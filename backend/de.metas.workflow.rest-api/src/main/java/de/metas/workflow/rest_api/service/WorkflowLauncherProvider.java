@@ -41,9 +41,11 @@ public interface WorkflowLauncherProvider
 
 	WFProcess startWorkflow(WorkflowStartRequest request);
 
+	void abort(WFProcessId wfProcessId, UserId callerId);
+
 	WFProcess getWFProcessById(WFProcessId wfProcessId);
 
-	default WFProcessHeaderProperties getHeaderProperties(@NonNull final WFProcess wfProcess, @NonNull final WFActivity wfActivity)
+	default WFProcessHeaderProperties getHeaderProperties(@NonNull final WFProcess wfProcess)
 	{
 		return WFProcessHeaderProperties.EMPTY;
 	}

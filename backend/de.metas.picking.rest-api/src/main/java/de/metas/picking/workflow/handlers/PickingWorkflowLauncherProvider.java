@@ -37,9 +37,12 @@ import de.metas.workflow.rest_api.model.WFActivity;
 import de.metas.workflow.rest_api.model.WFActivityId;
 import de.metas.workflow.rest_api.model.WFProcess;
 import de.metas.workflow.rest_api.model.WFProcessDocumentHolder;
+import de.metas.workflow.rest_api.model.WFProcessHeaderProperties;
+import de.metas.workflow.rest_api.model.WFProcessHeaderProperty;
 import de.metas.workflow.rest_api.model.WFProcessId;
 import de.metas.workflow.rest_api.model.WorkflowLauncher;
 import de.metas.workflow.rest_api.model.WorkflowLauncherProviderId;
+import de.metas.workflow.rest_api.service.WFProcessesIndex;
 import de.metas.workflow.rest_api.service.WorkflowLauncherProvider;
 import de.metas.workflow.rest_api.service.WorkflowStartRequest;
 import lombok.Builder;
@@ -50,7 +53,8 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
+
+import static de.metas.picking.workflow.handlers.activity_handlers.PickingWFActivityHelper.getPickingJob;
 
 @Component
 public class PickingWorkflowLauncherProvider implements WorkflowLauncherProvider
@@ -59,7 +63,7 @@ public class PickingWorkflowLauncherProvider implements WorkflowLauncherProvider
 
 	private final PickingJobService pickingJobService;
 
-	private final ConcurrentHashMap<WFProcessId, WFProcess> wfProcesses = new ConcurrentHashMap<>();
+	private final WFProcessesIndex wfProcesses = new WFProcessesIndex();
 
 	public PickingWorkflowLauncherProvider(
 			@NonNull final PickingJobService pickingJobService)
@@ -79,15 +83,13 @@ public class PickingWorkflowLauncherProvider implements WorkflowLauncherProvider
 		final ArrayList<WorkflowLauncher> result = new ArrayList<>();
 
 		final HashSet<ShipmentScheduleId> shipmentScheduleIdsAlreadyInPickingJobs = new HashSet<>();
-		for (final WFProcess wfProcess : wfProcesses.values())
+		for (final WFProcess wfProcess : wfProcesses.getByInvokerId(userId))
 		{
-			shipmentScheduleIdsAlreadyInPickingJobs.addAll(wfProcess.getDocumentAs(PickingJob.class).getShipmentScheduleIds());
+			shipmentScheduleIdsAlreadyInPickingJobs.addAll(getPickingJob(wfProcess).getShipmentScheduleIds());
 			result.add(toExistingWorkflowLauncher(wfProcess));
 		}
 
 		pickingJobService.streamPickingJobCandidates(userId, shipmentScheduleIdsAlreadyInPickingJobs)
-				// .map(PickingWorkflowLauncherProvider::extractPickingWorkflowLauncherKey)
-				// .distinct()
 				.map(PickingWorkflowLauncherProvider::toNewWorkflowLauncher)
 				.forEach(result::add);
 
@@ -119,12 +121,32 @@ public class PickingWorkflowLauncherProvider implements WorkflowLauncherProvider
 	@Override
 	public WFProcess getWFProcessById(@NonNull final WFProcessId wfProcessId)
 	{
-		final WFProcess wfProcess = wfProcesses.get(wfProcessId);
-		if (wfProcess == null)
-		{
-			throw new AdempiereException("No WFProcess found for " + wfProcessId);
-		}
-		return wfProcess;
+		return wfProcesses.getById(wfProcessId);
+	}
+
+	@Override
+	public WFProcessHeaderProperties getHeaderProperties(@NonNull final WFProcess wfProcess)
+	{
+		final PickingJob pickingJob = getPickingJob(wfProcess);
+
+		return WFProcessHeaderProperties.builder()
+				.entry(WFProcessHeaderProperty.builder()
+						.caption(TranslatableStrings.adElementOrMessage("SalesOrderDocumentNo"))
+						.value(pickingJob.getSalesOrderDocumentNo())
+						.build())
+				.entry(WFProcessHeaderProperty.builder()
+						.caption(TranslatableStrings.adElementOrMessage("CustomerName"))
+						.value(pickingJob.getCustomerName())
+						.build())
+				.entry(WFProcessHeaderProperty.builder()
+						.caption(TranslatableStrings.adElementOrMessage("PreparationDate"))
+						.value(pickingJob.getPreparationDate())
+						.build())
+				.entry(WFProcessHeaderProperty.builder()
+						.caption(TranslatableStrings.adElementOrMessage("DeliveryAddress"))
+						.value(pickingJob.getDeliveryAddress())
+						.build())
+				.build();
 	}
 
 	@Override
@@ -136,9 +158,23 @@ public class PickingWorkflowLauncherProvider implements WorkflowLauncherProvider
 		final PickingJob pickingJob = pickingJobService.createPickingJob(params, invokerId);
 
 		final WFProcess wfProcess = createWFProcess(pickingJob);
-		wfProcesses.put(wfProcess.getId(), wfProcess);
+		wfProcesses.add(wfProcess);
 
 		return wfProcess;
+	}
+
+	@Override
+	public void abort(@NonNull final WFProcessId wfProcessId, @NonNull final UserId callerId)
+	{
+		final WFProcess wfProcess = wfProcesses.getById(wfProcessId);
+		wfProcess.assertHasAccess(callerId);
+
+		// TODO: call the activity handlers
+
+		final PickingJob pickingJob = getPickingJob(wfProcess);
+		pickingJobService.abort(pickingJob);
+
+		wfProcesses.remove(wfProcess);
 	}
 
 	private WFProcess createWFProcess(final PickingJob pickingJob)
@@ -186,5 +222,4 @@ public class PickingWorkflowLauncherProvider implements WorkflowLauncherProvider
 	{
 		return TranslatableStrings.join(" | ", salesOrderDocumentNo, customerName);
 	}
-
 }
