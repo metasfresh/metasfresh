@@ -388,6 +388,12 @@ public class TranslatableStrings
 		return builder.build();
 	}
 
+	public static ITranslatableString adElementOrMessage(@NonNull final String columnName)
+	{
+		final IMsgBL msgBL = Services.get(IMsgBL.class);
+		return msgBL.translatable(columnName);
+	}
+
 	public static ITranslatableString adMessage(@NonNull final AdMessageKey adMessage, @Nullable final Object ... msgParameters)
 	{
 		final IMsgBL msgBL = Services.get(IMsgBL.class);
