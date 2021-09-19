@@ -104,27 +104,34 @@ public class WorkflowRestAPIService
 				.startWorkflow(request);
 	}
 
+	public void abortWFProcess(@NonNull final WFProcessId wfProcessId, @NonNull final UserId callerId)
+	{
+		launcherProviders
+				.getById(wfProcessId.getProviderId())
+				.abort(wfProcessId, callerId);
+	}
+
 	public WFProcessHeaderProperties getHeaderProperties(@NonNull final WFProcess wfProcess)
 	{
-		return wfProcess.getActivitiesInOrder()
+		final WFProcessHeaderProperties properties = launcherProviders.getById(wfProcess.getId().getProviderId())
+				.getHeaderProperties(wfProcess);
+
+		final WFProcessHeaderProperties propertiesFromActivities = wfProcess.getActivitiesInOrder()
 				.stream()
 				.map(wfActivity -> getHeaderProperties(wfProcess, wfActivity))
 				.reduce(WFProcessHeaderProperties::composeWith)
 				.orElse(WFProcessHeaderProperties.EMPTY);
+
+		return properties.composeWith(propertiesFromActivities);
 	}
 
 	private WFProcessHeaderProperties getHeaderProperties(
 			@NonNull final WFProcess wfProcess,
 			@NonNull final WFActivity wfActivity)
 	{
-		final WFProcessHeaderProperties properties = launcherProviders.getById(wfProcess.getId().getProviderId())
-				.getHeaderProperties(wfProcess, wfActivity);
-
-		final WFProcessHeaderProperties propertiesFromActivities = wfActivityHandlersRegistry
+		return wfActivityHandlersRegistry
 				.getHandler(wfActivity.getWfActivityType())
 				.getHeaderProperties(wfProcess, wfActivity);
-
-		return properties.composeWith(propertiesFromActivities);
 	}
 
 	public ImmutableMap<WFActivityId, UIComponent> getUIComponents(

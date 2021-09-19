@@ -72,10 +72,15 @@ public final class WFProcess
 
 	public void assertHasAccess(@NonNull final UserId userId)
 	{
-		if (!UserId.equals(getInvokerId(), userId))
+		if (!hasAccess(userId))
 		{
 			throw new AdempiereException("User does not have access");
 		}
+	}
+
+	public boolean hasAccess(@NonNull final UserId userId)
+	{
+		return UserId.equals(getInvokerId(), userId);
 	}
 
 	public <T> T getDocumentAs(@NonNull final Class<T> type)
@@ -130,5 +135,4 @@ public final class WFProcess
 			return WFState.Suspended;
 		}
 	}
-
 }

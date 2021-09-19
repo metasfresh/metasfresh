@@ -31,6 +31,7 @@ import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 
+import java.util.Comparator;
 import java.util.List;
 
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
@@ -48,6 +49,7 @@ public class JsonWorkflowLaunchersList
 		return builder()
 				.launchers(list.stream()
 						.map(launcher -> JsonWorkflowLauncher.of(launcher, jsonOpts))
+						.sorted(Comparator.comparing(JsonWorkflowLauncher::getCaption))
 						.collect(ImmutableList.toImmutableList()))
 				.build();
 	}

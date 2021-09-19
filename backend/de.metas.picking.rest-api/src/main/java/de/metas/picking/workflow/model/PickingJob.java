@@ -35,6 +35,7 @@ import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -47,6 +48,11 @@ public final class PickingJob
 
 	@Getter
 	@NonNull private final String customerName;
+	@Getter
+	@NonNull private final ZonedDateTime preparationDate;
+
+	@Getter
+	@NonNull private final String deliveryAddress;
 
 	@Nullable private UserId lockedBy;
 
@@ -60,11 +66,15 @@ public final class PickingJob
 
 	@Builder
 	private PickingJob(
-			@NonNull final String salesOrderDocumentNo,
-			@NonNull final String customerName,
-			@NonNull final ImmutableList<PickingJobLine> lines,
-			@Nullable final UserId lockedBy)
+			final @NonNull String salesOrderDocumentNo,
+			final @NonNull String customerName,
+			final @NonNull ZonedDateTime preparationDate,
+			final @NonNull String deliveryAddress,
+			final @NonNull ImmutableList<PickingJobLine> lines,
+			final @Nullable UserId lockedBy)
 	{
+		this.preparationDate = preparationDate;
+		this.deliveryAddress = deliveryAddress;
 		Check.assumeNotEmpty(lines, "lines");
 		this.salesOrderDocumentNo = salesOrderDocumentNo;
 		this.customerName = customerName;

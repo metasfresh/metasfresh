@@ -37,6 +37,7 @@ public class WFProcessHeaderProperty
 	@NonNull ITranslatableString caption;
 	@NonNull ITranslatableString value;
 
+	@SuppressWarnings("unused")
 	public static class WFProcessHeaderPropertyBuilder
 	{
 		public WFProcessHeaderPropertyBuilder value(final ITranslatableString value)

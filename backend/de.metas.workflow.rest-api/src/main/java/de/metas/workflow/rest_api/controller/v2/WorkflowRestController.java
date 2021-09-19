@@ -86,6 +86,23 @@ public class WorkflowRestController
 		return JsonWorkflowLaunchersList.of(launchers, newJsonOpts());
 	}
 
+	@GetMapping("/wfProcess/{wfProcessId}")
+	public JsonWFProcess getWFProcessById(@PathVariable("wfProcessId") final @NonNull String wfProcessIdStr)
+	{
+		return getWFProcessById(WFProcessId.ofString(wfProcessIdStr));
+	}
+
+	private JsonWFProcess getWFProcessById(final WFProcessId wfProcessId)
+	{
+		final WFProcess wfProcess = workflowRestAPIService.getWFProcessById(wfProcessId);
+
+		final UserId loggedUserId = Env.getLoggedUserId();
+		wfProcess.assertHasAccess(loggedUserId);
+
+		final JsonOpts jsonOpts = newJsonOpts();
+		return toJson(wfProcess, jsonOpts);
+	}
+
 	@PostMapping("/wfProcess/start")
 	public JsonWFProcess start(@RequestBody final @NonNull JsonWFProcessStartRequest request)
 	{
@@ -102,21 +119,13 @@ public class WorkflowRestController
 		return toJson(wfProcess, jsonOpts);
 	}
 
-	@GetMapping("/wfProcess/{wfProcessId}")
-	public JsonWFProcess getWFProcessById(@PathVariable("wfProcessId") final @NonNull String wfProcessIdStr)
+	@PostMapping("/wfProcess/{wfProcessId}/abort")
+	public void abort(@PathVariable("wfProcessId") final @NonNull String wfProcessIdStr)
 	{
-		return getWFProcessById(WFProcessId.ofString(wfProcessIdStr));
-	}
-
-	private JsonWFProcess getWFProcessById(final WFProcessId wfProcessId)
-	{
-		final WFProcess wfProcess = workflowRestAPIService.getWFProcessById(wfProcessId);
-
+		final WFProcessId wfProcessId = WFProcessId.ofString(wfProcessIdStr);
 		final UserId loggedUserId = Env.getLoggedUserId();
-		wfProcess.assertHasAccess(loggedUserId);
 
-		final JsonOpts jsonOpts = newJsonOpts();
-		return toJson(wfProcess, jsonOpts);
+		workflowRestAPIService.abortWFProcess(wfProcessId, loggedUserId);
 	}
 
 	private JsonWFProcess toJson(final WFProcess wfProcess, final JsonOpts jsonOpts)

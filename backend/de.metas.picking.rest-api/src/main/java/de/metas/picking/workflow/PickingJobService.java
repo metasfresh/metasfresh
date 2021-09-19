@@ -35,6 +35,7 @@ import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.inoutcandidate.lock.ShipmentScheduleLockRepository;
 import de.metas.inoutcandidate.lock.ShipmentScheduleLockRequest;
 import de.metas.inoutcandidate.lock.ShipmentScheduleLockType;
+import de.metas.inoutcandidate.lock.ShipmentScheduleUnLockRequest;
 import de.metas.picking.api.IPackagingDAO;
 import de.metas.picking.api.Packageable;
 import de.metas.picking.api.PackageableQuery;
@@ -135,6 +136,10 @@ public class PickingJobService
 						.orElseThrow(() -> new AdempiereException("Not an unique sales order documentNo")))
 				.customerName(Packageable.extractSingleValue(items, Packageable::getCustomerName)
 						.orElseThrow(() -> new AdempiereException("Not an unique sales order customerName")))
+				.preparationDate(Packageable.extractSingleValue(items, Packageable::getPreparationDate)
+						.orElseThrow(() -> new AdempiereException("Not an unique sales order preparationDate")))
+				.deliveryAddress(Packageable.extractSingleValue(items, Packageable::getCustomerAddress)
+						.orElseThrow(() -> new AdempiereException("Not an unique sales order delivery address")))
 				.lines(lines)
 				.lockedBy(Packageable.extractSingleLockedBy(items).orElse(null))
 				.build();
@@ -201,6 +206,12 @@ public class PickingJobService
 		}
 	}
 
+	public void abort(@NonNull final PickingJob pickingJob)
+	{
+		// TODO: reverse/remove created picking candidates
+		unlockIfNeeded(pickingJob);
+	}
+
 	private void lockIfNeeded(@NonNull final PickingJob pickingJob, @NonNull final UserId lockBy)
 	{
 		if (pickingJob.getLockedBy() == null)
@@ -218,6 +229,23 @@ public class PickingJobService
 		{
 			throw new AdempiereException("Already locked by " + pickingJob.getLockedBy());
 		}
+	}
+
+	private void unlockIfNeeded(@NonNull final PickingJob pickingJob)
+	{
+		final UserId lockedBy = pickingJob.getLockedBy();
+		if (lockedBy == null)
+		{
+			// already unlocked
+			return;
+		}
+
+		shipmentScheduleLockRepository.unlock(
+				ShipmentScheduleUnLockRequest.builder()
+						.shipmentScheduleIds(pickingJob.getShipmentScheduleIds())
+						.lockType(ShipmentScheduleLockType.PICKING)
+						.lockedBy(lockedBy)
+						.build());
 	}
 
 }
