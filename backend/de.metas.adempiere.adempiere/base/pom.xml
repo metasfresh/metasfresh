@@ -3,10 +3,10 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <artifactId>de.metas.parent</artifactId>
-        <groupId>de.metas</groupId>
+        <groupId>de.metas.adempiere.adempiere</groupId>
+        <artifactId>de.metas.adempiere.adempiere</artifactId>
         <version>10.0.0</version>
-        <relativePath>../../pom.xml</relativePath>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <groupId>de.metas.adempiere.adempiere</groupId>
@@ -222,6 +222,7 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
+            <version>${commons-lang3.version}</version>
         </dependency>
         
         <!-- needed for org.adempiere.plaf.UIDefaultsSerializer -->

@@ -67,6 +67,8 @@
 
         <!-- with 5.4.2 we can't run junit tests from eclipse ("no tests found") -->
         <junit-jupiter.version>5.6.2</junit-jupiter.version>
+
+        <commons-lang3.version>3.12.0</commons-lang3.version>
     </properties>
 
     <modules>
@@ -144,12 +146,12 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-lang3</artifactId>
-            <version>3.12.0</version>
-            <scope>test</scope>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.apache.commons</groupId>-->
+<!--            <artifactId>commons-lang3</artifactId>-->
+<!--            <version>3.12.0</version>-->
+<!--            <scope>test</scope>-->
+<!--        </dependency>-->
         <!-- 
         dependency of org.skyscreamer:jsonassert which is a dependency of json-snapshot
         I get a ClassNotFoundException JSONException, despite ofc it *should* be there transitively 
@@ -422,9 +424,13 @@
                                 <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
                             </manifest>
                             <manifestEntries>
+                                <!--suppress UnresolvedMavenProperty -->
                                 <ciBuildNo>${BUILD_NUMBER}</ciBuildNo>
+                                <!--suppress UnresolvedMavenProperty -->
                                 <ciBuildTag>${BUILD_TAG}</ciBuildTag>
+                                <!--suppress UnresolvedMavenProperty -->
                                 <ciJobName>${JOB_NAME}</ciJobName>
+                                <!--suppress UnresolvedMavenProperty -->
                                 <ciBuildUrl>${BUILD_URL}</ciBuildUrl>
                             </manifestEntries>
                         </archive>
@@ -458,6 +464,7 @@
                         <trimStackTrace>false</trimStackTrace>
 
                         <systemPropertyVariables>
+                            <!--suppress UnresolvedMavenProperty -->
                             <concordion.output.dir>${acceptance.reports.dir}</concordion.output.dir>
                         </systemPropertyVariables>
                         <includes>
