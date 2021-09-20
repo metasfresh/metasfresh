@@ -6,7 +6,11 @@ import { loginWithToken, checkLoginRequest, logoutRequest } from '../api';
 
 import history from '../services/History';
 import Auth from '../services/Auth';
-import { loginSuccess as loginAction } from '../actions/AppActions';
+import {
+  loginSuccess as loginAction,
+  getNotifications,
+  getNotificationsEndpoint,
+} from '../actions/AppActions';
 import useSynchronousState from './useSynchronousState';
 
 const authContext = createContext();
@@ -138,6 +142,10 @@ function useProvideAuth() {
       return dispatch(loginAction(auth)).then(() => {
         _loginSuccess();
       });
+      // user is already authenticated but we need to refresh notifications
+    } else {
+      dispatch(getNotificationsEndpoint(auth));
+      dispatch(getNotifications());
     }
   };
 
