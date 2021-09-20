@@ -4,10 +4,24 @@ import './index.css';
 import App from './App';
 import * as serviceWorkerRegistration from './serviceWorkerRegistration';
 import reportWebVitals from './reportWebVitals';
+import { Provider } from 'react-redux';
+import { ConnectedRouter } from 'connected-react-router';
+import { Route, Switch } from 'react-router';
+import { store, history } from './store/store';
 
 ReactDOM.render(
   <React.StrictMode>
-    <App />
+    <Provider store={store()}>
+      <ConnectedRouter history={history}>
+        <>
+          <Switch>
+            <Route exact path="/" render={() => (<App />)} />
+            <Route exact path="/test" render={() => (<><h1>test</h1></>)} />
+            <Route render={() => (<div>Not found</div>)} />
+          </Switch>
+        </>
+      </ConnectedRouter>
+    </Provider>
   </React.StrictMode>,
   document.getElementById('root')
 );
