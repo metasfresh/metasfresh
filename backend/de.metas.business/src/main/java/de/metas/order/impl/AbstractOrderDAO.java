@@ -27,6 +27,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_PO_OrderLine_Alloc;
 import org.compiere.model.I_M_InOut;
 import org.compiere.util.Env;
 
@@ -241,7 +242,7 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 	@Override
 	public List<I_C_OrderLine> retrieveOrderLinesByOrderIds(final Set<OrderId> orderIds)
 	{
-		if(orderIds.isEmpty())
+		if (orderIds.isEmpty())
 		{
 			return ImmutableList.of();
 		}
@@ -388,5 +389,36 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 
 		final I_C_Order order = queryBuilder.create().firstOnly(I_C_Order.class);
 		return order == null ? null : order;
+	}
+
+	@NonNull
+	public Set<OrderLineId> retrieveSOLineIdsByPOLineId(@NonNull final OrderLineId poLineId)
+	{
+		return queryBL.createQueryBuilder(I_C_PO_OrderLine_Alloc.class)
+				.addEqualsFilter(I_C_PO_OrderLine_Alloc.COLUMNNAME_C_PO_OrderLine_ID, poLineId)
+				.create()
+				.list()
+				.stream()
+				.map(I_C_PO_OrderLine_Alloc::getC_SO_OrderLine_ID)
+				.map(OrderLineId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	public void savePOLineAllocation(@NonNull final I_C_PO_OrderLine_Alloc poLineAllocation)
+	{
+		InterfaceWrapperHelper.save(poLineAllocation);
+	}
+
+	@NonNull
+	public ImmutableSet<OrderId> getSalesOrderIdsViaPOAllocation(@NonNull final OrderId purchaseOrderId)
+	{
+		return retrieveOrderLines(purchaseOrderId)
+				.stream()
+				.map(I_C_OrderLine::getC_OrderLine_ID)
+				.map(OrderLineId::ofRepoId)
+				.map(this::retrieveSOLineIdsByPOLineId)
+				.map(this::retrieveIdsByOrderLineIds)
+				.flatMap(Set::stream)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 }

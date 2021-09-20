@@ -113,8 +113,8 @@ public class C_Order_CreatePOFromSOs
 		for (final I_C_Order salesOrder : IteratorUtils.asIterable(it))
 		{
 			final List<I_C_OrderLine> salesOrderLines = orderCreatePOFromSOsDAO.retrieveOrderLines(salesOrder,
-					p_allowMultiplePOOrders,
-					purchaseQtySource);
+																								   p_allowMultiplePOOrders,
+																								   purchaseQtySource);
 			for (final I_C_OrderLine salesOrderLine : salesOrderLines)
 			{
 				workpackageAggregator.add(salesOrderLine);
