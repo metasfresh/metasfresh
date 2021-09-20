@@ -42,6 +42,7 @@ import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
+import org.compiere.model.I_M_Product;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_C_Tax;
 import org.compiere.util.TimeUtil;
@@ -231,6 +232,12 @@ public class MediatedOrderFactoryTest
 
 		//uom
 		final I_C_UOM uomRecord = BusinessTestHelper.createUOM("uom");
+
+		//product
+		final I_M_Product trxProduct = InterfaceWrapperHelper.newInstance(I_M_Product.class);
+		trxProduct.setM_Product_ID(transactionProductId.getRepoId());
+		trxProduct.setC_UOM_ID(uomRecord.getC_UOM_ID());
+		InterfaceWrapperHelper.saveRecord(trxProduct);
 
 		//currency
 		final I_C_Currency currency = newInstance(I_C_Currency.class);
