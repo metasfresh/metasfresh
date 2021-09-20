@@ -14,7 +14,8 @@
 
 	<properties>
 		<migration-sql-basedir>42-de.metas.report.jasper.server</migration-sql-basedir>
-		<metasfresh.version>[1,10.0.0]</metasfresh.version>
+		<metasfresh.version>10.0.0</metasfresh.version>
+		<metasfresh-common.version>10.0.0</metasfresh-common.version>
 	</properties>
 
 	<dependencies>
@@ -88,7 +89,20 @@
 			<artifactId>de.metas.report.jasper.commons</artifactId>
 			<version>${metasfresh.version}</version>
 		</dependency>
-				
+
+		<dependency>
+			<groupId>de.metas.util</groupId>
+			<artifactId>de.metas.util</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.common.util</groupId>
+			<artifactId>de-metas-common-util</artifactId>
+			<version>${metasfresh-common.version}</version>
+		</dependency>
+
+
 		<!-- Q/R code-->
 		<dependency>
 			<groupId>com.google.zxing</groupId>
@@ -159,7 +173,7 @@
 			<version>${assertj.version}</version>
 			<scope>test</scope>
 		</dependency>
-		
+
 	</dependencies>
 
 </project>
