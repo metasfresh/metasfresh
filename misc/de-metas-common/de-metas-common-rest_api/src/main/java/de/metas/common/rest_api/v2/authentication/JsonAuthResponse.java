@@ -19,11 +19,14 @@ public class JsonAuthResponse
 	String token;
 
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	String language;
+
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	String error;
 
-	public static JsonAuthResponse ok(@NonNull final String token)
+	public static JsonAuthResponse.JsonAuthResponseBuilder ok(@NonNull final String token)
 	{
-		return builder().token(token).build();
+		return builder().token(token);
 	}
 
 	public static JsonAuthResponse error(@NonNull final String error)
