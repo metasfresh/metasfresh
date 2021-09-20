@@ -2,16 +2,16 @@ package de.metas.ui.web.config;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.function.Predicate;
+
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
-import com.google.common.base.Predicate;
-import com.google.common.base.Predicates;
-
 import de.metas.util.web.SwaggerUtil;
 import de.pentabyte.springfox.ApiEnumDescriptionPlugin;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import springfox.documentation.RequestHandler;
 import springfox.documentation.builders.PathSelectors;
 import springfox.documentation.builders.RequestHandlerSelectors;
@@ -42,14 +42,14 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
  */
 
 @Configuration
-@EnableSwagger2
+@EnableWebMvc
 @Import(ApiEnumDescriptionPlugin.class) // https://github.com/hoereth/springfox-enum-plugin
 public class SwaggerConfig
 {
 	@Bean
 	public Docket api()
 	{
-		return new Docket(DocumentationType.SWAGGER_2)
+		return new Docket(DocumentationType.OAS_30/*SWAGGER_2*/)
 				.select()
 				.paths(PathSelectors.any())
 				.build()
@@ -58,21 +58,21 @@ public class SwaggerConfig
 						"REST API backend for metasfresh UIs"/* description */));
 	}
 
-	@SuppressWarnings("unused")
-	private static final Predicate<RequestHandler> basePackages(final Class<?>... classes)
-	{
-		final Set<Predicate<RequestHandler>> predicates = new HashSet<>(classes.length);
-		for (final Class<?> clazz : classes)
-		{
-			final String packageName = clazz.getPackage().getName();
-			predicates.add(RequestHandlerSelectors.basePackage(packageName));
-		}
-
-		if(predicates.size() == 1)
-		{
-			return predicates.iterator().next();
-		}
-
-		return Predicates.or(predicates);
-	}
+	// @SuppressWarnings("unused")
+	// private static Predicate<RequestHandler> basePackages(final Class<?>... classes)
+	// {
+	// 	final Set<Predicate<RequestHandler>> predicates = new HashSet<>(classes.length);
+	// 	for (final Class<?> clazz : classes)
+	// 	{
+	// 		final String packageName = clazz.getPackage().getName();
+	// 		predicates.add(RequestHandlerSelectors.basePackage(packageName));
+	// 	}
+	//
+	// 	if(predicates.size() == 1)
+	// 	{
+	// 		return predicates.iterator().next();
+	// 	}
+	//
+	// 	return Predicates.or(predicates);
+	// }
 }

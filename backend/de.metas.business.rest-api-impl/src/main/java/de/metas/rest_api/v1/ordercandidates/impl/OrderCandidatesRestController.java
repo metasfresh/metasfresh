@@ -71,6 +71,7 @@ import java.util.List;
 
 import static de.metas.common.util.CoalesceUtil.coalesce;
 
+
 /*
  * #%L
  * de.metas.ordercandidate.rest-api
@@ -92,18 +93,23 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+/**
+ * @deprecated please consider migrating to version 2 of this API.
+ */
+@Deprecated
 @RestController
 @RequestMapping(value = {
 		MetasfreshRestAPIConstants.ENDPOINT_API_DEPRECATED + "/sales/order/candidates",
 		MetasfreshRestAPIConstants.ENDPOINT_API_V1 + "/sales/order/candidates"})
 @Profile(Profiles.PROFILE_App)
-public class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEndpoint
+public class OrderCandidatesRestController implements OrderCandidatesRestEndpoint
 {
 	private final String PATH_BULK = "/bulk";
-	
-	public static final String DATA_SOURCE_INTERNAL_NAME = "SOURCE." + OrderCandidatesRestControllerImpl.class.getName();
 
-	private static final Logger logger = LogManager.getLogger(OrderCandidatesRestControllerImpl.class);
+	public static final String DATA_SOURCE_INTERNAL_NAME = "SOURCE." + OrderCandidatesRestController.class.getName();
+
+	private static final Logger logger = LogManager.getLogger(OrderCandidatesRestController.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	private final JsonConverters jsonConverters;
@@ -113,7 +119,7 @@ public class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEnd
 
 	private PermissionServiceFactory permissionServiceFactory;
 
-	public OrderCandidatesRestControllerImpl(
+	public OrderCandidatesRestController(
 			@NonNull final JsonConverters jsonConverters,
 			@NonNull final OLCandRepository olCandRepo,
 			@NonNull final BpartnerRestController bpartnerRestController,
