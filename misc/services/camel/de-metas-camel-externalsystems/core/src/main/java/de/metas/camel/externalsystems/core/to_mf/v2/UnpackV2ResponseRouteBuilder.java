@@ -1,6 +1,5 @@
 package de.metas.camel.externalsystems.core.to_mf.v2;
 
-import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 import de.metas.camel.externalsystems.core.CamelRouteHelper;
 import de.metas.common.rest_api.v2.JsonApiResponse;
 import lombok.NonNull;
@@ -15,7 +14,7 @@ public class UnpackV2ResponseRouteBuilder extends EndpointRouteBuilder
 	public final static String UNPACK_V2_API_RESPONSE = "UnpackV2ApiResponse";
 
 	@Override
-	public void configure() throws Exception
+	public void configure()
 	{
 		from(direct(UNPACK_V2_API_RESPONSE))
 				.routeId(UNPACK_V2_API_RESPONSE)
@@ -33,7 +32,6 @@ public class UnpackV2ResponseRouteBuilder extends EndpointRouteBuilder
 			throw new RuntimeCamelException("Empty exchange body! No JsonApiResponse present!");
 		}
 
-		exchange.getIn().setHeader(ExternalSystemCamelConstants.HEADER_API_REQUEST_ID, jsonApiResponse.getRequestId());
 		exchange.getIn().setBody(jsonApiResponse.getEndpointResponse());
 	}
 }
