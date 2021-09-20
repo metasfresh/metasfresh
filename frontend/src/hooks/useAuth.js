@@ -138,7 +138,7 @@ function useProvideAuth() {
    * setting language etc
    */
   const login = () => {
-    if (!store.getState().app.isLogged) {
+    if (!store.getState().appHandler.isLogged) {
       return dispatch(loginAction(auth)).then(() => {
         _loginSuccess();
       });

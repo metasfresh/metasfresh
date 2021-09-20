@@ -19,9 +19,7 @@ const TokenRoute = ({ match }) => {
   const state = useStore().getState();
 
   if (!auth.authRequestPending() && !state.appHandler.isLogged) {
-    auth.tokenLogin(tokenId).then(() => {
-      history.push('/');
-    });
+    auth.tokenLogin(tokenId).then(() => history.push('/'));
   }
 
   return null;

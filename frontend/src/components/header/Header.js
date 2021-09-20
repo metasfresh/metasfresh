@@ -133,17 +133,13 @@ class Header extends PureComponent {
    * @method openInbox
    * @summary Shows inbox
    */
-  openInbox = () => {
-    this.setState({ isInboxOpen: true });
-  };
+  openInbox = () => this.setState({ isInboxOpen: true });
 
   /**
    * @method closeInbox
    * @summary Hides inbox
    */
-  closeInbox = () => {
-    this.setState({ isInboxOpen: false });
-  };
+  closeInbox = () => this.setState({ isInboxOpen: false });
 
   /**
    * @method handleInboxToggle
