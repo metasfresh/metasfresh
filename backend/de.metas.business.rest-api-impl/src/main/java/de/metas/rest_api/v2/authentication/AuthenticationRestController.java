@@ -3,7 +3,7 @@ package de.metas.rest_api.v2.authentication;
 import de.metas.Profiles;
 import de.metas.common.rest_api.v2.authentication.JsonAuthRequest;
 import de.metas.common.rest_api.v2.authentication.JsonAuthResponse;
-import de.metas.error.IErrorManager;
+import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.security.Role;
@@ -11,6 +11,7 @@ import de.metas.security.RoleId;
 import de.metas.security.UserAuthToken;
 import de.metas.security.requests.CreateUserAuthTokenRequest;
 import de.metas.user.UserId;
+import de.metas.user.api.IUserBL;
 import de.metas.util.Services;
 import de.metas.util.hash.HashableString;
 import de.metas.util.web.MetasfreshRestAPIConstants;
@@ -40,6 +41,7 @@ public class AuthenticationRestController
 	public static final String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/auth";
 
 	private final Logger logger = LogManager.getLogger(AuthenticationRestController.class);
+	private final IUserBL userBL = Services.get(IUserBL.class);
 	private final UserAuthTokenService userAuthTokenService;
 
 	public AuthenticationRestController(
@@ -79,7 +81,11 @@ public class AuthenticationRestController
 					.description("Created by " + AuthenticationRestController.class.getName())
 					.build());
 
-			return JsonAuthResponse.ok(userAuthToken.getAuthToken());
+			final Language userLanguage = userBL.getUserLanguage(userAuthToken.getUserId());
+
+			return JsonAuthResponse.ok(userAuthToken.getAuthToken())
+					.language(userLanguage.getAD_Language())
+					.build();
 		}
 		catch (final Exception ex)
 		{
@@ -126,7 +132,7 @@ public class AuthenticationRestController
 		}
 		else if (orgIds.size() != 1)
 		{
-			// if there are more then Orgs, we are going with organization "*"
+			// if there are more Orgs, we are going with organization "*"
 			orgId = OrgId.ANY;
 		}
 		else
