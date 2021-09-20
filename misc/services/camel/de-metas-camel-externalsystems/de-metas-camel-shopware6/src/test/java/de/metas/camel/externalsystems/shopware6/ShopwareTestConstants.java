@@ -26,9 +26,6 @@ public interface ShopwareTestConstants
 {
 	String MOCK_ORG_CODE = "orgCode";
 
-	String MOCK_BPARTNER_LOCATION_ID_JSON_PATH = "/customFields/originalAddressId";
-	String MOCK_BPARTNER_ID_JSON_PATH = "/customFields/originalAddressId";
-
 	String MOCK_EUR_CODE = "EUR";
 	String MOCK_CURRENCY_ID = "currencyId";
 
@@ -38,8 +35,10 @@ public interface ShopwareTestConstants
 	String MOCK_NORMAL_VAT_RATES = "7.7,19,0";
 	String MOCK_REDUCED_VAT_RATES = "5.5,12";
 
-	String SYNC_ADVISE_IFEXISTS_UPDATE_MERGE = "UPDATE_MERGE";
-	String SYNC_ADVISE_IFEXISTS_DONT_UPDATE = "DONT_UPDATE";
-	String SYNC_ADVISE_IFNOTEXISTS_CREATE = "CREATE";
-	String SYNC_ADVISE_IFNOTEXISTS_FAIL = "FAIL";
+	String MOCK_BPARTNER_UPSERT = "mock:bPartnerUpsert";
+	String MOCK_OL_CAND_CREATE = "mock:olCandCreate";
+	String MOCK_OL_CAND_CLEAR = "mock:olCandClear";
+	String MOCK_CREATE_PAYMENT = "mock:createPayment";
+	String MOCK_UPSERT_RUNTIME_PARAMETERS = "mock:upsertRuntimeParams";
+	String MOCK_STORE_RAW_DATA = "mock:storeRawData";
 }

@@ -15,7 +15,7 @@ import {
   setNewFiltersActive,
   annotateFilters,
   isFilterValid,
-  parseFiltersToPatch,
+  normalizeFilterValue,
 } from '../../utils/filterHelpers';
 
 import FiltersNotIcluded from './FiltersNotIncluded';
@@ -44,7 +44,7 @@ class Filters extends PureComponent {
       const parsedFilter = filter.parameters
         ? {
             ...filter,
-            parameters: parseFiltersToPatch(filter.parameters),
+            parameters: normalizeFilterValue(filter.parameters),
           }
         : filter;
 

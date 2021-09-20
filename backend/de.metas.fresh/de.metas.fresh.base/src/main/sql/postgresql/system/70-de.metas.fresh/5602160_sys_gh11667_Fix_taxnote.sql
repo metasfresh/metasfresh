@@ -1,4 +1,5 @@
-DROP FUNCTION if exists report.taxnote(p_c_invoice_id numeric);
+--no need to drop the function because we don't change the name or params
+--DROP FUNCTION if exists report.taxnote(p_c_invoice_id numeric);
 
 CREATE OR REPLACE FUNCTION report.taxnote(IN p_c_invoice_id numeric) returns text
 AS

@@ -1,21 +1,19 @@
 package de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger;
 
-import static de.metas.common.util.CoalesceUtil.coalesce;
-
-import java.time.Instant;
-import java.time.LocalDate;
-
-import javax.annotation.Nullable;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionPoints;
 import de.metas.organization.OrgId;
 import de.metas.util.lang.Percent;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
+import java.time.Instant;
+import java.time.LocalDate;
+
+import static de.metas.common.util.CoalesceUtil.coalesce;
 
 /*
  * #%L
@@ -39,7 +37,9 @@ import lombok.Value;
  * #L%
  */
 
-/** Contains data from a commission trigger. Not deltas, just the base points which the trigger currently has */
+/**
+ * Contains data from a commission trigger. Not deltas, just the base points which the trigger currently has
+ */
 @Value
 public class CommissionTriggerData
 {
@@ -51,7 +51,9 @@ public class CommissionTriggerData
 
 	boolean invoiceCandidateWasDeleted;
 
-	/** Exact timestamp of this trigger. E.g. if one invoice candidate is changed, there might be two triggers wit different timestamps that relate to the same IC. */
+	/**
+	 * Exact timestamp of this trigger. E.g. if one invoice candidate is changed, there might be two triggers wit different timestamps that relate to the same IC.
+	 */
 	Instant timestamp;
 
 	LocalDate triggerDocumentDate;

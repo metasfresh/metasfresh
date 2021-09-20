@@ -93,12 +93,12 @@ public class JsonExternalSystemShopware6ConfigMapping
 
 	public boolean isGroupMatching(@NonNull final String sw6CustomerGroup)
 	{
-		return Check.isBlank(this.sw6CustomerGroup) || this.sw6CustomerGroup.equals(sw6CustomerGroup);
+		return Check.isBlank(this.sw6CustomerGroup) || this.sw6CustomerGroup.trim().equals(sw6CustomerGroup.trim());
 	}
 
 	public boolean isPaymentMethodMatching(@NonNull final String sw6PaymentMethod)
 	{
-		return Check.isBlank(this.sw6PaymentMethod) || this.sw6PaymentMethod.equals(sw6PaymentMethod);
+		return Check.isBlank(this.sw6PaymentMethod) || this.sw6PaymentMethod.trim().equals(sw6PaymentMethod.trim());
 	}
 
 }
