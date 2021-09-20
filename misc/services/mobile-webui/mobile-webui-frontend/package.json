@@ -2,6 +2,7 @@
   "name": "mobile-webui-frontend",
   "version": "0.1.0",
   "private": true,
+  "license": "GPL 2",
   "dependencies": {
     "@reduxjs/toolkit": "^1.6.1",
     "@testing-library/jest-dom": "^5.11.4",
