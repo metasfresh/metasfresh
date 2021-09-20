@@ -1,15 +1,10 @@
-import { combineReducers } from '@reduxjs/toolkit';
 import { createBrowserHistory } from 'history'
-import { connectRouter, routerMiddleware } from 'connected-react-router'
+import { routerMiddleware } from 'connected-react-router'
 import { applyMiddleware, compose, createStore } from 'redux'
 import thunk from "redux-thunk"
-
+import createRootReducer from '../reducers'
 
 export const history = createBrowserHistory()
-
-const createRootReducer = (history) => combineReducers({
-  router: connectRouter(history),
-})
 
 export const store = function configureStore(preloadedState) {
   const store = createStore(
