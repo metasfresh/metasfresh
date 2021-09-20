@@ -9,7 +9,7 @@ import java.math.BigDecimal;
  *  @author metasfresh (generated) 
  */
 @SuppressWarnings("unused")
-public interface I_C_Commission_Instance 
+public interface I_C_Commission_Instance
 {
 
 	String Table_Name = "C_Commission_Instance";
@@ -92,6 +92,28 @@ public interface I_C_Commission_Instance
 
 	ModelColumn<I_C_Commission_Instance, Object> COLUMN_C_Commission_Instance_ID = new ModelColumn<>(I_C_Commission_Instance.class, "C_Commission_Instance_ID", null);
 	String COLUMNNAME_C_Commission_Instance_ID = "C_Commission_Instance_ID";
+
+	/**
+	 * Set Currency.
+	 * The Currency for this record
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setC_Currency_ID (int C_Currency_ID);
+
+	/**
+	 * Get Currency.
+	 * The Currency for this record
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getC_Currency_ID();
+
+	String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
 
 	/**
 	 * Set Invoice candidate.
@@ -219,6 +241,28 @@ public interface I_C_Commission_Instance
 
 	ModelColumn<I_C_Commission_Instance, org.compiere.model.I_C_OrderLine> COLUMN_C_OrderLine_ID = new ModelColumn<>(I_C_Commission_Instance.class, "C_OrderLine_ID", org.compiere.model.I_C_OrderLine.class);
 	String COLUMNNAME_C_OrderLine_ID = "C_OrderLine_ID";
+
+	/**
+	 * Set UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setC_UOM_ID (int C_UOM_ID);
+
+	/**
+	 * Get UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getC_UOM_ID();
+
+	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
 	 * Set Date.
@@ -440,6 +484,29 @@ public interface I_C_Commission_Instance
 
 	ModelColumn<I_C_Commission_Instance, Object> COLUMN_POReference = new ModelColumn<>(I_C_Commission_Instance.class, "POReference", null);
 	String COLUMNNAME_POReference = "POReference";
+
+	/**
+	 * Set Quantity.
+	 * Quantity
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setQty (BigDecimal Qty);
+
+	/**
+	 * Get Quantity.
+	 * Quantity
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getQty();
+
+	ModelColumn<I_C_Commission_Instance, Object> COLUMN_Qty = new ModelColumn<>(I_C_Commission_Instance.class, "Qty", null);
+	String COLUMNNAME_Qty = "Qty";
 
 	/**
 	 * Get Updated.

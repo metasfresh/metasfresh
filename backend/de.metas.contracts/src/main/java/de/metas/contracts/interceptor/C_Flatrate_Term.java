@@ -470,7 +470,7 @@ public class C_Flatrate_Term
 
 	/**
 	 * Updates the <code>EndDate</code> and <code>NoticeDate</code> of the given term's predecessor(s).
-	 *
+	 * <p>
 	 * task https://github.com/metasfresh/metasfresh/issues/549
 	 */
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
@@ -642,9 +642,32 @@ public class C_Flatrate_Term
 		flatrateBL.ensureOneContractOfGivenType(term, TypeConditions.MEDIATED_COMMISSION);
 	}
 
+
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_COMPLETE)
 	public void ensureOneMediatedContractBeforeComplete(@NonNull final I_C_Flatrate_Term term)
 	{
 		flatrateBL.ensureOneContractOfGivenType(term, TypeConditions.MEDIATED_COMMISSION);
+	}
+
+	@ModelChange(timings = {
+			ModelValidator.TYPE_BEFORE_NEW,
+			ModelValidator.TYPE_BEFORE_CHANGE
+	},
+			ifColumnsChanged = {
+					I_C_Flatrate_Term.COLUMNNAME_Type_Conditions,
+					I_C_Flatrate_Term.COLUMNNAME_StartDate,
+					I_C_Flatrate_Term.COLUMNNAME_EndDate,
+					I_C_Flatrate_Term.COLUMNNAME_AD_Org_ID,
+					I_C_Flatrate_Term.COLUMNNAME_Bill_BPartner_ID
+			})
+	public void ensureOneMarginContract(@NonNull final I_C_Flatrate_Term term)
+	{
+		flatrateBL.ensureOneContractOfGivenType(term, TypeConditions.MARGIN_COMMISSION);
+	}
+
+	@DocValidate(timings = ModelValidator.TIMING_BEFORE_COMPLETE)
+	public void ensureOneMarginContractBeforeComplete(@NonNull final I_C_Flatrate_Term term)
+	{
+		flatrateBL.ensureOneContractOfGivenType(term, TypeConditions.MARGIN_COMMISSION);
 	}
 }
