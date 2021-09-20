@@ -30,13 +30,14 @@ public interface Shopware6Constants
 
 	String FIELD_UPDATED_AT = "updatedAt";
 	String FIELD_CREATED_AT = "createdAt";
-
+	String FIELD_ORDER_NUMBER = "orderNumber";
+	
 	String PARAMETERS_DATE_GTE = "gte";
 
 	//camel route properties
 	String ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT = "GetOrdersRouteContext";
 	String ROUTE_PROPERTY_IMPORT_PRODUCTS_CONTEXT = "GetProductsRouteContext";
-
+	
 	//nodes
 	String JSON_NODE_DATA = "data";
 	String JSON_NODE_DELIVERY_ADDRESS = "shippingOrderAddress";

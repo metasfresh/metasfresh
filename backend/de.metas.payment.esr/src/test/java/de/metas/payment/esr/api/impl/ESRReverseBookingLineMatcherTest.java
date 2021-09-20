@@ -32,7 +32,7 @@ public class ESRReverseBookingLineMatcherTest extends ESRTestBase
 		final CurrencyId currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
 		final I_C_BP_BankAccount account = createBankAccount(true,
-															 Env.getAD_Org_ID(getCtx()),
+															 getAD_Org().getAD_Org_ID(),
 															 Env.getAD_User_ID(getCtx()),
 															 "01-062822-7",
 															 currencyEUR);

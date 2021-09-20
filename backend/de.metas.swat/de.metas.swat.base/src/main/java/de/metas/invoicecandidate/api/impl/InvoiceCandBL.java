@@ -2352,7 +2352,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 		final List<I_C_Invoice_Candidate> invoiceCands = new ArrayList<>();
 
-		final MInvoice invoicePO = (MInvoice)InterfaceWrapperHelper.getPO(invoice);
+		final MInvoice invoicePO = InterfaceWrapperHelper.getPO(invoice);
 		for (final MInvoiceLine ilPO : invoicePO.getLines(true))
 		{
 			final I_C_InvoiceLine il = InterfaceWrapperHelper.create(ilPO, I_C_InvoiceLine.class);

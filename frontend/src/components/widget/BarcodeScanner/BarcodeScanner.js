@@ -40,7 +40,7 @@ export default class BarcodeScanner extends Component {
   }
 
   componentWillUnmount() {
-    this._handleStop(false);
+    this.handleStop(false);
   }
 
   _process = () => {
