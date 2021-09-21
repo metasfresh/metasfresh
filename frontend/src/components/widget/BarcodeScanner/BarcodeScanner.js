@@ -6,6 +6,12 @@ import classnames from 'classnames';
 
 import BrowserQRCodeReader from '../../../services/CustomBrowserQRCodeReader';
 
+/**
+ * @file Scanner component
+ * @module BarcodeScanner
+ * @summary Component rendering the video capture window and depending on the passed `barcodeScannerType` it
+ * will load the corresponding reader.
+ */
 export default class BarcodeScanner extends Component {
   constructor(props) {
     super(props);
@@ -34,7 +40,7 @@ export default class BarcodeScanner extends Component {
   }
 
   componentWillUnmount() {
-    this._handleStop(false);
+    this.handleStop(false);
   }
 
   _process = () => {
@@ -47,11 +53,15 @@ export default class BarcodeScanner extends Component {
   };
 
   _onDetected = (result) => {
-    this._handleStop(false);
+    this.handleStop(false);
     this.props.onDetected(result.text);
   };
 
-  _handleStop = (close) => {
+  /**
+   * @method handleStop
+   * @summary deactivates the reader and closes the scanner window
+   */
+  handleStop = (close) => {
     this.reader.stopStreams();
 
     close && this.props.onClose();
@@ -96,7 +106,7 @@ export default class BarcodeScanner extends Component {
         />
         <i
           className="btn-control btn-close meta-icon-close-1"
-          onClick={this._handleStop}
+          onClick={this.handleStop}
         />
       </div>
     );

@@ -38,6 +38,7 @@ import de.metas.servicerepair.project.model.ServiceRepairProjectCostCollectorId;
 import de.metas.servicerepair.project.model.ServiceRepairProjectCostCollectorType;
 import de.metas.servicerepair.project.model.ServiceRepairProjectTaskId;
 import de.metas.servicerepair.project.repository.requests.CreateProjectCostCollectorRequest;
+import de.metas.servicerepair.project.service.commands.createQuotationFromProjectCommand.QuotationLineIdsByCostCollectorIdIndex;
 import de.metas.servicerepair.repository.model.I_C_Project_Repair_CostCollector;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
@@ -52,7 +53,6 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -163,16 +163,16 @@ class ServiceRepairProjectCostCollectorRepository
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	public void setCustomerQuotation(@NonNull final Map<ServiceRepairProjectCostCollectorId, OrderAndLineId> map)
+	public void setCustomerQuotation(@NonNull final QuotationLineIdsByCostCollectorIdIndex map)
 	{
 		if (map.isEmpty())
 		{
 			return;
 		}
 
-		final ImmutableMap<ServiceRepairProjectCostCollectorId, I_C_Project_Repair_CostCollector> recordsById = retrieveRecordsByIds(map.keySet());
+		final ImmutableMap<ServiceRepairProjectCostCollectorId, I_C_Project_Repair_CostCollector> recordsById = retrieveRecordsByIds(map.getCostCollectorIds());
 
-		for (final ServiceRepairProjectCostCollectorId costCollectorId : map.keySet())
+		for (final ServiceRepairProjectCostCollectorId costCollectorId : map.getCostCollectorIds())
 		{
 			final I_C_Project_Repair_CostCollector record = recordsById.get(costCollectorId);
 			if (record == null)
@@ -180,7 +180,7 @@ class ServiceRepairProjectCostCollectorRepository
 				throw new AdempiereException("No record found for " + costCollectorId);
 			}
 
-			final OrderAndLineId customerQuotationLineId = map.get(costCollectorId);
+			final OrderAndLineId customerQuotationLineId = map.getFirstOrderAndLineId(costCollectorId);
 
 			record.setQuotation_Order_ID(customerQuotationLineId.getOrderRepoId());
 			record.setQuotation_OrderLine_ID(customerQuotationLineId.getOrderLineRepoId());

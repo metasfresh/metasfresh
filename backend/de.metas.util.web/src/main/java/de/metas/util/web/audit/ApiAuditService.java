@@ -70,6 +70,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.web.reactive.function.client.ExchangeStrategies;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
@@ -145,7 +146,13 @@ public class ApiAuditService
 		this.userGroupRepository = userGroupRepository;
 		this.compositeDataAuditService = compositeDataAuditService;
 
-		this.webClient = WebClient.create();
+		// allow up to 50MB large results in API responses; thx to https://stackoverflow.com/a/62543241/1012103
+		this.webClient = WebClient.builder().exchangeStrategies(ExchangeStrategies.builder()
+													   .codecs(configurer -> configurer
+															   .defaultCodecs()
+															   .maxInMemorySize(50 * 1024 * 1024))
+													   .build())
+				.build();
 		this.callerId2Scheduler = new ConcurrentHashMap<>();
 		this.objectMapper = JsonObjectMapperHolder.newJsonObjectMapper();
 	}

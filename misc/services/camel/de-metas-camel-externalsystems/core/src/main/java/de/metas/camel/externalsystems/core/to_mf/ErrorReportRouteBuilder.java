@@ -106,7 +106,7 @@ public class ErrorReportRouteBuilder extends RouteBuilder
 			exception.printStackTrace(pw);
 
 			content.append(" Error Message: ").append(exception.getLocalizedMessage()).append("\n");
-			content.append(" Error Stacktrace: ").append(sw.toString());
+			content.append(" Error Stacktrace: ").append(sw);
 		}
 
 		exchange.getIn().setBody(content.toString());

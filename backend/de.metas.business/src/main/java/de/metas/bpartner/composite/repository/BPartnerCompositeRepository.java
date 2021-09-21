@@ -9,6 +9,7 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import de.metas.bpartner.service.IBPartnerBL;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.table.LogEntriesRepository;
@@ -58,12 +59,16 @@ import lombok.NonNull;
 @Repository
 public class BPartnerCompositeRepository
 {
+	private final IBPartnerBL bpartnerBL;
 	private final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
 	private final LogEntriesRepository recordChangeLogRepository;
 	private final BPartnerCompositeCacheById bpartnerCompositeCache = new BPartnerCompositeCacheById();
 
-	public BPartnerCompositeRepository(@NonNull final LogEntriesRepository recordChangeLogRepository)
+	public BPartnerCompositeRepository(
+			@NonNull final IBPartnerBL bpartnerBL,
+			@NonNull final LogEntriesRepository recordChangeLogRepository)
 	{
+		this.bpartnerBL = bpartnerBL;
 		this.recordChangeLogRepository = recordChangeLogRepository;
 	}
 
@@ -256,7 +261,7 @@ public class BPartnerCompositeRepository
 
 	public void save(@NonNull final BPartnerComposite bpartnerComposite)
 	{
-		final BPartnerCompositeSaver saver = new BPartnerCompositeSaver();
+		final BPartnerCompositeSaver saver = new BPartnerCompositeSaver(bpartnerBL);
 		saver.save(bpartnerComposite);
 	}
 }

@@ -51,10 +51,6 @@ de.metas.rest_api.v1.bpartner.ContactRestControllerTest.createOrUpdateContact_cr
       "shipToDefault" : {
         "value" : false,
         "present" : true
-      },
-      "subjectMatter" : {
-        "value" : false,
-        "present" : true
       }
     },
     "externalId" : "externalId-1",
@@ -63,9 +59,11 @@ de.metas.rest_api.v1.bpartner.ContactRestControllerTest.createOrUpdateContact_cr
       "bpartnerId" : 20,
       "userId" : 100010
     },
+    "membershipContact" : false,
     "name" : "jsonContact.name",
     "newsletter" : false,
-    "roles" : [ ]
+    "subjectMatterContact" : false,
+    "roles" : [ ]    
   }
 ]
 
@@ -123,10 +121,6 @@ de.metas.rest_api.v1.bpartner.ContactRestControllerTest.createOrUpdateContact_up
       "shipToDefault" : {
         "value" : false,
         "present" : true
-      },
-      "subjectMatter" : {
-        "value" : false,
-        "present" : true
       }
     },
     "email" : "contactRecord.email",
@@ -138,10 +132,12 @@ de.metas.rest_api.v1.bpartner.ContactRestControllerTest.createOrUpdateContact_up
       "userId" : 30
     },
     "lastName" : "contactRecord.lastName",
+    "membershipContact" : false,
     "name" : "jsonContact.name-UPDATED",
     "newsletter" : false,
     "phone" : "contactRecord.phone",
-    "roles" : [ ],
+    "subjectMatterContact" : false,
+    "roles" : [ ],    
     "value" : "contactRecord.value"
   }
 ]
@@ -200,10 +196,6 @@ de.metas.rest_api.v1.bpartner.ContactRestControllerTest.createOrUpdateContact_up
       "shipToDefault" : {
         "value" : false,
         "present" : true
-      },
-      "subjectMatter" : {
-        "value" : false,
-        "present" : true
       }
     },
     "email" : "contactRecord.email",
@@ -215,10 +207,12 @@ de.metas.rest_api.v1.bpartner.ContactRestControllerTest.createOrUpdateContact_up
       "userId" : 30
     },
     "lastName" : "contactRecord.lastName",
+    "membershipContact" : false,
     "name" : "jsonContact.name-UPDATED",
     "newsletter" : false,
     "phone" : "contactRecord.phone",
-    "roles" : [ ],
+    "subjectMatterContact" : false,
+    "roles" : [ ],    
     "value" : "contactRecord.value"
   }
 ]
@@ -277,10 +271,6 @@ de.metas.rest_api.v1.bpartner.ContactRestControllerTest.createOrUpdateContact_up
       "shipToDefault" : {
         "value" : false,
         "present" : true
-      },
-      "subjectMatter" : {
-        "value" : false,
-        "present" : true
       }
     },
     "email" : "contactRecord.email",
@@ -292,10 +282,12 @@ de.metas.rest_api.v1.bpartner.ContactRestControllerTest.createOrUpdateContact_up
       "userId" : 30
     },
     "lastName" : "contactRecord.lastName",
+    "membershipContact" : false,
     "name" : "jsonContact.name-UPDATED",
     "newsletter" : false,
     "phone" : "contactRecord.phone",
-    "roles" : [ ],
+    "subjectMatterContact" : false,
+    "roles" : [ ],    
     "value" : "contactRecord.value"
   }
 ]

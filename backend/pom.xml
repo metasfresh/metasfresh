@@ -102,7 +102,6 @@
         <module>de.metas.edi</module>
 
         <module>de.metas.elasticsearch</module>
-        <module>de.metas.elasticsearch.server</module>
 
         <module>de.metas.banking</module>
         <module>de.metas.contracts</module>
@@ -131,6 +130,7 @@
         <module>de.metas.payment.esr</module>
         <module>de.metas.payment.sepa</module>
         <module>de.metas.payment.paypal</module>
+        <module>de.metas.payment.revolut</module>
 
         <module>de.metas.printing</module>
         <module>de.metas.printing.rest-api-impl</module>

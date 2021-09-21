@@ -5,10 +5,6 @@ import { connect } from 'react-redux';
 import Notification from './Notification';
 
 class NotificationHandler extends Component {
-  constructor(props) {
-    super(props);
-  }
-
   render() {
     const { notifications, children } = this.props;
 

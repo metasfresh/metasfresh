@@ -28,6 +28,8 @@ import com.google.common.collect.Collections2;
 
 import de.metas.handlingunits.model.I_M_HU;
 
+import javax.annotation.Nullable;
+
 /**
  * Interface implemented by all classes which are aware of {@link I_M_HU}
  *
@@ -53,9 +55,9 @@ public interface IHUAware
 	}
 
 	/**
-	 * @param model
 	 * @return {@link I_M_HU} or <code>null</code>
 	 */
+	@Nullable
 	static I_M_HU getM_HUOrNull(final Object model)
 	{
 		if(model instanceof IHUAware)

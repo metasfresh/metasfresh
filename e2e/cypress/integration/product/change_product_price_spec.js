@@ -49,7 +49,7 @@ describe('Change Product Price', function() {
     cy.fixture('product/simple_product.json').then(productJson => {
       Object.assign(new Product(), productJson)
         .setName(productName)
-        .setProductCategory(productCategoryName + '_' + productCategoryName)
+        .setProductCategory(productCategoryName)
         .addProductPrice(productPrice)
         .setSold(false)
         .apply();

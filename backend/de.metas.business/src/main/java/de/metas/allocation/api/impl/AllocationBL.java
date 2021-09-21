@@ -232,13 +232,9 @@ public class AllocationBL implements IAllocationBL
 				.dateAcct(dateAcct)
 				.dateTrx(dateTrx);
 
-		BigDecimal sumAmt = BigDecimal.ZERO;
-
 		{
 			final PaymentId paymentId = PaymentId.ofRepoId(payment.getC_Payment_ID());
 			final BigDecimal currentAmt = paymentDAO.getAvailableAmount(paymentId);
-
-			sumAmt = sumAmt.add(currentAmt);
 
 			Check.assume(invoice.getC_BPartner_ID() == payment.getC_BPartner_ID(), "{} and {} have the same C_BPartner_ID", invoice, payment);
 
@@ -248,17 +244,19 @@ public class AllocationBL implements IAllocationBL
 					.invoiceId(invoice.getC_Invoice_ID())
 					.paymentId(payment.getC_Payment_ID());
 
-			if (sumAmt.compareTo(invoiceOpenAmt) < 0)
+			final BigDecimal amountToAllocate = currentAmt.min(invoiceOpenAmt);
+
+			if (payment.getC_Invoice_ID() == invoice.getC_Invoice_ID())
 			{
 				allocBuilder = lineBuilder
-						.amount(currentAmt)
+						.amount(amountToAllocate)
+						.discountAmt(payment.getDiscountAmt())
 						.lineDone();
 			}
 			else
 			{
-				// make sure the allocated amt is not bigger than the open amt of the invoice
 				allocBuilder = lineBuilder
-						.amount(invoiceOpenAmt.subtract(sumAmt.subtract(currentAmt)))
+						.amount(amountToAllocate)
 						.lineDone();
 			}
 		}

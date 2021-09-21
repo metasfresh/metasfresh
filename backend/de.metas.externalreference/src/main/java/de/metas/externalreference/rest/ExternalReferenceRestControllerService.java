@@ -47,6 +47,7 @@ import de.metas.externalreference.IExternalReferenceType;
 import de.metas.externalreference.IExternalSystem;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
+import de.metas.rest_api.utils.MetasfreshId;
 import de.metas.util.Check;
 import de.metas.util.web.exception.InvalidIdentifierException;
 import lombok.NonNull;
@@ -187,6 +188,7 @@ public class ExternalReferenceRestControllerService
 					.externalReferenceType(type)
 					.recordId(metasfreshId.getValue())
 					.version(reference.getVersion())
+					.externalReferenceUrl(reference.getExternalReferenceUrl())
 					.build();
 			externalReferenceRepository.save(externalReference);
 		}
@@ -309,6 +311,17 @@ public class ExternalReferenceRestControllerService
 	}
 
 	@NonNull
+	public Optional<MetasfreshId> resolveExternalReference(
+			@Nullable final OrgId orgId,
+			@NonNull final ExternalIdentifier externalIdentifier,
+			@NonNull final IExternalReferenceType externalReferenceType)
+	{
+		final Optional<JsonMetasfreshId> jsonMetasfreshId = getJsonMetasfreshIdFromExternalReference(orgId, externalIdentifier, externalReferenceType);
+
+		return jsonMetasfreshId.map(metasfreshId -> MetasfreshId.of(metasfreshId.getValue()));
+	}
+
+	@NonNull
 	private ExternalReference mapJsonToExternalReference(@NonNull final JsonRequestExternalReferenceUpsert request, @NonNull final OrgId orgId)
 	{
 		Check.assumeNotNull(request.getExternalReferenceItem().getMetasfreshId(), "MetasfreshId cannot be null at this stage!");
@@ -326,6 +339,7 @@ public class ExternalReferenceRestControllerService
 				.externalReference(request.getExternalReferenceItem().getLookupItem().getId())
 				.recordId(request.getExternalReferenceItem().getMetasfreshId().getValue())
 				.version(request.getExternalReferenceItem().getVersion())
+				.externalReferenceUrl(request.getExternalReferenceItem().getExternalReferenceUrl())
 				.build();
 	}
 
@@ -344,6 +358,7 @@ public class ExternalReferenceRestControllerService
 				.externalReference(candidate.getExternalReference())
 				.recordId(candidate.getRecordId())
 				.version(candidate.getVersion())
+				.externalReferenceUrl(candidate.getExternalReferenceUrl())
 				.build();
 	}
 }

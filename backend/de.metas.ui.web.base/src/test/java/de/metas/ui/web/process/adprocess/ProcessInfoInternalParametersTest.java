@@ -125,12 +125,11 @@ public class ProcessInfoInternalParametersTest
 		assertThat(ViewBasedProcessTemplate.PARAM_ViewSelectedIds).isEqualTo("$WEBUI_ViewSelectedIds");
 		
 		// prepare data
-		final ADProcessInstancesRepository instancesRepository = new ADProcessInstancesRepository();
 		final ViewRowIdsSelection viewRowIdsSelection = createViewRowIdSelection(ImmutableSet.of("1", "2", "3", "4", "5"));
 		final CreateProcessInstanceRequest request = createProcessInstanceRequestrequest(viewRowIdsSelection, null, null);
 
 		// run
-		instancesRepository.addViewInternalParameters(request, processInfoBuilder);
+		ADProcessInstancesRepository.addViewInternalParameters(request, processInfoBuilder);
 
 		// expectations
 		final List<ProcessInfoParameter> parameters = processInfoBuilder.build().getParameter();
@@ -155,12 +154,11 @@ public class ProcessInfoInternalParametersTest
 		assertThat(ViewBasedProcessTemplate.PARAM_ParentViewSelectedIds).isEqualTo("$WEBUI_ParentViewSelectedIds");
 		
 		// prepare data
-		final ADProcessInstancesRepository instancesRepository = new ADProcessInstancesRepository();
 		final ViewRowIdsSelection parentViewRowIdsSelection = createViewRowIdSelection(ImmutableSet.of("100", "200", "300"));
 		final CreateProcessInstanceRequest request = createProcessInstanceRequestrequest(null, parentViewRowIdsSelection, null);
 
 		// run
-		instancesRepository.addViewInternalParameters(request, processInfoBuilder);
+		ADProcessInstancesRepository.addViewInternalParameters(request, processInfoBuilder);
 
 		// expectations
 		final List<ProcessInfoParameter> parameters = processInfoBuilder.build().getParameter();
@@ -183,12 +181,11 @@ public class ProcessInfoInternalParametersTest
 		assertThat(ViewBasedProcessTemplate.PARAM_ChildViewSelectedIds).isEqualTo("$WEBUI_ChildViewSelectedIds");
 		
 		// prepare data
-		final ADProcessInstancesRepository instancesRepository = new ADProcessInstancesRepository();
 		final ViewRowIdsSelection childViewRowIdsSelection = createViewRowIdSelection(ImmutableSet.of("10", "20"));
 		final CreateProcessInstanceRequest request = createProcessInstanceRequestrequest(null, null, childViewRowIdsSelection);
 
 		// run
-		instancesRepository.addViewInternalParameters(request, processInfoBuilder);
+		ADProcessInstancesRepository.addViewInternalParameters(request, processInfoBuilder);
 
 		// expectations
 		final List<ProcessInfoParameter> parameters = processInfoBuilder.build().getParameter();

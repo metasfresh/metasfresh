@@ -1,15 +1,15 @@
 package de.metas.material.event.stockestimate;
 
-import java.math.BigDecimal;
-import java.time.Instant;
-
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.commons.EventDescriptor;
-import de.metas.material.event.commons.ProductDescriptor;
+import de.metas.material.event.commons.MaterialDescriptor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+
+import java.math.BigDecimal;
+import java.time.Instant;
 
 /*
  * #%L
@@ -40,27 +40,35 @@ public abstract class AbstractStockEstimateEvent implements MaterialEvent
 {
 	private final EventDescriptor eventDescriptor;
 
-	private final ProductDescriptor productDescriptor;
+	private final MaterialDescriptor materialDescriptor;
 
 	private final Instant date;
 
 	private final int plantId;
 
+	private final int freshQtyOnHandId;
 
-	private final BigDecimal quantity;
+	private final int freshQtyOnHandLineId;
+
+	private final Instant eventDate;
 
 	public AbstractStockEstimateEvent(
 			@NonNull final EventDescriptor eventDescriptor,
-			@NonNull final ProductDescriptor productDescriptor,
+			@NonNull final MaterialDescriptor materialDescriptor,
 			@NonNull final Instant date,
 			final int plantId,
-			@NonNull final BigDecimal quantity)
+			final int freshQtyOnHandId,
+			final int freshQtyOnHandLineId,
+			@NonNull final Instant eventDate
+	)
 	{
 		this.eventDescriptor = eventDescriptor;
-		this.productDescriptor = productDescriptor;
+		this.materialDescriptor = materialDescriptor;
 		this.date = date;
 		this.plantId = plantId;
-		this.quantity = quantity;
+		this.freshQtyOnHandId = freshQtyOnHandId;
+		this.freshQtyOnHandLineId = freshQtyOnHandLineId;
+		this.eventDate = eventDate;
 	}
 
 	public abstract BigDecimal getQuantityDelta();

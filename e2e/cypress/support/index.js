@@ -14,13 +14,14 @@
 // ***********************************************************
 
 import 'cypress-skip-and-only-ui/support';
+import 'cypress-localstorage-commands';
 import './commands/general';
 import './commands/navigation';
 import './commands/form';
 import './commands/action';
 import './commands/test';
 
-Cypress.on('uncaught:exception', (err) => {
+Cypress.on('uncaught:exception', () => {
   //(err, runnable) => {
   // returning false here prevents Cypress from
   // failing the test
@@ -32,24 +33,41 @@ Cypress.on('uncaught:exception', (err) => {
 //   return false
 // });
 
-Cypress.on('emit:counterpartTranslations', messages => {
+Cypress.on('emit:counterpartTranslations', (messages) => {
   Cypress.messages = messages;
 });
 
-Cypress.on('window:alert', text => {
+Cypress.on('window:alert', (text) => {
   cy.log(`Alert modal confirmed: ${text}`);
 });
 
-before(function() {
-  // no clue why i have to add this wait, but it seems to be the only way the getLanguageSpecific workaround... works
-  cy.loginViaAPI().wait(300);
+before(function () {
+  // use the login routine only for the e2e tests, this will not be used for the component testing(independent)
+  if (Cypress.testingType !== 'component') {
+    cy.clearLocalStorageSnapshot();
 
-  Cypress.Cookies.defaults({
-    preserve: ['SESSION', 'isLogged'],
-  });
+    // cy.loginViaAPI().then(() => {
+    //   cy.log('logged in successfully');
+    // }, { timeout: 20000 });
+
+    const autoLogin = function () {
+      return cy.loginViaForm();
+    };
+    autoLogin().then((msg) => {
+      cy.log(msg);
+    });
+
+    Cypress.Cookies.defaults({
+      preserve: ['SESSION', 'isLogged'],
+    });
+  }
 });
 
-Cypress.on('scrolled', $el => {
+beforeEach(() => {
+  cy.restoreLocalStorage();
+});
+
+Cypress.on('scrolled', ($el) => {
   $el.get(0).scrollIntoView({
     block: 'center',
     inline: 'center',

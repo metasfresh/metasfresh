@@ -1,0 +1,5 @@
+-- 2021-07-01T06:41:03.003Z
+-- URL zum Konzept
+UPDATE AD_Window SET ZoomIntoPriority=99,Updated=TO_TIMESTAMP('2021-07-01 09:41:02','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Window_ID=123
+;
+

@@ -230,7 +230,7 @@ public class InterfaceWrapperHelper
 	 * @param cl the interface we need an instance of
 	 * @return an instance of <code>cl</code> which actually wraps <code>model</code> or <code>null</code> if model was <code>null</code>
 	 */
-	public static <T> T create(final Object model, final Class<T> cl)
+	public static <T> T create(@Nullable final Object model, final Class<T> cl)
 	{
 		final boolean useOldValues = false;
 		return create(model, cl, useOldValues);
@@ -806,7 +806,7 @@ public class InterfaceWrapperHelper
 		return helpers.getPO(model, strict);
 	}
 
-	public static int getId(final Object model)
+	public static int getId(@Nullable final Object model)
 	{
 		if (model == null)
 		{
@@ -1251,8 +1251,6 @@ public class InterfaceWrapperHelper
 	/**
 	 * Gets [columnName]_Override if the override column is available and not null, else column name value is returned.
 	 *
-	 * @param model
-	 * @param columnName
 	 * @return value of [columnName]_Override or [columnName]; <b>might return null</b>, so don't blindly use as int.
 	 * @throws AdempiereException if neither the "normal" value nor the override value is available.
 	 *

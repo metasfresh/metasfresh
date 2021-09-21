@@ -2,6 +2,7 @@ package de.metas.ui.web.window.controller;
 
 import javax.annotation.Nullable;
 
+import de.metas.i18n.BooleanWithReason;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
@@ -62,7 +63,7 @@ public class DocumentPermissionsHelper
 		// no access
 		if (!readAccess && !writeAccess)
 		{
-			final AdempiereException ex = DocumentPermissionException.of(DocumentPermission.WindowAccess, "@NoAccess@")
+			final AdempiereException ex = DocumentPermissionException.noAccess(DocumentPermission.WindowAccess)
 					.setParameter("Role", permissions.getName())
 					.setParameter("WindowName", entityDescriptor.getCaption())
 					.setParameter("AD_Window_ID", adWindowId);
@@ -76,9 +77,7 @@ public class DocumentPermissionsHelper
 	/**
 	 * Asserts view access
 	 *
-	 * @param windowId
 	 * @param viewId optional viewId, used only for error reporting
-	 * @param permissions
 	 */
 	public static void assertViewAccess(final WindowId windowId, @Nullable final String viewId, final IUserRolePermissions permissions)
 	{
@@ -95,7 +94,7 @@ public class DocumentPermissionsHelper
 		final ElementPermission windowPermission = permissions.checkWindowPermission(adWindowId);
 		if (!windowPermission.hasReadAccess())
 		{
-			final AdempiereException ex = DocumentPermissionException.of(DocumentPermission.WindowAccess, "@NoAccess@")
+			final AdempiereException ex = DocumentPermissionException.noAccess(DocumentPermission.WindowAccess)
 					.setParameter("roleName", permissions.getName())
 					.setParameter("view", viewId)
 					.setParameter("windowId", adWindowId);
@@ -135,7 +134,9 @@ public class DocumentPermissionsHelper
 		final AdWindowId adWindowId = document.getDocumentPath().getWindowId().toAdWindowIdOrNull();
 		if (adWindowId != null && !permissions.checkWindowPermission(adWindowId).hasReadAccess())
 		{
-			throw DocumentPermissionException.of(DocumentPermission.View, "no window read permission");
+			throw DocumentPermissionException.noAccess(DocumentPermission.WindowAccess)
+					.setParameter("Role", permissions.getName())
+					.setParameter("AD_Window_ID", adWindowId);
 		}
 
 		final int adTableId = getAdTableId(document);
@@ -151,10 +152,10 @@ public class DocumentPermissionsHelper
 		{
 			return; // the user cleared the field; field is flagged as mandatory; until the user set the field, don't make a fuss.
 		}
-		final String errmsg = permissions.checkCanView(document.getClientId(), orgId, adTableId, recordId);
-		if (errmsg != null)
+		final BooleanWithReason canView = permissions.checkCanView(document.getClientId(), orgId, adTableId, recordId);
+		if (canView.isFalse())
 		{
-			throw DocumentPermissionException.of(DocumentPermission.View, errmsg);
+			throw DocumentPermissionException.of(DocumentPermission.View, canView.getReason());
 		}
 	}
 
@@ -171,39 +172,39 @@ public class DocumentPermissionsHelper
 
 	public static void assertCanEdit(final Document document, final IUserRolePermissions permissions)
 	{
-		final String errmsg = checkCanEdit(document, permissions);
-		if (errmsg != null)
+		final BooleanWithReason canEdit = checkCanEdit(document, permissions);
+		if (canEdit.isFalse())
 		{
-			throw DocumentPermissionException.of(DocumentPermission.Update, errmsg);
+			throw DocumentPermissionException.of(DocumentPermission.Update, canEdit.getReason());
 		}
 	}
 
 	public static boolean canEdit(final Document document, final IUserRolePermissions permissions)
 	{
-		final String errmsg = checkCanEdit(document, permissions);
-		return errmsg == null;
+		final BooleanWithReason canEdit = checkCanEdit(document, permissions);
+		return canEdit.isTrue();
 	}
 
-	private static String checkCanEdit(@NonNull final Document document, @NonNull final IUserRolePermissions permissions)
+	private static BooleanWithReason checkCanEdit(@NonNull final Document document, @NonNull final IUserRolePermissions permissions)
 	{
 		// In case document type is not Window, return OK because we cannot validate
 		final DocumentPath documentPath = document.getDocumentPath();
 		if (documentPath.getDocumentType() != DocumentType.Window)
 		{
-			return null; // OK
+			return BooleanWithReason.TRUE; // OK
 		}
 
 		// Check if we have window write permission
 		final AdWindowId adWindowId = documentPath.getWindowId().toAdWindowIdOrNull();
 		if (adWindowId != null && !permissions.checkWindowPermission(adWindowId).hasWriteAccess())
 		{
-			return "no window edit permission";
+			return BooleanWithReason.falseBecause("no window edit permission");
 		}
 
 		final int adTableId = getAdTableId(document);
 		if (adTableId <= 0)
 		{
-			return null; // not table based => OK
+			return BooleanWithReason.TRUE; // not table based => OK
 		}
 		final int recordId = getRecordId(document);
 
@@ -211,7 +212,7 @@ public class DocumentPermissionsHelper
 		final OrgId adOrgId = document.getOrgId();
 		if (adOrgId == null)
 		{
-			return null; // the user cleared the field; field is flagged as mandatory; until user set the field, don't make a fuss.
+			return BooleanWithReason.TRUE; // the user cleared the field; field is flagged as mandatory; until user set the field, don't make a fuss.
 		}
 		return permissions.checkCanUpdate(adClientId, adOrgId, adTableId, recordId);
 	}

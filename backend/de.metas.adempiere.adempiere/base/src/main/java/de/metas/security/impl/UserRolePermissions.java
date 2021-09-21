@@ -30,7 +30,11 @@ import de.metas.document.engine.IDocument;
 import de.metas.document.references.zoom_into.CustomizedWindowInfo;
 import de.metas.document.references.zoom_into.CustomizedWindowInfoMap;
 import de.metas.document.references.zoom_into.CustomizedWindowInfoMapRepository;
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
 import de.metas.organization.OrgId;
@@ -63,6 +67,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.service.ClientId;
@@ -100,6 +105,9 @@ class UserRolePermissions implements IUserRolePermissions
 	private static final transient Logger logger = LogManager.getLogger(UserRolePermissions.class);
 
 	private static final Set<OrgId> ORGACCESS_ALL = Collections.unmodifiableSet(new HashSet<>()); // NOTE: new instance to make sure it's unique
+
+	private static final AdMessageKey MSG_AccessTableNoView = AdMessageKey.of("AccessTableNoView");
+	private static final AdMessageKey MSG_AccessTableNoUpdate = AdMessageKey.of("AccessTableNoUpdate");
 
 	/**
 	 * Permissions name (i.e. role name)
@@ -427,7 +435,7 @@ class UserRolePermissions implements IUserRolePermissions
 		{
 			if (sb.length() > 0)
 			{
-				return "AD_Org_ID=" + sb.toString();
+				return "AD_Org_ID=" + sb;
 			}
 			else
 			{
@@ -437,7 +445,7 @@ class UserRolePermissions implements IUserRolePermissions
 		}
 		else
 		{
-			return "AD_Org_ID IN (" + sb.toString() + ")";
+			return "AD_Org_ID IN (" + sb + ")";
 		}
 	}    // getOrgWhereValue
 
@@ -740,25 +748,26 @@ class UserRolePermissions implements IUserRolePermissions
 	@Override
 	public boolean canView(final ClientId clientId, final OrgId orgId, final int AD_Table_ID, final int Record_ID)
 	{
-		final String errmsg = checkCanAccessRecord(clientId, orgId, AD_Table_ID, Record_ID, Access.READ);
-		return errmsg == null;
+		return checkCanAccessRecord(clientId, orgId, AD_Table_ID, Record_ID, Access.READ)
+				.isTrue();
 	}
 
 	@Override
-	public String checkCanView(final ClientId clientId, final OrgId orgId, final int AD_Table_ID, final int Record_ID)
+	public BooleanWithReason checkCanView(final ClientId clientId, final OrgId orgId, final int AD_Table_ID, final int Record_ID)
 	{
 		return checkCanAccessRecord(clientId, orgId, AD_Table_ID, Record_ID, Access.READ);
 	}
 
 	@Override
-	public String checkCanCreateNewRecord(final ClientId clientId, final OrgId orgId, final int AD_Table_ID)
+	@Nullable
+	public BooleanWithReason checkCanCreateNewRecord(@NonNull final ClientId clientId, @NonNull final OrgId orgId, @NonNull final AdTableId adTableId)
 	{
 		final int Record_ID = -1;
-		return checkCanAccessRecord(clientId, orgId, AD_Table_ID, Record_ID, Access.WRITE);
+		return checkCanAccessRecord(clientId, orgId, adTableId.getRepoId(), Record_ID, Access.WRITE);
 	}
 
 	@Override
-	public String checkCanUpdate(final ClientId clientId, final OrgId orgId, final int AD_Table_ID, final int Record_ID)
+	public BooleanWithReason checkCanUpdate(final ClientId clientId, final OrgId orgId, final int AD_Table_ID, final int Record_ID)
 	{
 		return checkCanAccessRecord(clientId, orgId, AD_Table_ID, Record_ID, Access.WRITE);
 	}
@@ -766,8 +775,8 @@ class UserRolePermissions implements IUserRolePermissions
 	@Override
 	public boolean canUpdate(final ClientId clientId, final OrgId orgId, final int AD_Table_ID, final int Record_ID, final boolean saveWarning)
 	{
-		final String errmsg = checkCanUpdate(clientId, orgId, AD_Table_ID, Record_ID);
-		if (errmsg == null)
+		final BooleanWithReason canUpdate = checkCanUpdate(clientId, orgId, AD_Table_ID, Record_ID);
+		if (canUpdate.isTrue())
 		{
 			return true;
 		}
@@ -775,18 +784,15 @@ class UserRolePermissions implements IUserRolePermissions
 		{
 			if (saveWarning)
 			{
-				MetasfreshLastError.saveWarning(logger, "AccessTableNoUpdate", errmsg);
-				logger.warn("No update access: {}, {}", errmsg, this);
+				final String reason = canUpdate.getReasonAsString();
+				MetasfreshLastError.saveWarning(logger, "AccessTableNoUpdate", reason);
+				logger.warn("No update access: {}, {}", reason, this);
 			}
 			return false;
 		}
 	}
 
-	/**
-	 * @return error message or <code>null</code> if OK
-	 */
-	@Nullable
-	private String checkCanAccessRecord(
+	private BooleanWithReason checkCanAccessRecord(
 			@NonNull final ClientId clientId,
 			@NonNull final OrgId orgId,
 			final int AD_Table_ID,
@@ -799,10 +805,10 @@ class UserRolePermissions implements IUserRolePermissions
 		// TODO: check if we really need this rule here
 		if (userLevel.isSystem())
 		{
-			return null; // OK
+			return BooleanWithReason.TRUE; // OK
 		}
 
-		final List<String> missingAccesses = new ArrayList<>();
+		final ArrayList<String> missingAccesses = new ArrayList<>();
 
 		// Check user level vs required level (based on AD_Client_ID/AD_Org_ID)
 		if (access.isReadWrite())
@@ -841,23 +847,32 @@ class UserRolePermissions implements IUserRolePermissions
 
 		if (!missingAccesses.isEmpty())
 		{
-			final String adMessage;
+			final AdMessageKey adMessage;
 			if (access.isReadOnly())
 			{
-				adMessage = "AccessTableNoView";
+				adMessage = MSG_AccessTableNoView;
 			}
 			else if (access.isReadWrite())
 			{
-				adMessage = "AccessTableNoUpdate";
+				adMessage = MSG_AccessTableNoUpdate;
 			}
 			else
 			{
-				adMessage = "AccessTableNo" + access.getName();
+				adMessage = AdMessageKey.of("AccessTableNo" + access.getName());
 			}
-			return "@" + adMessage + "@: " + Joiner.on(", ").join(missingAccesses);
-		}
 
-		return null; // OK
+			final ITranslatableString noAccessReason = TranslatableStrings.builder()
+					.appendADMessage(adMessage)
+					.append(": ")
+					.append(Joiner.on(", ").join(missingAccesses))
+					.build();
+
+			return BooleanWithReason.falseBecause(noAccessReason);
+		}
+		else
+		{
+			return BooleanWithReason.TRUE; // OK
+		}
 	}
 
 	/**

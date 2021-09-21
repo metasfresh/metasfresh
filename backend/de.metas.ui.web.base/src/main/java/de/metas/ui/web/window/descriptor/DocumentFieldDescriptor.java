@@ -753,14 +753,14 @@ public final class DocumentFieldDescriptor
 			throw new AdempiereException("valueClass is unknown for " + this);
 		}
 
-		public Builder setDefaultValueExpression(final Optional<IExpression<?>> defaultValueExpression)
+		public Builder setDefaultValueExpression(@NonNull final Optional<IExpression<?>> defaultValueExpression)
 		{
 			assertNotBuilt();
 			this.defaultValueExpression = Preconditions.checkNotNull(defaultValueExpression);
 			return this;
 		}
 
-		public Builder setDefaultValueExpression(final IExpression<?> defaultValueExpression)
+		public Builder setDefaultValueExpression(@Nullable final IExpression<?> defaultValueExpression)
 		{
 			assertNotBuilt();
 			this.defaultValueExpression = Optional.of(defaultValueExpression);
@@ -1008,12 +1008,6 @@ public final class DocumentFieldDescriptor
 			if (!publicField && mandatory && !mandatoryDB)
 			{
 				return ConstantLogicExpression.FALSE;
-			}
-
-			// Case: DocumentNo special field shall always be mandatory
-			if (hasCharacteristic(Characteristic.SpecialField_DocumentNo))
-			{
-				return ConstantLogicExpression.TRUE;
 			}
 
 			if (mandatory)

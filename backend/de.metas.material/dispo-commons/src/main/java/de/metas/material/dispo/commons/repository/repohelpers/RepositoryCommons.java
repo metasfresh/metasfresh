@@ -13,6 +13,7 @@ import de.metas.material.dispo.commons.repository.query.DistributionDetailsQuery
 import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery;
 import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery.CustomerIdOperator;
 import de.metas.material.dispo.commons.repository.query.ProductionDetailsQuery;
+import de.metas.material.dispo.commons.repository.query.StockChangeDetailQuery;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate_Demand_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Transaction_Detail;
@@ -145,6 +146,8 @@ public class RepositoryCommons
 		PurchaseDetailRepoHelper.addPurchaseDetailsQueryToFilter(query.getPurchaseDetailsQuery(), builder);
 
 		addTransactionDetailToFilter(query, builder);
+
+		addStockChangeDetailToFilter(query, builder);
 
 		return builder;
 	}
@@ -433,4 +436,14 @@ public class RepositoryCommons
 				.create();
 	}
 
+	private void addStockChangeDetailToFilter(
+			@NonNull final CandidatesQuery query,
+			@NonNull final IQueryBuilder<I_MD_Candidate> builder)
+	{
+		final StockChangeDetailQuery stockChangeDetail = query.getStockChangeDetailQuery();
+		if (stockChangeDetail != null)
+		{
+			stockChangeDetail.augmentQueryBuilder(builder);
+		}
+	}
 }

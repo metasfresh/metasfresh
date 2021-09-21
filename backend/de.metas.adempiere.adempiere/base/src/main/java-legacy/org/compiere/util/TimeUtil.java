@@ -1821,6 +1821,12 @@ public class TimeUtil
 		return timestamp != null ? timestamp.toInstant() : null;
 	}
 
+	@NonNull
+	public static Instant asInstantNonNull(@NonNull final Timestamp timestamp)
+	{
+		return timestamp.toInstant();
+	}
+
 	@Nullable
 	public static Instant asInstant(
 			@Nullable final Object obj,
@@ -1904,6 +1910,12 @@ public class TimeUtil
 		{
 			return duration2;
 		}
+	}
+
+	@NonNull
+	public static Instant maxNotNull(@NonNull final Instant instant1, @NonNull final Instant instant2)
+	{
+		return max(instant1, instant2);
 	}
 
 	@Nullable

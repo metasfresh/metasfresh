@@ -26,6 +26,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.google.common.collect.ImmutableMap;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
+import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.camel.externalsystems.common.v2.BPUpsertCamelRequest;
 import de.metas.camel.externalsystems.shopware6.api.ShopwareClient;
 import de.metas.camel.externalsystems.shopware6.api.model.country.JsonCountry;
@@ -151,7 +152,8 @@ public class GetOrdersRouteBuilder_HappyFlow_Tests extends CamelTestSupport
 	@Override
 	protected RouteBuilder createRouteBuilder()
 	{
-		return new GetOrdersRouteBuilder();
+		final ProcessLogger processLogger = Mockito.mock(ProcessLogger.class);
+		return new GetOrdersRouteBuilder(processLogger);
 	}
 
 	@Override
@@ -341,7 +343,7 @@ public class GetOrdersRouteBuilder_HappyFlow_Tests extends CamelTestSupport
 					.parameters(parameters)
 					.build();
 
-			final ImportOrdersRouteContext ordersContext = new GetOrdersProcessor()
+			final ImportOrdersRouteContext ordersContext = new GetOrdersProcessor(Mockito.mock(ProcessLogger.class))
 					.buildContext(externalSystemRequest, shopwareClient, currencyInfoProvider);
 
 			exchange.getIn().setBody(orderCandidates);

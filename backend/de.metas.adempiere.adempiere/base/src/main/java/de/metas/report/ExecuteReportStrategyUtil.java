@@ -1,30 +1,27 @@
 package de.metas.report;
 
 import com.google.common.collect.ImmutableList;
+import com.lowagie.text.Document;
 import com.lowagie.text.pdf.BadPdfFormatException;
+import com.lowagie.text.pdf.PdfCopy;
+import com.lowagie.text.pdf.PdfReader;
 import de.metas.printing.IMassPrintingService;
+import de.metas.process.ProcessExecutor;
+import de.metas.process.ProcessInfo;
+import de.metas.report.server.OutputType;
+import de.metas.report.server.ReportConstants;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.experimental.UtilityClass;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.Env;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.Env;
-
-import com.lowagie.text.Document;
-import com.lowagie.text.pdf.PdfCopy;
-import com.lowagie.text.pdf.PdfReader;
-
-import de.metas.process.ProcessExecutor;
-import de.metas.process.ProcessInfo;
-import de.metas.report.server.ReportConstants;
-import de.metas.report.server.OutputType;
-import org.springframework.core.io.ByteArrayResource;
-import org.springframework.core.io.Resource;
 
 /*
  * #%L

@@ -14,13 +14,11 @@ class Link extends PureComponent {
   };
 
   render() {
-    const {
-      getClassNames,
-      isFocused,
-      widgetProperties,
-      icon,
-      widgetData,
-    } = this.props;
+    const { getClassNames, isFocused, widgetProperties, icon, widgetData } =
+      this.props;
+
+    const { validStatus, value } = widgetData[0];
+
     return (
       <div className="input-inner-container">
         <div className={cx(getClassNames(), { 'input-focused': isFocused })}>
@@ -34,7 +32,7 @@ class Link extends PureComponent {
             'pointer btn-distance-rev btn-sm',
             {
               'btn-disabled btn-meta-disabled':
-                !widgetData[0].validStatus.valid || widgetData[0].value === '',
+                (validStatus && !validStatus.valid) || value === '',
             }
           )}
         >

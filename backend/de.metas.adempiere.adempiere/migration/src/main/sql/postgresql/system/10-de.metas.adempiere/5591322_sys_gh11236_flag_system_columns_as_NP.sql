@@ -33,15 +33,6 @@ WHERE columnname = 'Name'
 
 UPDATE ad_column
 SET personaldatacategory='NP'
-WHERE ad_table_id = get_table_id('AD_Attribute_Value');
-
-UPDATE ad_column
-SET personaldatacategory='NP'
-WHERE ad_table_id = get_table_id('AD_Attribute');
-
-
-UPDATE ad_column
-SET personaldatacategory='NP'
 WHERE columnname = 'StackTrace'
   AND ad_table_id = get_table_id('AD_Issue')
 ;
@@ -330,8 +321,3 @@ WHERE ad_table_id = get_table_id('AD_User')
   AND ColumnName = 'Login'
 ;
 
-UPDATE ad_column
-SET personaldatacategory='NP'
-WHERE columnname IN ('ExternalId')
-  AND ad_table_id = get_table_id('AD_User')
-;

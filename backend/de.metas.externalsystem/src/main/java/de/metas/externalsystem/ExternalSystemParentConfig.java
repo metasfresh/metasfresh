@@ -26,6 +26,7 @@ import de.metas.externalsystem.model.I_ExternalSystem_Config;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
@@ -35,17 +36,25 @@ public class ExternalSystemParentConfig
 	ExternalSystemParentConfigId id;
 	ExternalSystemType type;
 	String name;
-	IExternalSystemChildConfig childConfig;
 	Boolean isActive;
+	IExternalSystemChildConfig childConfig;
 
-	@Builder
+	@Builder(toBuilder = true)
 	public ExternalSystemParentConfig(
 			@NonNull final ExternalSystemParentConfigId id,
 			@NonNull final ExternalSystemType type,
 			@NonNull final String name,
-			@NonNull final IExternalSystemChildConfig childConfig,
-			@NonNull final Boolean isActive)
+			@NonNull final Boolean isActive,
+			@NonNull final IExternalSystemChildConfig childConfig)
 	{
+		if (!type.equals(childConfig.getId().getType()))
+		{
+			throw new AdempiereException("Child and parent ExternalSystemType don't match!")
+					.appendParametersToMessage()
+					.setParameter("childConfig", childConfig)
+					.setParameter("parentType", type);
+		}
+
 		this.id = id;
 		this.type = type;
 		this.name = name;

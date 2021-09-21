@@ -100,6 +100,12 @@ public interface IInvoiceBL extends ISingletonService
 	}
 
 	/**
+	 * @param invoice the invoice to check
+	 * @return true if the given invoice is an Invoice (API or ARI)
+	 */
+	boolean isInvoice(@NonNull I_C_Invoice invoice);
+
+	/**
 	 * @param invoice
 	 * @return true if the given invoice is a CreditMemo (APC or ARC)
 	 */

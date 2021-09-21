@@ -7,6 +7,7 @@ import de.metas.cache.annotation.CacheTrx;
 import de.metas.contracts.ConditionsId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IFlatrateDAO;
+import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Data;
 import de.metas.contracts.model.I_C_Flatrate_DataEntry;
@@ -46,7 +47,6 @@ import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Calendar;
-import org.compiere.model.I_C_Customs_Invoice;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_Period;
@@ -59,7 +59,6 @@ import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnable;
 import org.slf4j.Logger;
 
-import javax.annotation.Nullable;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -976,5 +975,26 @@ public class FlatrateDAO implements IFlatrateDAO
 	public I_C_Flatrate_Conditions getConditionsById (final ConditionsId flatrateConditionsId )
 	{
 		return  load(flatrateConditionsId, I_C_Flatrate_Conditions.class);
+	}
+
+	@Override
+	public void save(@NonNull I_C_Flatrate_Term flatrateTerm)
+	{
+		InterfaceWrapperHelper.save(flatrateTerm);
+	}
+
+	@Cached(cacheName = I_C_Flatrate_Term.Table_Name + "#by#bPartnerId#typeConditions")
+	public List<I_C_Flatrate_Term> retrieveTerms(
+			@NonNull final BPartnerId bPartnerId,
+			@NonNull final OrgId orgId,
+			@NonNull final TypeConditions typeConditions)
+	{
+		return queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Bill_BPartner_ID, bPartnerId.getRepoId())
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Type_Conditions, typeConditions.getCode())
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_AD_Org_ID, orgId.getRepoId())
+				.create()
+				.list(I_C_Flatrate_Term.class);
 	}
 }

@@ -122,6 +122,7 @@ public class MockedDataUtil
 
 		return JsonRequestLocationUpsertItem.builder()
 				.locationIdentifier("ext-" + EXTERNAL_SYSTEM_NAME + "-" + externalId)
+				.externalVersion(prefix + "_version")
 				// .locationIdentifier("gln-" + prefix + "_gln")
 				.location(location)
 				.build();

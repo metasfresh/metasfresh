@@ -201,8 +201,7 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 			// Add M_Package to Shipper Transportation document
 			mPackages.forEach(mpackage -> shipperTransportationBL.createShippingPackage(shipperTransportation, mpackage));
 
-			// Add ShipperTransportation to InOut
-			request.setShipperTransportationId(shipperTransportationId);
+			linkTransportationToShipment(request.getShipment(), shipperTransportationId);
 		}
 
 		return result.build();
@@ -415,5 +414,12 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 						.build()
 				)
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	private void linkTransportationToShipment(@NonNull final I_M_InOut shipment, @NonNull final ShipperTransportationId shipperTransportationId)
+	{
+		final de.metas.inout.model.I_M_InOut inOutShipment = InterfaceWrapperHelper.create(shipment, de.metas.inout.model.I_M_InOut.class);
+		inOutShipment.setM_ShipperTransportation_ID(shipperTransportationId.getRepoId());
+		inOutDAO.save(inOutShipment);
 	}
 }

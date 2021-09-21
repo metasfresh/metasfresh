@@ -63,6 +63,7 @@ import de.metas.externalreference.ExternalIdentifier;
 import de.metas.externalreference.ExternalUserReferenceType;
 import de.metas.externalreference.IExternalReferenceType;
 import de.metas.externalreference.bpartner.BPartnerExternalReferenceType;
+import de.metas.externalreference.bpartnerlocation.BPLocationExternalReferenceType;
 import de.metas.externalreference.rest.ExternalReferenceRestControllerService;
 import de.metas.greeting.Greeting;
 import de.metas.greeting.GreetingRepository;
@@ -149,6 +150,7 @@ public class JsonRetrieverService
 			.put(BPartnerContact.FAX, JsonResponseContact.FAX)
 			.put(BPartnerContact.DESCRIPTION, JsonResponseContact.DESCRIPTION)
 			.put(BPartnerContact.NEWSLETTER, JsonResponseContact.NEWSLETTER)
+			.put(BPartnerContact.SUBJECT_MATTER, JsonResponseContact.SUBJECT_MATTER)
 
 			.put(BPartnerContactType.SHIP_TO_DEFAULT, JsonResponseContact.SHIP_TO_DEFAULT)
 			.put(BPartnerContactType.BILL_TO_DEFAULT, JsonResponseContact.BILL_TO_DEFAULT)
@@ -157,7 +159,6 @@ public class JsonRetrieverService
 			.put(BPartnerContactType.SALES_DEFAULT, JsonResponseContact.SALES_DEFAULT)
 			.put(BPartnerContactType.PURCHASE, JsonResponseContact.PURCHASE)
 			.put(BPartnerContactType.PURCHASE_DEFAULT, JsonResponseContact.PURCHASE_DEFAULT)
-			.put(BPartnerContactType.SUBJECT_MATTER, JsonResponseContact.SUBJECT_MATTER)
 
 			.build();
 
@@ -255,8 +256,8 @@ public class JsonRetrieverService
 	{
 		final BPartner bpartner = bpartnerComposite.getBpartner();
 
-		try (final MDCCloseable methodMDC = MDC.putCloseable("method", "JsonRetrieverService.toJson(BPartnerComposite)");
-				final MDCCloseable bpartnerMDC = TableRecordMDC.putTableRecordReference(I_C_BPartner.Table_Name, bpartner != null ? bpartner.getId() : null))
+		try (final MDCCloseable ignored = MDC.putCloseable("method", "JsonRetrieverService.toJson(BPartnerComposite)");
+				final MDCCloseable ignored1 = TableRecordMDC.putTableRecordReference(I_C_BPartner.Table_Name, bpartner != null ? bpartner.getId() : null))
 		{
 			final JsonResponseCompositeBuilder result = JsonResponseComposite.builder();
 
@@ -369,8 +370,8 @@ public class JsonRetrieverService
 			String greetingTrl = null;
 			if (contact.getGreetingId() != null)
 			{
-				final Greeting greeting = greetingRepository.getByIdAndLang(contact.getGreetingId(), language);
-				greetingTrl = greeting.getGreeting();
+				final Greeting greeting = greetingRepository.getById(contact.getGreetingId());
+				greetingTrl = greeting.getGreeting(language.getAD_Language());
 			}
 			final List<JsonResponseContactRole> roles = contact.getRoles()
 					.stream()
@@ -402,7 +403,7 @@ public class JsonRetrieverService
 					.salesDefault(contactType.getIsSalesDefaultOr(false))
 					.purchase(contactType.getIsPurchaseOr(false))
 					.purchaseDefault(contactType.getIsPurchaseDefaultOr(false))
-					.subjectMatter(contactType.getIsSubjectMatterOr(false))
+					.subjectMatter(contact.isSubjectMatterContact())
 					.roles(roles)
 					.changeInfo(jsonChangeInfo)
 					.build();
@@ -519,18 +520,38 @@ public class JsonRetrieverService
 				return externalReferenceService.getJsonMetasfreshIdFromExternalReference(orgId, bPartnerExternalIdentifier, BPartnerExternalReferenceType.BPARTNER)
 						.map(JsonMetasfreshId::getValue)
 						.map(BPartnerId::ofRepoId);
+			case VALUE:
+				final BPartnerQuery valQuery = BPartnerQuery.builder()
+						.onlyOrgId(orgId)
+						.bpartnerValue(bPartnerExternalIdentifier.asValue())
+						.build();
+				return bpartnersRepo.retrieveBPartnerIdBy(valQuery);
 			case GLN:
-				final BPartnerQuery bPartnerQuery = BPartnerQuery.builder()
+				final BPartnerQuery glnQuery = BPartnerQuery.builder()
 						.onlyOrgId(orgId)
 						.gln(bPartnerExternalIdentifier.asGLN())
 						.build();
-
-				return bpartnersRepo.retrieveBPartnerIdBy(bPartnerQuery);
+				return bpartnersRepo.retrieveBPartnerIdBy(glnQuery);
 			default:
 				throw new InvalidIdentifierException("Given external identifier type is not supported!")
 						.setParameter("externalIdentifierType", bPartnerExternalIdentifier.getType())
 						.setParameter("rawExternalIdentifier", bPartnerExternalIdentifier.getRawValue());
 		}
+	}
+
+	@NonNull
+	public Optional<JsonResponseLocation> resolveExternalBPartnerLocationId(
+			@NonNull final OrgId orgId,
+			@NonNull final ExternalIdentifier bpartnerIdentifier,
+			@NonNull final ExternalIdentifier bPartnerLocationExternalId)
+	{
+		final Optional<JsonResponseComposite> optBpartnerComposite = getJsonBPartnerComposite(orgId, bpartnerIdentifier);
+
+		return optBpartnerComposite.flatMap(jsonResponseComposite -> jsonResponseComposite
+				.getLocations()
+				.stream()
+				.filter(jsonBPartnerLocation -> isBPartnerLocationMatches(orgId, jsonBPartnerLocation, bPartnerLocationExternalId))
+				.findAny());
 	}
 
 	/**
@@ -675,5 +696,27 @@ public class JsonRetrieverService
 		}
 
 		return Optional.of(query.build());
+	}
+
+	private boolean isBPartnerLocationMatches(
+			@NonNull final OrgId orgId,
+			@NonNull final JsonResponseLocation jsonBPartnerLocation,
+			@NonNull final ExternalIdentifier locationIdentifier)
+	{
+		switch (locationIdentifier.getType())
+		{
+			case EXTERNAL_REFERENCE:
+				final Optional<MetasfreshId> metasfreshId =
+						resolveExternalReference(orgId, locationIdentifier, BPLocationExternalReferenceType.BPARTNER_LOCATION);
+
+				return metasfreshId.isPresent() &&
+						MetasfreshId.equals(metasfreshId.get(), MetasfreshId.of(jsonBPartnerLocation.getMetasfreshId()));
+			case GLN:
+				return GLN.equals(GLN.ofNullableString(jsonBPartnerLocation.getGln()), locationIdentifier.asGLN());
+			case METASFRESH_ID:
+				return MetasfreshId.equals(locationIdentifier.asMetasfreshId(), MetasfreshId.of(jsonBPartnerLocation.getMetasfreshId()));
+			default:
+				throw new AdempiereException("Unexpected type=" + locationIdentifier.getType());
+		}
 	}
 }

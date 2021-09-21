@@ -34,6 +34,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 import static de.metas.common.util.CoalesceUtil.coalesce;
+import static de.metas.util.time.DurationUtils.WORK_HOURS_PER_DAY;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 public class UOMConversionBL implements IUOMConversionBL
@@ -534,7 +535,7 @@ public class UOMConversionBL implements IUOMConversionBL
 			}
 			if (UOMUtil.isWorkDay(toTimeUom))
 			{
-				return BigDecimal.valueOf(1.0 / 480.0); // 8 * 60
+				return BigDecimal.valueOf(1.0 / WORK_HOURS_PER_DAY * 60); // 8 * 60
 			}
 			if (UOMUtil.isWeek(toTimeUom))
 			{
@@ -567,7 +568,7 @@ public class UOMConversionBL implements IUOMConversionBL
 			}
 			if (UOMUtil.isWorkDay(toTimeUom))
 			{
-				return BigDecimal.valueOf(1.0 / 8.0);
+				return BigDecimal.valueOf(1.0 / WORK_HOURS_PER_DAY);
 			}
 			if (UOMUtil.isWeek(toTimeUom))
 			{
@@ -579,7 +580,7 @@ public class UOMConversionBL implements IUOMConversionBL
 			}
 			if (UOMUtil.isWorkMonth(toTimeUom))
 			{
-				return BigDecimal.valueOf(1.0 / 160.0); // 4 * 5 * 8
+				return BigDecimal.valueOf(1.0 / 20 * WORK_HOURS_PER_DAY); // 4 * 5 * 8(WORK_HOURS_PER_DAY)
 			}
 			if (UOMUtil.isYear(toTimeUom))
 			{
@@ -600,7 +601,7 @@ public class UOMConversionBL implements IUOMConversionBL
 			}
 			if (UOMUtil.isWorkDay(toTimeUom))
 			{
-				return BigDecimal.valueOf(3.0); // 24 / 8
+				return BigDecimal.valueOf(24 / WORK_HOURS_PER_DAY); // 24 / 8
 			}
 			if (UOMUtil.isWeek(toTimeUom))
 			{
@@ -625,15 +626,15 @@ public class UOMConversionBL implements IUOMConversionBL
 		{
 			if (UOMUtil.isMinute(toTimeUom))
 			{
-				return BigDecimal.valueOf(480.0); // 8 * 60
+				return BigDecimal.valueOf(WORK_HOURS_PER_DAY * 60); // 8 * 60
 			}
 			if (UOMUtil.isHour(toTimeUom))
 			{
-				return BigDecimal.valueOf(8.0); // 8
+				return BigDecimal.valueOf(WORK_HOURS_PER_DAY); // 8
 			}
 			if (UOMUtil.isDay(toTimeUom))
 			{
-				return BigDecimal.valueOf(1.0 / 3.0); // 24 / 8
+				return BigDecimal.valueOf(WORK_HOURS_PER_DAY / 3); // 24 / 8
 			}
 			if (UOMUtil.isWeek(toTimeUom))
 			{

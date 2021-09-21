@@ -16,22 +16,23 @@ import de.metas.contracts.commission.Beneficiary;
 import de.metas.contracts.commission.CommissionConstants;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionConfig;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionSettingsLineId;
-import de.metas.contracts.commission.commissioninstance.businesslogic.algorithms.HierarchyConfig;
-import de.metas.contracts.commission.commissioninstance.businesslogic.algorithms.HierarchyConfig.HierarchyConfigBuilder;
-import de.metas.contracts.commission.commissioninstance.businesslogic.algorithms.HierarchyConfigId;
-import de.metas.contracts.commission.commissioninstance.businesslogic.algorithms.HierarchyContract;
-import de.metas.contracts.commission.commissioninstance.businesslogic.algorithms.HierarchyContract.HierarchyContractBuilder;
+import de.metas.contracts.commission.commissioninstance.businesslogic.algorithms.hierarchy.HierarchyConfig;
+import de.metas.contracts.commission.commissioninstance.businesslogic.algorithms.hierarchy.HierarchyConfig.HierarchyConfigBuilder;
+import de.metas.contracts.commission.commissioninstance.businesslogic.algorithms.hierarchy.HierarchyConfigId;
+import de.metas.contracts.commission.commissioninstance.businesslogic.algorithms.hierarchy.HierarchyContract;
+import de.metas.contracts.commission.commissioninstance.businesslogic.algorithms.hierarchy.HierarchyContract.HierarchyContractBuilder;
 import de.metas.contracts.commission.commissioninstance.businesslogic.hierarchy.Hierarchy;
 import de.metas.contracts.commission.commissioninstance.businesslogic.hierarchy.HierarchyNode;
+import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTriggerType;
 import de.metas.contracts.commission.commissioninstance.services.CommissionConfigStagingDataService.StagingData;
 import de.metas.contracts.commission.model.I_C_CommissionSettingsLine;
 import de.metas.contracts.commission.model.I_C_HierarchyCommissionSettings;
+import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.process.FlatrateTermCreator;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
-import de.metas.organization.OrgId;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
@@ -40,10 +41,7 @@ import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import de.metas.util.lang.Percent;
 import de.metas.util.lang.RepoIdAwares;
-import lombok.Builder;
 import lombok.NonNull;
-import lombok.Value;
-import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
@@ -55,7 +53,6 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Nullable;
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -91,7 +88,7 @@ import static de.metas.contracts.model.X_C_Flatrate_Conditions.DOCSTATUS_Complet
  */
 
 @Service
-public class CommissionConfigFactory
+public class CommissionConfigFactory implements ICommissionConfigFactory
 {
 	private static final Logger logger = LogManager.getLogger(CommissionConfigFactory.class);
 
@@ -102,6 +99,11 @@ public class CommissionConfigFactory
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 
+	private final ImmutableSet<CommissionTriggerType> SUPPORTED_TRIGGER_TYPES = ImmutableSet.of(CommissionTriggerType.SalesInvoice,
+																								CommissionTriggerType.InvoiceCandidate,
+																								CommissionTriggerType.SalesCreditmemo,
+																								CommissionTriggerType.Plain);
+
 	public CommissionConfigFactory(
 			@NonNull final CommissionConfigStagingDataService commissionConfigStagingDataService,
 			@NonNull final CommissionProductService commissionProductService)
@@ -110,13 +112,13 @@ public class CommissionConfigFactory
 		this.commissionProductService = commissionProductService;
 	}
 
-	public ImmutableList<CommissionConfig> createForNewCommissionInstances(@NonNull final ConfigRequestForNewInstance contractRequest)
+	public ImmutableList<CommissionConfig> createForNewCommissionInstances(@NonNull final CommissionConfigProvider.ConfigRequestForNewInstance contractRequest)
 	{
 		final Hierarchy hierarchy = contractRequest.getCommissionHierarchy();
-		
+
 		// Note: we start with the customer which *might* be a sales rep too. 
 		// If that's the case, the contract's C_HierarchyCommissionSettings might indicate that we need a 0% C_CommissionShare for that endcustomer
-		final Beneficiary beneficiary = Beneficiary.of(contractRequest.getCustomerBPartnerId()); 
+		final Beneficiary beneficiary = Beneficiary.of(contractRequest.getCustomerBPartnerId());
 		final Iterable<HierarchyNode> beneficiaries = hierarchy.getUpStream(beneficiary);
 
 		final ImmutableList<BPartnerId> allBPartnerIds = StreamSupport
@@ -136,7 +138,7 @@ public class CommissionConfigFactory
 		flatrateDAO
 				.retrieveTerms(termsQuery)
 				.stream()
-				.filter(termRecord -> CommissionConstants.TYPE_CONDITIONS_COMMISSION.equals(termRecord.getType_Conditions()))
+				.filter(termRecord -> TypeConditions.COMMISSION.getCode().equals(termRecord.getType_Conditions()))
 				.forEach(commissionTermRecordsBuilder::add);
 
 		getConditionsForSalesRepWithoutContract()
@@ -149,6 +151,33 @@ public class CommissionConfigFactory
 				contractRequest.getSalesProductId());
 
 		return CollectionUtils.extractDistinctElements(contractId2Config.values(), Function.identity());
+	}
+
+	@Override
+	public boolean appliesFor(@NonNull final CommissionConfigProvider.ConfigRequestForNewInstance contractRequest)
+	{
+		return SUPPORTED_TRIGGER_TYPES.contains(contractRequest.getCommissionTriggerType());
+	}
+
+	@NonNull
+	public ImmutableMap<FlatrateTermId, CommissionConfig> createForExistingInstance(
+			@NonNull final CommissionConfigProvider.ConfigRequestForExistingInstance commissionConfigRequest)
+	{
+		final ImmutableList<I_C_Flatrate_Term> commissionTermRecords = flatrateDAO
+				.retrieveTerms(commissionConfigRequest.getContractIds())
+				.stream()
+				.filter(termRecord -> TypeConditions.COMMISSION.getCode().equals(termRecord.getType_Conditions()))
+				.collect(ImmutableList.toImmutableList());
+
+		if (commissionTermRecords.isEmpty())
+		{
+			return ImmutableMap.of();
+		}
+
+		return createCommissionConfigsFor(
+				commissionTermRecords,
+				commissionConfigRequest.getCustomerBPartnerId(),
+				commissionConfigRequest.getSalesProductId());
 	}
 
 	/**
@@ -193,29 +222,6 @@ public class CommissionConfigFactory
 
 		Loggables.withLogger(logger, Level.INFO).addLog("Commission contracts created for bPartners: {}", salesRepIdsWithoutContract);
 		return termCreator.createTermsForBPartners();
-	}
-
-	public ImmutableMap<FlatrateTermId, CommissionConfig> createForExisingInstance(
-			@NonNull final ConfigRequestForExistingInstance commissionConfigRequest)
-	{
-		final ImmutableList<I_C_Flatrate_Term> commissionTermRecords = flatrateDAO
-				.retrieveTerms(commissionConfigRequest.getContractIds())
-				.stream()
-				.collect(ImmutableList.toImmutableList());
-
-		final ImmutableMap<FlatrateTermId, CommissionConfig> result = createCommissionConfigsFor(
-				commissionTermRecords,
-				commissionConfigRequest.getCustomerBPartnerId(),
-				commissionConfigRequest.getSalesProductId());
-		if (result.isEmpty())
-		{
-			throw new AdempiereException("The given commissionConfigRequest needs at least one commissionConfig")
-					.appendParametersToMessage()
-					.setParameter("result.size()", result.size())
-					.setParameter("commissionConfigRequest", commissionConfigRequest)
-					.setParameter("result", result);
-		}
-		return result;
 	}
 
 	private ImmutableMap<FlatrateTermId, CommissionConfig> createCommissionConfigsFor(
@@ -364,7 +370,7 @@ public class CommissionConfigFactory
 			final boolean productCategoryIdEquals = settingsProductCategoryId.equals(salesProductCategoryId);
 			productMatches = settingsLineRecord.isExcludeProductCategory() ? !productCategoryIdEquals : productCategoryIdEquals;
 			logger.debug(logMessagePrefix + "settingsProductCategoryId={} and salesProductCategoryId={} match={}; excludeProductCategory={}; -> productMatches={}",
-					RepoIdAwares.toRepoId(settingsProductCategoryId), RepoIdAwares.toRepoId(salesProductCategoryId), productCategoryIdEquals, settingsLineRecord.isExcludeProductCategory(), productMatches);
+						 RepoIdAwares.toRepoId(settingsProductCategoryId), RepoIdAwares.toRepoId(salesProductCategoryId), productCategoryIdEquals, settingsLineRecord.isExcludeProductCategory(), productMatches);
 		}
 		final boolean customerMatches;
 		final BPGroupId settingsCustomerGroupId = BPGroupId.ofRepoIdOrNull(settingsLineRecord.getCustomer_Group_ID());
@@ -381,7 +387,7 @@ public class CommissionConfigFactory
 			final boolean groupOrPartnerEquals = groupIdEquals || partnerIdEquals;
 			customerMatches = settingsLineRecord.isExcludeBPGroup() ? !groupOrPartnerEquals : groupOrPartnerEquals;
 			logger.debug(logMessagePrefix + "settingsCustomerGroupId={} and customerGroupId={} match={}; settingsCustomerId={} and customerPartnerId{} match={}; excludeBPGroup={}; -> customerMatches={}",
-					RepoIdAwares.toRepoId(settingsCustomerGroupId), RepoIdAwares.toRepoId(customerGroupId), groupIdEquals, RepoIdAwares.toRepoId(settingsCustomerId), RepoIdAwares.toRepoId(customerPartnerId), partnerIdEquals, settingsLineRecord.isExcludeBPGroup(), customerMatches);
+						 RepoIdAwares.toRepoId(settingsCustomerGroupId), RepoIdAwares.toRepoId(customerGroupId), groupIdEquals, RepoIdAwares.toRepoId(settingsCustomerId), RepoIdAwares.toRepoId(customerPartnerId), partnerIdEquals, settingsLineRecord.isExcludeBPGroup(), customerMatches);
 		}
 
 		final boolean settingsLineMatches = customerMatches && productMatches;
@@ -402,48 +408,5 @@ public class CommissionConfigFactory
 		}
 
 		return Optional.of(flatrateConditions);
-	}
-
-	@Builder
-	@Value
-	public static class ConfigRequestForNewInstance
-	{
-		@NonNull 
-		OrgId orgId;
-		
-		@NonNull
-		BPartnerId salesRepBPartnerId;
-
-		/**
-		 * Needed because config settings can be specific to the customer's group.
-		 */
-		@NonNull
-		BPartnerId customerBPartnerId;
-
-		/**
-		 * Needed because config settings can be specific to the product's category.
-		 */
-		@NonNull
-		ProductId salesProductId;
-
-		@NonNull
-		LocalDate commissionDate;
-
-		@NonNull
-		Hierarchy commissionHierarchy;
-	}
-
-	@Builder
-	@Value
-	public static class ConfigRequestForExistingInstance
-	{
-		@NonNull
-		ImmutableList<FlatrateTermId> contractIds;
-
-		@NonNull
-		BPartnerId customerBPartnerId;
-
-		@NonNull
-		ProductId salesProductId;
 	}
 }

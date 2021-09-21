@@ -6,6 +6,7 @@ import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterParam;
 import de.metas.ui.web.document.filter.DocumentFilterParam.Operator;
 import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
+import de.metas.ui.web.view.descriptor.SqlAndParams;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
@@ -15,7 +16,6 @@ import de.metas.ui.web.window.descriptor.sql.SqlSelectValue;
 import de.metas.ui.web.window.model.lookup.LabelsLookup;
 import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 import de.metas.ui.web.window.model.sql.SqlOptions;
-import de.metas.util.Check;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryFilterModifier;
@@ -90,19 +90,25 @@ import java.util.List;
 	 * Build document filter where clause
 	 */
 	@Override
-	public String getSql(
-			@NonNull final SqlParamsCollector sqlParams,
+	public FilterSql getSql(
 			@NonNull final DocumentFilter filter,
 			@NonNull final SqlOptions sqlOpts,
 			@NonNull final SqlDocumentFilterConverterContext context)
 	{
 		final String filterId = filter.getFilterId();
 
-		final StringBuilder sql = new StringBuilder();
+		final SqlAndParams.Builder sql = SqlAndParams.builder();
 		for (final DocumentFilterParam filterParam : filter.getParameters())
 		{
-			final String sqlFilterParam = buildSqlWhereClause(sqlParams, filterId, filterParam, sqlOpts);
-			if (Check.isBlank(sqlFilterParam))
+			if (filterParam.getValue() == null && filterParam.getSqlWhereClause() == null)
+			{
+				// don't include "null" parameters; The frontend might send them e.g. if a string field was cleared. 
+				// we assume that the user never filters for value = "NULL"
+				continue;
+			}
+
+			final SqlAndParams sqlFilterParam = buildSqlWhereClause(filterId, filterParam, sqlOpts);
+			if (sqlFilterParam == null || sqlFilterParam.isEmpty())
 			{
 				continue;
 			}
@@ -115,28 +121,33 @@ import java.util.List;
 			sql.append("(").append(sqlFilterParam).append(")");
 		}
 
-		return sql.toString();
+		return FilterSql.ofWhereClause(sql.build());
 	}
 
 	/**
 	 * Build document filter parameter where clause
 	 */
 	@Nullable
-	private String buildSqlWhereClause(final SqlParamsCollector sqlParams, final String filterId, final DocumentFilterParam filterParam, final SqlOptions sqlOpts)
+	private SqlAndParams buildSqlWhereClause(
+			final String filterId,
+			final DocumentFilterParam filterParam,
+			final SqlOptions sqlOpts)
 	{
 		//
 		// SQL filter
 		if (filterParam.isSqlFilter())
 		{
-			String sqlWhereClause = filterParam.getSqlWhereClause().getSql();
+			final SqlAndParams sqlWhereClause = filterParam.getSqlWhereClause();
 			if (sqlOpts.isUseTableAlias())
 			{
-				sqlWhereClause = replaceTableNameWithTableAlias(sqlWhereClause, sqlOpts.getTableAlias());
+				return SqlAndParams.of(
+						replaceTableNameWithTableAlias(sqlWhereClause.getSql(), sqlOpts.getTableAlias()),
+						sqlWhereClause.getSqlParams());
 			}
-
-			final List<Object> sqlWhereClauseParams = filterParam.getSqlWhereClause().getSqlParams();
-			sqlParams.collectAll(sqlWhereClauseParams);
-			return sqlWhereClause;
+			else
+			{
+				return sqlWhereClause;
+			}
 		}
 
 		//
@@ -146,13 +157,13 @@ import java.util.List;
 		if (widgetType == DocumentFieldWidgetType.Labels)
 		{
 			final DocumentFilterParamDescriptor paramDescriptor = getParameterDescriptor(filterId, parameterName);
-			return buildSqlWhereClause_LabelsWidget(filterParam, paramDescriptor, sqlParams, sqlOpts);
+			return buildSqlWhereClause_LabelsWidget(filterParam, paramDescriptor, sqlOpts);
 		}
 		//
 		// Standard filter
 		else
 		{
-			return buildSqlWhereClause_StandardWidget(sqlParams, filterParam, sqlOpts);
+			return buildSqlWhereClause_StandardWidget(filterParam, sqlOpts);
 		}
 	}
 
@@ -210,7 +221,7 @@ import java.util.List;
 	}
 
 	@Nullable
-	private String buildSqlWhereClause_StandardWidget(final SqlParamsCollector sqlParams, final DocumentFilterParam filterParam, final SqlOptions sqlOpts)
+	private SqlAndParams buildSqlWhereClause_StandardWidget(final DocumentFilterParam filterParam, final SqlOptions sqlOpts)
 	{
 		final SqlEntityFieldBinding paramBinding = getParameterBinding(filterParam.getFieldName());
 		final DocumentFieldWidgetType widgetType = paramBinding.getWidgetType();
@@ -232,72 +243,72 @@ import java.util.List;
 			{
 				final Object sqlValue = convertToSqlValue(filterParam.getValue(), paramBinding, valueModifier);
 				final boolean negate = false;
-				return buildSqlWhereClause_Equals(columnSqlString, sqlValue, negate, sqlParams);
+				return buildSqlWhereClause_Equals(columnSqlString, sqlValue, negate);
 			}
 			case NOT_EQUAL:
 			{
 				final Object sqlValue = convertToSqlValue(filterParam.getValue(), paramBinding, valueModifier);
 				final boolean negate = true;
-				return buildSqlWhereClause_Equals(columnSqlString, sqlValue, negate, sqlParams);
+				return buildSqlWhereClause_Equals(columnSqlString, sqlValue, negate);
 			}
 			case IN_ARRAY:
 			{
 				final List<Object> sqlValuesList = filterParam.getValueAsList(itemObj -> convertToSqlValue(itemObj, paramBinding, valueModifier));
-				return buildSqlWhereClause_InArray(columnSqlString, sqlValuesList, sqlParams);
+				return buildSqlWhereClause_InArray(columnSqlString, sqlValuesList);
 			}
 			case GREATER:
 			{
 				final Object sqlValue = convertToSqlValue(filterParam.getValue(), paramBinding, valueModifier);
-				return buildSqlWhereClause_Compare(columnSqlString, ">", sqlValue, sqlParams);
+				return buildSqlWhereClause_Compare(columnSqlString, ">", sqlValue);
 			}
 			case GREATER_OR_EQUAL:
 			{
 				final Object sqlValue = convertToSqlValue(filterParam.getValue(), paramBinding, valueModifier);
-				return buildSqlWhereClause_Compare(columnSqlString, ">=", sqlValue, sqlParams);
+				return buildSqlWhereClause_Compare(columnSqlString, ">=", sqlValue);
 			}
 			case LESS:
 			{
 				final Object sqlValue = convertToSqlValue(filterParam.getValue(), paramBinding, valueModifier);
-				return buildSqlWhereClause_Compare(columnSqlString, "<", sqlValue, sqlParams);
+				return buildSqlWhereClause_Compare(columnSqlString, "<", sqlValue);
 			}
 			case LESS_OR_EQUAL:
 			{
 				final Object sqlValue = convertToSqlValue(filterParam.getValue(), paramBinding, valueModifier);
-				return buildSqlWhereClause_Compare(columnSqlString, "<=", sqlValue, sqlParams);
+				return buildSqlWhereClause_Compare(columnSqlString, "<=", sqlValue);
 			}
 			case LIKE:
 			{
 				final Object sqlValue = convertToSqlValue(filterParam.getValue(), paramBinding, valueModifier);
 				final boolean negate = false;
 				final boolean ignoreCase = false;
-				return buildSqlWhereClause_Like(columnSqlString, negate, ignoreCase, sqlValue, sqlParams);
+				return buildSqlWhereClause_Like(columnSqlString, negate, ignoreCase, sqlValue);
 			}
 			case NOT_LIKE:
 			{
 				final Object sqlValue = convertToSqlValue(filterParam.getValue(), paramBinding, valueModifier);
 				final boolean negate = true;
 				final boolean ignoreCase = false;
-				return buildSqlWhereClause_Like(columnSqlString, negate, ignoreCase, sqlValue, sqlParams);
+				return buildSqlWhereClause_Like(columnSqlString, negate, ignoreCase, sqlValue);
 			}
 			case LIKE_I:
 			{
 				final Object sqlValue = convertToSqlValue(filterParam.getValue(), paramBinding, valueModifier);
 				final boolean negate = false;
 				final boolean ignoreCase = true;
-				return buildSqlWhereClause_Like(columnSqlString, negate, ignoreCase, sqlValue, sqlParams);
+				return buildSqlWhereClause_Like(columnSqlString, negate, ignoreCase, sqlValue);
 			}
 			case NOT_LIKE_I:
 			{
 				final Object sqlValue = convertToSqlValue(filterParam.getValue(), paramBinding, valueModifier);
 				final boolean negate = true;
 				final boolean ignoreCase = true;
-				return buildSqlWhereClause_Like(columnSqlString, negate, ignoreCase, sqlValue, sqlParams);
+				return buildSqlWhereClause_Like(columnSqlString, negate, ignoreCase, sqlValue);
 			}
 			case BETWEEN:
 			{
 				final Object sqlValue = convertToSqlValue(filterParam.getValue(), paramBinding, valueModifier);
 				final Object sqlValueTo = convertToSqlValue(filterParam.getValueTo(), paramBinding, valueModifier);
-				return buildSqlWhereClause_Between(columnSqlString, sqlValue, sqlValueTo, sqlParams);
+				return buildSqlWhereClause_Between(columnSqlString, sqlValue, sqlValueTo);
 			}
 			case NOT_NULL_IF_TRUE:
 			{
@@ -312,43 +323,43 @@ import java.util.List;
 	}
 
 	@VisibleForTesting
-	static String buildSqlWhereClause_Equals(final String sqlColumnExpr, @Nullable final Object sqlValue, final boolean negate, final SqlParamsCollector sqlParams)
+	static SqlAndParams buildSqlWhereClause_Equals(final String sqlColumnExpr, @Nullable final Object sqlValue, final boolean negate)
 	{
 		if (sqlValue == null)
 		{
 			return buildSqlWhereClause_IsNull(sqlColumnExpr, NullOperator.IS_NULL.negateIf(negate));
 		}
-
-		return sqlColumnExpr
-				+ (negate ? " <> " : " = ")
-				+ sqlParams.placeholder(sqlValue);
+		else
+		{
+			return SqlAndParams.of(sqlColumnExpr + (negate ? " <> " : " = ") + "?", sqlValue);
+		}
 	}
 
 	@VisibleForTesting
-	static String buildSqlWhereClause_IsNull(
+	static SqlAndParams buildSqlWhereClause_IsNull(
 			@NonNull final String sqlColumnExpr,
 			@NonNull final NullOperator operator)
 	{
 		switch (operator)
 		{
 			case IS_NULL:
-				return sqlColumnExpr + " IS NULL";
+				return SqlAndParams.of(sqlColumnExpr + " IS NULL");
 			case IS_NOT_NULL:
-				return sqlColumnExpr + " IS NOT NULL";
+				return SqlAndParams.of(sqlColumnExpr + " IS NOT NULL");
 			case ANY:
-				return "";
+				return SqlAndParams.EMPTY;
 			default:
 				throw new AdempiereException("Unknown operator: " + operator);
 		}
 	}
 
-	private static String buildSqlWhereClause_Compare(final String sqlColumnExpr, final String sqlOperator, @Nullable final Object sqlValue, final SqlParamsCollector sqlParams)
+	private static SqlAndParams buildSqlWhereClause_Compare(final String sqlColumnExpr, final String sqlOperator, @Nullable final Object sqlValue)
 	{
-		return sqlColumnExpr + sqlOperator + sqlParams.placeholder(sqlValue);
+		return SqlAndParams.of(sqlColumnExpr + sqlOperator + "?", sqlValue);
 	}
 
 	@Nullable
-	private static String buildSqlWhereClause_InArray(final String sqlColumnExpr, final List<Object> sqlValues, final SqlParamsCollector sqlParams)
+	private static SqlAndParams buildSqlWhereClause_InArray(final String sqlColumnExpr, final List<Object> sqlValues)
 	{
 		if (sqlValues == null || sqlValues.isEmpty())
 		{
@@ -356,22 +367,14 @@ import java.util.List;
 			return null;
 		}
 
-		final List<Object> sqlValuesEffective = sqlParams.isCollecting()
-				? new ArrayList<>()
-				: null;
+		final List<Object> sqlParams = new ArrayList<>();
+		final String sql = DB.buildSqlList(sqlColumnExpr, sqlValues, sqlParams);
 
-		final String sql = DB.buildSqlList(sqlColumnExpr, sqlValues, sqlValuesEffective);
-
-		if (sqlParams.isCollecting())
-		{
-			sqlParams.collectAll(sqlValuesEffective); // safe
-		}
-
-		return sql;
+		return SqlAndParams.of(sql, sqlParams);
 	}
 
 	@VisibleForTesting
-	static String buildSqlWhereClause_Like(final String sqlColumnExpr, final boolean negate, final boolean ignoreCase, @Nullable final Object sqlValue, final SqlParamsCollector sqlParams)
+	static SqlAndParams buildSqlWhereClause_Like(final String sqlColumnExpr, final boolean negate, final boolean ignoreCase, @Nullable final Object sqlValue)
 	{
 		if (sqlValue == null)
 		{
@@ -383,7 +386,7 @@ import java.util.List;
 		{
 			// NO value supplied, it's pointless to enforce a LIKE on that...
 			// => considering all matches
-			return "";
+			return SqlAndParams.EMPTY;
 		}
 
 		if (!sqlValueStr.startsWith("%"))
@@ -397,29 +400,31 @@ import java.util.List;
 
 		final String sqlOperator = (negate ? " NOT " : " ") + (ignoreCase ? "ILIKE " : "LIKE ");
 
-		return DBConstants.FUNCNAME_unaccent_string + "(" + sqlColumnExpr + ", 1)"
-				+ sqlOperator
-				+ DBConstants.FUNCNAME_unaccent_string + "(" + sqlParams.placeholder(sqlValueStr) + ", 1)";
+		return SqlAndParams.of(
+				DBConstants.FUNCNAME_unaccent_string + "(" + sqlColumnExpr + ", 1)"
+						+ sqlOperator
+						+ DBConstants.FUNCNAME_unaccent_string + "(?, 1)",
+				sqlValueStr);
 	}
 
-	private static String buildSqlWhereClause_Between(final String sqlColumnExpr, @Nullable final Object sqlValue, @Nullable final Object sqlValueTo, final SqlParamsCollector sqlParams)
+	private static SqlAndParams buildSqlWhereClause_Between(final String sqlColumnExpr, @Nullable final Object sqlValue, @Nullable final Object sqlValueTo)
 	{
 		if (sqlValue == null)
 		{
 			if (sqlValueTo == null)
 			{
 				// Both values are null => considering all matches
-				return "";
+				return SqlAndParams.EMPTY;
 			}
-			return buildSqlWhereClause_Compare(sqlColumnExpr, "<=", sqlValueTo, sqlParams);
+			return buildSqlWhereClause_Compare(sqlColumnExpr, "<=", sqlValueTo);
 		}
 		if (sqlValueTo == null)
 		{
 			// NOTE: at this point sqlValue is not null!
-			return buildSqlWhereClause_Compare(sqlColumnExpr, ">=", sqlValue, sqlParams);
+			return buildSqlWhereClause_Compare(sqlColumnExpr, ">=", sqlValue);
 		}
 
-		return sqlColumnExpr + " BETWEEN " + sqlParams.placeholder(sqlValue) + " AND " + sqlParams.placeholder(sqlValueTo);
+		return SqlAndParams.of(sqlColumnExpr + " BETWEEN ? AND ?", sqlValue, sqlValueTo);
 	}
 
 	@VisibleForTesting
@@ -458,10 +463,9 @@ import java.util.List;
 	}
 
 	@Nullable
-	private String buildSqlWhereClause_LabelsWidget(
+	private SqlAndParams buildSqlWhereClause_LabelsWidget(
 			final DocumentFilterParam filterParam,
 			final DocumentFilterParamDescriptor paramDescriptor,
-			final SqlParamsCollector sqlParams,
 			final SqlOptions sqlOpts)
 	{
 		final LookupValuesList lookupValues = extractLookupValuesList(filterParam);
@@ -480,10 +484,10 @@ import java.util.List;
 		final String linkColumnName = lookup.getLinkColumnName();
 		final String labelsValueColumnName = lookup.getLabelsValueColumnName();
 
-		final StringBuilder sql = new StringBuilder();
+		final SqlAndParams.Builder sql = SqlAndParams.builder();
 		for (final LookupValue lookupValue : lookupValues)
 		{
-			if (sql.length() > 0)
+			if (!sql.isEmpty())
 			{
 				sql.append(" AND ");
 			}
@@ -492,11 +496,11 @@ import java.util.List;
 
 			sql.append("EXISTS (SELECT 1 FROM ").append(labelsTableName).append(" labels ")
 					.append(" WHERE labels.").append(labelsLinkColumnName).append("=").append(tableAlias).append(".").append(linkColumnName)
-					.append(" AND labels.").append(labelsValueColumnName).append("=").append(sqlParams.placeholder(labelValue))
+					.append(" AND labels.").append(labelsValueColumnName).append("=?", labelValue)
 					.append(")");
 		}
 
-		return sql.toString();
+		return sql.build();
 	}
 
 	private static LookupValuesList extractLookupValuesList(final DocumentFilterParam filterParam)

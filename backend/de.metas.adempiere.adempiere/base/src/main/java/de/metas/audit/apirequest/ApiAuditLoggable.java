@@ -82,7 +82,7 @@ public class ApiAuditLoggable implements ILoggable
 	}
 
 	@Override
-	public ILoggable addLog(final String msg, final Object... msgParameters)
+	public ILoggable addLog(@Nullable final String msg, final Object... msgParameters)
 	{
 		if (msg == null)
 		{

@@ -30,6 +30,7 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import io.cucumber.datatable.DataTable;
+import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import lombok.Builder;
 import lombok.NonNull;
@@ -37,34 +38,30 @@ import lombok.Singular;
 import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.assertj.core.api.Assertions;
 import org.compiere.model.IQuery;
-import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_M_Product;
 
 import javax.annotation.Nullable;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 public class M_ShipmentSchedule_StepDef
 {
-	private final StepDefData<I_M_Product> productTable;
-	private final StepDefData<I_C_Order> orderTable;
+	final IQueryBL queryBL = Services.get(IQueryBL.class);
+
 	private final StepDefData<I_C_OrderLine> orderLineTable;
 	private final StepDefData<I_M_ShipmentSchedule> shipmentScheduleTable;
 
 	public M_ShipmentSchedule_StepDef(
-			@NonNull final StepDefData<I_M_Product> productTable,
-			@NonNull final StepDefData<I_C_Order> orderTable,
 			@NonNull final StepDefData<I_C_OrderLine> orderLineTable,
 			@NonNull final StepDefData<I_M_ShipmentSchedule> shipmentScheduleTable)
 	{
-		this.productTable = productTable;
-		this.orderTable = orderTable;
 		this.orderLineTable = orderLineTable;
 		this.shipmentScheduleTable = shipmentScheduleTable;
 	}
@@ -79,16 +76,53 @@ public class M_ShipmentSchedule_StepDef
 		// if they succeed, put them into shipmentScheduleTable
 		final ShipmentScheduleQueries shipmentScheduleQueries = createShipmentScheduleQueries(dataTable);
 
-		final long nowMillis = System.currentTimeMillis(); // don't use SystemTime.millis(); because it's probably "rigged" for testing purposes,
-		final long deadLineMillis = nowMillis + (timeoutSec * 1000L);
+		final Supplier<Boolean> shipmentScheduleQueryExecutor = () -> {
+			if (shipmentScheduleQueries.isAllDone())
+			{
+				return true;
+			}
 
-		while (System.currentTimeMillis() < deadLineMillis && !shipmentScheduleQueries.isAllDone())
-		{
-			Thread.sleep(500);
 			shipmentScheduleTable.putAll(shipmentScheduleQueries.executeAllRemaining());
-		}
+			return shipmentScheduleQueries.isAllDone();
+		};
+
+		StepDefUtil.tryAndWait(timeoutSec, 500, shipmentScheduleQueryExecutor);
 
 		assertThat(shipmentScheduleQueries.isAllDone()).as("Not all M_ShipmentSchedules were created within the %s second timout", timeoutSec).isTrue();
+	}
+
+	@And("^the shipment schedule identified by (.*) is processed after not more than (.*) seconds$")
+	public void processedShipmentScheduleByIdentifier(@NonNull final String identifier, final int timeoutSec) throws InterruptedException
+	{
+		final I_M_ShipmentSchedule shipmentSchedule = shipmentScheduleTable.get(identifier);
+
+		final Supplier<Boolean> isShipmentScheduleProcessed = () -> {
+
+			final I_M_ShipmentSchedule record = queryBL
+					.createQueryBuilder(I_M_ShipmentSchedule.class)
+					.addOnlyActiveRecordsFilter()
+					.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID, shipmentSchedule.getM_ShipmentSchedule_ID())
+					.create()
+					.firstOnlyNotNull(I_M_ShipmentSchedule.class);
+
+			return record.isProcessed();
+		};
+
+		StepDefUtil.tryAndWait(timeoutSec, 500, isShipmentScheduleProcessed);
+
+		assertThat(isShipmentScheduleProcessed.get())
+				.as("M_ShipmentSchedules with identifier %s was not processed within the %s second timout", identifier, timeoutSec)
+				.isTrue();
+	}
+
+	@Then("the shipment-schedule is closed")
+	public void assertShipmentScheduleIsClosed(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+		for (final Map<String, String> tableRow : tableRows)
+		{
+			assertShipmentScheduleIsClosed(tableRow);
+		}
 	}
 
 	private ShipmentScheduleQueries createShipmentScheduleQueries(@NonNull final DataTable dataTable)
@@ -97,13 +131,19 @@ public class M_ShipmentSchedule_StepDef
 		final ShipmentScheduleQueries.ShipmentScheduleQueriesBuilder queries = ShipmentScheduleQueries.builder();
 		for (final Map<String, String> tableRow : tableRows)
 		{
-			final IQueryBuilder<I_M_ShipmentSchedule> queryBuilder = Services.get(IQueryBL.class)
-					.createQueryBuilder(I_M_ShipmentSchedule.class);
+			final IQueryBuilder<I_M_ShipmentSchedule> queryBuilder = queryBL.createQueryBuilder(I_M_ShipmentSchedule.class);
 
 			final String orderLineIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_ShipmentSchedule.COLUMNNAME_C_OrderLine_ID + ".Identifier");
 
 			final I_C_OrderLine orderLine = orderLineTable.get(orderLineIdentifier);
 			queryBuilder.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_C_OrderLine_ID, orderLine.getC_OrderLine_ID());
+
+			final int warehouseId = DataTableUtil.extractIntOrMinusOneForColumnName(tableRow, "OPT.Warehouse_ID");
+
+			if (warehouseId > 0)
+			{
+				queryBuilder.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_M_Warehouse_ID, warehouseId);
+			}
 
 			final IQuery<I_M_ShipmentSchedule> query = queryBuilder.create();
 
@@ -189,9 +229,17 @@ public class M_ShipmentSchedule_StepDef
 		}
 	}
 
-	@Then("the M_ShipmentSchedules have these properties:")
-	public void theShipmentSchedulesHaveTheseProperties(@NonNull final DataTable dataTable)
+	private void assertShipmentScheduleIsClosed(@NonNull final Map<String, String> tableRow)
 	{
+		final String shipmentScheduleIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID + ".Identifier");
+		final I_M_ShipmentSchedule shipmentSchedule = shipmentScheduleTable.get(shipmentScheduleIdentifier);
 
+		final I_M_ShipmentSchedule refreshedSchedule = queryBL.createQueryBuilder(I_M_ShipmentSchedule.class)
+				.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID, shipmentSchedule.getM_ShipmentSchedule_ID())
+				.create()
+				.firstOnlyNotNull(I_M_ShipmentSchedule.class);
+
+		assertNotNull(shipmentSchedule);
+		assertEquals(Boolean.TRUE, refreshedSchedule.isClosed());
 	}
 }

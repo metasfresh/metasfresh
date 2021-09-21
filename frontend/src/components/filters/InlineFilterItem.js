@@ -8,9 +8,9 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { find } from 'lodash';
 
-import { allowShortcut, disableShortcut } from '../../actions/WindowActions';
-import RawWidget from '../widget/RawWidget';
 import { convertDateToReadable } from '../../utils/dateHelpers';
+
+import WidgetWrapper from '../../containers/WidgetWrapper';
 import { updateInlineFilter } from '../../actions/FiltersActions';
 
 class InlineFilterItem extends Component {
@@ -87,25 +87,14 @@ class InlineFilterItem extends Component {
   };
 
   render() {
-    const {
-      data,
-      id,
-      windowType,
-      onShow,
-      onHide,
-      viewId,
-      modalVisible,
-      timeZone,
-      allowShortcut,
-      disableShortcut,
-    } = this.props;
+    const { data, id, windowType, onShow, onHide, viewId } = this.props;
     const { filter, searchString } = this.state;
-
     const dataClone = { ...data };
     dataClone.value = searchString;
 
     return (
-      <RawWidget
+      <WidgetWrapper
+        dataSource="filter-item"
         entity="documentView"
         subentity="filter"
         subentityId={filter.filterId}
@@ -125,24 +114,11 @@ class InlineFilterItem extends Component {
           windowType,
           onShow,
           onHide,
-          modalVisible,
-          timeZone,
-          allowShortcut,
-          disableShortcut,
         }}
       />
     );
   }
 }
-
-const mapStateToProps = (state) => {
-  const { appHandler, windowHandler } = state;
-
-  return {
-    modalVisible: windowHandler.modal.visible,
-    timeZone: appHandler.me.timeZone,
-  };
-};
 
 InlineFilterItem.propTypes = {
   active: PropTypes.array,
@@ -155,19 +131,10 @@ InlineFilterItem.propTypes = {
   applyFilters: PropTypes.func,
   clearFilters: PropTypes.func,
   windowType: PropTypes.string,
-  allowShortcut: PropTypes.func.isRequired,
-  disableShortcut: PropTypes.func.isRequired,
-  modalVisible: PropTypes.bool.isRequired,
-  timeZone: PropTypes.string.isRequired,
   filterId: PropTypes.string,
   updateInlineFilter: PropTypes.func,
 };
 
-export default connect(
-  mapStateToProps,
-  {
-    allowShortcut,
-    disableShortcut,
-    updateInlineFilter,
-  }
-)(InlineFilterItem);
+export default connect(null, {
+  updateInlineFilter,
+})(InlineFilterItem);

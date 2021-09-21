@@ -89,9 +89,7 @@ public class C_BPartner_DeactivateAfterOrgChange extends JavaProcess
 	private void deactivateBankAccounts(final List<BPartnerId> partnerIds, final Instant date)
 	{
 		final ICompositeQueryUpdater<I_C_BP_BankAccount> queryUpdater = queryBL.createCompositeQueryUpdater(I_C_BP_BankAccount.class)
-				.addSetColumnValue(I_C_BP_BankAccount.COLUMNNAME_IsActive, false)
-				.addSetColumnValue(I_C_BP_BankAccount.COLUMNNAME_Updated, date)
-				.addSetColumnValue(I_C_BP_BankAccount.COLUMNNAME_UpdatedBy, Env.getAD_User_ID());
+				.addSetColumnValue(I_C_BP_BankAccount.COLUMNNAME_IsActive, false);
 		queryBL
 				.createQueryBuilder(I_C_BP_BankAccount.class)
 				.addInArrayFilter(I_C_BP_BankAccount.COLUMNNAME_C_BPartner_ID, partnerIds)
@@ -102,9 +100,7 @@ public class C_BPartner_DeactivateAfterOrgChange extends JavaProcess
 	private void deactivateUsers(final List<BPartnerId> partnerIds, final Instant date)
 	{
 		final ICompositeQueryUpdater<I_AD_User> queryUpdater = queryBL.createCompositeQueryUpdater(I_AD_User.class)
-				.addSetColumnValue(I_AD_User.COLUMNNAME_IsActive, false)
-				.addSetColumnValue(I_AD_User.COLUMNNAME_Updated, date)
-				.addSetColumnValue(I_AD_User.COLUMNNAME_UpdatedBy, Env.getAD_User_ID());
+				.addSetColumnValue(I_AD_User.COLUMNNAME_IsActive, false);
 		queryBL
 				.createQueryBuilder(I_AD_User.class)
 				.addInArrayFilter(I_AD_User.COLUMNNAME_C_BPartner_ID, partnerIds)
@@ -115,9 +111,7 @@ public class C_BPartner_DeactivateAfterOrgChange extends JavaProcess
 	private void deactivateLocations(final List<BPartnerId> partnerIds, final Instant date)
 	{
 		final ICompositeQueryUpdater<I_C_BPartner_Location> queryUpdater = queryBL.createCompositeQueryUpdater(I_C_BPartner_Location.class)
-				.addSetColumnValue(I_C_BPartner_Location.COLUMNNAME_IsActive, false)
-				.addSetColumnValue(I_C_BPartner_Location.COLUMNNAME_Updated, date)
-				.addSetColumnValue(I_C_BPartner_Location.COLUMNNAME_UpdatedBy, Env.getAD_User_ID());
+				.addSetColumnValue(I_C_BPartner_Location.COLUMNNAME_IsActive, false);
 		queryBL
 				.createQueryBuilder(I_C_BPartner_Location.class)
 				.addInArrayFilter(I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID, partnerIds)
@@ -128,9 +122,8 @@ public class C_BPartner_DeactivateAfterOrgChange extends JavaProcess
 	private void deactivatePartners(final List<BPartnerId> partnerIds, final Instant date)
 	{
 		final ICompositeQueryUpdater<I_C_BPartner> queryUpdater = queryBL.createCompositeQueryUpdater(I_C_BPartner.class)
-				.addSetColumnValue(I_C_BPartner.COLUMNNAME_IsActive, false)
-				.addSetColumnValue(I_C_BPartner.COLUMNNAME_Updated, date)
-				.addSetColumnValue(I_C_BPartner.COLUMNNAME_UpdatedBy, Env.getAD_User_ID());
+				.addSetColumnValue(I_C_BPartner.COLUMNNAME_IsActive, false);
+
 		queryBL
 				.createQueryBuilder(I_C_BPartner.class)
 				.addInArrayFilter(I_C_BPartner.COLUMNNAME_C_BPartner_ID, partnerIds)

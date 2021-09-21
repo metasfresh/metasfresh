@@ -53,6 +53,7 @@ import de.metas.user.UserId;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import de.metas.util.lang.UIDStringUtil;
+import de.metas.vertical.healthcare.alberta.bpartner.AlbertaBPartnerCompositeService;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.table.MockLogEntriesRepository;
@@ -71,6 +72,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mockito;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -121,7 +123,8 @@ class ContactRestControllerTest
 		AdempiereTestHelper.get().init();
 		Env.setLoggedUserId(Env.getCtx(), UserId.ofRepoId(BPartnerRecordsUtil.AD_USER_ID));
 
-		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
+		final BPartnerBL partnerBL = new BPartnerBL(new UserRepository());
+		//Services.registerService(IBPartnerBL.class, partnerBL);
 		SpringContextHolder.registerJUnitBean(new GreetingRepository());
 
 		recordChangeLogRepository = new MockLogEntriesRepository();
@@ -132,7 +135,7 @@ class ContactRestControllerTest
 		final ExternalReferenceRestControllerService externalReferenceRestControllerService =
 				new ExternalReferenceRestControllerService(externalReferenceRepository, new ExternalSystems(), new ExternalReferenceTypes());
 
-		bpartnerCompositeRepository = new BPartnerCompositeRepository(recordChangeLogRepository);
+		bpartnerCompositeRepository = new BPartnerCompositeRepository(partnerBL, recordChangeLogRepository);
 		final JsonServiceFactory jsonServiceFactory = new JsonServiceFactory(
 				new JsonRequestConsolidateService(),
 				new BPartnerQueryService(),
@@ -140,7 +143,8 @@ class ContactRestControllerTest
 				new BPGroupRepository(),
 				new GreetingRepository(),
 				new CurrencyRepository(),
-				externalReferenceRestControllerService);
+				externalReferenceRestControllerService,
+				Mockito.mock(AlbertaBPartnerCompositeService.class));
 
 		contactRestController = new ContactRestController(
 				new BPartnerEndpointService(jsonServiceFactory),

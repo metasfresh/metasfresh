@@ -43,6 +43,8 @@ import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFetcher;
 import de.metas.ui.web.window.model.sql.DocActionValidationRule;
 import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.ad.element.api.AdWindowId;
@@ -58,6 +60,7 @@ import org.adempiere.ad.validationRule.impl.NullValidationRule;
 import org.adempiere.db.DBConstants;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -473,11 +476,7 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 
 			//
 			// ORDER BY
-			String lookup_SqlOrderBy = lookupInfo.getOrderBySqlPart();
-			if (Check.isEmpty(lookup_SqlOrderBy, true))
-			{
-				lookup_SqlOrderBy = String.valueOf(MLookupFactory.COLUMNINDEX_DisplayName);
-			}
+			final IStringExpression lookup_SqlOrderBy = buildSqlOrderBy(lookupInfo);
 
 			//
 			// Set the SQLs
@@ -497,6 +496,36 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 			{
 				tooltipType = lookupInfo.getTooltipType();
 			}
+		}
+
+		private IStringExpression buildSqlOrderBy(final MLookupInfo lookupInfo)
+		{
+			final CompositeStringExpression.Builder builder = IStringExpression.composer();
+
+			//
+			// 1. LEVENSHTIEN distance from user typed string to display name
+			final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+			if (sysConfigBL.getBooleanValue("webui.lookup.orderBy.levenshtein", false))
+			{
+				final TranslatableParameterizedString displayColumnSql = lookupInfo.getDisplayColumnSql();
+				builder.append("levenshtein(")
+						.append(DBConstants.FUNCNAME_unaccent_string).append("(").append(LookupDataSourceContext.PARAM_FilterSqlWithoutWildcards).append(", 1)")
+						.append(", ")
+						.append(DBConstants.FUNCNAME_unaccent_string).append("(").append(displayColumnSql).append(", 1)")
+						.append(")");
+			}
+
+			//
+			// 2. Display Name
+			if (!builder.isEmpty())
+			{
+				builder.append(", ");
+			}
+			builder.append(StringUtils.trimBlankToOptional(lookupInfo.getOrderBySqlPart())
+					.orElse(String.valueOf(MLookupFactory.COLUMNINDEX_DisplayName)));
+
+			//
+			return builder.build();
 		}
 
 		private void setSqlExpressions_PAttribute()
@@ -624,7 +653,10 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 			return validationRuleWhereClause;
 		}
 
-		private SqlForFetchingLookups buildSqlForFetching(final MLookupInfo lookupInfo, final IStringExpression sqlWhere, final String sqlOrderBy)
+		private SqlForFetchingLookups buildSqlForFetching(
+				final MLookupInfo lookupInfo,
+				final IStringExpression sqlWhere,
+				final IStringExpression sqlOrderBy)
 		{
 			final String tableName = lookupInfo.getTableName();
 			return SqlForFetchingLookups.builder()
@@ -705,7 +737,7 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 			return this;
 		}
 
-		public Builder setCtxTableName(final String tableName)
+		public Builder setCtxTableName(@Nullable final String tableName)
 		{
 			this.ctxTableName = tableName;
 			return this;

@@ -94,13 +94,13 @@ public class GeoLocationDocumentService implements DocumentFilterDescriptorsProv
 	public DocumentFilterDescriptorsProvider createFiltersProvider(
 			@Nullable final AdTabId adTabId_NOTUSED,
 			@Nullable final String tableName,
-			@Nullable final Collection<DocumentFieldDescriptor> fields)
+			final @NonNull Collection<DocumentFieldDescriptor> fields)
 	{
 		if (tableName == null)
 		{
 			return NullDocumentFilterDescriptorsProvider.instance;
 		}
-		if (fields == null || fields.isEmpty())
+		if (fields.isEmpty())
 		{
 			return null;
 		}
@@ -126,6 +126,7 @@ public class GeoLocationDocumentService implements DocumentFilterDescriptorsProv
 		return getGeoLocationDocumentDescriptorIfExists(fieldNames).isPresent();
 	}
 
+	@Override
 	public boolean isActive()
 	{
 		return sysConfigBL.getBooleanValue(SYS_CONFIG_ENABLE_GEO_LOCATION_SEARCH, Boolean.TRUE);

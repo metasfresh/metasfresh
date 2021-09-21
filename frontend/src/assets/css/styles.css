@@ -781,13 +781,18 @@ body{
     /* column-count: 2; */
     column-fill: auto;
     margin-top: 1rem;
+    overflow: auto;
 }
 
-.sitemap-column {
+.sitemap-column-left {
     column-count: 1;
-    width: 45vw;
+    width: 50%;
     float: left;
-    margin-right: 1rem;
+}
+.sitemap-column-right {
+    column-count: 1;
+    width: 49%;
+    float: right;
 }
 .sitemap-box-header {
     column-span: all;
@@ -1636,6 +1641,14 @@ body{
             background: url('../images/spinner-solid.svg') no-repeat scroll center 0;
         }
     }
+}
+
+.modal-spinner {
+    height: 70%;
+    left:15%;
+    top: 15%;
+    width: 70%;
+    background-color: transparent !important;
 }
 
 .paypal-reservation-container {

@@ -1,7 +1,8 @@
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
 
 /** Generated Interface for AD_Archive
  *  @author metasfresh (generated) 
@@ -323,6 +324,29 @@ public interface I_AD_Archive
 
 	ModelColumn<I_AD_Archive, Object> COLUMN_DocumentFlavor = new ModelColumn<>(I_AD_Archive.class, "DocumentFlavor", null);
 	String COLUMNNAME_DocumentFlavor = "DocumentFlavor";
+
+	/**
+	 * Set Document No.
+	 * Document sequence number of the document
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDocumentNo (@Nullable java.lang.String DocumentNo);
+
+	/**
+	 * Get Document No.
+	 * Document sequence number of the document
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getDocumentNo();
+
+	ModelColumn<I_AD_Archive, Object> COLUMN_DocumentNo = new ModelColumn<>(I_AD_Archive.class, "DocumentNo", null);
+	String COLUMNNAME_DocumentNo = "DocumentNo";
 
 	/**
 	 * Set Help.

@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -122490736L;
+	private static final long serialVersionUID = 1005357324L;
 
     /** Standard Constructor */
     public X_C_BPartner (final Properties ctx, final int C_BPartner_ID, @Nullable final String trxName)
@@ -116,6 +116,60 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	public int getAD_Org_Mapping_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_Org_Mapping_ID);
+	}
+
+	/** 
+	 * AlbertaRole AD_Reference_ID=541322
+	 * Reference name: AlbertaRole
+	 */
+	public static final int ALBERTAROLE_AD_Reference_ID=541322;
+	/** Caregiver = CG */
+	public static final String ALBERTAROLE_Caregiver = "CG";
+	/** Caretaker = CT */
+	public static final String ALBERTAROLE_Caretaker = "CT";
+	/** General Practitioner = GP */
+	public static final String ALBERTAROLE_GeneralPractitioner = "GP";
+	/** Health Insurance = HI */
+	public static final String ALBERTAROLE_HealthInsurance = "HI";
+	/** Hostpital = HO */
+	public static final String ALBERTAROLE_Hostpital = "HO";
+	/** Main Producer = MP */
+	public static final String ALBERTAROLE_MainProducer = "MP";
+	/** Nursing Home = NH */
+	public static final String ALBERTAROLE_NursingHome = "NH";
+	/** Nursing Service = NS */
+	public static final String ALBERTAROLE_NursingService = "NS";
+	/** Payer = PA */
+	public static final String ALBERTAROLE_Payer = "PA";
+	/** Doctor = PD */
+	public static final String ALBERTAROLE_Doctor = "PD";
+	/** Pharmacy = PH */
+	public static final String ALBERTAROLE_Pharmacy = "PH";
+	/** Preferred Pharmacy = PP */
+	public static final String ALBERTAROLE_PreferredPharmacy = "PP";
+	/** Pacient = PT */
+	public static final String ALBERTAROLE_Pacient = "PT";
+	@Override
+	public void setAlbertaRole (final @Nullable java.lang.String AlbertaRole)
+	{
+		set_Value (COLUMNNAME_AlbertaRole, AlbertaRole);
+	}
+
+	@Override
+	public java.lang.String getAlbertaRole() 
+	{
+		return get_ValueAsString(COLUMNNAME_AlbertaRole);
+	}
+
+	@Override
+	public void setAlbertaTitle (final @Nullable java.lang.String AlbertaTitle)
+	{
+		throw new IllegalArgumentException ("AlbertaTitle is virtual column");	}
+
+	@Override
+	public java.lang.String getAlbertaTitle() 
+	{
+		return get_ValueAsString(COLUMNNAME_AlbertaTitle);
 	}
 
 	@Override
@@ -251,18 +305,6 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	public boolean isCertificateOfRegistrationVendor() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_CertificateOfRegistrationVendor);
-	}
-
-	@Override
-	public org.compiere.model.I_C_Greeting getC_Greeting()
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Greeting_ID, org.compiere.model.I_C_Greeting.class);
-	}
-
-	@Override
-	public void setC_Greeting(final org.compiere.model.I_C_Greeting C_Greeting)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Greeting_ID, org.compiere.model.I_C_Greeting.class, C_Greeting);
 	}
 
 	@Override
@@ -531,6 +573,10 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	public static final String DELIVERYVIARULE_Delivery = "D";
 	/** Shipper = S */
 	public static final String DELIVERYVIARULE_Shipper = "S";
+	/** Normalpost = NP */
+	public static final String DELIVERYVIARULE_Normalpost = "NP";
+	/** Luftpost = LU */
+	public static final String DELIVERYVIARULE_Luftpost = "LU";
 	@Override
 	public void setDeliveryViaRule (final @Nullable java.lang.String DeliveryViaRule)
 	{
@@ -600,6 +646,18 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	public java.lang.String getEMail() 
 	{
 		return get_ValueAsString(COLUMNNAME_EMail);
+	}
+
+	@Override
+	public void setExcludeFromPromotions (final boolean ExcludeFromPromotions)
+	{
+		set_Value (COLUMNNAME_ExcludeFromPromotions, ExcludeFromPromotions);
+	}
+
+	@Override
+	public boolean isExcludeFromPromotions() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_ExcludeFromPromotions);
 	}
 
 	@Override
@@ -793,6 +851,17 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	}
 
 	@Override
+	public void setIsAlbertaDoctor (final boolean IsAlbertaDoctor)
+	{
+		throw new IllegalArgumentException ("IsAlbertaDoctor is virtual column");	}
+
+	@Override
+	public boolean isAlbertaDoctor() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsAlbertaDoctor);
+	}
+
+	@Override
 	public void setIsAllowActionPrice (final boolean IsAllowActionPrice)
 	{
 		set_Value (COLUMNNAME_IsAllowActionPrice, IsAllowActionPrice);
@@ -814,6 +883,17 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	public boolean isAllowPriceMutation() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsAllowPriceMutation);
+	}
+
+	@Override
+	public void setIsArchived (final boolean IsArchived)
+	{
+		throw new IllegalArgumentException ("IsArchived is virtual column");	}
+
+	@Override
+	public boolean isArchived() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsArchived);
 	}
 
 	@Override
@@ -862,6 +942,18 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	public boolean isDiscountPrinted() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsDiscountPrinted);
+	}
+
+	@Override
+	public void setIsEdiDesadvRecipient (final boolean IsEdiDesadvRecipient)
+	{
+		set_Value (COLUMNNAME_IsEdiDesadvRecipient, IsEdiDesadvRecipient);
+	}
+
+	@Override
+	public boolean isEdiDesadvRecipient() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsEdiDesadvRecipient);
 	}
 
 	@Override
@@ -1174,6 +1266,21 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	}
 
 	@Override
+	public void setMKTG_Campaign_ID (final int MKTG_Campaign_ID)
+	{
+		if (MKTG_Campaign_ID < 1) 
+			set_Value (COLUMNNAME_MKTG_Campaign_ID, null);
+		else 
+			set_Value (COLUMNNAME_MKTG_Campaign_ID, MKTG_Campaign_ID);
+	}
+
+	@Override
+	public int getMKTG_Campaign_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_MKTG_Campaign_ID);
+	}
+
+	@Override
 	public void setM_PriceList_ID (final int M_PriceList_ID)
 	{
 		if (M_PriceList_ID < 1) 
@@ -1415,6 +1522,10 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	public static final String PO_DELIVERYVIARULE_Delivery = "D";
 	/** Shipper = S */
 	public static final String PO_DELIVERYVIARULE_Shipper = "S";
+	/** Normalpost = NP */
+	public static final String PO_DELIVERYVIARULE_Normalpost = "NP";
+	/** Luftpost = LU */
+	public static final String PO_DELIVERYVIARULE_Luftpost = "LU";
 	@Override
 	public void setPO_DeliveryViaRule (final @Nullable java.lang.String PO_DeliveryViaRule)
 	{
@@ -1452,6 +1563,49 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	public int getPO_DiscountSchema_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_PO_DiscountSchema_ID);
+	}
+
+	/** 
+	 * PO_Incoterm AD_Reference_ID=501599
+	 * Reference name: Incoterms
+	 */
+	public static final int PO_INCOTERM_AD_Reference_ID=501599;
+	/** EXW_AbWerk = EXW */
+	public static final String PO_INCOTERM_EXW_AbWerk = "EXW";
+	/** FCA_FreiSpediteur = FCA */
+	public static final String PO_INCOTERM_FCA_FreiSpediteur = "FCA";
+	/** FAS_FreiLaengsseitsSchiff = FAS */
+	public static final String PO_INCOTERM_FAS_FreiLaengsseitsSchiff = "FAS";
+	/** FOB_FreiAnBord = FOB */
+	public static final String PO_INCOTERM_FOB_FreiAnBord = "FOB";
+	/** CFR_KostenUndFracht = CFR */
+	public static final String PO_INCOTERM_CFR_KostenUndFracht = "CFR";
+	/** CIF_KostenVersicherungUndFracht = CIF */
+	public static final String PO_INCOTERM_CIF_KostenVersicherungUndFracht = "CIF";
+	/** CPT_FrachtPortoBezahltBis = CPT */
+	public static final String PO_INCOTERM_CPT_FrachtPortoBezahltBis = "CPT";
+	/** CIP_FrachtPortoUndVersicherungBezahltBis = CIP */
+	public static final String PO_INCOTERM_CIP_FrachtPortoUndVersicherungBezahltBis = "CIP";
+	/** DAF_FreiGrenze = DAF */
+	public static final String PO_INCOTERM_DAF_FreiGrenze = "DAF";
+	/** DES_FreiAbSchiff = DES */
+	public static final String PO_INCOTERM_DES_FreiAbSchiff = "DES";
+	/** DEQ_FreiAbKai = DEQ */
+	public static final String PO_INCOTERM_DEQ_FreiAbKai = "DEQ";
+	/** DDU_FreiUnverzollt = DDU */
+	public static final String PO_INCOTERM_DDU_FreiUnverzollt = "DDU";
+	/** DDP_Verzollt = DDP */
+	public static final String PO_INCOTERM_DDP_Verzollt = "DDP";
+	@Override
+	public void setPO_Incoterm (final @Nullable java.lang.String PO_Incoterm)
+	{
+		set_Value (COLUMNNAME_PO_Incoterm, PO_Incoterm);
+	}
+
+	@Override
+	public java.lang.String getPO_Incoterm() 
+	{
+		return get_ValueAsString(COLUMNNAME_PO_Incoterm);
 	}
 
 	@Override
@@ -1605,6 +1759,18 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	public java.lang.String getReferenceNo() 
 	{
 		return get_ValueAsString(COLUMNNAME_ReferenceNo);
+	}
+
+	@Override
+	public void setReferrer (final @Nullable java.lang.String Referrer)
+	{
+		set_Value (COLUMNNAME_Referrer, Referrer);
+	}
+
+	@Override
+	public java.lang.String getReferrer() 
+	{
+		return get_ValueAsString(COLUMNNAME_Referrer);
 	}
 
 	@Override
@@ -1850,6 +2016,17 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	public java.lang.String getTaxID() 
 	{
 		return get_ValueAsString(COLUMNNAME_TaxID);
+	}
+
+	@Override
+	public void setTitleShort (final @Nullable java.lang.String TitleShort)
+	{
+		throw new IllegalArgumentException ("TitleShort is virtual column");	}
+
+	@Override
+	public java.lang.String getTitleShort() 
+	{
+		return get_ValueAsString(COLUMNNAME_TitleShort);
 	}
 
 	@Override

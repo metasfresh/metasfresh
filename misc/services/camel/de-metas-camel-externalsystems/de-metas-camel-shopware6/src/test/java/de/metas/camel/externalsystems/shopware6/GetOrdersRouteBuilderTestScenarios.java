@@ -23,6 +23,7 @@
 package de.metas.camel.externalsystems.shopware6;
 
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
+import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
@@ -30,6 +31,7 @@ import org.apache.camel.builder.AdviceWith;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.test.junit5.CamelTestSupport;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import java.io.IOException;
 import java.util.Properties;
@@ -63,7 +65,7 @@ public class GetOrdersRouteBuilderTestScenarios extends CamelTestSupport
 	@Override
 	protected RouteBuilder createRouteBuilder()
 	{
-		return new GetOrdersRouteBuilder();
+		return new GetOrdersRouteBuilder(Mockito.mock(ProcessLogger.class));
 	}
 
 	@Override

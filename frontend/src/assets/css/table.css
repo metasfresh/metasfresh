@@ -804,9 +804,9 @@ $indent-collapsible-offset-lg: 24px;
 }
 
 .table-cell-label-wrapper {
-  float: left;
+    float: left;
 }
 .table-cell-label-show-more {
-  float: left;
-  width: 10%;
+    float: left;
+    width: 10%;
 }

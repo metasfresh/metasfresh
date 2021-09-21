@@ -66,8 +66,8 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
           }
         },
         "baseLanguage" : true,
-        "leftToRight" : true,
-        "decimalPoint" : false
+        "decimalPoint" : false,
+        "leftToRight" : true
       },
       "url" : "bPartner.url",
       "groupId" : 15,
@@ -97,7 +97,8 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
         },
         "entries" : [ ]
       },
-      "identifiedByExternalReference" : false
+      "identifiedByExternalReference" : false,
+      "excludeFromPromotions" : false
     },
     "contacts" : [
       {
@@ -152,10 +153,6 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
           "shipToDefault" : {
             "value" : false,
             "present" : true
-          },
-          "subjectMatter" : {
-            "value" : false,
-            "present" : true
           }
         },
         "email" : "c1_email@email.net",
@@ -165,9 +162,11 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
           "bpartnerId" : 100012,
           "userId" : 100017
         },
+        "membershipContact" : false,
         "name" : "c1_name",
         "newsletter" : false,
         "phone" : "c1_phone",
+        "subjectMatterContact" : false,
         "roles" : [ ]
       },
       {
@@ -222,10 +221,6 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
           "shipToDefault" : {
             "value" : false,
             "present" : true
-          },
-          "subjectMatter" : {
-            "value" : false,
-            "present" : true
           }
         },
         "email" : "c2_email@email.net",
@@ -235,9 +230,11 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
           "bpartnerId" : 100012,
           "userId" : 100018
         },
+        "membershipContact" : false,
         "name" : "c2_name",
         "newsletter" : false,
         "phone" : "c2_phone",
+        "subjectMatterContact" : false,
         "roles" : [ ]
       }
     ],
@@ -270,6 +267,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
         },
         "city" : "l1_city",
         "countryCode" : "CH",
+        "existingLocationId" : 100013,
         "externalId" : "l1_externalId",
         "gln" : "l1_gln",
         "handles" : [ ],
@@ -327,6 +325,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
         },
         "city" : "l2_city",
         "countryCode" : "DE",
+        "existingLocationId" : 100015,
         "externalId" : "l2_externalId",
         "gln" : "l2_gln",
         "handles" : [ ],
@@ -430,7 +429,8 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateContact_c
         },
         "entries" : [ ]
       },
-      "identifiedByExternalReference" : false
+      "identifiedByExternalReference" : false,
+      "excludeFromPromotions" : false
     },
     "contacts" : [
       {
@@ -485,10 +485,6 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateContact_c
           "shipToDefault" : {
             "value" : false,
             "present" : true
-          },
-          "subjectMatter" : {
-            "value" : false,
-            "present" : true
           }
         },
         "email" : "contactRecord.email",
@@ -500,9 +496,11 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateContact_c
           "userId" : 30
         },
         "lastName" : "contactRecord.lastName",
+        "membershipContact" : false,
         "name" : "contactRecord.name",
         "newsletter" : false,
         "phone" : "contactRecord.phone",
+        "subjectMatterContact" : false,
         "roles" : [ ],
         "value" : "contactRecord.value"
       },
@@ -558,10 +556,6 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateContact_c
           "shipToDefault" : {
             "value" : false,
             "present" : true
-          },
-          "subjectMatter" : {
-            "value" : false,
-            "present" : true
           }
         },
         "email" : "newContact-_email@email.net",
@@ -571,10 +565,12 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateContact_c
           "bpartnerId" : 20,
           "userId" : 100010
         },
+        "membershipContact" : false,
         "name" : "newContact-_name",
         "newsletter" : false,
         "phone" : "newContact-_phone",
-        "roles" : [ ]
+        "subjectMatterContact" : false,
+        "roles" : [ ]        
       }
     ],
     "locations" : [
@@ -607,6 +603,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateContact_c
         "city" : "locationRecord.city",
         "countryCode" : "countryRecord.countryCode",
         "district" : "postalRecord.district",
+        "existingLocationId" : 100008,
         "externalId" : "bpartnerLocation.externalId",
         "gln" : "bpartnerLocationRecord.gln",
         "handles" : [ ],
@@ -710,7 +707,8 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
         },
         "entries" : [ ]
       },
-      "identifiedByExternalReference" : false
+      "identifiedByExternalReference" : false,
+      "excludeFromPromotions" : false
     },
     "contacts" : [
       {
@@ -765,10 +763,6 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
           "shipToDefault" : {
             "value" : false,
             "present" : true
-          },
-          "subjectMatter" : {
-            "value" : false,
-            "present" : true
           }
         },
         "email" : "contactRecord.email",
@@ -780,10 +774,12 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
           "userId" : 30
         },
         "lastName" : "contactRecord.lastName",
+        "membershipContact" : false,
         "name" : "jsonContact.name-UPDATED",
         "newsletter" : false,
         "phone" : "contactRecord.phone",
-        "roles" : [ ],
+        "subjectMatterContact" : false,
+		"roles" : [ ],        
         "value" : "contactRecord.value"
       }
     ],
@@ -817,6 +813,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
         "city" : "locationRecord.city",
         "countryCode" : "countryRecord.countryCode",
         "district" : "postalRecord.district",
+        "existingLocationId" : 100008,
         "externalId" : "bpartnerLocation.externalId",
         "gln" : "bpartnerLocationRecord.gln",
         "handles" : [ ],
@@ -920,7 +917,8 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
         },
         "entries" : [ ]
       },
-      "identifiedByExternalReference" : false
+      "identifiedByExternalReference" : false,
+      "excludeFromPromotions" : false
     },
     "contacts" : [
       {
@@ -975,10 +973,6 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
           "shipToDefault" : {
             "value" : false,
             "present" : true
-          },
-          "subjectMatter" : {
-            "value" : false,
-            "present" : true
           }
         },
         "email" : "contactRecord.email",
@@ -990,10 +984,12 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
           "userId" : 30
         },
         "lastName" : "contactRecord.lastName",
+        "membershipContact" : false,
         "name" : "jsonContact.name-UPDATED",
         "newsletter" : false,
         "phone" : "contactRecord.phone",
-        "roles" : [ ],
+        "subjectMatterContact" : false,
+        "roles" : [ ],        
         "value" : "contactRecord.value"
       }
     ],
@@ -1027,6 +1023,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
         "city" : "locationRecord.city",
         "countryCode" : "countryRecord.countryCode",
         "district" : "postalRecord.district",
+        "existingLocationId" : 100008,
         "externalId" : "bpartnerLocation.externalId",
         "gln" : "bpartnerLocationRecord.gln",
         "handles" : [ ],
@@ -1130,7 +1127,8 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
         },
         "entries" : [ ]
       },
-      "identifiedByExternalReference" : false
+      "identifiedByExternalReference" : false,
+      "excludeFromPromotions" : false
     },
     "contacts" : [
       {
@@ -1185,10 +1183,6 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
           "shipToDefault" : {
             "value" : false,
             "present" : true
-          },
-          "subjectMatter" : {
-            "value" : false,
-            "present" : true
           }
         },
         "email" : "contactRecord.email",
@@ -1200,10 +1194,12 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
           "userId" : 30
         },
         "lastName" : "contactRecord.lastName",
+        "membershipContact" : false,
         "name" : "contactRecord.name",
         "newsletter" : false,
         "phone" : "contactRecord.phone",
-        "roles" : [ ],
+        "subjectMatterContact" : false,
+        "roles" : [ ],        
         "value" : "contactRecord.value"
       }
     ],
@@ -1237,6 +1233,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
         "city" : "locationRecord.city",
         "countryCode" : "countryRecord.countryCode",
         "district" : "postalRecord.district",
+        "existingLocationId" : 100008,
         "externalId" : "bpartnerLocation.externalId",
         "gln" : "bpartnerLocationRecord.gln",
         "handles" : [ ],
@@ -1294,6 +1291,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
         },
         "city" : "newLocation-_city",
         "countryCode" : "DE",
+        "existingLocationId" : 100011,
         "externalId" : "newLocation-_externalId",
         "gln" : "newLocation-_gln",
         "handles" : [ ],

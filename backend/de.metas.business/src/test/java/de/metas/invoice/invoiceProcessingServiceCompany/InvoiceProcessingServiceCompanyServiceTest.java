@@ -96,7 +96,7 @@ import java.util.Set;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 @ExtendWith(AdempiereTestWatcher.class)
 public class InvoiceProcessingServiceCompanyServiceTest
@@ -136,6 +136,7 @@ public class InvoiceProcessingServiceCompanyServiceTest
 					.feePercentageOfGrandTotal("2")
 					.customerId(BPartnerId.ofRepoId(2))
 					.validFrom(LocalDate.parse("2020-04-30").atStartOfDay(ZoneId.of("UTC+5")))
+					.docTypeId(DocTypeId.ofRepoId(4))
 					.build();
 
 			final Optional<InvoiceProcessingFeeCalculation> result = invoiceProcessingServiceCompanyService.computeFee(InvoiceProcessingFeeComputeRequest.builder()
@@ -143,6 +144,7 @@ public class InvoiceProcessingServiceCompanyServiceTest
 					.evaluationDate(LocalDate.parse("2020-04-30").atStartOfDay(ZoneId.of("UTC+5")))
 					.customerId(BPartnerId.ofRepoId(2))
 					.invoiceId(InvoiceId.ofRepoId(3))
+					.docTypeId(DocTypeId.ofRepoId(4))
 					.invoiceGrandTotal(Amount.of(100, CurrencyCode.EUR))
 					.build());
 
@@ -163,6 +165,29 @@ public class InvoiceProcessingServiceCompanyServiceTest
 		}
 
 		@Test
+		public void invoiceDocTypeDifferentThanAllConfigTargetDocType()
+		{
+			config()
+					.feePercentageOfGrandTotal("2")
+					.customerId(BPartnerId.ofRepoId(2))
+					.validFrom(LocalDate.parse("2020-04-30").atStartOfDay(ZoneId.of("UTC+5")))
+					.docTypeId(DocTypeId.ofRepoId(4))
+					.build();
+
+			final Optional<InvoiceProcessingFeeCalculation> result = invoiceProcessingServiceCompanyService.computeFee(InvoiceProcessingFeeComputeRequest.builder()
+					.orgId(OrgId.ofRepoId(1))
+					.evaluationDate(LocalDate.parse("2020-04-30").atStartOfDay(ZoneId.of("UTC+5")))
+					.customerId(BPartnerId.ofRepoId(2))
+					.invoiceId(InvoiceId.ofRepoId(3))
+					.docTypeId(DocTypeId.ofRepoId(3))
+					.invoiceGrandTotal(Amount.of(100, CurrencyCode.EUR))
+					.build());
+
+			assertThat(result.isPresent()).isFalse();
+
+		}
+
+		@Test
 		public void alreadyExistingServiceFeeInvoice()
 		{
 			// create the config just to make sure that's not the case for not computing the fee
@@ -170,6 +195,7 @@ public class InvoiceProcessingServiceCompanyServiceTest
 					.feePercentageOfGrandTotal("2")
 					.customerId(BPartnerId.ofRepoId(2))
 					.validFrom(LocalDate.parse("2020-04-30").atStartOfDay(ZoneId.of("UTC+5")))
+					.docTypeId(DocTypeId.ofRepoId(4))
 					.build();
 
 			final I_C_Invoice serviceFeeInvoice = newInstance(I_C_Invoice.class);
@@ -182,6 +208,7 @@ public class InvoiceProcessingServiceCompanyServiceTest
 					.evaluationDate(LocalDate.parse("2020-04-30").atStartOfDay(ZoneId.of("UTC+5")))
 					.customerId(BPartnerId.ofRepoId(2))
 					.invoiceId(InvoiceId.ofRepoId(3))
+					.docTypeId(DocTypeId.ofRepoId(4))
 					.invoiceGrandTotal(Amount.of(100, CurrencyCode.EUR))
 					.build());
 
@@ -196,6 +223,7 @@ public class InvoiceProcessingServiceCompanyServiceTest
 					.feePercentageOfGrandTotal("2")
 					.customerId(BPartnerId.ofRepoId(2))
 					.validFrom(LocalDate.parse("2020-04-30").atStartOfDay(ZoneId.of("UTC+5")))
+					.docTypeId(DocTypeId.ofRepoId(4))
 					.build();
 
 			final Optional<InvoiceProcessingFeeCalculation> result = invoiceProcessingServiceCompanyService.computeFee(InvoiceProcessingFeeComputeRequest.builder()
@@ -203,6 +231,7 @@ public class InvoiceProcessingServiceCompanyServiceTest
 					.evaluationDate(LocalDate.parse("2020-04-30").atStartOfDay(ZoneId.of("UTC+5")))
 					.customerId(BPartnerId.ofRepoId(2))
 					.invoiceId(InvoiceId.ofRepoId(3))
+					.docTypeId(DocTypeId.ofRepoId(4))
 					.invoiceGrandTotal(Amount.of(100, CurrencyCode.EUR))
 					.serviceInvoiceWasAlreadyGenerated(OptionalBoolean.TRUE)
 					.build());
@@ -218,6 +247,7 @@ public class InvoiceProcessingServiceCompanyServiceTest
 					.feePercentageOfGrandTotal("2")
 					.customerId(BPartnerId.ofRepoId(99999999))
 					.validFrom(LocalDate.parse("2020-04-30").atStartOfDay(ZoneId.of("UTC+5")))
+					.docTypeId(DocTypeId.ofRepoId(4))
 					.build();
 
 			final Optional<InvoiceProcessingFeeCalculation> result = invoiceProcessingServiceCompanyService.computeFee(InvoiceProcessingFeeComputeRequest.builder()
@@ -225,6 +255,7 @@ public class InvoiceProcessingServiceCompanyServiceTest
 					.evaluationDate(LocalDate.parse("2020-04-30").atStartOfDay(ZoneId.of("UTC+5")))
 					.customerId(BPartnerId.ofRepoId(2))
 					.invoiceId(InvoiceId.ofRepoId(3))
+					.docTypeId(DocTypeId.ofRepoId(4))
 					.invoiceGrandTotal(Amount.of(100, CurrencyCode.EUR))
 					.build());
 
@@ -238,6 +269,7 @@ public class InvoiceProcessingServiceCompanyServiceTest
 					.feePercentageOfGrandTotal("2")
 					.customerId(BPartnerId.ofRepoId(2))
 					.validFrom(LocalDate.parse("3020-04-30").atStartOfDay(ZoneId.of("UTC+5")))
+					.docTypeId(DocTypeId.ofRepoId(4))
 					.build();
 
 			final Optional<InvoiceProcessingFeeCalculation> result = invoiceProcessingServiceCompanyService.computeFee(InvoiceProcessingFeeComputeRequest.builder()
@@ -245,6 +277,7 @@ public class InvoiceProcessingServiceCompanyServiceTest
 					.evaluationDate(LocalDate.parse("2020-04-30").atStartOfDay(ZoneId.of("UTC+5")))
 					.customerId(BPartnerId.ofRepoId(2))
 					.invoiceId(InvoiceId.ofRepoId(3))
+					.docTypeId(DocTypeId.ofRepoId(4))
 					.invoiceGrandTotal(Amount.of(100, CurrencyCode.EUR))
 					.build());
 
@@ -364,7 +397,7 @@ public class InvoiceProcessingServiceCompanyServiceTest
 		private void assertCorrectConfigReturned(final BPartnerId bpartnerId, final String localDate, final int percentValue)
 		{
 			assertThat(configRepository.getByCustomerId(bpartnerId, LocalDate.parse(localDate).atStartOfDay(ZoneId.of("UTC+5"))))
-					.hasValueSatisfying(config -> assertThat(config.getFeePercentageOfGrandTotalByBpartner(bpartnerId)).hasValue(Percent.of(percentValue)));
+					.hasValueSatisfying(config -> assertThat(config.getFeePercentageOfGrandTotalByBpartner(bpartnerId, null)).hasValue(Percent.of(percentValue)));
 		}
 
 		private void assertCorrectConfigByValidFrom(final BPartnerId bpartnerId, final String localDate, final String expectedValidFrom)
@@ -598,7 +631,8 @@ public class InvoiceProcessingServiceCompanyServiceTest
 	private void createConfig(
 			@NonNull final String feePercentageOfGrandTotal,
 			@NonNull @Singular final Set<BPartnerId> customerIds,
-			@NonNull final ZonedDateTime validFrom)
+			@NonNull final ZonedDateTime validFrom,
+			@Nullable final DocTypeId docTypeId)
 	{
 		Check.assumeNotEmpty(customerIds, "customerIds is not empty");
 
@@ -616,6 +650,12 @@ public class InvoiceProcessingServiceCompanyServiceTest
 			assignmentRecord.setIsActive(true);
 			assignmentRecord.setInvoiceProcessingServiceCompany_ID(configRecord.getInvoiceProcessingServiceCompany_ID());
 			assignmentRecord.setC_BPartner_ID(customerId.getRepoId());
+
+			if(docTypeId != null)
+			{
+				assignmentRecord.setC_DocType_ID(docTypeId.getRepoId());
+			}
+
 			assignmentRecord.setFeePercentageOfGrandTotal(new BigDecimal(feePercentageOfGrandTotal));
 			saveRecord(assignmentRecord);
 

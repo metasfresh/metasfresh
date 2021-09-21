@@ -1,10 +1,12 @@
 package de.metas.monitoring.adapter;
 
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.function.BiConsumer;
 import javax.annotation.Nullable;
 
+import com.google.common.collect.ImmutableSet;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -35,10 +37,16 @@ import lombok.Value;
 
 public interface PerformanceMonitoringService
 {
+	public static final String LABEL_RECORD_ID = "recordId";
+	public static final String LABEL_EXTERNAL_HEADER_ID = "externalHeaderId";
+	public static final String LABEL_EXTERNAL_LINE_ID = "externalLineId";
+	public static final String LABEL_WORKPACKAGE_ID = "de.metas.async.C_Queue_WorkPackage_ID";
+	public static final Set<String> VOLATILE_LABELS = ImmutableSet.of(LABEL_RECORD_ID, LABEL_EXTERNAL_LINE_ID, LABEL_EXTERNAL_HEADER_ID, LABEL_WORKPACKAGE_ID);
+	
 	/** Invoke the given {@code callable} as a span. Capture exception and re-throw it, wrapped as RuntimeException if required. */
 	<V> V monitorSpan(Callable<V> callable, SpanMetadata metadata);
 
-	default void monitorSpan(Runnable runnable, SpanMetadata metadata)
+	default void monitorSpan(final Runnable runnable, final SpanMetadata metadata)
 	{
 		monitorSpan(
 				() -> {
@@ -47,10 +55,10 @@ public interface PerformanceMonitoringService
 				},
 				metadata);
 	}
-
+	
 	@Value
 	@Builder
-	public static class SpanMetadata
+	class SpanMetadata
 	{
 		@NonNull
 		String name;
@@ -88,7 +96,7 @@ public interface PerformanceMonitoringService
 
 	@Value
 	@Builder
-	public static class TransactionMetadata
+	class TransactionMetadata
 	{
 		@NonNull
 		String name;
@@ -103,7 +111,7 @@ public interface PerformanceMonitoringService
 		Map<String, String> distributedTransactionHeaders;
 	}
 
-	public enum Type
+	enum Type
 	{
 		MODEL_INTERCEPTOR("modelInterceptor"),
 
@@ -119,16 +127,16 @@ public interface PerformanceMonitoringService
 
 		EVENTBUS_REMOTE_ENDPOINT("eventbus-remote-endpoint");
 
-		private Type(String code)
+		Type(final String code)
 		{
 			this.code = code;
 		}
 
 		@Getter
-		private String code;
+		private final String code;
 	}
 
-	public enum SubType
+	enum SubType
 	{
 		MODEL_CHANGE("modelChange"),
 
@@ -142,12 +150,12 @@ public interface PerformanceMonitoringService
 
 		EVENT_RECEIVE("event-receive");
 
-		private SubType(String code)
+		SubType(final String code)
 		{
 			this.code = code;
 		}
 
 		@Getter
-		private String code;
+		private final String code;
 	}
 }

@@ -33,6 +33,7 @@ import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.ZonedDateTime;
@@ -241,12 +242,29 @@ public class DataTableUtil
 					.setParameter("dataTableRow", dataTableRow);
 		}
 	}
+
+	@NonNull
 	public static BigDecimal extractBigDecimalForColumnName(final Map<String, String> dataTableRow, final String columnName)
 	{
 		final String string = extractStringForColumnName(dataTableRow, columnName);
 		try
 		{
 			return new BigDecimal(string);
+		}
+		catch (final NumberFormatException e)
+		{
+			throw new AdempiereException("Can't parse value=" + string + " of columnName=" + columnName, e).appendParametersToMessage()
+					.setParameter("dataTableRow", dataTableRow);
+		}
+	}
+
+	@NonNull
+	public static BigDecimal extractBigDecimalWithScaleForColumnName(final Map<String, String> dataTableRow, final String columnName)
+	{
+		final String string = extractStringForColumnName(dataTableRow, columnName);
+		try
+		{
+			return new BigDecimal(string).setScale(2, RoundingMode.HALF_UP);
 		}
 		catch (final NumberFormatException e)
 		{

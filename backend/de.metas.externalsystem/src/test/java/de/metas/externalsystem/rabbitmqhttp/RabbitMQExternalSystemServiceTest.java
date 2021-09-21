@@ -32,6 +32,7 @@ import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_RabbitMQ_HTTP;
+import de.metas.externalsystem.other.ExternalSystemOtherConfigRepository;
 import de.metas.externalsystem.rabbitmq.ExternalSystemMessageSender;
 import de.metas.organization.OrgId;
 import de.metas.process.PInstanceId;
@@ -64,11 +65,10 @@ public class RabbitMQExternalSystemServiceTest
 	{
 		AdempiereTestHelper.get().init();
 
-		rabbitMQExternalSystemService = new RabbitMQExternalSystemService(new ExternalSystemConfigRepo(),
+		rabbitMQExternalSystemService = new RabbitMQExternalSystemService(new ExternalSystemConfigRepo(new ExternalSystemOtherConfigRepository()),
 																		  new ExternalSystemMessageSender(new RabbitTemplate(), new Queue(QUEUE_NAME_MF_TO_ES)),
 																		  new DataExportAuditLogRepository(),
-																		  new DataExportAuditRepository(),
-																		  new ExternalSystemConfigRepo());
+																		  new DataExportAuditRepository());
 
 		createPrerequisites();
 

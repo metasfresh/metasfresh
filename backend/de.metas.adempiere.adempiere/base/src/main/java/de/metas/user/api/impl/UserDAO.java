@@ -1,9 +1,11 @@
 package de.metas.user.api.impl;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.OrgMappingId;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.i18n.AdMessageKey;
 import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
 import de.metas.user.UserId;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Check;
@@ -24,6 +26,7 @@ import javax.annotation.Nullable;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
@@ -54,6 +57,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 public class UserDAO implements IUserDAO
 {
 	private static final transient Logger logger = LogManager.getLogger(UserDAO.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final AdMessageKey MSG_MailOrUsernameNotFound = AdMessageKey.of("MailOrUsernameNotFound");
 
@@ -112,7 +116,7 @@ public class UserDAO implements IUserDAO
 	@Cached(cacheName = org.compiere.model.I_AD_User.Table_Name)
 	public org.compiere.model.I_AD_User retrieveUserOrNull(@CacheCtx final Properties ctx, final int adUserId)
 	{
-		return Services.get(IQueryBL.class)
+		return queryBL
 				.createQueryBuilder(I_AD_User.class, ctx, ITrx.TRXNAME_None)
 				.addEqualsFilter(org.compiere.model.I_AD_User.COLUMNNAME_AD_User_ID, adUserId)
 				.create()
@@ -281,4 +285,37 @@ public class UserDAO implements IUserDAO
 	{
 		InterfaceWrapperHelper.save(user);
 	}
+
+	@Override
+	public Optional<I_AD_User> getCounterpartUser(
+			@NonNull final UserId sourceUserId,
+			@NonNull final OrgId targetOrgId)
+	{
+		final OrgMappingId orgMappingId = getOrgMappingId(sourceUserId).orElse(null);
+		if(orgMappingId == null)
+		{
+			return Optional.empty();
+		}
+
+		final UserId targetUserId = queryBL.createQueryBuilder(I_AD_User.class)
+				.addEqualsFilter(I_AD_User.COLUMNNAME_AD_Org_Mapping_ID, orgMappingId)
+				.addEqualsFilter(I_AD_User.COLUMNNAME_AD_Org_ID, targetOrgId)
+				.orderByDescending(I_AD_User.COLUMNNAME_AD_User_ID)
+				.create()
+				.firstId(UserId::ofRepoIdOrNull);
+
+		if(targetUserId == null)
+		{
+			return Optional.empty();
+		}
+
+		return Optional.of(getById(targetUserId));
+	}
+
+	private Optional<OrgMappingId> getOrgMappingId(@NonNull final UserId sourceUserId)
+	{
+		final I_AD_User sourceUserRecord = getById(sourceUserId);
+		return OrgMappingId.optionalOfRepoId(sourceUserRecord.getAD_Org_Mapping_ID());
+	}
+
 }

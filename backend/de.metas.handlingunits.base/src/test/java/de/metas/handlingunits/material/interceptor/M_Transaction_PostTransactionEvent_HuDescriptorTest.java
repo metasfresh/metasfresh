@@ -131,7 +131,6 @@ public class M_Transaction_PostTransactionEvent_HuDescriptorTest
 
 		assertThat(huDescriptor.getHuId()).isEqualTo(huPalets.get(0).getM_HU_ID()); // within the palet, everything is homogenous, that's why we expect the palet's ID (and not e.g. the IFCO's).
 		assertThat(huDescriptor.getQuantity()).isEqualByComparingTo(TOTAL_CU_QTY);
-		assertThat(huDescriptor.getQuantityDelta()).isEqualByComparingTo(TOTAL_CU_QTY);
 
 		final ProductDescriptor productDescriptor = huDescriptor.getProductDescriptor();
 

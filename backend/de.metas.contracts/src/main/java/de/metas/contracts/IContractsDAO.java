@@ -22,18 +22,17 @@ package de.metas.contracts;
  * #L%
  */
 
-
-import java.math.BigDecimal;
-import java.util.List;
-
-import org.adempiere.ad.dao.IQueryBuilder;
-
 import de.metas.bpartner.BPartnerId;
+import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_SubscriptionProgress;
 import de.metas.order.OrderId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBuilder;
+
+import java.math.BigDecimal;
+import java.util.List;
 
 public interface IContractsDAO extends ISingletonService
 {
@@ -70,4 +69,7 @@ public interface IContractsDAO extends ISingletonService
 
 	I_C_Flatrate_Term retrieveLatestFlatrateTermForBPartnerId(BPartnerId bpartnerId);
 
+	I_C_Flatrate_Term retrieveFirstFlatrateTermForBPartnerId(BPartnerId bpartnerId);
+
+	<T extends I_C_Flatrate_Conditions> T getConditionsById(ConditionsId conditionsId, Class<T> modelClass);
 }

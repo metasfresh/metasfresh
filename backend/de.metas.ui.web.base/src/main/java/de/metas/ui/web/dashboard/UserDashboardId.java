@@ -29,6 +29,7 @@ import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.util.Objects;
 
 @Value
 public class UserDashboardId implements RepoIdAware
@@ -63,4 +64,6 @@ public class UserDashboardId implements RepoIdAware
 	{
 		return id != null ? id.getRepoId() : -1;
 	}
+
+	public static boolean equals(@Nullable final UserDashboardId id1, @Nullable final UserDashboardId id2) { return Objects.equals(id1, id2); }
 }

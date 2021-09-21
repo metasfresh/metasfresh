@@ -29,6 +29,7 @@ import de.metas.audit.apirequest.request.ApiRequestAuditRepository;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.util.EmptyUtil;
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.util.Services;
 import de.metas.util.web.audit.ApiRequestReplayService;
@@ -37,7 +38,6 @@ import io.cucumber.java.en.And;
 import io.cucumber.java.en.When;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
@@ -61,12 +61,16 @@ public class ApiAuditFilter_StepDef
 	private final ApiRequestAuditRepository apiRequestAuditRepository = SpringContextHolder.instance.getBean(ApiRequestAuditRepository.class);
 	private final ApiRequestReplayService apiRequestReplayService = SpringContextHolder.instance.getBean(ApiRequestReplayService.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
 	private final TestContext testContext;
+	private final StepDefData<I_API_Audit_Config> apiAuditConfigTable;
 
-	public ApiAuditFilter_StepDef(final TestContext testContext)
+
+	public ApiAuditFilter_StepDef(
+			@NonNull final TestContext testContext,
+			@NonNull final StepDefData<I_API_Audit_Config> apiAuditConfigTable)
 	{
 		this.testContext = testContext;
+		this.apiAuditConfigTable = apiAuditConfigTable;
 	}
 
 	@And("all the API audit data is reset")
@@ -81,24 +85,25 @@ public class ApiAuditFilter_StepDef
 	@And("the following API_Audit_Config record is set")
 	public void API_Audit_Config_insert(@NonNull final DataTable table)
 	{
-		final List<Map<String, String>> dataTable = table.asMaps();
-		for (final Map<String, String> row : dataTable)
+		final List<Map<String, String>> tableRows = table.asMaps();
+		for (final Map<String, String> tableRow : tableRows)
 		{
-			final int id = DataTableUtil.extractIntForColumnName(row, "API_Audit_Config_ID");
-			final int seqNo = DataTableUtil.extractIntForColumnName(row, "SeqNo");
-			final String method = DataTableUtil.extractStringOrNullForColumnName(row, "OPT.Method");
-			final String pathPrefix = DataTableUtil.extractStringOrNullForColumnName(row, "OPT.PathPrefix");
-			final boolean isInvokerWaitsForResult = DataTableUtil.extractBooleanForColumnNameOr(row, "IsInvokerWaitsForResult", false);
+			final int seqNo = DataTableUtil.extractIntForColumnName(tableRow, "SeqNo");
+			final String method = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT.Method");
+			final String pathPrefix = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT.PathPrefix");
+			final boolean isInvokerWaitsForResult = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "IsInvokerWaitsForResult", false);
 
 			final I_API_Audit_Config auditConfig = InterfaceWrapperHelper.newInstance(I_API_Audit_Config.class);
 
-			auditConfig.setAPI_Audit_Config_ID(id);
 			auditConfig.setSeqNo(seqNo);
 			auditConfig.setMethod(method);
 			auditConfig.setPathPrefix(pathPrefix);
 			auditConfig.setIsInvokerWaitsForResult(isInvokerWaitsForResult);
 
 			saveRecord(auditConfig);
+
+			final String recordIdentifier = DataTableUtil.extractRecordIdentifier(tableRow, "API_Audit_Config");
+			apiAuditConfigTable.put(recordIdentifier, auditConfig);
 		}
 	}
 
