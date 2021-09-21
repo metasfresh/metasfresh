@@ -39,8 +39,8 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 @Service
 public class ApiAuditCleanUpService
@@ -66,7 +66,7 @@ public class ApiAuditCleanUpService
 
 	public void deleteProcessedRequests()
 	{
-		final List<ApiRequestAudit> processedApiRequests = apiRequestAuditRepository.getAllProcessedRequests();
+		final Stream<ApiRequestAudit> processedApiRequests = apiRequestAuditRepository.getAllProcessedRequests();
 
 		if (Check.isEmpty(processedApiRequests))
 		{
@@ -76,7 +76,6 @@ public class ApiAuditCleanUpService
 		final ApiAuditConfigShortTimeIndex apiAuditConfigShortTimeIndex = new ApiAuditConfigShortTimeIndex(apiAuditConfigRepository);
 
 		processedApiRequests
-				.stream()
 				.filter(request -> isReadyForCleanup(request, apiAuditConfigShortTimeIndex))
 				.forEach(this::deleteProcessedRequestInTrx);
 	}
