@@ -5,6 +5,7 @@ import de.metas.adempiere.service.IColumnBL;
 import de.metas.elasticsearch.IESSystem;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.logging.LogManager;
+import de.metas.reflist.ReferenceId;
 import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
 import de.metas.ui.web.process.ProcessId;
 import de.metas.ui.web.session.WebRestApiContextProvider;
@@ -820,6 +821,7 @@ import java.util.Set;
 				.labelsValueColumnName(labelsValueColumnName)
 				.labelsValuesLookupDescriptor(labelsValuesLookupDescriptor)
 				.labelsLinkColumnName(labelsLinkColumnName)
+				.labelsValueReferenceId(ReferenceId.ofRepoIdOrNull(referenceValueIDToUse))
 				.tableName(tableName)
 				.linkColumnName(linkColumnName)
 				.build();
