@@ -32,6 +32,7 @@ import de.metas.common.rest_api.v1.JsonError;
 import de.metas.common.rest_api.v1.JsonErrorItem;
 import de.metas.common.rest_api.v2.JsonApiResponse;
 import de.metas.common.util.Check;
+import de.metas.common.util.StringUtils;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
@@ -225,7 +226,7 @@ public class ErrorReportRouteBuilder extends RouteBuilder
 						.append(apiRequestId)
 						.append(";"));
 
-		logMessageBuilder.append(" Error: ").append(errorItem);
+		logMessageBuilder.append(" Error: ").append(StringUtils.removeCRLF(errorItem.toString()));
 
 		final LogMessageRequest logMessageRequest = LogMessageRequest.builder()
 				.logMessage(logMessageBuilder.toString())
