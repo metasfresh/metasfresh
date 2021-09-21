@@ -1,4 +1,4 @@
-// import { store } from './store/store';
+// import { globalStore } from './index';
 // import { networkStatusOffline, networkStatusOnline } from './actions/NetworkActions';
 
 /* eslint-disable no-restricted-globals */
@@ -79,14 +79,16 @@ self.addEventListener('fetch', (e) => {
       caches.match(e.request).then(function(response) {
           if (response) {
               console.log('[ServiceWorker] -> Retrieving from cache...');
+              //globalStore.dispatch(networkStatusOffline())
               return response;
           }
           console.log('[ServiceWorker] Retrieving from URL...');
-          // store.dispatch(networkStatusOffline())
+          // store().dispatch(networkStatusOffline())
           return fetch(e.request).catch(function (e) {
              /** You can check what e contains aso for further customize */
-             // store.dispatch(networkStatusOnline())
+             //globalStore.dispatch(networkStatusOffline())
              console.log('OFFLINE - You appear to be offline');
+             // console.log(globalStore.getState());
           });
       })
   );
