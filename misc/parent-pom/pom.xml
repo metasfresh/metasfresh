@@ -417,9 +417,13 @@
                                 <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
                             </manifest>
                             <manifestEntries>
+                                <!--suppress UnresolvedMavenProperty -->
                                 <ciBuildNo>${BUILD_NUMBER}</ciBuildNo>
+                                <!--suppress UnresolvedMavenProperty -->
                                 <ciBuildTag>${BUILD_TAG}</ciBuildTag>
+                                <!--suppress UnresolvedMavenProperty -->
                                 <ciJobName>${JOB_NAME}</ciJobName>
+                                <!--suppress UnresolvedMavenProperty -->
                                 <ciBuildUrl>${BUILD_URL}</ciBuildUrl>
                             </manifestEntries>
                         </archive>
@@ -453,6 +457,7 @@
                         <trimStackTrace>false</trimStackTrace>
 
                         <systemPropertyVariables>
+                            <!--suppress UnresolvedMavenProperty -->
                             <concordion.output.dir>${acceptance.reports.dir}</concordion.output.dir>
                         </systemPropertyVariables>
                         <includes>

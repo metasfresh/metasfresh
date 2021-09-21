@@ -34,8 +34,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class JsonRequestBPartnerUpsertItemTest
 {
-
-	private ObjectMapper mapper = new ObjectMapper();
+	private final ObjectMapper mapper = new ObjectMapper();
 
 	@BeforeClass	
 	public static void beforeAll()
