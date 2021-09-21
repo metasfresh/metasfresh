@@ -7,7 +7,7 @@ import Header from './components/Header';
 function App(props) {
   return (
       <>
-      <Header appName="webUI app" networkStatus="online" />
+      <Header appName="webUI app" />
       </>
   );
 }
