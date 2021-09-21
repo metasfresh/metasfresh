@@ -72,8 +72,8 @@ Map build(final MvnConf mvnConf,
 			//sh 'yarn test --ci --reporters="default" --reporters="jest-junit"' TODO comment back in
 			//junit 'junit.xml' // commenting out; might be that it published "everything"
 		}
-					
-		sh "webpack --config webpack.prod.js"
+		
+		sh 'yarn build'
 
 		// https://github.com/metasfresh/metasfresh-webui-frontend/issues/292
 		// add a file info.json whose shall look similar to the info which spring-boot provides unter the /info URL
