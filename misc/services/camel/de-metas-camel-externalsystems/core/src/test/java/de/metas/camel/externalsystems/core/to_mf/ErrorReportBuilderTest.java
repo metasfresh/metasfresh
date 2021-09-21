@@ -45,8 +45,8 @@ import static de.metas.camel.externalsystems.core.to_mf.ErrorReportRouteBuilder.
 
 public class ErrorReportBuilderTest extends CamelTestSupport
 {
-	private final String MOCK_LOG_MESSAGE = "mock:logMessage";
-	private final String JSON_LOG_MESSAGE_REQUEST = "0_LogMessageRequest.json";
+	private final static String MOCK_LOG_MESSAGE = "mock:logMessage";
+	private final static String JSON_LOG_MESSAGE_REQUEST = "0_LogMessageRequest.json";
 
 	@Override
 	public boolean isUseAdviceWith()
@@ -97,6 +97,7 @@ public class ErrorReportBuilderTest extends CamelTestSupport
 																						"Location",
 																						null,
 																						jsonApiResponseAsString);
+		exception.setStackTrace(new StackTraceElement[0]);
 
 		final Exchange exchange = new DefaultExchange(template.getCamelContext());
 		exchange.setProperty(Exchange.EXCEPTION_CAUGHT, exception);

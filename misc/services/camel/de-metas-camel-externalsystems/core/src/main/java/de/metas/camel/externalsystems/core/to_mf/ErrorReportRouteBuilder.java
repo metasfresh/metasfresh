@@ -166,7 +166,7 @@ public class ErrorReportRouteBuilder extends RouteBuilder
 			errorBuilder.message(exception.getLocalizedMessage());
 			errorBuilder.stackTrace(sw.toString());
 
-			final Optional<StackTraceElement> sourceStackTraceElem = exception.getStackTrace() != null
+			final Optional<StackTraceElement> sourceStackTraceElem = exception.getStackTrace() != null && exception.getStackTrace().length > 0
 					? Optional.ofNullable(exception.getStackTrace()[0])
 					: Optional.empty();
 
