@@ -8,6 +8,7 @@ import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_PO_OrderLine_Alloc;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.X_C_Order;
 
@@ -124,4 +125,10 @@ public interface IOrderDAO extends ISingletonService
 	Optional<I_C_Order> retrieveByOrderCriteria(OrderQuery query);
 
 	Set<OrderId> retrieveIdsByOrderLineIds(Set<OrderLineId> orderLineIds);
+
+	Set<OrderLineId> retrieveSOLineIdsByPOLineId(OrderLineId orderLineId);
+
+	Set<OrderId> getSalesOrderIdsViaPOAllocation(OrderId purchaseOrderId);
+
+	void allocatePOLineToSOLine(OrderLineId purchaseOrderLineId, OrderLineId salesOrderLineId);
 }
