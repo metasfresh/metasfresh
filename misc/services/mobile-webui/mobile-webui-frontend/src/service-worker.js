@@ -1,3 +1,6 @@
+import { store } from './store/store';
+import { networkStatusOffline, networkStatusOnline } from './actions/NetworkActions';
+
 /* eslint-disable no-restricted-globals */
 
 // This service worker can be customized!
@@ -79,8 +82,10 @@ self.addEventListener('fetch', (e) => {
               return response;
           }
           console.log('[ServiceWorker] Retrieving from URL...');
+          store.dispatch(networkStatusOffline())
           return fetch(e.request).catch(function (e) {
              /** You can check what e contains aso for further customize */
+             store.dispatch(networkStatusOnline())
              console.log('OFFLINE - You appear to be offline');
           });
       })
