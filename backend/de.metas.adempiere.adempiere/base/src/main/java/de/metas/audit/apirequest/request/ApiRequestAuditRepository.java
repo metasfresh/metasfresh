@@ -38,6 +38,8 @@ import org.compiere.model.I_API_Request_Audit;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
+import java.util.stream.Stream;
+
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 @Repository
@@ -96,8 +98,7 @@ public class ApiRequestAuditRepository
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	@NonNull
-	public ImmutableList<ApiRequestAudit> getAllProcessedRequests()
+	public Stream<ApiRequestAudit> getAllProcessedRequests()
 	{
 		final ICompositeQueryFilter<I_API_Request_Audit> acknowledgedErrors = queryBL.createCompositeQueryFilter(I_API_Request_Audit.class)
 				.addEqualsFilter(I_API_Request_Audit.COLUMNNAME_Status, Status.ERROR)
@@ -111,9 +112,8 @@ public class ApiRequestAuditRepository
 		return queryBL.createQueryBuilder(I_API_Request_Audit.class)
 				.filter(processedOrAcknowledgedErrors)
 				.create()
-				.stream()
-				.map(this::recordToRequestAudit)
-				.collect(ImmutableList.toImmutableList());
+				.iterateAndStream()
+				.map(this::recordToRequestAudit);
 	}
 
 
@@ -133,7 +133,7 @@ public class ApiRequestAuditRepository
 				.path(record.getPath())
 				.remoteAddress(record.getRemoteAddr())
 				.remoteHost(record.getRemoteHost())
-				.time(TimeUtil.asInstant(record.getTime()))
+				.time(TimeUtil.asInstantNonNull(record.getTime()))
 				.httpHeaders(record.getHttpHeaders())
 				.requestURI(record.getRequestURI())
 				.build();
