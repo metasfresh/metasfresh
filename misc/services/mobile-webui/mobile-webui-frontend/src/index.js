@@ -10,9 +10,11 @@ import { Route, Switch } from 'react-router';
 import { store, history } from './store/store';
 import './assets/index.scss';
 
+export const globalStore = store;
+
 ReactDOM.render(
   <React.StrictMode>
-    <Provider store={store()}>
+    <Provider store={globalStore()}>
       <ConnectedRouter history={history}>
         <>
           <Switch>

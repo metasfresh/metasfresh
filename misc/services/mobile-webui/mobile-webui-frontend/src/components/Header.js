@@ -12,7 +12,6 @@ class Header extends Component {
     networkOnline = () => { 
       const { networkStatusOnline } = this.props;
       if (networkStatusOnline) {
-            console.log('CALL ONLINE22')
         networkStatusOnline();
       }
     };
