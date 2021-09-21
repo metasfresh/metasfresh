@@ -22,23 +22,37 @@
 
 package de.metas.camel.externalsystems.common;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
 @Value
 @Builder
-@JsonDeserialize(builder = LogMessageRequest.LogMessageRequestBuilder.class)
-public class LogMessageRequest
+public class PInstanceLogger
 {
 	@NonNull
-	@JsonProperty("logMessage")
-	String logMessage;
+	ProcessLogger processLogger;
+	@Nullable
+	JsonMetasfreshId pInstanceId;
+
+	public void logMessage(@NonNull final String logMessage)
+	{
+		if (pInstanceId == null)
+		{
+			return;
+		}
+
+		processLogger.logMessage(logMessage, pInstanceId.getValue());
+	}
 
 	@NonNull
-	@JsonProperty("pinstanceId")
-	JsonMetasfreshId pInstanceId;
+	public static PInstanceLogger of(@NonNull final ProcessLogger processLogger)
+	{
+		return PInstanceLogger.builder()
+				.processLogger(processLogger)
+				.build();
+	}
 }

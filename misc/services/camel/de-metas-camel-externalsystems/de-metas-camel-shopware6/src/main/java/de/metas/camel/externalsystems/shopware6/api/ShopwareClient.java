@@ -28,10 +28,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import de.metas.camel.externalsystems.common.PInstanceLogger;
 import de.metas.camel.externalsystems.shopware6.api.model.GetBearerRequest;
-import de.metas.camel.externalsystems.shopware6.api.model.Shopware6QueryRequest;
 import de.metas.camel.externalsystems.shopware6.api.model.JsonOauthResponse;
 import de.metas.camel.externalsystems.shopware6.api.model.PathSegmentsEnum;
+import de.metas.camel.externalsystems.shopware6.api.model.Shopware6QueryRequest;
 import de.metas.camel.externalsystems.shopware6.api.model.country.JsonCountry;
 import de.metas.camel.externalsystems.shopware6.api.model.currency.JsonCurrencies;
 import de.metas.camel.externalsystems.shopware6.api.model.customer.JsonCustomerGroups;
@@ -83,6 +84,8 @@ public class ShopwareClient
 	private static final Logger logger = Logger.getLogger(ShopwareClient.class.getName());
 
 	@NonNull
+	private final PInstanceLogger pInstanceLogger;
+	@NonNull
 	private final AuthToken authToken;
 	@NonNull
 	private final String baseUrl;
@@ -92,7 +95,8 @@ public class ShopwareClient
 	public static ShopwareClient of(
 			@NonNull final String clientId,
 			@NonNull final String clientSecret,
-			@NonNull final String baseUrl)
+			@NonNull final String baseUrl,
+			@NonNull final PInstanceLogger pInstanceLogger)
 	{
 		final AuthToken authToken = AuthToken.builder()
 				.clientId(clientId)
@@ -100,11 +104,12 @@ public class ShopwareClient
 				.validUntil(Instant.ofEpochMilli(0))
 				.build();
 
-		return new ShopwareClient(authToken, baseUrl);
+		return new ShopwareClient(pInstanceLogger, authToken, baseUrl);
 	}
 
 	@NonNull
-	public GetOrdersResponse getOrders(@NonNull final Shopware6QueryRequest queryRequest,
+	public GetOrdersResponse getOrders(
+			@NonNull final Shopware6QueryRequest queryRequest,
 			@Nullable final String customIdentifierJSONPath,
 			@Nullable final String salesRepJSONPath)
 	{
@@ -448,12 +453,14 @@ public class ShopwareClient
 	}
 
 	@NonNull
-	protected Optional<OrderCandidate> getJsonOrderCandidate(@Nullable final JsonNode orderJson,
+	protected Optional<OrderCandidate> getJsonOrderCandidate(
+			@Nullable final JsonNode orderJson,
 			@Nullable final String customIdJSONPath,
 			@Nullable final String salesRepJSONPath)
 	{
 		if (orderJson == null)
 		{
+			pInstanceLogger.logMessage("Skipping the current 'order' ; no value found for orderJson node!");
 			return Optional.empty();
 		}
 
@@ -475,11 +482,13 @@ public class ShopwareClient
 				}
 				else
 				{
+					pInstanceLogger.logMessage("Skipping current order: " + jsonOrder.getId() + "; no value found for customIdJSONPath: " + customIdJSONPath);
 					return Optional.empty();
 				}
 			}
 			else if (Check.isBlank(jsonOrder.getOrderCustomer().getCustomerId()))
 			{
+				pInstanceLogger.logMessage("Skipping current order: " + jsonOrder.getId() + "; jsonOrder.getOrderCustomer().getCustomerId() is null!");
 				return Optional.empty();
 			}
 

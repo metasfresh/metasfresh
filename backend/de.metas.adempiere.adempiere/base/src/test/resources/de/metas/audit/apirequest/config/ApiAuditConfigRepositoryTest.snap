@@ -13,6 +13,17 @@ de.metas.audit.apirequest.config.ApiAuditConfigRepositoryTest.getAllConfigsByOrg
       "pathPrefix" : "pathPrefix",
       "notifyUserInCharge" : "ALWAYS",
       "userGroupInChargeId" : 1,
+      "antPathMatcher" : {
+        "pathSeparator" : "/",
+        "pathSeparatorPatternCache" : {
+          "endsOnWildCard" : "/*",
+          "endsOnDoubleWildCard" : "/**"
+        },
+        "caseSensitive" : true,
+        "trimTokens" : false,
+        "tokenizedPatternCache" : { },
+        "stringMatcherCache" : { }
+      },
       "invokerWaitsForResponse" : true
     }
   ]

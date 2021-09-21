@@ -27,6 +27,7 @@ import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
+import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.AdviceWith;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.test.junit5.CamelTestSupport;
@@ -65,7 +66,7 @@ public class GetOrdersRouteBuilderTestScenarios extends CamelTestSupport
 	@Override
 	protected RouteBuilder createRouteBuilder()
 	{
-		return new GetOrdersRouteBuilder(Mockito.mock(ProcessLogger.class));
+		return new GetOrdersRouteBuilder(Mockito.mock(ProcessLogger.class), Mockito.mock(ProducerTemplate.class));
 	}
 
 	@Override
