@@ -45,6 +45,9 @@ import de.metas.material.planning.pporder.PPOrderUtil;
 import de.metas.material.planning.pporder.PPRouting;
 import de.metas.material.planning.pporder.PPRoutingActivityTemplateId;
 import de.metas.material.planning.pporder.PPRoutingId;
+import de.metas.order.IOrderBL;
+import de.metas.order.IOrderDAO;
+import de.metas.order.OrderLineId;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.process.PInstanceId;
 import de.metas.product.ProductId;
@@ -110,6 +113,7 @@ public class PPOrderBL implements IPPOrderBL
 	private final IDocTypeDAO docTypesRepo = Services.get(IDocTypeDAO.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	private final IPPCostCollectorBL costCollectorsService = Services.get(IPPCostCollectorBL.class);
+	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 
 	@VisibleForTesting
 	static final String SYSCONFIG_CAN_BE_EXPORTED_AFTER_SECONDS = "de.metas.manufacturing.PP_Order.canBeExportedAfterSeconds";
@@ -572,4 +576,13 @@ public class PPOrderBL implements IPPOrderBL
 		}
 	}
 
+	@Override
+	public void setC_OrderLine(@NonNull final PPOrderId ppOrderId, @NonNull final OrderLineId orderLineId)
+	{
+		final I_PP_Order ppOrder = getById(ppOrderId);
+		final I_C_OrderLine ol = orderDAO.getOrderLineById(orderLineId);
+		ppOrder.setC_OrderLine(ol);
+
+		ppOrdersRepo.save(ppOrder);
+	}
 }
