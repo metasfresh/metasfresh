@@ -1,8 +1,6 @@
 import PropTypes from 'prop-types';
 import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router-dom';
-import queryString from 'query-string';
 import classnames from 'classnames';
 
 import { updateUri } from '../utils';
@@ -52,13 +50,10 @@ class DocList extends PureComponent {
    * @summary Update the url with query params if needed (ie add viewId, page etc)
    */
   updateUriCallback = (updatedQuery) => {
-    const { location } = this.props;
-    const query = queryString.parse(location.search, {
-      ignoreQueryPrefix: true,
-    });
-
+    const { query, pathname } = this.props;
     const { viewId } = updatedQuery;
-    viewId && updateUri(location.pathname, query, updatedQuery);
+
+    viewId && updateUri(pathname, query, updatedQuery);
   };
 
   render() {
@@ -165,7 +160,7 @@ class DocList extends PureComponent {
  * @prop {object} query - routing query
  * @prop {object} rawModal
  * @prop {string} windowId
- * @prop {object} location
+ * @prop {string} pathname
  */
 DocList.propTypes = {
   includedView: PropTypes.object,
@@ -175,14 +170,12 @@ DocList.propTypes = {
   rawModal: PropTypes.object.isRequired,
   windowId: PropTypes.string,
   getWindowBreadcrumb: PropTypes.func.isRequired,
-  location: PropTypes.object.isRequired,
+  pathname: PropTypes.string.isRequired,
   query: PropTypes.object.isRequired,
 };
 
-const mapStateToProps = (state, { location }) => {
-  const query = queryString.parse(location.search);
+const mapStateToProps = (state) => {
   return {
-    query,
     modal: state.windowHandler.modal,
     rawModal: state.windowHandler.rawModal,
     overlay: state.windowHandler.overlay,
@@ -193,8 +186,4 @@ const mapStateToProps = (state, { location }) => {
   };
 };
 
-export default withRouter(
-  connect(mapStateToProps, {
-    getWindowBreadcrumb,
-  })(DocList)
-);
+export default connect(mapStateToProps, { getWindowBreadcrumb })(DocList);

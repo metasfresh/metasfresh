@@ -8,13 +8,14 @@ import classnames from 'classnames';
 
 import {
   getUserLang,
-  localLoginRequest,
+  checkLoginRequest,
   loginCompletionRequest,
   loginRequest,
 } from '../../api';
 import { loginSuccess } from '../../actions/AppActions';
 
 import logo from '../../assets/images/metasfresh_logo_green_thumb.png';
+
 import RawList from '../widget/List/RawList';
 import PasswordRecovery from './PasswordRecovery';
 
@@ -106,7 +107,7 @@ class LoginForm extends Component {
    * @param {*} err
    */
   checkIfAlreadyLogged(err) {
-    return localLoginRequest().then((response) => {
+    return checkLoginRequest().then((response) => {
       if (response.data) {
         return history.push('/');
       }
