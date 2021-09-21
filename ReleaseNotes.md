@@ -12,23 +12,21 @@ Here come the actual release notes:
 # metasfresh 5.173
 ## Features
 * metasfresh
-  * https://github.com/metasfresh/metasfresh/issues/11607
-  * https://github.com/metasfresh/metasfresh/issues/11624
-  * https://github.com/metasfresh/metasfresh/issues/11654
-  * https://github.com/metasfresh/metasfresh/issues/11665
-  * https://github.com/metasfresh/metasfresh/issues/11668
-  * https://github.com/metasfresh/metasfresh/issues/11694
-  * https://github.com/metasfresh/metasfresh/issues/11698
-  * https://github.com/metasfresh/metasfresh/issues/11699
-  * https://github.com/metasfresh/metasfresh/issues/11701
-  * https://github.com/metasfresh/metasfresh/issues/11701
-  * https://github.com/metasfresh/metasfresh/pull/11705
-  * https://github.com/metasfresh/metasfresh/issues/11713
-  * https://github.com/metasfresh/metasfresh/issues/11734
-  
+  * [#11607](https://github.com/metasfresh/metasfresh/issues/11607) FE package updates - chunk 3 mid August
+  * [#11624](https://github.com/metasfresh/metasfresh/issues/11624) FE: option to always display "New BPartner" in order
+  * [#11654](https://github.com/metasfresh/metasfresh/issues/11654) Create Occupation Hierarchy tables and Validation Rules
+  * [#11665](https://github.com/metasfresh/metasfresh/issues/11665) C&E User / BPartner Synchronisation metasfresh => RabbitMQ
+  * [#11668](https://github.com/metasfresh/metasfresh/issues/11668) Chunk e2e for end of August 2021
+  * [#11694](https://github.com/metasfresh/metasfresh/issues/11694) Commission Calculation for Purchase Order Forwarding
+  * [#11698](https://github.com/metasfresh/metasfresh/issues/11698) Check and see more of the react* deps that can be updated and adapt code with the changes
+  * [#11699](https://github.com/metasfresh/metasfresh/issues/11699) Chunk e2e beginning of Sep 2021
+  * [#11701](https://github.com/metasfresh/metasfresh/issues/11701) Add organization-based filter for currently logged-in user: `OrgAccessSql`
+  * [#11713](https://github.com/metasfresh/metasfresh/issues/11713) Add `DeliveryViaRule` to DESADV
+  * [#11734](https://github.com/metasfresh/metasfresh/issues/11734) Add `isActive` Filter to window Product Price
+
 ## Fixes
 * metasfresh
-  * https://github.com/metasfresh/metasfresh/pull/11680
+  * [#11680](https://github.com/metasfresh/metasfresh/pull/11680) Fix `ESRDataImporterCamt54` context switching issues
 
 # metasfresh 5.172
 ## Features
