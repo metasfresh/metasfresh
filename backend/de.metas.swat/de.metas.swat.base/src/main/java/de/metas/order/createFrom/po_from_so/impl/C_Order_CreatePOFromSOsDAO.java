@@ -8,6 +8,7 @@ import de.metas.order.createFrom.po_from_so.IC_Order_CreatePOFromSOsDAO;
 import de.metas.order.model.I_C_Order;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -151,16 +152,15 @@ public class C_Order_CreatePOFromSOsDAO implements IC_Order_CreatePOFromSOsDAO
 	}
 
 	@Override
-	public List<I_C_OrderLine> retrieveOrderLines(final I_C_Order order,
+	public List<I_C_OrderLine> retrieveOrderLines(@NonNull final I_C_Order order,
 			final boolean allowMultiplePOOrders,
 			final String purchaseQtySource)
 	{
-		Check.assumeNotNull(order, "Param order is not null");
 		Check.assumeNotEmpty(purchaseQtySource, "Param purchaseQtySource is not empty");
 		Check.assume(I_C_OrderLine.COLUMNNAME_QtyOrdered.equals(purchaseQtySource) || I_C_OrderLine.COLUMNNAME_QtyReserved.equals(purchaseQtySource),
-				"Param purchaseQtySource={} needs to be either {} or {}",
-				purchaseQtySource, I_C_OrderLine.COLUMNNAME_QtyOrdered, I_C_OrderLine.COLUMNNAME_QtyReserved
-				);
+					 "Param purchaseQtySource={} needs to be either {} or {}",
+					 purchaseQtySource, I_C_OrderLine.COLUMNNAME_QtyOrdered, I_C_OrderLine.COLUMNNAME_QtyReserved
+		);
 
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
@@ -178,6 +178,7 @@ public class C_Order_CreatePOFromSOsDAO implements IC_Order_CreatePOFromSOsDAO
 			return salesOrderLines;
 		}
 
+		// exclude sales order lines that are already linked to a purchase order line
 		final Set<OrderLineId> salesOrderLineIds = salesOrderLines.stream()
 				.map(I_C_OrderLine::getC_OrderLine_ID)
 				.map(OrderLineId::ofRepoId)
@@ -192,7 +193,6 @@ public class C_Order_CreatePOFromSOsDAO implements IC_Order_CreatePOFromSOsDAO
 				.map(OrderLineId::ofRepoId)
 				.collect(ImmutableSet.toImmutableSet());
 
-		// exclude sales order lines that are already linked to a purchase order line
 		return salesOrderLines.stream()
 				.filter(salesOrderLine -> !alreadyAllocatedSOLineIds.contains(OrderLineId.ofRepoId(salesOrderLine.getC_OrderLine_ID())))
 				.collect(ImmutableList.toImmutableList());

@@ -128,7 +128,7 @@ public interface IOrderDAO extends ISingletonService
 
 	Set<OrderLineId> retrieveSOLineIdsByPOLineId(OrderLineId orderLineId);
 
-	void savePOLineAllocation(I_C_PO_OrderLine_Alloc poAllocation);
-
 	Set<OrderId> getSalesOrderIdsViaPOAllocation(OrderId purchaseOrderId);
+
+	void allocatePOLineToSOLine(OrderLineId purchaseOrderLineId, OrderLineId salesOrderLineId);
 }

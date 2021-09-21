@@ -83,17 +83,6 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 		return order;
 	}
 
-	@Nullable
-	private I_C_Order getByExternalId(@Nullable final ExternalId externalId)
-	{
-		final I_C_Order order = createQueryBuilder()
-				.addEqualsFilter(I_C_Order.COLUMNNAME_ExternalId, externalId.getValue())
-				.create()
-				.first();
-
-		return order;
-	}
-
 	private List<I_C_Order> getOrdersByExternalIds(@NonNull final List<ExternalId> externalIds)
 	{
 		final List<String> externalIdsAsStrings = externalIds.stream().map(ExternalId::getValue).collect(Collectors.toList());
@@ -375,7 +364,8 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
-	private I_C_Order getOrderByDocumentNumberQuery(final OrderQuery query)
+	@Nullable
+	private I_C_Order getOrderByDocumentNumberQuery(@NonNull final OrderQuery query)
 	{
 		final String documentNo = assumeNotNull(query.getDocumentNo(), "Param query needs to have a non-null document number; query={}", query);
 		final OrgId orgId = assumeNotNull(query.getOrgId(), "Param query needs to have a non-null orgId; query={}", query);
@@ -387,8 +377,7 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 				.addEqualsFilter(I_C_Order.COLUMNNAME_DocumentNo, documentNo)
 				.addEqualsFilter(I_C_Order.COLUMNNAME_C_DocType_ID, NumberUtils.asInt(docType.getDocBaseType(), -1));
 
-		final I_C_Order order = queryBuilder.create().firstOnly(I_C_Order.class);
-		return order == null ? null : order;
+		return queryBuilder.create().firstOnly(I_C_Order.class);
 	}
 
 	@NonNull
@@ -404,11 +393,6 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
-	public void savePOLineAllocation(@NonNull final I_C_PO_OrderLine_Alloc poLineAllocation)
-	{
-		InterfaceWrapperHelper.save(poLineAllocation);
-	}
-
 	@NonNull
 	public ImmutableSet<OrderId> getSalesOrderIdsViaPOAllocation(@NonNull final OrderId purchaseOrderId)
 	{
@@ -420,5 +404,17 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 				.map(this::retrieveIdsByOrderLineIds)
 				.flatMap(Set::stream)
 				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	@Override
+	public void allocatePOLineToSOLine(
+			@NonNull final OrderLineId purchaseOrderLineId, 
+			@NonNull final OrderLineId salesOrderLineId)
+	{
+		final I_C_PO_OrderLine_Alloc poLineAllocation = InterfaceWrapperHelper.newInstance(I_C_PO_OrderLine_Alloc.class);
+		poLineAllocation.setC_PO_OrderLine_ID(purchaseOrderLineId.getRepoId());
+		poLineAllocation.setC_SO_OrderLine_ID(salesOrderLineId.getRepoId());
+
+		InterfaceWrapperHelper.save(poLineAllocation);
 	}
 }

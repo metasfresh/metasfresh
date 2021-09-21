@@ -5,6 +5,7 @@ import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderId;
+import de.metas.order.OrderLineId;
 import de.metas.order.createFrom.po_from_so.IC_Order_CreatePOFromSOsBL;
 import de.metas.order.createFrom.po_from_so.PurchaseTypeEnum;
 import de.metas.order.location.adapter.OrderLineDocumentLocationAdapterFactory;
@@ -182,12 +183,10 @@ class CreatePOLineFromSOLinesAggregator extends MapReduceAggregator<I_C_OrderLin
 
 		for (final I_C_OrderLine salesOrderLine : purchaseOrderLine2saleOrderLines.get(purchaseOrderLine))
 		{
-			final I_C_PO_OrderLine_Alloc poAllocation = InterfaceWrapperHelper.newInstance(I_C_PO_OrderLine_Alloc.class);
-			poAllocation.setC_PO_OrderLine_ID(purchaseOrderLine.getC_OrderLine_ID());
-			poAllocation.setC_SO_OrderLine_ID(salesOrderLine.getC_OrderLine_ID());
-
-			orderDAO.savePOLineAllocation(poAllocation);
-
+			orderDAO.allocatePOLineToSOLine(
+					OrderLineId.ofRepoId(purchaseOrderLine.getC_OrderLine_ID()), 
+					OrderLineId.ofRepoId(salesOrderLine.getC_OrderLine_ID()));
+			
 			salesOrdersToBeClosed.add(OrderId.ofRepoId(salesOrderLine.getC_Order_ID()));
 		}
 
