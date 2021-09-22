@@ -58,7 +58,7 @@ window.addEventListener('online', () => {
   globalStore.dispatch(networkStatusOnline())
 });
 
-window.addEventListener('beforeinstallprompt', () => {
+window.addEventListener('beforeinstallprompt', (e) => {
   // e.preventDefault(); - this is going to disable the prompt if uncommented !
   // See if the app is already installed, in that case, do nothing
   if (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) {
@@ -66,22 +66,3 @@ window.addEventListener('beforeinstallprompt', () => {
     return false;
   }
 });
-
-// const checkOnlineStatus = async () => {
-//   try {
-//     const online = await fetch('/favicon.ico');
-//     return online.status >= 200 && online.status < 300; 
-//   } catch (err) {
-//     return false; // we are offline
-//   }
-// };
-
-// special case when page is refreshed after offline is set
-// window.addEventListener('load', async ()  => {
-//   const onlineStatus = await checkOnlineStatus();
-//   if (onlineStatus) {
-//     globalStore.dispatch(networkStatusOnline())
-//   } else {
-//     globalStore.dispatch(networkStatusOffline())
-//   }
-// });
