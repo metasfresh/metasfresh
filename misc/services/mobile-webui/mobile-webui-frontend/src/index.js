@@ -58,6 +58,15 @@ window.addEventListener('online', () => {
   globalStore.dispatch(networkStatusOnline())
 });
 
+window.addEventListener('beforeinstallprompt', () => {
+  // e.preventDefault(); - this is going to disable the prompt if uncommented !
+  // See if the app is already installed, in that case, do nothing
+  if (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) {
+    // Already installed
+    return false;
+  }
+});
+
 // const checkOnlineStatus = async () => {
 //   try {
 //     const online = await fetch('/favicon.ico');
