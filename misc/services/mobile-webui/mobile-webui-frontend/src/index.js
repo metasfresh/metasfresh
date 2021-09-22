@@ -48,3 +48,12 @@ window.addEventListener('offline', () => {
 window.addEventListener('online', () => {
   globalStore.dispatch(networkStatusOnline())
 });
+
+// special case when page is refreshed after offline is set
+window.addEventListener('load', () => {
+  if (navigator.onLine) {
+    globalStore.dispatch(networkStatusOnline())
+  } else {
+    globalStore.dispatch(networkStatusOffline())
+  }
+});
