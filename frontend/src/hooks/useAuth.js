@@ -106,6 +106,8 @@ function useProvideAuth() {
             error.response &&
             error.response.data.message.includes('User already logged in')
           ) {
+            setAuthRequestPending(false);
+
             return login().then(() => {
               history.push('/');
             });
@@ -129,7 +131,14 @@ function useProvideAuth() {
     localStorage.setItem('isLogged', true);
     setLoggedIn(true);
 
-    return;
+    return Promise.resolve();
+  };
+
+  const fetchNotifications = () => {
+    dispatch(getNotificationsEndpoint(auth));
+    dispatch(getNotifications());
+
+    return Promise.resolve();
   };
 
   /**
@@ -144,8 +153,7 @@ function useProvideAuth() {
       });
       // user is already authenticated but we need to refresh notifications
     } else {
-      dispatch(getNotificationsEndpoint(auth));
-      dispatch(getNotifications());
+      return fetchNotifications();
     }
   };
 

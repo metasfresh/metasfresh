@@ -116,7 +116,7 @@ const App = () => {
           // if user types in incorrect token, there's no way for us to tell if he's
           // already authenticated or not. So it's safest to reset the login process
           if (error.response.data.message.includes('Invalid token')) {
-            auth
+            return auth
               .logout()
               .then(() => {
                 history.push('/login');
@@ -128,7 +128,7 @@ const App = () => {
 
           //if not logged in
           if (!auth.isLoggedIn && !store.getState().appHandler.loggedIn) {
-            auth.checkAuthentication().then((authenticated) => {
+            return auth.checkAuthentication().then((authenticated) => {
               if (authenticated) {
                 history.push(location.pathname);
               }
