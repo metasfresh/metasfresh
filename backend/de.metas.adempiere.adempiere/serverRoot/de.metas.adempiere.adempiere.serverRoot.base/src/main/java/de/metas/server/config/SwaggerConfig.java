@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Configuration;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.util.web.SwaggerUtil;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import springfox.documentation.builders.PathSelectors;
 import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spring.web.plugins.Docket;
@@ -34,13 +35,13 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
  */
 
 @Configuration
-@EnableSwagger2
+@EnableWebMvc
 public class SwaggerConfig
 {
 	@Bean
 	public Docket api()
 	{
-		return new Docket(DocumentationType.SWAGGER_2)
+		return new Docket(DocumentationType.OAS_30)
 				.globalOperationParameters(ImmutableList.of(SwaggerUtil.SWAGGER_GLOBAL_AUTH_TOKEN_PARAMETER))
 				.select()
 				.paths(PathSelectors.any())

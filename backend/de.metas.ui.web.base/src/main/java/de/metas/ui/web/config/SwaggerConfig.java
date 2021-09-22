@@ -12,6 +12,7 @@ import com.google.common.base.Predicates;
 
 import de.metas.util.web.SwaggerUtil;
 import de.pentabyte.springfox.ApiEnumDescriptionPlugin;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import springfox.documentation.RequestHandler;
 import springfox.documentation.builders.PathSelectors;
 import springfox.documentation.builders.RequestHandlerSelectors;
@@ -42,14 +43,14 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
  */
 
 @Configuration
-@EnableSwagger2
+@EnableWebMvc
 @Import(ApiEnumDescriptionPlugin.class) // https://github.com/hoereth/springfox-enum-plugin
 public class SwaggerConfig
 {
 	@Bean
 	public Docket api()
 	{
-		return new Docket(DocumentationType.SWAGGER_2)
+		return new Docket(DocumentationType.OAS_30)
 				.select()
 				.paths(PathSelectors.any())
 				.build()
