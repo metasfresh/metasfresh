@@ -9,12 +9,13 @@ import { ConnectedRouter } from 'connected-react-router';
 import { Route, Switch } from 'react-router';
 import { store, history } from './store/store';
 import './assets/index.scss';
+import { networkStatusOffline, networkStatusOnline } from './actions/NetworkActions';
 
-export const globalStore = store;
+export const globalStore = store();
 
 ReactDOM.render(
   <React.StrictMode>
-    <Provider store={globalStore()}>
+    <Provider store={globalStore}>
       <ConnectedRouter history={history}>
         <>
           <Switch>
@@ -38,3 +39,12 @@ serviceWorkerRegistration.register();
 // to log results (for example: reportWebVitals(console.log))
 // or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
 reportWebVitals();
+
+
+window.addEventListener('offline', () => {
+  globalStore.dispatch(networkStatusOffline())
+});
+
+window.addEventListener('online', () => {
+  globalStore.dispatch(networkStatusOnline())
+});
