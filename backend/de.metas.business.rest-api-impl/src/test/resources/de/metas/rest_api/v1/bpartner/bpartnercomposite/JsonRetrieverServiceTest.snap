@@ -25,7 +25,7 @@ de.metas.rest_api.v1.bpartner.bpartnercomposite.JsonRetrieverServiceTest.retriev
           },
           "entries" : [ ]
         },
-        "currencyId" : 100009,
+        "currencyId" : 100010,
         "iban" : "INITIAL-IBAN-1",
         "id" : {
           "repoId" : 50,
