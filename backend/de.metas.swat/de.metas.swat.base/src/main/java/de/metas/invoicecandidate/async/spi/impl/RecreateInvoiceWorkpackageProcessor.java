@@ -1,11 +1,13 @@
 package de.metas.invoicecandidate.async.spi.impl;
 
+import ch.qos.logback.classic.Level;
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
+import de.metas.invoice.InvoiceId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoicingParams;
@@ -15,8 +17,10 @@ import de.metas.lock.api.ILockAutoCloseable;
 import de.metas.lock.api.ILockCommand;
 import de.metas.lock.api.ILockManager;
 import de.metas.lock.api.LockOwner;
+import de.metas.logging.LogManager;
 import de.metas.process.PInstanceId;
 import de.metas.util.Check;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -24,6 +28,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
+import org.slf4j.Logger;
 
 import java.util.Iterator;
 import java.util.List;
@@ -33,6 +38,8 @@ import static org.compiere.util.Env.getCtx;
 
 public class RecreateInvoiceWorkpackageProcessor extends WorkpackageProcessorAdapter
 {
+	private static final Logger logger = LogManager.getLogger(RecreateInvoiceWorkpackageProcessor.class);
+
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
 	private final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
@@ -74,6 +81,7 @@ public class RecreateInvoiceWorkpackageProcessor extends WorkpackageProcessorAda
 
 			if (!canVoidPaidInvoice(invoice))
 			{
+				Loggables.withLogger(logger, Level.DEBUG).addLog("Skipping invoice. Cannot void invoice, invoiceId=" + InvoiceId.ofRepoId(invoice.getC_Invoice_ID()));
 				continue;
 			}
 
@@ -113,7 +121,7 @@ public class RecreateInvoiceWorkpackageProcessor extends WorkpackageProcessorAda
 
 		final List<I_C_Payment> availablePayments = allocationDAO.retrieveInvoicePayments(inv);
 
-		// if there is no payment and is paid (can be payed with credit memo, but no real payment), we can not void //todo fp
+		// if there is no payment and is paid (can be payed with credit memo, but no real payment), we can not void
 		return !(invoice.isPaid() && availablePayments.isEmpty());
 	}
 
