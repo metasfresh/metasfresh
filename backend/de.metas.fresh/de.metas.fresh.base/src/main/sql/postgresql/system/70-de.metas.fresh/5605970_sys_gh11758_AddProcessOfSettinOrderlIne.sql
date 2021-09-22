@@ -43,18 +43,34 @@ INSERT INTO AD_Table_Process (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Table_ID,A
 UPDATE AD_Process SET Classname='org.eevolution.process.PP_Order_SetC_OrderLine',Updated=TO_TIMESTAMP('2021-09-21 18:57:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=584909
 ;
 
--- 2021-09-22T05:50:01.404Z
+-- 2021-09-22T14:59:39.546Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Column SET IsIdentifier='N', SeqNo=NULL,Updated=TO_TIMESTAMP('2021-09-22 08:50:01','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=3723
+UPDATE AD_Ref_Table SET WhereClause='exists (select 1 from C_order o where o.C_Order_ID = C_OrderLine.C_Order_ID and o.IsSOTrx=''Y'')',Updated=TO_TIMESTAMP('2021-09-22 17:59:39','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=271
 ;
 
--- 2021-09-22T05:50:54.310Z
+-- 2021-09-22T15:03:15.944Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Column SET IsIdentifier='Y', SeqNo=4,Updated=TO_TIMESTAMP('2021-09-22 08:50:54','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=2224
+UPDATE AD_Process_Para SET AD_Reference_Value_ID=271,Updated=TO_TIMESTAMP('2021-09-22 18:03:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=542099
 ;
 
--- 2021-09-22T05:51:07.255Z
+
+-- 2021-09-22T15:04:08.086Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Column SET IsIdentifier='Y', SeqNo=3,Updated=TO_TIMESTAMP('2021-09-22 08:51:07','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=2221
+UPDATE AD_Ref_Table SET WhereClause='',Updated=TO_TIMESTAMP('2021-09-22 18:04:08','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=271
+;
+
+-- 2021-09-22T15:04:15.184Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET AD_Reference_Value_ID=NULL,Updated=TO_TIMESTAMP('2021-09-22 18:04:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=542099
+;
+
+-- 2021-09-22T15:05:35.598Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Val_Rule (AD_Client_ID,AD_Org_ID,AD_Val_Rule_ID,Code,Created,CreatedBy,EntityType,IsActive,Name,Type,Updated,UpdatedBy) VALUES (0,0,540558,'exists (select 1 from C_order o where o.C_Order_ID = C_OrderLine.C_Order_ID and o.IsSOTrx=''Y'') ',TO_TIMESTAMP('2021-09-22 18:05:35','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','C_OrderLine of Sales Order','S',TO_TIMESTAMP('2021-09-22 18:05:35','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-09-22T15:05:45.084Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET AD_Val_Rule_ID=540558,Updated=TO_TIMESTAMP('2021-09-22 18:05:45','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=542099
 ;
 
