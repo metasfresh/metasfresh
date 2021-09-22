@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-
 class Header extends Component {
+
     render() {
         const { appName, networkStatus } = this.props;
         return (
