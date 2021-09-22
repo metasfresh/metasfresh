@@ -239,7 +239,7 @@ public class FlatrateDAO implements IFlatrateDAO
 			final int flatrateConditionsId,
 			final String trxName)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_C_Flatrate_Matching.class, ctx, trxName)
+		return queryBL.createQueryBuilder(I_C_Flatrate_Matching.class, ctx, trxName)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
 				.addEqualsFilter(I_C_Flatrate_Matching.COLUMNNAME_C_Flatrate_Conditions_ID, flatrateConditionsId)
@@ -283,7 +283,6 @@ public class FlatrateDAO implements IFlatrateDAO
 
 	private List<I_C_Invoice_Clearing_Alloc> retrieveClearingAllocs(final I_C_Invoice_Candidate invoiceCand, final boolean retrieveAll)
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final ICompositeQueryFilter<I_C_Invoice_Clearing_Alloc> orFilter = queryBL.createCompositeQueryFilter(I_C_Invoice_Clearing_Alloc.class)
 				.setJoinOr()
 				.addEqualsFilter(I_C_Invoice_Clearing_Alloc.COLUMNNAME_C_Invoice_Cand_ToClear_ID, invoiceCand.getC_Invoice_Candidate_ID())
@@ -462,8 +461,6 @@ public class FlatrateDAO implements IFlatrateDAO
 			final String dataEntryType,
 			final UomId uomId)
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-
 		final IQueryBuilder<I_C_Flatrate_DataEntry> queryBuilder = queryBL.createQueryBuilder(I_C_Flatrate_DataEntry.class, term)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Flatrate_DataEntry.COLUMNNAME_C_Flatrate_Term_ID, term.getC_Flatrate_Term_ID())
@@ -624,7 +621,7 @@ public class FlatrateDAO implements IFlatrateDAO
 	public List<I_C_Flatrate_Term> retrieveTerms(final I_C_Flatrate_Data data)
 	{
 
-		return Services.get(IQueryBL.class).createQueryBuilder(I_C_Flatrate_Term.class, data)
+		return queryBL.createQueryBuilder(I_C_Flatrate_Term.class, data)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Data_ID, data.getC_Flatrate_Data_ID())
@@ -824,7 +821,7 @@ public class FlatrateDAO implements IFlatrateDAO
 	@Override
 	public int getFlatrateConditionsIdByName(@NonNull final String name)
 	{
-		final int flatrateConditionsId = Services.get(IQueryBL.class)
+		final int flatrateConditionsId = queryBL
 				.createQueryBuilderOutOfTrx(I_C_Flatrate_Conditions.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Flatrate_Conditions.COLUMN_Name, name)
@@ -881,7 +878,6 @@ public class FlatrateDAO implements IFlatrateDAO
 			@NonNull final org.compiere.model.I_M_Product product)
 	{
 
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final IQuery<I_C_Period> periodQuery = queryBL
 				.createQueryBuilder(I_C_Period.class)
 				.addOnlyActiveRecordsFilter()
@@ -914,7 +910,7 @@ public class FlatrateDAO implements IFlatrateDAO
 	@Override
 	public I_C_Flatrate_Data retriveOrCreateFlatrateData(final I_C_BPartner bPartner)
 	{
-		I_C_Flatrate_Data existingData = Services.get(IQueryBL.class).createQueryBuilder(I_C_Flatrate_Data.class, bPartner)
+		I_C_Flatrate_Data existingData = queryBL.createQueryBuilder(I_C_Flatrate_Data.class, bPartner)
 				.addEqualsFilter(I_C_Flatrate_Data.COLUMNNAME_C_BPartner_ID, bPartner.getC_BPartner_ID())
 				.addOnlyActiveRecordsFilter()
 				.filterByClientId()
@@ -936,8 +932,7 @@ public class FlatrateDAO implements IFlatrateDAO
 	@Override
 	public I_C_Flatrate_Term retrieveAncestorFlatrateTerm(@NonNull final I_C_Flatrate_Term contract)
 	{
-
-		return Services.get(IQueryBL.class).createQueryBuilder(I_C_Flatrate_Term.class)
+		return queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_C_FlatrateTerm_Next_ID, contract.getC_Flatrate_Term_ID())
