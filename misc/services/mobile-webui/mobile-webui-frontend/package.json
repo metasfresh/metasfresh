@@ -16,6 +16,7 @@
     "react-redux": "^7.2.5",
     "react-router": "^5.2.1",
     "react-scripts": "4.0.3",
+    "uuid": "^8.3.2",
     "web-vitals": "^0.2.4",
     "workbox-background-sync": "^5.1.3",
     "workbox-broadcast-update": "^5.1.3",
