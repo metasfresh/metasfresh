@@ -59,21 +59,4 @@ public class SwaggerConfig
 						"REST API backend for metasfresh UIs"/* description */));
 	}
 
-	// @SuppressWarnings("unused")
-	// private static final Predicate<RequestHandler> basePackages(final Class<?>... classes)
-	// {
-	// 	final Set<Predicate<RequestHandler>> predicates = new HashSet<>(classes.length);
-	// 	for (final Class<?> clazz : classes)
-	// 	{
-	// 		final String packageName = clazz.getPackage().getName();
-	// 		predicates.add(RequestHandlerSelectors.basePackage(packageName));
-	// 	}
-	//
-	// 	if(predicates.size() == 1)
-	// 	{
-	// 		return predicates.iterator().next();
-	// 	}
-	//
-	// 	return Predicates.or(predicates);
-	// }
 }

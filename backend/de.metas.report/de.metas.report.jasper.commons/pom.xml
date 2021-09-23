@@ -32,7 +32,7 @@
         <dependency>
             <groupId>xerces</groupId>
             <artifactId>xercesImpl</artifactId>
-            <version>${commons-io.version}</version>
+            <version>2.11.0</version>
         </dependency>
         <dependency>
             <groupId>org.apache.xmlgraphics</groupId>
