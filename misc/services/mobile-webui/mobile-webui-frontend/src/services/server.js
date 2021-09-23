@@ -3,7 +3,7 @@ import { createServer, Response } from 'miragejs';
 export default function () {
   createServer({
     routes() {
-      this.post("/app/api/v2/aut", (schema, request) => {
+      this.post("/app/api/v2/auth", (schema, request) => {
         let attrs = JSON.parse(request.requestBody)
         console.log(attrs)
 

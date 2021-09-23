@@ -12,6 +12,8 @@ import { networkStatusOffline, networkStatusOnline } from './actions/NetworkActi
 import './index.css';
 import './assets/index.scss';
 
+mockServer();
+
 console.log('mockserver: ', mockServer)
 
 export const globalStore = store();
