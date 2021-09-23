@@ -1,12 +1,12 @@
 import { combineReducers } from '@reduxjs/toolkit';
 import { connectRouter } from 'connected-react-router';
 import appHandler from './appHandler';
-import launcher from './launcher'; 
+import launchers from './launchers'; 
 
 const createRootReducer = (history) => combineReducers({
     router: connectRouter(history),
     appHandler,
-    launcher,
+    launchers,
 })
 
 export default createRootReducer;
