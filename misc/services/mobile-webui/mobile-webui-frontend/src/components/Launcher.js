@@ -10,7 +10,7 @@ class Launcher extends PureComponent {
         const { id, caption, wfProviderId, startedWFProcessId } = this.props;
 
         return (
-            <div key={id} className="laucher ml-3 mr-3 is-light" onClick={() => this.handleClick(id)}>
+            <div key={id} className="ml-3 mr-3 is-light launcher" onClick={() => this.handleClick(id)}>
             <div className="box">
               <div className="columns is-mobile">
                 <div className="column is-12">
