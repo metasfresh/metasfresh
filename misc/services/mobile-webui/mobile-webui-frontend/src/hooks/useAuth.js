@@ -45,7 +45,9 @@ function useProvideAuth() {
   }
 
   const logout = () => {
-    dispatch(clearToken())
+    dispatch(clearToken());
+
+    return Promise.resolve();
   }
 
   const getToken = () => store.getState().appHandler.token;

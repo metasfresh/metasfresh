@@ -1,4 +1,5 @@
 import React from 'react';
+import axios from 'axios';
 import { useStore } from 'react-redux';
 
 import { ProvideAuth } from './hooks/useAuth';
@@ -8,19 +9,20 @@ import Routes from './routes';
 import './App.css';
 
 function App(props) {
-  // const store = useStore();
+  const store = useStore();
 
-  // (function() {
-  //      const token = store.getState().session.token;
-  //      if (token) {
-  //          axios.defaults.headers.common['Authorization'] = token;
-  //      } else {
-  //          axios.defaults.headers.common['Authorization'] = null;
-  //          /*if setting null does not remove `Authorization` header then try     
-  //            delete axios.defaults.headers.common['Authorization'];
-  //          */
-  //      }
-  // })();
+  (function() {
+       const token = store.getState().appHandler.token;
+
+       if (token) {
+           axios.defaults.headers.common['Authorization'] = token;
+       } else {
+           axios.defaults.headers.common['Authorization'] = null;
+           /*if setting null does not remove `Authorization` header then try     
+             delete axios.defaults.headers.common['Authorization'];
+           */
+       }
+  })();
 
   return (
     <ProvideAuth>

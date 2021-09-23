@@ -6,15 +6,13 @@ import mockServer from './services/server';
 import App from './App';
 import * as serviceWorkerRegistration from './serviceWorkerRegistration';
 import reportWebVitals from './reportWebVitals';
-import { store, history } from './store/store';
+import { store } from './store/store';
 import { networkStatusOffline, networkStatusOnline } from './actions/NetworkActions';
 
 import './index.css';
 import './assets/index.scss';
 
 mockServer();
-
-console.log('mockserver: ', mockServer)
 
 export const globalStore = store();
 
