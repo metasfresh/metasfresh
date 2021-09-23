@@ -45,7 +45,7 @@ public class UserAuthTokenFilter implements Filter
 	public void doFilter(final ServletRequest request, final ServletResponse response, final FilterChain chain) throws IOException, ServletException
 	{
 		final HttpServletRequest httpRequest = (HttpServletRequest)request;
-		if (configuration.isExcludedFromSecurityChecking(httpRequest))
+		if (isExcludedFromSecurityChecking(httpRequest))
 		{
 			chain.doFilter(request, response);
 		}
@@ -64,6 +64,12 @@ public class UserAuthTokenFilter implements Filter
 				httpResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED, ex.getLocalizedMessage());
 			}
 		}
+	}
+
+	private boolean isExcludedFromSecurityChecking(@NonNull final HttpServletRequest httpRequest)
+	{
+		return "OPTIONS".equals(httpRequest.getMethod()) // don't check auth for OPTIONS method calls because this causes troubles on chrome preflight checks
+				|| configuration.isExcludedFromSecurityChecking(httpRequest);
 	}
 
 	private static String extractTokenString(final HttpServletRequest httpRequest)
