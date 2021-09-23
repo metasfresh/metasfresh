@@ -27,3 +27,7 @@ package-lock.json
 *.lock
 
 .DS_Store
+
+config.js
+src/.env
+.env

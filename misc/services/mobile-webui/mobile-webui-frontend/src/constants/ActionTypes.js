@@ -1,4 +1,5 @@
 export * from './NetworkTypes';
+export * from './LaunchersTypes';
 
 /**
  * @constant

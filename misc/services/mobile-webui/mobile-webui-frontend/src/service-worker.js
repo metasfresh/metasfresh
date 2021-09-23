@@ -46,7 +46,8 @@ registerRoute(
 
     return true;
   },
-  createHandlerBoundToURL(process.env.PUBLIC_URL + '/index.html')
+  // createHandlerBoundToURL(process.env.PUBLIC_URL + '/index.html')
+  createHandlerBoundToURL('./index.html')
 );
 
 // An example runtime caching route for requests that aren't handled by the
@@ -72,6 +73,8 @@ self.addEventListener('message', (event) => {
   }
 });
 
+const broadcast = new BroadcastChannel('network-status-channel');
+
 // Any other custom service worker logic can go here.
 self.addEventListener('fetch', event => {
   // Prevent the default, and handle the request ourselves.
@@ -86,6 +89,7 @@ self.addEventListener('fetch', event => {
     // If we didn't find a match in the cache, use the network.
     return fetch(event.request).catch(function () {
       console.log('OFFLINE - You appear to be offline now');
+      broadcast.postMessage({ payload: 'offline' });
     });
   }());
 });

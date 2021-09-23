@@ -4,7 +4,7 @@
 
 // note that we set a default version for this library in jenkins, so we don't have to specify it here
 @Library('misc')
-import de.metas.jenkins.DockerConf
+import de.metas.jenkins.Misc
 import de.metas.jenkins.MvnConf
 
 Map build(final MvnConf mvnConf,
@@ -89,27 +89,17 @@ Map build(final MvnConf mvnConf,
         sh "tar cvzf mobile-frontend-dist-${env.MF_VERSION}.tar.gz build"
 
         withMaven(jdk: 'java-8-AdoptOpenJDK', maven: 'maven-3.6.3', mavenLocalRepo: '.repository', options: [artifactsPublisher(disabled: true)]) {
-            sh "mvn --settings ${mvnConf.settingsFile} ${mvnConf.resolveParams} -Dfile=mobile-frontend-dist-${env.MF_VERSION}.tar.gz -Durl=${mvnConf.deployRepoURL} -DrepositoryId=${mvnConf.MF_MAVEN_REPO_ID} -DgroupId=de.metas.ui.web -DartifactId=metasfresh-webui-frontend -Dversion=${env.MF_VERSION} -Dpackaging=tar.gz -DgeneratePom=true org.apache.maven.plugins:maven-deploy-plugin:2.7:deploy-file"
+            sh "mvn --settings ${mvnConf.settingsFile} ${mvnConf.resolveParams} -Dfile=mobile-frontend-dist-${env.MF_VERSION}.tar.gz -Durl=${mvnConf.deployRepoURL} -DrepositoryId=${mvnConf.MF_MAVEN_REPO_ID} -DgroupId=de.metas.ui.web -DartifactId=metasfresh-mobile-frontend -Dversion=${env.MF_VERSION} -Dpackaging=tar.gz -DgeneratePom=true org.apache.maven.plugins:maven-deploy-plugin:2.7:deploy-file"
         }
 
-        final misc = new de.metas.jenkins.Misc()
+        final Misc misc = new Misc()
         BUILD_ARTIFACT_URL = "${mvnConf.deployRepoURL}/de/metas/ui/web/metasfresh-mobile-frontend/${misc.urlEncode(env.MF_VERSION)}/metasfresh-mobile-frontend-${misc.urlEncode(env.MF_VERSION)}.tar.gz"
-
-        sh 'cp -r dist docker/nginx'
-
-        final DockerConf materialDispoDockerConf = new DockerConf(
-                'metasfresh-mobile-frontend-dev', // artifactName
-                env.BRANCH_NAME, // branchName
-                env.MF_VERSION, // versionSuffix
-                'docker/nginx' // workDir
-        )
-        final String publishedDockerImageName = dockerBuildAndPush(materialDispoDockerConf)
+  
 
         currentBuild.description = """${currentBuild.description}<br/>
 		This build's main artifacts (if not yet cleaned up) are
 <ul>
 <li><a href=\"${BUILD_ARTIFACT_URL}\">metasfresh-mobile-frontend-${env.MF_VERSION}.tar.gz</a></li>
-<li>a docker image with name <code>${publishedDockerImageName}</code>; Note that you can also use the tag <code>${misc.mkDockerTag(env.BRANCH_NAME)}_LATEST</code></li>
 </ul>"""
     }
 }

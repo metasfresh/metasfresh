@@ -17,6 +17,7 @@
     "react-router": "^5.2.1",
     "react-router-dom": "^5.3.0",
     "react-scripts": "4.0.3",
+    "uuid": "^8.3.2",
     "web-vitals": "^0.2.4",
     "workbox-background-sync": "^5.1.3",
     "workbox-broadcast-update": "^5.1.3",
@@ -56,7 +57,9 @@
     ]
   },
   "devDependencies": {
+    "axios-mock-adapter": "^1.20.0",
     "miragejs": "^0.1.41",
     "node-sass": "^6.0.1"
-  }
+  },
+  "homepage": "./"
 }

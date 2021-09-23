@@ -136,7 +136,7 @@ public final class Quantity implements Comparable<Quantity>
 		return quantity.toBigDecimal();
 	}
 
-	public static UomId getCommonUomIdOfAll(@NonNull final Quantity... quantities)
+	public static UomId getCommonUomIdOfAll(final Quantity... quantities)
 	{
 		Check.assumeNotEmpty(quantities, "The given quantities may not be empty");
 
@@ -154,6 +154,14 @@ public final class Quantity implements Comparable<Quantity>
 				"at least two quantity instances have different uoms: {}", uomIds2qties);
 
 		return CollectionUtils.singleElement(uomIds.asList());
+	}
+
+	public static void assertSameUOM(@NonNull final Quantity... quantities)
+	{
+		if(quantities.length > 1)
+		{
+			getCommonUomIdOfAll(quantities);
+		}
 	}
 
 	public static final BigDecimal QTY_INFINITE = BigDecimal.valueOf(Long.MAX_VALUE); // NOTE: we need a new instance to make sure it's unique
@@ -239,7 +247,6 @@ public final class Quantity implements Comparable<Quantity>
 	/**
 	 * Checks if <code>this</code> quantity equals with <code>other</code>, not considering the source (i.e. {@link #getSourceQty()}, {@link #getSourceUOM()}).
 	 *
-	 * @param other
 	 * @return true if they are equal
 	 */
 	public boolean equalsIgnoreSource(final Quantity other)
@@ -263,7 +270,6 @@ public final class Quantity implements Comparable<Quantity>
 	 * <p>
 	 * NOTE: quantities will be compared by using {@link BigDecimal#compareTo(BigDecimal)} instead of {@link BigDecimal#equals(Object)}.
 	 *
-	 * @param quantity
 	 * @return true if current Qty/UOM are comparable equal.
 	 */
 	public boolean qtyAndUomCompareToEquals(final Quantity quantity)
@@ -282,12 +288,7 @@ public final class Quantity implements Comparable<Quantity>
 			return false;
 		}
 
-		if (this.getUOMId() != quantity.getUOMId())
-		{
-			return false;
-		}
-
-		return true;
+		return this.getUOMId() == quantity.getUOMId();
 	}
 
 	/**
@@ -414,7 +415,6 @@ public final class Quantity implements Comparable<Quantity>
 	}
 
 	/**
-	 * @param uom
 	 * @return infinite quantity (using given UOM)
 	 */
 	public static Quantity infinite(final I_C_UOM uom)
@@ -760,7 +760,7 @@ public final class Quantity implements Comparable<Quantity>
 
 	private Quantity multiply(
 			@NonNull final Percent percent,
-			@NonNull final int precision,
+			final int precision,
 			@NonNull RoundingMode roundingMode)
 	{
 		final BigDecimal newQty = percent.computePercentageOf(this.qty, precision, roundingMode);
@@ -781,8 +781,7 @@ public final class Quantity implements Comparable<Quantity>
 
 	private UOMPrecision getUOMPrecision()
 	{
-		final UOMPrecision precision = UOMPrecision.ofInt(uom.getStdPrecision());
-		return precision;
+		return UOMPrecision.ofInt(uom.getStdPrecision());
 	}
 
 	public Quantity setScale(final UOMPrecision newScale, @NonNull final RoundingMode roundingMode)

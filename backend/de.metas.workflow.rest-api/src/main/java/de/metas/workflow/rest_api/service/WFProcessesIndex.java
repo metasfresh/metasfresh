@@ -9,7 +9,6 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
 import java.util.HashMap;
-import java.util.function.Predicate;
 
 public final class WFProcessesIndex
 {
