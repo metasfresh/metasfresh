@@ -1,5 +1,13 @@
 package de.metas.util.collections;
 
+import com.google.common.base.Splitter;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import de.metas.util.Check;
+import lombok.NonNull;
+import lombok.experimental.UtilityClass;
+
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -8,20 +16,11 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import javax.annotation.Nullable;
-
-import com.google.common.base.Splitter;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.util.Check;
-import lombok.NonNull;
-import lombok.experimental.UtilityClass;
 
 /*
  * #%L
@@ -52,7 +51,7 @@ public final class CollectionUtils
 	 * Convert given <code>list</code> to string using given <code>separator</code>.
 	 *
 	 * @param collection list to be converted to string
-	 * @param separator between elements separator
+	 * @param separator  between elements separator
 	 * @return string representation
 	 * @see #toString(Collection, String, Converter)
 	 */
@@ -67,14 +66,14 @@ public final class CollectionUtils
 	/**
 	 * Convert given <code>list</code> to string using given <code>separator</code>.
 	 *
-	 * @param collection collection to be converted to string
-	 * @param separator between elements separator
+	 * @param collection             collection to be converted to string
+	 * @param separator              between elements separator
 	 * @param elementStringConverter converter to be used when converting one list element to string
 	 * @return string representation
 	 */
 	public static <ET, CT extends Collection<ET>> String toString(final CT collection,
-			final String separator,
-			@Nullable final Converter<String, ET> elementStringConverter)
+																  final String separator,
+																  @Nullable final Converter<String, ET> elementStringConverter)
 	{
 		if (collection == null)
 		{
@@ -127,22 +126,23 @@ public final class CollectionUtils
 		return set;
 	}
 
-	public static <T> Set<T> asSet(@SuppressWarnings("unchecked") final T... arr)
+	@SafeVarargs
+	public static <T> Set<T> asSet(final T... arr)
 	{
 		if (arr == null || arr.length == 0)
 		{
 			return Collections.emptySet();
 		}
 
-		final Set<T> set = new HashSet<>(arr.length);
-		Collections.addAll(set, arr);
+		final HashSet<T> result = new HashSet<>(arr.length);
+		Collections.addAll(result, arr);
 
-		return set;
+		return result;
 	}
 
 	/**
 	 * Assumes that only one element will be matched by filter and returns it.
-	 *
+	 * <p>
 	 * If there were more elements matching or no element was matching an exception will be thrown.
 	 *
 	 * @param filter filter used to match the element
@@ -167,7 +167,7 @@ public final class CollectionUtils
 
 	/**
 	 * Assumes that given collection has one element only and returns it.
-	 *
+	 * <p>
 	 * If the collection has more elements or no element then an exception will be thrown.
 	 *
 	 * @return element; returns null ONLY if the element is null
@@ -181,7 +181,7 @@ public final class CollectionUtils
 
 	/**
 	 * Assumes that given collection has one element only and returns it.
-	 *
+	 * <p>
 	 * If the collection has more elements or no element then <code>null</code> will be returned.
 	 *
 	 * @see de.metas.util.reducers.Reducers#singleValue()
@@ -195,7 +195,7 @@ public final class CollectionUtils
 
 	/**
 	 * Assumes that given collection has one element only and returns it.
-	 *
+	 * <p>
 	 * If the collection has more elements or no element then <code>defaultValue</code> will be returned.
 	 *
 	 * @param defaultValue value to be returned in case there are more then one elements or no element
@@ -280,32 +280,34 @@ public final class CollectionUtils
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
-	/**
-	 * Converts the element of given <code>list</code> of type <code>InputType</code> to a list of <code>OutputType</code> by using given <code>converter</code>.
-	 *
-	 * @param collection input list (i.e. list to convert)
-	 * @param extractFuntion converter to be used to convert elements
-	 * @return list of OutputTypes.
-	 */
-	@Nullable
-	public static <R, T> ImmutableList<R> convert(
-			@Nullable final Collection<T> collection,
-			@NonNull final Function<T, R> extractFuntion)
+	public static <R, T> ImmutableList<R> map(
+			@NonNull final ImmutableList<T> collection,
+			@NonNull final Function<T, R> mappingFunction)
 	{
-		if (collection == null)
+		if (collection.isEmpty())
 		{
-			return null;
+			return ImmutableList.of();
 		}
 
-		return collection
-				.stream()
-				.map(extractFuntion)
-				.collect(ImmutableList.toImmutableList());
+		ImmutableList.Builder<R> result = ImmutableList.builder();
+		boolean hasChanges = false;
+		for (final T item : collection)
+		{
+			final R changedItem = mappingFunction.apply(item);
+			result.add(changedItem);
+
+			if (!hasChanges && !Objects.equals(item, changedItem))
+			{
+				hasChanges = true;
+			}
+		}
+
+		return result.build();
 	}
 
 	/**
 	 * Removes first element from {@link Set} and returns it.
-	 *
+	 * <p>
 	 * NOTE: this method is NOT checking if the set is null or empty.
 	 *
 	 * @return the removed first element
@@ -363,7 +365,7 @@ public final class CollectionUtils
 			@NonNull final Function<? super V, ? extends K> keyFunction)
 	{
 		// thx to https://reversecoding.net/java-8-list-to-map/
-		final LinkedHashMap<K, V> inventoryLineRecords = stream
+		return stream
 				.collect(Collectors.toMap(
 						keyFunction,
 						Function.identity(),
@@ -371,14 +373,13 @@ public final class CollectionUtils
 							throw new IllegalStateException(String.format("Duplicate key %s", u));
 						},
 						LinkedHashMap::new));
-		return inventoryLineRecords;
 	}
 
 	public static <T> ImmutableList<T> ofCommaSeparatedList(
 			@Nullable final String commaSeparatedStr,
 			@NonNull final Function<String, T> mapper)
 	{
-		if (Check.isBlank(commaSeparatedStr))
+		if (commaSeparatedStr == null || Check.isBlank(commaSeparatedStr))
 		{
 			return ImmutableList.of();
 		}
