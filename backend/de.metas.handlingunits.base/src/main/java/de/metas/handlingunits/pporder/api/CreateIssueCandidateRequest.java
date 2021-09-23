@@ -44,7 +44,7 @@ public class CreateIssueCandidateRequest
 {
 	@NonNull
 	PPOrderId orderId;
-	@NonNull
+	@Nullable
 	PPOrderBOMLineId orderBOMLineId;
 
 	@NonNull

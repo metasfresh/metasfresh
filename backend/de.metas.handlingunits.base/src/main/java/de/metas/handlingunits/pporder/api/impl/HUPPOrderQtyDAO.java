@@ -95,7 +95,7 @@ public class HUPPOrderQtyDAO implements IHUPPOrderQtyDAO
 		final I_PP_Order_Qty record = newInstance(I_PP_Order_Qty.class);
 
 		record.setPP_Order_ID(request.getOrderId().getRepoId());
-		record.setPP_Order_BOMLine_ID(request.getOrderBOMLineId().getRepoId());
+		record.setPP_Order_BOMLine_ID(request.getOrderBOMLineId() != null ? request.getOrderBOMLineId().getRepoId() : -1);
 
 		record.setM_Locator_ID(LocatorId.toRepoId(request.getLocatorId()));
 		record.setM_HU_ID(request.getIssueFromHUId().getRepoId());

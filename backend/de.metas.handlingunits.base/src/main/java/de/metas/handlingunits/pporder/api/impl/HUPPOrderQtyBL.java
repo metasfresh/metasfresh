@@ -13,7 +13,10 @@ import de.metas.handlingunits.pporder.api.HUPPOrderIssueProducer;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyBL;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
+import de.metas.handlingunits.pporder.api.impl.hu_pporder_issue_producer.CreateDraftIssuesCommand;
+import de.metas.handlingunits.pporder.api.impl.hu_pporder_issue_producer.CreatePickedIssueCommand;
 import de.metas.handlingunits.pporder.api.impl.hu_pporder_issue_producer.ReverseDraftIssues;
+import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.material.planning.pporder.DraftPPOrderBOMLineQuantities;
 import de.metas.material.planning.pporder.DraftPPOrderQuantities;
 import de.metas.material.planning.pporder.PPOrderUtil;
@@ -30,6 +33,7 @@ import org.eevolution.model.I_PP_Order_BOMLine;
 
 import javax.annotation.Nullable;
 import java.util.HashMap;
+import java.util.List;
 
 /*
  * #%L
@@ -166,12 +170,13 @@ public class HUPPOrderQtyBL implements IHUPPOrderQtyBL
 		final HuId issueFromHUId = issueToPickingOrder.getIssueFromHUId();
 		final I_M_HU issueFromHU = handlingUnitsBL.getById(issueFromHUId);
 
-		ppOrderBL.createIssueProducer(pickingOrderId)
-				.fixedQtyToIssue(issueToPickingOrder.getQtyToIssue())
+		final I_PP_Order_Qty candidate = CreatePickedIssueCommand.builder()
 				.movementDate(SystemTime.asZonedDateTime())
-				.processCandidates(HUPPOrderIssueProducer.ProcessIssueCandidatesPolicy.ALWAYS)
-				.changeHUStatusToIssued(false)
-				.createIssue(issueFromHU);
+				.fixedQtyToIssue(issueToPickingOrder.getQtyToIssue())
+				.orderId(pickingOrderId)
+				.issueFromHU(issueFromHU)
+				.build()
+				.execute();
 	}
 
 	@Override
