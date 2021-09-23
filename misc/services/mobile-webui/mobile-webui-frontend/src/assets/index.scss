@@ -4,3 +4,15 @@
 * {
   box-sizing: border-box;
 }
+
+.laucher {
+  margin-top: 0.4rem;
+  border: 1px solid $base-elements;
+  border-radius: 0.2rem;
+  .no-p {
+    padding: 0px;
+  }
+  .green-check {
+    color: $base-elements;
+  }
+}

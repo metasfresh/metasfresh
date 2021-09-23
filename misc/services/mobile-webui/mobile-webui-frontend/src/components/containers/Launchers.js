@@ -2,6 +2,8 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { populateLaunchers } from '../../actions/LauncherActions';
 import { getLaunchers } from '../../api/launchers';
+import Launcher from '../Launcher';
+import { v4 as uuidv4 } from 'uuid';
 class Launchers extends Component {
 
     componentDidMount() {
@@ -10,10 +12,16 @@ class Launchers extends Component {
         populateLaunchers(response.data.endpointResponse.launchers);
       });
     }
+
     render() {
+      const { launchers } = this.props;
+      const launchersKeys = Object.keys(launchers);
         return (
             <div>
-                Launchers placeholder
+                {launchersKeys.length > 0 && launchersKeys.map((keyName) => {
+                  let uniqueId = uuidv4();
+                  return <Launcher key={uniqueId} id={uniqueId} {...launchers[keyName]} />
+                })}
             </div>
         );
     }

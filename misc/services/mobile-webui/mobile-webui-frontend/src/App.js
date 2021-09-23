@@ -9,6 +9,7 @@ function App(props) {
   return (
       <>
       <Header appName="webUI app" />
+      <div></div>
       <Launchers />
       </>
   );
