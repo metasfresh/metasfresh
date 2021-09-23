@@ -1,11 +1,14 @@
-import axios from 'axios';
-import MockAdapter from 'axios-mock-adapter';
+import { createServer, Response } from 'miragejs';
 
-// This sets the mock adapter on the default instance
-const mockServer = new MockAdapter(axios);
+export default function () {
+  createServer({
+    routes() {
+      this.post("/app/api/v2/aut", (schema, request) => {
+        let attrs = JSON.parse(request.requestBody)
+        console.log(attrs)
 
-mockServer.onPost('/app/api/v2/aut').reply(200, {
-  token: '4bed7f8ec882465e80eb9d23f0f063cf'
-});
-
-export { mockServer };
+        return new Response(200, { "Access-Control-Allow-Origin": '*', }, { token: '4bed7f8ec882465e80eb9d23f0f063cf' });
+      })
+    },
+  });
+}

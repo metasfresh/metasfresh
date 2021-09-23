@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
 
+import mockServer from './services/server';
 import App from './App';
 import * as serviceWorkerRegistration from './serviceWorkerRegistration';
 import reportWebVitals from './reportWebVitals';
@@ -10,6 +11,8 @@ import { networkStatusOffline, networkStatusOnline } from './actions/NetworkActi
 
 import './index.css';
 import './assets/index.scss';
+
+console.log('mockserver: ', mockServer)
 
 export const globalStore = store();
 
