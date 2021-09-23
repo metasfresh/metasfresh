@@ -16,8 +16,8 @@ import java.util.Optional;
 @Getter
 public enum TakeWholeHUEnum implements ReferenceListAwareEnum
 {
-	WHOLE_HU("Y"),
-	SPLIT("N"),
+	WHOLE_HU("true"),
+	SPLIT("false"),
 	NONE("None");
 
 	private final String code;
@@ -26,7 +26,7 @@ public enum TakeWholeHUEnum implements ReferenceListAwareEnum
 	public static TakeWholeHUEnum ofCode(@NonNull final String code)
 	{
 		return ofCodeOptional(code)
-				.orElseThrow(() -> new AdempiereException("No PurchaseTypeEnum could be found for code!")
+				.orElseThrow(() -> new AdempiereException("No TakeWholeHUEnum could be found for code!")
 						.appendParametersToMessage()
 						.setParameter("code", code));
 	}

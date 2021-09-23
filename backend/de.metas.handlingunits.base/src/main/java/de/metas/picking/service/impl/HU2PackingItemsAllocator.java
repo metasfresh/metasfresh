@@ -518,7 +518,7 @@ public class HU2PackingItemsAllocator
 						.setParameter("qtyPacked to be Delivered", qtyPacked);
 		}
 
-		if (allowOverDelivery && isOverDelivery && TakeWholeHUEnum.SPLIT.equals(takeWholeHU.getCode()))
+		if (allowOverDelivery && isOverDelivery && TakeWholeHUEnum.SPLIT.getCode().equals(takeWholeHU.getCode()))
 		{
 			splitCurrentHU(pickFromVHU, packedPart);
 		}
