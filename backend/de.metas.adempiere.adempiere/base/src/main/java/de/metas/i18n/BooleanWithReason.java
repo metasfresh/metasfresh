@@ -5,6 +5,7 @@ import de.metas.util.Check;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.experimental.FieldDefaults;
+import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 
@@ -131,6 +132,14 @@ public final class BooleanWithReason
 	public String getReasonAsString()
 	{
 		return reason.getDefaultValue();
+	}
+
+	public void assertTrue()
+	{
+		if (isFalse())
+		{
+			throw new AdempiereException(reason);
+		}
 	}
 
 }
