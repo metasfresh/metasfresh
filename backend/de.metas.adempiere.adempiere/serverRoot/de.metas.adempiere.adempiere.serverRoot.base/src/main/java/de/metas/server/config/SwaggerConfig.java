@@ -1,16 +1,15 @@
 package de.metas.server.config;
 
+import com.google.common.collect.ImmutableList;
+import de.metas.util.web.SwaggerUtil;
+import de.pentabyte.springfox.ApiEnumDescriptionPlugin;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
-import com.google.common.collect.ImmutableList;
-
-import de.metas.util.web.SwaggerUtil;
+import org.springframework.context.annotation.Import;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import springfox.documentation.builders.PathSelectors;
 import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spring.web.plugins.Docket;
-import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 /*
  * #%L
@@ -36,6 +35,7 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 @Configuration
 @EnableWebMvc
+@Import(ApiEnumDescriptionPlugin.class)  // https://github.com/hoereth/springfox-enum-plugin
 public class SwaggerConfig
 {
 	@Bean
