@@ -1,30 +1,22 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import './index.css';
+import { Provider } from 'react-redux';
+
 import App from './App';
 import * as serviceWorkerRegistration from './serviceWorkerRegistration';
 import reportWebVitals from './reportWebVitals';
-import { Provider } from 'react-redux';
-import { ConnectedRouter } from 'connected-react-router';
-import { Route, Switch } from 'react-router';
 import { store, history } from './store/store';
-import './assets/index.scss';
 import { networkStatusOffline, networkStatusOnline } from './actions/NetworkActions';
+
+import './index.css';
+import './assets/index.scss';
 
 export const globalStore = store();
 
 ReactDOM.render(
   <React.StrictMode>
     <Provider store={globalStore}>
-      <ConnectedRouter history={history}>
-        <>
-          <Switch>
-            <Route exact path="/" render={() => (<App />)} />
-            <Route exact path="/test" render={() => (<><h1>test</h1></>)} />
-            <Route render={() => (<div>Not found</div>)} />
-          </Switch>
-        </>
-      </ConnectedRouter>
+      <App />
     </Provider>
   </React.StrictMode>,
   document.getElementById('root')
