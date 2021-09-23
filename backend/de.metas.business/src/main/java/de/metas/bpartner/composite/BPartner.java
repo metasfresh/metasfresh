@@ -8,6 +8,7 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.order.InvoiceRule;
+import de.metas.payment.PaymentRule;
 import de.metas.util.lang.ExternalId;
 import lombok.Builder;
 import lombok.Data;
@@ -62,6 +63,10 @@ public class BPartner
 	public static final String VENDOR = "vendor";
 	public static final String CUSTOMER = "customer";
 	public static final String COMPANY = "company";
+	public static final String SALES_PARTNER_CODE = "salesPartnerCode";
+	public static final String C_BPARTNER_SALES_REP_ID = "bPartnerSalesRepId";
+	public static final String PAYMENT_RULE = "paymentRule";
+	public static final String INTERNAL_NAME = "internalName";
 	public static final String VAT_ID = "vatId";
 
 	/**
@@ -104,6 +109,10 @@ public class BPartner
 	private boolean vendor;
 	private boolean customer;
 	private boolean company;
+	private String salesPartnerCode;
+	private SalesRep salesRep;
+	private PaymentRule paymentRule;
+	private String internalName;
 
 	private InvoiceRule invoiceRule;
 
@@ -151,6 +160,10 @@ public class BPartner
 			@Nullable final Boolean vendor,
 			@Nullable final Boolean customer,
 			@Nullable final Boolean company,
+			@Nullable final String salesPartnerCode,
+			@Nullable final SalesRep salesRep,
+			@Nullable final PaymentRule paymentRule,
+			@Nullable final String internalName,
 			@Nullable final String vatId,
 			@Nullable final RecordChangeLog changeLog,
 			@Nullable final String shipmentAllocationBestBeforePolicy,
@@ -177,6 +190,10 @@ public class BPartner
 		this.vendor = coalesce(vendor, false);
 		this.customer = coalesce(customer, false);
 		this.company = coalesce(company, false);
+		this.salesPartnerCode = salesPartnerCode;
+		this.salesRep = salesRep;
+		this.paymentRule = paymentRule;
+		this.internalName = internalName;
 		this.vatId = vatId;
 
 		this.changeLog = changeLog;

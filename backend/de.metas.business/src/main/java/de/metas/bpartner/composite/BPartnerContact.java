@@ -18,6 +18,7 @@ import lombok.Setter;
 import org.adempiere.ad.table.RecordChangeLog;
 
 import javax.annotation.Nullable;
+import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -58,6 +59,7 @@ public class BPartnerContact
 	public static final String NAME = "name";
 	public static final String LAST_NAME = "lastName";
 	public static final String FIRST_NAME = "firstName";
+	public static final String BIRTHDAY = "birthday";
 	public static final String EMAIL = "email";
 	public static final String PHONE = "phone";
 	public static final String NEWSLETTER = "newsletter";
@@ -85,6 +87,9 @@ public class BPartnerContact
 	private String lastName;
 
 	private String firstName;
+
+	@JsonInclude(Include.NON_NULL)
+	private LocalDate birthday;
 
 	@JsonInclude(Include.NON_NULL)
 	private String email;
@@ -133,6 +138,7 @@ public class BPartnerContact
 			@Nullable final String name,
 			@Nullable final String firstName,
 			@Nullable final String lastName,
+			@Nullable final LocalDate birthday,
 			@Nullable final String email,
 			@Nullable final Boolean newsletter,
 			@Nullable final Boolean invoiceEmailEnabled,
@@ -163,6 +169,7 @@ public class BPartnerContact
 		this.name = name;
 		this.firstName = firstName;
 		this.lastName = lastName;
+		this.birthday = birthday;
 		this.email = email;
 		this.phone = phone;
 

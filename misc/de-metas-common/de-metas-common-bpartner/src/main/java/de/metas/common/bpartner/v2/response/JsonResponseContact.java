@@ -33,6 +33,7 @@ import lombok.Builder;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.time.LocalDate;
 import java.util.List;
 
 @Value
@@ -42,6 +43,7 @@ public class JsonResponseContact
 	public static final String EMAIL = "email";
 	public static final String LAST_NAME = "lastName";
 	public static final String FIRST_NAME = "firstName";
+	public static final String BIRTHDAY = "birthday";
 	public static final String NAME = "name";
 	public static final String GREETING = "greeting";
 	public static final String CODE = "code";
@@ -88,6 +90,9 @@ public class JsonResponseContact
 
 	@JsonInclude(Include.NON_EMPTY)
 	String firstName;
+
+	@JsonInclude(Include.NON_EMPTY)
+	LocalDate birthday;
 
 	@JsonInclude(Include.NON_EMPTY)
 	String email;
@@ -153,6 +158,7 @@ public class JsonResponseContact
 			@JsonProperty(GREETING) final String greeting,
 			@JsonProperty(FIRST_NAME) final String firstName,
 			@JsonProperty(LAST_NAME) final String lastName,
+			@JsonProperty(BIRTHDAY) @Nullable final LocalDate birthday,
 			@JsonProperty(EMAIL) final String email,
 			@JsonProperty(PHONE) final String phone,
 
@@ -198,6 +204,7 @@ public class JsonResponseContact
 		this.greeting = greeting;
 		this.firstName = firstName;
 		this.lastName = lastName;
+		this.birthday = birthday;
 		this.email = email;
 		this.phone = phone;
 		this.invoiceEmailEnabled = invoiceEmailEnabled;
