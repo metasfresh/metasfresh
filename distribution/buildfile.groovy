@@ -24,7 +24,7 @@ Map build(final MvnConf mvnConf) {
 //                sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} ${metasfreshAdminPropertyParam} ${VERSIONS_PLUGIN}:update-property"
                 final String metasfreshWebFrontEndUpdatePropertyParam = '-Dproperty=metasfresh-webui-frontend.version -DallowDowngrade=true'
                 sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} ${metasfreshWebFrontEndUpdatePropertyParam} ${VERSIONS_PLUGIN}:update-property"
-                final String metasfreshMobileFrontEndUpdatePropertyParam = '-Dproperty=metasfresh-webui-frontend.version -DallowDowngrade=true'
+                final String metasfreshMobileFrontEndUpdatePropertyParam = '-Dproperty=metasfresh-mobile-frontend.version -DallowDowngrade=true'
                 sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} ${metasfreshMobileFrontEndUpdatePropertyParam} ${VERSIONS_PLUGIN}:update-property"
 //                final String metasfreshWebApiUpdatePropertyParam = '-Dproperty=metasfresh-webui-api.version -DallowDowngrade=true'
 //                sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} ${metasfreshWebApiUpdatePropertyParam} ${VERSIONS_PLUGIN}:update-property"
