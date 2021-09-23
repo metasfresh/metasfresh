@@ -152,3 +152,13 @@ INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_El
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_UI_Element SET IsAdvancedField='Y',Updated=TO_TIMESTAMP('2021-09-21 18:40:34','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=591504
 ;
+
+-- 2021-09-23T13:42:50.416Z
+-- URL zum Konzept
+UPDATE AD_Column SET FieldLength=255,Updated=TO_TIMESTAMP('2021-09-23 16:42:50','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=577119
+;
+
+-- 2021-09-23T13:43:57.328Z
+-- URL zum Konzept
+INSERT INTO t_alter_column values('c_bpartner','InternalName','VARCHAR(255)',null,null)
+;
