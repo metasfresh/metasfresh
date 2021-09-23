@@ -43,7 +43,6 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 @SpringBootApplication
 @EnableConfigurationProperties
 @EnableJpaRepositories
-@EnableWebMvc
 public class Application
 {
 	public static final String ENDPOINT_ROOT = "/rest";
