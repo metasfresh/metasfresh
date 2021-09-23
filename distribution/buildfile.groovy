@@ -5,13 +5,13 @@ import de.metas.jenkins.MvnConf
 import de.metas.jenkins.Misc
 
 Map build(final MvnConf mvnConf) {
-    final artifactURLs = [:];
+    final artifactURLs = [:]
 
     stage('Resolve all distribution artifacts')
             {
                 final String VERSIONS_PLUGIN = 'org.codehaus.mojo:versions-maven-plugin:2.5' // make sure we know which plugin version we run
 
-                final Misc misc = new Misc();
+                final Misc misc = new Misc()
 
                 mvnUpdateParentPomVersion mvnConf
 
@@ -105,9 +105,9 @@ Note: all the separately listed artifacts are also included in the dist-tar.gz
     Therefore the artifacts that are linked to by the URLs above might already have been deleted.</li>
   <li>It is important to note that both the <i>"metasfresh-dist"</i> artifacts (client and backend server) build by this job and the <i>"webui"</i> artifacts that are also linked here are based on the same underlying metasfresh version.
 </ul>
-""";
+"""
             }
     return artifactURLs
 }
 
-return this;
+return this
