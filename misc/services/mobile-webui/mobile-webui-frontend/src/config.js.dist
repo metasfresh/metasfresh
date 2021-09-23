@@ -1,0 +1,3 @@
+const config =  {
+  API_URL: 'http://localhost/rest/api/v2',
+};
