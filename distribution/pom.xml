@@ -20,11 +20,12 @@
 		See http://www.mojohaus.org/versions-maven-plugin/examples/update-properties.html
 		and http://stackoverflow.com/questions/3628471/maven-versions-plugin-not-picking-up-properties-from-parent
 		-->
-		<!-- 10.0.0 is the version that is build and installed to our local repo bei eclipse or if we run maven from the command line -->
+		<!-- 10.0.0 is the version that is build and installed to our local repo by the IDE or if we run maven from the command line -->
 		<metasfresh.version>10.0.0</metasfresh.version>
 <!--		<metasfresh-procurement-webui.version>10.0.0</metasfresh-procurement-webui.version>-->
 <!--		<metasfresh-admin.version>[1,10.0.0]</metasfresh-admin.version>-->
-<!--		<metasfresh-webui-frontend.version>10.0.0</metasfresh-webui-frontend.version>-->
+		<metasfresh-webui-frontend.version>10.0.0</metasfresh-webui-frontend.version>
+		<metasfresh-mobile-frontend.version>10.0.0</metasfresh-mobile-frontend.version>
 <!--		<procurement-webui-backend.version>10.0.0</procurement-webui-backend.version>-->
 	</properties>
 
@@ -42,14 +43,22 @@ Since we now work with a range, we now declare the dependencies here where range
 			<classifier>dist</classifier>
 		</dependency>
 
-<!--		<dependency>-->
-<!--			<groupId>de.metas.ui.web</groupId>-->
-<!--			<artifactId>metasfresh-webui-frontend</artifactId>-->
-<!--			<version>${metasfresh-webui-frontend.version}</version>-->
-<!--			<type>tar.gz</type>-->
-<!--		</dependency>-->
+		<dependency>
+			<groupId>de.metas.ui.web</groupId>
+			<artifactId>metasfresh-webui-frontend</artifactId>
+			<version>${metasfresh-webui-frontend.version}</version>
+			<type>tar.gz</type>
+		</dependency>
 
-<!--		<dependency>-->
+		<dependency>
+			<groupId>de.metas.ui.web</groupId>
+			<artifactId>metasfresh-mobile-frontend</artifactId>
+			<version>${metasfresh-mobile-frontend.version}</version>
+			<type>tar.gz</type>
+		</dependency>
+
+
+		<!--		<dependency>-->
 <!--			<groupId>de.metas.procurement</groupId>-->
 <!--			<artifactId>de.metas.procurement.webui</artifactId>-->
 <!--			<version>${metasfresh-procurement-webui.version}</version>-->
