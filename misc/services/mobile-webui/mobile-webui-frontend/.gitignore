@@ -27,3 +27,5 @@ package-lock.json
 *.lock
 
 .DS_Store
+
+config.js
