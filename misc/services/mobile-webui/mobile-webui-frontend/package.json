@@ -9,6 +9,7 @@
     "@testing-library/react": "^11.1.0",
     "@testing-library/user-event": "^12.1.10",
     "axios": "^0.21.4",
+    "axios-mock-adapter": "^1.20.0",
     "bulma": "^0.9.3",
     "connected-react-router": "^6.9.1",
     "react": "^17.0.2",
