@@ -1,20 +1,8 @@
-package de.metas.dataentry.data;
-
-import java.time.ZonedDateTime;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-
-import de.metas.user.UserId;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -32,23 +20,35 @@ import lombok.Value;
  * #L%
  */
 
+package de.metas;
+
+import java.time.ZonedDateTime;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import de.metas.user.UserId;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+
 @Value
-public class DataEntryCreatedUpdatedInfo
+public class CreatedUpdatedInfo
 {
-	public static DataEntryCreatedUpdatedInfo createNew(
+	public static CreatedUpdatedInfo createNew(
 			@NonNull final UserId createdBy,
 			@NonNull final ZonedDateTime created)
 	{
-		return new DataEntryCreatedUpdatedInfo(createdBy, created, createdBy, created);
+		return new CreatedUpdatedInfo(createdBy, created, createdBy, created);
 	}
 
-	public static DataEntryCreatedUpdatedInfo of(
+	public static CreatedUpdatedInfo of(
 			@NonNull final ZonedDateTime created,
 			@NonNull final UserId createdBy,
 			@NonNull final ZonedDateTime updated,
 			@NonNull final UserId updatedBy)
 	{
-		return new DataEntryCreatedUpdatedInfo(createdBy, created, updatedBy, updated);
+		return new CreatedUpdatedInfo(createdBy, created, updatedBy, updated);
 	}
 
 	UserId createdBy;
@@ -58,7 +58,7 @@ public class DataEntryCreatedUpdatedInfo
 
 	@Builder
 	@JsonCreator
-	private DataEntryCreatedUpdatedInfo(
+	private CreatedUpdatedInfo(
 			@NonNull @JsonProperty("createdBy") final UserId createdBy,
 			@NonNull @JsonProperty("created") final ZonedDateTime created,
 			@NonNull @JsonProperty("updatedBy") final UserId updatedBy,
@@ -70,11 +70,11 @@ public class DataEntryCreatedUpdatedInfo
 		this.updated = updated;
 	}
 
-	public DataEntryCreatedUpdatedInfo updated(
+	public CreatedUpdatedInfo updated(
 			@NonNull final UserId updatedBy,
 			@NonNull final ZonedDateTime updated)
 	{
-		return new DataEntryCreatedUpdatedInfo(createdBy, created, updatedBy, updated);
+		return new CreatedUpdatedInfo(createdBy, created, updatedBy, updated);
 	}
 
 }
