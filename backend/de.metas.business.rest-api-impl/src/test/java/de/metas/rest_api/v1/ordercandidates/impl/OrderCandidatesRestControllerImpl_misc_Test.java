@@ -85,7 +85,7 @@ public class OrderCandidatesRestControllerImpl_misc_Test
 				.mimeType(MimeType.TYPE_TextPlain)
 				.build();
 
-		final JsonAttachment jsonAttachment = OrderCandidatesRestControllerImpl.toJsonAttachment(
+		final JsonAttachment jsonAttachment = OrderCandidatesRestController.toJsonAttachment(
 				"externalReference",
 				"dataSourceName",
 				attachmentEntry);
@@ -111,6 +111,6 @@ public class OrderCandidatesRestControllerImpl_misc_Test
 
 	private ImmutableMap<String, String> invokeWith(final ImmutableList<String> of)
 	{
-		return OrderCandidatesRestControllerImpl.extractTags(of);
+		return OrderCandidatesRestController.extractTags(of);
 	}
 }
