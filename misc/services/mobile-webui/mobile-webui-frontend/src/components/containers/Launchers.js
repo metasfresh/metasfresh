@@ -1,6 +1,15 @@
 import React, { Component } from 'react';
-
+import { connect } from 'react-redux';
+import { populateLaunchers } from '../../actions/LauncherActions';
+import { getLaunchers } from '../../api/launchers';
 class Launchers extends Component {
+
+    componentDidMount() {
+      const { populateLaunchers } = this.props;
+      getLaunchers({ token: process.env.API_TOKEN}).then(() => {
+        populateLaunchers();
+      });
+    }
     render() {
         return (
             <div>
@@ -10,4 +19,10 @@ class Launchers extends Component {
     }
 }
 
-export default Launchers;
+const mapStateToProps = (state) => {
+    return {
+        launchers: state.launchers,
+      };
+};
+
+export default connect(mapStateToProps, { populateLaunchers })(Launchers);
