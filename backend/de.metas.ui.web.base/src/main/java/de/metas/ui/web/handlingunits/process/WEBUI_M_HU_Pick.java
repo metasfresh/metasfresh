@@ -8,6 +8,7 @@ import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.PickFrom;
 import de.metas.handlingunits.picking.PickingCandidateService;
+import de.metas.handlingunits.picking.TakeWholeHUEnum;
 import de.metas.handlingunits.picking.requests.PickRequest;
 import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.logging.LogManager;
@@ -238,7 +239,10 @@ public class WEBUI_M_HU_Pick extends ViewBasedProcessTemplate implements IProces
 				.build());
 		// NOTE: we are not moving the HU to shipment schedule's locator.
 		final PPOrderLinesView ppOrderView = (PPOrderLinesView)getView();
-		pickingCandidateService.processForHUIds(ImmutableSet.of(huId), shipmentScheduleId, isTakeWholeHU, ppOrderView.getPpOrderId());
+		pickingCandidateService.processForHUIds(ImmutableSet.of(huId),
+												shipmentScheduleId,
+												TakeWholeHUEnum.ofCode(String.valueOf(isTakeWholeHU)),
+												ppOrderView.getPpOrderId());
 	}
 
 	@Override

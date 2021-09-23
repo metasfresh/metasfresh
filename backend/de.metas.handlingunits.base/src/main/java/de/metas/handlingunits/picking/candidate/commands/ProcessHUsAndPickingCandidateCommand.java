@@ -11,6 +11,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.PickedFrom;
 import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
+import de.metas.handlingunits.picking.TakeWholeHUEnum;
 import de.metas.handlingunits.sourcehu.HuId2SourceHUsService;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.handlingunits.storage.IHUStorageFactory;
@@ -84,7 +85,7 @@ public class ProcessHUsAndPickingCandidateCommand
 	private final ImmutableListMultimap<HuId, PickingCandidate> pickingCandidatesByPickFromHUId;
 	private final ImmutableSet<HuId> pickFromHuIds;
 	private final boolean allowOverDelivery;
-	private final boolean isTakeWholeHU;
+	private final TakeWholeHUEnum takeWholeHU;
 
 	@Builder
 	@Getter
@@ -104,7 +105,7 @@ public class ProcessHUsAndPickingCandidateCommand
 			@NonNull final List<PickingCandidate> pickingCandidates,
 			@NonNull @Singular final Set<HuId> additionalPickFromHuIds,
 			final boolean allowOverDelivery,
-			final  boolean isTakeWholeHU)
+			final  TakeWholeHUEnum takeWholeHU)
 	{
 		Check.assumeNotEmpty(pickingCandidates, "pickingCandidates is not empty");
 		for (PickingCandidate pickingCandidate : pickingCandidates)
@@ -130,7 +131,7 @@ public class ProcessHUsAndPickingCandidateCommand
 
 		this.allowOverDelivery = allowOverDelivery;
 
-		this.isTakeWholeHU = isTakeWholeHU;
+		this.takeWholeHU = takeWholeHU;
 	}
 
 	public ImmutableList<PickingCandidate> perform()
@@ -163,7 +164,7 @@ public class ProcessHUsAndPickingCandidateCommand
 			final HU2PackingItemsAllocator allocator = HU2PackingItemsAllocator.builder()
 					.itemToPack(itemToPack)
 					.allowOverDelivery(allowOverDelivery)
-					.isTakeWholeHU(isTakeWholeHU)
+					.takeWholeHU(takeWholeHU)
 					.pickFromHU(hu)
 					.build();
 

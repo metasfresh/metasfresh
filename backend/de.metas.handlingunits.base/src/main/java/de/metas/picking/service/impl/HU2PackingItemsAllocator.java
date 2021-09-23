@@ -13,6 +13,8 @@ import javax.annotation.Nullable;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
+import de.metas.handlingunits.picking.TakeWholeHUEnum;
+import de.metas.order.createFrom.po_from_so.PurchaseTypeEnum;
 import de.metas.util.collections.CollectionUtils;
 import lombok.Value;
 import org.adempiere.ad.trx.api.ITrx;
@@ -101,7 +103,7 @@ public class HU2PackingItemsAllocator
 	private final PackingItemsMap packingItems;
 	//
 	private final boolean allowOverDelivery;
-	private final boolean isTakeWholeHU;
+	private final TakeWholeHUEnum takeWholeHU;
 
 	private ImmutableList<I_M_HU> _pickFromHUs;
 	private final IAllocationDestination _packToDestination;
@@ -124,7 +126,7 @@ public class HU2PackingItemsAllocator
 			@Nullable final PackingSlot packedItemsSlot,
 			//
 			final boolean allowOverDelivery,
-			final boolean isTakeWholeHU,
+			@NonNull final TakeWholeHUEnum takeWholeHU,
 			@NonNull @Singular("pickFromHU") final ImmutableList<I_M_HU> pickFromHUs,
 			@Nullable final IAllocationDestination packToDestination,
 			@Nullable final Quantity qtyToPack)
@@ -134,7 +136,7 @@ public class HU2PackingItemsAllocator
 		this.packedItemsSlot = packedItemsSlot != null ? packedItemsSlot : PackingSlot.DEFAULT_PACKED;
 
 		this.allowOverDelivery = allowOverDelivery;
-		this.isTakeWholeHU = isTakeWholeHU;
+		this.takeWholeHU = takeWholeHU;
 		_pickFromHUs = pickFromHUs;
 		_packToDestination = packToDestination;
 
@@ -509,14 +511,14 @@ public class HU2PackingItemsAllocator
 		final boolean isOverDelivery = currentQtyToDeliver.compareTo(qtyPacked.toBigDecimal()) < 0;
 
 		// Check over-delivery
-		if (!allowOverDelivery && isOverDelivery)
+		if (!allowOverDelivery && isOverDelivery && TakeWholeHUEnum.NONE.equals(takeWholeHU.getCode()))
 		{
 				throw new AdempiereException("@" + PickingConfigRepository.MSG_WEBUI_Picking_OverdeliveryNotAllowed + "@")
 						.setParameter("shipmentSchedule's QtyToDeliver", currentQtyToDeliver)
 						.setParameter("qtyPacked to be Delivered", qtyPacked);
 		}
 
-		if (allowOverDelivery && isOverDelivery && !isTakeWholeHU)
+		if (allowOverDelivery && isOverDelivery && TakeWholeHUEnum.SPLIT.equals(takeWholeHU.getCode()))
 		{
 			splitCurrentHU(pickFromVHU, packedPart);
 		}

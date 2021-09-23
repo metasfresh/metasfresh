@@ -27,6 +27,7 @@ import de.metas.handlingunits.picking.requests.RemoveQtyFromHURequest;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyBL;
 import de.metas.handlingunits.sourcehu.HuId2SourceHUsService;
 import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.order.createFrom.po_from_so.PurchaseTypeEnum;
 import de.metas.picking.api.PickingConfigRepository;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
@@ -167,13 +168,13 @@ public class PickingCandidateService
 			@NonNull final Set<HuId> pickFromHuIds,
 			@Nullable final ShipmentScheduleId shipmentScheduleId)
 	{
-		processForHUIds(pickFromHuIds, shipmentScheduleId, false, null); // TODO: figure out how shall be in this case
+		processForHUIds(pickFromHuIds, shipmentScheduleId, TakeWholeHUEnum.NONE, null);
 	}
 
 	public void processForHUIds(
 			@NonNull final Set<HuId> pickFromHuIds,
 			@Nullable final ShipmentScheduleId shipmentScheduleId,
-			final boolean isTakeWholeHU,
+			@NonNull final TakeWholeHUEnum takeWholeHU,
 			@Nullable final PPOrderId orderId)
 	{
 		final List<PickingCandidate> pickingCandidatesToProcess = pickingCandidateRepository.getByHUIds(pickFromHuIds)
@@ -189,7 +190,7 @@ public class PickingCandidateService
 				.pickingCandidates(pickingCandidatesToProcess)
 				.additionalPickFromHuIds(pickFromHuIds)
 				.allowOverDelivery(pickingConfigRepository.getPickingConfig().isAllowOverDelivery())
-				.isTakeWholeHU(isTakeWholeHU)
+				.takeWholeHU(takeWholeHU)
 				.build()
 				.perform();
 
