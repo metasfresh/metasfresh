@@ -10,9 +10,10 @@
   padding-bottom: 2rem;
 }
 .laucher {
+  cursor: pointer;
   margin-top: 0.4rem;
   border: 1px solid $base-elements;
-  border-radius: 0.2rem;
+  border-radius: 5px;
   .no-p {
     padding: 0px;
   }
