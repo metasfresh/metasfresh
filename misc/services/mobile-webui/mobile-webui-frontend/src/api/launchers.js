@@ -7,7 +7,7 @@ import axios from 'axios';
  * @returns 
  */
 export function getLaunchers({ token }) {
-  return axios.get(`${process.env.API_URL}/app/api/v2/userWorkflows/launchers`, {
+  return axios.get(`${window.config.API_URL}/userWorkflows/launchers`, {
     headers: {
       'Authorization': token,
       'accept': 'application/json',
