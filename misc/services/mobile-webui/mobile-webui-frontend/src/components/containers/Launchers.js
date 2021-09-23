@@ -6,7 +6,7 @@ class Launchers extends Component {
 
     componentDidMount() {
       const { populateLaunchers } = this.props;
-      getLaunchers({ token: process.env.API_TOKEN}).then(() => {
+      getLaunchers({ token: window.config.API_TOKEN }).then(() => {
         populateLaunchers();
       });
     }
