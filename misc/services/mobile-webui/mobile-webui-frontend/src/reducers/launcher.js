@@ -1,8 +1,6 @@
 import * as types from '../constants/ActionTypes';
 
-export const initialState = {
-    items: [],
-};
+export const initialState = {};
 
 export default function launcher(state = initialState, action) {
     const { payload } = action;
@@ -10,7 +8,7 @@ export default function launcher(state = initialState, action) {
       case types.POPULATE_LAUNCHERS:
         return {
           ...state,
-          ...payload,
+          ...payload.launchers,
         };
   
       default:
