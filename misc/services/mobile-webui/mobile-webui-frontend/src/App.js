@@ -3,6 +3,7 @@ import { connect, useStore } from 'react-redux';
 
 import { ProvideAuth } from './hooks/useAuth';
 import Routes from './routes';
+import { mockServer } from './services/server';
 
 // import logo from './logo.svg';
 import './App.css';
