@@ -9,10 +9,13 @@ import { ConnectedRouter } from 'connected-react-router';
 import { Route, Switch } from 'react-router';
 import { store, history } from './store/store';
 import './assets/index.scss';
+import { networkStatusOffline, networkStatusOnline } from './actions/NetworkActions';
+
+export const globalStore = store();
 
 ReactDOM.render(
   <React.StrictMode>
-    <Provider store={store()}>
+    <Provider store={globalStore}>
       <ConnectedRouter history={history}>
         <>
           <Switch>
@@ -36,3 +39,30 @@ serviceWorkerRegistration.register();
 // to log results (for example: reportWebVitals(console.log))
 // or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
 reportWebVitals();
+
+const broadcast = new BroadcastChannel('network-status-channel');
+
+/**
+ * Listen to the response broadcasted by the service worker when the network status changes
+ * This is needed for the special case when user refreshes the page while being off
+ */
+broadcast.onmessage = (event) => {
+  event.data.payload === 'offline' && globalStore.dispatch(networkStatusOffline())
+};
+
+window.addEventListener('offline', () => {
+  globalStore.dispatch(networkStatusOffline())
+});
+
+window.addEventListener('online', () => {
+  globalStore.dispatch(networkStatusOnline())
+});
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  // e.preventDefault(); - this is going to disable the prompt if uncommented !
+  // See if the app is already installed, in that case, do nothing
+  if (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) {
+    // Already installed
+    return false;
+  }
+});

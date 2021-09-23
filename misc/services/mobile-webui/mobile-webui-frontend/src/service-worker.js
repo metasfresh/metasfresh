@@ -1,5 +1,5 @@
-import { store } from './store/store';
-import { networkStatusOffline, networkStatusOnline } from './actions/NetworkActions';
+// import { globalStore } from './index';
+// import { networkStatusOffline, networkStatusOnline } from './actions/NetworkActions';
 
 /* eslint-disable no-restricted-globals */
 
@@ -46,7 +46,8 @@ registerRoute(
 
     return true;
   },
-  createHandlerBoundToURL(process.env.PUBLIC_URL + '/index.html')
+  // createHandlerBoundToURL(process.env.PUBLIC_URL + '/index.html')
+  createHandlerBoundToURL('./index.html')
 );
 
 // An example runtime caching route for requests that aren't handled by the
@@ -72,22 +73,23 @@ self.addEventListener('message', (event) => {
   }
 });
 
+const broadcast = new BroadcastChannel('network-status-channel');
+
 // Any other custom service worker logic can go here.
-self.addEventListener('fetch', (e) => {
-  console.log('[ServiceWorker] ->  Fetch event fired.', e.request.url);
-  e.respondWith(
-      caches.match(e.request).then(function(response) {
-          if (response) {
-              console.log('[ServiceWorker] -> Retrieving from cache...');
-              return response;
-          }
-          console.log('[ServiceWorker] Retrieving from URL...');
-          store.dispatch(networkStatusOffline())
-          return fetch(e.request).catch(function (e) {
-             /** You can check what e contains aso for further customize */
-             store.dispatch(networkStatusOnline())
-             console.log('OFFLINE - You appear to be offline');
-          });
-      })
-  );
+self.addEventListener('fetch', event => {
+  // Prevent the default, and handle the request ourselves.
+  event.respondWith(async function() {
+    // Try to get the response from a cache.
+    const cachedResponse = await caches.match(event.request);
+    // Return it if we found one.
+    if (cachedResponse) { 
+      console.log('[ServiceWorker] -> Retrieving from cache...');
+      return cachedResponse;
+    }
+    // If we didn't find a match in the cache, use the network.
+    return fetch(event.request).catch(function () {
+      console.log('OFFLINE - You appear to be offline now');
+      broadcast.postMessage({ payload: 'offline' });
+    });
+  }());
 });

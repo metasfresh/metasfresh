@@ -25,3 +25,9 @@ yarn-error.log*
 # ignore lock files either from npm or yarn
 package-lock.json
 *.lock
+
+.DS_Store
+
+config.js
+src/.env
+.env
