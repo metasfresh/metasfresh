@@ -17,7 +17,7 @@ class Launchers extends Component {
       const { launchers } = this.props;
       const launchersKeys = Object.keys(launchers);
         return (
-            <div>
+            <div className="launchers-container">
                 {launchersKeys.length > 0 && launchersKeys.map((keyName) => {
                   let uniqueId = uuidv4();
                   return <Launcher key={uniqueId} id={uniqueId} {...launchers[keyName]} />
