@@ -136,11 +136,12 @@ public final class Quantity implements Comparable<Quantity>
 		return quantity.toBigDecimal();
 	}
 
-	public static UomId getCommonUomIdOfAll(@NonNull final Quantity... quantities)
+	public static UomId getCommonUomIdOfAll(final Quantity... quantities)
 	{
 		Check.assumeNotEmpty(quantities, "The given quantities may not be empty");
 
 		final Iterator<Quantity> quantitiesIterator = Stream.of(quantities)
+				.filter(Objects::nonNull)
 				.iterator();
 		final ImmutableListMultimap<UomId, Quantity> uomIds2qties = Multimaps.index(quantitiesIterator, Quantity::getUomId);
 		if (uomIds2qties.isEmpty())
