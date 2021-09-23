@@ -22,6 +22,7 @@
 
 package de.metas.handlingunits.pporder.api;
 
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
 import org.eevolution.api.PPOrderId;
 import de.metas.util.ISingletonService;
@@ -63,4 +64,6 @@ public interface IHUPPOrderQtyDAO extends ISingletonService
 	I_PP_Order_Qty retrieveOrderQtyForCostCollector(PPOrderId ppOrderId, final PPCostCollectorId costCollectorId);
 
 	List<I_PP_Order_Qty> retrieveOrderQtyForFinishedGoodsReceive(PPOrderId ppOrderId);
+
+	I_PP_Order_Qty retrieveOrderQtyForHu(@NonNull PPOrderId ppOrderId, @NonNull HuId huId);
 }

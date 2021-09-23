@@ -1,11 +1,16 @@
 package de.metas.handlingunits.pporder.api.impl;
 
+import de.metas.common.util.time.SystemTime;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.model.X_M_HU;
+import de.metas.handlingunits.picking.PickingCandidateIssue;
+import de.metas.handlingunits.pporder.api.HUPPOrderIssueProducer;
+import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyBL;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
 import de.metas.handlingunits.pporder.api.impl.hu_pporder_issue_producer.ReverseDraftIssues;
@@ -54,6 +59,8 @@ public class HUPPOrderQtyBL implements IHUPPOrderQtyBL
 	private final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	private final IHUPPOrderQtyDAO huPPOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
+	private	final IHUPPOrderBL ppOrderBL = Services.get(IHUPPOrderBL.class);
+
 
 	@Override
 	public void reverseDraftCandidate(final I_PP_Order_Qty candidate)
@@ -151,5 +158,30 @@ public class HUPPOrderQtyBL implements IHUPPOrderQtyBL
 			@NonNull final DraftPPOrderBOMLineQuantities lineToAdd)
 	{
 		return line != null ? line.add(lineToAdd, uomConversionBL) : lineToAdd;
+	}
+
+	@Override
+	public void createIssue(@NonNull final PPOrderId pickingOrderId, @NonNull PickingCandidateIssue issueToPickingOrder)
+	{
+		final HuId issueFromHUId = issueToPickingOrder.getIssueFromHUId();
+		final I_M_HU issueFromHU = handlingUnitsBL.getById(issueFromHUId);
+
+		ppOrderBL.createIssueProducer(pickingOrderId)
+				.fixedQtyToIssue(issueToPickingOrder.getQtyToIssue())
+				.movementDate(SystemTime.asZonedDateTime())
+				.processCandidates(HUPPOrderIssueProducer.ProcessIssueCandidatesPolicy.ALWAYS)
+				.changeHUStatusToIssued(false)
+				.createIssue(issueFromHU);
+	}
+
+	@Override
+	public void updateQtyIssued(@NonNull final PPOrderId pickingOrderId, @NonNull PickingCandidateIssue issueToPickingOrder)
+	{
+	  	final I_PP_Order_Qty candidate = huPPOrderQtyDAO.retrieveOrderQtyForHu(pickingOrderId, issueToPickingOrder.getIssueFromHUId());
+		if (candidate != null)
+		{
+			candidate.setQty(issueToPickingOrder.getQtyToIssue().toBigDecimal());
+			huPPOrderQtyDAO.save(candidate);
+		}
 	}
 }

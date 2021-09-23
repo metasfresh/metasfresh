@@ -25,6 +25,7 @@ package de.metas.handlingunits.pporder.api.impl;
 import com.google.common.collect.ImmutableList;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.picking.PickingCandidateId;
@@ -165,5 +166,19 @@ public class HUPPOrderQtyDAO implements IHUPPOrderQtyDAO
 				.stream()
 				.filter(cand -> cand.getPP_Order_BOMLine_ID() <= 0)
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	@Override
+	public I_PP_Order_Qty retrieveOrderQtyForHu(
+			@NonNull final PPOrderId ppOrderId,
+			@NonNull final HuId huId)
+	{
+		return retrieveOrderQtys(ppOrderId)
+				.stream()
+				.filter(cand -> cand.getM_HU_ID() == huId.getRepoId())
+				.reduce((cand1, cand2) -> {
+					throw new HUException("Expected only one candidate but got: " + cand1 + ", " + cand2);
+				})
+				.orElse(null);
 	}
 }

@@ -2,11 +2,9 @@ package de.metas.picking.service.impl;
 
 import java.math.BigDecimal;
 import java.text.MessageFormat;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
@@ -14,32 +12,13 @@ import javax.annotation.Nullable;
 
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
-import de.metas.handlingunits.allocation.transfer.IHUSplitBuilder;
-import de.metas.handlingunits.allocation.transfer.impl.HUSplitBuilder;
-import de.metas.handlingunits.model.I_M_HU_PI_Item;
-import de.metas.handlingunits.model.I_PP_Order_Qty;
-import de.metas.handlingunits.picking.PickFrom;
-import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
-import de.metas.handlingunits.picking.PickingCandidateService;
-import de.metas.handlingunits.picking.requests.PickRequest;
-import de.metas.handlingunits.pporder.api.CreateReceiptCandidateRequest;
-import de.metas.handlingunits.pporder.api.HUPPOrderIssueProducer;
-import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
-import de.metas.handlingunits.reservation.HUReservation;
-import de.metas.handlingunits.storage.IHUStorageFactory;
-import de.metas.inoutcandidate.api.IShipmentScheduleBL;
-import de.metas.organization.OrgId;
-import de.metas.picking.service.PackingItemPartId;
-import de.metas.quantity.StockQtyAndUOMQtys;
-import de.metas.uom.IUOMDAO;
 import de.metas.util.collections.CollectionUtils;
+import lombok.Value;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_UOM;
 
 import com.google.common.base.Predicates;
@@ -83,8 +62,6 @@ import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
-import org.eevolution.api.PPOrderId;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 /**
  * Class responsible for allocating given HUs to underlying shipment schedules from {@link IPackingItem}.
@@ -126,7 +103,7 @@ public class HU2PackingItemsAllocator
 	private final boolean allowOverDelivery;
 	private final boolean isTakeWholeHU;
 
-	private List<I_M_HU> _pickFromHUs;
+	private ImmutableList<I_M_HU> _pickFromHUs;
 	private final IAllocationDestination _packToDestination;
 	private final boolean _qtyToPackEnforced;
 
@@ -134,6 +111,8 @@ public class HU2PackingItemsAllocator
 	// Status
 	private IHUContext _huContext = null;
 	private Quantity _qtyToPackRemaining = null;
+
+	@NonNull final Map<HuId, PickedHuAndQty> changedPickedHus = new HashMap<>();
 
 	/**
 	 * @param pickFromHUs the HUs to assign to the shipment schedule. IMPORTANT: The all need be out of transaction.
@@ -356,6 +335,7 @@ public class HU2PackingItemsAllocator
 			}
 
 			pickFromHU(pickFromHU);
+
 		}
 
 		//
@@ -539,10 +519,6 @@ public class HU2PackingItemsAllocator
 		if (allowOverDelivery && isOverDelivery && !isTakeWholeHU)
 		{
 			splitCurrentHU(pickFromVHU, packedPart);
-
-			// throw new AdempiereException("@" + PickingConfigRepository.MSG_WEBUI_Picking_OverdeliveryNotAllowed + "@")
-			// 		.setParameter("shipmentSchedule's QtyToDeliver", currentQtyToDeliver)
-			// 		.setParameter("qtyPacked to be Delivered", qtyPacked);
 		}
 
 		else
@@ -563,7 +539,7 @@ public class HU2PackingItemsAllocator
 
 	private void splitCurrentHU(@NonNull final I_M_HU pickFromVHU, @NonNull final PackingItemPart packedPart)
 	{
-		// todo
+		// todo make it nicer
 
 		final Quantity qtyPacked = packedPart.getQty();
 		final I_M_ShipmentSchedule shipmentSchedule = getShipmentScheduleById(packedPart.getShipmentScheduleId());
@@ -611,17 +587,12 @@ public class HU2PackingItemsAllocator
 		subtractFromQtyToPackRemaining(qtyCU);
 
 		// updated picked HU
-		_pickFromHUs = new ArrayList<>();
-		_pickFromHUs.add(huToIssue);
+		final PickedHuAndQty pickedHuAndQty = PickedHuAndQty.builder()
+					.huId(HuId.ofRepoId(huToIssue.getM_HU_ID()))
+					.qty(qtyCU)
+					.build();
 
-		// pickingCandidateRepository.save(pickingCandidate);
-
-		// final IHUPPOrderBL huPPOrderBL = Services.get(IHUPPOrderBL.class);
-		// final TableRecordReference referernce = packedPart.getSourceDocumentLineRef();
-		// final List<I_PP_Order_Qty> processedIssueCandidates = huPPOrderBL.createIssueProducer(orderId)
-		// 		.fixedQtyToIssue(qtyCU)
-		// 		.processCandidates(HUPPOrderIssueProducer.ProcessIssueCandidatesPolicy.ALWAYS)
-		// 		.createIssues(husToIssue);
+		changedPickedHus.put(HuId.ofRepoId(pickFromVHU.getM_HU_ID()), pickedHuAndQty);
 	}
 
 	private Quantity extractQtyOfHU(
@@ -750,6 +721,13 @@ public class HU2PackingItemsAllocator
 		return new GenericAllocationSourceDestination(shipmentScheduleQtyPickedStorage, schedule);
 	}
 
+
+
+	public Map<HuId, PickedHuAndQty> getChangedPickedHUs()
+	{
+		return changedPickedHus;
+	}
+
 	//
 	//
 	//
@@ -767,4 +745,13 @@ public class HU2PackingItemsAllocator
 			return packToDestination(HUListAllocationSourceDestination.of(hu));
 		}
 	}
+
+	@Value
+	@Builder
+	public static class PickedHuAndQty
+	{
+		@NonNull private final HuId huId;
+		@NonNull private final Quantity qty;
+	}
+
 }

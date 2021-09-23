@@ -68,6 +68,9 @@ public class PickingCandidate
 	@NonNull
 	private PickFrom pickFrom;
 
+	@Nullable
+	private PickedFrom pickedFrom;
+
 	@NonNull
 	private Quantity qtyPicked;
 	@Nullable
@@ -207,7 +210,18 @@ public class PickingCandidate
 
 	public void changeStatusToProcessed()
 	{
-		changeStatusToProcessed(getPickFrom().getHuId());
+		final HuId huId;
+		// make sure we are using the correct HU
+		if (getPickedFrom() != null && !getPickedFrom().getHuId().equals(getPickFrom().getHuId()))
+		{
+			huId = getPickedFrom().getHuId();
+		}
+		else
+		{
+			huId = getPickFrom().getHuId();
+		}
+
+		changeStatusToProcessed(huId);
 	}
 
 	public void changeStatusToProcessed(@Nullable final HuId packedToHuId)
@@ -311,8 +325,13 @@ public class PickingCandidate
 				: ImmutableList.of();
 	}
 
-	public void updatePickFrom(@NonNull final PickFrom pickFrom)
+	public void setPickedFrom(@NonNull final PickedFrom pickedFrom)
 	{
-		this.pickFrom = pickFrom;
+		this.pickedFrom = pickedFrom;
+	}
+
+	public boolean IsPickedDifferentHU()
+	{
+		return pickedFrom != null && !pickedFrom.getHuId().equals(pickFrom.getHuId());
 	}
 }

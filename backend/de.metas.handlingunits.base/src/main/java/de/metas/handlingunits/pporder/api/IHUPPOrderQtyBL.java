@@ -1,5 +1,6 @@
 package de.metas.handlingunits.pporder.api;
 
+import de.metas.handlingunits.picking.PickingCandidateIssue;
 import de.metas.material.planning.pporder.DraftPPOrderQuantities;
 import org.compiere.model.I_C_UOM;
 
@@ -43,4 +44,8 @@ public interface IHUPPOrderQtyBL extends ISingletonService
 	}
 
 	DraftPPOrderQuantities getDraftPPOrderQuantities(@NonNull PPOrderId ppOrderId);
+
+	void createIssue(@NonNull PPOrderId pickingOrderId, @NonNull PickingCandidateIssue issueToPickingOrder);
+
+	void updateQtyIssued(@NonNull PPOrderId pickingOrderId, @NonNull PickingCandidateIssue issueToPickingOrder);
 }

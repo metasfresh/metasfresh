@@ -222,6 +222,9 @@ public class WEBUI_M_HU_Pick extends ViewBasedProcessTemplate implements IProces
 		final HURow row = getSingleHURow();
 		pickHU(row);
 
+		// invalidate view in order to be refreshed
+		getView().invalidateAll();
+
 		return MSG_OK;
 	}
 
@@ -234,8 +237,8 @@ public class WEBUI_M_HU_Pick extends ViewBasedProcessTemplate implements IProces
 				.pickingSlotId(pickingSlotId)
 				.build());
 		// NOTE: we are not moving the HU to shipment schedule's locator.
-
-		pickingCandidateService.processForHUIds(ImmutableSet.of(huId), shipmentScheduleId, isTakeWholeHU);
+		final PPOrderLinesView ppOrderView = (PPOrderLinesView)getView();
+		pickingCandidateService.processForHUIds(ImmutableSet.of(huId), shipmentScheduleId, isTakeWholeHU, ppOrderView.getPpOrderId());
 	}
 
 	@Override

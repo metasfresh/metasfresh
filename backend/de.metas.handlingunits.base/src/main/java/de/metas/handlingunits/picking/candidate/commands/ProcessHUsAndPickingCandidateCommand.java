@@ -3,16 +3,14 @@ package de.metas.handlingunits.picking.candidate.commands;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Multimaps;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.picking.PickFrom;
+import de.metas.handlingunits.picking.PickedFrom;
 import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
-import de.metas.handlingunits.picking.PickingCandidateStatus;
 import de.metas.handlingunits.sourcehu.HuId2SourceHUsService;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.handlingunits.storage.IHUStorageFactory;
@@ -26,15 +24,16 @@ import de.metas.picking.service.PackingItemPart;
 import de.metas.picking.service.PackingItemPartId;
 import de.metas.picking.service.PackingItems;
 import de.metas.picking.service.impl.HU2PackingItemsAllocator;
+import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Singular;
 import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.Logger;
 
-import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -87,8 +86,15 @@ public class ProcessHUsAndPickingCandidateCommand
 	private final boolean allowOverDelivery;
 	private final boolean isTakeWholeHU;
 
+	@Builder
+	@Getter
+	private static class PickedHuAndQty
+	{
+		@NonNull private final HuId huId;
+		@NonNull private final Quantity qty;
+	}
 
-	private Map<HuId, HuId> pickingHUIdvsPickedHuId = new HashMap<>();
+	private Map<HuId, HU2PackingItemsAllocator.PickedHuAndQty> changedPickedHus = new HashMap<>();
 
 	@Builder
 	private ProcessHUsAndPickingCandidateCommand(
@@ -132,14 +138,9 @@ public class ProcessHUsAndPickingCandidateCommand
 		allocateHUsToShipmentSchedule();
 		destroyEmptySourceHUs();
 
-		if (!pickingHUIdvsPickedHuId.isEmpty())
-		{
+		setPickingCandidatePickedFromIfNeeded();
 
-		}
-
-		final ImmutableList<PickingCandidate> processedPickingCandidates = changeStatusToProcessedAndSave();
-
-		return processedPickingCandidates;
+		return changeStatusToProcessedAndSave();
 	}
 
 	private void allocateHUsToShipmentSchedule()
@@ -152,6 +153,7 @@ public class ProcessHUsAndPickingCandidateCommand
 	{
 		return handlingUnitsRepo.getByIdsOutOfTrx(pickFromHuIds);
 	}
+
 
 	private void allocateHUToShipmentSchedule(@NonNull final I_M_HU hu)
 	{
@@ -166,15 +168,7 @@ public class ProcessHUsAndPickingCandidateCommand
 					.build();
 
 			allocator.allocate();
-
-			final I_M_HU pickedHU = allocator.getPickFromHUs().get(0);
-			final int huId = hu.getM_HU_ID();
-			final int pickedHuId = pickedHU.getM_HU_ID();
-			if (huId != pickedHuId)
-			{
-				pickingHUIdvsPickedHuId.put(HuId.ofRepoId(huId), HuId.ofRepoId(pickedHuId));
-			}
-
+			changedPickedHus = allocator.getChangedPickedHUs();
 		});
 	}
 
@@ -186,9 +180,7 @@ public class ProcessHUsAndPickingCandidateCommand
 				.stream()
 				.map(this::createPackingItemPart)
 				.map(PackingItems::newPackingItem)
-				.forEach(item -> {
-					packingItems.merge(item.getGroupingKey(), item, IPackingItem::addPartsAndReturn);
-				});
+				.forEach(item -> packingItems.merge(item.getGroupingKey(), item, IPackingItem::addPartsAndReturn));
 
 		return ImmutableList.copyOf(packingItems.values());
 	}
@@ -242,38 +234,37 @@ public class ProcessHUsAndPickingCandidateCommand
 		logger.info("Source M_HU with M_HU_ID={} is now destroyed", sourceHU.getM_HU_ID());
 	}
 
+
 	private ImmutableList<PickingCandidate> changeStatusToProcessedAndSave()
 	{
 		final ImmutableList<PickingCandidate> pickingCandidates = getPickingCandidates();
-		final boolean hasPickedHuChanged = !pickingHUIdvsPickedHuId.isEmpty();
-
-		pickingCandidates.forEach(pc -> {
-
-			final HuId pickedHuId = pickingHUIdvsPickedHuId.get(pc.getPickFrom().getHuId());
-			if (hasPickedHuChanged && pickedHuId != null )
-			{
-				pc.updatePickFrom(PickFrom.ofHuId(pickedHuId));
-			}
-
-			pc.changeStatusToProcessed();
-		});
+		pickingCandidates.forEach(PickingCandidate::changeStatusToProcessed);
 		pickingCandidateRepository.saveAll(pickingCandidates);
 
 		return pickingCandidates;
 	}
 
-	public void updatePickingCandidate()
+	private void setPickingCandidatePickedFromIfNeeded()
 	{
-		final ImmutableList<PickingCandidate> initialPickingCandidates = getPickingCandidates();
+		final ImmutableList<PickingCandidate> pickingCandidates = getPickingCandidates();
+		final boolean hasPickedHuChanged = !changedPickedHus.isEmpty();
 
-		for (final PickingCandidate pc : initialPickingCandidates)
+		if (hasPickedHuChanged)
 		{
-			final PickingCandidate updatedPickingCandidate =  pickingCandidateRepository.getById(pc.getId());
-			if (!pc.getPickFrom().getHuId().equals(updatedPickingCandidate.getPickFrom().getHuId()))
+			for (PickingCandidate pc : pickingCandidates)
 			{
-
+				final HuId huId = pc.getPickFrom().getHuId();
+				final HU2PackingItemsAllocator.PickedHuAndQty pickedHuAndQty = changedPickedHus.get(huId);
+				if (pickedHuAndQty != null)
+				{
+					final HuId pickedHuId = pickedHuAndQty.getHuId();
+					final PickedFrom pickedFrom = PickedFrom.builder()
+							.huId(pickedHuId)
+							.qtyPicked(pickedHuAndQty.getQty())
+							.build();
+					pc.setPickedFrom(pickedFrom);
+				}
 			}
 		}
-
 	}
 }
