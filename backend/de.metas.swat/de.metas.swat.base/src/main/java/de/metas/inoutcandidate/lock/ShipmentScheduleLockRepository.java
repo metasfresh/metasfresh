@@ -54,10 +54,10 @@ import lombok.NonNull;
 public class ShipmentScheduleLockRepository
 {
 	private static final Logger logger = LogManager.getLogger(ShipmentScheduleLockRepository.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	public void lock(@NonNull final ShipmentScheduleLockRequest request)
 	{
-		final ITrxManager trxManager = Services.get(ITrxManager.class);
 		trxManager.runInNewTrx(() -> lockInTrx(request));
 	}
 
@@ -208,7 +208,7 @@ public class ShipmentScheduleLockRepository
 				.shipmentScheduleId(ShipmentScheduleId.ofRepoId(rs.getInt(I_M_ShipmentSchedule_Lock.COLUMNNAME_M_ShipmentSchedule_ID)))
 				.lockedBy(UserId.ofRepoId(rs.getInt(I_M_ShipmentSchedule_Lock.COLUMNNAME_LockedBy_User_ID)))
 				.lockType(ShipmentScheduleLockType.ofCode(rs.getString(I_M_ShipmentSchedule_Lock.COLUMNNAME_LockType)))
-				.created(TimeUtil.asZonedDateTime(rs.getTimestamp(I_M_ShipmentSchedule_Lock.COLUMNNAME_Created)))
+				.created(rs.getTimestamp(I_M_ShipmentSchedule_Lock.COLUMNNAME_Created).toInstant())
 				.build();
 	}
 

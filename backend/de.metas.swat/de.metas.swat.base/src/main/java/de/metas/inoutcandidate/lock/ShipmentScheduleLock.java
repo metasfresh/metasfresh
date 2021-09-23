@@ -1,5 +1,6 @@
 package de.metas.inoutcandidate.lock;
 
+import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.Objects;
 
@@ -42,7 +43,7 @@ public class ShipmentScheduleLock
 	@NonNull
 	ShipmentScheduleLockType lockType;
 	@NonNull
-	ZonedDateTime created;
+	Instant created;
 
 	public boolean isLockedBy(@NonNull final UserId userId)
 	{
