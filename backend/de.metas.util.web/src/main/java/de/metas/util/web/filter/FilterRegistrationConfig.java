@@ -23,6 +23,7 @@
 package de.metas.util.web.filter;
 
 import de.metas.Profiles;
+import de.metas.ui.web.CORSFilter;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import de.metas.util.web.audit.ApiAuditService;
 import de.metas.util.web.security.UserAuthTokenFilter;
@@ -41,11 +42,21 @@ import static de.metas.util.web.MetasfreshRestAPIConstants.URL_PATTERN_API_V2;
 public class FilterRegistrationConfig
 {
 	@Bean
+	public FilterRegistrationBean<CORSFilter> corsFilter(@NonNull final ApiAuditService apiAuditService)
+	{
+		final FilterRegistrationBean<CORSFilter> registrationBean = new FilterRegistrationBean<>();
+		registrationBean.setFilter(new CORSFilter());
+		registrationBean.addUrlPatterns(MetasfreshRestAPIConstants.URL_PATTERN_API);
+		registrationBean.setOrder(3);
+		return registrationBean;
+	}
+
+	@Bean
 	public FilterRegistrationBean<ApiAuditFilter> apiAuditFilter(@NonNull final ApiAuditService apiAuditService)
 	{
 		final FilterRegistrationBean<ApiAuditFilter> registrationBean = new FilterRegistrationBean<>();
 		registrationBean.setFilter(new ApiAuditFilter(apiAuditService));
-		registrationBean.addUrlPatterns(URL_PATTERN_API_V2);
+		registrationBean.addUrlPatterns(MetasfreshRestAPIConstants.URL_PATTERN_API_V2);
 		registrationBean.setOrder(2);
 		return registrationBean;
 	}

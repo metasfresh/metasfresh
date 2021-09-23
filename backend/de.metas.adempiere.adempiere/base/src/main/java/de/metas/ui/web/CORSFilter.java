@@ -1,6 +1,8 @@
-package de.metas.ui.web.config;
+package de.metas.ui.web;
 
-import java.io.IOException;
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import org.slf4j.Logger;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -10,52 +12,18 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
-import org.adempiere.service.ISysConfigBL;
-import org.slf4j.Logger;
-import org.springframework.stereotype.Component;
-
-import de.metas.logging.LogManager;
-import de.metas.printing.esb.base.util.Check;
-import de.metas.ui.web.WebuiURLs;
-import de.metas.util.Services;
-
-/*
- * #%L
- * metasfresh-webui-api
- * %%
- * Copyright (C) 2016 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-@Component
 public class CORSFilter implements Filter
 {
-	private static final transient Logger logger = LogManager.getLogger(CORSFilter.class);
+	private static final Logger logger = LogManager.getLogger(CORSFilter.class);
 
 	private final WebuiURLs webuiURLs = WebuiURLs.newInstance();
-
-	public CORSFilter()
-	{
-	}
 
 	@Override
 	public void init(final FilterConfig filterConfig)
 	{
+		logger.info("CORS filter initialized");
 	}
 
 	@Override
@@ -97,21 +65,23 @@ public class CORSFilter implements Filter
 
 	private String getAccessControlAllowOrigin(final String requestOrigin)
 	{
-		final boolean corsEnabled = !webuiURLs.isCrossSiteUsageAllowed(); 
+		final boolean corsEnabled = !webuiURLs.isCrossSiteUsageAllowed();
 		if (corsEnabled)
 		{
 			final String frontendURL = webuiURLs.getFrontendURL();
-			if (!Check.isEmpty(frontendURL, true))
+			if (!Check.isBlank(frontendURL))
 			{
 				return frontendURL;
 			}
 			else
 			{
-				logger.warn("Accepting any CORS Origin because even though CORS are enabled, the FrontendURL is not set.\n Please and set `{}` SysConfig or allow cross-site-usage (`{}` sysconfig).", WebuiURLs.SYSCONFIG_FRONTEND_URL, WebuiURLs.SYSCONFIG_IsCrossSiteUsageAllowed);
+				logger.warn("Accepting any CORS Origin because even though CORS are enabled, the FrontendURL is not set."
+								+ "\n Please and set `{}` SysConfig or allow cross-site-usage (`{}` sysconfig).",
+						WebuiURLs.SYSCONFIG_FRONTEND_URL, WebuiURLs.SYSCONFIG_IsCrossSiteUsageAllowed);
 			}
 		}
 
 		// Fallback
-		return Check.isEmpty(requestOrigin, true) ? "*" : requestOrigin;
+		return Check.isBlank(requestOrigin) ? "*" : requestOrigin;
 	}
 }
