@@ -81,7 +81,7 @@ public class RecreateInvoiceWorkpackageProcessor extends WorkpackageProcessorAda
 
 			if (!canVoidPaidInvoice(invoice))
 			{
-				Loggables.withLogger(logger, Level.DEBUG).addLog("Skipping invoice. Cannot void invoice, invoiceId=" + InvoiceId.ofRepoId(invoice.getC_Invoice_ID()));
+				Loggables.withLogger(logger, Level.DEBUG).addLog("C_Invoice_ID={}: Skipping paid invoice because we can't void it.", invoice.getC_Invoice_ID());
 				continue;
 			}
 
@@ -89,6 +89,7 @@ public class RecreateInvoiceWorkpackageProcessor extends WorkpackageProcessorAda
 
 			if (invoiceCandIds.isEmpty())
 			{
+				Loggables.withLogger(logger, Level.DEBUG).addLog("C_Invoice_ID={}: Skipping invoice that is not based on invoice candidates.", invoice.getC_Invoice_ID());
 				continue;
 			}
 
