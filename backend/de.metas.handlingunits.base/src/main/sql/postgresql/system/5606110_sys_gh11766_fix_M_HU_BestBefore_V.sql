@@ -1,3 +1,4 @@
+
 drop view if exists M_HU_BestBefore_V;
 create or replace view M_HU_BestBefore_V as
 select
@@ -46,24 +47,3 @@ group by
        , t.HU_Expired
        , AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy
 ;
-
-
-/*
-alter table M_Product_Category drop column GuaranteeDaysMin;
-SELECT public.db_alter_table('M_Product_Category','ALTER TABLE public.M_Product_Category ADD COLUMN GuaranteeDaysMin NUMERIC(10)') ;
-
-update M_Product_Category set GuaranteeDaysMin=3 where M_Product_Category_ID=2001580;
-update M_Product_Category set GuaranteeDaysMin=null where M_Product_Category_ID=2001580;
-update M_Product set GuaranteeDaysMin=5 where M_Product_ID=2005572;
-update M_Product set GuaranteeDaysMin=null where M_Product_ID=2005572;
-*/
-/*
-select
-	"de.metas.handlingunits".huInfo(t.M_HU_ID) as huInfo
-	, trunc(now(), 'DD') as now
-	-- , (select p.Value||'_'||p.name from M_product p where p.M_Product_ID=t.M_Product_ID) as product
-	-- , (select p.Value||'_'||p.name from M_product_Category p where p.M_product_Category_ID=t.M_product_Category_ID) as productCategory
-	, t.*
-from M_HU_BestBefore_V t
-;
-*/
