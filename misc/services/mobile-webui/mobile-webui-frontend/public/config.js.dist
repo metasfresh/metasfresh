@@ -1,3 +1,4 @@
+// This must reside in the root of the public directory
 const config =  {
   API_URL: 'http://localhost/rest/api/v2',
 };
