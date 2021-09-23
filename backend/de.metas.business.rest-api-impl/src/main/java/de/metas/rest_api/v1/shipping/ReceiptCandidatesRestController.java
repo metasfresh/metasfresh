@@ -41,6 +41,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Nullable;
 
+/**
+ * @deprecated please consider migrating to version 2 of this API.
+ */
+@Deprecated
 @RequestMapping(value = {
 		MetasfreshRestAPIConstants.ENDPOINT_API_DEPRECATED + "/receipts",
 		MetasfreshRestAPIConstants.ENDPOINT_API_V1 + "/receipts" })
