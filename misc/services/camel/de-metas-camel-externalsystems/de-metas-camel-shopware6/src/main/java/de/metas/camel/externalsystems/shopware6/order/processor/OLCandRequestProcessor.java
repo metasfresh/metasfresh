@@ -39,7 +39,7 @@ import de.metas.common.bpartner.v2.response.JsonResponseBPartnerCompositeUpsert;
 import de.metas.common.bpartner.v2.response.JsonResponseBPartnerCompositeUpsertItem;
 import de.metas.common.bpartner.v2.response.JsonResponseUpsertItem;
 import de.metas.common.externalsystem.JsonExternalSystemShopware6ConfigMapping;
-import de.metas.common.ordercandidates.v2.request.JSONPaymentRule;
+import de.metas.common.rest_api.v2.JSONPaymentRule;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateBulkRequest;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateRequest;
 import de.metas.common.ordercandidates.v2.request.JsonOrderDocType;

@@ -29,6 +29,7 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.ordercandidates.v2.request.alberta.JsonAlbertaOrderInfo;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.common.rest_api.v2.JSONPaymentRule;
 import de.metas.common.rest_api.v2.JsonDocTypeInfo;
 import de.metas.common.rest_api.v2.SwaggerDocConstants;
 import de.metas.common.util.Check;

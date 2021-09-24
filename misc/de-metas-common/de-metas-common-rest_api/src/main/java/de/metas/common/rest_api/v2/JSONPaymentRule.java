@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-common-ordercandidates
+ * de-metas-common-rest_api
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.common.ordercandidates.v2.request;
+package de.metas.common.rest_api.v2;
 
 import de.metas.common.util.Check;
 import de.pentabyte.springfox.ApiEnum;

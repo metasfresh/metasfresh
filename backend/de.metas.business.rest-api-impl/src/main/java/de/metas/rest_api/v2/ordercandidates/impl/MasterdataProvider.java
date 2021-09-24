@@ -10,7 +10,7 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.bpartner.v2.response.JsonResponseBPartner;
 import de.metas.common.bpartner.v2.response.JsonResponseContact;
 import de.metas.common.bpartner.v2.response.JsonResponseLocation;
-import de.metas.common.ordercandidates.v2.request.JSONPaymentRule;
+import de.metas.common.rest_api.v2.JSONPaymentRule;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateRequest;
 import de.metas.common.ordercandidates.v2.request.JsonRequestBPartnerLocationAndContact;
 import de.metas.common.ordercandidates.v2.request.JsonSalesPartner;
