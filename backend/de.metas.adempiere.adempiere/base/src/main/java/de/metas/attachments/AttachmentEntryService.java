@@ -330,14 +330,14 @@ public class AttachmentEntryService
 
 	public List<AttachmentEntry> getByQuery(@NonNull final AttachmentEntryQuery query)
 	{
-		final Comparator<AttachmentEntry> youngestFirstComparator = (e1, e2) -> e2.getCreatedUpdatedInfo().getCreated().compareTo(e1.getCreatedUpdatedInfo().getCreated());
-
+		final Comparator<AttachmentEntry> youngestFirst = (e1, e2) -> e2.getCreatedUpdatedInfo().getCreated().compareTo(e1.getCreatedUpdatedInfo().getCreated());
+		final Comparator<AttachmentEntry> biggestIdFirst = (e1, e2) -> Integer.compare(AttachmentEntryId.getRepoId(e2.getId()), AttachmentEntryId.getRepoId(e1.getId()));
 		return getByReferencedRecordMigrateIfNeeded(query.getReferencedRecord())
 				.stream()
 				.filter(e -> e.getTags().hasAllTagsSetToTrue(query.getTagsSetToTrue()))
 				.filter(e -> e.getTags().hasAllTagsSetToAnyValue(query.getTagsSetToAnyValue()))
 				.filter(e -> Check.isEmpty(query.getMimeType(), true) || Objects.equals(e.getMimeType(), query.getMimeType()))
-				.sorted(youngestFirstComparator)
+				.sorted(youngestFirst.thenComparing(biggestIdFirst))
 				.collect(ImmutableList.toImmutableList());
 	}
 
