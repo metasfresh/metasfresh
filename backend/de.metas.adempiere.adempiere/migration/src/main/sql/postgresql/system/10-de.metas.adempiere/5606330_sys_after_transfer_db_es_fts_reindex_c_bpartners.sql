@@ -1,3 +1,40 @@
+
+CREATE OR REPLACE FUNCTION ops.es_fts_reindex_bpartners() RETURNS bigint
+    LANGUAGE sql
+AS
+$$
+
+DELETE
+FROM es_fts_index_queue
+WHERE TRUE;
+
+INSERT INTO es_fts_index_queue (es_fts_config_id, eventtype, ad_table_id, record_id)
+SELECT es_fts_config_id,
+       'U'                        AS eventtype,
+       get_table_id('C_BPartner') AS ad_table_id,
+       bp.c_bpartner_id           AS record_id
+FROM c_bpartner bp
+         JOIN es_fts_config ON es_index = 'fts_bpartner'
+ORDER BY bp.c_bpartner_id ;
+
+SELECT count(1) as result FROM es_fts_index_queue;
+
+$$
+;
+
+COMMENT ON FUNCTION ops.es_fts_reindex_bpartners() IS 'Causes metasfresh to resend all existing bpartner data to elastic search in order to enable full text search. 
+Enqueues the C_BPartners for sending and returns the number of enqueued records.
+You can then check the indexing progress with 
+
+    SELECT processed,
+       iserror,
+       COUNT(1)                                                            AS count,
+       (MAX(updated) - MIN(updated))                                       AS duration,
+       EXTRACT(MILLISECONDS FROM (MAX(updated) - MIN(updated))) / COUNT(1) AS rate_millis
+FROM es_fts_index_queue
+GROUP BY processed, iserror;
+';
+
 CREATE OR REPLACE FUNCTION ops.after_transfer_db(
     p_source_instance            text,
     p_target_instance            text,
@@ -11,7 +48,7 @@ BEGIN
 
     UPDATE AD_SysConfig SET Value=p_target_webui_url WHERE Name = 'webui.frontend.url';
 
-    UPDATE ad_user SET password =public.hash_column_value_if_needed(valueplain := p_target_metasfresh_pw) WHERE name = 'metasfresh';
+    UPDATE ad_user SET password=public.hash_column_value_if_needed(p_target_metasfresh_pw) WHERE name = 'metasfresh';
 
     IF p_target_has_reports_service
     THEN
@@ -41,7 +78,7 @@ BEGIN
         EXECUTE ops.scramble_metasfresh(FALSE);
     END IF;
 
-    RAISE NOTICE '% !! Enqueued % C_BPartners to be send to elastic search for FTS !!', 
+    RAISE NOTICE '% !! Enqueued % C_BPartners to be send to elastic search for FTS !!',
         CLOCK_TIMESTAMP(),
         (SELECT ops.es_fts_reindex_bpartners());
 
