@@ -4,12 +4,12 @@ import { connect } from 'react-redux';
 import Header from './components/Header';
 import Launchers from './components/containers/Launchers';
 
-function App(props) {
+function App() {
   return (
-      <>
+    <>
       <Header appName="webUI app" />
       <Launchers />
-      </>
+    </>
   );
 }
 

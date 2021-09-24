@@ -19,9 +19,17 @@ ReactDOM.render(
       <ConnectedRouter history={history}>
         <>
           <Switch>
-            <Route exact path="/" render={() => (<App />)} />
-            <Route exact path="/test" render={() => (<><h1>test</h1></>)} />
-            <Route render={() => (<div>Not found</div>)} />
+            <Route exact path="/" render={() => <App />} />
+            <Route
+              exact
+              path="/test"
+              render={() => (
+                <>
+                  <h1>test</h1>
+                </>
+              )}
+            />
+            <Route render={() => <div>Not found</div>} />
           </Switch>
         </>
       </ConnectedRouter>
@@ -47,18 +55,20 @@ const broadcast = new BroadcastChannel('network-status-channel');
  * This is needed for the special case when user refreshes the page while being off
  */
 broadcast.onmessage = (event) => {
-  event.data.payload === 'offline' && globalStore.dispatch(networkStatusOffline())
+  event.data.payload === 'offline' && globalStore.dispatch(networkStatusOffline());
 };
 
 window.addEventListener('offline', () => {
-  globalStore.dispatch(networkStatusOffline())
+  globalStore.dispatch(networkStatusOffline());
 });
 
 window.addEventListener('online', () => {
-  globalStore.dispatch(networkStatusOnline())
+  globalStore.dispatch(networkStatusOnline());
 });
 
 window.addEventListener('beforeinstallprompt', (e) => {
+  let installEvent = e;
+  console.log('Install event triggered:', installEvent);
   // e.preventDefault(); - this is going to disable the prompt if uncommented !
   // See if the app is already installed, in that case, do nothing
   if (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) {

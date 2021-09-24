@@ -1,5 +1,3 @@
-import {
-    getLaunchers
-} from './launchers';
+import { getLaunchers } from './launchers';
 
 export { getLaunchers };
