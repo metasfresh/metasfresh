@@ -14,7 +14,6 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.picking.TakeWholeHUEnum;
-import de.metas.order.createFrom.po_from_so.PurchaseTypeEnum;
 import de.metas.util.collections.CollectionUtils;
 import lombok.Value;
 import org.adempiere.ad.trx.api.ITrx;
@@ -183,7 +182,7 @@ public class HU2PackingItemsAllocator
 		_huContext = huContext;
 	}
 
-	public ImmutableList<I_M_HU> getPickFromHUs()
+	private ImmutableList<I_M_HU> getPickFromHUs()
 	{
 		return _pickFromHUs;
 	}
@@ -295,8 +294,9 @@ public class HU2PackingItemsAllocator
 	 * QtyToDeliver).
 	 * <p>
 	 * The quantity that was allocated on HUs will be subtracted from {@link #getItemToPack()}.
+	 * @return
 	 */
-	public void allocate()
+	private HU2PackingItemsAllocator allocate()
 	{
 		// Make sure we did not run "allocate" before
 		// i.e. this builder is still configurable
@@ -311,7 +311,7 @@ public class HU2PackingItemsAllocator
 		// Make sure we have remaining qty to pack
 		if (!hasRemainingQtyToPack())
 		{
-			return;
+			return null;
 		}
 
 		//
@@ -319,9 +319,11 @@ public class HU2PackingItemsAllocator
 		final IHUContext huContextInitial = createHUContextInitial();
 		huTrxBL.createHUContextProcessorExecutor(huContextInitial)
 				.run(this::allocate0);
+
+		return this;
 	}
 
-	private void allocate0(final IHUContext huContext)
+	private HU2PackingItemsAllocator allocate0(final IHUContext huContext)
 	{
 		setHUContext(huContext);
 
@@ -344,6 +346,8 @@ public class HU2PackingItemsAllocator
 		// If we have an enforced QtyToPack and if we did not allocate and then transfer everything to Target HU
 		// then transfer the remaing qty now
 		packRemainingQtyToDestination();
+
+		return this;
 	}
 
 	/**
@@ -578,6 +582,7 @@ public class HU2PackingItemsAllocator
 					.setDate(_huContext.getDate())
 					.setFromReferencedModel(packedPart.getShipmentScheduleId().toTableRecordReference())
 					.setForceQtyAllocation(true)
+
 					.create();
 		}
 
@@ -733,9 +738,9 @@ public class HU2PackingItemsAllocator
 	//
 	public static class HU2PackingItemsAllocatorBuilder
 	{
-		public void allocate()
+		public HU2PackingItemsAllocator allocate()
 		{
-			allocate();
+			return build().allocate();
 		}
 
 		public HU2PackingItemsAllocatorBuilder packToHU(final I_M_HU hu)

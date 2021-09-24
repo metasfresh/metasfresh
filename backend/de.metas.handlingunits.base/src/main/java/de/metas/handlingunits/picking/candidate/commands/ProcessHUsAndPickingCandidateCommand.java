@@ -166,9 +166,8 @@ public class ProcessHUsAndPickingCandidateCommand
 					.allowOverDelivery(allowOverDelivery)
 					.takeWholeHU(takeWholeHU)
 					.pickFromHU(hu)
-					.build();
+					.allocate();
 
-			allocator.allocate();
 			changedPickedHus = allocator.getChangedPickedHUs();
 		});
 	}

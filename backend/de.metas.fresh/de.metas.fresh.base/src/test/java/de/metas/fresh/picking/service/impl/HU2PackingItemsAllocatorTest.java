@@ -38,6 +38,7 @@ import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
 
+import de.metas.handlingunits.picking.TakeWholeHUEnum;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.POJOLookupMap;
@@ -153,6 +154,7 @@ public class HU2PackingItemsAllocatorTest extends AbstractHUTest
 					.itemToPack(itemToPack)
 					.packingItems(packingItems)
 					.pickFromHUs(luHUs)
+					.takeWholeHU(TakeWholeHUEnum.NONE)
 					.allocate();
 
 			// Validate
@@ -180,6 +182,7 @@ public class HU2PackingItemsAllocatorTest extends AbstractHUTest
 					.itemToPack(itemToPack)
 					.packingItems(packingItems)
 					.pickFromHUs(luHUs)
+					.takeWholeHU(TakeWholeHUEnum.NONE)
 					.allocate();
 
 			// Validate
@@ -207,6 +210,7 @@ public class HU2PackingItemsAllocatorTest extends AbstractHUTest
 					.itemToPack(itemToPack)
 					.packingItems(packingItems)
 					.pickFromHUs(luHUs)
+					.takeWholeHU(TakeWholeHUEnum.NONE)
 					.allocate();
 
 			// Validate
@@ -239,6 +243,7 @@ public class HU2PackingItemsAllocatorTest extends AbstractHUTest
 					.itemToPack(itemToPack)
 					.packingItems(packingItems)
 					.pickFromHUs(tuHUs)
+					.takeWholeHU(TakeWholeHUEnum.NONE)
 					.allocate();
 
 			// Validate
@@ -267,6 +272,7 @@ public class HU2PackingItemsAllocatorTest extends AbstractHUTest
 				.itemToPack(itemToPack)
 				.packingItems(packingItems)
 				.pickFromHUs(tuHUs)
+				.takeWholeHU(TakeWholeHUEnum.NONE)
 				.allocate();
 
 		// Validate
@@ -299,6 +305,7 @@ public class HU2PackingItemsAllocatorTest extends AbstractHUTest
 				.itemToPack(itemToPack)
 				.packingItems(packingItems)
 				.pickFromHU(aggregateVhu)
+				.takeWholeHU(TakeWholeHUEnum.NONE)
 				.allocate();
 
 		// NOTE: even if we asked to allocate to a non-top level HU
