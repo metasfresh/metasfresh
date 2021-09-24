@@ -31,6 +31,8 @@ class Launcher extends PureComponent {
 Launcher.propTypes = {
   caption: PropTypes.string.isRequired,
   wfProviderId: PropTypes.string.isRequired,
+  id: PropTypes.string.isRequired,
+  startedWFProcessId: PropTypes.string,
 };
 
 export default Launcher;
