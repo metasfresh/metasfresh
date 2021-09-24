@@ -14,6 +14,7 @@ class BarcodeScanner extends Component {
     this.setState({ activeScanning: true });
     window.scrollTo(0, 0);
   };
+  stopScanning = () => this.setState({ activeScanning: false });
 
   render() {
     const { barcodeCaption } = this.props.componentProps;
@@ -28,8 +29,10 @@ class BarcodeScanner extends Component {
         </div>
         {activeScanning && (
           <div className="scanner-container">
-            <div className="subtitle centered-text is-size-4">Please scan a Barcode</div>
-            <video className="col-sm-12 viewport scanner-window" id="video" />
+            <div className="subtitle centered-text is-size-4">
+              Please scan a Barcode &nbsp; <button onClick={this.stopScanning}>Stop Scan</button>
+            </div>
+            <video className="viewport scanner-window" id="video" />
           </div>
         )}
       </div>
