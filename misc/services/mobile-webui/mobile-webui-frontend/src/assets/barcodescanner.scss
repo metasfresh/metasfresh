@@ -1,11 +1,12 @@
 .scanner-btn-green {
+    width: 8em;
     color: white;
     background-color: $base-mf-green;
     font-weight: 400;
 }
 .scanner-btn-green:hover {
     color: white;
-    background-color: $base-elements;
+    background-color: $base-mf-green;
 }
 .scanner-btn-green:focus {
     color: white;
