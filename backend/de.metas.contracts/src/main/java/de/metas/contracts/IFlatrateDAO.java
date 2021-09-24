@@ -55,6 +55,7 @@ import javax.annotation.Nullable;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
@@ -120,6 +121,8 @@ public interface IFlatrateDAO extends ISingletonService
 
 	List<I_C_Flatrate_Term> retrieveTerms(I_C_Flatrate_Conditions flatrateConditions);
 
+	Iterator<I_C_Flatrate_Term> retrieveTerms(@NonNull FlatrateDataId flatrateDataId);
+
 	List<I_C_Flatrate_Term> retrieveTerms(I_C_Flatrate_Data flatrateData);
 
 	List<I_C_Flatrate_Term> retrieveTerms(I_C_BPartner bPartner, I_C_Flatrate_Conditions flatrateConditions);
@@ -143,9 +146,9 @@ public interface IFlatrateDAO extends ISingletonService
 	@Builder
 	class TermsQuery
 	{
-		@NonNull 
+		@NonNull
 		OrgId orgId;
-		
+
 		@Singular
 		List<BPartnerId> billPartnerIds;
 
