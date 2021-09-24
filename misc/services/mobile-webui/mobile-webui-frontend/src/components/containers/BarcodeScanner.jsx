@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+//import ZXingBrowser from '@zxing/browser';
 
 class BarcodeScanner extends Component {
   constructor(props) {
@@ -9,7 +10,10 @@ class BarcodeScanner extends Component {
     };
   }
 
-  initiateScanning = () => this.setState({ activeScanning: true });
+  initiateScanning = () => {
+    this.setState({ activeScanning: true });
+    window.scrollTo(0, 0);
+  };
 
   render() {
     const { barcodeCaption } = this.props.componentProps;
@@ -23,9 +27,9 @@ class BarcodeScanner extends Component {
           </button>
         </div>
         {activeScanning && (
-          <div>
+          <div className="scanner-container">
             <div>Please scan a Barcode</div>
-            <div>Video Placeholder</div>
+            <video className="col-sm-12 viewport scanner-window" id="video" />
           </div>
         )}
       </div>
