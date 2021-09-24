@@ -541,8 +541,6 @@ public class HU2PackingItemsAllocator
 
 	private void splitCurrentHU(@NonNull final I_M_HU pickFromVHU, @NonNull final PackingItemPart packedPart)
 	{
-		// todo make it nicer
-
 		final Quantity qtyPacked = packedPart.getQty();
 		final I_M_ShipmentSchedule shipmentSchedule = getShipmentScheduleById(packedPart.getShipmentScheduleId());
 		final BigDecimal currentQtyToDeliver = shipmentSchedule.getQtyToDeliver();
@@ -579,8 +577,6 @@ public class HU2PackingItemsAllocator
 					.setQuantity(qtyCU)
 					.setDate(_huContext.getDate())
 					.setFromReferencedModel(packedPart.getShipmentScheduleId().toTableRecordReference())
-					// Force Qty Allocation: we need to allocate even if the HU is full
-					// see http://dewiki908/mediawiki/index.php/05706_Meldung_im_Aktuellen_UAT%3F_Sollte_schon_weg_sein%2C_oder%3F_%28105871951705%29
 					.setForceQtyAllocation(true)
 					.create();
 		}

@@ -205,8 +205,6 @@ public class CreatePickedIssueCommand
 	 */
 	private Quantity calculateQtyToIssue(@NonNull final IHUProductStorage from)
 	{
-		//
-		// Case: enforced qty to issue
 		if (remainingQtyToIssue != null)
 		{
 			final Quantity huStorageQty = from.getQty(remainingQtyToIssue.getUOM());
