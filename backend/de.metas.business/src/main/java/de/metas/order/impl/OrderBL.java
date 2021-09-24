@@ -498,9 +498,11 @@ public class OrderBL implements IOrderBL
 	public DeliveryViaRule evaluateOrderDeliveryViaRule(@NonNull final I_C_Order order)
 	{
 		final DeliveryViaRule orderDeliveryViaRule = DeliveryViaRule.ofNullableCode(order.getDeliveryViaRule());
-		return orderDeliveryViaRule != null
-				? orderDeliveryViaRule
-				: findDeliveryViaRule(order);
+		final DeliveryViaRule bpartnerDeliveryRule = findDeliveryViaRule(order);
+
+		return bpartnerDeliveryRule != null
+		 		? bpartnerDeliveryRule
+		 		: orderDeliveryViaRule;
 	}
 
 	private DeliveryViaRule findDeliveryViaRule(final I_C_Order orderRecord)
