@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
+import PropTypes from 'prop-types';
 class Header extends Component {
   render() {
     const { appName, networkStatus } = this.props;
@@ -13,6 +14,11 @@ class Header extends Component {
     );
   }
 }
+
+Header.propTypes = {
+  appName: PropTypes.string.isRequired,
+  networkStatus: PropTypes.bool,
+};
 
 const mapStateToProps = (state) => {
   return {

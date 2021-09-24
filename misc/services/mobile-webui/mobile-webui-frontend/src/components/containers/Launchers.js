@@ -4,6 +4,7 @@ import { populateLaunchers } from '../../actions/LauncherActions';
 import { getLaunchers } from '../../api/launchers';
 import Launcher from '../Launcher';
 import { v4 as uuidv4 } from 'uuid';
+import PropTypes from 'prop-types';
 class Launchers extends Component {
   componentDidMount() {
     const { populateLaunchers } = this.props;
@@ -26,6 +27,11 @@ class Launchers extends Component {
     );
   }
 }
+
+Launchers.propTypes = {
+  populateLaunchers: PropTypes.func.isRequired,
+  launchers: PropTypes.object.isRequired,
+};
 
 const mapStateToProps = (state) => {
   return {
