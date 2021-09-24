@@ -263,7 +263,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
         },
         "city" : "l1_city",
         "countryCode" : "CH",
-        "existingLocationId" : 100017,
+        "existingLocationId" : 100018,
         "gln" : "l1_gln",
         "handles" : [ ],
         "id" : {
@@ -320,7 +320,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
         },
         "city" : "l2_city",
         "countryCode" : "DE",
-        "existingLocationId" : 100019,
+        "existingLocationId" : 100020,
         "gln" : "l2_gln",
         "handles" : [ ],
         "id" : {
@@ -596,7 +596,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_c
         "city" : "locationRecord.city",
         "countryCode" : "countryRecord.countryCode",
         "district" : "postalRecord.district",
-        "existingLocationId" : 100010,
+        "existingLocationId" : 100011,
         "gln" : "bpartnerLocationRecord.gln",
         "handles" : [ ],
         "id" : {
@@ -869,7 +869,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
         "city" : "locationRecord.city",
         "countryCode" : "countryRecord.countryCode",
         "district" : "postalRecord.district",
-        "existingLocationId" : 100010,
+        "existingLocationId" : 100011,
         "gln" : "bpartnerLocationRecord.gln",
         "handles" : [ ],
         "id" : {
@@ -1077,7 +1077,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
         "city" : "locationRecord.city",
         "countryCode" : "countryRecord.countryCode",
         "district" : "postalRecord.district",
-        "existingLocationId" : 100010,
+        "existingLocationId" : 100011,
         "gln" : "bpartnerLocationRecord.gln",
         "handles" : [ ],
         "id" : {
@@ -1285,7 +1285,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
         "city" : "locationRecord.city",
         "countryCode" : "countryRecord.countryCode",
         "district" : "postalRecord.district",
-        "existingLocationId" : 100010,
+        "existingLocationId" : 100011,
         "gln" : "bpartnerLocationRecord.gln",
         "handles" : [ ],
         "id" : {
@@ -1342,7 +1342,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
         },
         "city" : "newLocation_city",
         "countryCode" : "DE",
-        "existingLocationId" : 100015,
+        "existingLocationId" : 100016,
         "gln" : "newLocation_gln",
         "handles" : [ ],
         "id" : {
