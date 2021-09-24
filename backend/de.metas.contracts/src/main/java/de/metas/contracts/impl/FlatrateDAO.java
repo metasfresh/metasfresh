@@ -71,7 +71,9 @@ import java.util.Properties;
 import static de.metas.contracts.model.X_C_Flatrate_Term.CONTRACTSTATUS_Quit;
 import static de.metas.contracts.model.X_C_Flatrate_Term.CONTRACTSTATUS_Voided;
 import static de.metas.contracts.model.X_C_Flatrate_Term.DOCSTATUS_Completed;
-import static org.adempiere.model.InterfaceWrapperHelper.*;
+import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
+import static org.adempiere.model.InterfaceWrapperHelper.getTrxName;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 /*
  * #%L
@@ -115,6 +117,7 @@ public class FlatrateDAO implements IFlatrateDAO
 	{
 		return load(flatrateTermId, I_C_Flatrate_Term.class);
 	}
+
 
 	@Override
 	public List<I_C_Flatrate_Term> retrieveTerms(final I_C_Invoice_Candidate ic)
@@ -208,7 +211,7 @@ public class FlatrateDAO implements IFlatrateDAO
 				.addNotEqualsFilter(I_C_Flatrate_Conditions.COLUMNNAME_Type_Conditions, X_C_Flatrate_Conditions.TYPE_CONDITIONS_Subscription)
 				.addNotEqualsFilter(I_C_Flatrate_Conditions.COLUMNNAME_Type_Conditions, X_C_Flatrate_Conditions.TYPE_CONDITIONS_HoldingFee)
 				.create();
-
+	
 		return queryBL.createQueryBuilder(I_C_Flatrate_Term.class, ctx, trxName)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_AD_Org_ID, orgId)
@@ -233,7 +236,7 @@ public class FlatrateDAO implements IFlatrateDAO
 	}
 
 	@Cached
-		/* package */List<I_C_Flatrate_Matching> retrieveFlatrateMatchings(
+	/* package */List<I_C_Flatrate_Matching> retrieveFlatrateMatchings(
 			@CacheCtx final Properties ctx,
 			final int flatrateConditionsId,
 			final String trxName)
@@ -930,8 +933,8 @@ public class FlatrateDAO implements IFlatrateDAO
 		if (existingData == null)
 		{
 			existingData = InterfaceWrapperHelper.create(getCtx(bPartner),
-														 I_C_Flatrate_Data.class,
-														 getTrxName(bPartner));
+					I_C_Flatrate_Data.class,
+					getTrxName(bPartner));
 			existingData.setAD_Org_ID(bPartner.getAD_Org_ID());
 			existingData.setC_BPartner_ID(bPartner.getC_BPartner_ID());
 			existingData.setHasContracts(false);
@@ -978,9 +981,9 @@ public class FlatrateDAO implements IFlatrateDAO
 	}
 
 	@Override
-	public I_C_Flatrate_Conditions getConditionsById(final ConditionsId flatrateConditionsId)
+	public I_C_Flatrate_Conditions getConditionsById (final ConditionsId flatrateConditionsId )
 	{
-		return load(flatrateConditionsId, I_C_Flatrate_Conditions.class);
+		return  load(flatrateConditionsId, I_C_Flatrate_Conditions.class);
 	}
 
 	@Override

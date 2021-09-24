@@ -16,17 +16,10 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import java.io.InputStream;
-import java.net.URL;
-import java.net.URLEncoder;
-import java.sql.CallableStatement;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Types;
-import java.util.Properties;
-
+import de.metas.document.sequence.IDocumentNoBuilder;
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import org.adempiere.ad.migration.logger.IMigrationLogger;
 import org.adempiere.ad.service.ISequenceDAO;
 import org.adempiere.ad.trx.api.ITrx;
@@ -39,10 +32,16 @@ import org.compiere.util.DB;
 import org.compiere.util.Ini;
 import org.slf4j.Logger;
 
-import de.metas.document.sequence.IDocumentNoBuilder;
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import java.io.InputStream;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.sql.CallableStatement;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Types;
+import java.util.Properties;
 
 /**
  * Sequence Model.
@@ -514,12 +513,13 @@ public class MSequence extends X_AD_Sequence
 	 */
 	public static synchronized int getNextOfficialID_HTTP(String TableName)
 	{
-		String website = MSysConfig.getValue("DICTIONARY_ID_WEBSITE"); // "http://developer.adempiere.com/cgi-bin/get_ID";
-		String prm_USER = MSysConfig.getValue("DICTIONARY_ID_USER");  // "globalqss";
-		String prm_PASSWORD = MSysConfig.getValue("DICTIONARY_ID_PASSWORD");  // "password_inseguro";
+		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+		String website = sysConfigBL.getValue("DICTIONARY_ID_WEBSITE"); // "http://developer.adempiere.com/cgi-bin/get_ID";
+		String prm_USER = sysConfigBL.getValue("DICTIONARY_ID_USER");  // "globalqss";
+		String prm_PASSWORD = sysConfigBL.getValue("DICTIONARY_ID_PASSWORD");  // "password_inseguro";
 		String prm_TABLE = TableName;
 		String prm_ALTKEY = "";  // TODO: generate alt-key based on key of table
-		String prm_COMMENT = MSysConfig.getValue("DICTIONARY_ID_COMMENTS");
+		String prm_COMMENT = sysConfigBL.getValue("DICTIONARY_ID_COMMENTS");
 		String prm_PROJECT = new String("Adempiere");
 
 		return getNextID_HTTP(TableName, website, prm_USER,
@@ -534,13 +534,14 @@ public class MSequence extends X_AD_Sequence
 	 */
 	public static synchronized int getNextProjectID_HTTP(String TableName)
 	{
-		String website = MSysConfig.getValue("PROJECT_ID_WEBSITE"); // "http://developer.adempiere.com/cgi-bin/get_ID";
-		String prm_USER = MSysConfig.getValue("PROJECT_ID_USER");  // "globalqss";
-		String prm_PASSWORD = MSysConfig.getValue("PROJECT_ID_PASSWORD");  // "password_inseguro";
+		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+		String website = sysConfigBL.getValue("PROJECT_ID_WEBSITE"); // "http://developer.adempiere.com/cgi-bin/get_ID";
+		String prm_USER = sysConfigBL.getValue("PROJECT_ID_USER");  // "globalqss";
+		String prm_PASSWORD = sysConfigBL.getValue("PROJECT_ID_PASSWORD");  // "password_inseguro";
 		String prm_TABLE = TableName;
 		String prm_ALTKEY = "";  // TODO: generate alt-key based on key of table
-		String prm_COMMENT = MSysConfig.getValue("PROJECT_ID_COMMENTS");
-		String prm_PROJECT = MSysConfig.getValue("PROJECT_ID_PROJECT");
+		String prm_COMMENT = sysConfigBL.getValue("PROJECT_ID_COMMENTS");
+		String prm_PROJECT = sysConfigBL.getValue("PROJECT_ID_PROJECT");
 
 		return getNextID_HTTP(TableName, website, prm_USER,
 				prm_PASSWORD, prm_TABLE, prm_ALTKEY, prm_COMMENT, prm_PROJECT);
@@ -697,11 +698,14 @@ public class MSequence extends X_AD_Sequence
 			s_log.debug("Returning 'false' because RunMode == BACKEND");
 			return false; // task 08011: we are running on the server; we don't need central ID because we won't record SQL-scripts
 		}
-		if (!MSysConfig.getBooleanValue(SYSCONFIG_DICTIONARY_ID_USE_CENTRALIZED_ID, true))
+
+		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+		if (!sysConfigBL.getBooleanValue(SYSCONFIG_DICTIONARY_ID_USE_CENTRALIZED_ID, true))
 		{
 			s_log.debug("Returning 'false' because AD_Sysconfig {} (default=true) returned false", SYSCONFIG_DICTIONARY_ID_USE_CENTRALIZED_ID);
 			return false;
 		}
+
 		// Check if is an exception
 		if (TableName != null && isExceptionCentralized(TableName))
 		{
@@ -731,7 +735,9 @@ public class MSequence extends X_AD_Sequence
 			s_log.debug("Returning 'false' because RunMode == BACKEND");
 			return false; // task 08011: we are running on the server; we don't need central ID because we won't record SQL-scripts
 		}
-		if (!MSysConfig.getBooleanValue(SYSCONFIG_PROJECT_ID_USE_CENTRALIZED_ID, false))
+
+		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+		if (!sysConfigBL.getBooleanValue(SYSCONFIG_PROJECT_ID_USE_CENTRALIZED_ID, false))
 		{
 			s_log.debug("Returning 'false' because AD_Sysconfig {} (default=false) returned false", SYSCONFIG_PROJECT_ID_USE_CENTRALIZED_ID);
 			return false;

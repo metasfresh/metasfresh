@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.logging.LogManager;
 import de.metas.security.UserRolePermissionsKey;
 import de.metas.security.impl.AccessSqlStringExpression;
+import de.metas.security.permissions.Access;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.descriptor.sql.SqlForFetchingLookups;
@@ -92,6 +93,7 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 	public static final CtxName PARAM_AD_Language = CtxNames.parse(Env.CTXNAME_AD_Language);
 	public static final CtxName PARAM_UserRolePermissionsKey = AccessSqlStringExpression.PARAM_UserRolePermissionsKey;
 
+	public static final CtxName PARAM_OrgAccessSql = CtxNames.parse("OrgAccessSql");
 	public static final CtxName PARAM_Filter = CtxNames.parse("Filter");
 	public static final CtxName PARAM_FilterSql = CtxNames.parse("FilterSql");
 	public static final CtxName PARAM_FilterSqlWithoutWildcards = CtxNames.parse("FilterSqlWithoutWildcards");
@@ -440,6 +442,7 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 		private Collection<CtxName> _requiredParameters;
 		private boolean _requiredParameters_copyOnAdd = false;
 
+		private final Properties ctx = Env.getCtx();
 		private final LinkedHashMap<String, Object> valuesCollected = new LinkedHashMap<>();
 
 		private Builder(@Nullable final String lookupTableName)
@@ -458,7 +461,6 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 			{
 				//
 				// Standard values, needed by each query
-				final Properties ctx = Env.getCtx();
 				final String adLanguage = Env.getAD_Language(ctx);
 				final String permissionsKey = UserRolePermissionsKey.toPermissionsKeyString(ctx);
 				putValue(PARAM_AD_Language, adLanguage);
@@ -629,6 +631,7 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 			return DB.TO_STRING(searchSql);
 		}
 
+
 		public Builder putFilterById(@NonNull final IdsToFilter idsToFilter)
 		{
 			this.idsToFilter = idsToFilter;
@@ -693,6 +696,13 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 				{
 					return valueObj;
 				}
+			}
+
+			if (variableName.getName().equals(PARAM_OrgAccessSql.getName())
+					&& !Check.isBlank(lookupTableName)
+					&& UserRolePermissionsKey.fromContextOrNull(ctx) != null)
+			{
+				return Env.getUserRolePermissions(ctx).getOrgWhere(lookupTableName, Access.READ);
 			}
 
 			// Fallback to document evaluatee

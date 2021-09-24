@@ -209,7 +209,7 @@ public final class NumberUtils
 		return asInteger(value, defaultValue);
 	}
 
-	public static Integer asIntegerOrNull(final Object value)
+	public static Integer asIntegerOrNull(@Nullable final Object value)
 	{
 		return asInteger(value, null);
 	}

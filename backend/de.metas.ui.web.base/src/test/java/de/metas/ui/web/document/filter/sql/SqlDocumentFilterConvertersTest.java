@@ -47,7 +47,7 @@ public class SqlDocumentFilterConvertersTest
 		 * This method won't be called throughout our test
 		 */
 		@Override
-		public String getSql(final SqlParamsCollector sqlParamsOut, final DocumentFilter filter, final SqlOptions sqlOpts, final SqlDocumentFilterConverterContext context)
+		public FilterSql getSql(final DocumentFilter filter, final SqlOptions sqlOpts, final SqlDocumentFilterConverterContext context)
 		{
 			throw new UnsupportedOperationException();
 		}

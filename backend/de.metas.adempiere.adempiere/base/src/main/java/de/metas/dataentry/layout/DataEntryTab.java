@@ -1,6 +1,15 @@
 package de.metas.dataentry.layout;
 
-import static de.metas.util.Check.assumeNotEmpty;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import de.metas.dataentry.DataEntrySubTabId;
+import de.metas.dataentry.DataEntryTabId;
+import de.metas.i18n.ITranslatableString;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Singular;
+import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
 
 import java.util.Collection;
 import java.util.List;
@@ -9,18 +18,7 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-import org.adempiere.exceptions.AdempiereException;
-
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.dataentry.DataEntrySubTabId;
-import de.metas.dataentry.DataEntryTabId;
-import de.metas.i18n.ITranslatableString;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Singular;
-import lombok.Value;
+import static de.metas.util.Check.assumeNotEmpty;
 
 /*
  * #%L
