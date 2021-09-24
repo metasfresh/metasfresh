@@ -61,6 +61,7 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_PO_OrderLine_Alloc;
 import org.compiere.model.I_C_UOM;
+import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Test;
@@ -91,6 +92,7 @@ public class OrderAttachmentRowsLoaderTest
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+		Env.setContext(Env.getCtx(), Env.CTXNAME_AD_User_ID, 10); // will be in the attachment-entry's CreatedUpdatedInfo
 
 		bpartnerRecord = createPartner("bpartner");
 
