@@ -34,6 +34,8 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
+    "lint": "./node_modules/eslint/bin/eslint.js 'src/**/*.{js,jsx}' --quiet",
+    "lintfix": "./node_modules/eslint/bin/eslint.js 'src/**/*.{js,jsx}' --fix",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
@@ -56,7 +58,22 @@
     ]
   },
   "devDependencies": {
-    "json-server": "^0.16.3",
+    "@babel/core": "^7.15.0",
+    "@babel/eslint-parser": "7.15.0",
+    "@babel/plugin-syntax-dynamic-import": "7.8.3",
+    "@babel/plugin-transform-regenerator": "^7.14.5",
+    "@babel/preset-env": "^7.15.0",
+    "@babel/preset-react": "7.14.5",
+    "@babel/register": "7.15.3",
+    "@babel/runtime": "7.15.3",
+    "react-hot-loader": "4.13.0",
+    "eslint-config-prettier": "8.3.0",
+    "eslint-plugin-import": "2.24.0",
+    "eslint-plugin-jest": "24.4.0",
+    "eslint-plugin-jsx-a11y": "6.4.1",
+    "eslint-plugin-prettier": "3.4.0",
+    "eslint-plugin-react": "7.24.0",
+    "prettier": "2.3.2",
     "node-sass": "^6.0.1"
   },
   "homepage": "./"
