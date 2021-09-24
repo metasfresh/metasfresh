@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.ordercandidate.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for C_OLCand
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1230205652L;
+	private static final long serialVersionUID = -1680974602L;
 
     /** Standard Constructor */
     public X_C_OLCand (final Properties ctx, final int C_OLCand_ID, @Nullable final String trxName)
@@ -123,6 +123,29 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	public int getAD_User_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_User_ID);
+	}
+
+	/** 
+	 * ApplySalesRepFrom AD_Reference_ID=541416
+	 * Reference name: SalesRepFrom
+	 */
+	public static final int APPLYSALESREPFROM_AD_Reference_ID=541416;
+	/** Dispo = Candidate */
+	public static final String APPLYSALESREPFROM_Dispo = "Candidate";
+	/** Stammdaten = BPartner */
+	public static final String APPLYSALESREPFROM_Stammdaten = "BPartner";
+	/** Dispo wenn vorh. = CandidateFirst */
+	public static final String APPLYSALESREPFROM_DispoWennVorh = "CandidateFirst";
+	@Override
+	public void setApplySalesRepFrom (final java.lang.String ApplySalesRepFrom)
+	{
+		set_Value (COLUMNNAME_ApplySalesRepFrom, ApplySalesRepFrom);
+	}
+
+	@Override
+	public java.lang.String getApplySalesRepFrom() 
+	{
+		return get_ValueAsString(COLUMNNAME_ApplySalesRepFrom);
 	}
 
 	@Override
@@ -346,6 +369,21 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	public int getC_BPartner_SalesRep_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_BPartner_SalesRep_ID);
+	}
+
+	@Override
+	public void setC_BPartner_SalesRep_Internal_ID (final int C_BPartner_SalesRep_Internal_ID)
+	{
+		if (C_BPartner_SalesRep_Internal_ID < 1) 
+			set_Value (COLUMNNAME_C_BPartner_SalesRep_Internal_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_BPartner_SalesRep_Internal_ID, C_BPartner_SalesRep_Internal_ID);
+	}
+
+	@Override
+	public int getC_BPartner_SalesRep_Internal_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_BPartner_SalesRep_Internal_ID);
 	}
 
 	@Override

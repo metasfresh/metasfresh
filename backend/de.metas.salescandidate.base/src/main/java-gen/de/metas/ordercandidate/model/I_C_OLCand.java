@@ -1,8 +1,9 @@
 package de.metas.ordercandidate.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for C_OLCand
  *  @author metasfresh (generated) 
@@ -180,6 +181,27 @@ public interface I_C_OLCand
 	int getAD_User_ID();
 
 	String COLUMNNAME_AD_User_ID = "AD_User_ID";
+
+	/**
+	 * Set Sales rep from.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setApplySalesRepFrom (java.lang.String ApplySalesRepFrom);
+
+	/**
+	 * Get Sales rep from.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getApplySalesRepFrom();
+
+	ModelColumn<I_C_OLCand, Object> COLUMN_ApplySalesRepFrom = new ModelColumn<>(I_C_OLCand.class, "ApplySalesRepFrom", null);
+	String COLUMNNAME_ApplySalesRepFrom = "ApplySalesRepFrom";
 
 	/**
 	 * Set Bill Business Partner.
@@ -471,6 +493,26 @@ public interface I_C_OLCand
 	String COLUMNNAME_C_BPartner_SalesRep_ID = "C_BPartner_SalesRep_ID";
 
 	/**
+	 * Set Internal sales rep.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_BPartner_SalesRep_Internal_ID (int C_BPartner_SalesRep_Internal_ID);
+
+	/**
+	 * Get Internal sales rep.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_BPartner_SalesRep_Internal_ID();
+
+	String COLUMNNAME_C_BPartner_SalesRep_Internal_ID = "C_BPartner_SalesRep_Internal_ID";
+
+	/**
 	 * Set Kosten.
 	 * Zusätzliche Kosten
 	 *
@@ -515,7 +557,7 @@ public interface I_C_OLCand
 	String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
 
 	/**
-	 * Set Rechnungs-Belegart.
+	 * Set DocType Invoice.
 	 * Document type used for invoices generated from this sales document
 	 *
 	 * <br>Type: Table
@@ -525,7 +567,7 @@ public interface I_C_OLCand
 	void setC_DocTypeInvoice_ID (int C_DocTypeInvoice_ID);
 
 	/**
-	 * Get Rechnungs-Belegart.
+	 * Get DocType Invoice.
 	 * Document type used for invoices generated from this sales document
 	 *
 	 * <br>Type: Table

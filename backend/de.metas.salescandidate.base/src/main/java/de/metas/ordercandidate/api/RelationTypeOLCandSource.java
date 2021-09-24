@@ -113,6 +113,8 @@ final class RelationTypeOLCandSource implements OLCandSource
 		final ShipperId shipperId = olCandBL.getShipperId(params, orderDefaults, olCandRecord);
 		final DocTypeId orderDocTypeId = olCandBL.getOrderDocTypeId(orderDefaults, olCandRecord);
 		final BPartnerId salesRepId = BPartnerId.ofRepoIdOrNull(olCandRecord.getC_BPartner_SalesRep_ID());
+		final BPartnerId salesRepInternalId = BPartnerId.ofRepoIdOrNull(olCandRecord.getC_BPartner_SalesRep_Internal_ID());
+		final AssignSalesRepRule assignSalesRepRule = AssignSalesRepRule.ofCode(olCandRecord.getApplySalesRepFrom());
 
 		final OrderLineGroup orderLineGroup = OrderLineGroup.ofOrNull(
 				olCandRecord.getCompensationGroupKey(),
@@ -134,6 +136,8 @@ final class RelationTypeOLCandSource implements OLCandSource
 				.orderDocTypeId(orderDocTypeId)
 				.salesRepId(salesRepId)
 				.orderLineGroup(orderLineGroup)
+				.salesRepInternalId(salesRepInternalId)
+				.assignSalesRepRule(assignSalesRepRule)
 				.build();
 	}
 }

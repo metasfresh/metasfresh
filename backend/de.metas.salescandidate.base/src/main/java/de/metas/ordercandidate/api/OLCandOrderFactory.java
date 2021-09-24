@@ -4,7 +4,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
 import de.metas.adempiere.model.I_C_Order;
-import de.metas.adempiere.modelvalidator.Order;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -89,6 +88,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -284,6 +284,8 @@ class OLCandOrderFactory
 		// task 08926: set the data source; this shall trigger IsEdiEnabled to be set to true, if the data source is "EDI"
 		final de.metas.order.model.I_C_Order orderWithDataSource = InterfaceWrapperHelper.create(order, de.metas.order.model.I_C_Order.class);
 		orderWithDataSource.setAD_InputDataSource_ID(candidateOfGroup.getAD_InputDataSource_ID());
+
+		setBPSalesRepIdToOrder(order, candidateOfGroup);
 
 		save(order);
 		return order;
@@ -590,5 +592,29 @@ class OLCandOrderFactory
 	I_C_Order getOrder()
 	{
 		return order;
+	}
+
+	private void setBPSalesRepIdToOrder(@NonNull final I_C_Order order, @NonNull final OLCand olCand)
+	{
+		switch (olCand.getAssignSalesRepRule())
+		{
+			case Candidate:
+				order.setC_BPartner_SalesRep_ID(BPartnerId.toRepoId(olCand.getSalesRepId()));
+				break;
+			case BPartner:
+				order.setC_BPartner_SalesRep_ID(BPartnerId.toRepoId(olCand.getSalesRepInternalId()));
+				break;
+			case CandidateFirst:
+				final int salesRepInt = Optional.ofNullable(olCand.getSalesRepId())
+						.map(BPartnerId::getRepoId)
+						.orElseGet(() -> BPartnerId.toRepoId(olCand.getSalesRepInternalId()));
+
+				order.setC_BPartner_SalesRep_ID(salesRepInt);
+				break;
+			default:
+				throw new AdempiereException("Unsupported SalesRepFrom type")
+						.appendParametersToMessage()
+						.setParameter("salesRepFrom", olCand.getAssignSalesRepRule());
+		}
 	}
 }
