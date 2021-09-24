@@ -4,6 +4,7 @@
   "private": true,
   "license": "GPL 2",
   "dependencies": {
+    "@redux-offline/redux-offline": "^2.6.0",
     "@reduxjs/toolkit": "^1.6.1",
     "@testing-library/jest-dom": "^5.11.4",
     "@testing-library/react": "^11.1.0",
@@ -66,15 +67,15 @@
     "@babel/preset-react": "7.14.5",
     "@babel/register": "7.15.3",
     "@babel/runtime": "7.15.3",
-    "react-hot-loader": "4.13.0",
     "eslint-config-prettier": "8.3.0",
     "eslint-plugin-import": "2.24.0",
     "eslint-plugin-jest": "24.4.0",
     "eslint-plugin-jsx-a11y": "6.4.1",
     "eslint-plugin-prettier": "3.4.0",
     "eslint-plugin-react": "7.24.0",
+    "node-sass": "^6.0.1",
     "prettier": "2.3.2",
-    "node-sass": "^6.0.1"
+    "react-hot-loader": "4.13.0"
   },
   "homepage": "./"
 }
