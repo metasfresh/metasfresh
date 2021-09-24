@@ -1,6 +1,7 @@
 package de.metas.contracts.impl;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 import de.metas.bpartner.BPartnerId;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
@@ -639,7 +640,7 @@ public class FlatrateDAO implements IFlatrateDAO
 	{
 		final Iterator<I_C_Flatrate_Term> flatrateTerms = retrieveTerms(FlatrateDataId.ofRepoId(data.getC_Flatrate_Data_ID()));
 
-		return ImmutableList.copyOf(flatrateTerms);
+		return Lists.newArrayList(flatrateTerms);
 	}
 
 	@Override
