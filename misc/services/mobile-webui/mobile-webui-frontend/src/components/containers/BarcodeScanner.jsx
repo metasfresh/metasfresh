@@ -28,7 +28,7 @@ class BarcodeScanner extends Component {
         </div>
         {activeScanning && (
           <div className="scanner-container">
-            <div>Please scan a Barcode</div>
+            <div className="subtitle centered-text is-size-4">Please scan a Barcode</div>
             <video className="col-sm-12 viewport scanner-window" id="video" />
           </div>
         )}
