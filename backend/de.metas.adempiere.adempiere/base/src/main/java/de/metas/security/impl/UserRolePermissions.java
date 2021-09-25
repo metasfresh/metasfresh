@@ -38,7 +38,6 @@ import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
 import de.metas.organization.OrgId;
-import de.metas.security.ISecurityRuleEngine;
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.RoleId;
 import de.metas.security.TableAccessLevel;
@@ -55,6 +54,7 @@ import de.metas.security.permissions.OrgResource;
 import de.metas.security.permissions.Permission;
 import de.metas.security.permissions.StartupWindowConstraint;
 import de.metas.security.permissions.TableColumnPermissions;
+import de.metas.security.permissions.TableOrgPermissions;
 import de.metas.security.permissions.TablePermissions;
 import de.metas.security.permissions.UserMenuInfo;
 import de.metas.security.permissions.UserPreferenceLevelConstraint;
@@ -135,6 +135,8 @@ class UserRolePermissions implements IUserRolePermissions
 	 */
 	@Getter(AccessLevel.PACKAGE)
 	private final OrgPermissions orgPermissions;
+	@Getter(AccessLevel.PACKAGE)
+	private final TableOrgPermissions tableOrgPermissions;
 
 	/**
 	 * List of Table Access
@@ -205,6 +207,7 @@ class UserRolePermissions implements IUserRolePermissions
 		userLevel = builder.getUserLevel();
 
 		orgPermissions = builder.getOrgPermissions();
+		tableOrgPermissions = builder.getTableOrgPermissions();
 
 		tablePermissions = builder.getTablePermissions();
 		columnPermissions = builder.getColumnPermissions();
@@ -223,8 +226,6 @@ class UserRolePermissions implements IUserRolePermissions
 	private RecordAccessService recordAccessService() { return SpringContextHolder.instance.getBean(RecordAccessService.class); }
 
 	private IRolePermLoggingBL rolePermLoggingBL() { return Services.get(IRolePermLoggingBL.class); }
-
-	private ISecurityRuleEngine securityRuleEngine() { return Services.get(ISecurityRuleEngine.class); }
 
 	private CustomizedWindowInfoMap getCustomizedWindowInfoMap() { return SpringContextHolder.instance.getBean(CustomizedWindowInfoMapRepository.class).get(); }
 
@@ -250,7 +251,7 @@ class UserRolePermissions implements IUserRolePermissions
 		sb.append(Env.NL).append(Env.NL);
 		Joiner.on(Env.NL + Env.NL)
 				.skipNulls()
-				.appendTo(sb, miscPermissions, constraints, orgPermissions, tablePermissions, columnPermissions
+				.appendTo(sb, miscPermissions, constraints, orgPermissions, tableOrgPermissions, tablePermissions, columnPermissions
 						// don't show followings because they could be to big, mainly when is not a manual role:
 						// , windowPermissions
 						// , processPermissions
@@ -379,11 +380,8 @@ class UserRolePermissions implements IUserRolePermissions
 			return ORGACCESS_ALL;
 		}
 
-		final Set<OrgId> adOrgIds = orgPermissions.getOrgAccess(access);
-
-		securityRuleEngine().filterOrgs(this, tableName, access, adOrgIds);
-
-		return adOrgIds;
+		return tableOrgPermissions.getOrgsWithAccess(tableName, access)
+				.orElseGet(() -> orgPermissions.getOrgAccess(access));
 	}
 
 	@Override

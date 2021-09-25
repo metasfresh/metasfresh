@@ -32,6 +32,9 @@ import de.metas.security.permissions.PermissionsBuilder.CollisionPolicy;
 import de.metas.security.permissions.TableColumnPermission;
 import de.metas.security.permissions.TableColumnPermissions;
 import de.metas.security.permissions.TableColumnResource;
+import de.metas.security.permissions.TableOrgPermission;
+import de.metas.security.permissions.TableOrgPermissions;
+import de.metas.security.permissions.TableOrgResource;
 import de.metas.security.permissions.TablePermission;
 import de.metas.security.permissions.TablePermissions;
 import de.metas.security.permissions.TableResource;
@@ -59,6 +62,8 @@ import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.persistence.EntityTypesCache;
+import org.adempiere.ad.table.api.AdTableId;
+import org.adempiere.ad.table.api.impl.TableIdsCache;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -79,6 +84,7 @@ import org.compiere.model.I_AD_Process_Access;
 import org.compiere.model.I_AD_Role;
 import org.compiere.model.I_AD_Role_Included;
 import org.compiere.model.I_AD_Role_OrgAccess;
+import org.compiere.model.I_AD_Role_TableOrg_Access;
 import org.compiere.model.I_AD_Table_Access;
 import org.compiere.model.I_AD_Task;
 import org.compiere.model.I_AD_Task_Access;
@@ -119,6 +125,7 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 			// Org Access
 			I_AD_User_OrgAccess.Table_Name,
 			I_AD_Role_OrgAccess.Table_Name,
+			I_AD_Role_TableOrg_Access.Table_Name,
 			// Access records
 			I_AD_Window_Access.Table_Name,
 			I_AD_Process_Access.Table_Name,
@@ -133,14 +140,18 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 
 	private final AtomicLong version = new AtomicLong(1);
 
-	/** Aggregated permissions per key */
+	/**
+	 * Aggregated permissions per key
+	 */
 	private CCache<UserRolePermissionsKey, IUserRolePermissions> //
-	permissionsByKey = CCache.<UserRolePermissionsKey, IUserRolePermissions> builder()
+			permissionsByKey = CCache.<UserRolePermissionsKey, IUserRolePermissions>builder()
 			.tableName(I_AD_Role.Table_Name)
 			.build();
 
-	/** Individual (not-aggregated) permissions per key */
-	private CCache<UserRolePermissionsKey, UserRolePermissions> individialPermissionsByKey = CCache.<UserRolePermissionsKey, UserRolePermissions> builder()
+	/**
+	 * Individual (not-aggregated) permissions per key
+	 */
+	private CCache<UserRolePermissionsKey, UserRolePermissions> individialPermissionsByKey = CCache.<UserRolePermissionsKey, UserRolePermissions>builder()
 			.tableName(I_AD_Role.Table_Name)
 			.build();
 
@@ -451,6 +462,41 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 		return builder.build();
 	}
 
+	public TableOrgPermissions retrieveTableOrgPermissions(final RoleId adRoleId)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		final TableOrgPermissions.Builder builder = TableOrgPermissions.builder();
+
+		queryBL.createQueryBuilderOutOfTrx(I_AD_Role_TableOrg_Access.class)
+				.addEqualsFilter(I_AD_Role_TableOrg_Access.COLUMNNAME_AD_Role_ID, adRoleId)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.stream()
+				.map(this::toTableOrgPermission)
+				.forEach(permission -> builder.addPermission(permission, CollisionPolicy.Merge));
+
+		return builder.build();
+	}
+
+	private TableOrgPermission toTableOrgPermission(@NonNull final I_AD_Role_TableOrg_Access record)
+	{
+		return TableOrgPermission.builder()
+				.resource(extractTableOrgResource(record))
+				.access(Access.ofCode(record.getAccess()))
+				.build();
+	}
+
+	private TableOrgResource extractTableOrgResource(@NonNull final I_AD_Role_TableOrg_Access record)
+	{
+		final AdTableId adTableId = AdTableId.ofRepoId(record.getAD_Table_ID());
+		@NonNull final String tableName = TableIdsCache.instance.getTableName(adTableId);
+		return TableOrgResource.builder()
+				.tableName(tableName)
+				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
+				.build();
+	}
+
 	@Cached(cacheName = I_AD_Role_OrgAccess.Table_Name + "#by#AD_User_ID")
 	public OrgPermissions retrieveRoleOrgPermissions(final RoleId adRoleId, final AdTreeId adTreeOrgId)
 	{
@@ -664,7 +710,7 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 		permissionsCollector.addPermission(defaultPermissions, CollisionPolicy.Override);
 
 		return permissionsCollector.build();
-	}	// loadTableAccess
+	}    // loadTableAccess
 
 	@Cached(cacheName = I_AD_Column_Access.Table_Name + "#Accesses")
 	public TableColumnPermissions retrieveTableColumnPermissions(final RoleId adRoleId)
@@ -725,7 +771,7 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 		builder.addPermission(defaultPermission.build(), CollisionPolicy.Override);
 
 		return builder.build();
-	}	// loadColumnAccess
+	}    // loadColumnAccess
 
 	@Override
 	public void updateAccessRecordsForAllRoles()
