@@ -5,10 +5,14 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 
+import de.metas.user.UserId;
+import de.metas.user.api.IUserDAO;
+import de.metas.util.Services;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_User_Assigned_Role;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
@@ -21,6 +25,8 @@ import de.metas.interfaces.I_C_BPartner;
 import de.metas.logging.LogManager;
 import lombok.NonNull;
 import lombok.ToString;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -48,16 +54,24 @@ final class BPartnerCompositeCacheById
 {
 	private static final Logger logger = LogManager.getLogger(BPartnerCompositeCacheById.class);
 
+	private final IUserDAO userDAO;
+	
 	private final CCache<BPartnerId, BPartnerComposite> cache = CCache
-			.<BPartnerId, BPartnerComposite> builder()
+			.<BPartnerId, BPartnerComposite>builder()
 			.cacheName("BPartnerComposite_by_Id")
 			.additionalTableNameToResetFor(I_C_BPartner.Table_Name)
 			.additionalTableNameToResetFor(I_C_BPartner_Location.Table_Name)
 			.additionalTableNameToResetFor(I_AD_User.Table_Name)
+			.additionalTableNameToResetFor(I_C_User_Assigned_Role.Table_Name)
 			.cacheMapType(CacheMapType.LRU)
 			.initialCapacity(500)
 			.invalidationKeysMapper(this::extractBPartnerIds)
 			.build();
+
+	BPartnerCompositeCacheById(@NonNull final IUserDAO userDAO)
+	{
+		this.userDAO = userDAO;
+	}
 
 	public Collection<BPartnerComposite> getAllOrLoad(
 			@NonNull final Collection<BPartnerId> bpartnerIds,
@@ -88,14 +102,19 @@ final class BPartnerCompositeCacheById
 		else if (I_AD_User.Table_Name.equals(recordRef.getTableName()))
 		{
 			final I_AD_User userRecord = recordRef.getModel(I_AD_User.class);
-			if (userRecord == null) // can happen while we are in the process of storing a bpartner with locations and contacts
+			result = extractBPartnerIds(userRecord);
+		}
+		else if (I_C_User_Assigned_Role.Table_Name.equals(recordRef.getTableName()))
+		{
+			final I_C_User_Assigned_Role userRoleRecord = recordRef.getModel(I_C_User_Assigned_Role.class);
+			if (userRoleRecord == null) // can happen while we are in the process of storing a bpartner with locations and contacts
 			{
 				result = ImmutableList.of();
 			}
 			else
 			{
-				final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(userRecord.getC_BPartner_ID());
-				result = bpartnerId != null ? ImmutableList.of(bpartnerId) : ImmutableList.of();
+				final I_AD_User userRecord = userDAO.getById(UserId.ofRepoId(userRoleRecord.getAD_User_ID()));
+				result = extractBPartnerIds(userRecord);
 			}
 		}
 		else
@@ -104,6 +123,21 @@ final class BPartnerCompositeCacheById
 		}
 
 		logger.debug("extractBPartnerIds for recordRef={} returns result={}", recordRef, result);
+		return result;
+	}
+
+	private ImmutableList<BPartnerId> extractBPartnerIds(@Nullable final I_AD_User userRecord)
+	{
+		final ImmutableList<BPartnerId> result;
+		if (userRecord == null) // can happen while we are in the process of storing a bpartner with locations and contacts
+		{
+			result = ImmutableList.of();
+		}
+		else
+		{
+			final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(userRecord.getC_BPartner_ID());
+			result = bpartnerId != null ? ImmutableList.of(bpartnerId) : ImmutableList.of();
+		}
 		return result;
 	}
 
