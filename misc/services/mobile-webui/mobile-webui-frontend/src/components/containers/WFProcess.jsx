@@ -9,16 +9,6 @@ class WFProcess extends Component {
   render() {
     const { wfProcessId, activities } = this.props;
 
-    const barcodeMockProps = {
-      activityId: '1',
-      caption: 'Scan picking slot',
-      componentType: 'common/scanBarcode',
-      readonly: true,
-      componentProps: {
-        barcodeCaption: null,
-      },
-    };
-
     return (
       <div className="pick-products-container">
         <div className="title is-4 header-caption">WFProcess Caption HEADER</div>
@@ -28,7 +18,7 @@ class WFProcess extends Component {
             let uniqueId = uuidv4();
             switch (activityItem.componentType) {
               case 'common/scanBarcode':
-                return <BarcodeScanner key={uniqueId} id={uniqueId} {...barcodeMockProps} />;
+                return <BarcodeScanner key={uniqueId} id={uniqueId} {...activityItem} />;
               case 'picking/pickProducts':
                 return (
                   <PickProductsActivity key={uniqueId} id={uniqueId} wfProcessId={wfProcessId} {...activityItem} />
