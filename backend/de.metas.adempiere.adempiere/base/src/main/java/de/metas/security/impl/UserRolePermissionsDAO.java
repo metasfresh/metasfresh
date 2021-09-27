@@ -339,7 +339,7 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 				@Override
 				public UserRolePermissionsBuilder initialValue(final IRolesTreeNode node)
 				{
-					final UserRolePermissions permissions = getIndividialUserRolePermissions(node.getRoleId(), adUserId, adClientId);
+					final UserRolePermissions permissions = getIndividualUserRolePermissions(node.getRoleId(), adUserId, adClientId);
 					return UserRolePermissionsBuilder.of(UserRolePermissionsDAO.this, permissions);
 				}
 
@@ -358,7 +358,7 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 				@Override
 				public UserRolePermissions leafValue(final IRolesTreeNode node)
 				{
-					return getIndividialUserRolePermissions(node.getRoleId(), adUserId, adClientId);
+					return getIndividualUserRolePermissions(node.getRoleId(), adUserId, adClientId);
 				}
 			});
 		}
@@ -371,7 +371,7 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 		}
 	}
 
-	final UserRolePermissions getIndividialUserRolePermissions(final RoleId adRoleId, final UserId adUserId, final ClientId adClientId)
+	final UserRolePermissions getIndividualUserRolePermissions(final RoleId adRoleId, final UserId adUserId, final ClientId adClientId)
 	{
 		final UserRolePermissionsKey key = UserRolePermissionsKey.of(adRoleId, adUserId, adClientId, LocalDate.MIN);
 		return individialPermissionsByKey.getOrLoad(key, () -> new UserRolePermissionsBuilder(this)
