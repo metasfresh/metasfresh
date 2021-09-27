@@ -3,67 +3,24 @@ import './App.css';
 import { connect } from 'react-redux';
 import Header from './components/Header';
 import Launchers from './components/containers/Launchers';
-
-import BarcodeScanner from './components/containers/BarcodeScanner';
-import ConfirmActivity from './components/containers/ConfirmActivity';
-import PickProductsActivity from './components/containers/PickProductsActivity';
-
-function App() {
-  const barcodeMockProps = {
-    activityId: '1',
-    caption: 'Scan picking slot',
-    componentType: 'common/scanBarcode',
-    readonly: true,
-    componentProps: {
-      barcodeCaption: null,
-    },
-  };
-
-  const confirmActivityProps = {
-    activityId: '3',
-    caption: 'Complete picking',
-    componentType: 'common/confirmButton',
-    readonly: true,
-    componentProps: {
-      question: 'Are you sure?',
-    },
-    wfProcessId: '200',
-  };
-
-  const pickProductsActivityProps = {
-    activityId: '2',
-    caption: 'Pick',
-    componentType: 'picking/pickProducts',
-    readonly: true,
-    componentProps: {
-      lines: [
-        {
-          caption: 'TestProduct',
-          steps: [
-            {
-              productName: 'TestProduct',
-              locatorName: 'Hauptlager',
-              huBarcode: '1000001',
-              uom: 'Stk',
-              qtyToPick: 7,
-              qtyPicked: 0,
-            },
-          ],
-        },
-      ],
-    },
-  };
-
+import WFProcess from './components/containers/WFProcess';
+import PropTypes from 'prop-types';
+function App(props) {
   return (
     <>
       <Header appName="webUI app" />
       <Launchers />
-      <BarcodeScanner {...barcodeMockProps} />
-      <ConfirmActivity {...confirmActivityProps} />
-      <PickProductsActivity {...pickProductsActivityProps} />
+      <WFProcess
+        wfProcessId="picking-7f42317d-0782-466c-a192-cb5ad7d3cce0"
+        {...props.wfProcesses['picking-7f42317d-0782-466c-a192-cb5ad7d3cce0']}
+      />
     </>
   );
 }
+
+App.propTypes = {
+  wfProcesses: PropTypes.object,
+};
 
 const mapStateToProps = (state) => {
   return state;
