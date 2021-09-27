@@ -146,11 +146,6 @@ public interface IOrderBL extends ISingletonService
 	void updateAddresses(I_C_Order order);
 
 	/**
-	 * Retrieve deliveryVIaRule from order if the rule is already set, is retrieving the one set in order, if not, retrieves the deliveryViaRule from partner
-	 */
-	DeliveryViaRule evaluateOrderDeliveryViaRule(I_C_Order order);
-
-	/**
 	 * Set Business Partner Defaults & Details. SOTrx should be set.
 	 *
 	 * @param bp business partner
@@ -258,4 +253,6 @@ public interface IOrderBL extends ISingletonService
 	void validateHaddexDate(I_C_Order order);
 
 	boolean isHaddexOrder(I_C_Order order);
+
+	Optional<DeliveryViaRule> findDeliveryViaRule(final I_C_Order orderRecord);
 }
