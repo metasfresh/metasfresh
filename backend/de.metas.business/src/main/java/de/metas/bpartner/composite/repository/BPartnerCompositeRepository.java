@@ -9,6 +9,7 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import de.metas.user.api.IUserDAO;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.table.LogEntriesRepository;
@@ -60,7 +61,7 @@ public class BPartnerCompositeRepository
 {
 	private final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
 	private final LogEntriesRepository recordChangeLogRepository;
-	private final BPartnerCompositeCacheById bpartnerCompositeCache = new BPartnerCompositeCacheById();
+	private final BPartnerCompositeCacheById bpartnerCompositeCache = new BPartnerCompositeCacheById(Services.get(IUserDAO.class));
 
 	public BPartnerCompositeRepository(@NonNull final LogEntriesRepository recordChangeLogRepository)
 	{
