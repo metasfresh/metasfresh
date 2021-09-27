@@ -23,7 +23,6 @@
 package de.metas.audit;
 
 import de.metas.audit.config.ApiAuditConfig;
-import de.metas.audit.config.ApiAuditConfigId;
 import de.metas.audit.config.ApiAuditConfigRepository;
 import de.metas.audit.request.ApiRequestAudit;
 import de.metas.audit.request.ApiRequestAuditRepository;
@@ -33,14 +32,11 @@ import de.metas.audit.response.ApiResponseAuditRepository;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
-import lombok.Value;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Service
 public class ApiAuditCleanUpService
@@ -73,11 +69,9 @@ public class ApiAuditCleanUpService
 			return;
 		}
 
-		final ApiAuditConfigShortTimeIndex apiAuditConfigShortTimeIndex = new ApiAuditConfigShortTimeIndex(apiAuditConfigRepository);
-
 		processedApiRequests
 				.stream()
-				.filter(request -> isReadyForCleanup(request, apiAuditConfigShortTimeIndex))
+				.filter(this::isReadyForCleanup)
 				.forEach(this::deleteProcessedRequestInTrx);
 	}
 
@@ -99,32 +93,12 @@ public class ApiAuditCleanUpService
 	}
 
 	private boolean isReadyForCleanup(
-			@NonNull final ApiRequestAudit apiRequestAudit,
-			@NonNull final ApiAuditConfigShortTimeIndex apiAuditConfigIndex)
+			@NonNull final ApiRequestAudit apiRequestAudit)
 	{
-		final ApiAuditConfig apiAuditConfig = apiAuditConfigIndex.getConfig(apiRequestAudit.getApiAuditConfigId());
+		final ApiAuditConfig apiAuditConfig = apiAuditConfigRepository.getConfigById(apiRequestAudit.getApiAuditConfigId());
 
 		final long daysSinceLastUpdate = (Instant.now().getEpochSecond() - apiRequestAudit.getTime().getEpochSecond()) / (60 * 60 * 24);
 
 		return daysSinceLastUpdate > apiAuditConfig.getKeepRequestDays();
-	}
-
-	@Value
-	private static class ApiAuditConfigShortTimeIndex
-	{
-		Map<ApiAuditConfigId, ApiAuditConfig> configId2Config = new HashMap<>();
-
-		ApiAuditConfigRepository apiAuditConfigRepository;
-
-		public ApiAuditConfigShortTimeIndex(final ApiAuditConfigRepository apiAuditConfigRepository)
-		{
-			this.apiAuditConfigRepository = apiAuditConfigRepository;
-		}
-
-		@NonNull
-		public ApiAuditConfig getConfig(@NonNull final ApiAuditConfigId apiAuditConfigId)
-		{
-			return configId2Config.computeIfAbsent(apiAuditConfigId, apiAuditConfigRepository::getConfigById);
-		}
 	}
 }

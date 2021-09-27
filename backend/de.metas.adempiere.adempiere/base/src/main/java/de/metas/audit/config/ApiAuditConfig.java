@@ -38,6 +38,7 @@ public class ApiAuditConfig
 {
 	@NonNull
 	ApiAuditConfigId apiAuditConfigId;
+	boolean active;
 
 	@NonNull
 	OrgId orgId;
