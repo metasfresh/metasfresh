@@ -547,6 +547,8 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 	public static final String TYPE_CONDITIONS_Refund = "Refund";
 	/** Commission = Commission */
 	public static final String TYPE_CONDITIONS_Commission = "Commission";
+	/** Mediated commission = MediatedCommission */
+	public static final String TYPE_CONDITIONS_MediatedCommission = "MediatedCommission";
 	@Override
 	public void setType_Conditions (final java.lang.String Type_Conditions)
 	{

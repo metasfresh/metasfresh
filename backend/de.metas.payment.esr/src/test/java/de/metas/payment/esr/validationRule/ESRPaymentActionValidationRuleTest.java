@@ -10,29 +10,20 @@ package de.metas.payment.esr.validationRule;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-import static de.metas.payment.esr.model.X_ESR_ImportLine.ESR_PAYMENT_ACTION_Allocate_Payment_With_Next_Invoice;
-import static de.metas.payment.esr.model.X_ESR_ImportLine.ESR_PAYMENT_ACTION_Control_Line;
-import static de.metas.payment.esr.model.X_ESR_ImportLine.ESR_PAYMENT_ACTION_Keep_For_Dunning;
-import static de.metas.payment.esr.model.X_ESR_ImportLine.ESR_PAYMENT_ACTION_Money_Was_Transfered_Back_to_Partner;
-import static de.metas.payment.esr.model.X_ESR_ImportLine.ESR_PAYMENT_ACTION_Unable_To_Assign_Income;
-import static de.metas.payment.esr.model.X_ESR_ImportLine.ESR_PAYMENT_ACTION_Write_Off_Amount;
-import static de.metas.payment.esr.model.X_ESR_ImportLine.ESR_PAYMENT_ACTION_Duplicate_Payment;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.math.BigDecimal;
-
+import de.metas.payment.esr.ESRValidationRuleTools;
+import de.metas.payment.esr.model.I_ESR_ImportLine;
 import org.adempiere.ad.validationRule.impl.PlainValidationContext;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.test.AdempiereTestHelper;
@@ -40,8 +31,16 @@ import org.compiere.model.I_C_Payment;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import de.metas.payment.esr.ESRValidationRuleTools;
-import de.metas.payment.esr.model.I_ESR_ImportLine;
+import java.math.BigDecimal;
+
+import static de.metas.payment.esr.model.X_ESR_ImportLine.ESR_PAYMENT_ACTION_Allocate_Payment_With_Next_Invoice;
+import static de.metas.payment.esr.model.X_ESR_ImportLine.ESR_PAYMENT_ACTION_Control_Line;
+import static de.metas.payment.esr.model.X_ESR_ImportLine.ESR_PAYMENT_ACTION_Duplicate_Payment;
+import static de.metas.payment.esr.model.X_ESR_ImportLine.ESR_PAYMENT_ACTION_Keep_For_Dunning;
+import static de.metas.payment.esr.model.X_ESR_ImportLine.ESR_PAYMENT_ACTION_Money_Was_Transfered_Back_to_Partner;
+import static de.metas.payment.esr.model.X_ESR_ImportLine.ESR_PAYMENT_ACTION_Unable_To_Assign_Income;
+import static de.metas.payment.esr.model.X_ESR_ImportLine.ESR_PAYMENT_ACTION_Write_Off_Amount;
+import static org.assertj.core.api.Assertions.*;
 
 public class ESRPaymentActionValidationRuleTest
 {
@@ -304,7 +303,7 @@ public class ESRPaymentActionValidationRuleTest
 		ESRValidationRuleTools.assertRejected(ESR_PAYMENT_ACTION_Money_Was_Transfered_Back_to_Partner, plainValidationCtx);
 		ESRValidationRuleTools.assertRejected(ESR_PAYMENT_ACTION_Unable_To_Assign_Income, plainValidationCtx);
 	}
-	
+
 	@Test
 	public void ESRPaymentActionValidationRule_DuplicatePayment_test()
 	{
@@ -320,7 +319,9 @@ public class ESRPaymentActionValidationRuleTest
 		plainValidationCtx.setValue(invoiceIdStr, "1000001");
 
 		boolean accepted = ESRValidationRuleTools.evaluatePaymentAction(ESR_PAYMENT_ACTION_Duplicate_Payment, plainValidationCtx);
-		assertThat(accepted).as("accepted").isTrue();
+
+		// Duplicate_Payment should never be available to set it manually
+		assertThat(accepted).as("accepted").isFalse();
 
 	}
 }

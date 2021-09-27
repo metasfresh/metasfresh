@@ -460,7 +460,7 @@ class Lookup extends Component {
                   defaultValue={defaultValue}
                   autoFocus={index === 0 && autoFocus}
                   initialFocus={index === 0 && initialFocus}
-                  mainProperty={[item]}
+                  mainProperty={item}
                   readonly={widgetData[index].readonly}
                   mandatory={widgetData[index].mandatory}
                   resetLocalClearing={this.resetLocalClearing}
@@ -472,9 +472,7 @@ class Lookup extends Component {
                   }
                   enableAutofocus={this.enableAutofocus}
                   isOpen={lookupWidget.dropdownOpen}
-                  onDropdownListToggle={(val, mouse) => {
-                    this.dropdownListToggle(val, item.field, mouse);
-                  }}
+                  onDropdownListToggle={this.dropdownListToggle}
                   forcedWidth={width}
                   forceHeight={forceHeight}
                   isComposed={this.props.properties.length > 1 ? true : false}

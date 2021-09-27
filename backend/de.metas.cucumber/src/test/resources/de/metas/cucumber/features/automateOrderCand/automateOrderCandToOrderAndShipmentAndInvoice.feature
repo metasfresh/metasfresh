@@ -341,6 +341,8 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | Shipment.Identifier | productIdentifier.m_product_id | movementqty | processed |
       | shipment_1          | 2005577                        | 8           | true      |
 
+    And validate that there are no M_ShipmentSchedule_Recompute records after no more than 10 seconds for order 'order_1'
+
     And a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/shipments/process' and fulfills with '200' status code
 """
 {

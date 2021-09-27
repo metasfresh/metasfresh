@@ -36,6 +36,8 @@ import de.metas.uom.UomId;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Collection;
@@ -138,7 +140,7 @@ public interface IPricingResult
 
 	PricingConditionsResult getPricingConditions();
 
-	void setPricingConditions(PricingConditionsResult pricingConditions);
+	void setPricingConditions(@Nullable PricingConditionsResult pricingConditions);
 
 	/**
 	 * @return the price relevant attributes. Never return {@code null}.

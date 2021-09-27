@@ -41,6 +41,7 @@ import java.time.Instant;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_PINSTANCE_ID;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.STORE_RAW_DATA_ROUTE;
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 
 @Component
@@ -79,6 +80,7 @@ public class GetOrdersRouteBuilder extends RouteBuilder
 				.log("Route invoked")
 				.streamCaching()
 				.process(new GetOrdersProcessor(processLogger)).id(GET_ORDERS_PROCESSOR_ID)
+				.to(direct(STORE_RAW_DATA_ROUTE))
 				.split(body())
 					.to(direct(PROCESS_ORDER_ROUTE_ID))
 				.end()

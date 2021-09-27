@@ -1,0 +1,60 @@
+de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.mediatedorder.MediatedOrderFactoryTest.givenValidMediatedOrder_taxIncluded_whenForRecord_thenReturnMediatedOrderModel=[
+  {
+    "id" : 100020,
+    "orgId" : 100014,
+    "vendorBPartnerId" : 2,
+    "orgBPartnerId" : 1,
+    "orderDateAcct" : {
+      "year" : 2021,
+      "month" : 3,
+      "day" : 18,
+      "leapYear" : false
+    },
+    "updated" : {
+      "seconds" : 1631157,
+      "nanos" : 38000000
+    },
+    "mediatedOrderLines" : [
+      {
+        "id" : 100021,
+        "productId" : 100,
+        "invoicedCommissionPoints" : 200.00,
+        "updated" : {
+          "seconds" : 1631157,
+          "nanos" : 38000000
+        }
+      }
+    ]
+  }
+]
+
+
+de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.mediatedorder.MediatedOrderFactoryTest.givenValidMediatedOrder_taxNotIncluded_whenForRecord_thenReturnMediatedOrderModel=[
+  {
+    "id" : 100028,
+    "orgId" : 100022,
+    "vendorBPartnerId" : 2,
+    "orgBPartnerId" : 1,
+    "orderDateAcct" : {
+      "year" : 2021,
+      "month" : 3,
+      "day" : 18,
+      "leapYear" : false
+    },
+    "updated" : {
+      "seconds" : 1631157,
+      "nanos" : 38000000
+    },
+    "mediatedOrderLines" : [
+      {
+        "id" : 100029,
+        "productId" : 100,
+        "invoicedCommissionPoints" : 220,
+        "updated" : {
+          "seconds" : 1631157,
+          "nanos" : 38000000
+        }
+      }
+    ]
+  }
+]

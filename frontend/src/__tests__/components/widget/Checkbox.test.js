@@ -9,7 +9,7 @@ const createDummyProps = function(props) {
     disabled: false,
     tabIndex: 2,
     fullScreen: false,
-    handlePatch: jest.fn(),
+    handlePatch: jest.fn(() => Promise.resolve(true)),
     ...props,
   };
 };
@@ -19,11 +19,11 @@ describe('Checkbox component', () => {
     it('renders without errors', () => {
       const props = createDummyProps({
         ...fixtures.data1.widgetProps,
-        widgetData: [
-            ...fixtures.data1.widgetProps.widgetData
-        ]
+        widgetData: 
+            {...fixtures.data1.widgetProps.widgetData}
+        
       });
-      props.widgetData[0].value = false;
+      props.widgetData.value = false;
       const wrapper = shallow(<Checkbox {...props} />);
       const html = wrapper.html();
 
@@ -38,7 +38,7 @@ describe('Checkbox component', () => {
         ...fixtures.data1.widgetProps,
         disabled: true,
       });
-      props.widgetData[0].value = true;
+      props.widgetData.value = true;
       const wrapper = shallow(<Checkbox {...props} />);
       const html = wrapper.html();
 
@@ -52,7 +52,7 @@ describe('Checkbox component', () => {
 
   describe('functional tests', () => {
     it('renders without errors with props set', () => {
-      const handlePatchSpy = jest.fn();
+      const handlePatchSpy = jest.fn(() => Promise.resolve(true));
       const updateItemsSpy = jest.fn();
       const props = createDummyProps({
         ...fixtures.data1.widgetProps,
@@ -60,12 +60,12 @@ describe('Checkbox component', () => {
         updateItems: updateItemsSpy,
       });
 
-      const updatedWidgetData = [
+      const updatedWidgetData = 
         {
           ...fixtures.data1.widgetProps.widgetData,
           value: false,
         }
-      ];
+      ;
       const wrapper = mount(<Checkbox {...props} />);
 
       const html = wrapper.html();

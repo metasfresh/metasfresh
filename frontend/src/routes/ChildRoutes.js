@@ -1,7 +1,5 @@
 import React from 'react';
-
 import { Route, Switch, Redirect, useHistory } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
 
 import { useAuth } from '../hooks/useAuth';
 import { MasterWindowRoute, BoardRoute, DocListRoute } from './KeyRoutes';
@@ -20,7 +18,6 @@ const ChildRoutes = () => {
   const auth = useAuth();
   const history = useHistory();
   const loggedIn = auth.isLoggedIn;
-  const dispatch = useDispatch();
 
   return (
     <>
@@ -28,9 +25,7 @@ const ChildRoutes = () => {
         <Route exact path="/" component={Dashboard} />
         <Route
           path="/window/:windowId/:docId"
-          render={(params) => (
-            <MasterWindowRoute {...params} dispatch={dispatch} />
-          )}
+          render={(params) => <MasterWindowRoute {...params} />}
         />
         <Route path="/window/:windowId" component={DocListRoute} />
         <Route path="/sitemap" component={NavigationTree} />

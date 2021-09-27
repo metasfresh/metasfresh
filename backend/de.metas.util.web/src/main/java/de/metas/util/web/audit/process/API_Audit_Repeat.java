@@ -23,9 +23,9 @@
 package de.metas.util.web.audit.process;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.audit.request.ApiRequestAudit;
-import de.metas.audit.request.ApiRequestAuditRepository;
-import de.metas.audit.request.Status;
+import de.metas.audit.apirequest.request.ApiRequestAudit;
+import de.metas.audit.apirequest.request.ApiRequestAuditRepository;
+import de.metas.audit.apirequest.request.Status;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;

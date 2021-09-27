@@ -102,7 +102,7 @@ import static de.metas.async.event.WorkpackageProcessedEvent.Status.DONE;
 import static de.metas.async.event.WorkpackageProcessedEvent.Status.ERROR;
 import static de.metas.async.event.WorkpackageProcessedEvent.Status.SKIPPED;
 
-@ToString(exclude = { "queueDAO", "workpackageParamDAO", "contextFactory", "iAsyncBatchBL", "logsRepository", "workPackageProcessorOriginal" })
+@ToString(exclude = { "queueDAO", "workpackageParamDAO", "contextFactory", "asyncBatchBL", "logsRepository", "workPackageProcessorOriginal" })
 class WorkpackageProcessorTask implements Runnable
 {
 	private static final AdMessageKey MSG_PROCESSING_ERROR_NOTIFICATION_TEXT = AdMessageKey.of("de.metas.async.WorkpackageProcessorTask.ProcessingErrorNotificationText");
@@ -167,7 +167,7 @@ class WorkpackageProcessorTask implements Runnable
 				NoopPerformanceMonitoringService.INSTANCE);
 
 		service.monitorTransaction(
-				() -> run0(),
+				this::run0,
 				TransactionMetadata.builder()
 						.type(Type.ASYNC_WORKPACKAGE)
 						.name("Workpackage-Processor - " + queueProcessor.getName())
@@ -205,7 +205,7 @@ class WorkpackageProcessorTask implements Runnable
 				trxManager.run(
 						trxNamePrefix,
 						trxRunConfig,
-						(TrxRunnable)trxName_IGNORED -> {
+						trxName_IGNORED -> {
 							// ignore the concrete trxName param,
 							// by default everything shall use the thread inherited trx
 							final Result result = processWorkpackage(ITrx.TRXNAME_ThreadInherited);
@@ -316,7 +316,7 @@ class WorkpackageProcessorTask implements Runnable
 	/**
 	 * Method called before we actually start to process the workpackage, but after the transaction is created.
 	 */
-	private final void beforeWorkpackageProcessing()
+	private void beforeWorkpackageProcessing()
 	{
 		// If the current workpackage's processor creates a follow-up-workpackage, the asyncBatch and priority will be forwarded.
 		contextFactory.setThreadInheritedAsyncBatch(AsyncBatchId.ofRepoIdOrNull(workPackage.getC_Async_Batch_ID()));
@@ -331,7 +331,7 @@ class WorkpackageProcessorTask implements Runnable
 	 * @param trxName transaction name to be used
 	 * @return result
 	 */
-	private Result processWorkpackage(final String trxName)
+	private Result processWorkpackage(@Nullable final String trxName)
 	{
 		// Setup context and everything that needs to be setup before actually starting to process the workpackage
 		beforeWorkpackageProcessing();
@@ -386,7 +386,9 @@ class WorkpackageProcessorTask implements Runnable
 		}
 	}
 
-	private RuntimeException handleServiceConnectionException(final String trxName, final ServiceConnectionException e)
+	private RuntimeException handleServiceConnectionException(
+			@Nullable final String trxName, 
+			@NonNull final ServiceConnectionException e)
 	{
 		final int retryAdvisedInMillis = e.getRetryAdvisedInMillis();
 		if (retryAdvisedInMillis > 0)
@@ -555,8 +557,7 @@ class WorkpackageProcessorTask implements Runnable
 		final String msg = StringUtils.formatMessage("Skipped while processing workpackage by processor {}; workpackage={}", processorName, workPackage);
 
 		// log error to console (for later audit):
-		logger.info(msg, skipException);
-		Loggables.addLog(msg);
+		Loggables.withLogger(logger,Level.DEBUG).addLog(msg, skipException);
 
 		createAndFireEventWithStatus(workPackage, SKIPPED);
 	}

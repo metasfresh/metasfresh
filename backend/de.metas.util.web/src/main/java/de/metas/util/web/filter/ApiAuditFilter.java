@@ -22,9 +22,9 @@
 
 package de.metas.util.web.filter;
 
-import de.metas.audit.ApiAuditLoggable;
-import de.metas.audit.config.ApiAuditConfig;
-import de.metas.audit.request.ApiRequestAuditId;
+import de.metas.audit.apirequest.ApiAuditLoggable;
+import de.metas.audit.apirequest.config.ApiAuditConfig;
+import de.metas.audit.apirequest.request.ApiRequestAuditId;
 import de.metas.logging.LogManager;
 import de.metas.util.Loggables;
 import de.metas.util.web.audit.ApiAuditService;

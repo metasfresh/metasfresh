@@ -5,8 +5,12 @@ Feature: external system invocation using metasfresh api
 
   Background:
     Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
-    And external system with type code 'S6' has an external system child with value 'testS6'
-    And external system with type code 'A' has an external system child with value 'testAlberta'
+    And add external system parent-child pair
+      | ExternalSystem_Config_ID.Identifier | Type | ExternalSystemValue |
+      |                                     | S6   | testS6              |
+    And add external system parent-child pair
+      | ExternalSystem_Config_ID.Identifier | Type | ExternalSystemValue |
+      |                                     | A    | testAlberta         |
 
   @from:cucumber
   Scenario: The request is good and the external service Shopware6 is invoked via the correct process

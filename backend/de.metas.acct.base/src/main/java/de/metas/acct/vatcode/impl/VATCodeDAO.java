@@ -2,6 +2,8 @@ package de.metas.acct.vatcode.impl;
 
 import java.util.List;
 import java.util.Properties;
+
+import lombok.NonNull;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
@@ -51,17 +53,16 @@ public class VATCodeDAO implements IVATCodeDAO
 	private static final transient Logger logger = LogManager.getLogger(VATCodeDAO.class);
 
 	@Override
-	public VATCode findVATCode(final VATCodeMatchingRequest request)
+	public VATCode findVATCode(@NonNull final VATCodeMatchingRequest request)
 	{
-		Check.assumeNotNull(request, "request not null");
 		final Properties ctx = Env.getCtx();
 
 		final List<I_C_VAT_Code> matchings = retriveVATCodeMatchingsForSchema(ctx, request.getC_AcctSchema_ID());
 		
 		if (logger.isDebugEnabled())
 		{
-			logger.debug("Request: {}" + request);
-			logger.debug("Rules:\n" + Joiner.on("\n").join(matchings));
+			logger.debug("Request={}", request);
+			logger.debug("Rules:\n{}", Joiner.on("\n").join(matchings));
 		}
 
 		for (final I_C_VAT_Code matching : matchings)
@@ -77,12 +78,9 @@ public class VATCodeDAO implements IVATCodeDAO
 	}
 
 	/**
-	 *
-	 * @param matching
-	 * @param request
 	 * @return true if the given {@link I_C_VAT_Code} is matching our request.
 	 */
-	private final boolean isMatching(final I_C_VAT_Code matching, final VATCodeMatchingRequest request)
+	private boolean isMatching(final I_C_VAT_Code matching, final VATCodeMatchingRequest request)
 	{
 		logger.debug("Matching: {}", matching);
 		logger.debug("Request: {}", request);
@@ -123,7 +121,6 @@ public class VATCodeDAO implements IVATCodeDAO
 	/**
 	 * Retries all active {@link I_C_VAT_Code}s for given C_AcctSchema_ID.
 	 *
-	 * @param ctx
 	 * @param acctSchemaId C_AcctSchema_ID
 	 */
 	@Cached(cacheName = I_C_VAT_Code.Table_Name + "#by#" + I_C_VAT_Code.COLUMNNAME_C_AcctSchema_ID)

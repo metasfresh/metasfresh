@@ -11,9 +11,9 @@
     }
   ],
   "attachment": {
-    "fileName": "test.txt.pdf",
+    "fileName": "attachmentFileName.png",
     "data": "dGhpcyBpcyBhIGR1bW15IHRlc3QgZmlsZQ==",
-    "mimeType": "application/pdf",
+    "mimeType": "image/png",
     "tags": [
       {
         "name": "alberta_attachment_id",
