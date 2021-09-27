@@ -8,7 +8,6 @@ import PickProductsActivity from './PickProductsActivity';
 class WFProcess extends Component {
   render() {
     const { wfProcessId, activities } = this.props;
-    console.log(activities);
 
     const barcodeMockProps = {
       activityId: '1',
