@@ -13,6 +13,7 @@ function App(props) {
       <WFProcess
         wfProcessId="picking-7f42317d-0782-466c-a192-cb5ad7d3cce0"
         {...props.wfProcesses['picking-7f42317d-0782-466c-a192-cb5ad7d3cce0']}
+        status={props.wfProcesses_status['picking-7f42317d-0782-466c-a192-cb5ad7d3cce0']}
       />
     </>
   );
@@ -20,6 +21,7 @@ function App(props) {
 
 App.propTypes = {
   wfProcesses: PropTypes.object,
+  wfProcesses_status: PropTypes.object,
 };
 
 const mapStateToProps = (state) => {
