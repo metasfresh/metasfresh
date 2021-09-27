@@ -495,20 +495,10 @@ public class OrderBL implements IOrderBL
 	}
 
 	@Override
-	public DeliveryViaRule evaluateOrderDeliveryViaRule(@NonNull final I_C_Order order)
-	{
-		final DeliveryViaRule orderDeliveryViaRule = DeliveryViaRule.ofNullableCode(order.getDeliveryViaRule());
-		final DeliveryViaRule bpartnerDeliveryRule = findDeliveryViaRule(order);
-
-		return bpartnerDeliveryRule != null
-		 		? bpartnerDeliveryRule
-		 		: orderDeliveryViaRule;
-	}
-
-	private DeliveryViaRule findDeliveryViaRule(final I_C_Order orderRecord)
+	public Optional<DeliveryViaRule> findDeliveryViaRule(final I_C_Order orderRecord)
 	{
 		final BPartnerOrderParams params = retrieveBPartnerParams(orderRecord);
-		return params.getDeliveryViaRule().orElse(null);
+		return params.getDeliveryViaRule();
 	}
 
 	private BPartnerOrderParams retrieveBPartnerParams(@NonNull final I_C_Order orderRecord)
