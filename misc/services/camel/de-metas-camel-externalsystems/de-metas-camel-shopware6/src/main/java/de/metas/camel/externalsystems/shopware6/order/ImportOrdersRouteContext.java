@@ -31,6 +31,7 @@ import de.metas.camel.externalsystems.shopware6.currency.CurrencyInfoProvider;
 import de.metas.camel.externalsystems.shopware6.order.processor.TaxProductIdProvider;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.common.externalsystem.JsonExternalSystemShopware6ConfigMappings;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Data;
@@ -91,6 +92,9 @@ public class ImportOrdersRouteContext
 	@Nullable
 	@Setter(AccessLevel.NONE)
 	private String bpLocationCustomJsonPath;
+
+	@Nullable
+	private final JsonMetasfreshId pInstanceId;
 
 	@Nullable
 	@Getter(AccessLevel.NONE)

@@ -1,4 +1,26 @@
-package de.metas.contracts.commission.commissioninstance.services;
+/*
+ * #%L
+ * de.metas.contracts
+ * %%
+ * Copyright (C) 2021 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+package de.metas.contracts.commission.commissioninstance.services.hierarchy;
 
 import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableList;
@@ -13,10 +35,13 @@ import de.metas.contracts.commission.commissioninstance.businesslogic.Commission
 import de.metas.contracts.commission.commissioninstance.businesslogic.algorithms.hierarchy.HierarchyConfig;
 import de.metas.contracts.commission.commissioninstance.businesslogic.algorithms.hierarchy.HierarchyContract;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTriggerType;
+import de.metas.contracts.commission.commissioninstance.services.CommissionConfigProvider;
+import de.metas.contracts.commission.commissioninstance.services.CommissionConfigStagingDataService;
+import de.metas.contracts.commission.commissioninstance.services.CommissionProductService;
 import de.metas.contracts.commission.commissioninstance.testhelpers.TestCommissionConfig;
 import de.metas.contracts.commission.commissioninstance.testhelpers.TestCommissionConfig.ConfigData;
 import de.metas.contracts.commission.commissioninstance.testhelpers.TestCommissionConfigLine;
-import de.metas.contracts.commission.commissioninstance.testhelpers.TestCommissionContract;
+import de.metas.contracts.commission.commissioninstance.testhelpers.TestHierarchyCommissionContract;
 import de.metas.contracts.commission.model.I_C_CommissionSettingsLine;
 import de.metas.contracts.commission.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.commission.model.I_C_HierarchyCommissionSettings;
@@ -51,33 +76,10 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
 
-/*
- * #%L
- * de.metas.contracts
- * %%
- * Copyright (C) 2019 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-public class CommissionConfigFactoryTest
+public class HierarchyCommissionConfigFactoryTest
 {
 	private CommissionHierarchyFactory commissionHierarchyFactory;
-	private CommissionConfigFactory commissionConfigFactory;
-	private I_C_BPartner bpartnerRecord_EndCustomer;
+	private HierarchyCommissionConfigFactory hierarchyCommissionConfigFactory;
 
 	private OrgId orgId;
 	private ProductId salesProductId;
@@ -110,13 +112,13 @@ public class CommissionConfigFactoryTest
 		commissionHierarchyFactory = new CommissionHierarchyFactory();
 
 		final CommissionConfigStagingDataService commissionConfigStagingDataService = new CommissionConfigStagingDataService();
-		commissionConfigFactory = new CommissionConfigFactory(commissionConfigStagingDataService, new CommissionProductService());
+		hierarchyCommissionConfigFactory = new HierarchyCommissionConfigFactory(commissionConfigStagingDataService, new CommissionProductService());
 
 		final I_C_BP_Group customerBPGroupRecord = newInstance(I_C_BP_Group.class);
 		saveRecord(customerBPGroupRecord);
 		customerBPGroudId = BPGroupId.ofRepoId(customerBPGroupRecord.getC_BP_Group_ID());
 
-		bpartnerRecord_EndCustomer = newInstance(I_C_BPartner.class);
+		final I_C_BPartner bpartnerRecord_EndCustomer = newInstance(I_C_BPartner.class);
 		bpartnerRecord_EndCustomer.setC_BP_Group_ID(customerBPGroupRecord.getC_BP_Group_ID());
 		bpartnerRecord_EndCustomer.setName("bpartnerRecord_EndCustomer");
 		saveRecord(bpartnerRecord_EndCustomer);
@@ -171,9 +173,9 @@ public class CommissionConfigFactoryTest
 				.subtractLowerLevelCommissionFromBase(true)
 				.configLineTestRecord(TestCommissionConfigLine.builder().name("2ndConfigLine").seqNo(20).salesProductCategoryId(saleProductCategoryId).percentOfBasePoints("10").build())
 				.configLineTestRecord(TestCommissionConfigLine.builder().name("1stConfigLine").seqNo(10).customerBGroupId(customerBPGroudId).percentOfBasePoints("20").build())
-				.contractTestRecord(TestCommissionContract.builder().salesRepName("salesRep").parentSalesRepName("salesSupervisor").date(date).build())
-				.contractTestRecord(TestCommissionContract.builder().salesRepName("salesSupervisor").parentSalesRepName("headOfSales").date(date).build())
-				.contractTestRecord(TestCommissionContract.builder().salesRepName("headOfSales").date(date).build())
+				.contractTestRecord(TestHierarchyCommissionContract.builder().salesRepName("salesRep").parentSalesRepName("salesSupervisor").date(date).build())
+				.contractTestRecord(TestHierarchyCommissionContract.builder().salesRepName("salesSupervisor").parentSalesRepName("headOfSales").date(date).build())
+				.contractTestRecord(TestHierarchyCommissionContract.builder().salesRepName("headOfSales").date(date).build())
 				.build()
 				.createConfigData();
 
@@ -192,7 +194,7 @@ public class CommissionConfigFactoryTest
 				.commissionTriggerType(commissionTriggerType)
 				.salesProductId(salesProductId)
 				.commissionDate(date).build();
-		final ImmutableList<CommissionConfig> configs = commissionConfigFactory.createForNewCommissionInstances(contractRequest);
+		final ImmutableList<CommissionConfig> configs = hierarchyCommissionConfigFactory.createForNewCommissionInstances(contractRequest);
 
 		// then
 		assertThat(configs).hasSize(1);
@@ -237,9 +239,9 @@ public class CommissionConfigFactoryTest
 				.subtractLowerLevelCommissionFromBase(true)
 				.configLineTestRecord(TestCommissionConfigLine.builder().name("2ndConfigLine").seqNo(20).salesProductCategoryId(saleProductCategoryId).percentOfBasePoints("10").build())
 				.configLineTestRecord(TestCommissionConfigLine.builder().name("1stConfigLine").seqNo(10).customerBGroupId(customerBPGroudId).percentOfBasePoints("20").build())
-				.contractTestRecord(TestCommissionContract.builder().salesRepName("salesRep").parentSalesRepName("salesSupervisor").date(date).build())
-				.contractTestRecord(TestCommissionContract.builder().salesRepName("salesSupervisor").parentSalesRepName("headOfSales").date(date).build())
-				.contractTestRecord(TestCommissionContract.builder().salesRepName("headOfSales").date(date).build())
+				.contractTestRecord(TestHierarchyCommissionContract.builder().salesRepName("salesRep").parentSalesRepName("salesSupervisor").date(date).build())
+				.contractTestRecord(TestHierarchyCommissionContract.builder().salesRepName("salesSupervisor").parentSalesRepName("headOfSales").date(date).build())
+				.contractTestRecord(TestHierarchyCommissionContract.builder().salesRepName("headOfSales").date(date).build())
 				.build()
 				.createConfigData();
 
@@ -253,9 +255,9 @@ public class CommissionConfigFactoryTest
 				.subtractLowerLevelCommissionFromBase(true)
 				.configLineTestRecord(TestCommissionConfigLine.builder().name("2ndConfigLine").seqNo(20).salesProductCategoryId(saleProductCategoryId).percentOfBasePoints("10").build())
 				.configLineTestRecord(TestCommissionConfigLine.builder().name("1stConfigLine").seqNo(10).customerBGroupId(customerBPGroudId).percentOfBasePoints("20").build())
-				.contractTestRecord(TestCommissionContract.builder().salesRepName("salesRep").parentSalesRepName("salesSupervisor").date(date).build())
-				.contractTestRecord(TestCommissionContract.builder().salesRepName("salesSupervisor").parentSalesRepName("headOfSales").date(date).build())
-				.contractTestRecord(TestCommissionContract.builder().salesRepName("headOfSales").date(date).build())
+				.contractTestRecord(TestHierarchyCommissionContract.builder().salesRepName("salesRep").parentSalesRepName("salesSupervisor").date(date).build())
+				.contractTestRecord(TestHierarchyCommissionContract.builder().salesRepName("salesSupervisor").parentSalesRepName("headOfSales").date(date).build())
+				.contractTestRecord(TestHierarchyCommissionContract.builder().salesRepName("headOfSales").date(date).build())
 				.build()
 				.createConfigData();
 
@@ -265,7 +267,7 @@ public class CommissionConfigFactoryTest
 		final BPartnerId salesRepLvl0Id = configData1.getName2BPartnerId().get("salesRep");
 
 		setSalesRepOfEndCustomerTo(salesRepLvl0Id);
-		
+
 		// when
 		final CommissionConfigProvider.ConfigRequestForNewInstance contractRequest = CommissionConfigProvider.ConfigRequestForNewInstance.builder()
 				.orgId(orgId)
@@ -275,7 +277,7 @@ public class CommissionConfigFactoryTest
 				.commissionTriggerType(commissionTriggerType)
 				.salesProductId(salesProductId)
 				.commissionDate(date).build();
-		final ImmutableList<CommissionConfig> configs = commissionConfigFactory.createForNewCommissionInstances(contractRequest);
+		final ImmutableList<CommissionConfig> configs = hierarchyCommissionConfigFactory.createForNewCommissionInstances(contractRequest);
 
 		// then
 		assertThat(configs).hasSize(2);
@@ -296,8 +298,8 @@ public class CommissionConfigFactoryTest
 				.subtractLowerLevelCommissionFromBase(true)
 				.configLineTestRecord(TestCommissionConfigLine.builder().name("2ndConfigLine").seqNo(20).salesProductCategoryId(saleProductCategoryId).percentOfBasePoints("10").build())
 				.configLineTestRecord(TestCommissionConfigLine.builder().name("1stConfigLine").seqNo(10).customerBGroupId(customerBPGroudId).percentOfBasePoints("20").build())
-				.contractTestRecord(TestCommissionContract.builder().salesRepName("salesRep").date(date).build())
-				.contractTestRecord(TestCommissionContract.builder().salesRepName("salesSupervisor").date(date).build())
+				.contractTestRecord(TestHierarchyCommissionContract.builder().salesRepName("salesRep").date(date).build())
+				.contractTestRecord(TestHierarchyCommissionContract.builder().salesRepName("salesSupervisor").date(date).build())
 				.build()
 				.createConfigData();
 
@@ -333,7 +335,7 @@ public class CommissionConfigFactoryTest
 				.build();
 
 		// when
-		final ImmutableList<CommissionConfig> configs = commissionConfigFactory.createForNewCommissionInstances(contractRequest);
+		final ImmutableList<CommissionConfig> configs = hierarchyCommissionConfigFactory.createForNewCommissionInstances(contractRequest);
 
 		// then
 		assertThat(configs).hasSize(2);
@@ -370,8 +372,8 @@ public class CommissionConfigFactoryTest
 				.subtractLowerLevelCommissionFromBase(true)
 				.configLineTestRecord(TestCommissionConfigLine.builder().name("2ndConfigLine").seqNo(20).salesProductCategoryId(saleProductCategoryId).percentOfBasePoints("10").build())
 				.configLineTestRecord(TestCommissionConfigLine.builder().name("1stConfigLine").seqNo(10).customerBGroupId(customerBPGroudId).percentOfBasePoints("20").build())
-				.contractTestRecord(TestCommissionContract.builder().salesRepName("salesRep").date(date).build())
-				.contractTestRecord(TestCommissionContract.builder().salesRepName("salesSupervisor").date(date).build())
+				.contractTestRecord(TestHierarchyCommissionContract.builder().salesRepName("salesRep").date(date).build())
+				.contractTestRecord(TestHierarchyCommissionContract.builder().salesRepName("salesSupervisor").date(date).build())
 				.build()
 				.createConfigData();
 
@@ -406,7 +408,7 @@ public class CommissionConfigFactoryTest
 				.commissionDate(date)
 				.build();
 		// when
-		final ImmutableList<CommissionConfig> configs = commissionConfigFactory.createForNewCommissionInstances(contractRequest);
+		final ImmutableList<CommissionConfig> configs = hierarchyCommissionConfigFactory.createForNewCommissionInstances(contractRequest);
 
 		// then
 		assertThat(POJOLookupMap.get().getRecords(I_C_Flatrate_Term.class)).hasSize(2); // guard
@@ -437,8 +439,8 @@ public class CommissionConfigFactoryTest
 				.subtractLowerLevelCommissionFromBase(true)
 				.configLineTestRecord(TestCommissionConfigLine.builder().name("2ndConfigLine").seqNo(20).salesProductCategoryId(saleProductCategoryId).percentOfBasePoints("10").build())
 				.configLineTestRecord(TestCommissionConfigLine.builder().name("1stConfigLine").seqNo(10).customerBGroupId(customerBPGroudId).percentOfBasePoints("20").build())
-				.contractTestRecord(TestCommissionContract.builder().salesRepName("salesRep").date(date).build())
-				.contractTestRecord(TestCommissionContract.builder().salesRepName("salesSupervisor").date(date).build())
+				.contractTestRecord(TestHierarchyCommissionContract.builder().salesRepName("salesRep").date(date).build())
+				.contractTestRecord(TestHierarchyCommissionContract.builder().salesRepName("salesSupervisor").date(date).build())
 				.build()
 				.createConfigData();
 
@@ -473,7 +475,7 @@ public class CommissionConfigFactoryTest
 				.commissionDate(date)
 				.build();
 		// when
-		final ImmutableList<CommissionConfig> configs = commissionConfigFactory.createForNewCommissionInstances(contractRequest);
+		final ImmutableList<CommissionConfig> configs = hierarchyCommissionConfigFactory.createForNewCommissionInstances(contractRequest);
 
 		// then
 		assertThat(POJOLookupMap.get().getRecords(I_C_Flatrate_Term.class)).hasSize(2); // guard
@@ -501,9 +503,9 @@ public class CommissionConfigFactoryTest
 				.subtractLowerLevelCommissionFromBase(true)
 				.configLineTestRecord(TestCommissionConfigLine.builder().name("2ndConfigLine").seqNo(20).salesProductCategoryId(saleProductCategoryId).percentOfBasePoints("10").build())
 				.configLineTestRecord(TestCommissionConfigLine.builder().name("1stConfigLine").seqNo(10).customerBGroupId(customerBPGroudId).percentOfBasePoints("20").build())
-				.contractTestRecord(TestCommissionContract.builder().salesRepName("salesRep").parentSalesRepName("salesSupervisor").date(date).build())
-				.contractTestRecord(TestCommissionContract.builder().salesRepName("salesSupervisor").parentSalesRepName("headOfSales").date(date).build())
-				.contractTestRecord(TestCommissionContract.builder().salesRepName("headOfSales").date(date).build())
+				.contractTestRecord(TestHierarchyCommissionContract.builder().salesRepName("salesRep").parentSalesRepName("salesSupervisor").date(date).build())
+				.contractTestRecord(TestHierarchyCommissionContract.builder().salesRepName("salesSupervisor").parentSalesRepName("headOfSales").date(date).build())
+				.contractTestRecord(TestHierarchyCommissionContract.builder().salesRepName("headOfSales").date(date).build())
 				.build()
 				.createConfigData();
 
@@ -517,9 +519,9 @@ public class CommissionConfigFactoryTest
 				.subtractLowerLevelCommissionFromBase(true)
 				.configLineTestRecord(TestCommissionConfigLine.builder().name("2ndConfigLine").seqNo(20).salesProductCategoryId(saleProductCategoryId).percentOfBasePoints("10").build())
 				.configLineTestRecord(TestCommissionConfigLine.builder().name("1stConfigLine").seqNo(10).customerBGroupId(customerBPGroudId).percentOfBasePoints("20").build())
-				.contractTestRecord(TestCommissionContract.builder().salesRepName("salesRep").parentSalesRepName("salesSupervisor").date(date).build())
-				.contractTestRecord(TestCommissionContract.builder().salesRepName("salesSupervisor").parentSalesRepName("headOfSales").date(date).build())
-				.contractTestRecord(TestCommissionContract.builder().salesRepName("headOfSales").date(date).build())
+				.contractTestRecord(TestHierarchyCommissionContract.builder().salesRepName("salesRep").parentSalesRepName("salesSupervisor").date(date).build())
+				.contractTestRecord(TestHierarchyCommissionContract.builder().salesRepName("salesSupervisor").parentSalesRepName("headOfSales").date(date).build())
+				.contractTestRecord(TestHierarchyCommissionContract.builder().salesRepName("headOfSales").date(date).build())
 				.build()
 				.createConfigData();
 
@@ -528,7 +530,6 @@ public class CommissionConfigFactoryTest
 
 		final BPartnerId salesRepLvl0Id = configData1.getName2BPartnerId().get("salesRep");
 		final BPartnerId salesRepLvl1Id = configData1.getName2BPartnerId().get("salesSupervisor");
-
 
 		// when
 		final CommissionConfigProvider.ConfigRequestForNewInstance contractRequest = CommissionConfigProvider.ConfigRequestForNewInstance.builder()
@@ -539,13 +540,13 @@ public class CommissionConfigFactoryTest
 				.commissionTriggerType(commissionTriggerType)
 				.salesProductId(salesProductId)
 				.commissionDate(date).build();
-		final ImmutableList<CommissionConfig> configs = commissionConfigFactory.createForNewCommissionInstances(contractRequest);
+		final ImmutableList<CommissionConfig> configs = hierarchyCommissionConfigFactory.createForNewCommissionInstances(contractRequest);
 
 		// then
 		assertThat(configs).hasSize(2);
 		SnapshotMatcher.expect(configs).toMatchSnapshot();
 	}
-	
+
 	@Test
 	void createForNewCommissionInstances_no_configLines()
 	{
@@ -558,9 +559,9 @@ public class CommissionConfigFactoryTest
 				.subtractLowerLevelCommissionFromBase(true)
 				// note: we create an unrelated configLine
 				.configLineTestRecord(TestCommissionConfigLine.builder().name("singleConfigLine").seqNo(10).salesProductCategoryId(someOtherProductCategoryId).percentOfBasePoints("20").build())
-				.contractTestRecord(TestCommissionContract.builder().salesRepName("salesRep").parentSalesRepName("salesSupervisor").date(date).build())
-				.contractTestRecord(TestCommissionContract.builder().salesRepName("salesSupervisor").parentSalesRepName("headOfSales").date(date).build())
-				.contractTestRecord(TestCommissionContract.builder().salesRepName("headOfSales").date(date).build())
+				.contractTestRecord(TestHierarchyCommissionContract.builder().salesRepName("salesRep").parentSalesRepName("salesSupervisor").date(date).build())
+				.contractTestRecord(TestHierarchyCommissionContract.builder().salesRepName("salesSupervisor").parentSalesRepName("headOfSales").date(date).build())
+				.contractTestRecord(TestHierarchyCommissionContract.builder().salesRepName("headOfSales").date(date).build())
 				.build()
 				.createConfigData();
 
@@ -576,9 +577,9 @@ public class CommissionConfigFactoryTest
 				.pointsPrecision(3)
 				.subtractLowerLevelCommissionFromBase(true)
 				// note: we create no configLines
-				.contractTestRecord(TestCommissionContract.builder().salesRepName("salesRep").parentSalesRepName("salesSupervisor").date(date).build())
-				.contractTestRecord(TestCommissionContract.builder().salesRepName("salesSupervisor").parentSalesRepName("headOfSales").date(date).build())
-				.contractTestRecord(TestCommissionContract.builder().salesRepName("headOfSales").date(date).build())
+				.contractTestRecord(TestHierarchyCommissionContract.builder().salesRepName("salesRep").parentSalesRepName("salesSupervisor").date(date).build())
+				.contractTestRecord(TestHierarchyCommissionContract.builder().salesRepName("salesSupervisor").parentSalesRepName("headOfSales").date(date).build())
+				.contractTestRecord(TestHierarchyCommissionContract.builder().salesRepName("headOfSales").date(date).build())
 				.build()
 				.createConfigData();
 
@@ -599,7 +600,7 @@ public class CommissionConfigFactoryTest
 				.commissionDate(date).build();
 
 		// invoke method under test
-		final ImmutableList<CommissionConfig> configs = commissionConfigFactory.createForNewCommissionInstances(contractRequest);
+		final ImmutableList<CommissionConfig> configs = hierarchyCommissionConfigFactory.createForNewCommissionInstances(contractRequest);
 
 		assertThat(configs).isEmpty();
 	}
@@ -616,9 +617,9 @@ public class CommissionConfigFactoryTest
 				.subtractLowerLevelCommissionFromBase(true)
 				.configLineTestRecord(TestCommissionConfigLine.builder().name("2ndConfigLine").seqNo(20).salesProductCategoryId(saleProductCategoryId).percentOfBasePoints("10").build())
 				.configLineTestRecord(TestCommissionConfigLine.builder().name("1stConfigLine").seqNo(10).customerBGroupId(customerBPGroudId).percentOfBasePoints("20").build())
-				.contractTestRecord(TestCommissionContract.builder().salesRepName("salesRep").parentSalesRepName("salesSupervisor").date(date).build())
-				.contractTestRecord(TestCommissionContract.builder().salesRepName("salesSupervisor").parentSalesRepName("headOfSales").date(date).build())
-				.contractTestRecord(TestCommissionContract.builder().salesRepName("headOfSales").date(date).build())
+				.contractTestRecord(TestHierarchyCommissionContract.builder().salesRepName("salesRep").parentSalesRepName("salesSupervisor").date(date).build())
+				.contractTestRecord(TestHierarchyCommissionContract.builder().salesRepName("salesSupervisor").parentSalesRepName("headOfSales").date(date).build())
+				.contractTestRecord(TestHierarchyCommissionContract.builder().salesRepName("headOfSales").date(date).build())
 				.build()
 				.createConfigData();
 
@@ -633,9 +634,9 @@ public class CommissionConfigFactoryTest
 				.subtractLowerLevelCommissionFromBase(true)
 				.configLineTestRecord(TestCommissionConfigLine.builder().name("2ndConfigLine").seqNo(20).salesProductCategoryId(saleProductCategoryId).percentOfBasePoints("10").build())
 				.configLineTestRecord(TestCommissionConfigLine.builder().name("1stConfigLine").seqNo(10).customerBGroupId(customerBPGroudId).percentOfBasePoints("20").build())
-				.contractTestRecord(TestCommissionContract.builder().salesRepName("salesRep").parentSalesRepName("salesSupervisor").date(date).build())
-				.contractTestRecord(TestCommissionContract.builder().salesRepName("salesSupervisor").parentSalesRepName("headOfSales").date(date).build())
-				.contractTestRecord(TestCommissionContract.builder().salesRepName("headOfSales").date(date).build())
+				.contractTestRecord(TestHierarchyCommissionContract.builder().salesRepName("salesRep").parentSalesRepName("salesSupervisor").date(date).build())
+				.contractTestRecord(TestHierarchyCommissionContract.builder().salesRepName("salesSupervisor").parentSalesRepName("headOfSales").date(date).build())
+				.contractTestRecord(TestHierarchyCommissionContract.builder().salesRepName("headOfSales").date(date).build())
 				.build()
 				.createConfigData();
 
@@ -657,7 +658,7 @@ public class CommissionConfigFactoryTest
 				.build();
 
 		// invoke method under test
-		final ImmutableMap<FlatrateTermId, CommissionConfig> result = commissionConfigFactory.createForExistingInstance(commissionConfigRequest);
+		final ImmutableMap<FlatrateTermId, CommissionConfig> result = hierarchyCommissionConfigFactory.createForExistingInstance(commissionConfigRequest);
 		assertThat(result).hasSize(6);
 		assertThat(configData1ContractIds)
 				.as("check that all contracts of configData1 are mapped to to the config created from configData1")

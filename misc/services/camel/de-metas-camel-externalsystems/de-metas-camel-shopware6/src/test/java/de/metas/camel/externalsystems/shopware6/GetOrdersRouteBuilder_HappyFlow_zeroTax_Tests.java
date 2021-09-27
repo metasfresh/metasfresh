@@ -26,6 +26,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.google.common.collect.ImmutableMap;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
+import de.metas.camel.externalsystems.common.PInstanceLogger;
 import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.camel.externalsystems.common.v2.BPUpsertCamelRequest;
 import de.metas.camel.externalsystems.shopware6.api.ShopwareClient;
@@ -54,6 +55,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
+import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.AdviceWith;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
@@ -152,7 +154,9 @@ public class GetOrdersRouteBuilder_HappyFlow_zeroTax_Tests extends CamelTestSupp
 	protected RouteBuilder createRouteBuilder()
 	{
 		final ProcessLogger processLogger = Mockito.mock(ProcessLogger.class);
-		return new GetOrdersRouteBuilder(processLogger);
+		final ProducerTemplate producerTemplate = Mockito.mock(ProducerTemplate.class);
+
+		return new GetOrdersRouteBuilder(processLogger, producerTemplate);
 	}
 
 	@Override
@@ -183,7 +187,7 @@ public class GetOrdersRouteBuilder_HappyFlow_zeroTax_Tests extends CamelTestSupp
 
 		final MockEndpoint storeRawDataEndpoint = getMockEndpoint(MOCK_STORE_RAW_DATA);
 		storeRawDataEndpoint.expectedMessageCount(1);
-		
+
 		// validate BPUpsertCamelRequest
 		final InputStream expectedUpsertBPartnerRequestIS = this.getClass().getResourceAsStream(JSON_UPSERT_BPARTNER_REQUEST);
 
@@ -343,7 +347,9 @@ public class GetOrdersRouteBuilder_HappyFlow_zeroTax_Tests extends CamelTestSupp
 					.build();
 
 			final ProcessLogger processLogger = Mockito.mock(ProcessLogger.class);
-			final ImportOrdersRouteContext ordersContext = new GetOrdersProcessor(processLogger)
+			final ProducerTemplate producerTemplate = Mockito.mock(ProducerTemplate.class);
+
+			final ImportOrdersRouteContext ordersContext = new GetOrdersProcessor(processLogger, producerTemplate)
 					.buildContext(externalSystemRequest, shopwareClient, currencyInfoProvider);
 
 			exchange.getIn().setBody(orderCandidates);
@@ -353,7 +359,10 @@ public class GetOrdersRouteBuilder_HappyFlow_zeroTax_Tests extends CamelTestSupp
 		@NonNull
 		private ShopwareClient prepareShopwareClientMock(final ObjectMapper mapper) throws IOException
 		{
-			final ShopwareClient dumbShopwareClient = ShopwareClient.of("does", "not", "https://www.matter.com");
+			final ProcessLogger processLogger = Mockito.mock(ProcessLogger.class);
+			final PInstanceLogger pInstanceLogger = PInstanceLogger.of(processLogger);
+
+			final ShopwareClient dumbShopwareClient = ShopwareClient.of("does", "not", "https://www.matter.com", pInstanceLogger);
 			final ShopwareClient shopwareClientSpy = Mockito.spy(dumbShopwareClient);
 
 			Mockito.doNothing().when(shopwareClientSpy).refreshTokenIfExpired();

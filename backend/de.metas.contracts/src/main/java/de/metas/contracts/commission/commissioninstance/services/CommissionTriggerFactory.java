@@ -9,7 +9,6 @@ import de.metas.contracts.commission.commissioninstance.businesslogic.sales.comm
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTriggerData.CommissionTriggerDataBuilder;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTriggerDocument;
 import de.metas.util.Services;
-import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Service;
@@ -79,23 +78,24 @@ public class CommissionTriggerFactory
 				.triggerType(commissionTriggerDocument.getTriggerType())
 				.triggerDocumentId(commissionTriggerDocument.getId())
 				.triggerDocumentDate(commissionTriggerDocument.getCommissionDate())
-				.timestamp(commissionTriggerDocument.getUpdated());
+				.timestamp(commissionTriggerDocument.getUpdated())
+				.productId(commissionTriggerDocument.getProductId())
+				.totalQtyInvolved(commissionTriggerDocument.getTotalQtyInvolved())
+				.documentCurrencyId(commissionTriggerDocument.getDocumentCurrencyId());
 
 		if (documentDeleted)
 		{
 			builder
 					.forecastedBasePoints(CommissionPoints.ZERO)
 					.invoiceableBasePoints(CommissionPoints.ZERO)
-					.invoicedBasePoints(CommissionPoints.ZERO)
-					.tradedCommissionPercent(Percent.ZERO);
+					.invoicedBasePoints(CommissionPoints.ZERO);
 		}
 		else
 		{
 			builder
 					.forecastedBasePoints(commissionTriggerDocument.getForecastCommissionPoints())
 					.invoiceableBasePoints(commissionTriggerDocument.getCommissionPointsToInvoice())
-					.invoicedBasePoints(commissionTriggerDocument.getInvoicedCommissionPoints())
-					.tradedCommissionPercent(commissionTriggerDocument.getTradedCommissionPercent());
+					.invoicedBasePoints(commissionTriggerDocument.getInvoicedCommissionPoints());
 		}
 		return builder.build();
 	}

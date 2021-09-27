@@ -86,9 +86,6 @@ public class HierarchyContract implements CommissionContract
 						.setParameter("contract", contract));
 	}
 
-	/**
-	 * @param config when creating hierarchy-config + contracts via code, then this parameter is usually set right from the hierachy config's constructor!
-	 */
 	@JsonCreator
 	@Builder
 	public HierarchyContract(

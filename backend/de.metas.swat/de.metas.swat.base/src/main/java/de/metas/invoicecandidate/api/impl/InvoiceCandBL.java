@@ -1744,6 +1744,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			// If the IC is processed, the qtyToInvoice must turn 0
 			ic.setQtyToInvoiceInPriceUOM(ZERO);
 			ic.setQtyToInvoice(ZERO);
+			ic.setQtyToInvoiceInUOM(ZERO);
 
 			ic.setApprovalForInvoicing(false);
 		}
@@ -2461,5 +2462,21 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		invoiceCandidate.setC_Async_Batch_ID(asyncBatchId.getRepoId());
 
 		invoiceCandDAO.save(invoiceCandidate);
+	}
+
+	@Override
+	public Quantity getQtyOrderedStockUOM(@NonNull final I_C_Invoice_Candidate ic)
+	{
+		final ProductId productId = ProductId.ofRepoId(ic.getM_Product_ID());
+
+		return Quantitys.create(ic.getQtyOrdered(), productId);
+	}
+
+	@Override
+	public Quantity getQtyInvoicedStockUOM(@NonNull final I_C_Invoice_Candidate ic)
+	{
+		final ProductId productId = ProductId.ofRepoId(ic.getM_Product_ID());
+
+		return Quantitys.create(ic.getQtyInvoiced(), productId);
 	}
 }

@@ -25,10 +25,6 @@ package de.metas.camel.externalsystems.shopware6;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 
-import javax.annotation.Nullable;
-
-import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_LOG_MESSAGE_ROUTE_ID;
-
 /**
  * @deprecated please use (and extend if needed) {@link de.metas.camel.externalsystems.common.ProcessorHelper}.
  */

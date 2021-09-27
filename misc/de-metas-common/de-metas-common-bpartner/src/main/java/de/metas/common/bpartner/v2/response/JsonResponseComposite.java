@@ -55,7 +55,7 @@ public class JsonResponseComposite
 
 	JsonResponseBPartner bpartner;
 
-	@ApiModelProperty(value = "The location's GLN can be used to lookup the whole bpartner; if nultiple locations with GLN are provided, then only the first one is used")
+	@ApiModelProperty(value = "The location's GLN can be used to lookup the whole bpartner; if multiple locations with GLN are provided, then only the first one is used")
 	@JsonInclude(Include.NON_EMPTY)
 	List<JsonResponseLocation> locations;
 
