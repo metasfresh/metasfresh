@@ -1,17 +1,15 @@
 package de.metas.cache;
 
-import java.util.Collection;
-import java.util.Set;
-
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.slf4j.Logger;
-
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.SetMultimap;
-
 import de.metas.logging.LogManager;
 import lombok.NonNull;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.slf4j.Logger;
+
+import java.util.Collection;
+import java.util.Set;
 
 /*
  * #%L

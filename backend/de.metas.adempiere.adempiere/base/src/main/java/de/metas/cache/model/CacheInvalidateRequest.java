@@ -38,7 +38,7 @@ import lombok.Value;
 
 @Value
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
-public final class CacheInvalidateRequest
+public class CacheInvalidateRequest
 {
 	public static Builder builder()
 	{
