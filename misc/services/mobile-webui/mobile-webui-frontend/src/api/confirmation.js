@@ -6,11 +6,14 @@ import axios from 'axios';
  * @param {object} `token` - The token to use for authentication
  * @returns
  */
-export function userConfirmation({ token }) {
-  return axios.post(`${window.config.API_URL}/userWorkflows/wfProcess/wfProcessId/wfActivityId/userConfirmation`, {
-    headers: {
-      Authorization: token,
-      accept: 'application/json',
-    },
-  });
+export function userConfirmation({ token, wfProcessId, wfActivityId }) {
+  return axios.post(
+    `${window.config.API_URL}/userWorkflows/wfProcess/${wfProcessId}/${wfActivityId}/userConfirmation`,
+    {
+      headers: {
+        Authorization: token,
+        accept: 'application/json',
+      },
+    }
+  );
 }
