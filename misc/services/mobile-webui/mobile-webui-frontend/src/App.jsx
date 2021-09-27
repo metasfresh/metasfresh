@@ -6,6 +6,7 @@ import Launchers from './components/containers/Launchers';
 
 import BarcodeScanner from './components/containers/BarcodeScanner';
 import ConfirmActivity from './components/containers/ConfirmActivity';
+import PickProductsActivity from './components/containers/PickProductsActivity';
 
 function App() {
   const barcodeMockProps = {
@@ -29,12 +30,37 @@ function App() {
     wfProcessId: '200',
   };
 
+  const pickProductsActivityProps = {
+    activityId: '2',
+    caption: 'Pick',
+    componentType: 'picking/pickProducts',
+    readonly: true,
+    componentProps: {
+      lines: [
+        {
+          caption: 'TestProduct',
+          steps: [
+            {
+              productName: 'TestProduct',
+              locatorName: 'Hauptlager',
+              huBarcode: '1000001',
+              uom: 'Stk',
+              qtyToPick: 7,
+              qtyPicked: 0,
+            },
+          ],
+        },
+      ],
+    },
+  };
+
   return (
     <>
       <Header appName="webUI app" />
       <Launchers />
       <BarcodeScanner {...barcodeMockProps} />
       <ConfirmActivity {...confirmActivityProps} />
+      <PickProductsActivity {...pickProductsActivityProps} />
     </>
   );
 }
