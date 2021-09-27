@@ -21,23 +21,20 @@
  */
 package de.metas.impexp.spreadsheet.excel;
 
-import static de.metas.common.util.CoalesceUtil.coalesce;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.sql.Timestamp;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Properties;
-
-import javax.annotation.Nullable;
-
+import ch.qos.logback.classic.Level;
+import com.google.common.annotations.VisibleForTesting;
+import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.Language;
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.apache.poi.ss.usermodel.BuiltinFormats;
 import org.apache.poi.ss.usermodel.Cell;
@@ -58,21 +55,21 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
-import com.google.common.annotations.VisibleForTesting;
+import javax.annotation.Nullable;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.sql.Timestamp;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Properties;
 
-import ch.qos.logback.classic.Level;
-import de.metas.i18n.IMsgBL;
-import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.Language;
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
-import de.metas.util.Loggables;
-import de.metas.util.Services;
-import de.metas.util.StringUtils;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.Value;
+import static de.metas.common.util.CoalesceUtil.coalesce;
 
 /**
  * Abstract MS Excel Format (xls) Exporter

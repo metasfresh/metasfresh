@@ -23,10 +23,9 @@
 package de.metas.ui.web.picking.packageable.filters;
 
 import de.metas.ui.web.document.filter.DocumentFilter;
+import de.metas.ui.web.document.filter.sql.FilterSql;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
-import de.metas.ui.web.document.filter.sql.SqlParamsCollector;
-import de.metas.ui.web.view.descriptor.SqlAndParams;
 import de.metas.ui.web.window.model.sql.SqlOptions;
 
 import java.util.Objects;
@@ -42,21 +41,18 @@ public class ProductBarcodeFilterConverter implements SqlDocumentFilterConverter
 	}
 
 	@Override
-	public String getSql(
-			final SqlParamsCollector sqlParamsOut,
+	public FilterSql getSql(
 			final DocumentFilter filter,
 			final SqlOptions sqlOpts,
 			final SqlDocumentFilterConverterContext context)
 	{
 		final ProductBarcodeFilterData data = PackageableFilterDescriptorProvider.extractProductBarcodeFilterData(filter).orElse(null);
 
-		if(data == null)
+		if (data == null)
 		{
-			return "false";
+			return FilterSql.ALLOW_NONE;
 		}
 
-		final SqlAndParams sqlWhereClause = data.getSqlWhereClause();
-		sqlParamsOut.collectAll(sqlWhereClause.getSqlParams());
-		return sqlWhereClause.getSql();
+		return FilterSql.ofWhereClause(data.getSqlWhereClause());
 	}
 }

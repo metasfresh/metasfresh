@@ -27,6 +27,11 @@ import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.common.rest_api.common.JsonExternalId;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.common.rest_api.common.JsonWorkPackageStatus;
+import de.metas.common.rest_api.v2.JsonPurchaseCandidate;
+import de.metas.common.rest_api.v2.JsonPurchaseCandidateResponse;
+import de.metas.common.rest_api.v2.JsonPurchaseCandidatesRequest;
+import de.metas.common.rest_api.v2.JsonPurchaseOrder;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
@@ -37,14 +42,8 @@ import de.metas.purchasecandidate.PurchaseCandidateId;
 import de.metas.purchasecandidate.PurchaseCandidateRepository;
 import de.metas.purchasecandidate.async.C_PurchaseCandidates_GeneratePurchaseOrders;
 import de.metas.purchasecandidate.model.I_C_PurchaseCandidate;
-import de.metas.common.rest_api.common.JsonWorkPackageStatus;
-import de.metas.common.rest_api.v2.JsonPurchaseCandidate;
-import de.metas.common.rest_api.v2.JsonPurchaseCandidateResponse;
-import de.metas.common.rest_api.v2.JsonPurchaseCandidatesRequest;
-import de.metas.common.rest_api.v2.JsonPurchaseOrder;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalHeaderIdWithExternalLineIds;
-import de.metas.util.lang.ExternalId;
 import de.metas.util.web.exception.InvalidEntityException;
 import lombok.NonNull;
 import org.adempiere.archive.api.IArchiveBL;
@@ -82,12 +81,12 @@ public class PurchaseCandidatesStatusService
 		}
 		final List<ExternalHeaderIdWithExternalLineIds> headerAndLineIds = POJsonConverters.fromJson(request.getPurchaseCandidates());
 
-		final List<PurchaseCandidate> invoiceCandidateRecords = purchaseCandidateRepo.getByExternal(headerAndLineIds);
+		final List<PurchaseCandidate> purchaseCandidates = purchaseCandidateRepo.getByExternal(headerAndLineIds);
 
-		final List<JsonPurchaseCandidate> invoiceCandidates = retrieveStatus(invoiceCandidateRecords);
+		final List<JsonPurchaseCandidate> jsonPurchaseCandidates = retrieveStatus(purchaseCandidates);
 
 		return JsonPurchaseCandidateResponse.builder()
-				.purchaseCandidates(invoiceCandidates)
+				.purchaseCandidates(jsonPurchaseCandidates)
 				.build();
 	}
 
@@ -102,11 +101,11 @@ public class PurchaseCandidatesStatusService
 			final List<JsonPurchaseOrder> purchaseOrders = retrievePurchaseOrderInfo(id);
 			final List<JsonWorkPackageStatus> workPackagesInfo = retrieveWorkPackageInfo(id);
 
-			final JsonPurchaseCandidate invoiceCandidateStatus = prepareInvoiceCandidateStatus(candidate)
+			final JsonPurchaseCandidate purchaseCandidateStatus = preparePurchaseCandidateStatus(candidate)
 					.purchaseOrders(purchaseOrders)
 					.workPackages(workPackagesInfo)
 					.build();
-			jsonPurchaseCandidates.add(invoiceCandidateStatus);
+			jsonPurchaseCandidates.add(purchaseCandidateStatus);
 		}
 
 		return jsonPurchaseCandidates.stream()
@@ -114,12 +113,12 @@ public class PurchaseCandidatesStatusService
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private List<JsonWorkPackageStatus> retrieveWorkPackageInfo(final PurchaseCandidateId invoiceCandidateId)
+	private List<JsonWorkPackageStatus> retrieveWorkPackageInfo(final PurchaseCandidateId purchaseCandidateId)
 	{
 		final List<I_C_Queue_WorkPackage> workPackageRecords =
 				queueDAO.retrieveUnprocessedWorkPackagesByEnqueuedRecord(
 						C_PurchaseCandidates_GeneratePurchaseOrders.class,
-						TableRecordReference.of(I_C_PurchaseCandidate.Table_Name, invoiceCandidateId));
+						TableRecordReference.of(I_C_PurchaseCandidate.Table_Name, purchaseCandidateId));
 		if (workPackageRecords.isEmpty())
 		{
 			return ImmutableList.of();
@@ -148,7 +147,7 @@ public class PurchaseCandidatesStatusService
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private static JsonPurchaseCandidate.JsonPurchaseCandidateBuilder prepareInvoiceCandidateStatus(final PurchaseCandidate candidate)
+	private static JsonPurchaseCandidate.JsonPurchaseCandidateBuilder preparePurchaseCandidateStatus(final PurchaseCandidate candidate)
 	{
 		return JsonPurchaseCandidate.builder()
 				.externalHeaderId(JsonExternalId.of(candidate.getExternalHeaderId().getValue()))

@@ -25,6 +25,7 @@
         <module>common</module>
         <module>de-metas-camel-shopware6</module>
         <module>ebay</module>
+        <module>de-metas-camel-rabbitmq</module>
         <module>de-metas-camel-woocommerce</module>
     </modules>
 

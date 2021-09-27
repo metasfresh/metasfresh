@@ -113,7 +113,10 @@ public class HUEditorView implements IView
 		considerTableRelatedProcessDescriptors = builder.isConsiderTableRelatedProcessDescriptors();
 		additionalRelatedProcessDescriptors = builder.getAdditionalRelatedProcessDescriptors();
 		parameters = builder.getParameters();
-		rowsBuffer = builder.createRowsBuffer(SqlDocumentFilterConverterContext.ofMap(parameters));
+		rowsBuffer = builder.createRowsBuffer(SqlDocumentFilterConverterContext.builder()
+				.viewId(builder.getViewId())
+				.parameters(parameters)
+				.build());
 	}
 
 	@Override

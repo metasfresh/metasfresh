@@ -211,9 +211,12 @@ class ListWidget extends Component {
 
   activate = () => {
     const { list, listToggled } = this.state;
-    const { lookupList } = this.props;
+    const { lookupList, mandatory } = this.props;
 
-    if (!listToggled && !(lookupList && list.length < 1)) {
+    if (
+      (!listToggled && !(lookupList && list.length < 1)) ||
+      (list.size === 0 && mandatory)
+    ) {
       this.setState({
         listToggled: true,
       });

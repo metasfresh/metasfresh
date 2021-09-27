@@ -3,6 +3,7 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Alber
     "id" : 100001,
     "type" : "Alberta",
     "name" : "name",
+    "isActive" : true,
     "childConfig" : {
       "id" : 100002,
       "parentId" : 100001,
@@ -32,6 +33,7 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Alber
     "id" : 100001,
     "type" : "Alberta",
     "name" : "name",
+    "isActive" : true,
     "childConfig" : {
       "id" : 100002,
       "parentId" : 100001,
@@ -62,16 +64,36 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Ebay_
 ]
 
 
+de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_RabbitMQ_getById=[
+  {
+    "id" : 100001,
+    "type" : "RabbitMQ",
+    "name" : "name",
+    "isActive" : true,
+    "childConfig" : {
+      "id" : 100002,
+      "parentId" : 100001,
+      "value" : "testRabbitMQValue",
+      "routingKey" : "routingKey",
+      "authToken" : "authToken",
+      "remoteUrl" : "remoteURL",
+      "isSyncBPartnerToRabbitMQ" : true,
+      "syncBPartnerToRabbitMQ" : true
+    }
+  }
+]
+
+
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Ebay_getByTypeAndParent=[
   {
-        "id" : 100002,
-        "parentId" : 100001,
-        "appId" : "appId",
-        "certId" : "certId",
-        "devId" : "devId",
-        "redirectUrl" : "redirectUrl",
-        "apiMode" : "SANDBOX"
-      }
+    "id" : 100002,
+    "parentId" : 100001,
+    "appId" : "appId",
+    "certId" : "certId",
+    "devId" : "devId",
+    "redirectUrl" : "redirectUrl",
+    "apiMode" : "SANDBOX"
+  }
 ]
 
 
@@ -81,14 +103,48 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Ebay_
     "type" : "Ebay",
     "name" : "name",
     "childConfig" :{
-                         "id" : 100002,
-                         "parentId" : 100001,
-                         "appId" : "appId",
-                         "certId" : "certId",
-                         "devId" : "devId",
-                         "redirectUrl" : "redirectUrl",
-                         "apiMode" : "SANDBOX"
-                       }
+     "id" : 100002,
+     "parentId" : 100001,
+     "appId" : "appId",
+     "certId" : "certId",
+     "devId" : "devId",
+     "redirectUrl" : "redirectUrl",
+     "apiMode" : "SANDBOX"
+   }
+ }
+]
+
+
+de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_RabbitMQ_getByTypeAndParent=[
+  {
+    "id" : 100002,
+    "parentId" : 100001,
+    "value" : "testRabbitMQValue",
+    "routingKey" : "routingKey",
+    "authToken" : "authToken",
+    "remoteUrl" : "remoteURL",
+    "isSyncBPartnerToRabbitMQ" : true,
+    "syncBPartnerToRabbitMQ" : true
+  }
+]
+
+
+de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_RabbitMQ_getByTypeAndValue=[
+  {
+    "id" : 100001,
+    "type" : "RabbitMQ",
+    "name" : "name",
+    "childConfig" : {
+      "id" : 100002,
+      "parentId" : 100001,
+      "value" : "testRabbitMQValue",
+      "routingKey" : "routingKey",
+      "remoteUrl" : "remoteURL",
+      "authToken" : "authToken",
+      "isSyncBPartnerToRabbitMQ" : true,
+      "syncBPartnerToRabbitMQ" : true
+    },
+    "isActive" : true
   }
 ]
 
@@ -98,6 +154,7 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
     "id" : 100001,
     "type" : "Shopware6",
     "name" : "name",
+    "isActive" : true,
     "childConfig" : {
       "id" : 100002,
       "parentId" : 100001,
@@ -107,7 +164,30 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
       "externalSystemShopware6ConfigMappingList" : [ ],
       "bPartnerIdJSONPath" : "/test/bp",
       "bPartnerLocationIdJSONPath" : "/test/bpl",
-      "salesRepJSONPath" : "/test/salesrep"
+      "salesRepJSONPath" : "/test/salesrep",
+      "isActive" : true
+    }
+  }
+]
+
+
+de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopware6_getByQuery=[
+  {
+    "id" : 100001,
+    "type" : "Shopware6",
+    "name" : "name",
+    "isActive" : false,
+    "childConfig" : {
+      "id" : 100002,
+      "parentId" : 100001,
+      "baseUrl" : "baseUrl",
+      "clientId" : "id",
+      "clientSecret" : "secret",
+      "externalSystemShopware6ConfigMappingList" : [ ],
+      "bPartnerIdJSONPath" : "/test/bp",
+      "bPartnerLocationIdJSONPath" : "/test/bpl",
+      "salesRepJSONPath" : "/test/salesrep",
+      "isActive" : false
     }
   }
 ]
@@ -138,7 +218,8 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
     ],
     "bPartnerIdJSONPath" : "/test/bp",
     "bPartnerLocationIdJSONPath" : "/test/bpl",
-    "salesRepJSONPath" : "/test/salesrep"
+    "salesRepJSONPath" : "/test/salesrep",
+    "isActive" : true
   }
 ]
 
@@ -148,6 +229,7 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
     "id" : 100001,
     "type" : "Shopware6",
     "name" : "name",
+    "isActive" : true,
     "childConfig" : {
       "id" : 100002,
       "parentId" : 100001,
@@ -157,7 +239,30 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
       "externalSystemShopware6ConfigMappingList" : [ ],
       "bPartnerIdJSONPath" : "/test/bp",
       "bPartnerLocationIdJSONPath" : "/test/bpl",
-      "salesRepJSONPath" : "/test/salesrep"
+      "salesRepJSONPath" : "/test/salesrep",
+      "isActive" : true
+    }
+  }
+]
+
+
+de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopware6_store=[
+  {
+    "id" : 100001,
+    "type" : "Shopware6",
+    "name" : "name",
+    "isActive" : true,
+    "childConfig" : {
+      "id" : 100002,
+      "parentId" : 100001,
+      "baseUrl" : "new-baseURL",
+      "clientId" : "new-clientId",
+      "clientSecret" : "new-clientSecret",
+      "externalSystemShopware6ConfigMappingList" : [ ],
+      "bPartnerIdJSONPath" : "/test/bp",
+      "bPartnerLocationIdJSONPath" : "/test/bpl",
+      "salesRepJSONPath" : "/test/salesrep",
+      "isActive" : true
     }
   }
 ]
@@ -168,6 +273,7 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Wooco
     "id" : 100001,
     "type" : "WOO",
     "name" : "name",
+    "isActive" : true,
     "childConfig" : {
       "id" : 100002,
       "parentId" : 100001,
@@ -183,6 +289,7 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Wooco
     "id" : 100001,
     "type" : "WOO",
     "name" : "name",
+    "isActive" : true,
     "childConfig" : {
       "id" : 100002,
       "parentId" : 100001,
@@ -197,6 +304,7 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Other_Config
     "id" : 100001,
     "type" : "Other",
     "name" : "name",
+    "isActive" : true,
     "childConfig" : {
       "id" : {
         "externalSystemParentConfigId" : 100001

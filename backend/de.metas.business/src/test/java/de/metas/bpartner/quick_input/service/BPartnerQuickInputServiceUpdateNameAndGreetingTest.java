@@ -22,6 +22,7 @@
 
 package de.metas.bpartner.quick_input.service;
 
+import de.metas.bpartner.attributes.related.service.BpartnerRelatedRecordsRepository;
 import de.metas.bpartner.attributes.service.BPartnerAttributesRepository;
 import de.metas.bpartner.attributes.service.BPartnerContactAttributesRepository;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
@@ -55,7 +56,7 @@ import java.util.Optional;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.refresh;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class BPartnerQuickInputServiceUpdateNameAndGreetingTest
 {
@@ -81,10 +82,12 @@ public class BPartnerQuickInputServiceUpdateNameAndGreetingTest
 		bPartnerQuickInputService = new BPartnerQuickInputService(
 				new BPartnerQuickInputRepository(),
 				new BPartnerQuickInputAttributesRepository(),
+				new BPartnerQuickInputRelatedRecordsRepository(),
 				new BPartnerContactQuickInputAttributesRepository(),
 				new BPartnerNameAndGreetingStrategies(Optional.of(strategies)),
 				new BPartnerCompositeRepository(new BPartnerBL(new UserRepository()), new MockLogEntriesRepository()),
 				new BPartnerAttributesRepository(),
+				new BpartnerRelatedRecordsRepository(),
 				new BPartnerContactAttributesRepository()
 		);
 

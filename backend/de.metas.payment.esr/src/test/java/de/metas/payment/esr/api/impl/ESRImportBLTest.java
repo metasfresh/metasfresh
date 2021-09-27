@@ -22,33 +22,6 @@ package de.metas.payment.esr.api.impl;
  * #L%
  */
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.refresh;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.comparesEqualTo;
-import static org.hamcrest.Matchers.greaterThan;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
-import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertThat;
-
-import java.io.ByteArrayInputStream;
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
-
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_AD_Org;
-import org.compiere.model.I_C_AllocationLine;
-import org.compiere.model.I_C_Payment;
-import org.compiere.model.X_C_DocType;
-import org.compiere.util.Env;
-import org.junit.jupiter.api.Test;
-
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.allocation.api.impl.PlainAllocationDAO;
@@ -66,9 +39,36 @@ import de.metas.payment.esr.ESRTestUtil;
 import de.metas.payment.esr.ESRValidationRuleTools;
 import de.metas.payment.esr.model.I_C_BP_BankAccount;
 import de.metas.payment.esr.model.I_ESR_Import;
+import de.metas.payment.esr.model.I_ESR_ImportFile;
 import de.metas.payment.esr.model.I_ESR_ImportLine;
 import de.metas.payment.esr.model.X_ESR_ImportLine;
 import de.metas.util.Services;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_AD_Org;
+import org.compiere.model.I_C_AllocationLine;
+import org.compiere.model.I_C_Payment;
+import org.compiere.model.X_C_DocType;
+import org.compiere.util.Env;
+import org.junit.jupiter.api.Test;
+
+import java.io.ByteArrayInputStream;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.refresh;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.comparesEqualTo;
+import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertThat;
 
 public class ESRImportBLTest extends ESRTestBase
 {
@@ -99,22 +99,24 @@ public class ESRImportBLTest extends ESRTestBase
 	public void testEvaluateTrxQty()
 	{
 		final I_ESR_Import esrImport = newInstance(I_ESR_Import.class);
+
 		save(esrImport);
+		final I_ESR_ImportFile esrImportFile = createImportFile(esrImport);
 
 		// https://github.com/metasfresh/metasfresh/issues/2106
-		assertThat(esrImportBL.evaluateTrxQty(esrImport, 23))
+		assertThat(esrImportBL.evaluateTrxQty(esrImportFile, 23))
 				.as("esrImport has no information, so assume it's OK and return true")
 				.isTrue();
 
-		esrImport.setESR_Control_Trx_Qty(BigDecimal.ZERO);
-		save(esrImport);
-		assertThat(esrImportBL.evaluateTrxQty(esrImport, 23))
+		esrImportFile.setESR_Control_Trx_Qty(BigDecimal.ZERO);
+		save(esrImportFile);
+		assertThat(esrImportBL.evaluateTrxQty(esrImportFile, 23))
 				.as("zero is not 23, so return false")
 				.isFalse();
 
-		esrImport.setESR_Control_Trx_Qty(new BigDecimal("23.000"));
-		save(esrImport);
-		assertThat(esrImportBL.evaluateTrxQty(esrImport, 23))
+		esrImportFile.setESR_Control_Trx_Qty(new BigDecimal("23.000"));
+		save(esrImportFile);
+		assertThat(esrImportBL.evaluateTrxQty(esrImportFile, 23))
 				.as("if numbers match, it shall return true")
 				.isTrue();
 	}
@@ -144,10 +146,10 @@ public class ESRImportBLTest extends ESRTestBase
 		final CurrencyId currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
 		final I_C_BP_BankAccount account = createBankAccount(true,
-				Env.getAD_Org_ID(getCtx()),
-				Env.getAD_User_ID(getCtx()),
-				"01-059931-0",
-				currencyEUR);
+															 org.getAD_Org_ID(),
+															 Env.getAD_User_ID(getCtx()),
+															 "01-059931-0",
+															 currencyEUR);
 
 		esrImport.setC_BP_BankAccount_ID(account.getC_BP_BankAccount_ID());
 
@@ -163,6 +165,8 @@ public class ESRImportBLTest extends ESRTestBase
 		esrImport.setAD_Org_ID(org.getAD_Org_ID());
 
 		save(esrImport);
+
+		final I_ESR_ImportFile esrImportFile = createImportFile(esrImport);
 
 		final I_C_DocType type = newInstance(I_C_DocType.class);
 		type.setDocBaseType(X_C_DocType.DOCBASETYPE_ARInvoice);
@@ -192,7 +196,7 @@ public class ESRImportBLTest extends ESRTestBase
 		save(esrReferenceNumberDocument);
 
 		// invoke the code under test
-		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes()));
+		esrImportBL.loadAndEvaluateESRImportStream(esrImportFile, new ByteArrayInputStream(esrImportLineText.getBytes()));
 		refresh(esrImport, true);
 
 		final I_ESR_ImportLine esrImportLine = ESRTestUtil.retrieveSingleLine(esrImport);
@@ -245,11 +249,15 @@ public class ESRImportBLTest extends ESRTestBase
 
 		final CurrencyId currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
+		final I_AD_Org org = newInstance(I_AD_Org.class);
+		org.setValue("105");
+		save(org);
+
 		final I_C_BP_BankAccount account = createBankAccount(true,
-				Env.getAD_Org_ID(getCtx()),
-				Env.getAD_User_ID(getCtx()),
-				"01-059931-0",
-				currencyEUR);
+															 org.getAD_Org_ID(),
+															 Env.getAD_User_ID(getCtx()),
+															 "01-059931-0",
+															 currencyEUR);
 
 		esrImport.setC_BP_BankAccount_ID(account.getC_BP_BankAccount_ID());
 		save(esrImport);
@@ -262,12 +270,12 @@ public class ESRImportBLTest extends ESRTestBase
 		partner.setValue("partner1");
 		save(partner);
 
-		final I_AD_Org org = newInstance(I_AD_Org.class);
-		org.setValue("105");
-		save(org);
+
 
 		esrImport.setAD_Org_ID(org.getAD_Org_ID());
 		save(esrImport);
+
+		final I_ESR_ImportFile esrImportFile = createImportFile(esrImport);
 
 		final I_C_DocType type = newInstance(I_C_DocType.class);
 		type.setDocBaseType(X_C_DocType.DOCBASETYPE_APCreditMemo);
@@ -297,7 +305,7 @@ public class ESRImportBLTest extends ESRTestBase
 		allocAmt.setC_Invoice_ID(invoice.getC_Invoice_ID());
 		save(allocAmt);
 
-		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes()));
+		esrImportBL.loadAndEvaluateESRImportStream(esrImportFile, new ByteArrayInputStream(esrImportLineText.getBytes()));
 
 		final BigDecimal grandTotal = new BigDecimal("123.56");
 
@@ -445,7 +453,6 @@ public class ESRImportBLTest extends ESRTestBase
 	}
 
 	/**
-	 *
 	 * Same lines as in {@link #testProcessLinesWithInvoice_3Lines_1Payment()}, but all line shoudl have different payments. Despite none of the two payments' PayAmounts matches the invoice's grant
 	 * total, the first two lines shall be processed, so that the user doen't need to deal with them.
 	 */
@@ -659,9 +666,9 @@ public class ESRImportBLTest extends ESRTestBase
 		final I_C_DocType type = newInstance(I_C_DocType.class);
 		type.setDocBaseType(X_C_DocType.DOCBASETYPE_ARInvoice);
 		save(type);
-		
+
 		final CurrencyId currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
-		
+
 		// bank account
 		final I_C_BP_BankAccount account = newInstance(I_C_BP_BankAccount.class, contextProvider);
 		account.setC_Bank_ID(999);
@@ -685,11 +692,14 @@ public class ESRImportBLTest extends ESRTestBase
 		esrImport.setC_BP_BankAccount_ID(account.getC_BP_BankAccount_ID());
 		save(esrImport);
 
+		final I_ESR_ImportFile esrImportFile = createImportFile(esrImport);
+
 		final List<I_ESR_ImportLine> lines = new ArrayList<>();
 		if (lineNo1 > 0)
 		{
 			final I_ESR_ImportLine esrImportLine1 = newInstance(I_ESR_ImportLine.class);
 			esrImportLine1.setESR_Import_ID(esrImport.getESR_Import_ID());
+			esrImportLine1.setESR_ImportFile_ID(esrImportFile.getESR_ImportFile_ID());
 			esrImportLine1.setC_BPartner_ID(partner.getC_BPartner_ID());
 			esrImportLine1.setC_Invoice_ID(invoice.getC_Invoice_ID());
 			esrImportLine1.setAD_Org_ID(org.getAD_Org_ID());
@@ -703,6 +713,7 @@ public class ESRImportBLTest extends ESRTestBase
 		{
 			final I_ESR_ImportLine esrImportLine2 = newInstance(I_ESR_ImportLine.class);
 			esrImportLine2.setESR_Import_ID(esrImport.getESR_Import_ID());
+			esrImportLine2.setESR_ImportFile_ID(esrImportFile.getESR_ImportFile_ID());
 			esrImportLine2.setC_BPartner_ID(partner.getC_BPartner_ID());
 			esrImportLine2.setC_Invoice_ID(invoice.getC_Invoice_ID());
 			esrImportLine2.setAD_Org_ID(org.getAD_Org_ID());
@@ -716,6 +727,7 @@ public class ESRImportBLTest extends ESRTestBase
 		{
 			final I_ESR_ImportLine esrImportLine3 = newInstance(I_ESR_ImportLine.class);
 			esrImportLine3.setESR_Import_ID(esrImport.getESR_Import_ID());
+			esrImportLine3.setESR_ImportFile_ID(esrImportFile.getESR_ImportFile_ID());
 			esrImportLine3.setC_BPartner_ID(partner.getC_BPartner_ID());
 			esrImportLine3.setC_Invoice_ID(invoice.getC_Invoice_ID());
 			esrImportLine3.setAD_Org_ID(org.getAD_Org_ID());
@@ -799,7 +811,7 @@ public class ESRImportBLTest extends ESRTestBase
 
 		// assertThat(lines.get(0).getESR_Payment_Action(), is(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Fit_Amounts));
 		assertThat("the invoice is completely unpaid, and this line's amount was not yet allocated either => the line's open amount is the invoice's grand-total minus line's pay amount",
-				line1.getESR_Invoice_Openamt(), comparesEqualTo(INVOICE_GRANDTOTAL.subtract(ESR_LINE_1_AMOUNT)));
+				   line1.getESR_Invoice_Openamt(), comparesEqualTo(INVOICE_GRANDTOTAL.subtract(ESR_LINE_1_AMOUNT)));
 	}
 
 	@Test
@@ -826,7 +838,7 @@ public class ESRImportBLTest extends ESRTestBase
 		esrImportBL.updateOpenAmtAndStatusDontSave(invoice, lines);
 
 		assertThat("the invoice's allocated sum is ZERO, but this line's amount is ALREADY a part of that sum, so it shall not count to reduce the overall open amount",
-				line1.getESR_Invoice_Openamt(), comparesEqualTo(INVOICE_GRANDTOTAL.subtract(externallAllocatedAmt).subtract(ESR_LINE_1_AMOUNT)));
+				   line1.getESR_Invoice_Openamt(), comparesEqualTo(INVOICE_GRANDTOTAL.subtract(externallAllocatedAmt).subtract(ESR_LINE_1_AMOUNT)));
 	}
 
 	@Test
@@ -845,7 +857,7 @@ public class ESRImportBLTest extends ESRTestBase
 
 		// assertThat(lines.get(0).getESR_Payment_Action(), is(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Fit_Amounts));
 		assertThat("'this line's amount has *not* been allocated against the invoice, so it counts in addition to the alreadyAllocatedAmt",
-				line1.getESR_Invoice_Openamt(), comparesEqualTo(INVOICE_GRANDTOTAL.subtract(alreadyAllocatedAmt).subtract(ESR_LINE_1_AMOUNT)));
+				   line1.getESR_Invoice_Openamt(), comparesEqualTo(INVOICE_GRANDTOTAL.subtract(alreadyAllocatedAmt).subtract(ESR_LINE_1_AMOUNT)));
 	}
 
 	@Test
@@ -872,7 +884,7 @@ public class ESRImportBLTest extends ESRTestBase
 
 		// assertThat(lines.get(0).getESR_Payment_Action(), is(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Fit_Amounts));
 		assertThat("'this line has been allocated, still the invoice's allocation SUM is 20 => the line's open amount is the invoice's open amount",
-				line1.getESR_Invoice_Openamt(), comparesEqualTo(INVOICE_GRANDTOTAL.subtract(alreadyAllocatedAmt).subtract(ESR_LINE_1_AMOUNT)));
+				   line1.getESR_Invoice_Openamt(), comparesEqualTo(INVOICE_GRANDTOTAL.subtract(alreadyAllocatedAmt).subtract(ESR_LINE_1_AMOUNT)));
 	}
 
 }

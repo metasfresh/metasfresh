@@ -73,8 +73,14 @@ public final class ProductBL implements IProductBL
 	}
 
 	@Override
+	public I_M_Product getByIdInTrx(@NonNull final ProductId productId)
+	{
+		return productsRepo.getByIdInTrx(productId);
+	}
+
+	@Override
 	public ProductId getProductIdByValue(
-			@NonNull final OrgId orgId, 
+			@NonNull final OrgId orgId,
 			@NonNull final String productValue)
 	{
 		final ProductQuery query = ProductQuery.builder()
@@ -129,6 +135,8 @@ public final class ProductBL implements IProductBL
 	{
 		// we don't know if the product of productId was already committed, so we can't load it out-of-trx
 		final I_M_Product product = InterfaceWrapperHelper.load(productId, I_M_Product.class);
+		Check.assumeNotNull(product, "Unable to load M_Product record for M_Product_ID={}", productId);
+
 		return Check.assumeNotNull(getStockUOM(product), "The uom for productId={} may not be null", productId);
 	}
 

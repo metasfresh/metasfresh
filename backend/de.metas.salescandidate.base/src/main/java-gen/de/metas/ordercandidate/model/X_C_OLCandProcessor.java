@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_C_OLCandProcessor extends org.compiere.model.PO implements I_C_OLCandProcessor, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -993489924L;
+	private static final long serialVersionUID = -572352246L;
 
     /** Standard Constructor */
     public X_C_OLCandProcessor (final Properties ctx, final int C_OLCandProcessor_ID, @Nullable final String trxName)
@@ -175,6 +175,10 @@ public class X_C_OLCandProcessor extends org.compiere.model.PO implements I_C_OL
 	public static final String DELIVERYVIARULE_Delivery = "D";
 	/** Shipper = S */
 	public static final String DELIVERYVIARULE_Shipper = "S";
+	/** Normalpost = NP */
+	public static final String DELIVERYVIARULE_Normalpost = "NP";
+	/** Luftpost = LU */
+	public static final String DELIVERYVIARULE_Luftpost = "LU";
 	@Override
 	public void setDeliveryViaRule (final java.lang.String DeliveryViaRule)
 	{

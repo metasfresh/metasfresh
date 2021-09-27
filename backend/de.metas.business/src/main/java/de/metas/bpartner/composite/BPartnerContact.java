@@ -8,6 +8,7 @@ import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.OrgMappingId;
+import de.metas.bpartner.user.role.UserRole;
 import de.metas.greeting.GreetingId;
 import de.metas.util.lang.ExternalId;
 import lombok.AccessLevel;
@@ -20,7 +21,10 @@ import org.adempiere.ad.table.RecordChangeLog;
 import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+
+import static de.metas.common.util.CoalesceUtil.coalesce;
 
 /*
  * #%L
@@ -62,6 +66,7 @@ public class BPartnerContact
 	public static final String MOBILE_PHONE = "mobilePhone";
 	public static final String DESCRIPTION = "description";
 	public static final String GREETING_ID = "greetingId";
+	public static final String ROLES = "roles";
 
 	public static final String SUBJECT_MATTER = "subjectMatter";
 	public static final String NEWSLETTER = "newsletter";
@@ -151,6 +156,9 @@ public class BPartnerContact
 	@Setter(AccessLevel.NONE)
 	private final Set<String> handles = new HashSet<>();
 
+	@Setter(AccessLevel.NONE)
+	private final List<UserRole> roles;
+
 	/**
 	 * They are all nullable because we can create a completely empty instance which we then fill.
 	 * <p>
@@ -180,7 +188,8 @@ public class BPartnerContact
 			@Nullable final RecordChangeLog changeLog,
 			@Nullable final OrgMappingId orgMappingId,
 			@Nullable final LocalDate birthday,
-			@Nullable final BPartnerLocationId bPartnerLocationId)
+			@Nullable final BPartnerLocationId bPartnerLocationId,
+			@Nullable final List<UserRole> roles)
 	{
 		setId(id);
 
@@ -210,6 +219,7 @@ public class BPartnerContact
 		this.orgMappingId = orgMappingId;
 		this.bPartnerLocationId = bPartnerLocationId;
 		this.birthday = birthday;
+		this.roles = roles;
 	}
 
 	public BPartnerContact deepCopy()

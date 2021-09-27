@@ -2,7 +2,6 @@ import axios from 'axios';
 import MomentTZ from 'moment-timezone';
 import numeral from 'numeral';
 
-import history from '../services/History';
 import * as types from '../constants/ActionTypes';
 import { setCurrentActiveLocale } from '../utils/locale';
 import {
@@ -244,58 +243,46 @@ export function updateHotkeys(hotkeys) {
 
 export function getNotificationsEndpoint(auth) {
   return (dispatch) => {
-    return getNotificationsEndpointRequest()
-      .then((topic) => {
-        auth.initNotificationClient(topic, (msg) => {
-          const notification = JSON.parse(msg.body);
+    return getNotificationsEndpointRequest().then((topic) => {
+      auth.initNotificationClient(topic, (msg) => {
+        const notification = JSON.parse(msg.body);
 
-          if (notification.eventType === 'Read') {
+        if (notification.eventType === 'Read') {
+          dispatch(
+            readNotification(
+              notification.notificationId,
+              notification.unreadCount
+            )
+          );
+        } else if (notification.eventType === 'ReadAll') {
+          dispatch(readAllNotifications());
+        } else if (notification.eventType === 'Delete') {
+          dispatch(
+            removeNotification(
+              notification.notificationId,
+              notification.unreadCount
+            )
+          );
+        } else if (notification.eventType === 'DeleteAll') {
+          dispatch(deleteAllNotifications());
+        } else if (notification.eventType === 'New') {
+          dispatch(
+            newNotification(notification.notification, notification.unreadCount)
+          );
+          const notif = notification.notification;
+          if (notif.important) {
             dispatch(
-              readNotification(
-                notification.notificationId,
-                notification.unreadCount
+              addNotification(
+                'Important notification',
+                notif.message,
+                5000,
+                'primary'
               )
             );
-          } else if (notification.eventType === 'ReadAll') {
-            dispatch(readAllNotifications());
-          } else if (notification.eventType === 'Delete') {
-            dispatch(
-              removeNotification(
-                notification.notificationId,
-                notification.unreadCount
-              )
-            );
-          } else if (notification.eventType === 'DeleteAll') {
-            dispatch(deleteAllNotifications());
-          } else if (notification.eventType === 'New') {
-            dispatch(
-              newNotification(
-                notification.notification,
-                notification.unreadCount
-              )
-            );
-            const notif = notification.notification;
-            if (notif.important) {
-              dispatch(
-                addNotification(
-                  'Important notification',
-                  notif.message,
-                  5000,
-                  'primary'
-                )
-              );
-            }
-          }
-        });
-      })
-      .catch((e) => {
-        if (e.response) {
-          let { status } = e.response;
-          if (status === 401) {
-            history.push('/');
           }
         }
       });
+    });
   };
 }
 
@@ -325,6 +312,8 @@ export function getNotifications() {
 export function loginSuccess(auth) {
   return async (dispatch) => {
     const requests = [];
+
+    dispatch({ type: types.LOGIN_SUCCESS });
 
     requests.push(
       getUserSession()

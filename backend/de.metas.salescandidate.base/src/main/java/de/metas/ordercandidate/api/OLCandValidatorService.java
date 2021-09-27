@@ -1,6 +1,7 @@
 package de.metas.ordercandidate.api;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.async.AsyncBatchId;
 import de.metas.i18n.AdMessageKey;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.spi.IOLCandValidator;
@@ -11,6 +12,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -68,7 +70,9 @@ public class OLCandValidatorService
 	}
 
 
-	public List<OLCandValidationResult> clearOLCandidates(@NonNull final List<I_C_OLCand> olCandList)
+	public List<OLCandValidationResult> clearOLCandidates(
+			@NonNull final List<I_C_OLCand> olCandList,
+			@Nullable final AsyncBatchId asyncBatchId)
 	{
 		final List<OLCandValidationResult> olCandValidationResults = validateOLCands(olCandList);
 
@@ -83,12 +87,18 @@ public class OLCandValidatorService
 		final ICompositeQueryUpdater<org.adempiere.process.rpl.model.I_C_OLCand> updater = queryBL.createCompositeQueryUpdater(org.adempiere.process.rpl.model.I_C_OLCand.class)
 				.addSetColumnValue(org.adempiere.process.rpl.model.I_C_OLCand.COLUMNNAME_IsImportedWithIssues, false);
 
+		if (asyncBatchId != null)
+		{
+			updater.addSetColumnValue(I_C_OLCand.COLUMNNAME_C_Async_Batch_ID, asyncBatchId.getRepoId());
+		}
+
 		final Set<Integer> olCandIdsToUpdate = olCandList.stream()
 				.map(I_C_OLCand::getC_OLCand_ID)
 				.collect(Collectors.toSet());
 
 		queryBL.createQueryBuilder(org.adempiere.process.rpl.model.I_C_OLCand.class)
 				.addInArrayFilter(org.adempiere.process.rpl.model.I_C_OLCand.COLUMNNAME_C_OLCand_ID, olCandIdsToUpdate)
+				.addEqualsFilter(I_C_OLCand.COLUMNNAME_Processed, false)
 				.create()
 				.update(updater);
 

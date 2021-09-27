@@ -109,15 +109,15 @@ public class TimeUtil
 	/**
 	 * Get earliest time of a day (truncate)
 	 *
-	 * @param day   day 1..31
-	 * @param month month 1..12
 	 * @param year  year (if two digits: < 50 is 2000; > 50 is 1900)
+	 * @param month month 1..12
+	 * @param day   day 1..31
 	 * @return timestamp ** not too reliable
 	 * @deprecated the return value of this method is {@code instanceof Date}, but it's not equal to "real" {@link Date} instances of the same time.
 	 * Hint: you can use {@link #asDate(Object)} to get a "real" date
 	 */
 	@Deprecated
-	static public Timestamp getDay(final int year, final int month, final int day)
+	public static Timestamp getDay(final int year, final int month, final int day)
 	{
 		final int hour = 0;
 		final int minute = 0;
@@ -1910,6 +1910,12 @@ public class TimeUtil
 		{
 			return duration2;
 		}
+	}
+
+	@NonNull
+	public static Instant maxNotNull(@NonNull final Instant instant1, @NonNull final Instant instant2)
+	{
+		return max(instant1, instant2);
 	}
 
 	@Nullable

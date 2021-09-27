@@ -2,12 +2,11 @@ package de.metas.contracts.process;
 
 import de.metas.contracts.ConditionsId;
 import de.metas.contracts.IFlatrateDAO;
-import de.metas.contracts.commission.CommissionConstants;
 import de.metas.contracts.commission.commissioninstance.services.CommissionProductService;
+import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Matching;
 import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.refund.RefundConfig;
 import de.metas.contracts.refund.RefundConfigQuery;
 import de.metas.contracts.refund.RefundConfigRepository;
@@ -101,49 +100,49 @@ public class C_Flatrate_Term_Create_For_BPartners extends C_Flatrate_Term_Create
 
 		final ConditionsId conditionsId = ConditionsId.ofRepoId(conditions.getC_Flatrate_Conditions_ID());
 
-		if (X_C_Flatrate_Conditions.TYPE_CONDITIONS_Refund.equals(conditions.getType_Conditions()))
-		{
+		final TypeConditions typeConditions = TypeConditions.ofCode(conditions.getType_Conditions());
 
-			final RefundConfigQuery query = RefundConfigQuery.builder()
-					.conditionsId(conditionsId)
-					.build();
+		switch (typeConditions)
+		{
+			case REFUND:
+				final RefundConfigQuery query = RefundConfigQuery.builder()
+						.conditionsId(conditionsId)
+						.build();
 
-			final List<ProductId> productIds = refundConfigRepository
-					.getByQuery(query)
-					.stream()
-					.map(RefundConfig::getProductId)
-					.distinct()
-					.collect(Collectors.toCollection(ArrayList::new));
-			for (final ProductId productId : productIds)
-			{
-				if (productId == null)
+				final List<ProductId> productIds = refundConfigRepository
+						.getByQuery(query)
+						.stream()
+						.map(RefundConfig::getProductId)
+						.distinct()
+						.collect(Collectors.toCollection(ArrayList::new));
+				for (final ProductId productId : productIds)
 				{
-					addProduct(null);
+					if (productId == null)
+					{
+						addProduct(null);
+					}
+					else
+					{
+						final I_M_Product product = loadOutOfTrx(productId, I_M_Product.class);
+						addProduct(product);
+					}
 				}
-				else
+				break;
+			case COMMISSION:
+			case MEDIATED_COMMISSION:
+				final I_M_Product commissionProductRecord = loadOutOfTrx(commissionProductService.getCommissionProduct(conditionsId), I_M_Product.class);
+				addProduct(commissionProductRecord);
+				break;
+			case REFUNDABLE:
+				addProduct(null);
+				break;
+			default:
+				final List<I_C_Flatrate_Matching> matchings = flatrateDAO.retrieveFlatrateMatchings(conditions);
+				if (matchings.size() == 1 && matchings.get(0).getM_Product_ID() > 0)
 				{
-					final I_M_Product product = loadOutOfTrx(productId, I_M_Product.class);
-					addProduct(product);
+					// this is the case for quality-based contracts
+					addProduct(matchings.get(0).getM_Product());
 				}
-			}
-		}
-		else if (CommissionConstants.TYPE_CONDITIONS_COMMISSION.equals(conditions.getType_Conditions()))
-		{
-			final I_M_Product commissionProductRecord = loadOutOfTrx(commissionProductService.getCommissionProduct(conditionsId), I_M_Product.class);
-			addProduct(commissionProductRecord);
-		}
-		else if (X_C_Flatrate_Conditions.TYPE_CONDITIONS_Refundable.equals(conditions.getType_Conditions()))
-		{
-			addProduct(null);
-		}
-		else
-		{
-			final List<I_C_Flatrate_Matching> matchings = flatrateDAO.retrieveFlatrateMatchings(conditions);
-			if (matchings.size() == 1 && matchings.get(0).getM_Product_ID() > 0)
-			{
-				// this is the case for quality-based contracts
-				addProduct(matchings.get(0).getM_Product());
-			}
 		}
 
 		if (p_adUserInChargeId > 0)

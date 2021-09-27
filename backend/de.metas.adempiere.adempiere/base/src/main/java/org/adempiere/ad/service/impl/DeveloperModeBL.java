@@ -1,9 +1,8 @@
 package org.adempiere.ad.service.impl;
 
-import java.io.File;
-import java.util.Optional;
-import java.util.Properties;
-
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.service.ISysConfigBL;
@@ -14,15 +13,15 @@ import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.slf4j.Logger;
 
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import java.io.File;
+import java.util.Optional;
+import java.util.Properties;
 
 /**
  * Developer Model BL Implementation
  * 
  * @author tsa
- * @see http://dewiki908/mediawiki/index.php/02664:_Introduce_ADempiere_Developer_Mode_%282012040510000121%29
+ * See http://dewiki908/mediawiki/index.php/02664:_Introduce_ADempiere_Developer_Mode_%282012040510000121%29
  */
 public class DeveloperModeBL implements IDeveloperModeBL
 {
@@ -68,8 +67,8 @@ public class DeveloperModeBL implements IDeveloperModeBL
 	@Override
 	public Optional<File> getDevelopmentWorkspaceDir()
 	{
-		final String dirStr = Services.get(ISysConfigBL.class).getValue(SYSCONFIG_DevelopmentWorkspaceDir, null);
-		if (Check.isEmpty(dirStr, true) || "-".equals(dirStr.trim()))
+		final String dirStr = Services.get(ISysConfigBL.class).getValue(SYSCONFIG_DevelopmentWorkspaceDir);
+		if (dirStr == null || Check.isBlank(dirStr) || "-".equals(dirStr.trim()))
 		{
 			return Optional.empty();
 		}

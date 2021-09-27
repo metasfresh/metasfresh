@@ -86,6 +86,8 @@ public class X_ExternalSystem_Config extends org.compiere.model.PO implements I_
 	public static final String TYPE_Other = "Other";
 	/** Ebay = Ebay */
 	public static final String TYPE_Ebay = "Ebay";
+	/** RabbitMQ REST API = RabbitMQ */
+	public static final String TYPE_RabbitMQRESTAPI = "RabbitMQ";
 	/** WooCommerce = WOO */
 	public static final String TYPE_WooCommerce = "WOO";
 	@Override

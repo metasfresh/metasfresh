@@ -45,14 +45,15 @@ import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.provider.ImmutableDocumentFilterDescriptorsProvider;
+import de.metas.ui.web.document.filter.sql.FilterSql;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
-import de.metas.ui.web.document.filter.sql.SqlParamsCollector;
 import de.metas.ui.web.handlingunits.SqlHUEditorViewRepository.SqlHUEditorViewRepositoryBuilder;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IViewFactory;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewProfileId;
+import de.metas.ui.web.view.descriptor.SqlAndParams;
 import de.metas.ui.web.view.descriptor.SqlViewBinding;
 import de.metas.ui.web.view.descriptor.SqlViewBindingFactory;
 import de.metas.ui.web.view.descriptor.SqlViewRowFieldBinding;
@@ -73,7 +74,6 @@ import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.Value;
-import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.ISqlQueryFilter;
 import org.adempiere.ad.dao.impl.InArrayQueryFilter;
@@ -81,6 +81,7 @@ import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.window.api.IADWindowDAO;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.service.ISysConfigBL;
+import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -479,8 +480,7 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 		}
 
 		@Override
-		public String getSql(
-				@NonNull final SqlParamsCollector sqlParamsOut,
+		public FilterSql getSql(
 				@NonNull final DocumentFilter filter,
 				final SqlOptions sqlOpts_NOTUSED,
 				@NonNull final SqlDocumentFilterConverterContext context)
@@ -508,16 +508,14 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 					.listIds(HuId::ofRepoId);
 			if (huIds.isEmpty())
 			{
-				return ConstantQueryFilter.of(false).getSql();
+				return FilterSql.ALLOW_NONE;
 			}
 
 			final ImmutableSet<HuId> topLevelHuIds = Services.get(IHandlingUnitsBL.class).getTopLevelHUs(huIds);
 
 			final ISqlQueryFilter sqlQueryFilter = new InArrayQueryFilter<>(I_M_HU.COLUMNNAME_M_HU_ID, topLevelHuIds);
 
-			final String sql = sqlQueryFilter.getSql();
-			sqlParamsOut.collectAll(sqlQueryFilter);
-			return sql;
+			return FilterSql.ofWhereClause(SqlAndParams.of(sqlQueryFilter.getSql(), sqlQueryFilter.getSqlParams(Env.getCtx())));
 		}
 	}
 

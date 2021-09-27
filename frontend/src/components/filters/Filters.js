@@ -15,11 +15,13 @@ import {
   setNewFiltersActive,
   annotateFilters,
   isFilterValid,
-  parseFiltersToPatch,
+  normalizeFilterValue,
 } from '../../utils/filterHelpers';
 
 import FiltersNotIcluded from './FiltersNotIncluded';
 import FiltersIncluded from './FiltersIncluded';
+
+const EMPTY_ARRAY = [];
 
 /**
  * @file Class based component.
@@ -42,7 +44,7 @@ class Filters extends PureComponent {
       const parsedFilter = filter.parameters
         ? {
             ...filter,
-            parameters: parseFiltersToPatch(filter.parameters),
+            parameters: normalizeFilterValue(filter.parameters),
           }
         : filter;
 
@@ -291,12 +293,12 @@ const mapStateToProps = (state, ownProps) => {
           unannotatedFilters: stateFilter.filterData,
           filtersActive: stateFilter.filtersActive,
         })
-      : [];
+      : EMPTY_ARRAY;
 
   const flatActiveFilterIds =
     stateFilter && stateFilter.filtersActive
       ? stateFilter.filtersActive.map((item) => item.filterId)
-      : [];
+      : EMPTY_ARRAY;
 
   return {
     allowOutsideClick,

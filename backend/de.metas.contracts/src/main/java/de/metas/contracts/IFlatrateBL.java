@@ -22,6 +22,7 @@ package de.metas.contracts;
  * #L%
  */
 
+import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Data;
 import de.metas.contracts.model.I_C_Flatrate_DataEntry;
@@ -184,4 +185,7 @@ public interface IFlatrateBL extends ISingletonService
 	 * Return the initial contract, looping back through contracts
 	 */
 	I_C_Flatrate_Term getInitialFlatrateTerm(I_C_Flatrate_Term term);
+
+
+	void ensureOneContractOfGivenType(I_C_Flatrate_Term term,TypeConditions targetConditions);
 }

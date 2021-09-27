@@ -26,6 +26,7 @@ import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.attributes.BPartnerAttributes;
+import de.metas.bpartner.attributes.related.service.BpartnerRelatedRecordsRepository;
 import de.metas.bpartner.attributes.service.BPartnerAttributesRepository;
 import de.metas.bpartner.attributes.service.BPartnerContactAttributesRepository;
 import de.metas.bpartner.composite.BPartner;
@@ -41,17 +42,23 @@ import de.metas.bpartner.name.strategy.ComputeNameAndGreetingRequest;
 import de.metas.bpartner.quick_input.BPartnerContactQuickInputId;
 import de.metas.bpartner.quick_input.BPartnerQuickInputId;
 import de.metas.bpartner.service.IBPGroupDAO;
-import de.metas.marketing.base.model.CampaignId;
 import de.metas.document.references.zoom_into.RecordWindowFinder;
 import de.metas.greeting.GreetingId;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.i18n.Language;
+import de.metas.lang.SOTrx;
+import de.metas.location.CountryId;
+import de.metas.location.ILocationDAO;
 import de.metas.location.LocationId;
 import de.metas.logging.LogManager;
+import de.metas.marketing.base.model.CampaignId;
 import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
+import de.metas.pricing.exceptions.PriceListNotFoundException;
+import de.metas.pricing.service.IPriceListDAO;
 import de.metas.user.api.IUserBL;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
@@ -84,13 +91,17 @@ public class BPartnerQuickInputService
 	private static final Logger logger = LogManager.getLogger(BPartnerQuickInputService.class);
 	private final BPartnerQuickInputRepository bpartnerQuickInputRepository;
 	private final BPartnerQuickInputAttributesRepository bpartnerQuickInputAttributesRepository;
+	private final BPartnerQuickInputRelatedRecordsRepository bpartnerQuickInputRelatedRecordsRepository;
 	private final BPartnerContactQuickInputAttributesRepository bpartnerContactQuickInputAttributesRepository;
 	private final BPartnerNameAndGreetingStrategies bpartnerNameAndGreetingStrategies;
 	private final BPartnerCompositeRepository bpartnerCompositeRepository;
 	private final BPartnerAttributesRepository bpartnerAttributesRepository;
+	private final BpartnerRelatedRecordsRepository bpartnerRelatedRecordsRepository;
 	private final BPartnerContactAttributesRepository bpartnerContactAttributesRepository;
 	private final IUserBL userBL = Services.get(IUserBL.class);
 	private final IBPGroupDAO bpGroupDAO = Services.get(IBPGroupDAO.class);
+	private final ILocationDAO locationDAO = Services.get(ILocationDAO.class);
+	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 	private final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
@@ -100,18 +111,22 @@ public class BPartnerQuickInputService
 	public BPartnerQuickInputService(
 			@NonNull final BPartnerQuickInputRepository bpartnerQuickInputRepository,
 			@NonNull final BPartnerQuickInputAttributesRepository bpartnerQuickInputAttributesRepository,
+			@NonNull final BPartnerQuickInputRelatedRecordsRepository bpartnerQuickInputRelatedRecordsRepository,
 			@NonNull final BPartnerContactQuickInputAttributesRepository bpartnerContactQuickInputAttributesRepository,
 			@NonNull final BPartnerNameAndGreetingStrategies bpartnerNameAndGreetingStrategies,
 			@NonNull final BPartnerCompositeRepository bpartnerCompositeRepository,
 			@NonNull final BPartnerAttributesRepository bpartnerAttributesRepository,
+			@NonNull final BpartnerRelatedRecordsRepository bpartnerRelatedRecordsRepository,
 			@NonNull final BPartnerContactAttributesRepository bpartnerContactAttributesRepository)
 	{
 		this.bpartnerQuickInputRepository = bpartnerQuickInputRepository;
 		this.bpartnerQuickInputAttributesRepository = bpartnerQuickInputAttributesRepository;
+		this.bpartnerQuickInputRelatedRecordsRepository = bpartnerQuickInputRelatedRecordsRepository;
 		this.bpartnerContactQuickInputAttributesRepository = bpartnerContactQuickInputAttributesRepository;
 		this.bpartnerNameAndGreetingStrategies = bpartnerNameAndGreetingStrategies;
 		this.bpartnerCompositeRepository = bpartnerCompositeRepository;
 		this.bpartnerAttributesRepository = bpartnerAttributesRepository;
+		this.bpartnerRelatedRecordsRepository = bpartnerRelatedRecordsRepository;
 		this.bpartnerContactAttributesRepository = bpartnerContactAttributesRepository;
 	}
 
@@ -260,6 +275,12 @@ public class BPartnerQuickInputService
 				bpartnerId);
 
 		//
+		// Copy BPartner Related records
+		bpartnerRelatedRecordsRepository.saveRelatedRecords(
+				bpartnerQuickInputRelatedRecordsRepository.getByBPartnerQuickInputId(extractBpartnerQuickInputId(template)),
+				bpartnerId);
+
+		//
 		// Copy Contact attributes
 		for (final BPartnerContact contact : bpartnerComposite.getContacts())
 		{
@@ -299,6 +320,22 @@ public class BPartnerQuickInputService
 			throw new FillMandatoryException(I_C_BPartner_QuickInput.COLUMNNAME_C_Location_ID);
 		}
 
+		final CountryId countryId = locationDAO.getCountryIdByLocationId(existingLocationId);
+
+		//
+		// Validate pricing setup
+		final PricingSystemId customerPricingSystemId = PricingSystemId.ofRepoIdOrNull(template.getM_PricingSystem_ID());
+		if (customerPricingSystemId != null && template.isCustomer())
+		{
+			assertPriceListExists(customerPricingSystemId, countryId, SOTrx.SALES);
+		}
+
+		final PricingSystemId vendorPricingSystemId = PricingSystemId.ofRepoIdOrNull(template.getPO_PricingSystem_ID());
+		if (vendorPricingSystemId != null && template.isVendor())
+		{
+			assertPriceListExists(vendorPricingSystemId, countryId, SOTrx.PURCHASE);
+		}
+
 		//
 		// BPartner (header)
 		final BPartner bpartner = BPartner.builder()
@@ -313,11 +350,11 @@ public class BPartnerQuickInputService
 				.phone(StringUtils.trimBlankToNull(template.getPhone()))
 				// Customer:
 				.customer(template.isCustomer())
-				.customerPricingSystemId(PricingSystemId.ofRepoIdOrNull(template.getM_PricingSystem_ID()))
+				.customerPricingSystemId(customerPricingSystemId)
 				.customerPaymentTermId(PaymentTermId.ofRepoIdOrNull(template.getC_PaymentTerm_ID()))
 				// Vendor:
 				.vendor(true)
-				.vendorPricingSystemId(PricingSystemId.ofRepoIdOrNull(template.getPO_PricingSystem_ID()))
+				.vendorPricingSystemId(vendorPricingSystemId)
 				.vendorPaymentTermId(PaymentTermId.ofRepoIdOrNull(template.getPO_PaymentTerm_ID()))
 				//
 				.excludeFromPromotions(template.isExcludeFromPromotions())
@@ -383,6 +420,19 @@ public class BPartnerQuickInputService
 				.location(bpLocation)
 				.contacts(contacts)
 				.build();
+	}
+
+	private void assertPriceListExists(
+			@NonNull final PricingSystemId pricingSystemId,
+			@NonNull final CountryId countryId,
+			@NonNull final SOTrx soTrx)
+	{
+		final PriceListId priceListId = priceListDAO.retrievePriceListIdByPricingSyst(pricingSystemId, countryId, soTrx);
+		if (priceListId == null)
+		{
+			final String pricingSystemName = priceListDAO.getPricingSystemName(pricingSystemId);
+			throw new PriceListNotFoundException(pricingSystemName, soTrx);
+		}
 	}
 
 	private static class TransientIdConverter

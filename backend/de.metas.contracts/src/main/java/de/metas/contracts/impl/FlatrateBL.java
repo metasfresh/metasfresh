@@ -23,7 +23,10 @@
 package de.metas.contracts.impl;
 
 import ch.qos.logback.classic.Level;
+import com.google.common.collect.ImmutableList;
 import de.metas.acct.api.IProductAcctDAO;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.cache.CacheMgt;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
@@ -37,8 +40,10 @@ import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.IFlatrateTermEventService;
 import de.metas.contracts.event.FlatrateUserNotificationsProducer;
+import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.interceptor.C_Flatrate_Term;
 import de.metas.contracts.invoicecandidate.FlatrateDataEntryHandler;
+import de.metas.contracts.location.ContractLocationHelper;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Data;
 import de.metas.contracts.model.I_C_Flatrate_DataEntry;
@@ -59,6 +64,7 @@ import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerDAO;
+import de.metas.invoicecandidate.location.adapter.InvoiceCandidateLocationAdapterFactory;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.lang.SOTrx;
@@ -82,6 +88,7 @@ import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
+import de.metas.util.time.InstantInterval;
 import de.metas.workflow.api.IWFExecutionFactory;
 import lombok.NonNull;
 import org.adempiere.ad.service.IADReferenceDAO;
@@ -433,12 +440,10 @@ public class FlatrateBL implements IFlatrateBL
 
 		newCand.setInvoiceRule(fc.getInvoiceRule());
 		newCand.setC_Currency_ID(term.getC_Currency_ID());
-		newCand.setBill_BPartner_ID(term.getBill_BPartner_ID());
 
-		final int billLocationID = term.getBill_Location_ID();
-		newCand.setBill_Location_ID(billLocationID);
-
-		newCand.setBill_User_ID(term.getBill_User_ID());
+		InvoiceCandidateLocationAdapterFactory
+				.billLocationAdapter(newCand)
+				.setFrom(ContractLocationHelper.extractBillLocation(term));
 
 		newCand.setDateOrdered(dataEntry.getC_Period().getEndDate());
 
@@ -452,8 +457,10 @@ public class FlatrateBL implements IFlatrateBL
 		newCand.setIsTaxIncluded(term.isTaxIncluded());
 
 		final TaxCategoryId taxCategoryId = TaxCategoryId.ofRepoIdOrNull(term.getC_TaxCategory_ID());
-		
-		final int shipToLocationId = CoalesceUtil.firstGreaterThanZero(term.getDropShip_Location_ID(), term.getBill_Location_ID());  // place of service performance
+
+		final BPartnerLocationAndCaptureId shipToLocationId = CoalesceUtil.coalesceSuppliers(
+				() -> BPartnerLocationAndCaptureId.ofRepoIdOrNull(term.getDropShip_BPartner_ID(), term.getDropShip_Location_ID()),
+				() -> BPartnerLocationAndCaptureId.ofRepoIdOrNull(term.getBill_BPartner_ID(), term.getBill_Location_ID()));
 
 		final TaxId taxId = Services.get(ITaxBL.class).getTaxNotNull(
 				ctx,
@@ -569,9 +576,10 @@ public class FlatrateBL implements IFlatrateBL
 
 		newCand.setInvoiceRule(fc.getInvoiceRule());
 		newCand.setC_Currency_ID(term.getC_Currency_ID());
-		newCand.setBill_BPartner_ID(term.getBill_BPartner_ID());
-		newCand.setBill_Location_ID(term.getBill_Location_ID());
-		newCand.setBill_User_ID(term.getBill_User_ID());
+
+		InvoiceCandidateLocationAdapterFactory
+				.billLocationAdapter(newCand)
+				.setFrom(ContractLocationHelper.extractBillLocation(term));
 
 		newCand.setAD_Table_ID(adTableDAO.retrieveTableId(I_C_Flatrate_DataEntry.Table_Name));
 		newCand.setRecord_ID(dataEntry.getC_Flatrate_DataEntry_ID());
@@ -584,7 +592,10 @@ public class FlatrateBL implements IFlatrateBL
 
 		final TaxCategoryId taxCategoryId = TaxCategoryId.ofRepoIdOrNull(term.getC_TaxCategory_ID());
 
-		final int shipToLocationId = CoalesceUtil.firstGreaterThanZero(term.getDropShip_Location_ID(), term.getBill_Location_ID());  // place of service performance
+		final BPartnerLocationAndCaptureId shipToLocationId = CoalesceUtil.coalesceSuppliers(
+				() -> BPartnerLocationAndCaptureId.ofRepoIdOrNull(term.getDropShip_BPartner_ID(), term.getDropShip_Location_ID()),
+				() -> BPartnerLocationAndCaptureId.ofRepoIdOrNull(term.getBill_BPartner_ID(), term.getBill_Location_ID()));
+
 		final TaxId taxId = Services.get(ITaxBL.class).getTaxNotNull(
 				ctx,
 				term,
@@ -862,7 +873,7 @@ public class FlatrateBL implements IFlatrateBL
 			}
 		}
 
-		final POInfo poInfo = POInfo.getPOInfo(ctx, I_C_Flatrate_Term.Table_Name);
+		final POInfo poInfo = POInfo.getPOInfo(I_C_Flatrate_Term.Table_Name);
 		final Lookup columnLookup = poInfo.getColumnLookup(ctx, poInfo.getColumnIndex(I_C_Flatrate_Term.COLUMNNAME_UOMType));
 
 		final String msg = msgBL.getMsg(ctx, FlatrateBL.MSG_DATA_ENTRY_CREATE_FLAT_FEE_4P,
@@ -1934,5 +1945,49 @@ public class FlatrateBL implements IFlatrateBL
 		}
 
 		return ancestor;
+	}
+
+	public void ensureOneContractOfGivenType(@NonNull final I_C_Flatrate_Term term, @NonNull final TypeConditions targetConditions)
+	{
+		if (!targetConditions.getCode().equals(term.getType_Conditions()))
+		{
+			return;
+		}
+
+		if (term.getEndDate() == null)
+		{
+			return; //not ready yet
+		}
+
+		final OrgId orgId = OrgId.ofRepoId(term.getAD_Org_ID());
+		final BPartnerId billPartnerId = BPartnerId.ofRepoId(term.getBill_BPartner_ID());
+
+		final List<I_C_Flatrate_Term> existingContracts = flatrateDAO.retrieveTerms(billPartnerId, orgId, targetConditions);
+
+		final InstantInterval newContractInterval = InstantInterval.of(TimeUtil.asInstantNonNull(term.getStartDate()), TimeUtil.asInstantNonNull(term.getEndDate()));
+
+		final List<Integer> existingContractsOfTargetType = existingContracts.stream()
+				.filter(existingContract -> targetConditions.getCode().equals(existingContract.getType_Conditions()))
+				.filter(existingContract -> existingContract.getC_Flatrate_Term_ID() != term.getC_Flatrate_Term_ID())
+				.filter(existingContract -> existingContract.getEndDate() != null)
+				.filter(existingContract -> {
+					final InstantInterval existingContractInterval = InstantInterval.of(TimeUtil.asInstantNonNull(existingContract.getStartDate()), TimeUtil.asInstantNonNull(existingContract.getEndDate()));
+					return newContractInterval.getIntersectionWith(existingContractInterval).isPresent();
+				})
+				.map(I_C_Flatrate_Term::getC_Flatrate_Term_ID)
+				.collect(ImmutableList.toImmutableList());
+
+		if (Check.isEmpty(existingContractsOfTargetType))
+		{
+			return;
+		}
+
+		throw new AdempiereException("There are already identical contracts in place for the given typeConditions, org, bpartner and period!")
+				.appendParametersToMessage()
+				.setParameter("TypeConditions", targetConditions.getCode())
+				.setParameter("startDate", term.getStartDate())
+				.setParameter("bpartnerId", billPartnerId)
+				.setParameter("orgId", term.getAD_Org_ID())
+				.setParameter("existingContractIds", existingContractsOfTargetType);
 	}
 }

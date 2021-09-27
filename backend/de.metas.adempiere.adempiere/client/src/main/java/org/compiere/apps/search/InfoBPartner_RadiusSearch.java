@@ -25,21 +25,20 @@ package org.compiere.apps.search;
  * #L%
  */
 
-
-import java.awt.Dimension;
-
+import de.metas.adempiere.gui.search.GeodbAutoCompleter;
+import de.metas.adempiere.gui.search.GeodbObject;
+import de.metas.i18n.Msg;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import org.adempiere.service.ISysConfigBL;
 import org.compiere.apps.ALayoutConstraint;
 import org.compiere.grid.ed.VNumber;
-import org.compiere.model.MSysConfig;
 import org.compiere.swing.CLabel;
 import org.compiere.swing.CTextField;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 
-import de.metas.adempiere.gui.search.GeodbAutoCompleter;
-import de.metas.adempiere.gui.search.GeodbObject;
-import de.metas.i18n.Msg;
-import de.metas.util.Check;
+import java.awt.*;
 
 /**
  * @author teo.sarca@gmail.com
@@ -54,7 +53,7 @@ public class InfoBPartner_RadiusSearch
 
 	public static void customize(InfoBPartner info)
 	{
-		final int defaultRadius = MSysConfig.getIntValue(SYSCONFIG_DefaultRadius, 0, Env.getAD_Client_ID(Env.getCtx()));
+		final int defaultRadius = Services.get(ISysConfigBL.class).getIntValue(SYSCONFIG_DefaultRadius, 0, Env.getAD_Client_ID(Env.getCtx()));
 
 		final CTextField fieldCityZip = new CTextField();
 		fieldCityZip.setPreferredSize(new Dimension(200, (int)fieldCityZip.getPreferredSize().getHeight()));
