@@ -11,6 +11,16 @@ class ConfirmButton extends Component {
 
   showConfirmDialog = () => this.setState((prevState) => ({ isPromptDialogOpen: !prevState.isPromptDialogOpen }));
 
+  cancelConfirmDialog = () => this.setState({ isPromptDialogOpen: false });
+
+  /**
+   * Execute any function passed as onConfirm prop
+   */
+  onDialogYes = () => {
+    const { onConfirmExec } = this.props;
+    onConfirmExec({ token: window.config.API_TOKEN });
+  };
+
   render() {
     const { caption, componentProps } = this.props;
     const { isPromptDialogOpen } = this.state;
@@ -25,13 +35,17 @@ class ConfirmButton extends Component {
             <article className="message is-dark">
               <div className="message-header">
                 <p>{btnCaption}</p>
-                <button className="delete" aria-label="delete"></button>
+                <button className="delete" aria-label="delete" onClick={this.cancelConfirmDialog}></button>
               </div>
               <div className="message-body">
                 <strong>{promptQuestion}</strong>
                 <div className="buttons">
-                  <button className="button is-success">Yes</button>
-                  <button className="button is-danger">No</button>
+                  <button className="button is-success" onClick={this.onDialogYes}>
+                    Yes
+                  </button>
+                  <button className="button is-danger" onClick={this.cancelConfirmDialog}>
+                    No
+                  </button>
                 </div>
               </div>
             </article>
@@ -49,6 +63,8 @@ class ConfirmButton extends Component {
 
 ConfirmButton.propTypes = {
   caption: PropTypes.string,
+  componentProps: PropTypes.object,
+  onConfirmExec: PropTypes.func,
 };
 
 export default ConfirmButton;
