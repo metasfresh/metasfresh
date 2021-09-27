@@ -30,14 +30,12 @@ import de.metas.util.Services;
 public class C_Flatrate_Term_Change_For_FlatrateData extends C_Flatrate_Term_Change_Base
 {
 	final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
+
 	@Override
 	protected Iterable<I_C_Flatrate_Term> getFlatrateTermsToChange()
 	{
-
 		final FlatrateDataId flatrateDataId = FlatrateDataId.ofRepoId(getRecord_ID());
-		flatrateDAO.retrieveTerms(flatrateDataId);
-
-		return null;
+		return flatrateDAO.retrieveTerms(flatrateDataId);
 	}
 
 }

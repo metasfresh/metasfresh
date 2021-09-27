@@ -1,7 +1,6 @@
 package de.metas.contracts.impl;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
 import de.metas.bpartner.BPartnerId;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
@@ -65,7 +64,6 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
@@ -621,7 +619,13 @@ public class FlatrateDAO implements IFlatrateDAO
 	}
 
 	@Override
-	public Iterator<I_C_Flatrate_Term> retrieveTerms(@NonNull final FlatrateDataId flatrateDataId)
+	public Iterable<I_C_Flatrate_Term> retrieveTerms(@NonNull final FlatrateDataId flatrateDataId)
+	{
+		return () -> getFlatrateTermQueryForFlatrateDataId(flatrateDataId)
+				.iterate(I_C_Flatrate_Term.class);
+	}
+
+	private IQuery<I_C_Flatrate_Term> getFlatrateTermQueryForFlatrateDataId(final FlatrateDataId flatrateDataId)
 	{
 		return Services.get(IQueryBL.class).createQueryBuilder(I_C_Flatrate_Term.class)
 				.addOnlyActiveRecordsFilter()
@@ -630,17 +634,16 @@ public class FlatrateDAO implements IFlatrateDAO
 				.orderBy()
 				.addColumn(I_C_Flatrate_Term.COLUMN_C_Flatrate_Term_ID)
 				.endOrderBy()
-				.create()
-				.iterate(I_C_Flatrate_Term.class);
-
+				.create();
 	}
 
 	@Override
 	public List<I_C_Flatrate_Term> retrieveTerms(final I_C_Flatrate_Data data)
 	{
-		final Iterator<I_C_Flatrate_Term> flatrateTerms = retrieveTerms(FlatrateDataId.ofRepoId(data.getC_Flatrate_Data_ID()));
+		final FlatrateDataId flatrateDataId = FlatrateDataId.ofRepoId(data.getC_Flatrate_Data_ID());
 
-		return Lists.newArrayList(flatrateTerms);
+		return getFlatrateTermQueryForFlatrateDataId(flatrateDataId)
+				.list(I_C_Flatrate_Term.class);
 	}
 
 	@Override
