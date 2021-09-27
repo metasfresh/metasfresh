@@ -1,6 +1,7 @@
 @import 'bulma/bulma.sass';
 @import './variables.scss';
 @import './header.scss';
+@import './launchers.scss';
 @import './barcodescanner.scss';
 @import './confirm-button.scss';
 @import './pick-products.scss';
@@ -9,25 +10,3 @@
   box-sizing: border-box;
 }
 
-.launchers-container {
-  margin-top: 7rem;
-  padding-bottom: 2rem;
-}
-.launcher {
-  cursor: pointer;
-  margin-top: 0.4rem;
-  border: 1px solid $base-mf-green;
-  border-radius: 5px;
-  box-shadow: 0 4px 8px 0px $grey-light;
-  transition: ".2s transform linear, .2s box-shadow linear !important";
-  .no-p {
-    padding: 0px;
-  }
-  .green-check {
-    color: $base-elements;
-  }
-}
-.launcher:hover {
-  background: $base-elements;
-  box-shadow: 0 4px 8px 0px $base-elements;
-}
