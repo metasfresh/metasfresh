@@ -9,9 +9,11 @@ class PickProductsActivity extends Component {
       caption,
       componentProps: { lines },
     } = this.props;
+
     return (
       <div className="pick-products-container">
         <div className="title is-4 header-caption">{caption}</div>
+        <div className="pick-products-active-line">Active line</div>
         {lines.length > 0 &&
           lines.map((lineItem) => {
             let uniqueId = uuidv4();
