@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import PropTypes from 'prop-types';
 import BarcodeScanner from './BarcodeScanner';
 import ConfirmActivity from './ConfirmActivity';
-//import PickProductsActivity from './PickProductsActivity';
+import PickProductsActivity from './PickProductsActivity';
 
 class WFProcess extends Component {
   render() {
@@ -30,8 +30,10 @@ class WFProcess extends Component {
             switch (activityItem.componentType) {
               case 'common/scanBarcode':
                 return <BarcodeScanner key={uniqueId} id={uniqueId} {...barcodeMockProps} />;
-              //   case 'picking/pickProducts':
-              //     return <PickProductsActivity key={uniqueId} id={uniqueId} />;
+              case 'picking/pickProducts':
+                return (
+                  <PickProductsActivity key={uniqueId} id={uniqueId} wfProcessId={wfProcessId} {...activityItem} />
+                );
               case 'common/confirmButton':
                 return <ConfirmActivity key={uniqueId} id={uniqueId} wfProcessId={wfProcessId} {...activityItem} />;
             }
@@ -42,6 +44,7 @@ class WFProcess extends Component {
 }
 
 WFProcess.propTypes = {
+  wfProcessId: PropTypes.string,
   activities: PropTypes.array,
   headerProperties: PropTypes.object,
 };
