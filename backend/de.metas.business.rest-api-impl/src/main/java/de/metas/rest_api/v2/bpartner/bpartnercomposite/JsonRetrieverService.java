@@ -93,6 +93,7 @@ import lombok.ToString;
 import org.adempiere.ad.table.RecordChangeLog;
 import org.adempiere.ad.table.RecordChangeLogEntry;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.Env;
 import org.slf4j.MDC;
 import org.slf4j.MDC.MDCCloseable;
 
@@ -359,6 +360,7 @@ public class JsonRetrieverService
 		return jsonChangeInfo.build();
 	}
 
+	@Nullable
 	private String convertIdToGroupName(@Nullable final BPGroupId bpGroupId)
 	{
 		if (bpGroupId == null)
@@ -387,7 +389,8 @@ public class JsonRetrieverService
 			if (contact.getGreetingId() != null)
 			{
 				final Greeting greeting = greetingRepository.getById(contact.getGreetingId());
-				greetingTrl = greeting.getGreeting(language.getAD_Language());
+				final String ad_language = language != null ? language.getAD_Language() : Env.getAD_Language();
+				greetingTrl = greeting.getGreeting(ad_language);
 			}
 			final List<JsonResponseContactRole> roles = contact.getRoles()
 					.stream()
