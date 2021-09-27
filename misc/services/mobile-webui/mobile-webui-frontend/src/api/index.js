@@ -1,3 +1,4 @@
 import { getLaunchers } from './launchers';
+import { userConfirmation } from './confirmation';
 
-export { getLaunchers };
+export { getLaunchers, userConfirmation };

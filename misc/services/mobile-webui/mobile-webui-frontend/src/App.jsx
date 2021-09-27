@@ -5,7 +5,7 @@ import Header from './components/Header';
 import Launchers from './components/containers/Launchers';
 
 import BarcodeScanner from './components/containers/BarcodeScanner';
-import ConfirmButton from './components/containers/ConfirmButton';
+import ConfirmActivity from './components/containers/ConfirmActivity';
 
 function App() {
   const barcodeMockProps = {
@@ -18,7 +18,7 @@ function App() {
     },
   };
 
-  const confirmBtnProps = {
+  const confirmActivityProps = {
     activityId: '3',
     caption: 'Complete picking',
     componentType: 'common/confirmButton',
@@ -33,7 +33,7 @@ function App() {
       <Header appName="webUI app" />
       <Launchers />
       <BarcodeScanner {...barcodeMockProps} />
-      <ConfirmButton {...confirmBtnProps} />
+      <ConfirmActivity {...confirmActivityProps} />
     </>
   );
 }
