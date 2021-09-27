@@ -1,11 +1,13 @@
 package de.metas.contracts.commission.salesrep.interceptor;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.contracts.commission.salesrep.DocumentSalesRepDescriptor;
 import de.metas.contracts.commission.salesrep.DocumentSalesRepDescriptorFactory;
 import de.metas.contracts.commission.salesrep.DocumentSalesRepDescriptorService;
 import de.metas.order.IOrderBL;
+import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -16,6 +18,7 @@ import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.ModelValidator;
@@ -53,6 +56,7 @@ public class C_Order
 	private final DocumentSalesRepDescriptorFactory documentSalesRepDescriptorFactory;
 	private final DocumentSalesRepDescriptorService documentSalesRepDescriptorService;
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
+	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 
 	public C_Order(
 			@NonNull final DocumentSalesRepDescriptorFactory documentSalesRepDescriptorFactory,
@@ -72,9 +76,27 @@ public class C_Order
 		// If on a new C_Order record both SalesPartnerCode and the BPartner-IDs were set at the same time,
 		// then don't override the sales-partner-id from the BPartners' mater data, but assume that the sales-partner-id shall remain the way it was set on the new record.
 		// This implies that the master data might be updated on thid C_Order's after-new modelinterceptor method
+		final BPartnerId salesRepId = BPartnerId.ofRepoIdOrNull(orderRecord.getC_BPartner_SalesRep_ID());
+		final OrgId orderOrgId = OrgId.ofRepoId(orderRecord.getAD_Org_ID());
+		if (Check.isNotBlank(orderRecord.getSalesPartnerCode()) && salesRepId != null)
+		{
+			final BPartnerId salesBPartnerIdBySalesCode = bpartnerDAO
+					.getBPartnerIdBySalesPartnerCode(orderRecord.getSalesPartnerCode(), ImmutableSet.of(orderOrgId))
+					.orElse(null);
+
+			if (salesBPartnerIdBySalesCode != null && !salesBPartnerIdBySalesCode.equals(salesRepId))
+			{
+				throw new AdempiereException("C_Order.SalesPartnerCode doesn't match C_Order.C_BPartner_SalesRep_ID")
+						.appendParametersToMessage()
+						.setParameter("C_Order.C_Order_ID", orderRecord.getC_Order_ID())
+						.setParameter("C_Order.SalesPartnerCode", orderRecord.getSalesPartnerCode())
+						.setParameter("C_Order.C_BPartner_SalesRep_ID", salesRepId.getRepoId());
+			}
+		}
+
 		final boolean currentPartnerCodeShallPrevail = type.isNew()
-				&& (Check.isNotBlank(orderRecord.getSalesPartnerCode())
-				|| orderRecord.getC_BPartner_SalesRep_ID() > 0);
+				&& (Check.isNotBlank(orderRecord.getSalesPartnerCode()) || orderRecord.getC_BPartner_SalesRep_ID() > 0);
+
 		if (!currentPartnerCodeShallPrevail)
 		{
 			updateSalesPartnerFromCustomer(orderRecord);
