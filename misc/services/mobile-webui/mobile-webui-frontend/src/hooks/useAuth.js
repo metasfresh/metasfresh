@@ -16,10 +16,7 @@ export function ProvideAuth({ children }) {
 }
 
 ProvideAuth.propTypes = {
-  children: PropTypes.oneOfType([
-    PropTypes.arrayOf(PropTypes.node),
-    PropTypes.node,
-  ]).isRequired,
+  children: PropTypes.oneOfType([PropTypes.arrayOf(PropTypes.node), PropTypes.node]).isRequired,
 };
 /**
  * @file React hook, that provides components with the authentication abject and
@@ -40,15 +37,15 @@ function useProvideAuth() {
         dispatch(setToken(token));
       })
       .catch((error) => {
-        console.error('login error: ', error)
+        console.error('login error: ', error);
       });
-  }
+  };
 
   const logout = () => {
     dispatch(clearToken());
 
     return Promise.resolve();
-  }
+  };
 
   const getToken = () => store.getState().appHandler.token;
 

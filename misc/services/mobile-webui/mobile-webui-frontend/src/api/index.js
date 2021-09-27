@@ -1,14 +1,13 @@
 import axios from 'axios';
 
-import {
-    getLaunchers
-} from './launchers';
+import { getLaunchers } from './launchers';
+import { userConfirmation } from './confirmation';
 
 function loginRequest(username, password) {
-  return axios.post(`/app/api/v2/auth`, {
+  return axios.post(`${window.config.API_URL}/auth`, {
     username,
     password,
   });
 }
 
-export { getLaunchers, loginRequest };
+export { getLaunchers, userConfirmation, loginRequest };

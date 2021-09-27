@@ -2,7 +2,6 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
 
-import mockServer from './services/server';
 import App from './App';
 import * as serviceWorkerRegistration from './serviceWorkerRegistration';
 import reportWebVitals from './reportWebVitals';
@@ -11,8 +10,6 @@ import { networkStatusOffline, networkStatusOnline } from './actions/NetworkActi
 
 import './index.css';
 import './assets/index.scss';
-
-mockServer();
 
 export const globalStore = store();
 
@@ -42,18 +39,20 @@ const broadcast = new BroadcastChannel('network-status-channel');
  * This is needed for the special case when user refreshes the page while being off
  */
 broadcast.onmessage = (event) => {
-  event.data.payload === 'offline' && globalStore.dispatch(networkStatusOffline())
+  event.data.payload === 'offline' && globalStore.dispatch(networkStatusOffline());
 };
 
 window.addEventListener('offline', () => {
-  globalStore.dispatch(networkStatusOffline())
+  globalStore.dispatch(networkStatusOffline());
 });
 
 window.addEventListener('online', () => {
-  globalStore.dispatch(networkStatusOnline())
+  globalStore.dispatch(networkStatusOnline());
 });
 
 window.addEventListener('beforeinstallprompt', (e) => {
+  let installEvent = e;
+  console.log('Install event triggered:', installEvent);
   // e.preventDefault(); - this is going to disable the prompt if uncommented !
   // See if the app is already installed, in that case, do nothing
   if (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) {

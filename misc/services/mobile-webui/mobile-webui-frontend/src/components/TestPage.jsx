@@ -7,7 +7,7 @@ const TestPage = () => {
       <h1>Test Page !!</h1>
       <Link to="/">Go to Dashboard</Link>
     </div>
-  )
-}
+  );
+};
 
 export default TestPage;

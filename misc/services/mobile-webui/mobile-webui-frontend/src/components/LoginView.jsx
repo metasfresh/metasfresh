@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useHistory, useLocation } from "react-router-dom";
+import { useHistory, useLocation } from 'react-router-dom';
 
 import { useAuth } from '../hooks/useAuth';
 
@@ -15,7 +15,7 @@ function LoginRoute() {
   const auth = useAuth();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const { from } = location.state || { from: { pathname: "/" } };
+  const { from } = location.state || { from: { pathname: '/' } };
 
   const changeUsername = (e) => setUsername(e.target.value);
   const changePassword = (e) => setPassword(e.target.value);

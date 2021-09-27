@@ -17,17 +17,17 @@ const Header = ({ appName }) => {
         <h4 className="title is-4">{appName}</h4>
         <div className="subtitle">network: {network ? 'online' : 'offline'} </div>
       </div>
-      { token ? (
+      {token ? (
         <button
           onClick={() => {
-            auth.logout().then(() => history.push("/"));
+            auth.logout().then(() => history.push('/'));
           }}
         >
-        Log out
+          Log out
         </button>
       ) : null}
     </header>
   );
-}
+};
 
 export default Header;
