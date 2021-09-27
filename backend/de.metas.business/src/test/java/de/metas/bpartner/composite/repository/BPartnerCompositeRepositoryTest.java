@@ -61,12 +61,14 @@ class BPartnerCompositeRepositoryTest
 {
 	private BPartnerCompositeRepository bpartnerCompositeRepository;
 	private CountryId countryId_DE;
+	private OrgId orgId;
 
 	@BeforeEach
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
-
+		orgId = AdempiereTestHelper.createOrgWithTimeZone("defaultOrg");
+		
 		SpringContextHolder.registerJUnitBean(new GreetingRepository());
 
 		bpartnerCompositeRepository = new BPartnerCompositeRepository(
@@ -81,7 +83,7 @@ class BPartnerCompositeRepositoryTest
 	void save_and_load_standardCase()
 	{
 		final BPartnerComposite bpartnerComposite = BPartnerComposite.builder()
-				.orgId(OrgId.MAIN)
+				.orgId(orgId)
 				.bpartner(BPartner.builder()
 						.value("12345")
 						.name("name1")
@@ -194,7 +196,7 @@ class BPartnerCompositeRepositoryTest
 				.build());
 
 		final BPartnerComposite bpartnerComposite = BPartnerComposite.builder()
-				.orgId(OrgId.MAIN)
+				.orgId(orgId)
 				.bpartner(BPartner.builder()
 						.value("value")
 						.name("name1")

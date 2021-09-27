@@ -49,6 +49,7 @@ public class ExternalSystemConstants
 	public static final String PARAM_FREIGHT_COST_REDUCED_PRODUCT_ID = "M_FreightCost_ReducedVAT_Product_ID";
 
 	public static final String PARAM_UPDATED_AFTER_OVERRIDE = "UpdatedAfterOverride";
+	public static final String PARAM_ORDER_NO = "OrderNo"; // if set, then this shall override PARAM_UPDATED_AFTER*
 	public static final String PARAM_ROOT_BPARTNER_ID_FOR_USERS = "RootBPartnerID";
 
 	public static final String PARAM_ALBERTA_ID = "Alberta_Id";
@@ -56,7 +57,6 @@ public class ExternalSystemConstants
 
 	public static final String PARAM_CAMEL_HTTP_RESOURCE_AUTH_KEY = "CamelHttpResourceAuthKey";
 
-	public static final String PARAM_ORDER_NO = "OrderNo"; // if set, then this shall override PARAM_UPDATED_AFTER*
 	public static final String QUEUE_NAME_MF_TO_ES = "MF_TO_ExternalSystem";
 
 	public static final String PARAM_RABBITMQ_HTTP_URL = "RemoteURL";

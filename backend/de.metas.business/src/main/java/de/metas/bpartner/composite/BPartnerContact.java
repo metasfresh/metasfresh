@@ -24,8 +24,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import static de.metas.common.util.CoalesceUtil.coalesce;
-
 /*
  * #%L
  * de.metas.ordercandidate.rest-api
@@ -60,6 +58,7 @@ public class BPartnerContact
 	public static final String NAME = "name";
 	public static final String LAST_NAME = "lastName";
 	public static final String FIRST_NAME = "firstName";
+	public static final String BIRTHDAY = "birthday";
 	public static final String EMAIL = "email";
 	public static final String PHONE = "phone";
 	public static final String FAX = "fax";
@@ -111,6 +110,10 @@ public class BPartnerContact
 
 	@JsonInclude(Include.NON_NULL)
 	@Nullable
+	private LocalDate birthday;
+
+	@JsonInclude(Include.NON_NULL)
+	@Nullable
 	private String email;
 
 	@JsonInclude(Include.NON_NULL)
@@ -143,10 +146,7 @@ public class BPartnerContact
 
 	@Nullable
 	private OrgMappingId orgMappingId;
-
-	@Nullable
-	private LocalDate birthday;
-
+	
 	@Nullable
 	private BPartnerLocationId bPartnerLocationId;
 
@@ -174,6 +174,7 @@ public class BPartnerContact
 			@Nullable final String name,
 			@Nullable final String firstName,
 			@Nullable final String lastName,
+			@Nullable final LocalDate birthday,
 			@Nullable final String email,
 			@Nullable final Boolean newsletter,
 			@Nullable final Boolean membershipContact,
@@ -187,7 +188,6 @@ public class BPartnerContact
 			@Nullable final BPartnerContactType contactType,
 			@Nullable final RecordChangeLog changeLog,
 			@Nullable final OrgMappingId orgMappingId,
-			@Nullable final LocalDate birthday,
 			@Nullable final BPartnerLocationId bPartnerLocationId,
 			@Nullable final List<UserRole> roles)
 	{

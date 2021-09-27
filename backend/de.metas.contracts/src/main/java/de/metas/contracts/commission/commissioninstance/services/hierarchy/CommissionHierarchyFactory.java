@@ -1,4 +1,4 @@
-package de.metas.contracts.commission.commissioninstance.services;
+package de.metas.contracts.commission.commissioninstance.services.hierarchy;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;

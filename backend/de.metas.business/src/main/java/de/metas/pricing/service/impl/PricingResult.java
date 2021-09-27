@@ -41,7 +41,6 @@ import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.UomId;
-import de.metas.util.Check;
 import de.metas.util.lang.Percent;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -123,8 +122,6 @@ final class PricingResult implements IPricingResult
 	private ImmutableList<String> loggableMessages;
 
 	private BigDecimal baseCommissionPointsPerPriceUOM;
-
-	private Percent tradedCommissionPercent = Percent.ZERO;
 
 	@Builder
 	private PricingResult(

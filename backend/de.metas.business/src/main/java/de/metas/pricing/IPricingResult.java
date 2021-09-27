@@ -22,13 +22,7 @@ package de.metas.pricing;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.Collection;
-import java.util.List;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.currency.CurrencyPrecision;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.money.CurrencyId;
@@ -43,6 +37,10 @@ import de.metas.util.lang.Percent;
 import lombok.NonNull;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * Result of a pricing calculation
@@ -180,12 +178,4 @@ public interface IPricingResult
 	IPricingResult setLoggableMessages(ImmutableList<String> singleMessages);
 
 	ImmutableList<String> getLoggableMessages();
-
-	void setBaseCommissionPointsPerPriceUOM(BigDecimal commissionPointsPerPriceUOM);
-
-	BigDecimal getBaseCommissionPointsPerPriceUOM();
-
-	void setTradedCommissionPercent(Percent tradedCommissionPercent);
-
-	Percent getTradedCommissionPercent();
 }

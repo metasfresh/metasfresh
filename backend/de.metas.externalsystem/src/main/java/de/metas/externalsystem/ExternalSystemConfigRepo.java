@@ -64,7 +64,7 @@ public class ExternalSystemConfigRepo
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final ExternalSystemOtherConfigRepository externalSystemOtherConfigRepository;
 
-	public ExternalSystemConfigRepo(final ExternalSystemOtherConfigRepository externalSystemOtherConfigRepository)
+	public ExternalSystemConfigRepo(@NonNull final ExternalSystemOtherConfigRepository externalSystemOtherConfigRepository)
 	{
 		this.externalSystemOtherConfigRepository = externalSystemOtherConfigRepository;
 	}
@@ -146,6 +146,27 @@ public class ExternalSystemConfigRepo
 		final I_ExternalSystem_Config externalSystemConfigRecord = InterfaceWrapperHelper.load(id, I_ExternalSystem_Config.class);
 
 		return externalSystemConfigRecord.getType();
+	}
+
+	@NonNull
+	public ImmutableList<ExternalSystemParentConfig> getAllByType(@NonNull final ExternalSystemType externalSystemType)
+	{
+		switch (externalSystemType)
+		{
+			case Alberta:
+				return getAllByTypeAlberta();
+			case RabbitMQ:
+				return getAllByTypeRabbitMQ();
+			case WOO:
+				return getAllByTypeWOO();
+			case Shopware6:
+			case Other:
+				throw new AdempiereException("Method not supported")
+						.appendParametersToMessage()
+						.setParameter("externalSystemType", externalSystemType);
+			default:
+				throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", externalSystemType);
+		}
 	}
 
 	public void saveConfig(@NonNull final ExternalSystemParentConfig config)
@@ -590,27 +611,6 @@ public class ExternalSystemConfigRepo
 		record.setIsActive(config.getIsActive());
 
 		return record;
-	}
-
-	@NonNull
-	public ImmutableList<ExternalSystemParentConfig> getAllByType(@NonNull final ExternalSystemType externalSystemType)
-	{
-		switch (externalSystemType)
-		{
-			case Alberta:
-				return getAllByTypeAlberta();
-			case RabbitMQ:
-				return getAllByTypeRabbitMQ();
-			case WOO:
-				return getAllByTypeWOO();
-			case Shopware6:
-			case Other:
-				throw new AdempiereException("Method not supported")
-						.appendParametersToMessage()
-						.setParameter("externalSystemType", externalSystemType);
-			default:
-				throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", externalSystemType);
-		}
 	}
 
 	@NonNull

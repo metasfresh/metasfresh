@@ -2,7 +2,7 @@
  * #%L
  * de.metas.contracts
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,25 +20,17 @@
  * #L%
  */
 
-package de.metas.contracts.pricing.trade_margin;
+package de.metas.contracts.commission.commissioninstance.services;
 
-import de.metas.bpartner.BPartnerId;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 
-import java.time.LocalDate;
-
-@Builder
-@Value
-public class CustomerTradeMarginSearchCriteria
+@AllArgsConstructor
+@Getter
+public enum CommissionConfigPriority
 {
-	@NonNull
-	BPartnerId salesRepId;
+	ZERO(0),
+	ONE(1);
 
-	@NonNull
-	BPartnerId customerId;
-
-	@NonNull
-	LocalDate requestedDate;
+	private final int prio;
 }

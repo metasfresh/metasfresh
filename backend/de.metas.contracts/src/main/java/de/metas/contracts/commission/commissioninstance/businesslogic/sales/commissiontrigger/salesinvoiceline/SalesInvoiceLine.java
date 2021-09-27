@@ -1,14 +1,15 @@
 package de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.salesinvoiceline;
 
-import java.time.Instant;
-
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionPoints;
 import de.metas.invoice.InvoiceLineId;
+import de.metas.money.CurrencyId;
 import de.metas.product.ProductId;
-import de.metas.util.lang.Percent;
+import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+
+import java.time.Instant;
 
 /*
  * #%L
@@ -43,17 +44,14 @@ public class SalesInvoiceLine
 	ProductId productId;
 
 	@NonNull
-	CommissionPoints forecastCommissionPoints;
-
-	@NonNull
-	CommissionPoints commissionPointsToInvoice;
-
-	@NonNull
 	CommissionPoints invoicedCommissionPoints;
 
 	@NonNull
-	Percent tradedCommissionPercent;
+	Instant updated;
 
 	@NonNull
-	Instant updated;
+	Quantity invoicedQty;
+
+	@NonNull
+	CurrencyId currencyId;
 }

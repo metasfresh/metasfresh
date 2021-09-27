@@ -11,7 +11,7 @@ import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.asyncbatchmilestone.AsyncBatchMilestone;
 import de.metas.async.asyncbatchmilestone.AsyncBatchMilestoneId;
 import de.metas.async.asyncbatchmilestone.AsyncBatchMilestoneObserver;
-import de.metas.async.asyncbatchmilestone.AsyncBathMilestoneService;
+import de.metas.async.asyncbatchmilestone.AsyncBatchMilestoneService;
 import de.metas.async.asyncbatchmilestone.MilestoneName;
 import de.metas.async.model.I_C_Async_Batch;
 import de.metas.banking.BankAccountId;
@@ -125,20 +125,20 @@ public class InvoiceService
 	private final PaymentService paymentService;
 	private final JsonRetrieverService jsonRetrieverService;
 	private final AsyncBatchMilestoneObserver asyncBatchMilestoneObserver;
-	private final AsyncBathMilestoneService asyncBathMilestoneService;
+	private final AsyncBatchMilestoneService asyncBatchMilestoneService;
 
 	public InvoiceService(
 			@NonNull final CurrencyService currencyService,
 			@NonNull final PaymentService paymentService,
 			@NonNull final JsonServiceFactory jsonServiceFactory,
 			@NonNull final AsyncBatchMilestoneObserver asyncBatchMilestoneObserver,
-			@NonNull final AsyncBathMilestoneService asyncBathMilestoneService)
+			@NonNull final AsyncBatchMilestoneService asyncBatchMilestoneService)
 	{
 		this.currencyService = currencyService;
 		this.paymentService = paymentService;
 		this.jsonRetrieverService = jsonServiceFactory.createRetriever();
 		this.asyncBatchMilestoneObserver = asyncBatchMilestoneObserver;
-		this.asyncBathMilestoneService = asyncBathMilestoneService;
+		this.asyncBatchMilestoneService = asyncBatchMilestoneService;
 	}
 
 	public Optional<byte[]> getInvoicePDF(@NonNull final InvoiceId invoiceId)
@@ -422,7 +422,7 @@ public class InvoiceService
 				.milestoneName(MilestoneName.INVOICE_CREATION)
 				.build();
 
-		final AsyncBatchMilestone milestone = asyncBathMilestoneService.save(asyncBatchMilestone);
+		final AsyncBatchMilestone milestone = asyncBatchMilestoneService.save(asyncBatchMilestone);
 
 		return milestone.getIdNotNull();
 	}

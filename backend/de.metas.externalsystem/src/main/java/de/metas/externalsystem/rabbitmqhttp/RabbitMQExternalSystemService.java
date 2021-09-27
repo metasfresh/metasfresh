@@ -90,7 +90,6 @@ public class RabbitMQExternalSystemService
 		this.externalSystemMessageSender = externalSystemMessageSender;
 		this.dataExportAuditLogRepository = dataExportAuditLogRepository;
 		this.dataExportAuditRepository = dataExportAuditRepository;
-
 		this.syncBPartnerDebouncer = Debouncer.<BPartnerId>builder()
 				.name("syncBPartnerDebouncer")
 				.bufferMaxSize(sysConfigBL.getIntValue("de.metas.externalsystem.rabbitmqhttp.debouncer.bufferMaxSize", 100))
