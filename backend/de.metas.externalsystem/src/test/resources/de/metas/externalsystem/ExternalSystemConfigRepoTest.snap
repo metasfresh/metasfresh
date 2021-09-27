@@ -51,6 +51,7 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Ebay_
     "id" : 100001,
     "type" : "Ebay",
     "name" : "name",
+    "isActive" : true,
     "childConfig" : {
       "id" : 100002,
       "parentId" : 100001,
@@ -102,6 +103,7 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Ebay_
     "id" : 100001,
     "type" : "Ebay",
     "name" : "name",
+    "isActive" : true,
     "childConfig" :{
      "id" : 100002,
      "parentId" : 100001,

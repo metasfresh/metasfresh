@@ -480,6 +480,7 @@ class ExternalSystemConfigRepoTest
 		final String value = "testEbayValue";
 
 		final I_ExternalSystem_Config_Ebay childRecord = newInstance(I_ExternalSystem_Config_Ebay.class);
+		childRecord.setIsActive(true);
 		childRecord.setAppId("appId");
 		childRecord.setDevId("devId");
 		childRecord.setCertId("certId");
