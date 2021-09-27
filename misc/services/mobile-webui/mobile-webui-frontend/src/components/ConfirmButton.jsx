@@ -19,6 +19,7 @@ class ConfirmButton extends Component {
   onDialogYes = () => {
     const { onConfirmExec } = this.props;
     onConfirmExec({ token: window.config.API_TOKEN });
+    // TODO !!! : deal with the response
   };
 
   render() {
