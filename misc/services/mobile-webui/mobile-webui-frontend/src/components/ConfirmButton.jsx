@@ -17,8 +17,8 @@ class ConfirmButton extends Component {
    * Execute any function passed as onConfirm prop
    */
   onDialogYes = () => {
-    const { onConfirmExec } = this.props;
-    onConfirmExec({ token: window.config.API_TOKEN });
+    const { onConfirmExec, wfProcessId, activityId: wfActivityId } = this.props;
+    onConfirmExec({ token: window.config.API_TOKEN, wfProcessId, wfActivityId });
     // TODO !!! : deal with the response
   };
 
@@ -66,6 +66,8 @@ ConfirmButton.propTypes = {
   caption: PropTypes.string,
   componentProps: PropTypes.object,
   onConfirmExec: PropTypes.func,
+  wfProcessId: PropTypes.string.isRequired,
+  activityId: PropTypes.string.isRequired,
 };
 
 export default ConfirmButton;

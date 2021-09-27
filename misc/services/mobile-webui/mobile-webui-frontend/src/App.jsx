@@ -26,6 +26,7 @@ function App() {
     componentProps: {
       question: 'Are you sure?',
     },
+    wfProcessId: '200',
   };
 
   return (
