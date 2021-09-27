@@ -289,3 +289,9 @@ UPDATE C_OLCand SET ApplySalesRepFrom='CandidateFirst' WHERE ApplySalesRepFrom I
 INSERT INTO t_alter_column values('c_olcand','ApplySalesRepFrom',null,'NOT NULL',null)
 ;
 
+-- 2021-09-27T08:07:17.838Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET SeqNo=596,Updated=TO_TIMESTAMP('2021-09-27 11:07:17','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=591774
+;
+
+

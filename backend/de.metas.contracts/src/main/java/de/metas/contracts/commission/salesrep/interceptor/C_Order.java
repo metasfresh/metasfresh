@@ -21,9 +21,6 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Nullable;
-
-import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
@@ -75,7 +72,9 @@ public class C_Order
 		// If on a new C_Order record both SalesPartnerCode and the BPartner-IDs were set at the same time,
 		// then don't override the sales-partner-id from the BPartners' mater data, but assume that the sales-partner-id shall remain the way it was set on the new record.
 		// This implies that the master data might be updated on thid C_Order's after-new modelinterceptor method
-		final boolean currentPartnerCodeShallPrevail = type.isNew() && Check.isNotBlank(orderRecord.getSalesPartnerCode());
+		final boolean currentPartnerCodeShallPrevail = type.isNew()
+				&& (Check.isNotBlank(orderRecord.getSalesPartnerCode())
+				|| orderRecord.getC_BPartner_SalesRep_ID() > 0);
 		if (!currentPartnerCodeShallPrevail)
 		{
 			updateSalesPartnerFromCustomer(orderRecord);
