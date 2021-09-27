@@ -26,8 +26,6 @@ yarn-error.log*
 package-lock.json
 *.lock
 
-.DS_Store
-
-config.js
+config.js*
 src/.env
 .env
