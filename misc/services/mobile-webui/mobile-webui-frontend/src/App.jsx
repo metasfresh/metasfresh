@@ -3,7 +3,9 @@ import './App.css';
 import { connect } from 'react-redux';
 import Header from './components/Header';
 import Launchers from './components/containers/Launchers';
+
 import BarcodeScanner from './components/containers/BarcodeScanner';
+import ConfirmButton from './components/containers/ConfirmButton';
 
 function App() {
   const barcodeMockProps = {
@@ -16,11 +18,22 @@ function App() {
     },
   };
 
+  const confirmBtnProps = {
+    activityId: '3',
+    caption: 'Complete picking',
+    componentType: 'common/confirmButton',
+    readonly: true,
+    componentProps: {
+      question: 'Are you sure?',
+    },
+  };
+
   return (
     <>
       <Header appName="webUI app" />
       <Launchers />
       <BarcodeScanner {...barcodeMockProps} />
+      <ConfirmButton {...confirmBtnProps} />
     </>
   );
 }
