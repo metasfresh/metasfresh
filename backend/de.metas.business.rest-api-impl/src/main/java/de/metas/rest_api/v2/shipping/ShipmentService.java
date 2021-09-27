@@ -22,6 +22,7 @@
 
 package de.metas.rest_api.v2.shipping;
 
+import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
@@ -88,6 +89,8 @@ import de.metas.shipping.IShipperDAO;
 import de.metas.shipping.ShipperId;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.util.Check;
+import de.metas.util.ILoggable;
+import de.metas.util.Loggables;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
@@ -208,9 +211,12 @@ public class ShipmentService
 	@NonNull
 	public JsonProcessCompositeResponse processShipmentSchedules(@NonNull final JsonProcessShipmentRequest request)
 	{
-		final JsonCreateShipmentRequest shipmentRequest = request.getCreateShipmentRequest();
+		final ILoggable loggable = Loggables.withLogger(logger, Level.DEBUG);
 
+		final JsonCreateShipmentRequest shipmentRequest = request.getCreateShipmentRequest();
+		loggable.addLog("processShipmentSchedules - start updating shipment schedules");
 		updateShipmentSchedules(shipmentRequest);
+		loggable.addLog("processShipmentSchedules - finished updating shipment schedules");
 
 		final Map<AsyncBatchId, List<CreateShipmentInfoCandidate>> asyncBatchId2ShipmentCandidates =
 				getShipmentInfoCandidateByAsyncBatchId(request.getCreateShipmentRequest().getCreateShipmentInfoList());
@@ -223,27 +229,43 @@ public class ShipmentService
 		final ImmutableSet.Builder<InOutId> createdShipmentIdsCollector = ImmutableSet.builder();
 		final ImmutableList.Builder<JSONInvoiceInfoResponse> invoiceInfoResponseCollector = ImmutableList.builder();
 
-		generateShipmentsRequestList.stream()
-				.filter(generateShipmentRequest -> !generateShipmentRequest.getScheduleIds().isEmpty())
-				.forEach(generateShipmentRequest -> {
-					final AsyncBatchId currentBatchId = generateShipmentRequest.getAsyncBatchId();
+		for (final GenerateShipmentsRequest generateShipmentRequest : generateShipmentsRequestList)
+		{
+			if (generateShipmentRequest.getScheduleIds().isEmpty())
+			{
+				loggable.addLog("processShipmentSchedules - skip generateShipmentRequest without ShipmentScheduleIds; generateShipmentRequest={}", generateShipmentRequest);
+				continue;
+			}
 
-					generateShipments(generateShipmentRequest);
+			final AsyncBatchId currentBatchId = generateShipmentRequest.getAsyncBatchId();
 
-					createdShipmentIdsCollector.addAll(retrieveInOutIdsByScheduleIds(generateShipmentRequest.getScheduleIds()));
+			loggable.addLog("processShipmentSchedules - start creating shipments with currentBatchId={}", AsyncBatchId.toRepoId(generateShipmentRequest.getAsyncBatchId()));
+			generateShipments(generateShipmentRequest);
+			final Set<InOutId> createdInoutIds = retrieveInOutIdsByScheduleIds(generateShipmentRequest.getScheduleIds());
+			
+			loggable.addLog("processShipmentSchedules - finished creating shipments with currentBatchId={}; M_InOut_IDs={}",
+							AsyncBatchId.toRepoId(generateShipmentRequest.getAsyncBatchId()), createdInoutIds);
+			createdShipmentIdsCollector.addAll(createdInoutIds);
 
-					if (request.getInvoice())
-					{
-						invoiceInfoResponseCollector.addAll(generateInvoicesForShipmentScheduleIds(generateShipmentRequest.getScheduleIds()));
-					}
+			if (request.getInvoice())
+			{
+				loggable.addLog("processShipmentSchedules - start creating invoices with currentBatchId={}", AsyncBatchId.toRepoId(generateShipmentRequest.getAsyncBatchId()));
+				final List<JSONInvoiceInfoResponse> createInvoiceInfos = generateInvoicesForShipmentScheduleIds(generateShipmentRequest.getScheduleIds());
 
-					asyncBatchBL.updateProcessedFromMilestones(currentBatchId);
+				loggable.addLog("processShipmentSchedules - finished creating invoices with currentBatchId={}; invoiceIds={}",
+								AsyncBatchId.toRepoId(generateShipmentRequest.getAsyncBatchId()), createdInoutIds);
+				invoiceInfoResponseCollector.addAll(createInvoiceInfos);
+			}
 
-					if (request.getCloseShipmentSchedule())
-					{
-						generateShipmentRequest.getScheduleIds().forEach(shipmentScheduleBL::closeShipmentSchedule);
-					}
-				});
+			asyncBatchBL.updateProcessedFromMilestones(currentBatchId);
+
+			if (request.getCloseShipmentSchedule())
+			{
+				loggable.addLog("processShipmentSchedules - start closing shipmentSchedules");
+				generateShipmentRequest.getScheduleIds().forEach(shipmentScheduleBL::closeShipmentSchedule);
+				loggable.addLog("processShipmentSchedules - finished closing shipmentSchedules");
+			}
+		}
 
 		final JsonProcessCompositeResponse.JsonProcessCompositeResponseBuilder responseBuilder = JsonProcessCompositeResponse.builder();
 		responseBuilder.shipmentResponse(buildCreateShipmentResponse(createdShipmentIdsCollector.build()));
@@ -813,7 +835,7 @@ public class ShipmentService
 	}
 
 	@NonNull
-	private Map<AsyncBatchId,List<CreateShipmentInfoCandidate>> getShipmentInfoCandidateByAsyncBatchId(@NonNull final List<JsonCreateShipmentInfo> createShipmentInfos)
+	private Map<AsyncBatchId, List<CreateShipmentInfoCandidate>> getShipmentInfoCandidateByAsyncBatchId(@NonNull final List<JsonCreateShipmentInfo> createShipmentInfos)
 	{
 		final List<CreateShipmentInfoCandidate> createShipmentCandidates = createShipmentInfos.stream()
 				.map(this::buildCreateShipmentCandidate)

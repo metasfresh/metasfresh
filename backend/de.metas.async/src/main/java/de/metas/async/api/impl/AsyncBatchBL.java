@@ -1,6 +1,3 @@
-/**
- *
- */
 package de.metas.async.api.impl;
 
 
@@ -367,12 +364,12 @@ public class AsyncBatchBL implements IAsyncBatchBL
 		final String keepAliveTimeHours = asyncBatchType.getKeepAliveTimeHours();
 
 		// if null or empty, keep alive for ever
-		if (Check.isEmpty(keepAliveTimeHours, true))
+		if (Check.isBlank(keepAliveTimeHours))
 		{
 			return false;
 		}
 
-		final int keepAlive = Integer.valueOf(keepAliveTimeHours);
+		final int keepAlive = Integer.parseInt(keepAliveTimeHours);
 
 		// if 0, keep alive for ever
 		if (keepAlive == 0)
@@ -385,15 +382,11 @@ public class AsyncBatchBL implements IAsyncBatchBL
 
 		final long diffHours = TimeUtil.getHoursBetween(lastUpdated, today);
 
-		if (diffHours > keepAlive)
-		{
-			return true;
-		}
-
-		return false;
+		return diffHours > keepAlive;
 	}
 
 	@Override
+	@Nullable
 	public I_C_Queue_WorkPackage notify(final I_C_Async_Batch asyncBatch, final I_C_Queue_WorkPackage workpackage)
 	{
 		//
@@ -421,7 +414,6 @@ public class AsyncBatchBL implements IAsyncBatchBL
 		}
 
 		return null;
-
 	}
 
 	@Override
