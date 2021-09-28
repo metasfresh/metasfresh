@@ -58,6 +58,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
 
 public interface IInvoiceCandBL extends ISingletonService
 {
@@ -401,7 +402,7 @@ public interface IInvoiceCandBL extends ISingletonService
 	 */
 	boolean isCreatedByInvoicingJustNow(org.compiere.model.I_C_Invoice invoiceRecord);
 
-	I_C_Invoice voidAndRecreateInvoice(org.compiere.model.I_C_Invoice invoice);
+	Set<InvoiceCandidateId> voidAndReturnInvoiceCandIds(org.compiere.model.I_C_Invoice invoice);
 
 	@NonNull
 	InvoiceCandidatesAmtSelectionSummary calculateAmtSelectionSummary(@Nullable String extraWhereClause);

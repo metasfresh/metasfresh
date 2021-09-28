@@ -248,7 +248,7 @@ describe('Filters tests', () => {
             {
               parameterName: 'Processed',
               value: false,
-              valueTo: '',
+              valueTo: null,
               defaultValue: null,
               defaultValueTo: null,
             },

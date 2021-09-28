@@ -22,12 +22,12 @@
 
 package de.metas.cucumber.stepdefs;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_Recompute;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import io.cucumber.datatable.DataTable;
@@ -40,6 +40,7 @@ import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.compiere.model.IQuery;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 
 import javax.annotation.Nullable;
@@ -57,13 +58,16 @@ public class M_ShipmentSchedule_StepDef
 	final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final StepDefData<I_C_OrderLine> orderLineTable;
+	private final StepDefData<I_C_Order> orderTable;
 	private final StepDefData<I_M_ShipmentSchedule> shipmentScheduleTable;
 
 	public M_ShipmentSchedule_StepDef(
 			@NonNull final StepDefData<I_C_OrderLine> orderLineTable,
+			@NonNull final StepDefData<I_C_Order> orderTable,
 			@NonNull final StepDefData<I_M_ShipmentSchedule> shipmentScheduleTable)
 	{
 		this.orderLineTable = orderLineTable;
+		this.orderTable = orderTable;
 		this.shipmentScheduleTable = shipmentScheduleTable;
 	}
 
@@ -124,6 +128,35 @@ public class M_ShipmentSchedule_StepDef
 		{
 			assertShipmentScheduleIsClosed(tableRow);
 		}
+	}
+
+	@And("validate that there are no M_ShipmentSchedule_Recompute records after no more than {int} seconds for order {string}")
+	public void validate_no_records(final int timeoutSec, final String orderIdentifier) throws InterruptedException
+	{
+		final I_C_Order order = orderTable.get(orderIdentifier);
+		final ImmutableList<Integer> shipmentScheduleIds = queryBL.createQueryBuilder(I_M_ShipmentSchedule.class)
+				.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_C_Order_ID, order.getC_Order_ID())
+				.create()
+				.stream()
+				.map(I_M_ShipmentSchedule::getM_ShipmentSchedule_ID)
+				.collect(ImmutableList.toImmutableList());
+
+		assertThat(shipmentScheduleIds.size()).isGreaterThan(0);
+
+		final Supplier<Boolean> noRecords = () -> {
+			final List<I_M_ShipmentSchedule_Recompute> records = queryBL.createQueryBuilder(I_M_ShipmentSchedule_Recompute.class)
+					.addInArrayFilter(I_M_ShipmentSchedule_Recompute.COLUMNNAME_M_ShipmentSchedule_ID, shipmentScheduleIds)
+					.create()
+					.list();
+
+			return records.size() == 0;
+		};
+
+		StepDefUtil.tryAndWait(timeoutSec, 500, noRecords);
+
+		assertThat(noRecords.get())
+				.as("There are still records in M_ShipmentSchedules_Recompute after %s second timeout", timeoutSec)
+				.isTrue();
 	}
 
 	private ShipmentScheduleQueries createShipmentScheduleQueries(@NonNull final DataTable dataTable)
@@ -235,7 +268,12 @@ public class M_ShipmentSchedule_StepDef
 		final String shipmentScheduleIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID + ".Identifier");
 		final I_M_ShipmentSchedule shipmentSchedule = shipmentScheduleTable.get(shipmentScheduleIdentifier);
 
+		final I_M_ShipmentSchedule refreshedSchedule = queryBL.createQueryBuilder(I_M_ShipmentSchedule.class)
+				.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID, shipmentSchedule.getM_ShipmentSchedule_ID())
+				.create()
+				.firstOnlyNotNull(I_M_ShipmentSchedule.class);
+
 		assertNotNull(shipmentSchedule);
-		assertEquals(shipmentSchedule.isClosed(), Boolean.TRUE);
+		assertEquals(Boolean.TRUE, refreshedSchedule.isClosed());
 	}
 }

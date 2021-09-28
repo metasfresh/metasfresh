@@ -1,21 +1,6 @@
 package de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.salesinvoiceline;
 
-import static org.adempiere.model.InterfaceWrapperHelper.create;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
-import org.compiere.model.I_C_Invoice;
-import org.compiere.util.TimeUtil;
-import org.slf4j.Logger;
-import org.slf4j.MDC.MDCCloseable;
-import org.springframework.stereotype.Service;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionPoints;
@@ -38,6 +23,19 @@ import de.metas.product.ProductId;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
+import org.slf4j.MDC.MDCCloseable;
+import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+import static org.adempiere.model.InterfaceWrapperHelper.create;
 
 /*
  * #%L

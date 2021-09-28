@@ -25,6 +25,7 @@ package de.metas.invoicecandidate.api.impl;
 import ch.qos.logback.classic.Level;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.model.I_C_Order;
@@ -2332,7 +2333,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	}
 
 	@Override
-	public I_C_Invoice voidAndRecreateInvoice(@NonNull final org.compiere.model.I_C_Invoice invoice)
+	@NonNull
+	public Set<InvoiceCandidateId> voidAndReturnInvoiceCandIds(@NonNull final org.compiere.model.I_C_Invoice invoice)
 	{
 		// first make sure that payments have the flag auto-allocate set
 		final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
@@ -2352,11 +2354,16 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 		final List<I_C_Invoice_Candidate> invoiceCands = new ArrayList<>();
 
-		final MInvoice invoicePO = (MInvoice)InterfaceWrapperHelper.getPO(invoice);
+		final MInvoice invoicePO = InterfaceWrapperHelper.getPO(invoice);
 		for (final MInvoiceLine ilPO : invoicePO.getLines(true))
 		{
 			final I_C_InvoiceLine il = InterfaceWrapperHelper.create(ilPO, I_C_InvoiceLine.class);
 			invoiceCands.addAll(invoiceCandDAO.retrieveIcForIl(il));
+		}
+
+		if (invoiceCands.isEmpty())
+		{
+			return ImmutableSet.of();
 		}
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(invoice);
@@ -2388,29 +2395,11 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			InterfaceWrapperHelper.save(ic, trxName);
 		}
 
-		// recreate invoice for those specific invoice candidates
-		final IInvoiceGenerateResult result = invoiceCandBL.generateInvoices()
-				.setContext(ctx, trxName)
-				.setInvoicingParams(new PlainInvoicingParams()
-						.setStoreInvoicesInResult(true)
-						.setAssumeOneInvoice(true))
-				.generateInvoices(invoiceCands.iterator());
-
-		final I_C_Invoice newInvoice;
-		if (result.getInvoiceCount() == 1)
-		{
-			newInvoice = result.getC_Invoices().get(0);
-		}
-		else if (result.getInvoiceCount() > 1)
-		{
-			throw new AdempiereException("Internal error: More then one invoices were generated for given candidate (" + result + ")");
-		}
-		else
-		{
-			newInvoice = null;
-		}
-
-		return newInvoice;
+		return invoiceCands
+				.stream()
+				.map(I_C_Invoice_Candidate::getC_Invoice_Candidate_ID)
+				.map(InvoiceCandidateId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	// TODO: would be nice to use de.metas.ui.web.view.descriptor.SqlAndParams but that is in module webui-api, and here we don't have access to it

@@ -3,7 +3,6 @@ Feature: warehouse out of stock notice
   Background:
     Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
 
-  @ignore
   Scenario: warehouse out of stock notice api test
     Given metasfresh contains M_Products:
       | Identifier | Name            |
@@ -41,14 +40,14 @@ Feature: warehouse out of stock notice
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute | OPT.Warehouse_ID |
       | s_sched_1  | ol_3                      | N             | 540008           |
     When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/warehouses/540008/outOfStockNotice' and fulfills with '200' status code
-    """
-{
-  "closePendingShipmentSchedules": true,
-  "createInventory": true,
-  "orgCode": "001",
-  "productIdentifier": "val-salesProduct_46"
-}
-"""
+  """
+  {
+    "closePendingShipmentSchedules": true,
+    "createInventory": true,
+    "orgCode": "001",
+    "productIdentifier": "val-salesProduct_46"
+  }
+  """
     Then the shipment-schedule is closed
       | M_ShipmentSchedule_ID.Identifier |
       | s_sched_1                        |
