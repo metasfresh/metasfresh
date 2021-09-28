@@ -1,7 +1,8 @@
-de.metas.audit.config.ApiAuditConfigRepositoryTest.getAllConfigsByOrgId=[
+de.metas.audit.config.ApiAuditConfigRepositoryTest.getActiveConfigsByOrgId=[
   [
     {
       "apiAuditConfigId" : 100001,
+      "active" : true,
       "orgId" : 1,
       "seqNo" : 10,
       "isInvokerWaitsForResponse" : true,

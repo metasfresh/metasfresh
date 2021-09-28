@@ -1,0 +1,26 @@
+.pick-products-container {
+    margin-top: 7rem;
+    padding-bottom: 2rem;
+    .header-caption {
+        width: 100%;
+        text-align: center;
+    }
+}
+.pick-product {
+    cursor: pointer;
+    margin-top: 0.4rem;
+    border: 1px solid $base-mf-green;
+    border-radius: 5px;
+    box-shadow: 0 4px 8px 0px $grey-light;
+    transition: ".2s transform linear, .2s box-shadow linear !important";
+    .no-p {
+      padding: 0px;
+    }
+    .green-check {
+      color: $base-elements;
+    }
+  }
+  .pick-product:hover {
+    background: $base-elements;
+    box-shadow: 0 4px 8px 0px $base-elements;
+  }
