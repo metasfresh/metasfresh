@@ -71,7 +71,4 @@ public class PaymentQuery
 	
 	@Nullable
 	Date dateTrx;
-	
-	@Nullable
-	InvoiceId invoiceId;
 }
