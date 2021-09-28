@@ -7,7 +7,8 @@ import PickProductsActivity from './PickProductsActivity';
 
 class WFProcess extends Component {
   render() {
-    const { wfProcessId, activities } = this.props;
+    const { wfProcessId, activities, status } = this.props;
+    const { activities: activitiesState } = status;
 
     return (
       <div className="pick-products-container">
@@ -21,7 +22,13 @@ class WFProcess extends Component {
                 return <BarcodeScanner key={uniqueId} id={uniqueId} {...activityItem} />;
               case 'picking/pickProducts':
                 return (
-                  <PickProductsActivity key={uniqueId} id={uniqueId} wfProcessId={wfProcessId} {...activityItem} />
+                  <PickProductsActivity
+                    key={uniqueId}
+                    id={uniqueId}
+                    wfProcessId={wfProcessId}
+                    activityState={activitiesState[activityItem.activityId]}
+                    {...activityItem}
+                  />
                 );
               case 'common/confirmButton':
                 return <ConfirmActivity key={uniqueId} id={uniqueId} wfProcessId={wfProcessId} {...activityItem} />;
@@ -36,6 +43,7 @@ WFProcess.propTypes = {
   wfProcessId: PropTypes.string,
   activities: PropTypes.array,
   headerProperties: PropTypes.object,
+  status: PropTypes.object,
 };
 
 export default WFProcess;
