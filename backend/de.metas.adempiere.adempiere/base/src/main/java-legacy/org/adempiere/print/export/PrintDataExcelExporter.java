@@ -13,22 +13,6 @@
  *****************************************************************************/
 package org.adempiere.print.export;
 
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-
-import javax.annotation.Nullable;
-import javax.print.attribute.standard.MediaSizeName;
-
-import org.apache.poi.ss.usermodel.PrintSetup;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.compiere.print.MPrintFormat;
-import org.compiere.print.MPrintFormatItem;
-import org.compiere.print.MPrintPaper;
-import org.compiere.print.PrintData;
-import org.compiere.print.PrintDataElement;
-
 import de.metas.i18n.Language;
 import de.metas.impexp.spreadsheet.excel.AbstractExcelExporter;
 import de.metas.impexp.spreadsheet.excel.CellValue;
@@ -37,6 +21,20 @@ import de.metas.impexp.spreadsheet.excel.ExcelExportConstants;
 import de.metas.impexp.spreadsheet.excel.ExcelFormat;
 import lombok.Builder;
 import lombok.NonNull;
+import org.apache.poi.ss.usermodel.PrintSetup;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.compiere.print.MPrintFormat;
+import org.compiere.print.MPrintFormatItem;
+import org.compiere.print.MPrintPaper;
+import org.compiere.print.PrintData;
+import org.compiere.print.PrintDataElement;
+
+import javax.annotation.Nullable;
+import javax.print.attribute.standard.MediaSizeName;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 /**
  * Export PrintData to Excel (XLS) file

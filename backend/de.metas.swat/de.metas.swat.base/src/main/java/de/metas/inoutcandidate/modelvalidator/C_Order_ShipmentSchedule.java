@@ -22,8 +22,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.Set;
 
-import static org.adempiere.model.InterfaceWrapperHelper.getContextAware;
-
 @Interceptor(I_C_Order.class)
 @Component
 public class C_Order_ShipmentSchedule
@@ -38,7 +36,7 @@ public class C_Order_ShipmentSchedule
 	{
 		if (orderRecord.isSOTrx())
 		{
-			CreateMissingShipmentSchedulesWorkpackageProcessor.scheduleIfNotPostponed(getContextAware(orderRecord));
+			CreateMissingShipmentSchedulesWorkpackageProcessor.scheduleIfNotPostponed(orderRecord);
 		}
 	}
 

@@ -22,21 +22,22 @@
 
 package de.metas.ui.web.handlingunits;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.ui.web.document.filter.DocumentFilter;
+import de.metas.ui.web.document.filter.sql.FilterSql;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
-import de.metas.ui.web.document.filter.sql.SqlParamsCollector;
+import de.metas.ui.web.view.descriptor.SqlAndParams;
 import de.metas.ui.web.window.model.sql.SqlOptions;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.ISqlQueryFilter;
 import org.adempiere.model.PlainContextAware;
+import org.compiere.util.Env;
 
 import java.util.Objects;
 
@@ -44,11 +45,6 @@ public final class HUIdsSqlDocumentFilterConverter implements SqlDocumentFilterC
 {
 	// services
 	private IHandlingUnitsDAO handlingUnitsDAO() { return Services.get(IHandlingUnitsDAO.class); }
-
-	@VisibleForTesting
-	static final String SQL_TRUE = "1=1";
-	@VisibleForTesting
-	static final String SQL_FALSE = "1=0";
 
 	HUIdsSqlDocumentFilterConverter()
 	{
@@ -61,8 +57,7 @@ public final class HUIdsSqlDocumentFilterConverter implements SqlDocumentFilterC
 	}
 
 	@Override
-	public String getSql(
-			@NonNull final SqlParamsCollector sqlParamsOut,
+	public FilterSql getSql(
 			@NonNull final DocumentFilter filter,
 			final SqlOptions sqlOpts_NOTUSED,
 			@NonNull final SqlDocumentFilterConverterContext context)
@@ -70,16 +65,16 @@ public final class HUIdsSqlDocumentFilterConverter implements SqlDocumentFilterC
 		final HUIdsFilterData huIdsFilter = HUIdsFilterHelper.extractFilterData(filter);
 		if (huIdsFilter.isAcceptAll())
 		{
-			return SQL_TRUE; // no restrictions were specified; pass through
+			return FilterSql.ALLOW_ALL; // no restrictions were specified; pass through
 		}
-		else if(huIdsFilter.isAcceptNone())
+		else if (huIdsFilter.isAcceptNone())
 		{
-			return SQL_FALSE;
+			return FilterSql.ALLOW_NONE;
 		}
 		else
 		{
 			final IHUQueryBuilder huQuery = toHUQuery(huIdsFilter);
-			return toSqlString(huQuery, sqlParamsOut);
+			return FilterSql.ofWhereClause(toSql(huQuery));
 		}
 	}
 
@@ -112,13 +107,13 @@ public final class HUIdsSqlDocumentFilterConverter implements SqlDocumentFilterC
 		return huQuery;
 	}
 
-	private static String toSqlString(@NonNull final IHUQueryBuilder huQuery, @NonNull final SqlParamsCollector sqlParamsOut)
+	private static SqlAndParams toSql(@NonNull final IHUQueryBuilder huQuery)
 	{
 		final ISqlQueryFilter sqlQueryFilter = ISqlQueryFilter.cast(huQuery.createQueryFilter());
-		final String sql = sqlQueryFilter.getSql();
 
-		sqlParamsOut.collectAll(sqlQueryFilter);
-		return sql;
+		return SqlAndParams.of(
+				sqlQueryFilter.getSql(),
+				sqlQueryFilter.getSqlParams(Env.getCtx()));
 	}
 
 }

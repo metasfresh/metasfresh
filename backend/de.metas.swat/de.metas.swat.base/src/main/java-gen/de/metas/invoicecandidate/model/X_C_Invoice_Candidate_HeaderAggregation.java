@@ -1,207 +1,129 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package de.metas.invoicecandidate.model;
 
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for C_Invoice_Candidate_HeaderAggregation
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public class X_C_Invoice_Candidate_HeaderAggregation extends org.compiere.model.PO implements I_C_Invoice_Candidate_HeaderAggregation, org.compiere.model.I_Persistent 
 {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = -926257439L;
+	private static final long serialVersionUID = 1847450598L;
 
     /** Standard Constructor */
-    public X_C_Invoice_Candidate_HeaderAggregation (Properties ctx, int C_Invoice_Candidate_HeaderAggregation_ID, String trxName)
+    public X_C_Invoice_Candidate_HeaderAggregation (final Properties ctx, final int C_Invoice_Candidate_HeaderAggregation_ID, @Nullable final String trxName)
     {
       super (ctx, C_Invoice_Candidate_HeaderAggregation_ID, trxName);
-      /** if (C_Invoice_Candidate_HeaderAggregation_ID == 0)
-        {
-			setC_BPartner_ID (0);
-			setC_Invoice_Candidate_HeaderAggregation_ID (0);
-			setHeaderAggregationKey (null);
-			setInvoicingGroupNo (0);
-			setIsSOTrx (false);
-			setProcessed (false); // N
-        } */
     }
 
     /** Load Constructor */
-    public X_C_Invoice_Candidate_HeaderAggregation (Properties ctx, ResultSet rs, String trxName)
+    public X_C_Invoice_Candidate_HeaderAggregation (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
 
 
-    /** Load Meta Data */
-    @Override
-    protected org.compiere.model.POInfo initPO (Properties ctx)
-    {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
-      return poi;
-    }
-
-	/** Set Geschäftspartner.
-		@param C_BPartner_ID 
-		Bezeichnet einen Geschäftspartner
-	  */
+	/** Load Meta Data */
 	@Override
-	public void setC_BPartner_ID (int C_BPartner_ID)
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
+	{
+		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public void setC_BPartner_ID (final int C_BPartner_ID)
 	{
 		if (C_BPartner_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_C_BPartner_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_C_BPartner_ID, Integer.valueOf(C_BPartner_ID));
+			set_ValueNoCheck (COLUMNNAME_C_BPartner_ID, C_BPartner_ID);
 	}
 
-	/** Get Geschäftspartner.
-		@return Bezeichnet einen Geschäftspartner
-	  */
 	@Override
-	public int getC_BPartner_ID () 
+	public int getC_BPartner_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_BPartner_ID);
 	}
 
-	/** Set Abrechnungsgruppe.
-		@param C_Invoice_Candidate_HeaderAggregation_ID Abrechnungsgruppe	  */
 	@Override
-	public void setC_Invoice_Candidate_HeaderAggregation_ID (int C_Invoice_Candidate_HeaderAggregation_ID)
+	public void setC_Invoice_Candidate_HeaderAggregation_ID (final int C_Invoice_Candidate_HeaderAggregation_ID)
 	{
 		if (C_Invoice_Candidate_HeaderAggregation_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_C_Invoice_Candidate_HeaderAggregation_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_C_Invoice_Candidate_HeaderAggregation_ID, Integer.valueOf(C_Invoice_Candidate_HeaderAggregation_ID));
+			set_ValueNoCheck (COLUMNNAME_C_Invoice_Candidate_HeaderAggregation_ID, C_Invoice_Candidate_HeaderAggregation_ID);
 	}
 
-	/** Get Abrechnungsgruppe.
-		@return Abrechnungsgruppe	  */
 	@Override
-	public int getC_Invoice_Candidate_HeaderAggregation_ID () 
+	public int getC_Invoice_Candidate_HeaderAggregation_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_Invoice_Candidate_HeaderAggregation_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_Invoice_Candidate_HeaderAggregation_ID);
 	}
 
-	/** Set Kopf-Aggregationsmerkmal.
-		@param HeaderAggregationKey Kopf-Aggregationsmerkmal	  */
 	@Override
-	public void setHeaderAggregationKey (java.lang.String HeaderAggregationKey)
+	public void setHeaderAggregationKey (final java.lang.String HeaderAggregationKey)
 	{
 		set_ValueNoCheck (COLUMNNAME_HeaderAggregationKey, HeaderAggregationKey);
 	}
 
-	/** Get Kopf-Aggregationsmerkmal.
-		@return Kopf-Aggregationsmerkmal	  */
 	@Override
-	public java.lang.String getHeaderAggregationKey () 
+	public java.lang.String getHeaderAggregationKey() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_HeaderAggregationKey);
+		return get_ValueAsString(COLUMNNAME_HeaderAggregationKey);
 	}
 
-	/** Set Header aggregation builder.
-		@param HeaderAggregationKeyBuilder_ID Header aggregation builder	  */
 	@Override
-	public void setHeaderAggregationKeyBuilder_ID (int HeaderAggregationKeyBuilder_ID)
+	public void setHeaderAggregationKeyBuilder_ID (final int HeaderAggregationKeyBuilder_ID)
 	{
 		if (HeaderAggregationKeyBuilder_ID < 1) 
 			set_Value (COLUMNNAME_HeaderAggregationKeyBuilder_ID, null);
 		else 
-			set_Value (COLUMNNAME_HeaderAggregationKeyBuilder_ID, Integer.valueOf(HeaderAggregationKeyBuilder_ID));
+			set_Value (COLUMNNAME_HeaderAggregationKeyBuilder_ID, HeaderAggregationKeyBuilder_ID);
 	}
 
-	/** Get Header aggregation builder.
-		@return Header aggregation builder	  */
 	@Override
-	public int getHeaderAggregationKeyBuilder_ID () 
+	public int getHeaderAggregationKeyBuilder_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_HeaderAggregationKeyBuilder_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_HeaderAggregationKeyBuilder_ID);
 	}
 
-	/** Set Abrechnungsgruppe.
-		@param InvoicingGroupNo 
-		Rechnungskandidaten mit der selben Abrechnungsgruppe können zu einer Rechnung zusammengefasst werden
-	  */
 	@Override
-	public void setInvoicingGroupNo (int InvoicingGroupNo)
+	public void setInvoicingGroupNo (final int InvoicingGroupNo)
 	{
-		set_ValueNoCheck (COLUMNNAME_InvoicingGroupNo, Integer.valueOf(InvoicingGroupNo));
+		set_ValueNoCheck (COLUMNNAME_InvoicingGroupNo, InvoicingGroupNo);
 	}
 
-	/** Get Abrechnungsgruppe.
-		@return Rechnungskandidaten mit der selben Abrechnungsgruppe können zu einer Rechnung zusammengefasst werden
-	  */
 	@Override
-	public int getInvoicingGroupNo () 
+	public int getInvoicingGroupNo() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_InvoicingGroupNo);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_InvoicingGroupNo);
 	}
 
-	/** Set Sales Transaction.
-		@param IsSOTrx 
-		This is a Sales Transaction
-	  */
 	@Override
-	public void setIsSOTrx (boolean IsSOTrx)
+	public void setIsSOTrx (final boolean IsSOTrx)
 	{
-		set_ValueNoCheck (COLUMNNAME_IsSOTrx, Boolean.valueOf(IsSOTrx));
+		set_ValueNoCheck (COLUMNNAME_IsSOTrx, IsSOTrx);
 	}
 
-	/** Get Sales Transaction.
-		@return This is a Sales Transaction
-	  */
 	@Override
-	public boolean isSOTrx () 
+	public boolean isSOTrx() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsSOTrx);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsSOTrx);
 	}
 
-	/** Set Verarbeitet.
-		@param Processed 
-		Checkbox sagt aus, ob der Datensatz verarbeitet wurde. 
-	  */
 	@Override
-	public void setProcessed (boolean Processed)
+	public void setProcessed (final boolean Processed)
 	{
-		set_Value (COLUMNNAME_Processed, Boolean.valueOf(Processed));
+		set_Value (COLUMNNAME_Processed, Processed);
 	}
 
-	/** Get Verarbeitet.
-		@return Checkbox sagt aus, ob der Datensatz verarbeitet wurde. 
-	  */
 	@Override
-	public boolean isProcessed () 
+	public boolean isProcessed() 
 	{
-		Object oo = get_Value(COLUMNNAME_Processed);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_Processed);
 	}
 }

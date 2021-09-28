@@ -8,6 +8,7 @@ import de.metas.allocation.api.IAllocationBL;
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.exceptions.BPartnerNoBillToAddressException;
 import de.metas.bpartner.service.IBPartnerBL;
@@ -39,9 +40,11 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
+import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
 import de.metas.invoice.BPartnerInvoicingInfo;
 import de.metas.invoice.InvoiceCreditContext;
 import de.metas.invoice.InvoiceDocBaseType;
+import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapterFactory;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
@@ -564,9 +567,10 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		//
 		invoice.setSalesRep_ID(order.getSalesRep_ID());
 		//
-		invoice.setC_BPartner_ID(order.getBill_BPartner_ID());
-		invoice.setC_BPartner_Location_ID(order.getBill_Location_ID());
-		invoice.setAD_User_ID(order.getBill_User_ID());
+		InvoiceDocumentLocationAdapterFactory
+				.locationAdapter(invoice)
+				.setFromBillLocation(order);
+
 		invoice.setExternalId(order.getExternalId());
 
 		return invoice;
@@ -649,8 +653,9 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		}
 
 		final BPartnerInvoicingInfo invoicingInfo = getBPartnerInvoicingInfo(bpartnerId, soTrx, date);
-		invoice.setC_BPartner_Location_ID(invoicingInfo.getBillBPartnerLocationId().getRepoId());
-		invoice.setAD_User_ID(invoicingInfo.getBillContactId().map(BPartnerContactId::getRepoId).orElse(-1));
+		InvoiceDocumentLocationAdapterFactory
+				.locationAdapter(invoice)
+				.setFrom(invoicingInfo.getBillLocation());
 
 		invoicingInfo.getPaymentRule().ifPresent(paymentRule -> invoice.setPaymentRule(paymentRule.getCode()));
 		invoicingInfo.getPaymentTermId().ifPresent(paymentTermId -> invoice.setC_PaymentTerm_ID(paymentTermId.getRepoId()));
@@ -742,7 +747,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 					.appendParametersToMessage();
 		}
 
-		final CountryId countryId = bpartnersRepo.getBPartnerLocationCountryId(bpartnerLocationId);
+		final CountryId countryId = bpartnersRepo.getCountryId(bpartnerLocationId);
 
 		final IPriceListBL priceListBL = Services.get(IPriceListBL.class);
 		return priceListBL.getCurrentPriceList(pricingSystemId, countryId, date, soTrx)
@@ -1392,8 +1397,9 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 
 			final Timestamp taxDate = io != null ? io.getMovementDate() : invoice.getDateInvoiced();
 
-			final BPartnerLocationId taxBPartnerLocationId = io != null ? BPartnerLocationId.ofRepoId(io.getC_BPartner_ID(), io.getC_BPartner_Location_ID())
-					: BPartnerLocationId.ofRepoId(invoice.getC_BPartner_ID(), invoice.getC_BPartner_Location_ID());
+			final BPartnerLocationAndCaptureId taxBPartnerLocationId = io != null
+					? InOutDocumentLocationAdapterFactory.locationAdapter(io).getBPartnerLocationAndCaptureId()
+					: InvoiceDocumentLocationAdapterFactory.locationAdapter(invoice).getBPartnerLocationAndCaptureId();
 
 			final boolean isSOTrx = io != null ? io.isSOTrx() : invoice.isSOTrx();
 

@@ -1,13 +1,13 @@
 package org.adempiere.ad.table.api;
 
-import java.util.Objects;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
+
+import javax.annotation.Nullable;
+import java.util.Objects;
 
 /*
  * #%L
@@ -40,12 +40,13 @@ public class AdTableId implements RepoIdAware
 		return new AdTableId(repoId);
 	}
 
+	@Nullable
 	public static AdTableId ofRepoIdOrNull(final int repoId)
 	{
 		return repoId > 0 ? new AdTableId(repoId) : null;
 	}
 
-	public static int toRepoId(final AdTableId id)
+	public static int toRepoId(@Nullable final AdTableId id)
 	{
 		return id != null ? id.getRepoId() : -1;
 	}
@@ -64,7 +65,7 @@ public class AdTableId implements RepoIdAware
 		return repoId;
 	}
 
-	public static boolean equals(final AdTableId o1, final AdTableId o2)
+	public static boolean equals(@Nullable final AdTableId o1, @Nullable final AdTableId o2)
 	{
 		return Objects.equals(o1, o2);
 	}

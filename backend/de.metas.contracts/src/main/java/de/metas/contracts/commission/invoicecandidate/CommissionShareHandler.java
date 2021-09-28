@@ -1,8 +1,9 @@
 package de.metas.contracts.commission.invoicecandidate;
 
 import de.metas.acct.api.IProductAcctDAO;
+import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IFlatrateDAO;
@@ -12,7 +13,9 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
+import de.metas.document.location.DocumentLocation;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
+import de.metas.invoicecandidate.location.adapter.InvoiceCandidateLocationAdapterFactory;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.AbstractInvoiceCandidateHandler;
@@ -20,6 +23,7 @@ import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
 import de.metas.lang.SOTrx;
+import de.metas.location.LocationId;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.pricing.IEditablePricingContext;
@@ -98,7 +102,7 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 	private final transient ITaxDAO taxDAO = Services.get(ITaxDAO.class);
 
 	@Override
-	public Iterator<? extends Object> retrieveAllModelsWithMissingCandidates(final int limit_IGNORED)
+	public Iterator<?> retrieveAllModelsWithMissingCandidates(final int limit_IGNORED)
 	{
 		return createShareWithMissingICsQuery()
 				.iterate(I_C_Commission_Share.class);
@@ -178,7 +182,7 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 		icRecord.setQtyToInvoice(ZERO); // to be computed
 
 		final BPartnerId bPartnerId = BPartnerId.ofRepoId(commissionShareRecord.getC_BPartner_SalesRep_ID());
-		final BPartnerLocationId commissionToLocationId = BPartnerLocationId.ofRepoId(flatrateTerm.getBill_BPartner_ID(), flatrateTerm.getBill_Location_ID());
+		final BPartnerLocationAndCaptureId commissionToLocationId = BPartnerLocationAndCaptureId.ofRepoId(flatrateTerm.getBill_BPartner_ID(), flatrateTerm.getBill_Location_ID());
 
 		final PricingSystemId pricingSystemId = bPartnerDAO.retrievePricingSystemIdOrNull(bPartnerId, SOTrx.PURCHASE);
 
@@ -207,9 +211,14 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 		icRecord.setDiscount(pricingResult.getDiscount().toBigDecimal());
 
 		// bill location
-		icRecord.setBill_BPartner_ID(bPartnerId.getRepoId());
-		icRecord.setBill_Location_ID(commissionToLocationId.getRepoId());
-		icRecord.setBill_User_ID(flatrateTerm.getBill_User_ID());
+		InvoiceCandidateLocationAdapterFactory
+				.billLocationAdapter(icRecord)
+				.setFrom(DocumentLocation.builder()
+								 .bpartnerId(bPartnerId)
+								 .bpartnerLocationId(commissionToLocationId.getBpartnerLocationId())
+								 .locationId(commissionToLocationId.getLocationCaptureId())
+								 .contactId(BPartnerContactId.ofRepoIdOrNull(bPartnerId, flatrateTerm.getBill_User_ID()))
+								 .build());
 
 		icRecord.setInvoiceRule(flatrateTerm.getC_Flatrate_Conditions().getInvoiceRule());
 
@@ -240,15 +249,16 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 				.build());
 		if (tax == null)
 		{
-			final I_C_BPartner_Location bpLocation = Services.get(IBPartnerDAO.class).getBPartnerLocationByIdEvenInactive(commissionToLocationId);
-			TaxNotFoundException.builder()
+			final I_C_BPartner_Location bpLocation = Services.get(IBPartnerDAO.class).getBPartnerLocationByIdEvenInactive(commissionToLocationId.getBpartnerLocationId());
+			throw TaxNotFoundException.builder()
 					.taxCategoryId(pricingResult.getTaxCategoryId())
 					.isSOTrx(false)
 					.billDate(icRecord.getDeliveryDate())
 					.orgId(orgId)
-					.billToC_Location_ID(bpLocation.getC_Location_ID())
+					.billToC_Location_ID(LocationId.ofRepoId(bpLocation.getC_Location_ID()))
 					.build()
-					.throwOrLogWarning(true, log);
+					.appendParametersToMessage()
+					.setParameter("C_Commission_Share_ID", commissionShareRecord.getC_Commission_Share_ID());
 		}
 		icRecord.setC_Tax_ID(tax.getTaxId().getRepoId());
 		icRecord.setIsSimulation(commissionShareRecord.isSimulation());
@@ -280,6 +290,15 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 		return false;
 	}
 
+	/**
+	 * <ul>
+	 * <li>QtyEntered := sum of all 3 C_Commission_Share.PointsSum_* columns
+	 * <li>C_UOM_ID := {@link #COMMISSION_PRODUCT_ID}'s stock UOM
+	 * <li>QtyOrdered := QtyEntered
+	 * <li>DateOrdered := C_Commission_Share.Created
+	 * <li>C_Order_ID: -1
+	 * </ul>
+	 */
 	@Override
 	public void setOrderedData(@NonNull final I_C_Invoice_Candidate ic)
 	{

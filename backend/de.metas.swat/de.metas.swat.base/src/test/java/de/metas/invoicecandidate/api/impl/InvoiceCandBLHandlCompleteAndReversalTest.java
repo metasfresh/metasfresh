@@ -6,6 +6,7 @@ package de.metas.invoicecandidate.api.impl;
 import de.metas.ShutdownListener;
 import de.metas.StartupListener;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.business.BusinessTestHelper;
 import de.metas.currency.CurrencyRepository;
 import de.metas.document.engine.IDocument;
 import de.metas.invoicecandidate.AbstractICTestSupport;
@@ -21,6 +22,8 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.lang.ImmutablePair;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.X_C_DocType;
@@ -71,7 +74,9 @@ public class InvoiceCandBLHandlCompleteAndReversalTest extends AbstractICTestSup
 		final String trxName = Services.get(ITrxManager.class).createTrxName("testReversal");
 		final PlainContextAware contextProvider = PlainContextAware.newWithTrxName(ctx, trxName);
 
-		final BPartnerLocationId billBPartnerAndLocationId = BPartnerLocationId.ofRepoId(1, 2);
+		final I_C_BPartner bPartner = BusinessTestHelper.createBPartner("test-bp");
+		final I_C_BPartner_Location bPartnerLocation = BusinessTestHelper.createBPartnerLocation(bPartner);
+		final BPartnerLocationId billBPartnerAndLocationId = BPartnerLocationId.ofRepoId(bPartnerLocation.getC_BPartner_ID(), bPartnerLocation.getC_BPartner_Location_ID());
 
 		final I_C_Invoice_Candidate ic = createInvoiceCandidate()
 				.setBillBPartnerAndLocationId(billBPartnerAndLocationId)
@@ -201,7 +206,6 @@ public class InvoiceCandBLHandlCompleteAndReversalTest extends AbstractICTestSup
 	/**
 	 *
 	 * @param reverseInvoice <code>true</code>: reverse the original invoice; <code>false</code> reverse the invoice's credit memo.
-	 * @param reversalIlaExpectedQtyInvoiced
 	 */
 	private void doTestCreditMemoReinvoicableAndReversal(final boolean reverseInvoice, final BigDecimal reversalIlaExpectedQtyInvoiced)
 	{
@@ -212,7 +216,9 @@ public class InvoiceCandBLHandlCompleteAndReversalTest extends AbstractICTestSup
 		final String trxName = Services.get(ITrxManager.class).createTrxName("testCompleteCreditmemo");
 		final PlainContextAware contextProvider = PlainContextAware.newWithTrxName(ctx, trxName);
 
-		final BPartnerLocationId billBPartnerAndLocationId = BPartnerLocationId.ofRepoId(1, 2);
+		final I_C_BPartner bPartner = BusinessTestHelper.createBPartner("test-bp");
+		final I_C_BPartner_Location bPartnerLocation = BusinessTestHelper.createBPartnerLocation(bPartner);
+		final BPartnerLocationId billBPartnerAndLocationId = BPartnerLocationId.ofRepoId(bPartnerLocation.getC_BPartner_ID(), bPartnerLocation.getC_BPartner_Location_ID());
 
 		final I_C_Invoice_Candidate ic = createInvoiceCandidate()
 				.setBillBPartnerAndLocationId(billBPartnerAndLocationId)
@@ -320,10 +326,6 @@ public class InvoiceCandBLHandlCompleteAndReversalTest extends AbstractICTestSup
 		doTestCreditMemoNonReinvoicableAndReversal(reversalIlaExpectedQtyInvoiced);
 	}
 
-	/**
-	 *
-	 * @param reversalIlaExpectedQtyInvoiced
-	 */
 	private void doTestCreditMemoNonReinvoicableAndReversal(final BigDecimal reversalIlaExpectedQtyInvoiced)
 	{
 		//
@@ -333,7 +335,9 @@ public class InvoiceCandBLHandlCompleteAndReversalTest extends AbstractICTestSup
 		final String trxName = Services.get(ITrxManager.class).createTrxName("testCompleteCreditmemo");
 		final PlainContextAware contextProvider = PlainContextAware.newWithTrxName(ctx, trxName);
 
-		final BPartnerLocationId billBPartnerAndLocationId = BPartnerLocationId.ofRepoId(1, 2);
+		final I_C_BPartner bPartner = BusinessTestHelper.createBPartner("test-bp");
+		final I_C_BPartner_Location bPartnerLocation = BusinessTestHelper.createBPartnerLocation(bPartner);
+		final BPartnerLocationId billBPartnerAndLocationId = BPartnerLocationId.ofRepoId(bPartnerLocation.getC_BPartner_ID(), bPartnerLocation.getC_BPartner_Location_ID());
 
 		final I_C_Invoice_Candidate ic = createInvoiceCandidate()
 				.setBillBPartnerAndLocationId(billBPartnerAndLocationId)
@@ -420,7 +424,9 @@ public class InvoiceCandBLHandlCompleteAndReversalTest extends AbstractICTestSup
 		final String trxName = Services.get(ITrxManager.class).createTrxName("testCompleteCreditmemo");
 		final PlainContextAware contextProvider = PlainContextAware.newWithTrxName(ctx, trxName);
 
-		final BPartnerLocationId billBPartnerAndLocationId = BPartnerLocationId.ofRepoId(1, 2);
+		final I_C_BPartner bPartner = BusinessTestHelper.createBPartner("test-bp");
+		final I_C_BPartner_Location bPartnerLocation = BusinessTestHelper.createBPartnerLocation(bPartner);
+		final BPartnerLocationId billBPartnerAndLocationId = BPartnerLocationId.ofRepoId(bPartnerLocation.getC_BPartner_ID(), bPartnerLocation.getC_BPartner_Location_ID());
 
 		final I_C_Invoice_Candidate ic = createInvoiceCandidate()
 				.setBillBPartnerAndLocationId(billBPartnerAndLocationId)
@@ -488,7 +494,9 @@ public class InvoiceCandBLHandlCompleteAndReversalTest extends AbstractICTestSup
 		final String trxName = Services.get(ITrxManager.class).createTrxName("testCompleteCreditmemo");
 		final PlainContextAware contextProvider = PlainContextAware.newWithTrxName(ctx, trxName);
 
-		final BPartnerLocationId billBPartnerAndLocationId = BPartnerLocationId.ofRepoId(1, 2);
+		final I_C_BPartner bPartner = BusinessTestHelper.createBPartner("test-bp");
+		final I_C_BPartner_Location bPartnerLocation = BusinessTestHelper.createBPartnerLocation(bPartner);
+		final BPartnerLocationId billBPartnerAndLocationId = BPartnerLocationId.ofRepoId(bPartnerLocation.getC_BPartner_ID(), bPartnerLocation.getC_BPartner_Location_ID());
 
 		final I_C_Invoice_Candidate ic = createInvoiceCandidate()
 				.setBillBPartnerAndLocationId(billBPartnerAndLocationId)

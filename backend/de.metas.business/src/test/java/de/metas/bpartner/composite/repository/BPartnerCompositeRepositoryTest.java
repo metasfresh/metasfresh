@@ -22,6 +22,7 @@
 
 package de.metas.bpartner.composite.repository;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.GLN;
@@ -154,7 +155,8 @@ class BPartnerCompositeRepositoryTest
 						.orgMappingId(null)
 						.birthday(LocalDate.parse("1901-02-03"))
 						.bPartnerLocationId(null)
-						.build())
+						.roles(ImmutableList.of()
+						).build())
 				.build();
 
 		bpartnerCompositeRepository.save(bpartnerComposite);
@@ -163,7 +165,7 @@ class BPartnerCompositeRepositoryTest
 		Assertions.assertThat(bpartnerId).isNotNull();
 
 		final BPartnerComposite bpartnerCompositeLoaded = bpartnerCompositeRepository.getById(bpartnerId);
-		System.out.println("bpartnerCompositeLoaded: " + bpartnerCompositeLoaded);
+		//System.out.println("bpartnerCompositeLoaded: " + bpartnerCompositeLoaded);
 
 		Assertions.assertThat(bpartnerCompositeLoaded)
 				.usingRecursiveComparison()

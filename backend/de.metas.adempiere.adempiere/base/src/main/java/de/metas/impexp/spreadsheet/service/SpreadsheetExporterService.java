@@ -22,14 +22,11 @@
 
 package de.metas.impexp.spreadsheet.service;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-
+import ch.qos.logback.classic.Level;
+import de.metas.logging.LogManager;
+import de.metas.util.ILoggable;
+import de.metas.util.Loggables;
+import lombok.NonNull;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.impl.StringExpressionCompiler;
 import org.adempiere.exceptions.DBException;
@@ -40,11 +37,13 @@ import org.compiere.util.Evaluatees;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
-import ch.qos.logback.classic.Level;
-import de.metas.logging.LogManager;
-import de.metas.util.ILoggable;
-import de.metas.util.Loggables;
-import lombok.NonNull;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class SpreadsheetExporterService

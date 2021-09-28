@@ -78,6 +78,8 @@ public class OrderLineBuilder
 
 	@Nullable private String description;
 
+	private boolean hideWhenPrinting;
+
 	private final ArrayList<OrderLineDetailCreateRequest> detailCreateRequests = new ArrayList<>();
 
 	private I_C_OrderLine createdOrderLine;
@@ -131,6 +133,8 @@ public class OrderLineBuilder
 		{
 			orderLine.setDescription(description);
 		}
+
+		orderLine.setIsHideWhenPrinting(hideWhenPrinting);
 
 		saveRecord(orderLine);
 
@@ -255,6 +259,12 @@ public class OrderLineBuilder
 	public OrderLineBuilder description(@Nullable final String description)
 	{
 		this.description = description;
+		return this;
+	}
+
+	public OrderLineBuilder hideWhenPrinting(final boolean hideWhenPrinting)
+	{
+		this.hideWhenPrinting = hideWhenPrinting;
 		return this;
 	}
 

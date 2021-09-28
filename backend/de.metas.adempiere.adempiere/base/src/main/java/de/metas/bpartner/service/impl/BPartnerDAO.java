@@ -29,6 +29,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.BPartnerType;
 import de.metas.bpartner.GLN;
@@ -279,6 +280,26 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 
 	@Override
+	public ImmutableSet<BPartnerContactId> getContactIdsByRepoIds(@NonNull final Set<Integer> repoIds)
+	{
+		if (repoIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		final List<I_AD_User> records = InterfaceWrapperHelper.loadByIds(repoIds, I_AD_User.class);
+		if (records.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		return records.stream()
+				.map(record -> BPartnerContactId.ofRepoIdOrNull(record.getC_BPartner_ID(), record.getC_BPartner_Location_ID()))
+				.filter(Objects::nonNull)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	@Override
 	public I_AD_User getContactById(@NonNull final BPartnerContactId contactId)
 	{
 		return retrieveContacts(contactId.getBpartnerId())
@@ -402,12 +423,32 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 
 	@Override
+	@NonNull
 	public BPartnerLocationId getBPartnerLocationIdByRepoId(final int repoId)
 	{
 		Check.assumeGreaterThanZero(repoId, "C_BPartner_Location_ID");
 		final I_C_BPartner_Location loc = InterfaceWrapperHelper.load(repoId, I_C_BPartner_Location.class);
 		Check.assumeNotNull(loc, "Cannot find C_BPartner_Location for ID: " + repoId);
 		return BPartnerLocationId.ofRepoId(loc.getC_BPartner_ID(), loc.getC_BPartner_Location_ID());
+	}
+
+	@Override
+	public ImmutableSet<BPartnerLocationId> getBPartnerLocationIdsByRepoIds(@NonNull final Set<Integer> repoIds)
+	{
+		if (repoIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		final List<I_C_BPartner_Location> records = InterfaceWrapperHelper.loadByIds(repoIds, I_C_BPartner_Location.class);
+		if (records.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		return records.stream()
+				.map(record -> BPartnerLocationId.ofRepoId(record.getC_BPartner_ID(), record.getC_BPartner_Location_ID()))
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	@Override
@@ -438,6 +479,17 @@ public class BPartnerDAO implements IBPartnerDAO
 				.filter(bpLocation -> bpLocation.getC_BPartner_Location_ID() == bpartnerLocationId.getRepoId())
 				.findFirst()
 				.orElse(null);
+	}
+
+	@Override
+	public BPartnerLocationAndCaptureId getBPartnerLocationAndCaptureIdInTrx(@NonNull final BPartnerLocationId bpartnerLocationId)
+	{
+		final I_C_BPartner_Location bpLocation = getBPartnerLocationByIdInTrx(bpartnerLocationId);
+		if (bpLocation == null)
+		{
+			throw new AdempiereException("No location found for " + bpartnerLocationId);
+		}
+		return BPartnerLocationAndCaptureId.ofRecord(bpLocation);
 	}
 
 	@Override
@@ -547,42 +599,49 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 
 	@Override
-	public CountryId retrieveBPartnerLocationCountryId(@NonNull final BPartnerLocationId bpLocationId)
+	public CountryId getCountryId(@NonNull final BPartnerLocationId bpLocationId)
 	{
 		final I_C_BPartner_Location bpLocation = getBPartnerLocationByIdEvenInactive(bpLocationId);
+		if (bpLocation == null)
+		{
+			throw new AdempiereException("No location found for " + bpLocationId);
+		}
 
+		return getCountryId(bpLocation);
+	}
+
+	private CountryId getCountryId(@NonNull final I_C_BPartner_Location bpLocation)
+	{
 		final LocationId locationId = LocationId.ofRepoId(bpLocation.getC_Location_ID());
 
-		final ILocationDAO locationRepos = Services.get(ILocationDAO.class);
-		return locationRepos.getCountryIdByLocationId(locationId);
+		final ILocationDAO locationDAO = Services.get(ILocationDAO.class);
+		return locationDAO.getCountryIdByLocationId(locationId);
 	}
 
 	@Override
-	public CountryId retrieveBPartnerLocationCountryIdInTrx(@NonNull final BPartnerLocationId bpLocationId)
+	public CountryId getCountryIdInTrx(@NonNull final BPartnerLocationId bpLocationId)
 	{
 		final I_C_BPartner_Location bpLocation = getBPartnerLocationByIdInTrx(bpLocationId);
-		final LocationId locationId = LocationId.ofRepoId(bpLocation.getC_Location_ID());
+		if (bpLocation == null)
+		{
+			throw new AdempiereException("No location found for " + bpLocationId);
+		}
 
-		final ILocationDAO locationRepos = Services.get(ILocationDAO.class);
-		return locationRepos.getCountryIdByLocationId(locationId);
+		return getCountryId(bpLocation);
 	}
 
 	@Override
 	public CountryId getDefaultShipToLocationCountryIdOrNull(final BPartnerId bpartnerId)
 	{
 		final I_C_BPartner_Location bpl = getDefaultShipToLocation(bpartnerId);
-		return bpl != null
-				? CountryId.ofRepoId(bpl.getC_Location().getC_Country_ID())
-				: null;
+		return bpl != null ? getCountryId(bpl) : null;
 	}
 
 	@Override
-	public CountryId getBPartnerLocationCountryId(@NonNull final BPartnerLocationId bpartnerLocationId)
+	public LocationId getLocationId(@NonNull final BPartnerLocationId bpLocationId)
 	{
-		final I_C_BPartner_Location bpLocation = getBPartnerLocationByIdEvenInactive(bpartnerLocationId);
-
-		return CountryId.ofRepoId(bpLocation.getC_Location().getC_Country_ID());
-
+		final I_C_BPartner_Location bpLocation = getBPartnerLocationByIdEvenInactive(bpLocationId);
+		return LocationId.ofRepoId(bpLocation.getC_Location_ID());
 	}
 
 	@Override
@@ -842,8 +901,8 @@ public class BPartnerDAO implements IBPartnerDAO
 
 	@Override
 	public I_C_BPartner retrieveBPartnerByValueOrSuffix(final Properties ctx,
-			final String bpValue,
-			final String bpValueSuffixToFallback)
+														final String bpValue,
+														final String bpValueSuffixToFallback)
 	{
 		//
 		// try exact match
@@ -1238,10 +1297,10 @@ public class BPartnerDAO implements IBPartnerDAO
 		}
 
 		bpLocationQueryBuilder.addInSubQueryFilter(I_C_BPartner_Location.COLUMN_C_Location_ID,
-												   I_C_Location.COLUMN_C_Location_ID, locationIQueryBuilder.create());
+				I_C_Location.COLUMN_C_Location_ID, locationIQueryBuilder.create());
 	}
 
-	private BPartnerLocationId createLocationIdOrNull(
+	private static BPartnerLocationId createLocationIdOrNull(
 			@NonNull final BPartnerId bpartnerId,
 			@Nullable final I_C_BPartner_Location bpLocationRecord)
 	{
@@ -1336,10 +1395,10 @@ public class BPartnerDAO implements IBPartnerDAO
 		if (existingBPartnerId == null && query.isFailIfNotExists())
 		{
 			final String msg = StringUtils.formatMessage("Found no existing BPartner;"
-																 + " Searched via the following properties one-after-one (list may be empty): {};"
-																 + " The search was restricted to the following orgIds (empty means no restriction): {}",
-														 searchedByInfo.toString(),
-														 query.getOnlyOrgIds().stream().map(OrgId::getRepoId).collect(ImmutableList.toImmutableList()).toString());
+							+ " Searched via the following properties one-after-one (list may be empty): {};"
+							+ " The search was restricted to the following orgIds (empty means no restriction): {}",
+					searchedByInfo.toString(),
+					query.getOnlyOrgIds().stream().map(OrgId::getRepoId).collect(ImmutableList.toImmutableList()).toString());
 			throw new BPartnerIdNotFoundException(msg);
 		}
 
@@ -1697,16 +1756,14 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 
 	@Override
-	public BPartnerLocationId retrieveCurrentBillLocationOrNull(final BPartnerId partnerId)
+	public I_C_BPartner_Location retrieveCurrentBillLocationOrNull(final BPartnerId partnerId)
 	{
 		final BPartnerLocationQuery query = BPartnerLocationQuery
 				.builder()
 				.type(Type.BILL_TO)
 				.bpartnerId(partnerId)
 				.build();
-		final I_C_BPartner_Location billToLocation = retrieveBPartnerLocation(query);
-
-		return createLocationIdOrNull(partnerId, billToLocation);
+		return retrieveBPartnerLocation(query);
 	}
 
 	@Override
@@ -1734,7 +1791,7 @@ public class BPartnerDAO implements IBPartnerDAO
 		if (record.getC_DocType_ID() <= 0 || record.getAD_PrintFormat_ID() <= 0)
 		{
 			logger.debug("getPrintFormats - C_BP_PrintFormat_ID={} has C_DocType_ID={} and AD_PrintFormat_ID={}; -> skipping it",
-						 record.getC_BP_PrintFormat_ID(), record.getC_DocType_ID(), record.getAD_PrintFormat_ID());
+					record.getC_BP_PrintFormat_ID(), record.getC_DocType_ID(), record.getAD_PrintFormat_ID());
 			return null;
 		}
 		return BPartnerPrintFormat.builder()
@@ -1778,8 +1835,7 @@ public class BPartnerDAO implements IBPartnerDAO
 				.addTargetColumnNameToSkip(I_C_BPartner.COLUMNNAME_M_PricingSystem_ID)
 				.addTargetColumnNameToSkip(I_C_BPartner.COLUMNNAME_PO_PricingSystem_ID)
 				.setFrom(fromBpartner)
-				.copyToNew(I_C_BPartner.class)
-				;
+				.copyToNew(I_C_BPartner.class);
 
 		if (request.getOrgId() != null)
 		{
@@ -1799,6 +1855,11 @@ public class BPartnerDAO implements IBPartnerDAO
 	@Override
 	public List<I_C_BPartner> retrieveByIds(@NonNull final Set<BPartnerId> bpartnerIds)
 	{
+		if(bpartnerIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
 		return queryBL.createQueryBuilder(I_C_BPartner.class)
 				.addInArrayFilter(I_C_BPartner.COLUMNNAME_C_BPartner_ID, bpartnerIds)
 				.create()
