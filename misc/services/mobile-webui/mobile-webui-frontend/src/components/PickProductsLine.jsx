@@ -14,7 +14,7 @@ class PickProductsLine extends Component {
   };
 
   render() {
-    const { id, activityId, caption, isLinesListVisible } = this.props;
+    const { id, activityId, caption, isLinesListVisible, steps } = this.props;
     console.log('isLINe:', isLinesListVisible);
     return (
       <div>
@@ -31,11 +31,19 @@ class PickProductsLine extends Component {
           </div>
         </div>
         {/* Steps Listing */}
-        {!isLinesListVisible && <PickProductsSteps />}
+        {/* {!isLinesListVisible && <PickProductsSteps />} */}
+        <PickProductsSteps steps={steps} />
       </div>
     );
   }
 }
+
+const mapStateToProps = (state, ownProps) => {
+  return {
+    isLinesListVisible:
+      state.wfProcesses_status[ownProps.wfProcessId].activities[ownProps.activityId].isLinesListVisible || true,
+  };
+};
 
 PickProductsLine.propTypes = {
   id: PropTypes.string.isRequired,
@@ -44,6 +52,7 @@ PickProductsLine.propTypes = {
   wfProcessId: PropTypes.string.isRequired,
   switchoffLinesVisibility: PropTypes.func.isRequired,
   isLinesListVisible: PropTypes.bool.isRequired,
+  steps: PropTypes.array.isRequired,
 };
 
-export default connect(null, { switchoffLinesVisibility })(PickProductsLine);
+export default connect(mapStateToProps, { switchoffLinesVisibility })(PickProductsLine);

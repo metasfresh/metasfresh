@@ -13,7 +13,6 @@ class PickProductsActivity extends Component {
 
     const { activityId } = activityState;
     const { isLinesListVisible } = activityState.dataStored;
-    console.log('isLineListVisible_inPickProductsActivity:', isLinesListVisible);
 
     return (
       <div className="pick-products-container">
@@ -29,7 +28,6 @@ class PickProductsActivity extends Component {
                 id={uniqueId}
                 wfProcessId={wfProcessId}
                 activityId={activityId}
-                isLinesListVisible={isLinesListVisible}
                 {...lineItem}
               />
             );
