@@ -73,26 +73,10 @@ public class C_Order
 			ifColumnsChanged = { I_C_Order.COLUMNNAME_C_BPartner_ID, I_C_Order.COLUMNNAME_Bill_BPartner_ID })
 	public void updateSalesPartnerFromCustomer(@NonNull final I_C_Order orderRecord, @NonNull final ModelChangeType type)
 	{
-		// If on a new C_Order record both SalesPartnerCode and the BPartner-IDs were set at the same time,
+		// If on a new C_Order record both salesPartner (SalesPartnerCode, C_BPartner_SalesRep_ID) and customer (the BPartner-IDs) were set at the same time,
 		// then don't override the sales-partner-id from the BPartners' mater data, but assume that the sales-partner-id shall remain the way it was set on the new record.
 		// This implies that the master data might be updated on thid C_Order's after-new modelinterceptor method
-		final BPartnerId salesRepId = BPartnerId.ofRepoIdOrNull(orderRecord.getC_BPartner_SalesRep_ID());
-		final OrgId orderOrgId = OrgId.ofRepoId(orderRecord.getAD_Org_ID());
-		if (Check.isNotBlank(orderRecord.getSalesPartnerCode()) && salesRepId != null)
-		{
-			final BPartnerId salesBPartnerIdBySalesCode = bpartnerDAO
-					.getBPartnerIdBySalesPartnerCode(orderRecord.getSalesPartnerCode(), ImmutableSet.of(orderOrgId))
-					.orElse(null);
-
-			if (salesBPartnerIdBySalesCode != null && !salesBPartnerIdBySalesCode.equals(salesRepId))
-			{
-				throw new AdempiereException("C_Order.SalesPartnerCode doesn't match C_Order.C_BPartner_SalesRep_ID")
-						.appendParametersToMessage()
-						.setParameter("C_Order.C_Order_ID", orderRecord.getC_Order_ID())
-						.setParameter("C_Order.SalesPartnerCode", orderRecord.getSalesPartnerCode())
-						.setParameter("C_Order.C_BPartner_SalesRep_ID", salesRepId.getRepoId());
-			}
-		}
+		validateSalesPartnerAssignment(orderRecord);
 
 		final boolean currentPartnerCodeShallPrevail = type.isNew()
 				&& (Check.isNotBlank(orderRecord.getSalesPartnerCode()) || orderRecord.getC_BPartner_SalesRep_ID() > 0);
@@ -173,5 +157,29 @@ public class C_Order
 		}
 
 		throw documentSalesRepDescriptorService.createMissingSalesRepException();
+	}
+
+	/**
+	 * Validate that both C_Order.SalesPartnerCode and C_Order.C_BPartner_SalesRep_ID point to the same BPartner
+	 */
+	private void validateSalesPartnerAssignment(@NonNull final I_C_Order orderRecord)
+	{
+		final BPartnerId salesRepId = BPartnerId.ofRepoIdOrNull(orderRecord.getC_BPartner_SalesRep_ID());
+		final OrgId orderOrgId = OrgId.ofRepoId(orderRecord.getAD_Org_ID());
+		if (Check.isNotBlank(orderRecord.getSalesPartnerCode()) && salesRepId != null)
+		{
+			final BPartnerId salesBPartnerIdBySalesCode = bpartnerDAO
+					.getBPartnerIdBySalesPartnerCode(orderRecord.getSalesPartnerCode(), ImmutableSet.of(orderOrgId))
+					.orElse(null);
+
+			if (salesBPartnerIdBySalesCode != null && !salesBPartnerIdBySalesCode.equals(salesRepId))
+			{
+				throw new AdempiereException("C_Order.SalesPartnerCode doesn't match C_Order.C_BPartner_SalesRep_ID")
+						.appendParametersToMessage()
+						.setParameter("C_Order.C_Order_ID", orderRecord.getC_Order_ID())
+						.setParameter("C_Order.SalesPartnerCode", orderRecord.getSalesPartnerCode())
+						.setParameter("C_Order.C_BPartner_SalesRep_ID", salesRepId.getRepoId());
+			}
+		}
 	}
 }
