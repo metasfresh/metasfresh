@@ -113,4 +113,6 @@ public interface IUserDAO extends ISingletonService
 	void deleteUserRolesByUserId(UserId userId);
 
 	void deleteUserOrgAssignmentByUserId(UserId userId);
+
+	void deletePInstancesForUserId(UserId userId);
 }

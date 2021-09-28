@@ -471,5 +471,7 @@ public class UserBL implements IUserBL
 		userDAO.deleteUserMailByUserId(userId);
 
 		userDAO.deleteUserQueryByUserId(userId);
+
+		userDAO.deletePInstancesForUserId(userId);
 	}
 }

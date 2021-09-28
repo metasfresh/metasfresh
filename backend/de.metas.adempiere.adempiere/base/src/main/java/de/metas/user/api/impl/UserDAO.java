@@ -18,6 +18,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.proxy.Cached;
+import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.I_AD_Preference;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_AD_UserMail;
@@ -384,6 +385,15 @@ public class UserDAO implements IUserDAO
 	{
 		queryBL.createQueryBuilder(I_C_OrgAssignment.class)
 				.addEqualsFilter(I_C_OrgAssignment.COLUMNNAME_AD_User_ID, userId)
+				.create()
+				.delete();
+	}
+
+	@Override
+	public void deletePInstancesForUserId(final UserId userId)
+	{
+		queryBL.createQueryBuilder(I_AD_PInstance.class)
+				.addEqualsFilter(I_AD_PInstance.COLUMN_AD_User_ID.getColumnName(), userId)
 				.create()
 				.delete();
 	}
