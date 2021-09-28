@@ -1,10 +1,20 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import { v4 as uuidv4 } from 'uuid';
+import PickStep from '../PickStep';
 
 class PickProductsSteps extends Component {
   render() {
-    console.log('P:', this.props);
-    return <div>Steps</div>;
+    const { steps } = this.props;
+    return (
+      <div className="steps-container">
+        {steps.length > 0 &&
+          steps.map((stepItem) => {
+            let uniqueId = uuidv4();
+            return <PickStep key={uniqueId} id={uniqueId} {...stepItem} />;
+          })}
+      </div>
+    );
   }
 }
 
