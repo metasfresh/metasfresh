@@ -33,6 +33,7 @@ import de.metas.common.rest_api.v2.JSONPaymentRule;
 import de.metas.common.rest_api.v2.JsonDocTypeInfo;
 import de.metas.common.rest_api.v2.SwaggerDocConstants;
 import de.metas.common.util.Check;
+import de.metas.common.util.CoalesceUtil;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.NonNull;
@@ -270,6 +271,11 @@ public class JsonOLCandCreateRequest
 	@JsonInclude(Include.NON_NULL)
 	BigDecimal qtyShipped;
 
+	@ApiModelProperty( //
+			value = "Translates to C_OLCand.ApplySalesRepFrom. If not specified default value is `CandidateFirst`")
+	@JsonInclude(Include.NON_NULL)
+	JsonApplySalesRepFrom applySalesRepFrom;
+
 	@JsonCreator
 	@Builder(toBuilder = true)
 	private JsonOLCandCreateRequest(
@@ -315,7 +321,8 @@ public class JsonOLCandCreateRequest
 			@JsonProperty("deliveryViaRule") final @Nullable String deliveryViaRule,
 			@JsonProperty("deliveryRule") final @Nullable String deliveryRule,
 			@JsonProperty("importWarningMessage") final @Nullable String importWarningMessage,
-			@JsonProperty("qtyShipped") final @Nullable BigDecimal qtyShipped)
+			@JsonProperty("qtyShipped") final @Nullable BigDecimal qtyShipped,
+			@JsonProperty("applySalesRepFrom") final @Nullable JsonApplySalesRepFrom applySalesRepFrom)
 	{
 		this.orgCode = orgCode;
 		this.externalLineId = externalLineId;
@@ -362,6 +369,7 @@ public class JsonOLCandCreateRequest
 		this.deliveryRule = deliveryRule;
 		this.importWarningMessage = importWarningMessage;
 		this.qtyShipped = qtyShipped;
+		this.applySalesRepFrom = CoalesceUtil.coalesceNotNull(applySalesRepFrom, JsonApplySalesRepFrom.CandidateFirst);
 	}
 
 	/**
