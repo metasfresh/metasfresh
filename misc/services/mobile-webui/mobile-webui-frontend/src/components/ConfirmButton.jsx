@@ -33,18 +33,19 @@ class ConfirmButton extends Component {
         {/*  Full sconfirm creen dialog  */}
         {isPromptDialogOpen && (
           <div className="prompt-dialog-screen">
-            <article className="message is-dark">
+            <article className="message confirm-box is-dark">
               <div className="message-header">
                 <p>{btnCaption}</p>
                 <button className="delete" aria-label="delete" onClick={this.cancelConfirmDialog}></button>
               </div>
               <div className="message-body">
                 <strong>{promptQuestion}</strong>
-                <div className="buttons">
-                  <button className="button is-success" onClick={this.onDialogYes}>
+                <div>&nbsp;</div>
+                <div className="buttons is-centered">
+                  <button className="button is-success confirm-button" onClick={this.onDialogYes}>
                     Yes
                   </button>
-                  <button className="button is-danger" onClick={this.cancelConfirmDialog}>
+                  <button className="button is-danger confirm-button" onClick={this.cancelConfirmDialog}>
                     No
                   </button>
                 </div>
