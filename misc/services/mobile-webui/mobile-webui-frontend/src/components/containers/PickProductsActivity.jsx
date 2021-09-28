@@ -8,17 +8,33 @@ class PickProductsActivity extends Component {
     const {
       caption,
       componentProps: { lines },
+      activityState,
+      wfProcessId,
     } = this.props;
+
+    const { activityId } = activityState;
+    const { isLinesListVisible } = activityState.dataStored;
 
     return (
       <div className="pick-products-container">
         <div className="title is-4 header-caption">{caption}</div>
-        <div className="pick-products-active-line">Active line</div>
+        {/* Lines listing */}
         {lines.length > 0 &&
+          isLinesListVisible &&
           lines.map((lineItem) => {
             let uniqueId = uuidv4();
-            return <PickProductsLine key={uniqueId} id={uniqueId} {...lineItem} />;
+            return (
+              <PickProductsLine
+                key={uniqueId}
+                id={uniqueId}
+                wfProcessId={wfProcessId}
+                activityId={activityId}
+                {...lineItem}
+              />
+            );
           })}
+        {/* Steps Listing */}
+        {!isLinesListVisible && <div>Steps listing</div>}
       </div>
     );
   }
@@ -27,6 +43,8 @@ class PickProductsActivity extends Component {
 PickProductsActivity.propTypes = {
   caption: PropTypes.string,
   componentProps: PropTypes.object,
+  activityState: PropTypes.object,
+  wfProcessId: PropTypes.string,
 };
 
 export default PickProductsActivity;

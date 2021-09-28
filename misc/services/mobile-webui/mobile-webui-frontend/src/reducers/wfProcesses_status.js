@@ -1,3 +1,5 @@
+import * as types from '../constants/ActionTypes';
+
 export const initialState = {
   'picking-7f42317d-0782-466c-a192-cb5ad7d3cce0': {
     isSentToBackend: false,
@@ -11,6 +13,7 @@ export const initialState = {
         activityId: '2',
         dataStored: {
           isComplete: false,
+          isLinesListVisible: true,
           lines: [
             {
               caption: 'TestProduct',
@@ -39,13 +42,25 @@ export const initialState = {
 };
 
 export default function wfProcesses_status(state = initialState, action) {
-  // const { payload } = action;
+  const { payload } = action;
   switch (action.type) {
-    // case types.SET_WFPROCESSES:
-    //   return {
-    //     ...state,
-    //     ...payload.WFPROCESESS,
-    //   };
+    case types.SWITCHOFF_LINES_VISIBILITY:
+      return {
+        ...state,
+        [`${payload.wfProcessId}`]: {
+          ...state[payload.wfProcessId],
+          activities: {
+            ...state[payload.wfProcessId].activities,
+            [payload.activityId]: {
+              ...state[payload.wfProcessId].activities[payload.activityId],
+              dataStored: {
+                ...state[payload.wfProcessId].activities[payload.activityId].dataStored,
+                isLinesListVisible: false,
+              },
+            },
+          },
+        },
+      };
 
     default:
       return state;
