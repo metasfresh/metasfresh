@@ -49,12 +49,17 @@ function useProvideAuth() {
   const login = (username, password) => {
     return loginRequest(username, password)
       .then(({ data }) => {
-        const { token } = data;
+        const { token, error } = data;
+
+        if (error) {
+          return Promise.reject(error);
+        }
 
         return localLogin(token);
       })
       .catch((error) => {
         console.error('login error: ', error);
+        return Promise.reject(error);
       });
   };
 
