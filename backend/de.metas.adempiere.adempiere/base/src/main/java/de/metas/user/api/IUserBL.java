@@ -59,4 +59,6 @@ public interface IUserBL extends ISingletonService
 	Language getUserLanguage(I_AD_User userRecord);
 
 	UserEMailConfig getEmailConfigById(UserId userId);
+
+	void deleteUserDependency(I_AD_User userRecord);
 }

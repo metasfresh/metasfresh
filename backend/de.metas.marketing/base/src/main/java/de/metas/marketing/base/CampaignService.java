@@ -4,6 +4,7 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
+import de.metas.user.UserId;
 import org.springframework.stereotype.Service;
 
 import de.metas.bpartner.BPartnerId;
@@ -163,4 +164,8 @@ public class CampaignService
 		campaignRepository.removeContactPersonFromCampaign(savedContactPerson, campaign);
 	}
 
+	public void unsubscribeUserFromCampaignConsentAndChannels(@NonNull final UserId userId) {
+		campaignRepository.removeUserFromCampaignConsentByUserId(userId);
+		campaignRepository.removeUserFromCampaignChannelsByUserId(userId);
+	}
 }

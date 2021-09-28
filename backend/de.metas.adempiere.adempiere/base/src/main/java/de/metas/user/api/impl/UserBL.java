@@ -18,6 +18,7 @@ import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
 import de.metas.security.IUserRolePermissionsDAO;
+import de.metas.security.UserAuthTokenRepository;
 import de.metas.ui.web.WebuiURLs;
 import de.metas.user.UserId;
 import de.metas.user.api.ChangeUserPasswordRequest;
@@ -28,6 +29,7 @@ import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import de.metas.util.hash.HashableString;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
@@ -41,7 +43,6 @@ import org.slf4j.Logger;
 import org.slf4j.MDC.MDCCloseable;
 
 import javax.annotation.Nullable;
-import javax.validation.constraints.Null;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -54,6 +55,9 @@ public class UserBL implements IUserBL
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IUserRolePermissionsDAO userRolePermissionsDAO = Services.get(IUserRolePermissionsDAO.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private final UserAuthTokenRepository userAuthTokenRepository = SpringContextHolder.instance.getBean(UserAuthTokenRepository.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
 
 	/**
 	 * @see org.compiere.model.X_AD_MailConfig#CUSTOMTYPE_OrgCompiereUtilLogin
@@ -448,4 +452,24 @@ public class UserBL implements IUserBL
 				.build();
 	}
 
+	@Override
+	public void deleteUserDependency(@NonNull final I_AD_User userRecord)
+	{
+		UserId userId = UserId.ofRepoId(userRecord.getAD_User_ID());
+
+		userDAO.deleteUserPreferenceByUserId(userId);
+		userAuthTokenRepository.deleteUserAuthTokenByUserId(userId);
+
+		userDAO.deleteUserOrgAccessByUserId(userId);
+
+		userDAO.deleteUserOrgAssignmentByUserId(userId);
+
+		userDAO.deleteUserRolesByUserId(userId);
+
+		userDAO.deleteUserSubstituteByUserId(userId);
+
+		userDAO.deleteUserMailByUserId(userId);
+
+		userDAO.deleteUserQueryByUserId(userId);
+	}
 }

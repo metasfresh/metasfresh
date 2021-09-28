@@ -10,9 +10,11 @@ import de.metas.marketing.base.model.CampaignId;
 import de.metas.marketing.base.model.CampaignRepository;
 import de.metas.organization.IOrgDAO;
 import de.metas.user.User;
+import de.metas.user.UserId;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
@@ -57,6 +59,7 @@ public class AD_User
 	private final CampaignService campaignService;
 	private final UserRepository userRepository;
 	private final ContactPersonService contactPersonService;
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
@@ -122,6 +125,13 @@ public class AD_User
 		final Language oldLanguage = Language.asLanguage(oldUser.getAD_Language());
 
 		contactPersonService.updateContactPersonsEmailFromUser(user, oldEmail, oldLanguage);
+	}
+
+	@ModelChange(timings = ModelValidator.TYPE_AFTER_DELETE)
+	public void deleteUser(final I_AD_User userRecord)
+	{
+		UserId userId = UserId.ofRepoId(userRecord.getAD_User_ID());
+		campaignService.unsubscribeUserFromCampaignConsentAndChannels(userId);
 	}
 
 	private boolean isCreateMarketingContact(final int clientID, final int orgID)
