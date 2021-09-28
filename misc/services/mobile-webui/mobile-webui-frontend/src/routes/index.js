@@ -2,7 +2,6 @@ import React from 'react';
 import { ConnectedRouter } from 'connected-react-router';
 import { Route, Switch } from 'react-router';
 
-// import App from '../App';
 import LoginView from '../components/LoginView';
 import Dashboard from '../components/Dashboard';
 import TestPage from '../components/TestPage';

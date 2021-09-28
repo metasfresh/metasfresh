@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
+import Cookies from 'js-cookie';
 
 import { useAuth } from '../hooks/useAuth';
 
@@ -16,6 +17,16 @@ function LoginRoute() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const { from } = location.state || { from: { pathname: '/' } };
+
+  useEffect(() => {
+    const tokenCookie = Cookies.get('Token');
+
+    if (tokenCookie) {
+      auth.localLogin(tokenCookie).then(() => {
+        history.replace(from);
+      });
+    }
+  }, []);
 
   const changeUsername = (e) => setUsername(e.target.value);
   const changePassword = (e) => setPassword(e.target.value);

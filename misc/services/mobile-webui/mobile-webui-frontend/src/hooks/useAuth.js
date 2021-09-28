@@ -1,8 +1,11 @@
 import React, { useContext, createContext } from 'react';
 import { useStore, useDispatch } from 'react-redux';
 import PropTypes from 'prop-types';
+import axios from 'axios';
+import Cookies from 'js-cookie';
 
 import { loginRequest } from '../api';
+import { COOKIE_EXPIRATION } from '../constants/Values';
 import { setToken, clearToken } from '../actions/Actions';
 
 const authContext = createContext();
@@ -31,10 +34,24 @@ function useProvideAuth() {
   const store = useStore();
   const dispatch = useDispatch();
 
-  const login = (username, token) => {
-    return loginRequest(username, token)
-      .then((token) => {
-        dispatch(setToken(token));
+  const localLogin = (token) => {
+    dispatch(setToken(token));
+
+    Cookies.set('Token', token, {
+      expires: COOKIE_EXPIRATION,
+    });
+
+    axios.defaults.headers.common['Authorization'] = token;
+
+    return Promise.resolve();
+  };
+
+  const login = (username, password) => {
+    return loginRequest(username, password)
+      .then(({ data }) => {
+        const { token } = data;
+
+        return localLogin(token);
       })
       .catch((error) => {
         console.error('login error: ', error);
@@ -43,6 +60,10 @@ function useProvideAuth() {
 
   const logout = () => {
     dispatch(clearToken());
+
+    Cookies.remove('Token', { expires: COOKIE_EXPIRATION });
+
+    axios.defaults.headers.common['Authorization'] = null;
 
     return Promise.resolve();
   };
@@ -53,5 +74,6 @@ function useProvideAuth() {
     userToken: getToken,
     login,
     logout,
+    localLogin,
   };
 }
