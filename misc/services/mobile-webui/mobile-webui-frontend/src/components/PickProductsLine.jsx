@@ -14,7 +14,7 @@ class PickProductsLine extends Component {
   };
 
   render() {
-    const { id, activityId, caption, isLinesListVisible, steps } = this.props;
+    const { id, activityId, wfProcessId, caption, isLinesListVisible, steps } = this.props;
     return (
       <div>
         {isLinesListVisible && (
@@ -32,7 +32,7 @@ class PickProductsLine extends Component {
           </div>
         )}
         {/* Steps Listing */}
-        {!isLinesListVisible && <PickProductsSteps steps={steps} />}
+        {!isLinesListVisible && <PickProductsSteps steps={steps} activityId={activityId} wfProcessId={wfProcessId} />}
       </div>
     );
   }
