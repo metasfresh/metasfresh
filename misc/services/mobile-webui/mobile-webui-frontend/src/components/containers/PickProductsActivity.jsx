@@ -15,7 +15,7 @@ class PickProductsActivity extends Component {
     const { isLinesListVisible } = activityState.dataStored;
 
     return (
-      <div className="pick-products-container">
+      <div className="pick-products-activity-container">
         <div className="title is-4 header-caption">{caption}</div>
         {/* Lines listing */}
         {lines.length > 0 &&
