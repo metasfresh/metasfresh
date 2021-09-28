@@ -165,21 +165,24 @@ public class C_Order
 	private void validateSalesPartnerAssignment(@NonNull final I_C_Order orderRecord)
 	{
 		final BPartnerId salesRepId = BPartnerId.ofRepoIdOrNull(orderRecord.getC_BPartner_SalesRep_ID());
-		final OrgId orderOrgId = OrgId.ofRepoId(orderRecord.getAD_Org_ID());
-		if (Check.isNotBlank(orderRecord.getSalesPartnerCode()) && salesRepId != null)
-		{
-			final BPartnerId salesBPartnerIdBySalesCode = bpartnerDAO
-					.getBPartnerIdBySalesPartnerCode(orderRecord.getSalesPartnerCode(), ImmutableSet.of(orderOrgId))
-					.orElse(null);
 
-			if (salesBPartnerIdBySalesCode != null && !salesBPartnerIdBySalesCode.equals(salesRepId))
-			{
-				throw new AdempiereException("C_Order.SalesPartnerCode doesn't match C_Order.C_BPartner_SalesRep_ID")
-						.appendParametersToMessage()
-						.setParameter("C_Order.C_Order_ID", orderRecord.getC_Order_ID())
-						.setParameter("C_Order.SalesPartnerCode", orderRecord.getSalesPartnerCode())
-						.setParameter("C_Order.C_BPartner_SalesRep_ID", salesRepId.getRepoId());
-			}
+		if (salesRepId == null || Check.isBlank(orderRecord.getSalesPartnerCode()))
+		{
+			return;
+		}
+
+		final OrgId orderOrgId = OrgId.ofRepoId(orderRecord.getAD_Org_ID());
+		final BPartnerId salesBPartnerIdBySalesCode = bpartnerDAO
+				.getBPartnerIdBySalesPartnerCode(orderRecord.getSalesPartnerCode(), ImmutableSet.of(orderOrgId, OrgId.ANY))
+				.orElse(null);
+
+		if (salesBPartnerIdBySalesCode != null && !salesBPartnerIdBySalesCode.equals(salesRepId))
+		{
+			throw new AdempiereException("C_Order.SalesPartnerCode doesn't match C_Order.C_BPartner_SalesRep_ID")
+					.appendParametersToMessage()
+					.setParameter("C_Order.C_Order_ID", orderRecord.getC_Order_ID())
+					.setParameter("C_Order.SalesPartnerCode", orderRecord.getSalesPartnerCode())
+					.setParameter("C_Order.C_BPartner_SalesRep_ID", salesRepId.getRepoId());
 		}
 	}
 }
