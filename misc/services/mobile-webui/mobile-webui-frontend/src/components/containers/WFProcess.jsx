@@ -13,7 +13,7 @@ class WFProcess extends Component {
     return (
       <div className="pick-products-container">
         <div className="title is-4 header-caption">WFProcess Caption HEADER</div>
-        <div className="pick-products-active-line">headers</div>
+        <div className="pick-products-active-line header-caption">custom headers</div>
         {activities.length > 0 &&
           activities.map((activityItem) => {
             let uniqueId = uuidv4();

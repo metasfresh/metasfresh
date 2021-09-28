@@ -53,9 +53,17 @@ class ConfirmButton extends Component {
           </div>
         )}
         {/*  Confirm Initiator  */}
-        <button className="button confirm-btn-green" onClick={this.showConfirmDialog}>
-          {btnCaption}
-        </button>
+        <div className="ml-3 mr-3 is-light launcher" onClick={this.showConfirmDialog}>
+          <div className="box">
+            <div className="columns is-mobile">
+              <div className="column is-12">
+                <div className="columns">
+                  <div className="column is-size-4-mobile no-p">{btnCaption}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
