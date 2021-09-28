@@ -26,6 +26,7 @@ class WFProcess extends Component {
                     key={uniqueId}
                     id={uniqueId}
                     wfProcessId={wfProcessId}
+                    activityId={activityItem.id}
                     activityState={activitiesState[activityItem.activityId]}
                     {...activityItem}
                   />

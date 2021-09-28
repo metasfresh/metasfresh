@@ -3,7 +3,8 @@ import PropTypes from 'prop-types';
 
 class PickProductsSteps extends Component {
   render() {
-    return <div></div>;
+    console.log('P:', this.props);
+    return <div>Steps</div>;
   }
 }
 
