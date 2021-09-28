@@ -15,24 +15,24 @@ class PickProductsLine extends Component {
 
   render() {
     const { id, activityId, caption, isLinesListVisible, steps } = this.props;
-    console.log('isLINe:', isLinesListVisible);
     return (
       <div>
-        <div key={id} className="ml-3 mr-3 is-light pick-product" onClick={() => this.handleClick(activityId)}>
-          <div className="box">
-            <div className="columns is-mobile">
-              <div className="column is-12">
-                <div className="columns">
-                  <div className="column is-size-4-mobile no-p">{caption}</div>
-                  <div className="column is-size-7 no-p">-line-</div>
+        {isLinesListVisible && (
+          <div key={id} className="ml-3 mr-3 is-light pick-product" onClick={() => this.handleClick(activityId)}>
+            <div className="box">
+              <div className="columns is-mobile">
+                <div className="column is-12">
+                  <div className="columns">
+                    <div className="column is-size-4-mobile no-p">{caption}</div>
+                    <div className="column is-size-7 no-p">-line-</div>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
+        )}
         {/* Steps Listing */}
-        {/* {!isLinesListVisible && <PickProductsSteps />} */}
-        <PickProductsSteps steps={steps} />
+        {!isLinesListVisible && <PickProductsSteps steps={steps} />}
       </div>
     );
   }
@@ -41,7 +41,7 @@ class PickProductsLine extends Component {
 const mapStateToProps = (state, ownProps) => {
   return {
     isLinesListVisible:
-      state.wfProcesses_status[ownProps.wfProcessId].activities[ownProps.activityId].isLinesListVisible || true,
+      state.wfProcesses_status[ownProps.wfProcessId].activities[ownProps.activityId].dataStored.isLinesListVisible,
   };
 };
 
@@ -51,7 +51,7 @@ PickProductsLine.propTypes = {
   activityId: PropTypes.string.isRequired,
   wfProcessId: PropTypes.string.isRequired,
   switchoffLinesVisibility: PropTypes.func.isRequired,
-  isLinesListVisible: PropTypes.bool.isRequired,
+  isLinesListVisible: PropTypes.bool,
   steps: PropTypes.array.isRequired,
 };
 
