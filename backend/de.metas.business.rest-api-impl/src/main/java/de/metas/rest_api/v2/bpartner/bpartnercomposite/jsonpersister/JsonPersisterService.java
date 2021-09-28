@@ -1789,8 +1789,10 @@ public class JsonPersisterService
 													   .collect(Collectors.toSet()));
 		}
 
-		externalReferenceCreateReqs.forEach(request -> externalReferenceRestControllerService.performUpsert(request, orgCode));
-
+		for (final JsonRequestExternalReferenceUpsert request : externalReferenceCreateReqs)
+		{
+			externalReferenceRestControllerService.performUpsert(request, orgCode);
+		}
 	}
 
 	private void handleAlbertaInfo(
