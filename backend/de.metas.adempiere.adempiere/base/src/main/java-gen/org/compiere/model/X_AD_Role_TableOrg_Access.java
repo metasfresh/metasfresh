@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_AD_Role_TableOrg_Access extends org.compiere.model.PO implements I_AD_Role_TableOrg_Access, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 805958985L;
+	private static final long serialVersionUID = -1610042486L;
 
     /** Standard Constructor */
     public X_AD_Role_TableOrg_Access (final Properties ctx, final int AD_Role_TableOrg_Access_ID, @Nullable final String trxName)
@@ -48,7 +48,7 @@ public class X_AD_Role_TableOrg_Access extends org.compiere.model.PO implements 
 	/** Export = E */
 	public static final String ACCESS_Export = "E";
 	@Override
-	public void setAccess (final @Nullable java.lang.String Access)
+	public void setAccess (final java.lang.String Access)
 	{
 		set_Value (COLUMNNAME_Access, Access);
 	}

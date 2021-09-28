@@ -1,6 +1,5 @@
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for AD_Role_TableOrg_Access
@@ -20,19 +19,19 @@ public interface I_AD_Role_TableOrg_Access
 	 * Set Access.
 	 *
 	 * <br>Type: List
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setAccess (@Nullable java.lang.String Access);
+	void setAccess (java.lang.String Access);
 
 	/**
 	 * Get Access.
 	 *
 	 * <br>Type: List
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getAccess();
+	java.lang.String getAccess();
 
 	ModelColumn<I_AD_Role_TableOrg_Access, Object> COLUMN_Access = new ModelColumn<>(I_AD_Role_TableOrg_Access.class, "Access", null);
 	String COLUMNNAME_Access = "Access";
