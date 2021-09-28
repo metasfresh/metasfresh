@@ -22,28 +22,26 @@
 
 package de.metas.contracts.pricing.trade_margin;
 
-import java.util.Map;
-import java.util.Optional;
-
-import org.slf4j.Logger;
-import org.slf4j.MDC;
-import org.slf4j.MDC.MDCCloseable;
-import org.springframework.stereotype.Service;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionContract;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionPoints;
-import de.metas.contracts.commission.commissioninstance.businesslogic.algorithms.HierarchyContract;
+import de.metas.contracts.commission.commissioninstance.businesslogic.algorithms.hierarchy.HierarchyContract;
 import de.metas.contracts.commission.commissioninstance.businesslogic.hierarchy.HierarchyLevel;
-import de.metas.contracts.commission.commissioninstance.businesslogic.sales.SalesCommissionShare;
+import de.metas.contracts.commission.commissioninstance.businesslogic.sales.CommissionShare;
 import de.metas.contracts.commission.model.I_C_Commission_Share;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
+import org.slf4j.Logger;
+import org.slf4j.MDC;
+import org.slf4j.MDC.MDCCloseable;
+import org.springframework.stereotype.Service;
+
+import java.util.Map;
+import java.util.Optional;
 
 @Service
 public class CustomerTradeMarginService
@@ -63,15 +61,15 @@ public class CustomerTradeMarginService
 		return customerTradeMarginRepository.getBestMatchForCriteria(customerTradeMarginSearchCriteria);
 	}
 
-	public Map<SalesCommissionShare, CommissionPoints> getTradedCommissionPointsFor(
+	public Map<CommissionShare, CommissionPoints> getTradedCommissionPointsFor(
 			@NonNull final CustomerTradeMarginSettings customerTradeMarginSettings,
-			@NonNull final ImmutableList<SalesCommissionShare> commissionShares)
+			@NonNull final ImmutableList<CommissionShare> commissionShares)
 	{
 		try (final MDCCloseable methodMDC = MDC.putCloseable("method", "CustomerTradeMarginService.getTradedCommissionPointsFor"))
 		{
-			ImmutableMap.Builder<SalesCommissionShare, CommissionPoints> result = ImmutableMap.builder();
+			ImmutableMap.Builder<CommissionShare, CommissionPoints> result = ImmutableMap.builder();
 
-			for (final SalesCommissionShare commissionShare : commissionShares)
+			for (final CommissionShare commissionShare : commissionShares)
 			{
 				try (final MDCCloseable commissionShareMDC = TableRecordMDC.putTableRecordReference(I_C_Commission_Share.Table_Name, commissionShare.getId()))
 				{

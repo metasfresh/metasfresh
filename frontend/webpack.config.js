@@ -33,7 +33,6 @@ const plugins = [
     },
     COMMIT_HASH: JSON.stringify(commitHash),
   }),
-  new webpack.HotModuleReplacementPlugin(),
   new webpack.NoEmitOnErrorsPlugin(),
   new HtmlWebpackPlugin({
     template: 'index.html',

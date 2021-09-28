@@ -1,9 +1,7 @@
-import Moment from 'moment';
 import queryString from 'query-string';
 import counterpart from 'counterpart';
 
 import history from '../services/History';
-import { DATE_FORMAT } from '../constants/Constants';
 
 /**
  * @method updateUri
@@ -18,7 +16,9 @@ export function updateUri(pathname, query, updatedQuery) {
   const queryUrl = queryString.stringify(queryObject);
   const url = `${pathname}?${queryUrl}`;
 
-  !fullPath.includes('viewId') ? history.replace(url) : history.push(url);
+  if (!fullPath.includes('viewId')) {
+    history.replace(url);
+  }
 }
 
 // TODO: Move to api ?
@@ -127,40 +127,6 @@ export function getItemsByProperty(arr, prop, value) {
     });
 
   return ret;
-}
-
-const cleanupParameter = ({ parameterName, value, valueTo }) => {
-  return {
-    parameterName,
-    value:
-      value &&
-      value.values &&
-      Array.isArray(value.values) &&
-      value.values.length === 0
-        ? [] // case when facets gets cleared
-        : value,
-    valueTo,
-  };
-};
-
-export function cleanupFilter({ filterId, parameters }) {
-  if (parameters && parameters.length) {
-    parameters.map((param, index) => {
-      if (param.widgetType === 'Date' && param.value) {
-        param.value = Moment(param.value).format(DATE_FORMAT);
-      }
-      if (param.widgetType === 'Date' && param.valueTo) {
-        param.valueTo = Moment(param.valueTo).format(DATE_FORMAT);
-      }
-      param = cleanupParameter(param);
-      parameters[index] = param;
-    });
-  }
-
-  return {
-    filterId,
-    parameters,
-  };
 }
 
 // TODO: Move to locale helpers
