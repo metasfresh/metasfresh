@@ -62,6 +62,25 @@ export default function wfProcesses_status(state = initialState, action) {
         },
       };
 
+    case types.UPDATE_PICKING_STEP_QTY:
+      return {
+        ...state,
+        [`${payload.wfProcessId}`]: {
+          ...state[payload.wfProcessId],
+          activities: {
+            ...state[payload.wfProcessId].activities,
+            [payload.activityId]: {
+              ...state[payload.wfProcessId].activities[payload.activityId],
+              dataStored: {
+                ...state[payload.wfProcessId].activities[payload.activityId].dataStored,
+                lines: state[payload.wfProcessId].activities[payload.activityId].dataStored.lines.map((lineItem, i) =>
+                  i === payload.stepId ? { ...lineItem, qtyPicked: payload.qtyPicked } : lineItem
+                ),
+              },
+            },
+          },
+        },
+      };
     default:
       return state;
   }

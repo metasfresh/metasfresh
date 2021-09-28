@@ -5,13 +5,22 @@ import PickStep from '../PickStep';
 
 class PickProductsSteps extends Component {
   render() {
-    const { steps } = this.props;
+    const { steps, wfProcessId, activityId } = this.props;
     return (
       <div className="steps-container">
         {steps.length > 0 &&
-          steps.map((stepItem) => {
+          steps.map((stepItem, index) => {
             let uniqueId = uuidv4();
-            return <PickStep key={uniqueId} id={uniqueId} {...stepItem} />;
+            return (
+              <PickStep
+                key={uniqueId}
+                id={uniqueId}
+                stepId={index}
+                wfProcessId={wfProcessId}
+                activityId={activityId}
+                {...stepItem}
+              />
+            );
           })}
       </div>
     );
@@ -20,6 +29,8 @@ class PickProductsSteps extends Component {
 
 PickProductsSteps.propTypes = {
   steps: PropTypes.array.isRequired,
+  activityId: PropTypes.string.isRequired,
+  wfProcessId: PropTypes.string.isRequired,
 };
 
 export default PickProductsSteps;

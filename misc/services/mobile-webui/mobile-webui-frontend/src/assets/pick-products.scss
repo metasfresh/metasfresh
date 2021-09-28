@@ -29,3 +29,12 @@
     background: $base-elements;
     box-shadow: 0 4px 8px 0px $base-elements;
   }
+
+  .picking-step-container {
+    background: $yellow-background;
+    position: absolute;
+    top: 6em;
+    right:0px;
+    bottom:0px;
+    left:0px;
+}
