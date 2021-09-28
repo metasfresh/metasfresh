@@ -327,24 +327,6 @@ public class UserDAO implements IUserDAO
 	}
 
 	@Override
-	public void deleteUserPreferenceByUserId(final UserId userId)
-	{
-		queryBL.createQueryBuilder(I_AD_Preference.class)
-				.addEqualsFilter(I_AD_Preference.COLUMNNAME_AD_User_ID, userId)
-				.create()
-				.delete();
-	}
-
-	@Override
-	public void deleteUserOrgAccessByUserId(final UserId userId)
-	{
-		queryBL.createQueryBuilder(I_AD_User_OrgAccess.class)
-				.addEqualsFilter(I_AD_User_OrgAccess.COLUMNNAME_AD_User_ID, userId)
-				.create()
-				.delete();
-	}
-
-	@Override
 	public void deleteUserSubstituteByUserId(final UserId userId)
 	{
 		queryBL.createQueryBuilder(I_AD_User_Substitute.class)
@@ -389,12 +371,12 @@ public class UserDAO implements IUserDAO
 				.delete();
 	}
 
-	@Override
-	public void deletePInstancesForUserId(final UserId userId)
-	{
-		queryBL.createQueryBuilder(I_AD_PInstance.class)
-				.addEqualsFilter(I_AD_PInstance.COLUMN_AD_User_ID.getColumnName(), userId)
-				.create()
-				.delete();
-	}
+	// @Override
+	// public void deletePInstancesForUserId(final UserId userId)
+	// {
+	// 	queryBL.createQueryBuilder(I_AD_PInstance.class)
+	// 			.addEqualsFilter(I_AD_PInstance.COLUMN_AD_User_ID.getColumnName(), userId)
+	// 			.create()
+	// 			.delete();
+	// }
 }

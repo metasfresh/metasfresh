@@ -100,10 +100,6 @@ public interface IUserDAO extends ISingletonService
 			@NonNull UserId sourceUserId,
 			@NonNull OrgId targetOrgId);
 
-	void deleteUserPreferenceByUserId(final UserId userId);
-
-	void deleteUserOrgAccessByUserId(final UserId userId);
-
 	void deleteUserSubstituteByUserId(final UserId userId);
 
 	void deleteUserMailByUserId(final UserId userId);
@@ -114,5 +110,5 @@ public interface IUserDAO extends ISingletonService
 
 	void deleteUserOrgAssignmentByUserId(UserId userId);
 
-	void deletePInstancesForUserId(UserId userId);
+	//void deletePInstancesForUserId(UserId userId);
 }

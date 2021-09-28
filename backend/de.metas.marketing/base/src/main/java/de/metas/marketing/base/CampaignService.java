@@ -163,9 +163,4 @@ public class CampaignService
 		contactPersonRepository.revokeConsent(savedContactPerson);
 		campaignRepository.removeContactPersonFromCampaign(savedContactPerson, campaign);
 	}
-
-	public void unsubscribeUserFromCampaignConsentAndChannels(@NonNull final UserId userId) {
-		campaignRepository.removeUserFromCampaignConsentByUserId(userId);
-		campaignRepository.removeUserFromCampaignChannelsByUserId(userId);
-	}
 }

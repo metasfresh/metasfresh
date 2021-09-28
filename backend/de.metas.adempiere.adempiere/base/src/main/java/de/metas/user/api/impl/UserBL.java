@@ -35,6 +35,8 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.IClientDAO;
 import org.adempiere.service.ISysConfigBL;
+import org.adempiere.service.IValuePreferenceDAO;
+import org.adempiere.service.impl.ValuePreferenceDAO;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
@@ -56,8 +58,7 @@ public class UserBL implements IUserBL
 	private final IUserRolePermissionsDAO userRolePermissionsDAO = Services.get(IUserRolePermissionsDAO.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final UserAuthTokenRepository userAuthTokenRepository = SpringContextHolder.instance.getBean(UserAuthTokenRepository.class);
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-
+	private final IValuePreferenceDAO valuePreferenceDAO = Services.get(IValuePreferenceDAO.class);
 
 	/**
 	 * @see org.compiere.model.X_AD_MailConfig#CUSTOMTYPE_OrgCompiereUtilLogin
@@ -457,10 +458,10 @@ public class UserBL implements IUserBL
 	{
 		UserId userId = UserId.ofRepoId(userRecord.getAD_User_ID());
 
-		userDAO.deleteUserPreferenceByUserId(userId);
+		valuePreferenceDAO.deleteUserPreferenceByUserId(userId);
 		userAuthTokenRepository.deleteUserAuthTokenByUserId(userId);
 
-		userDAO.deleteUserOrgAccessByUserId(userId);
+		userRolePermissionsDAO.deleteUserOrgAccessByUserId(userId);
 
 		userDAO.deleteUserOrgAssignmentByUserId(userId);
 
@@ -471,7 +472,5 @@ public class UserBL implements IUserBL
 		userDAO.deleteUserMailByUserId(userId);
 
 		userDAO.deleteUserQueryByUserId(userId);
-
-		userDAO.deletePInstancesForUserId(userId);
 	}
 }

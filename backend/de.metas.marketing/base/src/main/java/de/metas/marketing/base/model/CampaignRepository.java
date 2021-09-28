@@ -188,20 +188,4 @@ public class CampaignRepository
 				.create()
 				.delete();
 	}
-
-	public void removeUserFromCampaignConsentByUserId(final UserId userId)
-	{
-		queryBL.createQueryBuilder(I_MKTG_Consent.class)
-				.addEqualsFilter(I_MKTG_Consent.COLUMNNAME_AD_User_ID, userId)
-				.create()
-				.delete();
-	}
-
-	public void removeUserFromCampaignChannelsByUserId(final UserId userId)
-	{
-		queryBL.createQueryBuilder(I_AD_User_MKTG_Channels.class)
-				.addEqualsFilter(I_AD_User_MKTG_Channels.COLUMNNAME_AD_User_ID, userId)
-				.create()
-				.delete();
-	}
 }

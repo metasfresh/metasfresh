@@ -127,13 +127,6 @@ public class AD_User
 		contactPersonService.updateContactPersonsEmailFromUser(user, oldEmail, oldLanguage);
 	}
 
-	@ModelChange(timings = ModelValidator.TYPE_AFTER_DELETE)
-	public void deleteUser(final I_AD_User userRecord)
-	{
-		UserId userId = UserId.ofRepoId(userRecord.getAD_User_ID());
-		campaignService.unsubscribeUserFromCampaignConsentAndChannels(userId);
-	}
-
 	private boolean isCreateMarketingContact(final int clientID, final int orgID)
 	{
 		return sysConfigBL.getBooleanValue(SYS_CONFIG_CREATE_MARKETING_CONTACT, false, clientID, orgID);

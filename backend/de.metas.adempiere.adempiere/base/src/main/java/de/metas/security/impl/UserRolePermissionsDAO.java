@@ -110,7 +110,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 {
 	private static final transient Logger logger = LogManager.getLogger(UserRolePermissionsDAO.class);
-
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private static final Set<String> ROLE_DEPENDENT_TABLENAMES = ImmutableSet.of(
 			// I_AD_Role.Table_Name // NEVER include the AD_Role
 			I_AD_User_Roles.Table_Name, // User to Role assignment (see https://github.com/metasfresh/metasfresh-webui-api/issues/482)
@@ -1287,5 +1287,15 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 				.addEqualsFilter(I_AD_Private_Access.COLUMNNAME_AD_UserGroup_ID, principal.getUserGroupId())
 				.addEqualsFilter(I_AD_Private_Access.COLUMNNAME_AD_Table_ID, recordRef.getAD_Table_ID())
 				.addEqualsFilter(I_AD_Private_Access.COLUMNNAME_Record_ID, recordRef.getRecord_ID());
+	}
+
+
+	@Override
+	public void deleteUserOrgAccessByUserId(final UserId userId)
+	{
+		queryBL.createQueryBuilder(I_AD_User_OrgAccess.class)
+				.addEqualsFilter(I_AD_User_OrgAccess.COLUMNNAME_AD_User_ID, userId)
+				.create()
+				.delete();
 	}
 }

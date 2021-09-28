@@ -161,4 +161,6 @@ public interface IUserRolePermissionsDAO extends ISingletonService
 	 * @return true if given user has a role where he/she is an administrator, according to {@link IUserRolePermissions#isSystemAdministrator()}
 	 */
 	boolean isAdministrator(ClientId clientId, UserId adUserId, LocalDate date);
+
+	void deleteUserOrgAccessByUserId(final UserId userId);
 }
