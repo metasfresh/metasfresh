@@ -33,6 +33,25 @@ WHERE instance.commissiontrigger_type = 'MediatedOrder'
   AND mediatedOrderLine.c_orderline_id = instance.c_orderline_id
 ;
 
+-- existing instances where the commission trigger was meanwhile removed
+UPDATE c_commission_instance instance
+SET c_currency_id=o.c_currency_id,
+    c_uom_id=100, /*PCE*/
+    qty=0
+FROM c_order o
+WHERE o.c_order_id = instance.c_order_id
+  AND instance.c_currency_id IS NULL
+;
+UPDATE c_commission_instance instance
+SET c_currency_id=i.c_currency_id,
+    c_uom_id=100, /*PCE*/
+    qty=0
+FROM c_invoice i
+WHERE i.c_invoice_id = instance.c_invoice_id
+  AND instance.c_currency_id IS NULL
+;
+
+
 -- avoid ERROR:  cannot ALTER TABLE "c_commission_instance" because it has pending trigger events
 COMMIT;
 
