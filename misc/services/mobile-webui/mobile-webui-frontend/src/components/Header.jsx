@@ -1,6 +1,7 @@
 import React from 'react';
 import { useStore } from 'react-redux';
 import { useHistory } from 'react-router-dom';
+import PropTypes from 'prop-types';
 
 import { useAuth } from '../hooks/useAuth';
 
@@ -28,6 +29,10 @@ const Header = ({ appName }) => {
       ) : null}
     </header>
   );
+};
+
+Header.propTypes = {
+  appName: PropTypes.string,
 };
 
 export default Header;

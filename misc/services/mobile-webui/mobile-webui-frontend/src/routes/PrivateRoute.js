@@ -1,5 +1,6 @@
 import React from 'react';
 import { Route, Redirect } from 'react-router-dom';
+import PropTypes from 'prop-types';
 
 import { useAuth } from '../hooks/useAuth';
 
@@ -25,5 +26,9 @@ function PrivateRoute({ children, ...rest }) {
     />
   );
 }
+
+PrivateRoute.propTypes = {
+  children: PropTypes.oneOfType([PropTypes.arrayOf(PropTypes.node), PropTypes.node]),
+};
 
 export default PrivateRoute;
