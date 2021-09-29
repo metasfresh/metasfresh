@@ -25,7 +25,8 @@ class PickStep extends PureComponent {
 
   render() {
     const { activePickingStep } = this.state;
-    const { id, locatorName, productName, qtyPicked, qtyToPick, uom } = this.props;
+    const { id, locatorName, productName, qtyToPick, uom, pickstepState } = this.props;
+    const { qtyPicked } = pickstepState;
     return (
       <div>
         {activePickingStep && (
@@ -72,6 +73,14 @@ class PickStep extends PureComponent {
   }
 }
 
+const mapStateToProps = (state, ownProps) => {
+  const { wfProcessId, activityId, lineIndex, stepId } = ownProps;
+  return {
+    pickstepState:
+      state.wfProcesses_status[wfProcessId].activities[activityId].dataStored.lines[lineIndex].steps[stepId],
+  };
+};
+
 PickStep.propTypes = {
   id: PropTypes.string.isRequired,
   locatorName: PropTypes.string.isRequired,
@@ -84,6 +93,7 @@ PickStep.propTypes = {
   activityId: PropTypes.string.isRequired,
   stepId: PropTypes.number.isRequired,
   lineIndex: PropTypes.number.isRequired,
+  pickstepState: PropTypes.object,
 };
 
-export default connect(null, { updatePickingStepQty })(PickStep);
+export default connect(mapStateToProps, { updatePickingStepQty })(PickStep);
