@@ -222,7 +222,7 @@ final class UserRolePermissionsSqlHelpers
 					sqlAcessSqlWhereClause.append(mainTableNameOrAlias).append(".");
 				}
 
-				final String mainTableName = mainSqlSelect.getFirstTableName();
+				final String mainTableName = mainSqlSelect.getFirstTableNameOrEmpty();
 				sqlAcessSqlWhereClause.append(getOrgWhere(mainTableName, access));
 			}
 		}
