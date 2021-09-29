@@ -19,13 +19,16 @@ const Header = ({ appName }) => {
         <div className="subtitle">network: {network ? 'online' : 'offline'} </div>
       </div>
       {token ? (
-        <button
-          onClick={() => {
-            auth.logout().then(() => history.push('/'));
-          }}
-        >
-          Log out
-        </button>
+        <div className="buttons">
+          <button
+            className="button logout-btn-green"
+            onClick={() => {
+              auth.logout().then(() => history.push('/'));
+            }}
+          >
+            Log out
+          </button>
+        </div>
       ) : null}
     </header>
   );
