@@ -22,18 +22,43 @@ package de.metas.callcenter.form;
  * #L%
  */
 
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Cursor;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.GridLayout;
-import java.awt.Image;
-import java.awt.Insets;
-import java.awt.Toolkit;
-import java.awt.Window;
+import de.metas.callcenter.model.I_RV_R_Group_Prospect;
+import de.metas.callcenter.model.I_R_Request;
+import de.metas.i18n.Msg;
+import de.metas.logging.LogManager;
+import de.metas.util.Services;
+import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.images.Images;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.plaf.AdempierePLAF;
+import org.adempiere.service.ISysConfigBL;
+import org.compiere.apps.AEnv;
+import org.compiere.apps.AWindow;
+import org.compiere.apps.AWindowListener;
+import org.compiere.apps.StatusBar;
+import org.compiere.apps.form.FormFrame;
+import org.compiere.apps.form.FormPanel;
+import org.compiere.grid.GridController;
+import org.compiere.grid.VTable;
+import org.compiere.grid.ed.VLookup;
+import org.compiere.grid.ed.VText;
+import org.compiere.model.GridTab;
+import org.compiere.model.GridTab.DataNewCopyMode;
+import org.compiere.model.MQuery;
+import org.compiere.swing.CButton;
+import org.compiere.swing.CCheckBox;
+import org.compiere.swing.CLabel;
+import org.compiere.swing.CMenuItem;
+import org.compiere.swing.CPanel;
+import org.compiere.util.DisplayType;
+import org.compiere.util.Env;
+import org.jdesktop.swingx.JXTaskPane;
+import org.jdesktop.swingx.JXTaskPaneContainer;
+import org.slf4j.Logger;
+
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
@@ -49,47 +74,6 @@ import java.text.DateFormat;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import javax.swing.AbstractAction;
-import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
-import javax.swing.Timer;
-
-import org.adempiere.ad.element.api.AdWindowId;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.images.Images;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.plaf.AdempierePLAF;
-import org.compiere.apps.AEnv;
-import org.compiere.apps.AWindow;
-import org.compiere.apps.AWindowListener;
-import org.compiere.apps.StatusBar;
-import org.compiere.apps.form.FormFrame;
-import org.compiere.apps.form.FormPanel;
-import org.compiere.grid.GridController;
-import org.compiere.grid.VTable;
-import org.compiere.grid.ed.VLookup;
-import org.compiere.grid.ed.VText;
-import org.compiere.model.GridTab;
-import org.compiere.model.GridTab.DataNewCopyMode;
-import org.compiere.model.MQuery;
-import org.compiere.model.MSysConfig;
-import org.compiere.swing.CButton;
-import org.compiere.swing.CCheckBox;
-import org.compiere.swing.CLabel;
-import org.compiere.swing.CMenuItem;
-import org.compiere.swing.CPanel;
-import org.compiere.util.DisplayType;
-import org.compiere.util.Env;
-import org.jdesktop.swingx.JXTaskPane;
-import org.jdesktop.swingx.JXTaskPaneContainer;
-import org.slf4j.Logger;
-
-import de.metas.callcenter.model.I_RV_R_Group_Prospect;
-import de.metas.callcenter.model.I_R_Request;
-import de.metas.i18n.Msg;
-import de.metas.logging.LogManager;
 
 /**
  *
@@ -133,7 +117,7 @@ public class CallCenterForm
 			throw new AdempiereException("@de.metas.callcenter.FrontPanelAlreadyOpened@");
 		}
 		//
-		int checkIntervalSec = MSysConfig.getIntValue(SYSCONFIG_CheckInterval, 60, Env.getAD_Client_ID(Env.getCtx()));
+		int checkIntervalSec = Services.get(ISysConfigBL.class).getIntValue(SYSCONFIG_CheckInterval, 60, Env.getAD_Client_ID(Env.getCtx()));
 		m_updater = new Timer(checkIntervalSec * 1000, e -> {
 			try
 			{

@@ -50,6 +50,7 @@ import de.metas.common.bpartner.v2.response.JsonResponseBPartner;
 import de.metas.common.bpartner.v2.response.JsonResponseComposite;
 import de.metas.common.bpartner.v2.response.JsonResponseComposite.JsonResponseCompositeBuilder;
 import de.metas.common.bpartner.v2.response.JsonResponseContact;
+import de.metas.common.bpartner.v2.response.JsonResponseContactRole;
 import de.metas.common.bpartner.v2.response.JsonResponseLocation;
 import de.metas.common.changelog.JsonChangeInfo;
 import de.metas.common.changelog.JsonChangeInfo.JsonChangeInfoBuilder;
@@ -93,8 +94,10 @@ import org.slf4j.MDC.MDCCloseable;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static de.metas.util.Check.isEmpty;
 
@@ -370,6 +373,13 @@ public class JsonRetrieverService
 				final Greeting greeting = greetingRepository.getById(contact.getGreetingId());
 				greetingTrl = greeting.getGreeting(language.getAD_Language());
 			}
+			final List<JsonResponseContactRole> roles = contact.getRoles()
+					.stream()
+					.map(role -> JsonResponseContactRole.builder()
+							.name(role.getName())
+							.isUniquePerBpartner(role.isUniquePerBpartner())
+							.build())
+					.collect(Collectors.toList());
 
 			return JsonResponseContact.builder()
 					.active(contact.isActive())
@@ -394,6 +404,7 @@ public class JsonRetrieverService
 					.purchase(contactType.getIsPurchaseOr(false))
 					.purchaseDefault(contactType.getIsPurchaseDefaultOr(false))
 					.subjectMatter(contact.isSubjectMatterContact())
+					.roles(roles)
 					.changeInfo(jsonChangeInfo)
 					.build();
 		}

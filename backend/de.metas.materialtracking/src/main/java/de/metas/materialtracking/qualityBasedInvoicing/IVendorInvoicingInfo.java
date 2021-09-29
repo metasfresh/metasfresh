@@ -22,21 +22,22 @@ package de.metas.materialtracking.qualityBasedInvoicing;
  * #L%
  */
 
-
+import de.metas.bpartner.BPartnerContactId;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.document.location.DocumentLocation;
+import de.metas.pricing.PricingSystemId;
 import org.compiere.model.I_M_PriceList_Version;
 
-import de.metas.bpartner.BPartnerId;
-import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.pricing.PricingSystemId;
-
+import javax.annotation.Nullable;
 
 /**
  * Contains vendor invoicing informations.
- *
+ * <p>
  * Based on these informations, the actual invoicing will perform.
  *
  * @author tsa
- *
  */
 public interface IVendorInvoicingInfo
 {
@@ -76,4 +77,14 @@ public interface IVendorInvoicingInfo
 	 * @return invoicing rule
 	 */
 	String getInvoiceRule();
+
+	default DocumentLocation getBillLocation()
+	{
+		final BPartnerId billBPartnerId = getBill_BPartner_ID();
+		return DocumentLocation.builder()
+				.bpartnerId(billBPartnerId)
+				.bpartnerLocationId(BPartnerLocationId.ofRepoIdOrNull(billBPartnerId, getBill_Location_ID()))
+				.contactId(BPartnerContactId.ofRepoIdOrNull(billBPartnerId, getBill_User_ID()))
+				.build();
+	}
 }

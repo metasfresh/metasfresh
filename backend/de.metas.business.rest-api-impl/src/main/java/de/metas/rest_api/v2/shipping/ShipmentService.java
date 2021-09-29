@@ -26,13 +26,25 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
+import de.metas.async.AsyncBatchId;
+import de.metas.async.QueueWorkPackageId;
+import de.metas.async.api.IAsyncBatchBL;
+import de.metas.async.asyncbatchmilestone.AsyncBatchMilestone;
+import de.metas.async.asyncbatchmilestone.AsyncBatchMilestoneId;
+import de.metas.async.asyncbatchmilestone.AsyncBatchMilestoneObserver;
+import de.metas.async.asyncbatchmilestone.AsyncBathMilestoneService;
+import de.metas.async.asyncbatchmilestone.MilestoneName;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.BPartnerQuery;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.JsonAttributeInstance;
 import de.metas.common.shipping.v2.shipment.JsonCreateShipmentInfo;
 import de.metas.common.shipping.v2.shipment.JsonCreateShipmentRequest;
+import de.metas.common.shipping.v2.shipment.JsonCreateShipmentResponse;
+import de.metas.common.shipping.v2.shipment.JsonProcessShipmentRequest;
+import de.metas.common.shipping.v2.shipment.ShipmentScheduleIdentifier;
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters;
@@ -45,32 +57,52 @@ import de.metas.inoutcandidate.api.ApplyShipmentScheduleChangesRequest;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
+import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
+import de.metas.invoice.InvoiceId;
 import de.metas.location.CountryId;
 import de.metas.location.ICountryCodeFactory;
 import de.metas.location.ICountryDAO;
 import de.metas.logging.LogManager;
 import de.metas.order.DeliveryRule;
+import de.metas.order.OrderLineId;
+import de.metas.ordercandidate.api.IOLCandDAO;
+import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
+import de.metas.ordercandidate.api.OLCand;
+import de.metas.ordercandidate.api.OLCandId;
+import de.metas.ordercandidate.api.OLCandQuery;
+import de.metas.ordercandidate.api.OLCandRepository;
+import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.product.IProductDAO;
 import de.metas.product.IProductDAO.ProductQuery;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import de.metas.rest_api.v2.invoice.impl.InvoiceService;
+import de.metas.rest_api.v2.invoice.impl.JSONInvoiceInfoResponse;
+import de.metas.rest_api.v2.ordercandidates.impl.JsonProcessCompositeResponse;
 import de.metas.shipping.IShipperDAO;
 import de.metas.shipping.ShipperId;
+import de.metas.uom.IUOMConversionBL;
 import de.metas.util.Check;
+import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Value;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.CreateAttributeInstanceReq;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Shipper;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -81,12 +113,17 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
+
+import static de.metas.async.Async_Constants.C_Async_Batch_InternalName_ShipmentSchedule;
 
 @Service
 public class ShipmentService
@@ -105,35 +142,209 @@ public class ShipmentService
 	private final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	private final IADPInstanceDAO adPInstanceDAO = Services.get(IADPInstanceDAO.class);
-	private final AttributeSetHelper attributeSetHelper;
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
+	private final IOLCandDAO olCandDAO = Services.get(IOLCandDAO.class);
+	private final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
+	private final IOLCandEffectiveValuesBL olCandEffectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
+	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
-	public ShipmentService(@NonNull final AttributeSetHelper attributeSetHelper)
+	private final AttributeSetHelper attributeSetHelper;
+	private final AsyncBatchMilestoneObserver asyncBatchMilestoneObserver;
+	private final AsyncBathMilestoneService asyncBathMilestoneService;
+	private final InvoiceService invoiceService;
+	private final OLCandRepository olCandRepo;
+
+	public ShipmentService(
+			@NonNull final AttributeSetHelper attributeSetHelper,
+			@NonNull final AsyncBatchMilestoneObserver asyncBatchMilestoneObserver,
+			@NonNull final AsyncBathMilestoneService asyncBathMilestoneService,
+			@NonNull final InvoiceService invoiceService,
+			@NonNull final OLCandRepository olCandRepo)
 	{
 		this.attributeSetHelper = attributeSetHelper;
+		this.asyncBatchMilestoneObserver = asyncBatchMilestoneObserver;
+		this.asyncBathMilestoneService = asyncBathMilestoneService;
+		this.invoiceService = invoiceService;
+		this.olCandRepo = olCandRepo;
 	}
 
-	public ShipmentScheduleEnqueuer.Result updateShipmentSchedulesAndGenerateShipments(@NonNull final JsonCreateShipmentRequest request)
+	@NonNull
+	public ImmutableSet<QueueWorkPackageId> updateShipmentSchedulesAndGenerateShipments(@NonNull final JsonCreateShipmentRequest request)
 	{
-		final ShippingInfoCache cache = ShippingInfoCache.builder()
-				.shipmentScheduleBL(shipmentScheduleBL)
-				.scheduleEffectiveBL(scheduleEffectiveBL)
-				.shipperDAO(shipperDAO)
-				.build();
+		updateShipmentSchedules(request);
+
+		final Map<AsyncBatchId, List<CreateShipmentInfoCandidate>> asyncBatchId2ShipmentCandidates =
+				getShipmentInfoCandidateByAsyncBatchId(request.getCreateShipmentInfoList());
+
+		return asyncBatchId2ShipmentCandidates.keySet()
+				.stream()
+				.map(asyncBatchId -> toGenerateShipmentsRequest(asyncBatchId2ShipmentCandidates.get(asyncBatchId), asyncBatchId))
+				.map(this::generateShipments)
+				.map(ShipmentScheduleEnqueuer.Result::getEnqueuedPackageIds)
+				.flatMap(List::stream)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	@NonNull
+	public Set<InOutId> generateShipmentsForOLCands(@NonNull final Map<AsyncBatchId, List<OLCandId>> asyncBatchId2OLCandIds)
+	{
+		if (asyncBatchId2OLCandIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		return asyncBatchId2OLCandIds.keySet()
+				.stream()
+				.map(asyncBatchId -> {
+					final ImmutableSet<OLCandId> olCandIdImmutableSet = ImmutableSet.copyOf(asyncBatchId2OLCandIds.get(asyncBatchId));
+
+					return generateShipmentForBatch(olCandIdImmutableSet, asyncBatchId);
+				})
+				.flatMap(Set::stream)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	@NonNull
+	public JsonProcessCompositeResponse processShipmentSchedules(@NonNull final JsonProcessShipmentRequest request)
+	{
+		final JsonCreateShipmentRequest shipmentRequest = request.getCreateShipmentRequest();
+
+		updateShipmentSchedules(shipmentRequest);
+
+		final Map<AsyncBatchId, List<CreateShipmentInfoCandidate>> asyncBatchId2ShipmentCandidates =
+				getShipmentInfoCandidateByAsyncBatchId(request.getCreateShipmentRequest().getCreateShipmentInfoList());
+
+		final List<GenerateShipmentsRequest> generateShipmentsRequestList = asyncBatchId2ShipmentCandidates.keySet()
+				.stream()
+				.map(asyncBatchId -> toGenerateShipmentsRequest(asyncBatchId2ShipmentCandidates.get(asyncBatchId), asyncBatchId))
+				.collect(ImmutableList.toImmutableList());
+
+		final ImmutableSet.Builder<InOutId> createdShipmentIdsCollector = ImmutableSet.builder();
+		final ImmutableList.Builder<JSONInvoiceInfoResponse> invoiceInfoResponseCollector = ImmutableList.builder();
+
+		generateShipmentsRequestList.stream()
+				.filter(generateShipmentRequest -> !generateShipmentRequest.getScheduleIds().isEmpty())
+				.forEach(generateShipmentRequest -> {
+					final AsyncBatchId currentBatchId = generateShipmentRequest.getAsyncBatchId();
+
+					generateShipments(generateShipmentRequest);
+
+					createdShipmentIdsCollector.addAll(retrieveInOutIdsByScheduleIds(generateShipmentRequest.getScheduleIds()));
+
+					if (request.getInvoice())
+					{
+						invoiceInfoResponseCollector.addAll(generateInvoicesForShipmentScheduleIds(generateShipmentRequest.getScheduleIds()));
+					}
+
+					asyncBatchBL.updateProcessedFromMilestones(currentBatchId);
+
+					if (request.getCloseShipmentSchedule())
+					{
+						generateShipmentRequest.getScheduleIds().forEach(shipmentScheduleBL::closeShipmentSchedule);
+					}
+				});
+
+		final JsonProcessCompositeResponse.JsonProcessCompositeResponseBuilder responseBuilder = JsonProcessCompositeResponse.builder();
+		responseBuilder.shipmentResponse(buildCreateShipmentResponse(createdShipmentIdsCollector.build()));
+
+		if (request.getInvoice())
+		{
+			responseBuilder.invoiceInfoResponse(invoiceInfoResponseCollector.build());
+		}
+
+		return responseBuilder.build();
+	}
+
+	private void updateShipmentSchedules(@NonNull final JsonCreateShipmentRequest request)
+	{
+		final ShippingInfoCache cache = initShippingInfoCache();
 
 		cache.warmUpForShipmentScheduleIds(extractShipmentScheduleIds(request));
 		cache.warmUpForShipperInternalNames(extractShippersInternalName(request));
 
 		validateRequest(request, cache);
 		updateShipmentSchedules(request.getCreateShipmentInfoList(), cache);
+	}
 
-		return generateShipments(toGenerateShipmentsRequest(request));
+	@NonNull
+	private ImmutableMap<ShipmentScheduleId, BigDecimal> getShipmentScheduleId2QtyToDeliver(
+			@NonNull final Set<OLCandId> olCandIds,
+			@NonNull final AsyncBatchId asyncBatchId)
+	{
+		final Map<OLCandId, OrderLineId> olCandId2OrderLineId = olCandDAO.retrieveOLCandIdToOrderLineId(olCandIds);
+
+		if (olCandId2OrderLineId == null || olCandId2OrderLineId.isEmpty())
+		{
+			return ImmutableMap.of();
+		}
+
+		final Map<OLCandId, I_C_OLCand> olCandsById = olCandDAO.retrieveByIds(olCandIds);
+
+		final ImmutableMap.Builder<ShipmentScheduleId, BigDecimal> scheduleId2QtyShipped = ImmutableMap.builder();
+
+		for (final Map.Entry<OLCandId, OrderLineId> olCand2OrderLineEntry : olCandId2OrderLineId.entrySet())
+		{
+			final I_M_ShipmentSchedule shipmentSchedule = shipmentSchedulePA.getByOrderLineId(olCand2OrderLineEntry.getValue());
+
+			if (shipmentSchedule == null || shipmentSchedule.isProcessed())
+			{
+				continue;
+			}
+
+			final ShipmentScheduleId scheduleId = ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID());
+
+			final I_C_OLCand olCand = olCandsById.get(olCand2OrderLineEntry.getKey());
+
+			if (olCand.getC_Async_Batch_ID() != shipmentSchedule.getC_Async_Batch_ID() || olCand.getC_Async_Batch_ID() != asyncBatchId.getRepoId())
+			{
+				throw new AdempiereException("olCand.getC_Async_Batch_ID() != shipmentSchedule.getC_Async_Batch_ID() || olCand.getC_Async_Batch_ID() != asyncBatchId")
+						.appendParametersToMessage()
+						.setParameter("C_OLCand_ID", olCand.getC_OLCand_ID())
+						.setParameter("M_ShipmentSchedule_ID", shipmentSchedule.getM_ShipmentSchedule_ID())
+						.setParameter("olCand.getC_Async_Batch_ID()", olCand.getC_Async_Batch_ID())
+						.setParameter("shipmentSchedule.getC_Async_Batch_ID()", shipmentSchedule.getC_Async_Batch_ID())
+						.setParameter("AsyncBatchId", asyncBatchId);
+			}
+
+			if (NumberUtils.asBigDecimal(olCand.getQtyShipped(), BigDecimal.ZERO).signum() <= 0)
+			{
+				scheduleId2QtyShipped.put(scheduleId,
+										  shipmentScheduleBL.getQtyToDeliver(shipmentSchedule).toBigDecimal());
+				continue;
+			}
+
+			final I_C_UOM olCandUOM = olCandEffectiveValuesBL.getC_UOM_Effective(olCand);
+			final Quantity olCandQtyShipped = Quantity.of(olCand.getQtyShipped(), olCandUOM);
+
+			final Quantity olCandQtyShippedProductUOM = uomConversionBL.convertToProductUOM(olCandQtyShipped, ProductId.ofRepoId(shipmentSchedule.getM_Product_ID()));
+
+			scheduleId2QtyShipped.put(scheduleId, olCandQtyShippedProductUOM.toBigDecimal());
+		}
+
+		return scheduleId2QtyShipped.build();
+	}
+
+	@NonNull
+	private List<JSONInvoiceInfoResponse> generateInvoicesForShipmentScheduleIds(@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds)
+	{
+		final List<I_M_InOutLine> shipmentLines = retrieveInOuLineIdByShipScheduleId(shipmentScheduleIds)
+				.stream()
+				.map(inOutDAO::getLineById)
+				.collect(ImmutableList.toImmutableList());
+
+		final Set<InvoiceId> invoiceIds = invoiceService.generateInvoicesFromShipmentLines(shipmentLines);
+
+		return invoiceIds.stream()
+				.map(invoiceId -> invoiceService.getInvoiceInfo(invoiceId, Env.getAD_Language()))
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	private ImmutableSet<ShipmentScheduleId> extractShipmentScheduleIds(@NonNull final JsonCreateShipmentRequest request)
 	{
 		return request.getCreateShipmentInfoList()
 				.stream()
-				.map(ShipmentService::extractShipmentScheduleId)
+				.map(this::extractShipmentScheduleId)
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
@@ -146,9 +357,23 @@ public class ShipmentService
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
-	private static ShipmentScheduleId extractShipmentScheduleId(final JsonCreateShipmentInfo createShipmentInfo)
+	@NonNull
+	private ShipmentScheduleId extractShipmentScheduleId(final JsonCreateShipmentInfo createShipmentInfo)
 	{
-		return ShipmentScheduleId.ofRepoId(createShipmentInfo.getShipmentScheduleId().getValue());
+		final ShipmentScheduleIdentifier jsonScheduleIdentifier = createShipmentInfo.getShipmentScheduleIdentifier();
+
+		if (jsonScheduleIdentifier == null)
+		{
+			return ShipmentScheduleId.ofRepoId(createShipmentInfo.getShipmentScheduleId().getValue());
+		}
+		else if (jsonScheduleIdentifier.identifiedByHeaderAndLineId())
+		{
+			return getShipmentScheduleIdByExternalHeaderAndLineId(jsonScheduleIdentifier);
+		}
+		else
+		{
+			return ShipmentScheduleId.ofRepoId(jsonScheduleIdentifier.getShipmentScheduleId().getValue());
+		}
 	}
 
 	private void validateRequest(
@@ -300,16 +525,21 @@ public class ShipmentService
 				.build();
 	}
 
-	private GenerateShipmentsRequest toGenerateShipmentsRequest(@NonNull final JsonCreateShipmentRequest request)
+	@NonNull
+	private GenerateShipmentsRequest toGenerateShipmentsRequest(
+			@NonNull final List<CreateShipmentInfoCandidate> createShipmentInfoList,
+			@NonNull final AsyncBatchId asyncBatchId)
 	{
 		final ImmutableMap.Builder<ShipmentScheduleId, ShipmentScheduleExternalInfo> scheduleId2ExternalInfo = new ImmutableMap.Builder<>();
 		final ImmutableMap.Builder<ShipmentScheduleId, BigDecimal> scheduleToQuantityToDeliver = new ImmutableMap.Builder<>();
 
 		final ImmutableSet.Builder<ShipmentScheduleId> shipmentScheduleIdsBuilder = new ImmutableSet.Builder<>();
 
-		for (final JsonCreateShipmentInfo createShipmentInfo : request.getCreateShipmentInfoList())
+		for (final CreateShipmentInfoCandidate createShipmentCandidate : createShipmentInfoList)
 		{
-			final ShipmentScheduleId shipmentScheduleId = extractShipmentScheduleId(createShipmentInfo);
+			final ShipmentScheduleId shipmentScheduleId = createShipmentCandidate.getShipmentScheduleId();
+			final JsonCreateShipmentInfo createShipmentInfo = createShipmentCandidate.getCreateShipmentInfo();
+
 			shipmentScheduleIdsBuilder.add(shipmentScheduleId);
 
 			if (Check.isNotBlank(createShipmentInfo.getDocumentNo()))
@@ -329,6 +559,7 @@ public class ShipmentService
 		}
 
 		final GenerateShipmentsRequest.GenerateShipmentsRequestBuilder generateShipmentsRequestBuilder = GenerateShipmentsRequest.builder()
+				.asyncBatchId(asyncBatchId)
 				.scheduleIds(shipmentScheduleIdsBuilder.build())
 				.scheduleToExternalInfo(scheduleId2ExternalInfo.build())
 				.scheduleToQuantityToDeliverOverride(scheduleToQuantityToDeliver.build())
@@ -337,30 +568,47 @@ public class ShipmentService
 		return generateShipmentsRequestBuilder.build();
 	}
 
+	@NonNull
 	private ShipmentScheduleEnqueuer.Result generateShipments(@NonNull final GenerateShipmentsRequest request)
 	{
-		final ICompositeQueryFilter<de.metas.handlingunits.model.I_M_ShipmentSchedule> queryFilters = queryBL
-				.createCompositeQueryFilter(de.metas.handlingunits.model.I_M_ShipmentSchedule.class)
-				.addInArrayFilter(de.metas.handlingunits.model.I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID, request.getScheduleIds());
+		if (Check.isEmpty(request.getScheduleIds()))
+		{
+			throw new AdempiereException("No shipmentScheduleIds found on request!")
+					.appendParametersToMessage()
+					.setParameter("GenerateShipmentsRequest", request);
+		}
+
+		validateAsyncBatchAssignment(request.getScheduleIds(), request.getAsyncBatchId());
+
+		final AsyncBatchMilestoneId milestoneId = newScheduleShipmentMilestone(request.getAsyncBatchId());
+
+		asyncBatchMilestoneObserver.observeOn(milestoneId);
+
+		final ShipmentScheduleEnqueuer.Result result = trxManager.callInNewTrx(() -> {
+			final ICompositeQueryFilter<de.metas.handlingunits.model.I_M_ShipmentSchedule> queryFilters = queryBL
+					.createCompositeQueryFilter(de.metas.handlingunits.model.I_M_ShipmentSchedule.class)
+					.addInArrayFilter(de.metas.handlingunits.model.I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID, request.getScheduleIds());
+
+			final ShipmentScheduleWorkPackageParameters workPackageParameters = ShipmentScheduleWorkPackageParameters.builder()
+					.adPInstanceId(adPInstanceDAO.createSelectionId())
+					.queryFilters(queryFilters)
+					.quantityType(request.getQuantityTypeToUse())
+					.completeShipments(true)
+					.advisedShipmentDocumentNos(request.extractShipmentDocumentNos())
+					.qtysToDeliverOverride(request.getScheduleToQuantityToDeliverOverride())
+					.build();
+
+			return new ShipmentScheduleEnqueuer()
+					.setContext(Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
+					.createWorkpackages(workPackageParameters);
+		});
 
 		// Wait until processed because the next call might contain the same shipment schedules as the current one.
 		// In this case enqueing the same shipmentschedule will fail, because it requires a an exclusive lock and the sched is still enqueued from the current lock
 		// See ShipmentScheduleEnqueuer.acquireLock(...)
-		final boolean waitUtilProcessed = true;
+		asyncBatchMilestoneObserver.waitToBeProcessed(milestoneId);
 
-		final ShipmentScheduleWorkPackageParameters workPackageParameters = ShipmentScheduleWorkPackageParameters.builder()
-				.adPInstanceId(adPInstanceDAO.createSelectionId())
-				.queryFilters(queryFilters)
-				.quantityType(request.getQuantityTypeToUse())
-				.completeShipments(true)
-				.waitUtilProcessed(waitUtilProcessed)
-				.advisedShipmentDocumentNos(request.extractShipmentDocumentNos())
-				.qtysToDeliverOverride(request.getScheduleToQuantityToDeliverOverride())
-				.build();
-
-		return new ShipmentScheduleEnqueuer()
-				.setContext(Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
-				.createWorkpackages(workPackageParameters);
+		return result;
 	}
 
 	private Optional<BPartnerId> getBPartnerIdByValue(@Nullable final String bPartnerValue)
@@ -450,6 +698,221 @@ public class ShipmentService
 		return candidateKey2ShipmentId.build();
 	}
 
+	@NonNull
+	private ShipmentScheduleId getShipmentScheduleIdByExternalHeaderAndLineId(@NonNull final ShipmentScheduleIdentifier identifier)
+	{
+		Check.assume(identifier.identifiedByHeaderAndLineId(),
+					 "getShipmentScheduleIdByExternalHeaderAndLineId should be called for ShipmentScheduleIdentifier with externalHeaderId and externalLineId");
+
+		final OLCandQuery query = OLCandQuery.builder()
+				.externalHeaderId(identifier.getExternalHeaderId())
+				.externalLineId(identifier.getExternalLineId())
+				.orgId(Env.getOrgId())
+				.build();
+
+		final Set<OLCandId> olCandIds = olCandRepo.getByQuery(query)
+				.stream()
+				.map(OLCand::getId)
+				.map(OLCandId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
+
+		if (olCandIds.size() != 1)
+		{
+			throw new AdempiereException("Number of olCands found for external header id and line id: "
+												 + identifier + " != 1. Found: " + olCandIds.size());
+		}
+
+		final OLCandId olCandId = CollectionUtils.singleElement(olCandIds);
+
+		final OrderLineId orderLineId = olCandDAO.retrieveOLCandIdToOrderLineId(ImmutableSet.of(olCandId))
+				.get(olCandId);
+
+		if (orderLineId == null)
+		{
+			throw new AdempiereException("No orderLineId found for olCandId: " + olCandId);
+		}
+
+		final Optional<ShipmentScheduleId> shipmentScheduleId = Optional.ofNullable(shipmentSchedulePA.getShipmentScheduleIdByOrderLineId(orderLineId));
+
+		if (!shipmentScheduleId.isPresent())
+		{
+			throw new AdempiereException("No shipment schedule found for orderLineId" + orderLineId);
+		}
+
+		return shipmentScheduleId.get();
+	}
+
+	@NonNull
+	private Set<InOutLineId> retrieveInOuLineIdByShipScheduleId(@NonNull final Set<ShipmentScheduleId> ids)
+	{
+		return shipmentScheduleAllocDAO.retrieveOnShipmentLineRecordsByScheduleIds(ids)
+				.values()
+				.stream()
+				.flatMap(List::stream)
+				.map(I_M_ShipmentSchedule_QtyPicked::getM_InOutLine_ID)
+				.map(InOutLineId::ofRepoIdOrNull)
+				.filter(Objects::nonNull)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	@NonNull
+	private Set<InOutId> retrieveInOutIdsByScheduleIds(@NonNull final Set<ShipmentScheduleId> ids)
+	{
+		return retrieveInOuLineIdByShipScheduleId(ids)
+				.stream()
+				.map(inOutDAO::getLineById)
+				.map(I_M_InOutLine::getM_InOut_ID)
+				.map(InOutId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	@NonNull
+	private AsyncBatchMilestoneId newScheduleShipmentMilestone(@NonNull final AsyncBatchId asyncBatchId)
+	{
+		final AsyncBatchMilestone asyncBatchMilestone = AsyncBatchMilestone.builder()
+				.asyncBatchId(asyncBatchId)
+				.orgId(Env.getOrgId())
+				.milestoneName(MilestoneName.SHIPMENT_CREATION)
+				.build();
+
+		final AsyncBatchMilestone milestone = asyncBathMilestoneService.save(asyncBatchMilestone);
+
+		return milestone.getIdNotNull();
+	}
+
+	private void assignAsyncBatchIdToShipmentSchedules(@NonNull final Set<ShipmentScheduleId> ids, @NonNull final AsyncBatchId asyncBatchId)
+	{
+		ids.forEach(id -> shipmentScheduleBL.setAsyncBatch(id, asyncBatchId));
+	}
+
+	private void validateAsyncBatchAssignment(@NonNull final Set<ShipmentScheduleId> ids, @NonNull final AsyncBatchId asyncBatchId)
+	{
+		final int unassignedScheduleCount = queryBL.createQueryBuilder(I_M_ShipmentSchedule.class)
+				.addInArrayFilter(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID, ids)
+				.addNotEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_C_Async_Batch_ID, asyncBatchId)
+				.create()
+				.count();
+
+		if (unassignedScheduleCount > 0)
+		{
+			throw new AdempiereException("Found a number of unassigned scheduleIds! Count: " + unassignedScheduleCount)
+					.appendParametersToMessage()
+					.setParameter("scheduleIds", ids);
+		}
+	}
+
+	@NonNull
+	public JsonCreateShipmentResponse buildCreateShipmentResponse(@NonNull final Set<InOutId> shipmentIds)
+	{
+		return JsonCreateShipmentResponse.builder()
+				.createdShipmentIds(shipmentIds.stream()
+											.map(InOutId::getRepoId)
+											.map(JsonMetasfreshId::of)
+											.collect(ImmutableList.toImmutableList()))
+				.build();
+	}
+
+	@NonNull
+	private Map<AsyncBatchId,List<CreateShipmentInfoCandidate>> getShipmentInfoCandidateByAsyncBatchId(@NonNull final List<JsonCreateShipmentInfo> createShipmentInfos)
+	{
+		final List<CreateShipmentInfoCandidate> createShipmentCandidates = createShipmentInfos.stream()
+				.map(this::buildCreateShipmentCandidate)
+				.collect(ImmutableList.toImmutableList());
+
+		final List<ShipmentScheduleId> scheduleIds = createShipmentCandidates.stream()
+				.map(CreateShipmentInfoCandidate::getShipmentScheduleId)
+				.collect(ImmutableList.toImmutableList());
+
+		final ShippingInfoCache shippingInfoCache = initShippingInfoCache();
+		shippingInfoCache.warmUpForShipmentScheduleIds(scheduleIds);
+
+		final Map<AsyncBatchId, ArrayList<CreateShipmentInfoCandidate>> asyncBatchId2CreateShipmentInfos = new HashMap<>();
+
+		for (final CreateShipmentInfoCandidate createShipmentInfoCandidate : createShipmentCandidates)
+		{
+			final ArrayList<CreateShipmentInfoCandidate> currentCandidateList = new ArrayList<>();
+			currentCandidateList.add(createShipmentInfoCandidate);
+
+			final AsyncBatchId currentAsyncBatchId = shippingInfoCache.getAsyncBatchId(createShipmentInfoCandidate.getShipmentScheduleId())
+					.orElse(AsyncBatchId.NONE_ASYNC_BATCH_ID);
+
+			asyncBatchId2CreateShipmentInfos.merge(currentAsyncBatchId, currentCandidateList, CollectionUtils::mergeLists);
+		}
+
+		final ArrayList<CreateShipmentInfoCandidate> shipmentSchedulesWithNoAsyncBatchId = asyncBatchId2CreateShipmentInfos.get(AsyncBatchId.NONE_ASYNC_BATCH_ID);
+
+		Optional.ofNullable(shipmentSchedulesWithNoAsyncBatchId)
+				.flatMap(this::assignAsyncBatch)
+				.ifPresent(batchId -> {
+					asyncBatchId2CreateShipmentInfos.put(batchId, shipmentSchedulesWithNoAsyncBatchId);
+					asyncBatchId2CreateShipmentInfos.remove(AsyncBatchId.NONE_ASYNC_BATCH_ID);
+				});
+
+		return ImmutableMap.copyOf(asyncBatchId2CreateShipmentInfos);
+	}
+
+	@NonNull
+	private Optional<AsyncBatchId> assignAsyncBatch(@NonNull final List<CreateShipmentInfoCandidate> shipmentInfoCandidates)
+	{
+		if (shipmentInfoCandidates.isEmpty())
+		{
+			return Optional.empty();
+		}
+
+		final ImmutableSet<ShipmentScheduleId> shipmentScheduleIds = shipmentInfoCandidates.stream()
+				.map(CreateShipmentInfoCandidate::getShipmentScheduleId)
+				.collect(ImmutableSet.toImmutableSet());
+
+		final AsyncBatchId asyncBatchId = asyncBatchBL.newAsyncBatch(C_Async_Batch_InternalName_ShipmentSchedule);
+
+		assignAsyncBatchIdToShipmentSchedules(shipmentScheduleIds, asyncBatchId);
+
+		return Optional.of(asyncBatchId);
+	}
+
+	@NonNull
+	private CreateShipmentInfoCandidate buildCreateShipmentCandidate(@NonNull final JsonCreateShipmentInfo jsonCreateShipmentInfo)
+	{
+		final ShipmentScheduleId shipmentScheduleId = extractShipmentScheduleId(jsonCreateShipmentInfo);
+
+		return CreateShipmentInfoCandidate.builder()
+				.createShipmentInfo(jsonCreateShipmentInfo)
+				.shipmentScheduleId(shipmentScheduleId)
+				.build();
+	}
+
+	private ShippingInfoCache initShippingInfoCache()
+	{
+		return ShippingInfoCache.builder()
+				.shipmentScheduleBL(shipmentScheduleBL)
+				.scheduleEffectiveBL(scheduleEffectiveBL)
+				.shipperDAO(shipperDAO)
+				.build();
+	}
+
+	private Set<InOutId> generateShipmentForBatch(@NonNull final Set<OLCandId> olCandIds, @NonNull final AsyncBatchId olCandsAsyncBatchId)
+	{
+		final ImmutableMap<ShipmentScheduleId, BigDecimal> shipmentScheduleIdToQtyShipped = getShipmentScheduleId2QtyToDeliver(olCandIds, olCandsAsyncBatchId);
+
+		if (shipmentScheduleIdToQtyShipped.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		//dev-note: if we came this far, we know all shipment schedules are assigned to the async batch identified by the input param:"asyncBatchId"
+		final GenerateShipmentsRequest generateShipmentsRequest = GenerateShipmentsRequest.builder()
+				.asyncBatchId(olCandsAsyncBatchId)
+				.scheduleIds(shipmentScheduleIdToQtyShipped.keySet())
+				.scheduleToExternalInfo(ImmutableMap.of())
+				.scheduleToQuantityToDeliverOverride(shipmentScheduleIdToQtyShipped)
+				.quantityTypeToUse(M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER)
+				.build();
+
+		generateShipments(generateShipmentsRequest);
+
+		return retrieveInOutIdsByScheduleIds(shipmentScheduleIdToQtyShipped.keySet());
+	}
+
 	//
 	//
 	//
@@ -506,6 +969,12 @@ public class ShipmentService
 			return scheduleEffectiveBL.getBPartnerId(shipmentSchedule);
 		}
 
+		public Optional<AsyncBatchId> getAsyncBatchId(@NonNull final ShipmentScheduleId shipmentScheduleId)
+		{
+			final I_M_ShipmentSchedule shipmentSchedule = getShipmentScheduleById(shipmentScheduleId);
+			return Optional.ofNullable(AsyncBatchId.ofRepoIdOrNull(shipmentSchedule.getC_Async_Batch_ID()));
+		}
+
 		@Nullable
 		public ShipperId getShipperId(@Nullable final String shipperInternalName)
 		{
@@ -536,5 +1005,15 @@ public class ShipmentService
 		{
 			return shipperDAO.getByInternalName(ImmutableSet.of(shipperInternalName)).get(shipperInternalName);
 		}
+	}
+
+	@Value
+	@Builder
+	private static class CreateShipmentInfoCandidate
+	{
+		@NonNull
+		ShipmentScheduleId shipmentScheduleId;
+		@NonNull
+		JsonCreateShipmentInfo createShipmentInfo;
 	}
 }

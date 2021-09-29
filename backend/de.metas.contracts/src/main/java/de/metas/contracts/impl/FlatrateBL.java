@@ -24,6 +24,8 @@ package de.metas.contracts.impl;
 
 import ch.qos.logback.classic.Level;
 import de.metas.acct.api.IProductAcctDAO;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.cache.CacheMgt;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
@@ -39,6 +41,7 @@ import de.metas.contracts.IFlatrateTermEventService;
 import de.metas.contracts.event.FlatrateUserNotificationsProducer;
 import de.metas.contracts.interceptor.C_Flatrate_Term;
 import de.metas.contracts.invoicecandidate.FlatrateDataEntryHandler;
+import de.metas.contracts.location.ContractLocationHelper;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Data;
 import de.metas.contracts.model.I_C_Flatrate_DataEntry;
@@ -59,6 +62,7 @@ import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerDAO;
+import de.metas.invoicecandidate.location.adapter.InvoiceCandidateLocationAdapterFactory;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.lang.SOTrx;
@@ -433,12 +437,10 @@ public class FlatrateBL implements IFlatrateBL
 
 		newCand.setInvoiceRule(fc.getInvoiceRule());
 		newCand.setC_Currency_ID(term.getC_Currency_ID());
-		newCand.setBill_BPartner_ID(term.getBill_BPartner_ID());
 
-		final int billLocationID = term.getBill_Location_ID();
-		newCand.setBill_Location_ID(billLocationID);
-
-		newCand.setBill_User_ID(term.getBill_User_ID());
+		InvoiceCandidateLocationAdapterFactory
+				.billLocationAdapter(newCand)
+				.setFrom(ContractLocationHelper.extractBillLocation(term));
 
 		newCand.setDateOrdered(dataEntry.getC_Period().getEndDate());
 
@@ -452,8 +454,10 @@ public class FlatrateBL implements IFlatrateBL
 		newCand.setIsTaxIncluded(term.isTaxIncluded());
 
 		final TaxCategoryId taxCategoryId = TaxCategoryId.ofRepoIdOrNull(term.getC_TaxCategory_ID());
-		
-		final int shipToLocationId = CoalesceUtil.firstGreaterThanZero(term.getDropShip_Location_ID(), term.getBill_Location_ID());  // place of service performance
+
+		final BPartnerLocationAndCaptureId shipToLocationId = CoalesceUtil.coalesceSuppliers(
+				() -> BPartnerLocationAndCaptureId.ofRepoIdOrNull(term.getDropShip_BPartner_ID(), term.getDropShip_Location_ID()),
+				() -> BPartnerLocationAndCaptureId.ofRepoIdOrNull(term.getBill_BPartner_ID(), term.getBill_Location_ID()));
 
 		final TaxId taxId = Services.get(ITaxBL.class).getTaxNotNull(
 				ctx,
@@ -569,9 +573,10 @@ public class FlatrateBL implements IFlatrateBL
 
 		newCand.setInvoiceRule(fc.getInvoiceRule());
 		newCand.setC_Currency_ID(term.getC_Currency_ID());
-		newCand.setBill_BPartner_ID(term.getBill_BPartner_ID());
-		newCand.setBill_Location_ID(term.getBill_Location_ID());
-		newCand.setBill_User_ID(term.getBill_User_ID());
+
+		InvoiceCandidateLocationAdapterFactory
+				.billLocationAdapter(newCand)
+				.setFrom(ContractLocationHelper.extractBillLocation(term));
 
 		newCand.setAD_Table_ID(adTableDAO.retrieveTableId(I_C_Flatrate_DataEntry.Table_Name));
 		newCand.setRecord_ID(dataEntry.getC_Flatrate_DataEntry_ID());
@@ -584,7 +589,10 @@ public class FlatrateBL implements IFlatrateBL
 
 		final TaxCategoryId taxCategoryId = TaxCategoryId.ofRepoIdOrNull(term.getC_TaxCategory_ID());
 
-		final int shipToLocationId = CoalesceUtil.firstGreaterThanZero(term.getDropShip_Location_ID(), term.getBill_Location_ID());  // place of service performance
+		final BPartnerLocationAndCaptureId shipToLocationId = CoalesceUtil.coalesceSuppliers(
+				() -> BPartnerLocationAndCaptureId.ofRepoIdOrNull(term.getDropShip_BPartner_ID(), term.getDropShip_Location_ID()),
+				() -> BPartnerLocationAndCaptureId.ofRepoIdOrNull(term.getBill_BPartner_ID(), term.getBill_Location_ID()));
+
 		final TaxId taxId = Services.get(ITaxBL.class).getTaxNotNull(
 				ctx,
 				term,
@@ -862,7 +870,7 @@ public class FlatrateBL implements IFlatrateBL
 			}
 		}
 
-		final POInfo poInfo = POInfo.getPOInfo(ctx, I_C_Flatrate_Term.Table_Name);
+		final POInfo poInfo = POInfo.getPOInfo(I_C_Flatrate_Term.Table_Name);
 		final Lookup columnLookup = poInfo.getColumnLookup(ctx, poInfo.getColumnIndex(I_C_Flatrate_Term.COLUMNNAME_UOMType));
 
 		final String msg = msgBL.getMsg(ctx, FlatrateBL.MSG_DATA_ENTRY_CREATE_FLAT_FEE_4P,

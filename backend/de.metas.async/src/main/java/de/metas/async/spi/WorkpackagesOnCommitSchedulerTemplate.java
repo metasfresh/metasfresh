@@ -1,28 +1,36 @@
 package de.metas.async.spi;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.Map;
-import java.util.Properties;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.spi.TrxOnCommitCollectorFactory;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.IContextAware;
-
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
-
+import de.metas.async.AsyncBatchId;
+import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.api.IWorkPackageBlockBuilder;
 import de.metas.async.api.IWorkPackageBuilder;
+import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.spi.TrxOnCommitCollectorFactory;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IContextAware;
+
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import static de.metas.async.AsyncBatchId.NONE_ASYNC_BATCH_ID;
 
 /*
  * #%L
@@ -56,7 +64,7 @@ import lombok.NonNull;
 public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 {
 	/** Convenient method to create an instance which is scheduling a workpackage on transaction commit, but which is NOT collecting the enqueued models */
-	public static final <ModelType> WorkpackagesOnCommitSchedulerTemplate<ModelType> newModelSchedulerNoCollect(
+	public static <ModelType> WorkpackagesOnCommitSchedulerTemplate<ModelType> newModelSchedulerNoCollect(
 			final Class<? extends IWorkpackageProcessor> workpackageProcessorClass,
 			final Class<ModelType> modelType)
 	{
@@ -65,14 +73,14 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 	}
 
 	/** Convenient method to create an instance which is scheduling a workpackage on transaction commit based on a given {@link IContextAware} */
-	public static final WorkpackagesOnCommitSchedulerTemplate<IContextAware> newContextAwareSchedulerNoCollect(final Class<? extends IWorkpackageProcessor> workpackageProcessorClass)
+	public static WorkpackagesOnCommitSchedulerTemplate<IContextAware> newContextAwareSchedulerNoCollect(final Class<? extends IWorkpackageProcessor> workpackageProcessorClass)
 	{
 		final boolean collectModels = false;
 		return new ModelsScheduler<>(workpackageProcessorClass, IContextAware.class, collectModels);
 	}
 
 	/** Convenient method to create an instance which IS COLLECTING models and schedules a workpackage on transaction commit. */
-	public static final <ModelType> WorkpackagesOnCommitSchedulerTemplate<ModelType> newModelScheduler(
+	public static <ModelType> WorkpackagesOnCommitSchedulerTemplate<ModelType> newModelScheduler(
 			final Class<? extends IWorkpackageProcessor> workpackageProcessorClass,
 			final Class<ModelType> modelType)
 	{
@@ -80,9 +88,12 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 		return new ModelsScheduler<>(workpackageProcessorClass, modelType, collectModels);
 	}
 
+	private final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
+
 	private final Class<? extends IWorkpackageProcessor> workpackageProcessorClass;
 	private final String trxPropertyName;
 	private final AtomicBoolean createOneWorkpackagePerModel = new AtomicBoolean(false);
+	private final AtomicBoolean createOneWorkpackagePerAsyncBatch = new AtomicBoolean(false);
 
 	/**
 	 *
@@ -117,6 +128,12 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 			final boolean createOneWorkpackagePerModel)
 	{
 		this.createOneWorkpackagePerModel.set(createOneWorkpackagePerModel);
+		return this;
+	}
+
+	public WorkpackagesOnCommitSchedulerTemplate<ItemType> setCreateOneWorkpackagePerAsyncBatch(final boolean createOneWorkpackagePerAsyncBatch)
+	{
+		this.createOneWorkpackagePerAsyncBatch.set(createOneWorkpackagePerAsyncBatch);
 		return this;
 	}
 
@@ -173,6 +190,11 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 	 */
 	protected abstract Object extractModelToEnqueueFromItem(final Collector collector, final ItemType item);
 
+	public Optional<AsyncBatchId> extractAsyncBatchFromItem(final Collector collector, final ItemType item)
+	{
+		return Optional.empty();
+	}
+
 	/**
 	 * @return true if the workpackage shall be enqueued even if there are no models collected to it.
 	 */
@@ -209,7 +231,8 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 			return new Collector(
 					ctx,
 					WorkpackagesOnCommitSchedulerTemplate.this.createOneWorkpackagePerModel.get(),
-					userIdInCharge);
+					userIdInCharge,
+					WorkpackagesOnCommitSchedulerTemplate.this.createOneWorkpackagePerAsyncBatch.get());
 		}
 
 		@Override
@@ -244,20 +267,24 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 	{
 		private final Properties ctx;
 		private final LinkedHashSet<Object> models = new LinkedHashSet<>();
+		private final Map<AsyncBatchId, List<Object>> batchId2Models = new HashMap<>();
 		private final Map<String, Object> parameters = new LinkedHashMap<>();
 		private final boolean createOneWorkpackagePerModel;
 		private final UserId userIdInCharge;
+		private final boolean createOneWorkpackagePerAsyncBatch;
 
 		private boolean processed = false;
 
 		private Collector(
 				final Properties ctx,
 				final boolean createOneWorkpackagePerModel,
-				final UserId userIdInCharge)
+				final UserId userIdInCharge,
+				final boolean createOneWorkpackagePerAsyncBatch)
 		{
 			this.ctx = ctx;
 			this.createOneWorkpackagePerModel = createOneWorkpackagePerModel;
 			this.userIdInCharge = userIdInCharge;
+			this.createOneWorkpackagePerAsyncBatch = createOneWorkpackagePerAsyncBatch;
 		}
 
 		private void assertNotProcessed()
@@ -276,6 +303,20 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 			assertNotProcessed();
 
 			final Object model = WorkpackagesOnCommitSchedulerTemplate.this.extractModelToEnqueueFromItem(this, item);
+
+			if (isCreateOneWorkpackagePerAsyncBatch())
+			{
+				final AsyncBatchId asyncBatchId = WorkpackagesOnCommitSchedulerTemplate.this.extractAsyncBatchFromItem(this, item)
+						.orElse(NONE_ASYNC_BATCH_ID);
+
+				final List<Object> modelList = new ArrayList<>();
+
+				Optional.ofNullable(model).ifPresent(modelList::add);
+
+				this.batchId2Models.merge(asyncBatchId, modelList, (oldList, newList) -> { oldList.addAll(newList); return oldList; });
+				return this;
+			}
+
 			if (model != null)
 			{
 				models.add(model);
@@ -310,11 +351,16 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 			return createOneWorkpackagePerModel;
 		}
 
+		private boolean isCreateOneWorkpackagePerAsyncBatch()
+		{
+			return createOneWorkpackagePerAsyncBatch;
+		}
+
 		public void createAndSubmitWorkpackage()
 		{
 			markAsProcessed();
 
-			if (models.isEmpty() && !isEnqueueWorkpackageWhenNoModelsEnqueued())
+			if (hasNoModels() && !isEnqueueWorkpackageWhenNoModelsEnqueued())
 			{
 				return;
 			}
@@ -328,22 +374,48 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 			{
 				for (final Object model : models)
 				{
-					createAndSubmitWorkpackage(blockBuilder, ImmutableList.of(model));
+					createAndSubmitWorkpackage(blockBuilder, ImmutableList.of(model), null);
 				}
+			}
+			else if (isCreateOneWorkpackagePerAsyncBatch())
+			{
+				createAndSubmitWorkpackagesByAsyncBatch(blockBuilder);
 			}
 			else
 			{
-				createAndSubmitWorkpackage(blockBuilder, models);
+				createAndSubmitWorkpackage(blockBuilder, models, null);
 			}
 		}
 
-		private void createAndSubmitWorkpackage(final IWorkPackageBlockBuilder blockBuilder, final Collection<Object> modelsToEnqueue)
+		private void createAndSubmitWorkpackage(
+				@NonNull final IWorkPackageBlockBuilder blockBuilder,
+				@NonNull final Collection<Object> modelsToEnqueue,
+				@Nullable final AsyncBatchId asyncBatchId)
 		{
-			blockBuilder.newWorkpackage()
+			final IWorkPackageBuilder builder = blockBuilder.newWorkpackage()
 					.setUserInChargeId(userIdInCharge)
 					.parameters(parameters)
-					.addElements(modelsToEnqueue)
-					.build();
+					.addElements(modelsToEnqueue);
+
+			if (asyncBatchId != null)
+			{
+				final I_C_Async_Batch asyncBatch = asyncBatchBL.getAsyncBatchById(asyncBatchId);
+				builder.setC_Async_Batch(asyncBatch);
+			}
+
+			builder.build();
+		}
+
+		private void createAndSubmitWorkpackagesByAsyncBatch(@NonNull final IWorkPackageBlockBuilder blockBuilder)
+		{
+			batchId2Models.forEach((key, models) -> {
+				createAndSubmitWorkpackage(blockBuilder, models, AsyncBatchId.toAsyncBatchIdOrNull(key));
+			});
+		}
+
+		private boolean hasNoModels()
+		{
+			return isCreateOneWorkpackagePerAsyncBatch() ? batchId2Models.isEmpty() : models.isEmpty();
 		}
 	}
 

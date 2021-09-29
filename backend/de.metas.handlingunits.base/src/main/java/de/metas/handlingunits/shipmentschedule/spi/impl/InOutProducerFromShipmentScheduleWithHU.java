@@ -25,9 +25,6 @@ package de.metas.handlingunits.shipmentschedule.spi.impl;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import de.metas.bpartner.BPartnerContactId;
-import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -44,6 +41,8 @@ import de.metas.handlingunits.shipmentschedule.api.IInOutProducerFromShipmentSch
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.inout.IInOutDAO;
+import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
+import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
 import de.metas.inout.event.InOutUserNotificationsProducer;
 import de.metas.inout.model.I_M_InOut;
@@ -125,7 +124,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 
 	@Nullable
 	private I_M_InOut currentShipment;
-	
+
 	@Nullable
 	private ShipmentLineBuilder currentShipmentLineBuilder;
 
@@ -342,13 +341,9 @@ public class InOutProducerFromShipmentScheduleWithHU
 
 		//
 		// BPartner, Location & Contact
-		{
-			final BPartnerId bpartnerId = shipmentScheduleEffectiveValuesBL.getBPartnerId(shipmentSchedule);
-			final BPartnerLocationId bpLocationId = shipmentScheduleEffectiveValuesBL.getBPartnerLocationId(shipmentSchedule);
-			shipment.setC_BPartner_ID(bpartnerId.getRepoId());
-			shipment.setC_BPartner_Location_ID(bpLocationId.getRepoId());
-			shipment.setAD_User_ID(BPartnerContactId.toRepoId(shipmentScheduleEffectiveValuesBL.getBPartnerContactId(shipmentSchedule)));
-		}
+		InOutDocumentLocationAdapterFactory
+				.locationAdapter(shipment)
+				.setFrom(shipmentScheduleEffectiveValuesBL.getDocumentLocation(shipmentSchedule));
 
 		//
 		// Document Dates
@@ -393,6 +388,11 @@ public class InOutProducerFromShipmentScheduleWithHU
 			{
 				shipment.setM_ShipperTransportation_ID(shipperTransportation.getM_ShipperTransportation_ID());
 			}
+		}
+
+		if (shipmentSchedule.getC_Async_Batch_ID() > 0)
+		{
+			shipment.setC_Async_Batch_ID(shipmentSchedule.getC_Async_Batch_ID());
 		}
 
 		//

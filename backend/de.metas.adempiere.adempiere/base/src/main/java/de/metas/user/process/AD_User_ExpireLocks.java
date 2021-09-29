@@ -22,27 +22,25 @@ package de.metas.user.process;
  * #L%
  */
 
+import de.metas.process.JavaProcess;
+import de.metas.util.Services;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
+import org.compiere.model.I_AD_User;
+import org.compiere.util.DB;
+import org.compiere.util.TrxRunnable;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
-
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_AD_User;
-import org.compiere.model.MSysConfig;
-import org.compiere.util.DB;
-import org.compiere.util.TrxRunnable;
-
-import de.metas.process.JavaProcess;
-import de.metas.util.Services;
 
 public class AD_User_ExpireLocks extends JavaProcess
 {
 	@Override
 	protected String doIt() throws Exception
 	{
-		final int accountLockExpire = MSysConfig.getIntValue("USERACCOUNT_LOCK_EXPIRE", 30);
+		final int accountLockExpire = Services.get(ISysConfigBL.class).getIntValue("USERACCOUNT_LOCK_EXPIRE", 30);
 
 		final String sql = "SELECT * FROM AD_User" + " WHERE IsAccountLocked = 'Y'";
 

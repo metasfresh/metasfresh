@@ -22,6 +22,17 @@ package de.metas.async.spi.impl;
  * #L%
  */
 
+import com.google.common.annotations.VisibleForTesting;
+import de.metas.cache.CCache;
+import de.metas.logging.LogManager;
+import de.metas.organization.ClientAndOrgId;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.service.ISysConfigBL;
+import org.compiere.model.I_AD_SysConfig;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
 
 import java.util.Comparator;
 import java.util.Map;
@@ -31,19 +42,6 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.function.Function;
 import java.util.function.Supplier;
-
-import org.adempiere.service.ISysConfigBL;
-import org.compiere.model.I_AD_SysConfig;
-import org.compiere.util.Env;
-import org.slf4j.Logger;
-
-import com.google.common.annotations.VisibleForTesting;
-
-import de.metas.cache.CCache;
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
 
 /**
  * This class uses <code>AD_Sysconfig</code> to obtain priorities for different workpackage-sizes.
@@ -92,9 +90,6 @@ public class SysconfigBackedSizeBasedWorkpackagePrioConfig implements Function<I
 	private final String sysConfigPrefix;
 
 	/**
-	 *
-	 *
-	 * @param queue the queue for which we create this function. Its internal name is used to construct the <code>AD_SysConfig</code> prefix.
 	 * @param defaultPrio the priority to return in case that there is no proper <code>AD_SysConfig</code> info.
 	 */
 	/* package */SysconfigBackedSizeBasedWorkpackagePrioConfig(
@@ -177,8 +172,7 @@ public class SysconfigBackedSizeBasedWorkpackagePrioConfig implements Function<I
 					public SortedMap<Integer, ConstantWorkpackagePrio> get()
 					{
 						final Map<String, String> valuesForPrefix = Services.get(ISysConfigBL.class).getValuesForPrefix(sysConfigPrefix,
-								AD_Client_ID,
-								AD_Org_ID);
+								ClientAndOrgId.ofClientAndOrg(AD_Client_ID, AD_Org_ID));
 
 						// initialize reverse-sorted map (biggest number first)
 						final TreeMap<Integer, ConstantWorkpackagePrio> sortedMap = new TreeMap<Integer, ConstantWorkpackagePrio>(new Comparator<Integer>()

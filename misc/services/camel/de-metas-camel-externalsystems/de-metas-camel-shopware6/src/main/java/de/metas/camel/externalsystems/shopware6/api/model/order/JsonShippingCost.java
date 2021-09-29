@@ -27,9 +27,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.util.List;
 
 @Value
@@ -41,6 +43,10 @@ public class JsonShippingCost
 	@JsonProperty("calculatedTaxes")
 	List<JsonTax> calculatedTaxes;
 
+	@Nullable
+	@JsonProperty("totalPrice")
+	BigDecimal totalPrice;
+	
 	@JsonIgnoreProperties(ignoreUnknown = true)
 	@JsonPOJOBuilder(withPrefix = "")
 	static class JsonShippingCostBuilder
