@@ -74,7 +74,7 @@ public class C_Order_CreatePOFromSOsDAO implements IC_Order_CreatePOFromSOsDAO
 			final String poReference,
 			final Timestamp datePromised_From,
 			final Timestamp datePromised_To,
-			final boolean IsVendorInOrderLinesRequired)
+			final boolean isVendorInOrderLinesRequired)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 

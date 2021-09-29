@@ -11,8 +11,8 @@ import de.metas.order.createFrom.po_from_so.impl.CreatePOFromSOsAggregationKeyBu
 import de.metas.order.createFrom.po_from_so.impl.CreatePOFromSOsAggregator;
 import de.metas.order.model.I_C_Order;
 import de.metas.process.JavaProcess;
+import de.metas.process.Param;
 import de.metas.util.Services;
-import org.adempiere.util.api.IRangeAwareParams;
 import org.adempiere.util.lang.Mutable;
 import org.apache.commons.collections4.IteratorUtils;
 import org.compiere.model.I_C_OrderLine;
@@ -55,26 +55,33 @@ import java.util.Set;
 public class C_Order_CreatePOFromSOs
 		extends JavaProcess
 {
-
+	@Param(parameterName = "DatePromised_From", mandatory = true)
 	private Timestamp p_DatePromised_From;
 
+	@Param(parameterName = "DatePromised_To", mandatory = true)
 	private Timestamp p_DatePromised_To;
 
+	@Param(parameterName = "C_BPartner_ID", mandatory = true)
 	private int p_C_BPartner_ID;
 
+	@Param(parameterName = "Vendor_ID")
 	private int p_Vendor_ID;
 
+	@Param(parameterName = "C_Order_ID", mandatory = true)
 	private int p_C_Order_ID;
 
+	@Param(parameterName = "TypeOfPurchase", mandatory = true)
 	private PurchaseTypeEnum p_TypeOfPurchase;
 
+	@Param(parameterName = "poReference")
 	private String p_poReference;
+
+	@Param(parameterName = "IsVendorInOrderLinesRequired", mandatory = true)
+	private boolean p_IsVendorInOrderLinesRequired;
 
 	private final IC_Order_CreatePOFromSOsDAO orderCreatePOFromSOsDAO = Services.get(IC_Order_CreatePOFromSOsDAO.class);
 
 	private final IC_Order_CreatePOFromSOsBL orderCreatePOFromSOsBL = Services.get(IC_Order_CreatePOFromSOsBL.class);
-
-	private boolean p_IsVendorInOrderLinesRequired;
 
 	/**
 	 * Task http://dewiki908/mediawiki/index.php/07228_Create_bestellung_from_auftrag_more_than_once_%28100300573628%29
@@ -83,22 +90,7 @@ public class C_Order_CreatePOFromSOs
 
 	private final INotificationBL userNotifications = Services.get(INotificationBL.class);
 
-	private static final AdMessageKey MSG_C_Orderline_Skipped_Ids = AdMessageKey.of("SkippedOrderLines");
-
-	@Override
-	protected void prepare()
-	{
-		final IRangeAwareParams params = getParameterAsIParams();
-
-		p_DatePromised_From = params.getParameterAsTimestamp("DatePromised_From");
-		p_DatePromised_To = params.getParameterAsTimestamp("DatePromised_To");
-		p_C_BPartner_ID = params.getParameterAsInt("C_BPartner_ID", -1);
-		p_Vendor_ID = params.getParameterAsInt("Vendor_ID", -1);
-		p_C_Order_ID = params.getParameterAsInt("C_Order_ID", -1);
-		p_TypeOfPurchase = PurchaseTypeEnum.ofCode(params.getParameterAsString("TypeOfPurchase"));
-		p_poReference = params.getParameterAsString("POReference");
-		p_IsVendorInOrderLinesRequired = params.getParameterAsBool("IsVendorInOrderLinesRequired");
-	}
+	private static final AdMessageKey MSG_SKIPPED_C_ORDERLINE_IDS = AdMessageKey.of("SkippedOrderLines");
 
 	@Override
 	protected String doIt() throws Exception
@@ -143,7 +135,7 @@ public class C_Order_CreatePOFromSOs
 		{
 			final UserNotificationRequest userNotificationRequest = UserNotificationRequest.builder()
 					.recipientUserId(Env.getLoggedUserId())
-					.contentADMessage(MSG_C_Orderline_Skipped_Ids)
+					.contentADMessage(MSG_SKIPPED_C_ORDERLINE_IDS)
 					.contentADMessageParam(skippedSalesOrderLines)
 					.build();
 			userNotifications.send(userNotificationRequest);
