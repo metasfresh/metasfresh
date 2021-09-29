@@ -3,9 +3,11 @@ package de.metas.rest_api.v2.authentication;
 import de.metas.Profiles;
 import de.metas.common.rest_api.v2.authentication.JsonAuthRequest;
 import de.metas.common.rest_api.v2.authentication.JsonAuthResponse;
+import de.metas.common.rest_api.v2.i18n.JsonMessages;
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
+import de.metas.rest_api.v2.i18n.I18NRestController;
 import de.metas.security.Role;
 import de.metas.security.RoleId;
 import de.metas.security.UserAuthToken;
@@ -45,14 +47,16 @@ public class AuthenticationRestController
 	private final Logger logger = LogManager.getLogger(AuthenticationRestController.class);
 	private final IUserBL userBL = Services.get(IUserBL.class);
 	private final UserAuthTokenService userAuthTokenService;
+	private final I18NRestController i18nRestController;
 
 	public AuthenticationRestController(
 			@NonNull final UserAuthTokenService userAuthTokenService,
-			@NonNull final UserAuthTokenFilterConfiguration userAuthTokenFilterConfiguration)
+			@NonNull final UserAuthTokenFilterConfiguration userAuthTokenFilterConfiguration, final I18NRestController i18nRestController)
 	{
 		this.userAuthTokenService = userAuthTokenService;
+		this.i18nRestController = i18nRestController;
 
-		userAuthTokenFilterConfiguration.excludePathEndingWith(ENDPOINT);
+		userAuthTokenFilterConfiguration.excludePathContaining(ENDPOINT);
 	}
 
 	@PostMapping
@@ -63,7 +67,7 @@ public class AuthenticationRestController
 			final LoginContext loginCtx = new LoginContext(Env.newTemporaryCtx());
 			loginCtx.setWebui(true);
 			final Login loginService = new Login(loginCtx);
-			
+
 			final LoginAuthenticateResponse loginAuthResult = loginService.authenticate(
 					request.getUsername(),
 					HashableString.ofPlainValue(request.getPassword()));
@@ -84,10 +88,13 @@ public class AuthenticationRestController
 					.build());
 
 			final Language userLanguage = userBL.getUserLanguage(userAuthToken.getUserId());
+			final String adLanguage = userLanguage.getAD_Language();
+			final JsonMessages messages = i18nRestController.getMessages(null, adLanguage);
 
 			return ResponseEntity.ok(
 					JsonAuthResponse.ok(userAuthToken.getAuthToken())
-							.language(userLanguage.getAD_Language())
+							.language(adLanguage)
+							.messages(messages.getMessages())
 							.build());
 		}
 		catch (final Exception ex)

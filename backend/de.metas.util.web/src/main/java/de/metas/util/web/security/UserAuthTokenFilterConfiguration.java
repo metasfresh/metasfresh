@@ -17,13 +17,13 @@ public class UserAuthTokenFilterConfiguration
 
 	private final CopyOnWriteArrayList<PathMatcher> excludedPaths = new CopyOnWriteArrayList<>();
 
-	public void excludePathEndingWith(@NonNull final String pathEndingWith)
+	public void excludePathContaining(@NonNull final String containing)
 	{
 		final PathMatcher matcher = PathMatcher.builder()
-				.endsWith(pathEndingWith)
+				.containing(containing)
 				.build();
 		excludedPaths.add(matcher);
-		logger.info("Excluding path: {}", pathEndingWith);
+		logger.info("Excluding path: {}", matcher);
 	}
 
 	public boolean isExcludedFromSecurityChecking(@NonNull final HttpServletRequest httpRequest)
@@ -46,9 +46,9 @@ public class UserAuthTokenFilterConfiguration
 	@Builder
 	private static class PathMatcher
 	{
-		@NonNull String endsWith;
+		@NonNull String containing;
 
-		public boolean isMatching(final String path) {return path.endsWith(endsWith);}
+		public boolean isMatching(final String path) {return path.contains(containing);}
 	}
 
 }
