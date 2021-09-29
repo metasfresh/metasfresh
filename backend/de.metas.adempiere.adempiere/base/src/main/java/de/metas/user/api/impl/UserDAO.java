@@ -370,13 +370,4 @@ public class UserDAO implements IUserDAO
 				.create()
 				.delete();
 	}
-
-	// @Override
-	// public void deletePInstancesForUserId(final UserId userId)
-	// {
-	// 	queryBL.createQueryBuilder(I_AD_PInstance.class)
-	// 			.addEqualsFilter(I_AD_PInstance.COLUMN_AD_User_ID.getColumnName(), userId)
-	// 			.create()
-	// 			.delete();
-	// }
 }

@@ -29,14 +29,12 @@ import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import de.metas.util.hash.HashableString;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.IClientDAO;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.service.IValuePreferenceDAO;
-import org.adempiere.service.impl.ValuePreferenceDAO;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
@@ -57,7 +55,6 @@ public class UserBL implements IUserBL
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IUserRolePermissionsDAO userRolePermissionsDAO = Services.get(IUserRolePermissionsDAO.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-	private final UserAuthTokenRepository userAuthTokenRepository = SpringContextHolder.instance.getBean(UserAuthTokenRepository.class);
 	private final IValuePreferenceDAO valuePreferenceDAO = Services.get(IValuePreferenceDAO.class);
 
 	/**
@@ -71,6 +68,11 @@ public class UserBL implements IUserBL
 	private MailService mailService()
 	{
 		return SpringContextHolder.instance.getBean(MailService.class);
+	}
+
+	private UserAuthTokenRepository getUserAuthTokenRepository()
+	{
+		return SpringContextHolder.instance.getBean(UserAuthTokenRepository.class);
 	}
 
 	@Override
@@ -459,7 +461,7 @@ public class UserBL implements IUserBL
 		UserId userId = UserId.ofRepoId(userRecord.getAD_User_ID());
 
 		valuePreferenceDAO.deleteUserPreferenceByUserId(userId);
-		userAuthTokenRepository.deleteUserAuthTokenByUserId(userId);
+		getUserAuthTokenRepository().deleteUserAuthTokenByUserId(userId);
 
 		userRolePermissionsDAO.deleteUserOrgAccessByUserId(userId);
 

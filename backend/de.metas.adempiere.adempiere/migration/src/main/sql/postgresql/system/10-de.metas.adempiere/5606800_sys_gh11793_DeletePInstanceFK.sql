@@ -8,3 +8,5 @@ UPDATE AD_Column SET DDL_NoForeignKey='Y',Updated=TO_TIMESTAMP('2021-09-28 16:18
 INSERT INTO t_alter_column values('ad_pinstance','AD_User_ID','NUMERIC(10)',null,null)
 ;
 
+ALTER TABLE ad_pinstance
+    DROP CONSTRAINT aduser_pinstance;
