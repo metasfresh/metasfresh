@@ -32,7 +32,10 @@ class PickStep extends PureComponent {
         {activePickingStep && (
           <div className="picking-step-container">
             <div className="subtitle centered-text is-size-4 pt-3">
-              Pick Item <button onClick={this.goBackToPickingSteps}>Go back</button>
+              Pick Item{' '}
+              <button className="pickgoback-btn-green" onClick={this.goBackToPickingSteps}>
+                Go back
+              </button>
             </div>
             <div className="picking-step-details centered-text is-size-5">
               <div>Product: {productName}</div>
