@@ -252,7 +252,7 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 		for (final RoleId roleId : Services.get(IRoleDAO.class).getUserRoleIds(adUserId))
 		{
 			final IUserRolePermissions permissions = getUserRolePermissions(roleId, adUserId, clientId, date);
-			if (permissions.isOrgAccess(adOrgId, Access.READ)) // readonly access is fine for us
+			if (permissions.isOrgAccess(adOrgId, null, Access.READ)) // readonly access is fine for us
 			{
 				permissionsWithOrgAccess.add(permissions);
 			}
@@ -271,7 +271,7 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 		for (final RoleId roleId : Services.get(IRoleDAO.class).getUserRoleIds(adUserId))
 		{
 			final IUserRolePermissions permissions = getUserRolePermissions(roleId, adUserId, clientId, date);
-			if (permissions.isOrgAccess(adOrgId, Access.READ)) // readonly access is fine for us
+			if (permissions.isOrgAccess(adOrgId, null, Access.READ)) // readonly access is fine for us
 			{
 				return Optional.of(permissions);
 			}

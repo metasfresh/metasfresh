@@ -68,6 +68,7 @@ import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.table.api.AdTableId;
+import org.adempiere.ad.table.api.impl.TableIdsCache;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.service.ClientId;
@@ -319,7 +320,7 @@ class UserRolePermissions implements IUserRolePermissions
 				// System role:
 				getRoleId().isSystem()
 						// and Shall have at access to system organization:
-						&& isOrgAccess(OrgId.ANY, Access.WRITE);
+						&& isOrgAccess(OrgId.ANY, null, Access.WRITE);
 	}
 
 	/**************************************************************************
@@ -373,7 +374,7 @@ class UserRolePermissions implements IUserRolePermissions
 		return menuInfo;
 	}
 
-	private Set<OrgId> getOrgAccess(@Nullable final String tableName, final Access access)
+	private Set<OrgId> getOrgAccess( @Nullable final String tableName, final Access access)
 	{
 		if (isAccessAllOrgs())
 		{
@@ -406,7 +407,7 @@ class UserRolePermissions implements IUserRolePermissions
 	}
 
 	@Override
-	public String getOrgWhere(final String tableName, final Access access)
+	public String getOrgWhere(@Nullable final String tableName, final Access access)
 	{
 		final Set<OrgId> adOrgIds = getOrgAccess(tableName, access);
 		if (adOrgIds == ORGACCESS_ALL)
@@ -453,7 +454,7 @@ class UserRolePermissions implements IUserRolePermissions
 	 * @return true if access
 	 */
 	@Override
-	public boolean isOrgAccess(@NonNull final OrgId orgId, final Access access)
+	public boolean isOrgAccess(@NonNull final OrgId orgId, @Nullable final String tableName, final Access access)
 	{
 		// Readonly access to "*" organization is always granted
 		if (orgId.isAny() && access.isReadOnly())
@@ -461,7 +462,7 @@ class UserRolePermissions implements IUserRolePermissions
 			return true;
 		}
 
-		final Set<OrgId> orgs = getOrgAccess(null, access); // tableName=n/a
+		final Set<OrgId> orgs = getOrgAccess(tableName, access);
 		if (orgs == ORGACCESS_ALL)
 		{
 			return true;
@@ -825,8 +826,9 @@ class UserRolePermissions implements IUserRolePermissions
 			missingAccesses.add("client access");
 		}
 
+		final String tableName = TableIdsCache.instance.getTableName(AdTableId.ofRepoId(AD_Table_ID));
 		// Org Access: Verify if the role has access to the given organization - teo_sarca, patch [ 1628050 ]
-		if (missingAccesses.isEmpty() && !isOrgAccess(orgId, access))
+		if (missingAccesses.isEmpty() && !isOrgAccess(orgId, tableName, access))
 		{
 			missingAccesses.add("organization access");
 		}
