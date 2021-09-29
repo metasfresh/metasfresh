@@ -113,3 +113,13 @@ INSERT INTO AD_Process_Para_Trl (AD_Process_Para_ID, AD_Language,  AD_Client_ID,
 INSERT INTO AD_Table_Process (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Table_ID,AD_Table_Process_ID,Created,CreatedBy,EntityType,IsActive,Updated,UpdatedBy,WEBUI_DocumentAction,WEBUI_IncludedTabTopAction,WEBUI_ViewAction,WEBUI_ViewQuickAction,WEBUI_ViewQuickAction_Default) VALUES (0,0,584911,540310,541001,TO_TIMESTAMP('2021-09-23 19:46:08','YYYY-MM-DD HH24:MI:SS'),100,'D','Y',TO_TIMESTAMP('2021-09-23 19:46:08','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','N','N')
 ;
 
+
+
+-- 2021-09-29T15:18:33.496Z
+-- URL zum Konzept
+UPDATE AD_Process_Para SET DefaultValue='',Updated=TO_TIMESTAMP('2021-09-29 18:18:33','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=542101
+;
+
+
+
+
