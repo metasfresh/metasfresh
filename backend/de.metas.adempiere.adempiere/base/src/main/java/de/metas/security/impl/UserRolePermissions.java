@@ -415,6 +415,11 @@ class UserRolePermissions implements IUserRolePermissions
 			return "1=1"; // no org filter
 		}
 
+		if(adOrgIds.contains(OrgId.ANY))
+		{
+			return "1=1"; // no org filter
+		}
+
 		//
 		final StringBuilder sb = new StringBuilder();
 		final Iterator<OrgId> it = adOrgIds.iterator();
@@ -464,6 +469,11 @@ class UserRolePermissions implements IUserRolePermissions
 
 		final Set<OrgId> orgs = getOrgAccess(tableName, access);
 		if (orgs == ORGACCESS_ALL)
+		{
+			return true;
+		}
+
+		if(orgs.contains(OrgId.ANY))
 		{
 			return true;
 		}
