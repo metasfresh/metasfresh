@@ -26,6 +26,8 @@ import org.compiere.util.LoginAuthenticateResponse;
 import org.compiere.util.LoginContext;
 import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -54,14 +56,14 @@ public class AuthenticationRestController
 	}
 
 	@PostMapping
-	public JsonAuthResponse authenticate(@RequestBody @NonNull final JsonAuthRequest request)
+	public ResponseEntity<JsonAuthResponse> authenticate(@RequestBody @NonNull final JsonAuthRequest request)
 	{
-		final LoginContext loginCtx = new LoginContext(Env.newTemporaryCtx());
-		loginCtx.setWebui(true);
-		final Login loginService = new Login(loginCtx);
-
 		try
 		{
+			final LoginContext loginCtx = new LoginContext(Env.newTemporaryCtx());
+			loginCtx.setWebui(true);
+			final Login loginService = new Login(loginCtx);
+			
 			final LoginAuthenticateResponse loginAuthResult = loginService.authenticate(
 					request.getUsername(),
 					HashableString.ofPlainValue(request.getPassword()));
@@ -83,20 +85,23 @@ public class AuthenticationRestController
 
 			final Language userLanguage = userBL.getUserLanguage(userAuthToken.getUserId());
 
-			return JsonAuthResponse.ok(userAuthToken.getAuthToken())
-					.language(userLanguage.getAD_Language())
-					.build();
+			return ResponseEntity.ok(
+					JsonAuthResponse.ok(userAuthToken.getAuthToken())
+							.language(userLanguage.getAD_Language())
+							.build());
 		}
 		catch (final Exception ex)
 		{
 			if (AdempiereException.isUserValidationError(ex))
 			{
-				return JsonAuthResponse.error(AdempiereException.extractMessage(ex));
+				return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+						.body(JsonAuthResponse.error(AdempiereException.extractMessage(ex)));
 			}
 			else
 			{
 				logger.warn("Failed authenticating user {}", request.getUsername(), ex);
-				return JsonAuthResponse.error("Authentication error. Pls contact the system administrator.");
+				return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+						.body(JsonAuthResponse.error("Authentication error. Pls contact the system administrator."));
 			}
 		}
 
