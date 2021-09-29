@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 //import ZXingBrowser from '@zxing/browser';
-
+import Webcam from 'react-webcam';
 class BarcodeScanner extends Component {
   constructor(props) {
     super(props);
@@ -44,7 +44,8 @@ class BarcodeScanner extends Component {
             <div className="subtitle centered-text is-size-4">
               Please scan a Barcode &nbsp; <button onClick={this.stopScanning}>Stop Scan</button>
             </div>
-            <video className="viewport scanner-window" id="video" />
+            {/* <video className="viewport scanner-window" id="video" /> */}
+            <Webcam />
           </div>
         )}
       </div>
