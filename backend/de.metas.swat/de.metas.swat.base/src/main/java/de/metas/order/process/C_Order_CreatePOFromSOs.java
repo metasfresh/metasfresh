@@ -55,19 +55,19 @@ import java.util.Set;
 public class C_Order_CreatePOFromSOs
 		extends JavaProcess
 {
-	@Param(parameterName = "DatePromised_From", mandatory = true)
+	@Param(parameterName = "DatePromised_From")
 	private Timestamp p_DatePromised_From;
 
-	@Param(parameterName = "DatePromised_To", mandatory = true)
+	@Param(parameterName = "DatePromised_To")
 	private Timestamp p_DatePromised_To;
 
-	@Param(parameterName = "C_BPartner_ID", mandatory = true)
+	@Param(parameterName = "C_BPartner_ID")
 	private int p_C_BPartner_ID;
 
 	@Param(parameterName = "Vendor_ID")
 	private int p_Vendor_ID;
 
-	@Param(parameterName = "C_Order_ID", mandatory = true)
+	@Param(parameterName = "C_Order_ID")
 	private int p_C_Order_ID;
 
 	@Param(parameterName = "TypeOfPurchase", mandatory = true)
