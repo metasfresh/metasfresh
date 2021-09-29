@@ -15,9 +15,9 @@ export function switchoffLinesVisibility({ wfProcessId, activityId }) {
  * @method switchoffLinesVisibility
  * @summary sets the lines visibility to `false` and by doing this the steps will be visible
  */
-export function updatePickingStepQty({ wfProcessId, activityId, stepId, qty }) {
+export function updatePickingStepQty({ wfProcessId, activityId, lineIndex, stepId, qty }) {
   return {
     type: UPDATE_PICKING_STEP_QTY,
-    payload: { wfProcessId, activityId, stepId, qty },
+    payload: { wfProcessId, activityId, lineIndex, stepId, qty },
   };
 }

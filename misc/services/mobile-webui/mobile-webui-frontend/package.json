@@ -14,6 +14,7 @@
     "axios": "^0.21.4",
     "bulma": "^0.9.3",
     "connected-react-router": "^6.9.1",
+    "immer": "^9.0.6",
     "js-cookie": "^3.0.1",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",

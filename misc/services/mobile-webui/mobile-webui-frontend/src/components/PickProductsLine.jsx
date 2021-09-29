@@ -14,7 +14,7 @@ class PickProductsLine extends Component {
   };
 
   render() {
-    const { id, activityId, wfProcessId, caption, isLinesListVisible, steps } = this.props;
+    const { id, activityId, wfProcessId, caption, isLinesListVisible, steps, lineIndex } = this.props;
     return (
       <div>
         {isLinesListVisible && (
@@ -32,7 +32,9 @@ class PickProductsLine extends Component {
           </div>
         )}
         {/* Steps Listing */}
-        {!isLinesListVisible && <PickProductsSteps steps={steps} activityId={activityId} wfProcessId={wfProcessId} />}
+        {!isLinesListVisible && (
+          <PickProductsSteps steps={steps} activityId={activityId} wfProcessId={wfProcessId} lineIndex={lineIndex} />
+        )}
       </div>
     );
   }
@@ -53,6 +55,7 @@ PickProductsLine.propTypes = {
   switchoffLinesVisibility: PropTypes.func.isRequired,
   isLinesListVisible: PropTypes.bool,
   steps: PropTypes.array.isRequired,
+  lineIndex: PropTypes.number.isRequired,
 };
 
 export default connect(mapStateToProps, { switchoffLinesVisibility })(PickProductsLine);
