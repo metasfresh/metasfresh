@@ -2,6 +2,7 @@ import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { updatePickingStepQty } from '../actions/PickingActions';
+import BarcodeScanner from './containers/BarcodeScanner';
 
 class PickStep extends PureComponent {
   constructor(props) {
@@ -25,7 +26,7 @@ class PickStep extends PureComponent {
 
   render() {
     const { activePickingStep } = this.state;
-    const { id, locatorName, productName, qtyToPick, uom, pickstepState } = this.props;
+    const { id, locatorName, productName, huBarcode, uom, pickstepState, qtyToPick } = this.props;
     const { qtyPicked } = pickstepState;
     return (
       <div>
@@ -38,22 +39,27 @@ class PickStep extends PureComponent {
               </button>
             </div>
             <div className="picking-step-details centered-text is-size-5">
-              <div>Product: {productName}</div>
-              <div>Locator: {locatorName}</div>
-              <div>UOM: {uom}</div>
-              <div>Qty to pick: {qtyToPick}</div>
-              <div className="columns">
-                <div className="column is-size-4-mobile">
-                  Qty picked:{' '}
-                  <input
-                    className="input"
-                    type="text"
-                    placeholder="Quantity"
-                    value={qtyPicked}
-                    onChange={(e) => this.modifyQty(e)}
-                  />
-                </div>
+              <div className="columns is-mobile">
+                <div className="column is-half has-text-right">Product:</div>
+                <div className="column is-half has-text-left">{productName}</div>
               </div>
+              <div className="columns is-mobile">
+                <div className="column is-half has-text-right">Locator:</div>
+                <div className="column is-half has-text-left">{locatorName}</div>
+              </div>
+              <div className="columns is-mobile">
+                <div className="column is-half has-text-right">UOM:</div>
+                <div className="column is-half has-text-left">{uom}</div>
+              </div>
+              <div className="columns is-mobile">
+                <div className="column is-half has-text-right">Quantity to pick:</div>
+                <div className="column is-half has-text-left">{qtyToPick}</div>
+              </div>
+              <div className="columns is-mobile">
+                <div className="column is-half has-text-right">Quantity picked:</div>
+                <div className="column is-half has-text-left">{qtyPicked}</div>
+              </div>
+              <BarcodeScanner id={huBarcode} componentProps={{ caption: 'Scan' }} />
             </div>
           </div>
         )}
@@ -98,6 +104,7 @@ PickStep.propTypes = {
   stepId: PropTypes.number.isRequired,
   lineIndex: PropTypes.number.isRequired,
   pickstepState: PropTypes.object,
+  huBarcode: PropTypes.string,
 };
 
 export default connect(mapStateToProps, { updatePickingStepQty })(PickStep);
