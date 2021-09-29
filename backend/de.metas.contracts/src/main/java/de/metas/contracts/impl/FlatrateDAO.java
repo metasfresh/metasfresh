@@ -8,6 +8,7 @@ import de.metas.contracts.ConditionsId;
 import de.metas.contracts.FlatrateDataId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IFlatrateDAO;
+import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Data;
 import de.metas.contracts.model.I_C_Flatrate_DataEntry;
@@ -989,5 +990,20 @@ public class FlatrateDAO implements IFlatrateDAO
 	public void save(@NonNull I_C_Flatrate_Term flatrateTerm)
 	{
 		InterfaceWrapperHelper.save(flatrateTerm);
+	}
+
+	@Cached(cacheName = I_C_Flatrate_Term.Table_Name + "#by#bPartnerId#typeConditions")
+	public List<I_C_Flatrate_Term> retrieveTerms(
+			@NonNull final BPartnerId bPartnerId,
+			@NonNull final OrgId orgId,
+			@NonNull final TypeConditions typeConditions)
+	{
+		return queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Bill_BPartner_ID, bPartnerId.getRepoId())
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Type_Conditions, typeConditions.getCode())
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_AD_Org_ID, orgId.getRepoId())
+				.create()
+				.list(I_C_Flatrate_Term.class);
 	}
 }
