@@ -61,7 +61,8 @@ class PickStep extends PureComponent {
                 <div className="columns">
                   <div className="column is-size-4-mobile no-p">Product: {productName}</div>
                   <div className="column is-size-7 no-p">
-                    To Pick: {qtyToPick} Quantity picked: {qtyPicked} UOM: {uom} Locator Name: {locatorName}
+                    To Pick: <span className="has-text-weight-bold">{qtyToPick}</span> Quantity picked:{' '}
+                    <span className="has-text-weight-bold">{qtyPicked}</span> UOM: {uom} Locator Name: {locatorName}
                   </div>
                 </div>
               </div>
