@@ -376,13 +376,19 @@ class UserRolePermissions implements IUserRolePermissions
 
 	private Set<OrgId> getOrgAccess( @Nullable final String tableName, final Access access)
 	{
+		final Optional<Set<OrgId>> orgsWithAccess = tableOrgPermissions.getOrgsWithAccess(tableName, access);
+
+		if(orgsWithAccess.isPresent())
+		{
+			return orgsWithAccess.get();
+		}
+
 		if (isAccessAllOrgs())
 		{
 			return ORGACCESS_ALL;
 		}
 
-		return tableOrgPermissions.getOrgsWithAccess(tableName, access)
-				.orElseGet(() -> orgPermissions.getOrgAccess(access));
+		return orgPermissions.getOrgAccess(access);
 	}
 
 	@Override
