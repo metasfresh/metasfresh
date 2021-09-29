@@ -19,8 +19,8 @@ class PickStep extends PureComponent {
   goBackToPickingSteps = () => this.setState({ activePickingStep: false });
 
   modifyQty = (e) => {
-    const { updatePickingStepQty, wfProcessId, activityId, stepId } = this.props;
-    updatePickingStepQty({ wfProcessId, activityId, stepId, qty: e.target.value });
+    const { updatePickingStepQty, wfProcessId, activityId, lineIndex, stepId } = this.props;
+    updatePickingStepQty({ wfProcessId, activityId, lineIndex, stepId, qty: e.target.value });
   };
 
   render() {
@@ -83,6 +83,7 @@ PickStep.propTypes = {
   wfProcessId: PropTypes.string.isRequired,
   activityId: PropTypes.string.isRequired,
   stepId: PropTypes.number.isRequired,
+  lineIndex: PropTypes.number.isRequired,
 };
 
 export default connect(null, { updatePickingStepQty })(PickStep);
