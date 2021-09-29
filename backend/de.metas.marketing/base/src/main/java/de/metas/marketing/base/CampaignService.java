@@ -1,12 +1,5 @@
 package de.metas.marketing.base;
 
-import java.util.stream.Stream;
-
-import javax.annotation.Nullable;
-
-import de.metas.user.UserId;
-import org.springframework.stereotype.Service;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -23,6 +16,10 @@ import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Nullable;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -163,4 +160,5 @@ public class CampaignService
 		contactPersonRepository.revokeConsent(savedContactPerson);
 		campaignRepository.removeContactPersonFromCampaign(savedContactPerson, campaign);
 	}
+
 }
