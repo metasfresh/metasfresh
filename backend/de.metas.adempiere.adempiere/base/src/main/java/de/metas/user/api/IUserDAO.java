@@ -100,14 +100,4 @@ public interface IUserDAO extends ISingletonService
 			@NonNull UserId sourceUserId,
 			@NonNull OrgId targetOrgId);
 
-	void deleteUserSubstituteByUserId(final UserId userId);
-
-	void deleteUserMailByUserId(final UserId userId);
-
-	void deleteUserQueryByUserId(final UserId userId);
-
-	void deleteUserRolesByUserId(UserId userId);
-
-	void deleteUserOrgAssignmentByUserId(UserId userId);
-
 }

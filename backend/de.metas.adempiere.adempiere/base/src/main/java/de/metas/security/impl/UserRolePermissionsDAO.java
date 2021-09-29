@@ -88,6 +88,7 @@ import org.compiere.model.I_AD_Window;
 import org.compiere.model.I_AD_Window_Access;
 import org.compiere.model.I_AD_Workflow;
 import org.compiere.model.I_AD_Workflow_Access;
+import org.compiere.model.I_C_OrgAssignment;
 import org.compiere.model.X_AD_Table_Access;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
@@ -1295,6 +1296,15 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 	{
 		queryBL.createQueryBuilder(I_AD_User_OrgAccess.class)
 				.addEqualsFilter(I_AD_User_OrgAccess.COLUMNNAME_AD_User_ID, userId)
+				.create()
+				.delete();
+	}
+
+	@Override
+	public void deleteUserOrgAssignmentByUserId(final UserId userId)
+	{
+		queryBL.createQueryBuilder(I_C_OrgAssignment.class)
+				.addEqualsFilter(I_C_OrgAssignment.COLUMNNAME_AD_User_ID, userId)
 				.create()
 				.delete();
 	}

@@ -163,4 +163,6 @@ public interface IUserRolePermissionsDAO extends ISingletonService
 	boolean isAdministrator(ClientId clientId, UserId adUserId, LocalDate date);
 
 	void deleteUserOrgAccessByUserId(final UserId userId);
+
+	void deleteUserOrgAssignmentByUserId(final UserId userId);
 }
