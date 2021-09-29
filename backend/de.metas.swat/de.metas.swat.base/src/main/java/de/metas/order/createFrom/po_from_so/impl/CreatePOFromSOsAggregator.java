@@ -4,6 +4,7 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.i18n.IMsgBL;
 import de.metas.order.IOrderBL;
+import de.metas.order.OrderLineId;
 import de.metas.order.createFrom.po_from_so.PurchaseTypeEnum;
 import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.organization.IOrgDAO;
@@ -11,6 +12,7 @@ import de.metas.organization.OrgId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.collections.MapReduceAggregator;
+import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -23,8 +25,10 @@ import org.compiere.model.I_C_OrderLine;
 import org.compiere.util.Env;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import static org.compiere.model.X_C_DocType.DOCSUBTYPE_Mediated;
 
@@ -54,7 +58,6 @@ import static org.compiere.model.X_C_DocType.DOCSUBTYPE_Mediated;
  * Created new purchase orders for sales order lines and contains one instance of {@link CreatePOLineFromSOLinesAggregator} for each created purchase order line.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_C_OrderLine>
 {
@@ -73,6 +76,9 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	final Map<String, CreatePOLineFromSOLinesAggregator> orderKey2OrderLineAggregator = new HashMap<>();
+
+	@Getter
+	final Set<OrderLineId> skippedSalesOrderLineIds = new HashSet<>();
 
 	public CreatePOFromSOsAggregator(
 			final IContextAware context,
@@ -96,6 +102,7 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 	{
 		if (CreatePOFromSOsAggregationKeyBuilder.KEY_SKIP.equals(vendorBPartnerValue))
 		{
+			skippedSalesOrderLineIds.add(OrderLineId.ofRepoId(salesOrderLine.getC_OrderLine_ID()));
 			return dummyOrder;
 			// nothing to do;
 		}
@@ -198,7 +205,7 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 		purchaseOrder.setLink_Order_ID(salesOrder.getC_Order_ID());
 		purchaseOrder.setIsSOTrx(false);
 
-		if(PurchaseTypeEnum.MEDIATED.equals(p_TypeOfPurchase))
+		if (PurchaseTypeEnum.MEDIATED.equals(p_TypeOfPurchase))
 		{
 			orderBL.setPODocTypeTargetId(purchaseOrder, DOCSUBTYPE_Mediated);
 		}
@@ -279,7 +286,7 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 
 		InterfaceWrapperHelper.save(purchaseOrder);
 		return purchaseOrder;
-	}	// createPOForVendor
+	}    // createPOForVendor
 
 	private int findWareousePOId(final I_C_Order salesOrder)
 	{

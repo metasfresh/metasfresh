@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1248532788L;
+	private static final long serialVersionUID = -676729616L;
 
     /** Standard Constructor */
     public X_C_OrderLine (final Properties ctx, final int C_OrderLine_ID, @Nullable final String trxName)
@@ -175,6 +175,21 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	public int getC_BPartner_Location_Value_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_BPartner_Location_Value_ID);
+	}
+
+	@Override
+	public void setC_BPartner_Vendor_ID (final int C_BPartner_Vendor_ID)
+	{
+		if (C_BPartner_Vendor_ID < 1) 
+			set_Value (COLUMNNAME_C_BPartner_Vendor_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_BPartner_Vendor_ID, C_BPartner_Vendor_ID);
+	}
+
+	@Override
+	public int getC_BPartner_Vendor_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_BPartner_Vendor_ID);
 	}
 
 	@Override
@@ -1667,17 +1682,6 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_TaxAmtInfo);
 		return bd != null ? bd : BigDecimal.ZERO;
-	}
-
-	@Override
-	public void setTradeBom_Product_ID (final int TradeBom_Product_ID)
-	{
-		throw new IllegalArgumentException ("TradeBom_Product_ID is virtual column");	}
-
-	@Override
-	public int getTradeBom_Product_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_TradeBom_Product_ID);
 	}
 
 	@Override

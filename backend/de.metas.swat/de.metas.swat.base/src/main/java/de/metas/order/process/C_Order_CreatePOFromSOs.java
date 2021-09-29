@@ -1,5 +1,9 @@
 package de.metas.order.process;
 
+import de.metas.i18n.AdMessageKey;
+import de.metas.notification.INotificationBL;
+import de.metas.notification.UserNotificationRequest;
+import de.metas.order.OrderLineId;
 import de.metas.order.createFrom.po_from_so.IC_Order_CreatePOFromSOsBL;
 import de.metas.order.createFrom.po_from_so.IC_Order_CreatePOFromSOsDAO;
 import de.metas.order.createFrom.po_from_so.PurchaseTypeEnum;
@@ -12,10 +16,12 @@ import org.adempiere.util.api.IRangeAwareParams;
 import org.adempiere.util.lang.Mutable;
 import org.apache.commons.collections4.IteratorUtils;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.util.Env;
 
 import java.sql.Timestamp;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 /*
  * #%L
@@ -27,12 +33,12 @@ import java.util.List;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -68,10 +74,16 @@ public class C_Order_CreatePOFromSOs
 
 	private final IC_Order_CreatePOFromSOsBL orderCreatePOFromSOsBL = Services.get(IC_Order_CreatePOFromSOsBL.class);
 
+	private boolean p_IsVendorInOrderLinesRequired;
+
 	/**
 	 * Task http://dewiki908/mediawiki/index.php/07228_Create_bestellung_from_auftrag_more_than_once_%28100300573628%29
 	 */
 	private final boolean p_allowMultiplePOOrders = true;
+
+	private final INotificationBL userNotifications = Services.get(INotificationBL.class);
+
+	private static final AdMessageKey MSG_C_Orderline_Skipped_Ids = AdMessageKey.of("SkippedOrderLines");
 
 	@Override
 	protected void prepare()
@@ -85,6 +97,7 @@ public class C_Order_CreatePOFromSOs
 		p_C_Order_ID = params.getParameterAsInt("C_Order_ID", -1);
 		p_TypeOfPurchase = PurchaseTypeEnum.ofCode(params.getParameterAsString("TypeOfPurchase"));
 		p_poReference = params.getParameterAsString("POReference");
+		p_IsVendorInOrderLinesRequired = params.getParameterAsBool("IsVendorInOrderLinesRequired");
 	}
 
 	@Override
@@ -100,14 +113,15 @@ public class C_Order_CreatePOFromSOs
 				p_Vendor_ID,
 				p_poReference,
 				p_DatePromised_From,
-				p_DatePromised_To);
+				p_DatePromised_To,
+				p_IsVendorInOrderLinesRequired);
 
 		final String purchaseQtySource = orderCreatePOFromSOsBL.getConfigPurchaseQtySource();
 		final CreatePOFromSOsAggregator workpackageAggregator = new CreatePOFromSOsAggregator(this,
 																							  purchaseQtySource,
 																							  p_TypeOfPurchase);
 
-		workpackageAggregator.setItemAggregationKeyBuilder(new CreatePOFromSOsAggregationKeyBuilder(p_Vendor_ID, this));
+		workpackageAggregator.setItemAggregationKeyBuilder(new CreatePOFromSOsAggregationKeyBuilder(p_Vendor_ID, this, p_IsVendorInOrderLinesRequired));
 		workpackageAggregator.setGroupsBufferSize(100);
 
 		for (final I_C_Order salesOrder : IteratorUtils.asIterable(it))
@@ -123,6 +137,17 @@ public class C_Order_CreatePOFromSOs
 		}
 		workpackageAggregator.closeAllGroups();
 
+		final Set<OrderLineId> skippedSalesOrderLines = workpackageAggregator.getSkippedSalesOrderLineIds();
+
+		if (skippedSalesOrderLines.size() > 0)
+		{
+			final UserNotificationRequest userNotificationRequest = UserNotificationRequest.builder()
+					.recipientUserId(Env.getLoggedUserId())
+					.contentADMessage(MSG_C_Orderline_Skipped_Ids)
+					.contentADMessageParam(skippedSalesOrderLines)
+					.build();
+			userNotifications.send(userNotificationRequest);
+		}
 		return MSG_OK;
 	}
 }
