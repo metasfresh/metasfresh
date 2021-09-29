@@ -5,7 +5,7 @@ import PickStep from '../PickStep';
 
 class PickProductsSteps extends Component {
   render() {
-    const { steps, wfProcessId, activityId } = this.props;
+    const { steps, wfProcessId, activityId, lineIndex } = this.props;
     return (
       <div className="steps-container">
         {steps.length > 0 &&
@@ -18,6 +18,7 @@ class PickProductsSteps extends Component {
                 stepId={index}
                 wfProcessId={wfProcessId}
                 activityId={activityId}
+                lineIndex={lineIndex}
                 {...stepItem}
               />
             );
@@ -31,6 +32,7 @@ PickProductsSteps.propTypes = {
   steps: PropTypes.array.isRequired,
   activityId: PropTypes.string.isRequired,
   wfProcessId: PropTypes.string.isRequired,
+  lineIndex: PropTypes.number.isRequired,
 };
 
 export default PickProductsSteps;

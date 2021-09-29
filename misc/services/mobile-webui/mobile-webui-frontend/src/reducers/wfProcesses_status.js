@@ -1,3 +1,4 @@
+import { produce } from 'immer';
 import * as types from '../constants/ActionTypes';
 
 export const initialState = {
@@ -41,47 +42,25 @@ export const initialState = {
   },
 };
 
-export default function wfProcesses_status(state = initialState, action) {
-  const { payload } = action;
+const reducer = produce((draftState, action) => {
   switch (action.type) {
-    case types.SWITCHOFF_LINES_VISIBILITY:
-      return {
-        ...state,
-        [`${payload.wfProcessId}`]: {
-          ...state[payload.wfProcessId],
-          activities: {
-            ...state[payload.wfProcessId].activities,
-            [payload.activityId]: {
-              ...state[payload.wfProcessId].activities[payload.activityId],
-              dataStored: {
-                ...state[payload.wfProcessId].activities[payload.activityId].dataStored,
-                isLinesListVisible: false,
-              },
-            },
-          },
-        },
-      };
+    case types.SWITCHOFF_LINES_VISIBILITY: {
+      const { wfProcessId, activityId } = action.payload;
 
-    case types.UPDATE_PICKING_STEP_QTY:
-      return {
-        ...state,
-        [`${payload.wfProcessId}`]: {
-          ...state[payload.wfProcessId],
-          activities: {
-            ...state[payload.wfProcessId].activities,
-            [payload.activityId]: {
-              ...state[payload.wfProcessId].activities[payload.activityId],
-              dataStored: {
-                ...state[payload.wfProcessId].activities[payload.activityId].dataStored,
-                lines: state[payload.wfProcessId].activities[payload.activityId].dataStored.lines.map((lineItem, i) =>
-                  i === payload.stepId ? { ...lineItem, qtyPicked: payload.qtyPicked } : lineItem
-                ),
-              },
-            },
-          },
-        },
-      };
+      draftState[wfProcessId].activities[activityId].dataStored.isLinesListVisible = false;
+
+      return draftState;
+    }
+    case types.UPDATE_PICKING_STEP_QTY: {
+      const { wfProcessId, activityId, lineIndex, stepId, qty } = action.payload;
+
+      draftState[wfProcessId].activities[activityId].dataStored.lines[lineIndex].steps[stepId].qtyPicked = qty;
+
+      return draftState;
+    }
     default:
-      return state;
+      return draftState;
   }
-}
+}, initialState);
+
+export default reducer;

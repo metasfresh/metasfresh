@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
 
+import { ProvideAuth } from './hooks/useAuth';
 import App from './App';
 import * as serviceWorkerRegistration from './serviceWorkerRegistration';
 import reportWebVitals from './reportWebVitals';
@@ -16,7 +17,9 @@ export const globalStore = store();
 ReactDOM.render(
   <React.StrictMode>
     <Provider store={globalStore}>
-      <App />
+      <ProvideAuth>
+        <App />
+      </ProvideAuth>
     </Provider>
   </React.StrictMode>,
   document.getElementById('root')

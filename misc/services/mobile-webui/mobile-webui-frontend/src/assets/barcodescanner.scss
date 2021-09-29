@@ -3,6 +3,10 @@
     color: white;
     background-color: $base-mf-green;
     font-weight: 400;
+    border: 0px;
+    padding: 5px;
+    border-radius: 5px;
+    cursor: pointer;
 }
 .scanner-btn-green:hover {
     color: white;

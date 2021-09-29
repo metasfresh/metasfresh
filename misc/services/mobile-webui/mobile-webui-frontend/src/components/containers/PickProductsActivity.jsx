@@ -20,7 +20,7 @@ class PickProductsActivity extends Component {
         {/* Lines listing */}
         {lines.length > 0 &&
           isLinesListVisible &&
-          lines.map((lineItem) => {
+          lines.map((lineItem, lineIndex) => {
             let uniqueId = uuidv4();
             return (
               <PickProductsLine
@@ -28,6 +28,7 @@ class PickProductsActivity extends Component {
                 id={uniqueId}
                 wfProcessId={wfProcessId}
                 activityId={activityId}
+                lineIndex={lineIndex}
                 {...lineItem}
               />
             );
