@@ -142,6 +142,8 @@ public interface IPriceListDAO extends ISingletonService
 	@Nullable
 	I_M_PriceList_Version retrieveNewestPriceListVersion(PriceListId priceListId);
 
+	Optional<PriceListVersionId> retrieveNewestPriceListVersionId(PriceListId priceListId);
+
 	String getPricingSystemName(@Nullable final PricingSystemId pricingSystemId);
 
 	String getPriceListName(final PriceListId priceListId);

@@ -39,6 +39,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
+import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.AdviceWith;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
@@ -99,7 +100,8 @@ public class GetProductsRouteBuilderTests extends CamelTestSupport
 	protected RouteBuilder createRouteBuilder()
 	{
 		final ProcessLogger processLogger = Mockito.mock(ProcessLogger.class);
-		return new GetProductsRouteBuilder(processLogger);
+		final ProducerTemplate producerTemplate = Mockito.mock(ProducerTemplate.class);
+		return new GetProductsRouteBuilder(processLogger, producerTemplate);
 	}
 
 	@Override

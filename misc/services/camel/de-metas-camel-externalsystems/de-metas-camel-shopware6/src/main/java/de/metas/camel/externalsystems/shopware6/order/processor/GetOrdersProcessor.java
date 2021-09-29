@@ -69,9 +69,9 @@ import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.PARAME
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT;
 import static de.metas.camel.externalsystems.shopware6.currency.GetCurrenciesRoute.GET_CURRENCY_ROUTE_ID;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_FREIGHT_COST_NORMAL_PRODUCT_ID;
-import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_FREIGHT_COST_NORMAL_VAT_RATES;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_NORMAL_VAT_RATES;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_FREIGHT_COST_REDUCED_PRODUCT_ID;
-import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_FREIGHT_COST_REDUCED_VAT_RATES;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_REDUCED_VAT_RATES;
 
 public class GetOrdersProcessor implements Processor
 {
@@ -231,7 +231,7 @@ public class GetOrdersProcessor implements Processor
 		final ImmutableMap.Builder<JsonMetasfreshId, List<BigDecimal>> productId2VatRatesBuilder = ImmutableMap.builder();
 		final Map<String, String> parameters = externalSystemRequest.getParameters();
 
-		final String normalVatRates = parameters.get(PARAM_FREIGHT_COST_NORMAL_VAT_RATES);
+		final String normalVatRates = parameters.get(PARAM_NORMAL_VAT_RATES);
 		final String normalVatProductId = parameters.get(PARAM_FREIGHT_COST_NORMAL_PRODUCT_ID);
 		if (Check.isNotBlank(normalVatProductId) && Check.isNotBlank(normalVatRates))
 		{
@@ -241,7 +241,7 @@ public class GetOrdersProcessor implements Processor
 			productId2VatRatesBuilder.put(productId, rates);
 		}
 
-		final String reducedVatRates = parameters.get(PARAM_FREIGHT_COST_REDUCED_VAT_RATES);
+		final String reducedVatRates = parameters.get(PARAM_REDUCED_VAT_RATES);
 		final String reducedVatProductId = parameters.get(PARAM_FREIGHT_COST_REDUCED_PRODUCT_ID);
 		if (Check.isNotBlank(reducedVatProductId) && Check.isNotBlank(reducedVatRates))
 		{

@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-camel-shopware6
+ * de.metas.externalsystem
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,32 +20,33 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.shopware6.api.model;
+package de.metas.externalsystem.shopware6;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+import de.metas.uom.UomId;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 
-@AllArgsConstructor
-@Getter
-public enum PathSegmentsEnum
+@Value
+public class UOMShopwareMapping
 {
-	API("api"),
-	V3("v3"),
-	SEARCH("search"),
-	ORDER("order"),
-	PRODUCT("product"),
-	UNIT("unit"),
-	DELIVERIES("deliveries"),
-	ORDER_ADDRESS("order-address"),
-	OATH("oauth"),
-	TOKEN("token"),
-	COUNTRY("country"),
-	LINE_ITEMS("line-items"),
-	CURRENCY("currency"),
-	CUSTOMER("customer"),
-	GROUP("group"),
-	TRANSACTIONS("transactions"),
-	PAYMENT_METHOD("payment-method");
+	@NonNull
+	ExternalSystemShopware6ConfigId externalSystemShopware6ConfigId;
 
-	private final String value;
+	@NonNull
+	UomId uomId;
+
+	@NonNull
+	String shopwareCode;
+
+	@Builder
+	public UOMShopwareMapping(
+			@NonNull final ExternalSystemShopware6ConfigId externalSystemShopware6ConfigId,
+			@NonNull final UomId uomId,
+			@NonNull final String shopwareCode)
+	{
+		this.externalSystemShopware6ConfigId = externalSystemShopware6ConfigId;
+		this.uomId = uomId;
+		this.shopwareCode = shopwareCode;
+	}
 }
