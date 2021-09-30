@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import PickProductsSteps from './containers/PickProductsSteps';
 import { push } from 'connected-react-router';
 class PickProductsLine extends Component {
   /**
@@ -14,7 +13,7 @@ class PickProductsLine extends Component {
   };
 
   render() {
-    const { id, activityId, wfProcessId, caption, isLinesListVisible, steps, lineIndex } = this.props;
+    const { id, caption, isLinesListVisible } = this.props;
     return (
       <div>
         {isLinesListVisible && (
@@ -30,10 +29,6 @@ class PickProductsLine extends Component {
               </div>
             </div>
           </div>
-        )}
-        {/* Steps Listing */}
-        {!isLinesListVisible && (
-          <PickProductsSteps steps={steps} activityId={activityId} wfProcessId={wfProcessId} lineIndex={lineIndex} />
         )}
       </div>
     );
