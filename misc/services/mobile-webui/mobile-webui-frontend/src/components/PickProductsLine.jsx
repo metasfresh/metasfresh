@@ -9,8 +9,7 @@ class PickProductsLine extends Component {
    * @param {string} id of the line
    */
   handleClick = () => {
-    const { wfProcessId, activityId, lineIndex } = this.props;
-    console.log('HERE');
+    const { wfProcessId, activityId, lineIndex, push } = this.props;
     push(`/workflow/${wfProcessId}/activityId/${activityId}/lineId/${lineIndex}`);
   };
 
