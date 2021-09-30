@@ -54,6 +54,7 @@ PickProductsLine.propTypes = {
   isLinesListVisible: PropTypes.bool,
   steps: PropTypes.array.isRequired,
   lineIndex: PropTypes.number.isRequired,
+  push: PropTypes.func.isRequired,
 };
 
 export default connect(mapStateToProps, { push })(PickProductsLine);

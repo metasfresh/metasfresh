@@ -53,7 +53,7 @@ const reducer = produce((draftState, action) => {
         tmpActivity.dataStored = {
           isComplete: false,
           isLinesListVisible: true,
-          lines: [],
+          lines: activity.componentProps.lines,
         };
 
         acc[idx + 1] = tmpActivity;
