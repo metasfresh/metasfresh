@@ -149,6 +149,10 @@ final class BPartnerCompositeCacheIndex
 		}
 	}
 
+	/**
+	  * @return true if the given recordRef is a C_User_Assigned_Role or C_User_Role.
+	  *    background: in case of new role being assigned, that new assigned_role_id will not be part of the cached key (as it wasn't there before) thus the cache is not refreshed.
+	  */
 	@Override
 	public boolean isResetAll(@NonNull final TableRecordReference recordRef)
 	{
