@@ -132,16 +132,13 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 	@Override
 	protected I_C_Order createGroup(final Object vendorBPartnerValue, final I_C_OrderLine salesOrderLine)
 	{
-		final I_C_Order salesOrder = salesOrderLine.getC_Order();
-
 		if (CreatePOFromSOsAggregationKeyBuilder.KEY_SKIP.equals(vendorBPartnerValue))
 		{
-			collectSkippedLine(salesOrder, salesOrderLine);
-
-			Loggables.withLogger(logger, Level.DEBUG).addLog("Skipped sales order line: {}", salesOrderLine.getC_OrderLine_ID());
 			return dummyOrder;
 			// nothing to do;
 		}
+
+		final I_C_Order salesOrder = salesOrderLine.getC_Order();
 
 		final I_C_BPartner vendor = bpartnerDAO.retrieveBPartnerByValue(context.getCtx(), (String)vendorBPartnerValue);
 		if (vendor == null)
@@ -189,15 +186,17 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 	@Override
 	protected void addItemToGroup(final I_C_Order purchaseOrder, final I_C_OrderLine salesOrderLine)
 	{
+		final I_C_Order salesOrder = salesOrderLine.getC_Order();
 		final CreatePOLineFromSOLinesAggregator orderLineAggregator = getCreateLineAggregator(purchaseOrder);
 		if (orderLineAggregator.getPurchaseOrder() == dummyOrder)
 		{
+			collectSkippedLine(salesOrder, salesOrderLine);
+
+			Loggables.withLogger(logger, Level.DEBUG).addLog("Skipped sales order line: {}", salesOrderLine.getC_OrderLine_ID());
 			return;// nothing to do
 		}
 
 		orderLineAggregator.add(salesOrderLine);
-
-		final I_C_Order salesOrder = salesOrderLine.getC_Order();
 
 		if (purchaseOrder.getLink_Order_ID() > 0 &&
 				purchaseOrder.getLink_Order_ID() != salesOrder.getC_Order_ID())
