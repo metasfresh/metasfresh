@@ -74,7 +74,7 @@ public class C_Order_CreatePOFromSOs
 	@Param(parameterName = "poReference")
 	private String p_poReference;
 
-	@Param(parameterName = "IsVendorInOrderLinesRequired", mandatory = true)
+	@Param(parameterName = "IsVendorInOrderLinesRequired")
 	private boolean p_IsVendorInOrderLinesRequired;
 
 	private final IC_Order_CreatePOFromSOsDAO orderCreatePOFromSOsDAO = Services.get(IC_Order_CreatePOFromSOsDAO.class);
