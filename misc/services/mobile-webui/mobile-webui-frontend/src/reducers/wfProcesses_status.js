@@ -44,6 +44,31 @@ export const initialState = {
 
 const reducer = produce((draftState, action) => {
   switch (action.type) {
+    case types.ADD_WORKFLOW_STATUS: {
+      const { id, headerProperties, activities } = action.payload;
+      const formattedActivities = activities.reduce((acc, activity, idx) => {
+        const tmpActivity = { activity };
+
+        //tmp
+        tmpActivity.dataStored = {
+          isComplete: false,
+          isLinesListVisible: true,
+          lines: [],
+        };
+
+        acc[idx + 1] = tmpActivity;
+
+        return acc;
+      }, {});
+
+      draftState[id] = {
+        headerProperties,
+        isSentToBackend: false,
+        activities: formattedActivities,
+      };
+
+      return draftState;
+    }
     case types.SWITCHOFF_LINES_VISIBILITY: {
       const { wfProcessId, activityId } = action.payload;
 
