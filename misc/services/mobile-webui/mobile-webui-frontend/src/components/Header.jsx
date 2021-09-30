@@ -1,35 +1,33 @@
 import React from 'react';
 import { useStore } from 'react-redux';
-import { useHistory } from 'react-router-dom';
+import { useLocation, useHistory } from 'react-router-dom';
 import PropTypes from 'prop-types';
 
-import { useAuth } from '../hooks/useAuth';
-
 const Header = ({ appName }) => {
-  const auth = useAuth();
-  const history = useHistory();
   const store = useStore();
   const state = store.getState();
-  const { token, network } = state.appHandler;
+  const location = useLocation();
+  const history = useHistory();
+  const { network } = state.appHandler;
+  const showBackButton = location.pathname !== '/';
+
+  const handleClick = () => {
+    if (showBackButton) {
+      history.goBack();
+    }
+  };
 
   return (
     <header className="p-4 navbar is-fixed-top is-flex is-align-items-center is-justify-content-space-around header">
+      {showBackButton ? (
+        <button className="button" onClick={handleClick}>
+          Back
+        </button>
+      ) : null}
       <div className="header-title">
         <h4 className="title is-4">{appName}</h4>
         <div className="subtitle">network: {network ? 'online' : 'offline'} </div>
       </div>
-      {token ? (
-        <div className="buttons">
-          <button
-            className="button logout-btn-green"
-            onClick={() => {
-              auth.logout().then(() => history.push('/'));
-            }}
-          >
-            Log out
-          </button>
-        </div>
-      ) : null}
     </header>
   );
 };

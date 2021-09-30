@@ -14,3 +14,19 @@ export function getLaunchers({ token }) {
     },
   });
 }
+
+/**
+ * @method startWorkflowRequest
+ * @summary Start a workflow from the launchers list
+ */
+export function startWorkflowRequest({ wfProviderId, wfParameters }) {
+  return axios.post(`${window.config.API_URL}/userWorkflows/wfProcess/start`, { wfProviderId, wfParameters });
+}
+
+/**
+ * @method startWorkflow
+ * @summary Continue a workflow from the launchers list
+ */
+export function continueWorkflowRequest(wfProviderId) {
+  return axios.get(`${window.config.API_URL}/userWorkflows/wfProcess/${wfProviderId}`);
+}

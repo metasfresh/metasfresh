@@ -3,9 +3,12 @@ package de.metas.common.rest_api.v2.authentication;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
+import de.metas.common.rest_api.v2.i18n.JsonMessages;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+
+import java.util.Map;
 
 @Value
 @Builder
@@ -23,6 +26,9 @@ public class JsonAuthResponse
 
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	String error;
+
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	Map<String, Object> messages;
 
 	public static JsonAuthResponse.JsonAuthResponseBuilder ok(@NonNull final String token)
 	{

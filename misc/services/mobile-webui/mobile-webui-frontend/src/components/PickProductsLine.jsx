@@ -40,10 +40,15 @@ class PickProductsLine extends Component {
   }
 }
 
-const mapStateToProps = (state, ownProps) => {
+// const mapStateToProps = (state, ownProps) => {
+const mapStateToProps = () => {
+  // Aren't we checking this in `PicProductsActivity` already ?
+  // return {
+  //   isLinesListVisible:
+  //     state.wfProcesses_status[ownProps.wfProcessId].activities[ownProps.activityId].dataStored.isLinesListVisible,
+  // };
   return {
-    isLinesListVisible:
-      state.wfProcesses_status[ownProps.wfProcessId].activities[ownProps.activityId].dataStored.isLinesListVisible,
+    isLinesListVisible: true,
   };
 };
 
