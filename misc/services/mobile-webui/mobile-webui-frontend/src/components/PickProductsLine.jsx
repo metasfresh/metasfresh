@@ -1,16 +1,17 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { switchoffLinesVisibility } from '../actions/PickingActions';
 import PickProductsSteps from './containers/PickProductsSteps';
+import { push } from 'connected-react-router';
 class PickProductsLine extends Component {
   /**
    *
    * @param {string} id of the line
    */
-  handleClick = (id) => {
-    const { wfProcessId, switchoffLinesVisibility } = this.props;
-    switchoffLinesVisibility({ wfProcessId, activityId: id });
+  handleClick = () => {
+    const { wfProcessId, activityId, lineIndex } = this.props;
+    console.log('HERE');
+    push(`/workflow/${wfProcessId}/activityId/${activityId}/lineId/${lineIndex}`);
   };
 
   render() {
@@ -18,7 +19,7 @@ class PickProductsLine extends Component {
     return (
       <div>
         {isLinesListVisible && (
-          <div key={id} className="ml-3 mr-3 is-light pick-product" onClick={() => this.handleClick(activityId)}>
+          <div key={id} className="ml-3 mr-3 is-light pick-product" onClick={() => this.handleClick()}>
             <div className="box">
               <div className="columns is-mobile">
                 <div className="column is-12">
@@ -40,13 +41,7 @@ class PickProductsLine extends Component {
   }
 }
 
-// const mapStateToProps = (state, ownProps) => {
 const mapStateToProps = () => {
-  // Aren't we checking this in `PicProductsActivity` already ?
-  // return {
-  //   isLinesListVisible:
-  //     state.wfProcesses_status[ownProps.wfProcessId].activities[ownProps.activityId].dataStored.isLinesListVisible,
-  // };
   return {
     isLinesListVisible: true,
   };
@@ -57,10 +52,9 @@ PickProductsLine.propTypes = {
   caption: PropTypes.string.isRequired,
   activityId: PropTypes.string.isRequired,
   wfProcessId: PropTypes.string.isRequired,
-  switchoffLinesVisibility: PropTypes.func.isRequired,
   isLinesListVisible: PropTypes.bool,
   steps: PropTypes.array.isRequired,
   lineIndex: PropTypes.number.isRequired,
 };
 
-export default connect(mapStateToProps, { switchoffLinesVisibility })(PickProductsLine);
+export default connect(mapStateToProps, {})(PickProductsLine);
