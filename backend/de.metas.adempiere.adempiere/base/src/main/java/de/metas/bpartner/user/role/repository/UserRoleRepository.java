@@ -23,6 +23,8 @@
 package de.metas.bpartner.user.role.repository;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
 import de.metas.bpartner.user.role.UserAssignedRoleId;
 import de.metas.bpartner.user.role.UserRole;
 import de.metas.bpartner.user.role.UserRoleId;
@@ -35,7 +37,12 @@ import org.compiere.model.I_C_User_Assigned_Role;
 import org.compiere.model.I_C_User_Role;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Repository
 public class UserRoleRepository
@@ -57,12 +64,34 @@ public class UserRoleRepository
 	{
 		final List<UserAssignedRoleId> assignedRoleIds = assignedUserRoleCache.getOrLoad(userId, this::getAssignedRoleIds);
 
+		final Set<UserRoleId> roleIds = assignedRoleIds.stream()
+				.map(UserAssignedRoleId::getUserRoleId)
+				.collect(ImmutableSet.toImmutableSet());
+
+		final Collection<I_C_User_Role> userRoles = userRoleCache.getAllOrLoad(roleIds, this::loadUserRoles);
+
+		final Map<UserRoleId, I_C_User_Role> userRoleById = Maps.uniqueIndex(userRoles, (userRole) -> UserRoleId.ofRepoId(userRole.getC_User_Role_ID()));
+
 		return assignedRoleIds.stream()
 				.map(assignedRoleId -> {
-					final I_C_User_Role role = userRoleCache.getOrLoad(assignedRoleId.getUserRoleId(), this::getUserRoleRecord);
+					final I_C_User_Role role = userRoleById.get(assignedRoleId.getUserRoleId());
 					return toUserRole(assignedRoleId, role);
 				})
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	@NonNull
+	private Map<UserRoleId, I_C_User_Role> loadUserRoles(@NonNull final Set<UserRoleId> userRoleId)
+	{
+		return queryBL.createQueryBuilder(I_C_User_Role.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_C_User_Role.COLUMN_C_User_Role_ID, userRoleId)
+				.create()
+				.stream()
+				.collect(Collectors.toMap(
+						role -> UserRoleId.ofRepoId(role.getC_User_Role_ID()),
+						Function.identity()
+				));
 	}
 
 	@NonNull
@@ -78,16 +107,6 @@ public class UserRoleRepository
 					return UserAssignedRoleId.ofRepoId(roleId, record.getC_User_Assigned_Role_ID());
 				})
 				.collect(ImmutableList.toImmutableList());
-	}
-
-	@NonNull
-	private I_C_User_Role getUserRoleRecord(@NonNull final UserRoleId userRoleId)
-	{
-		return queryBL.createQueryBuilder(I_C_User_Role.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_User_Role.COLUMN_C_User_Role_ID, userRoleId)
-				.create()
-				.firstOnlyNotNull(I_C_User_Role.class);
 	}
 
 	@NonNull
