@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import PickProductsSteps from './containers/PickProductsSteps';
+import PickProductsSteps from './PickProductsSteps';
 import { connect } from 'react-redux';
 import { push } from 'connected-react-router';
 import PropTypes from 'prop-types';

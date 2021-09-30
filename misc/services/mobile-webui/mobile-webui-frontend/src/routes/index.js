@@ -5,7 +5,7 @@ import { Route, Switch } from 'react-router';
 import Main from '../components/Main';
 import LoginView from '../components/LoginView';
 import Dashboard from '../components/Dashboard';
-import LineScreen from '../components/LineScreen';
+import LineScreen from '../components/containers/LineScreen';
 import WorkflowProcess from '../containers/WFProcess';
 
 import PrivateRoute from './PrivateRoute';
