@@ -23,6 +23,7 @@
 package de.metas.bpartner.user.role;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
@@ -58,6 +59,7 @@ public class UserRoleId implements RepoIdAware
 	}
 
 	@Override
+	@JsonValue
 	public int getRepoId()
 	{
 		return repoId;
