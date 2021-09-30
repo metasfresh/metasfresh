@@ -57,4 +57,4 @@ PickProductsLine.propTypes = {
   lineIndex: PropTypes.number.isRequired,
 };
 
-export default connect(mapStateToProps, {})(PickProductsLine);
+export default connect(mapStateToProps, { push })(PickProductsLine);
