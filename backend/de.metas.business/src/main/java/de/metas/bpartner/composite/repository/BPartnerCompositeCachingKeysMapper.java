@@ -23,7 +23,6 @@
 package de.metas.bpartner.composite.repository;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.acct.api.IAccountDAO;
 import de.metas.bpartner.BPartnerId;
 import de.metas.cache.CachingKeysMapper;
 import de.metas.interfaces.I_C_BPartner;
@@ -130,7 +129,8 @@ public class BPartnerCompositeCachingKeysMapper implements CachingKeysMapper<BPa
 		{
 			return false; // recordRef.getRecord_ID() returns the C_BPartner_ID to invalidate => no need to reset all
 		}
-		else if (I_C_User_Role.Table_Name.equals(recordRef.getTableName()))
+		else if (I_C_User_Role.Table_Name.equals(recordRef.getTableName())
+				|| I_C_User_Assigned_Role.Table_Name.equals(recordRef.getTableName()))
 		{
 			return true; // there might be too many C_BPartners using the given role; also this change is not frequent; so, better reset the whole cache
 		}

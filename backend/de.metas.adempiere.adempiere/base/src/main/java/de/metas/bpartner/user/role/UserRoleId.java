@@ -22,25 +22,44 @@
 
 package de.metas.bpartner.user.role;
 
-import lombok.Builder;
-import lombok.Data;
-import lombok.NonNull;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import de.metas.util.Check;
+import de.metas.util.lang.RepoIdAware;
+import lombok.Value;
+import org.compiere.model.I_C_User_Role;
 
 import javax.annotation.Nullable;
 
-/**
- * "UserRole" is basically a multi-purpose class to maintain "labels" about users. 
- * The predominant use is maintaining the "roles" that metasfresh-users have assigned to them in external systems.
- */
-@Data
-@Builder
-public class UserRole
+@Value
+public class UserRoleId implements RepoIdAware
 {
+	int repoId;
+
+	@JsonCreator
+	public static UserRoleId ofRepoId(final int repoId)
+	{
+		return new UserRoleId(repoId);
+	}
+
 	@Nullable
-	private String name;
+	public static UserRoleId ofRepoIdOrNull(final int repoId)
+	{
+		return repoId > 0 ? new UserRoleId(repoId) : null;
+	}
 
-	private boolean uniquePerBpartner;
+	public static int toRepoId(@Nullable final UserRoleId userRoleId)
+	{
+		return userRoleId != null ? userRoleId.getRepoId() : -1;
+	}
 
-	@NonNull
-	private UserAssignedRoleId userAssignedRoleId;
+	private UserRoleId(final int repoId)
+	{
+		this.repoId = Check.assumeGreaterThanZero(repoId, I_C_User_Role.COLUMNNAME_C_User_Role_ID);
+	}
+
+	@Override
+	public int getRepoId()
+	{
+		return repoId;
+	}
 }

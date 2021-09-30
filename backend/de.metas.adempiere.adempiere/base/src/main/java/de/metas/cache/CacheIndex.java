@@ -169,4 +169,10 @@ public final class CacheIndex<DataItemId, CacheKey, DataItem> implements Caching
 		logger.debug("Removing pairs from index: {}, {}", recordRefs, dataItemId);
 		recordRefs.forEach(recordRef -> _recordRef_to_dateItemId.remove(recordRef, dataItemId));
 	}
+
+	@Override
+	public boolean isResetAll(final TableRecordReference recordRef)
+	{
+		return adapter.isResetAll(recordRef);
+	}
 }

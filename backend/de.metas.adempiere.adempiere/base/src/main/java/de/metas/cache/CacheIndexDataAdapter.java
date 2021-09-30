@@ -1,8 +1,8 @@
 package de.metas.cache;
 
-import java.util.Collection;
-
 import org.adempiere.util.lang.impl.TableRecordReference;
+
+import java.util.Collection;
 
 /*
  * #%L
@@ -40,4 +40,9 @@ public interface CacheIndexDataAdapter<DataItemId, CacheKey, DataItem>
 	 * Needed in order to know on which record-changes we would need to invalidate the given dataItem within the cache.
 	 */
 	Collection<TableRecordReference> extractRecordRefs(DataItem dataItem);
+
+	default boolean isResetAll(final TableRecordReference recordRef)
+	{
+		return false;
+	}
 }
