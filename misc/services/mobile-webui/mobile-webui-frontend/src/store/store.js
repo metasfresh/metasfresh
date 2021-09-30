@@ -8,7 +8,9 @@ import createRootReducer from '../reducers';
 
 export const history = createBrowserHistory();
 const composeEnhancer =
-  window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__({ serialize: true, latency: 0, features: { persist: false } }) || compose;
+  typeof window === 'object' && window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__
+    ? window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__({ serialize: true, latency: 0, features: { persist: false } })
+    : compose;
 
 export const store = function configureStore(preloadedState) {
   const store = createStore(
