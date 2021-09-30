@@ -23,7 +23,7 @@ class Launchers extends Component {
     const launchersKeys = Object.keys(launchers);
 
     return (
-      <div className="launchers-container">
+      <div className="container launchers-container">
         {launchersKeys.length > 0 &&
           launchersKeys.map((keyName) => {
             let uniqueId = uuidv4();
