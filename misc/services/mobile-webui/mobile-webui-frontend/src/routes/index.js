@@ -24,7 +24,7 @@ const Routes = () => {
             <Route exact path="/workflow/:workflowId/activityId/:activityId/lineId/:lineId" component={LineScreen} />
             <Route
               exact
-              path="/workflow/:workflowId/activityId/:activityId/lineId/:lineId/step/stepId"
+              path="/workflow/:workflowId/activityId/:activityId/lineId/:lineId/stepId/:stepId"
               component={PickScreen}
             />
           </PrivateRoute>
