@@ -9,7 +9,7 @@ const Header = ({ appName }) => {
   const location = useLocation();
   const history = useHistory();
   const { network } = state.appHandler;
-  const showBackButton = location.pathname !== '/';
+  const showBackButton = state.appHandler.token && location.pathname !== '/' && location.pathname !== '/login';
 
   const handleClick = () => {
     if (showBackButton) {
