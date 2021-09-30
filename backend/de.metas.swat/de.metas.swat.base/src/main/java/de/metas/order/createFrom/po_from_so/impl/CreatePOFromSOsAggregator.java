@@ -1,10 +1,11 @@
 package de.metas.order.createFrom.po_from_so.impl;
 
+import ch.qos.logback.classic.Level;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.i18n.IMsgBL;
+import de.metas.logging.LogManager;
 import de.metas.order.IOrderBL;
-import de.metas.order.OrderLineId;
 import de.metas.order.createFrom.po_from_so.PurchaseTypeEnum;
 import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.organization.IOrgDAO;
@@ -12,7 +13,6 @@ import de.metas.organization.OrgId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.collections.MapReduceAggregator;
-import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -23,12 +23,15 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
-import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.compiere.model.X_C_DocType.DOCSUBTYPE_Mediated;
 
@@ -64,6 +67,7 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 	private static final String MSG_PURCHASE_ORDER_CREATED = "de.metas.order.C_Order_CreatePOFromSOs.PurchaseOrderCreated";
 	private final IContextAware context;
 	private final boolean p_IsDropShip;
+	private static final Logger logger = LogManager.getLogger(CreatePOFromSOsAggregator.class);
 
 	@NonNull
 	private final PurchaseTypeEnum p_TypeOfPurchase;
@@ -77,8 +81,8 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 
 	final Map<String, CreatePOLineFromSOLinesAggregator> orderKey2OrderLineAggregator = new HashMap<>();
 
-	@Getter
-	final Set<OrderLineId> skippedSalesOrderLineIds = new HashSet<>();
+	@NonNull
+	final Map<I_C_Order, List<I_C_OrderLine>> skippedSalesOrderLinesByOrder = new HashMap<>();
 
 	public CreatePOFromSOsAggregator(
 			final IContextAware context,
@@ -94,20 +98,50 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 		dummyOrder.setDocumentNo(CreatePOFromSOsAggregationKeyBuilder.KEY_SKIP);
 	}
 
+	@NonNull
+	public Optional<String> getSkippedLinesMessage()
+	{
+		if (skippedSalesOrderLinesByOrder.isEmpty())
+		{
+			return Optional.empty();
+		}
+
+		return Optional.of(skippedSalesOrderLinesByOrder.entrySet()
+								   .stream()
+								   .map(entry -> {
+									   final I_C_Order salesOrder = entry.getKey();
+									   final List<I_C_OrderLine> salesOrderLines = entry.getValue();
+
+									   return salesOrderLines.stream()
+											   .map(orderLine -> salesOrder.getDocumentNo() + "-" + orderLine.getLine())
+											   .collect(Collectors.joining(", "));
+								   })
+								   .collect(Collectors.joining(", ")));
+	}
+
+
+	@Override
+	public String toString()
+	{
+		return ObjectUtils.toString(this);
+	}
+
 	/**
 	 * Creates a new purchase order.
 	 */
 	@Override
 	protected I_C_Order createGroup(final Object vendorBPartnerValue, final I_C_OrderLine salesOrderLine)
 	{
+		final I_C_Order salesOrder = salesOrderLine.getC_Order();
+
 		if (CreatePOFromSOsAggregationKeyBuilder.KEY_SKIP.equals(vendorBPartnerValue))
 		{
-			skippedSalesOrderLineIds.add(OrderLineId.ofRepoId(salesOrderLine.getC_OrderLine_ID()));
+			collectSkippedLine(salesOrder, salesOrderLine);
+
+			Loggables.withLogger(logger, Level.DEBUG).addLog("Skipped sales order line: {}", salesOrderLine.getC_OrderLine_ID());
 			return dummyOrder;
 			// nothing to do;
 		}
-
-		final I_C_Order salesOrder = salesOrderLine.getC_Order();
 
 		final I_C_BPartner vendor = bpartnerDAO.retrieveBPartnerByValue(context.getCtx(), (String)vendorBPartnerValue);
 		if (vendor == null)
@@ -299,9 +333,10 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 		return salesOrder.getM_Warehouse_ID();
 	}
 
-	@Override
-	public String toString()
+	private void collectSkippedLine(@NonNull final I_C_Order salesOrder, @NonNull final I_C_OrderLine salesOrderLine)
 	{
-		return ObjectUtils.toString(this);
+		final List<I_C_OrderLine> skippedOrderLinesFromCurrentOrder = new ArrayList<>();
+		skippedOrderLinesFromCurrentOrder.add(salesOrderLine);
+		skippedSalesOrderLinesByOrder.merge(salesOrder, skippedOrderLinesFromCurrentOrder, (oldList, newList) -> {oldList.addAll(newList); return oldList;});
 	}
 }
