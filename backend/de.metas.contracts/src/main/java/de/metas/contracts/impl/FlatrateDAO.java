@@ -5,6 +5,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
 import de.metas.contracts.ConditionsId;
+import de.metas.contracts.FlatrateDataId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.flatrate.TypeConditions;
@@ -210,7 +211,7 @@ public class FlatrateDAO implements IFlatrateDAO
 				.addNotEqualsFilter(I_C_Flatrate_Conditions.COLUMNNAME_Type_Conditions, X_C_Flatrate_Conditions.TYPE_CONDITIONS_Subscription)
 				.addNotEqualsFilter(I_C_Flatrate_Conditions.COLUMNNAME_Type_Conditions, X_C_Flatrate_Conditions.TYPE_CONDITIONS_HoldingFee)
 				.create();
-	
+
 		return queryBL.createQueryBuilder(I_C_Flatrate_Term.class, ctx, trxName)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_AD_Org_ID, orgId)
@@ -619,17 +620,30 @@ public class FlatrateDAO implements IFlatrateDAO
 	}
 
 	@Override
-	public List<I_C_Flatrate_Term> retrieveTerms(final I_C_Flatrate_Data data)
+	public Iterable<I_C_Flatrate_Term> retrieveTerms(@NonNull final FlatrateDataId flatrateDataId)
 	{
+		return () -> getFlatrateTermQueryForFlatrateDataId(flatrateDataId)
+				.iterate(I_C_Flatrate_Term.class);
+	}
 
-		return queryBL.createQueryBuilder(I_C_Flatrate_Term.class, data)
+	private IQuery<I_C_Flatrate_Term> getFlatrateTermQueryForFlatrateDataId(final FlatrateDataId flatrateDataId)
+	{
+		return Services.get(IQueryBL.class).createQueryBuilder(I_C_Flatrate_Term.class)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
-				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Data_ID, data.getC_Flatrate_Data_ID())
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Data_ID, flatrateDataId)
 				.orderBy()
 				.addColumn(I_C_Flatrate_Term.COLUMN_C_Flatrate_Term_ID)
 				.endOrderBy()
-				.create()
+				.create();
+	}
+
+	@Override
+	public List<I_C_Flatrate_Term> retrieveTerms(final I_C_Flatrate_Data data)
+	{
+		final FlatrateDataId flatrateDataId = FlatrateDataId.ofRepoId(data.getC_Flatrate_Data_ID());
+
+		return getFlatrateTermQueryForFlatrateDataId(flatrateDataId)
 				.list(I_C_Flatrate_Term.class);
 	}
 
