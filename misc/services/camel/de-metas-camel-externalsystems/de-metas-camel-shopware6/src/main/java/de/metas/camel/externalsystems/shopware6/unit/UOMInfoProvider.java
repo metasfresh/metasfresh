@@ -22,7 +22,6 @@
 
 package de.metas.camel.externalsystems.shopware6.unit;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.ImmutableMap;
 import lombok.Builder;
 import lombok.NonNull;
@@ -33,7 +32,6 @@ import java.io.Serializable;
 
 @Value
 @Builder
-@JsonDeserialize(builder = UOMInfoProvider.UOMInfoProviderBuilder.class)
 public class UOMInfoProvider implements Serializable
 {
 	@NonNull

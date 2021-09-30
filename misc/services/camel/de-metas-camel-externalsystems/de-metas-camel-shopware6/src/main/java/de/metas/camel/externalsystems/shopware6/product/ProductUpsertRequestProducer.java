@@ -124,7 +124,7 @@ public class ProductUpsertRequestProducer
 			return DEFAULT_PRODUCT_UOM;
 		}
 
-		final String externalCode = routeContext.getUomInfoProvider().getCode(unitId);
+		final String externalCode = routeContext.getShopwareUomInfoProvider().getCode(unitId);
 		if (externalCode == null)
 		{
 			processLogger.logMessage("No externalCode found for unit id: " + unitId + ", fallback to default UOM: PCE ! ProductId: " + product.getId(),

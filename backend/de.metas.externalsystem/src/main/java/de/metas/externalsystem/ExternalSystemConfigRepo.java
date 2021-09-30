@@ -50,6 +50,7 @@ import de.metas.pricing.PriceListId;
 import de.metas.product.ProductId;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
+import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -135,7 +136,7 @@ public class ExternalSystemConfigRepo
 				final ExternalSystemOtherConfigId externalSystemOtherConfigId = ExternalSystemOtherConfigId.ofExternalSystemParentConfigId(id);
 				return Optional.of(externalSystemOtherConfigRepository.getById(externalSystemOtherConfigId));
 			case RabbitMQ:
-				return getRabbitMQConfigByParentId(id);				
+				return getRabbitMQConfigByParentId(id);
 			case WOO:
 				return getWooCommerceConfigByParentId(id);
 			default:
@@ -181,7 +182,7 @@ public class ExternalSystemConfigRepo
 				return;
 			case Alberta:
 			case Other:
-				throw new AdempiereException("Method not supported for externalSystemType="+config.getType())
+				throw new AdempiereException("Method not supported for externalSystemType=" + config.getType())
 						.appendParametersToMessage()
 						.setParameter("externalSystemType", config.getType());
 			default:
@@ -207,7 +208,6 @@ public class ExternalSystemConfigRepo
 				throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", externalSystemType);
 		}
 	}
-
 
 	@NonNull
 	private Optional<I_ExternalSystem_Config_Alberta> getAlbertaConfigByValue(@NonNull final String value)
@@ -575,6 +575,7 @@ public class ExternalSystemConfigRepo
 		record.setJSONPathConstantBPartnerLocationID(config.getBPartnerLocationIdJSONPath());
 		record.setJSONPathSalesRepID(config.getSalesRepJSONPath());
 
+		record.setM_PriceList_ID(NumberUtils.asInteger(config.getPriceListId(), -1));
 		record.setIsActive(config.getIsActive());
 
 		if (config.getFreightCostNormalVatConfig() != null)

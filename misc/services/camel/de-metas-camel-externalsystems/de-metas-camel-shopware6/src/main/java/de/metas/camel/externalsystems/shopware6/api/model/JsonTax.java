@@ -22,6 +22,7 @@
 
 package de.metas.camel.externalsystems.shopware6.api.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
@@ -40,6 +41,7 @@ public class JsonTax
 	@JsonProperty("taxRate")
 	BigDecimal taxRate;
 
+	@JsonIgnoreProperties(ignoreUnknown = true)
 	@JsonPOJOBuilder(withPrefix = "")
 	public static class JsonTaxBuilder
 	{

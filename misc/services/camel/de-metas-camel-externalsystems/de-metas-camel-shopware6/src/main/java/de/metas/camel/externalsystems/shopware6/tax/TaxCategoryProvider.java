@@ -22,7 +22,6 @@
 
 package de.metas.camel.externalsystems.shopware6.tax;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.ImmutableMap;
 import de.metas.common.pricing.v2.productprice.TaxCategory;
 import de.metas.common.util.Check;
@@ -38,7 +37,6 @@ import java.util.Arrays;
 import java.util.Objects;
 
 @Value
-@JsonDeserialize(builder = TaxCategoryProvider.TaxCategoryProviderBuilder.class)
 public class TaxCategoryProvider
 {
 	@NonNull
@@ -53,6 +51,7 @@ public class TaxCategoryProvider
 		if (Check.isNotBlank(normalRates))
 		{
 			Arrays.stream(Objects.requireNonNull(normalRates).split(","))
+					.map(String::strip)
 					.map(BigDecimal::new)
 					.forEach(rate -> taxRate2CategoryBuilder.put(rate, TaxCategory.NORMAL));
 		}
@@ -60,6 +59,7 @@ public class TaxCategoryProvider
 		if (Check.isNotBlank(reducedRates))
 		{
 			Arrays.stream(Objects.requireNonNull(reducedRates).split(","))
+					.map(String::strip)
 					.map(BigDecimal::new)
 					.forEach(rate -> taxRate2CategoryBuilder.put(rate, TaxCategory.REDUCED));
 		}

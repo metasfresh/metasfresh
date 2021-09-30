@@ -47,13 +47,13 @@ import java.util.concurrent.TimeUnit;
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 
 @Component
-public class GetUnitsRoute extends RouteBuilder
+public class GetUnitsRouteBuilder extends RouteBuilder
 {
 	public static final String GET_UOM_MAPPINGS_ROUTE_ID = "Shopware6-getUOMMappings";
 
 	private final ProcessLogger processLogger;
 
-	public GetUnitsRoute(@NonNull final ProcessLogger processLogger)
+	public GetUnitsRouteBuilder(@NonNull final ProcessLogger processLogger)
 	{
 		this.processLogger = processLogger;
 	}

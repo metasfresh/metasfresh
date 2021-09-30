@@ -54,7 +54,7 @@ import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_PRICE_LIST_UPSERT_PRODUCT_PRICE_V2_CAMEL_URI;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_UPSERT_PRODUCT_V2_CAMEL_URI;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.ROUTE_PROPERTY_IMPORT_PRODUCTS_CONTEXT;
-import static de.metas.camel.externalsystems.shopware6.unit.GetUnitsRoute.GET_UOM_MAPPINGS_ROUTE_ID;
+import static de.metas.camel.externalsystems.shopware6.unit.GetUnitsRouteBuilder.GET_UOM_MAPPINGS_ROUTE_ID;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_UPDATED_AFTER;
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 
@@ -66,8 +66,11 @@ public class GetProductsRouteBuilder extends RouteBuilder
 	public static final String UPSERT_RUNTIME_PARAMS_ROUTE_ID = "Shopware6-getProducts-upsertRuntimeParams";
 	public static final String UPSERT_PRODUCT_PRICE_ROUTE_ID = "Shopware6-getProducts-upsertProductPrice";
 
-	public static final String GET_PRODUCTS_PROCESSOR_ID = "SW6Products-GetProductsProcessorId";
-	public static final String ATTACH_CONTEXT_PROCESSOR_ID = "SW6Products-ContextProcessorId";
+	public static final String GET_PRODUCTS_PROCESSOR_ID = "Shopware6-Products-getProductsProcessorId";
+	public static final String UPSERT_PRODUCT_PROCESSOR_ID = "Shopware6-Products-upsertProductProcessorId";
+	public static final String UPSERT_PRODUCT_PRICE_PROCESSOR_ID = "Shopware6-Products-upsertProductPriceProcessorId";
+	public static final String UPSERT_RUNTIME_PARAMS_PROCESSOR_ID = "Shopware6-Products-upsertRuntimeParamsProcessorId";
+	public static final String ATTACH_CONTEXT_PROCESSOR_ID = "Shopware6-Products-contextProcessorId";
 
 	private final ProcessLogger processLogger;
 	private final ProducerTemplate producerTemplate;
@@ -105,14 +108,13 @@ public class GetProductsRouteBuilder extends RouteBuilder
 						.end()
 				.endChoice()
 				.to(direct(UPSERT_RUNTIME_PARAMS_ROUTE_ID))
-				.log("Make sure this is called")
 				.process((exchange) -> processLogger.logMessage("Shopware6:GetProducts process ended!" + Instant.now(),
 															exchange.getIn().getHeader(HEADER_PINSTANCE_ID, Integer.class)));
 
 		from(direct(PROCESS_PRODUCT_ROUTE_ID))
 				.routeId(PROCESS_PRODUCT_ROUTE_ID)
 				.log("Route invoked")
-				.process(new ProductUpsertProcessor(processLogger))
+				.process(new ProductUpsertProcessor(processLogger)).id(UPSERT_PRODUCT_PROCESSOR_ID)
 				.choice()
 					.when(body().isNull())
 						.log(LoggingLevel.INFO, "Nothing to do ! Product was skipped !")
@@ -126,7 +128,7 @@ public class GetProductsRouteBuilder extends RouteBuilder
 		from(direct(UPSERT_PRODUCT_PRICE_ROUTE_ID))
 				.routeId(UPSERT_PRODUCT_PRICE_ROUTE_ID)
 				.log("Route invoked")
-				.process(new ProductPriceProcessor(processLogger))
+				.process(new ProductPriceProcessor(processLogger)).id(UPSERT_PRODUCT_PRICE_PROCESSOR_ID)
 				.choice()
 					.when(body().isNull())
 						.log(LoggingLevel.INFO, "Nothing to do ! Product price was skipped!")
@@ -139,7 +141,7 @@ public class GetProductsRouteBuilder extends RouteBuilder
 		from(direct(UPSERT_RUNTIME_PARAMS_ROUTE_ID))
 				.routeId(UPSERT_RUNTIME_PARAMS_ROUTE_ID)
 				.log("Route invoked")
-				.process(this::prepareUpsertRuntimeParameterRequest)
+				.process(this::prepareUpsertRuntimeParameterRequest).id(UPSERT_RUNTIME_PARAMS_PROCESSOR_ID)
 				.choice()
 					.when(body().isNull())
 						.log(LoggingLevel.DEBUG, "Nothing to do! No runtime parameters to insert!")
@@ -192,7 +194,7 @@ public class GetProductsRouteBuilder extends RouteBuilder
 				.externalSystemRequest(request)
 				.orgCode(request.getOrgCode())
 				.nextImportStartingTimestamp(Instant.parse(updatedAfter))
-				.uomInfoProvider(uomInfoProvider)
+				.shopwareUomInfoProvider(uomInfoProvider)
 				.uomMappings(GetProductsRouteHelper.getUOMMappingRules(request))
 				.taxCategoryProvider(GetProductsRouteHelper.getTaxCategoryProvider(request))
 				.build();

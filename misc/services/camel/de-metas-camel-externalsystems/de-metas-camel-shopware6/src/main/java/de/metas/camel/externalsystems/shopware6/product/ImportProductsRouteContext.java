@@ -55,7 +55,7 @@ public class ImportProductsRouteContext
 	private final String orgCode;
 
 	@NonNull
-	private final UOMInfoProvider uomInfoProvider;
+	private final UOMInfoProvider shopwareUomInfoProvider;
 
 	@NonNull
 	private final ImmutableMap<String, JsonUOM> uomMappings;

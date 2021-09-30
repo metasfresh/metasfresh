@@ -43,7 +43,7 @@ public class ExternalSystemConstants
 	public static final String PARAM_CONFIG_MAPPINGS = "ConfigMappings";
 	public static final String PARAM_UOM_MAPPINGS = "UOMMappings";
 
-	public static final String PARAM_NORMAL_VAT_RATES = "FreightCost_NormalVAT_Rates";
+	public static final String PARAM_NORMAL_VAT_RATES = "NormalVAT_Rates";
 	public static final String PARAM_FREIGHT_COST_NORMAL_PRODUCT_ID = "M_FreightCost_NormalVAT_Product_ID";
 
 	public static final String PARAM_REDUCED_VAT_RATES = "Reduced_VAT_Rates";

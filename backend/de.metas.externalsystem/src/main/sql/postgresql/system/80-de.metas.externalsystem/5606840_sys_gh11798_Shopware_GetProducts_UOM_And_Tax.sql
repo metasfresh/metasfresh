@@ -617,3 +617,183 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=660997
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_Element_ID,AD_UI_ElementGroup_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayed_SideList,IsDisplayedGrid,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNo_SideList,SeqNoGrid,Updated,UpdatedBy) VALUES (0,660997,0,543435,591811,545818,'F',TO_TIMESTAMP('2021-09-28 21:12:15','YYYY-MM-DD HH24:MI:SS'),100,'Bezeichnung der Preisliste','Preislisten werden verwendet, um Preis, Spanne und Kosten einer ge- oder verkauften Ware zu bestimmen.','Y','N','N','Y','N','N','N',0,'Preisliste',50,0,0,TO_TIMESTAMP('2021-09-28 21:12:15','YYYY-MM-DD HH24:MI:SS'),100)
 ;
+
+-- 2021-09-29T16:10:08.183Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,579930,0,TO_TIMESTAMP('2021-09-29 19:10:07','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.externalsystem','Y','UOM Mapping','UOM Mapping',TO_TIMESTAMP('2021-09-29 19:10:07','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-09-29T16:10:08.195Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description,Help,Name,PO_Description,PO_Help,PO_Name,PO_PrintName,PrintName,WEBUI_NameBrowse,WEBUI_NameNew,WEBUI_NameNewBreadcrumb, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Element_ID, t.CommitWarning,t.Description,t.Help,t.Name,t.PO_Description,t.PO_Help,t.PO_Name,t.PO_PrintName,t.PrintName,t.WEBUI_NameBrowse,t.WEBUI_NameNew,t.WEBUI_NameNewBreadcrumb, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Element t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Element_ID=579930 AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
+;
+
+-- 2021-09-29T16:10:19.978Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET AD_Element_ID=579930, CommitWarning=NULL, Description=NULL, Help=NULL, Name='UOM Mapping',Updated=TO_TIMESTAMP('2021-09-29 19:10:19','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Tab_ID=544561
+;
+
+-- 2021-09-29T16:10:20.006Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_tab_translation_from_ad_element(579930)
+;
+
+-- 2021-09-29T16:10:20.016Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */ select AD_Element_Link_Create_Missing_Tab(544561)
+;
+
+-- 2021-09-29T16:15:51.145Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Name='UOM Zuordnung', PrintName='UOM Zuordnung',Updated=TO_TIMESTAMP('2021-09-29 19:15:51','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579930 AND AD_Language='de_CH'
+;
+
+-- 2021-09-29T16:15:51.152Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579930,'de_CH')
+;
+
+-- 2021-09-29T16:15:55.660Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Name='UOM Zuordnung', PrintName='UOM Zuordnung',Updated=TO_TIMESTAMP('2021-09-29 19:15:55','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579930 AND AD_Language='de_DE'
+;
+
+-- 2021-09-29T16:15:55.663Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579930,'de_DE')
+;
+
+-- 2021-09-29T16:15:55.695Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_ad_element_on_ad_element_trl_update(579930,'de_DE')
+;
+
+-- 2021-09-29T16:15:55.697Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnName=NULL, Name='UOM Zuordnung', Description=NULL, Help=NULL WHERE AD_Element_ID=579930
+;
+
+-- 2021-09-29T16:15:55.698Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName=NULL, Name='UOM Zuordnung', Description=NULL, Help=NULL WHERE AD_Element_ID=579930 AND IsCentrallyMaintained='Y'
+;
+
+-- 2021-09-29T16:15:55.699Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='UOM Zuordnung', Description=NULL, Help=NULL WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=579930) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 579930)
+;
+
+-- 2021-09-29T16:15:55.724Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_PrintFormatItem pi SET PrintName='UOM Zuordnung', Name='UOM Zuordnung' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c  WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=579930)
+;
+
+-- 2021-09-29T16:15:55.726Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET Name='UOM Zuordnung', Description=NULL, Help=NULL, CommitWarning = NULL WHERE AD_Element_ID = 579930
+;
+
+-- 2021-09-29T16:15:55.728Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_WINDOW SET Name='UOM Zuordnung', Description=NULL, Help=NULL WHERE AD_Element_ID = 579930
+;
+
+-- 2021-09-29T16:15:55.728Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu SET   Name = 'UOM Zuordnung', Description = NULL, WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 579930
+;
+
+-- 2021-09-29T16:16:00.433Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Name='UOM Zuordnung', PrintName='UOM Zuordnung',Updated=TO_TIMESTAMP('2021-09-29 19:16:00','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579930 AND AD_Language='nl_NL'
+;
+
+-- 2021-09-29T16:16:00.434Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579930,'nl_NL')
+;
+
+-- 2021-09-30T08:28:12.676Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Name='External system config Shopware6', PrintName='External system config Shopware6',Updated=TO_TIMESTAMP('2021-09-30 11:28:12','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=578776 AND AD_Language='de_CH'
+;
+
+-- 2021-09-30T08:28:12.718Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(578776,'de_CH')
+;
+
+-- 2021-09-30T08:28:15.936Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Name='External system config Shopware6', PrintName='External system config Shopware6',Updated=TO_TIMESTAMP('2021-09-30 11:28:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=578776 AND AD_Language='de_DE'
+;
+
+-- 2021-09-30T08:28:15.940Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(578776,'de_DE')
+;
+
+-- 2021-09-30T08:28:15.990Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_ad_element_on_ad_element_trl_update(578776,'de_DE')
+;
+
+-- 2021-09-30T08:28:15.995Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnName='ExternalSystem_Config_Shopware6_ID', Name='External system config Shopware6', Description=NULL, Help=NULL WHERE AD_Element_ID=578776
+;
+
+-- 2021-09-30T08:28:15.999Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='ExternalSystem_Config_Shopware6_ID', Name='External system config Shopware6', Description=NULL, Help=NULL, AD_Element_ID=578776 WHERE UPPER(ColumnName)='EXTERNALSYSTEM_CONFIG_SHOPWARE6_ID' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2021-09-30T08:28:16.001Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='ExternalSystem_Config_Shopware6_ID', Name='External system config Shopware6', Description=NULL, Help=NULL WHERE AD_Element_ID=578776 AND IsCentrallyMaintained='Y'
+;
+
+-- 2021-09-30T08:28:16.001Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='External system config Shopware6', Description=NULL, Help=NULL WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=578776) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 578776)
+;
+
+-- 2021-09-30T08:28:16.028Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_PrintFormatItem pi SET PrintName='External system config Shopware6', Name='External system config Shopware6' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c  WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=578776)
+;
+
+-- 2021-09-30T08:28:16.029Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET Name='External system config Shopware6', Description=NULL, Help=NULL, CommitWarning = NULL WHERE AD_Element_ID = 578776
+;
+
+-- 2021-09-30T08:28:16.032Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_WINDOW SET Name='External system config Shopware6', Description=NULL, Help=NULL WHERE AD_Element_ID = 578776
+;
+
+-- 2021-09-30T08:28:16.032Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu SET   Name = 'External system config Shopware6', Description = NULL, WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 578776
+;
+
+-- 2021-09-30T08:28:23.696Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Name='External system config Shopware6', PrintName='External system config Shopware6',Updated=TO_TIMESTAMP('2021-09-30 11:28:23','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=578776 AND AD_Language='en_US'
+;
+
+-- 2021-09-30T08:28:23.698Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(578776,'en_US')
+;
+
+-- 2021-09-30T08:28:26.648Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Name='External system config Shopware6', PrintName='External system config Shopware6',Updated=TO_TIMESTAMP('2021-09-30 11:28:26','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=578776 AND AD_Language='nl_NL'
+;
+
+-- 2021-09-30T08:28:26.649Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(578776,'nl_NL')
+;

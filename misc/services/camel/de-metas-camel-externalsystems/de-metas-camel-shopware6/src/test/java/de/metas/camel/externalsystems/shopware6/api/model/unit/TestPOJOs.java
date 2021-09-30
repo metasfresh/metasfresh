@@ -20,27 +20,23 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.shopware6.api.model.product;
+package de.metas.camel.externalsystems.shopware6.api.model.unit;
 
-import com.google.common.collect.ImmutableList;
 import de.metas.camel.externalsystems.common.JsonObjectMapperHolder;
-import de.metas.camel.externalsystems.shopware6.api.model.JsonTax;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-import java.math.BigDecimal;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.util.Arrays;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.*;
 
 public class TestPOJOs
 {
-
 	@Test
-	public void givenJsonProducts_whenSerializeDeserialize_thenSuccess() throws IOException
+	public void givenJsonUnits_whenSerializeDeserialize_thenSuccess() throws IOException
 	{
-		testSerializeDeserializeObject(getMockJsonProducts());
+		testSerializeDeserializeObject(getMockJsonUnits());
 	}
 
 	private void testSerializeDeserializeObject(final Object value) throws IOException
@@ -48,25 +44,25 @@ public class TestPOJOs
 		final Class<?> valueClass = value.getClass();
 		final String json = JsonObjectMapperHolder.sharedJsonObjectMapper().writeValueAsString(value);
 		final Object value2 = JsonObjectMapperHolder.sharedJsonObjectMapper().readValue(json, valueClass);
+
 		assertThat(value2).isEqualTo(value);
 	}
 
-	private JsonProducts getMockJsonProducts()
+	private JsonUnits getMockJsonUnits()
 	{
-		return JsonProducts.builder()
-				.productList(ImmutableList.of(
-						JsonProduct.builder()
-								.id("productId")
-								.name("productName")
-								.ean("ean")
-								.unitId("unitId")
-								.jsonTax(JsonTax.builder()
-												 .taxRate(BigDecimal.TEN)
-												 .build())
-								.productNumber("productNumber")
-								.createdAt(ZonedDateTime.now(ZoneId.of("UTC")))
-								.updatedAt(ZonedDateTime.now(ZoneId.of("UTC")))
-								.build())
-				).build();
+		final List<JsonUOM> unitList = Arrays.asList(
+				JsonUOM.builder()
+						.id("1")
+						.shortCode("shortCode1")
+						.build(),
+				JsonUOM.builder()
+						.id("2")
+						.shortCode("shortCode2")
+						.build()
+		);
+
+		return JsonUnits.builder()
+				.unitList(unitList)
+				.build();
 	}
 }
