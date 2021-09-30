@@ -20,7 +20,7 @@ export function getLaunchers({ token }) {
  * @summary Start a workflow from the launchers list
  */
 export function startWorkflowRequest({ wfProviderId, wfParameters }) {
-  return axios.post(`${window.config.API_URL}/userWorkflows/wfProcess/start`, { wfProviderId, wfParameters });
+  return axios.post(`${window.config.SERVER_URL}/userWorkflows/wfProcess/start`, { wfProviderId, wfParameters });
 }
 
 /**
@@ -28,5 +28,5 @@ export function startWorkflowRequest({ wfProviderId, wfParameters }) {
  * @summary Continue a workflow from the launchers list
  */
 export function continueWorkflowRequest(wfProviderId) {
-  return axios.get(`${window.config.API_URL}/userWorkflows/wfProcess/${wfProviderId}`);
+  return axios.get(`${window.config.SERVER_URL}/userWorkflows/wfProcess/${wfProviderId}`);
 }
