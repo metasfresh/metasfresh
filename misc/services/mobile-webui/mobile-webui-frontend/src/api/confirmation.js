@@ -8,7 +8,7 @@ import axios from 'axios';
  */
 export function userConfirmation({ token, wfProcessId, wfActivityId }) {
   return axios.post(
-    `${window.config.API_URL}/userWorkflows/wfProcess/${wfProcessId}/${wfActivityId}/userConfirmation`,
+    `${window.config.SERVER_URL}/userWorkflows/wfProcess/${wfProcessId}/${wfActivityId}/userConfirmation`,
     {
       headers: {
         Authorization: token,
