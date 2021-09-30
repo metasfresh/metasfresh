@@ -30,7 +30,7 @@ class WorkflowProcess extends PureComponent {
                     key={uniqueId}
                     id={uniqueId}
                     wfProcessId={wfProcessId}
-                    activityId={activityItem.id}
+                    activityId={activityItem.activityId}
                     activityState={activitiesState[activityItem.activityId]}
                     {...activityItem}
                   />

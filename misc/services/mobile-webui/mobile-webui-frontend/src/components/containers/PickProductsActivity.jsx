@@ -9,9 +9,9 @@ class PickProductsActivity extends Component {
       componentProps: { lines },
       activityState,
       wfProcessId,
+      activityId,
     } = this.props;
 
-    const { activityId } = activityState;
     const { isLinesListVisible } = activityState.dataStored;
 
     return (
