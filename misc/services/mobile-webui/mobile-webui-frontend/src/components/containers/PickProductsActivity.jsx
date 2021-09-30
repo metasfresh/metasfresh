@@ -43,6 +43,7 @@ PickProductsActivity.propTypes = {
   componentProps: PropTypes.object,
   activityState: PropTypes.object,
   wfProcessId: PropTypes.string,
+  activityId: PropTypes.string,
 };
 
 export default PickProductsActivity;
