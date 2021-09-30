@@ -1,29 +1,37 @@
-import React, { Component } from 'react';
-import PickProductsSteps from './PickProductsSteps';
+import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
 import { push } from 'connected-react-router';
 import PropTypes from 'prop-types';
-class LineScreen extends Component {
+
+import PickProductsSteps from './PickProductsSteps';
+
+class LineScreen extends PureComponent {
   render() {
-    const { activityId, wfProcessId, lineIndex } = this.props;
-    const { caption, steps } = this.props.lineProps;
-    return (
-      <div className="lines-screen-container">
-        <div className="has-text-centered">{caption}</div>
-        <PickProductsSteps steps={steps} activityId={activityId} wfProcessId={wfProcessId} lineIndex={lineIndex} />
-      </div>
-    );
+    const { activityId, wfProcessId, lineIndex, lineProps } = this.props;
+
+    if (lineProps) {
+      const { caption, steps } = lineProps;
+
+      return (
+        <div className="lines-screen-container">
+          <div className="has-text-centered">{caption}</div>
+          <PickProductsSteps steps={steps} activityId={activityId} wfProcessId={wfProcessId} lineIndex={lineIndex} />
+        </div>
+      );
+    }
+
+    return null;
   }
 }
 
 const mapStateToProps = (state, ownProps) => {
   const { workflowId: wfProcessId, activityId, lineId } = ownProps.match.params;
+  const workflow = state.wfProcesses[wfProcessId];
+  const activities = workflow ? workflow.activities : [];
+  const targetActivity = activities.filter((activity) => activity.activityId === activityId);
 
-  const targetActivity = state.wfProcesses[wfProcessId].activities.filter(
-    (activity) => activity.activityId === activityId
-  );
   return {
-    lineProps: targetActivity[0].componentProps.lines[lineId],
+    lineProps: targetActivity.length ? targetActivity[0].componentProps.lines[lineId] : null,
     activityId,
     wfProcessId,
     lineIndex: Number(lineId),
@@ -35,7 +43,7 @@ LineScreen.propTypes = {
   activityId: PropTypes.string.isRequired,
   wfProcessId: PropTypes.string.isRequired,
   lineIndex: PropTypes.number.isRequired,
-  lineProps: PropTypes.object.isRequired,
+  lineProps: PropTypes.any.isRequired,
 };
 
 export default connect(mapStateToProps, { push })(LineScreen);
