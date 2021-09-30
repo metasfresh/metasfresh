@@ -5,7 +5,6 @@ import PickStep from '../PickStep';
 
 class PickProductsSteps extends Component {
   render() {
-    console.log(this.props);
     const { steps, wfProcessId, activityId, lineIndex } = this.props;
     return (
       <div className="steps-container">
