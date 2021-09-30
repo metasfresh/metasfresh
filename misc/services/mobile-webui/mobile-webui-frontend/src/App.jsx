@@ -24,7 +24,7 @@ function App() {
           const history = useHistory();
 
           auth.logout().finally(() => {
-            history.push('./login');
+            history.push('/login');
           });
         } else {
           return Promise.reject(error);
