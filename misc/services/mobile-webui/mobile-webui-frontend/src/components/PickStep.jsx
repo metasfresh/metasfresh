@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { updatePickingStepQty } from '../actions/PickingActions';
 import BarcodeScanner from './containers/BarcodeScanner';
-
+import { push } from 'connected-react-router';
 class PickStep extends PureComponent {
   constructor(props) {
     super(props);
@@ -13,8 +13,9 @@ class PickStep extends PureComponent {
   }
 
   handleClick = () => {
-    this.setState({ activePickingStep: true });
-    window.scrollTo(0, 0);
+    const { wfProcessId, activityId, lineIndex, stepId, push } = this.props;
+    console.log('P:', this.props);
+    push(`/workflow/${wfProcessId}/activityId/${activityId}/lineId/${lineIndex}/stepId/${stepId}`);
   };
 
   goBackToPickingSteps = () => this.setState({ activePickingStep: false });
@@ -109,6 +110,7 @@ PickStep.propTypes = {
   lineIndex: PropTypes.number.isRequired,
   pickstepState: PropTypes.object,
   huBarcode: PropTypes.string,
+  push: PropTypes.func.isRequired,
 };
 
-export default connect(mapStateToProps, { updatePickingStepQty })(PickStep);
+export default connect(mapStateToProps, { updatePickingStepQty, push })(PickStep);
