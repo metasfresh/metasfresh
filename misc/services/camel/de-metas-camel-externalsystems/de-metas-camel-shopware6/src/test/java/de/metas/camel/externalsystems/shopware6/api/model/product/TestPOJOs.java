@@ -22,8 +22,10 @@
 
 package de.metas.camel.externalsystems.shopware6.api.model.product;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.google.common.collect.ImmutableList;
-import de.metas.camel.externalsystems.common.JsonObjectMapperHolder;
 import de.metas.camel.externalsystems.shopware6.api.model.JsonTax;
 import org.junit.Test;
 
@@ -36,6 +38,9 @@ import static org.assertj.core.api.Assertions.*;
 
 public class TestPOJOs
 {
+	private final ObjectMapper objectMapper = new ObjectMapper()
+			.registerModule(new JavaTimeModule())
+			.disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE);
 
 	@Test
 	public void givenJsonProducts_whenSerializeDeserialize_thenSuccess() throws IOException
@@ -46,8 +51,8 @@ public class TestPOJOs
 	private void testSerializeDeserializeObject(final Object value) throws IOException
 	{
 		final Class<?> valueClass = value.getClass();
-		final String json = JsonObjectMapperHolder.sharedJsonObjectMapper().writeValueAsString(value);
-		final Object value2 = JsonObjectMapperHolder.sharedJsonObjectMapper().readValue(json, valueClass);
+		final String json = objectMapper.writeValueAsString(value);
+		final Object value2 = objectMapper.readValue(json, valueClass);
 		assertThat(value2).isEqualTo(value);
 	}
 
