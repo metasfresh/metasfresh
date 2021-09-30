@@ -1,4 +1,5 @@
-// import * as types from '../constants/ActionTypes';
+import * as types from '../constants/ActionTypes';
+import { produce } from 'immer';
 
 export const initialState = {
   'picking-7f42317d-0782-466c-a192-cb5ad7d3cce0': {
@@ -52,16 +53,26 @@ export const initialState = {
   },
 };
 
-export default function wfProcesses(state = initialState, action) {
-  // const { payload } = action;
+const reducer = produce((draftState, action) => {
   switch (action.type) {
-    // case types.SET_WFPROCESSES:
-    //   return {
-    //     ...state,
-    //     ...payload.WFPROCESESS,
-    //   };
+    case types.START_WORKFLOW_PROCESS: {
+      const { id, headerProperties, activities } = action.payload;
+
+      draftState[id] = { headerProperties, activities };
+
+      return draftState;
+    }
+    case types.CONTINUE_WORKFLOW_PROCESS: {
+      const { id, headerProperties, activities } = action.payload;
+
+      draftState[id] = { headerProperties, activities };
+
+      return draftState;
+    }
 
     default:
-      return state;
+      return draftState;
   }
-}
+}, initialState);
+
+export default reducer;

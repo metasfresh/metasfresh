@@ -1,16 +1,27 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
+import { connect } from 'react-redux';
+import { push } from 'connected-react-router';
+
+import { startWorkflow, continueWorkflow } from '../actions/WorkflowActions';
 
 class Launcher extends PureComponent {
-  handleClick = (id) => {
-    console.log(id);
+  handleClick = () => {
+    const { startWorkflow, continueWorkflow, wfProviderId, wfParameters, startedWFProcessId, push } = this.props;
+    const action = startedWFProcessId
+      ? continueWorkflow(startedWFProcessId)
+      : startWorkflow({ wfProviderId, wfParameters });
+
+    action.then(({ endpointResponse }) => {
+      push(`/workflow/${endpointResponse.id}`);
+    });
   };
 
   render() {
-    const { id, caption, wfProviderId, startedWFProcessId } = this.props;
+    const { caption, wfProviderId, startedWFProcessId } = this.props;
 
     return (
-      <div key={id} className="ml-3 mr-3 is-light launcher" onClick={() => this.handleClick(id)}>
+      <div className="ml-3 mr-3 is-light launcher" onClick={this.handleClick}>
         <div className="box">
           <div className="columns is-mobile">
             <div className="column is-12">
@@ -31,8 +42,11 @@ class Launcher extends PureComponent {
 Launcher.propTypes = {
   caption: PropTypes.string.isRequired,
   wfProviderId: PropTypes.string.isRequired,
-  id: PropTypes.string.isRequired,
   startedWFProcessId: PropTypes.string,
+  startWorkflow: PropTypes.func.isRequired,
+  continueWorkflow: PropTypes.func.isRequired,
+  push: PropTypes.func.isRequired,
+  wfParameters: PropTypes.object.isRequired,
 };
 
-export default Launcher;
+export default connect(null, { startWorkflow, continueWorkflow, push })(Launcher);

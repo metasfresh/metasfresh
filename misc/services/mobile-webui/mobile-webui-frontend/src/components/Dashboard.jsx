@@ -2,7 +2,6 @@ import React from 'react';
 import { useStore } from 'react-redux';
 import { Link } from 'react-router-dom';
 
-import Header from '../components/Header';
 import Launchers from '../containers/Launchers';
 import WFProcess from '../components/containers/WFProcess';
 
@@ -12,7 +11,6 @@ const Dashboard = () => {
 
   return (
     <>
-      <Header appName="webUI app" />
       <Launchers />
       <WFProcess
         wfProcessId="picking-7f42317d-0782-466c-a192-cb5ad7d3cce0"
