@@ -13,6 +13,7 @@
     "@zxing/library": "^0.18.6",
     "axios": "^0.21.4",
     "bulma": "^0.9.3",
+    "classnames": "^2.3.1",
     "connected-react-router": "^6.9.1",
     "immer": "^9.0.6",
     "js-cookie": "^3.0.1",

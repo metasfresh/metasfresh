@@ -26,7 +26,6 @@ class WorkflowProcess extends PureComponent {
     return (
       <div className="container pick-products-container">
         <ViewHeader />
-        <div className="pick-products-active-line header-caption">custom headers</div>
         {activities.length > 0 &&
           activities.map((activityItem) => {
             let uniqueId = uuidv4();
