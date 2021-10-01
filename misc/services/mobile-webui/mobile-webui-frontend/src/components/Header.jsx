@@ -18,12 +18,19 @@ const Header = ({ appName }) => {
     }
   };
 
+  //<header className="p-4 navbar is-fixed-top is-flex is-align-items-center is-justify-content-space-around header">
+
   return (
-    <header className="p-4 navbar is-fixed-top is-flex is-align-items-center is-justify-content-space-around header">
-      {showBackButton ? <BackButton caption="Back" onClickExec={handleClick} /> : null}
-      <div className="header-title">
-        <h4 className="title is-4">{appName}</h4>
-        <div className="subtitle">network: {network ? 'online' : 'offline'} </div>
+    <header className="p-4 is-fixed-top header">
+      <div className="columns pl-5 is-mobile">
+        <div className="column dupasradupapapapapapapa">
+          {showBackButton ? <BackButton onClickExec={handleClick} /> : null}
+        </div>
+        <div className="column is-four-fifths has-text-centered header-title">
+          <h4 className="title is-4">{appName}</h4>
+          <div className="subtitle">network: {network ? 'online' : 'offline'} </div>
+        </div>
+        <div className="column" />
       </div>
     </header>
   );
@@ -34,3 +41,22 @@ Header.propTypes = {
 };
 
 export default Header;
+
+/*<div className="container">
+  <div
+    className="columns pl-5 is-mobile"
+    onClick={() => {
+      navigation.removeViewFromHistory();
+      history.goBack();
+    }}
+  >
+    <div className="column is-flex is-11 is-size-3 green-color mt-1">
+      <div className="mt-2">
+        <i className="fas fa-chevron-left" />
+      </div>
+      <div className="pt-1 pl-2 nav-text">
+        <span className="is-size-4">{text}</span>
+      </div>
+    </div>
+  </div>
+</div>*/

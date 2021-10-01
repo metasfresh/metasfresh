@@ -1,15 +1,20 @@
 .header {
-    background: $base-mf-green;
-    .header-title {
-        .title {
-            color: $white-background
-            
-        }
-        .subtitle {
-        }
+  background: $base-mf-green;
+  left: 0;
+  right: 0;
+  top: 0;
+  position: fixed;
+  z-index: 30;
+
+  .header-title {
+    .title {
+      color: $white-background
     }
+    .subtitle {
+    }
+  }
 }
 
 .header-caption {
-    margin-bottom: 1rem;
+  margin-bottom: 1rem;
 }
