@@ -19,6 +19,7 @@ class PickScreen extends Component {
     const { detectedCode } = this.state;
     const {
       stepProps: { productName, locatorName, uom, huBarcode, qtyToPick, qtyPicked },
+      activityId,
     } = this.props;
 
     return (
@@ -51,7 +52,12 @@ class PickScreen extends Component {
               {!detectedCode && qtyPicked}
             </div>
           </div>
-          <BarcodeScanner id={huBarcode} componentProps={{ caption: 'Scan' }} onDetection={this.onDetection} />
+          <BarcodeScanner
+            id={huBarcode}
+            componentProps={{ caption: 'Scan' }}
+            onDetection={this.onDetection}
+            activityId={activityId}
+          />
         </div>
       </div>
     );

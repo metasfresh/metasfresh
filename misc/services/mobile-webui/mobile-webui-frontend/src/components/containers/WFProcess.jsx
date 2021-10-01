@@ -7,7 +7,7 @@ import PickProductsActivity from './PickProductsActivity';
 
 class WFProcess extends Component {
   scanActivityPostDetection = (detectedCode) => {
-    console.log('Detected code:', detectedCode);
+    console.log('Detected code -:', detectedCode);
   };
 
   render() {

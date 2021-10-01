@@ -5,10 +5,13 @@ import { v4 as uuidv4 } from 'uuid';
 import PropTypes from 'prop-types';
 
 import { continueWorkflow } from '../actions/WorkflowActions';
+import { postScannedBarcode } from '../api/scanner';
+
 import ViewHeader from '../containers/ViewHeader';
 import BarcodeScanner from '../components/containers/BarcodeScanner';
 import ConfirmActivity from '../components/containers/ConfirmActivity';
 import PickProductsActivity from '../components/containers/PickProductsActivity';
+import { stopScanning } from '../actions/ScanActions';
 
 class WorkflowProcess extends PureComponent {
   componentDidMount() {
@@ -19,8 +22,12 @@ class WorkflowProcess extends PureComponent {
     }
   }
 
-  scanActivityPostDetection = (detectedCode) => {
-    console.log('Detected code:', detectedCode);
+  scanActivityPostDetection = ({ detectedCode, activityId }) => {
+    const { wfProcessId, token, stopScanning } = this.props;
+    postScannedBarcode({ detectedCode, wfProcessId, activityId, token }).then(() => {
+      console.log('POST COMPLETE ?');
+    });
+    stopScanning();
   };
 
   render() {
@@ -77,6 +84,7 @@ function mapStateToProps(state, { match }) {
     wfProcessId: workflowId,
     activities,
     status,
+    token: state.appHandler.token,
   };
 }
 
@@ -88,6 +96,8 @@ WorkflowProcess.propTypes = {
   history: PropTypes.object.isRequired,
   wfProcessId: PropTypes.string.isRequired,
   continueWorkflow: PropTypes.func.isRequired,
+  token: PropTypes.string,
+  stopScanning: PropTypes.func.isRequired,
 };
 
-export default withRouter(connect(mapStateToProps, { continueWorkflow })(WorkflowProcess));
+export default withRouter(connect(mapStateToProps, { continueWorkflow, stopScanning })(WorkflowProcess));
