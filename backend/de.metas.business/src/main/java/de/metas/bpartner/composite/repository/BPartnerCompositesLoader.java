@@ -24,17 +24,20 @@ import de.metas.bpartner.composite.BPartnerLocation.BPartnerLocationBuilder;
 import de.metas.bpartner.composite.BPartnerLocationType;
 import de.metas.bpartner.composite.SalesRep;
 import de.metas.bpartner.user.role.UserRole;
+import de.metas.bpartner.user.role.repository.UserRoleRepository;
 import de.metas.common.util.StringUtils;
 import de.metas.greeting.GreetingId;
 import de.metas.i18n.Language;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.logging.LogManager;
+import de.metas.marketing.base.model.CampaignId;
 import de.metas.money.CurrencyId;
 import de.metas.order.InvoiceRule;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
 import de.metas.util.Check;
+import de.metas.user.UserId;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import de.metas.util.lang.ExternalId;
@@ -53,6 +56,7 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_Postal;
+import org.compiere.util.TimeUtil;
 import org.compiere.model.I_C_User_Assigned_Role;
 import org.compiere.model.I_C_User_Role;
 import org.slf4j.Logger;
@@ -65,6 +69,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.Objects;
 
 import static de.metas.util.StringUtils.trimBlankToNull;
 import static org.compiere.util.TimeUtil.asLocalDate;
@@ -94,14 +99,20 @@ import static org.compiere.util.TimeUtil.asLocalDate;
 final class BPartnerCompositesLoader
 {
 	private static final Logger logger = LogManager.getLogger(BPartnerCompositesLoader.class);
+
 	private final LogEntriesRepository recordChangeLogRepository;
+	private final UserRoleRepository userRoleRepository;
+
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	@Builder
-	private BPartnerCompositesLoader(@NonNull final LogEntriesRepository recordChangeLogRepository)
+	private BPartnerCompositesLoader(
+			@NonNull final LogEntriesRepository recordChangeLogRepository,
+			@NonNull final UserRoleRepository userRoleRepository)
 	{
 		this.recordChangeLogRepository = recordChangeLogRepository;
+		this.userRoleRepository = userRoleRepository;
 	}
 
 	public ImmutableMap<BPartnerId, BPartnerComposite> retrieveByIds(@NonNull final Collection<BPartnerId> bpartnerIds)
@@ -331,7 +342,7 @@ final class BPartnerCompositesLoader
 		return location.build();
 	}
 
-	private static ImmutableList<BPartnerContact> ofContactRecords(
+	private ImmutableList<BPartnerContact> ofContactRecords(
 			@NonNull final BPartnerId bpartnerId,
 			@NonNull final CompositeRelatedRecords relatedRecords,
 			@NonNull final ZoneId orgZoneId)
@@ -350,18 +361,20 @@ final class BPartnerCompositesLoader
 		return result.build();
 	}
 
-	private static BPartnerContact ofContactRecord(
+	private BPartnerContact ofContactRecord(
 			@NonNull final I_AD_User contactRecord,
 			@NonNull final CompositeRelatedRecords relatedRecords,
 			@NonNull final ZoneId orgZoneId)
 	{
 		final RecordChangeLog changeLog = ChangeLogUtil.createContactChangeLog(contactRecord, relatedRecords);
-		final List<UserRole> roles = getUserRoles(contactRecord);
+
+		final UserId contactUserId = UserId.ofRepoId(contactRecord.getAD_User_ID());
+		final List<UserRole> roles = userRoleRepository.getUserRoles(contactUserId);
 
 		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(contactRecord.getC_BPartner_ID());
 		return BPartnerContact.builder()
 				.active(contactRecord.isActive())
-				.id(BPartnerContactId.ofRepoId(bpartnerId, contactRecord.getAD_User_ID()))
+				.id(BPartnerContactId.of(bpartnerId, contactUserId))
 				.contactType(BPartnerContactType.builder()
 						.defaultContact(contactRecord.isDefaultContact())
 						.billToDefault(contactRecord.isBillToContact_Default())
@@ -409,28 +422,6 @@ final class BPartnerCompositesLoader
 			}
 		}
 		return result.build();
-	}
-
-	private static List<UserRole> getUserRoles(final I_AD_User user)
-	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		return queryBL
-				.createQueryBuilder(I_C_User_Role.class)
-				.addOnlyActiveRecordsFilter()
-				.addInSubQueryFilter(I_C_User_Role.COLUMNNAME_C_User_Role_ID, I_C_User_Assigned_Role.COLUMNNAME_C_User_Role_ID,
-						queryBL
-								.createQueryBuilder(I_C_User_Assigned_Role.class)
-								.addOnlyActiveRecordsFilter()
-								.addEqualsFilter(I_C_User_Assigned_Role.COLUMNNAME_AD_User_ID, user.getAD_User_ID())
-								.create())
-				.orderBy(I_C_User_Role.COLUMNNAME_Name)
-				.create()
-				.stream()
-				.map(role -> UserRole.builder()
-						.name(role.getName())
-						.uniquePerBpartner(role.isUniqueForBPartner())
-						.build())
-				.collect(Collectors.toList());
 	}
 
 	/**
