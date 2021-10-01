@@ -1,13 +1,6 @@
-import axios from 'axios';
-
 import { getLaunchers } from './launchers';
 import { userConfirmation } from './confirmation';
+import { postScannedBarcode } from './scanner';
+import { loginRequest } from './login';
 
-function loginRequest(username, password) {
-  return axios.post(`${window.config.SERVER_URL}/auth`, {
-    username,
-    password,
-  });
-}
-
-export { getLaunchers, userConfirmation, loginRequest };
+export { getLaunchers, userConfirmation, loginRequest, postScannedBarcode };
