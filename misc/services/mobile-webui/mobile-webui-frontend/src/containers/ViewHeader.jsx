@@ -22,7 +22,7 @@ const ViewHeader = () => {
   }, [params, location]);
 
   return (
-    <div className="level box pb-2 header-caption">
+    <div className="level box p-4 header-caption">
       {headerInfo
         ? headerInfo.map((info, idx) => {
             return (
