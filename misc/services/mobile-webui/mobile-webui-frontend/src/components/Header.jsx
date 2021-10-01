@@ -2,6 +2,7 @@ import React from 'react';
 import { useStore } from 'react-redux';
 import { useLocation, useHistory } from 'react-router-dom';
 import PropTypes from 'prop-types';
+import BackButton from './BackButton';
 
 const Header = ({ appName }) => {
   const store = useStore();
@@ -19,11 +20,7 @@ const Header = ({ appName }) => {
 
   return (
     <header className="p-4 navbar is-fixed-top is-flex is-align-items-center is-justify-content-space-around header">
-      {showBackButton ? (
-        <button className="button" onClick={handleClick}>
-          Back
-        </button>
-      ) : null}
+      {showBackButton ? <BackButton caption="Back" onClickExec={handleClick} /> : null}
       <div className="header-title">
         <h4 className="title is-4">{appName}</h4>
         <div className="subtitle">network: {network ? 'online' : 'offline'} </div>
