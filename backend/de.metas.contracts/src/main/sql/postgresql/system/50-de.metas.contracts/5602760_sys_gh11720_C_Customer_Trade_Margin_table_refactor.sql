@@ -204,10 +204,6 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 /* DDL */  select update_Column_Translation_From_AD_Element(577568) 
 ;
 
--- 2021-08-31T18:11:39.462Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ SELECT public.db_alter_table('C_Customer_Trade_Margin','ALTER TABLE public.C_Customer_Trade_Margin ADD COLUMN Name VARCHAR(40) NOT NULL')
-;
 
 -- 2021-08-31T18:11:45.571Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
