@@ -1,28 +1,85 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-//import ZXingBrowser from '@zxing/browser';
-import Webcam from 'react-webcam';
+import { BrowserMultiFormatReader, DecodeHintType, BarcodeFormat } from '@zxing/library';
 import { connect } from 'react-redux';
 import { startScanning, stopScanning } from '../../actions/ScanActions';
 
 class BarcodeScanner extends Component {
+  constructor(props) {
+    super(props);
+    const hints = new Map();
+    const formats = [BarcodeFormat.CODE_128, BarcodeFormat.DATA_MATRIX, BarcodeFormat.QR_CODE];
+    hints.set(DecodeHintType.POSSIBLE_FORMATS, formats);
+    hints.set(DecodeHintType.TRY_HARDER, true);
+    this.codeReader = new BrowserMultiFormatReader(hints);
+
+    this.state = {
+      videoInputDevices: [],
+      selectedDeviceId: '',
+    };
+  }
+
+  setSelectedDeviceId = (deviceId) => this.setState({ selectedDeviceId: deviceId });
+
+  setupDevices = (videoInputDevices) => {
+    // selects first device
+    this.setState({ selectedDeviceId: videoInputDevices[0].deviceId });
+
+    // setup devices dropdown
+    if (videoInputDevices.length >= 1) {
+      this.setState({ videoInputDevices });
+    }
+  };
+
+  decodeContinuously = (selectedDeviceId) => {
+    this.codeReader.decodeFromInputVideoDeviceContinuously(selectedDeviceId, 'video', (result, err) => {
+      if (result) {
+        // properly decoded qr code
+        console.log('Found the code!', result);
+      }
+
+      if (err) {
+        console.error(err);
+      }
+    });
+  };
+
+  componentDidMount() {
+    console.log('BarcodeScanner initialized');
+    this.codeReader
+      .getVideoInputDevices()
+      .then((videoInputDevices) => {
+        this.setState({ videoInputDevices }, () => {
+          this.setupDevices(videoInputDevices);
+        });
+      })
+      .catch((err) => {
+        console.error(err);
+      });
+  }
+
   initiateScanning = () => {
+    const { selectedDeviceId } = this.state;
     const { startScanning } = this.props;
     startScanning();
+    this.decodeContinuously(selectedDeviceId);
     // window.scrollTo(0, 0);
   };
 
   stopScanning = () => {
     const { stopScanning } = this.props;
+    this.codeReader.stopContinuousDecode();
     stopScanning();
   };
 
   render() {
+    const { videoInputDevices } = this.state;
     const { barcodeCaption } = this.props.componentProps;
     const {
       scanner: { active },
     } = this.props;
     const scanBtnCaption = barcodeCaption || 'Scan';
+
     return (
       <div>
         {!active && (
@@ -40,13 +97,22 @@ class BarcodeScanner extends Component {
         )}
         {active && (
           <div className="scanner-container">
-            {/* <video className="viewport scanner-window" id="video" /> */}
-            <Webcam
-              clssname="scanner-container"
-              audio={false}
-              screenshotFormat="image/jpeg"
-              forceScreenshotSourceSize="true"
-            />
+            {/* Select video source */}
+            <div id="sourceSelectPanel">
+              <label htmlFor="sourceSelect">Video source:</label>
+              <select id="sourceSelect" onChange={() => this.setSelectedDeviceId(this.value)}>
+                {videoInputDevices.map((element) => (
+                  <option key={element.deviceId} value={element.deviceId}>
+                    {element.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Video stream  */}
+            <div>
+              <video id="video" width="100%" height="100%" />
+            </div>
           </div>
         )}
       </div>
