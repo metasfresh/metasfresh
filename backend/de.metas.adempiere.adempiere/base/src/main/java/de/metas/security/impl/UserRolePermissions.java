@@ -423,7 +423,7 @@ class UserRolePermissions implements IUserRolePermissions
 
 		if(adOrgIds.contains(OrgId.ANY))
 		{
-			return "AD_Org_ID >= 0";
+			return "AD_Org_ID IS NOT NULL";
 		}
 
 		//
