@@ -87,17 +87,20 @@ class BarcodeScanner extends Component {
     return (
       <div>
         {!active && (
-          <div className="ml-3 mr-3 is-light launcher" onClick={this.initiateScanning}>
-            <div className="box">
-              <div className="columns is-mobile">
-                <div className="column is-12">
-                  <div className="columns">
-                    <div className="column is-size-4-mobile no-p">{scanBtnCaption}</div>
+          <>
+            <div className="title is-4 header-caption">Scanner</div>
+            <div className="ml-3 mr-3 is-light launcher" onClick={this.initiateScanning}>
+              <div className="box">
+                <div className="columns is-mobile">
+                  <div className="column is-12">
+                    <div className="columns">
+                      <div className="column is-size-4-mobile no-p">{scanBtnCaption}</div>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
+          </>
         )}
         {active && (
           <div className="scanner-container">

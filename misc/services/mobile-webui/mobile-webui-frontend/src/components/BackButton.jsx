@@ -39,22 +39,3 @@ BackButton.propTypes = {
 };
 
 export default connect(mapStateToProps, { stopScanning })(BackButton);
-
-/*<div className="container">
-  <div
-    className="columns pl-5 is-mobile"
-    onClick={() => {
-      navigation.removeViewFromHistory();
-      history.goBack();
-    }}
-  >
-    <div className="column is-flex is-11 is-size-3 green-color mt-1">
-      <div className="mt-2">
-        <i className="fas fa-chevron-left" />
-      </div>
-      <div className="pt-1 pl-2 nav-text">
-        <span className="is-size-4">{text}</span>
-      </div>
-    </div>
-  </div>
-</div>*/
