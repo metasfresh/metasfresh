@@ -17,38 +17,34 @@ class BarcodeScanner extends Component {
   stopScanning = () => this.setState({ activeScanning: false });
 
   render() {
+    console.log(this.size);
     const { barcodeCaption } = this.props.componentProps;
     const { activeScanning } = this.state;
     const scanBtnCaption = barcodeCaption || 'Scan';
     return (
       <div>
-        {/* INITIAL SCN BUTTON */}
-        {/* <div className="buttons">
-          <button className="button scanner-btn-green" onClick={this.initiateScanning}>
-            {scanBtnCaption}
-          </button>
-        </div> */}
-        <div className="ml-3 mr-3 is-light launcher" onClick={this.initiateScanning}>
-          <div className="box">
-            <div className="columns is-mobile">
-              <div className="column is-12">
-                <div className="columns">
-                  <div className="column is-size-4-mobile no-p">{scanBtnCaption}</div>
+        {!activeScanning && (
+          <div className="ml-3 mr-3 is-light launcher" onClick={this.initiateScanning}>
+            <div className="box">
+              <div className="columns is-mobile">
+                <div className="column is-12">
+                  <div className="columns">
+                    <div className="column is-size-4-mobile no-p">{scanBtnCaption}</div>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
+        )}
         {activeScanning && (
           <div className="scanner-container">
-            <div className="subtitle centered-text is-size-4 pt-2">
-              Please scan a Barcode &nbsp;{' '}
-              <button className="scanner-btn-green" onClick={this.stopScanning}>
-                Stop Scan
-              </button>
-            </div>
             {/* <video className="viewport scanner-window" id="video" /> */}
-            <Webcam />
+            <Webcam
+              clssname="scanner-container"
+              audio={false}
+              screenshotFormat="image/jpeg"
+              forceScreenshotSourceSize="true"
+            />
           </div>
         )}
       </div>
