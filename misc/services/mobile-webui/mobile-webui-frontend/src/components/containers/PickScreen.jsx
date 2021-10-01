@@ -2,9 +2,21 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import BarcodeScanner from './BarcodeScanner';
-
+import { stopScanning } from '../../actions/ScanActions';
 class PickScreen extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { detectedCode: '' };
+  }
+
+  onDetection = (barcode) => {
+    const { stopScanning } = this.props;
+    stopScanning();
+    this.setState({ detectedCode: barcode });
+  };
+
   render() {
+    const { detectedCode } = this.state;
     const {
       stepProps: { productName, locatorName, uom, huBarcode, qtyToPick, qtyPicked },
     } = this.props;
@@ -34,9 +46,12 @@ class PickScreen extends Component {
           </div>
           <div className="columns is-mobile">
             <div className="column is-half has-text-right has-text-weight-bold pb-0 pl-0 pr-0">Quantity picked:</div>
-            <div className="column is-half has-text-left pb-0">{qtyPicked}</div>
+            <div className="column is-half has-text-left pb-0">
+              {detectedCode && <input type="text" value={qtyPicked} />}
+              {!detectedCode && qtyPicked}
+            </div>
           </div>
-          <BarcodeScanner id={huBarcode} componentProps={{ caption: 'Scan' }} />
+          <BarcodeScanner id={huBarcode} componentProps={{ caption: 'Scan' }} onDetection={this.onDetection} />
         </div>
       </div>
     );
@@ -63,6 +78,7 @@ PickScreen.propTypes = {
   wfProcessId: PropTypes.string.isRequired,
   lineIndex: PropTypes.number.isRequired,
   stepProps: PropTypes.object.isRequired,
+  stopScanning: PropTypes.func.isRequired,
 };
 
-export default connect(mapStateToProps, {})(PickScreen);
+export default connect(mapStateToProps, { stopScanning })(PickScreen);

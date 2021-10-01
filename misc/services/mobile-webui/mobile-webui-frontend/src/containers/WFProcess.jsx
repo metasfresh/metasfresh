@@ -19,6 +19,10 @@ class WorkflowProcess extends PureComponent {
     }
   }
 
+  scanActivityPostDetection = (detectedCode) => {
+    console.log('Detected code:', detectedCode);
+  };
+
   render() {
     const { wfProcessId, activities, status } = this.props;
     const { activities: activitiesState } = status;
@@ -32,7 +36,14 @@ class WorkflowProcess extends PureComponent {
 
             switch (activityItem.componentType) {
               case 'common/scanBarcode':
-                return <BarcodeScanner key={uniqueId} id={uniqueId} {...activityItem} />;
+                return (
+                  <BarcodeScanner
+                    key={uniqueId}
+                    id={uniqueId}
+                    {...activityItem}
+                    onDetection={this.scanActivityPostDetection}
+                  />
+                );
               case 'picking/pickProducts':
                 return (
                   <PickProductsActivity
