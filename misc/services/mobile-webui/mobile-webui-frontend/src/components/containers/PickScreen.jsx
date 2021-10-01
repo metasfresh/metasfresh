@@ -5,11 +5,10 @@ import BarcodeScanner from './BarcodeScanner';
 
 class PickScreen extends Component {
   render() {
-    console.log('stepProps:', this.props);
-
     const {
       stepProps: { productName, locatorName, uom, huBarcode, qtyToPick, qtyPicked },
     } = this.props;
+
     return (
       <div className="picking-step-container">
         <div className="picking-step-details centered-text is-size-5">
