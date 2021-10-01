@@ -11,25 +11,27 @@ const ViewHeader = () => {
 
   useEffect(() => {
     const { workflowId } = params;
-    const workflow = state.wfProcesses[workflowId];
-    const { entries } = workflow.headerProperties;
-    const newHeaderInfo = [entries];
 
-    setHeaderInfo(newHeaderInfo);
+    if (workflowId) {
+      const workflow = state.wfProcesses[workflowId];
+      const { entries } = workflow.headerProperties;
+      const newHeaderInfo = [entries];
+
+      setHeaderInfo(newHeaderInfo);
+    }
   }, [params, location]);
 
   return (
-    <div className="title is-4 header-caption">
-      WFProcess Caption HEADER
+    <div className="level box pb-2 header-caption">
       {headerInfo
         ? headerInfo.map((info, idx) => {
             return (
-              <div key={idx} className={classnames(`header_info_${idx}`)}>
+              <div key={idx} className={classnames('content', `header_info_${idx}`)}>
                 {info.map(({ caption, value }, i) => {
                   return (
-                    <div key={i} className="info_line">
+                    <p key={i} className="info_line">
                       {caption} : {value}
-                    </div>
+                    </p>
                   );
                 })}
               </div>
