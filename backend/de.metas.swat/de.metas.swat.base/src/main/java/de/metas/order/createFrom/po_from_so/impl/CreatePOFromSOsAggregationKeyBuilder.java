@@ -1,11 +1,18 @@
 package de.metas.order.createFrom.po_from_so.impl;
 
-import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
+import ch.qos.logback.classic.Level;
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.bpartner_product.IBPartnerProductDAO;
 import de.metas.common.util.Check;
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.IMsgBL;
+import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
+import de.metas.product.IProductDAO;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
@@ -16,16 +23,10 @@ import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Product;
+import org.slf4j.Logger;
 
-import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.bpartner_product.IBPartnerProductDAO;
-import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.IMsgBL;
-import de.metas.organization.OrgId;
-import de.metas.product.IProductDAO;
-import de.metas.util.ILoggable;
-import de.metas.util.Loggables;
-import de.metas.util.Services;
+import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 /*
  * #%L
@@ -56,6 +57,8 @@ import de.metas.util.Services;
  */
 public class CreatePOFromSOsAggregationKeyBuilder extends AbstractOrderLineAggregationKeyBuilder
 {
+	private static final Logger logger = LogManager.getLogger(CreatePOFromSOsAggregationKeyBuilder.class);
+
 	@VisibleForTesting
 	public static final String ON_MISSING_C_B_PARTNER_PRODUCT_ERROR = "ERROR";
 
@@ -134,7 +137,7 @@ public class CreatePOFromSOsAggregationKeyBuilder extends AbstractOrderLineAggre
 											MSG_VENDOR_MISMATCH,
 											new Object[] { salesOrder.getDocumentNo(), salesOrderLine.getLine(), poBPartnerRecord.getValue(), poBPartnerRecord.getName() });
 
-			Loggables.get().addLog(msg);
+			Loggables.withLogger(logger, Level.DEBUG).addLog(msg);
 			return KEY_SKIP;
 		}
 		return poBPartnerRecord.getValue();
@@ -166,7 +169,7 @@ public class CreatePOFromSOsAggregationKeyBuilder extends AbstractOrderLineAggre
 							   MSG_MISSING_C_B_PARTNER_PRODUCT_ID,
 							   new Object[] { salesOrder.getDocumentNo(), salesOrderLine.getLine() });
 
-			Loggables.get().addLog(msg);
+			Loggables.withLogger(logger, Level.DEBUG).addLog(msg);
 		}
 		if (log || ignore)
 		{

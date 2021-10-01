@@ -1,25 +1,3 @@
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2021 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 -- 2021-09-24T12:24:50.159Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,Description,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,579925,0,'IsVendorInOrderLinesRequired',TO_TIMESTAMP('2021-09-24 15:24:50','YYYY-MM-DD HH24:MI:SS'),100,'If ticked, then the process only creates purchase order lines for sales order lines that have a vendor set.','D','Y','Require vendor set in order line','Require vendor set in order line',TO_TIMESTAMP('2021-09-24 15:24:50','YYYY-MM-DD HH24:MI:SS'),100)
@@ -69,28 +47,6 @@ UPDATE AD_Process_Para SET ColumnName='IsVendorInOrderLinesRequired', Name='Lief
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_Process_Para SET ColumnName='IsVendorInOrderLinesRequired', Name='Lieferant in Auftragspos. erforderlich', Description='Wenn angehakt werden nur solche Auftragspositionen berücksichtigt, in denen ein Lieferant angegeben ist.', Help=NULL WHERE AD_Element_ID=579925 AND IsCentrallyMaintained='Y'
 ;
-
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2021 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
 
 -- 2021-09-24T12:25:28.650Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator

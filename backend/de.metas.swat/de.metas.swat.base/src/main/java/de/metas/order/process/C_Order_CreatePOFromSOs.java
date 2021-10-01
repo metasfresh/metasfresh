@@ -3,7 +3,6 @@ package de.metas.order.process;
 import de.metas.i18n.AdMessageKey;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
-import de.metas.order.OrderLineId;
 import de.metas.order.createFrom.po_from_so.IC_Order_CreatePOFromSOsBL;
 import de.metas.order.createFrom.po_from_so.IC_Order_CreatePOFromSOsDAO;
 import de.metas.order.createFrom.po_from_so.PurchaseTypeEnum;
@@ -21,7 +20,6 @@ import org.compiere.util.Env;
 import java.sql.Timestamp;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
 /*
  * #%L
@@ -76,7 +74,7 @@ public class C_Order_CreatePOFromSOs
 	@Param(parameterName = "poReference")
 	private String p_poReference;
 
-	@Param(parameterName = "IsVendorInOrderLinesRequired", mandatory = true)
+	@Param(parameterName = "IsVendorInOrderLinesRequired")
 	private boolean p_IsVendorInOrderLinesRequired;
 
 	private final IC_Order_CreatePOFromSOsDAO orderCreatePOFromSOsDAO = Services.get(IC_Order_CreatePOFromSOsDAO.class);
@@ -129,17 +127,16 @@ public class C_Order_CreatePOFromSOs
 		}
 		workpackageAggregator.closeAllGroups();
 
-		final Set<OrderLineId> skippedSalesOrderLines = workpackageAggregator.getSkippedSalesOrderLineIds();
+		workpackageAggregator.getSkippedLinesMessage()
+				.ifPresent(skippedLinesMessage -> {
+					final UserNotificationRequest userNotificationRequest = UserNotificationRequest.builder()
+							.recipientUserId(Env.getLoggedUserId())
+							.contentADMessage(MSG_SKIPPED_C_ORDERLINE_IDS)
+							.contentADMessageParam(skippedLinesMessage)
+							.build();
+					userNotifications.send(userNotificationRequest);
+				});
 
-		if (skippedSalesOrderLines.size() > 0)
-		{
-			final UserNotificationRequest userNotificationRequest = UserNotificationRequest.builder()
-					.recipientUserId(Env.getLoggedUserId())
-					.contentADMessage(MSG_SKIPPED_C_ORDERLINE_IDS)
-					.contentADMessageParam(skippedSalesOrderLines)
-					.build();
-			userNotifications.send(userNotificationRequest);
-		}
 		return MSG_OK;
 	}
 }
