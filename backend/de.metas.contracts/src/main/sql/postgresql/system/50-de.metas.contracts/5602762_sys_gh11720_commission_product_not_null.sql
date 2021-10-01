@@ -17,7 +17,7 @@ WHERE Commission_Product_ID IS NULL
 ;
 
 UPDATE C_Customer_Trade_Margin
-SET Name=C_Customer_Trade_Margin_ID::text
+SET Name=C_Customer_Trade_Margin_ID::text,
     updated='2021-10-01 15:55', updatedby=99
 WHERE Name IS NULL
 ;
