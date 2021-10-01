@@ -17,12 +17,13 @@
     border-color: $base-mf-green;
 }
 .scanner-container {
-    background: $yellow-background;
-    position: absolute;
-    top: 6em;
-    right:0px;
-    bottom:0px;
-    left:0px;
+    width: 100%;
+    // background: $yellow-background;
+    // position: absolute;
+    // top: 6em;
+    // right:0px;
+    // bottom:0px;
+    // left:0px;
 }
 .centered-text {
     text-align: center;
