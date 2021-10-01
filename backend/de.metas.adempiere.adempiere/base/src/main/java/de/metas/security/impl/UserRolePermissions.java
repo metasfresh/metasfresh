@@ -106,6 +106,7 @@ class UserRolePermissions implements IUserRolePermissions
 	private static final transient Logger logger = LogManager.getLogger(UserRolePermissions.class);
 
 	private static final Set<OrgId> ORGACCESS_ALL = Collections.unmodifiableSet(new HashSet<>()); // NOTE: new instance to make sure it's unique
+	private static final Set<OrgId> TABLE_ORGACCESS_ALL  = Collections.unmodifiableSet(new HashSet<>()); // NOTE: new instance to make sure it's unique;
 
 	private static final AdMessageKey MSG_AccessTableNoView = AdMessageKey.of("AccessTableNoView");
 	private static final AdMessageKey MSG_AccessTableNoUpdate = AdMessageKey.of("AccessTableNoUpdate");
@@ -380,7 +381,14 @@ class UserRolePermissions implements IUserRolePermissions
 
 		if(orgsWithAccess.isPresent())
 		{
-			return orgsWithAccess.get();
+			final Set<OrgId> orgIds = orgsWithAccess.get();
+
+			if(orgIds.contains(OrgId.ANY))
+			{
+				return TABLE_ORGACCESS_ALL;
+			}
+
+			return orgIds;
 		}
 
 		if (isAccessAllOrgs())
@@ -421,7 +429,7 @@ class UserRolePermissions implements IUserRolePermissions
 			return "1=1"; // no org filter
 		}
 
-		if(adOrgIds.contains(OrgId.ANY))
+		if(adOrgIds == TABLE_ORGACCESS_ALL)
 		{
 			return "AD_Org_ID IS NOT NULL";
 		}
@@ -479,10 +487,11 @@ class UserRolePermissions implements IUserRolePermissions
 			return true;
 		}
 
-		if(orgs.contains(OrgId.ANY))
+		if(orgs == TABLE_ORGACCESS_ALL)
 		{
 			return true;
 		}
+
 		return orgs.contains(orgId);
 	}    // isOrgAccess
 
