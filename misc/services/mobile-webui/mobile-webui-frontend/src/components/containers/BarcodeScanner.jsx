@@ -32,12 +32,12 @@ class BarcodeScanner extends Component {
   };
 
   decodeContinuously = (selectedDeviceId) => {
-    const { onDetection } = this.props;
+    const { onDetection, activityId } = this.props;
     this.codeReader.decodeFromInputVideoDeviceContinuously(selectedDeviceId, 'video', (result, err) => {
       if (result) {
         // properly decoded qr code
         console.log('Found:', result);
-        onDetection(result.getText());
+        onDetection({ detectedCode: result.getText(), activityId });
       }
 
       if (err) {
@@ -136,6 +136,7 @@ BarcodeScanner.propTypes = {
   startScanning: PropTypes.func.isRequired,
   stopScanning: PropTypes.func.isRequired,
   onDetection: PropTypes.func.isRequired,
+  activityId: PropTypes.string.isRequired,
 };
 
 export default connect(mapStateToProps, { startScanning, stopScanning })(BarcodeScanner);
