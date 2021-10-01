@@ -6,6 +6,10 @@ import ConfirmActivity from './ConfirmActivity';
 import PickProductsActivity from './PickProductsActivity';
 
 class WFProcess extends Component {
+  scanActivityPostDetection = (detectedCode) => {
+    console.log('Detected code:', detectedCode);
+  };
+
   render() {
     const { wfProcessId, activities, status } = this.props;
     const { activities: activitiesState } = status;
@@ -19,7 +23,14 @@ class WFProcess extends Component {
             let uniqueId = uuidv4();
             switch (activityItem.componentType) {
               case 'common/scanBarcode':
-                return <BarcodeScanner key={uniqueId} id={uniqueId} {...activityItem} />;
+                return (
+                  <BarcodeScanner
+                    key={uniqueId}
+                    id={uniqueId}
+                    {...activityItem}
+                    onDetection={this.scanActivityPostDetection}
+                  />
+                );
               case 'picking/pickProducts':
                 return (
                   <PickProductsActivity
