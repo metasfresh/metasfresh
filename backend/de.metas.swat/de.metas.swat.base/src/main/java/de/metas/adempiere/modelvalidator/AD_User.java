@@ -8,6 +8,7 @@ import de.metas.title.TitleId;
 import de.metas.title.TitleRepository;
 import de.metas.user.UserPOCopyRecordSupport;
 import de.metas.user.api.IUserBL;
+import de.metas.user.api.IUserDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -37,7 +38,8 @@ public class AD_User
 {
 	private final IBPartnerBL bpPartnerService = Services.get(IBPartnerBL.class);
 	private final TitleRepository titleRepository = SpringContextHolder.instance.getBean(TitleRepository.class);
-
+	private final IUserDAO userDAO = Services.get(IUserDAO.class);
+	private final IUserBL userBL = Services.get(IUserBL.class);
 	@Init
 	public void init()
 	{
@@ -102,6 +104,12 @@ public class AD_User
 			return;
 		}
 		bpPartnerService.updateNameAndGreetingFromContacts(bPartnerId);
+	}
+
+	@ModelChange(timings = {ModelValidator.TYPE_BEFORE_DELETE})
+	public void beforeDelete(@NonNull final I_AD_User userRecord)
+	{
+		userBL.deleteUserDependency(userRecord);
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_DELETE },

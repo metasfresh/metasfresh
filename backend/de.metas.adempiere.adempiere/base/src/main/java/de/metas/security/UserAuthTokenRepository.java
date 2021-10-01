@@ -137,4 +137,13 @@ public class UserAuthTokenRepository
 				.roleId(RoleId.ofRepoId(userAuthTokenPO.getAD_Role_ID()))
 				.build();
 	}
+
+	public void deleteUserAuthTokenByUserId(@NonNull final UserId userId)
+	{
+		Services.get(IQueryBL.class)
+				.createQueryBuilder(I_AD_User_AuthToken.class)
+				.addEqualsFilter(I_AD_User_AuthToken.COLUMN_AD_User_ID, userId)
+				.create()
+				.delete();
+	}
 }
