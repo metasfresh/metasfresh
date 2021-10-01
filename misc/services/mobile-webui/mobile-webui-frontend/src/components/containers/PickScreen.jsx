@@ -47,7 +47,7 @@ class PickScreen extends Component {
           <div className="columns is-mobile">
             <div className="column is-half has-text-right has-text-weight-bold pb-0 pl-0 pr-0">Quantity picked:</div>
             <div className="column is-half has-text-left pb-0">
-              {detectedCode && <input type="text" value={qtyPicked} />}
+              {detectedCode && <input type="text" value={qtyPicked} onChange={() => null} />}
               {!detectedCode && qtyPicked}
             </div>
           </div>
