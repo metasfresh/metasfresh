@@ -4,6 +4,7 @@ import java.util.Properties;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.Mutable;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_I_BPartner;
 import org.compiere.util.Env;
 import org.junit.Before;
@@ -42,10 +43,6 @@ import de.metas.util.Services;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class,
-		DBFunctionsRepository.class,
-		ImportTableDescriptorRepository.class })
 public class BPartnerImportProcess_SimpleCase_Test
 {
 	private Properties ctx;
@@ -57,6 +54,8 @@ public class BPartnerImportProcess_SimpleCase_Test
 		ctx = Env.getCtx();
 
 		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
+		SpringContextHolder.registerJUnitBean(new DBFunctionsRepository());
+		SpringContextHolder.registerJUnitBean(new ImportTableDescriptorRepository());
 	}
 
 	@Test

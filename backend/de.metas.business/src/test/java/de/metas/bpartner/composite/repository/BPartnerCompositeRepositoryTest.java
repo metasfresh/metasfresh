@@ -72,6 +72,7 @@ class BPartnerCompositeRepositoryTest
 		SpringContextHolder.registerJUnitBean(new GreetingRepository());
 
 		bpartnerCompositeRepository = new BPartnerCompositeRepository(
+				new BPartnerBL(new UserRepository()),
 				new MockLogEntriesRepository(),
 				new UserRoleRepository());
 
@@ -134,6 +135,7 @@ class BPartnerCompositeRepositoryTest
 						.description("description")
 						.greetingId(GreetingId.ofRepoId(12345))
 						.newsletter(true)
+ 						.birthday(LocalDate.parse("1901-02-03"))
 						.contactType(BPartnerContactType.builder()
 								.defaultContact(true)
 								.billToDefault(true)
@@ -142,6 +144,7 @@ class BPartnerCompositeRepositoryTest
 								.salesDefault(true)
 								.purchase(true)
 								.purchaseDefault(true)
+								.subjectMatter(true)
 								.build())
 						.changeLog(null)
 						.orgMappingId(null)
@@ -165,49 +168,6 @@ class BPartnerCompositeRepositoryTest
 						"locations.changeLog",
 						"locations.original",
 						"contacts.changeLog")
-				.isEqualTo(bpartnerComposite);
-	}
-
-	@Test
-	void save_and_load_existingLocationId()
-	{
-		final ILocationDAO locationDAO = Services.get(ILocationDAO.class);
-		final LocationId existingLocationId = locationDAO.createLocation(LocationCreateRequest.builder()
-				.address1("address1")
-				.address2("address2")
-				.address3("address3")
-				.address4("address4")
-				.postal("postal")
-				.city("city")
-				.countryId(countryId_DE)
-				.poBox("poBox")
-				.build());
-
-		final BPartnerComposite bpartnerComposite = BPartnerComposite.builder()
-				.orgId(orgId)
-				.bpartner(BPartner.builder()
-						.value("value")
-						.name("name1")
-						.groupId(BPGroupId.STANDARD)
-						.build())
-				.location(BPartnerLocation.builder()
-						.build())
-				.build();
-
-		bpartnerCompositeRepository.save(bpartnerComposite);
-
-		final BPartnerId bpartnerId = bpartnerComposite.getBpartner().getId();
-		Assertions.assertThat(bpartnerId).isNotNull();
-
-		final BPartnerComposite bpartnerCompositeLoaded = bpartnerCompositeRepository.getById(bpartnerId);
-		System.out.println("bpartnerCompositeLoaded: " + bpartnerCompositeLoaded);
-
-		Assertions.assertThat(bpartnerCompositeLoaded)
-				.usingRecursiveComparison()
-				.ignoringFields(
-						"bpartner.changeLog",
-						"locations.changeLog",
-						"locations.original")
 				.isEqualTo(bpartnerComposite);
 	}
 }

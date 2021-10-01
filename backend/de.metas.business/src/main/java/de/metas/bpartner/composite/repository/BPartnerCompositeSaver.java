@@ -44,6 +44,7 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_Postal;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.slf4j.MDC.MDCCloseable;
 
 import javax.annotation.Nullable;
@@ -83,9 +84,14 @@ import static org.compiere.model.X_AD_User.ISINVOICEEMAILENABLED_Yes;
 
 final class BPartnerCompositeSaver
 {
+	private final IBPartnerBL bpartnerBL;
 
-	private final IBPartnerBL bPartnerBL = Services.get(IBPartnerBL.class);
-
+	BPartnerCompositeSaver(
+			@NonNull final IBPartnerBL bpartnerBL)
+	{
+		this.bpartnerBL = bpartnerBL;
+	}
+	
 	public void save(@NonNull final BPartnerComposite bpartnerComposite)
 	{
 		final ImmutableList<ITranslatableString> validateResult = bpartnerComposite.validate();
@@ -345,7 +351,7 @@ final class BPartnerCompositeSaver
 				bpartnerLocationRecord.setC_Location_ID(locationRecord.getC_Location_ID());
 			}
 
-			bPartnerBL.setAddress(bpartnerLocationRecord);
+			bpartnerBL.setAddress(bpartnerLocationRecord);
 
 			assertCanCreateOrUpdate(bpartnerLocationRecord);
 
@@ -438,6 +444,8 @@ final class BPartnerCompositeSaver
 			bpartnerContactRecord.setC_Greeting_ID(GreetingId.toRepoIdOr(bpartnerContact.getGreetingId(), 0));
 
 			bpartnerContactRecord.setAD_Org_Mapping_ID(OrgMappingId.toRepoId(bpartnerContact.getOrgMappingId()));
+
+			bpartnerContactRecord.setBirthday(TimeUtil.asTimestamp(bpartnerContact.getBirthday()));
 
 			assertCanCreateOrUpdate(bpartnerContactRecord);
 			saveRecord(bpartnerContactRecord);

@@ -1,23 +1,5 @@
 package de.metas.bpartner.composite.repository;
 
-import static de.metas.util.Check.isEmpty;
-
-import java.sql.Timestamp;
-import java.util.Collection;
-import java.util.Optional;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
-import de.metas.user.api.IUserDAO;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
-import org.adempiere.ad.table.LogEntriesRepository;
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_AD_User;
-import org.compiere.model.I_C_BPartner_Recent_V;
-import org.springframework.stereotype.Repository;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -76,14 +58,18 @@ import static de.metas.util.Check.isEmpty;
 @Repository
 public class BPartnerCompositeRepository
 {
+	private final IBPartnerBL bpartnerBL;
 	private final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
 	private final LogEntriesRepository recordChangeLogRepository;
 	private final UserRoleRepository userRoleRepository;
 	private final BPartnerCompositeCacheById bpartnerCompositeCache = new BPartnerCompositeCacheById(Services.get(IUserDAO.class));
 
-	public BPartnerCompositeRepository(@NonNull final LogEntriesRepository recordChangeLogRepository,
+	public BPartnerCompositeRepository(
+			@NonNull final IBPartnerBL bpartnerBL,
+			@NonNull final LogEntriesRepository recordChangeLogRepository,
 			@NonNull final UserRoleRepository userRoleRepository)
 	{
+		this.bpartnerBL = bpartnerBL;
 		this.recordChangeLogRepository = recordChangeLogRepository;
 		this.userRoleRepository = userRoleRepository;
 	}
@@ -278,7 +264,7 @@ public class BPartnerCompositeRepository
 
 	public void save(@NonNull final BPartnerComposite bpartnerComposite)
 	{
-		final BPartnerCompositeSaver saver = new BPartnerCompositeSaver();
+		final BPartnerCompositeSaver saver = new BPartnerCompositeSaver(bpartnerBL);
 		saver.save(bpartnerComposite);
 	}
 }
