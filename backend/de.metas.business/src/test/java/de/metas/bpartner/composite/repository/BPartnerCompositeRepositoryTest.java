@@ -42,7 +42,6 @@ import de.metas.location.CountryId;
 import de.metas.location.ILocationDAO;
 import de.metas.location.LocationCreateRequest;
 import de.metas.location.LocationId;
-import de.metas.marketing.base.model.CampaignId;
 import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PricingSystemId;
@@ -73,7 +72,6 @@ class BPartnerCompositeRepositoryTest
 		SpringContextHolder.registerJUnitBean(new GreetingRepository());
 
 		bpartnerCompositeRepository = new BPartnerCompositeRepository(
-				new BPartnerBL(new UserRepository()),
 				new MockLogEntriesRepository(),
 				new UserRoleRepository());
 
@@ -93,18 +91,10 @@ class BPartnerCompositeRepositoryTest
 						.name3("name3")
 						.company(false)
 						//.companyName("companyName")
-						.greetingId(GreetingId.ofRepoId(1))
 						.groupId(BPGroupId.STANDARD)
 						.language(Language.asLanguage("de_DE"))
 						.customer(true)
-						.customerPaymentTermId(PaymentTermId.ofRepoId(11))
-						.customerPricingSystemId(PricingSystemId.ofRepoId(12))
 						.vendor(true)
-						.vendorPaymentTermId(PaymentTermId.ofRepoId(21))
-						.vendorPricingSystemId(PricingSystemId.ofRepoId(22))
-						.excludeFromPromotions(true)
-						.referrer("test referrer")
-						.campaignId(CampaignId.ofRepoId(1111))
 						.build())
 				.location(BPartnerLocation.builder()
 						.locationType(BPartnerLocationType.builder()
@@ -144,8 +134,6 @@ class BPartnerCompositeRepositoryTest
 						.description("description")
 						.greetingId(GreetingId.ofRepoId(12345))
 						.newsletter(true)
-						.membershipContact(true)
-						.subjectMatterContact(true)
 						.contactType(BPartnerContactType.builder()
 								.defaultContact(true)
 								.billToDefault(true)
@@ -158,7 +146,6 @@ class BPartnerCompositeRepositoryTest
 						.changeLog(null)
 						.orgMappingId(null)
 						.birthday(LocalDate.parse("1901-02-03"))
-						.bPartnerLocationId(null)
 						.roles(ImmutableList.of()
 						).build())
 				.build();
@@ -192,7 +179,6 @@ class BPartnerCompositeRepositoryTest
 				.address4("address4")
 				.postal("postal")
 				.city("city")
-				.regionName("region")
 				.countryId(countryId_DE)
 				.poBox("poBox")
 				.build());
@@ -205,7 +191,6 @@ class BPartnerCompositeRepositoryTest
 						.groupId(BPGroupId.STANDARD)
 						.build())
 				.location(BPartnerLocation.builder()
-						.existingLocationId(existingLocationId)
 						.build())
 				.build();
 
