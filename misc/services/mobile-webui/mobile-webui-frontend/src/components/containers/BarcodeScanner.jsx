@@ -2,28 +2,30 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 //import ZXingBrowser from '@zxing/browser';
 import Webcam from 'react-webcam';
-class BarcodeScanner extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      activeScanning: false,
-    };
-  }
+import { connect } from 'react-redux';
+import { startScanning, stopScanning } from '../../actions/ScanActions';
 
+class BarcodeScanner extends Component {
   initiateScanning = () => {
-    this.setState({ activeScanning: true });
-    window.scrollTo(0, 0);
+    const { startScanning } = this.props;
+    startScanning();
+    // window.scrollTo(0, 0);
   };
-  stopScanning = () => this.setState({ activeScanning: false });
+
+  stopScanning = () => {
+    const { stopScanning } = this.props;
+    stopScanning();
+  };
 
   render() {
-    console.log(this.size);
     const { barcodeCaption } = this.props.componentProps;
-    const { activeScanning } = this.state;
+    const {
+      scanner: { active },
+    } = this.props;
     const scanBtnCaption = barcodeCaption || 'Scan';
     return (
       <div>
-        {!activeScanning && (
+        {!active && (
           <div className="ml-3 mr-3 is-light launcher" onClick={this.initiateScanning}>
             <div className="box">
               <div className="columns is-mobile">
@@ -36,7 +38,7 @@ class BarcodeScanner extends Component {
             </div>
           </div>
         )}
-        {activeScanning && (
+        {active && (
           <div className="scanner-container">
             {/* <video className="viewport scanner-window" id="video" /> */}
             <Webcam
@@ -52,8 +54,17 @@ class BarcodeScanner extends Component {
   }
 }
 
-BarcodeScanner.propTypes = {
-  componentProps: PropTypes.object.isRequired,
+const mapStateToProps = (state) => {
+  return {
+    scanner: state.scanner,
+  };
 };
 
-export default BarcodeScanner;
+BarcodeScanner.propTypes = {
+  componentProps: PropTypes.object.isRequired,
+  scanner: PropTypes.object.isRequired,
+  startScanning: PropTypes.func.isRequired,
+  stopScanning: PropTypes.func.isRequired,
+};
+
+export default connect(mapStateToProps, { startScanning, stopScanning })(BarcodeScanner);
