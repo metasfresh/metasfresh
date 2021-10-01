@@ -1,6 +1,7 @@
 export * from './NetworkActions';
 export * from './LauncherActions';
 export * from './PickingActions';
+export * from './ScanActions';
 
 import { SET_TOKEN, CLEAR_TOKEN } from '../constants/ActionTypes';
 

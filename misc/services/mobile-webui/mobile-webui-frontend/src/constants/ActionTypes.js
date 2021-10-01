@@ -1,6 +1,7 @@
 export * from './NetworkTypes';
 export * from './LaunchersTypes';
 export * from './PickingTypes';
+export * from './ScanTypes';
 
 /**
  * @constant
