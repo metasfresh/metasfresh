@@ -80,6 +80,8 @@ class BarcodeScanner extends Component {
     } = this.props;
     const scanBtnCaption = barcodeCaption || 'Scan';
 
+    !active && this.codeReader.stopContinuousDecode();
+
     return (
       <div>
         {!active && (
