@@ -213,18 +213,17 @@ final class UserRolePermissionsSqlHelpers
 			sqlAcessSqlWhereClause.append(getClientWhere(mainTableNameOrAlias, tableAlias, access));
 
 			// Org Access
-			if (!hasAccessAllOrgs())
-			{
-				sqlAcessSqlWhereClause.append("\n /* security-org */ ");
-				sqlAcessSqlWhereClause.append(" AND ");
-				if (fullyQualified)
-				{
-					sqlAcessSqlWhereClause.append(mainTableNameOrAlias).append(".");
-				}
 
-				final String mainTableName = mainSqlSelect.getFirstTableNameOrEmpty();
-				sqlAcessSqlWhereClause.append(getOrgWhere(mainTableName, access));
+			sqlAcessSqlWhereClause.append("\n /* security-org */ ");
+			sqlAcessSqlWhereClause.append(" AND ");
+			if (fullyQualified)
+			{
+				sqlAcessSqlWhereClause.append(mainTableNameOrAlias).append(".");
 			}
+
+			final String mainTableName = mainSqlSelect.getFirstTableNameOrEmpty();
+			sqlAcessSqlWhereClause.append(getOrgWhere(mainTableName, access));
+
 		}
 		else
 		{
