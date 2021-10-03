@@ -35,6 +35,7 @@ import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule_ExportAudit;
 import de.metas.location.CountryId;
 import de.metas.product.ProductRepository;
+import de.metas.user.UserRepository;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.table.MockLogEntriesRepository;
 import org.adempiere.ad.wrapper.POJOLookupMap;
@@ -106,7 +107,7 @@ class ReceiptCandidateAPIServiceTest
 		receiptCandidateAPIService = new ReceiptCandidateAPIService(
 				new ReceiptScheduleAuditRepository(),
 				new ReceiptScheduleRepository(),
-				new BPartnerCompositeRepository(new MockLogEntriesRepository(), new UserRoleRepository()),
+				new BPartnerCompositeRepository(new BPartnerBL(new UserRepository()), new MockLogEntriesRepository(), new UserRoleRepository()),
 				new ProductRepository(),
 				exportSequenceNumberProvider);
 	}

@@ -44,6 +44,7 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_Recompute;
 import de.metas.inoutcandidate.model.X_M_ShipmentSchedule;
 import de.metas.location.CountryId;
 import de.metas.product.ProductRepository;
+import de.metas.user.UserRepository;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.table.MockLogEntriesRepository;
 import org.adempiere.ad.wrapper.POJOLookupMap;
@@ -128,7 +129,7 @@ class ShipmentCandidateAPIServiceTest
 		shipmentCandidateAPIService = new ShipmentCandidateAPIService(
 				new ShipmentScheduleAuditRepository(),
 				new ShipmentScheduleRepository(),
-				new BPartnerCompositeRepository(new MockLogEntriesRepository(), new UserRoleRepository()),
+				new BPartnerCompositeRepository(new BPartnerBL(new UserRepository()), new MockLogEntriesRepository(), new UserRoleRepository()),
 				new ProductRepository(),
 				exportSequenceNumberProvider);
 	}
