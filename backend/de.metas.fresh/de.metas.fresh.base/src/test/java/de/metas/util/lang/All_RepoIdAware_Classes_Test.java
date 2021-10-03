@@ -3,6 +3,7 @@ package de.metas.util.lang;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Stopwatch;
 import de.metas.JsonObjectMapperHolder;
+import de.metas.audit.data.model.DataExportAuditLogId;
 import de.metas.contracts.commission.mediated.model.MediatedCommissionSettingsLineId;
 import de.metas.externalsystem.other.ExternalSystemOtherConfigId;
 import de.metas.audit.data.model.DataExportAuditLogId;
@@ -59,6 +60,7 @@ public class All_RepoIdAware_Classes_Test
 			.skip(de.metas.bpartner.BPartnerLocationId.class)
 			.skip(de.metas.bpartner.BPartnerContactId.class)
 			.skip(de.metas.bpartner.BPartnerBankAccountId.class)
+			.skip(de.metas.bpartner.user.role.UserAssignedRoleId.class)
 			//
 			.skip(de.metas.contracts.pricing.trade_margin.CustomerTradeMarginLineId.class)
 			//

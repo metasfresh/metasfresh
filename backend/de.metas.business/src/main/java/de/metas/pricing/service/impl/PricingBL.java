@@ -173,7 +173,7 @@ public class PricingBL implements IPricingBL
 		}
 	}
 
-	private IPricingResult calculatePrice0(final IPricingContext pricingCtx)
+	private IPricingResult calculatePrice0(@NonNull final IPricingContext pricingCtx)
 	{
 		final IPricingContext pricingCtxToUse = setupPricingContext(pricingCtx);
 		final PricingResult result = createInitialResult(pricingCtxToUse);

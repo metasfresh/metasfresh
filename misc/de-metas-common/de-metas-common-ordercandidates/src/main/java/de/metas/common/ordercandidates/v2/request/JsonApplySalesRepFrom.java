@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de-metas-common-ordercandidates
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,27 +20,16 @@
  * #L%
  */
 
-package de.metas.bpartner.user.role;
+package de.metas.common.ordercandidates.v2.request;
 
-import lombok.Builder;
-import lombok.Data;
-import lombok.NonNull;
+import de.pentabyte.springfox.ApiEnum;
 
-import javax.annotation.Nullable;
-
-/**
- * "UserRole" is basically a multi-purpose class to maintain "labels" about users. 
- * The predominant use is maintaining the "roles" that metasfresh-users have assigned to them in external systems.
- */
-@Data
-@Builder
-public class UserRole
+public enum JsonApplySalesRepFrom
 {
-	@Nullable
-	private String name;
-
-	private boolean uniquePerBpartner;
-
-	@NonNull
-	private UserAssignedRoleId userAssignedRoleId;
+	@ApiEnum("The sales partner set in the order candidate is forwarded to both the order and the business partner master data.")
+	Candidate,
+	@ApiEnum("The sales partner set in the order candidate is for information purposes only. The internal sales partner from the master data is always forwarded to the order.")
+	BPartner,
+	@ApiEnum("Like \"Dispo\", but if the sales partner set in the order candidate is \"empty\", then the internal sales partner is used.")
+	CandidateFirst
 }
