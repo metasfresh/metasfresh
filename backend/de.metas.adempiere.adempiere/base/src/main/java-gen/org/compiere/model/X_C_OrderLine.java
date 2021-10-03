@@ -943,33 +943,6 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	}
 
 	@Override
-	public org.compiere.model.I_C_OrderLine getLink_OrderLine()
-	{
-		return get_ValueAsPO(COLUMNNAME_Link_OrderLine_ID, org.compiere.model.I_C_OrderLine.class);
-	}
-
-	@Override
-	public void setLink_OrderLine(final org.compiere.model.I_C_OrderLine Link_OrderLine)
-	{
-		set_ValueFromPO(COLUMNNAME_Link_OrderLine_ID, org.compiere.model.I_C_OrderLine.class, Link_OrderLine);
-	}
-
-	@Override
-	public void setLink_OrderLine_ID (final int Link_OrderLine_ID)
-	{
-		if (Link_OrderLine_ID < 1)
-			set_Value (COLUMNNAME_Link_OrderLine_ID, null);
-		else
-			set_Value (COLUMNNAME_Link_OrderLine_ID, Link_OrderLine_ID);
-	}
-
-	@Override
-	public int getLink_OrderLine_ID()
-	{
-		return get_ValueAsInt(COLUMNNAME_Link_OrderLine_ID);
-	}
-
-	@Override
 	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class);

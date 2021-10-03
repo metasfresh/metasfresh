@@ -1,29 +1,8 @@
-package de.metas.dataentry.data;
-
-import static io.github.jsonSnapshot.SnapshotMatcher.expect;
-import static io.github.jsonSnapshot.SnapshotMatcher.start;
-import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.io.IOException;
-import java.time.LocalDate;
-import java.time.Month;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-
-import org.adempiere.test.AdempiereTestHelper;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-
-import de.metas.user.UserId;
-import de.metas.util.JSONObjectMapper;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -40,6 +19,26 @@ import de.metas.util.JSONObjectMapper;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas;
+
+import de.metas.user.UserId;
+import de.metas.util.JSONObjectMapper;
+import org.adempiere.test.AdempiereTestHelper;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+
+import java.io.IOException;
+import java.time.LocalDate;
+import java.time.Month;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+
+import static io.github.jsonSnapshot.SnapshotMatcher.expect;
+import static io.github.jsonSnapshot.SnapshotMatcher.start;
+import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
+import static org.assertj.core.api.Assertions.*;
 
 class CreatedUpdatedInfoTest
 {
@@ -66,7 +65,7 @@ class CreatedUpdatedInfoTest
 	@Test
 	void createNew_updated()
 	{
-		final DataEntryCreatedUpdatedInfo createdUpdatedInfo = DataEntryCreatedUpdatedInfo
+		final CreatedUpdatedInfo createdUpdatedInfo = CreatedUpdatedInfo
 				.createNew(UserId.ofRepoId(10), CREATED)
 				.updated(UserId.ofRepoId(20), UPDATED);
 
@@ -74,16 +73,16 @@ class CreatedUpdatedInfoTest
 	}
 
 	@Test
-	void serialize_deserialize() throws IOException
+	void serialize_deserialize()
 	{
-		final DataEntryCreatedUpdatedInfo createdUpdatedInfo = DataEntryCreatedUpdatedInfo
+		final CreatedUpdatedInfo createdUpdatedInfo = CreatedUpdatedInfo
 				.createNew(UserId.ofRepoId(10), CREATED)
 				.updated(UserId.ofRepoId(20), UPDATED);
 
-		final JSONObjectMapper<DataEntryCreatedUpdatedInfo> objectMapper = JSONObjectMapper.forClass(DataEntryCreatedUpdatedInfo.class);
+		final JSONObjectMapper<CreatedUpdatedInfo> objectMapper = JSONObjectMapper.forClass(CreatedUpdatedInfo.class);
 
 		final String jsonString = objectMapper.writeValueAsString(createdUpdatedInfo);
-		final DataEntryCreatedUpdatedInfo deserializedObject = objectMapper.readValue(jsonString);
+		final CreatedUpdatedInfo deserializedObject = objectMapper.readValue(jsonString);
 
 		assertThat(deserializedObject).isEqualTo(createdUpdatedInfo);
 	}

@@ -1339,33 +1339,6 @@ public interface I_C_OrderLine
 	String COLUMNNAME_LineNetAmt = "LineNetAmt";
 
 	/**
-	 * Set Zugehörige Bestellposition.
-	 * Mit diesem Feld kann eine Auftragsposition die ihr zugehörige Bestellposition referenzieren.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setLink_OrderLine_ID (int Link_OrderLine_ID);
-
-	/**
-	 * Get Zugehörige Bestellposition.
-	 * Mit diesem Feld kann eine Auftragsposition die ihr zugehörige Bestellposition referenzieren.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getLink_OrderLine_ID();
-
-	@Nullable org.compiere.model.I_C_OrderLine getLink_OrderLine();
-
-	void setLink_OrderLine(@Nullable org.compiere.model.I_C_OrderLine Link_OrderLine);
-
-	ModelColumn<I_C_OrderLine, org.compiere.model.I_C_OrderLine> COLUMN_Link_OrderLine_ID = new ModelColumn<>(I_C_OrderLine.class, "Link_OrderLine_ID", org.compiere.model.I_C_OrderLine.class);
-	String COLUMNNAME_Link_OrderLine_ID = "Link_OrderLine_ID";
-
-	/**
 	 * Set Attributes.
 	 * Attribute Instances for Products
 	 *
