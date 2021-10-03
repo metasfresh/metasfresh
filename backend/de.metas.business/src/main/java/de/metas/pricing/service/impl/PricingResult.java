@@ -97,7 +97,8 @@ final class PricingResult implements IPricingResult
 	private BigDecimal priceLimit = BigDecimal.ZERO;
 	private Percent discount = Percent.ZERO;
 
-	@NonNull private BooleanWithReason enforcePriceLimit = BooleanWithReason.FALSE;
+	@NonNull
+	private BooleanWithReason enforcePriceLimit = BooleanWithReason.FALSE;
 
 	private boolean usesDiscountSchema = false;
 	private boolean disallowDiscount;
@@ -109,6 +110,8 @@ final class PricingResult implements IPricingResult
 	private boolean discountEditable = true;
 
 	private boolean campaignPrice = false;
+
+	private boolean isDiscountCalculated;
 
 	private InvoicableQtyBasedOn invoicableQtyBasedOn = InvoicableQtyBasedOn.NominalWeight;
 
@@ -134,7 +137,8 @@ final class PricingResult implements IPricingResult
 			//
 			@Nullable final ProductId productId,
 			//
-			final boolean disallowDiscount)
+			final boolean disallowDiscount,
+			final boolean isDiscountCalculated)
 	{
 		this.calculated = false;
 
@@ -148,6 +152,7 @@ final class PricingResult implements IPricingResult
 		this.productId = productId;
 
 		this.disallowDiscount = disallowDiscount;
+		this.isDiscountCalculated = isDiscountCalculated;
 	}
 
 	@Override
@@ -176,6 +181,7 @@ final class PricingResult implements IPricingResult
 					.setParameter("this", this);
 		}
 		this.discount = discount;
+		this.isDiscountCalculated = true;
 	}
 
 	@Override

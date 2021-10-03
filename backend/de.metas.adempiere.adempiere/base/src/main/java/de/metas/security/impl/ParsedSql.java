@@ -377,5 +377,15 @@ public final class ParsedSql
 
 			return tableNameAndAliases.get(0).getAliasOrTableName();
 		}
+
+		public String getFirstTableNameOrEmpty()
+		{
+			if (tableNameAndAliases.isEmpty())
+			{
+				return "";
+			}
+
+			return tableNameAndAliases.get(0).getTableName();
+		}
 	}
 }

@@ -42,9 +42,13 @@ import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.Collection;
+import java.util.List;
+
 /**
  * Result of a pricing calculation
- *
  */
 public interface IPricingResult
 {
@@ -86,6 +90,8 @@ public interface IPricingResult
 	Percent getDiscount();
 
 	void setDiscount(Percent discount);
+
+	boolean isDiscountCalculated();
 
 	CurrencyPrecision getPrecision();
 
@@ -153,7 +159,6 @@ public interface IPricingResult
 	void addPricingAttributes(final Collection<IPricingAttribute> pricingAttributesToAdd);
 
 	/**
-	 *
 	 * @return the timestamp that was relevant for the price calculation.
 	 */
 	LocalDate getPriceDate();
@@ -166,7 +171,9 @@ public interface IPricingResult
 
 	void setDiscountEditable(boolean isDiscountEditable);
 
-	/** This info is contained in the pricing master data; it's not relevant for the price per unit, but to compute the invoicable quantity.*/
+	/**
+	 * This info is contained in the pricing master data; it's not relevant for the price per unit, but to compute the invoicable quantity.
+	 */
 	InvoicableQtyBasedOn getInvoicableQtyBasedOn();
 
 	void setInvoicableQtyBasedOn(InvoicableQtyBasedOn invoicableQtyBasedOn);

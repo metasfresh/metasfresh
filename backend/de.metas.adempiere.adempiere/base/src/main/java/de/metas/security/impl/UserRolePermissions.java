@@ -38,7 +38,6 @@ import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
 import de.metas.organization.OrgId;
-import de.metas.security.ISecurityRuleEngine;
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.RoleId;
 import de.metas.security.TableAccessLevel;
@@ -55,6 +54,7 @@ import de.metas.security.permissions.OrgResource;
 import de.metas.security.permissions.Permission;
 import de.metas.security.permissions.StartupWindowConstraint;
 import de.metas.security.permissions.TableColumnPermissions;
+import de.metas.security.permissions.TableOrgPermissions;
 import de.metas.security.permissions.TablePermissions;
 import de.metas.security.permissions.UserMenuInfo;
 import de.metas.security.permissions.UserPreferenceLevelConstraint;
@@ -68,6 +68,7 @@ import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.table.api.AdTableId;
+import org.adempiere.ad.table.api.impl.TableIdsCache;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.service.ClientId;
@@ -105,6 +106,7 @@ class UserRolePermissions implements IUserRolePermissions
 	private static final transient Logger logger = LogManager.getLogger(UserRolePermissions.class);
 
 	private static final Set<OrgId> ORGACCESS_ALL = Collections.unmodifiableSet(new HashSet<>()); // NOTE: new instance to make sure it's unique
+	private static final Set<OrgId> TABLE_ORGACCESS_ALL  = Collections.unmodifiableSet(new HashSet<>()); // NOTE: new instance to make sure it's unique;
 
 	private static final AdMessageKey MSG_AccessTableNoView = AdMessageKey.of("AccessTableNoView");
 	private static final AdMessageKey MSG_AccessTableNoUpdate = AdMessageKey.of("AccessTableNoUpdate");
@@ -135,6 +137,8 @@ class UserRolePermissions implements IUserRolePermissions
 	 */
 	@Getter(AccessLevel.PACKAGE)
 	private final OrgPermissions orgPermissions;
+	@Getter(AccessLevel.PACKAGE)
+	private final TableOrgPermissions tableOrgPermissions;
 
 	/**
 	 * List of Table Access
@@ -205,6 +209,7 @@ class UserRolePermissions implements IUserRolePermissions
 		userLevel = builder.getUserLevel();
 
 		orgPermissions = builder.getOrgPermissions();
+		tableOrgPermissions = builder.getTableOrgPermissions();
 
 		tablePermissions = builder.getTablePermissions();
 		columnPermissions = builder.getColumnPermissions();
@@ -223,8 +228,6 @@ class UserRolePermissions implements IUserRolePermissions
 	private RecordAccessService recordAccessService() { return SpringContextHolder.instance.getBean(RecordAccessService.class); }
 
 	private IRolePermLoggingBL rolePermLoggingBL() { return Services.get(IRolePermLoggingBL.class); }
-
-	private ISecurityRuleEngine securityRuleEngine() { return Services.get(ISecurityRuleEngine.class); }
 
 	private CustomizedWindowInfoMap getCustomizedWindowInfoMap() { return SpringContextHolder.instance.getBean(CustomizedWindowInfoMapRepository.class).get(); }
 
@@ -250,7 +253,7 @@ class UserRolePermissions implements IUserRolePermissions
 		sb.append(Env.NL).append(Env.NL);
 		Joiner.on(Env.NL + Env.NL)
 				.skipNulls()
-				.appendTo(sb, miscPermissions, constraints, orgPermissions, tablePermissions, columnPermissions
+				.appendTo(sb, miscPermissions, constraints, orgPermissions, tableOrgPermissions, tablePermissions, columnPermissions
 						// don't show followings because they could be to big, mainly when is not a manual role:
 						// , windowPermissions
 						// , processPermissions
@@ -318,7 +321,7 @@ class UserRolePermissions implements IUserRolePermissions
 				// System role:
 				getRoleId().isSystem()
 						// and Shall have at access to system organization:
-						&& isOrgAccess(OrgId.ANY, Access.WRITE);
+						&& isOrgAccess(OrgId.ANY, null, Access.WRITE);
 	}
 
 	/**************************************************************************
@@ -372,18 +375,28 @@ class UserRolePermissions implements IUserRolePermissions
 		return menuInfo;
 	}
 
-	private Set<OrgId> getOrgAccess(@Nullable final String tableName, final Access access)
+	private Set<OrgId> getOrgAccess( @Nullable final String tableName, final Access access)
 	{
+		final Optional<Set<OrgId>> orgsWithAccess = tableOrgPermissions.getOrgsWithAccess(tableName, access);
+
+		if(orgsWithAccess.isPresent())
+		{
+			final Set<OrgId> orgIds = orgsWithAccess.get();
+
+			if(orgIds.contains(OrgId.ANY))
+			{
+				return TABLE_ORGACCESS_ALL;
+			}
+
+			return orgIds;
+		}
+
 		if (isAccessAllOrgs())
 		{
 			return ORGACCESS_ALL;
 		}
 
-		final Set<OrgId> adOrgIds = orgPermissions.getOrgAccess(access);
-
-		securityRuleEngine().filterOrgs(this, tableName, access, adOrgIds);
-
-		return adOrgIds;
+		return orgPermissions.getOrgAccess(access);
 	}
 
 	@Override
@@ -408,12 +421,17 @@ class UserRolePermissions implements IUserRolePermissions
 	}
 
 	@Override
-	public String getOrgWhere(final String tableName, final Access access)
+	public String getOrgWhere(@Nullable final String tableName, final Access access)
 	{
 		final Set<OrgId> adOrgIds = getOrgAccess(tableName, access);
 		if (adOrgIds == ORGACCESS_ALL)
 		{
 			return "1=1"; // no org filter
+		}
+
+		if(adOrgIds == TABLE_ORGACCESS_ALL)
+		{
+			return "AD_Org_ID IS NOT NULL";
 		}
 
 		//
@@ -455,7 +473,7 @@ class UserRolePermissions implements IUserRolePermissions
 	 * @return true if access
 	 */
 	@Override
-	public boolean isOrgAccess(@NonNull final OrgId orgId, final Access access)
+	public boolean isOrgAccess(@NonNull final OrgId orgId, @Nullable final String tableName, final Access access)
 	{
 		// Readonly access to "*" organization is always granted
 		if (orgId.isAny() && access.isReadOnly())
@@ -463,11 +481,17 @@ class UserRolePermissions implements IUserRolePermissions
 			return true;
 		}
 
-		final Set<OrgId> orgs = getOrgAccess(null, access); // tableName=n/a
+		final Set<OrgId> orgs = getOrgAccess(tableName, access);
 		if (orgs == ORGACCESS_ALL)
 		{
 			return true;
 		}
+
+		if(orgs == TABLE_ORGACCESS_ALL)
+		{
+			return true;
+		}
+
 		return orgs.contains(orgId);
 	}    // isOrgAccess
 
@@ -827,8 +851,9 @@ class UserRolePermissions implements IUserRolePermissions
 			missingAccesses.add("client access");
 		}
 
+		final String tableName = TableIdsCache.instance.getTableName(AdTableId.ofRepoId(AD_Table_ID));
 		// Org Access: Verify if the role has access to the given organization - teo_sarca, patch [ 1628050 ]
-		if (missingAccesses.isEmpty() && !isOrgAccess(orgId, access))
+		if (missingAccesses.isEmpty() && !isOrgAccess(orgId, tableName, access))
 		{
 			missingAccesses.add("organization access");
 		}
