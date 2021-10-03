@@ -213,7 +213,7 @@ public class C_Order
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = { I_C_Order.COLUMNNAME_C_BPartner_ID })
 	public void setDeliveryViaRule(final I_C_Order order)
 	{
-		final DeliveryViaRule deliveryViaRule = orderBL.evaluateOrderDeliveryViaRule(order);
+		final DeliveryViaRule deliveryViaRule = orderBL.findDeliveryViaRule(order).orElse(null);
 
 		if (deliveryViaRule != null)
 		{
