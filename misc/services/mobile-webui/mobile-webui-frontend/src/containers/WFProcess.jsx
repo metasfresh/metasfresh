@@ -35,7 +35,13 @@ class WorkflowProcess extends PureComponent {
               switch (activityItem.componentType) {
                 case 'common/scanBarcode':
                   return (
-                    <ScanActivity key={uniqueId} id={uniqueId} activityItem={activityItem} wfProcessId={wfProcessId} />
+                    <ScanActivity
+                      key={uniqueId}
+                      id={uniqueId}
+                      activityItem={activityItem}
+                      wfProcessId={wfProcessId}
+                      activityId={activityItem.activityId}
+                    />
                   );
                 case 'picking/pickProducts':
                   return (
