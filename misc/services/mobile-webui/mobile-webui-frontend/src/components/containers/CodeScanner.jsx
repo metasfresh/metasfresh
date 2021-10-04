@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { BrowserMultiFormatReader, DecodeHintType, BarcodeFormat } from '@zxing/library';
 import { connect } from 'react-redux';
-import { startScanning, stopScanning } from '../../actions/ScanActions';
+import { startScanning } from '../../actions/ScanActions';
 
 class CodeScanner extends Component {
   constructor(props) {
@@ -38,6 +38,7 @@ class CodeScanner extends Component {
         // properly decoded qr code
         console.log('Found:', result);
         onDetection({ detectedCode: result.getText(), activityId });
+        this.codeReader.stopContinuousDecode();
       }
 
       if (err) {
@@ -68,19 +69,15 @@ class CodeScanner extends Component {
     // window.scrollTo(0, 0);
   };
 
-  stopScanning = () => {
-    const { stopScanning } = this.props;
-    this.codeReader.stopContinuousDecode();
-    stopScanning();
-  };
-
   render() {
     const { videoInputDevices } = this.state;
-    const { barcodeCaption } = this.props.componentProps;
     const {
       scanner: { active },
+      caption,
     } = this.props;
-    const scanBtnCaption = barcodeCaption || 'Scan';
+    console.log('CAPTION:', caption);
+
+    const scanBtnCaption = caption || 'Scan';
 
     !active && this.codeReader.stopContinuousDecode();
 
@@ -88,7 +85,6 @@ class CodeScanner extends Component {
       <div>
         {!active && (
           <>
-            <div className="title is-4 header-caption">Scanner</div>
             <div className="ml-3 mr-3 is-light launcher" onClick={this.initiateScanning}>
               <div className="box">
                 <div className="columns is-mobile">
@@ -137,9 +133,9 @@ CodeScanner.propTypes = {
   componentProps: PropTypes.object.isRequired,
   scanner: PropTypes.object.isRequired,
   startScanning: PropTypes.func.isRequired,
-  stopScanning: PropTypes.func.isRequired,
   onDetection: PropTypes.func.isRequired,
   activityId: PropTypes.string.isRequired,
+  caption: PropTypes.string,
 };
 
-export default connect(mapStateToProps, { startScanning, stopScanning })(CodeScanner);
+export default connect(mapStateToProps, { startScanning })(CodeScanner);
