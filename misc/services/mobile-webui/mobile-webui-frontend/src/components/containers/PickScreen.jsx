@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
-import BarcodeScanner from './BarcodeScanner';
+import CodeScanner from './CodeScanner';
 import { stopScanning } from '../../actions/ScanActions';
 class PickScreen extends Component {
   constructor(props) {
@@ -52,7 +52,7 @@ class PickScreen extends Component {
               {!detectedCode && qtyPicked}
             </div>
           </div>
-          <BarcodeScanner
+          <CodeScanner
             id={huBarcode}
             componentProps={{ caption: 'Scan' }}
             onDetection={this.onDetection}
