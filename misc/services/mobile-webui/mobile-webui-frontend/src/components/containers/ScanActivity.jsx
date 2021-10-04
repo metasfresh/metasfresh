@@ -26,10 +26,8 @@ class ScanActivity extends Component {
   render() {
     const { uniqueId, activityItem, dataStored } = this.props;
     const { scannedCode, isComplete } = dataStored;
-    const { barcodeCaption } = activityItem.componentProps;
-    let codeCaption = scannedCode ? `Code: ${barcodeCaption}` : ``;
-    console.log('scannedCode:', scannedCode);
-    console.log('CODE CAPTION:', codeCaption);
+
+    let caption = scannedCode ? `Code: ${activityItem.componentProps.barcodeCaption}` : activityItem.caption;
 
     return (
       <div>
@@ -37,8 +35,8 @@ class ScanActivity extends Component {
           key={uniqueId}
           id={uniqueId}
           isComplete={isComplete}
-          caption={codeCaption}
-          {...activityItem}
+          caption={caption}
+          activityItem={activityItem}
           onDetection={this.scanActivityPostDetection}
         />
         <Toaster
