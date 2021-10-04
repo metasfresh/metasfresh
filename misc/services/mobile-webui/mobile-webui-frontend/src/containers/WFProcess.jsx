@@ -12,6 +12,7 @@ import CodeScanner from '../components/containers/CodeScanner';
 import ConfirmActivity from '../components/containers/ConfirmActivity';
 import PickProductsActivity from '../components/containers/PickProductsActivity';
 import { stopScanning } from '../actions/ScanActions';
+import toast, { Toaster } from 'react-hot-toast';
 
 class WorkflowProcess extends PureComponent {
   componentDidMount() {
@@ -24,9 +25,13 @@ class WorkflowProcess extends PureComponent {
 
   scanActivityPostDetection = ({ detectedCode, activityId }) => {
     const { wfProcessId, token, stopScanning } = this.props;
-    postScannedBarcode({ detectedCode, wfProcessId, activityId, token }).then(() => {
-      console.log('POST COMPLETE ?');
-    });
+    postScannedBarcode({ detectedCode, wfProcessId, activityId, token })
+      .then(() => {
+        toast('Successful scanning!', { type: 'success', style: { color: 'white' } });
+      })
+      .catch(() => {
+        toast('Scanned code is invalid!', { type: 'error', style: { color: 'white' } });
+      });
     stopScanning();
   };
 
@@ -68,6 +73,21 @@ class WorkflowProcess extends PureComponent {
               }
             })}
         </div>
+        <Toaster
+          position="bottom-center"
+          toastOptions={{
+            success: {
+              style: {
+                background: 'green',
+              },
+            },
+            error: {
+              style: {
+                background: 'red',
+              },
+            },
+          }}
+        />
       </div>
     );
   }
