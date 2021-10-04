@@ -8,7 +8,7 @@ import { continueWorkflow } from '../actions/WorkflowActions';
 import { postScannedBarcode } from '../api/scanner';
 
 import ViewHeader from '../containers/ViewHeader';
-import BarcodeScanner from '../components/containers/BarcodeScanner';
+import CodeScanner from '../components/containers/CodeScanner';
 import ConfirmActivity from '../components/containers/ConfirmActivity';
 import PickProductsActivity from '../components/containers/PickProductsActivity';
 import { stopScanning } from '../actions/ScanActions';
@@ -45,7 +45,7 @@ class WorkflowProcess extends PureComponent {
               switch (activityItem.componentType) {
                 case 'common/scanBarcode':
                   return (
-                    <BarcodeScanner
+                    <CodeScanner
                       key={uniqueId}
                       id={uniqueId}
                       {...activityItem}
