@@ -49,12 +49,21 @@ const reducer = produce((draftState, action) => {
       const formattedActivities = activities.reduce((acc, activity, idx) => {
         const tmpActivity = { activity };
 
-        //tmp
-        tmpActivity.dataStored = {
-          isComplete: false,
-          isLinesListVisible: true,
-          lines: activity.componentProps.lines,
-        };
+        // each state is different depending on the activity componentType
+        switch (activity.componentType) {
+          case 'common/scanBarcode':
+            tmpActivity.dataStored = {
+              isComplete: false,
+              scannedCode: '',
+            };
+            break;
+          default:
+            tmpActivity.dataStored = {
+              isComplete: false,
+              isLinesListVisible: true,
+              lines: activity.componentProps.lines,
+            };
+        }
 
         acc[idx + 1] = tmpActivity;
 
@@ -80,6 +89,13 @@ const reducer = produce((draftState, action) => {
       const { wfProcessId, activityId, lineIndex, stepId, qty } = action.payload;
 
       draftState[wfProcessId].activities[activityId].dataStored.lines[lineIndex].steps[stepId].qtyPicked = qty;
+
+      return draftState;
+    }
+    case types.UPDATE_PICKING_SLOT_CODE: {
+      const { wfProcessId, activityId, detectedCode } = action.payload;
+
+      draftState[wfProcessId].activities[activityId].dataStored.scannedCode = detectedCode;
 
       return draftState;
     }

@@ -5,14 +5,11 @@ import { v4 as uuidv4 } from 'uuid';
 import PropTypes from 'prop-types';
 
 import { continueWorkflow } from '../actions/WorkflowActions';
-import { postScannedBarcode } from '../api/scanner';
 
 import ViewHeader from '../containers/ViewHeader';
-import CodeScanner from '../components/containers/CodeScanner';
 import ConfirmActivity from '../components/containers/ConfirmActivity';
 import PickProductsActivity from '../components/containers/PickProductsActivity';
-import { stopScanning } from '../actions/ScanActions';
-import toast, { Toaster } from 'react-hot-toast';
+import ScanActivity from '../components/containers/ScanActivity';
 
 class WorkflowProcess extends PureComponent {
   componentDidMount() {
@@ -22,18 +19,6 @@ class WorkflowProcess extends PureComponent {
       continueWorkflow(wfProcessId);
     }
   }
-
-  scanActivityPostDetection = ({ detectedCode, activityId }) => {
-    const { wfProcessId, token, stopScanning } = this.props;
-    postScannedBarcode({ detectedCode, wfProcessId, activityId, token })
-      .then(() => {
-        toast('Successful scanning!', { type: 'success', style: { color: 'white' } });
-      })
-      .catch(() => {
-        toast('Scanned code is invalid!', { type: 'error', style: { color: 'white' } });
-      });
-    stopScanning();
-  };
 
   render() {
     const { wfProcessId, activities, status } = this.props;
@@ -50,12 +35,7 @@ class WorkflowProcess extends PureComponent {
               switch (activityItem.componentType) {
                 case 'common/scanBarcode':
                   return (
-                    <CodeScanner
-                      key={uniqueId}
-                      id={uniqueId}
-                      {...activityItem}
-                      onDetection={this.scanActivityPostDetection}
-                    />
+                    <ScanActivity key={uniqueId} id={uniqueId} activityItem={activityItem} wfProcessId={wfProcessId} />
                   );
                 case 'picking/pickProducts':
                   return (
@@ -73,21 +53,6 @@ class WorkflowProcess extends PureComponent {
               }
             })}
         </div>
-        <Toaster
-          position="bottom-center"
-          toastOptions={{
-            success: {
-              style: {
-                background: 'green',
-              },
-            },
-            error: {
-              style: {
-                background: 'red',
-              },
-            },
-          }}
-        />
       </div>
     );
   }
@@ -117,7 +82,6 @@ WorkflowProcess.propTypes = {
   wfProcessId: PropTypes.string.isRequired,
   continueWorkflow: PropTypes.func.isRequired,
   token: PropTypes.string,
-  stopScanning: PropTypes.func.isRequired,
 };
 
-export default withRouter(connect(mapStateToProps, { continueWorkflow, stopScanning })(WorkflowProcess));
+export default withRouter(connect(mapStateToProps, { continueWorkflow })(WorkflowProcess));
