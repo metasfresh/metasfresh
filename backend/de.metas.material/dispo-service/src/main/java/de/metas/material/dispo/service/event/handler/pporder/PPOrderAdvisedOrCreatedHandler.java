@@ -1,5 +1,8 @@
 package de.metas.material.dispo.service.event.handler.pporder;
 
+import de.metas.material.cockpit.view.MainDataRecordIdentifier;
+import de.metas.material.cockpit.view.mainrecord.MainDataRequestHandler;
+import de.metas.material.cockpit.view.mainrecord.UpdateMainDataRequest;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.Candidate.CandidateBuilder;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
@@ -18,9 +21,13 @@ import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.pporder.AbstractPPOrderEvent;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.material.event.pporder.PPOrder;
+import de.metas.organization.IOrgDAO;
+import de.metas.util.Services;
 import lombok.NonNull;
+import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
+import java.time.ZoneId;
 import java.util.Optional;
 
 /*
@@ -47,15 +54,19 @@ import java.util.Optional;
 
 abstract class PPOrderAdvisedOrCreatedHandler<T extends AbstractPPOrderEvent> implements MaterialEventHandler<T>
 {
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+
 	private final CandidateChangeService candidateChangeService;
 	private final CandidateRepositoryRetrieval candidateRepositoryRetrieval;
+	private final MainDataRequestHandler mainDataRequestHandler;
 
 	PPOrderAdvisedOrCreatedHandler(
 			@NonNull final CandidateChangeService candidateChangeService,
-			@NonNull final CandidateRepositoryRetrieval candidateRepositoryRetrieval)
+			@NonNull final CandidateRepositoryRetrieval candidateRepositoryRetrieval, final MainDataRequestHandler mainDataRequestHandler)
 	{
 		this.candidateChangeService = candidateChangeService;
 		this.candidateRepositoryRetrieval = candidateRepositoryRetrieval;
+		this.mainDataRequestHandler = mainDataRequestHandler;
 	}
 
 	/**
@@ -66,6 +77,8 @@ abstract class PPOrderAdvisedOrCreatedHandler<T extends AbstractPPOrderEvent> im
 	protected final MaterialDispoGroupId handleAbstractPPOrderEvent(@NonNull final AbstractPPOrderEvent ppOrderEvent)
 	{
 		final Candidate headerCandidate = createHeaderCandidate(ppOrderEvent);
+
+		updateMainData(ppOrderEvent);
 
 		return headerCandidate.getGroupId();
 	}
@@ -150,6 +163,24 @@ abstract class PPOrderAdvisedOrCreatedHandler<T extends AbstractPPOrderEvent> im
 				.map(ProductionDetail::cast)
 				.map(ProductionDetail::toBuilder)
 				.orElse(ProductionDetail.builder());
+	}
+
+	private void updateMainData(@NonNull final AbstractPPOrderEvent ppOrderEvent)
+	{
+		final ZoneId orgZoneId = orgDAO.getTimeZone(ppOrderEvent.getEventDescriptor().getOrgId());
+
+		final MainDataRecordIdentifier mainDataRecordIdentifier = MainDataRecordIdentifier.builder()
+				.warehouseId(ppOrderEvent.getPpOrder().getWarehouseId())
+				.productDescriptor(ppOrderEvent.getPpOrder().getProductDescriptor())
+				.date(TimeUtil.getDay(ppOrderEvent.getPpOrder().getDatePromised(), orgZoneId))
+				.build();
+
+		final UpdateMainDataRequest updateMainDataRequest = UpdateMainDataRequest.builder()
+				.identifier(mainDataRecordIdentifier)
+				.qtySupplyPPOrder(ppOrderEvent.getPpOrder().getQtyOpen())
+				.build();
+
+		mainDataRequestHandler.handleDataUpdateRequest(updateMainDataRequest);
 	}
 
 	protected abstract Flag extractIsAdviseEvent(@NonNull final AbstractPPOrderEvent ppOrderEvent);

@@ -1,7 +1,11 @@
 package de.metas.handlingunits.material.interceptor;
 
-import java.math.BigDecimal;
-
+import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.model.I_M_HU_Attribute;
+import de.metas.material.event.PostMaterialEventService;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.trx.api.ITrx;
@@ -18,12 +22,8 @@ import org.compiere.model.ModelValidator;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Component;
 
-import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.model.I_M_HU_Attribute;
-import de.metas.material.event.PostMaterialEventService;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.math.BigDecimal;
+import java.util.Objects;
 
 /*
  * #%L
@@ -71,12 +71,18 @@ public class M_HU_Attribute
 
 		final AttributeId attributeId = AttributeId.ofRepoId(record.getM_Attribute_ID());
 		final I_M_Attribute attribute = attributesService.getAttributeById(attributeId);
+
 		if (!attribute.isStorageRelevant())
 		{
 			return;
 		}
 
 		final HUAttributeChange change = extractHUAttributeChange(record, attribute);
+
+		if (Objects.equals(change.getOldAttributeKeyPartOrNull(), change.getNewAttributeKeyPartOrNull()))
+		{
+			return;
+		}
 
 		getOrCreateCollector().collect(change);
 	}

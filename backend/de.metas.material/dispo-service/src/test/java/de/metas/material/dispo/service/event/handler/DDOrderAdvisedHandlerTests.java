@@ -4,6 +4,8 @@ import com.google.common.collect.ImmutableList;
 import de.metas.document.dimension.DimensionFactory;
 import de.metas.document.dimension.DimensionService;
 import de.metas.document.dimension.MDCandidateDimensionFactory;
+import de.metas.material.cockpit.view.ddorderdetail.DDOrderDetailRequestHandler;
+import de.metas.material.cockpit.view.mainrecord.MainDataRequestHandler;
 import de.metas.material.dispo.commons.DispoTestUtils;
 import de.metas.material.dispo.commons.RequestMaterialOrderService;
 import de.metas.material.dispo.commons.candidate.CandidateType;
@@ -153,7 +155,9 @@ public class DDOrderAdvisedHandlerTests
 				candidateRepositoryCommands,
 				candidateChangeService,
 				supplyProposalEvaluator,
-				new RequestMaterialOrderService(candidateRepository, postMaterialEventService));
+				new RequestMaterialOrderService(candidateRepository, postMaterialEventService),
+				new DDOrderDetailRequestHandler(),
+				new MainDataRequestHandler());
 	}
 
 	/**

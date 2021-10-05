@@ -62,7 +62,7 @@ public class MaterialEventHandlerRegistry
 		for (final MaterialEventHandler handler : handlers.orElse(ImmutableList.of()))
 		{
 			@SuppressWarnings("unchecked")
-			final Collection<Class<? extends MaterialEventHandler>> handeledEventTypes = handler.getHandeledEventType();
+			final Collection<Class<? extends MaterialEventHandler>> handeledEventTypes = handler.getHandledEventType();
 
 			for (final Class<? extends MaterialEventHandler> handeledEventType : handeledEventTypes)
 			{
