@@ -6,7 +6,9 @@ import createRootReducer from '../reducers';
 // import { offline } from '@redux-offline/redux-offline';
 // import offlineConfig from '@redux-offline/redux-offline/lib/defaults';
 
-export const history = createBrowserHistory();
+export const history = createBrowserHistory({
+  basename: process.env.PUBLIC_URL,
+});
 const composeEnhancer =
   typeof window === 'object' && window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__
     ? window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__({ serialize: true, latency: 0, features: { persist: false } })
