@@ -6,7 +6,6 @@ import PropTypes from 'prop-types';
 
 import { continueWorkflow } from '../actions/WorkflowActions';
 
-import ViewHeader from '../containers/ViewHeader';
 import ConfirmActivity from '../components/containers/ConfirmActivity';
 import PickProductsActivity from '../components/containers/PickProductsActivity';
 import ScanActivity from '../components/containers/ScanActivity';
@@ -26,7 +25,6 @@ class WorkflowProcess extends PureComponent {
 
     return (
       <div className="wf-process-container">
-        <ViewHeader />
         <div className="container pick-products-container">
           <div className="activities">
             {activities.length > 0 &&
