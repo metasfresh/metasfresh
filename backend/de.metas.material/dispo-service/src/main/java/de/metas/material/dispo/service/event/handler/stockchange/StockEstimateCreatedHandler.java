@@ -56,7 +56,7 @@ public class StockEstimateCreatedHandler implements MaterialEventHandler<Abstrac
 	}
 
 	@Override
-	public Collection<Class<? extends AbstractStockEstimateEvent>> getHandeledEventType()
+	public Collection<Class<? extends AbstractStockEstimateEvent>> getHandledEventType()
 	{
 		return ImmutableList.of(StockEstimateCreatedEvent.class);
 	}

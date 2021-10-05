@@ -1,17 +1,6 @@
 package de.metas.material.cockpit.view.eventhandler;
 
-import java.time.ZoneId;
-import java.util.Collection;
-
-import de.metas.organization.IOrgDAO;
-import de.metas.organization.OrgId;
-import de.metas.util.Services;
-import org.compiere.util.TimeUtil;
-import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Service;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.Profiles;
 import de.metas.material.cockpit.view.MainDataRecordIdentifier;
 import de.metas.material.cockpit.view.mainrecord.MainDataRequestHandler;
@@ -21,7 +10,16 @@ import de.metas.material.event.procurement.AbstractPurchaseOfferEvent;
 import de.metas.material.event.procurement.PurchaseOfferCreatedEvent;
 import de.metas.material.event.procurement.PurchaseOfferDeletedEvent;
 import de.metas.material.event.procurement.PurchaseOfferUpdatedEvent;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
+import de.metas.util.Services;
 import lombok.NonNull;
+import org.compiere.util.TimeUtil;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Service;
+
+import java.time.ZoneId;
+import java.util.Collection;
 
 /*
  * #%L
@@ -60,7 +58,7 @@ public class AbstractPurchaseOfferEventHandler
 	}
 
 	@Override
-	public Collection<Class<? extends AbstractPurchaseOfferEvent>> getHandeledEventType()
+	public Collection<Class<? extends AbstractPurchaseOfferEvent>> getHandledEventType()
 	{
 		return ImmutableList.of(
 				PurchaseOfferCreatedEvent.class,

@@ -5,6 +5,7 @@ import de.metas.document.dimension.DimensionFactory;
 import de.metas.document.dimension.DimensionService;
 import de.metas.document.dimension.MDCandidateDimensionFactory;
 import de.metas.document.engine.DocStatus;
+import de.metas.material.cockpit.view.mainrecord.MainDataRequestHandler;
 import de.metas.material.dispo.commons.DispoTestUtils;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
@@ -135,11 +136,13 @@ public class PPOrderAdvisedOrCreatedHandlerTests
 		ppOrderAdvisedHandler = new PPOrderAdvisedHandler(
 				candidateChangeHandler,
 				candidateRepositoryRetrieval,
-				postMaterialEventService);
+				postMaterialEventService,
+				new MainDataRequestHandler());
 
 		ppOrderCreatedHandler = new PPOrderCreatedHandler(
 				candidateChangeHandler,
-				candidateRepositoryRetrieval);
+				candidateRepositoryRetrieval,
+				new MainDataRequestHandler());
 	}
 
 	@Test
