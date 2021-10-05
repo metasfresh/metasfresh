@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import { connect } from 'react-redux';
 
 class ConfirmButton extends Component {
   constructor(props) {
@@ -23,10 +24,11 @@ class ConfirmButton extends Component {
   };
 
   render() {
-    const { caption, componentProps } = this.props;
+    const { caption, componentProps, dataStored } = this.props;
     const { isPromptDialogOpen } = this.state;
     const btnCaption = caption || 'Confirm';
     const promptQuestion = componentProps.promptQuestion || 'Are you sure?';
+    const { isComplete } = dataStored;
 
     return (
       <div>
@@ -55,7 +57,11 @@ class ConfirmButton extends Component {
         )}
         {/*  Confirm Initiator  */}
         <div>
-          <button className="button is-outlined complete-btn" onClick={this.showConfirmDialog}>
+          <button
+            className="button is-outlined complete-btn"
+            onClick={this.showConfirmDialog}
+            disabled={isComplete ? false : true}
+          >
             {btnCaption}
           </button>
         </div>
@@ -65,12 +71,21 @@ class ConfirmButton extends Component {
   1;
 }
 
+const mapStateToProps = (state, ownProps) => {
+  const { wfProcessId, activityId } = ownProps;
+
+  return {
+    dataStored: state.wfProcesses_status[wfProcessId].activities[activityId].dataStored,
+  };
+};
+
 ConfirmButton.propTypes = {
   caption: PropTypes.string,
   componentProps: PropTypes.object,
   onConfirmExec: PropTypes.func,
   wfProcessId: PropTypes.string.isRequired,
   activityId: PropTypes.string.isRequired,
+  dataStored: PropTypes.object,
 };
 
-export default ConfirmButton;
+export default connect(mapStateToProps, null)(ConfirmButton);
