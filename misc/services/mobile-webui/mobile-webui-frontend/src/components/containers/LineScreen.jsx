@@ -10,11 +10,10 @@ class LineScreen extends PureComponent {
     const { activityId, wfProcessId, lineIndex, lineProps } = this.props;
 
     if (lineProps) {
-      const { caption, steps } = lineProps;
+      const { steps } = lineProps;
 
       return (
         <div className="lines-screen-container">
-          <div className="has-text-centered">{caption}</div>
           <PickProductsSteps steps={steps} activityId={activityId} wfProcessId={wfProcessId} lineIndex={lineIndex} />
         </div>
       );

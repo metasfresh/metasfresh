@@ -6,7 +6,7 @@ import ConfirmButton from '../../components/ConfirmButton';
 class ConfirmActivity extends PureComponent {
   render() {
     return (
-      <div>
+      <div className="mt-5">
         <ConfirmButton onConfirmExec={userConfirmation} {...this.props} />
       </div>
     );
