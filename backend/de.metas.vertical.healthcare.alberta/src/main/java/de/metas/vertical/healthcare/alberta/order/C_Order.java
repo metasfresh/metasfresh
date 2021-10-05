@@ -27,7 +27,6 @@ import de.metas.vertical.healthcare.alberta.bpartner.BPartnerRepository;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BP_Relation;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
