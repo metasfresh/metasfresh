@@ -27,10 +27,13 @@ import de.metas.vertical.healthcare.alberta.bpartner.BPartnerRepository;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BP_Relation;
 import org.compiere.model.ModelValidator;
+import org.springframework.stereotype.Component;
 
 @Interceptor(I_C_Order.class)
+@Component
 public class C_Order
 {
 	private final BPartnerRepository bpartnerRepository;
@@ -40,17 +43,16 @@ public class C_Order
 		this.bpartnerRepository = bpartnerRepository;
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = {I_C_Order.COLUMNNAME_C_BPartner_ID})
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = {I_C_Order.COLUMNNAME_C_BPartner_ID})
 	public void onBusinessPartnerChange(final I_C_Order order)
 	{
 		if (order.getC_BPartner_Pharmacy_ID() == 0)
 		{
-			final I_C_BP_Relation bpRelation = bpartnerRepository.getLastUpdatedPreferedPharmacyByPartnerId(order.getC_BPartner_Pharmacy_ID());
+			final I_C_BP_Relation bpRelation = bpartnerRepository.getLastUpdatedPreferedPharmacyByPartnerId(order.getC_BPartner_ID());
 			if (bpRelation != null)
 			{
 				order.setC_BPartner_Pharmacy_ID(bpRelation.getC_BPartnerRelation_ID());
 			}
-
 		}
 	}
 
