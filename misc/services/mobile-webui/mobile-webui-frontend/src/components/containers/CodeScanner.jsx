@@ -86,17 +86,9 @@ class CodeScanner extends Component {
       <div>
         {!active && (
           <>
-            <div className="ml-3 mr-3 is-light launcher" onClick={this.initiateScanning}>
-              <div className="box">
-                <div className="columns is-mobile">
-                  <div className="column is-12">
-                    <div className="columns">
-                      <div className="column is-size-4-mobile no-p">{scanBtnCaption}</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <button className="button is-outlined complete-btn" onClick={this.initiateScanning}>
+              {scanBtnCaption}
+            </button>
           </>
         )}
         {active && (
