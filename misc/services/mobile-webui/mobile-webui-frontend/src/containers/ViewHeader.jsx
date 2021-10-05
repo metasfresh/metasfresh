@@ -3,6 +3,8 @@ import { useLocation, useParams } from 'react-router-dom';
 import { useStore } from 'react-redux';
 import classnames from 'classnames';
 
+import { getWorkflowProcess } from '../reducers/wfProcesses';
+
 const ViewHeader = () => {
   const location = useLocation();
   const params = useParams();
@@ -13,7 +15,7 @@ const ViewHeader = () => {
     const { workflowId } = params;
 
     if (workflowId) {
-      const workflow = state.wfProcesses[workflowId];
+      const workflow = getWorkflowProcess(state, workflowId);
       const { entries } = workflow.headerProperties;
       const newHeaderInfo = [entries];
 
