@@ -7,6 +7,8 @@ import { startScanning } from '../../actions/ScanActions';
 class CodeScanner extends Component {
   constructor(props) {
     super(props);
+
+    this.videoInput = React.createRef();
     const hints = new Map();
     const formats = [BarcodeFormat.CODE_128, BarcodeFormat.DATA_MATRIX, BarcodeFormat.QR_CODE];
     hints.set(DecodeHintType.POSSIBLE_FORMATS, formats);
@@ -35,10 +37,15 @@ class CodeScanner extends Component {
     const { onDetection, activityId } = this.props;
     this.codeReader.decodeFromInputVideoDeviceContinuously(selectedDeviceId, 'video', (result, err) => {
       if (result) {
-        // properly decoded qr code
+        // properly decoded the code
         console.log('Found:', result);
         let detectedCode = result.getText();
-        console.log('Detected code:', detectedCode);
+
+        // close the video sources
+        const mediaStream = this.videoInput.current.srcObject;
+        const tracks = mediaStream.getTracks();
+        tracks.forEach((track) => track.stop());
+
         onDetection({ detectedCode, activityId });
         this.codeReader.stopContinuousDecode();
       }
@@ -107,7 +114,7 @@ class CodeScanner extends Component {
 
             {/* Video stream  */}
             <div>
-              <video id="video" width="100%" height="100%" />
+              <video id="video" width="100%" height="100%" ref={this.videoInput} />
             </div>
           </div>
         )}
