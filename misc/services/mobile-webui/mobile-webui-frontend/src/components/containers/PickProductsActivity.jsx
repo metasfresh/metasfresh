@@ -5,7 +5,6 @@ import PickProductsLine from '../PickProductsLine';
 class PickProductsActivity extends Component {
   render() {
     const {
-      caption,
       componentProps: { lines },
       activityState,
       wfProcessId,
@@ -16,7 +15,6 @@ class PickProductsActivity extends Component {
 
     return (
       <div className="pick-products-activity-container">
-        <div className="title is-4 header-caption">{caption}</div>
         {/* Lines listing */}
         {lines.length > 0 &&
           isLinesListVisible &&

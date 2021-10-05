@@ -36,7 +36,7 @@ class ScanActivity extends Component {
           id={uniqueId}
           isComplete={isComplete}
           caption={caption}
-          activityItem={activityItem}
+          activityId={activityItem.activityId}
           onDetection={this.scanActivityPostDetection}
         />
         <Toaster
