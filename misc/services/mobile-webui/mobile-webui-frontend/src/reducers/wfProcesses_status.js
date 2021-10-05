@@ -18,6 +18,11 @@ const reducer = produce((draftState, action) => {
               scannedCode: '',
             };
             break;
+          case 'common/confirmButton':
+            tmpActivity.dataStored = {
+              isComplete: false,
+            };
+            break;
           default:
             tmpActivity.dataStored = {
               isComplete: false,
