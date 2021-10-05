@@ -32,10 +32,7 @@ class CodeScanner extends Component {
   };
 
   decodeContinuously = (selectedDeviceId) => {
-    const {
-      onDetection,
-      activityItem: { activityId },
-    } = this.props;
+    const { onDetection, activityId } = this.props;
     this.codeReader.decodeFromInputVideoDeviceContinuously(selectedDeviceId, 'video', (result, err) => {
       if (result) {
         // properly decoded qr code
@@ -134,13 +131,11 @@ const mapStateToProps = (state) => {
 };
 
 CodeScanner.propTypes = {
-  componentProps: PropTypes.object.isRequired,
   scanner: PropTypes.object.isRequired,
   startScanning: PropTypes.func.isRequired,
   onDetection: PropTypes.func.isRequired,
   activityId: PropTypes.string.isRequired,
   caption: PropTypes.string,
-  activityItem: PropTypes.object,
 };
 
 export default connect(mapStateToProps, { startScanning })(CodeScanner);
