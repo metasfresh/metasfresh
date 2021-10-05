@@ -21,5 +21,17 @@
 
 .header-caption {
   margin: 0;
-  background-color: lighten($header-green-one, 15%);
+  border-bottom: 1px solid hsl(0, 0%, 86%);
+
+  .header_info_0 {
+    background-color: lighten($header-green-one, 15%);
+  }
+
+  .header_info_1 {
+    background-color: lighten($header-green-one, 25%);
+  }
+
+  .header_info_2 {
+    background-color: lighten($header-green-one, 35%);
+  }
 }
