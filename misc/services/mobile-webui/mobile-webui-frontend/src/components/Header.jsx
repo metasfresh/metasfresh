@@ -2,9 +2,11 @@ import React from 'react';
 import { useStore } from 'react-redux';
 import { useLocation, useHistory } from 'react-router-dom';
 import PropTypes from 'prop-types';
+import classnames from 'classnames';
+
 import BackButton from './BackButton';
 
-const Header = ({ appName }) => {
+const Header = ({ appName, hidden }) => {
   const store = useStore();
   const state = store.getState();
   const location = useLocation();
@@ -19,7 +21,7 @@ const Header = ({ appName }) => {
   };
 
   return (
-    <header className="p-4 is-fixed-top header">
+    <header className={classnames('p-4', { hidden: hidden, header: !hidden })}>
       <div className="columns is-mobile">
         <div className="column pt-1">{showBackButton ? <BackButton onClickExec={handleClick} /> : null}</div>
         <div className="column is-flex-grow-2 has-text-centered header-title">
@@ -34,6 +36,7 @@ const Header = ({ appName }) => {
 
 Header.propTypes = {
   appName: PropTypes.string,
+  hidden: PropTypes.bool,
 };
 
 export default Header;
