@@ -42,9 +42,9 @@ class CodeScanner extends Component {
         let detectedCode = result.getText();
 
         // close the video sources
-        // const mediaStream = this.videoInput.current.srcObject;
-        // const tracks = mediaStream.getTracks();
-        // tracks.forEach((track) => track.stop());
+        const mediaStream = this.videoInput.current.srcObject;
+        const tracks = mediaStream.getTracks();
+        tracks.forEach((track) => track.stop());
 
         onDetection({ detectedCode, activityId });
         this.codeReader.stopContinuousDecode();
@@ -61,6 +61,17 @@ class CodeScanner extends Component {
     this.codeReader
       .getVideoInputDevices()
       .then((videoInputDevices) => {
+        navigator.mediaDevices
+          .getUserMedia({
+            audio: false,
+            video: {
+              facingMode: 'environment',
+            },
+          })
+          .then((stream) => this.setSelectedDeviceId(stream.getVideoTracks()[0].getSettings().deviceId))
+          .catch(console.error);
+
+        console.log('videoInputDevices', videoInputDevices);
         this.setState({ videoInputDevices }, () => {
           this.setupDevices(videoInputDevices);
         });
@@ -79,7 +90,6 @@ class CodeScanner extends Component {
   };
 
   render() {
-    const { videoInputDevices } = this.state;
     const {
       scanner: { active },
       caption,
@@ -101,7 +111,7 @@ class CodeScanner extends Component {
         {active && (
           <div className="scanner-container">
             {/* Select video source */}
-            <div id="sourceSelectPanel">
+            {/* <div id="sourceSelectPanel">
               <label htmlFor="sourceSelect">Video source:</label>
               <select id="sourceSelect" onChange={() => this.setSelectedDeviceId(this.value)}>
                 {videoInputDevices.map((element) => (
@@ -110,7 +120,7 @@ class CodeScanner extends Component {
                   </option>
                 ))}
               </select>
-            </div>
+            </div> */}
 
             {/* Video stream  */}
             <div>
