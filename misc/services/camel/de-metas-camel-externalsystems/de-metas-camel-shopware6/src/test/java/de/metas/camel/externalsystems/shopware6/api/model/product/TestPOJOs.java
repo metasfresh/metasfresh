@@ -26,9 +26,11 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.google.common.collect.ImmutableList;
+import de.metas.camel.externalsystems.shopware6.api.model.JsonTax;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
@@ -62,6 +64,10 @@ public class TestPOJOs
 								.id("productId")
 								.name("productName")
 								.ean("ean")
+								.unitId("unitId")
+								.jsonTax(JsonTax.builder()
+												 .taxRate(BigDecimal.TEN)
+												 .build())
 								.productNumber("productNumber")
 								.createdAt(ZonedDateTime.now(ZoneId.of("UTC")))
 								.updatedAt(ZonedDateTime.now(ZoneId.of("UTC")))

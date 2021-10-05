@@ -448,6 +448,14 @@ public class PriceListDAO implements IPriceListDAO
 	}
 
 	@Override
+	@NonNull
+	public Optional<PriceListVersionId> retrieveNewestPriceListVersionId(@NonNull final PriceListId priceListId)
+	{
+		return Optional.ofNullable(retrieveNewestPriceListVersion(priceListId))
+				.map(priceListVersion -> PriceListVersionId.ofRepoId(priceListVersion.getM_PriceList_Version_ID()));
+	}
+
+	@Override
 	public String getPricingSystemName(@Nullable final PricingSystemId pricingSystemId)
 	{
 		if (pricingSystemId == null)

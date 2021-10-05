@@ -20,32 +20,26 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.shopware6.api.model;
+package de.metas.camel.externalsystems.shopware6.unit;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+import com.google.common.collect.ImmutableMap;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 
-@AllArgsConstructor
-@Getter
-public enum PathSegmentsEnum
+import javax.annotation.Nullable;
+import java.io.Serializable;
+
+@Value
+@Builder
+public class UOMInfoProvider implements Serializable
 {
-	API("api"),
-	V3("v3"),
-	SEARCH("search"),
-	ORDER("order"),
-	PRODUCT("product"),
-	UNIT("unit"),
-	DELIVERIES("deliveries"),
-	ORDER_ADDRESS("order-address"),
-	OATH("oauth"),
-	TOKEN("token"),
-	COUNTRY("country"),
-	LINE_ITEMS("line-items"),
-	CURRENCY("currency"),
-	CUSTOMER("customer"),
-	GROUP("group"),
-	TRANSACTIONS("transactions"),
-	PAYMENT_METHOD("payment-method");
+	@NonNull
+	ImmutableMap<String, String> unitId2Code;
 
-	private final String value;
+	@Nullable
+	public String getCode(@NonNull final String unitId)
+	{
+		return unitId2Code.get(unitId);
+	}
 }

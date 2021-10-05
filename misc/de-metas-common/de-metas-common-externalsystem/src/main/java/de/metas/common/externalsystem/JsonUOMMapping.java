@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-camel-shopware6
+ * de-metas-common-externalsystem
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,32 +20,30 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.shopware6.api.model;
+package de.metas.common.externalsystem;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 
-@AllArgsConstructor
-@Getter
-public enum PathSegmentsEnum
+@Value
+public class JsonUOMMapping
 {
-	API("api"),
-	V3("v3"),
-	SEARCH("search"),
-	ORDER("order"),
-	PRODUCT("product"),
-	UNIT("unit"),
-	DELIVERIES("deliveries"),
-	ORDER_ADDRESS("order-address"),
-	OATH("oauth"),
-	TOKEN("token"),
-	COUNTRY("country"),
-	LINE_ITEMS("line-items"),
-	CURRENCY("currency"),
-	CUSTOMER("customer"),
-	GROUP("group"),
-	TRANSACTIONS("transactions"),
-	PAYMENT_METHOD("payment-method");
+	@NonNull
+	JsonUOM uom;
 
-	private final String value;
+	@NonNull
+	String externalCode;
+
+	@Builder
+	@JsonCreator
+	public JsonUOMMapping(
+			@JsonProperty("uom") @NonNull final JsonUOM uom,
+			@JsonProperty("externalCode") @NonNull final String externalCode)
+	{
+		this.uom = uom;
+		this.externalCode = externalCode;
+	}
 }

@@ -27,7 +27,9 @@ public interface ShopwareTestConstants
 	String MOCK_ORG_CODE = "orgCode";
 
 	String MOCK_EUR_CODE = "EUR";
+	String MOCK_UNIT_CODE = "kg";
 	String MOCK_CURRENCY_ID = "currencyId";
+	String MOCK_UNIT_ID = "unitId";
 
 	int MOCK_NORMAL_VAT_PRODUCT_ID = 1001;
 	int MOCK_REDUCED_VAT_PRODUCT_ID = 1002;

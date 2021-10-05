@@ -57,8 +57,8 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Rabbi
       "parentId" : 100001,
       "value" : "testRabbitMQValue",
       "routingKey" : "routingKey",
-      "authToken" : "authToken",
       "remoteUrl" : "remoteURL",
+      "authToken" : "authToken",
       "isSyncBPartnerToRabbitMQ" : true,
       "syncBPartnerToRabbitMQ" : true
     }
@@ -72,8 +72,8 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Rabbi
     "parentId" : 100001,
     "value" : "testRabbitMQValue",
     "routingKey" : "routingKey",
-    "authToken" : "authToken",
     "remoteUrl" : "remoteURL",
+    "authToken" : "authToken",
     "isSyncBPartnerToRabbitMQ" : true,
     "syncBPartnerToRabbitMQ" : true
   }
@@ -85,6 +85,7 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Rabbi
     "id" : 100001,
     "type" : "RabbitMQ",
     "name" : "name",
+    "isActive" : true,
     "childConfig" : {
       "id" : 100002,
       "parentId" : 100001,
@@ -94,8 +95,7 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Rabbi
       "authToken" : "authToken",
       "isSyncBPartnerToRabbitMQ" : true,
       "syncBPartnerToRabbitMQ" : true
-    },
-    "isActive" : true
+    }
   }
 ]
 
@@ -113,9 +113,17 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
       "clientId" : "id",
       "clientSecret" : "secret",
       "externalSystemShopware6ConfigMappingList" : [ ],
+      "uomShopwareMappingList" : [
+        {
+          "externalSystemShopware6ConfigId" : 100002,
+          "uomId" : 100003,
+          "shopwareCode" : "shopwareCode"
+        }
+      ],
       "bPartnerIdJSONPath" : "/test/bp",
       "bPartnerLocationIdJSONPath" : "/test/bpl",
       "salesRepJSONPath" : "/test/salesrep",
+      "priceListId" : 1,
       "isActive" : true
     }
   }
@@ -135,9 +143,17 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
       "clientId" : "id",
       "clientSecret" : "secret",
       "externalSystemShopware6ConfigMappingList" : [ ],
+      "uomShopwareMappingList" : [
+        {
+          "externalSystemShopware6ConfigId" : 100002,
+          "uomId" : 100003,
+          "shopwareCode" : "shopwareCode"
+        }
+      ],
       "bPartnerIdJSONPath" : "/test/bp",
       "bPartnerLocationIdJSONPath" : "/test/bpl",
       "salesRepJSONPath" : "/test/salesrep",
+      "priceListId" : 1,
       "isActive" : false
     }
   }
@@ -167,9 +183,17 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
         "description" : "test"
       }
     ],
+    "uomShopwareMappingList" : [
+      {
+        "externalSystemShopware6ConfigId" : 100002,
+        "uomId" : 100004,
+        "shopwareCode" : "shopwareCode"
+      }
+    ],
     "bPartnerIdJSONPath" : "/test/bp",
     "bPartnerLocationIdJSONPath" : "/test/bpl",
     "salesRepJSONPath" : "/test/salesrep",
+    "priceListId" : 1,
     "isActive" : true
   }
 ]
@@ -188,9 +212,17 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
       "clientId" : "id",
       "clientSecret" : "secret",
       "externalSystemShopware6ConfigMappingList" : [ ],
+      "uomShopwareMappingList" : [
+        {
+          "externalSystemShopware6ConfigId" : 100002,
+          "uomId" : 100003,
+          "shopwareCode" : "shopwareCode"
+        }
+      ],
       "bPartnerIdJSONPath" : "/test/bp",
       "bPartnerLocationIdJSONPath" : "/test/bpl",
       "salesRepJSONPath" : "/test/salesrep",
+      "priceListId" : 1,
       "isActive" : true
     }
   }
@@ -210,9 +242,11 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
       "clientId" : "new-clientId",
       "clientSecret" : "new-clientSecret",
       "externalSystemShopware6ConfigMappingList" : [ ],
+      "uomShopwareMappingList" : [ ],
       "bPartnerIdJSONPath" : "/test/bp",
       "bPartnerLocationIdJSONPath" : "/test/bpl",
       "salesRepJSONPath" : "/test/salesrep",
+      "priceListId" : 2,
       "isActive" : true
     }
   }

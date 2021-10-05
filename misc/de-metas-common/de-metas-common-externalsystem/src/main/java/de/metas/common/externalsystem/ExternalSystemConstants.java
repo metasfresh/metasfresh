@@ -41,12 +41,15 @@ public class ExternalSystemConstants
 	public static final String PARAM_JSON_PATH_CONSTANT_BPARTNER_LOCATION_ID = "JSONPathConstantBPartnerLocationID";
 	public static final String PARAM_JSON_PATH_SALES_REP_ID = "JSONPathConstantSalesRepID";
 	public static final String PARAM_CONFIG_MAPPINGS = "ConfigMappings";
+	public static final String PARAM_UOM_MAPPINGS = "UOMMappings";
 
-	public static final String PARAM_FREIGHT_COST_NORMAL_VAT_RATES = "FreightCost_NormalVAT_Rates";
+	public static final String PARAM_NORMAL_VAT_RATES = "NormalVAT_Rates";
 	public static final String PARAM_FREIGHT_COST_NORMAL_PRODUCT_ID = "M_FreightCost_NormalVAT_Product_ID";
 
-	public static final String PARAM_FREIGHT_COST_REDUCED_VAT_RATES = "FreightCost_Reduced_VAT_Rates";
+	public static final String PARAM_REDUCED_VAT_RATES = "Reduced_VAT_Rates";
 	public static final String PARAM_FREIGHT_COST_REDUCED_PRODUCT_ID = "M_FreightCost_ReducedVAT_Product_ID";
+
+	public static final String PARAM_TARGET_PRICE_LIST_ID = "TargetPriceListId";
 
 	public static final String PARAM_UPDATED_AFTER_OVERRIDE = "UpdatedAfterOverride";
 	public static final String PARAM_ORDER_NO = "OrderNo"; // if set, then this shall override PARAM_UPDATED_AFTER*

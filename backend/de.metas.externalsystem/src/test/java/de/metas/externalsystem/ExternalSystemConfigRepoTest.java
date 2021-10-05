@@ -28,15 +28,18 @@ import de.metas.externalsystem.model.I_ExternalSystem_Config_Alberta;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_RabbitMQ_HTTP;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6Mapping;
+import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6_UOM;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_WooCommerce;
 import de.metas.externalsystem.model.X_ExternalSystem_Config;
 import de.metas.externalsystem.other.ExternalSystemOtherConfigId;
 import de.metas.externalsystem.other.ExternalSystemOtherConfigRepository;
-import de.metas.externalsystem.shopware6.ExternalSystemShopware6Config;
 import de.metas.externalsystem.rabbitmqhttp.ExternalSystemRabbitMQConfigId;
+import de.metas.externalsystem.shopware6.ExternalSystemShopware6Config;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6ConfigId;
 import de.metas.externalsystem.woocommerce.ExternalSystemWooCommerceConfigId;
+import de.metas.pricing.PriceListId;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_C_UOM;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -121,7 +124,18 @@ class ExternalSystemConfigRepoTest
 		childRecord.setJSONPathConstantBPartnerID("/test/bp");
 		childRecord.setJSONPathSalesRepID("/test/salesrep");
 		childRecord.setJSONPathConstantBPartnerLocationID("/test/bpl");
+		childRecord.setM_PriceList_ID(1);
 		saveRecord(childRecord);
+
+		final I_C_UOM uom = newInstance(I_C_UOM.class);
+		uom.setX12DE355("PCE");
+		saveRecord(uom);
+
+		final I_ExternalSystem_Config_Shopware6_UOM shopware6Uom = newInstance(I_ExternalSystem_Config_Shopware6_UOM.class);
+		shopware6Uom.setExternalSystem_Config_Shopware6_ID(childRecord.getExternalSystem_Config_Shopware6_ID());
+		shopware6Uom.setShopwareCode("shopwareCode");
+		shopware6Uom.setC_UOM_ID(uom.getC_UOM_ID());
+		saveRecord(shopware6Uom);
 
 		// when
 		final ExternalSystemShopware6ConfigId id = ExternalSystemShopware6ConfigId.ofRepoId(childRecord.getExternalSystem_Config_Shopware6_ID());
@@ -178,9 +192,20 @@ class ExternalSystemConfigRepoTest
 		childRecord.setJSONPathConstantBPartnerID("/test/bp");
 		childRecord.setJSONPathSalesRepID("/test/salesrep");
 		childRecord.setJSONPathConstantBPartnerLocationID("/test/bpl");
+		childRecord.setM_PriceList_ID(1);
 		childRecord.setExternalSystemValue(value);
 		childRecord.setExternalSystem_Config_ID(parentRecord.getExternalSystem_Config_ID());
 		saveRecord(childRecord);
+
+		final I_C_UOM uom = newInstance(I_C_UOM.class);
+		uom.setX12DE355("PCE");
+		saveRecord(uom);
+
+		final I_ExternalSystem_Config_Shopware6_UOM shopware6Uom = newInstance(I_ExternalSystem_Config_Shopware6_UOM.class);
+		shopware6Uom.setExternalSystem_Config_Shopware6_ID(childRecord.getExternalSystem_Config_Shopware6_ID());
+		shopware6Uom.setShopwareCode("shopwareCode");
+		shopware6Uom.setC_UOM_ID(uom.getC_UOM_ID());
+		saveRecord(shopware6Uom);
 
 		// when
 		final ExternalSystemParentConfig result = externalSystemConfigRepo.getByTypeAndValue(ExternalSystemType.Shopware6, value)
@@ -323,6 +348,7 @@ class ExternalSystemConfigRepoTest
 		childRecord.setJSONPathSalesRepID("/test/salesrep");
 		childRecord.setJSONPathConstantBPartnerLocationID("/test/bpl");
 		childRecord.setExternalSystem_Config_ID(parentRecord.getExternalSystem_Config_ID());
+		childRecord.setM_PriceList_ID(1);
 		saveRecord(childRecord);
 
 		final I_ExternalSystem_Config_Shopware6Mapping childMappingRecord = newInstance(I_ExternalSystem_Config_Shopware6Mapping.class);
@@ -340,6 +366,16 @@ class ExternalSystemConfigRepoTest
 		childMappingRecord.setBPartnerLocation_IfExists("DONT_UPDATE");
 		childMappingRecord.setBPartnerLocation_IfNotExists("CREATE");
 		saveRecord(childMappingRecord);
+
+		final I_C_UOM uom = newInstance(I_C_UOM.class);
+		uom.setX12DE355("PCE");
+		saveRecord(uom);
+
+		final I_ExternalSystem_Config_Shopware6_UOM shopware6Uom = newInstance(I_ExternalSystem_Config_Shopware6_UOM.class);
+		shopware6Uom.setExternalSystem_Config_Shopware6_ID(childRecord.getExternalSystem_Config_Shopware6_ID());
+		shopware6Uom.setShopwareCode("shopwareCode");
+		shopware6Uom.setC_UOM_ID(uom.getC_UOM_ID());
+		saveRecord(shopware6Uom);
 
 		final ExternalSystemParentConfigId externalSystemParentConfigId = ExternalSystemParentConfigId.ofRepoId(parentRecord.getExternalSystem_Config_ID());
 		// when
@@ -468,8 +504,19 @@ class ExternalSystemConfigRepoTest
 		childRecord.setJSONPathConstantBPartnerLocationID("/test/bpl");
 		childRecord.setExternalSystemValue("testShopware6Value");
 		childRecord.setExternalSystem_Config_ID(parentRecord.getExternalSystem_Config_ID());
+		childRecord.setM_PriceList_ID(1);
 		childRecord.setIsActive(false);
 		saveRecord(childRecord);
+
+		final I_C_UOM uom = newInstance(I_C_UOM.class);
+		uom.setX12DE355("PCE");
+		saveRecord(uom);
+
+		final I_ExternalSystem_Config_Shopware6_UOM shopware6Uom = newInstance(I_ExternalSystem_Config_Shopware6_UOM.class);
+		shopware6Uom.setExternalSystem_Config_Shopware6_ID(childRecord.getExternalSystem_Config_Shopware6_ID());
+		shopware6Uom.setShopwareCode("shopwareCode");
+		shopware6Uom.setC_UOM_ID(uom.getC_UOM_ID());
+		saveRecord(shopware6Uom);
 
 		final ExternalSystemConfigQuery query = ExternalSystemConfigQuery.builder()
 				.parentConfigId(ExternalSystemParentConfigId.ofRepoId(parentRecord.getExternalSystem_Config_ID()))
@@ -504,6 +551,7 @@ class ExternalSystemConfigRepoTest
 		initialChildRecord.setJSONPathConstantBPartnerLocationID("/test/bpl");
 		initialChildRecord.setExternalSystemValue("testShopware6Value");
 		initialChildRecord.setExternalSystem_Config_ID(initialParentRecord.getExternalSystem_Config_ID());
+		initialChildRecord.setM_PriceList_ID(1);
 		initialChildRecord.setIsActive(false);
 		saveRecord(initialChildRecord);
 
@@ -512,12 +560,14 @@ class ExternalSystemConfigRepoTest
 		final String baseURL = "new-baseURL";
 		final String clientId = "new-clientId";
 		final String clientSecret = "new-clientSecret";
+		final PriceListId newPriceListId = PriceListId.ofRepoId(2);
 
 		final ExternalSystemShopware6Config childConfig = ExternalSystemShopware6Config.cast(parentConfig.getChildConfig())
 				.toBuilder()
 				.baseUrl(baseURL)
 				.clientId(clientId)
 				.clientSecret(clientSecret)
+				.priceListId(newPriceListId)
 				.isActive(true)
 				.build();
 
@@ -540,6 +590,7 @@ class ExternalSystemConfigRepoTest
 		assertThat(shopware6Config.getClientId()).isEqualTo(clientId);
 		assertThat(shopware6Config.getClientSecret()).isEqualTo(clientSecret);
 		assertThat(shopware6Config.getIsActive()).isTrue();
+		assertThat(shopware6Config.getPriceListId()).isEqualTo(newPriceListId);
 	}
 
 	@Test

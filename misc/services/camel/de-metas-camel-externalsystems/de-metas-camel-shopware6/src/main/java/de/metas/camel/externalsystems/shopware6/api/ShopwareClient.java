@@ -46,6 +46,7 @@ import de.metas.camel.externalsystems.shopware6.api.model.order.JsonPaymentMetho
 import de.metas.camel.externalsystems.shopware6.api.model.order.OrderCandidate;
 import de.metas.camel.externalsystems.shopware6.api.model.order.OrderDeliveryItem;
 import de.metas.camel.externalsystems.shopware6.api.model.product.JsonProducts;
+import de.metas.camel.externalsystems.shopware6.api.model.unit.JsonUnits;
 import de.metas.common.util.Check;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -450,6 +451,29 @@ public class ShopwareClient
 		}
 
 		return Optional.of(response.getBody());
+	}
+
+	@NonNull
+	public JsonUnits getUnits()
+	{
+		final UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(baseUrl);
+
+		uriBuilder.pathSegment(PathSegmentsEnum.API.getValue())
+				.pathSegment(PathSegmentsEnum.V3.getValue())
+				.pathSegment(PathSegmentsEnum.UNIT.getValue());
+
+		refreshTokenIfExpired();
+
+		final URI resourceURI = uriBuilder.build().toUri();
+
+		final ResponseEntity<JsonUnits> response = performWithRetry(resourceURI, HttpMethod.GET, JsonUnits.class, null /*requestBody*/);
+
+		if (response == null || response.getBody() == null)
+		{
+			throw new RuntimeException("No units return from Shopware!");
+		}
+
+		return response.getBody();
 	}
 
 	@NonNull

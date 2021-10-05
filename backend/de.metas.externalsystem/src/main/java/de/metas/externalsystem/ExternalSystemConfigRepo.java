@@ -33,6 +33,7 @@ import de.metas.externalsystem.model.I_ExternalSystem_Config_Alberta;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_RabbitMQ_HTTP;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6Mapping;
+import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6_UOM;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_WooCommerce;
 import de.metas.externalsystem.other.ExternalSystemOtherConfig;
 import de.metas.externalsystem.other.ExternalSystemOtherConfigId;
@@ -42,11 +43,14 @@ import de.metas.externalsystem.rabbitmqhttp.ExternalSystemRabbitMQConfigId;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6Config;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6ConfigId;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6ConfigMapping;
+import de.metas.externalsystem.shopware6.UOMShopwareMapping;
 import de.metas.externalsystem.woocommerce.ExternalSystemWooCommerceConfig;
 import de.metas.externalsystem.woocommerce.ExternalSystemWooCommerceConfigId;
 import de.metas.pricing.PriceListId;
 import de.metas.product.ProductId;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
+import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -132,7 +136,7 @@ public class ExternalSystemConfigRepo
 				final ExternalSystemOtherConfigId externalSystemOtherConfigId = ExternalSystemOtherConfigId.ofExternalSystemParentConfigId(id);
 				return Optional.of(externalSystemOtherConfigRepository.getById(externalSystemOtherConfigId));
 			case RabbitMQ:
-				return getRabbitMQConfigByParentId(id);				
+				return getRabbitMQConfigByParentId(id);
 			case WOO:
 				return getWooCommerceConfigByParentId(id);
 			default:
@@ -178,7 +182,7 @@ public class ExternalSystemConfigRepo
 				return;
 			case Alberta:
 			case Other:
-				throw new AdempiereException("Method not supported for externalSystemType="+config.getType())
+				throw new AdempiereException("Method not supported for externalSystemType=" + config.getType())
 						.appendParametersToMessage()
 						.setParameter("externalSystemType", config.getType());
 			default:
@@ -204,7 +208,6 @@ public class ExternalSystemConfigRepo
 				throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", externalSystemType);
 		}
 	}
-
 
 	@NonNull
 	private Optional<I_ExternalSystem_Config_Alberta> getAlbertaConfigByValue(@NonNull final String value)
@@ -391,6 +394,8 @@ public class ExternalSystemConfigRepo
 				.baseUrl(config.getBaseURL())
 				.clientSecret(config.getClient_Secret())
 				.externalSystemShopware6ConfigMappingList(getExternalSystemShopware6ConfigMappingList(externalSystemShopware6ConfigId))
+				.uomShopwareMappingList(getUOMShopwareMappingList(externalSystemShopware6ConfigId))
+				.priceListId(PriceListId.ofRepoIdOrNull(config.getM_PriceList_ID()))
 				.clientId(config.getClient_Id())
 				.bPartnerIdJSONPath(config.getJSONPathConstantBPartnerID())
 				.bPartnerLocationIdJSONPath(config.getJSONPathConstantBPartnerLocationID())
@@ -570,6 +575,7 @@ public class ExternalSystemConfigRepo
 		record.setJSONPathConstantBPartnerLocationID(config.getBPartnerLocationIdJSONPath());
 		record.setJSONPathSalesRepID(config.getSalesRepJSONPath());
 
+		record.setM_PriceList_ID(NumberUtils.asInteger(config.getPriceListId(), -1));
 		record.setIsActive(config.getIsActive());
 
 		if (config.getFreightCostNormalVatConfig() != null)
@@ -622,5 +628,27 @@ public class ExternalSystemConfigRepo
 				.stream()
 				.map(this::getExternalSystemParentConfig)
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	@NonNull
+	private List<UOMShopwareMapping> getUOMShopwareMappingList(@NonNull final ExternalSystemShopware6ConfigId externalSystemShopware6ConfigId)
+	{
+		return queryBL.createQueryBuilder(I_ExternalSystem_Config_Shopware6_UOM.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_ExternalSystem_Config_Shopware6_UOM.COLUMNNAME_ExternalSystem_Config_Shopware6_ID, externalSystemShopware6ConfigId.getRepoId())
+				.create()
+				.stream()
+				.map(this::toUOMShopwareMapping)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@NonNull
+	private UOMShopwareMapping toUOMShopwareMapping(@NonNull final I_ExternalSystem_Config_Shopware6_UOM record)
+	{
+		return UOMShopwareMapping.builder()
+				.externalSystemShopware6ConfigId(ExternalSystemShopware6ConfigId.ofRepoId(record.getExternalSystem_Config_Shopware6_ID()))
+				.uomId(UomId.ofRepoId(record.getC_UOM_ID()))
+				.shopwareCode(record.getShopwareCode())
+				.build();
 	}
 }
