@@ -48,9 +48,7 @@ public class CommissionHierarchyFactory
 	{
 		if (bPartnerId.equals(salesRepId))
 		{
-			return Hierarchy.builder()
-					.addChildren(node(salesRepId), ImmutableList.of())
-					.build();
+			return createFor(salesRepId, Hierarchy.builder(), new HashSet<>());
 		}
 
 		final HierarchyBuilder hierarchyBuilder = Hierarchy.builder()
