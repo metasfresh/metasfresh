@@ -42,9 +42,9 @@ class CodeScanner extends Component {
         let detectedCode = result.getText();
 
         // close the video sources
-        const mediaStream = this.videoInput.current.srcObject;
-        const tracks = mediaStream.getTracks();
-        tracks.forEach((track) => track.stop());
+        // const mediaStream = this.videoInput.current.srcObject;
+        // const tracks = mediaStream.getTracks();
+        // tracks.forEach((track) => track.stop());
 
         onDetection({ detectedCode, activityId });
         this.codeReader.stopContinuousDecode();
