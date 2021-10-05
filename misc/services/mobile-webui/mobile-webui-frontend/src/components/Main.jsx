@@ -6,7 +6,7 @@ import Header from './Header';
 function Main({ children }) {
   return (
     <>
-      <Header appName="webUI app" />
+      <Header appName="Picking" />
       {children}
     </>
   );
