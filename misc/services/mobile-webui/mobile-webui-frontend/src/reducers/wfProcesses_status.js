@@ -1,7 +1,37 @@
 import { produce } from 'immer';
+import { createSelector } from 'reselect';
+import { get } from 'lodash';
+
 import * as types from '../constants/ActionTypes';
 
 export const initialState = {};
+const initialWorkflowState = {
+  headerProperties: {
+    entries: [],
+  },
+  isSentToBackend: false,
+  activities: {},
+};
+
+const wfSelector = (state, id) => state.wfProcesses_status[id] || null;
+
+export const getWorkflowProcessStatus = createSelector(wfSelector, (workflow) =>
+  workflow ? workflow : initialWorkflowState
+);
+
+export const getWorkflowProcessActivityLine = (wfProcess, activityId, lineId) => {
+  const { activities } = wfProcess;
+
+  if (activities[activityId]) {
+    const line = get(activities, [activityId, 'dataStored', 'lines', lineId]);
+
+    if (line) {
+      return line;
+    }
+  }
+
+  return null;
+};
 
 const reducer = produce((draftState, action) => {
   switch (action.type) {
