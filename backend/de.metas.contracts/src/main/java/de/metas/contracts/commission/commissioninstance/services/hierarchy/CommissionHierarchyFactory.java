@@ -42,6 +42,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 @Service
 public class CommissionHierarchyFactory
 {
+	// very crude but simple implementation; expand and make more efficient as needed
 	@NonNull
 	public Hierarchy createForCustomer(@NonNull final BPartnerId bPartnerId, @NonNull final BPartnerId salesRepId)
 	{
