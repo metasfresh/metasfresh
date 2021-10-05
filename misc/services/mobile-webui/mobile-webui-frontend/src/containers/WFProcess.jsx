@@ -25,40 +25,42 @@ class WorkflowProcess extends PureComponent {
     const { activities: activitiesState } = status;
 
     return (
-      <div className="container pick-products-container">
+      <div className="wf-process-container">
         <ViewHeader />
-        <div className="activities">
-          {activities.length > 0 &&
-            activities.map((activityItem) => {
-              let uniqueId = uuidv4();
+        <div className="container pick-products-container">
+          <div className="activities">
+            {activities.length > 0 &&
+              activities.map((activityItem) => {
+                let uniqueId = uuidv4();
 
-              switch (activityItem.componentType) {
-                case 'common/scanBarcode':
-                  return (
-                    <ScanActivity
-                      key={uniqueId}
-                      id={uniqueId}
-                      uniqueId={uniqueId}
-                      activityItem={activityItem}
-                      wfProcessId={wfProcessId}
-                      activityId={activityItem.activityId}
-                    />
-                  );
-                case 'picking/pickProducts':
-                  return (
-                    <PickProductsActivity
-                      key={uniqueId}
-                      id={uniqueId}
-                      wfProcessId={wfProcessId}
-                      activityId={activityItem.activityId}
-                      activityState={activitiesState[activityItem.activityId]}
-                      {...activityItem}
-                    />
-                  );
-                case 'common/confirmButton':
-                  return <ConfirmActivity key={uniqueId} id={uniqueId} wfProcessId={wfProcessId} {...activityItem} />;
-              }
-            })}
+                switch (activityItem.componentType) {
+                  case 'common/scanBarcode':
+                    return (
+                      <ScanActivity
+                        key={uniqueId}
+                        id={uniqueId}
+                        uniqueId={uniqueId}
+                        activityItem={activityItem}
+                        wfProcessId={wfProcessId}
+                        activityId={activityItem.activityId}
+                      />
+                    );
+                  case 'picking/pickProducts':
+                    return (
+                      <PickProductsActivity
+                        key={uniqueId}
+                        id={uniqueId}
+                        wfProcessId={wfProcessId}
+                        activityId={activityItem.activityId}
+                        activityState={activitiesState[activityItem.activityId]}
+                        {...activityItem}
+                      />
+                    );
+                  case 'common/confirmButton':
+                    return <ConfirmActivity key={uniqueId} id={uniqueId} wfProcessId={wfProcessId} {...activityItem} />;
+                }
+              })}
+          </div>
         </div>
       </div>
     );
