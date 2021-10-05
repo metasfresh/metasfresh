@@ -17,18 +17,9 @@ class PickProductsLine extends Component {
     return (
       <div>
         {isLinesListVisible && (
-          <div key={id} className="ml-3 mr-3 is-light pick-product" onClick={() => this.handleClick()}>
-            <div className="box">
-              <div className="columns is-mobile">
-                <div className="column is-12">
-                  <div className="columns">
-                    <div className="column is-size-4-mobile no-p">{caption}</div>
-                    <div className="column is-size-7 no-p">-line-</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+          <button key={id} className="button is-outlined complete-btn" onClick={() => this.handleClick()}>
+            {caption}
+          </button>
         )}
       </div>
     );

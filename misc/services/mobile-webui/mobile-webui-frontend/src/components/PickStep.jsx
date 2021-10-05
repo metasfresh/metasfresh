@@ -20,21 +20,22 @@ class PickStep extends PureComponent {
     const { qtyPicked } = pickstepState;
     return (
       <div>
-        <div key={id} className="ml-3 mr-3 is-light launcher" onClick={() => this.handleClick(id)}>
-          <div className="box">
-            <div className="columns is-mobile">
-              <div className="column is-12">
-                <div className="columns">
-                  <div className="column is-size-4-mobile no-p">Product: {productName}</div>
-                  <div className="column is-size-7 no-p">
-                    To Pick: <span className="has-text-weight-bold">{qtyToPick}</span> Quantity picked:{' '}
-                    <span className="has-text-weight-bold">{qtyPicked}</span> UOM: {uom} Locator Name: {locatorName}
-                  </div>
-                </div>
-              </div>
+        <button
+          key={id}
+          className="button is-outlined complete-btn pick-higher-btn"
+          onClick={() => this.handleClick(id)}
+        >
+          <div className="rows">
+            <div className="row is-full">Product: {productName}</div>
+            <div className="row is-full is-size-7">
+              To Pick: <span className="has-text-weight-bold">{qtyToPick}</span> Quantity picked:{' '}
+              <span className="has-text-weight-bold">{qtyPicked}</span>
+            </div>
+            <div className="row is-full is-size-7">
+              UOM: {uom} Locator Name: {locatorName}
             </div>
           </div>
-        </div>
+        </button>
       </div>
     );
   }
