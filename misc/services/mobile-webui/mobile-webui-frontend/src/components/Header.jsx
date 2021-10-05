@@ -9,7 +9,7 @@ const Header = ({ appName }) => {
   const state = store.getState();
   const location = useLocation();
   const history = useHistory();
-  const { network } = state.appHandler;
+  // const { network } = state.appHandler;
   const showBackButton = state.appHandler.token && location.pathname !== '/' && location.pathname !== '/login';
 
   const handleClick = () => {
@@ -21,10 +21,10 @@ const Header = ({ appName }) => {
   return (
     <header className="p-4 is-fixed-top header">
       <div className="columns is-mobile">
-        <div className="column">{showBackButton ? <BackButton onClickExec={handleClick} /> : null}</div>
+        <div className="column pt-1">{showBackButton ? <BackButton onClickExec={handleClick} /> : null}</div>
         <div className="column is-flex-grow-2 has-text-centered header-title">
-          <h4 className="title is-4">{appName}</h4>
-          <div className="subtitle">network: {network ? 'online' : 'offline'} </div>
+          <h4 className="title is-4 pt-2 pb-3">{appName}</h4>
+          {/* <div className="subtitle">network: {network ? 'online' : 'offline'} </div> */}
         </div>
         <div className="column" />
       </div>
