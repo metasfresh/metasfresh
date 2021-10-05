@@ -22,6 +22,7 @@
 
 package de.metas.vertical.healthcare.alberta.bpartner;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryOrderBy;
@@ -34,9 +35,8 @@ public class BPartnerRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	public I_C_BP_Relation getLastUpdatedPreferedPharmacyByPartnerId(int bpartnerId)
+	public I_C_BP_Relation getLastUpdatedPreferedPharmacyByPartnerId(final BPartnerId bpartnerId)
 	{
-		//check if C_BP_Relation exists for c_order.c_bpartner_id if yes take the latest
 		final IQuery<I_C_BP_Relation> query  = queryBL.createQueryBuilder(I_C_BP_Relation.class)
 				.addEqualsFilter(I_C_BP_Relation.COLUMNNAME_C_BPartner_ID, bpartnerId)
 				.addEqualsFilter(I_C_BP_Relation.COLUMN_Role, "PP")
