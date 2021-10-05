@@ -15,6 +15,9 @@
     .green-check {
       color: $base-elements;
     }
+    .box {
+      min-height: 5em;
+    }
  }
  .launcher:hover {
     background: $base-elements;
