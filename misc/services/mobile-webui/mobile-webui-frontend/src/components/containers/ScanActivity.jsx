@@ -30,7 +30,7 @@ class ScanActivity extends Component {
     let caption = scannedCode ? `Code: ${activityItem.componentProps.barcodeCaption}` : activityItem.caption;
 
     return (
-      <div>
+      <div className="mt-0">
         <CodeScanner
           key={uniqueId}
           id={uniqueId}
