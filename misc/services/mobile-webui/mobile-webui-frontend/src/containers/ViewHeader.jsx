@@ -22,16 +22,25 @@ const ViewHeader = () => {
   }, [params, location]);
 
   return (
-    <div className="level box p-4 header-caption">
+    <div className="header-caption">
       {headerInfo
         ? headerInfo.map((info, idx) => {
             return (
-              <div key={idx} className={classnames('content', `header_info_${idx}`)}>
+              <div
+                key={idx}
+                className={classnames('picking-step-details centered-text is-size-6', `header_info_${idx}`)}
+              >
                 {info.map(({ caption, value }, i) => {
                   return (
-                    <p key={i} className="info_line">
-                      {caption} : {value}
-                    </p>
+                    <div key={i} className="columns is-mobile">
+                      <div className="column is-half has-text-right has-text-weight-bold pt-0 pb-0 pl-0 pr-0">
+                        {caption}:
+                      </div>
+                      <div className="column is-half has-text-left pt-0 pb-0">{value}</div>
+                    </div>
+                    // <p key={i} className="info-line">
+                    //   {caption} : {value}
+                    // </p>
                   );
                 })}
               </div>
