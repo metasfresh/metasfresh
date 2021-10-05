@@ -34,7 +34,7 @@ function App() {
   });
 
   return (
-    <div className="application section">
+    <div className="application">
       <Routes />
     </div>
   );

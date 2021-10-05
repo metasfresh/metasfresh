@@ -36,3 +36,10 @@
     transform: rotate(360deg);
   }
 }
+
+.application {}
+
+.view {
+  top: 95px;
+  position: relative;
+}

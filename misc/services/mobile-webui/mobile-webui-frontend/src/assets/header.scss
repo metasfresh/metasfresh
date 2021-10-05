@@ -6,6 +6,10 @@
   position: fixed;
   z-index: 30;
 
+  &.hidden {
+    visibility: hidden;
+  }
+
   .header-title {
     .title {
       color: $white-background
@@ -16,5 +20,6 @@
 }
 
 .header-caption {
-  background-color: $header-green-one;
+  margin: 0;
+  background-color: lighten($header-green-one, 15%);
 }

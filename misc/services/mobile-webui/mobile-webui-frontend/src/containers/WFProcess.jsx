@@ -24,7 +24,7 @@ class WorkflowProcess extends PureComponent {
     const { activities: activitiesState } = status;
 
     return (
-      <div className="wf-process-container">
+      <div className="pt-2 section wf-process-container">
         <div className="container pick-products-container">
           <div className="activities">
             {activities.length > 0 &&

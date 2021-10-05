@@ -3,6 +3,7 @@ import { ConnectedRouter } from 'connected-react-router';
 import { Route, Switch } from 'react-router';
 
 import Main from '../components/Main';
+import Header from '../components/Header';
 import ViewHeader from '../containers/ViewHeader';
 import LoginView from '../components/LoginView';
 import Dashboard from '../components/Dashboard';
@@ -21,9 +22,10 @@ const routesArray = [
 ];
 
 const childRoutes = (
-  <div className="view fullsize">
+  <div>
     {routesArray.map(({ path, Component }) => (
       <Route key={path} exact path={path}>
+        <Header appName="Picking" hidden />
         <ViewHeader />
         <Component />
       </Route>
