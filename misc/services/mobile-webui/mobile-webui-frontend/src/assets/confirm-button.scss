@@ -37,3 +37,11 @@
     color: #fff;
     pointer-events: visible;
 }
+
+.complete-btn { 
+    width: 100%;
+    font-size: 1.5rem;
+    border: 1px solid $base-mf-green;
+    border-radius: 5px;
+    box-shadow: 0 4px 8px 0px $grey-light;
+}
