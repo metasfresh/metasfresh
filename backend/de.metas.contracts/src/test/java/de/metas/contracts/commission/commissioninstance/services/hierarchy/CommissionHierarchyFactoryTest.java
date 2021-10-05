@@ -67,7 +67,9 @@ class CommissionHierarchyFactoryTest
 		saveRecord(headOfSalesRecord);
 
 		// invoke the method under test
-		final Hierarchy result = new CommissionHierarchyFactory().createFor(BPartnerId.ofRepoId(salesRep1.getC_BPartner_ID()));
+		final Hierarchy result = new CommissionHierarchyFactory()
+				.createForCustomer(BPartnerId.ofRepoId(salesRep1.getC_BPartner_ID()),
+								   BPartnerId.ofRepoId(salesSuperVisor.getC_BPartner_ID()));
 
 		assertThat(result.getParent(node(salesRep2.getC_BPartner_ID()))).isNotPresent();
 		assertThat(result.getParent(node(salesRep1.getC_BPartner_ID()))).contains(node(salesSuperVisor.getC_BPartner_ID()));
