@@ -1,5 +1,6 @@
 import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
+import { withRouter } from 'react-router';
 import { push } from 'connected-react-router';
 import PropTypes from 'prop-types';
 
@@ -45,4 +46,4 @@ LineScreen.propTypes = {
   lineProps: PropTypes.any.isRequired,
 };
 
-export default connect(mapStateToProps, { push })(LineScreen);
+export default withRouter(connect(mapStateToProps, { push })(LineScreen));
