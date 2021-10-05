@@ -1,8 +1,10 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { updatePickingStepQty } from '../actions/PickingActions';
 import { push } from 'connected-react-router';
+
+import { updatePickingStepQty } from '../actions/PickingActions';
+
 class PickStep extends PureComponent {
   constructor(props) {
     super(props);

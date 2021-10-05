@@ -1,8 +1,11 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
+import { withRouter } from 'react-router';
+
 import CodeScanner from './CodeScanner';
 import { stopScanning } from '../../actions/ScanActions';
+
 class PickScreen extends Component {
   constructor(props) {
     super(props);
@@ -23,7 +26,7 @@ class PickScreen extends Component {
     } = this.props;
 
     return (
-      <div className="picking-step-container">
+      <div className="pt-3 section picking-step-container">
         <div className="picking-step-details centered-text is-size-5">
           <div className="columns is-mobile">
             <div className="column is-half has-text-right has-text-weight-bold pt-0 pb-0 pl-0 pr-0">Product:</div>
@@ -87,4 +90,4 @@ PickScreen.propTypes = {
   stopScanning: PropTypes.func.isRequired,
 };
 
-export default connect(mapStateToProps, { stopScanning })(PickScreen);
+export default withRouter(connect(mapStateToProps, { stopScanning })(PickScreen));

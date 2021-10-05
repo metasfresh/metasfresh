@@ -14,7 +14,7 @@ class LineScreen extends PureComponent {
       const { steps } = lineProps;
 
       return (
-        <div className="lines-screen-container">
+        <div className="pt-2 section lines-screen-container">
           <PickProductsSteps steps={steps} activityId={activityId} wfProcessId={wfProcessId} lineIndex={lineIndex} />
         </div>
       );
