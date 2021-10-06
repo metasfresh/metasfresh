@@ -37,6 +37,7 @@ class ScanActivity extends Component {
           isComplete={isComplete}
           caption={caption}
           activityId={activityItem.activityId}
+          scanButtonStatus={scannedCode ? 'complete' : 'incomplete'}
           onDetection={this.scanActivityPostDetection}
         />
         <Toaster

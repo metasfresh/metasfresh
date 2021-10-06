@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { BrowserMultiFormatReader, DecodeHintType, BarcodeFormat } from '@zxing/library';
 import { connect } from 'react-redux';
 import { startScanning } from '../../actions/ScanActions';
+import ButtonWithIndicator from '../ButtonWithIndicator';
 
 class CodeScanner extends Component {
   constructor(props) {
@@ -93,18 +94,20 @@ class CodeScanner extends Component {
     const {
       scanner: { active },
       caption,
+      scanButtonStatus,
     } = this.props;
 
     let scanBtnCaption = caption || 'Scan';
 
     !active && this.codeReader.stopContinuousDecode();
 
+    console.log('ScanButtonStatus:', scanButtonStatus);
     return (
       <div>
         {!active && (
           <>
             <button className="button is-outlined complete-btn" onClick={this.initiateScanning}>
-              {scanBtnCaption}
+              <ButtonWithIndicator caption={scanBtnCaption} indicatorType={scanButtonStatus} />
             </button>
           </>
         )}
@@ -145,6 +148,7 @@ CodeScanner.propTypes = {
   onDetection: PropTypes.func.isRequired,
   activityId: PropTypes.string.isRequired,
   caption: PropTypes.string,
+  scanButtonStatus: PropTypes.string,
 };
 
 export default connect(mapStateToProps, { startScanning })(CodeScanner);
