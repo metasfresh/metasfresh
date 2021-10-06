@@ -108,7 +108,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 	 * @return <code>false</code>, the candidates will be created by {@link C_Order_Handler}.
 	 */
 	@Override
-	public boolean isCreateMissingCandidatesAutomatically(Object model)
+	public boolean isCreateMissingCandidatesAutomatically(final Object model)
 	{
 		return false;
 	}
@@ -122,12 +122,11 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		//
 		// Retrieve order
 		final I_C_OrderLine orderLine = InterfaceWrapperHelper.create(model, I_C_OrderLine.class);
-		final org.compiere.model.I_C_Order order = orderLine.getC_Order();
-		return order;
+		return orderLine.getC_Order();
 	}
 
 	@Override
-	public Iterator<? extends Object> retrieveAllModelsWithMissingCandidates(final int limit)
+	public Iterator<?> retrieveAllModelsWithMissingCandidates(final int limit)
 	{
 		return Services.get(IC_OrderLine_HandlerDAO.class).retrieveMissingOrderLinesQuery(Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
 				.create()
@@ -166,7 +165,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		final int productRecordId = orderLine.getM_Product_ID();
 		icRecord.setM_Product_ID(productRecordId);
 
-		boolean isFreightCostProduct = productBL
+		final boolean isFreightCostProduct = productBL
 				.getProductType(ProductId.ofRepoId(productRecordId))
 				.isFreightCost();
 
@@ -220,7 +219,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 
 		//
 		// Dimension
-		Dimension orderLineDimension = extractDimension(orderLine);
+		final Dimension orderLineDimension = extractDimension(orderLine);
 		dimensionService.updateRecord(icRecord, orderLineDimension);
 
 		//
@@ -361,7 +360,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 	 *
 	 */
 	@Override
-	public void setDeliveredData(final I_C_Invoice_Candidate icRecord)
+	public void setDeliveredData(@NonNull final I_C_Invoice_Candidate icRecord)
 	{
 		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 		final InvoiceCandidateRecordService invoiceCandidateRecordService = SpringContextHolder.instance.getBean(InvoiceCandidateRecordService.class);
@@ -417,7 +416,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 	}
 
 	@Override
-	public PriceAndTax calculatePriceAndTax(final I_C_Invoice_Candidate ic)
+	public PriceAndTax calculatePriceAndTax(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		final I_C_OrderLine orderLine = InterfaceWrapperHelper.create(ic.getC_OrderLine(), I_C_OrderLine.class);
 

@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
+import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_InventoryLine;
@@ -43,6 +44,9 @@ import de.metas.util.Services;
  * #L%
  */
 
+/**
+ * Creates/handles invoice candidates for completed material disposals
+ */
 public class M_Inventory_Handler extends AbstractInvoiceCandidateHandler
 {
 	// Services
@@ -61,7 +65,7 @@ public class M_Inventory_Handler extends AbstractInvoiceCandidateHandler
 	}
 
 	@Override
-	public List<InvoiceCandidateGenerateRequest> expandRequest(final InvoiceCandidateGenerateRequest request)
+	public List<InvoiceCandidateGenerateRequest> expandRequest(@NonNull final InvoiceCandidateGenerateRequest request)
 	{
 		final I_M_Inventory inventory = request.getModel(I_M_Inventory.class);
 
@@ -85,7 +89,7 @@ public class M_Inventory_Handler extends AbstractInvoiceCandidateHandler
 	}
 
 	@Override
-	public Iterator<? extends Object> retrieveAllModelsWithMissingCandidates(final int limit)
+	public Iterator<?> retrieveAllModelsWithMissingCandidates(final int limit)
 	{
 		return Collections.emptyIterator();
 	}

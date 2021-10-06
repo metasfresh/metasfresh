@@ -219,8 +219,7 @@ public class C_Invoice_Candidate
 	/**
 	 * For new invoice candidates, this method sets the <code>C_Order_ID</code>, if the referenced record is either a <code>C_OrderLine_ID</code> or a <code>M_InOutLine_ID</code>.
 	 *
-	 * @param ic
-	 * @task http://dewiki908/mediawiki/index.php/07242_Error_creating_invoice_from_InOutLine-IC_%28104224060697%29
+	 * task http://dewiki908/mediawiki/index.php/07242_Error_creating_invoice_from_InOutLine-IC_%28104224060697%29
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW })
 	public void updateOrderId(final I_C_Invoice_Candidate ic)
@@ -242,8 +241,6 @@ public class C_Invoice_Candidate
 
 	/**
 	 * Set the POReference of the C_Order, in case of Sales Orders
-	 *
-	 * @param ic
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void updatePOReference(final I_C_Invoice_Candidate ic)
@@ -254,8 +251,7 @@ public class C_Invoice_Candidate
 	/**
 	 * Configure {@link I_C_Invoice_Candidate#COLUMN_PriceActual_Net_Effective}, depending on the <code>PriceActual</code> and <code>IsTaxIncluded</code> (which if true, is removed).
 	 *
-	 * @param candidate
-	 * @task 08457
+	 * task 08457
 	 */
 	@ModelChange(//
 			timings = { ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_NEW }, //
@@ -320,8 +316,6 @@ public class C_Invoice_Candidate
 	 * This method sets {@link I_M_InOutLine#COLUMNNAME_IsInvoiceCandidate} back to <code>N</code> if the given <code>ic</code> references an inOutLine.
 	 * <p>
 	 * TODO in task 07067: extract this into the listener architecture.
-	 *
-	 * @param ic
 	 */
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
 	public void resetIolIsInvoiceCandidateFlag(final I_C_Invoice_Candidate ic)
@@ -343,9 +337,7 @@ public class C_Invoice_Candidate
 	/**
 	 * After an invoice candidate was deleted, schedule the recreation of it.
 	 *
-	 * @param ic
-	 *
-	 * @task http://dewiki908/mediawiki/index.php/09531_C_Invoice_candidate%3A_deleted_ICs_are_not_coming_back_%28107964479343%29
+	 * task http://dewiki908/mediawiki/index.php/09531_C_Invoice_candidate%3A_deleted_ICs_are_not_coming_back_%28107964479343%29
 	 */
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_DELETE)
 	public void scheduleRecreate(final I_C_Invoice_Candidate ic)
@@ -400,8 +392,6 @@ public class C_Invoice_Candidate
 
 	/**
 	 * Update header aggregation key, unless (=>task 08451) the given <code>id</code> is already processed or a background process (creating, updating or invoicing) is currently in progress.
-	 *
-	 * @param ic
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void setHeaderAggregationKey(final I_C_Invoice_Candidate ic)
@@ -422,9 +412,8 @@ public class C_Invoice_Candidate
 
 	/**
 	 * In case the correct tax was not found for the invoice candidate and it was set to the Tax_Not_Found placeholder instead, mark the candidate as Error.
-	 *
-	 * @param candidate
-	 * @task 07814
+	 * 
+	 * task 07814
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_NEW })
 	public void errorIfTaxNotFound(final I_C_Invoice_Candidate candidate)

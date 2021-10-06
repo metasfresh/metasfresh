@@ -47,6 +47,8 @@ import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
+
 /**
  * Simple abstract base class that implements {@link #setHandlerRecord(I_C_ILCandHandler)} and {@link #setNetAmtToInvoice(I_C_Invoice_Candidate)}.
  *
@@ -156,7 +158,7 @@ public abstract class AbstractInvoiceCandidateHandler implements IInvoiceCandida
 	 * @param ic invoice candidate
 	 * @param firstInOut first shipment/receipt or <code>null</code>
 	 */
-	protected final void setDeliveredDataFromFirstInOut(final I_C_Invoice_Candidate ic, final I_M_InOut firstInOut)
+	protected final void setDeliveredDataFromFirstInOut(@NonNull final I_C_Invoice_Candidate ic, @Nullable final I_M_InOut firstInOut)
 	{
 		ic.setM_InOut(firstInOut);
 
