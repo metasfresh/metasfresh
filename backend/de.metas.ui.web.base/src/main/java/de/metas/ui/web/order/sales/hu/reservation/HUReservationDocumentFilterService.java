@@ -9,7 +9,7 @@ import de.metas.order.OrderLine;
 import de.metas.order.OrderLineId;
 import de.metas.order.OrderLineRepository;
 import de.metas.ui.web.document.filter.DocumentFilter;
-import de.metas.ui.web.handlingunits.HUIdsFilterHelper;
+import de.metas.ui.web.handlingunits.filter.HUIdsFilterHelper;
 import lombok.NonNull;
 
 /*
