@@ -183,8 +183,7 @@ public final class CollectionUtils
 	@Nullable
 	public static <T> T singleElementOrNull(final Collection<T> collection)
 	{
-		final T defaultValue = null;
-		return singleElementOrDefault(collection, defaultValue);
+		return singleElementOrDefault(collection, null);
 	}
 
 	/**
@@ -192,7 +191,7 @@ public final class CollectionUtils
 	 * <p>
 	 * If the collection has more elements or no element then <code>defaultValue</code> will be returned.
 	 *
-	 * @param defaultValue value to be returned in case there are more then one elements or no element
+	 * @param defaultValue value to be returned in case there are more than one element or no element
 	 * @see de.metas.util.reducers.Reducers#singleValue()
 	 */
 	@Nullable
