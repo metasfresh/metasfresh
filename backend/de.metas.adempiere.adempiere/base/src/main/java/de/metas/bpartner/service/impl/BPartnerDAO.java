@@ -1806,7 +1806,7 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 
 	@Override
-	public List<I_C_BPartner> retrieveVednors()
+	public List<I_C_BPartner> retrieveVendors()
 	{
 		return queryBL.createQueryBuilder(I_C_BPartner.class)
 				.addInArrayFilter(I_C_BPartner.COLUMNNAME_IsVendor, true)

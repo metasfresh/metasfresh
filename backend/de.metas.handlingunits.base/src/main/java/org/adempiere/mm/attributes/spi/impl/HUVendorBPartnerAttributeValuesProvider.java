@@ -4,12 +4,10 @@ import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.cache.CCache;
 import de.metas.cache.CCache.CCacheStats;
-import de.metas.handlingunits.age.AgeValues;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
-import de.metas.interfaces.I_C_BP_Relation;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
@@ -297,13 +295,13 @@ class HUVendorBPartnerAttributeValuesProvider implements IAttributeValuesProvide
 
 	private static List<KeyNamePair> retrieveVendorKeyNamePairs()
 	{
-		return bPartnerDAO.retrieveVednors()
+		return bPartnerDAO.retrieveVendors()
 				.stream()
 				.map(bpartner -> toKeyNamePair(bpartner))
 				.collect(GuavaCollectors.toImmutableList());
 	}
 
-	private static final KeyNamePair toKeyNamePair(@NonNull final I_C_BPartner bpartner)
+	private static KeyNamePair toKeyNamePair(@NonNull final I_C_BPartner bpartner)
 	{
 		return KeyNamePair.of(bpartner.getC_BPartner_ID(), bpartner.getName(), bpartner.getDescription());
 	}

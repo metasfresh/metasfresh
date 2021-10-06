@@ -316,7 +316,7 @@ public interface IBPartnerDAO extends ISingletonService
 
 	BPartnerId cloneBPartnerRecord(@NonNull CloneBPartnerRequest request);
 
-	List<I_C_BPartner> retrieveVednors();
+	List<I_C_BPartner> retrieveVendors();
 
 	@Value
 	@Builder
