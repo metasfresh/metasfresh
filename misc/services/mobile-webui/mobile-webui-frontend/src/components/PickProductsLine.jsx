@@ -15,10 +15,16 @@ class PickProductsLine extends Component {
   render() {
     const { id, caption, isLinesListVisible } = this.props;
     return (
-      <div>
+      <div className="buttons">
         {isLinesListVisible && (
           <button key={id} className="button is-outlined complete-btn" onClick={() => this.handleClick()}>
-            {caption}
+            <div className="full-size-btn">
+              <div className="left-btn-side"></div>
+              <div className="caption-btn">{caption}</div>
+              <div className="right-btn-side">
+                <span className="status-btn-red"></span>
+              </div>
+            </div>
           </button>
         )}
       </div>
