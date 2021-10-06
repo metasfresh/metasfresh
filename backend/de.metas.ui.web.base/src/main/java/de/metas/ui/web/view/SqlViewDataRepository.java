@@ -304,7 +304,7 @@ class SqlViewDataRepository implements IViewDataRepository
 		}
 
 		return rowBuilders.values().stream()
-				.map(rowBuilder -> rowBuilder.build())
+				.map(ViewRow.Builder::build)
 				.collect(ImmutableList.toImmutableList());
 	}
 
@@ -671,7 +671,7 @@ class SqlViewDataRepository implements IViewDataRepository
 		final SqlAndParams sql = SqlAndParams.builder()
 				.append("SELECT ").append(keyColumnNamesMap.getKeyColumnNamesCommaSeparated())
 				.append("\n FROM " + getTableName())
-				.append("\n WHERE ").append(sqlWhereClause.toSqlAndParams())
+				.append("\n WHERE (\n").append(sqlWhereClause.toSqlAndParams()).append("\n)")
 				.build();
 
 		PreparedStatement pstmt = null;
