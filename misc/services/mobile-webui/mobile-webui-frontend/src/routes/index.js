@@ -25,7 +25,7 @@ const childRoutes = (
   <div>
     {routesArray.map(({ path, Component }) => (
       <Route key={path} exact path={path}>
-        <Header appName="Picking" hidden />
+        <Header appName="Kommissionierung" hidden />
         <ViewHeader />
         <Component />
       </Route>

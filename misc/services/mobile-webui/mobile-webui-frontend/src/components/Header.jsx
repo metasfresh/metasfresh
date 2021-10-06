@@ -23,12 +23,12 @@ const Header = ({ appName, hidden }) => {
   return (
     <header className={classnames('p-4', { hidden: hidden, header: !hidden })}>
       <div className="columns is-mobile">
-        <div className="column pt-1">{showBackButton ? <BackButton onClickExec={handleClick} /> : null}</div>
+        <div className="column pt-1 is-2">{showBackButton ? <BackButton onClickExec={handleClick} /> : null}</div>
         <div className="column is-flex-grow-2 has-text-centered header-title">
-          <h4 className="title is-4 pt-2 pb-3">{appName}</h4>
+          <h4 className="title is-half is-4 pt-2 pb-3">{appName}</h4>
           {/* <div className="subtitle">network: {network ? 'online' : 'offline'} </div> */}
         </div>
-        <div className="column" />
+        <div className="column is-2" />
       </div>
     </header>
   );
