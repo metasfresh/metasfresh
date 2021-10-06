@@ -3,6 +3,10 @@ import { routerMiddleware } from 'connected-react-router';
 import { applyMiddleware, compose, createStore } from 'redux';
 import thunk from 'redux-thunk';
 import createRootReducer from '../reducers';
+
+// Import the necessary methods for saving and loading
+import { save } from 'redux-localstorage-simple';
+
 // import { offline } from '@redux-offline/redux-offline';
 // import offlineConfig from '@redux-offline/redux-offline/lib/defaults';
 
@@ -19,7 +23,7 @@ export const store = function configureStore(preloadedState) {
     createRootReducer(history),
     preloadedState,
     // composeEnhancer(offline(offlineConfig), applyMiddleware(routerMiddleware(history), thunk)) // unhook offline due to caching issues
-    composeEnhancer(applyMiddleware(routerMiddleware(history), thunk))
+    composeEnhancer(applyMiddleware(routerMiddleware(history), thunk, save({ ignoreStates: ['appHandler', 'router'] })))
   );
   return store;
 };
