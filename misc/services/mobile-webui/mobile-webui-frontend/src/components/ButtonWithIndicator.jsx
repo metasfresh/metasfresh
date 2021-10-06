@@ -1,7 +1,7 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 
-class Indicator extends PureComponent {
+class ButtonWithIndicator extends PureComponent {
   getIndicatorColor(indicatorType) {
     switch (indicatorType) {
       case 'incomplete':
@@ -32,9 +32,9 @@ class Indicator extends PureComponent {
   }
 }
 
-Indicator.propTypes = {
+ButtonWithIndicator.propTypes = {
   caption: PropTypes.string.isRequired,
   indicatorType: PropTypes.string.isRequired,
 };
 
-export default Indicator;
+export default ButtonWithIndicator;
