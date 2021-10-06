@@ -12,14 +12,15 @@ import javax.annotation.Nullable;
 
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
+import de.metas.handlingunits.picking.OnOverDelivery;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
-import de.metas.handlingunits.picking.TakeWholeHUEnum;
 import de.metas.util.collections.CollectionUtils;
 import lombok.Value;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.PlainContextAware;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_UOM;
 
 import com.google.common.base.Predicates;
@@ -89,7 +90,7 @@ public class HU2PackingItemsAllocator
 	private final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final transient IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
 	private final transient IHUShipmentScheduleBL huShipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
-	private final PickingCandidateRepository pickingCandidateRepository = new PickingCandidateRepository();
+	private final PickingCandidateRepository pickingCandidateRepository = SpringContextHolder.instance.getBean(PickingCandidateRepository.class);
 	/**
 	 * Cannot fully load:
 	 */
@@ -102,7 +103,7 @@ public class HU2PackingItemsAllocator
 	private final PackingItemsMap packingItems;
 	//
 	private final boolean allowOverDelivery;
-	private final TakeWholeHUEnum takeWholeHU;
+	private final OnOverDelivery takeWholeHU;
 
 	private ImmutableList<I_M_HU> _pickFromHUs;
 	private final IAllocationDestination _packToDestination;
@@ -113,7 +114,7 @@ public class HU2PackingItemsAllocator
 	private IHUContext _huContext = null;
 	private Quantity _qtyToPackRemaining = null;
 
-	@NonNull final Map<HuId, PickedHuAndQty> changedPickedHus = new HashMap<>();
+	@NonNull final Map<HuId, PickedHuAndQty> pickedHus = new HashMap<>();
 
 	/**
 	 * @param pickFromHUs the HUs to assign to the shipment schedule. IMPORTANT: The all need be out of transaction.
@@ -125,7 +126,7 @@ public class HU2PackingItemsAllocator
 			@Nullable final PackingSlot packedItemsSlot,
 			//
 			final boolean allowOverDelivery,
-			@NonNull final TakeWholeHUEnum takeWholeHU,
+			@NonNull final OnOverDelivery takeWholeHU,
 			@NonNull @Singular("pickFromHU") final ImmutableList<I_M_HU> pickFromHUs,
 			@Nullable final IAllocationDestination packToDestination,
 			@Nullable final Quantity qtyToPack)
@@ -515,14 +516,14 @@ public class HU2PackingItemsAllocator
 		final boolean isOverDelivery = currentQtyToDeliver.compareTo(qtyPacked.toBigDecimal()) < 0;
 
 		// Check over-delivery
-		if (!allowOverDelivery && isOverDelivery && TakeWholeHUEnum.NONE.equals(takeWholeHU.getCode()))
+		if (!allowOverDelivery && isOverDelivery && takeWholeHU.isFallback())
 		{
 				throw new AdempiereException("@" + PickingConfigRepository.MSG_WEBUI_Picking_OverdeliveryNotAllowed + "@")
 						.setParameter("shipmentSchedule's QtyToDeliver", currentQtyToDeliver)
 						.setParameter("qtyPacked to be Delivered", qtyPacked);
 		}
 
-		if (allowOverDelivery && isOverDelivery && TakeWholeHUEnum.SPLIT.getCode().equals(takeWholeHU.getCode()))
+		if (allowOverDelivery && isOverDelivery && takeWholeHU.isSplit())
 		{
 			splitCurrentHU(pickFromVHU, packedPart);
 		}
@@ -540,6 +541,8 @@ public class HU2PackingItemsAllocator
 
 			// Adjust remaining Qty to be packed
 			subtractFromQtyToPackRemaining(qtyPacked);
+
+			pickedHus.put(HuId.ofRepoId(pickFromVHU.getM_HU_ID()), null);
 		}
 	}
 
@@ -551,10 +554,8 @@ public class HU2PackingItemsAllocator
 
 		final Quantity qtyCU = Quantity.of(currentQtyToDeliver, packedPart.getQty().getUOM());
 
-		// e.g. if we have one 1000PCE-HU, but we need to issue just 10PCE, then we need to split those 10PCE from the big HU
-
 		final ProductId productId = packedPart.getProductId();
-		final I_M_HU huToIssue = CollectionUtils.singleElement(HUTransformService.newInstance()
+		final I_M_HU huReceived = CollectionUtils.singleElement(HUTransformService.newInstance()
 					       .husToNewCUs(HUTransformService.HUsToNewCUsRequest.builder()
 										 .sourceHU(pickFromVHU)
 										 .productId(productId)
@@ -562,17 +563,16 @@ public class HU2PackingItemsAllocator
 										 .onlyFromUnreservedHUs(true)
 										 .build()));
 
-		final StockQtyAndUOMQty stockQtyAndUomQty = CatchWeightHelper.extractQtys(_huContext, getProductId(), qtyCU, huToIssue);
+		final StockQtyAndUOMQty stockQtyAndUomQty = CatchWeightHelper.extractQtys(_huContext, getProductId(), qtyCU, huReceived);
 
 		// "Back" allocate the qtyPicked from VHU to given shipment schedule
 		final boolean anonymousHuPickedOnTheFly = false;
-		huShipmentScheduleBL.addQtyPickedAndUpdateHU(shipmentSchedule, stockQtyAndUomQty, huToIssue, _huContext, anonymousHuPickedOnTheFly);
+		huShipmentScheduleBL.addQtyPickedAndUpdateHU(shipmentSchedule, stockQtyAndUomQty, huReceived, _huContext, anonymousHuPickedOnTheFly);
 
 		// Transfer the qtyPicked from vhu to our target HU (if any)
-
 		if (hasPackToDestination())
 		{
-			final IAllocationSource source = HUListAllocationSourceDestination.of(huToIssue);
+			final IAllocationSource source = HUListAllocationSourceDestination.of(huReceived);
 			final IAllocationDestination destination = getPackToDestination();
 
 			AllocationUtils.builder()
@@ -591,11 +591,11 @@ public class HU2PackingItemsAllocator
 
 		// updated picked HU
 		final PickedHuAndQty pickedHuAndQty = PickedHuAndQty.builder()
-					.huId(HuId.ofRepoId(huToIssue.getM_HU_ID()))
+					.huId(HuId.ofRepoId(huReceived.getM_HU_ID()))
 					.qty(qtyCU)
 					.build();
 
-		changedPickedHus.put(HuId.ofRepoId(pickFromVHU.getM_HU_ID()), pickedHuAndQty);
+		pickedHus.put(HuId.ofRepoId(pickFromVHU.getM_HU_ID()), pickedHuAndQty);
 	}
 
 	private Quantity extractQtyOfHU(
@@ -726,9 +726,9 @@ public class HU2PackingItemsAllocator
 
 
 
-	public Map<HuId, PickedHuAndQty> getChangedPickedHUs()
+	public Map<HuId, PickedHuAndQty> getPickedHUs()
 	{
-		return changedPickedHus;
+		return pickedHus;
 	}
 
 	//

@@ -38,7 +38,7 @@ import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
 
-import de.metas.handlingunits.picking.TakeWholeHUEnum;
+import de.metas.handlingunits.picking.OnOverDelivery;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.POJOLookupMap;
@@ -154,7 +154,7 @@ public class HU2PackingItemsAllocatorTest extends AbstractHUTest
 					.itemToPack(itemToPack)
 					.packingItems(packingItems)
 					.pickFromHUs(luHUs)
-					.takeWholeHU(TakeWholeHUEnum.NONE)
+					.takeWholeHU(OnOverDelivery.FALLBACK)
 					.allocate();
 
 			// Validate
@@ -182,7 +182,7 @@ public class HU2PackingItemsAllocatorTest extends AbstractHUTest
 					.itemToPack(itemToPack)
 					.packingItems(packingItems)
 					.pickFromHUs(luHUs)
-					.takeWholeHU(TakeWholeHUEnum.NONE)
+					.takeWholeHU(OnOverDelivery.FALLBACK)
 					.allocate();
 
 			// Validate
@@ -210,7 +210,7 @@ public class HU2PackingItemsAllocatorTest extends AbstractHUTest
 					.itemToPack(itemToPack)
 					.packingItems(packingItems)
 					.pickFromHUs(luHUs)
-					.takeWholeHU(TakeWholeHUEnum.NONE)
+					.takeWholeHU(OnOverDelivery.FALLBACK)
 					.allocate();
 
 			// Validate
