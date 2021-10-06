@@ -73,7 +73,7 @@ public class TokenService
 		return (int)restApiAuthToken.values()
 				.stream()
 				.map(Authentication::getAuthorities)
-				.map(item -> item.contains(grantedAuthority))
+				.filter(item -> item.contains(grantedAuthority))
 				.count();
 	}
 }

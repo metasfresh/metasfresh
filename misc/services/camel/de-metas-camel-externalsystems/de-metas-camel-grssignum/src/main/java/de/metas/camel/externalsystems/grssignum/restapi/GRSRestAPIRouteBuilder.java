@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-camel-woocommerce
+ * de-metas-camel-externalsystems
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.woocommerce.restapi;
+package de.metas.camel.externalsystems.grssignum.restapi;
 
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 import de.metas.camel.externalsystems.common.ProcessLogger;
@@ -45,61 +45,57 @@ import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 
 @Component
-public class RestAPIRouteBuilder extends RouteBuilder
+public class GRSRestAPIRouteBuilder extends RouteBuilder
 {
-	public static final String REST_API_ROUTE_ID = "WOO-restAPI";
-	public static final String ENABLE_RESOURCE_ROUTE_ID = "WOO-enableRestAPI";
-	public static final String DISABLE_RESOURCE_ROUTE_ID = "WOO-disableRestAPI";
+	public static final String REST_API_ROUTE_ID = "GRSSignum_RestAPI";
 
-	public static final String ENABLE_RESOURCE_ROUTE_PROCESSOR_ID = "WOO-enableRestAPIProcessor";
-	public static final String DISABLE_RESOURCE_ROUTE_PROCESSOR_ID = "WOO-disableRestAPIProcessor";
-	public static final String ENABLE_RESOURCE_ATTACH_AUTHENTICATE_REQ_PROCESSOR_ID = "WOO-ER-AttachAuthenticateReqProcessorId";
-	public static final String DISABLE_RESOURCE_ATTACH_AUTHENTICATE_REQ_PROCESSOR_ID = "WOO-DR-AttachAuthenticateReqProcessorId";
+	public static final String ENABLE_RESOURCE_ROUTE_ID = "GRSSignum-enableRestAPI";
+	public static final String DISABLE_RESOURCE_ROUTE_ID = "GRSSignum-disableRestAPI";
+
+	public static final String ENABLE_RESOURCE_ROUTE_PROCESSOR_ID = "GRS-enableRestAPIProcessor";
+	public static final String DISABLE_RESOURCE_ROUTE_PROCESSOR_ID = "GRS-disableRestAPIProcessor";
+
+	public static final String ENABLE_RESOURCE_ATTACH_AUTHENTICATE_REQ_PROCESSOR_ID = "GRS-ER-AttachAuthenticateReqProcessorId";
+	public static final String DISABLE_RESOURCE_ATTACH_AUTHENTICATE_REQ_PROCESSOR_ID = "GRS-DR-AttachAuthenticateReqProcessorId";
 
 	@NonNull
 	private final ProcessLogger processLogger;
 
-	public RestAPIRouteBuilder(final @NonNull ProcessLogger processLogger)
+	public GRSRestAPIRouteBuilder(final @NonNull ProcessLogger processLogger)
 	{
 		this.processLogger = processLogger;
 	}
 
 	@Override
-	public void configure()
+	public void configure() throws Exception
 	{
 		errorHandler(defaultErrorHandler());
 		onException(Exception.class)
 				.to(direct(MF_ERROR_ROUTE_ID));
 
-		//@formatter:off
 		from(direct(ENABLE_RESOURCE_ROUTE_ID))
 				.routeId(ENABLE_RESOURCE_ROUTE_ID)
-				.streamCaching()
 				.log("Route invoked!")
-				.process(this::enableRestAPIProcessor).id(ENABLE_RESOURCE_ROUTE_PROCESSOR_ID)
 				.process(this::attachAuthenticateRequest).id(ENABLE_RESOURCE_ATTACH_AUTHENTICATE_REQ_PROCESSOR_ID)
 				.to(direct(REST_API_AUTHENTICATE_TOKEN))
+				.process(this::enableRestAPIProcessor).id(ENABLE_RESOURCE_ROUTE_PROCESSOR_ID)
 				.end();
 
 		from(direct(DISABLE_RESOURCE_ROUTE_ID))
 				.routeId(DISABLE_RESOURCE_ROUTE_ID)
-				.streamCaching()
 				.log("Route invoked!")
 				.process(this::attachAuthenticateRequest).id(DISABLE_RESOURCE_ATTACH_AUTHENTICATE_REQ_PROCESSOR_ID)
 				.to(direct(REST_API_EXPIRE_TOKEN))
 				.process(this::disableRestAPIProcessor).id(DISABLE_RESOURCE_ROUTE_PROCESSOR_ID)
 				.end();
 
-		rest().path(RestServiceRoutes.WOO.getPath())
+		rest().path(RestServiceRoutes.GRS.getPath())
 				.post()
 				.route()
 				.routeId(REST_API_ROUTE_ID)
 				.autoStartup(false)
 				.process(this::restAPIProcessor)
 				.end();
-
-		//@formatter:on
-
 	}
 
 	public void enableRestAPIProcessor(@NonNull final Exchange exchange) throws Exception
@@ -107,30 +103,6 @@ public class RestAPIRouteBuilder extends RouteBuilder
 		final RouteController routeController = getContext().getRouteController();
 
 		routeController.resumeRoute(REST_API_ROUTE_ID);
-	}
-
-	public void disableRestAPIProcessor(@NonNull final Exchange exchange) throws Exception
-	{
-		final JsonExpireTokenResponse response = exchange.getIn().getBody(JsonExpireTokenResponse.class);
-
-		if (response != null && response.getNumberOfAuthenticatedTokens() == 0)
-		{
-			getContext().getRouteController().suspendRoute(REST_API_ROUTE_ID);
-		}
-	}
-
-	public void restAPIProcessor(@NonNull final Exchange exchange)
-	{
-		final TokenCredentials credentials = (TokenCredentials)SecurityContextHolder.getContext().getAuthentication().getCredentials();
-
-		if (credentials == null)
-		{
-			throw new RuntimeCamelException("Missing credentials!");
-		}
-
-		final String requestBody = exchange.getIn().getBody(String.class);
-
-		processLogger.logMessage(REST_API_ROUTE_ID + " has been called with requestBody:" + requestBody, credentials.getPInstance().getValue());
 	}
 
 	private void attachAuthenticateRequest(@NonNull final Exchange exchange)
@@ -158,9 +130,33 @@ public class RestAPIRouteBuilder extends RouteBuilder
 		}
 
 		return JsonAuthenticateRequest.builder()
-				.grantedAuthority(RestServiceAuthority.WOO.getValue())
+				.grantedAuthority(RestServiceAuthority.GRS.getValue())
 				.authKey(authKey)
 				.pInstance(request.getAdPInstanceId())
 				.build();
+	}
+
+	public void restAPIProcessor(@NonNull final Exchange exchange)
+	{
+		final TokenCredentials credentials = (TokenCredentials)SecurityContextHolder.getContext().getAuthentication().getCredentials();
+
+		if (credentials == null)
+		{
+			throw new RuntimeCamelException("Missing credentials!");
+		}
+
+		final String requestBody = exchange.getIn().getBody(String.class);
+
+		processLogger.logMessage(REST_API_ROUTE_ID + " has been called with requestBody:" + requestBody, credentials.getPInstance().getValue());
+	}
+
+	public void disableRestAPIProcessor(@NonNull final Exchange exchange) throws Exception
+	{
+		final JsonExpireTokenResponse response = exchange.getIn().getBody(JsonExpireTokenResponse.class);
+
+		if (response != null && response.getNumberOfAuthenticatedTokens() == 0)
+		{
+			getContext().getRouteController().suspendRoute(REST_API_ROUTE_ID);
+		}
 	}
 }

@@ -5,6 +5,7 @@ import com.google.common.collect.Maps;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.externalsystem.model.X_ExternalSystem_Config;
 import de.metas.externalsystem.process.InvokeAlbertaAction;
+import de.metas.externalsystem.process.InvokeGRSSignumAction;
 import de.metas.externalsystem.process.InvokeOtherAction;
 import de.metas.externalsystem.process.InvokeShopware6Action;
 import de.metas.externalsystem.process.InvokeWooCommerceAction;
@@ -43,7 +44,8 @@ public enum ExternalSystemType implements ReferenceListAwareEnum
 	Alberta(X_ExternalSystem_Config.TYPE_Alberta, "Alberta", InvokeAlbertaAction.class.getName()),
 	Shopware6(X_ExternalSystem_Config.TYPE_Shopware6, "Shopware6", InvokeShopware6Action.class.getName()),
 	Other(X_ExternalSystem_Config.TYPE_Other, "Other", InvokeOtherAction.class.getName()),
-	WOO(X_ExternalSystem_Config.TYPE_WooCommerce, "WOO", InvokeWooCommerceAction.class.getName())
+	WOO(X_ExternalSystem_Config.TYPE_WooCommerce, "WOO", InvokeWooCommerceAction.class.getName()),
+	GRSSignum(X_ExternalSystem_Config.TYPE_GRSSignum, "GRSSignum", InvokeGRSSignumAction.class.getName())
 	;
 
 	@Getter
