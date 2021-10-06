@@ -83,7 +83,7 @@ function LoginRoute() {
           </div>
           <div className="field">
             <div className="control">
-              <button type="submit" className="button is-medium is-success is-green-bg" onClick={submitForm}>
+              <button type="submit" className="button is-medium btn-green" onClick={submitForm}>
                 Log in
               </button>
             </div>
