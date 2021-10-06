@@ -140,7 +140,7 @@ class HUVendorBPartnerAttributeValuesProvider implements IAttributeValuesProvide
 	@Override
 	public boolean isAllowAnyValue()
 	{
-		return false;
+		return true;
 	}
 
 	@Override
@@ -150,15 +150,9 @@ class HUVendorBPartnerAttributeValuesProvider implements IAttributeValuesProvide
 		final int bpartnerId = hu.getC_BPartner_ID();
 		final int huId = hu.getM_HU_ID();
 
-		int currentVendorId = -1;
-		if (attributeSet.hasAttribute(attribute))
-		{
-			currentVendorId = attributeSet.getValueAsInt(attribute);
-		}
-
 		return Evaluatees.mapBuilder()
 				.put(CTXNAME_M_HU_ID, huId > 0 ? huId : -1)
-				.put(CTXNAME_CurrentVendor_BPartner_ID, currentVendorId > 0 ? currentVendorId : -1)
+				.put(CTXNAME_CurrentVendor_BPartner_ID, bpartnerId > 0 ? bpartnerId : -1)
 				.build();
 	}
 
@@ -263,25 +257,6 @@ class HUVendorBPartnerAttributeValuesProvider implements IAttributeValuesProvide
 		if (bpartnerId <= 0)
 		{
 			return;
-		}
-
-		//
-		// Check if our BPartner is already in the list.
-		// If yes, there is no point to add it.
-		if (vendors != null)
-		{
-			for (final KeyNamePair subProducer : vendors)
-			{
-				if (subProducer == null)
-				{
-					continue;
-				}
-				if (subProducer.getKey() == bpartnerId)
-				{
-					// our bpartner is already in the list
-					return;
-				}
-			}
 		}
 
 		//
