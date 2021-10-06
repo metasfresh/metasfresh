@@ -27,6 +27,7 @@ import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.IExternalSystemChildConfig;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
+import de.metas.i18n.AdMessageKey;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -42,6 +43,8 @@ import java.util.Optional;
 public class ExternalSystem_Config
 {
 	public final ExternalSystemConfigRepo externalSystemConfigRepo;
+
+	private final AdMessageKey MSG_EXTERNAL_SYS_CONFIG_CANNOT_CHANGE_TYPE = AdMessageKey.of("External_System_Config_Cannot_Change_Type");
 
 	public ExternalSystem_Config(@NonNull final ExternalSystemConfigRepo externalSystemConfigRepo)
 	{
@@ -59,7 +62,7 @@ public class ExternalSystem_Config
 		final Optional<IExternalSystemChildConfig> childConfig = externalSystemConfigRepo.getChildByParentIdAndType(parentConfigId, oldParentType);
 
 		childConfig.ifPresent(x -> {
-			throw new AdempiereException("Cannot change type!").markAsUserValidationError();
+			throw new AdempiereException(MSG_EXTERNAL_SYS_CONFIG_CANNOT_CHANGE_TYPE).markAsUserValidationError();
 		});
 
 	}
