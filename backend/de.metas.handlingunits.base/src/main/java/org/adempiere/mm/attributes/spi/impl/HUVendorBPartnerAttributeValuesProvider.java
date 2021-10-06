@@ -138,7 +138,7 @@ class HUVendorBPartnerAttributeValuesProvider implements IAttributeValuesProvide
 	@Override
 	public boolean isAllowAnyValue()
 	{
-		return false;
+		return true;
 	}
 
 	@Override
@@ -148,15 +148,9 @@ class HUVendorBPartnerAttributeValuesProvider implements IAttributeValuesProvide
 		final int bpartnerId = hu.getC_BPartner_ID();
 		final int huId = hu.getM_HU_ID();
 
-		int currentVendorId = -1;
-		if (attributeSet.hasAttribute(attribute))
-		{
-			currentVendorId = attributeSet.getValueAsInt(attribute);
-		}
-
 		return Evaluatees.mapBuilder()
 				.put(CTXNAME_M_HU_ID, huId > 0 ? huId : -1)
-				.put(CTXNAME_CurrentVendor_BPartner_ID, currentVendorId > 0 ? currentVendorId : -1)
+				.put(CTXNAME_CurrentVendor_BPartner_ID, bpartnerId > 0 ? bpartnerId : -1)
 				.build();
 	}
 
@@ -248,8 +242,8 @@ class HUVendorBPartnerAttributeValuesProvider implements IAttributeValuesProvide
 		final List<KeyNamePair> vendors = new ArrayList<>();
 		vendors.add(staticNullValue());
 
-		final List<KeyNamePair> subProducerBPartnersCached = HUVendorBPartnerAttributeValuesProvider.vendors.getOrLoad(0, () -> retrieveVendorKeyNamePairs());
-			vendors.addAll(subProducerBPartnersCached);
+		final List<KeyNamePair> vendorsCached = HUVendorBPartnerAttributeValuesProvider.vendors.getOrLoad(currentVendorBPartnerId, () -> retrieveVendorKeyNamePairs());
+			vendors.addAll(vendorsCached);
 
 		addVendor(vendors, ctx, currentVendorBPartnerId);
 
@@ -268,13 +262,13 @@ class HUVendorBPartnerAttributeValuesProvider implements IAttributeValuesProvide
 		// If yes, there is no point to add it.
 		if (vendors != null)
 		{
-			for (final KeyNamePair subProducer : vendors)
+			for (final KeyNamePair vendor : vendors)
 			{
-				if (subProducer == null)
+				if (vendor == null)
 				{
 					continue;
 				}
-				if (subProducer.getKey() == bpartnerId)
+				if (vendor.getKey() == bpartnerId)
 				{
 					// our bpartner is already in the list
 					return;
