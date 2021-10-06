@@ -85,9 +85,8 @@ class HUVendorBPartnerAttributeValuesProvider implements IAttributeValuesProvide
 
 	private final I_M_Attribute attribute;
 
-	public HUVendorBPartnerAttributeValuesProvider(final I_M_Attribute attribute)
+	public HUVendorBPartnerAttributeValuesProvider(@NonNull final I_M_Attribute attribute)
 	{
-		Check.assumeNotNull(attribute, "Parameter attribute is not null");
 		this.attribute = attribute;
 	}
 
