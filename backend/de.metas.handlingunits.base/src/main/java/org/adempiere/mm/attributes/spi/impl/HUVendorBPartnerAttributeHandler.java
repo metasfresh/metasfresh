@@ -66,7 +66,7 @@ public class HUVendorBPartnerAttributeHandler
 	public Object generateSeedValue(final IAttributeSet attributeSet, final org.compiere.model.I_M_Attribute attribute, final Object valueInitialDefault)
 	{
 		// we don't support a value different from null
-		Check.assumeNull(valueInitialDefault, "valueInitialDefault null");
+		Check.assumeNull(valueInitialDefault, "valueInitialDefault should be null");
 		return HUVendorBPartnerAttributeValuesProvider.staticNullValue();
 	}
 
