@@ -151,10 +151,7 @@ class SqlViewDataRepository implements IViewDataRepository
 					.build();
 
 			final FilterSql filterSql = filterConverters.getSql(filters, sqlOpts, context);
-			final SqlAndParams rowsMatchingFilter = SqlAndParams.andNullables(
-					filterSql.getWhereClause(),
-					filterSql.getFilterByFTS() != null ? filterSql.getFilterByFTS().buildExistsWhereClause(sqlOpts.getTableNameOrAlias()) : null)
-					.orElse(null);
+			final SqlAndParams rowsMatchingFilter = filterSql.toSqlAndParams(sqlOpts).orElse(null);
 
 			sqlWhereClause = sqlWhereClause.withRowsMatchingFilter(rowsMatchingFilter);
 		}

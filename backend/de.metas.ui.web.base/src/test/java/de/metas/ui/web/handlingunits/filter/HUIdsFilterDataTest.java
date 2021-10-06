@@ -20,11 +20,13 @@
  * #L%
  */
 
-package de.metas.ui.web.handlingunits;
+package de.metas.ui.web.handlingunits.filter;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUQueryBuilder;
+import de.metas.ui.web.handlingunits.filter.HUIdsFilterData;
+import de.metas.ui.web.handlingunits.filter.HuIdsFilterList;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -47,28 +49,36 @@ class HUIdsFilterDataTest
 		{
 			assertThat(data.isAcceptAll()).isTrue();
 			assertThat(data.isAcceptNone()).isFalse();
-			assertThat(data.getFixedHUIds()).isEmpty();
-			assertThat(data.hasNoInitialHUQuery()).isTrue();
+			assertThat(data.getFixedHUIds()).contains(HuIdsFilterList.ALL);
 		}
 
 		@Test
-		void acceptAll_then_addMustHUIds()
+		void acceptAll_then_mustID1()
 		{
 			final HUIdsFilterData data = HUIdsFilterData.acceptAll();
 			data.mustHUIds(ImmutableSet.of(HuId.ofRepoId(1)));
-			assertThat(data.isAcceptAll()).isFalse();
-			assertThat(data.isAcceptNone()).isFalse();
-			assertThat(data.getFixedHUIds()).contains(ImmutableSet.of(HuId.ofRepoId(1)));
-			assertThat(data.hasNoInitialHUQuery()).isTrue();
+			assertAcceptAll(data);
 		}
 
 		@Test
-		void acceptAll_then_addMustHUIds_then_addShallNotHUIds()
+		void acceptAll_then_mustID1_then_shallNotID1()
 		{
 			final HUIdsFilterData data = HUIdsFilterData.acceptAll();
 			data.mustHUIds(ImmutableSet.of(HuId.ofRepoId(1)));
 			data.shallNotHUIds(ImmutableSet.of(HuId.ofRepoId(1)));
-			assertAcceptAll(data);
+			assertThat(data.isAcceptAll()).isFalse();
+			assertThat(data.isAcceptNone()).isFalse();
+			assertThat(data.getFixedHUIds()).isEmpty();
+		}
+
+		@Test
+		void acceptAll_then_shallNotID1()
+		{
+			final HUIdsFilterData data = HUIdsFilterData.acceptAll();
+			data.shallNotHUIds(ImmutableSet.of(HuId.ofRepoId(1)));
+			assertThat(data.isAcceptAll()).isFalse();
+			assertThat(data.isAcceptNone()).isFalse();
+			assertThat(data.getFixedHUIds()).isEmpty();
 		}
 	}
 
@@ -76,57 +86,52 @@ class HUIdsFilterDataTest
 	class ofHUIds
 	{
 		@Test
-		void initialEmpty()
+		void acceptNone()
 		{
 			final HUIdsFilterData data = HUIdsFilterData.ofHUIds(ImmutableSet.of());
 			assertThat(data.isAcceptAll()).isFalse();
 			assertThat(data.isAcceptNone()).isTrue();
-			assertThat(data.getFixedHUIds()).contains(ImmutableSet.of());
-			assertThat(data.hasNoInitialHUQuery()).isTrue();
+			assertThat(data.getFixedHUIds()).contains(HuIdsFilterList.NONE);
 		}
 
 		@Test
-		void initialEmpty_then_addMustHUIds()
+		void acceptNone_then_mustID1()
 		{
 			final HUIdsFilterData data = HUIdsFilterData.ofHUIds(ImmutableSet.of());
 			data.mustHUIds(ImmutableSet.of(HuId.ofRepoId(1)));
 			assertThat(data.isAcceptAll()).isFalse();
 			assertThat(data.isAcceptNone()).isFalse();
-			assertThat(data.getFixedHUIds()).contains(ImmutableSet.of(HuId.ofRepoId(1)));
-			assertThat(data.hasNoInitialHUQuery()).isTrue();
+			assertThat(data.getFixedHUIds()).contains(HuIdsFilterList.of(HuId.ofRepoId(1)));
 		}
 
 		@Test
-		void initialNotEmpty()
+		void acceptID1()
 		{
 			final HUIdsFilterData data = HUIdsFilterData.ofHUIds(ImmutableSet.of(HuId.ofRepoId(1)));
 			assertThat(data.isAcceptAll()).isFalse();
 			assertThat(data.isAcceptNone()).isFalse();
-			assertThat(data.getFixedHUIds()).contains(ImmutableSet.of(HuId.ofRepoId(1)));
-			assertThat(data.hasNoInitialHUQuery()).isTrue();
+			assertThat(data.getFixedHUIds()).contains(HuIdsFilterList.of(HuId.ofRepoId(1)));
 		}
 
 		@Test
-		void initialNotEmpty_then_addMustHUIds()
+		void acceptID1_then_mustID2()
 		{
 			final HUIdsFilterData data = HUIdsFilterData.ofHUIds(ImmutableSet.of(HuId.ofRepoId(1)));
 			data.mustHUIds(ImmutableSet.of(HuId.ofRepoId(2)));
 			assertThat(data.isAcceptAll()).isFalse();
 			assertThat(data.isAcceptNone()).isFalse();
-			assertThat(data.getFixedHUIds()).contains(ImmutableSet.of(HuId.ofRepoId(1), HuId.ofRepoId(2)));
-			assertThat(data.hasNoInitialHUQuery()).isTrue();
+			assertThat(data.getFixedHUIds()).contains(HuIdsFilterList.of(HuId.ofRepoId(1), HuId.ofRepoId(2)));
 		}
 
 		@Test
-		void initialNotEmpty_then_addMustHUIds_then_addShallNotHUIds()
+		void acceptID1_then_mustID2_then_shallNotID1()
 		{
 			final HUIdsFilterData data = HUIdsFilterData.ofHUIds(ImmutableSet.of(HuId.ofRepoId(1)));
 			data.mustHUIds(ImmutableSet.of(HuId.ofRepoId(2)));
 			data.shallNotHUIds(ImmutableSet.of(HuId.ofRepoId(1)));
 			assertThat(data.isAcceptAll()).isFalse();
 			assertThat(data.isAcceptNone()).isFalse();
-			assertThat(data.getFixedHUIds()).contains(ImmutableSet.of(HuId.ofRepoId(2)));
-			assertThat(data.hasNoInitialHUQuery()).isTrue();
+			assertThat(data.getFixedHUIds()).contains(HuIdsFilterList.of(HuId.ofRepoId(2)));
 		}
 	}
 
@@ -141,15 +146,40 @@ class HUIdsFilterDataTest
 		}
 
 		@Test
-		void test()
+		void emptyHUQuery()
 		{
 			final IHUQueryBuilder initialHUQuery = newHUQuery();
 			final HUIdsFilterData data = HUIdsFilterData.ofHUQuery(initialHUQuery);
 			assertThat(data.isAcceptAll()).isFalse();
 			assertThat(data.isAcceptNone()).isFalse();
 			assertThat(data.getFixedHUIds()).isEmpty();
-			assertThat(data.hasNoInitialHUQuery()).isFalse();
-			assertThat(data.getInitialHUQueryOrNull()).isEqualTo(initialHUQuery);
+			assertThat(data.getInitialHUQueryCopyOrNull()).isEqualTo(initialHUQuery);
+		}
+	}
+
+	@Nested
+	class isPossibleHighVolume
+	{
+		@Test
+		void acceptAll()
+		{
+			final HUIdsFilterData data = HUIdsFilterData.acceptAll();
+			assertThat(data.isPossibleHighVolume(Integer.MAX_VALUE)).isTrue();
+		}
+
+		@Test
+		void acceptAll_then_mustID1_mustID2()
+		{
+			final HUIdsFilterData data = HUIdsFilterData.acceptAll();
+			data.mustHUIds(ImmutableSet.of(HuId.ofRepoId(1), HuId.ofRepoId(2)));
+			assertThat(data.isPossibleHighVolume(Integer.MAX_VALUE)).isTrue();
+		}
+
+		@Test
+		void acceptNone()
+		{
+			final HUIdsFilterData data = HUIdsFilterData.ofHUIds(ImmutableSet.of());
+			assertThat(data.isPossibleHighVolume(1)).isFalse();
 		}
 	}
 }
