@@ -22,3 +22,33 @@
     color: white;
     border-color: $base-mf-green;
 }
+
+.full-size-btn {
+    width: 100%;
+}
+
+.caption-btn {
+    width:90%;
+    float: left;
+    text-align: center;
+}
+.left-btn-side {
+    width: 5%;
+    float: left;
+}
+.right-btn-side {
+    width: 5%;
+    float: right;
+}
+
+.status-btn-red {
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    margin-right: 10px;
+    border: 1px solid #000;
+    border-radius: 7px;
+    background-color: #C9404D;
+    border-color: #C42C3B;
+    box-shadow: 0px 0px 4px 1px #C9404D;
+}
