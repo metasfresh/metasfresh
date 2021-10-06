@@ -244,8 +244,8 @@ class HUVendorBPartnerAttributeValuesProvider implements IAttributeValuesProvide
 		final List<KeyNamePair> vendors = new ArrayList<>();
 		vendors.add(staticNullValue());
 
-		final List<KeyNamePair> subProducerBPartnersCached = HUVendorBPartnerAttributeValuesProvider.vendors.getOrLoad(currentVendorBPartnerId, () -> retrieveVendorKeyNamePairs());
-			vendors.addAll(subProducerBPartnersCached);
+		final List<KeyNamePair> vendorsCached = HUVendorBPartnerAttributeValuesProvider.vendors.getOrLoad(currentVendorBPartnerId, () -> retrieveVendorKeyNamePairs());
+			vendors.addAll(vendorsCached);
 
 		addVendor(vendors, ctx, currentVendorBPartnerId);
 
