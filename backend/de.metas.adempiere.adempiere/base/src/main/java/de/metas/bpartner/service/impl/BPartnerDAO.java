@@ -1804,4 +1804,14 @@ public class BPartnerDAO implements IBPartnerDAO
 				.create()
 				.list();
 	}
+
+	@Override
+	public List<I_C_BPartner> retrieveVendors()
+	{
+		return queryBL.createQueryBuilder(I_C_BPartner.class)
+				.addInArrayFilter(I_C_BPartner.COLUMNNAME_IsVendor, true)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.list();
+	}
 }

@@ -364,11 +364,10 @@ export function getViewAttributeTypeahead(
   query
 ) {
   return get(
-    `${config.API_URL}/documentView/
-      ${windowId}/
-      ${viewId}/
-      ${rowId}/attributes/attribute/
-      ${attribute}/typeahead?query=
-      ${encodeURIComponent(query)}`
+    `${
+      config.API_URL
+    }/documentView/${windowId}/${viewId}/${rowId}/attributes/attribute/${attribute}/typeahead?query=${encodeURIComponent(
+      query
+    )}`
   );
 }
