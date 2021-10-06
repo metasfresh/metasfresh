@@ -244,7 +244,7 @@ class HUVendorBPartnerAttributeValuesProvider implements IAttributeValuesProvide
 		final List<KeyNamePair> vendors = new ArrayList<>();
 		vendors.add(staticNullValue());
 
-		final List<KeyNamePair> subProducerBPartnersCached = HUVendorBPartnerAttributeValuesProvider.vendors.getOrLoad(0, () -> retrieveVendorKeyNamePairs());
+		final List<KeyNamePair> subProducerBPartnersCached = HUVendorBPartnerAttributeValuesProvider.vendors.getOrLoad(currentVendorBPartnerId, () -> retrieveVendorKeyNamePairs());
 			vendors.addAll(subProducerBPartnersCached);
 
 		addVendor(vendors, ctx, currentVendorBPartnerId);
@@ -257,6 +257,25 @@ class HUVendorBPartnerAttributeValuesProvider implements IAttributeValuesProvide
 		if (bpartnerId <= 0)
 		{
 			return;
+		}
+
+		//
+		// Check if our BPartner is already in the list.
+		// If yes, there is no point to add it.
+		if (vendors != null)
+		{
+			for (final KeyNamePair vendor : vendors)
+			{
+				if (vendor == null)
+				{
+					continue;
+				}
+				if (vendor.getKey() == bpartnerId)
+				{
+					// our bpartner is already in the list
+					return;
+				}
+			}
 		}
 
 		//
