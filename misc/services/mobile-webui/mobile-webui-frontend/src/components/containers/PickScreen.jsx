@@ -21,14 +21,14 @@ class PickScreen extends Component {
   render() {
     const { detectedCode } = this.state;
     const {
-      stepProps: { productName, locatorName, uom, huBarcode, qtyToPick, qtyPicked },
+      stepProps: { huBarcode, qtyToPick, qtyPicked },
       activityId,
     } = this.props;
 
     return (
       <div className="pt-3 section picking-step-container">
         <div className="picking-step-details centered-text is-size-5">
-          <div className="columns is-mobile">
+          {/* <div className="columns is-mobile">
             <div className="column is-half has-text-right has-text-weight-bold pt-0 pb-0 pl-0 pr-0">Product:</div>
             <div className="column is-half has-text-left pt-0 pb-0">{productName}</div>
           </div>
@@ -39,7 +39,7 @@ class PickScreen extends Component {
           <div className="columns is-mobile">
             <div className="column is-half has-text-right has-text-weight-bold pb-0 pl-0 pr-0">UOM:</div>
             <div className="column is-half has-text-left pb-0">{uom}</div>
-          </div>
+          </div> */}
           <div className="columns is-mobile">
             <div className="column is-half has-text-right has-text-weight-bold pb-0 pl-0 pr-0">Barcode:</div>
             <div className="column is-half has-text-left pb-0">{huBarcode}</div>
