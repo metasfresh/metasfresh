@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { push } from 'connected-react-router';
+import Indicator from './Indicator';
 class PickProductsLine extends Component {
   /**
    *
@@ -18,13 +19,7 @@ class PickProductsLine extends Component {
       <div className="buttons">
         {isLinesListVisible && (
           <button key={id} className="button is-outlined complete-btn" onClick={() => this.handleClick()}>
-            <div className="full-size-btn">
-              <div className="left-btn-side"></div>
-              <div className="caption-btn">{caption}</div>
-              <div className="right-btn-side">
-                <span className="status-btn-red"></span>
-              </div>
-            </div>
+            <Indicator caption={caption} indicatorType="incomplete" />
           </button>
         )}
       </div>
