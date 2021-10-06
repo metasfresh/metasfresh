@@ -8,11 +8,12 @@ import * as serviceWorkerRegistration from './serviceWorkerRegistration';
 import reportWebVitals from './reportWebVitals';
 import { store } from './store/store';
 import { networkStatusOffline, networkStatusOnline } from './actions/NetworkActions';
+import { load } from 'redux-localstorage-simple';
 
 import './index.css';
 import './assets/index.scss';
 
-export const globalStore = store();
+export const globalStore = store(load());
 
 ReactDOM.render(
   <React.StrictMode>
