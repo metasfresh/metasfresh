@@ -48,3 +48,8 @@ UPDATE AD_Message_Trl SET MsgText='Die Konfig-Art kann nicht mehr geändert werd
 UPDATE AD_Message_Trl SET MsgText='Die Konfig-Art kann nicht mehr geändert werden',Updated=TO_TIMESTAMP('2021-10-07 06:47:32','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Message_ID=545063
 ;
 
+-- 2021-10-07T03:54:00.640Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Message SET MsgText='Die Konfig-Art kann nicht mehr geändert werden',Updated=TO_TIMESTAMP('2021-10-07 06:54:00','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Message_ID=545063
+;
+
