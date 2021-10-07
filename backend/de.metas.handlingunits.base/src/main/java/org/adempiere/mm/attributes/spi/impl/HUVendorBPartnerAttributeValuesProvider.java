@@ -1,6 +1,7 @@
 package org.adempiere.mm.attributes.spi.impl;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.cache.CCache;
 import de.metas.cache.CCache.CCacheStats;
@@ -12,6 +13,7 @@ import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.AttributeValueId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
@@ -32,6 +34,8 @@ import org.compiere.util.Util.ArrayKey;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
@@ -77,12 +81,6 @@ class HUVendorBPartnerAttributeValuesProvider implements IAttributeValuesProvide
 			.initialCapacity(20)
 			.build();
 
-	private final CCache<ArrayKey, List<KeyNamePair>> hu2Vendors = CCache.<ArrayKey, List<KeyNamePair>> builder()
-			.cacheName(vendors.getCacheName() + "#AndHU")
-			.initialCapacity(100)
-			.expireMinutes(10)
-			.build();
-
 	private final I_M_Attribute attribute;
 
 	public HUVendorBPartnerAttributeValuesProvider(@NonNull final I_M_Attribute attribute)
@@ -99,7 +97,7 @@ class HUVendorBPartnerAttributeValuesProvider implements IAttributeValuesProvide
 	@Override
 	public List<CCacheStats> getCacheStats()
 	{
-		return ImmutableList.of(vendors.stats(), hu2Vendors.stats());
+		return ImmutableList.of(vendors.stats());
 	}
 
 	@Override
@@ -156,19 +154,7 @@ class HUVendorBPartnerAttributeValuesProvider implements IAttributeValuesProvide
 	@Override
 	public List<? extends NamePair> getAvailableValues(final Evaluatee evalCtx)
 	{
-		final int huId = CTXNAME_M_HU_ID.getValueAsInteger(evalCtx);
-		final int currentVendorId = CTXNAME_CurrentVendor_BPartner_ID.getValueAsInteger(evalCtx);
-
-		//
-		// Create the cache key based on M_HU_ID and current vendor
-		final ArrayKey cacheKey = ArrayKey.of(
-				huId <= 0 ? System.currentTimeMillis() : huId,      // if M_HU_ID <= 0 then make it unique
-				currentVendorId <= 0 ? -1 : currentVendorId // normalize
-		);
-
-		//
-		// Get from cache / Load
-		return hu2Vendors.getOrLoad(cacheKey, () -> retrieveVendorKeyNamePairs(currentVendorId));
+		return retrieveVendorPairs();
 	}
 
 	@Nullable
@@ -193,7 +179,7 @@ class HUVendorBPartnerAttributeValuesProvider implements IAttributeValuesProvide
 	@Nullable
 	public NamePair getAttributeValueOrNull(final Evaluatee evalCtx, final Object valueKey)
 	{
-		final List<? extends NamePair> availableValues = getAvailableValues(evalCtx);
+		final List<? extends NamePair> availableValues = retrieveVendorPairs();
 		if (availableValues.isEmpty())
 		{
 			return null;
@@ -223,72 +209,22 @@ class HUVendorBPartnerAttributeValuesProvider implements IAttributeValuesProvide
 	/**
 	 * Retrieve allowed vendor KeyNamePairs.
 	 *
-	 * Mainly it will contain following values:
-	 * <ul>
-	 * <li>{@link #getNullValue()}
-	 * <li>available vendors
-	 * <li>current HU's vendor if not present in the list above
-	 * </ul>
-	 *
-	 * @param currentVendorBPartnerId current vendor ID
 	 * @return available values
 	 */
-	private static List<KeyNamePair> retrieveVendorKeyNamePairs(
-			final int currentVendorBPartnerId)
+	private static List<KeyNamePair> retrieveVendorPairs()
 	{
-		final Properties ctx = Env.getCtx();
-
 		final List<KeyNamePair> vendors = new ArrayList<>();
 		vendors.add(staticNullValue());
 
-		final List<KeyNamePair> vendorsCached = HUVendorBPartnerAttributeValuesProvider.vendors.getOrLoad(currentVendorBPartnerId, () -> retrieveVendorKeyNamePairs());
+		final List<KeyNamePair> vendorsCached = HUVendorBPartnerAttributeValuesProvider.vendors.getOrLoad(0, () -> retrieveVendorKeyNamePairs());
 			vendors.addAll(vendorsCached);
-
-		addVendor(vendors, ctx, currentVendorBPartnerId);
 
 		return vendors;
 	}
 
-	private static void addVendor(final List<KeyNamePair> vendors, final Properties ctx, final int bpartnerId)
-	{
-		if (bpartnerId <= 0)
-		{
-			return;
-		}
-
-		//
-		// Check if our BPartner is already in the list.
-		// If yes, there is no point to add it.
-		if (vendors != null)
-		{
-			for (final KeyNamePair vendor : vendors)
-			{
-				if (vendor == null)
-				{
-					continue;
-				}
-				if (vendor.getKey() == bpartnerId)
-				{
-					// our bpartner is already in the list
-					return;
-				}
-			}
-		}
-
-		//
-		// Load the new BPartner and add it to our list
-		final I_C_BPartner bpartner = InterfaceWrapperHelper.create(ctx, bpartnerId, I_C_BPartner.class, ITrx.TRXNAME_None);
-		if (bpartner == null)
-		{
-			return;
-		}
-		final KeyNamePair bpartnerKNP = toKeyNamePair(bpartner);
-		vendors.add(bpartnerKNP);
-	}
-
 	private static List<KeyNamePair> retrieveVendorKeyNamePairs()
 	{
-		return bPartnerDAO.retrieveVendors()
+		return bPartnerDAO.retrieveVendors(QueryLimit.ofInt(10))
 				.stream()
 				.map(bpartner -> toKeyNamePair(bpartner))
 				.collect(GuavaCollectors.toImmutableList());
