@@ -1,5 +1,7 @@
 package de.metas.i18n;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.google.common.collect.ImmutableMap;
 import lombok.EqualsAndHashCode;
 import lombok.Singular;
@@ -75,6 +77,7 @@ public final class ImmutableTranslatableString implements ITranslatableString
 		return trlMap.keySet();
 	}
 
+	@JsonIgnore // needed for snapshot testing
 	public boolean isEmpty()
 	{
 		return defaultValue.isEmpty()
