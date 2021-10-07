@@ -1812,8 +1812,10 @@ public class BPartnerDAO implements IBPartnerDAO
 		return queryBL.createQueryBuilder(I_C_BPartner.class)
 				.addInArrayFilter(I_C_BPartner.COLUMNNAME_IsVendor, true)
 				.addOnlyActiveRecordsFilter()
-				.create()
+				.orderBy(I_C_BPartner.COLUMNNAME_Name)
+				.orderBy(I_C_BPartner.COLUMNNAME_C_BPartner_ID)
 				.setLimit(limit)
-				.list();
+				.create()
+				.listImmutable(I_C_BPartner.class);
 	}
 }
