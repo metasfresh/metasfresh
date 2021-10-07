@@ -15,3 +15,9 @@ export const CONTINUE_WORKFLOW_PROCESS = 'CONTINUE_WORKFLOW_PROCESS';
  * @type {string} Adds started workflow's activities to a temporary structure in the tree
  */
 export const ADD_WORKFLOW_STATUS = 'ADD_WORKFLOW_STATUS';
+
+/**
+ * @constant
+ * @type {string} used to set the isActivityEnabled flag
+ */
+export const SET_ACTIVITY_ENABLE_FLAG = 'SET_ACTIVITY_ENABLE_FLAG';

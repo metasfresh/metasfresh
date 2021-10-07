@@ -11,7 +11,7 @@ class PickProductsActivity extends Component {
       activityId,
     } = this.props;
 
-    const { isLinesListVisible } = activityState.dataStored;
+    const { isLinesListVisible, isActivityEnabled } = activityState.dataStored;
 
     return (
       <div className="pick-products-activity-container mt-5">
@@ -27,6 +27,7 @@ class PickProductsActivity extends Component {
                 wfProcessId={wfProcessId}
                 activityId={activityId}
                 lineIndex={lineIndex}
+                isActivityEnabled={isActivityEnabled}
                 {...lineItem}
               />
             );

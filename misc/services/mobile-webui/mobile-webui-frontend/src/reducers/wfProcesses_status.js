@@ -44,18 +44,21 @@ const reducer = produce((draftState, action) => {
         switch (activity.componentType) {
           case 'common/scanBarcode':
             tmpActivity.dataStored = {
+              isActivityEnabled: true,
               isComplete: false,
               scannedCode: '',
             };
             break;
           case 'common/confirmButton':
             tmpActivity.dataStored = {
+              isActivityEnabled: false,
               isComplete: false,
             };
             break;
           default:
             tmpActivity.dataStored = {
               isComplete: false,
+              isActivityEnabled: false,
               isLinesListVisible: true,
               lines: activity.componentProps.lines,
             };
@@ -78,6 +81,16 @@ const reducer = produce((draftState, action) => {
       const { wfProcessId, activityId } = action.payload;
 
       draftState[wfProcessId].activities[activityId].dataStored.isLinesListVisible = false;
+
+      return draftState;
+    }
+    case types.SET_ACTIVITY_ENABLE_FLAG: {
+      const { wfProcessId, activityId, isActivityEnabled } = action.payload;
+      console.log('wfProcess:', wfProcessId);
+      console.log('activityId:', activityId);
+      console.log('isActivityEnabled:', isActivityEnabled);
+
+      draftState[wfProcessId].activities[activityId].dataStored.isActivityEnabled = isActivityEnabled;
 
       return draftState;
     }

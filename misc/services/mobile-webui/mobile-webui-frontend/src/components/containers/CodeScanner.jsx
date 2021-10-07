@@ -6,6 +6,8 @@ import { startScanning } from '../../actions/ScanActions';
 import ButtonWithIndicator from '../ButtonWithIndicator';
 
 class CodeScanner extends Component {
+  _isMounted = false;
+
   constructor(props) {
     super(props);
 
@@ -22,15 +24,17 @@ class CodeScanner extends Component {
     };
   }
 
-  setSelectedDeviceId = (deviceId) => this.setState({ selectedDeviceId: deviceId });
+  setSelectedDeviceId = (deviceId) => {
+    this._isMounted && this.setState({ selectedDeviceId: deviceId });
+  };
 
   setupDevices = (videoInputDevices) => {
     // selects first device
-    this.setState({ selectedDeviceId: videoInputDevices[0].deviceId });
+    this._isMounted && this.setState({ selectedDeviceId: videoInputDevices[0].deviceId });
 
     // setup devices dropdown
     if (videoInputDevices.length >= 1) {
-      this.setState({ videoInputDevices });
+      this._isMounted && this.setState({ videoInputDevices });
     }
   };
 
@@ -58,6 +62,8 @@ class CodeScanner extends Component {
   };
 
   componentDidMount() {
+    this._isMounted = true;
+
     console.log('CodeScanner initialized');
     this.codeReader
       .getVideoInputDevices()
@@ -73,9 +79,10 @@ class CodeScanner extends Component {
           .catch(console.error);
 
         console.log('videoInputDevices', videoInputDevices);
-        this.setState({ videoInputDevices }, () => {
-          this.setupDevices(videoInputDevices);
-        });
+        this._isMounted &&
+          this.setState({ videoInputDevices }, () => {
+            this.setupDevices(videoInputDevices);
+          });
       })
       .catch((err) => {
         console.error(err);
@@ -89,6 +96,10 @@ class CodeScanner extends Component {
     this.decodeContinuously(selectedDeviceId);
     // window.scrollTo(0, 0);
   };
+
+  componentWillUnmount() {
+    this._isMounted = false;
+  }
 
   render() {
     const {
@@ -148,6 +159,7 @@ CodeScanner.propTypes = {
   activityId: PropTypes.string.isRequired,
   caption: PropTypes.string,
   scanButtonStatus: PropTypes.string,
+  isEnabled: PropTypes.bool,
 };
 
 export default connect(mapStateToProps, { startScanning })(CodeScanner);
