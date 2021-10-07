@@ -106,4 +106,5 @@ import java.util.Set;
 		return anyLanguage;
 	}
 
+	public boolean isEmpty() {return value.isEmpty();}
 }
