@@ -20,6 +20,7 @@ import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Builder;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+import de.metas.ui.web.window.descriptor.IncludedTabNewRecordInputMode;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProvider;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProviders;
@@ -41,7 +42,9 @@ import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.adempiere.ad.expression.api.IExpression;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.expression.api.impl.LogicExpressionCompiler;
+import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.table.api.impl.TableIdsCache;
 import org.adempiere.ad.validationRule.IValidationRuleFactory;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -228,6 +231,7 @@ import java.util.Set;
 				.setAllowDeleteLogic(allowDeleteLogic)
 				.setDisplayLogic(displayLogic)
 				.setAllowQuickInput(gridTabVO.isAllowQuickInput())
+				.setIncludedTabNewRecordInputMode(IncludedTabNewRecordInputMode.ofNullableCodeOrAllAvailable(gridTabVO.getIncludedTabNewRecordInputMode()))
 				//
 				.setDataBinding(dataBinding)
 				.setHighVolume(gridTabVO.IsHighVolume)
@@ -760,7 +764,8 @@ import java.util.Set;
 			@NonNull final String tableName)
 	{
 		final I_AD_Tab labelsTab = labelsUIElement.getLabels_Tab();
-		final String labelsTableName = labelsTab.getAD_Table().getTableName();
+		final AdTableId adTableId = AdTableId.ofRepoId(labelsTab.getAD_Table_ID());
+		final String labelsTableName = TableIdsCache.instance.getTableName(adTableId);
 
 		final String linkColumnName;
 		if (labelsTab.getParent_Column_ID() > 0)

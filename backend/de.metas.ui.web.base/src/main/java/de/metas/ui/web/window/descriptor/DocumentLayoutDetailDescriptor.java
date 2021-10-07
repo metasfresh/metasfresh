@@ -41,25 +41,34 @@ import lombok.NonNull;
  */
 public final class DocumentLayoutDetailDescriptor
 {
-	public static final Builder builder(
+	public static Builder builder(
 			@NonNull final WindowId windowId,
 			@NonNull final DetailId detailId)
 	{
 		return new Builder(windowId, detailId);
 	}
 
+	@Getter
 	private final WindowId windowId;
+	@Getter
 	private final DetailId detailId;
+	@Getter
 	private final String internalName;
 
 	private final ITranslatableString caption;
 	private final ITranslatableString description;
 
+	@Getter
 	private final ViewLayout gridLayout;
+	@Getter
 	private final DocumentLayoutSingleRow singleRowLayout;
 
+	@Getter
 	private final boolean supportQuickInput;
+	@Getter
 	private final boolean queryOnActivate;
+	@Getter
+	private IncludedTabNewRecordInputMode newRecordInputMode;
 
 	/** May be {@code true} for a tab that can have just zero or one record and that shall be displayed in detail (i.e. not grid) layout. */
 	@Getter
@@ -84,6 +93,7 @@ public final class DocumentLayoutDetailDescriptor
 
 		supportQuickInput = builder.isSupportQuickInput();
 		queryOnActivate = builder.queryOnActivate;
+		newRecordInputMode = builder.getNewRecordInputModeEffective();
 
 		subTabLayouts = builder.subTabLayouts;
 
@@ -100,31 +110,6 @@ public final class DocumentLayoutDetailDescriptor
 				.toString();
 	}
 
-	public WindowId getWindowId()
-	{
-		return windowId;
-	}
-
-	public DetailId getDetailId()
-	{
-		return detailId;
-	}
-
-	public String getInternalName()
-	{
-		return internalName;
-	}
-
-	public ViewLayout getGridLayout()
-	{
-		return gridLayout;
-	}
-
-	public DocumentLayoutSingleRow getSingleRowLayout()
-	{
-		return singleRowLayout;
-	}
-
 	public boolean isEmpty()
 	{
 		final boolean hasSubLayouts = !Check.isEmpty(subTabLayouts);
@@ -137,16 +122,6 @@ public final class DocumentLayoutDetailDescriptor
 		return !hasSubLayouts && !hasFields;
 	}
 
-	public boolean isSupportQuickInput()
-	{
-		return supportQuickInput;
-	}
-
-	public boolean isQueryOnActivate()
-	{
-		return queryOnActivate;
-	}
-
 	public String getCaption(@NonNull final String adLanguage)
 	{
 		return caption.translate(adLanguage);
@@ -157,6 +132,13 @@ public final class DocumentLayoutDetailDescriptor
 		return description.translate(adLanguage);
 	}
 
+	//
+	//
+	// -----------------------------------------------------------
+	//
+	//
+
+	@SuppressWarnings("UnusedReturnValue")
 	public static final class Builder
 	{
 		private final WindowId windowId;
@@ -176,6 +158,8 @@ public final class DocumentLayoutDetailDescriptor
 
 		private ITranslatableString caption;
 		private ITranslatableString description;
+
+		private IncludedTabNewRecordInputMode newRecordInputMode = IncludedTabNewRecordInputMode.ALL_AVAILABLE_METHODS;
 
 		private Builder(@NonNull final WindowId windowId, @NonNull final DetailId detailId)
 		{
@@ -287,6 +271,17 @@ public final class DocumentLayoutDetailDescriptor
 		{
 			this.subTabLayouts.addAll(subTabLayouts);
 			return this;
+		}
+
+		public Builder newRecordInputMode(@NonNull final IncludedTabNewRecordInputMode newRecordInputMode)
+		{
+			this.newRecordInputMode = newRecordInputMode;
+			return this;
+		}
+
+		private IncludedTabNewRecordInputMode getNewRecordInputModeEffective()
+		{
+			return newRecordInputMode.orCompatibleIfAllowQuickInputIs(isSupportQuickInput());
 		}
 	}
 }

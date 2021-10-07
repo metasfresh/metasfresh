@@ -151,6 +151,9 @@ public final class JSONDocumentLayoutTab
 	@JsonProperty("queryOnActivate")
 	private final boolean queryOnActivate;
 
+	@JsonProperty("newRecordInputMode")
+	private final JSONIncludedTabNewRecordInputMode newRecordInputMode;
+
 	@ApiModelProperty(allowEmptyValue = true, //
 			value = "If set to true, then the frontend shall render the tab in \"detail\" view. It can assume that there is at most one record to be shown in the tab.<br>"
 					+ "If empty, assume false.")
@@ -167,6 +170,7 @@ public final class JSONDocumentLayoutTab
 
 		supportQuickInput = includedTabLayout.isSupportQuickInput();
 		queryOnActivate = includedTabLayout.isQueryOnActivate();
+		newRecordInputMode = JSONIncludedTabNewRecordInputMode.of(includedTabLayout.getNewRecordInputMode());
 
 		windowId = includedTabLayout.getWindowId();
 		tabId = includedTabLayout.getDetailId();

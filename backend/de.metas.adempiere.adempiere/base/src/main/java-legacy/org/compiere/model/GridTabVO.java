@@ -361,6 +361,7 @@ public class GridTabVO implements Evaluatee, Serializable
 			}
 
 			vo.allowQuickInput = StringUtils.toBoolean(rs.getString(I_AD_Tab.COLUMNNAME_AllowQuickInput));
+			vo.includedTabNewRecordInputMode = rs.getString(I_AD_Tab.COLUMNNAME_IncludedTabNewRecordInputMode);
 			vo.refreshViewOnChangeEvents = StringUtils.toBoolean(rs.getString(I_AD_Tab.COLUMNNAME_IsRefreshViewOnChangeEvents));
 
 			loadTabDetails_metas(vo, rs); // metas
@@ -546,6 +547,8 @@ public class GridTabVO implements Evaluatee, Serializable
 
 	@Getter
 	private boolean allowQuickInput;
+	@Getter
+	private String includedTabNewRecordInputMode;
 	@Getter
 	private boolean refreshViewOnChangeEvents = false;
 
@@ -766,6 +769,7 @@ public class GridTabVO implements Evaluatee, Serializable
 		clone.onlyCurrentDays = 0;
 
 		clone.allowQuickInput = allowQuickInput;
+		clone.includedTabNewRecordInputMode = includedTabNewRecordInputMode;
 		clone.refreshViewOnChangeEvents = refreshViewOnChangeEvents;
 
 		clone_metas(ctx, windowNo, clone); // metas

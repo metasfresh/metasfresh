@@ -55,6 +55,7 @@ trl.ad_language
 , t.maxqueryrecords
 , t.EntityType
 , t.AllowQuickInput
+, t.IncludedTabNewRecordInputMode
 , t.IsRefreshViewOnChangeEvents
 FROM ad_tab t
 JOIN ad_table tbl ON t.ad_table_id = tbl.ad_table_id

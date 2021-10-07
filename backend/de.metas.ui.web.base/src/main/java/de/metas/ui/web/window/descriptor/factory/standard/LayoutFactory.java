@@ -695,7 +695,8 @@ public class LayoutFactory
 				.gridLayout(layoutGridView())
 				.singleRowLayout(layoutSingleRow)
 				.queryOnActivate(entityDescriptor.isQueryIncludedTabOnActivate())
-				.supportQuickInput(isSupportQuickInput(entityDescriptor));
+				.supportQuickInput(isSupportQuickInput(entityDescriptor))
+				.newRecordInputMode(entityDescriptor.getIncludedTabNewRecordInputMode());
 		return Optional.of(builder);
 	}
 

@@ -188,6 +188,7 @@ class SectionGroup extends PureComponent {
         internalName,
         queryOnActivate,
         supportQuickInput,
+        newRecordInputMode,
         defaultOrderBys,
         orderBy,
         singleRowDetailView,
@@ -272,6 +273,7 @@ class SectionGroup extends PureComponent {
             tabIndex={this.tabIndex.tabs}
             queryOnActivate={queryOnActivate}
             supportQuickInput={supportQuickInput}
+            newRecordInputMode={newRecordInputMode}
             tabInfo={tabsInfo && tabsInfo[tabId]}
             updateDocList={onRefreshTab}
           />
