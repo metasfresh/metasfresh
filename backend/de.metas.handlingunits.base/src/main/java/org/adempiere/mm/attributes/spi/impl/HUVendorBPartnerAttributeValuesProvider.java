@@ -79,6 +79,7 @@ class HUVendorBPartnerAttributeValuesProvider implements IAttributeValuesProvide
 			.tableName(IAttributeDAO.CACHEKEY_ATTRIBUTE_VALUE)
 			.cacheName(CACHE_PREFIX)
 			.initialCapacity(20)
+			.expireMinutes(10)
 			.build();
 
 	private final I_M_Attribute attribute;
@@ -224,7 +225,7 @@ class HUVendorBPartnerAttributeValuesProvider implements IAttributeValuesProvide
 
 	private static List<KeyNamePair> retrieveVendorKeyNamePairs()
 	{
-		return bPartnerDAO.retrieveVendors(QueryLimit.ofInt(10))
+		return bPartnerDAO.retrieveVendors(QueryLimit.ofInt(20))
 				.stream()
 				.map(bpartner -> toKeyNamePair(bpartner))
 				.collect(GuavaCollectors.toImmutableList());
