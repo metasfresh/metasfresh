@@ -66,14 +66,11 @@ const ViewHeader = () => {
                 {info.map(({ caption, value }, i) => {
                   return (
                     <div key={i} className="columns is-mobile is-size-7">
-                      <div className="column is-half has-text-left has-text-weight-bold pt-0 pb-0 pl-0 pr-0">
+                      <div className="column is-half has-text-left has-text-weight-bold pt-0 pb-0 pl-1 pr-0">
                         {caption}:
                       </div>
                       <div className="column is-half has-text-left pt-0 pb-0">{value}</div>
                     </div>
-                    // <p key={i} className="info-line">
-                    //   {caption} : {value}
-                    // </p>
                   );
                 })}
               </div>
