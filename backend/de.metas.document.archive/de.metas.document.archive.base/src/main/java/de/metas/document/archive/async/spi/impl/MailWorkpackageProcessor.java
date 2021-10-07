@@ -41,7 +41,6 @@ import org.adempiere.ad.expression.api.IExpressionEvaluator;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.api.impl.StringExpressionCompiler;
 import org.adempiere.ad.persistence.TableModelLoader;
-import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.archive.api.ArchiveEmailSentStatus;
 import org.adempiere.archive.api.IArchiveBL;
 import org.adempiere.archive.api.IArchiveEventManager;
@@ -60,7 +59,6 @@ import org.compiere.util.Evaluatees;
 
 import javax.annotation.Nullable;
 import java.util.List;
-import java.util.Optional;
 import java.util.Properties;
 
 import static de.metas.attachments.AttachmentTags.TAGNAME_SEND_VIA_EMAIL;
@@ -184,19 +182,18 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 					emailParams.getMessage(),
 					isHTMLMessage(emailParams.getMessage()));
 
-			final TableRecordReference recordRef = TableRecordReference.of(AdTableId.ofRepoId(docOutboundLogRecord.getAD_Table_ID()),
-																		   docOutboundLogRecord.getRecord_ID());
+			final TableRecordReference recordRef = TableRecordReference.ofReferenced(docOutboundLogRecord);
 
 			final long addedAttachments = attachmentEntryService.streamEmailAttachments(recordRef, TAGNAME_SEND_VIA_EMAIL)
 					.map(attachment -> email.addAttachment(attachment.getFilename(), attachment.getAttachmentDataSupplier().get()))
-					.filter(Optional::isPresent)
+					.filter(Boolean::booleanValue)
 					.count();
 
 			final byte[] attachment = archiveBL.getBinaryData(archive);
 			if (attachment == null && addedAttachments <= 0)
 			{
 				status = ArchiveEmailSentStatus.MESSAGE_NOT_SENT;
-				Loggables.addLog("No documents to attach on email for docOutboundLogId:", docOutboundLogRecord.getC_Doc_Outbound_Log_ID());
+				Loggables.addLog("No documents to attach on email for C_Doc_Outbound_Log_ID={}; -> not sending mail", docOutboundLogRecord.getC_Doc_Outbound_Log_ID());
 			}
 			else
 			{

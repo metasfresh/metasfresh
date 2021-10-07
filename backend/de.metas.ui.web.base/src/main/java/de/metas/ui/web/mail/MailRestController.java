@@ -180,9 +180,15 @@ public class MailRestController
 			{
 				final List<EmailAttachment> attachments = mailRestService.getEmailAttachments(contextDocumentPath, TAGNAME_SEND_VIA_EMAIL);
 
-				attachments.forEach(attachment -> attachFile(emailId, () -> mailAttachmentsRepo.createAttachment(emailId,
-																											 attachment.getFilename(),
-																											 new ByteArrayResource(attachment.getAttachmentDataSupplier().get()))));
+				for (final EmailAttachment attachment : attachments)
+				{
+					final Supplier<LookupValue> attachmentProducer = () -> mailAttachmentsRepo
+							.createAttachment(emailId,
+											  attachment.getFilename(),
+											  new ByteArrayResource(attachment.getAttachmentDataSupplier().get()));
+
+					attachFile(emailId, attachmentProducer);
+				}
 			}
 			catch (final Exception ex)
 			{

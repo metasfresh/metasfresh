@@ -57,7 +57,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.List;
-import java.util.Optional;
 import java.util.Properties;
 
 /**
@@ -854,20 +853,19 @@ public final class EMail implements Serializable
 		addAttachment(EMailAttachment.of(uri));
 	}
 
-	@NonNull
-	public Optional<EMailAttachment> addAttachment(final String filename, final byte[] content)
+	public boolean addAttachment(final String filename, final byte[] content)
 	{
 		if (content == null || content.length == 0)
 		{
 			logger.warn("Skip adding byte attachment because the content is empty for {}", filename);
-			return Optional.empty();
+			return false;
 		}
 
 		final EMailAttachment attachment = EMailAttachment.of(filename, content);
 
 		addAttachment(attachment);
 
-		return Optional.of(attachment);
+		return true;
 	}
 
 	public void addAttachment(@NonNull final EMailAttachment emailAttachment)
