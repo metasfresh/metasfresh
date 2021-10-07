@@ -95,6 +95,14 @@ const reducer = produce((draftState, action) => {
 
       return draftState;
     }
+    case types.UPDATE_PICKING_STEP_DETECTED_CODE: {
+      const { wfProcessId, activityId, lineIndex, stepId, detectedCode } = action.payload;
+
+      draftState[wfProcessId].activities[activityId].dataStored.lines[lineIndex].steps[stepId].detectedCode =
+        detectedCode;
+
+      return draftState;
+    }
     default:
       return draftState;
   }

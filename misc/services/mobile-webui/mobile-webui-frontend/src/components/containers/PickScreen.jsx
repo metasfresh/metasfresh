@@ -5,25 +5,24 @@ import { withRouter } from 'react-router';
 
 import CodeScanner from './CodeScanner';
 import { stopScanning } from '../../actions/ScanActions';
+import { updatePickingStepDetectedCode } from '../../actions/PickingActions';
 
 class PickScreen extends Component {
-  constructor(props) {
-    super(props);
-    this.state = { detectedCode: '' };
-  }
-
-  onDetection = (barcode) => {
-    const { stopScanning } = this.props;
+  onDetection = (scannedData) => {
+    const { detectedCode } = scannedData;
+    const { stopScanning, updatePickingStepDetectedCode, wfProcessId, activityId, lineIndex, stepId } = this.props;
+    updatePickingStepDetectedCode({ wfProcessId, activityId, lineIndex, stepId, detectedCode });
     stopScanning();
-    this.setState({ detectedCode: barcode });
   };
 
   render() {
-    const { detectedCode } = this.state;
     const {
-      stepProps: { huBarcode, qtyToPick, qtyPicked },
+      stepProps: { huBarcode, qtyToPick, qtyPicked, detectedCode },
       activityId,
     } = this.props;
+
+    const scanBtnCaption = detectedCode ? `Code: ${detectedCode}` : ``;
+    const scanButtonStatus = detectedCode ? `complete` : `incomplete`;
 
     return (
       <div className="pt-3 section picking-step-container">
@@ -57,9 +56,10 @@ class PickScreen extends Component {
           </div>
           <CodeScanner
             id={huBarcode}
-            componentProps={{ caption: 'Scan' }}
+            caption={scanBtnCaption}
             onDetection={this.onDetection}
             activityId={activityId}
+            scanButtonStatus={scanButtonStatus}
           />
         </div>
       </div>
@@ -70,11 +70,8 @@ class PickScreen extends Component {
 const mapStateToProps = (state, ownProps) => {
   const { workflowId: wfProcessId, activityId, lineId, stepId } = ownProps.match.params;
 
-  const targetActivity = state.wfProcesses[wfProcessId].activities.filter(
-    (activity) => activity.activityId === activityId
-  );
   return {
-    stepProps: targetActivity[0].componentProps.lines[lineId].steps[stepId],
+    stepProps: state.wfProcesses_status[wfProcessId].activities[activityId].dataStored.lines[lineId].steps[stepId],
     activityId,
     wfProcessId,
     stepId,
@@ -88,6 +85,8 @@ PickScreen.propTypes = {
   lineIndex: PropTypes.number.isRequired,
   stepProps: PropTypes.object.isRequired,
   stopScanning: PropTypes.func.isRequired,
+  updatePickingStepDetectedCode: PropTypes.func.isRequired,
+  stepId: PropTypes.string.isRequired,
 };
 
-export default withRouter(connect(mapStateToProps, { stopScanning })(PickScreen));
+export default withRouter(connect(mapStateToProps, { stopScanning, updatePickingStepDetectedCode })(PickScreen));
