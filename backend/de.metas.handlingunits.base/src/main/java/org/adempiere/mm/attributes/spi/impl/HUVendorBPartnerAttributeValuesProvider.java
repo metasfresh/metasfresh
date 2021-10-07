@@ -1,7 +1,6 @@
 package org.adempiere.mm.attributes.spi.impl;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.cache.CCache;
 import de.metas.cache.CCache.CCacheStats;
@@ -9,17 +8,14 @@ import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
-import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.AttributeValueId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.mm.attributes.spi.IAttributeValuesProvider;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.X_M_Attribute;
@@ -30,15 +26,11 @@ import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.NamePair;
-import org.compiere.util.Util.ArrayKey;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.Properties;
 
 /*
  * #%L
@@ -74,11 +66,12 @@ class HUVendorBPartnerAttributeValuesProvider implements IAttributeValuesProvide
 	private static final CtxName CTXNAME_M_HU_ID = CtxNames.parse("M_HU_ID/-1");
 	private static final CtxName CTXNAME_CurrentVendor_BPartner_ID = CtxNames.parse("CurrentVendor_BPartner_ID/-1");
 
+	private static final int limitVendor = 20;
 
 	private static final CCache<Integer, List<KeyNamePair>> vendors =  CCache.<Integer, List<KeyNamePair>> builder()
 			.tableName(IAttributeDAO.CACHEKEY_ATTRIBUTE_VALUE)
 			.cacheName(CACHE_PREFIX)
-			.initialCapacity(20)
+			.initialCapacity(limitVendor)
 			.expireMinutes(10)
 			.build();
 
@@ -155,7 +148,7 @@ class HUVendorBPartnerAttributeValuesProvider implements IAttributeValuesProvide
 	@Override
 	public List<? extends NamePair> getAvailableValues(final Evaluatee evalCtx)
 	{
-		return retrieveVendorPairs();
+		return getCachedVendors();
 	}
 
 	@Nullable
@@ -180,7 +173,7 @@ class HUVendorBPartnerAttributeValuesProvider implements IAttributeValuesProvide
 	@Nullable
 	public NamePair getAttributeValueOrNull(final Evaluatee evalCtx, final Object valueKey)
 	{
-		final List<? extends NamePair> availableValues = retrieveVendorPairs();
+		final List<? extends NamePair> availableValues = getCachedVendors();
 		if (availableValues.isEmpty())
 		{
 			return null;
@@ -212,7 +205,7 @@ class HUVendorBPartnerAttributeValuesProvider implements IAttributeValuesProvide
 	 *
 	 * @return available values
 	 */
-	private static List<KeyNamePair> retrieveVendorPairs()
+	private static List<KeyNamePair> getCachedVendors()
 	{
 		final List<KeyNamePair> vendors = new ArrayList<>();
 		vendors.add(staticNullValue());
@@ -225,7 +218,7 @@ class HUVendorBPartnerAttributeValuesProvider implements IAttributeValuesProvide
 
 	private static List<KeyNamePair> retrieveVendorKeyNamePairs()
 	{
-		return bPartnerDAO.retrieveVendors(QueryLimit.ofInt(20))
+		return bPartnerDAO.retrieveVendors(QueryLimit.ofInt(limitVendor))
 				.stream()
 				.map(bpartner -> toKeyNamePair(bpartner))
 				.collect(GuavaCollectors.toImmutableList());
