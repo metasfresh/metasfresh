@@ -25,6 +25,8 @@ package de.metas.vertical.healthcare.alberta.order;
 import de.metas.bpartner.BPartnerId;
 import de.metas.vertical.healthcare.alberta.bpartner.BPartnerRepository;
 import lombok.NonNull;
+import org.adempiere.ad.callout.annotations.Callout;
+import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.compiere.model.I_C_BP_Relation;
@@ -33,7 +35,7 @@ import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
 @Interceptor(I_C_Order.class)
-//@Callout(I_C_Order.class)
+@Callout(I_C_Order.class)
 @Component
 public class C_Order
 {
@@ -44,7 +46,7 @@ public class C_Order
 		this.bpartnerRepository = bpartnerRepository;
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_NEW }, ifColumnsChanged = {I_C_Order.COLUMNNAME_C_BPartner_ID})
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = {I_C_Order.COLUMNNAME_C_BPartner_ID})
 	public void onBusinessPartnerChange(final I_C_Order order)
 	{
 		final I_C_BP_Relation bpRelation = bpartnerRepository.getLastUpdatedPreferedPharmacyByPartnerId(BPartnerId.ofRepoIdOrNull(order.getC_BPartner_ID()));
@@ -54,14 +56,14 @@ public class C_Order
 		}
 	}
 
-	// @CalloutMethod(columnNames = I_C_Order.COLUMNNAME_C_BPartner_ID)
-	// public void newOrderBusinessPartnerSet(final I_C_Order order)
-	// {
-	// 	final I_C_BP_Relation bpRelation = bpartnerRepository.getLastUpdatedPreferedPharmacyByPartnerId(BPartnerId.ofRepoIdOrNull(order.getC_BPartner_ID()));
-	// 	if (bpRelation != null)
-	// 	{
-	// 		order.setC_BPartner_Pharmacy_ID(bpRelation.getC_BPartnerRelation_ID());
-	// 	}
-	// }
+	@CalloutMethod(columnNames = I_C_Order.COLUMNNAME_C_BPartner_ID)
+	public void newOrderBusinessPartnerSet(final I_C_Order order)
+	{
+		final I_C_BP_Relation bpRelation = bpartnerRepository.getLastUpdatedPreferedPharmacyByPartnerId(BPartnerId.ofRepoIdOrNull(order.getC_BPartner_ID()));
+		if (bpRelation != null)
+		{
+			order.setC_BPartner_Pharmacy_ID(bpRelation.getC_BPartnerRelation_ID());
+		}
+	}
 
 }
