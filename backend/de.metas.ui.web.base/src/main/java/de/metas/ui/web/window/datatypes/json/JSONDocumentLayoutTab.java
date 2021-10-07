@@ -145,8 +145,9 @@ public final class JSONDocumentLayoutTab
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final List<JSONViewOrderBy> defaultOrderBys;
 
-	@JsonProperty("supportQuickInput")
-	private final JSONQuickInputSupport supportQuickInput;
+	@JsonProperty("quickInputSupport")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private final JSONQuickInputSupport quickInputSupport;
 
 	@JsonProperty("queryOnActivate")
 	private final boolean queryOnActivate;
@@ -168,7 +169,7 @@ public final class JSONDocumentLayoutTab
 	{
 		final ViewLayout gridLayout = includedTabLayout.getGridLayout();
 
-		supportQuickInput = includedTabLayout.getQuickInputSupport() != null
+		quickInputSupport = includedTabLayout.getQuickInputSupport() != null
 				? JSONQuickInputSupport.of(includedTabLayout.getQuickInputSupport(), options.getAdLanguage())
 				: null;
 

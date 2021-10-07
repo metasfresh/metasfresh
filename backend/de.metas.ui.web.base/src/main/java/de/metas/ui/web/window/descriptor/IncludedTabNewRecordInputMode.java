@@ -38,9 +38,9 @@ public enum IncludedTabNewRecordInputMode implements ReferenceListAwareEnum
 		return QUICK_INPUT_ONLY == this;
 	}
 
-	public IncludedTabNewRecordInputMode orCompatibleIfAllowQuickInputIs(final boolean allowQuickInput)
+	public IncludedTabNewRecordInputMode orCompatibleIfAllowQuickInputIs(final boolean hasQuickInputSupport)
 	{
-		return isQuickInputRequired() && !allowQuickInput
+		return isQuickInputRequired() && !hasQuickInputSupport
 				? ALL_AVAILABLE_METHODS
 				: this;
 	}

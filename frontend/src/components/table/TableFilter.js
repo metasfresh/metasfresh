@@ -74,7 +74,7 @@ class TableFilter extends PureComponent {
     wrapperHeight: PropTypes.number,
     isBatchEntry: PropTypes.bool,
     handleBatchEntryToggle: PropTypes.func,
-    supportQuickInput: PropTypes.object,
+    quickInputSupport: PropTypes.object,
     newRecordInputMode: PropTypes.string,
     allowCreateNew: PropTypes.bool,
     openTableModal: PropTypes.func,
@@ -105,7 +105,7 @@ class TableFilter extends PureComponent {
   componentDidUpdate(prevProps) {
     if (
       this.props.allowCreateNew !== prevProps.allowCreateNew ||
-      this.props.supportQuickInput !== prevProps.supportQuickInput ||
+      this.props.quickInputSupport !== prevProps.quickInputSupport ||
       this.props.newRecordInputMode !== prevProps.newRecordInputMode
     ) {
       this.openCloseBatchEntryIfNeeded();
@@ -115,7 +115,7 @@ class TableFilter extends PureComponent {
   openCloseBatchEntryIfNeeded = () => {
     const {
       allowCreateNew,
-      supportQuickInput,
+      quickInputSupport,
       newRecordInputMode,
       isBatchEntry,
       handleBatchEntryToggle,
@@ -124,7 +124,7 @@ class TableFilter extends PureComponent {
     //
     // Automatically open batch entry (if not already opened) when we can add new entries
     if (
-      supportQuickInput &&
+      quickInputSupport &&
       newRecordInputMode === 'QUICK_INPUT_ONLY' &&
       allowCreateNew &&
       !isBatchEntry
@@ -133,7 +133,7 @@ class TableFilter extends PureComponent {
     }
     //
     // Close batch entry if open but creating new entries is no longer allowed
-    else if (supportQuickInput && !allowCreateNew && isBatchEntry) {
+    else if (quickInputSupport && !allowCreateNew && isBatchEntry) {
       handleBatchEntryToggle();
     }
   };
@@ -252,7 +252,7 @@ class TableFilter extends PureComponent {
       isBatchEntry,
       newRecordInputMode,
       handleBatchEntryToggle,
-      supportQuickInput,
+      quickInputSupport,
       allowCreateNew,
       modalVisible,
       wrapperHeight,
@@ -269,7 +269,7 @@ class TableFilter extends PureComponent {
     const showBatchEntryButton =
       (newRecordInputMode === 'ALL_METHODS' ||
         newRecordInputMode === 'QUICK_INPUT_ONLY') && // input mode allows it
-      supportQuickInput && // batch entry is supported by backend
+      quickInputSupport && // batch entry is supported by backend
       allowCreateNew && // we are allowed to create a new record
       !fullScreen; // included tab is not in full screen mode
 
@@ -295,15 +295,15 @@ class TableFilter extends PureComponent {
                 tabIndex={tabIndex}
               >
                 {isBatchEntry
-                  ? supportQuickInput.closeButtonCaption
-                  : supportQuickInput.openButtonCaption}
+                  ? quickInputSupport.closeButtonCaption
+                  : quickInputSupport.openButtonCaption}
                 {isTooltipShow === keymap.TOGGLE_QUICK_INPUT && (
                   <Tooltips
                     name={keymap.TOGGLE_QUICK_INPUT}
                     action={
                       isBatchEntry
-                        ? supportQuickInput.closeButtonCaption
-                        : supportQuickInput.openButtonCaption
+                        ? quickInputSupport.closeButtonCaption
+                        : quickInputSupport.openButtonCaption
                     }
                     type={''}
                   />
@@ -318,7 +318,7 @@ class TableFilter extends PureComponent {
                 />
               ) : null)}
           </div>
-          {supportQuickInput &&
+          {quickInputSupport &&
             (isBatchEntry || fullScreen) &&
             allowCreateNew && (
               <TableQuickInput

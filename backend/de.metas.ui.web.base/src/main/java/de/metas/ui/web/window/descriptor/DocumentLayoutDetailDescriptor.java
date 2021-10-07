@@ -286,8 +286,8 @@ public final class DocumentLayoutDetailDescriptor
 
 		private IncludedTabNewRecordInputMode getNewRecordInputModeEffective()
 		{
-			final boolean isSupportQuickInput = getQuickInputSupport() != null;
-			return newRecordInputMode.orCompatibleIfAllowQuickInputIs(isSupportQuickInput);
+			final boolean hasQuickInputSupport = getQuickInputSupport() != null;
+			return newRecordInputMode.orCompatibleIfAllowQuickInputIs(hasQuickInputSupport);
 		}
 	}
 }
