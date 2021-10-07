@@ -24,6 +24,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -393,6 +394,18 @@ public class AttachmentEntryService
 			final byte[] data)
 	{
 		attachmentEntryRepository.updateAttachmentEntryData(attachmentEntryId, data);
+	}
+
+	@NonNull
+	public Stream<EmailAttachment> streamEmailAttachments(@NonNull final TableRecordReference recordRef, @Nullable final String tagName)
+	{
+		return attachmentEntryRepository.getByReferencedRecord(recordRef)
+				.stream()
+				.filter(attachmentEntry -> Check.isBlank(tagName) || attachmentEntry.getTags().hasTag(tagName))
+				.map(attachmentEntry -> EmailAttachment.builder()
+						.filename(attachmentEntry.getFilename())
+						.attachmentDataSupplier(() -> retrieveData(attachmentEntry.getId()))
+						.build());
 	}
 
 	/**
