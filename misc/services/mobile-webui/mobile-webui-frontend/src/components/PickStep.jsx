@@ -2,9 +2,6 @@ import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { push } from 'connected-react-router';
-
-import { updatePickingStepQty } from '../actions/PickingActions';
-
 class PickStep extends PureComponent {
   constructor(props) {
     super(props);
@@ -58,7 +55,6 @@ PickStep.propTypes = {
   qtyPicked: PropTypes.number,
   qtyToPick: PropTypes.number.isRequired,
   uom: PropTypes.string,
-  updatePickingStepQty: PropTypes.func.isRequired,
   wfProcessId: PropTypes.string.isRequired,
   activityId: PropTypes.string.isRequired,
   stepId: PropTypes.number.isRequired,
@@ -68,4 +64,4 @@ PickStep.propTypes = {
   push: PropTypes.func.isRequired,
 };
 
-export default connect(mapStateToProps, { updatePickingStepQty, push })(PickStep);
+export default connect(mapStateToProps, { push })(PickStep);
