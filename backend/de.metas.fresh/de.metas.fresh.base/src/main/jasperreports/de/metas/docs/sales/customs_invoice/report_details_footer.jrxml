@@ -32,7 +32,9 @@
        CASE
            WHEN uom.StdPrecision = 0
                THEN '#,##0'
-           ELSE Substring('#,##0.0000' FROM 0 FOR 7 + uom.StdPrecision :: integer) END AS QtyPattern
+           ELSE Substring('#,##0.0000' FROM 0 FOR 7 + uom.StdPrecision :: integer) END AS QtyPattern,
+           de_metas_endcustomer_fresh_reports.CalculateCustom_Invoice_TotalBruttoWeight($P{C_Customs_Invoice_Id}) as totalWeight
+          
 from C_Customs_Invoice_Line il
   LEFT OUTER JOIN C_UOM uom ON uom.C_UOM_ID = il.c_uom_id
   LEFT OUTER JOIN C_UOM_Trl uomt on uomt.c_UOM_ID = uom.C_UOM_ID and uomt.AD_Language = $P{ad_language}
@@ -47,6 +49,9 @@ group by uomt.UOMSymbol, uom.UOMSymbol, uom.StdPrecision;]]>
 	</field>
 	<field name="qtypattern" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="qtypattern"/>
+	</field>
+	<field name="totalweight" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="totalweight"/>
 	</field>
 	<title>
 		<band height="37">
@@ -71,6 +76,28 @@ group by uomt.UOMSymbol, uom.UOMSymbol, uom.StdPrecision;]]>
 					<font fontName="Arial" size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{weight}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="196" y="21" width="100" height="12" uuid="baa00a65-8daf-4472-88bc-0661494a9c2f"/>
+				<textElement>
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{uom}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="136" y="21" width="54" height="12" uuid="4ff26313-199c-4196-9f0b-db3e68cbac33"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{totalweight}]]></textFieldExpression>
+				<patternExpression><![CDATA[$F{qtypattern}]]></patternExpression>
+			</textField>
+			<textField pattern="0.00">
+				<reportElement x="80" y="21" width="56" height="12" uuid="a3e8ac96-f70a-4e73-b495-43dece26b51e"/>
+				<textElement>
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{bruttoweight}]]></textFieldExpression>
 			</textField>
 		</band>
 	</title>
