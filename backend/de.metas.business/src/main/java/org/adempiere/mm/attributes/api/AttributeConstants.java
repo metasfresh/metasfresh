@@ -51,7 +51,7 @@ public class AttributeConstants
 	public final AttributeCode ATTR_SubProducerBPartner_Value = AttributeCode.ofString("SubProducerBPartner");
 
 	//
-	public final AttributeCode ATTR_Vendor_Value = AttributeCode.ofString("Vendor");
+	public final AttributeCode ATTR_Vendor_BPartner_ID = AttributeCode.ofString("Vendor");
 
 	public static final String ATTR_SerialNo_String = "SerialNo";
 	public final AttributeCode ATTR_SerialNo = AttributeCode.ofString(ATTR_SerialNo_String);
