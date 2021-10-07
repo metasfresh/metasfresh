@@ -30,6 +30,8 @@ import de.metas.util.Check;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
 @Value
 public class ExternalSystemGRSSignumConfigId implements IExternalSystemChildConfigId
 {
@@ -40,6 +42,12 @@ public class ExternalSystemGRSSignumConfigId implements IExternalSystemChildConf
 	public static ExternalSystemGRSSignumConfigId ofRepoId(final int repoId)
 	{
 		return new ExternalSystemGRSSignumConfigId(repoId);
+	}
+
+	@Nullable
+	public static ExternalSystemGRSSignumConfigId ofRepoIdOrNull(@Nullable final Integer repoId)
+	{
+		return repoId != null && repoId > 0 ? new ExternalSystemGRSSignumConfigId(repoId) : null;
 	}
 
 	public static ExternalSystemGRSSignumConfigId cast(@NonNull final IExternalSystemChildConfigId id)
