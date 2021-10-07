@@ -14,11 +14,16 @@ class PickProductsLine extends Component {
   };
 
   render() {
-    const { id, caption, isLinesListVisible } = this.props;
+    const { id, caption, isLinesListVisible, isActivityEnabled } = this.props;
     return (
       <div className="buttons">
         {isLinesListVisible && (
-          <button key={id} className="button is-outlined complete-btn" onClick={() => this.handleClick()}>
+          <button
+            key={id}
+            className="button is-outlined complete-btn"
+            disabled={!isActivityEnabled}
+            onClick={() => this.handleClick()}
+          >
             <ButtonWithIndicator caption={caption} indicatorType="incomplete" />
           </button>
         )}
@@ -42,6 +47,7 @@ PickProductsLine.propTypes = {
   steps: PropTypes.array.isRequired,
   lineIndex: PropTypes.number.isRequired,
   push: PropTypes.func.isRequired,
+  isActivityEnabled: PropTypes.bool,
 };
 
 export default connect(mapStateToProps, { push })(PickProductsLine);
