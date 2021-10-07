@@ -43,25 +43,6 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Alber
   }
 ]
 
-de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopware6_getById=[
-  {
-    "id" : 100001,
-    "type" : "Shopware6",
-    "name" : "name",
-    "childConfig" : {
-      "id" : 100002,
-      "parentId" : 100001,
-      "baseUrl" : "baseUrl",
-      "clientId" : "id",
-      "clientSecret" : "secret",
-      "externalSystemShopware6ConfigMappingList" : [ ],
-      "bPartnerIdJSONPath" : "/test/bp",
-      "bPartnerLocationIdJSONPath" : "/test/bpl",
-      "salesRepJSONPath" : "/test/salesrep"
-    }
-  }
-]
-
 
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_GRSSignum_getById=[
   {
@@ -69,9 +50,7 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_GRSSi
     "type" : "GRSSignum",
     "name" : "name",
     "childConfig" : {
-      "id" : {
-        "repoId" : 100002
-      },
+      "id" : 100002,
       "parentId" : 100001,
       "value" : "testGRSSignumValue",
       "baseUrl" : "baseUrl",
@@ -83,9 +62,7 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_GRSSi
 
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_GRSSignum_getByTypeAndParent=[
   {
-    "id" : {
-      "repoId" : 100002
-    },
+    "id" : 100002,
     "parentId" : 100001,
     "value" : "testGRSSignumValue",
     "baseUrl" : "baseUrl",
@@ -100,9 +77,7 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_GRSSi
     "type" : "GRSSignum",
     "name" : "name",
     "childConfig" : {
-      "id" : {
-        "repoId" : 100002
-      },
+      "id" : 100002,
       "parentId" : 100001,
       "value" : "testGRSSignumValue",
       "baseUrl" : "baseUrl",
