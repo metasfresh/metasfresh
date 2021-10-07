@@ -2,6 +2,7 @@ import {
   SWITCHOFF_LINES_VISIBILITY,
   UPDATE_PICKING_STEP_QTY,
   UPDATE_PICKING_SLOT_CODE,
+  UPDATE_PICKING_STEP_DETECTED_CODE,
 } from '../constants/ActionTypes';
 
 /**
@@ -23,6 +24,17 @@ export function updatePickingStepQty({ wfProcessId, activityId, lineIndex, stepI
   return {
     type: UPDATE_PICKING_STEP_QTY,
     payload: { wfProcessId, activityId, lineIndex, stepId, qty },
+  };
+}
+
+/**
+ * @method updatePickingStepDetectedCode
+ * @summary sets the detected code for the step
+ */
+export function updatePickingStepDetectedCode({ wfProcessId, activityId, lineIndex, stepId, detectedCode }) {
+  return {
+    type: UPDATE_PICKING_STEP_DETECTED_CODE,
+    payload: { wfProcessId, activityId, lineIndex, stepId, detectedCode },
   };
 }
 

@@ -101,7 +101,6 @@ class CodeScanner extends Component {
 
     !active && this.codeReader.stopContinuousDecode();
 
-    console.log('ScanButtonStatus:', scanButtonStatus);
     return (
       <div>
         {!active && (
