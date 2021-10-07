@@ -192,6 +192,12 @@ public final class TableRecordReference implements ITableRecordReference
 		return new TableRecordReference(adTableId, recordId);
 	}
 
+	@NonNull
+	public static TableRecordReference of(@NonNull final AdTableId adTableId, final int recordId)
+	{
+		return new TableRecordReference(adTableId.getRepoId(), recordId);
+	}
+
 	@Nullable
 	public static TableRecordReference ofOrNull(final int adTableId, final int recordId)
 	{
