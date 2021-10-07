@@ -63,7 +63,7 @@ public abstract class ReceiptScheduleBasedProcess extends JavaProcess implements
 		final IAttributeStorage huAttributes = attributeStorageFactory.getAttributeStorage(hu);
 		setAttributeLotNumber(hu, huAttributes);
 		setAttributeBBD(receiptSchedule, huAttributes);
-		setAttributeVendor(receiptSchedule, huAttributes);
+		setVendorValueFromReceiptSchedule(receiptSchedule, huAttributes);
 	}
 
 	private void setAttributeLotNumber(final @NonNull I_M_HU hu, @NonNull final IAttributeStorage huAttributes)
@@ -96,15 +96,15 @@ public abstract class ReceiptScheduleBasedProcess extends JavaProcess implements
 		}
 	}
 
-	private void setAttributeVendor(@NonNull final I_M_ReceiptSchedule receiptSchedule, @NonNull final IAttributeStorage huAttributes)
+	private void setVendorValueFromReceiptSchedule(@NonNull final I_M_ReceiptSchedule receiptSchedule, @NonNull final IAttributeStorage huAttributes)
 	{
-		if (huAttributes.hasAttribute(AttributeConstants.ATTR_Vendor_Value)
-				&& huAttributes.getValueAsLocalDate(AttributeConstants.ATTR_Vendor_Value) == null)
+			if (huAttributes.hasAttribute(AttributeConstants.ATTR_Vendor_BPartner_ID)
+				&& huAttributes.getValueAsInt(AttributeConstants.ATTR_Vendor_BPartner_ID) > -1)
 		{
 			final int bpId = receiptSchedule.getC_BPartner_ID();
 			if (bpId > 0)
 			{
-				huAttributes.setValue(AttributeConstants.ATTR_Vendor_Value, bpId);
+				huAttributes.setValue(AttributeConstants.ATTR_Vendor_BPartner_ID, bpId);
 				huAttributes.saveChangesIfNeeded();
 			}
 		}
