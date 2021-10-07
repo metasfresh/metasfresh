@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import { withRouter } from 'react-router';
-
+import toast, { Toaster } from 'react-hot-toast';
 import CodeScanner from './CodeScanner';
 import { stopScanning } from '../../actions/ScanActions';
 import { updatePickingStepDetectedCode } from '../../actions/PickingActions';
@@ -10,9 +10,21 @@ import { updatePickingStepDetectedCode } from '../../actions/PickingActions';
 class PickScreen extends Component {
   onDetection = (scannedData) => {
     const { detectedCode } = scannedData;
+    const isValidCode = this.checkIfValidCode(detectedCode);
     const { stopScanning, updatePickingStepDetectedCode, wfProcessId, activityId, lineIndex, stepId } = this.props;
-    updatePickingStepDetectedCode({ wfProcessId, activityId, lineIndex, stepId, detectedCode });
+    if (isValidCode) {
+      updatePickingStepDetectedCode({ wfProcessId, activityId, lineIndex, stepId, detectedCode });
+    } else {
+      toast('Scanned code is invalid!', { type: 'error', style: { color: 'white' } });
+    }
     stopScanning();
+  };
+
+  checkIfValidCode = (detectedCode) => {
+    const {
+      stepProps: { huBarcode },
+    } = this.props;
+    return huBarcode === detectedCode;
   };
 
   render() {
@@ -21,8 +33,9 @@ class PickScreen extends Component {
       activityId,
     } = this.props;
 
-    const scanBtnCaption = detectedCode ? `Code: ${detectedCode}` : ``;
-    const scanButtonStatus = detectedCode ? `complete` : `incomplete`;
+    const isValidCode = this.checkIfValidCode(detectedCode);
+    const scanBtnCaption = isValidCode ? `Code: ${detectedCode}` : ``;
+    const scanButtonStatus = isValidCode ? `complete` : `incomplete`;
 
     return (
       <div className="pt-3 section picking-step-container">
@@ -60,6 +73,21 @@ class PickScreen extends Component {
             onDetection={this.onDetection}
             activityId={activityId}
             scanButtonStatus={scanButtonStatus}
+          />
+          <Toaster
+            position="bottom-center"
+            toastOptions={{
+              success: {
+                style: {
+                  background: 'green',
+                },
+              },
+              error: {
+                style: {
+                  background: 'red',
+                },
+              },
+            }}
           />
         </div>
       </div>
