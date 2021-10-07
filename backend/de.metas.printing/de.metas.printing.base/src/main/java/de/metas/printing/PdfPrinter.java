@@ -1,24 +1,23 @@
 package de.metas.printing;
 
-import java.awt.Graphics2D;
+import com.lowagie.text.Document;
+import com.lowagie.text.PageSize;
+import com.lowagie.text.pdf.DefaultFontMapper;
+import com.lowagie.text.pdf.PdfContentByte;
+import com.lowagie.text.pdf.PdfWriter;
+import de.metas.util.Services;
+import org.adempiere.service.ISysConfigBL;
+
+import javax.print.attribute.Size2DSyntax;
+import javax.print.attribute.standard.MediaSize;
+import javax.print.attribute.standard.MediaSizeName;
+import java.awt.*;
 import java.awt.print.PageFormat;
 import java.awt.print.Paper;
 import java.awt.print.Printable;
 import java.awt.print.PrinterJob;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-
-import javax.print.attribute.Size2DSyntax;
-import javax.print.attribute.standard.MediaSize;
-import javax.print.attribute.standard.MediaSizeName;
-
-import org.compiere.model.MSysConfig;
-
-import com.lowagie.text.Document;
-import com.lowagie.text.PageSize;
-import com.lowagie.text.pdf.DefaultFontMapper;
-import com.lowagie.text.pdf.PdfContentByte;
-import com.lowagie.text.pdf.PdfWriter;
 
 /**
  * @author cg
@@ -76,7 +75,7 @@ public class PdfPrinter
 				final DefaultFontMapper mapper = new DefaultFontMapper();
 
 				// Elaine 2009/02/17 - load additional font from directory set in PDF_FONT_DIR of System Configurator
-				String pdfFontDir = MSysConfig.getValue(PDF_FONT_DIR, "");
+				String pdfFontDir = Services.get(ISysConfigBL.class).getValue(PDF_FONT_DIR, "");
 				if (pdfFontDir != null && pdfFontDir.trim().length() > 0)
 				{
 					pdfFontDir = pdfFontDir.trim();

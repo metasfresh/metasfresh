@@ -22,21 +22,19 @@ package de.metas.event;
  * #L%
  */
 
-import java.lang.management.ManagementFactory;
-import java.util.Map;
-import java.util.UUID;
-
-import org.adempiere.service.ClientId;
-import org.adempiere.service.ISysConfigBL;
-import org.compiere.Adempiere;
-import org.slf4j.Logger;
-
 import de.metas.logging.LogManager;
-import de.metas.organization.OrgId;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
+import org.adempiere.service.ISysConfigBL;
+import org.compiere.Adempiere;
+import org.slf4j.Logger;
+
+import java.lang.management.ManagementFactory;
+import java.util.Map;
+import java.util.UUID;
 
 /**
  * Misc {@link IEventBus} related constants.
@@ -116,7 +114,7 @@ public final class EventBusConfig
 		}
 
 		final String nameForAllTopics = "de.metas.event.asyncEventBus";
-		final Map<String, String> valuesForPrefix = Services.get(ISysConfigBL.class).getValuesForPrefix(nameForAllTopics, ClientId.SYSTEM.getRepoId(), OrgId.ANY.getRepoId());
+		final Map<String, String> valuesForPrefix = Services.get(ISysConfigBL.class).getValuesForPrefix(nameForAllTopics, ClientAndOrgId.SYSTEM);
 
 		final String keyForTopic = nameForAllTopics + ".topic_" + topic.getName();
 		final String valueForTopic = valuesForPrefix.get(keyForTopic);

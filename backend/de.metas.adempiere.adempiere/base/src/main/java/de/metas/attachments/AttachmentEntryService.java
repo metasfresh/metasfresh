@@ -1,20 +1,7 @@
 package de.metas.attachments;
 
-import java.io.File;
-import java.net.URI;
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.springframework.stereotype.Service;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-
 import de.metas.attachments.automaticlinksharing.RecordToReferenceProviderService;
 import de.metas.attachments.automaticlinksharing.RecordToReferenceProviderService.ExpandResult;
 import de.metas.attachments.listener.TableAttachmentListenerRepository;
@@ -26,6 +13,16 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Nullable;
+import java.io.File;
+import java.net.URI;
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 /*
  * #%L
@@ -260,6 +257,49 @@ public class AttachmentEntryService
 			result.add(updatedEntry);
 		}
 		return result.build();
+	}
+
+	@NonNull
+	public AttachmentEntry handleAttachmentLinks(@NonNull final AttachmentLinksRequest attachmentLinksRequest)
+	{
+		AttachmentEntry updatedEntry = getById(attachmentLinksRequest.getAttachmentEntryId());
+
+		if (!Check.isEmpty(attachmentLinksRequest.getLinksToAdd()))
+		{
+			updatedEntry = updatedEntry.withAdditionalLinkedRecords(attachmentLinksRequest.getLinksToAdd());
+		}
+
+		if (attachmentLinksRequest.getTagsToAdd() != null)
+		{
+			updatedEntry = updatedEntry.withAdditionalTag(attachmentLinksRequest.getTagsToAdd());
+		}
+
+		if (!Check.isEmpty(attachmentLinksRequest.getLinksToRemove()))
+		{
+			updatedEntry = updatedEntry.withRemovedLinkedRecords(attachmentLinksRequest.getLinksToRemove());
+		}
+
+		if (attachmentLinksRequest.getTagsToRemove() != null)
+		{
+			updatedEntry = updatedEntry.withoutTags(attachmentLinksRequest.getTagsToRemove());
+		}
+
+		final AttachmentEntry savedAttachmentEntry = attachmentEntryRepository.save(updatedEntry);
+
+		if (savedAttachmentEntry.getLinkedRecords().isEmpty())
+		{
+			for (final TableRecordReference removedLinkRecord : Objects.requireNonNull(attachmentLinksRequest.getLinksToRemove()))
+			{
+				final AttachmentLog attachmentLog = AttachmentLog.builder()
+						.attachmentEntry(savedAttachmentEntry)
+						.recordRef(removedLinkRecord)
+						.build();
+
+				attachmentLogRepository.save(attachmentLog);
+			}
+			attachmentEntryRepository.delete(savedAttachmentEntry);
+		}
+		return savedAttachmentEntry;
 	}
 
 	public AttachmentEntry unattach(

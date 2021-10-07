@@ -9,6 +9,62 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.171
+## Features
+* metasfresh
+  * [#11015](https://github.com/metasfresh/metasfresh/issues/11015) Move frontend to react-router v5
+  * [#11369](https://github.com/metasfresh/metasfresh/issues/11369) Display Label fileds in Grid view
+  * [#11436](https://github.com/metasfresh/metasfresh/issues/11436) Supplier Approval Strategy
+  * [#11437](https://github.com/metasfresh/metasfresh/pull/11437) material-dispo supports stock-estimate events
+  * [#11447](https://github.com/metasfresh/metasfresh/issues/11447) Adding TRLs for Service Annahme and Request window and Change PO Reference in `m_inout` table to be identifier
+  * [#11457](https://github.com/metasfresh/metasfresh/issues/11457) Automatic creditorId/DebitorId update when `c_bpartner.value` changes
+  * [#11458](https://github.com/metasfresh/metasfresh/issues/11458) Create `C_BP_Relation.IsBranchOffice` and display it in Partner Relation window
+  * [#11470](https://github.com/metasfresh/metasfresh/issues/11470) `PP_Order_RecordWork` should support decimal duration values
+  * [#11473](https://github.com/metasfresh/metasfresh/issues/11473) Implement the possibility to allow auto allocation with next invoice when importing ESR
+  * [#11478](https://github.com/metasfresh/metasfresh/issues/11478) REMADV related tweaks
+  * [#11484](https://github.com/metasfresh/metasfresh/issues/11484) Create Validation Rule for `C_BPartner_Patient_ID`, `C_BPartner_Doctor_ID` and `C_BPartner_Pharmacy_ID`. New `C_Order_ID` and `C_BPartner_Payer_ID` in `Alberta_PrescriptionRequest` Table
+  * [#11488](https://github.com/metasfresh/metasfresh/issues/11488) Create `C_CommissionShare` for sales partners without commission contract
+  * [#11489](https://github.com/metasfresh/metasfresh/issues/11489) Add Offer No in sales order description function
+  * [#11501](https://github.com/metasfresh/metasfresh/issues/11501) `AD_Process`: Export to CSV
+  * [#11507](https://github.com/metasfresh/metasfresh/issues/11507) Remove all unnecessary and erroneous messages from unit tests log
+  * [#11508](https://github.com/metasfresh/metasfresh/issues/11508) Implement ESR payment action - duplicate payment
+  * [#11514](https://github.com/metasfresh/metasfresh/pull/11514) Remove `HUDescriptor#quantityDelta`, it wasn't used and created confusion
+  * [#11516](https://github.com/metasfresh/metasfresh/issues/11516) Time-booking window - indicate if parent is already invoiced there as well
+  * [#11522](https://github.com/metasfresh/metasfresh/issues/11522) New Values for Alberta Therapy and Alberta Therapy Type
+  * [#11527](https://github.com/metasfresh/metasfresh/pull/11527) Avoid OOME by using spring Resource instead of byte[]
+  * [#11529](https://github.com/metasfresh/metasfresh/issues/11529) Tell camel from metasfresh to open http-EP with particular auth-token
+  * [#11534](https://github.com/metasfresh/metasfresh/pull/11534) Order lookup results by levenshtein distance
+  * [#11535](https://github.com/metasfresh/metasfresh/issues/11535) DB-Function for customizable DB-changes on DB-transfer
+  * [#11539](https://github.com/metasfresh/metasfresh/issues/11539) PaySelection CSV-File export for Revolut
+  * [#11543](https://github.com/metasfresh/metasfresh/issues/11543) Remove legacy MRP info window code
+  * [#11545](https://github.com/metasfresh/metasfresh/pull/11545) Display labels in grid mode
+  * [#11551](https://github.com/metasfresh/metasfresh/issues/11551) WebUI Display `AD_Element` Description also in class based views
+  * [#11554](https://github.com/metasfresh/metasfresh/issues/11554) Update react-tether package
+  * [#11571](https://github.com/metasfresh/metasfresh/issues/11571) Packages update August 2021
+  * [#11575](https://github.com/metasfresh/metasfresh/issues/11575) Remove all uses of immutable.js
+  * [#11580](https://github.com/metasfresh/metasfresh/issues/11580) Update relevant tabs when workflow field is updated on manufacturing order
+  * [#11590](https://github.com/metasfresh/metasfresh/issues/11590) Allow order discount via API (compensation group)
+  * [#11595](https://github.com/metasfresh/metasfresh/issues/11595) FE package updates - chunk mid August
+  * [#11597](https://github.com/metasfresh/metasfresh/issues/11597) Gebindesaldo - Improve M_Material_Balance_Config Standard Name
+
+## Fixes
+* metasfresh
+  * [#10900](https://github.com/metasfresh/metasfresh/issues/10900) WebUI frontend: Fix breadcrumb issues for good
+  * [#11415](https://github.com/metasfresh/metasfresh/issues/11415) Fix menue tree on releasetestit and instancesuat
+  * [#11474](https://github.com/metasfresh/metasfresh/issues/11474) Boilerplate variables might fail silently
+  * [#11479](https://github.com/metasfresh/metasfresh/issues/11479) Fix process of setting the parent of an account
+  * [#11494](https://github.com/metasfresh/metasfresh/issues/11494) Another Regional Manager DownLine Export Problem
+  * [#11496](https://github.com/metasfresh/metasfresh/issues/11496) Only change org of order from new partner if role has access to it
+  * [#11512](https://github.com/metasfresh/metasfresh/pull/11512) Create quotation from project fixes
+  * [#11517](https://github.com/metasfresh/metasfresh/pull/11517) `5599030_sys_valrule_Fresh_SalesPriceList_Version_of_BPartner_add_depends_on_C_BPartner.sql`
+  * [#11549](https://github.com/metasfresh/metasfresh/issues/11549) Allow importing 0.00 bank statement lines
+  * [#11560](https://github.com/metasfresh/metasfresh/issues/11560) Show gross weight as qty CU for HU editor lines with weight UOMs
+  * [#11565](https://github.com/metasfresh/metasfresh/issues/11565) "Issue CUs from source HUs" not working in case source HUs include a HU which is CU on LU
+  * [#11567](https://github.com/metasfresh/metasfresh/issues/11567) Have the supportOpenRecord set correctly by the BE for product proposal
+  * [#11569](https://github.com/metasfresh/metasfresh/issues/11569) Consider the `supportOpenRecord` for the products proposal table
+  * [#11602](https://github.com/metasfresh/metasfresh/issues/11602) Caption not correctly set when filtering by label in the Filter component
+  * [#11609](https://github.com/metasfresh/metasfresh/pull/11609) Fix subheader actions
+
 # metasfresh 5.170
 ## Features
 * metasfresh

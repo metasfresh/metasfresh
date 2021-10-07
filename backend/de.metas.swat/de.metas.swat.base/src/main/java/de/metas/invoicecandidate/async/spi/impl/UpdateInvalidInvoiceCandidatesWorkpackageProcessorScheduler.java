@@ -1,10 +1,12 @@
 package de.metas.invoicecandidate.async.spi.impl;
 
-import java.util.Properties;
-
+import de.metas.async.AsyncBatchId;
 import de.metas.async.spi.WorkpackagesOnCommitSchedulerTemplate;
 import de.metas.invoicecandidate.api.IInvoiceCandUpdateScheduler;
 import de.metas.invoicecandidate.api.IInvoiceCandUpdateSchedulerRequest;
+
+import java.util.Optional;
+import java.util.Properties;
 
 /*
  * #%L
@@ -31,9 +33,10 @@ import de.metas.invoicecandidate.api.IInvoiceCandUpdateSchedulerRequest;
 class UpdateInvalidInvoiceCandidatesWorkpackageProcessorScheduler extends WorkpackagesOnCommitSchedulerTemplate<IInvoiceCandUpdateSchedulerRequest>
 		implements IInvoiceCandUpdateScheduler
 {
-	public UpdateInvalidInvoiceCandidatesWorkpackageProcessorScheduler()
+	public UpdateInvalidInvoiceCandidatesWorkpackageProcessorScheduler(final boolean createOneWorkpackagePerAsyncBatch)
 	{
 		super(UpdateInvalidInvoiceCandidatesWorkpackageProcessor.class);
+		super.setCreateOneWorkpackagePerAsyncBatch(createOneWorkpackagePerAsyncBatch);
 	}
 
 	@Override
@@ -58,5 +61,11 @@ class UpdateInvalidInvoiceCandidatesWorkpackageProcessorScheduler extends Workpa
 	protected boolean isEnqueueWorkpackageWhenNoModelsEnqueued()
 	{
 		return true;
+	}
+
+	@Override
+	public Optional<AsyncBatchId> extractAsyncBatchFromItem(final Collector collector, final IInvoiceCandUpdateSchedulerRequest request)
+	{
+		return Optional.ofNullable(request.getAsyncBatchId());
 	}
 }

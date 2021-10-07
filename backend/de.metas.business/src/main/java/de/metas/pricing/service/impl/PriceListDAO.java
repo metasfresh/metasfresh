@@ -25,8 +25,8 @@ package de.metas.pricing.service.impl;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import de.metas.bpartner.BPartnerLocationId;
-import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
+import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.cache.model.IModelCacheInvalidationService;
@@ -180,7 +180,7 @@ public class PriceListDAO implements IPriceListDAO
 
 		if (productIdsToExclude != null && !productIdsToExclude.isEmpty())
 		{
-			queryBuilder.addNotInArrayFilter(I_M_ProductPrice.COLUMN_M_Product_ID, productIdsToExclude);
+			queryBuilder.addNotInArrayFilter(I_M_ProductPrice.COLUMNNAME_M_Product_ID, productIdsToExclude);
 		}
 
 		return queryBuilder
@@ -205,7 +205,7 @@ public class PriceListDAO implements IPriceListDAO
 	@Override
 	public PriceListId retrievePriceListIdByPricingSyst(
 			@Nullable final PricingSystemId pricingSystemId,
-			final BPartnerLocationId bpartnerLocationId,
+			final BPartnerLocationAndCaptureId bpartnerLocationId,
 			final SOTrx soTrx)
 	{
 		if (pricingSystemId == null)
@@ -220,12 +220,37 @@ public class PriceListDAO implements IPriceListDAO
 		}
 
 		assumeNotNull(bpartnerLocationId, "If the given pricingSystemId={} is not null and not-none, then bpartnerLocationId may not be null", pricingSystemId);
-		final CountryId countryId = Services.get(IBPartnerDAO.class).getBPartnerLocationCountryId(bpartnerLocationId);
+		final CountryId countryId = Services.get(IBPartnerBL.class).getCountryId(bpartnerLocationId);
 
 		final List<I_M_PriceList> priceLists = retrievePriceLists(pricingSystemId, countryId, soTrx);
 
 		return !priceLists.isEmpty() ? PriceListId.ofRepoId(priceLists.get(0).getM_PriceList_ID()) : null;
 	}
+
+	@Override
+	public PriceListId retrievePriceListIdByPricingSyst(
+			@Nullable final PricingSystemId pricingSystemId,
+			final CountryId countryId,
+			final SOTrx soTrx)
+	{
+		if (pricingSystemId == null)
+		{
+			return null;
+		}
+
+		// In case we are dealing with Pricing System None, return the PriceList none
+		if (pricingSystemId.isNone())
+		{
+			return PriceListId.NONE;
+		}
+
+		assumeNotNull(countryId, "If the given pricingSystemId={} is not null and not-none, then countryId may not be null", countryId);
+
+		final List<I_M_PriceList> priceLists = retrievePriceLists(pricingSystemId, countryId, soTrx);
+
+		return !priceLists.isEmpty() ? PriceListId.ofRepoId(priceLists.get(0).getM_PriceList_ID()) : null;
+	}
+
 
 	@Override
 	public List<I_M_PriceList> retrievePriceLists(final PricingSystemId pricingSystemId, final CountryId countryId, final SOTrx soTrx)
@@ -767,7 +792,7 @@ public class PriceListDAO implements IPriceListDAO
 	{
 		Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_ProductPrice.class, Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
-				.addEqualsFilter(I_M_ProductPrice.COLUMN_M_PriceList_Version_ID, newPLVId)
+				.addEqualsFilter(I_M_ProductPrice.COLUMNNAME_M_PriceList_Version_ID, newPLVId)
 				.addEqualsFilter(I_M_ProductPrice.COLUMN_IsAttributeDependant, true)
 				.create()
 				.iterateAndStream()
@@ -919,8 +944,8 @@ public class PriceListDAO implements IPriceListDAO
 
 		return queryBL.createQueryBuilder(I_M_Product.class)
 				.filter(productFilter)
-				.andCollectChildren(I_M_ProductPrice.COLUMN_M_Product_ID)
-				.addInSubQueryFilter(I_M_ProductPrice.COLUMN_M_PriceList_Version_ID, I_M_PriceList_Version.COLUMN_M_PriceList_Version_ID, priceListVersionQuery)
+				.andCollectChildren(I_M_ProductPrice.COLUMNNAME_M_Product_ID, I_M_ProductPrice.class)
+				.addInSubQueryFilter(I_M_ProductPrice.COLUMNNAME_M_PriceList_Version_ID, I_M_PriceList_Version.COLUMNNAME_M_PriceList_Version_ID, priceListVersionQuery)
 				.create();
 
 	}

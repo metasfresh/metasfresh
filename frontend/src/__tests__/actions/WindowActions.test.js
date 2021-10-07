@@ -28,6 +28,7 @@ import {
   setPrintingOptions,
   resetPrintingOptions,
   togglePrintingOption,
+  setSpinner,
 } from '../../actions/WindowActions';
 
 const createState = function (state = {}) {
@@ -445,6 +446,20 @@ describe('WindowActions thunks', () => {
       ];
 
       store.dispatch(togglePrintingOption('PRINTER_OPTS_IsPrintLogo'));
+      expect(store.getActions()).toEqual(expectedAction);
+    });
+
+    it('triggers action to set the showSpinner option', () => {
+      const state = createState();
+      const store = mockStore(state);
+      const expectedAction = [
+        {
+          type: ACTION_TYPES.SET_SPINNER,
+          payload: true,
+        },
+      ];
+
+      store.dispatch(setSpinner(true));
       expect(store.getActions()).toEqual(expectedAction);
     });
   });

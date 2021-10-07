@@ -19,7 +19,6 @@ import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.ddorder.api.IHUDDOrderBL;
 import de.metas.handlingunits.ddorder.api.IHUDDOrderDAO;
 import de.metas.handlingunits.model.I_M_Warehouse;
-import de.metas.order.model.interceptor.C_Order;
 import de.metas.request.service.async.spi.impl.C_Request_CreateFromDDOrder_Async;
 import de.metas.util.Services;
 
@@ -98,7 +97,7 @@ public class DD_Order
 	{
 		return ddOrderDAO.retrieveLines(ddOrder)
 				.stream()
-				.filter(ddOrderLine -> isQuarantineWarehouseLine(ddOrderLine))
+				.filter(this::isQuarantineWarehouseLine)
 				.map(I_DD_OrderLine::getDD_OrderLine_ID)
 				.collect(ImmutableList.toImmutableList())
 				;
