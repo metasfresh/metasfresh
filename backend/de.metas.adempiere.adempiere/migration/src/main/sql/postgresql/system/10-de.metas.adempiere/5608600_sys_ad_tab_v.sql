@@ -1,4 +1,6 @@
-DROP VIEW IF EXISTS ad_tab_v;
+DROP VIEW IF EXISTS ad_tab_v
+;
+
 CREATE OR REPLACE VIEW ad_tab_v AS
 SELECT
      -- trl.ad_language
@@ -51,27 +53,32 @@ SELECT
      , t.maxqueryrecords
      , t.EntityType
      , t.AllowQuickInput
+     , t.QuickInput_OpenButton_Caption
+     , t.QuickInput_CloseButton_Caption
      , t.IncludedTabNewRecordInputMode
      , t.IsRefreshViewOnChangeEvents
 FROM ad_tab t
          JOIN ad_table tbl ON t.ad_table_id = tbl.ad_table_id
-WHERE t.isactive = 'Y'::bpchar AND tbl.isactive = 'Y'::bpchar;
+WHERE t.isactive = 'Y'::bpchar
+  AND tbl.isactive = 'Y'::bpchar
+;
 
-DROP VIEW IF EXISTS ad_tab_vt;
+DROP VIEW IF EXISTS ad_tab_vt
+;
+
 CREATE OR REPLACE VIEW ad_tab_vt AS
-SELECT
-    trl.ad_language
+SELECT trl.ad_language
      , t.ad_tab_id
      , t.Template_Tab_ID
      , t.ad_window_id
      , t.InternalName
      , t.ad_table_id
      , trl.name
-     , t.name as Name_BaseLang
+     , t.name                           AS Name_BaseLang
      , trl.description
-     , t.description as Description_BaseLang
+     , t.description                    AS Description_BaseLang
      , trl.help
-     , t.help as Help_BaseLang
+     , t.help                           AS Help_BaseLang
      , t.seqno
      , t.issinglerow
      , t.hastree
@@ -83,7 +90,7 @@ SELECT
      , tbl.isdeleteable
      , tbl.ishighvolume
      , tbl.isview
-     , 'N'::bpchar AS hasassociation
+     , 'N'::bpchar                      AS hasassociation
      , t.istranslationtab
      , t.isreadonly
      , t.ad_image_id
@@ -91,7 +98,7 @@ SELECT
      , t.whereclause
      , t.orderbyclause
      , trl.commitwarning
-     , t.CommitWarning as CommitWarning_BaseLang
+     , t.CommitWarning                  AS CommitWarning_BaseLang
      , t.readonlylogic
      , t.displaylogic
      , t.ad_column_id
@@ -114,10 +121,16 @@ SELECT
      , t.maxqueryrecords
      , t.EntityType
      , t.AllowQuickInput
+     , trl.QuickInput_OpenButton_Caption
+     , t.QuickInput_OpenButton_Caption  AS QuickInput_OpenButton_Caption_BaseLang
+     , trl.QuickInput_CloseButton_Caption
+     , t.QuickInput_CloseButton_Caption AS QuickInput_CloseButton_Caption_BaseLang
      , t.IncludedTabNewRecordInputMode
      , t.IsRefreshViewOnChangeEvents
 FROM ad_tab t
          JOIN ad_table tbl ON t.ad_table_id = tbl.ad_table_id
          JOIN ad_tab_trl trl ON t.ad_tab_id = trl.ad_tab_id
-WHERE t.isactive = 'Y'::bpchar AND tbl.isactive = 'Y'::bpchar;
+WHERE t.isactive = 'Y'::bpchar
+  AND tbl.isactive = 'Y'::bpchar
+;
 

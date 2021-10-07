@@ -74,7 +74,7 @@ class TableFilter extends PureComponent {
     wrapperHeight: PropTypes.number,
     isBatchEntry: PropTypes.bool,
     handleBatchEntryToggle: PropTypes.func,
-    supportQuickInput: PropTypes.bool,
+    supportQuickInput: PropTypes.object,
     newRecordInputMode: PropTypes.string,
     allowCreateNew: PropTypes.bool,
     openTableModal: PropTypes.func,
@@ -295,17 +295,15 @@ class TableFilter extends PureComponent {
                 tabIndex={tabIndex}
               >
                 {isBatchEntry
-                  ? counterpart.translate('window.batchEntryClose.caption')
-                  : counterpart.translate('window.batchEntry.caption')}
+                  ? supportQuickInput.closeButtonCaption
+                  : supportQuickInput.openButtonCaption}
                 {isTooltipShow === keymap.TOGGLE_QUICK_INPUT && (
                   <Tooltips
                     name={keymap.TOGGLE_QUICK_INPUT}
                     action={
                       isBatchEntry
-                        ? counterpart.translate(
-                            'window.batchEntryClose.caption'
-                          )
-                        : counterpart.translate('window.batchEntry.caption')
+                        ? supportQuickInput.closeButtonCaption
+                        : supportQuickInput.openButtonCaption
                     }
                     type={''}
                   />

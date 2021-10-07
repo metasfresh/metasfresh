@@ -171,7 +171,7 @@ public class DocumentEntityDescriptor
 		allowDeleteLogic = builder.getAllowDeleteLogic();
 		readonlyLogic = builder.getReadonlyLogic();
 		displayLogic = builder.getDisplayLogic();
-		allowQuickInput = builder.isAllowQuickInput();
+		allowQuickInput = builder.getQuickInputSupport() != null;
 
 		fields = ImmutableMap.copyOf(builder.getFields());
 		idFields = builder.getIdFields();
@@ -455,8 +455,12 @@ public class DocumentEntityDescriptor
 		private ILogicExpression _allowDeleteLogic = ConstantLogicExpression.TRUE;
 		private ILogicExpression _displayLogic = ConstantLogicExpression.TRUE;
 		private ILogicExpression _readonlyLogic = ConstantLogicExpression.FALSE;
-		private boolean _allowQuickInput = false;
+
+		@Getter
+		private QuickInputSupportDescriptor quickInputSupport = null;
+
 		private IncludedTabNewRecordInputMode includedTabNewRecordInputMode = IncludedTabNewRecordInputMode.ALL_AVAILABLE_METHODS;
+
 		private boolean _refreshViewOnChangeEvents = false;
 
 		//
@@ -969,15 +973,10 @@ public class DocumentEntityDescriptor
 			return _readonlyLogic;
 		}
 
-		public Builder setAllowQuickInput(final boolean allowQuickInput)
+		public Builder setQuickInputSupport(@Nullable final QuickInputSupportDescriptor quickInputSupport)
 		{
-			this._allowQuickInput = allowQuickInput;
+			this.quickInputSupport = quickInputSupport;
 			return this;
-		}
-
-		public boolean isAllowQuickInput()
-		{
-			return _allowQuickInput;
 		}
 
 		public Builder setIncludedTabNewRecordInputMode(@NonNull final IncludedTabNewRecordInputMode includedTabNewRecordInputMode)

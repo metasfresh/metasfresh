@@ -1062,6 +1062,48 @@ public interface I_AD_Tab
 	String COLUMNNAME_Processing = "Processing";
 
 	/**
+	 * Set Quick Input Close Button Caption.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQuickInput_CloseButton_Caption (@Nullable java.lang.String QuickInput_CloseButton_Caption);
+
+	/**
+	 * Get Quick Input Close Button Caption.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getQuickInput_CloseButton_Caption();
+
+	ModelColumn<I_AD_Tab, Object> COLUMN_QuickInput_CloseButton_Caption = new ModelColumn<>(I_AD_Tab.class, "QuickInput_CloseButton_Caption", null);
+	String COLUMNNAME_QuickInput_CloseButton_Caption = "QuickInput_CloseButton_Caption";
+
+	/**
+	 * Set Quick Input Open Button Caption.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQuickInput_OpenButton_Caption (@Nullable java.lang.String QuickInput_OpenButton_Caption);
+
+	/**
+	 * Get Quick Input Open Button Caption.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getQuickInput_OpenButton_Caption();
+
+	ModelColumn<I_AD_Tab, Object> COLUMN_QuickInput_OpenButton_Caption = new ModelColumn<>(I_AD_Tab.class, "QuickInput_OpenButton_Caption", null);
+	String COLUMNNAME_QuickInput_OpenButton_Caption = "QuickInput_OpenButton_Caption";
+
+	/**
 	 * Set Read Only Logic.
 	 * Logic to determine if field is read only (applies only when field is read-write)
 	 *
