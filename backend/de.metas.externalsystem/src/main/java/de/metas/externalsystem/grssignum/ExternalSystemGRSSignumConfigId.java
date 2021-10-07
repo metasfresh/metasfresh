@@ -23,6 +23,7 @@
 package de.metas.externalsystem.grssignum;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.IExternalSystemChildConfigId;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_GRSSignum;
@@ -64,5 +65,11 @@ public class ExternalSystemGRSSignumConfigId implements IExternalSystemChildConf
 	public ExternalSystemType getType()
 	{
 		return ExternalSystemType.GRSSignum;
+	}
+
+	@JsonValue
+	public int toJson()
+	{
+		return getRepoId();
 	}
 }
