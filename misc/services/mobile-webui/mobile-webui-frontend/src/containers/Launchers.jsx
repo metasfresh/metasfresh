@@ -20,15 +20,15 @@ class Launchers extends Component {
   }
 
   render() {
-    const { launchers } = this.props;
-    const launchersKeys = Object.keys(launchers);
+    const { launchers: launchersMap } = this.props;
+    const launchers = Object.values(launchersMap);
 
     return (
       <div className="container launchers-container">
-        {launchersKeys.length > 0 &&
-          launchersKeys.map((keyName) => {
-            let uniqueId = uuidv4();
-            return <Launcher key={uniqueId} {...launchers[keyName]} />;
+        {launchers.length > 0 &&
+          launchers.map((launcher) => {
+            let key = launcher.startedWFProcessId ? 'started-' + launcher.startedWFProcessId : 'new-' + uuidv4();
+            return <Launcher key={key} {...launcher} />;
           })}
       </div>
     );
