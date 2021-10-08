@@ -30,12 +30,14 @@ import org.compiere.model.IQuery;
 import org.compiere.model.I_C_BP_Relation;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 @Repository
 public class BPartnerRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	public BPartnerId getLastUpdatedPreferedPharmacyByPartnerId(final BPartnerId bpartnerId)
+	public Optional<BPartnerId> getLastUpdatedPreferedPharmacyByPartnerId(final BPartnerId bpartnerId)
 	{
 		final IQuery<I_C_BP_Relation> query  = queryBL.createQueryBuilder(I_C_BP_Relation.class)
 				.addEqualsFilter(I_C_BP_Relation.COLUMNNAME_C_BPartner_ID, bpartnerId)
@@ -48,8 +50,10 @@ public class BPartnerRepository
 				.createQueryOrderBy();
 		query.setOrderBy(orderBy);
 
-		final I_C_BP_Relation bpRelation = query.first(I_C_BP_Relation.class);
-		return BPartnerId.ofRepoIdOrNull(bpRelation.getC_BPartnerRelation_ID());
+		return query
+				.firstOptional(I_C_BP_Relation.class)
+				.map(bpRelation -> BPartnerId.ofRepoId(bpRelation.getC_BPartnerRelation_ID()));
+
 	}
 
 }

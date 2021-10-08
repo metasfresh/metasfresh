@@ -69,10 +69,10 @@ public class C_Order
 
 	private void updatePharmacyIdFromBPartner(final I_C_Order order)
 	{
-		final BPartnerId bpRelationId = bpartnerRepository.getLastUpdatedPreferedPharmacyByPartnerId(BPartnerId.ofRepoIdOrNull(order.getC_BPartner_ID()));
-		if (bpRelationId != null)
+		final BPartnerId preferedPharmacyID = bpartnerRepository.getLastUpdatedPreferedPharmacyByPartnerId(BPartnerId.ofRepoIdOrNull(order.getC_BPartner_ID())).get();
+		if (preferedPharmacyID != null)
 		{
-			order.setC_BPartner_Pharmacy_ID(bpRelationId.getRepoId());
+			order.setC_BPartner_Pharmacy_ID(preferedPharmacyID.getRepoId());
 		}
 	}
 }
