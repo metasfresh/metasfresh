@@ -87,12 +87,10 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     },
                                     "publicField" : true,
                                     "lookupTableName" : {
-                                      "empty" : true,
                                       "present" : false
                                     },
                                     "lookupSearchStringMinLength" : -1,
                                     "lookupSearchStartDelay" : {
-                                      "empty" : true,
                                       "present" : false
                                     },
                                     "listNullItemCaption" : {
@@ -123,12 +121,10 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     "publicField" : true,
                                     "lookupSource" : "text",
                                     "lookupTableName" : {
-                                      "empty" : true,
                                       "present" : false
                                     },
                                     "lookupSearchStringMinLength" : -1,
                                     "lookupSearchStartDelay" : {
-                                      "empty" : true,
                                       "present" : false
                                     },
                                     "listNullItemCaption" : {
@@ -192,12 +188,10 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     },
                                     "publicField" : true,
                                     "lookupTableName" : {
-                                      "empty" : true,
                                       "present" : false
                                     },
                                     "lookupSearchStringMinLength" : -1,
                                     "lookupSearchStartDelay" : {
-                                      "empty" : true,
                                       "present" : false
                                     },
                                     "listNullItemCaption" : {
@@ -228,12 +222,10 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     "publicField" : true,
                                     "lookupSource" : "text",
                                     "lookupTableName" : {
-                                      "empty" : true,
                                       "present" : false
                                     },
                                     "lookupSearchStringMinLength" : -1,
                                     "lookupSearchStartDelay" : {
-                                      "empty" : true,
                                       "present" : false
                                     },
                                     "listNullItemCaption" : {
@@ -289,12 +281,10 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     },
                                     "publicField" : true,
                                     "lookupTableName" : {
-                                      "empty" : true,
                                       "present" : false
                                     },
                                     "lookupSearchStringMinLength" : -1,
                                     "lookupSearchStartDelay" : {
-                                      "empty" : true,
                                       "present" : false
                                     },
                                     "listNullItemCaption" : {
@@ -325,12 +315,10 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     "publicField" : true,
                                     "lookupSource" : "text",
                                     "lookupTableName" : {
-                                      "empty" : true,
                                       "present" : false
                                     },
                                     "lookupSearchStringMinLength" : -1,
                                     "lookupSearchStartDelay" : {
-                                      "empty" : true,
                                       "present" : false
                                     },
                                     "listNullItemCaption" : {
@@ -410,12 +398,10 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     },
                                     "publicField" : true,
                                     "lookupTableName" : {
-                                      "empty" : true,
                                       "present" : false
                                     },
                                     "lookupSearchStringMinLength" : -1,
                                     "lookupSearchStartDelay" : {
-                                      "empty" : true,
                                       "present" : false
                                     },
                                     "listNullItemCaption" : {
@@ -446,12 +432,10 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     "publicField" : true,
                                     "lookupSource" : "text",
                                     "lookupTableName" : {
-                                      "empty" : true,
                                       "present" : false
                                     },
                                     "lookupSearchStringMinLength" : -1,
                                     "lookupSearchStartDelay" : {
-                                      "empty" : true,
                                       "present" : false
                                     },
                                     "listNullItemCaption" : {
@@ -507,12 +491,10 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     },
                                     "publicField" : true,
                                     "lookupTableName" : {
-                                      "empty" : true,
                                       "present" : false
                                     },
                                     "lookupSearchStringMinLength" : -1,
                                     "lookupSearchStartDelay" : {
-                                      "empty" : true,
                                       "present" : false
                                     },
                                     "listNullItemCaption" : {
@@ -543,12 +525,10 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     "publicField" : true,
                                     "lookupSource" : "text",
                                     "lookupTableName" : {
-                                      "empty" : true,
                                       "present" : false
                                     },
                                     "lookupSearchStringMinLength" : -1,
                                     "lookupSearchStartDelay" : {
-                                      "empty" : true,
                                       "present" : false
                                     },
                                     "listNullItemCaption" : {
@@ -604,12 +584,10 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     },
                                     "publicField" : true,
                                     "lookupTableName" : {
-                                      "empty" : true,
                                       "present" : false
                                     },
                                     "lookupSearchStringMinLength" : -1,
                                     "lookupSearchStartDelay" : {
-                                      "empty" : true,
                                       "present" : false
                                     },
                                     "listNullItemCaption" : {
@@ -640,12 +618,10 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     "publicField" : true,
                                     "lookupSource" : "text",
                                     "lookupTableName" : {
-                                      "empty" : true,
                                       "present" : false
                                     },
                                     "lookupSearchStringMinLength" : -1,
                                     "lookupSearchStartDelay" : {
-                                      "empty" : true,
                                       "present" : false
                                     },
                                     "listNullItemCaption" : {
@@ -757,12 +733,10 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     },
                                     "publicField" : true,
                                     "lookupTableName" : {
-                                      "empty" : true,
                                       "present" : false
                                     },
                                     "lookupSearchStringMinLength" : -1,
                                     "lookupSearchStartDelay" : {
-                                      "empty" : true,
                                       "present" : false
                                     },
                                     "listNullItemCaption" : {
@@ -793,12 +767,10 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     "publicField" : true,
                                     "lookupSource" : "text",
                                     "lookupTableName" : {
-                                      "empty" : true,
                                       "present" : false
                                     },
                                     "lookupSearchStringMinLength" : -1,
                                     "lookupSearchStartDelay" : {
-                                      "empty" : true,
                                       "present" : false
                                     },
                                     "listNullItemCaption" : {
@@ -862,12 +834,10 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     },
                                     "publicField" : true,
                                     "lookupTableName" : {
-                                      "empty" : true,
                                       "present" : false
                                     },
                                     "lookupSearchStringMinLength" : -1,
                                     "lookupSearchStartDelay" : {
-                                      "empty" : true,
                                       "present" : false
                                     },
                                     "listNullItemCaption" : {
@@ -898,12 +868,10 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     "publicField" : true,
                                     "lookupSource" : "text",
                                     "lookupTableName" : {
-                                      "empty" : true,
                                       "present" : false
                                     },
                                     "lookupSearchStringMinLength" : -1,
                                     "lookupSearchStartDelay" : {
-                                      "empty" : true,
                                       "present" : false
                                     },
                                     "listNullItemCaption" : {
@@ -959,12 +927,10 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     },
                                     "publicField" : true,
                                     "lookupTableName" : {
-                                      "empty" : true,
                                       "present" : false
                                     },
                                     "lookupSearchStringMinLength" : -1,
                                     "lookupSearchStartDelay" : {
-                                      "empty" : true,
                                       "present" : false
                                     },
                                     "listNullItemCaption" : {
@@ -995,12 +961,10 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     "publicField" : true,
                                     "lookupSource" : "text",
                                     "lookupTableName" : {
-                                      "empty" : true,
                                       "present" : false
                                     },
                                     "lookupSearchStringMinLength" : -1,
                                     "lookupSearchStartDelay" : {
-                                      "empty" : true,
                                       "present" : false
                                     },
                                     "listNullItemCaption" : {
@@ -1080,12 +1044,10 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     },
                                     "publicField" : true,
                                     "lookupTableName" : {
-                                      "empty" : true,
                                       "present" : false
                                     },
                                     "lookupSearchStringMinLength" : -1,
                                     "lookupSearchStartDelay" : {
-                                      "empty" : true,
                                       "present" : false
                                     },
                                     "listNullItemCaption" : {
@@ -1116,12 +1078,10 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     "publicField" : true,
                                     "lookupSource" : "text",
                                     "lookupTableName" : {
-                                      "empty" : true,
                                       "present" : false
                                     },
                                     "lookupSearchStringMinLength" : -1,
                                     "lookupSearchStartDelay" : {
-                                      "empty" : true,
                                       "present" : false
                                     },
                                     "listNullItemCaption" : {
@@ -1177,12 +1137,10 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     },
                                     "publicField" : true,
                                     "lookupTableName" : {
-                                      "empty" : true,
                                       "present" : false
                                     },
                                     "lookupSearchStringMinLength" : -1,
                                     "lookupSearchStartDelay" : {
-                                      "empty" : true,
                                       "present" : false
                                     },
                                     "listNullItemCaption" : {
@@ -1213,12 +1171,10 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     "publicField" : true,
                                     "lookupSource" : "text",
                                     "lookupTableName" : {
-                                      "empty" : true,
                                       "present" : false
                                     },
                                     "lookupSearchStringMinLength" : -1,
                                     "lookupSearchStartDelay" : {
-                                      "empty" : true,
                                       "present" : false
                                     },
                                     "listNullItemCaption" : {
@@ -1274,12 +1230,10 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     },
                                     "publicField" : true,
                                     "lookupTableName" : {
-                                      "empty" : true,
                                       "present" : false
                                     },
                                     "lookupSearchStringMinLength" : -1,
                                     "lookupSearchStartDelay" : {
-                                      "empty" : true,
                                       "present" : false
                                     },
                                     "listNullItemCaption" : {
@@ -1310,12 +1264,10 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     "publicField" : true,
                                     "lookupSource" : "text",
                                     "lookupTableName" : {
-                                      "empty" : true,
                                       "present" : false
                                     },
                                     "lookupSearchStringMinLength" : -1,
                                     "lookupSearchStartDelay" : {
-                                      "empty" : true,
                                       "present" : false
                                     },
                                     "listNullItemCaption" : {
@@ -1888,11 +1840,9 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "supportZoomInto" : false,
               "virtualField" : false,
               "virtualFieldValueProvider" : {
-                "empty" : true,
                 "present" : false
               },
               "defaultValueExpression" : {
-                "empty" : true,
                 "present" : false
               },
               "callouts" : [ ],
@@ -1909,10 +1859,9 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "mandatory" : false,
                   "dataEntryFieldId" : 1111,
                   "fieldType" : "TEXT",
-                  "defaultOrderBy" : false,
-                  "defaultOrderByAscending" : true
+                  "defaultOrderByAscending" : true,
+                  "defaultOrderBy" : false
                 },
-                "empty" : false,
                 "present" : true
               },
               "dependencies" : {
@@ -1945,11 +1894,9 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "supportZoomInto" : false,
               "virtualField" : false,
               "virtualFieldValueProvider" : {
-                "empty" : true,
                 "present" : false
               },
               "defaultValueExpression" : {
-                "empty" : true,
                 "present" : false
               },
               "callouts" : [ ],
@@ -1966,10 +1913,9 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "mandatory" : false,
                   "dataEntryFieldId" : 1111,
                   "fieldType" : "CREATED_UPDATED_INFO",
-                  "defaultOrderBy" : false,
-                  "defaultOrderByAscending" : true
+                  "defaultOrderByAscending" : true,
+                  "defaultOrderBy" : false
                 },
-                "empty" : false,
                 "present" : true
               },
               "dependencies" : {
@@ -2002,11 +1948,9 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "supportZoomInto" : false,
               "virtualField" : false,
               "virtualFieldValueProvider" : {
-                "empty" : true,
                 "present" : false
               },
               "defaultValueExpression" : {
-                "empty" : true,
                 "present" : false
               },
               "callouts" : [ ],
@@ -2023,10 +1967,9 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "mandatory" : false,
                   "dataEntryFieldId" : 1112,
                   "fieldType" : "LONG_TEXT",
-                  "defaultOrderBy" : false,
-                  "defaultOrderByAscending" : true
+                  "defaultOrderByAscending" : true,
+                  "defaultOrderBy" : false
                 },
-                "empty" : false,
                 "present" : true
               },
               "dependencies" : {
@@ -2059,11 +2002,9 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "supportZoomInto" : false,
               "virtualField" : false,
               "virtualFieldValueProvider" : {
-                "empty" : true,
                 "present" : false
               },
               "defaultValueExpression" : {
-                "empty" : true,
                 "present" : false
               },
               "callouts" : [ ],
@@ -2080,10 +2021,9 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "mandatory" : false,
                   "dataEntryFieldId" : 1112,
                   "fieldType" : "CREATED_UPDATED_INFO",
-                  "defaultOrderBy" : false,
-                  "defaultOrderByAscending" : true
+                  "defaultOrderByAscending" : true,
+                  "defaultOrderBy" : false
                 },
-                "empty" : false,
                 "present" : true
               },
               "dependencies" : {
@@ -2116,11 +2056,9 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "supportZoomInto" : false,
               "virtualField" : false,
               "virtualFieldValueProvider" : {
-                "empty" : true,
                 "present" : false
               },
               "defaultValueExpression" : {
-                "empty" : true,
                 "present" : false
               },
               "callouts" : [ ],
@@ -2137,10 +2075,9 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "mandatory" : false,
                   "dataEntryFieldId" : 1113,
                   "fieldType" : "NUMBER",
-                  "defaultOrderBy" : false,
-                  "defaultOrderByAscending" : true
+                  "defaultOrderByAscending" : true,
+                  "defaultOrderBy" : false
                 },
-                "empty" : false,
                 "present" : true
               },
               "dependencies" : {
@@ -2173,11 +2110,9 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "supportZoomInto" : false,
               "virtualField" : false,
               "virtualFieldValueProvider" : {
-                "empty" : true,
                 "present" : false
               },
               "defaultValueExpression" : {
-                "empty" : true,
                 "present" : false
               },
               "callouts" : [ ],
@@ -2194,10 +2129,9 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "mandatory" : false,
                   "dataEntryFieldId" : 1113,
                   "fieldType" : "CREATED_UPDATED_INFO",
-                  "defaultOrderBy" : false,
-                  "defaultOrderByAscending" : true
+                  "defaultOrderByAscending" : true,
+                  "defaultOrderBy" : false
                 },
-                "empty" : false,
                 "present" : true
               },
               "dependencies" : {
@@ -2230,11 +2164,9 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "supportZoomInto" : false,
               "virtualField" : false,
               "virtualFieldValueProvider" : {
-                "empty" : true,
                 "present" : false
               },
               "defaultValueExpression" : {
-                "empty" : true,
                 "present" : false
               },
               "callouts" : [ ],
@@ -2251,10 +2183,9 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "mandatory" : false,
                   "dataEntryFieldId" : 1121,
                   "fieldType" : "DATE",
-                  "defaultOrderBy" : false,
-                  "defaultOrderByAscending" : true
+                  "defaultOrderByAscending" : true,
+                  "defaultOrderBy" : false
                 },
-                "empty" : false,
                 "present" : true
               },
               "dependencies" : {
@@ -2287,11 +2218,9 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "supportZoomInto" : false,
               "virtualField" : false,
               "virtualFieldValueProvider" : {
-                "empty" : true,
                 "present" : false
               },
               "defaultValueExpression" : {
-                "empty" : true,
                 "present" : false
               },
               "callouts" : [ ],
@@ -2308,10 +2237,9 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "mandatory" : false,
                   "dataEntryFieldId" : 1121,
                   "fieldType" : "CREATED_UPDATED_INFO",
-                  "defaultOrderBy" : false,
-                  "defaultOrderByAscending" : true
+                  "defaultOrderByAscending" : true,
+                  "defaultOrderBy" : false
                 },
-                "empty" : false,
                 "present" : true
               },
               "dependencies" : {
@@ -2344,11 +2272,9 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "supportZoomInto" : false,
               "virtualField" : false,
               "virtualFieldValueProvider" : {
-                "empty" : true,
                 "present" : false
               },
               "defaultValueExpression" : {
-                "empty" : true,
                 "present" : false
               },
               "callouts" : [ ],
@@ -2365,10 +2291,9 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "mandatory" : false,
                   "dataEntryFieldId" : 1122,
                   "fieldType" : "YESNO",
-                  "defaultOrderBy" : false,
-                  "defaultOrderByAscending" : true
+                  "defaultOrderByAscending" : true,
+                  "defaultOrderBy" : false
                 },
-                "empty" : false,
                 "present" : true
               },
               "dependencies" : {
@@ -2401,11 +2326,9 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "supportZoomInto" : false,
               "virtualField" : false,
               "virtualFieldValueProvider" : {
-                "empty" : true,
                 "present" : false
               },
               "defaultValueExpression" : {
-                "empty" : true,
                 "present" : false
               },
               "callouts" : [ ],
@@ -2422,10 +2345,9 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "mandatory" : false,
                   "dataEntryFieldId" : 1122,
                   "fieldType" : "CREATED_UPDATED_INFO",
-                  "defaultOrderBy" : false,
-                  "defaultOrderByAscending" : true
+                  "defaultOrderByAscending" : true,
+                  "defaultOrderBy" : false
                 },
-                "empty" : false,
                 "present" : true
               },
               "dependencies" : {
@@ -2483,13 +2405,12 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                           "active" : true
                         }
                       },
-                      "cached" : true,
-                      "numericKey" : false
+                      "numericKey" : false,
+                      "cached" : true
                     },
                     "numericKey" : true,
                     "highVolume" : false
                   },
-                  "empty" : false,
                   "present" : true
                 },
                 "numericKey" : true
@@ -2497,11 +2418,9 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "supportZoomInto" : true,
               "virtualField" : false,
               "virtualFieldValueProvider" : {
-                "empty" : true,
                 "present" : false
               },
               "defaultValueExpression" : {
-                "empty" : true,
                 "present" : false
               },
               "callouts" : [ ],
@@ -2518,10 +2437,9 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "mandatory" : false,
                   "dataEntryFieldId" : 1123,
                   "fieldType" : "LIST",
-                  "defaultOrderBy" : false,
-                  "defaultOrderByAscending" : true
+                  "defaultOrderByAscending" : true,
+                  "defaultOrderBy" : false
                 },
-                "empty" : false,
                 "present" : true
               },
               "dependencies" : {
@@ -2554,11 +2472,9 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "supportZoomInto" : false,
               "virtualField" : false,
               "virtualFieldValueProvider" : {
-                "empty" : true,
                 "present" : false
               },
               "defaultValueExpression" : {
-                "empty" : true,
                 "present" : false
               },
               "callouts" : [ ],
@@ -2575,10 +2491,9 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "mandatory" : false,
                   "dataEntryFieldId" : 1123,
                   "fieldType" : "CREATED_UPDATED_INFO",
-                  "defaultOrderBy" : false,
-                  "defaultOrderByAscending" : true
+                  "defaultOrderByAscending" : true,
+                  "defaultOrderBy" : false
                 },
-                "empty" : false,
                 "present" : true
               },
               "dependencies" : {
@@ -2611,11 +2526,9 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "supportZoomInto" : true,
               "virtualField" : false,
               "virtualFieldValueProvider" : {
-                "empty" : true,
                 "present" : false
               },
               "defaultValueExpression" : {
-                "empty" : true,
                 "present" : false
               },
               "callouts" : [ ],
@@ -2631,10 +2544,9 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "columnName" : "DataEntry_SubTab_ID",
                   "mandatory" : true,
                   "fieldType" : "SUB_TAB_ID",
-                  "defaultOrderBy" : false,
-                  "defaultOrderByAscending" : true
+                  "defaultOrderByAscending" : true,
+                  "defaultOrderBy" : false
                 },
-                "empty" : false,
                 "present" : true
               },
               "dependencies" : {
@@ -2668,11 +2580,9 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "supportZoomInto" : false,
               "virtualField" : false,
               "virtualFieldValueProvider" : {
-                "empty" : true,
                 "present" : false
               },
               "defaultValueExpression" : {
-                "empty" : true,
                 "present" : false
               },
               "callouts" : [ ],
@@ -2688,10 +2598,9 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "columnName" : "documentLinkColumnName",
                   "mandatory" : true,
                   "fieldType" : "PARENT_LINK_ID",
-                  "defaultOrderBy" : false,
-                  "defaultOrderByAscending" : true
+                  "defaultOrderByAscending" : true,
+                  "defaultOrderBy" : false
                 },
-                "empty" : false,
                 "present" : true
               },
               "dependencies" : {
@@ -2726,11 +2635,9 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "supportZoomInto" : true,
               "virtualField" : false,
               "virtualFieldValueProvider" : {
-                "empty" : true,
                 "present" : false
               },
               "defaultValueExpression" : {
-                "empty" : true,
                 "present" : false
               },
               "callouts" : [ ],
@@ -2746,10 +2653,9 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "columnName" : "DataEntry_SubTab_ID",
                   "mandatory" : true,
                   "fieldType" : "SUB_TAB_ID",
-                  "defaultOrderBy" : false,
-                  "defaultOrderByAscending" : true
+                  "defaultOrderByAscending" : true,
+                  "defaultOrderBy" : false
                 },
-                "empty" : false,
                 "present" : true
               },
               "dependencies" : {
@@ -2784,11 +2690,9 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
             "supportZoomInto" : false,
             "virtualField" : false,
             "virtualFieldValueProvider" : {
-              "empty" : true,
               "present" : false
             },
             "defaultValueExpression" : {
-              "empty" : true,
               "present" : false
             },
             "callouts" : [ ],
@@ -2804,10 +2708,9 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "columnName" : "documentLinkColumnName",
                 "mandatory" : true,
                 "fieldType" : "PARENT_LINK_ID",
-                "defaultOrderBy" : false,
-                "defaultOrderByAscending" : true
+                "defaultOrderByAscending" : true,
+                "defaultOrderBy" : false
               },
-              "empty" : false,
               "present" : true
             },
             "dependencies" : {
@@ -2829,15 +2732,12 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
           "filterDescriptors" : { },
           "refreshViewOnChangeEvents" : false,
           "adTabId" : {
-            "empty" : true,
             "present" : false
           },
           "tableName" : {
-            "empty" : true,
             "present" : false
           },
           "soTrx" : {
-            "empty" : true,
             "present" : false
           },
           "cloneEnabled" : false,
@@ -2887,11 +2787,9 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "supportZoomInto" : false,
               "virtualField" : false,
               "virtualFieldValueProvider" : {
-                "empty" : true,
                 "present" : false
               },
               "defaultValueExpression" : {
-                "empty" : true,
                 "present" : false
               },
               "callouts" : [ ],
@@ -2908,10 +2806,9 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "mandatory" : false,
                   "dataEntryFieldId" : 1211,
                   "fieldType" : "TEXT",
-                  "defaultOrderBy" : false,
-                  "defaultOrderByAscending" : true
+                  "defaultOrderByAscending" : true,
+                  "defaultOrderBy" : false
                 },
-                "empty" : false,
                 "present" : true
               },
               "dependencies" : {
@@ -2944,11 +2841,9 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "supportZoomInto" : false,
               "virtualField" : false,
               "virtualFieldValueProvider" : {
-                "empty" : true,
                 "present" : false
               },
               "defaultValueExpression" : {
-                "empty" : true,
                 "present" : false
               },
               "callouts" : [ ],
@@ -2965,10 +2860,9 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "mandatory" : false,
                   "dataEntryFieldId" : 1211,
                   "fieldType" : "CREATED_UPDATED_INFO",
-                  "defaultOrderBy" : false,
-                  "defaultOrderByAscending" : true
+                  "defaultOrderByAscending" : true,
+                  "defaultOrderBy" : false
                 },
-                "empty" : false,
                 "present" : true
               },
               "dependencies" : {
@@ -3001,11 +2895,9 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "supportZoomInto" : false,
               "virtualField" : false,
               "virtualFieldValueProvider" : {
-                "empty" : true,
                 "present" : false
               },
               "defaultValueExpression" : {
-                "empty" : true,
                 "present" : false
               },
               "callouts" : [ ],
@@ -3022,10 +2914,9 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "mandatory" : false,
                   "dataEntryFieldId" : 1212,
                   "fieldType" : "LONG_TEXT",
-                  "defaultOrderBy" : false,
-                  "defaultOrderByAscending" : true
+                  "defaultOrderByAscending" : true,
+                  "defaultOrderBy" : false
                 },
-                "empty" : false,
                 "present" : true
               },
               "dependencies" : {
@@ -3058,11 +2949,9 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "supportZoomInto" : false,
               "virtualField" : false,
               "virtualFieldValueProvider" : {
-                "empty" : true,
                 "present" : false
               },
               "defaultValueExpression" : {
-                "empty" : true,
                 "present" : false
               },
               "callouts" : [ ],
@@ -3079,10 +2968,9 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "mandatory" : false,
                   "dataEntryFieldId" : 1212,
                   "fieldType" : "CREATED_UPDATED_INFO",
-                  "defaultOrderBy" : false,
-                  "defaultOrderByAscending" : true
+                  "defaultOrderByAscending" : true,
+                  "defaultOrderBy" : false
                 },
-                "empty" : false,
                 "present" : true
               },
               "dependencies" : {
@@ -3115,11 +3003,9 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "supportZoomInto" : false,
               "virtualField" : false,
               "virtualFieldValueProvider" : {
-                "empty" : true,
                 "present" : false
               },
               "defaultValueExpression" : {
-                "empty" : true,
                 "present" : false
               },
               "callouts" : [ ],
@@ -3136,10 +3022,9 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "mandatory" : false,
                   "dataEntryFieldId" : 1213,
                   "fieldType" : "NUMBER",
-                  "defaultOrderBy" : false,
-                  "defaultOrderByAscending" : true
+                  "defaultOrderByAscending" : true,
+                  "defaultOrderBy" : false
                 },
-                "empty" : false,
                 "present" : true
               },
               "dependencies" : {
@@ -3172,11 +3057,9 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "supportZoomInto" : false,
               "virtualField" : false,
               "virtualFieldValueProvider" : {
-                "empty" : true,
                 "present" : false
               },
               "defaultValueExpression" : {
-                "empty" : true,
                 "present" : false
               },
               "callouts" : [ ],
@@ -3193,10 +3076,9 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "mandatory" : false,
                   "dataEntryFieldId" : 1213,
                   "fieldType" : "CREATED_UPDATED_INFO",
-                  "defaultOrderBy" : false,
-                  "defaultOrderByAscending" : true
+                  "defaultOrderByAscending" : true,
+                  "defaultOrderBy" : false
                 },
-                "empty" : false,
                 "present" : true
               },
               "dependencies" : {
@@ -3229,11 +3111,9 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "supportZoomInto" : false,
               "virtualField" : false,
               "virtualFieldValueProvider" : {
-                "empty" : true,
                 "present" : false
               },
               "defaultValueExpression" : {
-                "empty" : true,
                 "present" : false
               },
               "callouts" : [ ],
@@ -3250,10 +3130,9 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "mandatory" : false,
                   "dataEntryFieldId" : 1221,
                   "fieldType" : "DATE",
-                  "defaultOrderBy" : false,
-                  "defaultOrderByAscending" : true
+                  "defaultOrderByAscending" : true,
+                  "defaultOrderBy" : false
                 },
-                "empty" : false,
                 "present" : true
               },
               "dependencies" : {
@@ -3286,11 +3165,9 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "supportZoomInto" : false,
               "virtualField" : false,
               "virtualFieldValueProvider" : {
-                "empty" : true,
                 "present" : false
               },
               "defaultValueExpression" : {
-                "empty" : true,
                 "present" : false
               },
               "callouts" : [ ],
@@ -3307,10 +3184,9 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "mandatory" : false,
                   "dataEntryFieldId" : 1221,
                   "fieldType" : "CREATED_UPDATED_INFO",
-                  "defaultOrderBy" : false,
-                  "defaultOrderByAscending" : true
+                  "defaultOrderByAscending" : true,
+                  "defaultOrderBy" : false
                 },
-                "empty" : false,
                 "present" : true
               },
               "dependencies" : {
@@ -3343,11 +3219,9 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "supportZoomInto" : false,
               "virtualField" : false,
               "virtualFieldValueProvider" : {
-                "empty" : true,
                 "present" : false
               },
               "defaultValueExpression" : {
-                "empty" : true,
                 "present" : false
               },
               "callouts" : [ ],
@@ -3364,10 +3238,9 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "mandatory" : false,
                   "dataEntryFieldId" : 1222,
                   "fieldType" : "YESNO",
-                  "defaultOrderBy" : false,
-                  "defaultOrderByAscending" : true
+                  "defaultOrderByAscending" : true,
+                  "defaultOrderBy" : false
                 },
-                "empty" : false,
                 "present" : true
               },
               "dependencies" : {
@@ -3400,11 +3273,9 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "supportZoomInto" : false,
               "virtualField" : false,
               "virtualFieldValueProvider" : {
-                "empty" : true,
                 "present" : false
               },
               "defaultValueExpression" : {
-                "empty" : true,
                 "present" : false
               },
               "callouts" : [ ],
@@ -3421,10 +3292,9 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "mandatory" : false,
                   "dataEntryFieldId" : 1222,
                   "fieldType" : "CREATED_UPDATED_INFO",
-                  "defaultOrderBy" : false,
-                  "defaultOrderByAscending" : true
+                  "defaultOrderByAscending" : true,
+                  "defaultOrderBy" : false
                 },
-                "empty" : false,
                 "present" : true
               },
               "dependencies" : {
@@ -3482,13 +3352,12 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                           "active" : true
                         }
                       },
-                      "cached" : true,
-                      "numericKey" : false
+                      "numericKey" : false,
+                      "cached" : true
                     },
                     "numericKey" : true,
                     "highVolume" : false
                   },
-                  "empty" : false,
                   "present" : true
                 },
                 "numericKey" : true
@@ -3496,11 +3365,9 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "supportZoomInto" : true,
               "virtualField" : false,
               "virtualFieldValueProvider" : {
-                "empty" : true,
                 "present" : false
               },
               "defaultValueExpression" : {
-                "empty" : true,
                 "present" : false
               },
               "callouts" : [ ],
@@ -3517,10 +3384,9 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "mandatory" : false,
                   "dataEntryFieldId" : 1223,
                   "fieldType" : "LIST",
-                  "defaultOrderBy" : false,
-                  "defaultOrderByAscending" : true
+                  "defaultOrderByAscending" : true,
+                  "defaultOrderBy" : false
                 },
-                "empty" : false,
                 "present" : true
               },
               "dependencies" : {
@@ -3553,11 +3419,9 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "supportZoomInto" : false,
               "virtualField" : false,
               "virtualFieldValueProvider" : {
-                "empty" : true,
                 "present" : false
               },
               "defaultValueExpression" : {
-                "empty" : true,
                 "present" : false
               },
               "callouts" : [ ],
@@ -3574,10 +3438,9 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "mandatory" : false,
                   "dataEntryFieldId" : 1223,
                   "fieldType" : "CREATED_UPDATED_INFO",
-                  "defaultOrderBy" : false,
-                  "defaultOrderByAscending" : true
+                  "defaultOrderByAscending" : true,
+                  "defaultOrderBy" : false
                 },
-                "empty" : false,
                 "present" : true
               },
               "dependencies" : {
@@ -3610,11 +3473,9 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "supportZoomInto" : true,
               "virtualField" : false,
               "virtualFieldValueProvider" : {
-                "empty" : true,
                 "present" : false
               },
               "defaultValueExpression" : {
-                "empty" : true,
                 "present" : false
               },
               "callouts" : [ ],
@@ -3630,10 +3491,9 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "columnName" : "DataEntry_SubTab_ID",
                   "mandatory" : true,
                   "fieldType" : "SUB_TAB_ID",
-                  "defaultOrderBy" : false,
-                  "defaultOrderByAscending" : true
+                  "defaultOrderByAscending" : true,
+                  "defaultOrderBy" : false
                 },
-                "empty" : false,
                 "present" : true
               },
               "dependencies" : {
@@ -3667,11 +3527,9 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "supportZoomInto" : false,
               "virtualField" : false,
               "virtualFieldValueProvider" : {
-                "empty" : true,
                 "present" : false
               },
               "defaultValueExpression" : {
-                "empty" : true,
                 "present" : false
               },
               "callouts" : [ ],
@@ -3687,10 +3545,9 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "columnName" : "documentLinkColumnName",
                   "mandatory" : true,
                   "fieldType" : "PARENT_LINK_ID",
-                  "defaultOrderBy" : false,
-                  "defaultOrderByAscending" : true
+                  "defaultOrderByAscending" : true,
+                  "defaultOrderBy" : false
                 },
-                "empty" : false,
                 "present" : true
               },
               "dependencies" : {
@@ -3725,11 +3582,9 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "supportZoomInto" : true,
               "virtualField" : false,
               "virtualFieldValueProvider" : {
-                "empty" : true,
                 "present" : false
               },
               "defaultValueExpression" : {
-                "empty" : true,
                 "present" : false
               },
               "callouts" : [ ],
@@ -3745,10 +3600,9 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "columnName" : "DataEntry_SubTab_ID",
                   "mandatory" : true,
                   "fieldType" : "SUB_TAB_ID",
-                  "defaultOrderBy" : false,
-                  "defaultOrderByAscending" : true
+                  "defaultOrderByAscending" : true,
+                  "defaultOrderBy" : false
                 },
-                "empty" : false,
                 "present" : true
               },
               "dependencies" : {
@@ -3783,11 +3637,9 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
             "supportZoomInto" : false,
             "virtualField" : false,
             "virtualFieldValueProvider" : {
-              "empty" : true,
               "present" : false
             },
             "defaultValueExpression" : {
-              "empty" : true,
               "present" : false
             },
             "callouts" : [ ],
@@ -3803,10 +3655,9 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "columnName" : "documentLinkColumnName",
                 "mandatory" : true,
                 "fieldType" : "PARENT_LINK_ID",
-                "defaultOrderBy" : false,
-                "defaultOrderByAscending" : true
+                "defaultOrderByAscending" : true,
+                "defaultOrderBy" : false
               },
-              "empty" : false,
               "present" : true
             },
             "dependencies" : {
@@ -3828,15 +3679,12 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
           "filterDescriptors" : { },
           "refreshViewOnChangeEvents" : false,
           "adTabId" : {
-            "empty" : true,
             "present" : false
           },
           "tableName" : {
-            "empty" : true,
             "present" : false
           },
           "soTrx" : {
-            "empty" : true,
             "present" : false
           },
           "cloneEnabled" : false,
@@ -3855,15 +3703,12 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
       "filterDescriptors" : { },
       "refreshViewOnChangeEvents" : false,
       "adTabId" : {
-        "empty" : true,
         "present" : false
       },
       "tableName" : {
-        "empty" : true,
         "present" : false
       },
       "soTrx" : {
-        "empty" : true,
         "present" : false
       },
       "cloneEnabled" : false,
