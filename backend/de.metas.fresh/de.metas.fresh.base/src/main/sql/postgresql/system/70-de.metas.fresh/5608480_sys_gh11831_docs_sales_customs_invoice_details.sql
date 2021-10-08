@@ -29,7 +29,7 @@ SELECT ct.Name,
            WHEN uom.StdPrecision = 0
                THEN '#,##0'
                ELSE Substring('#,##0.0000' FROM 0 FOR 7 + uom.StdPrecision :: integer) END AS QtyPattern,
-       de_metas_endcustomer_fresh_reports.CalculateCustom_Invoice_BruttoWeight(il.C_Customs_Invoice_ID, il.c_customs_invoice_line_id) as bruttoweight
+       de_metas_endcustomer_fresh_reports.CalculateCustom_InvoiceLine_BruttoWeight(il.c_customs_invoice_line_id) as bruttoweight
 
 FROM C_Customs_Invoice_Line il
          INNER JOIN C_Customs_Invoice i ON il.C_Customs_Invoice_ID = i.C_Customs_Invoice_ID
@@ -48,7 +48,7 @@ FROM C_Customs_Invoice_Line il
 
 WHERE il.C_Customs_Invoice_ID = p_C_Customs_Invoice_ID
 GROUP BY ct.Name, ct.value, COALESCE(uomt.UOMSymbol, uom.UOMSymbol), uom.StdPrecision, c.cursymbol, i.DocumentNo,
-         ct.Seqno, il.C_Customs_Invoice_ID, il.c_customs_invoice_line_id
+         ct.Seqno, il.c_customs_invoice_line_id
 ORDER BY ct.Seqno, ct.value, ct.Name
 
 $BODY$;

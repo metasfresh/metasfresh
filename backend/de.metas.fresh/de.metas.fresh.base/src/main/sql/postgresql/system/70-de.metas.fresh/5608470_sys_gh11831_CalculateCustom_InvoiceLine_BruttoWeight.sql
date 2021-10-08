@@ -1,14 +1,11 @@
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.CalculateCustom_InvoiceLine_BruttoWeight( NUMERIC);
 
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.CalculateCustom_Invoice_BruttoWeight(numeric, NUMERIC);
-
-CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.CalculateCustom_Invoice_BruttoWeight(p_c_customs_invoice_id numeric, p_c_customs_invoice_line NUMERIC)
-    RETURNS TABLE
-            (
-                bruttoWeight numeric
-            )
+CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.CalculateCustom_InvoiceLine_BruttoWeight(p_c_customs_invoice_line_ID NUMERIC)
+    RETURNS  numeric
     LANGUAGE 'sql'
 AS
 $BODY$
+
 select productWeight + packageWeight
 from (
          select
@@ -28,8 +25,9 @@ from (
                   LEFT JOIN  m_hu_pi_item pii on pii.m_hu_pi_item_id = pip.m_hu_pi_item_id
                   LEFT JOIN m_hu_packingmaterial pp on pp.m_hu_packingmaterial_id=pii.m_hu_packingmaterial_id
                   LEFT JOIN m_product packingProd on packingProd.m_product_id=pp.m_product_id
-         WHERE il.C_Customs_Invoice_ID = p_C_Customs_Invoice_ID and il.c_customs_invoice_line_id = p_c_customs_invoice_line) w
+         WHERE  il.c_customs_invoice_line_id = p_c_customs_invoice_line_ID) w
 $BODY$;
 
-COMMENT ON FUNCTION de_metas_endcustomer_fresh_reports.CalculateCustom_Invoice_BruttoWeight(numeric, NUMERIC)
-    IS 'calculate brutto weight of lines';
+
+COMMENT ON FUNCTION de_metas_endcustomer_fresh_reports.CalculateCustom_InvoiceLine_BruttoWeight(numeric)
+    IS 'calculate brutto weight of the given line';
