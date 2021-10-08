@@ -23,10 +23,13 @@
 package de.metas.vertical.healthcare.alberta.order;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.util.Services;
 import de.metas.vertical.healthcare.alberta.bpartner.BPartnerRepository;
 import lombok.NonNull;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
+import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
+import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.compiere.model.I_C_BP_Relation;
@@ -40,6 +43,13 @@ import org.springframework.stereotype.Component;
 public class C_Order
 {
 	private final BPartnerRepository bpartnerRepository;
+
+	@Init
+	public void init()
+	{
+		Services.get(IProgramaticCalloutProvider.class)
+				.registerAnnotatedCallout(new de.metas.vertical.healthcare.alberta.order.C_Order(this.bpartnerRepository));
+	}
 
 	public C_Order(@NonNull final BPartnerRepository bpartnerRepository)
 	{
