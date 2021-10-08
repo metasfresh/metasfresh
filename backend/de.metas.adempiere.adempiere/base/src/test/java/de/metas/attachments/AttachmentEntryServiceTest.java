@@ -11,6 +11,7 @@ import org.junit.Test;
 
 import java.util.List;
 
+import static de.metas.attachments.AttachmentTags.TAGNAME_SEND_VIA_EMAIL;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
@@ -128,7 +129,7 @@ public class AttachmentEntryServiceTest
 	{
 		final AttachmentEntryCreateRequest requestWithTags = AttachmentEntryCreateRequest
 				.builderFromByteArray(
-						"bPartnerAttachment_eith_tags",
+						"bPartnerAttachment_with_tags",
 						"bPartnerAttachment_with_tags.data".getBytes())
 				.tags(AttachmentTags.builder()
 						.tag("tag1Name", "tag1Value")
@@ -204,5 +205,32 @@ public class AttachmentEntryServiceTest
 
 		assertThat(result.getLinkedRecords()).doesNotContain(tableRecordReferenceToRemove);
 		assertThat(result.getLinkedRecords()).contains(tableRecordReferenceToAdd);
+	}
+
+	@Test
+	public void streamEmailAttachments_test()
+	{
+		// given
+		final AttachmentEntry attachment = createNewAttachment_with_tags_performTest().toBuilder()
+				.tags(AttachmentTags.builder()
+							  .tag(TAGNAME_SEND_VIA_EMAIL, "tag3Value")
+							  .build())
+				.build();
+
+		attachmentEntryService.save(attachment);
+		final List<AttachmentEntry> attachmentsForRecordRef = attachmentEntryService.getByReferencedRecord(bpartnerRecord);
+		assertThat(attachmentsForRecordRef.size()).isEqualTo(3);
+
+		// when
+		final List<EmailAttachment> filteredAttachments = attachmentEntryService.streamEmailAttachments(TableRecordReference.of(bpartnerRecord), TAGNAME_SEND_VIA_EMAIL)
+				.collect(ImmutableList.toImmutableList());
+
+		// then
+		assertThat(filteredAttachments).isNotEmpty();
+		assertThat(filteredAttachments.size()).isEqualTo(1);
+
+		final EmailAttachment attachmentEntry = filteredAttachments.get(0);
+		assertThat(attachmentEntry.getFilename()).isEqualTo("bPartnerAttachment_with_tags");
+		assertThat(attachmentEntry.getAttachmentDataSupplier().get()).isEqualTo("bPartnerAttachment_with_tags.data".getBytes());
 	}
 }

@@ -491,6 +491,7 @@ class WidgetRenderer extends PureComponent {
               isFilterActive: filterActiveState,
               updateItems,
             }}
+            widgetData={widgetData[0]}
             handlePatch={onPatch}
           />
         );

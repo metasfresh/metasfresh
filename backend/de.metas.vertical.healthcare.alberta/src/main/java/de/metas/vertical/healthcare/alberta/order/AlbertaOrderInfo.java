@@ -25,7 +25,6 @@ package de.metas.vertical.healthcare.alberta.order;
 import de.metas.bpartner.BPartnerId;
 import de.metas.ordercandidate.api.OLCandId;
 import de.metas.organization.OrgId;
-import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -38,13 +37,16 @@ import java.util.List;
 
 @Value
 @Builder
-public class AlbertaOrderCompositeInfo
+public class AlbertaOrderInfo
 {
 	@NonNull
 	OLCandId olCandId;
 
 	@NonNull
 	OrgId orgId;
+
+	@NonNull
+	String externalId;
 
 	@Nullable
 	String rootId;
@@ -83,25 +85,13 @@ public class AlbertaOrderCompositeInfo
 	String annotation;
 
 	@Nullable
+	String deliveryInformation;
+
+	@Nullable
+	String deliveryNote;
+
+	@Nullable
 	Instant updated;
-
-	@Nullable
-	String salesLineId;
-
-	@Nullable
-	String unit;
-
-	@Nullable
-	Boolean isPrivateSale;
-
-	@Nullable
-	Boolean isRentalEquipment;
-
-	@Nullable
-	BigDecimal durationAmount;
-
-	@Nullable
-	BigDecimal timePeriod;
 
 	@Nullable
 	String therapy;
@@ -109,26 +99,6 @@ public class AlbertaOrderCompositeInfo
 	@Nullable
 	List<String> therapyTypes;
 
-	public boolean noAlbertaInfoSet()
-	{
-		return Check.isEmpty(rootId) &&
-				Check.isEmpty(annotation) &&
-				Check.isEmpty(salesLineId) &&
-				Check.isEmpty(unit) &&
-				creationDate == null &&
-				startDate == null &&
-				endDate == null &&
-				dayOfDelivery == null &&
-				nextDelivery == null &&
-				doctorBPartnerId == null &&
-				pharmacyBPartnerId == null &&
-				isInitialCare == null &&
-				isSeriesOrder == null &&
-				isArchived == null &&
-				updated == null &&
-				isPrivateSale == null &&
-				isRentalEquipment == null &&
-				durationAmount == null &&
-				timePeriod == null;
-	}
+	@Nullable
+	AlbertaOrderLineInfo orderLine;
 }
