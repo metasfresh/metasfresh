@@ -76,7 +76,7 @@ public class WorkflowRestAPIService
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private List<WorkflowLauncher> provideLaunchersNoFail(
+	private static List<WorkflowLauncher> provideLaunchersNoFail(
 			@NonNull final WFProcessHandler handler,
 			@NonNull final UserId userId)
 	{
