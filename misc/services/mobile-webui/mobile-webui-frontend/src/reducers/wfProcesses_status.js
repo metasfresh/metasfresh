@@ -1,4 +1,4 @@
-import { produce, original } from 'immer';
+import { original, produce } from 'immer';
 import { createSelector } from 'reselect';
 import { get } from 'lodash';
 
@@ -35,7 +35,8 @@ export const getWorkflowProcessActivityLine = (wfProcess, activityId, lineId) =>
 
 const reducer = produce((draftState, action) => {
   switch (action.type) {
-    case types.ADD_WORKFLOW_STATUS: {
+    case types.ADD_WORKFLOW_STATUS:
+    case types.UPDATE_WORKFLOW_PROCESS: {
       const { id, headerProperties, activities } = action.payload;
       const current = draftState[id] ? original(draftState[id]).activities : null;
 
@@ -49,7 +50,7 @@ const reducer = produce((draftState, action) => {
             tmpActivity.dataStored = {
               isActivityEnabled: true,
               isComplete: false,
-              scannedCode: '',
+              scannedBarcode: '',
             };
             break;
           case 'common/confirmButton':
@@ -111,10 +112,10 @@ const reducer = produce((draftState, action) => {
 
       return draftState;
     }
-    case types.UPDATE_PICKING_SLOT_CODE: {
-      const { wfProcessId, activityId, detectedCode } = action.payload;
+    case types.SET_SCANNED_BARCODE: {
+      const { wfProcessId, activityId, scannedBarcode } = action.payload;
 
-      draftState[wfProcessId].activities[activityId].dataStored.scannedCode = detectedCode;
+      draftState[wfProcessId].activities[activityId].dataStored.scannedBarcode = scannedBarcode;
 
       return draftState;
     }

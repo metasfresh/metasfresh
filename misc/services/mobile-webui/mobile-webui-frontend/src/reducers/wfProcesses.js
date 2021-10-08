@@ -18,14 +18,9 @@ export const getWorkflowProcess = createSelector(wfSelector, (workflow) =>
 
 const reducer = produce((draftState, action) => {
   switch (action.type) {
-    case types.START_WORKFLOW_PROCESS: {
-      const { id, headerProperties, activities } = action.payload;
-
-      draftState[id] = { headerProperties, activities };
-
-      return draftState;
-    }
-    case types.CONTINUE_WORKFLOW_PROCESS: {
+    case types.START_WORKFLOW_PROCESS:
+    case types.CONTINUE_WORKFLOW_PROCESS:
+    case types.UPDATE_WORKFLOW_PROCESS: {
       const { id, headerProperties, activities } = action.payload;
 
       draftState[id] = { headerProperties, activities };

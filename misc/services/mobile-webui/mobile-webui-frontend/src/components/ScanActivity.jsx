@@ -8,10 +8,11 @@ const ScanActivity = (props) => {
   const history = useHistory();
   const { activityItem, activityState } = props;
 
-  const scannedCode = activityState ? activityState.dataStored : null;
-  const caption = scannedCode ? `Code: ${activityItem.componentProps.barcodeCaption}` : activityItem.caption;
-  const scanButtonStatus = scannedCode ? 'complete' : 'incomplete';
-  const scanBtnCaption = caption || 'Scan';
+  const scannedBarcode = activityState && activityState.dataStored ? activityState.dataStored.scannedBarcode : null;
+  const scannedBarcodeCaption = activityItem.componentProps.barcodeCaption;
+
+  const scanButtonStatus = scannedBarcode || scannedBarcodeCaption ? 'complete' : 'incomplete';
+  const scanButtonCaption = scannedBarcodeCaption || scannedBarcode || activityItem.caption || 'Scan';
 
   const handleClick = () => {
     const { wfProcessId } = props;
@@ -23,7 +24,7 @@ const ScanActivity = (props) => {
   return (
     <div className="mt-0">
       <button className="button is-outlined complete-btn" onClick={handleClick}>
-        <ButtonWithIndicator caption={scanBtnCaption} indicatorType={scanButtonStatus} />
+        <ButtonWithIndicator caption={scanButtonCaption} indicatorType={scanButtonStatus} />
       </button>
     </div>
   );

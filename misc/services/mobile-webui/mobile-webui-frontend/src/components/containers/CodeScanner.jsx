@@ -39,7 +39,7 @@ class CodeScanner extends Component {
   };
 
   decodeContinuously = (selectedDeviceId) => {
-    const { onDetection, activityId, isScanDisabled } = this.props;
+    const { onDetection, isScanDisabled } = this.props;
 
     this.codeReader.decodeFromInputVideoDeviceContinuously(selectedDeviceId, 'video', (result, err) => {
       if (result) {
@@ -54,7 +54,7 @@ class CodeScanner extends Component {
           tracks.forEach((track) => track.stop());
         }
 
-        onDetection({ detectedCode, activityId });
+        onDetection({ scannedBarcode: detectedCode });
         isScanDisabled && this.codeReader.stopContinuousDecode();
       }
 
@@ -144,7 +144,6 @@ CodeScanner.propTypes = {
   scanner: PropTypes.object.isRequired,
   startScanning: PropTypes.func.isRequired,
   onDetection: PropTypes.func.isRequired,
-  activityId: PropTypes.string.isRequired,
   caption: PropTypes.string,
   scanButtonStatus: PropTypes.string,
   isScanDisabled: PropTypes.bool, // future indicator for scanning status
