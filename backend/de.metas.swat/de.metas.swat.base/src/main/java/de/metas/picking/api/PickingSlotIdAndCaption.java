@@ -25,9 +25,14 @@ package de.metas.picking.api;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+import java.util.Objects;
+
 @Value(staticConstructor = "of")
 public class PickingSlotIdAndCaption
 {
 	@NonNull PickingSlotId pickingSlotId;
 	@NonNull String caption;
+
+	public static boolean equals(@Nullable PickingSlotIdAndCaption o1, @Nullable PickingSlotIdAndCaption o2) {return Objects.equals(o1, o2);}
 }
