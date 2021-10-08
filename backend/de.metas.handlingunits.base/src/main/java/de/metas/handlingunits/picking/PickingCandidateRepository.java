@@ -242,9 +242,19 @@ public class PickingCandidateRepository
 
 	public ImmutableList<PickingCandidate> getByShipmentScheduleId(@NonNull final ShipmentScheduleId shipmentScheduleId)
 	{
+		return getByShipmentScheduleIds(ImmutableSet.of(shipmentScheduleId));
+	}
+
+	public ImmutableList<PickingCandidate> getByShipmentScheduleIds(@NonNull final Collection<ShipmentScheduleId> shipmentScheduleIds)
+	{
+		if (shipmentScheduleIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
 		return queryBL.createQueryBuilder(I_M_Picking_Candidate.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_Picking_Candidate.COLUMNNAME_M_ShipmentSchedule_ID, shipmentScheduleId)
+				.addInArrayFilter(I_M_Picking_Candidate.COLUMNNAME_M_ShipmentSchedule_ID, shipmentScheduleIds)
 				.orderBy(I_M_Picking_Candidate.COLUMN_M_Picking_Candidate_ID) // just to have a predictable order
 				.create()
 				.stream()
@@ -278,7 +288,7 @@ public class PickingCandidateRepository
 		{
 			return;
 		}
-		
+
 		final Set<PickingCandidateId> pickingCandidateIds = candidates.stream()
 				.map(PickingCandidate::getId)
 				.filter(Objects::nonNull)
