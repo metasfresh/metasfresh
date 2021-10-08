@@ -23,25 +23,39 @@
 package de.metas.picking.rest_api.json;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
+import de.metas.common.util.time.SystemTime;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.time.Instant;
 
 @Value
 @Builder
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
-@JsonDeserialize(builder = JsonQtyPickedEvent.JsonQtyPickedEventBuilder.class)
-public class JsonQtyPickedEvent
+@Jacksonized
+public class JsonPickingStepEvent
 {
-	@JsonPOJOBuilder(withPrefix = "")
-	public static class JsonQtyPickedEventBuilder {}
-
+	//
+	// Picking Step Identifier
 	@NonNull String wfProcessId;
 	@NonNull String wfActivityId;
 	@NonNull String pickingStepId;
-	@NonNull BigDecimal qtyPicked;
+
+	//
+	// Event Type
+	@NonNull EventType type;
+
+	public enum EventType
+	{PICK, UNPICK}
+
+	//
+	// Event Type: PICK
+	@Nullable BigDecimal qtyPicked;
 }

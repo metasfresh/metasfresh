@@ -26,32 +26,53 @@ import com.google.common.collect.ImmutableList;
 import de.metas.i18n.ITranslatableString;
 import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import de.metas.util.Check;
+import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
 @Value
-@Builder
 public class PickingJobLine
 {
 	@NonNull ProductId productId;
 	@NonNull ITranslatableString productName;
 	@NonNull ImmutableList<PickingJobStep> steps;
 
-	Stream<ShipmentScheduleId> streamShipmentScheduleId()
+	// computed values
+	@NonNull Quantity qtyToPick;
+	@NonNull Quantity qtyPicked;
+	@NonNull PickingJobProgress progress;
+
+	@Builder(toBuilder = true)
+	@SuppressWarnings("OptionalGetWithoutIsPresent")
+	private PickingJobLine(
+			@NonNull final ProductId productId,
+			@NonNull final ITranslatableString productName,
+			@NonNull final ImmutableList<PickingJobStep> steps)
 	{
-		return steps.stream().map(PickingJobStep::getShipmentScheduleId);
+		Check.assumeNotEmpty(steps, "steps not empty");
+
+		this.productId = productId;
+		this.productName = productName;
+		this.steps = steps;
+
+		this.progress = computeProgress(steps);
+		this.qtyToPick = steps.stream().map(PickingJobStep::getQtyToPick).reduce(Quantity::add).get();
+		this.qtyPicked = steps.stream().map(PickingJobStep::getQtyPicked).reduce(Quantity::add).get();
 	}
 
-	public PickingJobProgress getProgress()
+	private static PickingJobProgress computeProgress(@NonNull ImmutableList<PickingJobStep> steps)
 	{
 		int countDoneSteps = 0;
 		int countNotDoneSteps = 0;
 		for (final PickingJobStep step : steps)
 		{
-			if (step.isPickingDone())
+			if (step.isQtyPickedConfirmed())
 			{
 				countDoneSteps++;
 			}
@@ -63,15 +84,29 @@ public class PickingJobLine
 
 		if (countDoneSteps <= 0)
 		{
-			return countNotDoneSteps <= 0
-					? PickingJobProgress.FULLY_PICKED // corner case: when there are no steps because steps were invalid
-					: PickingJobProgress.NOTHING_PICKED;
+			return PickingJobProgress.NOTHING_PICKED;
 		}
-		else // countDoneSteps > 0
+		else if (countNotDoneSteps <= 0)
 		{
-			return countNotDoneSteps <= 0
-					? PickingJobProgress.FULLY_PICKED
-					: PickingJobProgress.PARTIAL_PICKED;
+			return PickingJobProgress.FULLY_PICKED;
+		}
+		else
+		{
+			return PickingJobProgress.PARTIAL_PICKED;
 		}
 	}
+
+	Stream<ShipmentScheduleId> streamShipmentScheduleId()
+	{
+		return steps.stream().map(PickingJobStep::getShipmentScheduleId);
+	}
+
+	public PickingJobLine withChangedSteps(@NonNull final UnaryOperator<PickingJobStep> stepMapper)
+	{
+		final ImmutableList<PickingJobStep> changedSteps = CollectionUtils.map(steps, stepMapper);
+		return changedSteps.equals(steps)
+				? this
+				: toBuilder().steps(changedSteps).build();
+	}
+
 }

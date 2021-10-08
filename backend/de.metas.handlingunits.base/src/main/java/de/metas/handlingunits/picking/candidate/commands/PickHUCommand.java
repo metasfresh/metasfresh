@@ -1,13 +1,6 @@
 package de.metas.handlingunits.picking.candidate.commands;
 
-import java.util.List;
-
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_C_UOM;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.HuPackingInstructionsId;
@@ -18,22 +11,29 @@ import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.picking.IHUPickingSlotBL;
 import de.metas.handlingunits.picking.PickFrom;
 import de.metas.handlingunits.picking.PickingCandidate;
+import de.metas.handlingunits.picking.PickingCandidateId;
 import de.metas.handlingunits.picking.PickingCandidateIssueToBOMLine;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.picking.PickingCandidateStatus;
 import de.metas.handlingunits.picking.requests.PickRequest;
 import de.metas.handlingunits.picking.requests.PickRequest.IssueToPickingOrderRequest;
 import de.metas.handlingunits.storage.IHUProductStorage;
+import de.metas.i18n.BooleanWithReason;
+import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
-import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_C_UOM;
+
+import java.util.List;
 
 /*
  * #%L
@@ -68,6 +68,7 @@ public class PickHUCommand
 	private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 	private final PickingCandidateRepository pickingCandidateRepository;
 
+	private final PickingCandidateId existingPickingCandidateId;
 	private final ShipmentScheduleId shipmentScheduleId;
 	private final PickFrom pickFrom;
 	private final PickingSlotId pickingSlotId;
@@ -85,6 +86,7 @@ public class PickHUCommand
 	{
 		this.pickingCandidateRepository = pickingCandidateRepository;
 
+		this.existingPickingCandidateId = request.getExistingPickingCandidateId();
 		this.shipmentScheduleId = request.getShipmentScheduleId();
 
 		this.pickFrom = request.getPickFrom();
@@ -109,14 +111,20 @@ public class PickHUCommand
 			throw new AdempiereException("Invalid quantity to pick: " + qtyToPick);
 		}
 
-		final PickingCandidate pickingCandidate = getOrCreatePickingCandidate();
+		final PickingCandidate pickingCandidate = preparePickingCandidate();
 		pickingCandidate.assertDraft();
+
+		if (!autoReview)
+		{
+			pickingCandidate.assertNotApproved();
+		}
 
 		pickingCandidate.pick(qtyToPick);
 		pickingCandidate.packTo(packToId);
+
 		if (autoReview)
 		{
-			pickingCandidate.reviewPicking(qtyToPick.toBigDecimal());
+			pickingCandidate.reviewPicking();
 		}
 
 		pickingCandidate.issueToPickingOrder(getIssuesToPickingOrder());
@@ -130,28 +138,56 @@ public class PickHUCommand
 				.build();
 	}
 
-	private PickingCandidate getOrCreatePickingCandidate()
+	private PickingCandidate preparePickingCandidate()
 	{
-		final PickingCandidate existingPickingCandidate = pickingCandidateRepository.getByShipmentScheduleId(shipmentScheduleId)
-				.stream()
-				.filter(PickingCandidate::isDraft)
-				.filter(pc -> PickingSlotId.equals(pickingSlotId, pc.getPickingSlotId()))
-				.filter(pc -> pickFrom.equals(pc.getPickFrom()))
-				.findFirst()
-				.orElse(null);
-		if (existingPickingCandidate != null)
+		if (existingPickingCandidateId != null)
 		{
+			final PickingCandidate existingPickingCandidate = pickingCandidateRepository.getById(existingPickingCandidateId)
+					// NOTE: in case of existing draft picking candidate, it's OK to change the picking slot
+					.withPickingSlotId(pickingSlotId);
+
+			checkEligibleCandidate(existingPickingCandidate).assertTrue();
+
 			return existingPickingCandidate;
 		}
 		else
 		{
-			return PickingCandidate.builder()
-					.processingStatus(PickingCandidateStatus.Draft)
-					.qtyPicked(Quantity.zero(getShipmentScheduleUOM()))
-					.shipmentScheduleId(shipmentScheduleId)
-					.pickFrom(pickFrom)
-					.pickingSlotId(pickingSlotId)
-					.build();
+			return pickingCandidateRepository.getByShipmentScheduleId(shipmentScheduleId)
+					.stream()
+					.filter(pc -> checkEligibleCandidate(pc).isTrue())
+					.findFirst()
+					.orElseGet(this::createNewPickingCandidate);
+		}
+	}
+
+	private PickingCandidate createNewPickingCandidate()
+	{
+		return PickingCandidate.builder()
+				.processingStatus(PickingCandidateStatus.Draft)
+				.qtyPicked(Quantity.zero(getShipmentScheduleUOM()))
+				.shipmentScheduleId(shipmentScheduleId)
+				.pickFrom(pickFrom)
+				.pickingSlotId(pickingSlotId)
+				.build();
+	}
+
+	private BooleanWithReason checkEligibleCandidate(final PickingCandidate pc)
+	{
+		if (!pc.isDraft())
+		{
+			return BooleanWithReason.falseBecause("not in Draft mode");
+		}
+		else if (!PickingSlotId.equals(pickingSlotId, pc.getPickingSlotId()))
+		{
+			return BooleanWithReason.falseBecause("picking slot not matching");
+		}
+		else if (!pickFrom.equals(pc.getPickFrom()))
+		{
+			return BooleanWithReason.falseBecause("pickFrom not matching");
+		}
+		else
+		{
+			return BooleanWithReason.TRUE;
 		}
 	}
 
@@ -163,7 +199,7 @@ public class PickHUCommand
 		}
 
 		return issuesToPickingOrderRequests.stream()
-				.map(request -> toPickingCandidateIssueToBOMLine(request))
+				.map(this::toPickingCandidateIssueToBOMLine)
 				.collect(ImmutableList.toImmutableList());
 	}
 

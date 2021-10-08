@@ -23,11 +23,13 @@
 package de.metas.workflow.rest_api.model;
 
 import de.metas.i18n.ITranslatableString;
-import de.metas.workflow.WFState;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+import lombok.With;
+
+import javax.annotation.Nullable;
 
 @ToString
 public class WFActivity
@@ -42,26 +44,24 @@ public class WFActivity
 	@NonNull private final WFActivityType wfActivityType;
 
 	@Getter
-	@NonNull private WFState status = WFState.NotStarted;
+	@With
+	@NonNull private final WFActivityStatus status;
 
 	@Builder
 	private WFActivity(
 			@NonNull final WFActivityId id,
 			@NonNull final ITranslatableString caption,
-			@NonNull final WFActivityType wfActivityType)
+			@NonNull final WFActivityType wfActivityType,
+			@Nullable final WFActivityStatus status)
 	{
 		this.id = id;
 		this.caption = caption;
 		this.wfActivityType = wfActivityType;
+		this.status = status != null ? status : WFActivityStatus.NOT_STARTED;
 	}
 
 	public boolean isCompleted()
 	{
 		return getStatus().isCompleted();
-	}
-
-	void _setStatus(@NonNull final WFState status)
-	{
-		this.status = status;
 	}
 }

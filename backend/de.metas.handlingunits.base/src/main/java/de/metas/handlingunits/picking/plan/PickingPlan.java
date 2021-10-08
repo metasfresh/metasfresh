@@ -31,7 +31,7 @@ import lombok.Value;
  * Contains a plan about how a picker can precisely pick.
  */
 @Value
-@Builder
+@Builder(toBuilder = true)
 public class PickingPlan
 {
 	@NonNull ImmutableList<PickingPlanLine> lines;

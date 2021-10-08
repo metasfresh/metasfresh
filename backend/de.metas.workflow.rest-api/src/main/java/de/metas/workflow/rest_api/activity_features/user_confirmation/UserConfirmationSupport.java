@@ -22,7 +22,9 @@
 
 package de.metas.workflow.rest_api.activity_features.user_confirmation;
 
+import de.metas.workflow.rest_api.model.WFProcess;
+
 public interface UserConfirmationSupport
 {
-	void userConfirmed(UserConfirmationRequest request);
+	WFProcess userConfirmed(UserConfirmationRequest request);
 }

@@ -26,7 +26,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.metas.logging.LogManager;
 import de.metas.user.UserId;
-import de.metas.workflow.WFState;
 import de.metas.workflow.rest_api.activity_features.set_scanned_barcode.SetScannedBarcodeRequest;
 import de.metas.workflow.rest_api.activity_features.set_scanned_barcode.SetScannedBarcodeSupport;
 import de.metas.workflow.rest_api.activity_features.user_confirmation.UserConfirmationRequest;
@@ -35,6 +34,7 @@ import de.metas.workflow.rest_api.controller.v2.json.JsonOpts;
 import de.metas.workflow.rest_api.model.UIComponent;
 import de.metas.workflow.rest_api.model.WFActivity;
 import de.metas.workflow.rest_api.model.WFActivityId;
+import de.metas.workflow.rest_api.model.WFActivityStatus;
 import de.metas.workflow.rest_api.model.WFProcess;
 import de.metas.workflow.rest_api.model.WFProcessHeaderProperties;
 import de.metas.workflow.rest_api.model.WFProcessId;
@@ -45,93 +45,88 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
-import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
+import java.util.function.UnaryOperator;
 
 @Service
 public class WorkflowRestAPIService
 {
 	private static final Logger logger = LogManager.getLogger(WorkflowRestAPIService.class);
 
-	private final WorkflowLauncherProvidersMap launcherProviders;
+	private final WFProcessHandlersMap wfProcessHandlers;
 	private final WFActivityHandlersRegistry wfActivityHandlersRegistry;
 
 	WorkflowRestAPIService(
-			@NonNull final Optional<List<WorkflowLauncherProvider>> providers,
+			@NonNull final Optional<List<WFProcessHandler>> wfProcessHandlers,
 			@NonNull final WFActivityHandlersRegistry wfActivityHandlersRegistry)
 	{
-		this.launcherProviders = WorkflowLauncherProvidersMap.of(providers);
-		logger.info("launcherProviders: {}", launcherProviders);
+		this.wfProcessHandlers = WFProcessHandlersMap.of(wfProcessHandlers);
+		logger.info("wfProcessHandlers: {}", this.wfProcessHandlers);
 
 		this.wfActivityHandlersRegistry = wfActivityHandlersRegistry;
 	}
 
 	public List<WorkflowLauncher> getLaunchers(@NonNull final UserId userId)
 	{
-		return launcherProviders.stream()
-				.map(provider -> provideLaunchersNoFail(provider, userId))
+		return wfProcessHandlers.stream()
+				.map(handler -> provideLaunchersNoFail(handler, userId))
 				.flatMap(List::stream)
 				.collect(ImmutableList.toImmutableList());
 	}
 
 	private List<WorkflowLauncher> provideLaunchersNoFail(
-			@NonNull final WorkflowLauncherProvider provider,
+			@NonNull final WFProcessHandler handler,
 			@NonNull final UserId userId)
 	{
 		try
 		{
-			final List<WorkflowLauncher> launchers = provider.provideLaunchers(userId);
+			final List<WorkflowLauncher> launchers = handler.provideLaunchers(userId);
 			return launchers != null ? launchers : ImmutableList.of();
 		}
 		catch (final Exception ex)
 		{
-			logger.warn("Failed fetching launchers from {} for {}. Skipped", provider, userId, ex);
+			logger.warn("Failed fetching launchers from {} for {}. Skipped", handler, userId, ex);
 			return ImmutableList.of();
 		}
 	}
 
 	public WFProcess getWFProcessById(@NonNull final WFProcessId wfProcessId)
 	{
-		return launcherProviders
-				.getById(wfProcessId.getProviderId())
+		return wfProcessHandlers
+				.getById(wfProcessId.getHandlerId())
 				.getWFProcessById(wfProcessId);
+	}
+
+	public WFProcess changeWFProcessById(
+			@NonNull final WFProcessId wfProcessId,
+			@NonNull final UnaryOperator<WFProcess> remappingFunction)
+	{
+		return wfProcessHandlers
+				.getById(wfProcessId.getHandlerId())
+				.changeWFProcessById(wfProcessId, remappingFunction);
 	}
 
 	public WFProcess startWorkflow(@NonNull final WorkflowStartRequest request)
 	{
-		return launcherProviders
-				.getById(request.getProviderId())
+		return wfProcessHandlers
+				.getById(request.getHandlerId())
 				.startWorkflow(request);
 	}
 
 	public void abortWFProcess(@NonNull final WFProcessId wfProcessId, @NonNull final UserId callerId)
 	{
-		launcherProviders
-				.getById(wfProcessId.getProviderId())
+		wfProcessHandlers
+				.getById(wfProcessId.getHandlerId())
 				.abort(wfProcessId, callerId);
 	}
 
 	public WFProcessHeaderProperties getHeaderProperties(@NonNull final WFProcess wfProcess)
 	{
-		final WFProcessHeaderProperties properties = launcherProviders.getById(wfProcess.getId().getProviderId())
+		return wfProcessHandlers
+				.getById(wfProcess.getId().getHandlerId())
 				.getHeaderProperties(wfProcess);
-
-		final WFProcessHeaderProperties propertiesFromActivities = wfProcess.getActivitiesInOrder()
-				.stream()
-				.map(wfActivity -> getHeaderProperties(wfProcess, wfActivity))
-				.reduce(WFProcessHeaderProperties::composeWith)
-				.orElse(WFProcessHeaderProperties.EMPTY);
-
-		return properties.composeWith(propertiesFromActivities);
-	}
-
-	private WFProcessHeaderProperties getHeaderProperties(
-			@NonNull final WFProcess wfProcess,
-			@NonNull final WFActivity wfActivity)
-	{
-		return wfActivityHandlersRegistry
-				.getHandler(wfActivity.getWfActivityType())
-				.getHeaderProperties(wfProcess, wfActivity);
 	}
 
 	public ImmutableMap<WFActivityId, UIComponent> getUIComponents(
@@ -139,7 +134,7 @@ public class WorkflowRestAPIService
 			@NonNull final JsonOpts jsonOpts)
 	{
 		final ImmutableMap.Builder<WFActivityId, UIComponent> uiComponents = ImmutableMap.builder();
-		for (final WFActivity wfActivity : wfProcess.getActivitiesInOrder())
+		for (final WFActivity wfActivity : wfProcess.getActivities())
 		{
 			final UIComponent uiComponent = wfActivityHandlersRegistry
 					.getHandler(wfActivity.getWfActivityType())
@@ -151,25 +146,25 @@ public class WorkflowRestAPIService
 		return uiComponents.build();
 	}
 
-	public void setScannedBarcode(
+	public WFProcess setScannedBarcode(
 			@NonNull final UserId invokerId,
 			@NonNull final WFProcessId wfProcessId,
 			@NonNull final WFActivityId wfActivityId,
 			@Nullable final String scannedBarcode)
 	{
-		processWFActivity(
+		return processWFActivity(
 				invokerId,
 				wfProcessId,
 				wfActivityId,
 				(wfProcess, wfActivity) -> setScannedBarcode0(wfProcess, wfActivity, scannedBarcode));
 	}
 
-	private void setScannedBarcode0(
+	private WFProcess setScannedBarcode0(
 			@NonNull final WFProcess wfProcess,
 			@NonNull final WFActivity wfActivity,
 			@Nullable final String scannedBarcode)
 	{
-		wfActivityHandlersRegistry
+		return wfActivityHandlersRegistry
 				.getFeature(wfActivity.getWfActivityType(), SetScannedBarcodeSupport.class)
 				.setScannedBarcode(SetScannedBarcodeRequest.builder()
 						.wfProcess(wfProcess)
@@ -178,23 +173,23 @@ public class WorkflowRestAPIService
 						.build());
 	}
 
-	public void setUserConfirmation(
+	public WFProcess setUserConfirmation(
 			@NonNull final UserId invokerId,
 			@NonNull final WFProcessId wfProcessId,
 			@NonNull final WFActivityId wfActivityId)
 	{
-		processWFActivity(
+		return processWFActivity(
 				invokerId,
 				wfProcessId,
 				wfActivityId,
 				this::setUserConfirmation0);
 	}
 
-	private void setUserConfirmation0(
+	private WFProcess setUserConfirmation0(
 			@NonNull final WFProcess wfProcess,
 			@NonNull final WFActivity wfActivity)
 	{
-		wfActivityHandlersRegistry
+		return wfActivityHandlersRegistry
 				.getFeature(wfActivity.getWfActivityType(), UserConfirmationSupport.class)
 				.userConfirmed(UserConfirmationRequest.builder()
 						.wfProcess(wfProcess)
@@ -202,31 +197,43 @@ public class WorkflowRestAPIService
 						.build());
 	}
 
-	private void processWFActivity(
+	private WFProcess processWFActivity(
 			@NonNull final UserId invokerId,
 			@NonNull final WFProcessId wfProcessId,
 			@NonNull final WFActivityId wfActivityId,
-			@NonNull final BiConsumer<WFProcess, WFActivity> processor)
+			@NonNull final BiFunction<WFProcess, WFActivity, WFProcess> processor)
 	{
-		final WFProcess wfProcess = getWFProcessById(wfProcessId);
-		wfProcess.assertHasAccess(invokerId);
+		return changeWFProcessById(
+				wfProcessId,
+				wfProcess -> {
+					wfProcess.assertHasAccess(invokerId);
 
-		final WFActivity wfActivity = wfProcess.getActivityById(wfActivityId);
+					final WFActivity wfActivity = wfProcess.getActivityById(wfActivityId);
 
-		processor.accept(wfProcess, wfActivity);
+					WFProcess wfProcessChanged = processor.apply(wfProcess, wfActivity);
+					if (!Objects.equals(wfProcess, wfProcessChanged))
+					{
+						wfProcessChanged = withUpdatedActivityStatuses(wfProcessChanged);
+					}
 
-		updateStatuses(wfProcess);
+					return wfProcessChanged;
+				});
+
 	}
 
-	private void updateStatuses(@NonNull final WFProcess wfProcess)
+	private WFProcess withUpdatedActivityStatuses(@NonNull final WFProcess wfProcess)
 	{
-		for (final WFActivity wfActivity : wfProcess.getActivitiesInOrder())
-		{
-			final WFState newActivityStatus = wfActivityHandlersRegistry
-					.getHandler(wfActivity.getWfActivityType())
-					.computeActivityState(wfProcess, wfActivity);
+		WFProcess wfProcessChanged = wfProcess;
 
-			wfProcess.setActivityStatus(wfActivity.getId(), newActivityStatus);
+		for (final WFActivity wfActivity : wfProcess.getActivities())
+		{
+			final WFActivityStatus newActivityStatus = wfActivityHandlersRegistry
+					.getHandler(wfActivity.getWfActivityType())
+					.computeActivityState(wfProcessChanged, wfActivity);
+
+			wfProcessChanged = wfProcessChanged.withChangedActivityStatus(wfActivity.getId(), newActivityStatus);
 		}
+
+		return wfProcessChanged;
 	}
 }

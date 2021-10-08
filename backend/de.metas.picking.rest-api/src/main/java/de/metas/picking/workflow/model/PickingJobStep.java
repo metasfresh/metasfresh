@@ -23,65 +23,59 @@
 package de.metas.picking.workflow.model;
 
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.picking.PickingCandidateId;
 import de.metas.i18n.ITranslatableString;
 import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
-import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.LocatorId;
+import org.compiere.model.I_C_UOM;
 
-import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import java.util.Optional;
 
+@Value
 @ToString
 public class PickingJobStep
 {
-	@Getter
-	@NonNull private final PickingJobStepId id;
+	@NonNull PickingJobStepId id;
 
-	@Getter
-	@NonNull private final ShipmentScheduleId shipmentScheduleId;
+	@NonNull ShipmentScheduleId shipmentScheduleId;
+	@NonNull PickingCandidateId pickingCandidateId;
 
 	//
 	// What?
-	@Getter
 	@NonNull ProductId productId;
-	@Getter
 	@NonNull ITranslatableString productName;
-	@Getter
-	@NonNull private final Quantity qtyToPick;
+	@NonNull Quantity qtyToPick;
+	@NonNull Quantity qtyPicked;
+	boolean qtyPickedConfirmed;
 
 	//
 	// From where?
-	@Getter
 	@NonNull LocatorId locatorId;
-	@Getter
 	@NonNull String locatorName;
 
-	@Getter
-	@NonNull private final HuId huId;
-	@Getter
-	@NonNull private final String huBarcode;
+	@NonNull HuId huId;
+	@NonNull String huBarcode;
 
-	//
-	// Status
-	@Getter
-	@NonNull private Quantity qtyPicked;
-	@Getter
-	boolean pickingDone;
-
-	@Builder
+	@Builder(toBuilder = true)
 	private PickingJobStep(
 			@NonNull final PickingJobStepId id,
 			@NonNull final ShipmentScheduleId shipmentScheduleId,
+			@NonNull final PickingCandidateId pickingCandidateId,
 			//
 			// What?
 			@NonNull final ProductId productId,
 			@NonNull final ITranslatableString productName,
 			@NonNull final Quantity qtyToPick,
+			@Nullable final Quantity qtyPicked,
+			final boolean qtyPickedConfirmed,
 			//
 			// From where?
 			@NonNull final LocatorId locatorId,
@@ -91,24 +85,48 @@ public class PickingJobStep
 	{
 		this.id = id;
 		this.shipmentScheduleId = shipmentScheduleId;
+		this.pickingCandidateId = pickingCandidateId;
 		this.productId = productId;
 		this.productName = productName;
+
 		this.qtyToPick = qtyToPick;
-		this.qtyPicked = qtyToPick.toZero();
+		this.qtyPicked = qtyPicked != null ? qtyPicked : qtyToPick.toZero();
+		Quantity.assertSameUOM(this.qtyToPick, this.qtyPicked); // make sure they have the same UOM
+		this.qtyPickedConfirmed = qtyPickedConfirmed;
+
 		this.locatorId = locatorId;
 		this.locatorName = locatorName;
 		this.huId = huId;
 		this.huBarcode = huBarcode;
 	}
 
-	void changeQtyPicked(@NonNull final BigDecimal qtyPickedBD)
+	public I_C_UOM getUOM()
 	{
-		if (qtyPickedBD.signum() < 0)
+		return qtyToPick.getUOM();
+	}
+
+	public PickingJobStep withQtyPickedAndConfirmed(@NonNull final Quantity newQtyPicked)
+	{
+		if (newQtyPicked.signum() < 0)
 		{
 			throw new AdempiereException("Negative qty picked is not allowed");
 		}
+		else if (newQtyPicked.compareTo(this.qtyToPick) > 0)
+		{
+			throw new AdempiereException("Maximum allowed qty to pick is " + qtyToPick);
+		}
 
-		this.qtyPicked = Quantity.of(qtyPickedBD, this.qtyPicked.getUOM());
-		this.pickingDone = true;
+		if (this.qtyPicked.equals(newQtyPicked)
+				&& this.qtyPickedConfirmed)
+		{
+			return this;
+		}
+		else
+		{
+			return toBuilder()
+					.qtyPicked(newQtyPicked)
+					.qtyPickedConfirmed(true)
+					.build();
+		}
 	}
 }

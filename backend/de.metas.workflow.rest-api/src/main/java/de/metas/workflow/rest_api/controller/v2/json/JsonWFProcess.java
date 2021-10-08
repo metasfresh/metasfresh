@@ -24,6 +24,12 @@ package de.metas.workflow.rest_api.controller.v2.json;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import de.metas.workflow.rest_api.model.UIComponent;
+import de.metas.workflow.rest_api.model.WFActivityId;
+import de.metas.workflow.rest_api.model.WFProcess;
+import de.metas.workflow.rest_api.model.WFProcessHeaderProperties;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -40,4 +46,24 @@ public class JsonWFProcess
 	@NonNull JsonWFProcessHeaderProperties headerProperties;
 
 	@NonNull List<JsonWFActivity> activities;
+
+	public static JsonWFProcess of(
+			@NonNull final WFProcess wfProcess,
+			@NonNull final WFProcessHeaderProperties headerProperties,
+			@NonNull final ImmutableMap<WFActivityId, UIComponent> uiComponents,
+			@NonNull final JsonOpts jsonOpts)
+	{
+		return builder()
+				.id(wfProcess.getId().getAsString())
+				.headerProperties(JsonWFProcessHeaderProperties.of(headerProperties, jsonOpts))
+				.activities(wfProcess.getActivities()
+						.stream()
+						.map(activity -> JsonWFActivity.of(
+								activity,
+								uiComponents.get(activity.getId()),
+								jsonOpts))
+						.collect(ImmutableList.toImmutableList()))
+				.build();
+	}
+
 }

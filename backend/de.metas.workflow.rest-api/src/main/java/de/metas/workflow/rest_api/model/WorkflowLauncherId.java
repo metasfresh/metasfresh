@@ -46,7 +46,7 @@ public final class WorkflowLauncherId
 	private static final Splitter SPLITTER = Splitter.on("$");
 
 	public static WorkflowLauncherId ofParts(
-			@NonNull final WorkflowLauncherProviderId providerId,
+			@NonNull final WFProcessHandlerId handlerId,
 			final Object... parts)
 	{
 		if (parts == null || parts.length <= 0)
@@ -55,7 +55,7 @@ public final class WorkflowLauncherId
 		}
 
 		return new WorkflowLauncherId(
-				providerId,
+				handlerId,
 				Stream.of(parts)
 						.map(part -> part != null ? part.toString() : "")
 						.collect(ImmutableList.toImmutableList()));
@@ -64,14 +64,14 @@ public final class WorkflowLauncherId
 	@JsonCreator
 	public static WorkflowLauncherId ofString(@NonNull final String stringRepresentation)
 	{
-		WorkflowLauncherProviderId providerId = null;
+		WFProcessHandlerId handlerId = null;
 		final ImmutableList.Builder<String> parts = ImmutableList.builder();
 
 		for (final String part : SPLITTER.split(stringRepresentation))
 		{
-			if (providerId == null)
+			if (handlerId == null)
 			{
-				providerId = WorkflowLauncherProviderId.ofString(part);
+				handlerId = WFProcessHandlerId.ofString(part);
 			}
 			else
 			{
@@ -79,26 +79,26 @@ public final class WorkflowLauncherId
 			}
 		}
 
-		if (providerId == null)
+		if (handlerId == null)
 		{
 			throw new AdempiereException("Invalid string: " + stringRepresentation);
 		}
 
-		final WorkflowLauncherId result = new WorkflowLauncherId(providerId, parts.build());
+		final WorkflowLauncherId result = new WorkflowLauncherId(handlerId, parts.build());
 		result._stringRepresentation = stringRepresentation;
 		return result;
 	}
 
 	@Getter
-	private final WorkflowLauncherProviderId providerId;
+	private final WFProcessHandlerId handlerId;
 	private final ImmutableList<String> parts;
 	private String _stringRepresentation;
 
 	private WorkflowLauncherId(
-			@NonNull final WorkflowLauncherProviderId providerId,
+			@NonNull final WFProcessHandlerId handlerId,
 			@NonNull final ImmutableList<String> parts)
 	{
-		this.providerId = providerId;
+		this.handlerId = handlerId;
 		this.parts = parts;
 	}
 
@@ -117,7 +117,7 @@ public final class WorkflowLauncherId
 		{
 			_stringRepresentation = stringRepresentation = JOINER
 					.join(Iterables.concat(
-							ImmutableList.of(providerId.getAsString()),
+							ImmutableList.of(handlerId.getAsString()),
 							parts));
 		}
 		return stringRepresentation;

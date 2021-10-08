@@ -8,6 +8,7 @@ import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.picking.candidate.commands.AddQtyToHUCommand;
 import de.metas.handlingunits.picking.candidate.commands.ClosePickingCandidateCommand;
 import de.metas.handlingunits.picking.candidate.commands.CreatePickingCandidatesCommand;
+import de.metas.handlingunits.picking.candidate.commands.CreatePickingCandidatesFromPickingPlanCommand;
 import de.metas.handlingunits.picking.candidate.commands.PickHUCommand;
 import de.metas.handlingunits.picking.candidate.commands.PickHUResult;
 import de.metas.handlingunits.picking.candidate.commands.ProcessHUsAndPickingCandidateCommand;
@@ -33,7 +34,9 @@ import de.metas.handlingunits.sourcehu.HuId2SourceHUsService;
 import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.picking.api.PickingConfigRepository;
 import de.metas.quantity.Quantity;
+import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -72,6 +75,7 @@ public class PickingCandidateService
 	private final HuId2SourceHUsService sourceHUsRepository;
 	private final HUReservationService huReservationService;
 	private final IBPartnerBL bpartnersService;
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	public PickingCandidateService(
 			@NonNull final PickingConfigRepository pickingConfigRepository,
@@ -109,6 +113,26 @@ public class PickingCandidateService
 	public boolean existsPickingCandidates(@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds)
 	{
 		return pickingCandidateRepository.existsPickingCandidates(shipmentScheduleIds);
+	}
+
+	public List<PickHUResult> pickHUsBulk(@NonNull final List<PickRequest> requests)
+	{
+		if (requests.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+		else if (requests.size() == 1)
+		{
+			final PickHUResult result = pickHU(requests.get(0));
+			return ImmutableList.of(result);
+		}
+		else
+		{
+			return trxManager.callInThreadInheritedTrx(
+					() -> requests.stream()
+							.map(this::pickHU)
+							.collect(ImmutableList.toImmutableList()));
+		}
 	}
 
 	public PickHUResult pickHU(final PickRequest request)
@@ -297,6 +321,21 @@ public class PickingCandidateService
 				//
 				.build()
 				.execute();
+	}
+
+	public PickingPlan createPickingCandidatesFromPlan(@NonNull final PickingPlan plan)
+	{
+		return CreatePickingCandidatesFromPickingPlanCommand.builder()
+				.pickingCandidateRepository(pickingCandidateRepository)
+				.pickingPlan(plan)
+				.build()
+				.execute();
+	}
+
+	public void deleteDraftPickingCandidatesByShipmentScheduleId(@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds)
+	{
+		final List<PickingCandidate> draftCandidates = pickingCandidateRepository.getByShipmentScheduleIdsAndStatus(shipmentScheduleIds, PickingCandidateStatus.Draft);
+		pickingCandidateRepository.deletePickingCandidates(draftCandidates);
 	}
 
 }

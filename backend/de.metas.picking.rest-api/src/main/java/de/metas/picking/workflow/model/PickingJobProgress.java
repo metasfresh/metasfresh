@@ -28,7 +28,5 @@ public enum PickingJobProgress
 	PARTIAL_PICKED,
 	FULLY_PICKED;
 
-	public boolean isNothingPicked() {return NOTHING_PICKED.equals(this);}
-
 	public boolean isFullyPicked() {return FULLY_PICKED.equals(this);}
 }

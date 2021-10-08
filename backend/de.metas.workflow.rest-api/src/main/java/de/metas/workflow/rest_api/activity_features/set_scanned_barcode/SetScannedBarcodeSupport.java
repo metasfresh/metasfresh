@@ -22,7 +22,9 @@
 
 package de.metas.workflow.rest_api.activity_features.set_scanned_barcode;
 
+import de.metas.workflow.rest_api.model.WFProcess;
+
 public interface SetScannedBarcodeSupport
 {
-	void setScannedBarcode(SetScannedBarcodeRequest request);
+	WFProcess setScannedBarcode(SetScannedBarcodeRequest request);
 }

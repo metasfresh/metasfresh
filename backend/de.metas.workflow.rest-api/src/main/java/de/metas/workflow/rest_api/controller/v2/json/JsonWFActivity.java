@@ -25,6 +25,9 @@ package de.metas.workflow.rest_api.controller.v2.json;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.google.common.collect.ImmutableMap;
+import de.metas.workflow.rest_api.model.UIComponent;
+import de.metas.workflow.rest_api.model.WFActivity;
+import de.metas.workflow.rest_api.model.WFActivityStatus;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -37,12 +40,28 @@ import java.util.Map;
 public class JsonWFActivity
 {
 	@NonNull String activityId;
-
 	@NonNull String caption;
-
 	@NonNull String componentType;
-	boolean readonly;
+
+	WFActivityStatus status;
 
 	@Builder.Default
 	@NonNull Map<String, Object> componentProps = ImmutableMap.of();
+
+	static JsonWFActivity of(
+			@NonNull final WFActivity activity,
+			@NonNull final UIComponent uiComponent,
+			@NonNull final JsonOpts jsonOpts)
+	{
+		final String adLanguage = jsonOpts.getAdLanguage();
+
+		return builder()
+				.activityId(activity.getId().getAsString())
+				.caption(activity.getCaption().translate(adLanguage))
+				.componentType(uiComponent.getType().getAsString())
+				.status(activity.getStatus())
+				.componentProps(uiComponent.getProperties().toJson(jsonOpts::convertValueToJson))
+				.build();
+	}
+
 }
