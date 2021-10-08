@@ -23,7 +23,6 @@
 package de.metas.common.ordercandidates.v2.request.alberta;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.Builder;
@@ -33,91 +32,42 @@ import lombok.Value;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.time.LocalDate;
-import java.util.List;
 
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
 @Value
 @Builder
-@JsonDeserialize(builder = JsonAlbertaOrderInfo.JsonAlbertaOrderInfoBuilder.class)
-public class JsonAlbertaOrderInfo
+@JsonDeserialize(builder = JsonAlbertaOrderLineInfo.JsonAlbertaOrderLineInfoBuilder.class)
+public class JsonAlbertaOrderLineInfo
 {
 	@JsonProperty("externalId")
 	@NonNull
 	String externalId;
 
-	@JsonProperty("rootId")
+	@JsonProperty("salesLineId")
 	@Nullable
-	String rootId;
+	String salesLineId;
 
-	@JsonProperty("creationDate")
+	@JsonProperty("unit")
 	@Nullable
-	Instant creationDate;
+	String unit;
 
-	@JsonProperty("startDate")
+	@JsonProperty("isPrivateSale")
 	@Nullable
-	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-	LocalDate startDate;
+	Boolean isPrivateSale;
 
-	@JsonProperty("endDate")
+	@JsonProperty("isRentalEquipment")
 	@Nullable
-	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-	LocalDate endDate;
-
-	@JsonProperty("dayOfDelivery")
-	@Nullable
-	BigDecimal dayOfDelivery;
-
-	@JsonProperty("nextDelivery")
-	@Nullable
-	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-	LocalDate nextDelivery;
-
-	@JsonProperty("doctorBPartnerIdentifier")
-	@Nullable
-	String doctorBPartnerIdentifier;
-
-	@JsonProperty("pharmacyBPartnerIdentifier")
-	@Nullable
-	String pharmacyBPartnerIdentifier;
-
-	@JsonProperty("isInitialCare")
-	@Nullable
-	Boolean isInitialCare;
-
-	@JsonProperty("isSeriesOrder")
-	@Nullable
-	Boolean isSeriesOrder;
-
-	@JsonProperty("isArchived")
-	@Nullable
-	Boolean isArchived;
-
-	@JsonProperty("annotation")
-	@Nullable
-	String annotation;
+	Boolean isRentalEquipment;
 
 	@JsonProperty("updated")
 	@Nullable
 	Instant updated;
 
-	@JsonProperty("therapy")
+	@JsonProperty("durationAmount")
 	@Nullable
-	String therapy;
+	BigDecimal durationAmount;
 
-	@JsonProperty("therapyTypes")
+	@JsonProperty("timePeriod")
 	@Nullable
-	List<String> therapyTypes;
-
-	@JsonProperty("deliveryInformation")
-	@Nullable
-	String deliveryInformation;
-
-	@JsonProperty("deliveryNote")
-	@Nullable
-	String deliveryNote;
-
-	@JsonProperty("orderLineInfo")
-	@Nullable
-	JsonAlbertaOrderLineInfo jsonAlbertaOrderLineInfo;
+	BigDecimal timePeriod;
 }
