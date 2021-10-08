@@ -1,7 +1,7 @@
 import {
   SWITCHOFF_LINES_VISIBILITY,
   UPDATE_PICKING_STEP_QTY,
-  UPDATE_PICKING_SLOT_CODE,
+  SET_SCANNED_BARCODE,
   UPDATE_PICKING_STEP_DETECTED_CODE,
 } from '../constants/ActionTypes';
 
@@ -39,12 +39,12 @@ export function updatePickingStepDetectedCode({ wfProcessId, activityId, lineInd
 }
 
 /**
- * @method updatePickingSlotCode
- * @summary update the scannedCode for a `common/scanBarcode` activity type with the detectedCode
+ * @method setScannedBarcode
+ * @summary update the scannedCode for a `common/scanBarcode` activity type with the scannedBarcode
  */
-export function updatePickingSlotCode({ wfProcessId, activityId, detectedCode }) {
+export function setScannedBarcode({ wfProcessId, activityId, scannedBarcode }) {
   return {
-    type: UPDATE_PICKING_SLOT_CODE,
-    payload: { wfProcessId, activityId, detectedCode },
+    type: SET_SCANNED_BARCODE,
+    payload: { wfProcessId, activityId, scannedBarcode },
   };
 }

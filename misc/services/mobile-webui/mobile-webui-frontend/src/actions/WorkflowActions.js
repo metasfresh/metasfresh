@@ -3,6 +3,7 @@ import {
   CONTINUE_WORKFLOW_PROCESS,
   ADD_WORKFLOW_STATUS,
   SET_ACTIVITY_ENABLE_FLAG,
+  UPDATE_WORKFLOW_PROCESS,
 } from '../constants/ActionTypes';
 import { startWorkflowRequest, continueWorkflowRequest } from '../api/launchers';
 
@@ -70,5 +71,12 @@ export function setActivityEnableFlag({ wfProcessId, activityId, isActivityEnabl
   return {
     type: SET_ACTIVITY_ENABLE_FLAG,
     payload: { wfProcessId, activityId, isActivityEnabled },
+  };
+}
+
+export function updateWFProcess({ wfProcess }) {
+  return {
+    type: UPDATE_WORKFLOW_PROCESS,
+    payload: wfProcess,
   };
 }
