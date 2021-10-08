@@ -6,8 +6,8 @@ export const initialState = {};
 const initialWorkflowState = {
   headerProperties: {
     entries: [],
+    activities: [],
   },
-  activities: [],
 };
 
 const wfSelector = (state, id) => state.wfProcesses[id] || null;
