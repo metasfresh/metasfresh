@@ -20,12 +20,12 @@ class PickScreen extends Component {
     if (isValidCode) {
       updatePickingStepDetectedCode({ wfProcessId, activityId, lineIndex, stepId, detectedCode });
       updatePickingStepQty({ wfProcessId, activityId, lineIndex, stepId, qty: qtyToPick });
+      stopScanning();
     } else {
       toast('Scanned code is invalid!', { type: 'error', style: { color: 'white' } });
       updatePickingStepDetectedCode({ wfProcessId, activityId, lineIndex, stepId, detectedCode: undefined });
       updatePickingStepQty({ wfProcessId, activityId, lineIndex, stepId, qty: 0 });
     }
-    stopScanning();
   };
 
   checkIfValidCode = (detectedCode) => {

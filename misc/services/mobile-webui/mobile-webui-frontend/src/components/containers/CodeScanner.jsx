@@ -2,8 +2,8 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { BrowserMultiFormatReader, DecodeHintType, BarcodeFormat } from '@zxing/library';
 import { connect } from 'react-redux';
+
 import { startScanning } from '../../actions/ScanActions';
-import ButtonWithIndicator from '../ButtonWithIndicator';
 
 class CodeScanner extends Component {
   _isMounted = false;
@@ -39,7 +39,8 @@ class CodeScanner extends Component {
   };
 
   decodeContinuously = (selectedDeviceId) => {
-    const { onDetection, activityId } = this.props;
+    const { onDetection, activityId, isScanDisabled } = this.props;
+
     this.codeReader.decodeFromInputVideoDeviceContinuously(selectedDeviceId, 'video', (result, err) => {
       if (result) {
         // properly decoded the code
@@ -47,12 +48,14 @@ class CodeScanner extends Component {
         let detectedCode = result.getText();
 
         // close the video sources
-        const mediaStream = this.videoInput.current.srcObject;
-        const tracks = mediaStream.getTracks();
-        tracks.forEach((track) => track.stop());
+        if (isScanDisabled) {
+          const mediaStream = this.videoInput.current.srcObject;
+          const tracks = mediaStream.getTracks();
+          tracks.forEach((track) => track.stop());
+        }
 
         onDetection({ detectedCode, activityId });
-        this.codeReader.stopContinuousDecode();
+        isScanDisabled && this.codeReader.stopContinuousDecode();
       }
 
       if (err) {
@@ -63,6 +66,10 @@ class CodeScanner extends Component {
 
   componentDidMount() {
     this._isMounted = true;
+
+    const { selectedDeviceId } = this.state;
+
+    this.decodeContinuously(selectedDeviceId);
 
     console.log('CodeScanner initialized');
     this.codeReader
@@ -89,14 +96,6 @@ class CodeScanner extends Component {
       });
   }
 
-  initiateScanning = () => {
-    const { selectedDeviceId } = this.state;
-    const { startScanning } = this.props;
-    startScanning();
-    this.decodeContinuously(selectedDeviceId);
-    // window.scrollTo(0, 0);
-  };
-
   componentWillUnmount() {
     this._isMounted = false;
   }
@@ -104,23 +103,12 @@ class CodeScanner extends Component {
   render() {
     const {
       scanner: { active },
-      caption,
-      scanButtonStatus,
     } = this.props;
-
-    let scanBtnCaption = caption || 'Scan';
 
     !active && this.codeReader.stopContinuousDecode();
 
     return (
       <div>
-        {!active && (
-          <>
-            <button className="button is-outlined complete-btn" onClick={this.initiateScanning}>
-              <ButtonWithIndicator caption={scanBtnCaption} indicatorType={scanButtonStatus} />
-            </button>
-          </>
-        )}
         {active && (
           <div className="scanner-container">
             {/* Select video source */}

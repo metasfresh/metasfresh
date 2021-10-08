@@ -1,16 +1,29 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import toast, { Toaster } from 'react-hot-toast';
-import { postScannedBarcode } from '../../api/scanner';
-import CodeScanner from './CodeScanner';
-import { stopScanning } from '../../actions/ScanActions';
+import { connect } from 'react-redux';
+import { withRouter } from 'react-router';
+import { goBack } from 'connected-react-router';
+
+import { getWorkflowProcessStatus } from '../../reducers/wfProcesses_status';
 import { updatePickingSlotCode } from '../../actions/PickingActions';
 import { setActivityEnableFlag } from '../../actions/WorkflowActions';
-import { connect } from 'react-redux';
+import { startScanning, stopScanning } from '../../actions/ScanActions';
+import { postScannedBarcode } from '../../api/scanner';
 
-class ScanActivity extends Component {
+import CodeScanner from './CodeScanner';
+
+class ScanScreen extends Component {
+  componentDidMount() {
+    const { startScanning } = this.props;
+
+    startScanning();
+  }
+
   scanActivityPostDetection = ({ detectedCode, activityId }) => {
-    const { wfProcessId, token, stopScanning, updatePickingSlotCode, activities, setActivityEnableFlag } = this.props;
+    const { wfProcessId, token, stopScanning, updatePickingSlotCode, activities, setActivityEnableFlag, goBack } =
+      this.props;
+
     postScannedBarcode({ detectedCode, wfProcessId, activityId, token })
       .then(() => {
         // update the scanned activity code in the store
@@ -25,27 +38,18 @@ class ScanActivity extends Component {
       .catch(() => {
         toast('Scanned code is invalid!', { type: 'error', style: { color: 'white' } });
       });
+
     stopScanning();
+
+    goBack();
   };
 
   render() {
-    const { uniqueId, activityItem, dataStored } = this.props;
-    const { scannedCode, isComplete, isActivityEnabled } = dataStored;
-
-    let caption = scannedCode ? `Code: ${activityItem.componentProps.barcodeCaption}` : activityItem.caption;
+    const { activityId } = this.props;
 
     return (
       <div className="mt-0">
-        <CodeScanner
-          key={uniqueId}
-          id={uniqueId}
-          isActivityEnabled={isActivityEnabled}
-          isComplete={isComplete}
-          caption={caption}
-          activityId={activityItem.activityId}
-          scanButtonStatus={scannedCode ? 'complete' : 'incomplete'}
-          onDetection={this.scanActivityPostDetection}
-        />
+        <CodeScanner activityId={activityId} onDetection={this.scanActivityPostDetection} />
         <Toaster
           position="bottom-center"
           toastOptions={{
@@ -66,30 +70,32 @@ class ScanActivity extends Component {
   }
 }
 
-const mapStateToProps = (state, ownProps) => {
-  const {
-    wfProcessId,
-    activityItem: { activityId },
-  } = ownProps;
+const mapStateToProps = (state, { match }) => {
+  const { workflowId, activityId } = match.params;
+  const wfProcessStatus = getWorkflowProcessStatus(state, workflowId);
+
   return {
-    dataStored: state.wfProcesses_status[wfProcessId].activities[activityId].dataStored,
-    activities: state.wfProcesses_status[wfProcessId].activities, // we need this to enable the next activity post scanning
+    wfProcessId: workflowId,
+    activityId,
+    activities: wfProcessStatus.activities, // we need this to enable the next activity post scanning
     token: state.appHandler.token,
   };
 };
 
-ScanActivity.propTypes = {
-  caption: PropTypes.string,
+ScanScreen.propTypes = {
   componentProps: PropTypes.object,
   stopScanning: PropTypes.func.isRequired,
+  startScanning: PropTypes.func.isRequired,
   updatePickingSlotCode: PropTypes.func.isRequired,
   wfProcessId: PropTypes.string.isRequired,
   token: PropTypes.string.isRequired,
-  uniqueId: PropTypes.string.isRequired,
-  activityItem: PropTypes.object.isRequired,
-  dataStored: PropTypes.object.isRequired,
   setActivityEnableFlag: PropTypes.func.isRequired,
   activities: PropTypes.object,
+  activityId: PropTypes.string,
 };
 
-export default connect(mapStateToProps, { stopScanning, updatePickingSlotCode, setActivityEnableFlag })(ScanActivity);
+export default withRouter(
+  connect(mapStateToProps, { stopScanning, startScanning, updatePickingSlotCode, setActivityEnableFlag, goBack })(
+    ScanScreen
+  )
+);
