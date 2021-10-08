@@ -35,7 +35,7 @@ public class BPartnerRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	public I_C_BP_Relation getLastUpdatedPreferedPharmacyByPartnerId(final BPartnerId bpartnerId)
+	public BPartnerId getLastUpdatedPreferedPharmacyByPartnerId(final BPartnerId bpartnerId)
 	{
 		final IQuery<I_C_BP_Relation> query  = queryBL.createQueryBuilder(I_C_BP_Relation.class)
 				.addEqualsFilter(I_C_BP_Relation.COLUMNNAME_C_BPartner_ID, bpartnerId)
@@ -48,7 +48,8 @@ public class BPartnerRepository
 				.createQueryOrderBy();
 		query.setOrderBy(orderBy);
 
-		return query.first(I_C_BP_Relation.class);
+		final I_C_BP_Relation bpRelation = query.first(I_C_BP_Relation.class);
+		return BPartnerId.ofRepoIdOrNull(bpRelation.getC_BPartnerRelation_ID());
 	}
 
 }
