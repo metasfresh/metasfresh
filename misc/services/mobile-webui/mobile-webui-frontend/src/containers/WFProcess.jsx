@@ -5,10 +5,12 @@ import { v4 as uuidv4 } from 'uuid';
 import PropTypes from 'prop-types';
 
 import { continueWorkflow } from '../actions/WorkflowActions';
+import { getWorkflowProcess } from '../reducers/wfProcesses';
+import { getWorkflowProcessStatus } from '../reducers/wfProcesses_status';
 
 import ConfirmActivity from '../components/containers/ConfirmActivity';
 import PickProductsActivity from '../components/containers/PickProductsActivity';
-import ScanActivity from '../components/containers/ScanActivity';
+import ScanActivity from '../components/ScanActivity';
 
 class WorkflowProcess extends PureComponent {
   componentDidMount() {
@@ -20,8 +22,8 @@ class WorkflowProcess extends PureComponent {
   }
 
   render() {
-    const { wfProcessId, activities, status } = this.props;
-    const { activities: activitiesState } = status;
+    const { wfProcessId, activities, workflowProcessStatus } = this.props;
+    const { activities: activitiesState } = workflowProcessStatus;
 
     return (
       <div className="pt-2 section wf-process-container">
@@ -36,11 +38,9 @@ class WorkflowProcess extends PureComponent {
                     return (
                       <ScanActivity
                         key={uniqueId}
-                        id={uniqueId}
-                        uniqueId={uniqueId}
-                        activityItem={activityItem}
                         wfProcessId={wfProcessId}
-                        activityId={activityItem.activityId}
+                        activityItem={activityItem}
+                        activityState={activitiesState[activityItem.activityId]}
                       />
                     );
                   case 'picking/pickProducts':
@@ -67,22 +67,20 @@ class WorkflowProcess extends PureComponent {
 
 function mapStateToProps(state, { match }) {
   const { workflowId } = match.params;
-  // TODO: We need a selector for this
-  const workflow = state.wfProcesses[workflowId];
-  const activities = workflow ? workflow.activities : [];
-  const status = state.wfProcesses_status[workflowId] || { activities: [] };
+  const workflow = getWorkflowProcess(state, workflowId);
+  const workflowProcessStatus = getWorkflowProcessStatus(state, workflowId);
 
   return {
     wfProcessId: workflowId,
-    activities,
-    status,
+    activities: workflow.activities,
+    workflowProcessStatus,
     token: state.appHandler.token,
   };
 }
 
 WorkflowProcess.propTypes = {
   activities: PropTypes.array,
-  status: PropTypes.object,
+  workflowProcessStatus: PropTypes.object,
   match: PropTypes.object.isRequired,
   location: PropTypes.object.isRequired,
   history: PropTypes.object.isRequired,
