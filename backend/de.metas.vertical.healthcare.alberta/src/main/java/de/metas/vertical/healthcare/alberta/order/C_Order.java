@@ -23,8 +23,8 @@
 package de.metas.vertical.healthcare.alberta.order;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.api.IBPRelationDAO;
 import de.metas.util.Services;
-import de.metas.vertical.healthcare.alberta.bpartner.BPartnerRepository;
 import lombok.NonNull;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
@@ -43,7 +43,7 @@ import java.util.Optional;
 @Component
 public class C_Order
 {
-	private final BPartnerRepository bpartnerRepository;
+	private final IBPRelationDAO bPartnerRelationDAO = Services.get(IBPRelationDAO.class);
 
 	@Init
 	public void init()
@@ -52,27 +52,26 @@ public class C_Order
 				.registerAnnotatedCallout(this);
 	}
 
-	public C_Order(@NonNull final BPartnerRepository bpartnerRepository)
-	{
-		this.bpartnerRepository = bpartnerRepository;
-	}
-
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_NEW }, ifColumnsChanged = {I_C_Order.COLUMNNAME_C_BPartner_ID})
-	public void onBusinessPartnerChange(final I_C_Order order)
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_NEW }, ifColumnsChanged = { I_C_Order.COLUMNNAME_C_BPartner_ID })
+	public void onBusinessPartnerChange(@NonNull final I_C_Order order)
 	{
 		updatePharmacyIdFromBPartner(order);
 	}
 
 	@CalloutMethod(columnNames = I_C_Order.COLUMNNAME_C_BPartner_ID)
-	public void newOrderBusinessPartnerSet(final I_C_Order order)
+	public void newOrderBusinessPartnerSet(@NonNull final I_C_Order order)
 	{
+		if (order.getC_BPartner_ID() <= 0)
+		{
+			return; // not yet saved; nothing to do
+		}
 		updatePharmacyIdFromBPartner(order);
 	}
 
-	private void updatePharmacyIdFromBPartner(final I_C_Order order)
+	private void updatePharmacyIdFromBPartner(@NonNull final I_C_Order order)
 	{
-		final Optional<BPartnerId> optionalPreferedPharmacyID = bpartnerRepository
-				.getLastUpdatedPreferedPharmacyByPartnerId(BPartnerId.ofRepoIdOrNull(order.getC_BPartner_ID()));
+		final Optional<BPartnerId> optionalPreferedPharmacyID = bPartnerRelationDAO
+				.getLastUpdatedPreferredPharmacyByPartnerId(BPartnerId.ofRepoId(order.getC_BPartner_ID()));
 
 		optionalPreferedPharmacyID.ifPresent(bPartnerId -> order.setC_BPartner_Pharmacy_ID(bPartnerId.getRepoId()));
 	}
