@@ -36,6 +36,8 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
+
 @Interceptor(I_C_Order.class)
 @Callout(I_C_Order.class)
 @Component
@@ -69,10 +71,9 @@ public class C_Order
 
 	private void updatePharmacyIdFromBPartner(final I_C_Order order)
 	{
-		final BPartnerId preferedPharmacyID = bpartnerRepository.getLastUpdatedPreferedPharmacyByPartnerId(BPartnerId.ofRepoIdOrNull(order.getC_BPartner_ID())).orElseGet(null);
-		if (preferedPharmacyID != null)
-		{
-			order.setC_BPartner_Pharmacy_ID(preferedPharmacyID.getRepoId());
-		}
+		final Optional<BPartnerId> optionalPreferedPharmacyID = bpartnerRepository
+				.getLastUpdatedPreferedPharmacyByPartnerId(BPartnerId.ofRepoIdOrNull(order.getC_BPartner_ID()));
+
+		optionalPreferedPharmacyID.ifPresent(bPartnerId -> order.setC_BPartner_Pharmacy_ID(bPartnerId.getRepoId()));
 	}
 }
