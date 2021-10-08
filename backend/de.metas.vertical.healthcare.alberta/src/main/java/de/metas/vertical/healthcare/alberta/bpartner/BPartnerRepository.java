@@ -30,6 +30,7 @@ import org.compiere.model.IQuery;
 import org.compiere.model.I_C_BP_Relation;
 import org.springframework.stereotype.Repository;
 
+import javax.annotation.Nullable;
 import java.util.Optional;
 
 @Repository
@@ -37,22 +38,26 @@ public class BPartnerRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	public Optional<BPartnerId> getLastUpdatedPreferedPharmacyByPartnerId(final BPartnerId bpartnerId)
+	public Optional<BPartnerId> getLastUpdatedPreferedPharmacyByPartnerId(@Nullable final BPartnerId bpartnerId)
 	{
-		final IQuery<I_C_BP_Relation> query  = queryBL.createQueryBuilder(I_C_BP_Relation.class)
-				.addEqualsFilter(I_C_BP_Relation.COLUMNNAME_C_BPartner_ID, bpartnerId)
-				.addEqualsFilter(I_C_BP_Relation.COLUMN_Role, "PP")
-				.addOnlyActiveRecordsFilter()
-				.create();
+		if (bpartnerId != null)
+		{
+			final IQuery<I_C_BP_Relation> query = queryBL.createQueryBuilder(I_C_BP_Relation.class)
+					.addEqualsFilter(I_C_BP_Relation.COLUMNNAME_C_BPartner_ID, bpartnerId)
+					.addEqualsFilter(I_C_BP_Relation.COLUMN_Role, "PP")
+					.addOnlyActiveRecordsFilter()
+					.create();
 
-		final IQueryOrderBy orderBy = queryBL.createQueryOrderByBuilder(I_C_BP_Relation.class)
-				.addColumnDescending(I_C_BP_Relation.COLUMNNAME_Updated)
-				.createQueryOrderBy();
-		query.setOrderBy(orderBy);
+			final IQueryOrderBy orderBy = queryBL.createQueryOrderByBuilder(I_C_BP_Relation.class)
+					.addColumnDescending(I_C_BP_Relation.COLUMNNAME_Updated)
+					.createQueryOrderBy();
+			query.setOrderBy(orderBy);
 
-		return query
-				.firstOptional(I_C_BP_Relation.class)
-				.map(bpRelation -> BPartnerId.ofRepoId(bpRelation.getC_BPartnerRelation_ID()));
+			return query
+					.firstOptional(I_C_BP_Relation.class)
+					.map(bpRelation -> BPartnerId.ofRepoId(bpRelation.getC_BPartnerRelation_ID()));
+		}
+		return Optional.empty();
 
 	}
 
