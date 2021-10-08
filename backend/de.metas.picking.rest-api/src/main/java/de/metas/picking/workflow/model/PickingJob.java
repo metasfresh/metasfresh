@@ -24,98 +24,65 @@ package de.metas.picking.workflow.model;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.handlingunits.picking.PickingCandidateId;
 import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.api.PickingSlotIdAndCaption;
-import de.metas.user.UserId;
 import de.metas.util.Check;
+import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+import lombok.With;
+import lombok.experimental.Delegate;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
-import java.time.ZonedDateTime;
-import java.util.List;
 import java.util.Optional;
+import java.util.function.UnaryOperator;
+import java.util.stream.Stream;
 
 @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 @ToString
 public final class PickingJob
 {
-	@Getter
-	@NonNull private final String salesOrderDocumentNo;
+	@Delegate
+	@NonNull private final PickingJobHeader header;
 
 	@Getter
-	@NonNull private final String customerName;
-	@Getter
-	@NonNull private final ZonedDateTime preparationDate;
-
-	@Getter
-	@NonNull private final String deliveryAddress;
-
-	@Nullable private UserId lockedBy;
-
-	@NonNull private Optional<PickingSlotIdAndCaption> pickingSlot = Optional.empty();
+	@NonNull private final Optional<PickingSlotIdAndCaption> pickingSlot;
 
 	@Getter
 	@NonNull private final ImmutableList<PickingJobLine> lines;
 
 	@Getter
-	boolean completed;
+	private final boolean processed;
 
-	@Builder
+	@Getter
+	private final PickingJobProgress progress;
+
+	@Builder(toBuilder = true)
 	private PickingJob(
-			final @NonNull String salesOrderDocumentNo,
-			final @NonNull String customerName,
-			final @NonNull ZonedDateTime preparationDate,
-			final @NonNull String deliveryAddress,
-			final @NonNull ImmutableList<PickingJobLine> lines,
-			final @Nullable UserId lockedBy)
+			final @NonNull PickingJobHeader header,
+			final @Nullable Optional<PickingSlotIdAndCaption> pickingSlot,
+			final boolean processed, final @NonNull ImmutableList<PickingJobLine> lines)
 	{
-		this.preparationDate = preparationDate;
-		this.deliveryAddress = deliveryAddress;
-		Check.assumeNotEmpty(lines, "lines");
-		this.salesOrderDocumentNo = salesOrderDocumentNo;
-		this.customerName = customerName;
+		Check.assumeNotEmpty(lines, "lines not empty");
+
+		this.header = header;
+
+		//noinspection OptionalAssignedToNull
+		this.pickingSlot = pickingSlot != null ? pickingSlot : Optional.empty();
+
 		this.lines = lines;
-		this.lockedBy = lockedBy;
+
+		this.processed = processed;
+
+		this.progress = computeProgress(lines);
 	}
 
-	public synchronized @NonNull Optional<PickingSlotIdAndCaption> getPickingSlot()
-	{
-		return pickingSlot;
-	}
-
-	public synchronized void setPickingSlot(@Nullable final PickingSlotIdAndCaption pickingSlot)
-	{
-		this.pickingSlot = Optional.ofNullable(pickingSlot);
-	}
-
-	@Nullable
-	public synchronized UserId getLockedBy()
-	{
-		return lockedBy;
-	}
-
-	public synchronized void setLockedBy(@Nullable final UserId lockedBy)
-	{
-		this.lockedBy = lockedBy;
-	}
-
-	public ImmutableSet<ShipmentScheduleId> getShipmentScheduleIds()
-	{
-		return lines.stream()
-				.flatMap(PickingJobLine::streamShipmentScheduleId)
-				.collect(ImmutableSet.toImmutableSet());
-	}
-
-	public boolean isReadyForPicking()
-	{
-		return getPickingSlot().isPresent();
-	}
-
-	public PickingJobProgress getProgress()
+	private PickingJobProgress computeProgress(@NonNull final ImmutableList<PickingJobLine> lines)
 	{
 		int countFullyPickedLines = 0;
 		int countNotFullyPickedLines = 0;
@@ -145,24 +112,65 @@ public final class PickingJob
 		}
 	}
 
-	public synchronized void applyChanges(@NonNull final List<QtyPickedEvent> events)
+	public void assertNotProcessed()
 	{
-		Check.assumeNotEmpty(events, "events");
-		events.forEach(this::applyChanges);
+		if (processed)
+		{
+			throw new AdempiereException("Picking Job was already processed");
+		}
 	}
 
-	private void applyChanges(@NonNull final QtyPickedEvent event)
+	public PickingJob withProcessedTrue()
 	{
-		getStepById(event.getStepId())
-				.changeQtyPicked(event.getQtyPicked());
+		return !processed ? toBuilder().processed(true).build() : this;
 	}
 
-	private PickingJobStep getStepById(@NonNull final PickingJobStepId stepId)
+	public Optional<PickingSlotId> getPickingSlotId() {return pickingSlot.map(PickingSlotIdAndCaption::getPickingSlotId);}
+
+	public PickingJob withPickingSlot(@Nullable final PickingSlotIdAndCaption pickingSlot)
+	{
+		return PickingSlotIdAndCaption.equals(this.pickingSlot.orElse(null), pickingSlot)
+				? this
+				: toBuilder().pickingSlot(Optional.ofNullable(pickingSlot)).build();
+	}
+
+	public ImmutableSet<ShipmentScheduleId> getShipmentScheduleIds()
+	{
+		return streamShipmentScheduleIds().collect(ImmutableSet.toImmutableSet());
+	}
+
+	public Stream<ShipmentScheduleId> streamShipmentScheduleIds()
+	{
+		return lines.stream().flatMap(PickingJobLine::streamShipmentScheduleId);
+	}
+
+	public PickingJob withChangedSteps(final UnaryOperator<PickingJobStep> stepMapper)
+	{
+		return withChangedLines(line -> line.withChangedSteps(stepMapper));
+	}
+
+	public PickingJob withChangedLines(final UnaryOperator<PickingJobLine> lineMapper)
+	{
+		final ImmutableList<PickingJobLine> changedLines = CollectionUtils.map(lines, lineMapper);
+		return changedLines.equals(lines)
+				? this
+				: toBuilder().lines(changedLines).build();
+	}
+
+	public PickingJobStep getStepById(@NonNull final PickingJobStepId stepId)
 	{
 		return lines.stream()
 				.flatMap(line -> line.getSteps().stream())
 				.filter(step -> PickingJobStepId.equals(step.getId(), stepId))
 				.findFirst()
 				.orElseThrow(() -> new AdempiereException("No step found for " + stepId));
+	}
+
+	public ImmutableSet<PickingCandidateId> getPickingCandidateIds()
+	{
+		return lines.stream()
+				.flatMap(line -> line.getSteps().stream())
+				.map(PickingJobStep::getPickingCandidateId)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 }

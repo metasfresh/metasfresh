@@ -16,6 +16,7 @@ import lombok.NonNull;
 import lombok.Setter;
 import lombok.Singular;
 import lombok.ToString;
+import lombok.With;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
@@ -79,6 +80,7 @@ public class PickingCandidate
 	@NonNull
 	private final ShipmentScheduleId shipmentScheduleId;
 	@Nullable
+	@With
 	private final PickingSlotId pickingSlotId;
 
 	@NonNull
@@ -185,7 +187,7 @@ public class PickingCandidate
 				&& getPackedToHuId() != null;
 	}
 
-	private void assertNotApproved()
+	public void assertNotApproved()
 	{
 		if (approvalStatus.isApproved())
 		{
@@ -218,10 +220,10 @@ public class PickingCandidate
 	public void pick(@NonNull final Quantity qtyPicked)
 	{
 		assertDraft();
-		assertNotApproved();
 
 		this.qtyPicked = qtyPicked;
 		pickStatus = computePickOrPackStatus(this.packToInstructionsId);
+		approvalStatus = computeApprovalStatus(this.qtyPicked, this.qtyReview, this.pickStatus);
 	}
 
 	public void rejectPicking(@NonNull final Quantity qtyRejected)
@@ -233,7 +235,7 @@ public class PickingCandidate
 		pickStatus = PickingCandidatePickStatus.WILL_NOT_BE_PICKED;
 	}
 
-	public void packTo(final HuPackingInstructionsId packToInstructionsId)
+	public void packTo(@Nullable final HuPackingInstructionsId packToInstructionsId)
 	{
 		assertDraft();
 
@@ -257,6 +259,11 @@ public class PickingCandidate
 
 		this.qtyReview = qtyReview;
 		approvalStatus = computeApprovalStatus(qtyPicked, this.qtyReview, pickStatus);
+	}
+
+	public void reviewPicking()
+	{
+		reviewPicking(qtyPicked.toBigDecimal());
 	}
 
 	private static PickingCandidateApprovalStatus computeApprovalStatus(final Quantity qtyPicked, final BigDecimal qtyReview, final PickingCandidatePickStatus pickStatus)
@@ -298,7 +305,7 @@ public class PickingCandidate
 		return getPickFrom().isPickFromPickingOrder();
 	}
 
-	public void issueToPickingOrder(final List<PickingCandidateIssueToBOMLine> issuesToPickingOrder)
+	public void issueToPickingOrder(@Nullable final List<PickingCandidateIssueToBOMLine> issuesToPickingOrder)
 	{
 		this.issuesToPickingOrder = issuesToPickingOrder != null
 				? ImmutableList.copyOf(issuesToPickingOrder)

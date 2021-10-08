@@ -29,6 +29,7 @@ import de.metas.workflow.rest_api.model.WorkflowLauncher;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.util.api.Params;
 
 import javax.annotation.Nullable;
 import java.util.Map;
@@ -40,8 +41,6 @@ public class JsonWorkflowLauncher
 {
 	@NonNull String caption;
 
-	@NonNull String wfProviderId;
-
 	@Nullable String startedWFProcessId;
 
 	@NonNull Map<String, Object> wfParameters;
@@ -52,11 +51,19 @@ public class JsonWorkflowLauncher
 	{
 		final String adLanguage = jsonOpts.getAdLanguage();
 
+		final String caption = workflowLauncher.getCaption().translate(adLanguage);
+		final WFProcessId startedWFProcessId = workflowLauncher.getStartedWFProcessId();
+
+		Params wfParameters = workflowLauncher.getWfParameters();
+		if(startedWFProcessId == null)
+		{
+			wfParameters = wfParameters.withParameter(JsonWFProcessStartRequest.PARAM_WFProcessHandlerId, workflowLauncher.getHandlerId().getAsString());
+		}
+
 		return builder()
-				.caption(workflowLauncher.getCaption().translate(adLanguage))
-				.wfProviderId(workflowLauncher.getProviderId().getAsString())
-				.startedWFProcessId(WFProcessId.getAsStringOrNull(workflowLauncher.getStartedWFProcessId()))
-				.wfParameters(workflowLauncher.getWfParameters().toJson(jsonOpts::convertValueToJson))
+				.caption(caption)
+				.startedWFProcessId(WFProcessId.getAsStringOrNull(startedWFProcessId))
+				.wfParameters(wfParameters.toJson(jsonOpts::convertValueToJson))
 				.build();
 	}
 }

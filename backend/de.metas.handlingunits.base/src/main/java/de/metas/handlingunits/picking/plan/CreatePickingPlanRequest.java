@@ -29,6 +29,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import java.util.Collection;
 import java.util.List;
 
 @Value
@@ -39,7 +40,7 @@ public class CreatePickingPlanRequest
 
 	@Builder
 	private CreatePickingPlanRequest(
-			@NonNull final List<Packageable> packageables,
+			@NonNull final Collection<Packageable> packageables,
 			final boolean considerAttributes)
 	{
 		Check.assumeNotEmpty(packageables, "packageables shall not be empty");

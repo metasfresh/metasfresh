@@ -26,15 +26,16 @@ import de.metas.picking.rest_api.json.JsonPickingJob;
 import de.metas.picking.rest_api.json.JsonPickingJobLine;
 import de.metas.picking.workflow.model.PickingJob;
 import de.metas.picking.workflow.model.PickingJobProgress;
-import de.metas.workflow.WFState;
 import de.metas.workflow.rest_api.controller.v2.json.JsonOpts;
 import de.metas.workflow.rest_api.model.UIComponent;
 import de.metas.workflow.rest_api.model.UIComponentType;
 import de.metas.workflow.rest_api.model.WFActivity;
+import de.metas.workflow.rest_api.model.WFActivityStatus;
 import de.metas.workflow.rest_api.model.WFActivityType;
 import de.metas.workflow.rest_api.model.WFProcess;
 import de.metas.workflow.rest_api.service.WFActivityHandler;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.api.Params;
 import org.springframework.stereotype.Component;
 
@@ -67,7 +68,6 @@ public class ActualPickingWFActivityHandler implements WFActivityHandler
 
 		return UIComponent.builder()
 				.type(COMPONENTTYPE_PICK_PRODUCTS)
-				.readonly(!wfActivity.getStatus().isSuspended())
 				.properties(Params.builder()
 						.valueObj("lines", lines)
 						.build())
@@ -75,24 +75,26 @@ public class ActualPickingWFActivityHandler implements WFActivityHandler
 	}
 
 	@Override
-	public WFState computeActivityState(final WFProcess wfProcess, final WFActivity wfActivity)
+	public WFActivityStatus computeActivityState(final WFProcess wfProcess, final WFActivity wfActivity)
 	{
 		final PickingJob pickingJob = getPickingJob(wfProcess);
-		if (pickingJob.isReadyForPicking())
+		return computeActivityState(pickingJob);
+	}
+
+	@NonNull
+	private WFActivityStatus computeActivityState(final PickingJob pickingJob)
+	{
+		final PickingJobProgress progress = pickingJob.getProgress();
+		switch (progress)
 		{
-			final PickingJobProgress progress = pickingJob.getProgress();
-			if (progress.isFullyPicked())
-			{
-				return WFState.Completed;
-			}
-			else
-			{
-				return WFState.Suspended;
-			}
-		}
-		else
-		{
-			return WFState.NotStarted;
+			case NOTHING_PICKED:
+				return WFActivityStatus.NOT_STARTED;
+			case PARTIAL_PICKED:
+				return WFActivityStatus.IN_PROGRESS;
+			case FULLY_PICKED:
+				return WFActivityStatus.COMPLETED;
+			default:
+				throw new AdempiereException("Unknown process status: " + progress);
 		}
 	}
 }

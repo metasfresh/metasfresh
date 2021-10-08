@@ -222,6 +222,7 @@ public class AddQtyToHUCommand
 			qtyNew = qty.add(qtyToAddConv);
 		}
 
+		candidate.assertNotApproved();
 		candidate.pick(qtyNew);
 		pickingCandidateRepository.save(candidate);
 	}

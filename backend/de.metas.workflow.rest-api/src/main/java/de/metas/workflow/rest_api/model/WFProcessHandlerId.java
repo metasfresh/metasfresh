@@ -22,28 +22,39 @@
 
 package de.metas.workflow.rest_api.model;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+import com.google.common.collect.Interner;
+import com.google.common.collect.Interners;
+import de.metas.util.Check;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
-import lombok.ToString;
 
-@EqualsAndHashCode(doNotUseGetters = true)
-@ToString
-public final class WFProcessDocumentHolder
+@EqualsAndHashCode
+public final class WFProcessHandlerId
 {
-	public static WFProcessDocumentHolder ofObject(@NonNull final Object documentObj)
+	@JsonCreator
+	public static WFProcessHandlerId ofString(@NonNull final String value)
 	{
-		return new WFProcessDocumentHolder(documentObj);
+		return interner.intern(new WFProcessHandlerId(value));
 	}
 
-	private final Object documentObj;
+	private static final Interner<WFProcessHandlerId> interner = Interners.newStrongInterner();
 
-	private WFProcessDocumentHolder(@NonNull final Object documentObj)
+	private final String value;
+
+	private WFProcessHandlerId(@NonNull final String value) {this.value = Check.assumeNotEmpty(value, "value");}
+
+	@Override
+	@Deprecated
+	public String toString()
 	{
-		this.documentObj = documentObj;
+		return getAsString();
 	}
 
-	public <T> T getDocumentAs(@NonNull final Class<T> type)
+	@JsonValue
+	public String getAsString()
 	{
-		return type.cast(documentObj);
+		return value;
 	}
 }

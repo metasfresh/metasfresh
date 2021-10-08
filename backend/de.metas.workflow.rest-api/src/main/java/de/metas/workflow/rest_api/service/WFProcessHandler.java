@@ -23,19 +23,19 @@
 package de.metas.workflow.rest_api.service;
 
 import de.metas.user.UserId;
-import de.metas.workflow.rest_api.model.WFActivity;
 import de.metas.workflow.rest_api.model.WFProcess;
+import de.metas.workflow.rest_api.model.WFProcessHandlerId;
 import de.metas.workflow.rest_api.model.WFProcessHeaderProperties;
 import de.metas.workflow.rest_api.model.WFProcessId;
 import de.metas.workflow.rest_api.model.WorkflowLauncher;
-import de.metas.workflow.rest_api.model.WorkflowLauncherProviderId;
 import lombok.NonNull;
 
 import java.util.List;
+import java.util.function.UnaryOperator;
 
-public interface WorkflowLauncherProvider
+public interface WFProcessHandler
 {
-	WorkflowLauncherProviderId getId();
+	WFProcessHandlerId getId();
 
 	List<WorkflowLauncher> provideLaunchers(final UserId userId);
 
@@ -44,6 +44,8 @@ public interface WorkflowLauncherProvider
 	void abort(WFProcessId wfProcessId, UserId callerId);
 
 	WFProcess getWFProcessById(WFProcessId wfProcessId);
+
+	WFProcess changeWFProcessById(WFProcessId wfProcessId, UnaryOperator<WFProcess> remappingFunction);
 
 	default WFProcessHeaderProperties getHeaderProperties(@NonNull final WFProcess wfProcess)
 	{

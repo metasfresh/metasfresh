@@ -28,12 +28,15 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import de.metas.i18n.ITranslatableString;
 import de.metas.user.UserId;
-import de.metas.workflow.WFState;
+import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Singular;
 import org.adempiere.exceptions.AdempiereException;
+
+import java.util.Objects;
+import java.util.function.UnaryOperator;
 
 public final class WFProcess
 {
@@ -46,28 +49,63 @@ public final class WFProcess
 	@Getter
 	@NonNull private final ITranslatableString caption;
 
-	@NonNull private WFState status = WFState.NotStarted;
+	@NonNull private final WFProcessStatus status;
 
-	@NonNull private final WFProcessDocumentHolder documentHolder;
+	@NonNull private final Object document;
 
 	@Getter
-	@NonNull private final ImmutableList<WFActivity> activitiesInOrder;
+	@NonNull private final ImmutableList<WFActivity> activities;
 	@NonNull private final ImmutableMap<WFActivityId, WFActivity> activitiesById;
 
-	@Builder
+	@Builder(toBuilder = true)
 	private WFProcess(
 			@NonNull final WFProcessId id,
 			@NonNull final UserId invokerId,
 			@NonNull final ITranslatableString caption,
-			@NonNull final WFProcessDocumentHolder documentHolder,
-			@NonNull @Singular final ImmutableList<WFActivity> activities)
+			@NonNull final Object document,
+			@NonNull final ImmutableList<WFActivity> activities)
 	{
 		this.id = id;
 		this.invokerId = invokerId;
 		this.caption = caption;
-		this.documentHolder = documentHolder;
-		this.activitiesInOrder = activities;
-		this.activitiesById = Maps.uniqueIndex(activities, WFActivity::getId);
+		this.document = document;
+		this.activities = activities;
+
+		this.activitiesById = Maps.uniqueIndex(this.activities, WFActivity::getId);
+		this.status = computeStatusFromActivities(this.activities);
+	}
+
+	private static WFProcessStatus computeStatusFromActivities(@NonNull final ImmutableList<WFActivity> activities)
+	{
+		final ImmutableSet<WFActivityStatus> activityStatuses = activities
+				.stream()
+				.map(WFActivity::getStatus)
+				.collect(ImmutableSet.toImmutableSet());
+
+		if (activityStatuses.isEmpty())
+		{
+			// shall never happen
+			return WFProcessStatus.COMPLETED;
+		}
+		else if (activityStatuses.size() == 1)
+		{
+			final WFActivityStatus activityStatus = activityStatuses.iterator().next();
+			switch (activityStatus)
+			{
+				case NOT_STARTED:
+					return WFProcessStatus.NOT_STARTED;
+				case IN_PROGRESS:
+					return WFProcessStatus.IN_PROGRESS;
+				case COMPLETED:
+					return WFProcessStatus.COMPLETED;
+				default:
+					throw new AdempiereException("Unknown activity status: " + activityStatus);
+			}
+		}
+		else
+		{
+			return WFProcessStatus.IN_PROGRESS;
+		}
 	}
 
 	public void assertHasAccess(@NonNull final UserId userId)
@@ -85,7 +123,17 @@ public final class WFProcess
 
 	public <T> T getDocumentAs(@NonNull final Class<T> type)
 	{
-		return documentHolder.getDocumentAs(type);
+		return type.cast(document);
+	}
+
+	public <T> WFProcess mapDocument(@NonNull final UnaryOperator<T> remappingFunction)
+	{
+		//noinspection unchecked
+		final T document = (T)this.document;
+		final T documentNew = remappingFunction.apply(document);
+		return !Objects.equals(document, documentNew)
+				? toBuilder().document(documentNew).build()
+				: this;
 	}
 
 	public WFActivity getActivityById(@NonNull final WFActivityId id)
@@ -98,41 +146,25 @@ public final class WFProcess
 		return wfActivity;
 	}
 
-	public synchronized void setActivityStatus(@NonNull final WFActivityId wfActivityId, @NonNull final WFState newActivityStatus)
+	public WFProcess withChangedActivityStatus(
+			@NonNull final WFActivityId wfActivityId,
+			@NonNull final WFActivityStatus newActivityStatus)
 	{
-		final WFActivity wfActivity = getActivityById(wfActivityId);
-		final WFState oldActivityStatus = wfActivity.getStatus();
-		if (!newActivityStatus.equals(oldActivityStatus))
-		{
-			wfActivity._setStatus(newActivityStatus);
-			updateStatusFromActivities();
-		}
+		return withChangedActivityById(wfActivityId, wfActivity -> wfActivity.withStatus(newActivityStatus));
 	}
 
-	public synchronized void updateStatusFromActivities()
+	private WFProcess withChangedActivityById(@NonNull final WFActivityId wfActivityId, @NonNull final UnaryOperator<WFActivity> remappingFunction)
 	{
-		this.status = computeStatusFromActivities();
+		return withChangedActivities(wfActivity -> wfActivity.getId().equals(wfActivityId)
+				? remappingFunction.apply(wfActivity)
+				: wfActivity);
 	}
 
-	private WFState computeStatusFromActivities()
+	private WFProcess withChangedActivities(@NonNull final UnaryOperator<WFActivity> remappingFunction)
 	{
-		final ImmutableSet<WFState> activityStatuses = getActivitiesInOrder()
-				.stream()
-				.map(WFActivity::getStatus)
-				.collect(ImmutableSet.toImmutableSet());
-
-		if (activityStatuses.isEmpty())
-		{
-			// shall never happen
-			return WFState.Completed;
-		}
-		else if (activityStatuses.size() == 1)
-		{
-			return activityStatuses.iterator().next();
-		}
-		else
-		{
-			return WFState.Suspended;
-		}
+		final ImmutableList<WFActivity> activitiesNew = CollectionUtils.map(this.activities, remappingFunction);
+		return !Objects.equals(this.activities, activitiesNew)
+				? toBuilder().activities(activitiesNew).build()
+				: this;
 	}
 }

@@ -27,13 +27,13 @@ import de.metas.picking.api.PickingSlotBarcode;
 import de.metas.picking.api.PickingSlotIdAndCaption;
 import de.metas.picking.workflow.model.PickingJob;
 import de.metas.util.Services;
-import de.metas.workflow.WFState;
 import de.metas.workflow.rest_api.activity_features.set_scanned_barcode.SetScannedBarcodeRequest;
 import de.metas.workflow.rest_api.activity_features.set_scanned_barcode.SetScannedBarcodeSupport;
 import de.metas.workflow.rest_api.controller.v2.json.JsonOpts;
 import de.metas.workflow.rest_api.model.UIComponent;
 import de.metas.workflow.rest_api.model.UIComponentType;
 import de.metas.workflow.rest_api.model.WFActivity;
+import de.metas.workflow.rest_api.model.WFActivityStatus;
 import de.metas.workflow.rest_api.model.WFActivityType;
 import de.metas.workflow.rest_api.model.WFProcess;
 import de.metas.workflow.rest_api.service.WFActivityHandler;
@@ -63,10 +63,10 @@ public class SetPickingSlotWFActivityHandler implements WFActivityHandler, SetSc
 			final @NonNull JsonOpts jsonOpts)
 	{
 		final PickingJob pickingJob = getPickingJob(wfProcess);
+		pickingJob.assertNotProcessed();
 
 		return UIComponent.builder()
 				.type(UIComponentType.SCAN_BARCODE)
-				.readonly(!wfActivity.getStatus().isSuspended())
 				.properties(Params.builder()
 						.value("barcodeCaption", pickingJob.getPickingSlot().map(PickingSlotIdAndCaption::getCaption).orElse(null))
 						.build())
@@ -74,22 +74,21 @@ public class SetPickingSlotWFActivityHandler implements WFActivityHandler, SetSc
 	}
 
 	@Override
-	public WFState computeActivityState(final WFProcess wfProcess, final WFActivity wfActivity)
+	public WFActivityStatus computeActivityState(final WFProcess wfProcess, final WFActivity wfActivity)
 	{
 		final PickingJob pickingJob = getPickingJob(wfProcess);
-		return pickingJob.getPickingSlot().isPresent() ? WFState.Completed : WFState.Suspended;
+		return pickingJob.getPickingSlot().isPresent() ? WFActivityStatus.COMPLETED : WFActivityStatus.IN_PROGRESS;
 	}
 
 	@Override
-	public void setScannedBarcode(final SetScannedBarcodeRequest request)
+	public WFProcess setScannedBarcode(final SetScannedBarcodeRequest request)
 	{
-		final PickingJob pickingJob = getPickingJob(request.getWfProcess());
-
 		final PickingSlotIdAndCaption pickingSlot = PickingSlotBarcode.optionalOfBarcodeString(request.getScannedBarcode())
 				.map(PickingSlotBarcode::getPickingSlotId)
 				.map(pickingSlotDAO::getPickingSlotIdAndCaption)
 				.orElse(null);
 
-		pickingJob.setPickingSlot(pickingSlot);
+		final WFProcess wfProcess = request.getWfProcess();
+		return wfProcess.<PickingJob>mapDocument(pickingJob -> pickingJob.withPickingSlot(pickingSlot));
 	}
 }

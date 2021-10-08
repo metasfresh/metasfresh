@@ -22,10 +22,14 @@
 
 package de.metas.picking.workflow.handlers;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.picking.rest_api.json.JsonPickingEventsList;
 import de.metas.picking.workflow.PickingJobService;
+import de.metas.picking.workflow.PickingJobStepEvent;
 import de.metas.picking.workflow.handlers.activity_handlers.ActualPickingWFActivityHandler;
 import de.metas.picking.workflow.handlers.activity_handlers.CompletePickingWFActivityHandler;
 import de.metas.picking.workflow.handlers.activity_handlers.SetPickingSlotWFActivityHandler;
@@ -36,43 +40,44 @@ import de.metas.user.UserId;
 import de.metas.workflow.rest_api.model.WFActivity;
 import de.metas.workflow.rest_api.model.WFActivityId;
 import de.metas.workflow.rest_api.model.WFProcess;
-import de.metas.workflow.rest_api.model.WFProcessDocumentHolder;
+import de.metas.workflow.rest_api.model.WFProcessHandlerId;
 import de.metas.workflow.rest_api.model.WFProcessHeaderProperties;
 import de.metas.workflow.rest_api.model.WFProcessHeaderProperty;
 import de.metas.workflow.rest_api.model.WFProcessId;
 import de.metas.workflow.rest_api.model.WorkflowLauncher;
-import de.metas.workflow.rest_api.model.WorkflowLauncherProviderId;
+import de.metas.workflow.rest_api.service.WFProcessHandler;
 import de.metas.workflow.rest_api.service.WFProcessesIndex;
-import de.metas.workflow.rest_api.service.WorkflowLauncherProvider;
 import de.metas.workflow.rest_api.service.WorkflowStartRequest;
 import lombok.Builder;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.Collection;
 import java.util.List;
+import java.util.Set;
+import java.util.function.UnaryOperator;
 
+import static de.metas.picking.workflow.handlers.activity_handlers.PickingWFActivityHelper.extractShipmentScheduleIds;
 import static de.metas.picking.workflow.handlers.activity_handlers.PickingWFActivityHelper.getPickingJob;
 
 @Component
-public class PickingWorkflowLauncherProvider implements WorkflowLauncherProvider
+public class PickingWFProcessHandler implements WFProcessHandler
 {
-	private static final WorkflowLauncherProviderId PROVIDER_ID = WorkflowLauncherProviderId.ofString("picking");
+	private static final WFProcessHandlerId PROVIDER_ID = WFProcessHandlerId.ofString("picking");
 
 	private final PickingJobService pickingJobService;
 
 	private final WFProcessesIndex wfProcesses = new WFProcessesIndex();
 
-	public PickingWorkflowLauncherProvider(
+	public PickingWFProcessHandler(
 			@NonNull final PickingJobService pickingJobService)
 	{
 		this.pickingJobService = pickingJobService;
 	}
 
 	@Override
-	public WorkflowLauncherProviderId getId()
+	public WFProcessHandlerId getId()
 	{
 		return PROVIDER_ID;
 	}
@@ -82,15 +87,18 @@ public class PickingWorkflowLauncherProvider implements WorkflowLauncherProvider
 	{
 		final ArrayList<WorkflowLauncher> result = new ArrayList<>();
 
-		final HashSet<ShipmentScheduleId> shipmentScheduleIdsAlreadyInPickingJobs = new HashSet<>();
-		for (final WFProcess wfProcess : wfProcesses.getByInvokerId(userId))
-		{
-			shipmentScheduleIdsAlreadyInPickingJobs.addAll(getPickingJob(wfProcess).getShipmentScheduleIds());
-			result.add(toExistingWorkflowLauncher(wfProcess));
-		}
+		//
+		// Already started launchers
+		final ImmutableList<WFProcess> existingWFProcesses = wfProcesses.getByInvokerId(userId);
+		existingWFProcesses.stream()
+				.map(PickingWFProcessHandler::toExistingWorkflowLauncher)
+				.forEach(result::add);
 
+		//
+		// New launchers
+		final Set<ShipmentScheduleId> shipmentScheduleIdsAlreadyInPickingJobs = extractShipmentScheduleIds(existingWFProcesses);
 		pickingJobService.streamPickingJobCandidates(userId, shipmentScheduleIdsAlreadyInPickingJobs)
-				.map(PickingWorkflowLauncherProvider::toNewWorkflowLauncher)
+				.map(PickingWFProcessHandler::toNewWorkflowLauncher)
 				.forEach(result::add);
 
 		return result;
@@ -99,7 +107,7 @@ public class PickingWorkflowLauncherProvider implements WorkflowLauncherProvider
 	private static WorkflowLauncher toNewWorkflowLauncher(@NonNull final PickingJobCandidate pickingJobCandidate)
 	{
 		return WorkflowLauncher.builder()
-				.providerId(PROVIDER_ID)
+				.handlerId(PROVIDER_ID)
 				.caption(workflowCaption()
 						.salesOrderDocumentNo(pickingJobCandidate.getSalesOrderDocumentNo())
 						.customerName(pickingJobCandidate.getCustomerName())
@@ -112,7 +120,7 @@ public class PickingWorkflowLauncherProvider implements WorkflowLauncherProvider
 	private static WorkflowLauncher toExistingWorkflowLauncher(@NonNull final WFProcess wfProcess)
 	{
 		return WorkflowLauncher.builder()
-				.providerId(PROVIDER_ID)
+				.handlerId(PROVIDER_ID)
 				.caption(wfProcess.getCaption())
 				.startedWFProcessId(wfProcess.getId())
 				.build();
@@ -122,6 +130,14 @@ public class PickingWorkflowLauncherProvider implements WorkflowLauncherProvider
 	public WFProcess getWFProcessById(@NonNull final WFProcessId wfProcessId)
 	{
 		return wfProcesses.getById(wfProcessId);
+	}
+
+	@Override
+	public WFProcess changeWFProcessById(
+			@NonNull final WFProcessId wfProcessId,
+			@NonNull final UnaryOperator<WFProcess> remappingFunction)
+	{
+		return wfProcesses.compute(wfProcessId, remappingFunction);
 	}
 
 	@Override
@@ -155,7 +171,8 @@ public class PickingWorkflowLauncherProvider implements WorkflowLauncherProvider
 		final UserId invokerId = request.getInvokerId();
 		final PickingWFProcessStartParams params = PickingWFProcessStartParams.ofParams(request.getWfParameters());
 
-		final PickingJob pickingJob = pickingJobService.createPickingJob(params, invokerId);
+		final Set<ShipmentScheduleId> shipmentScheduleIdsAlreadyInPickingJobs = extractShipmentScheduleIds(wfProcesses.getByInvokerId(invokerId));
+		final PickingJob pickingJob = pickingJobService.createPickingJob(params, invokerId, shipmentScheduleIdsAlreadyInPickingJobs);
 
 		final WFProcess wfProcess = createWFProcess(pickingJob);
 		wfProcesses.add(wfProcess);
@@ -180,39 +197,32 @@ public class PickingWorkflowLauncherProvider implements WorkflowLauncherProvider
 	private WFProcess createWFProcess(final PickingJob pickingJob)
 	{
 		final UserId lockedBy = pickingJob.getLockedBy();
-		if (lockedBy == null)
-		{
-			throw new AdempiereException("PickingJob shall be already locked for invoker");
-		}
 
-		final WFProcess wfProcess = WFProcess.builder()
+		return WFProcess.builder()
 				.id(WFProcessId.random(PROVIDER_ID))
 				.invokerId(lockedBy)
 				.caption(workflowCaption()
 						.salesOrderDocumentNo(pickingJob.getSalesOrderDocumentNo())
 						.customerName(pickingJob.getCustomerName())
 						.build())
-				.documentHolder(WFProcessDocumentHolder.ofObject(pickingJob))
-				.activity(WFActivity.builder()
-						.id(WFActivityId.ofString("1"))
-						.caption(TranslatableStrings.anyLanguage("Scan picking slot"))
-						.wfActivityType(SetPickingSlotWFActivityHandler.HANDLED_ACTIVITY_TYPE)
-						.build())
-				.activity(WFActivity.builder()
-						.id(WFActivityId.ofString("2"))
-						.caption(TranslatableStrings.anyLanguage("Pick"))
-						.wfActivityType(ActualPickingWFActivityHandler.HANDLED_ACTIVITY_TYPE)
-						.build())
-				.activity(WFActivity.builder()
-						.id(WFActivityId.ofString("3"))
-						.caption(TranslatableStrings.anyLanguage("Complete picking"))
-						.wfActivityType(CompletePickingWFActivityHandler.HANDLED_ACTIVITY_TYPE)
-						.build())
+				.document(pickingJob)
+				.activities(ImmutableList.of(
+						WFActivity.builder()
+								.id(WFActivityId.ofString("1"))
+								.caption(TranslatableStrings.anyLanguage("Scan picking slot"))
+								.wfActivityType(SetPickingSlotWFActivityHandler.HANDLED_ACTIVITY_TYPE)
+								.build(),
+						WFActivity.builder()
+								.id(WFActivityId.ofString("2"))
+								.caption(TranslatableStrings.anyLanguage("Pick"))
+								.wfActivityType(ActualPickingWFActivityHandler.HANDLED_ACTIVITY_TYPE)
+								.build(),
+						WFActivity.builder()
+								.id(WFActivityId.ofString("3"))
+								.caption(TranslatableStrings.anyLanguage("Complete picking"))
+								.wfActivityType(CompletePickingWFActivityHandler.HANDLED_ACTIVITY_TYPE)
+								.build()))
 				.build();
-
-		wfProcess.updateStatusFromActivities();
-
-		return wfProcess;
 	}
 
 	@Builder(builderMethodName = "workflowCaption", builderClassName = "$WorkflowCaptionBuilder")
@@ -222,4 +232,51 @@ public class PickingWorkflowLauncherProvider implements WorkflowLauncherProvider
 	{
 		return TranslatableStrings.join(" | ", salesOrderDocumentNo, customerName);
 	}
+
+	public void processStepEvents(
+			@NonNull final JsonPickingEventsList eventsList,
+			@NonNull final UserId callerId)
+	{
+		final ImmutableListMultimap<WFProcessId, PickingJobStepEvent> eventsByWFProcessId = eventsList
+				.getEvents()
+				.stream()
+				.map(PickingJobStepEvent::ofJson)
+				.collect(ImmutableListMultimap.toImmutableListMultimap(
+						PickingJobStepEvent::getWfProcessId,
+						event -> event));
+
+		eventsByWFProcessId
+				.asMap()
+				.forEach((wfProcessId, events) -> processStepEvents(wfProcessId, callerId, events));
+	}
+
+	private void processStepEvents(
+			@NonNull final WFProcessId wfProcessId,
+			@NonNull final UserId callerId,
+			@NonNull final Collection<PickingJobStepEvent> events)
+	{
+		changeWFProcessById(
+				wfProcessId,
+				wfProcess -> {
+					wfProcess.assertHasAccess(callerId);
+					assertPickingActivityType(events, wfProcess);
+
+					return wfProcess.<PickingJob>mapDocument(
+							pickingJob -> pickingJobService.processStepEvents(pickingJob, events)
+					);
+				});
+	}
+
+	private static void assertPickingActivityType(
+			final @NonNull Collection<PickingJobStepEvent> events,
+			final @NonNull WFProcess wfProcess)
+	{
+		events.stream()
+				.map(PickingJobStepEvent::getWfActivityId)
+				.distinct()
+				.map(wfProcess::getActivityById)
+				.map(WFActivity::getWfActivityType)
+				.forEach(ActualPickingWFActivityHandler.HANDLED_ACTIVITY_TYPE::assertActual);
+	}
+
 }

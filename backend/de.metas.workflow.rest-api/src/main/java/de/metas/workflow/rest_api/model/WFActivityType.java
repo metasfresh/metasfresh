@@ -28,6 +28,7 @@ import com.google.common.collect.Interner;
 import com.google.common.collect.Interners;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 
 @EqualsAndHashCode(doNotUseGetters = true)
 public class WFActivityType
@@ -58,5 +59,25 @@ public class WFActivityType
 	public String getAsString()
 	{
 		return value;
+	}
+
+	public void assertExpected(@NonNull final WFActivityType expected)
+	{
+		assertExpected(expected, this);
+	}
+
+	public void assertActual(@NonNull final WFActivityType actual)
+	{
+		assertExpected(this, actual);
+	}
+
+	private static void assertExpected(
+			@NonNull final WFActivityType expected,
+			@NonNull final WFActivityType actual)
+	{
+		if (!actual.equals(expected))
+		{
+			throw new AdempiereException("WFActivityType expected to be `" + expected + "` but it was `" + actual + "`");
+		}
 	}
 }

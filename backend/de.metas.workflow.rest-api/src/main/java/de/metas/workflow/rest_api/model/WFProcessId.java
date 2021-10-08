@@ -45,33 +45,33 @@ public final class WFProcessId
 			throw new AdempiereException("Invalid format: " + string);
 		}
 
-		final WorkflowLauncherProviderId providerId = WorkflowLauncherProviderId.ofString(string.substring(0, idx));
+		final WFProcessHandlerId handlerId = WFProcessHandlerId.ofString(string.substring(0, idx));
 		final String idPart = string.substring(idx + 1);
 		if (idPart.isEmpty())
 		{
 			throw new AdempiereException("Invalid format: " + string);
 		}
 
-		return new WFProcessId(providerId, idPart);
+		return new WFProcessId(handlerId, idPart);
 	}
 
-	public static WFProcessId random(@NonNull final WorkflowLauncherProviderId providerId)
+	public static WFProcessId random(@NonNull final WFProcessHandlerId handlerId)
 	{
-		return new WFProcessId(providerId, UUID.randomUUID().toString());
+		return new WFProcessId(handlerId, UUID.randomUUID().toString());
 	}
 
 	private static final String SEPARATOR = "-";
 
 	@Getter
-	private final WorkflowLauncherProviderId providerId;
+	private final WFProcessHandlerId handlerId;
 	private final String idPart;
 	private transient String stringRepresentation = null;
 
 	private WFProcessId(
-			@NonNull final WorkflowLauncherProviderId providerId,
+			@NonNull final WFProcessHandlerId handlerId,
 			@NonNull final String idPart)
 	{
-		this.providerId = providerId;
+		this.handlerId = handlerId;
 		this.idPart = Check.assumeNotEmpty(idPart, "idPart");
 	}
 
@@ -88,7 +88,7 @@ public final class WFProcessId
 		String stringRepresentation = this.stringRepresentation;
 		if (stringRepresentation == null)
 		{
-			stringRepresentation = this.stringRepresentation = providerId.getAsString() + SEPARATOR + idPart;
+			stringRepresentation = this.stringRepresentation = handlerId.getAsString() + SEPARATOR + idPart;
 		}
 		return stringRepresentation;
 	}

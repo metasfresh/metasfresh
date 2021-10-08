@@ -22,14 +22,15 @@
 
 package de.metas.picking.workflow.handlers.activity_handlers;
 
+import de.metas.picking.workflow.PickingJobService;
 import de.metas.picking.workflow.model.PickingJob;
-import de.metas.workflow.WFState;
 import de.metas.workflow.rest_api.activity_features.user_confirmation.UserConfirmationRequest;
 import de.metas.workflow.rest_api.activity_features.user_confirmation.UserConfirmationSupport;
 import de.metas.workflow.rest_api.controller.v2.json.JsonOpts;
 import de.metas.workflow.rest_api.model.UIComponent;
 import de.metas.workflow.rest_api.model.UIComponentType;
 import de.metas.workflow.rest_api.model.WFActivity;
+import de.metas.workflow.rest_api.model.WFActivityStatus;
 import de.metas.workflow.rest_api.model.WFActivityType;
 import de.metas.workflow.rest_api.model.WFProcess;
 import de.metas.workflow.rest_api.service.WFActivityHandler;
@@ -43,6 +44,14 @@ import static de.metas.picking.workflow.handlers.activity_handlers.PickingWFActi
 public class CompletePickingWFActivityHandler implements WFActivityHandler, UserConfirmationSupport
 {
 	public static final WFActivityType HANDLED_ACTIVITY_TYPE = WFActivityType.ofString("picking.completePicking");
+
+	private final PickingJobService pickingJobService;
+
+	public CompletePickingWFActivityHandler(
+			@NonNull final PickingJobService pickingJobService)
+	{
+		this.pickingJobService = pickingJobService;
+	}
 
 	@Override
 	public WFActivityType getHandledActivityType()
@@ -58,7 +67,6 @@ public class CompletePickingWFActivityHandler implements WFActivityHandler, User
 	{
 		return UIComponent.builder()
 				.type(UIComponentType.CONFIRM_BUTTON)
-				.readonly(!wfActivity.getStatus().isSuspended())
 				.properties(Params.builder()
 						.value("question", "Are you sure?")
 						.build())
@@ -66,30 +74,18 @@ public class CompletePickingWFActivityHandler implements WFActivityHandler, User
 	}
 
 	@Override
-	public WFState computeActivityState(final WFProcess wfProcess, final WFActivity completePickingWFActivity)
+	public WFActivityStatus computeActivityState(final WFProcess wfProcess, final WFActivity completePickingWFActivity)
 	{
 		final PickingJob pickingJob = getPickingJob(wfProcess);
-
-		if (pickingJob.isCompleted())
-		{
-			return WFState.Completed;
-		}
-		else if (pickingJob.getProgress().isFullyPicked())
-		{
-			return WFState.Suspended;
-		}
-		else
-		{
-			return WFState.NotStarted;
-		}
+		return pickingJob.isProcessed() ? WFActivityStatus.COMPLETED : WFActivityStatus.NOT_STARTED;
 	}
 
 	@Override
-	public void userConfirmed(final UserConfirmationRequest request)
+	public WFProcess userConfirmed(final UserConfirmationRequest request)
 	{
-		final PickingJob pickingJob = getPickingJob(request.getWfProcess());
+		final WFProcess wfProcess = request.getWfProcess();
+		request.getWfActivity().getWfActivityType().assertExpected(HANDLED_ACTIVITY_TYPE);
 
-		// TODO process the picking and mark the workflow as DONE
-		throw new UnsupportedOperationException();
+		return wfProcess.mapDocument(pickingJobService::process);
 	}
 }

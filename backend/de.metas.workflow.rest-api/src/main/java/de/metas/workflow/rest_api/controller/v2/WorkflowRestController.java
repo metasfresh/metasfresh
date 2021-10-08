@@ -22,26 +22,18 @@
 
 package de.metas.workflow.rest_api.controller.v2;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import de.metas.Profiles;
 import de.metas.user.UserId;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import de.metas.workflow.rest_api.controller.v2.json.JsonOpts;
 import de.metas.workflow.rest_api.controller.v2.json.JsonSetScannedBarcodeRequest;
-import de.metas.workflow.rest_api.controller.v2.json.JsonWFActivity;
 import de.metas.workflow.rest_api.controller.v2.json.JsonWFProcess;
-import de.metas.workflow.rest_api.controller.v2.json.JsonWFProcessHeaderProperties;
 import de.metas.workflow.rest_api.controller.v2.json.JsonWFProcessStartRequest;
 import de.metas.workflow.rest_api.controller.v2.json.JsonWorkflowLaunchersList;
-import de.metas.workflow.rest_api.model.UIComponent;
-import de.metas.workflow.rest_api.model.WFActivity;
 import de.metas.workflow.rest_api.model.WFActivityId;
 import de.metas.workflow.rest_api.model.WFProcess;
-import de.metas.workflow.rest_api.model.WFProcessHeaderProperties;
 import de.metas.workflow.rest_api.model.WFProcessId;
 import de.metas.workflow.rest_api.model.WorkflowLauncher;
-import de.metas.workflow.rest_api.model.WorkflowLauncherProviderId;
 import de.metas.workflow.rest_api.service.WorkflowRestAPIService;
 import de.metas.workflow.rest_api.service.WorkflowStartRequest;
 import lombok.NonNull;
@@ -89,18 +81,13 @@ public class WorkflowRestController
 	@GetMapping("/wfProcess/{wfProcessId}")
 	public JsonWFProcess getWFProcessById(@PathVariable("wfProcessId") final @NonNull String wfProcessIdStr)
 	{
-		return getWFProcessById(WFProcessId.ofString(wfProcessIdStr));
-	}
-
-	private JsonWFProcess getWFProcessById(final WFProcessId wfProcessId)
-	{
+		final WFProcessId wfProcessId = WFProcessId.ofString(wfProcessIdStr);
 		final WFProcess wfProcess = workflowRestAPIService.getWFProcessById(wfProcessId);
 
 		final UserId loggedUserId = Env.getLoggedUserId();
 		wfProcess.assertHasAccess(loggedUserId);
 
-		final JsonOpts jsonOpts = newJsonOpts();
-		return toJson(wfProcess, jsonOpts);
+		return toJson(wfProcess);
 	}
 
 	@PostMapping("/wfProcess/start")
@@ -111,7 +98,7 @@ public class WorkflowRestController
 
 		final WFProcess wfProcess = workflowRestAPIService.startWorkflow(
 				WorkflowStartRequest.builder()
-						.providerId(WorkflowLauncherProviderId.ofString(request.getWfProviderId()))
+						.handlerId(request.getWfProcessHandlerId())
 						.wfParameters(Params.ofMap(request.getWfParameters()))
 						.invokerId(loggedUserId)
 						.build());
@@ -128,39 +115,19 @@ public class WorkflowRestController
 		workflowRestAPIService.abortWFProcess(wfProcessId, loggedUserId);
 	}
 
-	private JsonWFProcess toJson(final WFProcess wfProcess, final JsonOpts jsonOpts)
+	private JsonWFProcess toJson(final WFProcess wfProcess)
 	{
-		final WFProcessHeaderProperties headerProperties = workflowRestAPIService.getHeaderProperties(wfProcess);
-
-		final ImmutableMap<WFActivityId, UIComponent> uiComponents = workflowRestAPIService.getUIComponents(wfProcess, jsonOpts);
-
-		return JsonWFProcess.builder()
-				.id(wfProcess.getId().getAsString())
-				.headerProperties(JsonWFProcessHeaderProperties.of(headerProperties, jsonOpts))
-				.activities(wfProcess.getActivitiesInOrder()
-						.stream()
-						.map(activity -> toJson(
-								activity,
-								uiComponents.get(activity.getId()),
-								jsonOpts))
-						.collect(ImmutableList.toImmutableList()))
-				.build();
+		final JsonOpts jsonOpts = newJsonOpts();
+		return toJson(wfProcess, jsonOpts);
 	}
 
-	private static JsonWFActivity toJson(
-			@NonNull final WFActivity activity,
-			@NonNull final UIComponent uiComponent,
-			@NonNull final JsonOpts jsonOpts)
+	private JsonWFProcess toJson(@NonNull final WFProcess wfProcess, @NonNull final JsonOpts jsonOpts)
 	{
-		final String adLanguage = jsonOpts.getAdLanguage();
-
-		return JsonWFActivity.builder()
-				.activityId(activity.getId().getAsString())
-				.caption(activity.getCaption().translate(adLanguage))
-				.componentType(uiComponent.getType().getAsString())
-				.readonly(uiComponent.isReadonly())
-				.componentProps(uiComponent.getProperties().toJson(jsonOpts::convertValueToJson))
-				.build();
+		return JsonWFProcess.of(
+				wfProcess,
+				workflowRestAPIService.getHeaderProperties(wfProcess),
+				workflowRestAPIService.getUIComponents(wfProcess, jsonOpts),
+				jsonOpts);
 	}
 
 	@PostMapping("/wfProcess/{wfProcessId}/{wfActivityId}/scannedBarcode")
@@ -172,9 +139,9 @@ public class WorkflowRestController
 		final UserId invokerId = Env.getLoggedUserId();
 		final WFProcessId wfProcessId = WFProcessId.ofString(wfProcessIdStr);
 		final WFActivityId wfActivityId = WFActivityId.ofString(wfActivityIdStr);
-		workflowRestAPIService.setScannedBarcode(invokerId, wfProcessId, wfActivityId, request.getBarcode());
+		final WFProcess wfProcess = workflowRestAPIService.setScannedBarcode(invokerId, wfProcessId, wfActivityId, request.getBarcode());
 
-		return getWFProcessById(wfProcessId);
+		return toJson(wfProcess);
 	}
 
 	@PostMapping("/wfProcess/{wfProcessId}/{wfActivityId}/userConfirmation")
@@ -185,8 +152,8 @@ public class WorkflowRestController
 		final UserId invokerId = Env.getLoggedUserId();
 		final WFProcessId wfProcessId = WFProcessId.ofString(wfProcessIdStr);
 		final WFActivityId wfActivityId = WFActivityId.ofString(wfActivityIdStr);
-		workflowRestAPIService.setUserConfirmation(invokerId, wfProcessId, wfActivityId);
+		final WFProcess wfProcess = workflowRestAPIService.setUserConfirmation(invokerId, wfProcessId, wfActivityId);
 
-		return getWFProcessById(wfProcessId);
+		return toJson(wfProcess);
 	}
 }

@@ -24,11 +24,14 @@ package de.metas.workflow.rest_api.controller.v2.json;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
+import de.metas.workflow.rest_api.model.WFProcessHandlerId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
 
 import java.util.Map;
 
@@ -41,6 +44,18 @@ public class JsonWFProcessStartRequest
 	@JsonPOJOBuilder(withPrefix = "")
 	public static class JsonWFProcessStartRequestBuilder {}
 
-	@NonNull String wfProviderId;
+	static final String PARAM_WFProcessHandlerId = "wfProcessHandlerId";
+	
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	@NonNull Map<String, Object> wfParameters;
+
+	public WFProcessHandlerId getWfProcessHandlerId()
+	{
+		final Object handlerIdObj = wfParameters.get(PARAM_WFProcessHandlerId);
+		if (handlerIdObj == null)
+		{
+			throw new AdempiereException("No `" + PARAM_WFProcessHandlerId + "` found in " + this);
+		}
+		return WFProcessHandlerId.ofString(handlerIdObj.toString());
+	}
 }

@@ -40,5 +40,5 @@ public class JsonPickingEventsList
 	@JsonPOJOBuilder(withPrefix = "")
 	public static class JsonPickingEventsListBuilder {}
 
-	@NonNull List<JsonQtyPickedEvent> events;
+	@NonNull List<JsonPickingStepEvent> events;
 }

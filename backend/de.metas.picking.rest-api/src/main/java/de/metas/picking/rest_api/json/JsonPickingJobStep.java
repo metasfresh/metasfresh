@@ -34,6 +34,8 @@ import java.math.BigDecimal;
 @Builder
 public class JsonPickingJobStep
 {
+	@NonNull String pickingStepId;
+
 	@NonNull String productName;
 	@NonNull String locatorName;
 	@NonNull String huBarcode;
@@ -46,6 +48,7 @@ public class JsonPickingJobStep
 		final String adLanguage = jsonOpts.getAdLanguage();
 
 		return builder()
+				.pickingStepId(step.getId().getAsString())
 				.productName(step.getProductName().translate(adLanguage))
 				.locatorName(step.getLocatorName())
 				.huBarcode(step.getHuBarcode())

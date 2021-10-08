@@ -32,7 +32,6 @@ import org.adempiere.util.api.Params;
 public class UIComponent
 {
 	@NonNull UIComponentType type;
-	boolean readonly;
 
 	@Builder.Default
 	@NonNull Params properties = Params.EMPTY;

@@ -34,7 +34,7 @@ import javax.annotation.Nullable;
 @Builder
 public class WorkflowLauncher
 {
-	@NonNull WorkflowLauncherProviderId providerId;
+	@NonNull WFProcessHandlerId handlerId;
 
 	@NonNull ITranslatableString caption;
 
