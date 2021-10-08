@@ -21,6 +21,7 @@ const routesArray = [
   { path: '/workflow/:workflowId/activityId/:activityId/scanner', Component: ScanScreen },
   { path: '/workflow/:workflowId/activityId/:activityId/lineId/:lineId', Component: LineScreen },
   { path: '/workflow/:workflowId/activityId/:activityId/lineId/:lineId/stepId/:stepId', Component: PickScreen },
+  { path: '/workflow/:workflowId/activityId/:activityId/lineId/:lineId/stepId/:stepId/scanner', Component: ScanScreen },
 ];
 
 const childRoutes = (
@@ -37,7 +38,7 @@ const childRoutes = (
 
 const Routes = () => {
   return (
-    <ConnectedRouter history={history}>
+    <ConnectedRouter history={history} basename="./">
       <Main>
         <Switch>
           <Route exact path="/login" component={LoginView} />

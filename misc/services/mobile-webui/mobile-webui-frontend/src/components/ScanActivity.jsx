@@ -1,5 +1,5 @@
 import React from 'react';
-// import PropTypes from 'prop-types';
+import PropTypes from 'prop-types';
 import { useHistory } from 'react-router-dom';
 
 import ButtonWithIndicator from './ButtonWithIndicator';
@@ -28,9 +28,12 @@ const ScanActivity = (props) => {
   );
 };
 
-// ScanActivity.propTypes = {
-//   caption: PropTypes.string,
-//   scanButtonStatus: PropTypes.string,
-// };
+ScanActivity.propTypes = {
+  caption: PropTypes.string,
+  scanButtonStatus: PropTypes.string,
+  activityItem: PropTypes.object,
+  activityState: PropTypes.object,
+  wfProcessId: PropTypes.string.isRequired,
+};
 
 export default ScanActivity;

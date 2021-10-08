@@ -92,6 +92,7 @@ ScanScreen.propTypes = {
   setActivityEnableFlag: PropTypes.func.isRequired,
   activities: PropTypes.object,
   activityId: PropTypes.string,
+  goBack: PropTypes.func.isRequired,
 };
 
 export default withRouter(
