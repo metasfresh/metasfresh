@@ -39,7 +39,7 @@ class CodeScanner extends Component {
   };
 
   decodeContinuously = (selectedDeviceId) => {
-    const { onDetection, activityId } = this.props;
+    const { onDetection, activityId, isScanDisabled } = this.props;
     this.codeReader.decodeFromInputVideoDeviceContinuously(selectedDeviceId, 'video', (result, err) => {
       if (result) {
         // properly decoded the code
@@ -47,12 +47,14 @@ class CodeScanner extends Component {
         let detectedCode = result.getText();
 
         // close the video sources
-        const mediaStream = this.videoInput.current.srcObject;
-        const tracks = mediaStream.getTracks();
-        tracks.forEach((track) => track.stop());
+        if (isScanDisabled) {
+          const mediaStream = this.videoInput.current.srcObject;
+          const tracks = mediaStream.getTracks();
+          tracks.forEach((track) => track.stop());
+        }
 
         onDetection({ detectedCode, activityId });
-        this.codeReader.stopContinuousDecode();
+        isScanDisabled && this.codeReader.stopContinuousDecode();
       }
 
       if (err) {
