@@ -1,13 +1,34 @@
-select
-    SUM(il.InvoicedQty) as catchweight,
-    COALESCE(uomt.UOMSymbol, uom.UOMSymbol) AS UOM,
-    CASE
-        WHEN uom.StdPrecision = 0
-            THEN '#,##0'
-            ELSE Substring('#,##0.0000' FROM 0 FOR 7 + uom.StdPrecision :: integer) END AS QtyPattern
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.CalculateCustom_Invoice_TotalBruttoWeight(numeric);
 
-from C_Customs_Invoice_Line il
-         LEFT OUTER JOIN C_UOM uom ON uom.C_UOM_ID = il.c_uom_id
-         LEFT OUTER JOIN C_UOM_Trl uomt on uomt.c_UOM_ID = uom.C_UOM_ID and uomt.AD_Language = $P{ad_language}
-where il.C_Customs_Invoice_Id =  $P{C_Customs_Invoice_Id}
-group by uomt.UOMSymbol, uom.UOMSymbol, uom.StdPrecision;
+CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.CalculateCustom_Invoice_TotalBruttoWeight(p_c_customs_invoice_id numeric)
+    RETURNS TABLE
+            (
+                bruttoWeight numeric
+            )
+    LANGUAGE 'sql'
+AS
+$BODY$
+select sum(productWeight + packageWeight)
+from (
+         select
+             (case
+                  when cil.c_uom_id = 540017 -- harcoded kg
+                      then COALESCE(p.weight, 0) * iol.movementqty
+                      else COALESCE(p.weight, 0) * il.invoicedqty end)
+                                                                as productWeight,
+             COALESCE(packingProd.weight * iol.qtyenteredtu, 0) as packageWeight
+
+         from c_customs_invoice_line il
+                  join m_inoutline_to_c_customs_invoice_line cil
+                       on il.c_customs_invoice_line_id = cil.c_customs_invoice_line_id and il.m_product_id = cil.m_product_id
+                  join m_inoutline iol on iol.m_inoutline_id=cil.m_inoutline_id and iol.m_product_id = cil.m_product_id
+                  join M_product p on il.m_product_id = p.m_product_id
+                  LEFT JOIN m_hu_pi_item_product pip on pip.m_hu_pi_item_product_id=iol.m_hu_pi_item_product_id
+                  LEFT JOIN  m_hu_pi_item pii on pii.m_hu_pi_item_id = pip.m_hu_pi_item_id
+                  LEFT JOIN m_hu_packingmaterial pp on pp.m_hu_packingmaterial_id=pii.m_hu_packingmaterial_id
+                  LEFT JOIN m_product packingProd on packingProd.m_product_id=pp.m_product_id
+         WHERE il.C_Customs_Invoice_ID = p_c_customs_invoice_id ) w
+$BODY$;
+
+COMMENT ON FUNCTION de_metas_endcustomer_fresh_reports.CalculateCustom_Invoice_TotalBruttoWeight(numeric)
+    IS 'calculate total brutto weight of lines';
