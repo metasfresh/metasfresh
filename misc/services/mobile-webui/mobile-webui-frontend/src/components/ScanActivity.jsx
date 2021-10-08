@@ -7,7 +7,8 @@ import ButtonWithIndicator from './ButtonWithIndicator';
 const ScanActivity = (props) => {
   const history = useHistory();
   const { activityItem, activityState } = props;
-  const { scannedCode } = activityState.dataStored;
+
+  const scannedCode = activityState ? activityState.dataStored : null;
   const caption = scannedCode ? `Code: ${activityItem.componentProps.barcodeCaption}` : activityItem.caption;
   const scanButtonStatus = scannedCode ? 'complete' : 'incomplete';
   const scanBtnCaption = caption || 'Scan';

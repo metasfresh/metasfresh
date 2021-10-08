@@ -12,6 +12,7 @@ class Launchers extends Component {
     const { populateLaunchers, token } = this.props;
 
     if (token) {
+      // TODO: fetch on each visit
       getLaunchers({ token }).then((response) => {
         populateLaunchers(response.data.endpointResponse.launchers);
       });
