@@ -10,9 +10,9 @@ import { startWorkflowRequest, continueWorkflowRequest } from '../api/launchers'
  * @method startWorkflow
  * @summary
  */
-export function startWorkflow({ wfProviderId, wfParameters }) {
+export function startWorkflow({ wfParameters }) {
   return (dispatch) => {
-    return startWorkflowRequest({ wfProviderId, wfParameters })
+    return startWorkflowRequest({ wfParameters })
       .then(({ data }) => {
         const { endpointResponse } = data;
 
@@ -38,9 +38,9 @@ export function startWorkflow({ wfProviderId, wfParameters }) {
  * @method continueWorkflow
  * @summary
  */
-export function continueWorkflow(wfProviderId) {
+export function continueWorkflow(wfProcessId) {
   return (dispatch) => {
-    return continueWorkflowRequest(wfProviderId)
+    return continueWorkflowRequest(wfProcessId)
       .then(({ data }) => {
         const { endpointResponse } = data;
 
