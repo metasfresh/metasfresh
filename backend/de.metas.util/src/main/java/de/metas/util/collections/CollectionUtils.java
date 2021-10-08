@@ -302,7 +302,8 @@ public final class CollectionUtils
 			}
 		}
 
-		return result.build();
+		//noinspection unchecked
+		return hasChanges ? result.build() : (ImmutableList<R>)collection;
 	}
 
 	/**
