@@ -147,6 +147,7 @@ CodeScanner.propTypes = {
   activityId: PropTypes.string.isRequired,
   caption: PropTypes.string,
   scanButtonStatus: PropTypes.string,
+  isScanDisabled: PropTypes.bool, // future indicator for scanning status
   isEnabled: PropTypes.bool,
 };
 
