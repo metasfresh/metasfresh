@@ -1,4 +1,4 @@
-import { produce } from 'immer';
+import { produce, original } from 'immer';
 import { createSelector } from 'reselect';
 import { get } from 'lodash';
 
@@ -37,8 +37,11 @@ const reducer = produce((draftState, action) => {
   switch (action.type) {
     case types.ADD_WORKFLOW_STATUS: {
       const { id, headerProperties, activities } = action.payload;
-      const formattedActivities = activities.reduce((acc, activity, idx) => {
-        const tmpActivity = { activity };
+      const current = draftState[id] ? original(draftState[id]).activities : null;
+
+      const formattedActivities = activities.reduce((acc, activity) => {
+        let tmpActivity = { activity }; // TODO: What's this for ?
+        const activityId = activity.activityId;
 
         // each state is different depending on the activity componentType
         switch (activity.componentType) {
@@ -64,7 +67,14 @@ const reducer = produce((draftState, action) => {
             };
         }
 
-        acc[idx + 1] = tmpActivity;
+        // we might be continuing an existing workflow status
+        const currentActivityTmp = current ? current[activityId] : null;
+
+        if (currentActivityTmp) {
+          tmpActivity = { ...tmpActivity, currentActivityTmp };
+        }
+
+        acc[activityId] = tmpActivity;
 
         return acc;
       }, {});

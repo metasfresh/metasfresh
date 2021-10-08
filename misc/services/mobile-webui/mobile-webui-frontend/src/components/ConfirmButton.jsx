@@ -2,6 +2,8 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
+import { getWorkflowProcessStatus } from '../reducers/wfProcesses_status';
+
 class ConfirmButton extends Component {
   constructor(props) {
     super(props);
@@ -25,10 +27,11 @@ class ConfirmButton extends Component {
 
   render() {
     const { caption, componentProps, dataStored } = this.props;
+    const { isComplete } = dataStored;
     const { isPromptDialogOpen } = this.state;
+
     const btnCaption = caption || 'Confirm';
     const promptQuestion = componentProps.promptQuestion || 'Are you sure?';
-    const { isComplete } = dataStored;
 
     return (
       <div>
@@ -68,14 +71,15 @@ class ConfirmButton extends Component {
       </div>
     );
   }
-  1;
 }
 
 const mapStateToProps = (state, ownProps) => {
   const { wfProcessId, activityId } = ownProps;
+  const workflowStatus = getWorkflowProcessStatus(state, wfProcessId);
+  const dataStored = workflowStatus.activities[activityId] ? workflowStatus.activities[activityId].dataStored : {};
 
   return {
-    dataStored: state.wfProcesses_status[wfProcessId].activities[activityId].dataStored,
+    dataStored,
   };
 };
 

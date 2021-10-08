@@ -2,7 +2,9 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { push } from 'connected-react-router';
+
 import ButtonWithIndicator from './ButtonWithIndicator';
+
 class PickProductsLine extends Component {
   /**
    *

@@ -21,6 +21,11 @@ export function startWorkflow({ wfProviderId, wfParameters }) {
           payload: { ...endpointResponse },
         });
 
+        dispatch({
+          type: ADD_WORKFLOW_STATUS,
+          payload: { ...endpointResponse },
+        });
+
         return Promise.resolve(data);
       })
       .catch((err) => {
