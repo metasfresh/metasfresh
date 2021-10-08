@@ -44,7 +44,7 @@ class PickStep extends PureComponent {
               </div>
             </div>
 
-            <div className="right-btn-side">
+            <div className="right-btn-side pt-4">
               <Indicator indicatorType={detectedCode ? 'complete' : 'incomplete'} />
             </div>
           </div>
