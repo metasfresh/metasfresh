@@ -2,7 +2,7 @@ import {
   SWITCHOFF_LINES_VISIBILITY,
   UPDATE_PICKING_STEP_QTY,
   SET_SCANNED_BARCODE,
-  UPDATE_PICKING_STEP_DETECTED_CODE,
+  UPDATE_PICKING_STEP_SCANNED_HU_BARCODE,
 } from '../constants/ActionTypes';
 
 /**
@@ -20,21 +20,17 @@ export function switchoffLinesVisibility({ wfProcessId, activityId }) {
  * @method switchoffLinesVisibility
  * @summary sets the lines visibility to `false` and by doing this the steps will be visible
  */
-export function updatePickingStepQty({ wfProcessId, activityId, lineIndex, stepId, qty }) {
+export function updatePickingStepQty({ wfProcessId, activityId, lineId, stepId, qty }) {
   return {
     type: UPDATE_PICKING_STEP_QTY,
-    payload: { wfProcessId, activityId, lineIndex, stepId, qty },
+    payload: { wfProcessId, activityId, lineId, stepId, qty },
   };
 }
 
-/**
- * @method updatePickingStepDetectedCode
- * @summary sets the detected code for the step
- */
-export function updatePickingStepDetectedCode({ wfProcessId, activityId, lineIndex, stepId, detectedCode }) {
+export function updatePickingStepScannedHUBarcode({ wfProcessId, activityId, lineId, stepId, scannedHUBarcode }) {
   return {
-    type: UPDATE_PICKING_STEP_DETECTED_CODE,
-    payload: { wfProcessId, activityId, lineIndex, stepId, detectedCode },
+    type: UPDATE_PICKING_STEP_SCANNED_HU_BARCODE,
+    payload: { wfProcessId, activityId, lineId, stepId, scannedHUBarcode },
   };
 }
 

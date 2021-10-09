@@ -3,49 +3,29 @@ import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import { withRouter } from 'react-router';
 import toast, { Toaster } from 'react-hot-toast';
-import CodeScanner from './CodeScanner';
-import { stopScanning } from '../../actions/ScanActions';
-import { updatePickingStepDetectedCode, updatePickingStepQty } from '../../actions/PickingActions';
+import { updatePickingStepQty } from '../../actions/PickingActions';
+import ButtonWithIndicator from '../ButtonWithIndicator';
 
 class PickScreen extends Component {
-  onDetection = (scannedData) => {
-    const {
-      stepProps: { qtyToPick },
-      updatePickingStepQty,
-    } = this.props;
+  onScanHUButtonClick = () => {
+    const { wfProcessId, activityId, lineId, stepId } = this.props;
 
-    const { detectedCode } = scannedData;
-    const isValidCode = this.checkIfValidCode(detectedCode);
-    const { stopScanning, updatePickingStepDetectedCode, wfProcessId, activityId, lineIndex, stepId } = this.props;
-    if (isValidCode) {
-      updatePickingStepDetectedCode({ wfProcessId, activityId, lineIndex, stepId, detectedCode });
-      updatePickingStepQty({ wfProcessId, activityId, lineIndex, stepId, qty: qtyToPick });
-      stopScanning();
-    } else {
-      toast('Scanned code is invalid!', { type: 'error', style: { color: 'white' } });
-      updatePickingStepDetectedCode({ wfProcessId, activityId, lineIndex, stepId, detectedCode: undefined });
-      updatePickingStepQty({ wfProcessId, activityId, lineIndex, stepId, qty: 0 });
-    }
+    this.props.history.push(
+      `/workflow/${wfProcessId}/activityId/${activityId}/lineId/${lineId}/stepId/${stepId}/scanner`
+    );
   };
 
-  checkIfValidCode = (detectedCode) => {
-    const {
-      stepProps: { huBarcode },
-    } = this.props;
-    return huBarcode === detectedCode;
-  };
-
-  onChangeHandler = (e) => {
-    const { updatePickingStepQty, wfProcessId, activityId, lineIndex, stepId } = this.props;
+  onQtyPickedChanged = (e) => {
+    const { updatePickingStepQty, wfProcessId, activityId, lineId, stepId } = this.props;
     const inputQty = parseInt(e.target.value);
     if (isNaN(inputQty)) {
-      updatePickingStepQty({ wfProcessId, activityId, lineIndex, stepId, qty: '' });
+      updatePickingStepQty({ wfProcessId, activityId, lineId, stepId, qty: '' });
       return;
     }
 
     const isValidQty = this.validateQtyInput(inputQty);
     if (isValidQty) {
-      updatePickingStepQty({ wfProcessId, activityId, lineIndex, stepId, qty: e.target.value });
+      updatePickingStepQty({ wfProcessId, activityId, lineId, stepId, qty: e.target.value });
     } else {
       // show error
       toast('Quantity picked is invalid!', { type: 'error', style: { color: 'white' } });
@@ -64,21 +44,20 @@ class PickScreen extends Component {
       stepProps: { qtyPicked },
       wfProcessId,
       activityId,
-      lineIndex,
+      lineId,
       stepId,
       updatePickingStepQty,
     } = this.props;
-    qtyPicked === '' && updatePickingStepQty({ wfProcessId, activityId, lineIndex, stepId, qty: 0 });
+    qtyPicked === '' && updatePickingStepQty({ wfProcessId, activityId, lineId, stepId, qty: 0 });
   }
 
   render() {
     const {
-      stepProps: { huBarcode, qtyToPick, qtyPicked, detectedCode },
-      activityId,
+      stepProps: { huBarcode, qtyToPick, qtyPicked, scannedHUBarcode },
     } = this.props;
 
-    const isValidCode = this.checkIfValidCode(detectedCode);
-    const scanBtnCaption = isValidCode ? `Code: ${detectedCode}` : ``;
+    const isValidCode = !!scannedHUBarcode;
+    const scanButtonCaption = isValidCode ? `${scannedHUBarcode}` : `Scan`;
     const scanButtonStatus = isValidCode ? `complete` : `incomplete`;
 
     return (
@@ -107,17 +86,15 @@ class PickScreen extends Component {
           <div className="columns is-mobile">
             <div className="column is-half has-text-right has-text-weight-bold pb-0 pl-0 pr-0">Quantity picked:</div>
             <div className="column is-half has-text-left pb-0">
-              {detectedCode && <input type="number" value={qtyPicked} onChange={(e) => this.onChangeHandler(e)} />}
-              {!detectedCode && qtyPicked}
+              {isValidCode && <input type="number" value={qtyPicked} onChange={(e) => this.onQtyPickedChanged(e)} />}
+              {!isValidCode && qtyPicked}
             </div>
           </div>
-          <CodeScanner
-            id={huBarcode}
-            caption={scanBtnCaption}
-            onDetection={this.onDetection}
-            activityId={activityId}
-            scanButtonStatus={scanButtonStatus}
-          />
+          <div className="mt-0">
+            <button className="button is-outlined complete-btn" onClick={this.onScanHUButtonClick}>
+              <ButtonWithIndicator caption={scanButtonCaption} indicatorType={scanButtonStatus} />
+            </button>
+          </div>
           <Toaster
             position="bottom-center"
             toastOptions={{
@@ -142,26 +119,30 @@ class PickScreen extends Component {
 const mapStateToProps = (state, ownProps) => {
   const { workflowId: wfProcessId, activityId, lineId, stepId } = ownProps.match.params;
 
+  const stepProps = state.wfProcesses_status[wfProcessId].activities[activityId].dataStored.lines[lineId].steps[stepId];
+
   return {
-    stepProps: state.wfProcesses_status[wfProcessId].activities[activityId].dataStored.lines[lineId].steps[stepId],
-    activityId,
     wfProcessId,
+    activityId,
+    lineId,
     stepId,
-    lineIndex: Number(lineId),
+    stepProps,
   };
 };
 
 PickScreen.propTypes = {
-  activityId: PropTypes.string.isRequired,
+  //
+  // Props
   wfProcessId: PropTypes.string.isRequired,
-  lineIndex: PropTypes.number.isRequired,
-  stepProps: PropTypes.object.isRequired,
-  stopScanning: PropTypes.func.isRequired,
-  updatePickingStepDetectedCode: PropTypes.func.isRequired,
-  updatePickingStepQty: PropTypes.func.isRequired,
+  activityId: PropTypes.string.isRequired,
+  lineId: PropTypes.string.isRequired,
   stepId: PropTypes.string.isRequired,
+  stepProps: PropTypes.object.isRequired,
+  //
+  // Actions
+  updatePickingStepQty: PropTypes.func.isRequired,
+  //
+  history: PropTypes.object.isRequired,
 };
 
-export default withRouter(
-  connect(mapStateToProps, { stopScanning, updatePickingStepDetectedCode, updatePickingStepQty })(PickScreen)
-);
+export default withRouter(connect(mapStateToProps, { updatePickingStepQty })(PickScreen));

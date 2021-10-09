@@ -7,61 +7,36 @@ import { goBack } from 'connected-react-router';
 
 import { getWorkflowProcessStatus } from '../../reducers/wfProcesses_status';
 import { setScannedBarcode } from '../../actions/PickingActions';
-import { setActivityEnableFlag, updateWFProcess } from '../../actions/WorkflowActions';
-import { startScanning, stopScanning } from '../../actions/ScanActions';
+import { setActivityStatus, updateWFProcess } from '../../actions/WorkflowActions';
 import { postScannedBarcode } from '../../api/scanner';
 
 import CodeScanner from './CodeScanner';
 
 class ScanScreen extends Component {
-  componentDidMount() {
-    const { startScanning } = this.props;
-
-    startScanning();
-  }
-
   onBarcodeScanned = ({ scannedBarcode }) => {
-    const {
-      wfProcessId,
-      activityId,
-      stopScanning,
-      setScannedBarcode,
-      activities,
-      updateWFProcess,
-      setActivityEnableFlag,
-      goBack,
-    } = this.props;
+    const { wfProcessId, activityId, setScannedBarcode, updateWFProcess, setActivityStatus, goBack } = this.props;
+
+    setScannedBarcode({ wfProcessId, activityId, scannedBarcode });
+    setActivityStatus({ wfProcessId, activityId: activityId, isComplete: true });
 
     postScannedBarcode({ wfProcessId, activityId, scannedBarcode })
       .then((response) => {
-        // update the scanned activity code in the store
-        setScannedBarcode({ wfProcessId, activityId, scannedBarcode });
-
         updateWFProcess({ wfProcess: response.data.endpointResponse });
-
-        // display a toast
-        toast('Successful scanning!', { type: 'success', style: { color: 'white' } });
-
-        // update the next activity
-        const nextActivityId = Number(activityId) + 1;
-        nextActivityId in activities &&
-          setActivityEnableFlag({ wfProcessId, activityId: nextActivityId, isActivityEnabled: true });
+        goBack();
       })
-      .catch(() => {
+      .catch((err) => {
+        console.log('postScannedBarcode failed: %o', err);
+        setScannedBarcode({ wfProcessId, activityId, scannedBarcode: null });
+        setActivityStatus({ wfProcessId, activityId: activityId, isComplete: false });
+
         toast('Scanned code is invalid!', { type: 'error', style: { color: 'white' } });
       });
-
-    stopScanning();
-
-    goBack();
   };
 
   render() {
-    const { activityId } = this.props;
-
     return (
       <div className="mt-0">
-        <CodeScanner activityId={activityId} onDetection={this.onBarcodeScanned} />
+        <CodeScanner onBarcodeScanned={this.onBarcodeScanned} />
         <Toaster
           position="bottom-center"
           toastOptions={{
@@ -94,25 +69,25 @@ const mapStateToProps = (state, { match }) => {
 };
 
 ScanScreen.propTypes = {
+  //
+  // Props
   componentProps: PropTypes.object,
-  stopScanning: PropTypes.func.isRequired,
-  startScanning: PropTypes.func.isRequired,
-  setScannedBarcode: PropTypes.func.isRequired,
   wfProcessId: PropTypes.string.isRequired,
   activityId: PropTypes.string,
-  setActivityEnableFlag: PropTypes.func.isRequired,
-  updateWFProcess: PropTypes.func.isRequired,
   activities: PropTypes.object,
+  //
+  // Actions
+  setScannedBarcode: PropTypes.func.isRequired,
+  setActivityStatus: PropTypes.func.isRequired,
+  updateWFProcess: PropTypes.func.isRequired,
   goBack: PropTypes.func.isRequired,
 };
 
 export default withRouter(
   connect(mapStateToProps, {
-    stopScanning,
-    startScanning,
     setScannedBarcode,
     updateWFProcess,
-    setActivityEnableFlag,
+    setActivityStatus,
     goBack,
   })(ScanScreen)
 );

@@ -13,3 +13,5 @@ export const ADD_WORKFLOW_STATUS = 'ADD_WORKFLOW_STATUS';
  * {string} used to set the isActivityEnabled flag
  */
 export const SET_ACTIVITY_ENABLE_FLAG = 'SET_ACTIVITY_ENABLE_FLAG';
+
+export const SET_ACTIVITY_STATUS = 'SET_ACTIVITY_STATUS';

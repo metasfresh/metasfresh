@@ -39,7 +39,6 @@ class WorkflowProcess extends PureComponent {
                       <ScanActivity
                         key={uniqueId}
                         wfProcessId={wfProcessId}
-                        activityItem={activityItem}
                         activityState={activitiesState[activityItem.activityId]}
                       />
                     );
