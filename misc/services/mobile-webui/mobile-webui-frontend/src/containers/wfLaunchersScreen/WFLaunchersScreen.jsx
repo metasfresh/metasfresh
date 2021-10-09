@@ -4,15 +4,15 @@ import { v4 as uuidv4 } from 'uuid';
 import PropTypes from 'prop-types';
 
 import { populateLaunchers } from '../../actions/LauncherActions';
-import { getLaunchers } from '../../api/launchers';
+import { getLaunchers } from '../../api';
 import Launcher from './WFLauncherItem';
 
 class WFLaunchersScreen extends Component {
   componentDidMount() {
-    const { populateLaunchers, token } = this.props;
+    const { token } = this.props;
+    const { populateLaunchers } = this.props;
 
     if (token) {
-      // TODO: fetch on each visit
       getLaunchers({ token }).then((response) => {
         populateLaunchers(response.data.endpointResponse.launchers);
       });
@@ -36,9 +36,13 @@ class WFLaunchersScreen extends Component {
 }
 
 WFLaunchersScreen.propTypes = {
-  populateLaunchers: PropTypes.func.isRequired,
-  launchers: PropTypes.object.isRequired,
+  //
+  // Props
   token: PropTypes.string,
+  launchers: PropTypes.object.isRequired,
+  //
+  // Actions
+  populateLaunchers: PropTypes.func.isRequired,
 };
 
 const mapStateToProps = (state) => {

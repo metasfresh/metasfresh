@@ -1,26 +1,23 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { v4 as uuidv4 } from 'uuid';
 
 import PickStep from './PickStep';
 
 class PickProductsSteps extends Component {
   render() {
-    const { steps, wfProcessId, activityId, lineIndex } = this.props;
+    const { steps, wfProcessId, activityId, lineId } = this.props;
     return (
       <div className="steps-container">
         {steps.length > 0 &&
-          steps.map((stepItem, index) => {
-            let uniqueId = uuidv4();
+          steps.map((stepItem) => {
             return (
               <PickStep
-                key={uniqueId}
-                id={uniqueId}
-                stepId={index}
+                key={stepItem.pickingStepId}
+                {...stepItem}
                 wfProcessId={wfProcessId}
                 activityId={activityId}
-                lineIndex={lineIndex}
-                {...stepItem}
+                lineId={lineId}
+                stepId={stepItem.pickingStepId}
               />
             );
           })}
@@ -30,10 +27,10 @@ class PickProductsSteps extends Component {
 }
 
 PickProductsSteps.propTypes = {
-  steps: PropTypes.array.isRequired,
-  activityId: PropTypes.string.isRequired,
   wfProcessId: PropTypes.string.isRequired,
-  lineIndex: PropTypes.number.isRequired,
+  activityId: PropTypes.string.isRequired,
+  lineId: PropTypes.string.isRequired,
+  steps: PropTypes.array.isRequired,
 };
 
 export default PickProductsSteps;

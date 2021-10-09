@@ -1,4 +1,4 @@
-import { original, produce } from 'immer';
+import { current, original, isDraft, produce } from 'immer';
 import { createSelector } from 'reselect';
 import { get } from 'lodash';
 
@@ -34,11 +34,7 @@ export const getWorkflowProcessActivityLine = (wfProcess, activityId, lineId) =>
 };
 
 const mergeWFProcessToState = ({ draftWFProcess, fromWFProcess }) => {
-  draftWFProcess = {
-    ...draftWFProcess,
-    headerProperties: fromWFProcess.headerProperties,
-    isSentToBackend: true,
-  };
+  draftWFProcess.headerProperties = fromWFProcess.headerProperties;
 
   if (!draftWFProcess.activities) {
     draftWFProcess.activities = {};
@@ -49,7 +45,7 @@ const mergeWFProcessToState = ({ draftWFProcess, fromWFProcess }) => {
     fromActivities: fromWFProcess.activities,
   });
 
-  console.log('AFTER MERGE: %o', draftWFProcess);
+  console.log('AFTER MERGE: %o', isDraft(draftWFProcess) ? current(draftWFProcess) : draftWFProcess);
   console.log('fromWFProcess=%o', fromWFProcess);
 };
 
@@ -61,32 +57,31 @@ const mergeActivitiesToState = ({ draftActivities, fromActivities }) => {
 
     const draftActivity = draftActivities[fromActivity.activityId];
 
-    draftActivity.caption = fromActivity.caption;
-    draftActivity.componentProps = fromActivity.componentProps;
-    draftActivity.componentType = fromActivity.componentType;
-
-    if (!draftActivity.dataStored) {
-      draftActivity.dataStored = computeActivityDataStoredInitialValue({
-        componentType: fromActivity.componentType,
-        componentProps: fromActivity.componentProps,
-      });
-    }
+    mergeActivityToState({ draftActivity, fromActivity });
   });
+};
+
+const mergeActivityToState = ({ draftActivity, fromActivity }) => {
+  draftActivity.caption = fromActivity.caption;
+  draftActivity.componentType = fromActivity.componentType;
+
+  const componentPropsNormalized = normalizeComponentProps({
+    componentType: fromActivity.componentType,
+    componentProps: fromActivity.componentProps,
+  });
+  draftActivity.componentProps = componentPropsNormalized;
+
+  if (!draftActivity.dataStored) {
+    draftActivity.dataStored = computeActivityDataStoredInitialValue({
+      componentType: fromActivity.componentType,
+      componentProps: componentPropsNormalized,
+    });
+  }
 };
 
 const computeActivityDataStoredInitialValue = ({ componentType, componentProps }) => {
   switch (componentType) {
-    case 'common/scanBarcode': {
-      // do nothing; we will handle it at component level
-      return {};
-    }
-    case 'common/confirmButton': {
-      return {
-        isActivityEnabled: false,
-        isComplete: false,
-      };
-    }
-    default: {
+    case 'picking/pickProducts': {
       return {
         isActivityEnabled: false,
         isComplete: false,
@@ -94,7 +89,36 @@ const computeActivityDataStoredInitialValue = ({ componentType, componentProps }
         lines: componentProps.lines,
       };
     }
+    default: {
+      return {};
+    }
   }
+};
+
+const normalizeComponentProps = ({ componentType, componentProps }) => {
+  switch (componentType) {
+    case 'picking/pickProducts': {
+      return {
+        ...componentProps,
+        lines: normalizePickingLines(componentProps.lines),
+      };
+    }
+    default: {
+      return componentProps;
+    }
+  }
+};
+
+const normalizePickingLines = (lines) => {
+  return lines.map((line) => {
+    return {
+      ...line,
+      steps: line.steps.reduce((accum, step) => {
+        accum[step.pickingStepId] = step;
+        return accum;
+      }, {}),
+    };
+  });
 };
 
 const extractActivitiesStatus = ({ wfProcess }) => {
@@ -137,8 +161,8 @@ const updateActivitiesStatus = ({ draftWFProcess, activitiesStatus }) => {
 };
 
 const reducer = produce((draftState, action) => {
-  console.log('---------------------------------------------------------------------');
-  console.log('*** wfProcesses_status reducer: %o', action);
+  // console.log('---------------------------------------------------------------------');
+  // console.log('*** wfProcesses_status reducer: %o', action);
 
   switch (action.type) {
     case types.ADD_WORKFLOW_STATUS:

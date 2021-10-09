@@ -7,7 +7,6 @@ import ButtonWithIndicator from '../../../components/ButtonWithIndicator';
 const ScanActivity = (props) => {
   const history = useHistory();
   const { activityState } = props;
-  console.log('ScanActivity.render: activityState=%o', activityState);
 
   const scannedBarcode = activityState.dataStored.scannedBarcode;
   const scannedBarcodeCaption = activityState.componentProps.barcodeCaption;

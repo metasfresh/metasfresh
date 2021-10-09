@@ -9,24 +9,22 @@ class PickStep extends PureComponent {
   }
 
   handleClick = () => {
-    const { wfProcessId, activityId, lineIndex, stepId, push } = this.props;
-    push(`/workflow/${wfProcessId}/activityId/${activityId}/lineId/${lineIndex}/stepId/${stepId}`);
+    const { wfProcessId, activityId, lineId, stepId, push } = this.props;
+    push(`/workflow/${wfProcessId}/activityId/${activityId}/lineId/${lineId}/stepId/${stepId}`);
   };
 
   goBackToPickingSteps = () => this.setState({ activePickingStep: false });
 
   render() {
-    const { id, locatorName, productName, uom, pickstepState, qtyToPick } = this.props;
+    const { lineId, locatorName, productName, uom, pickstepState, qtyToPick } = this.props;
     const { qtyPicked, scannedHUBarcode } = pickstepState;
-
-    console.log('scannedHUBarcode:', scannedHUBarcode);
 
     return (
       <div>
         <button
-          key={id}
+          key={lineId}
           className="button is-outlined complete-btn pick-higher-btn"
-          onClick={() => this.handleClick(id)}
+          onClick={() => this.handleClick()}
         >
           <div className="full-size-btn">
             <div className="left-btn-side" />
@@ -55,26 +53,29 @@ class PickStep extends PureComponent {
 }
 
 const mapStateToProps = (state, ownProps) => {
-  const { wfProcessId, activityId, lineIndex, stepId } = ownProps;
+  const { wfProcessId, activityId, lineId, stepId } = ownProps;
+
   return {
-    pickstepState:
-      state.wfProcesses_status[wfProcessId].activities[activityId].dataStored.lines[lineIndex].steps[stepId],
+    pickstepState: state.wfProcesses_status[wfProcessId].activities[activityId].dataStored.lines[lineId].steps[stepId],
   };
 };
 
 PickStep.propTypes = {
-  id: PropTypes.string.isRequired,
-  locatorName: PropTypes.string.isRequired,
-  productName: PropTypes.string.isRequired,
-  qtyPicked: PropTypes.number,
-  qtyToPick: PropTypes.number.isRequired,
-  uom: PropTypes.string,
+  //
+  // Props
   wfProcessId: PropTypes.string.isRequired,
   activityId: PropTypes.string.isRequired,
-  stepId: PropTypes.number.isRequired,
-  lineIndex: PropTypes.number.isRequired,
-  pickstepState: PropTypes.object,
+  lineId: PropTypes.string.isRequired,
+  stepId: PropTypes.string.isRequired,
+  productName: PropTypes.string.isRequired,
+  locatorName: PropTypes.string.isRequired,
   huBarcode: PropTypes.string,
+  uom: PropTypes.string,
+  qtyPicked: PropTypes.number,
+  qtyToPick: PropTypes.number.isRequired,
+  pickstepState: PropTypes.object,
+  //
+  // Actions
   push: PropTypes.func.isRequired,
 };
 
