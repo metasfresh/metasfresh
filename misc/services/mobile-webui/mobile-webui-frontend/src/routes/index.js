@@ -10,6 +10,7 @@ import Launchers from '../containers/Launchers';
 import LineScreen from '../components/containers/LineScreen';
 import PickScreen from '../components/containers/PickScreen';
 import ScanScreen from '../components/containers/ScanScreen';
+import PickingScanHUScreen from '../components/containers/PickingScanHUScreen';
 import WorkflowProcess from '../containers/WFProcess';
 
 import PrivateRoute from './PrivateRoute';
@@ -21,7 +22,10 @@ const routesArray = [
   { path: '/workflow/:workflowId/activityId/:activityId/scanner', Component: ScanScreen },
   { path: '/workflow/:workflowId/activityId/:activityId/lineId/:lineId', Component: LineScreen },
   { path: '/workflow/:workflowId/activityId/:activityId/lineId/:lineId/stepId/:stepId', Component: PickScreen },
-  { path: '/workflow/:workflowId/activityId/:activityId/lineId/:lineId/stepId/:stepId/scanner', Component: ScanScreen },
+  {
+    path: '/workflow/:workflowId/activityId/:activityId/lineId/:lineId/stepId/:stepId/scanner',
+    Component: PickingScanHUScreen,
+  },
 ];
 
 const childRoutes = (

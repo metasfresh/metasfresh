@@ -6,17 +6,18 @@ import ButtonWithIndicator from './ButtonWithIndicator';
 
 const ScanActivity = (props) => {
   const history = useHistory();
-  const { activityItem, activityState } = props;
+  const { activityState } = props;
+  console.log('ScanActivity.render: activityState=%o', activityState);
 
-  const scannedBarcode = activityState && activityState.dataStored ? activityState.dataStored.scannedBarcode : null;
-  const scannedBarcodeCaption = activityItem.componentProps.barcodeCaption;
+  const scannedBarcode = activityState.dataStored.scannedBarcode;
+  const scannedBarcodeCaption = activityState.componentProps.barcodeCaption;
 
-  const scanButtonStatus = scannedBarcode || scannedBarcodeCaption ? 'complete' : 'incomplete';
-  const scanButtonCaption = scannedBarcodeCaption || scannedBarcode || activityItem.caption || 'Scan';
+  const scanButtonStatus = activityState.dataStored.isComplete ? 'complete' : 'incomplete';
+  const scanButtonCaption = scannedBarcodeCaption || scannedBarcode || activityState.caption || 'Scan';
 
   const handleClick = () => {
     const { wfProcessId } = props;
-    const { activityId } = activityItem;
+    const { activityId } = activityState;
 
     history.push(`/workflow/${wfProcessId}/activityId/${activityId}/scanner`);
   };
@@ -31,11 +32,8 @@ const ScanActivity = (props) => {
 };
 
 ScanActivity.propTypes = {
-  caption: PropTypes.string,
-  scanButtonStatus: PropTypes.string,
-  activityItem: PropTypes.object,
-  activityState: PropTypes.object,
   wfProcessId: PropTypes.string.isRequired,
+  activityState: PropTypes.object.isRequired,
 };
 
 export default ScanActivity;

@@ -17,9 +17,9 @@ class PickStep extends PureComponent {
 
   render() {
     const { id, locatorName, productName, uom, pickstepState, qtyToPick } = this.props;
-    const { qtyPicked, detectedCode } = pickstepState;
+    const { qtyPicked, scannedHUBarcode } = pickstepState;
 
-    console.log('Detectedcode:', detectedCode);
+    console.log('scannedHUBarcode:', scannedHUBarcode);
 
     return (
       <div>
@@ -29,11 +29,11 @@ class PickStep extends PureComponent {
           onClick={() => this.handleClick(id)}
         >
           <div className="full-size-btn">
-            <div className="left-btn-side"></div>
+            <div className="left-btn-side" />
 
             <div className="caption-btn">
               <div className="rows">
-                <div className="row is-full">Product: {productName}</div>
+                <div className="row is-full">{productName}</div>
                 <div className="row is-full is-size-7">
                   To Pick: <span className="has-text-weight-bold">{qtyToPick}</span> Quantity picked:{' '}
                   <span className="has-text-weight-bold">{qtyPicked}</span>
@@ -45,7 +45,7 @@ class PickStep extends PureComponent {
             </div>
 
             <div className="right-btn-side pt-4">
-              <Indicator indicatorType={detectedCode ? 'complete' : 'incomplete'} />
+              <Indicator indicatorType={scannedHUBarcode ? 'complete' : 'incomplete'} />
             </div>
           </div>
         </button>
