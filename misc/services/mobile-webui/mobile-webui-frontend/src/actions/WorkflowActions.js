@@ -6,7 +6,7 @@ import {
   SET_ACTIVITY_STATUS,
   UPDATE_WORKFLOW_PROCESS,
 } from '../constants/ActionTypes';
-import { startWorkflowRequest, continueWorkflowRequest } from '../api/launchers';
+import { startWorkflowRequest, getWorkflowRequest } from '../api/launchers';
 
 /**
  * @method startWorkflow
@@ -42,7 +42,7 @@ export function startWorkflow({ wfParameters }) {
  */
 export function continueWorkflow(wfProcessId) {
   return (dispatch) => {
-    return continueWorkflowRequest(wfProcessId)
+    return getWorkflowRequest(wfProcessId)
       .then(({ data }) => {
         const { endpointResponse } = data;
 
