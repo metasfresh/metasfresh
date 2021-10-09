@@ -3,8 +3,8 @@ import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import { withRouter } from 'react-router';
 import toast, { Toaster } from 'react-hot-toast';
-import { updatePickingStepQty } from '../../actions/PickingActions';
-import ButtonWithIndicator from '../ButtonWithIndicator';
+import { updatePickingStepQty } from '../../../actions/PickingActions';
+import ButtonWithIndicator from '../../../components/ButtonWithIndicator';
 
 class PickScreen extends Component {
   onScanHUButtonClick = () => {

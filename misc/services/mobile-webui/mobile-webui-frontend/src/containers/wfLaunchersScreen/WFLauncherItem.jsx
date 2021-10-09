@@ -3,9 +3,9 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { push } from 'connected-react-router';
 
-import { startWorkflow, continueWorkflow } from '../actions/WorkflowActions';
+import { startWorkflow, continueWorkflow } from '../../actions/WorkflowActions';
 
-class Launcher extends PureComponent {
+class WFLauncherItem extends PureComponent {
   handleClick = () => {
     const { startWorkflow, continueWorkflow, wfParameters, startedWFProcessId, push } = this.props;
     const action = startedWFProcessId ? continueWorkflow(startedWFProcessId) : startWorkflow({ wfParameters });
@@ -35,7 +35,7 @@ class Launcher extends PureComponent {
   }
 }
 
-Launcher.propTypes = {
+WFLauncherItem.propTypes = {
   caption: PropTypes.string.isRequired,
   startedWFProcessId: PropTypes.string,
   startWorkflow: PropTypes.func.isRequired,
@@ -44,4 +44,4 @@ Launcher.propTypes = {
   wfParameters: PropTypes.object.isRequired,
 };
 
-export default connect(null, { startWorkflow, continueWorkflow, push })(Launcher);
+export default connect(null, { startWorkflow, continueWorkflow, push })(WFLauncherItem);

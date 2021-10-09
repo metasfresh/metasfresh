@@ -5,9 +5,9 @@ import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
 import { goBack } from 'connected-react-router';
 
-import { updatePickingStepScannedHUBarcode } from '../../actions/PickingActions';
+import { updatePickingStepScannedHUBarcode } from '../../../actions/PickingActions';
 
-import CodeScanner from './CodeScanner';
+import CodeScanner from '../scan/CodeScanner';
 
 class PickingScanHUScreen extends Component {
   onBarcodeScanned = ({ scannedBarcode }) => {

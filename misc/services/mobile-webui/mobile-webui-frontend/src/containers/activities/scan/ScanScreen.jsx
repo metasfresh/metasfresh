@@ -5,10 +5,10 @@ import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
 import { goBack } from 'connected-react-router';
 
-import { getWorkflowProcessStatus } from '../../reducers/wfProcesses_status';
-import { setScannedBarcode } from '../../actions/PickingActions';
-import { setActivityStatus, updateWFProcess } from '../../actions/WorkflowActions';
-import { postScannedBarcode } from '../../api/scanner';
+import { getWorkflowProcessStatus } from '../../../reducers/wfProcesses_status';
+import { setScannedBarcode } from '../../../actions/PickingActions';
+import { setActivityStatus, updateWFProcess } from '../../../actions/WorkflowActions';
+import { postScannedBarcode } from '../../../api/scanner';
 
 import CodeScanner from './CodeScanner';
 

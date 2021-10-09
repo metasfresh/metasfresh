@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { v4 as uuidv4 } from 'uuid';
 
-import PickStep from '../PickStep';
+import PickStep from './PickStep';
 
 class PickProductsSteps extends Component {
   render() {
