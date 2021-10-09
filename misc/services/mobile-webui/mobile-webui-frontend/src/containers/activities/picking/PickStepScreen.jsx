@@ -2,17 +2,43 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import { withRouter } from 'react-router';
+import { pushHeaderEntry } from '../../../actions/HeaderActions';
 import toast, { Toaster } from 'react-hot-toast';
 import { updatePickingStepQty } from '../../../actions/PickingActions';
 import ButtonWithIndicator from '../../../components/ButtonWithIndicator';
 
 class PickStepScreen extends Component {
   onScanHUButtonClick = () => {
-    const { wfProcessId, activityId, lineId, stepId } = this.props;
+    const {
+      wfProcessId,
+      activityId,
+      lineId,
+      stepId,
+      stepProps: { huBarcode, qtyToPick, qtyPicked },
+      history,
+    } = this.props;
 
-    this.props.history.push(
-      `/workflow/${wfProcessId}/activityId/${activityId}/lineId/${lineId}/stepId/${stepId}/scanner`
-    );
+    const { pushHeaderEntry } = this.props;
+
+    const location = `/workflow/${wfProcessId}/activityId/${activityId}/lineId/${lineId}/stepId/${stepId}/scanner`;
+    history.push(location);
+    pushHeaderEntry({
+      location,
+      values: [
+        {
+          caption: 'Barcode',
+          value: huBarcode,
+        },
+        {
+          caption: 'To Pick',
+          value: qtyToPick,
+        },
+        {
+          caption: 'Picked',
+          value: qtyPicked,
+        },
+      ],
+    });
   };
 
   onQtyPickedChanged = (e) => {
@@ -141,8 +167,9 @@ PickStepScreen.propTypes = {
   //
   // Actions
   updatePickingStepQty: PropTypes.func.isRequired,
+  pushHeaderEntry: PropTypes.func.isRequired,
   //
   history: PropTypes.object.isRequired,
 };
 
-export default withRouter(connect(mapStateToProps, { updatePickingStepQty })(PickStepScreen));
+export default withRouter(connect(mapStateToProps, { updatePickingStepQty, pushHeaderEntry })(PickStepScreen));
