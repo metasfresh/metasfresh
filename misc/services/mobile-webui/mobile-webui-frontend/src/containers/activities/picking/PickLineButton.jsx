@@ -6,7 +6,7 @@ import { pushHeaderEntry } from '../../../actions/HeaderActions';
 
 import ButtonWithIndicator from '../../../components/ButtonWithIndicator';
 
-class PickProductsLineButton extends Component {
+class PickLineButton extends Component {
   handleClick = () => {
     const { wfProcessId, activityId, lineId, caption } = this.props;
     const { push, pushHeaderEntry } = this.props;
@@ -17,7 +17,7 @@ class PickProductsLineButton extends Component {
       location,
       values: [
         {
-          caption: 'caption',
+          caption: 'Line',
           value: caption,
         },
       ],
@@ -41,7 +41,7 @@ class PickProductsLineButton extends Component {
   }
 }
 
-PickProductsLineButton.propTypes = {
+PickLineButton.propTypes = {
   //
   // Props
   wfProcessId: PropTypes.string.isRequired,
@@ -56,4 +56,4 @@ PickProductsLineButton.propTypes = {
   pushHeaderEntry: PropTypes.func.isRequired,
 };
 
-export default connect(null, { push, pushHeaderEntry })(PickProductsLineButton);
+export default connect(null, { push, pushHeaderEntry })(PickLineButton);

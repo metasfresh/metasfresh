@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 
-import PickProductsLineButton from './PickProductsLineButton';
+import PickLineButton from './PickLineButton';
 
 class PickProductsActivity extends Component {
   render() {
@@ -21,7 +21,7 @@ class PickProductsActivity extends Component {
           ? lines.map((lineItem, lineIndex) => {
               const lineId = '' + lineIndex;
               return (
-                <PickProductsLineButton
+                <PickLineButton
                   key={lineId}
                   wfProcessId={wfProcessId}
                   activityId={activityId}
