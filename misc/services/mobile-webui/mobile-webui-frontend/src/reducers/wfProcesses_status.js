@@ -34,26 +34,67 @@ export const getWorkflowProcessActivityLine = (wfProcess, activityId, lineId) =>
 };
 
 const mergeWFProcessToState = ({ draftWFProcess, fromWFProcess }) => {
-  const { headerProperties, activities } = fromWFProcess;
-
   draftWFProcess = {
     ...draftWFProcess,
-    headerProperties,
+    headerProperties: fromWFProcess.headerProperties,
     isSentToBackend: true,
   };
 
+  if (!draftWFProcess.activities) {
+    draftWFProcess.activities = {};
+  }
+
   mergeActivitiesToState({
     draftActivities: draftWFProcess.activities,
-    fromActivities: activities,
+    fromActivities: fromWFProcess.activities,
   });
+
+  console.log('AFTER MERGE: %o', draftWFProcess);
+  console.log('fromWFProcess=%o', fromWFProcess);
 };
 
 const mergeActivitiesToState = ({ draftActivities, fromActivities }) => {
   fromActivities.forEach((fromActivity) => {
-    draftActivities[fromActivity.activityId]['caption'] = fromActivity.caption;
-    draftActivities[fromActivity.activityId]['componentProps'] = fromActivity.componentProps;
-    draftActivities[fromActivity.activityId]['componentType'] = fromActivity.componentType;
+    if (!draftActivities[fromActivity.activityId]) {
+      draftActivities[fromActivity.activityId] = { ...fromActivity };
+    }
+
+    const draftActivity = draftActivities[fromActivity.activityId];
+
+    draftActivity.caption = fromActivity.caption;
+    draftActivity.componentProps = fromActivity.componentProps;
+    draftActivity.componentType = fromActivity.componentType;
+
+    if (!draftActivity.dataStored) {
+      draftActivity.dataStored = computeActivityDataStoredInitialValue({
+        componentType: fromActivity.componentType,
+        componentProps: fromActivity.componentProps,
+      });
+    }
   });
+};
+
+const computeActivityDataStoredInitialValue = ({ componentType, componentProps }) => {
+  switch (componentType) {
+    case 'common/scanBarcode': {
+      // do nothing; we will handle it at component level
+      return {};
+    }
+    case 'common/confirmButton': {
+      return {
+        isActivityEnabled: false,
+        isComplete: false,
+      };
+    }
+    default: {
+      return {
+        isActivityEnabled: false,
+        isComplete: false,
+        isLinesListVisible: true,
+        lines: componentProps.lines,
+      };
+    }
+  }
 };
 
 const extractActivitiesStatus = ({ wfProcess }) => {
@@ -72,6 +113,7 @@ const extractActivitiesStatus = ({ wfProcess }) => {
 
 const updateActivitiesStatus = ({ draftWFProcess, activitiesStatus }) => {
   console.log('Updating WF activities status from %o', activitiesStatus);
+  console.log('draftWFProcess=%o', draftWFProcess);
 
   let previousActivityStatus = null;
   Object.values(activitiesStatus).forEach((activityStatus) => {
@@ -99,70 +141,24 @@ const reducer = produce((draftState, action) => {
   console.log('*** wfProcesses_status reducer: %o', action);
 
   switch (action.type) {
-    case types.ADD_WORKFLOW_STATUS: {
-      const { id: wfProcessId, headerProperties, activities } = action.payload;
-      const current = draftState[wfProcessId] ? original(draftState[wfProcessId]).activities : null;
-
-      const formattedActivities = activities.reduce((acc, activity) => {
-        let tmpActivity = { ...activity }; // TODO: What's this for ?
-        const activityId = activity.activityId;
-
-        // each state is different depending on the activity componentType
-        tmpActivity.dataStored = {};
-        switch (activity.componentType) {
-          case 'common/scanBarcode':
-            // do nothing; we will handle it at component level
-            break;
-          case 'common/confirmButton':
-            tmpActivity.dataStored = {
-              isActivityEnabled: false,
-              isComplete: false,
-            };
-            break;
-          default:
-            tmpActivity.dataStored = {
-              isActivityEnabled: false,
-              isComplete: false,
-              isLinesListVisible: true,
-              lines: activity.componentProps.lines,
-            };
-        }
-
-        // we might be continuing an existing workflow status
-        const currentActivityTmp = current ? current[activityId] : null;
-
-        if (currentActivityTmp) {
-          tmpActivity = { ...tmpActivity, currentActivityTmp };
-        }
-
-        acc[activityId] = tmpActivity;
-
-        return acc;
-      }, {});
-
-      const wfProcess = {
-        headerProperties,
-        activities: formattedActivities,
-        isSentToBackend: false,
-      };
-
-      draftState[wfProcessId] = wfProcess;
-      updateActivitiesStatus({
-        draftWFProcess: draftState[wfProcessId],
-        activitiesStatus: extractActivitiesStatus({ wfProcess }),
-      });
-
-      return draftState;
-    }
-
+    case types.ADD_WORKFLOW_STATUS:
     case types.UPDATE_WORKFLOW_PROCESS: {
-      const wfProcess = action.payload;
+      const fromWFProcess = action.payload;
+
+      let draftWFProcess = draftState[fromWFProcess.id];
+      if (!draftWFProcess) {
+        draftWFProcess = {
+          id: fromWFProcess.id,
+          activities: {},
+        };
+      }
 
       mergeWFProcessToState({
-        draftWFProcess: draftState[wfProcess.id],
-        fromWFProcess: wfProcess,
+        draftWFProcess: draftWFProcess,
+        fromWFProcess,
       });
 
+      draftState[fromWFProcess.id] = draftWFProcess;
       return draftState;
     }
 
