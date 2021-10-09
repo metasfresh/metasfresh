@@ -2,6 +2,7 @@ import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { push } from 'connected-react-router';
+import { pushHeaderEntry } from '../../../actions/HeaderActions';
 import Indicator from '../../../components/Indicator';
 class PickStepButton extends PureComponent {
   constructor(props) {
@@ -9,15 +10,33 @@ class PickStepButton extends PureComponent {
   }
 
   handleClick = () => {
-    const { wfProcessId, activityId, lineId, stepId, push } = this.props;
-    push(`/workflow/${wfProcessId}/activityId/${activityId}/lineId/${lineId}/stepId/${stepId}`);
+    const { wfProcessId, activityId, lineId, stepId, locatorName } = this.props;
+    const { push, pushHeaderEntry } = this.props;
+
+    const location = `/workflow/${wfProcessId}/activityId/${activityId}/lineId/${lineId}/stepId/${stepId}`;
+    push(location);
+    pushHeaderEntry({
+      location,
+      values: [
+        {
+          caption: 'Locator',
+          value: locatorName,
+        },
+      ],
+    });
   };
 
   goBackToPickingSteps = () => this.setState({ activePickingStep: false });
 
   render() {
-    const { lineId, locatorName, productName, uom, pickstepState, qtyToPick } = this.props;
-    const { qtyPicked, scannedHUBarcode } = pickstepState;
+    const {
+      lineId,
+      locatorName,
+      productName,
+      uom,
+      pickStepState: { qtyPicked, scannedHUBarcode },
+      qtyToPick,
+    } = this.props;
 
     return (
       <div>
@@ -31,14 +50,18 @@ class PickStepButton extends PureComponent {
 
             <div className="caption-btn">
               <div className="rows">
-                <div className="row is-full">{productName}</div>
+                <div className="row is-full">{locatorName}</div>
                 <div className="row is-full is-size-7">
-                  To Pick: <span className="has-text-weight-bold">{qtyToPick}</span> Quantity picked:{' '}
-                  <span className="has-text-weight-bold">{qtyPicked}</span>
+                  To Pick:{' '}
+                  <span className="has-text-weight-bold">
+                    {qtyToPick} {uom}
+                  </span>{' '}
+                  Picked:{' '}
+                  <span className="has-text-weight-bold">
+                    {qtyPicked} {uom}
+                  </span>
                 </div>
-                <div className="row is-full is-size-7">
-                  UOM: {uom} Locator Name: {locatorName}
-                </div>
+                <div className="row is-full is-size-7">Product: {productName}</div>
               </div>
             </div>
 
@@ -56,7 +79,7 @@ const mapStateToProps = (state, ownProps) => {
   const { wfProcessId, activityId, lineId, stepId } = ownProps;
 
   return {
-    pickstepState: state.wfProcesses_status[wfProcessId].activities[activityId].dataStored.lines[lineId].steps[stepId],
+    pickStepState: state.wfProcesses_status[wfProcessId].activities[activityId].dataStored.lines[lineId].steps[stepId],
   };
 };
 
@@ -73,10 +96,11 @@ PickStepButton.propTypes = {
   uom: PropTypes.string,
   qtyPicked: PropTypes.number,
   qtyToPick: PropTypes.number.isRequired,
-  pickstepState: PropTypes.object,
+  pickStepState: PropTypes.object,
   //
   // Actions
   push: PropTypes.func.isRequired,
+  pushHeaderEntry: PropTypes.func.isRequired,
 };
 
-export default connect(mapStateToProps, { push })(PickStepButton);
+export default connect(mapStateToProps, { push, pushHeaderEntry })(PickStepButton);
