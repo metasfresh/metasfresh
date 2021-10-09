@@ -85,7 +85,6 @@ const computeActivityDataStoredInitialValue = ({ componentType, componentProps }
       return {
         isActivityEnabled: false,
         isComplete: false,
-        isLinesListVisible: true,
         lines: componentProps.lines,
       };
     }
@@ -186,13 +185,6 @@ const reducer = produce((draftState, action) => {
       return draftState;
     }
 
-    case types.SWITCHOFF_LINES_VISIBILITY: {
-      const { wfProcessId, activityId } = action.payload;
-
-      draftState[wfProcessId].activities[activityId].dataStored.isLinesListVisible = false;
-
-      return draftState;
-    }
     case types.SET_ACTIVITY_ENABLE_FLAG: {
       const { wfProcessId, activityId, isActivityEnabled } = action.payload;
       console.log('SET_ACTIVITY_ENABLE_FLAG: wfProcess:', wfProcessId);

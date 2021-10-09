@@ -25,29 +25,21 @@ class PickProductsLine extends Component {
   };
 
   render() {
-    const { lineId, caption, isLinesListVisible, isActivityEnabled } = this.props;
+    const { lineId, caption, isActivityEnabled } = this.props;
     return (
       <div className="buttons">
-        {isLinesListVisible && (
-          <button
-            key={lineId}
-            className="button is-outlined complete-btn"
-            disabled={!isActivityEnabled}
-            onClick={() => this.handleClick()}
-          >
-            <ButtonWithIndicator caption={caption} indicatorType="incomplete" />
-          </button>
-        )}
+        <button
+          key={lineId}
+          className="button is-outlined complete-btn"
+          disabled={!isActivityEnabled}
+          onClick={() => this.handleClick()}
+        >
+          <ButtonWithIndicator caption={caption} indicatorType="incomplete" />
+        </button>
       </div>
     );
   }
 }
-
-const mapStateToProps = () => {
-  return {
-    isLinesListVisible: true,
-  };
-};
 
 PickProductsLine.propTypes = {
   //
@@ -56,7 +48,6 @@ PickProductsLine.propTypes = {
   activityId: PropTypes.string.isRequired,
   lineId: PropTypes.string.isRequired,
   caption: PropTypes.string.isRequired,
-  isLinesListVisible: PropTypes.bool,
   steps: PropTypes.array.isRequired,
   isActivityEnabled: PropTypes.bool,
   //
@@ -65,4 +56,4 @@ PickProductsLine.propTypes = {
   pushHeaderEntry: PropTypes.func.isRequired,
 };
 
-export default connect(mapStateToProps, { push, pushHeaderEntry })(PickProductsLine);
+export default connect(null, { push, pushHeaderEntry })(PickProductsLine);
