@@ -12,12 +12,12 @@ class PickProductsActivity extends Component {
       activityId,
     } = this.props;
     const dataStored = activityState ? activityState.dataStored : {};
-    const { isLinesListVisible, isActivityEnabled } = dataStored;
+    const { isActivityEnabled } = dataStored;
 
     return (
       <div className="pick-products-activity-container mt-5">
         {/* Lines listing */}
-        {activityState && lines.length > 0 && isLinesListVisible
+        {activityState && lines.length > 0
           ? lines.map((lineItem, lineIndex) => {
               const lineId = '' + lineIndex;
               return (
