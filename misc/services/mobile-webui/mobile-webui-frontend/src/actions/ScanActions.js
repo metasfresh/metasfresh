@@ -1,17 +1,12 @@
-// FIXME DELETE IT!!!
+import { SET_SCANNED_BARCODE } from '../constants/ScanActionTypes';
 
-import { START_SCANNING, STOP_SCANNING } from '../constants/ActionTypes';
-
-export function startScanning() {
+/**
+ * @method setScannedBarcode
+ * @summary update the scannedCode for a `common/scanBarcode` activity type with the scannedBarcode
+ */
+export function setScannedBarcode({ wfProcessId, activityId, scannedBarcode }) {
   return {
-    type: START_SCANNING,
-    payload: { active: true },
-  };
-}
-
-export function stopScanning() {
-  return {
-    type: STOP_SCANNING,
-    payload: { active: false },
+    type: SET_SCANNED_BARCODE,
+    payload: { wfProcessId, activityId, scannedBarcode },
   };
 }

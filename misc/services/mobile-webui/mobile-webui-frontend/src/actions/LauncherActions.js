@@ -1,4 +1,4 @@
-import { POPULATE_LAUNCHERS } from '../constants/LaunchersTypes';
+import { POPULATE_LAUNCHERS } from '../constants/LaunchersActionTypes';
 
 /**
  * @method populateLaunchers

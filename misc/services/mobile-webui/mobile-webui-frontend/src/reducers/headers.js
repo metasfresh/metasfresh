@@ -1,4 +1,4 @@
-import * as types from '../constants/HeaderTypes';
+import * as types from '../constants/HeaderActionTypes';
 
 export const initialState = {
   entries: [
