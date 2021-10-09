@@ -146,7 +146,7 @@ public class BPRelationDAO implements IBPRelationDAO
 		return queryBL.createQueryBuilder(org.compiere.model.I_C_BP_Relation.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(org.compiere.model.I_C_BP_Relation.COLUMNNAME_C_BPartner_ID, bpartnerId)
-				.addEqualsFilter(org.compiere.model.I_C_BP_Relation.COLUMN_Role, X_C_BP_Relation.ROLE_PreferredPharmacy)
+				.addEqualsFilter(org.compiere.model.I_C_BP_Relation.COLUMNNAME_Role, X_C_BP_Relation.ROLE_PreferredPharmacy)
 				.orderByDescending(org.compiere.model.I_C_BP_Relation.COLUMNNAME_Updated)
 				.create()
 				.firstOptional(org.compiere.model.I_C_BP_Relation.class)
