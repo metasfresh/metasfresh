@@ -6,7 +6,7 @@ import toast, { Toaster } from 'react-hot-toast';
 import { updatePickingStepQty } from '../../../actions/PickingActions';
 import ButtonWithIndicator from '../../../components/ButtonWithIndicator';
 
-class PickScreen extends Component {
+class PickStepScreen extends Component {
   onScanHUButtonClick = () => {
     const { wfProcessId, activityId, lineId, stepId } = this.props;
 
@@ -130,7 +130,7 @@ const mapStateToProps = (state, ownProps) => {
   };
 };
 
-PickScreen.propTypes = {
+PickStepScreen.propTypes = {
   //
   // Props
   wfProcessId: PropTypes.string.isRequired,
@@ -145,4 +145,4 @@ PickScreen.propTypes = {
   history: PropTypes.object.isRequired,
 };
 
-export default withRouter(connect(mapStateToProps, { updatePickingStepQty })(PickScreen));
+export default withRouter(connect(mapStateToProps, { updatePickingStepQty })(PickStepScreen));
