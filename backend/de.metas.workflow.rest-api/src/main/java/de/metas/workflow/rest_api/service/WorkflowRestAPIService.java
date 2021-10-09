@@ -122,6 +122,13 @@ public class WorkflowRestAPIService
 				.abort(wfProcessId, callerId);
 	}
 
+	public void abortAllWFProcesses(@NonNull final UserId callerId)
+	{
+		wfProcessHandlers
+				.stream()
+				.forEach(handler -> handler.abortAll(callerId));
+	}
+
 	public WFProcessHeaderProperties getHeaderProperties(@NonNull final WFProcess wfProcess)
 	{
 		return wfProcessHandlers

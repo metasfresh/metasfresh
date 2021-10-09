@@ -184,6 +184,11 @@ public class PickingWFProcessHandler implements WFProcessHandler
 	public void abort(@NonNull final WFProcessId wfProcessId, @NonNull final UserId callerId)
 	{
 		final WFProcess wfProcess = wfProcesses.getById(wfProcessId);
+		abort(wfProcess, callerId);
+	}
+
+	private void abort(@NonNull final WFProcess wfProcess, final @NonNull UserId callerId)
+	{
 		wfProcess.assertHasAccess(callerId);
 
 		// TODO: call the activity handlers
@@ -192,6 +197,13 @@ public class PickingWFProcessHandler implements WFProcessHandler
 		pickingJobService.abort(pickingJob);
 
 		wfProcesses.remove(wfProcess);
+	}
+
+	@Override
+	public void abortAll(final UserId callerId)
+	{
+		wfProcesses.getByInvokerId(callerId)
+				.forEach(wfProcess -> abort(wfProcess, callerId));
 	}
 
 	private WFProcess createWFProcess(final PickingJob pickingJob)

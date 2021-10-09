@@ -43,6 +43,8 @@ public interface WFProcessHandler
 
 	void abort(WFProcessId wfProcessId, UserId callerId);
 
+	void abortAll(UserId callerId);
+
 	WFProcess getWFProcessById(WFProcessId wfProcessId);
 
 	WFProcess changeWFProcessById(WFProcessId wfProcessId, UnaryOperator<WFProcess> remappingFunction);

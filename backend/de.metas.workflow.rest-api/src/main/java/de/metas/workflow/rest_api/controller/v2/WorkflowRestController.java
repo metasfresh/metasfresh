@@ -115,6 +115,14 @@ public class WorkflowRestController
 		workflowRestAPIService.abortWFProcess(wfProcessId, loggedUserId);
 	}
 
+	@PostMapping("/wfProcess/abortAll")
+	public void abortAll()
+	{
+		final UserId loggedUserId = Env.getLoggedUserId();
+
+		workflowRestAPIService.abortAllWFProcesses(loggedUserId);
+	}
+
 	private JsonWFProcess toJson(final WFProcess wfProcess)
 	{
 		final JsonOpts jsonOpts = newJsonOpts();
