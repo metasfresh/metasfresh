@@ -6,18 +6,17 @@ import { withRouter } from 'react-router';
 import { goBack } from 'connected-react-router';
 
 import { getWorkflowProcessStatus } from '../../../reducers/wfProcesses_status';
-import { setScannedBarcode } from '../../../actions/PickingActions';
-import { setActivityStatus, updateWFProcess } from '../../../actions/WorkflowActions';
-import { postScannedBarcode } from '../../../api/scanner';
+import { setScannedBarcode } from '../../../actions/ScanActions';
+import { updateWFProcess } from '../../../actions/WorkflowActions';
+import { postScannedBarcode } from '../../../api';
 
 import CodeScanner from './CodeScanner';
 
 class ScanScreen extends Component {
   onBarcodeScanned = ({ scannedBarcode }) => {
-    const { wfProcessId, activityId, setScannedBarcode, updateWFProcess, setActivityStatus, goBack } = this.props;
+    const { wfProcessId, activityId, setScannedBarcode, updateWFProcess, goBack } = this.props;
 
     setScannedBarcode({ wfProcessId, activityId, scannedBarcode });
-    setActivityStatus({ wfProcessId, activityId: activityId, isComplete: true });
 
     postScannedBarcode({ wfProcessId, activityId, scannedBarcode })
       .then((response) => {
@@ -27,7 +26,6 @@ class ScanScreen extends Component {
       .catch((err) => {
         console.log('postScannedBarcode failed: %o', err);
         setScannedBarcode({ wfProcessId, activityId, scannedBarcode: null });
-        setActivityStatus({ wfProcessId, activityId: activityId, isComplete: false });
 
         toast('Scanned code is invalid!', { type: 'error', style: { color: 'white' } });
       });
@@ -78,7 +76,6 @@ ScanScreen.propTypes = {
   //
   // Actions
   setScannedBarcode: PropTypes.func.isRequired,
-  setActivityStatus: PropTypes.func.isRequired,
   updateWFProcess: PropTypes.func.isRequired,
   goBack: PropTypes.func.isRequired,
 };
@@ -87,7 +84,6 @@ export default withRouter(
   connect(mapStateToProps, {
     setScannedBarcode,
     updateWFProcess,
-    setActivityStatus,
     goBack,
   })(ScanScreen)
 );
