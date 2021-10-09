@@ -3,13 +3,9 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { push } from 'connected-react-router';
 
-import ButtonWithIndicator from './ButtonWithIndicator';
+import ButtonWithIndicator from '../../../components/ButtonWithIndicator';
 
 class PickProductsLine extends Component {
-  /**
-   *
-   * @param {string} id of the line
-   */
   handleClick = () => {
     const { wfProcessId, activityId, lineIndex, push } = this.props;
     push(`/workflow/${wfProcessId}/activityId/${activityId}/lineId/${lineIndex}`);

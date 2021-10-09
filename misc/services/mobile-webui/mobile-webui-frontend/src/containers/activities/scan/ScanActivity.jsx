@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { useHistory } from 'react-router-dom';
 
-import ButtonWithIndicator from './ButtonWithIndicator';
+import ButtonWithIndicator from '../../../components/ButtonWithIndicator';
 
 const ScanActivity = (props) => {
   const history = useHistory();
@@ -19,6 +19,7 @@ const ScanActivity = (props) => {
     const { wfProcessId } = props;
     const { activityId } = activityState;
 
+    console.log('history:', history);
     history.push(`/workflow/${wfProcessId}/activityId/${activityId}/scanner`);
   };
 

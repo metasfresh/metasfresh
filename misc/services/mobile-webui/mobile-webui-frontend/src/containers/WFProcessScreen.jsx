@@ -8,9 +8,9 @@ import { continueWorkflow } from '../actions/WorkflowActions';
 import { getWorkflowProcess } from '../reducers/wfProcesses';
 import { getWorkflowProcessStatus } from '../reducers/wfProcesses_status';
 
-import ScanActivity from '../components/ScanActivity';
-import PickProductsActivity from '../components/containers/PickProductsActivity';
-import ConfirmActivity from '../components/containers/ConfirmActivity';
+import ScanActivity from './activities/scan/ScanActivity';
+import PickProductsActivity from './activities/picking/PickProductsActivity';
+import ConfirmActivity from './activities/confirmButton/ConfirmActivity';
 
 class WFProcessScreen extends PureComponent {
   componentDidMount() {

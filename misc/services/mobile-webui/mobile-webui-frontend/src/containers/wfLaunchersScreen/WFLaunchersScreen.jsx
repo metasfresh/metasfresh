@@ -3,11 +3,11 @@ import { connect } from 'react-redux';
 import { v4 as uuidv4 } from 'uuid';
 import PropTypes from 'prop-types';
 
-import { populateLaunchers } from '../actions/LauncherActions';
-import { getLaunchers } from '../api/launchers';
-import Launcher from '../components/Launcher';
+import { populateLaunchers } from '../../actions/LauncherActions';
+import { getLaunchers } from '../../api/launchers';
+import Launcher from './WFLauncherItem';
 
-class Launchers extends Component {
+class WFLaunchersScreen extends Component {
   componentDidMount() {
     const { populateLaunchers, token } = this.props;
 
@@ -35,7 +35,7 @@ class Launchers extends Component {
   }
 }
 
-Launchers.propTypes = {
+WFLaunchersScreen.propTypes = {
   populateLaunchers: PropTypes.func.isRequired,
   launchers: PropTypes.object.isRequired,
   token: PropTypes.string,
@@ -48,4 +48,4 @@ const mapStateToProps = (state) => {
   };
 };
 
-export default connect(mapStateToProps, { populateLaunchers })(Launchers);
+export default connect(mapStateToProps, { populateLaunchers })(WFLaunchersScreen);

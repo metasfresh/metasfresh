@@ -2,7 +2,7 @@ import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { push } from 'connected-react-router';
-import Indicator from './Indicator';
+import Indicator from '../../../components/Indicator';
 class PickStep extends PureComponent {
   constructor(props) {
     super(props);

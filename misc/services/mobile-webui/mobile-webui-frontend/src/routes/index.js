@@ -6,18 +6,18 @@ import Main from '../components/Main';
 import Header from '../components/Header';
 import ViewHeader from '../containers/ViewHeader';
 import LoginView from '../components/LoginView';
-import Launchers from '../containers/Launchers';
-import LineScreen from '../components/containers/LineScreen';
-import PickScreen from '../components/containers/PickScreen';
-import ScanScreen from '../components/containers/ScanScreen';
-import PickingScanHUScreen from '../components/containers/PickingScanHUScreen';
+import WFLaunchersScreen from '../containers/wfLaunchersScreen/WFLaunchersScreen';
+import LineScreen from '../containers/activities/picking/LineScreen';
+import PickScreen from '../containers/activities/picking/PickScreen';
+import ScanScreen from '../containers/activities/scan/ScanScreen';
+import PickingScanHUScreen from '../containers/activities/picking/PickingScanHUScreen';
 import WFProcessScreen from '../containers/WFProcessScreen';
 
 import PrivateRoute from './PrivateRoute';
 import { history } from '../store/store';
 
 const routesArray = [
-  { path: '/', Component: Launchers },
+  { path: '/', Component: WFLaunchersScreen },
   { path: '/workflow/:workflowId', Component: WFProcessScreen },
   { path: '/workflow/:workflowId/activityId/:activityId/scanner', Component: ScanScreen },
   { path: '/workflow/:workflowId/activityId/:activityId/lineId/:lineId', Component: LineScreen },

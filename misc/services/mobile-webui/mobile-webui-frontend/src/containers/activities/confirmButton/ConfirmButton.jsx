@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
-import { getWorkflowProcessStatus } from '../reducers/wfProcesses_status';
+import { getWorkflowProcessStatus } from '../../../reducers/wfProcesses_status';
 
 class ConfirmButton extends Component {
   constructor(props) {
@@ -41,7 +41,7 @@ class ConfirmButton extends Component {
             <article className="message confirm-box is-dark">
               <div className="message-header">
                 <p>{btnCaption}</p>
-                <button className="delete" aria-label="delete" onClick={this.cancelConfirmDialog}></button>
+                <button className="delete" aria-label="delete" onClick={this.cancelConfirmDialog} />
               </div>
               <div className="message-body">
                 <strong>{promptQuestion}</strong>
@@ -60,11 +60,7 @@ class ConfirmButton extends Component {
         )}
         {/*  Confirm Initiator  */}
         <div>
-          <button
-            className="button is-outlined complete-btn"
-            onClick={this.showConfirmDialog}
-            disabled={isComplete ? false : true}
-          >
+          <button className="button is-outlined complete-btn" onClick={this.showConfirmDialog} disabled={!isComplete}>
             {btnCaption}
           </button>
         </div>

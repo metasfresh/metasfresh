@@ -1,7 +1,7 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
-import { userConfirmation } from '../../api/confirmation';
-import ConfirmButton from '../../components/ConfirmButton';
+import { userConfirmation } from '../../../api/confirmation';
+import ConfirmButton from './ConfirmButton';
 
 class ConfirmActivity extends PureComponent {
   render() {
