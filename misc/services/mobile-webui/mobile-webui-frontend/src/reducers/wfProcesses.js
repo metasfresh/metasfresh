@@ -23,7 +23,7 @@ const reducer = produce((draftState, action) => {
     case types.UPDATE_WORKFLOW_PROCESS: {
       const { id, headerProperties, activities } = action.payload;
 
-      draftState[id] = { headerProperties, activities };
+      draftState[id] = { id, headerProperties, activities };
 
       return draftState;
     }

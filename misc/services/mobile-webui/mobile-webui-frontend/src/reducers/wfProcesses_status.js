@@ -213,9 +213,9 @@ const reducer = produce((draftState, action) => {
     }
 
     case types.UPDATE_PICKING_STEP_QTY: {
-      const { wfProcessId, activityId, lineId, stepId, qty } = action.payload;
+      const { wfProcessId, activityId, lineId, stepId, qtyPicked } = action.payload;
 
-      draftState[wfProcessId].activities[activityId].dataStored.lines[lineId].steps[stepId].qtyPicked = qty;
+      draftState[wfProcessId].activities[activityId].dataStored.lines[lineId].steps[stepId].qtyPicked = qtyPicked;
 
       return draftState;
     }
