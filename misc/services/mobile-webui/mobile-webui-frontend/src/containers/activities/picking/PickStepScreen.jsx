@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
+import { push } from 'connected-react-router';
 import PropTypes from 'prop-types';
 import { withRouter } from 'react-router';
 import { pushHeaderEntry } from '../../../actions/HeaderActions';
@@ -15,13 +16,12 @@ class PickStepScreen extends Component {
       lineId,
       stepId,
       stepProps: { huBarcode, qtyToPick, qtyPicked },
-      history,
     } = this.props;
 
-    const { pushHeaderEntry } = this.props;
+    const { push, pushHeaderEntry } = this.props;
 
     const location = `/workflow/${wfProcessId}/activityId/${activityId}/lineId/${lineId}/stepId/${stepId}/scanner`;
-    history.push(location);
+    push(location);
     pushHeaderEntry({
       location,
       values: [
@@ -167,9 +167,8 @@ PickStepScreen.propTypes = {
   //
   // Actions
   updatePickingStepQty: PropTypes.func.isRequired,
+  push: PropTypes.func.isRequired,
   pushHeaderEntry: PropTypes.func.isRequired,
-  //
-  history: PropTypes.object.isRequired,
 };
 
-export default withRouter(connect(mapStateToProps, { updatePickingStepQty, pushHeaderEntry })(PickStepScreen));
+export default withRouter(connect(mapStateToProps, { updatePickingStepQty, push, pushHeaderEntry })(PickStepScreen));
