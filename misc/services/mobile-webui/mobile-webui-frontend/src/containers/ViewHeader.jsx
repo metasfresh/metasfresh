@@ -1,84 +1,74 @@
-import React, { useEffect, useState } from 'react';
-import { useLocation, useParams } from 'react-router-dom';
-import { useStore } from 'react-redux';
+import React, { Component } from 'react';
+import PropTypes from 'prop-types';
+import { connect } from 'react-redux';
 import classnames from 'classnames';
-import { forEach } from 'lodash';
 
-import { getWorkflowProcess } from '../reducers/wfProcesses';
-import { getWorkflowProcessStatus, getWorkflowProcessActivityLine } from '../reducers/wfProcesses_status';
+class ViewHeader extends Component {
+  render() {
+    const { headersEntries } = this.props;
+    //console.log('************* renderHeaderLanes: ', headersEntries);
 
-const ViewHeader = () => {
-  const location = useLocation();
-  const params = useParams();
-  const state = useStore().getState();
-  const [headerInfo, setHeaderInfo] = useState(null);
+    return (
+      <div className={classnames({ 'header-caption': headersEntries })}>{this.renderHeaderLanes(headersEntries)}</div>
+    );
+  }
 
-  useEffect(() => {
-    const { workflowId, activityId, lineId, stepId } = params;
+  renderHeaderLanes(headersEntries) {
+    if (!headersEntries) {
+      return null;
+    }
 
-    if (workflowId) {
-      const workflow = getWorkflowProcess(state, workflowId);
-      const { entries } = workflow.headerProperties;
-      const newHeaderInfo = [entries];
+    let nextIndex = 0;
+    return headersEntries.map((headersEntry) => {
+      const laneComponent = this.renderHeaderLane(headersEntry, nextIndex);
 
-      if (activityId && lineId) {
-        const workflowStatus = getWorkflowProcessStatus(state, workflowId);
-        const line = getWorkflowProcessActivityLine(workflowStatus, activityId, lineId);
-
-        if (line) {
-          // this uses hardcoded key
-          newHeaderInfo.push([{ caption: 'Caption', value: line.caption }]);
-        }
-
-        if (line && stepId) {
-          const step = line.steps[stepId];
-          const stepInfo = [];
-
-          forEach(step, (k, v) => {
-            stepInfo.push({
-              caption: v,
-              value: k,
-            });
-          });
-
-          newHeaderInfo.push(stepInfo);
-        }
+      if (laneComponent) {
+        nextIndex++;
       }
 
-      setHeaderInfo(newHeaderInfo);
-    }
-  }, [params, location]);
+      return laneComponent;
+    });
+  }
 
-  return (
-    <div className={classnames({ 'header-caption': headerInfo })}>
-      {headerInfo
-        ? headerInfo.map((info, idx) => {
+  renderHeaderLane(headersEntry, idx) {
+    if (headersEntry.hidden) {
+      return null;
+    }
+
+    return (
+      <div
+        key={idx}
+        className={classnames(
+          'picking-step-details centered-text is-size-6',
+          `py-4`,
+          `px-${idx + 4}`,
+          `header_info_${idx}`
+        )}
+      >
+        {headersEntry.values &&
+          headersEntry.values.map(({ caption, value }, i) => {
             return (
-              <div
-                key={idx}
-                className={classnames(
-                  'picking-step-details centered-text is-size-6',
-                  `py-4`,
-                  `px-${idx + 4}`,
-                  `header_info_${idx}`
-                )}
-              >
-                {info.map(({ caption, value }, i) => {
-                  return (
-                    <div key={i} className="columns is-mobile is-size-7">
-                      <div className="column is-half has-text-left has-text-weight-bold pt-0 pb-0 pl-1 pr-0">
-                        {caption}:
-                      </div>
-                      <div className="column is-half has-text-left pt-0 pb-0">{value}</div>
-                    </div>
-                  );
-                })}
+              <div key={i} className="columns is-mobile is-size-7">
+                <div className="column is-half has-text-left has-text-weight-bold pt-0 pb-0 pl-1 pr-0">{caption}:</div>
+                <div className="column is-half has-text-left pt-0 pb-0">{value}</div>
               </div>
             );
-          })
-        : null}
-    </div>
-  );
+          })}
+      </div>
+    );
+  }
+}
+
+const mapStateToProps = (state) => {
+  return {
+    headersEntries: state.headers.entries,
+  };
 };
 
-export default ViewHeader;
+ViewHeader.propTypes = {
+  //
+  // Props:
+  headersEntries: PropTypes.array.isRequired,
+};
+
+export default connect(mapStateToProps, null)(ViewHeader);

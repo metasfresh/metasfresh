@@ -8,14 +8,14 @@ import PickProductsSteps from './PickProductsSteps';
 
 class LineScreen extends PureComponent {
   render() {
-    const { activityId, wfProcessId, lineIndex, lineProps } = this.props;
+    const { activityId, wfProcessId, lineId, lineProps } = this.props;
 
     if (lineProps) {
       const { steps } = lineProps;
 
       return (
         <div className="pt-2 section lines-screen-container">
-          <PickProductsSteps steps={steps} activityId={activityId} wfProcessId={wfProcessId} lineIndex={lineIndex} />
+          <PickProductsSteps steps={steps} activityId={activityId} wfProcessId={wfProcessId} lineId={lineId} />
         </div>
       );
     }
@@ -31,19 +31,23 @@ const mapStateToProps = (state, ownProps) => {
   const targetActivity = activities.filter((activity) => activity.activityId === activityId);
 
   return {
-    lineProps: targetActivity.length ? targetActivity[0].componentProps.lines[lineId] : null,
-    activityId,
     wfProcessId,
-    lineIndex: Number(lineId),
+    activityId,
+    lineId,
+    lineProps: targetActivity.length ? targetActivity[0].componentProps.lines[lineId] : null,
   };
 };
 
 LineScreen.propTypes = {
-  push: PropTypes.func.isRequired,
-  activityId: PropTypes.string.isRequired,
+  //
+  // Props
   wfProcessId: PropTypes.string.isRequired,
-  lineIndex: PropTypes.number.isRequired,
-  lineProps: PropTypes.any.isRequired,
+  activityId: PropTypes.string.isRequired,
+  lineId: PropTypes.string.isRequired,
+  lineProps: PropTypes.object.isRequired,
+  //
+  // Actions
+  push: PropTypes.func.isRequired,
 };
 
 export default withRouter(connect(mapStateToProps, { push })(LineScreen));

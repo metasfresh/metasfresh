@@ -1,6 +1,7 @@
 import { combineReducers } from '@reduxjs/toolkit';
 import { connectRouter } from 'connected-react-router';
 import appHandler from './appHandler';
+import headers from './headers';
 import launchers from './launchers';
 import wfProcesses from './wfProcesses';
 import scanner from './scanner';
@@ -10,6 +11,7 @@ const createRootReducer = (history) =>
   combineReducers({
     router: connectRouter(history),
     appHandler,
+    headers,
     scanner,
     launchers,
     wfProcesses,
