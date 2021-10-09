@@ -73,7 +73,6 @@ function mapStateToProps(state, { match }) {
     wfProcessId: workflowId,
     activities: workflow.activities,
     workflowProcessStatus,
-    token: state.appHandler.token,
   };
 }
 
@@ -85,7 +84,6 @@ WorkflowProcess.propTypes = {
   history: PropTypes.object.isRequired,
   wfProcessId: PropTypes.string.isRequired,
   continueWorkflow: PropTypes.func.isRequired,
-  token: PropTypes.string,
 };
 
 export default withRouter(connect(mapStateToProps, { continueWorkflow })(WorkflowProcess));
