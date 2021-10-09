@@ -7,10 +7,10 @@ import java.time.ZonedDateTime;
 import javax.annotation.Nullable;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.common.util.time.SystemTime;
 import de.metas.invoice.InvoiceId;
 import de.metas.money.Money;
 import de.metas.product.ProductId;
-import de.metas.util.time.SystemTime;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;

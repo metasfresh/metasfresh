@@ -2,7 +2,7 @@ package de.metas.handlingunits.picking.requests;
 
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.inoutcandidate.api.ShipmentScheduleId;
+import de.metas.inoutcandidate.ShipmentScheduleId;
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.NonNull;

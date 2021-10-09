@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ #%L
+  ~ de-metas-camel-edi
+  ~ %%
+  ~ Copyright (C) 2021 metas GmbH
+  ~ %%
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as
+  ~ published by the Free Software Foundation, either version 2 of the
+  ~ License, or (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+  ~ GNU General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU General Public
+  ~ License along with this program. If not, see
+  ~ <http://www.gnu.org/licenses/gpl-2.0.html>.
+  ~ #L%
+  -->
+
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://erpel.at/schemas/1p0/documents/ext" xmlns:erpel="http://erpel.at/schemas/1p0/documents/ext" xmlns:klosterquell="http://erpel.at/schemas/1p0/documents/extensions/klosterquell" xmlns:edifact="http://erpel.at/schemas/1p0/documents/extensions/edifact" xmlns:bosch="http://erpel.at/schemas/1p0/documents/extensions/bosch" targetNamespace="http://erpel.at/schemas/1p0/documents/ext" elementFormDefault="qualified" attributeFormDefault="qualified">
+	<xs:annotation>
+		<xs:documentation>
+			<xs:documentation>
+			ERPEL extension document version: 1p0
+			last update: 2019-03-07
+			last update by: pl
+			documentation: https://docs.ecosio.com (ask contact (at) ecosio.com for access credentials)
+		</xs:documentation>
+		</xs:documentation>
+	</xs:annotation>
+	<!-- Import the extension document for EDIFACT mappings -->
+	<xs:import namespace="http://erpel.at/schemas/1p0/documents/extensions/edifact" schemaLocation="extensions/DocumentExtension_Edifact.xsd"/>
+	<!-- === Element declarations === -->
+	<xs:element name="Attachment" type="AttachmentType"/>
+	<xs:element name="AttachmentData" type="xs:base64Binary"/>
+	<xs:element name="Attachments" type="AttachmentsType"/>
+	<xs:element name="EncodingAlgorithm" type="xs:string"/>
+	<xs:element name="ConsignmentItemInformationExtension" type="ConsignmentItemInformationExtensionType"/>
+	<xs:element name="CustomerExtension" type="CustomerExtensionType"/>
+	<xs:element name="DeliveryDetailsExtension" type="DeliveryDetailsExtensionType"/>
+	<xs:element name="DeliveryRecipientExtension" type="DeliveryRecipientExtensionType"/>
+	<xs:element name="Description" type="xs:string"/>
+	<xs:element name="DocumentExtension" type="DocumentExtensionType"/>
+	<xs:element name="ForecastListLineItemExtension" type="ForecastListLineItemExtensionType"/>
+	<xs:element name="MimeType" type="xs:string"/>
+	<xs:element name="InvoiceRecipientExtension" type="InvoiceRecipientExtensionType"/>
+	<xs:element name="ListLineItemExtension" type="ListLineItemExtensionType"/>
+	<xs:element name="Name" type="xs:string"/>
+	<xs:element name="OrderingPartyExtension" type="OrderingPartyExtensionType"/>
+	<xs:element name="PaymentConditionsExtension" type="PaymentConditionsExtensionType"/>
+	<xs:element name="PlanningQuantityExtension" type="PlanningQuantityExtensionType"/>
+	<xs:element name="PresentationDetailsExtension" type="PresentationDetailsExtensionType"/>
+	<xs:element name="ReductionAndSurchargeDetailsExtension" type="ReductionAndSurchargeDetailsExtensionType"/>
+	<xs:element name="ShipperExtension" type="ShipperExtensionType"/>
+	<xs:element name="SupplierExtension" type="SupplierExtensionType"/>
+	<xs:element name="TaxExtension" type="TaxExtensionType"/>
+	<!-- === ERPEL extension element === -->
+	<xs:element name="ErpelConsignmentItemInformationExtension" type="CustomType"/>
+	<xs:element name="ErpelCustomerExtension" type="CustomType"/>
+	<xs:element name="ErpelDeliveryDetailsExtension" type="CustomType"/>
+	<xs:element name="ErpelDeliveryRecipientExtension" type="CustomType"/>
+	<xs:element name="ErpelDocumentExtension" type="ErpelDocumentExtensionType"/>
+	<xs:element name="ErpelForecastLineItemExtension" type="CustomType"/>
+	<xs:element name="ErpelInvoiceRecipientExtension" type="CustomType"/>
+	<xs:element name="ErpelListLineItemExtension" type="CustomType"/>
+	<xs:element name="ErpelOrderingPartyExtension" type="CustomType"/>
+	<xs:element name="ErpelPaymentConditionsExtension" type="CustomType"/>
+	<xs:element name="ErpelPlanningQuantityExtension" type="CustomType"/>
+	<xs:element name="ErpelPresentationDetailsExtension" type="CustomType"/>
+	<xs:element name="ErpelReductionAndSurchargeDetailsExtension" type="CustomType"/>
+	<xs:element name="ErpelShipperExtension" type="CustomType"/>
+	<xs:element name="ErpelSupplierExtension" type="CustomType"/>
+	<xs:element name="ErpelTaxExtension" type="CustomType"/>
+	<!-- === Complex Type declarations === -->
+	<xs:complexType name="AttachmentType">
+		<xs:sequence>
+			<xs:element ref="Name">
+				<xs:annotation>
+					<xs:documentation>Name of the attachment.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="Description" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Free text description of the attachment.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="MimeType">
+				<xs:annotation>
+					<xs:documentation>The MIME type of the attachment. E.g., 'application/pdf' for PDF attachments.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="AttachmentData">
+				<xs:annotation>
+					<xs:documentation>The actual attachment data as base64-encoded String.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="AttachmentsType">
+		<xs:sequence>
+			<xs:element ref="Attachment" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="CustomType">
+		<xs:sequence>
+			<xs:any namespace="##other" processContents="lax" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ConsignmentItemInformationExtensionType">
+		<xs:choice>
+			<xs:element ref="edifact:ConsignmentItemInformationExtension"/>
+			<xs:element ref="erpel:ErpelConsignmentItemInformationExtension"/>
+		</xs:choice>
+	</xs:complexType>
+	<xs:complexType name="CustomerExtensionType">
+		<xs:choice>
+			<xs:element ref="edifact:CustomerExtension"/>
+			<xs:element ref="erpel:ErpelCustomerExtension"/>
+		</xs:choice>
+	</xs:complexType>
+	<xs:complexType name="DeliveryDetailsExtensionType">
+		<xs:choice>
+			<xs:element ref="edifact:DeliveryDetailsExtension"/>
+			<xs:element ref="erpel:ErpelDeliveryDetailsExtension"/>
+		</xs:choice>
+	</xs:complexType>
+	<xs:complexType name="DeliveryRecipientExtensionType">
+		<xs:choice>
+			<xs:element ref="edifact:DeliveryRecipientExtension"/>
+			<xs:element ref="erpel:ErpelDeliveryRecipientExtension"/>
+		</xs:choice>
+	</xs:complexType>
+	<xs:complexType name="DocumentExtensionType">
+		<xs:choice>
+			<xs:element ref="edifact:DocumentExtension"/>
+			<xs:element ref="erpel:ErpelDocumentExtension"/>
+		</xs:choice>
+	</xs:complexType>
+	<xs:complexType name="ErpelDocumentExtensionType">
+		<xs:sequence>
+			<xs:element ref="Attachments" minOccurs="0" maxOccurs="1"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ForecastListLineItemExtensionType">
+		<xs:choice>
+			<xs:element ref="edifact:ForecastListLineItemExtension"/>
+			<xs:element ref="erpel:ErpelForecastLineItemExtension"/>
+		</xs:choice>
+	</xs:complexType>
+	<xs:complexType name="InvoiceRecipientExtensionType">
+		<xs:choice>
+			<xs:element ref="edifact:InvoiceRecipientExtension"/>
+			<xs:element ref="erpel:ErpelInvoiceRecipientExtension"/>
+		</xs:choice>
+	</xs:complexType>
+	<xs:complexType name="ListLineItemExtensionType">
+		<xs:choice>
+			<xs:element ref="edifact:ListLineItemExtension"/>
+			<xs:element ref="erpel:ErpelListLineItemExtension"/>
+		</xs:choice>
+	</xs:complexType>
+	<xs:complexType name="OrderingPartyExtensionType">
+		<xs:choice>
+			<xs:element ref="edifact:OrderingPartyExtension"/>
+			<xs:element ref="erpel:ErpelOrderingPartyExtension"/>
+		</xs:choice>
+	</xs:complexType>
+	<xs:complexType name="PaymentConditionsExtensionType">
+		<xs:choice>
+			<xs:element ref="edifact:PaymentConditionsExtension"/>
+			<xs:element ref="erpel:ErpelPaymentConditionsExtension"/>
+		</xs:choice>
+	</xs:complexType>
+	<xs:complexType name="PlanningQuantityExtensionType">
+		<xs:choice>
+			<xs:element ref="edifact:PlanningQuantityExtension"/>
+			<xs:element ref="erpel:ErpelPlanningQuantityExtension"/>
+		</xs:choice>
+	</xs:complexType>
+	<xs:complexType name="PresentationDetailsExtensionType">
+		<xs:choice>
+			<xs:element ref="erpel:ErpelPresentationDetailsExtension"/>
+		</xs:choice>
+	</xs:complexType>
+	<xs:complexType name="ReductionAndSurchargeDetailsExtensionType">
+		<xs:choice>
+			<xs:element ref="erpel:ErpelReductionAndSurchargeDetailsExtension"/>
+		</xs:choice>
+	</xs:complexType>
+	<xs:complexType name="ShipperExtensionType">
+		<xs:choice>
+			<xs:element ref="edifact:ShipperExtension"/>
+			<xs:element ref="erpel:ErpelShipperExtension"/>
+		</xs:choice>
+	</xs:complexType>
+	<xs:complexType name="SupplierExtensionType">
+		<xs:choice>
+			<xs:element ref="edifact:SupplierExtension"/>
+			<xs:element ref="erpel:ErpelSupplierExtension"/>
+		</xs:choice>
+	</xs:complexType>
+	<xs:complexType name="TaxExtensionType">
+		<xs:choice>
+			<xs:element ref="edifact:TaxExtension"/>
+			<xs:element ref="erpel:ErpelTaxExtension"/>
+		</xs:choice>
+	</xs:complexType>
+</xs:schema>

@@ -1,24 +1,12 @@
 package de.metas.material.dispo.commons.repository;
 
-import static org.adempiere.model.InterfaceWrapperHelper.isNew;
-
-import java.sql.Timestamp;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.warehouse.WarehouseId;
-import org.compiere.util.TimeUtil;
-import org.springframework.stereotype.Service;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
-
 import de.metas.bpartner.BPartnerId;
+import de.metas.common.util.CoalesceUtil;
+import de.metas.document.dimension.Dimension;
+import de.metas.document.dimension.DimensionService;
 import de.metas.document.engine.DocStatus;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.Candidate.CandidateBuilder;
@@ -32,11 +20,13 @@ import de.metas.material.dispo.commons.candidate.businesscase.DistributionDetail
 import de.metas.material.dispo.commons.candidate.businesscase.Flag;
 import de.metas.material.dispo.commons.candidate.businesscase.ProductionDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.PurchaseDetail;
+import de.metas.material.dispo.commons.candidate.businesscase.StockChangeDetail;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.commons.repository.query.ProductionDetailsQuery;
 import de.metas.material.dispo.commons.repository.repohelpers.DemandDetailRepoHelper;
 import de.metas.material.dispo.commons.repository.repohelpers.PurchaseDetailRepoHelper;
 import de.metas.material.dispo.commons.repository.repohelpers.RepositoryCommons;
+import de.metas.material.dispo.commons.repository.repohelpers.StockChangeDetailRepo;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate_Demand_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Dist_Detail;
@@ -45,6 +35,7 @@ import de.metas.material.dispo.model.I_MD_Candidate_Transaction_Detail;
 import de.metas.material.dispo.model.X_MD_Candidate;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.material.event.commons.MinMaxDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.material.event.stock.ResetStockPInstanceId;
@@ -52,8 +43,21 @@ import de.metas.organization.ClientAndOrgId;
 import de.metas.product.ResourceId;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.common.util.CoalesceUtil;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.warehouse.WarehouseId;
+import org.compiere.util.TimeUtil;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Nullable;
+import java.sql.Timestamp;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static org.adempiere.model.InterfaceWrapperHelper.isNew;
 
 /*
  * #%L
@@ -80,11 +84,19 @@ import lombok.NonNull;
 @Service
 public class CandidateRepositoryRetrieval
 {
+	private final DimensionService dimensionService;
+	private final StockChangeDetailRepo stockChangeDetailRepo;
+
+	public CandidateRepositoryRetrieval(
+			@NonNull final DimensionService dimensionService,
+			@NonNull final StockChangeDetailRepo stockChangeDetailRepo)
+	{
+		this.dimensionService = dimensionService;
+		this.stockChangeDetailRepo = stockChangeDetailRepo;
+	}
+
 	/**
 	 * Load and return <b>the</b> single record this has the given {@code id} as parentId.
-	 *
-	 * @param parentId
-	 * @return
 	 */
 	public Optional<Candidate> retrieveSingleChild(@NonNull final CandidateId parentId)
 	{
@@ -130,6 +142,7 @@ public class CandidateRepositoryRetrieval
 	@VisibleForTesting
 	Optional<Candidate> fromCandidateRecord(final I_MD_Candidate candidateRecordOrNull)
 	{
+
 		if (candidateRecordOrNull == null || isNew(candidateRecordOrNull) || candidateRecordOrNull.getMD_Candidate_ID() <= 0)
 		{
 			return Optional.empty();
@@ -143,17 +156,20 @@ public class CandidateRepositoryRetrieval
 		final ProductionDetail productionDetailOrNull = createProductionDetailOrNull(candidateRecordOrNull);
 		final DistributionDetail distributionDetailOrNull = createDistributionDetailOrNull(candidateRecordOrNull);
 		final PurchaseDetail purchaseDetailOrNull = PurchaseDetailRepoHelper.getSingleForCandidateRecordOrNull(candidateRecordOrNull);
+		final StockChangeDetail stockChangeDetailOrNull = stockChangeDetailRepo.getSingleForCandidateRecordOrNull(candidateRecordOrNull);
 
 		final int hasProductionDetail = productionDetailOrNull == null ? 0 : 1;
 		final int hasDistributionDetail = distributionDetailOrNull == null ? 0 : 1;
 		final int hasPurchaseDetail = purchaseDetailOrNull == null ? 0 : 1;
+		final int hasStockChangeDetail = stockChangeDetailOrNull == null ? 0 : 1;
 
-		Check.errorIf(hasProductionDetail + hasDistributionDetail + hasPurchaseDetail > 1,
-				"A candidate may not have both a distribution, production and a production detail; candidateRecord={}", candidateRecordOrNull);
+		Check.errorIf(hasProductionDetail + hasDistributionDetail + hasPurchaseDetail + hasStockChangeDetail > 1,
+					  "A candidate may not have both a distribution, production, production detail and a hasStockChangeDetail; candidateRecord={}", candidateRecordOrNull);
 
 		final DemandDetail demandDetailOrNull = createDemandDetailOrNull(candidateRecordOrNull);
 
-		final BusinessCaseDetail businessCaseDetail = CoalesceUtil.coalesce(productionDetailOrNull, distributionDetailOrNull, purchaseDetailOrNull, demandDetailOrNull);
+		final BusinessCaseDetail businessCaseDetail = CoalesceUtil.coalesce(productionDetailOrNull, distributionDetailOrNull, purchaseDetailOrNull,
+																			demandDetailOrNull, stockChangeDetailOrNull);
 		builder.businessCaseDetail(businessCaseDetail);
 		if (hasProductionDetail > 0 || hasDistributionDetail > 0 || hasPurchaseDetail > 0)
 		{
@@ -162,9 +178,13 @@ public class CandidateRepositoryRetrieval
 
 		builder.transactionDetails(createTransactionDetails(candidateRecordOrNull));
 
+		final Dimension candidateDimension = dimensionService.getFromRecord(candidateRecordOrNull);
+		builder.dimension(candidateDimension);
+
 		return Optional.of(builder.build());
 	}
 
+	@Nullable
 	private CandidateBusinessCase getBusinesCaseOrNull(@NonNull final I_MD_Candidate candidateRecord)
 	{
 		CandidateBusinessCase subType = null;
@@ -178,11 +198,11 @@ public class CandidateRepositoryRetrieval
 	private CandidateBuilder createAndInitializeBuilder(@NonNull final I_MD_Candidate candidateRecord)
 	{
 		final Timestamp dateProjected = Preconditions.checkNotNull(candidateRecord.getDateProjected(),
-				"Given parameter candidateRecord needs to have a not-null dateProjected; candidateRecord=%s",
-				candidateRecord);
+																   "Given parameter candidateRecord needs to have a not-null dateProjected; candidateRecord=%s",
+																   candidateRecord);
 		final String md_candidate_type = Preconditions.checkNotNull(candidateRecord.getMD_Candidate_Type(),
-				"Given parameter candidateRecord needs to have a not-null MD_Candidate_Type; candidateRecord=%s",
-				candidateRecord);
+																	"Given parameter candidateRecord needs to have a not-null MD_Candidate_Type; candidateRecord=%s",
+																	candidateRecord);
 
 		final ProductDescriptor productDescriptor = ProductDescriptor.forProductAndAttributes(
 				candidateRecord.getM_Product_ID(),
@@ -194,9 +214,15 @@ public class CandidateRepositoryRetrieval
 				.quantity(candidateRecord.getQty())
 				.warehouseId(WarehouseId.ofRepoId(candidateRecord.getM_Warehouse_ID()))
 				.customerId(BPartnerId.ofRepoIdOrNull(candidateRecord.getC_BPartner_Customer_ID()))
+				.reservedForCustomer(candidateRecord.isReservedForCustomer())
 
 				// make sure to add a Date and not a Timestamp to avoid confusing Candidate's equals() and hashCode() methods
 				.date(TimeUtil.asInstant(dateProjected))
+				.build();
+
+		final MinMaxDescriptor minMaxDescriptor = MinMaxDescriptor.builder()
+				.min(candidateRecord.getReplenish_MinQty())
+				.max(candidateRecord.getReplenish_MaxQty())
 				.build();
 
 		final CandidateBuilder candidateBuilder = Candidate.builder()
@@ -207,7 +233,8 @@ public class CandidateRepositoryRetrieval
 
 				// if the record has a group id, then set it.
 				.groupId(MaterialDispoGroupId.ofIntOrNull(candidateRecord.getMD_Candidate_GroupId()))
-				.materialDescriptor(materialDescriptor);
+				.materialDescriptor(materialDescriptor)
+				.minMaxDescriptor(minMaxDescriptor);
 
 		if (candidateRecord.getMD_Candidate_Parent_ID() > 0)
 		{
@@ -230,10 +257,11 @@ public class CandidateRepositoryRetrieval
 		return attributesKey;
 	}
 
+	@Nullable
 	private static ProductionDetail createProductionDetailOrNull(@NonNull final I_MD_Candidate candidateRecord)
 	{
 		final I_MD_Candidate_Prod_Detail //
-		productionDetailRecord = RepositoryCommons.retrieveSingleCandidateDetail(candidateRecord, I_MD_Candidate_Prod_Detail.class);
+				productionDetailRecord = RepositoryCommons.retrieveSingleCandidateDetail(candidateRecord, I_MD_Candidate_Prod_Detail.class);
 		if (productionDetailRecord == null)
 		{
 			return null;
@@ -253,6 +281,7 @@ public class CandidateRepositoryRetrieval
 				.build();
 	}
 
+	@Nullable
 	private static DistributionDetail createDistributionDetailOrNull(@NonNull final I_MD_Candidate candidateRecord)
 	{
 		final I_MD_Candidate_Dist_Detail distributionDetail = //
@@ -265,6 +294,7 @@ public class CandidateRepositoryRetrieval
 		return DistributionDetail.forDistributionDetailRecord(distributionDetail);
 	}
 
+	@Nullable
 	private static DemandDetail createDemandDetailOrNull(@NonNull final I_MD_Candidate candidateRecord)
 	{
 		final I_MD_Candidate_Demand_Detail demandDetailRecord = //
@@ -302,6 +332,7 @@ public class CandidateRepositoryRetrieval
 		return result.build();
 	}
 
+	@Nullable
 	public Candidate retrieveLatestMatchOrNull(@NonNull final CandidatesQuery query)
 	{
 		final IQueryBuilder<I_MD_Candidate> queryBuilderWithoutOrdering = RepositoryCommons.mkQueryBuilder(query);
@@ -351,8 +382,8 @@ public class CandidateRepositoryRetrieval
 	{
 		final CandidatesQuery query = CandidatesQuery.builder()
 				.productionDetailsQuery(ProductionDetailsQuery.builder()
-						.ppOrderId(ppOrderId)
-						.build())
+												.ppOrderId(ppOrderId)
+												.build())
 				.build();
 		return retrieveOrderedByDateAndSeqNo(query);
 	}

@@ -1,129 +1,83 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package de.metas.handlingunits.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for M_HU_LUTU_Configuration
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public class X_M_HU_LUTU_Configuration extends org.compiere.model.PO implements I_M_HU_LUTU_Configuration, org.compiere.model.I_Persistent 
 {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = 2125840320L;
+	private static final long serialVersionUID = -270391989L;
 
     /** Standard Constructor */
-    public X_M_HU_LUTU_Configuration (Properties ctx, int M_HU_LUTU_Configuration_ID, String trxName)
+    public X_M_HU_LUTU_Configuration (final Properties ctx, final int M_HU_LUTU_Configuration_ID, @Nullable final String trxName)
     {
       super (ctx, M_HU_LUTU_Configuration_ID, trxName);
-      /** if (M_HU_LUTU_Configuration_ID == 0)
-        {
-			setC_UOM_ID (0);
-			setIsInfiniteQtyCU (false); // N
-			setIsInfiniteQtyLU (false); // N
-			setIsInfiniteQtyTU (false); // N
-			setM_HU_LUTU_Configuration_ID (0);
-			setM_Product_ID (0);
-			setM_TU_HU_PI_ID (0);
-			setQtyCU (BigDecimal.ZERO);
-			setQtyLU (BigDecimal.ZERO);
-			setQtyTU (BigDecimal.ZERO);
-        } */
     }
 
     /** Load Constructor */
-    public X_M_HU_LUTU_Configuration (Properties ctx, ResultSet rs, String trxName)
+    public X_M_HU_LUTU_Configuration (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
 
 
-    /** Load Meta Data */
-    @Override
-    protected org.compiere.model.POInfo initPO (Properties ctx)
-    {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
-      return poi;
-    }
-
-	/** Set Geschäftspartner.
-		@param C_BPartner_ID 
-		Bezeichnet einen Geschäftspartner
-	  */
+	/** Load Meta Data */
 	@Override
-	public void setC_BPartner_ID (int C_BPartner_ID)
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
+	{
+		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public void setC_BPartner_ID (final int C_BPartner_ID)
 	{
 		if (C_BPartner_ID < 1) 
 			set_Value (COLUMNNAME_C_BPartner_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_BPartner_ID, Integer.valueOf(C_BPartner_ID));
+			set_Value (COLUMNNAME_C_BPartner_ID, C_BPartner_ID);
 	}
 
-	/** Get Geschäftspartner.
-		@return Bezeichnet einen Geschäftspartner
-	  */
 	@Override
-	public int getC_BPartner_ID () 
+	public int getC_BPartner_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_BPartner_ID);
 	}
 
-	/** Set Standort.
-		@param C_BPartner_Location_ID 
-		Identifiziert die (Liefer-) Adresse des Geschäftspartners
-	  */
 	@Override
-	public void setC_BPartner_Location_ID (int C_BPartner_Location_ID)
+	public void setC_BPartner_Location_ID (final int C_BPartner_Location_ID)
 	{
 		if (C_BPartner_Location_ID < 1) 
 			set_Value (COLUMNNAME_C_BPartner_Location_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_BPartner_Location_ID, Integer.valueOf(C_BPartner_Location_ID));
+			set_Value (COLUMNNAME_C_BPartner_Location_ID, C_BPartner_Location_ID);
 	}
 
-	/** Get Standort.
-		@return Identifiziert die (Liefer-) Adresse des Geschäftspartners
-	  */
 	@Override
-	public int getC_BPartner_Location_ID () 
+	public int getC_BPartner_Location_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_Location_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_BPartner_Location_ID);
 	}
 
-	/** Set Maßeinheit.
-		@param C_UOM_ID 
-		Maßeinheit
-	  */
 	@Override
-	public void setC_UOM_ID (int C_UOM_ID)
+	public void setC_UOM_ID (final int C_UOM_ID)
 	{
 		if (C_UOM_ID < 1) 
 			set_Value (COLUMNNAME_C_UOM_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_UOM_ID, Integer.valueOf(C_UOM_ID));
+			set_Value (COLUMNNAME_C_UOM_ID, C_UOM_ID);
 	}
 
-	/** Get Maßeinheit.
-		@return Maßeinheit
-	  */
 	@Override
-	public int getC_UOM_ID () 
+	public int getC_UOM_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_UOM_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_UOM_ID);
 	}
 
 	/** 
@@ -143,159 +97,97 @@ public class X_M_HU_LUTU_Configuration extends org.compiere.model.PO implements 
 	public static final String HUSTATUS_Shipped = "E";
 	/** Issued = I */
 	public static final String HUSTATUS_Issued = "I";
-	/** Set Gebinde Status.
-		@param HUStatus Gebinde Status	  */
 	@Override
-	public void setHUStatus (java.lang.String HUStatus)
+	public void setHUStatus (final @Nullable java.lang.String HUStatus)
 	{
-
 		set_Value (COLUMNNAME_HUStatus, HUStatus);
 	}
 
-	/** Get Gebinde Status.
-		@return Gebinde Status	  */
 	@Override
-	public java.lang.String getHUStatus () 
+	public java.lang.String getHUStatus() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_HUStatus);
+		return get_ValueAsString(COLUMNNAME_HUStatus);
 	}
 
-	/** Set Unendliche CU Menge.
-		@param IsInfiniteQtyCU Unendliche CU Menge	  */
 	@Override
-	public void setIsInfiniteQtyCU (boolean IsInfiniteQtyCU)
+	public void setIsInfiniteQtyCU (final boolean IsInfiniteQtyCU)
 	{
-		set_Value (COLUMNNAME_IsInfiniteQtyCU, Boolean.valueOf(IsInfiniteQtyCU));
+		set_Value (COLUMNNAME_IsInfiniteQtyCU, IsInfiniteQtyCU);
 	}
 
-	/** Get Unendliche CU Menge.
-		@return Unendliche CU Menge	  */
 	@Override
-	public boolean isInfiniteQtyCU () 
+	public boolean isInfiniteQtyCU() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsInfiniteQtyCU);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsInfiniteQtyCU);
 	}
 
-	/** Set Unendliche LU Menge.
-		@param IsInfiniteQtyLU Unendliche LU Menge	  */
 	@Override
-	public void setIsInfiniteQtyLU (boolean IsInfiniteQtyLU)
+	public void setIsInfiniteQtyLU (final boolean IsInfiniteQtyLU)
 	{
-		set_Value (COLUMNNAME_IsInfiniteQtyLU, Boolean.valueOf(IsInfiniteQtyLU));
+		set_Value (COLUMNNAME_IsInfiniteQtyLU, IsInfiniteQtyLU);
 	}
 
-	/** Get Unendliche LU Menge.
-		@return Unendliche LU Menge	  */
 	@Override
-	public boolean isInfiniteQtyLU () 
+	public boolean isInfiniteQtyLU() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsInfiniteQtyLU);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsInfiniteQtyLU);
 	}
 
-	/** Set Unendliche TU Menge.
-		@param IsInfiniteQtyTU Unendliche TU Menge	  */
 	@Override
-	public void setIsInfiniteQtyTU (boolean IsInfiniteQtyTU)
+	public void setIsInfiniteQtyTU (final boolean IsInfiniteQtyTU)
 	{
-		set_Value (COLUMNNAME_IsInfiniteQtyTU, Boolean.valueOf(IsInfiniteQtyTU));
+		set_Value (COLUMNNAME_IsInfiniteQtyTU, IsInfiniteQtyTU);
 	}
 
-	/** Get Unendliche TU Menge.
-		@return Unendliche TU Menge	  */
 	@Override
-	public boolean isInfiniteQtyTU () 
+	public boolean isInfiniteQtyTU() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsInfiniteQtyTU);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsInfiniteQtyTU);
 	}
 
-	/** Set Gebindekonfiguration.
-		@param M_HU_LUTU_Configuration_ID Gebindekonfiguration	  */
 	@Override
-	public void setM_HU_LUTU_Configuration_ID (int M_HU_LUTU_Configuration_ID)
+	public void setM_HU_LUTU_Configuration_ID (final int M_HU_LUTU_Configuration_ID)
 	{
 		if (M_HU_LUTU_Configuration_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_M_HU_LUTU_Configuration_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_M_HU_LUTU_Configuration_ID, Integer.valueOf(M_HU_LUTU_Configuration_ID));
+			set_ValueNoCheck (COLUMNNAME_M_HU_LUTU_Configuration_ID, M_HU_LUTU_Configuration_ID);
 	}
 
-	/** Get Gebindekonfiguration.
-		@return Gebindekonfiguration	  */
 	@Override
-	public int getM_HU_LUTU_Configuration_ID () 
+	public int getM_HU_LUTU_Configuration_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_HU_LUTU_Configuration_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_HU_LUTU_Configuration_ID);
 	}
 
-	/** Set Packvorschrift.
-		@param M_HU_PI_Item_Product_ID Packvorschrift	  */
 	@Override
-	public void setM_HU_PI_Item_Product_ID (int M_HU_PI_Item_Product_ID)
+	public void setM_HU_PI_Item_Product_ID (final int M_HU_PI_Item_Product_ID)
 	{
 		if (M_HU_PI_Item_Product_ID < 1) 
 			set_Value (COLUMNNAME_M_HU_PI_Item_Product_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_HU_PI_Item_Product_ID, Integer.valueOf(M_HU_PI_Item_Product_ID));
+			set_Value (COLUMNNAME_M_HU_PI_Item_Product_ID, M_HU_PI_Item_Product_ID);
 	}
 
-	/** Get Packvorschrift.
-		@return Packvorschrift	  */
 	@Override
-	public int getM_HU_PI_Item_Product_ID () 
+	public int getM_HU_PI_Item_Product_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_HU_PI_Item_Product_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_HU_PI_Item_Product_ID);
 	}
 
-	/** Set Lagerort.
-		@param M_Locator_ID 
-		Lagerort im Lager
-	  */
 	@Override
-	public void setM_Locator_ID (int M_Locator_ID)
+	public void setM_Locator_ID (final int M_Locator_ID)
 	{
 		if (M_Locator_ID < 1) 
 			set_Value (COLUMNNAME_M_Locator_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_Locator_ID, Integer.valueOf(M_Locator_ID));
+			set_Value (COLUMNNAME_M_Locator_ID, M_Locator_ID);
 	}
 
-	/** Get Lagerort.
-		@return Lagerort im Lager
-	  */
 	@Override
-	public int getM_Locator_ID () 
+	public int getM_Locator_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_Locator_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_Locator_ID);
 	}
 
 	@Override
@@ -305,31 +197,24 @@ public class X_M_HU_LUTU_Configuration extends org.compiere.model.PO implements 
 	}
 
 	@Override
-	public void setM_LU_HU_PI(de.metas.handlingunits.model.I_M_HU_PI M_LU_HU_PI)
+	public void setM_LU_HU_PI(final de.metas.handlingunits.model.I_M_HU_PI M_LU_HU_PI)
 	{
 		set_ValueFromPO(COLUMNNAME_M_LU_HU_PI_ID, de.metas.handlingunits.model.I_M_HU_PI.class, M_LU_HU_PI);
 	}
 
-	/** Set Packvorschrift (LU).
-		@param M_LU_HU_PI_ID Packvorschrift (LU)	  */
 	@Override
-	public void setM_LU_HU_PI_ID (int M_LU_HU_PI_ID)
+	public void setM_LU_HU_PI_ID (final int M_LU_HU_PI_ID)
 	{
 		if (M_LU_HU_PI_ID < 1) 
 			set_Value (COLUMNNAME_M_LU_HU_PI_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_LU_HU_PI_ID, Integer.valueOf(M_LU_HU_PI_ID));
+			set_Value (COLUMNNAME_M_LU_HU_PI_ID, M_LU_HU_PI_ID);
 	}
 
-	/** Get Packvorschrift (LU).
-		@return Packvorschrift (LU)	  */
 	@Override
-	public int getM_LU_HU_PI_ID () 
+	public int getM_LU_HU_PI_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_LU_HU_PI_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_LU_HU_PI_ID);
 	}
 
 	@Override
@@ -339,56 +224,39 @@ public class X_M_HU_LUTU_Configuration extends org.compiere.model.PO implements 
 	}
 
 	@Override
-	public void setM_LU_HU_PI_Item(de.metas.handlingunits.model.I_M_HU_PI_Item M_LU_HU_PI_Item)
+	public void setM_LU_HU_PI_Item(final de.metas.handlingunits.model.I_M_HU_PI_Item M_LU_HU_PI_Item)
 	{
 		set_ValueFromPO(COLUMNNAME_M_LU_HU_PI_Item_ID, de.metas.handlingunits.model.I_M_HU_PI_Item.class, M_LU_HU_PI_Item);
 	}
 
-	/** Set Packvorschrift Position (LU).
-		@param M_LU_HU_PI_Item_ID Packvorschrift Position (LU)	  */
 	@Override
-	public void setM_LU_HU_PI_Item_ID (int M_LU_HU_PI_Item_ID)
+	public void setM_LU_HU_PI_Item_ID (final int M_LU_HU_PI_Item_ID)
 	{
 		if (M_LU_HU_PI_Item_ID < 1) 
 			set_Value (COLUMNNAME_M_LU_HU_PI_Item_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_LU_HU_PI_Item_ID, Integer.valueOf(M_LU_HU_PI_Item_ID));
+			set_Value (COLUMNNAME_M_LU_HU_PI_Item_ID, M_LU_HU_PI_Item_ID);
 	}
 
-	/** Get Packvorschrift Position (LU).
-		@return Packvorschrift Position (LU)	  */
 	@Override
-	public int getM_LU_HU_PI_Item_ID () 
+	public int getM_LU_HU_PI_Item_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_LU_HU_PI_Item_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_LU_HU_PI_Item_ID);
 	}
 
-	/** Set Produkt.
-		@param M_Product_ID 
-		Produkt, Leistung, Artikel
-	  */
 	@Override
-	public void setM_Product_ID (int M_Product_ID)
+	public void setM_Product_ID (final int M_Product_ID)
 	{
 		if (M_Product_ID < 1) 
 			set_Value (COLUMNNAME_M_Product_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_Product_ID, Integer.valueOf(M_Product_ID));
+			set_Value (COLUMNNAME_M_Product_ID, M_Product_ID);
 	}
 
-	/** Get Produkt.
-		@return Produkt, Leistung, Artikel
-	  */
 	@Override
-	public int getM_Product_ID () 
+	public int getM_Product_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_Product_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_Product_ID);
 	}
 
 	@Override
@@ -398,87 +266,62 @@ public class X_M_HU_LUTU_Configuration extends org.compiere.model.PO implements 
 	}
 
 	@Override
-	public void setM_TU_HU_PI(de.metas.handlingunits.model.I_M_HU_PI M_TU_HU_PI)
+	public void setM_TU_HU_PI(final de.metas.handlingunits.model.I_M_HU_PI M_TU_HU_PI)
 	{
 		set_ValueFromPO(COLUMNNAME_M_TU_HU_PI_ID, de.metas.handlingunits.model.I_M_HU_PI.class, M_TU_HU_PI);
 	}
 
-	/** Set Packvorschrift (TU).
-		@param M_TU_HU_PI_ID Packvorschrift (TU)	  */
 	@Override
-	public void setM_TU_HU_PI_ID (int M_TU_HU_PI_ID)
+	public void setM_TU_HU_PI_ID (final int M_TU_HU_PI_ID)
 	{
 		if (M_TU_HU_PI_ID < 1) 
 			set_Value (COLUMNNAME_M_TU_HU_PI_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_TU_HU_PI_ID, Integer.valueOf(M_TU_HU_PI_ID));
+			set_Value (COLUMNNAME_M_TU_HU_PI_ID, M_TU_HU_PI_ID);
 	}
 
-	/** Get Packvorschrift (TU).
-		@return Packvorschrift (TU)	  */
 	@Override
-	public int getM_TU_HU_PI_ID () 
+	public int getM_TU_HU_PI_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_TU_HU_PI_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_TU_HU_PI_ID);
 	}
 
-	/** Set Menge CU.
-		@param QtyCU Menge CU	  */
 	@Override
-	public void setQtyCU (java.math.BigDecimal QtyCU)
+	public void setQtyCU (final BigDecimal QtyCU)
 	{
 		set_Value (COLUMNNAME_QtyCU, QtyCU);
 	}
 
-	/** Get Menge CU.
-		@return Menge CU	  */
 	@Override
-	public java.math.BigDecimal getQtyCU () 
+	public BigDecimal getQtyCU() 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyCU);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyCU);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
-	/** Set LU Anzahl.
-		@param QtyLU LU Anzahl	  */
 	@Override
-	public void setQtyLU (java.math.BigDecimal QtyLU)
+	public void setQtyLU (final BigDecimal QtyLU)
 	{
 		set_Value (COLUMNNAME_QtyLU, QtyLU);
 	}
 
-	/** Get LU Anzahl.
-		@return LU Anzahl	  */
 	@Override
-	public java.math.BigDecimal getQtyLU () 
+	public BigDecimal getQtyLU() 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyLU);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyLU);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
-	/** Set TU Anzahl.
-		@param QtyTU TU Anzahl	  */
 	@Override
-	public void setQtyTU (java.math.BigDecimal QtyTU)
+	public void setQtyTU (final BigDecimal QtyTU)
 	{
 		set_Value (COLUMNNAME_QtyTU, QtyTU);
 	}
 
-	/** Get TU Anzahl.
-		@return TU Anzahl	  */
 	@Override
-	public java.math.BigDecimal getQtyTU () 
+	public BigDecimal getQtyTU() 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyTU);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyTU);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 }

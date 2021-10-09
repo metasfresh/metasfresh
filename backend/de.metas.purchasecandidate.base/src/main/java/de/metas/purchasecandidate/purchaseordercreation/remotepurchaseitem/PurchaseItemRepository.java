@@ -182,6 +182,7 @@ public class PurchaseItemRepository
 
 			final PurchaseOrderItem purchaseOrderItem = PurchaseOrderItem.builder()
 					.purchaseCandidate(purchaseCandidate)
+					.dimension(purchaseCandidate.getDimension())
 					.purchaseItemId(PurchaseItemId.ofRepoId(record.getC_PurchaseCandidate_Alloc_ID()))
 					.datePromised(TimeUtil.asZonedDateTime(record.getDatePromised()))
 					.purchasedQty(purchasedQty)

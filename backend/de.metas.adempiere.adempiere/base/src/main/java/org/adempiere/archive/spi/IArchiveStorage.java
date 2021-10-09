@@ -26,7 +26,10 @@ package org.adempiere.archive.spi;
 import java.io.InputStream;
 import java.util.Properties;
 
+import org.adempiere.service.ClientId;
 import org.compiere.model.I_AD_Archive;
+
+import javax.annotation.Nullable;
 
 /**
  * Archive Storage (e.g. database, filesystem etc)
@@ -41,18 +44,14 @@ public interface IArchiveStorage
 	 * 
 	 * NOTE: don't call it directly, it's called by API
 	 */
-	void init(Properties ctx, int adClientId);
+	void init(ClientId adClientId);
 
 	I_AD_Archive newArchive(final Properties ctx, final String trxName);
 
+	@Nullable
 	byte[] getBinaryData(I_AD_Archive archive);
 
-	/**
-	 * Get Data as Input Stream
-	 * 
-	 * @param archive
-	 * @return input stream or null
-	 */
+	@Nullable
 	InputStream getBinaryDataAsStream(I_AD_Archive archive);
 
 	void setBinaryData(I_AD_Archive archive, byte[] data);

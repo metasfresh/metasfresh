@@ -8,6 +8,8 @@ import java.util.function.Consumer;
 import org.compiere.model.I_M_Cost;
 import org.compiere.model.I_M_Product;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.business
@@ -34,6 +36,7 @@ public interface ICurrentCostsRepository
 {
 	List<CurrentCost> getByIds(Set<CurrentCostId> ids);
 
+	@Nullable
 	CurrentCost getOrNull(CostSegmentAndElement costSegmentAndElement);
 
 	CurrentCost getOrCreate(CostSegmentAndElement costSegmentAndElement);

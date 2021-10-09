@@ -34,6 +34,7 @@ import java.util.Properties;
 
 import javax.annotation.Nullable;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -56,7 +57,6 @@ import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.OptionalBoolean;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;

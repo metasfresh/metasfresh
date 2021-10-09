@@ -5,6 +5,9 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyBoolean;
+import static org.mockito.Matchers.anyInt;
 
 import java.sql.Timestamp;
 
@@ -32,31 +35,13 @@ import java.sql.Timestamp;
 
 import java.util.Properties;
 
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.pricing.model.I_C_PricingRule;
-import org.adempiere.warehouse.WarehouseId;
-import org.compiere.model.I_AD_Org;
-import org.compiere.model.I_C_Activity;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_Calendar;
-import org.compiere.model.I_C_Country;
-import org.compiere.model.I_C_Location;
-import org.compiere.model.I_C_Period;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_C_Year;
-import org.compiere.model.I_M_PriceList;
-import org.compiere.model.I_M_PriceList_Version;
-import org.compiere.model.I_M_PricingSystem;
-import org.compiere.model.I_M_Product_Category;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-
+import de.metas.lang.SOTrx;
 import de.metas.acct.api.IProductAcctDAO;
 import de.metas.adempiere.model.I_M_Product;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.invoicecandidate.FlatrateDataEntryHandler;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
@@ -76,8 +61,44 @@ import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxCategoryId;
+import de.metas.tax.api.TaxId;
+import de.metas.user.UserRepository;
 import de.metas.util.Services;
-import de.metas.common.util.CoalesceUtil;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.pricing.model.I_C_PricingRule;
+import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.warehouse.WarehouseId;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_Activity;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Calendar;
+import org.compiere.model.I_C_Country;
+import org.compiere.model.I_C_Location;
+import org.compiere.model.I_C_Period;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_C_Year;
+import org.compiere.model.I_M_PriceList;
+import org.compiere.model.I_M_PriceList_Version;
+import org.compiere.model.I_M_PricingSystem;
+import org.compiere.model.I_M_Product_Category;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+import org.springframework.boot.SpringApplication;
+
+import java.sql.Timestamp;
+import java.util.Properties;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyInt;
 
 public class FlatrateBLTest extends ContractsTestBase
 {
@@ -122,14 +143,14 @@ public class FlatrateBLTest extends ContractsTestBase
 
 		productAcctDAO = Mockito.mock(IProductAcctDAO.class);
 		taxBL = Mockito.mock(ITaxBL.class);
+
+		SpringContextHolder.registerJUnitBean(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
 	}
 
 	@BeforeEach
 	public void before()
 	{
-		final I_AD_Org org = newInstance(I_AD_Org.class);
-		save(org);
-		orgId = OrgId.ofRepoId(org.getAD_Org_ID());
+		orgId = AdempiereTestHelper.createOrgWithTimeZone();
 
 		final I_C_Activity activity = newInstance(I_C_Activity.class);
 		save(activity);
@@ -144,7 +165,6 @@ public class FlatrateBLTest extends ContractsTestBase
 	@Test
 	public void beforeCompleteDataEntry_test()
 	{
-
 		final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 
 		final I_C_Flatrate_Transition flatrateTransition = newInstance(I_C_Flatrate_Transition.class);
@@ -157,7 +177,7 @@ public class FlatrateBLTest extends ContractsTestBase
 
 		final I_C_Flatrate_Conditions flatrateConditions = newInstance(I_C_Flatrate_Conditions.class);
 		flatrateConditions.setType_Conditions(X_C_Flatrate_Conditions.TYPE_CONDITIONS_HoldingFee);
-		flatrateConditions.setM_PricingSystem(pricingSystem);
+		flatrateConditions.setM_PricingSystem_ID(pricingSystem.getM_PricingSystem_ID());
 		save(flatrateConditions);
 
 		final I_C_Country country = newInstance(I_C_Country.class);
@@ -182,9 +202,9 @@ public class FlatrateBLTest extends ContractsTestBase
 		currentTerm.setStartDate(day(2013, 1, 1));
 		currentTerm.setEndDate(day(2014, 7, 27));
 		currentTerm.setC_Flatrate_Conditions(flatrateConditions);
-		currentTerm.setM_PricingSystem(pricingSystem);
+		currentTerm.setM_PricingSystem_ID(pricingSystem.getM_PricingSystem_ID());
 		currentTerm.setBill_BPartner_ID(bpartner.getC_BPartner_ID());
-		currentTerm.setBill_Location(bpLocation);
+		currentTerm.setBill_Location_ID(bpLocation.getC_BPartner_Location_ID());
 		save(currentTerm);
 
 		final I_M_PriceList priceList = newInstance(I_M_PriceList.class);
@@ -241,17 +261,18 @@ public class FlatrateBLTest extends ContractsTestBase
 		final Properties ctx = Env.getCtx();
 		final TaxCategoryId taxCategoryId = null;
 		final boolean isSOTrx = true;
-		Mockito.when(taxBL.getTax(
-				ctx,
-				currentTerm,
-				taxCategoryId,
-				currentTerm.getM_Product_ID(),
-				dataEntry.getDate_Reported(),
-				OrgId.ofRepoId(dataEntry.getAD_Org_ID()),
-				(WarehouseId)null,
-				CoalesceUtil.firstGreaterThanZero(currentTerm.getDropShip_Location_ID(), currentTerm.getBill_Location_ID()),
-				isSOTrx))
-				.thenReturn(3);
+		Mockito
+				.when(taxBL.getTaxNotNull(
+						any(Properties.class),
+						any(I_C_Flatrate_Term.class),
+						any(TaxCategoryId.class),
+						anyInt(),
+						any(Timestamp.class),
+						any(OrgId.class),
+						any(WarehouseId.class),
+						any(BPartnerLocationAndCaptureId.class),
+						any(SOTrx.class)))
+				.thenReturn(TaxId.ofRepoId(3));
 	}
 
 	@Test
@@ -482,7 +503,7 @@ public class FlatrateBLTest extends ContractsTestBase
 
 		// first term: first conditions, March 15 - April 14
 		term = newInstance(I_C_Flatrate_Term.class);
-		term.setBill_BPartner(partner);
+		term.setBill_BPartner_ID(partner.getC_BPartner_ID());
 		term.setStartDate(day(2017, 3, 15));
 		term.setEndDate(day(2017, 4, 14));
 		term.setC_Flatrate_Conditions(conditions1);
@@ -492,7 +513,7 @@ public class FlatrateBLTest extends ContractsTestBase
 
 		// second term: second conditions, March 14 - April 13 => Overlapping: March 15, April 14
 		overlappingTerm = newInstance(I_C_Flatrate_Term.class);
-		overlappingTerm.setBill_BPartner(partner);
+		overlappingTerm.setBill_BPartner_ID(partner.getC_BPartner_ID());
 		overlappingTerm.setStartDate(day(2017, 3, 14));
 		overlappingTerm.setEndDate(day(2017, 4, 13));
 		overlappingTerm.setC_Flatrate_Conditions(conditions2);

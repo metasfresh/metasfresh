@@ -1,5 +1,6 @@
 package de.metas.handlingunits.pporder.api;
 
+import de.metas.material.planning.pporder.DraftPPOrderQuantities;
 import org.compiere.model.I_C_UOM;
 
 import de.metas.handlingunits.model.I_PP_Order_Qty;
@@ -7,6 +8,7 @@ import de.metas.uom.IUOMDAO;
 import de.metas.util.ISingletonService;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.eevolution.api.PPOrderId;
 
 /*
  * #%L
@@ -36,6 +38,9 @@ public interface IHUPPOrderQtyBL extends ISingletonService
 
 	static I_C_UOM extractUOM(@NonNull final I_PP_Order_Qty ppOrderQty)
 	{
-		return Services.get(IUOMDAO.class).getById(ppOrderQty.getC_UOM_ID());
+		final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+		return uomDAO.getById(ppOrderQty.getC_UOM_ID());
 	}
+
+	DraftPPOrderQuantities getDraftPPOrderQuantities(@NonNull PPOrderId ppOrderId);
 }

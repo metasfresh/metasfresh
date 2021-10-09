@@ -81,8 +81,7 @@ public class C_ElementValue
 	private void createValidCombination(final I_C_ElementValue elementValue)
 	{
 		final ClientId adClientId = ClientId.ofRepoId(elementValue.getAD_Client_ID());
-		final ChartOfAccountsId chartOfAccountsId = ChartOfAccountsId.ofRepoId(elementValue.getC_Element_ID());
-		for (final AcctSchema acctSchema : getAcctSchemasHavingElementId(adClientId, chartOfAccountsId))
+		for (final AcctSchema acctSchema : acctSchemasRepo.getAllByClient(adClientId))
 		{
 			MAccount.getCreate(AccountDimension.builder()
 					.setAcctSchemaId(acctSchema.getId())
@@ -91,25 +90,6 @@ public class C_ElementValue
 					.setAD_Org_ID(OrgId.ANY.getRepoId())
 					.build());
 		}
-	}
-
-	private List<AcctSchema> getAcctSchemasHavingElementId(
-			final ClientId adClientId,
-			final ChartOfAccountsId chartOfAccountsId)
-	{
-		return acctSchemasRepo.getAllByClient(adClientId)
-				.stream()
-				.filter(acctSchema -> isAcctSchemaMatchingElementId(acctSchema, chartOfAccountsId))
-				.collect(ImmutableList.toImmutableList());
-	}
-
-	private static boolean isAcctSchemaMatchingElementId(
-			final AcctSchema acctSchema,
-			final ChartOfAccountsId chartOfAccountsId)
-	{
-		final AcctSchemaElement accountElement = acctSchema.getSchemaElementByType(AcctSchemaElementType.Account);
-		return accountElement != null
-				&& ChartOfAccountsId.equals(accountElement.getChartOfAccountsId(), chartOfAccountsId);
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = { I_C_ElementValue.COLUMNNAME_Parent_ID, I_C_ElementValue.COLUMNNAME_SeqNo })

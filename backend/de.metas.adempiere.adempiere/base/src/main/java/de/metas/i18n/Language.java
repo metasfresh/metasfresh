@@ -8,6 +8,7 @@ import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Supplier;
@@ -15,7 +16,9 @@ import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import javax.print.attribute.standard.MediaSize;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Builder;
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.compiere.util.Env;
@@ -371,6 +374,7 @@ public final class Language implements Serializable
 	 * @return Base Language
 	 * @throws AdempiereException if the base language was not already configured
 	 */
+	@NonNull
 	public static String getBaseAD_Language()
 	{
 		// return s_languages[0].getAD_Language();
@@ -388,11 +392,14 @@ public final class Language implements Serializable
 
 	public static Language asLanguage(@Nullable final String languageInfo)
 	{
-		if (Check.isEmpty(languageInfo, true))
-		{
-			return null;
-		}
-		return getLanguage(languageInfo);
+		return !Check.isBlank(languageInfo) ? getLanguage(languageInfo) : null;
+	}
+
+	public static Optional<Language> optionalOfNullable(@Nullable final String adLanguage)
+	{
+		return !Check.isBlank(adLanguage)
+				? Optional.of(getLanguage(adLanguage))
+				: Optional.empty();
 	}
 
 	/**
@@ -568,10 +575,16 @@ public final class Language implements Serializable
 	/** Locale */
 	private final Locale m_locale;
 	//
+	@JsonIgnore
 	private Boolean _decimalPoint; // might be lazy
+
+	@JsonIgnore
 	private Boolean _leftToRight; // might be lazy
 
+	@JsonIgnore
 	private String _dateFormatPattern; // might be lazy
+
+	@JsonIgnore
 	private ThreadLocal<SimpleDateFormat> _dateFormatThreadLocal = null;
 
 	private final MediaSize _mediaSize;

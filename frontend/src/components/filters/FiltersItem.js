@@ -7,15 +7,16 @@ import ReactDOM from 'react-dom';
 import _ from 'lodash';
 import Moment from 'moment-timezone';
 
-import keymap from '../../shortcuts/keymap';
-import OverlayField from '../app/OverlayField';
-import ModalContextShortcuts from '../keyshortcuts/ModalContextShortcuts';
-import Tooltips from '../tooltips/Tooltips.js';
-import RawWidget from '../widget/RawWidget';
 import { openFilterBox, closeFilterBox } from '../../actions/WindowActions';
+
+import { convertDateToReadable } from '../../utils/dateHelpers';
+import keymap from '../../shortcuts/keymap';
+import ModalContextShortcuts from '../keyshortcuts/ModalContextShortcuts';
 import { DATE_FIELD_FORMATS } from '../../constants/Constants';
 
-import { parseDateToReadable } from './Filters';
+import OverlayField from '../app/OverlayField';
+import Tooltips from '../tooltips/Tooltips.js';
+import WidgetWrapper from '../../containers/WidgetWrapper';
 
 /**
  * @file Class based component.
@@ -63,6 +64,8 @@ class FiltersItem extends PureComponent {
   }
 
   componentDidMount() {
+    this.mounted = true;
+
     if (this.widgetsContainer) {
       this.widgetsContainer.addEventListener('scroll', this.handleScroll);
     }
@@ -97,13 +100,15 @@ class FiltersItem extends PureComponent {
   }
 
   componentWillUnmount() {
-    const { dispatch } = this.props;
+    this.mounted = false;
+
+    const { closeFilterBox } = this.props;
 
     if (this.widgetsContainer) {
       this.widgetsContainer.removeEventListener('scroll', this.handleScroll);
     }
 
-    dispatch(closeFilterBox());
+    closeFilterBox();
   }
 
   /**
@@ -140,18 +145,8 @@ class FiltersItem extends PureComponent {
    * @param {*} value
    * @param {*} id
    * @param {*} valueTo
-   * @param {*} filterId
-   * @param {*} defaultValue
    */
-  setValue = (parameter, value, id, valueTo = '', filterId, defaultValue) => {
-    const { resetInitialValues } = this.props;
-
-    // if user changed field value and defaultValue is not null, then we need
-    // to reset it's initial value so that it won't be set
-    if (defaultValue != null) {
-      resetInitialValues && resetInitialValues(filterId, parameter);
-    }
-
+  setValue = (parameter, value, id, valueTo = '') => {
     if (!Array.isArray(parameter)) {
       parameter = [parameter];
     }
@@ -260,26 +255,7 @@ class FiltersItem extends PureComponent {
     const parametersArray = [];
 
     newActiveFilter.parameters.forEach((param) => {
-      if (updatedParameters[param.parameterName]) {
-        const { value, activeValue, activeValueTo } = paramsMap[
-          param.parameterName
-        ];
-
-        // if there's no value but param exists in the updated parameters,
-        // remove the parameter from active filter.
-        // Otherwise just update it's value
-        if (value !== null && value !== '') {
-          parametersArray.push({
-            ...param,
-            value: parseDateToReadable(param.widgetType, activeValue),
-            valueTo: parseDateToReadable(param.widgetType, activeValueTo),
-            defaultValue: null,
-            defaultValueTo: null,
-          });
-        }
-
-        delete updatedParameters[param.parameterName];
-      } else {
+      if (!updatedParameters[param.parameterName]) {
         // copy params that were not updated
         parametersArray.push({
           ...param,
@@ -315,8 +291,8 @@ class FiltersItem extends PureComponent {
           if (value !== null && value !== '') {
             return {
               ...param,
-              value: parseDateToReadable(param.widgetType, value),
-              valueTo: parseDateToReadable(param.widgetType, valueTo),
+              value: convertDateToReadable(param.widgetType, value),
+              valueTo: convertDateToReadable(param.widgetType, valueTo),
             };
           }
           return {
@@ -339,15 +315,50 @@ class FiltersItem extends PureComponent {
    * @todo Write the documentation
    */
   handleScroll = () => {
-    const { dispatch } = this.props;
-    const {
-      top,
-      left,
-      bottom,
-      right,
-    } = this.widgetsContainer.getBoundingClientRect();
+    const { openFilterBox } = this.props;
+    const { top, left, bottom, right } =
+      this.widgetsContainer.getBoundingClientRect();
 
-    dispatch(openFilterBox({ top, left, bottom, right }));
+    openFilterBox({ top, left, bottom, right });
+  };
+
+  /**
+   * @method checkFilterTypeByName
+   * @summary Gets the corresponding widgetType from the filters data
+   * @param {*} filterItem - the active one that does not contain the widgetType
+   * @returns {string} widgetType
+   */
+  checkFilterTypeByName = (filterItem) => {
+    const {
+      filter: { parameters },
+    } = this.state;
+
+    const targetFilter = parameters.filter(
+      (item) => item.field === filterItem.parameterName
+    );
+    return targetFilter[0] ? targetFilter[0].widgetType : '';
+  };
+
+  /**
+   * updates the items for the case when there is no active filters, does this update within the existing default values
+   * @param {array} toChange
+   */
+  updateItems = (toChange) => {
+    if (this.mounted) {
+      const { filter } = this.state;
+
+      if (filter.parameters) {
+        filter.parameters.map((filterItem) => {
+          if (filterItem.parameterName === toChange.widgetField) {
+            filterItem.defaultValue = toChange.value;
+            filterItem.value = toChange.value;
+            filterItem.valueTo = toChange.valueTo;
+          }
+          return filterItem;
+        });
+      }
+      this.setState({ filter });
+    }
   };
 
   /**
@@ -356,8 +367,10 @@ class FiltersItem extends PureComponent {
    * @todo Write the documentation
    */
   handleApply = () => {
-    const { applyFilters, closeFilterMenu, returnBackToDropdown } = this.props;
+    const { applyFilters, closeFilterMenu, returnBackToDropdown, isActive } =
+      this.props;
     const { filter, activeFilter } = this.state;
+
     if (
       (filter &&
         filter.parametersLayoutType === 'singleOverlayField' &&
@@ -381,16 +394,18 @@ class FiltersItem extends PureComponent {
       );
     } else {
       // update the active filter with the defaultValue if value from active filter is empty
-      const activeFilterClone = _.cloneDeep(activeFilter);
-      activeFilterClone.parameters.map((afcItem, index) => {
-        // YesNo filters (checkboxes) can be either null, true or false
-        afcItem.value =
-          !afcItem.value && afcItem.value !== false
-            ? filter.parameters[index].defaultValue
-            : afcItem.value;
-        return afcItem;
-      });
-
+      let activeFilterClone = _.cloneDeep(activeFilter);
+      if (!isActive) {
+        activeFilterClone = filter;
+        activeFilterClone.parameters.map((afcItem) => {
+          let filterType = this.checkFilterTypeByName(afcItem);
+          if (filterType === 'YesNo') {
+            // YesNo filters (checkboxes) can be either null, true or false
+            afcItem.value = afcItem.defaultValue;
+          }
+          return afcItem;
+        });
+      }
       applyFilters(activeFilterClone, () => {
         closeFilterMenu();
         returnBackToDropdown && returnBackToDropdown();
@@ -403,15 +418,9 @@ class FiltersItem extends PureComponent {
    * @summary clears this filter completely, removing it from the active filters
    */
   handleClear = () => {
-    const {
-      clearFilters,
-      closeFilterMenu,
-      returnBackToDropdown,
-      resetInitialValues,
-    } = this.props;
+    const { clearFilters, closeFilterMenu, returnBackToDropdown } = this.props;
     const { filter } = this.state;
 
-    resetInitialValues && resetInitialValues(filter.filterId);
     clearFilters(filter);
     closeFilterMenu();
     returnBackToDropdown && returnBackToDropdown();
@@ -493,9 +502,7 @@ class FiltersItem extends PureComponent {
               )}
             </div>
             <div
-              className={`form-group row filter-content filter-${
-                data.filterId
-              }`}
+              className={`form-group row filter-content filter-${data.filterId}`}
             >
               <div className="col-sm-12">
                 {filter.parameters &&
@@ -504,7 +511,8 @@ class FiltersItem extends PureComponent {
                     item.field = item.parameterName;
 
                     return (
-                      <RawWidget
+                      <WidgetWrapper
+                        dataSource="filter-item"
                         entity="documentView"
                         subentity="filter"
                         subentityId={filter.filterId}
@@ -549,6 +557,8 @@ class FiltersItem extends PureComponent {
                           windowType,
                           onShow,
                           onHide,
+                          isFilterActive: isActive,
+                          updateItems: this.updateItems,
                         }}
                       />
                     );
@@ -575,28 +585,33 @@ class FiltersItem extends PureComponent {
                     pin: ['bottom'],
                   },
                 ]}
-              >
-                {filter.isActive && !filter.parameters ? (
-                  <span />
-                ) : (
-                  <button
-                    className="applyBtn btn btn-sm btn-success"
-                    onClick={this.handleApply}
-                    onMouseEnter={this.showTooltip}
-                    onMouseLeave={this.hideTooltip}
-                  >
-                    {counterpart.translate('window.apply.caption')}
-                  </button>
-                )}
-                {isTooltipShow && (
-                  <Tooltips
-                    className="filter-tooltip"
-                    name={keymap.DONE}
-                    action={counterpart.translate('window.apply.caption')}
-                    type={''}
-                  />
-                )}
-              </TetherComponent>
+                renderTarget={(ref) =>
+                  filter.isActive && !filter.parameters ? (
+                    <span ref={ref} />
+                  ) : (
+                    <button
+                      ref={ref}
+                      className="applyBtn btn btn-sm btn-success"
+                      onClick={this.handleApply}
+                      onMouseEnter={this.showTooltip}
+                      onMouseLeave={this.hideTooltip}
+                    >
+                      {counterpart.translate('window.apply.caption')}
+                    </button>
+                  )
+                }
+                renderElement={(ref) =>
+                  isTooltipShow && (
+                    <Tooltips
+                      ref={ref}
+                      className="filter-tooltip"
+                      name={keymap.DONE}
+                      action={counterpart.translate('window.apply.caption')}
+                      type={''}
+                    />
+                  )
+                }
+              />
             </div>
           </div>
         )}
@@ -611,9 +626,7 @@ class FiltersItem extends PureComponent {
 
 /**
  * @typedef {object} Props Component props
- * @prop {func} dispatch
  * @prop {func} applyFilters
- * @prop {func} [resetInitialValues]
  * @prop {func} [clearFilters]
  * @prop {*} [filterWrapper]
  * @prop {string} [panelCaption]
@@ -630,12 +643,11 @@ class FiltersItem extends PureComponent {
  * @prop {*} captionValue
  * @prop {*} openedFilter
  * @prop {*} returnBackToDropdown
- * @todo Check props. Which proptype? Required or optional?
+ * @prop {func} openFilterBox
+ * @prop {func} closeFilterBox
  */
 FiltersItem.propTypes = {
-  dispatch: PropTypes.func.isRequired,
   applyFilters: PropTypes.func.isRequired,
-  resetInitialValues: PropTypes.func,
   clearFilters: PropTypes.func,
   filtersWrapper: PropTypes.any,
   panelCaption: PropTypes.string,
@@ -652,6 +664,11 @@ FiltersItem.propTypes = {
   captionValue: PropTypes.any,
   openedFilter: PropTypes.any,
   returnBackToDropdown: PropTypes.any,
+  openFilterBox: PropTypes.func.isRequired,
+  closeFilterBox: PropTypes.func.isRequired,
 };
 
-export default connect()(FiltersItem);
+export default connect(null, {
+  openFilterBox,
+  closeFilterBox,
+})(FiltersItem);

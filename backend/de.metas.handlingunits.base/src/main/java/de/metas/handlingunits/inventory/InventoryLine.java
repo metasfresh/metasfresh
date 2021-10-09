@@ -1,24 +1,15 @@
 package de.metas.handlingunits.inventory;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.warehouse.LocatorId;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.google.common.collect.ImmutableList;
-
 import de.metas.inventory.HUAggregationType;
 import de.metas.inventory.InventoryLineId;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.QuantityUOMConverter;
 import de.metas.util.Check;
 import de.metas.util.collections.CollectionUtils;
 import de.metas.util.reducers.Reducers;
@@ -29,6 +20,13 @@ import lombok.Singular;
 import lombok.ToString;
 import lombok.Value;
 import lombok.experimental.NonFinal;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.warehouse.LocatorId;
+
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
 
 /*
  * #%L
@@ -116,6 +114,11 @@ public class InventoryLine
 		inventoryType = extractInventoryType(inventoryLineHUs, InventoryType.PHYSICAL);
 		this.counted = counted;
 		this.inventoryLineHUs = inventoryLineHUs;
+
+		if (HUAggregationType.SINGLE_HU.equals(huAggregationType) && inventoryLineHUs.size() > 1)
+		{
+			throw new AdempiereException("Only one HU shall be assigned when huAggregatioType=" + huAggregationType);
+		}
 	}
 
 	private static InventoryType extractInventoryType(
@@ -157,6 +160,15 @@ public class InventoryLine
 		}
 	}
 
+	public Quantity getQtyCountMinusBooked()
+	{
+		return getInventoryLineHUs()
+				.stream()
+				.map(InventoryLineHU::getQtyCountMinusBooked)
+				.reduce(Quantity::add)
+				.get();
+	}
+
 	public Quantity getQtyInternalUse()
 	{
 		return getInventoryLineHUs()
@@ -182,6 +194,14 @@ public class InventoryLine
 				.map(InventoryLineHU::getQtyCount)
 				.reduce(Quantity::add)
 				.get();
+	}
+
+	public InventoryLine distributeQtyCountToHUs(
+			@NonNull final Quantity qtyCountToDistribute,
+			@NonNull final QuantityUOMConverter uomConverter)
+	{
+		final Quantity qtyCountToDistributeConv = uomConverter.convertQuantityTo(qtyCountToDistribute, getProductId(), getQtyCount().getUomId());
+		return distributeQtyCountToHUs(qtyCountToDistributeConv);
 	}
 
 	public InventoryLine distributeQtyCountToHUs(@NonNull final Quantity qtyCountToDistribute)
@@ -223,9 +243,14 @@ public class InventoryLine
 			}
 		}
 
+		return withInventoryLineHUs(newInventoryLineHUs);
+	}
+
+	public InventoryLine withInventoryLineHUs(@NonNull final List<InventoryLineHU> inventoryLineHUs)
+	{
 		return toBuilder()
 				.clearInventoryLineHUs()
-				.inventoryLineHUs(newInventoryLineHUs)
+				.inventoryLineHUs(inventoryLineHUs)
 				.build();
 	}
 }

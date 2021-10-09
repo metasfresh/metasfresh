@@ -4,7 +4,7 @@ import javax.annotation.Nullable;
 
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.picking.PickingCandidateId;
-import de.metas.inoutcandidate.api.ShipmentScheduleId;
+import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;

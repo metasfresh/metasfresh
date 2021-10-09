@@ -12,13 +12,17 @@ FROM (
              -- BPartner
              p.C_BPartner_ID                                           AS C_BPartner_Customer_ID,
              p.Value                                                   AS BPartnerValue,
-             (coalesce(p.Name, '') || coalesce(p.Name2, ''))           AS BPartnerName,
+             (COALESCE(p.Name, '') || COALESCE(p.Name2, ''))           AS BPartnerName,
 
              --
              -- BPartner location
              l.C_BPartner_Location_ID,
              l.Name                                                    AS BPartnerLocationName,
-             s.BPartnerAddress_Override,
+             (CASE
+                  WHEN s.BPartnerAddress_Override IS NOT NULL AND s.BPartnerAddress_Override != ''
+                      THEN s.BPartnerAddress_Override
+                      ELSE s.BPartnerAddress
+              END)                                                     AS BPartnerAddress_Override,
 
              --
              -- Order Info
@@ -134,6 +138,7 @@ FROM (
            AND s.Processed = 'N'
            AND s.IsActive = 'Y'
            AND s.QtyToDeliver > 0
+           AND s.isclosed = 'N'
            AND (stats.SOCreditStatus NOT IN ('S', 'H') OR stats.SOCreditStatus IS NULL)
      ) p
 ;

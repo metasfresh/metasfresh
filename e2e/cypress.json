@@ -13,6 +13,7 @@
   "requestTimeout_comment2": "Example: when adding a new sales order line, the actual 'request' does not happen directly,",
   "requestTimeout_comment3": "but only after some time, when the line was already added by the API",
   "requestTimeout" : 30000,
+  "runMode": 2,
 
   "videoCompression": false,
 
@@ -32,7 +33,14 @@
     "**/__snapshots__/*",
     "**/__image_snapshots__/*"
   ],
-
+  "retries": {
+    "runMode": 2,
+    "openMode": 1
+  },
+  "component": {
+    "componentFolder": "cypress-ct",
+    "testFiles": "**/*spec.{js,jsx,ts,tsx}"
+  },
   "env": {
     "cypress-plugin-snapshots": {
       "autoCleanUp": false,

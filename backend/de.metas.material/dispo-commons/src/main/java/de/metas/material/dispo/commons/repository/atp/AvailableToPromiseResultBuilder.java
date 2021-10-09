@@ -1,19 +1,20 @@
 package de.metas.material.dispo.commons.repository.atp;
 
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
+import de.metas.material.commons.attributes.AttributesKeyMatcher;
+import de.metas.material.commons.attributes.AttributesKeyPatternsUtil;
+import de.metas.material.commons.attributes.clasifiers.BPartnerClassifier;
+import de.metas.material.commons.attributes.clasifiers.ProductClassifier;
+import de.metas.material.commons.attributes.clasifiers.WarehouseClassifier;
+import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.warehouse.WarehouseId;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.warehouse.WarehouseId;
-
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
-
-import de.metas.material.commons.attributes.AttributesKeyMatcher;
-import de.metas.material.commons.attributes.AttributesKeyPatterns;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -51,7 +52,7 @@ final class AvailableToPromiseResultBuilder
 
 		for (final AvailableToPromiseQuery query : multiQuery.getQueries())
 		{
-			final List<AttributesKeyMatcher> storageAttributesKeyMatchers = AttributesKeyPatterns.extractAttributesKeyMatchers(query.getStorageAttributesKeyPatterns());
+			final List<AttributesKeyMatcher> storageAttributesKeyMatchers = AttributesKeyPatternsUtil.extractAttributesKeyMatchers(query.getStorageAttributesKeyPatterns());
 
 			Set<WarehouseId> warehouseIds = query.getWarehouseIds();
 			if (warehouseIds.isEmpty())
@@ -105,24 +106,9 @@ final class AvailableToPromiseResultBuilder
 
 	public void addQtyToAllMatchingGroups(@NonNull final AddToResultGroupRequest request)
 	{
-		boolean addedToAtLeastOneGroup = false;
-		for (final AvailableToPromiseResultBucket bucket : buckets)
-		{
-			if (bucket.addQtyToAllMatchingGroups(request))
-			{
-				addedToAtLeastOneGroup = true;
-			}
-		}
-
-		if (!addedToAtLeastOneGroup)
-		{
-			throw new AdempiereException("No matching group found for AddToResultGroupRequest")
-					.appendParametersToMessage()
-					.setParameter("request", request)
-					.setParameter("buckets", buckets)
-					.setParameter("this", this);
-		}
-
+		// note that we might select more quantities than we actually wanted (bc of the way we match attributes in the query using LIKE)
+		// for that reason, we need to be lenient in case not all quantities can be added to a bucked
+		buckets.forEach(bucket -> bucket.addQtyToAllMatchingGroups(request));
 	}
 
 	public void addToNewGroupIfFeasible(@NonNull final AddToResultGroupRequest request)
@@ -152,8 +138,8 @@ final class AvailableToPromiseResultBuilder
 		final AvailableToPromiseResultBucket bucket = AvailableToPromiseResultBucket.builder()
 				.warehouse(WarehouseClassifier.specificOrAny(request.getWarehouseId()))
 				.bpartner(request.getBpartner())
-				.product(ProductClassifier.specific(request.getProductId()))
-				.storageAttributesKeyMatcher(AttributesKeyPatterns.matching(request.getStorageAttributesKey()))
+				.product(ProductClassifier.specific(request.getProductId().getRepoId()))
+				.storageAttributesKeyMatcher(AttributesKeyPatternsUtil.matching(request.getStorageAttributesKey()))
 				.build();
 
 		buckets.add(bucket);

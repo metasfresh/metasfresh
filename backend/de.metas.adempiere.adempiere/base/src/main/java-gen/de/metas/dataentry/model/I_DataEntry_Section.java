@@ -1,225 +1,215 @@
 package de.metas.dataentry.model;
 
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for DataEntry_Section
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public interface I_DataEntry_Section 
 {
 
-    /** TableName=DataEntry_Section */
-    public static final String Table_Name = "DataEntry_Section";
+	String Table_Name = "DataEntry_Section";
 
-    /** AD_Table_ID=541179 */
-//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=541179 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 3 - Client - Org
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
-
-    /** Load Meta Data */
 
 	/**
-	 * Get Mandant.
-	 * Mandant für diese Installation.
+	 * Get Client.
+	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Client_ID();
+	int getAD_Client_ID();
 
-	public org.compiere.model.I_AD_Client getAD_Client();
-
-    /** Column definition for AD_Client_ID */
-    public static final org.adempiere.model.ModelColumn<I_DataEntry_Section, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_DataEntry_Section, org.compiere.model.I_AD_Client>(I_DataEntry_Section.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
-    /** Column name AD_Client_ID */
-    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Set Organisation.
+	 * Organisational entity within client
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Org_ID (int AD_Org_ID);
+	void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Get Organisation.
+	 * Organisational entity within client
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Org_ID();
+	int getAD_Org_ID();
 
-	public org.compiere.model.I_AD_Org getAD_Org();
-
-	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
-
-    /** Column definition for AD_Org_ID */
-    public static final org.adempiere.model.ModelColumn<I_DataEntry_Section, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_DataEntry_Section, org.compiere.model.I_AD_Org>(I_DataEntry_Section.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Get Erstellt.
-	 * Datum, an dem dieser Eintrag erstellt wurde
+	 * Set Available in API.
+	 * Specifies whether this field is available to external applications via metasfresh API.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setAvailableInAPI (boolean AvailableInAPI);
+
+	/**
+	 * Get Available in API.
+	 * Specifies whether this field is available to external applications via metasfresh API.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isAvailableInAPI();
+
+	ModelColumn<I_DataEntry_Section, Object> COLUMN_AvailableInAPI = new ModelColumn<>(I_DataEntry_Section.class, "AvailableInAPI", null);
+	String COLUMNNAME_AvailableInAPI = "AvailableInAPI";
+
+	/**
+	 * Get Created.
+	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getCreated();
+	java.sql.Timestamp getCreated();
 
-    /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_DataEntry_Section, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_DataEntry_Section, Object>(I_DataEntry_Section.class, "Created", null);
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
+	ModelColumn<I_DataEntry_Section, Object> COLUMN_Created = new ModelColumn<>(I_DataEntry_Section.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Erstellt durch.
-	 * Nutzer, der diesen Eintrag erstellt hat
+	 * Get Created By.
+	 * User who created this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getCreatedBy();
+	int getCreatedBy();
 
-    /** Column definition for CreatedBy */
-    public static final org.adempiere.model.ModelColumn<I_DataEntry_Section, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_DataEntry_Section, org.compiere.model.I_AD_User>(I_DataEntry_Section.class, "CreatedBy", org.compiere.model.I_AD_User.class);
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Sektion.
+	 * Set Section.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setDataEntry_Section_ID (int DataEntry_Section_ID);
+	void setDataEntry_Section_ID (int DataEntry_Section_ID);
 
 	/**
-	 * Get Sektion.
+	 * Get Section.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getDataEntry_Section_ID();
+	int getDataEntry_Section_ID();
 
-    /** Column definition for DataEntry_Section_ID */
-    public static final org.adempiere.model.ModelColumn<I_DataEntry_Section, Object> COLUMN_DataEntry_Section_ID = new org.adempiere.model.ModelColumn<I_DataEntry_Section, Object>(I_DataEntry_Section.class, "DataEntry_Section_ID", null);
-    /** Column name DataEntry_Section_ID */
-    public static final String COLUMNNAME_DataEntry_Section_ID = "DataEntry_Section_ID";
+	ModelColumn<I_DataEntry_Section, Object> COLUMN_DataEntry_Section_ID = new ModelColumn<>(I_DataEntry_Section.class, "DataEntry_Section_ID", null);
+	String COLUMNNAME_DataEntry_Section_ID = "DataEntry_Section_ID";
 
 	/**
-	 * Set Unterregister.
+	 * Set Subtab.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setDataEntry_SubTab_ID (int DataEntry_SubTab_ID);
+	void setDataEntry_SubTab_ID (int DataEntry_SubTab_ID);
 
 	/**
-	 * Get Unterregister.
+	 * Get Subtab.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getDataEntry_SubTab_ID();
+	int getDataEntry_SubTab_ID();
 
-	public de.metas.dataentry.model.I_DataEntry_SubTab getDataEntry_SubTab();
+	de.metas.dataentry.model.I_DataEntry_SubTab getDataEntry_SubTab();
 
-	public void setDataEntry_SubTab(de.metas.dataentry.model.I_DataEntry_SubTab DataEntry_SubTab);
+	void setDataEntry_SubTab(de.metas.dataentry.model.I_DataEntry_SubTab DataEntry_SubTab);
 
-    /** Column definition for DataEntry_SubTab_ID */
-    public static final org.adempiere.model.ModelColumn<I_DataEntry_Section, de.metas.dataentry.model.I_DataEntry_SubTab> COLUMN_DataEntry_SubTab_ID = new org.adempiere.model.ModelColumn<I_DataEntry_Section, de.metas.dataentry.model.I_DataEntry_SubTab>(I_DataEntry_Section.class, "DataEntry_SubTab_ID", de.metas.dataentry.model.I_DataEntry_SubTab.class);
-    /** Column name DataEntry_SubTab_ID */
-    public static final String COLUMNNAME_DataEntry_SubTab_ID = "DataEntry_SubTab_ID";
+	ModelColumn<I_DataEntry_Section, de.metas.dataentry.model.I_DataEntry_SubTab> COLUMN_DataEntry_SubTab_ID = new ModelColumn<>(I_DataEntry_Section.class, "DataEntry_SubTab_ID", de.metas.dataentry.model.I_DataEntry_SubTab.class);
+	String COLUMNNAME_DataEntry_SubTab_ID = "DataEntry_SubTab_ID";
 
 	/**
-	 * Set Beschreibung.
+	 * Set Description.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDescription (java.lang.String Description);
+	void setDescription (@Nullable java.lang.String Description);
 
 	/**
-	 * Get Beschreibung.
+	 * Get Description.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getDescription();
+	@Nullable java.lang.String getDescription();
 
-    /** Column definition for Description */
-    public static final org.adempiere.model.ModelColumn<I_DataEntry_Section, Object> COLUMN_Description = new org.adempiere.model.ModelColumn<I_DataEntry_Section, Object>(I_DataEntry_Section.class, "Description", null);
-    /** Column name Description */
-    public static final String COLUMNNAME_Description = "Description";
+	ModelColumn<I_DataEntry_Section, Object> COLUMN_Description = new ModelColumn<>(I_DataEntry_Section.class, "Description", null);
+	String COLUMNNAME_Description = "Description";
 
 	/**
-	 * Set Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Set Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsActive (boolean IsActive);
+	void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Get Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isActive();
+	boolean isActive();
 
-    /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_DataEntry_Section, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_DataEntry_Section, Object>(I_DataEntry_Section.class, "IsActive", null);
-    /** Column name IsActive */
-    public static final String COLUMNNAME_IsActive = "IsActive";
+	ModelColumn<I_DataEntry_Section, Object> COLUMN_IsActive = new ModelColumn<>(I_DataEntry_Section.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Initial geschlossen.
-	 * Legt fest, ob die Feldgruppe initial offen (sichtbar) oder geschlossen ist
+	 * Set Initially closed.
+	 * Specifies whether the field group is initially open (field visible) or closed
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsInitiallyClosed (boolean IsInitiallyClosed);
+	void setIsInitiallyClosed (boolean IsInitiallyClosed);
 
 	/**
-	 * Get Initial geschlossen.
-	 * Legt fest, ob die Feldgruppe initial offen (sichtbar) oder geschlossen ist
+	 * Get Initially closed.
+	 * Specifies whether the field group is initially open (field visible) or closed
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isInitiallyClosed();
+	boolean isInitiallyClosed();
 
-    /** Column definition for IsInitiallyClosed */
-    public static final org.adempiere.model.ModelColumn<I_DataEntry_Section, Object> COLUMN_IsInitiallyClosed = new org.adempiere.model.ModelColumn<I_DataEntry_Section, Object>(I_DataEntry_Section.class, "IsInitiallyClosed", null);
-    /** Column name IsInitiallyClosed */
-    public static final String COLUMNNAME_IsInitiallyClosed = "IsInitiallyClosed";
+	ModelColumn<I_DataEntry_Section, Object> COLUMN_IsInitiallyClosed = new ModelColumn<>(I_DataEntry_Section.class, "IsInitiallyClosed", null);
+	String COLUMNNAME_IsInitiallyClosed = "IsInitiallyClosed";
 
 	/**
 	 * Set Name.
@@ -228,7 +218,7 @@ public interface I_DataEntry_Section
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setName (java.lang.String Name);
+	void setName (@Nullable java.lang.String Name);
 
 	/**
 	 * Get Name.
@@ -237,12 +227,10 @@ public interface I_DataEntry_Section
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getName();
+	@Nullable java.lang.String getName();
 
-    /** Column definition for Name */
-    public static final org.adempiere.model.ModelColumn<I_DataEntry_Section, Object> COLUMN_Name = new org.adempiere.model.ModelColumn<I_DataEntry_Section, Object>(I_DataEntry_Section.class, "Name", null);
-    /** Column name Name */
-    public static final String COLUMNNAME_Name = "Name";
+	ModelColumn<I_DataEntry_Section, Object> COLUMN_Name = new ModelColumn<>(I_DataEntry_Section.class, "Name", null);
+	String COLUMNNAME_Name = "Name";
 
 	/**
 	 * Set Sektionsname.
@@ -251,7 +239,7 @@ public interface I_DataEntry_Section
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setSectionName (java.lang.String SectionName);
+	void setSectionName (@Nullable java.lang.String SectionName);
 
 	/**
 	 * Get Sektionsname.
@@ -260,67 +248,58 @@ public interface I_DataEntry_Section
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getSectionName();
+	@Nullable java.lang.String getSectionName();
 
-    /** Column definition for SectionName */
-    public static final org.adempiere.model.ModelColumn<I_DataEntry_Section, Object> COLUMN_SectionName = new org.adempiere.model.ModelColumn<I_DataEntry_Section, Object>(I_DataEntry_Section.class, "SectionName", null);
-    /** Column name SectionName */
-    public static final String COLUMNNAME_SectionName = "SectionName";
+	ModelColumn<I_DataEntry_Section, Object> COLUMN_SectionName = new ModelColumn<>(I_DataEntry_Section.class, "SectionName", null);
+	String COLUMNNAME_SectionName = "SectionName";
 
 	/**
-	 * Set Reihenfolge.
-	 * Zur Bestimmung der Reihenfolge der Einträge;
- die kleinste Zahl kommt zuerst
+	 * Set SeqNo.
+	 * Method of ordering records;
+ lowest number comes first
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setSeqNo (int SeqNo);
+	void setSeqNo (int SeqNo);
 
 	/**
-	 * Get Reihenfolge.
-	 * Zur Bestimmung der Reihenfolge der Einträge;
- die kleinste Zahl kommt zuerst
+	 * Get SeqNo.
+	 * Method of ordering records;
+ lowest number comes first
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getSeqNo();
+	int getSeqNo();
 
-    /** Column definition for SeqNo */
-    public static final org.adempiere.model.ModelColumn<I_DataEntry_Section, Object> COLUMN_SeqNo = new org.adempiere.model.ModelColumn<I_DataEntry_Section, Object>(I_DataEntry_Section.class, "SeqNo", null);
-    /** Column name SeqNo */
-    public static final String COLUMNNAME_SeqNo = "SeqNo";
+	ModelColumn<I_DataEntry_Section, Object> COLUMN_SeqNo = new ModelColumn<>(I_DataEntry_Section.class, "SeqNo", null);
+	String COLUMNNAME_SeqNo = "SeqNo";
 
 	/**
-	 * Get Aktualisiert.
-	 * Datum, an dem dieser Eintrag aktualisiert wurde
+	 * Get Updated.
+	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getUpdated();
+	java.sql.Timestamp getUpdated();
 
-    /** Column definition for Updated */
-    public static final org.adempiere.model.ModelColumn<I_DataEntry_Section, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_DataEntry_Section, Object>(I_DataEntry_Section.class, "Updated", null);
-    /** Column name Updated */
-    public static final String COLUMNNAME_Updated = "Updated";
+	ModelColumn<I_DataEntry_Section, Object> COLUMN_Updated = new ModelColumn<>(I_DataEntry_Section.class, "Updated", null);
+	String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Aktualisiert durch.
-	 * Nutzer, der diesen Eintrag aktualisiert hat
+	 * Get Updated By.
+	 * User who updated this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getUpdatedBy();
+	int getUpdatedBy();
 
-    /** Column definition for UpdatedBy */
-    public static final org.adempiere.model.ModelColumn<I_DataEntry_Section, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_DataEntry_Section, org.compiere.model.I_AD_User>(I_DataEntry_Section.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
-    /** Column name UpdatedBy */
-    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 }

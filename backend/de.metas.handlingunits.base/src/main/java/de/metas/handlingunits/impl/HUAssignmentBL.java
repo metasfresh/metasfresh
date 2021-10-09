@@ -22,20 +22,8 @@ package de.metas.handlingunits.impl;
  * #L%
  */
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.IReference;
-import org.adempiere.util.lang.ImmutableReference;
-
+import com.google.common.collect.ImmutableSetMultimap;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUAssignmentBuilder;
 import de.metas.handlingunits.IHUAssignmentDAO;
@@ -45,12 +33,29 @@ import de.metas.handlingunits.model.I_M_HU_Assignment;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IReference;
+import org.adempiere.util.lang.ImmutableReference;
+import org.adempiere.util.lang.impl.TableRecordReference;
+
+import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 
 public class HUAssignmentBL implements IHUAssignmentBL
 {
+	private final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
 	private final CompositeHUAssignmentListener listeners = new CompositeHUAssignmentListener();
 
-	/** Marker used to specify that we don't want to change the IsTransferPackingMaterials flag */
+	/**
+	 * Marker used to specify that we don't want to change the IsTransferPackingMaterials flag
+	 */
 	private static final Boolean IsTransferPackingMaterials_DoNotChange = null;
 
 	public HUAssignmentBL()
@@ -157,7 +162,7 @@ public class HUAssignmentBL implements IHUAssignmentBL
 		return builder;
 	}
 
-	private void updateHUAssignment(final IHUAssignmentBuilder builder, final I_M_HU hu, final Object model, final Boolean isTransferPackingMaterials, final String trxName)
+	private void updateHUAssignment(final IHUAssignmentBuilder builder, final I_M_HU hu, final Object model, @Nullable final Boolean isTransferPackingMaterials, final String trxName)
 	{
 		//
 		// Make sure HU is assignable to given model
@@ -207,13 +212,8 @@ public class HUAssignmentBL implements IHUAssignmentBL
 	}
 
 	/**
-	 * @param builder
-	 * @param model
-	 * @param topLevelHU
-	 * @param isTransferPackingMaterials
-	 * @return assignment which was built / saved
 	 */
-	private I_M_HU_Assignment updateHUAssignmentAndSave(final IHUAssignmentBuilder builder, final Object model, final I_M_HU topLevelHU, final Boolean isTransferPackingMaterials)
+	private void updateHUAssignmentAndSave(final IHUAssignmentBuilder builder, final Object model, final I_M_HU topLevelHU, @Nullable final Boolean isTransferPackingMaterials)
 	{
 		builder.setModel(model);
 		builder.setIsActive(true);
@@ -224,7 +224,7 @@ public class HUAssignmentBL implements IHUAssignmentBL
 
 		builder.setTopLevelHU(topLevelHU);
 
-		return builder.build();
+		builder.build();
 	}
 
 	@Override
@@ -249,12 +249,18 @@ public class HUAssignmentBL implements IHUAssignmentBL
 		setAssignedHandlingUnits(model, handlingUnits, deleteOld, ITrx.TRXNAME_ThreadInherited);
 	}
 
+	@Override
+	public void addAssignedHandlingUnits(final Object model, final Collection<I_M_HU> handlingUnits)
+	{
+		final boolean deleteOld = false;
+		setAssignedHandlingUnits(model, handlingUnits, deleteOld, ITrx.TRXNAME_ThreadInherited);
+	}
+
 	/**
-	 *
-	 * @param model
+	 * @param model         model
 	 * @param handlingUnits handling units to assign
-	 * @param deleteOld if true, assigned HUs which are not found in <code>handlingUnits</code> will be deleted
-	 * @param trxName transaction name
+	 * @param deleteOld     if true, assigned HUs which are not found in <code>handlingUnits</code> will be deleted
+	 * @param trxName       transaction name
 	 */
 	private void setAssignedHandlingUnits(
 			@NonNull final Object model,
@@ -279,7 +285,6 @@ public class HUAssignmentBL implements IHUAssignmentBL
 		// Iterate current assignments and:
 		// * delete those which are not assignments anymore
 		// * update those which are still assignments
-		final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
 		final List<I_M_HU_Assignment> assignmentsExisting = huAssignmentDAO.retrieveHUAssignmentsForModel(ctx, adTableId, recordId, trxName);
 		for (final I_M_HU_Assignment assignment : assignmentsExisting)
 		{
@@ -288,17 +293,18 @@ public class HUAssignmentBL implements IHUAssignmentBL
 			// NOTE: we are deleting the HU from map because at the end we want to have in that map only those HUs which we still need to assign
 			final I_M_HU hu = huId2hu.remove(huId);
 
+			// Case: existing assignment, keep it but update it (just in case)
 			if (hu != null)
 			{
-				// existing assignment, keep it but update it (just in case)
 				final IHUAssignmentBuilder builder = createHUAssignmentBuilder();
 				builder.setAssignmentRecordToUpdate(assignment);
 
 				updateHUAssignment(builder, hu, model, IsTransferPackingMaterials_DoNotChange, trxName);
 			}
-			else
+			// Case: not an assignment anymore and deleteOld=true
+			// => delete the assignment
+			else if (deleteOld)
 			{
-				// not an assignment anymore, delete it
 				InterfaceWrapperHelper.delete(assignment);
 
 				// delete included assignments too
@@ -308,6 +314,11 @@ public class HUAssignmentBL implements IHUAssignmentBL
 					InterfaceWrapperHelper.delete(includedHUAssignment);
 				}
 			}
+			// Case: not an assignment anymore and deleteOld=false
+			// => do nothing, preserve the assignment
+			// else
+			// {
+			// }
 		}
 
 		//
@@ -327,14 +338,14 @@ public class HUAssignmentBL implements IHUAssignmentBL
 	}
 
 	@Override
-	public void unassignHUs(final Object model, final Collection<I_M_HU> husToUnassign, final String trxName)
+	public void unassignHUs(final Object model, final Collection<HuId> husToUnassign, final String trxName)
 	{
 		final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
 		huAssignmentDAO.deleteHUAssignments(model, husToUnassign, trxName);
 	}
 
 	@Override
-	public void unassignHUs(final Object model, final Collection<I_M_HU> husToUnassign)
+	public void unassignHUs(final Object model, final Collection<HuId> husToUnassign)
 	{
 		Check.assumeNotNull(model, "model not null");
 		final String trxName = InterfaceWrapperHelper.getTrxName(model);
@@ -355,7 +366,7 @@ public class HUAssignmentBL implements IHUAssignmentBL
 		final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
 
 		final List<I_M_HU_Assignment> //
-		huAssignmentsForSource = huAssignmentDAO.retrieveTopLevelHUAssignmentsForModel(sourceModel);
+				huAssignmentsForSource = huAssignmentDAO.retrieveTopLevelHUAssignmentsForModel(sourceModel);
 
 		for (final I_M_HU_Assignment huAssignment : huAssignmentsForSource)
 		{
@@ -364,5 +375,11 @@ public class HUAssignmentBL implements IHUAssignmentBL
 					.setModel(targetModel)
 					.build();
 		}
+	}
+
+	@Override
+	public ImmutableSetMultimap<TableRecordReference, HuId> getHUsByRecordRefs(@NonNull final Set<TableRecordReference> recordRefs)
+	{
+		return huAssignmentDAO.retrieveHUsByRecordRefs(recordRefs);
 	}
 }

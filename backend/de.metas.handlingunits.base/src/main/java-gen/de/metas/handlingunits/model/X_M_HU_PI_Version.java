@@ -1,63 +1,49 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package de.metas.handlingunits.model;
 
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for M_HU_PI_Version
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public class X_M_HU_PI_Version extends org.compiere.model.PO implements I_M_HU_PI_Version, org.compiere.model.I_Persistent 
 {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = -277253140L;
+	private static final long serialVersionUID = 960875732L;
 
     /** Standard Constructor */
-    public X_M_HU_PI_Version (Properties ctx, int M_HU_PI_Version_ID, String trxName)
+    public X_M_HU_PI_Version (final Properties ctx, final int M_HU_PI_Version_ID, @Nullable final String trxName)
     {
       super (ctx, M_HU_PI_Version_ID, trxName);
-      /** if (M_HU_PI_Version_ID == 0)
-        {
-			setIsCurrent (false); // N
-			setM_HU_PI_ID (0);
-			setM_HU_PI_Version_ID (0);
-			setName (null);
-        } */
     }
 
     /** Load Constructor */
-    public X_M_HU_PI_Version (Properties ctx, ResultSet rs, String trxName)
+    public X_M_HU_PI_Version (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
 
 
-    /** Load Meta Data */
-    @Override
-    protected org.compiere.model.POInfo initPO (Properties ctx)
-    {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
-      return poi;
-    }
-
-	/** Set Beschreibung.
-		@param Description Beschreibung	  */
+	/** Load Meta Data */
 	@Override
-	public void setDescription (java.lang.String Description)
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
+	{
+		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public void setDescription (final @Nullable java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
 
-	/** Get Beschreibung.
-		@return Beschreibung	  */
 	@Override
-	public java.lang.String getDescription () 
+	public java.lang.String getDescription() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Description);
+		return get_ValueAsString(COLUMNNAME_Description);
 	}
 
 	/** 
@@ -71,44 +57,28 @@ public class X_M_HU_PI_Version extends org.compiere.model.PO implements I_M_HU_P
 	public static final String HU_UNITTYPE_LoadLogistiqueUnit = "LU";
 	/** VirtualPI = V */
 	public static final String HU_UNITTYPE_VirtualPI = "V";
-	/** Set Handling Unit Typ.
-		@param HU_UnitType Handling Unit Typ	  */
 	@Override
-	public void setHU_UnitType (java.lang.String HU_UnitType)
+	public void setHU_UnitType (final @Nullable java.lang.String HU_UnitType)
 	{
-
 		set_Value (COLUMNNAME_HU_UnitType, HU_UnitType);
 	}
 
-	/** Get Handling Unit Typ.
-		@return Handling Unit Typ	  */
 	@Override
-	public java.lang.String getHU_UnitType () 
+	public java.lang.String getHU_UnitType() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_HU_UnitType);
+		return get_ValueAsString(COLUMNNAME_HU_UnitType);
 	}
 
-	/** Set Aktuell gültige Version.
-		@param IsCurrent Aktuell gültige Version	  */
 	@Override
-	public void setIsCurrent (boolean IsCurrent)
+	public void setIsCurrent (final boolean IsCurrent)
 	{
-		set_Value (COLUMNNAME_IsCurrent, Boolean.valueOf(IsCurrent));
+		set_Value (COLUMNNAME_IsCurrent, IsCurrent);
 	}
 
-	/** Get Aktuell gültige Version.
-		@return Aktuell gültige Version	  */
 	@Override
-	public boolean isCurrent () 
+	public boolean isCurrent() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsCurrent);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsCurrent);
 	}
 
 	@Override
@@ -118,31 +88,24 @@ public class X_M_HU_PI_Version extends org.compiere.model.PO implements I_M_HU_P
 	}
 
 	@Override
-	public void setM_HU_PackagingCode(de.metas.handlingunits.model.I_M_HU_PackagingCode M_HU_PackagingCode)
+	public void setM_HU_PackagingCode(final de.metas.handlingunits.model.I_M_HU_PackagingCode M_HU_PackagingCode)
 	{
 		set_ValueFromPO(COLUMNNAME_M_HU_PackagingCode_ID, de.metas.handlingunits.model.I_M_HU_PackagingCode.class, M_HU_PackagingCode);
 	}
 
-	/** Set Verpackungscode.
-		@param M_HU_PackagingCode_ID Verpackungscode	  */
 	@Override
-	public void setM_HU_PackagingCode_ID (int M_HU_PackagingCode_ID)
+	public void setM_HU_PackagingCode_ID (final int M_HU_PackagingCode_ID)
 	{
 		if (M_HU_PackagingCode_ID < 1) 
 			set_Value (COLUMNNAME_M_HU_PackagingCode_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_HU_PackagingCode_ID, Integer.valueOf(M_HU_PackagingCode_ID));
+			set_Value (COLUMNNAME_M_HU_PackagingCode_ID, M_HU_PackagingCode_ID);
 	}
 
-	/** Get Verpackungscode.
-		@return Verpackungscode	  */
 	@Override
-	public int getM_HU_PackagingCode_ID () 
+	public int getM_HU_PackagingCode_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_HU_PackagingCode_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_HU_PackagingCode_ID);
 	}
 
 	@Override
@@ -152,68 +115,50 @@ public class X_M_HU_PI_Version extends org.compiere.model.PO implements I_M_HU_P
 	}
 
 	@Override
-	public void setM_HU_PI(de.metas.handlingunits.model.I_M_HU_PI M_HU_PI)
+	public void setM_HU_PI(final de.metas.handlingunits.model.I_M_HU_PI M_HU_PI)
 	{
 		set_ValueFromPO(COLUMNNAME_M_HU_PI_ID, de.metas.handlingunits.model.I_M_HU_PI.class, M_HU_PI);
 	}
 
-	/** Set Packvorschrift.
-		@param M_HU_PI_ID Packvorschrift	  */
 	@Override
-	public void setM_HU_PI_ID (int M_HU_PI_ID)
+	public void setM_HU_PI_ID (final int M_HU_PI_ID)
 	{
 		if (M_HU_PI_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_M_HU_PI_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_M_HU_PI_ID, Integer.valueOf(M_HU_PI_ID));
+			set_ValueNoCheck (COLUMNNAME_M_HU_PI_ID, M_HU_PI_ID);
 	}
 
-	/** Get Packvorschrift.
-		@return Packvorschrift	  */
 	@Override
-	public int getM_HU_PI_ID () 
+	public int getM_HU_PI_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_HU_PI_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_HU_PI_ID);
 	}
 
-	/** Set Packvorschrift Version.
-		@param M_HU_PI_Version_ID Packvorschrift Version	  */
 	@Override
-	public void setM_HU_PI_Version_ID (int M_HU_PI_Version_ID)
+	public void setM_HU_PI_Version_ID (final int M_HU_PI_Version_ID)
 	{
 		if (M_HU_PI_Version_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_M_HU_PI_Version_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_M_HU_PI_Version_ID, Integer.valueOf(M_HU_PI_Version_ID));
+			set_ValueNoCheck (COLUMNNAME_M_HU_PI_Version_ID, M_HU_PI_Version_ID);
 	}
 
-	/** Get Packvorschrift Version.
-		@return Packvorschrift Version	  */
 	@Override
-	public int getM_HU_PI_Version_ID () 
+	public int getM_HU_PI_Version_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_HU_PI_Version_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_HU_PI_Version_ID);
 	}
 
-	/** Set Name.
-		@param Name Name	  */
 	@Override
-	public void setName (java.lang.String Name)
+	public void setName (final java.lang.String Name)
 	{
 		set_Value (COLUMNNAME_Name, Name);
 	}
 
-	/** Get Name.
-		@return Name	  */
 	@Override
-	public java.lang.String getName () 
+	public java.lang.String getName() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Name);
+		return get_ValueAsString(COLUMNNAME_Name);
 	}
 }

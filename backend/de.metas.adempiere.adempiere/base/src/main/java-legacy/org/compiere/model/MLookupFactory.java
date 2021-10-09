@@ -35,7 +35,7 @@ import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.service.ILookupDAO;
 import org.adempiere.ad.service.ILookupDAO.IColumnInfo;
 import org.adempiere.ad.service.ILookupDAO.ILookupDisplayInfo;
-import org.adempiere.ad.service.ILookupDAO.ITableRefInfo;
+import org.adempiere.ad.service.TableRefInfo;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.validationRule.IValidationRuleFactory;
 import org.adempiere.exceptions.AdempiereException;
@@ -205,9 +205,7 @@ public class MLookupFactory
 	 *		Key, Value, Name, IsActive	(where either key or value is null)
 	 * </pre>
 	 *
-	 * @param ctx context for access
 	 * @param WindowNo window no
-	 * @param ColumnName key column name
 	 * @param AD_Reference_ID display type
 	 * @param AD_Reference_Value_ID AD_Reference (List, Table)
 	 * @param IsParent parent (prevents query to directly access value)
@@ -267,7 +265,7 @@ public class MLookupFactory
 		// Account
 		else if (AD_Reference_ID == DisplayType.Account)
 		{
-			final ITableRefInfo accountTableRefInfo = Services.get(ILookupDAO.class).retrieveAccountTableRefInfo();
+			final TableRefInfo accountTableRefInfo = Services.get(ILookupDAO.class).retrieveAccountTableRefInfo();
 			info = getLookupInfo(WindowNo, accountTableRefInfo);
 		}
 		else if (AD_Reference_ID == DisplayType.Location)
@@ -462,7 +460,7 @@ public class MLookupFactory
 		return sql;
 	}    // getLookup_ListEmbed
 
-	private static ArrayKey createCacheKey(final ITableRefInfo tableRef)
+	private static ArrayKey createCacheKey(final TableRefInfo tableRef)
 	{
 		return new ArrayKey(tableRef);
 	}
@@ -470,8 +468,6 @@ public class MLookupFactory
 	/***************************************************************************
 	 * Get Lookup SQL for Table Lookup
 	 *
-	 * @param ctx context for access and dynamic access
-	 * @param languageInfo report language
 	 * @param WindowNo window no
 	 * @param AD_Reference_Value_ID reference value
 	 * @return SELECT Key, NULL, Name, IsActive FROM Table - if KeyColumn end with _ID
@@ -480,7 +476,7 @@ public class MLookupFactory
 	// NOTE: never make this method public because in case the lookup is cloned from a cached version we need to set the context and other relevant fields anyway
 	static private MLookupInfo getLookup_Table(final int WindowNo, final int AD_Reference_Value_ID)
 	{
-		final ITableRefInfo tableRefInfo = Services.get(ILookupDAO.class).retrieveTableRefInfo(AD_Reference_Value_ID);
+		final TableRefInfo tableRefInfo = Services.get(ILookupDAO.class).retrieveTableRefInfo(AD_Reference_Value_ID);
 		if (tableRefInfo == null)
 		{
 			return null;
@@ -513,19 +509,17 @@ public class MLookupFactory
 	/**************************************************************************
 	 * Get Lookup SQL for direct Table Lookup
 	 *
-	 * @param ctx context for access
-	 * @param ColumnName column name
 	 * @return SELECT Key, NULL, Name, IsActive from Table (fully qualified)
 	 */
 	// NOTE: never make this method public because in case the lookup is cloned from a cached version we need to set the context and other relevant fields anyway
 	static private MLookupInfo getLookup_TableDir(final int WindowNo, final String ColumnName)
 	{
-		final ITableRefInfo tableRef = Services.get(ILookupDAO.class).retrieveTableDirectRefInfo(ColumnName);
+		final TableRefInfo tableRef = Services.get(ILookupDAO.class).retrieveTableDirectRefInfo(ColumnName);
 		return getLookupInfo(WindowNo, tableRef);
 	}
 
 	// NOTE: never make this method public because in case the lookup is cloned from a cached version we need to set the context and other relevant fields anyway
-	private static MLookupInfo getLookupInfo(final int windowNo, @NonNull final ITableRefInfo tableRefInfo)
+	private static MLookupInfo getLookupInfo(final int windowNo, @NonNull final TableRefInfo tableRefInfo)
 	{
 		final ArrayKey cacheKey = createCacheKey(tableRefInfo);
 		final MLookupInfo lookupInfo = s_cacheRefTable.getOrLoad(cacheKey, () -> buildLookupInfo(windowNo, tableRefInfo));
@@ -533,7 +527,7 @@ public class MLookupFactory
 	}
 
 	@Nullable
-	private static MLookupInfo buildLookupInfo(final int windowNo, @NonNull final ITableRefInfo tableRefInfo)
+	private static MLookupInfo buildLookupInfo(final int windowNo, @NonNull final TableRefInfo tableRefInfo)
 	{
 
 		final ILookupDisplayInfo lookupDisplayInfo = Services.get(ILookupDAO.class).retrieveLookupDisplayInfo(tableRefInfo);
@@ -935,7 +929,7 @@ public class MLookupFactory
 	 * @param BaseColumn   base column
 	 * @return SELECT Column FROM TableName WHERE BaseTable.BaseColumn=TableName.ColumnName
 	 */
-	static public String getLookup_TableDirEmbed(final LanguageInfo languageInfo, final String ColumnName, final String BaseTable, final String BaseColumn)
+	static public String getLookup_TableDirEmbed(final LanguageInfo languageInfo, final String ColumnName, @Nullable final String BaseTable, final String BaseColumn)
 	{
 		final int windowNo = Env.WINDOW_None; // NOTE: for TableDir WindowNo, is not important
 		final MLookupInfo lookupInfo = getLookup_TableDir(windowNo, ColumnName);

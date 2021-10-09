@@ -1,0 +1,279 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ #%L
+  ~ de-metas-camel-edi
+  ~ %%
+  ~ Copyright (C) 2021 metas GmbH
+  ~ %%
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as
+  ~ published by the Free Software Foundation, either version 2 of the
+  ~ License, or (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+  ~ GNU General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU General Public
+  ~ License along with this program. If not, see
+  ~ <http://www.gnu.org/licenses/gpl-2.0.html>.
+  ~ #L%
+  -->
+
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:header="http://erpel.at/schemas/1p0/messaging/header" targetNamespace="http://erpel.at/schemas/1p0/messaging/header" elementFormDefault="qualified" attributeFormDefault="qualified">
+	<xs:annotation>
+		<xs:documentation>
+			ERPEL business document header version: 1p0
+			last update: 2017-08-25
+			last update by: pl
+			documentation: https://docs.ecosio.com (ask contact (at) ecosio.com for access credentials)
+		</xs:documentation>
+	</xs:annotation>
+	<!-- ROOT Element -->
+	<xs:element name="ErpelBusinessDocumentHeader" type="header:ErpelBusinessDocumentHeaderType">
+		<xs:annotation>
+			<xs:documentation>Represents the header part of the message, containing all routing- and meta-information.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<!-- Element declarations -->
+	<xs:element name="CertificateCheck" type="xs:int"/>
+	<xs:element name="InterchangeHeader" type="header:InterchangeHeaderType"/>
+	<xs:element name="MessageReceivedAt" type="xs:dateTime"/>
+	<xs:element name="Receiver" type="xs:string"/>
+	<xs:element name="Sender" type="xs:string"/>
+	<xs:element name="SignatureCheck" type="xs:int"/>
+	<xs:element name="SignatureManifestCheck" type="xs:int"/>
+	<xs:element name="SignatureVerificationResult" type="header:SignatureVerificationResultType"/>
+	<xs:element name="SignatureVerification" type="header:SignatureVerificationType"/>
+	<xs:element name="SignatureVerificationOmittedErrorCode" type="xs:string"/>
+	<!-- Attribute declarations -->
+	<xs:attribute name="ID" type="xs:string"/>
+	<xs:attribute name="References" type="xs:string"/>
+	<xs:attribute name="SignatureVerified" type="xs:boolean"/>
+	<xs:attribute name="TestIndicator" type="xs:boolean"/>
+	<!-- Simple types -->
+	<!-- Complex types -->
+	<xs:complexType name="DateTimeType" mixed="false">
+		<xs:sequence>
+			<xs:element name="date" type="xs:string">
+				<xs:annotation>
+					<xs:documentation>Represents the date when the message was sent.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="time" type="xs:string">
+				<xs:annotation>
+					<xs:documentation>Represents the time when the message was sent.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ErpelBusinessDocumentHeaderType">
+		<xs:sequence>
+			<xs:element ref="header:Sender" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Deprecated. Please use InterchangeHeader/Sender/id. </xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="header:Receiver" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Deprecated. Please use InterchangeHeader/Receiver/id. </xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="header:MessageReceivedAt" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Contains the date and time when the message was received at a specific location.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="header:SignatureVerification" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Contains details about the digital signature, which may be applied to an ERPEL message. Deprecated.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="header:InterchangeHeader">
+				<xs:annotation>
+					<xs:documentation>Contains all routing information. May include EDIFACT-specific data.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+		<xs:attribute ref="header:ID" use="optional">
+			<xs:annotation>
+				<xs:documentation>The ID represents the unique number of the message.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute ref="header:References" use="optional">
+			<xs:annotation>
+				<xs:documentation>This segment contains references related to the message.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute ref="header:TestIndicator" use="optional">
+			<xs:annotation>
+				<xs:documentation>Flag indicating whether the message is a test message or not.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+	</xs:complexType>
+	<xs:complexType name="InterchangeHeaderType">
+		<xs:sequence>
+			<xs:element name="SyntaxIdentifier" type="header:SyntaxIdentifierType" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Coded identification of the agency controlling the syntax, and of the character repertoire used in an EDIFACT interchange.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Sender" type="header:SenderType" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Identification of the sender of the interchange.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Recipient" type="header:RecipientType" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Identification of the recipient of the interchange.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="DateTime" type="header:DateTimeType" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Date and time of preparation of the interchange.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="ControlRef" type="xs:string" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Unique reference assigned by the sender to an interchange.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="RecipientRef" type="header:RecipientRefType" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>A reference as agreed between the communicating partners.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="ApplicationRef" type="xs:string" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Identification of the application area assigned by the sender, to which the messages in the interchange relate e.g. the message type, if all the messages in the interchange are of the same type.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="ProcessingPriorityCode" type="xs:string" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Code determined by the sender requesting processing priority for the interchange.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="AckRequest" type="xs:string" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Code requesting acknowledgement for the interchange.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="AgreementId" type="xs:string" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Identification by name or code of the type of agreement under which the interchange takes place.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="TestIndicator" type="xs:string" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>This flag is used to indicate that the message serves for test purposes.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="RecipientRefType">
+		<xs:sequence>
+			<xs:element name="ref" type="xs:string" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Contains the reference from the recipient.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="refQualifier" type="xs:string" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Quallifier related to the reference from the recipient.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="RecipientType" mixed="false">
+		<xs:sequence>
+			<xs:element name="id" type="xs:string" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>The ID of the receiver. For example a GLN or another mutually agreed ID.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="codeQualifier" type="xs:string" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Contains the code to specify what kind of ID is used,</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="internalId" type="xs:string" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>The internal ID of the receiver.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="internalSubId" type="xs:string" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>The internal sub ID of the receiver.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="SignatureVerificationType">
+		<xs:sequence>
+			<xs:element ref="header:SignatureVerificationResult" minOccurs="0"/>
+			<xs:element ref="header:SignatureVerificationOmittedErrorCode" minOccurs="0"/>
+		</xs:sequence>
+		<xs:attribute ref="header:SignatureVerified" use="required"/>
+	</xs:complexType>
+	<xs:complexType name="SignatureVerificationResultType">
+		<xs:sequence>
+			<xs:element ref="header:SignatureCheck"/>
+			<xs:element ref="header:CertificateCheck"/>
+			<xs:element ref="header:SignatureManifestCheck"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="SyntaxIdentifierType" mixed="false">
+		<xs:sequence>
+			<xs:element name="id" type="xs:string" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Coded identification of the agency controlling the syntax, and of the character repertoire used in an interchange.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="versionNum" type="xs:string" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>The version number of the syntax.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="serviceCodeListDirVersion" type="xs:string" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Version number of the service code list directory.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="codedCharacterEncoding" type="xs:string" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Identification code of the character encoding used of the interchange.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="releaseNum" type="xs:string" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>The realease number of the syntax.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="SenderType" mixed="false">
+		<xs:sequence>
+			<xs:element name="id" type="xs:string" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>The ID of the sender. For example a GLN or another mutually agreed ID.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="codeQualifier" type="xs:string" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Contains the code to specify what kind of ID is used,</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="internalId" type="xs:string" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>The internal ID of the sender.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="internalSubId" type="xs:string" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>The internal sub ID of the sender.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+</xs:schema>

@@ -2,7 +2,7 @@ package org.compiere.model;
 
 
 /** Generated Interface for I_Replenish
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
 @SuppressWarnings("javadoc")
 public interface I_I_Replenish 
@@ -14,17 +14,10 @@ public interface I_I_Replenish
     /** AD_Table_ID=541362 */
 //    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 3 - Client - Org
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
-
-    /** Load Meta Data */
 
 	/**
-	 * Get Mandant.
-	 * Mandant für diese Installation.
+	 * Get Client.
+	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -32,45 +25,62 @@ public interface I_I_Replenish
 	 */
 	public int getAD_Client_ID();
 
-	public org.compiere.model.I_AD_Client getAD_Client();
-
-    /** Column definition for AD_Client_ID */
-    public static final org.adempiere.model.ModelColumn<I_I_Replenish, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_I_Replenish, org.compiere.model.I_AD_Client>(I_I_Replenish.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
     /** Column name AD_Client_ID */
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Set Issues.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setAD_Issue_ID (int AD_Issue_ID);
+
+	/**
+	 * Get Issues.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getAD_Issue_ID();
+
+	public org.compiere.model.I_AD_Issue getAD_Issue();
+
+	public void setAD_Issue(org.compiere.model.I_AD_Issue AD_Issue);
+
+    /** Column definition for AD_Issue_ID */
+    public static final org.adempiere.model.ModelColumn<I_I_Replenish, org.compiere.model.I_AD_Issue> COLUMN_AD_Issue_ID = new org.adempiere.model.ModelColumn<I_I_Replenish, org.compiere.model.I_AD_Issue>(I_I_Replenish.class, "AD_Issue_ID", org.compiere.model.I_AD_Issue.class);
+    /** Column name AD_Issue_ID */
+    public static final String COLUMNNAME_AD_Issue_ID = "AD_Issue_ID";
+
+	/**
+	 * Set Organisation.
+	 * Organisational entity within client
+	 *
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Get Organisation.
+	 * Organisational entity within client
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public int getAD_Org_ID();
 
-	public org.compiere.model.I_AD_Org getAD_Org();
-
-	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
-
-    /** Column definition for AD_Org_ID */
-    public static final org.adempiere.model.ModelColumn<I_I_Replenish, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_I_Replenish, org.compiere.model.I_AD_Org>(I_I_Replenish.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
     /** Column name AD_Org_ID */
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Kalender.
-	 * Bezeichnung des Buchführungs-Kalenders
+	 * Set Calendar.
+	 * Accounting Calendar Name
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -79,8 +89,8 @@ public interface I_I_Replenish
 	public void setC_Calendar_ID (int C_Calendar_ID);
 
 	/**
-	 * Get Kalender.
-	 * Bezeichnung des Buchführungs-Kalenders
+	 * Get Calendar.
+	 * Accounting Calendar Name
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -98,8 +108,62 @@ public interface I_I_Replenish
     public static final String COLUMNNAME_C_Calendar_ID = "C_Calendar_ID";
 
 	/**
-	 * Set Periode.
-	 * Periode des Kalenders
+	 * Set Data import.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_DataImport_ID (int C_DataImport_ID);
+
+	/**
+	 * Get Data import.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_DataImport_ID();
+
+	public org.compiere.model.I_C_DataImport getC_DataImport();
+
+	public void setC_DataImport(org.compiere.model.I_C_DataImport C_DataImport);
+
+    /** Column definition for C_DataImport_ID */
+    public static final org.adempiere.model.ModelColumn<I_I_Replenish, org.compiere.model.I_C_DataImport> COLUMN_C_DataImport_ID = new org.adempiere.model.ModelColumn<I_I_Replenish, org.compiere.model.I_C_DataImport>(I_I_Replenish.class, "C_DataImport_ID", org.compiere.model.I_C_DataImport.class);
+    /** Column name C_DataImport_ID */
+    public static final String COLUMNNAME_C_DataImport_ID = "C_DataImport_ID";
+
+	/**
+	 * Set Data Import Run.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_DataImport_Run_ID (int C_DataImport_Run_ID);
+
+	/**
+	 * Get Data Import Run.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_DataImport_Run_ID();
+
+	public org.compiere.model.I_C_DataImport_Run getC_DataImport_Run();
+
+	public void setC_DataImport_Run(org.compiere.model.I_C_DataImport_Run C_DataImport_Run);
+
+    /** Column definition for C_DataImport_Run_ID */
+    public static final org.adempiere.model.ModelColumn<I_I_Replenish, org.compiere.model.I_C_DataImport_Run> COLUMN_C_DataImport_Run_ID = new org.adempiere.model.ModelColumn<I_I_Replenish, org.compiere.model.I_C_DataImport_Run>(I_I_Replenish.class, "C_DataImport_Run_ID", org.compiere.model.I_C_DataImport_Run.class);
+    /** Column name C_DataImport_Run_ID */
+    public static final String COLUMNNAME_C_DataImport_Run_ID = "C_DataImport_Run_ID";
+
+	/**
+	 * Set Period.
+	 * Period of the Calendar
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -108,8 +172,8 @@ public interface I_I_Replenish
 	public void setC_Period_ID (int C_Period_ID);
 
 	/**
-	 * Get Periode.
-	 * Periode des Kalenders
+	 * Get Period.
+	 * Period of the Calendar
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -127,8 +191,8 @@ public interface I_I_Replenish
     public static final String COLUMNNAME_C_Period_ID = "C_Period_ID";
 
 	/**
-	 * Get Erstellt.
-	 * Datum, an dem dieser Eintrag erstellt wurde
+	 * Get Created.
+	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -142,8 +206,8 @@ public interface I_I_Replenish
     public static final String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Erstellt durch.
-	 * Nutzer, der diesen Eintrag erstellt hat
+	 * Get Created By.
+	 * User who created this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -151,8 +215,6 @@ public interface I_I_Replenish
 	 */
 	public int getCreatedBy();
 
-    /** Column definition for CreatedBy */
-    public static final org.adempiere.model.ModelColumn<I_I_Replenish, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_I_Replenish, org.compiere.model.I_AD_User>(I_I_Replenish.class, "CreatedBy", org.compiere.model.I_AD_User.class);
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
@@ -180,8 +242,8 @@ public interface I_I_Replenish
     public static final String COLUMNNAME_DateGeneral = "DateGeneral";
 
 	/**
-	 * Set Import-Fehlermeldung.
-	 * Meldungen, die durch den Importprozess generiert wurden
+	 * Set Import Error Message.
+	 * Messages generated from import process
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -190,8 +252,8 @@ public interface I_I_Replenish
 	public void setI_ErrorMsg (java.lang.String I_ErrorMsg);
 
 	/**
-	 * Get Import-Fehlermeldung.
-	 * Meldungen, die durch den Importprozess generiert wurden
+	 * Get Import Error Message.
+	 * Messages generated from import process
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -205,8 +267,8 @@ public interface I_I_Replenish
     public static final String COLUMNNAME_I_ErrorMsg = "I_ErrorMsg";
 
 	/**
-	 * Set Importiert.
-	 * Ist dieser Import verarbeitet worden?
+	 * Set Imported.
+	 * Has this import been processed
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -215,8 +277,8 @@ public interface I_I_Replenish
 	public void setI_IsImported (java.lang.String I_IsImported);
 
 	/**
-	 * Get Importiert.
-	 * Ist dieser Import verarbeitet worden?
+	 * Get Imported.
+	 * Has this import been processed
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -228,6 +290,52 @@ public interface I_I_Replenish
     public static final org.adempiere.model.ModelColumn<I_I_Replenish, Object> COLUMN_I_IsImported = new org.adempiere.model.ModelColumn<I_I_Replenish, Object>(I_I_Replenish.class, "I_IsImported", null);
     /** Column name I_IsImported */
     public static final String COLUMNNAME_I_IsImported = "I_IsImported";
+
+	/**
+	 * Set Import Line Content.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setI_LineContent (java.lang.String I_LineContent);
+
+	/**
+	 * Get Import Line Content.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getI_LineContent();
+
+    /** Column definition for I_LineContent */
+    public static final org.adempiere.model.ModelColumn<I_I_Replenish, Object> COLUMN_I_LineContent = new org.adempiere.model.ModelColumn<I_I_Replenish, Object>(I_I_Replenish.class, "I_LineContent", null);
+    /** Column name I_LineContent */
+    public static final String COLUMNNAME_I_LineContent = "I_LineContent";
+
+	/**
+	 * Set Import Line No.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setI_LineNo (int I_LineNo);
+
+	/**
+	 * Get Import Line No.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getI_LineNo();
+
+    /** Column definition for I_LineNo */
+    public static final org.adempiere.model.ModelColumn<I_I_Replenish, Object> COLUMN_I_LineNo = new org.adempiere.model.ModelColumn<I_I_Replenish, Object>(I_I_Replenish.class, "I_LineNo", null);
+    /** Column name I_LineNo */
+    public static final String COLUMNNAME_I_LineNo = "I_LineNo";
 
 	/**
 	 * Set Import Replenishment.
@@ -253,8 +361,8 @@ public interface I_I_Replenish
     public static final String COLUMNNAME_I_Replenish_ID = "I_Replenish_ID";
 
 	/**
-	 * Set Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Set Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -263,8 +371,8 @@ public interface I_I_Replenish
 	public void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Get Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -278,8 +386,8 @@ public interface I_I_Replenish
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Maximalmenge.
-	 * Maximaler Bestand für dieses Produkt
+	 * Set Maximum Level.
+	 * Maximum Inventory level for this product
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: false
@@ -288,8 +396,8 @@ public interface I_I_Replenish
 	public void setLevel_Max (java.math.BigDecimal Level_Max);
 
 	/**
-	 * Get Maximalmenge.
-	 * Maximaler Bestand für dieses Produkt
+	 * Get Maximum Level.
+	 * Maximum Inventory level for this product
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: false
@@ -303,8 +411,8 @@ public interface I_I_Replenish
     public static final String COLUMNNAME_Level_Max = "Level_Max";
 
 	/**
-	 * Set Mindestmenge.
-	 * Minimaler Bestand für dieses Produkt
+	 * Set Minimum Level.
+	 * Minimum Inventory level for this product
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: false
@@ -313,8 +421,8 @@ public interface I_I_Replenish
 	public void setLevel_Min (java.math.BigDecimal Level_Min);
 
 	/**
-	 * Get Mindestmenge.
-	 * Minimaler Bestand für dieses Produkt
+	 * Get Minimum Level.
+	 * Minimum Inventory level for this product
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: false
@@ -328,8 +436,8 @@ public interface I_I_Replenish
     public static final String COLUMNNAME_Level_Min = "Level_Min";
 
 	/**
-	 * Set Lagerort-Schlüssel.
-	 * Suchschlüssel für den Lagerort im Lager
+	 * Set Locator Key.
+	 * Key of the Warehouse Locator
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -338,8 +446,8 @@ public interface I_I_Replenish
 	public void setLocatorValue (java.lang.String LocatorValue);
 
 	/**
-	 * Get Lagerort-Schlüssel.
-	 * Suchschlüssel für den Lagerort im Lager
+	 * Get Locator Key.
+	 * Key of the Warehouse Locator
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -353,8 +461,8 @@ public interface I_I_Replenish
     public static final String COLUMNNAME_LocatorValue = "LocatorValue";
 
 	/**
-	 * Set Lagerort.
-	 * Lagerort im Lager
+	 * Set Locator.
+	 * Warehouse Locator
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -363,8 +471,8 @@ public interface I_I_Replenish
 	public void setM_Locator_ID (int M_Locator_ID);
 
 	/**
-	 * Get Lagerort.
-	 * Lagerort im Lager
+	 * Get Locator.
+	 * Warehouse Locator
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -372,18 +480,12 @@ public interface I_I_Replenish
 	 */
 	public int getM_Locator_ID();
 
-	public org.compiere.model.I_M_Locator getM_Locator();
-
-	public void setM_Locator(org.compiere.model.I_M_Locator M_Locator);
-
-    /** Column definition for M_Locator_ID */
-    public static final org.adempiere.model.ModelColumn<I_I_Replenish, org.compiere.model.I_M_Locator> COLUMN_M_Locator_ID = new org.adempiere.model.ModelColumn<I_I_Replenish, org.compiere.model.I_M_Locator>(I_I_Replenish.class, "M_Locator_ID", org.compiere.model.I_M_Locator.class);
     /** Column name M_Locator_ID */
     public static final String COLUMNNAME_M_Locator_ID = "M_Locator_ID";
 
 	/**
-	 * Set Produkt.
-	 * Produkt, Leistung, Artikel
+	 * Set Product.
+	 * Product, Service, Item
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -392,8 +494,8 @@ public interface I_I_Replenish
 	public void setM_Product_ID (int M_Product_ID);
 
 	/**
-	 * Get Produkt.
-	 * Produkt, Leistung, Artikel
+	 * Get Product.
+	 * Product, Service, Item
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -401,12 +503,6 @@ public interface I_I_Replenish
 	 */
 	public int getM_Product_ID();
 
-	public org.compiere.model.I_M_Product getM_Product();
-
-	public void setM_Product(org.compiere.model.I_M_Product M_Product);
-
-    /** Column definition for M_Product_ID */
-    public static final org.adempiere.model.ModelColumn<I_I_Replenish, org.compiere.model.I_M_Product> COLUMN_M_Product_ID = new org.adempiere.model.ModelColumn<I_I_Replenish, org.compiere.model.I_M_Product>(I_I_Replenish.class, "M_Product_ID", org.compiere.model.I_M_Product.class);
     /** Column name M_Product_ID */
     public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
@@ -438,8 +534,8 @@ public interface I_I_Replenish
     public static final String COLUMNNAME_M_Replenish_ID = "M_Replenish_ID";
 
 	/**
-	 * Set Lager.
-	 * Lager oder Ort für Dienstleistung
+	 * Set Warehouse.
+	 * Storage Warehouse and Service Point
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -448,8 +544,8 @@ public interface I_I_Replenish
 	public void setM_Warehouse_ID (int M_Warehouse_ID);
 
 	/**
-	 * Get Lager.
-	 * Lager oder Ort für Dienstleistung
+	 * Get Warehouse.
+	 * Storage Warehouse and Service Point
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -457,47 +553,11 @@ public interface I_I_Replenish
 	 */
 	public int getM_Warehouse_ID();
 
-	public org.compiere.model.I_M_Warehouse getM_Warehouse();
-
-	public void setM_Warehouse(org.compiere.model.I_M_Warehouse M_Warehouse);
-
-    /** Column definition for M_Warehouse_ID */
-    public static final org.adempiere.model.ModelColumn<I_I_Replenish, org.compiere.model.I_M_Warehouse> COLUMN_M_Warehouse_ID = new org.adempiere.model.ModelColumn<I_I_Replenish, org.compiere.model.I_M_Warehouse>(I_I_Replenish.class, "M_Warehouse_ID", org.compiere.model.I_M_Warehouse.class);
     /** Column name M_Warehouse_ID */
     public static final String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
 
 	/**
-	 * Set Source Warehouse.
-	 * Optional Warehouse to replenish from
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setM_WarehouseSource_ID (int M_WarehouseSource_ID);
-
-	/**
-	 * Get Source Warehouse.
-	 * Optional Warehouse to replenish from
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getM_WarehouseSource_ID();
-
-	public org.compiere.model.I_M_Warehouse getM_WarehouseSource();
-
-	public void setM_WarehouseSource(org.compiere.model.I_M_Warehouse M_WarehouseSource);
-
-    /** Column definition for M_WarehouseSource_ID */
-    public static final org.adempiere.model.ModelColumn<I_I_Replenish, org.compiere.model.I_M_Warehouse> COLUMN_M_WarehouseSource_ID = new org.adempiere.model.ModelColumn<I_I_Replenish, org.compiere.model.I_M_Warehouse>(I_I_Replenish.class, "M_WarehouseSource_ID", org.compiere.model.I_M_Warehouse.class);
-    /** Column name M_WarehouseSource_ID */
-    public static final String COLUMNNAME_M_WarehouseSource_ID = "M_WarehouseSource_ID";
-
-	/**
-	 * Set Organisations-Schlüssel.
-	 * Suchschlüssel der Organisation
+	 * Set Organisation Key.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -506,8 +566,7 @@ public interface I_I_Replenish
 	public void setOrgValue (java.lang.String OrgValue);
 
 	/**
-	 * Get Organisations-Schlüssel.
-	 * Suchschlüssel der Organisation
+	 * Get Organisation Key.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -521,8 +580,7 @@ public interface I_I_Replenish
     public static final String COLUMNNAME_OrgValue = "OrgValue";
 
 	/**
-	 * Set Verarbeitet.
-	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
+	 * Set Processed.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -531,8 +589,7 @@ public interface I_I_Replenish
 	public void setProcessed (boolean Processed);
 
 	/**
-	 * Get Verarbeitet.
-	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
+	 * Get Processed.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -569,8 +626,9 @@ public interface I_I_Replenish
     public static final String COLUMNNAME_Processing = "Processing";
 
 	/**
-	 * Set Produktschlüssel.
-	 * Schlüssel des Produktes
+	 * Set Product Value.
+	 * Product identifier;
+ "val-<search key>", "ext-<external id>" or internal M_Product_ID
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -579,8 +637,9 @@ public interface I_I_Replenish
 	public void setProductValue (java.lang.String ProductValue);
 
 	/**
-	 * Get Produktschlüssel.
-	 * Schlüssel des Produktes
+	 * Get Product Value.
+	 * Product identifier;
+ "val-<search key>", "ext-<external id>" or internal M_Product_ID
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -594,8 +653,8 @@ public interface I_I_Replenish
     public static final String COLUMNNAME_ProductValue = "ProductValue";
 
 	/**
-	 * Set Art der Wiederauffüllung.
-	 * Methode für das Nachbestellen des Produktes
+	 * Set Replenish Type.
+	 * Method for re-ordering a product
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -604,8 +663,8 @@ public interface I_I_Replenish
 	public void setReplenishType (java.lang.String ReplenishType);
 
 	/**
-	 * Get Art der Wiederauffüllung.
-	 * Methode für das Nachbestellen des Produktes
+	 * Get Replenish Type.
+	 * Method for re-ordering a product
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -619,7 +678,7 @@ public interface I_I_Replenish
     public static final String COLUMNNAME_ReplenishType = "ReplenishType";
 
 	/**
-	 * Set Markteinführungszeit.
+	 * Set Time to Market.
 	 * Time to Market (in Wochen)
 	 *
 	 * <br>Type: Integer
@@ -629,7 +688,7 @@ public interface I_I_Replenish
 	public void setTimeToMarket (int TimeToMarket);
 
 	/**
-	 * Get Markteinführungszeit.
+	 * Get Time to Market.
 	 * Time to Market (in Wochen)
 	 *
 	 * <br>Type: Integer
@@ -644,8 +703,8 @@ public interface I_I_Replenish
     public static final String COLUMNNAME_TimeToMarket = "TimeToMarket";
 
 	/**
-	 * Get Aktualisiert.
-	 * Datum, an dem dieser Eintrag aktualisiert wurde
+	 * Get Updated.
+	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -659,8 +718,8 @@ public interface I_I_Replenish
     public static final String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Aktualisiert durch.
-	 * Nutzer, der diesen Eintrag aktualisiert hat
+	 * Get Updated By.
+	 * User who updated this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -668,37 +727,12 @@ public interface I_I_Replenish
 	 */
 	public int getUpdatedBy();
 
-    /** Column definition for UpdatedBy */
-    public static final org.adempiere.model.ModelColumn<I_I_Replenish, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_I_Replenish, org.compiere.model.I_AD_User>(I_I_Replenish.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
     /** Column name UpdatedBy */
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
 	/**
-	 * Set Source Warehouse Value.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setWarehouseSourceValue (java.lang.String WarehouseSourceValue);
-
-	/**
-	 * Get Source Warehouse Value.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getWarehouseSourceValue();
-
-    /** Column definition for WarehouseSourceValue */
-    public static final org.adempiere.model.ModelColumn<I_I_Replenish, Object> COLUMN_WarehouseSourceValue = new org.adempiere.model.ModelColumn<I_I_Replenish, Object>(I_I_Replenish.class, "WarehouseSourceValue", null);
-    /** Column name WarehouseSourceValue */
-    public static final String COLUMNNAME_WarehouseSourceValue = "WarehouseSourceValue";
-
-	/**
-	 * Set Lager-Schlüssel.
-	 * Suchschlüssel des Lagers
+	 * Set Warehouse Key.
+	 * Key of the Warehouse
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -707,8 +741,8 @@ public interface I_I_Replenish
 	public void setWarehouseValue (java.lang.String WarehouseValue);
 
 	/**
-	 * Get Lager-Schlüssel.
-	 * Suchschlüssel des Lagers
+	 * Get Warehouse Key.
+	 * Key of the Warehouse
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false

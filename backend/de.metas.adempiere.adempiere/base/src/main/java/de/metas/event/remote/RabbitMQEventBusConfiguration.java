@@ -1,12 +1,17 @@
 package de.metas.event.remote;
 
-import java.util.Optional;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
+import de.metas.event.Topic;
+import de.metas.monitoring.adapter.NoopPerformanceMonitoringService;
+import de.metas.monitoring.adapter.PerformanceMonitoringService;
+import lombok.NonNull;
 import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.amqp.core.AnonymousQueue;
+import org.springframework.amqp.core.Base64UrlNamingStrategy;
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.FanoutExchange;
+import org.springframework.amqp.core.NamingStrategy;
 import org.springframework.amqp.rabbit.annotation.EnableRabbit;
 import org.springframework.amqp.rabbit.connection.ConnectionNameStrategy;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
@@ -17,12 +22,7 @@ import org.springframework.messaging.converter.MappingJackson2MessageConverter;
 import org.springframework.messaging.handler.annotation.support.DefaultMessageHandlerMethodFactory;
 import org.springframework.messaging.handler.annotation.support.MessageHandlerMethodFactory;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import de.metas.event.Topic;
-import de.metas.monitoring.adapter.NoopPerformanceMonitoringService;
-import de.metas.monitoring.adapter.PerformanceMonitoringService;
-import lombok.NonNull;
+import java.util.Optional;
 
 /*
  * #%L
@@ -125,8 +125,8 @@ public class RabbitMQEventBusConfiguration
 		@Bean(QUEUE_BEAN_NAME)
 		public AnonymousQueue eventsQueue()
 		{
-			final AnonymousQueue.NamingStrategy eventQueueNamingStrategy = new AnonymousQueue.Base64UrlNamingStrategy("metasfresh.events." + appName + "-");
-			return new AnonymousQueue(eventQueueNamingStrategy);
+			final NamingStrategy eventQueueNamingStrategy = new Base64UrlNamingStrategy("metasfresh.events." + appName + "-");
+			return new AnonymousQueue(eventQueueNamingStrategy); 
 		}
 
 		@Bean
@@ -156,7 +156,7 @@ public class RabbitMQEventBusConfiguration
 		@Bean(QUEUE_BEAN_NAME)
 		public AnonymousQueue cacheInvalidationQueue()
 		{
-			final AnonymousQueue.NamingStrategy eventQueueNamingStrategy = new AnonymousQueue.Base64UrlNamingStrategy(EVENTBUS_TOPIC.getName() + "." + appName + "-");
+			final NamingStrategy eventQueueNamingStrategy = new Base64UrlNamingStrategy(EVENTBUS_TOPIC.getName() + "." + appName + "-");
 			return new AnonymousQueue(eventQueueNamingStrategy);
 		}
 
@@ -188,7 +188,7 @@ public class RabbitMQEventBusConfiguration
 		@Bean(QUEUE_BEAN_NAME)
 		public AnonymousQueue accountingQueue()
 		{
-			final AnonymousQueue.NamingStrategy eventQueueNamingStrategy = new AnonymousQueue.Base64UrlNamingStrategy(EVENTBUS_TOPIC.getName() + "." + appName + "-");
+			final NamingStrategy eventQueueNamingStrategy = new Base64UrlNamingStrategy(EVENTBUS_TOPIC.getName() + "." + appName + "-");
 			return new AnonymousQueue(eventQueueNamingStrategy);
 		}
 
@@ -202,6 +202,36 @@ public class RabbitMQEventBusConfiguration
 		public Binding accountingBinding()
 		{
 			return BindingBuilder.bind(accountingQueue()).to(accountingExchange());
+		}
+	}
+
+	@Configuration
+	public static class ManageSchedulerQueueConfiguration
+	{
+		public static final Topic EVENTBUS_TOPIC = Topic.remote("de.metas.externalsystem.rabbitmq.request.ManageSchedulerRequest");
+		private static final String QUEUE_BEAN_NAME = "metasfreshManageSchedulerQueue";
+		private static final String EXCHANGE_NAME = "metasfresh-scheduler-events";
+
+		@Value(APPLICATION_NAME_SPEL)
+		private String appName;
+
+		@Bean(QUEUE_BEAN_NAME)
+		public AnonymousQueue schedulerQueue()
+		{
+			final NamingStrategy eventQueueNamingStrategy = new Base64UrlNamingStrategy(EVENTBUS_TOPIC.getName() + "." + appName + "-");
+			return new AnonymousQueue(eventQueueNamingStrategy);
+		}
+
+		@Bean
+		public FanoutExchange schedulerExchange()
+		{
+			return new FanoutExchange(EXCHANGE_NAME);
+		}
+
+		@Bean
+		public Binding schedulerBinding()
+		{
+			return BindingBuilder.bind(schedulerQueue()).to(schedulerExchange());
 		}
 	}
 }

@@ -1,14 +1,13 @@
 package de.metas.util.lang;
 
-import static de.metas.util.Check.isEmpty;
-
-import javax.annotation.Nullable;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-
+import de.metas.util.Check;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -33,25 +32,28 @@ import lombok.Value;
  */
 
 @Value
-public class ExternalId
+public class ExternalId implements Comparable<ExternalId>
 {
 	String value;
 
 	@JsonCreator
+	@NonNull
 	public static ExternalId of(@NonNull final String value)
 	{
 		return new ExternalId(value);
 	}
 
+	@Nullable
 	public static ExternalId ofOrNull(@Nullable final String value)
 	{
-		if (isEmpty(value, true))
+		if (Check.isBlank(value))
 		{
 			return null;
 		}
 		return new ExternalId(value);
 	}
 
+	@Nullable
 	public static String toValue(@Nullable final ExternalId externalId)
 	{
 		if (externalId == null)
@@ -65,5 +67,11 @@ public class ExternalId
 	public String getValue()
 	{
 		return value;
+	}
+
+	@Override
+	public int compareTo(@NonNull final ExternalId o)
+	{
+		return value.compareTo(o.value);
 	}
 }

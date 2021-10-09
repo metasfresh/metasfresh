@@ -108,7 +108,7 @@ public class ManualCandidateService
 
 		final ZoneId timeZone = orgDAO.getTimeZone(newIC.getOrgId());
 
-		final int taxId = Services.get(ITaxBL.class).getTax(
+		final TaxId taxId = Services.get(ITaxBL.class).getTaxNotNull(
 				Env.getCtx(),
 				newIC,
 				pricingResult.getTaxCategoryId(),
@@ -116,9 +116,9 @@ public class ManualCandidateService
 				TimeUtil.asTimestamp(newIC.getDateOrdered(), timeZone), // shipDate
 				newIC.getOrgId(),
 				newIC.getSoTrx().isSales() ? orgDAO.getOrgWarehouseId(newIC.getOrgId()) : orgDAO.getOrgPOWarehouseId(newIC.getOrgId()),
-				newIC.getBillPartnerInfo().getBpartnerLocationId().getRepoId(), // ship location id
-				newIC.getSoTrx().toBoolean());
-		candidate.taxId(TaxId.ofRepoId(taxId));
+				newIC.getBillPartnerInfo().toBPartnerLocationAndCaptureId(), // ship location id
+				newIC.getSoTrx());
+		candidate.taxId(taxId);
 
 		final InvoiceRule invoiceRule = coalesce(
 				bpartnerComp.getBpartner().getInvoiceRule(),

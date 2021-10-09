@@ -1,69 +1,53 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package de.metas.handlingunits.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for RV_M_Material_Tracking_HU_Details
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public class X_RV_M_Material_Tracking_HU_Details extends org.compiere.model.PO implements I_RV_M_Material_Tracking_HU_Details, org.compiere.model.I_Persistent 
 {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = 961078157L;
+	private static final long serialVersionUID = 1759764899L;
 
     /** Standard Constructor */
-    public X_RV_M_Material_Tracking_HU_Details (Properties ctx, int RV_M_Material_Tracking_HU_Details_ID, String trxName)
+    public X_RV_M_Material_Tracking_HU_Details (final Properties ctx, final int RV_M_Material_Tracking_HU_Details_ID, @Nullable final String trxName)
     {
       super (ctx, RV_M_Material_Tracking_HU_Details_ID, trxName);
-      /** if (RV_M_Material_Tracking_HU_Details_ID == 0)
-        {
-        } */
     }
 
     /** Load Constructor */
-    public X_RV_M_Material_Tracking_HU_Details (Properties ctx, ResultSet rs, String trxName)
+    public X_RV_M_Material_Tracking_HU_Details (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
 
 
-    /** Load Meta Data */
-    @Override
-    protected org.compiere.model.POInfo initPO (Properties ctx)
-    {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
-      return poi;
-    }
-
-	/** Set Maßeinheit.
-		@param C_UOM_ID 
-		Maßeinheit
-	  */
+	/** Load Meta Data */
 	@Override
-	public void setC_UOM_ID (int C_UOM_ID)
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
+	{
+		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public void setC_UOM_ID (final int C_UOM_ID)
 	{
 		if (C_UOM_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_C_UOM_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_C_UOM_ID, Integer.valueOf(C_UOM_ID));
+			set_ValueNoCheck (COLUMNNAME_C_UOM_ID, C_UOM_ID);
 	}
 
-	/** Get Maßeinheit.
-		@return Maßeinheit
-	  */
 	@Override
-	public int getC_UOM_ID () 
+	public int getC_UOM_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_UOM_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_UOM_ID);
 	}
 
 	/** 
@@ -83,63 +67,40 @@ public class X_RV_M_Material_Tracking_HU_Details extends org.compiere.model.PO i
 	public static final String HUSTATUS_Shipped = "E";
 	/** Issued = I */
 	public static final String HUSTATUS_Issued = "I";
-	/** Set Gebinde Status.
-		@param HUStatus Gebinde Status	  */
 	@Override
-	public void setHUStatus (java.lang.String HUStatus)
+	public void setHUStatus (final @Nullable java.lang.String HUStatus)
 	{
-
 		set_ValueNoCheck (COLUMNNAME_HUStatus, HUStatus);
 	}
 
-	/** Get Gebinde Status.
-		@return Gebinde Status	  */
 	@Override
-	public java.lang.String getHUStatus () 
+	public java.lang.String getHUStatus() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_HUStatus);
+		return get_ValueAsString(COLUMNNAME_HUStatus);
 	}
 
-	/** Set Waschprobe.
-		@param IsQualityInspection Waschprobe	  */
 	@Override
-	public void setIsQualityInspection (boolean IsQualityInspection)
+	public void setIsQualityInspection (final boolean IsQualityInspection)
 	{
-		set_ValueNoCheck (COLUMNNAME_IsQualityInspection, Boolean.valueOf(IsQualityInspection));
+		set_ValueNoCheck (COLUMNNAME_IsQualityInspection, IsQualityInspection);
 	}
 
-	/** Get Waschprobe.
-		@return Waschprobe	  */
 	@Override
-	public boolean isQualityInspection () 
+	public boolean isQualityInspection() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsQualityInspection);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsQualityInspection);
 	}
 
-	/** Set Los-Nr..
-		@param Lot 
-		Los-Nummer (alphanumerisch)
-	  */
 	@Override
-	public void setLot (java.lang.String Lot)
+	public void setLot (final @Nullable java.lang.String Lot)
 	{
 		set_ValueNoCheck (COLUMNNAME_Lot, Lot);
 	}
 
-	/** Get Los-Nr..
-		@return Los-Nummer (alphanumerisch)
-	  */
 	@Override
-	public java.lang.String getLot () 
+	public java.lang.String getLot() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Lot);
+		return get_ValueAsString(COLUMNNAME_Lot);
 	}
 
 	@Override
@@ -149,31 +110,24 @@ public class X_RV_M_Material_Tracking_HU_Details extends org.compiere.model.PO i
 	}
 
 	@Override
-	public void setM_HU(de.metas.handlingunits.model.I_M_HU M_HU)
+	public void setM_HU(final de.metas.handlingunits.model.I_M_HU M_HU)
 	{
 		set_ValueFromPO(COLUMNNAME_M_HU_ID, de.metas.handlingunits.model.I_M_HU.class, M_HU);
 	}
 
-	/** Set Handling Unit.
-		@param M_HU_ID Handling Unit	  */
 	@Override
-	public void setM_HU_ID (int M_HU_ID)
+	public void setM_HU_ID (final int M_HU_ID)
 	{
 		if (M_HU_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_M_HU_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_M_HU_ID, Integer.valueOf(M_HU_ID));
+			set_ValueNoCheck (COLUMNNAME_M_HU_ID, M_HU_ID);
 	}
 
-	/** Get Handling Unit.
-		@return Handling Unit	  */
 	@Override
-	public int getM_HU_ID () 
+	public int getM_HU_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_HU_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_HU_ID);
 	}
 
 	@Override
@@ -183,31 +137,24 @@ public class X_RV_M_Material_Tracking_HU_Details extends org.compiere.model.PO i
 	}
 
 	@Override
-	public void setM_InOut_Receipt(org.compiere.model.I_M_InOut M_InOut_Receipt)
+	public void setM_InOut_Receipt(final org.compiere.model.I_M_InOut M_InOut_Receipt)
 	{
 		set_ValueFromPO(COLUMNNAME_M_InOut_Receipt_ID, org.compiere.model.I_M_InOut.class, M_InOut_Receipt);
 	}
 
-	/** Set Material Receipt.
-		@param M_InOut_Receipt_ID Material Receipt	  */
 	@Override
-	public void setM_InOut_Receipt_ID (int M_InOut_Receipt_ID)
+	public void setM_InOut_Receipt_ID (final int M_InOut_Receipt_ID)
 	{
 		if (M_InOut_Receipt_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_M_InOut_Receipt_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_M_InOut_Receipt_ID, Integer.valueOf(M_InOut_Receipt_ID));
+			set_ValueNoCheck (COLUMNNAME_M_InOut_Receipt_ID, M_InOut_Receipt_ID);
 	}
 
-	/** Get Material Receipt.
-		@return Material Receipt	  */
 	@Override
-	public int getM_InOut_Receipt_ID () 
+	public int getM_InOut_Receipt_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_InOut_Receipt_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_InOut_Receipt_ID);
 	}
 
 	@Override
@@ -217,103 +164,69 @@ public class X_RV_M_Material_Tracking_HU_Details extends org.compiere.model.PO i
 	}
 
 	@Override
-	public void setM_InOut_Shipment(org.compiere.model.I_M_InOut M_InOut_Shipment)
+	public void setM_InOut_Shipment(final org.compiere.model.I_M_InOut M_InOut_Shipment)
 	{
 		set_ValueFromPO(COLUMNNAME_M_InOut_Shipment_ID, org.compiere.model.I_M_InOut.class, M_InOut_Shipment);
 	}
 
-	/** Set Shipment.
-		@param M_InOut_Shipment_ID Shipment	  */
 	@Override
-	public void setM_InOut_Shipment_ID (int M_InOut_Shipment_ID)
+	public void setM_InOut_Shipment_ID (final int M_InOut_Shipment_ID)
 	{
 		if (M_InOut_Shipment_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_M_InOut_Shipment_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_M_InOut_Shipment_ID, Integer.valueOf(M_InOut_Shipment_ID));
+			set_ValueNoCheck (COLUMNNAME_M_InOut_Shipment_ID, M_InOut_Shipment_ID);
 	}
 
-	/** Get Shipment.
-		@return Shipment	  */
 	@Override
-	public int getM_InOut_Shipment_ID () 
+	public int getM_InOut_Shipment_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_InOut_Shipment_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_InOut_Shipment_ID);
 	}
 
-	/** Set Lagerort.
-		@param M_Locator_ID 
-		Lagerort im Lager
-	  */
 	@Override
-	public void setM_Locator_ID (int M_Locator_ID)
+	public void setM_Locator_ID (final int M_Locator_ID)
 	{
 		if (M_Locator_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_M_Locator_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_M_Locator_ID, Integer.valueOf(M_Locator_ID));
+			set_ValueNoCheck (COLUMNNAME_M_Locator_ID, M_Locator_ID);
 	}
 
-	/** Get Lagerort.
-		@return Lagerort im Lager
-	  */
 	@Override
-	public int getM_Locator_ID () 
+	public int getM_Locator_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_Locator_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_Locator_ID);
 	}
 
-	/** Set Material-Vorgang-ID.
-		@param M_Material_Tracking_ID Material-Vorgang-ID	  */
 	@Override
-	public void setM_Material_Tracking_ID (int M_Material_Tracking_ID)
+	public void setM_Material_Tracking_ID (final int M_Material_Tracking_ID)
 	{
 		if (M_Material_Tracking_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_M_Material_Tracking_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_M_Material_Tracking_ID, Integer.valueOf(M_Material_Tracking_ID));
+			set_ValueNoCheck (COLUMNNAME_M_Material_Tracking_ID, M_Material_Tracking_ID);
 	}
 
-	/** Get Material-Vorgang-ID.
-		@return Material-Vorgang-ID	  */
 	@Override
-	public int getM_Material_Tracking_ID () 
+	public int getM_Material_Tracking_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_Material_Tracking_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_Material_Tracking_ID);
 	}
 
-	/** Set Produkt.
-		@param M_Product_ID 
-		Produkt, Leistung, Artikel
-	  */
 	@Override
-	public void setM_Product_ID (int M_Product_ID)
+	public void setM_Product_ID (final int M_Product_ID)
 	{
 		if (M_Product_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_M_Product_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_M_Product_ID, Integer.valueOf(M_Product_ID));
+			set_ValueNoCheck (COLUMNNAME_M_Product_ID, M_Product_ID);
 	}
 
-	/** Get Produkt.
-		@return Produkt, Leistung, Artikel
-	  */
 	@Override
-	public int getM_Product_ID () 
+	public int getM_Product_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_Product_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_Product_ID);
 	}
 
 	/** 
@@ -345,43 +258,31 @@ public class X_RV_M_Material_Tracking_HU_Details extends org.compiere.model.PO i
 	public static final String PP_ORDER_ISSUE_DOCSTATUS_WaitingPayment = "WP";
 	/** WaitingConfirmation = WC */
 	public static final String PP_ORDER_ISSUE_DOCSTATUS_WaitingConfirmation = "WC";
-	/** Set MO Issue Doc Status.
-		@param PP_Order_Issue_DocStatus MO Issue Doc Status	  */
 	@Override
-	public void setPP_Order_Issue_DocStatus (java.lang.String PP_Order_Issue_DocStatus)
+	public void setPP_Order_Issue_DocStatus (final @Nullable java.lang.String PP_Order_Issue_DocStatus)
 	{
-
 		set_ValueNoCheck (COLUMNNAME_PP_Order_Issue_DocStatus, PP_Order_Issue_DocStatus);
 	}
 
-	/** Get MO Issue Doc Status.
-		@return MO Issue Doc Status	  */
 	@Override
-	public java.lang.String getPP_Order_Issue_DocStatus () 
+	public java.lang.String getPP_Order_Issue_DocStatus() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_PP_Order_Issue_DocStatus);
+		return get_ValueAsString(COLUMNNAME_PP_Order_Issue_DocStatus);
 	}
 
-	/** Set MO Issue DocType.
-		@param PP_Order_Issue_DocType_ID MO Issue DocType	  */
 	@Override
-	public void setPP_Order_Issue_DocType_ID (int PP_Order_Issue_DocType_ID)
+	public void setPP_Order_Issue_DocType_ID (final int PP_Order_Issue_DocType_ID)
 	{
 		if (PP_Order_Issue_DocType_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_PP_Order_Issue_DocType_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_PP_Order_Issue_DocType_ID, Integer.valueOf(PP_Order_Issue_DocType_ID));
+			set_ValueNoCheck (COLUMNNAME_PP_Order_Issue_DocType_ID, PP_Order_Issue_DocType_ID);
 	}
 
-	/** Get MO Issue DocType.
-		@return MO Issue DocType	  */
 	@Override
-	public int getPP_Order_Issue_DocType_ID () 
+	public int getPP_Order_Issue_DocType_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_PP_Order_Issue_DocType_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_PP_Order_Issue_DocType_ID);
 	}
 
 	@Override
@@ -391,31 +292,24 @@ public class X_RV_M_Material_Tracking_HU_Details extends org.compiere.model.PO i
 	}
 
 	@Override
-	public void setPP_Order_Issue(org.eevolution.model.I_PP_Order PP_Order_Issue)
+	public void setPP_Order_Issue(final org.eevolution.model.I_PP_Order PP_Order_Issue)
 	{
 		set_ValueFromPO(COLUMNNAME_PP_Order_Issue_ID, org.eevolution.model.I_PP_Order.class, PP_Order_Issue);
 	}
 
-	/** Set Zugeteilt zu Prod.-Auftrag.
-		@param PP_Order_Issue_ID Zugeteilt zu Prod.-Auftrag	  */
 	@Override
-	public void setPP_Order_Issue_ID (int PP_Order_Issue_ID)
+	public void setPP_Order_Issue_ID (final int PP_Order_Issue_ID)
 	{
 		if (PP_Order_Issue_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_PP_Order_Issue_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_PP_Order_Issue_ID, Integer.valueOf(PP_Order_Issue_ID));
+			set_ValueNoCheck (COLUMNNAME_PP_Order_Issue_ID, PP_Order_Issue_ID);
 	}
 
-	/** Get Zugeteilt zu Prod.-Auftrag.
-		@return Zugeteilt zu Prod.-Auftrag	  */
 	@Override
-	public int getPP_Order_Issue_ID () 
+	public int getPP_Order_Issue_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_PP_Order_Issue_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_PP_Order_Issue_ID);
 	}
 
 	/** 
@@ -447,43 +341,31 @@ public class X_RV_M_Material_Tracking_HU_Details extends org.compiere.model.PO i
 	public static final String PP_ORDER_RECEIPT_DOCSTATUS_WaitingPayment = "WP";
 	/** WaitingConfirmation = WC */
 	public static final String PP_ORDER_RECEIPT_DOCSTATUS_WaitingConfirmation = "WC";
-	/** Set MO Receipt DocStatus.
-		@param PP_Order_Receipt_DocStatus MO Receipt DocStatus	  */
 	@Override
-	public void setPP_Order_Receipt_DocStatus (java.lang.String PP_Order_Receipt_DocStatus)
+	public void setPP_Order_Receipt_DocStatus (final @Nullable java.lang.String PP_Order_Receipt_DocStatus)
 	{
-
 		set_ValueNoCheck (COLUMNNAME_PP_Order_Receipt_DocStatus, PP_Order_Receipt_DocStatus);
 	}
 
-	/** Get MO Receipt DocStatus.
-		@return MO Receipt DocStatus	  */
 	@Override
-	public java.lang.String getPP_Order_Receipt_DocStatus () 
+	public java.lang.String getPP_Order_Receipt_DocStatus() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_PP_Order_Receipt_DocStatus);
+		return get_ValueAsString(COLUMNNAME_PP_Order_Receipt_DocStatus);
 	}
 
-	/** Set MO Receipt DocType.
-		@param PP_Order_Receipt_DocType_ID MO Receipt DocType	  */
 	@Override
-	public void setPP_Order_Receipt_DocType_ID (int PP_Order_Receipt_DocType_ID)
+	public void setPP_Order_Receipt_DocType_ID (final int PP_Order_Receipt_DocType_ID)
 	{
 		if (PP_Order_Receipt_DocType_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_PP_Order_Receipt_DocType_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_PP_Order_Receipt_DocType_ID, Integer.valueOf(PP_Order_Receipt_DocType_ID));
+			set_ValueNoCheck (COLUMNNAME_PP_Order_Receipt_DocType_ID, PP_Order_Receipt_DocType_ID);
 	}
 
-	/** Get MO Receipt DocType.
-		@return MO Receipt DocType	  */
 	@Override
-	public int getPP_Order_Receipt_DocType_ID () 
+	public int getPP_Order_Receipt_DocType_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_PP_Order_Receipt_DocType_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_PP_Order_Receipt_DocType_ID);
 	}
 
 	@Override
@@ -493,90 +375,63 @@ public class X_RV_M_Material_Tracking_HU_Details extends org.compiere.model.PO i
 	}
 
 	@Override
-	public void setPP_Order_Receipt(org.eevolution.model.I_PP_Order PP_Order_Receipt)
+	public void setPP_Order_Receipt(final org.eevolution.model.I_PP_Order PP_Order_Receipt)
 	{
 		set_ValueFromPO(COLUMNNAME_PP_Order_Receipt_ID, org.eevolution.model.I_PP_Order.class, PP_Order_Receipt);
 	}
 
-	/** Set Empf. aus Prod.-Auftrag.
-		@param PP_Order_Receipt_ID Empf. aus Prod.-Auftrag	  */
 	@Override
-	public void setPP_Order_Receipt_ID (int PP_Order_Receipt_ID)
+	public void setPP_Order_Receipt_ID (final int PP_Order_Receipt_ID)
 	{
 		if (PP_Order_Receipt_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_PP_Order_Receipt_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_PP_Order_Receipt_ID, Integer.valueOf(PP_Order_Receipt_ID));
+			set_ValueNoCheck (COLUMNNAME_PP_Order_Receipt_ID, PP_Order_Receipt_ID);
 	}
 
-	/** Get Empf. aus Prod.-Auftrag.
-		@return Empf. aus Prod.-Auftrag	  */
 	@Override
-	public int getPP_Order_Receipt_ID () 
+	public int getPP_Order_Receipt_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_PP_Order_Receipt_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_PP_Order_Receipt_ID);
 	}
 
-	/** Set Menge.
-		@param Qty 
-		Menge
-	  */
 	@Override
-	public void setQty (java.math.BigDecimal Qty)
+	public void setQty (final @Nullable BigDecimal Qty)
 	{
 		set_ValueNoCheck (COLUMNNAME_Qty, Qty);
 	}
 
-	/** Get Menge.
-		@return Menge
-	  */
 	@Override
-	public java.math.BigDecimal getQty () 
+	public BigDecimal getQty() 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Qty);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Qty);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
-	/** Set Waschprobe.
-		@param QualityInspectionCycle Waschprobe	  */
 	@Override
-	public void setQualityInspectionCycle (java.lang.String QualityInspectionCycle)
+	public void setQualityInspectionCycle (final @Nullable java.lang.String QualityInspectionCycle)
 	{
 		set_ValueNoCheck (COLUMNNAME_QualityInspectionCycle, QualityInspectionCycle);
 	}
 
-	/** Get Waschprobe.
-		@return Waschprobe	  */
 	@Override
-	public java.lang.String getQualityInspectionCycle () 
+	public java.lang.String getQualityInspectionCycle() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_QualityInspectionCycle);
+		return get_ValueAsString(COLUMNNAME_QualityInspectionCycle);
 	}
 
-	/** Set RV_M_Material_Tracking_HU_Details_ID.
-		@param RV_M_Material_Tracking_HU_Details_ID RV_M_Material_Tracking_HU_Details_ID	  */
 	@Override
-	public void setRV_M_Material_Tracking_HU_Details_ID (int RV_M_Material_Tracking_HU_Details_ID)
+	public void setRV_M_Material_Tracking_HU_Details_ID (final int RV_M_Material_Tracking_HU_Details_ID)
 	{
 		if (RV_M_Material_Tracking_HU_Details_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_RV_M_Material_Tracking_HU_Details_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_RV_M_Material_Tracking_HU_Details_ID, Integer.valueOf(RV_M_Material_Tracking_HU_Details_ID));
+			set_ValueNoCheck (COLUMNNAME_RV_M_Material_Tracking_HU_Details_ID, RV_M_Material_Tracking_HU_Details_ID);
 	}
 
-	/** Get RV_M_Material_Tracking_HU_Details_ID.
-		@return RV_M_Material_Tracking_HU_Details_ID	  */
 	@Override
-	public int getRV_M_Material_Tracking_HU_Details_ID () 
+	public int getRV_M_Material_Tracking_HU_Details_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_RV_M_Material_Tracking_HU_Details_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_RV_M_Material_Tracking_HU_Details_ID);
 	}
 }

@@ -10,6 +10,9 @@ import static de.metas.material.event.EventTestHelper.createProductDescriptor;
 import java.math.BigDecimal;
 import java.time.Instant;
 
+import de.metas.document.dimension.Dimension;
+import de.metas.product.acct.api.ActivityId;
+import de.metas.project.ProjectId;
 import org.mockito.Mockito;
 
 import de.metas.material.dispo.commons.candidate.Candidate;
@@ -62,12 +65,28 @@ public class RepositoryTestHelper
 				.date(NOW)
 				.build();
 
+		final Dimension dimension = Dimension.builder()
+				.activityId(ActivityId.ofRepoIdOrNull(-1))
+				.campaignId(0)
+				.projectId(ProjectId.ofRepoIdOrNull(-1))
+				.userElement1Id(0)
+				.userElement2Id(0)
+				.userElementString1(null)
+				.userElementString2(null)
+				.userElementString3(null)
+				.userElementString4(null)
+				.userElementString5(null)
+				.userElementString6(null)
+				.userElementString7(null)
+				.build();
+
 		stockCandidate = candidateRepositoryCommands
 				.addOrUpdateOverwriteStoredSeqNo(
 						Candidate.builder()
 								.type(CandidateType.STOCK)
 								.clientAndOrgId(CLIENT_AND_ORG_ID)
 								.materialDescriptor(materialDescriptorOfStockCandidate)
+								.dimension(dimension)
 								.build())
 				.getCandidate();
 
@@ -84,6 +103,7 @@ public class RepositoryTestHelper
 								.type(CandidateType.STOCK)
 								.clientAndOrgId(CLIENT_AND_ORG_ID)
 								.materialDescriptor(laterMaterialDescriptor)
+								.dimension(dimension)
 								.build())
 				.getCandidate();
 	}
@@ -94,9 +114,9 @@ public class RepositoryTestHelper
 				.productId(PRODUCT_ID)
 				.warehouseId(WAREHOUSE_ID)
 				.timeRangeEnd(DateAndSeqNo.builder()
-						.date(date)
-						.operator(Operator.INCLUSIVE)
-						.build())
+									  .date(date)
+									  .operator(Operator.INCLUSIVE)
+									  .build())
 				.build();
 
 		return CandidatesQuery.builder()
@@ -111,9 +131,9 @@ public class RepositoryTestHelper
 				.productId(PRODUCT_ID)
 				.warehouseId(WAREHOUSE_ID)
 				.timeRangeStart(DateAndSeqNo.builder()
-						.date(date)
-						.operator(Operator.INCLUSIVE)
-						.build())
+										.date(date)
+										.operator(Operator.INCLUSIVE)
+										.build())
 				.build();
 
 		return CandidatesQuery.builder()

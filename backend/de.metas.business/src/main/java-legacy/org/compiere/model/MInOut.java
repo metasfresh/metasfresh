@@ -25,6 +25,12 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
+import de.metas.common.util.time.SystemTime;
+import de.metas.document.location.DocumentLocation;
+import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
+import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
+import de.metas.report.DocumentReportService;
+import de.metas.report.ReportResultData;
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.ProductASIMandatoryException;
@@ -38,7 +44,8 @@ import org.adempiere.warehouse.api.IWarehouseBL;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.apache.commons.collections4.comparators.ComparatorChain;
 import org.compiere.Adempiere;
-import org.compiere.print.ReportEngine;
+import org.compiere.SpringContextHolder;
+import de.metas.report.StandardDocumentReportType;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -78,7 +85,6 @@ import de.metas.product.IStorageBL;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 
 /**
  * Shipment Model
@@ -92,10 +98,10 @@ import de.metas.util.time.SystemTime;
  * @author victor.perez@e-evolution.com, e-Evolution http://www.e-evolution.com
  *         <li>FR [ 1948157 ] Is necessary the reference for document reverse
  *         <li>FR [ 2520591 ] Support multiples calendar for Org
- * @see http ://sourceforge.net/tracker2/?func=detail&atid=879335&aid=2520591&group_id =176962
+ * see http://sourceforge.net/tracker2/?func=detail&atid=879335&aid=2520591&group_id =176962
  * @author Armen Rizal, Goodwill Consulting
  *         <li>BF [ 1745154 ] Cost in Reversing Material Related Docs
- * @see http ://sourceforge.net/tracker/?func=detail&atid=879335&aid=1948157&group_id =176962
+ * see http://sourceforge.net/tracker/?func=detail&atid=879335&aid=1948157&group_id =176962
  */
 public class MInOut extends X_M_InOut implements IDocument
 {
@@ -313,9 +319,8 @@ public class MInOut extends X_M_InOut implements IDocument
 	{
 		this(order.getCtx(), 0, order.get_TrxName());
 		setClientOrg(order);
-		setC_BPartner_ID(order.getC_BPartner_ID());
-		setC_BPartner_Location_ID(order.getC_BPartner_Location_ID()); // shipment address
-		setAD_User_ID(order.getAD_User_ID());
+
+		InOutDocumentLocationAdapterFactory.locationAdapter(this).setFrom(order);
 		//
 
 		// 04579 fixing this problem so i can create a shipment for a PO order
@@ -396,16 +401,16 @@ public class MInOut extends X_M_InOut implements IDocument
 		if (order.isSOTrx())
 		{
 			setIsDropShip(false);
-			setDropShip_BPartner_ID(0);
-			setDropShip_Location_ID(0);
-			setDropShip_User_ID(0);
+			InOutDocumentLocationAdapterFactory
+					.deliveryLocationAdapter(this)
+					.setFrom(DocumentLocation.EMPTY);
 		}
 		else
 		{
 			setIsDropShip(order.isDropShip());
-			setDropShip_BPartner_ID(order.getDropShip_BPartner_ID());
-			setDropShip_Location_ID(order.getDropShip_Location_ID());
-			setDropShip_User_ID(order.getDropShip_User_ID());
+			InOutDocumentLocationAdapterFactory
+					.deliveryLocationAdapter(this)
+					.setFrom(OrderDocumentLocationAdapterFactory.deliveryLocationAdapter(order).toDocumentLocation());
 		}
 		// metas end: cg: 01717
 		// metas
@@ -438,9 +443,7 @@ public class MInOut extends X_M_InOut implements IDocument
 	{
 		this(invoice.getCtx(), 0, invoice.get_TrxName());
 		setClientOrg(invoice);
-		setC_BPartner_ID(invoice.getC_BPartner_ID());
-		setC_BPartner_Location_ID(invoice.getC_BPartner_Location_ID()); // shipment address
-		setAD_User_ID(invoice.getAD_User_ID());
+		InOutDocumentLocationAdapterFactory.locationAdapter(this).setFrom(invoice);
 		//
 		setM_Warehouse_ID(M_Warehouse_ID);
 		setIsSOTrx(invoice.isSOTrx());
@@ -504,9 +507,9 @@ public class MInOut extends X_M_InOut implements IDocument
 
 			// Drop Shipment
 			setIsDropShip(order.isDropShip());
-			setDropShip_BPartner_ID(order.getDropShip_BPartner_ID());
-			setDropShip_Location_ID(order.getDropShip_Location_ID());
-			setDropShip_User_ID(order.getDropShip_User_ID());
+			InOutDocumentLocationAdapterFactory
+					.deliveryLocationAdapter(this)
+					.setFrom(OrderDocumentLocationAdapterFactory.deliveryLocationAdapter(order).toDocumentLocation());
 		}
 	} // MInOut
 
@@ -521,10 +524,7 @@ public class MInOut extends X_M_InOut implements IDocument
 	{
 		this(original.getCtx(), 0, original.get_TrxName());
 		setClientOrg(original);
-
-		setC_BPartner_ID(original.getC_BPartner_ID());
-		setC_BPartner_Location_ID(original.getC_BPartner_Location_ID()); // shipment address
-		setAD_User_ID(original.getAD_User_ID());
+		InOutDocumentLocationAdapterFactory.locationAdapter(this).setFrom(original);
 		//
 		setM_Warehouse_ID(original.getM_Warehouse_ID());
 		setIsSOTrx(original.isSOTrx());
@@ -570,9 +570,9 @@ public class MInOut extends X_M_InOut implements IDocument
 
 		// DropShipment
 		setIsDropShip(original.isDropShip());
-		setDropShip_BPartner_ID(original.getDropShip_BPartner_ID());
-		setDropShip_Location_ID(original.getDropShip_Location_ID());
-		setDropShip_User_ID(original.getDropShip_User_ID());
+		InOutDocumentLocationAdapterFactory
+				.deliveryLocationAdapter(this)
+				.setFrom(InOutDocumentLocationAdapterFactory.deliveryLocationAdapter(original).toDocumentLocation());
 
 		// metas
 		copyAdditionalCols(original);
@@ -639,41 +639,13 @@ public class MInOut extends X_M_InOut implements IDocument
 		return dt.getName() + " " + getDocumentNo();
 	} // getDocumentInfo
 
-	/**
-	 * Create PDF
-	 *
-	 * @return File or null
-	 */
 	@Override
 	public File createPDF()
 	{
-		try
-		{
-			final File temp = File.createTempFile(get_TableName() + get_ID() + "_", ".pdf");
-			return createPDF(temp);
-		}
-		catch (final Exception e)
-		{
-			log.error("Could not create PDF", e);
-		}
-		return null;
-	} // getPDF
-
-	/**
-	 * Create PDF file
-	 *
-	 * @param file output file
-	 * @return file if success
-	 */
-	public File createPDF(final File file)
-	{
-		final ReportEngine re = ReportEngine.get(getCtx(), ReportEngine.SHIPMENT, getM_InOut_ID(), get_TrxName());
-		if (re == null)
-		{
-			return null;
-		}
-		return re.getPDF(file);
-	} // createPDF
+		final DocumentReportService documentReportService = SpringContextHolder.instance.getBean(DocumentReportService.class);
+		final ReportResultData report = documentReportService.createStandardDocumentReportData(getCtx(), StandardDocumentReportType.SHIPMENT, getM_InOut_ID());
+		return report.writeToTemporaryFile(get_TableName() + get_ID());
+	}
 
 	/**
 	 * Get Lines of Shipment
@@ -913,7 +885,7 @@ public class MInOut extends X_M_InOut implements IDocument
 	 *
 	 * @param bp business partner
 	 */
-	public void setBPartner(final I_C_BPartner bp)
+	private void setBPartner(final I_C_BPartner bp)
 	{
 		if (bp == null)
 		{
@@ -2197,14 +2169,15 @@ public class MInOut extends X_M_InOut implements IDocument
 		counter.setAD_Org_ID(counterAD_Org_ID.getRepoId());
 		counter.setM_Warehouse_ID(WarehouseId.toRepoId(counterOrgInfo.getWarehouseId()));
 		//
+		counter.setAD_User_ID(-1); // don't leave the old AD_User_ID dangling in our copy, because it doesn't go together with counterBP
 		counter.setBPartner(counterBP);
 
 		if (isDropShip())
 		{
 			counter.setIsDropShip(true);
-			counter.setDropShip_BPartner_ID(getDropShip_BPartner_ID());
-			counter.setDropShip_Location_ID(getDropShip_Location_ID());
-			counter.setDropShip_User_ID(getDropShip_User_ID());
+			InOutDocumentLocationAdapterFactory
+					.deliveryLocationAdapter(counter)
+					.setFrom(InOutDocumentLocationAdapterFactory.deliveryLocationAdapter(this).toDocumentLocation());
 		}
 
 		// metas

@@ -8,6 +8,7 @@ import java.util.Locale.LanguageRange;
 import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 import org.compiere.util.ValueNamePair;
@@ -55,7 +56,7 @@ import lombok.ToString;
 @ToString
 public final class ADLanguageList
 {
-	public static final Builder builder()
+	public static Builder builder()
 	{
 		return new Builder();
 	}
@@ -104,12 +105,13 @@ public final class ADLanguageList
 	/**
 	 * Extract preferred language from HTTP "Accept-Language" header.
 	 * 
-	 * @param acceptLanguageHeader
-	 * @param defaultValue
 	 * @return preferred language or <code>defaultValue</code>
-	 * @see https://tools.ietf.org/html/rfc5646#section-2.1
+	 * See https://tools.ietf.org/html/rfc5646#section-2.1
 	 */
-	public String getAD_LanguageFromHttpAcceptLanguage(final String acceptLanguageHeader, final String defaultValue)
+	@Nullable
+	public String getAD_LanguageFromHttpAcceptLanguage(
+			@Nullable final String acceptLanguageHeader,
+			@Nullable final String defaultValue)
 	{
 		if (Check.isEmpty(acceptLanguageHeader, true))
 		{
@@ -155,7 +157,7 @@ public final class ADLanguageList
 				.collect(ImmutableBiMap.toImmutableBiMap(adLanguage -> adLanguage, adLanguage -> toHttpLanguageTag(adLanguage)));
 	}
 
-	public static final String toHttpLanguageTag(final String adLanguage)
+	public static String toHttpLanguageTag(final String adLanguage)
 	{
 		return adLanguage.replace('_', '-').trim().toLowerCase();
 	}

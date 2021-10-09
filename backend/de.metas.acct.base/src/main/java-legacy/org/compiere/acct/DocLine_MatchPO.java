@@ -1,17 +1,5 @@
 package org.compiere.acct;
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
-import org.compiere.model.I_C_Order;
-import org.compiere.model.I_M_InOut;
-import org.compiere.model.I_M_InOutLine;
-import org.compiere.model.I_M_MatchPO;
-import org.compiere.model.X_M_InOut;
-import org.compiere.util.TimeUtil;
-
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.costing.AggregatedCostAmount;
@@ -22,6 +10,7 @@ import de.metas.costing.CostSegment;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.CostingMethod;
 import de.metas.currency.CurrencyPrecision;
+import de.metas.currency.CurrencyRate;
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.interfaces.I_C_OrderLine;
@@ -34,6 +23,17 @@ import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_InOutLine;
+import org.compiere.model.I_M_MatchPO;
+import org.compiere.model.X_M_InOut;
+import org.compiere.util.TimeUtil;
+
+import java.math.BigDecimal;
+import java.sql.Timestamp;
 
 /*
  * #%L
@@ -61,7 +61,7 @@ final class DocLine_MatchPO extends DocLine<Doc_MatchPO>
 {
 	private final transient ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
 
-	private I_C_OrderLine orderLine;
+	private final I_C_OrderLine orderLine;
 
 	public DocLine_MatchPO(final I_M_MatchPO matchPO, final Doc_MatchPO doc)
 	{
@@ -89,21 +89,16 @@ final class DocLine_MatchPO extends DocLine<Doc_MatchPO>
 		}
 
 		final I_C_Order order = orderLine.getC_Order();
-		final BigDecimal rate = currencyConversionBL.getRate(
+		final CurrencyRate conversionRate = currencyConversionBL.getCurrencyRate(
 				poCost.getCurrencyId(),
 				as.getCurrencyId(),
 				TimeUtil.asLocalDate(order.getDateAcct()),
 				CurrencyConversionTypeId.ofRepoIdOrNull(order.getC_ConversionType_ID()),
 				ClientId.ofRepoId(orderLine.getAD_Client_ID()),
 				OrgId.ofRepoId(orderLine.getAD_Org_ID()));
-		if (rate == null)
-		{
-			throw newPostingException()
-					.setAcctSchema(as)
-					.setDetailMessage("Purchase Order not convertible");
-		}
+
 		return poCost
-				.multiply(rate)
+				.multiply(conversionRate.getConversionRate())
 				.roundToPrecisionIfNeeded(as.getCosting().getCostingPrecision());
 	}
 

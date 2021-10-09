@@ -96,6 +96,7 @@ public class C_Invoice_Candidate_Builder
 
 	private int M_PriceList_Version_ID;
 	private int M_PricingSystem_ID;
+	private int asyncBatchId;
 
 	public C_Invoice_Candidate_Builder(@NonNull final AbstractICTestSupport test)
 	{
@@ -112,17 +113,7 @@ public class C_Invoice_Candidate_Builder
 	{
 		final Properties ctx = Env.getCtx();
 		final String trxName = ITrx.TRXNAME_ThreadInherited; // Services.get(ITrxManager.class).createTrxName("createInvoiceCandidate");
-
-		//
-		// Configure the BPartner
-		{
-			final I_C_BPartner billPartner;
-			billPartner = InterfaceWrapperHelper.create(ctx, I_C_BPartner.class, trxName);
-			billPartner.setC_BPartner_ID(billBPartnerId.getRepoId());
-
-			InterfaceWrapperHelper.save(billPartner);
-		}
-
+		
 		final I_C_Invoice_Candidate ic = InterfaceWrapperHelper.create(ctx, I_C_Invoice_Candidate.class, trxName);
 		POJOWrapper.setInstanceName(ic, instanceName);
 
@@ -191,6 +182,7 @@ public class C_Invoice_Candidate_Builder
 		ic.setPriceEntered(BigDecimal.valueOf(priceEntered));
 		ic.setPriceEntered_Override(priceEntered_Override);
 		ic.setC_UOM_ID(UomId.toRepoId(uomId));
+		ic.setC_Async_Batch_ID(asyncBatchId);
 
 		Check.errorIf(isSOTrx == null, "this builder needs isSOTrx to be set before it is able to build an IC; this={}", this); // avoid autoboxing-NPE
 		ic.setIsSOTrx(isSOTrx);
@@ -285,12 +277,18 @@ public class C_Invoice_Candidate_Builder
 		return ic;
 	}
 
+	/**
+	 * Needs to be an existing partner's ID
+	 */
 	public C_Invoice_Candidate_Builder setBillBPartnerId(final int billBPartnerId)
 	{
 		return setBillBPartnerId(BPartnerId.ofRepoId(billBPartnerId));
 	}
 
-	public C_Invoice_Candidate_Builder setBillBPartnerId(final BPartnerId billBPartnerId)
+	/**
+	 * Needs to be an existing partner's ID
+	 */
+	public C_Invoice_Candidate_Builder setBillBPartnerId(@NonNull final BPartnerId billBPartnerId)
 	{
 		this.billBPartnerId = billBPartnerId;
 		return this;
@@ -471,6 +469,12 @@ public class C_Invoice_Candidate_Builder
 	public C_Invoice_Candidate_Builder setOrgId(@NonNull final OrgId orgId)
 	{
 		this.orgId = orgId;
+		return this;
+	}
+
+	public C_Invoice_Candidate_Builder setAsyncBatchId(final int asyncBatchId)
+	{
+		this.asyncBatchId = asyncBatchId;
 		return this;
 	}
 }

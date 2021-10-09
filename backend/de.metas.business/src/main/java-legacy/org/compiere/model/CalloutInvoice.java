@@ -16,28 +16,13 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
-
-import java.math.BigDecimal;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.util.Properties;
-
-import org.adempiere.ad.callout.api.ICalloutField;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ISysConfigBL;
-import org.compiere.Adempiere;
-import org.compiere.util.DB;
-import org.compiere.util.DisplayType;
-import org.compiere.util.Env;
-
 import de.metas.bpartner.BPartnerContactId;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.document.IDocTypeDAO;
+import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapter;
+import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapterFactory;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.logging.MetasfreshLastError;
 import de.metas.payment.PaymentRule;
@@ -48,13 +33,28 @@ import de.metas.pricing.service.IPriceListBL;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.product.IProductBL;
 import de.metas.security.IUserRolePermissions;
-import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.ITaxDAO;
-import de.metas.uom.IUOMDAO;
 import de.metas.uom.LegacyUOMConversionUtils;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import org.adempiere.ad.callout.api.ICalloutField;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
+import org.compiere.Adempiere;
+import org.compiere.util.DB;
+import org.compiere.util.DisplayType;
+import org.compiere.util.Env;
+
+import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.Properties;
+
+import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 
 /**
  * Invoice Callouts
@@ -397,15 +397,15 @@ public class CalloutInvoice extends CalloutEngine
 		// No Product defined
 		if (invoiceLine.getM_Product_ID() > 0)
 		{
-			invoiceLine.setC_Charge(null);
+			invoiceLine.setC_Charge_ID(-1);
 			return "ChargeExclusively";
 		}
 
 		invoiceLine.setM_AttributeSetInstance(null);
 		invoiceLine.setS_ResourceAssignment_ID(-1);
-		invoiceLine.setC_UOM_ID(IUOMDAO.C_UOM_ID_Each); // EA
+		invoiceLine.setC_UOM_ID(UomId.EACH.getRepoId()); // EA
 
-		invoiceLine.setPrice_UOM_ID(IUOMDAO.C_UOM_ID_Each); // 07216: Make sure price UOM is also filled.
+		invoiceLine.setPrice_UOM_ID(UomId.EACH.getRepoId()); // 07216: Make sure price UOM is also filled.
 
 		calloutField.putContext(CTX_DiscountSchema, false);
 
@@ -473,16 +473,16 @@ public class CalloutInvoice extends CalloutEngine
 		}
 
 		// Check Partner Location
-		final int shipBPartnerLocationID = invoice.getC_BPartner_Location_ID();
-		if (shipBPartnerLocationID <= 0)
+		final BPartnerLocationAndCaptureId shipBPartnerLocationID = InvoiceDocumentLocationAdapterFactory.locationAdapter(invoice).getBPartnerLocationAndCaptureIdIfExists().orElse(null);
+		if (shipBPartnerLocationID == null)
 		{
 			return amt(calloutField);	//
 		}
 
-		log.debug("Ship BP_Location=" + shipBPartnerLocationID);
+		log.debug("Ship BP_Location={}", shipBPartnerLocationID);
 
-		final int billBPartnerLocationID = shipBPartnerLocationID;
-		log.debug("Bill BP_Location=" + billBPartnerLocationID);
+		final BPartnerLocationAndCaptureId billBPartnerLocationID = shipBPartnerLocationID;
+		log.debug("Bill BP_Location={}", billBPartnerLocationID);
 
 		// Dates
 
@@ -495,13 +495,25 @@ public class CalloutInvoice extends CalloutEngine
 		final int orgID = invoiceLine.getAD_Org_ID();
 		log.debug("Org=" + orgID);
 
-		final int warehouseID = calloutField.getGlobalContextAsInt("#M_Warehouse_ID");
+		final int warehouseID;
+		if (invoice.getM_Warehouse_ID() > 0)
+		{
+			warehouseID = invoice.getM_Warehouse_ID();
+
+		}
+		else
+		{
+			warehouseID = calloutField.getGlobalContextAsInt("#M_Warehouse_ID");
+		}
+
 		log.debug("Warehouse={}", warehouseID);
 
 		//
 		final int taxID = Tax.get(ctx, productID, chargeID, billDate,
-				shipDate, orgID, warehouseID,
-				billBPartnerLocationID, shipBPartnerLocationID, invoice.isSOTrx());
+								  shipDate, orgID, warehouseID,
+								  billBPartnerLocationID,
+								  shipBPartnerLocationID,
+								  invoice.isSOTrx());
 
 		log.debug("Tax ID={}", taxID);
 
@@ -626,7 +638,7 @@ public class CalloutInvoice extends CalloutEngine
 		{
 			priceActual = (BigDecimal)value;
 			priceEntered = LegacyUOMConversionUtils.convertToProductUOM(ctx, productID, uomToID, priceActual);
-
+ 
 			if (priceEntered == null)
 			{
 				priceEntered = priceActual;
@@ -636,20 +648,8 @@ public class CalloutInvoice extends CalloutEngine
 					+ " -> PriceEntered=" + priceEntered);
 
 			invoiceLine.setPriceEntered(priceEntered);
-
 		}
-		else if (columnName.equals("PriceEntered"))
-		{
-			priceEntered = (BigDecimal)value;
-
-			// task 08763: PriceActual = PriceEntered should be OK in invoices. see the task chant and wiki-page for details
-			priceActual = pricePrecision.round(priceEntered);
-			//
-			log.debug("amt - PriceEntered=" + priceEntered
-					+ " -> PriceActual=" + priceActual);
-
-			invoiceLine.setPriceActual(priceActual);
-		}
+		
 
 		/*
 		 * Discount entered - Calculate Actual/Entered
@@ -738,13 +738,13 @@ public class CalloutInvoice extends CalloutEngine
 			else
 			{
 				final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
-				final I_C_Tax tax = taxDAO.getTaxByIdOrNull(invoiceLine.getC_Tax_ID());
+				final de.metas.tax.api.Tax tax = taxDAO.getTaxByIdOrNull(invoiceLine.getC_Tax_ID());
 
 				if (tax != null)
 				{
 
 					final boolean taxIncluded = isTaxIncluded(invoiceLine);
-					taxAmt = Services.get(ITaxBL.class).calculateTax(tax, lineNetAmt, taxIncluded, pricePrecision.toInt());
+					taxAmt = tax.calculateTax(lineNetAmt, taxIncluded, pricePrecision.toInt());
 					invoiceLine.setTaxAmt(taxAmt);
 				}
 			}

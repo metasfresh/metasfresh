@@ -1,63 +1,79 @@
 package org.adempiere.ad.persistence.modelgen;
 
-import com.google.common.base.Optional;
-
-import lombok.Data;
+import lombok.Builder;
+import lombok.NonNull;
 import lombok.ToString;
+import lombok.Value;
+
+import java.util.Optional;
 
 /**
  * Model Generator's Column Info
  *
  * @author tsa
- *
  */
-@Data
+@Value
 @ToString(exclude = "repository")
-/* package */class ColumnInfo
+class ColumnInfo
 {
-	private TableAndColumnInfoRepository repository;
+	TableAndColumnInfoRepository repository;
 	//
-	private final String tableName;
-	private final String columnName;
-	private final boolean isUpdateable;
-	private final boolean isMandatory;
-	private final int displayType;
-	/** i.e. AD_Column.AD_Reference_Value_ID */
-	private final int adReferenceId;
-	private final int fieldLength;
-	private final String defaultValue;
-	private final String valueMin;
-	private final String valueMax;
-	private final String vFormat;
-	private final String callout;
-	private final String name;
-	private final String description;
-	private final boolean virtualColumn;
-	private boolean lazyLoading;
-	private final boolean isEncrypted;
-	private final boolean isKey;
-	private final int seqNo;
-	private final int adTableId;
-	private boolean isIdentifier;
-	private String tableIdColumnName;
+	String tableName;
+	String columnName;
+	boolean isUpdatable;
+	boolean isMandatory;
+	int displayType;
+	/**
+	 * i.e. AD_Column.AD_Reference_Value_ID
+	 */
+	int adReferenceId;
+	int fieldLength;
+	String defaultValue;
+	String valueMin;
+	String valueMax;
+	String vFormat;
+	String callout;
+	String name;
+	String description;
+	boolean virtualColumn;
+	boolean lazyLoading;
+	boolean isEncrypted;
+	boolean isKey;
+	int seqNo;
+	int adTableId;
+	boolean isIdentifier;
+	String tableIdColumnName;
 
-	public ColumnInfo(final String tableName, final String columnName,
-			final boolean isUpdateable, final boolean isMandatory,
-			final int displayType, final int adReferenceId,
+	@Builder
+	private ColumnInfo(
+			@NonNull final TableAndColumnInfoRepository repository,
+			final String tableName,
+			final String columnName,
+			final boolean isUpdatable,
+			final boolean isMandatory,
+			final int displayType,
+			final int adReferenceId,
 			final int fieldLength,
-			final String defaultValue, final String valueMin, final String valueMax,
+			final String defaultValue,
+			final String valueMin,
+			final String valueMax,
 			final String vFormat,
 			final String callout,
-			final String name, final String description,
+			final String name,
+			final String description,
 			final boolean virtualColumn,
 			final boolean isEncrypted,
 			final boolean isKey,
+			final boolean isIdentifier,
+			final boolean lazyLoading,
 			final int seqNo,
-			final int adTableId)
+			final int adTableId,
+			final String tableIdColumnName)
 	{
+		this.repository = repository;
 		this.tableName = tableName;
 		this.columnName = columnName;
-		this.isUpdateable = isUpdateable;
+		this.isUpdatable = isUpdatable;
 		this.isMandatory = isMandatory;
 		this.displayType = displayType;
 		this.adReferenceId = adReferenceId;
@@ -72,8 +88,11 @@ import lombok.ToString;
 		this.virtualColumn = virtualColumn;
 		this.isEncrypted = isEncrypted;
 		this.isKey = isKey;
+		this.isIdentifier = isIdentifier;
+		this.lazyLoading = lazyLoading;
 		this.seqNo = seqNo;
 		this.adTableId = adTableId;
+		this.tableIdColumnName = tableIdColumnName;
 	}
 
 	/**

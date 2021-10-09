@@ -22,10 +22,12 @@ package de.metas.handlingunits.impl;
  * #L%
  */
 
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
-
+import com.google.common.collect.ImmutableSet;
+import de.metas.handlingunits.IHUWarehouseDAO;
+import de.metas.handlingunits.model.I_M_Locator;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -36,17 +38,15 @@ import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.Env;
 
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.handlingunits.IHUWarehouseDAO;
-import de.metas.handlingunits.model.I_M_Locator;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
 
 public class HUWarehouseDAO implements IHUWarehouseDAO
 {
 	private static final String MSG_NoQualityWarehouse = "NoQualityWarehouse";
+
+	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 
 	@Override
 	public List<I_M_Warehouse> retrievePickingWarehouses()
@@ -95,8 +95,6 @@ public class HUWarehouseDAO implements IHUWarehouseDAO
 	@Override
 	public I_M_Locator suggestAfterPickingLocator(@NonNull final I_M_Warehouse warehouse)
 	{
-		final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
-
 		final WarehouseId warehouseId = WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID());
 
 		for (final I_M_Locator huCurrentLocator : warehouseDAO.getLocators(warehouseId, I_M_Locator.class))
@@ -119,12 +117,25 @@ public class HUWarehouseDAO implements IHUWarehouseDAO
 	@Override
 	public List<de.metas.handlingunits.model.I_M_Warehouse> retrieveQualityReturnWarehouses()
 	{
-		final Set<WarehouseId> warehouseIds = retriveQualityReturnWarehouseIds();
+		final Set<WarehouseId> warehouseIds = retrieveQualityReturnWarehouseIds();
 
 		return Services.get(IWarehouseDAO.class).getByIds(warehouseIds, de.metas.handlingunits.model.I_M_Warehouse.class);
 	}
 
-	private Set<WarehouseId> retriveQualityReturnWarehouseIds()
+	@NonNull
+	public WarehouseId retrieveQuarantineWarehouseId()
+	{
+		final I_M_Warehouse warehouse = warehouseDAO.retrieveQuarantineWarehouseOrNull();
+
+		if (warehouse == null)
+		{
+			throw new AdempiereException("@NotFound@ @M_Warehouse_ID@ (@IsQuarantineWarehouse@=@Y@)");
+		}
+
+		return WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID());
+	}
+
+	public Set<WarehouseId> retrieveQualityReturnWarehouseIds()
 	{
 		final Set<WarehouseId> warehouseIds = Services.get(IQueryBL.class)
 				.createQueryBuilderOutOfTrx(de.metas.handlingunits.model.I_M_Warehouse.class)

@@ -1,16 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution *
- * Copyright (C) 2008 SC ARHIPAC SERVICE SRL. All Rights Reserved. *
- * This program is free software; you can redistribute it and/or modify it *
- * under the terms version 2 of the GNU General Public License as published *
- * by the Free Software Foundation. This program is distributed in the hope *
- * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
- * See the GNU General Public License for more details. *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
- *****************************************************************************/
 package org.adempiere.exceptions;
 
 import static de.metas.common.util.CoalesceUtil.coalesceSuppliers;
@@ -53,7 +40,6 @@ import lombok.NonNull;
  *
  * @author Teo Sarca, SC ARHIPAC SERVICE SRL
  */
-@SuppressWarnings("serial")
 public class AdempiereException extends RuntimeException
 		implements IIssueReportableAware
 {
@@ -61,10 +47,9 @@ public class AdempiereException extends RuntimeException
 	 * Wraps given <code>throwable</code> as {@link AdempiereException}, if it's not already an {@link AdempiereException}.<br>
 	 * Note that this method also tries to pick the most specific adempiere exception (work in progress).
 	 *
-	 * @param throwable
 	 * @return {@link AdempiereException} or <code>null</code> if the throwable was null.
 	 */
-	public static AdempiereException wrapIfNeeded(final Throwable throwable)
+	public static AdempiereException wrapIfNeeded(@Nullable final Throwable throwable)
 	{
 		if (throwable == null)
 		{
@@ -99,10 +84,9 @@ public class AdempiereException extends RuntimeException
 	/**
 	 * Extracts throwable message.
 	 *
-	 * @param throwable
 	 * @return message; never return null
 	 */
-	public static final String extractMessage(final Throwable throwable)
+	public static String extractMessage(@Nullable final Throwable throwable)
 	{
 		// guard against NPE, shall not happen
 		if (throwable == null)
@@ -128,7 +112,7 @@ public class AdempiereException extends RuntimeException
 		}
 	}
 
-	public static final ITranslatableString extractMessageTrl(final Throwable throwable)
+	public static ITranslatableString extractMessageTrl(final Throwable throwable)
 	{
 		if (throwable instanceof AdempiereException)
 		{
@@ -139,7 +123,7 @@ public class AdempiereException extends RuntimeException
 		return TranslatableStrings.constant(extractMessage(throwable));
 	}
 
-	public static final Map<String, Object> extractParameters(final Throwable throwable)
+	public static Map<String, Object> extractParameters(final Throwable throwable)
 	{
 		if (throwable instanceof AdempiereException)
 		{
@@ -154,10 +138,9 @@ public class AdempiereException extends RuntimeException
 	/**
 	 * Extract cause exception from those exceptions which are only about wrapping the real cause (e.g. ExecutionException, InvocationTargetException).
 	 *
-	 * @param throwable
 	 * @return cause or throwable; never returns null
 	 */
-	public static final Throwable extractCause(final Throwable throwable)
+	public static Throwable extractCause(final Throwable throwable)
 	{
 		final Throwable cause = throwable.getCause();
 		if (cause == null)
@@ -198,11 +181,9 @@ public class AdempiereException extends RuntimeException
 	/**
 	 * Convenient method to suppress a given exception if there is an already main exception which is currently thrown.
 	 *
-	 * @param exceptionToSuppress
-	 * @param mainException
 	 * @throws AdempiereException if mainException was null. It will actually be the exceptionToSuppress, wrapped to AdempiereException if it was needed.
 	 */
-	public static final void suppressOrThrow(final Throwable exceptionToSuppress, final Throwable mainException)
+	public static void suppressOrThrow(final Throwable exceptionToSuppress, final Throwable mainException)
 	{
 		if (mainException == null)
 		{
@@ -219,7 +200,7 @@ public class AdempiereException extends RuntimeException
 	 *
 	 * If is NOT enabled, the language used to translate the error message is acquired when the message is translated.
 	 */
-	public static final void enableCaptureLanguageOnConstructionTime()
+	public static void enableCaptureLanguageOnConstructionTime()
 	{
 		AdempiereException.captureLanguageOnConstructionTime = true;
 	}
@@ -233,6 +214,7 @@ public class AdempiereException extends RuntimeException
 
 	private final ITranslatableString messageTrl;
 	/** Build message but not translated */
+	@Nullable
 	private ITranslatableString _messageBuilt = null;
 	private final String adLanguage;
 
@@ -289,7 +271,7 @@ public class AdempiereException extends RuntimeException
 		this.mdcContextMap = captureMDCContextMap();
 	}
 
-	public AdempiereException(final String plainMessage, final Throwable cause)
+	public AdempiereException(final String plainMessage, @Nullable final Throwable cause)
 	{
 		super(cause);
 		this.adLanguage = captureLanguageOnConstructionTime ? Env.getAD_Language() : null;
@@ -359,7 +341,7 @@ public class AdempiereException extends RuntimeException
 		this._messageBuilt = null;
 	}
 
-	private final ITranslatableString getMessageBuilt()
+	private ITranslatableString getMessageBuilt()
 	{
 		ITranslatableString messageBuilt = _messageBuilt;
 		if (messageBuilt == null)
@@ -389,7 +371,7 @@ public class AdempiereException extends RuntimeException
 		{
 			appendParameters(message);
 			final Throwable cause = getCause();
-			if (cause != null && cause instanceof AdempiereException)
+			if (cause instanceof AdempiereException)
 			{
 				final AdempiereException metasfreshCause = (AdempiereException)cause;
 				if (metasfreshCause.appendParametersToMessage) // also append the cause's parameters
@@ -403,14 +385,13 @@ public class AdempiereException extends RuntimeException
 
 	protected final String getADLanguage()
 	{
-		return coalesceSuppliers(() -> adLanguage, () -> Env.getAD_Language());
+		return coalesceSuppliers(() -> adLanguage, Env::getAD_Language);
 	}
 
 	/**
 	 * Convenient method to throw this exception or just log it as {@link Level#ERROR}.
 	 *
 	 * @param throwIt <code>true</code> if the exception shall be thrown
-	 * @param logger
 	 * @return always returns <code>false</code>.
 	 */
 	public final boolean throwOrLogSevere(final boolean throwIt, final Logger logger)
@@ -422,18 +403,15 @@ public class AdempiereException extends RuntimeException
 	 * Convenient method to throw this exception or just log it as {@link Level#WARN}.
 	 *
 	 * @param throwIt <code>true</code> if the exception shall be thrown
-	 * @param logger
-	 * @return always returns <code>false</code>.
 	 */
-	public final boolean throwOrLogWarning(final boolean throwIt, final Logger logger)
+	public final void throwOrLogWarning(final boolean throwIt, final Logger logger)
 	{
-		return throwOrLog(throwIt, Level.WARN, logger);
+		throwOrLog(throwIt, Level.WARN, logger);
 	}
 
 	/**
-	 * Convenient method to throw this exception if developer mode is enabled or just log it as {@link Level#WARNING}.
+	 * Convenient method to throw this exception if developer mode is enabled or just log it as {@link Level#WARN}.
 	 *
-	 * @param logger
 	 * @return always returns <code>false</code>.
 	 */
 	public final boolean throwIfDeveloperModeOrLogWarningElse(final Logger logger)
@@ -442,7 +420,7 @@ public class AdempiereException extends RuntimeException
 		return throwOrLog(throwIt, Level.WARN, logger);
 	}
 
-	private final boolean throwOrLog(final boolean throwIt, final Level logLevel, final Logger logger)
+	private boolean throwOrLog(final boolean throwIt, final Level logLevel, final Logger logger)
 	{
 		if (throwIt)
 		{
@@ -467,10 +445,9 @@ public class AdempiereException extends RuntimeException
 	 *
 	 * If the developer mode is not active, this method does nothing
 	 *
-	 * @param logger
 	 * @param exceptionSupplier {@link AdempiereException} supplier
 	 */
-	public static final void logWarningIfDeveloperMode(final Logger logger, Supplier<? extends AdempiereException> exceptionSupplier)
+	public static void logWarningIfDeveloperMode(final Logger logger, final Supplier<? extends AdempiereException> exceptionSupplier)
 	{
 		if (!Services.get(IDeveloperModeBL.class).isEnabled())
 		{
@@ -526,9 +503,9 @@ public class AdempiereException extends RuntimeException
 				: null;
 	}
 
-	public AdempiereException setIssueCategory(@NonNull final IssueCategory issueCategory)
+	public void setIssueCategory(@NonNull final IssueCategory issueCategory)
 	{
-		return setParameter(PARAMETER_IssueCategory, issueCategory);
+		setParameter(PARAMETER_IssueCategory, issueCategory);
 	}
 
 	@NonNull
@@ -560,34 +537,6 @@ public class AdempiereException extends RuntimeException
 		return this;
 	}
 
-	protected final AdempiereException putParametetersFrom(@Nullable final Throwable ex)
-	{
-		if (ex instanceof AdempiereException)
-		{
-			this.putParameteters(((AdempiereException)ex).parameters);
-		}
-
-		return this;
-	}
-
-	private final AdempiereException putParameteters(@Nullable final Map<String, Object> parameters)
-	{
-		if (parameters == null || parameters.isEmpty())
-		{
-			return this;
-		}
-
-		if (this.parameters == null)
-		{
-			this.parameters = new LinkedHashMap<>();
-		}
-
-		parameters.forEach((name, value) -> this.parameters.put(name, Null.box(value)));
-		resetMessageBuilt();
-
-		return this;
-	}
-
 	@OverridingMethodsMustInvokeSuper
 	public <T extends Enum<?>> AdempiereException setParameter(@NonNull final T enumValue)
 	{
@@ -602,16 +551,17 @@ public class AdempiereException extends RuntimeException
 		return enumValue.equals(getParameter(parameterName));
 	}
 
-	private static final <T extends Enum<?>> String buildParameterName(@NonNull final T enumValue)
+	private static <T extends Enum<?>> String buildParameterName(@NonNull final T enumValue)
 	{
 		return enumValue.getClass().getSimpleName();
 	}
 
 	public final boolean hasParameter(@NonNull final String name)
 	{
-		return parameters == null ? false : parameters.containsKey(name);
+		return parameters != null && parameters.containsKey(name);
 	}
 
+	@Nullable
 	public final Object getParameter(@NonNull final String name)
 	{
 		return parameters != null ? parameters.get(name) : null;
@@ -630,6 +580,7 @@ public class AdempiereException extends RuntimeException
 	 * Ask the exception to also include the parameters in it's message.
 	 */
 	@OverridingMethodsMustInvokeSuper
+	@NonNull
 	public AdempiereException appendParametersToMessage()
 	{
 		if (!appendParametersToMessage)
@@ -716,7 +667,7 @@ public class AdempiereException extends RuntimeException
 		return userValidationError;
 	}
 
-	public static final boolean isUserValidationError(final Throwable ex)
+	public static boolean isUserValidationError(final Throwable ex)
 	{
 		return (ex instanceof AdempiereException) && ((AdempiereException)ex).isUserValidationError();
 	}

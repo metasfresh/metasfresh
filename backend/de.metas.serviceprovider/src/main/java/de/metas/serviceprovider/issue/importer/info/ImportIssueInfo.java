@@ -25,7 +25,7 @@ package de.metas.serviceprovider.issue.importer.info;
 import com.google.common.collect.ImmutableList;
 import de.metas.organization.OrgId;
 import de.metas.project.ProjectId;
-import de.metas.serviceprovider.external.ExternalId;
+import de.metas.externalreference.ExternalId;
 import de.metas.serviceprovider.external.label.IssueLabel;
 import de.metas.serviceprovider.external.project.ExternalProjectReferenceId;
 import de.metas.serviceprovider.external.project.ExternalProjectType;
@@ -42,7 +42,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Value
-@Builder
+@Builder(toBuilder = true)
 public class ImportIssueInfo
 {
 	@Nullable
@@ -107,6 +107,10 @@ public class ImportIssueInfo
 
 	@NonNull
 	ImmutableList<IssueLabel> issueLabels;
+
+	@Nullable
+	LocalDate deliveredDate;
+
 
 	public String getSearchKey()
 	{

@@ -1,21 +1,19 @@
 package de.metas.material.planning.event;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-
-import java.math.BigDecimal;
-
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.planning.IMaterialPlanningContext;
-import de.metas.material.planning.IMaterialRequest;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
+
+import java.math.BigDecimal;
+
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 /*
  * #%L
@@ -43,7 +41,8 @@ import lombok.experimental.UtilityClass;
 public class SupplyRequiredHandlerUtils
 {
 
-	public IMaterialRequest mkRequest(
+	@NonNull
+	public MaterialRequest mkRequest(
 			@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor,
 			@NonNull final IMaterialPlanningContext mrpContext)
 	{

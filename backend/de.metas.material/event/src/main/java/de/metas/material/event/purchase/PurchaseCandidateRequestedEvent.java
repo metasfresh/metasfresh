@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.material.event.forecast.ForecastLine;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
@@ -42,16 +43,39 @@ public class PurchaseCandidateRequestedEvent implements MaterialEvent
 
 	EventDescriptor eventDescriptor;
 
-	/** If the purchase candidate is created according to this event, the respective {@link PurchaseCandidateCreatedEvent} will have the same suplyCandidateRepoId. */
+	/**
+	 * If the purchase candidate is created according to this event, the respective {@link PurchaseCandidateCreatedEvent} will have the same suplyCandidateRepoId.
+	 */
 	int supplyCandidateRepoId;
 
 	MaterialDescriptor purchaseMaterialDescriptor;
 
-	/** can specify the sales order line (if there is any) that triggered the material-dispo to request this purchase candidate. */
+	/**
+	 * can specify the sales order line (if there is any) that triggered the material-dispo to request this purchase candidate.
+	 */
 	int salesOrderLineRepoId;
 
-	/** analog to {@link #salesOrderLineRepoId}. */
+	/**
+	 * analog to {@link #salesOrderLineRepoId}.
+	 */
 	int salesOrderRepoId;
+
+	int forecastId;
+	int forecastLineId;
+
+	// Dimensions
+	int activityId;
+	int campaignId;
+	int projectId;
+	int userElementId1;
+	int userElementId2;
+	String userElementString1;
+	String userElementString2;
+	String userElementString3;
+	String userElementString4;
+	String userElementString5;
+	String userElementString6;
+	String userElementString7;
 
 	@Builder
 	@JsonCreator
@@ -60,12 +84,43 @@ public class PurchaseCandidateRequestedEvent implements MaterialEvent
 			@JsonProperty("purchaseMaterialDescriptor") @NonNull final MaterialDescriptor purchaseMaterialDescriptor,
 			@JsonProperty("salesOrderLineRepoId") @Nullable final int salesOrderLineRepoId,
 			@JsonProperty("salesOrderRepoId") @Nullable final int salesOrderRepoId,
-			@JsonProperty("eventDescriptor") @NonNull final EventDescriptor eventDescriptor)
+			@JsonProperty("forecastId") @Nullable final int forecastId,
+			@JsonProperty("forecastLineId") @Nullable final int forecastLineId,
+			@JsonProperty("eventDescriptor") @NonNull final EventDescriptor eventDescriptor,
+			@JsonProperty("activityId") @Nullable final int activityId,
+			@JsonProperty("campaignId") @Nullable final int campaignId,
+			@JsonProperty("projectId") @Nullable final int projectId,
+			@JsonProperty("userElementId1") @Nullable final int userElementId1,
+			@JsonProperty("userElementId2") @Nullable final int userElementId2,
+			@JsonProperty("userElementString1") @Nullable final String userElementString1,
+			@JsonProperty("userElementString2") @Nullable final String userElementString2,
+			@JsonProperty("userElementString3") @Nullable final String userElementString3,
+			@JsonProperty("userElementString4") @Nullable final String userElementString4,
+			@JsonProperty("userElementString5") @Nullable final String userElementString5,
+			@JsonProperty("userElementString6") @Nullable final String userElementString6,
+			@JsonProperty("userElementString7") @Nullable final String userElementString7)
 	{
 		this.supplyCandidateRepoId = Check.assumeGreaterThanZero(supplyCandidateRepoId, "supplyCandidateRepoId");
 		this.purchaseMaterialDescriptor = purchaseMaterialDescriptor;
 		this.salesOrderLineRepoId = salesOrderLineRepoId;
 		this.salesOrderRepoId = salesOrderRepoId;
 		this.eventDescriptor = eventDescriptor;
+
+		this.forecastId = forecastId;
+		this.forecastLineId = forecastLineId;
+
+		this.activityId = activityId;
+		this.campaignId = campaignId;
+		this.projectId = projectId;
+		this.userElementId1 = userElementId1;
+		this.userElementId2 = userElementId2;
+		this.userElementString1 = userElementString1;
+		this.userElementString2 = userElementString2;
+		this.userElementString3 = userElementString3;
+		this.userElementString4 = userElementString4;
+		this.userElementString5 = userElementString5;
+		this.userElementString6 = userElementString6;
+		this.userElementString7 = userElementString7;
+
 	}
 }

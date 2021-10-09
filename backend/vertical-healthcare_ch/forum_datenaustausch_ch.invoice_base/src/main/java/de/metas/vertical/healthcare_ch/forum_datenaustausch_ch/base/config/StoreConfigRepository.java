@@ -1,15 +1,13 @@
 package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.config;
 
+import de.metas.bpartner.service.BPartnerQuery;
+import de.metas.vertical.healthcare.forum_datenaustausch_ch.commons.model.I_HC_Forum_Datenaustausch_Config;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.commons.ForumDatenaustauschChConstants;
 import lombok.NonNull;
-
-import javax.annotation.Nullable;
-
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
-import de.metas.vertical.healthcare.forum_datenaustausch_ch.commons.model.I_HC_Forum_Datenaustausch_Config;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.config.ConfigRepositoryUtil.ConfigQuery;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.commons.ForumDatenaustauschChConstants;
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -37,7 +35,7 @@ import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.commons.ForumDate
 @Profile(ForumDatenaustauschChConstants.PROFILE)
 public class StoreConfigRepository
 {
-	public StoreConfig getForQueryOrNull(@NonNull final ConfigQuery query)
+	public StoreConfig getForQueryOrNull(@NonNull final BPartnerQuery query)
 	{
 		final I_HC_Forum_Datenaustausch_Config configRecord = ConfigRepositoryUtil.retrieveRecordForQueryOrNull(query);
 		return ofRecordOrNull(configRecord);

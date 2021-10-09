@@ -1,6 +1,12 @@
 package de.metas.handlingunits;
 
+import com.google.common.collect.ImmutableList;
+import de.metas.handlingunits.impl.CreatePackagesRequest;
+import de.metas.util.ISingletonService;
+import lombok.NonNull;
 import org.compiere.model.I_M_Package;
+
+import java.util.List;
 
 /*
  * #%L
@@ -24,14 +30,8 @@ import org.compiere.model.I_M_Package;
  * #L%
  */
 
-import de.metas.inout.InOutId;
-import de.metas.shipping.ShipperId;
-import de.metas.util.ISingletonService;
-import lombok.NonNull;
-
 public interface IInOutPackageDAO extends ISingletonService
 {
-
 	@NonNull
-	I_M_Package createM_Package(@NonNull InOutId inOutId, @NonNull ShipperId shipperId);
+	ImmutableList<I_M_Package> createM_Packages(List<CreatePackagesRequest> packagesRequestList);
 }

@@ -24,6 +24,8 @@ package org.adempiere.ad.callout.api;
 
 import java.util.Properties;
 
+import de.metas.util.lang.RepoIdAware;
+import lombok.NonNull;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.ValueNamePair;
@@ -165,4 +167,6 @@ public interface ICalloutField
 	{
 		return DisplayType.toBoolean(Env.getContext(getCtx(), getWindowNo(), name));
 	}
+
+	boolean isLookupValuesContainingId(@NonNull RepoIdAware id);
 }

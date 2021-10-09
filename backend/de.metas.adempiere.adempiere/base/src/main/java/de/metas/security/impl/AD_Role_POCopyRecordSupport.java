@@ -77,7 +77,7 @@ public class AD_Role_POCopyRecordSupport extends GeneralCopyRecordSupport
 		final String adLanguage = Env.getAD_Language(ctx);
 
 		final String timestampStr = DATE_FORMATTER.format(LocalDateTime.now());
-		final String userName = userDAO.retrieveUserFullname(adUserId);
+		final String userName = userDAO.retrieveUserFullName(adUserId);
 
 		// Create the name using the text from the specific AD_Message.
 		final String nameUnique = msgBL.getMsg(adLanguage, MSG_AD_Role_Name_Unique, new String[] { userName, timestampStr });

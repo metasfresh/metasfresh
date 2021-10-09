@@ -15,6 +15,8 @@ import lombok.NonNull;
 import lombok.ToString;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -85,11 +87,12 @@ final class FixedConversionRateMap
 		return getMultiplyRateOrNull(fromCurrencyId, toCurrencyId) != null;
 	}
 
+	@Nullable
 	private BigDecimal getMultiplyRateOrNull(
 			@NonNull final CurrencyId fromCurrencyId,
 			@NonNull final CurrencyId toCurrencyId)
 	{
-		final FixedConversionRateMap.FixedConversionRate rate = rates.get(FixedConversionRateKey.builder()
+		final FixedConversionRate rate = rates.get(FixedConversionRateKey.builder()
 				.fromCurrencyId(fromCurrencyId)
 				.toCurrencyId(toCurrencyId)
 				.build());
@@ -107,17 +110,4 @@ final class FixedConversionRateMap
 		CurrencyId toCurrencyId;
 	}
 
-	@Value
-	@Builder
-	public static class FixedConversionRate
-	{
-		@NonNull
-		CurrencyId fromCurrencyId;
-
-		@NonNull
-		CurrencyId toCurrencyId;
-
-		@NonNull
-		BigDecimal multiplyRate;
-	}
 }

@@ -22,16 +22,14 @@ package de.metas.monitoring.api.impl;
  * #L%
  */
 
-
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertThat;
+import de.metas.common.util.time.SystemTime;
+import org.junit.Test;
 
 import java.math.BigDecimal;
 
-import org.junit.Test;
-
-import de.metas.util.time.SystemTime;
-import de.metas.util.time.TimeSource;
+import static org.hamcrest.Matchers.comparesEqualTo;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
 
 public class MeterTests
 {
@@ -159,12 +157,6 @@ public class MeterTests
 	
 	private void setTime(final long millis)
 	{
-		SystemTime.setTimeSource(new TimeSource()
-		{
-			public long millis()
-			{
-				return millis;
-			}
-		});
+		de.metas.common.util.time.SystemTime.setTimeSource(() -> millis);
 	}
 }

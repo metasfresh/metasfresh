@@ -33,17 +33,14 @@ public interface I_C_OLCand extends de.metas.ordercandidate.model.I_C_OLCand
 	void setM_HU_PI_Item_Product_ID(int M_HU_PI_Item_Product_ID);
 	@Override
 	int getM_HU_PI_Item_Product_ID();
-	I_M_HU_PI_Item_Product getM_HU_PI_Item_Product();
 	// @formatter:on
 
 	// @formatter:off
 	String COLUMNNAME_M_HU_PI_Item_Product_Override_ID = "M_HU_PI_Item_Product_Override_ID";
 	@Override
 	void setM_HU_PI_Item_Product_Override_ID(int M_HU_PI_Item_Product_Override_ID);
-	void setM_HU_PI_Item_Product_Override(I_M_HU_PI_Item_Product M_HU_PI_Item_Product_Override);
 	@Override
 	int getM_HU_PI_Item_Product_Override_ID();
-	I_M_HU_PI_Item_Product getM_HU_PI_Item_Product_Override();
 	// @formatter:on
 
 	// @formatter:off
@@ -52,7 +49,6 @@ public interface I_C_OLCand extends de.metas.ordercandidate.model.I_C_OLCand
 	void setM_HU_PI_Item_Product_Effective_ID(int M_HU_PI_Item_Product_Effective_ID);
 	@Override
 	int getM_HU_PI_Item_Product_Effective_ID();
-	I_M_HU_PI_Item_Product getM_HU_PI_Item_Product_Effective();
 	// @formatter:on
 
 	// @formatter:off

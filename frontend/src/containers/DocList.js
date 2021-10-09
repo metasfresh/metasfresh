@@ -3,7 +3,7 @@ import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
 import classnames from 'classnames';
 
-import { updateUri } from '../actions/AppActions';
+import { updateUri } from '../utils';
 import { getWindowBreadcrumb } from '../actions/MenuActions';
 import Container from '../components/Container';
 import DocumentList from './DocumentList';
@@ -49,26 +49,11 @@ class DocList extends PureComponent {
    * @method updateUriCallback
    * @summary Update the url with query params if needed (ie add viewId, page etc)
    */
-  updateUriCallback = (prop, value) => {
-    const { updateUri, query, pathname } = this.props;
+  updateUriCallback = (updatedQuery) => {
+    const { query, pathname } = this.props;
+    const { viewId } = updatedQuery;
 
-    updateUri(pathname, query, prop, value);
-  };
-
-  /**
-   * @method handleUpdateParentSelectedIds
-   * @summary ToDo: Describe the method.
-   */
-  handleUpdateParentSelectedIds = (childSelection) => {
-    this.masterDocumentList.updateQuickActions(childSelection);
-  };
-
-  /**
-   * @method handleDocListRef
-   * @summary Store ref to the main DocumentList
-   */
-  handleDocListRef = (ref) => {
-    this.masterDocumentList = ref;
+    viewId && updateUri(pathname, query, updatedQuery);
   };
 
   render() {
@@ -103,7 +88,6 @@ class DocList extends PureComponent {
         processStatus={processStatus}
         includedView={includedView}
         modalHidden={!modal.visible && !rawModal.visible}
-        masterDocumentList={this.masterDocumentList}
       >
         <Overlay data={overlay.data} showOverlay={overlay.visible} />
 
@@ -113,7 +97,6 @@ class DocList extends PureComponent {
           })}
         >
           <DocumentList
-            ref={this.handleDocListRef}
             type="grid"
             updateUri={this.updateUriCallback}
             windowId={windowId}
@@ -121,7 +104,6 @@ class DocList extends PureComponent {
             includedView={includedView}
             inBackground={rawModal.visible}
             inModal={modal.visible}
-            fetchQuickActionsOnInit
             processStatus={processStatus}
             disablePaginationShortcuts={modal.visible || rawModal.visible}
             sort={queryCopy.sort}
@@ -140,13 +122,11 @@ class DocList extends PureComponent {
             !modal.visible && (
               <DocumentList
                 type="includedView"
-                windowId={includedView.windowType}
+                windowId={includedView.windowId}
                 defaultViewId={includedView.viewId}
                 parentWindowType={windowId}
                 parentDefaultViewId={viewId}
-                updateParentSelectedIds={this.handleUpdateParentSelectedIds}
                 viewProfileId={includedView.viewProfileId}
-                fetchQuickActionsOnInit
                 processStatus={processStatus}
                 isIncluded
                 inBackground={false}
@@ -180,42 +160,30 @@ class DocList extends PureComponent {
  * @prop {object} query - routing query
  * @prop {object} rawModal
  * @prop {string} windowId
+ * @prop {string} pathname
  */
 DocList.propTypes = {
   includedView: PropTypes.object,
   modal: PropTypes.object.isRequired,
   overlay: PropTypes.object,
   processStatus: PropTypes.string.isRequired,
-  query: PropTypes.object.isRequired,
-  pathname: PropTypes.string.isRequired,
   rawModal: PropTypes.object.isRequired,
   windowId: PropTypes.string,
   getWindowBreadcrumb: PropTypes.func.isRequired,
-  updateUri: PropTypes.func.isRequired,
+  pathname: PropTypes.string.isRequired,
+  query: PropTypes.object.isRequired,
 };
 
-/**
- * @method mapStateToProps
- * @summary ToDo: Describe the method.
- * @param {object} state
- */
 const mapStateToProps = (state) => {
   return {
     modal: state.windowHandler.modal,
     rawModal: state.windowHandler.rawModal,
     overlay: state.windowHandler.overlay,
-    includedView: state.listHandler.includedView.windowType
-      ? state.listHandler.includedView
+    includedView: state.viewHandler.includedView.windowId
+      ? state.viewHandler.includedView
       : null,
     processStatus: state.appHandler.processStatus,
-    pathname: state.routing.locationBeforeTransitions.pathname,
   };
 };
 
-export default connect(
-  mapStateToProps,
-  {
-    getWindowBreadcrumb,
-    updateUri,
-  }
-)(DocList);
+export default connect(mapStateToProps, { getWindowBreadcrumb })(DocList);

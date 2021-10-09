@@ -8,7 +8,7 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
-import de.metas.inoutcandidate.api.ShipmentScheduleId;
+import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.inoutcandidate.invalidation.segments.IShipmentScheduleSegment;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.process.PInstanceId;
@@ -32,7 +32,6 @@ public interface IShipmentScheduleInvalidateBL extends ISingletonService
 	 * <p>
 	 * <b>IMPORTANT:</b> won't invalidate any processed schedules.
 	 *
-	 * @param storageSegments
 	 * @param addToSelectionId if not null will add the invalidated records to given selection
 	 */
 	void flagSegmentsForRecompute(Collection<IShipmentScheduleSegment> storageSegments, PInstanceId addToSelectionId);

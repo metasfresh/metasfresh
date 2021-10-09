@@ -159,7 +159,9 @@ public interface ICompositeQueryFilter<T> extends IQueryFilter<T>
 	 * @param columnName
 	 * @param values
 	 * @return this
+	 * @deprecated  dev note: if the target column (i.e. column identified by @param columnName) has value null the query won't match
 	 */
+	@Deprecated
 	<V> ICompositeQueryFilter<T> addNotInArrayFilter(String columnName, Collection<V> values);
 
 	/**
@@ -237,11 +239,6 @@ public interface ICompositeQueryFilter<T> extends IQueryFilter<T>
 
 	/**
 	 * Add a {@link EqualsQueryFilter}
-	 *
-	 * @param columnName
-	 * @param value
-	 * @param modifier
-	 * @return this
 	 */
 	ICompositeQueryFilter<T> addEqualsFilter(String columnName, Object value, IQueryFilterModifier modifier);
 
@@ -251,15 +248,14 @@ public interface ICompositeQueryFilter<T> extends IQueryFilter<T>
 	 * Adds a filter for substrings. That filter creates SQL such as <code>columnName LIKE '%substring%'</code>.<br>
 	 * The string to filter by may contain {@code _} and {@code %}. Starting and trailing '%' are supplemented if missing.
 	 *
-	 * @param columnName
-	 * @param substring
+	 * Note: if you don't want the starting and trailing '%' to be supplemented, check out {@link #addCompareFilter(String, Operator, Object)}
+	 *
 	 * @param ignoreCase if <code>true</code> the filter will use <code>ILIKE</code> instead of <code>LIKE</code>
-	 * @return
 	 */
 	ICompositeQueryFilter<T> addStringLikeFilter(String columnName, String substring, boolean ignoreCase);
 
 	/**
-	 * See {@link #addSubstringFilter(String, String)}.
+	 * See {@link #addStringLikeFilter(String, String, boolean)}
 	 */
 	ICompositeQueryFilter<T> addStringLikeFilter(ModelColumn<T, ?> column, String substring, boolean ignoreCase);
 
@@ -271,9 +267,9 @@ public interface ICompositeQueryFilter<T> extends IQueryFilter<T>
 	 * Add a {@link NotEqualsQueryFilter}.
 	 * As with all {@link CompareQueryFilter}s: if the filter is about an {@code _ID}, then also {@link RepoIdAware} is supported.
 	 */
-	ICompositeQueryFilter<T> addNotEqualsFilter(String columnName, Object value);
+	ICompositeQueryFilter<T> addNotEqualsFilter(String columnName, @Nullable Object value);
 
-	ICompositeQueryFilter<T> addNotEqualsFilter(ModelColumn<T, ?> column, Object value);
+	ICompositeQueryFilter<T> addNotEqualsFilter(ModelColumn<T, ?> column, @Nullable Object value);
 
 	ICompositeQueryFilter<T> addNotNull(ModelColumn<T, ?> column);
 

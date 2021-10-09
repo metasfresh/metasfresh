@@ -43,6 +43,7 @@ import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 import javax.mail.internet.MimePart;
 
+import de.metas.common.util.EmptyUtil;
 import org.compiere.util.Ini;
 import org.slf4j.Logger;
 import org.springframework.core.io.Resource;
@@ -58,20 +59,19 @@ import com.sun.mail.smtp.SMTPMessage;
 
 import de.metas.email.mailboxes.Mailbox;
 import de.metas.logging.LogManager;
-import de.metas.session.jaxrs.IServerService;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 
 /**
  * EMail builder and sender.
- * 
+ *
  * To create a new email, please use {@link MailService}'s createMail methods.
- * 
+ *
  * To send the message, please use {@link #send()}.
- * 
+ *
  * NOTE: This is basically a reimplementation of the class <code>org.compiere.util.EMail</code> which was authored (according to the javadoc) by author Joerg Janke.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  */
 @SuppressWarnings("serial")
@@ -105,10 +105,10 @@ public final class EMail implements Serializable
 	private EMailAddress _replyTo;
 	@JsonIgnore
 	private InternetAddress _replyToAddress;
-	
+
 	@JsonIgnore
 	private InternetAddress _debugMailToAddress;
-	
+
 	/** Mail Subject */
 	@JsonProperty("subject")
 	private String _subject;
@@ -229,12 +229,12 @@ public final class EMail implements Serializable
 		_mailbox = mailbox;
 		setFrom(mailbox.getEmail());
 	}
-	
+
 	public void setDebugMailToAddress(@Nullable final InternetAddress debugMailToAddress)
 	{
 		this._debugMailToAddress = debugMailToAddress;
 	}
-	
+
 	private InternetAddress getDebugMailToAddress()
 	{
 		return _debugMailToAddress;
@@ -244,7 +244,7 @@ public final class EMail implements Serializable
 	{
 		if (logger.isDebugEnabled())
 		{
-			logger.debug("Sending email {} -> {} ({})", getFrom(), getTos(), getMailbox());
+			logger.debug("Sending email from={}, tos={} mailbox={}", getFrom(), getTos(), getMailbox());
 		}
 
 		//
@@ -266,18 +266,8 @@ public final class EMail implements Serializable
 
 		//
 		// Send the email now
-		final Mailbox mailbox = getMailbox();
-		final boolean sendEmailsFromServer = mailbox.isSendEmailsFromServer() && Ini.isSwingClient();
-		if (sendEmailsFromServer)
-		{
-			final EMailSentStatus sentStatus = Services.get(IServerService.class).sendEMail(this);
-			return setStatus(sentStatus);
-		}
-		else
-		{
-			final EMailSentStatus sentStatus = sendNow();
-			return setStatus(sentStatus);
-		}
+		final EMailSentStatus sentStatus = sendNow();
+		return setStatus(sentStatus);
 	}	// send
 
 	private EMailSentStatus sendNow()
@@ -417,15 +407,10 @@ public final class EMail implements Serializable
 	 * Sets recipients.
 	 *
 	 * <b>NOTE: If {@link #getDebugMailToAddress()} returns a valid mail address, it will send to that instead!</b>
-	 *
-	 * @param message
-	 * @param type
-	 * @param addresses
-	 * @throws MessagingException
 	 */
 	private void setRecipients(
-			final SMTPMessage message, 
-			final RecipientType type, 
+			final SMTPMessage message,
+			final RecipientType type,
 			final List<? extends Address> addresses) throws MessagingException
 	{
 		if (addresses == null || addresses.isEmpty())
@@ -945,7 +930,7 @@ public final class EMail implements Serializable
 	{
 		// Local Character Set
 		String charSetName = Ini.getCharset().name();
-		if (charSetName == null || charSetName.isEmpty())
+		if (EmptyUtil.isBlank(charSetName))
 		{
 			charSetName = "iso-8859-1";	// WebEnv.ENCODING - alternative iso-8859-1
 		}

@@ -10,19 +10,22 @@ import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.bpartner.service.BPartnerInfo.BPartnerInfoBuilder;
 import de.metas.bpartner.service.BPartnerQuery;
+import de.metas.common.rest_api.v1.JsonDocTypeInfo;
+import de.metas.common.rest_api.common.JsonExternalId;
+import de.metas.common.rest_api.v1.JsonInvoiceRule;
+import de.metas.common.rest_api.v1.JsonPrice;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.invoice.detail.InvoiceDetailItem;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.externallyreferenced.ExternallyReferencedCandidate;
 import de.metas.invoicecandidate.externallyreferenced.ExternallyReferencedCandidateRepository;
 import de.metas.invoicecandidate.externallyreferenced.InvoiceCandidateLookupKey;
-import de.metas.invoice.detail.InvoiceDetailItem;
 import de.metas.invoicecandidate.externallyreferenced.ManualCandidateService;
 import de.metas.invoicecandidate.externallyreferenced.NewManualInvoiceCandidate;
 import de.metas.invoicecandidate.externallyreferenced.NewManualInvoiceCandidate.NewManualInvoiceCandidateBuilder;
 import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
-import de.metas.order.InvoiceRule;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.organization.OrgIdNotFoundException;
@@ -36,15 +39,6 @@ import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantitys;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
-import de.metas.rest_api.bpartner.impl.bpartnercomposite.BPartnerCompositeRestUtils;
-import de.metas.rest_api.common.JsonDocTypeInfo;
-import de.metas.rest_api.common.JsonExternalId;
-import de.metas.rest_api.common.JsonInvoiceRule;
-import de.metas.rest_api.common.JsonPrice;
-import de.metas.rest_api.common.MetasfreshId;
-import de.metas.rest_api.exception.InvalidEntityException;
-import de.metas.rest_api.exception.MissingPropertyException;
-import de.metas.rest_api.exception.MissingResourceException;
 import de.metas.rest_api.invoicecandidates.request.JsonCreateInvoiceCandidatesRequest;
 import de.metas.rest_api.invoicecandidates.request.JsonCreateInvoiceCandidatesRequestItem;
 import de.metas.rest_api.invoicecandidates.response.JsonCreateInvoiceCandidatesResponse;
@@ -56,11 +50,17 @@ import de.metas.rest_api.utils.CurrencyService;
 import de.metas.rest_api.utils.DocTypeService;
 import de.metas.rest_api.utils.IdentifierString;
 import de.metas.rest_api.utils.JsonExternalIds;
+import de.metas.rest_api.utils.MetasfreshId;
+import de.metas.rest_api.v1.bpartner.bpartnercomposite.BPartnerCompositeRestUtils;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
+import de.metas.uom.X12DE355;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
+import de.metas.util.web.exception.InvalidEntityException;
+import de.metas.util.web.exception.MissingPropertyException;
+import de.metas.util.web.exception.MissingResourceException;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.apache.commons.collections4.CollectionUtils;
@@ -74,8 +74,8 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
-import static de.metas.util.Check.isEmpty;
 import static de.metas.common.util.CoalesceUtil.coalesce;
+import static de.metas.util.Check.isEmpty;
 import static java.math.BigDecimal.ZERO;
 
 /*
@@ -210,7 +210,10 @@ public class CreateInvoiceCandidatesService
 		}
 
 		// uomId
-		final UomId uomId = lookupUomId(item.getUomCode(), productId, item);
+		final UomId uomId = lookupUomId(
+				X12DE355.ofNullableCode(item.getUomCode()),
+				productId,
+				item);
 		candidate.invoicingUomId(uomId);
 
 		// qtyOrdered
@@ -266,11 +269,15 @@ public class CreateInvoiceCandidatesService
 		{
 			final List<InvoiceDetailItem> invoiceDetailItems = item.getInvoiceDetailItems()
 					.stream()
-					.map(jsonDetail -> new InvoiceDetailItem(
-							jsonDetail.getSeqNo(),
-							jsonDetail.getLabel(),
-							jsonDetail.getDescription(),
-							jsonDetail.getDate()))
+					.map(jsonDetail -> InvoiceDetailItem.builder()
+							.seqNo(jsonDetail.getSeqNo())
+							.label(jsonDetail.getLabel())
+							.description(jsonDetail.getDescription())
+							.date(jsonDetail.getDate())
+							.price(jsonDetail.getPrice())
+							.note(jsonDetail.getNote())
+							.orgId(orgId)
+							.build())
 					.collect(Collectors.toList());
 
 			candidate.invoiceDetailItems(invoiceDetailItems);
@@ -450,31 +457,7 @@ public class CreateInvoiceCandidatesService
 			@NonNull final NewManualInvoiceCandidateBuilder candidate,
 			@Nullable final JsonInvoiceRule invoiceRuleOverride)
 	{
-		candidate.invoiceRuleOverride(createInvoiceRule(invoiceRuleOverride));
-	}
-
-	private InvoiceRule createInvoiceRule(@Nullable final JsonInvoiceRule jsonInvoiceRule)
-	{
-		if (jsonInvoiceRule == null)
-		{
-			return null;
-		}
-		final InvoiceRule invoiceRule;
-		switch (jsonInvoiceRule)
-		{
-			case AfterDelivery:
-				invoiceRule = InvoiceRule.AfterDelivery;
-				break;
-			case CustomerScheduleAfterDelivery:
-				invoiceRule = InvoiceRule.CustomerScheduleAfterDelivery;
-				break;
-			case Immediate:
-				invoiceRule = InvoiceRule.Immediate;
-				break;
-			default:
-				throw new AdempiereException("Unsupported JsonInvliceRule " + jsonInvoiceRule);
-		}
-		return invoiceRule;
+		candidate.invoiceRuleOverride(BPartnerCompositeRestUtils.getInvoiceRule(invoiceRuleOverride));
 	}
 
 	private void syncPriceEnteredOverrideToCandidate(
@@ -502,7 +485,10 @@ public class CreateInvoiceCandidatesService
 
 		final CurrencyId currencyId = lookupCurrencyId(jsonPrice);
 
-		final UomId priceUomId = lookupUomId(jsonPrice.getPriceUomCode(), productId, item);
+		final UomId priceUomId = lookupUomId(
+				X12DE355.ofNullableCode(jsonPrice.getPriceUomCode()),
+				productId,
+				item);
 
 		final ProductPrice price = ProductPrice.builder()
 				.money(Money.of(jsonPrice.getValue(), currencyId))
@@ -523,11 +509,11 @@ public class CreateInvoiceCandidatesService
 	}
 
 	private UomId lookupUomId(
-			@Nullable final String uomCode,
+			@Nullable final X12DE355 uomCode,
 			@NonNull final ProductId productId,
 			@NonNull final JsonCreateInvoiceCandidatesRequestItem item)
 	{
-		if (isEmpty(uomCode, true))
+		if (uomCode == null)
 		{
 			return productBL.getStockUOMId(productId);
 		}

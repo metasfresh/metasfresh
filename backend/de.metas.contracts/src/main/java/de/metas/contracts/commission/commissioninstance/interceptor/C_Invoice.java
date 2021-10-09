@@ -50,13 +50,11 @@ public class C_Invoice
 	public void createCommissionInstanceForInvoice(@NonNull final I_C_Invoice invoiceRecord)
 	{
 		trxManager.getCurrentTrxListenerManagerOrAutoCommit()
-				.runAfterCommit(() -> {
-					trxManager.runInNewTrx(() -> {
-						try (final MDCCloseable icRecordMDC = TableRecordMDC.putTableRecordReference(invoiceRecord))
-						{
-							invoiceFacadeService.syncInvoiceToCommissionInstance(invoiceRecord);
-						}
-					});
-				});
+				.runAfterCommit(() -> trxManager.runInNewTrx(() -> {
+					try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(invoiceRecord))
+					{
+						invoiceFacadeService.syncInvoiceToCommissionInstance(invoiceRecord);
+					}
+				}));
 	}
 }

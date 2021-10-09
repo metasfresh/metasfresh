@@ -37,7 +37,7 @@ import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.IPPCostCollectorDAO;
 import org.eevolution.model.I_PP_Cost_Collector;
 
-import de.metas.material.planning.pporder.PPOrderId;
+import org.eevolution.api.PPOrderId;
 import de.metas.materialtracking.IMaterialTrackingDAO;
 import de.metas.materialtracking.MTLinkRequest;
 import de.metas.materialtracking.MaterialTrackingId;

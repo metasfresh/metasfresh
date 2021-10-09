@@ -2,6 +2,7 @@ package de.metas.dlm.coordinator.process;
 
 import java.util.Iterator;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
@@ -19,7 +20,6 @@ import de.metas.dlm.model.I_DLM_Partition;
 import de.metas.process.JavaProcess;
 import de.metas.process.RunOutOfTrx;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 
 /*
  * #%L

@@ -1,15 +1,5 @@
 package de.metas.contracts.commission.commissioninstance.services;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.springframework.stereotype.Service;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
@@ -30,6 +20,15 @@ import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /*
  * #%L
@@ -96,8 +95,8 @@ public class CommissionConfigStagingDataService
 		// 2. create additional mappings between different records' IDs
 		//
 		final ListMultimap<Integer, Integer> settingsId2termIds = MultimapBuilder.hashKeys().arrayListValues().build();
-		final ImmutableListMultimap.Builder<Integer, BPartnerId> conditionRecordId2BPartnerIds = ImmutableListMultimap.<Integer, BPartnerId> builder();
-		final ImmutableListMultimap.Builder<BPartnerId, FlatrateTermId> bpartnerId2FlatrateTermId = ImmutableListMultimap.<BPartnerId, FlatrateTermId> builder();
+		final ImmutableListMultimap.Builder<Integer, BPartnerId> conditionRecordId2BPartnerIds = ImmutableListMultimap.builder();
+		final ImmutableListMultimap.Builder<BPartnerId, FlatrateTermId> bpartnerId2FlatrateTermId = ImmutableListMultimap.builder();
 
 		for (final I_C_Flatrate_Term commissionTermRecord : commissionTermRecords)
 		{
@@ -113,7 +112,7 @@ public class CommissionConfigStagingDataService
 		}
 
 		final ImmutableListMultimap.Builder<Integer, Integer> settingsId2settingsLineIds = ImmutableListMultimap
-				.<Integer, Integer> builder(); // the list is and arraylist, so the settingsLines' ordering is preserved
+				.builder(); // the list is and arraylist, so the settingsLines' ordering is preserved
 		for (final I_C_CommissionSettingsLine settingsLineRecord : settingsLineRecords)
 		{
 			settingsId2settingsLineIds.put(settingsLineRecord.getC_HierarchyCommissionSettings_ID(), settingsLineRecord.getC_CommissionSettingsLine_ID());
@@ -144,7 +143,7 @@ public class CommissionConfigStagingDataService
 	{
 		final Collection<List<I_C_CommissionSettingsLine>> allRecords = commissionSettingsLineRecordCache.getAllOrLoad(
 				settingsRecordIds,
-				notYetCachedIds -> retrieveHierarchySettings0(notYetCachedIds));
+				this::retrieveHierarchySettings0);
 
 		return allRecords
 				.stream()
@@ -162,7 +161,7 @@ public class CommissionConfigStagingDataService
 				.create()
 				.list();
 
-		HashMap<Integer, List<I_C_CommissionSettingsLine>> result = new HashMap<Integer, List<I_C_CommissionSettingsLine>>();
+		final HashMap<Integer, List<I_C_CommissionSettingsLine>> result = new HashMap<>();
 		for (final I_C_CommissionSettingsLine settingsLineRecord : settingsLineRecords)
 		{
 			final List<I_C_CommissionSettingsLine> settingsLines = result.computeIfAbsent(settingsLineRecord.getC_HierarchyCommissionSettings_ID(), ignored -> new ArrayList<I_C_CommissionSettingsLine>());

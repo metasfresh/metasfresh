@@ -1,18 +1,49 @@
 package de.metas.contracts.commission.commissioninstance.interceptor;
 
-import static de.metas.contracts.commission.model.I_C_Commission_Instance.COLUMNNAME_Bill_BPartner_ID;
-import static de.metas.contracts.commission.model.I_C_Commission_Instance.COLUMNNAME_C_InvoiceLine_ID;
-import static de.metas.contracts.commission.model.I_C_Commission_Instance.COLUMNNAME_C_Invoice_ID;
-import static de.metas.contracts.commission.model.I_C_Commission_Instance.COLUMNNAME_CommissionTrigger_Type;
-import static de.metas.contracts.commission.model.I_C_Commission_Instance.COLUMNNAME_M_Product_Order_ID;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.tuple;
-
-import java.util.List;
-
+import ch.qos.logback.classic.Level;
+import com.google.common.collect.ImmutableList;
+import de.metas.bpartner.BPartnerId;
+import de.metas.business.BusinessTestHelper;
+import de.metas.business.TestInvoice;
+import de.metas.business.TestInvoiceLine;
+import de.metas.cache.CacheMgt;
+import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTriggerDocumentService;
+import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.salesinvoiceline.SalesInvoiceFactory;
+import de.metas.contracts.commission.commissioninstance.services.CommissionAlgorithmInvoker;
+import de.metas.contracts.commission.commissioninstance.services.CommissionConfigProvider;
+import de.metas.contracts.commission.commissioninstance.services.CommissionConfigStagingDataService;
+import de.metas.contracts.commission.commissioninstance.services.CommissionInstanceRequestFactory;
+import de.metas.contracts.commission.commissioninstance.services.CommissionInstanceService;
+import de.metas.contracts.commission.commissioninstance.services.CommissionProductService;
+import de.metas.contracts.commission.commissioninstance.services.CommissionTriggerFactory;
+import de.metas.contracts.commission.commissioninstance.services.hierarchy.CommissionHierarchyFactory;
+import de.metas.contracts.commission.commissioninstance.services.hierarchy.HierarchyCommissionConfigFactory;
+import de.metas.contracts.commission.commissioninstance.services.hierarchy.HierarchyCommissionConfigFactoryTest;
+import de.metas.contracts.commission.commissioninstance.services.repos.CommissionInstanceRepository;
+import de.metas.contracts.commission.commissioninstance.services.repos.CommissionRecordStagingService;
+import de.metas.contracts.commission.commissioninstance.testhelpers.TestCommissionConfig;
+import de.metas.contracts.commission.commissioninstance.testhelpers.TestCommissionConfig.ConfigData;
+import de.metas.contracts.commission.commissioninstance.testhelpers.TestCommissionConfigLine;
+import de.metas.contracts.commission.commissioninstance.testhelpers.TestHierarchyCommissionContract;
+import de.metas.contracts.commission.model.I_C_Commission_Instance;
+import de.metas.contracts.commission.model.I_C_Commission_Share;
+import de.metas.contracts.commission.model.X_C_Commission_Instance;
+import de.metas.contracts.flatrate.TypeConditions;
+import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.currency.CurrencyRepository;
+import de.metas.document.DocTypeId;
+import de.metas.document.IDocTypeDAO;
+import de.metas.document.IDocTypeDAO.DocTypeCreateRequest;
+import de.metas.lang.SOTrx;
+import de.metas.logging.LogManager;
+import de.metas.money.CurrencyId;
+import de.metas.organization.OrgId;
+import de.metas.product.ProductId;
+import de.metas.uom.UomId;
+import de.metas.util.Services;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_Invoice;
@@ -23,41 +54,17 @@ import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import ch.qos.logback.classic.Level;
-import de.metas.bpartner.BPartnerId;
-import de.metas.business.BusinessTestHelper;
-import de.metas.business.TestInvoice;
-import de.metas.business.TestInvoiceLine;
-import de.metas.cache.CacheMgt;
-import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTriggerDocumentService;
-import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.salesinvoiceline.SalesInvoiceFactory;
-import de.metas.contracts.commission.commissioninstance.interceptor.C_InvoiceFacadeService;
-import de.metas.contracts.commission.commissioninstance.services.CommissionAlgorithmInvoker;
-import de.metas.contracts.commission.commissioninstance.services.CommissionConfigFactory;
-import de.metas.contracts.commission.commissioninstance.services.CommissionConfigStagingDataService;
-import de.metas.contracts.commission.commissioninstance.services.CommissionHierarchyFactory;
-import de.metas.contracts.commission.commissioninstance.services.CommissionInstanceRequestFactory;
-import de.metas.contracts.commission.commissioninstance.services.CommissionInstanceService;
-import de.metas.contracts.commission.commissioninstance.services.CommissionProductService;
-import de.metas.contracts.commission.commissioninstance.services.CommissionTriggerFactory;
-import de.metas.contracts.commission.commissioninstance.services.repos.CommissionInstanceRepository;
-import de.metas.contracts.commission.commissioninstance.services.repos.CommissionRecordStagingService;
-import de.metas.contracts.commission.commissioninstance.testhelpers.TestCommissionConfig;
-import de.metas.contracts.commission.commissioninstance.testhelpers.TestCommissionConfig.ConfigData;
-import de.metas.contracts.commission.commissioninstance.testhelpers.TestCommissionConfigLine;
-import de.metas.contracts.commission.commissioninstance.testhelpers.TestCommissionContract;
-import de.metas.contracts.commission.model.I_C_Commission_Instance;
-import de.metas.contracts.commission.model.I_C_Commission_Share;
-import de.metas.contracts.commission.model.X_C_Commission_Instance;
-import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.document.DocTypeId;
-import de.metas.document.IDocTypeDAO;
-import de.metas.document.IDocTypeDAO.DocTypeCreateRequest;
-import de.metas.lang.SOTrx;
-import de.metas.logging.LogManager;
-import de.metas.money.CurrencyId;
-import de.metas.product.ProductId;
-import de.metas.util.Services;
+import java.math.BigDecimal;
+import java.util.List;
+
+import static de.metas.contracts.commission.CommissionConstants.FLATRATE_CONDITION_0_COMMISSION_ID;
+import static de.metas.contracts.commission.model.I_C_Commission_Instance.COLUMNNAME_Bill_BPartner_ID;
+import static de.metas.contracts.commission.model.I_C_Commission_Instance.COLUMNNAME_C_InvoiceLine_ID;
+import static de.metas.contracts.commission.model.I_C_Commission_Instance.COLUMNNAME_C_Invoice_ID;
+import static de.metas.contracts.commission.model.I_C_Commission_Instance.COLUMNNAME_CommissionTrigger_Type;
+import static de.metas.contracts.commission.model.I_C_Commission_Instance.COLUMNNAME_M_Product_Order_ID;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -84,8 +91,10 @@ import de.metas.util.Services;
 class C_InvoiceFacadeServiceTest
 {
 	private C_InvoiceFacadeService invoiceFacadeService;
+	private OrgId orgId;
 	private BPartnerId customerId;
 	private BPartnerId salesRepPartnerId;
+	private BPartnerId orgBPartnerId;
 	private CurrencyId currencyId;
 	private ProductId salesProductId;
 	private DocTypeId creditMemoDocTypeId;
@@ -97,17 +106,24 @@ class C_InvoiceFacadeServiceTest
 	{
 		AdempiereTestHelper.get().init();
 
+		SpringContextHolder.registerJUnitBean(new CurrencyRepository());
+
+		final HierarchyCommissionConfigFactory hierarchyCommissionConfigFactory =
+				new HierarchyCommissionConfigFactory(new CommissionConfigStagingDataService(), new CommissionProductService());
 		final CommissionProductService commissionProductService = new CommissionProductService();
 		final SalesInvoiceFactory salesInvoiceFactory = new SalesInvoiceFactory(commissionProductService);
 
-		final CommissionConfigStagingDataService commissionConfigStagingDataService = new CommissionConfigStagingDataService();
-		final CommissionConfigFactory commissionConfigFactory = new CommissionConfigFactory(commissionConfigStagingDataService);
+		final CommissionConfigProvider commissionConfigProvider = new CommissionConfigProvider(ImmutableList.of(hierarchyCommissionConfigFactory));
 		final CommissionRecordStagingService commissionInstanceRecordStagingService = new CommissionRecordStagingService();
-		final CommissionInstanceRepository commissionInstanceRepository = new CommissionInstanceRepository(commissionConfigFactory, commissionInstanceRecordStagingService);
+		final CommissionInstanceRepository commissionInstanceRepository = new CommissionInstanceRepository(commissionInstanceRecordStagingService, commissionConfigProvider);
 		final CommissionHierarchyFactory commissionHierarchyFactory = new CommissionHierarchyFactory();
 		final CommissionTriggerFactory commissionTriggerFactory = new CommissionTriggerFactory();
-		final CommissionInstanceRequestFactory commissionInstanceRequestFactory = new CommissionInstanceRequestFactory(commissionConfigFactory, commissionHierarchyFactory, commissionTriggerFactory);
-		final CommissionAlgorithmInvoker commissionAlgorithmInvoker = new CommissionAlgorithmInvoker();
+		final CommissionInstanceRequestFactory commissionInstanceRequestFactory = new CommissionInstanceRequestFactory(
+				commissionConfigProvider,
+				commissionHierarchyFactory,
+				commissionTriggerFactory);
+
+		final CommissionAlgorithmInvoker commissionAlgorithmInvoker = new CommissionAlgorithmInvoker(ImmutableList.of());
 		final CommissionInstanceService commissionInstanceService = new CommissionInstanceService(commissionInstanceRequestFactory, commissionAlgorithmInvoker);
 
 		final CommissionTriggerDocumentService commissionTriggerDocumentService = new CommissionTriggerDocumentService(commissionInstanceRepository, commissionInstanceRequestFactory, commissionAlgorithmInvoker, commissionTriggerFactory, commissionInstanceService);
@@ -115,6 +131,8 @@ class C_InvoiceFacadeServiceTest
 		invoiceFacadeService = new C_InvoiceFacadeService(salesInvoiceFactory, commissionTriggerDocumentService);
 
 		LogManager.setLoggerLevel("de.metas.contracts.commission", Level.DEBUG);
+
+		orgId = AdempiereTestHelper.createOrgWithTimeZone();
 
 		commissionUOMRecord = BusinessTestHelper.createUOM("commissionPoint");
 		final I_M_Product commissionProductRecord = BusinessTestHelper.createProduct("commissionProduct", commissionUOMRecord);
@@ -124,17 +142,19 @@ class C_InvoiceFacadeServiceTest
 		currencyId = CurrencyId.ofRepoId(currencyRecord.getC_Currency_ID());
 
 		final I_M_Product salesProductRecord = BusinessTestHelper.createProduct("salesProduct", BusinessTestHelper.createUomEach());
+		salesProductRecord.setAD_Org_ID(OrgId.toRepoId(orgId));
 		salesProductRecord.setM_Product_Category_ID(20);
 		salesProductRecord.setIsCommissioned(true);
 		saveRecord(salesProductRecord);
 		salesProductId = ProductId.ofRepoId(salesProductRecord.getM_Product_ID());
 
 		final ConfigData configData = TestCommissionConfig.builder()
+				.orgId(orgId)
 				.subtractLowerLevelCommissionFromBase(true)
 				.pointsPrecision(2)
 				.commissionProductId(commissionProductId)
 				.configLineTestRecord(TestCommissionConfigLine.builder().name("singleConfigLine").seqNo(10).percentOfBasePoints("10").build())
-				.contractTestRecord(TestCommissionContract.builder().contractName("1stContract").salesRepName("salesRep").build())
+				.contractTestRecord(TestHierarchyCommissionContract.builder().contractName("1stContract").salesRepName("salesRep").build())
 				.build()
 				.createConfigData();
 
@@ -142,6 +162,7 @@ class C_InvoiceFacadeServiceTest
 		salesRepPartnerId = configData.getName2BPartnerId().get("salesRep");
 
 		final I_C_BPartner customerBPartner = BusinessTestHelper.createBPartner("customerBPartner");
+		customerBPartner.setAD_Org_ID(OrgId.toRepoId(orgId));
 		customerBPartner.setC_BP_Group_ID(10);
 		customerBPartner.setC_BPartner_SalesRep_ID(salesRepPartnerId.getRepoId());
 		saveRecord(customerBPartner);
@@ -149,10 +170,27 @@ class C_InvoiceFacadeServiceTest
 
 		creditMemoDocTypeId = Services.get(IDocTypeDAO.class)
 				.createDocType(DocTypeCreateRequest.builder()
-						.ctx(Env.getCtx())
-						.name("creditmemo")
-						.docBaseType(X_C_DocType.DOCBASETYPE_ARCreditMemo)
-						.build());
+									   .ctx(Env.getCtx())
+									   .name("creditmemo")
+									   .docBaseType(X_C_DocType.DOCBASETYPE_ARCreditMemo)
+									   .build());
+
+		HierarchyCommissionConfigFactoryTest.flatrateConditionsBuilder()
+				.name("Default for `Missing commission contract`")
+				.isSubtractLowerLevelCommissionFromBase(true)
+				.noContractCommissionProductId(1)
+				.percentageOfBasePoint(BigDecimal.ZERO)
+				.flatrateConditionsId(FLATRATE_CONDITION_0_COMMISSION_ID.getRepoId())
+				.docStatus("CO")
+				.isActive(false)
+				.typeConditions(TypeConditions.COMMISSION)
+				.build();
+
+		final I_C_BPartner orgBPartner = BusinessTestHelper.createBPartner("orgBPartnerId");
+		orgBPartner.setAD_OrgBP_ID(orgId.getRepoId());
+		saveRecord(orgBPartner);
+
+		orgBPartnerId = BPartnerId.ofRepoId(orgBPartner.getC_BPartner_ID());
 	}
 
 	@Test
@@ -165,14 +203,16 @@ class C_InvoiceFacadeServiceTest
 	{
 		// given
 		final TestInvoice testInvoice = TestInvoice.builder()
+				.orgId(orgId)
 				.customerId(customerId)
 				.docTypeId(creditMemoDocTypeId)
 				.salesRepPartnerId(salesRepPartnerId)
 				.currencyId(currencyId)
 				.soTrx(SOTrx.SALES)
 				.testInvoiceLine(TestInvoiceLine.builder()
-						.productId(salesProductId)
-						.build())
+										 .productId(salesProductId)
+										 .uomId(UomId.ofRepoId(commissionUOMRecord.getC_UOM_ID()))
+										 .build())
 				.build()
 				.createInvoiceRecord();
 		final I_C_Invoice invoiceRecord = testInvoice.getInvoiceRecord();
@@ -188,11 +228,11 @@ class C_InvoiceFacadeServiceTest
 		assertThat(commissionShare)
 				.hasSize(1)
 				.extracting(I_C_Commission_Share.COLUMNNAME_C_Commission_Instance_ID,
-						I_C_Commission_Share.COLUMNNAME_Commission_Product_ID,
-						I_C_Commission_Share.COLUMNNAME_C_BPartner_SalesRep_ID)
+							I_C_Commission_Share.COLUMNNAME_Commission_Product_ID,
+							I_C_Commission_Share.COLUMNNAME_C_BPartner_SalesRep_ID)
 				.contains(tuple(commissionInstances.get(0).getC_Commission_Instance_ID(),
-						commissionProductId.getRepoId(),
-						salesRepPartnerId.getRepoId()));
+								commissionProductId.getRepoId(),
+								salesRepPartnerId.getRepoId()));
 
 		return testInvoice;
 	}
@@ -209,11 +249,12 @@ class C_InvoiceFacadeServiceTest
 		assertThat(POJOLookupMap.get().getRecords(I_C_Flatrate_Term.class)).hasSize(1); // guard
 
 		TestCommissionConfig.builder()
+				.orgId(orgId)
 				.subtractLowerLevelCommissionFromBase(true)
 				.pointsPrecision(2)
 				.commissionProductId(commissionProduct2Id)
 				.configLineTestRecord(TestCommissionConfigLine.builder().name("singleConfigLine2ndContract").seqNo(10).percentOfBasePoints("10").build())
-				.contractTestRecord(TestCommissionContract.builder().contractName("2ndContract").salesRepName("salesRep").build())
+				.contractTestRecord(TestHierarchyCommissionContract.builder().contractName("2ndContract").salesRepName("salesRep").build())
 				.build()
 				.createConfigData();
 		assertThat(POJOLookupMap.get().getRecords(I_C_Flatrate_Term.class)).hasSize(2)
@@ -234,15 +275,15 @@ class C_InvoiceFacadeServiceTest
 		assertThat(commissionShares)
 				.hasSize(2)
 				.extracting(I_C_Commission_Share.COLUMNNAME_C_Commission_Instance_ID,
-						I_C_Commission_Share.COLUMNNAME_Commission_Product_ID,
-						I_C_Commission_Share.COLUMNNAME_C_BPartner_SalesRep_ID)
+							I_C_Commission_Share.COLUMNNAME_Commission_Product_ID,
+							I_C_Commission_Share.COLUMNNAME_C_BPartner_SalesRep_ID)
 				.contains(
 						tuple(commissionInstances.get(0).getC_Commission_Instance_ID(),
-								commissionProductId.getRepoId(),
-								salesRepPartnerId.getRepoId()),
+							  commissionProductId.getRepoId(),
+							  salesRepPartnerId.getRepoId()),
 						tuple(commissionInstances.get(0).getC_Commission_Instance_ID(),
-								commissionProduct2Id.getRepoId(),
-								salesRepPartnerId.getRepoId()));
+							  commissionProduct2Id.getRepoId(),
+							  salesRepPartnerId.getRepoId()));
 	}
 
 	private void assertInstanceOK(
@@ -252,14 +293,14 @@ class C_InvoiceFacadeServiceTest
 		assertThat(commissionInstances)
 				.hasSize(1)
 				.extracting(COLUMNNAME_C_Invoice_ID,
-						COLUMNNAME_C_InvoiceLine_ID,
-						COLUMNNAME_Bill_BPartner_ID,
-						COLUMNNAME_M_Product_Order_ID,
-						COLUMNNAME_CommissionTrigger_Type)
+							COLUMNNAME_C_InvoiceLine_ID,
+							COLUMNNAME_Bill_BPartner_ID,
+							COLUMNNAME_M_Product_Order_ID,
+							COLUMNNAME_CommissionTrigger_Type)
 				.contains(tuple(testInvoice.getRepoId(),
-						testInvoice.getLineRepoId(0),
-						customerId.getRepoId(),
-						salesProductId.getRepoId(),
-						X_C_Commission_Instance.COMMISSIONTRIGGER_TYPE_CustomerCreditmemo));
+								testInvoice.getLineRepoId(0),
+								customerId.getRepoId(),
+								salesProductId.getRepoId(),
+								X_C_Commission_Instance.COMMISSIONTRIGGER_TYPE_CustomerCreditmemo));
 	}
 }

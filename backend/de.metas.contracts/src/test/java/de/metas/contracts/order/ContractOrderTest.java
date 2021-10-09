@@ -26,6 +26,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.sql.Timestamp;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.TimeUtil;
@@ -49,7 +50,6 @@ import de.metas.product.IProductDAO;
 import de.metas.product.ProductAndCategoryId;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 
 public class ContractOrderTest extends AbstractFlatrateTermTest
 {
@@ -226,7 +226,8 @@ public class ContractOrderTest extends AbstractFlatrateTermTest
 		contractOrder.setContractStatus(I_C_Order.CONTRACTSTATUS_Active);
 		InterfaceWrapperHelper.save(contractOrder);
 
-		contract.setC_OrderLine_Term(orderLine);
+		contract.setC_OrderLine_Term_ID(orderLine.getC_OrderLine_ID());
+		contract.setC_Order_Term_ID(orderLine.getC_Order_ID());
 		InterfaceWrapperHelper.save(contract);
 
 		return orderLine;

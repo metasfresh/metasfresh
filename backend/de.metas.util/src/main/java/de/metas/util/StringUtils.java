@@ -1,10 +1,9 @@
 package de.metas.util;
-
 /*
  * #%L
  * de.metas.util
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,6 +21,10 @@ package de.metas.util;
  * #L%
  */
 
+import com.google.common.base.CharMatcher;
+import com.google.common.collect.ImmutableList;
+import de.metas.common.util.Check;
+import de.metas.common.util.EmptyUtil;
 import lombok.NonNull;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
@@ -31,11 +34,11 @@ import org.slf4j.helpers.MessageFormatter;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.text.Format;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -48,9 +51,10 @@ public final class StringUtils
 	{
 	}
 
+	@Nullable
 	public static IPair<String, String> splitStreetAndHouseNumberOrNull(@Nullable final String streetAndNumber)
 	{
-		if (Check.isEmpty(streetAndNumber, true))
+		if (EmptyUtil.isBlank(streetAndNumber))
 		{
 			return null;
 		}
@@ -67,7 +71,7 @@ public final class StringUtils
 	}
 
 	@Nullable
-	public static String trim(@Nullable String untrimmedStringOrNull)
+	public static String trim(@Nullable final String untrimmedStringOrNull)
 	{
 		if (untrimmedStringOrNull == null)
 		{
@@ -93,6 +97,33 @@ public final class StringUtils
 		return strTrim;
 	}
 
+	public static Optional<String> trimBlankToOptional(@Nullable final String str)
+	{
+		return Optional.ofNullable(trimBlankToNull(str));
+	}
+
+	/**
+	 * TODO: consider using this method to improve {@link de.metas.util.lang.RepoIdAwares#ofCommaSeparatedList(String, Class)}.
+	 */
+	public static ImmutableList<Integer> tokenizeStringToIntegers(@Nullable final String str)
+	{
+		if (Check.isBlank(str))
+		{
+			return ImmutableList.of();
+		}
+		final ImmutableList.Builder<Integer> result = ImmutableList.builder();
+		final String[] integerStrings = str.split("[^0-9]");
+		for (final String integerString : integerStrings)
+		{
+			if (Check.isBlank(integerString))
+			{
+				continue;
+			}
+			result.add(Integer.parseInt(integerString));
+		}
+		return result.build();
+	}
+
 	public enum TruncateAt
 	{
 		STRING_START, STRING_END
@@ -101,6 +132,7 @@ public final class StringUtils
 	/**
 	 * Truncate string to a given length, if required.
 	 */
+	@Nullable
 	public static String trunc(
 			@Nullable final String str,
 			final int length)
@@ -108,6 +140,7 @@ public final class StringUtils
 		return trunc(str, length, TruncateAt.STRING_END);
 	}
 
+	@Nullable
 	public static String trunc(
 			@Nullable final String string,
 			final int maxLength,
@@ -126,7 +159,7 @@ public final class StringUtils
 		switch (side)
 		{
 			case STRING_START:
-				return string.substring(string.length() - maxLength, string.length());
+				return string.substring(string.length() - maxLength);
 			case STRING_END:
 				return string.substring(0, maxLength);
 			default:
@@ -137,9 +170,6 @@ public final class StringUtils
 
 	/**
 	 * Casts a string to integer. Returns 0 if the operation fails.
-	 *
-	 * @param str
-	 * @return
 	 */
 	public static int toIntegerOrZero(final String str)
 	{
@@ -150,7 +180,7 @@ public final class StringUtils
 
 		try
 		{
-			return Integer.valueOf(str.trim());
+			return Integer.parseInt(str.trim());
 		}
 		catch (final NumberFormatException e)
 		{
@@ -161,9 +191,6 @@ public final class StringUtils
 
 	/**
 	 * Casts a string to BigDecimal. Returns BigDecimal.ZERO if the operation fails.
-	 *
-	 * @param str
-	 * @return
 	 */
 	public static BigDecimal toBigDecimalOrZero(final String str)
 	{
@@ -192,7 +219,6 @@ public final class StringUtils
 	 * </ul>
 	 *
 	 * @param strBoolean the parameter to convert. May be empty or {@code null}.
-	 * @return
 	 */
 	@Nullable
 	public static Boolean toBooleanOrNull(@Nullable final String strBoolean)
@@ -220,10 +246,10 @@ public final class StringUtils
 	 * @param value,        may be null
 	 * @param defaultValue, may be null
 	 * @return <ul>
-	 *         <li>true if value is boolean true, "true" or "Y"
-	 *         <li>false if value is boolean false, "false" or "N"
-	 *         <li><code>defaultValue</code> if value is null or other
-	 *         </ul>
+	 * <li>true if value is boolean true, "true" or "Y"
+	 * <li>false if value is boolean false, "false" or "N"
+	 * <li><code>defaultValue</code> if value is null or other
+	 * </ul>
 	 */
 	@Nullable
 	public static Boolean toBoolean(@Nullable final Object value, @Nullable final Boolean defaultValue)
@@ -256,17 +282,23 @@ public final class StringUtils
 		}
 	}
 
+	@NonNull
+	public static OptionalBoolean toOptionalBoolean(@Nullable final Object value)
+	{
+		return OptionalBoolean.ofNullableBoolean(toBoolean(value, null));
+	}
+
 	/**
-	 * Converts the give object to boolean value, same as {@link #toBoolean(Object, boolean)} but assumes default value is <code>false</code>.
+	 * Converts the give object to boolean value, same as {@link #toBoolean(Object, Boolean)}  but assumes default value is <code>false</code>.
 	 *
 	 * @param value may be {@code null}. in that case, {@code false} is returned.
 	 * @return <ul>
-	 *         <li>true if value is boolean true, "true" or "Y"
-	 *         <li>false if value is boolean false, "false" or "N"
-	 *         <li>false if value is null or other
-	 *         </ul>
+	 * <li>true if value is boolean true, "true" or "Y"
+	 * <li>false if value is boolean false, "false" or "N"
+	 * <li>false if value is null or other
+	 * </ul>
 	 */
-	public static boolean toBoolean(final Object value)
+	public static boolean toBoolean(@Nullable final Object value)
 	{
 		final Boolean defaultValue = Boolean.FALSE;
 		return toBoolean(value, defaultValue);
@@ -275,13 +307,13 @@ public final class StringUtils
 	/**
 	 * Converts given boolean value to ADempiere's string representation of it
 	 *
-	 * @param value
 	 * @return <ul>
-	 *         <li><code>null</code> if value is null
-	 *         <li>"Y" if value is true
-	 *         <li>"N" if value is false
-	 *         </ul>
+	 * <li><code>null</code> if value is null
+	 * <li>"Y" if value is true
+	 * <li>"N" if value is false
+	 * </ul>
 	 */
+	@Nullable
 	public static String ofBoolean(@Nullable final Boolean value)
 	{
 		if (value == null)
@@ -291,6 +323,7 @@ public final class StringUtils
 		return value ? "Y" : "N";
 	}
 
+	@Nullable
 	public static String ofBoolean(
 			@Nullable final Boolean booleanOrNull,
 			@Nullable final String defaultValue)
@@ -324,12 +357,8 @@ public final class StringUtils
 
 	/**
 	 * Formats the given message the same way our log messages are formatted. See {@link MessageFormatter} for further infos
-	 *
-	 * @param message
-	 * @param params
-	 * @return
 	 */
-	private static String formatSLF4JMessage(final String message, Object... params)
+	private static String formatSLF4JMessage(final String message, @Nullable final Object... params)
 	{
 		if (params == null)
 		{
@@ -343,13 +372,9 @@ public final class StringUtils
 	}
 
 	/**
-	 * Formats the given message the using {@link Format}.
-	 *
-	 * @param message
-	 * @param params
-	 * @return
+	 * Formats the given message the using {@link MessageFormat}.
 	 */
-	public static String formatJavaTextFormatMessage(final String message, Object... params)
+	public static String formatJavaTextFormatMessage(final String message, @Nullable final Object... params)
 	{
 		String messageFormated;
 		if (params != null && params.length > 0)
@@ -387,6 +412,7 @@ public final class StringUtils
 	}
 
 	@SafeVarargs
+	@Nullable
 	private static Object[] invokeSuppliers(final Object... params)
 	{
 		if (params == null)
@@ -420,7 +446,7 @@ public final class StringUtils
 	 */
 	@Deprecated
 	// note: we just moved the method here, and left it unchanged. as of now idk why all this code is commented out
-	public static String stripDiacritics(String s)
+	public static String stripDiacritics(final String s)
 	{
 		/* JAVA5 behaviour */
 		return s;
@@ -449,17 +475,15 @@ public final class StringUtils
 		final int stringLength = stringToUse.length();
 		final int overlayLength = overlayToUse.length();
 
-		final String result = org.apache.commons.lang3.StringUtils.overlay(stringToUse, overlayToUse, stringLength - overlayLength, stringLength);
-		return result;
+		return org.apache.commons.lang3.StringUtils.overlay(stringToUse, overlayToUse, stringLength - overlayLength, stringLength);
 	}
 
 	/**
 	 * Check if given string contains digits only.
 	 *
-	 * @param stringToVerify
 	 * @return {@code true} if the given string consists only of digits (i.e. contains no letter, whitespace decimal point etc).
 	 */
-	public static boolean isNumber(final String stringToVerify)
+	public static boolean isNumber(@Nullable final String stringToVerify)
 	{
 		// Null or empty strings are not numbers
 		if (stringToVerify == null || stringToVerify.isEmpty())
@@ -492,7 +516,7 @@ public final class StringUtils
 		}
 		if (collection.isEmpty())
 		{
-			return new StringBuilder("");
+			return new StringBuilder();
 		}
 
 		final StringBuilder sb = new StringBuilder();
@@ -503,7 +527,7 @@ public final class StringUtils
 				sb.append(separator);
 			}
 
-			sb.append(String.valueOf(item));
+			sb.append(item);
 		}
 		return sb;
 	}
@@ -522,6 +546,17 @@ public final class StringUtils
 		return string + suffix;
 	}
 
+	public static String prependIfNotStartingWith(
+			@NonNull final String string,
+			@NonNull final String prefix)
+	{
+		if (string.startsWith(prefix))
+		{
+			return string;
+		}
+		return prefix + string;
+	}
+
 	/**
 	 * Replace String values.
 	 *
@@ -530,7 +565,8 @@ public final class StringUtils
 	 * @param newPart replacement - can be null or ""
 	 * @return String with replaced values
 	 */
-	public static String replace(String value, String oldPart, String newPart)
+	@Nullable
+	public static String replace(final String value, final String oldPart, final String newPart)
 	{
 		if (value == null || value.length() == 0
 				|| oldPart == null || oldPart.length() == 0)
@@ -540,11 +576,11 @@ public final class StringUtils
 		//
 		final int oldPartLength = oldPart.length();
 		String oldValue = value;
-		final StringBuffer retValue = new StringBuffer();
+		final StringBuilder retValue = new StringBuilder();
 		int pos = oldValue.indexOf(oldPart);
 		while (pos != -1)
 		{
-			retValue.append(oldValue.substring(0, pos));
+			retValue.append(oldValue, 0, pos);
 			if (newPart != null && newPart.length() > 0)
 			{
 				retValue.append(newPart);
@@ -563,6 +599,7 @@ public final class StringUtils
 	 * @param in input
 	 * @return cleaned string
 	 */
+	@Nullable
 	public static String removeCRLF(@Nullable final String in)
 	{
 		if (in == null)
@@ -575,9 +612,9 @@ public final class StringUtils
 	/**
 	 * Fetch the numbers from a string
 	 *
-	 * @param text
 	 * @return string which contains all digits, or null if text is null
 	 */
+	@Nullable
 	public static String getDigits(final String text)
 	{
 		if (text == null)
@@ -600,9 +637,9 @@ public final class StringUtils
 	 * E.g. text= '9000 St. Gallen'<br>
 	 * This method will return test St. Gallen
 	 *
-	 * @param text
 	 * @return string which contains all letters not digits, or null if text is null
 	 */
+	@Nullable
 	public static String stripDigits(final String text)
 	{
 		if (text == null)
@@ -611,12 +648,11 @@ public final class StringUtils
 		}
 		final char[] inArray = text.toCharArray();
 		final StringBuilder out = new StringBuilder(inArray.length);
-		for (final char element : inArray)
+		for (final char ch : inArray)
 		{
-			final char c = element;
-			if (Character.isLetter(c) || !Character.isDigit(c))
+			if (Character.isLetter(ch) || !Character.isDigit(ch))
 			{
-				out.append(c);
+				out.append(ch);
 			}
 		}
 		return out.toString();
@@ -628,34 +664,21 @@ public final class StringUtils
 	 * @param in in
 	 * @return cleaned string
 	 */
-	public static String cleanWhitespace(String in)
+	public static String cleanWhitespace(@Nullable String in)
 	{
-		final char[] inArray = in.toCharArray();
-		final StringBuffer out = new StringBuffer(inArray.length);
-		boolean lastWasSpace = false;
-		for (final char c : inArray)
+		if (in == null)
 		{
-			if (Character.isWhitespace(c))
-			{
-				if (!lastWasSpace)
-				{
-					out.append(' ');
-				}
-				lastWasSpace = true;
-			}
-			else
-			{
-				out.append(c);
-				lastWasSpace = false;
-			}
+			return in;
 		}
-		return out.toString();
+		
+		return CharMatcher.whitespace().removeFrom(in);
 	}    // cleanWhitespace
 
+	
 	/**
 	 * remove white space from the begin
 	 */
-	public static String cleanBeginWhitespace(String in)
+	public static String cleanBeginWhitespace(final String in)
 	{
 		final int len = in.length();
 		int st = 0;
@@ -670,7 +693,7 @@ public final class StringUtils
 	}
 
 	/**
-	 * @param value       note: <code>null</code> is threaded like ""
+	 * @param value note: <code>null</code> is threaded like ""
 	 */
 	public static String lpadZero(final String value, final int size, final String description)
 	{
@@ -691,7 +714,7 @@ public final class StringUtils
 		return s.substring(0, size);
 	}
 
-	private static String prepareValueForPadding(String value, int size, String description)
+	private static String prepareValueForPadding(final String value, final int size, final String description)
 	{
 		final String valueFixed;
 
@@ -718,7 +741,7 @@ public final class StringUtils
 	 * @return masked content
 	 * @see #maskHTML(String, boolean)
 	 */
-	public static String maskHTML(String content)
+	public static String maskHTML(final String content)
 	{
 		return maskHTML(content, false);
 	}    // maskHTML
@@ -732,7 +755,8 @@ public final class StringUtils
 	 * @deprecated please consider using {@link StringEscapeUtils#escapeHtml4(String)} instead.
 	 */
 	@Deprecated
-	public static String maskHTML(String content, boolean maskCR)
+	@Nullable
+	public static String maskHTML(final String content, final boolean maskCR)
 	{
 		// If the content is null, then return null - teo_sarca [ 1748346 ]
 		if (content == null || content.isEmpty())
@@ -974,14 +998,51 @@ public final class StringUtils
 			}
 		}
 		return new String(data);
-	}	// initCap
+	}    // initCap
 
 	/**
 	 * @param in input {@link String}
 	 * @return {@param in} if != null, empty string otherwise
 	 */
-	public static String nullToEmpty(final String in)
+	@Nullable
+	public static String nullToEmpty(@Nullable final String in)
 	{
 		return in != null ? in : "";
+	}
+
+	/**
+	 * Example:
+	 * <pre>
+	 * - string = `87whdhA7008S` (length 14)
+	 * - groupSeparator = "--"
+	 * - groupSize = 4
+	 *
+	 * Results into `87wh--dhA7--008S` of length 18.
+	 * </pre>
+	 *
+	 * @param string         the input string
+	 * @param groupSeparator the separator string
+	 * @param groupSize      the size of each character group, after which a groupSeparator is inserted
+	 * @return the input string containing the groupSeparator
+	 */
+	@NonNull
+	public static String insertSeparatorEveryNCharacters(
+			@NonNull final String string,
+			@NonNull final String groupSeparator,
+			final int groupSize)
+	{
+		if (groupSize < 1)
+		{
+			return string;
+		}
+
+		final StringBuilder result = new StringBuilder(string);
+		int insertPosition = groupSize;
+		while (insertPosition < result.length())
+		{
+			result.insert(insertPosition, groupSeparator);
+			insertPosition += groupSize + groupSeparator.length();
+		}
+		return result.toString();
 	}
 }

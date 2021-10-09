@@ -10,28 +10,20 @@ package de.metas.materialtracking.qualityBasedInvoicing.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
-import java.math.BigDecimal;
-
-import org.adempiere.model.IModelWrapper;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.ObjectUtils;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
-import org.eevolution.api.BOMComponentType;
-
+import de.metas.material.planning.pporder.IPPOrderBOMBL;
+import de.metas.material.planning.pporder.PPOrderQuantities;
 import de.metas.materialtracking.IHandlingUnitsInfo;
 import de.metas.materialtracking.model.I_PP_Order;
 import de.metas.materialtracking.qualityBasedInvoicing.ProductionMaterialType;
@@ -42,20 +34,32 @@ import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
+import lombok.ToString;
+import org.adempiere.model.IModelWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
+import org.eevolution.api.BOMComponentType;
 
-/* package */class PPOrderProductionMaterial extends AbstractProductionMaterial implements IModelWrapper
+import java.math.BigDecimal;
+
+@ToString
+class PPOrderProductionMaterial extends AbstractProductionMaterial implements IModelWrapper
 {
 	// services
 	private final IHandlingUnitsInfoFactory handlingUnitsInfoFactory = Services.get(IHandlingUnitsInfoFactory.class);
+	private final IPPOrderBOMBL ppOrderBOMBL = Services.get(IPPOrderBOMBL.class);
+	private final IProductDAO productDAO = Services.get(IProductDAO.class);
+	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
 	private final I_PP_Order ppOrder;
 
 	private IHandlingUnitsInfo _handlingUnitsInfo;
 	private boolean _handlingUnitsInfoLoaded = false;
 
-	public PPOrderProductionMaterial(final org.eevolution.model.I_PP_Order ppOrder)
+	public PPOrderProductionMaterial(@NonNull final org.eevolution.model.I_PP_Order ppOrder)
 	{
-		Check.assumeNotNull(ppOrder, "ppOrder not null");
 		this.ppOrder = InterfaceWrapperHelper.create(ppOrder, I_PP_Order.class);
 
 		Check.assumeNotNull(this.getC_UOM(), "getC_UOM() does not return null for {}", this);
@@ -66,21 +70,32 @@ import de.metas.util.Services;
 	public I_M_Product getM_Product()
 	{
 		final ProductId productId = ProductId.ofRepoId(ppOrder.getM_Product_ID());
-		return Services.get(IProductDAO.class).getById(productId);
+		return productDAO.getById(productId);
 	}
 
 	@Override
 	public BigDecimal getQty()
 	{
-		final BigDecimal qtyDelivered = ppOrder.getQtyDelivered();
-		return qtyDelivered;
+		return getQuantities(getUomId())
+				.getQtyReceived()
+				.toBigDecimal();
+	}
+
+	private PPOrderQuantities getQuantities(final UomId targetUOMId)
+	{
+		return ppOrderBOMBL.getQuantities(ppOrder, targetUOMId);
 	}
 
 	@Override
 	public I_C_UOM getC_UOM()
 	{
-		final UomId uomId = UomId.ofRepoId(ppOrder.getC_UOM_ID());
-		return Services.get(IUOMDAO.class).getById(uomId);
+		return uomDAO.getById(getUomId());
+	}
+
+	@NonNull
+	public UomId getUomId()
+	{
+		return UomId.ofRepoId(ppOrder.getC_UOM_ID());
 	}
 
 	@Override
@@ -147,11 +162,5 @@ import de.metas.util.Services;
 	{
 		// there is no substitute for a produced material
 		return null;
-	}
-
-	@Override
-	public String toString()
-	{
-		return ObjectUtils.toString(this);
 	}
 }

@@ -1,99 +1,75 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package de.metas.inoutcandidate.model;
 
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for M_IolCandHandler
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public class X_M_IolCandHandler extends org.compiere.model.PO implements I_M_IolCandHandler, org.compiere.model.I_Persistent 
 {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = 81926115L;
+	private static final long serialVersionUID = -1140899552L;
 
     /** Standard Constructor */
-    public X_M_IolCandHandler (Properties ctx, int M_IolCandHandler_ID, String trxName)
+    public X_M_IolCandHandler (final Properties ctx, final int M_IolCandHandler_ID, @Nullable final String trxName)
     {
       super (ctx, M_IolCandHandler_ID, trxName);
-      /** if (M_IolCandHandler_ID == 0)
-        {
-			setClassname (null);
-			setM_IolCandHandler_ID (0);
-			setTableName (null);
-        } */
     }
 
     /** Load Constructor */
-    public X_M_IolCandHandler (Properties ctx, ResultSet rs, String trxName)
+    public X_M_IolCandHandler (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
 
 
-    /** Load Meta Data */
-    @Override
-    protected org.compiere.model.POInfo initPO (Properties ctx)
-    {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
-      return poi;
-    }
-
-	/** Set Java-Klasse.
-		@param Classname Java-Klasse	  */
+	/** Load Meta Data */
 	@Override
-	public void setClassname (java.lang.String Classname)
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
+	{
+		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public void setClassname (final java.lang.String Classname)
 	{
 		set_Value (COLUMNNAME_Classname, Classname);
 	}
 
-	/** Get Java-Klasse.
-		@return Java-Klasse	  */
 	@Override
-	public java.lang.String getClassname () 
+	public java.lang.String getClassname() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Classname);
+		return get_ValueAsString(COLUMNNAME_Classname);
 	}
 
-	/** Set M_IolCandHandler.
-		@param M_IolCandHandler_ID M_IolCandHandler	  */
 	@Override
-	public void setM_IolCandHandler_ID (int M_IolCandHandler_ID)
+	public void setM_IolCandHandler_ID (final int M_IolCandHandler_ID)
 	{
 		if (M_IolCandHandler_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_M_IolCandHandler_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_M_IolCandHandler_ID, Integer.valueOf(M_IolCandHandler_ID));
+			set_ValueNoCheck (COLUMNNAME_M_IolCandHandler_ID, M_IolCandHandler_ID);
 	}
 
-	/** Get M_IolCandHandler.
-		@return M_IolCandHandler	  */
 	@Override
-	public int getM_IolCandHandler_ID () 
+	public int getM_IolCandHandler_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_IolCandHandler_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_IolCandHandler_ID);
 	}
 
-	/** Set Name der DB-Tabelle.
-		@param TableName Name der DB-Tabelle	  */
 	@Override
-	public void setTableName (java.lang.String TableName)
+	public void setTableName (final java.lang.String TableName)
 	{
 		set_Value (COLUMNNAME_TableName, TableName);
 	}
 
-	/** Get Name der DB-Tabelle.
-		@return Name der DB-Tabelle	  */
 	@Override
-	public java.lang.String getTableName () 
+	public java.lang.String getTableName() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_TableName);
+		return get_ValueAsString(COLUMNNAME_TableName);
 	}
 }

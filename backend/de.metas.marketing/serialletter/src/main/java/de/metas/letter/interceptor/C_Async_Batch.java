@@ -43,9 +43,10 @@ public class C_Async_Batch
 	{
 
 		if (asyncBatch.isProcessed()
+				&& asyncBatch.getC_Async_Batch_Type_ID() > 0
 				&& LetterConstants.C_Async_Batch_InternalName_CreateLettersAsync.equals(asyncBatch.getC_Async_Batch_Type().getInternalName()))
 		{
-			runPrintingProcess(asyncBatch);
+			runPrintingProcess(asyncBatch); 
 		}
 	}
 
@@ -53,6 +54,5 @@ public class C_Async_Batch
 	{
 		final SerialLetterService serialLetterService = Adempiere.getBean(SerialLetterService.class);
 		serialLetterService.printAutomaticallyLetters(asyncBatch);
-		}
-
+	}
 }

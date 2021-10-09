@@ -2,12 +2,15 @@ package de.metas.payment.api;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.Instant;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import de.metas.banking.BankAccountId;
 import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_PaySelection;
@@ -45,11 +48,18 @@ import de.metas.util.ISingletonService;
 import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
+
 public interface IPaymentDAO extends ISingletonService
 {
 	I_C_Payment getById(PaymentId paymentId);
 
 	Optional<I_C_Payment> getByExternalOrderId(@NonNull ExternalId externalId, @NonNull OrgId orgId);
+
+	Optional<I_C_Payment> getByExternalId(@NonNull ExternalId externalId, @NonNull OrgId orgId);
+
+	@Nullable
+	ExternalId getExternalOrderId(@NonNull PaymentId paymentId);
 
 	List<I_C_Payment> getByIds(Set<PaymentId> paymentIds);
 
@@ -83,6 +93,8 @@ public interface IPaymentDAO extends ISingletonService
 	 */
 	BigDecimal getAllocatedAmt(I_C_Payment payment);
 
+	BigDecimal getAllocatedAmt(PaymentId paymentId);
+
 	/**
 	 * Retrieve all the payments that are marked as posted but do not actually have fact accounts.
 	 * Exclude the entries that don't have either PayAmt or OverUnderAmt. These entries will produce 0 in posting
@@ -99,4 +111,6 @@ public interface IPaymentDAO extends ISingletonService
 	ImmutableSet<PaymentId> retrievePaymentIds(PaymentQuery query);
 
 	void save(@NonNull final I_C_Payment payment);
+
+	Iterator<I_C_Payment> retrieveEmployeePaymentsForTimeframe(OrgId orgId, BankAccountId bankAccountId, Instant startDate, Instant endDate);
 }

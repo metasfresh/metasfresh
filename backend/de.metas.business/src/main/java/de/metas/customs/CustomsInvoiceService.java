@@ -9,6 +9,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 
+import de.metas.bpartner.BPartnerContactId;
+import de.metas.document.location.RenderedAddressAndCapturedLocation;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
@@ -32,11 +34,11 @@ import de.metas.currency.ICurrencyBL;
 import de.metas.customs.event.CustomsInvoiceUserNotificationsProducer;
 import de.metas.customs.process.ShipmentLinesForCustomsInvoiceRepo;
 import de.metas.document.DocTypeId;
-import de.metas.document.IDocumentLocationBL;
+import de.metas.document.location.IDocumentLocationBL;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
-import de.metas.document.model.impl.PlainDocumentLocation;
+import de.metas.document.location.DocumentLocation;
 import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.i18n.AdMessageKey;
@@ -60,13 +62,15 @@ import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.IUOMDAO;
-import de.metas.uom.UOMConstants;
 import de.metas.uom.UOMConversionContext;
 import de.metas.uom.UomId;
+import de.metas.uom.X12DE355;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -100,16 +104,18 @@ public class CustomsInvoiceService
 	private final CustomsInvoiceRepository customsInvoiceRepo;
 	private final OrderLineRepository orderLineRepo;
 	private final ShipmentLinesForCustomsInvoiceRepo shipmentLinesForCustomsInvoiceRepo;
+	private final IDocumentLocationBL documentLocationBL;
 
 	public CustomsInvoiceService(
 			@NonNull final CustomsInvoiceRepository customsInvoiceRepo,
 			@NonNull final OrderLineRepository orderLineRepo,
-			@NonNull final ShipmentLinesForCustomsInvoiceRepo shipmentLinesForCustomsInvoiceRepo)
+			@NonNull final ShipmentLinesForCustomsInvoiceRepo shipmentLinesForCustomsInvoiceRepo,
+			@NonNull final IDocumentLocationBL documentLocationBL)
 	{
 		this.customsInvoiceRepo = customsInvoiceRepo;
 		this.orderLineRepo = orderLineRepo;
 		this.shipmentLinesForCustomsInvoiceRepo = shipmentLinesForCustomsInvoiceRepo;
-
+		this.documentLocationBL = documentLocationBL;
 	}
 
 	public CustomsInvoice generateCustomsInvoice(@NonNull final CustomsInvoiceRequest customsInvoiceRequest)
@@ -248,11 +254,6 @@ public class CustomsInvoiceService
 				Env.getClientId(),
 				Env.getOrgId());
 
-		if (shipmentLinePriceConverted == null)
-		{
-			throw new AdempiereException("Please, add a conversion between the following currencies: " + priceActual.getCurrencyId() + ", " + currencyId);
-		}
-
 		return priceActual.toBuilder().money(Money.of(shipmentLinePriceConverted, currencyId)).build();
 	}
 
@@ -307,7 +308,7 @@ public class CustomsInvoiceService
 
 	private Optional<Quantity> convertToKillogram(final Quantity qty, final ProductId productId)
 	{
-		final UomId kilogram = Services.get(IUOMDAO.class).getUomIdByX12DE355(UOMConstants.X12_KILOGRAM);
+		final UomId kilogram = Services.get(IUOMDAO.class).getUomIdByX12DE355(X12DE355.KILOGRAM);
 		try
 		{
 			final Quantity quantityInKilograms = uomConversionBL.convertQuantityTo(
@@ -348,7 +349,7 @@ public class CustomsInvoiceService
 
 	public CustomsInvoice generateNewCustomsInvoice(
 			final BPartnerLocationId bpartnerLocationId,
-			final UserId contactId,
+			@Nullable final BPartnerContactId contactId,
 			final IQueryFilter<I_M_InOut> queryFilter)
 	{
 		final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
@@ -376,20 +377,16 @@ public class CustomsInvoiceService
 
 		final String documentNo = reserveDocumentNo(docTypeId);
 
-		final PlainDocumentLocation documentLocation = PlainDocumentLocation.builder()
-				.bpartnerId(bpartnerLocationId.getBpartnerId())
-				.bpartnerLocationId(bpartnerLocationId)
-				.contactId(contactId)
-				.build();
-
-		Services.get(IDocumentLocationBL.class).setBPartnerAddress(documentLocation);
-
-		final String bpartnerAddress = documentLocation.getBPartnerAddress();
+		final RenderedAddressAndCapturedLocation bpartnerAddress = documentLocationBL.computeRenderedAddress(DocumentLocation.builder()
+												 .bpartnerId(bpartnerLocationId.getBpartnerId())
+												 .bpartnerLocationId(bpartnerLocationId)
+												 .contactId(contactId)
+												 .build());
 
 		final CustomsInvoiceRequest customsInvoiceRequest = CustomsInvoiceRequest.builder()
 				.bpartnerAndLocationId(bpartnerLocationId)
-				.bpartnerAddress(bpartnerAddress)
-				.userId(contactId)
+				.bpartnerAddress(bpartnerAddress.getRenderedAddress())
+				.userId(BPartnerContactId.toUserIdOrNull(contactId))
 				.currencyId(currencyId)
 				.linesToExportMap(linesToExportMap)
 				.invoiceDate(invoiceDate)

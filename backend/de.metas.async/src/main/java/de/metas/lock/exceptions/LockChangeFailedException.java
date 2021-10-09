@@ -1,5 +1,6 @@
 package de.metas.lock.exceptions;
 
+import lombok.NonNull;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
 import de.metas.lock.api.ILock;
@@ -24,14 +25,14 @@ public class LockChangeFailedException extends LockException
 	}
 
 	@Override
-	public LockChangeFailedException setParameter(String name, Object value)
+	public LockChangeFailedException setParameter(@NonNull String name, Object value)
 	{
 		super.setParameter(name, value);
 		return this;
 	}
 
 	@Override
-	public LockChangeFailedException setRecord(final TableRecordReference record)
+	public LockChangeFailedException setRecord(final @NonNull TableRecordReference record)
 	{
 		super.setRecord(record);
 		return this;

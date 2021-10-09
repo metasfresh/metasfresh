@@ -32,6 +32,8 @@ import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Movement;
 import org.compiere.model.I_M_MovementLine;
 
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductActivityProvider;
 import de.metas.product.IProductBL;
@@ -46,10 +48,14 @@ import lombok.NonNull;
 
 public class MovementBL implements IMovementBL
 {
+	private final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
+	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+	
 	@Override
 	public I_C_UOM getC_UOM(final I_M_MovementLine movementLine)
 	{
-		return Services.get(IProductBL.class).getStockUOM(movementLine.getM_Product_ID());
+		final IProductBL productBL = Services.get(IProductBL.class);
+		return productBL.getStockUOM(movementLine.getM_Product_ID());
 	}
 
 	@Override
@@ -59,7 +65,6 @@ public class MovementBL implements IMovementBL
 		final I_C_UOM movementQtyUOM = getC_UOM(movementLine);
 		final Quantity movementQty = new Quantity(movementQtyValue, movementQtyUOM);
 
-		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 		final int productId = movementLine.getM_Product_ID();
 		final UOMConversionContext uomConversionCtx = UOMConversionContext.of(productId);
 
@@ -72,7 +77,6 @@ public class MovementBL implements IMovementBL
 		final ProductId productId = ProductId.ofRepoId(movementLine.getM_Product_ID());
 		final I_C_UOM uomTo = getC_UOM(movementLine);
 
-		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 		final BigDecimal movementQtyConv = uomConversionBL.convertQty(productId, movementQty, uom, uomTo);
 
 		movementLine.setMovementQty(movementQtyConv);
@@ -131,5 +135,11 @@ public class MovementBL implements IMovementBL
 		final int movementId = movement.getM_Movement_ID();
 		final boolean reversal = movementId > reversalId;
 		return reversal;
+	}
+	
+	@Override
+	public void voidMovement(final I_M_Movement movement)
+	{
+		docActionBL.processEx(movement, IDocument.ACTION_Void, IDocument.STATUS_Reversed);
 	}
 }

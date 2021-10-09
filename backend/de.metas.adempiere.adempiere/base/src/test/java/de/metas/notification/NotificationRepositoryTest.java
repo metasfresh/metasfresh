@@ -7,6 +7,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.math.BigDecimal;
 import java.util.List;
 
+import de.metas.i18n.AdMessageKey;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -69,13 +70,13 @@ public class NotificationRepositoryTest
 				.important(true)
 				//
 				.subjectPlain("subjectPlain")
-				.subjectADMessage("subjectADMessage")
+				.subjectADMessage(AdMessageKey.of("subjectADMessage"))
 				.subjectADMessageParam("string")
 				.subjectADMessageParam(TableRecordReference.of("MyTable", 111))
 				.subjectADMessageParam(BigDecimal.valueOf(123.44))
 				//
 				.contentPlain("contentPlain")
-				.contentADMessage("contentADMessage")
+				.contentADMessage(AdMessageKey.of("contentADMessage"))
 				.contentADMessageParam("string")
 				.contentADMessageParam(TableRecordReference.of("MyTable", 111))
 				.contentADMessageParam(BigDecimal.valueOf(123.44))

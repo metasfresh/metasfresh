@@ -1,24 +1,23 @@
 package de.metas.inout.event;
 
-import java.util.Collection;
-import java.util.List;
-
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_M_InOut;
-import org.compiere.util.Env;
-
 import com.google.common.collect.ImmutableList;
-
-import de.metas.document.engine.IDocumentBL;
+import de.metas.document.engine.DocStatus;
 import de.metas.event.Topic;
+import de.metas.i18n.AdMessageKey;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
 import de.metas.notification.UserNotificationRequest.TargetRecordAction;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_M_InOut;
+import org.compiere.util.Env;
+
+import java.util.Collection;
+import java.util.List;
 
 /*
  * #%L
@@ -62,11 +61,8 @@ public class ReturnInOutUserNotificationsProducer
 	 */
 	public static final Topic EVENTBUS_TOPIC = InOutUserNotificationsProducer.EVENTBUS_TOPIC;
 
-	// services
-	private final transient IDocumentBL docActionBL = Services.get(IDocumentBL.class);
-
-	private static final String MSG_Event_RETURN_FROM_CUSTOMER_Generated = "Event_CustomerReturn_Generated";
-	private static final String MSG_Event_RETURN_TO_VENDOR_Generated = "Event_ReturnToVendor_Generated";
+	private static final AdMessageKey MSG_Event_RETURN_FROM_CUSTOMER_Generated = AdMessageKey.of("Event_CustomerReturn_Generated");
+	private static final AdMessageKey MSG_Event_RETURN_TO_VENDOR_Generated = AdMessageKey.of("Event_ReturnToVendor_Generated");
 
 	private ReturnInOutUserNotificationsProducer()
 	{
@@ -110,7 +106,7 @@ public class ReturnInOutUserNotificationsProducer
 		final String bpValue = bpartner.getValue();
 		final String bpName = bpartner.getName();
 
-		final String adMessage = getNotificationAD_Message(inout);
+		final AdMessageKey adMessage = getNotificationAD_Message(inout);
 		final UserId recipientUserId = getNotificationRecipientUserId(inout);
 
 		final TableRecordReference inoutRef = TableRecordReference.of(inout);
@@ -136,7 +132,7 @@ public class ReturnInOutUserNotificationsProducer
 		return inout.isSOTrx() ? WINDOW_RETURN_FROM_CUSTOMER : WINDOW_RETURN_TO_VENDOR;
 	}
 
-	private String getNotificationAD_Message(final I_M_InOut inout)
+	private AdMessageKey getNotificationAD_Message(final I_M_InOut inout)
 	{
 
 		return inout.isSOTrx() ? MSG_Event_RETURN_FROM_CUSTOMER_Generated : MSG_Event_RETURN_TO_VENDOR_Generated;
@@ -147,7 +143,8 @@ public class ReturnInOutUserNotificationsProducer
 	{
 		//
 		// In case of reversal i think we shall notify the current user too
-		if (docActionBL.isDocumentReversedOrVoided(inout))
+		final DocStatus docStatus = DocStatus.ofCode(inout.getDocStatus());
+		if (docStatus.isReversedOrVoided())
 		{
 			final int currentUserId = Env.getAD_User_ID(Env.getCtx()); // current/triggering user
 			if (currentUserId > 0)

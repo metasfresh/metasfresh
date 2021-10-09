@@ -1,6 +1,3 @@
-/**
- *
- */
 package de.metas.order.callout;
 
 /*
@@ -25,25 +22,26 @@ package de.metas.order.callout;
  * #L%
  */
 
-import org.adempiere.ad.callout.annotations.Callout;
-import org.adempiere.ad.callout.annotations.CalloutMethod;
-
+import de.metas.document.location.IDocumentLocationBL;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.IOrderLineBL;
+import de.metas.order.location.adapter.OrderLineDocumentLocationAdapterFactory;
 import de.metas.util.Services;
+import org.adempiere.ad.callout.annotations.Callout;
+import org.adempiere.ad.callout.annotations.CalloutMethod;
+import org.compiere.SpringContextHolder;
 
-/**
- * @author cg
- *
- */
 @Callout(I_C_OrderLine.class)
 public class C_OrderLine
 {
+	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+	private final IDocumentLocationBL documentLocationBL = SpringContextHolder.instance.getBean(IDocumentLocationBL.class);
+
 	@CalloutMethod(columnNames = { I_C_OrderLine.COLUMNNAME_M_Product_ID })
 	public void onProductChanged(final I_C_OrderLine orderLine)
 	{
 		resetManualFlags(orderLine);
-		Services.get(IOrderLineBL.class).updateProductDescriptionFromProductBOMIfConfigured(orderLine);
+		orderLineBL.updateProductDescriptionFromProductBOMIfConfigured(orderLine);
 	}
 
 	private void resetManualFlags(final I_C_OrderLine orderLineRecord)
@@ -52,6 +50,31 @@ public class C_OrderLine
 		orderLineRecord.setIsManualPrice(false);
 		orderLineRecord.setIsManualPaymentTerm(false);
 
-		Services.get(IOrderLineBL.class).updatePrices(orderLineRecord); // see task 06727
+		orderLineBL.updatePrices(orderLineRecord); // see task 06727
+	}
+
+	@CalloutMethod(columnNames = { I_C_OrderLine.COLUMNNAME_Discount }, skipIfCopying = true, skipIfIndirectlyCalled = true)
+	public void SetIsManualDiscount(final I_C_OrderLine orderLine)
+	{
+		orderLine.setIsManualDiscount(true);
+	}
+
+	/**
+	 * Sets {@code C_OrderLine.IsManualPrice='Y'}, but only if the user "manually" edited the price.
+	 */
+	@CalloutMethod(columnNames = { I_C_OrderLine.COLUMNNAME_PriceEntered }, skipIfCopying = true, skipIfIndirectlyCalled = true)
+	public void setIsManualPriceFlag(final I_C_OrderLine orderLine)
+	{
+		orderLine.setIsManualPrice(true);
+	}
+
+	@CalloutMethod(columnNames = {
+			I_C_OrderLine.COLUMNNAME_C_BPartner_ID,
+			I_C_OrderLine.COLUMNNAME_C_BPartner_Location_ID,
+			I_C_OrderLine.COLUMNNAME_AD_User_ID },
+			skipIfCopying = true)
+	public void updateBPartnerAddress(final I_C_OrderLine orderLine)
+	{
+		documentLocationBL.updateRenderedAddressAndCapturedLocation(OrderLineDocumentLocationAdapterFactory.locationAdapter(orderLine));
 	}
 }

@@ -1,0 +1,42 @@
+{
+  "orgCode": "001",
+  "jsonRequestProductUpsert": {
+    "requestItems": [
+      {
+        "productIdentifier": "ext-Shopware6-!!productId!!",
+        "externalVersion": null,
+        "externalReferenceUrl": null,
+        "requestProduct": {
+          "code": "!!productNumber!!",
+          "codeSet": true,
+          "name": "!!name!!",
+          "nameSet": true,
+          "type": "ITEM",
+          "typeSet": true,
+          "uomCode": "CM",
+          "uomCodeSet": true,
+          "ean": "!!ean!!",
+          "eanSet": true,
+          "gtin": null,
+          "gtinSet": false,
+          "description": null,
+          "descriptionSet": false,
+          "discontinued": null,
+          "discontinuedSet": false,
+          "active": null,
+          "activeSet": false,
+          "stocked": null,
+          "stockedSet": false,
+          "productCategoryIdentifier": null,
+          "productCategoryIdentifierSet": false,
+          "syncAdvise": null,
+          "bpartnerProductItems": null
+        }
+      }
+    ],
+    "syncAdvise": {
+      "ifNotExists": "CREATE",
+      "ifExists": "UPDATE_MERGE"
+    }
+  }
+}

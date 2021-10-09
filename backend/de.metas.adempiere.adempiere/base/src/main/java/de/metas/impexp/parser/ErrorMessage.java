@@ -4,6 +4,8 @@ import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
 
+import lombok.EqualsAndHashCode;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -32,6 +34,7 @@ import org.adempiere.exceptions.AdempiereException;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
+@EqualsAndHashCode
 public final class ErrorMessage
 {
 	public static ErrorMessage of(final String message)

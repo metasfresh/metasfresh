@@ -1,6 +1,3 @@
-/**
- *
- */
 package de.metas.contracts.order;
 
 import java.util.HashSet;
@@ -17,6 +14,8 @@ import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.util.Services;
 import lombok.NonNull;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -50,16 +49,17 @@ public class ContractOrderService
 	/**
 	 * Retrieves the linked order through column <code>I_C_Order.COLUMNNAME_Ref_FollowupOrder_ID</code>.
 	 */
+	@Nullable
 	public OrderId retrieveLinkedFollowUpContractOrder(@NonNull final OrderId orderId)
 	{
-		int oroginalOrderId = Services.get(IQueryBL.class).createQueryBuilder(I_C_Order.class)
+		final int originalOrderId = Services.get(IQueryBL.class).createQueryBuilder(I_C_Order.class)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
 				.addEqualsFilter(I_C_Order.COLUMNNAME_Ref_FollowupOrder_ID, orderId)
 				.create()
 				.firstId();
 
-		return OrderId.ofRepoIdOrNull(oroginalOrderId);
+		return OrderId.ofRepoIdOrNull(originalOrderId);
 	}
 
 	/**
@@ -102,7 +102,7 @@ public class ContractOrderService
 	/**
 	 * Builds up a list of contract orders based on column <code>I_C_Order.COLUMNNAME_Ref_FollowupOrder_ID</code>.
 	 */
-	private void buildAllContractOrderList(@NonNull final OrderId orderId, @NonNull Set<OrderId> contractOrderIds)
+	private void buildAllContractOrderList(@NonNull final OrderId orderId, @NonNull final Set<OrderId> contractOrderIds)
 	{
 		final I_C_Order order = InterfaceWrapperHelper.load(orderId, I_C_Order.class);
 		final OrderId nextAncestorId = OrderId.ofRepoIdOrNull(order.getRef_FollowupOrder_ID());
@@ -125,6 +125,7 @@ public class ContractOrderService
 		return nextTerm == null ? term : nextTerm;
 	}
 
+	@Nullable
 	public OrderId getContractOrderId(@NonNull final I_C_Flatrate_Term term)
 	{
 		if (term.getC_OrderLine_Term_ID() <= 0)
@@ -148,7 +149,7 @@ public class ContractOrderService
 				.createQueryBuilder(I_C_OrderLine.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_C_Order_ID, orderId)
-				.addNotNull(I_C_OrderLine.COLUMN_C_Flatrate_Conditions_ID)
+				.addNotNull(I_C_OrderLine.COLUMNNAME_C_Flatrate_Conditions_ID)
 				.create()
 				.anyMatch();
 	}

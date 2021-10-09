@@ -30,13 +30,14 @@ import lombok.Getter;
 
 import java.time.format.DateTimeFormatter;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 public interface GithubImporterConstants
 {
 	int CHUNK_SIZE = 100;
 	UomId HOUR_UOM_ID = UomId.ofRepoId(101);
 
-	DateTimeFormatter PLANNED_UAT_DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+	DateTimeFormatter LABEL_DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
 	@AllArgsConstructor
 	@Getter
@@ -56,9 +57,17 @@ public interface GithubImporterConstants
 		STATUS(Pattern.compile("^status:(?<status>" + Joiner.on("|").join(Status.listCodes()) +")$"), "status"),
 		DELIVERY_PLATFORM(Pattern.compile("^ins:(?<platform>[A-Za-z0-9]+)$"),"platform"),
 		PLANNED_UAT(Pattern.compile("^p_uat:(?<uat>[0-9]{4}-[01][0-9]-[0-3][0-9])$"), "uat"),
-		ROUGH_EST(Pattern.compile("^p_est:(?<pest>[0-9]+(\\.[0-9]+)?)$"), "pest");
+		ROUGH_EST(Pattern.compile("^p_est:(?<pest>[0-9]+(\\.[0-9]+)?)$"), "pest"),
+		DELIVERED_DATE(Pattern.compile("^del_date:(?<deldate>[0-9]{4}-[01][0-9]-[0-3][0-9])$"), "deldate"),
+
+		UNKNOWN(Pattern.compile(".*"),"");
 
 		private final Pattern pattern;
 		private final String groupName;
+
+		public static Stream<LabelType> streamKnownLabelTypes()
+		{
+			return Stream.of(values()).filter(label -> !UNKNOWN.equals(label));
+		}
 	}
 }

@@ -22,9 +22,11 @@
 
 package org.adempiere.warehouse.api;
 
+import de.metas.document.location.DocumentLocation;
 import de.metas.location.CountryId;
 import de.metas.organization.OrgId;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_Locator;
@@ -51,7 +53,6 @@ public interface IWarehouseBL extends ISingletonService
 	 * <p>
 	 * In case none found, create a new one, with the coordinates (0,0,0)
 	 *
-	 * @param warehouse
 	 * @return default locator's Id; never return null
 	 */
 	LocatorId getDefaultLocatorId(WarehouseId warehouse);
@@ -59,5 +60,8 @@ public interface IWarehouseBL extends ISingletonService
 	@Nullable
 	CountryId getCountryId(WarehouseId warehouseId);
 
+	@NonNull
 	OrgId getWarehouseOrgId(WarehouseId warehouseId);
+
+	DocumentLocation getPlainDocumentLocation(WarehouseId warehouseId);
 }

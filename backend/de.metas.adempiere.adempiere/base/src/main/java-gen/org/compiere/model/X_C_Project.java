@@ -1,943 +1,553 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for C_Project
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public class X_C_Project extends org.compiere.model.PO implements I_C_Project, org.compiere.model.I_Persistent 
 {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = 1830699571L;
+	private static final long serialVersionUID = 1725670829L;
 
     /** Standard Constructor */
-    public X_C_Project (Properties ctx, int C_Project_ID, String trxName)
+    public X_C_Project (final Properties ctx, final int C_Project_ID, @Nullable final String trxName)
     {
       super (ctx, C_Project_ID, trxName);
-      /** if (C_Project_ID == 0)
-        {
-			setC_Currency_ID (0);
-			setCommittedAmt (BigDecimal.ZERO);
-			setCommittedQty (BigDecimal.ZERO);
-			setC_Project_ID (0);
-			setInvoicedAmt (BigDecimal.ZERO);
-			setInvoicedQty (BigDecimal.ZERO);
-			setIsCommitCeiling (false);
-			setIsCommitment (false);
-			setIsSummary (false);
-			setName (null);
-			setPlannedAmt (BigDecimal.ZERO);
-			setPlannedMarginAmt (BigDecimal.ZERO);
-			setPlannedQty (BigDecimal.ZERO);
-			setProcessed (false);
-			setProjectBalanceAmt (BigDecimal.ZERO);
-			setProjectLineLevel (null); // P
-			setProjInvoiceRule (null); // -
-			setValue (null);
-        } */
     }
 
     /** Load Constructor */
-    public X_C_Project (Properties ctx, ResultSet rs, String trxName)
+    public X_C_Project (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
 
 
-    /** Load Meta Data */
-    @Override
-    protected org.compiere.model.POInfo initPO (Properties ctx)
-    {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
-      return poi;
-    }
-
+	/** Load Meta Data */
 	@Override
-	public org.compiere.model.I_AD_User getAD_User() throws RuntimeException
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
-		return get_ValueAsPO(COLUMNNAME_AD_User_ID, org.compiere.model.I_AD_User.class);
+		return org.compiere.model.POInfo.getPOInfo(Table_Name);
 	}
 
 	@Override
-	public void setAD_User(org.compiere.model.I_AD_User AD_User)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_User_ID, org.compiere.model.I_AD_User.class, AD_User);
-	}
-
-	/** Set Ansprechpartner.
-		@param AD_User_ID 
-		User within the system - Internal or Business Partner Contact
-	  */
-	@Override
-	public void setAD_User_ID (int AD_User_ID)
+	public void setAD_User_ID (final int AD_User_ID)
 	{
 		if (AD_User_ID < 0) 
 			set_Value (COLUMNNAME_AD_User_ID, null);
 		else 
-			set_Value (COLUMNNAME_AD_User_ID, Integer.valueOf(AD_User_ID));
+			set_Value (COLUMNNAME_AD_User_ID, AD_User_ID);
 	}
 
-	/** Get Ansprechpartner.
-		@return User within the system - Internal or Business Partner Contact
-	  */
 	@Override
-	public int getAD_User_ID () 
+	public int getAD_User_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_User_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_AD_User_ID);
 	}
 
 	@Override
-	public org.compiere.model.I_C_BPartner getC_BPartner() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class);
-	}
-
-	@Override
-	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner)
-	{
-		set_ValueFromPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class, C_BPartner);
-	}
-
-	/** Set Geschäftspartner.
-		@param C_BPartner_ID 
-		Identifies a Business Partner
-	  */
-	@Override
-	public void setC_BPartner_ID (int C_BPartner_ID)
+	public void setC_BPartner_ID (final int C_BPartner_ID)
 	{
 		if (C_BPartner_ID < 1) 
 			set_Value (COLUMNNAME_C_BPartner_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_BPartner_ID, Integer.valueOf(C_BPartner_ID));
+			set_Value (COLUMNNAME_C_BPartner_ID, C_BPartner_ID);
 	}
 
-	/** Get Geschäftspartner.
-		@return Identifies a Business Partner
-	  */
 	@Override
-	public int getC_BPartner_ID () 
+	public int getC_BPartner_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_BPartner_ID);
 	}
 
 	@Override
-	public org.compiere.model.I_C_BPartner_Location getC_BPartner_Location() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_BPartner_Location_ID, org.compiere.model.I_C_BPartner_Location.class);
-	}
-
-	@Override
-	public void setC_BPartner_Location(org.compiere.model.I_C_BPartner_Location C_BPartner_Location)
-	{
-		set_ValueFromPO(COLUMNNAME_C_BPartner_Location_ID, org.compiere.model.I_C_BPartner_Location.class, C_BPartner_Location);
-	}
-
-	/** Set Standort.
-		@param C_BPartner_Location_ID 
-		Identifies the (ship to) address for this Business Partner
-	  */
-	@Override
-	public void setC_BPartner_Location_ID (int C_BPartner_Location_ID)
+	public void setC_BPartner_Location_ID (final int C_BPartner_Location_ID)
 	{
 		if (C_BPartner_Location_ID < 1) 
 			set_Value (COLUMNNAME_C_BPartner_Location_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_BPartner_Location_ID, Integer.valueOf(C_BPartner_Location_ID));
+			set_Value (COLUMNNAME_C_BPartner_Location_ID, C_BPartner_Location_ID);
 	}
 
-	/** Get Standort.
-		@return Identifies the (ship to) address for this Business Partner
-	  */
 	@Override
-	public int getC_BPartner_Location_ID () 
+	public int getC_BPartner_Location_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_Location_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_BPartner_Location_ID);
 	}
 
 	@Override
-	public org.compiere.model.I_C_BPartner getC_BPartnerSR() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_BPartnerSR_ID, org.compiere.model.I_C_BPartner.class);
-	}
-
-	@Override
-	public void setC_BPartnerSR(org.compiere.model.I_C_BPartner C_BPartnerSR)
-	{
-		set_ValueFromPO(COLUMNNAME_C_BPartnerSR_ID, org.compiere.model.I_C_BPartner.class, C_BPartnerSR);
-	}
-
-	/** Set BPartner (Agent).
-		@param C_BPartnerSR_ID 
-		Business Partner (Agent or Sales Rep)
-	  */
-	@Override
-	public void setC_BPartnerSR_ID (int C_BPartnerSR_ID)
+	public void setC_BPartnerSR_ID (final int C_BPartnerSR_ID)
 	{
 		if (C_BPartnerSR_ID < 1) 
 			set_Value (COLUMNNAME_C_BPartnerSR_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_BPartnerSR_ID, Integer.valueOf(C_BPartnerSR_ID));
+			set_Value (COLUMNNAME_C_BPartnerSR_ID, C_BPartnerSR_ID);
 	}
 
-	/** Get BPartner (Agent).
-		@return Business Partner (Agent or Sales Rep)
-	  */
 	@Override
-	public int getC_BPartnerSR_ID () 
+	public int getC_BPartnerSR_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartnerSR_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_BPartnerSR_ID);
 	}
 
 	@Override
-	public org.compiere.model.I_C_Campaign getC_Campaign() throws RuntimeException
+	public org.compiere.model.I_C_Campaign getC_Campaign()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Campaign_ID, org.compiere.model.I_C_Campaign.class);
 	}
 
 	@Override
-	public void setC_Campaign(org.compiere.model.I_C_Campaign C_Campaign)
+	public void setC_Campaign(final org.compiere.model.I_C_Campaign C_Campaign)
 	{
 		set_ValueFromPO(COLUMNNAME_C_Campaign_ID, org.compiere.model.I_C_Campaign.class, C_Campaign);
 	}
 
-	/** Set Werbemassnahme.
-		@param C_Campaign_ID 
-		Marketing Campaign
-	  */
 	@Override
-	public void setC_Campaign_ID (int C_Campaign_ID)
+	public void setC_Campaign_ID (final int C_Campaign_ID)
 	{
 		if (C_Campaign_ID < 1) 
 			set_Value (COLUMNNAME_C_Campaign_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_Campaign_ID, Integer.valueOf(C_Campaign_ID));
+			set_Value (COLUMNNAME_C_Campaign_ID, C_Campaign_ID);
 	}
 
-	/** Get Werbemassnahme.
-		@return Marketing Campaign
-	  */
 	@Override
-	public int getC_Campaign_ID () 
+	public int getC_Campaign_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_Campaign_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_Campaign_ID);
 	}
 
 	@Override
-	public org.compiere.model.I_C_Currency getC_Currency() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Currency_ID, org.compiere.model.I_C_Currency.class);
-	}
-
-	@Override
-	public void setC_Currency(org.compiere.model.I_C_Currency C_Currency)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Currency_ID, org.compiere.model.I_C_Currency.class, C_Currency);
-	}
-
-	/** Set Währung.
-		@param C_Currency_ID 
-		The Currency for this record
-	  */
-	@Override
-	public void setC_Currency_ID (int C_Currency_ID)
+	public void setC_Currency_ID (final int C_Currency_ID)
 	{
 		if (C_Currency_ID < 1) 
 			set_Value (COLUMNNAME_C_Currency_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_Currency_ID, Integer.valueOf(C_Currency_ID));
+			set_Value (COLUMNNAME_C_Currency_ID, C_Currency_ID);
 	}
 
-	/** Get Währung.
-		@return The Currency for this record
-	  */
 	@Override
-	public int getC_Currency_ID () 
+	public int getC_Currency_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_Currency_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	/** Set Committed Amount.
-		@param CommittedAmt 
-		The (legal) commitment amount
-	  */
-	@Override
-	public void setCommittedAmt (java.math.BigDecimal CommittedAmt)
-	{
-		set_Value (COLUMNNAME_CommittedAmt, CommittedAmt);
-	}
-
-	/** Get Committed Amount.
-		@return The (legal) commitment amount
-	  */
-	@Override
-	public java.math.BigDecimal getCommittedAmt () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_CommittedAmt);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
-	}
-
-	/** Set Committed Quantity.
-		@param CommittedQty 
-		The (legal) commitment Quantity
-	  */
-	@Override
-	public void setCommittedQty (java.math.BigDecimal CommittedQty)
-	{
-		set_Value (COLUMNNAME_CommittedQty, CommittedQty);
-	}
-
-	/** Get Committed Quantity.
-		@return The (legal) commitment Quantity
-	  */
-	@Override
-	public java.math.BigDecimal getCommittedQty () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_CommittedQty);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
-	}
-
-	/** Set Copy From.
-		@param CopyFrom 
-		Copy From Record
-	  */
-	@Override
-	public void setCopyFrom (java.lang.String CopyFrom)
-	{
-		set_Value (COLUMNNAME_CopyFrom, CopyFrom);
-	}
-
-	/** Get Copy From.
-		@return Copy From Record
-	  */
-	@Override
-	public java.lang.String getCopyFrom () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_CopyFrom);
+		return get_ValueAsInt(COLUMNNAME_C_Currency_ID);
 	}
 
 	@Override
-	public org.compiere.model.I_C_PaymentTerm getC_PaymentTerm() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_PaymentTerm_ID, org.compiere.model.I_C_PaymentTerm.class);
-	}
-
-	@Override
-	public void setC_PaymentTerm(org.compiere.model.I_C_PaymentTerm C_PaymentTerm)
-	{
-		set_ValueFromPO(COLUMNNAME_C_PaymentTerm_ID, org.compiere.model.I_C_PaymentTerm.class, C_PaymentTerm);
-	}
-
-	/** Set Zahlungsbedingung.
-		@param C_PaymentTerm_ID 
-		Die Bedingungen für die Bezahlung dieses Vorgangs
-	  */
-	@Override
-	public void setC_PaymentTerm_ID (int C_PaymentTerm_ID)
+	public void setC_PaymentTerm_ID (final int C_PaymentTerm_ID)
 	{
 		if (C_PaymentTerm_ID < 1) 
 			set_Value (COLUMNNAME_C_PaymentTerm_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_PaymentTerm_ID, Integer.valueOf(C_PaymentTerm_ID));
+			set_Value (COLUMNNAME_C_PaymentTerm_ID, C_PaymentTerm_ID);
 	}
 
-	/** Get Zahlungsbedingung.
-		@return Die Bedingungen für die Bezahlung dieses Vorgangs
-	  */
 	@Override
-	public int getC_PaymentTerm_ID () 
+	public int getC_PaymentTerm_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_PaymentTerm_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_PaymentTerm_ID);
 	}
 
 	@Override
-	public org.compiere.model.I_C_Phase getC_Phase() throws RuntimeException
+	public org.compiere.model.I_C_Phase getC_Phase()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Phase_ID, org.compiere.model.I_C_Phase.class);
 	}
 
 	@Override
-	public void setC_Phase(org.compiere.model.I_C_Phase C_Phase)
+	public void setC_Phase(final org.compiere.model.I_C_Phase C_Phase)
 	{
 		set_ValueFromPO(COLUMNNAME_C_Phase_ID, org.compiere.model.I_C_Phase.class, C_Phase);
 	}
 
-	/** Set Standard-Phase.
-		@param C_Phase_ID 
-		Standard Phase of the Project Type
-	  */
 	@Override
-	public void setC_Phase_ID (int C_Phase_ID)
+	public void setC_Phase_ID (final int C_Phase_ID)
 	{
 		if (C_Phase_ID < 1) 
 			set_Value (COLUMNNAME_C_Phase_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_Phase_ID, Integer.valueOf(C_Phase_ID));
+			set_Value (COLUMNNAME_C_Phase_ID, C_Phase_ID);
 	}
 
-	/** Get Standard-Phase.
-		@return Standard Phase of the Project Type
-	  */
 	@Override
-	public int getC_Phase_ID () 
+	public int getC_Phase_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_Phase_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_Phase_ID);
 	}
 
-	/** Set Projekt.
-		@param C_Project_ID 
-		Financial Project
-	  */
 	@Override
-	public void setC_Project_ID (int C_Project_ID)
+	public void setC_Project_ID (final int C_Project_ID)
 	{
 		if (C_Project_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_C_Project_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_C_Project_ID, Integer.valueOf(C_Project_ID));
+			set_ValueNoCheck (COLUMNNAME_C_Project_ID, C_Project_ID);
 	}
 
-	/** Get Projekt.
-		@return Financial Project
-	  */
 	@Override
-	public int getC_Project_ID () 
+	public int getC_Project_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_Project_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_Project_ID);
 	}
 
 	@Override
-	public org.compiere.model.I_C_ProjectType getC_ProjectType() throws RuntimeException
+	public org.compiere.model.I_C_Project_Label getC_Project_Label()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Project_Label_ID, org.compiere.model.I_C_Project_Label.class);
+	}
+
+	@Override
+	public void setC_Project_Label(final org.compiere.model.I_C_Project_Label C_Project_Label)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Project_Label_ID, org.compiere.model.I_C_Project_Label.class, C_Project_Label);
+	}
+
+	@Override
+	public void setC_Project_Label_ID (final int C_Project_Label_ID)
+	{
+		if (C_Project_Label_ID < 1) 
+			set_Value (COLUMNNAME_C_Project_Label_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Project_Label_ID, C_Project_Label_ID);
+	}
+
+	@Override
+	public int getC_Project_Label_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Project_Label_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_C_ProjectType getC_ProjectType()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_ProjectType_ID, org.compiere.model.I_C_ProjectType.class);
 	}
 
 	@Override
-	public void setC_ProjectType(org.compiere.model.I_C_ProjectType C_ProjectType)
+	public void setC_ProjectType(final org.compiere.model.I_C_ProjectType C_ProjectType)
 	{
 		set_ValueFromPO(COLUMNNAME_C_ProjectType_ID, org.compiere.model.I_C_ProjectType.class, C_ProjectType);
 	}
 
-	/** Set Projektart.
-		@param C_ProjectType_ID 
-		Type of the project
-	  */
 	@Override
-	public void setC_ProjectType_ID (int C_ProjectType_ID)
+	public void setC_ProjectType_ID (final int C_ProjectType_ID)
 	{
 		if (C_ProjectType_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_C_ProjectType_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_C_ProjectType_ID, Integer.valueOf(C_ProjectType_ID));
+			set_ValueNoCheck (COLUMNNAME_C_ProjectType_ID, C_ProjectType_ID);
 	}
 
-	/** Get Projektart.
-		@return Type of the project
-	  */
 	@Override
-	public int getC_ProjectType_ID () 
+	public int getC_ProjectType_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_ProjectType_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_ProjectType_ID);
 	}
 
-	/** Set Datum AE.
-		@param DateContract 
-		The (planned) effective date of this document.
-	  */
 	@Override
-	public void setDateContract (java.sql.Timestamp DateContract)
+	public void setCommittedAmt (final BigDecimal CommittedAmt)
+	{
+		set_Value (COLUMNNAME_CommittedAmt, CommittedAmt);
+	}
+
+	@Override
+	public BigDecimal getCommittedAmt() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_CommittedAmt);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setCommittedQty (final BigDecimal CommittedQty)
+	{
+		set_Value (COLUMNNAME_CommittedQty, CommittedQty);
+	}
+
+	@Override
+	public BigDecimal getCommittedQty() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_CommittedQty);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setCopyFrom (final @Nullable java.lang.String CopyFrom)
+	{
+		set_Value (COLUMNNAME_CopyFrom, CopyFrom);
+	}
+
+	@Override
+	public java.lang.String getCopyFrom() 
+	{
+		return get_ValueAsString(COLUMNNAME_CopyFrom);
+	}
+
+	@Override
+	public void setDateContract (final @Nullable java.sql.Timestamp DateContract)
 	{
 		set_Value (COLUMNNAME_DateContract, DateContract);
 	}
 
-	/** Get Datum AE.
-		@return The (planned) effective date of this document.
-	  */
 	@Override
-	public java.sql.Timestamp getDateContract () 
+	public java.sql.Timestamp getDateContract() 
 	{
-		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateContract);
+		return get_ValueAsTimestamp(COLUMNNAME_DateContract);
 	}
 
-	/** Set Projektabschluss.
-		@param DateFinish 
-		Finish or (planned) completion date
-	  */
 	@Override
-	public void setDateFinish (java.sql.Timestamp DateFinish)
+	public void setDateFinish (final @Nullable java.sql.Timestamp DateFinish)
 	{
 		set_Value (COLUMNNAME_DateFinish, DateFinish);
 	}
 
-	/** Get Projektabschluss.
-		@return Finish or (planned) completion date
-	  */
 	@Override
-	public java.sql.Timestamp getDateFinish () 
+	public java.sql.Timestamp getDateFinish() 
 	{
-		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateFinish);
+		return get_ValueAsTimestamp(COLUMNNAME_DateFinish);
 	}
 
-	/** Set Beschreibung.
-		@param Description Beschreibung	  */
 	@Override
-	public void setDescription (java.lang.String Description)
+	public void setDescription (final @Nullable java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
 
-	/** Get Beschreibung.
-		@return Beschreibung	  */
 	@Override
-	public java.lang.String getDescription () 
+	public java.lang.String getDescription() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Description);
+		return get_ValueAsString(COLUMNNAME_Description);
 	}
 
-	/** Set Generate To.
-		@param GenerateTo 
-		Generate To
-	  */
 	@Override
-	public void setGenerateTo (java.lang.String GenerateTo)
+	public void setenddatetime (final @Nullable java.sql.Timestamp enddatetime)
+	{
+		set_Value (COLUMNNAME_enddatetime, enddatetime);
+	}
+
+	@Override
+	public java.sql.Timestamp getenddatetime() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_enddatetime);
+	}
+
+	@Override
+	public void setGenerateTo (final @Nullable java.lang.String GenerateTo)
 	{
 		set_Value (COLUMNNAME_GenerateTo, GenerateTo);
 	}
 
-	/** Get Generate To.
-		@return Generate To
-	  */
 	@Override
-	public java.lang.String getGenerateTo () 
+	public java.lang.String getGenerateTo() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_GenerateTo);
+		return get_ValueAsString(COLUMNNAME_GenerateTo);
 	}
 
-	/** Set Invoiced Amount.
-		@param InvoicedAmt 
-		The amount invoiced
-	  */
 	@Override
-	public void setInvoicedAmt (java.math.BigDecimal InvoicedAmt)
+	public void setInvoicedAmt (final BigDecimal InvoicedAmt)
 	{
 		set_ValueNoCheck (COLUMNNAME_InvoicedAmt, InvoicedAmt);
 	}
 
-	/** Get Invoiced Amount.
-		@return The amount invoiced
-	  */
 	@Override
-	public java.math.BigDecimal getInvoicedAmt () 
+	public BigDecimal getInvoicedAmt() 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_InvoicedAmt);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_InvoicedAmt);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
-	/** Set Berechnete Menge.
-		@param InvoicedQty 
-		The quantity invoiced
-	  */
 	@Override
-	public void setInvoicedQty (java.math.BigDecimal InvoicedQty)
+	public void setInvoicedQty (final BigDecimal InvoicedQty)
 	{
 		set_ValueNoCheck (COLUMNNAME_InvoicedQty, InvoicedQty);
 	}
 
-	/** Get Berechnete Menge.
-		@return The quantity invoiced
-	  */
 	@Override
-	public java.math.BigDecimal getInvoicedQty () 
+	public BigDecimal getInvoicedQty() 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_InvoicedQty);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
-	}
-
-	/** Set Zusage ist Obergrenze.
-		@param IsCommitCeiling 
-		The commitment amount/quantity is the chargeable ceiling 
-	  */
-	@Override
-	public void setIsCommitCeiling (boolean IsCommitCeiling)
-	{
-		set_Value (COLUMNNAME_IsCommitCeiling, Boolean.valueOf(IsCommitCeiling));
-	}
-
-	/** Get Zusage ist Obergrenze.
-		@return The commitment amount/quantity is the chargeable ceiling 
-	  */
-	@Override
-	public boolean isCommitCeiling () 
-	{
-		Object oo = get_Value(COLUMNNAME_IsCommitCeiling);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
-	}
-
-	/** Set Commitment.
-		@param IsCommitment 
-		Is this document a (legal) commitment?
-	  */
-	@Override
-	public void setIsCommitment (boolean IsCommitment)
-	{
-		set_Value (COLUMNNAME_IsCommitment, Boolean.valueOf(IsCommitment));
-	}
-
-	/** Get Commitment.
-		@return Is this document a (legal) commitment?
-	  */
-	@Override
-	public boolean isCommitment () 
-	{
-		Object oo = get_Value(COLUMNNAME_IsCommitment);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
-	}
-
-	/** Set Zusammenfassungseintrag.
-		@param IsSummary 
-		This is a summary entity
-	  */
-	@Override
-	public void setIsSummary (boolean IsSummary)
-	{
-		set_Value (COLUMNNAME_IsSummary, Boolean.valueOf(IsSummary));
-	}
-
-	/** Get Zusammenfassungseintrag.
-		@return This is a summary entity
-	  */
-	@Override
-	public boolean isSummary () 
-	{
-		Object oo = get_Value(COLUMNNAME_IsSummary);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_InvoicedQty);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
-	public org.compiere.model.I_M_PriceList_Version getM_PriceList_Version() throws RuntimeException
+	public void setIsCommitCeiling (final boolean IsCommitCeiling)
 	{
-		return get_ValueAsPO(COLUMNNAME_M_PriceList_Version_ID, org.compiere.model.I_M_PriceList_Version.class);
+		set_Value (COLUMNNAME_IsCommitCeiling, IsCommitCeiling);
 	}
 
 	@Override
-	public void setM_PriceList_Version(org.compiere.model.I_M_PriceList_Version M_PriceList_Version)
+	public boolean isCommitCeiling() 
 	{
-		set_ValueFromPO(COLUMNNAME_M_PriceList_Version_ID, org.compiere.model.I_M_PriceList_Version.class, M_PriceList_Version);
+		return get_ValueAsBoolean(COLUMNNAME_IsCommitCeiling);
 	}
 
-	/** Set Version Preisliste.
-		@param M_PriceList_Version_ID 
-		Identifies a unique instance of a Price List
-	  */
 	@Override
-	public void setM_PriceList_Version_ID (int M_PriceList_Version_ID)
+	public void setIsCommitment (final boolean IsCommitment)
+	{
+		set_Value (COLUMNNAME_IsCommitment, IsCommitment);
+	}
+
+	@Override
+	public boolean isCommitment() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsCommitment);
+	}
+
+	@Override
+	public void setIsSummary (final boolean IsSummary)
+	{
+		set_Value (COLUMNNAME_IsSummary, IsSummary);
+	}
+
+	@Override
+	public boolean isSummary() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsSummary);
+	}
+
+	@Override
+	public void setM_PriceList_Version_ID (final int M_PriceList_Version_ID)
 	{
 		if (M_PriceList_Version_ID < 1) 
 			set_Value (COLUMNNAME_M_PriceList_Version_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_PriceList_Version_ID, Integer.valueOf(M_PriceList_Version_ID));
+			set_Value (COLUMNNAME_M_PriceList_Version_ID, M_PriceList_Version_ID);
 	}
 
-	/** Get Version Preisliste.
-		@return Identifies a unique instance of a Price List
-	  */
 	@Override
-	public int getM_PriceList_Version_ID () 
+	public int getM_PriceList_Version_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_PriceList_Version_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_PriceList_Version_ID);
 	}
 
 	@Override
-	public org.compiere.model.I_M_Warehouse getM_Warehouse() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Warehouse_ID, org.compiere.model.I_M_Warehouse.class);
-	}
-
-	@Override
-	public void setM_Warehouse(org.compiere.model.I_M_Warehouse M_Warehouse)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Warehouse_ID, org.compiere.model.I_M_Warehouse.class, M_Warehouse);
-	}
-
-	/** Set Lager.
-		@param M_Warehouse_ID 
-		Storage Warehouse and Service Point
-	  */
-	@Override
-	public void setM_Warehouse_ID (int M_Warehouse_ID)
+	public void setM_Warehouse_ID (final int M_Warehouse_ID)
 	{
 		if (M_Warehouse_ID < 1) 
 			set_Value (COLUMNNAME_M_Warehouse_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_Warehouse_ID, Integer.valueOf(M_Warehouse_ID));
+			set_Value (COLUMNNAME_M_Warehouse_ID, M_Warehouse_ID);
 	}
 
-	/** Get Lager.
-		@return Storage Warehouse and Service Point
-	  */
 	@Override
-	public int getM_Warehouse_ID () 
+	public int getM_Warehouse_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_Warehouse_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_Warehouse_ID);
 	}
 
-	/** Set Name.
-		@param Name 
-		Alphanumeric identifier of the entity
-	  */
 	@Override
-	public void setName (java.lang.String Name)
+	public void setName (final java.lang.String Name)
 	{
 		set_Value (COLUMNNAME_Name, Name);
 	}
 
-	/** Get Name.
-		@return Alphanumeric identifier of the entity
-	  */
 	@Override
-	public java.lang.String getName () 
+	public java.lang.String getName() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Name);
+		return get_ValueAsString(COLUMNNAME_Name);
 	}
 
-	/** Set Notiz.
-		@param Note 
-		Optional additional user defined information
-	  */
 	@Override
-	public void setNote (java.lang.String Note)
+	public void setNote (final @Nullable java.lang.String Note)
 	{
 		set_Value (COLUMNNAME_Note, Note);
 	}
 
-	/** Get Notiz.
-		@return Optional additional user defined information
-	  */
 	@Override
-	public java.lang.String getNote () 
+	public java.lang.String getNote() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Note);
+		return get_ValueAsString(COLUMNNAME_Note);
 	}
 
-	/** Set VK Total.
-		@param PlannedAmt 
-		Planned amount for this project
-	  */
 	@Override
-	public void setPlannedAmt (java.math.BigDecimal PlannedAmt)
+	public void setPlannedAmt (final BigDecimal PlannedAmt)
 	{
 		set_Value (COLUMNNAME_PlannedAmt, PlannedAmt);
 	}
 
-	/** Get VK Total.
-		@return Planned amount for this project
-	  */
 	@Override
-	public java.math.BigDecimal getPlannedAmt () 
+	public BigDecimal getPlannedAmt() 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PlannedAmt);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_PlannedAmt);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
-	/** Set DB1.
-		@param PlannedMarginAmt 
-		Project's planned margin amount
-	  */
 	@Override
-	public void setPlannedMarginAmt (java.math.BigDecimal PlannedMarginAmt)
+	public void setPlannedMarginAmt (final BigDecimal PlannedMarginAmt)
 	{
 		set_Value (COLUMNNAME_PlannedMarginAmt, PlannedMarginAmt);
 	}
 
-	/** Get DB1.
-		@return Project's planned margin amount
-	  */
 	@Override
-	public java.math.BigDecimal getPlannedMarginAmt () 
+	public BigDecimal getPlannedMarginAmt() 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PlannedMarginAmt);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_PlannedMarginAmt);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
-	/** Set Geplante Menge.
-		@param PlannedQty Geplante Menge	  */
 	@Override
-	public void setPlannedQty (java.math.BigDecimal PlannedQty)
+	public void setPlannedQty (final BigDecimal PlannedQty)
 	{
 		set_Value (COLUMNNAME_PlannedQty, PlannedQty);
 	}
 
-	/** Get Geplante Menge.
-		@return Geplante Menge	  */
 	@Override
-	public java.math.BigDecimal getPlannedQty () 
+	public BigDecimal getPlannedQty() 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PlannedQty);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_PlannedQty);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
-	/** Set Referenz.
-		@param POReference 
-		Referenz-Nummer des Kunden
-	  */
 	@Override
-	public void setPOReference (java.lang.String POReference)
+	public void setPOReference (final @Nullable java.lang.String POReference)
 	{
 		set_Value (COLUMNNAME_POReference, POReference);
 	}
 
-	/** Get Referenz.
-		@return Referenz-Nummer des Kunden
-	  */
 	@Override
-	public java.lang.String getPOReference () 
+	public java.lang.String getPOReference() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_POReference);
+		return get_ValueAsString(COLUMNNAME_POReference);
 	}
 
-	/** Set Verarbeitet.
-		@param Processed 
-		Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
-	  */
 	@Override
-	public void setProcessed (boolean Processed)
+	public void setProcessed (final boolean Processed)
 	{
-		set_Value (COLUMNNAME_Processed, Boolean.valueOf(Processed));
+		set_Value (COLUMNNAME_Processed, Processed);
 	}
 
-	/** Get Verarbeitet.
-		@return Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
-	  */
 	@Override
-	public boolean isProcessed () 
+	public boolean isProcessed() 
 	{
-		Object oo = get_Value(COLUMNNAME_Processed);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_Processed);
 	}
 
-	/** Set Verarbeiten.
-		@param Processing Verarbeiten	  */
 	@Override
-	public void setProcessing (boolean Processing)
+	public void setProcessing (final boolean Processing)
 	{
-		set_Value (COLUMNNAME_Processing, Boolean.valueOf(Processing));
+		set_Value (COLUMNNAME_Processing, Processing);
 	}
 
-	/** Get Verarbeiten.
-		@return Verarbeiten	  */
 	@Override
-	public boolean isProcessing () 
+	public boolean isProcessing() 
 	{
-		Object oo = get_Value(COLUMNNAME_Processing);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_Processing);
 	}
 
-	/** Set Project Balance.
-		@param ProjectBalanceAmt 
-		Total Project Balance
-	  */
 	@Override
-	public void setProjectBalanceAmt (java.math.BigDecimal ProjectBalanceAmt)
+	public void setProjectBalanceAmt (final BigDecimal ProjectBalanceAmt)
 	{
 		set_ValueNoCheck (COLUMNNAME_ProjectBalanceAmt, ProjectBalanceAmt);
 	}
 
-	/** Get Project Balance.
-		@return Total Project Balance
-	  */
 	@Override
-	public java.math.BigDecimal getProjectBalanceAmt () 
+	public BigDecimal getProjectBalanceAmt() 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ProjectBalanceAmt);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_ProjectBalanceAmt);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	/** 
@@ -953,24 +563,18 @@ public class X_C_Project extends org.compiere.model.PO implements I_C_Project, o
 	public static final String PROJECTCATEGORY_WorkOrderJob = "W";
 	/** ServiceChargeProject = S */
 	public static final String PROJECTCATEGORY_ServiceChargeProject = "S";
-	/** Set Project Category.
-		@param ProjectCategory 
-		Project Category
-	  */
+	/** ServiceOrRepair = R */
+	public static final String PROJECTCATEGORY_ServiceOrRepair = "R";
 	@Override
-	public void setProjectCategory (java.lang.String ProjectCategory)
+	public void setProjectCategory (final @Nullable java.lang.String ProjectCategory)
 	{
-
 		set_Value (COLUMNNAME_ProjectCategory, ProjectCategory);
 	}
 
-	/** Get Project Category.
-		@return Project Category
-	  */
 	@Override
-	public java.lang.String getProjectCategory () 
+	public java.lang.String getProjectCategory() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_ProjectCategory);
+		return get_ValueAsString(COLUMNNAME_ProjectCategory);
 	}
 
 	/** 
@@ -984,24 +588,16 @@ public class X_C_Project extends org.compiere.model.PO implements I_C_Project, o
 	public static final String PROJECTLINELEVEL_Phase = "A";
 	/** Task = T */
 	public static final String PROJECTLINELEVEL_Task = "T";
-	/** Set Line Level.
-		@param ProjectLineLevel 
-		Project Line Level
-	  */
 	@Override
-	public void setProjectLineLevel (java.lang.String ProjectLineLevel)
+	public void setProjectLineLevel (final java.lang.String ProjectLineLevel)
 	{
-
 		set_Value (COLUMNNAME_ProjectLineLevel, ProjectLineLevel);
 	}
 
-	/** Get Line Level.
-		@return Project Line Level
-	  */
 	@Override
-	public java.lang.String getProjectLineLevel () 
+	public java.lang.String getProjectLineLevel() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_ProjectLineLevel);
+		return get_ValueAsString(COLUMNNAME_ProjectLineLevel);
 	}
 
 	/** 
@@ -1019,76 +615,81 @@ public class X_C_Project extends org.compiere.model.PO implements I_C_Project, o
 	public static final String PROJINVOICERULE_TimeMaterial = "T";
 	/** Product  Quantity = P */
 	public static final String PROJINVOICERULE_ProductQuantity = "P";
-	/** Set Rechnungsstellung.
-		@param ProjInvoiceRule 
-		Invoice Rule for the project
-	  */
 	@Override
-	public void setProjInvoiceRule (java.lang.String ProjInvoiceRule)
+	public void setProjInvoiceRule (final java.lang.String ProjInvoiceRule)
 	{
-
 		set_Value (COLUMNNAME_ProjInvoiceRule, ProjInvoiceRule);
 	}
 
-	/** Get Rechnungsstellung.
-		@return Invoice Rule for the project
-	  */
 	@Override
-	public java.lang.String getProjInvoiceRule () 
+	public java.lang.String getProjInvoiceRule() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_ProjInvoiceRule);
+		return get_ValueAsString(COLUMNNAME_ProjInvoiceRule);
 	}
 
 	@Override
-	public org.compiere.model.I_AD_User getSalesRep() throws RuntimeException
+	public org.compiere.model.I_R_Status getR_Project_Status()
 	{
-		return get_ValueAsPO(COLUMNNAME_SalesRep_ID, org.compiere.model.I_AD_User.class);
+		return get_ValueAsPO(COLUMNNAME_R_Project_Status_ID, org.compiere.model.I_R_Status.class);
 	}
 
 	@Override
-	public void setSalesRep(org.compiere.model.I_AD_User SalesRep)
+	public void setR_Project_Status(final org.compiere.model.I_R_Status R_Project_Status)
 	{
-		set_ValueFromPO(COLUMNNAME_SalesRep_ID, org.compiere.model.I_AD_User.class, SalesRep);
+		set_ValueFromPO(COLUMNNAME_R_Project_Status_ID, org.compiere.model.I_R_Status.class, R_Project_Status);
 	}
 
-	/** Set Aussendienst.
-		@param SalesRep_ID Aussendienst	  */
 	@Override
-	public void setSalesRep_ID (int SalesRep_ID)
+	public void setR_Project_Status_ID (final int R_Project_Status_ID)
+	{
+		if (R_Project_Status_ID < 1) 
+			set_Value (COLUMNNAME_R_Project_Status_ID, null);
+		else 
+			set_Value (COLUMNNAME_R_Project_Status_ID, R_Project_Status_ID);
+	}
+
+	@Override
+	public int getR_Project_Status_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_R_Project_Status_ID);
+	}
+
+	@Override
+	public void setSalesRep_ID (final int SalesRep_ID)
 	{
 		if (SalesRep_ID < 1) 
 			set_Value (COLUMNNAME_SalesRep_ID, null);
 		else 
-			set_Value (COLUMNNAME_SalesRep_ID, Integer.valueOf(SalesRep_ID));
+			set_Value (COLUMNNAME_SalesRep_ID, SalesRep_ID);
 	}
 
-	/** Get Aussendienst.
-		@return Aussendienst	  */
 	@Override
-	public int getSalesRep_ID () 
+	public int getSalesRep_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_SalesRep_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_SalesRep_ID);
 	}
 
-	/** Set Suchschlüssel.
-		@param Value 
-		Search key for the record in the format required - must be unique
-	  */
 	@Override
-	public void setValue (java.lang.String Value)
+	public void setstartdatetime (final @Nullable java.sql.Timestamp startdatetime)
 	{
-		set_Value (COLUMNNAME_Value, Value);
+		set_Value (COLUMNNAME_startdatetime, startdatetime);
 	}
 
-	/** Get Suchschlüssel.
-		@return Search key for the record in the format required - must be unique
-	  */
 	@Override
-	public java.lang.String getValue () 
+	public java.sql.Timestamp getstartdatetime() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Value);
+		return get_ValueAsTimestamp(COLUMNNAME_startdatetime);
+	}
+
+	@Override
+	public void setValue (final java.lang.String Value)
+	{
+		set_ValueNoCheck (COLUMNNAME_Value, Value);
+	}
+
+	@Override
+	public java.lang.String getValue() 
+	{
+		return get_ValueAsString(COLUMNNAME_Value);
 	}
 }

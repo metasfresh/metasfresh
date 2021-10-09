@@ -1,6 +1,5 @@
 import PropTypes from 'prop-types';
 import React, { PureComponent } from 'react';
-import { connect } from 'react-redux';
 import _ from 'lodash';
 
 import { getZoomIntoWindow } from '../../api';
@@ -8,14 +7,9 @@ import { formatDateWithZeros } from '../../utils/documentListHelper';
 import {
   validatePrecision,
   formatValueByWidgetType,
-} from '../../utils/widgetHelper';
+} from '../../utils/widgetHelpers';
 import { DATE_FIELD_TYPES, TIME_FIELD_TYPES } from '../../constants/Constants';
 import { getTableId } from '../../reducers/tables';
-import {
-  openModal,
-  patch,
-  updatePropertyValue,
-} from '../../actions/WindowActions';
 
 import RawWidget from './RawWidget';
 
@@ -29,16 +23,22 @@ const dateParse = [...DATE_FIELD_TYPES, ...TIME_FIELD_TYPES];
 class MasterWidget extends PureComponent {
   constructor(props) {
     super(props);
-    const { data, widgetData, clearValue } = this.props;
+    const { value, widgetData, clearValue } = this.props;
     // `clearValue` removes current field value for the widget. This is used when user
-    // focuses on table cell and starts typing without pressing {enter} first
+    // focuses on table cell and starts typing without pressing {enter} first. `value` is
+    // only used by the `BarcodeScanner` to force formatting of the visible value, so there's
+    // no collision possible here
     this.state = {
       updated: false,
       edited: false,
-      data: data || (clearValue ? '' : widgetData[0].value),
+      value: value || (clearValue ? '' : widgetData[0].value),
       widgetData: props.widgetData, // this is used for comparison in the getDerivedStateFromProps lifecycle
     };
   }
+
+  componentDidMount = () => (this.mounted = true);
+
+  componentWillUnmount = () => (this.mounted = false);
 
   /**
    * @method getDerivedStateFromProps
@@ -52,7 +52,7 @@ class MasterWidget extends PureComponent {
     let hasNewData = widgetData[0] && !_.isEqual(widgetData[0].value, next);
 
     if (!edited && hasNewData) {
-      return { updated: true, data: next, widgetData: nextProps.widgetData };
+      return { updated: true, value: next, widgetData: nextProps.widgetData };
     }
     return null;
   }
@@ -63,13 +63,16 @@ class MasterWidget extends PureComponent {
   componentDidUpdate() {
     const { updated } = this.state;
     if (updated) {
-      this.timeout = setTimeout(() => this.setState({ updated: false }), 1000);
+      this.timeout = setTimeout(() => {
+        this.mounted && this.setState({ updated: false });
+      }, 1000);
     }
   }
 
   /**
    * @method handlePatch
-   * @summary ToDo: Describe the method.
+   * @summary Performs the actual patch request and for `Product attributes` also
+   * updates the field value stored in the redux store.
    * @param {*} property
    * @param {*} value
    */
@@ -78,29 +81,57 @@ class MasterWidget extends PureComponent {
       isModal,
       widgetType,
       dataId,
-      windowType,
+      windowId,
       patch,
       rowId,
+      dataId: docId,
       tabId,
-      onChange,
       relativeDocId,
       isAdvanced = false,
       viewId,
+      updatePropertyValue,
+      disconnected,
+      updateRow,
     } = this.props;
+
     value = formatValueByWidgetType({ widgetType, value });
+
     let entity = viewId ? 'documentView' : this.props.entity;
     let currRowId = rowId === 'NEW' ? relativeDocId : rowId;
     let ret = null;
     let isEdit = viewId ? true : false;
+    const tableId = getTableId({
+      windowId,
+      viewId,
+    });
 
-    // TODO: Leaving this for now in case this is used in some edga cases
+    const updateOptions = {
+      windowId,
+      docId,
+      property,
+      value,
+      tabId,
+      rowId: currRowId,
+      isModal,
+      entity,
+      tableId,
+      disconnected,
+      action: 'patch',
+    };
+
+    // TODO: Leaving this for now in case this is used in some edge cases
     // but seems like a duplication of what we have in `handleChange`.
-    // widgetType !== 'Button' &&
-    //   updatePropertyValue(property, value, tabId, currRowId, isModal, entity);
+    // *HOTFIX update*: This is used by attributes. I think we should try to rewrite the
+    // Attributes component so that it won't need it anymore.
+    // https://github.com/metasfresh/me03/issues/5384
+    widgetType !== 'Button' &&
+      !dataId &&
+      (widgetType === 'ProductAttributes' || widgetType === 'Quantity') &&
+      updatePropertyValue(updateOptions);
 
     ret = patch(
       entity,
-      windowType,
+      windowId,
       dataId,
       tabId,
       currRowId,
@@ -109,10 +140,17 @@ class MasterWidget extends PureComponent {
       isModal,
       isAdvanced,
       viewId,
-      isEdit
+      isEdit,
+      disconnected
     );
+
+    // flash the row to indicate a change
+    updateRow && updateRow();
     this.setState({ edited: false });
-    onChange && onChange(rowId, property, value, ret); //callback
+
+    /** we are using this `disconnected` flag to know when the Master widget should update the property value differently */
+    disconnected === 'inlineTab' &&
+      updatePropertyValue({ ...updateOptions, ret });
 
     return ret;
   };
@@ -136,13 +174,15 @@ class MasterWidget extends PureComponent {
       entity,
       viewId,
       dataId,
-      windowType,
+      windowId,
       widgetData,
+      disconnected,
     } = this.props;
+
     // Add special case of formating for the case when people input 04.7.2020 to be transformed to 04.07.2020
     val = widgetType === 'Date' ? await formatDateWithZeros(val) : val;
     let fieldName = widgetData[0] ? widgetData[0].field : '';
-    this.setState({ edited: true, data: val }, () => {
+    this.setState({ edited: true, value: val }, () => {
       if (
         !dateParse.includes(widgetType) &&
         !validatePrecision({
@@ -156,13 +196,15 @@ class MasterWidget extends PureComponent {
       }
       const currRowId = rowId === 'NEW' ? relativeDocId : rowId;
       const tableId = getTableId({
-        windowId: windowType,
+        windowId,
         docId: dataId,
         tabId,
         viewId,
       });
 
       updatePropertyValue({
+        windowId,
+        docId: dataId,
         property,
         value: val,
         tabId,
@@ -170,6 +212,8 @@ class MasterWidget extends PureComponent {
         isModal,
         entity,
         tableId,
+        disconnected,
+        action: 'change',
       });
     });
   };
@@ -185,7 +229,13 @@ class MasterWidget extends PureComponent {
   handleProcess = (caption, buttonProcessId, tabId, rowId) => {
     const { openModal } = this.props;
 
-    openModal(caption, buttonProcessId, 'process', tabId, rowId, false, false);
+    openModal({
+      title: caption,
+      windowId: buttonProcessId,
+      modalType: 'process',
+      tabId,
+      rowId,
+    });
   };
 
   /**
@@ -194,17 +244,21 @@ class MasterWidget extends PureComponent {
    * @param {*} field
    */
   handleZoomInto = (field) => {
-    const { dataId, windowType, tabId, rowId } = this.props;
+    const { dataId, windowId, tabId, rowId, entity } = this.props;
+    const fallBackEntity = entity ? entity : 'window';
 
-    getZoomIntoWindow('window', windowType, dataId, tabId, rowId, field).then(
-      (res) => {
-        const url = `/window/${res.data.documentPath.windowId}/${
-          res.data.documentPath.documentId
-        }`;
+    getZoomIntoWindow(
+      fallBackEntity,
+      windowId,
+      dataId,
+      tabId,
+      rowId,
+      field
+    ).then((res) => {
+      const url = `/${fallBackEntity}/${res.data.documentPath.windowId}/${res.data.documentPath.documentId}`;
 
-        res && res.data && window.open(url, '_blank');
-      }
-    );
+      res && res.data && window.open(url, '_blank');
+    });
   };
 
   /**
@@ -217,23 +271,28 @@ class MasterWidget extends PureComponent {
     onBlurWidget && onBlurWidget(fieldName);
   };
 
-  /**
-   * @method render
-   * @summary ToDo: Describe the method.
-   */
+  handleFocus = () => this.handleFocusFn(true);
+
+  handleBlur = () => this.handleFocusFn(false);
+
+  handleFocusFn = (val) => {
+    const { handleBackdropLock } = this.props;
+
+    handleBackdropLock && handleBackdropLock(val);
+  };
+
   render() {
-    const { handleBackdropLock, onClickOutside } = this.props;
-    const { updated, data } = this.state;
-    const handleFocusFn = handleBackdropLock ? handleBackdropLock : () => {};
+    const { windowId } = this.props;
+    const { updated, value } = this.state;
 
     return (
       <RawWidget
         {...this.props}
+        windowType={windowId}
         updated={updated}
-        data={data}
-        handleFocus={() => handleFocusFn(true)}
-        handleBlur={() => handleFocusFn(false)}
-        onClickOutside={onClickOutside}
+        data={value}
+        handleFocus={this.handleFocus}
+        handleBlur={this.handleBlur}
         handlePatch={this.handlePatch}
         handleChange={this.handleChange}
         handleProcess={this.handleProcess}
@@ -251,6 +310,11 @@ class MasterWidget extends PureComponent {
  * @prop {func} openModal
  */
 MasterWidget.propTypes = {
+  dataId: PropTypes.string,
+  windowId: PropTypes.string,
+  viewId: PropTypes.string,
+  rowId: PropTypes.string,
+  tabId: PropTypes.string,
   isModal: PropTypes.bool,
   dataEntry: PropTypes.bool,
   fieldName: PropTypes.string,
@@ -260,30 +324,17 @@ MasterWidget.propTypes = {
   handleBackdropLock: PropTypes.func,
   updatePropertyValue: PropTypes.func,
   openModal: PropTypes.func.isRequired,
-  data: PropTypes.object,
+  value: PropTypes.object,
   widgetData: PropTypes.array,
   widgetType: PropTypes.string,
-  dataId: PropTypes.string,
-  windowType: PropTypes.string,
   patch: PropTypes.func,
-  rowId: PropTypes.string,
-  tabId: PropTypes.string,
-  onChange: PropTypes.func,
   relativeDocId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   isAdvanced: PropTypes.bool,
-  viewId: PropTypes.string,
   entity: PropTypes.string,
   precision: PropTypes.bool,
   clearValue: PropTypes.bool,
+  disconnected: PropTypes.string,
+  updateRow: PropTypes.func,
 };
 
-export default connect(
-  null,
-  {
-    openModal,
-    patch,
-    updatePropertyValue,
-  },
-  null,
-  { forwardRef: true }
-)(MasterWidget);
+export default MasterWidget;

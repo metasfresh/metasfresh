@@ -20,12 +20,18 @@
 	<properties>
 		<!-- empty property because the sql migration dir already contains a list 
 			of base directories -->
-		<migration-sql-basedir></migration-sql-basedir>
-		<metasfresh.version>[1,10.0.0]</metasfresh.version>
+		<migration-sql-basedir/>
+		<metasfresh.version>10.0.0</metasfresh.version>
 	</properties>
 
 	<dependencies>
 
+		<dependency>
+			<groupId>de.metas.vertical.healthcare.alberta</groupId>
+			<artifactId>de.metas.vertical.healthcare.alberta</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+		
 		<dependency>
 			<groupId>de.metas.async</groupId>
 			<artifactId>de.metas.async</artifactId>
@@ -110,6 +116,18 @@
 		</dependency>
 
 		<dependency>
+			<groupId>de.metas.externalreference</groupId>
+			<artifactId>de.metas.externalreference</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.externalsystem</groupId>
+			<artifactId>de.metas.externalsystem</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+		
+		<dependency>
 			<groupId>de.metas.contracts</groupId>
 			<artifactId>de.metas.contracts</artifactId>
 			<version>${metasfresh.version}</version>
@@ -193,6 +211,12 @@
 		</dependency>
 
 		<dependency>
+			<groupId>de.metas.payment.revolut</groupId>
+			<artifactId>de.metas.payment.revolut</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+
+		<dependency>
 			<groupId>de.metas.handlingunits</groupId>
 			<artifactId>de.metas.handlingunits.base</artifactId>
 			<version>${metasfresh.version}</version>
@@ -207,17 +231,11 @@
 		
 		<!-- Required by de.metas.handlingunits.base-tests -->
 		<dependency>
-			<groupId>de.metas.adempiere.libero</groupId>
-			<artifactId>de.metas.adempiere.libero.libero</artifactId>
+			<groupId>de.metas.manufacturing</groupId>
+			<artifactId>de.metas.manufacturing</artifactId>
 			<version>${metasfresh.version}</version>
 			<classifier>tests</classifier>
 			<scope>test</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>de.metas.handlingunits</groupId>
-			<artifactId>de.metas.handlingunits.client</artifactId>
-			<version>${metasfresh.version}</version>
 		</dependency>
 
 		<dependency>
@@ -235,12 +253,6 @@
 		<dependency>
 			<groupId>de.metas.util</groupId>
 			<artifactId>de.metas.util</artifactId>
-			<version>${metasfresh.version}</version>
-		</dependency>
-
-		<dependency>
-			<groupId>de.metas.jax.rs</groupId>
-			<artifactId>de.metas.jax.rs</artifactId>
 			<version>${metasfresh.version}</version>
 		</dependency>
 
@@ -330,6 +342,12 @@
 		<dependency>
 			<groupId>de.metas.material</groupId>
 			<artifactId>metasfresh-material-dispo-service</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.servicerepair</groupId>
+			<artifactId>de.metas.servicerepair.base</artifactId>
 			<version>${metasfresh.version}</version>
 		</dependency>
 

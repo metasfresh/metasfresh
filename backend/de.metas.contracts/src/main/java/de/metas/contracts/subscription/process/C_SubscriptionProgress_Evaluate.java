@@ -25,6 +25,7 @@ package de.metas.contracts.subscription.process;
 import java.sql.Timestamp;
 import java.util.Iterator;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
@@ -41,7 +42,6 @@ import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.process.JavaProcess;
 import de.metas.process.RunOutOfTrx;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 
 /**
  *

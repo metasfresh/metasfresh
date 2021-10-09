@@ -1,16 +1,16 @@
 package de.metas.organization;
 
-import java.util.Objects;
-import java.util.Optional;
-
-import org.compiere.util.Env;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.Env;
+
+import javax.annotation.Nullable;
+import java.util.Objects;
+import java.util.Optional;
 
 /*
  * #%L
@@ -37,66 +37,8 @@ import lombok.Value;
 @Value
 public class OrgId implements RepoIdAware
 {
-	@JsonCreator
-	public static OrgId ofRepoId(final int repoId)
-	{
-		if (repoId == ANY.repoId)
-		{
-			return ANY;
-		}
-		return new OrgId(repoId);
-	}
-
-	/** @return {@link #ANY} if the given {@code repoId} is zero; {@code null} if it is less than zero. */
-	public static OrgId ofRepoIdOrNull(final int repoId)
-	{
-		if (repoId == ANY.repoId)
-		{
-			return ANY;
-		}
-		else if (repoId < 0)
-		{
-			return null;
-		}
-		else
-		{
-			return ofRepoId(repoId);
-		}
-	}
-
-	/** @return {@link #ANY} even if the given {@code repoId} is less than zero. */
-	public static OrgId ofRepoIdOrAny(final int repoId)
-	{
-		if (repoId == ANY.repoId)
-		{
-			return ANY;
-		}
-		else if (repoId < 0)
-		{
-			return ANY;
-		}
-		else
-		{
-			return ofRepoId(repoId);
-		}
-	}
-
-	public static Optional<OrgId> optionalOfRepoId(final int repoId)
-	{
-		return Optional.ofNullable(ofRepoIdOrNull(repoId));
-	}
-
-	public static int toRepoId(final OrgId orgId)
-	{
-		return orgId != null ? orgId.getRepoId() : -1;
-	}
-
-	public static int toRepoIdOrAny(final OrgId orgId)
-	{
-		return orgId != null ? orgId.getRepoId() : ANY.repoId;
-	}
-
 	public static final OrgId ANY = new OrgId();
+	public static final OrgId MAIN = new OrgId(1000000);
 
 	int repoId;
 
@@ -110,6 +52,66 @@ public class OrgId implements RepoIdAware
 		this.repoId = Env.CTXVALUE_AD_Org_ID_Any;
 	}
 
+	@JsonCreator
+	public static OrgId ofRepoId(final int repoId)
+	{
+		final OrgId orgId = ofRepoIdOrNull(repoId);
+		if (orgId == null)
+		{
+			throw new AdempiereException("Invalid AD_Org_ID: " + repoId);
+		}
+		return orgId;
+	}
+
+	/**
+	 * @return {@link #ANY} if the given {@code repoId} is zero; {@code null} if it is less than zero.
+	 */
+	@Nullable
+	public static OrgId ofRepoIdOrNull(final int repoId)
+	{
+		if (repoId == ANY.repoId)
+		{
+			return ANY;
+		}
+		else if (repoId == MAIN.repoId)
+		{
+			return MAIN;
+		}
+		else if (repoId < 0)
+		{
+			return null;
+		}
+		else
+		{
+			return new OrgId(repoId);
+		}
+	}
+
+	/**
+	 * @return {@link #ANY} even if the given {@code repoId} is less than zero.
+	 */
+	public static OrgId ofRepoIdOrAny(final int repoId)
+	{
+		final OrgId orgId = ofRepoIdOrNull(repoId);
+		return orgId != null ? orgId : ANY;
+	}
+
+	public static Optional<OrgId> optionalOfRepoId(final int repoId)
+	{
+		return Optional.ofNullable(ofRepoIdOrNull(repoId));
+	}
+
+	public static int toRepoId(@Nullable final OrgId orgId)
+	{
+		return orgId != null ? orgId.getRepoId() : -1;
+	}
+
+	public static int toRepoIdOrAny(@Nullable final OrgId orgId)
+	{
+		return orgId != null ? orgId.getRepoId() : ANY.repoId;
+	}
+
+
 	@Override
 	@JsonValue
 	public int getRepoId()
@@ -122,13 +124,15 @@ public class OrgId implements RepoIdAware
 		return repoId == Env.CTXVALUE_AD_Org_ID_Any;
 	}
 
-	/** @return {@code true} if the org in question is not {@code *} (i.e. "ANY"), but a specific organisation's ID */
+	/**
+	 * @return {@code true} if the org in question is not {@code *} (i.e. "ANY"), but a specific organisation's ID
+	 */
 	public boolean isRegular()
 	{
 		return !isAny();
 	}
 
-	public static boolean equals(final OrgId id1, final OrgId id2)
+	public static boolean equals(@Nullable final OrgId id1, @Nullable final OrgId id2)
 	{
 		return Objects.equals(id1, id2);
 	}

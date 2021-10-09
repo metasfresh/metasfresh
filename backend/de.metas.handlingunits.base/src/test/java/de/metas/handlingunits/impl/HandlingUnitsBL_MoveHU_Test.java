@@ -33,6 +33,7 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Properties;
 
+import de.metas.common.util.time.SystemTime;
 import de.metas.organization.ClientAndOrgId;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
@@ -56,7 +57,6 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Trx_Line;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
-import de.metas.util.time.SystemTime;
 import org.junit.jupiter.api.Test;
 
 public class HandlingUnitsBL_MoveHU_Test extends AbstractHUTest

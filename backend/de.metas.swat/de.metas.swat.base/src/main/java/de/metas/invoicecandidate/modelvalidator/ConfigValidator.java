@@ -1,6 +1,3 @@
-/**
- *
- */
 package de.metas.invoicecandidate.modelvalidator;
 
 /*
@@ -25,21 +22,6 @@ package de.metas.invoicecandidate.modelvalidator;
  * #L%
  */
 
-
-import java.util.Properties;
-
-import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
-import org.adempiere.ad.migration.logger.IMigrationLogger;
-import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
-import org.adempiere.ad.modelvalidator.IModelValidationEngine;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.ui.api.ITabCalloutFactory;
-import org.adempiere.invoice.event.InvoiceUserNotificationsProducer;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.ui.api.IGridTabSummaryInfoFactory;
-import org.compiere.util.Env;
-import org.compiere.util.Ini;
-
 import de.metas.aggregation.api.IAggregationFactory;
 import de.metas.aggregation.listeners.AggregationListenerAdapter;
 import de.metas.aggregation.listeners.IAggregationListener;
@@ -61,6 +43,19 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Recompute;
 import de.metas.invoicecandidate.ui.spi.impl.C_Invoice_Candidate_GridTabSummaryInfoProvider;
 import de.metas.util.Services;
+import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
+import org.adempiere.ad.migration.logger.IMigrationLogger;
+import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
+import org.adempiere.ad.modelvalidator.IModelValidationEngine;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.ui.api.ITabCalloutFactory;
+import org.adempiere.invoice.event.InvoiceUserNotificationsProducer;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.ui.api.IGridTabSummaryInfoFactory;
+import org.compiere.util.Env;
+import org.compiere.util.Ini;
+
+import java.util.Properties;
 
 /**
  * Main Invoice Candidates validator
@@ -74,7 +69,7 @@ public class ConfigValidator extends AbstractModuleInterceptor
 	private static final IAggregationListener aggregationListener = new AggregationListenerAdapter()
 	{
 		@Override
-		protected void onEvent(I_C_Aggregation aggregation)
+		protected void onEvent(final I_C_Aggregation aggregation)
 		{
 			Services.get(IInvoiceCandDAO.class).invalidateCandsForAggregationBuilder(aggregation);
 		}
@@ -115,7 +110,7 @@ public class ConfigValidator extends AbstractModuleInterceptor
 		engine.addModelValidator(new C_Invoice_Candidate_Agg());
 		engine.addModelValidator(new C_Invoice_Line_Alloc());
 		engine.addModelValidator(new C_InvoiceSchedule());
-		engine.addModelValidator(new C_Invoice());
+		// engine.addModelValidator(new C_Invoice()); is now a spring component
 		engine.addModelValidator(new AD_Note());
 		engine.addModelValidator(new C_OrderLine());
 		engine.addModelValidator(new C_Order());
@@ -143,7 +138,7 @@ public class ConfigValidator extends AbstractModuleInterceptor
 	/**
 	 * Setup de.metas.aggregation
 	 */
-	private final void setupAggregations()
+	private void setupAggregations()
 	{
 		//
 		// In case there was no aggregation found, fallback to our legacy IC header/line aggregation key builders

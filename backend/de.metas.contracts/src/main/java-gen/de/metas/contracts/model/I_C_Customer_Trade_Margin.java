@@ -1,104 +1,55 @@
 package de.metas.contracts.model;
 
+import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
 
 /** Generated Interface for C_Customer_Trade_Margin
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public interface I_C_Customer_Trade_Margin 
 {
 
-    /** TableName=C_Customer_Trade_Margin */
-    public static final String Table_Name = "C_Customer_Trade_Margin";
+	String Table_Name = "C_Customer_Trade_Margin";
 
-    /** AD_Table_ID=541445 */
-//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=541445 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 3 - Client - Org
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
-
-    /** Load Meta Data */
 
 	/**
-	 * Get Mandant.
-	 * Mandant für diese Installation.
+	 * Get Client.
+	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Client_ID();
+	int getAD_Client_ID();
 
-    /** Column name AD_Client_ID */
-    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Set Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Org_ID (int AD_Org_ID);
+	void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Get Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Org_ID();
+	int getAD_Org_ID();
 
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
-
-	/**
-	 * Set Kunde.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setC_BPartner_Customer_ID (int C_BPartner_Customer_ID);
-
-	/**
-	 * Get Kunde.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getC_BPartner_Customer_ID();
-
-    /** Column name C_BPartner_Customer_ID */
-    public static final String COLUMNNAME_C_BPartner_Customer_ID = "C_BPartner_Customer_ID";
-
-	/**
-	 * Set Zugeordneter Vertriebspartner.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setC_BPartner_SalesRep_ID (int C_BPartner_SalesRep_ID);
-
-	/**
-	 * Get Zugeordneter Vertriebspartner.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getC_BPartner_SalesRep_ID();
-
-    /** Column name C_BPartner_SalesRep_ID */
-    public static final String COLUMNNAME_C_BPartner_SalesRep_ID = "C_BPartner_SalesRep_ID";
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
 	 * Set C_Customer_Trade_Margin.
@@ -107,7 +58,7 @@ public interface I_C_Customer_Trade_Margin
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setC_Customer_Trade_Margin_ID (int C_Customer_Trade_Margin_ID);
+	void setC_Customer_Trade_Margin_ID (int C_Customer_Trade_Margin_ID);
 
 	/**
 	 * Get C_Customer_Trade_Margin.
@@ -116,139 +67,166 @@ public interface I_C_Customer_Trade_Margin
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getC_Customer_Trade_Margin_ID();
+	int getC_Customer_Trade_Margin_ID();
 
-    /** Column definition for C_Customer_Trade_Margin_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Customer_Trade_Margin, Object> COLUMN_C_Customer_Trade_Margin_ID = new org.adempiere.model.ModelColumn<I_C_Customer_Trade_Margin, Object>(I_C_Customer_Trade_Margin.class, "C_Customer_Trade_Margin_ID", null);
-    /** Column name C_Customer_Trade_Margin_ID */
-    public static final String COLUMNNAME_C_Customer_Trade_Margin_ID = "C_Customer_Trade_Margin_ID";
+	ModelColumn<I_C_Customer_Trade_Margin, Object> COLUMN_C_Customer_Trade_Margin_ID = new ModelColumn<>(I_C_Customer_Trade_Margin.class, "C_Customer_Trade_Margin_ID", null);
+	String COLUMNNAME_C_Customer_Trade_Margin_ID = "C_Customer_Trade_Margin_ID";
 
 	/**
-	 * Get Erstellt.
-	 * Datum, an dem dieser Eintrag erstellt wurde
+	 * Set Commission product.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setCommission_Product_ID (int Commission_Product_ID);
+
+	/**
+	 * Get Commission product.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getCommission_Product_ID();
+
+	String COLUMNNAME_Commission_Product_ID = "Commission_Product_ID";
+
+	/**
+	 * Get Created.
+	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getCreated();
+	java.sql.Timestamp getCreated();
 
-    /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_C_Customer_Trade_Margin, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_C_Customer_Trade_Margin, Object>(I_C_Customer_Trade_Margin.class, "Created", null);
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
+	ModelColumn<I_C_Customer_Trade_Margin, Object> COLUMN_Created = new ModelColumn<>(I_C_Customer_Trade_Margin.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Erstellt durch.
-	 * Nutzer, der diesen Eintrag erstellt hat
+	 * Get Created By.
+	 * User who created this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getCreatedBy();
+	int getCreatedBy();
 
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Set Description.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDescription (@Nullable java.lang.String Description);
+
+	/**
+	 * Get Description.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getDescription();
+
+	ModelColumn<I_C_Customer_Trade_Margin, Object> COLUMN_Description = new ModelColumn<>(I_C_Customer_Trade_Margin.class, "Description", null);
+	String COLUMNNAME_Description = "Description";
+
+	/**
+	 * Set Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsActive (boolean IsActive);
+	void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Get Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isActive();
+	boolean isActive();
 
-    /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_C_Customer_Trade_Margin, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_C_Customer_Trade_Margin, Object>(I_C_Customer_Trade_Margin.class, "IsActive", null);
-    /** Column name IsActive */
-    public static final String COLUMNNAME_IsActive = "IsActive";
+	ModelColumn<I_C_Customer_Trade_Margin, Object> COLUMN_IsActive = new ModelColumn<>(I_C_Customer_Trade_Margin.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Margin Percent.
+	 * Set Name.
 	 *
-	 * <br>Type: Number
+	 * <br>Type: String
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setMargin_Percent (java.math.BigDecimal Margin_Percent);
+	void setName (java.lang.String Name);
 
 	/**
-	 * Get Margin Percent.
+	 * Get Name.
 	 *
-	 * <br>Type: Number
+	 * <br>Type: String
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getMargin_Percent();
+	java.lang.String getName();
 
-    /** Column definition for Margin_Percent */
-    public static final org.adempiere.model.ModelColumn<I_C_Customer_Trade_Margin, Object> COLUMN_Margin_Percent = new org.adempiere.model.ModelColumn<I_C_Customer_Trade_Margin, Object>(I_C_Customer_Trade_Margin.class, "Margin_Percent", null);
-    /** Column name Margin_Percent */
-    public static final String COLUMNNAME_Margin_Percent = "Margin_Percent";
+	ModelColumn<I_C_Customer_Trade_Margin, Object> COLUMN_Name = new ModelColumn<>(I_C_Customer_Trade_Margin.class, "Name", null);
+	String COLUMNNAME_Name = "Name";
 
 	/**
-	 * Get Aktualisiert.
-	 * Datum, an dem dieser Eintrag aktualisiert wurde
+	 * Set Points precision.
+	 * Number of digits after the decimal point to which the system rounds when computing commission points.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setPointsPrecision (int PointsPrecision);
+
+	/**
+	 * Get Points precision.
+	 * Number of digits after the decimal point to which the system rounds when computing commission points.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getPointsPrecision();
+
+	ModelColumn<I_C_Customer_Trade_Margin, Object> COLUMN_PointsPrecision = new ModelColumn<>(I_C_Customer_Trade_Margin.class, "PointsPrecision", null);
+	String COLUMNNAME_PointsPrecision = "PointsPrecision";
+
+	/**
+	 * Get Updated.
+	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getUpdated();
+	java.sql.Timestamp getUpdated();
 
-    /** Column definition for Updated */
-    public static final org.adempiere.model.ModelColumn<I_C_Customer_Trade_Margin, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_C_Customer_Trade_Margin, Object>(I_C_Customer_Trade_Margin.class, "Updated", null);
-    /** Column name Updated */
-    public static final String COLUMNNAME_Updated = "Updated";
+	ModelColumn<I_C_Customer_Trade_Margin, Object> COLUMN_Updated = new ModelColumn<>(I_C_Customer_Trade_Margin.class, "Updated", null);
+	String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Aktualisiert durch.
-	 * Nutzer, der diesen Eintrag aktualisiert hat
+	 * Get Updated By.
+	 * User who updated this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getUpdatedBy();
+	int getUpdatedBy();
 
-    /** Column name UpdatedBy */
-    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
-
-	/**
-	 * Set Gültig ab.
-	 * Gültig ab inklusiv (erster Tag)
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setValidFrom (java.sql.Timestamp ValidFrom);
-
-	/**
-	 * Get Gültig ab.
-	 * Gültig ab inklusiv (erster Tag)
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public java.sql.Timestamp getValidFrom();
-
-    /** Column definition for ValidFrom */
-    public static final org.adempiere.model.ModelColumn<I_C_Customer_Trade_Margin, Object> COLUMN_ValidFrom = new org.adempiere.model.ModelColumn<I_C_Customer_Trade_Margin, Object>(I_C_Customer_Trade_Margin.class, "ValidFrom", null);
-    /** Column name ValidFrom */
-    public static final String COLUMNNAME_ValidFrom = "ValidFrom";
+	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 }

@@ -41,10 +41,6 @@ public interface IRoleDAO extends ISingletonService
 
 	/**
 	 * Convenient method to retrieve the role's name.
-	 * 
-	 * @param ctx
-	 * @param adRoleId
-	 * @return role's name
 	 */
 	String getRoleName(RoleId adRoleId);
 
@@ -53,4 +49,6 @@ public interface IRoleDAO extends ISingletonService
 	RoleId retrieveFirstRoleIdForUserId(UserId adUserId);
 
 	void createUserRoleAssignmentIfMissing(UserId adUserId, RoleId adRoleId);
+
+	void deleteUserRolesByUserId(final UserId userId);
 }

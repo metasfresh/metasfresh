@@ -1,16 +1,23 @@
 package de.metas.inout.invoicecandidate;
 
-import static java.math.BigDecimal.ONE;
-import static java.math.BigDecimal.TEN;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.math.BigDecimal;
-import java.util.List;
-
-import javax.annotation.Nullable;
-
+import com.jgoodies.common.base.Objects;
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.business.BusinessTestHelper;
+import de.metas.common.util.time.SystemTime;
+import de.metas.document.dimension.DimensionFactory;
+import de.metas.document.dimension.DimensionService;
+import de.metas.document.dimension.InOutLineDimensionFactory;
+import de.metas.document.engine.IDocument;
+import de.metas.inout.model.I_M_InOut;
+import de.metas.interfaces.I_C_BPartner;
+import de.metas.invoicecandidate.document.dimension.InvoiceCandidateDimensionFactory;
+import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.invoicecandidate.model.I_M_InOutLine;
+import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.user.UserRepository;
+import de.metas.util.Services;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
@@ -26,21 +33,16 @@ import org.compiere.model.X_M_InOut;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.jgoodies.common.base.Objects;
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
-import de.metas.bpartner.service.IBPartnerBL;
-import de.metas.bpartner.service.impl.BPartnerBL;
-import de.metas.business.BusinessTestHelper;
-import de.metas.document.engine.IDocument;
-import de.metas.inout.model.I_M_InOut;
-import de.metas.interfaces.I_C_BPartner;
-import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
-import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.invoicecandidate.model.I_M_InOutLine;
-import de.metas.payment.paymentterm.PaymentTermId;
-import de.metas.user.UserRepository;
-import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
+import static java.math.BigDecimal.ONE;
+import static java.math.BigDecimal.TEN;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -86,6 +88,12 @@ public class M_InOutLine_HandlerTest
 		AdempiereTestHelper.get().init();
 		BusinessTestHelper.createDefaultBusinessRecords();
 
+		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
+		dimensionFactories.add(new InOutLineDimensionFactory());
+		dimensionFactories.add(new InvoiceCandidateDimensionFactory());
+
+		SpringContextHolder.registerJUnitBean(new DimensionService(dimensionFactories));
+
 		final I_C_BPartner bPartner = newInstance(I_C_BPartner.class);
 		save(bPartner);
 
@@ -98,6 +106,7 @@ public class M_InOutLine_HandlerTest
 		inout.setIsSOTrx(true);
 		inout.setDocStatus(IDocument.STATUS_Completed); // otherwise the code won't consider the inoutLines' quantities
 		inout.setC_BPartner_ID(bPartner.getC_BPartner_ID());
+		inout.setC_BPartner_Location_ID(bPartnerLocation.getC_BPartner_Location_ID());
 		inout.setM_Warehouse_ID(1);
 		inout.setMovementDate(SystemTime.asTimestamp());
 		save(inout);

@@ -2,19 +2,20 @@ import counterpart from 'counterpart';
 import Moment from 'moment';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
-import { List } from 'immutable';
 import { connect } from 'react-redux';
-import { goBack, push } from 'react-router-redux';
+import { withRouter } from 'react-router-dom';
 import classnames from 'classnames';
 
 import {
   getUserLang,
-  localLoginRequest,
+  checkLoginRequest,
   loginCompletionRequest,
   loginRequest,
 } from '../../api';
 import { loginSuccess } from '../../actions/AppActions';
+
 import logo from '../../assets/images/metasfresh_logo_green_thumb.png';
+
 import RawList from '../widget/List/RawList';
 import PasswordRecovery from './PasswordRecovery';
 
@@ -37,10 +38,6 @@ class LoginForm extends Component {
     };
   }
 
-  /**
-   * @method componentDidMount
-   * @summary ToDo: Describe the method.
-   */
   componentDidMount() {
     const { path } = this.props;
 
@@ -49,10 +46,6 @@ class LoginForm extends Component {
     }
   }
 
-  /**
-   * @method UNSAFE_componentWillUpdate
-   * @summary ToDo: Describe the method.
-   */
   UNSAFE_componentWillUpdate(nextProps, nextState) {
     if (this.roleSelector && nextState.roleSelect) {
       this.roleSelector.instanceRef.dropdown.focus();
@@ -88,16 +81,22 @@ class LoginForm extends Component {
    * @summary ToDo: Describe the method.
    */
   handleSuccess = () => {
-    const { redirect, dispatch } = this.props;
+    const { auth, history, dispatch } = this.props;
 
     getUserLang().then((response) => {
       //GET language shall always return a result
       Moment.locale(response.data['key']);
 
+      // get user session and so on
+      dispatch(loginSuccess(auth.auth));
+
+      const redirect = auth.redirectRoute;
+
       if (redirect) {
-        dispatch(goBack());
+        auth.clearRedirectRoute();
+        history.push(redirect);
       } else {
-        dispatch(push('/'));
+        history.push('/');
       }
     });
   };
@@ -108,11 +107,9 @@ class LoginForm extends Component {
    * @param {*} err
    */
   checkIfAlreadyLogged(err) {
-    const { router } = this.context;
-
-    return localLoginRequest().then((response) => {
+    return checkLoginRequest().then((response) => {
       if (response.data) {
-        return router.push('/');
+        return history.push('/');
       }
 
       return Promise.reject(err);
@@ -158,12 +155,12 @@ class LoginForm extends Component {
         if (response.data.loginComplete) {
           return this.handleSuccess();
         }
-        const roles = List(response.data.roles);
+        const roles = response.data.roles;
 
         this.setState({
           roleSelect: true,
           roles,
-          role: roles.get(0),
+          role: roles[0],
         });
       })
       .then(() => {
@@ -189,7 +186,7 @@ class LoginForm extends Component {
    * @summary ToDo: Describe the method.
    */
   handleLogin = () => {
-    const { dispatch, auth } = this.props;
+    const { auth } = this.props;
     const { roleSelect, role } = this.state;
 
     this.setState(
@@ -200,7 +197,7 @@ class LoginForm extends Component {
         if (roleSelect) {
           return loginCompletionRequest(role)
             .then(() => {
-              dispatch(loginSuccess(auth));
+              auth.login();
               this.handleSuccess();
             })
             .catch((err) => {
@@ -234,8 +231,9 @@ class LoginForm extends Component {
    * @summary ToDo: Describe the method.
    */
   handleForgotPassword = () => {
-    const { dispatch } = this.props;
-    dispatch(push('/forgottenPassword'));
+    const { history } = this.props;
+
+    history.push('/forgottenPassword');
   };
 
   /**
@@ -276,10 +274,6 @@ class LoginForm extends Component {
     this.setState({ dropdownFocused: false });
   };
 
-  /**
-   * @method render
-   * @summary ToDo: Describe the method.
-   */
   render() {
     const {
       roleSelect,
@@ -393,15 +387,12 @@ class LoginForm extends Component {
 }
 
 LoginForm.propTypes = {
-  dispatch: PropTypes.func.isRequired,
   path: PropTypes.string,
   token: PropTypes.string,
   redirect: PropTypes.any,
   auth: PropTypes.object,
+  history: PropTypes.object.isRequired,
+  dispatch: PropTypes.func.isRequired,
 };
 
-LoginForm.contextTypes = {
-  router: PropTypes.object.isRequired,
-};
-
-export default connect()(LoginForm);
+export default connect()(withRouter(LoginForm));

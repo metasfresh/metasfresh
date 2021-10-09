@@ -53,7 +53,7 @@ public class SSCC18CodeBL implements ISSCC18CodeBL
 
 	private final NextSerialNumberProvider nextSerialNumberProvider;
 	/** for debugging */
-	private boolean hasCustomNextSerialNumberProvider;
+	private final boolean hasCustomNextSerialNumberProvider;
 
 	public SSCC18CodeBL()
 	{
@@ -206,7 +206,7 @@ public class SSCC18CodeBL implements ISSCC18CodeBL
 		Check.errorIf(serialNumber.length() > digitsAvailableForSerialNumber, "With a {}-digit manufactoring code={}, the serial number={} may only have {} digits", manufactCode.length(), manufactCode, serialNumber, digitsAvailableForSerialNumber);
 
 		final int computeCheckDigit = computeCheckDigit(sscc18ToValidate);
-		Check.errorUnless(sscc18ToValidate.getCheckDigit() == computeCheckDigit, "The check digit of SSCC18={} is not valid; It needs to be={}", toString(sscc18ToValidate, false), computeCheckDigit);
+		Check.errorUnless(sscc18ToValidate.getCheckDigit() == computeCheckDigit, "The check digit of SSCC18={} is not valid; It needs to be={}", sscc18ToValidate.asString(), computeCheckDigit);
 		Check.errorUnless(isCheckDigitValid(sscc18ToValidate), "Check digit is not valid");
 	}
 
@@ -219,30 +219,13 @@ public class SSCC18CodeBL implements ISSCC18CodeBL
 
 	private int computeLenghtOfSerialNumber(final String manufactCode)
 	{
-		final int digitsAvailableForSerialNumber = 18 - 1/* extension-digit */ - manufactCode.length() - 1/* check-digit */;
-		return digitsAvailableForSerialNumber;
+		return 18 - 1/* extension-digit */ - manufactCode.length() - 1;
 	}
 
 	private void validateManufacturerCode(@NonNull final String manufactCode)
 	{
 		Check.errorUnless(StringUtils.isNumber(manufactCode), "The manufacturer code " + manufactCode + " is not a number");
 		Check.errorIf(manufactCode.length() > 9, "The manufacturer code " + manufactCode + " is too long");
-	}
-
-	@Override
-	public String toString(@NonNull final SSCC18 sscc18, final boolean humanReadable)
-	{
-		if (!humanReadable)
-		{
-			return sscc18.getExtensionDigit()
-					+ sscc18.getManufacturerCode()
-					+ sscc18.getSerialNumber()
-					+ sscc18.getCheckDigit();
-		}
-		else
-		{
-			throw new IllegalStateException("Not implemented");
-		}
 	}
 
 	@FunctionalInterface

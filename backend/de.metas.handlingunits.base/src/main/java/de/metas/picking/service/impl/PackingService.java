@@ -3,6 +3,7 @@ package de.metas.picking.service.impl;
 import java.text.MessageFormat;
 import java.util.Properties;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.PlainContextAware;
@@ -23,13 +24,12 @@ import de.metas.handlingunits.allocation.impl.HULoader;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.shipmentschedule.api.impl.ShipmentScheduleQtyPickedProductStorage;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
-import de.metas.inoutcandidate.api.ShipmentScheduleId;
+import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.service.IPackingService;
 import de.metas.picking.service.PackingItemPart;
 import de.metas.picking.service.PackingItemParts;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 
 public class PackingService implements IPackingService
 {

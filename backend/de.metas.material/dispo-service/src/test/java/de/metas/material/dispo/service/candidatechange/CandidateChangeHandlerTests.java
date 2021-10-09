@@ -1,40 +1,9 @@
 package de.metas.material.dispo.service.candidatechange;
 
-import static de.metas.material.event.EventTestHelper.AFTER_NOW;
-import static de.metas.material.event.EventTestHelper.BEFORE_BEFORE_NOW;
-import static de.metas.material.event.EventTestHelper.BEFORE_NOW;
-import static de.metas.material.event.EventTestHelper.CLIENT_AND_ORG_ID;
-import static de.metas.material.event.EventTestHelper.NOW;
-import static de.metas.material.event.EventTestHelper.ORG_ID;
-import static de.metas.material.event.EventTestHelper.PRODUCT_ID;
-import static de.metas.material.event.EventTestHelper.STORAGE_ATTRIBUTES_KEY;
-import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
-import static de.metas.material.event.EventTestHelper.createProductDescriptor;
-import static de.metas.testsupport.MetasfreshAssertions.assertThatModel;
-import static java.math.BigDecimal.TEN;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.compiere.util.TimeUtil.asTimestamp;
-
-import java.math.BigDecimal;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-
-import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.test.AdempiereTestWatcher;
-import org.adempiere.warehouse.WarehouseId;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mockito;
-
 import com.google.common.collect.ImmutableList;
-
+import de.metas.document.dimension.DimensionFactory;
+import de.metas.document.dimension.DimensionService;
+import de.metas.document.dimension.MDCandidateDimensionFactory;
 import de.metas.material.dispo.commons.DispoTestUtils;
 import de.metas.material.dispo.commons.RepositoryTestHelper;
 import de.metas.material.dispo.commons.candidate.Candidate;
@@ -53,6 +22,7 @@ import de.metas.material.dispo.commons.repository.DateAndSeqNo.Operator;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseRepository;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery;
+import de.metas.material.dispo.commons.repository.repohelpers.StockChangeDetailRepo;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.service.candidatechange.handler.CandidateHandler;
 import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateHandler;
@@ -60,6 +30,39 @@ import de.metas.material.dispo.service.candidatechange.handler.SupplyCandidateHa
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.MaterialDescriptor;
 import lombok.NonNull;
+import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.test.AdempiereTestWatcher;
+import org.adempiere.warehouse.WarehouseId;
+import org.compiere.SpringContextHolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mockito;
+
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+
+import static de.metas.material.event.EventTestHelper.AFTER_NOW;
+import static de.metas.material.event.EventTestHelper.BEFORE_BEFORE_NOW;
+import static de.metas.material.event.EventTestHelper.BEFORE_NOW;
+import static de.metas.material.event.EventTestHelper.CLIENT_AND_ORG_ID;
+import static de.metas.material.event.EventTestHelper.NOW;
+import static de.metas.material.event.EventTestHelper.ORG_ID;
+import static de.metas.material.event.EventTestHelper.PRODUCT_ID;
+import static de.metas.material.event.EventTestHelper.STORAGE_ATTRIBUTES_KEY;
+import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
+import static de.metas.material.event.EventTestHelper.createProductDescriptor;
+import static de.metas.testsupport.MetasfreshAssertions.assertThatModel;
+import static java.math.BigDecimal.TEN;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.assertj.core.api.Assertions.*;
+import static org.compiere.util.TimeUtil.asTimestamp;
 
 /*
  * #%L
@@ -109,13 +112,23 @@ public class CandidateChangeHandlerTests
 	private StockCandidateService stockCandidateService;
 	private CandidateRepositoryWriteService candidateRepositoryCommands;
 
+	private DimensionService dimensionService;
+
 	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
 
-		candidateRepositoryRetrieval = new CandidateRepositoryRetrieval();
-		candidateRepositoryCommands = new CandidateRepositoryWriteService();
+		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
+		dimensionFactories.add(new MDCandidateDimensionFactory());
+
+		dimensionService = new DimensionService(dimensionFactories);
+		SpringContextHolder.registerJUnitBean(dimensionService);
+
+		final StockChangeDetailRepo stockChangeDetailRepo = new StockChangeDetailRepo();
+
+		candidateRepositoryRetrieval = new CandidateRepositoryRetrieval(dimensionService, stockChangeDetailRepo);
+		candidateRepositoryCommands = new CandidateRepositoryWriteService(dimensionService, stockChangeDetailRepo);
 
 		final PostMaterialEventService postMaterialEventService = Mockito.mock(PostMaterialEventService.class);
 
@@ -124,10 +137,11 @@ public class CandidateChangeHandlerTests
 				candidateRepositoryRetrieval,
 				candidateRepositoryCommands);
 
+		final SupplyCandidateHandler supplyCandidateHandler = new SupplyCandidateHandler(candidateRepositoryCommands, stockCandidateService);
 		candidateChangeHandler = new CandidateChangeService(
 				ImmutableList.of(
-						new DemandCandiateHandler(candidateRepositoryRetrieval, candidateRepositoryCommands, postMaterialEventService, stockRepository, stockCandidateService),
-						new SupplyCandidateHandler(candidateRepositoryCommands, stockCandidateService)));
+						new DemandCandiateHandler(candidateRepositoryRetrieval, candidateRepositoryCommands, postMaterialEventService, stockRepository, stockCandidateService, supplyCandidateHandler),
+						supplyCandidateHandler));
 	}
 
 	@Test
@@ -166,7 +180,7 @@ public class CandidateChangeHandlerTests
 			}
 
 			@Override
-			public Candidate onCandidateNewOrChange(Candidate candidate)
+			public Candidate onCandidateNewOrChange(Candidate candidate, OnNewOrChangeAdvise advise)
 			{
 				throw new UnsupportedOperationException();
 			}
@@ -198,10 +212,10 @@ public class CandidateChangeHandlerTests
 
 			earlierCandidate = candidateRepositoryCommands
 					.addOrUpdateOverwriteStoredSeqNo(Candidate.builder()
-							.type(CandidateType.STOCK)
-							.clientAndOrgId(CLIENT_AND_ORG_ID)
-							.materialDescriptor(earlierMaterialDescriptor)
-							.build())
+															 .type(CandidateType.STOCK)
+															 .clientAndOrgId(CLIENT_AND_ORG_ID)
+															 .materialDescriptor(earlierMaterialDescriptor)
+															 .build())
 					.getCandidate();
 
 			final MaterialDescriptor laterMaterialDescriptor = materialDescriptor.withDate(t3);
@@ -533,7 +547,9 @@ public class CandidateChangeHandlerTests
 		assertThat(secondStockRecord.getQty()).isEqualByComparingTo("-14"); // -2 - 12
 	}
 
-	/** verifies that "moving" a candidate to an earlier time works */
+	/**
+	 * verifies that "moving" a candidate to an earlier time works
+	 */
 	@Test
 	public void onCandidateNewOrChange_demand_then_demand_then_supply_then_supplyTrx_after_1st_demand()
 	{
@@ -567,11 +583,11 @@ public class CandidateChangeHandlerTests
 		final Candidate candidate = supplyCandidate.toBuilder()
 				.materialDescriptor(supplyCandidate.getMaterialDescriptor().withDate(BEFORE_NOW))
 				.transactionDetail(TransactionDetail.builder()
-						.transactionId(50)
-						.quantity(FIFTEEN) // sidenote: this is not the candidate's Qty..it just contributes to the candidate's *fullFilledQty*
-						.transactionDate(BEFORE_NOW)
-						.complete(true)
-						.build())
+										   .transactionId(50)
+										   .quantity(FIFTEEN) // sidenote: this is not the candidate's Qty..it just contributes to the candidate's *fullFilledQty*
+										   .transactionDate(BEFORE_NOW)
+										   .complete(true)
+										   .build())
 				.build();
 
 		candidateChangeHandler.onCandidateNewOrChange(candidate);
@@ -627,11 +643,11 @@ public class CandidateChangeHandlerTests
 		final Candidate candidate = supplyCandidate.toBuilder()
 				.materialDescriptor(supplyCandidate.getMaterialDescriptor().withDate(BEFORE_NOW))
 				.transactionDetail(TransactionDetail.builder()
-						.transactionId(50)
-						.quantity(FIFTEEN) // sidenote: this is not the candidate's Qty..it just contributes to the candidate's *fullFilledQty*
-						.transactionDate(BEFORE_NOW)
-						.complete(true)
-						.build())
+										   .transactionId(50)
+										   .quantity(FIFTEEN) // sidenote: this is not the candidate's Qty..it just contributes to the candidate's *fullFilledQty*
+										   .transactionDate(BEFORE_NOW)
+										   .complete(true)
+										   .build())
 				.build();
 
 		candidateChangeHandler.onCandidateNewOrChange(candidate);
@@ -724,10 +740,10 @@ public class CandidateChangeHandlerTests
 
 				.businessCase(CandidateBusinessCase.PURCHASE)
 				.businessCaseDetail(PurchaseDetail.builder()
-						.qty(qty)
-						.advised(Flag.TRUE)
-						.receiptScheduleRepoId(receiptScheduleIdForSupplyDetail)
-						.build())
+											.qty(qty)
+											.advised(Flag.TRUE)
+											.receiptScheduleRepoId(receiptScheduleIdForSupplyDetail)
+											.build())
 				.build();
 
 		return candidateChangeHandler.onCandidateNewOrChange(supplyCandidate);

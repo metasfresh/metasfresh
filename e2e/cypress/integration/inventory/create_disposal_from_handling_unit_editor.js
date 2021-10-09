@@ -51,18 +51,12 @@ describe('Create a single HU', function() {
   });
 
   it('Create a new single-HU inventory doc', function() {
-    let uomName;
-    cy.fixture('product/simple_product.json').then(productJson => {
-      uomName = getLanguageSpecific(productJson, 'c_uom');
-    });
-
     cy.fixture('inventory/inventory.json').then(inventoryJson => {
       const docTypeName = getLanguageSpecific(inventoryJson, 'singleHUInventoryDocTypeName');
 
       const inventoryLine = new InventoryLine()
         .setProductName(productName)
         .setQuantity(productQty)
-        .setC_UOM_ID(uomName)
         .setM_Locator_ID(locatorId)
         .setIsCounted(true);
 
@@ -130,7 +124,8 @@ describe('Open Internal Use from notifications bell and do the checks', function
   it('Check tab Handling Unit Assignment', function() {
     cy.selectTab('M_HU_Assignment');
     cy.expectNumberOfRows(1);
-    cy.selectNthRow(0);
+    // cy.selectNthRow(0); // removed - reason: first row is already selected by default, if we were to use the selection it will unselect 
+    //                        and fail the test this due to https://github.com/metasfresh/metasfresh/issues/10167
     cy.openAdvancedEdit();
     cy.getStringFieldValue('M_HU_ID', true).then(val => {
       expect(val).contains(huValue);
@@ -141,7 +136,7 @@ describe('Open Internal Use from notifications bell and do the checks', function
   it('Check tab Internal Use Line', function() {
     cy.selectTab('M_InventoryLine');
     cy.expectNumberOfRows(1);
-    cy.selectNthRow(0);
+    //cy.selectNthRow(0);  - reason why this was removed is described in the previous test
     cy.openAdvancedEdit();
     cy.getStringFieldValue('M_Product_ID', true).should('contain', productName);
     cy.getStringFieldValue('QtyInternalUse', true).should('equal', productQty.toString(10));

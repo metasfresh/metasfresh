@@ -26,6 +26,7 @@ import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.element.api.AdTabId;
 import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -49,6 +50,7 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -108,9 +110,8 @@ public class ADProcessDAO implements IADProcessDAO
 		{
 			// more then one AD_Process_IDs matched => return -1
 			// we are logging a warning because it's not a common case.
-			final AdProcessId adProcessId = null;
-			logger.warn("retriveProcessIdByClassIfUnique: More then one AD_Process_ID found for {}: {} => considering {}", processClassname, processIds, adProcessId);
-			return adProcessId;
+			logger.warn("retrieveProcessIdByClassIfUnique: More then one AD_Process_ID found for {}: {} => returning null", processClassname, processIds);
+			return null;
 		}
 	}
 
@@ -152,10 +153,9 @@ public class ADProcessDAO implements IADProcessDAO
 	}
 
 	@Override
-	public void registerTableProcess(final int adTableId, final AdWindowId adWindowId, final AdProcessId adProcessId)
+	public void registerTableProcess(@Nullable final AdTableId adTableId, @Nullable final AdWindowId adWindowId, final AdProcessId adProcessId)
 	{
-		final AdTabId adTabId = null;
-		final RelatedProcessDescriptorKey key = RelatedProcessDescriptorKey.of(adTableId, adWindowId, adTabId);
+		final RelatedProcessDescriptorKey key = RelatedProcessDescriptorKey.of(adTableId, adWindowId, null);
 		registerTableProcess(key, adProcessId);
 	}
 
@@ -167,7 +167,6 @@ public class ADProcessDAO implements IADProcessDAO
 		{
 			// NOTE: not sure this shall be a WARN, but for sure is a rare case.
 			logger.warn("Skip because process ID={} is already registered for {}", adProcessId, key);
-			return;
 		}
 		else
 		{
@@ -184,15 +183,15 @@ public class ADProcessDAO implements IADProcessDAO
 			final AdWindowId adWindowId,
 			@NonNull final AdProcessId adProcessId)
 	{
-		final int adTableId;
+		final AdTableId adTableId;
 		if (Check.isEmpty(tableName))
 		{
-			adTableId = -1;
+			adTableId = null;
 		}
 		else
 		{
-			adTableId = Services.get(IADTableDAO.class).retrieveTableId(tableName);
-			Check.assume(adTableId > 0, "adTableId > 0 (TableName={})", tableName);
+			adTableId = AdTableId.ofRepoIdOrNull(Services.get(IADTableDAO.class).retrieveTableId(tableName));
+			Check.assumeNotNull(adTableId, "adTableId > 0 (TableName={})", tableName);
 		}
 
 		registerTableProcess(adTableId, adWindowId, adProcessId);
@@ -216,7 +215,7 @@ public class ADProcessDAO implements IADProcessDAO
 	@Override
 	@Cached(cacheName = I_AD_Table_Process.Table_Name + "#RelatedProcessDescriptors")
 	public ImmutableList<RelatedProcessDescriptor> retrieveRelatedProcessDescriptors(
-			final int adTableId,
+			@Nullable final AdTableId adTableId,
 			@Nullable final AdWindowId adWindowId,
 			@Nullable final AdTabId adTabId)
 	{
@@ -227,7 +226,7 @@ public class ADProcessDAO implements IADProcessDAO
 		//
 		// Get the programmatically registered ones
 		{
-			final Map<AdProcessId, RelatedProcessDescriptor> relatedProcessesStatic = staticRelatedProcessDescriptors.getIndexedByProcessId(key);
+			final ImmutableMap<AdProcessId, RelatedProcessDescriptor> relatedProcessesStatic = staticRelatedProcessDescriptors.getIndexedByProcessId(key);
 			result.putAll(relatedProcessesStatic);
 		}
 
@@ -247,7 +246,7 @@ public class ADProcessDAO implements IADProcessDAO
 					//
 					.create()
 					.stream()
-					.map(tableProcess -> toRelatedProcessDescriptor(tableProcess))
+					.map(ADProcessDAO::toRelatedProcessDescriptor)
 					.collect(GuavaCollectors.toImmutableMapByKeyKeepFirstDuplicate(RelatedProcessDescriptor::getProcessId));
 
 			// Add all to result, overriding existing ones
@@ -257,11 +256,11 @@ public class ADProcessDAO implements IADProcessDAO
 		return ImmutableList.copyOf(result.values());
 	}
 
-	private static final RelatedProcessDescriptor toRelatedProcessDescriptor(final I_AD_Table_Process tableProcess)
+	private static RelatedProcessDescriptor toRelatedProcessDescriptor(final I_AD_Table_Process tableProcess)
 	{
 		return RelatedProcessDescriptor.builder()
 				.processId(AdProcessId.ofRepoId(tableProcess.getAD_Process_ID()))
-				.tableId(tableProcess.getAD_Table_ID())
+				.tableId(AdTableId.ofRepoId(tableProcess.getAD_Table_ID()))
 				.windowId(AdWindowId.ofRepoIdOrNull(tableProcess.getAD_Window_ID()))
 				.tabId(AdTabId.ofRepoIdOrNull(tableProcess.getAD_Tab_ID()))
 				//
@@ -304,12 +303,9 @@ public class ADProcessDAO implements IADProcessDAO
 	}
 
 	@Override
-	public Collection<I_AD_Process_Para> retrieveProcessParameters(final I_AD_Process process)
+	public Collection<I_AD_Process_Para> retrieveProcessParameters(final AdProcessId adProcessId)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(process);
-		final String trxName = InterfaceWrapperHelper.getTrxName(process);
-		final AdProcessId adProcessId = AdProcessId.ofRepoId(process.getAD_Process_ID());
-		return retrieveProcessParameters(ctx, adProcessId, trxName).values();
+		return retrieveProcessParameters(Env.getCtx(), adProcessId, ITrx.TRXNAME_None).values();
 	}
 
 	@Override
@@ -319,14 +315,18 @@ public class ADProcessDAO implements IADProcessDAO
 	}
 
 	@Cached(cacheName = I_AD_Process_Para.Table_Name + "#by#" + I_AD_Process_Para.COLUMNNAME_AD_Process_ID)
-	public Map<String, I_AD_Process_Para> retrieveProcessParameters(@CacheCtx final Properties ctx, final AdProcessId adProcessId, @CacheTrx final String trxName)
+	public ImmutableMap<String, I_AD_Process_Para> retrieveProcessParameters(
+			@CacheCtx final Properties ctx,
+			final AdProcessId adProcessId,
+			@CacheTrx final String trxName)
 	{
 		return queryBL.createQueryBuilder(I_AD_Process_Para.class, ctx, trxName)
 				.addEqualsFilter(I_AD_Process_Para.COLUMNNAME_AD_Process_ID, adProcessId)
 				.addOnlyActiveRecordsFilter()
 				.orderBy(I_AD_Process_Para.COLUMNNAME_SeqNo)
 				.create()
-				.map(I_AD_Process_Para.class, I_AD_Process_Para::getColumnName);
+				.stream()
+				.collect(ImmutableMap.toImmutableMap(I_AD_Process_Para::getColumnName, Function.identity()));
 	}
 
 	@Override
@@ -510,7 +510,7 @@ public class ADProcessDAO implements IADProcessDAO
 			return descriptorsMap.values().stream();
 		}
 
-		public Map<AdProcessId, RelatedProcessDescriptor> getIndexedByProcessId(final RelatedProcessDescriptorKey key)
+		public ImmutableMap<AdProcessId, RelatedProcessDescriptor> getIndexedByProcessId(final RelatedProcessDescriptorKey key)
 		{
 			return RelatedProcessDescriptorKey.mkKeysFromSpecificToGeneral(key)
 					.stream()
@@ -519,7 +519,7 @@ public class ADProcessDAO implements IADProcessDAO
 					// collects RelatedProcessDescriptor(s) indexed by AD_Process_ID
 					// in case of duplicates, first descriptor will be kept,
 					// i.e. the one which was more specifically registered (specific adTableId/adWindowId).
-					.collect(GuavaCollectors.toImmutableMapByKeyKeepFirstDuplicate(desc -> desc.getProcessId()));
+					.collect(GuavaCollectors.toImmutableMapByKeyKeepFirstDuplicate(RelatedProcessDescriptor::getProcessId));
 		}
 
 	}
@@ -527,9 +527,9 @@ public class ADProcessDAO implements IADProcessDAO
 	@Value
 	private static class RelatedProcessDescriptorKey
 	{
-		public static final ImmutableSet<RelatedProcessDescriptorKey> mkKeysFromSpecificToGeneral(final RelatedProcessDescriptorKey key)
+		public static ImmutableSet<RelatedProcessDescriptorKey> mkKeysFromSpecificToGeneral(final RelatedProcessDescriptorKey key)
 		{
-			final int adTableId = key.getAdTableId();
+			final AdTableId adTableId = key.getAdTableId();
 			final AdWindowId adWindowId = key.getAdWindowId();
 			final AdTabId adTabId = key.getAdTabId();
 
@@ -540,9 +540,9 @@ public class ADProcessDAO implements IADProcessDAO
 					ANY);
 		}
 
-		public static final RelatedProcessDescriptorKey of(final int adTableId, @Nullable final AdWindowId adWindowId, @Nullable final AdTabId adTabId)
+		public static RelatedProcessDescriptorKey of(@Nullable final AdTableId adTableId, @Nullable final AdWindowId adWindowId, @Nullable final AdTabId adTabId)
 		{
-			if (adTableId <= 0 && adWindowId == null && adTabId == null)
+			if (adTableId == null && adWindowId == null && adTabId == null)
 			{
 				return ANY;
 			}
@@ -550,23 +550,22 @@ public class ADProcessDAO implements IADProcessDAO
 			return new RelatedProcessDescriptorKey(adTableId, adWindowId, adTabId);
 		}
 
-		private static final int AD_Table_ID_Any = 0;
+		private static final AdTableId AD_Table_ID_Any = null;
 		private static final AdWindowId AD_Window_ID_Any = null;
 		private static final AdTabId AD_Tab_ID_Any = null;
 
 		public static final RelatedProcessDescriptorKey ANY = new RelatedProcessDescriptorKey(AD_Table_ID_Any, AD_Window_ID_Any, AD_Tab_ID_Any);
 
-		int adTableId;
+		AdTableId adTableId;
 		AdWindowId adWindowId;
 		AdTabId adTabId;
 
-		private RelatedProcessDescriptorKey(final int adTableId, final AdWindowId adWindowId, final AdTabId adTabId)
+		private RelatedProcessDescriptorKey(final AdTableId adTableId, final AdWindowId adWindowId, final AdTabId adTabId)
 		{
-			this.adTableId = adTableId > 0 ? adTableId : AD_Table_ID_Any;
+			this.adTableId = adTableId;
 			this.adWindowId = adWindowId;
 			this.adTabId = adTabId;
 		}
-
 	}
 
 	@Override
@@ -601,5 +600,11 @@ public class ADProcessDAO implements IADProcessDAO
 				.list()
 				.stream()
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	@Override
+	public void save(final I_AD_Process process)
+	{
+		InterfaceWrapperHelper.save(process);
 	}
 }

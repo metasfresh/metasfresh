@@ -22,14 +22,6 @@ package de.metas.edi.model.validator;
  * #L%
  */
 
-import java.util.List;
-
-import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.ModelValidator;
-import org.springframework.stereotype.Component;
-
 import de.metas.edi.api.IDesadvBL;
 import de.metas.edi.api.IDesadvDAO;
 import de.metas.edi.model.I_C_Order;
@@ -39,6 +31,13 @@ import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.esb.edi.model.I_EDI_DesadvLine;
 import de.metas.i18n.IMsgBL;
 import de.metas.util.Services;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.ModelValidator;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Interceptor(I_EDI_Desadv.class)
 @Component
@@ -81,7 +80,7 @@ public class EDI_Desadv
 		final boolean processing = I_EDI_Document.EDI_EXPORTSTATUS_Enqueued.equals(exportStatus) || I_EDI_Document.EDI_EXPORTSTATUS_SendingStarted.equals(exportStatus);
 		desadv.setProcessing(processing);
 
-		final boolean processed = I_EDI_Document.EDI_EXPORTSTATUS_Sent.equals(exportStatus);
+		final boolean processed = I_EDI_Document.EDI_EXPORTSTATUS_Sent.equals(exportStatus) || I_EDI_Document.EDI_EXPORTSTATUS_DontSend.equals(exportStatus);
 		desadv.setProcessed(processed);
 	}
 

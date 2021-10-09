@@ -24,6 +24,11 @@ package de.metas.invoicecandidate.api.impl;
 
 import java.util.List;
 
+import de.metas.costing.impl.ChargeRepository;
+import de.metas.greeting.GreetingRepository;
+import de.metas.invoicecandidate.model.I_C_BPartner;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.assertj.core.api.Assertions;
 import org.compiere.SpringContextHolder;
 import org.junit.jupiter.api.BeforeEach;
 
@@ -49,11 +54,15 @@ public class InvoiceCandidateEnqueueToInvoice_Locking_Test extends InvoiceCandid
 	@BeforeEach
 	public void registerService()
 	{
+		SpringContextHolder.registerJUnitBean(new CurrencyRepository());
+		SpringContextHolder.registerJUnitBean(new ChargeRepository());
+		
 		final BPartnerStatisticsUpdater asyncBPartnerStatisticsUpdater = new BPartnerStatisticsUpdater();
 		Services.registerService(IBPartnerStatisticsUpdater.class, asyncBPartnerStatisticsUpdater);
 		SpringContextHolder.registerJUnitBean(new MailService(new MailboxRepository(), new MailTemplateRepository()));
 		SpringContextHolder.registerJUnitBean(new InvoiceCandidateRecordService());
 		SpringContextHolder.registerJUnitBean(new MoneyService(new CurrencyRepository()));
+		SpringContextHolder.registerJUnitBean(new GreetingRepository());
 		NOPWorkpackageLogsRepository.registerToSpringContext();
 	}
 
@@ -67,9 +76,9 @@ public class InvoiceCandidateEnqueueToInvoice_Locking_Test extends InvoiceCandid
 				.setManual(true)
 				.setSOTrx(true)
 				.build();
-
+		Assertions.assertThat(InterfaceWrapperHelper.load(bpartner1.getC_BPartner_ID(), I_C_BPartner.class).getName()).isNotNull();
 		icTestSupport.updateInvalidCandidates();
 
-		return ImmutableList.<I_C_Invoice_Candidate> of(ic1);
+		return ImmutableList.of(ic1);
 	}
 }

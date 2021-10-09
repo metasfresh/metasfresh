@@ -1,26 +1,11 @@
 package de.metas.ordercandidate.api;
 
-import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.ArrayKeyBuilder;
-import org.compiere.util.TimeUtil;
-import org.compiere.util.Util;
-import org.compiere.util.Util.ArrayKey;
-import org.slf4j.Logger;
-
+import ch.qos.logback.classic.Level;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ListMultimap;
-
-import ch.qos.logback.classic.Level;
+import de.metas.async.AsyncBatchId;
+import de.metas.common.util.time.SystemTime;
 import de.metas.impex.InputDataSourceId;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.logging.LogManager;
@@ -33,9 +18,24 @@ import de.metas.util.Check;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.ArrayKeyBuilder;
+import org.compiere.util.TimeUtil;
+import org.compiere.util.Util;
+import org.compiere.util.Util.ArrayKey;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 
 /*
  * #%L
@@ -75,6 +75,7 @@ public class OLCandsProcessorExecutor
 	private final OLCandAggregation aggregationInfo;
 	private final OLCandOrderDefaults orderDefaults;
 	private final InputDataSourceId processorDataDestinationId;
+	private final AsyncBatchId asyncBatchId;
 	private final LocalDate defaultDateDoc = SystemTime.asLocalDate();
 
 	private final OLCandSource candidatesSource;
@@ -84,12 +85,14 @@ public class OLCandsProcessorExecutor
 			@NonNull final OLCandProcessorDescriptor processorDescriptor,
 			@NonNull final IOLCandListener olCandListeners,
 			@NonNull final IOLCandGroupingProvider groupingValuesProviders,
-			@NonNull final OLCandSource candidatesSource)
+			@NonNull final OLCandSource candidatesSource,
+			@Nullable final AsyncBatchId asyncBatchId)
 	{
 		this.orderDefaults = processorDescriptor.getDefaults();
 		this.olCandListeners = olCandListeners;
 		this.aggregationInfo = processorDescriptor.getAggregationInfo();
 		this.groupingValuesProviders = groupingValuesProviders;
+		this.asyncBatchId = asyncBatchId;
 		this.loggable = Loggables.withLogger(logger, Level.DEBUG);
 
 		this.olCandProcessorId = processorDescriptor.getId();
@@ -115,7 +118,10 @@ public class OLCandsProcessorExecutor
 				.sorted(aggregationInfo.getOrderingComparator())
 				.collect(ImmutableList.toImmutableList());
 		loggable.addLog("Processing {} order line candidates", candidates.size());
-
+		if (candidates.isEmpty())
+		{
+			return;
+		}
 		//
 		// Compute a grouping key for each candidate and group them according to their key
 		final Map<Integer, ArrayKey> toProcess = new HashMap<>();
@@ -134,7 +140,6 @@ public class OLCandsProcessorExecutor
 			toProcess.put(olCandId, groupingKey);
 			grouping.put(groupingKey, candidate);
 		}
-
 		// 'processedIds' contains the candidates that have already been processed
 		final Set<Integer> processedIds = new HashSet<>();
 
@@ -181,7 +186,6 @@ public class OLCandsProcessorExecutor
 		if (currentOrder != null)
 		{
 			currentOrder.completeOrDelete();
-			currentOrder = null;
 		}
 
 		Check.assume(processedIds.size() == candidates.size(), "All candidates have been processed");
@@ -311,7 +315,7 @@ public class OLCandsProcessorExecutor
 		}
 	}
 
-	private final boolean isEligibleOrLog(final OLCand cand)
+	private boolean isEligibleOrLog(final OLCand cand)
 	{
 		if (cand.isProcessed())
 		{
@@ -322,6 +326,12 @@ public class OLCandsProcessorExecutor
 		if (cand.isError())
 		{
 			logger.debug("Skipping C_OLCand with errors: {}", cand);
+			return false;
+		}
+
+		if (cand.getOrderLineGroup() != null && cand.getOrderLineGroup().isGroupingError())
+		{
+			logger.debug("Skipping C_OLCand with grouping errors: {}", cand);
 			return false;
 		}
 
@@ -337,6 +347,12 @@ public class OLCandsProcessorExecutor
 			// FIXME: instead of having isImportedWithIssues() implemented here, add support for using a filter that is then registered from e.g. a model validator
 			// this way, we would further decouple our modules
 			logger.debug("Skipping C_OLCand with import issues: {}", cand);
+			return false;
+		}
+
+		if (asyncBatchId != null && !cand.isAssignToBatch(asyncBatchId))
+		{
+			logger.debug("Skipping C_OLCand due to missing batch assignment: targetBatchId: {}, candidate: {}", asyncBatchId, cand);
 			return false;
 		}
 

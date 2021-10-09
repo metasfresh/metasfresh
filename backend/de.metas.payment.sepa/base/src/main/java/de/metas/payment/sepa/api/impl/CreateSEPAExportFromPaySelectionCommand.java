@@ -1,18 +1,5 @@
 package de.metas.payment.sepa.api.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.create;
-import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.FillMandatoryException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_Invoice;
-import org.compiere.model.I_C_PaySelectionLine;
-
 import de.metas.banking.Bank;
 import de.metas.banking.BankId;
 import de.metas.banking.api.BankRepository;
@@ -22,12 +9,24 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.payment.api.IPaymentDAO;
 import de.metas.payment.sepa.api.SEPAProtocol;
 import de.metas.payment.sepa.interfaces.I_C_BP_BankAccount;
-import de.metas.payment.sepa.interfaces.I_C_PaySelection;
 import de.metas.payment.sepa.model.I_SEPA_Export;
 import de.metas.payment.sepa.model.I_SEPA_Export_Line;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.FillMandatoryException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_PaySelection;
+import org.compiere.model.I_C_PaySelectionLine;
+
+import static org.adempiere.model.InterfaceWrapperHelper.create;
+import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 /*
  * #%L

@@ -3,12 +3,13 @@ package de.metas.zoom.process;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.GenericPO;
+import org.compiere.SpringContextHolder;
 import org.compiere.util.Env;
 
-import de.metas.document.references.POZoomSource;
-import de.metas.document.references.ZoomInfoFactory;
-import de.metas.document.references.ZoomInfoPermissions;
-import de.metas.document.references.ZoomInfoPermissionsFactory;
+import de.metas.document.references.related_documents.POZoomSource;
+import de.metas.document.references.related_documents.RelatedDocumentsFactory;
+import de.metas.document.references.related_documents.RelatedDocumentsPermissions;
+import de.metas.document.references.related_documents.RelatedDocumentsPermissionsFactory;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.util.ILoggable;
@@ -37,7 +38,7 @@ import de.metas.util.Services;
  */
 
 /**
- * Excercise the {@link ZoomInfoFactory} with the currently selected record.
+ * Excercise the {@link RelatedDocumentsFactory} with the currently selected record.
  * The relevant code contains {@link ILoggable#addLog(String, Object...)} calls that output timing info.
  * this way, we can use the process to diagnose zoom-to-performance-problems.
  *
@@ -46,6 +47,8 @@ import de.metas.util.Services;
  */
 public class ZoomInfoFactoryExecute extends JavaProcess
 {
+	private final RelatedDocumentsFactory relatedDocumentsFactory = SpringContextHolder.instance.getBean(RelatedDocumentsFactory.class);
+
 	@Param(mandatory = true, parameterName = "AD_Window_ID")
 	private AdWindowId windowId;
 
@@ -62,8 +65,8 @@ public class ZoomInfoFactoryExecute extends JavaProcess
 		final GenericPO po = new GenericPO(tableName, getCtx(), recordId);
 
 		final POZoomSource zoomSource = POZoomSource.of(po, windowId);
-		final ZoomInfoPermissions permissions = ZoomInfoPermissionsFactory.ofRolePermissions(Env.getUserRolePermissions());
-		ZoomInfoFactory.get().retrieveZoomInfos(zoomSource, permissions);
+		final RelatedDocumentsPermissions permissions = RelatedDocumentsPermissionsFactory.ofRolePermissions(Env.getUserRolePermissions());
+		relatedDocumentsFactory.retrieveRelatedDocuments(zoomSource, permissions);
 
 		return MSG_OK;
 	}

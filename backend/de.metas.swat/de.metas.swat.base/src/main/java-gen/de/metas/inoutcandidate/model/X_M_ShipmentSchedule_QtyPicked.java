@@ -1,112 +1,77 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package de.metas.inoutcandidate.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for M_ShipmentSchedule_QtyPicked
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public class X_M_ShipmentSchedule_QtyPicked extends org.compiere.model.PO implements I_M_ShipmentSchedule_QtyPicked, org.compiere.model.I_Persistent 
 {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = -771578003L;
+	private static final long serialVersionUID = 5054528L;
 
     /** Standard Constructor */
-    public X_M_ShipmentSchedule_QtyPicked (Properties ctx, int M_ShipmentSchedule_QtyPicked_ID, String trxName)
+    public X_M_ShipmentSchedule_QtyPicked (final Properties ctx, final int M_ShipmentSchedule_QtyPicked_ID, @Nullable final String trxName)
     {
       super (ctx, M_ShipmentSchedule_QtyPicked_ID, trxName);
-      /** if (M_ShipmentSchedule_QtyPicked_ID == 0)
-        {
-			setIsAnonymousHuPickedOnTheFly (false); // N
-			setM_ShipmentSchedule_QtyPicked_ID (0);
-			setProcessed (false); // N
-			setQtyPicked (BigDecimal.ZERO); // 0
-        } */
     }
 
     /** Load Constructor */
-    public X_M_ShipmentSchedule_QtyPicked (Properties ctx, ResultSet rs, String trxName)
+    public X_M_ShipmentSchedule_QtyPicked (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
 
 
-    /** Load Meta Data */
-    @Override
-    protected org.compiere.model.POInfo initPO (Properties ctx)
-    {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
-      return poi;
-    }
-
-	/** Set Catch Einheit.
-		@param Catch_UOM_ID 
-		Aus dem Produktstamm übenommene Catch Weight Einheit.
-	  */
+	/** Load Meta Data */
 	@Override
-	public void setCatch_UOM_ID (int Catch_UOM_ID)
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
+	{
+		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public void setCatch_UOM_ID (final int Catch_UOM_ID)
 	{
 		if (Catch_UOM_ID < 1) 
 			set_Value (COLUMNNAME_Catch_UOM_ID, null);
 		else 
-			set_Value (COLUMNNAME_Catch_UOM_ID, Integer.valueOf(Catch_UOM_ID));
+			set_Value (COLUMNNAME_Catch_UOM_ID, Catch_UOM_ID);
 	}
 
-	/** Get Catch Einheit.
-		@return Aus dem Produktstamm übenommene Catch Weight Einheit.
-	  */
 	@Override
-	public int getCatch_UOM_ID () 
+	public int getCatch_UOM_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_Catch_UOM_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_Catch_UOM_ID);
 	}
 
-	/** Set Beschreibung.
-		@param Description Beschreibung	  */
 	@Override
-	public void setDescription (java.lang.String Description)
+	public void setDescription (final @Nullable java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
 
-	/** Get Beschreibung.
-		@return Beschreibung	  */
 	@Override
-	public java.lang.String getDescription () 
+	public java.lang.String getDescription() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Description);
+		return get_ValueAsString(COLUMNNAME_Description);
 	}
 
-	/** Set Anonymous HU Picked On the Fly.
-		@param IsAnonymousHuPickedOnTheFly Anonymous HU Picked On the Fly	  */
 	@Override
-	public void setIsAnonymousHuPickedOnTheFly (boolean IsAnonymousHuPickedOnTheFly)
+	public void setIsAnonymousHuPickedOnTheFly (final boolean IsAnonymousHuPickedOnTheFly)
 	{
-		set_Value (COLUMNNAME_IsAnonymousHuPickedOnTheFly, Boolean.valueOf(IsAnonymousHuPickedOnTheFly));
+		set_Value (COLUMNNAME_IsAnonymousHuPickedOnTheFly, IsAnonymousHuPickedOnTheFly);
 	}
 
-	/** Get Anonymous HU Picked On the Fly.
-		@return Anonymous HU Picked On the Fly	  */
 	@Override
-	public boolean isAnonymousHuPickedOnTheFly () 
+	public boolean isAnonymousHuPickedOnTheFly() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsAnonymousHuPickedOnTheFly);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsAnonymousHuPickedOnTheFly);
 	}
 
 	@Override
@@ -116,34 +81,24 @@ public class X_M_ShipmentSchedule_QtyPicked extends org.compiere.model.PO implem
 	}
 
 	@Override
-	public void setM_InOutLine(org.compiere.model.I_M_InOutLine M_InOutLine)
+	public void setM_InOutLine(final org.compiere.model.I_M_InOutLine M_InOutLine)
 	{
 		set_ValueFromPO(COLUMNNAME_M_InOutLine_ID, org.compiere.model.I_M_InOutLine.class, M_InOutLine);
 	}
 
-	/** Set Versand-/Wareneingangsposition.
-		@param M_InOutLine_ID 
-		Position auf Versand- oder Wareneingangsbeleg
-	  */
 	@Override
-	public void setM_InOutLine_ID (int M_InOutLine_ID)
+	public void setM_InOutLine_ID (final int M_InOutLine_ID)
 	{
 		if (M_InOutLine_ID < 1) 
 			set_Value (COLUMNNAME_M_InOutLine_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_InOutLine_ID, Integer.valueOf(M_InOutLine_ID));
+			set_Value (COLUMNNAME_M_InOutLine_ID, M_InOutLine_ID);
 	}
 
-	/** Get Versand-/Wareneingangsposition.
-		@return Position auf Versand- oder Wareneingangsbeleg
-	  */
 	@Override
-	public int getM_InOutLine_ID () 
+	public int getM_InOutLine_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_InOutLine_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_InOutLine_ID);
 	}
 
 	@Override
@@ -153,119 +108,76 @@ public class X_M_ShipmentSchedule_QtyPicked extends org.compiere.model.PO implem
 	}
 
 	@Override
-	public void setM_ShipmentSchedule(de.metas.inoutcandidate.model.I_M_ShipmentSchedule M_ShipmentSchedule)
+	public void setM_ShipmentSchedule(final de.metas.inoutcandidate.model.I_M_ShipmentSchedule M_ShipmentSchedule)
 	{
 		set_ValueFromPO(COLUMNNAME_M_ShipmentSchedule_ID, de.metas.inoutcandidate.model.I_M_ShipmentSchedule.class, M_ShipmentSchedule);
 	}
 
-	/** Set Lieferdisposition.
-		@param M_ShipmentSchedule_ID Lieferdisposition	  */
 	@Override
-	public void setM_ShipmentSchedule_ID (int M_ShipmentSchedule_ID)
+	public void setM_ShipmentSchedule_ID (final int M_ShipmentSchedule_ID)
 	{
 		if (M_ShipmentSchedule_ID < 1) 
 			set_Value (COLUMNNAME_M_ShipmentSchedule_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_ShipmentSchedule_ID, Integer.valueOf(M_ShipmentSchedule_ID));
+			set_Value (COLUMNNAME_M_ShipmentSchedule_ID, M_ShipmentSchedule_ID);
 	}
 
-	/** Get Lieferdisposition.
-		@return Lieferdisposition	  */
 	@Override
-	public int getM_ShipmentSchedule_ID () 
+	public int getM_ShipmentSchedule_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_ShipmentSchedule_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_ShipmentSchedule_ID);
 	}
 
-	/** Set ShipmentSchedule QtyPicked.
-		@param M_ShipmentSchedule_QtyPicked_ID ShipmentSchedule QtyPicked	  */
 	@Override
-	public void setM_ShipmentSchedule_QtyPicked_ID (int M_ShipmentSchedule_QtyPicked_ID)
+	public void setM_ShipmentSchedule_QtyPicked_ID (final int M_ShipmentSchedule_QtyPicked_ID)
 	{
 		if (M_ShipmentSchedule_QtyPicked_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_M_ShipmentSchedule_QtyPicked_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_M_ShipmentSchedule_QtyPicked_ID, Integer.valueOf(M_ShipmentSchedule_QtyPicked_ID));
+			set_ValueNoCheck (COLUMNNAME_M_ShipmentSchedule_QtyPicked_ID, M_ShipmentSchedule_QtyPicked_ID);
 	}
 
-	/** Get ShipmentSchedule QtyPicked.
-		@return ShipmentSchedule QtyPicked	  */
 	@Override
-	public int getM_ShipmentSchedule_QtyPicked_ID () 
+	public int getM_ShipmentSchedule_QtyPicked_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_ShipmentSchedule_QtyPicked_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_ShipmentSchedule_QtyPicked_ID);
 	}
 
-	/** Set Verarbeitet.
-		@param Processed 
-		Checkbox sagt aus, ob der Datensatz verarbeitet wurde. 
-	  */
 	@Override
-	public void setProcessed (boolean Processed)
+	public void setProcessed (final boolean Processed)
 	{
-		set_Value (COLUMNNAME_Processed, Boolean.valueOf(Processed));
+		set_Value (COLUMNNAME_Processed, Processed);
 	}
 
-	/** Get Verarbeitet.
-		@return Checkbox sagt aus, ob der Datensatz verarbeitet wurde. 
-	  */
 	@Override
-	public boolean isProcessed () 
+	public boolean isProcessed() 
 	{
-		Object oo = get_Value(COLUMNNAME_Processed);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_Processed);
 	}
 
-	/** Set Geliefert Catch.
-		@param QtyDeliveredCatch 
-		Tatsächlich gelieferte Menge
-	  */
 	@Override
-	public void setQtyDeliveredCatch (java.math.BigDecimal QtyDeliveredCatch)
+	public void setQtyDeliveredCatch (final @Nullable BigDecimal QtyDeliveredCatch)
 	{
 		set_Value (COLUMNNAME_QtyDeliveredCatch, QtyDeliveredCatch);
 	}
 
-	/** Get Geliefert Catch.
-		@return Tatsächlich gelieferte Menge
-	  */
 	@Override
-	public java.math.BigDecimal getQtyDeliveredCatch () 
+	public BigDecimal getQtyDeliveredCatch() 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyDeliveredCatch);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyDeliveredCatch);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
-	/** Set Menge (Lagereinheit).
-		@param QtyPicked Menge (Lagereinheit)	  */
 	@Override
-	public void setQtyPicked (java.math.BigDecimal QtyPicked)
+	public void setQtyPicked (final BigDecimal QtyPicked)
 	{
 		set_Value (COLUMNNAME_QtyPicked, QtyPicked);
 	}
 
-	/** Get Menge (Lagereinheit).
-		@return Menge (Lagereinheit)	  */
 	@Override
-	public java.math.BigDecimal getQtyPicked () 
+	public BigDecimal getQtyPicked() 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyPicked);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyPicked);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 }

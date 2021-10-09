@@ -40,8 +40,6 @@ public interface IHUAttributePropagator
 	 * Sets {@link IHUAttributePropagatorFactory}.
 	 *
 	 * NOTE: don't call it directly. It's called by API.
-	 *
-	 * @param factory
 	 */
 	void setHUAttributePropagatorFactory(IHUAttributePropagatorFactory factory);
 
@@ -49,7 +47,6 @@ public interface IHUAttributePropagator
 	 * Check if this {@link IHUAttributePropagator} is compatible with it's parent. See the implementing subclasses' javadocs for implementation details.
 	 *
 	 * @param otherPropagator the propagator to compare with
-	 * @return
 	 */
 	boolean isCompatible(IHUAttributePropagator otherPropagator);
 
@@ -67,9 +64,7 @@ public interface IHUAttributePropagator
 	 * Set and propagate attribute value. 
 	 * Note that propagation only happens if the respective attribute exists in the propagation target. If it doesn't exists, it is <b>not</b> created on the fly
 	 *
-	 * @param propagationContext
 	 * @param attributeSet the attributeset to which the given <code>value</code> shall be set.
-	 * @param value
 	 */
 	void propagateValue(IHUAttributePropagationContext propagationContext, IAttributeStorage attributeSet, Object value);
 }

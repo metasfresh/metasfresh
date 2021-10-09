@@ -10,28 +10,6 @@ import static de.metas.business.BusinessTestHelper.createWarehouse;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
-/*
- * #%L
- * de.metas.handlingunits.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -48,6 +26,18 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.common.util.time.SystemTime;
+import de.metas.document.dimension.DimensionFactory;
+import de.metas.document.dimension.DimensionService;
+import de.metas.document.dimension.InOutLineDimensionFactory;
+import de.metas.document.dimension.OrderLineDimensionFactory;
+import de.metas.document.location.IDocumentLocationBL;
+import de.metas.document.location.impl.DocumentLocationBL;
+import de.metas.inoutcandidate.document.dimension.ReceiptScheduleDimensionFactory;
+import de.metas.invoicecandidate.document.dimension.InvoiceCandidateDimensionFactory;
+import de.metas.user.UserRepository;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
@@ -59,7 +49,6 @@ import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.AttributeListValueCreateRequest;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.impl.AttributesTestHelper;
-import org.adempiere.mm.attributes.api.impl.LotNumberDateAttributeDAO;
 import org.adempiere.mm.attributes.spi.impl.WeightGrossAttributeValueCallout;
 import org.adempiere.mm.attributes.spi.impl.WeightNetAttributeValueCallout;
 import org.adempiere.mm.attributes.spi.impl.WeightTareAdjustAttributeValueCallout;
@@ -89,6 +78,7 @@ import org.eevolution.util.ProductBOMBuilder;
 import org.junit.Assert;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.dimension.model.I_DIM_Dimension_Spec;
 import de.metas.handlingunits.allocation.IAllocationDestination;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationResult;
@@ -131,6 +121,7 @@ import de.metas.handlingunits.attribute.strategy.impl.RedistributeQtyHUAttribute
 import de.metas.handlingunits.attribute.strategy.impl.SumAggregationStrategy;
 import de.metas.handlingunits.attribute.weightable.Weightables;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
+import de.metas.handlingunits.impl.ShipperTransportationRepository;
 import de.metas.handlingunits.model.I_DD_NetworkDistribution;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
@@ -161,10 +152,31 @@ import de.metas.uom.CreateUOMConversionRequest;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
+
+/*
+ * #%L
+ * de.metas.handlingunits.base
+ * %%
+ * Copyright (C) 2015 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
 
 /**
  * This class sets up basic master data like attributes and HU-items.
@@ -172,7 +184,9 @@ import lombok.NonNull;
  */
 public class HUTestHelper
 {
-	/** Creates a new instance <b>and also calls {@link AdempiereTestHelper#init()}</b> */
+	/**
+	 * Creates a new instance <b>and also calls {@link AdempiereTestHelper#init()}</b>
+	 */
 	public static HUTestHelper newInstanceOutOfTrx()
 	{
 		return new HUTestHelper()
@@ -320,6 +334,10 @@ public class HUTestHelper
 	// #653
 	public I_M_Attribute attr_LotNumber;
 
+	public I_M_Attribute attr_BestBeforeDate;
+
+	public I_M_Attribute attr_SerialNo;
+
 	/**
 	 * Mandatory in receipts
 	 */
@@ -412,7 +430,23 @@ public class HUTestHelper
 			AdempiereTestHelper.get().init();
 		}
 
+		beforeRegisteringServices();
+
 		SpringContextHolder.registerJUnitBean(new AllocationStrategyFactory(new AllocationStrategySupportingServicesFacade()));
+		SpringContextHolder.registerJUnitBean(new ShipperTransportationRepository());
+
+		final BPartnerBL bpartnerBL = new BPartnerBL(new UserRepository());
+		SpringContextHolder.registerJUnitBean(IBPartnerBL.class, bpartnerBL);
+		SpringContextHolder.registerJUnitBean(IDocumentLocationBL.class, new DocumentLocationBL(bpartnerBL));
+
+
+		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
+		dimensionFactories.add(new OrderLineDimensionFactory());
+		dimensionFactories.add(new ReceiptScheduleDimensionFactory());
+		dimensionFactories.add(new InvoiceCandidateDimensionFactory());
+		dimensionFactories.add(new InOutLineDimensionFactory());
+
+		SpringContextHolder.registerJUnitBean(new DimensionService(dimensionFactories));
 
 		ctx = Env.getCtx();
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
@@ -457,6 +491,10 @@ public class HUTestHelper
 		return this;
 	}
 
+	public void beforeRegisteringServices()
+	{
+	}
+
 	protected void afterInitialized()
 	{
 		// nothing here
@@ -497,10 +535,10 @@ public class HUTestHelper
 	 * <b>Important:</b> if you do the full monty with interceptors, then you also need to annotate the respective test class like this:
 	 *
 	 * <pre>
-	&#64;RunWith(SpringRunner.class)
-	&#64;SpringBootTest(classes= HandlingUnitsConfiguration.class)
+	 * &#64;RunWith(SpringRunner.class)
+	 * &#64;SpringBootTest(classes= HandlingUnitsConfiguration.class)
 	 * </pre>
-	 *
+	 * <p>
 	 * Otherwise, tests will probably fail due to spring application context.
 	 */
 	protected final void setupModuleInterceptors_HU_Full()
@@ -531,6 +569,7 @@ public class HUTestHelper
 	 *
 	 * @return trxName
 	 */
+	@Nullable
 	protected String createAndStartTransaction()
 	{
 		final String trxNamePrefix = "HUTest";
@@ -540,8 +579,7 @@ public class HUTestHelper
 	protected final String createAndStartTransaction(final String trxNamePrefix)
 	{
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
-		final String trxName = trxManager.createTrxName(trxNamePrefix);
-		return trxName;
+		return trxManager.createTrxName(trxNamePrefix);
 	}
 
 	protected IMutableHUContext createInitialHUContext(final IContextAware contextProvider)
@@ -614,8 +652,11 @@ public class HUTestHelper
 		attr_M_Material_Tracking_ID = attributesTestHelper.createM_Attribute(NAME_M_Material_Tracking_ID_Attribute, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, true);
 
 		attr_LotNumberDate = attributesTestHelper.createM_Attribute(HUAttributeConstants.ATTR_LotNumberDate.getCode(), X_M_Attribute.ATTRIBUTEVALUETYPE_Date, true);
+		attr_LotNumber = attributesTestHelper.createM_Attribute(AttributeConstants.ATTR_LotNumber.getCode(), X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);
+		
+		attr_BestBeforeDate = attributesTestHelper.createM_Attribute(AttributeConstants.ATTR_BestBeforeDate.getCode(), X_M_Attribute.ATTRIBUTEVALUETYPE_Date, true);
 
-		attr_LotNumber = attributesTestHelper.createM_Attribute(LotNumberDateAttributeDAO.ATTR_LotNumber.getCode(), X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);
+		attr_SerialNo = attributesTestHelper.createM_Attribute(AttributeConstants.ATTR_SerialNo.getCode(), X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);
 
 		attr_PurchaseOrderLine = attributesTestHelper.createM_Attribute(HUAttributeConstants.ATTR_PurchaseOrderLine_ID.getCode(), X_M_Attribute.ATTRIBUTEVALUETYPE_Number, true);
 		attr_ReceiptInOutLine = attributesTestHelper.createM_Attribute(HUAttributeConstants.ATTR_ReceiptInOutLine_ID.getCode(), X_M_Attribute.ATTRIBUTEVALUETYPE_Number, true);
@@ -853,6 +894,20 @@ public class HUTestHelper
 		}
 
 		{
+			final I_M_HU_PI_Attribute piAttr_BestBeforeDate = createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(attr_BestBeforeDate)
+					.setM_HU_PI(huDefNone)
+					.setPropagationType(X_M_HU_PI_Attribute.PROPAGATIONTYPE_TopDown)
+					.setSplitterStrategyClass(CopyAttributeSplitterStrategy.class)
+					.setAggregationStrategyClass(NullAggregationStrategy.class)
+					.setTransferStrategyClass(CopyHUAttributeTransferStrategy.class));
+			piAttr_BestBeforeDate.setIsReadOnly(false);
+			piAttr_BestBeforeDate.setSeqNo(piAttrSeqNo);
+			piAttr_BestBeforeDate.setUseInASI(true);
+			InterfaceWrapperHelper.save(piAttr_BestBeforeDate);
+			piAttrSeqNo += 10;
+		}
+
+		{
 			final I_M_HU_PI_Attribute piAttr_PurchaseOrderLine = createM_HU_PI_Attribute(
 					HUPIAttributeBuilder.newInstance(attr_PurchaseOrderLine)
 							.setM_HU_PI(huDefNone)
@@ -931,9 +986,6 @@ public class HUTestHelper
 
 	/**
 	 * Creates a link between given warehouse and empties warehouse
-	 *
-	 * @param warehouse
-	 * @see IHandlingUnitsBL#getEmptiesWarehouse(Properties, org.compiere.model.I_M_Warehouse, String)
 	 */
 	public void addEmptiesNetworkLine(final org.compiere.model.I_M_Warehouse warehouse)
 	{
@@ -960,7 +1012,7 @@ public class HUTestHelper
 		return createMutableHUContextForProcessing(ITrx.TRXNAME_None);
 	}
 
-	public IMutableHUContext createMutableHUContextForProcessing(final String trxName)
+	public IMutableHUContext createMutableHUContextForProcessing(@Nullable final String trxName)
 	{
 		final IContextAware contextProvider = PlainContextAware.newWithTrxName(ctx, trxName);
 		return Services.get(IHandlingUnitsBL.class).createMutableHUContextForProcessing(contextProvider);
@@ -968,8 +1020,6 @@ public class HUTestHelper
 
 	/**
 	 * Creates an {@link IMutableHUContext} based on {@link #getContextProvider()}.
-	 *
-	 * @return
 	 */
 	public IMutableHUContext createMutableHUContext()
 	{
@@ -1014,10 +1064,6 @@ public class HUTestHelper
 		final I_M_HU_PI pi = InterfaceWrapperHelper.create(ctx, I_M_HU_PI.class, ITrx.TRXNAME_None);
 		pi.setName(name);
 		InterfaceWrapperHelper.save(pi);
-
-		// // Create some several dummy versions
-		// createVersion(hu, false);
-		// createVersion(hu, false);
 
 		// Create the current version
 		final HuPackingInstructionsVersionId huPIVersionId = null;
@@ -1149,7 +1195,9 @@ public class HUTestHelper
 		return piItem;
 	}
 
-	/** @deprecated please use {@link #assignProduct(I_M_HU_PI_Item, ProductId, BigDecimal, I_C_UOM)} instead. */
+	/**
+	 * @deprecated please use {@link #assignProduct(I_M_HU_PI_Item, ProductId, BigDecimal, I_C_UOM)} instead.
+	 */
 	@Deprecated
 	public I_M_HU_PI_Item_Product assignProduct(final I_M_HU_PI_Item itemPI, final I_M_Product product, final BigDecimal capacity, final I_C_UOM uom)
 	{
@@ -1438,11 +1486,7 @@ public class HUTestHelper
 	}
 
 	/**
-	 *
-	 * @param huContextEffective
 	 * @param loadingUnitPIItem the PI item with type = HU that link's the LU's PI with the TU's PI. This methods passes it to the {@link ILUTUProducerAllocationDestination}.
-	 * @param tuPIItemProduct
-	 * @param totalQtyCU
 	 */
 	@Builder(builderMethodName = "newLUs", builderClassName = "LUsBuilder")
 	private List<I_M_HU> createLUs(
@@ -1572,7 +1616,7 @@ public class HUTestHelper
 	 * <p>
 	 * Note: this method performs the load using an {@link IHUContext} that was created with {@link #createMutableHUContextOutOfTransaction()}.
 	 *
-	 * @param producer used as the loader's {@link IAllocationDestination}
+	 * @param producer    used as the loader's {@link IAllocationDestination}
 	 * @param cuProductId
 	 * @param loadCuQty
 	 * @param loadCuUOM
@@ -1612,7 +1656,7 @@ public class HUTestHelper
 		final IAllocationRequest request = AllocationUtils.createQtyRequest(huContext0,
 				r.getCuProductId(), // product
 				Quantity.of(r.getLoadCuQty(), r.getLoadCuUOM()), // qty
-				SystemTime.asZonedDateTime());
+				de.metas.common.util.time.SystemTime.asZonedDateTime());
 
 		huLoader.load(request);
 	}
@@ -1639,13 +1683,12 @@ public class HUTestHelper
 	/**
 	 * Creates LUs with TUs and loads the products from the given {@code mtrx} into them.<br>
 	 * <b>Important:</b> only works if the given {@code huPI} has exactly one HU PI-item for the TU.
-	 *
+	 * <p>
 	 * This method contains the code that used to be in {@link IHUTrxBL} {@code transferIncomingToHUs()}.<br>
 	 * When it was there, that method was used only by test cases and also doesn't make a lot of sense for production.
 	 *
 	 * @param mtrx the load's source. Also provides the context.
 	 * @param huPI a "simple" PI that contains one HU-item which links to one child-HU PI
-	 * @return
 	 */
 	public List<I_M_HU> createHUsFromSimplePI(final I_M_Transaction mtrx, final I_M_HU_PI huPI)
 	{
@@ -1730,14 +1773,13 @@ public class HUTestHelper
 	 * {@link I_M_HU_Trx_Hdr} to document from which source items (of <code>sourceHU</code>) to which destination items (of the new HU) the qtys were moved. That trx-hdr has a one line for every
 	 * {@link de.metas.handlingunits.model.I_M_HU_Item} of the source HU and one line for
 	 *
-	 * @param sourceHUs the HUs from which the given product and qty shall be taken
-	 * @param qty the qty of <code>product</code> that shall be included in the new HU(s)
-	 * @param product the product the shall be taken out of the <code>sourceHUs</code>
+	 * @param sourceHUs       the HUs from which the given product and qty shall be taken
+	 * @param qty             the qty of <code>product</code> that shall be included in the new HU(s)
+	 * @param product         the product the shall be taken out of the <code>sourceHUs</code>
 	 * @param destinationHuPI the definition of the new HU that shall be created with the given product and qty
 	 * @return the newly created HUs that are "split off" the source HU
-	 *
 	 * @deprecated uses {@link HUProducerDestination}; deprecated for the same reasons as {@link #transferIncomingToHUs(I_M_Transaction, I_M_HU_PI)}.
-	 *             Please consider calling {@link #transferMaterialToNewHUs(List, LUTUProducerDestination, BigDecimal, I_M_Product, I_C_UOM, I_M_HU_PI)}.
+	 * Please consider calling {@link #transferMaterialToNewHUs(List, LUTUProducerDestination, BigDecimal, I_M_Product, I_C_UOM)}.
 	 */
 	@Deprecated
 	public List<I_M_HU> transferMaterialToNewHUs(final List<I_M_HU> sourceHUs, final BigDecimal qty, final I_M_Product product, final I_M_HU_PI destinationHuPI)
@@ -1764,13 +1806,8 @@ public class HUTestHelper
 	 * given source HUs need to be sufficient for the products and qtys of the transaction document. If the given source HUs contain more material than required for the transaction document, then the
 	 * rest is "left back" in the source HU(s).
 	 *
-	 * The method also creates a {@link I_M_HU_Trx_Hdr} which references the given transactionDoc. That trx-hdr has a one line for every {@link de.metas.handlingunits.model.I_M_HU_Item} of every
-	 * source HU and one line for every {@link org.compiere.model.I_M_TransactionAllocation} of the given transaction doc.
-	 *
-	 *
-	 * @param outgoingTrxDoc
+	 * @param outgoingTrx
 	 * @param sourceHUs
-	 *
 	 */
 	public void transferHUsToOutgoing(final I_M_Transaction outgoingTrx, final List<I_M_HU> sourceHUs)
 	{
@@ -1795,12 +1832,11 @@ public class HUTestHelper
 	 * This method creates one or many HU(s) and distributes the products and Qtys of the given transaction document (e.g. material receipt) among those instances' material-HU-items. The method also
 	 * creates a {@link de.metas.handlingunits.model.I_M_HU_Trx_Hdr} which references the given transactionDoc.
 	 *
-	 * @param incomingTrxDoc the material transaction (inventory, receipt etc) that document the "origin" of the products to be added to the new HU
+	 * @param mtrx the material transaction (inventory, receipt etc) that document the "origin" of the products to be added to the new HU
 	 * @param huPI
 	 * @return the newly created HUs that were created from the transaction doc.
-	 *
 	 * @deprecated this method only uses {@link HUProducerDestination} which will only create a simple plain HU. In almost every scenario that's not what you want test-wise.
-	 *             Please remove the deprecation flag and update the doc if and when a good class of testcases come up which justify having the method in this helper..
+	 * Please remove the deprecation flag and update the doc if and when a good class of testcases come up which justify having the method in this helper..
 	 */
 	@Deprecated
 	public List<I_M_HU> transferIncomingToHUs(final I_M_Transaction mtrx, final I_M_HU_PI huPI)
@@ -1831,14 +1867,11 @@ public class HUTestHelper
 	}
 
 	/**
-	 *
 	 * @param sourceHUs
 	 * @param destinationHUs
 	 * @param product
 	 * @param qty
 	 * @param uom
-	 *
-	 *
 	 */
 	public void transferMaterialToExistingHUs(final List<I_M_HU> sourceHUs, final List<I_M_HU> destinationHUs, final I_M_Product product, final BigDecimal qty, final I_C_UOM uom)
 	{
@@ -1878,17 +1911,6 @@ public class HUTestHelper
 	}
 
 	/**
-	 * @param huToSplit
-	 * @param documentLine
-	 * @param cuProductId
-	 * @param cuQty
-	 * @param cuUOM
-	 * @param cuPerTU
-	 * @param tuPerLU
-	 * @param maxLUToAllocate
-	 * @param tuPIItem
-	 * @param luPIItem
-	 *
 	 * @return HUs which were split
 	 */
 	public List<I_M_HU> splitHUs(
@@ -1947,9 +1969,6 @@ public class HUTestHelper
 
 	/**
 	 * Join given <code>tradingUnits</code> to the <code>loadingUnit</code>
-	 *
-	 * @param loadingUnit
-	 * @param tradingUnits
 	 */
 	public void joinHUs(final IHUContext huContext, final I_M_HU loadingUnit, final Collection<I_M_HU> tradingUnits)
 	{
@@ -2016,11 +2035,10 @@ public class HUTestHelper
 	 * Commits {@link #trxName} and writes the given {@code hu} as XML to std-out. The commit might break some tests.
 	 * Please only use this method temporarily to debug tests and comment it out again when the tests are fixed.
 	 *
-	 * @param hu
 	 * @deprecated please only use temporarily for debugging.
 	 */
 	@Deprecated
-	public void commitAndDumpHU(I_M_HU hu)
+	public void commitAndDumpHU(@NonNull final I_M_HU hu)
 	{
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 		if (!trxManager.isNull(trxName))
@@ -2033,11 +2051,9 @@ public class HUTestHelper
 
 	/**
 	 * Similar to {@link #commitAndDumpHU(I_M_HU)}.
-	 *
-	 * @param hus
 	 */
 	@Deprecated
-	public void commitAndDumpHUs(List<I_M_HU> hus)
+	public void commitAndDumpHUs(@NonNull final List<I_M_HU> hus)
 	{
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 		if (!trxManager.isNull(trxName))
@@ -2046,5 +2062,18 @@ public class HUTestHelper
 		}
 
 		System.out.println(HUXmlConverter.toString(HUXmlConverter.toXml("HUs", hus)));
+	}
+
+	public I_DIM_Dimension_Spec createDimensionSpec_PP_Order_ProductAttribute_To_Transfer()
+	{
+		return createDimensionSpec(HUConstants.DIM_PP_Order_ProductAttribute_To_Transfer);
+	}
+
+	public I_DIM_Dimension_Spec createDimensionSpec(final String internalName)
+	{
+		final I_DIM_Dimension_Spec dim = InterfaceWrapperHelper.newInstance(I_DIM_Dimension_Spec.class);
+		dim.setInternalName(internalName);
+		InterfaceWrapperHelper.save(dim);
+		return dim;
 	}
 }

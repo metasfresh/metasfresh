@@ -15,6 +15,8 @@ import de.metas.util.Services;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -43,7 +45,7 @@ final class ADMessageTranslatableString implements ITranslatableString
 	private final AdMessageKey adMessage;
 	private final List<Object> msgParameters;
 
-	ADMessageTranslatableString(@NonNull final AdMessageKey adMessage, final Object... msgParameters)
+	ADMessageTranslatableString(@NonNull final AdMessageKey adMessage, @Nullable final Object... msgParameters)
 	{
 		this.adMessage = adMessage;
 		if (msgParameters == null || msgParameters.length == 0)

@@ -1,21 +1,24 @@
 package de.metas.material.dispo.commons.repository.atp;
 
-import java.util.ArrayList;
-import java.util.Objects;
-import java.util.stream.Stream;
-
-import javax.annotation.Nullable;
-
 import com.google.common.annotations.VisibleForTesting;
-
 import de.metas.material.commons.attributes.AttributesKeyMatcher;
-import de.metas.material.commons.attributes.AttributesKeyPatterns;
+import de.metas.material.commons.attributes.AttributesKeyPattern;
+import de.metas.material.commons.attributes.AttributesKeyPatternsUtil;
+import de.metas.material.commons.attributes.clasifiers.BPartnerClassifier;
+import de.metas.material.commons.attributes.clasifiers.ProductClassifier;
+import de.metas.material.commons.attributes.clasifiers.WarehouseClassifier;
 import de.metas.material.event.commons.AttributesKey;
+import de.metas.product.ProductId;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Objects;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -77,7 +80,7 @@ final class AvailableToPromiseResultBucket
 		this.product = product != null ? product : ProductClassifier.any();
 		this.storageAttributesKeyMatcher = storageAttributesKeyMatcher != null
 				? storageAttributesKeyMatcher
-				: AttributesKeyPatterns.matchingAll();
+				: AttributesKeyPatternsUtil.matchingAll();
 	}
 
 	Stream<AvailableToPromiseResultGroup> buildAndStreamGroups()
@@ -85,14 +88,11 @@ final class AvailableToPromiseResultBucket
 		return groups.stream().map(AvailableToPromiseResultGroupBuilder::build);
 	}
 
-	/**
-	 * @return true if the request was added now (or in the past) to one of the bucket groups
-	 */
-	public boolean addQtyToAllMatchingGroups(@NonNull final AddToResultGroupRequest request)
+	public void addQtyToAllMatchingGroups(@NonNull final AddToResultGroupRequest request)
 	{
 		if (!isMatching(request))
 		{
-			return false;
+			return;
 		}
 
 		boolean addedToAtLeastOneGroup = false;
@@ -120,10 +120,7 @@ final class AvailableToPromiseResultBucket
 			final AttributesKey storageAttributesKey = storageAttributesKeyMatcher.toAttributeKeys(request.getStorageAttributesKey());
 			final AvailableToPromiseResultGroupBuilder group = newGroup(request, storageAttributesKey);
 			group.addQty(request);
-			addedToAtLeastOneGroup = true;
 		}
-
-		return addedToAtLeastOneGroup;
 	}
 
 	public boolean addToNewGroupIfFeasible(@NonNull final AddToResultGroupRequest request)
@@ -144,15 +141,11 @@ final class AvailableToPromiseResultBucket
 					continue;
 				}
 
-				if (group.isAlreadyIncluded(request))
-				{
-					alreadyIncludedInMatchingGroup = true;
-				}
-				else
+				if (!group.isAlreadyIncluded(request))
 				{
 					group.addQty(request);
-					alreadyIncludedInMatchingGroup = true;
 				}
+				alreadyIncludedInMatchingGroup = true;
 			}
 		}
 
@@ -161,16 +154,15 @@ final class AvailableToPromiseResultBucket
 			final AttributesKey storageAttributesKey = request.getStorageAttributesKey();
 			final AvailableToPromiseResultGroupBuilder group = newGroup(request, storageAttributesKey);
 			group.addQty(request);
-			alreadyIncludedInMatchingGroup = true;
 		}
 
-		return alreadyIncludedInMatchingGroup;
+		return true;
 	}
 
 	@VisibleForTesting
 	boolean isMatching(final AddToResultGroupRequest request)
 	{
-		if (!product.isMatching(request.getProductId()))
+		if (!product.isMatching(request.getProductId().getRepoId()))
 		{
 			return false;
 		}
@@ -241,7 +233,9 @@ final class AvailableToPromiseResultBucket
 		}
 		else
 		{
-			return requestStorageAttributesKey.contains(groupAttributesKey);
+			final AttributesKeyPattern groupAttributePattern = AttributesKeyPatternsUtil.ofAttributeKey(groupAttributesKey);
+
+			return groupAttributePattern.matches(requestStorageAttributesKey);
 		}
 	}
 
@@ -277,7 +271,7 @@ final class AvailableToPromiseResultBucket
 		final AvailableToPromiseResultGroupBuilder group = AvailableToPromiseResultGroupBuilder.builder()
 				.bpartner(bpartner)
 				.warehouse(warehouse)
-				.productId(product.getProductId())
+				.productId(ProductId.ofRepoId(product.getProductId()))
 				.storageAttributesKey(defaultAttributesKey)
 				.build();
 

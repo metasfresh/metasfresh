@@ -25,6 +25,7 @@ package de.metas.rest_api.process.response;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import de.metas.common.rest_api.v1.JsonError;
 import lombok.Builder;
 import lombok.Value;
 
@@ -39,4 +40,7 @@ public class RunProcessResponse
 
 	@JsonProperty(value = "summary")
 	String summary;
+
+	@JsonProperty(value = "errors")
+	JsonError errors;
 }

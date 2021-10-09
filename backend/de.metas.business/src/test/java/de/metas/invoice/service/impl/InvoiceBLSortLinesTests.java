@@ -1,27 +1,27 @@
 package de.metas.invoice.service.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.util.Arrays;
-import java.util.List;
-
-import org.adempiere.ad.wrapper.POJOWrapper;
-import org.adempiere.service.ClientId;
-import org.adempiere.service.ISysConfigBL;
-import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.model.I_M_InOutLine;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.adempiere.model.I_C_InvoiceLine;
+import de.metas.currency.CurrencyRepository;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.ad.wrapper.POJOWrapper;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.ISysConfigBL;
+import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_M_InOutLine;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.util.Arrays;
+import java.util.List;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class InvoiceBLSortLinesTests
 {
@@ -30,6 +30,7 @@ public class InvoiceBLSortLinesTests
 	{
 		AdempiereTestHelper.get().init();
 
+		SpringContextHolder.registerJUnitBean(new CurrencyRepository());
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 		sysConfigBL.setValue(AbstractInvoiceBL.SYSCONFIG_SortILsByShipmentLineOrders, false, ClientId.SYSTEM, OrgId.ANY);
 	}
@@ -180,7 +181,7 @@ public class InvoiceBLSortLinesTests
 	public void sortWith_SYSCONFIG_SortILsByShipmentLineOrders()
 	{
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-		sysConfigBL.setValue(AbstractInvoiceBL.SYSCONFIG_SortILsByShipmentLineOrders, true, ClientId.METASFRESH, OrgId.ANY); // configure override
+		sysConfigBL.setValue(AbstractInvoiceBL.SYSCONFIG_SortILsByShipmentLineOrders, true, ClientId.SYSTEM, OrgId.ANY);
 
 		final I_C_InvoiceLine il1 = invoiceLine().name("IL1").lineNo(10).inoutId(12).build();
 		final I_C_InvoiceLine il2 = invoiceLine().name("IL2").lineNo(9).inoutId(0).build();

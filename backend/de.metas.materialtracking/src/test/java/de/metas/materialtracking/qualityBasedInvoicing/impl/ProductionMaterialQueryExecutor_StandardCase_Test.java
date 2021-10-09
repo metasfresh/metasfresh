@@ -79,10 +79,6 @@ public class ProductionMaterialQueryExecutor_StandardCase_Test
 		AdempiereTestHelper.get().init();
 		this.context = PlainContextAware.newOutOfTrx();
 
-		// NOTE: we are running this test without any model interceptors, listeners etc.
-		// For that reason we can safely enabled strict values because we want to make sure only the values we set in Order/Order BOM Line are used.
-		POJOWrapper.setDefaultStrictValues(true);
-
 		//
 		// Create Master Data for our standard test case
 		setupMasterData();

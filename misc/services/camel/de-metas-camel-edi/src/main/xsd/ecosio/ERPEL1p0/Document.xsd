@@ -1,0 +1,3328 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ #%L
+  ~ de-metas-camel-edi
+  ~ %%
+  ~ Copyright (C) 2021 metas GmbH
+  ~ %%
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as
+  ~ published by the Free Software Foundation, either version 2 of the
+  ~ License, or (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+  ~ GNU General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU General Public
+  ~ License along with this program. If not, see
+  ~ <http://www.gnu.org/licenses/gpl-2.0.html>.
+  ~ #L%
+  -->
+
+<xs:schema xmlns="http://erpel.at/schemas/1p0/documents" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:ext="http://erpel.at/schemas/1p0/documents/ext" targetNamespace="http://erpel.at/schemas/1p0/documents" elementFormDefault="qualified" attributeFormDefault="qualified">
+	<xs:annotation>
+		<xs:documentation>
+			ERPEL Schema version: 1p0
+			last update: 2020-07-20
+			last update by: pl
+			documentation: https://docs.ecosio.com (ask contact (at) ecosio.com for access credentials)
+		</xs:documentation>
+	</xs:annotation>
+	<xs:import namespace="http://erpel.at/schemas/1p0/documents/ext" schemaLocation="ext/DocumentExtension.xsd"/>
+	<!-- === Root Element === -->
+	<xs:element name="Document" type="DocumentType">
+		<xs:annotation>
+			<xs:documentation>The ERPEL document is the payload of an ERPEL message.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<!-- === Element Declarations === -->
+	<xs:element name="AccountingArea" type="AccountingAreaType"/>
+	<xs:element name="AdditionalForecastInformation" type="AdditionalForecastInformationType"/>
+	<xs:element name="AdditionalInformation" type="AdditionalInformationType"/>
+	<xs:element name="AdditionalLineItemInformation" type="AdditionalLineItemInformationType"/>
+	<xs:element name="Address" type="AddressType"/>
+	<xs:element name="AddressExtension" type="xs:string"/>
+	<xs:element name="AlternativeQuantity" type="UnitType"/>
+	<xs:element name="Amount" type="Decimal2Type"/>
+	<xs:element name="ArticleNumber" type="ArticleNumberType"/>
+	<xs:element name="BankAccountNr" type="xs:string"/>
+	<xs:element name="BankAccountOwner" type="BankAccountOwnerType"/>
+	<xs:element name="BankCode" type="BankCodeCType"/>
+	<xs:element name="BaseAmount" type="Decimal2Type"/>
+	<xs:element name="BankName" type="BankNameType"/>
+	<xs:element name="BeneficiaryAccount" type="AccountType"/>
+	<xs:element name="BestBeforeDate" type="xs:dateTime"/>
+	<xs:element name="BIC" type="BICType"/>
+	<xs:element name="Boxes" type="xs:positiveInteger"/>
+	<xs:element name="BusinessProcessID" type="xs:string"/>
+	<xs:element name="ChargeDateOfManufacture" type="xs:date"/>
+	<xs:element name="ChargeExpirationDate" type="xs:dateTime"/>
+	<xs:element name="ChargeNumber" type="AlphaNumType"/>
+	<xs:element name="ChargeNumberExternal" type="AlphaNumType"/>
+	<xs:element name="Classification" type="ClassificationType"/>
+	<xs:element name="Color" type="xs:string"/>
+	<xs:element name="Comment" type="xs:string"/>
+	<xs:element name="Contact" type="ContactType"/>
+	<xs:element name="ConsignmentPackagingSequence" type="ConsignmentPackagingSequenceType"/>
+	<xs:element name="Country" type="CountryType"/>
+	<xs:element name="CreditorID" type="AlphaNumIDType"/>
+	<xs:element name="Customer" type="CustomerType"/>
+	<xs:element name="CustomersDocumentReference" type="DocumentReferenceType"/>
+	<xs:element name="Date" type="xs:dateTime"/>
+	<xs:element name="DebitCollectionDate" type="xs:date"/>
+	<xs:element name="DeductionQuantity" type="UnitType"/>
+	<xs:element name="Delivery" type="DeliveryType"/>
+	<xs:element name="DeliveryDateConfirmed" type="xs:dateTime"/>
+	<xs:element name="DeliveryDetails" type="DeliveryDetailsType"/>
+	<xs:element name="DeliveryID" type="AlphaNumIDType"/>
+	<xs:element name="DeliveryListLineItem" type="DeliveryListLineItemType"/>
+	<xs:element name="DeliveryRecipient" type="DeliveryRecipientType"/>
+	<xs:element name="Description" type="DescriptionType"/>
+	<xs:element name="DestinationStockGround" type="xs:string"/>
+	<xs:element name="DestinationStockLocation" type="xs:string"/>
+	<xs:element name="Details" type="DetailsType"/>
+	<xs:element name="DirectDebit" type="DirectDebitType"/>
+	<xs:element name="Discount" type="DiscountType"/>
+	<xs:element name="DiscountFlag" type="xs:boolean"/>
+	<xs:element name="DocumentDate" type="xs:dateTime"/>
+	<xs:element name="DocumentID" type="xs:string"/>
+	<xs:element name="DocumentNumber" type="AlphaNumIDType"/>
+	<xs:element name="DocumentPositionNumber" type="AlphaNumType"/>
+	<xs:element name="DocumentReference" type="DocumentReferenceType"/>
+	<xs:element name="DocumentType" type="DocumentTypeType"/>
+	<xs:element name="DomesticAmount" type="DomesticAmountType"/>
+	<xs:element name="DrawingRevisionNumber" type="xs:string"/>
+	<xs:element name="DueDate" type="xs:dateTime"/>
+	<xs:element name="Duration" type="xs:duration"/>
+	<xs:element name="EBPP_ConsolidatorsBillerID" type="AlphaNumIDType"/>
+	<xs:element name="Email" type="xs:string"/>
+	<xs:element name="EngineeringChangeNumber" type="xs:string"/>
+	<xs:element name="ExtraCharge" type="Decimal4Type"/>
+	<xs:element name="Fax" type="xs:string"/>
+	<xs:element name="Feature" type="FeatureType"/>
+	<xs:element name="ForecastListLineItem" type="ForecastListLineItemType"/>
+	<xs:element name="FooterDescription" type="xs:string"/>
+	<xs:element name="FromDate" type="xs:dateTime"/>
+	<xs:element name="FurtherIdentification" type="FurtherIdentificationType"/>
+	<xs:element name="GLN" type="GLNType"/>
+	<xs:element name="GrossWeight" type="UnitType"/>
+	<xs:element name="HeaderDescription" type="xs:string"/>
+	<xs:element name="Heigth" type="UnitType"/>
+	<xs:element name="IBAN" type="IBANType"/>
+	<xs:element name="Incoterm" type="IncotermType"/>
+	<xs:element name="Indicators" type="IndicatorsType"/>
+	<xs:element name="InvoiceRecipient" type="InvoiceRecipientType"/>
+	<xs:element name="Item" type="ItemType"/>
+	<xs:element name="ItemList" type="ItemListType"/>
+	<xs:element name="LayoutID" type="AlphaNumIDType"/>
+	<xs:element name="LastDeliveryReference" type="ForecastASNReferenceType"/>
+	<xs:element name="Length" type="UnitType"/>
+	<xs:element name="LineItemAmount" type="Decimal2Type"/>
+	<xs:element name="ListLineItem" type="ListLineItemType"/>
+	<xs:element name="ListLineItemReduction" type="ListLineItemReductionType"/>
+	<xs:element name="LogoURL" type="xs:anyURI"/>
+	<xs:element name="MandateReference" type="AlphaNumIDType"/>
+	<xs:element name="MarkingTypeCode" type="xs:string"/>
+	<xs:element name="MinimumPayment" type="Decimal2Type"/>
+	<xs:element name="ModeOfDispatch" type="xs:string"/>
+	<xs:element name="Name" type="xs:string"/>
+	<xs:element name="NameOfDriver" type="xs:string"/>
+	<xs:element name="NetWeight" type="UnitType"/>
+	<xs:element name="NoPayment" type="NoPaymentType"/>
+	<xs:element name="NumberOfPackages" type="xs:positiveInteger"/>
+	<xs:element name="OrderingParty" type="OrderingPartyType"/>
+	<xs:element name="OtherTax" type="OtherTaxType"/>
+	<xs:element name="PackagingConditionsCode" type="xs:string"/>
+	<xs:element name="PackagingDetails" type="PackagingDetailsType"/>
+	<xs:element name="PackagingDescriptionCode" type="xs:string"/>
+	<xs:element name="PackagingIdentification" type="PackagingIdentificationType"/>
+	<xs:element name="PaymentConditions" type="PaymentConditionsType"/>
+	<xs:element name="PaymentDate" type="xs:dateTime"/>
+	<xs:element name="PaymentMethod" type="PaymentMethodType"/>
+	<xs:element name="PaymentReference" type="PaymentReferenceType"/>
+	<xs:element name="Percentage" type="PercentageType"/>
+	<xs:element name="Period" type="PeriodType"/>
+	<xs:element name="Phone" type="xs:string"/>
+	<xs:element name="PlanningQuantity" type="PlanningQuantityType"/>
+	<xs:element name="POBox" type="xs:string"/>
+	<xs:element name="PositionNumber" type="xs:string"/>
+	<xs:element name="PresentationDetails" type="PresentationDetailsType"/>
+	<xs:element name="Quantity" type="UnitType"/>
+	<xs:element name="QuantityCharged" type="UnitType"/>
+	<xs:element name="QuantityFreeOfCharge" type="UnitType"/>
+	<xs:element name="QuantityPerPack" type="ConditionalUnitType"/>
+	<xs:element name="Reduction" type="ReductionAndSurchargeType"/>
+	<xs:element name="ReductionAndSurchargeDetails" type="ReductionAndSurchargeDetailsType"/>
+	<xs:element name="ReductionAndSurchargeListLineItemDetails" type="ReductionAndSurchargeListLineItemDetailsType"/>
+	<xs:element name="ReductionAmount" type="Decimal2Type"/>
+	<xs:element name="ReductionListLineItem" type="ReductionAndSurchargeBaseType"/>
+	<xs:element name="ReductionRate" type="PercentageType"/>
+	<xs:element name="ReferenceDate" type="xs:dateTime"/>
+	<xs:element name="ReferenceNumber" type="xs:string"/>
+	<xs:element name="SalesValue" type="UnitPriceType"/>
+	<xs:element name="Salutation" type="xs:string"/>
+	<xs:element name="SEPADirectDebit" type="SEPADirectDebitType"/>
+	<xs:element name="SerialNumber" type="AlphaNumType"/>
+	<xs:element name="SerialShippingContainerCode" type="SerialShippingContainerCodeType"/>
+	<xs:element name="Shipper" type="ShipperType"/>
+	<xs:element name="ShippingDate" type="xs:dateTime"/>
+	<xs:element name="ShortDescription" type="xs:string"/>
+	<xs:element name="Size" type="AlphaNumType"/>
+	<xs:element name="StockGround" type="xs:string"/>
+	<xs:element name="StockLocation" type="xs:string"/>
+	<xs:element name="Street" type="xs:string"/>
+	<xs:element name="SubOrganizationID" type="xs:string"/>
+	<xs:element name="Supplier" type="SupplierType"/>
+	<xs:element name="SupplierIDissuedByCustomer" type="AlphaNumIDType"/>
+	<xs:element name="SupplierReference" type="SupplierReferenceType"/>
+	<xs:element name="SuppliersCustomerID" type="AlphaNumIDType"/>
+	<xs:element name="SuppliersDeliveryID" type="AlphaNumIDType"/>
+	<xs:element name="SuppliersDocumentReference" type="DocumentReferenceType"/>
+	<xs:element name="SuppliersInvoiceRecipientID" type="AlphaNumIDType"/>
+	<xs:element name="SuppliersOrderingPartyID" type="AlphaNumIDType"/>
+	<xs:element name="SuppressZero" type="xs:boolean"/>
+	<xs:element name="Surcharge" type="ReductionAndSurchargeType"/>
+	<xs:element name="SurchargeListLineItem" type="ReductionAndSurchargeBaseType"/>
+	<xs:element name="TareWeight" type="UnitType"/>
+	<xs:element name="Tax" type="TaxType"/>
+	<xs:element name="TaxAmount" type="Decimal2Type"/>
+	<xs:element name="TaxedAmount" type="Decimal2Type"/>
+	<xs:element name="TaxExemption" type="xs:string"/>
+	<xs:element name="TaxRate" type="TaxRateType"/>
+	<xs:element name="ToDate" type="xs:dateTime"/>
+	<xs:element name="TotalGrossAmount" type="Decimal2Type"/>
+	<xs:element name="TotalLineItemAmount" type="Decimal2Type"/>
+	<xs:element name="TotalNetAmount" type="Decimal2Type"/>
+	<xs:element name="TotalOfReductionAndSurcharge" type="Decimal2Type"/>
+	<xs:element name="TotalReductionAndSurchargeListLineItem" type="Decimal2Type"/>
+	<xs:element name="TourNumber" type="xs:string"/>
+	<xs:element name="Town" type="xs:string"/>
+	<xs:element name="TransportDetail" type="TransportDetailType"/>
+	<xs:element name="TransportVehicleLicenseNumber" type="xs:string"/>
+	<xs:element name="Type" type="SEPADirectDebitTypeType"/>
+	<xs:element name="UnitPrice" type="UnitPriceType"/>
+	<xs:element name="UniversalBankTransaction" type="UniversalBankTransactionType"/>
+	<xs:element name="URL" type="xs:anyURI"/>
+	<xs:element name="VAT" type="VATType"/>
+	<xs:element name="VATIdentificationNumber" type="xs:string"/>
+	<xs:element name="Weight" type="UnitType"/>
+	<xs:element name="Width" type="UnitType"/>
+	<xs:element name="ZIP" type="xs:string"/>
+	<!-- === Attribute Deklarations === -->
+	<xs:attribute name="ArticleNumberType" type="ArticleNumberTypeType"/>
+	<xs:attribute name="BankCodeType" type="CountryCodeType"/>
+	<xs:attribute name="BaseQuantity" type="Decimal4Type"/>
+	<xs:attribute name="CancelledOriginalDocument" type="AlphaNumIDType"/>
+	<xs:attribute name="ClassificationSchema" type="xs:string"/>
+	<xs:attribute name="ConsolidatorPayable" type="xs:boolean"/>
+	<xs:attribute name="CountryCode" type="CountryCodeType"/>
+	<xs:attribute name="ConfirmedBySupplier" type="xs:boolean"/>
+	<xs:attribute name="Currency" type="CurrencyType"/>
+	<xs:attribute name="SupplierUnit" type="xs:string"/>
+	<xs:attribute name="DocumentCurrency" type="CurrencyType"/>
+	<xs:attribute name="DocumentTitle" type="xs:string"/>
+	<xs:attribute name="DocumentType" type="DocumentTypeType"/>
+	<xs:attribute name="GeneratingSystem" type="xs:string"/>
+	<xs:attribute name="IdentificationType" type="xs:string"/>
+	<xs:attribute name="IsGrossPrice" type="xs:boolean"/>
+	<xs:attribute name="Language" type="LanguageType"/>
+	<xs:attribute name="ManualProcessing" type="xs:boolean"/>
+	<xs:attribute name="PriceType" type="PriceTypeType"/>
+	<xs:attribute name="TaxCode" type="xs:string"/>
+	<xs:attribute name="Unit" type="xs:string"/>
+	<!-- === Group Deklarations === -->
+	<xs:group name="Custom">
+		<xs:sequence>
+			<xs:any namespace="http://www.erpel.at/documents/ext" processContents="strict"/>
+		</xs:sequence>
+	</xs:group>
+	<!-- === Simple Types === -->
+	<xs:simpleType name="AccountingAreaType">
+		<xs:restriction base="xs:string">
+			<xs:maxLength value="20"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="AlphaNumType">
+		<xs:restriction base="xs:string"/>
+	</xs:simpleType>
+	<xs:simpleType name="AlphaNumIDType">
+		<xs:restriction base="AlphaNumType">
+			<xs:maxLength value="35"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="ArticleNumberTypeType">
+		<xs:restriction base="xs:token">
+			<xs:enumeration value="PZN">
+				<xs:annotation>
+					<xs:documentation>Pharmazentralnummer - German for "central pharamaceutical number" - a unique identifier for pharmaceutical products</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="GTIN">
+				<xs:annotation>
+					<xs:documentation>GS1 Global Trade Identification Number</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="SuppliersArticleNumber">
+				<xs:annotation>
+					<xs:documentation>Article number used by the supplier</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="CustomersArticleNumber">
+				<xs:annotation>
+					<xs:documentation>Article number used by the customer</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="UltimateCustomersArticleNumber">
+				<xs:annotation>
+					<xs:documentation>The product number of the final (ultimate) customer.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="ManufacturersArticleNumber">
+				<xs:annotation>
+					<xs:documentation>Article number used by the manufacturer.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="UPC">
+				<xs:annotation>
+					<xs:documentation>The Universal Product Code - typcially the coded printed below the bar code.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="BankAccountOwnerType">
+		<xs:restriction base="xs:string">
+			<xs:maxLength value="70"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="BankNameType">
+		<xs:restriction base="xs:string">
+			<xs:maxLength value="255"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<!-- BICs either have 8  or 11 characters (ISO 9362) -->
+	<xs:simpleType name="BICType">
+		<xs:restriction base="xs:string">
+			<xs:pattern value="[0-9A-Za-z]{8}([0-9A-Za-z]{3})?"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<!-- Country Codes accordyng to ISO 3166-1 -->
+	<xs:simpleType name="CountryCodeType">
+		<xs:restriction base="xs:token">
+			<xs:enumeration value="AF"/>
+			<xs:enumeration value="AL"/>
+			<xs:enumeration value="DZ"/>
+			<xs:enumeration value="AS"/>
+			<xs:enumeration value="AD"/>
+			<xs:enumeration value="AO"/>
+			<xs:enumeration value="AI"/>
+			<xs:enumeration value="AQ"/>
+			<xs:enumeration value="AG"/>
+			<xs:enumeration value="AR"/>
+			<xs:enumeration value="AM"/>
+			<xs:enumeration value="AW"/>
+			<xs:enumeration value="AU"/>
+			<xs:enumeration value="AT"/>
+			<xs:enumeration value="AZ"/>
+			<xs:enumeration value="BS"/>
+			<xs:enumeration value="BH"/>
+			<xs:enumeration value="BD"/>
+			<xs:enumeration value="BB"/>
+			<xs:enumeration value="BY"/>
+			<xs:enumeration value="BE"/>
+			<xs:enumeration value="BZ"/>
+			<xs:enumeration value="BJ"/>
+			<xs:enumeration value="BM"/>
+			<xs:enumeration value="BT"/>
+			<xs:enumeration value="BO"/>
+			<xs:enumeration value="BA"/>
+			<xs:enumeration value="BW"/>
+			<xs:enumeration value="BV"/>
+			<xs:enumeration value="BR"/>
+			<xs:enumeration value="IO"/>
+			<xs:enumeration value="BN"/>
+			<xs:enumeration value="BG"/>
+			<xs:enumeration value="BF"/>
+			<xs:enumeration value="BI"/>
+			<xs:enumeration value="KH"/>
+			<xs:enumeration value="CM"/>
+			<xs:enumeration value="CA"/>
+			<xs:enumeration value="CV"/>
+			<xs:enumeration value="KY"/>
+			<xs:enumeration value="CF"/>
+			<xs:enumeration value="TD"/>
+			<xs:enumeration value="CL"/>
+			<xs:enumeration value="CN"/>
+			<xs:enumeration value="CX"/>
+			<xs:enumeration value="CC"/>
+			<xs:enumeration value="CO"/>
+			<xs:enumeration value="KM"/>
+			<xs:enumeration value="CG"/>
+			<xs:enumeration value="CD"/>
+			<xs:enumeration value="CK"/>
+			<xs:enumeration value="CR"/>
+			<xs:enumeration value="CI"/>
+			<xs:enumeration value="HR"/>
+			<xs:enumeration value="CU"/>
+			<xs:enumeration value="CY"/>
+			<xs:enumeration value="CZ"/>
+			<xs:enumeration value="DK"/>
+			<xs:enumeration value="DJ"/>
+			<xs:enumeration value="DM"/>
+			<xs:enumeration value="DO"/>
+			<xs:enumeration value="TP"/>
+			<xs:enumeration value="EC"/>
+			<xs:enumeration value="EG"/>
+			<xs:enumeration value="SV"/>
+			<xs:enumeration value="GQ"/>
+			<xs:enumeration value="ER"/>
+			<xs:enumeration value="EE"/>
+			<xs:enumeration value="ET"/>
+			<xs:enumeration value="FK"/>
+			<xs:enumeration value="FO"/>
+			<xs:enumeration value="FJ"/>
+			<xs:enumeration value="FI"/>
+			<xs:enumeration value="FR"/>
+			<xs:enumeration value="GF"/>
+			<xs:enumeration value="PF"/>
+			<xs:enumeration value="TF"/>
+			<xs:enumeration value="GA"/>
+			<xs:enumeration value="GM"/>
+			<xs:enumeration value="GE"/>
+			<xs:enumeration value="DE"/>
+			<xs:enumeration value="GH"/>
+			<xs:enumeration value="GI"/>
+			<xs:enumeration value="GR"/>
+			<xs:enumeration value="GL"/>
+			<xs:enumeration value="GD"/>
+			<xs:enumeration value="GP"/>
+			<xs:enumeration value="GU"/>
+			<xs:enumeration value="GT"/>
+			<xs:enumeration value="GN"/>
+			<xs:enumeration value="GW"/>
+			<xs:enumeration value="GY"/>
+			<xs:enumeration value="HT"/>
+			<xs:enumeration value="HM"/>
+			<xs:enumeration value="VA"/>
+			<xs:enumeration value="HN"/>
+			<xs:enumeration value="HK"/>
+			<xs:enumeration value="HU"/>
+			<xs:enumeration value="IS"/>
+			<xs:enumeration value="IN"/>
+			<xs:enumeration value="ID"/>
+			<xs:enumeration value="IR"/>
+			<xs:enumeration value="IQ"/>
+			<xs:enumeration value="IE"/>
+			<xs:enumeration value="IL"/>
+			<xs:enumeration value="IT"/>
+			<xs:enumeration value="JM"/>
+			<xs:enumeration value="JP"/>
+			<xs:enumeration value="JO"/>
+			<xs:enumeration value="KZ"/>
+			<xs:enumeration value="KE"/>
+			<xs:enumeration value="KI"/>
+			<xs:enumeration value="KP"/>
+			<xs:enumeration value="KR"/>
+			<xs:enumeration value="KW"/>
+			<xs:enumeration value="KG"/>
+			<xs:enumeration value="LA"/>
+			<xs:enumeration value="LV"/>
+			<xs:enumeration value="LB"/>
+			<xs:enumeration value="LS"/>
+			<xs:enumeration value="LR"/>
+			<xs:enumeration value="LY"/>
+			<xs:enumeration value="LI"/>
+			<xs:enumeration value="LT"/>
+			<xs:enumeration value="LU"/>
+			<xs:enumeration value="MO"/>
+			<xs:enumeration value="MK"/>
+			<xs:enumeration value="MG"/>
+			<xs:enumeration value="MW"/>
+			<xs:enumeration value="MY"/>
+			<xs:enumeration value="MV"/>
+			<xs:enumeration value="ML"/>
+			<xs:enumeration value="MT"/>
+			<xs:enumeration value="MH"/>
+			<xs:enumeration value="MQ"/>
+			<xs:enumeration value="MR"/>
+			<xs:enumeration value="MU"/>
+			<xs:enumeration value="YT"/>
+			<xs:enumeration value="MX"/>
+			<xs:enumeration value="FM"/>
+			<xs:enumeration value="MD"/>
+			<xs:enumeration value="MC"/>
+			<xs:enumeration value="MN"/>
+			<xs:enumeration value="MS"/>
+			<xs:enumeration value="MA"/>
+			<xs:enumeration value="MZ"/>
+			<xs:enumeration value="MM"/>
+			<xs:enumeration value="NA"/>
+			<xs:enumeration value="NR"/>
+			<xs:enumeration value="NP"/>
+			<xs:enumeration value="NL"/>
+			<xs:enumeration value="AN"/>
+			<xs:enumeration value="NC"/>
+			<xs:enumeration value="NZ"/>
+			<xs:enumeration value="NI"/>
+			<xs:enumeration value="NE"/>
+			<xs:enumeration value="NG"/>
+			<xs:enumeration value="NU"/>
+			<xs:enumeration value="NF"/>
+			<xs:enumeration value="MP"/>
+			<xs:enumeration value="NO"/>
+			<xs:enumeration value="OM"/>
+			<xs:enumeration value="PK"/>
+			<xs:enumeration value="PW"/>
+			<xs:enumeration value="PS"/>
+			<xs:enumeration value="PA"/>
+			<xs:enumeration value="PG"/>
+			<xs:enumeration value="PY"/>
+			<xs:enumeration value="PE"/>
+			<xs:enumeration value="PH"/>
+			<xs:enumeration value="PN"/>
+			<xs:enumeration value="PL"/>
+			<xs:enumeration value="PT"/>
+			<xs:enumeration value="PR"/>
+			<xs:enumeration value="QA"/>
+			<xs:enumeration value="RE"/>
+			<xs:enumeration value="RO"/>
+			<xs:enumeration value="RU"/>
+			<xs:enumeration value="RW"/>
+			<xs:enumeration value="SH"/>
+			<xs:enumeration value="KN"/>
+			<xs:enumeration value="LC"/>
+			<xs:enumeration value="PM"/>
+			<xs:enumeration value="VC"/>
+			<xs:enumeration value="WS"/>
+			<xs:enumeration value="SM"/>
+			<xs:enumeration value="ST"/>
+			<xs:enumeration value="SA"/>
+			<xs:enumeration value="SN"/>
+			<xs:enumeration value="SC"/>
+			<xs:enumeration value="SL"/>
+			<xs:enumeration value="SG"/>
+			<xs:enumeration value="SK"/>
+			<xs:enumeration value="SI"/>
+			<xs:enumeration value="SB"/>
+			<xs:enumeration value="SO"/>
+			<xs:enumeration value="ZA"/>
+			<xs:enumeration value="GS"/>
+			<xs:enumeration value="ES"/>
+			<xs:enumeration value="LK"/>
+			<xs:enumeration value="SD"/>
+			<xs:enumeration value="SR"/>
+			<xs:enumeration value="RS"/>
+			<xs:enumeration value="SJ"/>
+			<xs:enumeration value="SZ"/>
+			<xs:enumeration value="SE"/>
+			<xs:enumeration value="CH"/>
+			<xs:enumeration value="SY"/>
+			<xs:enumeration value="TW"/>
+			<xs:enumeration value="TJ"/>
+			<xs:enumeration value="TZ"/>
+			<xs:enumeration value="TH"/>
+			<xs:enumeration value="TG"/>
+			<xs:enumeration value="TK"/>
+			<xs:enumeration value="TO"/>
+			<xs:enumeration value="TT"/>
+			<xs:enumeration value="TN"/>
+			<xs:enumeration value="TR"/>
+			<xs:enumeration value="TM"/>
+			<xs:enumeration value="TC"/>
+			<xs:enumeration value="TV"/>
+			<xs:enumeration value="UG"/>
+			<xs:enumeration value="UA"/>
+			<xs:enumeration value="AE"/>
+			<xs:enumeration value="GB"/>
+			<xs:enumeration value="US"/>
+			<xs:enumeration value="UM"/>
+			<xs:enumeration value="UY"/>
+			<xs:enumeration value="UZ"/>
+			<xs:enumeration value="VU"/>
+			<xs:enumeration value="VE"/>
+			<xs:enumeration value="VN"/>
+			<xs:enumeration value="VG"/>
+			<xs:enumeration value="VI"/>
+			<xs:enumeration value="WF"/>
+			<xs:enumeration value="EH"/>
+			<xs:enumeration value="XS"/>
+			<xs:enumeration value="YE"/>
+			<xs:enumeration value="YU"/>
+			<xs:enumeration value="ZM"/>
+			<xs:enumeration value="ZW"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<!-- Currency Codes according ISO 4217 -->
+	<xs:simpleType name="CurrencyType">
+		<xs:restriction base="xs:token">
+			<xs:enumeration value="AFA"/>
+			<xs:enumeration value="ALL"/>
+			<xs:enumeration value="DZD"/>
+			<xs:enumeration value="ADP"/>
+			<xs:enumeration value="AOA"/>
+			<xs:enumeration value="ARS"/>
+			<xs:enumeration value="AMD"/>
+			<xs:enumeration value="AWG"/>
+			<xs:enumeration value="AZM"/>
+			<xs:enumeration value="BSD"/>
+			<xs:enumeration value="BHD"/>
+			<xs:enumeration value="BDT"/>
+			<xs:enumeration value="BBD"/>
+			<xs:enumeration value="BYR"/>
+			<xs:enumeration value="BZD"/>
+			<xs:enumeration value="BMD"/>
+			<xs:enumeration value="BTN"/>
+			<xs:enumeration value="INR"/>
+			<xs:enumeration value="BOV"/>
+			<xs:enumeration value="BOB"/>
+			<xs:enumeration value="BAM"/>
+			<xs:enumeration value="BWP"/>
+			<xs:enumeration value="BRL"/>
+			<xs:enumeration value="BND"/>
+			<xs:enumeration value="BGL"/>
+			<xs:enumeration value="BGN"/>
+			<xs:enumeration value="BIF"/>
+			<xs:enumeration value="KHR"/>
+			<xs:enumeration value="CAD"/>
+			<xs:enumeration value="CVE"/>
+			<xs:enumeration value="KYD"/>
+			<xs:enumeration value="XAF"/>
+			<xs:enumeration value="CLF"/>
+			<xs:enumeration value="CLP"/>
+			<xs:enumeration value="CNY"/>
+			<xs:enumeration value="COP"/>
+			<xs:enumeration value="KMF"/>
+			<xs:enumeration value="CDF"/>
+			<xs:enumeration value="CRC"/>
+			<xs:enumeration value="HRK"/>
+			<xs:enumeration value="CUP"/>
+			<xs:enumeration value="CYP"/>
+			<xs:enumeration value="CZK"/>
+			<xs:enumeration value="DKK"/>
+			<xs:enumeration value="DJF"/>
+			<xs:enumeration value="DOP"/>
+			<xs:enumeration value="TPE"/>
+			<xs:enumeration value="ECV"/>
+			<xs:enumeration value="ECS"/>
+			<xs:enumeration value="EGP"/>
+			<xs:enumeration value="SVC"/>
+			<xs:enumeration value="ERN"/>
+			<xs:enumeration value="EEK"/>
+			<xs:enumeration value="ETB"/>
+			<xs:enumeration value="FKP"/>
+			<xs:enumeration value="FJD"/>
+			<xs:enumeration value="GMD"/>
+			<xs:enumeration value="GEL"/>
+			<xs:enumeration value="GHC"/>
+			<xs:enumeration value="GIP"/>
+			<xs:enumeration value="GTQ"/>
+			<xs:enumeration value="GNF"/>
+			<xs:enumeration value="GWP"/>
+			<xs:enumeration value="GYD"/>
+			<xs:enumeration value="HTG"/>
+			<xs:enumeration value="HNL"/>
+			<xs:enumeration value="HKD"/>
+			<xs:enumeration value="HUF"/>
+			<xs:enumeration value="ISK"/>
+			<xs:enumeration value="IDR"/>
+			<xs:enumeration value="IRR"/>
+			<xs:enumeration value="IQD"/>
+			<xs:enumeration value="ILS"/>
+			<xs:enumeration value="JMD"/>
+			<xs:enumeration value="JPY"/>
+			<xs:enumeration value="JOD"/>
+			<xs:enumeration value="KZT"/>
+			<xs:enumeration value="KES"/>
+			<xs:enumeration value="AUD"/>
+			<xs:enumeration value="KPW"/>
+			<xs:enumeration value="KRW"/>
+			<xs:enumeration value="KWD"/>
+			<xs:enumeration value="KGS"/>
+			<xs:enumeration value="LAK"/>
+			<xs:enumeration value="LVL"/>
+			<xs:enumeration value="LBP"/>
+			<xs:enumeration value="LSL"/>
+			<xs:enumeration value="LRD"/>
+			<xs:enumeration value="LYD"/>
+			<xs:enumeration value="CHF"/>
+			<xs:enumeration value="LTL"/>
+			<xs:enumeration value="MOP"/>
+			<xs:enumeration value="MKD"/>
+			<xs:enumeration value="MGF"/>
+			<xs:enumeration value="MWK"/>
+			<xs:enumeration value="MYR"/>
+			<xs:enumeration value="MVR"/>
+			<xs:enumeration value="MTL"/>
+			<xs:enumeration value="EUR"/>
+			<xs:enumeration value="MRO"/>
+			<xs:enumeration value="MUR"/>
+			<xs:enumeration value="MXN"/>
+			<xs:enumeration value="MXV"/>
+			<xs:enumeration value="MDL"/>
+			<xs:enumeration value="MNT"/>
+			<xs:enumeration value="XCD"/>
+			<xs:enumeration value="MZM"/>
+			<xs:enumeration value="MMK"/>
+			<xs:enumeration value="ZAR"/>
+			<xs:enumeration value="NAD"/>
+			<xs:enumeration value="NPR"/>
+			<xs:enumeration value="ANG"/>
+			<xs:enumeration value="XPF"/>
+			<xs:enumeration value="NZD"/>
+			<xs:enumeration value="NIO"/>
+			<xs:enumeration value="NGN"/>
+			<xs:enumeration value="NOK"/>
+			<xs:enumeration value="OMR"/>
+			<xs:enumeration value="PKR"/>
+			<xs:enumeration value="PAB"/>
+			<xs:enumeration value="PGK"/>
+			<xs:enumeration value="PYG"/>
+			<xs:enumeration value="PEN"/>
+			<xs:enumeration value="PHP"/>
+			<xs:enumeration value="PLN"/>
+			<xs:enumeration value="USD"/>
+			<xs:enumeration value="QAR"/>
+			<xs:enumeration value="ROL"/>
+			<xs:enumeration value="RUB"/>
+			<xs:enumeration value="RUR"/>
+			<xs:enumeration value="RWF"/>
+			<xs:enumeration value="SHP"/>
+			<xs:enumeration value="WST"/>
+			<xs:enumeration value="STD"/>
+			<xs:enumeration value="SAR"/>
+			<xs:enumeration value="SCR"/>
+			<xs:enumeration value="SLL"/>
+			<xs:enumeration value="SGD"/>
+			<xs:enumeration value="SKK"/>
+			<xs:enumeration value="SIT"/>
+			<xs:enumeration value="SBD"/>
+			<xs:enumeration value="SOS"/>
+			<xs:enumeration value="LKR"/>
+			<xs:enumeration value="SDD"/>
+			<xs:enumeration value="SRG"/>
+			<xs:enumeration value="SZL"/>
+			<xs:enumeration value="SEK"/>
+			<xs:enumeration value="SYP"/>
+			<xs:enumeration value="TWD"/>
+			<xs:enumeration value="TJS"/>
+			<xs:enumeration value="TZS"/>
+			<xs:enumeration value="THB"/>
+			<xs:enumeration value="XOF"/>
+			<xs:enumeration value="TOP"/>
+			<xs:enumeration value="TTD"/>
+			<xs:enumeration value="TND"/>
+			<xs:enumeration value="TRL"/>
+			<xs:enumeration value="TMM"/>
+			<xs:enumeration value="UGX"/>
+			<xs:enumeration value="UAH"/>
+			<xs:enumeration value="AED"/>
+			<xs:enumeration value="GBP"/>
+			<xs:enumeration value="USS"/>
+			<xs:enumeration value="USN"/>
+			<xs:enumeration value="UYU"/>
+			<xs:enumeration value="UZS"/>
+			<xs:enumeration value="VUV"/>
+			<xs:enumeration value="VEB"/>
+			<xs:enumeration value="VND"/>
+			<xs:enumeration value="MAD"/>
+			<xs:enumeration value="YER"/>
+			<xs:enumeration value="YUM"/>
+			<xs:enumeration value="ZMK"/>
+			<xs:enumeration value="ZWD"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="Decimal2Type">
+		<xs:restriction base="xs:decimal">
+			<xs:fractionDigits value="2"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="Decimal4Type">
+		<xs:restriction base="xs:decimal">
+			<xs:fractionDigits value="4"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="DocumentTypeType">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="CallOff"/>
+			<xs:enumeration value="Cheque"/>
+			<xs:enumeration value="CommercialDispute"/>
+			<xs:enumeration value="ContractReference"/>
+			<xs:enumeration value="Contrl"/>
+			<xs:enumeration value="DebitNote"/>
+			<xs:enumeration value="DebitNoteForFinancialAdjustment"/>
+			<xs:enumeration value="DeliveryForecast"/>
+			<xs:enumeration value="DeliveryJIT"/>
+			<xs:enumeration value="DispatchAdvice"/>
+			<xs:enumeration value="DocumentReference"/>
+			<xs:enumeration value="FactoredInvoice"/>
+			<xs:enumeration value="GeneralPurposeMessage"/>
+			<xs:enumeration value="InventoryReport"/>
+			<xs:enumeration value="Invoice"/>
+			<xs:enumeration value="InvoiceCreditMemo"/>
+			<xs:enumeration value="InvoiceFinalSettlement"/>
+			<xs:enumeration value="InvoiceForAdvancePayment"/>
+			<xs:enumeration value="InvoiceForPartialDelivery"/>
+			<xs:enumeration value="InvoiceList"/>
+			<xs:enumeration value="InvoiceProForma"/>
+			<xs:enumeration value="InvoiceSelfBilling"/>
+			<xs:enumeration value="InvoiceSubsequentCredit"/>
+			<xs:enumeration value="InvoiceSubsequentDebit"/>
+			<xs:enumeration value="Offer"/>
+			<xs:enumeration value="Order"/>
+			<xs:enumeration value="OrderChange"/>
+			<xs:enumeration value="OrderConfirmation"/>
+			<xs:enumeration value="PaymentOrder"/>
+			<xs:enumeration value="PreviousCallOff"/>
+			<xs:enumeration value="PriceCatalogue"/>
+			<xs:enumeration value="Project"/>
+			<xs:enumeration value="ReceiptAdvice"/>
+			<xs:enumeration value="RemittanceAdvice"/>
+			<xs:enumeration value="RequestForQuote"/>
+			<xs:enumeration value="RequestNumber"/>
+			<xs:enumeration value="ReturnDelivery"/>
+			<xs:enumeration value="SalesReport"/>
+			<xs:enumeration value="TransportInstruction"/>
+			<xs:enumeration value="TransportStatus"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="GLNType">
+		<xs:restriction base="xs:string">
+			<xs:maxLength value="13"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<!-- ISO 13616 und EBS-Standard (European Banking Standard):
+        max. 34 Stellen, alphanummerisch -->
+	<xs:simpleType name="IBANType">
+		<xs:restriction base="xs:string">
+			<xs:maxLength value="34"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="IntegerAccountType">
+		<xs:restriction base="xs:integer">
+			<xs:maxInclusive value="99999999999"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<!-- Language Codes according to ISO 639-2 -->
+	<xs:simpleType name="LanguageType">
+		<xs:restriction base="xs:token">
+			<xs:enumeration value="aar"/>
+			<xs:enumeration value="abk"/>
+			<xs:enumeration value="ace"/>
+			<xs:enumeration value="ach"/>
+			<xs:enumeration value="ada"/>
+			<xs:enumeration value="ady"/>
+			<xs:enumeration value="afa"/>
+			<xs:enumeration value="afh"/>
+			<xs:enumeration value="afr"/>
+			<xs:enumeration value="aka"/>
+			<xs:enumeration value="akk"/>
+			<xs:enumeration value="alb"/>
+			<xs:enumeration value="sqi"/>
+			<xs:enumeration value="ale"/>
+			<xs:enumeration value="alg"/>
+			<xs:enumeration value="amh"/>
+			<xs:enumeration value="ang"/>
+			<xs:enumeration value="apa"/>
+			<xs:enumeration value="ara"/>
+			<xs:enumeration value="arc"/>
+			<xs:enumeration value="arg"/>
+			<xs:enumeration value="arm"/>
+			<xs:enumeration value="hye"/>
+			<xs:enumeration value="arn"/>
+			<xs:enumeration value="arp"/>
+			<xs:enumeration value="art"/>
+			<xs:enumeration value="arw"/>
+			<xs:enumeration value="asm"/>
+			<xs:enumeration value="ast"/>
+			<xs:enumeration value="ath"/>
+			<xs:enumeration value="aus"/>
+			<xs:enumeration value="ava"/>
+			<xs:enumeration value="ave"/>
+			<xs:enumeration value="awa"/>
+			<xs:enumeration value="aym"/>
+			<xs:enumeration value="aze"/>
+			<xs:enumeration value="bad"/>
+			<xs:enumeration value="bai"/>
+			<xs:enumeration value="bak"/>
+			<xs:enumeration value="bal"/>
+			<xs:enumeration value="bam"/>
+			<xs:enumeration value="ban"/>
+			<xs:enumeration value="baq"/>
+			<xs:enumeration value="eus"/>
+			<xs:enumeration value="bas"/>
+			<xs:enumeration value="bat"/>
+			<xs:enumeration value="bej"/>
+			<xs:enumeration value="bem"/>
+			<xs:enumeration value="ben"/>
+			<xs:enumeration value="ber"/>
+			<xs:enumeration value="bho"/>
+			<xs:enumeration value="bih"/>
+			<xs:enumeration value="bik"/>
+			<xs:enumeration value="bin"/>
+			<xs:enumeration value="bis"/>
+			<xs:enumeration value="bla"/>
+			<xs:enumeration value="bnt"/>
+			<xs:enumeration value="bos"/>
+			<xs:enumeration value="bra"/>
+			<xs:enumeration value="bre"/>
+			<xs:enumeration value="btk"/>
+			<xs:enumeration value="bua"/>
+			<xs:enumeration value="bug"/>
+			<xs:enumeration value="bul"/>
+			<xs:enumeration value="bur"/>
+			<xs:enumeration value="mya"/>
+			<xs:enumeration value="byn"/>
+			<xs:enumeration value="cad"/>
+			<xs:enumeration value="cai"/>
+			<xs:enumeration value="car"/>
+			<xs:enumeration value="cat"/>
+			<xs:enumeration value="cau"/>
+			<xs:enumeration value="ceb"/>
+			<xs:enumeration value="cel"/>
+			<xs:enumeration value="cha"/>
+			<xs:enumeration value="chb"/>
+			<xs:enumeration value="che"/>
+			<xs:enumeration value="chg"/>
+			<xs:enumeration value="chi"/>
+			<xs:enumeration value="zho"/>
+			<xs:enumeration value="chk"/>
+			<xs:enumeration value="chm"/>
+			<xs:enumeration value="chn"/>
+			<xs:enumeration value="cho"/>
+			<xs:enumeration value="chp"/>
+			<xs:enumeration value="chr"/>
+			<xs:enumeration value="chu"/>
+			<xs:enumeration value="chv"/>
+			<xs:enumeration value="chy"/>
+			<xs:enumeration value="cmc"/>
+			<xs:enumeration value="cop"/>
+			<xs:enumeration value="cor"/>
+			<xs:enumeration value="cos"/>
+			<xs:enumeration value="cpe"/>
+			<xs:enumeration value="cpf"/>
+			<xs:enumeration value="cpp"/>
+			<xs:enumeration value="cre"/>
+			<xs:enumeration value="crh"/>
+			<xs:enumeration value="crp"/>
+			<xs:enumeration value="csb"/>
+			<xs:enumeration value="cus"/>
+			<xs:enumeration value="cze"/>
+			<xs:enumeration value="ces"/>
+			<xs:enumeration value="dak"/>
+			<xs:enumeration value="dan"/>
+			<xs:enumeration value="dar"/>
+			<xs:enumeration value="day"/>
+			<xs:enumeration value="del"/>
+			<xs:enumeration value="den"/>
+			<xs:enumeration value="dgr"/>
+			<xs:enumeration value="din"/>
+			<xs:enumeration value="div"/>
+			<xs:enumeration value="doi"/>
+			<xs:enumeration value="dra"/>
+			<xs:enumeration value="dsb"/>
+			<xs:enumeration value="dua"/>
+			<xs:enumeration value="dum"/>
+			<xs:enumeration value="dut"/>
+			<xs:enumeration value="nld"/>
+			<xs:enumeration value="dyu"/>
+			<xs:enumeration value="dzo"/>
+			<xs:enumeration value="efi"/>
+			<xs:enumeration value="egy"/>
+			<xs:enumeration value="eka"/>
+			<xs:enumeration value="elx"/>
+			<xs:enumeration value="eng"/>
+			<xs:enumeration value="enm"/>
+			<xs:enumeration value="epo"/>
+			<xs:enumeration value="est"/>
+			<xs:enumeration value="ewe"/>
+			<xs:enumeration value="ewo"/>
+			<xs:enumeration value="fan"/>
+			<xs:enumeration value="fao"/>
+			<xs:enumeration value="fat"/>
+			<xs:enumeration value="fij"/>
+			<xs:enumeration value="fil"/>
+			<xs:enumeration value="fin"/>
+			<xs:enumeration value="fiu"/>
+			<xs:enumeration value="fon"/>
+			<xs:enumeration value="fre"/>
+			<xs:enumeration value="fra"/>
+			<xs:enumeration value="frm"/>
+			<xs:enumeration value="fro"/>
+			<xs:enumeration value="fry"/>
+			<xs:enumeration value="ful"/>
+			<xs:enumeration value="fur"/>
+			<xs:enumeration value="gaa"/>
+			<xs:enumeration value="gay"/>
+			<xs:enumeration value="gba"/>
+			<xs:enumeration value="gem"/>
+			<xs:enumeration value="geo"/>
+			<xs:enumeration value="kat"/>
+			<xs:enumeration value="ger"/>
+			<xs:enumeration value="deu"/>
+			<xs:enumeration value="gez"/>
+			<xs:enumeration value="gil"/>
+			<xs:enumeration value="gla"/>
+			<xs:enumeration value="gle"/>
+			<xs:enumeration value="glg"/>
+			<xs:enumeration value="glv"/>
+			<xs:enumeration value="gmh"/>
+			<xs:enumeration value="goh"/>
+			<xs:enumeration value="gon"/>
+			<xs:enumeration value="gor"/>
+			<xs:enumeration value="got"/>
+			<xs:enumeration value="grb"/>
+			<xs:enumeration value="grc"/>
+			<xs:enumeration value="gre"/>
+			<xs:enumeration value="ell"/>
+			<xs:enumeration value="grn"/>
+			<xs:enumeration value="guj"/>
+			<xs:enumeration value="gwi"/>
+			<xs:enumeration value="hai"/>
+			<xs:enumeration value="hat"/>
+			<xs:enumeration value="hau"/>
+			<xs:enumeration value="haw"/>
+			<xs:enumeration value="heb"/>
+			<xs:enumeration value="her"/>
+			<xs:enumeration value="hil"/>
+			<xs:enumeration value="him"/>
+			<xs:enumeration value="hin"/>
+			<xs:enumeration value="hit"/>
+			<xs:enumeration value="hmn"/>
+			<xs:enumeration value="hmo"/>
+			<xs:enumeration value="hsb"/>
+			<xs:enumeration value="hun"/>
+			<xs:enumeration value="hup"/>
+			<xs:enumeration value="iba"/>
+			<xs:enumeration value="ibo"/>
+			<xs:enumeration value="ice"/>
+			<xs:enumeration value="isl"/>
+			<xs:enumeration value="ido"/>
+			<xs:enumeration value="iii"/>
+			<xs:enumeration value="ijo"/>
+			<xs:enumeration value="iku"/>
+			<xs:enumeration value="ile"/>
+			<xs:enumeration value="ilo"/>
+			<xs:enumeration value="ina"/>
+			<xs:enumeration value="inc"/>
+			<xs:enumeration value="ind"/>
+			<xs:enumeration value="ine"/>
+			<xs:enumeration value="inh"/>
+			<xs:enumeration value="ipk"/>
+			<xs:enumeration value="ira"/>
+			<xs:enumeration value="iro"/>
+			<xs:enumeration value="ita"/>
+			<xs:enumeration value="jbo"/>
+			<xs:enumeration value="jav"/>
+			<xs:enumeration value="jpn"/>
+			<xs:enumeration value="jpr"/>
+			<xs:enumeration value="jrb"/>
+			<xs:enumeration value="kaa"/>
+			<xs:enumeration value="kab"/>
+			<xs:enumeration value="kac"/>
+			<xs:enumeration value="kal"/>
+			<xs:enumeration value="kam"/>
+			<xs:enumeration value="kan"/>
+			<xs:enumeration value="kar"/>
+			<xs:enumeration value="kas"/>
+			<xs:enumeration value="kau"/>
+			<xs:enumeration value="kaw"/>
+			<xs:enumeration value="kaz"/>
+			<xs:enumeration value="kbd"/>
+			<xs:enumeration value="kha"/>
+			<xs:enumeration value="khi"/>
+			<xs:enumeration value="khm"/>
+			<xs:enumeration value="kho"/>
+			<xs:enumeration value="kik"/>
+			<xs:enumeration value="kin"/>
+			<xs:enumeration value="kir"/>
+			<xs:enumeration value="kmb"/>
+			<xs:enumeration value="kok"/>
+			<xs:enumeration value="kom"/>
+			<xs:enumeration value="kon"/>
+			<xs:enumeration value="kor"/>
+			<xs:enumeration value="kos"/>
+			<xs:enumeration value="kpe"/>
+			<xs:enumeration value="krc"/>
+			<xs:enumeration value="kro"/>
+			<xs:enumeration value="kru"/>
+			<xs:enumeration value="kua"/>
+			<xs:enumeration value="kum"/>
+			<xs:enumeration value="kur"/>
+			<xs:enumeration value="kut"/>
+			<xs:enumeration value="lad"/>
+			<xs:enumeration value="lah"/>
+			<xs:enumeration value="lam"/>
+			<xs:enumeration value="lao"/>
+			<xs:enumeration value="lat"/>
+			<xs:enumeration value="lav"/>
+			<xs:enumeration value="lez"/>
+			<xs:enumeration value="lim"/>
+			<xs:enumeration value="lin"/>
+			<xs:enumeration value="lit"/>
+			<xs:enumeration value="lol"/>
+			<xs:enumeration value="loz"/>
+			<xs:enumeration value="ltz"/>
+			<xs:enumeration value="lua"/>
+			<xs:enumeration value="lub"/>
+			<xs:enumeration value="lug"/>
+			<xs:enumeration value="lui"/>
+			<xs:enumeration value="lun"/>
+			<xs:enumeration value="luo"/>
+			<xs:enumeration value="lus"/>
+			<xs:enumeration value="mac"/>
+			<xs:enumeration value="mkd"/>
+			<xs:enumeration value="mad"/>
+			<xs:enumeration value="mag"/>
+			<xs:enumeration value="mah"/>
+			<xs:enumeration value="mai"/>
+			<xs:enumeration value="mak"/>
+			<xs:enumeration value="mal"/>
+			<xs:enumeration value="man"/>
+			<xs:enumeration value="mao"/>
+			<xs:enumeration value="mri"/>
+			<xs:enumeration value="map"/>
+			<xs:enumeration value="mar"/>
+			<xs:enumeration value="mas"/>
+			<xs:enumeration value="may"/>
+			<xs:enumeration value="msa"/>
+			<xs:enumeration value="mdf"/>
+			<xs:enumeration value="mdr"/>
+			<xs:enumeration value="men"/>
+			<xs:enumeration value="mga"/>
+			<xs:enumeration value="mic"/>
+			<xs:enumeration value="min"/>
+			<xs:enumeration value="mis"/>
+			<xs:enumeration value="mkh"/>
+			<xs:enumeration value="mlg"/>
+			<xs:enumeration value="mlt"/>
+			<xs:enumeration value="mnc"/>
+			<xs:enumeration value="mni"/>
+			<xs:enumeration value="mno"/>
+			<xs:enumeration value="moh"/>
+			<xs:enumeration value="mol"/>
+			<xs:enumeration value="mon"/>
+			<xs:enumeration value="mos"/>
+			<xs:enumeration value="mul"/>
+			<xs:enumeration value="mun"/>
+			<xs:enumeration value="mus"/>
+			<xs:enumeration value="mwl"/>
+			<xs:enumeration value="mwr"/>
+			<xs:enumeration value="myn"/>
+			<xs:enumeration value="myv"/>
+			<xs:enumeration value="nah"/>
+			<xs:enumeration value="nai"/>
+			<xs:enumeration value="nap"/>
+			<xs:enumeration value="nau"/>
+			<xs:enumeration value="nav"/>
+			<xs:enumeration value="nbl"/>
+			<xs:enumeration value="nde"/>
+			<xs:enumeration value="ndo"/>
+			<xs:enumeration value="nds"/>
+			<xs:enumeration value="nep"/>
+			<xs:enumeration value="new"/>
+			<xs:enumeration value="nia"/>
+			<xs:enumeration value="nic"/>
+			<xs:enumeration value="niu"/>
+			<xs:enumeration value="nno"/>
+			<xs:enumeration value="nob"/>
+			<xs:enumeration value="nog"/>
+			<xs:enumeration value="non"/>
+			<xs:enumeration value="nor"/>
+			<xs:enumeration value="nso"/>
+			<xs:enumeration value="nub"/>
+			<xs:enumeration value="nwc"/>
+			<xs:enumeration value="nya"/>
+			<xs:enumeration value="nym"/>
+			<xs:enumeration value="nyn"/>
+			<xs:enumeration value="nyo"/>
+			<xs:enumeration value="nzi"/>
+			<xs:enumeration value="oci"/>
+			<xs:enumeration value="oji"/>
+			<xs:enumeration value="ori"/>
+			<xs:enumeration value="orm"/>
+			<xs:enumeration value="osa"/>
+			<xs:enumeration value="oss"/>
+			<xs:enumeration value="ota"/>
+			<xs:enumeration value="oto"/>
+			<xs:enumeration value="paa"/>
+			<xs:enumeration value="pag"/>
+			<xs:enumeration value="pal"/>
+			<xs:enumeration value="pam"/>
+			<xs:enumeration value="pan"/>
+			<xs:enumeration value="pap"/>
+			<xs:enumeration value="pau"/>
+			<xs:enumeration value="peo"/>
+			<xs:enumeration value="per"/>
+			<xs:enumeration value="fas"/>
+			<xs:enumeration value="phi"/>
+			<xs:enumeration value="phn"/>
+			<xs:enumeration value="pli"/>
+			<xs:enumeration value="pol"/>
+			<xs:enumeration value="pon"/>
+			<xs:enumeration value="por"/>
+			<xs:enumeration value="pra"/>
+			<xs:enumeration value="pro"/>
+			<xs:enumeration value="pus"/>
+			<xs:enumeration value="que"/>
+			<xs:enumeration value="raj"/>
+			<xs:enumeration value="rap"/>
+			<xs:enumeration value="rar"/>
+			<xs:enumeration value="roa"/>
+			<xs:enumeration value="roh"/>
+			<xs:enumeration value="rom"/>
+			<xs:enumeration value="rum"/>
+			<xs:enumeration value="ron"/>
+			<xs:enumeration value="run"/>
+			<xs:enumeration value="rus"/>
+			<xs:enumeration value="sad"/>
+			<xs:enumeration value="sag"/>
+			<xs:enumeration value="sah"/>
+			<xs:enumeration value="sai"/>
+			<xs:enumeration value="sal"/>
+			<xs:enumeration value="sam"/>
+			<xs:enumeration value="san"/>
+			<xs:enumeration value="sas"/>
+			<xs:enumeration value="sat"/>
+			<xs:enumeration value="scc"/>
+			<xs:enumeration value="srp"/>
+			<xs:enumeration value="scn"/>
+			<xs:enumeration value="sco"/>
+			<xs:enumeration value="scr"/>
+			<xs:enumeration value="hrv"/>
+			<xs:enumeration value="sel"/>
+			<xs:enumeration value="sem"/>
+			<xs:enumeration value="sga"/>
+			<xs:enumeration value="sgn"/>
+			<xs:enumeration value="shn"/>
+			<xs:enumeration value="sid"/>
+			<xs:enumeration value="sin"/>
+			<xs:enumeration value="sio"/>
+			<xs:enumeration value="sit"/>
+			<xs:enumeration value="sla"/>
+			<xs:enumeration value="slo"/>
+			<xs:enumeration value="slk"/>
+			<xs:enumeration value="slv"/>
+			<xs:enumeration value="sma"/>
+			<xs:enumeration value="sme"/>
+			<xs:enumeration value="smi"/>
+			<xs:enumeration value="smj"/>
+			<xs:enumeration value="smn"/>
+			<xs:enumeration value="smo"/>
+			<xs:enumeration value="sms"/>
+			<xs:enumeration value="sna"/>
+			<xs:enumeration value="snd"/>
+			<xs:enumeration value="snk"/>
+			<xs:enumeration value="sog"/>
+			<xs:enumeration value="som"/>
+			<xs:enumeration value="son"/>
+			<xs:enumeration value="sot"/>
+			<xs:enumeration value="spa"/>
+			<xs:enumeration value="srd"/>
+			<xs:enumeration value="srr"/>
+			<xs:enumeration value="ssa"/>
+			<xs:enumeration value="ssw"/>
+			<xs:enumeration value="suk"/>
+			<xs:enumeration value="sun"/>
+			<xs:enumeration value="sus"/>
+			<xs:enumeration value="sux"/>
+			<xs:enumeration value="swa"/>
+			<xs:enumeration value="swe"/>
+			<xs:enumeration value="syr"/>
+			<xs:enumeration value="tah"/>
+			<xs:enumeration value="tai"/>
+			<xs:enumeration value="tam"/>
+			<xs:enumeration value="tat"/>
+			<xs:enumeration value="tel"/>
+			<xs:enumeration value="tem"/>
+			<xs:enumeration value="ter"/>
+			<xs:enumeration value="tet"/>
+			<xs:enumeration value="tgk"/>
+			<xs:enumeration value="tgl"/>
+			<xs:enumeration value="tha"/>
+			<xs:enumeration value="tib"/>
+			<xs:enumeration value="bod"/>
+			<xs:enumeration value="tig"/>
+			<xs:enumeration value="tir"/>
+			<xs:enumeration value="tiv"/>
+			<xs:enumeration value="tkl"/>
+			<xs:enumeration value="tlh"/>
+			<xs:enumeration value="tli"/>
+			<xs:enumeration value="tmh"/>
+			<xs:enumeration value="tog"/>
+			<xs:enumeration value="ton"/>
+			<xs:enumeration value="tpi"/>
+			<xs:enumeration value="tsi"/>
+			<xs:enumeration value="tsn"/>
+			<xs:enumeration value="tso"/>
+			<xs:enumeration value="tuk"/>
+			<xs:enumeration value="tum"/>
+			<xs:enumeration value="tup"/>
+			<xs:enumeration value="tur"/>
+			<xs:enumeration value="tut"/>
+			<xs:enumeration value="tvl"/>
+			<xs:enumeration value="twi"/>
+			<xs:enumeration value="tyv"/>
+			<xs:enumeration value="udm"/>
+			<xs:enumeration value="uga"/>
+			<xs:enumeration value="uig"/>
+			<xs:enumeration value="ukr"/>
+			<xs:enumeration value="umb"/>
+			<xs:enumeration value="und"/>
+			<xs:enumeration value="urd"/>
+			<xs:enumeration value="uzb"/>
+			<xs:enumeration value="vai"/>
+			<xs:enumeration value="ven"/>
+			<xs:enumeration value="vie"/>
+			<xs:enumeration value="vol"/>
+			<xs:enumeration value="vot"/>
+			<xs:enumeration value="wak"/>
+			<xs:enumeration value="wal"/>
+			<xs:enumeration value="war"/>
+			<xs:enumeration value="was"/>
+			<xs:enumeration value="wel"/>
+			<xs:enumeration value="cym"/>
+			<xs:enumeration value="wen"/>
+			<xs:enumeration value="wln"/>
+			<xs:enumeration value="wol"/>
+			<xs:enumeration value="xal"/>
+			<xs:enumeration value="xho"/>
+			<xs:enumeration value="yao"/>
+			<xs:enumeration value="yap"/>
+			<xs:enumeration value="yid"/>
+			<xs:enumeration value="yor"/>
+			<xs:enumeration value="ypk"/>
+			<xs:enumeration value="zap"/>
+			<xs:enumeration value="zen"/>
+			<xs:enumeration value="zha"/>
+			<xs:enumeration value="znd"/>
+			<xs:enumeration value="zul"/>
+			<xs:enumeration value="zun"/>
+			<xs:enumeration value=""/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="PaymentReferenceType">
+		<xs:restriction base="xs:string"/>
+	</xs:simpleType>
+	<xs:simpleType name="PercentageType">
+		<xs:restriction base="xs:decimal">
+			<xs:maxInclusive value="100"/>
+			<xs:minInclusive value="0"/>
+			<xs:fractionDigits value="2"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="PriceTypeType">
+		<xs:restriction base="xs:token">
+			<xs:enumeration value="CalculationNet">
+				<xs:annotation>
+					<xs:documentation>Indicates the calculation net price. The calculation net price is the price including allowances/ charges and excluding taxes.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="CalculationGross">
+				<xs:annotation>
+					<xs:documentation>Indicates the calculation gross price. The calculation gross price is the price excluding all allowances, charges and taxes.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="SEPADirectDebitTypeType">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="B2C"/>
+			<xs:enumeration value="B2B"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="SerialShippingContainerCodeType">
+		<xs:restriction base="xs:string">
+			<xs:pattern value="[0-9]{18}"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<!-- === Complex Types === -->
+	<xs:complexType name="AccountType">
+		<xs:sequence>
+			<xs:element ref="BankName" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Name of the bank institute.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="BankCode" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>The bank code.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="BIC" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Bank identification code.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="BankAccountNr" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Bank account number.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="IBAN" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>International Bank Account Number.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="BankAccountOwner" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Name of the bank account holder.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="AdditionalLineItemInformationType">
+		<xs:sequence>
+			<!-- Free-text description of the item -->
+			<xs:element ref="DrawingRevisionNumber" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Revision number of the underlying drawing of the product</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="DrawingRevisionDate" type="xs:dateTime" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Date when the underlying drawing of the product has been change</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="EngineeringChangeNumber" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>A control number indicating the engineering change</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="ControlNumber" type="xs:string" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>A control number which is assigned to the forecasted product</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="ProductionNumber" type="xs:string" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>A production number to which the forecasted product is assigned to</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="ModelYear" type="xs:string" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>And indicator for the model year to which the forecasted product belongs to</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="BuyersInternalProductGroupCode" type="xs:string" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>An internal code of the buyer, identifying the product group to which the forecasted product belongs to</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="IdentificationOfUse" type="xs:string" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Identifies what the requested product is used for - e.g. pilot, additional request, specimem, etc. Contains a coded value. Has been introduced due to a requirements from the VDA 4905 document</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="SpecialConditions" type="xs:string" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Indicator showing whether this is an article with special conditions, which is requested here. If no BLANK is provided here, the article is an article with special coniditions</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="ProgressNumberDifference" type="xs:integer" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Difference between the continuous entry number and the continuous demand number</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="KanbanID" type="xs:string" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>A set of kanban IDs, issued by the customer. These Kanban IDs can be taken over to the dispatch advice as well.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="Classification" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>The classification of the product/service in free-text form.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="AdditionalInformationType">
+		<xs:sequence>
+			<xs:element ref="SerialNumber" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>The serial number of the list line item product.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="ChargeNumber" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>The number of the batch/lot.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="Classification" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>The classification of the product/service in free-text form.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="AlternativeQuantity" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Used to specify an alternative quantity in addition to ListLineItem/Quantity.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="QuantityCharged" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Used to describe a quantity for which the customer is actually charged. May be provided in case this number deviates from ListLinteItem/Quantity.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="QuantityFreeOfCharge" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Used to describe a quantity which is provided to the customer free-of-charge. May be provided in case this number deviates from ListLinteItem/Quantity.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="ChargeNumberExternal" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>An external batch/lot number.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="ChargeExpirationDate" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>The expiration date is the last day in which a product is safe to consume.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="BestBeforeDate" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>The best before date is the last day where the product is still in perfect condition.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="ChargeDateOfManufacture" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>The manufacturing date of a certain batch/lot.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="EngineeringChangeNumber" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>A control number/level indicating the engineering change.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="DrawingRevisionNumber" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Revision number of the underlying drawing of the product.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="DeductionQuantity" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>
+						In case a deduction took place, the deducted quantity is provided here.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="StockLocation" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>
+						The stock location where the goods item was taken from.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="StockGround" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>
+						The stock ground the goods item was taken from.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="DestinationStockLocation" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>
+						The destination stock location where the goods item will be shipped to.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="DestinationStockGround" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>
+						The destination stock ground where the goods item will be shipped to.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="Size" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>The size of the product.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="Weight" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>The weight of the product.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="Boxes" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>The number of boxes where the products of the given list line item are stored in.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="Color" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>The color of the product of the given list line item.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="CountryOfOrigin" type="CountryType" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>Country in which the product was produced or could be produced.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="ConfirmedCountryOfOrigin" type="CountryType" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>The confirmed country of origin, provided by the supplier. Even if a product can potentially be produced in multiple countries, it has only one confirmed country of origin.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="AddressType">
+		<xs:sequence>
+			<xs:element ref="Salutation" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Salutation, e.g., Mr., Mrs., Company, etc.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="Name" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>The name. Either first name + last name or the company name.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="Street" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Street information.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="POBox" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Post-office box.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="Town">
+				<xs:annotation>
+					<xs:documentation>City information.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="ZIP">
+				<xs:annotation>
+					<xs:documentation>ZIP code.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="Country">
+				<xs:annotation>
+					<xs:documentation>Country information.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="AddressExtension" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>Any further elements or attributes which are necessary for an address may be provided here.
+Note that extensions should be used with care and only those extensions shall be used, which are officially provided by ERPEL.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ArticleNumberType" mixed="true">
+		<xs:attribute ref="ArticleNumberType" use="optional">
+			<xs:annotation>
+				<xs:documentation>Attribute defining the type of article number.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+	</xs:complexType>
+	<xs:complexType name="AttachmentsType">
+		<xs:sequence>
+			<xs:element name="FileAttachment" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>If a file needs to be attached to a document FileAttachment can be used. At least a file content has to be provided.</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="Name" type="xs:string" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>Name/ID of the file</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="MimeType" type="xs:string" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>MimeType of the attached file</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="Encoding" type="xs:string" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>Encoding used for the file</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="Content" type="xs:string">
+							<xs:annotation>
+								<xs:documentation>Encoded file</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="LinkAttachment" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>If a link to an external attachment needs to be added to a document, LinkAttachment can be used.</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="Name" type="xs:string" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>A name or description of the link.</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="Link" type="xs:string">
+							<xs:annotation>
+								<xs:documentation>The actual link.</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="BankCodeCType">
+		<xs:simpleContent>
+			<xs:extension base="xs:integer">
+				<xs:attribute ref="BankCodeType" use="required">
+					<xs:annotation>
+						<xs:documentation>Defines the type of bank code by providing the country from which the bank code is. In order to specify the country in this attribute, a code according to ISO 3166-1 must be used.</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+			</xs:extension>
+		</xs:simpleContent>
+	</xs:complexType>
+	<xs:complexType name="BusinessEntityType" abstract="true">
+		<xs:sequence>
+			<xs:element ref="VATIdentificationNumber" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>The VAT identification number.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="FurtherIdentification" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>Additional identification used to uniquely identify the party.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="DocumentReference" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>References to documents from the given party.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="Phone" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Deprecated. Please supply the phone number in Contact/Phone</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="Email" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Deprecated. Please supply the email address in Contact/Email.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="GLN" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Global Location Number of the party.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="Contact" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Further contact details.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="Address" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Address details of the party.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ClassificationType" mixed="true">
+		<xs:sequence>
+			<xs:element ref="Feature" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>A feature of the given classification.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+		<xs:attribute ref="ClassificationSchema" use="optional">
+			<xs:annotation>
+				<xs:documentation>The schema of the classification - e.g. eCl@ss.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+	</xs:complexType>
+	<xs:complexType name="ConsignmentPackagingSequenceType">
+		<xs:sequence>
+			<xs:element name="HierarchicalId" type="xs:string" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>The hierarchical ID of the current consignment packaging item. A sequential numbering is recommended.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="HierarchicalParentId" type="xs:string" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>The hierarchical ID of the parent consignment item (if exists).</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="PackagingLevel" type="xs:string" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>The current packaging level.
+
+The use of one of the EDIFACT prescribed codes is recommended here (VDA4987 CPS 7075):
+
+1     =	Inner
+Level of packing, if it exists, that is immediately subordinate to the intermediate packaging level.
+2     = 	Intermediate
+Level of packaging, if it exists, that is immediately subordinate to the outer packaging level.
+3     =   	Outer
+For packed merchandise, outermost level of packaging for a shipment.
+1E     =    Highest (EAN Code)
+Level of packaging, if it exists, which is highest in the packaging hierarchy.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="ConsignmentItemInformation" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>Further information about the specific consignment item.</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="TypeOfPackaging" type="xs:string" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>DEPRICATED - Please use ContainedPackagingItems/@Unit; The type of packaging which is being used.</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="AmountOfPackagingLevels" type="xs:string" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>The amount of packaging levels used.</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="NVE" type="xs:string" minOccurs="0" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>The serial shipping container code (SSCC) (NVE = German for: Nummer der Verpackungseinheit).</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="ParentNVE" type="xs:string" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>The serial shipping container code (SSCC) for the parent shipping container if a structured DESADV is requested. Mainly used in automotive or industry DESADV messages.</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="GrossVolume" type="UnitType" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>The gross volume of the consignment item.</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element ref="NetWeight" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>The net weight of the consignment item.	</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element ref="GrossWeight" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>The gross weight of the consignment item.	</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element ref="TareWeight" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>The tare weight of the consignment item's packaging. Gross weight - tare weight = net weight.</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="DeliveredAmount" type="UnitType" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>The delivered amount.</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="ContainedPackagingItems" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>The packaging items contained in the given consignment item.</xs:documentation>
+							</xs:annotation>
+							<xs:complexType>
+								<xs:simpleContent>
+									<xs:extension base="Decimal4Type">
+										<xs:attribute ref="Unit" use="optional">
+											<xs:annotation>
+												<xs:documentation>Packaging unit type of the contained packages. If customer's and supplier's packaging unit type is different this should be used for customer's packaging unit type.</xs:documentation>
+											</xs:annotation>
+										</xs:attribute>
+										<xs:attribute ref="SupplierUnit" use="optional">
+											<xs:annotation>
+												<xs:documentation>Packaging unit type used by the supplier. If customer's and supplier's packaging unit type is different this should be used for suppliers's packaging unit type.</xs:documentation>
+											</xs:annotation>
+										</xs:attribute>
+									</xs:extension>
+								</xs:simpleContent>
+							</xs:complexType>
+						</xs:element>
+						<xs:element name="GTIN" type="xs:string" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>GTIN/EAN number of the specific consignment item.</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element ref="PackagingDescriptionCode" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>Packaging related description code. Please use EDIFACT code list values. (PAC 7233)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element ref="PackagingConditionsCode" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>Packaging terms and conditions code (Who is the owner, is it returnable..). Please use EDIFACT code list values. (PAC 7073)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element ref="MarkingTypeCode" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>Marking type code. Please use EDIFACT code list values or VDA codes. e.g. 33E=Marked with packaging label number (GS1 PCI 7511), G/M/S (VDA4913 715/13)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element ref="QuantityPerPack" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>Quantity per packaging item with optional unit.</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element ref="ext:ConsignmentItemInformationExtension" minOccurs="0"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element ref="ListLineItem" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>A list line item describing a certain product/service in a consignment item in further detail. Note, that this element's structure is identical to ItemList/LiteLineItem.	</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ContactType">
+		<xs:sequence>
+			<xs:element ref="Name">
+				<xs:annotation>
+					<xs:documentation>Name of the contact.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="Email" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Email address of the contact.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="Phone" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Phone number of the contact.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="Fax" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Fax number of the contact.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="CountryType" mixed="true">
+		<xs:attribute ref="CountryCode" use="optional">
+			<xs:annotation>
+				<xs:documentation>Code for the country. Must be provided using an ISO 3166-1 code.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+	</xs:complexType>
+	<xs:complexType name="CustomerType">
+		<xs:complexContent>
+			<xs:extension base="BusinessEntityType">
+				<xs:sequence>
+					<xs:element ref="SuppliersCustomerID" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation>The customer ID issued by the supplier.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element ref="AccountingArea" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation>The accounting area at the document recipient's side. Used to associate a given document to a certain accounting area.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element ref="SubOrganizationID" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation>The ID of an internal sub organization to which the document shall be associated to at the document recipient's side.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element ref="ext:CustomerExtension" minOccurs="0"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="DeliveryDetailsType">
+		<xs:sequence>
+			<xs:element ref="DeliveryID" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>The ID of the delivery.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:choice>
+				<xs:element ref="Date" minOccurs="0">
+					<xs:annotation>
+						<xs:documentation>						
+						Note that either Date or Period may be specified, but not both.
+						Depending on the message type, the meaning of Date varies. 
+						Order: requested delivery date. 
+						OrderConfirmation: confirmed delivery date.
+						DispatchAdvice: actual delivery date; 
+						Invoice: actual delivery date;</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element ref="Period" minOccurs="0">
+					<xs:annotation>
+						<xs:documentation>		
+						Note that either Date or Period may be specified, but not both.
+						Depending on the message type, the meaning of Period varies. 
+						Order: requested delivery period. 
+						OrderConfirmation: confirmed delivery period.
+						DispatchAdvice: use Date; 
+						Invoice: use Date;</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+			</xs:choice>
+			<xs:element ref="DeliveryDateConfirmed" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Not commonly used. Use this element in DispatchAdvices when both the actual and the confirmed delivery dates must be supplied. </xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="ShippingDate" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>The date when shipping of goods takes place. The delivery date is the date when the goods/serivces arrive at the premises of the customer. The shipping date is the date when the goods/services leave the suppliers premises/warehouse.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="Description" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Free-text description of the delivery.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="NetWeight" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>The net weight of the delivery.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="GrossWeight" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>The gross weight of the delivery.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="TareWeight" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>The tare weight. Tare weight is the weight of the containment (e.g. container, ), where the actual goods are stored in. Gross weight - tare weight = net weight.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="Incoterm" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>Further details about the incoterms.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="TransportDetail" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>Further details about the transport.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="TourNumber" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>The tour number of a certain delivery, e.g., the tour number of a delivery truck.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="SerialShippingContainerCode" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>A unique identifier used for the shipment according to the SSCC specification of GS1.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="ModeOfDispatch" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>The mode of despatch in free-text. E.g., "standard international shipping", "express international shipping", etc.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="NumberOfPackages" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>The number of packages in the given delivery.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="NameOfDriver" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>The name of the driver performing the delivery.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="TransportVehicleLicenseNumber" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>The license plate number of the vehicle performing the delivery.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="ext:DeliveryDetailsExtension" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="DeliveryListLineItemType">
+		<xs:sequence>
+			<xs:element ref="ConsignmentPackagingSequence">
+				<xs:annotation>
+					<xs:documentation>Used to identify the sequence in which physical packing is presented in the consignment, and optionally to identify the hierarchical relationship between packing layers. Note: This element is used in order to allow for compliance to EDIFACT DESADVs.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="DeliveryRecipientType">
+		<xs:complexContent>
+			<xs:extension base="BusinessEntityType">
+				<xs:sequence>
+					<xs:element ref="ext:DeliveryRecipientExtension" minOccurs="0"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="DeliveryType">
+		<xs:sequence>
+			<xs:element ref="DeliveryRecipient" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Details about the recipient of the delivery of goods or services.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="DeliveryDetails" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Details about the delivery of good or services specified in this document.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="DescriptionType" mixed="true">
+		<xs:attribute ref="Language">
+			<xs:annotation>
+				<xs:documentation>A code for a unique identification of the language used for the free-text description. Codes according to  ISO 639-2 must be used.	</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+	</xs:complexType>
+	<xs:complexType name="DetailsType">
+		<xs:sequence>
+			<xs:element ref="HeaderDescription" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>A free-text header description with precedes the details section.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="ItemList" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>A list of different line items. Used to group line items of a certain kind together.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="FooterDescription" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>A free-text footer description with suceeds the details section.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="DirectDebitType"/>
+	<xs:complexType name="DiscountType">
+		<xs:sequence>
+			<xs:element ref="PaymentDate" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Date until the discount may be applied.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="BaseAmount" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>The base amount for the discount.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="Percentage" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>The discount rate.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="Amount" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>The discount amount. The discount amount is calculated by:	Base amount x percentage = discount amount. In case both, percentage and discount amount, are provided, discount amount is normative.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="Comment" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Free text comment field for the given discount.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="DocumentType">
+		<xs:annotation>
+			<xs:documentation>
+				The ERPEL core document is defined as a single XML Schema file and comprises all elements, which are used by the different ERPEL sub document types.
+			</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element ref="BusinessProcessID" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Several documents such as order, despatch advice and invoice may belong to a common business process. This element may be used to correlate different business documents to a common business process.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="DocumentNumber">
+				<xs:annotation>
+					<xs:documentation>The document number. May be used to identify the document.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="DocumentDate">
+				<xs:annotation>
+					<xs:documentation>The date when the document was issued.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="Delivery" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Used to store information about the delivery itself (such as delivery date, delivery times, etc.) and the delivery party.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="Supplier">
+				<xs:annotation>
+					<xs:documentation>Details about the supplier of goods/services.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="Customer" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Details about the receiver of goods or services.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="OrderingParty" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Details about the party ordering the goods/services. Customer and ordering party do not necessarily have to be the same.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="Shipper" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Details about the company (carrier) shipping the product/services.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="InvoiceRecipient" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Details about the party receiving the invoice.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="Details">
+				<xs:annotation>
+					<xs:documentation>Details about the document itself are provided in this element, i.e., the different line items.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="TotalLineItemAmount" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>The total line item ammount of the invoice. Equals the sum of all line item amounts bafore any further calculations were done.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="ReductionAndSurchargeDetails" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Details about reductions and surcharges applying to the products/services defined in the document. Note that both, reductions and surcharges, are always provided as positive values.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="TotalNetAmount" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>The total net amount of the invoice. Equals the sum of all line item net amounts minus reductions and plus surcharges.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="Tax" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Used to specify the relevant tax information for this document.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="TotalGrossAmount" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>The total gross amount of the invoice. Equals the total net amount plus taxes.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="PaymentMethod" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>The payment method applicable to this document. May be either of type UniversalBankTransaction, DirectDebit, or NoPayment.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="PaymentConditions" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Information in regard to the payment conditions of this document.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="PresentationDetails" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Used to provide presentation details for the document.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Attachments" type="AttachmentsType" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Attachmens included in the message.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="ext:DocumentExtension" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Any further elements or attributes which are necessary for the ERPEL document may be provided here. Note that extensions should be used with care and only those extensions shall be used, which are  officially provided by ERPEL.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+		<xs:attribute ref="GeneratingSystem" use="required">
+			<xs:annotation>
+				<xs:documentation>The name of the system which has been used to generate the document.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute ref="CancelledOriginalDocument" use="optional">
+			<xs:annotation>
+				<xs:documentation>In case a previously sent ERPEL document shall be cancelled, this attribute may be used. In this case the document number of the document to cancel must be provided in this attribute.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute ref="DocumentType" use="required">
+			<xs:annotation>
+				<xs:documentation>The document type of the current document.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute ref="DocumentCurrency" use="required">
+			<xs:annotation>
+				<xs:documentation>The currency in which the monetary values of the document are provided. Codes according to ISO 4217 must be used.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute ref="ManualProcessing" use="optional">
+			<xs:annotation>
+				<xs:documentation>If this attribute is set to true, the issuer of the document signalizes the recipient of the document that the document shall be checked manual upon receipt before any automated processing takes place.
+				This might for instance occur if previously untested fields are set or tests shall be conducted.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute ref="DocumentTitle" use="optional">
+			<xs:annotation>
+				<xs:documentation>The free-text title of the document.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute ref="Language" use="optional">
+			<xs:annotation>
+				<xs:documentation>The language used throughout the document. Codes according to  ISO 639-2 must be used.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute ref="IsGrossPrice" use="optional">
+			<xs:annotation>
+				<xs:documentation>@Deprecated. Indicates whether prices in this document are provided in gross or in net.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+	</xs:complexType>
+	<xs:complexType name="DocumentReferenceType">
+		<xs:sequence>
+			<xs:element ref="DocumentID" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>The document number of the referenced document.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="DocumentType">
+				<xs:annotation>
+					<xs:documentation>The type of the referenced document. E.g., order, despatch advice, etc.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="DocumentPositionNumber" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>In case a certain position in a document shall be referenced, this element may be used.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="ReferenceDate" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Reference date of the document. Typcially this element refers to the document date of the preceding document.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="Description" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>An optional description in free-text or a specification of the reference type for the DocumentType 'DocumentReference'.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="DomesticAmountType" mixed="true">
+		<xs:attribute ref="Currency"/>
+	</xs:complexType>
+	<xs:complexType name="EmptyType">
+		<xs:complexContent>
+			<xs:restriction base="xs:anyType"/>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="ExtendedPeriodType">
+		<xs:sequence>
+			<xs:element name="Quantity" type="ConditionalUnitType" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>The quantity for this period.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="StartDate" type="xs:dateTime" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>The start date of the periode.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="EndDate" type="xs:dateTime" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>The end date of the periode.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ForecastASNReferenceType">
+		<xs:sequence>
+			<xs:element name="LastASNNumber" type="xs:string">
+				<xs:annotation>
+					<xs:documentation>Last ASN number.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="LastASNDate" type="xs:dateTime" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Last ASN date (= the date when the goods have been shipped on the supplier's side).</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="LastASNDeliveryDate" type="xs:dateTime" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>The date when the goods of the last delivery have been received at the customer's side.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="LastReceivedQuantity" type="ConditionalUnitType" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>The quantity received at the customer's side with the last delivery.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="LastASNDispatchDate" type="xs:dateTime" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>The date when the goods of the last delivery have been dispached at the supplier's side.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="LastDispatchedQuantity" type="ConditionalUnitType" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>The quantity dispached at the supplier's side with the last delivery.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ForecastListLineItemType">
+		<xs:sequence>
+			<xs:element ref="Indicators" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Indicator about the purpose of the forecast message - taken from the GIS segment</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="LineItemActionRequest" type="xs:string" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>A coded request action for the line item</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="PositionNumber" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Position number of the entry</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="Description" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>A detailled description of a certain entry in free-text form.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="ArticleNumber" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>A number uniquely identifying a certain article in the context of the document. The type of the article number is determined by the accompanying attribute.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="Delivery" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Information about the  delivery location</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="AdditionalForecastInformation" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Referenced documents and date</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="AdditionalLineItemInformation" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Additional information about the forecasted item</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="PackagingDetails" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Packaging details, related to the forecasted item</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="PackagingIdentification" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Packaging identification information requested by the customer - details about the packaging items</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="PlanningQuantity" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>Planning Quantity</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="ext:ForecastListLineItemExtension" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="FurtherIdentificationType">
+		<xs:simpleContent>
+			<xs:extension base="AlphaNumIDType">
+				<xs:attribute ref="IdentificationType" use="required">
+					<xs:annotation>
+						<xs:documentation>Used to identify the type of further information. Currently, the following identification types are used: 
+								AdditionalInternalDestination ... Additional destination, mostly provided in a LOC+159 segment
+								DUNS             ... DUNS-number
+								FiscalNumber     ... fiscal number of party
+								GLN              ... Global Location Number/ILN
+								IssuedBySupplier ... ID given by supplier
+								IssuedByCustomer ... ID given by customer 
+								Location         ... physical location
+								Odette           ... ID assigned by ODETTE
+								PlantCode        ... plant code
+								StorageLocation  ... storage within location
+								StorageCell      ... most fine-grained location id (actual shelf / storage bin)
+								TribunalPlaceRegistrationNumber ... Tribunal place registration number (GS1 Code)
+								UnloadingPoint   ... unloading point
+								ZZZ              ... mutually defined ID by both parties
+						</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+			</xs:extension>
+		</xs:simpleContent>
+	</xs:complexType>
+	<xs:complexType name="FeatureType">
+		<xs:simpleContent>
+			<xs:extension base="xs:string">
+				<xs:attribute name="Code" type="xs:string">
+					<xs:annotation>
+						<xs:documentation>A code, identifying the feature.</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="Description" type="xs:string">
+					<xs:annotation>
+						<xs:documentation>A description of the feature.</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="Unit" type="xs:string">
+					<xs:annotation>
+						<xs:documentation>The unit of the feature.</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+			</xs:extension>
+		</xs:simpleContent>
+	</xs:complexType>
+	<xs:complexType name="IncotermType">
+		<xs:annotation>
+			<xs:documentation>Incoterm</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="DeliveryOrTransportTermsCode" type="xs:string" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Terms of delivery/transport coded. Please use Edifact code lists, i.e. 1="Price condition", 2="Despatch condition", ...</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="IncotermCode" type="xs:string" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Incoterm coded. Please use INCOTERMS code lists, i.e. CFR="Cost and Freight", EXW="Ex Works", ...</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="IncotermText" type="xs:string" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Incoterm in clear text.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="IncotermLocation" type="xs:string" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Place relevant to the incoterms.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="IndicatorsType">
+		<xs:sequence>
+			<xs:element name="ProcessingIndicator" type="xs:string" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Provides coded information about the forecast item
+E.g. 
+36 Changed information (used for Ship Direct suppliers)
+37 Complete information
+or in case of Plastic Omnium
+1 = Firm
+4 = Planning/forecast</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="CriticalStockCode" type="xs:string" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Identifies an item with a critical stock amount. These items must be treated with high priority.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="InvoiceRecipientType">
+		<xs:complexContent>
+			<xs:extension base="BusinessEntityType">
+				<xs:sequence>
+					<xs:element ref="SuppliersInvoiceRecipientID" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation>ID of the invoice recipient issued by the supplier.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element ref="ext:InvoiceRecipientExtension" minOccurs="0"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="ItemListType">
+		<xs:sequence>
+			<xs:element ref="HeaderDescription" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Free-text description preceding a list line item group.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:choice>
+				<xs:element ref="ListLineItem" maxOccurs="unbounded">
+					<xs:annotation>
+						<xs:documentation>Represent a certain list line item.</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element ref="DeliveryListLineItem" maxOccurs="unbounded">
+					<xs:annotation>
+						<xs:documentation>Represents a list line item used in a despatch advice.</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element ref="ForecastListLineItem" maxOccurs="unbounded">
+					<xs:annotation>
+						<xs:documentation>Represents a list line item used in a forecast or JIT schedule.</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+			</xs:choice>
+			<xs:element ref="FooterDescription" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>A free-text description suceeding a list line item group.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ItemType">
+		<xs:sequence>
+			<xs:element ref="TaxedAmount">
+				<xs:annotation>
+					<xs:documentation>The base amount for the tax (= the amount the tax must be applied to).</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="TaxRate">
+				<xs:annotation>
+					<xs:documentation>The tax rate.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="Amount">
+				<xs:annotation>
+					<xs:documentation>The tax amount. Calculated using: taxed amount x tax rate = tax amount.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="DomesticAmount" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>The tax amount in the domestic currency. The domestic currency != invoice currency.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Description" type="xs:string" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Free text description of the tax type.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ListLineItemType">
+		<xs:sequence>
+			<xs:element ref="PositionNumber">
+				<xs:annotation>
+					<xs:documentation>Position number, identifing a certain entry.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="ShortDescription">
+				<xs:annotation>
+					<xs:documentation>A short description of the item in free-text form.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="Description" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>A detailled description of a certain entry in free-text form.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="Contact" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Further contact details.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="ArticleNumber" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>A number uniquely identifying a certain article in the context of the document. The type of the article number is determined by the accompanying attribute.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="Quantity">
+				<xs:annotation>
+					<xs:documentation>The quantity of the given product.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="UnitPrice" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>The price of a single unit.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="TaxRate" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>The VAT tax rate applicable to the given list line item.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="OtherTax" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>Used to provide information about other tax on line item level.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="DiscountFlag" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Indicates, whether a discount may be applied to this line item or not.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="ReductionAndSurchargeListLineItemDetails" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Used to specify reductions and surcharges on the list line item. Note that both, reductions and surcharges, are always provided as positive values.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="Delivery" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Used to store information about the delivery itself (such as delivery date, delivery times, etc.) and the delivery party.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="SuppliersDocumentReference" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>Supplier's reference to a previously exchanged document (e.g. an order which was preceding a despatch advice).</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="CustomersDocumentReference" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>Customer's reference to a previously exchanged document (e.g. an order which was preceding a despatch advice).</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="AdditionalInformation" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Used to provide additional information about the line item.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="SalesValue" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>The sales value of the given list line item.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="ExtraCharge" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Extra charge for the given list line item.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="TaxAmount" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>The tax amount for this line item (gross - net = tax amount)</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="LineItemAmount" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>The overall amount for this line item (net value).</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="ext:ListLineItemExtension" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="NoPaymentType"/>
+	<xs:complexType name="SupplierReferenceType">
+		<xs:sequence>
+			<xs:element ref="DocumentID">
+				<xs:annotation>
+					<xs:documentation>The ID of the document.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="ReferenceDate" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>The date of the referenced document.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="Description" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>A description in free-text form of the referenced document.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="OrderingPartyType">
+		<xs:complexContent>
+			<xs:extension base="BusinessEntityType">
+				<xs:sequence>
+					<xs:element ref="SuppliersOrderingPartyID" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation>ID of the ordering party issued by the supplier.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element ref="ext:OrderingPartyExtension" minOccurs="0"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="OtherTaxType">
+		<xs:sequence>
+			<xs:element ref="Comment">
+				<xs:annotation>
+					<xs:documentation>The type of "other tax" using free-text.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="Amount">
+				<xs:annotation>
+					<xs:documentation>The amount of "other tax".</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="PackagingIdentificationType">
+		<xs:sequence>
+			<xs:element name="StorageLocation" type="xs:string" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Storage location of the packaging item at the plant</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="PlantCode" type="xs:string" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Plant code, where the packaging item is located</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="StorageBin" type="xs:string" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Storage bin of the packaging item</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="PlantName" type="xs:string" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Name of the plan</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="PlantCity" type="xs:string" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>City of the plant</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="DeliverTo" type="xs:string" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>The delivery location of the packaging item</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="ProductionDescription" type="xs:string" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>A plain text description of the product in the packaging item</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="KanbanCardNumberRange1Start" type="xs:string" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Start of the Kanban number range 1 - Delphi only</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="KanbanCardNumberRange1End" type="xs:string" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>End of the Kanban number range 1 - Delphi only</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="PaymentConditionsType">
+		<xs:sequence>
+			<xs:choice>
+				<xs:element ref="DueDate" minOccurs="0">
+					<xs:annotation>
+						<xs:documentation>Date when the payment is due.</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element ref="Duration" minOccurs="0">
+					<xs:annotation>
+						<xs:documentation>The duration starting with the document date when the payment is due.</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+			</xs:choice>
+			<xs:element ref="Discount" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>Details about discounts.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="MinimumPayment" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>The minimum payment which must be paid at the payment due date.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="Comment" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>A free-text comment for the payment conditions.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="ext:PaymentConditionsExtension" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="PaymentMethodType">
+		<xs:sequence>
+			<xs:element ref="Comment" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Free-text comment which may be specified for a payment method.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:choice>
+				<xs:element ref="UniversalBankTransaction">
+					<xs:annotation>
+						<xs:documentation>Used to denote details about a bank transaction, via which this invoice has to be paid.</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element ref="NoPayment">
+					<xs:annotation>
+						<xs:documentation>Indicates that no payment takes place as a result of this invoice.</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element ref="DirectDebit">
+					<xs:annotation>
+						<xs:documentation>Indicates that a direct debit will take place as a result of this invoice.</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element ref="SEPADirectDebit">
+					<xs:annotation>
+						<xs:documentation>Used to denote details about a SEPA direct debit, via which this invoice has to be paid.</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+			</xs:choice>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="PeriodType">
+		<xs:sequence>
+			<xs:element ref="FromDate">
+				<xs:annotation>
+					<xs:documentation>Delivery period - from date.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="ToDate">
+				<xs:annotation>
+					<xs:documentation>Delivery period - to date.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="PlanningQuantityType">
+		<xs:sequence>
+			<xs:element name="PlanningQuantity" type="ConditionalUnitType" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>The actual quantity, which is forecasted</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="BackorderQuantity" type="ConditionalUnitType" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>A negative or positive amount indicating whether at the current moment too many or too little components have been delivered</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="ImmediateRequestQuantity" type="ConditionalUnitType" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>An immediate amount which shall be delivered promptly and which as not been communicated earlier</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="RequestedShipmentDate" type="xs:dateTime" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>The date, when the shipment shall take place</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="EarliestShipmentDate" type="xs:dateTime" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>The date, when the shipment may take place the earliest</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="LatestShipmentDate" type="xs:dateTime" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>The date, when the shipment may take place the latest</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="WeeklyPeriodEndDate" type="xs:dateTime" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>The end date of the requested weekly delivery amounts</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="DeliveryPlanStatusIdentifier" type="xs:string" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Status code, indicating whether the forecast is firm (i.e., items must be delivered) or a foreast</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="FrequencyIdentifier" type="xs:string" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Identifier, which indicates the frequency - discrete, flexible intervall (from, to), or weekly</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="DeliveryRequirements" type="xs:string" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>A status code, indicating the delivery requirements. E.g. deliver on date or ship complete order</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="DespatchPattern" type="xs:string" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Encoded representation of the desired dispatch pattern. E.g. 1 = first week of month, 2 = second week of month, etc.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="CumulativeQuantity" type="ConditionalUnitType" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>The cumulative requested quantity to the given date.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="ext:PlanningQuantityExtension" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="PresentationDetailsType">
+		<xs:sequence>
+			<xs:element ref="URL" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>A link to the website of the issuer of the document.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="LogoURL" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>A URL to the logo of the issuer of the document.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="LayoutID" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>A certain layout id.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="SuppressZero" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Indicates whether an amount of 0 shall be shown or not.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="ext:PresentationDetailsExtension" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ListLineItemReductionType">
+		<xs:choice>
+			<xs:element ref="ReductionAmount" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Used to denote details about the reduction amount. Must be a positive value.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="ReductionRate" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Used to denote details about the reduction rate.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:choice>
+	</xs:complexType>
+	<xs:complexType name="PackagingDetailsType">
+		<xs:sequence>
+			<xs:element name="NumberOfPackages" type="xs:decimal" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Number of packages</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="CustomersPackagingNumber" type="xs:string" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>An identification number for the packaging item, assigned by the customer</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="SuppliersPackagingNumber" type="xs:string" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>An identification number for the packaging item, assigned by the supplier</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="PackagingCapacity" type="xs:decimal" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Capacity of packaging item</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ReductionAndSurchargeListLineItemDetailsType">
+		<xs:sequence>
+			<xs:choice maxOccurs="unbounded">
+				<xs:element ref="ReductionListLineItem" minOccurs="0" maxOccurs="unbounded">
+					<xs:annotation>
+						<xs:documentation>Used to specify detailled information about a reduction on a list line item. Note that both, reductions and surcharges, are always provided as positive values.</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element ref="SurchargeListLineItem" minOccurs="0" maxOccurs="unbounded">
+					<xs:annotation>
+						<xs:documentation>Used to specify detailled information about a surcharge on a list line item. Note that both, reductions and surcharges, are always provided as positive values.</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+			</xs:choice>
+			<xs:element ref="TotalReductionAndSurchargeListLineItem" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ReductionAndSurchargeBaseType">
+		<xs:sequence>
+			<xs:element ref="BaseAmount">
+				<xs:annotation>
+					<xs:documentation>The base amount to which the reduction/surcharge refers to.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="Percentage" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>The percentage of the reduction/surcharge.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="Amount" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>The amount of reduction/surcharge. The amount of reduction is calculated by: base amount x percentage = amount. In case amount is specified, it is not necessary to provide percentage (it may, however, be specified). If both, amount and percentage, are present amount is normative. Note that both, reductions and surcharges, are always provided as positive values.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="Comment" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Free text for the reudction/surcharge.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="Classification" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>The type of surcharge or reduction. May be used to aggregate surcharges and reductions into different categories.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ReductionAndSurchargeType">
+		<xs:complexContent>
+			<xs:extension base="ReductionAndSurchargeBaseType">
+				<xs:sequence>
+					<xs:element ref="TaxRate" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation>The VAT rate of the underlying products/services.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="ReductionAndSurchargeDetailsType">
+		<xs:sequence>
+			<xs:choice maxOccurs="unbounded">
+				<xs:element ref="Reduction" minOccurs="0">
+					<xs:annotation>
+						<xs:documentation>Details about reductions. Note that both, reductions and surcharges, are always provided as positive values.</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element ref="Surcharge" minOccurs="0">
+					<xs:annotation>
+						<xs:documentation>Details about surcharges. Note that both, reductions and surcharges, are always provided as positive values.</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+			</xs:choice>
+			<xs:element ref="TotalOfReductionAndSurcharge" minOccurs="0"/>
+			<xs:element ref="ext:ReductionAndSurchargeDetailsExtension" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="AdditionalForecastInformationType">
+		<xs:sequence>
+			<xs:element ref="DocumentReference" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>Partner's reference to any document (e.g. CallOff, PreviousCallOff, Order, Contract, Release, Agreement).</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="LastDeliveryReference" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>Information regarding the last delivery like ASN number, ASN date, delivery date and quantities.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="CumulativeScheduledQuantity" type="ConditionalUnitType" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Cumulative Scheduled Quantity. This amount is based on plan data and not on data based on shipped or received amounts.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="CumulativeReceivedQuantityLastPeriod" type="ExtendedPeriodType" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>For the last planing period: cumulative received quantity (CRQ) and CRQ start and end date.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="CumulativeReceivedQuantitySummary" type="ExtendedPeriodType" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>For the actual planing period: cumulative received quantity (CRQ) and CRQ start and end date.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="PlanningHorizion" type="ExtendedPeriodType" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Planning horizon start and end date.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="MaterialAuthorization" type="ExtendedPeriodType" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Details about the material authorization.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="ProductionAuthorization" type="ExtendedPeriodType" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Details about the production authorization.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="SEPADirectDebitType">
+		<xs:sequence>
+			<xs:element ref="Type" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>The type of SEPA direct debit.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="BIC">
+				<xs:annotation>
+					<xs:documentation>
+						Bank identifier code
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="IBAN">
+				<xs:annotation>
+					<xs:documentation>
+						International bank account number
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="BankAccountOwner">
+				<xs:annotation>
+					<xs:documentation>
+						Owner of the bank account.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="CreditorID">
+				<xs:annotation>
+					<xs:documentation>
+						The creditor ID of the SEPA direct debit.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="MandateReference">
+				<xs:annotation>
+					<xs:documentation>
+						The mandate reference of the SEPA direct debit.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="DebitCollectionDate">
+				<xs:annotation>
+					<xs:documentation>
+						The debit collection date.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ShipperType">
+		<xs:complexContent>
+			<xs:extension base="BusinessEntityType">
+				<xs:sequence>
+					<xs:element ref="ext:ShipperExtension" minOccurs="0"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="SupplierType">
+		<xs:complexContent>
+			<xs:extension base="BusinessEntityType">
+				<xs:sequence>
+					<xs:element ref="EBPP_ConsolidatorsBillerID" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation>ID of the supplier at the consolidator's side.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element ref="SupplierIDissuedByCustomer" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation>The ID of the supplier issued by the customer.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element ref="ext:SupplierExtension" minOccurs="0"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="TaxRateType">
+		<xs:simpleContent>
+			<xs:extension base="PercentageType">
+				<xs:attribute ref="TaxCode" use="required">
+					<xs:annotation>
+						<xs:documentation>The VAT code for the used tax rate.</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+			</xs:extension>
+		</xs:simpleContent>
+	</xs:complexType>
+	<xs:complexType name="TaxType">
+		<xs:sequence>
+			<xs:element ref="VAT" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Used to provide information about the VAT or a potential tax exemptation (if applicable).</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="OtherTax" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>Used to provide information about other tax.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="ext:TaxExtension" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="TransportDetailType">
+		<xs:annotation>
+			<xs:documentation>Transport transit information.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="TransportStageCode" type="xs:string" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Transport stage coded. Please use codes from the Edifact code list,  i.e. 1="Inland transport", 12="At departure", ...</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="TransportModeCode" type="xs:string" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Transport mode coded. Please use codes from the Edifact code list, UN/ECE Recommendation No 19.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="TransportMeansCode" type="xs:string" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Transport means coded. Please use codes from the Edifact code list,  i.e. 25="Rail express", 31="Truck", ...</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="TransportMeansIdentification" type="xs:string" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Depending on the means of transport (TransportMeansCode), use the registration number (license plate number) of the truck and carriage or swap body number, the ship name or flight number.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="CarrierIdentifier" type="xs:string" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Identifier of the carrierr.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="UnitPriceType">
+		<xs:simpleContent>
+			<xs:extension base="Decimal4Type">
+				<xs:attribute ref="BaseQuantity" use="optional">
+					<xs:annotation>
+						<xs:documentation>Base quantity to which the unit price is related, i.e. 1, 100, etc.</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute ref="PriceType" use="optional">
+					<xs:annotation>
+						<xs:documentation>Indicates whether the price is the calculation net (including allowances/charges, excluding taxes) or the calculation gross price (excluding allowances/charges/taxes) . If this attribute is not specified the UnitPrice is considered as calculation gross price.</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+			</xs:extension>
+		</xs:simpleContent>
+	</xs:complexType>
+	<xs:complexType name="UnitType">
+		<xs:simpleContent>
+			<xs:extension base="Decimal4Type">
+				<xs:attribute ref="Unit" use="required">
+					<xs:annotation>
+						<xs:documentation>The type of unit. ERPEL recommends the use of code list UN/ECE recommendation 20. Note, that ERPEL supports both representations for piece: PCE and C62. A list of valid codes may be found under https://docs.ecosio.com/files/Measure_Unit_Qualifiers_6411.pdf</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+			</xs:extension>
+		</xs:simpleContent>
+	</xs:complexType>
+	<xs:complexType name="ConditionalUnitType">
+		<xs:simpleContent>
+			<xs:extension base="Decimal4Type">
+				<xs:attribute ref="Unit" use="optional">
+					<xs:annotation>
+						<xs:documentation>The type of unit. ERPEL recommends the use of code list UN/ECE recommendation 20. Note, that ERPEL supports both representations for piece: PCE and C62. A list of valid codes may be found under https://docs.ecosio.com/files/Measure_Unit_Qualifiers_6411.pdf</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+			</xs:extension>
+		</xs:simpleContent>
+	</xs:complexType>
+	<xs:complexType name="UniversalBankTransactionType">
+		<xs:sequence>
+			<xs:element ref="BeneficiaryAccount" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>The account of the beneficiary.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="PaymentReference" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>A payment reference which may be provided in order to allow for an automated processing of the payment.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+		<xs:attribute ref="ConsolidatorPayable" use="optional">
+			<xs:annotation>
+				<xs:documentation>Indicates whether the payment is payable on a consolidator platform. In this case the attribute must be set to true.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+	</xs:complexType>
+	<xs:complexType name="VATType">
+		<xs:choice>
+			<xs:element ref="TaxExemption" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>
+						Reason for the tax exemption.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:sequence>
+				<xs:element ref="Item" maxOccurs="unbounded">
+					<xs:annotation>
+						<xs:documentation>Element used to aggregate certain tax information.</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+			</xs:sequence>
+		</xs:choice>
+	</xs:complexType>
+</xs:schema>

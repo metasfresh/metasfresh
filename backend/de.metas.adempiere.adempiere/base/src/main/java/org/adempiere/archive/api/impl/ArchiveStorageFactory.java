@@ -10,113 +10,131 @@ package org.adempiere.archive.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
-import java.util.Map;
-import java.util.Properties;
-import java.util.concurrent.ConcurrentHashMap;
-
+import de.metas.cache.CCache;
+import de.metas.logging.LogManager;
+import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.Value;
 import org.adempiere.archive.api.IArchiveStorageFactory;
 import org.adempiere.archive.spi.IArchiveStorage;
 import org.adempiere.archive.spi.impl.DBArchiveStorage;
 import org.adempiere.archive.spi.impl.FilesystemArchiveStorage;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.adempiere.service.IClientDAO;
-import org.adempiere.util.proxy.Cached;
+import org.adempiere.util.reflect.ClassReference;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_AD_Client;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
-import org.compiere.util.Util.ArrayKey;
+import org.slf4j.Logger;
 
-import de.metas.cache.annotation.CacheCtx;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class ArchiveStorageFactory implements IArchiveStorageFactory
 {
-	private final Map<ArrayKey, Class<? extends IArchiveStorage>> storageClasses = new ConcurrentHashMap<ArrayKey, Class<? extends IArchiveStorage>>();
+	private static final Logger logger = LogManager.getLogger(ArchiveStorageFactory.class);
+	private final IClientDAO clientDAO = Services.get(IClientDAO.class);
+
+	@Value(staticConstructor = "of")
+	private static class ArchiveStorageClassKey
+	{
+		@NonNull StorageType storageType;
+		@NonNull AccessMode accessMode;
+	}
+
+	private final ConcurrentHashMap<ArchiveStorageClassKey, ClassReference<? extends IArchiveStorage>> storageClasses = new ConcurrentHashMap<>();
+
+	@Value(staticConstructor = "of")
+	private static class ArchiveStorageKey
+	{
+		@NonNull ClientId clientId;
+		@NonNull StorageType storageType;
+		@NonNull AccessMode accessMode;
+	}
+
+	private final CCache<ArchiveStorageKey, IArchiveStorage> archiveStorages = CCache.<ArchiveStorageKey, IArchiveStorage>builder().build();
 
 	public ArchiveStorageFactory()
 	{
 		// Register defaults
-		registerArchiveStorage(STORAGETYPE_Database, AccessMode.ALL, DBArchiveStorage.class);
-		registerArchiveStorage(STORAGETYPE_Filesystem, AccessMode.SERVER, FilesystemArchiveStorage.class);
-	}
-
-	private static final ArrayKey createStorageClassesKey(@NonNull final String storageType, @NonNull final AccessMode accessMode)
-	{
-		final ArrayKey key = new ArrayKey(storageType, accessMode);
-		return key;
+		registerArchiveStorage(StorageType.Database, AccessMode.ALL, DBArchiveStorage.class);
+		registerArchiveStorage(StorageType.Filesystem, AccessMode.SERVER, FilesystemArchiveStorage.class);
 	}
 
 	@Override
-	public void registerArchiveStorage(final String storageType, final AccessMode accessMode, @NonNull final Class<? extends IArchiveStorage> storageClass)
+	public void registerArchiveStorage(
+			@NonNull final StorageType storageType,
+			@NonNull final AccessMode accessMode,
+			@NonNull final Class<? extends IArchiveStorage> storageClass)
 	{
-		final ArrayKey key = createStorageClassesKey(storageType, accessMode);
-		storageClasses.put(key, storageClass);
+		final ArchiveStorageClassKey key = ArchiveStorageClassKey.of(storageType, accessMode);
+		storageClasses.put(key, ClassReference.of(storageClass));
+		logger.info("Registered {}: {}", key, storageClass);
 	}
 
-	private Class<? extends IArchiveStorage> getArchiveStorageClass(final String storageType, final AccessMode accessMode)
+	private Class<? extends IArchiveStorage> getArchiveStorageClass(
+			@NonNull final StorageType storageType,
+			@NonNull final AccessMode accessMode)
 	{
 		// First try: by storageType and acessMode
-		ArrayKey key = createStorageClassesKey(storageType, accessMode);
-		Class<? extends IArchiveStorage> storageClass = storageClasses.get(key);
+		ArchiveStorageClassKey key = ArchiveStorageClassKey.of(storageType, accessMode);
+		ClassReference<? extends IArchiveStorage> storageClassRef = storageClasses.get(key);
 
 		// Second try: by storageType and AccessMode.ALL
-		if (storageClass == null)
+		if (storageClassRef == null)
 		{
-			key = createStorageClassesKey(storageType, AccessMode.ALL);
-			storageClass = storageClasses.get(key);
+			key = ArchiveStorageClassKey.of(storageType, AccessMode.ALL);
+			storageClassRef = storageClasses.get(key);
 		}
 
-		if (storageClass == null)
+		if (storageClassRef == null)
 		{
 			throw new AdempiereException("No archive storage class found for storage type '" + storageType + "' and access mode '" + accessMode + "'");
 		}
 
-		return storageClass;
+		return storageClassRef.getReferencedClass();
 	}
 
-	private String getStorageType(final Properties ctx, final int adClientId)
+	private StorageType getStorageType(final ClientId adClientId)
 	{
-		final I_AD_Client client = Services.get(IClientDAO.class).retriveClient(ctx, adClientId);
+		final I_AD_Client client = clientDAO.getById(adClientId);
 		if (client.isStoreArchiveOnFileSystem())
 		{
-			return STORAGETYPE_Filesystem;
+			return StorageType.Filesystem;
 		}
 		else
 		{
-			return STORAGETYPE_Database;
+			return StorageType.Database;
 		}
 	}
 
-	private String getStorageType(final I_AD_Archive archive)
+	private StorageType getStorageType(final I_AD_Archive archive)
 	{
 		if (archive.isFileSystem())
 		{
-			return STORAGETYPE_Filesystem;
+			return StorageType.Filesystem;
 		}
 		else
 		{
-			return STORAGETYPE_Database;
+			return StorageType.Database;
 		}
 	}
 
-	private AccessMode getAccessMode(final Properties ctx)
+	private AccessMode getAccessMode()
 	{
 		if (Ini.isSwingClient())
 		{
@@ -129,67 +147,70 @@ public class ArchiveStorageFactory implements IArchiveStorageFactory
 	}
 
 	@Override
-	public IArchiveStorage getArchiveStorage(Properties ctx)
+	public IArchiveStorage getArchiveStorage(final Properties ctx)
 	{
-		final int adClientId = Env.getAD_Client_ID(ctx);
-		final String storageType = getStorageType(ctx, adClientId);
-		final AccessMode accessMode = getAccessMode(ctx);
+		final ClientId adClientId = Env.getClientId(ctx);
+		final StorageType storageType = getStorageType(adClientId);
+		final AccessMode accessMode = getAccessMode();
 
-		final IArchiveStorage storage = getArchiveStorage(ctx, adClientId, storageType, accessMode);
-		return storage;
+		return getArchiveStorage(adClientId, storageType, accessMode);
 	}
 
 	@Override
-	public IArchiveStorage getArchiveStorage(I_AD_Archive archive)
+	public IArchiveStorage getArchiveStorage(final I_AD_Archive archive)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(archive);
-		final int adClientId = archive.getAD_Client_ID();
-		final String storageType = getStorageType(archive);
-		final AccessMode accessMode = getAccessMode(ctx);
+		final ClientId adClientId = ClientId.ofRepoId(archive.getAD_Client_ID());
+		final StorageType storageType = getStorageType(archive);
+		final AccessMode accessMode = getAccessMode();
 
-		final IArchiveStorage storage = getArchiveStorage(ctx, adClientId, storageType, accessMode);
-		return storage;
+		return getArchiveStorage(adClientId, storageType, accessMode);
 	}
 
-	@Cached(cacheName = I_AD_Client.Table_Name + "#IArchiveStorage#By#AD_Client_ID")
-	/* package */IArchiveStorage getArchiveStorage(@CacheCtx final Properties ctx, final int adClientId,
-			final String storageType, final AccessMode accessMode)
+	private IArchiveStorage getArchiveStorage(
+			final ClientId adClientId,
+			final StorageType storageType,
+			final AccessMode accessMode)
 	{
-		Class<? extends IArchiveStorage> storageClass = getArchiveStorageClass(storageType, accessMode);
+		final ArchiveStorageKey key = ArchiveStorageKey.of(adClientId, storageType, accessMode);
+		return archiveStorages.getOrLoad(key, this::createArchiveStorage);
+	}
+
+	private IArchiveStorage createArchiveStorage(@NonNull final ArchiveStorageKey key)
+	{
+		final Class<? extends IArchiveStorage> storageClass = getArchiveStorageClass(key.getStorageType(), key.getAccessMode());
 
 		try
 		{
 			final IArchiveStorage storage = storageClass.newInstance();
-			storage.init(ctx, adClientId);
-
+			storage.init(key.getClientId());
 			return storage;
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
 			throw AdempiereException.wrapIfNeeded(e)
 					.appendParametersToMessage()
-					.setParameter("storageClass",storageClass);
+					.setParameter("storageClass", storageClass);
 		}
 	}
 
 	@Override
-	public IArchiveStorage getArchiveStorage(final Properties ctx, final String storageType)
+	public IArchiveStorage getArchiveStorage(final Properties ctx, final StorageType storageType)
 	{
-		final int adClientId = Env.getAD_Client_ID(ctx);
-		final AccessMode accessMode = getAccessMode(ctx);
-		return getArchiveStorage(ctx, adClientId, storageType, accessMode);
+		final ClientId adClientId = Env.getClientId(ctx);
+		final AccessMode accessMode = getAccessMode();
+		return getArchiveStorage(adClientId, storageType, accessMode);
 	}
 
 	@Override
-	public IArchiveStorage getArchiveStorage(final Properties ctx, final String storageType, final AccessMode accessMode)
+	public IArchiveStorage getArchiveStorage(final Properties ctx, final StorageType storageType, final AccessMode accessMode)
 	{
-		final int adClientId = Env.getAD_Client_ID(ctx);
-		return getArchiveStorage(ctx, adClientId, storageType, accessMode);
+		final ClientId adClientId = Env.getClientId(ctx);
+		return getArchiveStorage(adClientId, storageType, accessMode);
 	}
 
 	/**
 	 * Remove all registered {@link IArchiveStorage} classes.
-	 * 
+	 * <p>
 	 * NOTE: to be used only in testing
 	 */
 	public void removeAllArchiveStorages()

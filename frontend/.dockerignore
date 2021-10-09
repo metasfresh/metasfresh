@@ -3,3 +3,4 @@ npm-debug.log
 ansible
 docs
 .git
+buildfile.groovy

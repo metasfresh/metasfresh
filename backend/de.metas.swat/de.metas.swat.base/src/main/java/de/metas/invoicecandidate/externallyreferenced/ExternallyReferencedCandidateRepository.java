@@ -15,6 +15,7 @@ import de.metas.invoicecandidate.api.InvoiceCandidateMultiQuery;
 import de.metas.invoicecandidate.api.InvoiceCandidateMultiQuery.InvoiceCandidateMultiQueryBuilder;
 import de.metas.invoicecandidate.api.InvoiceCandidateQuery;
 import de.metas.invoicecandidate.externallyreferenced.ExternallyReferencedCandidate.ExternallyReferencedCandidateBuilder;
+import de.metas.invoicecandidate.location.adapter.InvoiceCandidateLocationAdapterFactory;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Detail;
@@ -47,6 +48,7 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
+import java.sql.Timestamp;
 import java.time.ZoneId;
 import java.util.Collection;
 import java.util.List;
@@ -162,7 +164,7 @@ public class ExternallyReferencedCandidateRepository
 		icRecord.setExternalLineId(ExternalId.toValue(ic.getExternalLineId()));
 
 		saveRecord(icRecord);
-		final InvoiceCandidateId persistedInvoiceCandidateId =  InvoiceCandidateId.ofRepoId(icRecord.getC_Invoice_Candidate_ID());
+		final InvoiceCandidateId persistedInvoiceCandidateId = InvoiceCandidateId.ofRepoId(icRecord.getC_Invoice_Candidate_ID());
 
 		storeInvoiceDetailItems(persistedInvoiceCandidateId, ic.getInvoiceDetailItems());
 
@@ -173,9 +175,9 @@ public class ExternallyReferencedCandidateRepository
 			@NonNull final ExternallyReferencedCandidate invoiceCandidate,
 			@NonNull final I_C_Invoice_Candidate icRecord)
 	{
-		icRecord.setBill_BPartner_ID(invoiceCandidate.getBillPartnerInfo().getBpartnerId().getRepoId());
-		icRecord.setBill_Location_ID(invoiceCandidate.getBillPartnerInfo().getBpartnerLocationId().getRepoId());
-		icRecord.setBill_User_ID(BPartnerContactId.toRepoId(invoiceCandidate.getBillPartnerInfo().getContactId()));
+		InvoiceCandidateLocationAdapterFactory
+				.billLocationAdapter(icRecord)
+				.setFrom(invoiceCandidate.getBillPartnerInfo());
 	}
 
 	private void syncQtysToRecord(
@@ -208,9 +210,9 @@ public class ExternallyReferencedCandidateRepository
 			{
 				query = InvoiceCandidateQuery.builder()
 						.externalIds(ExternalHeaderIdWithExternalLineIds.builder()
-								.externalHeaderId(invoiceCandidateLookupKey.getExternalHeaderId())
-								.externalLineId(invoiceCandidateLookupKey.getExternalLineId())
-								.build())
+											 .externalHeaderId(invoiceCandidateLookupKey.getExternalHeaderId())
+											 .externalLineId(invoiceCandidateLookupKey.getExternalLineId())
+											 .build())
 						.build();
 			}
 			multiQuery.query(query);
@@ -298,10 +300,10 @@ public class ExternallyReferencedCandidateRepository
 
 	/**
 	 * Persists the given invoice detail items that are not considered empty.
-	 * @see InvoiceDetailItem#isEmpty()
 	 *
-	 * @param invoiceCandidateId	Id of the invoice candidate to which the detail items are referring.
-	 * @param invoiceDetailItems    TO holding additional details about invoice candidate.
+	 * @param invoiceCandidateId Id of the invoice candidate to which the detail items are referring.
+	 * @param invoiceDetailItems TO holding additional details about invoice candidate.
+	 * @see InvoiceDetailItem#isEmpty()
 	 */
 	private void storeInvoiceDetailItems(final InvoiceCandidateId invoiceCandidateId, final List<InvoiceDetailItem> invoiceDetailItems)
 	{
@@ -316,13 +318,30 @@ public class ExternallyReferencedCandidateRepository
 
 	private I_C_Invoice_Detail createI_C_InvoiceDetail(final InvoiceCandidateId invoiceCandidateId, final InvoiceDetailItem invoiceDetailItem)
 	{
+
 		final I_C_Invoice_Detail invoiceDetailEntity = newInstance(I_C_Invoice_Detail.class);
 
 		invoiceDetailEntity.setC_Invoice_Candidate_ID(invoiceCandidateId.getRepoId());
+		invoiceDetailEntity.setAD_Org_ID(invoiceDetailItem.getOrgId().getRepoId());
 		invoiceDetailEntity.setSeqNo(NumberUtils.asInt(invoiceDetailItem.getSeqNo(), 0));
 		invoiceDetailEntity.setDescription(invoiceDetailItem.getDescription());
 		invoiceDetailEntity.setLabel(invoiceDetailItem.getLabel());
+		invoiceDetailEntity.setNote(invoiceDetailItem.getNote());
+		invoiceDetailEntity.setPriceActual(invoiceDetailItem.getPrice());
+		invoiceDetailEntity.setDate(getDate(invoiceDetailItem));
 
 		return invoiceDetailEntity;
+	}
+
+	private Timestamp getDate(@NonNull final InvoiceDetailItem invoiceDetailItem)
+	{
+		if (invoiceDetailItem.getDate() != null)
+		{
+			final OrgId orgId = invoiceDetailItem.getOrgId();
+			final ZoneId timeZone = orgDAO.getTimeZone(orgId);
+			return TimeUtil.asTimestamp(invoiceDetailItem.getDate(), timeZone);
+		}
+
+		return null;
 	}
 }

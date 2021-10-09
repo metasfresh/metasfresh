@@ -2,14 +2,11 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 
+import history from '../../services/History';
 import { getElementBreadcrumb } from '../../actions/MenuActions';
 import BookmarkButton from './BookmarkButton';
 
 class MenuOverlayItem extends Component {
-  constructor(props) {
-    super(props);
-  }
-
   componentDidMount() {
     const { query } = this.props;
     if (!query && document.getElementsByClassName('js-menu-overlay')[0]) {
@@ -23,6 +20,7 @@ class MenuOverlayItem extends Component {
       handleNewRedirect,
       openModal,
       caption,
+      breadcrumb,
     } = this.props;
 
     if (e) {
@@ -33,7 +31,11 @@ class MenuOverlayItem extends Component {
     if (type === 'newRecord') {
       handleNewRedirect(elementId);
     } else if (type === 'window' || type === 'board') {
-      this.handleClick(elementId, type);
+      if (breadcrumb[1] && breadcrumb[1].nodeId === nodeId) {
+        history.go(0);
+      } else {
+        this.handleClick(elementId, type);
+      }
     } else if (type === 'group') {
       handleClickOnFolder(e, nodeId);
     } else if (type === 'report' || type === 'process') {
@@ -264,6 +266,15 @@ MenuOverlayItem.propTypes = {
   onUpdateData: PropTypes.func,
   transparentBookmarks: PropTypes.bool,
   children: PropTypes.node,
+  breadcrumb: PropTypes.array,
 };
 
-export default connect()(MenuOverlayItem);
+const mapStateToProps = (state) => {
+  return {
+    breadcrumb: state.menuHandler.breadcrumb,
+  };
+};
+
+export default connect(mapStateToProps, null, null, { forwardRef: true })(
+  MenuOverlayItem
+);

@@ -96,8 +96,10 @@ public class PPOrder
 	 */
 	Instant dateStartSchedule;
 
+	/** qty in stocking UOM */
 	BigDecimal qtyRequired;
 
+	/** qty in stocking UOM */
 	BigDecimal qtyDelivered;
 
 	/**

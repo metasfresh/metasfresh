@@ -33,6 +33,7 @@ import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.UUID;
 
+import de.metas.common.util.time.SystemTime;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.junit.jupiter.api.Test;
@@ -48,7 +49,6 @@ import de.metas.tourplanning.model.I_M_Tour;
 import de.metas.tourplanning.model.I_M_TourVersion;
 import de.metas.tourplanning.model.I_M_Tour_Instance;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 
 /**
  * Test a scenario which involves

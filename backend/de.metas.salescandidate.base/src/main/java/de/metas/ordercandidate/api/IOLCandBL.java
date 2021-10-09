@@ -22,11 +22,7 @@ package de.metas.ordercandidate.api;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-
-import org.compiere.model.PO;
-
+import de.metas.async.AsyncBatchId;
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryCreateRequest;
 import de.metas.document.DocTypeId;
@@ -42,11 +38,15 @@ import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.PricingSystemId;
 import de.metas.shipping.ShipperId;
+import de.metas.user.UserId;
 import de.metas.util.ISingletonService;
+import org.compiere.model.PO;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
 
 /**
  * @author RC
- *
  */
 public interface IOLCandBL extends ISingletonService
 {
@@ -55,7 +55,7 @@ public interface IOLCandBL extends ISingletonService
 	/**
 	 * Creates and updates orders.
 	 */
-	void process(OLCandProcessorDescriptor processor);
+	void process(OLCandProcessorDescriptor processor, AsyncBatchId asyncBatchId);
 
 	I_C_OLCand invokeOLCandCreator(PO po, IOLCandCreator olCandCreator);
 
@@ -64,16 +64,16 @@ public interface IOLCandBL extends ISingletonService
 	 * <ul>
 	 * <li>{@link I_C_OLCand#isManualDiscount()}</li>
 	 * <li>{@link I_C_OLCand#isManualPrice()}</li>
-	 * <li>{@link I_C_OLCand#getQty()}</li>
+	 * <li>{@link I_C_OLCand#getQtyEntered()}</li>
 	 * <li>{@link I_C_OLCand#getPriceEntered()}</li>
 	 * <li>{@link I_C_OLCand#getDiscount()}</li>
 	 * <li>etc</li>
 	 * </ul>
 	 *
-	 * @param olc the order line candidate for which we compute the priceActual
-	 * @param qtyOverride if not <code>null</code>, then this value is used instead of {@link I_C_OLCand#getQty()}
+	 * @param olCand                  the order line candidate for which we compute the priceActual
+	 * @param qtyOverride             if not <code>null</code>, then this value is used instead of {@link I_C_OLCand#getQtyEntered()}
 	 * @param pricingSystemIdOverride if not <code>null</code>, then this value is used instead of {@link I_C_OLCand#getM_PricingSystem_ID()}
-	 * @Param date to be used in retrieving the actual price
+	 * @param date to be used in retrieving the actual price
 	 */
 	IPricingResult computePriceActual(I_C_OLCand olCand, BigDecimal qtyOverride, PricingSystemId pricingSystemIdOverride, LocalDate date);
 
@@ -107,4 +107,7 @@ public interface IOLCandBL extends ISingletonService
 
 	DocTypeId getOrderDocTypeId(OLCandOrderDefaults orderDefaults, I_C_OLCand orderCandidateRecord);
 
+	void markAsProcessed(final OLCand olCand);
+
+	void markAsError(final UserId userInChargeId, final OLCand olCand, final Exception ex);
 }

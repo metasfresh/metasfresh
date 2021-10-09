@@ -21,18 +21,62 @@ class DatetimeRange extends Component {
 
   /**
    * @method componentDidMount
-   * @summary ToDo: Describe the method
-   * @todo Write the documentation
+   * @summary lifecycle hook - We set in the local state the `startDate` and `endDate` after the component is mounted
    */
   componentDidMount() {
-    const { value, valueTo } = this.props;
-    if (value && valueTo) {
+    const {
+      isFilterActive,
+      value,
+      valueTo,
+      defaultValue,
+      defaultValueTo,
+      field,
+      updateItems,
+    } = this.props;
+    if (!isFilterActive && defaultValue && defaultValueTo) {
       this.setState({
-        startDate: Moment(value),
-        endDate: Moment(valueTo),
+        startDate: Moment(defaultValue),
+        endDate: Moment(defaultValueTo),
       });
+      updateItems &&
+        updateItems({
+          widgetField: field,
+          value: defaultValue,
+          valueTo: defaultValueTo,
+        });
+    } else {
+      if (value && valueTo) {
+        this.setState({
+          startDate: Moment(value),
+          endDate: Moment(valueTo),
+        });
+      }
     }
   }
+
+  /**
+   * @method handleClear
+   * @summary Clears the DatatimeRange input by updating the startDate and endDate into the local state
+   */
+  handleClear = () => {
+    const { onChange } = this.props;
+
+    this.setState(
+      {
+        startDate: undefined,
+        endDate: undefined,
+      },
+      () => {
+        onChange(undefined, undefined);
+        // even if we reset the values we get autofocus on the input and calendar shown
+        // we need to use this workaround below to cancel programatically such that we hide the calendars automatically
+        const rangeInputEl = document.querySelector('div.range_inputs');
+        const rangeInputButtons = rangeInputEl.querySelectorAll('button');
+        const cancelBtn = rangeInputButtons ? rangeInputButtons[1] : null;
+        cancelBtn && cancelBtn.click();
+      }
+    );
+  };
 
   /**
    * @method handleApply
@@ -74,12 +118,8 @@ class DatetimeRange extends Component {
       [last30days]: [Moment().subtract(29, 'days'), Moment()],
       [thisMonth]: [Moment().startOf('month'), Moment().endOf('month')],
       [lastMonth]: [
-        Moment()
-          .subtract(1, 'month')
-          .startOf('month'),
-        Moment()
-          .subtract(1, 'month')
-          .endOf('month'),
+        Moment().subtract(1, 'month').startOf('month'),
+        Moment().subtract(1, 'month').endOf('month'),
       ],
     };
     const { startDate, endDate } = this.state;
@@ -112,6 +152,7 @@ class DatetimeRange extends Component {
         onApply={this.handleApply}
         onShow={onShow}
         onHide={onHide}
+        onEvent={this.handleFocus}
         locale={{
           format: Moment.localeData().longDateFormat(format),
           firstDay: 1,
@@ -142,7 +183,17 @@ class DatetimeRange extends Component {
           )}
         >
           {availableDates}
-          <i className="meta-icon-calendar input-icon-right" />
+          {startDate && (
+            <i
+              className="meta-icon-close-alt input-icon-right"
+              onClick={this.handleClear}
+            />
+          )}
+          <i
+            className={classnames('meta-icon-calendar', 'input-icon-right', {
+              'input-icon-m-right input-icon-m-top-small': startDate && endDate,
+            })}
+          />
         </button>
       </DateRangePicker>
     );
@@ -170,6 +221,11 @@ DatetimeRange.propTypes = {
   mandatory: PropTypes.any,
   validStatus: PropTypes.any,
   timePicker: PropTypes.any,
+  isFilterActive: PropTypes.bool,
+  defaultValue: PropTypes.string,
+  defaultValueTo: PropTypes.string,
+  field: PropTypes.string,
+  updateItems: PropTypes.func,
 };
 
 export default DatetimeRange;

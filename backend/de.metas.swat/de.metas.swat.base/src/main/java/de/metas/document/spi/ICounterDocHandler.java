@@ -33,15 +33,11 @@ import de.metas.document.engine.IDocument;
 public interface ICounterDocHandler
 {
 	/**
-	 *
-	 * @param document
 	 * @return <code>true</code> if the system is supposed to create a counter document for the given document.
 	 */
 	boolean isCreateCounterDocument(IDocument document);
 
 	/**
-	 *
-	 * @param document
 	 * @return <code>true</code> if the given <code>document</code> is actually a counter document.
 	 */
 	boolean isCounterDocument(IDocument document);

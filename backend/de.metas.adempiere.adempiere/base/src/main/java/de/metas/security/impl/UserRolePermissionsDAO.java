@@ -1,65 +1,10 @@
 package de.metas.security.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.Consumer;
-import java.util.function.Predicate;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
-import org.adempiere.ad.element.api.AdWindowId;
-import org.adempiere.ad.persistence.EntityTypesCache;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.tree.AdTreeId;
-import org.adempiere.service.ClientId;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.adempiere.util.proxy.Cached;
-import org.compiere.model.IQuery;
-import org.compiere.model.I_AD_Column_Access;
-import org.compiere.model.I_AD_Document_Action_Access;
-import org.compiere.model.I_AD_Form;
-import org.compiere.model.I_AD_Form_Access;
-import org.compiere.model.I_AD_Org;
-import org.compiere.model.I_AD_Private_Access;
-import org.compiere.model.I_AD_Process;
-import org.compiere.model.I_AD_Process_Access;
-import org.compiere.model.I_AD_Role;
-import org.compiere.model.I_AD_Role_Included;
-import org.compiere.model.I_AD_Role_OrgAccess;
-import org.compiere.model.I_AD_Table_Access;
-import org.compiere.model.I_AD_Task;
-import org.compiere.model.I_AD_Task_Access;
-import org.compiere.model.I_AD_User_OrgAccess;
-import org.compiere.model.I_AD_User_Roles;
-import org.compiere.model.I_AD_Window;
-import org.compiere.model.I_AD_Window_Access;
-import org.compiere.model.I_AD_Workflow;
-import org.compiere.model.I_AD_Workflow_Access;
-import org.compiere.model.X_AD_Table_Access;
-import org.compiere.util.DB;
-import org.compiere.util.DisplayType;
-import org.compiere.util.Env;
-import org.slf4j.Logger;
-
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.cache.CCache;
 import de.metas.cache.CacheMgt;
 import de.metas.document.DocTypeId;
@@ -87,6 +32,9 @@ import de.metas.security.permissions.PermissionsBuilder.CollisionPolicy;
 import de.metas.security.permissions.TableColumnPermission;
 import de.metas.security.permissions.TableColumnPermissions;
 import de.metas.security.permissions.TableColumnResource;
+import de.metas.security.permissions.TableOrgPermission;
+import de.metas.security.permissions.TableOrgPermissions;
+import de.metas.security.permissions.TableOrgResource;
 import de.metas.security.permissions.TablePermission;
 import de.metas.security.permissions.TablePermissions;
 import de.metas.security.permissions.TableResource;
@@ -108,11 +56,68 @@ import de.metas.user.UserGroupId;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
+import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.ad.persistence.EntityTypesCache;
+import org.adempiere.ad.table.api.AdTableId;
+import org.adempiere.ad.table.api.impl.TableIdsCache;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.tree.AdTreeId;
+import org.adempiere.service.ClientId;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.util.proxy.Cached;
+import org.compiere.model.IQuery;
+import org.compiere.model.I_AD_Column_Access;
+import org.compiere.model.I_AD_Document_Action_Access;
+import org.compiere.model.I_AD_Form;
+import org.compiere.model.I_AD_Form_Access;
+import org.compiere.model.I_AD_Org;
+import org.compiere.model.I_AD_Private_Access;
+import org.compiere.model.I_AD_Process;
+import org.compiere.model.I_AD_Process_Access;
+import org.compiere.model.I_AD_Role;
+import org.compiere.model.I_AD_Role_Included;
+import org.compiere.model.I_AD_Role_OrgAccess;
+import org.compiere.model.I_AD_Role_TableOrg_Access;
+import org.compiere.model.I_AD_Table_Access;
+import org.compiere.model.I_AD_Task;
+import org.compiere.model.I_AD_Task_Access;
+import org.compiere.model.I_AD_User_OrgAccess;
+import org.compiere.model.I_AD_User_Roles;
+import org.compiere.model.I_AD_Window;
+import org.compiere.model.I_AD_Window_Access;
+import org.compiere.model.I_AD_Workflow;
+import org.compiere.model.I_AD_Workflow_Access;
+import org.compiere.model.I_C_OrgAssignment;
+import org.compiere.model.X_AD_Table_Access;
+import org.compiere.util.DB;
+import org.compiere.util.DisplayType;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
+
+import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
+
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 {
 	private static final transient Logger logger = LogManager.getLogger(UserRolePermissionsDAO.class);
-
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private static final Set<String> ROLE_DEPENDENT_TABLENAMES = ImmutableSet.of(
 			// I_AD_Role.Table_Name // NEVER include the AD_Role
 			I_AD_User_Roles.Table_Name, // User to Role assignment (see https://github.com/metasfresh/metasfresh-webui-api/issues/482)
@@ -121,6 +126,7 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 			// Org Access
 			I_AD_User_OrgAccess.Table_Name,
 			I_AD_Role_OrgAccess.Table_Name,
+			I_AD_Role_TableOrg_Access.Table_Name,
 			// Access records
 			I_AD_Window_Access.Table_Name,
 			I_AD_Process_Access.Table_Name,
@@ -135,14 +141,18 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 
 	private final AtomicLong version = new AtomicLong(1);
 
-	/** Aggregated permissions per key */
+	/**
+	 * Aggregated permissions per key
+	 */
 	private CCache<UserRolePermissionsKey, IUserRolePermissions> //
-	permissionsByKey = CCache.<UserRolePermissionsKey, IUserRolePermissions> builder()
+			permissionsByKey = CCache.<UserRolePermissionsKey, IUserRolePermissions>builder()
 			.tableName(I_AD_Role.Table_Name)
 			.build();
 
-	/** Individual (not-aggregated) permissions per key */
-	private CCache<UserRolePermissionsKey, UserRolePermissions> individialPermissionsByKey = CCache.<UserRolePermissionsKey, UserRolePermissions> builder()
+	/**
+	 * Individual (not-aggregated) permissions per key
+	 */
+	private CCache<UserRolePermissionsKey, UserRolePermissions> individialPermissionsByKey = CCache.<UserRolePermissionsKey, UserRolePermissions>builder()
 			.tableName(I_AD_Role.Table_Name)
 			.build();
 
@@ -243,7 +253,7 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 		for (final RoleId roleId : Services.get(IRoleDAO.class).getUserRoleIds(adUserId))
 		{
 			final IUserRolePermissions permissions = getUserRolePermissions(roleId, adUserId, clientId, date);
-			if (permissions.isOrgAccess(adOrgId, Access.READ)) // readonly access is fine for us
+			if (permissions.isOrgAccess(adOrgId, null, Access.READ)) // readonly access is fine for us
 			{
 				permissionsWithOrgAccess.add(permissions);
 			}
@@ -262,7 +272,7 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 		for (final RoleId roleId : Services.get(IRoleDAO.class).getUserRoleIds(adUserId))
 		{
 			final IUserRolePermissions permissions = getUserRolePermissions(roleId, adUserId, clientId, date);
-			if (permissions.isOrgAccess(adOrgId, Access.READ)) // readonly access is fine for us
+			if (permissions.isOrgAccess(adOrgId, null, Access.READ)) // readonly access is fine for us
 			{
 				return Optional.of(permissions);
 			}
@@ -330,7 +340,7 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 				@Override
 				public UserRolePermissionsBuilder initialValue(final IRolesTreeNode node)
 				{
-					final UserRolePermissions permissions = getIndividialUserRolePermissions(node.getRoleId(), adUserId, adClientId);
+					final UserRolePermissions permissions = getIndividualUserRolePermissions(node.getRoleId(), adUserId, adClientId);
 					return UserRolePermissionsBuilder.of(UserRolePermissionsDAO.this, permissions);
 				}
 
@@ -349,7 +359,7 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 				@Override
 				public UserRolePermissions leafValue(final IRolesTreeNode node)
 				{
-					return getIndividialUserRolePermissions(node.getRoleId(), adUserId, adClientId);
+					return getIndividualUserRolePermissions(node.getRoleId(), adUserId, adClientId);
 				}
 			});
 		}
@@ -362,7 +372,7 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 		}
 	}
 
-	final UserRolePermissions getIndividialUserRolePermissions(final RoleId adRoleId, final UserId adUserId, final ClientId adClientId)
+	final UserRolePermissions getIndividualUserRolePermissions(final RoleId adRoleId, final UserId adUserId, final ClientId adClientId)
 	{
 		final UserRolePermissionsKey key = UserRolePermissionsKey.of(adRoleId, adUserId, adClientId, LocalDate.MIN);
 		return individialPermissionsByKey.getOrLoad(key, () -> new UserRolePermissionsBuilder(this)
@@ -435,7 +445,7 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 				.createQueryBuilderOutOfTrx(I_AD_User_OrgAccess.class)
 				.addEqualsFilter(I_AD_User_OrgAccess.COLUMNNAME_AD_User_ID, adUserId)
 				.addOnlyActiveRecordsFilter()
-				.addInSubQueryFilter(I_AD_User_OrgAccess.COLUMN_AD_Org_ID, I_AD_Org.COLUMN_AD_Org_ID, activeOrgsQuery)
+				.addInSubQueryFilter(I_AD_User_OrgAccess.COLUMNNAME_AD_Org_ID, I_AD_Org.COLUMNNAME_AD_Org_ID, activeOrgsQuery)
 				.create()
 				.list();
 
@@ -453,6 +463,41 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 		return builder.build();
 	}
 
+	public TableOrgPermissions retrieveTableOrgPermissions(final RoleId adRoleId)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		final TableOrgPermissions.Builder builder = TableOrgPermissions.builder();
+
+		queryBL.createQueryBuilderOutOfTrx(I_AD_Role_TableOrg_Access.class)
+				.addEqualsFilter(I_AD_Role_TableOrg_Access.COLUMNNAME_AD_Role_ID, adRoleId)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.stream()
+				.map(this::toTableOrgPermission)
+				.forEach(permission -> builder.addPermission(permission, CollisionPolicy.Merge));
+
+		return builder.build();
+	}
+
+	private TableOrgPermission toTableOrgPermission(@NonNull final I_AD_Role_TableOrg_Access record)
+	{
+		return TableOrgPermission.builder()
+				.resource(extractTableOrgResource(record))
+				.access(Access.ofCode(record.getAccess()))
+				.build();
+	}
+
+	private TableOrgResource extractTableOrgResource(@NonNull final I_AD_Role_TableOrg_Access record)
+	{
+		final AdTableId adTableId = AdTableId.ofRepoId(record.getAD_Table_ID());
+		@NonNull final String tableName = TableIdsCache.instance.getTableName(adTableId);
+		return TableOrgResource.builder()
+				.tableName(tableName)
+				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
+				.build();
+	}
+
 	@Cached(cacheName = I_AD_Role_OrgAccess.Table_Name + "#by#AD_User_ID")
 	public OrgPermissions retrieveRoleOrgPermissions(final RoleId adRoleId, final AdTreeId adTreeOrgId)
 	{
@@ -465,7 +510,7 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 				.createQueryBuilderOutOfTrx(I_AD_Role_OrgAccess.class)
 				.addEqualsFilter(I_AD_Role_OrgAccess.COLUMNNAME_AD_Role_ID, adRoleId)
 				.addOnlyActiveRecordsFilter()
-				.addInSubQueryFilter(I_AD_Role_OrgAccess.COLUMN_AD_Org_ID, I_AD_Org.COLUMN_AD_Org_ID, activeOrgsQuery)
+				.addInSubQueryFilter(I_AD_Role_OrgAccess.COLUMNNAME_AD_Org_ID, I_AD_Org.COLUMNNAME_AD_Org_ID, activeOrgsQuery)
 				.create()
 				.list();
 
@@ -666,7 +711,7 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 		permissionsCollector.addPermission(defaultPermissions, CollisionPolicy.Override);
 
 		return permissionsCollector.build();
-	}	// loadTableAccess
+	}    // loadTableAccess
 
 	@Cached(cacheName = I_AD_Column_Access.Table_Name + "#Accesses")
 	public TableColumnPermissions retrieveTableColumnPermissions(final RoleId adRoleId)
@@ -727,7 +772,7 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 		builder.addPermission(defaultPermission.build(), CollisionPolicy.Override);
 
 		return builder.build();
-	}	// loadColumnAccess
+	}    // loadColumnAccess
 
 	@Override
 	public void updateAccessRecordsForAllRoles()
@@ -1289,5 +1334,24 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 				.addEqualsFilter(I_AD_Private_Access.COLUMNNAME_AD_UserGroup_ID, principal.getUserGroupId())
 				.addEqualsFilter(I_AD_Private_Access.COLUMNNAME_AD_Table_ID, recordRef.getAD_Table_ID())
 				.addEqualsFilter(I_AD_Private_Access.COLUMNNAME_Record_ID, recordRef.getRecord_ID());
+	}
+
+
+	@Override
+	public void deleteUserOrgAccessByUserId(final UserId userId)
+	{
+		queryBL.createQueryBuilder(I_AD_User_OrgAccess.class)
+				.addEqualsFilter(I_AD_User_OrgAccess.COLUMNNAME_AD_User_ID, userId)
+				.create()
+				.delete();
+	}
+
+	@Override
+	public void deleteUserOrgAssignmentByUserId(final UserId userId)
+	{
+		queryBL.createQueryBuilder(I_C_OrgAssignment.class)
+				.addEqualsFilter(I_C_OrgAssignment.COLUMNNAME_AD_User_ID, userId)
+				.create()
+				.delete();
 	}
 }

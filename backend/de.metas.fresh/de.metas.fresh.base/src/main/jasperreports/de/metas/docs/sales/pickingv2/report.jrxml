@@ -6,7 +6,7 @@
 	<property name="ireport.zoom" value="1.100000000000001"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="96"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="fresh\uat.xml"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="mf15"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
@@ -22,7 +22,6 @@ distinct
   bpartnername,
   orderdocumentno,
   preparationdate,
-  c_uom_id,
   ad_org_id,
   c_orderso_id
 from m_packageable_v
@@ -39,9 +38,6 @@ where orderdocumentno = $P{OrderDocumentNo};]]>
 	</field>
 	<field name="preparationdate" class="java.sql.Timestamp">
 		<property name="com.jaspersoft.studio.field.label" value="preparationdate"/>
-	</field>
-	<field name="c_uom_id" class="java.math.BigDecimal">
-		<property name="com.jaspersoft.studio.field.label" value="c_uom_id"/>
 	</field>
 	<field name="ad_org_id" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.label" value="ad_org_id"/>

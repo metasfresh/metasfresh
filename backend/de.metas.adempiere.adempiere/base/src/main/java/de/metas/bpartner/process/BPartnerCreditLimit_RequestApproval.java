@@ -1,5 +1,6 @@
 package de.metas.bpartner.process;
 
+import de.metas.i18n.AdMessageKey;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BPartner_CreditLimit;
@@ -26,7 +27,7 @@ public class BPartnerCreditLimit_RequestApproval extends JavaProcess implements 
 
 	public static final Topic USER_NOTIFICATIONS_TOPIC = Topic.remote("de.metas.bpartner.UserNotifications.CreditLimit");
 
-	private static final String MSG_Event_RequestApproval = "org.adempiere.bpartner.process.BPartnerCreditLimit_RequestApproval";
+	private static final AdMessageKey MSG_Event_RequestApproval = AdMessageKey.of("org.adempiere.bpartner.process.BPartnerCreditLimit_RequestApproval");
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)

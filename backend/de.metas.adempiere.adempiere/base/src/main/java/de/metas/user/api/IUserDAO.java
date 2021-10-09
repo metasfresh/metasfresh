@@ -22,46 +22,45 @@ package de.metas.user.api;
  * #L%
  */
 
-import java.sql.Timestamp;
+import de.metas.bpartner.BPartnerId;
+import de.metas.organization.OrgId;
+import de.metas.user.UserId;
+import de.metas.util.ISingletonService;
+import lombok.NonNull;
+import org.adempiere.service.ClientId;
+import org.compiere.model.I_AD_Preference;
+import org.compiere.model.I_AD_User;
+
+import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
-import org.adempiere.service.ClientId;
-
-import de.metas.adempiere.model.I_AD_User;
-import de.metas.bpartner.BPartnerId;
-import de.metas.user.UserId;
-import de.metas.util.ISingletonService;
-
 public interface IUserDAO extends ISingletonService
 {
-	String MSG_MailOrUsernameNotFound = "MailOrUsernameNotFound";
-
 	/**
 	 * Retrieves a user whose <code>Login</code> or <code>EMail</code> column equals the given <code>userId</code>.
 	 *
-	 * @param userId
 	 * @return user; never return null
 	 */
-	I_AD_User retrieveLoginUserByUserId(String userId);
+	org.compiere.model.I_AD_User retrieveLoginUserByUserId(String userId);
 
-	I_AD_User getByPasswordResetCode(String passwordResetCode);
+	org.compiere.model.I_AD_User getByPasswordResetCode(String passwordResetCode);
 
-	List<I_AD_User> retrieveUsersSubstitudedBy(Properties ctx, int adUserId, Timestamp date, String trxName);
-
-	I_AD_User retrieveUserOrNull(Properties ctx, int adUserId);
+	@Nullable
+	org.compiere.model.I_AD_User retrieveUserOrNull(Properties ctx, int adUserId);
 
 	/**
 	 * @deprecated please use {@link #getById(UserId)} instead
 	 */
 	@Deprecated
-	default I_AD_User getById(final int adUserRepoId)
+	default org.compiere.model.I_AD_User getById(final int adUserRepoId)
 	{
 		return getById(UserId.ofRepoId(adUserRepoId));
 	}
 
-	I_AD_User getById(UserId adUserId);
+	org.compiere.model.I_AD_User getById(UserId adUserId);
 
 	<T extends org.compiere.model.I_AD_User> T getByIdInTrx(UserId userId, Class<T> modelClass);
 
@@ -70,13 +69,16 @@ public interface IUserDAO extends ISingletonService
 		return getByIdInTrx(userId, org.compiere.model.I_AD_User.class);
 	}
 
-	I_AD_User getByIdInTrx(int adUserId);
+	org.compiere.model.I_AD_User getByIdInTrx(int adUserId);
 
-	/** @return user's full name or <code>?</code> if no found */
-	String retrieveUserFullname(int userRepoId);
+	/**
+	 * @return user's full name or <code>?</code> if no found
+	 */
+	String retrieveUserFullName(int userRepoId);
 
-	String retrieveUserFullname(UserId userId);
+	String retrieveUserFullName(UserId userId);
 
+	@Nullable
 	UserId retrieveUserIdByEMail(String email, ClientId adClientId);
 
 	/**
@@ -84,9 +86,18 @@ public interface IUserDAO extends ISingletonService
 	 */
 	Set<UserId> retrieveSystemUserIds();
 
+	boolean isSystemUser(UserId userId);
+
+	@Nullable
 	BPartnerId getBPartnerIdByUserId(final UserId userId);
 
-	Set<UserId> getUserIdsByBPartnerId(BPartnerId bpartnerId);
-
+	@Nullable
 	UserId retrieveUserIdByLogin(String login);
+
+	void save(I_AD_User user);
+
+	Optional<I_AD_User> getCounterpartUser(
+			@NonNull UserId sourceUserId,
+			@NonNull OrgId targetOrgId);
+
 }

@@ -5,8 +5,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import java.util.List;
 
 import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.mm.attributes.api.impl.LotNumberDateAttributeDAO;
 import org.springframework.stereotype.Service;
 
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -62,7 +62,7 @@ public class HULotNumberQuarantineService
 
 	public boolean isQuarantineLotNumber(@NonNull final AbstractHUAttributeStorage huAttributeStorage)
 	{
-		final String lotNumber = huAttributeStorage.getValueAsString(LotNumberDateAttributeDAO.ATTR_LotNumber);
+		final String lotNumber = huAttributeStorage.getValueAsString(AttributeConstants.ATTR_LotNumber);
 
 		final List<IHUProductStorage> productStorages = handlingUnitsBL
 				.getStorageFactory()

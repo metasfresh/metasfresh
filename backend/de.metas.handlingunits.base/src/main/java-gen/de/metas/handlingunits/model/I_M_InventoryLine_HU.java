@@ -1,138 +1,125 @@
 package de.metas.handlingunits.model;
 
+import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for M_InventoryLine_HU
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public interface I_M_InventoryLine_HU 
 {
 
-    /** TableName=M_InventoryLine_HU */
-    public static final String Table_Name = "M_InventoryLine_HU";
+	String Table_Name = "M_InventoryLine_HU";
 
-    /** AD_Table_ID=541345 */
-//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=541345 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 3 - Client - Org
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
-
-    /** Load Meta Data */
 
 	/**
-	 * Get Mandant.
-	 * Mandant für diese Installation.
+	 * Get Client.
+	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Client_ID();
+	int getAD_Client_ID();
 
-    /** Column name AD_Client_ID */
-    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Set Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Org_ID (int AD_Org_ID);
+	void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Get Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Org_ID();
+	int getAD_Org_ID();
 
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Maßeinheit.
-	 * Maßeinheit
+	 * Set UOM.
+	 * Unit of Measure
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setC_UOM_ID (int C_UOM_ID);
+	void setC_UOM_ID (int C_UOM_ID);
 
 	/**
-	 * Get Maßeinheit.
-	 * Maßeinheit
+	 * Get UOM.
+	 * Unit of Measure
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getC_UOM_ID();
+	int getC_UOM_ID();
 
-    /** Column name C_UOM_ID */
-    public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
+	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
-	 * Get Erstellt.
-	 * Datum, an dem dieser Eintrag erstellt wurde
+	 * Get Created.
+	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getCreated();
+	java.sql.Timestamp getCreated();
 
-    /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_M_InventoryLine_HU, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_M_InventoryLine_HU, Object>(I_M_InventoryLine_HU.class, "Created", null);
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
+	ModelColumn<I_M_InventoryLine_HU, Object> COLUMN_Created = new ModelColumn<>(I_M_InventoryLine_HU.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Erstellt durch.
-	 * Nutzer, der diesen Eintrag erstellt hat
+	 * Get Created By.
+	 * User who created this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getCreatedBy();
+	int getCreatedBy();
 
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Set Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsActive (boolean IsActive);
+	void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Get Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isActive();
+	boolean isActive();
 
-    /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_M_InventoryLine_HU, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_M_InventoryLine_HU, Object>(I_M_InventoryLine_HU.class, "IsActive", null);
-    /** Column name IsActive */
-    public static final String COLUMNNAME_IsActive = "IsActive";
+	ModelColumn<I_M_InventoryLine_HU, Object> COLUMN_IsActive = new ModelColumn<>(I_M_InventoryLine_HU.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
 	 * Set Handling Unit.
@@ -141,7 +128,7 @@ public interface I_M_InventoryLine_HU
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setM_HU_ID (int M_HU_ID);
+	void setM_HU_ID (int M_HU_ID);
 
 	/**
 	 * Get Handling Unit.
@@ -150,16 +137,41 @@ public interface I_M_InventoryLine_HU
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getM_HU_ID();
+	int getM_HU_ID();
 
-	public de.metas.handlingunits.model.I_M_HU getM_HU();
+	@Nullable de.metas.handlingunits.model.I_M_HU getM_HU();
 
-	public void setM_HU(de.metas.handlingunits.model.I_M_HU M_HU);
+	void setM_HU(@Nullable de.metas.handlingunits.model.I_M_HU M_HU);
 
-    /** Column definition for M_HU_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_InventoryLine_HU, de.metas.handlingunits.model.I_M_HU> COLUMN_M_HU_ID = new org.adempiere.model.ModelColumn<I_M_InventoryLine_HU, de.metas.handlingunits.model.I_M_HU>(I_M_InventoryLine_HU.class, "M_HU_ID", de.metas.handlingunits.model.I_M_HU.class);
-    /** Column name M_HU_ID */
-    public static final String COLUMNNAME_M_HU_ID = "M_HU_ID";
+	ModelColumn<I_M_InventoryLine_HU, de.metas.handlingunits.model.I_M_HU> COLUMN_M_HU_ID = new ModelColumn<>(I_M_InventoryLine_HU.class, "M_HU_ID", de.metas.handlingunits.model.I_M_HU.class);
+	String COLUMNNAME_M_HU_ID = "M_HU_ID";
+
+	/**
+	 * Set Phys. Inventory.
+	 * Parameters for a Physical Inventory
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setM_Inventory_ID (int M_Inventory_ID);
+
+	/**
+	 * Get Phys. Inventory.
+	 * Parameters for a Physical Inventory
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getM_Inventory_ID();
+
+	org.compiere.model.I_M_Inventory getM_Inventory();
+
+	void setM_Inventory(org.compiere.model.I_M_Inventory M_Inventory);
+
+	ModelColumn<I_M_InventoryLine_HU, org.compiere.model.I_M_Inventory> COLUMN_M_Inventory_ID = new ModelColumn<>(I_M_InventoryLine_HU.class, "M_Inventory_ID", org.compiere.model.I_M_Inventory.class);
+	String COLUMNNAME_M_Inventory_ID = "M_Inventory_ID";
 
 	/**
 	 * Set M_InventoryLine_HU.
@@ -168,7 +180,7 @@ public interface I_M_InventoryLine_HU
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setM_InventoryLine_HU_ID (int M_InventoryLine_HU_ID);
+	void setM_InventoryLine_HU_ID (int M_InventoryLine_HU_ID);
 
 	/**
 	 * Get M_InventoryLine_HU.
@@ -177,142 +189,125 @@ public interface I_M_InventoryLine_HU
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getM_InventoryLine_HU_ID();
+	int getM_InventoryLine_HU_ID();
 
-    /** Column definition for M_InventoryLine_HU_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_InventoryLine_HU, Object> COLUMN_M_InventoryLine_HU_ID = new org.adempiere.model.ModelColumn<I_M_InventoryLine_HU, Object>(I_M_InventoryLine_HU.class, "M_InventoryLine_HU_ID", null);
-    /** Column name M_InventoryLine_HU_ID */
-    public static final String COLUMNNAME_M_InventoryLine_HU_ID = "M_InventoryLine_HU_ID";
+	ModelColumn<I_M_InventoryLine_HU, Object> COLUMN_M_InventoryLine_HU_ID = new ModelColumn<>(I_M_InventoryLine_HU.class, "M_InventoryLine_HU_ID", null);
+	String COLUMNNAME_M_InventoryLine_HU_ID = "M_InventoryLine_HU_ID";
 
 	/**
-	 * Set Inventur-Position.
-	 * Eindeutige Position in einem Inventurdokument
+	 * Set Phys.Inventory Line.
+	 * Unique line in an Inventory document
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setM_InventoryLine_ID (int M_InventoryLine_ID);
+	void setM_InventoryLine_ID (int M_InventoryLine_ID);
 
 	/**
-	 * Get Inventur-Position.
-	 * Eindeutige Position in einem Inventurdokument
+	 * Get Phys.Inventory Line.
+	 * Unique line in an Inventory document
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getM_InventoryLine_ID();
+	int getM_InventoryLine_ID();
 
-	public org.compiere.model.I_M_InventoryLine getM_InventoryLine();
+	org.compiere.model.I_M_InventoryLine getM_InventoryLine();
 
-	public void setM_InventoryLine(org.compiere.model.I_M_InventoryLine M_InventoryLine);
+	void setM_InventoryLine(org.compiere.model.I_M_InventoryLine M_InventoryLine);
 
-    /** Column definition for M_InventoryLine_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_InventoryLine_HU, org.compiere.model.I_M_InventoryLine> COLUMN_M_InventoryLine_ID = new org.adempiere.model.ModelColumn<I_M_InventoryLine_HU, org.compiere.model.I_M_InventoryLine>(I_M_InventoryLine_HU.class, "M_InventoryLine_ID", org.compiere.model.I_M_InventoryLine.class);
-    /** Column name M_InventoryLine_ID */
-    public static final String COLUMNNAME_M_InventoryLine_ID = "M_InventoryLine_ID";
+	ModelColumn<I_M_InventoryLine_HU, org.compiere.model.I_M_InventoryLine> COLUMN_M_InventoryLine_ID = new ModelColumn<>(I_M_InventoryLine_HU.class, "M_InventoryLine_ID", org.compiere.model.I_M_InventoryLine.class);
+	String COLUMNNAME_M_InventoryLine_ID = "M_InventoryLine_ID";
 
 	/**
-	 * Set Buchmenge.
-	 * Buchmenge
+	 * Set Qty Book.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setQtyBook (java.math.BigDecimal QtyBook);
+	void setQtyBook (@Nullable BigDecimal QtyBook);
 
 	/**
-	 * Get Buchmenge.
-	 * Buchmenge
+	 * Get Qty Book.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getQtyBook();
+	BigDecimal getQtyBook();
 
-    /** Column definition for QtyBook */
-    public static final org.adempiere.model.ModelColumn<I_M_InventoryLine_HU, Object> COLUMN_QtyBook = new org.adempiere.model.ModelColumn<I_M_InventoryLine_HU, Object>(I_M_InventoryLine_HU.class, "QtyBook", null);
-    /** Column name QtyBook */
-    public static final String COLUMNNAME_QtyBook = "QtyBook";
+	ModelColumn<I_M_InventoryLine_HU, Object> COLUMN_QtyBook = new ModelColumn<>(I_M_InventoryLine_HU.class, "QtyBook", null);
+	String COLUMNNAME_QtyBook = "QtyBook";
 
 	/**
-	 * Set Zählmenge.
-	 * Gezählte Menge
+	 * Set Qty Count.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setQtyCount (java.math.BigDecimal QtyCount);
+	void setQtyCount (@Nullable BigDecimal QtyCount);
 
 	/**
-	 * Get Zählmenge.
-	 * Gezählte Menge
+	 * Get Qty Count.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getQtyCount();
+	BigDecimal getQtyCount();
 
-    /** Column definition for QtyCount */
-    public static final org.adempiere.model.ModelColumn<I_M_InventoryLine_HU, Object> COLUMN_QtyCount = new org.adempiere.model.ModelColumn<I_M_InventoryLine_HU, Object>(I_M_InventoryLine_HU.class, "QtyCount", null);
-    /** Column name QtyCount */
-    public static final String COLUMNNAME_QtyCount = "QtyCount";
+	ModelColumn<I_M_InventoryLine_HU, Object> COLUMN_QtyCount = new ModelColumn<>(I_M_InventoryLine_HU.class, "QtyCount", null);
+	String COLUMNNAME_QtyCount = "QtyCount";
 
 	/**
-	 * Set Internal Use Qty.
-	 * Internal Use Quantity removed from Inventory
+	 * Set Quantity count.
+	 * Counted Quantity
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setQtyInternalUse (java.math.BigDecimal QtyInternalUse);
+	void setQtyInternalUse (@Nullable BigDecimal QtyInternalUse);
 
 	/**
-	 * Get Internal Use Qty.
-	 * Internal Use Quantity removed from Inventory
+	 * Get Quantity count.
+	 * Counted Quantity
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getQtyInternalUse();
+	BigDecimal getQtyInternalUse();
 
-    /** Column definition for QtyInternalUse */
-    public static final org.adempiere.model.ModelColumn<I_M_InventoryLine_HU, Object> COLUMN_QtyInternalUse = new org.adempiere.model.ModelColumn<I_M_InventoryLine_HU, Object>(I_M_InventoryLine_HU.class, "QtyInternalUse", null);
-    /** Column name QtyInternalUse */
-    public static final String COLUMNNAME_QtyInternalUse = "QtyInternalUse";
+	ModelColumn<I_M_InventoryLine_HU, Object> COLUMN_QtyInternalUse = new ModelColumn<>(I_M_InventoryLine_HU.class, "QtyInternalUse", null);
+	String COLUMNNAME_QtyInternalUse = "QtyInternalUse";
 
 	/**
-	 * Get Aktualisiert.
-	 * Datum, an dem dieser Eintrag aktualisiert wurde
+	 * Get Updated.
+	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getUpdated();
+	java.sql.Timestamp getUpdated();
 
-    /** Column definition for Updated */
-    public static final org.adempiere.model.ModelColumn<I_M_InventoryLine_HU, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_M_InventoryLine_HU, Object>(I_M_InventoryLine_HU.class, "Updated", null);
-    /** Column name Updated */
-    public static final String COLUMNNAME_Updated = "Updated";
+	ModelColumn<I_M_InventoryLine_HU, Object> COLUMN_Updated = new ModelColumn<>(I_M_InventoryLine_HU.class, "Updated", null);
+	String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Aktualisiert durch.
-	 * Nutzer, der diesen Eintrag aktualisiert hat
+	 * Get Updated By.
+	 * User who updated this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getUpdatedBy();
+	int getUpdatedBy();
 
-    /** Column name UpdatedBy */
-    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 }

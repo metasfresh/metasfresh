@@ -4,6 +4,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.Before;
 import org.junit.Test;
@@ -11,7 +12,6 @@ import org.junit.Test;
 import de.metas.handlingunits.model.I_M_HU_Trace;
 import de.metas.handlingunits.model.X_M_HU_Trace;
 import de.metas.handlingunits.trace.HUTraceEvent;
-import de.metas.util.time.SystemTime;
 
 /*
  * #%L

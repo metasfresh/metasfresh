@@ -34,6 +34,8 @@ import org.adempiere.util.proxy.Cached;
 /**
  * Use this annotation on a method parameter if the method has been annotated
  * with {@link Cached}, and the parameter is the actual transaction name (i.e. trxName).
+ *
+ * metasfresh can use this method to provide a transaction-local cache.
  * 
  * @author Teo Sarca
  * 

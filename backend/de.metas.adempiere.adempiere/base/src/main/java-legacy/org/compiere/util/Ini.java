@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import lombok.Setter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.plaf.AdempiereLookAndFeel;
 import org.adempiere.plaf.MetasFreshTheme;
@@ -44,6 +45,8 @@ import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 
+import javax.annotation.Nullable;
+
 /**
  * Load & Save INI Settings from property file
  * Initiated in Adempiere.startup
@@ -58,11 +61,19 @@ import de.metas.util.Check;
  */
 public final class Ini
 {
+	public enum IfMissingMetasfreshProperties
+	{
+		SHOW_DIALOG, IGNORE
+	}
+
+	@Setter
+	private static IfMissingMetasfreshProperties ifMissingMetasfreshProperties = IfMissingMetasfreshProperties.SHOW_DIALOG;
+
 	/**
 	 * Make sure this happens first, because otherwise, during startup, {@link #getMetasfreshHome()} might be called before this field is initialized
 	 * Especially, this supplier needs to be initialized has to be before {@link #DEFAULT_LANGUAGE}.
 	 */
-	private static final ExtendedMemorizingSupplier<String> METASFRESH_HOME_Supplier = ExtendedMemorizingSupplier.of(() -> findMetasfreshHome());
+	private static final ExtendedMemorizingSupplier<String> METASFRESH_HOME_Supplier = ExtendedMemorizingSupplier.of(Ini::findMetasfreshHome);
 
 	/** Property file name */
 	public static final String METASFRESH_PROPERTY_FILE = "metasfresh.properties";
@@ -103,12 +114,6 @@ public final class Ini
 	/** UI Theme */
 	public static final String P_UI_THEME = "UITheme";
 
-	/**
-	 * Flat Color UI
-	 * public static final String P_UI_FLAT = "UIFlat";
-	 * private static final boolean DEFAULT_UI_FLAT = false;
-	 */
-
 	/** Auto Save */
 	public static final String P_A_COMMIT = "AutoCommit";
 	private static final boolean DEFAULT_A_COMMIT = true;
@@ -119,10 +124,10 @@ public final class Ini
 	public static final String P_A_NEW = "AutoNew";
 	private static final boolean DEFAULT_A_NEW = false;
 	/** Dictionary Maintenance */
-	public static final String P_ADEMPIERESYS = "AdempiereSys";	// Save system records
+	public static final String P_ADEMPIERESYS = "AdempiereSys";    // Save system records
 	private static final boolean DEFAULT_ADEMPIERESYS = false;
 	/** Log Migration Script */
-	public static final String P_LOGMIGRATIONSCRIPT = "LogMigrationScript";	// Log migration script
+	public static final String P_LOGMIGRATIONSCRIPT = "LogMigrationScript";    // Log migration script
 	private static final boolean DEFAULT_LOGMIGRATIONSCRIPT = false;
 	/** Show Acct Tabs */
 	public static final String P_SHOW_ACCT = "ShowAcct";
@@ -199,7 +204,7 @@ public final class Ini
 	public static final String DEFAULT_LOAD_TAB_META_DATA_BG = "N";
 
 	/** Ini PropertyName to default value */
-	private static final ImmutableMap<String, String> PROPERTY_DEFAULTS = ImmutableMap.<String, String> builder()
+	private static final ImmutableMap<String, String> PROPERTY_DEFAULTS = ImmutableMap.<String, String>builder()
 			.put(P_UID, DEFAULT_UID)
 			.put(P_PWD, DEFAULT_PWD)
 			.put(P_TRACELEVEL, DEFAULT_TRACELEVEL)
@@ -242,13 +247,13 @@ public final class Ini
 	 * List of properties which are available only as a client. In case of client properties and we are in server mode, {@link #setProperty(String, String)} and {@link #getProperty(String)} will
 	 * operate on {@link Env#getCtx()} instead.
 	 */
-	private static final Set<String> PROPERTIES_CLIENT = ImmutableSet.<String> builder()
+	private static final Set<String> PROPERTIES_CLIENT = ImmutableSet.<String>builder()
 			.add(P_ADEMPIERESYS)
 			.add(P_LOGMIGRATIONSCRIPT)
 			.build();
 
 	/** List of property names which shall be skipped from encryption */
-	private static final Set<String> PROPERTIES_SKIP_ENCRYPTION = ImmutableSet.<String> builder()
+	private static final Set<String> PROPERTIES_SKIP_ENCRYPTION = ImmutableSet.<String>builder()
 			.add(P_WARNING)
 			.add(P_WARNING_de)
 			.build();
@@ -268,7 +273,6 @@ public final class Ini
 
 	/**
 	 * Save INI parameters to disk
-	 *
 	 */
 	public static void saveProperties()
 	{
@@ -280,7 +284,7 @@ public final class Ini
 
 		final String fileName = getFileName();
 		final File file = new File(fileName).getAbsoluteFile();
-		FileOutputStream fos = null;
+		final FileOutputStream fos;
 		try
 		{
 			file.getParentFile().mkdirs(); // Create all dirs if not exist - teo_sarca FR [ 2406123 ]
@@ -289,24 +293,22 @@ public final class Ini
 			fos.flush();
 			fos.close();
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
 			log.error("Cannot save Properties to {}", file, e);
 			return;
 		}
 		log.info("Saved properties to {}", file);
 
-	}	// save
+	}    // save
 
 	/**
 	 * Load INI parameters from disk
-	 *
-	 * @param reload reload
 	 */
-	public static void loadProperties(boolean reload)
+	public static void loadProperties()
 	{
 		loadProperties(getFileName());
-	}	// loadProperties
+	}    // loadProperties
 
 	/**
 	 * Load INI parameters from filename.
@@ -324,7 +326,8 @@ public final class Ini
 		// for any other fail, we shall throw an exception because there can be
 		// plenty of reasons and we can't just rewrite the file and go on each time.
 		final File propertiesFile = new File(filename).getAbsoluteFile();
-		if (!propertiesFile.exists())
+		boolean propertiesFileExists = propertiesFile.exists();
+		if (!propertiesFileExists && IfMissingMetasfreshProperties.SHOW_DIALOG.equals(ifMissingMetasfreshProperties))
 		{
 			log.info("File {} does not exist. Allow the user to set initial properties", propertiesFile);
 			firstTime = true;
@@ -336,37 +339,40 @@ public final class Ini
 				}
 			}
 			saveProperties();
+			propertiesFileExists = true;
 		}
 
-		try (final FileInputStream fis = new FileInputStream(filename))
+		if (propertiesFileExists)
 		{
-			s_prop.load(fis);
-			fis.close();
+			try (final FileInputStream fis = new FileInputStream(filename))
+			{
+				s_prop.load(fis);
+			}
+			catch (final Exception e)
+			{
+				log.warn(filename + " - " + e.toString());
+
+				// gh #658: for f***'s sake, don't just log a warning. When running in tomcat, this logged warning will go nowhere
+				throw AdempiereException.wrapIfNeeded(e);
+			}
+
+			checkProperties();
+
+			s_loaded = true;
+			log.info("Loaded {} properties from {}", s_prop.size(), propertiesFile);
+			s_propertyFileName = propertiesFile.toString();
 		}
-		catch (Exception e)
-		{
-			log.warn(filename + " - " + e.toString());
-
-			// gh #658: for f***'s sake, don't just log a warning. When running in tomcat, this logged warning will go nowhere
-			throw AdempiereException.wrapIfNeeded(e);
-		}
-
-		checkProperties();
-
-		s_loaded = true;
-		log.info("Loaded {} properties from {}", s_prop.size(), propertiesFile);
-		s_propertyFileName = propertiesFile.toString();
 
 		return firstTime;
-	}	// loadProperties
+	}    // loadProperties
 
 	private static void checkProperties()
 	{
 		// Check/set properties defaults
-		for (Map.Entry<String, String> propertyName2defaultValue : PROPERTY_DEFAULTS.entrySet())
+		for (final Map.Entry<String, String> propertyName2defaultValue : PROPERTY_DEFAULTS.entrySet())
 		{
 			final String defaultValue = propertyName2defaultValue.getValue();
-			if (defaultValue != null && defaultValue.length() > 0)
+			if (Check.isNotBlank(defaultValue))
 			{
 				final String propertyName = propertyName2defaultValue.getKey();
 				checkProperty(propertyName, defaultValue);
@@ -393,8 +399,8 @@ public final class Ini
 	 */
 	public static void deletePropertyFile()
 	{
-		String fileName = getFileName();
-		File file = new File(fileName);
+		final String fileName = getFileName();
+		final File file = new File(fileName);
 		if (file.exists())
 		{
 			try
@@ -404,17 +410,17 @@ public final class Ini
 				s_prop = new Properties();
 				log.info("Deleted properties file: {}", fileName);
 			}
-			catch (Exception e)
+			catch (final Exception e)
 			{
 				log.warn("Cannot delete properties file: {}", fileName, e);
 			}
 		}
-	}	// deleteProperties
+	}    // deleteProperties
 
 	/**
 	 * Load property and set to default, if not existing
 	 *
-	 * @param key Key
+	 * @param key          Key
 	 * @param defaultValue Default Value
 	 * @return Property
 	 */
@@ -435,7 +441,7 @@ public final class Ini
 		}
 		s_prop.setProperty(key, result);
 		return result;
-	}	// checkProperty
+	}    // checkProperty
 
 	/**
 	 * Return File Name of INI file
@@ -446,7 +452,7 @@ public final class Ini
 	 *      D:\Adempiere\Adempiere.properties
 	 *      Adempiere.properties
 	 * </pre>
-	 *
+	 * <p>
 	 * Can be overwritten by -DPropertyFile=myFile allowing multiple
 	 * configurations / property files.
 	 *
@@ -474,17 +480,17 @@ public final class Ini
 		propertyFileName += METASFRESH_PROPERTY_FILE;
 
 		return propertyFileName;
-	}	// getFileName
+	}    // getFileName
 
 	/**
 	 * Set Property
 	 *
-	 * @param key can by any key, not only the ones declared in this class. In order to persist it, call {@link #saveProperties()}.
-	 *            <p>
-	 *            <b>Important:</b> if the given key is included in {@link #PROPERTIES_CLIENT}, but we currently aren't in the client, then the property is set in {@link Env} instead.
+	 * @param key   can by any key, not only the ones declared in this class. In order to persist it, call {@link #saveProperties()}.
+	 *              <p>
+	 *              <b>Important:</b> if the given key is included in {@link #PROPERTIES_CLIENT}, but we currently aren't in the client, then the property is set in {@link Env} instead.
 	 * @param value Value
 	 */
-	public static void setProperty(String key, String value)
+	public static void setProperty(final String key, final String value)
 	{
 		// If it's a client property and we are in server mode, update the context instead of Ini file
 		if (!Ini.isSwingClient() && PROPERTIES_CLIENT.contains(key))
@@ -510,7 +516,7 @@ public final class Ini
 				s_prop.setProperty(key, "");
 			else
 			{
-				String eValue = SecureEngine.encrypt(value);
+				final String eValue = SecureEngine.encrypt(value);
 				if (eValue == null)
 					s_prop.setProperty(key, "");
 				else
@@ -521,32 +527,20 @@ public final class Ini
 
 	/**
 	 * Set Property from a boolean value. Delegates to {@link #setProperty(String, String)} with the boolean's string representation.
-	 *
-	 * @param key Key
-	 * @param value Value
 	 */
-	public static void setProperty(String key, boolean value)
+	public static void setProperty(final String key, final boolean value)
 	{
 		setProperty(key, DisplayType.toBooleanString(value));
 	}   // setProperty
 
 	/**
 	 * Set Property from a int value. Delegates to {@link #setProperty(String, String)} with the int's string representation.
-	 *
-	 * @param key Key
-	 * @param value Value
 	 */
-	public static void setProperty(String key, int value)
+	public static void setProperty(final String key, final int value)
 	{
 		setProperty(key, String.valueOf(value));
 	}   // setProperty
 
-	/**
-	 * Get Property
-	 *
-	 * @param key Key
-	 * @return Value
-	 */
 	public static String getProperty(final String key)
 	{
 		if (key == null)
@@ -576,18 +570,15 @@ public final class Ini
 		}
 
 		return value;
-	}	// getProperty
+	}    // getProperty
 
 	/**
 	 * Get Property as Boolean
-	 *
-	 * @param key Key
-	 * @return Value
 	 */
-	public static boolean isPropertyBool(String key)
+	public static boolean isPropertyBool(final String key)
 	{
 		return DisplayType.toBoolean(getProperty(key), false);
-	}	// getProperty
+	}    // getProperty
 
 	/**
 	 * Cache Windows
@@ -597,7 +588,7 @@ public final class Ini
 	public static boolean isCacheWindow()
 	{
 		return isPropertyBool(P_CACHE_WINDOW);
-	}	// isCacheWindow
+	}    // isCacheWindow
 
 	/**************************************************************************
 	 * Get Properties
@@ -616,11 +607,11 @@ public final class Ini
 	 */
 	public static String getAsString()
 	{
-		StringBuffer buf = new StringBuffer("Ini[");
-		Enumeration<Object> e = s_prop.keys();
+		final StringBuffer buf = new StringBuffer("Ini[");
+		final Enumeration<Object> e = s_prop.keys();
 		while (e.hasMoreElements())
 		{
-			String key = (String)e.nextElement();
+			final String key = (String)e.nextElement();
 			buf.append(key).append("=");
 			buf.append(getProperty(key)).append("; ");
 		}
@@ -632,20 +623,26 @@ public final class Ini
 
 	public static final String METASFRESH_HOME = "METASFRESH_HOME";
 
-	/** System Property Value of ADEMPIERE_HOME. Users should rather set the {@value #METASFRESH_HOME} value */
+	/**
+	 * System Property Value of ADEMPIERE_HOME. Users should rather set the {@value #METASFRESH_HOME} value
+	 */
 	@Deprecated
 	public static final String ADEMPIERE_HOME = "ADEMPIERE_HOME";
 
 	/**
 	 * Internal run mode marker. Note that the inital setting is equivalent to the old initialization of <code>s_client = true</code>
 	 *
-	 * @task 04585
+	 * task 04585
 	 */
 	private static RunMode s_runMode = RunMode.SWING_CLIENT;
 
-	/** IsClient Internal marker */
+	/**
+	 * IsClient Internal marker
+	 */
 	private static boolean s_loaded = false;
-	/** Show license dialog for first time **/
+	/**
+	 * Show license dialog for first time
+	 **/
 	private static boolean s_license_dialog = true;
 
 	/**
@@ -662,17 +659,15 @@ public final class Ini
 	 * Set Client Mode
 	 *
 	 * @param client if true, then global run mode is set to {@code SWING_CLIENT}, else to {@code BACKEND}
-	 *
 	 */
-	public static void setClient(boolean client)
+	public static void setClient(final boolean client)
 	{
 		setRunMode(client ? RunMode.SWING_CLIENT : RunMode.BACKEND);
 	}   // setClient
 
 	/**
-	 *
 	 * @return global run mode
-	 * @task 04585
+	 * task 04585
 	 */
 	public static RunMode getRunMode()
 	{
@@ -683,20 +678,17 @@ public final class Ini
 	/**
 	 * Set global run mode.
 	 *
-	 * @param mode
-	 * @task 04585
+	 * task 04585
 	 */
-	public static void setRunMode(RunMode mode)
+	public static void setRunMode(final RunMode mode)
 	{
 		s_runMode = mode;
 	}
 
 	/**
 	 * Set show license dialog for new setup
-	 *
-	 * @param b
 	 */
-	public static void setShowLicenseDialog(boolean b)
+	public static void setShowLicenseDialog(final boolean b)
 	{
 		s_license_dialog = b;
 	}
@@ -754,9 +746,8 @@ public final class Ini
 			final String env = System.getenv(METASFRESH_HOME);
 			if (!Check.isEmpty(env, true))
 			{
-				final String metasfreshHome = env.trim();
 				// log.info("Found METASFRESH_HOME: {} (from environment variable {})", metasfreshHome, METASFRESH_HOME);
-				return metasfreshHome;
+				return env.trim();
 			}
 		}
 
@@ -765,10 +756,9 @@ public final class Ini
 			final String env = System.getProperty(ADEMPIERE_HOME);
 			if (!Check.isEmpty(env, true))
 			{
-				final String metasfreshHome = env.trim();
 				// log.info("Found METASFRESH_HOME: {} (from system property variable {})", metasfreshHome, ADEMPIERE_HOME);
 				// log.warn("Property variable {} is deprecated. Please use {} instead.", ADEMPIERE_HOME, METASFRESH_HOME);
-				return metasfreshHome;
+				return env.trim();
 			}
 		}
 
@@ -777,10 +767,9 @@ public final class Ini
 			final String env = System.getenv(ADEMPIERE_HOME);
 			if (!Check.isEmpty(env, true))
 			{
-				final String metasfreshHome = env.trim();
 				// log.info("Found METASFRESH_HOME: {} (from environment variable {})", metasfreshHome, ADEMPIERE_HOME);
 				// log.warn("System environment variable {} is deprecated. Please use {} instead.", ADEMPIERE_HOME, METASFRESH_HOME);
-				return metasfreshHome;
+				return env.trim();
 			}
 		}
 
@@ -788,16 +777,14 @@ public final class Ini
 		final String userHomeDir = System.getProperty("user.home");
 		if (!Check.isEmpty(userHomeDir) && new File(userHomeDir).exists())
 		{
-			final String metasfreshHome = userHomeDir + File.separator + ".metasfresh";
 			// log.info("Found METASFRESH_HOME: {} (fallback, based on user.home)", metasfreshHome);
-			return metasfreshHome;
+			return userHomeDir + File.separator + ".metasfresh";
 		}
 
 		// Fallback
 		{
-			final String metasfreshHome = File.separator + "metasfresh";
 			// log.info("Found METASFRESH_HOME: {} (fallback)", metasfreshHome);
-			return metasfreshHome;
+			return File.separator + "metasfresh";
 		}
 	}
 
@@ -807,44 +794,44 @@ public final class Ini
 	 * @param AD_Window_ID window no
 	 * @return dimension or null
 	 */
-	public static Dimension getWindowDimension(int AD_Window_ID)
+	@Nullable
+	public static Dimension getWindowDimension(final int AD_Window_ID)
 	{
-		String key = "WindowDim" + AD_Window_ID;
-		String value = (String)s_prop.get(key);
+		final String key = "WindowDim" + AD_Window_ID;
+		final String value = (String)s_prop.get(key);
 		if (value == null || value.length() == 0)
 			return null;
-		int index = value.indexOf('|');
+		final int index = value.indexOf('|');
 		if (index == -1)
 			return null;
 		try
 		{
-			String w = value.substring(0, index);
-			String h = value.substring(index + 1);
+			final String w = value.substring(0, index);
+			final String h = value.substring(index + 1);
 			return new Dimension(Integer.parseInt(w), Integer.parseInt(h));
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
 		}
 		return null;
-	}	// getWindowDimension
+	}    // getWindowDimension
 
 	/**
 	 * Set Window Dimension
 	 *
-	 * @param AD_Window_ID window
 	 * @param windowDimension dimension - null to remove
 	 */
-	public static void setWindowDimension(int AD_Window_ID, Dimension windowDimension)
+	public static void setWindowDimension(final int AD_Window_ID, final Dimension windowDimension)
 	{
-		String key = "WindowDim" + AD_Window_ID;
+		final String key = "WindowDim" + AD_Window_ID;
 		if (windowDimension != null)
 		{
-			String value = windowDimension.width + "|" + windowDimension.height;
+			final String value = windowDimension.width + "|" + windowDimension.height;
 			s_prop.put(key, value);
 		}
 		else
 			s_prop.remove(key);
-	}	// setWindowDimension
+	}    // setWindowDimension
 
 	/**
 	 * Get Window Location
@@ -852,44 +839,48 @@ public final class Ini
 	 * @param AD_Window_ID window id
 	 * @return location or null
 	 */
-	public static Point getWindowLocation(int AD_Window_ID)
+	@Nullable
+	public static Point getWindowLocation(final int AD_Window_ID)
 	{
-		String key = "WindowLoc" + AD_Window_ID;
-		String value = (String)s_prop.get(key);
+		final String key = "WindowLoc" + AD_Window_ID;
+		final String value = (String)s_prop.get(key);
 		if (value == null || value.length() == 0)
+		{
 			return null;
-		int index = value.indexOf('|');
+		}
+		final int index = value.indexOf('|');
 		if (index == -1)
+		{
 			return null;
+		}
 		try
 		{
-			String x = value.substring(0, index);
-			String y = value.substring(index + 1);
+			final String x = value.substring(0, index);
+			final String y = value.substring(index + 1);
 			return new Point(Integer.parseInt(x), Integer.parseInt(y));
 		}
-		catch (Exception e)
+		catch (final Exception ignored)
 		{
 		}
 		return null;
-	}	// getWindowLocation
+	}    // getWindowLocation
 
 	/**
 	 * Set Window Location
 	 *
-	 * @param AD_Window_ID window
 	 * @param windowLocation location - null to remove
 	 */
-	public static void setWindowLocation(int AD_Window_ID, Point windowLocation)
+	public static void setWindowLocation(final int AD_Window_ID, final Point windowLocation)
 	{
-		String key = "WindowLoc" + AD_Window_ID;
+		final String key = "WindowLoc" + AD_Window_ID;
 		if (windowLocation != null)
 		{
-			String value = windowLocation.x + "|" + windowLocation.y;
+			final String value = windowLocation.x + "|" + windowLocation.y;
 			s_prop.put(key, value);
 		}
 		else
 			s_prop.remove(key);
-	}	// setWindowLocation
+	}    // setWindowLocation
 
 	/**
 	 * Get Divider Location
@@ -899,8 +890,8 @@ public final class Ini
 	public static int getDividerLocation()
 	{
 		final int defaultValue = 400;
-		String key = "Divider";
-		String value = (String)s_prop.get(key);
+		final String key = "Divider";
+		final String value = (String)s_prop.get(key);
 		if (value == null || value.length() == 0)
 			return defaultValue;
 
@@ -909,24 +900,24 @@ public final class Ini
 		{
 			valueInt = Integer.parseInt(value);
 		}
-		catch (Exception e)
+		catch (final Exception ignored)
 		{
 		}
 
 		return valueInt <= 0 ? defaultValue : valueInt;
-	}	// getDividerLocation
+	}    // getDividerLocation
 
 	/**
 	 * Set Divider Location
 	 *
 	 * @param dividerLocation location
 	 */
-	public static void setDividerLocation(int dividerLocation)
+	public static void setDividerLocation(final int dividerLocation)
 	{
-		String key = "Divider";
-		String value = String.valueOf(dividerLocation);
+		final String key = "Divider";
+		final String value = String.valueOf(dividerLocation);
 		s_prop.put(key, value);
-	}	// setDividerLocation
+	}    // setDividerLocation
 
 	/**
 	 * Get Available Encoding Charsets
@@ -936,8 +927,8 @@ public final class Ini
 	 */
 	public static Charset[] getAvailableCharsets()
 	{
-		Collection<Charset> col = Charset.availableCharsets().values();
-		Charset[] arr = new Charset[col.size()];
+		final Collection<Charset> col = Charset.availableCharsets().values();
+		final Charset[] arr = new Charset[col.size()];
 		col.toArray(arr);
 		return arr;
 	}
@@ -950,14 +941,16 @@ public final class Ini
 	 */
 	public static Charset getCharset()
 	{
-		String charsetName = getProperty(P_CHARSET);
-		if (charsetName == null || charsetName.length() == 0)
+		final String charsetName = getProperty(P_CHARSET);
+		if (Check.isBlank(charsetName))
+		{
 			return Charset.defaultCharset();
+		}
 		try
 		{
 			return Charset.forName(charsetName);
 		}
-		catch (Exception e)
+		catch (final Exception ignored)
 		{
 		}
 		return Charset.defaultCharset();
@@ -976,4 +969,4 @@ public final class Ini
 	// return Ini.getRunMode() != RunMode.SWING_CLIENT;
 	// }
 	// }
-}	// Ini
+}    // Ini

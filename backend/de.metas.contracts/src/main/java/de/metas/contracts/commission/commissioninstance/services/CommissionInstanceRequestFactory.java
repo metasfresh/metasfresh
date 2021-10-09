@@ -1,21 +1,20 @@
 package de.metas.contracts.commission.commissioninstance.services;
 
-import java.util.Optional;
-
-import org.slf4j.Logger;
-import org.springframework.stereotype.Service;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionConfig;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CreateCommissionSharesRequest;
 import de.metas.contracts.commission.commissioninstance.businesslogic.hierarchy.Hierarchy;
+import de.metas.contracts.commission.commissioninstance.businesslogic.hierarchy.HierarchyLevel;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTrigger;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTriggerDocument;
-import de.metas.contracts.commission.commissioninstance.services.CommissionConfigFactory.ConfigRequestForNewInstance;
+import de.metas.contracts.commission.commissioninstance.services.hierarchy.CommissionHierarchyFactory;
 import de.metas.logging.LogManager;
 import lombok.NonNull;
+import org.slf4j.Logger;
+import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 /*
  * #%L
@@ -44,16 +43,16 @@ public class CommissionInstanceRequestFactory
 {
 	private static final Logger logger = LogManager.getLogger(CommissionInstanceRequestFactory.class);
 
-	private final CommissionConfigFactory commissionConfigFactory;
+	private final CommissionConfigProvider configProvider;
 	private final CommissionHierarchyFactory commissionHierarchyFactory;
 	private final CommissionTriggerFactory commissionTriggerFactory;
 
 	public CommissionInstanceRequestFactory(
-			@NonNull final CommissionConfigFactory commissionConfigFactory,
+			@NonNull final CommissionConfigProvider configProvider,
 			@NonNull final CommissionHierarchyFactory commissionHierarchyFactory,
 			@NonNull final CommissionTriggerFactory commissionTriggerFactory)
 	{
-		this.commissionConfigFactory = commissionConfigFactory;
+		this.configProvider = configProvider;
 		this.commissionHierarchyFactory = commissionHierarchyFactory;
 		this.commissionTriggerFactory = commissionTriggerFactory;
 	}
@@ -64,27 +63,33 @@ public class CommissionInstanceRequestFactory
 	 */
 	public Optional<CreateCommissionSharesRequest> createRequestFor(@NonNull final CommissionTriggerDocument commissionTriggerDocument)
 	{
+		final BPartnerId customerBPartnerId = commissionTriggerDocument.getCustomerBPartnerId();
 		final BPartnerId salesRepBPartnerId = commissionTriggerDocument.getSalesRepBPartnerId();
-		final Hierarchy hierarchy = commissionHierarchyFactory.createFor(salesRepBPartnerId);
 
-		final ConfigRequestForNewInstance contractRequest = ConfigRequestForNewInstance.builder()
+		// note: we include the end-customer in the hierarchy because they might be a salesrep 
+		// and their contract might indicate that metasfresh shall create a 0% commission share for them
+		final Hierarchy hierarchy = commissionHierarchyFactory.createFor(customerBPartnerId);
+
+		final CommissionConfigProvider.ConfigRequestForNewInstance contractRequest = CommissionConfigProvider.ConfigRequestForNewInstance.builder()
+				.orgId(commissionTriggerDocument.getOrgId())
 				.commissionHierarchy(hierarchy)
-				.customerBPartnerId(commissionTriggerDocument.getCustomerBPartnerId())
+				.customerBPartnerId(customerBPartnerId)
 				.salesRepBPartnerId(salesRepBPartnerId)
 				.commissionDate(commissionTriggerDocument.getCommissionDate())
 				.salesProductId(commissionTriggerDocument.getProductId())
+				.commissionTriggerType(commissionTriggerDocument.getTriggerType())
 				.build();
-		final ImmutableList<CommissionConfig> configs = commissionConfigFactory.createForNewCommissionInstances(contractRequest);
+
+		final ImmutableList<CommissionConfig> configs = configProvider.createForNewCommissionInstances(contractRequest);
 		if (configs.isEmpty())
 		{
 			logger.debug("Found no CommissionConfigs for contractRequest; -> return empty; contractRequest={}", contractRequest);
 			return Optional.empty();
 		}
 
-		final CommissionTrigger trigger = commissionTriggerFactory.createForDocument(commissionTriggerDocument, false /* candidateDeleted */);
+		final CommissionTrigger commissionTrigger = commissionTriggerFactory.createForDocument(commissionTriggerDocument, false /* candidateDeleted */);
 
-		return Optional.of(createRequest(hierarchy, configs, trigger));
-
+		return Optional.of(createRequest(hierarchy, configs, commissionTrigger));
 	}
 
 	private CreateCommissionSharesRequest createRequest(
@@ -92,11 +97,11 @@ public class CommissionInstanceRequestFactory
 			@NonNull final ImmutableList<CommissionConfig> configs,
 			@NonNull final CommissionTrigger trigger)
 	{
-		final CreateCommissionSharesRequest request = CreateCommissionSharesRequest.builder()
+		return CreateCommissionSharesRequest.builder()
 				.configs(configs)
 				.hierarchy(hierarchy)
 				.trigger(trigger)
+				.startingHierarchyLevel(HierarchyLevel.ZERO)
 				.build();
-		return request;
 	}
 }

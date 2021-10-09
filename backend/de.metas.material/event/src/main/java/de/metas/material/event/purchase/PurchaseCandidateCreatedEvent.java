@@ -67,6 +67,7 @@ public class PurchaseCandidateCreatedEvent extends PurchaseCandidateEvent
 			@JsonProperty("vendorId") final int vendorId)
 	{
 		super(purchaseMaterialDescriptor,
+				null,
 				eventDescriptor,
 				purchaseCandidateRepoId,
 				vendorId);

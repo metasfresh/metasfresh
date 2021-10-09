@@ -22,6 +22,7 @@
 
 package de.metas.rest_api.process.impl;
 
+import ch.qos.logback.classic.Level;
 import de.metas.Profiles;
 import de.metas.logging.LogManager;
 import de.metas.process.AdProcessId;
@@ -37,11 +38,14 @@ import de.metas.rest_api.process.response.JSONProcessBasicInfo;
 import de.metas.rest_api.process.response.JSONProcessParamBasicInfo;
 import de.metas.rest_api.process.response.Message;
 import de.metas.rest_api.process.response.RunProcessResponse;
-import de.metas.security.PermissionServiceFactories;
-import de.metas.security.PermissionServiceFactory;
+import de.metas.security.permissions2.PermissionServiceFactories;
+import de.metas.security.permissions2.PermissionServiceFactory;
 import de.metas.util.Check;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.web.MetasfreshRestAPIConstants;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_AD_Process;
@@ -64,14 +68,18 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+/**
+ * This is the rest controller used when processes are invoked via REST-API on the app-server (ServerRoot).
+ */
 @RestController
-@RequestMapping(ProcessRestController.ENDPOINT)
+@RequestMapping(value = {
+		MetasfreshRestAPIConstants.ENDPOINT_API_DEPRECATED + "/process",
+		MetasfreshRestAPIConstants.ENDPOINT_API_V1 + "/process",
+		MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/processes" })
 @Profile(Profiles.PROFILE_App)
 public class ProcessRestController
 {
 	private static final transient Logger logger = LogManager.getLogger(ADProcessDAO.class);
-
-	public static final String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API + "/process";
 
 	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 	private final PermissionServiceFactory permissionServiceFactory = PermissionServiceFactories.currentContext();
@@ -83,12 +91,12 @@ public class ProcessRestController
 		this.processService = processService;
 	}
 
+	@ApiOperation("Invoke a process from the list returned by the `available` endpoint")
 	@PostMapping("{value}/invoke")
 	public ResponseEntity<?> invokeProcess(
-			@NonNull @PathVariable("value") final String processValue,
-			@Nullable @RequestBody final RunProcessRequest request)
+			@NonNull @PathVariable("value") @ApiParam("Translates to `AD_Process.Value`") final String processValue,
+			@Nullable @RequestBody(required = false) final RunProcessRequest request)
 	{
-
 		final Optional<AdProcessId> processId = getProcessIdIfRunnable(processValue);
 
 		if (!processId.isPresent())
@@ -126,6 +134,8 @@ public class ProcessRestController
 	{
 		final List<ProcessBasicInfo> processList = processService.getProcessesByType(ProcessType.getTypesRunnableFromAppRestController());
 
+		Loggables.withLogger(logger, Level.DEBUG).addLog("Retrieved {} process-info items", processList.size());
+				
 		final List<JSONProcessBasicInfo> jsonProcessList = processList
 				.stream()
 				.map(this::buildJSONProcessBasicInfo)
@@ -138,7 +148,7 @@ public class ProcessRestController
 
 		return ResponseEntity
 				.ok()
-				.contentType(MediaType.APPLICATION_JSON_UTF8)
+				.contentType(MediaType.APPLICATION_JSON)
 				.body(response);
 	}
 
@@ -146,14 +156,14 @@ public class ProcessRestController
 	{
 		if (processExecutionResult.isError())
 		{
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(processExecutionResult.getThrowable());
+			throw AdempiereException.wrapIfNeeded(processExecutionResult.getThrowable());
 		}
-		else if (Check.isNotBlank(processExecutionResult.getJsonResult()))
+		else if (Check.isNotBlank(processExecutionResult.getStringResult()))
 		{
 			return ResponseEntity
 					.ok()
-					.contentType(MediaType.APPLICATION_JSON_UTF8)
-					.body(processExecutionResult.getJsonResult());
+					.contentType(MediaType.valueOf(processExecutionResult.getStringResultContentType()))
+					.body(processExecutionResult.getStringResult());
 		}
 		else if (Check.isNotBlank(processExecutionResult.getReportFilename()))
 		{
@@ -163,7 +173,7 @@ public class ProcessRestController
 
 			return ResponseEntity.ok()
 					.contentType(MediaType.parseMediaType(contentType))
-					.header(HttpHeaders.CONTENT_DISPOSITION,"attachment; filename=\"" + processExecutionResult.getReportFilename() + "\"")
+					.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + processExecutionResult.getReportFilename() + "\"")
 					.body(processExecutionResult.getReportData());
 		}
 		else
@@ -175,7 +185,7 @@ public class ProcessRestController
 
 			return ResponseEntity
 					.ok()
-					.contentType(MediaType.APPLICATION_JSON_UTF8)
+					.contentType(MediaType.APPLICATION_JSON)
 					.body(runProcessResponse);
 		}
 	}

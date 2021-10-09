@@ -89,7 +89,7 @@ public class NotificationRepository implements INotificationRepository
 		//
 		// contentADMessage -> AD_Message
 		AdMessageId adMessageId = null;
-		final AdMessageKey detailADMessage = AdMessageKey.ofNullable(request.getContentADMessage());
+		final AdMessageKey detailADMessage = request.getContentADMessage();
 		if (detailADMessage != null)
 		{
 			adMessageId = Services.get(IADMessageDAO.class).retrieveIdByValue(detailADMessage).orElse(null);
@@ -143,7 +143,7 @@ public class NotificationRepository implements INotificationRepository
 		{
 			final TargetViewAction targetViewAction = TargetViewAction.cast(targetAction);
 			notificationPO.setViewId(targetViewAction.getViewId());
-			notificationPO.setAD_Window_ID(targetViewAction.getAdWindowId());
+			notificationPO.setAD_Window_ID(AdWindowId.toRepoId(targetViewAction.getAdWindowId()));
 		}
 		else
 		{

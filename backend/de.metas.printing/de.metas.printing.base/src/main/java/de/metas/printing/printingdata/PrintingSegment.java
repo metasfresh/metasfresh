@@ -65,8 +65,8 @@ public class PrintingSegment
 			final int initialPageFrom,
 			final int initialPageTo,
 			final int lastPages,
-			@NonNull final String routingType,
-			@NonNull final PrinterRoutingId printerRoutingId,
+			@Nullable final String routingType,
+			@Nullable final PrinterRoutingId printerRoutingId,
 			@NonNull final HardwarePrinter printer,
 			@Nullable final HardwareTrayId trayId)
 	{

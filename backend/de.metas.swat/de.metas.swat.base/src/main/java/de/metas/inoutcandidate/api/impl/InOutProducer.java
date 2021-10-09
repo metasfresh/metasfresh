@@ -1,5 +1,64 @@
 package de.metas.inoutcandidate.api.impl;
 
+import com.google.common.collect.ImmutableMap;
+import de.metas.bpartner.BPartnerContactId;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.common.util.CoalesceUtil;
+import de.metas.document.DocTypeQuery;
+import de.metas.document.IDocTypeDAO;
+import de.metas.document.dimension.Dimension;
+import de.metas.document.dimension.DimensionService;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
+import de.metas.document.location.DocumentLocation;
+import de.metas.inout.IInOutBL;
+import de.metas.inout.event.InOutUserNotificationsProducer;
+import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
+import de.metas.inout.model.I_M_InOut;
+import de.metas.inout.model.I_M_InOutLine;
+import de.metas.inoutcandidate.ReceiptScheduleId;
+import de.metas.inoutcandidate.api.IInOutProducer;
+import de.metas.inoutcandidate.api.IReceiptScheduleBL;
+import de.metas.inoutcandidate.api.InOutGenerateResult;
+import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
+import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
+import de.metas.quantity.Quantity;
+import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.UOMConversionContext;
+import de.metas.uom.UomId;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
+import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.processor.api.ITrxItemProcessorContext;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.api.AttributeConstants;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.agg.key.IAggregationKeyBuilder;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.I_M_AttributeSetInstance;
+import org.compiere.model.X_C_DocType;
+import org.compiere.model.X_M_InOut;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+
+import javax.annotation.Nullable;
+import java.sql.Timestamp;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+
 import static de.metas.common.util.CoalesceUtil.coalesce;
 
 /*
@@ -24,55 +83,10 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
  * #L%
  */
 
-import java.sql.Timestamp;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
-
-import de.metas.bpartner.BPartnerContactId;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.processor.api.ITrxItemProcessorContext;
-import org.adempiere.mm.attributes.api.AttributeConstants;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.agg.key.IAggregationKeyBuilder;
-import org.adempiere.warehouse.LocatorId;
-import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.api.IWarehouseBL;
-import org.compiere.model.I_C_Order;
-import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.model.X_C_DocType;
-import org.compiere.model.X_M_InOut;
-import org.compiere.util.Env;
-
-import de.metas.document.DocTypeQuery;
-import de.metas.document.IDocTypeDAO;
-import de.metas.document.engine.IDocument;
-import de.metas.document.engine.IDocumentBL;
-import de.metas.inout.IInOutBL;
-import de.metas.inout.event.InOutUserNotificationsProducer;
-import de.metas.inout.model.I_M_InOut;
-import de.metas.inout.model.I_M_InOutLine;
-import de.metas.inoutcandidate.api.IInOutProducer;
-import de.metas.inoutcandidate.api.IReceiptScheduleBL;
-import de.metas.inoutcandidate.api.InOutGenerateResult;
-import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
-import de.metas.quantity.Quantity;
-import de.metas.quantity.StockQtyAndUOMQty;
-import de.metas.uom.IUOMConversionBL;
-import de.metas.uom.UOMConversionContext;
-import de.metas.uom.UomId;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
-
 /**
  * Class responsible for converting {@link I_M_ReceiptSchedule}s to {@link I_M_InOut} receipts.
  *
  * @author tsa
- *
  */
 public class InOutProducer implements IInOutProducer
 {
@@ -86,6 +100,8 @@ public class InOutProducer implements IInOutProducer
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
+	private final DimensionService dimensionService = SpringContextHolder.instance.getBean(DimensionService.class);
+
 	private static final String DYNATTR_HeaderAggregationKey = InOutProducer.class.getName() + "#HeaderAggregationKey";
 
 	private ITrxItemProcessorContext processorCtx;
@@ -93,13 +109,10 @@ public class InOutProducer implements IInOutProducer
 	private final InOutGenerateResult result;
 	private final boolean complete;
 
-	/**
-	 * If <code>false</code> (the default), then a new InOut is created with the current date from {@link Env#getDate(Properties)}. Otherwise it is created with the DatePromised value of the receipt
-	 * schedule's C_Order. To be used e.g. when doing migration work.
-	 *
-	 * @task 08648
-	 */
-	private final boolean createReceiptWithDatePromised;
+	private final ReceiptMovementDateRule movementDateRule;
+
+	@NonNull
+	private final Map<ReceiptScheduleId, ReceiptScheduleExternalInfo> externalInfoByReceiptScheduleId;
 
 	private I_M_InOut _currentReceipt = null;
 	private int _currentReceiptLinesCount = 0;
@@ -108,28 +121,30 @@ public class InOutProducer implements IInOutProducer
 	private final Set<Integer> _currentOrderIds = new HashSet<>();
 
 	/**
-	 * Calls {@link #InOutProducer(InOutGenerateResult, boolean, boolean)} with <code>createReceiptWithDatePromised == false</code>.
-	 *
-	 * @param result
-	 * @param complete
+	 * Calls {@link #InOutProducer(InOutGenerateResult, boolean, ReceiptMovementDateRule, Map)} with <code> ReceiptMovementDateRule.CURRENT_DATE && externalInfoByScheduleId = null</code>.
 	 */
 	public InOutProducer(final InOutGenerateResult result, final boolean complete)
 	{
-		this(result, complete, false); // createReceiptWithDatePromised = false
+		this(result, complete, ReceiptMovementDateRule.CURRENT_DATE, null);
 	}
 
 	/**
-	 *
 	 * @param result
 	 * @param complete
-	 * @param createReceiptWithDatePromised if <code>false</code> (the default), then a new InOut is created with the current date from {@link Env#getDate(Properties)}. Otherwise it is created with
-	 *            the DatePromised value of the receipt schedule's C_Order. To be used e.g. when doing migration work.
+	 * @param movementDateRule if {@code ReceiptMovementDateRule#CURRENT_DATE} (the default), then a new InOut is created with the current date from {@link Env#getDate(Properties)}.
+	 *                         else if {@code ReceiptMovementDateRule#EXTERNAL_DATE_IF_AVAIL} then the MovementDate will be taken from {@code externalInfoByReceiptScheduleId} if available
+	 *                         else if {@code ReceiptMovementDateRule#ORDER_DATE_PROMISED} then the date will be the DatePromised value of the receipt schedule's C_Order.
 	 */
-	protected InOutProducer(@NonNull final InOutGenerateResult result, final boolean complete, final boolean createReceiptWithDatePromised)
+	protected InOutProducer(@NonNull final InOutGenerateResult result,
+			final boolean complete,
+			@NonNull final ReceiptMovementDateRule movementDateRule,
+			@Nullable final Map<ReceiptScheduleId, ReceiptScheduleExternalInfo> externalInfoByReceiptScheduleId)
 	{
 		this.result = result;
 		this.complete = complete;
-		this.createReceiptWithDatePromised = createReceiptWithDatePromised;
+		this.movementDateRule = movementDateRule;
+
+		this.externalInfoByReceiptScheduleId = CoalesceUtil.coalesce(externalInfoByReceiptScheduleId, ImmutableMap.of());
 	}
 
 	@Override
@@ -209,13 +224,13 @@ public class InOutProducer implements IInOutProducer
 	}
 
 	/**
-	 *
 	 * @param previousReceiptSchedule
 	 * @param receiptSchedule
 	 * @return true if given receipt schedules shall not be part of the same receipt
 	 */
 	// package level because of JUnit tests
-	/* package */final boolean isNewReceiptRequired(final I_M_ReceiptSchedule previousReceiptSchedule, final I_M_ReceiptSchedule receiptSchedule)
+	/* package */
+	final boolean isNewReceiptRequired(final I_M_ReceiptSchedule previousReceiptSchedule, final I_M_ReceiptSchedule receiptSchedule)
 	{
 		Check.assumeNotNull(previousReceiptSchedule, "previousReceiptSchedule not null");
 		Check.assumeNotNull(receiptSchedule, "receiptSchedule not null");
@@ -298,7 +313,7 @@ public class InOutProducer implements IInOutProducer
 
 	/**
 	 * Create bottom receipt lines, right before completing the receipt.
-	 *
+	 * <p>
 	 * NOTE: at this level this method does nothing but you are free to implement your functionality.
 	 *
 	 * @return created lines
@@ -362,7 +377,7 @@ public class InOutProducer implements IInOutProducer
 
 	/**
 	 * Gets current receipt.
-	 *
+	 * <p>
 	 * If there is no current receipt, an exception will be thrown.
 	 *
 	 * @return current receipt; never return null.
@@ -442,9 +457,13 @@ public class InOutProducer implements IInOutProducer
 			final int bpartnerLocationId = receiptScheduleBL.getC_BPartner_Location_Effective_ID(rs);
 			final BPartnerContactId bpartnerContactId = receiptScheduleBL.getBPartnerContactID(rs);
 
-			receiptHeader.setC_BPartner_ID(bpartnerId);
-			receiptHeader.setC_BPartner_Location_ID(bpartnerLocationId);
-			receiptHeader.setAD_User_ID(bpartnerContactId.toRepoId(bpartnerContactId));
+			InOutDocumentLocationAdapterFactory
+					.locationAdapter(receiptHeader)
+					.setFrom(DocumentLocation.builder()
+									 .bpartnerId(BPartnerId.ofRepoId(bpartnerId))
+									 .bpartnerLocationId(BPartnerLocationId.ofRepoId(bpartnerId, bpartnerLocationId))
+									 .contactId(bpartnerContactId)
+									 .build());
 		}
 
 		//
@@ -452,24 +471,9 @@ public class InOutProducer implements IInOutProducer
 		{
 			receiptHeader.setDateOrdered(rs.getDateOrdered());
 
-			final Timestamp movementDate;
-			if (createReceiptWithDatePromised)
-			{
-				if (rs.getC_Order_ID() > 0) // guarding against NPE, but actually C_Order_ID is always set.
-				{
-					// task: 08648: see the javadoc of createReceiptWithDatePromised
-					movementDate = rs.getC_Order().getDatePromised();
-				}
-				else
-				{
-					movementDate = Env.getDate(ctx);
-				}
-			}
-			else
-			{
-				// Use Login Date as movement date because some roles will rely on the fact that they can override it (08247)
-				movementDate = Env.getDate(ctx);
-			}
+			final Timestamp movementDate = getMovementDate(rs, ctx);
+
+			receiptHeader.setDateReceived(getExternalReceivedDate(rs));
 			receiptHeader.setMovementDate(movementDate);
 			receiptHeader.setDateAcct(movementDate);
 		}
@@ -494,13 +498,19 @@ public class InOutProducer implements IInOutProducer
 		if (order != null && order.isDropShip())
 		{
 			receiptHeader.setIsDropShip(true);
-			receiptHeader.setDropShip_BPartner_ID(order.getDropShip_BPartner_ID());
-			receiptHeader.setDropShip_Location_ID(order.getDropShip_Location_ID());
-			receiptHeader.setDropShip_User_ID(order.getDropShip_User_ID());
+			InOutDocumentLocationAdapterFactory
+					.deliveryLocationAdapter(receiptHeader)
+					.setFrom(OrderDocumentLocationAdapterFactory.deliveryLocationAdapter(order).toDocumentLocation());
 		}
 		else
 		{
 			receiptHeader.setIsDropShip(false);
+		}
+
+		//external id
+		{
+			receiptHeader.setExternalId(getExternalId(rs));
+			receiptHeader.setExternalResourceURL(getExternalResourceURL(rs));
 		}
 
 		//
@@ -577,11 +587,14 @@ public class InOutProducer implements IInOutProducer
 		//
 		// Order Line Link
 		line.setC_OrderLine_ID(rs.getC_OrderLine_ID());
+
+		final Dimension receiptScheduleDimension = dimensionService.getFromRecord(rs);
+		dimensionService.updateRecord(line, receiptScheduleDimension);
 	}
 
 	/**
 	 * Create receipt line(s) from current receipt schedule (see {@link #getCurrentReceiptSchedule()}).
-	 *
+	 * <p>
 	 * NOTE: this method can be overriden by extending classes.
 	 *
 	 * @return created receipt lines
@@ -595,5 +608,87 @@ public class InOutProducer implements IInOutProducer
 		InterfaceWrapperHelper.save(line);
 
 		return Collections.singletonList(line);
+	}
+
+	@NonNull
+	private Timestamp getPromisedDate(@NonNull final I_M_ReceiptSchedule receiptSchedule, @NonNull final Properties context)
+	{
+		if (receiptSchedule.getC_Order_ID() > 0) // guarding against NPE, but actually C_Order_ID is always set.
+		{
+			// task: 08648: see the javadoc of createReceiptWithDatePromised
+			return receiptSchedule.getC_Order().getDatePromised();
+		}
+		else
+		{
+			return Env.getDate(context);
+		}
+	}
+
+	@NonNull
+	private Timestamp getExternalMovementDate(@NonNull final I_M_ReceiptSchedule receiptSchedule, @NonNull final Properties context)
+	{
+		final ReceiptScheduleId receiptScheduleId = ReceiptScheduleId.ofRepoId(receiptSchedule.getM_ReceiptSchedule_ID());
+
+		final ReceiptScheduleExternalInfo externalInfo = externalInfoByReceiptScheduleId.get(receiptScheduleId);
+
+		if (externalInfo != null && externalInfo.getMovementDate() != null)
+		{
+			return TimeUtil.asTimestamp(externalInfo.getMovementDate());
+		}
+
+		return Env.getDate(context);
+	}
+
+	@Nullable
+	private Timestamp getExternalReceivedDate(@NonNull final I_M_ReceiptSchedule receiptSchedule)
+	{
+		final ReceiptScheduleId receiptScheduleId = ReceiptScheduleId.ofRepoId(receiptSchedule.getM_ReceiptSchedule_ID());
+
+		final ReceiptScheduleExternalInfo externalInfo = externalInfoByReceiptScheduleId.get(receiptScheduleId);
+
+		return externalInfo != null
+				? TimeUtil.asTimestamp(externalInfo.getDateReceived())
+				: null;
+	}
+
+	@Nullable
+	private String getExternalId(@NonNull final I_M_ReceiptSchedule receiptSchedule)
+	{
+		final ReceiptScheduleId receiptScheduleId = ReceiptScheduleId.ofRepoId(receiptSchedule.getM_ReceiptSchedule_ID());
+
+		final ReceiptScheduleExternalInfo externalInfo = externalInfoByReceiptScheduleId.get(receiptScheduleId);
+
+		return externalInfo != null
+				? StringUtils.trimBlankToNull(externalInfo.getExternalId())
+				: null;
+	}
+
+	@Nullable
+	private String getExternalResourceURL(@NonNull final I_M_ReceiptSchedule receiptSchedule)
+	{
+		return StringUtils.trimBlankToNull(receiptSchedule.getExternalResourceURL());
+
+	}
+
+	private Timestamp getMovementDate(@NonNull final I_M_ReceiptSchedule receiptSchedule, @NonNull final Properties context)
+	{
+		final Timestamp movementDate;
+
+		switch (this.movementDateRule)
+		{
+			case ORDER_DATE_PROMISED:
+				movementDate = getPromisedDate(receiptSchedule, context);
+				break;
+			case EXTERNAL_DATE_IF_AVAIL:
+				movementDate = getExternalMovementDate(receiptSchedule, context);
+				break;
+			case CURRENT_DATE:
+				// Use Login Date as movement date because some roles will rely on the fact that they can override it (08247)
+				movementDate = Env.getDate(context);
+				break;
+			default:
+				throw new AdempiereException("Unknown ReceiptMovementDateRule!");
+		}
+		return movementDate;
 	}
 }

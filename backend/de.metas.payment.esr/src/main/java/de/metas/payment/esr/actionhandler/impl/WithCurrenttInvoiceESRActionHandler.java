@@ -13,15 +13,14 @@ package de.metas.payment.esr.actionhandler.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import org.slf4j.Logger;
 
@@ -31,6 +30,8 @@ import de.metas.logging.LogManager;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
 
+import de.metas.payment.PaymentId;
+import de.metas.payment.api.IPaymentDAO;
 import de.metas.payment.esr.actionhandler.IESRActionHandler;
 import de.metas.payment.esr.api.IESRImportBL;
 import de.metas.payment.esr.api.impl.ESRImportBL;
@@ -43,14 +44,17 @@ import de.metas.util.Services;
  */
 public class WithCurrenttInvoiceESRActionHandler implements IESRActionHandler
 {
+	private final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
 
 	private static final transient Logger logger = LogManager.getLogger(ESRImportBL.class);
 
 	@Override
 	public boolean process(final I_ESR_ImportLine line, final String message)
 	{
+		final PaymentId esrImportLinePaymentId = PaymentId.ofRepoIdOrNull(line.getC_Payment_ID());
+		final I_C_Payment payment = esrImportLinePaymentId == null ? null
+				: paymentDAO.getById(esrImportLinePaymentId);
 
-		final I_C_Payment payment = line.getC_Payment();
 		final I_C_Invoice invoice = line.getC_Invoice();
 		if (null != payment && null != invoice)
 		{

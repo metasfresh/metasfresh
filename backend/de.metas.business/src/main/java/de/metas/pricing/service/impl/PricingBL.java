@@ -22,34 +22,18 @@ package de.metas.pricing.service.impl;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.IAutoCloseable;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_PriceList;
-import org.compiere.model.I_M_PriceList_Version;
-import org.compiere.model.I_M_ProductPrice;
-import org.compiere.util.DisplayType;
-import org.compiere.util.TimeUtil;
-import org.slf4j.Logger;
-
-import java.util.Objects;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.common.util.time.SystemTime;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.organization.OrgId;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingContext;
@@ -75,23 +59,40 @@ import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
+import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
-import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.OptionalBoolean;
 import de.metas.util.PlainStringLoggable;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IAutoCloseable;
+import org.compiere.model.I_M_PriceList;
+import org.compiere.model.I_M_PriceList_Version;
+import org.compiere.model.I_M_ProductPrice;
+import org.compiere.util.DisplayType;
+import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 
 public class PricingBL implements IPricingBL
 {
 	private static final Logger logger = LogManager.getLogger(PricingBL.class);
 
 	private final CompositePriceLimitRule priceLimitRules = new CompositePriceLimitRule();
+
+	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
 	@Override
 	public IEditablePricingContext createPricingContext()
@@ -173,7 +174,7 @@ public class PricingBL implements IPricingBL
 		}
 	}
 
-	private IPricingResult calculatePrice0(final IPricingContext pricingCtx)
+	private IPricingResult calculatePrice0(@NonNull final IPricingContext pricingCtx)
 	{
 		final IPricingContext pricingCtxToUse = setupPricingContext(pricingCtx);
 		final PricingResult result = createInitialResult(pricingCtxToUse);
@@ -279,7 +280,7 @@ public class PricingBL implements IPricingBL
 				&& pricingCtx.getPriceListId() == null
 				&& pricingCtx.getPriceListVersionId() == null)
 		{
-			final PricingSystemId pricingSystemId = bpartnerDAO.retrievePricingSystemIdOrNull(pricingCtx.getBPartnerId(), pricingCtx.getSoTrx());
+			final PricingSystemId pricingSystemId = bpartnerDAO.retrievePricingSystemIdOrNullInTrx(pricingCtx.getBPartnerId(), pricingCtx.getSoTrx());
 			if (pricingSystemId == null)
 			{
 				throw new AdempiereException("BPartnerId=" + pricingCtx.getBPartnerId().getRepoId() + " has no assigned " + pricingCtx.getSoTrx() + " pricingSystem")
@@ -334,7 +335,7 @@ public class PricingBL implements IPricingBL
 			{
 				final Boolean processedPLVFiltering = null; // task 09533: the user doesn't know about PLV's processed flag, so we can't filter by it
 				final I_M_PriceList_Version plv = priceListDAO.retrievePriceListVersionOrNull(priceList,
-						TimeUtil.asZonedDateTime(priceDate, SystemTime.zoneId()), processedPLVFiltering);
+						TimeUtil.asZonedDateTime(priceDate, de.metas.common.util.time.SystemTime.zoneId()), processedPLVFiltering);
 				if (plv != null)
 				{
 					final PriceListVersionId priceListVersionId = PriceListVersionId.ofRepoId(plv.getM_PriceList_Version_ID());
@@ -403,7 +404,8 @@ public class PricingBL implements IPricingBL
 		result.updatePriceScales();
 	}
 
-	private void convertResultToContextUOMIfNeeded(
+	@VisibleForTesting
+	protected void convertResultToContextUOMIfNeeded(
 			@NonNull final IPricingResult result,
 			@NonNull final IPricingContext pricingCtx)
 	{
@@ -416,19 +418,25 @@ public class PricingBL implements IPricingBL
 		if (pricingCtx.getUomId() != null
 				&& !UomId.equals(pricingCtx.getUomId(), result.getPriceUomId()))
 		{
-			final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
-			final I_C_UOM uomTo = uomsRepo.getById(pricingCtx.getUomId());
-			final I_C_UOM uomFrom = uomsRepo.getById(result.getPriceUomId());
+			final ProductPrice.ProductPriceBuilder productPriceBuilder = ProductPrice.builder()
+					.productId(result.getProductId())
+					.uomId(result.getPriceUomId());
 
-			final BigDecimal factor = Services.get(IUOMConversionBL.class).convertQty(
-					result.getProductId(),
-					BigDecimal.ONE,
-					uomFrom,
-					uomTo);
+			final CurrencyPrecision productPricePrecision = Optional.ofNullable(result.getPrecision())
+					.orElseGet(() -> CurrencyPrecision.ofInt(result.getPriceStd().scale()));
 
-			result.setPriceLimit(factor.multiply(result.getPriceLimit()));
-			result.setPriceList(factor.multiply(result.getPriceList()));
-			result.setPriceStd(factor.multiply(result.getPriceStd()));
+			final ProductPrice stdProductPrice = productPriceBuilder.money(Money.of(result.getPriceStd(), result.getCurrencyId())).build();
+			final ProductPrice stdProductPriceInContextUOM = uomConversionBL.convertProductPriceToUom(stdProductPrice, pricingCtx.getUomId(), productPricePrecision);
+			result.setPriceStd(stdProductPriceInContextUOM.toBigDecimal());
+
+			final ProductPrice listProductPrice = productPriceBuilder.money(Money.of(result.getPriceList(), result.getCurrencyId())).build();
+			final ProductPrice listProductPriceInContextUOM = uomConversionBL.convertProductPriceToUom(listProductPrice, pricingCtx.getUomId(), productPricePrecision);
+			result.setPriceList(listProductPriceInContextUOM.toBigDecimal());
+
+			final ProductPrice limitProductPrice = productPriceBuilder.money(Money.of(result.getPriceLimit(), result.getCurrencyId())).build();
+			final ProductPrice limitProductPriceInContextUOM = uomConversionBL.convertProductPriceToUom(limitProductPrice, pricingCtx.getUomId(), productPricePrecision);
+			result.setPriceLimit(limitProductPriceInContextUOM.toBigDecimal());
+
 			result.setPriceUomId(pricingCtx.getUomId());
 		}
 	}

@@ -1,138 +1,125 @@
 package de.metas.handlingunits.model;
 
+import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for M_HU_Storage_Snapshot
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public interface I_M_HU_Storage_Snapshot 
 {
 
-    /** TableName=M_HU_Storage_Snapshot */
-    public static final String Table_Name = "M_HU_Storage_Snapshot";
+	String Table_Name = "M_HU_Storage_Snapshot";
 
-    /** AD_Table_ID=540672 */
-//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=540672 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 3 - Client - Org
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
-
-    /** Load Meta Data */
 
 	/**
-	 * Get Mandant.
-	 * Mandant für diese Installation.
+	 * Get Client.
+	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Client_ID();
+	int getAD_Client_ID();
 
-    /** Column name AD_Client_ID */
-    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Set Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Org_ID (int AD_Org_ID);
+	void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Get Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Org_ID();
+	int getAD_Org_ID();
 
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Maßeinheit.
-	 * Maßeinheit
+	 * Set UOM.
+	 * Unit of Measure
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setC_UOM_ID (int C_UOM_ID);
+	void setC_UOM_ID (int C_UOM_ID);
 
 	/**
-	 * Get Maßeinheit.
-	 * Maßeinheit
+	 * Get UOM.
+	 * Unit of Measure
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getC_UOM_ID();
+	int getC_UOM_ID();
 
-    /** Column name C_UOM_ID */
-    public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
+	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
-	 * Get Erstellt.
-	 * Datum, an dem dieser Eintrag erstellt wurde
+	 * Get Created.
+	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getCreated();
+	java.sql.Timestamp getCreated();
 
-    /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_Storage_Snapshot, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_M_HU_Storage_Snapshot, Object>(I_M_HU_Storage_Snapshot.class, "Created", null);
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
+	ModelColumn<I_M_HU_Storage_Snapshot, Object> COLUMN_Created = new ModelColumn<>(I_M_HU_Storage_Snapshot.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Erstellt durch.
-	 * Nutzer, der diesen Eintrag erstellt hat
+	 * Get Created By.
+	 * User who created this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getCreatedBy();
+	int getCreatedBy();
 
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Set Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsActive (boolean IsActive);
+	void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Get Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isActive();
+	boolean isActive();
 
-    /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_Storage_Snapshot, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_M_HU_Storage_Snapshot, Object>(I_M_HU_Storage_Snapshot.class, "IsActive", null);
-    /** Column name IsActive */
-    public static final String COLUMNNAME_IsActive = "IsActive";
+	ModelColumn<I_M_HU_Storage_Snapshot, Object> COLUMN_IsActive = new ModelColumn<>(I_M_HU_Storage_Snapshot.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
 	 * Set Handling Unit.
@@ -141,7 +128,7 @@ public interface I_M_HU_Storage_Snapshot
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setM_HU_ID (int M_HU_ID);
+	void setM_HU_ID (int M_HU_ID);
 
 	/**
 	 * Get Handling Unit.
@@ -150,16 +137,14 @@ public interface I_M_HU_Storage_Snapshot
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getM_HU_ID();
+	int getM_HU_ID();
 
-	public de.metas.handlingunits.model.I_M_HU getM_HU();
+	de.metas.handlingunits.model.I_M_HU getM_HU();
 
-	public void setM_HU(de.metas.handlingunits.model.I_M_HU M_HU);
+	void setM_HU(de.metas.handlingunits.model.I_M_HU M_HU);
 
-    /** Column definition for M_HU_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_Storage_Snapshot, de.metas.handlingunits.model.I_M_HU> COLUMN_M_HU_ID = new org.adempiere.model.ModelColumn<I_M_HU_Storage_Snapshot, de.metas.handlingunits.model.I_M_HU>(I_M_HU_Storage_Snapshot.class, "M_HU_ID", de.metas.handlingunits.model.I_M_HU.class);
-    /** Column name M_HU_ID */
-    public static final String COLUMNNAME_M_HU_ID = "M_HU_ID";
+	ModelColumn<I_M_HU_Storage_Snapshot, de.metas.handlingunits.model.I_M_HU> COLUMN_M_HU_ID = new ModelColumn<>(I_M_HU_Storage_Snapshot.class, "M_HU_ID", de.metas.handlingunits.model.I_M_HU.class);
+	String COLUMNNAME_M_HU_ID = "M_HU_ID";
 
 	/**
 	 * Set Handling Units Storage.
@@ -168,7 +153,7 @@ public interface I_M_HU_Storage_Snapshot
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setM_HU_Storage_ID (int M_HU_Storage_ID);
+	void setM_HU_Storage_ID (int M_HU_Storage_ID);
 
 	/**
 	 * Get Handling Units Storage.
@@ -177,16 +162,14 @@ public interface I_M_HU_Storage_Snapshot
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getM_HU_Storage_ID();
+	int getM_HU_Storage_ID();
 
-	public de.metas.handlingunits.model.I_M_HU_Storage getM_HU_Storage();
+	@Nullable de.metas.handlingunits.model.I_M_HU_Storage getM_HU_Storage();
 
-	public void setM_HU_Storage(de.metas.handlingunits.model.I_M_HU_Storage M_HU_Storage);
+	void setM_HU_Storage(@Nullable de.metas.handlingunits.model.I_M_HU_Storage M_HU_Storage);
 
-    /** Column definition for M_HU_Storage_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_Storage_Snapshot, de.metas.handlingunits.model.I_M_HU_Storage> COLUMN_M_HU_Storage_ID = new org.adempiere.model.ModelColumn<I_M_HU_Storage_Snapshot, de.metas.handlingunits.model.I_M_HU_Storage>(I_M_HU_Storage_Snapshot.class, "M_HU_Storage_ID", de.metas.handlingunits.model.I_M_HU_Storage.class);
-    /** Column name M_HU_Storage_ID */
-    public static final String COLUMNNAME_M_HU_Storage_ID = "M_HU_Storage_ID";
+	ModelColumn<I_M_HU_Storage_Snapshot, de.metas.handlingunits.model.I_M_HU_Storage> COLUMN_M_HU_Storage_ID = new ModelColumn<>(I_M_HU_Storage_Snapshot.class, "M_HU_Storage_ID", de.metas.handlingunits.model.I_M_HU_Storage.class);
+	String COLUMNNAME_M_HU_Storage_ID = "M_HU_Storage_ID";
 
 	/**
 	 * Set Handling Units Storage Snapshot.
@@ -195,7 +178,7 @@ public interface I_M_HU_Storage_Snapshot
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setM_HU_Storage_Snapshot_ID (int M_HU_Storage_Snapshot_ID);
+	void setM_HU_Storage_Snapshot_ID (int M_HU_Storage_Snapshot_ID);
 
 	/**
 	 * Get Handling Units Storage Snapshot.
@@ -204,60 +187,55 @@ public interface I_M_HU_Storage_Snapshot
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getM_HU_Storage_Snapshot_ID();
+	int getM_HU_Storage_Snapshot_ID();
 
-    /** Column definition for M_HU_Storage_Snapshot_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_Storage_Snapshot, Object> COLUMN_M_HU_Storage_Snapshot_ID = new org.adempiere.model.ModelColumn<I_M_HU_Storage_Snapshot, Object>(I_M_HU_Storage_Snapshot.class, "M_HU_Storage_Snapshot_ID", null);
-    /** Column name M_HU_Storage_Snapshot_ID */
-    public static final String COLUMNNAME_M_HU_Storage_Snapshot_ID = "M_HU_Storage_Snapshot_ID";
+	ModelColumn<I_M_HU_Storage_Snapshot, Object> COLUMN_M_HU_Storage_Snapshot_ID = new ModelColumn<>(I_M_HU_Storage_Snapshot.class, "M_HU_Storage_Snapshot_ID", null);
+	String COLUMNNAME_M_HU_Storage_Snapshot_ID = "M_HU_Storage_Snapshot_ID";
 
 	/**
-	 * Set Produkt.
-	 * Produkt, Leistung, Artikel
+	 * Set Product.
+	 * Product, Service, Item
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setM_Product_ID (int M_Product_ID);
+	void setM_Product_ID (int M_Product_ID);
 
 	/**
-	 * Get Produkt.
-	 * Produkt, Leistung, Artikel
+	 * Get Product.
+	 * Product, Service, Item
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getM_Product_ID();
+	int getM_Product_ID();
 
-    /** Column name M_Product_ID */
-    public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
+	String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
-	 * Set Menge.
-	 * Menge
+	 * Set Quantity.
+	 * Quantity
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setQty (java.math.BigDecimal Qty);
+	void setQty (BigDecimal Qty);
 
 	/**
-	 * Get Menge.
-	 * Menge
+	 * Get Quantity.
+	 * Quantity
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getQty();
+	BigDecimal getQty();
 
-    /** Column definition for Qty */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_Storage_Snapshot, Object> COLUMN_Qty = new org.adempiere.model.ModelColumn<I_M_HU_Storage_Snapshot, Object>(I_M_HU_Storage_Snapshot.class, "Qty", null);
-    /** Column name Qty */
-    public static final String COLUMNNAME_Qty = "Qty";
+	ModelColumn<I_M_HU_Storage_Snapshot, Object> COLUMN_Qty = new ModelColumn<>(I_M_HU_Storage_Snapshot.class, "Qty", null);
+	String COLUMNNAME_Qty = "Qty";
 
 	/**
 	 * Set Snapshot UUID.
@@ -266,7 +244,7 @@ public interface I_M_HU_Storage_Snapshot
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setSnapshot_UUID (java.lang.String Snapshot_UUID);
+	void setSnapshot_UUID (java.lang.String Snapshot_UUID);
 
 	/**
 	 * Get Snapshot UUID.
@@ -275,38 +253,33 @@ public interface I_M_HU_Storage_Snapshot
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getSnapshot_UUID();
+	java.lang.String getSnapshot_UUID();
 
-    /** Column definition for Snapshot_UUID */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_Storage_Snapshot, Object> COLUMN_Snapshot_UUID = new org.adempiere.model.ModelColumn<I_M_HU_Storage_Snapshot, Object>(I_M_HU_Storage_Snapshot.class, "Snapshot_UUID", null);
-    /** Column name Snapshot_UUID */
-    public static final String COLUMNNAME_Snapshot_UUID = "Snapshot_UUID";
+	ModelColumn<I_M_HU_Storage_Snapshot, Object> COLUMN_Snapshot_UUID = new ModelColumn<>(I_M_HU_Storage_Snapshot.class, "Snapshot_UUID", null);
+	String COLUMNNAME_Snapshot_UUID = "Snapshot_UUID";
 
 	/**
-	 * Get Aktualisiert.
-	 * Datum, an dem dieser Eintrag aktualisiert wurde
+	 * Get Updated.
+	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getUpdated();
+	java.sql.Timestamp getUpdated();
 
-    /** Column definition for Updated */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_Storage_Snapshot, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_M_HU_Storage_Snapshot, Object>(I_M_HU_Storage_Snapshot.class, "Updated", null);
-    /** Column name Updated */
-    public static final String COLUMNNAME_Updated = "Updated";
+	ModelColumn<I_M_HU_Storage_Snapshot, Object> COLUMN_Updated = new ModelColumn<>(I_M_HU_Storage_Snapshot.class, "Updated", null);
+	String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Aktualisiert durch.
-	 * Nutzer, der diesen Eintrag aktualisiert hat
+	 * Get Updated By.
+	 * User who updated this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getUpdatedBy();
+	int getUpdatedBy();
 
-    /** Column name UpdatedBy */
-    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 }

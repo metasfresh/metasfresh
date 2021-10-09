@@ -9,6 +9,8 @@ import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * metasfresh-material-planning
@@ -41,12 +43,13 @@ public class PPRoutingActivityTemplateId implements RepoIdAware
 		return new PPRoutingActivityTemplateId(repoId);
 	}
 
+	@Nullable
 	public static PPRoutingActivityTemplateId ofRepoIdOrNull(final int repoId)
 	{
 		return repoId > 0 ? ofRepoId(repoId) : null;
 	}
 
-	public static int toRepoId(final PPRoutingActivityTemplateId id)
+	public static int toRepoId(@Nullable final PPRoutingActivityTemplateId id)
 	{
 		return id != null ? id.getRepoId() : -1;
 	}

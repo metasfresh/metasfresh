@@ -12,7 +12,7 @@ const mapStateToProps = (state) => ({
   rawModal: state.windowHandler.rawModal,
   pluginModal: state.windowHandler.pluginModal,
   indicator: state.windowHandler.indicator,
-  includedView: state.listHandler.includedView,
+  includedView: state.viewHandler.includedView,
 });
 
 class InboxAll extends Component {

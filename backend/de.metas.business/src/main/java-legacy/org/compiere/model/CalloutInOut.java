@@ -16,29 +16,21 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.Properties;
-
-import org.adempiere.ad.callout.api.ICalloutField;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.warehouse.LocatorId;
-import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.api.IWarehouseBL;
-import org.adempiere.warehouse.spi.IWarehouseAdvisor;
-import org.compiere.util.DisplayType;
-
 import de.metas.adempiere.form.IClientUI;
+import de.metas.bpartner.BPartnerContactId;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.BPartnerStats;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerStatsDAO;
+import de.metas.document.dimension.Dimension;
+import de.metas.document.dimension.DimensionService;
+import de.metas.document.location.DocumentLocation;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequence.impl.IDocumentNoInfo;
+import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
+import de.metas.location.LocationId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.uom.LegacyUOMConversionUtils;
@@ -46,6 +38,22 @@ import de.metas.uom.UOMPrecision;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import org.adempiere.ad.callout.api.ICalloutField;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
+import org.adempiere.warehouse.spi.IWarehouseAdvisor;
+import org.compiere.SpringContextHolder;
+import org.compiere.util.DisplayType;
+
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Properties;
+
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 /**
  * Shipment/Receipt Callouts
@@ -114,9 +122,7 @@ public class CalloutInOut extends CalloutEngine
 		inout.setFreightCostRule(order.getFreightCostRule());
 		inout.setFreightAmt(order.getFreightAmt());
 
-		inout.setC_BPartner_ID(order.getC_BPartner_ID());
-		inout.setC_BPartner_Location_ID(order.getC_BPartner_Location_ID());
-		inout.setAD_User_ID(new Integer(order.getAD_User_ID()));
+		InOutDocumentLocationAdapterFactory.locationAdapter(inout).setFrom(order);
 
 		return NO_ERROR;
 	} // order
@@ -159,11 +165,7 @@ public class CalloutInOut extends CalloutEngine
 			inout.setFreightCostRule(originalReceipt.getFreightCostRule());
 			inout.setFreightAmt(originalReceipt.getFreightAmt());
 
-			inout.setC_BPartner_ID(originalReceipt.getC_BPartner_ID());
-
-			// [ 1867464 ]
-			inout.setC_BPartner_Location_ID(originalReceipt.getC_BPartner_Location_ID());
-			inout.setAD_User_ID(originalReceipt.getAD_User_ID());
+			InOutDocumentLocationAdapterFactory.locationAdapter(inout).setFrom(originalReceipt);
 		}
 
 		return NO_ERROR;
@@ -230,8 +232,15 @@ public class CalloutInOut extends CalloutEngine
 	public String bpartner(final ICalloutField calloutField)
 	{
 		final I_M_InOut inout = calloutField.getModel(I_M_InOut.class);
-		final I_C_BPartner bpartner = load(inout.getC_BPartner_ID(), I_C_BPartner.class);
-		if (bpartner == null || bpartner.getC_BPartner_ID() <= 0)
+		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(inout.getC_BPartner_ID());
+		if (bpartnerId == null)
+		{
+			return NO_ERROR;
+		}
+
+		final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
+		final I_C_BPartner bpartner = bpartnerBL.getById(bpartnerId);
+		if (bpartner == null)
 		{
 			return NO_ERROR;
 		}
@@ -241,23 +250,39 @@ public class CalloutInOut extends CalloutEngine
 		//
 		// BPartner Location (i.e. ShipTo)
 		final I_C_BPartner_Location shipToLocation = suggestShipToLocation(calloutField, bpartner);
-		inout.setC_BPartner_Location_ID(shipToLocation.getC_BPartner_Location_ID());
 
 		//
 		// BPartner Contact
+		BPartnerContactId bpContactId = InOutDocumentLocationAdapterFactory.locationAdapter(inout).getBPartnerContactId().orElse(null);
 		if (!isSOTrx)
 		{
 			I_AD_User contact = null;
 			if (shipToLocation != null)
 			{
-				contact = Services.get(IBPartnerBL.class).retrieveUserForLoc(shipToLocation);
+				contact = bpartnerBL.retrieveUserForLoc(shipToLocation);
 			}
 			if (contact == null)
 			{
-				contact = Services.get(IBPartnerBL.class).retrieveShipContact(bpartner);
+				contact = bpartnerBL.retrieveShipContact(bpartner);
 			}
-			inout.setAD_User_ID(contact.getAD_User_ID());
+			if (contact != null)
+			{
+				bpContactId = BPartnerContactId.ofRepoId(contact.getC_BPartner_ID(), contact.getAD_User_ID());
+			}
 		}
+
+		InOutDocumentLocationAdapterFactory.locationAdapter(inout)
+				.setFrom(DocumentLocation.builder()
+								 .bpartnerId(bpartnerId)
+								 .bpartnerLocationId(shipToLocation != null
+															 ? BPartnerLocationId.ofRepoId(shipToLocation.getC_BPartner_ID(), shipToLocation.getC_BPartner_Location_ID())
+															 : null)
+								 .locationId(shipToLocation != null
+													 ? LocationId.ofRepoId(shipToLocation.getC_Location_ID())
+													 : null)
+								 .bpartnerAddress(shipToLocation != null ? shipToLocation.getAddress() : null)
+								 .contactId(bpContactId)
+								 .build());
 
 		//
 		// Check SO credit available
@@ -299,8 +324,7 @@ public class CalloutInOut extends CalloutEngine
 			}
 		}
 
-		final I_C_BPartner_Location shipToLocation = shipToLocations.get(0);
-		return shipToLocation;
+		return shipToLocations.get(0);
 	}
 
 	/**
@@ -332,6 +356,7 @@ public class CalloutInOut extends CalloutEngine
 	 */
 	public String orderLine(final ICalloutField calloutField)
 	{
+		final DimensionService dimensionService = SpringContextHolder.instance.getBean(DimensionService.class);
 		final I_M_InOutLine inoutLine = calloutField.getModel(I_M_InOutLine.class);
 
 		final int C_OrderLine_ID = inoutLine.getC_OrderLine_ID();
@@ -368,14 +393,12 @@ public class CalloutInOut extends CalloutEngine
 
 			//
 			// Dimensions
-			inoutLine.setC_Activity_ID(ol.getC_Activity_ID());
-			inoutLine.setC_Campaign_ID(ol.getC_Campaign_ID());
-			inoutLine.setC_Project_ID(ol.getC_Project_ID());
 			inoutLine.setC_ProjectPhase_ID(ol.getC_ProjectPhase_ID());
 			inoutLine.setC_ProjectTask_ID(ol.getC_ProjectTask_ID());
 			inoutLine.setAD_OrgTrx_ID(ol.getAD_OrgTrx_ID());
-			inoutLine.setUser1_ID(ol.getUser1_ID());
-			inoutLine.setUser2_ID(ol.getUser2_ID());
+
+			final Dimension orderLineDimensions = dimensionService.getFromRecord(ol);
+			dimensionService.updateRecord(inoutLine, orderLineDimensions);
 		}
 
 		return NO_ERROR;
@@ -697,11 +720,6 @@ public class CalloutInOut extends CalloutEngine
 	/**
 	 * M_InOutLine - ASI.
 	 *
-	 * @param ctx      context
-	 * @param WindowNo window no
-	 * @param mTab     tab model
-	 * @param mField   field model
-	 * @param value    new value
 	 * @return error message or ""
 	 */
 	public String asi(final ICalloutField calloutField)

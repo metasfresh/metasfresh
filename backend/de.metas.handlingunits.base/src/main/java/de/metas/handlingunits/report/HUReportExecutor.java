@@ -1,24 +1,6 @@
 package de.metas.handlingunits.report;
 
-import java.util.Collection;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Properties;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
-import org.compiere.print.ReportEngine;
-import org.compiere.util.DB;
-import org.compiere.util.Env;
-
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.handlingunits.HuId;
@@ -27,16 +9,32 @@ import de.metas.i18n.Language;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.Recipient;
 import de.metas.notification.UserNotificationRequest;
-import de.metas.print.IPrintService;
+import de.metas.printing.IMassPrintingService;
 import de.metas.process.AdProcessId;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessExecutor;
 import de.metas.process.ProcessInfo;
+import de.metas.report.DocumentReportService;
+import de.metas.report.PrintCopies;
 import de.metas.report.server.ReportConstants;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
+import org.compiere.util.DB;
+import org.compiere.util.Env;
+
+import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Properties;
+import java.util.Set;
 
 /*
  * #%L
@@ -77,7 +75,7 @@ public class HUReportExecutor
 
 	private final Properties ctx;
 	private int windowNo = Env.WINDOW_None;
-	private int numberOfCopies = 1;
+	private PrintCopies numberOfCopies = PrintCopies.ONE;
 	private Boolean printPreview = null;
 
 	private HUReportExecutor(final Properties ctx)
@@ -99,7 +97,15 @@ public class HUReportExecutor
 	 */
 	public HUReportExecutor numberOfCopies(final int numberOfCopies)
 	{
-		Check.assume(numberOfCopies > 0, "numberOfCopies > 0");
+		return numberOfCopies(PrintCopies.ofInt(numberOfCopies));
+	}
+
+	/**
+	 * Specify the number of copies. One means one printout. The default is one.
+	 */
+	public HUReportExecutor numberOfCopies(@NonNull final PrintCopies numberOfCopies)
+	{
+		Check.assume(numberOfCopies.isGreaterThanZero(), "numberOfCopies > 0");
 		this.numberOfCopies = numberOfCopies;
 		return this;
 	}
@@ -151,12 +157,12 @@ public class HUReportExecutor
 		trxManager.getTrxListenerManagerOrAutoCommit(ITrx.TRXNAME_ThreadInherited)
 				.newEventListener(TrxEventTiming.AFTER_COMMIT)
 				.invokeMethodJustOnce(false) // invoke the handling method on *every* commit, because that's how it was and I can't check now if it's really needed
-				.registerHandlingMethod(innerTrx -> huReportTrxListener.afterCommit(innerTrx));
+				.registerHandlingMethod(huReportTrxListener::afterCommit);
 
 		trxManager.getTrxListenerManagerOrAutoCommit(ITrx.TRXNAME_ThreadInherited)
 				.newEventListener(TrxEventTiming.AFTER_CLOSE)
 				.invokeMethodJustOnce(false) // invoke the handling method on *every* commit, because that's how it was and I can't check now if it's really needed
-				.registerHandlingMethod(innerTrx -> huReportTrxListener.afterClose(innerTrx));
+				.registerHandlingMethod(huReportTrxListener::afterClose);
 
 		huReportTrxListener.setListenerWasRegistered();
 	}
@@ -192,7 +198,7 @@ public class HUReportExecutor
 	{
 		final Set<BPartnerId> huBPartnerIds = hus.stream()
 				.map(HUToReport::getBPartnerId)
-				.filter(bpartnerId -> bpartnerId != null)
+				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
 		return extractReportingLanguageFromBPartnerIds(huBPartnerIds);
 	}
@@ -202,7 +208,7 @@ public class HUReportExecutor
 		if (huBPartnerIds.size() == 1)
 		{
 			final BPartnerId bpartnerId = huBPartnerIds.iterator().next();
-			final Language reportLanguage = Services.get(IBPartnerBL.class).getLanguage(ctx, bpartnerId.getRepoId());
+			final Language reportLanguage = Services.get(IBPartnerBL.class).getLanguage(bpartnerId).orElse(null);
 			return reportLanguage == null ? REPORT_LANG_NONE : reportLanguage.getAD_Language();
 		}
 		else
@@ -225,8 +231,8 @@ public class HUReportExecutor
 				.setWindowNo(request.getWindowNo())
 				.setTableName(I_M_HU.Table_Name)
 				.setReportLanguage(reportLanguageToUse)
-				.addParameter(ReportConstants.REPORT_PARAM_BARCODE_URL, ReportEngine.getBarcodeServlet(ctx))
-				.addParameter(IPrintService.PARAM_PrintCopies, request.getCopies())
+				.addParameter(ReportConstants.REPORT_PARAM_BARCODE_URL, DocumentReportService.getBarcodeServlet(Env.getClientId(ctx), Env.getOrgId(ctx)))
+				.addParameter(IMassPrintingService.PARAM_PrintCopies, request.getCopies().toInt())
 				.setPrintPreview(request.getPrintPreview())
 				//
 				// Execute report in a new transaction
@@ -246,7 +252,7 @@ public class HUReportExecutor
 		private final Properties ctx;
 		private final AdProcessId adProcessId;
 		private final int windowNo;
-		private final int copies;
+		private final PrintCopies copies;
 
 		private final Set<HuId> huIdsToProcess = new LinkedHashSet<>(); // using a linked set to preserve the order in which HUs were added
 
@@ -257,7 +263,7 @@ public class HUReportExecutor
 		 * Therefore (and because right now there is not time to get to the root of the problem),
 		 * we are now doing the job on afterClose(). This flag is set to true on a commit and will tell the afterClose implementation if it shall proceed.
 		 *
-		 * @task https://github.com/metasfresh/metasfresh/issues/1263
+		 * task https://github.com/metasfresh/metasfresh/issues/1263
 		 *
 		 */
 		private boolean commitWasDone = false;
@@ -268,7 +274,7 @@ public class HUReportExecutor
 				@NonNull final Properties ctx,
 				final AdProcessId adProcessId,
 				final int windowNo,
-				final int copies)
+				final PrintCopies copies)
 		{
 			this.ctx = ctx;
 			this.adProcessId = adProcessId;
@@ -356,7 +362,7 @@ public class HUReportExecutor
 		Properties ctx;
 		AdProcessId adProcessId;
 		int windowNo;
-		int copies;
+		PrintCopies copies;
 		Boolean printPreview;
 		String adLanguage;
 		boolean onErrorThrowException;
@@ -367,13 +373,13 @@ public class HUReportExecutor
 				@NonNull final Properties ctx,
 				@NonNull final AdProcessId adProcessId,
 				final int windowNo,
-				final int copies,
+				@NonNull final PrintCopies copies,
 				@Nullable final Boolean printPreview,
 				@NonNull final String adLanguage,
 				final boolean onErrorThrowException,
 				final ImmutableSet<HuId> huIdsToProcess)
 		{
-			Check.assume(copies > 0, "copies > 0");
+			Check.assume(copies.toInt() > 0, "copies > 0");
 			Check.assumeNotEmpty(adLanguage, "adLanguage is not empty");
 			Check.assumeNotEmpty(huIdsToProcess, "huIdsToProcess is not empty");
 

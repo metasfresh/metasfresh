@@ -24,6 +24,8 @@ package de.metas.document.archive.spi.impl;
 
 import java.util.Properties;
 
+import de.metas.async.api.IAsyncBatchBL;
+import de.metas.async.model.I_C_Async_Batch;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_DocType;
@@ -43,6 +45,8 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
+
 /**
  * {@link IDocOutboundProducer} base implementation.
  *
@@ -57,6 +61,7 @@ public abstract class AbstractDocOutboundProducer implements IDocOutboundProduce
 	protected final transient Logger logger = LogManager.getLogger(getClass());
 
 	private final transient IDocumentBL documentBL = Services.get(IDocumentBL.class);
+	private final transient IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
 	private final transient IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 	private final transient IWorkPackageQueueFactory workPackageQueueFactory = Services.get(IWorkPackageQueueFactory.class);
 
@@ -104,7 +109,7 @@ public abstract class AbstractDocOutboundProducer implements IDocOutboundProduce
 	}
 
 	@Override
-	public boolean accept(final Object model)
+	public boolean accept(@Nullable final Object model)
 	{
 		if (model == null)
 		{
@@ -167,13 +172,18 @@ public abstract class AbstractDocOutboundProducer implements IDocOutboundProduce
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(model);
 
-		workPackageQueueFactory
-				.getQueueForEnqueuing(ctx, packageProcessorClass)
-				.newBlock()
-				.newWorkpackage()
-				.bindToThreadInheritedTrx()
-				.addElement(model)
-				.setUserInChargeId(Env.getLoggedUserIdIfExists().orElse(null))
-				.build();
+		final I_C_Async_Batch asyncBatch = asyncBatchBL.getAsyncBatchId(model)
+				.map(asyncBatchBL::getAsyncBatchById)
+				.orElse(null);
+
+			workPackageQueueFactory
+					.getQueueForEnqueuing(ctx, packageProcessorClass)
+					.newBlock()
+					.newWorkpackage()
+					.bindToThreadInheritedTrx()
+					.addElement(model)
+					.setC_Async_Batch(asyncBatch)
+					.setUserInChargeId(Env.getLoggedUserIdIfExists().orElse(null))
+					.build();
 	}
 }

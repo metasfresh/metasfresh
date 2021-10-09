@@ -50,11 +50,13 @@ public class ProductId implements RepoIdAware
 		return new ProductId(repoId);
 	}
 
+	@Nullable
 	public static ProductId ofRepoIdOrNull(@Nullable final Integer repoId)
 	{
 		return repoId != null && repoId > 0 ? new ProductId(repoId) : null;
 	}
 
+	@Nullable
 	public static ProductId ofRepoIdOrNull(final int repoId)
 	{
 		return repoId > 0 ? new ProductId(repoId) : null;
@@ -68,7 +70,7 @@ public class ProductId implements RepoIdAware
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
-	public static int toRepoId(final ProductId productId)
+	public static int toRepoId(@Nullable final ProductId productId)
 	{
 		return productId != null ? productId.getRepoId() : -1;
 	}
@@ -81,7 +83,7 @@ public class ProductId implements RepoIdAware
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
-	public static boolean equals(final ProductId o1, final ProductId o2)
+	public static boolean equals(@Nullable final ProductId o1, @Nullable final ProductId o2)
 	{
 		return Objects.equals(o1, o2);
 	}

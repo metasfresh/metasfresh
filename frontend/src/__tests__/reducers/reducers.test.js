@@ -4,8 +4,10 @@ import menuHandler, { initialState as menuHandlerState } from '../../reducers/me
 import listHandler, { initialState as listHandlerState } from '../../reducers/listHandler';
 import pluginsHandler, { initialState as pluginsHandlerState } from '../../reducers/pluginsHandler';
 import viewHandler, { initialState as viewHandlerState } from '../../reducers/viewHandler';
+import actionsHandler, { initialState as initialActionsState } from '../../reducers/actionsHandler';
+import tablesHandler, { initialState as tablesInitialState } from '../../reducers/tables';
 
-describe.skip('Composed project reducer', () => {
+describe('Composed project reducer', () => {
   const initialComposedState = {
     appHandler: { ...appHandlerState },
     windowHandler: { ...windowHandlerState },
@@ -13,6 +15,8 @@ describe.skip('Composed project reducer', () => {
     menuHandler: { ...menuHandlerState },
     pluginsHandler: { ...pluginsHandlerState },
     viewHandler: { ...viewHandlerState },
+    actionsHandler: { ...initialActionsState },
+    tables: { ...tablesInitialState },
   };
 
   const reducerState = {
@@ -22,6 +26,8 @@ describe.skip('Composed project reducer', () => {
     menuHandler: menuHandler(undefined, {}),
     pluginsHandler: pluginsHandler(undefined, {}),
     viewHandler: viewHandler(undefined, {}),
+    actionsHandler: { ...actionsHandler(undefined, {}) },
+    tables: { ...tablesHandler(undefined, {}) },
   }
 
   it('should return the initial state', () => {

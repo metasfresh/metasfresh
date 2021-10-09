@@ -26,15 +26,19 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.common.util.time.SystemTime;
 import de.metas.util.NumberUtils;
 import de.metas.util.StringUtils;
-import de.metas.util.time.SystemTime;
+import de.metas.util.lang.RepoIdAware;
+import de.metas.util.lang.RepoIdAwares;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;
@@ -50,10 +54,35 @@ public final class Params implements IParams
 			return EMPTY;
 		}
 
-		return new Params(values);
+		return new Params(new HashMap<>(values));
 	}
 
-	static final Params EMPTY = new Params();
+	public static Params copyOf(@NonNull final IParams from)
+	{
+		if (from instanceof Params)
+		{
+			return (Params)from;
+		}
+		else
+		{
+			final Collection<String> parameterNames = from.getParameterNames();
+			if (parameterNames.isEmpty())
+			{
+				return EMPTY;
+			}
+
+			final HashMap<String, Object> values = new HashMap<>(parameterNames.size());
+			for (final String parameterName : parameterNames)
+			{
+				final Object value = from.getParameterAsObject(parameterName);
+				values.put(parameterName, value);
+			}
+
+			return new Params(values);
+		}
+	}
+
+	public static final Params EMPTY = new Params();
 
 	private final Map<String, Object> values;
 
@@ -64,7 +93,7 @@ public final class Params implements IParams
 
 	private Params(@NonNull final Map<String, Object> values)
 	{
-		this.values = new HashMap<>(values);
+		this.values = values;
 	}
 
 	@Override
@@ -102,6 +131,27 @@ public final class Params implements IParams
 	{
 		final Object value = getParameterAsObject(parameterName);
 		return NumberUtils.asInt(value, defaultValue);
+	}
+
+	@Override
+	public <T extends RepoIdAware> T getParameterAsId(@NonNull final String parameterName, @NonNull final Class<T> type)
+	{
+		final Object value = getParameterAsObject(parameterName);
+		if (value == null)
+		{
+			return null;
+		}
+		else if (type.isInstance(value))
+		{
+			@SuppressWarnings("unchecked")
+			final T id = (T)value;
+			return id;
+		}
+		else
+		{
+			int repoId = NumberUtils.asInt(value, -1);
+			return RepoIdAwares.ofRepoIdOrNull(repoId, type);
+		}
 	}
 
 	@Override
@@ -143,5 +193,20 @@ public final class Params implements IParams
 	{
 		final Object value = getParameterAsObject(parameterName);
 		return StringUtils.toBoolean(value);
+	}
+
+	public Params withParameter(@NonNull final String parameterName, final Object value)
+	{
+		final Object existingValue = values.get(parameterName);
+		if (Objects.equals(value, existingValue))
+		{
+			return this;
+		}
+		else
+		{
+			final Map<String, Object> newValues = new HashMap<>(values);
+			newValues.put(parameterName, value);
+			return new Params(newValues);
+		}
 	}
 }

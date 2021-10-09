@@ -2,15 +2,28 @@ package de.metas.invoice.service.impl;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.costing.ChargeId;
+import de.metas.costing.impl.ChargeRepository;
 import de.metas.currency.CurrencyPrecision;
+import de.metas.inout.IInOutDAO;
+import de.metas.inout.InOutId;
+import de.metas.inout.InOutLineId;
+import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
+import de.metas.invoice.InvoiceId;
+import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapterFactory;
 import de.metas.invoice.service.IInvoiceBL;
+import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.invoice.service.IInvoiceLineBL;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
+import de.metas.location.LocationId;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
+import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingResult;
@@ -27,25 +40,29 @@ import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.ITaxDAO;
+import de.metas.tax.api.Tax;
 import de.metas.tax.api.TaxCategoryId;
+import de.metas.tax.api.TaxId;
 import de.metas.tax.api.TaxNotFoundException;
+import de.metas.tax.api.TaxQuery;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UOMConversionContext;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.TaxCategoryNotFoundException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.api.IWarehouseBL;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Charge;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Tax;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_ProductPrice;
@@ -57,6 +74,7 @@ import org.slf4j.MDC.MDCCloseable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Optional;
 import java.util.Properties;
 
@@ -84,15 +102,19 @@ import java.util.Properties;
 
 public class InvoiceLineBL implements IInvoiceLineBL
 {
-
 	private static final Logger logger = LogManager.getLogger(InvoiceLineBL.class);
+
+	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final IPricingBL pricingBL = Services.get(IPricingBL.class);
+	private final IPriceListBL priceListBL = Services.get(IPriceListBL.class);
+	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
+	private final ITaxBL taxBL = Services.get(ITaxBL.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
 
 	@Override
 	public void setTaxAmtInfo(final Properties ctx, final I_C_InvoiceLine il, final String getTrxName)
 	{
-		final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
-		final ITaxBL taxBL = Services.get(ITaxBL.class);
-
 		final int taxId = il.getC_Tax_ID();
 
 		final boolean taxIncluded = invoiceBL.isTaxIncluded(il);
@@ -106,8 +128,57 @@ public class InvoiceLineBL implements IInvoiceLineBL
 	}
 
 	@Override
-	public boolean setTax(final Properties ctx, final org.compiere.model.I_C_InvoiceLine il, final String trxName)
+	public boolean setTaxBasedOnShipment(final org.compiere.model.I_C_InvoiceLine il, final String trxName)
 	{
+		final IInOutDAO inoutDAO = Services.get(IInOutDAO.class);
+		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+		final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+
+		final InvoiceId invoiceId = InvoiceId.ofRepoId(il.getC_Invoice_ID());
+		final I_C_Invoice invoice = invoiceDAO.getByIdInTrx(invoiceId);
+
+		if (il.getM_InOutLine_ID() <= 0)
+		{
+			logger.debug(il + "has M_InOutLine_ID=" + il.getM_InOutLine_ID() + ": returning");
+			return false;
+		}
+
+		final InOutLineId inoutLineId = InOutLineId.ofRepoId(il.getM_InOutLine_ID());
+		final I_M_InOutLine inoutLineRecord = inoutDAO.getLineById(inoutLineId);
+
+		final I_M_InOut io = inoutDAO.getById(InOutId.ofRepoId(inoutLineRecord.getM_InOut_ID()));
+
+		final OrgId inOutOrgId = OrgId.ofRepoId(io.getAD_Org_ID());
+
+		final Timestamp shipDate = io.getMovementDate();
+
+		final BPartnerLocationAndCaptureId shipToPartnerLocationId = InOutDocumentLocationAdapterFactory
+				.locationAdapter(io)
+				.getBPartnerLocationAndCaptureId();
+
+		final boolean isSOTrx = io.isSOTrx();
+
+		final CountryId countryFromId = invoiceBL.getFromCountryId(invoice, il);
+
+		return setTaxForInvoiceLine(il, inOutOrgId, shipDate, countryFromId, shipToPartnerLocationId, isSOTrx);
+	}
+
+	@Override
+	public boolean setTaxForInvoiceLine(
+			final org.compiere.model.I_C_InvoiceLine il,
+			@NonNull final OrgId orgId,
+			final Timestamp taxDate,
+			final CountryId countryFromId,
+			@NonNull final BPartnerLocationAndCaptureId partnerLocationId,
+			final boolean isSOTrx)
+	{
+		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+		final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
+		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+
+		final InvoiceId invoiceId = InvoiceId.ofRepoId(il.getC_Invoice_ID());
+		final I_C_Invoice invoice = invoiceDAO.getByIdInTrx(invoiceId);
+
 		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(il))
 		{
 			TaxCategoryId taxCategoryId = TaxCategoryId.ofRepoIdOrNull(il.getC_TaxCategory_ID());
@@ -118,12 +189,6 @@ public class InvoiceLineBL implements IInvoiceLineBL
 				il.setC_TaxCategory_ID(TaxCategoryId.toRepoId(taxCategoryId));
 			}
 
-			if (il.getM_InOutLine_ID() <= 0)
-			{
-				logger.debug(il + "has M_InOutLine_ID=" + il.getM_InOutLine_ID() + ": returning");
-				return false;
-			}
-
 			if (il.getM_Product_ID() <= 0)
 			{
 				// this might be the case if a descriptional il refers to an iol.
@@ -131,53 +196,37 @@ public class InvoiceLineBL implements IInvoiceLineBL
 				return false;
 			}
 
-			final I_M_InOut io = il.getM_InOutLine().getM_InOut();
-
-			final WarehouseId warehouseId = WarehouseId.ofRepoId(io.getM_Warehouse_ID());
-			final CountryId countryFromId = Services.get(IWarehouseBL.class).getCountryId(warehouseId);
-
-			final BPartnerLocationId partnerLocationId = BPartnerLocationId.ofRepoId(io.getC_BPartner_ID(), io.getC_BPartner_Location_ID());
-			final I_C_BPartner_Location locationTo = Services.get(IBPartnerDAO.class).getBPartnerLocationById(partnerLocationId);
-
-			final Timestamp shipDate = io.getMovementDate();
-			final int taxId = Services.get(ITaxBL.class).retrieveTaxIdForCategory(ctx,
-					countryFromId,
-					OrgId.ofRepoId(io.getAD_Org_ID()),
-					locationTo,
-					shipDate,
-					taxCategoryId,
-					il.getC_Invoice().isSOTrx(),
-					false);
-
-			if (taxId <= 0)
-			{
-				final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
-
-			final I_C_Invoice invoice = il.getC_Invoice();
-			final I_C_BPartner_Location bPartnerLocationRecord = bpartnerDAO.getBPartnerLocationById(BPartnerLocationId.ofRepoId(invoice.getC_BPartner_ID(), invoice.getC_BPartner_Location_ID()));
-
-			throw TaxNotFoundException.builder()
+			final Tax tax = taxDAO.getBy(TaxQuery.builder()
+					.fromCountryId(countryFromId)
+					.orgId(orgId)
+					.bPartnerLocationId(partnerLocationId)
+					.dateOfInterest(taxDate)
 					.taxCategoryId(taxCategoryId)
-					.isSOTrx(io.isSOTrx())
-					.shipDate(shipDate)
-					.shipFromCountryId(countryFromId)
-					.shipToC_Location_ID(locationTo.getC_Location_ID())
-					.billDate(invoice.getDateInvoiced())
-					.billFromCountryId(countryFromId)
-					.billToC_Location_ID(bPartnerLocationRecord.getC_Location_ID())
+					.soTrx(SOTrx.ofBoolean(isSOTrx))
+					.build());
+
+			if (tax == null)
+			{
+				final I_C_BPartner_Location bPartnerLocationRecord = bpartnerDAO.getBPartnerLocationByIdEvenInactive(BPartnerLocationId.ofRepoId(invoice.getC_BPartner_ID(), invoice.getC_BPartner_Location_ID()));
+
+				throw TaxNotFoundException.builder()
+						.taxCategoryId(taxCategoryId)
+						.isSOTrx(isSOTrx)
+						.shipDate(taxDate)
+						.shipFromCountryId(countryFromId)
+						.shipToC_Location_ID(partnerLocationId)
+						.billDate(invoice.getDateInvoiced())
+						.billFromCountryId(countryFromId)
+						.billToC_Location_ID(LocationId.ofRepoId(bPartnerLocationRecord.getC_Location_ID()))
 						.build();
 			}
-
-			final boolean taxChange = il.getC_Tax_ID() != taxId;
+			final TaxId taxId = tax.getTaxId();
+			final boolean taxChange = il.getC_Tax_ID() != taxId.getRepoId();
 			if (taxChange)
 			{
 				logger.info("Changing C_Tax_ID to " + taxId + " for " + il);
-				il.setC_Tax_ID(taxId);
-
-				final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
-				final I_C_Tax tax = taxDAO.getTaxByIdOrNull(taxId);
-
-				il.setC_TaxCategory_ID(tax.getC_TaxCategory_ID());
+				il.setC_Tax_ID(taxId.getRepoId());
+				il.setC_TaxCategory_ID(tax.getTaxCategoryId().getRepoId());
 			}
 			return taxChange;
 		}
@@ -201,9 +250,13 @@ public class InvoiceLineBL implements IInvoiceLineBL
 	{
 		// FIXME: we need to retrieve the C_TaxCategory_ID by using Pricing Engine
 
-		if (invoiceLine.getC_Charge_ID() > 0)
+		final ChargeRepository chargeRepo = SpringContextHolder.instance.getBean(ChargeRepository.class);
+
+		final ChargeId chargeId = ChargeId.ofRepoIdOrNull(invoiceLine.getC_Charge_ID());
+		if (chargeId != null)
 		{
-			return TaxCategoryId.ofRepoId(invoiceLine.getC_Charge().getC_TaxCategory_ID());
+			final I_C_Charge chargeRecord = chargeRepo.getById(chargeId);
+			return TaxCategoryId.ofRepoId(chargeRecord.getC_TaxCategory_ID());
 		}
 
 		final I_C_Invoice invoice = invoiceLine.getC_Invoice();
@@ -231,14 +284,14 @@ public class InvoiceLineBL implements IInvoiceLineBL
 			final org.compiere.model.I_C_InvoiceLine invoiceLine,
 			final I_C_Invoice invoice)
 	{
-		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
+		final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(invoice.getAD_Org_ID()));
 		final Boolean processedPLVFiltering = null; // task 09533: the user doesn't know about PLV's processed flag, so we can't filter by it
 
 		final PriceListId priceListId = PriceListId.ofRepoId(invoice.getM_PriceList_ID());
 
 		final I_M_PriceList_Version priceListVersion = priceListDAO.retrievePriceListVersionOrNull(
 				priceListId,
-				TimeUtil.asZonedDateTime(invoice.getDateInvoiced()),
+				TimeUtil.asZonedDateTime(invoice.getDateInvoiced(), timeZone),
 				processedPLVFiltering);
 		Check.errorIf(priceListVersion == null, "Missing PLV for M_PriceList and DateInvoiced of {}", invoice);
 
@@ -257,6 +310,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 			final I_C_Invoice invoice)
 	{
 		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
+
 		final Boolean processedPLVFiltering = null; // task 09533: the user doesn't know about PLV's processed flag, so we can't filter by it
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(invoiceLine);
@@ -264,11 +318,12 @@ public class InvoiceLineBL implements IInvoiceLineBL
 
 		final I_C_Order order = InterfaceWrapperHelper.create(ctx, invoiceLine.getC_Invoice().getC_Order_ID(), I_C_Order.class, trxName);
 
-		final I_M_PriceList priceList = Services.get(IPriceListDAO.class).getById(order.getM_PriceList_ID());
+		final I_M_PriceList priceList = priceListDAO.getById(order.getM_PriceList_ID());
+		final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(order.getAD_Org_ID()));
 
 		final I_M_PriceList_Version priceListVersion = priceListDAO.retrievePriceListVersionOrNull(
 				priceList,
-				TimeUtil.asZonedDateTime(invoice.getDateInvoiced()),
+				TimeUtil.asZonedDateTime(invoice.getDateInvoiced(), timeZone),
 				processedPLVFiltering);
 		Check.errorIf(priceListVersion == null, "Missing PLV for M_PriceList and DateInvoiced of {}", invoice);
 
@@ -293,6 +348,8 @@ public class InvoiceLineBL implements IInvoiceLineBL
 
 	private Quantity calculateQtyInvoicedInPriceUOM(@NonNull final I_C_InvoiceLine ilRecord)
 	{
+		final IProductBL productBL = Services.get(IProductBL.class);
+		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
 		final BigDecimal qtyEntered = ilRecord.getQtyEntered();
 		Check.assumeNotNull(qtyEntered, "qtyEntered not null; ilRecord={}", ilRecord);
@@ -303,7 +360,6 @@ public class InvoiceLineBL implements IInvoiceLineBL
 
 		if (priceUomId != null && uomId != null)
 		{
-			final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
 			final Quantity qtyToConvert = Quantitys.create(qtyEntered, uomId);
 			final Quantity result = uomConversionBL.convertQuantityTo(qtyToConvert, UOMConversionContext.of(productId), priceUomId);
@@ -318,7 +374,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		}
 		else if (productId != null)
 		{
-			final UomId stockUomId = Services.get(IProductBL.class).getStockUOMId(productId);
+			final UomId stockUomId = productBL.getStockUOMId(productId);
 			final Quantity result = Quantitys.create(ilRecord.getQtyInvoiced(), stockUomId);
 			logger.debug("invoice line has Price_UOM_ID=null, C_UOM_ID=null and M_Product_ID={}; return result={}", productId.getRepoId(), result);
 			return result;
@@ -357,10 +413,10 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		final ProductId productId = ProductId.ofRepoId(invoiceLine.getM_Product_ID()); // without a product-id, this method is not called
 
 		final BPartnerId bPartnerId = BPartnerId.ofRepoId(invoice.getC_BPartner_ID());
+		final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(invoiceLine.getAD_Org_ID()));
+		final LocalDate date = TimeUtil.asLocalDate(invoice.getDateInvoiced(), timeZone);
 
-		final LocalDate date = TimeUtil.asLocalDate(invoice.getDateInvoiced());
-
-		final IEditablePricingContext pricingCtx = Services.get(IPricingBL.class)
+		final IEditablePricingContext pricingCtx = pricingBL
 				.createInitialContext(
 						OrgId.ofRepoIdOrAny(invoiceLine.getAD_Org_ID()),
 						productId,
@@ -398,11 +454,8 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		{
 			return null;
 		}
-
-		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
-		final I_C_BPartner_Location bPartnerLocationRecord = bpartnerDAO.getBPartnerLocationById(BPartnerLocationId.ofRepoId(invoice.getC_BPartner_ID(), invoice.getC_BPartner_Location_ID()));
-
-		return CountryId.ofRepoId(bPartnerLocationRecord.getC_Location().getC_Country_ID());
+		final BPartnerLocationAndCaptureId bpartnerLocationId = InvoiceDocumentLocationAdapterFactory.locationAdapter(invoice).getBPartnerLocationAndCaptureId();
+		return Services.get(IBPartnerBL.class).getCountryId(bpartnerLocationId);
 	}
 
 	@Override
@@ -421,9 +474,9 @@ public class InvoiceLineBL implements IInvoiceLineBL
 
 				// this code has been borrowed from
 				// org.compiere.model.CalloutOrder.amt
-				final CurrencyPrecision netPrecision = Services.get(IPriceListBL.class).getAmountPrecision(priceListId);
+				final CurrencyPrecision netPrecision = priceListBL.getAmountPrecision(priceListId);
 
-				BigDecimal lineNetAmt = netPrecision.roundIfNeeded(convertedQty.toBigDecimal().multiply(line.getPriceActual()));
+				final BigDecimal lineNetAmt = netPrecision.roundIfNeeded(convertedQty.toBigDecimal().multiply(line.getPriceActual()));
 				logger.debug("LineNetAmt={}", lineNetAmt);
 				line.setLineNetAmt(lineNetAmt);
 			}
@@ -431,8 +484,10 @@ public class InvoiceLineBL implements IInvoiceLineBL
 	}
 
 	@Override
-	public void updatePrices(final I_C_InvoiceLine invoiceLine)
+	public void updatePrices(@NonNull final I_C_InvoiceLine invoiceLine)
 	{
+		final IPricingBL pricingBL = Services.get(IPricingBL.class);
+
 		// Product was not set yet. There is no point to calculate the prices
 		if (invoiceLine.getM_Product_ID() <= 0)
 		{
@@ -453,7 +508,6 @@ public class InvoiceLineBL implements IInvoiceLineBL
 			return;
 		}
 
-		final IPricingBL pricingBL = Services.get(IPricingBL.class);
 		final IPricingResult pricingResult = pricingBL.calculatePrice(pricingCtx.setFailIfNotCalculated());
 
 		//
@@ -480,39 +534,22 @@ public class InvoiceLineBL implements IInvoiceLineBL
 
 		//
 		// Calculate PriceActual from PriceEntered and Discount
-		calculatePriceActual(invoiceLine, pricingResult.getPrecision());
+		InvoiceLinePriceAndDiscount.of(invoiceLine, pricingResult.getPrecision())
+				.withUpdatedPriceActual()
+				.applyTo(invoiceLine);
 
 		invoiceLine.setPrice_UOM_ID(UomId.toRepoId(pricingResult.getPriceUomId())); //
 	}
 
-	private static void calculatePriceActual(final I_C_InvoiceLine invoiceLine, final CurrencyPrecision precision)
+
+	@NonNull
+	@Override
+	public Quantity getQtyInvoicedStockUOM(@NonNull final I_C_InvoiceLine invoiceLine)
 	{
-		final Percent discount = Percent.of(invoiceLine.getDiscount());
-		final BigDecimal priceEntered = invoiceLine.getPriceEntered();
+		final BigDecimal qtyInvoiced = invoiceLine.getQtyInvoiced();
 
-		BigDecimal priceActual;
-		if (priceEntered.signum() == 0)
-		{
-			priceActual = priceEntered;
-		}
-		else
-		{
-			final CurrencyPrecision pricePrecision;
-			if (precision != null)
-			{
-				pricePrecision = precision;
-			}
-			else
-			{
-				final IPriceListBL priceListBL = Services.get(IPriceListBL.class);
+		final I_C_UOM stockUOM = productBL.getStockUOM(invoiceLine.getM_Product_ID());
 
-				final I_C_Invoice invoice = invoiceLine.getC_Invoice();
-				pricePrecision = priceListBL.getPricePrecision(PriceListId.ofRepoId(invoice.getM_PriceList_ID()));
-			}
-
-			priceActual = discount.subtractFromBase(priceEntered, pricePrecision.toInt(), pricePrecision.getRoundingMode());
-		}
-
-		invoiceLine.setPriceActual(priceActual);
+		return Quantity.of(qtyInvoiced, stockUOM);
 	}
 }

@@ -1,5 +1,21 @@
 package de.metas.handlingunits.impl;
 
+import de.metas.handlingunits.IHUPackageBL;
+import de.metas.handlingunits.IHUPackageDAO;
+import de.metas.handlingunits.IHUShipperTransportationBL;
+import de.metas.handlingunits.exceptions.HUException;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_Package_HU;
+import de.metas.shipping.ShipperId;
+import de.metas.shipping.api.IShipperTransportationDAO;
+import de.metas.shipping.model.I_M_ShippingPackage;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_Package;
+
+import java.util.List;
+
 import static org.adempiere.model.InterfaceWrapperHelper.delete;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
@@ -26,29 +42,17 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
  * #L%
  */
 
-import java.util.List;
-
-import org.compiere.model.I_M_InOut;
-import org.compiere.model.I_M_Package;
-
-import de.metas.handlingunits.IHUPackageBL;
-import de.metas.handlingunits.IHUPackageDAO;
-import de.metas.handlingunits.IHUShipperTransportationBL;
-import de.metas.handlingunits.exceptions.HUException;
-import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_Package_HU;
-import de.metas.shipping.ShipperId;
-import de.metas.shipping.api.IShipperTransportationDAO;
-import de.metas.shipping.model.I_M_ShippingPackage;
-import de.metas.util.Check;
-import de.metas.util.Services;
-
 public class HUPackageBL implements IHUPackageBL
 {
+	// services
+	private final IHUShipperTransportationBL huShipperTransportationBL = Services.get(IHUShipperTransportationBL.class);
+	private final IHUPackageDAO huPackageDAO = Services.get(IHUPackageDAO.class);
+	private final IShipperTransportationDAO shipperTransportationDAO = Services.get(IShipperTransportationDAO.class);
+
 	@Override
 	public void destroyHUPackage(final org.compiere.model.I_M_Package mpackage)
 	{
-		final List<I_M_Package_HU> mpackageHUs = Services.get(IHUPackageDAO.class).retrievePackageHUs(mpackage);
+		final List<I_M_Package_HU> mpackageHUs = huPackageDAO.retrievePackageHUs(mpackage);
 
 		//
 		// If it's a package build from a a collection of HUs, remove the assignment and inactivate the package
@@ -96,11 +100,6 @@ public class HUPackageBL implements IHUPackageBL
 		Check.assumeNotNull(hu, "hu not null");
 		Check.assumeNotNull(inout, "inout not null");
 
-		// services
-		final IHUShipperTransportationBL huShipperTransportationBL = Services.get(IHUShipperTransportationBL.class);
-		final IHUPackageDAO huPackageDAO = Services.get(IHUPackageDAO.class);
-		final IShipperTransportationDAO shipperTransportationDAO = Services.get(IShipperTransportationDAO.class);
-
 		// Make sure our HU is eligible for shipper transportation.
 		// We do this check and we throw exception because it could be an internal development error.
 		if (!huShipperTransportationBL.isEligibleForAddingToShipperTransportation(hu))
@@ -145,9 +144,6 @@ public class HUPackageBL implements IHUPackageBL
 	@Override
 	public void unassignShipmentFromPackages(final I_M_InOut shipment)
 	{
-		final IHUPackageDAO huPackageDAO = Services.get(IHUPackageDAO.class);
-		final IShipperTransportationDAO shipperTransportationDAO = Services.get(IShipperTransportationDAO.class);
-
 		final int inoutId = shipment.getM_InOut_ID();
 		final List<I_M_Package> mpackages = huPackageDAO.retrievePackagesForShipment(shipment);
 		for (final I_M_Package mpackage : mpackages)

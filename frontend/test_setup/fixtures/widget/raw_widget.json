@@ -1,0 +1,56 @@
+{
+  "text": {
+    "data1": {
+      "widgetData": [
+        {
+          "displayed": true,
+          "field": "POReference",
+          "mandatory": false,
+          "readonly": false,
+          "validStatus": {
+            "fieldName": "POReference",
+            "initialValue": true,
+            "valid": true
+          },
+          "value": "",
+          "viewEditorRenderMode": "always",
+          "widgetType": "Text"
+        }
+      ],
+      "fields": [
+        {
+          "caption": "Order Reference",
+          "clearValueText": "none",
+          "emptyText": "none",
+          "field": "POReference"
+        }
+      ]
+    },
+    "props1": {
+      "renderMaster": true,
+      "dataSource": "element",
+      "layoutId": "0_1_0_3_0",
+      "entity": "window",
+      "windowId": "143",
+      "dataId": "1003424",
+      "isModal": false,
+      "tabIndex": 2,
+      "autoFocus": false,
+      "fullScreen": null,
+      "fieldName": "POReference",
+      "caption": "Order Reference",
+      "description": "Transaction Reference Number (Sales Order, Purchase Order) of your Business Partner",
+      "widgetType": "Text",
+      "maxLength": 40,
+      "size": "S",
+      "viewEditorRenderMode": "never",
+      "relativeDocId": 1003424,
+      "activeTab": "AD_Tab-187",
+      "modalVisible": false,
+      "timeZone": "Europe/Berlin",
+      "windowType": "143",
+      "updated": false,
+      "data": ""
+    }
+  }
+}

@@ -1,8 +1,0 @@
-<?xml version="1.0"?>
-<smooks-resource-list xmlns="http://www.milyn.org/xsd/smooks-1.1.xsd" xmlns:jb="http://www.milyn.org/xsd/smooks/javabean-1.2.xsd"
-	xmlns:ftl="http://www.milyn.org/xsd/smooks/freemarker-1.1.xsd">
-
-	<ftl:freemarker applyOnElement="de.metas.edi.esb.pojo.invoice.cctop.CctopInvoice">
-		<ftl:template>/marshal-config/smooks/invoices/templates/edi-marshal-cctopinvoice-customer_01.ftl</ftl:template>
-	</ftl:freemarker>
-</smooks-resource-list>

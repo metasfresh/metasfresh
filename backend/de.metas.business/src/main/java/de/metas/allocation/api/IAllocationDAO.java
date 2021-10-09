@@ -22,24 +22,25 @@ package de.metas.allocation.api;
  * #L%
  */
 
+import com.google.common.collect.SetMultimap;
+import de.metas.bpartner.BPartnerId;
+import de.metas.invoice.InvoiceId;
+import de.metas.lang.SOTrx;
+import de.metas.organization.ClientAndOrgId;
+import de.metas.payment.PaymentId;
+import de.metas.util.ISingletonService;
+import lombok.NonNull;
+import org.compiere.model.I_C_AllocationHdr;
+import org.compiere.model.I_C_AllocationLine;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_Payment;
+
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
-
-import org.compiere.model.I_C_AllocationHdr;
-import org.compiere.model.I_C_AllocationLine;
-import org.compiere.model.I_C_Invoice;
-import org.compiere.model.I_C_Payment;
-
-import com.google.common.collect.SetMultimap;
-
-import de.metas.invoice.InvoiceId;
-import de.metas.payment.PaymentId;
-import de.metas.util.ISingletonService;
-import lombok.NonNull;
 
 public interface IAllocationDAO extends ISingletonService
 {
@@ -50,22 +51,24 @@ public interface IAllocationDAO extends ISingletonService
 	List<I_C_AllocationLine> retrieveLines(I_C_AllocationHdr allocHdr);
 
 	/**
-	 * @param allocHdr
 	 * @return all lines, also inactive ones, and no matter which AD_Client_ID
 	 */
 	List<I_C_AllocationLine> retrieveAllLines(I_C_AllocationHdr allocHdr);
 
 	/**
 	 * Check all the completed C_Payments with a "matching" doctype for the invoice and IsAutoAllocateAvailableAmt='Y' AND IsAllocated='N' for the partner given as param.
-	 * 
-	 * @task 04193
+	 * <p>
+	 * task 04193
 	 */
-	List<I_C_Payment> retrieveAvailablePayments(I_C_Invoice invoice);
+	List<I_C_Payment> retrieveAvailablePaymentsToAutoAllocate(
+			BPartnerId invoiceBPartnerId,
+			SOTrx invoiceSOTrx,
+			ClientAndOrgId invoiceClientAndOrgId);
 
 	/**
 	 * Retrieve that part of the given <code>invoice</code>'s <code>GrandTotal</code> that has not yet been allocated.
 	 *
-	 * @param invoice the invoice for which we retrieve the open amount
+	 * @param invoice            the invoice for which we retrieve the open amount
 	 * @param creditMemoAdjusted if <code>true</code> and <code>invoice</code> is a credit memo, then the open amount is negated.
 	 */
 	BigDecimal retrieveOpenAmt(I_C_Invoice invoice, boolean creditMemoAdjusted);
@@ -83,7 +86,6 @@ public interface IAllocationDAO extends ISingletonService
 	/**
 	 * Similar to {@link #retrieveAllocatedAmt(I_C_Invoice)}, but excludes those allocations from the sum that are related to the given <code>C_Payment_ID</code>s.
 	 *
-	 * @param invoice
 	 * @param paymentIDsToIgnore may be <code>null</code> or empty.
 	 */
 	BigDecimal retrieveAllocatedAmtIgnoreGivenPaymentIDs(I_C_Invoice invoice, Set<Integer> paymentIDsToIgnore);
@@ -96,10 +98,6 @@ public interface IAllocationDAO extends ISingletonService
 	/**
 	 * Retrieve all the AllocationHdr documents that are marked as posted but do not actually have fact accounts.
 	 * Exclude the entries that don't have either Amount, DiscountAmt, WriteOffAmt or OverUnderAmt. These entries will produce 0 in posting.
-	 *
-	 * @param ctx
-	 * @param startTime
-	 * @return
 	 */
 	List<I_C_AllocationHdr> retrievePostedWithoutFactAcct(Properties ctx, Date startTime);
 

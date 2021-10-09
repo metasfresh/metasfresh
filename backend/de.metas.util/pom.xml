@@ -15,6 +15,7 @@
 
     <properties>
         <metasfresh.version>10.0.0</metasfresh.version>
+        <metasfresh-common.version>10.0.0</metasfresh-common.version>
     </properties>
 
     <!-- FRESH-271: we need an explicit version here, otherwise versions-maven-plugin
@@ -25,7 +26,7 @@
         <dependency>
             <groupId>de.metas.common.util</groupId>
             <artifactId>de-metas-common-util</artifactId>
-            <version>${metasfresh.version}</version>
+            <version>${metasfresh-common.version}</version>
         </dependency>
 
         <dependency>
@@ -58,17 +59,18 @@
         <dependency>
             <groupId>org.javassist</groupId>
             <artifactId>javassist</artifactId>
+            <version>3.21.0-GA</version>
         </dependency>
 
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-collections4</artifactId>
-            <version>4.1</version>
+            <version>4.4</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
-            <version>3.8.1</version>
+            <version>${commons-lang3.version}</version>
         </dependency>
 
         <!-- used for email aggress validation and maybe more -->
@@ -94,11 +96,18 @@
             <groupId>commons-logging</groupId>
             <artifactId>commons-logging</artifactId>
         </dependency>
+
         <dependency>
-            <groupId>commons-collections</groupId>
-            <artifactId>commons-collections</artifactId>
+            <groupId>javax.validation</groupId>
+            <artifactId>validation-api</artifactId>
+            <version>2.0.1.Final</version>
         </dependency>
 
+         <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-autoconfigure</artifactId>
+        </dependency>
+        
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>

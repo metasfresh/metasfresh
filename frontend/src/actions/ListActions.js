@@ -1,4 +1,4 @@
-import * as types from '../constants/ListTypes';
+import * as types from '../constants/ActionTypes';
 
 export function setListId(viewId, windowType) {
   return {
@@ -29,27 +29,5 @@ export function setPagination(page, windowType) {
     type: types.SET_LIST_PAGINATION,
     page,
     windowType,
-  };
-}
-
-export function setListIncludedView({
-  windowType,
-  viewId,
-  viewProfileId = null,
-} = {}) {
-  return {
-    type: types.SET_LIST_INCLUDED_VIEW,
-    payload: { windowType, viewId, viewProfileId },
-  };
-}
-
-export function closeListIncludedView({
-  windowType,
-  viewId,
-  forceClose = false,
-} = {}) {
-  return {
-    type: types.CLOSE_LIST_INCLUDED_VIEW,
-    payload: { windowType, viewId, forceClose },
   };
 }

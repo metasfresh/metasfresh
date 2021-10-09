@@ -30,6 +30,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.util.lang.IMutable;
 
 import de.metas.handlingunits.HUIteratorListenerAdapter;
@@ -44,7 +45,6 @@ import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.handlingunits.storage.IProductStorage;
 import de.metas.handlingunits.storage.impl.DefaultHUStorageFactory;
 import de.metas.handlingunits.storage.impl.SaveDecoupledHUStorageDAO;
-import de.metas.util.time.SystemTime;
 
 /**
  * Creates {@link IHUDocument}s from handling units.

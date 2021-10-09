@@ -1,0 +1,1 @@
+UPDATE ad_impformat_row SET  name ='TrxAmt',  ad_column_id = 9322 WHERE ad_impformat_row_id = 541333;

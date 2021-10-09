@@ -1,19 +1,23 @@
 package org.compiere.util;
 
-import java.time.LocalDate;
-import java.util.Optional;
-import java.util.Properties;
-
-import org.adempiere.service.ClientId;
-import org.adempiere.service.IValuePreferenceBL.IUserValuePreference;
-import org.adempiere.warehouse.WarehouseId;
-
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.organization.OrgId;
 import de.metas.security.RoleId;
 import de.metas.security.TableAccessLevel;
 import de.metas.user.UserId;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.Setter;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.IValuePreferenceBL.IUserValuePreference;
+import org.adempiere.warehouse.WarehouseId;
+
+import javax.annotation.Nullable;
+import java.time.LocalDate;
+import java.util.Optional;
+import java.util.Properties;
 
 /*
  * #%L
@@ -43,28 +47,24 @@ import de.metas.user.UserId;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
+@SuppressWarnings("SameParameterValue")
+@Getter
+@Setter
 public class LoginContext
 {
-	private final Properties _ctx;
+	@Getter(AccessLevel.PRIVATE)
+	private final Properties ctx;
 
-	private String _remoteAddr = null;
-	private String _remoteHost = null;
-	private String _webSession = null;
+	private String remoteAddr = null;
+	private String remoteHost = null;
+
+	/** true if logging from webui */
 	private boolean webui = false;
+	private String webSessionId = null;
 
-	public LoginContext(final Properties ctx)
+	public LoginContext(@NonNull final Properties ctx)
 	{
-		super();
-		if (ctx == null)
-		{
-			throw new IllegalArgumentException("Context missing");
-		}
-		_ctx = ctx;
-	}
-
-	private final Properties getCtx()
-	{
-		return _ctx;
+		this.ctx = ctx;
 	}
 
 	public final Properties getSessionContext()
@@ -87,13 +87,13 @@ public class LoginContext
 		Env.setContext(getCtx(), name, valueInt);
 	}
 
-	private final int getMandatoryPropertyAsInt(final String name)
+	private int getMandatoryPropertyAsInt(final String name)
 	{
 		return getOptionalPropertyAsInt(name)
 				.orElseThrow(() -> new UnsupportedOperationException("Missing Context: " + name));
 	}
 
-	private final Optional<Integer> getOptionalPropertyAsInt(final String name)
+	private Optional<Integer> getOptionalPropertyAsInt(final String name)
 	{
 		final Properties ctx = getCtx();
 		if (Env.getContext(ctx, name).length() == 0)   	// could be number 0
@@ -247,6 +247,7 @@ public class LoginContext
 		Ini.setProperty(Ini.P_WAREHOUSE, warehouseName);
 	}
 
+	@Nullable
 	public WarehouseId getWarehouseId()
 	{
 		return WarehouseId.ofRepoIdOrNull(getPropertyAsInt(Env.CTXNAME_M_Warehouse_ID));
@@ -266,52 +267,9 @@ public class LoginContext
 		setProperty("$HasAlias", acctSchema.getValidCombinationOptions().isUseAccountAlias());
 	}
 
+	@Nullable
 	public AcctSchemaId getAcctSchemaId()
 	{
 		return AcctSchemaId.ofRepoIdOrNull(getPropertyAsInt("$C_AcctSchema_ID"));
-	}
-
-	public void setRemoteAddr(final String remoteAddr)
-	{
-		_remoteAddr = remoteAddr;
-	}
-
-	public String getRemoteAddr()
-	{
-		return _remoteAddr;
-	}
-
-	public void setRemoteHost(final String remoteHost)
-	{
-		_remoteHost = remoteHost;
-	}
-
-	public String getRemoteHost()
-	{
-		return _remoteHost;
-	}
-
-	public void setWebSession(final String webSession)
-	{
-		_webSession = webSession;
-	}
-
-	public String getWebSession()
-	{
-		return _webSession;
-	}
-
-	/**
-	 * @param webui true if logging from webui
-	 */
-	public void setWebui(final boolean webui)
-	{
-		this.webui = webui;
-	}
-
-	/** @return true if logging from webui */
-	public boolean isWebui()
-	{
-		return webui;
 	}
 }

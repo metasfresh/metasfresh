@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2017-02-15T13:28:09 -->
+<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/sales/dunning/report" uuid="a1fcf6a3-db4f-439e-bfc4-ef89d9533f31">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -9,7 +8,8 @@
 	<property name="ireport.y" value="0"/>
 	<property name="net.sf.jasperreports.governor.max.pages.enabled" value="true"/>
 	<property name="net.sf.jasperreports.governor.max.pages" value="2"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="mf15"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
@@ -23,12 +23,34 @@
 	<parameter name="ad_language" class="java.lang.String" isForPrompting="false">
 		<defaultValueExpression><![CDATA[$P{REPORT_LOCALE}.toString()]]></defaultValueExpression>
 	</parameter>
+	<parameter name="PRINTER_OPTS_IsPrintLogo" class="java.lang.String">
+		<defaultValueExpression><![CDATA["Y"]]></defaultValueExpression>
+	</parameter>
 	<queryString>
-		<![CDATA[select * from report.Docs_Sales_Dunning_Report_Root ($P{RECORD_ID}, $P{ad_language}) ;]]>
+		<![CDATA[select r.*, showQRBill, showESR_QR
+ from report.Docs_Sales_Dunning_Report_Root ($P{RECORD_ID}, $P{ad_language}) as r
+JOIN report.isShowQRBill(1000000, r.ad_org_id)  showQRBill on 1=1
+JOIN report.isShowESR_QR(1000000, r.ad_org_id)  showESR_QR on 1=1
+;]]>
 	</queryString>
-	<field name="ad_org_id" class="java.math.BigDecimal"/>
-	<field name="processed" class="java.lang.String"/>
-	<field name="countrycode" class="java.lang.String"/>
+	<field name="processed" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="processed"/>
+	</field>
+	<field name="ad_org_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="ad_org_id"/>
+	</field>
+	<field name="ad_language" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="ad_language"/>
+	</field>
+	<field name="countrycode" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="countrycode"/>
+	</field>
+	<field name="showqrbill" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="showqrbill"/>
+	</field>
+	<field name="showesr_qr" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="showesr_qr"/>
+	</field>
 	<background>
 		<band height="842" splitType="Stretch"/>
 	</background>
@@ -86,7 +108,9 @@
 				<subreportExpression><![CDATA["de/metas/docs/generics/report_orgblock_right.jasper"]]></subreportExpression>
 			</subreport>
 			<subreport isUsingCache="true">
-				<reportElement key="subreport-4" x="0" y="0" width="595" height="85" uuid="8d540ecf-6f54-4712-a4e6-81d7568900ef"/>
+				<reportElement key="subreport-4" x="0" y="0" width="595" height="85" uuid="8d540ecf-6f54-4712-a4e6-81d7568900ef">
+					<printWhenExpression><![CDATA[$P{PRINTER_OPTS_IsPrintLogo}.equals("Y")]]></printWhenExpression>
+				</reportElement>
 				<subreportParameter name="org_id">
 					<subreportParameterExpression><![CDATA[$F{ad_org_id}]]></subreportParameterExpression>
 				</subreportParameter>
@@ -133,12 +157,13 @@
 		<band splitType="Stretch"/>
 	</pageFooter>
 	<summary>
-		<band height="305" splitType="Stretch">
+		<band height="310" splitType="Stretch">
 			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-			<subreport isUsingCache="true">
+			<subreport isUsingCache="false">
 				<reportElement key="subreport-3" mode="Transparent" x="0" y="105" width="595" height="200" uuid="134a28b0-5b42-49bf-a126-ddd31e35c2c0">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-					<printWhenExpression><![CDATA[new Boolean("CH".equals($F{countrycode} ))]]></printWhenExpression>
+					<printWhenExpression><![CDATA[("CH").equals($F{countrycode}) && ("Y").equals($F{showesr_qr})
+&& ("N").equals($F{showqrbill})]]></printWhenExpression>
 				</reportElement>
 				<subreportParameter name="REPORT_MAX_COUNT">
 					<subreportParameterExpression><![CDATA[new Integer(1)]]></subreportParameterExpression>
@@ -159,6 +184,21 @@
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 				<subreportExpression><![CDATA["de/metas/docs/sales/dunning/report_description_bottom.jasper"]]></subreportExpression>
+			</subreport>
+			<subreport isUsingCache="false">
+				<reportElement key="subreport-3" mode="Transparent" x="0" y="105" width="595" height="200" uuid="27a5dbcb-32f9-4dc8-9d9f-485e5811b7b5">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					<printWhenExpression><![CDATA[("CH").equals($F{countrycode}) && ("Y").equals($F{showesr_qr})
+&& ("Y").equals($F{showqrbill})]]></printWhenExpression>
+				</reportElement>
+				<subreportParameter name="REPORT_MAX_COUNT">
+					<subreportParameterExpression><![CDATA[new Integer(1)]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="C_DunningDoc_ID">
+					<subreportParameterExpression><![CDATA[$P{RECORD_ID}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA["de/metas/docs/sales/dunning/report_qr.jasper"]]></subreportExpression>
 			</subreport>
 		</band>
 	</summary>

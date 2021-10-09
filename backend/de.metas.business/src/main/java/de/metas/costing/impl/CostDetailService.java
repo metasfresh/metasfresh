@@ -17,14 +17,15 @@ import de.metas.costing.CostDetailPreviousAmounts;
 import de.metas.costing.CostDetailQuery;
 import de.metas.costing.CostSegment;
 import de.metas.costing.CostSegmentAndElement;
+import de.metas.costing.CostSegmentAndElement.CostSegmentAndElementBuilder;
 import de.metas.costing.CostTypeId;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.CostingLevel;
-import de.metas.costing.CurrentCost;
 import de.metas.costing.ICostDetailRepository;
 import de.metas.costing.ICostDetailService;
 import de.metas.costing.ICostElementRepository;
 import de.metas.costing.IProductCostingBL;
+import de.metas.costing.MoveCostsRequest;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -73,20 +74,25 @@ public class CostDetailService implements ICostDetailService
 	}
 
 	@Override
-	public CostDetailCreateResult createCostDetailRecordWithChangedCosts(@NonNull final CostDetailCreateRequest request, @NonNull final CurrentCost previousCosts)
+	public CostDetailCreateResult createCostDetailRecordWithChangedCosts(
+			@NonNull final CostDetailCreateRequest request,
+			@NonNull final CostDetailPreviousAmounts previousCosts)
 	{
 		final CostDetail costDetail = create(request.toCostDetailBuilder()
 				.changingCosts(true)
-				.previousAmounts(CostDetailPreviousAmounts.of(previousCosts)));
+				.previousAmounts(previousCosts));
 
 		return toCostDetailCreateResult(costDetail);
 	}
 
 	@Override
-	public CostDetailCreateResult createCostDetailRecordNoCostsChanged(@NonNull final CostDetailCreateRequest request)
+	public CostDetailCreateResult createCostDetailRecordNoCostsChanged(
+			@NonNull final CostDetailCreateRequest request,
+			@NonNull final CostDetailPreviousAmounts currentCosts)
 	{
 		final CostDetail costDetail = create(request.toCostDetailBuilder()
-				.changingCosts(false));
+				.changingCosts(false)
+				.previousAmounts(currentCosts));
 
 		return toCostDetailCreateResult(costDetail);
 	}
@@ -194,6 +200,39 @@ public class CostDetailService implements ICostDetailService
 				.attributeSetInstanceId(request.getAttributeSetInstanceId())
 				.costElementId(request.getCostElementId())
 				.build();
+	}
+
+	@Override
+	public CostSegmentAndElement extractOutboundCostSegmentAndElement(final MoveCostsRequest request)
+	{
+		return extractCommonCostSegmentAndElement(request)
+				.orgId(request.getOutboundOrgId())
+				.build();
+	}
+
+	@Override
+	public CostSegmentAndElement extractInboundCostSegmentAndElement(final MoveCostsRequest request)
+	{
+		return extractCommonCostSegmentAndElement(request)
+				.orgId(request.getInboundOrgId())
+				.build();
+	}
+
+	private CostSegmentAndElementBuilder extractCommonCostSegmentAndElement(final MoveCostsRequest request)
+	{
+		final AcctSchema acctSchema = getAcctSchemaById(request.getAcctSchemaId());
+		final CostingLevel costingLevel = productCostingBL.getCostingLevel(request.getProductId(), acctSchema);
+		final CostTypeId costTypeId = acctSchema.getCosting().getCostTypeId();
+
+		return CostSegmentAndElement.builder()
+				.costingLevel(costingLevel)
+				.acctSchemaId(request.getAcctSchemaId())
+				.costTypeId(costTypeId)
+				.clientId(request.getClientId())
+				// .orgId(null) // to be set by caller
+				.productId(request.getProductId())
+				.attributeSetInstanceId(request.getAttributeSetInstanceId())
+				.costElementId(request.getCostElementId());
 	}
 
 	@Override

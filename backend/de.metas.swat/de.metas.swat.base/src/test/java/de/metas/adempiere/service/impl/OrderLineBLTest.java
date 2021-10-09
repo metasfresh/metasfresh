@@ -27,10 +27,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.math.BigDecimal;
 import java.util.Properties;
 
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.user.UserRepository;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.model.I_C_PricingRule;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_PriceList;
@@ -63,6 +67,8 @@ public class OrderLineBLTest
 
 		ctx = Env.getCtx();
 
+		SpringContextHolder.registerJUnitBean(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
+
 		//
 		// Setup mocked pricing rule
 		MockedPricingRule.INSTANCE.reset();
@@ -78,6 +84,7 @@ public class OrderLineBLTest
 		I_C_OrderLine orderline = InterfaceWrapperHelper.create(ctx, I_C_OrderLine.class, ITrx.TRXNAME_None);
 
 		final I_C_UOM uom = InterfaceWrapperHelper.create(ctx, I_C_UOM.class, ITrx.TRXNAME_None);
+		uom.setX12DE355("uom");
 		InterfaceWrapperHelper.save(uom);
 
 		final I_M_Product product = InterfaceWrapperHelper.create(ctx, I_M_Product.class, ITrx.TRXNAME_None);
@@ -103,6 +110,7 @@ public class OrderLineBLTest
 		InterfaceWrapperHelper.save(plv);
 
 		final I_C_UOM priceUom = InterfaceWrapperHelper.create(ctx, I_C_UOM.class, ITrx.TRXNAME_None);
+		priceUom.setX12DE355("uom");
 		InterfaceWrapperHelper.save(priceUom);
 
 		// Define conversion: uom->priceUom

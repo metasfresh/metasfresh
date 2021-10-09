@@ -22,60 +22,84 @@ package de.metas.inoutcandidate.api.impl;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
-
+import ch.qos.logback.classic.Level;
 import de.metas.bpartner.BPartnerContactId;
-import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
-import org.adempiere.ad.trx.processor.api.LoggableTrxItemExceptionHandler;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.agg.key.IAggregationKeyBuilder;
-import org.adempiere.util.lang.IContextAware;
-import org.adempiere.warehouse.LocatorId;
-import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.api.IWarehouseBL;
-import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_Order;
-import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.model.I_M_Warehouse;
-import org.compiere.util.Env;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.document.IDocumentLocationBL;
-import de.metas.document.model.IDocumentLocation;
+import de.metas.document.location.IDocumentLocationBL;
+import de.metas.document.location.adapter.IDocumentLocationAdapter;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.model.I_M_InOutLine;
+import de.metas.inoutcandidate.api.ApplyReceiptScheduleChangesRequest;
 import de.metas.inoutcandidate.api.IInOutProducer;
 import de.metas.inoutcandidate.api.IReceiptScheduleAllocBuilder;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
 import de.metas.inoutcandidate.api.IReceiptScheduleQtysBL;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
+import de.metas.inoutcandidate.exportaudit.APIExportStatus;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule_Alloc;
+import de.metas.inoutcandidate.modelvalidator.M_ReceiptSchedule;
 import de.metas.inoutcandidate.spi.IReceiptScheduleListener;
 import de.metas.inoutcandidate.spi.impl.CompositeReceiptScheduleListener;
 import de.metas.interfaces.I_C_BPartner;
+import de.metas.logging.LogManager;
+import de.metas.process.PInstanceId;
+import de.metas.product.ProductId;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.util.Check;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.ToString;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
+import org.adempiere.ad.trx.processor.api.LoggableTrxItemExceptionHandler;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
+import org.adempiere.mm.attributes.api.impl.AddAttributesRequest;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.agg.key.IAggregationKeyBuilder;
+import org.adempiere.util.lang.IContextAware;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.I_M_AttributeSetInstance;
+import org.compiere.model.I_M_Warehouse;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Objects;
+import java.util.Properties;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class ReceiptScheduleBL implements IReceiptScheduleBL
 {
+	public static final String SYSCONFIG_CAN_BE_EXPORTED_AFTER_SECONDS = "de.metas.inoutcandidate.M_ReceiptSchedule.canBeExportedAfterSeconds";
+
+	private final static transient Logger logger = LogManager.getLogger(M_ReceiptSchedule.class);
+
 	private final CompositeReceiptScheduleListener listeners = new CompositeReceiptScheduleListener();
 	private final IAggregationKeyBuilder<I_M_ReceiptSchedule> headerAggregationKeyBuilder = new ReceiptScheduleHeaderAggregationKeyBuilder();
 
 	private final IReceiptScheduleDAO receiptScheduleDAO = Services.get(IReceiptScheduleDAO.class);
+	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@Override
 	public void addReceiptScheduleListener(IReceiptScheduleListener listener)
@@ -175,10 +199,9 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 	@Override
 	public I_C_BPartner_Location getC_BPartner_Location_Effective(final I_M_ReceiptSchedule sched)
 	{
-		final I_C_BPartner_Location location = InterfaceWrapperHelper.load(
+		return InterfaceWrapperHelper.load(
 				sched.getC_BP_Location_Override_ID() <= 0 ? sched.getC_BPartner_Location_ID() : sched.getC_BP_Location_Override_ID(),
 				I_C_BPartner_Location.class);
-		return location;
 	}
 
 	@Deprecated
@@ -219,92 +242,32 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 		return BPartnerContactId.ofRepoIdOrNull(cBPartnerIdRepo, adUserIdRepo);
 	}
 
-	private IDocumentLocation asDocumentLocation(final I_M_ReceiptSchedule receiptSchedule)
+	private IDocumentLocationAdapter asDocumentLocation(final I_M_ReceiptSchedule receiptSchedule)
 	{
-		return new IDocumentLocation()
-		{
-
-			@Override
-			public void setBPartnerAddress(final String address)
-			{
-				receiptSchedule.setBPartnerAddress(address);
-			}
-
-			@Override
-			public int getC_BPartner_Location_ID()
-			{
-				return receiptSchedule.getC_BPartner_Location_ID();
-			}
-
-			@Override
-			public int getC_BPartner_ID()
-			{
-				return receiptSchedule.getC_BPartner_ID();
-			}
-
-			@Override
-			public String getBPartnerAddress()
-			{
-				return receiptSchedule.getBPartnerAddress();
-			}
-
-			@Override
-			public int getAD_User_ID()
-			{
-				return receiptSchedule.getAD_User_ID();
-			}
-		};
+		return new ReceiptScheduleDocumentLocationAdapter(receiptSchedule);
 	}
 
-	private IDocumentLocation asDocumentLocationEffective(final I_M_ReceiptSchedule receiptSchedule)
+	private IDocumentLocationAdapter asDocumentLocationEffective(final I_M_ReceiptSchedule receiptSchedule)
 	{
-		return new IDocumentLocation()
-		{
-
-			@Override
-			public void setBPartnerAddress(final String address)
-			{
-				receiptSchedule.setBPartnerAddress_Override(address);
-			}
-
-			@Override
-			public int getC_BPartner_Location_ID()
-			{
-				return getC_BPartner_Location_Effective_ID(receiptSchedule);
-			}
-
-			@Override
-			public int getC_BPartner_ID()
-			{
-				return getC_BPartner_Effective_ID(receiptSchedule);
-			}
-
-			@Override
-			public String getBPartnerAddress()
-			{
-				return receiptSchedule.getBPartnerAddress_Override();
-			}
-
-			@Override
-			public int getAD_User_ID()
-			{
-				return BPartnerContactId.toRepoId(getBPartnerContactID(receiptSchedule));
-			}
-		};
+		return new ReceiptScheduleEffectiveDocumentLocation(receiptSchedule);
 	}
 
 	@Override
 	public void updateBPartnerAddress(final I_M_ReceiptSchedule receiptSchedule)
 	{
-		final IDocumentLocation documentLocation = asDocumentLocation(receiptSchedule);
-		Services.get(IDocumentLocationBL.class).setBPartnerAddress(documentLocation);
+		final IDocumentLocationBL documentLocationBL = SpringContextHolder.instance.getBean(IDocumentLocationBL.class);
+
+		final IDocumentLocationAdapter documentLocation = asDocumentLocation(receiptSchedule);
+		documentLocationBL.updateRenderedAddressAndCapturedLocation(documentLocation);
 	}
 
 	@Override
 	public void updateBPartnerAddressOverride(final I_M_ReceiptSchedule receiptSchedule)
 	{
-		final IDocumentLocation documentLocation = asDocumentLocationEffective(receiptSchedule);
-		Services.get(IDocumentLocationBL.class).setBPartnerAddress(documentLocation);
+		final IDocumentLocationBL documentLocationBL = SpringContextHolder.instance.getBean(IDocumentLocationBL.class);
+
+		final IDocumentLocationAdapter documentLocation = asDocumentLocationEffective(receiptSchedule);
+		documentLocationBL.updateRenderedAddressAndCapturedLocation(documentLocation);
 	}
 
 	@Override
@@ -330,8 +293,7 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 	@Override
 	public IInOutProducer createInOutProducer(final InOutGenerateResult resultInitial, final boolean complete)
 	{
-		final InOutProducer processor = new InOutProducer(resultInitial, complete);
-		return processor;
+		return new InOutProducer(resultInitial, complete);
 	}
 
 	@Override
@@ -364,7 +326,7 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 	 * @param qtyToAllocate quantity to allocate (in stock UOM)
 	 * @return receipt schedule allocation; never return null
 	 */
-	private final I_M_ReceiptSchedule_Alloc createReceiptScheduleAlloc(
+	private I_M_ReceiptSchedule_Alloc createReceiptScheduleAlloc(
 			@NonNull final I_M_ReceiptSchedule receiptSchedule,
 			@NonNull final I_M_InOutLine receiptLine,
 			@NonNull final StockQtyAndUOMQty qtyToAllocate)
@@ -499,10 +461,8 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 	}
 
 	@Override
-	public void close(final I_M_ReceiptSchedule rs)
+	public void close(@NonNull final I_M_ReceiptSchedule rs)
 	{
-		Check.assumeNotNull(rs, "rs not null");
-
 		// Make sure receipt schedule was not already processed
 		if (isClosed(rs))
 		{
@@ -523,10 +483,8 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 	}
 
 	@Override
-	public void reopen(final I_M_ReceiptSchedule receiptSchedule)
+	public void reopen(@NonNull final I_M_ReceiptSchedule receiptSchedule)
 	{
-		Check.assumeNotNull(receiptSchedule, "rs not null");
-
 		//
 		// Make sure receipt schedule is closed/processed
 		if (!isClosed(receiptSchedule))
@@ -549,9 +507,229 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 	}
 
 	@Override
-	public boolean isClosed(final I_M_ReceiptSchedule receiptSchedule)
+	public boolean isClosed(@NonNull final I_M_ReceiptSchedule receiptSchedule)
 	{
 		return receiptSchedule.isProcessed();
 	}
 
+	public void applyReceiptScheduleChanges(@NonNull final ApplyReceiptScheduleChangesRequest applyReceiptScheduleChangesRequest)
+	{
+		final I_M_ReceiptSchedule receiptSchedule = receiptScheduleDAO.getById(applyReceiptScheduleChangesRequest.getReceiptScheduleId());
+
+		if (applyReceiptScheduleChangesRequest.getQtyInStockingUOM() != null)
+		{
+			receiptSchedule.setQtyToMove_Override(applyReceiptScheduleChangesRequest.getQtyInStockingUOM());
+		}
+
+		if (applyReceiptScheduleChangesRequest.hasAttributes())
+		{
+			final AttributeSetInstanceId existingAttributeSetIdOrNone = AttributeSetInstanceId.ofRepoIdOrNone(receiptSchedule.getM_AttributeSetInstance_ID());
+
+			final AddAttributesRequest addAttributesRequest = AddAttributesRequest.builder()
+					.productId(ProductId.ofRepoId(receiptSchedule.getM_Product_ID()))
+					.existingAttributeSetIdOrNone(existingAttributeSetIdOrNone)
+					.attributeInstanceBasicInfos(applyReceiptScheduleChangesRequest.getNonNullAttributeReqList())
+					.build();
+
+			final AttributeSetInstanceId newAttributeSetInstanceId = attributeSetInstanceBL.addAttributes(addAttributesRequest);
+
+			receiptSchedule.setM_AttributeSetInstance_ID(newAttributeSetInstanceId.getRepoId());
+		}
+
+		if (Check.isNotBlank(applyReceiptScheduleChangesRequest.getExternalResourceURL()))
+		{
+			receiptSchedule.setExternalResourceURL(applyReceiptScheduleChangesRequest.getExternalResourceURL());
+		}
+
+		InterfaceWrapperHelper.saveRecord(receiptSchedule);
+	}
+
+	@Override
+	public void updateExportStatus(@NonNull final APIExportStatus newExportStatus, @NonNull final PInstanceId pinstanceId)
+	{
+		final AtomicInteger allCounter = new AtomicInteger(0);
+		final AtomicInteger updatedCounter = new AtomicInteger(0);
+
+		queryBL.createQueryBuilder(I_M_ReceiptSchedule.class)
+				.setOnlySelection(pinstanceId)
+				.create()
+				.iterateAndStream()
+				.forEach(record ->
+						 {
+							 allCounter.incrementAndGet();
+							 if (Objects.equals(record.getExportStatus(), newExportStatus.getCode()))
+							 {
+								 return;
+							 }
+							 record.setExportStatus(newExportStatus.getCode());
+							 updateCanBeExportedFrom(record);
+							 InterfaceWrapperHelper.saveRecord(record);
+
+							 updatedCounter.incrementAndGet();
+						 });
+
+		Loggables.withLogger(logger, Level.INFO).addLog("Updated {} out of {} M_ReceiptSchedules", updatedCounter.get(), allCounter.get());
+	}
+
+	@Override
+	public void updateCanBeExportedFrom(@NonNull final I_M_ReceiptSchedule sched)
+	{
+		// we see "not-yet-set" as equivalent to "pending"
+		final APIExportStatus exportStatus = APIExportStatus.ofNullableCode(sched.getExportStatus(), APIExportStatus.Pending);
+		if (!Objects.equals(exportStatus, APIExportStatus.Pending))
+		{
+			sched.setCanBeExportedFrom(Env.MAX_DATE);
+			logger.debug("exportStatus={}; -> set CanBeExportedFrom={}", sched.getExportStatus(), Env.MAX_DATE);
+			return;
+		}
+
+		final int canBeExportedAfterSeconds = sysConfigBL.getIntValue(
+				SYSCONFIG_CAN_BE_EXPORTED_AFTER_SECONDS,
+				sched.getAD_Client_ID(),
+				sched.getAD_Org_ID());
+		if (canBeExportedAfterSeconds >= 0)
+		{
+			final Instant instant = Instant.now().plusSeconds(canBeExportedAfterSeconds);
+			sched.setCanBeExportedFrom(TimeUtil.asTimestamp(instant));
+			logger.debug("canBeExportedAfterSeconds={}; -> set CanBeExportedFrom={}", canBeExportedAfterSeconds, sched.getCanBeExportedFrom());
+		}
+	}
+
+	private static class ReceiptScheduleDocumentLocationAdapter implements IDocumentLocationAdapter
+	{
+		private final I_M_ReceiptSchedule delegate;
+
+		private ReceiptScheduleDocumentLocationAdapter(@NonNull final I_M_ReceiptSchedule delegate)
+		{
+			this.delegate = delegate;
+		}
+
+		@Override
+		public int getC_BPartner_ID()
+		{
+			return delegate.getC_BPartner_ID();
+		}
+
+		@Override
+		public void setC_BPartner_ID(final int C_BPartner_ID)
+		{
+			delegate.setC_BPartner_ID(C_BPartner_ID);
+		}
+
+		@Override
+		public int getC_BPartner_Location_ID()
+		{
+			return delegate.getC_BPartner_Location_ID();
+		}
+
+		@Override
+		public void setC_BPartner_Location_ID(final int C_BPartner_Location_ID)
+		{
+			delegate.setC_BPartner_Location_ID(C_BPartner_Location_ID);
+		}
+
+		@Override
+		public int getC_BPartner_Location_Value_ID()
+		{
+			return -1;
+		}
+
+		@Override
+		public void setC_BPartner_Location_Value_ID(final int C_BPartner_Location_Value_ID)
+		{
+		}
+
+		@Override
+		public int getAD_User_ID()
+		{
+			return delegate.getAD_User_ID();
+		}
+
+		@Override
+		public void setAD_User_ID(final int AD_User_ID)
+		{
+			delegate.setAD_User_ID(AD_User_ID);
+		}
+
+		@Override
+		public String getBPartnerAddress()
+		{
+			return delegate.getBPartnerAddress();
+		}
+
+		@Override
+		public void setBPartnerAddress(final String address)
+		{
+			delegate.setBPartnerAddress(address);
+		}
+
+	}
+
+	@ToString
+	private class ReceiptScheduleEffectiveDocumentLocation implements IDocumentLocationAdapter
+	{
+		private final I_M_ReceiptSchedule delegate;
+
+		private ReceiptScheduleEffectiveDocumentLocation(@NonNull final I_M_ReceiptSchedule delegate)
+		{
+			this.delegate = delegate;
+		}
+
+		@Override
+		public int getC_BPartner_ID()
+		{
+			return BPartnerId.toRepoId(getBPartnerEffectiveId(delegate));
+		}
+
+		@Override
+		public void setC_BPartner_ID(final int C_BPartner_ID)
+		{
+		}
+
+		@Override
+		public int getC_BPartner_Location_ID()
+		{
+			return getC_BPartner_Location_Effective_ID(delegate);
+		}
+
+		@Override
+		@Deprecated
+		public void setC_BPartner_Location_ID(final int C_BPartner_Location_ID)
+		{
+		}
+
+		@Override
+		public int getC_BPartner_Location_Value_ID()
+		{
+			return -1;
+		}
+
+		@Override
+		public void setC_BPartner_Location_Value_ID(final int C_BPartner_Location_Value_ID)
+		{
+		}
+
+		@Override
+		public int getAD_User_ID()
+		{
+			return BPartnerContactId.toRepoId(getBPartnerContactID(delegate));
+		}
+
+		@Override
+		public void setAD_User_ID(final int AD_User_ID)
+		{
+		}
+
+		@Override
+		public String getBPartnerAddress()
+		{
+			return delegate.getBPartnerAddress_Override();
+		}
+
+		@Override
+		public void setBPartnerAddress(final String address)
+		{
+			delegate.setBPartnerAddress_Override(address);
+		}
+	}
 }

@@ -32,12 +32,14 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
+import de.metas.i18n.AdMessageKey;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.service.ITaskExecutorService;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.archive.api.ArchivePrintOutStatus;
 import org.adempiere.archive.api.IArchiveEventManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
@@ -63,9 +65,9 @@ import lombok.NonNull;
 public class C_Print_Job_Instructions
 {
 
-	private static final String MSG_CLIENT_REPORTS_PRINT_ERROR = "de.metas.printing.C_Print_Job_Instructions.ClientReportsPrintError";
-	private static final String MSG_CLIENT_PRINT_TIMEOUT = "de.metas.printing.C_Print_Job_Instructions.ClientStatusTimeOut";
-	private static final String MSG_CLIENT_PRINT_TIMEOUT_DETAILS = "de.metas.printing.C_Print_Job_Instructions.ClientStatusTimeOutDetails";
+	private static final AdMessageKey MSG_CLIENT_REPORTS_PRINT_ERROR = AdMessageKey.of("de.metas.printing.C_Print_Job_Instructions.ClientReportsPrintError");
+	private static final AdMessageKey MSG_CLIENT_PRINT_TIMEOUT = AdMessageKey.of("de.metas.printing.C_Print_Job_Instructions.ClientStatusTimeOut");
+	private static final AdMessageKey MSG_CLIENT_PRINT_TIMEOUT_DETAILS = AdMessageKey.of("de.metas.printing.C_Print_Job_Instructions.ClientStatusTimeOutDetails");
 
 	private static final String SYSCONFIG_NOTIFY_PRINT_RECEIVER_ON_ERROR = "de.metas.printing.C_Print_Job_Instructions.NotifyPrintReceiverOnError";
 	private static final String SYSCONFIG_NOTIFY_PRINT_RECEIVER_SEND_TIMEOUT_SECONDS = "de.metas.printing.C_Print_Job_Instructions.NotifyPrintReceiverOnSendTimeoutSeconds";
@@ -73,8 +75,6 @@ public class C_Print_Job_Instructions
 
 	/**
 	 * Create Document Outbound only if Status column just changed to Done
-	 *
-	 * @param jobInstructions
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_CHANGE_REPLICATION }, ifColumnsChanged = I_C_Print_Job_Instructions.COLUMNNAME_Status)
 	public void logDocOutbound(final I_C_Print_Job_Instructions jobInstructions)
@@ -127,8 +127,7 @@ public class C_Print_Job_Instructions
 	 * <p>
 	 * The goal is to notify users about timeout problems with the printing client.
 	 *
-	 * @param jobInstructions
-	 * @task http://dewiki908/mediawiki/index.php/09618_Bestellkontrolle_Druck_Probleme_%28106933593952%29
+	 * Task http://dewiki908/mediawiki/index.php/09618_Bestellkontrolle_Druck_Probleme_%28106933593952%29
 	 */
 	@ModelChange(timings = {
 			ModelValidator.TYPE_AFTER_NEW,
@@ -160,9 +159,7 @@ public class C_Print_Job_Instructions
 	 * If that is the case, the print-receiver will be notified, because in this case something is wrong with the printing client.<br>
 	 * If the integer value of the given <code>sysConfigName</code> is less or equal to zero, then the method does nothing.
 	 *
-	 * @param jobInstructions
-	 * @param sysconfigName
-	 * @task http://dewiki908/mediawiki/index.php/09618_Bestellkontrolle_Druck_Probleme_%28106933593952%29
+	 * Task http://dewiki908/mediawiki/index.php/09618_Bestellkontrolle_Druck_Probleme_%28106933593952%29
 	 */
 	private void scheduleTimeoutCheck(
 			@NonNull final I_C_Print_Job_Instructions jobInstructions,
@@ -243,7 +240,7 @@ public class C_Print_Job_Instructions
 					userToPrintId,
 					printerName,
 					IArchiveEventManager.COPIES_ONE,
-					IArchiveEventManager.STATUS_Success);
+					ArchivePrintOutStatus.Success);
 		}
 	}
 }

@@ -10,18 +10,25 @@ class TetheredDateTime extends DateTime {
   constructor(props) {
     super(props);
 
-    this.updateSelectedDate = debounce(this.updateSelectedDate, 300, {
-      leading: true,
-      trailing: false,
+    // we set this fn as debounced to have 300ms for catching any double clicks
+    // that might happen
+    this.debouncedSetDate = debounce(this.debouncedSetDate, 300, {
+      leading: false,
+      trailing: true,
     });
+
+    // and if doubleclick happened, we can cancel this function call and
+    // only trigger the doubleclick handler
+    props.setDebounced(this.debouncedSetDate);
   }
 
-  handleClick = () =>
+  handleClick = () => {
     this.onInputChange({
       target: {
         value: this.state.viewDate,
       },
     });
+  };
 
   onInputKey = (e) => {
     if (
@@ -34,11 +41,23 @@ class TetheredDateTime extends DateTime {
   };
 
   updateSelectedDate = (e, close) => {
+    // we need to persist the event as it might be reused in the 300ms
+    // debounce wait
+    e.persist();
+
+    this.debouncedSetDate(e, close);
+  };
+
+  debouncedSetDate = (e, close) => {
     if (this.props.onFocusInput) {
       this.props.onFocusInput();
     }
 
-    return super.updateSelectedDate(e, close);
+    // because event is debounced, currentTarget gets lost and `react-datetime`
+    // uses it to get the day value
+    e.currentTarget = e.target;
+
+    super.updateSelectedDate(e, close);
   };
 
   render() {
@@ -48,8 +67,7 @@ class TetheredDateTime extends DateTime {
     const classNames = classnames('rdt', className, {
       rdtStatic: !input,
     });
-
-    const children = [];
+    let renderedInput = null;
 
     if (input) {
       const props = {
@@ -61,9 +79,7 @@ class TetheredDateTime extends DateTime {
         value: inputValue,
         ...inputProps,
       };
-      const input = renderInput(props, this.openCalendar);
-
-      children.push(<div key="i">{input}</div>);
+      renderedInput = renderInput(props, this.openCalendar);
     }
 
     return (
@@ -80,23 +96,33 @@ class TetheredDateTime extends DateTime {
               pin: ['bottom'],
             },
           ]}
-        >
-          {children}
-          {open && (
-            <div
-              className="ignore-react-onclickoutside rdtPicker"
-              onClick={
-                (currentView === 'time' && !selectedDate && this.handleClick) ||
-                null
-              }
-            >
-              <CalendarContainer
-                view={currentView}
-                viewProps={this.getComponentProps()}
-              />
-            </div>
-          )}
-        </TetherComponent>
+          renderTarget={(ref) =>
+            renderedInput && (
+              <div ref={ref} key="i">
+                {renderedInput}
+              </div>
+            )
+          }
+          renderElement={(ref) =>
+            open && (
+              <div
+                ref={ref}
+                className="ignore-react-onclickoutside rdtPicker"
+                onClick={
+                  (currentView === 'time' &&
+                    !selectedDate &&
+                    this.handleClick) ||
+                  null
+                }
+              >
+                <CalendarContainer
+                  view={currentView}
+                  viewProps={this.getComponentProps()}
+                />
+              </div>
+            )
+          }
+        />
       </div>
     );
   }

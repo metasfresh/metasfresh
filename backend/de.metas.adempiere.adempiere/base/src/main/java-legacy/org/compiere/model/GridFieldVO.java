@@ -60,7 +60,7 @@ import lombok.Getter;
  * @author Victor Perez , e-Evolution.SC FR [ 1757088 ] , [1877902] Implement JSR 223 Scripting APIs to Callout
  * @author Carlos Ruiz, qss FR [1877902]
  * @author Juan David Arboleda (arboleda), GlobalQSS, [ 1795398 ] Process Parameter: add display and readonly logic
- * @see http://sourceforge.net/tracker/?func=detail&atid=879335&aid=1877902&group_id=176962 to FR [1877902]
+ * See http://sourceforge.net/tracker/?func=detail&atid=879335&aid=1877902&group_id=176962 to FR [1877902]
  * @version $Id: GridFieldVO.java,v 1.3 2006/07/30 00:58:04 jjanke Exp $
  */
 public class GridFieldVO implements Serializable
@@ -95,12 +95,6 @@ public class GridFieldVO implements Serializable
 
 	private static final transient Logger logger = LogManager.getLogger(GridFieldVO.class);
 
-	/**
-	 * Return the SQL statement used for the {@link #create(Properties, int, int, int, int, boolean, boolean, ResultSet)}.
-	 * 
-	 * @param ctx context
-	 * @return SQL
-	 */
 	static String getSQL(final Properties ctx, final int adTabId, final boolean loadAllLanguages, final List<Object> sqlParams)
 	{
 		final String viewName;
@@ -449,7 +443,7 @@ public class GridFieldVO implements Serializable
 
 	private static GridFieldDefaultFilterDescriptor retrieveDefaultFilterDescriptor(final ResultSet rs) throws SQLException
 	{
-		final boolean defaultFilter = DisplayType.toBoolean(rs.getString(I_AD_Column.COLUMNNAME_IsSelectionColumn));
+		final boolean defaultFilter = StringUtils.toBoolean(rs.getString(I_AD_Column.COLUMNNAME_IsSelectionColumn));
 		final boolean facetFilter = StringUtils.toBoolean(rs.getString(I_AD_Column.COLUMNNAME_IsFacetFilter));
 		if (!defaultFilter && !facetFilter)
 		{
@@ -460,8 +454,9 @@ public class GridFieldVO implements Serializable
 				//
 				.defaultFilter(defaultFilter)
 				.defaultFilterSeqNo(rs.getInt(I_AD_Column.COLUMNNAME_SelectionColumnSeqNo))
-				.rangeFilter(StringUtils.toBoolean(rs.getString(I_AD_Column.COLUMNNAME_IsRangeFilter)))
-				.showFilterIncrementButtons(DisplayType.toBoolean(rs.getString(I_AD_Column.COLUMNNAME_IsShowFilterIncrementButtons)))
+				.operator(rs.getString(I_AD_Column.COLUMNNAME_FilterOperator))
+				.showFilterIncrementButtons(StringUtils.toBoolean(rs.getString(I_AD_Column.COLUMNNAME_IsShowFilterIncrementButtons)))
+				.showFilterInline(StringUtils.toBoolean(rs.getString(I_AD_Column.COLUMNNAME_IsShowFilterInline)))
 				.defaultValue(rs.getString(I_AD_Column.COLUMNNAME_FilterDefaultValue))
 				//
 				.facetFilter(facetFilter)

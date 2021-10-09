@@ -151,7 +151,7 @@ public class OrderCheckupTestHelper
 	{
 		final I_AD_Workflow workflow = newInstance(I_AD_Workflow.class);
 		workflow.setValue("wf");
-		workflow.setAD_User_InCharge(responsibleUser);
+		workflow.setAD_User_InCharge_ID(responsibleUser.getAD_User_ID());
 		workflow.setDurationUnit(X_AD_Workflow.DURATIONUNIT_Hour);
 		save(workflow);
 

@@ -5,7 +5,7 @@ import java.util.Set;
 
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.inoutcandidate.api.ShipmentScheduleId;
+import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import lombok.Builder;

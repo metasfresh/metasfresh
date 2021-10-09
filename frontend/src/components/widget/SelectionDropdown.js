@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
+import { CSSTransition } from 'react-transition-group';
 import classnames from 'classnames';
 
 /**
@@ -29,45 +29,20 @@ export default class SelectionDropdown extends Component {
     this.handleMouseDown = this.handleMouseDown.bind(this);
   }
 
-  /**
-   * @method componentDidMount
-   * @summary ToDo: Describe the method.
-   */
   componentDidMount() {
     window.addEventListener('keydown', this.handleKeyDown);
     window.addEventListener('keyup', this.handleKeyUp);
   }
 
-  /**
-   * @method componentWillUnmount
-   * @summary ToDo: Describe the method.
-   */
   componentWillUnmount() {
     window.removeEventListener('keydown', this.handleKeyDown);
     window.removeEventListener('keyup', this.handleKeyUp);
   }
 
-  /**
-   * @method UNSAFE_componentWillReceiveProps
-   * @summary ToDo: Describe the method.
-   */
   UNSAFE_componentWillReceiveProps(propsNext) {
-    if (propsNext.options !== this.props.options) {
+    if (propsNext.listHash !== this.props.listHash) {
       this.optionToRef.clear();
     }
-  }
-
-  /**
-   * @method size
-   * @summary ToDo: Describe the method.
-   * @param {*} options
-   */
-  size(options) {
-    if (Array.isArray(options)) {
-      return options.length;
-    }
-
-    return options.size;
   }
 
   /**
@@ -91,10 +66,8 @@ export default class SelectionDropdown extends Component {
    * @param {*} up
    */
   scrollIntoView(element, up) {
-    const {
-      top: topMax,
-      bottom: bottomMax,
-    } = this.wrapper.getBoundingClientRect();
+    const { top: topMax, bottom: bottomMax } =
+      this.wrapper.getBoundingClientRect();
     const { top, bottom } = element.getBoundingClientRect();
 
     if (top < topMax || bottom > bottomMax) {
@@ -112,7 +85,7 @@ export default class SelectionDropdown extends Component {
     this.ignoreNextMouseEnter = true;
 
     const { selected, options, onChange } = this.props;
-    const size = this.size(options);
+    const size = options.length;
     let index = options.indexOf(selected);
 
     if (up) {
@@ -270,14 +243,14 @@ export default class SelectionDropdown extends Component {
    * @summary ToDo: Describe the method.
    * @param {*} option
    */
-  renderOption = (option) => {
+  renderOption = (option, idx) => {
     const { selected } = this.props;
     const { key, caption, description } = option;
 
     return (
       <div
         ref={(ref) => this.optionToRef.set(option, ref)}
-        key={`${key}${caption}`}
+        key={`${key}-${idx}-${caption}`}
         data-test-id={`${key}${caption}`}
         className={classnames(
           'input-dropdown-list-option ignore-react-onclickoutside',
@@ -301,24 +274,20 @@ export default class SelectionDropdown extends Component {
   renderEmpty = () => this.renderHeader(this.props.empty);
 
   loading = this.renderHeader(
-    <ReactCSSTransitionGroup
-      transitionName="rotate"
-      transitionEnterTimeout={1000}
-      transitionLeaveTimeout={1000}
-    >
-      <div className="rotate icon-rotate">
-        <i className="meta-icon-settings" />
+    <CSSTransition className="rotate" timeout={{ enter: 1000, exit: 1000 }}>
+      <div>
+        <div className="rotate icon-rotate">
+          <i className="meta-icon-settings" />
+        </div>
       </div>
-    </ReactCSSTransitionGroup>
+    </CSSTransition>
   );
 
-  /**
-   * @method render
-   * @summary ToDo: Describe the method.
-   */
+  setRef = (ref) => (this.wrapper = ref);
+
   render() {
     const { options, width, height, loading, forceEmpty } = this.props;
-    const empty = this.size(options) === 0;
+    const empty = options.length === 0;
     const style = {
       width,
       height: height ? height : '200px',
@@ -329,11 +298,7 @@ export default class SelectionDropdown extends Component {
     }
 
     return (
-      <div
-        ref={(ref) => (this.wrapper = ref)}
-        className="input-dropdown-list"
-        style={style}
-      >
+      <div ref={this.setRef} className="input-dropdown-list" style={style}>
         {loading ? this.loading : (empty || forceEmpty) && this.renderEmpty()}
         {options.map(this.renderOption)}
       </div>
@@ -354,18 +319,11 @@ export default class SelectionDropdown extends Component {
  * @prop {func} onSelect
  * @prop {bool} allowShortcut
  * @prop {func} onCancel
+ * @prop {string} listHash,
  */
 SelectionDropdown.propTypes = {
-  options: PropTypes.oneOfType([
-    PropTypes.array,
-    PropTypes.shape({
-      map: PropTypes.func.isRequired,
-      includes: PropTypes.func.isRequired,
-      indexOf: PropTypes.func.isRequired,
-      get: PropTypes.func.isRequired,
-      size: PropTypes.number.isRequired,
-    }),
-  ]).isRequired,
+  options: PropTypes.array.isRequired,
+  listHash: PropTypes.string,
   selected: PropTypes.object,
   empty: PropTypes.node,
   forceEmpty: PropTypes.bool,

@@ -1,8 +1,21 @@
 package de.metas.report;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import de.metas.util.Check;
+import de.metas.util.lang.SpringResourceUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+import org.apache.commons.io.FileUtils;
+import org.compiere.util.MimeType;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
+
+import java.io.File;
+import java.io.IOException;
 
 /*
  * #%L
@@ -26,11 +39,13 @@ import lombok.Value;
  * #L%
  */
 
-/** Tiny and hopefully helpful class to exchange reporting data. */
+/**
+ * Tiny and hopefully helpful class to exchange reporting data.
+ */
 @Value
 public class ReportResultData
 {
-	byte[] reportData;
+	Resource reportData;
 
 	String reportFilename;
 
@@ -38,7 +53,7 @@ public class ReportResultData
 
 	@Builder
 	private ReportResultData(
-			@NonNull final byte[] reportData,
+			@NonNull final Resource reportData,
 			@NonNull final String reportFilename,
 			@NonNull final String reportContentType)
 	{
@@ -47,4 +62,74 @@ public class ReportResultData
 		this.reportContentType = reportContentType;
 	}
 
+	@JsonCreator
+	private ReportResultData(
+			@JsonProperty("reportData") final byte[] reportData,
+			@JsonProperty("reportFilename") @NonNull final String reportFilename,
+			@JsonProperty("reportContentType") @NonNull final String reportContentType)
+	{
+		this.reportData = SpringResourceUtils.fromByteArray(reportData);
+		this.reportFilename = reportFilename;
+		this.reportContentType = reportContentType;
+	}
+
+	@JsonProperty("reportData")
+	public byte[] getReportDataByteArray()
+	{
+		return SpringResourceUtils.toByteArray(reportData);
+	}
+
+	public static ReportResultData ofFile(@NonNull final File file)
+	{
+		final String reportFilename = file.getName();
+
+		return ReportResultData.builder()
+				.reportData(new FileSystemResource(file))
+				.reportFilename(reportFilename)
+				.reportContentType(MimeType.getMimeType(reportFilename))
+				.build();
+	}
+
+	@JsonIgnore
+	public boolean isEmpty()
+	{
+		try
+		{
+			return reportData.contentLength() <= 0;
+		}
+		catch (final IOException e)
+		{
+			return true; // reportdata couldn't be resolved, so we say it's empty
+		}
+
+	}
+
+	public File writeToTemporaryFile(@NonNull final String filenamePrefix)
+	{
+		final File file = createTemporaryFile(filenamePrefix);
+		try
+		{
+			FileUtils.copyInputStreamToFile(reportData.getInputStream(), file);
+			return file;
+		}
+		catch (final IOException ex)
+		{
+			throw new AdempiereException("Failed writing " + file.getAbsolutePath(), ex);
+		}
+	}
+
+	@NonNull
+	private File createTemporaryFile(@NonNull final String filenamePrefix)
+	{
+		try
+		{
+			final String ext = MimeType.getExtensionByType(reportContentType);
+			final String suffix = Check.isNotBlank(ext) ? "." + ext : "";
+			return File.createTempFile(filenamePrefix, suffix);
+		}
+		catch (final IOException ex)
+		{
+			throw new AdempiereException("Failed creating temporary file with `" + filenamePrefix + "` prefix", ex);
+		}
+	}
 }

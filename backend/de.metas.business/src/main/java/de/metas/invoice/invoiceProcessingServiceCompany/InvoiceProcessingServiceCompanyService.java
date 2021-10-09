@@ -22,6 +22,7 @@
 
 package de.metas.invoice.invoiceProcessingServiceCompany;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.Amount;
@@ -52,6 +53,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
+import java.util.Collection;
 import java.util.Optional;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -75,13 +77,18 @@ public class InvoiceProcessingServiceCompanyService
 		this.moneyService = moneyService;
 	}
 
+	public Optional<InvoiceProcessingServiceCompanyConfig> getByCustomerId(@NonNull final BPartnerId customerId, @NonNull final ZonedDateTime evaluationDate)
+	{
+		return configRepository.getByCustomerId(customerId, evaluationDate);
+	}
+
 	public Optional<InvoiceProcessingFeeCalculation> createFeeCalculationForPayment(@NonNull final InvoiceProcessingFeeWithPrecalculatedAmountRequest request)
 	{
 		final BPartnerId serviceCompanyBPartnerId = request.getServiceCompanyBPartnerId();
 		final InvoiceId invoiceId = request.getInvoiceId();
 		final Amount feeAmountIncludingTax = request.getFeeAmountIncludingTax();
 
-		if (invoiceDAO.hasCompletedInvoicesReferencing(invoiceId))
+		if (isServiceInvoiceAlreadyGenerated(invoiceId))
 		{
 			return Optional.empty();
 		}
@@ -91,7 +98,6 @@ public class InvoiceProcessingServiceCompanyService
 		{
 			return Optional.empty();
 		}
-
 
 		return Optional.of(InvoiceProcessingFeeCalculation.builder()
 				.orgId(request.getOrgId())
@@ -110,36 +116,36 @@ public class InvoiceProcessingServiceCompanyService
 
 	public Optional<InvoiceProcessingFeeCalculation> computeFee(@NonNull final InvoiceProcessingFeeComputeRequest request)
 	{
-		final BPartnerId customerId = request.getCustomerId();
-		final InvoiceId invoiceId = request.getInvoiceId();
-		final Amount invoiceGrandTotal = request.getInvoiceGrandTotal();
-
-		if (invoiceDAO.hasCompletedInvoicesReferencing(invoiceId))
+		if (isServiceInvoiceAlreadyGenerated(request))
 		{
 			return Optional.empty();
 		}
 
-		final InvoiceProcessingServiceCompanyConfig config = configRepository.getByCustomerId(customerId, request.getEvaluationDate()).orElse(null);
+		final BPartnerId customerId = request.getCustomerId();
+		final InvoiceProcessingServiceCompanyConfig config = getByCustomerId(customerId, request.getEvaluationDate()).orElse(null);
 		if (config == null)
 		{
 			return Optional.empty();
 		}
 
-		final Percent feePercentageOfGrandTotal = config.getFeePercentageOfGrandTotalByBpartner(customerId).orElse(null);
+		final Percent feePercentageOfGrandTotal = config.getFeePercentageOfGrandTotalByBpartner(customerId, request.getDocTypeId()).orElse(null);
 		if (feePercentageOfGrandTotal == null)
 		{
 			return Optional.empty();
 		}
 
+		final Amount invoiceGrandTotal = request.getInvoiceGrandTotal();
 		final CurrencyPrecision precision = moneyService.getStdPrecision(invoiceGrandTotal.getCurrencyCode());
-		final Amount feeAmountIncludingTax = invoiceGrandTotal.multiply(feePercentageOfGrandTotal, precision);
+		final Amount feeAmountIncludingTax = invoiceGrandTotal
+				.abs() // because no matter if the grand total is payed by customer or we have to pay it to customer, the processing company is retaining their fee
+				.multiply(feePercentageOfGrandTotal, precision);
 
 		return Optional.of(InvoiceProcessingFeeCalculation.builder()
 				.orgId(request.getOrgId())
 				.evaluationDate(request.getEvaluationDate())
 				//
 				.customerId(customerId)
-				.invoiceId(invoiceId)
+				.invoiceId(request.getInvoiceId())
 				//
 				.serviceCompanyBPartnerId(config.getServiceCompanyBPartnerId())
 				.serviceInvoiceDocTypeId(config.getServiceInvoiceDocTypeId())
@@ -148,6 +154,19 @@ public class InvoiceProcessingServiceCompanyService
 				//
 				.build());
 	}
+
+	private boolean isServiceInvoiceAlreadyGenerated(@NonNull final InvoiceProcessingFeeComputeRequest request)
+	{
+		if (request.getServiceInvoiceWasAlreadyGenerated().isPresent())
+		{
+			return request.getServiceInvoiceWasAlreadyGenerated().isTrue();
+		}
+		else
+		{
+			return isServiceInvoiceAlreadyGenerated(request.getInvoiceId());
+		}
+	}
+
 
 	public InvoiceId generateServiceInvoice(
 			@NonNull final InvoiceProcessingFeeCalculation calculation,
@@ -220,5 +239,15 @@ public class InvoiceProcessingServiceCompanyService
 		documentBL.processEx(invoice, IDocument.ACTION_Complete, DocStatus.Completed.getCode());
 
 		return InvoiceId.ofRepoId(invoice.getC_Invoice_ID());
+	}
+
+	private boolean isServiceInvoiceAlreadyGenerated(@NonNull final InvoiceId invoiceId)
+	{
+		return invoiceDAO.hasCompletedInvoicesReferencing(invoiceId);
+	}
+
+	public ImmutableSet<InvoiceId> retainIfServiceInvoiceWasAlreadyGenerated(final @NonNull Collection<InvoiceId> invoiceIds)
+	{
+		return invoiceDAO.retainIfHasCompletedInvoicesReferencing(invoiceIds);
 	}
 }

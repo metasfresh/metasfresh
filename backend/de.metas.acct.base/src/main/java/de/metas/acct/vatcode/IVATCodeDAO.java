@@ -35,7 +35,6 @@ public interface IVATCodeDAO extends ISingletonService
 	/**
 	 * Find matching {@link VATCode} for given context.
 	 * 
-	 * @param request
 	 * @return vat code or {@link VATCode#NULL}; never returns null
 	 */
 	VATCode findVATCode(VATCodeMatchingRequest request);

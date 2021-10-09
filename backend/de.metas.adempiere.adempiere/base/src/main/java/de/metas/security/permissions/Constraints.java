@@ -25,11 +25,11 @@ package de.metas.security.permissions;
 
 import java.util.Collection;
 import java.util.LinkedHashMap;
+import java.util.Optional;
 
 import org.compiere.util.Env;
 
 import com.google.common.base.Joiner;
-import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.util.Check;
@@ -42,23 +42,22 @@ import de.metas.util.Check;
  */
 public final class Constraints
 {
-	public static final Builder builder()
+	public static Builder builder()
 	{
 		return new Builder();
 	}
 
 	private final ImmutableMap<Class<? extends Constraint>, Constraint> constraints;
 
-	private Constraints(Builder builder)
+	private Constraints(final Builder builder)
 	{
-		super();
 		constraints = builder.getConstraints();
 	}
 
 	@Override
 	public String toString()
 	{
-		// NOTE: we are making it translateable friendly because it's displayed in Prefereces->Info->Rollen
+		// NOTE: we are making it translatable friendly because it's displayed in Prefereces->Info->Rollen
 
 		final String constraintsName = getClass().getSimpleName();
 		final Collection<Constraint> constraintsList = constraints.values();
@@ -85,7 +84,7 @@ public final class Constraints
 	{
 		@SuppressWarnings("unchecked")
 		final T constraint = (T)constraints.get(constraintType);
-		return Optional.fromNullable(constraint);
+		return Optional.ofNullable(constraint);
 	}
 
 	public static final class Builder

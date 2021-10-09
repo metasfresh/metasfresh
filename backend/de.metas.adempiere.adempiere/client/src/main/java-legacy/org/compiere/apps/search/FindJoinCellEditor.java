@@ -48,7 +48,7 @@ class FindJoinCellEditor extends FindCellEditor implements TableCellRenderer
 		final Properties ctx = Env.getCtx();
 		join2displayName = ImmutableMap.<Join, String> builder()
 				.put(Join.AND, adReferenceDAO.retrieveListNameTrl(ctx, JoinAndOr_AD_Reference_ID, X_AD_WF_NextCondition.ANDOR_And))
-				.put(Join.OR, adReferenceDAO.retrieveListNameTrl(ctx, JoinAndOr_AD_Reference_ID, X_AD_WF_NextCondition.ANDOR_Or))
+				.put(Join.OR, adReferenceDAO.retrieveListNameTrl(ctx, JoinAndOr_AD_Reference_ID, X_AD_WF_NextCondition.ANDOR_OR))
 				.build();
 	}
 

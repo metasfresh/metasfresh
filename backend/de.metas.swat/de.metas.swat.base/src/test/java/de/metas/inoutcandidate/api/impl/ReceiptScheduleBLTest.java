@@ -29,6 +29,10 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
+import ch.qos.logback.classic.Level;
+import de.metas.common.util.time.SystemTime;
+import de.metas.logging.LogManager;
+import de.metas.util.Loggables;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.Env;
@@ -45,7 +49,6 @@ import de.metas.product.ProductId;
 import de.metas.uom.CreateUOMConversionRequest;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 
 @SuppressWarnings("ArraysAsListWithZeroOrOneArgument")
 public class ReceiptScheduleBLTest extends ReceiptScheduleTestBase
@@ -55,7 +58,6 @@ public class ReceiptScheduleBLTest extends ReceiptScheduleTestBase
 	@Override
 	protected void setup()
 	{
-		// nothing
 	}
 
 	/**
@@ -104,11 +106,11 @@ public class ReceiptScheduleBLTest extends ReceiptScheduleTestBase
 	public void testGenerateReceiptScheduleOrderedByBpartnerWarehouseDate()
 	{
 		final Iterator<I_M_ReceiptSchedule> schedules = Arrays.asList(
+				createReceiptSchedule(bpartner1, warehouse1, de.metas.common.util.time.SystemTime.asDayTimestamp(), product1_wh1, 10),
+				createReceiptSchedule(bpartner1, warehouse1, de.metas.common.util.time.SystemTime.asDayTimestamp(), product1_wh1, 10),
 				createReceiptSchedule(bpartner1, warehouse1, SystemTime.asDayTimestamp(), product1_wh1, 10),
-				createReceiptSchedule(bpartner1, warehouse1, SystemTime.asDayTimestamp(), product1_wh1, 10),
-				createReceiptSchedule(bpartner1, warehouse1, SystemTime.asDayTimestamp(), product1_wh1, 10),
-				createReceiptSchedule(bpartner1, warehouse1, SystemTime.asDayTimestamp(), product1_wh1, 10),
-				createReceiptSchedule(bpartner1, warehouse1, SystemTime.asDayTimestamp(), product1_wh1, 10)).iterator();
+				createReceiptSchedule(bpartner1, warehouse1, de.metas.common.util.time.SystemTime.asDayTimestamp(), product1_wh1, 10),
+				createReceiptSchedule(bpartner1, warehouse1, de.metas.common.util.time.SystemTime.asDayTimestamp(), product1_wh1, 10)).iterator();
 
 		final InOutGenerateResult result = Services.get(IInOutCandidateBL.class).createEmptyInOutGenerateResult(true); // storeReceipts=true
 		receiptScheduleBL.generateInOuts(ctx, schedules, result, complete);

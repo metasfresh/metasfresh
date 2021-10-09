@@ -1,5 +1,6 @@
 package de.metas.procurement.base.model;
 
+import javax.annotation.Nullable;
 
 /** Generated Interface for PMM_QtyReport_Event
  *  @author Adempiere (generated)
@@ -787,7 +788,7 @@ public interface I_PMM_QtyReport_Event
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setQtyPromised (java.math.BigDecimal QtyPromised);
+	public void setQtyPromised (@Nullable java.math.BigDecimal QtyPromised);
 
 	/**
 	 * Get Zusagbar.

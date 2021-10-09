@@ -1,62 +1,54 @@
 package org.eevolution.model;
 
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for PP_Product_BOM
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public interface I_PP_Product_BOM 
 {
 
-    /** TableName=PP_Product_BOM */
-    public static final String Table_Name = "PP_Product_BOM";
+	String Table_Name = "PP_Product_BOM";
 
-    /** AD_Table_ID=53018 */
-//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=53018 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 3 - Client - Org
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
-
-    /** Load Meta Data */
 
 	/**
-	 * Get Mandant.
+	 * Get Client.
 	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Client_ID();
+	int getAD_Client_ID();
 
-    /** Column name AD_Client_ID */
-    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Set Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Org_ID (int AD_Org_ID);
+	void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Get Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Org_ID();
+	int getAD_Org_ID();
 
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
 	 * Set Stücklisten-Zugehörigkeit.
@@ -66,7 +58,7 @@ public interface I_PP_Product_BOM
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setBOMType (java.lang.String BOMType);
+	void setBOMType (@Nullable java.lang.String BOMType);
 
 	/**
 	 * Get Stücklisten-Zugehörigkeit.
@@ -76,12 +68,10 @@ public interface I_PP_Product_BOM
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getBOMType();
+	@Nullable java.lang.String getBOMType();
 
-    /** Column definition for BOMType */
-    public static final org.adempiere.model.ModelColumn<I_PP_Product_BOM, Object> COLUMN_BOMType = new org.adempiere.model.ModelColumn<I_PP_Product_BOM, Object>(I_PP_Product_BOM.class, "BOMType", null);
-    /** Column name BOMType */
-    public static final String COLUMNNAME_BOMType = "BOMType";
+	ModelColumn<I_PP_Product_BOM, Object> COLUMN_BOMType = new ModelColumn<>(I_PP_Product_BOM.class, "BOMType", null);
+	String COLUMNNAME_BOMType = "BOMType";
 
 	/**
 	 * Set BOM Use.
@@ -91,7 +81,7 @@ public interface I_PP_Product_BOM
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setBOMUse (java.lang.String BOMUse);
+	void setBOMUse (@Nullable java.lang.String BOMUse);
 
 	/**
 	 * Get BOM Use.
@@ -101,35 +91,32 @@ public interface I_PP_Product_BOM
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getBOMUse();
+	@Nullable java.lang.String getBOMUse();
 
-    /** Column definition for BOMUse */
-    public static final org.adempiere.model.ModelColumn<I_PP_Product_BOM, Object> COLUMN_BOMUse = new org.adempiere.model.ModelColumn<I_PP_Product_BOM, Object>(I_PP_Product_BOM.class, "BOMUse", null);
-    /** Column name BOMUse */
-    public static final String COLUMNNAME_BOMUse = "BOMUse";
+	ModelColumn<I_PP_Product_BOM, Object> COLUMN_BOMUse = new ModelColumn<>(I_PP_Product_BOM.class, "BOMUse", null);
+	String COLUMNNAME_BOMUse = "BOMUse";
 
 	/**
-	 * Set Maßeinheit.
+	 * Set UOM.
 	 * Unit of Measure
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setC_UOM_ID (int C_UOM_ID);
+	void setC_UOM_ID (int C_UOM_ID);
 
 	/**
-	 * Get Maßeinheit.
+	 * Get UOM.
 	 * Unit of Measure
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getC_UOM_ID();
+	int getC_UOM_ID();
 
-    /** Column name C_UOM_ID */
-    public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
+	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
 	 * Set Copy From.
@@ -139,7 +126,7 @@ public interface I_PP_Product_BOM
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setCopyFrom (java.lang.String CopyFrom);
+	void setCopyFrom (@Nullable java.lang.String CopyFrom);
 
 	/**
 	 * Get Copy From.
@@ -149,167 +136,152 @@ public interface I_PP_Product_BOM
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getCopyFrom();
+	@Nullable java.lang.String getCopyFrom();
 
-    /** Column definition for CopyFrom */
-    public static final org.adempiere.model.ModelColumn<I_PP_Product_BOM, Object> COLUMN_CopyFrom = new org.adempiere.model.ModelColumn<I_PP_Product_BOM, Object>(I_PP_Product_BOM.class, "CopyFrom", null);
-    /** Column name CopyFrom */
-    public static final String COLUMNNAME_CopyFrom = "CopyFrom";
+	ModelColumn<I_PP_Product_BOM, Object> COLUMN_CopyFrom = new ModelColumn<>(I_PP_Product_BOM.class, "CopyFrom", null);
+	String COLUMNNAME_CopyFrom = "CopyFrom";
 
 	/**
-	 * Get Erstellt.
+	 * Get Created.
 	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getCreated();
+	java.sql.Timestamp getCreated();
 
-    /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_PP_Product_BOM, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_PP_Product_BOM, Object>(I_PP_Product_BOM.class, "Created", null);
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
+	ModelColumn<I_PP_Product_BOM, Object> COLUMN_Created = new ModelColumn<>(I_PP_Product_BOM.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Erstellt durch.
+	 * Get Created By.
 	 * User who created this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getCreatedBy();
+	int getCreatedBy();
 
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Beschreibung.
+	 * Set Description.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDescription (java.lang.String Description);
+	void setDescription (@Nullable java.lang.String Description);
 
 	/**
-	 * Get Beschreibung.
+	 * Get Description.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getDescription();
+	@Nullable java.lang.String getDescription();
 
-    /** Column definition for Description */
-    public static final org.adempiere.model.ModelColumn<I_PP_Product_BOM, Object> COLUMN_Description = new org.adempiere.model.ModelColumn<I_PP_Product_BOM, Object>(I_PP_Product_BOM.class, "Description", null);
-    /** Column name Description */
-    public static final String COLUMNNAME_Description = "Description";
+	ModelColumn<I_PP_Product_BOM, Object> COLUMN_Description = new ModelColumn<>(I_PP_Product_BOM.class, "Description", null);
+	String COLUMNNAME_Description = "Description";
 
 	/**
-	 * Set Nr..
+	 * Set Document No.
 	 * Document sequence number of the document
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDocumentNo (java.lang.String DocumentNo);
+	void setDocumentNo (@Nullable java.lang.String DocumentNo);
 
 	/**
-	 * Get Nr..
+	 * Get Document No.
 	 * Document sequence number of the document
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getDocumentNo();
+	@Nullable java.lang.String getDocumentNo();
 
-    /** Column definition for DocumentNo */
-    public static final org.adempiere.model.ModelColumn<I_PP_Product_BOM, Object> COLUMN_DocumentNo = new org.adempiere.model.ModelColumn<I_PP_Product_BOM, Object>(I_PP_Product_BOM.class, "DocumentNo", null);
-    /** Column name DocumentNo */
-    public static final String COLUMNNAME_DocumentNo = "DocumentNo";
+	ModelColumn<I_PP_Product_BOM, Object> COLUMN_DocumentNo = new ModelColumn<>(I_PP_Product_BOM.class, "DocumentNo", null);
+	String COLUMNNAME_DocumentNo = "DocumentNo";
 
 	/**
-	 * Set Kommentar/Hilfe.
+	 * Set Help.
 	 * Comment or Hint
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setHelp (java.lang.String Help);
+	void setHelp (@Nullable java.lang.String Help);
 
 	/**
-	 * Get Kommentar/Hilfe.
+	 * Get Help.
 	 * Comment or Hint
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getHelp();
+	@Nullable java.lang.String getHelp();
 
-    /** Column definition for Help */
-    public static final org.adempiere.model.ModelColumn<I_PP_Product_BOM, Object> COLUMN_Help = new org.adempiere.model.ModelColumn<I_PP_Product_BOM, Object>(I_PP_Product_BOM.class, "Help", null);
-    /** Column name Help */
-    public static final String COLUMNNAME_Help = "Help";
+	ModelColumn<I_PP_Product_BOM, Object> COLUMN_Help = new ModelColumn<>(I_PP_Product_BOM.class, "Help", null);
+	String COLUMNNAME_Help = "Help";
 
 	/**
-	 * Set Aktiv.
+	 * Set Active.
 	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsActive (boolean IsActive);
+	void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Aktiv.
+	 * Get Active.
 	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isActive();
+	boolean isActive();
 
-    /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_PP_Product_BOM, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_PP_Product_BOM, Object>(I_PP_Product_BOM.class, "IsActive", null);
-    /** Column name IsActive */
-    public static final String COLUMNNAME_IsActive = "IsActive";
+	ModelColumn<I_PP_Product_BOM, Object> COLUMN_IsActive = new ModelColumn<>(I_PP_Product_BOM.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Merkmale.
-	 * Merkmals Ausprägungen zum Produkt
+	 * Set Attributes.
+	 * Attribute Instances for Products
 	 *
 	 * <br>Type: PAttribute
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID);
+	void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID);
 
 	/**
-	 * Get Merkmale.
-	 * Merkmals Ausprägungen zum Produkt
+	 * Get Attributes.
+	 * Attribute Instances for Products
 	 *
 	 * <br>Type: PAttribute
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getM_AttributeSetInstance_ID();
+	int getM_AttributeSetInstance_ID();
 
-	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance();
+	@Nullable org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance();
 
-	public void setM_AttributeSetInstance(org.compiere.model.I_M_AttributeSetInstance M_AttributeSetInstance);
+	void setM_AttributeSetInstance(@Nullable org.compiere.model.I_M_AttributeSetInstance M_AttributeSetInstance);
 
-    /** Column definition for M_AttributeSetInstance_ID */
-    public static final org.adempiere.model.ModelColumn<I_PP_Product_BOM, org.compiere.model.I_M_AttributeSetInstance> COLUMN_M_AttributeSetInstance_ID = new org.adempiere.model.ModelColumn<I_PP_Product_BOM, org.compiere.model.I_M_AttributeSetInstance>(I_PP_Product_BOM.class, "M_AttributeSetInstance_ID", org.compiere.model.I_M_AttributeSetInstance.class);
-    /** Column name M_AttributeSetInstance_ID */
-    public static final String COLUMNNAME_M_AttributeSetInstance_ID = "M_AttributeSetInstance_ID";
+	ModelColumn<I_PP_Product_BOM, org.compiere.model.I_M_AttributeSetInstance> COLUMN_M_AttributeSetInstance_ID = new ModelColumn<>(I_PP_Product_BOM.class, "M_AttributeSetInstance_ID", org.compiere.model.I_M_AttributeSetInstance.class);
+	String COLUMNNAME_M_AttributeSetInstance_ID = "M_AttributeSetInstance_ID";
 
 	/**
 	 * Set Änderungsmeldung.
@@ -319,7 +291,7 @@ public interface I_PP_Product_BOM
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setM_ChangeNotice_ID (int M_ChangeNotice_ID);
+	void setM_ChangeNotice_ID (int M_ChangeNotice_ID);
 
 	/**
 	 * Get Änderungsmeldung.
@@ -329,39 +301,36 @@ public interface I_PP_Product_BOM
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getM_ChangeNotice_ID();
+	int getM_ChangeNotice_ID();
 
-	public org.compiere.model.I_M_ChangeNotice getM_ChangeNotice();
+	@Nullable org.compiere.model.I_M_ChangeNotice getM_ChangeNotice();
 
-	public void setM_ChangeNotice(org.compiere.model.I_M_ChangeNotice M_ChangeNotice);
+	void setM_ChangeNotice(@Nullable org.compiere.model.I_M_ChangeNotice M_ChangeNotice);
 
-    /** Column definition for M_ChangeNotice_ID */
-    public static final org.adempiere.model.ModelColumn<I_PP_Product_BOM, org.compiere.model.I_M_ChangeNotice> COLUMN_M_ChangeNotice_ID = new org.adempiere.model.ModelColumn<I_PP_Product_BOM, org.compiere.model.I_M_ChangeNotice>(I_PP_Product_BOM.class, "M_ChangeNotice_ID", org.compiere.model.I_M_ChangeNotice.class);
-    /** Column name M_ChangeNotice_ID */
-    public static final String COLUMNNAME_M_ChangeNotice_ID = "M_ChangeNotice_ID";
+	ModelColumn<I_PP_Product_BOM, org.compiere.model.I_M_ChangeNotice> COLUMN_M_ChangeNotice_ID = new ModelColumn<>(I_PP_Product_BOM.class, "M_ChangeNotice_ID", org.compiere.model.I_M_ChangeNotice.class);
+	String COLUMNNAME_M_ChangeNotice_ID = "M_ChangeNotice_ID";
 
 	/**
-	 * Set Produkt.
-	 * Produkt, Leistung, Artikel
+	 * Set Product.
+	 * Product, Service, Item
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setM_Product_ID (int M_Product_ID);
+	void setM_Product_ID (int M_Product_ID);
 
 	/**
-	 * Get Produkt.
-	 * Produkt, Leistung, Artikel
+	 * Get Product.
+	 * Product, Service, Item
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getM_Product_ID();
+	int getM_Product_ID();
 
-    /** Column name M_Product_ID */
-    public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
+	String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
 	 * Set Name.
@@ -370,7 +339,7 @@ public interface I_PP_Product_BOM
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setName (java.lang.String Name);
+	void setName (java.lang.String Name);
 
 	/**
 	 * Get Name.
@@ -379,12 +348,10 @@ public interface I_PP_Product_BOM
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getName();
+	java.lang.String getName();
 
-    /** Column definition for Name */
-    public static final org.adempiere.model.ModelColumn<I_PP_Product_BOM, Object> COLUMN_Name = new org.adempiere.model.ModelColumn<I_PP_Product_BOM, Object>(I_PP_Product_BOM.class, "Name", null);
-    /** Column name Name */
-    public static final String COLUMNNAME_Name = "Name";
+	ModelColumn<I_PP_Product_BOM, Object> COLUMN_Name = new ModelColumn<>(I_PP_Product_BOM.class, "Name", null);
+	String COLUMNNAME_Name = "Name";
 
 	/**
 	 * Set BOM & Formula.
@@ -394,7 +361,7 @@ public interface I_PP_Product_BOM
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setPP_Product_BOM_ID (int PP_Product_BOM_ID);
+	void setPP_Product_BOM_ID (int PP_Product_BOM_ID);
 
 	/**
 	 * Get BOM & Formula.
@@ -404,35 +371,31 @@ public interface I_PP_Product_BOM
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getPP_Product_BOM_ID();
+	int getPP_Product_BOM_ID();
 
-    /** Column definition for PP_Product_BOM_ID */
-    public static final org.adempiere.model.ModelColumn<I_PP_Product_BOM, Object> COLUMN_PP_Product_BOM_ID = new org.adempiere.model.ModelColumn<I_PP_Product_BOM, Object>(I_PP_Product_BOM.class, "PP_Product_BOM_ID", null);
-    /** Column name PP_Product_BOM_ID */
-    public static final String COLUMNNAME_PP_Product_BOM_ID = "PP_Product_BOM_ID";
+	ModelColumn<I_PP_Product_BOM, Object> COLUMN_PP_Product_BOM_ID = new ModelColumn<>(I_PP_Product_BOM.class, "PP_Product_BOM_ID", null);
+	String COLUMNNAME_PP_Product_BOM_ID = "PP_Product_BOM_ID";
 
 	/**
-	 * Set Verarbeiten.
+	 * Set Process Now.
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setProcessing (boolean Processing);
+	void setProcessing (boolean Processing);
 
 	/**
-	 * Get Verarbeiten.
+	 * Get Process Now.
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public boolean isProcessing();
+	boolean isProcessing();
 
-    /** Column definition for Processing */
-    public static final org.adempiere.model.ModelColumn<I_PP_Product_BOM, Object> COLUMN_Processing = new org.adempiere.model.ModelColumn<I_PP_Product_BOM, Object>(I_PP_Product_BOM.class, "Processing", null);
-    /** Column name Processing */
-    public static final String COLUMNNAME_Processing = "Processing";
+	ModelColumn<I_PP_Product_BOM, Object> COLUMN_Processing = new ModelColumn<>(I_PP_Product_BOM.class, "Processing", null);
+	String COLUMNNAME_Processing = "Processing";
 
 	/**
 	 * Set Revision.
@@ -441,7 +404,7 @@ public interface I_PP_Product_BOM
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setRevision (java.lang.String Revision);
+	void setRevision (@Nullable java.lang.String Revision);
 
 	/**
 	 * Get Revision.
@@ -450,140 +413,125 @@ public interface I_PP_Product_BOM
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getRevision();
+	@Nullable java.lang.String getRevision();
 
-    /** Column definition for Revision */
-    public static final org.adempiere.model.ModelColumn<I_PP_Product_BOM, Object> COLUMN_Revision = new org.adempiere.model.ModelColumn<I_PP_Product_BOM, Object>(I_PP_Product_BOM.class, "Revision", null);
-    /** Column name Revision */
-    public static final String COLUMNNAME_Revision = "Revision";
+	ModelColumn<I_PP_Product_BOM, Object> COLUMN_Revision = new ModelColumn<>(I_PP_Product_BOM.class, "Revision", null);
+	String COLUMNNAME_Revision = "Revision";
 
 	/**
-	 * Set Nummernfolge für Seriennummer.
+	 * Set Serial No. Sequence.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setSerialNo_Sequence_ID (int SerialNo_Sequence_ID);
+	void setSerialNo_Sequence_ID (int SerialNo_Sequence_ID);
 
 	/**
-	 * Get Nummernfolge für Seriennummer.
+	 * Get Serial No. Sequence.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getSerialNo_Sequence_ID();
+	int getSerialNo_Sequence_ID();
 
-	public org.compiere.model.I_AD_Sequence getSerialNo_Sequence();
+	@Nullable org.compiere.model.I_AD_Sequence getSerialNo_Sequence();
 
-	public void setSerialNo_Sequence(org.compiere.model.I_AD_Sequence SerialNo_Sequence);
+	void setSerialNo_Sequence(@Nullable org.compiere.model.I_AD_Sequence SerialNo_Sequence);
 
-    /** Column definition for SerialNo_Sequence_ID */
-    public static final org.adempiere.model.ModelColumn<I_PP_Product_BOM, org.compiere.model.I_AD_Sequence> COLUMN_SerialNo_Sequence_ID = new org.adempiere.model.ModelColumn<I_PP_Product_BOM, org.compiere.model.I_AD_Sequence>(I_PP_Product_BOM.class, "SerialNo_Sequence_ID", org.compiere.model.I_AD_Sequence.class);
-    /** Column name SerialNo_Sequence_ID */
-    public static final String COLUMNNAME_SerialNo_Sequence_ID = "SerialNo_Sequence_ID";
+	ModelColumn<I_PP_Product_BOM, org.compiere.model.I_AD_Sequence> COLUMN_SerialNo_Sequence_ID = new ModelColumn<>(I_PP_Product_BOM.class, "SerialNo_Sequence_ID", org.compiere.model.I_AD_Sequence.class);
+	String COLUMNNAME_SerialNo_Sequence_ID = "SerialNo_Sequence_ID";
 
 	/**
-	 * Get Aktualisiert.
+	 * Get Updated.
 	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getUpdated();
+	java.sql.Timestamp getUpdated();
 
-    /** Column definition for Updated */
-    public static final org.adempiere.model.ModelColumn<I_PP_Product_BOM, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_PP_Product_BOM, Object>(I_PP_Product_BOM.class, "Updated", null);
-    /** Column name Updated */
-    public static final String COLUMNNAME_Updated = "Updated";
+	ModelColumn<I_PP_Product_BOM, Object> COLUMN_Updated = new ModelColumn<>(I_PP_Product_BOM.class, "Updated", null);
+	String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Aktualisiert durch.
+	 * Get Updated By.
 	 * User who updated this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getUpdatedBy();
+	int getUpdatedBy();
 
-    /** Column name UpdatedBy */
-    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
 	/**
-	 * Set Gültig ab.
-	 * Valid from including this date (first day)
+	 * Set Valid From.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setValidFrom (java.sql.Timestamp ValidFrom);
+	void setValidFrom (java.sql.Timestamp ValidFrom);
 
 	/**
-	 * Get Gültig ab.
-	 * Valid from including this date (first day)
+	 * Get Valid From.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getValidFrom();
+	java.sql.Timestamp getValidFrom();
 
-    /** Column definition for ValidFrom */
-    public static final org.adempiere.model.ModelColumn<I_PP_Product_BOM, Object> COLUMN_ValidFrom = new org.adempiere.model.ModelColumn<I_PP_Product_BOM, Object>(I_PP_Product_BOM.class, "ValidFrom", null);
-    /** Column name ValidFrom */
-    public static final String COLUMNNAME_ValidFrom = "ValidFrom";
+	ModelColumn<I_PP_Product_BOM, Object> COLUMN_ValidFrom = new ModelColumn<>(I_PP_Product_BOM.class, "ValidFrom", null);
+	String COLUMNNAME_ValidFrom = "ValidFrom";
 
 	/**
-	 * Set Gültig bis.
+	 * Set Valid to.
 	 * Valid to including this date (last day)
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setValidTo (java.sql.Timestamp ValidTo);
+	void setValidTo (@Nullable java.sql.Timestamp ValidTo);
 
 	/**
-	 * Get Gültig bis.
+	 * Get Valid to.
 	 * Valid to including this date (last day)
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getValidTo();
+	@Nullable java.sql.Timestamp getValidTo();
 
-    /** Column definition for ValidTo */
-    public static final org.adempiere.model.ModelColumn<I_PP_Product_BOM, Object> COLUMN_ValidTo = new org.adempiere.model.ModelColumn<I_PP_Product_BOM, Object>(I_PP_Product_BOM.class, "ValidTo", null);
-    /** Column name ValidTo */
-    public static final String COLUMNNAME_ValidTo = "ValidTo";
+	ModelColumn<I_PP_Product_BOM, Object> COLUMN_ValidTo = new ModelColumn<>(I_PP_Product_BOM.class, "ValidTo", null);
+	String COLUMNNAME_ValidTo = "ValidTo";
 
 	/**
-	 * Set Suchschlüssel.
+	 * Set Search Key.
 	 * Search key for the record in the format required - must be unique
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setValue (java.lang.String Value);
+	void setValue (java.lang.String Value);
 
 	/**
-	 * Get Suchschlüssel.
+	 * Get Search Key.
 	 * Search key for the record in the format required - must be unique
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getValue();
+	java.lang.String getValue();
 
-    /** Column definition for Value */
-    public static final org.adempiere.model.ModelColumn<I_PP_Product_BOM, Object> COLUMN_Value = new org.adempiere.model.ModelColumn<I_PP_Product_BOM, Object>(I_PP_Product_BOM.class, "Value", null);
-    /** Column name Value */
-    public static final String COLUMNNAME_Value = "Value";
+	ModelColumn<I_PP_Product_BOM, Object> COLUMN_Value = new ModelColumn<>(I_PP_Product_BOM.class, "Value", null);
+	String COLUMNNAME_Value = "Value";
 }

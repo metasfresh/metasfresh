@@ -128,7 +128,7 @@ public class EDIDocumentBL implements IEDIDocumentBL
 		feedback.addAll(isValidPartner(invoice.getC_BPartner(), true/* isPartOfInvoiceValidation */));
 
 		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
-		final org.compiere.model.I_C_BPartner_Location bPartnerLocationRecord = bpartnerDAO.getBPartnerLocationById(BPartnerLocationId.ofRepoId(invoice.getC_BPartner_ID(), invoice.getC_BPartner_Location_ID()));
+		final org.compiere.model.I_C_BPartner_Location bPartnerLocationRecord = bpartnerDAO.getBPartnerLocationByIdEvenInactive(BPartnerLocationId.ofRepoId(invoice.getC_BPartner_ID(), invoice.getC_BPartner_Location_ID()));
 		feedback.addAll(isValidBPLocation(bPartnerLocationRecord));
 
 		// task 09182: for return material credit memos, we don't have or need an (imported) EDI ORDERS PoReference
@@ -226,9 +226,9 @@ public class EDIDocumentBL implements IEDIDocumentBL
 			feedback.add(new AdempiereException(Services.get(IMsgBL.class).getMsg(InterfaceWrapperHelper.getCtx(ediPartner), IEDIDocumentBL.MSG_Partner_ValidateIsEDIRecipient_Error)));
 		}
 
-		if (Check.isEmpty(ediPartner.getEdiRecipientGLN(), true))
+		if (Check.isEmpty(ediPartner.getEdiDesadvRecipientGLN(), true))
 		{
-			missingFields.add(I_C_BPartner.COLUMNNAME_EdiRecipientGLN);
+			missingFields.add(I_C_BPartner.COLUMNNAME_EdiDesadvRecipientGLN);
 		}
 
 		final boolean checkForAggregationRule = !isPartOfInvoiceValidation; // if we validate for an already existing invoice we don't need to bother for the partner's aggregation rule

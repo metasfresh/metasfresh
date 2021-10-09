@@ -31,6 +31,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.ISqlQueryFilter;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.exceptions.DBException;
 import org.compiere.model.IQuery;
@@ -89,7 +90,7 @@ public class QueryBuilderDAO extends AbstractQueryBuilderDAO
 		final Class<T> modelClass = queryBuildCtx.getModelClass();
 		final String modelTableName = queryBuildCtx.getModelTableName();
 		final IQueryOrderBy queryOrderBy = queryBuildCtx.getQueryOrderBy();
-		final int queryLimit = queryBuildCtx.getQueryLimit();
+		final QueryLimit queryLimit = queryBuildCtx.getQueryLimit();
 		final PInstanceId queryOnlySelectionId = queryBuildCtx.getQueryOnlySelectionId();
 		final Map<String, Object> queryOptions = queryBuildCtx.getQueryOptions();
 		return new TypedSqlQuery<>(ctx, modelClass, modelTableName, sqlWhereClause, trxName)

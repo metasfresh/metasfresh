@@ -2,7 +2,7 @@
  * #%L
  * de.metas.elasticsearch
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,143 +22,65 @@
 
 package de.metas.elasticsearch.impl;
 
-import java.util.function.Consumer;
-
-import org.adempiere.model.InterfaceWrapperHelper;
+import de.metas.elasticsearch.IESSystem;
+import de.metas.i18n.BooleanWithReason;
+import de.metas.util.Services;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.Adempiere;
-import org.slf4j.Logger;
-
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
-
-import de.metas.elasticsearch.IESSystem;
-import de.metas.elasticsearch.config.ESModelIndexerConfigBuilder;
-import de.metas.elasticsearch.config.ESModelIndexerProfile;
-import de.metas.elasticsearch.scheduler.IESModelIndexingScheduler;
-import de.metas.elasticsearch.trigger.IESModelIndexerTrigger;
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import de.metas.util.StringUtils;
-import lombok.NonNull;
+import org.compiere.SpringContextHolder;
+import org.elasticsearch.client.RestHighLevelClient;
 
 public class ESSystem implements IESSystem
 {
-	private static final Logger logger = LogManager.getLogger(ESSystem.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
-	@VisibleForTesting
-	public static final String ESServer_Classname = "de.metas.elasticsearch.ESServer";
+	// IMPORTANT: fetch it only when needed and when this feature is enabled!!!
+	// else it might start the elasticsearch client when the elasticsearch server does not even exists,
+	// which will flood the console with errors
+	private RestHighLevelClient elasticsearchClient = null;
 
-	private static final String SYSTEM_PROPERTY_elastic_enable = "elastic_enable";
-
-	public static final String SYSCONFIG_PostKpiEvents = "de.metas.elasticsearch.PostKpiEvents";
-	private static final boolean SYSCONFIG_PostKpiEvents_Default = true;
+	public static final String SYSCONFIG_elastic_enable = "elastic_enable";
+	private static final BooleanWithReason DISABLED_BECAUSE_JUNIT_MODE = BooleanWithReason.falseBecause("Elasticsearch disabled when running in JUnit test mode");
+	private static final BooleanWithReason DISABLED_BECAUSE_SYSCONFIG = BooleanWithReason.falseBecause("Elasticsearch disabled by sysconfig `" + SYSCONFIG_elastic_enable + "`");
 
 	@Override
-	public boolean isEnabled()
+	public BooleanWithReason getEnabled()
 	{
 		if (Adempiere.isUnitTestMode())
 		{
-			return false;
-		}
-
-		// Check if disabled by system property (as documented on sysconfig description)
-		if (StringUtils.toBoolean(System.getProperty(SYSTEM_PROPERTY_elastic_enable)))
-		{
-			return false;
+			return DISABLED_BECAUSE_JUNIT_MODE;
 		}
 
 		// Check if it was disabled by sysconfig
+		if (!sysConfigBL.getBooleanValue(SYSCONFIG_elastic_enable, true))
 		{
-			final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-			final boolean enabled = sysConfigBL.getBooleanValue(SYSCONFIG_PostKpiEvents, SYSCONFIG_PostKpiEvents_Default);
-			return enabled;
+			return DISABLED_BECAUSE_SYSCONFIG;
+		}
+
+		return BooleanWithReason.TRUE;
+	}
+
+	private void assertEnabled()
+	{
+		final BooleanWithReason enabled = getEnabled();
+		if (enabled.isFalse())
+		{
+			throw new AdempiereException("Expected elasticsearch feature to be enabled but is disabled because `" + enabled.getReasonAsString() + "`");
 		}
 	}
 
-	private final void assertEnabled()
-	{
-		Check.assume(isEnabled(), "Elasticsearch system is enabled");
-	}
-
 	@Override
-	public ESModelIndexerConfigBuilder newModelIndexerConfig(
-			@NonNull final ESModelIndexerProfile profile,
-			@NonNull final String indexName,
-			@NonNull final Class<?> modelClass)
-	{
-		final Consumer<ESModelIndexerConfigBuilder> configInstaller = this::installConfig;
-		final String modelTableName = InterfaceWrapperHelper.getTableName(modelClass);
-		return new ESModelIndexerConfigBuilder(configInstaller, profile, indexName, modelTableName);
-	}
-
-	@Override
-	public ESModelIndexerConfigBuilder newModelIndexerConfig(
-			@NonNull final ESModelIndexerProfile profile,
-			@NonNull final String indexName,
-			@NonNull final String modelTableName)
-	{
-		final Consumer<ESModelIndexerConfigBuilder> configInstaller = this::installConfig;
-		return new ESModelIndexerConfigBuilder(configInstaller, profile, indexName, modelTableName);
-	}
-
-	private void installConfig(final ESModelIndexerConfigBuilder config)
+	public RestHighLevelClient elasticsearchClient()
 	{
 		assertEnabled();
 
-		//
-		// Add configuration on server too (if exists)
-		final IESServer esServer = getESServer();
-		if (esServer != null)
+		RestHighLevelClient elasticsearchClient = this.elasticsearchClient;
+		if (elasticsearchClient == null)
 		{
-			esServer.installConfig(config);
+			elasticsearchClient = this.elasticsearchClient = SpringContextHolder.instance.getBean(RestHighLevelClient.class);
 		}
 
-		//
-		// Install model indexer's triggers
-		for (final IESModelIndexerTrigger trigger : config.getTriggers())
-		{
-			trigger.install();
-			logger.info("Installed trigger: {}", trigger);
-		}
-	}
-
-	private final Supplier<IESServer> serverSupplier = Suppliers.memoize(() -> findESServer());
-
-	private IESServer getESServer()
-	{
-		return serverSupplier.get();
-	}
-
-	private final IESServer findESServer()
-	{
-		try
-		{
-			final IESServer esServer = (IESServer)Thread.currentThread()
-					.getContextClassLoader()
-					.loadClass(ESServer_Classname)
-					.newInstance();
-
-			logger.info("Found ESServer: {}", esServer);
-			return esServer;
-		}
-		catch (final ClassNotFoundException e)
-		{
-			logger.info("ESServer class was not found: {}", ESServer_Classname);
-			return null;
-		}
-		catch (final Exception e)
-		{
-			logger.warn("Failed instantiating ESServer for {}", ESServer_Classname, e);
-			return null;
-		}
-	}
-
-	@Override
-	public IESModelIndexingScheduler scheduler()
-	{
-		return Services.get(IESModelIndexingScheduler.class);
+		return elasticsearchClient;
 	}
 }

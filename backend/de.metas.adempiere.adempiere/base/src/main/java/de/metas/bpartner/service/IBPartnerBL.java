@@ -1,7 +1,31 @@
 package de.metas.bpartner.service;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
+import de.metas.i18n.Language;
+import de.metas.lang.SOTrx;
+import de.metas.location.CountryId;
+import de.metas.location.LocationId;
+import de.metas.payment.PaymentRule;
+import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.user.User;
+import de.metas.user.UserId;
+import de.metas.util.ISingletonService;
+import lombok.Builder;
+import lombok.Builder.Default;
+import lombok.NonNull;
+import lombok.Value;
+import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
+
+import javax.annotation.Nullable;
 import java.util.Comparator;
 import java.util.Optional;
+import java.util.Properties;
+import java.util.function.Predicate;
 
 /*
  * #%L
@@ -25,34 +49,6 @@ import java.util.Optional;
  * #L%
  */
 
-import java.util.Properties;
-import java.util.function.Predicate;
-
-import javax.annotation.Nullable;
-
-import org.compiere.model.I_AD_User;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_BPartner_QuickInput;
-
-import com.google.common.base.Predicates;
-
-import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.BPartnerLocationId;
-import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
-import de.metas.i18n.Language;
-import de.metas.lang.SOTrx;
-import de.metas.location.CountryId;
-import de.metas.payment.PaymentRule;
-import de.metas.payment.paymentterm.PaymentTermId;
-import de.metas.user.User;
-import de.metas.user.UserId;
-import de.metas.util.ISingletonService;
-import lombok.Builder;
-import lombok.Builder.Default;
-import lombok.NonNull;
-import lombok.Value;
-
 public interface IBPartnerBL extends ISingletonService
 {
 	I_C_BPartner getById(BPartnerId bpartnerId);
@@ -65,9 +61,8 @@ public interface IBPartnerBL extends ISingletonService
 
 	/**
 	 * make full address
-	 *
 	 */
-	String mkFullAddress(I_C_BPartner bPartner, I_C_BPartner_Location location, I_AD_User user, String trxName);
+	String mkFullAddress(@NonNull I_C_BPartner bpartner, @Nullable I_C_BPartner_Location bpLocation, @Nullable LocationId locationId, @Nullable I_AD_User bpContact);
 
 	/**
 	 * Retrieve user/contact assigned to default/first ship to address. If no user/contact found, the first default user contact will be returned.
@@ -80,26 +75,24 @@ public interface IBPartnerBL extends ISingletonService
 	 * Retrieve user/contact that is assigned to given location. If no assigned contact found then the default BPartner contact will be returned.<br>
 	 * If there is no contact for given BPartner null will be returned.
 	 *
-	 * @param loc
 	 * @return user/contact or null
 	 */
 	I_AD_User retrieveUserForLoc(I_C_BPartner_Location loc);
 
 	/**
 	 * Compute and set {@link I_C_BPartner_Location#COLUMNNAME_Address} field.
-	 *
-	 * @param bpLocation
 	 */
 	void setAddress(I_C_BPartner_Location bpLocation);
+
+	void updateAllAddresses(I_C_BPartner bpartner);
 
 	I_AD_User retrieveShipContact(I_C_BPartner bpartner);
 
 	/**
 	 * Creates a draft contact linked to given partner.
-	 *
+	 * <p>
 	 * It's up to the caller to set the other fields and then save it or not.
 	 *
-	 * @param bpartner
 	 * @return draft contact
 	 */
 	I_AD_User createDraftContact(I_C_BPartner bpartner);
@@ -114,42 +107,29 @@ public interface IBPartnerBL extends ISingletonService
 	 */
 	boolean isAllowConsolidateInOutEffective(I_C_BPartner partner, SOTrx soTrx);
 
-	/**
-	 * Use {@link IBPartnerAware} to get BPartner from given model.
-	 *
-	 * @param model
-	 * @return bpartner or <code>null</code>
-	 */
-	I_C_BPartner getBPartnerForModel(Object model);
+	@Deprecated
+	@Nullable
+	default Language getLanguage(final Properties ctx_NOTUSED, final int bpartnerRepoId)
+	{
+		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(bpartnerRepoId);
+		return bpartnerId != null
+				? getLanguage(bpartnerId).orElse(null)
+				: null;
+	}
 
-	/**
-	 * Gets BPartner's Language
-	 *
-	 * @param ctx_NOTUSED
-	 * @param bpartnerId
-	 * @return {@link Language} or <code>null</code>
-	 */
-	Language getLanguage(Properties ctx_NOTUSED, int bpartnerId);
+	Optional<Language> getLanguage(@NonNull BPartnerId bpartnerId);
+
+	Optional<BPartnerId> getBPartnerIdForModel(@Nullable Object model);
 
 	/**
 	 * Get the language of the given model's C_BPartner, if it has a <code>C_BPartner_ID</code> column and if the BPartner is set.
-	 *
-	 * @param model
-	 * @return the language, if found, <code>null</code> otherwise.
 	 */
-	Language getLanguageForModel(Object model);
+	Optional<Language> getLanguageForModel(Object model);
+
+	Optional<Language> getLanguage(@NonNull I_C_BPartner bpartner);
 
 	/**
-	 * Creates BPartner, Location and contact from given template.
-	 *
-	 * @param template
-	 * @return created bpartner
-	 * @task https://github.com/metasfresh/metasfresh/issues/1090
-	 */
-	I_C_BPartner createFromTemplate(I_C_BPartner_QuickInput template);
-
-	/**
-	 * Retrieves the discount schema for the given BParnter. If the BPartner has none, it falls back to the partner's C_BP_Group.
+	 * Retrieves the discount schema for the given BPartner. If the BPartner has none, it falls back to the partner's C_BP_Group.
 	 * If the partner has no group or that group hasn't a discount schema either, it returns <code>-1</code>.
 	 *
 	 * @param soTrx if <code>true</code>, the sales discount schema is returned, otherwise the purchase discount schema is returned.
@@ -163,28 +143,40 @@ public interface IBPartnerBL extends ISingletonService
 	int getDiscountSchemaId(BPartnerId bpartnerId, SOTrx soTrx);
 
 	/**
-	 * Retrieves (out of transaction) a list of {@link User} that could be bill contacts, best first. See {@link ContactQuery}.
+	 * Retrieves (out of transaction) a list of {@link User} that could be bill contacts, best first.
+	 * <p>
+	 * See {@link RetrieveContactRequest}.
 	 */
+	@Nullable
 	User retrieveContactOrNull(RetrieveContactRequest request);
 
 	String getAddressStringByBPartnerLocationId(BPartnerLocationId bpartnerLocationId);
 
+	@Nullable
 	UserId getSalesRepIdOrNull(BPartnerId bpartnerId);
 
+	@Nullable
 	BPartnerId getBPartnerSalesRepId(BPartnerId bpartnerId);
+
+	void setBPartnerSalesRepIdOutOfTrx(BPartnerId bPartnerId, BPartnerId salesRepBPartnerId);
 
 	/**
 	 * @return previous sales rep or null
 	 */
+	@Nullable
 	UserId setSalesRepId(BPartnerId bpartnerId, final UserId salesRepId);
+
+	BPartnerPrintFormatMap getPrintFormats(@NonNull BPartnerId bpartnerId);
+
+	void updateNameAndGreetingFromContacts(@NonNull BPartnerId bpartnerId);
 
 	@Value
 	@Builder
-	public static class RetrieveContactRequest
+	class RetrieveContactRequest
 	{
 		public enum ContactType
 		{
-			BILL_TO_DEFAULT, SHIP_TO_DEFAULT, SALES_DEFAULT, SUBJECT_MATTER;
+			BILL_TO_DEFAULT, SHIP_TO_DEFAULT, SALES_DEFAULT, SUBJECT_MATTER
 		}
 
 		public enum IfNotFound
@@ -198,14 +190,18 @@ public interface IBPartnerBL extends ISingletonService
 		@Nullable
 		ContactType contactType;
 
-		/** If specified, then contacts with this location are preferred, even if a user ad another location is the default bill-to user. */
+		/**
+		 * If specified, then contacts with this location are preferred, even if a user ad another location is the default bill-to user.
+		 */
 		@Nullable
 		BPartnerLocationId bPartnerLocationId;
 
-		/** If specified, then only matching contacts are considered */
+		/**
+		 * If specified, then only matching contacts are considered
+		 */
 		@Default
 		@NonNull
-		Predicate<User> filter = Predicates.alwaysTrue();
+		Predicate<User> filter = user -> true;
 
 		/**
 		 * If specified and there are multiple equally good fits, then the first fit according to this comparator is returned.
@@ -221,9 +217,13 @@ public interface IBPartnerBL extends ISingletonService
 		IfNotFound ifNotFound = IfNotFound.RETURN_DEFAULT_CONTACT;
 	}
 
-	int getFreightCostIdByBPartnerId(BPartnerId bpartnerId);
+	CountryId getCountryId(@NonNull BPartnerLocationAndCaptureId bpartnerLocationAndCaptureId);
 
-	CountryId getBPartnerLocationCountryId(BPartnerLocationId bpLocationId);
+	CountryId getCountryId(@NonNull BPartnerInfo bpartnerInfo);
+
+	LocationId getLocationId(@NonNull BPartnerLocationAndCaptureId bpartnerLocationAndCaptureId);
+
+	int getFreightCostIdByBPartnerId(BPartnerId bpartnerId);
 
 	ShipmentAllocationBestBeforePolicy getBestBeforePolicy(BPartnerId bpartnerId);
 
@@ -233,4 +233,8 @@ public interface IBPartnerBL extends ISingletonService
 	 * @return the payment rule for the BP. If none is set, gets the one of the BP group.
 	 */
 	Optional<PaymentRule> getPaymentRuleForBPartner(BPartnerId bpartnerId);
+
+	boolean isSalesRep(BPartnerId bpartnerId);
+
+	void validateSalesRep(@NonNull BPartnerId bPartnerId, @Nullable BPartnerId salesRepId);
 }

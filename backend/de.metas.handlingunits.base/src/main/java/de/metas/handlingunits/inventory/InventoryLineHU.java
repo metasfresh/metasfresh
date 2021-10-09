@@ -1,18 +1,8 @@
 package de.metas.handlingunits.inventory;
 
-import java.util.Collection;
-import java.util.Objects;
-import java.util.stream.Stream;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_C_UOM;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.handlingunits.HuId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
@@ -22,6 +12,14 @@ import lombok.NonNull;
 import lombok.ToString;
 import lombok.Value;
 import lombok.experimental.NonFinal;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_C_UOM;
+
+import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.Objects;
+import java.util.function.UnaryOperator;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -153,6 +151,11 @@ public class InventoryLineHU
 		return qtyBook;
 	}
 
+	public Quantity getQtyCountMinusBooked()
+	{
+		return getQtyCount().subtract(getQtyBook());
+	}
+
 	/**
 	 * @param qtyCountToAdd needs to have the same UOM as this instance's current qtyCount.
 	 */
@@ -183,5 +186,31 @@ public class InventoryLineHU
 				.map(InventoryLineHU::getHuId)
 				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	public InventoryLineHU withHuId(final @NonNull HuId huId)
+	{
+		return toBuilder().huId(huId).build();
+	}
+
+	public InventoryLineHU convertQuantities(@NonNull final UnaryOperator<Quantity> qtyConverter)
+	{
+		return toBuilder()
+				.qtyCount(qtyConverter.apply(getQtyCount()))
+				.qtyBook(qtyConverter.apply(getQtyBook()))
+				.build();
+	}
+
+	@NonNull
+	public HuId getHuIdNotNull()
+	{
+		if (this.huId == null)
+		{
+			throw new AdempiereException("de.metas.handlingunits.inventory.InventoryLineHU.getHuIdNotNull called on an uncompleted inventory!")
+					.appendParametersToMessage()
+					.setParameter("InventoryLineHUId", id);
+		}
+
+		return huId;
 	}
 }

@@ -36,6 +36,7 @@ import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.archive.ArchiveId;
+import org.adempiere.archive.api.ArchiveAction;
 import org.adempiere.archive.api.IArchiveDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -49,7 +50,6 @@ import de.metas.document.archive.api.IDocOutboundDAO;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
-import de.metas.document.archive.model.X_C_Doc_Outbound_Log_Line;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -155,7 +155,7 @@ public class DocOutboundDAO implements IDocOutboundDAO
 				//
 				// Filter the ones with PDF export
 				//
-				.addEqualsFilter(I_C_Doc_Outbound_Log_Line.COLUMN_Action, X_C_Doc_Outbound_Log_Line.ACTION_PdfExport);
+				.addEqualsFilter(I_C_Doc_Outbound_Log_Line.COLUMN_Action, ArchiveAction.PDF_EXPORT.getCode());
 
 		//
 		// Order by latest log line first
@@ -171,8 +171,8 @@ public class DocOutboundDAO implements IDocOutboundDAO
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 		final IQueryBuilder<I_C_Doc_Outbound_Log> queryBuilder = queryBL.createQueryBuilder(I_C_Doc_Outbound_Log.class, contextProvider)
-				.addEqualsFilter(I_C_Doc_Outbound_Log.COLUMN_C_BPartner_ID, bpartnerId)
-				.addEqualsFilter(I_C_Doc_Outbound_Log.COLUMN_AD_Table_ID, AD_Table_ID);
+				.addEqualsFilter(I_C_Doc_Outbound_Log.COLUMNNAME_C_BPartner_ID, bpartnerId)
+				.addEqualsFilter(I_C_Doc_Outbound_Log.COLUMNNAME_AD_Table_ID, AD_Table_ID);
 
 		// Order by
 		final IQueryOrderBy queryOrderBy = Services.get(IQueryBL.class)
@@ -201,7 +201,7 @@ public class DocOutboundDAO implements IDocOutboundDAO
 				.get(IQueryBL.class)
 				.createQueryBuilder(I_C_Doc_Outbound_Log.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_Doc_Outbound_Log.COLUMN_AD_Table_ID, tableRecordReference.getAdTableId())
+				.addEqualsFilter(I_C_Doc_Outbound_Log.COLUMNNAME_AD_Table_ID, tableRecordReference.getAdTableId())
 				.addEqualsFilter(I_C_Doc_Outbound_Log.COLUMN_Record_ID, tableRecordReference.getRecord_ID())
 				.create()
 				.firstOnly(I_C_Doc_Outbound_Log.class);

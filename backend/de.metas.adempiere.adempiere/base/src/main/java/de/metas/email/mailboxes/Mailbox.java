@@ -10,11 +10,13 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.email.EMailAddress;
+import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.ToString;
 import lombok.Value;
+import org.slf4j.Logger;
 
 /*
  * #%L
@@ -42,13 +44,14 @@ import lombok.Value;
  * Mailbox configuration.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
 @ToString(exclude = "password")
 public final class Mailbox
 {
+	private final static transient Logger logger = LogManager.getLogger(Mailbox.class);
+
 	private static final int DEFAULT_SMTP_PORT = 25;
 	private static final int DEFAULT_SMTPS_PORT = 587;
 
@@ -120,8 +123,12 @@ public final class Mailbox
 
 	public Mailbox mergeFrom(@Nullable final UserEMailConfig userEmailConfig)
 	{
-		if (userEmailConfig == null)
+		if (userEmailConfig == null
+				|| userEmailConfig.getEmail() == null
+				|| Check.isBlank(userEmailConfig.getUsername())
+				|| Check.isBlank(userEmailConfig.getPassword()))
 		{
+			logger.debug("userEmailConfig can't be used because it has no SMTP-UserName, -Password or Mail-Address; userEmailConfig={}", userEmailConfig);
 			return this;
 		}
 

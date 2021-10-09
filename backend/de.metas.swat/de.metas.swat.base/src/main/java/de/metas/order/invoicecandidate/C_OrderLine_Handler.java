@@ -1,55 +1,21 @@
 package de.metas.order.invoicecandidate;
 
-import java.math.BigDecimal;
-
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
-
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.adempiere.warehouse.WarehouseId;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_M_InOut;
-import org.compiere.util.Env;
-
 import de.metas.acct.api.IProductAcctDAO;
 import de.metas.adempiere.model.I_C_Order;
+import de.metas.common.util.CoalesceUtil;
+import de.metas.document.DocTypeId;
+import de.metas.document.IDocTypeBL;
+import de.metas.document.dimension.Dimension;
+import de.metas.document.dimension.DimensionService;
 import de.metas.document.engine.DocStatus;
+import de.metas.document.location.DocumentLocation;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoicecandidate.InvoiceCandidateIds;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.compensationGroup.InvoiceCandidateGroupRepository;
 import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
+import de.metas.invoicecandidate.location.adapter.InvoiceCandidateLocationAdapterFactory;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
@@ -58,12 +24,14 @@ import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.PriceAndTax.PriceAndTaxBuilder;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
+import de.metas.lang.SOTrx;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.compensationGroup.Group;
 import de.metas.order.compensationGroup.GroupCompensationAmtType;
 import de.metas.order.compensationGroup.GroupCompensationLine;
 import de.metas.order.compensationGroup.GroupId;
 import de.metas.order.compensationGroup.OrderGroupCompensationUtils;
+import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.InvoicableQtyBasedOn;
@@ -74,17 +42,38 @@ import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxCategoryId;
+import de.metas.tax.api.TaxId;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.common.util.CoalesceUtil;
 import lombok.NonNull;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.warehouse.WarehouseId;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_M_InOut;
+import org.compiere.util.Env;
+
+import java.math.BigDecimal;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
 
 /**
  * Converts {@link I_C_OrderLine} to {@link I_C_Invoice_Candidate}.
  */
 public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 {
+	private final DimensionService dimensionService = SpringContextHolder.instance.getBean(DimensionService.class);
+	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
+
 	/**
 	 * @return <code>false</code>, the candidates will be created by {@link C_Order_Handler}.
 	 */
@@ -112,12 +101,11 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		//
 		// Retrieve order
 		final I_C_OrderLine orderLine = InterfaceWrapperHelper.create(model, I_C_OrderLine.class);
-		final org.compiere.model.I_C_Order order = orderLine.getC_Order();
-		return order;
+		return orderLine.getC_Order();
 	}
 
 	@Override
-	public Iterator<? extends Object> retrieveAllModelsWithMissingCandidates(final int limit)
+	public Iterator<?> retrieveAllModelsWithMissingCandidates(final int limit)
 	{
 		return Services.get(IC_OrderLine_HandlerDAO.class).retrieveMissingOrderLinesQuery(Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
 				.create()
@@ -156,7 +144,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		final int productRecordId = orderLine.getM_Product_ID();
 		icRecord.setM_Product_ID(productRecordId);
 
-		boolean isFreightCostProduct = productBL
+		final boolean isFreightCostProduct = productBL
 				.getProductType(ProductId.ofRepoId(productRecordId))
 				.isFreightCost();
 
@@ -176,12 +164,6 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		icRecord.setQtyToInvoice(BigDecimal.ZERO); // to be computed
 
 		icRecord.setDescription(orderLine.getDescription()); // 03439
-
-		if ( orderLine.getPriceEntered().compareTo( orderLine.getPriceStd() ) == 0)
-		{
-			icRecord.setBase_Commission_Points_Per_Price_UOM( orderLine.getBase_Commission_Points_Per_Price_UOM() );
-			icRecord.setTraded_Commission_Percent( orderLine.getTraded_Commission_Percent() );
-		}
 
 		final I_C_Order order = InterfaceWrapperHelper.create(orderLine.getC_Order(), I_C_Order.class);
 
@@ -208,24 +190,24 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 
 		icRecord.setQtyOrderedOverUnder(orderLine.getQtyOrderedOverUnder());
 
-		// 07442 activity and tax
+		//
+		// Dimension
+		final Dimension orderLineDimension = extractDimension(orderLine);
+		dimensionService.updateRecord(icRecord, orderLineDimension);
 
-		final ActivityId activityId;
-		if (orderLine.getC_Activity_ID() > 0)
+		DocumentLocation orderDeliveryLocation = OrderDocumentLocationAdapterFactory
+				.deliveryLocationAdapter(order)
+				.toDocumentLocation();
+		if(orderDeliveryLocation.getBpartnerLocationId() == null)
 		{
-			// https://github.com/metasfresh/metasfresh/issues/2299
-			activityId = ActivityId.ofRepoId(orderLine.getC_Activity_ID());
+			orderDeliveryLocation = OrderDocumentLocationAdapterFactory
+					.locationAdapter(order)
+					.toDocumentLocation();
 		}
-		else
-		{
-			activityId = Services.get(IProductAcctDAO.class).retrieveActivityForAcct(
-					ClientId.ofRepoId(orderLine.getAD_Client_ID()),
-					OrgId.ofRepoId(orderLine.getAD_Org_ID()),
-					ProductId.ofRepoId(orderLine.getM_Product_ID()));
-		}
-		icRecord.setC_Activity_ID(ActivityId.toRepoId(activityId));
 
-		final int taxId = Services.get(ITaxBL.class).getTax(
+		//
+		// Tax
+		final TaxId taxId = Services.get(ITaxBL.class).getTaxNotNull(
 				ctx,
 				icRecord,
 				TaxCategoryId.ofRepoIdOrNull(orderLine.getC_TaxCategory_ID()),
@@ -233,16 +215,27 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 				order.getDatePromised(), // shipDate
 				OrgId.ofRepoId(order.getAD_Org_ID()),
 				WarehouseId.ofRepoIdOrNull(order.getM_Warehouse_ID()),
-				CoalesceUtil.firstGreaterThanZero(order.getDropShip_Location_ID(), order.getC_BPartner_Location_ID()), // ship location id
-				order.isSOTrx());
-		icRecord.setC_Tax_ID(taxId);
+				orderDeliveryLocation.toBPartnerLocationAndCaptureId(), // ship location id
+				SOTrx.ofBoolean(order.isSOTrx()));
+		icRecord.setC_Tax_ID(TaxId.toRepoId(taxId)); // avoid NPE in tests
 
-		// set Quality Issue Percentage Override
+		//DocType
+		final DocTypeId orderDocTypeId = CoalesceUtil.coalesceSuppliersNotNull(
+				() -> DocTypeId.ofRepoIdOrNull(order.getC_DocType_ID()),
+				() -> DocTypeId.ofRepoId(order.getC_DocTypeTarget_ID()));
+		final I_C_DocType orderDocType = docTypeBL.getById(orderDocTypeId);
+		final DocTypeId invoiceDocTypeId = DocTypeId.ofRepoIdOrNull(orderDocType.getC_DocTypeInvoice_ID());
+		if (invoiceDocTypeId != null)
+		{
+			icRecord.setC_DocTypeInvoice_ID(invoiceDocTypeId.getRepoId());
+		}
 
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(orderLine.getM_AttributeSetInstance_ID());
 		final ImmutableAttributeSet attributes = Services.get(IAttributeDAO.class).getImmutableAttributeSetById(asiId);
 
 		Services.get(IInvoiceCandBL.class).setQualityDiscountPercent_Override(icRecord, attributes);
+
+		icRecord.setC_Async_Batch_ID(order.getC_Async_Batch_ID());
 
 		// Don't save.
 		// That's done by the invoking API-impl, because we want to avoid C_Invoice_Candidate.invalidateCandidates() from being called on every single IC that is created here.
@@ -250,6 +243,20 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		// InterfaceWrapperHelper.save(ic);
 
 		return icRecord;
+	}
+
+	private Dimension extractDimension(final I_C_OrderLine orderLine)
+	{
+		Dimension orderLineDimension = dimensionService.getFromRecord(orderLine);
+		if (orderLineDimension.getActivityId() == null)
+		{
+			final ActivityId activityId = Services.get(IProductAcctDAO.class).retrieveActivityForAcct(
+					ClientId.ofRepoId(orderLine.getAD_Client_ID()),
+					OrgId.ofRepoId(orderLine.getAD_Org_ID()),
+					ProductId.ofRepoId(orderLine.getM_Product_ID()));
+			orderLineDimension = orderLineDimension.withActivityId(activityId);
+		}
+		return orderLineDimension;
 	}
 
 	@Override
@@ -335,7 +342,6 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 	 * "First" means the one with first <code>MovementDate</code> or (if the date)the smallest <code>M_InOut_ID</code>.<br>
 	 * <p>
 	 * If the given ic has no InOut, then <code>QtyDelivered</code>, <code>DeliveryDate</code> and <code>M_InOut_ID</code> are set to <code>null</code>.
-	 *
 	 */
 	@Override
 	public void setDeliveredData(final I_C_Invoice_Candidate icRecord)
@@ -436,9 +442,9 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 	private void setBPartnerData(@NonNull final I_C_Invoice_Candidate ic, @NonNull final org.compiere.model.I_C_OrderLine orderLine)
 	{
 		final org.compiere.model.I_C_Order order = orderLine.getC_Order();
-		ic.setBill_BPartner_ID(order.getBill_BPartner_ID());
-		ic.setBill_Location_ID(order.getBill_Location_ID());
-		ic.setBill_User_ID(order.getBill_User_ID());
+		InvoiceCandidateLocationAdapterFactory
+				.billLocationAdapter(ic)
+				.setFrom(order);
 		ic.setC_BPartner_SalesRep_ID(order.getC_BPartner_SalesRep_ID());
 	}
 
@@ -456,10 +462,6 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		ic.setGroupCompensationPercentage(fromOrderLine.getGroupCompensationPercentage());
 	}
 
-	/**
-	 * Invalidates the candidate(s) referencing the given order line. If {@link IInvoiceCandBL#isChangedByUpdateProcess(I_C_Invoice_Candidate)} returns <code>false</code> for any given candidate, this
-	 * method additionally invalidates all candidates with the same header aggregation key and (depending on invoice schedule) even more dependent candidates.
-	 */
 	@Override
 	public final void invalidateCandidatesFor(final Object model)
 	{

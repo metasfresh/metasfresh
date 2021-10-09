@@ -1,21 +1,18 @@
 package org.eevolution.api.impl;
 
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
-
-import javax.swing.tree.DefaultMutableTreeNode;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.compiere.util.Env;
+import de.metas.product.ProductId;
+import de.metas.util.Services;
 import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.IProductBOMDAO;
 import org.eevolution.exceptions.BOMCycleException;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
 
-import de.metas.product.ProductId;
-import de.metas.util.Services;
+import javax.annotation.Nullable;
+import javax.swing.tree.DefaultMutableTreeNode;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Calculates product's low level code (LLC) and also checks for BOM cycles (it is throwing {@link BOMCycleException} in that case).
@@ -24,7 +21,7 @@ import de.metas.util.Services;
  */
 /* package */class ProductLowLevelCalculator
 {
-	public static final ProductLowLevelCalculator newInstance()
+	public static ProductLowLevelCalculator newInstance()
 	{
 		return new ProductLowLevelCalculator();
 	}
@@ -50,17 +47,14 @@ import de.metas.util.Services;
 	/**
 	 * get an implotion the product
 	 * 
-	 * @param ID Product
-	 * @param ID BOM
 	 * @return DefaultMutableTreeNode Tree with all parent product
 	 */
 	private DefaultMutableTreeNode createParentProductNode(final ProductId productId)
 	{
 		final DefaultMutableTreeNode productNode = new DefaultMutableTreeNode(productId);
 
-		final List<I_PP_Product_BOMLine> productBOMLines = Services.get(IProductBOMDAO.class)
-				.retrieveBOMLinesForProductQuery(Env.getCtx(), productId.getRepoId(), ITrx.TRXNAME_ThreadInherited)
-				.list();
+		final IProductBOMDAO productBOMDAO = Services.get(IProductBOMDAO.class);
+		final List<I_PP_Product_BOMLine> productBOMLines = productBOMDAO.retrieveBOMLinesByComponentIdInTrx(productId);
 
 		boolean first = true;
 		for (final I_PP_Product_BOMLine productBOMLine : productBOMLines)
@@ -89,12 +83,13 @@ import de.metas.util.Services;
 		return productNode;
 	}
 
-	private static final boolean isByOrCoProduct(final I_PP_Product_BOMLine bomLine)
+	private static boolean isByOrCoProduct(final I_PP_Product_BOMLine bomLine)
 	{
 		final BOMComponentType componentType = BOMComponentType.ofCode(bomLine.getComponentType());
 		return componentType.isByOrCoProduct();
 	}
 
+	@Nullable
 	private DefaultMutableTreeNode createParentProductNodeForBOMLine(final I_PP_Product_BOMLine bomLine)
 	{
 		final I_PP_Product_BOM bom = bomLine.getPP_Product_BOM();

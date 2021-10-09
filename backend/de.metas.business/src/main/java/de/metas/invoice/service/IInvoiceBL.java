@@ -1,33 +1,27 @@
 package de.metas.invoice.service;
 
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.time.ZonedDateTime;
-import java.util.List;
-
+import de.metas.adempiere.model.I_C_InvoiceLine;
+import de.metas.bpartner.BPartnerId;
+import de.metas.currency.Amount;
+import de.metas.currency.CurrencyPrecision;
+import de.metas.document.DocTypeId;
+import de.metas.document.ICopyHandler;
+import de.metas.document.ICopyHandlerBL;
+import de.metas.document.IDocCopyHandler;
+import de.metas.document.IDocLineCopyHandler;
+import de.metas.invoice.BPartnerInvoicingInfo;
+import de.metas.invoice.InvoiceCreditContext;
+import de.metas.invoice.InvoiceDocBaseType;
+import de.metas.invoice.InvoiceId;
+import de.metas.lang.SOTrx;
+import de.metas.location.CountryId;
+import de.metas.payment.PaymentRule;
+import de.metas.product.ProductId;
+import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.tax.api.Tax;
+import de.metas.tax.api.TaxCategoryId;
+import de.metas.util.ISingletonService;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.ImmutablePair;
@@ -37,27 +31,16 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.X_C_DocType;
 
-import de.metas.adempiere.model.I_C_InvoiceLine;
-import de.metas.bpartner.BPartnerId;
-import de.metas.currency.CurrencyPrecision;
-import de.metas.document.DocTypeId;
-import de.metas.document.ICopyHandler;
-import de.metas.document.ICopyHandlerBL;
-import de.metas.document.IDocCopyHandler;
-import de.metas.document.IDocLineCopyHandler;
-import de.metas.invoice.BPartnerInvoicingInfo;
-import de.metas.invoice.InvoiceCreditContext;
-import de.metas.invoice.InvoiceId;
-import de.metas.lang.SOTrx;
-import de.metas.payment.PaymentRule;
-import de.metas.product.ProductId;
-import de.metas.quantity.StockQtyAndUOMQty;
-import de.metas.tax.api.TaxCategoryId;
-import de.metas.util.ISingletonService;
-import lombok.NonNull;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
+import java.util.List;
 
 public interface IInvoiceBL extends ISingletonService
 {
+	I_C_Invoice getById(final InvoiceId invoiceId);
+
 	/**
 	 * Copies a given invoice
 	 *
@@ -115,6 +98,12 @@ public interface IInvoiceBL extends ISingletonService
 		return X_C_DocType.DOCBASETYPE_APInvoice.equals(docBaseType)
 				|| X_C_DocType.DOCBASETYPE_APCreditMemo.equals(docBaseType);
 	}
+
+	/**
+	 * @param invoice the invoice to check
+	 * @return true if the given invoice is an Invoice (API or ARI)
+	 */
+	boolean isInvoice(@NonNull I_C_Invoice invoice);
 
 	/**
 	 * @param invoice
@@ -198,7 +187,7 @@ public interface IInvoiceBL extends ISingletonService
 
 	/**
 	 * @param order
-	 * @param C_DocTypeTarget_ID invoice's document type
+	 * @param docTypeTargetId invoice's document type
 	 * @param dateInvoiced may be <code>null</code>
 	 * @param dateAcct may be <code>null</code> (see task 08438)
 	 * @return created invoice
@@ -221,11 +210,9 @@ public interface IInvoiceBL extends ISingletonService
 	/**
 	 * Sets Target Document Type and IsSOTrx.
 	 *
-	 * @param invoice
-	 * @param docBaseType
 	 * @return true if document type found and set
 	 */
-	boolean setDocTypeTargetId(I_C_Invoice invoice, String docBaseType);
+	boolean setDocTypeTargetId(I_C_Invoice invoice, InvoiceDocBaseType docBaseType);
 
 	/**
 	 * Set Target Document Type based on SO flag AP/AP Invoice
@@ -358,7 +345,7 @@ public interface IInvoiceBL extends ISingletonService
 			IDocLineCopyHandler<org.compiere.model.I_C_InvoiceLine> copyhandler);
 
 	/**
-	 * Calls {@link #isTaxIncluded(I_C_Invoice, I_C_Tax)} for the given <code>invoiceLine</code>'s <code>C_Invoice</code> and <code>C_Tax</code>.
+	 * Calls {@link #isTaxIncluded(I_C_Invoice, Tax)} for the given <code>invoiceLine</code>'s <code>C_Invoice</code> and <code>C_Tax</code>.
 	 *
 	 * @param invoiceLine
 	 * @return
@@ -372,7 +359,7 @@ public interface IInvoiceBL extends ISingletonService
 	 * @param tax
 	 * @return if the given <code>tax</code> is not <code>null</code> and if is has {@link I_C_Tax#isWholeTax()} equals <code>true</code>, then true is returned. Otherwise, the given invoice's
 	 */
-	boolean isTaxIncluded(I_C_Invoice invoice, I_C_Tax tax);
+	boolean isTaxIncluded(I_C_Invoice invoice, Tax tax);
 
 	/**
 	 * Supposed to be called if an invoice is reversed. Iterate the given invoice's lines, iterate each line's <code>M_MatchInv</code> and create a reversal M_Matchinv that references the respective
@@ -424,4 +411,16 @@ public interface IInvoiceBL extends ISingletonService
 	 * - set Price_UOM_ID to C_InvoiceLine.C_UOM_ID
 	 */
 	void ensureUOMsAreNotNull(@NonNull InvoiceId invoiceId);
+
+	/**
+	 * 
+	 * @param invoice
+	 * @param discountAmt - the value is not AP corrected. The correction is done inside this function
+	 * @param date
+	 */
+	void discountInvoice(@NonNull I_C_Invoice invoice, @NonNull Amount discountAmt, @NonNull Timestamp date);
+
+	void setInvoiceLineTaxes(@NonNull de.metas.adempiere.model.I_C_Invoice invoice);
+
+	CountryId getFromCountryId(@NonNull I_C_Invoice invoice, @NonNull org.compiere.model.I_C_InvoiceLine invoiceLine);
 }

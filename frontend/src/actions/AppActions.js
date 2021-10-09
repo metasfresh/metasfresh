@@ -1,21 +1,16 @@
 import axios from 'axios';
 import MomentTZ from 'moment-timezone';
 import numeral from 'numeral';
-import { replace } from 'react-router-redux';
 
 import * as types from '../constants/ActionTypes';
 import { setCurrentActiveLocale } from '../utils/locale';
-import { getUserSession } from '../api';
+import {
+  getNotificationsRequest,
+  getNotificationsEndpointRequest,
+  getUserSession,
+} from '../api';
 
 // TODO: All requests should be moved to API
-
-export function getNotifications() {
-  return axios.get(`${config.API_URL}/notifications/all?limit=20`);
-}
-
-export function getNotificationsEndpoint() {
-  return axios.get(`${config.API_URL}/notifications/websocketEndpoint`);
-}
 
 export function markAllAsRead() {
   return axios.put(`${config.API_URL}/notifications/all/read`);
@@ -40,52 +35,6 @@ export function postImageAction(data) {
   return axios
     .post(`${config.API_URL}/image`, data)
     .then((response) => response.data);
-}
-
-export function getKPIsDashboard() {
-  return axios.get(`${config.API_URL}/dashboard/kpis?silentError=true`);
-}
-
-export function getTargetIndicatorsDashboard() {
-  return axios.get(
-    `${config.API_URL}/dashboard/targetIndicators?silentError=true`
-  );
-}
-
-export function getKPIData(id) {
-  return axios.get(
-    `${config.API_URL}/dashboard/kpis/${id}/data?silentError=true`
-  );
-}
-
-export function changeKPIItem(id, path, value) {
-  return axios.patch(`${config.API_URL}/dashboard/kpis/${id}`, [
-    {
-      op: 'replace',
-      path: path,
-      value: value,
-    },
-  ]);
-}
-
-export function changeTargetIndicatorsItem(id, path, value) {
-  return axios.patch(`${config.API_URL}/dashboard/targetIndicators/${id}`, [
-    {
-      op: 'replace',
-      path: path,
-      value: value,
-    },
-  ]);
-}
-
-export function getTargetIndicatorsData(id) {
-  return axios.get(
-    `${config.API_URL}/dashboard/targetIndicators/${id}/data?silentError=true`
-  );
-}
-
-export function setUserDashboardWidgets(payload) {
-  return axios.patch(`${config.API_URL}/dashboard/kpis`, payload);
 }
 
 export function getMessages(lang) {
@@ -122,117 +71,7 @@ function initNumeralLocales(lang, locale) {
   }
 }
 
-export function logoutSuccess(auth) {
-  auth.close();
-  localStorage.removeItem('isLogged');
-}
-
 // REDUX ACTIONS
-
-export function loginSuccess(auth) {
-  return async (dispatch) => {
-    localStorage.setItem('isLogged', true);
-
-    const requests = [];
-
-    requests.push(
-      getUserSession()
-        .then(({ data }) => {
-          dispatch(userSessionInit(data));
-          setCurrentActiveLocale(data.language['key']);
-          initNumeralLocales(data.language['key'], data.locale);
-          MomentTZ.tz.setDefault(data.timeZone);
-
-          auth.initSessionClient(data.websocketEndpoint, (msg) => {
-            const me = JSON.parse(msg.body);
-            dispatch(userSessionUpdate(me));
-            me.language && setCurrentActiveLocale(me.language['key']);
-            me.locale && initNumeralLocales(me.language['key'], me.locale);
-
-            getNotifications().then((response) => {
-              dispatch(
-                getNotificationsSuccess(
-                  response.data.notifications,
-                  response.data.unreadCount
-                )
-              );
-            });
-          });
-        })
-        .catch((e) => e)
-    );
-
-    requests.push(
-      getNotificationsEndpoint()
-        .then((topic) => {
-          auth.initNotificationClient(topic, (msg) => {
-            const notification = JSON.parse(msg.body);
-
-            if (notification.eventType === 'Read') {
-              dispatch(
-                readNotification(
-                  notification.notificationId,
-                  notification.unreadCount
-                )
-              );
-            } else if (notification.eventType === 'ReadAll') {
-              dispatch(readAllNotifications());
-            } else if (notification.eventType === 'Delete') {
-              dispatch(
-                removeNotification(
-                  notification.notificationId,
-                  notification.unreadCount
-                )
-              );
-            } else if (notification.eventType === 'DeleteAll') {
-              dispatch(deleteAllNotifications());
-            } else if (notification.eventType === 'New') {
-              dispatch(
-                newNotification(
-                  notification.notification,
-                  notification.unreadCount
-                )
-              );
-              const notif = notification.notification;
-              if (notif.important) {
-                dispatch(
-                  addNotification(
-                    'Important notification',
-                    notif.message,
-                    5000,
-                    'primary'
-                  )
-                );
-              }
-            }
-          });
-        })
-        .catch((e) => {
-          if (e.response) {
-            let { status } = e.response;
-            if (status === 401) {
-              window.location.href = '/';
-            }
-          }
-        })
-    );
-
-    requests.push(
-      getNotifications()
-        .then((response) => {
-          dispatch(
-            getNotificationsSuccess(
-              response.data.notifications,
-              response.data.unreadCount
-            )
-          );
-        })
-        .catch((e) => e)
-    );
-
-    return await Promise.all(requests);
-  };
-}
 
 export function enableTutorial(flag = true) {
   return {
@@ -277,29 +116,23 @@ export function deleteNotification(key) {
 }
 
 export function clearNotifications() {
-  return {
-    type: types.CLEAR_NOTIFICATIONS,
+  return (dispatch, getState) => {
+    const { appHandler } = getState();
+
+    if (
+      appHandler.inbox.notifications.length === 0 ||
+      appHandler.inbox.pending
+    ) {
+      return;
+    }
+
+    dispatch({ type: types.CLEAR_NOTIFICATIONS });
   };
 }
 
-export function updateUri(pathname, query, prop, value) {
-  return (dispatch) => {
-    let url = pathname + '?';
-
-    // add new prop or overwrite existing
-    query[prop] = value;
-
-    const queryKeys = Object.keys(query);
-
-    for (let i = 0; i < queryKeys.length; i++) {
-      url +=
-        queryKeys[i] +
-        '=' +
-        query[queryKeys[i]] +
-        (queryKeys.length - 1 !== i ? '&' : '');
-    }
-
-    dispatch(replace(url));
+export function requestNotifications() {
+  return {
+    type: types.GET_NOTIFICATIONS_REQUEST,
   };
 }
 
@@ -405,5 +238,108 @@ export function updateHotkeys(hotkeys) {
   return {
     type: types.UPDATE_HOTKEYS,
     payload: hotkeys,
+  };
+}
+
+export function getNotificationsEndpoint(auth) {
+  return (dispatch) => {
+    return getNotificationsEndpointRequest().then((topic) => {
+      auth.initNotificationClient(topic, (msg) => {
+        const notification = JSON.parse(msg.body);
+
+        if (notification.eventType === 'Read') {
+          dispatch(
+            readNotification(
+              notification.notificationId,
+              notification.unreadCount
+            )
+          );
+        } else if (notification.eventType === 'ReadAll') {
+          dispatch(readAllNotifications());
+        } else if (notification.eventType === 'Delete') {
+          dispatch(
+            removeNotification(
+              notification.notificationId,
+              notification.unreadCount
+            )
+          );
+        } else if (notification.eventType === 'DeleteAll') {
+          dispatch(deleteAllNotifications());
+        } else if (notification.eventType === 'New') {
+          dispatch(
+            newNotification(notification.notification, notification.unreadCount)
+          );
+          const notif = notification.notification;
+          if (notif.important) {
+            dispatch(
+              addNotification(
+                'Important notification',
+                notif.message,
+                5000,
+                'primary'
+              )
+            );
+          }
+        }
+      });
+    });
+  };
+}
+
+export function getNotifications() {
+  return (dispatch, getState) => {
+    const state = getState();
+
+    if (state.appHandler.inbox.pending) {
+      return Promise.resolve(true);
+    }
+
+    dispatch(requestNotifications());
+
+    return getNotificationsRequest()
+      .then((response) => {
+        dispatch(
+          getNotificationsSuccess(
+            response.data.notifications,
+            response.data.unreadCount
+          )
+        );
+      })
+      .catch((e) => e);
+  };
+}
+
+export function loginSuccess(auth) {
+  return async (dispatch) => {
+    const requests = [];
+
+    dispatch({ type: types.LOGIN_SUCCESS });
+
+    requests.push(
+      getUserSession()
+        .then(({ data }) => {
+          dispatch(userSessionInit(data));
+
+          setCurrentActiveLocale(data.language['key']);
+          initNumeralLocales(data.language['key'], data.locale);
+          MomentTZ.tz.setDefault(data.timeZone);
+
+          auth.initSessionClient(data.websocketEndpoint, (msg) => {
+            const me = JSON.parse(msg.body);
+            dispatch(userSessionUpdate(me));
+
+            me.language && setCurrentActiveLocale(me.language['key']);
+            me.locale && initNumeralLocales(me.language['key'], me.locale);
+
+            dispatch(getNotifications());
+          });
+        })
+        .catch((e) => e)
+    );
+
+    requests.push(dispatch(getNotificationsEndpoint(auth)));
+    requests.push(dispatch(getNotifications()));
+
+    return await Promise.all(requests);
   };
 }

@@ -7,12 +7,24 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
+import de.metas.common.util.time.SystemTime;
+import de.metas.document.dimension.Dimension;
+import de.metas.document.dimension.DimensionFactory;
+import de.metas.document.dimension.DimensionService;
+import de.metas.document.dimension.OrderLineDimensionFactory;
+import de.metas.i18n.ADMessageAndParams;
+import de.metas.order.impl.OrderLineDetailRepository;
+import de.metas.purchasecandidate.document.dimension.PurchaseCandidateDimensionFactory;
+import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
@@ -26,7 +38,6 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.event.OrderUserNotifications;
-import de.metas.order.event.OrderUserNotifications.ADMessageAndParams;
 import de.metas.order.event.OrderUserNotifications.NotificationRequest;
 import de.metas.order.impl.OrderLineBL;
 import de.metas.order.model.I_C_Order;
@@ -41,7 +52,6 @@ import de.metas.purchasecandidate.VendorProductInfo;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 
 /*
  * #%L
@@ -74,6 +84,8 @@ public class PurchaseOrderFromItemFactoryTest
 
 	private OrderUserNotifications orderUserNotifications;
 
+	private Dimension dimension;
+
 	@BeforeEach
 	public void init()
 	{
@@ -84,18 +96,31 @@ public class PurchaseOrderFromItemFactoryTest
 
 		orderUserNotifications = Mockito.mock(OrderUserNotifications.class);
 
+		dimension = createDimension();
+
 		// mock IOrderLineBL.updatePrices() because setting up the required masterdata and testing the pricing engine is out of scope.
 		final OrderLineBL orderLineBL = new OrderLineBL()
 		{
 			@Override
-			public void updatePrices(I_C_OrderLine orderLine)
+			public void updatePrices(final @NonNull I_C_OrderLine orderLine)
 			{
 				// do nothing
 			}
 		};
 		Services.registerService(IOrderLineBL.class, orderLineBL);
+
+
+		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
+		dimensionFactories.add(new PurchaseCandidateDimensionFactory());
+		dimensionFactories.add(new OrderLineDimensionFactory());
+
+		final DimensionService dimensionService = new DimensionService(dimensionFactories);
+		SpringContextHolder.registerJUnitBean(new DimensionService(dimensionFactories));
+
+		SpringContextHolder.registerJUnitBean(new OrderLineDetailRepository());
 	}
 
+	@SuppressWarnings("SameParameterValue")
 	private I_C_UOM createUOM(final String name)
 	{
 		final I_C_UOM uom = newInstanceOutOfTrx(I_C_UOM.class);
@@ -169,6 +194,7 @@ public class PurchaseOrderFromItemFactoryTest
 				.purchasedQty(deviatingPurchasedQty)
 				.remotePurchaseOrderId("remotePurchaseOrderId")
 				.transactionReference(TableRecordReference.of("tableName", 20))
+				.dimension(dimension)
 				.buildAndAddToParent();
 
 		Services.get(ITrxManager.class).runInNewTrx(() -> {
@@ -236,5 +262,14 @@ public class PurchaseOrderFromItemFactoryTest
 	{
 		return PricingConditions.builder()
 				.build();
+	}
+
+	private Dimension createDimension()
+	{
+		final Dimension dimension = Dimension.builder().
+				userElementString1("test1").
+				build();
+
+				return dimension;
 	}
 }

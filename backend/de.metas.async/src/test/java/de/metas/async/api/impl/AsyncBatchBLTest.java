@@ -1,8 +1,9 @@
 package de.metas.async.api.impl;
 
-import java.sql.Timestamp;
-import java.util.Properties;
-
+import de.metas.async.api.IAsyncBatchBL;
+import de.metas.async.model.I_C_Async_Batch;
+import de.metas.common.util.time.SystemTime;
+import de.metas.util.Services;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
@@ -12,12 +13,8 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.metas.async.api.IAsyncBatchBL;
-import de.metas.async.model.I_C_Async_Batch;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
-import de.metas.util.time.TimeSource;
+import java.sql.Timestamp;
+import java.util.Properties;
 
 public class AsyncBatchBLTest
 {
@@ -36,17 +33,8 @@ public class AsyncBatchBLTest
 
 		this.asyncBatchBL = (AsyncBatchBL)Services.get(IAsyncBatchBL.class);
 
-		this.now = SystemTime.asTimestamp();
-		SystemTime.setTimeSource(new TimeSource()
-		{
-
-			@Override
-			public long millis()
-			{
-				Check.assumeNotNull(now, "now shall be configured first");
-				return now.getTime();
-			}
-		});
+		this.now = de.metas.common.util.time.SystemTime.asTimestamp();
+		SystemTime.setFixedTimeSource(TimeUtil.asZonedDateTime(now));
 	}
 
 	@Test

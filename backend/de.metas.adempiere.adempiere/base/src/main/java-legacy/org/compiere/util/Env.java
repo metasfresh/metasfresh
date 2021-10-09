@@ -16,26 +16,23 @@
  *****************************************************************************/
 package org.compiere.util;
 
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.Window;
-import java.io.File;
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
-import java.util.Date;
-import java.util.Enumeration;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.Set;
-import java.util.function.Predicate;
-
-import javax.annotation.Nullable;
-import javax.swing.JFrame;
-
+import com.google.common.base.Supplier;
+import de.metas.adempiere.form.IClientUI;
+import de.metas.adempiere.model.I_AD_Role;
+import de.metas.cache.CacheMgt;
+import de.metas.common.util.time.SystemTime;
+import de.metas.i18n.ILanguageDAO;
+import de.metas.i18n.Language;
+import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.IUserRolePermissionsDAO;
+import de.metas.security.RoleId;
+import de.metas.security.UserRolePermissionsKey;
+import de.metas.user.UserId;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.IStringExpression;
@@ -57,24 +54,22 @@ import org.slf4j.Logger;
 import org.springframework.boot.SpringApplication;
 import org.springframework.context.ApplicationContext;
 
-import com.google.common.base.Supplier;
-
-import de.metas.adempiere.form.IClientUI;
-import de.metas.adempiere.model.I_AD_Role;
-import de.metas.cache.CacheMgt;
-import de.metas.i18n.ILanguageDAO;
-import de.metas.i18n.Language;
-import de.metas.logging.LogManager;
-import de.metas.organization.OrgId;
-import de.metas.security.IUserRolePermissions;
-import de.metas.security.IUserRolePermissionsDAO;
-import de.metas.security.RoleId;
-import de.metas.security.UserRolePermissionsKey;
-import de.metas.user.UserId;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
-import lombok.NonNull;
+import javax.annotation.Nullable;
+import javax.swing.*;
+import java.awt.*;
+import java.io.File;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.util.Date;
+import java.util.Enumeration;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
+import java.util.function.Predicate;
 
 /**
  * System Environment and static variables.
@@ -316,6 +311,11 @@ public final class Env
 	 * To be used when setting the tabNo in context
 	 */
 	public static final String DYNATTR_TabNo = "TabNo";
+
+	/**
+	 * To be used when setting the current user ID in context
+	 */
+	public static final String DYNATTR_AD_User_ID = "AD_User_ID";
 
 	/**
 	 * Matches any key which is about window context (i.e. starts with "WindowNo|").
@@ -1131,7 +1131,7 @@ public final class Env
 	 *
 	 * @param ctx context
 	 * @param WindowNo window no
-	 * @return true if {@link CTXNAME_IsSOTrx} = <code>Y</code>, false if {@link CTXNAME_IsSOTrx} = <code>N</code> and <code>null</code> if {@link CTXNAME_IsSOTrx} is not set.
+	 * @return true if {@link #CTXNAME_IsSOTrx} = <code>Y</code>, false if {@link #CTXNAME_IsSOTrx} = <code>N</code> and <code>null</code> if {@link #CTXNAME_IsSOTrx} is not set.
 	 * @deprecated Please consider fetching the actual model and then calling it's <code>isSOTrx()</code> method
 	 */
 	@Deprecated
@@ -1178,10 +1178,10 @@ public final class Env
 		if (timestamp == null)
 		{
 			final Timestamp sysDate = SystemTime.asTimestamp();
-			if(!Adempiere.isUnitTestMode())
+			if (!Adempiere.isUnitTestMode())
 			{
 				// metas: tsa: added a dummy exception to be able to track it quickly
-				s_log.error("No value for '{}' or value '{}' could not be parsed. Returning system date: {}", context, timestampStr, sysDate, new Exception("StackTrace"));
+				s_log.warn("No value for '{}' or value '{}' could not be parsed. Returning system date: {}", context, timestampStr, sysDate);
 			}
 			return sysDate;
 		}
@@ -1329,6 +1329,11 @@ public final class Env
 		return RoleId.ofRepoId(getAD_Role_ID(ctx));
 	}
 
+	public static Optional<RoleId> getLoggedRoleIdIfExists(final Properties ctx)
+	{
+		return Optional.ofNullable(RoleId.ofRepoIdOrNull(Env.getContextAsInt(ctx, CTXNAME_AD_Role_ID, -1)));
+	}
+
 	public static RoleId getLoggedRoleId()
 	{
 		return getLoggedRoleId(getCtx());
@@ -1391,12 +1396,11 @@ public final class Env
 	 * </pre>
 	 *
 	 * @param ctx context
-	 * @param AD_Window_ID window no
 	 * @param context Entity to search
 	 * @param system System level preferences (vs. user defined)
 	 * @return preference value
 	 */
-	public static String getPreference(final Properties ctx, final AdWindowId adWindowId, final String context, final boolean system)
+	public static String getPreference(final Properties ctx, @Nullable final AdWindowId adWindowId, final String context, final boolean system)
 	{
 		if (ctx == null || context == null)
 		{
@@ -1532,6 +1536,7 @@ public final class Env
 	 * @param ctx context
 	 * @return AD_Language eg. en_US
 	 */
+	@Nullable
 	public static String getAD_Language(final Properties ctx)
 	{
 		if (ctx != null)
@@ -1562,6 +1567,12 @@ public final class Env
 	public static String getADLanguageOrBaseLanguage()
 	{
 		final String adLanguage = getAD_Language();
+		return adLanguage != null ? adLanguage : Language.getBaseAD_Language();
+	}
+
+	public static String getADLanguageOrBaseLanguage(@NonNull final Properties ctx)
+	{
+		final String adLanguage = getAD_Language(ctx);
 		return adLanguage != null ? adLanguage : Language.getBaseAD_Language();
 	}
 
@@ -2017,6 +2028,13 @@ public final class Env
 	public static final int WINDOW_None = -100;
 	public static final int TAB_None = -100;
 
+	/**
+	 * Note: we only use this internally; by having it as timestamp, we avoid useless conversions between it and {@link LocalDate}
+	 *
+	 * @task 08451
+	 */
+	public static final Timestamp MAX_DATE = Timestamp.valueOf("9999-12-31 23:59:59");
+
 	// /* package */ static final String NoValue = "";
 
 	/** Marker used to flag a NULL ID */
@@ -2190,7 +2208,7 @@ public final class Env
 			if (Services.get(ISysConfigBL.class).getBooleanValue("LOGINDATE_AUTOUPDATE", false, Env.getAD_Client_ID(ctx)) == true)
 			{
 				// Note: we keep these conditions in 2 inner IFs because we want to avoid infinite recursion
-				value = toString(SystemTime.asDayTimestamp());
+				value = toString(de.metas.common.util.time.SystemTime.asDayTimestamp());
 				setProperty(ctx, context, value);
 			}
 		}
@@ -2281,7 +2299,6 @@ public final class Env
 	/**
 	 * Convert given timestamp to string.
 	 *
-	 * @param timestamp
 	 * @return timestamp as string (JDBC Format 2005-05-09 00:00:00, without nanos) or <code>null</code> if timestamp was null
 	 * @see #parseTimestamp(String)
 	 */
@@ -2313,11 +2330,10 @@ public final class Env
 	 *
 	 * @param timestampStr Timestamp string representation (JDBC format)
 	 * @return Timestamp or <code>null</code> if value is empty
-	 * @see #toString(Timestamp)
 	 */
 	public static Timestamp parseTimestamp(@Nullable final String timestampStr)
 	{
-		if (Check.isEmpty(timestampStr, true) || isPropertyValueNull(timestampStr))
+		if (Check.isBlank(timestampStr) || isPropertyValueNull(timestampStr))
 		{
 			return null;
 		}
@@ -2338,7 +2354,10 @@ public final class Env
 			// ignore exception
 		}
 
-		throw new AdempiereException("Failed converting '" + timestampStr + "' to " + Timestamp.class);
+		throw new AdempiereException("Failed converting `" + timestampStr + "` to " + Timestamp.class + "."
+				+ "\nExpected following formats:"
+				+ "\n1. JDBC format"
+				+ "\n2. ISO8601 format: `" + DATE_PATTEN + "`, e.g. " + de.metas.common.util.time.SystemTime.asZonedDateTime().format(DATE_FORMAT));
 	}
 
 	private static Timestamp parseTimestampUsingJDBCFormatOrNull(@NonNull final String timestampStr)
@@ -2488,8 +2507,6 @@ public final class Env
 
 	/**
 	 * Helper method to bind <code>@Autowire</code> annotated properties of given bean using current Spring Application Context.
-	 *
-	 * @param bean
 	 */
 	public static void autowireBean(final Object bean)
 	{
@@ -2497,9 +2514,18 @@ public final class Env
 	}
 
 	/**
+	 * Gets Login/System date using the current context
+	 *
+	 * @return login/system date; never return null
+	 */
+	public static Timestamp getDate()
+	{
+		return getContextAsDate(getCtx(), WINDOW_MAIN, CTXNAME_Date);
+	}
+
+	/**
 	 * Gets Login/System date
 	 *
-	 * @param ctx
 	 * @return login/system date; never return null
 	 */
 	public static Timestamp getDate(final Properties ctx)

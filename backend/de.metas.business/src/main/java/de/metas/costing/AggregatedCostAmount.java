@@ -12,6 +12,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.AcctSchemaCosting;
 import de.metas.util.Check;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -110,7 +111,8 @@ public final class AggregatedCostAmount
 
 	public CostAmount getTotalAmountToPost(@NonNull final AcctSchema as)
 	{
-		return getTotalAmount(as.getCosting().getCostingMethod(), as.getCosting().getPostOnlyCostElementIds())
+		final AcctSchemaCosting acctSchemaCosting = as.getCosting();
+		return getTotalAmount(acctSchemaCosting.getCostingMethod(), acctSchemaCosting.getPostOnlyCostElementIds())
 				.orElseGet(() -> CostAmount.zero(as.getCurrencyId()));
 	}
 

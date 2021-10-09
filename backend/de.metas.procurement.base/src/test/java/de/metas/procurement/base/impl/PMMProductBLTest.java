@@ -4,6 +4,9 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Date;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.product.ProductId;
+import lombok.NonNull;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
@@ -32,7 +35,10 @@ import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.procurement.base.IPMMProductBL;
 import de.metas.procurement.base.model.I_PMM_Product;
+import de.metas.uom.X12DE355;
 import de.metas.util.Services;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -125,8 +131,8 @@ public class PMMProductBLTest
 
 		final I_PMM_Product pmmProductActual = Services.get(IPMMProductBL.class).getPMMProductForDateProductAndASI(
 				date,
-				product1.getM_Product_ID(),
-				partner1.getC_BPartner_ID(),
+				ProductId.ofRepoId(product1.getM_Product_ID()),
+				BPartnerId.ofRepoIdOrNull(partner1.getC_BPartner_ID()),
 				hupip1.getM_HU_PI_Item_Product_ID(),
 				asi2);
 
@@ -171,8 +177,8 @@ public class PMMProductBLTest
 
 		final I_PMM_Product pmmProductActual = Services.get(IPMMProductBL.class).getPMMProductForDateProductAndASI(
 				date,
-				product1.getM_Product_ID(),
-				partner1.getC_BPartner_ID(),
+				ProductId.ofRepoId(product1.getM_Product_ID()),
+				BPartnerId.ofRepoIdOrNull(partner1.getC_BPartner_ID()),
 				hupip1.getM_HU_PI_Item_Product_ID(),
 				asi2);
 
@@ -223,8 +229,8 @@ public class PMMProductBLTest
 
 		final I_PMM_Product pmmProductActual = Services.get(IPMMProductBL.class).getPMMProductForDateProductAndASI(
 				date,
-				product1.getM_Product_ID(),
-				partner1.getC_BPartner_ID(),
+				ProductId.ofRepoId(product1.getM_Product_ID()),
+				BPartnerId.ofRepoIdOrNull(partner1.getC_BPartner_ID()),
 				hupip1.getM_HU_PI_Item_Product_ID(),
 				asi1);
 
@@ -275,8 +281,8 @@ public class PMMProductBLTest
 
 		final I_PMM_Product pmmProductActual = Services.get(IPMMProductBL.class).getPMMProductForDateProductAndASI(
 				date,
-				product1.getM_Product_ID(),
-				partner1.getC_BPartner_ID(),
+				ProductId.ofRepoId(product1.getM_Product_ID()),
+				BPartnerId.ofRepoIdOrNull(partner1.getC_BPartner_ID()),
 				hupip1.getM_HU_PI_Item_Product_ID(),
 				asi2);
 
@@ -342,8 +348,8 @@ public class PMMProductBLTest
 
 		I_PMM_Product pmmProductActual = Services.get(IPMMProductBL.class).getPMMProductForDateProductAndASI(
 				date,
-				product1.getM_Product_ID(),
-				partner1.getC_BPartner_ID(),
+				ProductId.ofRepoId(product1.getM_Product_ID()),
+				BPartnerId.ofRepoIdOrNull(partner1.getC_BPartner_ID()),
 				hupip1.getM_HU_PI_Item_Product_ID(),
 				asi1);
 
@@ -358,8 +364,8 @@ public class PMMProductBLTest
 
 		pmmProductActual = Services.get(IPMMProductBL.class).getPMMProductForDateProductAndASI(
 				date,
-				product1.getM_Product_ID(),
-				partner1.getC_BPartner_ID(),
+				ProductId.ofRepoId(product1.getM_Product_ID()),
+				BPartnerId.ofRepoIdOrNull(partner1.getC_BPartner_ID()),
 				hupip1.getM_HU_PI_Item_Product_ID(),
 				asi1);
 
@@ -375,9 +381,8 @@ public class PMMProductBLTest
 		final I_M_HU_PI piTU = createHUDefinition(tuName, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
 
 		final I_M_HU_PI_Item piTU_Item = createHU_PI_Item_Material(piTU);
-		final I_M_HU_PI_Item_Product hupip = assignProduct(piTU_Item, product, capacity, productUOM, null);
 
-		return hupip;
+		return assignProduct(piTU_Item, product, capacity, productUOM, null);
 
 	}
 
@@ -497,7 +502,7 @@ public class PMMProductBLTest
 		uom.setStdPrecision(3);
 		uom.setCostingPrecision(0);
 
-		uom.setX12DE355("KGM");
+		uom.setX12DE355(X12DE355.KILOGRAM.getCode());
 
 		InterfaceWrapperHelper.save(uom);
 
@@ -516,7 +521,12 @@ public class PMMProductBLTest
 		return piItem;
 	}
 
-	public I_M_HU_PI_Item_Product assignProduct(final I_M_HU_PI_Item itemPI, final I_M_Product product, final BigDecimal qty, final I_C_UOM uom, final I_C_BPartner bpartner)
+	public I_M_HU_PI_Item_Product assignProduct(
+			final I_M_HU_PI_Item itemPI,
+			@Nullable final I_M_Product product,
+			final BigDecimal qty,
+			@NonNull final I_C_UOM uom,
+			@Nullable final I_C_BPartner bpartner)
 	{
 		final I_M_HU_PI_Item_Product itemDefProduct = InterfaceWrapperHelper.newInstance(I_M_HU_PI_Item_Product.class, itemPI);
 		itemDefProduct.setM_HU_PI_Item(itemPI);

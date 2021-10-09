@@ -1,17 +1,6 @@
 package de.metas.document.sequence.impl;
 
-import java.util.Date;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
-import org.compiere.model.I_C_DocType;
-import org.compiere.model.MSequence;
-import org.compiere.util.Env;
-
+import de.metas.common.util.CoalesceUtil;
 import de.metas.document.DocTypeSequenceMap;
 import de.metas.document.DocumentNoBuilderException;
 import de.metas.document.DocumentSequenceInfo;
@@ -20,7 +9,18 @@ import de.metas.document.sequence.DocSequenceId;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.common.util.CoalesceUtil;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.compiere.model.I_C_DocType;
+import org.compiere.model.MSequence;
+import org.compiere.util.Env;
+
+import javax.annotation.Nullable;
+import java.util.Date;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /*
  * #%L
@@ -257,7 +257,7 @@ import de.metas.common.util.CoalesceUtil;
 	}
 
 	@Override
-	public IPreliminaryDocumentNoBuilder setNewDocType(final I_C_DocType newDocType)
+	public IPreliminaryDocumentNoBuilder setNewDocType(@Nullable final I_C_DocType newDocType)
 	{
 		assertNotBuilt();
 		_newDocType = newDocType;

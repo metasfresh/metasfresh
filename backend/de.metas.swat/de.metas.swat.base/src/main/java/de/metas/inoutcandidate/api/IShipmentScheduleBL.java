@@ -22,15 +22,23 @@ package de.metas.inoutcandidate.api;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.time.ZonedDateTime;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.Set;
-
+import com.google.common.collect.ImmutableList;
+import de.metas.async.AsyncBatchId;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
+import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inoutcandidate.api.impl.ShipmentScheduleHeaderAggregationKeyBuilder;
+import de.metas.inoutcandidate.async.CreateMissingShipmentSchedulesWorkpackageProcessor;
+import de.metas.inoutcandidate.exportaudit.APIExportStatus;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.process.PInstanceId;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import de.metas.storage.IStorageQuery;
+import de.metas.uom.UomId;
+import de.metas.util.ISingletonService;
+import lombok.NonNull;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -38,18 +46,10 @@ import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOut;
 
-import com.google.common.collect.ImmutableList;
-
-import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
-import de.metas.inoutcandidate.api.impl.ShipmentScheduleHeaderAggregationKeyBuilder;
-import de.metas.inoutcandidate.async.CreateMissingShipmentSchedulesWorkpackageProcessor;
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.product.ProductId;
-import de.metas.quantity.Quantity;
-import de.metas.storage.IStorageQuery;
-import de.metas.uom.UomId;
-import de.metas.util.ISingletonService;
+import java.time.ZonedDateTime;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 
 public interface IShipmentScheduleBL extends ISingletonService
 {
@@ -73,12 +73,7 @@ public interface IShipmentScheduleBL extends ISingletonService
 	 */
 	IAutoCloseable postponeMissingSchedsCreationUntilClose();
 
-	/**
-	 * Updates the given shipment schedule's {@link I_M_ShipmentSchedule#COLUMNNAME_BPartnerAddress_Override} field
-	 *
-	 * @param sched
-	 */
-	void updateBPArtnerAddressOverrideIfNotYetSet(I_M_ShipmentSchedule sched);
+	void updateCapturedLocationsAndRenderedAddresses(I_M_ShipmentSchedule sched);
 
 	/**
 	 * Returns the UOM of QtyOrdered, QtyToDeliver, QtyPicked etc (i.e. the stock UOM)
@@ -91,9 +86,6 @@ public interface IShipmentScheduleBL extends ISingletonService
 	 * Evaluates if the given shipment schedule's order and effective bPartner allow that different orders' schedules to go into one and the same shipment.
 	 * <p>
 	 * <b>IMPORTANT</b> this column does not evaluate the actual schedule's own {@link I_M_ShipmentSchedule#isAllowConsolidateInOut()} value. As of now, that flag is only for the user's information.
-	 *
-	 * @param sched
-	 * @return
 	 */
 	boolean isSchedAllowsConsolidate(I_M_ShipmentSchedule sched);
 
@@ -108,12 +100,10 @@ public interface IShipmentScheduleBL extends ISingletonService
 	 * If the given <code>shipmentSchedule</code> has its {@link I_M_ShipmentSchedule#COLUMN_QtyOrdered_Override QtyOrdered_Override} set, then override its <code>QtyOrdered</code> value with it. If
 	 * QtyOrdered_Override is <code>null</code>, then reset <code>QtyOrdered</code> to the value of <code>QtyOrdered_Calculated</code>.
 	 *
-	 * @param shipmentSchedule
-	 * @return the previous <code>QtyOrdered</code> value of the schedule
-	 *         <li>NOTE: This returned value is never used. Maybe we shall change this method to return void.
-	 * @task 08255
+	 * Task 08255
+	 *
 	 */
-	BigDecimal updateQtyOrdered(I_M_ShipmentSchedule shipmentSchedule);
+	void updateQtyOrdered(I_M_ShipmentSchedule shipmentSchedule);
 
 	/**
 	 * Close the given Shipment Schedule.
@@ -121,6 +111,8 @@ public interface IShipmentScheduleBL extends ISingletonService
 	 * Closing a shipment schedule means overriding its QtyOrdered to the qty which was already delivered.
 	 */
 	void closeShipmentSchedule(I_M_ShipmentSchedule schedule);
+
+	void closeShipmentSchedule(ShipmentScheduleId shipmentScheduleId);
 
 	/**
 	 * Reopen the closed shipment schedule given as parameter
@@ -151,11 +143,15 @@ public interface IShipmentScheduleBL extends ISingletonService
 
 	I_M_ShipmentSchedule getById(ShipmentScheduleId id);
 
+	Map<ShipmentScheduleId,I_M_ShipmentSchedule> getByIds(Set<ShipmentScheduleId> ids);
+
 	Map<ShipmentScheduleId, I_M_ShipmentSchedule> getByIdsOutOfTrx(Set<ShipmentScheduleId> ids);
 
 	<T extends I_M_ShipmentSchedule> Map<ShipmentScheduleId, T> getByIdsOutOfTrx(Set<ShipmentScheduleId> ids, Class<T> modelType);
 
 	BPartnerId getBPartnerId(I_M_ShipmentSchedule schedule);
+
+	BPartnerLocationId getBPartnerLocationId(I_M_ShipmentSchedule schedule);
 
 	WarehouseId getWarehouseId(I_M_ShipmentSchedule schedule);
 
@@ -169,10 +165,26 @@ public interface IShipmentScheduleBL extends ISingletonService
 
 	IAttributeSetInstanceAware toAttributeSetInstanceAware(I_M_ShipmentSchedule shipmentSchedule);
 
+	void applyShipmentScheduleChanges(ApplyShipmentScheduleChangesRequest request);
+
+	boolean isDoNotInvalidateOnChange(@NonNull I_M_ShipmentSchedule sched);
+
 	/**
 	 * Close linked shipment schedules if they were partially invoiced
 	 * Note: This behavior is determined by the value of the sys config {@code M_ShipmentSchedule_Close_PartiallyInvoice}.
 	 * The scheds will be closed only if the sys config is set to 'Y'
 	 */
 	void closePartiallyShipped_ShipmentSchedules(I_M_InOut inoutRecord);
+
+	void updateExportStatus(@NonNull I_M_ShipmentSchedule schedRecord);
+
+	void updateCanBeExportedAfter(@NonNull final I_M_ShipmentSchedule schedRecord);
+
+	Quantity getQtyOrdered(I_M_ShipmentSchedule shipmentScheduleRecord);
+
+	Quantity getQtyDelivered(I_M_ShipmentSchedule shipmentScheduleRecord);
+
+	void updateExportStatus(@NonNull final APIExportStatus newExportStatus, @NonNull final PInstanceId pinstanceId);
+
+	void setAsyncBatch(ShipmentScheduleId shipmentScheduleId, AsyncBatchId asyncBatchId);
 }

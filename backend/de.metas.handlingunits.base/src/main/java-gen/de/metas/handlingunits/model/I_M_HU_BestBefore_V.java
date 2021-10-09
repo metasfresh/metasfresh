@@ -1,90 +1,79 @@
 package de.metas.handlingunits.model;
 
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for M_HU_BestBefore_V
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public interface I_M_HU_BestBefore_V 
 {
 
-    /** TableName=M_HU_BestBefore_V */
-    public static final String Table_Name = "M_HU_BestBefore_V";
+	String Table_Name = "M_HU_BestBefore_V";
 
-    /** AD_Table_ID=540942 */
-//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=540942 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 3 - Client - Org
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
-
-    /** Load Meta Data */
 
 	/**
-	 * Get Mandant.
-	 * Mandant für diese Installation.
+	 * Get Client.
+	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Client_ID();
+	int getAD_Client_ID();
 
-    /** Column name AD_Client_ID */
-    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Set Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Org_ID (int AD_Org_ID);
+	void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Get Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Org_ID();
+	int getAD_Org_ID();
 
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Get Erstellt.
-	 * Datum, an dem dieser Eintrag erstellt wurde
+	 * Get Created.
+	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getCreated();
+	@Nullable java.sql.Timestamp getCreated();
 
-    /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_BestBefore_V, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_M_HU_BestBefore_V, Object>(I_M_HU_BestBefore_V.class, "Created", null);
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
+	ModelColumn<I_M_HU_BestBefore_V, Object> COLUMN_Created = new ModelColumn<>(I_M_HU_BestBefore_V.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Erstellt durch.
-	 * Nutzer, der diesen Eintrag erstellt hat
+	 * Get Created By.
+	 * User who created this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getCreatedBy();
+	int getCreatedBy();
 
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
 	 * Set Min. Garantie-Tage.
@@ -94,7 +83,7 @@ public interface I_M_HU_BestBefore_V
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setGuaranteeDaysMin (int GuaranteeDaysMin);
+	void setGuaranteeDaysMin (int GuaranteeDaysMin);
 
 	/**
 	 * Get Min. Garantie-Tage.
@@ -104,35 +93,31 @@ public interface I_M_HU_BestBefore_V
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getGuaranteeDaysMin();
+	int getGuaranteeDaysMin();
 
-    /** Column definition for GuaranteeDaysMin */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_BestBefore_V, Object> COLUMN_GuaranteeDaysMin = new org.adempiere.model.ModelColumn<I_M_HU_BestBefore_V, Object>(I_M_HU_BestBefore_V.class, "GuaranteeDaysMin", null);
-    /** Column name GuaranteeDaysMin */
-    public static final String COLUMNNAME_GuaranteeDaysMin = "GuaranteeDaysMin";
+	ModelColumn<I_M_HU_BestBefore_V, Object> COLUMN_GuaranteeDaysMin = new ModelColumn<>(I_M_HU_BestBefore_V.class, "GuaranteeDaysMin", null);
+	String COLUMNNAME_GuaranteeDaysMin = "GuaranteeDaysMin";
 
 	/**
-	 * Set Best Before Date.
+	 * Set HU best before date.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setHU_BestBeforeDate (java.sql.Timestamp HU_BestBeforeDate);
+	void setHU_BestBeforeDate (@Nullable java.sql.Timestamp HU_BestBeforeDate);
 
 	/**
-	 * Get Best Before Date.
+	 * Get HU best before date.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getHU_BestBeforeDate();
+	@Nullable java.sql.Timestamp getHU_BestBeforeDate();
 
-    /** Column definition for HU_BestBeforeDate */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_BestBefore_V, Object> COLUMN_HU_BestBeforeDate = new org.adempiere.model.ModelColumn<I_M_HU_BestBefore_V, Object>(I_M_HU_BestBefore_V.class, "HU_BestBeforeDate", null);
-    /** Column name HU_BestBeforeDate */
-    public static final String COLUMNNAME_HU_BestBeforeDate = "HU_BestBeforeDate";
+	ModelColumn<I_M_HU_BestBefore_V, Object> COLUMN_HU_BestBeforeDate = new ModelColumn<>(I_M_HU_BestBefore_V.class, "HU_BestBeforeDate", null);
+	String COLUMNNAME_HU_BestBeforeDate = "HU_BestBeforeDate";
 
 	/**
 	 * Set Expired.
@@ -141,7 +126,7 @@ public interface I_M_HU_BestBefore_V
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setHU_Expired (java.lang.String HU_Expired);
+	void setHU_Expired (@Nullable java.lang.String HU_Expired);
 
 	/**
 	 * Get Expired.
@@ -150,60 +135,54 @@ public interface I_M_HU_BestBefore_V
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getHU_Expired();
+	@Nullable java.lang.String getHU_Expired();
 
-    /** Column definition for HU_Expired */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_BestBefore_V, Object> COLUMN_HU_Expired = new org.adempiere.model.ModelColumn<I_M_HU_BestBefore_V, Object>(I_M_HU_BestBefore_V.class, "HU_Expired", null);
-    /** Column name HU_Expired */
-    public static final String COLUMNNAME_HU_Expired = "HU_Expired";
+	ModelColumn<I_M_HU_BestBefore_V, Object> COLUMN_HU_Expired = new ModelColumn<>(I_M_HU_BestBefore_V.class, "HU_Expired", null);
+	String COLUMNNAME_HU_Expired = "HU_Expired";
 
 	/**
-	 * Set Expiring Warning Date.
+	 * Set hu_expiredwarndate.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setHU_ExpiredWarnDate (java.sql.Timestamp HU_ExpiredWarnDate);
+	void setHU_ExpiredWarnDate (@Nullable java.sql.Timestamp HU_ExpiredWarnDate);
 
 	/**
-	 * Get Expiring Warning Date.
+	 * Get hu_expiredwarndate.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getHU_ExpiredWarnDate();
+	@Nullable java.sql.Timestamp getHU_ExpiredWarnDate();
 
-    /** Column definition for HU_ExpiredWarnDate */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_BestBefore_V, Object> COLUMN_HU_ExpiredWarnDate = new org.adempiere.model.ModelColumn<I_M_HU_BestBefore_V, Object>(I_M_HU_BestBefore_V.class, "HU_ExpiredWarnDate", null);
-    /** Column name HU_ExpiredWarnDate */
-    public static final String COLUMNNAME_HU_ExpiredWarnDate = "HU_ExpiredWarnDate";
+	ModelColumn<I_M_HU_BestBefore_V, Object> COLUMN_HU_ExpiredWarnDate = new ModelColumn<>(I_M_HU_BestBefore_V.class, "HU_ExpiredWarnDate", null);
+	String COLUMNNAME_HU_ExpiredWarnDate = "HU_ExpiredWarnDate";
 
 	/**
-	 * Set Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Set Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setIsActive (boolean IsActive);
+	void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Get Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public boolean isActive();
+	boolean isActive();
 
-    /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_BestBefore_V, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_M_HU_BestBefore_V, Object>(I_M_HU_BestBefore_V.class, "IsActive", null);
-    /** Column name IsActive */
-    public static final String COLUMNNAME_IsActive = "IsActive";
+	ModelColumn<I_M_HU_BestBefore_V, Object> COLUMN_IsActive = new ModelColumn<>(I_M_HU_BestBefore_V.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
 	 * Set Handling Unit.
@@ -212,7 +191,7 @@ public interface I_M_HU_BestBefore_V
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setM_HU_ID (int M_HU_ID);
+	void setM_HU_ID (int M_HU_ID);
 
 	/**
 	 * Get Handling Unit.
@@ -221,38 +200,33 @@ public interface I_M_HU_BestBefore_V
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getM_HU_ID();
+	int getM_HU_ID();
 
-    /** Column definition for M_HU_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_BestBefore_V, de.metas.handlingunits.model.I_M_HU> COLUMN_M_HU_ID = new org.adempiere.model.ModelColumn<I_M_HU_BestBefore_V, de.metas.handlingunits.model.I_M_HU>(I_M_HU_BestBefore_V.class, "M_HU_ID", de.metas.handlingunits.model.I_M_HU.class);
-    /** Column name M_HU_ID */
-    public static final String COLUMNNAME_M_HU_ID = "M_HU_ID";
+	ModelColumn<I_M_HU_BestBefore_V, de.metas.handlingunits.model.I_M_HU> COLUMN_M_HU_ID = new ModelColumn<>(I_M_HU_BestBefore_V.class, "M_HU_ID", de.metas.handlingunits.model.I_M_HU.class);
+	String COLUMNNAME_M_HU_ID = "M_HU_ID";
 
 	/**
-	 * Get Aktualisiert.
-	 * Datum, an dem dieser Eintrag aktualisiert wurde
+	 * Get Updated.
+	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getUpdated();
+	@Nullable java.sql.Timestamp getUpdated();
 
-    /** Column definition for Updated */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_BestBefore_V, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_M_HU_BestBefore_V, Object>(I_M_HU_BestBefore_V.class, "Updated", null);
-    /** Column name Updated */
-    public static final String COLUMNNAME_Updated = "Updated";
+	ModelColumn<I_M_HU_BestBefore_V, Object> COLUMN_Updated = new ModelColumn<>(I_M_HU_BestBefore_V.class, "Updated", null);
+	String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Aktualisiert durch.
-	 * Nutzer, der diesen Eintrag aktualisiert hat
+	 * Get Updated By.
+	 * User who updated this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getUpdatedBy();
+	int getUpdatedBy();
 
-    /** Column name UpdatedBy */
-    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 }

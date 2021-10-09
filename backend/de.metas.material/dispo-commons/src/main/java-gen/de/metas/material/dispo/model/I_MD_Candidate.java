@@ -1,83 +1,127 @@
 package de.metas.material.dispo.model;
 
+import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for MD_Candidate
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated)
  */
-@SuppressWarnings("javadoc")
-public interface I_MD_Candidate 
+@SuppressWarnings("unused")
+public interface I_MD_Candidate
 {
 
-    /** TableName=MD_Candidate */
-    public static final String Table_Name = "MD_Candidate";
+	String Table_Name = "MD_Candidate";
 
-    /** AD_Table_ID=540808 */
-//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+	//	/** AD_Table_ID=540808 */
+	//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 1 - Org
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(1);
-
-    /** Load Meta Data */
 
 	/**
-	 * Get Mandant.
-	 * Mandant für diese Installation.
+	 * Get Client.
+	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Client_ID();
+	int getAD_Client_ID();
 
-    /** Column name AD_Client_ID */
-    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Set Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Org_ID (int AD_Org_ID);
+	void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Get Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Org_ID();
+	int getAD_Org_ID();
 
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Kunde.
+	 * Set Activity.
+	 * Business Activity
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setC_BPartner_Customer_ID (int C_BPartner_Customer_ID);
+	void setC_Activity_ID (int C_Activity_ID);
 
 	/**
-	 * Get Kunde.
+	 * Get Activity.
+	 * Business Activity
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getC_BPartner_Customer_ID();
+	int getC_Activity_ID();
 
-    /** Column name C_BPartner_Customer_ID */
-    public static final String COLUMNNAME_C_BPartner_Customer_ID = "C_BPartner_Customer_ID";
+	String COLUMNNAME_C_Activity_ID = "C_Activity_ID";
+
+	/**
+	 * Set Business Partner .
+	 * Identifies a Business Partner
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_BPartner_Customer_ID (int C_BPartner_Customer_ID);
+
+	/**
+	 * Get Business Partner .
+	 * Identifies a Business Partner
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_BPartner_Customer_ID();
+
+	String COLUMNNAME_C_BPartner_Customer_ID = "C_BPartner_Customer_ID";
+
+	/**
+	 * Set Campaign.
+	 * Marketing Campaign
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Campaign_ID (int C_Campaign_ID);
+
+	/**
+	 * Get Campaign.
+	 * Marketing Campaign
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Campaign_ID();
+
+	@Nullable org.compiere.model.I_C_Campaign getC_Campaign();
+
+	void setC_Campaign(@Nullable org.compiere.model.I_C_Campaign C_Campaign);
+
+	ModelColumn<I_MD_Candidate, org.compiere.model.I_C_Campaign> COLUMN_C_Campaign_ID = new ModelColumn<>(I_MD_Candidate.class, "C_Campaign_ID", org.compiere.model.I_C_Campaign.class);
+	String COLUMNNAME_C_Campaign_ID = "C_Campaign_ID";
 
 	/**
 	 * Set Auftrag.
@@ -87,7 +131,7 @@ public interface I_MD_Candidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setC_OrderSO_ID (int C_OrderSO_ID);
+	void setC_OrderSO_ID (int C_OrderSO_ID);
 
 	/**
 	 * Get Auftrag.
@@ -97,44 +141,61 @@ public interface I_MD_Candidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getC_OrderSO_ID();
+	int getC_OrderSO_ID();
 
-	public org.compiere.model.I_C_Order getC_OrderSO();
+	@Nullable org.compiere.model.I_C_Order getC_OrderSO();
 
-	public void setC_OrderSO(org.compiere.model.I_C_Order C_OrderSO);
+	void setC_OrderSO(@Nullable org.compiere.model.I_C_Order C_OrderSO);
 
-    /** Column definition for C_OrderSO_ID */
-    public static final org.adempiere.model.ModelColumn<I_MD_Candidate, org.compiere.model.I_C_Order> COLUMN_C_OrderSO_ID = new org.adempiere.model.ModelColumn<I_MD_Candidate, org.compiere.model.I_C_Order>(I_MD_Candidate.class, "C_OrderSO_ID", org.compiere.model.I_C_Order.class);
-    /** Column name C_OrderSO_ID */
-    public static final String COLUMNNAME_C_OrderSO_ID = "C_OrderSO_ID";
+	ModelColumn<I_MD_Candidate, org.compiere.model.I_C_Order> COLUMN_C_OrderSO_ID = new ModelColumn<>(I_MD_Candidate.class, "C_OrderSO_ID", org.compiere.model.I_C_Order.class);
+	String COLUMNNAME_C_OrderSO_ID = "C_OrderSO_ID";
 
 	/**
-	 * Get Erstellt.
-	 * Datum, an dem dieser Eintrag erstellt wurde
+	 * Set Project.
+	 * Financial Project
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Project_ID (int C_Project_ID);
+
+	/**
+	 * Get Project.
+	 * Financial Project
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Project_ID();
+
+	String COLUMNNAME_C_Project_ID = "C_Project_ID";
+
+	/**
+	 * Get Created.
+	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getCreated();
+	java.sql.Timestamp getCreated();
 
-    /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_MD_Candidate, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_MD_Candidate, Object>(I_MD_Candidate.class, "Created", null);
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
+	ModelColumn<I_MD_Candidate, Object> COLUMN_Created = new ModelColumn<>(I_MD_Candidate.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Erstellt durch.
-	 * Nutzer, der diesen Eintrag erstellt hat
+	 * Get Created By.
+	 * User who created this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getCreatedBy();
+	int getCreatedBy();
 
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
 	 * Set Plandatum.
@@ -143,7 +204,7 @@ public interface I_MD_Candidate
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setDateProjected (java.sql.Timestamp DateProjected);
+	void setDateProjected (java.sql.Timestamp DateProjected);
 
 	/**
 	 * Get Plandatum.
@@ -152,89 +213,194 @@ public interface I_MD_Candidate
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getDateProjected();
+	java.sql.Timestamp getDateProjected();
 
-    /** Column definition for DateProjected */
-    public static final org.adempiere.model.ModelColumn<I_MD_Candidate, Object> COLUMN_DateProjected = new org.adempiere.model.ModelColumn<I_MD_Candidate, Object>(I_MD_Candidate.class, "DateProjected", null);
-    /** Column name DateProjected */
-    public static final String COLUMNNAME_DateProjected = "DateProjected";
+	ModelColumn<I_MD_Candidate, Object> COLUMN_DateProjected = new ModelColumn<>(I_MD_Candidate.class, "DateProjected", null);
+	String COLUMNNAME_DateProjected = "DateProjected";
 
 	/**
-	 * Set Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Set Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsActive (boolean IsActive);
+	void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Get Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isActive();
+	boolean isActive();
 
-    /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_MD_Candidate, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_MD_Candidate, Object>(I_MD_Candidate.class, "IsActive", null);
-    /** Column name IsActive */
-    public static final String COLUMNNAME_IsActive = "IsActive";
+	ModelColumn<I_MD_Candidate, Object> COLUMN_IsActive = new ModelColumn<>(I_MD_Candidate.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Merkmale.
-	 * Merkmals Ausprägungen zum Produkt
+	 * Set ATP reserved for customer.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsReservedForCustomer (boolean IsReservedForCustomer);
+
+	/**
+	 * Get ATP reserved for customer.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isReservedForCustomer();
+
+	ModelColumn<I_MD_Candidate, Object> COLUMN_IsReservedForCustomer = new ModelColumn<>(I_MD_Candidate.class, "IsReservedForCustomer", null);
+	String COLUMNNAME_IsReservedForCustomer = "IsReservedForCustomer";
+
+	/**
+	 * Set Attributes.
+	 * Attribute Instances for Products
 	 *
 	 * <br>Type: PAttribute
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID);
+	void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID);
 
 	/**
-	 * Get Merkmale.
-	 * Merkmals Ausprägungen zum Produkt
+	 * Get Attributes.
+	 * Attribute Instances for Products
 	 *
 	 * <br>Type: PAttribute
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getM_AttributeSetInstance_ID();
+	int getM_AttributeSetInstance_ID();
 
-	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance();
+	@Nullable org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance();
 
-	public void setM_AttributeSetInstance(org.compiere.model.I_M_AttributeSetInstance M_AttributeSetInstance);
+	void setM_AttributeSetInstance(@Nullable org.compiere.model.I_M_AttributeSetInstance M_AttributeSetInstance);
 
-    /** Column definition for M_AttributeSetInstance_ID */
-    public static final org.adempiere.model.ModelColumn<I_MD_Candidate, org.compiere.model.I_M_AttributeSetInstance> COLUMN_M_AttributeSetInstance_ID = new org.adempiere.model.ModelColumn<I_MD_Candidate, org.compiere.model.I_M_AttributeSetInstance>(I_MD_Candidate.class, "M_AttributeSetInstance_ID", org.compiere.model.I_M_AttributeSetInstance.class);
-    /** Column name M_AttributeSetInstance_ID */
-    public static final String COLUMNNAME_M_AttributeSetInstance_ID = "M_AttributeSetInstance_ID";
+	ModelColumn<I_MD_Candidate, org.compiere.model.I_M_AttributeSetInstance> COLUMN_M_AttributeSetInstance_ID = new ModelColumn<>(I_MD_Candidate.class, "M_AttributeSetInstance_ID", org.compiere.model.I_M_AttributeSetInstance.class);
+	String COLUMNNAME_M_AttributeSetInstance_ID = "M_AttributeSetInstance_ID";
 
 	/**
-	 * Set Geschäftsvorfall.
+	 * Set Forecast.
+	 * Material Forecast
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_Forecast_ID (int M_Forecast_ID);
+
+	/**
+	 * Get Forecast.
+	 * Material Forecast
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_Forecast_ID();
+
+	@Nullable org.compiere.model.I_M_Forecast getM_Forecast();
+
+	void setM_Forecast(@Nullable org.compiere.model.I_M_Forecast M_Forecast);
+
+	ModelColumn<I_MD_Candidate, org.compiere.model.I_M_Forecast> COLUMN_M_Forecast_ID = new ModelColumn<>(I_MD_Candidate.class, "M_Forecast_ID", org.compiere.model.I_M_Forecast.class);
+	String COLUMNNAME_M_Forecast_ID = "M_Forecast_ID";
+
+	/**
+	 * Set Product.
+	 * Product, Service, Item
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setM_Product_ID (int M_Product_ID);
+
+	/**
+	 * Get Product.
+	 * Product, Service, Item
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getM_Product_ID();
+
+	String COLUMNNAME_M_Product_ID = "M_Product_ID";
+
+	/**
+	 * Set Shipment Candidate.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false (lazy loading)
+	 */
+	void setM_ShipmentSchedule_ID (int M_ShipmentSchedule_ID);
+
+	/**
+	 * Get Shipment Candidate.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false (lazy loading)
+	 */
+	int getM_ShipmentSchedule_ID();
+
+	ModelColumn<I_MD_Candidate, Object> COLUMN_M_ShipmentSchedule_ID = new ModelColumn<>(I_MD_Candidate.class, "M_ShipmentSchedule_ID", null);
+	String COLUMNNAME_M_ShipmentSchedule_ID = "M_ShipmentSchedule_ID";
+
+	/**
+	 * Set Warehouse.
+	 * Storage Warehouse and Service Point
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setM_Warehouse_ID (int M_Warehouse_ID);
+
+	/**
+	 * Get Warehouse.
+	 * Storage Warehouse and Service Point
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getM_Warehouse_ID();
+
+	String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
+
+	/**
+	 * Set Business case.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setMD_Candidate_BusinessCase (java.lang.String MD_Candidate_BusinessCase);
+	void setMD_Candidate_BusinessCase (@Nullable java.lang.String MD_Candidate_BusinessCase);
 
 	/**
-	 * Get Geschäftsvorfall.
+	 * Get Business case.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getMD_Candidate_BusinessCase();
+	@Nullable java.lang.String getMD_Candidate_BusinessCase();
 
-    /** Column definition for MD_Candidate_BusinessCase */
-    public static final org.adempiere.model.ModelColumn<I_MD_Candidate, Object> COLUMN_MD_Candidate_BusinessCase = new org.adempiere.model.ModelColumn<I_MD_Candidate, Object>(I_MD_Candidate.class, "MD_Candidate_BusinessCase", null);
-    /** Column name MD_Candidate_BusinessCase */
-    public static final String COLUMNNAME_MD_Candidate_BusinessCase = "MD_Candidate_BusinessCase";
+	ModelColumn<I_MD_Candidate, Object> COLUMN_MD_Candidate_BusinessCase = new ModelColumn<>(I_MD_Candidate.class, "MD_Candidate_BusinessCase", null);
+	String COLUMNNAME_MD_Candidate_BusinessCase = "MD_Candidate_BusinessCase";
 
 	/**
 	 * Set Gruppen-ID.
@@ -243,7 +409,7 @@ public interface I_MD_Candidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setMD_Candidate_GroupId (int MD_Candidate_GroupId);
+	void setMD_Candidate_GroupId (int MD_Candidate_GroupId);
 
 	/**
 	 * Get Gruppen-ID.
@@ -252,35 +418,31 @@ public interface I_MD_Candidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getMD_Candidate_GroupId();
+	int getMD_Candidate_GroupId();
 
-    /** Column definition for MD_Candidate_GroupId */
-    public static final org.adempiere.model.ModelColumn<I_MD_Candidate, Object> COLUMN_MD_Candidate_GroupId = new org.adempiere.model.ModelColumn<I_MD_Candidate, Object>(I_MD_Candidate.class, "MD_Candidate_GroupId", null);
-    /** Column name MD_Candidate_GroupId */
-    public static final String COLUMNNAME_MD_Candidate_GroupId = "MD_Candidate_GroupId";
+	ModelColumn<I_MD_Candidate, Object> COLUMN_MD_Candidate_GroupId = new ModelColumn<>(I_MD_Candidate.class, "MD_Candidate_GroupId", null);
+	String COLUMNNAME_MD_Candidate_GroupId = "MD_Candidate_GroupId";
 
 	/**
-	 * Set Dispositionskandidat.
+	 * Set Dispo Candidate.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setMD_Candidate_ID (int MD_Candidate_ID);
+	void setMD_Candidate_ID (int MD_Candidate_ID);
 
 	/**
-	 * Get Dispositionskandidat.
+	 * Get Dispo Candidate.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getMD_Candidate_ID();
+	int getMD_Candidate_ID();
 
-    /** Column definition for MD_Candidate_ID */
-    public static final org.adempiere.model.ModelColumn<I_MD_Candidate, Object> COLUMN_MD_Candidate_ID = new org.adempiere.model.ModelColumn<I_MD_Candidate, Object>(I_MD_Candidate.class, "MD_Candidate_ID", null);
-    /** Column name MD_Candidate_ID */
-    public static final String COLUMNNAME_MD_Candidate_ID = "MD_Candidate_ID";
+	ModelColumn<I_MD_Candidate, Object> COLUMN_MD_Candidate_ID = new ModelColumn<>(I_MD_Candidate.class, "MD_Candidate_ID", null);
+	String COLUMNNAME_MD_Candidate_ID = "MD_Candidate_ID";
 
 	/**
 	 * Set Elterndatensatz.
@@ -289,7 +451,7 @@ public interface I_MD_Candidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setMD_Candidate_Parent_ID (int MD_Candidate_Parent_ID);
+	void setMD_Candidate_Parent_ID (int MD_Candidate_Parent_ID);
 
 	/**
 	 * Get Elterndatensatz.
@@ -298,16 +460,14 @@ public interface I_MD_Candidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getMD_Candidate_Parent_ID();
+	int getMD_Candidate_Parent_ID();
 
-	public de.metas.material.dispo.model.I_MD_Candidate getMD_Candidate_Parent();
+	@Nullable de.metas.material.dispo.model.I_MD_Candidate getMD_Candidate_Parent();
 
-	public void setMD_Candidate_Parent(de.metas.material.dispo.model.I_MD_Candidate MD_Candidate_Parent);
+	void setMD_Candidate_Parent(@Nullable de.metas.material.dispo.model.I_MD_Candidate MD_Candidate_Parent);
 
-    /** Column definition for MD_Candidate_Parent_ID */
-    public static final org.adempiere.model.ModelColumn<I_MD_Candidate, de.metas.material.dispo.model.I_MD_Candidate> COLUMN_MD_Candidate_Parent_ID = new org.adempiere.model.ModelColumn<I_MD_Candidate, de.metas.material.dispo.model.I_MD_Candidate>(I_MD_Candidate.class, "MD_Candidate_Parent_ID", de.metas.material.dispo.model.I_MD_Candidate.class);
-    /** Column name MD_Candidate_Parent_ID */
-    public static final String COLUMNNAME_MD_Candidate_Parent_ID = "MD_Candidate_Parent_ID";
+	ModelColumn<I_MD_Candidate, de.metas.material.dispo.model.I_MD_Candidate> COLUMN_MD_Candidate_Parent_ID = new ModelColumn<>(I_MD_Candidate.class, "MD_Candidate_Parent_ID", de.metas.material.dispo.model.I_MD_Candidate.class);
+	String COLUMNNAME_MD_Candidate_Parent_ID = "MD_Candidate_Parent_ID";
 
 	/**
 	 * Set Status.
@@ -316,7 +476,7 @@ public interface I_MD_Candidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setMD_Candidate_Status (java.lang.String MD_Candidate_Status);
+	void setMD_Candidate_Status (@Nullable java.lang.String MD_Candidate_Status);
 
 	/**
 	 * Get Status.
@@ -325,12 +485,10 @@ public interface I_MD_Candidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getMD_Candidate_Status();
+	@Nullable java.lang.String getMD_Candidate_Status();
 
-    /** Column definition for MD_Candidate_Status */
-    public static final org.adempiere.model.ModelColumn<I_MD_Candidate, Object> COLUMN_MD_Candidate_Status = new org.adempiere.model.ModelColumn<I_MD_Candidate, Object>(I_MD_Candidate.class, "MD_Candidate_Status", null);
-    /** Column name MD_Candidate_Status */
-    public static final String COLUMNNAME_MD_Candidate_Status = "MD_Candidate_Status";
+	ModelColumn<I_MD_Candidate, Object> COLUMN_MD_Candidate_Status = new ModelColumn<>(I_MD_Candidate.class, "MD_Candidate_Status", null);
+	String COLUMNNAME_MD_Candidate_Status = "MD_Candidate_Status";
 
 	/**
 	 * Set Typ.
@@ -339,7 +497,7 @@ public interface I_MD_Candidate
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setMD_Candidate_Type (java.lang.String MD_Candidate_Type);
+	void setMD_Candidate_Type (java.lang.String MD_Candidate_Type);
 
 	/**
 	 * Get Typ.
@@ -348,135 +506,33 @@ public interface I_MD_Candidate
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getMD_Candidate_Type();
+	java.lang.String getMD_Candidate_Type();
 
-    /** Column definition for MD_Candidate_Type */
-    public static final org.adempiere.model.ModelColumn<I_MD_Candidate, Object> COLUMN_MD_Candidate_Type = new org.adempiere.model.ModelColumn<I_MD_Candidate, Object>(I_MD_Candidate.class, "MD_Candidate_Type", null);
-    /** Column name MD_Candidate_Type */
-    public static final String COLUMNNAME_MD_Candidate_Type = "MD_Candidate_Type";
+	ModelColumn<I_MD_Candidate, Object> COLUMN_MD_Candidate_Type = new ModelColumn<>(I_MD_Candidate.class, "MD_Candidate_Type", null);
+	String COLUMNNAME_MD_Candidate_Type = "MD_Candidate_Type";
 
 	/**
-	 * Set Prognose.
-	 * Vorhersagen zu Material-/Produkt-/Artikelentwicklung
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setM_Forecast_ID (int M_Forecast_ID);
-
-	/**
-	 * Get Prognose.
-	 * Vorhersagen zu Material-/Produkt-/Artikelentwicklung
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getM_Forecast_ID();
-
-	public org.compiere.model.I_M_Forecast getM_Forecast();
-
-	public void setM_Forecast(org.compiere.model.I_M_Forecast M_Forecast);
-
-    /** Column definition for M_Forecast_ID */
-    public static final org.adempiere.model.ModelColumn<I_MD_Candidate, org.compiere.model.I_M_Forecast> COLUMN_M_Forecast_ID = new org.adempiere.model.ModelColumn<I_MD_Candidate, org.compiere.model.I_M_Forecast>(I_MD_Candidate.class, "M_Forecast_ID", org.compiere.model.I_M_Forecast.class);
-    /** Column name M_Forecast_ID */
-    public static final String COLUMNNAME_M_Forecast_ID = "M_Forecast_ID";
-
-	/**
-	 * Set Produkt.
-	 * Produkt, Leistung, Artikel
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setM_Product_ID (int M_Product_ID);
-
-	/**
-	 * Get Produkt.
-	 * Produkt, Leistung, Artikel
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getM_Product_ID();
-
-    /** Column name M_Product_ID */
-    public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
-
-	/**
-	 * Set Lieferdisposition.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false (lazy loading)
-	 */
-	public void setM_ShipmentSchedule_ID (int M_ShipmentSchedule_ID);
-
-	/**
-	 * Get Lieferdisposition.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false (lazy loading)
-	 */
-	public int getM_ShipmentSchedule_ID();
-
-    /** Column definition for M_ShipmentSchedule_ID */
-    public static final org.adempiere.model.ModelColumn<I_MD_Candidate, Object> COLUMN_M_ShipmentSchedule_ID = new org.adempiere.model.ModelColumn<I_MD_Candidate, Object>(I_MD_Candidate.class, "M_ShipmentSchedule_ID", null);
-    /** Column name M_ShipmentSchedule_ID */
-    public static final String COLUMNNAME_M_ShipmentSchedule_ID = "M_ShipmentSchedule_ID";
-
-	/**
-	 * Set Lager.
-	 * Lager oder Ort für Dienstleistung
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setM_Warehouse_ID (int M_Warehouse_ID);
-
-	/**
-	 * Get Lager.
-	 * Lager oder Ort für Dienstleistung
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getM_Warehouse_ID();
-
-    /** Column name M_Warehouse_ID */
-    public static final String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
-
-	/**
-	 * Set Menge.
-	 * Menge
+	 * Set Quantity.
+	 * Quantity
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setQty (java.math.BigDecimal Qty);
+	void setQty (BigDecimal Qty);
 
 	/**
-	 * Get Menge.
-	 * Menge
+	 * Get Quantity.
+	 * Quantity
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getQty();
+	BigDecimal getQty();
 
-    /** Column definition for Qty */
-    public static final org.adempiere.model.ModelColumn<I_MD_Candidate, Object> COLUMN_Qty = new org.adempiere.model.ModelColumn<I_MD_Candidate, Object>(I_MD_Candidate.class, "Qty", null);
-    /** Column name Qty */
-    public static final String COLUMNNAME_Qty = "Qty";
+	ModelColumn<I_MD_Candidate, Object> COLUMN_Qty = new ModelColumn<>(I_MD_Candidate.class, "Qty", null);
+	String COLUMNNAME_Qty = "Qty";
 
 	/**
 	 * Set Zusagbar (ATP).
@@ -487,7 +543,7 @@ public interface I_MD_Candidate
 	 * @deprecated Please don't use it because this is a virtual column
 	 */
 	@Deprecated
-	public void setQty_AvailableToPromise (java.math.BigDecimal Qty_AvailableToPromise);
+	void setQty_AvailableToPromise (@Nullable BigDecimal Qty_AvailableToPromise);
 
 	/**
 	 * Get Zusagbar (ATP).
@@ -498,37 +554,33 @@ public interface I_MD_Candidate
 	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
 	@Deprecated
-	public java.math.BigDecimal getQty_AvailableToPromise();
+	BigDecimal getQty_AvailableToPromise();
 
-    /** Column definition for Qty_AvailableToPromise */
-    public static final org.adempiere.model.ModelColumn<I_MD_Candidate, Object> COLUMN_Qty_AvailableToPromise = new org.adempiere.model.ModelColumn<I_MD_Candidate, Object>(I_MD_Candidate.class, "Qty_AvailableToPromise", null);
-    /** Column name Qty_AvailableToPromise */
-    public static final String COLUMNNAME_Qty_AvailableToPromise = "Qty_AvailableToPromise";
+	ModelColumn<I_MD_Candidate, Object> COLUMN_Qty_AvailableToPromise = new ModelColumn<>(I_MD_Candidate.class, "Qty_AvailableToPromise", null);
+	String COLUMNNAME_Qty_AvailableToPromise = "Qty_AvailableToPromise";
 
 	/**
-	 * Set Erledigte Menge.
-	 * Summe der bereits eingetretenden Materialbewegungen
+	 * Set Menge.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
 	 */
-	public void setQtyFulfilled (java.math.BigDecimal QtyFulfilled);
+	@Deprecated
+	void setQty_Display (@Nullable BigDecimal Qty_Display);
 
 	/**
-	 * Get Erledigte Menge.
-	 * Summe der bereits eingetretenden Materialbewegungen
+	 * Get Menge.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
+	 * <br>Virtual Column: true
 	 */
-	public java.math.BigDecimal getQtyFulfilled();
+	BigDecimal getQty_Display();
 
-    /** Column definition for QtyFulfilled */
-    public static final org.adempiere.model.ModelColumn<I_MD_Candidate, Object> COLUMN_QtyFulfilled = new org.adempiere.model.ModelColumn<I_MD_Candidate, Object>(I_MD_Candidate.class, "QtyFulfilled", null);
-    /** Column name QtyFulfilled */
-    public static final String COLUMNNAME_QtyFulfilled = "QtyFulfilled";
+	ModelColumn<I_MD_Candidate, Object> COLUMN_Qty_Display = new ModelColumn<>(I_MD_Candidate.class, "Qty_Display", null);
+	String COLUMNNAME_Qty_Display = "Qty_Display";
 
 	/**
 	 * Set Menge.
@@ -539,7 +591,7 @@ public interface I_MD_Candidate
 	 * @deprecated Please don't use it because this is a virtual column
 	 */
 	@Deprecated
-	public void setQty_Planned_Display (java.math.BigDecimal Qty_Planned_Display);
+	void setQty_Planned_Display (@Nullable BigDecimal Qty_Planned_Display);
 
 	/**
 	 * Get Menge.
@@ -550,39 +602,127 @@ public interface I_MD_Candidate
 	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
 	@Deprecated
-	public java.math.BigDecimal getQty_Planned_Display();
+	BigDecimal getQty_Planned_Display();
 
-    /** Column definition for Qty_Planned_Display */
-    public static final org.adempiere.model.ModelColumn<I_MD_Candidate, Object> COLUMN_Qty_Planned_Display = new org.adempiere.model.ModelColumn<I_MD_Candidate, Object>(I_MD_Candidate.class, "Qty_Planned_Display", null);
-    /** Column name Qty_Planned_Display */
-    public static final String COLUMNNAME_Qty_Planned_Display = "Qty_Planned_Display";
+	ModelColumn<I_MD_Candidate, Object> COLUMN_Qty_Planned_Display = new ModelColumn<>(I_MD_Candidate.class, "Qty_Planned_Display", null);
+	String COLUMNNAME_Qty_Planned_Display = "Qty_Planned_Display";
 
 	/**
-	 * Set Reihenfolge.
-	 * Zur Bestimmung der Reihenfolge der Einträge;
- die kleinste Zahl kommt zuerst
+	 * Set Fulfilled quantity.
+	 * Summe der bereits eingetretenden Materialbewegungen
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQtyFulfilled (@Nullable BigDecimal QtyFulfilled);
+
+	/**
+	 * Get Fulfilled quantity.
+	 * Summe der bereits eingetretenden Materialbewegungen
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getQtyFulfilled();
+
+	ModelColumn<I_MD_Candidate, Object> COLUMN_QtyFulfilled = new ModelColumn<>(I_MD_Candidate.class, "QtyFulfilled", null);
+	String COLUMNNAME_QtyFulfilled = "QtyFulfilled";
+
+	/**
+	 * Set Erledigte Menge.
+	 * Summe der bereits eingetretenden Materialbewegungen
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setQtyFulfilled_Display (@Nullable BigDecimal QtyFulfilled_Display);
+
+	/**
+	 * Get Erledigte Menge.
+	 * Summe der bereits eingetretenden Materialbewegungen
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	BigDecimal getQtyFulfilled_Display();
+
+	ModelColumn<I_MD_Candidate, Object> COLUMN_QtyFulfilled_Display = new ModelColumn<>(I_MD_Candidate.class, "QtyFulfilled_Display", null);
+	String COLUMNNAME_QtyFulfilled_Display = "QtyFulfilled_Display";
+
+	/**
+	 * Set Höchstmenge.
+	 * Maximaler ATP. Wenn die Material-Dispo eine Aufstockung veranlasst, dann auf diese Menge.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setReplenish_MaxQty (BigDecimal Replenish_MaxQty);
+
+	/**
+	 * Get Höchstmenge.
+	 * Maximaler ATP. Wenn die Material-Dispo eine Aufstockung veranlasst, dann auf diese Menge.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getReplenish_MaxQty();
+
+	ModelColumn<I_MD_Candidate, Object> COLUMN_Replenish_MaxQty = new ModelColumn<>(I_MD_Candidate.class, "Replenish_MaxQty", null);
+	String COLUMNNAME_Replenish_MaxQty = "Replenish_MaxQty";
+
+	/**
+	 * Set Minimal ATP.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setReplenish_MinQty (BigDecimal Replenish_MinQty);
+
+	/**
+	 * Get Minimal ATP.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getReplenish_MinQty();
+
+	ModelColumn<I_MD_Candidate, Object> COLUMN_Replenish_MinQty = new ModelColumn<>(I_MD_Candidate.class, "Replenish_MinQty", null);
+	String COLUMNNAME_Replenish_MinQty = "Replenish_MinQty";
+
+	/**
+	 * Set SeqNo.
+	 * Method of ordering records;
+	 lowest number comes first
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setSeqNo (int SeqNo);
+	void setSeqNo (int SeqNo);
 
 	/**
-	 * Get Reihenfolge.
-	 * Zur Bestimmung der Reihenfolge der Einträge;
- die kleinste Zahl kommt zuerst
+	 * Get SeqNo.
+	 * Method of ordering records;
+	 lowest number comes first
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getSeqNo();
+	int getSeqNo();
 
-    /** Column definition for SeqNo */
-    public static final org.adempiere.model.ModelColumn<I_MD_Candidate, Object> COLUMN_SeqNo = new org.adempiere.model.ModelColumn<I_MD_Candidate, Object>(I_MD_Candidate.class, "SeqNo", null);
-    /** Column name SeqNo */
-    public static final String COLUMNNAME_SeqNo = "SeqNo";
+	ModelColumn<I_MD_Candidate, Object> COLUMN_SeqNo = new ModelColumn<>(I_MD_Candidate.class, "SeqNo", null);
+	String COLUMNNAME_SeqNo = "SeqNo";
 
 	/**
 	 * Set StorageAttributesKey (technical).
@@ -591,7 +731,7 @@ public interface I_MD_Candidate
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setStorageAttributesKey (java.lang.String StorageAttributesKey);
+	void setStorageAttributesKey (java.lang.String StorageAttributesKey);
 
 	/**
 	 * Get StorageAttributesKey (technical).
@@ -600,38 +740,180 @@ public interface I_MD_Candidate
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getStorageAttributesKey();
+	java.lang.String getStorageAttributesKey();
 
-    /** Column definition for StorageAttributesKey */
-    public static final org.adempiere.model.ModelColumn<I_MD_Candidate, Object> COLUMN_StorageAttributesKey = new org.adempiere.model.ModelColumn<I_MD_Candidate, Object>(I_MD_Candidate.class, "StorageAttributesKey", null);
-    /** Column name StorageAttributesKey */
-    public static final String COLUMNNAME_StorageAttributesKey = "StorageAttributesKey";
+	ModelColumn<I_MD_Candidate, Object> COLUMN_StorageAttributesKey = new ModelColumn<>(I_MD_Candidate.class, "StorageAttributesKey", null);
+	String COLUMNNAME_StorageAttributesKey = "StorageAttributesKey";
 
 	/**
-	 * Get Aktualisiert.
-	 * Datum, an dem dieser Eintrag aktualisiert wurde
+	 * Get Updated.
+	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getUpdated();
+	java.sql.Timestamp getUpdated();
 
-    /** Column definition for Updated */
-    public static final org.adempiere.model.ModelColumn<I_MD_Candidate, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_MD_Candidate, Object>(I_MD_Candidate.class, "Updated", null);
-    /** Column name Updated */
-    public static final String COLUMNNAME_Updated = "Updated";
+	ModelColumn<I_MD_Candidate, Object> COLUMN_Updated = new ModelColumn<>(I_MD_Candidate.class, "Updated", null);
+	String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Aktualisiert durch.
-	 * Nutzer, der diesen Eintrag aktualisiert hat
+	 * Get Updated By.
+	 * User who updated this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getUpdatedBy();
+	int getUpdatedBy();
 
-    /** Column name UpdatedBy */
-    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+	String COLUMNNAME_UpdatedBy = "UpdatedBy";
+
+	/**
+	 * Set UserElementString1.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setUserElementString1 (@Nullable java.lang.String UserElementString1);
+
+	/**
+	 * Get UserElementString1.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getUserElementString1();
+
+	ModelColumn<I_MD_Candidate, Object> COLUMN_UserElementString1 = new ModelColumn<>(I_MD_Candidate.class, "UserElementString1", null);
+	String COLUMNNAME_UserElementString1 = "UserElementString1";
+
+	/**
+	 * Set UserElementString2.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setUserElementString2 (@Nullable java.lang.String UserElementString2);
+
+	/**
+	 * Get UserElementString2.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getUserElementString2();
+
+	ModelColumn<I_MD_Candidate, Object> COLUMN_UserElementString2 = new ModelColumn<>(I_MD_Candidate.class, "UserElementString2", null);
+	String COLUMNNAME_UserElementString2 = "UserElementString2";
+
+	/**
+	 * Set UserElementString3.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setUserElementString3 (@Nullable java.lang.String UserElementString3);
+
+	/**
+	 * Get UserElementString3.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getUserElementString3();
+
+	ModelColumn<I_MD_Candidate, Object> COLUMN_UserElementString3 = new ModelColumn<>(I_MD_Candidate.class, "UserElementString3", null);
+	String COLUMNNAME_UserElementString3 = "UserElementString3";
+
+	/**
+	 * Set UserElementString4.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setUserElementString4 (@Nullable java.lang.String UserElementString4);
+
+	/**
+	 * Get UserElementString4.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getUserElementString4();
+
+	ModelColumn<I_MD_Candidate, Object> COLUMN_UserElementString4 = new ModelColumn<>(I_MD_Candidate.class, "UserElementString4", null);
+	String COLUMNNAME_UserElementString4 = "UserElementString4";
+
+	/**
+	 * Set UserElementString5.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setUserElementString5 (@Nullable java.lang.String UserElementString5);
+
+	/**
+	 * Get UserElementString5.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getUserElementString5();
+
+	ModelColumn<I_MD_Candidate, Object> COLUMN_UserElementString5 = new ModelColumn<>(I_MD_Candidate.class, "UserElementString5", null);
+	String COLUMNNAME_UserElementString5 = "UserElementString5";
+
+	/**
+	 * Set UserElementString6.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setUserElementString6 (@Nullable java.lang.String UserElementString6);
+
+	/**
+	 * Get UserElementString6.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getUserElementString6();
+
+	ModelColumn<I_MD_Candidate, Object> COLUMN_UserElementString6 = new ModelColumn<>(I_MD_Candidate.class, "UserElementString6", null);
+	String COLUMNNAME_UserElementString6 = "UserElementString6";
+
+	/**
+	 * Set UserElementString7.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setUserElementString7 (@Nullable java.lang.String UserElementString7);
+
+	/**
+	 * Get UserElementString7.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getUserElementString7();
+
+	ModelColumn<I_MD_Candidate, Object> COLUMN_UserElementString7 = new ModelColumn<>(I_MD_Candidate.class, "UserElementString7", null);
+	String COLUMNNAME_UserElementString7 = "UserElementString7";
 }

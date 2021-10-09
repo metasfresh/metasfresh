@@ -1,12 +1,8 @@
-package de.metas.bpartner.impexp;
-
-import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
-
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.business
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -23,6 +19,10 @@ import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.bpartner.impexp;
+
+import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -109,7 +109,7 @@ public class BPartnerImportProcess extends SimpleImportProcessTemplate<I_I_BPart
 	}
 
 	@Override
-	protected ImportRecordResult importRecord(final IMutable<Object> state, final I_I_BPartner importRecord, final boolean insertOnly)
+	protected ImportRecordResult importRecord(final @NonNull IMutable<Object> state, final @NonNull I_I_BPartner importRecord, final boolean insertOnly)
 	{
 		// First line to import or this line does NOT have the same BP value
 		// => create a new BPartner or update the existing one

@@ -162,8 +162,8 @@ public class GenerateModel
 				}
 
 				final TableInfo tableInfo = repository.getTableInfo(adTableId);
-				new ModelInterfaceGenerator(tableInfo, directoryFinal, packageNameFinal);
-				new ModelClassGenerator(tableInfo, directoryFinal, packageNameFinal);
+				new ModelInterfaceGenerator(repository, tableInfo, directoryFinal, packageNameFinal);
+				new ModelClassGenerator(repository, tableInfo, directoryFinal, packageNameFinal);
 				count++;
 			}
 		}

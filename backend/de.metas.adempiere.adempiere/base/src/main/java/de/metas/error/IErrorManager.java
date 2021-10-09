@@ -23,6 +23,8 @@ public interface IErrorManager extends ISingletonService
 
 	AdIssueId createIssue(IssueCreateRequest request);
 
+	AdIssueId insertRemoteIssue(InsertRemoteIssueRequest request);
+
 	void markIssueAcknowledged(AdIssueId adIssueId);
 
 	IssueCountersByCategory getIssueCountersByCategory(

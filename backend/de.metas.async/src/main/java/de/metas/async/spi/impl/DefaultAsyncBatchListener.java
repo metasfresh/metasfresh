@@ -7,6 +7,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 import java.util.Set;
 
+import de.metas.i18n.AdMessageKey;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
 import com.google.common.collect.ImmutableSet;
@@ -29,7 +30,7 @@ import de.metas.util.Services;
  */
 public class DefaultAsyncBatchListener implements IAsyncBatchListener
 {
-	private static final String MSG_ASYNC_PROCESSED = "Notice_Async_Processed";
+	private static final AdMessageKey MSG_ASYNC_PROCESSED = AdMessageKey.of("DefaultAsyncBatchListener_AsyncBatch_Processed");
 
 	@Override
 	public void createNotice(final I_C_Async_Batch asyncBatch)
@@ -51,8 +52,6 @@ public class DefaultAsyncBatchListener implements IAsyncBatchListener
 		notificationBL.send(
 				UserNotificationRequest.builder()
 						.notificationsConfig(notificationsConfig)
-						.subjectADMessage(MSG_ASYNC_PROCESSED)
-						.subjectADMessageParam(asyncBatch.getName())
 						.contentADMessage(MSG_ASYNC_PROCESSED)
 						.contentADMessageParam(asyncBatch.getName())
 						.targetAction(TargetRecordAction.of(TableRecordReference.of(asyncBatch)))
@@ -61,28 +60,7 @@ public class DefaultAsyncBatchListener implements IAsyncBatchListener
 
 	private static UserNotificationsConfig createUserNotificationsConfigOrNull(final UserId recipientUserId, final I_C_Async_Batch_Type asyncBatchType)
 	{
-		final Set<NotificationType> notificationTypes = extractNotificationTypes(asyncBatchType);
-		if (notificationTypes.isEmpty())
-		{
-			return null;
-		}
-
 		final INotificationBL notifications = Services.get(INotificationBL.class);
-		return notifications.getUserNotificationsConfig(recipientUserId).deriveWithNotificationTypes(notificationTypes);
+		return notifications.getUserNotificationsConfig(recipientUserId);
 	}
-
-	private static Set<NotificationType> extractNotificationTypes(final I_C_Async_Batch_Type asyncBatchType)
-	{
-		final ImmutableSet.Builder<NotificationType> notificationTypes = ImmutableSet.<NotificationType> builder();
-		if (asyncBatchType.isSendMail())
-		{
-			notificationTypes.add(NotificationType.EMail);
-		}
-		else if (asyncBatchType.isSendNotification())
-		{
-			notificationTypes.add(NotificationType.Notice);
-		}
-		return notificationTypes.build();
-	}
-
 }

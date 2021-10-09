@@ -1,77 +1,76 @@
 import React from 'react';
-import { mount, shallow, render } from 'enzyme';
+import { mount, shallow } from 'enzyme';
 import nock from 'nock';
-import { Provider } from 'react-redux';
-
 import { ShortcutProvider } from '../../components/keyshortcuts/ShortcutProvider';
-import { initialState } from '../../reducers/windowHandler';
-import { FETCHED_QUICK_ACTIONS } from '../../constants/ActionTypes';
-import ConnectedQuickActions, { QuickActions } from '../../components/app/QuickActions';
+import { QuickActions } from '../../components/app/QuickActions';
 import fixtures from '../../../test_setup/fixtures/quickactions.json';
 
-import { quickActionsRequest } from '../../api';
+import hotkeys from '../../../test_setup/fixtures/hotkeys.json';
+import keymap from '../../../test_setup/fixtures/keymap.json';
 jest.mock('../../api');
 
-const createDummyProps = function(props) {
+const createDummyProps = function(override = {}) {
   return {
-    actions: props.actions || [],
-    openModal: props.openModal || jest.fn(),
-    fetchedQuickActions: props.fetchedQuickActions || jest.fn(),
-    deleteQuickActions: props.deleteQuickActions || jest.fn(),
+    quickActions: override.quickActions || {
+      actions: fixtures.data,
+      pending: false,
+    },
+    openModal: override.openModal || jest.fn(),
+    deleteQuickActions: override.deleteQuickActions || jest.fn(),
 
-    selected: props.selected || null,
-    childView: props.childView || {},
-    parentView: props.parentView || {},
-    windowType: props.windowType || '540485',
-    viewId: props.viewId || '540485-b',
-    fetchOnInit: props.fetchOnInit || false,
-    inBackground: props.inBackground || false,
-    inModal: props.inModal || false,
-    disabled: props.disabled || false,
-    stopShortcutPropagation: props.stopShortcutPropagation || false,
-    shouldNotUpdate: props.shouldNotUpdate || false,
-    processStatus: props.processStatus || 'saved',
+    selected: override.selected || null,
+    childView: override.childView || {},
+    parentView: override.parentView || {},
+    windowId: override.windowType || fixtures.props.windowId,
+    viewId: override.viewId || fixtures.props.viewId,
+    inBackground: override.inBackground || false,
+    inModal: override.inModal || false,
+    disabled: override.disabled || false,
+    stopShortcutPropagation: override.stopShortcutPropagation || false,
+    shouldNotUpdate: override.shouldNotUpdate || false,
+    processStatus: override.processStatus || 'saved',
   };
 };
 
 describe('QuickActions standalone component', () => {
+  const emptyViewId = '540485-a';
   describe('rendering tests:', () => {
     beforeEach(() => {
-      nock(config.API_URL)
-        .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
-        .get('/documentView/540485/540485-a/quickActions')
-        .reply(200, { data: { actions: [] }} );
+      const data1 = fixtures.props;
 
       nock(config.API_URL)
         .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
-        .get('/documentView/540485/540485-b/quickActions')
-        .reply(200, { data: fixtures.data1.actions } );
+        .get(`/documentView/${data1.windowId}/${emptyViewId}/quickActions`)
+        .reply(200, { data: { actions: [] } });
 
       nock(config.API_URL)
         .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
-        .get('/documentView/540485/540485-a/quickActions')
-        .reply(200, { data: fixtures.data2.actions } );
+        .get(`/documentView/${data1.windowId}/${data1.viewId}/quickActions?selectedIds=${data1.selected.join(',')}`)
+        .reply(200, { data: { actions: fixtures.data } });
     });
 
     it('renders nothing when no actions', () => {
-      const props = createDummyProps({ viewId: '540485-a' });
-      const wrapper = shallow(<QuickActions {...props} />);
+      const props = createDummyProps({ viewId: emptyViewId, quickActions: { actions: [], pending: false } });
+      const wrapper = mount(
+        <ShortcutProvider hotkeys={hotkeys} keymap={keymap}>
+          <QuickActions {...props} />
+        </ShortcutProvider>
+      );
 
-      expect(wrapper.html()).toBe(null);
+      expect(wrapper.html()).toBeFalsy();
     });
 
-    it('renders actions', async function asyncTest() {
-      const props = createDummyProps({ viewId: '540485-b', actions: fixtures.data1.actions });
-
+    it('renders actions', () => {
+      const props = createDummyProps();
       const wrapper = mount(
-        <ShortcutProvider hotkeys={{}} keymap={{}} >
+        <ShortcutProvider hotkeys={hotkeys} keymap={keymap}>
           <QuickActions {...props} />,
         </ShortcutProvider>
       );
 
-        wrapper.update();
+      wrapper.update();
 
-        expect(wrapper.html()).toContain('quick-actions-wrapper');
+      expect(wrapper.html()).toContain('quick-actions-wrapper');
     });
   });
 });

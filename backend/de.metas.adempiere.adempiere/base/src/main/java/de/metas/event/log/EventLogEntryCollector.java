@@ -64,6 +64,9 @@ public class EventLogEntryCollector implements IAutoCloseable
 		this.previousEntryCollector = previousEntryCollector;
 	}
 
+	/**
+	 * Called by the event-bus to create and register a log entry collector for the duration of the event-processing.
+	 */
 	public static EventLogEntryCollector createThreadLocalForEvent(@NonNull final Event event)
 	{
 		final EventLogEntryCollector previousEntryCollector = threadLocalCollector.get();

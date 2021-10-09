@@ -102,17 +102,20 @@ public class RabbitMqImportProcessor implements IImportProcessor
 
 		if (StringUtils.isEmpty(queueName))
 		{
-			throw new AdempiereException(MessageFormat.format("Missing {0} with key '{1}'!", I_IMP_ProcessorParameter.Table_Name, PARAM_QUEUE_NAME));
+			throw new AdempiereException(MessageFormat.format("Missing {0} with key {1}!", I_IMP_ProcessorParameter.Table_Name, PARAM_QUEUE_NAME)).appendParametersToMessage()
+					.setParameter("IMP_Processor_ID",impProcessor.getIMP_Processor_ID());
 		}
 
 		if (StringUtils.isEmpty(exchangeName))
 		{
-			throw new AdempiereException(MessageFormat.format("Missing {0} with key '{1}'!", I_IMP_ProcessorParameter.Table_Name, PARAM_EXCHANGE_NAME));
+			throw new AdempiereException(MessageFormat.format("Missing {0} with key {1}!", I_IMP_ProcessorParameter.Table_Name, PARAM_EXCHANGE_NAME)).appendParametersToMessage()
+					.setParameter("IMP_Processor_ID",impProcessor.getIMP_Processor_ID());
 		}
 
 		if (StringUtils.isEmpty(consumerTag))
 		{
-			throw new AdempiereException(MessageFormat.format("Missing {0} with key '{1}'!", I_IMP_ProcessorParameter.Table_Name, PARAM_CONSUMER_TAG));
+			throw new AdempiereException(MessageFormat.format("Missing {0} with key {1}!", I_IMP_ProcessorParameter.Table_Name, PARAM_CONSUMER_TAG)).appendParametersToMessage()
+					.setParameter("IMP_Processor_ID",impProcessor.getIMP_Processor_ID());
 		}
 
 		rabbitMqListener = new RabbitMqListener(ctx,

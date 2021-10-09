@@ -10,12 +10,12 @@ package de.metas.acct.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -25,6 +25,7 @@ package de.metas.acct.api.impl;
 
 import java.math.BigDecimal;
 
+import de.metas.organization.OrgId;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_Activity;
@@ -56,7 +57,7 @@ public class AccountBL implements IAccountBL
 {
 	private static final Logger log = LogManager.getLogger(AccountBL.class);
 	private final IAcctSchemaDAO acctSchemaDAO = Services.get(IAcctSchemaDAO.class);
-	
+
 	private static final String SEGMENT_COMBINATION_NA = "_";
 	private static final String SEGMENT_DESCRIPTION_NA = "_";
 
@@ -331,6 +332,7 @@ public class AccountBL implements IAccountBL
 	{
 		return AccountDimension.builder()
 				.setAD_Client_ID(ev.getAD_Client_ID())
+				.setAD_Org_ID(OrgId.ANY.getRepoId())
 				.setC_ElementValue_ID(ev.getC_ElementValue_ID())
 				.setAcctSchemaId(acctSchemaId)
 				.build();
@@ -359,6 +361,13 @@ public class AccountBL implements IAccountBL
 				.setUser2_ID(account.getUser2_ID())
 				.setUserElement1_ID(account.getUserElement1_ID())
 				.setUserElement2_ID(account.getUserElement2_ID())
+				.setUserElementString1(account.getUserElementString1())
+				.setUserElementString2(account.getUserElementString2())
+				.setUserElementString3(account.getUserElementString3())
+				.setUserElementString4(account.getUserElementString4())
+				.setUserElementString5(account.getUserElementString5())
+				.setUserElementString6(account.getUserElementString6())
+				.setUserElementString7(account.getUserElementString7())
 				.build();
 	}
 

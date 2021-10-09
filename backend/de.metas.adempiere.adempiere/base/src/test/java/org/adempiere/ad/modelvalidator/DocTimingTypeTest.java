@@ -1,8 +1,11 @@
 package org.adempiere.ad.modelvalidator;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import lombok.NonNull;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 
-import org.junit.jupiter.api.Test;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -28,29 +31,71 @@ import org.junit.jupiter.api.Test;
 
 public class DocTimingTypeTest
 {
-	@Test
-	public void test_valueOfTimingInt()
+	@ParameterizedTest
+	@EnumSource(DocTimingType.class)
+	void valueOfInt(@NonNull final DocTimingType timing)
 	{
-		for (final DocTimingType timing : DocTimingType.values())
+		assertThat(DocTimingType.valueOf(timing.toInt())).isSameAs(timing);
+	}
+
+	@ParameterizedTest
+	@EnumSource(DocTimingType.class)
+	void forAction(@NonNull final DocTimingType timing)
+	{
+		assertThat(DocTimingType.forAction(timing.getDocAction(), timing.getBeforeAfter())).isSameAs(timing);
+	}
+
+	@ParameterizedTest
+	@EnumSource(DocTimingType.class)
+	void isDocAction(@NonNull final DocTimingType timing)
+	{
+		assertThat(timing.isDocAction(timing.getDocAction())).isTrue();
+	}
+
+	@Nested
+	public class isVoid
+	{
+		@ParameterizedTest
+		@EnumSource(value = DocTimingType.class, names = { "BEFORE_VOID", "AFTER_VOID" })
+		void returns_true(@NonNull final DocTimingType timing)
 		{
-			assertThat(DocTimingType.valueOf(timing.toInt())).isSameAs(timing);
+			assertThat(timing.isVoid()).isTrue();
+		}
+
+		@ParameterizedTest
+		@EnumSource(value = DocTimingType.class, names = { "BEFORE_VOID", "AFTER_VOID" }, mode = EnumSource.Mode.EXCLUDE)
+		void returns_false(@NonNull final DocTimingType timing)
+		{
+			assertThat(timing.isVoid()).isFalse();
 		}
 	}
 
-	@Test
-	public void test_forAction()
+	@Nested
+	public class isReverse
 	{
-		for (final DocTimingType timing : DocTimingType.values())
+		@ParameterizedTest
+		@EnumSource(value = DocTimingType.class, names = {
+				"BEFORE_REVERSECORRECT",
+				"AFTER_REVERSECORRECT",
+				"BEFORE_REVERSEACCRUAL",
+				"AFTER_REVERSEACCRUAL" })
+		void returns_true(@NonNull final DocTimingType timing)
 		{
-			assertThat(DocTimingType.forAction(timing.getDocAction(), timing.getBeforeAfter())).isSameAs(timing);
+			assertThat(timing.isReverse()).isTrue();
+		}
+
+		@ParameterizedTest
+		@EnumSource(value = DocTimingType.class,
+				mode = EnumSource.Mode.EXCLUDE,
+				names = {
+				"BEFORE_REVERSECORRECT",
+				"AFTER_REVERSECORRECT",
+				"BEFORE_REVERSEACCRUAL",
+				"AFTER_REVERSEACCRUAL" })
+		void returns_false(@NonNull final DocTimingType timing)
+		{
+			assertThat(timing.isReverse()).isFalse();
 		}
 	}
 
-	public void test_isDocAction()
-	{
-		for (final DocTimingType timing : DocTimingType.values())
-		{
-			assertThat(timing.isDocAction(timing.getDocAction())).isTrue();
-		}
-	}
 }

@@ -7,12 +7,24 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
+import de.metas.common.util.time.SystemTime;
+import de.metas.currency.CurrencyRepository;
+import de.metas.document.dimension.Dimension;
+import de.metas.document.dimension.DimensionFactory;
+import de.metas.document.dimension.DimensionService;
+import de.metas.document.dimension.OrderLineDimensionFactory;
+import de.metas.greeting.GreetingRepository;
+import de.metas.purchasecandidate.document.dimension.PurchaseCandidateDimensionFactory;
+import de.metas.order.impl.OrderLineDetailRepository;
+import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_UOM;
@@ -36,7 +48,6 @@ import de.metas.purchasecandidate.purchaseordercreation.remoteorder.NullVendorGa
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 
 /*
  * #%L
@@ -65,11 +76,14 @@ public class PurchaseOrderFromItemsAggregatorTest
 	private I_C_UOM EACH;
 	private Quantity TEN;
 
+	private Dimension dimension;
+
 	private static class MockedOrderLineBL extends OrderLineBL
 	{
 		private int updatePricesCallCount;
 
-		public void updatePrices(org.compiere.model.I_C_OrderLine orderLine)
+		@Override
+		public void updatePrices(org.compiere.model.@NonNull I_C_OrderLine orderLine)
 		{
 			// mock IOrderLineBL.updatePrices() because
 			// setting up the required masterdata and testing the pricing engine is out of scope.
@@ -91,6 +105,24 @@ public class PurchaseOrderFromItemsAggregatorTest
 
 		orderLineBL = new MockedOrderLineBL();
 		Services.registerService(IOrderLineBL.class, orderLineBL);
+
+		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
+		dimensionFactories.add(new PurchaseCandidateDimensionFactory());
+		dimensionFactories.add(new OrderLineDimensionFactory());
+
+		final DimensionService dimensionService = new DimensionService(dimensionFactories);
+		SpringContextHolder.registerJUnitBean(new DimensionService(dimensionFactories));
+
+		dimension = createDimension();
+
+		SpringContextHolder.registerJUnitBean(new OrderLineDetailRepository());
+	}
+
+	private Dimension createDimension()
+	{
+		return Dimension.builder()
+				.userElementString1("test1")
+				.build();
 	}
 
 	private I_C_UOM createUOM(final String name)
@@ -144,6 +176,7 @@ public class PurchaseOrderFromItemsAggregatorTest
 				.salesOrderAndLineIdOrNull(OrderAndLineId.ofRepoIds(salesOrder.getC_Order_ID(), 50))
 				.warehouseId(WarehouseId.ofRepoId(60))
 				.profitInfoOrNull(PurchaseCandidateTestTool.createPurchaseProfitInfo())
+				.dimension(dimension)
 				.build();
 
 		final PurchaseOrderFromItemsAggregator aggregator = PurchaseOrderFromItemsAggregator.newInstance();
@@ -151,9 +184,10 @@ public class PurchaseOrderFromItemsAggregatorTest
 		Services.get(ITrxManager.class).runInNewTrx(() -> {
 			aggregator.add(PurchaseOrderItem.builder()
 					.purchaseCandidate(purchaseCandidate)
-					.datePromised(SystemTime.asZonedDateTime())
+					.datePromised(de.metas.common.util.time.SystemTime.asZonedDateTime())
 					.purchasedQty(TEN)
 					.remotePurchaseOrderId(NullVendorGatewayInvoker.NO_REMOTE_PURCHASE_ID)
+					.dimension(dimension)
 					.build());
 
 			aggregator.closeAllGroups();

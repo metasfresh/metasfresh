@@ -1,6 +1,7 @@
 package de.metas.rest_api.utils;
 
 import static de.metas.util.Check.isEmpty;
+
 import java.util.Collection;
 
 import javax.annotation.Nullable;
@@ -12,8 +13,7 @@ import de.metas.bpartner.GLN;
 import de.metas.bpartner.service.BPartnerQuery;
 import de.metas.bpartner.service.BPartnerQuery.BPartnerQueryBuilder;
 import de.metas.organization.OrgId;
-import de.metas.rest_api.common.JsonExternalId;
-import de.metas.rest_api.common.MetasfreshId;
+import de.metas.common.rest_api.common.JsonExternalId;
 import lombok.NonNull;
 
 /*
@@ -41,9 +41,9 @@ import lombok.NonNull;
 @Service
 public class BPartnerQueryService
 {
-	public BPartnerQuery createQuery(@NonNull final Collection<BPartnerCompositeLookupKey> queryLookupKeys)
+	public BPartnerQuery createQuery(@NonNull final OrgAndBPartnerCompositeLookupKeyList queryLookupKeys)
 	{
-		return createBPartnerQuery(queryLookupKeys, null);
+		return createBPartnerQuery(queryLookupKeys.getCompositeLookupKeys(), queryLookupKeys.getOrgId());
 	}
 
 	public BPartnerQuery createQuery(@NonNull final Collection<BPartnerCompositeLookupKey> queryLookupKeys, @NonNull final OrgId onlyOrgId)
@@ -80,7 +80,8 @@ public class BPartnerQueryService
 		final BPartnerQueryBuilder query = BPartnerQuery.builder();
 		if (onlyOrgId != null)
 		{
-			query.onlyOrgId(onlyOrgId);
+			query.onlyOrgId(onlyOrgId)
+					.onlyOrgId(OrgId.ANY);
 		}
 
 		for (final BPartnerCompositeLookupKey bpartnerLookupKey : bpartnerLookupKeys)

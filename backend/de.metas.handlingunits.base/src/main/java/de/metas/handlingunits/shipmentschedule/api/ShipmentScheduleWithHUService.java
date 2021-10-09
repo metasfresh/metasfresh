@@ -24,9 +24,13 @@ package de.metas.handlingunits.shipmentschedule.api;
 
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import de.metas.common.util.CoalesceUtil;
+import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.HUConstants;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHUContext;
+import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.IMutableHUContext;
@@ -50,19 +54,22 @@ import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
+import de.metas.handlingunits.picking.IHUPickingSlotBL;
 import de.metas.handlingunits.shipmentschedule.api.impl.ShipmentScheduleQtyPickedProductStorage;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
+import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
-import de.metas.inoutcandidate.api.ShipmentScheduleId;
+import de.metas.inoutcandidate.api.ShipmentSchedulesMDC;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.storage.IStorageQuery;
@@ -71,7 +78,6 @@ import de.metas.util.Check;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -83,8 +89,10 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
+import org.slf4j.MDC;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -103,6 +111,9 @@ public class ShipmentScheduleWithHUService
 
 	private static final AdMessageKey MSG_NoQtyPicked = AdMessageKey.of("MSG_NoQtyPicked");
 
+	private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
+	private final IHUPickingSlotBL huPickingSlotBL = Services.get(IHUPickingSlotBL.class);
+
 	@Value
 	@Builder
 	public static class CreateCandidatesRequest
@@ -115,6 +126,12 @@ public class ShipmentScheduleWithHUService
 
 		@NonNull
 		M_ShipmentSchedule_QuantityTypeToUse quantityType;
+
+		/**
+		 * If set and {@link #quantityType} is TYPE_QTY_TO_DELIVER (or _BOTH), then the respective M_ShipmentSchedule's current QtyToDeliver and QtyToDeliver_Override will be ignored.
+		 */
+		@Nullable
+		Quantity quantityToDeliverOverride;
 	}
 
 	/**
@@ -136,7 +153,7 @@ public class ShipmentScheduleWithHUService
 		switch (quantityType)
 		{
 			case TYPE_QTY_TO_DELIVER:
-				candidates.addAll(createShipmentSchedulesWithHUForQtyToDeliver(scheduleRecord, quantityType, huContext));
+				candidates.addAll(createShipmentSchedulesWithHUForQtyToDeliver(scheduleRecord, request.getQuantityToDeliverOverride(), quantityType, huContext));
 				break;
 			case TYPE_PICKED_QTY:
 				final Collection<? extends ShipmentScheduleWithHU> candidatesForPick = createAndValidateCandidatesForPick(huContext, scheduleRecord, quantityType);
@@ -144,7 +161,7 @@ public class ShipmentScheduleWithHUService
 				break;
 			case TYPE_BOTH:
 				candidates.addAll(createShipmentScheduleWithHUForPick(scheduleRecord, huContext, quantityType));
-				candidates.addAll(createShipmentSchedulesWithHUForQtyToDeliver(scheduleRecord, quantityType, huContext));
+				candidates.addAll(createShipmentSchedulesWithHUForQtyToDeliver(scheduleRecord, request.getQuantityToDeliverOverride(), quantityType, huContext));
 				break;
 			default:
 				throw new AdempiereException("Unexpected QuantityType=" + quantityType + "; CreateCandidatesRequest=" + request);
@@ -153,8 +170,60 @@ public class ShipmentScheduleWithHUService
 		return candidates.build();
 	}
 
+	public ImmutableList<ShipmentScheduleWithHU> createShipmentSchedulesWithHU(
+			@NonNull final List<I_M_ShipmentSchedule> shipmentSchedules,
+			@NonNull final M_ShipmentSchedule_QuantityTypeToUse quantityTypeToUse,
+			@NonNull final ImmutableMap<ShipmentScheduleId, BigDecimal> scheduleId2QtyToDeliverOverride)
+	{
+		if (shipmentSchedules.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		final IHUContext huContext = huContextFactory.createMutableHUContext();
+
+		final CreateCandidatesRequest.CreateCandidatesRequestBuilder requestBuilder = CreateCandidatesRequest.builder()
+				.huContext(huContext)
+				.quantityType(quantityTypeToUse);
+
+		final ArrayList<ShipmentScheduleWithHU> candidates = new ArrayList<>();
+
+		for (final I_M_ShipmentSchedule shipmentSchedule : shipmentSchedules)
+		{
+			final Quantity quantityToDeliverOverride = extractQuantityToDeliverOverrideOrNull(scheduleId2QtyToDeliverOverride, shipmentSchedule);
+			requestBuilder.quantityToDeliverOverride(quantityToDeliverOverride);
+			
+			final ImmutableList<ShipmentScheduleWithHU> candidatesForSched = createCandidatesForSched(requestBuilder, shipmentSchedule);
+			candidates.addAll(candidatesForSched);
+		}
+
+		// Sort our candidates
+		candidates.sort(new ShipmentScheduleWithHUComparator());
+
+		return ImmutableList.copyOf(candidates);
+	}
+
+	private Quantity extractQuantityToDeliverOverrideOrNull(
+			@NonNull final ImmutableMap<ShipmentScheduleId, BigDecimal> scheduleId2QtyToDeliverOverride,
+			@NonNull final I_M_ShipmentSchedule shipmentSchedule)
+	{
+		final Quantity quantityToDeliverOverride;
+		final BigDecimal qtyToDeliverOverride = scheduleId2QtyToDeliverOverride.get(ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID()));
+		if (qtyToDeliverOverride != null)
+		{
+			quantityToDeliverOverride = Quantitys.create(qtyToDeliverOverride, ProductId.ofRepoId(shipmentSchedule.getM_Product_ID()));
+			
+		}
+		else
+		{
+			quantityToDeliverOverride = null;
+		}
+		return quantityToDeliverOverride;
+	}
+
 	private List<ShipmentScheduleWithHU> createShipmentSchedulesWithHUForQtyToDeliver(
 			@NonNull final I_M_ShipmentSchedule scheduleRecord,
+			@Nullable final Quantity quantityToDeliverOverride,
 			@NonNull final M_ShipmentSchedule_QuantityTypeToUse quantityTypeToUse,
 			@NonNull final IHUContext huContext)
 	{
@@ -162,7 +231,9 @@ public class ShipmentScheduleWithHUService
 
 		final ArrayList<ShipmentScheduleWithHU> result = new ArrayList<>();
 
-		final Quantity qtyToDeliver = shipmentScheduleBL.getQtyToDeliver(scheduleRecord);
+		final Quantity qtyToDeliver = CoalesceUtil.coalesceSuppliers(
+				() -> quantityToDeliverOverride,
+				() -> shipmentScheduleBL.getQtyToDeliver(scheduleRecord));
 
 		final boolean pickAvailableHUsOnTheFly = retrievePickAvailableHUsOntheFly(huContext);
 		if (pickAvailableHUsOnTheFly)
@@ -218,9 +289,9 @@ public class ShipmentScheduleWithHUService
 
 		final boolean pickAvailableHUsOntheFly = Services.get(ISysConfigBL.class)
 				.getBooleanValue(SYSCFG_PICK_AVAILABLE_HUS_ON_THE_FLY,
-						true,
-						adClientId,
-						adOrgId);
+								 true,
+								 adClientId,
+								 adOrgId);
 
 		Loggables.withLogger(logger, Level.DEBUG)
 				.addLog("SysConfig {}={} for AD_Client_ID={} and AD_Org_ID={}",
@@ -246,7 +317,7 @@ public class ShipmentScheduleWithHUService
 
 		if (qtyToDeliver.signum() <= 0)
 		{
-			loggableWithLogger.addLog("pickHUsOnTheFly - qtyToDeliver={} is <= 0; nothing to do");
+			loggableWithLogger.addLog("pickHUsOnTheFly - qtyToDeliver={} is <= 0; nothing to do", qtyToDeliver);
 			return ImmutableList.of();
 		}
 
@@ -269,11 +340,17 @@ public class ShipmentScheduleWithHUService
 		boolean firstHU = true;
 
 		// if we have HUs on stock, get them now
-		final Iterator<I_M_HU> iterator = HUStorageQuery
-				.cast(storageQuery)
-				.createHUQueryBuilder()
-				.createQuery()
-				.iterate(I_M_HU.class);
+		final IHUPickingSlotBL.PickingHUsQuery pickingHUsQuery = IHUPickingSlotBL.PickingHUsQuery
+				.builder()
+				.shipmentSchedule(scheduleRecord)
+				.onlyTopLevelHUs(true)
+				.onlyIfAttributesMatchWithShipmentSchedules(true)
+				.build();
+
+		final List<I_M_HU> husToPick = huPickingSlotBL.retrieveAvailableHUsToPick(pickingHUsQuery);
+
+		final Iterator<I_M_HU> iterator = husToPick.iterator();
+
 		while (iterator.hasNext())
 		{
 			final I_M_HU sourceHURecord = iterator.next();
@@ -305,6 +382,9 @@ public class ShipmentScheduleWithHUService
 			final List<I_M_HU> newHURecords = HUTransformService
 					.newInstance(huContext)
 					.husToNewCUs(request);
+
+			// we stumbled over HUs with null-trx, which caused some trouble down the line
+			InterfaceWrapperHelper.setThreadInheritedTrxName(newHURecords);
 
 			for (final I_M_HU newHURecord : newHURecords)
 			{
@@ -661,9 +741,7 @@ public class ShipmentScheduleWithHUService
 	private IAllocationSource createAllocationSource(final I_M_ShipmentSchedule schedule)
 	{
 		final ShipmentScheduleQtyPickedProductStorage shipmentScheduleQtyPickedStorage = new ShipmentScheduleQtyPickedProductStorage(schedule);
-		final GenericAllocationSourceDestination source = new GenericAllocationSourceDestination(shipmentScheduleQtyPickedStorage, schedule);
-
-		return source;
+		return new GenericAllocationSourceDestination(shipmentScheduleQtyPickedStorage, schedule);
 	}
 
 	private ILUTUProducerAllocationDestination createLUTUProducerDestination(@NonNull final I_M_ShipmentSchedule schedule)
@@ -680,10 +758,30 @@ public class ShipmentScheduleWithHUService
 		if (luProducerDestination.isNoLU())
 		{
 			throw new HUException("No Loading Unit found for TU: " + luProducerDestination.getTUPI()
-					+ "\n@M_ShipmentSchedule_ID@: " + schedule
-					+ "\n@Destination@: " + luProducerDestination);
+										  + "\n@M_ShipmentSchedule_ID@: " + schedule
+										  + "\n@Destination@: " + luProducerDestination);
 		}
 
 		return luProducerDestination;
+	}
+
+	private ImmutableList<ShipmentScheduleWithHU> createCandidatesForSched(
+			@NonNull final ShipmentScheduleWithHUService.CreateCandidatesRequest.CreateCandidatesRequestBuilder requestBuilder,
+			@NonNull final I_M_ShipmentSchedule shipmentSchedule)
+	{
+		if (shipmentSchedule.isProcessed())
+		{
+			return ImmutableList.of();
+		}
+
+		final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID());
+		try (final MDC.MDCCloseable ignored = ShipmentSchedulesMDC.putShipmentScheduleId(shipmentScheduleId))
+		{
+			final CreateCandidatesRequest request = requestBuilder
+					.shipmentScheduleId(shipmentScheduleId)
+					.build();
+
+			return createShipmentSchedulesWithHU(request);
+		}
 	}
 }

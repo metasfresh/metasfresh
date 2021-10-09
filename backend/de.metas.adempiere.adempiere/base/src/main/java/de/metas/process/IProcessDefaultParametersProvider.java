@@ -1,12 +1,8 @@
-package de.metas.process;
-
-import org.compiere.model.Null;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -24,11 +20,16 @@ import org.compiere.model.Null;
  * #L%
  */
 
+package de.metas.process;
+
+import org.compiere.model.Null;
+
+import javax.annotation.Nullable;
+
 /**
  * Let your process implement this interface if you want to provide some default values for process parameters. Those values will be set when the UI parameters panel will be presented to user.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 @FunctionalInterface
 public interface IProcessDefaultParametersProvider
@@ -39,13 +40,13 @@ public interface IProcessDefaultParametersProvider
 	 * Gets process parameter's default value.
 	 *
 	 * @param parameter never {@code null}.
-	 * @return
-	 * 		<ul>
+	 * @return <ul>
 	 *         <li>not null value
 	 *         <li>{@link Null#NULL} to specify that we provide a null value
 	 *         <li>{@link #DEFAULT_VALUE_NOTAVAILABLE} to advice the caller that we don't have a default value for given parameter and the caller can search forward in other places.
 	 *         <li>Important: if the field is a lookup field (table, search etc), then the callers expects an integer <b>ID</b>, not the actual model.
 	 *         </ul>
 	 */
+	@Nullable
 	Object getParameterDefaultValue(final IProcessDefaultParameter parameter);
 }

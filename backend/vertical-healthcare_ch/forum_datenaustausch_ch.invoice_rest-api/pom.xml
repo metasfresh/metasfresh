@@ -79,11 +79,8 @@
 
 		<dependency>
 			<groupId>io.springfox</groupId>
-			<artifactId>springfox-swagger2</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>io.springfox</groupId>
-			<artifactId>springfox-swagger-ui</artifactId>
+			<artifactId>springfox-boot-starter</artifactId>
+			<version>${springfox-swagger.version}</version>
 		</dependency>
 
 		<dependency>
@@ -115,6 +112,11 @@
 			<classifier>tests</classifier>
 			<scope>test</scope>
 		</dependency>
-
+		<dependency>
+			<groupId>org.assertj</groupId>
+			<artifactId>assertj-core</artifactId>
+			<version>${assertj.version}</version>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 </project>

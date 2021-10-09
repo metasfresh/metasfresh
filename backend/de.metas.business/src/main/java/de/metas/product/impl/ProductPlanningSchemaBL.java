@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.business
+ * %%
+ * Copyright (C) 2020 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.product.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.delete;
@@ -7,6 +29,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import java.util.ArrayList;
 import java.util.List;
 
+import de.metas.organization.OrgId;
+import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_Product;
 import org.eevolution.model.I_PP_Product_Planning;
@@ -27,30 +51,10 @@ import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
 
-/*
- * #%L
- * de.metas.business
- * %%
- * Copyright (C) 2018 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 public class ProductPlanningSchemaBL implements IProductPlanningSchemaBL
 {
+
+	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 
 	@Override
 	public List<I_PP_Product_Planning> createDefaultProductPlanningsForAllProducts()
@@ -61,28 +65,30 @@ public class ProductPlanningSchemaBL implements IProductPlanningSchemaBL
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private List<I_PP_Product_Planning> createOrUpdateProductPlanningsForProductSelector(final I_M_Product product)
+	private List<I_PP_Product_Planning> createOrUpdateProductPlanningsForProductSelector(@NonNull final I_M_Product product)
 	{
 		final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
+		final OrgId orgId = OrgId.ofRepoId(product.getAD_Org_ID());
 		final ProductPlanningSchemaSelector selector = ProductPlanningSchemaSelector.ofNullableCode(product.getM_ProductPlanningSchema_Selector());
 		if (selector == null)
 		{
 			return ImmutableList.of();
 		}
 
-		return createOrUpdateProductPlanningsForSelector(productId, selector);
+		return createOrUpdateProductPlanningsForSelector(productId, orgId, selector);
 	}
 
 	@Override
 	public List<I_PP_Product_Planning> createOrUpdateProductPlanningsForSelector(
-			@NonNull final ProductId productId,
-			@NonNull final ProductPlanningSchemaSelector selector)
+			final @NonNull ProductId productId,
+			final @NonNull OrgId orgId,
+			final @NonNull ProductPlanningSchemaSelector selector)
 	{
 		final List<I_PP_Product_Planning> createdPlannings = new ArrayList<>();
 
-		for (final ProductPlanningSchema productPlanningSchema : ProductPlanningSchemaDAO.retrieveSchemasForSelector(selector))
+		for (final ProductPlanningSchema productPlanningSchema : ProductPlanningSchemaDAO.retrieveSchemasForSelectorAndOrg(selector, orgId))
 		{
-			createdPlannings.add(createOrUpdateProductPlanningAndSave(productId, productPlanningSchema));
+			createdPlannings.add(createOrUpdateProductPlanningAndSave(productId, orgId, productPlanningSchema));
 		}
 
 		return createdPlannings;
@@ -91,8 +97,6 @@ public class ProductPlanningSchemaBL implements IProductPlanningSchemaBL
 	@Override
 	public List<I_PP_Product_Planning> createOrUpdateDefaultProductPlanningsForSchemaId(@NonNull final ProductPlanningSchemaId schemaId)
 	{
-		final IProductDAO productsRepo = Services.get(IProductDAO.class);
-
 		final List<I_PP_Product_Planning> createdPlannings = new ArrayList<>();
 
 		final ProductPlanningSchema schema = ProductPlanningSchemaDAO.getById(schemaId);
@@ -101,7 +105,7 @@ public class ProductPlanningSchemaBL implements IProductPlanningSchemaBL
 		for (final I_PP_Product_Planning planning : ProductPlanningSchemaDAO.retrieveProductPlanningsForSchemaId(schema.getId()))
 		{
 			final ProductId productId = ProductId.ofRepoId(planning.getM_Product_ID());
-			final I_M_Product product = productsRepo.getById(productId);
+			final I_M_Product product = productDAO.getById(productId);
 			final ProductPlanningSchemaSelector productSchemaSelector = ProductPlanningSchemaSelector.ofNullableCode(product.getM_ProductPlanningSchema_Selector());
 			if (!selector.equals(productSchemaSelector))
 			{
@@ -113,16 +117,16 @@ public class ProductPlanningSchemaBL implements IProductPlanningSchemaBL
 			}
 		}
 
-		for (final ProductId productId : ProductPlanningSchemaDAO.retrieveProductIdsForSchemaSelector(selector))
+		for (final ImmutablePair<ProductId, OrgId> productAndOrg : productDAO.retrieveProductsAndOrgsForSchemaSelector(selector))
 		{
-			final I_PP_Product_Planning planning = createOrUpdateProductPlanningAndSave(productId, schema);
+			final I_PP_Product_Planning planning = createOrUpdateProductPlanningAndSave(productAndOrg.getLeft(), productAndOrg.getRight(), schema);
 			createdPlannings.add(planning);
 		}
 
 		return createdPlannings;
 	}
 
-	private I_PP_Product_Planning createOrUpdateProductPlanningAndSave(final ProductId productId, final ProductPlanningSchema schema)
+	private I_PP_Product_Planning createOrUpdateProductPlanningAndSave(@NonNull final ProductId productId, final @NonNull OrgId orgId, @NonNull final ProductPlanningSchema schema)
 	{
 		final ProductPlanningSchemaId schemaId = schema.getId();
 
@@ -137,6 +141,8 @@ public class ProductPlanningSchemaBL implements IProductPlanningSchemaBL
 
 		updateProductPlanningFromSchemaAndSave(productPlanning, schema);
 
+		productPlanning.setAD_Org_ID(orgId.getRepoId());
+
 		return productPlanning;
 	}
 
@@ -144,7 +150,6 @@ public class ProductPlanningSchemaBL implements IProductPlanningSchemaBL
 			final I_PP_Product_Planning productPlanning,
 			final ProductPlanningSchema schema)
 	{
-		productPlanning.setAD_Org_ID(schema.getOrgId().getRepoId());
 		productPlanning.setIsAttributeDependant(schema.isAttributeDependant());
 		productPlanning.setS_Resource_ID(ResourceId.toRepoId(schema.getPlantId()));
 		productPlanning.setM_Warehouse_ID(WarehouseId.toRepoId(schema.getWarehouseId()));

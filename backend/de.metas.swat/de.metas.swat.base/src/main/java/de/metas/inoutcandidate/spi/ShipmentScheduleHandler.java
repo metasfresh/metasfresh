@@ -69,7 +69,7 @@ import lombok.Value;
  *
  * Implementors are also related to {@link I_M_IolCandHandler} records.
  *
- * Implementors can be registered by calling {@link IShipmentScheduleHandlerBL#registerHandler(Properties, ShipmentScheduleHandler)}.
+ * Implementors can be registered by calling {@link IShipmentScheduleHandlerBL#registerHandler(ShipmentScheduleHandler)} .
  *
  * Interface methods should only be called by the {@link IShipmentScheduleHandlerBL} implementation.
  *
@@ -121,10 +121,10 @@ public abstract class ShipmentScheduleHandler
 	 * Note:
 	 * <ul>
 	 * <li>The framework will create a {@link I_M_IolCandHandler_Log} record for every object returned by this method.</li>
-	 * <li>Implementors should check for <code>I_M_IolCandHandler_Log</code> to make sure that they don't repeatedly return records are then vetoed by some {@link IInOutCandHandlerListener}</li>
+	 * <li>Implementors should check for <code>I_M_IolCandHandler_Log</code> to make sure that they don't repeatedly return records are then vetoed by some {@link ModelWithoutShipmentScheduleVetoer}</li>
 	 * </ul>
 	 */
-	public abstract Iterator<? extends Object> retrieveModelsWithMissingCandidates(Properties ctx, String trxName);
+	public abstract Iterator<?> retrieveModelsWithMissingCandidates(Properties ctx, String trxName);
 
 	/**
 	 * Creates missing candidates for the given model.
@@ -141,7 +141,7 @@ public abstract class ShipmentScheduleHandler
 
 	/**
 	 * (Re-)sync the given shipment schedule from the record that it references. Use-case: sales order is re-completed after reactivation.
-	 * In that case, we need to sync the potentially changed properties from the sales order lines to their repsective shipment schedules.
+	 * In that case, we need to sync the potentially changed properties from the sales order lines to their respective shipment schedules.
 	 */
 	public abstract void updateShipmentScheduleFromReferencedRecord(I_M_ShipmentSchedule shipmentSchedule);
 
@@ -153,8 +153,6 @@ public abstract class ShipmentScheduleHandler
 	 * <li>can be handled by {@link InterfaceWrapperHelper} and</li>
 	 * <li>belong to the table that is returned by {@link #getSourceTable()}</li>
 	 * </ul>
-	 *
-	 * @param model
 	 */
 	public abstract void invalidateCandidatesFor(Object model);
 
@@ -172,7 +170,7 @@ public abstract class ShipmentScheduleHandler
 
 	/**
 	 * Create a new deliver request for the given <code>sched</code>.<br>
-	 * This method shall be called by {@link IShipmentScheduleHandlerBL#createDeliverRequest(I_M_ShipmentSchedule)}, not directly by a user.
+	 * This method shall be called by {@link IShipmentScheduleHandlerBL#createDeliverRequest(I_M_ShipmentSchedule, I_C_OrderLine)} , not directly by a user.
 	 */
 	public abstract IDeliverRequest createDeliverRequest(I_M_ShipmentSchedule sched, final I_C_OrderLine salesOrderLine);
 

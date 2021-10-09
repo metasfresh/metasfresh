@@ -17,8 +17,12 @@
 
 package org.adempiere.process;
 
+import de.metas.document.dimension.Dimension;
+import de.metas.document.dimension.DimensionService;
+import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
 import org.compiere.model.MRMA;
@@ -38,6 +42,7 @@ import de.metas.util.Services;
 public class RMACreateOrder extends JavaProcess
 {
 	private final transient IOrderBL orderBL = Services.get(IOrderBL.class);
+	private final DimensionService dimensionService = SpringContextHolder.instance.getBean(DimensionService.class);
 
 	private int rmaId = 0;
     @Override
@@ -71,12 +76,10 @@ public class RMACreateOrder extends JavaProcess
         // Create new order and set the different values based on original order/RMA doc
         MOrder order = new MOrder(getCtx(), 0, get_TrxName());
         order.setAD_Org_ID(rma.getAD_Org_ID());
-        order.setC_BPartner_ID(originalOrder.getC_BPartner_ID());
-        order.setC_BPartner_Location_ID(originalOrder.getC_BPartner_Location_ID());
-        order.setAD_User_ID(originalOrder.getAD_User_ID());
-        order.setBill_BPartner_ID(originalOrder.getBill_BPartner_ID());
-        order.setBill_Location_ID(originalOrder.getBill_Location_ID());
-        order.setBill_User_ID(originalOrder.getBill_User_ID());
+
+        OrderDocumentLocationAdapterFactory.locationAdapter(order).setFrom(originalOrder);
+        OrderDocumentLocationAdapterFactory.billLocationAdapter(order).setFromBillLocation(originalOrder);
+
         order.setSalesRep_ID(rma.getSalesRep_ID());
         order.setM_PriceList_ID(originalOrder.getM_PriceList_ID());
         order.setM_Warehouse_ID(originalOrder.getM_Warehouse_ID());
@@ -87,8 +90,6 @@ public class RMACreateOrder extends JavaProcess
         I_C_Order mOrder = InterfaceWrapperHelper.create(order, I_C_Order.class);   // metas c.ghita@metas.ro : metas order
         order.setM_Shipper_ID(originalOrder.getM_Shipper_ID());
         orderBL.setDocTypeTargetIdAndUpdateDescription(order, originalOrder.getC_DocTypeTarget_ID());
-        mOrder.setBPartnerAddress(originalOrder.getBPartnerAddress());
-        mOrder.setBillToAddress(originalOrder.getBillToAddress());
         mOrder.setFreightCostRule(originalOrder.getFreightCostRule());
         mOrder.setDeliveryViaRule(originalOrder.getDeliveryViaRule());
         mOrder.setFreightAmt(originalOrder.getFreightAmt());
@@ -121,11 +122,13 @@ public class RMACreateOrder extends JavaProcess
                 orderLine.setM_Warehouse_ID(Services.get(IWarehouseAdvisor.class).evaluateWarehouse(originalOLine).getRepoId());
                 orderLine.setC_Currency_ID(originalOLine.getC_Currency_ID());
                 orderLine.setQty(line.getQty());
-                orderLine.setC_Project_ID(originalOLine.getC_Project_ID());
-                orderLine.setC_Activity_ID(originalOLine.getC_Activity_ID());
-                orderLine.setC_Campaign_ID(originalOLine.getC_Campaign_ID());
+
                 orderLine.setPrice();
                 orderLine.setPrice(line.getAmt());
+
+                final Dimension originalDimension = dimensionService.getFromRecord(originalOLine);
+
+                dimensionService.updateRecord(orderLine, originalDimension);
 
                 if (!orderLine.save())
                 {

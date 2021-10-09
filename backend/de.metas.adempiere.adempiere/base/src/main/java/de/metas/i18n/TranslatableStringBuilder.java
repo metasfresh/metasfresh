@@ -1,5 +1,13 @@
 package de.metas.i18n;
 
+import com.google.common.base.MoreObjects;
+import de.metas.currency.Amount;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.compiere.util.DisplayType;
+
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -8,15 +16,6 @@ import java.time.format.TextStyle;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-
-import org.compiere.util.DisplayType;
-
-import com.google.common.base.MoreObjects;
-
-import de.metas.currency.Amount;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -53,6 +52,7 @@ public final class TranslatableStringBuilder
 	private static final String EMPTY_JOIN_STRING = "";
 
 	private final List<ITranslatableString> parts = new ArrayList<>();
+	@Nullable
 	private StringBuilder lastStringBuffer;
 
 	private TranslatableStringBuilder()
@@ -154,7 +154,7 @@ public final class TranslatableStringBuilder
 		return insertFirst(TranslatableStrings.constant(value));
 	}
 
-	public TranslatableStringBuilder append(final String value)
+	public TranslatableStringBuilder append(@Nullable final String value)
 	{
 		if (Check.isEmpty(value))
 		{
@@ -171,7 +171,9 @@ public final class TranslatableStringBuilder
 		// return append(ConstantTranslatableString.of(value));
 	}
 
-	public TranslatableStringBuilder append(@NonNull final BigDecimal value, final int displayType)
+	public TranslatableStringBuilder append(
+			@NonNull final BigDecimal value,
+			final int displayType)
 	{
 		return append(NumberTranslatableString.of(value, displayType));
 	}
@@ -188,27 +190,36 @@ public final class TranslatableStringBuilder
 		return append(NumberTranslatableString.of(value));
 	}
 
-	public TranslatableStringBuilder appendDate(final Date value)
+	public TranslatableStringBuilder appendDate(@NonNull final Date value)
 	{
 		return append(DateTimeTranslatableString.ofDate(value));
 	}
 
-	public TranslatableStringBuilder appendDate(final LocalDate value)
+	public TranslatableStringBuilder appendDate(@NonNull final LocalDate value)
 	{
 		return append(TranslatableStrings.date(value));
 	}
 
-	public TranslatableStringBuilder appendDateTime(final Date value)
+	public TranslatableStringBuilder appendDate(
+			@Nullable final LocalDate value,
+			@Nullable final String defaultValueIfNull)
+	{
+		return value != null ? appendDate(value) : append(defaultValueIfNull);
+	}
+
+	public TranslatableStringBuilder appendDateTime(@NonNull final Date value)
 	{
 		return append(TranslatableStrings.dateAndTime(value));
 	}
 
-	public TranslatableStringBuilder appendDateTime(final Instant value)
+	public TranslatableStringBuilder appendDateTime(@NonNull final Instant value)
 	{
 		return append(DateTimeTranslatableString.ofDateTime(value));
 	}
 
-	public TranslatableStringBuilder appendTimeZone(@NonNull final ZoneId zoneId, @NonNull final TextStyle textStyle)
+	public TranslatableStringBuilder appendTimeZone(
+			@NonNull final ZoneId zoneId,
+			@NonNull final TextStyle textStyle)
 	{
 		return append(TimeZoneTranslatableString.ofZoneId(zoneId, textStyle));
 	}
@@ -225,26 +236,34 @@ public final class TranslatableStringBuilder
 		}
 	}
 
-	public TranslatableStringBuilder appendADMessage(final AdMessageKey adMessage, final Object... msgParameters)
+	public TranslatableStringBuilder appendADMessage(
+			final AdMessageKey adMessage,
+			final Object... msgParameters)
 	{
 		final ITranslatableString value = msgBL.getTranslatableMsgText(adMessage, msgParameters);
 		return append(value);
 	}
 
 	@Deprecated
-	public TranslatableStringBuilder appendADMessage(final String adMessage, final Object... msgParameters)
+	public TranslatableStringBuilder appendADMessage(
+			final String adMessage,
+			final Object... msgParameters)
 	{
 		return appendADMessage(AdMessageKey.of(adMessage), msgParameters);
 	}
 
-	public TranslatableStringBuilder insertFirstADMessage(final AdMessageKey adMessage, final Object... msgParameters)
+	public TranslatableStringBuilder insertFirstADMessage(
+			final AdMessageKey adMessage,
+			final Object... msgParameters)
 	{
 		final ITranslatableString value = msgBL.getTranslatableMsgText(adMessage, msgParameters);
 		return insertFirst(value);
 	}
 
 	@Deprecated
-	public TranslatableStringBuilder insertFirstADMessage(final String adMessage, final Object... msgParameters)
+	public TranslatableStringBuilder insertFirstADMessage(
+			final String adMessage,
+			final Object... msgParameters)
 	{
 		return insertFirstADMessage(AdMessageKey.of(adMessage), msgParameters);
 	}

@@ -3,7 +3,7 @@ import {
   createSpecialField,
   fieldValueToString,
 } from '../../utils/tableHelpers';
-import LOCAL_LANG from '../../constants/Constants';
+import { LOCAL_LANG } from '../../constants/Constants';
 
 describe('Table helpers', () => {
   describe('TableCell functions', () => {

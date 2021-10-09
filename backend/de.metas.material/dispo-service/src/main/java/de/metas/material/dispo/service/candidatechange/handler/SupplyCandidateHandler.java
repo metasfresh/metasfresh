@@ -1,15 +1,7 @@
 package de.metas.material.dispo.service.candidatechange.handler;
 
-import static java.math.BigDecimal.ZERO;
-
-import java.util.Collection;
-
-import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Service;
-
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
-
 import de.metas.Profiles;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
@@ -19,6 +11,13 @@ import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteServic
 import de.metas.material.dispo.commons.repository.DateAndSeqNo;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
 import lombok.NonNull;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+import java.util.Collection;
+
+import static java.math.BigDecimal.ZERO;
 
 /*
  * #%L
@@ -74,18 +73,28 @@ public class SupplyCandidateHandler implements CandidateHandler
 	 * When creating a new candidate, then compute its qty by getting the qty from that stockCandidate that has the same product and locator and is "before" it and add the supply candidate's qty
 	 */
 	@Override
-	public Candidate onCandidateNewOrChange(@NonNull final Candidate candidate)
+	public Candidate onCandidateNewOrChange(
+			@NonNull final Candidate candidate,
+			@NonNull final OnNewOrChangeAdvise advise)
 	{
 		assertCorrectCandidateType(candidate);
 
 		// store the supply candidate and get both its ID and qty-delta
 		// TODO 3034 test: if we add a supplyCandidate that has an unspecified parent-id and and in DB there is an MD_Candidate with parentId > 0,
 		// then supplyCandidateDeltaWithId needs to have that parentId
-		final SaveResult candidateSaveResult = candidateRepositoryWriteService.addOrUpdateOverwriteStoredSeqNo(candidate);
+		final SaveResult candidateSaveResult;
+		if (advise.isAttemptUpdate())
+		{
+			candidateSaveResult = candidateRepositoryWriteService.addOrUpdateOverwriteStoredSeqNo(candidate);
+		}
+		else
+		{
+			candidateSaveResult = candidateRepositoryWriteService.add(candidate);
+		}
 
 		if (!candidateSaveResult.isDateChanged() && !candidateSaveResult.isQtyChanged())
 		{
-			return candidateSaveResult.toCandidateWithQtyDelta(); // nothing to do
+			return candidateSaveResult.toCandidateWithQtyDelta(); // nothing more to do, because the candidate didn't change any ATP quantity.
 		}
 
 		final Candidate savedCandidate = candidateSaveResult.getCandidate();
@@ -126,12 +135,15 @@ public class SupplyCandidateHandler implements CandidateHandler
 		final DeleteResult stockDeleteResult = candidateRepositoryWriteService.deleteCandidatebyId(candidate.getParentId());
 
 		final DateAndSeqNo timeOfDeletedStock = stockDeleteResult.getPreviousTime();
+
+		final BigDecimal previousQty = candidate.getQuantity();
+
 		final SaveResult applyDeltaRequest = SaveResult.builder()
 				.candidate(candidate
 						.withQuantity(ZERO)
 						.withDate(timeOfDeletedStock.getDate())
 						.withSeqNo(timeOfDeletedStock.getSeqNo()))
-				.previousQty(stockDeleteResult.getPreviousQty())
+				.previousQty(previousQty)
 				.build();
 		stockCandidateService.applyDeltaToMatchingLaterStockCandidates(applyDeltaRequest);
 	}

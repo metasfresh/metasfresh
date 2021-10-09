@@ -1,70 +1,52 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package de.metas.inoutcandidate.model;
 
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for M_IolCandHandler_Log
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public class X_M_IolCandHandler_Log extends org.compiere.model.PO implements I_M_IolCandHandler_Log, org.compiere.model.I_Persistent 
 {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = -1174879021L;
+	private static final long serialVersionUID = -41886622L;
 
     /** Standard Constructor */
-    public X_M_IolCandHandler_Log (Properties ctx, int M_IolCandHandler_Log_ID, String trxName)
+    public X_M_IolCandHandler_Log (final Properties ctx, final int M_IolCandHandler_Log_ID, @Nullable final String trxName)
     {
       super (ctx, M_IolCandHandler_Log_ID, trxName);
-      /** if (M_IolCandHandler_Log_ID == 0)
-        {
-			setM_IolCandHandler_ID (0);
-			setM_IolCandHandler_Log_ID (0);
-        } */
     }
 
     /** Load Constructor */
-    public X_M_IolCandHandler_Log (Properties ctx, ResultSet rs, String trxName)
+    public X_M_IolCandHandler_Log (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
 
 
-    /** Load Meta Data */
-    @Override
-    protected org.compiere.model.POInfo initPO (Properties ctx)
-    {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
-      return poi;
-    }
-
-	/** Set DB-Tabelle.
-		@param AD_Table_ID 
-		Database Table information
-	  */
+	/** Load Meta Data */
 	@Override
-	public void setAD_Table_ID (int AD_Table_ID)
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
+	{
+		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public void setAD_Table_ID (final int AD_Table_ID)
 	{
 		if (AD_Table_ID < 1) 
 			set_Value (COLUMNNAME_AD_Table_ID, null);
 		else 
-			set_Value (COLUMNNAME_AD_Table_ID, Integer.valueOf(AD_Table_ID));
+			set_Value (COLUMNNAME_AD_Table_ID, AD_Table_ID);
 	}
 
-	/** Get DB-Tabelle.
-		@return Database Table information
-	  */
 	@Override
-	public int getAD_Table_ID () 
+	public int getAD_Table_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Table_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_AD_Table_ID);
 	}
 
 	@Override
@@ -74,96 +56,65 @@ public class X_M_IolCandHandler_Log extends org.compiere.model.PO implements I_M
 	}
 
 	@Override
-	public void setM_IolCandHandler(de.metas.inoutcandidate.model.I_M_IolCandHandler M_IolCandHandler)
+	public void setM_IolCandHandler(final de.metas.inoutcandidate.model.I_M_IolCandHandler M_IolCandHandler)
 	{
 		set_ValueFromPO(COLUMNNAME_M_IolCandHandler_ID, de.metas.inoutcandidate.model.I_M_IolCandHandler.class, M_IolCandHandler);
 	}
 
-	/** Set M_IolCandHandler.
-		@param M_IolCandHandler_ID M_IolCandHandler	  */
 	@Override
-	public void setM_IolCandHandler_ID (int M_IolCandHandler_ID)
+	public void setM_IolCandHandler_ID (final int M_IolCandHandler_ID)
 	{
 		if (M_IolCandHandler_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_M_IolCandHandler_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_M_IolCandHandler_ID, Integer.valueOf(M_IolCandHandler_ID));
+			set_ValueNoCheck (COLUMNNAME_M_IolCandHandler_ID, M_IolCandHandler_ID);
 	}
 
-	/** Get M_IolCandHandler.
-		@return M_IolCandHandler	  */
 	@Override
-	public int getM_IolCandHandler_ID () 
+	public int getM_IolCandHandler_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_IolCandHandler_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_IolCandHandler_ID);
 	}
 
-	/** Set M_IolCandHandler_Log.
-		@param M_IolCandHandler_Log_ID M_IolCandHandler_Log	  */
 	@Override
-	public void setM_IolCandHandler_Log_ID (int M_IolCandHandler_Log_ID)
+	public void setM_IolCandHandler_Log_ID (final int M_IolCandHandler_Log_ID)
 	{
 		if (M_IolCandHandler_Log_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_M_IolCandHandler_Log_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_M_IolCandHandler_Log_ID, Integer.valueOf(M_IolCandHandler_Log_ID));
+			set_ValueNoCheck (COLUMNNAME_M_IolCandHandler_Log_ID, M_IolCandHandler_Log_ID);
 	}
 
-	/** Get M_IolCandHandler_Log.
-		@return M_IolCandHandler_Log	  */
 	@Override
-	public int getM_IolCandHandler_Log_ID () 
+	public int getM_IolCandHandler_Log_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_IolCandHandler_Log_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_IolCandHandler_Log_ID);
 	}
 
-	/** Set Datensatz-ID.
-		@param Record_ID 
-		Direct internal record ID
-	  */
 	@Override
-	public void setRecord_ID (int Record_ID)
+	public void setRecord_ID (final int Record_ID)
 	{
 		if (Record_ID < 0) 
 			set_Value (COLUMNNAME_Record_ID, null);
 		else 
-			set_Value (COLUMNNAME_Record_ID, Integer.valueOf(Record_ID));
+			set_Value (COLUMNNAME_Record_ID, Record_ID);
 	}
 
-	/** Get Datensatz-ID.
-		@return Direct internal record ID
-	  */
 	@Override
-	public int getRecord_ID () 
+	public int getRecord_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_Record_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_Record_ID);
 	}
 
-	/** Set Status.
-		@param Status 
-		Status of the currently running check
-	  */
 	@Override
-	public void setStatus (java.lang.String Status)
+	public void setStatus (final @Nullable java.lang.String Status)
 	{
 		set_Value (COLUMNNAME_Status, Status);
 	}
 
-	/** Get Status.
-		@return Status of the currently running check
-	  */
 	@Override
-	public java.lang.String getStatus () 
+	public java.lang.String getStatus() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Status);
+		return get_ValueAsString(COLUMNNAME_Status);
 	}
 }

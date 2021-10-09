@@ -40,7 +40,7 @@ import java.util.Set;
 	}
 
 	@NonNull
-	static ITranslatableString anyLanguage(final String value)
+	static ITranslatableString anyLanguage(@Nullable final String value)
 	{
 		final boolean anyLanguage = true;
 		return of(value, anyLanguage);

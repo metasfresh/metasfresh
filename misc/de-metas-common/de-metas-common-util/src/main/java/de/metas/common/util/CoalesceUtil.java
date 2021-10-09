@@ -22,15 +22,13 @@
 
 package de.metas.common.util;
 
-import java.util.function.Predicate;
-import java.util.function.Supplier;
-
-import java.util.Objects;
-
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
 import javax.annotation.Nullable;
+import java.util.Objects;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 @UtilityClass
 public class CoalesceUtil
@@ -45,12 +43,31 @@ public class CoalesceUtil
 		return value1 == null ? value2 : value1;
 	}
 
+	@NonNull
+	public <T> T coalesceNotNull(@Nullable final T value1, @NonNull final T value2)
+	{
+		return value1 == null ? value2 : value1;
+	}
+
+	@Nullable
+	public <T> T coalesce(@Nullable final T value1, @NonNull final Supplier<T> value2)
+	{
+		return value1 != null ? value1 : value2.get();
+	}
+
 	/**
 	 * @return first not null value from list
 	 * @see #coalesce(Object...)
 	 */
 	// NOTE: this method is optimized for common usage
-	public <T> T coalesce(final T value1, final T value2, final T value3)
+	@Nullable
+	public <T> T coalesce(@Nullable final T value1, @Nullable final T value2, @Nullable final T value3)
+	{
+		return value1 != null ? value1 : (value2 != null ? value2 : value3);
+	}
+
+	@NonNull
+	public <T> T coalesceNotNull(@Nullable final T value1, @Nullable final T value2, @NonNull final T value3)
 	{
 		return value1 != null ? value1 : (value2 != null ? value2 : value3);
 	}
@@ -76,18 +93,41 @@ public class CoalesceUtil
 		return null;
 	}
 
+	@SafeVarargs
+	@NonNull
+	public <T> T coalesceNotNull(@Nullable final T... values)
+	{
+		final T result = coalesce(values);
+		if (result == null)
+		{
+			throw new NullPointerException("At least one parameter must be not-null");
+		}
+		return result;
+	}
+
 	/**
 	 * Similar to {@link #coalesce(Object...)}, but invokes the given suppliers' get methods one by one.
 	 * Note that it also works if some of the given supplier themselves are {@code null}.
 	 */
 	@SafeVarargs
-	public static final <T> T coalesceSuppliers(final Supplier<T>... values)
+	@Nullable
+	public static <T> T coalesceSuppliers(@Nullable final Supplier<T>... values)
 	{
 		return firstValidValue(Objects::nonNull, values);
 	}
 
 	@SafeVarargs
-	public <T> T firstValidValue(@NonNull final Predicate<T> isValidPredicate, final Supplier<T>... values)
+	@NonNull
+	public static <T> T coalesceSuppliersNotNull(@NonNull final Supplier<T>... values)
+	{
+		return Check.assumeNotNull(
+				firstValidValue(Objects::nonNull, values),
+				"At least one of the given suppliers={} has to return not-null", (Object[])values);
+	}
+	
+	@SafeVarargs
+	@Nullable
+	public <T> T firstValidValue(@NonNull final Predicate<T> isValidPredicate, @Nullable final Supplier<T>... values)
 	{
 		if (values == null || values.length == 0)
 		{
@@ -110,10 +150,9 @@ public class CoalesceUtil
 	/**
 	 * Analog to {@link #coalesce(Object...)}, returns the first <code>int</code> value that is greater than 0.
 	 *
-	 * @param values
 	 * @return first greater than zero value or zero
 	 */
-	public int firstGreaterThanZero(int... values)
+	public int firstGreaterThanZero(final int... values)
 	{
 		if (values == null || values.length == 0)
 		{
@@ -150,15 +189,75 @@ public class CoalesceUtil
 	/**
 	 * @return the first non-empty string or {@code null}.
 	 */
-	public String firstNotEmptyTrimmed(@NonNull final String... values)
+	@Nullable
+	public String firstNotEmptyTrimmed(@Nullable final String... values)
 	{
-		for (int i = 0; i < values.length; i++)
+		return firstNotBlank(values);
+	}
+
+	@Nullable
+	public String firstNotBlank(@Nullable final String... values)
+	{
+		if(values == null || values.length == 0)
 		{
-			if (EmptyUtil.isNotBlank(values[i]))
+			return null;
+		}
+
+		for (final String value : values)
+		{
+			if (value != null && EmptyUtil.isNotBlank(value))
 			{
-				return values[i].trim();
+				return value.trim();
 			}
 		}
+
 		return null;
+	}
+
+	@SafeVarargs
+	@Nullable
+	public String firstNotBlank(@Nullable final Supplier<String>... valueSuppliers)
+	{
+		if(valueSuppliers == null || valueSuppliers.length == 0)
+		{
+			return null;
+		}
+
+		for (final Supplier<String> valueSupplier : valueSuppliers)
+		{
+			if(valueSupplier == null)
+			{
+				continue;
+			}
+
+			final String value = valueSupplier.get();
+			if (value != null && EmptyUtil.isNotBlank(value))
+			{
+				return value.trim();
+			}
+		}
+
+		return null;
+	}
+
+
+
+	public int countNotNulls(@Nullable final Object... values)
+	{
+		if (values == null || values.length <= 0)
+		{
+			return 0;
+		}
+
+		int count = 0;
+		for (final Object value : values)
+		{
+			if (value != null)
+			{
+				count++;
+			}
+		}
+
+		return count;
 	}
 }

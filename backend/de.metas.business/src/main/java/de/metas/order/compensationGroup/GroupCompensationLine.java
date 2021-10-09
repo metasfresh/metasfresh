@@ -3,6 +3,7 @@ package de.metas.order.compensationGroup;
 import java.math.BigDecimal;
 
 import de.metas.currency.CurrencyPrecision;
+import de.metas.util.lang.RepoIdAware;
 import org.adempiere.exceptions.AdempiereException;
 
 import de.metas.product.ProductId;
@@ -46,7 +47,7 @@ public final class GroupCompensationLine
 	/** Repository ID */
 	@Getter
 	@Setter
-	private int repoId;
+	private RepoIdAware repoId;
 
 	@Getter
 	private final int seqNo;
@@ -77,11 +78,11 @@ public final class GroupCompensationLine
 	private BigDecimal lineNetAmt;
 
 	@Getter
-	private GroupTemplateLineId groupTemplateLineId;
+	private final GroupTemplateLineId groupTemplateLineId;
 
 	@Builder
 	public GroupCompensationLine(
-			final int repoId,
+			final RepoIdAware repoId,
 			final int seqNo,
 			@NonNull final ProductId productId,
 			@NonNull final UomId uomId,
@@ -94,7 +95,7 @@ public final class GroupCompensationLine
 			final BigDecimal lineNetAmt,
 			final GroupTemplateLineId groupTemplateLineId)
 	{
-		this.repoId = repoId > 0 ? repoId : -1;
+		this.repoId = repoId;
 		this.groupTemplateLineId = groupTemplateLineId;
 
 		this.seqNo = seqNo;
@@ -161,7 +162,7 @@ public final class GroupCompensationLine
 
 	public boolean isGeneratedLine()
 	{
-		return OrderGroupCompensationUtils.isGeneratedCompensationLine(getGroupTemplateLineId());
+		return OrderGroupCompensationUtils.isGeneratedLine(getGroupTemplateLineId());
 	}
 
 	public boolean isManualLine()

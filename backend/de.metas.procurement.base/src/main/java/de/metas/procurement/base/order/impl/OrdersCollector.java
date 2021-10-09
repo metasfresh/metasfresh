@@ -3,6 +3,7 @@ package de.metas.procurement.base.order.impl;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import de.metas.i18n.AdMessageKey;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
@@ -50,14 +51,14 @@ import de.metas.util.Services;
  */
 public class OrdersCollector implements IOrdersCollector
 {
-	public static final OrdersCollector newInstance()
+	public static OrdersCollector newInstance()
 	{
 		return new OrdersCollector();
 	}
 
 	private final AtomicInteger countOrders = new AtomicInteger(0);
 
-	private static final String MSG_Event_Generated = "Event_ProcurementPurchaseOrderGenerated";
+	private static final AdMessageKey MSG_Event_Generated = AdMessageKey.of("Event_ProcurementPurchaseOrderGenerated");
 	private final DocumentUserNotificationsProducer<I_C_Order> orderGeneratedNotifier = DocumentUserNotificationsProducer.<I_C_Order> builder()
 			.logger(ProcurementConstants.getLogger(OrdersCollector.class))
 			.topic(ProcurementConstants.USER_NOTIFICATIONS_TOPIC)

@@ -1,11 +1,15 @@
 package de.metas.material.cockpit.view.eventhandler;
 
 import java.math.BigDecimal;
+import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
+import de.metas.util.Services;
 import org.compiere.util.TimeUtil;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
@@ -13,7 +17,6 @@ import org.springframework.stereotype.Service;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.Profiles;
-import de.metas.material.cockpit.CockpitConstants;
 import de.metas.material.cockpit.view.MainDataRecordIdentifier;
 import de.metas.material.cockpit.view.mainrecord.MainDataRequestHandler;
 import de.metas.material.cockpit.view.mainrecord.UpdateMainDataRequest;
@@ -51,7 +54,8 @@ import lombok.NonNull;
 public class PPOrderChangedEventHandler implements MaterialEventHandler<PPOrderChangedEvent>
 {
 	private final MainDataRequestHandler dataUpdateRequestHandler;
-
+	private IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	
 	public PPOrderChangedEventHandler(@NonNull final MainDataRequestHandler dataUpdateRequestHandler)
 	{
 		this.dataUpdateRequestHandler = dataUpdateRequestHandler;
@@ -68,12 +72,15 @@ public class PPOrderChangedEventHandler implements MaterialEventHandler<PPOrderC
 	{
 		final List<PPOrderLine> newPPOrderLines = ppOrderChangedEvent.getNewPPOrderLines();
 
+		final OrgId orgId = ppOrderChangedEvent.getEventDescriptor().getOrgId();
+		final ZoneId timeZone = orgDAO.getTimeZone(orgId);
+		
 		final List<UpdateMainDataRequest> requests = new ArrayList<>();
 		for (final PPOrderLine newPPOrderLine : newPPOrderLines)
 		{
 			final MainDataRecordIdentifier identifier = MainDataRecordIdentifier.builder()
 					.productDescriptor(newPPOrderLine.getProductDescriptor())
-					.date(TimeUtil.getDay(newPPOrderLine.getIssueOrReceiveDate(), CockpitConstants.TIME_ZONE))
+					.date(TimeUtil.getDay(newPPOrderLine.getIssueOrReceiveDate(), timeZone))
 					.build();
 
 			final BigDecimal qtyRequiredForProduction = //
@@ -117,7 +124,7 @@ public class PPOrderChangedEventHandler implements MaterialEventHandler<PPOrderC
 
 			final MainDataRecordIdentifier identifier = MainDataRecordIdentifier.builder()
 					.productDescriptor(changedPPOrderLine.getProductDescriptor())
-					.date(TimeUtil.getDay(changedPPOrderLine.getIssueOrReceiveDate(), CockpitConstants.TIME_ZONE))
+					.date(TimeUtil.getDay(changedPPOrderLine.getIssueOrReceiveDate(), timeZone))
 					.build();
 
 			final UpdateMainDataRequest request = UpdateMainDataRequest.builder()

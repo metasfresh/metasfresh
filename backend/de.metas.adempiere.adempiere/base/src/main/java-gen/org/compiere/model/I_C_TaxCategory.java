@@ -1,97 +1,54 @@
 package org.compiere.model;
 
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_TaxCategory
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public interface I_C_TaxCategory 
 {
 
-    /** TableName=C_TaxCategory */
-    public static final String Table_Name = "C_TaxCategory";
+	String Table_Name = "C_TaxCategory";
 
-    /** AD_Table_ID=252 */
-//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=252 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 2 - Client
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(2);
-
-    /** Load Meta Data */
 
 	/**
-	 * Get Mandant.
+	 * Get Client.
 	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Client_ID();
+	int getAD_Client_ID();
 
-	public org.compiere.model.I_AD_Client getAD_Client();
-
-    /** Column definition for AD_Client_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_TaxCategory, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_C_TaxCategory, org.compiere.model.I_AD_Client>(I_C_TaxCategory.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
-    /** Column name AD_Client_ID */
-    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Set Organisation.
+	 * Organisational entity within client
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Org_ID (int AD_Org_ID);
+	void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Get Organisation.
+	 * Organisational entity within client
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Org_ID();
+	int getAD_Org_ID();
 
-	public org.compiere.model.I_AD_Org getAD_Org();
-
-	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
-
-    /** Column definition for AD_Org_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_TaxCategory, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_C_TaxCategory, org.compiere.model.I_AD_Org>(I_C_TaxCategory.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
-
-	/**
-	 * Set Steuerkategorie.
-	 * Tax Category
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setC_TaxCategory_ID (int C_TaxCategory_ID);
-
-	/**
-	 * Get Steuerkategorie.
-	 * Tax Category
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getC_TaxCategory_ID();
-
-    /** Column definition for C_TaxCategory_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_TaxCategory, Object> COLUMN_C_TaxCategory_ID = new org.adempiere.model.ModelColumn<I_C_TaxCategory, Object>(I_C_TaxCategory.class, "C_TaxCategory_ID", null);
-    /** Column name C_TaxCategory_ID */
-    public static final String COLUMNNAME_C_TaxCategory_ID = "C_TaxCategory_ID";
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
 	 * Set Statistische Warennummer.
@@ -101,7 +58,7 @@ public interface I_C_TaxCategory
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setCommodityCode (java.lang.String CommodityCode);
+	void setCommodityCode (@Nullable java.lang.String CommodityCode);
 
 	/**
 	 * Get Statistische Warennummer.
@@ -111,145 +68,171 @@ public interface I_C_TaxCategory
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getCommodityCode();
+	@Nullable java.lang.String getCommodityCode();
 
-    /** Column definition for CommodityCode */
-    public static final org.adempiere.model.ModelColumn<I_C_TaxCategory, Object> COLUMN_CommodityCode = new org.adempiere.model.ModelColumn<I_C_TaxCategory, Object>(I_C_TaxCategory.class, "CommodityCode", null);
-    /** Column name CommodityCode */
-    public static final String COLUMNNAME_CommodityCode = "CommodityCode";
+	ModelColumn<I_C_TaxCategory, Object> COLUMN_CommodityCode = new ModelColumn<>(I_C_TaxCategory.class, "CommodityCode", null);
+	String COLUMNNAME_CommodityCode = "CommodityCode";
 
 	/**
-	 * Get Erstellt.
+	 * Get Created.
 	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getCreated();
+	java.sql.Timestamp getCreated();
 
-    /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_C_TaxCategory, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_C_TaxCategory, Object>(I_C_TaxCategory.class, "Created", null);
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
+	ModelColumn<I_C_TaxCategory, Object> COLUMN_Created = new ModelColumn<>(I_C_TaxCategory.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Erstellt durch.
+	 * Get Created By.
 	 * User who created this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getCreatedBy();
+	int getCreatedBy();
 
-    /** Column definition for CreatedBy */
-    public static final org.adempiere.model.ModelColumn<I_C_TaxCategory, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_C_TaxCategory, org.compiere.model.I_AD_User>(I_C_TaxCategory.class, "CreatedBy", org.compiere.model.I_AD_User.class);
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Beschreibung.
+	 * Set Tax Category.
+	 * Tax Category
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setC_TaxCategory_ID (int C_TaxCategory_ID);
+
+	/**
+	 * Get Tax Category.
+	 * Tax Category
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getC_TaxCategory_ID();
+
+	ModelColumn<I_C_TaxCategory, Object> COLUMN_C_TaxCategory_ID = new ModelColumn<>(I_C_TaxCategory.class, "C_TaxCategory_ID", null);
+	String COLUMNNAME_C_TaxCategory_ID = "C_TaxCategory_ID";
+
+	/**
+	 * Set Description.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDescription (java.lang.String Description);
+	void setDescription (@Nullable java.lang.String Description);
 
 	/**
-	 * Get Beschreibung.
+	 * Get Description.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getDescription();
+	@Nullable java.lang.String getDescription();
 
-    /** Column definition for Description */
-    public static final org.adempiere.model.ModelColumn<I_C_TaxCategory, Object> COLUMN_Description = new org.adempiere.model.ModelColumn<I_C_TaxCategory, Object>(I_C_TaxCategory.class, "Description", null);
-    /** Column name Description */
-    public static final String COLUMNNAME_Description = "Description";
+	ModelColumn<I_C_TaxCategory, Object> COLUMN_Description = new ModelColumn<>(I_C_TaxCategory.class, "Description", null);
+	String COLUMNNAME_Description = "Description";
 
 	/**
-	 * Set Aktiv.
+	 * Set Internal Name.
+	 * Generally used to give records a name that can be safely referenced from code.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setInternalName (@Nullable java.lang.String InternalName);
+
+	/**
+	 * Get Internal Name.
+	 * Generally used to give records a name that can be safely referenced from code.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getInternalName();
+
+	ModelColumn<I_C_TaxCategory, Object> COLUMN_InternalName = new ModelColumn<>(I_C_TaxCategory.class, "InternalName", null);
+	String COLUMNNAME_InternalName = "InternalName";
+
+	/**
+	 * Set Active.
 	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsActive (boolean IsActive);
+	void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Aktiv.
+	 * Get Active.
 	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isActive();
+	boolean isActive();
 
-    /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_C_TaxCategory, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_C_TaxCategory, Object>(I_C_TaxCategory.class, "IsActive", null);
-    /** Column name IsActive */
-    public static final String COLUMNNAME_IsActive = "IsActive";
+	ModelColumn<I_C_TaxCategory, Object> COLUMN_IsActive = new ModelColumn<>(I_C_TaxCategory.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
 	 * Set Name.
-	 * Alphanumeric identifier of the entity
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setName (java.lang.String Name);
+	void setName (java.lang.String Name);
 
 	/**
 	 * Get Name.
-	 * Alphanumeric identifier of the entity
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getName();
+	java.lang.String getName();
 
-    /** Column definition for Name */
-    public static final org.adempiere.model.ModelColumn<I_C_TaxCategory, Object> COLUMN_Name = new org.adempiere.model.ModelColumn<I_C_TaxCategory, Object>(I_C_TaxCategory.class, "Name", null);
-    /** Column name Name */
-    public static final String COLUMNNAME_Name = "Name";
+	ModelColumn<I_C_TaxCategory, Object> COLUMN_Name = new ModelColumn<>(I_C_TaxCategory.class, "Name", null);
+	String COLUMNNAME_Name = "Name";
 
 	/**
-	 * Get Aktualisiert.
+	 * Get Updated.
 	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getUpdated();
+	java.sql.Timestamp getUpdated();
 
-    /** Column definition for Updated */
-    public static final org.adempiere.model.ModelColumn<I_C_TaxCategory, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_C_TaxCategory, Object>(I_C_TaxCategory.class, "Updated", null);
-    /** Column name Updated */
-    public static final String COLUMNNAME_Updated = "Updated";
+	ModelColumn<I_C_TaxCategory, Object> COLUMN_Updated = new ModelColumn<>(I_C_TaxCategory.class, "Updated", null);
+	String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Aktualisiert durch.
+	 * Get Updated By.
 	 * User who updated this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getUpdatedBy();
+	int getUpdatedBy();
 
-    /** Column definition for UpdatedBy */
-    public static final org.adempiere.model.ModelColumn<I_C_TaxCategory, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_C_TaxCategory, org.compiere.model.I_AD_User>(I_C_TaxCategory.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
-    /** Column name UpdatedBy */
-    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
 	/**
 	 * Set MwSt-Typ.
@@ -258,7 +241,7 @@ public interface I_C_TaxCategory
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setVATType (java.lang.String VATType);
+	void setVATType (@Nullable java.lang.String VATType);
 
 	/**
 	 * Get MwSt-Typ.
@@ -267,10 +250,8 @@ public interface I_C_TaxCategory
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getVATType();
+	@Nullable java.lang.String getVATType();
 
-    /** Column definition for VATType */
-    public static final org.adempiere.model.ModelColumn<I_C_TaxCategory, Object> COLUMN_VATType = new org.adempiere.model.ModelColumn<I_C_TaxCategory, Object>(I_C_TaxCategory.class, "VATType", null);
-    /** Column name VATType */
-    public static final String COLUMNNAME_VATType = "VATType";
+	ModelColumn<I_C_TaxCategory, Object> COLUMN_VATType = new ModelColumn<>(I_C_TaxCategory.class, "VATType", null);
+	String COLUMNNAME_VATType = "VATType";
 }

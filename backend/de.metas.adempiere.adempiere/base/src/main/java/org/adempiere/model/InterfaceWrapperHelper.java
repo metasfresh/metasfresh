@@ -22,17 +22,24 @@
 
 package org.adempiere.model;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import javax.annotation.Nullable;
-
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import de.metas.cache.model.IModelCacheService;
+import de.metas.error.AdIssueId;
+import de.metas.error.IErrorManager;
+import de.metas.i18n.IModelTranslationMap;
+import de.metas.i18n.impl.NullModelTranslationMap;
+import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
+import de.metas.util.Check;
+import de.metas.util.GuavaCollectors;
+import de.metas.util.NumberUtils;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
+import de.metas.util.lang.RepoIdAware;
+import de.metas.util.lang.RepoIdAwares;
+import lombok.NonNull;
+import lombok.experimental.UtilityClass;
 import org.adempiere.ad.model.util.IModelCopyHelper;
 import org.adempiere.ad.model.util.ModelCopyHelper;
 import org.adempiere.ad.persistence.IModelClassInfo;
@@ -63,25 +70,15 @@ import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 import org.slf4j.Logger;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.cache.model.IModelCacheService;
-import de.metas.error.AdIssueId;
-import de.metas.error.IErrorManager;
-import de.metas.i18n.IModelTranslationMap;
-import de.metas.i18n.impl.NullModelTranslationMap;
-import de.metas.logging.LogManager;
-import de.metas.organization.OrgId;
-import de.metas.util.Check;
-import de.metas.util.GuavaCollectors;
-import de.metas.util.NumberUtils;
-import de.metas.util.Services;
-import de.metas.util.StringUtils;
-import de.metas.util.lang.RepoIdAware;
-import de.metas.util.lang.RepoIdAwares;
-import lombok.NonNull;
-import lombok.experimental.UtilityClass;
+import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * This class is heavily used throughout metasfresh. To understand what it's all about see the javadoc of {@link #create(Object, Class)}.
@@ -233,7 +230,7 @@ public class InterfaceWrapperHelper
 	 * @param cl the interface we need an instance of
 	 * @return an instance of <code>cl</code> which actually wraps <code>model</code> or <code>null</code> if model was <code>null</code>
 	 */
-	public static <T> T create(final Object model, final Class<T> cl)
+	public static <T> T create(@Nullable final Object model, final Class<T> cl)
 	{
 		final boolean useOldValues = false;
 		return create(model, cl, useOldValues);
@@ -293,7 +290,7 @@ public class InterfaceWrapperHelper
 		return create(model, cl, useOldValues);
 	}
 
-	public static <T> T create(final Properties ctx, final Class<T> cl, final String trxName)
+	public static <T> T create(final Properties ctx, final Class<T> cl, @Nullable final String trxName)
 	{
 		if (getInMemoryDatabaseForModel(cl) != null)
 		{
@@ -310,7 +307,7 @@ public class InterfaceWrapperHelper
 	 * Note: if you want to load a record from <code>(AD_Table_ID, Reference_ID)</code>,<br>
 	 * then it's probably better to use e.g. {@link org.adempiere.util.lang.impl.TableRecordReference#of(int, int)}.
 	 */
-	public static <T> T create(final Properties ctx, final int id, final Class<T> cl, @Nullable final String trxName)
+	public static <T> T create(final Properties ctx, final int id, @NonNull final Class<T> cl, @Nullable final String trxName)
 	{
 		if (getInMemoryDatabaseForModel(cl) != null)
 		{
@@ -364,7 +361,7 @@ public class InterfaceWrapperHelper
 		return create(Env.getCtx(), id, modelClass, ITrx.TRXNAME_None);
 	}
 
-	public static <T> T load(final RepoIdAware id, final Class<T> modelClass)
+	public static <T> T load(@NonNull final RepoIdAware id, @NonNull final Class<T> modelClass)
 	{
 		return load(id.getRepoId(), modelClass);
 	}
@@ -373,10 +370,9 @@ public class InterfaceWrapperHelper
 	 * Loads given model, using thread inherited transaction.
 	 *
 	 * @param id model's ID
-	 * @param modelClass
 	 * @return loaded model
 	 */
-	public static <T> T load(final int id, final Class<T> modelClass)
+	public static <T> T load(final int id, @NonNull final Class<T> modelClass)
 	{
 		return create(Env.getCtx(), id, modelClass, ITrx.TRXNAME_ThreadInherited);
 	}
@@ -560,8 +556,6 @@ public class InterfaceWrapperHelper
 
 	/**
 	 * Sets trxName to {@link ITrx#TRXNAME_ThreadInherited}.
-	 *
-	 * @param model
 	 */
 	public static void setThreadInheritedTrxName(final Object model)
 	{
@@ -570,8 +564,6 @@ public class InterfaceWrapperHelper
 
 	/**
 	 * Set current thread inerited transaction name to given models.
-	 *
-	 * @param models
 	 */
 	public static void setThreadInheritedTrxName(final Collection<?> models)
 	{
@@ -648,7 +640,7 @@ public class InterfaceWrapperHelper
 		return modelToSave;
 	}
 
-	public static void save(final Object model, final String trxName)
+	public static void save(final Object model, @Nullable final String trxName)
 	{
 		if (model == null)
 		{
@@ -814,7 +806,7 @@ public class InterfaceWrapperHelper
 		return helpers.getPO(model, strict);
 	}
 
-	public static int getId(final Object model)
+	public static int getId(@Nullable final Object model)
 	{
 		if (model == null)
 		{
@@ -879,10 +871,10 @@ public class InterfaceWrapperHelper
 	/**
 	 * Checks static variable "Table_Name" of given interface and returns it's content.
 	 *
-	 * @param clazz
 	 * @return tableName associated with given interface
 	 * @throws AdempiereException if "Table_Name" static variable is not defined or is not accessible
 	 */
+	@NonNull
 	public static String getTableName(final Class<?> modelClass) throws AdempiereException
 	{
 		final String modelClassTableName = getTableNameOrNull(modelClass);
@@ -896,7 +888,6 @@ public class InterfaceWrapperHelper
 	/**
 	 * Checks static variable "Table_Name" of given interface and returns it's content.
 	 *
-	 * @param clazz
 	 * @return tableName associated with given interface or null if interface has no Table_Name
 	 */
 	public static String getTableNameOrNull(final Class<?> clazz)
@@ -1248,11 +1239,18 @@ public class InterfaceWrapperHelper
 		return Optional.ofNullable(value);
 	}
 
+	@NonNull
+	public static <T> Optional<T> getValueOptional(final Object model, final String columnName)
+	{
+		final boolean throwExIfColumnNotFound = false;
+		final boolean useOverrideColumnIfAvailable = false;
+		final T value = getValue(model, columnName, throwExIfColumnNotFound, useOverrideColumnIfAvailable);
+		return Optional.ofNullable(value);
+	}
+
 	/**
 	 * Gets [columnName]_Override if the override column is available and not null, else column name value is returned.
 	 *
-	 * @param model
-	 * @param columnName
 	 * @return value of [columnName]_Override or [columnName]; <b>might return null</b>, so don't blindly use as int.
 	 * @throws AdempiereException if neither the "normal" value nor the override value is available.
 	 *
@@ -1379,9 +1377,6 @@ public class InterfaceWrapperHelper
 	/**
 	 * <b>IMPORTANT:</b> Please consider using {@link org.adempiere.ad.persistence.ModelDynAttributeAccessor} instead if this method. It's typesafe.
 	 *
-	 * @param model
-	 * @param attributeName
-	 * @param value
 	 * @return old value or null
 	 */
 	public static Object setDynAttribute(final Object model, final String attributeName, final Object value)
@@ -1391,10 +1386,6 @@ public class InterfaceWrapperHelper
 
 	/**
 	 * <b>IMPORTANT:</b> Please consider using {@link org.adempiere.ad.persistence.ModelDynAttributeAccessor} instead if this method. It's typesafe.
-	 *
-	 * @param model
-	 * @param attributeName
-	 * @return
 	 */
 	public static <T> T getDynAttribute(final Object model, final String attributeName)
 	{
@@ -1404,8 +1395,6 @@ public class InterfaceWrapperHelper
 	/**
 	 * Check if given <code>model</code> can be casted to <code>interfaceClass</code>. NOTE: by casted we mean using create(...) methods.
 	 *
-	 * @param model
-	 * @param interfaceClass
 	 * @return true if we can cast the model to given interface.
 	 */
 	public static boolean isInstanceOf(final Object model, final Class<?> interfaceClass)
@@ -1502,7 +1491,7 @@ public class InterfaceWrapperHelper
 		}
 	}
 
-	public static final IModelTranslationMap getModelTranslationMap(@NonNull final Object model)
+	public static IModelTranslationMap getModelTranslationMap(@NonNull final Object model)
 	{
 		if (POWrapper.isHandled(model))
 		{
@@ -1515,7 +1504,6 @@ public class InterfaceWrapperHelper
 	}
 
 	/**
-	 * @param model
 	 * @return true if model is a new record (not yet saved in database)
 	 */
 	public static boolean isNew(final Object model)
@@ -1591,14 +1579,21 @@ public class InterfaceWrapperHelper
 	}
 
 	/**
-	 * @param model
-	 * @param columnNames
 	 * @return true if <i>any</i> of the given column names where changed
 	 */
 	public static boolean isValueChanged(final Object model, final Set<String> columnNames)
 	{
 		return helpers.isValueChanged(model, columnNames);
 	}
+
+	/**
+	 * @return true if <i>any</i> of the given column names where changed
+	 */
+	public static boolean isValueChanged(final Object model, final String... columnNames)
+	{
+		return helpers.isValueChanged(model, ImmutableSet.copyOf(columnNames));
+	}
+
 
 	@Deprecated
 	public static boolean isPOValueChanged(final Object model, final String columnName)
@@ -1702,9 +1697,8 @@ public class InterfaceWrapperHelper
 		return new ModelCopyHelper();
 	}
 
-	public static boolean isOldValues(final Object model)
+	public static boolean isOldValues(@NonNull final Object model)
 	{
-		Check.assumeNotNull(model, "model not null");
 		if (POWrapper.isHandled(model))
 		{
 			return POWrapper.isOldValues(model);
@@ -1723,6 +1717,15 @@ public class InterfaceWrapperHelper
 					+ "\n Class: " + (model == null ? null : model.getClass()));
 		}
 	}
+
+	public static void assertNotOldValues(@NonNull final Object model)
+	{
+		if (isOldValues(model))
+		{
+			throw new AdempiereException("Model was expected to not use old values: " + model + " (" + model.getClass() + ")");
+		}
+	}
+
 
 	/**
 	 * If the given <code>model</code> is not null and has all the columns which are defined inside the given <code>clazz</code>'s {@link IModelClassInfo},<br>

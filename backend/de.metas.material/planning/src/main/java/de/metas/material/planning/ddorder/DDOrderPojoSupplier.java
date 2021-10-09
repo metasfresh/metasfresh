@@ -1,16 +1,23 @@
 package de.metas.material.planning.ddorder;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-import java.util.stream.Collectors;
-
-import javax.annotation.Nullable;
-
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
+import de.metas.material.event.ModelProductDescriptorExtractor;
+import de.metas.material.event.commons.ProductDescriptor;
+import de.metas.material.event.ddorder.DDOrder;
+import de.metas.material.event.ddorder.DDOrderLine;
+import de.metas.material.planning.IMaterialPlanningContext;
+import de.metas.material.planning.IMaterialRequest;
+import de.metas.material.planning.exception.MrpException;
+import de.metas.organization.OrgId;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.PlainAttributeSetInstanceAware;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
@@ -22,22 +29,14 @@ import org.eevolution.model.I_DD_NetworkDistributionLine;
 import org.eevolution.model.I_PP_Product_Planning;
 import org.springframework.stereotype.Service;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
-
-import de.metas.material.event.ModelProductDescriptorExtractor;
-import de.metas.material.event.commons.ProductDescriptor;
-import de.metas.material.event.ddorder.DDOrder;
-import de.metas.material.event.ddorder.DDOrderLine;
-import de.metas.material.planning.IMaterialPlanningContext;
-import de.metas.material.planning.IMaterialRequest;
-import de.metas.material.planning.exception.MrpException;
-import de.metas.organization.OrgId;
-import de.metas.quantity.Quantity;
-import de.metas.uom.IUOMConversionBL;
-import de.metas.util.Loggables;
-import de.metas.util.Services;
-import lombok.NonNull;
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
+import java.util.stream.Collectors;
 
 /*
  * #%L
@@ -274,8 +273,8 @@ public class DDOrderPojoSupplier
 
 		final PlainAttributeSetInstanceAware asiAware = PlainAttributeSetInstanceAware
 				.forProductIdAndAttributeSetInstanceId(
-						mrpContext.getM_Product_ID(),
-						mrpContext.getM_AttributeSetInstance_ID());
+						ProductId.toRepoId(mrpContext.getProductId()),
+						AttributeSetInstanceId.toRepoId(mrpContext.getAttributeSetInstanceId()));
 		final ProductDescriptor productDescriptor = productDescriptorFactory.createProductDescriptor(asiAware);
 
 		final int durationDays = DDOrderUtil.calculateDurationDays(mrpContext.getProductPlanning(), networkLine);

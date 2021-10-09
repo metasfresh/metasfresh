@@ -1,17 +1,17 @@
 package de.metas.purchasecandidate.purchaseordercreation.localorder;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.compiere.model.I_C_Order;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-
+import de.metas.document.DocTypeId;
 import de.metas.order.event.OrderUserNotifications;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem;
 import de.metas.util.collections.MapReduceAggregator;
 import lombok.NonNull;
+import org.compiere.model.I_C_Order;
+
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
 
 /*
  * #%L
@@ -39,24 +39,36 @@ import lombok.NonNull;
  * Aggregates {@link PurchaseOrderItem}s and creates completed purchase orders ({@link I_C_Order}).
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public class PurchaseOrderFromItemsAggregator
 		extends MapReduceAggregator<PurchaseOrderFromItemFactory, PurchaseOrderItem>
 {
-	public static final PurchaseOrderFromItemsAggregator newInstance()
+	public static PurchaseOrderFromItemsAggregator newInstance()
 	{
 		return new PurchaseOrderFromItemsAggregator();
 	}
 
+	public static PurchaseOrderFromItemsAggregator newInstance(@Nullable final DocTypeId docType)
+	{
+		return new PurchaseOrderFromItemsAggregator(docType);
+	}
+
 	private final OrderUserNotifications userNotifications = OrderUserNotifications.newInstance();
+	private final DocTypeId docType;
 
 	private final List<I_C_Order> createdPurchaseOrders = new ArrayList<>();
 
 	@VisibleForTesting
 	PurchaseOrderFromItemsAggregator()
 	{
+		this(null);
+	}
+
+	@VisibleForTesting
+	PurchaseOrderFromItemsAggregator(@Nullable final DocTypeId docType)
+	{
 		setItemAggregationKeyBuilder(PurchaseOrderAggregationKey::fromPurchaseOrderItem);
+		this.docType = docType;
 	}
 
 	@Override
@@ -69,11 +81,12 @@ public class PurchaseOrderFromItemsAggregator
 		return PurchaseOrderFromItemFactory.builder()
 				.orderAggregationKey(orderAggregationKey)
 				.userNotifications(userNotifications)
+				.docType(docType)
 				.build();
 	}
 
 	@Override
-	protected void closeGroup(final PurchaseOrderFromItemFactory orderFactory)
+	protected void closeGroup(@NonNull final PurchaseOrderFromItemFactory orderFactory)
 	{
 		final I_C_Order newPurchaseOrder = orderFactory.createAndComplete();
 		createdPurchaseOrders.add(newPurchaseOrder);

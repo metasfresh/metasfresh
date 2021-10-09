@@ -1,33 +1,42 @@
 package de.metas.contracts.pricing;
 
-import org.adempiere.ad.dao.IQueryBL;
-import org.compiere.model.I_M_PriceList;
-import org.slf4j.Logger;
-
+import de.metas.contracts.ConditionsId;
+import de.metas.contracts.SubscriptionDiscountLine;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
+import de.metas.contracts.repository.ISubscriptionDiscountRepository;
+import de.metas.contracts.repository.SubscriptionDiscountQuery;
 import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
+import de.metas.organization.IOrgDAO;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.PriceListId;
+import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.rules.IPricingRule;
 import de.metas.pricing.service.IPricingBL;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.compiere.model.I_M_PriceList;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.util.Optional;
 
 /**
  * This pricing rule applies if the given {@link IPricingContext}'s referenced object references a {@link I_C_Flatrate_Conditions} record.
  * <p>
  * If that is given, then the rule creates a pricing context of it's own and calls the pricing engine with that "alternative" pricing context.
  * The rule's own pricing context contains the {@link I_C_Flatrate_Conditions}'s pricing system.
- *
- *
  */
 public class SubscriptionPricingRule implements IPricingRule
 {
+	private final @NonNull ISubscriptionDiscountRepository subscriptionDiscountRepository = Services.get(ISubscriptionDiscountRepository.class);
 
 	private static final Logger logger = LogManager.getLogger(SubscriptionPricingRule.class);
+
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	@Override
 	public boolean applies(
@@ -73,20 +82,54 @@ public class SubscriptionPricingRule implements IPricingRule
 		final I_C_Flatrate_Conditions conditions = ContractPricingUtil.getC_Flatrate_Conditions(referencedObject);
 		final I_M_PriceList subscriptionPriceList = retrievePriceListForConditionsAndCountry(pricingCtx.getCountryId(), conditions);
 
+		final SubscriptionDiscountLine subscriptionDiscountLine = getSubscriptionDiscountOrNull(pricingCtx, conditions);
+
 		final IEditablePricingContext subscriptionPricingCtx = copyPricingCtxButInsertPriceList(pricingCtx, subscriptionPriceList);
 
 		final IPricingResult subscriptionPricingResult = invokePricingEngine(subscriptionPricingCtx.setFailIfNotCalculated());
 
-		copySubscriptionResultIntoResult(subscriptionPricingResult, result);
+		final IPricingResult combinedPricingResult = aggregateSubscriptionDiscount(pricingCtx, subscriptionDiscountLine, subscriptionPricingResult);
 
-		copyDiscountIntoResultIfAllowedByPricingContext(subscriptionPricingResult, result, pricingCtx);
+		copySubscriptionResultIntoResult(combinedPricingResult, result);
+
+		copyDiscountIntoResultIfAllowedByPricingContext(combinedPricingResult, result, pricingCtx);
+	}
+
+	private IPricingResult aggregateSubscriptionDiscount(final @NonNull IPricingContext pricingCtx, @Nullable final SubscriptionDiscountLine subscriptionDiscountLine, final IPricingResult subscriptionPricingResult)
+	{
+		if (subscriptionDiscountLine != null && subscriptionDiscountLine.isPrioritiseOwnDiscount() && !pricingCtx.isDisallowDiscount())
+		{
+			subscriptionPricingResult.setDiscount(subscriptionDiscountLine.getDiscount());
+		}
+		return subscriptionPricingResult;
+	}
+
+	@Nullable
+	private SubscriptionDiscountLine getSubscriptionDiscountOrNull(final @NonNull IPricingContext pricingCtx, final I_C_Flatrate_Conditions conditions)
+	{
+		final Optional<SubscriptionDiscountLine> discount = subscriptionDiscountRepository.getDiscount(SubscriptionDiscountQuery.builder()
+				.productId(pricingCtx.getProductId())
+				.flatrateConditionId(ConditionsId.ofRepoId(conditions.getC_Flatrate_Conditions_ID()))
+				.onDate(pricingCtx.getPriceDate().atStartOfDay(orgDAO.getTimeZone(pricingCtx.getOrgId())))
+				.build());
+
+		if (discount.isPresent() && conditions.getC_Flatrate_Transition() != null)
+		{
+			final SubscriptionDiscountLine discountLine = discount.get();
+			final boolean matchIfTermEndsWithCalendarYear = discountLine.isMatchIfTermEndsWithCalendarYear();
+			if (matchIfTermEndsWithCalendarYear == conditions.getC_Flatrate_Transition().isEndsWithCalendarYear())
+			{
+				return discountLine;
+			}
+		}
+		return null;
 	}
 
 	private static I_M_PriceList retrievePriceListForConditionsAndCountry(
 			final CountryId countryId,
 			@NonNull final I_C_Flatrate_Conditions conditions)
 	{
-		final I_M_PriceList subscriptionPriceList = Services.get(IQueryBL.class)
+		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_PriceList.class)
 				.addOnlyActiveRecordsFilter()
 				.addInArrayFilter(I_M_PriceList.COLUMN_C_Country_ID, countryId, null)
@@ -95,7 +138,6 @@ public class SubscriptionPricingRule implements IPricingRule
 				.orderBy().addColumnDescending(I_M_PriceList.COLUMNNAME_C_Country_ID).endOrderBy()
 				.create()
 				.first();
-		return subscriptionPriceList;
 	}
 
 	private static IEditablePricingContext copyPricingCtxButInsertPriceList(
@@ -109,6 +151,7 @@ public class SubscriptionPricingRule implements IPricingRule
 
 		// set the price list from subscription's M_Pricing_Systen
 		subscriptionPricingCtx.setPriceListId(PriceListId.ofRepoId(subscriptionPriceList.getM_PriceList_ID()));
+		subscriptionPricingCtx.setPricingSystemId(PricingSystemId.ofRepoId(subscriptionPriceList.getM_PricingSystem_ID()));
 		subscriptionPricingCtx.setPriceListVersionId(null);
 
 		return subscriptionPricingCtx;
@@ -117,16 +160,12 @@ public class SubscriptionPricingRule implements IPricingRule
 	private static IPricingResult invokePricingEngine(@NonNull final IPricingContext subscriptionPricingCtx)
 	{
 		final IPricingBL pricingBL = Services.get(IPricingBL.class);
-		final IPricingResult subscriptionPricingResult = pricingBL.calculatePrice(subscriptionPricingCtx);
 
-		return subscriptionPricingResult;
+		return pricingBL.calculatePrice(subscriptionPricingCtx);
 	}
 
 	/**
-	 * copy the results of our internal call into 'result'
-	 *
-	 * @param subscriptionPricingResult
-	 * @param result
+	 * Copy the results of our internal call into 'result'
 	 */
 	private static void copySubscriptionResultIntoResult(
 			@NonNull final IPricingResult subscriptionPricingResult,

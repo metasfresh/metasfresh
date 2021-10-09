@@ -1,24 +1,10 @@
 package de.metas.material.dispo.service.event;
 
-import static de.metas.material.event.EventTestHelper.CLIENT_AND_ORG_ID;
-import static de.metas.material.event.EventTestHelper.createProductDescriptor;
-import static java.math.BigDecimal.ONE;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.math.BigDecimal;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-
-import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.test.AdempiereTestWatcher;
-import org.adempiere.warehouse.WarehouseId;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mockito;
-
 import com.google.common.collect.ImmutableList;
-
+import de.metas.common.util.time.SystemTime;
+import de.metas.document.dimension.DimensionFactory;
+import de.metas.document.dimension.DimensionService;
+import de.metas.document.dimension.MDCandidateDimensionFactory;
 import de.metas.material.dispo.commons.RequestMaterialOrderService;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
@@ -28,6 +14,7 @@ import de.metas.material.dispo.commons.candidate.businesscase.DistributionDetail
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseRepository;
+import de.metas.material.dispo.commons.repository.repohelpers.StockChangeDetailRepo;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
 import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateHandler;
@@ -38,7 +25,25 @@ import de.metas.material.dispo.service.event.handler.ddorder.DDOrderAdvisedHandl
 import de.metas.material.event.EventTestHelper;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.MaterialDescriptor;
-import de.metas.util.time.SystemTime;
+import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.test.AdempiereTestWatcher;
+import org.adempiere.warehouse.WarehouseId;
+import org.compiere.SpringContextHolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mockito;
+
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.List;
+
+import static de.metas.material.event.EventTestHelper.CLIENT_AND_ORG_ID;
+import static de.metas.material.event.EventTestHelper.createProductDescriptor;
+import static java.math.BigDecimal.ONE;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -89,9 +94,17 @@ public class SupplyProposalEvaluatorTests
 	{
 		AdempiereTestHelper.get().init();
 
-		candidateRepositoryCommands = new CandidateRepositoryWriteService();
+		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
+		dimensionFactories.add(new MDCandidateDimensionFactory());
 
-		final CandidateRepositoryRetrieval candidateRepositoryRetrieval = new CandidateRepositoryRetrieval();
+		final DimensionService dimensionService = new DimensionService(dimensionFactories);
+		SpringContextHolder.registerJUnitBean(dimensionService);
+
+		final StockChangeDetailRepo stockChangeDetailRepo = new StockChangeDetailRepo();
+
+		candidateRepositoryCommands = new CandidateRepositoryWriteService(dimensionService, stockChangeDetailRepo);
+
+		final CandidateRepositoryRetrieval candidateRepositoryRetrieval = new CandidateRepositoryRetrieval(dimensionService, stockChangeDetailRepo);
 		supplyProposalEvaluator = new SupplyProposalEvaluator(candidateRepositoryRetrieval);
 
 		final StockCandidateService stockCandidateService = new StockCandidateService(
@@ -102,14 +115,17 @@ public class SupplyProposalEvaluatorTests
 
 		availableToPromiseRepository = new AvailableToPromiseRepository();
 
+		final SupplyCandidateHandler supplyCandidateHandler = new SupplyCandidateHandler(candidateRepositoryCommands, stockCandidateService);
+
 		final CandidateChangeService candidateChangeHandler = new CandidateChangeService(ImmutableList.of(
-				new SupplyCandidateHandler(candidateRepositoryCommands, stockCandidateService),
+				supplyCandidateHandler,
 				new DemandCandiateHandler(
 						candidateRepositoryRetrieval,
 						candidateRepositoryCommands,
 						postMaterialEventService,
 						availableToPromiseRepository,
-						stockCandidateService)));
+						stockCandidateService,
+						supplyCandidateHandler)));
 
 		ddOrderAdvisedHandler = new DDOrderAdvisedHandler(
 				candidateRepositoryRetrieval,

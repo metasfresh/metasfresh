@@ -1,12 +1,15 @@
 package de.metas.document;
 
-import org.compiere.model.I_C_DocType;
-
 import de.metas.i18n.ITranslatableString;
 import de.metas.util.ISingletonService;
+import org.compiere.model.I_C_DocType;
 
 public interface IDocTypeBL extends ISingletonService
 {
+	I_C_DocType getById(DocTypeId docTypeId);
+
+	DocTypeId getDocTypeIdOrNull(DocTypeQuery docTypeQuery);
+
 	ITranslatableString getNameById(DocTypeId docTypeId);
 
 	/**
@@ -19,6 +22,10 @@ public interface IDocTypeBL extends ISingletonService
 	 */
 	boolean isSalesQuotation(I_C_DocType dt);
 
+	/**
+	 * @return true if it's a sales cost estimate
+	 */
+	boolean isSalesCostEstimate(I_C_DocType dt);
 	/**
 	 * @return true if it's a sales proposal (Not binding)
 	 */
@@ -45,4 +52,9 @@ public interface IDocTypeBL extends ISingletonService
 
 	boolean isPrepay(I_C_DocType dt);
 
+	boolean hasRequestType(DocTypeId docTypeId);
+
+	boolean isRequisition(DocTypeId docTypeId);
+
+	boolean isMediated(DocTypeId docTypeId);
 }

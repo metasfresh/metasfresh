@@ -16,27 +16,21 @@
  *****************************************************************************/
 package org.compiere.apps.wf;
 
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Cursor;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.Insets;
-import java.awt.Point;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.util.Properties;
-
-import javax.swing.JScrollPane;
-import javax.swing.JTextPane;
-
+import de.metas.i18n.IMsgBL;
+import de.metas.logging.LogManager;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.permissions.Access;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.workflow.WFNodeId;
+import de.metas.workflow.WorkflowId;
+import de.metas.workflow.service.IADWorkflowDAO;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.images.Images;
 import org.adempiere.plaf.AdempierePLAF;
+import org.adempiere.service.ClientId;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.AMenu;
 import org.compiere.apps.AMenuStartItem;
@@ -52,26 +46,24 @@ import org.compiere.swing.CPanel;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
-import org.compiere.wf.MWFNode;
-import org.compiere.wf.MWFNodeNext;
-import org.compiere.wf.MWorkflow;
 import org.slf4j.Logger;
 
-import de.metas.i18n.IMsgBL;
-import de.metas.logging.LogManager;
-import de.metas.security.IUserRolePermissions;
-import de.metas.security.permissions.Access;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.List;
+import java.util.Properties;
 
 /**
  * WorkFlow Panel
  *
  * @author Jorg Janke
- * @version $Id: WFPanel.java,v 1.2 2006/07/30 00:51:28 jjanke Exp $
- *
  * @author Teo Sarca, www.arhipac.ro <li>FR [ 2048081 ] Mf. Workflow editor should display only mf. workflows <li>BF [ 2844102 ] Workfow Editor is displaying manufacturing routings too
- *         https://sourceforge.net/tracker/?func=detail&aid=2844102&group_id=176962&atid=879332
+ * https://sourceforge.net/tracker/?func=detail&aid=2844102&group_id=176962&atid=879332
+ * @version $Id: WFPanel.java,v 1.2 2006/07/30 00:51:28 jjanke Exp $
  */
 public class WFPanel extends CPanel
 		implements PropertyChangeListener, ActionListener, FormPanel
@@ -79,10 +71,8 @@ public class WFPanel extends CPanel
 
 	private static final long serialVersionUID = 4478193785606693055L;
 
-	/**
-	 * services
-	 */
-	private IMsgBL msgBL = Services.get(IMsgBL.class);
+	private final IADWorkflowDAO workflowDAO = Services.get(IADWorkflowDAO.class);
+	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	/**
 	 * variable used to check when we want to display only the workflow, without the navigation bar
@@ -99,11 +89,13 @@ public class WFPanel extends CPanel
 		this.isSimpleWorkflowWindow = isSimpleWorkflowWindow;
 	}
 
-	/** Workflow WhereClause : General, Document Process, Document Value */
+	/**
+	 * Workflow WhereClause : General, Document Process, Document Value
+	 */
 	private static final String WORKFLOW_WhereClause = "WorkflowType IN ("
 			+ DB.TO_STRING(X_AD_Workflow.WORKFLOWTYPE_General)
-			+ "," + DB.TO_STRING(MWorkflow.WORKFLOWTYPE_DocumentProcess)
-			+ "," + DB.TO_STRING(MWorkflow.WORKFLOWTYPE_DocumentValue)
+			+ "," + DB.TO_STRING(X_AD_Workflow.WORKFLOWTYPE_DocumentProcess)
+			+ "," + DB.TO_STRING(X_AD_Workflow.WORKFLOWTYPE_DocumentValue)
 			+ ")";
 
 	/**
@@ -113,7 +105,7 @@ public class WFPanel extends CPanel
 	public WFPanel()
 	{
 		this(null, WORKFLOW_WhereClause, -1);
-	}	// WFPanel
+	}    // WFPanel
 
 	/**
 	 * Create Workflow Panel
@@ -150,11 +142,11 @@ public class WFPanel extends CPanel
 		{
 			log.error("WFPanel", e);
 		}
-	}	// WFPanel
+	}    // WFPanel
 
 	/**
 	 * Menu.
-	 *
+	 * <p>
 	 * NOTE: atm is needed only for {@link AMenuStartItem} which needs it to update the progress bar.
 	 */
 	private AMenu m_menu = null;
@@ -166,24 +158,40 @@ public class WFPanel extends CPanel
 
 	// /** Window No */
 	// private int m_WindowNo = 0;
-	/** FormFrame */
+	/**
+	 * FormFrame
+	 */
 	private FormFrame m_frame;
 
-	/** Workflow Model */
-	private MWorkflow m_wf = null;
-	/** Context */
+	/**
+	 * Workflow Model
+	 */
+	private WorkflowModel workflowModel = null;
+	/**
+	 * Context
+	 */
 	private Properties m_ctx = Env.getCtx();
-	/** Active Node					*/
-	private WFNode 		m_activeNode = null;
-	/** ReadWrite Mode (see WFNode) */
+	/**
+	 * Active Node
+	 */
+	private WFNodeComponent m_activeNode = null;
+	/**
+	 * ReadWrite Mode (see WFNode)
+	 */
 	private boolean m_readWrite = false;
 
-	/** Workflows List Where Clause */
+	/**
+	 * Workflows List Where Clause
+	 */
 	private String m_WF_whereClause = null;
-	/** Workflow Window ID */
+	/**
+	 * Workflow Window ID
+	 */
 	private AdWindowId m_WF_Window_ID;
 
-	/** Logger */
+	/**
+	 * Logger
+	 */
 	private static Logger log = LogManager.getLogger(WFPanel.class);
 
 	// UI
@@ -246,14 +254,13 @@ public class WFPanel extends CPanel
 		southPanel.add(infoScrollPane, BorderLayout.CENTER);
 		southPanel.add(wfPanel, BorderLayout.SOUTH);
 
-
-	}	// jbInit
+	}    // jbInit
 
 	/**
 	 * Initialize Panel for FormPanel
 	 *
 	 * @param WindowNo window
-	 * @param frame frame
+	 * @param frame    frame
 	 * @see org.compiere.apps.form.FormPanel#init(int, FormFrame)
 	 */
 	@Override
@@ -278,7 +285,7 @@ public class WFPanel extends CPanel
 		{
 			log.error("init", e);
 		}
-	}	// init
+	}    // init
 
 	/**
 	 * Dispose
@@ -293,7 +300,7 @@ public class WFPanel extends CPanel
 			m_frame.dispose();
 		}
 		m_frame = null;
-	}	// dispose
+	}    // dispose
 
 	/**
 	 * Workflow Add & Load Panel
@@ -304,7 +311,7 @@ public class WFPanel extends CPanel
 				"SELECT AD_Workflow_ID, Name FROM AD_Workflow "
 						+ (!Check.isEmpty(m_WF_whereClause, true) ? " WHERE " + m_WF_whereClause : "")
 						+ " ORDER BY 2",
-				"AD_Workflow", IUserRolePermissions.SQL_NOTQUALIFIED, Access.READ);	// all
+				"AD_Workflow", IUserRolePermissions.SQL_NOTQUALIFIED, Access.READ);    // all
 		KeyNamePair[] pp = DB.getKeyNamePairs(sql, true);
 		//
 		workflow = new CComboBox<>(pp);
@@ -320,7 +327,7 @@ public class WFPanel extends CPanel
 		bSaveLayout.addActionListener(this);
 		loadPanel.add(bZoom);
 		bZoom.addActionListener(this);
-	}	// loadPanel
+	}    // loadPanel
 
 	/**************************************************************************
 	 * Load Workflow & Nodes
@@ -334,56 +341,58 @@ public class WFPanel extends CPanel
 		{
 			return;
 		}
-		load(pp.getKey(), readWrite);
-	}	// load
+		load(WorkflowId.ofRepoIdOrNull(pp.getKey()), readWrite);
+	}    // load
 
 	/**
 	 * Load Workflow & Nodes
 	 *
-	 * @param AD_Workflow_ID ID
-	 * @param readWrite if true nodes can be moved
+	 * @param workflowId ID
+	 * @param readWrite  if true nodes can be moved
 	 */
-	public void load(int AD_Workflow_ID, boolean readWrite)
+	public void load(WorkflowId workflowId, boolean readWrite)
 	{
-		log.debug("RW=" + readWrite + " - AD_Workflow_ID=" + AD_Workflow_ID);
-		if (AD_Workflow_ID <= 0)
+		log.debug("RW=" + readWrite + " - AD_Workflow_ID=" + workflowId);
+		if (workflowId == null)
 		{
 			return;
 		}
-		int AD_Client_ID = Env.getAD_Client_ID(Env.getCtx());
+
+		final ClientId clientId = Env.getClientId();
+		final String adLanguage = Env.getADLanguageOrBaseLanguage();
+
 		// Get Workflow
-		m_wf = new MWorkflow(Env.getCtx(), AD_Workflow_ID, null);
+		workflowModel = new WorkflowModel(workflowDAO.getById(workflowId));
 		centerPanel.removeAll();
 		centerPanel.setReadWrite(readWrite);
 		if (readWrite)
 		{
-			centerPanel.setWorkflow(m_wf);
+			centerPanel.setWorkflow(workflowModel);
 		}
 		// Add Nodes for Paint
-		MWFNode[] nodes = m_wf.getNodes(true, AD_Client_ID);
-		for (MWFNode node : nodes)
+		List<WorkflowNodeModel> nodes = workflowModel.getNodesInOrder(clientId);
+		for (final WorkflowNodeModel node : nodes)
 		{
-			WFNode wfn = new WFNode(node);
-			wfn.addPropertyChangeListener(WFNode.PROPERTY_SELECTED, this);
-			boolean rw = readWrite 		// in editor mode & owned
-					&& (AD_Client_ID == node.getAD_Client_ID());
+			final WFNodeComponent wfn = new WFNodeComponent(node);
+			wfn.addPropertyChangeListener(WFNodeComponent.PROPERTY_SELECTED, this);
+			boolean rw = readWrite        // in editor mode & owned
+					&& ClientId.equals(clientId, node.getClientId());
 			centerPanel.add(wfn, rw);
 			// Add Lines
-			MWFNodeNext[] nexts = node.getTransitions(AD_Client_ID);
-			for (MWFNodeNext next : nexts)
+			for (WorkflowNodeTransitionModel transition : node.getTransitions(clientId))
 			{
-				centerPanel.add(new WFLine(next), false);
+				centerPanel.add(new WFLine(transition), false);
 			}
 		}
 		// Info Text
 		StringBuffer msg = new StringBuffer("<HTML>");
-		msg.append("<H2>").append(m_wf.getName(true)).append("</H2>");
-		String s = m_wf.getDescription(true);
+		msg.append("<H2>").append(workflowModel.getName().translate(adLanguage)).append("</H2>");
+		String s = workflowModel.getDescription().translate(adLanguage);
 		if (s != null && s.length() > 0)
 		{
 			msg.append("<B>").append(s).append("</B>");
 		}
-		s = m_wf.getHelp(true);
+		s = workflowModel.getHelp().translate(adLanguage);
 		if (s != null && s.length() > 0)
 		{
 			msg.append("<BR>").append(s);
@@ -397,7 +406,7 @@ public class WFPanel extends CPanel
 		centerPanel.validate();
 		centerPanel.repaint();
 		validate();
-	}	// load
+	}    // load
 
 	/**
 	 * Property Change Listener
@@ -410,9 +419,9 @@ public class WFPanel extends CPanel
 	{
 		if (e.getNewValue() == Boolean.TRUE)
 		{
-			start((WFNode)e.getSource());
+			start((WFNodeComponent)e.getSource());
 		}
-	}	// propertyChange
+	}    // propertyChange
 
 	/**
 	 * Action Listener
@@ -423,7 +432,7 @@ public class WFPanel extends CPanel
 	@Override
 	public void actionPerformed(ActionEvent e)
 	{
-		if (m_wf == null && e.getSource() != workflow)
+		if (workflowModel == null && e.getSource() != workflow)
 		{
 			return;
 		}
@@ -431,7 +440,7 @@ public class WFPanel extends CPanel
 		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 		try
 		{
-			final int AD_Client_ID = Env.getAD_Client_ID(Env.getCtx());
+			final ClientId clientId = Env.getClientId();
 			// Editing
 			if (e.getSource() == bZoom)
 			{
@@ -439,7 +448,7 @@ public class WFPanel extends CPanel
 			}
 			else if (e.getSource() == bIgnore)
 			{
-				load(m_wf.getAD_Workflow_ID(), true);
+				load(workflowModel.getId(), true);
 			}
 			else if (e.getSource() == workflow)
 			{
@@ -447,16 +456,11 @@ public class WFPanel extends CPanel
 			}
 			else if (e.getSource() == bSaveLayout)
 			{
-				if (m_wf.getAD_Client_ID() == AD_Client_ID)
+				for (WorkflowNodeModel node : workflowModel.getNodesInOrder(clientId))
 				{
-					m_wf.save();
-				}
-				MWFNode[] nodes = m_wf.getNodes(false, AD_Client_ID);
-				for (MWFNode node : nodes)
-				{
-					if (node.getAD_Client_ID() == AD_Client_ID)
+					if (ClientId.equals(node.getClientId(), clientId))
 					{
-						node.save();
+						node.saveEx();
 					}
 				}
 			}
@@ -468,8 +472,11 @@ public class WFPanel extends CPanel
 			{
 				if (isSimpleWorkflowWindow && m_activeNode != null)
 				{
-					final MWFNode model = MWFNode.get(m_ctx, m_activeNode.getAD_WF_Node_ID());
-					AMenuStartItem.startWFNode(model, m_menu); // async load
+					final WorkflowNodeModel model = m_activeNode.getModel();
+					AMenuStartItem.startWFNode(
+							model.getWorkflowId(),
+							model.unbox(),
+							m_menu); // async load
 				}
 			}
 		}
@@ -477,26 +484,27 @@ public class WFPanel extends CPanel
 		{
 			setCursor(Cursor.getDefaultCursor());
 		}
-	}	// actionPerformed
+	}    // actionPerformed
 
 	/**************************************************************************
 	 * Start Node
 	 *
 	 * @param node node
 	 */
-	private void start(WFNode node)
+	private void start(WFNodeComponent node)
 	{
 		log.debug("Node=" + node);
-		MWFNode model = node.getModel();
+		final String adLanguage = Env.getADLanguageOrBaseLanguage();
+		WorkflowNodeModel model = node.getModel();
 		// Info Text
 		StringBuffer msg = new StringBuffer("<HTML>");
-		msg.append("<H2>").append(model.getName(true)).append("</H2>");
-		String s = model.getDescription(true);
+		msg.append("<H2>").append(model.getName().translate(adLanguage)).append("</H2>");
+		String s = model.getDescription().translate(adLanguage);
 		if (s != null && s.length() > 0)
 		{
 			msg.append("<B>").append(s).append("</B>");
 		}
-		s = model.getHelp(true);
+		s = model.getHelp().translate(adLanguage);
 		if (s != null && s.length() > 0)
 		{
 			msg.append("<BR>").append(s);
@@ -507,38 +515,9 @@ public class WFPanel extends CPanel
 
 		wfStartNode.setEnabled(true);
 		m_activeNode = node;
-	}	// start
+	}    // start
 
-	/**
-	 * Start Node
-	 *
-	 * @param AD_WF_Node_ID node id
-	 */
-	public void start(int AD_WF_Node_ID)
-	{
-		if (AD_WF_Node_ID == 0)
-		{
-			return;
-		}
-		//
-		for (int i = 0; i < centerPanel.getComponentCount(); i++)
-		{
-			Component comp = centerPanel.getComponent(i);
-			if (comp instanceof WFNode)
-			{
-				WFNode node = (WFNode)comp;
-				if (node.getAD_WF_Node_ID() == AD_WF_Node_ID)
-				{
-					start(node);
-					return;
-				}
-			}	// WFNode
-		}	// for all components
-	}	// start
 
-	/**
-	 * Reset Layout
-	 */
 	private void resetLayout()
 	{
 		Point p0 = new Point(0, 0);
@@ -548,7 +527,7 @@ public class WFPanel extends CPanel
 			comp.setLocation(p0);
 		}
 		centerPanel.validate();
-	}	// resetLayout
+	}    // resetLayout
 
 	/**
 	 * Zoom to WorkFlow
@@ -565,9 +544,9 @@ public class WFPanel extends CPanel
 		}
 
 		MQuery query = null;
-		if (m_wf != null)
+		if (workflowModel != null)
 		{
-			query = MQuery.getEqualQuery("AD_Workflow_ID", m_wf.getAD_Workflow_ID());
+			query = MQuery.getEqualQuery("AD_Workflow_ID", workflowModel.getId().getRepoId());
 		}
 		AWindow frame = new AWindow();
 		if (!frame.initWindow(m_WF_Window_ID, query))
@@ -577,7 +556,7 @@ public class WFPanel extends CPanel
 		AEnv.addToWindowManager(frame);
 		AEnv.showCenterScreen(frame);
 		frame = null;
-	}	// zoom
+	}    // zoom
 
 	/**
 	 * String Representation
@@ -588,11 +567,11 @@ public class WFPanel extends CPanel
 	public String toString()
 	{
 		final StringBuilder sb = new StringBuilder("WFPanel[");
-		if (m_wf != null)
+		if (workflowModel != null)
 		{
-			sb.append(m_wf.getAD_Workflow_ID());
+			sb.append(workflowModel.getId().getRepoId());
 		}
 		sb.append("]");
 		return sb.toString();
-	}	// toString
-}	// WFPanel
+	}    // toString
+}    // WFPanel

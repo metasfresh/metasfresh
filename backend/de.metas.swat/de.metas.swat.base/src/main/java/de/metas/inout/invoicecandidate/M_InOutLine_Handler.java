@@ -1,23 +1,39 @@
 package de.metas.inout.invoicecandidate;
 
+import ch.qos.logback.classic.Level;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableSet;
 import de.metas.acct.api.IProductAcctDAO;
+import de.metas.async.AsyncBatchId;
 import de.metas.bpartner.BPartnerContactId;
+import de.metas.bpartner.BPartnerDocumentLocationHelper;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.cache.model.impl.TableRecordCacheLocal;
+import de.metas.common.util.CoalesceUtil;
+import de.metas.document.DocTypeId;
+import de.metas.document.IDocTypeBL;
+import de.metas.document.dimension.Dimension;
+import de.metas.document.dimension.DimensionService;
 import de.metas.document.engine.DocStatus;
+import de.metas.document.location.DocumentLocation;
+import de.metas.document.location.RenderedAddressAndCapturedLocation;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
+import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
+import de.metas.inout.InOutId;
 import de.metas.inout.model.I_M_InOut;
+import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandInvalidUpdater;
 import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
+import de.metas.invoicecandidate.location.adapter.InvoiceCandidateLocationAdapterFactory;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_M_InOutLine;
@@ -26,8 +42,10 @@ import de.metas.invoicecandidate.spi.AbstractInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
+import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderLineBL;
+import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.IPricingResult;
@@ -38,12 +56,14 @@ import de.metas.product.acct.api.ActivityId;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxCategoryId;
+import de.metas.tax.api.TaxId;
 import de.metas.user.User;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
+import de.metas.util.ILoggable;
 import de.metas.util.ImmutableMapEntry;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
-import de.metas.common.util.CoalesceUtil;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
@@ -56,6 +76,7 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Note;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.slf4j.Logger;
@@ -104,7 +125,10 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 	private static final Logger logger = LogManager.getLogger(M_InOutLine_Handler.class);
 
 	// Services
+	private final transient IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 	private final transient IInOutBL inOutBL = Services.get(IInOutBL.class);
+	private final transient DimensionService dimensionService = SpringContextHolder.instance.getBean(DimensionService.class);
+	private final transient IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 
 	/**
 	 * @return {@code false}, but note that this handler will be invoked to create missing invoice candidates via {@link M_InOut_Handler#expandRequest(InvoiceCandidateGenerateRequest)}.
@@ -119,7 +143,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 	 * @return {@code false}, but note that this handler will be invoked to create missing invoice candidates via {@link M_InOut_Handler#expandRequest(InvoiceCandidateGenerateRequest)}.
 	 */
 	@Override
-	public boolean isCreateMissingCandidatesAutomatically(Object model)
+	public boolean isCreateMissingCandidatesAutomatically(final Object model)
 	{
 		return false;
 	}
@@ -133,8 +157,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		//
 		// Retrieve inout
 		final I_M_InOutLine inoutLine = create(model, I_M_InOutLine.class);
-		final org.compiere.model.I_M_InOut inout = inoutLine.getM_InOut();
-		return inout;
+		return inoutLine.getM_InOut();
 	}
 
 	@Override
@@ -231,8 +254,8 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 			final boolean qtyLeftWasAllocated = qtyLeftToAllocate.abs().compareTo(allocatedQty.abs()) == 0;
 
 			Check.errorIf(qtyLeftShouldHaveBeenAllocated && !qtyLeftWasAllocated,
-					"We invoked createInvoiceCandidateForInOutLineOrNull with forcedQtyOrdered={}, but allocatedQty={}; inOutLine={}; inOut={}",
-					qtyLeftToAllocate, allocatedQty, inOutLine, inOutLine.getM_InOut());
+						  "We invoked createInvoiceCandidateForInOutLineOrNull with forcedQtyOrdered={}, but allocatedQty={}; inOutLine={}; inOut={}",
+						  qtyLeftToAllocate, allocatedQty, inOutLine, inOutLine.getM_InOut());
 		}
 
 		return createdInvoiceCandidates.build();
@@ -271,7 +294,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 	private I_C_Invoice_Candidate createInvoiceCandidateForInOutLineOrNull(
 			@NonNull final I_M_InOutLine inOutLineRecord,
 			@Nullable final PaymentTermId paymentTermId,
-			@Nullable BigDecimal forcedQtyToAllocate)
+			@Nullable final BigDecimal forcedQtyToAllocate)
 	{
 
 		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
@@ -341,7 +364,8 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		// Set invoice rule form linked order (if exists)
 		if (inOut.getC_Order_ID() > 0)
 		{
-			icRecord.setInvoiceRule(inOut.getC_Order().getInvoiceRule()); // the rule set in order
+			final I_C_Order order = inOut.getC_Order();
+			icRecord.setInvoiceRule(order.getInvoiceRule()); // the rule set in order
 		}
 		// Set Invoice Rule from BPartner
 		else
@@ -358,10 +382,17 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 			}
 		}
 
-		//
-		// Set C_Activity from Product (07442)
-		final ActivityId activityId = Services.get(IProductAcctDAO.class).retrieveActivityForAcct(clientId, orgId, productId);
-		icRecord.setC_Activity_ID(ActivityId.toRepoId(activityId));
+		Dimension inOutLineDimension = dimensionService.getFromRecord(inOutLineRecord);
+
+		if (inOutLineDimension.getActivityId() == null)
+		{
+			//
+			// Set C_Activity from Product (07442)
+			final ActivityId activityId = Services.get(IProductAcctDAO.class).retrieveActivityForAcct(clientId, orgId, productId);
+			inOutLineDimension = inOutLineDimension.withActivityId(activityId);
+		}
+
+		dimensionService.updateRecord(icRecord, inOutLineDimension);
 
 		//
 		// Set C_Tax from Product (07442)
@@ -369,8 +400,11 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		final TaxCategoryId taxCategoryId = priceAndQty != null ? priceAndQty.getTaxCategoryId() : null;
 		final Timestamp shipDate = inOut.getMovementDate();
 		final int locationId = inOut.getC_BPartner_Location_ID();
+		final BPartnerLocationAndCaptureId deliveryLocation = InOutDocumentLocationAdapterFactory
+				.locationAdapter(inOut)
+				.getBPartnerLocationAndCaptureId();
 
-		final int taxId = Services.get(ITaxBL.class).getTax(
+		final TaxId taxId = Services.get(ITaxBL.class).getTaxNotNull(
 				ctx,
 				icRecord,
 				taxCategoryId,
@@ -378,10 +412,18 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 				shipDate,
 				orgId,
 				WarehouseId.ofRepoId(inOut.getM_Warehouse_ID()),
-				locationId, // shipC_BPartner_Location_ID
-				isSOTrx);
-		icRecord.setC_Tax_ID(taxId);
+				deliveryLocation, // shipC_BPartner_Location_ID
+				SOTrx.ofBoolean(isSOTrx));
+		icRecord.setC_Tax_ID(taxId.getRepoId());
 
+		//DocType
+		final DocTypeId invoiceDocTypeId = extractDocTypeId(inOutLineRecord);
+		if (invoiceDocTypeId != null)
+		{
+			icRecord.setC_DocTypeInvoice_ID(invoiceDocTypeId.getRepoId());
+		}
+
+		icRecord.setC_Async_Batch_ID(inOut.getC_Async_Batch_ID());
 		//
 		// Save the Invoice Candidate, so that we can use it's ID further down
 		saveRecord(icRecord);
@@ -426,6 +468,60 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		return icRecord;
 	}
 
+	private DocTypeId extractDocTypeId(final I_M_InOutLine inOutLineRecord)
+	{
+		final ILoggable loggable = Loggables.withLogger(logger, Level.DEBUG);
+
+		final org.compiere.model.I_M_InOut inOutRecord = inOutLineRecord.getM_InOut();
+
+		if (inOutRecord.getC_DocType_ID() > 0)
+		{
+			final DocTypeId inoutDocTypeId = DocTypeId.ofRepoIdOrNull(inOutRecord.getC_DocType_ID());
+			final I_C_DocType inOutDocType = docTypeBL.getById(inoutDocTypeId);
+			if (inOutDocType.getC_DocTypeInvoice_ID() > 0)
+			{
+				loggable.addLog("extractDocTypeId - M_InOutLine_ID={} has M_InOut_ID={} => C_DocType_ID={} => C_DocTypeInvoice_ID={}; -> return that as DocTypeId",
+								inOutLineRecord.getM_InOutLine_ID(), inOutLineRecord.getM_InOut_ID(), inOutRecord.getC_DocType_ID(), inOutDocType.getC_DocTypeInvoice_ID());
+				return DocTypeId.ofRepoId(inOutDocType.getC_DocTypeInvoice_ID());
+			}
+		}
+		if (inOutLineRecord.getC_OrderLine_ID() > 0)
+		{
+			final I_C_Order order = inOutLineRecord.getC_OrderLine().getC_Order();
+			final I_C_DocType orderDocType = extractOrderDocTypeRecord(order);
+			if (orderDocType.getC_DocTypeInvoice_ID() > 0)
+			{
+				loggable.addLog("extractDocTypeId - M_InOutLine_ID={} has C_OrderLine_ID={} => C_Order_ID={} => doctype-ID={} => C_DocTypeInvoice_ID={}; -> return that as DocTypeId",
+								inOutLineRecord.getM_InOutLine_ID(), inOutLineRecord.getC_OrderLine_ID(), order.getC_Order_ID(),
+								orderDocType.getC_DocType_ID(), orderDocType.getC_DocTypeInvoice_ID());
+				return DocTypeId.ofRepoId(orderDocType.getC_DocTypeInvoice_ID());
+			}
+		}
+		if (inOutRecord.getC_Order_ID() > 0)
+		{
+			final I_C_Order order = inOutRecord.getC_Order();
+			final I_C_DocType orderDocType = extractOrderDocTypeRecord(order);
+			if (orderDocType.getC_DocTypeInvoice_ID() > 0)
+			{
+				loggable.addLog("extractDocTypeId - M_InOutLine_ID={} has M_InOut_ID={} => C_Order_ID={} => doctype-ID={} => C_DocTypeInvoice_ID={}; -> return that as DocTypeId",
+								inOutLineRecord.getM_InOutLine_ID(), inOutLineRecord.getC_OrderLine_ID(), order.getC_Order_ID(),
+								orderDocType.getC_DocType_ID(), orderDocType.getC_DocTypeInvoice_ID());
+				return DocTypeId.ofRepoId(orderDocType.getC_DocTypeInvoice_ID());
+			}
+		}
+		loggable.addLog("extractDocTypeId - Unable to determine invoice doctype for M_InOutLine_ID={}; -> return null", inOutLineRecord.getM_InOutLine_ID());
+		return null;
+	}
+
+	private I_C_DocType extractOrderDocTypeRecord(final I_C_Order order)
+	{
+		final DocTypeId orderDocTypeId = CoalesceUtil.coalesceSuppliers(
+				() -> DocTypeId.ofRepoIdOrNull(order.getC_DocType_ID()),
+				() -> DocTypeId.ofRepoId(order.getC_DocTypeTarget_ID()));
+		final I_C_DocType orderDocType = docTypeBL.getById(orderDocTypeId);
+		return orderDocType;
+	}
+
 	@Override
 	public void invalidateCandidatesFor(final Object model)
 	{
@@ -437,7 +533,26 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 	{
 		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 
+		final org.compiere.model.I_M_InOut shipment = inOutBL.getById(InOutId.ofRepoId(inoutLine.getM_InOut_ID()));
+
 		final IQueryBuilder<I_C_Invoice_Candidate> icQueryBuilder = invoiceCandDAO.retrieveInvoiceCandidatesForInOutLineQuery(inoutLine);
+
+		final AsyncBatchId asyncBatchId = AsyncBatchId.ofRepoIdOrNull(shipment.getC_Async_Batch_ID());
+
+		if (asyncBatchId != null)
+		{
+			final ImmutableSet<InvoiceCandidateId> invoiceCandidateIds = icQueryBuilder.create()
+					.listIds()
+					.stream()
+					.map(InvoiceCandidateId::ofRepoId)
+					.collect(ImmutableSet.toImmutableSet());
+
+
+			invoiceCandidateIds.forEach(invoiceCandidateId -> invoiceCandBL.setAsyncBatch(invoiceCandidateId, asyncBatchId));
+
+			invoiceCandDAO.invalidateCandsFor(invoiceCandidateIds);
+			return;
+		}
 
 		invoiceCandDAO.invalidateCandsFor(icQueryBuilder);
 	}
@@ -749,15 +864,17 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 
 		final I_M_InOut inOut = create(fromInOutLine.getM_InOut(), I_M_InOut.class);
 
-		final BPartnerLocationId billBPLocationId;
-		final BPartnerContactId billBPContactId;
+		final DocumentLocation billLocation;
+		//final BPartnerLocationId billBPLocationId;
+		//final BPartnerContactId billBPContactId;
 		// The bill related info cannot be changed in the schedule
 		// Therefore, it's safe to set them in the invoice candidate directly from the order (if we have it)
 		final I_C_Order inoutOrder = inOut.getC_Order();
 		if (inoutOrder != null && inoutOrder.getC_Order_ID() > 0)
 		{
-			billBPLocationId = BPartnerLocationId.ofRepoIdOrNull(inoutOrder.getBill_BPartner_ID(), inoutOrder.getBill_Location_ID());
-			billBPContactId = BPartnerContactId.ofRepoIdOrNull(inoutOrder.getBill_BPartner_ID(), inoutOrder.getBill_User_ID());
+			billLocation = OrderDocumentLocationAdapterFactory
+					.billLocationAdapter(inoutOrder)
+					.toDocumentLocation();
 		}
 		// Otherwise, take it from the inout, but don't use the inout's location and user. They might not be "billto" after all.
 		else
@@ -765,27 +882,35 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 			final boolean alsoTryBilltoRelation = true;
 			final Properties ctx = getCtx(ic);
 
-			final I_C_BPartner_Location billBPLocation = bPartnerDAO.retrieveBillToLocation(ctx, inOut.getC_BPartner_ID(), alsoTryBilltoRelation, ITrx.TRXNAME_None);
-			billBPLocationId = BPartnerLocationId.ofRepoId(billBPLocation.getC_BPartner_ID(), billBPLocation.getC_BPartner_Location_ID());
+			final DocumentLocation billLocationFromInOut = BPartnerDocumentLocationHelper.extractDocumentLocation(
+					bPartnerDAO.retrieveBillToLocation(ctx, inOut.getC_BPartner_ID(), alsoTryBilltoRelation, ITrx.TRXNAME_None)
+			);
 
-			final User billBPContact = bPartnerBL
-					.retrieveContactOrNull(RetrieveContactRequest.builder()
-							.bpartnerId(billBPLocationId.getBpartnerId())
-							.bPartnerLocationId(billBPLocationId)
-							.build());
-			billBPContactId = billBPContact != null
-					? BPartnerContactId.of(billBPLocationId.getBpartnerId(), billBPContact.getId())
+			final User billUser = bPartnerBL.retrieveContactOrNull(RetrieveContactRequest.builder()
+												   .bpartnerId(billLocationFromInOut.getBpartnerId())
+												   .bPartnerLocationId(billLocationFromInOut.getBpartnerLocationId())
+												   .build());
+			final BPartnerContactId billBPContactId = billUser != null
+					? BPartnerContactId.of(billLocationFromInOut.getBpartnerId(), billUser.getId())
 					: null;
+
+			if(billBPContactId != null)
+			{
+				billLocation = billLocationFromInOut.toBuilder()
+						.contactId(billBPContactId)
+						.bpartnerAddress(null) // shall be recomputed
+						.build();
+			}
+			else
+			{
+				billLocation = billLocationFromInOut;
+			}
 		}
 
-		Check.assumeNotNull(billBPLocationId, "billBPLocation not null");
-		// Bill_User_ID isn't mandatory in C_Order, and isn't considered a must in OLHandler either
-		// Check.assumeNotNull(billBPContactId, "billBPContact not null");
-
 		// Set BPartner / Location / Contact
-		ic.setBill_BPartner_ID(billBPLocationId.getBpartnerId().getRepoId());
-		ic.setBill_Location_ID(billBPLocationId.getRepoId());
-		ic.setBill_User_ID(BPartnerContactId.toRepoId(billBPContactId));
+		InvoiceCandidateLocationAdapterFactory
+				.billLocationAdapter(ic)
+				.setFrom(billLocation);
 	}
 
 	@Override

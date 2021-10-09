@@ -15,7 +15,7 @@
 	<packaging>jar</packaging>
 
 	<properties>
-		<migration-sql-basedir>80-de.metas.edi</migration-sql-basedir>
+		<migration-sql-basedir/>
 	</properties>
 
 	<dependencies>
@@ -60,8 +60,8 @@
 		</dependency>
 
 		<dependency>
-			<groupId>de.metas.adempiere.libero</groupId>
-			<artifactId>de.metas.adempiere.libero.libero</artifactId>
+			<groupId>de.metas.manufacturing</groupId>
+			<artifactId>de.metas.manufacturing</artifactId>
 			<version>10.0.0</version>
 			<classifier>tests</classifier>
 			<scope>test</scope>
@@ -74,6 +74,14 @@
 			<classifier>tests</classifier>
 			<scope>test</scope>
 		</dependency>
+
+		<dependency>
+			<groupId>org.assertj</groupId>
+			<artifactId>assertj-core</artifactId>
+			<version>${assertj.version}</version>
+			<scope>test</scope>
+		</dependency>
+		
 	</dependencies>
 
 </project>

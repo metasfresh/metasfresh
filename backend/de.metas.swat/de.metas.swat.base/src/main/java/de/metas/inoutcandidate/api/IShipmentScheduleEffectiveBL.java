@@ -26,12 +26,13 @@ import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 
 import de.metas.bpartner.BPartnerContactId;
+import de.metas.document.location.DocumentLocation;
 import lombok.NonNull;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner_Location;
 
-import de.metas.adempiere.model.I_AD_User;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -58,8 +59,11 @@ public interface IShipmentScheduleEffectiveBL extends ISingletonService
 	 */
 	BPartnerId getBPartnerId(I_M_ShipmentSchedule sched);
 
+	String getBPartnerAddress(@NonNull I_M_ShipmentSchedule sched);
+
 	DeliveryRule getDeliveryRule(I_M_ShipmentSchedule sched);
 
+	/** Consider using {@link IShipmentScheduleBL#getQtyToDeliver(I_M_ShipmentSchedule)} instead. */
 	BigDecimal getQtyToDeliverBD(I_M_ShipmentSchedule sched);
 
 	I_C_BPartner getBPartner(I_M_ShipmentSchedule sched);
@@ -71,6 +75,8 @@ public interface IShipmentScheduleEffectiveBL extends ISingletonService
 	}
 
 	BPartnerLocationId getBPartnerLocationId(I_M_ShipmentSchedule sched);
+
+	DocumentLocation getDocumentLocation(@NonNull I_M_ShipmentSchedule sched);
 
 	/**
 	 * @deprecated please use {@link #getBPartnerContactId(I_M_ShipmentSchedule)} as this returns BAD data!
@@ -84,13 +90,10 @@ public interface IShipmentScheduleEffectiveBL extends ISingletonService
 	/**
 	 * @return the effective {@code QtyOrdered}. Where it's coming from is determined from different values and flags of the given {@code sched}.
 	 */
-	BigDecimal computeQtyOrdered(I_M_ShipmentSchedule sched);
+	BigDecimal computeQtyOrdered(@NonNull I_M_ShipmentSchedule sched);
 
 	/**
 	 * Get the delivery date effective based on DeliveryDate and DeliveryDate_Override
-	 *
-	 * @param sched
-	 * @return
 	 */
 	ZonedDateTime getDeliveryDate(I_M_ShipmentSchedule sched);
 
@@ -98,9 +101,6 @@ public interface IShipmentScheduleEffectiveBL extends ISingletonService
 	 * Get the preparation date effective based on PreparationDate and PreparationDate_Override.
 	 * If none of them is set, try to fallback to the given {@code sched}'s order's preparation date. If the order has no proparation date, falls back to the order's promised date.
 	 * If the given {@code sched} doesn't have an order, return the current time.,
-	 *
-	 * @param sched
-	 * @return
 	 */
 	ZonedDateTime getPreparationDate(I_M_ShipmentSchedule sched);
 }

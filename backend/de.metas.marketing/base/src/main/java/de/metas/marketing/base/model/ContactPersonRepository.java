@@ -1,25 +1,12 @@
 package de.metas.marketing.base.model;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-
-import org.adempiere.ad.dao.ICompositeQueryFilter;
-import org.adempiere.ad.dao.IQueryBL;
-import org.compiere.model.IQuery;
-import org.springframework.stereotype.Repository;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.bpartner.service.BPartnerLocationInfo;
-import de.metas.bpartner.service.BPartnerLocationInfoRepository;
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.common.util.time.SystemTime;
 import de.metas.i18n.Language;
 import de.metas.letter.BoilerPlateId;
 import de.metas.location.LocationId;
@@ -28,8 +15,19 @@ import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
+import org.adempiere.ad.dao.ICompositeQueryFilter;
+import org.adempiere.ad.dao.IQueryBL;
+import org.compiere.model.IQuery;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -56,12 +54,7 @@ import lombok.NonNull;
 @Repository
 public class ContactPersonRepository
 {
-	private final BPartnerLocationInfoRepository bpLocationRepo;
-
-	public ContactPersonRepository(@NonNull final BPartnerLocationInfoRepository bpLocationRepo)
-	{
-		this.bpLocationRepo = bpLocationRepo;
-	}
+	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 
 	public ContactPerson save(@NonNull final ContactPerson contactPerson)
 	{
@@ -86,9 +79,9 @@ public class ContactPersonRepository
 		{
 			if (contactPerson.getBpLocationId() != null)
 			{
-				final BPartnerLocationInfo bpLocation = bpLocationRepo.getByBPartnerLocationId(contactPerson.getBpLocationId());
-				contactPersonRecord.setC_BPartner_Location_ID(bpLocation.getId().getRepoId());
-				contactPersonRecord.setC_Location_ID(bpLocation.getLocationId().getRepoId());
+				final BPartnerLocationAndCaptureId bpLocationId = bpartnerDAO.getBPartnerLocationAndCaptureIdInTrx(contactPerson.getBpLocationId());
+				contactPersonRecord.setC_BPartner_Location_ID(bpLocationId.getBPartnerLocationRepoId());
+				contactPersonRecord.setC_Location_ID(bpLocationId.getLocationCaptureRepoId());
 			}
 			else
 			{
@@ -158,8 +151,8 @@ public class ContactPersonRepository
 
 		if (contactPerson.getBpLocationId() != null)
 		{
-			final BPartnerLocationInfo bpLocation = bpLocationRepo.getByBPartnerLocationId(contactPerson.getBpLocationId());
-			final LocationId locationId = bpLocation.getLocationId();
+			final BPartnerLocationAndCaptureId bpLocation = bpartnerDAO.getBPartnerLocationAndCaptureIdInTrx(contactPerson.getBpLocationId());
+			final LocationId locationId = bpLocation.getLocationCaptureId();
 			baseQueryFilter.addEqualsFilter(I_MKTG_ContactPerson.COLUMNNAME_C_Location_ID, locationId);
 		}
 		else
@@ -198,7 +191,7 @@ public class ContactPersonRepository
 		}
 		else if (syncResult instanceof RemoteToLocalSyncResult)
 		{
-			contactPersonRecord.setLastSyncOfRemoteToLocal(SystemTime.asTimestamp());
+			contactPersonRecord.setLastSyncOfRemoteToLocal(de.metas.common.util.time.SystemTime.asTimestamp());
 
 			final RemoteToLocalSyncResult remoteToLocalSyncResult = (RemoteToLocalSyncResult)syncResult;
 			contactPersonRecord.setLastSyncStatus(remoteToLocalSyncResult.getRemoteToLocalStatus().toString());
@@ -309,7 +302,7 @@ public class ContactPersonRepository
 		consent.setAD_User_ID(UserId.toRepoIdOr(contactPerson.getUserId(), -1));
 		consent.setC_BPartner_ID(BPartnerId.toRepoIdOr(contactPerson.getBPartnerId(), 0));
 
-		consent.setConsentDeclaredOn(SystemTime.asTimestamp());
+		consent.setConsentDeclaredOn(de.metas.common.util.time.SystemTime.asTimestamp());
 		consent.setMKTG_ContactPerson_ID(contactPerson.getContactPersonId().getRepoId());
 
 		saveRecord(consent);
@@ -322,7 +315,7 @@ public class ContactPersonRepository
 
 		if (consent != null)
 		{
-			consent.setConsentRevokedOn(SystemTime.asTimestamp());
+			consent.setConsentRevokedOn(de.metas.common.util.time.SystemTime.asTimestamp());
 			saveRecord(consent);
 		}
 	}

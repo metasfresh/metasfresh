@@ -5,6 +5,7 @@ import java.sql.SQLException;
 import java.util.Objects;
 import java.util.Properties;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -20,7 +21,6 @@ import org.compiere.model.X_M_DiscountSchema;
 import de.metas.impexp.processing.IImportInterceptor;
 import de.metas.impexp.processing.ImportRecordsSelection;
 import de.metas.impexp.processing.SimpleImportProcessTemplate;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 /**

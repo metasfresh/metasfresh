@@ -1,71 +1,52 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package de.metas.contracts.commission.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for C_Commission_Fact
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
 public class X_C_Commission_Fact extends org.compiere.model.PO implements I_C_Commission_Fact, org.compiere.model.I_Persistent 
 {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = 1757201916L;
+	private static final long serialVersionUID = -861662769L;
 
     /** Standard Constructor */
-    public X_C_Commission_Fact (Properties ctx, int C_Commission_Fact_ID, String trxName)
+    public X_C_Commission_Fact (final Properties ctx, final int C_Commission_Fact_ID, @Nullable final String trxName)
     {
       super (ctx, C_Commission_Fact_ID, trxName);
-      /** if (C_Commission_Fact_ID == 0)
-        {
-			setC_Commission_Fact_ID (0);
-			setC_Commission_Share_ID (0);
-			setCommission_Fact_State (null);
-			setCommissionFactTimestamp (null);
-			setCommissionPoints (BigDecimal.ZERO);
-        } */
     }
 
     /** Load Constructor */
-    public X_C_Commission_Fact (Properties ctx, ResultSet rs, String trxName)
+    public X_C_Commission_Fact (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
 
 
-    /** Load Meta Data */
-    @Override
-    protected org.compiere.model.POInfo initPO (Properties ctx)
-    {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
-      return poi;
-    }
-
-	/** Set C_Commission_Fact.
-		@param C_Commission_Fact_ID C_Commission_Fact	  */
+	/** Load Meta Data */
 	@Override
-	public void setC_Commission_Fact_ID (int C_Commission_Fact_ID)
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
+	{
+		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public void setC_Commission_Fact_ID (final int C_Commission_Fact_ID)
 	{
 		if (C_Commission_Fact_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_C_Commission_Fact_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_C_Commission_Fact_ID, Integer.valueOf(C_Commission_Fact_ID));
+			set_ValueNoCheck (COLUMNNAME_C_Commission_Fact_ID, C_Commission_Fact_ID);
 	}
 
-	/** Get C_Commission_Fact.
-		@return C_Commission_Fact	  */
 	@Override
-	public int getC_Commission_Fact_ID () 
+	public int getC_Commission_Fact_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_Commission_Fact_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_Commission_Fact_ID);
 	}
 
 	@Override
@@ -75,53 +56,39 @@ public class X_C_Commission_Fact extends org.compiere.model.PO implements I_C_Co
 	}
 
 	@Override
-	public void setC_Commission_Share(de.metas.contracts.commission.model.I_C_Commission_Share C_Commission_Share)
+	public void setC_Commission_Share(final de.metas.contracts.commission.model.I_C_Commission_Share C_Commission_Share)
 	{
 		set_ValueFromPO(COLUMNNAME_C_Commission_Share_ID, de.metas.contracts.commission.model.I_C_Commission_Share.class, C_Commission_Share);
 	}
 
-	/** Set Buchauszug.
-		@param C_Commission_Share_ID Buchauszug	  */
 	@Override
-	public void setC_Commission_Share_ID (int C_Commission_Share_ID)
+	public void setC_Commission_Share_ID (final int C_Commission_Share_ID)
 	{
 		if (C_Commission_Share_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_C_Commission_Share_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_C_Commission_Share_ID, Integer.valueOf(C_Commission_Share_ID));
+			set_ValueNoCheck (COLUMNNAME_C_Commission_Share_ID, C_Commission_Share_ID);
 	}
 
-	/** Get Buchauszug.
-		@return Buchauszug	  */
 	@Override
-	public int getC_Commission_Share_ID () 
+	public int getC_Commission_Share_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_Commission_Share_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_Commission_Share_ID);
 	}
 
-	/** Set Provisionsabrechnungskandidat.
-		@param C_Invoice_Candidate_Commission_ID Provisionsabrechnungskandidat	  */
 	@Override
-	public void setC_Invoice_Candidate_Commission_ID (int C_Invoice_Candidate_Commission_ID)
+	public void setC_Invoice_Candidate_Commission_ID (final int C_Invoice_Candidate_Commission_ID)
 	{
 		if (C_Invoice_Candidate_Commission_ID < 1) 
 			set_Value (COLUMNNAME_C_Invoice_Candidate_Commission_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_Invoice_Candidate_Commission_ID, Integer.valueOf(C_Invoice_Candidate_Commission_ID));
+			set_Value (COLUMNNAME_C_Invoice_Candidate_Commission_ID, C_Invoice_Candidate_Commission_ID);
 	}
 
-	/** Get Provisionsabrechnungskandidat.
-		@return Provisionsabrechnungskandidat	  */
 	@Override
-	public int getC_Invoice_Candidate_Commission_ID () 
+	public int getC_Invoice_Candidate_Commission_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_Invoice_Candidate_Commission_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_Invoice_Candidate_Commission_ID);
 	}
 
 	/** 
@@ -139,55 +106,40 @@ public class X_C_Commission_Fact extends org.compiere.model.PO implements I_C_Co
 	public static final String COMMISSION_FACT_STATE_SETTLED = "SETTLED";
 	/** TO_SETTLE = TO_SETTLE */
 	public static final String COMMISSION_FACT_STATE_TO_SETTLE = "TO_SETTLE";
-	/** Set Status.
-		@param Commission_Fact_State Status	  */
 	@Override
-	public void setCommission_Fact_State (java.lang.String Commission_Fact_State)
+	public void setCommission_Fact_State (final java.lang.String Commission_Fact_State)
 	{
-
 		set_ValueNoCheck (COLUMNNAME_Commission_Fact_State, Commission_Fact_State);
 	}
 
-	/** Get Status.
-		@return Status	  */
 	@Override
-	public java.lang.String getCommission_Fact_State () 
+	public java.lang.String getCommission_Fact_State() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Commission_Fact_State);
+		return get_ValueAsString(COLUMNNAME_Commission_Fact_State);
 	}
 
-	/** Set Zeitstempel.
-		@param CommissionFactTimestamp Zeitstempel	  */
 	@Override
-	public void setCommissionFactTimestamp (java.lang.String CommissionFactTimestamp)
+	public void setCommissionFactTimestamp (final java.lang.String CommissionFactTimestamp)
 	{
 		set_ValueNoCheck (COLUMNNAME_CommissionFactTimestamp, CommissionFactTimestamp);
 	}
 
-	/** Get Zeitstempel.
-		@return Zeitstempel	  */
 	@Override
-	public java.lang.String getCommissionFactTimestamp () 
+	public java.lang.String getCommissionFactTimestamp() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_CommissionFactTimestamp);
+		return get_ValueAsString(COLUMNNAME_CommissionFactTimestamp);
 	}
 
-	/** Set Provisionspunkte.
-		@param CommissionPoints Provisionspunkte	  */
 	@Override
-	public void setCommissionPoints (java.math.BigDecimal CommissionPoints)
+	public void setCommissionPoints (final BigDecimal CommissionPoints)
 	{
 		set_ValueNoCheck (COLUMNNAME_CommissionPoints, CommissionPoints);
 	}
 
-	/** Get Provisionspunkte.
-		@return Provisionspunkte	  */
 	@Override
-	public java.math.BigDecimal getCommissionPoints () 
+	public BigDecimal getCommissionPoints() 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_CommissionPoints);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_CommissionPoints);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 }

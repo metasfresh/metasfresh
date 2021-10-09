@@ -1,52 +1,15 @@
 package de.metas.handlingunits.picking;
 
-import static org.adempiere.model.InterfaceWrapperHelper.deleteAll;
-import static org.adempiere.model.InterfaceWrapperHelper.isNull;
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.function.BiConsumer;
-import java.util.function.BinaryOperator;
-import java.util.function.Function;
-import java.util.function.Supplier;
-import java.util.stream.Collector;
-import java.util.stream.Stream;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.IQueryUpdater;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.IQuery;
-import org.compiere.model.I_C_UOM;
-import org.springframework.stereotype.Service;
-
-import java.util.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Picking_Candidate;
 import de.metas.handlingunits.model.I_M_Picking_Candidate_IssueToOrder;
 import de.metas.handlingunits.model.X_M_HU;
-import de.metas.inoutcandidate.api.ShipmentScheduleId;
-import de.metas.material.planning.pporder.PPOrderBOMLineId;
-import de.metas.material.planning.pporder.PPOrderId;
+import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.picking.api.IPickingSlotDAO;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.api.PickingSlotQuery;
@@ -57,6 +20,40 @@ import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryUpdater;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.IQuery;
+import org.compiere.model.I_C_UOM;
+import org.eevolution.api.PPOrderBOMLineId;
+import org.eevolution.api.PPOrderId;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.BiConsumer;
+import java.util.function.BinaryOperator;
+import java.util.function.Function;
+import java.util.function.Supplier;
+import java.util.stream.Collector;
+import java.util.stream.Stream;
+
+import static org.adempiere.model.InterfaceWrapperHelper.deleteAll;
+import static org.adempiere.model.InterfaceWrapperHelper.isNull;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -84,7 +81,6 @@ import lombok.NonNull;
  * Dedicated DAO'ish class centered around {@link I_M_Picking_Candidate}s
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 @Service
 public class PickingCandidateRepository
@@ -278,6 +274,11 @@ public class PickingCandidateRepository
 
 	public void deletePickingCandidates(@NonNull final Collection<PickingCandidate> candidates)
 	{
+		if (candidates.isEmpty())
+		{
+			return;
+		}
+		
 		final Set<PickingCandidateId> pickingCandidateIds = candidates.stream()
 				.map(PickingCandidate::getId)
 				.filter(Objects::nonNull)
@@ -294,7 +295,7 @@ public class PickingCandidateRepository
 	}
 
 	public List<PickingCandidate> getByShipmentScheduleIdAndStatus(
-			@NonNull ShipmentScheduleId shipmentScheduleId,
+			@NonNull final ShipmentScheduleId shipmentScheduleId,
 			@NonNull final PickingCandidateStatus status)
 	{
 		return getByShipmentScheduleIdsAndStatus(ImmutableSet.of(shipmentScheduleId), status);
@@ -356,7 +357,7 @@ public class PickingCandidateRepository
 				});
 	}
 
-	private void markAsInactiveNoSave(I_M_Picking_Candidate record)
+	private void markAsInactiveNoSave(final I_M_Picking_Candidate record)
 	{
 		record.setIsActive(false);
 		record.setStatus(PickingCandidateStatus.Closed.getCode());
@@ -386,7 +387,10 @@ public class PickingCandidateRepository
 
 		//
 		// Shipment schedules
-		queryBuilder.addInArrayFilter(I_M_Picking_Candidate.COLUMN_M_ShipmentSchedule_ID, pickingCandidatesQuery.getShipmentScheduleIds());
+		if (!Check.isEmpty(pickingCandidatesQuery.getShipmentScheduleIds()))
+		{
+			queryBuilder.addInArrayFilter(I_M_Picking_Candidate.COLUMN_M_ShipmentSchedule_ID, pickingCandidatesQuery.getShipmentScheduleIds());
+		}
 
 		//
 		// Not Closed + Not Rack System Picking slots
@@ -452,13 +456,12 @@ public class PickingCandidateRepository
 	 */
 	public boolean isHuIdPicked(@NonNull final HuId huId)
 	{
-		final boolean isAlreadyPicked = queryBL
+		return queryBL
 				.createQueryBuilder(I_M_Picking_Candidate.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_Picking_Candidate.COLUMNNAME_M_HU_ID, huId)
 				.create()
 				.anyMatch();
-		return isAlreadyPicked;
 	}
 
 	private Collector<I_M_Picking_Candidate, ?, ImmutableList<PickingCandidate>> toPickingCandidatesList()
@@ -547,7 +550,7 @@ public class PickingCandidateRepository
 
 	private void saveIssuesToBOMLine(
 			@NonNull final PickingCandidateId pickingCandidateId,
-			@NonNull ImmutableList<PickingCandidateIssueToBOMLine> issuesToPickingOrder)
+			@NonNull final ImmutableList<PickingCandidateIssueToBOMLine> issuesToPickingOrder)
 	{
 		final HashMap<PickingCandidateIssueToBOMLineKey, I_M_Picking_Candidate_IssueToOrder> existingRecordsByKey = streamIssuesToBOMLineRecords(pickingCandidateId)
 				.collect(GuavaCollectors.toHashMapByKey(PickingCandidateIssueToBOMLineKey::of));

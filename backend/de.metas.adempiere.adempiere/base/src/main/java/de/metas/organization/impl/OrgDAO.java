@@ -1,55 +1,16 @@
 package de.metas.organization.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-import java.time.ZoneId;
-
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.util.List;
-import java.util.Optional;
-import java.util.Properties;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
-import org.adempiere.util.proxy.Cached;
-import org.adempiere.warehouse.WarehouseId;
-import org.compiere.model.I_AD_Org;
-import org.compiere.model.I_AD_OrgInfo;
-import org.compiere.util.Env;
-
+import com.google.common.collect.ImmutableMap;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.cache.CCache;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.calendar.CalendarId;
+import de.metas.common.util.time.SystemTime;
+import de.metas.image.AdImageId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.organization.OrgIdNotFoundException;
+import de.metas.organization.OrgImagesMap;
 import de.metas.organization.OrgInfo;
 import de.metas.organization.OrgInfoUpdateRequest;
 import de.metas.organization.OrgQuery;
@@ -61,12 +22,35 @@ import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
-import de.metas.util.time.SystemTime;
+import de.metas.workflow.WFResponsibleId;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.adempiere.util.proxy.Cached;
+import org.adempiere.warehouse.WarehouseId;
+import org.compiere.Adempiere;
+import org.compiere.model.I_AD_Org;
+import org.compiere.model.I_AD_OrgInfo;
+import org.compiere.model.POInfo;
+import org.compiere.util.DisplayType;
+import org.compiere.util.Env;
+
+import java.time.ZoneId;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 public class OrgDAO implements IOrgDAO
 {
-	private final CCache<OrgId, OrgInfo> orgInfosCache = CCache.<OrgId, OrgInfo> builder()
+	private final CCache<OrgId, OrgInfo> orgInfosCache = CCache.<OrgId, OrgInfo>builder()
 			.tableName(I_AD_OrgInfo.Table_Name)
 			.build();
 
@@ -150,11 +134,13 @@ public class OrgDAO implements IOrgDAO
 	}
 
 	@Override
+	
 	public OrgInfo getOrgInfoByIdInTrx(final OrgId adOrgId)
 	{
 		return retrieveOrgInfo(adOrgId, ITrx.TRXNAME_ThreadInherited);
 	}
-
+	
+	@NonNull
 	private OrgInfo retrieveOrgInfo(@NonNull final OrgId orgId, final String trxName)
 	{
 		final I_AD_OrgInfo record = retrieveOrgInfoRecordOrNull(orgId, trxName);
@@ -202,13 +188,54 @@ public class OrgDAO implements IOrgDAO
 				//
 				.storeCreditCardNumberMode(StoreCreditCardNumberMode.ofCode(record.getStoreCreditCardData()))
 				//
-				.logoImageId(record.getLogo_ID())
-				.workflowResponsibleId(record.getAD_WF_Responsible_ID())
+				.imagesMap(extractImagesMap(record))
+				.workflowResponsibleId(WFResponsibleId.ofRepoIdOrNull(record.getAD_WF_Responsible_ID()))
 				.orgBPartnerLocationId(BPartnerLocationId.ofRepoIdOrNull(record.getOrg_BPartner_ID(), record.getOrgBP_Location_ID()))
 				.reportsPathPrefix(record.getReportPrefix())
 				.timeZone(timeZone)
 				//
 				.build();
+	}
+
+	private static OrgImagesMap extractImagesMap(@NonNull final I_AD_OrgInfo orgInfo)
+	{
+		if (Adempiere.isUnitTestMode())
+		{
+			final HashMap<String, AdImageId> result = new HashMap<>();
+			final AdImageId logoId = AdImageId.ofRepoIdOrNull(orgInfo.getLogo_ID());
+			if(logoId != null)
+			{
+				result.put(I_AD_OrgInfo.COLUMNNAME_Logo_ID, logoId);
+			}
+
+			final AdImageId reportBottomLogoId = AdImageId.ofRepoIdOrNull(orgInfo.getReportBottom_Logo_ID());
+			if(reportBottomLogoId != null)
+			{
+				result.put(I_AD_OrgInfo.COLUMNNAME_ReportBottom_Logo_ID, reportBottomLogoId);
+			}
+
+			return OrgImagesMap.ofImageIdsByColumnName(result);
+		}
+		else
+		{
+			final ImmutableMap.Builder<String, AdImageId> result = ImmutableMap.builder();
+			final POInfo poInfo = POInfo.getPOInfo(I_AD_OrgInfo.Table_Name);
+			for (final String columnName : poInfo.getColumnNames())
+			{
+				if (poInfo.getColumnDisplayType(columnName) == DisplayType.Image)
+				{
+					final AdImageId imageId = InterfaceWrapperHelper.getValue(orgInfo, columnName)
+							.map(AdImageId::ofNullableObject)
+							.orElse(null);
+					if(imageId != null)
+					{
+						result.put(columnName, imageId);
+					}
+				}
+			}
+
+			return OrgImagesMap.ofImageIdsByColumnName(result.build());
+		}
 	}
 
 	@Override
@@ -284,6 +311,17 @@ public class OrgDAO implements IOrgDAO
 		}
 		final ZoneId timeZone = getOrgInfoById(orgId).getTimeZone();
 		return timeZone != null ? timeZone : SystemTime.zoneId();
+	}
+
+	@Override
+	public boolean isEUOneStopShop(@NonNull final OrgId orgId)
+	{
+		final I_AD_Org org = getById(orgId);
+		if (org == null)
+		{
+			throw new AdempiereException("No Organization found for ID: " + orgId);
+		}
+		return org.isEUOneStopShop();
 	}
 
 }

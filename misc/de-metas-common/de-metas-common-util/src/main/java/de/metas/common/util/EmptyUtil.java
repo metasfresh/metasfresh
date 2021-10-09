@@ -31,6 +31,12 @@ import java.util.Collection;
 @UtilityClass
 public class EmptyUtil
 {
+	/**
+	 * @return {@code true} if the given value is either {@code null} or
+	 * <li>an empty collection</li>
+	 * <li>an empty array</li>
+	 * <li>a blank string</li>
+	 */
 	public boolean isEmpty(@Nullable final Object value)
 	{
 		if (value == null)
@@ -40,15 +46,11 @@ public class EmptyUtil
 
 		if (value instanceof String)
 		{
-			return isEmpty((String)value, true);
+			return isBlank((String)value);
 		}
 		if (value instanceof Object[])
 		{
 			return isEmpty((Object[])value);
-		}
-		if (value instanceof BigDecimal)
-		{
-			return isEmpty((BigDecimal)value);
 		}
 		if (value instanceof Collection<?>)
 		{
@@ -103,17 +105,9 @@ public class EmptyUtil
 	}    // isEmpty
 
 	/**
-	 * @return true if bd is null or bd.signum() is zero
-	 */
-	public boolean isEmpty(final BigDecimal bd)
-	{
-		return bd == null || bd.signum() == 0;
-	}
-
-	/**
 	 * @return true if the array is null or it's length is zero.
 	 */
-	public <T> boolean isEmpty(final T[] arr)
+	public <T> boolean isEmpty(@Nullable final T[] arr)
 	{
 		return arr == null || arr.length == 0;
 	}
@@ -121,7 +115,7 @@ public class EmptyUtil
 	/**
 	 * @return true if given collection is <code>null</code> or it has no elements
 	 */
-	public boolean isEmpty(final Collection<?> collection)
+	public boolean isEmpty(@Nullable final Collection<?> collection)
 	{
 		return collection == null || collection.isEmpty();
 	}

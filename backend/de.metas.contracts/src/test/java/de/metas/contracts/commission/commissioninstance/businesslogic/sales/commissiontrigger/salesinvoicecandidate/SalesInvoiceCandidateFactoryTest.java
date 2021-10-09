@@ -1,17 +1,18 @@
 package de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.salesinvoicecandidate;
 
-import static java.math.BigDecimal.TEN;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.math.BigDecimal;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.ZoneId;
-import java.util.Optional;
-
+import de.metas.bpartner.BPartnerId;
+import de.metas.business.BusinessTestHelper;
+import de.metas.common.util.time.SystemTime;
+import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionPoints;
+import de.metas.contracts.commission.commissioninstance.services.CommissionProductService;
+import de.metas.currency.CurrencyRepository;
+import de.metas.invoicecandidate.InvoiceCandidateId;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.money.CurrencyId;
+import de.metas.money.MoneyService;
+import de.metas.organization.OrgId;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_UOM;
@@ -20,18 +21,17 @@ import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import de.metas.bpartner.BPartnerId;
-import de.metas.business.BusinessTestHelper;
-import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionPoints;
-import de.metas.contracts.commission.commissioninstance.services.CommissionProductService;
-import de.metas.currency.CurrencyRepository;
-import de.metas.invoicecandidate.InvoiceCandidateId;
-import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.money.MoneyService;
-import de.metas.organization.OrgId;
-import de.metas.product.ProductId;
-import de.metas.util.lang.Percent;
-import de.metas.util.time.SystemTime;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.util.Optional;
+
+import static java.math.BigDecimal.TEN;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -70,12 +70,11 @@ class SalesInvoiceCandidateFactoryTest
 	@Test
 	void forRecord()
 	{
-		final Instant fixedTime = LocalDate.parse("2020-03-03")
+		final ZonedDateTime fixedTime = LocalDate.parse("2020-03-03")
 				.atTime(LocalTime.parse("09:23:00"))
-				.atZone(ZoneId.of("CET"))
-				.toInstant();
+				.atZone(ZoneId.of("CET"));
 
-		SystemTime.setTimeSource(fixedTime::toEpochMilli);
+		SystemTime.setFixedTimeSource(fixedTime);
 
 		final I_C_UOM uomRecord = BusinessTestHelper.createUOM("uom");
 		final I_C_Currency currencyRecord = BusinessTestHelper.createCurrency("TobiDollar");
@@ -89,12 +88,14 @@ class SalesInvoiceCandidateFactoryTest
 		icRecord.setC_Currency_ID(currencyRecord.getC_Currency_ID());
 		icRecord.setC_UOM_ID(uomRecord.getC_UOM_ID());
 		icRecord.setM_Product_ID(product.getM_Product_ID());
+		icRecord.setPrice_UOM_ID(product.getC_UOM_ID());
 		icRecord.setC_BPartner_SalesRep_ID(20);
 		icRecord.setBill_BPartner_ID(30);
 		icRecord.setPriceActual(TEN);
 		icRecord.setDateOrdered(TimeUtil.parseTimestamp("2020-03-21"));
 
 		icRecord.setQtyEntered(new BigDecimal("50"));
+		icRecord.setQtyOrdered(new BigDecimal("50"));
 
 		icRecord.setNetAmtToInvoice(new BigDecimal("300"));
 		icRecord.setQtyToInvoiceInUOM(new BigDecimal("30"));
@@ -115,11 +116,12 @@ class SalesInvoiceCandidateFactoryTest
 						.customerBPartnerId(BPartnerId.ofRepoId(30))
 						.productId(ProductId.ofRepoId(product.getM_Product_ID()))
 						.commissionDate(LocalDate.parse("2020-03-21"))
-						.updated(fixedTime)
-						.forecastCommissionPoints(CommissionPoints.of("100")) // (Entered - ToInvoiceInUOM - InvoicedInUOM) * PriceActual
+						.updated(fixedTime.toInstant())
+						.forecastCommissionPoints(CommissionPoints.of("500")) // (Entered - ToInvoiceInUOM - InvoicedInUOM) * PriceActual
 						.commissionPointsToInvoice(CommissionPoints.of("300")) // toInvoiceInUOM * priceActual
 						.invoicedCommissionPoints(CommissionPoints.of("100")) // invoicedInUOM * priceActual
-						.tradedCommissionPercent(Percent.ZERO)
+						.totalQtyInvolved(Quantity.of(BigDecimal.valueOf(50), uomRecord))
+						.currencyId(CurrencyId.ofRepoId(currencyRecord.getC_Currency_ID()))
 						.build());
 	}
 }

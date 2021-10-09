@@ -1,22 +1,21 @@
 package de.metas.rest_api.utils;
 
-import static de.metas.common.util.CoalesceUtil.firstNotEmptyTrimmed;
-
-import javax.annotation.Nullable;
-
-import org.compiere.model.I_AD_Org;
-import org.compiere.model.X_C_DocType;
-import org.springframework.stereotype.Service;
-
+import de.metas.common.ordercandidates.v1.request.JsonOLCandCreateRequest.OrderDocType;
+import de.metas.common.rest_api.v1.JsonDocTypeInfo;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
-import de.metas.rest_api.common.JsonDocTypeInfo;
-import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateRequest.OrderDocType;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.compiere.model.I_AD_Org;
+import org.compiere.model.X_C_DocType;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Nullable;
+
+import static de.metas.common.util.CoalesceUtil.firstNotEmptyTrimmed;
 
 /*
  * #%L

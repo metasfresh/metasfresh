@@ -118,6 +118,16 @@
 			<artifactId>jp.osdn.ocrb</artifactId>
 		</dependency>
  		-->
+		<dependency>
+			<groupId>de.metas.report.jasper</groupId>
+			<artifactId>roboto-fonts</artifactId>
+			<version>2012023.1-2</version>
+		</dependency>
+		<dependency>
+			<groupId>de.metas.report.jasper</groupId>
+			<artifactId>source-code-pro-fonts</artifactId>
+			<version>1.0.0</version>
+		</dependency>
 
  		<!-- JXls integration -->
 		<dependency>
@@ -144,6 +154,22 @@
 			<artifactId>lombok</artifactId>
 			<scope>provided</scope>
 		</dependency>
+
+		<dependency>
+			<groupId>de.metas.adempiere.adempiere</groupId>
+			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
+			<version>${metasfresh.version}</version>
+			<classifier>tests</classifier>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.assertj</groupId>
+			<artifactId>assertj-core</artifactId>
+			<version>${assertj.version}</version>
+			<scope>test</scope>
+		</dependency>
+		
 	</dependencies>
 
 </project>

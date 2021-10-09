@@ -1,125 +1,99 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for AD_ImpFormat
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
 public class X_AD_ImpFormat extends org.compiere.model.PO implements I_AD_ImpFormat, org.compiere.model.I_Persistent 
 {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = -1649907738L;
+	private static final long serialVersionUID = -1897064103L;
 
     /** Standard Constructor */
-    public X_AD_ImpFormat (Properties ctx, int AD_ImpFormat_ID, String trxName)
+    public X_AD_ImpFormat (final Properties ctx, final int AD_ImpFormat_ID, @Nullable final String trxName)
     {
       super (ctx, AD_ImpFormat_ID, trxName);
-      /** if (AD_ImpFormat_ID == 0)
-        {
-			setAD_ImpFormat_ID (0);
-			setAD_Table_ID (0);
-			setFormatType (null);
-			setIsManualImport (false); // N
-			setIsMultiLine (false); // N
-			setName (null);
-			setProcessing (false); // N
-        } */
     }
 
     /** Load Constructor */
-    public X_AD_ImpFormat (Properties ctx, ResultSet rs, String trxName)
+    public X_AD_ImpFormat (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
 
 
-    /** Load Meta Data */
-    @Override
-    protected org.compiere.model.POInfo initPO (Properties ctx)
-    {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
-      return poi;
-    }
-
-	/** Set Import-Format.
-		@param AD_ImpFormat_ID Import-Format	  */
+	/** Load Meta Data */
 	@Override
-	public void setAD_ImpFormat_ID (int AD_ImpFormat_ID)
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
+	{
+		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public void setAD_ImpFormat_ID (final int AD_ImpFormat_ID)
 	{
 		if (AD_ImpFormat_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_AD_ImpFormat_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_AD_ImpFormat_ID, Integer.valueOf(AD_ImpFormat_ID));
+			set_ValueNoCheck (COLUMNNAME_AD_ImpFormat_ID, AD_ImpFormat_ID);
 	}
 
-	/** Get Import-Format.
-		@return Import-Format	  */
 	@Override
-	public int getAD_ImpFormat_ID () 
+	public int getAD_ImpFormat_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_ImpFormat_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_AD_ImpFormat_ID);
 	}
 
 	@Override
-	public org.compiere.model.I_AD_Table getAD_Table()
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_Table_ID, org.compiere.model.I_AD_Table.class);
-	}
-
-	@Override
-	public void setAD_Table(org.compiere.model.I_AD_Table AD_Table)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_Table_ID, org.compiere.model.I_AD_Table.class, AD_Table);
-	}
-
-	/** Set DB-Tabelle.
-		@param AD_Table_ID 
-		Database Table information
-	  */
-	@Override
-	public void setAD_Table_ID (int AD_Table_ID)
+	public void setAD_Table_ID (final int AD_Table_ID)
 	{
 		if (AD_Table_ID < 1) 
 			set_Value (COLUMNNAME_AD_Table_ID, null);
 		else 
-			set_Value (COLUMNNAME_AD_Table_ID, Integer.valueOf(AD_Table_ID));
+			set_Value (COLUMNNAME_AD_Table_ID, AD_Table_ID);
 	}
 
-	/** Get DB-Tabelle.
-		@return Database Table information
-	  */
 	@Override
-	public int getAD_Table_ID () 
+	public int getAD_Table_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Table_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_AD_Table_ID);
 	}
 
-	/** Set Beschreibung.
-		@param Description Beschreibung	  */
 	@Override
-	public void setDescription (java.lang.String Description)
+	public void setDescription (final java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
 
-	/** Get Beschreibung.
-		@return Beschreibung	  */
 	@Override
-	public java.lang.String getDescription () 
+	public java.lang.String getDescription() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Description);
+		return get_ValueAsString(COLUMNNAME_Description);
+	}
+
+	/** 
+	 * FileCharset AD_Reference_ID=541224
+	 * Reference name: FileCharset
+	 */
+	public static final int FILECHARSET_AD_Reference_ID=541224;
+	/** UTF-8 = utf-8 */
+	public static final String FILECHARSET_UTF_8 = "utf-8";
+	/** Windows-1252 = Windows-1252 */
+	public static final String FILECHARSET_Windows_1252 = "Windows-1252";
+	@Override
+	public void setFileCharset (final java.lang.String FileCharset)
+	{
+		set_Value (COLUMNNAME_FileCharset, FileCharset);
+	}
+
+	@Override
+	public java.lang.String getFileCharset() 
+	{
+		return get_ValueAsString(COLUMNNAME_FileCharset);
 	}
 
 	/** 
@@ -137,108 +111,75 @@ public class X_AD_ImpFormat extends org.compiere.model.PO implements I_AD_ImpFor
 	public static final String FORMATTYPE_XML = "X";
 	/** SemicolonSeparated = S */
 	public static final String FORMATTYPE_SemicolonSeparated = "S";
-	/** Set Format.
-		@param FormatType 
-		Format of the data
-	  */
 	@Override
-	public void setFormatType (java.lang.String FormatType)
+	public void setFormatType (final java.lang.String FormatType)
 	{
-
 		set_Value (COLUMNNAME_FormatType, FormatType);
 	}
 
-	/** Get Format.
-		@return Format of the data
-	  */
 	@Override
-	public java.lang.String getFormatType () 
+	public java.lang.String getFormatType() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_FormatType);
+		return get_ValueAsString(COLUMNNAME_FormatType);
 	}
 
-	/** Set IsManualImport.
-		@param IsManualImport IsManualImport	  */
 	@Override
-	public void setIsManualImport (boolean IsManualImport)
+	public void setIsManualImport (final boolean IsManualImport)
 	{
-		set_Value (COLUMNNAME_IsManualImport, Boolean.valueOf(IsManualImport));
+		set_Value (COLUMNNAME_IsManualImport, IsManualImport);
 	}
 
-	/** Get IsManualImport.
-		@return IsManualImport	  */
 	@Override
-	public boolean isManualImport () 
+	public boolean isManualImport() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsManualImport);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsManualImport);
 	}
 
-	/** Set Multi Line.
-		@param IsMultiLine Multi Line	  */
 	@Override
-	public void setIsMultiLine (boolean IsMultiLine)
+	public void setIsMultiLine (final boolean IsMultiLine)
 	{
-		set_Value (COLUMNNAME_IsMultiLine, Boolean.valueOf(IsMultiLine));
+		set_Value (COLUMNNAME_IsMultiLine, IsMultiLine);
 	}
 
-	/** Get Multi Line.
-		@return Multi Line	  */
 	@Override
-	public boolean isMultiLine () 
+	public boolean isMultiLine() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsMultiLine);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsMultiLine);
 	}
 
-	/** Set Name.
-		@param Name Name	  */
 	@Override
-	public void setName (java.lang.String Name)
+	public void setName (final java.lang.String Name)
 	{
 		set_Value (COLUMNNAME_Name, Name);
 	}
 
-	/** Get Name.
-		@return Name	  */
 	@Override
-	public java.lang.String getName () 
+	public java.lang.String getName() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Name);
+		return get_ValueAsString(COLUMNNAME_Name);
 	}
 
-	/** Set Verarbeiten.
-		@param Processing Verarbeiten	  */
 	@Override
-	public void setProcessing (boolean Processing)
+	public void setProcessing (final boolean Processing)
 	{
-		set_Value (COLUMNNAME_Processing, Boolean.valueOf(Processing));
+		set_Value (COLUMNNAME_Processing, Processing);
 	}
 
-	/** Get Verarbeiten.
-		@return Verarbeiten	  */
 	@Override
-	public boolean isProcessing () 
+	public boolean isProcessing() 
 	{
-		Object oo = get_Value(COLUMNNAME_Processing);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_Processing);
+	}
+
+	@Override
+	public void setSkipFirstNRows (final int SkipFirstNRows)
+	{
+		set_Value (COLUMNNAME_SkipFirstNRows, SkipFirstNRows);
+	}
+
+	@Override
+	public int getSkipFirstNRows() 
+	{
+		return get_ValueAsInt(COLUMNNAME_SkipFirstNRows);
 	}
 }

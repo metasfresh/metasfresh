@@ -1,5 +1,11 @@
 package de.metas.handlingunits.reservation.interceptor;
 
+import com.google.common.collect.ImmutableSet;
+import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.model.I_M_HU_Reservation;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.modelvalidator.ModelChangeUtil;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -7,14 +13,6 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
-
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.IHandlingUnitsDAO;
-import de.metas.handlingunits.model.I_M_HU_Reservation;
-import de.metas.util.Services;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -48,7 +46,10 @@ public class M_HU_Reservation
 	public void updateC_BPartner_ID(@NonNull final I_M_HU_Reservation huReservationRecord)
 	{
 		final I_C_OrderLine orderLineRecord = huReservationRecord.getC_OrderLineSO();
-		huReservationRecord.setC_BPartner_Customer_ID(orderLineRecord.getC_BPartner_ID());
+		if (orderLineRecord != null)
+		{
+			huReservationRecord.setC_BPartner_Customer_ID(orderLineRecord.getC_BPartner_ID());
+		}
 	}
 
 	@ModelChange( //

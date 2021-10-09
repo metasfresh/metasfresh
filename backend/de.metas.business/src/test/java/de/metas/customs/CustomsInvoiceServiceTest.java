@@ -9,7 +9,11 @@ import java.time.LocalDate;
 import java.time.Month;
 import java.util.function.Consumer;
 
+import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.document.location.impl.DocumentLocationBL;
+import de.metas.user.UserRepository;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
@@ -25,7 +29,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
 
-import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -53,8 +56,8 @@ import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.uom.CreateUOMConversionRequest;
 import de.metas.uom.IUOMConversionDAO;
 import de.metas.uom.IUOMDAO;
-import de.metas.uom.UOMConstants;
 import de.metas.uom.UomId;
+import de.metas.uom.X12DE355;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -110,7 +113,8 @@ public class CustomsInvoiceServiceTest
 		customsInvoiceRepo = new CustomsInvoiceRepository();
 		final OrderLineRepository orderLineRepo = new OrderLineRepository();
 		final ShipmentLinesForCustomsInvoiceRepo shipmentLinesForCustomsInvoiceRepo = new ShipmentLinesForCustomsInvoiceRepo();
-		service = new CustomsInvoiceService(customsInvoiceRepo, orderLineRepo, shipmentLinesForCustomsInvoiceRepo);
+		final DocumentLocationBL documentLocationBL = new DocumentLocationBL(new BPartnerBL(new UserRepository()));
+		service = new CustomsInvoiceService(customsInvoiceRepo, orderLineRepo, shipmentLinesForCustomsInvoiceRepo, documentLocationBL);
 
 		logisticCompany = createBPartnerAndLocation("LogisticCompany", "Logistic Company Address");
 		logisticUserId = createUser(logisticCompany.getBpartnerId(), "Logistic company user");
@@ -122,7 +126,7 @@ public class CustomsInvoiceServiceTest
 
 		uom1 = createUOM("UomCode1");
 		uom2 = createUOM("UomCode2");
-		createUOM(UOMConstants.X12_KILOGRAM);
+		createUOM(X12DE355.KILOGRAM.getCode());
 
 		product1 = createProduct("Product1", uom1);
 
@@ -673,6 +677,7 @@ public class CustomsInvoiceServiceTest
 		return OrderId.ofRepoId(order.getC_Order_ID());
 	}
 
+	@SuppressWarnings("SameParameterValue")
 	private ProductId createProduct(final String productName, final UomId uomId)
 	{
 		final I_M_Product product = newInstance(I_M_Product.class);
@@ -696,9 +701,10 @@ public class CustomsInvoiceServiceTest
 		return UomId.ofRepoId(uom.getC_UOM_ID());
 	}
 
+	@SuppressWarnings("SameParameterValue")
 	private UserId createUser(final BPartnerId bpartnerId, final String userName)
 	{
-		final I_AD_User userRecord = newInstance(I_AD_User.class);
+		final org.compiere.model.I_AD_User userRecord = newInstance(I_AD_User.class);
 		userRecord.setC_BPartner_ID(bpartnerId.getRepoId());
 		userRecord.setName(userName);
 		save(userRecord);
@@ -706,6 +712,7 @@ public class CustomsInvoiceServiceTest
 		return UserId.ofRepoId(userRecord.getAD_User_ID());
 	}
 
+	@SuppressWarnings("SameParameterValue")
 	private DocTypeId createDocType(final String docTypeName)
 	{
 		final I_C_DocType docTypeRecord = newInstance(I_C_DocType.class);

@@ -46,6 +46,10 @@ public class All_ReferenceListAwareEnums_Test
 	@ArgumentsSource(ReferenceListAwareEnumArgumentsProvider.class)
 	public void testClass(final Class<? extends ReferenceListAwareEnum> clazz)
 	{
+		if(clazz.isInterface())
+		{
+			return; // nothing to do
+		}
 		final Set<? extends ReferenceListAwareEnum> values = ReferenceListAwareEnums.values(clazz);
 		assertThat(values).isNotNull();
 		assertThat(values).isNotEmpty();

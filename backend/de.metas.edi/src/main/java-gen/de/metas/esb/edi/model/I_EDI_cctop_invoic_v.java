@@ -2,7 +2,7 @@ package de.metas.esb.edi.model;
 
 
 /** Generated Interface for EDI_cctop_invoic_v
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
 @SuppressWarnings("javadoc")
 public interface I_EDI_cctop_invoic_v 
@@ -14,17 +14,10 @@ public interface I_EDI_cctop_invoic_v
     /** AD_Table_ID=540462 */
 //    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 3 - Client - Org
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
-
-    /** Load Meta Data */
 
 	/**
-	 * Get Mandant.
-	 * Mandant für diese Installation.
+	 * Get Client.
+	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -37,7 +30,7 @@ public interface I_EDI_cctop_invoic_v
 
 	/**
 	 * Set Organisation.
-	 * Organisatorische Einheit des Mandanten
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -47,7 +40,7 @@ public interface I_EDI_cctop_invoic_v
 
 	/**
 	 * Get Organisation.
-	 * Organisatorische Einheit des Mandanten
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -59,8 +52,7 @@ public interface I_EDI_cctop_invoic_v
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Standort.
-	 * Identifiziert die (Liefer-) Adresse des Geschäftspartners
+	 * Set Location.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -69,8 +61,7 @@ public interface I_EDI_cctop_invoic_v
 	public void setC_BPartner_Location_ID (int C_BPartner_Location_ID);
 
 	/**
-	 * Get Standort.
-	 * Identifiziert die (Liefer-) Adresse des Geschäftspartners
+	 * Get Location.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -111,7 +102,7 @@ public interface I_EDI_cctop_invoic_v
     public static final String COLUMNNAME_C_Invoice_ID = "C_Invoice_ID";
 
 	/**
-	 * Set Auftrag.
+	 * Set Sales order.
 	 * Order
 	 *
 	 * <br>Type: TableDir
@@ -121,7 +112,7 @@ public interface I_EDI_cctop_invoic_v
 	public void setC_Order_ID (int C_Order_ID);
 
 	/**
-	 * Get Auftrag.
+	 * Get Sales order.
 	 * Order
 	 *
 	 * <br>Type: TableDir
@@ -140,8 +131,8 @@ public interface I_EDI_cctop_invoic_v
     public static final String COLUMNNAME_C_Order_ID = "C_Order_ID";
 
 	/**
-	 * Set ISO Ländercode.
-	 * Zweibuchstabiger ISO Ländercode gemäß ISO 3166-1 - http://www.chemie.fu-berlin.de/diverse/doc/ISO_3166.html
+	 * Set ISO Country Code.
+	 * Upper-case two-letter alphanumeric ISO Country code according to ISO 3166-1 - http://www.chemie.fu-berlin.de/diverse/doc/ISO_3166.html
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -150,8 +141,8 @@ public interface I_EDI_cctop_invoic_v
 	public void setCountryCode (java.lang.String CountryCode);
 
 	/**
-	 * Get ISO Ländercode.
-	 * Zweibuchstabiger ISO Ländercode gemäß ISO 3166-1 - http://www.chemie.fu-berlin.de/diverse/doc/ISO_3166.html
+	 * Get ISO Country Code.
+	 * Upper-case two-letter alphanumeric ISO Country code according to ISO 3166-1 - http://www.chemie.fu-berlin.de/diverse/doc/ISO_3166.html
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -188,8 +179,8 @@ public interface I_EDI_cctop_invoic_v
     public static final String COLUMNNAME_CountryCode_3digit = "CountryCode_3digit";
 
 	/**
-	 * Get Erstellt.
-	 * Datum, an dem dieser Eintrag erstellt wurde
+	 * Get Created.
+	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
@@ -203,8 +194,8 @@ public interface I_EDI_cctop_invoic_v
     public static final String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Erstellt durch.
-	 * Nutzer, der diesen Eintrag erstellt hat
+	 * Get Created By.
+	 * User who created this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
@@ -262,8 +253,8 @@ public interface I_EDI_cctop_invoic_v
     public static final String COLUMNNAME_CreditMemoReasonText = "CreditMemoReasonText";
 
 	/**
-	 * Set Rechnungsdatum.
-	 * Datum auf der Rechnung
+	 * Set Date.
+	 * Date printed on Invoice
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -272,8 +263,8 @@ public interface I_EDI_cctop_invoic_v
 	public void setDateInvoiced (java.sql.Timestamp DateInvoiced);
 
 	/**
-	 * Get Rechnungsdatum.
-	 * Datum auf der Rechnung
+	 * Get Date.
+	 * Date printed on Invoice
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -287,8 +278,8 @@ public interface I_EDI_cctop_invoic_v
     public static final String COLUMNNAME_DateInvoiced = "DateInvoiced";
 
 	/**
-	 * Set Auftragsdatum.
-	 * Datum des Auftrags
+	 * Set Date.
+	 * Date of Order
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -297,8 +288,8 @@ public interface I_EDI_cctop_invoic_v
 	public void setDateOrdered (java.sql.Timestamp DateOrdered);
 
 	/**
-	 * Get Auftragsdatum.
-	 * Datum des Auftrags
+	 * Get Date.
+	 * Date of Order
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -406,8 +397,8 @@ public interface I_EDI_cctop_invoic_v
     public static final String COLUMNNAME_invoice_documentno = "invoice_documentno";
 
 	/**
-	 * Set Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Set Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -416,8 +407,8 @@ public interface I_EDI_cctop_invoic_v
 	public void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Get Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -456,7 +447,7 @@ public interface I_EDI_cctop_invoic_v
     public static final String COLUMNNAME_ISO_Code = "ISO_Code";
 
 	/**
-	 * Set Bewegungsdatum.
+	 * Set Bewegungs-Datum.
 	 * Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
 	 *
 	 * <br>Type: Date
@@ -466,7 +457,7 @@ public interface I_EDI_cctop_invoic_v
 	public void setMovementDate (java.sql.Timestamp MovementDate);
 
 	/**
-	 * Get Bewegungsdatum.
+	 * Get Bewegungs-Datum.
 	 * Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
 	 *
 	 * <br>Type: Date
@@ -481,8 +472,8 @@ public interface I_EDI_cctop_invoic_v
     public static final String COLUMNNAME_MovementDate = "MovementDate";
 
 	/**
-	 * Set Referenz.
-	 * Referenz-Nummer des Kunden
+	 * Set Order Reference.
+	 * Transaction Reference Number (Sales Order, Purchase Order) of your Business Partner
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -491,8 +482,8 @@ public interface I_EDI_cctop_invoic_v
 	public void setPOReference (java.lang.String POReference);
 
 	/**
-	 * Get Referenz.
-	 * Referenz-Nummer des Kunden
+	 * Get Order Reference.
+	 * Transaction Reference Number (Sales Order, Purchase Order) of your Business Partner
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -646,8 +637,8 @@ public interface I_EDI_cctop_invoic_v
     public static final String COLUMNNAME_totalvat = "totalvat";
 
 	/**
-	 * Get Aktualisiert.
-	 * Datum, an dem dieser Eintrag aktualisiert wurde
+	 * Get Updated.
+	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
@@ -661,8 +652,8 @@ public interface I_EDI_cctop_invoic_v
     public static final String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Aktualisiert durch.
-	 * Nutzer, der diesen Eintrag aktualisiert hat
+	 * Get Updated By.
+	 * User who updated this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
@@ -674,7 +665,7 @@ public interface I_EDI_cctop_invoic_v
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
 	/**
-	 * Set Umsatzsteuer ID.
+	 * Set VAT ID.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -683,7 +674,7 @@ public interface I_EDI_cctop_invoic_v
 	public void setVATaxID (java.lang.String VATaxID);
 
 	/**
-	 * Get Umsatzsteuer ID.
+	 * Get VAT ID.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false

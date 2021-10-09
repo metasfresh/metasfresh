@@ -22,12 +22,14 @@
 
 package de.metas.contracts.interceptor;
 
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.calendar.ICalendarDAO;
 import de.metas.contracts.Contracts_Constants;
 import de.metas.contracts.IContractsDAO;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.IFlatrateTermEventService;
+import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.flatrate.interfaces.I_C_DocType;
 import de.metas.contracts.flatrate.interfaces.I_C_OLCand;
 import de.metas.contracts.impl.FlatrateBL;
@@ -65,6 +67,7 @@ import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_AD_Org;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_Period;
 import org.compiere.model.ModelValidator;
@@ -90,6 +93,9 @@ public class C_Flatrate_Term
 	private static final String MSG_TERM_ERROR_YEAR_WITHOUT_PERIODS_2P = "Term_Error_Range_Without_Periods";
 	private static final String MSG_TERM_ERROR_PERIOD_END_DATE_BEFORE_TERM_END_DATE_2P = "Term_Error_PeriodEndDate_Before_TermEndDate";
 	private static final String MSG_TERM_ERROR_PERIOD_START_DATE_AFTER_TERM_START_DATE_2P = "Term_Error_PeriodStartDate_After_TermStartDate";
+
+	private final IBPartnerDAO bparnterDAO = Services.get(IBPartnerDAO.class);
+	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 
 	private final ContractOrderService contractOrderService;
 
@@ -464,7 +470,7 @@ public class C_Flatrate_Term
 
 	/**
 	 * Updates the <code>EndDate</code> and <code>NoticeDate</code> of the given term's predecessor(s).
-	 *
+	 * <p>
 	 * task https://github.com/metasfresh/metasfresh/issues/549
 	 */
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
@@ -507,8 +513,6 @@ public class C_Flatrate_Term
 	/**
 	 * task #1169
 	 * In case the term to be completed overlaps with other term regarding time period and product the user must be announced about this and the new term shall not be completed
-	 *
-	 * @param term
 	 */
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_COMPLETE })
 	public void preventOverlappingTerms_OnComplete(final I_C_Flatrate_Term term)
@@ -525,7 +529,9 @@ public class C_Flatrate_Term
 		final boolean hasOverlappingTerms = flatrateBL.hasOverlappingTerms(term);
 		if (hasOverlappingTerms)
 		{
-			throw new AdempiereException(FlatrateBL.MSG_HasOverlapping_Term, term.getC_Flatrate_Term_ID(), term.getBill_BPartner().getValue())
+			final I_C_BPartner billBPartnerRecord = bparnterDAO.getById(term.getBill_BPartner_ID());
+
+			throw new AdempiereException(FlatrateBL.MSG_HasOverlapping_Term, term.getC_Flatrate_Term_ID(), billBPartnerRecord.getValue())
 					.markAsUserValidationError();
 		}
 	}
@@ -618,5 +624,50 @@ public class C_Flatrate_Term
 		updateContractStatus.updateStatusIfNeededWhenExtendind(term, orderIds);
 		updateContractStatus.updateStatusIfNeededWhenCancelling(term, orderIds);
 		updateContractStatus.updateStausIfNeededWhenVoiding(term);
+	}
+
+	@ModelChange(timings = {
+			ModelValidator.TYPE_BEFORE_NEW,
+			ModelValidator.TYPE_BEFORE_CHANGE
+	},
+			ifColumnsChanged = {
+					I_C_Flatrate_Term.COLUMNNAME_Type_Conditions,
+					I_C_Flatrate_Term.COLUMNNAME_StartDate,
+					I_C_Flatrate_Term.COLUMNNAME_EndDate,
+					I_C_Flatrate_Term.COLUMNNAME_AD_Org_ID,
+					I_C_Flatrate_Term.COLUMNNAME_Bill_BPartner_ID
+			})
+	public void ensureOneMediatedContract(@NonNull final I_C_Flatrate_Term term)
+	{
+		flatrateBL.ensureOneContractOfGivenType(term, TypeConditions.MEDIATED_COMMISSION);
+	}
+
+
+	@DocValidate(timings = ModelValidator.TIMING_BEFORE_COMPLETE)
+	public void ensureOneMediatedContractBeforeComplete(@NonNull final I_C_Flatrate_Term term)
+	{
+		flatrateBL.ensureOneContractOfGivenType(term, TypeConditions.MEDIATED_COMMISSION);
+	}
+
+	@ModelChange(timings = {
+			ModelValidator.TYPE_BEFORE_NEW,
+			ModelValidator.TYPE_BEFORE_CHANGE
+	},
+			ifColumnsChanged = {
+					I_C_Flatrate_Term.COLUMNNAME_Type_Conditions,
+					I_C_Flatrate_Term.COLUMNNAME_StartDate,
+					I_C_Flatrate_Term.COLUMNNAME_EndDate,
+					I_C_Flatrate_Term.COLUMNNAME_AD_Org_ID,
+					I_C_Flatrate_Term.COLUMNNAME_Bill_BPartner_ID
+			})
+	public void ensureOneMarginContract(@NonNull final I_C_Flatrate_Term term)
+	{
+		flatrateBL.ensureOneContractOfGivenType(term, TypeConditions.MARGIN_COMMISSION);
+	}
+
+	@DocValidate(timings = ModelValidator.TIMING_BEFORE_COMPLETE)
+	public void ensureOneMarginContractBeforeComplete(@NonNull final I_C_Flatrate_Term term)
+	{
+		flatrateBL.ensureOneContractOfGivenType(term, TypeConditions.MARGIN_COMMISSION);
 	}
 }

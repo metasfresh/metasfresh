@@ -25,7 +25,7 @@ import de.metas.handlingunits.picking.requests.PickRequest;
 import de.metas.handlingunits.picking.requests.RejectPickingRequest;
 import de.metas.handlingunits.picking.requests.RemoveQtyFromHURequest;
 import de.metas.handlingunits.sourcehu.HuId2SourceHUsService;
-import de.metas.inoutcandidate.api.ShipmentScheduleId;
+import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.picking.api.PickingConfigRepository;
 import de.metas.quantity.Quantity;
 import lombok.NonNull;
@@ -82,7 +82,7 @@ public class PickingCandidateService
 	}
 
 	public List<PickingCandidate> getByShipmentScheduleIdAndStatus(
-			@NonNull ShipmentScheduleId shipmentScheduleId,
+			@NonNull final ShipmentScheduleId shipmentScheduleId,
 			@NonNull final PickingCandidateStatus status)
 	{
 		return pickingCandidateRepository.getByShipmentScheduleIdAndStatus(shipmentScheduleId, status);

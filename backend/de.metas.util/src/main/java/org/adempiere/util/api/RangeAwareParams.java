@@ -9,6 +9,7 @@ import java.util.Set;
 
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.util.lang.RepoIdAware;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;
@@ -105,6 +106,12 @@ public class RangeAwareParams implements IRangeAwareParams
 	}
 
 	@Override
+	public <T extends RepoIdAware> T getParameterAsId(String parameterName, Class<T> type)
+	{
+		return values.getParameterAsId(parameterName, type);
+	}
+
+	@Override
 	public boolean getParameterAsBool(final String parameterName)
 	{
 		return values.getParameterAsBool(parameterName);
@@ -169,7 +176,7 @@ public class RangeAwareParams implements IRangeAwareParams
 	{
 		return valuesTo.getParameterAsLocalDate(parameterName);
 	}
-	
+
 	@Override
 	public ZonedDateTime getParameterAsZonedDateTime(String parameterName)
 	{

@@ -24,17 +24,21 @@ package de.metas.async.spi.impl;
 
 import java.util.Properties;
 
+import ch.qos.logback.classic.Level;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.util.Loggables;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IClientDAO;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Client;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
-import de.metas.adempiere.model.I_AD_User;
 import de.metas.async.api.IAsyncBatchListeners;
 import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.model.I_C_Async_Batch_Type;
@@ -66,10 +70,9 @@ public class NotifyAsyncBatch implements INotifyAsyncBatch
 	}
 
 	/***
-	 * Send mail to the user who created the async batch with the result based the on boiler plate the ID of which is defined by {@value #AD_SYSCONFIG_ASYNC_BOILERPLATE_ID}. If there is no such
+	 * Send mail to the user who created the async batch with the result based the on boiler plate the ID of which is defined by AD_SYSCONFIG_ASYNC_BOILERPLATE_ID. If there is no such
 	 * AS_SysConfig or no <code>AD_BoilerPlate</code> record, then the method does nothing.
 	 * 
-	 * @param asyncBatch
 	 * @see de.metas.letters.model.MADBoilerPlate#sendEMail(de.metas.letters.model.IEMailEditor, boolean)
 	 */
 	public void sendEMail(final I_C_Async_Batch asyncBatch)
@@ -77,18 +80,17 @@ public class NotifyAsyncBatch implements INotifyAsyncBatch
 		final I_C_Async_Batch_Type asyncBatchType = asyncBatch.getC_Async_Batch_Type();
 		Check.assumeNotNull(asyncBatchType, "Async Batch type should not be null for async batch! ", asyncBatch.getC_Async_Batch_ID());
 
-		// do nothing is the flag for sending mail is not checked
-		if (!asyncBatchType.isSendMail())
-		{
-			return;
-		}
-
 		final Properties ctx = InterfaceWrapperHelper.getCtx(asyncBatch);
 		final String trxName = InterfaceWrapperHelper.getTrxName(asyncBatch);
 
 		final int boilerPlateId = asyncBatchType.getAD_BoilerPlate_ID();
-		Check.assume(boilerPlateId > 0, "Boiler plate should not be null for async batch type {} ", asyncBatchType);
-
+		if (boilerPlateId <= 0)
+		{
+			Loggables.withLogger(logger, Level.INFO).addLog("sendEMail - C_Async_Batch_Type_ID={} of C_Async_Batch_ID={} has no AD_BoilerPlate_ID; -> not sending mail", 
+															asyncBatchType.getC_Async_Batch_Type_ID());
+			return;
+		}
+		
 		final MADBoilerPlate text = new MADBoilerPlate(ctx, boilerPlateId, trxName);
 
 		Boolean isSent = null;
@@ -127,8 +129,12 @@ public class NotifyAsyncBatch implements INotifyAsyncBatch
 						attributesBuilder.setSourceDocumentFromObject(asyncBatch);
 
 						// try to set language; take first from partner; if does not exists, take it from client
-						final I_AD_User user = InterfaceWrapperHelper.create(ctx, asyncBatch.getCreatedBy(), I_AD_User.class, ITrx.TRXNAME_None);
-						final I_C_BPartner partner = user.getC_BPartner();
+						final org.compiere.model.I_AD_User user = InterfaceWrapperHelper.create(ctx, asyncBatch.getCreatedBy(), I_AD_User.class, ITrx.TRXNAME_None);
+						final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(user.getC_BPartner_ID());
+						final I_C_BPartner partner = bpartnerId != null
+								? Services.get(IBPartnerDAO.class).getById(bpartnerId)
+								: null;
+
 						String adLanguage = "";
 						if (partner != null && partner.getC_BPartner_ID() > 0)
 						{
@@ -187,19 +193,11 @@ public class NotifyAsyncBatch implements INotifyAsyncBatch
 
 	/**
 	 * Send note to the user who created the async batch with the result
-	 * 
-	 * @param asyncBatch
 	 */
 	public void sendNote(final I_C_Async_Batch asyncBatch)
 	{
 		final I_C_Async_Batch_Type asyncBatchType = asyncBatch.getC_Async_Batch_Type();
 		Check.assumeNotNull(asyncBatchType, "Async Batch type should not be null for async batch! ", asyncBatch.getC_Async_Batch_ID());
-
-		// do nothing is the flag for sending notification is not checked
-		if (!asyncBatchType.isSendNotification())
-		{
-			return;
-		}
 
 		asyncBatchListener.applyListener(asyncBatch);
 	}

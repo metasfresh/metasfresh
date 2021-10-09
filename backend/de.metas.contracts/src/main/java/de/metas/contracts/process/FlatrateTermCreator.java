@@ -22,12 +22,14 @@
 
 package de.metas.contracts.process;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.contracts.CreateFlatrateTermRequest;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductAndCategoryId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
@@ -54,7 +56,6 @@ import java.util.Properties;
 @Value
 public class FlatrateTermCreator
 {
-
 	private static final Logger logger = LogManager.getLogger(FlatrateTermCreator.class);
 
 	Properties ctx;
@@ -76,9 +77,11 @@ public class FlatrateTermCreator
 	/**
 	 * create terms for all the BPartners iterated from the subclass, each of them in its own transaction
 	 */
-	public void createTermsForBPartners()
+	public ImmutableList<I_C_Flatrate_Term> createTermsForBPartners()
 	{
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
+
+		final ImmutableList.Builder<I_C_Flatrate_Term> flatrateTermsCollector = ImmutableList.builder();
 
 		for (final I_C_BPartner partner : bPartners)
 		{
@@ -90,7 +93,7 @@ public class FlatrateTermCreator
 					@Override
 					public void run(final String localTrxName)
 					{
-						createTerm(partner);
+						createTerm(partner, flatrateTermsCollector);
 						Loggables.addLog("@Processed@ @C_BPartner_ID@:" + partner.getValue() + "_" + partner.getName());
 						logger.debug("Created contract(s) for {}", partner);
 					}
@@ -108,9 +111,11 @@ public class FlatrateTermCreator
 				});
 			}
 		}
+
+		return flatrateTermsCollector.build();
 	}
 
-	private void createTerm(@NonNull final I_C_BPartner partner)
+	private void createTerm(@NonNull final I_C_BPartner partner, @NonNull final ImmutableList.Builder<I_C_Flatrate_Term> flatrateTermCollector)
 	{
 		final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 
@@ -119,6 +124,7 @@ public class FlatrateTermCreator
 		for (final I_M_Product product : products)
 		{
 			final CreateFlatrateTermRequest createFlatrateTermRequest = CreateFlatrateTermRequest.builder()
+					.orgId(OrgId.ofRepoId(conditions.getAD_Org_ID()))
 					.context(context)
 					.bPartner(partner)
 					.conditions(conditions)
@@ -130,7 +136,7 @@ public class FlatrateTermCreator
 					.completeIt(isCompleteDocument)
 					.build();
 
-			flatrateBL.createTerm(createFlatrateTermRequest);
+			flatrateTermCollector.add(flatrateBL.createTerm(createFlatrateTermRequest));
 		}
 	}
 

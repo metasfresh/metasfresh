@@ -31,6 +31,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -52,7 +53,6 @@ import de.metas.lock.spi.impl.PlainLockDatabase;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 
 /**
  * Misc helper used when testing ASync module
@@ -178,12 +178,6 @@ public class Helper
 
 	/**
 	 * Mark the workpackage as ready for processing and wait until the workpackage gets processed
-	 * 
-	 * @param workpackageQueue
-	 * @param workpackage
-	 * @throws TimeoutException
-	 * @throws ExecutionException
-	 * @throws InterruptedException
 	 */
 	public void markReadyForProcessingAndWait(final IWorkPackageQueue workpackageQueue, final I_C_Queue_WorkPackage workpackage) throws InterruptedException, ExecutionException, TimeoutException
 	{
@@ -210,7 +204,6 @@ public class Helper
 	 * the method throws an Exception.
 	 * 
 	 * @param timeoutMillis how many millis to wait for result. If ZERO, we will wait forever
-	 * @throws InterruptedException
 	 * @throws TimeoutException if the timeout exceeded
 	 */
 	public void waitUntilSize(final List<?> list, final int targetSize, final long timeoutMillis) throws InterruptedException, TimeoutException
@@ -226,7 +219,7 @@ public class Helper
 
 		while (size < targetSize)
 		{
-			long currentTS = SystemTime.millis();
+			long currentTS = de.metas.common.util.time.SystemTime.millis();
 			if (lastSize != -1 && timeoutMillis > 0)
 			{
 				final long elapsedMillis = currentTS - beginTS;

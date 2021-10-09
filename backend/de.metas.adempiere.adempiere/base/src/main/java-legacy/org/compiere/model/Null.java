@@ -16,6 +16,10 @@
  *****************************************************************************/
 package org.compiere.model;
 
+import lombok.NonNull;
+
+import javax.annotation.Nullable;
+
 /**
  * Database Null Indicator
  *
@@ -51,7 +55,8 @@ public final class Null
 	 * @param obj
 	 * @return <code>obj</code> or {@link #NULL} if the <code>obj</code> was <code>null</code>; this method never returns <code>null</code>.
 	 */
-	public static final Object box(final Object obj)
+	@NonNull
+	public static final Object box(@Nullable final Object obj)
 	{
 		return obj == null ? NULL : obj;
 	}

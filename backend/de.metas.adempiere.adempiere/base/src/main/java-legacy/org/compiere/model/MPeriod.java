@@ -25,6 +25,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.dao.impl.TypedSqlQuery;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -51,7 +52,6 @@ import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.organization.OrgInfo;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 
 /**
  *  Calendar Period Model
@@ -65,7 +65,7 @@ import de.metas.util.time.SystemTime;
  *
  *  @author victor.perez@e-evolution.com, e-Evolution http://www.e-evolution.com
  * 			<li> FR [ 2520591 ] Support multiples calendar for Org 
- *			@see http://sourceforge.net/tracker2/?func=detail&atid=879335&aid=2520591&group_id=176962 
+ *			see http://sourceforge.net/tracker2/?func=detail&atid=879335&aid=2520591&group_id=176962 
  */
 public class MPeriod extends X_C_Period
 {
@@ -464,7 +464,7 @@ public class MPeriod extends X_C_Period
 			DB.getConstraints().addAllowedTrxNamePrefix("POSave").incMaxTrx(1);
 		
 			final IAcctSchemaDAO acctSchemasRepo = Services.get(IAcctSchemaDAO.class);
-			final AcctSchema as = acctSchemasRepo.getByCliendAndOrg(ClientId.ofRepoId(getAD_Client_ID()), OrgId.ofRepoId(ad_Org_ID));
+			final AcctSchema as = acctSchemasRepo.getByClientAndOrg(ClientId.ofRepoId(getAD_Client_ID()), OrgId.ofRepoId(ad_Org_ID));
 			final AcctSchemaPeriodControl periodControl = as.getPeriodControl();
 			if (periodControl.isAutomaticPeriodControl())
 			{
@@ -705,8 +705,7 @@ public class MPeriod extends X_C_Period
 	/**
 	 * Get Calendar for Organization
 	 * @param ctx Context
-	 * @param AD_Org_ID Organization
-	 * @return
+	 * @param orgRepoId Organization
 	 */
     public static int getC_Calendar_ID(final Properties ctx, final int orgRepoId)
     {	

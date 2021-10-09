@@ -22,27 +22,25 @@ package de.metas.user.process;
  * #L%
  */
 
+import de.metas.process.JavaProcess;
+import de.metas.util.Services;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
+import org.compiere.model.I_AD_User;
+import org.compiere.util.DB;
+import org.compiere.util.TrxRunnable;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
-
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.MSysConfig;
-import org.compiere.util.DB;
-import org.compiere.util.TrxRunnable;
-
-import de.metas.adempiere.model.I_AD_User;
-import de.metas.process.JavaProcess;
-import de.metas.util.Services;
 
 public class AD_User_ExpireLocks extends JavaProcess
 {
 	@Override
 	protected String doIt() throws Exception
 	{
-		final int accountLockExpire = MSysConfig.getIntValue("USERACCOUNT_LOCK_EXPIRE", 30);
+		final int accountLockExpire = Services.get(ISysConfigBL.class).getIntValue("USERACCOUNT_LOCK_EXPIRE", 30);
 
 		final String sql = "SELECT * FROM AD_User" + " WHERE IsAccountLocked = 'Y'";
 
@@ -56,7 +54,7 @@ public class AD_User_ExpireLocks extends JavaProcess
 
 			while (rs.next())
 			{
-				final int AD_User_IDToUnlock = rs.getInt(I_AD_User.COLUMNNAME_AD_User_ID);
+				final int AD_User_IDToUnlock = rs.getInt(org.compiere.model.I_AD_User.COLUMNNAME_AD_User_ID);
 				no = no + unlockUser(accountLockExpire, AD_User_IDToUnlock);
 			}
 		}
@@ -85,7 +83,7 @@ public class AD_User_ExpireLocks extends JavaProcess
 			@Override
 			public void run(final String localTrxName) throws Exception
 			{
-				final I_AD_User user = InterfaceWrapperHelper.create(getCtx(), AD_User_IDToUnlock, I_AD_User.class, localTrxName);
+				final org.compiere.model.I_AD_User user = InterfaceWrapperHelper.create(getCtx(), AD_User_IDToUnlock, I_AD_User.class, localTrxName);
 				
 				final Timestamp curentLogin = (new Timestamp(System.currentTimeMillis()));
 				final long loginFailureTime = user.getLoginFailureDate().getTime();

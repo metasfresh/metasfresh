@@ -22,6 +22,7 @@ package org.adempiere.ad.callout.exceptions;
  * #L%
  */
 
+import lombok.NonNull;
 import org.adempiere.ad.callout.api.ICalloutExecutor;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.callout.api.ICalloutInstance;
@@ -56,7 +57,7 @@ public class CalloutException extends AdempiereException
 	}
 
 	@Override
-	public CalloutException setParameter(final String name, final Object value)
+	public CalloutException setParameter(final @NonNull String name, final Object value)
 	{
 		super.setParameter(name, value);
 		return this;

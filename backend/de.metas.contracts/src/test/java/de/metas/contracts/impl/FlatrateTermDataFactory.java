@@ -1,13 +1,17 @@
 package de.metas.contracts.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.contracts.model.I_C_Flatrate_Conditions;
+import de.metas.contracts.model.I_C_Flatrate_Transition;
+import de.metas.contracts.model.X_C_Flatrate_Conditions;
+import de.metas.contracts.model.X_C_Flatrate_Transition;
+import de.metas.money.CurrencyId;
+import de.metas.product.ProductAndCategoryId;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -27,17 +31,12 @@ import org.compiere.model.X_C_Tax;
 import org.compiere.model.X_M_Product;
 import org.compiere.util.TimeUtil;
 
-import de.metas.acct.api.AcctSchemaId;
-import de.metas.adempiere.model.I_AD_User;
-import de.metas.contracts.model.I_C_Flatrate_Conditions;
-import de.metas.contracts.model.I_C_Flatrate_Transition;
-import de.metas.contracts.model.X_C_Flatrate_Conditions;
-import de.metas.contracts.model.X_C_Flatrate_Transition;
-import de.metas.money.CurrencyId;
-import de.metas.product.ProductAndCategoryId;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -73,10 +72,10 @@ public class FlatrateTermDataFactory
 	private static final String valuePricingSystem = "Abo";
 
 	@Builder(builderMethodName = "userNew")
-	public static I_AD_User createADUser(@NonNull final I_C_BPartner bpartner, final String lastName, final String firstName, final boolean isBillToContact_Default, final boolean isShipToContact_Default)
+	public static org.compiere.model.I_AD_User createADUser(@NonNull final I_C_BPartner bpartner, final String lastName, final String firstName, final boolean isBillToContact_Default, final boolean isShipToContact_Default)
 	{
-		final I_AD_User user = newInstance(I_AD_User.class, bpartner);
-		user.setC_BPartner(bpartner);
+		final org.compiere.model.I_AD_User user = newInstance(I_AD_User.class, bpartner);
+		user.setC_BPartner_ID(bpartner.getC_BPartner_ID());
 		user.setLastname(lastName);
 		user.setFirstname(firstName);
 		user.setIsBillToContact_Default(isBillToContact_Default);
@@ -119,7 +118,7 @@ public class FlatrateTermDataFactory
 			@NonNull final I_M_PricingSystem pricingSystem, final String extensionType, final boolean isCreateNoInvoice)
 	{
 		final I_C_Flatrate_Conditions conditions = newInstance(I_C_Flatrate_Conditions.class);
-		conditions.setM_PricingSystem(pricingSystem);
+		conditions.setM_PricingSystem_ID(pricingSystem == null ? null : pricingSystem.getM_PricingSystem_ID());
 		conditions.setInvoiceRule(invoiceRule);
 		conditions.setType_Conditions(typeConditions);
 		conditions.setOnFlatrateTermExtend(onFlatrateTermExtend);
@@ -264,7 +263,8 @@ public class FlatrateTermDataFactory
 		final I_C_Tax tax = newInstance(I_C_Tax.class);
 		tax.setC_Country(country);
 		tax.setTo_Country(country);
-		tax.setC_TaxCategory(taxCategory);
+		tax.setTypeOfDestCountry(X_C_Tax.TYPEOFDESTCOUNTRY_Domestic);
+		tax.setC_TaxCategory_ID(taxCategory.getC_TaxCategory_ID());
 		tax.setIsDocumentLevel(true);
 		tax.setIsSalesTax(true);
 		tax.setName("test tax");

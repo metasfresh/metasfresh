@@ -1,10 +1,5 @@
 package de.metas.material.planning;
 
-import java.sql.Timestamp;
-import java.util.Date;
-import java.util.List;
-import java.util.Properties;
-
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
@@ -12,6 +7,11 @@ import org.compiere.model.I_S_Resource;
 import org.eevolution.model.I_PP_MRP;
 import org.eevolution.model.I_PP_Product_Planning;
 import org.slf4j.Logger;
+
+import java.sql.Timestamp;
+import java.util.Date;
+import java.util.List;
+import java.util.Properties;
 
 public interface IMutableMRPContext extends IMaterialPlanningContext
 {
@@ -25,13 +25,13 @@ public interface IMutableMRPContext extends IMaterialPlanningContext
 
 	void setAD_Client_ID(int adClientId);
 
-	void setAD_Org(final I_AD_Org org);
+	void setAD_Org(I_AD_Org org);
 
-	void setM_Product(final I_M_Product product);
+	void setM_Product(I_M_Product product);
 
 	void setM_AttributeSetInstance_ID(int attributeSetInstanceId);
 
-	void setProductPlanning(final I_PP_Product_Planning productPlanning);
+	void setProductPlanning(I_PP_Product_Planning productPlanning);
 
 	/**
 	 * @see #getPP_MRP()
@@ -40,11 +40,11 @@ public interface IMutableMRPContext extends IMaterialPlanningContext
 
 	void setMRPDemands(List<I_PP_MRP> mrpDemands);
 
-	void setPlant(final I_S_Resource resource);
+	void setPlant(I_S_Resource resource);
 
-	void setM_Warehouse(final I_M_Warehouse warehouse);
+	void setM_Warehouse(I_M_Warehouse warehouse);
 
-	void setPlanningHorizon(final Timestamp planningHorizon);
+	void setPlanningHorizon(Timestamp planningHorizon);
 
 	void setTimeFence(Timestamp timeFence);
 
@@ -56,8 +56,6 @@ public interface IMutableMRPContext extends IMaterialPlanningContext
 	void setEnforced_PP_MRP_Demand_ID(int supplyPP_Parent_MRP_ID);
 
 	/**
-	 *
-	 * @param subsequentMRPExecutorCall
 	 * @see #isSubsequentMRPExecutorCall()
 	 */
 	void setSubsequentMRPExecutorCall(final boolean subsequentMRPExecutorCall);
@@ -65,7 +63,6 @@ public interface IMutableMRPContext extends IMaterialPlanningContext
 	/**
 	 * Sets if MRP is allowed to run an MRP cleanup on this context/segment
 	 *
-	 * @param allowCleanup
 	 * @see #isAllowCleanup()
 	 */
 	void setAllowCleanup(boolean allowCleanup);

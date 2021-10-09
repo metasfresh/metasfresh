@@ -1,13 +1,27 @@
 package de.metas.material.dispo.commons.repository.repohelpers;
 
-import static de.metas.material.dispo.commons.candidate.IdConstants.UNSPECIFIED_REPO_ID;
-import static de.metas.material.dispo.commons.candidate.IdConstants.toRepoId;
-
-import java.sql.Timestamp;
-import java.util.List;
-
-import javax.annotation.Nullable;
-
+import com.google.common.annotations.VisibleForTesting;
+import de.metas.material.commons.attributes.AttributesKeyPatternsUtil;
+import de.metas.material.commons.attributes.AttributesKeyQueryHelper;
+import de.metas.material.commons.attributes.clasifiers.BPartnerClassifier;
+import de.metas.material.dispo.commons.candidate.CandidateId;
+import de.metas.material.dispo.commons.candidate.TransactionDetail;
+import de.metas.material.dispo.commons.repository.DateAndSeqNo;
+import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
+import de.metas.material.dispo.commons.repository.query.DemandDetailsQuery;
+import de.metas.material.dispo.commons.repository.query.DistributionDetailsQuery;
+import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery;
+import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery.CustomerIdOperator;
+import de.metas.material.dispo.commons.repository.query.ProductionDetailsQuery;
+import de.metas.material.dispo.commons.repository.query.StockChangeDetailQuery;
+import de.metas.material.dispo.model.I_MD_Candidate;
+import de.metas.material.dispo.model.I_MD_Candidate_Demand_Detail;
+import de.metas.material.dispo.model.I_MD_Candidate_Transaction_Detail;
+import de.metas.material.event.commons.AttributesKey;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
+import lombok.experimental.UtilityClass;
 import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
@@ -17,28 +31,12 @@ import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.compiere.model.IQuery;
 import org.compiere.util.TimeUtil;
 
-import com.google.common.annotations.VisibleForTesting;
+import javax.annotation.Nullable;
+import java.sql.Timestamp;
+import java.util.List;
 
-import de.metas.material.commons.attributes.AttributesKeyPatterns;
-import de.metas.material.commons.attributes.AttributesKeyQueryHelper;
-import de.metas.material.dispo.commons.candidate.CandidateId;
-import de.metas.material.dispo.commons.candidate.TransactionDetail;
-import de.metas.material.dispo.commons.repository.DateAndSeqNo;
-import de.metas.material.dispo.commons.repository.atp.BPartnerClassifier;
-import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
-import de.metas.material.dispo.commons.repository.query.DemandDetailsQuery;
-import de.metas.material.dispo.commons.repository.query.DistributionDetailsQuery;
-import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery;
-import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery.CustomerIdOperator;
-import de.metas.material.dispo.commons.repository.query.ProductionDetailsQuery;
-import de.metas.material.dispo.model.I_MD_Candidate;
-import de.metas.material.dispo.model.I_MD_Candidate_Demand_Detail;
-import de.metas.material.dispo.model.I_MD_Candidate_Transaction_Detail;
-import de.metas.material.event.commons.AttributesKey;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
-import lombok.experimental.UtilityClass;
+import static de.metas.material.dispo.commons.candidate.IdConstants.UNSPECIFIED_REPO_ID;
+import static de.metas.material.dispo.commons.candidate.IdConstants.toRepoId;
 
 /*
  * #%L
@@ -89,6 +87,11 @@ public class RepositoryCommons
 		if (query.getType() != null)
 		{
 			builder.addEqualsFilter(I_MD_Candidate.COLUMN_MD_Candidate_Type, query.getType().toString());
+		}
+
+		if (query.getBusinessCase() != null)
+		{
+			builder.addEqualsFilter(I_MD_Candidate.COLUMN_MD_Candidate_BusinessCase, query.getBusinessCase().toString());
 		}
 
 		if (!query.getParentId().isUnspecified())
@@ -143,6 +146,8 @@ public class RepositoryCommons
 		PurchaseDetailRepoHelper.addPurchaseDetailsQueryToFilter(query.getPurchaseDetailsQuery(), builder);
 
 		addTransactionDetailToFilter(query, builder);
+
+		addStockChangeDetailToFilter(query, builder);
 
 		return builder;
 	}
@@ -202,7 +207,7 @@ public class RepositoryCommons
 			{
 				final IQueryFilter<I_MD_Candidate> filter = AttributesKeyQueryHelper
 						.createFor(I_MD_Candidate.COLUMN_StorageAttributesKey)
-						.createFilter(AttributesKeyPatterns.ofAttributeKey(attributesKey));
+						.createFilter(AttributesKeyPatternsUtil.ofAttributeKey(attributesKey));
 
 				builder.filter(filter);
 			}
@@ -242,8 +247,7 @@ public class RepositoryCommons
 					addDateAndSeqNoToBuilder(builder, Operator.GREATER, timeRangeStart);
 					break;
 				default:
-					Check.fail("timeRangeStart has a unexpected dateOperator {}; query={}", timeRangeStart.getOperator(), materialDescriptorQuery);
-					break;
+					throw Check.fail("timeRangeStart has a unexpected dateOperator {}; query={}", timeRangeStart.getOperator(), materialDescriptorQuery);
 			}
 			atLeastOneFilterAdded = true;
 		}
@@ -260,8 +264,7 @@ public class RepositoryCommons
 					addDateAndSeqNoToBuilder(builder, Operator.LESS, timeRangeEnd);
 					break;
 				default:
-					Check.fail("timeRangeEnd has a unexpected dateOperator {}; query={}", timeRangeEnd.getOperator(), materialDescriptorQuery);
-					break;
+					throw Check.fail("timeRangeEnd has a unexpected dateOperator {}; query={}", timeRangeEnd.getOperator(), materialDescriptorQuery);
 			}
 			atLeastOneFilterAdded = true;
 		}
@@ -301,9 +304,6 @@ public class RepositoryCommons
 
 	/**
 	 * filter by demand detail, ignore if there is none!
-	 *
-	 * @param candidate
-	 * @param builder
 	 */
 	private void addDemandDetailToBuilder(
 			@Nullable final DemandDetailsQuery demandDetailsQuery,
@@ -421,9 +421,8 @@ public class RepositoryCommons
 			@NonNull final Class<T> modelClass)
 	{
 		final IQuery<T> candidateDetailQueryBuilder = createCandidateDetailQueryBuilder(candidateRecord, modelClass);
-		final T existingDetail = candidateDetailQueryBuilder
+		return candidateDetailQueryBuilder
 				.firstOnly(modelClass);
-		return existingDetail;
 	}
 
 	public <T> IQuery<T> createCandidateDetailQueryBuilder(
@@ -437,4 +436,14 @@ public class RepositoryCommons
 				.create();
 	}
 
+	private void addStockChangeDetailToFilter(
+			@NonNull final CandidatesQuery query,
+			@NonNull final IQueryBuilder<I_MD_Candidate> builder)
+	{
+		final StockChangeDetailQuery stockChangeDetail = query.getStockChangeDetailQuery();
+		if (stockChangeDetail != null)
+		{
+			stockChangeDetail.augmentQueryBuilder(builder);
+		}
+	}
 }

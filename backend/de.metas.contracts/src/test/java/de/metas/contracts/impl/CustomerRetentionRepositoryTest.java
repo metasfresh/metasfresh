@@ -9,6 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_AD_SysConfig;
 import org.compiere.model.I_C_BPartner;
@@ -27,8 +28,6 @@ import de.metas.document.engine.DocStatus;
 import de.metas.invoicecandidate.model.I_C_Invoice;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
-import de.metas.util.time.FixedTimeSource;
-import de.metas.util.time.SystemTime;
 
 /*
  * #%L
@@ -63,8 +62,7 @@ public class CustomerRetentionRepositoryTest
 		AdempiereTestHelper.get().init();
 
 		repository = new CustomerRetentionRepository(new ContractInvoiceService());
-
-		SystemTime.setTimeSource(new FixedTimeSource(2018, 12, 13, 0, 0, 0));
+		de.metas.common.util.time.SystemTime.setFixedTimeSource("2018-12-13T00:00:00+01:00");
 	}
 
 	@Test
@@ -145,13 +143,13 @@ public class CustomerRetentionRepositoryTest
 
 		LocalDate contractEndDate = TimeUtil.asLocalDate("2017-12-12");
 
-		final LocalDate dateToCompare = SystemTime.asLocalDate();
-		boolean dateExceedsThreshold = repository.dateExceedsThreshold(contractEndDate, dateToCompare);
+		final LocalDate dateToCompare = de.metas.common.util.time.SystemTime.asLocalDate();
+		boolean dateExceedsThreshold = repository.dateExceedsRegularThreshold(contractEndDate, dateToCompare);
 
 		assertThat(dateExceedsThreshold).isTrue();
 
 		contractEndDate = TimeUtil.asLocalDate("2017-12-14");
-		dateExceedsThreshold = repository.dateExceedsThreshold(contractEndDate, dateToCompare);
+		dateExceedsThreshold = repository.dateExceedsRegularThreshold(contractEndDate, dateToCompare);
 
 		assertThat(dateExceedsThreshold).isFalse();
 	}
@@ -162,9 +160,9 @@ public class CustomerRetentionRepositoryTest
 		final I_C_BPartner partner = createPartner("Partner1");
 
 		final I_C_Customer_Retention customerRetention = createCustomerRetention(partner.getC_BPartner_ID());
-
+		final Timestamp masterStartDate = TimeUtil.parseTimestamp("2016-12-14");
 		final Timestamp masterEndDate = TimeUtil.parseTimestamp("2017-12-14");
-		createFlatrateTerm(partner.getC_BPartner_ID(), masterEndDate);
+		createFlatrateTerm(partner.getC_BPartner_ID(), masterStartDate, masterEndDate);
 
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(partner.getC_BPartner_ID());
 
@@ -182,8 +180,9 @@ public class CustomerRetentionRepositoryTest
 
 		final I_C_Customer_Retention customerRetention = createCustomerRetention(partner.getC_BPartner_ID());
 
+		final Timestamp masterStartDate = TimeUtil.parseTimestamp("2016-12-11");
 		final Timestamp masterEndDate = TimeUtil.parseTimestamp("2017-12-11");
-		createFlatrateTerm(partner.getC_BPartner_ID(), masterEndDate);
+		createFlatrateTerm(partner.getC_BPartner_ID(), masterStartDate, masterEndDate);
 
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(partner.getC_BPartner_ID());
 
@@ -201,9 +200,10 @@ public class CustomerRetentionRepositoryTest
 
 		final I_C_Customer_Retention customerRetention = createCustomerRetention(partner.getC_BPartner_ID());
 
+		final Timestamp masterStartDate1 = TimeUtil.parseTimestamp("2017-12-11");
 		final Timestamp masterEndDate1 = TimeUtil.parseTimestamp("2018-12-11");
 		final Timestamp invoiceDate1 = TimeUtil.parseTimestamp("2017-12-11");
-		final I_C_Flatrate_Term term1 = createFlatrateTerm(partner.getC_BPartner_ID(), masterEndDate1);
+		final I_C_Flatrate_Term term1 = createFlatrateTerm(partner.getC_BPartner_ID(), masterStartDate1, masterEndDate1);
 
 		final I_C_Invoice_Candidate cand1 = createInvoiceCandidate(term1.getC_Flatrate_Term_ID());
 
@@ -213,12 +213,13 @@ public class CustomerRetentionRepositoryTest
 
 		createInvoiceLineAlloc(cand1.getC_Invoice_Candidate_ID(), invoiceLine1.getC_InvoiceLine_ID());
 
+		final Timestamp masterStartDate2 = TimeUtil.parseTimestamp("2017-12-11");
 		final Timestamp masterEndDate2 = TimeUtil.parseTimestamp("2018-12-11");
-		final I_C_Flatrate_Term term2 = createFlatrateTerm(partner.getC_BPartner_ID(), masterEndDate2);
+		final I_C_Flatrate_Term term2 = createFlatrateTerm(partner.getC_BPartner_ID(), masterStartDate2, masterEndDate2);
 
 		final I_C_Invoice_Candidate cand2 = createInvoiceCandidate(term2.getC_Flatrate_Term_ID());
 
-		final I_C_Invoice invoice2 = createInvoice(partner.getC_BPartner_ID(), "documentNo2", SystemTime.asTimestamp());
+		final I_C_Invoice invoice2 = createInvoice(partner.getC_BPartner_ID(), "documentNo2", de.metas.common.util.time.SystemTime.asTimestamp());
 
 		final I_C_InvoiceLine invoiceLine2 = createInvoiceLine(invoice2.getC_Invoice_ID());
 
@@ -243,8 +244,9 @@ public class CustomerRetentionRepositoryTest
 
 		final I_C_Customer_Retention customerRetention = createCustomerRetention(partner.getC_BPartner_ID());
 
+		final Timestamp masterStartDate1 = TimeUtil.parseTimestamp("2014-12-11");
 		final Timestamp masterEndDate1 = TimeUtil.parseTimestamp("2015-12-11");
-		final I_C_Flatrate_Term term1 = createFlatrateTerm(partner.getC_BPartner_ID(), masterEndDate1);
+		final I_C_Flatrate_Term term1 = createFlatrateTerm(partner.getC_BPartner_ID(), masterStartDate1, masterEndDate1);
 
 		final I_C_Invoice_Candidate cand1 = createInvoiceCandidate(term1.getC_Flatrate_Term_ID());
 
@@ -254,12 +256,13 @@ public class CustomerRetentionRepositoryTest
 
 		createInvoiceLineAlloc(cand1.getC_Invoice_Candidate_ID(), invoiceLine1.getC_InvoiceLine_ID());
 
+		final Timestamp masterStartDate2 = TimeUtil.parseTimestamp("2017-12-11");
 		final Timestamp masterEndDate2 = TimeUtil.parseTimestamp("2018-12-11");
-		final I_C_Flatrate_Term term2 = createFlatrateTerm(partner.getC_BPartner_ID(), masterEndDate2);
+		final I_C_Flatrate_Term term2 = createFlatrateTerm(partner.getC_BPartner_ID(), masterStartDate2, masterEndDate2);
 
 		final I_C_Invoice_Candidate cand2 = createInvoiceCandidate(term2.getC_Flatrate_Term_ID());
 
-		final I_C_Invoice invoice2 = createInvoice(partner.getC_BPartner_ID(), "documentNo2", SystemTime.asTimestamp());
+		final I_C_Invoice invoice2 = createInvoice(partner.getC_BPartner_ID(), "documentNo2", de.metas.common.util.time.SystemTime.asTimestamp());
 
 		final I_C_InvoiceLine invoiceLine2 = createInvoiceLine(invoice2.getC_Invoice_ID());
 
@@ -282,8 +285,9 @@ public class CustomerRetentionRepositoryTest
 
 		final I_C_Customer_Retention customerRetention = createCustomerRetention(partner.getC_BPartner_ID());
 
+		final Timestamp masterStartDate1 = TimeUtil.parseTimestamp("2016-12-13");
 		final Timestamp masterEndDate1 = TimeUtil.parseTimestamp("2017-12-13");
-		final I_C_Flatrate_Term term1 = createFlatrateTerm(partner.getC_BPartner_ID(), masterEndDate1);
+		final I_C_Flatrate_Term term1 = createFlatrateTerm(partner.getC_BPartner_ID(), masterStartDate1, masterEndDate1);
 
 		final I_C_Invoice_Candidate cand1 = createInvoiceCandidate(term1.getC_Flatrate_Term_ID());
 
@@ -293,12 +297,13 @@ public class CustomerRetentionRepositoryTest
 
 		createInvoiceLineAlloc(cand1.getC_Invoice_Candidate_ID(), invoiceLine1.getC_InvoiceLine_ID());
 
+		final Timestamp masterStartDate2 = TimeUtil.parseTimestamp("2017-12-13");
 		final Timestamp masterEndDate2 = TimeUtil.parseTimestamp("2018-12-11");
-		final I_C_Flatrate_Term term2 = createFlatrateTerm(partner.getC_BPartner_ID(), masterEndDate2);
+		final I_C_Flatrate_Term term2 = createFlatrateTerm(partner.getC_BPartner_ID(), masterStartDate2, masterEndDate2);
 
 		final I_C_Invoice_Candidate cand2 = createInvoiceCandidate(term2.getC_Flatrate_Term_ID());
 
-		final I_C_Invoice invoice2 = createInvoice(partner.getC_BPartner_ID(), "documentNo2", SystemTime.asTimestamp());
+		final I_C_Invoice invoice2 = createInvoice(partner.getC_BPartner_ID(), "documentNo2", de.metas.common.util.time.SystemTime.asTimestamp());
 
 		final I_C_InvoiceLine invoiceLine2 = createInvoiceLine(invoice2.getC_Invoice_ID());
 
@@ -314,14 +319,56 @@ public class CustomerRetentionRepositoryTest
 	}
 
 	@Test
+	public void updateCustomerRetention_NewCustomer_InitialThresholdNotMet()
+	{
+		final I_C_BPartner partner = createPartner("Partner1");
+
+		final I_C_Customer_Retention customerRetention = createCustomerRetention(partner.getC_BPartner_ID());
+
+		final Timestamp masterStartDate1 = TimeUtil.parseTimestamp("2016-12-13");
+		final Timestamp masterEndDate1 = TimeUtil.parseTimestamp("2017-12-13");
+		final I_C_Flatrate_Term term1 = createFlatrateTerm(partner.getC_BPartner_ID(), masterStartDate1, masterEndDate1);
+
+		final I_C_Invoice_Candidate cand1 = createInvoiceCandidate(term1.getC_Flatrate_Term_ID());
+
+		final I_C_Invoice invoice1 = createInvoice(partner.getC_BPartner_ID(), "documentNo1", masterStartDate1);
+
+		final I_C_InvoiceLine invoiceLine1 = createInvoiceLine(invoice1.getC_Invoice_ID());
+
+		createInvoiceLineAlloc(cand1.getC_Invoice_Candidate_ID(), invoiceLine1.getC_InvoiceLine_ID());
+
+		final Timestamp masterStartDate2 = TimeUtil.parseTimestamp("2016-12-31");
+		final Timestamp masterEndDate2 = TimeUtil.parseTimestamp("2017-12-31");
+		final I_C_Flatrate_Term term2 = createFlatrateTerm(partner.getC_BPartner_ID(), masterStartDate2, masterEndDate2);
+
+		final I_C_Invoice_Candidate cand2 = createInvoiceCandidate(term2.getC_Flatrate_Term_ID());
+
+		final I_C_Invoice invoice2 = createInvoice(partner.getC_BPartner_ID(), "documentNo2", masterStartDate2);
+
+		final I_C_InvoiceLine invoiceLine2 = createInvoiceLine(invoice2.getC_Invoice_ID());
+
+		createInvoiceLineAlloc(cand2.getC_Invoice_Candidate_ID(), invoiceLine2.getC_InvoiceLine_ID());
+
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(partner.getC_BPartner_ID());
+
+		repository.createUpdateCustomerRetention(bpartnerId);
+
+		refresh(customerRetention);
+		assertThat(X_C_Customer_Retention.CUSTOMERRETENTION_Neukunde).isEqualTo(customerRetention.getCustomerRetention());
+
+	}
+
+	@Test
 	public void updateCustomerRetention_SameInvoiceDate()
 	{
 		final I_C_BPartner partner = createPartner("Partner1");
 
 		final I_C_Customer_Retention customerRetention = createCustomerRetention(partner.getC_BPartner_ID());
 
-		final Timestamp masterEndDate1 = SystemTime.asTimestamp();
-		final I_C_Flatrate_Term term1 = createFlatrateTerm(partner.getC_BPartner_ID(), masterEndDate1);
+
+		final Timestamp masterEndDate1 = de.metas.common.util.time.SystemTime.asTimestamp();
+		final Timestamp masterStartDate1 = TimeUtil.addYears(masterEndDate1, -12);
+		final I_C_Flatrate_Term term1 = createFlatrateTerm(partner.getC_BPartner_ID(), masterStartDate1, masterEndDate1);
 
 		final I_C_Invoice_Candidate cand1 = createInvoiceCandidate(term1.getC_Flatrate_Term_ID());
 
@@ -332,11 +379,12 @@ public class CustomerRetentionRepositoryTest
 		createInvoiceLineAlloc(cand1.getC_Invoice_Candidate_ID(), invoiceLine1.getC_InvoiceLine_ID());
 
 		final Timestamp masterEndDate2 = SystemTime.asTimestamp();
-		final I_C_Flatrate_Term term2 = createFlatrateTerm(partner.getC_BPartner_ID(), masterEndDate2);
+		final Timestamp masterStartDate2 = TimeUtil.addYears(masterEndDate2, -12);
+		final I_C_Flatrate_Term term2 = createFlatrateTerm(partner.getC_BPartner_ID(), masterStartDate2, masterEndDate2);
 
 		final I_C_Invoice_Candidate cand2 = createInvoiceCandidate(term2.getC_Flatrate_Term_ID());
 
-		final I_C_Invoice invoice2 = createInvoice(partner.getC_BPartner_ID(), "documentNo2", SystemTime.asTimestamp());
+		final I_C_Invoice invoice2 = createInvoice(partner.getC_BPartner_ID(), "documentNo2", de.metas.common.util.time.SystemTime.asTimestamp());
 
 		final I_C_InvoiceLine invoiceLine2 = createInvoiceLine(invoice2.getC_Invoice_ID());
 
@@ -395,11 +443,14 @@ public class CustomerRetentionRepositoryTest
 		return cand;
 	}
 
-	private I_C_Flatrate_Term createFlatrateTerm(final int partnerId, final Timestamp masterEndDate)
+	private I_C_Flatrate_Term createFlatrateTerm(final int partnerId,
+			final Timestamp masterStartDate,
+			final Timestamp masterEndDate)
 	{
 		final I_C_Flatrate_Term term = newInstance(I_C_Flatrate_Term.class);
 
 		term.setBill_BPartner_ID(partnerId);
+		term.setMasterStartDate(masterStartDate);
 		term.setMasterEndDate(masterEndDate);
 
 		save(term);

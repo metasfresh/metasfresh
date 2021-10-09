@@ -1,7 +1,7 @@
 package org.adempiere.mm.attributes.api.impl;
 
-import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.ILotNumberDateAttributeDAO;
 import org.compiere.model.I_M_Attribute;
@@ -32,23 +32,18 @@ import de.metas.util.Services;
 
 public class LotNumberDateAttributeDAO implements ILotNumberDateAttributeDAO
 {
-	public static final AttributeCode ATTR_LotNumberDate = AttributeCode.ofString("HU_LotNumberDate");
-
-	public static final String ATTR_LotNumber_String = "Lot-Nummer";
-	public static final AttributeCode ATTR_LotNumber = AttributeCode.ofString(ATTR_LotNumber_String);
-
 	@Override
 	public AttributeId getLotNumberDateAttributeId()
 	{
 		final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
-		return attributesRepo.retrieveAttributeIdByValueOrNull(ATTR_LotNumberDate);
+		return attributesRepo.retrieveAttributeIdByValueOrNull(AttributeConstants.ATTR_LotNumberDate);
 	}
 
 	@Override
 	public AttributeId getLotNumberAttributeId()
 	{
 		final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
-		return attributesRepo.retrieveAttributeIdByValueOrNull(ATTR_LotNumber);
+		return attributesRepo.retrieveAttributeIdByValueOrNull(AttributeConstants.ATTR_LotNumber);
 	}
 
 	@Override

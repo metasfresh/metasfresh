@@ -44,7 +44,10 @@ CREATE OR REPLACE FUNCTION report.Current_Vs_Previous_Pricelist_Comparison_Repor
             )
 AS
 $$
-WITH PriceListVersionsByValidFrom AS
+WITH plvvr AS
+         (SELECT plv.* FROM Report.Fresh_PriceList_Version_Val_Rule plv),
+     bpg AS (SELECT DISTINCT b.c_bpartner_id FROM c_bpartner b WHERE b.c_bp_group_id = p_C_BP_Group_ID),
+     PriceListVersionsByValidFrom AS
          (
              SELECT t.*
              FROM (SELECT --
@@ -53,12 +56,12 @@ WITH PriceListVersionsByValidFrom AS
                           plv.validfrom,
                           plv.name,
                           row_number() OVER (PARTITION BY plv.c_bpartner_id ORDER BY plv.validfrom DESC, plv.m_pricelist_version_id DESC) rank
-                   FROM Report.Fresh_PriceList_Version_Val_Rule plv
+                   FROM plvvr plv
                    WHERE TRUE
                      AND plv.validfrom <= now()
                      AND plv.issotrx = p_IsSoTrx
                      AND (p_C_BPartner_ID IS NULL OR plv.c_bpartner_id = p_C_BPartner_ID)
-                     AND (p_C_BP_Group_ID IS NULL OR plv.c_bpartner_id IN (SELECT DISTINCT b.c_bpartner_id FROM c_bpartner b WHERE b.c_bp_group_id = p_C_BP_Group_ID))
+                     AND (p_C_BP_Group_ID IS NULL OR plv.c_bpartner_id IN (SELECT bpg.c_bpartner_id FROM bpg))
                    ORDER BY TRUE,
                             plv.validfrom DESC,
                             plv.m_pricelist_version_id DESC) t

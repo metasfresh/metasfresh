@@ -1,8 +1,25 @@
-import Moment from 'moment';
-import { DATE_FORMAT } from '../constants/Constants';
 import queryString from 'query-string';
 import counterpart from 'counterpart';
 
+import history from '../services/History';
+
+/**
+ * @method updateUri
+ * @summary Prepends viewId/page/sorting to the url
+ */
+export function updateUri(pathname, query, updatedQuery) {
+  const fullPath = window.location.href;
+  const queryObject = {
+    ...query,
+    ...updatedQuery,
+  };
+  const queryUrl = queryString.stringify(queryObject);
+  const url = `${pathname}?${queryUrl}`;
+
+  !fullPath.includes('viewId') ? history.replace(url) : history.push(url);
+}
+
+// TODO: Move to api ?
 export const getQueryString = (query) =>
   queryString.stringify(
     Object.keys(query).reduce((parameters, key) => {
@@ -18,6 +35,7 @@ export const getQueryString = (query) =>
     }, {})
   );
 
+// TODO: Move to api ?
 export function createPatchRequestPayload(property, value) {
   if (Array.isArray(property) && Array.isArray(value)) {
     return property.map((item, index) => ({
@@ -96,24 +114,6 @@ export function nullToEmptyStrings(fieldsByName) {
   }, {});
 }
 
-// TODO: Not used ? Kuba
-export function findRowByPropName(arr, name) {
-  let ret = -1;
-
-  if (!arr) {
-    return ret;
-  }
-
-  for (let i = 0; i < arr.length; i++) {
-    if (arr[i].field === name) {
-      ret = arr[i];
-      break;
-    }
-  }
-
-  return ret;
-}
-
 export function getItemsByProperty(arr, prop, value) {
   let ret = [];
 
@@ -127,30 +127,7 @@ export function getItemsByProperty(arr, prop, value) {
   return ret;
 }
 
-const cleanupParameter = ({ parameterName, value, valueTo }) => ({
-  parameterName,
-  value,
-  valueTo,
-});
-
-export function cleanupFilter({ filterId, parameters }) {
-  if (parameters && parameters.length) {
-    parameters.map((param, index) => {
-      if (param.widgetType === 'Date' && param.value) {
-        param.value = Moment(param.value).format(DATE_FORMAT);
-      }
-
-      param = cleanupParameter(param);
-      parameters[index] = param;
-    });
-  }
-
-  return {
-    filterId,
-    parameters,
-  };
-}
-
+// TODO: Move to locale helpers
 export function translateCaption(caption) {
   const translatedString = counterpart.translate(caption);
   // show a default placeholder in case translation is missing such that the BE would know what specific key they need to add
@@ -168,4 +145,103 @@ export function preFormatPostDATA({ target, postData }) {
     dataToSend.text = postData.txt;
   }
   return dataToSend;
+}
+
+/**
+ * Opens the url given as param in a new window and focuses on that window
+ * @param {string} urlPath
+ * @param {fnct} dispatch
+ * @param {fnct} function to dispatch - added this in case we need to perform custom actions when opening new tab ()
+ *               https://github.com/metasfresh/metasfresh/issues/10145 (in this case we send setProcessSaved that will
+ *               update the store flag - processStatus)
+ */
+export function openInNewTab({ urlPath, dispatch, actionName }) {
+  dispatch(actionName());
+  let newTabBrowser = window.open(urlPath, '_blank');
+  newTabBrowser.focus();
+}
+
+/**
+ * Returns the tab with `tabId` from the data set, or null if no match
+ *
+ * @param {object} dataSet
+ * @param {string} tabId
+ */
+export function getTab(dataSet, tabId) {
+  let tab = null;
+  if (dataSet.tabs) {
+    dataSet.tabs.forEach((t) => {
+      if (t.tabs) {
+        tab = getTab(t, tabId);
+      } else if (t.tabId === tabId) {
+        tab = t;
+      }
+    });
+
+    return tab;
+  }
+
+  return null;
+}
+
+/**
+ * Updates the layout of a tab with `tabId` and creates a new copy of the data set.
+ * Works for nested (data entry) tabs too.
+ *
+ * @param {object} dataSet
+ * @param {string} tabId
+ * @param {object} updatedData - updated tab data
+ */
+export function updateTab(dataSet, tabId, updatedData) {
+  return dataSet.map((tabItem) => {
+    if (tabItem.tabId === tabId) {
+      tabItem = {
+        ...tabItem,
+        ...updatedData,
+      };
+    } else {
+      if (tabItem.tabs) {
+        tabItem.tabs = updateTab(tabItem.tabs, tabId, updatedData);
+      }
+    }
+
+    return tabItem;
+  });
+}
+
+// unfreezes a property (object) only after determining it wasn't frozen in the first place.
+const unfreezeProp = (prop) => {
+  return Object.isFrozen(prop) ? deepUnfreeze(prop) : prop;
+};
+
+// our local copy of https://www.npmjs.com/package/deep-unfreeze
+// as it's not maintained anymore and has some problems unfreezing our
+// compound date objects
+export function deepUnfreeze(obj) {
+  if (obj != null) {
+    if (
+      obj.constructor.name !== 'Date' &&
+      !Array.isArray(obj) &&
+      typeof obj !== 'function' &&
+      typeof obj === 'object'
+    ) {
+      return Object.getOwnPropertyNames(obj)
+        .map((prop) => {
+          const clonedObj = {};
+          clonedObj[prop] = unfreezeProp(obj[prop]);
+
+          return clonedObj;
+        })
+        .reduce((leftObj, rightObj) => Object.assign({}, leftObj, rightObj));
+    } else if (Array.isArray(obj)) {
+      return obj.map((item) => unfreezeProp(item));
+    } else if (typeof obj === 'function') {
+      const target = function () {
+        obj.call(this, ...arguments);
+      };
+      target.prototype = Object.create(obj.prototype);
+      return target;
+    }
+  }
+  return obj;
 }

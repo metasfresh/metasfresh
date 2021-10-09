@@ -48,7 +48,7 @@ public class CalloutAttributeStorageListener implements IAttributeStorageListene
 		final I_M_Attribute attribute = attributeValue.getM_Attribute();
 		final Object valueOld = null;
 		final Object valueNew = attributeValue.getValue();
-		calloutExecutor.executeCallout(attributeValueContext, storage, attribute, valueNew, valueOld);
+		calloutExecutor.executeCallout(attributeValueContext, storage, attribute, valueOld, valueNew);
 	}
 
 	@Override
@@ -56,7 +56,7 @@ public class CalloutAttributeStorageListener implements IAttributeStorageListene
 	{
 		final I_M_Attribute attribute = attributeValue.getM_Attribute();
 		final Object valueNew = attributeValue.getValue();
-		calloutExecutor.executeCallout(attributeValueContext, storage, attribute, valueNew, valueOld);
+		calloutExecutor.executeCallout(attributeValueContext, storage, attribute, valueOld, valueNew);
 	}
 
 	@Override
@@ -65,7 +65,7 @@ public class CalloutAttributeStorageListener implements IAttributeStorageListene
 		final I_M_Attribute attribute = attributeValue.getM_Attribute();
 		final Object valueOld = attributeValue.getValue();
 		final Object valueNew = null;
-		calloutExecutor.executeCallout(attributeValueContext, storage, attribute, valueNew, valueOld);
+		calloutExecutor.executeCallout(attributeValueContext, storage, attribute, valueOld, valueNew);
 	}
 
 	@Override

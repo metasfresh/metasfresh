@@ -49,7 +49,7 @@ describe('Change Product Price', function() {
     cy.fixture('product/simple_product.json').then(productJson => {
       Object.assign(new Product(), productJson)
         .setName(productName)
-        .setProductCategory(productCategoryName + '_' + productCategoryName)
+        .setProductCategory(productCategoryName)
         .addProductPrice(productPrice)
         .setSold(false)
         .apply();
@@ -87,7 +87,10 @@ describe('Change Product Price', function() {
   it(`Change Price and use it`, function() {
     cy.visitWindow(`140`, productRecordID);
     cy.selectTab(`M_ProductPrice`);
-    cy.selectNthRow(0);
+    cy.get(`[data-cy=cell-M_PriceList_Version_ID]`).click();
+    cy.get(`[data-cy=cell-M_PriceList_Version_ID]`)
+      .parent()
+      .should('have.class', 'row-selected');
     cy.openAdvancedEdit();
     cy.writeIntoStringField('PriceStd', 1, true, null, true);
     cy.pressDoneButton();

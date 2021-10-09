@@ -1,375 +1,720 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 package org.compiere.model;
 
+import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.sql.Timestamp;
-import org.compiere.util.KeyNamePair;
 
 /** Generated Interface for Test
- *  @author Adempiere (generated) 
- *  @version Release 3.5.4a
+ *  @author metasfresh (generated) 
  */
+@SuppressWarnings("unused")
 public interface I_Test 
 {
 
-    /** TableName=Test */
-    public static final String Table_Name = "Test";
-
-    /** AD_Table_ID=135 */
-    public static final int Table_ID = MTable.getTable_ID(Table_Name);
-
-    KeyNamePair Model = new KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 4 - System 
-     */
-    BigDecimal accessLevel = BigDecimal.valueOf(4);
-
-    /** Load Meta Data */
-
-    /** Column name Account_Acct */
-    public static final String COLUMNNAME_Account_Acct = "Account_Acct";
-
-	/** Set Account_Acct	  */
-	public void setAccount_Acct (int Account_Acct);
-
-	/** Get Account_Acct	  */
-	public int getAccount_Acct();
-
-	public I_C_ValidCombination getAccount_A() throws RuntimeException;
-
-    /** Column name AD_Client_ID */
-    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
-
-	/** Get Client.
-	  * Client/Tenant for this installation.
-	  */
-	public int getAD_Client_ID();
-
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
-
-	/** Set Organization.
-	  * Organizational entity within client
-	  */
-	public void setAD_Org_ID (int AD_Org_ID);
-
-	/** Get Organization.
-	  * Organizational entity within client
-	  */
-	public int getAD_Org_ID();
-
-    /** Column name BinaryData */
-    public static final String COLUMNNAME_BinaryData = "BinaryData";
-
-	/** Set BinaryData.
-	  * Binary Data
-	  */
-	public void setBinaryData (int BinaryData);
-
-	/** Get BinaryData.
-	  * Binary Data
-	  */
-	public int getBinaryData();
-
-    /** Column name C_BPartner_ID */
-    public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
-
-	/** Set Business Partner .
-	  * Identifies a Business Partner
-	  */
-	public void setC_BPartner_ID (int C_BPartner_ID);
-
-	/** Get Business Partner .
-	  * Identifies a Business Partner
-	  */
-	public int getC_BPartner_ID();
-
-	public I_C_BPartner getC_BPartner() throws RuntimeException;
-
-    /** Column name C_Currency_ID */
-    public static final String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
-
-	/** Set Currency.
-	  * The Currency for this record
-	  */
-	public void setC_Currency_ID (int C_Currency_ID);
-
-	/** Get Currency.
-	  * The Currency for this record
-	  */
-	public int getC_Currency_ID();
-
-	public I_C_Currency getC_Currency() throws RuntimeException;
-
-    /** Column name CharacterData */
-    public static final String COLUMNNAME_CharacterData = "CharacterData";
-
-	/** Set Character Data.
-	  * Long Character Field
-	  */
-	public void setCharacterData (String CharacterData);
-
-	/** Get Character Data.
-	  * Long Character Field
-	  */
-	public String getCharacterData();
-
-    /** Column name C_Location_ID */
-    public static final String COLUMNNAME_C_Location_ID = "C_Location_ID";
-
-	/** Set Address.
-	  * Location or Address
-	  */
-	public void setC_Location_ID (int C_Location_ID);
-
-	/** Get Address.
-	  * Location or Address
-	  */
-	public int getC_Location_ID();
-
-	public I_C_Location getC_Location() throws RuntimeException;
-
-    /** Column name C_Payment_ID */
-    public static final String COLUMNNAME_C_Payment_ID = "C_Payment_ID";
-
-	/** Set Payment.
-	  * Payment identifier
-	  */
-	public void setC_Payment_ID (int C_Payment_ID);
-
-	/** Get Payment.
-	  * Payment identifier
-	  */
-	public int getC_Payment_ID();
-
-	public I_C_Payment getC_Payment() throws RuntimeException;
-
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
-
-	/** Get Created.
-	  * Date this record was created
-	  */
-	public Timestamp getCreated();
-
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
-
-	/** Get Created By.
-	  * User who created this records
-	  */
-	public int getCreatedBy();
-
-    /** Column name C_UOM_ID */
-    public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
-
-	/** Set UOM.
-	  * Unit of Measure
-	  */
-	public void setC_UOM_ID (int C_UOM_ID);
-
-	/** Get UOM.
-	  * Unit of Measure
-	  */
-	public int getC_UOM_ID();
-
-	public I_C_UOM getC_UOM() throws RuntimeException;
-
-    /** Column name Description */
-    public static final String COLUMNNAME_Description = "Description";
-
-	/** Set Description.
-	  * Optional short description of the record
-	  */
-	public void setDescription (String Description);
-
-	/** Get Description.
-	  * Optional short description of the record
-	  */
-	public String getDescription();
-
-    /** Column name Help */
-    public static final String COLUMNNAME_Help = "Help";
-
-	/** Set Comment/Help.
-	  * Comment or Hint
-	  */
-	public void setHelp (String Help);
-
-	/** Get Comment/Help.
-	  * Comment or Hint
-	  */
-	public String getHelp();
-
-    /** Column name IsActive */
-    public static final String COLUMNNAME_IsActive = "IsActive";
-
-	/** Set Active.
-	  * The record is active in the system
-	  */
-	public void setIsActive (boolean IsActive);
-
-	/** Get Active.
-	  * The record is active in the system
-	  */
-	public boolean isActive();
-
-    /** Column name M_Locator_ID */
-    public static final String COLUMNNAME_M_Locator_ID = "M_Locator_ID";
-
-	/** Set Locator.
-	  * Warehouse Locator
-	  */
-	public void setM_Locator_ID (int M_Locator_ID);
-
-	/** Get Locator.
-	  * Warehouse Locator
-	  */
-	public int getM_Locator_ID();
-
-	public I_M_Locator getM_Locator() throws RuntimeException;
-
-    /** Column name M_Product_ID */
-    public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
-
-	/** Set Product.
-	  * Product, Service, Item
-	  */
-	public void setM_Product_ID (int M_Product_ID);
-
-	/** Get Product.
-	  * Product, Service, Item
-	  */
-	public int getM_Product_ID();
-
-	public I_M_Product getM_Product() throws RuntimeException;
-
-    /** Column name Name */
-    public static final String COLUMNNAME_Name = "Name";
-
-	/** Set Name.
-	  * Alphanumeric identifier of the entity
-	  */
-	public void setName (String Name);
-
-	/** Get Name.
-	  * Alphanumeric identifier of the entity
-	  */
-	public String getName();
-
-    /** Column name Processed */
-    public static final String COLUMNNAME_Processed = "Processed";
-
-	/** Set Processed.
-	  * The document has been processed
-	  */
-	public void setProcessed (boolean Processed);
-
-	/** Get Processed.
-	  * The document has been processed
-	  */
-	public boolean isProcessed();
-
-    /** Column name Processing */
-    public static final String COLUMNNAME_Processing = "Processing";
-
-	/** Set Process Now	  */
-	public void setProcessing (boolean Processing);
-
-	/** Get Process Now	  */
-	public boolean isProcessing();
-
-    /** Column name T_Amount */
-    public static final String COLUMNNAME_T_Amount = "T_Amount";
-
-	/** Set Amount	  */
-	public void setT_Amount (BigDecimal T_Amount);
-
-	/** Get Amount	  */
-	public BigDecimal getT_Amount();
-
-    /** Column name T_Date */
-    public static final String COLUMNNAME_T_Date = "T_Date";
-
-	/** Set Date	  */
-	public void setT_Date (Timestamp T_Date);
-
-	/** Get Date	  */
-	public Timestamp getT_Date();
-
-    /** Column name T_DateTime */
-    public static final String COLUMNNAME_T_DateTime = "T_DateTime";
-
-	/** Set DateTime	  */
-	public void setT_DateTime (Timestamp T_DateTime);
-
-	/** Get DateTime	  */
-	public Timestamp getT_DateTime();
-
-    /** Column name Test_ID */
-    public static final String COLUMNNAME_Test_ID = "Test_ID";
-
-	/** Set Test ID	  */
-	public void setTest_ID (int Test_ID);
-
-	/** Get Test ID	  */
-	public int getTest_ID();
-
-    /** Column name T_Integer */
-    public static final String COLUMNNAME_T_Integer = "T_Integer";
-
-	/** Set Integer	  */
-	public void setT_Integer (int T_Integer);
-
-	/** Get Integer	  */
-	public int getT_Integer();
-
-    /** Column name T_Number */
-    public static final String COLUMNNAME_T_Number = "T_Number";
-
-	/** Set Number	  */
-	public void setT_Number (BigDecimal T_Number);
-
-	/** Get Number	  */
-	public BigDecimal getT_Number();
-
-    /** Column name T_Qty */
-    public static final String COLUMNNAME_T_Qty = "T_Qty";
-
-	/** Set Qty	  */
-	public void setT_Qty (BigDecimal T_Qty);
-
-	/** Get Qty	  */
-	public BigDecimal getT_Qty();
-
-    /** Column name Updated */
-    public static final String COLUMNNAME_Updated = "Updated";
-
-	/** Get Updated.
-	  * Date this record was updated
-	  */
-	public Timestamp getUpdated();
-
-    /** Column name UpdatedBy */
-    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
-
-	/** Get Updated By.
-	  * User who updated this records
-	  */
-	public int getUpdatedBy();
+	String Table_Name = "Test";
+
+//	/** AD_Table_ID=135 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+
+
+	/**
+	 * Set Account_Acct.
+	 *
+	 * <br>Type: Account
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setAccount_Acct (int Account_Acct);
+
+	/**
+	 * Get Account_Acct.
+	 *
+	 * <br>Type: Account
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getAccount_Acct();
+
+	@Nullable org.compiere.model.I_C_ValidCombination getAccount_A();
+
+	void setAccount_A(@Nullable org.compiere.model.I_C_ValidCombination Account_A);
+
+	ModelColumn<I_Test, org.compiere.model.I_C_ValidCombination> COLUMN_Account_Acct = new ModelColumn<>(I_Test.class, "Account_Acct", org.compiere.model.I_C_ValidCombination.class);
+	String COLUMNNAME_Account_Acct = "Account_Acct";
+
+	/**
+	 * Get Client.
+	 * Client/Tenant for this installation.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getAD_Client_ID();
+
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+
+	/**
+	 * Set Organisation.
+	 * Organisational entity within client
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setAD_Org_ID (int AD_Org_ID);
+
+	/**
+	 * Get Organisation.
+	 * Organisational entity within client
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getAD_Org_ID();
+
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+
+	/**
+	 * Set Contact.
+	 * User within the system - Internal or Business Partner Contact
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setAD_User_ID (int AD_User_ID);
+
+	/**
+	 * Get Contact.
+	 * User within the system - Internal or Business Partner Contact
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getAD_User_ID();
+
+	String COLUMNNAME_AD_User_ID = "AD_User_ID";
+
+	/**
+	 * Set Binary Data.
+	 * Binary Data
+	 *
+	 * <br>Type: Image
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setBinaryData (int BinaryData);
+
+	/**
+	 * Get Binary Data.
+	 * Binary Data
+	 *
+	 * <br>Type: Image
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getBinaryData();
+
+	@Nullable org.compiere.model.I_AD_Image getBinaryD();
+
+	void setBinaryD(@Nullable org.compiere.model.I_AD_Image BinaryD);
+
+	ModelColumn<I_Test, org.compiere.model.I_AD_Image> COLUMN_BinaryData = new ModelColumn<>(I_Test.class, "BinaryData", org.compiere.model.I_AD_Image.class);
+	String COLUMNNAME_BinaryData = "BinaryData";
+
+	/**
+	 * Set Async Batch.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Async_Batch_ID (int C_Async_Batch_ID);
+
+	/**
+	 * Get Async Batch.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Async_Batch_ID();
+
+	ModelColumn<I_Test, Object> COLUMN_C_Async_Batch_ID = new ModelColumn<>(I_Test.class, "C_Async_Batch_ID", null);
+	String COLUMNNAME_C_Async_Batch_ID = "C_Async_Batch_ID";
+
+	/**
+	 * Set Business Partner.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_BPartner_ID (int C_BPartner_ID);
+
+	/**
+	 * Get Business Partner.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_BPartner_ID();
+
+	String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
+
+	/**
+	 * Set Location.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_BPartner_Location_ID (int C_BPartner_Location_ID);
+
+	/**
+	 * Get Location.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_BPartner_Location_ID();
+
+	String COLUMNNAME_C_BPartner_Location_ID = "C_BPartner_Location_ID";
+
+	/**
+	 * Set Businesspartner-Memo.
+	 * Memo Text
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_BPartner_Memo (@Nullable java.lang.String C_BPartner_Memo);
+
+	/**
+	 * Get Businesspartner-Memo.
+	 * Memo Text
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getC_BPartner_Memo();
+
+	ModelColumn<I_Test, Object> COLUMN_C_BPartner_Memo = new ModelColumn<>(I_Test.class, "C_BPartner_Memo", null);
+	String COLUMNNAME_C_BPartner_Memo = "C_BPartner_Memo";
+
+	/**
+	 * Set Currency.
+	 * The Currency for this record
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Currency_ID (int C_Currency_ID);
+
+	/**
+	 * Get Currency.
+	 * The Currency for this record
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Currency_ID();
+
+	String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
+
+	/**
+	 * Set Location.
+	 * Location or Address
+	 *
+	 * <br>Type: Location
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Location_ID (int C_Location_ID);
+
+	/**
+	 * Get Location.
+	 * Location or Address
+	 *
+	 * <br>Type: Location
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Location_ID();
+
+	@Nullable org.compiere.model.I_C_Location getC_Location();
+
+	void setC_Location(@Nullable org.compiere.model.I_C_Location C_Location);
+
+	ModelColumn<I_Test, org.compiere.model.I_C_Location> COLUMN_C_Location_ID = new ModelColumn<>(I_Test.class, "C_Location_ID", org.compiere.model.I_C_Location.class);
+	String COLUMNNAME_C_Location_ID = "C_Location_ID";
+
+	/**
+	 * Set Payment.
+	 * Payment identifier
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Payment_ID (int C_Payment_ID);
+
+	/**
+	 * Get Payment.
+	 * Payment identifier
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Payment_ID();
+
+	String COLUMNNAME_C_Payment_ID = "C_Payment_ID";
+
+	/**
+	 * Set UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_UOM_ID (int C_UOM_ID);
+
+	/**
+	 * Get UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_UOM_ID();
+
+	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
+
+	/**
+	 * Set Character Data.
+	 * Long Character Field
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCharacterData (@Nullable java.lang.String CharacterData);
+
+	/**
+	 * Get Character Data.
+	 * Long Character Field
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getCharacterData();
+
+	ModelColumn<I_Test, Object> COLUMN_CharacterData = new ModelColumn<>(I_Test.class, "CharacterData", null);
+	String COLUMNNAME_CharacterData = "CharacterData";
+
+	/**
+	 * Get Created.
+	 * Date this record was created
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.sql.Timestamp getCreated();
+
+	ModelColumn<I_Test, Object> COLUMN_Created = new ModelColumn<>(I_Test.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
+
+	/**
+	 * Get Created By.
+	 * User who created this records
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getCreatedBy();
+
+	String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
+	 * Set Description.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDescription (@Nullable java.lang.String Description);
+
+	/**
+	 * Get Description.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getDescription();
+
+	ModelColumn<I_Test, Object> COLUMN_Description = new ModelColumn<>(I_Test.class, "Description", null);
+	String COLUMNNAME_Description = "Description";
+
+	/**
+	 * Set Help.
+	 * Comment or Hint
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setHelp (@Nullable java.lang.String Help);
+
+	/**
+	 * Get Help.
+	 * Comment or Hint
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getHelp();
+
+	ModelColumn<I_Test, Object> COLUMN_Help = new ModelColumn<>(I_Test.class, "Help", null);
+	String COLUMNNAME_Help = "Help";
+
+	/**
+	 * Set Active.
+	 * The record is active in the system
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsActive (boolean IsActive);
+
+	/**
+	 * Get Active.
+	 * The record is active in the system
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isActive();
+
+	ModelColumn<I_Test, Object> COLUMN_IsActive = new ModelColumn<>(I_Test.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set Locator.
+	 * Warehouse Locator
+	 *
+	 * <br>Type: Locator
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_Locator_ID (int M_Locator_ID);
+
+	/**
+	 * Get Locator.
+	 * Warehouse Locator
+	 *
+	 * <br>Type: Locator
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_Locator_ID();
+
+	String COLUMNNAME_M_Locator_ID = "M_Locator_ID";
+
+	/**
+	 * Set Product.
+	 * Product, Service, Item
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_Product_ID (int M_Product_ID);
+
+	/**
+	 * Get Product.
+	 * Product, Service, Item
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_Product_ID();
+
+	String COLUMNNAME_M_Product_ID = "M_Product_ID";
+
+	/**
+	 * Set Name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setName (java.lang.String Name);
+
+	/**
+	 * Get Name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getName();
+
+	ModelColumn<I_Test, Object> COLUMN_Name = new ModelColumn<>(I_Test.class, "Name", null);
+	String COLUMNNAME_Name = "Name";
+
+	/**
+	 * Set Processed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setProcessed (boolean Processed);
+
+	/**
+	 * Get Processed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	boolean isProcessed();
+
+	ModelColumn<I_Test, Object> COLUMN_Processed = new ModelColumn<>(I_Test.class, "Processed", null);
+	String COLUMNNAME_Processed = "Processed";
+
+	/**
+	 * Set Process Now.
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setProcessing (boolean Processing);
+
+	/**
+	 * Get Process Now.
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	boolean isProcessing();
+
+	ModelColumn<I_Test, Object> COLUMN_Processing = new ModelColumn<>(I_Test.class, "Processing", null);
+	String COLUMNNAME_Processing = "Processing";
+
+	/**
+	 * Set Amount.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setT_Amount (@Nullable BigDecimal T_Amount);
+
+	/**
+	 * Get Amount.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getT_Amount();
+
+	ModelColumn<I_Test, Object> COLUMN_T_Amount = new ModelColumn<>(I_Test.class, "T_Amount", null);
+	String COLUMNNAME_T_Amount = "T_Amount";
+
+	/**
+	 * Set Date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setT_Date (@Nullable java.sql.Timestamp T_Date);
+
+	/**
+	 * Get Date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getT_Date();
+
+	ModelColumn<I_Test, Object> COLUMN_T_Date = new ModelColumn<>(I_Test.class, "T_Date", null);
+	String COLUMNNAME_T_Date = "T_Date";
+
+	/**
+	 * Set DateTime.
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setT_DateTime (@Nullable java.sql.Timestamp T_DateTime);
+
+	/**
+	 * Get DateTime.
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getT_DateTime();
+
+	ModelColumn<I_Test, Object> COLUMN_T_DateTime = new ModelColumn<>(I_Test.class, "T_DateTime", null);
+	String COLUMNNAME_T_DateTime = "T_DateTime";
+
+	/**
+	 * Set Integer.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setT_Integer (int T_Integer);
+
+	/**
+	 * Get Integer.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getT_Integer();
+
+	ModelColumn<I_Test, Object> COLUMN_T_Integer = new ModelColumn<>(I_Test.class, "T_Integer", null);
+	String COLUMNNAME_T_Integer = "T_Integer";
+
+	/**
+	 * Set Number.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setT_Number (@Nullable BigDecimal T_Number);
+
+	/**
+	 * Get Number.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getT_Number();
+
+	ModelColumn<I_Test, Object> COLUMN_T_Number = new ModelColumn<>(I_Test.class, "T_Number", null);
+	String COLUMNNAME_T_Number = "T_Number";
+
+	/**
+	 * Set Qty.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setT_Qty (@Nullable BigDecimal T_Qty);
+
+	/**
+	 * Get Qty.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getT_Qty();
+
+	ModelColumn<I_Test, Object> COLUMN_T_Qty = new ModelColumn<>(I_Test.class, "T_Qty", null);
+	String COLUMNNAME_T_Qty = "T_Qty";
+
+	/**
+	 * Set Time.
+	 *
+	 * <br>Type: Time
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setT_Time (@Nullable java.sql.Timestamp T_Time);
+
+	/**
+	 * Get Time.
+	 *
+	 * <br>Type: Time
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getT_Time();
+
+	ModelColumn<I_Test, Object> COLUMN_T_Time = new ModelColumn<>(I_Test.class, "T_Time", null);
+	String COLUMNNAME_T_Time = "T_Time";
+
+	/**
+	 * Set Test ID.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setTest_ID (int Test_ID);
+
+	/**
+	 * Get Test ID.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getTest_ID();
+
+	ModelColumn<I_Test, Object> COLUMN_Test_ID = new ModelColumn<>(I_Test.class, "Test_ID", null);
+	String COLUMNNAME_Test_ID = "Test_ID";
+
+	/**
+	 * Get Updated.
+	 * Date this record was updated
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.sql.Timestamp getUpdated();
+
+	ModelColumn<I_Test, Object> COLUMN_Updated = new ModelColumn<>(I_Test.class, "Updated", null);
+	String COLUMNNAME_Updated = "Updated";
+
+	/**
+	 * Get Updated By.
+	 * User who updated this records
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getUpdatedBy();
+
+	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 }

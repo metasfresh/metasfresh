@@ -26,6 +26,7 @@ package de.metas.payment.esr.actionhandler.impl;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
@@ -38,12 +39,12 @@ import de.metas.banking.BankAccountId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
+import de.metas.payment.PaymentId;
 import de.metas.payment.TenderType;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.esr.model.I_ESR_ImportLine;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 
 /**
  * Handler for {@link de.metas.payment.esr.model.X_ESR_ImportLine#ESR_PAYMENT_ACTION_Money_Was_Transfered_Back_to_Partner}. Creates a reversal payment for the given line's payment. The reversal's
@@ -62,8 +63,11 @@ public class MoneyTransferedBackESRActionHandler extends AbstractESRActionHandle
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 		final String trxName = trxManager.getThreadInheritedTrxName(OnTrxMissingPolicy.ReturnTrxNone);
-		
-		final I_C_Payment linePayment = line.getC_Payment();
+
+		final PaymentId esrImportLinePaymentId = PaymentId.ofRepoIdOrNull(line.getC_Payment_ID());
+		final I_C_Payment linePayment = esrImportLinePaymentId == null ? null
+				: paymentDAO.getById(esrImportLinePaymentId);
+
 		InterfaceWrapperHelper.refresh(linePayment, trxName); // refresh the payment : very important; otherwise the over amount is not seen
 		
 		Check.assumeNotNull(linePayment, "Null payment for line {}", line.getESR_ImportLine_ID());

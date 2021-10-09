@@ -21,19 +21,40 @@ package de.metas.ordercandidate.api.impl;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-import java.util.List;
-import java.util.Properties;
 
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.model.InterfaceWrapperHelper;
-
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import de.metas.async.AsyncBatchId;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.order.IOrderDAO;
+import de.metas.order.OrderId;
+import de.metas.order.OrderLineId;
 import de.metas.ordercandidate.api.IOLCandDAO;
+import de.metas.ordercandidate.api.OLCandId;
+import de.metas.ordercandidate.api.PoReferenceLookupKey;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.model.I_C_Order_Line_Alloc;
+import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.time.LocalDateInterval;
+import lombok.NonNull;
+import org.adempiere.ad.dao.ICompositeQueryUpdater;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.impl.DateTruncQueryFilterModifier;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.util.TimeUtil;
+
+import javax.annotation.Nullable;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class OLCandDAO implements IOLCandDAO
 {
@@ -49,6 +70,8 @@ public class OLCandDAO implements IOLCandDAO
 	//
 	// return olCandId > 0 ? OptionalInt.of(olCandId) : OptionalInt.empty();
 	// }
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 
 	@Override
 	public List<I_C_OLCand> retrieveReferencing(final Properties ctx, final String tableName, final int recordId, final String trxName)
@@ -58,8 +81,7 @@ public class OLCandDAO implements IOLCandDAO
 
 		final int tableId = Services.get(IADTableDAO.class).retrieveTableId(tableName);
 
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_OLCand.class, ctx, trxName)
+		return queryBL.createQueryBuilder(I_C_OLCand.class, ctx, trxName)
 				.addEqualsFilter(I_C_OLCand.COLUMNNAME_AD_Table_ID, tableId)
 
 				.addEqualsFilter(I_C_OLCand.COLUMNNAME_Record_ID, recordId)
@@ -78,8 +100,7 @@ public class OLCandDAO implements IOLCandDAO
 		final String trxName = InterfaceWrapperHelper.getTrxName(ol);
 		final int orderLineId = ol.getC_OrderLine_ID();
 
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_Order_Line_Alloc.class, ctx, trxName)
+		return queryBL.createQueryBuilder(I_C_Order_Line_Alloc.class, ctx, trxName)
 				.addEqualsFilter(I_C_Order_Line_Alloc.COLUMN_C_OrderLine_ID, orderLineId)
 				.addOnlyActiveRecordsFilter()
 				.andCollect(I_C_Order_Line_Alloc.COLUMN_C_OLCand_ID)
@@ -97,8 +118,7 @@ public class OLCandDAO implements IOLCandDAO
 		final String trxName = InterfaceWrapperHelper.getTrxName(ol);
 		final int orderLineId = ol.getC_OrderLine_ID();
 
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_Order_Line_Alloc.class, ctx, trxName)
+		return queryBL.createQueryBuilder(I_C_Order_Line_Alloc.class, ctx, trxName)
 				.addEqualsFilter(I_C_Order_Line_Alloc.COLUMN_C_OrderLine_ID, orderLineId)
 				// .addOnlyActiveRecordsFilter() // note that we also load records that are inactive or belong to different AD_Clients
 				.orderBy(I_C_Order_Line_Alloc.COLUMN_C_Order_Line_Alloc_ID)
@@ -113,12 +133,100 @@ public class OLCandDAO implements IOLCandDAO
 		final String trxName = InterfaceWrapperHelper.getTrxName(olCand);
 		final int olCandId = olCand.getC_OLCand_ID();
 
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_Order_Line_Alloc.class, ctx, trxName)
+		return queryBL.createQueryBuilder(I_C_Order_Line_Alloc.class, ctx, trxName)
 				.addEqualsFilter(I_C_Order_Line_Alloc.COLUMN_C_OLCand_ID, olCandId)
 				// .addOnlyActiveRecordsFilter() // note that we also load records that are inactive or belong to different AD_Clients
 				.orderBy(I_C_Order_Line_Alloc.COLUMN_C_Order_Line_Alloc_ID)
 				.create()
 				.list(I_C_Order_Line_Alloc.class);
+	}
+
+	public ImmutableMap<PoReferenceLookupKey, Integer> getNumberOfRecordsWithTheSamePOReference(
+			@NonNull final Set<PoReferenceLookupKey> targetKeySet,
+			@Nullable final LocalDateInterval searchingTimeWindow)
+	{
+		final Set<String> poReferences = targetKeySet.stream().map(PoReferenceLookupKey::getPoReference).collect(Collectors.toSet());
+		final Set<Integer> orgIdSet = targetKeySet.stream().map(PoReferenceLookupKey::getOrgId).map(OrgId::getRepoId).collect(Collectors.toSet());
+
+		final IQueryBuilder<I_C_OLCand> olCandsQBuilder = queryBL
+				.createQueryBuilder(I_C_OLCand.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_C_OLCand.COLUMNNAME_POReference, poReferences)
+				.addInArrayFilter(I_C_OLCand.COLUMNNAME_AD_Org_ID, orgIdSet);
+
+		if (searchingTimeWindow != null)
+		{
+			olCandsQBuilder.addBetweenFilter(I_C_OLCand.COLUMNNAME_Created, TimeUtil.asTimestamp(searchingTimeWindow.getStartDate()),
+											 TimeUtil.asTimestamp(searchingTimeWindow.getEndDate()), DateTruncQueryFilterModifier.DAY);
+		}
+
+		final List<I_C_OLCand> olCands = olCandsQBuilder.create().list();
+
+		final Map<PoReferenceLookupKey, Integer> nrOfOLCandsByPoReferenceKey = new HashMap<>();
+
+		//initialize map
+		//we only care about those PoReferenceLookupKey that were requested
+		targetKeySet.forEach(key -> nrOfOLCandsByPoReferenceKey.put(key, 0));
+
+		olCands.forEach(olCand -> {
+			final PoReferenceLookupKey poReferenceLookupKey = PoReferenceLookupKey.builder()
+					.poReference(olCand.getPOReference())
+					.orgId(OrgId.ofRepoId(olCand.getAD_Org_ID()))
+					.build();
+
+			final Integer currentCounting = nrOfOLCandsByPoReferenceKey.get(poReferenceLookupKey);
+
+			if (currentCounting != null)
+			{
+				nrOfOLCandsByPoReferenceKey.put(poReferenceLookupKey, currentCounting + 1);
+			}
+		});
+
+		return ImmutableMap.copyOf(nrOfOLCandsByPoReferenceKey);
+	}
+
+	@NonNull
+	public Set<OrderId> getOrderIdsByOLCandIds(@NonNull final Set<OLCandId> olCandIds)
+	{
+		final Set<OrderLineId> orderLineIds = ImmutableSet.copyOf(retrieveOLCandIdToOrderLineId(olCandIds).values());
+
+		return orderDAO.retrieveIdsByOrderLineIds(orderLineIds);
+	}
+
+	@NonNull
+	public Map<OLCandId, I_C_OLCand> retrieveByIds(@NonNull final Set<OLCandId> olCandIds)
+	{
+		return queryBL.createQueryBuilder(I_C_OLCand.class)
+				.addInArrayFilter(I_C_OLCand.COLUMNNAME_C_OLCand_ID, olCandIds)
+				.create()
+				.stream()
+				.collect(ImmutableMap.toImmutableMap(
+						olCand -> OLCandId.ofRepoId(olCand.getC_OLCand_ID()),
+						Function.identity())
+				);
+	}
+
+	@NonNull
+	public Map<OLCandId, OrderLineId> retrieveOLCandIdToOrderLineId(@NonNull final Set<OLCandId> olCandIds)
+	{
+		return queryBL.createQueryBuilder(I_C_Order_Line_Alloc.class)
+				.addInArrayFilter(I_C_Order_Line_Alloc.COLUMNNAME_C_OLCand_ID, olCandIds)
+				.create()
+				.stream()
+				.collect(ImmutableMap.toImmutableMap(
+						olAlloc -> OLCandId.ofRepoId(olAlloc.getC_OLCand_ID()),
+						olAlloc -> OrderLineId.ofRepoId(olAlloc.getC_OrderLine_ID())
+				));
+	}
+
+	public void assignAsyncBatchId(@NonNull final Set<OLCandId> olCandIds,@NonNull final AsyncBatchId asyncBatchId)
+	{
+		final ICompositeQueryUpdater<I_C_OLCand> updater = queryBL.createCompositeQueryUpdater(I_C_OLCand.class)
+				.addSetColumnValue(I_C_OLCand.COLUMNNAME_C_Async_Batch_ID, asyncBatchId.getRepoId());
+
+		queryBL.createQueryBuilder(I_C_OLCand.class)
+				.addInArrayFilter(I_C_OLCand.COLUMNNAME_C_OLCand_ID, olCandIds)
+				.create()
+				.update(updater);
 	}
 }

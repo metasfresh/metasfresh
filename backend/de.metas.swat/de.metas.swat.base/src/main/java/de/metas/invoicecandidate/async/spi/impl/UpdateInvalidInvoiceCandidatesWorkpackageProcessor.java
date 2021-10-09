@@ -1,11 +1,6 @@
 package de.metas.invoicecandidate.async.spi.impl;
 
-import java.util.Properties;
-
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ISysConfigBL;
-
+import de.metas.async.AsyncBatchId;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
@@ -19,6 +14,11 @@ import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
+
+import java.util.Properties;
 
 /*
  * #%L
@@ -46,15 +46,10 @@ import lombok.NonNull;
  * Workpackage processor used to update all invalid {@link I_C_Invoice_Candidate}s.<br>
  * Important notes:
  * <ul>
- * <li>to schedule an invoice candidates update please use {@link #schedule(Properties, String)}.
+ * <li>to schedule an invoice candidates update please use {@link #schedule(IInvoiceCandUpdateSchedulerRequest)}.
  * <li>you can set the maximum number of invalid ICs to update per run, by using <code>AD_Sysconfig</code> {@value #SYSCONFIG_MaxInvoiceCandidatesToUpdate}. If there are more invalid ICs than this
  * specified maximum, then the work package processor will schedule another workpackage for the remainder.
  * </ul>
- *
- *
- *
- * @author metas-dev <dev@metasfresh.com>
- *
  */
 public class UpdateInvalidInvoiceCandidatesWorkpackageProcessor extends WorkpackageProcessorAdapter
 {
@@ -63,16 +58,13 @@ public class UpdateInvalidInvoiceCandidatesWorkpackageProcessor extends Workpack
 	 *
 	 * NOTE: the workpackages are not created right away, but the models are collected per database transaction and a workpackage is enqueued when the transaction is committed.
 	 */
-	public static final void schedule(@NonNull final IInvoiceCandUpdateSchedulerRequest request)
+	public static void schedule(@NonNull final IInvoiceCandUpdateSchedulerRequest request)
 	{
 		SCHEDULER.schedule(request);
 	}
 
-	private static final IInvoiceCandUpdateScheduler SCHEDULER = new UpdateInvalidInvoiceCandidatesWorkpackageProcessorScheduler();
+	private static final IInvoiceCandUpdateScheduler SCHEDULER = new UpdateInvalidInvoiceCandidatesWorkpackageProcessorScheduler(true/*createOneWorkpackagePerAsyncBatch*/);
 
-	/**
-	 *
-	 */
 	private static final String SYSCONFIG_MaxInvoiceCandidatesToUpdate = "de.metas.invoicecandidate.async.spi.impl.UpdateInvalidInvoiceCandidatesWorkpackageProcessor.MaxInvoiceCandidatesToUpdate";
 
 	private static final int DEFAULT_MaxInvoiceCandidatesToUpdate = 500;
@@ -90,7 +82,7 @@ public class UpdateInvalidInvoiceCandidatesWorkpackageProcessor extends Workpack
 	}
 
 	@Override
-	public Result processWorkPackage(final I_C_Queue_WorkPackage workpackage, final String localTrxName)
+	public Result processWorkPackage(@NonNull final I_C_Queue_WorkPackage workpackage, final String localTrxName)
 	{
 		trxManager.assertTrxNameNull(localTrxName);
 
@@ -125,7 +117,9 @@ public class UpdateInvalidInvoiceCandidatesWorkpackageProcessor extends Workpack
 
 			if (countRemaining > 0)
 			{
-				final IInvoiceCandUpdateSchedulerRequest request = InvoiceCandUpdateSchedulerRequest.of(ctx, localTrxName);
+				final AsyncBatchId asyncBatchId = AsyncBatchId.ofRepoIdOrNull(getC_Queue_WorkPackage().getC_Async_Batch_ID());
+
+				final IInvoiceCandUpdateSchedulerRequest request = InvoiceCandUpdateSchedulerRequest.of(ctx, localTrxName, asyncBatchId);
 				schedule(request);
 
 				Loggables.addLog("Scheduled another workpackage for {} remaining recompute records", countRemaining);
@@ -134,7 +128,7 @@ public class UpdateInvalidInvoiceCandidatesWorkpackageProcessor extends Workpack
 		return Result.SUCCESS;
 	}
 
-	private final int getMaxInvoiceCandidatesToUpdate()
+	private int getMaxInvoiceCandidatesToUpdate()
 	{
 		return sysConfigBL.getIntValue(SYSCONFIG_MaxInvoiceCandidatesToUpdate, DEFAULT_MaxInvoiceCandidatesToUpdate);
 	}

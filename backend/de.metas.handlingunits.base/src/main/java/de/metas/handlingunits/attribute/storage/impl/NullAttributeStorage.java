@@ -153,7 +153,7 @@ public final class NullAttributeStorage implements IAttributeStorage
 	}
 
 	@Override
-	public boolean hasAttribute(final I_M_Attribute attribute)
+	public boolean hasAttribute(final @NonNull I_M_Attribute attribute)
 	{
 		return false;
 	}
@@ -254,7 +254,7 @@ public final class NullAttributeStorage implements IAttributeStorage
 	 * @throws AttributeNotFoundException
 	 */
 	@Override
-	public BigDecimal getValueAsBigDecimal(final AttributeCode attributeCode)
+	public BigDecimal getValueAsBigDecimal(final @NonNull AttributeCode attributeCode)
 	{
 		throw new AttributeNotFoundException(attributeCode, this);
 	}

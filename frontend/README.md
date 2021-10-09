@@ -1,11 +1,9 @@
 
 # Metasfresh Front-end Application
 
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/9b3e33a215a14a51a0d134fdf93993fb)](https://www.codacy.com/gh/metasfresh/metasfresh-webui-frontend?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=metasfresh/metasfresh-webui-frontend&amp;utm_campaign=Badge_Grade)
-[![Join the chat at https://gitter.im/metasfresh/metasfresh-webui-frontend](https://badges.gitter.im/metasfresh/metasfresh-webui-frontend.svg)](https://gitter.im/metasfresh/metasfresh-webui-frontend?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-
 
 ## For webui-frontend developers
+
 
 ### Init
 - Install dependencies
@@ -46,6 +44,7 @@ and then run it pointing to your dist folder:
 > http-server ./dist
 
 Now open your browser and go to `localhost:8080` to see the application running.
+
 
 ### Testing
 Application comes with a set of tests, both unit as well as functional.

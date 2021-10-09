@@ -32,12 +32,12 @@ import org.adempiere.ad.dao.impl.TypedSqlQuery;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_TreeBar;
 
-import de.metas.adempiere.model.I_AD_User;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import org.compiere.model.I_AD_User;
 
 /**
  * @author cg
@@ -106,11 +106,6 @@ public class AD_User_CopyFavoritesPanel extends JavaProcess
 
 	/**
 	 * check if the TreeBar already exists
-	 * 
-	 * @param AD_User_ID
-	 * @param Node_ID
-	 * @param AD_Tree_ID
-	 * @return
 	 */
 	private boolean existsAlready(final int AD_User_ID, final int Node_ID)
 	{

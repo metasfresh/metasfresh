@@ -1,19 +1,7 @@
 package de.metas.ordercandidate.api;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.ZonedDateTime;
-import java.util.Optional;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.adempiere.warehouse.WarehouseId;
-import org.compiere.util.TimeUtil;
-
 import com.google.common.base.MoreObjects;
-
+import de.metas.async.AsyncBatchId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.document.DocTypeId;
@@ -21,6 +9,7 @@ import de.metas.freighcost.FreightCostRule;
 import de.metas.order.DeliveryRule;
 import de.metas.order.DeliveryViaRule;
 import de.metas.order.InvoiceRule;
+import de.metas.order.OrderLineGroup;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
@@ -35,6 +24,16 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.warehouse.WarehouseId;
+import org.compiere.util.TimeUtil;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
+import java.util.Optional;
 
 /*
  * #%L
@@ -58,6 +57,7 @@ import lombok.Setter;
  * #L%
  */
 
+@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public final class OLCand implements IProductPriceAware
 {
 	private final IOLCandEffectiveValuesBL olCandEffectiveValuesBL;
@@ -121,6 +121,21 @@ public final class OLCand implements IProductPriceAware
 	@Getter
 	private final DocTypeId orderDocTypeId;
 
+	@Getter
+	private final OrderLineGroup orderLineGroup;
+
+	@Getter
+	private final AsyncBatchId asyncBatchId;
+
+	@Getter
+	private final BigDecimal qtyShipped;
+
+	@Getter
+	private final AssignSalesRepRule assignSalesRepRule;
+
+	@Getter
+	private final BPartnerId salesRepInternalId;
+
 	@Builder
 	private OLCand(
 			@NonNull final IOLCandEffectiveValuesBL olCandEffectiveValuesBL,
@@ -135,7 +150,12 @@ public final class OLCand implements IProductPriceAware
 			@Nullable final PricingSystemId pricingSystemId,
 			@Nullable final ShipperId shipperId,
 			@Nullable final DocTypeId orderDocTypeId,
-			@Nullable final BPartnerId salesRepId)
+			@Nullable final BPartnerId salesRepId,
+			@Nullable final OrderLineGroup orderLineGroup,
+			@Nullable final AsyncBatchId asyncBatchId,
+			@Nullable final BigDecimal qtyShipped,
+			@NonNull final AssignSalesRepRule assignSalesRepRule,
+			@Nullable final BPartnerId salesRepInternalId)
 	{
 		this.olCandEffectiveValuesBL = olCandEffectiveValuesBL;
 
@@ -143,17 +163,8 @@ public final class OLCand implements IProductPriceAware
 
 		this.dateDoc = TimeUtil.asLocalDate(olCandRecord.getDateOrdered());
 
-		this.bpartnerInfo = BPartnerInfo.builder()
-				.bpartnerId(this.olCandEffectiveValuesBL.getBPartnerEffectiveId(olCandRecord))
-				.bpartnerLocationId(this.olCandEffectiveValuesBL.getLocationEffectiveId(olCandRecord))
-				.contactId(this.olCandEffectiveValuesBL.getContactEffectiveId(olCandRecord))
-				.build();
-		this.billBPartnerInfo = BPartnerInfo.builder()
-				.bpartnerId(this.olCandEffectiveValuesBL.getBillBPartnerEffectiveId(olCandRecord))
-				.bpartnerLocationId(this.olCandEffectiveValuesBL.getBillLocationEffectiveId(olCandRecord))
-				.contactId(this.olCandEffectiveValuesBL.getBillContactEffectiveId(olCandRecord))
-				.build();
-
+		this.bpartnerInfo = olCandEffectiveValuesBL.getBuyerPartnerInfo(olCandRecord);
+		this.billBPartnerInfo = olCandEffectiveValuesBL.getBillToPartnerInfo(olCandRecord);
 		this.dropShipBPartnerInfo = olCandEffectiveValuesBL.getDropShipPartnerInfo(olCandRecord);
 		this.handOverBPartnerInfo = olCandEffectiveValuesBL.getHandOverPartnerInfo(olCandRecord);
 
@@ -179,6 +190,13 @@ public final class OLCand implements IProductPriceAware
 		this.salesRepId = salesRepId;
 
 		this.orderDocTypeId = orderDocTypeId;
+		this.orderLineGroup = orderLineGroup;
+
+		this.asyncBatchId = asyncBatchId;
+		this.qtyShipped = qtyShipped;
+
+		this.assignSalesRepRule = assignSalesRepRule;
+		this.salesRepInternalId = salesRepInternalId;
 	}
 
 	@Override
@@ -232,6 +250,11 @@ public final class OLCand implements IProductPriceAware
 		return olCandRecord.getM_AttributeSetInstance_ID();
 	}
 
+	public WarehouseId getWarehouseId()
+	{
+		return WarehouseId.ofRepoIdOrNull(olCandRecord.getM_Warehouse_ID());
+	}
+
 	public WarehouseId getWarehouseDestId()
 	{
 		return WarehouseId.ofRepoIdOrNull(olCandRecord.getM_Warehouse_Dest_ID());
@@ -277,7 +300,7 @@ public final class OLCand implements IProductPriceAware
 		return olCandRecord.isProcessed();
 	}
 
-	public void setProcessed(final boolean processed)
+	public void setProcessed()
 	{
 		olCandRecord.setProcessed(true);
 	}
@@ -285,6 +308,13 @@ public final class OLCand implements IProductPriceAware
 	public boolean isError()
 	{
 		return olCandRecord.isError();
+	}
+
+	public void setGroupingError(final String errorMsg)
+	{
+		olCandRecord.setProcessed(false);
+		olCandRecord.setIsGroupingError(true);
+		olCandRecord.setGroupingErrorMessage(errorMsg);
 	}
 
 	public void setError(final String errorMsg, final int adNoteId)
@@ -333,6 +363,10 @@ public final class OLCand implements IProductPriceAware
 		{
 			return getBillBPartnerInfo().getBpartnerLocationId();
 		}
+		else if (olCandColumnName.equals(I_C_OLCand.COLUMNNAME_Bill_Location_Value_ID))
+		{
+			return getBillBPartnerInfo().getLocationId();
+		}
 		else if (olCandColumnName.equals(I_C_OLCand.COLUMNNAME_Bill_User_ID))
 		{
 			return getBillBPartnerInfo().getContactId();
@@ -344,6 +378,10 @@ public final class OLCand implements IProductPriceAware
 		else if (olCandColumnName.equals(I_C_OLCand.COLUMNNAME_DropShip_Location_ID))
 		{
 			return dropShipBPartnerInfo.orElse(bpartnerInfo).getBpartnerLocationId();
+		}
+		else if (olCandColumnName.equals(I_C_OLCand.COLUMNNAME_DropShip_Location_Value_ID))
+		{
+			return dropShipBPartnerInfo.orElse(bpartnerInfo).getLocationId();
 		}
 		else if (olCandColumnName.equals(I_C_OLCand.COLUMNNAME_M_PricingSystem_ID))
 		{
@@ -407,5 +445,15 @@ public final class OLCand implements IProductPriceAware
 	public BPartnerInfo getBPartnerInfo()
 	{
 		return bpartnerInfo;
+	}
+
+	public boolean isAssignToBatch(@NonNull final AsyncBatchId asyncBatchIdCandidate)
+	{
+		if (this.asyncBatchId == null)
+		{
+			return false;
+		}
+
+		return asyncBatchId.getRepoId() == asyncBatchIdCandidate.getRepoId();
 	}
 }

@@ -1,10 +1,11 @@
 import PropTypes from 'prop-types';
 import React, { PureComponent } from 'react';
 import onClickOutside from 'react-onclickoutside';
-import { Map } from 'immutable';
-import RawWidget from '../RawWidget';
 import classnames from 'classnames';
+
 import { DROPUP_START } from '../../../constants/Constants';
+
+import WidgetWrapper from '../../../containers/WidgetWrapper';
 
 /**
  * @file Class based component.
@@ -15,7 +16,7 @@ class AttributesDropdown extends PureComponent {
   constructor(props) {
     super(props);
     this.state = {
-      patchCallbacks: Map(),
+      patchCallbacks: new Map(),
     };
   }
 
@@ -61,13 +62,9 @@ class AttributesDropdown extends PureComponent {
         },
         () => {
           return handlePatch(prop, value, attrId, () => {
-            const resolvedCallbacks = this.state.patchCallbacks.delete(id);
+            this.state.patchCallbacks.delete(id);
 
             res();
-
-            this.setState({
-              patchCallbacks: resolvedCallbacks,
-            });
           });
         }
       );
@@ -96,7 +93,8 @@ class AttributesDropdown extends PureComponent {
       return layout.map((item, idx) => {
         const widgetData = item.fields.map((elem) => data[elem.field] || -1);
         return (
-          <RawWidget
+          <WidgetWrapper
+            dataSource="attributes-dropdown"
             entity={attributeType}
             widgetType={item.widgetType}
             fields={item.fields}
@@ -110,9 +108,11 @@ class AttributesDropdown extends PureComponent {
             handleChange={handleChange}
             disableOnClickOutside={disableOnClickOutside}
             enableOnClickOutside={enableOnClickOutside}
-            tabIndex={tabIndex}
-            isModal={isModal}
             attributeWidget={true}
+            {...{
+              tabIndex,
+              isModal,
+            }}
           />
         );
       });
@@ -155,7 +155,10 @@ class AttributesDropdown extends PureComponent {
  * @prop {func} handlePatch
  * @prop {func} disableOnClickOutside
  * @prop {func} enableOnClickOutside
- * @todo Check props. Which proptype? Required or optional?
+ * @prop {func} allowShortcut
+ * @prop {func} disableShortcut
+ * @prop {bool} modalVisible
+ * @prop {string} timeZone
  */
 AttributesDropdown.propTypes = {
   tabIndex: PropTypes.number,

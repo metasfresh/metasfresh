@@ -36,6 +36,7 @@ public class IssueCreateRequest
 
 	@Nullable
 	String sourceClassname;
+
 	@Nullable
 	String sourceMethodName;
 
@@ -44,4 +45,7 @@ public class IssueCreateRequest
 
 	@Nullable
 	Throwable throwable;
+
+	@Nullable
+	String stackTrace;
 }

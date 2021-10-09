@@ -22,6 +22,8 @@
 
 package de.metas.issue.tracking.github.api.v3.service.rest;
 
+
+import java.time.Duration; 
 import ch.qos.logback.classic.Level;
 import de.metas.issue.tracking.github.api.v3.service.RateLimitService;
 import de.metas.issue.tracking.github.api.v3.service.rest.info.GetRequest;
@@ -89,7 +91,7 @@ public class RestService
 	private HttpHeaders buildHttpHeaders(final String oAuthToken)
 	{
 		final HttpHeaders headers = new HttpHeaders();
-		headers.setContentType(MediaType.APPLICATION_JSON_UTF8);
+		headers.setContentType(MediaType.APPLICATION_JSON);
 		headers.add(HttpHeaders.ACCEPT, GITHUB_API_VERSION);
 		headers.add(HttpHeaders.AUTHORIZATION, "Bearer " + oAuthToken);
 
@@ -130,8 +132,8 @@ public class RestService
 	{
 		return new RestTemplateBuilder()
 				.errorHandler(responseErrorHandler)
-				.setConnectTimeout(sysConfigBL.getIntValue(CONNECTION_TIMEOUT.getName(), CONNECTION_TIMEOUT.getDefaultValue()))
-				.setReadTimeout(sysConfigBL.getIntValue(READ_TIMEOUT.getName(),READ_TIMEOUT.getDefaultValue() ))
+				.setConnectTimeout(Duration.ofMillis(sysConfigBL.getIntValue(CONNECTION_TIMEOUT.getName(), CONNECTION_TIMEOUT.getDefaultValue())))
+				.setReadTimeout(Duration.ofMillis(sysConfigBL.getIntValue(READ_TIMEOUT.getName(),READ_TIMEOUT.getDefaultValue())))
 				.build();
 	}
 }

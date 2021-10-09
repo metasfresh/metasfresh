@@ -29,6 +29,10 @@ import java.sql.Timestamp;
 import java.util.Iterator;
 import java.util.function.Consumer;
 
+import de.metas.lang.SOTrx;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.tax.api.TaxId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.Env;
@@ -94,7 +98,7 @@ public class FlatrateTermSubscription_Handler implements ConditionTypeSpecificIn
 		final BigDecimal qty = Services.get(IContractsDAO.class).retrieveSubscriptionProgressQtyForTerm(term);
 		ic.setQtyOrdered(qty);
 
-		final int taxId = Services.get(ITaxBL.class).getTax(
+		final TaxId taxId = Services.get(ITaxBL.class).getTaxNotNull(
 				Env.getCtx(),
 				term,
 				taxCategoryId,
@@ -102,9 +106,11 @@ public class FlatrateTermSubscription_Handler implements ConditionTypeSpecificIn
 				ic.getDateOrdered(), // shipDate
 				OrgId.ofRepoId(term.getAD_Org_ID()),
 				(WarehouseId)null,
-				CoalesceUtil.firstGreaterThanZero(term.getDropShip_Location_ID(), term.getBill_Location_ID()), // ship location id
-				isSOTrx);
-		ic.setC_Tax_ID(taxId);
+				CoalesceUtil.coalesceSuppliers(
+						()-> BPartnerLocationAndCaptureId.ofRepoIdOrNull(term.getDropShip_BPartner_ID(), term.getDropShip_Location_ID()),
+						()->BPartnerLocationAndCaptureId.ofRepoIdOrNull(term.getBill_BPartner_ID(), term.getBill_Location_ID())),
+				SOTrx.ofBoolean(isSOTrx));
+		ic.setC_Tax_ID(taxId.getRepoId());
 	}
 
 	@Override

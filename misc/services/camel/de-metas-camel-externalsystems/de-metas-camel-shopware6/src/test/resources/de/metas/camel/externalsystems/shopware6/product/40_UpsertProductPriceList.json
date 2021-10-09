@@ -1,0 +1,20 @@
+{
+  "priceListIdentifier": "targetPriceListId",
+  "jsonRequestProductPriceUpsert": {
+    "requestItems": [
+      {
+        "productPriceIdentifier": "ext-Shopware6-!!productId!!",
+        "productPrice": {
+          "orgCode": "001",
+          "productIdentifier": "ext-Shopware6-!!productId!!",
+          "taxCategory": "NORMAL",
+          "priceStd": 0
+        }
+      }
+    ],
+    "syncAdvise": {
+      "ifNotExists": "CREATE",
+      "ifExists": "UPDATE_MERGE"
+    }
+  }
+}

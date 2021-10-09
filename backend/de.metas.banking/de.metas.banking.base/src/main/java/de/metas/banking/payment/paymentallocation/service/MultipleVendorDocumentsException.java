@@ -39,7 +39,6 @@ import de.metas.i18n.TranslatableStrings;
  * @author cg
  *
  */
-@SuppressWarnings("serial")
 public class MultipleVendorDocumentsException extends PaymentAllocationException
 {
 	private static final AdMessageKey MSG = AdMessageKey.of("PaymentAllocation.CannotAllocateMultipleDocumentsException");
@@ -48,7 +47,7 @@ public class MultipleVendorDocumentsException extends PaymentAllocationException
 	private final ImmutableList<PayableDocument> payables;
 
 	MultipleVendorDocumentsException(
-			final Collection<IPaymentDocument> payments,
+			final Collection<? extends IPaymentDocument> payments,
 			final Collection<PayableDocument> payables)
 	{
 		super();

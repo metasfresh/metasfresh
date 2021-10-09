@@ -3,12 +3,16 @@ package de.metas.document.engine;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 
+import de.metas.document.DocTypeId;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_DocType;
 
 import de.metas.util.ISingletonService;
+
+import javax.annotation.Nullable;
 
 public interface IDocumentBL extends ISingletonService
 {
@@ -48,7 +52,7 @@ public interface IDocumentBL extends ISingletonService
 	 * @throws IllegalArgumentException if document is not a valid {@link IDocument}
 	 * @throws AdempiereException if processing fails or document does not have expected DocStatus
 	 */
-	void processEx(Object document, String docAction, String expectedDocStatus);
+	void processEx(Object document, String docAction, @Nullable String expectedDocStatus);
 
 	default void processEx(final Object document, final String docAction)
 	{
@@ -167,6 +171,8 @@ public interface IDocumentBL extends ISingletonService
 	 * In case the table is of an yet unsupported table type, the document date will be left null.
 	 */
 	LocalDate getDocumentDate(final Properties ctx, final int adTableID, final int recordId);
+
+	Optional<DocTypeId> getDocTypeId(Object model);
 
 	/**
 	 * Gets document summary

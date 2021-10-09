@@ -30,6 +30,8 @@ import java.util.List;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
+import de.metas.common.util.time.SystemTime;
+import de.metas.order.createFrom.LegacyOrderCopyCommand;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -68,11 +70,9 @@ import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderBL;
-import de.metas.order.IOrderPA;
 import de.metas.pricing.PricingSystemId;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.Getter;
@@ -332,9 +332,13 @@ public class ContractChangeBL implements IContractChangeBL
 	{
 		final I_C_OrderLine currentTermOl = currentTerm.getC_OrderLine_Term();
 		final I_C_Order currentTermOrder = currentTermOl.getC_Order();
-		final IOrderPA orderPA = Services.get(IOrderPA.class);
 		final String trxName = InterfaceWrapperHelper.getTrxName(currentTerm);
-		final I_C_Order termChangeOrder = orderPA.copyOrder(currentTermOrder, false, trxName);
+		final I_C_Order termChangeOrder = LegacyOrderCopyCommand.builder()
+				.originalOrder(currentTermOrder)
+				.copyLines(false)
+				.trxName(trxName)
+				.build()
+				.execute();
 		final PricingSystemId pricingSystemId = getPricingSystemId(currentTerm, changeConditions);
 		termChangeOrder.setM_PricingSystem_ID(PricingSystemId.toRepoId(pricingSystemId));
 
@@ -374,7 +378,7 @@ public class ContractChangeBL implements IContractChangeBL
 
 	private void setTerminatioReasonMemoAndDate(@NonNull final I_C_Flatrate_Term currentTerm, final @NonNull ContractChangeParameters contractChangeParameters)
 	{
-		currentTerm.setTerminationDate(SystemTime.asDayTimestamp());
+		currentTerm.setTerminationDate(de.metas.common.util.time.SystemTime.asDayTimestamp());
 
 		final String terminationMemo = contractChangeParameters.getTerminationMemo();
 		final String terminationReason = contractChangeParameters.getTerminationReason();
@@ -448,7 +452,7 @@ public class ContractChangeBL implements IContractChangeBL
 
 	private void setQuitContractStatus(@NonNull final I_C_SubscriptionProgress progress)
 	{
-		final Timestamp today = SystemTime.asDayTimestamp();
+		final Timestamp today = de.metas.common.util.time.SystemTime.asDayTimestamp();
 		if (today.after(progress.getEventDate()))
 		{
 			progress.setContractStatus(X_C_SubscriptionProgress.CONTRACTSTATUS_Quit);

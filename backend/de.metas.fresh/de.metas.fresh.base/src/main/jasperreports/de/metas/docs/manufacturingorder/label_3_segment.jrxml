@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="label_3_segment" pageWidth="257" pageHeight="300" whenNoDataType="BlankPage" columnWidth="257" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="a235b651-ce67-479f-8246-f2ed82a0d6b6">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<property name="ireport.zoom" value="3.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="mf15"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<property name="com.jaspersoft.studio.unit." value="mm"/>
+	<property name="com.jaspersoft.studio.unit.pageHeight" value="mm"/>
+	<property name="com.jaspersoft.studio.unit.pageWidth" value="mm"/>
+	<property name="com.jaspersoft.studio.unit.topMargin" value="mm"/>
+	<property name="com.jaspersoft.studio.unit.bottomMargin" value="mm"/>
+	<property name="com.jaspersoft.studio.unit.leftMargin" value="mm"/>
+	<property name="com.jaspersoft.studio.unit.rightMargin" value="mm"/>
+	<property name="com.jaspersoft.studio.unit.columnWidth" value="mm"/>
+	<property name="com.jaspersoft.studio.unit.columnSpacing" value="mm"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<parameter name="AD_PInstance_ID" class="java.lang.Integer"/>
+	<queryString>
+		<![CDATA[select t.* from T_Selection s
+join report.cu_product_label(s.T_Selection_id) as t on 1=1
+where s.ad_pinstance_id=$P{AD_PInstance_ID}]]>
+	</queryString>
+	<field name="created" class="java.sql.Date">
+		<property name="com.jaspersoft.studio.field.label" value="created"/>
+	</field>
+	<field name="value" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="value"/>
+	</field>
+	<field name="serialno" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="serialno"/>
+	</field>
+	<field name="name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="name"/>
+	</field>
+	<field name="prod_value" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="prod_value"/>
+	</field>
+	<field name="vendorname" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="vendorname"/>
+	</field>
+	<field name="purchaseorderno" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="purchaseorderno"/>
+	</field>
+	<detail>
+		<band height="257">
+			<image scaleImage="FillFrame" hAlign="Center" vAlign="Middle">
+				<reportElement key="image-1" x="2" y="17" width="249" height="55" uuid="30f5b950-2774-48d3-af82-f55aeb188a99">
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
+				</reportElement>
+				<box topPadding="0" leftPadding="0" bottomPadding="0" rightPadding="0">
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<imageExpression><![CDATA["de/metas/generics/logo.png"]]></imageExpression>
+			</image>
+			<staticText>
+				<reportElement x="14" y="78" width="66" height="20" uuid="0ed57ae5-5609-48ed-bcb5-00f7552cb3c9"/>
+				<textElement markup="none">
+					<font fontName="Arial" size="16" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Typ:]]></text>
+			</staticText>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="80" y="78" width="133" height="20" uuid="aa2f9d6c-354d-460b-8b09-0cbf84de7142"/>
+				<textElement markup="none">
+					<font fontName="Arial" size="16" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{prod_value}]]></textFieldExpression>
+			</textField>
+			<componentElement>
+				<reportElement x="10" y="137" width="120" height="34" uuid="32894ab7-c334-4e57-99a1-5362e3830917">
+					<property name="com.jaspersoft.studio.unit.moduleWidth" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					<printWhenExpression><![CDATA[$F{serialno} != null]]></printWhenExpression>
+				</reportElement>
+				<jr:Code128 xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" moduleWidth="1.0" textPosition="none">
+					<jr:codeExpression><![CDATA[$F{serialno}]]></jr:codeExpression>
+				</jr:Code128>
+			</componentElement>
+			<line>
+				<reportElement x="2" y="76" width="252" height="1" uuid="be727426-1a49-4101-a092-4e65242c5a31">
+					<property name="com.jaspersoft.studio.unit.width" value="mm"/>
+				</reportElement>
+			</line>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="81" y="124" width="133" height="11" uuid="aca94a6e-f9a6-4a09-8925-53ad9a1370ab"/>
+				<textElement markup="none">
+					<font fontName="Arial" size="8" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{serialno}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="0" y="234" width="252" height="1" uuid="8cadeb3a-ce03-4067-b267-7c8e6ad3ae89">
+					<property name="com.jaspersoft.studio.unit.width" value="mm"/>
+				</reportElement>
+			</line>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="14" y="125" width="67" height="11" uuid="7b3bf292-f090-49e9-8229-41fb053cf65d"/>
+				<textElement markup="none">
+					<font fontName="Arial" size="8" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{SerialNo}]]></textFieldExpression>
+			</textField>
+		</band>
+		<band height="45">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="6" y="9" width="98" height="11" uuid="6cae7586-0a61-44b8-8dff-5ba04b1ac4c8"/>
+				<textElement markup="none">
+					<font fontName="Arial" size="7" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{serialno}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="121" y="-2" width="60" height="10" uuid="d5b05629-69e6-4c75-949c-9a5395e5e707"/>
+				<textElement markup="none">
+					<font fontName="Arial" size="8" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{prod_value}]]></textFieldExpression>
+			</textField>
+			<componentElement>
+				<reportElement positionType="Float" x="117" y="9" width="100" height="25" uuid="ca9f6430-9bed-425e-9618-183ac996989a">
+					<property name="com.jaspersoft.studio.unit.moduleWidth" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					<printWhenExpression><![CDATA[$F{serialno} != null]]></printWhenExpression>
+				</reportElement>
+				<jr:Code128 xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" moduleWidth="1.0" textPosition="none">
+					<jr:codeExpression><![CDATA[$F{serialno}]]></jr:codeExpression>
+				</jr:Code128>
+			</componentElement>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="185" y="-2" width="67" height="11" uuid="c957d23a-2c59-4418-9c32-a35867caf5b9"/>
+				<textElement markup="none">
+					<font fontName="Arial" size="8" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{serialno}]]></textFieldExpression>
+			</textField>
+			<componentElement>
+				<reportElement x="67" y="3" width="30" height="30" uuid="00af1e5c-ac76-4504-a139-3a86dfb9f8f7">
+					<printWhenExpression><![CDATA[$F{serialno} != null]]></printWhenExpression>
+				</reportElement>
+				<jr:DataMatrix xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd">
+					<jr:codeExpression><![CDATA[$F{prod_value}+":"+$F{serialno}]]></jr:codeExpression>
+				</jr:DataMatrix>
+			</componentElement>
+		</band>
+	</detail>
+</jasperReport>

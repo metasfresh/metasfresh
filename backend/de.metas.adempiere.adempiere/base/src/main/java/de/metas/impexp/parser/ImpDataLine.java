@@ -10,13 +10,16 @@ import com.google.common.collect.ImmutableList;
 import de.metas.impexp.format.ImpFormatColumn;
 import de.metas.util.StringUtils;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.ToString;
 
 /**
  * A line from import file, which needs to be imported.
  *
  */
+@EqualsAndHashCode
 @ToString
 public class ImpDataLine
 {
@@ -29,7 +32,7 @@ public class ImpDataLine
 	private ImpDataLine(
 			final int fileLineNo,
 			@Nullable final String lineStr,
-			@Nullable final List<ImpDataCell> cells,
+			@Nullable @Singular final ImmutableList<ImpDataCell> cells,
 			@Nullable final ErrorMessage parseError)
 	{
 		this.fileLineNo = fileLineNo;
@@ -37,7 +40,7 @@ public class ImpDataLine
 
 		if (parseError == null)
 		{
-			this.cells = ImmutableList.copyOf(cells);
+			this.cells = cells;
 			this.parseError = null;
 		}
 		else
@@ -61,6 +64,11 @@ public class ImpDataLine
 	{
 		return parseError != null
 				|| (cells != null && cells.stream().anyMatch(ImpDataCell::isCellError));
+	}
+
+	public String getErrorMessageAsStringOrNull()
+	{
+		return getErrorMessageAsStringOrNull(-1);
 	}
 
 	public String getErrorMessageAsStringOrNull(final int maxLength)

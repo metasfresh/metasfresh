@@ -1,15 +1,15 @@
 package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.config;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.BPartnerQuery;
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.util.Services;
+import de.metas.vertical.healthcare.forum_datenaustausch_ch.commons.model.I_HC_Forum_Datenaustausch_Config;
+import lombok.experimental.UtilityClass;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 
-import de.metas.util.Services;
-import de.metas.util.lang.RepoIdAware;
-import de.metas.vertical.healthcare.forum_datenaustausch_ch.commons.model.I_HC_Forum_Datenaustausch_Config;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
-import lombok.experimental.UtilityClass;
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -33,32 +33,32 @@ import lombok.experimental.UtilityClass;
  * #L%
  */
 
-/** Under the hood, the two configs are both stored in {@link I_HC_Forum_Datenaustausch_Config}, so the repositories share some code. */
+/**
+ * Under the hood, the three configs are all stored in {@link I_HC_Forum_Datenaustausch_Config}, so the repositories share some code.
+ */
 @UtilityClass
 public class ConfigRepositoryUtil
 {
-	public I_HC_Forum_Datenaustausch_Config retrieveRecordForQueryOrNull(@NonNull final ConfigQuery query)
+	@Nullable
+	public I_HC_Forum_Datenaustausch_Config retrieveRecordForQueryOrNull(@Nullable final BPartnerQuery query)
 	{
-		final IQueryBuilder<I_HC_Forum_Datenaustausch_Config> queryBuilder = Services.get(IQueryBL.class)
+		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		final IQueryBuilder<I_HC_Forum_Datenaustausch_Config> queryBuilder = queryBL
 				.createQueryBuilder(I_HC_Forum_Datenaustausch_Config.class)
 				.addOnlyActiveRecordsFilter();
-		if (query.getBpartnerId() != null)
+		if (query != null)
 		{
-			queryBuilder.addInArrayFilter(I_HC_Forum_Datenaustausch_Config.COLUMN_Bill_BPartner_ID, query.getBpartnerId(), null);
+			final BPartnerId bPartnerId = bpartnerDAO
+					.retrieveBPartnerIdBy(query)
+					.orElse(null);
+			queryBuilder.addInArrayFilter(I_HC_Forum_Datenaustausch_Config.COLUMNNAME_Bill_BPartner_ID, bPartnerId, null);
 		}
 
-		final I_HC_Forum_Datenaustausch_Config configRecord = queryBuilder
-				.orderByDescending(I_HC_Forum_Datenaustausch_Config.COLUMN_Bill_BPartner_ID)
+		return queryBuilder
+				.orderByDescending(I_HC_Forum_Datenaustausch_Config.COLUMNNAME_Bill_BPartner_ID)
 				.create()
 				.first(I_HC_Forum_Datenaustausch_Config.class);
-		return configRecord;
-	}
-
-
-	@Value
-	@Builder
-	public static class ConfigQuery
-	{
-		RepoIdAware bpartnerId;
 	}
 }

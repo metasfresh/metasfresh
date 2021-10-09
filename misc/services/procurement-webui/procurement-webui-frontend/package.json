@@ -1,0 +1,90 @@
+{
+  "name": "procurement-webui-frontend",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@testing-library/jest-dom": "^5.11.4",
+    "@testing-library/react": "^11.1.0",
+    "@testing-library/user-event": "^12.1.10",
+    "@types/classnames": "^2.2.11",
+    "@types/jest": "^26.0.15",
+    "@types/node": "^12.0.0",
+    "@types/react": "^17.0.0",
+    "@types/react-dom": "^17.0.0",
+    "@types/react-router-dom": "^5.1.7",
+    "@types/react-transition-group": "^4.4.0",
+    "axios": "^0.21.1",
+    "bulma": "^0.9.1",
+    "classnames": "^2.2.6",
+    "enzyme": "^3.11.0",
+    "enzyme-adapter-react-16": "^1.15.6",
+    "mobx": "6.0.4",
+    "mobx-react": "7.0.5",
+    "mobx-state-tree": "4.0.2",
+    "node-sass": "^4.14.1",
+    "postcss-cli": "^8.3.1",
+    "prop-types": "^15.7.2",
+    "qs": "^6.7.0",
+    "react": "^17.0.1",
+    "react-dom": "^17.0.1",
+    "react-router-dom": "^5.2.0",
+    "react-scripts": "4.0.1",
+    "react-swipeable": "^6.0.1",
+    "react-transition-group": "^4.4.1",
+    "typescript": "^4.1.2",
+    "uuid": "^8.3.2",
+    "web-vitals": "^0.2.4",
+    "workbox-background-sync": "^5.1.3",
+    "workbox-broadcast-update": "^5.1.3",
+    "workbox-cacheable-response": "^5.1.3",
+    "workbox-core": "^5.1.3",
+    "workbox-expiration": "^5.1.3",
+    "workbox-google-analytics": "^5.1.3",
+    "workbox-navigation-preload": "^5.1.3",
+    "workbox-precaching": "^5.1.3",
+    "workbox-range-requests": "^5.1.3",
+    "workbox-routing": "^5.1.3",
+    "workbox-strategies": "^5.1.3",
+    "workbox-streams": "^5.1.3"
+  },
+  "scripts": {
+    "proxy-up": "node server.mjs&",
+    "lint": "eslint 'src/**/*.{js,ts,tsx}' --quiet",
+    "lint-fix": "eslint 'src/**/*.{js,ts,tsx}' --quiet --fix",
+    "start": "yarn run proxy-up && react-scripts start",
+    "build": "react-scripts build && mkdir -p build/static/media && cp src/static/images/logo.png build/static/media/logo.png",
+    "test": "react-scripts test",
+    "test:watch": "react-scripts test --watchAll=true",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^4.12.0",
+    "@typescript-eslint/parser": "^4.12.0",
+    "eslint": "^7.17.0",
+    "eslint-config-prettier": "^7.1.0",
+    "eslint-plugin-prettier": "^3.3.1",
+    "eslint-plugin-react": "^7.22.0",
+    "express": "^4.17.1",
+    "http-proxy-middleware": "^1.0.6",
+    "prettier": "^2.2.1"
+  },
+  "proxy": "http://localhost:5000"
+}

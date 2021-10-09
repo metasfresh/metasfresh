@@ -1,13 +1,13 @@
+import React from 'react';
 import PropTypes from 'prop-types';
-import { Map as iMap } from 'immutable';
 import Moment from 'moment-timezone';
 import currentDevice from 'current-device';
-import deepUnfreeze from 'deep-unfreeze';
 import { toInteger } from 'lodash';
 
-import { getItemsByProperty, nullToEmptyStrings } from './index';
+import { getItemsByProperty, nullToEmptyStrings, deepUnfreeze } from './index';
 import { viewState, getView } from '../reducers/viewHandler';
 import { getTable, getTableId, getSelection } from '../reducers/tables';
+import { getEntityRelatedId, getCachedFilter } from '../reducers/filters';
 import { TIME_REGEX_TEST } from '../constants/Constants';
 import { getCurrentActiveLocale } from './locale';
 
@@ -19,7 +19,7 @@ const DLpropTypes = {
   // from parent
   windowId: PropTypes.string.isRequired,
   viewId: PropTypes.string,
-  updateParentSelectedIds: PropTypes.func,
+  queryViewId: PropTypes.string,
   page: PropTypes.number,
   sort: PropTypes.string,
   defaultViewId: PropTypes.string,
@@ -46,16 +46,12 @@ const DLpropTypes = {
   filterView: PropTypes.func.isRequired,
   deleteTable: PropTypes.func.isRequired,
   indicatorState: PropTypes.func.isRequired,
-  closeListIncludedView: PropTypes.func.isRequired,
   setListPagination: PropTypes.func.isRequired,
   setListSorting: PropTypes.func.isRequired,
   setListId: PropTypes.func.isRequired,
-  push: PropTypes.func.isRequired,
   updateRawModal: PropTypes.func.isRequired,
-  updateTableSelection: PropTypes.func.isRequired,
-  deselectTableItems: PropTypes.func.isRequired,
+  deselectTableRows: PropTypes.func.isRequired,
   fetchLocationConfig: PropTypes.func.isRequired,
-  clearAllFilters: PropTypes.func.isRequired,
 };
 
 /**
@@ -75,6 +71,7 @@ const DLmapStateToProps = (state, props) => {
     refDocumentId: queryRefDocumentId,
     refTabId: queryRefTabId,
   } = props;
+
   let master = getView(state, windowId, isModal);
 
   // use empty view's data. This is used in tests
@@ -82,9 +79,16 @@ const DLmapStateToProps = (state, props) => {
     master = viewState;
   }
 
-  const sort = master.sort ? master.sort : querySort;
-  const page = toInteger(queryPage) || master.page;
+  // modals use viewId from layout data, and not from the url
   let viewId = master.viewId ? master.viewId : queryViewId;
+  let sort = querySort || master.sort;
+  let page = toInteger(queryPage) || master.page;
+  // used for included views, so that we don't use sorting/pagination
+  // of the parent view
+  if (props.isIncluded) {
+    sort = master.sort || sort;
+    page = master.page || page;
+  }
 
   // used for modals
   if (defaultViewId) {
@@ -102,9 +106,9 @@ const DLmapStateToProps = (state, props) => {
   let childTableId = null;
   const childSelector = getSelection();
   const { includedView } = props;
-  if (includedView && includedView.windowType) {
+  if (includedView && includedView.windowId) {
     childTableId = getTableId({
-      windowId: includedView.windowType,
+      windowId: includedView.windowId,
       viewId: includedView.viewId,
     });
   }
@@ -118,13 +122,16 @@ const DLmapStateToProps = (state, props) => {
       viewId: parentDefaultViewId,
     });
   }
+  const filterId = getEntityRelatedId({ windowId, viewId });
+  const filters = getCachedFilter(state, filterId);
 
   return {
     page,
     sort,
     viewId,
+    queryViewId,
     table,
-    reduxData: master,
+    viewData: master,
     layout: master.layout,
     layoutPending: master.layoutPending,
     referenceId: queryReferenceId,
@@ -135,7 +142,8 @@ const DLmapStateToProps = (state, props) => {
     parentSelected: parentSelector(state, parentTableId),
     modal: state.windowHandler.modal,
     rawModalVisible: state.windowHandler.rawModal.visible,
-    filters: state.filters,
+    filters,
+    filterId,
   };
 };
 
@@ -149,29 +157,22 @@ if (currentDevice.type === 'mobile' || currentDevice.type === 'tablet') {
   GEO_PANEL_STATES.splice(1, 1);
 }
 
-const filtersToMap = function(filtersArray) {
-  let filtersMap = iMap();
-
-  if (filtersArray && filtersArray.length) {
-    filtersArray.forEach((filter) => {
-      filtersMap = filtersMap.set(filter.filterId, filter);
-    });
-  }
-  return filtersMap;
-};
-
 /**
  * Check if current selection still exists in the provided data (used when
  * updates happen)
  * @todo TODO: rewrite this to not modify `initialMap`. This will also require
  * changes in TableActions
  */
-const doesSelectionExist = function({
+const doesSelectionExist = function ({
   data,
   selected,
   keyProperty = 'id',
 } = {}) {
   if (selected && selected[0] === 'all') {
+    return true;
+  }
+  // if selection is empty and data exist, selection is valid
+  if (selected && !selected.length && data) {
     return true;
   }
 
@@ -202,7 +203,6 @@ export {
   PANEL_WIDTHS,
   GEO_PANEL_STATES,
   getSortingQuery,
-  filtersToMap,
   doesSelectionExist,
 };
 
@@ -218,6 +218,12 @@ export function mergeColumnInfosIntoViewRows(columnInfosByFieldName, rows) {
   );
 }
 
+/**
+ * @method mergeColumnInfosIntoViewRow
+ * @summary add additional data to row's fields
+ * @param {*} rows
+ * @param {object} map
+ */
 function mergeColumnInfosIntoViewRow(columnInfosByFieldName, row) {
   const fieldsByName = Object.values(row.fieldsByName)
     .map((viewRowField) =>
@@ -234,6 +240,12 @@ function mergeColumnInfosIntoViewRow(columnInfosByFieldName, row) {
   return Object.assign({}, row, { fieldsByName });
 }
 
+/**
+ * @method mergeColumnInfoIntoViewRowField
+ * @summary merge field's widget data of the row with additional data
+ * @param {*} rows
+ * @param {object} map
+ */
 function mergeColumnInfoIntoViewRowField(columnInfo, viewRowField) {
   if (!columnInfo) {
     return viewRowField;
@@ -252,6 +264,12 @@ function mergeColumnInfoIntoViewRowField(columnInfo, viewRowField) {
   return viewRowField;
 }
 
+/**
+ * @method indexRows
+ * @summary create a key/value map of rows with their ids as keys (including nested rows)
+ * @param {*} rows
+ * @param {object} map
+ */
 function indexRows(rows, map) {
   for (const row of rows) {
     const { id, includedDocuments } = row;
@@ -266,6 +284,13 @@ function indexRows(rows, map) {
   return map;
 }
 
+/**
+ * @method mapRows
+ * @summary TODO
+ * @param {*} rows
+ * @param {*} map
+ * @param {*} columnInfosByFieldName
+ */
 function mapRows(rows, map, columnInfosByFieldName) {
   return rows.map((row) => {
     const { id, includedDocuments } = row;
@@ -310,6 +335,14 @@ export function removeRows(rowsList, changedRows) {
   };
 }
 
+/**
+ * @method mergeRows
+ * @summary merge existing rows with new rows
+ * @param {*} toRows
+ * @param {*} fromRows
+ * @param {*} columnInfosByFieldName
+ * @param {*} changedIds
+ */
 export function mergeRows({
   toRows,
   fromRows,
@@ -475,33 +508,27 @@ export function mapIncluded(node, indent, isParentLastChild = false) {
   return result;
 }
 
-/**
- * Create a flat array of collapsed rows ids including parents and children
- * @todo TODO: rewrite this to not modify `initialMap`. This will also require
- * changes in TableActions
- */
-export function createCollapsedMap(node, isCollapsed, initialMap) {
-  let collapsedMap = [];
-  if (initialMap) {
-    if (!isCollapsed) {
-      initialMap.splice(
-        initialMap.indexOf(node.includedDocuments[0]),
-        node.includedDocuments.length
-      );
-      collapsedMap = initialMap;
-    } else {
-      initialMap.map((item) => {
-        collapsedMap.push(item);
-        if (item.id === node.id) {
-          collapsedMap = collapsedMap.concat(node.includedDocuments);
-        }
-      });
-    }
-  } else {
-    if (node.includedDocuments) {
-      collapsedMap.push(node);
-    }
-  }
+export function renderHeaderProperties(groups) {
+  return groups.reduce((acc, group, idx) => {
+    let cursor = 0;
 
-  return collapsedMap;
+    do {
+      const entry = group.entries[cursor];
+
+      acc.push(
+        <span key={`${idx}_${cursor}`} className="optional-name">
+          <p className="caption">{entry.caption}:</p>{' '}
+          <p className="value">{entry.value}</p>
+        </span>
+      );
+
+      cursor += 1;
+    } while (cursor < group.entries.length);
+
+    if (idx !== groups.length - 1) {
+      acc.push(<span key={`${idx}_${cursor}`} className="separator" />);
+    }
+
+    return acc;
+  }, []);
 }

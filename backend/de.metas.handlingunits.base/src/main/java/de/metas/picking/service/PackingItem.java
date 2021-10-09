@@ -3,29 +3,26 @@
  */
 package de.metas.picking.service;
 
-import java.util.Set;
-import java.util.function.Predicate;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.adempiere.warehouse.WarehouseId;
-import org.compiere.model.I_C_UOM;
-import org.compiere.util.Util;
-
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.HUPIItemProductId;
-import de.metas.inoutcandidate.api.ShipmentScheduleId;
+import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.I_C_UOM;
+import org.compiere.util.Util;
+
+import javax.annotation.Nullable;
+import java.util.Set;
+import java.util.function.Predicate;
 
 /**
  * Item to be packed.
@@ -45,7 +42,7 @@ final class PackingItem implements IPackingItem
 
 		this.parts = parts.copy();
 		this.groupingKey = parts.mapReduce(PackingItem::computeGroupingKey).get();
-		uom = parts.mapReduce(part -> part.getQty().getUOM()).get();
+		uom = parts.getCommonUOM();
 	}
 
 	PackingItem(@NonNull final PackingItem copyFromItem)
@@ -231,6 +228,13 @@ final class PackingItem implements IPackingItem
 	{
 		addParts(packingItem.getParts());
 	}
+	@Override
+	public final IPackingItem addPartsAndReturn(final IPackingItem packingItem)
+	{
+		addParts(packingItem.getParts());
+		return this;
+	}
+
 
 	@Override
 	public final void setPartsFrom(final IPackingItem packingItem)

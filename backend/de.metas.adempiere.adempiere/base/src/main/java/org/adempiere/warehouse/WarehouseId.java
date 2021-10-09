@@ -15,6 +15,8 @@ import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.business
@@ -47,6 +49,7 @@ public class WarehouseId implements RepoIdAware
 		return new WarehouseId(repoId);
 	}
 
+	@Nullable
 	public static WarehouseId ofRepoIdOrNull(final int repoId)
 	{
 		return repoId > 0 ? new WarehouseId(repoId) : null;
@@ -54,10 +57,10 @@ public class WarehouseId implements RepoIdAware
 
 	public static Optional<WarehouseId> optionalOfRepoId(final int repoId)
 	{
-		return Optional.ofNullable(ofRepoId(repoId));
+		return Optional.ofNullable(ofRepoIdOrNull(repoId));
 	}
 
-	public static int toRepoId(final WarehouseId warehouseId)
+	public static int toRepoId(@Nullable final WarehouseId warehouseId)
 	{
 		return warehouseId != null ? warehouseId.getRepoId() : -1;
 	}
@@ -84,7 +87,7 @@ public class WarehouseId implements RepoIdAware
 		return repoId;
 	}
 
-	public static boolean equals(final WarehouseId id1, final WarehouseId id2)
+	public static boolean equals(@Nullable final WarehouseId id1, @Nullable final WarehouseId id2)
 	{
 		return Objects.equals(id1, id2);
 	}

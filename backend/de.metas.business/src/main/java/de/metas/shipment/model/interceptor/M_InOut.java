@@ -1,5 +1,17 @@
 package de.metas.shipment.model.interceptor;
 
+import de.metas.document.DocTypeId;
+import de.metas.document.IDocTypeBL;
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
+import de.metas.inout.IInOutBL;
+import de.metas.inout.InOutId;
+import de.metas.logging.TableRecordMDC;
+import de.metas.shipment.repo.ShipmentDeclarationRepository;
+import de.metas.shipment.service.ShipmentDeclarationCreator;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.exceptions.AdempiereException;
@@ -7,16 +19,6 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.ModelValidator;
 import org.slf4j.MDC.MDCCloseable;
 import org.springframework.stereotype.Component;
-
-import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.IMsgBL;
-import de.metas.i18n.ITranslatableString;
-import de.metas.inout.InOutId;
-import de.metas.logging.TableRecordMDC;
-import de.metas.shipment.repo.ShipmentDeclarationRepository;
-import de.metas.shipment.service.ShipmentDeclarationCreator;
-import de.metas.util.Services;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -48,6 +50,8 @@ public class M_InOut
 
 	private final ShipmentDeclarationCreator shipmentDeclarationCreator;
 	private final ShipmentDeclarationRepository shipmentDeclarationRepo;
+	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
+	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
 
 	public M_InOut(@NonNull final ShipmentDeclarationCreator shipmentDeclarationCreator,
 			@NonNull final ShipmentDeclarationRepository shipmentDeclarationRepo)
@@ -70,6 +74,15 @@ public class M_InOut
 			final InOutId shipmentId = InOutId.ofRepoId(inout.getM_InOut_ID());
 
 			shipmentDeclarationCreator.createShipmentDeclarationsIfNeeded(shipmentId);
+		}
+	}
+
+	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
+	public void createRequestIfConfigured(final I_M_InOut inout)
+	{
+		if (docTypeBL.hasRequestType(DocTypeId.ofRepoId(inout.getC_DocType_ID())))
+		{
+			inOutBL.createRequestFromInOut(inout);
 		}
 	}
 

@@ -47,6 +47,7 @@ import javax.management.MalformedObjectNameException;
 import javax.management.NotCompliantMBeanException;
 import javax.management.ObjectName;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.modelvalidator.AnnotatedModelInterceptorFactory;
 import org.adempiere.ad.modelvalidator.CompositeModelInterceptor;
@@ -82,7 +83,6 @@ import de.metas.process.PInstanceId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -96,6 +96,13 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 
 	private static final ThreadLocal<POJOLookupMap> threadInstanceRef = new ThreadLocal<>();
 
+	@NonNull
+	public static POJOLookupMap getNonNull()
+	{
+		return Check.assumeNotNull(get(), "POJOLookupMap.get() shall not return null at this point");
+	}
+
+	@Nullable
 	public static POJOLookupMap get()
 	{
 		final POJOLookupMap threadInstance = threadInstanceRef.get();

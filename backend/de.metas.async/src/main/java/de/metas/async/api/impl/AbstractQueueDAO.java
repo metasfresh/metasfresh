@@ -88,10 +88,6 @@ public abstract class AbstractQueueDAO implements IQueueDAO
 	/**
 	 * Retrieve object from given <code>element</code>
 	 *
-	 * @param element
-	 * @param clazz
-	 * @param trxName
-	 * @return object
 	 * @throws PackageItemNotAvailableException if underlying object was not found at this moment. Never return <code>null</code>.
 	 */
 	protected abstract <T> T retrieveItem(I_C_Queue_Element element, Class<T> clazz, String trxName);

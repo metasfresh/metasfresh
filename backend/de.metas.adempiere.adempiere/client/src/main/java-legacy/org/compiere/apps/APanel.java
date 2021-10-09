@@ -111,7 +111,6 @@ import org.compiere.model.MQuery.Operator;
 import org.compiere.model.MWindow;
 import org.compiere.model.PO;
 import org.compiere.model.X_AD_Process;
-import org.compiere.print.AReport;
 import org.compiere.swing.CPanel;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -166,14 +165,14 @@ import de.metas.util.Services;
  *         <li>BF [ 2876892 ] Save included tab before calling button action
  *         https://sourceforge.net/tracker/?func=detail&aid=2876892&group_id=176962&atid=879332
  * @author victor.perez@e-evolution.com
- * @see FR [ 1966328 ] New Window Info to MRP and CRP into View http://sourceforge.net/tracker/index.php?func=detail&aid=1966328&group_id=176962&atid=879335
+ * See FR [ 1966328 ] New Window Info to MRP and CRP into View http://sourceforge.net/tracker/index.php?func=detail&aid=1966328&group_id=176962&atid=879335
  * @autor tobi42, metas GmBH
  *        <li>BF [ 2799362 ] You can press New button a lot of times
  * @author Cristina Ghita, www.arhipac.ro
- * @see FR [ 2877111 ] See identifiers columns when delete records https://sourceforge.net/tracker/?func=detail&atid=879335&aid=2877111&group_id=176962
+ * See FR [ 2877111 ] See identifiers columns when delete records https://sourceforge.net/tracker/?func=detail&atid=879335&aid=2877111&group_id=176962
  *
  * @author hengsin, hengsin.low@idalica.com
- * @see FR [2887701] https://sourceforge.net/tracker/?func=detail&atid=879335&aid=2887701&group_id=176962
+ * See FR [2887701] https://sourceforge.net/tracker/?func=detail&atid=879335&aid=2887701&group_id=176962
  * @sponsor www.metas.de
  */
 // metas: removed final modifier
@@ -390,7 +389,7 @@ public class APanel extends CPanel
 	public AppsAction aSave;
 	// Local (added to toolbar)
 	@SuppressWarnings("unused")
-	private AppsAction aReport, aEnd, aHome, aHelp,
+	private AppsAction aEnd, aHome, aHelp,
 			aPreference,
 			aOnline, aMailSupport, aAbout, aExit,
 			aDeleteSelection;
@@ -420,7 +419,6 @@ public class APanel extends CPanel
 		// File
 		final JMenu mFile = AEnv.getMenu("File");
 		menuBar.add(mFile);
-		aReport = addAction("Report", mFile, KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0), false, false);
 		aPrint = addAction("Print", mFile, KeyStroke.getKeyStroke(KeyEvent.VK_F12, 0), false, false);
 		aPrintPreview = addAction("PrintPreview", mFile, KeyStroke.getKeyStroke(KeyEvent.VK_P, Event.SHIFT_MASK + Event.ALT_MASK), false, false);
 		if (role.isCanExport())
@@ -561,7 +559,6 @@ public class APanel extends CPanel
 			addToolbarSeparator();
 			toolBar.add(aPrintPreview.getButton());
 			toolBar.add(aPrint.getButton());
-			toolBar.add(aReport.getButton());
 		}
 
 		// Archive / Request
@@ -1475,7 +1472,7 @@ public class APanel extends CPanel
 
 		aNew.setEnabled(((inserting && changedColumn > 0) || !inserting) && insertRecord);
 		aCopy.setEnabled(!changed && insertRecord);
-		aCopyDetails.setEnabled(!changed && insertRecord && CopyRecordFactory.isEnabled(m_curTab));
+		aCopyDetails.setEnabled(!changed && insertRecord && CopyRecordFactory.isEnabledForTableName(m_curTab.getTableName()));
 		aRefresh.setEnabled(!changed);
 		aDelete.setEnabled(!changed && deleteRecord);
 		aDeleteSelection.setEnabled(!changed && deleteRecord); // same as "aDelete"
@@ -2022,11 +2019,7 @@ public class APanel extends CPanel
 			}
 
 			// File
-			if (cmd.equals(aReport.getName()))
-			{
-				cmd_report();
-			}
-			else if (cmd.equals(aPrint.getName()))
+			if (cmd.equals(aPrint.getName()))
 			{
 				cmd_print();
 			}
@@ -2241,8 +2234,6 @@ public class APanel extends CPanel
 	 * as CalloutSystem.
 	 * The class needs to comply with the Interface Callout.
 	 *
-	 * @param field field
-	 * @return error message or ""
 	 * @see org.compiere.model.Callout
 	 */
 	private String processButtonCallout(VButton button)
@@ -2591,25 +2582,6 @@ public class APanel extends CPanel
 	}   // cmd_refresh
 
 	/**
-	 * Print standard Report
-	 */
-	private void cmd_report()
-	{
-		if (!Env.getUserRolePermissions().isCanReport(m_curTab.getAD_Table_ID()))
-		{
-			ADialog.error(m_curWindowNo, this, "AccessCannotReport");
-			return;
-		}
-
-		cmd_save(false);
-
-		// Query
-		final MQuery query = m_curTab.createReportingQuery(); // 03917
-
-		new AReport(m_curTab.getAD_Table_ID(), aReport.getButton(), query, this, m_curWindowNo, getTabNo());
-	}	// cmd_report
-
-	/**
 	 * Zoom Across Menu
 	 */
 	private void cmd_zoomAcross()
@@ -2698,8 +2670,7 @@ public class APanel extends CPanel
 		// No report defined
 		if (printProcessId == null)
 		{
-			cmd_report();
-			return;
+			throw new AdempiereException("@NotFound@ @AD_Process_ID@");
 		}
 
 		cmd_save(false);

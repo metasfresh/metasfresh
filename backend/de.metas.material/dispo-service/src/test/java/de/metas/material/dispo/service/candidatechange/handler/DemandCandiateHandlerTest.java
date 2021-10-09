@@ -1,26 +1,9 @@
 package de.metas.material.dispo.service.candidatechange.handler;
 
-import static de.metas.material.event.EventTestHelper.CLIENT_AND_ORG_ID;
-import static de.metas.material.event.EventTestHelper.NOW;
-import static de.metas.material.event.EventTestHelper.PRODUCT_ID;
-import static de.metas.material.event.EventTestHelper.STORAGE_ATTRIBUTES_KEY;
-import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
-import static de.metas.material.event.EventTestHelper.createProductDescriptor;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
-
-import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.test.AdempiereTestWatcher;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
-
+import de.metas.common.util.time.SystemTime;
+import de.metas.document.dimension.DimensionFactory;
+import de.metas.document.dimension.DimensionService;
+import de.metas.document.dimension.MDCandidateDimensionFactory;
 import de.metas.material.dispo.commons.DispoTestUtils;
 import de.metas.material.dispo.commons.RepositoryTestHelper;
 import de.metas.material.dispo.commons.candidate.Candidate;
@@ -29,17 +12,43 @@ import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseMultiQuery;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseRepository;
+import de.metas.material.dispo.commons.repository.repohelpers.StockChangeDetailRepo;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.X_MD_Candidate;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
+import de.metas.material.dispo.service.candidatechange.handler.CandidateHandler.OnNewOrChangeAdvise;
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.material.event.commons.MinMaxDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
 import de.metas.organization.ClientAndOrgId;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
+import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.test.AdempiereTestWatcher;
+import org.compiere.SpringContextHolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+
+import static de.metas.material.event.EventTestHelper.CLIENT_AND_ORG_ID;
+import static de.metas.material.event.EventTestHelper.NOW;
+import static de.metas.material.event.EventTestHelper.PRODUCT_ID;
+import static de.metas.material.event.EventTestHelper.STORAGE_ATTRIBUTES_KEY;
+import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
+import static de.metas.material.event.EventTestHelper.createProductDescriptor;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -69,14 +78,22 @@ public class DemandCandiateHandlerTest
 	private PostMaterialEventService postMaterialEventService;
 	private DemandCandiateHandler demandCandidateHandler;
 	private AvailableToPromiseRepository availableToPromiseRepository;
+	private DimensionService dimensionService;
 
 	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
 
-		final CandidateRepositoryWriteService candidateRepositoryWriteService = new CandidateRepositoryWriteService();
-		final CandidateRepositoryRetrieval candidateRepositoryRetrieval = new CandidateRepositoryRetrieval();
+		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
+		dimensionFactories.add(new MDCandidateDimensionFactory());
+		dimensionService = new DimensionService(dimensionFactories);
+		SpringContextHolder.registerJUnitBean(new DimensionService(dimensionFactories));
+
+		final StockChangeDetailRepo stockChangeDetailRepo = new StockChangeDetailRepo();
+
+		final CandidateRepositoryWriteService candidateRepositoryWriteService = new CandidateRepositoryWriteService(dimensionService, stockChangeDetailRepo);
+		final CandidateRepositoryRetrieval candidateRepositoryRetrieval = new CandidateRepositoryRetrieval(dimensionService, stockChangeDetailRepo);
 
 		postMaterialEventService = Mockito.mock(PostMaterialEventService.class);
 		availableToPromiseRepository = Mockito.spy(AvailableToPromiseRepository.class);
@@ -85,12 +102,15 @@ public class DemandCandiateHandlerTest
 				candidateRepositoryRetrieval,
 				candidateRepositoryWriteService);
 
+		final SupplyCandidateHandler supplyCandidateHandler = new SupplyCandidateHandler(candidateRepositoryWriteService, stockCandidateService);
+
 		demandCandidateHandler = new DemandCandiateHandler(
 				candidateRepositoryRetrieval,
 				candidateRepositoryWriteService,
 				postMaterialEventService,
 				availableToPromiseRepository,
-				stockCandidateService);
+				stockCandidateService,
+				supplyCandidateHandler);
 	}
 
 	@Test
@@ -99,44 +119,67 @@ public class DemandCandiateHandlerTest
 		final Candidate candidate = createDemandCandidateWithQuantity("23");
 		setupRepositoryReturnsQuantityForMaterial("-23", candidate.getMaterialDescriptor());
 
-		demandCandidateHandler.onCandidateNewOrChange(candidate);
+		demandCandidateHandler.onCandidateNewOrChange(candidate, OnNewOrChangeAdvise.DEFAULT);
 
 		assertDemandEventWasFiredWithQuantity("23");
 
 		final List<I_MD_Candidate> records = DispoTestUtils.retrieveAllRecords();
-		assertThat(records).hasSize(2);
-		final I_MD_Candidate stockRecord = DispoTestUtils.filter(CandidateType.STOCK).get(0);
+		assertThat(records).hasSize(4);
 		final I_MD_Candidate demandRecord = DispoTestUtils.filter(CandidateType.DEMAND).get(0);
+		final I_MD_Candidate demandStockRecord = DispoTestUtils.retrieveStockCandidate(demandRecord);
 
 		assertThat(demandRecord.getQty()).isEqualByComparingTo("23");
-		assertThat(stockRecord.getQty()).isEqualByComparingTo("-23"); // ..because there was no older record, the "delta" we provided is the current quantity
-		assertThat(stockRecord.getMD_Candidate_Parent_ID()).isEqualTo(demandRecord.getMD_Candidate_ID());
+		assertThat(demandStockRecord.getQty()).isEqualByComparingTo("-23"); // ..because there was no older record, the "delta" we provided is the current quantity
+		assertThat(demandStockRecord.getMD_Candidate_Parent_ID()).isEqualTo(demandRecord.getMD_Candidate_ID());
+		assertThat(demandStockRecord.getSeqNo()).isEqualTo(demandRecord.getSeqNo());
 
-		assertThat(stockRecord.getSeqNo()).isEqualTo(demandRecord.getSeqNo());
+		final I_MD_Candidate supplyRecord = DispoTestUtils.filter(CandidateType.SUPPLY).get(0);
+		assertThat(supplyRecord.getQty()).isEqualByComparingTo("23");
+		final I_MD_Candidate supplyStockRecord = DispoTestUtils.retrieveStockCandidate(supplyRecord);
+		assertThat(supplyStockRecord.getQty()).isEqualByComparingTo("0"); // ..because there was no older record, the "delta" we provided is the current quantity
+		assertThat(supplyStockRecord.getMD_Candidate_ID()).isEqualTo(supplyRecord.getMD_Candidate_Parent_ID());
+		assertThat(supplyStockRecord.getSeqNo()).isEqualTo(supplyRecord.getSeqNo());
 	}
 
+	/**
+	 * demand: 23
+	 * available after demand: -13
+	 * => min and max=0, so we expect a demand event with 13
+	 */
 	@Test
 	public void onCandidateNewOrChange_unsufficient_stock()
 	{
 		final Candidate candidate = createDemandCandidateWithQuantity("23");
 		setupRepositoryReturnsQuantityForMaterial("-13", candidate.getMaterialDescriptor());
 
-		demandCandidateHandler.onCandidateNewOrChange(candidate);
+		// when
+		demandCandidateHandler.onCandidateNewOrChange(candidate, OnNewOrChangeAdvise.DEFAULT);
 
+		// then
 		assertDemandEventWasFiredWithQuantity("13");
 
-		assertThat(DispoTestUtils.retrieveAllRecords()).hasSize(2);
-		final I_MD_Candidate stockRecord = DispoTestUtils.filter(CandidateType.STOCK).get(0);
+		assertThat(DispoTestUtils.retrieveAllRecords()).hasSize(4);
+
 		final I_MD_Candidate demandRecord = DispoTestUtils.filter(CandidateType.DEMAND).get(0);
+		assertThat(demandRecord).extracting("qty.toString", "StorageAttributesKey")
+				.containsExactly("23", STORAGE_ATTRIBUTES_KEY.getAsString());
 
-		assertThat(demandRecord.getQty()).isEqualByComparingTo("23");
-		assertThat(demandRecord.getStorageAttributesKey()).isEqualTo(STORAGE_ATTRIBUTES_KEY.getAsString());
+		final I_MD_Candidate demandStockRecord = DispoTestUtils.retrieveStockCandidate(demandRecord);
+		assertThat(demandStockRecord).extracting(
+				"MD_Candidate_Parent_ID",
+				"Qty.toString",
+				"StorageAttributesKey",
+				"SeqNo")
+				.containsExactly(demandRecord.getMD_Candidate_ID(), "-23", STORAGE_ATTRIBUTES_KEY.getAsString(), demandRecord.getSeqNo());
 
-		assertThat(stockRecord.getQty()).isEqualByComparingTo("-23");
-		assertThat(stockRecord.getStorageAttributesKey()).isEqualTo(STORAGE_ATTRIBUTES_KEY.getAsString());
-		assertThat(stockRecord.getMD_Candidate_Parent_ID()).isEqualTo(demandRecord.getMD_Candidate_ID());
+		final I_MD_Candidate supplyRecord = DispoTestUtils.filter(CandidateType.SUPPLY).get(0);
+		assertThat(supplyRecord).extracting("qty.toString", "StorageAttributesKey")
+				.containsExactly("13", STORAGE_ATTRIBUTES_KEY.getAsString());
 
-		assertThat(stockRecord.getSeqNo()).isEqualTo(demandRecord.getSeqNo());
+		final I_MD_Candidate supplyStockRecord = DispoTestUtils.retrieveStockCandidate(supplyRecord);
+		// the stock record's qty is -10 because we were at -23, and 13 were added
+		assertThat(supplyStockRecord).extracting("MD_Candidate_ID", "Qty.toString", "StorageAttributesKey")
+				.containsExactly(supplyRecord.getMD_Candidate_Parent_ID(), "-10", STORAGE_ATTRIBUTES_KEY.getAsString());
 	}
 
 	private void setupRepositoryReturnsQuantityForMaterial(
@@ -148,13 +191,6 @@ public class DemandCandiateHandlerTest
 		Mockito.doReturn(new BigDecimal(quantity))
 				.when(availableToPromiseRepository)
 				.retrieveAvailableStockQtySum(query);
-//		// @formatter:off
-//		new Expectations()
-//		{{
-//			availableToPromiseRepository.retrieveAvailableStockQtySum(query);
-//			times = 1;
-//			result = new BigDecimal(quantity);
-//		}}; // @formatter:on
 	}
 
 	private void assertDemandEventWasFiredWithQuantity(@NonNull final String expectedQty)
@@ -181,7 +217,7 @@ public class DemandCandiateHandlerTest
 	{
 		final Candidate candidate = createCandidateWithType(CandidateType.UNEXPECTED_DECREASE);
 
-		demandCandidateHandler.onCandidateNewOrChange(candidate);
+		demandCandidateHandler.onCandidateNewOrChange(candidate, OnNewOrChangeAdvise.DEFAULT);
 
 		final List<I_MD_Candidate> allRecords = DispoTestUtils.retrieveAllRecords();
 		assertThat(allRecords).hasSize(2);
@@ -197,11 +233,6 @@ public class DemandCandiateHandlerTest
 
 		Mockito.verify(postMaterialEventService, Mockito.times(0))
 				.postEventNow(Mockito.any());
-//		// @formatter:off verify that no event was fired
-//		new Verifications()
-//		{{
-//			postMaterialEventService.postEventNow((MaterialEvent)any); times = 0;
-//		}}; // @formatter:on
 	}
 
 	private static Candidate createCandidateWithType(@NonNull final CandidateType type)
@@ -220,7 +251,7 @@ public class DemandCandiateHandlerTest
 	}
 
 	/**
-	 * Like {@link #testOnDemandCandidateCandidateNewOrChange_noOlderRecords()},
+	 * Like {@link #onCandidateNewOrChange_noOlderRecords_invokeTwice_withDifferent_qty()},
 	 * but the method under test is called two times. We expect the code to recognize this and not count the 2nd invocation.
 	 */
 	@Test
@@ -248,7 +279,7 @@ public class DemandCandiateHandlerTest
 
 		final Consumer<Candidate> doTest = candidateUnderTest -> {
 
-			demandCandidateHandler.onCandidateNewOrChange(candidateUnderTest);
+			demandCandidateHandler.onCandidateNewOrChange(candidateUnderTest, OnNewOrChangeAdvise.DEFAULT);
 
 			final List<I_MD_Candidate> records = DispoTestUtils.retrieveAllRecords();
 			assertThat(records).hasSize(2);
@@ -267,7 +298,7 @@ public class DemandCandiateHandlerTest
 	}
 
 	/**
-	 * like {@link #testOnDemandCandidateCandidateNewOrChange_noOlderRecords_invokeTwiceWitDifferent()},
+	 * like {@link #onCandidateNewOrChange_noOlderRecords_invokeTwiceWithSame()},
 	 * but on the 2nd invocation, a different demand-quantity is used.
 	 */
 	@Test
@@ -293,7 +324,7 @@ public class DemandCandiateHandlerTest
 				"0");
 
 		final BiConsumer<Candidate, BigDecimal> doTest = (candidateUnderTest, expectedQty) -> {
-			demandCandidateHandler.onCandidateNewOrChange(candidateUnderTest);
+			demandCandidateHandler.onCandidateNewOrChange(candidateUnderTest, OnNewOrChangeAdvise.DEFAULT);
 
 			final List<I_MD_Candidate> records = DispoTestUtils.retrieveAllRecords();
 			assertThat(records).hasSize(2);
@@ -323,9 +354,9 @@ public class DemandCandiateHandlerTest
 
 	/**
 	 * given: existing candidate
-	 *
+	 * <p>
 	 * change its date and invoke the handler under test
-	 *
+	 * <p>
 	 * verify that
 	 * <li>the candidate's stock-candidate's date also changed</li>
 	 * <li>
@@ -341,7 +372,7 @@ public class DemandCandiateHandlerTest
 				"0");
 
 		assertThat(demandCandidate.getMaterialDescriptor().getDate()).isEqualTo(NOW); // guard
-		demandCandidateHandler.onCandidateNewOrChange(demandCandidate);
+		demandCandidateHandler.onCandidateNewOrChange(demandCandidate, OnNewOrChangeAdvise.DEFAULT);
 	}
 
 	private Candidate createDemandCandidateWithQuantity(@NonNull final String quantity)
@@ -359,5 +390,32 @@ public class DemandCandiateHandlerTest
 				.build();
 
 		return candidate;
+	}
+
+	@ParameterizedTest
+	@CsvSource({
+			"0,0,0,0",
+			"0,0,-10,10",
+			"0,5,-10,15",
+			"5,5,5,0",
+			"5,6,5,0",
+			"5,5,6,0",
+			"5,7,6,0",
+			"5,5,3,2",
+			"5,7,3,4",
+			"5,7,-10,17",
+	})
+	void computeRequiredQty(String givenMin, String givenMax, String when, String then)
+	{
+		// given
+		final MinMaxDescriptor minMaxDescriptor = MinMaxDescriptor.builder()
+				.min(new BigDecimal(givenMin))
+				.max(new BigDecimal(givenMax)).build();
+
+		// when
+		final BigDecimal actual = DemandCandiateHandler.computeRequiredQty(new BigDecimal(when), minMaxDescriptor);
+
+		// then
+		assertThat(actual).isEqualByComparingTo(then);
 	}
 }

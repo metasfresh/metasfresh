@@ -8,7 +8,7 @@ import org.adempiere.ad.dao.impl.TypedSqlQuery;
 import org.adempiere.ad.dao.impl.ValidationRuleQueryFilter;
 import org.adempiere.ad.service.ILookupDAO;
 import org.adempiere.ad.service.ILookupDAO.IColumnInfo;
-import org.adempiere.ad.service.ILookupDAO.ITableRefInfo;
+import org.adempiere.ad.service.TableRefInfo;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Column;
@@ -100,7 +100,7 @@ public class ValRuleAutoApplier
 			@NonNull final Object recordModel,
 			@NonNull final I_AD_Column column)
 	{
-		final ITableRefInfo tableRefInfo = extractTableRefInfo(column);
+		final TableRefInfo tableRefInfo = extractTableRefInfo(column);
 
 		final IQueryBuilder<Object> queryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(tableRefInfo.getTableName());
@@ -126,11 +126,11 @@ public class ValRuleAutoApplier
 		return resultId;
 	}
 
-	private ITableRefInfo extractTableRefInfo(@NonNull final I_AD_Column column)
+	private TableRefInfo extractTableRefInfo(@NonNull final I_AD_Column column)
 	{
 		final ILookupDAO lookupDAO = Services.get(ILookupDAO.class);
 
-		final ITableRefInfo tableRefInfo;
+		final TableRefInfo tableRefInfo;
 		if (column.getAD_Reference_Value_ID() > 0)
 		{
 			tableRefInfo = lookupDAO.retrieveTableRefInfo(column.getAD_Reference_Value_ID());

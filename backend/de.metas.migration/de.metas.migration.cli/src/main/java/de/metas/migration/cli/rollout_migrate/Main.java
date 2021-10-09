@@ -22,15 +22,28 @@ package de.metas.migration.cli.rollout_migrate;
  * #L%
  */
 
+import lombok.NonNull;
+
 /**
  * The "main" class that sets up and calls {@link RolloutMigrate} to do the actual work.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public class Main
 {
-	public static final void main(final String[] args)
+	public static void main(final String[] args)
+	{
+		final CommandlineParams commandlineParams = new CommandlineParams();
+		final RolloutMigrationConfig config = commandlineParams.init(args);
+
+		main(config);
+	}
+
+	/**
+	 * Alternative main method to be called directly from other code, rather than the command-line.
+	 * Allows to run the toll without the presence of a settings-file
+	 */
+	public static void main(@NonNull final RolloutMigrationConfig config)
 	{
 		final DirectoryChecker directoryChecker = new DirectoryChecker();
 		final PropertiesFileLoader propertiesFileLoader = new PropertiesFileLoader(directoryChecker);
@@ -52,9 +65,6 @@ public class Main
 				dbConnectionMaker,
 				dbVersionGetter,
 				migrationScriptApplier);
-
-		final CommandlineParams commandlineParams = new CommandlineParams();
-		final Config config = commandlineParams.init(args);
 
 		if (config.isCanRun())
 		{

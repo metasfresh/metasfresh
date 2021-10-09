@@ -46,12 +46,14 @@ public class BPartnerId implements RepoIdAware
 		return new BPartnerId(repoId);
 	}
 
+	@Nullable
 	public static BPartnerId ofRepoIdOrNull(@Nullable final Integer repoId)
 	{
 		return repoId != null && repoId > 0 ? new BPartnerId(repoId) : null;
 	}
 
-	public static BPartnerId ofRepoIdOrNull(@Nullable final int repoId)
+	@Nullable
+	public static BPartnerId ofRepoIdOrNull(final int repoId)
 	{
 		return repoId > 0 ? new BPartnerId(repoId) : null;
 	}
@@ -82,7 +84,7 @@ public class BPartnerId implements RepoIdAware
 		return getRepoId();
 	}
 
-	public static boolean equals(final BPartnerId o1, final BPartnerId o2)
+	public static boolean equals(@Nullable final BPartnerId o1, @Nullable final BPartnerId o2)
 	{
 		return Objects.equals(o1, o2);
 	}

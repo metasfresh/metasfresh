@@ -22,8 +22,12 @@ package de.metas.fresh.model.validator;
  * #L%
  */
 
-import java.text.DateFormat;
-
+import de.metas.fresh.model.I_Fresh_QtyOnHand;
+import de.metas.fresh.printing.spi.impl.C_Order_MFGWarehouse_Report_RecordTextProvider;
+import de.metas.fresh.product.ProductPOCopyRecordSupport;
+import de.metas.i18n.Language;
+import de.metas.notification.INotificationBL;
+import de.metas.util.Services;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.mm.attributes.api.IModelAttributeSetInstanceListenerService;
@@ -51,14 +55,9 @@ import org.adempiere.mm.attributes.listeners.inAusLand.InvoiceLineInAusLandModel
 import org.adempiere.mm.attributes.listeners.inAusLand.OrderInAusLandModelAttributeSetInstanceListener;
 import org.adempiere.mm.attributes.listeners.inAusLand.OrderLineInAusLandModelAttributeSetInstanceListener;
 import org.adempiere.model.CopyRecordFactory;
+import org.compiere.model.I_M_Product;
 
-import de.metas.fresh.model.I_Fresh_QtyOnHand;
-import de.metas.fresh.picking.form.SwingPickingTerminalPanel;
-import de.metas.fresh.printing.spi.impl.C_Order_MFGWarehouse_Report_RecordTextProvider;
-import de.metas.i18n.Language;
-import de.metas.notification.INotificationBL;
-import de.metas.picking.terminal.form.swing.PickingTerminal;
-import de.metas.util.Services;
+import java.text.DateFormat;
 
 public class Main extends AbstractModuleInterceptor
 {
@@ -106,8 +105,6 @@ public class Main extends AbstractModuleInterceptor
 
 		modelAttributeSetInstanceListenerService.registerListener(new AgeModelAttributeSetInstanceListener());
 
-		PickingTerminal.setPickingTerminalPanelClass(SwingPickingTerminalPanel.class);
-
 		//
 		// Setup Time Format (see 06148)
 		Language.setDefaultTimeStyle(DateFormat.SHORT);
@@ -119,6 +116,11 @@ public class Main extends AbstractModuleInterceptor
 		// task 09833
 		// Register the Printing Info ctx provider for C_Order_MFGWarehouse_Report
 		Services.get(INotificationBL.class).addCtxProvider(C_Order_MFGWarehouse_Report_RecordTextProvider.instance);
+		
+		//
+		// register ProductPOCopyRecordSupport, which needs to know about many different tables
+		CopyRecordFactory.enableForTableName(I_M_Product.Table_Name);
+		CopyRecordFactory.registerCopyRecordSupport(I_M_Product.Table_Name, ProductPOCopyRecordSupport.class);
 	}
 
 	@Override
@@ -131,22 +133,11 @@ public class Main extends AbstractModuleInterceptor
 		engine.addModelValidator(new de.metas.fresh.freshQtyOnHand.model.validator.Fresh_QtyOnHand());
 		engine.addModelValidator(new de.metas.fresh.freshQtyOnHand.model.validator.Fresh_QtyOnHand_Line());
 
-		engine.addModelValidator(de.metas.fresh.material.interceptor.Fresh_QtyOnHand.INSTANCE);
 		engine.addModelValidator(de.metas.fresh.material.interceptor.PMM_PurchaseCandidate.INSTANCE);
 
-		engine.addModelValidator(de.metas.fresh.ordercheckup.model.validator.C_Order.instance); // task 09028
-		engine.addModelValidator(de.metas.fresh.ordercheckup.model.validator.C_Order_MFGWarehouse_ReportLine.instance); // task 09028
-
-		// task 09421
-		engine.addModelValidator(de.metas.fresh.mrp_productinfo.model.validator.C_Order.INSTANCE);
-		engine.addModelValidator(de.metas.fresh.mrp_productinfo.model.validator.Fresh_QtyOnHand.INSTANCE);
-
-		// task FRESH-905: work with M_Transaction to update on each storage change
-		engine.addModelValidator(de.metas.fresh.mrp_productinfo.model.validator.M_Transaction.INSTANCE);
-		// engine.addModelValidator(de.metas.fresh.mrp_productinfo.model.validator.M_InOut.INSTANCE);
-		// engine.addModelValidator(de.metas.fresh.mrp_productinfo.model.validator.M_Movement.INSTANCE);
-
-		engine.addModelValidator(de.metas.fresh.mrp_productinfo.model.validator.PMM_PurchaseCandidate.INSTANCE); // task FRESH-86
+		// these two are now spring components
+		// engine.addModelValidator(de.metas.fresh.ordercheckup.model.validator.C_Order.instance); // task 09028
+		// engine.addModelValidator(de.metas.fresh.ordercheckup.model.validator.C_Order_MFGWarehouse_ReportLine.instance); // task 09028
 	}
 
 	private void apply_Fresh_GOLIVE_Workarounds()

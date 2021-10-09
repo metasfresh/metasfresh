@@ -24,7 +24,7 @@ package de.metas.invoice.invoiceProcessingServiceCompany;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
-import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMultimap;
 import de.metas.bpartner.BPartnerId;
 import de.metas.cache.CCache;
 import de.metas.document.DocTypeId;
@@ -47,37 +47,42 @@ import java.util.function.Function;
 @Repository
 public class InvoiceProcessingServiceCompanyConfigRepository
 {
-	private final CCache<Integer, InvoiceProcessingServiceCompanyConfigMap> configMapCache =
-			CCache.<Integer, InvoiceProcessingServiceCompanyConfigMap>builder()
-					.tableName(I_InvoiceProcessingServiceCompany.Table_Name)
-					.additionalTableNameToResetFor(I_InvoiceProcessingServiceCompany_BPartnerAssignment.Table_Name)
-					.build();
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	private final CCache<Integer, InvoiceProcessingServiceCompanyConfigMap> configMapCache = CCache.<Integer, InvoiceProcessingServiceCompanyConfigMap>builder()
+			.tableName(I_InvoiceProcessingServiceCompany.Table_Name)
+			.additionalTableNameToResetFor(I_InvoiceProcessingServiceCompany_BPartnerAssignment.Table_Name)
+			.build();
 
 	public Optional<InvoiceProcessingServiceCompanyConfig> getByCustomerId(@NonNull final BPartnerId customerId, @NonNull final ZonedDateTime evaluationDate)
 	{
-		final InvoiceProcessingServiceCompanyConfigMap configMap = configMapCache.getOrLoad(0, InvoiceProcessingServiceCompanyConfigRepository::retrieveAllCompanyConfigs);
-		return configMap.getByCustomerIdAndDate(customerId, evaluationDate);
+		return getInvoiceProcessingServiceCompanyConfigMap()
+				.getByCustomerIdAndDate(customerId, evaluationDate);
 	}
 
 	public Optional<InvoiceProcessingServiceCompanyConfig> getByPaymentBPartnerAndValidFromDate(@NonNull final BPartnerId serviceCompanyBPartnerId, @NonNull final ZonedDateTime evaluationDate)
 	{
-		final InvoiceProcessingServiceCompanyConfigMap configMap = configMapCache.getOrLoad(0, InvoiceProcessingServiceCompanyConfigRepository::retrieveAllCompanyConfigs);
-		return configMap.getByServiceCompanyBPartnerIdAndDateIncludingInvalidDates(serviceCompanyBPartnerId, evaluationDate);
+		return getInvoiceProcessingServiceCompanyConfigMap()
+				.getByServiceCompanyBPartnerIdAndDateIncludingInvalidDates(serviceCompanyBPartnerId, evaluationDate);
+	}
+
+	private InvoiceProcessingServiceCompanyConfigMap getInvoiceProcessingServiceCompanyConfigMap()
+	{
+		return configMapCache.getOrLoad(0, this::retrieveAllCompanyConfigs);
 	}
 
 	@NonNull
-	static private InvoiceProcessingServiceCompanyConfigMap retrieveAllCompanyConfigs()
+	private InvoiceProcessingServiceCompanyConfigMap retrieveAllCompanyConfigs()
 	{
-		final ImmutableListMultimap<InvoiceProcessingServiceCompanyConfigId, InvoiceProcessingServiceCompanyConfigBPartnerDetails> bpartnerDetailsByCompanyConfig = retrieveAllBPartnerDetailsMappedByCompany();
+		final ImmutableListMultimap<InvoiceProcessingServiceCompanyConfigId, InvoiceProcessingServiceCompanyConfigBPartnerDetails> bpartnerDetailsByCompanyConfig = retrieveAllBPartnerDetailsMappedByConfigId();
 
-		final ImmutableList<InvoiceProcessingServiceCompanyConfig> companyConfigs =
-				Services.get(IQueryBL.class)
-						.createQueryBuilder(I_InvoiceProcessingServiceCompany.class)
-						.addOnlyActiveRecordsFilter()
-						.create()
-						.iterateAndStream()
-						.map(toCompanyConfig(bpartnerDetailsByCompanyConfig))
-						.collect(GuavaCollectors.toImmutableList());
+		final ImmutableList<InvoiceProcessingServiceCompanyConfig> companyConfigs = queryBL.createQueryBuilder(I_InvoiceProcessingServiceCompany.class)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.iterateAndStream()
+				.map(toCompanyConfig(bpartnerDetailsByCompanyConfig))
+				.collect(GuavaCollectors.toImmutableList());
+
 		return new InvoiceProcessingServiceCompanyConfigMap(companyConfigs);
 	}
 
@@ -87,7 +92,7 @@ public class InvoiceProcessingServiceCompanyConfigRepository
 	{
 		return record -> {
 			final InvoiceProcessingServiceCompanyConfigId companyConfigId = InvoiceProcessingServiceCompanyConfigId.ofRepoId(record.getInvoiceProcessingServiceCompany_ID());
-			final ImmutableMap<BPartnerId, InvoiceProcessingServiceCompanyConfigBPartnerDetails> partnerDetails = getBPartnerDetailsForCompany(bpartnerDetailsByCompanyConfig, companyConfigId);
+			final ImmutableMultimap<BPartnerId, InvoiceProcessingServiceCompanyConfigBPartnerDetails> partnerDetails = getBPartnerDetailsForCompany(bpartnerDetailsByCompanyConfig, companyConfigId);
 
 			return InvoiceProcessingServiceCompanyConfig.builder()
 					.serviceCompanyBPartnerId(BPartnerId.ofRepoId(record.getServiceCompany_BPartner_ID()))
@@ -99,19 +104,18 @@ public class InvoiceProcessingServiceCompanyConfigRepository
 		};
 	}
 
-	static private ImmutableMap<BPartnerId, InvoiceProcessingServiceCompanyConfigBPartnerDetails> getBPartnerDetailsForCompany(
+	static private ImmutableMultimap<BPartnerId, InvoiceProcessingServiceCompanyConfigBPartnerDetails> getBPartnerDetailsForCompany(
 			@NonNull final ImmutableListMultimap<InvoiceProcessingServiceCompanyConfigId, InvoiceProcessingServiceCompanyConfigBPartnerDetails> bpartnerDetailsByCompanyConfig,
 			@NonNull final InvoiceProcessingServiceCompanyConfigId companyConfigId)
 	{
 		return bpartnerDetailsByCompanyConfig.get(companyConfigId)
 				.stream()
-				.collect(GuavaCollectors.toImmutableMapByKey(InvoiceProcessingServiceCompanyConfigBPartnerDetails::getBpartnerId));
+				.collect(GuavaCollectors.toImmutableListMultimap(InvoiceProcessingServiceCompanyConfigBPartnerDetails::getBpartnerId));
 	}
 
-	private static ImmutableListMultimap<InvoiceProcessingServiceCompanyConfigId, InvoiceProcessingServiceCompanyConfigBPartnerDetails> retrieveAllBPartnerDetailsMappedByCompany()
+	private ImmutableListMultimap<InvoiceProcessingServiceCompanyConfigId, InvoiceProcessingServiceCompanyConfigBPartnerDetails> retrieveAllBPartnerDetailsMappedByConfigId()
 	{
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_InvoiceProcessingServiceCompany_BPartnerAssignment.class)
+		return queryBL.createQueryBuilder(I_InvoiceProcessingServiceCompany_BPartnerAssignment.class)
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.iterateAndStream()
@@ -125,6 +129,7 @@ public class InvoiceProcessingServiceCompanyConfigRepository
 		return recordBP -> {
 			final InvoiceProcessingServiceCompanyConfigBPartnerDetails partnerDetails = InvoiceProcessingServiceCompanyConfigBPartnerDetails.builder()
 					.bpartnerId(BPartnerId.ofRepoId(recordBP.getC_BPartner_ID()))
+					.docTypeId(DocTypeId.ofRepoIdOrNull(recordBP.getC_DocType_ID()))
 					.percent(Percent.of(recordBP.getFeePercentageOfGrandTotal()))
 					.build();
 

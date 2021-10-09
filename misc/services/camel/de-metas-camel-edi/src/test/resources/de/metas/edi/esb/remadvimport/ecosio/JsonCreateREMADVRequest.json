@@ -1,0 +1,30 @@
+{
+  "remittanceAdviceList": [
+    {
+      "senderId": "gln-kundeGLN",
+      "recipientId": "gln-metasGLN",
+      "documentNumber": "remadv_externalDocNumber",
+      "sendDate": "2020-11-28T11:11:00Z",
+      "documentDate": "2020-11-27T23:00:00Z",
+      "remittanceAdviceType": "INBOUND",
+      "remittedAmountSum": 16.4,
+      "remittanceAmountCurrencyISO": "EUR",
+      "serviceFeeAmount": 5,
+      "serviceFeeCurrencyISO": "EUR",
+      "paymentDiscountAmountSum": 0,
+      "lines": [
+        {
+          "invoiceIdentifier": "doc-145808",
+          "remittedAmount": 16.4,
+          "dateInvoiced": "2020-10-29T23:00:00Z",
+          "bpartnerIdentifier": "gln-kundeGLN",
+          "invoiceBaseDocType": "ARI",
+          "invoiceGrossAmount": 21.4,
+          "paymentDiscountAmount": 2.00,
+          "serviceFeeAmount": 3,
+          "serviceFeeVatRate": 7
+        }
+      ]
+    }
+  ]
+}

@@ -32,6 +32,7 @@ import java.sql.Timestamp;
 import java.util.List;
 import java.util.Properties;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -76,7 +77,6 @@ import de.metas.monitoring.adapter.PerformanceMonitoringService;
 import de.metas.process.PInstanceId;
 import de.metas.util.OptionalBoolean;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 public class TerminateSingleContractTest extends AbstractFlatrateTermTest
@@ -121,7 +121,7 @@ public class TerminateSingleContractTest extends AbstractFlatrateTermTest
 					ICLineAggregationKeyBuilder_OLD.instance);
 		}
 
-		SystemTime.setTimeSource(today);
+		de.metas.common.util.time.SystemTime.setTimeSource(today);
 	}
 
 	@Test
@@ -183,7 +183,7 @@ public class TerminateSingleContractTest extends AbstractFlatrateTermTest
 				.update();
 
 		final ContractChangeParameters contractChangeParameters = ContractChangeParameters.builder()
-				.changeDate(SystemTime.asDayTimestamp())
+				.changeDate(de.metas.common.util.time.SystemTime.asDayTimestamp())
 				.isCloseInvoiceCandidate(true)
 				.action(IContractChangeBL.ChangeTerm_ACTION_VoidSingleContract)
 				.build();

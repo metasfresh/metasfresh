@@ -8,6 +8,7 @@ import de.metas.report.server.ReportResult;
 import de.metas.util.Check;
 import de.metas.common.util.CoalesceUtil;
 import lombok.NonNull;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
@@ -60,11 +61,11 @@ public class JasperExecuteReportStrategy implements ExecuteReportStrategy
 
 		if (Check.isBlank(reportFilename)) // if the report returns some blanks, we ignore them
 		{
-			return ExecuteReportResult.of(outputTypeEffective, reportData);
+			return ExecuteReportResult.of(outputTypeEffective, new ByteArrayResource(reportData));
 		}
 		else
 		{
-			return ExecuteReportResult.of(reportFilename, outputTypeEffective, reportData);
+			return ExecuteReportResult.of(reportFilename, outputTypeEffective, new ByteArrayResource(reportData));
 		}
 	}
 }

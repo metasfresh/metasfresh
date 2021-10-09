@@ -7,12 +7,27 @@ export function loginRequest(username, password) {
   });
 }
 
-export function localLoginRequest() {
+export function checkLoginRequest() {
   return axios.get(`${config.API_URL}/login/isLoggedIn`);
 }
 
 export function loginCompletionRequest(role) {
   return axios.post(`${config.API_URL}/login/loginComplete`, role);
+}
+
+/**
+ * POST method
+ * REST -> /rest/api/login/authenticate
+ * @method loginWithToken
+ * @summary - Allows authenticating with a given token, returns a promise (Note: `  type: "token" ` - passed by default
+ *            to trigger the token authentication routine.)
+ * @param {string} tokenId
+ */
+export function loginWithToken(token) {
+  return axios.post(`${config.API_URL}/login/authenticate`, {
+    type: 'token',
+    token,
+  });
 }
 
 export function logoutRequest() {

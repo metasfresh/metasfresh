@@ -1,0 +1,47 @@
+{
+  "process_data1": {
+    "pinstanceId": "1504182",
+    "fieldsByName": {
+      "C_Payment_ID": {
+        "field": "C_Payment_ID",
+        "value": null,
+        "readonly": false,
+        "mandatory": true,
+        "displayed": true,
+        "widgetType": "Lookup",
+        "validStatus": {
+          "valid": false,
+          "initialValue": true,
+          "reason": "Mandatory field C_Payment_ID not filled",
+          "fieldName": "C_Payment_ID"
+        },
+        "viewEditorRenderMode": "always"
+      }
+    },
+    "startProcessDirectly": false
+  },
+  "process_layout1": {
+    "layoutType": "panel",
+    "caption": "Add payment",
+    "description": "",
+    "elements": [
+      {
+        "caption": "Payment",
+        "description": "Payment identifier",
+        "widgetType": "Lookup",
+        "fields": [
+          {
+            "field": "C_Payment_ID",
+            "caption": "",
+            "emptyText": "none",
+            "clearValueText": "none",
+            "source": "lookup",
+            "lookupSearchStringMinLength": -1,
+            "lookupSearchStartDelayMillis": 500,
+            "supportZoomInto": true
+          }
+        ]
+      }
+    ]
+  }
+}

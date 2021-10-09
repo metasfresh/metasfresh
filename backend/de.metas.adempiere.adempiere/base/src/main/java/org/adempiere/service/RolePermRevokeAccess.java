@@ -21,6 +21,8 @@ import de.metas.security.requests.RemoveWorkflowAccessRequest;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import de.metas.workflow.WorkflowId;
+import de.metas.workflow.service.IADWorkflowBL;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.adempiere.ad.element.api.AdWindowId;
@@ -126,17 +128,17 @@ public class RolePermRevokeAccess
 		}
 		else if (request.getAD_Workflow_ID() > 0)
 		{
-			final int adWorkflowId = request.getAD_Workflow_ID();
+			final WorkflowId workflowId = WorkflowId.ofRepoId(request.getAD_Workflow_ID());
 
 			permissionsDAO.deleteWorkflowAccess(RemoveWorkflowAccessRequest.builder()
 					.roleId(role.getId())
 					.clientId(role.getClientId())
 					.orgId(role.getOrgId())
-					.adWorkflowId(adWorkflowId)
+					.adWorkflowId(workflowId.getRepoId())
 					.build());
 
-			final I_AD_Workflow wf = InterfaceWrapperHelper.loadOutOfTrx(adWorkflowId, I_AD_Workflow.class);
-			logRevoked(I_AD_Workflow.COLUMNNAME_AD_Workflow_ID, wf.getName());
+			final String workflowName = Services.get(IADWorkflowBL.class).getWorkflowName(workflowId);
+			logRevoked(I_AD_Workflow.COLUMNNAME_AD_Workflow_ID, workflowName);
 		}
 		else if (request.getDocAction() != null)
 		{

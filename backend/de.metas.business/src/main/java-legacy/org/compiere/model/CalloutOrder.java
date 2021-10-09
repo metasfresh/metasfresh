@@ -16,38 +16,21 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import java.math.BigDecimal;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.util.Properties;
-
 import de.metas.bpartner.BPartnerContactId;
-import org.adempiere.ad.callout.api.ICalloutField;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.DBException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.compiere.Adempiere;
-import org.compiere.util.DB;
-import org.compiere.util.DisplayType;
-import org.compiere.util.Env;
-
-import de.metas.adempiere.model.I_AD_User;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.exceptions.BPartnerNoBillToAddressException;
 import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.bpartner.service.BPartnerStats;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.bpartner.service.IBPartnerStatsDAO;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
+import de.metas.document.location.DocumentLocation;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequence.impl.IDocumentNoInfo;
 import de.metas.interfaces.I_C_OrderLine;
@@ -55,10 +38,14 @@ import de.metas.logging.MetasfreshLastError;
 import de.metas.order.DeliveryRule;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderLineBL;
+import de.metas.order.OrderLinePriceAndDiscount;
 import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
-import de.metas.order.PriceAndDiscount;
+import de.metas.order.OrderLinePriceAndDiscount;
+import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
+import de.metas.order.location.adapter.OrderLineDocumentLocationAdapterFactory;
 import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PriceListId;
@@ -68,6 +55,7 @@ import de.metas.pricing.service.IPriceListDAO;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
+import de.metas.security.permissions.Access;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.LegacyUOMConversionUtils;
@@ -75,11 +63,29 @@ import de.metas.uom.UOMConversionContext;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.common.util.CoalesceUtil;
 import de.metas.util.lang.Percent;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.ad.callout.api.ICalloutField;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.DBException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.Adempiere;
+import org.compiere.util.DB;
+import org.compiere.util.DisplayType;
+import org.compiere.util.Env;
+
+import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.Properties;
 
 /**
  * Order Callouts. metas 24.09.2008: Aenderungen durchgefuehrt um das Verhalten bei der Auswahl von Liefer- und Rechnungsadressen (sowie Geschaeftspartnern) zu beeinflussen. So werden jetzt im Feld
@@ -97,6 +103,9 @@ public class CalloutOrder extends CalloutEngine
 
 	private static final String MSG_CreditLimitOver = "CreditLimitOver";
 	private static final String MSG_UnderLimitPrice = "UnderLimitPrice";
+	private static final String DEFAULT_INVOICE_RULE = "DEFAULT_INVOICE_RULE";
+
+	private static final String SYSCONFIG_CopyOrgFromBPartner = "de.metas.order.CopyOrgFromBPartner";
 
 	/**
 	 * C_Order.C_DocTypeTarget_ID changed: - InvoiceRuld/DeliveryRule/PaymentRule - temporary Document Context: - DocSubType - HasCharges - (re-sets Business Partner info of required)
@@ -163,7 +172,7 @@ public class CalloutOrder extends CalloutEngine
 		}
 		else
 		{
-			order.setInvoiceRule(X_C_Order.INVOICERULE_AfterDelivery);
+			order.setInvoiceRule(getDefaultInvoiceRule());
 		}
 
 		// Payment Rule - POS Order
@@ -340,9 +349,9 @@ public class CalloutOrder extends CalloutEngine
 
 		final boolean IsSOTrx = order.isSOTrx();
 		// #928: Make sure the user is of the right SOTrx value and it is set as default for that SOTrx value.
-		final String userFlag = IsSOTrx ? I_AD_User.COLUMNNAME_IsSalesContact : I_AD_User.COLUMNNAME_IsPurchaseContact;
+		final String userFlag = IsSOTrx ? org.compiere.model.I_AD_User.COLUMNNAME_IsSalesContact : org.compiere.model.I_AD_User.COLUMNNAME_IsPurchaseContact;
 
-		final String defaultUserFlag = IsSOTrx ? I_AD_User.COLUMNNAME_IsSalesContact_Default : I_AD_User.COLUMNNAME_IsPurchaseContact_Default;
+		final String defaultUserFlag = IsSOTrx ? org.compiere.model.I_AD_User.COLUMNNAME_IsSalesContact_Default : org.compiere.model.I_AD_User.COLUMNNAME_IsPurchaseContact_Default;
 
 		// task FRESH-152: Joining with the BPartner Stats.
 		// will use the table and column names so if somebody wants to know the references of the stats table, he will also get here
@@ -354,7 +363,8 @@ public class CalloutOrder extends CalloutEngine
 				+ " lship.C_BPartner_Location_ID,c.AD_User_ID,"
 				+ " COALESCE(p.PO_PriceList_ID,g.PO_PriceList_ID) AS PO_PriceList_ID, p.PaymentRulePO,p.PO_PaymentTerm_ID,"
 				+ " lbill.C_BPartner_Location_ID AS Bill_Location_ID, "
-				+ " p.SalesRep_ID, p.SO_DocTypeTarget_ID "
+				+ " p.SalesRep_ID, p.SO_DocTypeTarget_ID, "
+				+ " p.AD_Org_ID "
 				+ " FROM C_BPartner p"
 				+ " INNER JOIN C_BP_Group g ON (p.C_BP_Group_ID=g.C_BP_Group_ID)"
 				+ " LEFT OUTER JOIN C_BPartner_Location lbill ON (p.C_BPartner_ID=lbill.C_BPartner_ID AND lbill.IsBillTo='Y' AND lbill.IsActive='Y')"
@@ -373,7 +383,7 @@ public class CalloutOrder extends CalloutEngine
 				// 08578 take default users first.
 				// #928: The IsDefaultContact is no longer important
 				// + " , c." + I_AD_User.COLUMNNAME_IsDefaultContact + " DESC"
-				+ " , c." + I_AD_User.COLUMNNAME_AD_User_ID + " ASC "; // #1
+				+ " , c." + org.compiere.model.I_AD_User.COLUMNNAME_AD_User_ID + " ASC "; // #1
 		final Object[] sqlParams = new Object[] { C_BPartner_ID };
 
 		PreparedStatement pstmt = null;
@@ -385,6 +395,18 @@ public class CalloutOrder extends CalloutEngine
 			rs = pstmt.executeQuery();
 			if (rs.next())
 			{
+				final OrgId bpartnerOrgId = OrgId.ofRepoId(rs.getInt("AD_Org_ID"));
+
+				if (isCopyOrgFromBPartner())
+				{
+					final boolean userHasOrgPermissions = Env.getUserRolePermissions().isOrgAccess(bpartnerOrgId, null,Access.WRITE);
+
+					if (userHasOrgPermissions)
+					{
+						order.setAD_Org_ID(bpartnerOrgId.getRepoId());
+					}
+				}
+
 				// metas: Auftragsart aus Kunde
 				if (IsSOTrx)
 				{
@@ -392,6 +414,13 @@ public class CalloutOrder extends CalloutEngine
 					if (docTypeTargetId == null)
 					{
 						docTypeTargetId = suggestDefaultSalesOrderDocTypeId(order);
+					}
+
+					if (docTypeTargetId != null
+							&& !calloutField.getCalloutRecord().isLookupValuesContainingId(I_C_Order.COLUMNNAME_C_DocTypeTarget_ID, docTypeTargetId))
+					{
+						log.debug("Avoid setting a document type which is not in our list of allowed document types to pick from");
+						docTypeTargetId = null;
 					}
 
 					if (docTypeTargetId != null)
@@ -496,7 +525,7 @@ public class CalloutOrder extends CalloutEngine
 
 				// Defaults, if not Walkin Receipt or Walkin Invoice
 				final String OrderType = order.getOrderType();
-				order.setInvoiceRule(X_C_Order.INVOICERULE_AfterDelivery);
+				order.setInvoiceRule(getDefaultInvoiceRule());
 				// mTab.setValue("DeliveryRule", X_C_Order.DELIVERYRULE_Availability); // nop, shall use standard defaults (see task 09250)
 				order.setPaymentRule(PaymentRule.OnCredit.getCode());
 				if (MOrder.DocSubType_Prepay.equals(OrderType))
@@ -579,6 +608,24 @@ public class CalloutOrder extends CalloutEngine
 		return NO_ERROR;
 	} // bPartner
 
+	private boolean isCopyOrgFromBPartner()
+	{
+		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+		return sysConfigBL.getBooleanValue(SYSCONFIG_CopyOrgFromBPartner, false);
+	}
+
+	private String getDefaultInvoiceRule()
+	{
+		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+
+		final String invoiceRule = sysConfigBL.getValue(DEFAULT_INVOICE_RULE, X_C_Order.INVOICERULE_AfterDelivery);
+		if (!invoiceRule.trim().isEmpty())
+		{
+			return invoiceRule;
+		}
+		return X_C_Order.INVOICERULE_AfterDelivery;
+	}
+
 	private DocTypeId suggestDefaultSalesOrderDocTypeId(final I_C_Order order)
 	{
 		final IDocTypeDAO docTypesRepo = Services.get(IDocTypeDAO.class);
@@ -587,22 +634,22 @@ public class CalloutOrder extends CalloutEngine
 		final int adOrgId = order.getAD_Org_ID();
 
 		final DocTypeId defaultDocTypeId = docTypesRepo.getDocTypeIdOrNull(DocTypeQuery.builder()
-				.docBaseType(X_C_DocType.DOCBASETYPE_SalesOrder)
-				.defaultDocType(true)
-				.adClientId(adClientId)
-				.adOrgId(adOrgId)
-				.build());
+																				   .docBaseType(X_C_DocType.DOCBASETYPE_SalesOrder)
+																				   .defaultDocType(true)
+																				   .adClientId(adClientId)
+																				   .adOrgId(adOrgId)
+																				   .build());
 		if (defaultDocTypeId != null)
 		{
 			return defaultDocTypeId;
 		}
 
 		final DocTypeId standardOrderDocTypeId = docTypesRepo.getDocTypeIdOrNull(DocTypeQuery.builder()
-				.docBaseType(X_C_DocType.DOCBASETYPE_SalesOrder)
-				.docSubType(X_C_DocType.DOCSUBTYPE_StandardOrder)
-				.adClientId(adClientId)
-				.adOrgId(adOrgId)
-				.build());
+																						 .docBaseType(X_C_DocType.DOCBASETYPE_SalesOrder)
+																						 .docSubType(X_C_DocType.DOCSUBTYPE_StandardOrder)
+																						 .adClientId(adClientId)
+																						 .adOrgId(adOrgId)
+																						 .build());
 
 		return standardOrderDocTypeId;
 	}
@@ -658,9 +705,9 @@ public class CalloutOrder extends CalloutEngine
 		// #928: Make sure the user is of the right SOTrx value and it is set as default for that SOTrx value.
 
 		final boolean isSOTrx = order.isSOTrx();
-		final String userFlag = isSOTrx ? I_AD_User.COLUMNNAME_IsSalesContact : I_AD_User.COLUMNNAME_IsPurchaseContact;
+		final String userFlag = isSOTrx ? org.compiere.model.I_AD_User.COLUMNNAME_IsSalesContact : org.compiere.model.I_AD_User.COLUMNNAME_IsPurchaseContact;
 
-		final String defaultUserFlag = isSOTrx ? I_AD_User.COLUMNNAME_IsSalesContact_Default : I_AD_User.COLUMNNAME_IsPurchaseContact_Default;
+		final String defaultUserFlag = isSOTrx ? org.compiere.model.I_AD_User.COLUMNNAME_IsSalesContact_Default : I_AD_User.COLUMNNAME_IsPurchaseContact_Default;
 
 		final String sql = "SELECT p.AD_Language,p.C_PaymentTerm_ID,"
 				+ "p.M_PriceList_ID,p.PaymentRule,p.POReference,"
@@ -801,7 +848,7 @@ public class CalloutOrder extends CalloutEngine
 
 				// Defaults, if not Walkin Receipt or Walkin Invoice
 				final String OrderType = order.getOrderType();
-				order.setInvoiceRule(X_C_Order.INVOICERULE_AfterDelivery);
+				order.setInvoiceRule(getDefaultInvoiceRule());
 				order.setPaymentRule(PaymentRule.OnCredit.getCode());
 				if (MOrder.DocSubType_Prepay.equals(OrderType))
 				{
@@ -937,7 +984,7 @@ public class CalloutOrder extends CalloutEngine
 		}
 		orderLine.setM_AttributeSetInstance(null);
 		orderLine.setS_ResourceAssignment_ID(-1);
-		orderLine.setC_UOM_ID(IUOMDAO.C_UOM_ID_Each); // EA
+		orderLine.setC_UOM_ID(UomId.EACH.getRepoId()); // EA
 
 		final String sql = "SELECT ChargeAmt FROM C_Charge WHERE C_Charge_ID=?";
 		final Object[] sqlParams = new Object[] { C_Charge_ID };
@@ -987,11 +1034,11 @@ public class CalloutOrder extends CalloutEngine
 		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 
 		orderLineBL.updatePrices(OrderLinePriceUpdateRequest.builder()
-				.orderLine(ol)
-				.resultUOM(ResultUOM.CONTEXT_UOM)
-				.updatePriceEnteredAndDiscountOnlyIfNotAlreadySet(true)
-				.updateLineNetAmt(true)
-				.build());
+										 .orderLine(ol)
+										 .resultUOM(ResultUOM.CONTEXT_UOM)
+										 .updatePriceEnteredAndDiscountOnlyIfNotAlreadySet(true)
+										 .updateLineNetAmt(true)
+										 .build());
 
 		final Object value = calloutField.getValue();
 		if (value == null)
@@ -1010,16 +1057,16 @@ public class CalloutOrder extends CalloutEngine
 
 		// Check Partner Location
 		final I_C_Order order = ol.getC_Order();
-		int shipC_BPartner_Location_ID = ol.getC_BPartner_Location_ID();
-		if (shipC_BPartner_Location_ID <= 0)
+		BPartnerLocationAndCaptureId shipBPLocationId = OrderLineDocumentLocationAdapterFactory.locationAdapter(ol).getBPartnerLocationAndCaptureIdIfExists().orElse(null);
+		if (shipBPLocationId == null)
 		{
-			shipC_BPartner_Location_ID = order.getC_BPartner_Location_ID();
+			shipBPLocationId = OrderDocumentLocationAdapterFactory.locationAdapter(order).getBPartnerLocationAndCaptureIdIfExists().orElse(null);
 		}
-		if (shipC_BPartner_Location_ID <= 0)
+		if (shipBPLocationId == null)
 		{
 			return amt(calloutField); //
 		}
-		log.debug("Ship BP_Location={}", shipC_BPartner_Location_ID);
+		log.debug("Ship BP_Location={}", shipBPLocationId);
 
 		//
 		Timestamp billDate = ol.getDateOrdered();
@@ -1046,17 +1093,19 @@ public class CalloutOrder extends CalloutEngine
 		}
 		log.debug("Warehouse={}", M_Warehouse_ID);
 
-		int billC_BPartner_Location_ID = order.getBill_Location_ID();
-		if (billC_BPartner_Location_ID <= 0)
+		BPartnerLocationAndCaptureId billBPLocationId = OrderDocumentLocationAdapterFactory.billLocationAdapter(order).getBPartnerLocationAndCaptureIdIfExists().orElse(null);
+		if (billBPLocationId == null)
 		{
-			billC_BPartner_Location_ID = shipC_BPartner_Location_ID;
+			billBPLocationId = shipBPLocationId;
 		}
-		log.debug("Bill BP_Location={}", billC_BPartner_Location_ID);
+		log.debug("Bill BP_Location={}", billBPLocationId);
 
 		//
 		final int C_Tax_ID = Tax.get(ctx, M_Product_ID, C_Charge_ID, billDate,
-				shipDate, AD_Org_ID, M_Warehouse_ID,
-				billC_BPartner_Location_ID, shipC_BPartner_Location_ID, order.isSOTrx());
+									 shipDate, AD_Org_ID, M_Warehouse_ID,
+									 billBPLocationId,
+									 shipBPLocationId,
+									 order.isSOTrx());
 		log.trace("Tax ID={}", C_Tax_ID);
 		//
 		if (C_Tax_ID <= 0)
@@ -1092,22 +1141,22 @@ public class CalloutOrder extends CalloutEngine
 		final CurrencyPrecision pricePrecision = Services.get(IPriceListBL.class).getPricePrecision(PriceListId.ofRepoId(order.getM_PriceList_ID()));
 
 		//
-		PriceAndDiscount priceAndDiscount;
+		OrderLinePriceAndDiscount priceAndDiscount;
 
 		if (I_C_OrderLine.COLUMNNAME_QtyOrdered.equals(changedColumnName))
 		{
 			orderLineBL.updatePrices(OrderLinePriceUpdateRequest.prepare(orderLine)
-					.applyPriceLimitRestrictions(false)
-					.build());
+											 .applyPriceLimitRestrictions(false)
+											 .build());
 
-			priceAndDiscount = PriceAndDiscount.of(orderLine, pricePrecision);
+			priceAndDiscount = OrderLinePriceAndDiscount.of(orderLine, pricePrecision);
 		}
 		else if (I_C_OrderLine.COLUMNNAME_PriceActual.equals(changedColumnName))
 		{
 			final BigDecimal priceActual = orderLine.getPriceActual();
 			final BigDecimal priceEntered = calculatePriceEnteredFromPriceActual(orderLine);
 
-			priceAndDiscount = PriceAndDiscount.builder()
+			priceAndDiscount = OrderLinePriceAndDiscount.builder()
 					.precision(pricePrecision)
 					.priceEntered(priceEntered)
 					.priceActual(priceActual)
@@ -1116,18 +1165,18 @@ public class CalloutOrder extends CalloutEngine
 		}
 		else if (I_C_OrderLine.COLUMNNAME_PriceEntered.equals(changedColumnName))
 		{
-			priceAndDiscount = PriceAndDiscount.of(orderLine, pricePrecision)
+			priceAndDiscount = OrderLinePriceAndDiscount.of(orderLine, pricePrecision)
 					.updatePriceActual();
 		}
 		else if (I_C_OrderLine.COLUMNNAME_Discount.equals(changedColumnName))
 		{
-			priceAndDiscount = PriceAndDiscount.of(orderLine, pricePrecision)
+			priceAndDiscount = OrderLinePriceAndDiscount.of(orderLine, pricePrecision)
 					.updatePriceActualIfPriceEnteredIsNotZero();
 		}
 		// C_UOM_ID, PriceList, S_ResourceAssignment_ID
 		else
 		{
-			priceAndDiscount = PriceAndDiscount.of(orderLine, pricePrecision);
+			priceAndDiscount = OrderLinePriceAndDiscount.of(orderLine, pricePrecision);
 		}
 
 		//
@@ -1324,8 +1373,8 @@ public class CalloutOrder extends CalloutEngine
 						C_OrderLine_ID = 0;
 					}
 					BigDecimal notReserved = MOrderLine.getNotReserved(calloutField.getCtx(),
-							M_Warehouse_ID, M_Product_ID,
-							M_AttributeSetInstance_ID, C_OrderLine_ID);
+																	   M_Warehouse_ID, M_Product_ID,
+																	   M_AttributeSetInstance_ID, C_OrderLine_ID);
 					if (notReserved == null)
 					{
 						notReserved = BigDecimal.ZERO;
@@ -1541,15 +1590,17 @@ public class CalloutOrder extends CalloutEngine
 		{
 			if (order.isDropShip())
 			{
-				order.setDropShip_BPartner_ID(order.getC_BPartner_ID());
-				order.setDropShip_Location_ID(order.getC_BPartner_Location_ID());
-				order.setDropShip_User_ID(order.getAD_User_ID());
+				OrderDocumentLocationAdapterFactory
+						.deliveryLocationAdapter(order)
+						.setFrom(OrderDocumentLocationAdapterFactory
+										 .locationAdapter(order)
+										 .toDocumentLocation());
 			}
 			else
 			{
-				order.setDropShip_BPartner_ID(-1);
-				order.setDropShip_Location_ID(-1);
-				order.setDropShip_User_ID(-1);
+				OrderDocumentLocationAdapterFactory
+						.deliveryLocationAdapter(order)
+						.setFrom(DocumentLocation.EMPTY);
 			}
 		}
 		else

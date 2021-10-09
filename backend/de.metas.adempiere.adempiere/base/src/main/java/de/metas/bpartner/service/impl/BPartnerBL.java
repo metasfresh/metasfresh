@@ -1,65 +1,32 @@
 package de.metas.bpartner.service.impl;
 
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.util.List;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.function.Function;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ISysConfigBL;
-import org.compiere.model.I_AD_User;
-import org.compiere.model.I_C_BP_Group;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_BPartner_QuickInput;
-import org.compiere.util.Env;
-import org.springframework.stereotype.Service;
-
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
-
+import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
+import de.metas.bpartner.name.NameAndGreeting;
+import de.metas.bpartner.name.strategy.BPartnerNameAndGreetingStrategies;
+import de.metas.bpartner.name.strategy.BPartnerNameAndGreetingStrategyId;
+import de.metas.bpartner.name.strategy.ComputeNameAndGreetingRequest;
+import de.metas.bpartner.service.BPartnerInfo;
+import de.metas.bpartner.service.BPartnerPrintFormatMap;
 import de.metas.bpartner.service.IBPGroupDAO;
 import de.metas.bpartner.service.IBPartnerAware;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest.ContactType;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.greeting.GreetingId;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.Language;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.location.ILocationBL;
+import de.metas.location.ILocationDAO;
+import de.metas.location.LocationId;
 import de.metas.location.impl.AddressBuilder;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
@@ -70,19 +37,44 @@ import de.metas.user.UserRepository;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BP_Group;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_BPartner_QuickInput;
+import org.compiere.util.Env;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.function.Function;
 
 @Service
 public class BPartnerBL implements IBPartnerBL
 {
 	/* package */static final String SYSCONFIG_C_BPartner_SOTrx_AllowConsolidateInOut_Override = "C_BPartner.SOTrx_AllowConsolidateInOut_Override";
+	private static final AdMessageKey MSG_SALES_REP_EQUALS_BPARTNER = AdMessageKey.of("SALES_REP_EQUALS_BPARTNER");
 
+	private final ILocationDAO locationDAO = Services.get(ILocationDAO.class);
 	private final IBPartnerDAO bpartnersRepo;
 	private final UserRepository userRepository;
+	private final IBPGroupDAO bpGroupDAO;
 
 	public BPartnerBL(@NonNull final UserRepository userRepository)
 	{
 		this.bpartnersRepo = Services.get(IBPartnerDAO.class);
 		this.userRepository = userRepository;
+		this.bpGroupDAO = Services.get(IBPGroupDAO.class);
 	}
 
 	@Override
@@ -127,16 +119,16 @@ public class BPartnerBL implements IBPartnerBL
 
 	@Override
 	public String mkFullAddress(
-			@NonNull final org.compiere.model.I_C_BPartner bPartner,
-			final I_C_BPartner_Location location,
-			final I_AD_User user,
-			final String trxName)
+			@NonNull final org.compiere.model.I_C_BPartner bpartner,
+			@Nullable final I_C_BPartner_Location bpLocation,
+			@Nullable final LocationId locationId,
+			@Nullable final I_AD_User bpContact)
 	{
 		final AddressBuilder addressBuilder = AddressBuilder.builder()
-				.orgId(OrgId.ofRepoId(bPartner.getAD_Org_ID()))
-				.adLanguage(bPartner.getAD_Language())
+				.orgId(OrgId.ofRepoId(bpartner.getAD_Org_ID()))
+				.adLanguage(bpartner.getAD_Language())
 				.build();
-		return addressBuilder.buildBPartnerFullAddressString(bPartner, location, user, trxName);
+		return addressBuilder.buildBPartnerFullAddressString(bpartner, bpLocation, locationId, bpContact);
 	}
 
 	@Override
@@ -161,12 +153,13 @@ public class BPartnerBL implements IBPartnerBL
 	@Override
 	public I_AD_User createDraftContact(final org.compiere.model.I_C_BPartner bpartner)
 	{
-		I_AD_User contact = InterfaceWrapperHelper.newInstance(I_AD_User.class, bpartner);
+		final I_AD_User contact = InterfaceWrapperHelper.newInstance(I_AD_User.class, bpartner);
 		contact.setC_BPartner_ID(bpartner.getC_BPartner_ID());
 		contact.setName(bpartner.getName());
 		return contact;
 	}
 
+	@Nullable
 	@Override
 	public User retrieveContactOrNull(@NonNull final RetrieveContactRequest request)
 	{
@@ -291,6 +284,7 @@ public class BPartnerBL implements IBPartnerBL
 		return retrieveUserForLoc(ctx, bPartnerId, bPartnerLocationId, trxName);
 	}
 
+	@Nullable
 	private I_AD_User retrieveUserForLoc(final Properties ctx, final int bPartnerId, final int bPartnerLocationId, final String trxName)
 	{
 		final List<I_AD_User> users = bpartnersRepo.retrieveContacts(ctx, bPartnerId, trxName);
@@ -311,10 +305,8 @@ public class BPartnerBL implements IBPartnerBL
 
 	/**
 	 * Selects the default contact from a list of BPartner users. Returns first user with IsDefaultContact=Y found or first contact.
-	 *
-	 * @param users
-	 * @return default user/contact.
 	 */
+	@Nullable
 	private I_AD_User getDefaultBPContact(final List<I_AD_User> users)
 	{
 		if (users == null || users.isEmpty())
@@ -333,23 +325,41 @@ public class BPartnerBL implements IBPartnerBL
 	}
 
 	@Override
-	public void setAddress(final I_C_BPartner_Location bpLocation)
+	public void updateAllAddresses(@NonNull final I_C_BPartner bpartner)
 	{
-		final String address = Services.get(ILocationBL.class).mkAddress(
-				bpLocation.getC_Location(),
-				bpartnersRepo.getById(bpLocation.getC_BPartner_ID()),
+		final List<I_C_BPartner_Location> bpLocations = bpartnersRepo.retrieveBPartnerLocations(bpartner);
+		for (final I_C_BPartner_Location bpLocation : bpLocations)
+		{
+			updateAddressNoSave(bpLocation, bpartner);
+			bpartnersRepo.save(bpLocation);
+		}
+	}
+
+	@Override
+	public void setAddress(@NonNull final I_C_BPartner_Location bpLocation)
+	{
+		final I_C_BPartner bpartner = bpartnersRepo.getById(bpLocation.getC_BPartner_ID());
+		updateAddressNoSave(bpLocation, bpartner);
+	}
+
+	private void updateAddressNoSave(final I_C_BPartner_Location bpLocation, final I_C_BPartner bpartner)
+	{
+		final ILocationBL locationBL = Services.get(ILocationBL.class);
+
+		final String address = locationBL.mkAddress(
+				locationBL.getRecordById(LocationId.ofRepoId(bpLocation.getC_Location_ID())),
+				bpartner,
 				"",  // bPartnerBlock
 				"" // userBlock
 		);
 
 		bpLocation.setAddress(address);
-
 	}
 
 	@Override
 	public boolean isAllowConsolidateInOutEffective(@NonNull final BPartnerId bpartnerId, @NonNull final SOTrx soTrx)
 	{
-		I_C_BPartner bpartner = getById(bpartnerId);
+		final I_C_BPartner bpartner = getById(bpartnerId);
 		return isAllowConsolidateInOutEffective(bpartner, soTrx);
 	}
 
@@ -370,10 +380,9 @@ public class BPartnerBL implements IBPartnerBL
 		if (soTrx.isSales())
 		{
 			final boolean allowConsolidateInOutOverrideDefault = false; // default=false (preserve existing logic)
-			final boolean allowConsolidateInOutOverride = Services.get(ISysConfigBL.class).getBooleanValue(
+			return Services.get(ISysConfigBL.class).getBooleanValue(
 					SYSCONFIG_C_BPartner_SOTrx_AllowConsolidateInOut_Override,
 					allowConsolidateInOutOverrideDefault);
-			return allowConsolidateInOutOverride;
 		}
 		else
 		{
@@ -382,159 +391,39 @@ public class BPartnerBL implements IBPartnerBL
 	}
 
 	@Override
-	public Language getLanguage(final Properties ctx_NOTUSED, final int bpartnerId)
+	public Optional<Language> getLanguage(@NonNull final BPartnerId bpartnerId)
 	{
-		if (bpartnerId > 0)
-		{
-			final I_C_BPartner bp = bpartnersRepo.getById(bpartnerId);
-			if (null != bp)
-			{
-				final String lang = bp.getAD_Language();
-				if (!Check.isEmpty(lang, true))
-				{
-					return Language.getLanguage(lang);
-				}
-			}
-			return null;
-		}
-		return null;
+		final I_C_BPartner bpartner = bpartnersRepo.getById(bpartnerId);
+		return bpartner != null
+				? getLanguage(bpartner)
+				: Optional.empty();
 	}
 
 	@Override
-	public I_C_BPartner getBPartnerForModel(final Object model)
+	public Optional<BPartnerId> getBPartnerIdForModel(@Nullable final Object model)
 	{
-		// 09527 get the most suitable language:
 		final IBPartnerAware bpartnerAware = InterfaceWrapperHelper.asColumnReferenceAwareOrNull(model, IBPartnerAware.class);
-		if (bpartnerAware == null)
-		{
-			return null;
-		}
-		if (bpartnerAware.getC_BPartner_ID() <= 0)
-		{
-			return null;
-		}
-		return InterfaceWrapperHelper.create(bpartnerAware.getC_BPartner(), I_C_BPartner.class);
+		return bpartnerAware != null
+				? BPartnerId.optionalOfRepoId(bpartnerAware.getC_BPartner_ID())
+				: Optional.empty();
 	}
 
 	@Override
-	public Language getLanguageForModel(final Object model)
+	public Optional<Language> getLanguageForModel(@Nullable final Object model)
 	{
 		// 09527 get the most suitable language:
-		final I_C_BPartner bpartner = getBPartnerForModel(model);
-		if (bpartner == null)
-		{
-			return null;
-		}
-		final String lang = bpartner.getAD_Language();
-		if (Check.isEmpty(lang, true))
-		{
-			return null;
-		}
-
-		return Language.getLanguage(lang);
+		return getBPartnerIdForModel(model)
+				.map(bpartnersRepo::getById)
+				.flatMap(this::getLanguage);
 	}
 
 	@Override
-	public I_C_BPartner createFromTemplate(final I_C_BPartner_QuickInput template)
+	public Optional<Language> getLanguage(@NonNull final I_C_BPartner bpartner)
 	{
-		Check.assumeNotNull(template, "Parameter template is not null");
-		Check.assume(!template.isProcessed(), "{} not already processed", template);
-		Check.assume(template.getC_Location_ID() > 0, "{} > 0", template); // just to make sure&explicit
-
-		Services.get(ITrxManager.class).assertThreadInheritedTrxExists();
-
-		//
-		// BPartner
-		final I_C_BPartner bpartner = InterfaceWrapperHelper.create(Env.getCtx(), I_C_BPartner.class, ITrx.TRXNAME_ThreadInherited);
-		bpartner.setAD_Org_ID(template.getAD_Org_ID());
-		// bpartner.setValue(Value);
-		bpartner.setName(extractName(template));
-		bpartner.setName2(template.getName2());
-		bpartner.setIsCompany(template.isCompany());
-		bpartner.setCompanyName(template.getCompanyname());
-		bpartner.setC_BP_Group_ID(template.getC_BP_Group_ID());
-		bpartner.setAD_Language(template.getAD_Language());
-		// Customer
-		bpartner.setIsCustomer(template.isCustomer());
-		bpartner.setC_PaymentTerm_ID(template.getC_PaymentTerm_ID());
-		bpartner.setM_PricingSystem_ID(template.getM_PricingSystem_ID());
-		// Vendor
-		bpartner.setIsVendor(template.isVendor());
-		bpartner.setPO_PaymentTerm_ID(template.getPO_PaymentTerm_ID());
-		bpartner.setPO_PricingSystem_ID(template.getPO_PricingSystem_ID());
-		//
-		bpartnersRepo.save(bpartner);
-
-		template.setC_BPartner(bpartner);
-
-		//
-		// BPartner location
-		final I_C_BPartner_Location bpLocation = InterfaceWrapperHelper.newInstance(I_C_BPartner_Location.class, bpartner);
-		bpLocation.setC_BPartner_ID(bpartner.getC_BPartner_ID());
-		bpLocation.setC_Location_ID(template.getC_Location_ID());
-		bpLocation.setIsBillTo(true);
-		bpLocation.setIsBillToDefault(true);
-		bpLocation.setIsShipTo(true);
-		bpLocation.setIsShipToDefault(true);
-		bpartnersRepo.save(bpLocation);
-
-		template.setC_BPartner_Location(bpLocation);
-
-		final boolean isContactInfoProvided = !Check.isEmpty(template.getFirstname()) || !Check.isEmpty(template.getLastname());
-
-		if (isContactInfoProvided)
-		{
-			//
-			// BPartner contact
-			final I_AD_User bpContact = InterfaceWrapperHelper.newInstance(I_AD_User.class, bpartner);
-			bpContact.setC_BPartner(bpartner);
-			bpContact.setC_Greeting(template.getC_Greeting());
-			bpContact.setFirstname(template.getFirstname());
-			bpContact.setLastname(template.getLastname());
-			bpContact.setPhone(template.getPhone());
-			bpContact.setEMail(template.getEMail());
-			bpContact.setIsNewsletter(template.isNewsletter());
-			bpContact.setC_BPartner_Location(bpLocation);
-			if (template.isCustomer())
-			{
-				bpContact.setIsSalesContact(true);
-				bpContact.setIsSalesContact_Default(true);
-			}
-			if (template.isVendor())
-			{
-				bpContact.setIsPurchaseContact(true);
-				bpContact.setIsPurchaseContact_Default(true);
-			}
-			bpartnersRepo.save(bpContact);
-
-			template.setAD_User(bpContact);
-		}
-
-		template.setProcessed(true);
-		save(template);
-
-		return bpartner;
-	}
-
-	private void save(final I_C_BPartner_QuickInput template)
-	{
-		InterfaceWrapperHelper.saveRecord(template);
-	}
-
-	private final String extractName(final I_C_BPartner_QuickInput template)
-	{
-		if (template.isCompany())
-		{
-			return template.getCompanyname();
-		}
-		else
-		{
-			final String firstname = Strings.emptyToNull(template.getFirstname());
-			final String lastname = Strings.emptyToNull(template.getLastname());
-			return Joiner.on(" ")
-					.skipNulls()
-					.join(firstname, lastname);
-		}
+		final String adLanguage = bpartner.getAD_Language();
+		return Check.isNotBlank(adLanguage)
+				? Optional.ofNullable(Language.getLanguage(adLanguage))
+				: Optional.empty();
 	}
 
 	@Override
@@ -594,11 +483,12 @@ public class BPartnerBL implements IBPartnerBL
 			return "?";
 		}
 
-		final I_C_BPartner_Location bpLocation = bpartnersRepo.getBPartnerLocationById(bpartnerLocationId);
+		final I_C_BPartner_Location bpLocation = bpartnersRepo.getBPartnerLocationByIdEvenInactive(bpartnerLocationId);
 		return bpLocation != null ? bpLocation.getAddress() : "<" + bpartnerLocationId.getRepoId() + ">";
 	}
 
 	@Override
+	@Nullable
 	public UserId getSalesRepIdOrNull(final BPartnerId bpartnerId)
 	{
 		final I_C_BPartner bpartnerRecord = getById(bpartnerId);
@@ -612,6 +502,7 @@ public class BPartnerBL implements IBPartnerBL
 	}
 
 	@Override
+	@Nullable
 	public BPartnerId getBPartnerSalesRepId(final BPartnerId bPartnerId)
 	{
 		final int salesRepRecordId = getById(bPartnerId).getC_BPartner_SalesRep_ID();
@@ -620,6 +511,23 @@ public class BPartnerBL implements IBPartnerBL
 	}
 
 	@Override
+	public void setBPartnerSalesRepIdOutOfTrx(@NonNull final BPartnerId bPartnerId, @Nullable final BPartnerId salesRepBPartnerId)
+	{
+		if (bPartnerId.equals(salesRepBPartnerId))
+		{
+			return;
+		}
+		final I_C_BPartner bPartnerRecord = bpartnersRepo.getByIdOutOfTrx(bPartnerId);
+
+		final int salesRepBPartnerIdInt = salesRepBPartnerId != null ? salesRepBPartnerId.getRepoId() : -1;
+
+		bPartnerRecord.setC_BPartner_SalesRep_ID(salesRepBPartnerIdInt);
+
+		bpartnersRepo.saveOutOfTrx(bPartnerRecord);
+	}
+
+	@Override
+	@Nullable
 	public UserId setSalesRepId(
 			@NonNull final BPartnerId bpartnerId,
 			@Nullable final UserId salesRepId)
@@ -634,9 +542,36 @@ public class BPartnerBL implements IBPartnerBL
 	}
 
 	@Override
-	public CountryId getBPartnerLocationCountryId(@NonNull final BPartnerLocationId bpLocationId)
+	public CountryId getCountryId(@NonNull BPartnerLocationAndCaptureId bpartnerLocationAndCaptureId)
 	{
-		return bpartnersRepo.retrieveBPartnerLocationCountryId(bpLocationId);
+		final LocationId locationId = getLocationId(bpartnerLocationAndCaptureId);
+		return locationDAO.getCountryIdByLocationId(locationId);
+	}
+
+	@Override
+	public CountryId getCountryId(@NonNull final BPartnerInfo bpartnerInfo)
+	{
+		if (bpartnerInfo.getLocationId() != null)
+		{
+			return locationDAO.getCountryIdByLocationId(bpartnerInfo.getLocationId());
+		}
+		else
+		{
+			return bpartnersRepo.getCountryId(bpartnerInfo.getBpartnerLocationId());
+		}
+	}
+
+	@Override
+	public LocationId getLocationId(@NonNull BPartnerLocationAndCaptureId bpartnerLocationAndCaptureId)
+	{
+		if (bpartnerLocationAndCaptureId.getLocationCaptureId() != null)
+		{
+			return bpartnerLocationAndCaptureId.getLocationCaptureId();
+		}
+		else
+		{
+			return bpartnersRepo.getLocationId(bpartnerLocationAndCaptureId.getBpartnerLocationId());
+		}
 	}
 
 	@Override
@@ -688,5 +623,68 @@ public class BPartnerBL implements IBPartnerBL
 		final IBPGroupDAO bpGroupDAO = Services.get(IBPGroupDAO.class);
 		final I_C_BP_Group bpGroup = bpGroupDAO.getById(bpGroupId);
 		return PaymentRule.optionalOfCode(bpGroup.getPaymentRule());
+	}
+
+	@Override
+	public BPartnerPrintFormatMap getPrintFormats(final @NonNull BPartnerId bpartnerId)
+	{
+		return bpartnersRepo.getPrintFormats(bpartnerId);
+	}
+
+	@Override
+	public boolean isSalesRep(@NonNull final BPartnerId bpartnerId)
+	{
+		return getById(bpartnerId).isSalesRep();
+	}
+
+	@Override
+	public void validateSalesRep(@NonNull final BPartnerId bPartnerId, @Nullable final BPartnerId salesRepId)
+	{
+		if (bPartnerId.equals(salesRepId))
+		{
+			throw new AdempiereException(MSG_SALES_REP_EQUALS_BPARTNER);
+		}
+	}
+
+	@Override
+	public void updateNameAndGreetingFromContacts(@NonNull final BPartnerId bpartnerId)
+	{
+		final I_C_BPartner bpartner = bpartnersRepo.getByIdInTrx(bpartnerId);
+		if (bpartner.isCompany())
+		{
+			return;
+		}
+
+		final BPGroupId bpGroupId = BPGroupId.ofRepoId(bpartner.getC_BP_Group_ID());
+		final BPartnerNameAndGreetingStrategyId strategyId = bpGroupDAO.getBPartnerNameAndGreetingStrategyId(bpGroupId);
+
+		final BPartnerNameAndGreetingStrategies partnerNameAndGreetingStrategies = SpringContextHolder.instance.getBean(BPartnerNameAndGreetingStrategies.class);
+
+		final NameAndGreeting nameAndGreeting = partnerNameAndGreetingStrategies.compute(
+				strategyId,
+				ComputeNameAndGreetingRequest.builder()
+						.adLanguage(bpartner.getAD_Language())
+						.contacts(bpartnersRepo.retrieveContacts(bpartner)
+								.stream()
+								.map(contact -> ComputeNameAndGreetingRequest.Contact.builder()
+										.greetingId(GreetingId.ofRepoIdOrNull(contact.getC_Greeting_ID()))
+										.firstName(contact.getFirstname())
+										.lastName(contact.getLastname())
+										.seqNo(contact.getAD_User_ID()) // TODO: introduce AD_User.SeqNo
+										.isDefaultContact(contact.isDefaultContact())
+										.isMembershipContact(contact.isMembershipContact())
+										.build())
+								.collect(ImmutableList.toImmutableList()))
+						.build())
+				.orElse(null);
+
+		if (nameAndGreeting == null)
+		{
+			return;
+		}
+
+		bpartner.setName(nameAndGreeting.getName());
+		bpartner.setC_Greeting_ID(GreetingId.toRepoId(nameAndGreeting.getGreetingId()));
+		bpartnersRepo.save(bpartner);
 	}
 }

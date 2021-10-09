@@ -22,36 +22,36 @@ package de.metas.invoice.process;
  * #L%
  */
 
-
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.Iterator;
-
+import de.metas.adempiere.model.I_C_Invoice;
+import de.metas.allocation.api.IAllocationBL;
+import de.metas.allocation.api.IAllocationDAO;
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.IMsgBL;
+import de.metas.process.JavaProcess;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
+import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.api.IRangeAwareParams;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.util.TrxRunnableAdapter;
 
-import de.metas.adempiere.model.I_C_Invoice;
-import de.metas.allocation.api.IAllocationBL;
-import de.metas.allocation.api.IAllocationDAO;
-import de.metas.i18n.IMsgBL;
-import de.metas.process.JavaProcess;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.Iterator;
 
 /**
- *
  * Process to batch-create discount allocations for invoices that only have a very small remaining open amount left.<br>
  * See task 09135.
  */
 public class C_Invoice_DiscountAllocation_Process extends JavaProcess
 {
-	public static final String MSG_AllocationLinesCreated = "MSG_AllocationLinesCreated";
+	public static final AdMessageKey MSG_AllocationLinesCreated = AdMessageKey.of("MSG_AllocationLinesCreated");
 
 	private static final String PARAM_OpenAmt = "OpenAmt";
 	private static final String PARAM_DateInvoiced = I_C_Invoice.COLUMNNAME_DateInvoiced;
@@ -74,6 +74,10 @@ public class C_Invoice_DiscountAllocation_Process extends JavaProcess
 	{
 		final IRangeAwareParams params = getParameterAsIParams();
 		p_OpenAmt = params.getParameterAsBigDecimal(PARAM_OpenAmt);
+		if (p_OpenAmt == null)
+		{
+			throw new FillMandatoryException(PARAM_OpenAmt);
+		}
 		p_DateInvoicedFrom = params.getParameterAsTimestamp(PARAM_DateInvoiced);
 		p_DateInvoicedTo = params.getParameter_ToAsTimestamp(PARAM_DateInvoiced);
 		p_isSOTrx = params.getParameterAsBool(PARAM_IsSOTrx);
@@ -90,76 +94,88 @@ public class C_Invoice_DiscountAllocation_Process extends JavaProcess
 			addLog("@NoSelection@");
 		}
 
-		@SuppressWarnings("unused")
-		int counterSkipped = 0;
 		int counterProcessed = 0;
 
 		while (iterator.hasNext())
 		{
 			final I_C_Invoice invoice = iterator.next();
-
-			final BigDecimal invoiceOpenAmt = allocationDAO.retrieveOpenAmt(invoice,
-					true); // creditMemoAdjusted = false
-
-			if (invoiceOpenAmt.signum() <= 0)
+			final boolean processed = invoiceDiscount(invoice);
+			if (processed)
 			{
-				counterSkipped++;
-				continue;
+				counterProcessed++;
 			}
-
-			if (invoiceOpenAmt.compareTo(p_OpenAmt) > 0)
-			{
-				counterSkipped++;
-				continue;
-			}
-
-			final BigDecimal discountAmount = invoice.isSOTrx()
-					? invoiceOpenAmt
-					: invoiceOpenAmt.negate();
-
-			trxManager.runInNewTrx(new TrxRunnableAdapter()
-			{
-				@Override
-				public void run(final String localTrxName) throws Exception
-				{
-					final boolean ignoreIfNotHandled = true;
-					InterfaceWrapperHelper.setTrxName(invoice, localTrxName, ignoreIfNotHandled);
-
-					//@formatter:off
-					final I_C_AllocationHdr allocationHdr = allocationBL.newBuilder()
-							.orgId(invoice.getAD_Org_ID())
-							.currencyId(invoice.getC_Currency_ID())
-							.dateAcct(invoice.getDateAcct())
-							.dateTrx(invoice.getDateInvoiced())
-							.addLine()
-								.orgId(invoice.getAD_Org_ID())
-								.bpartnerId(invoice.getC_BPartner_ID())
-								.invoiceId(invoice.getC_Invoice_ID())
-								.discountAmt(discountAmount)
-								.writeOffAmt(BigDecimal.ZERO)
-							.lineDone()
-							.create(true); // complete=true
-					//@formatter:on
-
-					InterfaceWrapperHelper.refresh(invoice);
-					Check.errorIf(!invoice.isPaid(), "C_Invoice {} still has IsPaid='N' after having created {} with discountAmt={}", invoice, allocationHdr, discountAmount);
-				}
-
-				@Override
-				public boolean doCatch(final Throwable e) throws Throwable
-				{
-					addLog("@Error@: @C_Invoice_ID@ " + invoice.getDocumentNo() + ": " + e.getMessage());
-					return true; // do rollback
-				}
-
-			});
-
-			addLog("@Processed@: @C_Invoice_ID@ " + invoice.getDocumentNo() + "; @DiscountAmt@=" + discountAmount);
-			counterProcessed++;
 		}
 
-		final String message = msgBL.getMsg(getCtx(), MSG_AllocationLinesCreated, new Object[] { counterProcessed });
-		return message;
+		return msgBL.getMsg(getCtx(), MSG_AllocationLinesCreated, new Object[] { counterProcessed });
+	}
+
+	/**
+	 * @return true if processed successfully
+	 */
+	private boolean invoiceDiscount(@NonNull final I_C_Invoice invoice)
+	{
+		final BigDecimal invoiceOpenAmt = allocationDAO.retrieveOpenAmt(invoice, true);
+
+		if (invoiceOpenAmt.signum() == 0)
+		{
+			addLog("Skip C_Invoice_ID " + invoice.getC_Invoice_ID() + ": " + "Has OpenAmt=0 but IsPaid=F.");
+			return false;
+		}
+
+		// skip the invoice if there is nothing allocated yet! We only want to complete *partial* allocations
+		final BigDecimal allocatedAmt = allocationDAO.retrieveAllocatedAmt(invoice);
+		if (allocatedAmt == null || allocatedAmt.signum() == 0)
+		{
+			addLog("Skip C_Invoice_ID " + invoice.getC_Invoice_ID() + ": " + "Has allocatedAmt=0.");
+			return false;
+		}
+
+		if (invoiceOpenAmt.abs().compareTo(p_OpenAmt.abs()) > 0)
+		{
+			return false;
+		}
+
+		final BigDecimal discountAmount = invoice.isSOTrx()
+				? invoiceOpenAmt
+				: invoiceOpenAmt.negate();
+
+		trxManager.runInNewTrx(new TrxRunnableAdapter()
+		{
+			@Override
+			public void run(final String localTrxName)
+			{
+				final boolean ignoreIfNotHandled = true;
+				InterfaceWrapperHelper.setTrxName(invoice, localTrxName, ignoreIfNotHandled);
+
+				final I_C_AllocationHdr allocationHdr = allocationBL.newBuilder()
+						.orgId(invoice.getAD_Org_ID())
+						.currencyId(invoice.getC_Currency_ID())
+						.dateAcct(invoice.getDateAcct())
+						.dateTrx(invoice.getDateInvoiced())
+						.addLine()
+						.orgId(invoice.getAD_Org_ID())
+						.bpartnerId(invoice.getC_BPartner_ID())
+						.invoiceId(invoice.getC_Invoice_ID())
+						.discountAmt(discountAmount)
+						.writeOffAmt(BigDecimal.ZERO)
+						.lineDone()
+						.create(true); // complete=true
+
+				InterfaceWrapperHelper.refresh(invoice);
+				Check.errorIf(!invoice.isPaid(), "C_Invoice {} still has IsPaid='N' after having created {} with discountAmt={}", invoice, allocationHdr, discountAmount);
+			}
+
+			@Override
+			public boolean doCatch(final Throwable e)
+			{
+				addLog("@Error@: @C_Invoice_ID@ " + invoice.getDocumentNo() + ": " + e.getMessage());
+				return true; // do rollback
+			}
+
+		});
+
+		addLog("@Processed@: @C_Invoice_ID@ " + invoice.getDocumentNo() + "; @DiscountAmt@=" + discountAmount);
+		return true;
 	}
 
 	private Iterator<I_C_Invoice> createIterator()

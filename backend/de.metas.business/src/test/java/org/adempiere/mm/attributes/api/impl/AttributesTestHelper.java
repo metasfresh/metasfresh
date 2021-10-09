@@ -2,6 +2,7 @@ package org.adempiere.mm.attributes.api.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -31,7 +32,9 @@ import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeListValue;
+import org.adempiere.mm.attributes.AttributeValueType;
 import org.adempiere.mm.attributes.callout.M_Attribute;
 import org.adempiere.mm.attributes.spi.IAttributeValueGenerator;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -50,6 +53,7 @@ import org.junit.Ignore;
 import de.metas.javaclasses.model.I_AD_JavaClass;
 import de.metas.javaclasses.model.I_AD_JavaClass_Type;
 import de.metas.util.Services;
+import lombok.Builder;
 import lombok.NonNull;
 
 /**
@@ -78,6 +82,7 @@ public class AttributesTestHelper
 	public I_M_AttributeSet createM_AttributeSet(final I_M_Attribute... attributes)
 	{
 		final I_M_AttributeSet as = InterfaceWrapperHelper.create(ctx, I_M_AttributeSet.class, ITrx.TRXNAME_None);
+		as.setIsInstanceAttribute(true);
 		save(as);
 
 		for (final I_M_Attribute attribute : attributes)
@@ -205,6 +210,24 @@ public class AttributesTestHelper
 			final I_C_UOM uom,
 			final boolean isInstanceAttribute)
 	{
+		return attribute()
+				.attributeCode(AttributeCode.ofString(name))
+				.valueType(AttributeValueType.ofCode(valueType))
+				.javaClass(javaClass)
+				.uom(uom)
+				.instanceAttribute(isInstanceAttribute)
+				.build();
+	}
+
+	@Builder(builderMethodName = "attribute", builderClassName = "$AttributeBuilder")
+	private I_M_Attribute createM_Attribute(
+			@NonNull final AttributeCode attributeCode,
+			@NonNull final AttributeValueType valueType,
+			@Nullable final Class<?> javaClass,
+			@Nullable final I_C_UOM uom,
+			@Nullable final Boolean instanceAttribute,
+			final boolean storageRelevantAttribute)
+	{
 
 		final I_AD_JavaClass javaClassDef;
 		if (javaClass != null)
@@ -222,7 +245,7 @@ public class AttributesTestHelper
 		final I_M_Attribute attr;
 
 		// make sure the attribute was not already defined
-		final I_M_Attribute existingAttribute = retrieveAttributeValue(name);
+		final I_M_Attribute existingAttribute = retrieveAttributeValue(attributeCode.getCode());
 		if (existingAttribute != null)
 		{
 			attr = existingAttribute;
@@ -232,9 +255,9 @@ public class AttributesTestHelper
 		{
 			attr = newInstanceOutOfTrx(I_M_Attribute.class);
 		}
-		attr.setValue(name);
-		attr.setName(name);
-		attr.setAttributeValueType(valueType);
+		attr.setValue(attributeCode.getCode());
+		attr.setName(attributeCode.getCode());
+		attr.setAttributeValueType(valueType.getCode());
 
 		//
 		// Assume all attributes active and non-mandatory
@@ -243,7 +266,7 @@ public class AttributesTestHelper
 
 		//
 		// Configure ASI usage
-		attr.setIsInstanceAttribute(isInstanceAttribute);
+		attr.setIsInstanceAttribute(instanceAttribute != null ? instanceAttribute : true);
 
 		//
 		// Configure JC
@@ -251,9 +274,12 @@ public class AttributesTestHelper
 
 		//
 		// Configure UOM
-		attr.setC_UOM(uom);
+		attr.setC_UOM_ID(uom != null ? uom.getC_UOM_ID() : -1);
+		
+		attr.setIsStorageRelevant(storageRelevantAttribute);
 
-		save(attr);
+		saveRecord(attr);
+		
 		return attr;
 	}
 

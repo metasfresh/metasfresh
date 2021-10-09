@@ -28,7 +28,7 @@ public class ExecuteUpdateSQL extends JavaProcess
 
 		final String msg;
 		addLog("Executing: " + sqlParsed);
-		if (sqlParsed.trim().toUpperCase().startsWith("UPDATE"))
+		if (!sqlParsed.trim().toUpperCase().startsWith("SELECT"))
 		{
 			final int no = DB.executeUpdateEx(sqlParsed, ITrx.TRXNAME_ThreadInherited);
 			stopwatch.stop();

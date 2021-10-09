@@ -52,11 +52,14 @@ public class ESRImportAttachmentListener implements AttachmentListener
 
 	@Override
 	public AttachmentListenerConstants.ListenerWorkStatus afterRecordLinked(
-							final AttachmentEntry attachmentEntry,
-							final TableRecordReference tableRecordReference)
+			final AttachmentEntry attachmentEntry,
+			final TableRecordReference tableRecordReference)
 	{
 		final I_ESR_Import esrImport = InterfaceWrapperHelper.load(tableRecordReference.getRecord_ID(), I_ESR_Import.class);
 
+		final boolean isZipAttachment = attachmentEntry.getFilename().endsWith(".zip");
+
+		esrImport.setIsArchiveFile(isZipAttachment);
 		final RunESRImportRequest runESRImportRequest = RunESRImportRequest.builder()
 				.esrImport(esrImport)
 				.attachmentEntryId(attachmentEntry.getId())
@@ -64,7 +67,7 @@ public class ESRImportAttachmentListener implements AttachmentListener
 				.asyncBatchName(ESR_ASYNC_BATCH_NAME)
 				.loggable(Loggables.withLogger(logger, Level.DEBUG))
 				.build();
-
+		
 		esrImportBL.scheduleESRImportFor(runESRImportRequest);
 
 		return SUCCESS;

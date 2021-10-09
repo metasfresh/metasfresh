@@ -15,11 +15,7 @@ class AttachUrl extends Component {
     // generate name from URL by getting part after last / and before ? or #
     this.setState({
       // TODO: handle edge cases like URL with trailing slash
-      nameFromUrl: url
-        .split('/')
-        .pop()
-        .split('#')[0]
-        .split('?')[0],
+      nameFromUrl: url.split('/').pop().split('#')[0].split('?')[0],
     });
   };
 
@@ -45,13 +41,8 @@ class AttachUrl extends Component {
     event.stopPropagation();
     event.persist();
 
-    const {
-      windowId,
-      documentId,
-      handleClose,
-      dispatch,
-      fetchAttachments,
-    } = this.props;
+    const { windowId, documentId, handleClose, dispatch, fetchAttachments } =
+      this.props;
     const { url, name, nameFromUrl } = this.state;
 
     createUrlAttachment({

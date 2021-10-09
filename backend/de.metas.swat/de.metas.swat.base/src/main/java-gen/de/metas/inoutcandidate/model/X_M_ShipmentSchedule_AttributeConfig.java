@@ -1,71 +1,52 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package de.metas.inoutcandidate.model;
 
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for M_ShipmentSchedule_AttributeConfig
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public class X_M_ShipmentSchedule_AttributeConfig extends org.compiere.model.PO implements I_M_ShipmentSchedule_AttributeConfig, org.compiere.model.I_Persistent 
 {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = -531410306L;
+	private static final long serialVersionUID = 835521478L;
 
     /** Standard Constructor */
-    public X_M_ShipmentSchedule_AttributeConfig (Properties ctx, int M_ShipmentSchedule_AttributeConfig_ID, String trxName)
+    public X_M_ShipmentSchedule_AttributeConfig (final Properties ctx, final int M_ShipmentSchedule_AttributeConfig_ID, @Nullable final String trxName)
     {
       super (ctx, M_ShipmentSchedule_AttributeConfig_ID, trxName);
-      /** if (M_ShipmentSchedule_AttributeConfig_ID == 0)
-        {
-			setM_IolCandHandler_ID (0);
-			setM_ShipmentSchedule_AttributeConfig_ID (0);
-			setOnlyIfInReferencedASI (false); // N
-        } */
     }
 
     /** Load Constructor */
-    public X_M_ShipmentSchedule_AttributeConfig (Properties ctx, ResultSet rs, String trxName)
+    public X_M_ShipmentSchedule_AttributeConfig (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
 
 
-    /** Load Meta Data */
-    @Override
-    protected org.compiere.model.POInfo initPO (Properties ctx)
-    {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
-      return poi;
-    }
-
-	/** Set Merkmal.
-		@param M_Attribute_ID 
-		Produkt-Merkmal
-	  */
+	/** Load Meta Data */
 	@Override
-	public void setM_Attribute_ID (int M_Attribute_ID)
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
+	{
+		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public void setM_Attribute_ID (final int M_Attribute_ID)
 	{
 		if (M_Attribute_ID < 1) 
 			set_Value (COLUMNNAME_M_Attribute_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_Attribute_ID, Integer.valueOf(M_Attribute_ID));
+			set_Value (COLUMNNAME_M_Attribute_ID, M_Attribute_ID);
 	}
 
-	/** Get Merkmal.
-		@return Produkt-Merkmal
-	  */
 	@Override
-	public int getM_Attribute_ID () 
+	public int getM_Attribute_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_Attribute_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_Attribute_ID);
 	}
 
 	@Override
@@ -75,78 +56,50 @@ public class X_M_ShipmentSchedule_AttributeConfig extends org.compiere.model.PO 
 	}
 
 	@Override
-	public void setM_IolCandHandler(de.metas.inoutcandidate.model.I_M_IolCandHandler M_IolCandHandler)
+	public void setM_IolCandHandler(final de.metas.inoutcandidate.model.I_M_IolCandHandler M_IolCandHandler)
 	{
 		set_ValueFromPO(COLUMNNAME_M_IolCandHandler_ID, de.metas.inoutcandidate.model.I_M_IolCandHandler.class, M_IolCandHandler);
 	}
 
-	/** Set M_IolCandHandler.
-		@param M_IolCandHandler_ID M_IolCandHandler	  */
 	@Override
-	public void setM_IolCandHandler_ID (int M_IolCandHandler_ID)
+	public void setM_IolCandHandler_ID (final int M_IolCandHandler_ID)
 	{
 		if (M_IolCandHandler_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_M_IolCandHandler_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_M_IolCandHandler_ID, Integer.valueOf(M_IolCandHandler_ID));
+			set_ValueNoCheck (COLUMNNAME_M_IolCandHandler_ID, M_IolCandHandler_ID);
 	}
 
-	/** Get M_IolCandHandler.
-		@return M_IolCandHandler	  */
 	@Override
-	public int getM_IolCandHandler_ID () 
+	public int getM_IolCandHandler_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_IolCandHandler_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_IolCandHandler_ID);
 	}
 
-	/** Set M_ShipmentSchedule_AttributeConfig.
-		@param M_ShipmentSchedule_AttributeConfig_ID M_ShipmentSchedule_AttributeConfig	  */
 	@Override
-	public void setM_ShipmentSchedule_AttributeConfig_ID (int M_ShipmentSchedule_AttributeConfig_ID)
+	public void setM_ShipmentSchedule_AttributeConfig_ID (final int M_ShipmentSchedule_AttributeConfig_ID)
 	{
 		if (M_ShipmentSchedule_AttributeConfig_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_M_ShipmentSchedule_AttributeConfig_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_M_ShipmentSchedule_AttributeConfig_ID, Integer.valueOf(M_ShipmentSchedule_AttributeConfig_ID));
+			set_ValueNoCheck (COLUMNNAME_M_ShipmentSchedule_AttributeConfig_ID, M_ShipmentSchedule_AttributeConfig_ID);
 	}
 
-	/** Get M_ShipmentSchedule_AttributeConfig.
-		@return M_ShipmentSchedule_AttributeConfig	  */
 	@Override
-	public int getM_ShipmentSchedule_AttributeConfig_ID () 
+	public int getM_ShipmentSchedule_AttributeConfig_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_ShipmentSchedule_AttributeConfig_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_ShipmentSchedule_AttributeConfig_ID);
 	}
 
-	/** Set Nur falls in ref. Datensatz.
-		@param OnlyIfInReferencedASI 
-		Das Attribut wird nur berücksichtigt, wenn es in der Merkmalssatzinstanz des referenzierenden Datensatzes vorkommt
-	  */
 	@Override
-	public void setOnlyIfInReferencedASI (boolean OnlyIfInReferencedASI)
+	public void setOnlyIfInReferencedASI (final boolean OnlyIfInReferencedASI)
 	{
-		set_Value (COLUMNNAME_OnlyIfInReferencedASI, Boolean.valueOf(OnlyIfInReferencedASI));
+		set_Value (COLUMNNAME_OnlyIfInReferencedASI, OnlyIfInReferencedASI);
 	}
 
-	/** Get Nur falls in ref. Datensatz.
-		@return Das Attribut wird nur berücksichtigt, wenn es in der Merkmalssatzinstanz des referenzierenden Datensatzes vorkommt
-	  */
 	@Override
-	public boolean isOnlyIfInReferencedASI () 
+	public boolean isOnlyIfInReferencedASI() 
 	{
-		Object oo = get_Value(COLUMNNAME_OnlyIfInReferencedASI);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_OnlyIfInReferencedASI);
 	}
 }

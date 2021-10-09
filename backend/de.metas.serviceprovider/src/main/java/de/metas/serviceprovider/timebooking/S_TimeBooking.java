@@ -22,10 +22,11 @@
 
 package de.metas.serviceprovider.timebooking;
 
+import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
-import de.metas.serviceprovider.external.reference.ExternalReferenceRepository;
-import de.metas.serviceprovider.external.reference.ExternalReferenceType;
+import de.metas.organization.OrgId;
+import de.metas.serviceprovider.external.reference.ExternalServiceReferenceType;
 import de.metas.serviceprovider.issue.IssueId;
 import de.metas.serviceprovider.issue.IssueService;
 import de.metas.serviceprovider.issue.interceptor.AddIssueProgressRequest;
@@ -74,7 +75,7 @@ public class S_TimeBooking
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
 	public void beforeDelete(@NonNull final I_S_TimeBooking record)
 	{
-		externalReferenceRepository.deleteByRecordIdAndType(record.getS_TimeBooking_ID(), ExternalReferenceType.TIME_BOOKING_ID);
+		externalReferenceRepository.deleteByRecordIdAndType(record.getS_TimeBooking_ID(), ExternalServiceReferenceType.TIME_BOOKING_ID);
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_DELETE)
@@ -121,22 +122,10 @@ public class S_TimeBooking
 		}
 	}
 
-	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = I_S_TimeBooking.COLUMNNAME_IsActive)
-	public void reactivateLinkedExternalReferences(@NonNull final I_S_TimeBooking record)
+	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = I_S_TimeBooking.COLUMNNAME_AD_Org_ID)
+	public void updateLinkedExternalReferencesOrgId(@NonNull final I_S_TimeBooking record)
 	{
-		if (record.isActive())
-		{
-			externalReferenceRepository.updateIsActiveByRecordIdAndType(record.getS_TimeBooking_ID(), ExternalReferenceType.TIME_BOOKING_ID, record.isActive());
-		}
-	}
-
-	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_S_TimeBooking.COLUMNNAME_IsActive)
-	public void inactivateLinkedExternalReferences(@NonNull final I_S_TimeBooking record)
-	{
-		if (!record.isActive())
-		{
-			externalReferenceRepository.updateIsActiveByRecordIdAndType(record.getS_TimeBooking_ID(), ExternalReferenceType.TIME_BOOKING_ID, record.isActive());
-		}
+			externalReferenceRepository.updateOrgIdByRecordIdAndType(record.getS_TimeBooking_ID(), ExternalServiceReferenceType.TIME_BOOKING_ID, OrgId.ofRepoId(record.getAD_Org_ID()));
 	}
 
 	@ModelChange(timings = {ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE},

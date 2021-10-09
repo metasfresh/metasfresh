@@ -1,23 +1,21 @@
 package de.metas.rest_api.invoicecandidates.request;
 
-import static de.metas.common.util.CoalesceUtil.coalesce;
-
-import java.time.LocalDate;
-import java.util.List;
-
-import javax.annotation.Nullable;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
-
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.Singular;
 import lombok.Value;
+
+import javax.annotation.Nullable;
+import java.time.LocalDate;
+import java.util.List;
+
+import static de.metas.common.util.CoalesceUtil.coalesce;
 
 /*
  * #%L
@@ -44,7 +42,7 @@ import lombok.Value;
 public final class JsonEnqueueForInvoicingRequest
 {
 	@ApiModelProperty(position = 10, required = true, //
-			value = "Specifies the invoice candidtes to be invoiced.")
+			value = "Specifies the invoice candidates to be invoiced.")
 	List<JsonInvoiceCandidateReference> invoiceCandidates;
 
 	@ApiModelProperty(position = 20, value = "Optional invoices' document date", example = "2019-10-30")

@@ -25,23 +25,28 @@ package de.metas.adempiere.process;
  * #L%
  */
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.document.location.DocumentLocation;
+import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.util.Services;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBMoreThanOneRecordsFoundException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BP_Relation;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.Query;
-
-import de.metas.process.ProcessInfoParameter;
-import de.metas.process.JavaProcess;
 
 /**
  * Create BP relation from document.
  *
  * @author tsa
- * @see http
- *      ://dewiki908/mediawiki/index.php/US1010:_unterschiedliche_Liefer-_und_Rechnungsempf%C3%A4nger_im_Auftragskopf_
- *      %282010122110000025%29
+ * see http://dewiki908/mediawiki/index.php/US1010:_unterschiedliche_Liefer-_und_Rechnungsempf%C3%A4nger_im_Auftragskopf_%282010122110000025%29
  *
  */
 public class CreateBPRelationFromDocument extends JavaProcess
@@ -63,6 +68,9 @@ public class CreateBPRelationFromDocument extends JavaProcess
 	private boolean p_IsPayFrom = false;
 	private boolean p_IsRemitTo = false;
 	private boolean p_IsShipTo = false;
+
+	private final IBPartnerDAO bPartnersRepo = Services.get(IBPartnerDAO.class);
+	private final IBPartnerBL bPartnerBL = Services.get(IBPartnerBL.class);
 
 	@Override
 	protected void prepare()
@@ -155,8 +163,12 @@ public class CreateBPRelationFromDocument extends JavaProcess
 			// order.setC_BPartner_ID(rel.getC_BPartner_ID());
 			// order.setC_BPartner_Location_ID(rel.getC_BPartner_Location_ID());
 			//
-			order.setBill_BPartner_ID(rel.getC_BPartnerRelation_ID());
-			order.setBill_Location_ID(rel.getC_BPartnerRelation_Location_ID());
+			OrderDocumentLocationAdapterFactory
+					.billLocationAdapter(order)
+					.setFrom(DocumentLocation.builder()
+									 .bpartnerId(BPartnerId.ofRepoIdOrNull(rel.getC_BPartnerRelation_ID()))
+									 .bpartnerLocationId(BPartnerLocationId.ofRepoIdOrNull(rel.getC_BPartnerRelation_ID(), rel.getC_BPartnerRelation_Location_ID()))
+									 .build());
 		}
 
 		InterfaceWrapperHelper.save(order);
@@ -203,23 +215,26 @@ public class CreateBPRelationFromDocument extends JavaProcess
 	{
 		final StringBuffer name = new StringBuffer();
 
-		final String nameFrom = rel.getC_BPartner().getName();
+		final String nameFrom = bPartnerBL.getBPartnerName(BPartnerId.ofRepoId(rel.getC_BPartner_ID()));
 		name.append(nameFrom);
 
 		if (rel.getC_BPartner_Location_ID() > 0)
 		{
-			final String locFrom = rel.getC_BPartner_Location().getName();
+			final BPartnerLocationId bPartnerLocationId = BPartnerLocationId.ofRepoId(rel.getC_BPartner_ID(), rel.getC_BPartner_Location_ID());
+			final I_C_BPartner_Location bPartnerLocation = bPartnersRepo.getBPartnerLocationById(bPartnerLocationId);
+			final String locFrom = bPartnerLocation.getName();
 			name.append("(").append(locFrom).append(")");
 		}
 
 		name.append("->");
 
-		final String nameTo = rel.getC_BPartnerRelation().getName();
+		final String nameTo = bPartnersRepo.getBPartnerNameById(BPartnerId.ofRepoId(rel.getC_BPartnerRelation_ID()));
 		name.append(nameTo);
 
 		if (rel.getC_BPartnerRelation_Location_ID() > 0)
 		{
-			final String locTo = rel.getC_BPartnerRelation_Location().getName();
+			final BPartnerLocationId bPartnerLocationId = BPartnerLocationId.ofRepoId(rel.getC_BPartnerRelation_ID(), rel.getC_BPartnerRelation_Location_ID());
+			final String locTo = bPartnersRepo.getBPartnerLocationById(bPartnerLocationId).getName();
 			name.append("(").append(locTo).append(")");
 		}
 		rel.setName(name.toString());

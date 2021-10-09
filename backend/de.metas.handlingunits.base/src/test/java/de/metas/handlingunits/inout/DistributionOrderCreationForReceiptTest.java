@@ -1,14 +1,17 @@
 package de.metas.handlingunits.inout;
 
-import static org.adempiere.model.InterfaceWrapperHelper.create;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.math.BigDecimal;
-import java.util.Collections;
-import java.util.List;
-
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.business.BusinessTestHelper;
+import de.metas.inout.api.IInOutMovementBL;
+import de.metas.inout.model.I_M_InOut;
+import de.metas.inout.model.I_M_InOutLine;
+import de.metas.inoutcandidate.api.impl.ReceiptSchedule_WarehouseDest_Test;
+import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
+import de.metas.inoutcandidate.model.I_M_ReceiptSchedule_Alloc;
+import de.metas.inoutcandidate.model.X_M_ReceiptSchedule;
+import de.metas.interfaces.I_M_Movement;
+import de.metas.uom.UomId;
+import de.metas.util.Services;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
@@ -25,17 +28,14 @@ import org.eevolution.model.I_DD_OrderLine;
 import org.eevolution.model.I_PP_Product_Planning;
 import org.junit.jupiter.api.Test;
 
-import de.metas.business.BusinessTestHelper;
-import de.metas.inout.api.IInOutMovementBL;
-import de.metas.inout.model.I_M_InOut;
-import de.metas.inout.model.I_M_InOutLine;
-import de.metas.inoutcandidate.api.impl.ReceiptSchedule_WarehouseDest_Test;
-import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
-import de.metas.inoutcandidate.model.I_M_ReceiptSchedule_Alloc;
-import de.metas.inoutcandidate.model.X_M_ReceiptSchedule;
-import de.metas.interfaces.I_M_Movement;
-import de.metas.uom.UomId;
-import de.metas.util.Services;
+import java.math.BigDecimal;
+import java.util.Collections;
+import java.util.List;
+
+import static org.adempiere.model.InterfaceWrapperHelper.create;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -61,7 +61,6 @@ import de.metas.util.Services;
 
 public class DistributionOrderCreationForReceiptTest extends ReceiptSchedule_WarehouseDest_Test
 {
-
 	@Test
 	public void createDistributionOrder_noMovementCreated()
 	{
@@ -148,7 +147,6 @@ public class DistributionOrderCreationForReceiptTest extends ReceiptSchedule_War
 
 	private I_PP_Product_Planning createProductPlanning(final int productID, final I_DD_NetworkDistribution nwDist, final String onmaterialreceiptwithdestwarehouse)
 	{
-
 		final I_PP_Product_Planning prodPlanning = newInstance(I_PP_Product_Planning.class);
 		prodPlanning.setDD_NetworkDistribution(nwDist);
 		prodPlanning.setM_Product_ID(productID);
@@ -201,7 +199,7 @@ public class DistributionOrderCreationForReceiptTest extends ReceiptSchedule_War
 
 	private I_M_InOut createReceipt(final I_M_Locator receiptLocator)
 	{
-		final I_C_BPartner receiptPartner = createBPartner("Receipt Partner");
+		final BPartnerLocationId receiptPartner = createBPartner("Receipt Partner");
 
 		// NOTE: we need to use some dummy transaction, else movement generation will fail
 		final String trxName = Services.get(ITrxManager.class).createTrxName("DummyTrx", true);
@@ -209,7 +207,7 @@ public class DistributionOrderCreationForReceiptTest extends ReceiptSchedule_War
 		final I_M_InOut receipt = create(ctx, I_M_InOut.class, trxName);
 		receipt.setAD_Org_ID(receiptLocator.getAD_Org_ID());
 		receipt.setM_Warehouse_ID(receiptLocator.getM_Warehouse_ID());
-		receipt.setC_BPartner_ID(receiptPartner.getC_BPartner_ID());
+		receipt.setC_BPartner_ID(receiptPartner.getBpartnerId().getRepoId());
 		save(receipt);
 
 		return receipt;
