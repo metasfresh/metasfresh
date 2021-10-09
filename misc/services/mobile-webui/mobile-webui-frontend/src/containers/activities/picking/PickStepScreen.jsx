@@ -45,13 +45,13 @@ class PickStepScreen extends Component {
     const { updatePickingStepQty, wfProcessId, activityId, lineId, stepId } = this.props;
     const inputQty = parseInt(e.target.value);
     if (isNaN(inputQty)) {
-      updatePickingStepQty({ wfProcessId, activityId, lineId, stepId, qty: '' });
+      updatePickingStepQty({ wfProcessId, activityId, lineId, stepId, qtyPicked: '' });
       return;
     }
 
     const isValidQty = this.validateQtyInput(inputQty);
     if (isValidQty) {
-      updatePickingStepQty({ wfProcessId, activityId, lineId, stepId, qty: e.target.value });
+      updatePickingStepQty({ wfProcessId, activityId, lineId, stepId, qtyPicked: e.target.value });
     } else {
       // show error
       toast('Quantity picked is invalid!', { type: 'error', style: { color: 'white' } });
@@ -74,7 +74,7 @@ class PickStepScreen extends Component {
       stepId,
       updatePickingStepQty,
     } = this.props;
-    qtyPicked === '' && updatePickingStepQty({ wfProcessId, activityId, lineId, stepId, qty: 0 });
+    qtyPicked === '' && updatePickingStepQty({ wfProcessId, activityId, lineId, stepId, qtyPicked: 0 });
   }
 
   render() {
