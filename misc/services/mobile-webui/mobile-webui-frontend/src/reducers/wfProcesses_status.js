@@ -33,15 +33,38 @@ export const getWorkflowProcessActivityLine = (wfProcess, activityId, lineId) =>
   return null;
 };
 
+const mergeWFProcessToState = ({ draftWFProcess, fromWFProcess }) => {
+  const { headerProperties, activities } = fromWFProcess;
+
+  draftWFProcess = {
+    ...draftWFProcess,
+    headerProperties,
+    isSentToBackend: true,
+  };
+
+  mergeActivitiesToState({
+    draftActivities: draftWFProcess.activities,
+    fromActivities: activities,
+  });
+};
+
+const mergeActivitiesToState = ({ draftActivities, fromActivities }) => {
+  fromActivities.forEach((fromActivity) => {
+    console.log('fromActivity: %o', fromActivity);
+    draftActivities[fromActivity.activityId]['caption'] = fromActivity.caption;
+    draftActivities[fromActivity.activityId]['componentProps'] = fromActivity.componentProps;
+    draftActivities[fromActivity.activityId]['componentType'] = fromActivity.componentType;
+  });
+};
+
 const reducer = produce((draftState, action) => {
   switch (action.type) {
-    case types.ADD_WORKFLOW_STATUS:
-    case types.UPDATE_WORKFLOW_PROCESS: {
+    case types.ADD_WORKFLOW_STATUS: {
       const { id, headerProperties, activities } = action.payload;
       const current = draftState[id] ? original(draftState[id]).activities : null;
 
       const formattedActivities = activities.reduce((acc, activity) => {
-        let tmpActivity = { activity }; // TODO: What's this for ?
+        let tmpActivity = { ...activity }; // TODO: What's this for ?
         const activityId = activity.activityId;
 
         // each state is different depending on the activity componentType
@@ -88,6 +111,18 @@ const reducer = produce((draftState, action) => {
 
       return draftState;
     }
+
+    case types.UPDATE_WORKFLOW_PROCESS: {
+      const wfProcess = action.payload;
+
+      mergeWFProcessToState({
+        draftWFProcess: draftState[wfProcess.id],
+        fromWFProcess: wfProcess,
+      });
+
+      return draftState;
+    }
+
     case types.SWITCHOFF_LINES_VISIBILITY: {
       const { wfProcessId, activityId } = action.payload;
 
