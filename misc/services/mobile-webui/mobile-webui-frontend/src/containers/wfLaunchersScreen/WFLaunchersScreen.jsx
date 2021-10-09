@@ -9,14 +9,11 @@ import Launcher from './WFLauncherItem';
 
 class WFLaunchersScreen extends Component {
   componentDidMount() {
-    const { token } = this.props;
     const { populateLaunchers } = this.props;
 
-    if (token) {
-      getLaunchers({ token }).then((response) => {
-        populateLaunchers(response.data.endpointResponse.launchers);
-      });
-    }
+    getLaunchers().then((response) => {
+      populateLaunchers(response.data.endpointResponse.launchers);
+    });
   }
 
   render() {
@@ -38,7 +35,6 @@ class WFLaunchersScreen extends Component {
 WFLaunchersScreen.propTypes = {
   //
   // Props
-  token: PropTypes.string,
   launchers: PropTypes.object.isRequired,
   //
   // Actions
@@ -48,7 +44,6 @@ WFLaunchersScreen.propTypes = {
 const mapStateToProps = (state) => {
   return {
     launchers: state.launchers,
-    token: state.appHandler.token,
   };
 };
 
