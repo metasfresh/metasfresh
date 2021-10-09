@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { push } from 'connected-react-router';
 import Indicator from '../../../components/Indicator';
-class PickStep extends PureComponent {
+class PickStepButton extends PureComponent {
   constructor(props) {
     super(props);
   }
@@ -60,7 +60,7 @@ const mapStateToProps = (state, ownProps) => {
   };
 };
 
-PickStep.propTypes = {
+PickStepButton.propTypes = {
   //
   // Props
   wfProcessId: PropTypes.string.isRequired,
@@ -79,4 +79,4 @@ PickStep.propTypes = {
   push: PropTypes.func.isRequired,
 };
 
-export default connect(mapStateToProps, { push })(PickStep);
+export default connect(mapStateToProps, { push })(PickStepButton);

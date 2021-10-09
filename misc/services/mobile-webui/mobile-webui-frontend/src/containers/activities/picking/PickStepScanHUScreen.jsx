@@ -9,7 +9,7 @@ import { updatePickingStepScannedHUBarcode } from '../../../actions/PickingActio
 
 import CodeScanner from '../scan/CodeScanner';
 
-class PickingScanHUScreen extends Component {
+class PickStepScanHUScreen extends Component {
   onBarcodeScanned = ({ scannedBarcode }) => {
     if (this.isEligibleHUBarcode(scannedBarcode)) {
       const { wfProcessId, activityId, lineId, stepId } = this.props;
@@ -74,7 +74,7 @@ const mapStateToProps = (state, { match }) => {
   };
 };
 
-PickingScanHUScreen.propTypes = {
+PickStepScanHUScreen.propTypes = {
   componentProps: PropTypes.object,
   wfProcessId: PropTypes.string.isRequired,
   activityId: PropTypes.string.isRequired,
@@ -90,5 +90,5 @@ export default withRouter(
   connect(mapStateToProps, {
     updatePickingStepScannedHUBarcode,
     goBack,
-  })(PickingScanHUScreen)
+  })(PickStepScanHUScreen)
 );

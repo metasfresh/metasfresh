@@ -1,17 +1,17 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 
-import PickStep from './PickStep';
+import PickStepButton from './PickStepButton';
 
-class PickProductsSteps extends Component {
+class PickStepButtonsGroup extends Component {
   render() {
-    const { steps, wfProcessId, activityId, lineId } = this.props;
+    const { wfProcessId, activityId, lineId, steps } = this.props;
     return (
       <div className="steps-container">
         {steps.length > 0 &&
           steps.map((stepItem) => {
             return (
-              <PickStep
+              <PickStepButton
                 key={stepItem.pickingStepId}
                 {...stepItem}
                 wfProcessId={wfProcessId}
@@ -26,11 +26,11 @@ class PickProductsSteps extends Component {
   }
 }
 
-PickProductsSteps.propTypes = {
+PickStepButtonsGroup.propTypes = {
   wfProcessId: PropTypes.string.isRequired,
   activityId: PropTypes.string.isRequired,
   lineId: PropTypes.string.isRequired,
   steps: PropTypes.array.isRequired,
 };
 
-export default PickProductsSteps;
+export default PickStepButtonsGroup;

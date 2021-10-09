@@ -4,9 +4,9 @@ import { withRouter } from 'react-router';
 import { push } from 'connected-react-router';
 import PropTypes from 'prop-types';
 
-import PickProductsSteps from './PickProductsSteps';
+import PickStepButtonsGroup from './PickStepButtonsGroup';
 
-class LineScreen extends PureComponent {
+class PickLineScreen extends PureComponent {
   render() {
     const { activityId, wfProcessId, lineId, lineProps } = this.props;
 
@@ -15,7 +15,7 @@ class LineScreen extends PureComponent {
 
       return (
         <div className="pt-2 section lines-screen-container">
-          <PickProductsSteps steps={steps} activityId={activityId} wfProcessId={wfProcessId} lineId={lineId} />
+          <PickStepButtonsGroup steps={steps} activityId={activityId} wfProcessId={wfProcessId} lineId={lineId} />
         </div>
       );
     }
@@ -38,7 +38,7 @@ const mapStateToProps = (state, ownProps) => {
   };
 };
 
-LineScreen.propTypes = {
+PickLineScreen.propTypes = {
   //
   // Props
   wfProcessId: PropTypes.string.isRequired,
@@ -50,4 +50,4 @@ LineScreen.propTypes = {
   push: PropTypes.func.isRequired,
 };
 
-export default withRouter(connect(mapStateToProps, { push })(LineScreen));
+export default withRouter(connect(mapStateToProps, { push })(PickLineScreen));
