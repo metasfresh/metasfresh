@@ -27,6 +27,6 @@ export function startWorkflowRequest({ wfParameters }) {
  * @method startWorkflow
  * @summary Continue a workflow from the launchers list
  */
-export function continueWorkflowRequest(wfProcessId) {
+export function getWorkflowRequest(wfProcessId) {
   return axios.get(`${window.config.SERVER_URL}/userWorkflows/wfProcess/${wfProcessId}`);
 }

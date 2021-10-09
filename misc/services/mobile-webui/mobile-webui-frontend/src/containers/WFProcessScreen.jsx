@@ -8,11 +8,11 @@ import { continueWorkflow } from '../actions/WorkflowActions';
 import { getWorkflowProcess } from '../reducers/wfProcesses';
 import { getWorkflowProcessStatus } from '../reducers/wfProcesses_status';
 
-import ConfirmActivity from '../components/containers/ConfirmActivity';
-import PickProductsActivity from '../components/containers/PickProductsActivity';
 import ScanActivity from '../components/ScanActivity';
+import PickProductsActivity from '../components/containers/PickProductsActivity';
+import ConfirmActivity from '../components/containers/ConfirmActivity';
 
-class WorkflowProcess extends PureComponent {
+class WFProcessScreen extends PureComponent {
   componentDidMount() {
     const { wfProcessId, activities, continueWorkflow } = this.props;
 
@@ -76,14 +76,15 @@ function mapStateToProps(state, { match }) {
   };
 }
 
-WorkflowProcess.propTypes = {
-  activities: PropTypes.array,
-  workflowProcessStatus: PropTypes.object,
-  match: PropTypes.object.isRequired,
-  location: PropTypes.object.isRequired,
-  history: PropTypes.object.isRequired,
+WFProcessScreen.propTypes = {
+  //
+  // Props
   wfProcessId: PropTypes.string.isRequired,
+  workflowProcessStatus: PropTypes.object,
+  activities: PropTypes.array,
+  //
+  // Actions
   continueWorkflow: PropTypes.func.isRequired,
 };
 
-export default withRouter(connect(mapStateToProps, { continueWorkflow })(WorkflowProcess));
+export default withRouter(connect(mapStateToProps, { continueWorkflow })(WFProcessScreen));

@@ -11,14 +11,14 @@ import LineScreen from '../components/containers/LineScreen';
 import PickScreen from '../components/containers/PickScreen';
 import ScanScreen from '../components/containers/ScanScreen';
 import PickingScanHUScreen from '../components/containers/PickingScanHUScreen';
-import WorkflowProcess from '../containers/WFProcess';
+import WFProcessScreen from '../containers/WFProcessScreen';
 
 import PrivateRoute from './PrivateRoute';
 import { history } from '../store/store';
 
 const routesArray = [
   { path: '/', Component: Launchers },
-  { path: '/workflow/:workflowId', Component: WorkflowProcess },
+  { path: '/workflow/:workflowId', Component: WFProcessScreen },
   { path: '/workflow/:workflowId/activityId/:activityId/scanner', Component: ScanScreen },
   { path: '/workflow/:workflowId/activityId/:activityId/lineId/:lineId', Component: LineScreen },
   { path: '/workflow/:workflowId/activityId/:activityId/lineId/:lineId/stepId/:stepId', Component: PickScreen },
