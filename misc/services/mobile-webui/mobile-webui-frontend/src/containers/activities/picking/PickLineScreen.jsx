@@ -1,7 +1,6 @@
 import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
-import { push } from 'connected-react-router';
 import PropTypes from 'prop-types';
 
 import PickStepButtonsGroup from './PickStepButtonsGroup';
@@ -45,9 +44,6 @@ PickLineScreen.propTypes = {
   activityId: PropTypes.string.isRequired,
   lineId: PropTypes.string.isRequired,
   lineProps: PropTypes.object.isRequired,
-  //
-  // Actions
-  push: PropTypes.func.isRequired,
 };
 
-export default withRouter(connect(mapStateToProps, { push })(PickLineScreen));
+export default withRouter(connect(mapStateToProps, null)(PickLineScreen));
