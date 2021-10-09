@@ -58,8 +58,10 @@ public final class WFProcessesIndex
 		if (!remappingResult.isSameValue())
 		{
 			final WFProcess wfProcessNew = remappingResult.getNewValue();
+			final WFProcess wfProcessOld = remappingResult.getOldValue();
 			synchronized (mutex)
 			{
+				byInvokerId.remove(wfProcessOld.getInvokerId(), wfProcessOld);
 				byInvokerId.put(wfProcessNew.getInvokerId(), wfProcessNew);
 			}
 			return wfProcessNew;
