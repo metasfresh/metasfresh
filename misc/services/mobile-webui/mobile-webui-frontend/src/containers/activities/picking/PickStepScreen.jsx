@@ -54,6 +54,7 @@ class PickStepScreen extends Component {
     if (isValidQty) {
       updatePickingStepQty({ wfProcessId, activityId, lineId, stepId, qtyPicked });
       postQtyPicked({ wfProcessId, activityId, stepId, qtyPicked });
+      // TODO: handle the promise
     } else {
       // show error
       toast('Quantity picked is invalid!', { type: 'error', style: { color: 'white' } });
