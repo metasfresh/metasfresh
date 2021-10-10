@@ -3,6 +3,7 @@ import { useHistory, useLocation } from 'react-router-dom';
 import Cookies from 'js-cookie';
 
 import { useAuth } from '../hooks/useAuth';
+import counterpart from 'counterpart';
 
 /**
  * @file Functional component.
@@ -20,10 +21,10 @@ function LoginRoute() {
   const { from } = location.state || { from: { pathname: '/' } };
 
   useEffect(() => {
-    const tokenCookie = Cookies.get('Token');
+    const token = Cookies.get('Token');
 
-    if (tokenCookie) {
-      auth.localLogin(tokenCookie).then(() => {
+    if (token) {
+      auth.localLogin({ token }).then(() => {
         history.replace(from);
       });
     }
@@ -62,7 +63,7 @@ function LoginRoute() {
                 onChange={changeUsername}
               />
               <span className="icon is-small is-left">
-                <i className="fas fa-user"></i>
+                <i className="fas fa-user" />
               </span>
             </p>
           </div>
@@ -77,14 +78,14 @@ function LoginRoute() {
                 onChange={changePassword}
               />
               <span className="icon is-small is-left">
-                <i className="fas fa-lock"></i>
+                <i className="fas fa-lock" />
               </span>
             </p>
           </div>
           <div className="field">
             <div className="control">
               <button type="submit" className="button is-medium btn-green" onClick={submitForm}>
-                Log in
+                {counterpart.translate('login.submitButton')}
               </button>
             </div>
             {error ? <p className="help is-danger">{error}</p> : null}

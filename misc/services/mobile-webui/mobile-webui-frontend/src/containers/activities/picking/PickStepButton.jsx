@@ -4,6 +4,7 @@ import { connect } from 'react-redux';
 import { push } from 'connected-react-router';
 import { pushHeaderEntry } from '../../../actions/HeaderActions';
 import Indicator from '../../../components/Indicator';
+import counterpart from 'counterpart';
 class PickStepButton extends PureComponent {
   constructor(props) {
     super(props);
@@ -19,7 +20,7 @@ class PickStepButton extends PureComponent {
       location,
       values: [
         {
-          caption: 'Locator',
+          caption: counterpart.translate('general.Locator'),
           value: locatorName,
         },
       ],
@@ -61,7 +62,9 @@ class PickStepButton extends PureComponent {
                     {qtyPicked} {uom}
                   </span>
                 </div>
-                <div className="row is-full is-size-7">Product: {productName}</div>
+                <div className="row is-full is-size-7">
+                  {counterpart.translate('general.Product')}: {productName}
+                </div>
               </div>
             </div>
 

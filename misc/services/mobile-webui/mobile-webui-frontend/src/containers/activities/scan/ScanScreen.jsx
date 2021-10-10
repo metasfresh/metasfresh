@@ -4,6 +4,7 @@ import toast, { Toaster } from 'react-hot-toast';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
 import { goBack } from 'connected-react-router';
+import counterpart from 'counterpart';
 
 import { selectWFProcessState } from '../../../reducers/wfProcesses_status/index';
 import { setScannedBarcode } from '../../../actions/ScanActions';
@@ -27,7 +28,10 @@ class ScanScreen extends Component {
         console.log('postScannedBarcode failed: %o', err);
         setScannedBarcode({ wfProcessId, activityId, scannedBarcode: null });
 
-        toast('Scanned code is invalid!', { type: 'error', style: { color: 'white' } });
+        toast(counterpart.translate('activities.scanBarcode.invalidScannedBarcode'), {
+          type: 'error',
+          style: { color: 'white' },
+        });
       });
   };
 

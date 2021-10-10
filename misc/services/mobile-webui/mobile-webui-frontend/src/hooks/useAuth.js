@@ -7,6 +7,7 @@ import Cookies from 'js-cookie';
 import { loginRequest } from '../api/login';
 import { COOKIE_EXPIRATION } from '../constants/Cookie';
 import { setToken, clearToken } from '../actions/TokenActions';
+import { setLanguage } from '../utils/translations';
 
 const authContext = createContext();
 
@@ -34,7 +35,11 @@ function useProvideAuth() {
   const store = useStore();
   const dispatch = useDispatch();
 
-  const localLogin = (token) => {
+  const localLogin = ({ token, language }) => {
+    if (language) {
+      setLanguage(language);
+    }
+
     dispatch(setToken(token));
 
     Cookies.set('Token', token, {
@@ -49,13 +54,13 @@ function useProvideAuth() {
   const login = (username, password) => {
     return loginRequest(username, password)
       .then(({ data }) => {
-        const { token, error } = data;
+        const { error, token, language } = data;
 
         if (error) {
           return Promise.reject(error);
+        } else {
+          return localLogin({ token, language });
         }
-
-        return localLogin(token);
       })
       .catch((error) => {
         console.error('login error: ', error);

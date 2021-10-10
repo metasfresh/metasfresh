@@ -1,5 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import counterpart from 'counterpart';
 import { useHistory } from 'react-router-dom';
 
 import ButtonWithIndicator from '../../../components/ButtonWithIndicator';
@@ -12,7 +13,11 @@ const ScanActivity = (props) => {
   const scannedBarcodeCaption = activityState.componentProps.barcodeCaption;
 
   const scanButtonStatus = activityState.dataStored.isComplete ? 'complete' : 'incomplete';
-  const scanButtonCaption = scannedBarcodeCaption || scannedBarcode || activityState.caption || 'Scan';
+  const scanButtonCaption =
+    scannedBarcodeCaption ||
+    scannedBarcode ||
+    activityState.caption ||
+    counterpart.translate('activities.scanBarcode.defaultCaption');
 
   const handleClick = () => {
     const { wfProcessId } = props;
