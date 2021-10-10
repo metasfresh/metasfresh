@@ -28,6 +28,7 @@ import de.metas.handlingunits.picking.impl.HUPickingSlotBLs.RetrieveAvailableHUs
 import de.metas.handlingunits.picking.impl.HUPickingSlotBLs.RetrieveAvailableHUsToPickFilters;
 import de.metas.handlingunits.picking.requests.RetrieveAvailableHUIdsToPickRequest;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
+import de.metas.i18n.BooleanWithReason;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.api.IPickingSlotDAO;
 import de.metas.picking.api.PickingSlotId;
@@ -46,7 +47,6 @@ import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.Adempiere;
-import org.compiere.util.TrxRunnable;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -83,7 +83,6 @@ public class HUPickingSlotBL
 		extends PickingSlotBL
 		implements IHUPickingSlotBL
 {
-
 	public static final class QueueActionResult implements IHUPickingSlotBL.IQueueActionResult
 	{
 		private final I_M_PickingSlot_Trx pickingSlotTrx;
@@ -140,7 +139,7 @@ public class HUPickingSlotBL
 		final I_M_HU[] huArr = new I_M_HU[] { null };
 		Services.get(IHUTrxBL.class)
 				.createHUContextProcessorExecutor(huContext)
-				.run((IHUContextProcessor)huContext1 -> {
+				.run(huContext1 -> {
 					//
 					// Create a new HU instance
 					final IHUBuilder huBuilder = Services.get(IHandlingUnitsDAO.class).createHUBuilder(huContext1);
@@ -186,9 +185,7 @@ public class HUPickingSlotBL
 	}
 
 	/**
-	 *
-	 * @param pickingSlot
-	 * @param addToQueue if <code>true</code>, the current HU is not only closed, but also added to the picking slot queue.
+	 * @param addToQueue  if <code>true</code>, the current HU is not only closed, but also added to the picking slot queue.
 	 * @return the HU which was unassigned from the given pickingSlot, or <code>null</code>
 	 */
 	private I_M_HU closeCurrentHU(final I_M_PickingSlot pickingSlot, final boolean addToQueue)
@@ -204,7 +201,7 @@ public class HUPickingSlotBL
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 		final IContextAware context = InterfaceWrapperHelper.getContextAware(pickingSlot);
 		// trxManager.assertTrxNull(context);
-		trxManager.run(context.getTrxName(), (TrxRunnable)localTrxName -> {
+		trxManager.run(context.getTrxName(), localTrxName -> {
 			final I_M_PickingSlot pickingSlotInTrx = InterfaceWrapperHelper.create(pickingSlot, I_M_PickingSlot.class);
 			final I_M_HU currentHU = pickingSlot.getM_HU();
 			unassignedHURef.setValue(currentHU);
@@ -295,7 +292,7 @@ public class HUPickingSlotBL
 		// to make sure everything is logged and updated correctly.
 		final List<IQueueActionResult> queueActionResults = new ArrayList<>(hus.size());
 		huTrxBL.createHUContextProcessorExecutor(huContextInitial)
-				.run((IHUContextProcessor)huContext -> {
+				.run(huContext -> {
 					for (final I_M_HU hu : hus)
 					{
 						final IQueueActionResult result = addToPickingSlotQueue0(huContext, pickingSlot, hu);
@@ -307,7 +304,7 @@ public class HUPickingSlotBL
 		return queueActionResults;
 	}
 
-	private final IQueueActionResult addToPickingSlotQueue0(
+	private IQueueActionResult addToPickingSlotQueue0(
 			@NonNull final IHUContext huContext,
 			@NonNull final de.metas.picking.model.I_M_PickingSlot pickingSlot,
 			@NonNull final I_M_HU hu)
@@ -473,11 +470,6 @@ public class HUPickingSlotBL
 	 * <br>
 	 * TODO: this method should be public and the methods of this BL which call it should be private instead,<br>
 	 * so that all sorts of actions shall be done by creating a picking slot transaction and then processing it
-	 *
-	 * @param pickingSlot
-	 * @param hu
-	 * @param action
-	 * @return
 	 */
 	private I_M_PickingSlot_Trx createPickingSlotTrx(final de.metas.picking.model.I_M_PickingSlot pickingSlot, final I_M_HU hu, final String action)
 	{
@@ -508,33 +500,39 @@ public class HUPickingSlotBL
 	}
 
 	@Override
-	public void allocatePickingSlotIfPossible(final I_M_PickingSlot pickingSlot, final BPartnerId bpartnerId, final BPartnerLocationId bpartnerLocationId)
+	public BooleanWithReason allocatePickingSlotIfPossible(
+			final @NonNull PickingSlotId pickingSlotId,
+			final @NonNull BPartnerLocationId bpartnerAndLocationId)
 	{
+		final I_M_PickingSlot pickingSlot = pickingSlotDAO.getById(pickingSlotId, I_M_PickingSlot.class);
+
+		//
+		// Already allocated to same location
+		final BPartnerLocationId pickingSlotBPartnerAndLocationId = BPartnerLocationId.ofRepoIdOrNull(pickingSlot.getC_BPartner_ID(), pickingSlot.getC_BPartner_Location_ID());
+		if (BPartnerLocationId.equals(bpartnerAndLocationId, pickingSlotBPartnerAndLocationId))
+		{
+			return BooleanWithReason.TRUE;
+		}
+
 		//
 		// Not dynamic picking slot; gtfo
 		if (!pickingSlot.isDynamic())
 		{
-			return;
+			return BooleanWithReason.falseBecause("Not a dynamic picking slot");
 		}
 
 		//
 		// Already allocated for a different partner?
 		if (!isAvailableForAnyBPartner(pickingSlot))
 		{
-			return;
+			return BooleanWithReason.falseBecause("already allocated");
 		}
 
-		pickingSlot.setC_BPartner_ID(BPartnerId.toRepoId(bpartnerId));
-		pickingSlot.setC_BPartner_Location_ID(BPartnerLocationId.toRepoId(bpartnerLocationId));
-
+		pickingSlot.setC_BPartner_ID(bpartnerAndLocationId.getBpartnerId().getRepoId());
+		pickingSlot.setC_BPartner_Location_ID(bpartnerAndLocationId.getRepoId());
 		InterfaceWrapperHelper.save(pickingSlot);
-	}
 
-	@Override
-	public void allocatePickingSlotIfPossible(final PickingSlotId pickingSlotId, final BPartnerId bpartnerId, final BPartnerLocationId bpartnerLocationId)
-	{
-		final I_M_PickingSlot pickingSlot = Services.get(IPickingSlotDAO.class).getById(pickingSlotId, I_M_PickingSlot.class);
-		allocatePickingSlotIfPossible(pickingSlot, bpartnerId, bpartnerLocationId);
+		return BooleanWithReason.TRUE;
 	}
 
 	@Override

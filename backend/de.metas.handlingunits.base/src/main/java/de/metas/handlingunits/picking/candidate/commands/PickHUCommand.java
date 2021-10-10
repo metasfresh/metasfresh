@@ -278,8 +278,7 @@ public class PickHUCommand
 		}
 
 		final I_M_ShipmentSchedule shipmentSchedule = getShipmentSchedule();
-		final BPartnerId bpartnerId = shipmentScheduleEffectiveBL.getBPartnerId(shipmentSchedule);
-		final BPartnerLocationId bpartnerLocationId = shipmentScheduleEffectiveBL.getBPartnerLocationId(shipmentSchedule);
-		huPickingSlotBL.allocatePickingSlotIfPossible(pickingSlotId, bpartnerId, bpartnerLocationId);
+		final BPartnerLocationId bpartnerAndLocationId = shipmentScheduleEffectiveBL.getBPartnerLocationId(shipmentSchedule);
+		huPickingSlotBL.allocatePickingSlotIfPossible(pickingSlotId, bpartnerAndLocationId);
 	}
 }

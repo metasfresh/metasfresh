@@ -22,7 +22,10 @@
 
 package de.metas.picking.workflow.handlers.activity_handlers;
 
-import de.metas.picking.api.IPickingSlotDAO;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.handlingunits.picking.IHUPickingSlotBL;
+import de.metas.i18n.BooleanWithReason;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.picking.api.PickingSlotBarcode;
 import de.metas.picking.api.PickingSlotIdAndCaption;
 import de.metas.picking.workflow.model.PickingJob;
@@ -38,6 +41,7 @@ import de.metas.workflow.rest_api.model.WFActivityType;
 import de.metas.workflow.rest_api.model.WFProcess;
 import de.metas.workflow.rest_api.service.WFActivityHandler;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.api.Params;
 import org.springframework.stereotype.Component;
 
@@ -48,7 +52,7 @@ public class SetPickingSlotWFActivityHandler implements WFActivityHandler, SetSc
 {
 	public static final WFActivityType HANDLED_ACTIVITY_TYPE = WFActivityType.ofString("picking.setPickingSlot");
 
-	private final IPickingSlotDAO pickingSlotDAO = Services.get(IPickingSlotDAO.class);
+	private final IHUPickingSlotBL pickingSlotBL = Services.get(IHUPickingSlotBL.class);
 
 	@Override
 	public WFActivityType getHandledActivityType()
@@ -81,14 +85,29 @@ public class SetPickingSlotWFActivityHandler implements WFActivityHandler, SetSc
 	}
 
 	@Override
-	public WFProcess setScannedBarcode(final SetScannedBarcodeRequest request)
+	public WFProcess setScannedBarcode(@NonNull final SetScannedBarcodeRequest request)
 	{
-		final PickingSlotIdAndCaption pickingSlot = PickingSlotBarcode.optionalOfBarcodeString(request.getScannedBarcode())
-				.map(PickingSlotBarcode::getPickingSlotId)
-				.map(pickingSlotDAO::getPickingSlotIdAndCaption)
-				.orElse(null);
-
+		final PickingSlotBarcode pickingSlotBarcode = PickingSlotBarcode.ofBarcodeString(request.getScannedBarcode());
 		final WFProcess wfProcess = request.getWfProcess();
-		return wfProcess.<PickingJob>mapDocument(pickingJob -> pickingJob.withPickingSlot(pickingSlot));
+		return wfProcess.<PickingJob>mapDocument(pickingJob -> allocateAndSetPickingSlot(pickingJob, pickingSlotBarcode));
+	}
+
+	private PickingJob allocateAndSetPickingSlot(
+			@NonNull final PickingJob pickingJob,
+			@NonNull final PickingSlotBarcode pickingSlotBarcode)
+	{
+		final PickingSlotIdAndCaption pickingSlot = pickingSlotBL.getPickingSlotIdAndCaption(pickingSlotBarcode.getPickingSlotId());
+
+		final BPartnerLocationId deliveryBPLocationId = pickingJob.getDeliveryBPLocationId();
+		final BooleanWithReason allocated = pickingSlotBL.allocatePickingSlotIfPossible(pickingSlot.getPickingSlotId(), deliveryBPLocationId);
+		if (allocated.isFalse())
+		{
+			throw new AdempiereException(TranslatableStrings.builder()
+					.append("Failed allocating picking slot ").append(pickingSlot.getCaption()).append(" because ")
+					.append(allocated.getReason())
+					.build());
+		}
+
+		return pickingJob.withPickingSlot(pickingSlot);
 	}
 }

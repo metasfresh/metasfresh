@@ -150,10 +150,8 @@ public class AddQtyToHUCommand
 
 		addQtyToCandidate(candidate, productId, qtyPicked);
 
-		final BPartnerLocationId bPartnerLocationId = shipmentScheduleBL.getBPartnerLocationId(shipmentSchedule);
-		final BPartnerId bPartnerId = bPartnerLocationId.getBpartnerId();
-
-		huPickingSlotBL.allocatePickingSlotIfPossible(pickingSlotId, bPartnerId, bPartnerLocationId);
+		final BPartnerLocationId bpartnerAndLocationId = shipmentScheduleBL.getBPartnerLocationId(shipmentSchedule);
+		huPickingSlotBL.allocatePickingSlotIfPossible(pickingSlotId, bpartnerAndLocationId);
 
 		return qtyPicked;
 	}
