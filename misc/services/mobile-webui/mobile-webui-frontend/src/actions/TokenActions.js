@@ -1,4 +1,4 @@
-import { SET_TOKEN, CLEAR_TOKEN } from '../constants/ActionTypes';
+import { SET_TOKEN, CLEAR_TOKEN } from '../constants/TokenActionTypes';
 
 /**
  * @method setToken

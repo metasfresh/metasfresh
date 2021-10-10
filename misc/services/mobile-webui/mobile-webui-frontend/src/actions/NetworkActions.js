@@ -1,4 +1,4 @@
-import { SET_NETWORK_OFFLINE, SET_NETWORK_ONLINE } from '../constants/ActionTypes';
+import { SET_NETWORK_OFFLINE, SET_NETWORK_ONLINE } from '../constants/NetworkActionTypes';
 
 /**
  * @method networkStatusOffline

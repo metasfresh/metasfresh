@@ -4,7 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import PropTypes from 'prop-types';
 
 import { populateLaunchers } from '../../actions/LauncherActions';
-import { getLaunchers } from '../../api';
+import { getLaunchers } from '../../api/launchers';
 import Launcher from './WFLauncherItem';
 
 class WFLaunchersScreen extends Component {
