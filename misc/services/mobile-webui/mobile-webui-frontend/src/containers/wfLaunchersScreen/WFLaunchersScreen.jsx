@@ -5,7 +5,7 @@ import PropTypes from 'prop-types';
 
 import { populateLaunchers } from '../../actions/LauncherActions';
 import { getLaunchers } from '../../api/launchers';
-import Launcher from './WFLauncherItem';
+import WFLauncherButton from './WFLauncherButton';
 
 class WFLaunchersScreen extends Component {
   componentDidMount() {
@@ -25,7 +25,7 @@ class WFLaunchersScreen extends Component {
         {launchers.length > 0 &&
           launchers.map((launcher) => {
             let key = launcher.startedWFProcessId ? 'started-' + launcher.startedWFProcessId : 'new-' + uuidv4();
-            return <Launcher key={key} {...launcher} />;
+            return <WFLauncherButton key={key} id={key} {...launcher} />;
           })}
       </div>
     );
