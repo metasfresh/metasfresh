@@ -1,10 +1,11 @@
 import { current, isDraft, original } from 'immer';
 import * as CompleteStatus from '../../constants/CompleteStatus';
+import { normalizeComponentProps, computeActivityDataStoredInitialValue } from './activityStateHandlers';
 
 /**
  * Updates isUserEditable flag for all activities.
  */
-export const updateActivitiesStatus = ({ draftWFProcess }) => {
+export const updateUserEditable = ({ draftWFProcess }) => {
   console.log('draftWFProcess=%o', draftWFProcess);
 
   const activityIds = Object.keys(
@@ -68,7 +69,7 @@ export const mergeWFProcessToState = ({ draftWFProcess, fromWFProcess }) => {
     fromActivities: fromWFProcess.activities,
   });
 
-  updateActivitiesStatus({ draftWFProcess });
+  updateUserEditable({ draftWFProcess });
 
   console.log('AFTER MERGE: %o', isDraft(draftWFProcess) ? current(draftWFProcess) : draftWFProcess);
   console.log('fromWFProcess=%o', fromWFProcess);
@@ -97,54 +98,13 @@ const mergeActivityToState = ({ draftActivity, fromActivity }) => {
   draftActivity.componentProps = componentPropsNormalized;
 
   if (!draftActivity.dataStored) {
-    draftActivity.dataStored = computeActivityDataStoredInitialValue({
-      componentType: fromActivity.componentType,
-      componentProps: componentPropsNormalized,
-    });
-  }
-};
-
-const computeActivityDataStoredInitialValue = ({ componentType, componentProps }) => {
-  const template = {
-    completeStatus: CompleteStatus.NOT_STARTED,
-    isUserEditable: false,
-  };
-
-  switch (componentType) {
-    case 'picking/pickProducts': {
-      return {
-        ...template,
-        lines: componentProps.lines,
-      };
-    }
-    default: {
-      return template;
-    }
-  }
-};
-
-const normalizeComponentProps = ({ componentType, componentProps }) => {
-  switch (componentType) {
-    case 'picking/pickProducts': {
-      return {
-        ...componentProps,
-        lines: normalizePickingLines(componentProps.lines),
-      };
-    }
-    default: {
-      return componentProps;
-    }
-  }
-};
-
-const normalizePickingLines = (lines) => {
-  return lines.map((line) => {
-    return {
-      ...line,
-      steps: line.steps.reduce((accum, step) => {
-        accum[step.pickingStepId] = step;
-        return accum;
-      }, {}),
+    draftActivity.dataStored = {
+      completeStatus: CompleteStatus.NOT_STARTED,
+      isUserEditable: false,
+      ...computeActivityDataStoredInitialValue({
+        componentType: fromActivity.componentType,
+        componentProps: componentPropsNormalized,
+      }),
     };
-  });
+  }
 };

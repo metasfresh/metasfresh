@@ -1,7 +1,7 @@
 import * as types from '../../constants/ScanActionTypes';
 import * as CompleteStatus from '../../constants/CompleteStatus';
 
-import { updateActivitiesStatus } from './utils';
+import { updateUserEditable } from './utils';
 
 export const scanReducer = ({ draftState, action }) => {
   switch (action.type) {
@@ -26,7 +26,7 @@ function reduceOnSetScannedBarcode(draftState, payload) {
   draftActivity.componentProps.barcodeCaption = null;
 
   draftActivity.dataStored.completeStatus = computeActivityStatus({ draftActivity });
-  updateActivitiesStatus({ draftWFProcess });
+  updateUserEditable({ draftWFProcess });
 
   return draftState;
 }
