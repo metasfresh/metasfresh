@@ -1,23 +1,8 @@
-package de.metas.ui.web.handlingunits;
-
-import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.IHUQueryBuilder;
-import de.metas.ui.web.document.filter.DocumentFilter;
-import de.metas.ui.web.document.filter.DocumentFilterList;
-import de.metas.ui.web.document.filter.DocumentFilterParam.Operator;
-import lombok.NonNull;
-import lombok.experimental.UtilityClass;
-import org.adempiere.exceptions.AdempiereException;
-
-import javax.annotation.Nullable;
-import java.util.Collection;
-import java.util.Optional;
-
 /*
  * #%L
- * metasfresh-webui-api
+ * de.metas.ui.web.base
  * %%
- * Copyright (C) 2017 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -34,6 +19,21 @@ import java.util.Optional;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.ui.web.handlingunits.filter;
+
+import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.IHUQueryBuilder;
+import de.metas.ui.web.document.filter.DocumentFilter;
+import de.metas.ui.web.document.filter.DocumentFilterList;
+import de.metas.ui.web.document.filter.DocumentFilterParam.Operator;
+import lombok.NonNull;
+import lombok.experimental.UtilityClass;
+import org.adempiere.exceptions.AdempiereException;
+
+import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.Optional;
 
 /**
  * Helper class to handle the HUIds document filter.
