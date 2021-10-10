@@ -36,20 +36,35 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
  * #L%
  */
 
-/** Crates a hierarchy of BPartners by recursively following {@code C_BPartner.C_BPartner_SalesRep_ID} references. */
+/**
+ * Crates a hierarchy of BPartners by recursively following {@code C_BPartner.C_BPartner_SalesRep_ID} references.
+ */
 @Service
 public class CommissionHierarchyFactory
 {
 	// very crude but simple implementation; expand and make more efficient as needed
-	public Hierarchy createFor(@NonNull final BPartnerId bPartnerId)
+	@NonNull
+	public Hierarchy createForCustomer(@NonNull final BPartnerId bPartnerId, @NonNull final BPartnerId salesRepId)
 	{
+		if (bPartnerId.equals(salesRepId))
+		{
+			return createFor(salesRepId, Hierarchy.builder(), new HashSet<>());
+		}
+
+		final HierarchyBuilder hierarchyBuilder = Hierarchy.builder()
+				.addChildren(node(salesRepId), ImmutableList.of(node(bPartnerId)));
+
+		final HashSet<BPartnerId> seenBPartnerIds = new HashSet<>();
+		seenBPartnerIds.add(bPartnerId);
+
 		return createFor(
-				bPartnerId/* starting point */,
-				Hierarchy.builder() /* result builder */,
-				new HashSet<>() /* helper to make sure we don't enter a cycle */
+				salesRepId/* starting point */,
+				hierarchyBuilder /* result builder */,
+				seenBPartnerIds /* helper to make sure we don't enter a cycle */
 		);
 	}
 
+	@NonNull
 	private Hierarchy createFor(
 			@NonNull final BPartnerId bPartnerId,
 			@NonNull final HierarchyBuilder hierarchyBuilder,

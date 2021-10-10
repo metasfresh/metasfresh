@@ -109,7 +109,7 @@ class ReceiptCandidateAPIServiceTest
 		receiptCandidateAPIService = new ReceiptCandidateAPIService(
 				new ReceiptScheduleAuditRepository(),
 				new ReceiptScheduleRepository(),
-				new BPartnerCompositeRepository(partnerBL, new MockLogEntriesRepository(), new UserRoleRepository()),
+				new BPartnerCompositeRepository(partnerBL, new BPartnerBL(new UserRepository()), new MockLogEntriesRepository(), new UserRoleRepository()),
 				new ProductRepository(),
 				exportSequenceNumberProvider);
 	}
