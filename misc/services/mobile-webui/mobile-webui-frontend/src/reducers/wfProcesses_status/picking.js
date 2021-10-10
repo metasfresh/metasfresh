@@ -1,7 +1,10 @@
 import * as types from '../../constants/PickingActionTypes';
 import { original } from 'immer';
-import { updateActivitiesStatus } from './utils';
+import { updateUserEditable } from './utils';
 import * as CompleteStatus from '../../constants/CompleteStatus';
+import { registerHandler } from './activityStateHandlers';
+
+const COMPONENT_TYPE = 'picking/pickProducts';
 
 export const pickingReducer = ({ draftState, action }) => {
   switch (action.type) {
@@ -121,7 +124,7 @@ const updateActivityStatusFromLines = ({ draftWFProcess, activityId }) => {
 
   //
   // Rollup:
-  updateActivitiesStatus({ draftWFProcess });
+  updateUserEditable({ draftWFProcess });
 };
 
 const computeActivityStatusFromLines = ({ draftActivity }) => {
@@ -150,3 +153,36 @@ const computeActivityStatusFromLines = ({ draftActivity }) => {
     return CompleteStatus.COMPLETED;
   }
 };
+
+//
+//
+// ----------------------------------------------------------------------------
+//
+//
+
+const normalizePickingLines = (lines) => {
+  return lines.map((line) => {
+    return {
+      ...line,
+      steps: line.steps.reduce((accum, step) => {
+        accum[step.pickingStepId] = step;
+        return accum;
+      }, {}),
+    };
+  });
+};
+
+registerHandler({
+  componentType: COMPONENT_TYPE,
+  normalizeComponentProps: ({ componentProps }) => {
+    console.log('normalizeComponentProps for ', componentProps);
+    return {
+      ...componentProps,
+      lines: normalizePickingLines(componentProps.lines),
+    };
+  },
+  computeActivityDataStoredInitialValue: ({ componentProps }) => {
+    console.log('computeActivityDataStoredInitialValue for ', componentProps);
+    return { lines: componentProps.lines };
+  },
+});
