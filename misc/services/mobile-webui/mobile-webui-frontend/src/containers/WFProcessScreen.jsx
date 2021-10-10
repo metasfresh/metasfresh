@@ -54,7 +54,15 @@ class WFProcessScreen extends PureComponent {
                       />
                     );
                   case 'common/confirmButton':
-                    return <ConfirmActivity key={uniqueId} id={uniqueId} wfProcessId={wfProcessId} {...activityItem} />;
+                    return (
+                      <ConfirmActivity
+                        key={uniqueId}
+                        id={uniqueId}
+                        wfProcessId={wfProcessId}
+                        {...activityItem}
+                        {...activitiesState[activityItem.activityId]}
+                      />
+                    );
                 }
               })}
           </div>

@@ -26,8 +26,12 @@ class ConfirmButton extends Component {
   };
 
   render() {
-    const { caption, componentProps, dataStored } = this.props;
-    const { isComplete } = dataStored;
+    console.log(this.props);
+    const {
+      caption,
+      componentProps,
+      dataStored: { isActivityEnabled },
+    } = this.props;
     const { isPromptDialogOpen } = this.state;
 
     const btnCaption = caption || 'Confirm';
@@ -35,7 +39,7 @@ class ConfirmButton extends Component {
 
     return (
       <div>
-        {/*  Full sconfirm creen dialog  */}
+        {/*  Full screen confirm dialog  */}
         {isPromptDialogOpen && (
           <div className="prompt-dialog-screen">
             <article className="message confirm-box is-dark">
@@ -60,7 +64,11 @@ class ConfirmButton extends Component {
         )}
         {/*  Confirm Initiator  */}
         <div>
-          <button className="button is-outlined complete-btn" onClick={this.showConfirmDialog} disabled={!isComplete}>
+          <button
+            className="button is-outlined complete-btn"
+            onClick={this.showConfirmDialog}
+            disabled={!isActivityEnabled}
+          >
             {btnCaption}
           </button>
         </div>
