@@ -5,6 +5,8 @@ import { push } from 'connected-react-router';
 import { pushHeaderEntry } from '../../../actions/HeaderActions';
 import Indicator from '../../../components/Indicator';
 import counterpart from 'counterpart';
+import * as CompleteStatus from '../../../constants/CompleteStatus';
+
 class PickStepButton extends PureComponent {
   constructor(props) {
     super(props);
@@ -35,7 +37,7 @@ class PickStepButton extends PureComponent {
       locatorName,
       productName,
       uom,
-      pickStepState: { qtyPicked, scannedHUBarcode },
+      pickStepState: { qtyPicked, completeStatus },
       qtyToPick,
     } = this.props;
 
@@ -69,7 +71,7 @@ class PickStepButton extends PureComponent {
             </div>
 
             <div className="right-btn-side pt-4">
-              <Indicator indicatorType={scannedHUBarcode ? 'complete' : 'incomplete'} />
+              <Indicator completeStatus={completeStatus || CompleteStatus.NOT_STARTED} />
             </div>
           </div>
         </button>

@@ -6,6 +6,7 @@ import { pushHeaderEntry } from '../../actions/HeaderActions';
 
 import { continueWorkflow, startWorkflow } from '../../actions/WorkflowActions';
 import ButtonWithIndicator from '../../components/ButtonWithIndicator';
+import * as CompleteStatus from '../../constants/CompleteStatus';
 
 class WFLauncherButton extends PureComponent {
   handleClick = () => {
@@ -24,12 +25,12 @@ class WFLauncherButton extends PureComponent {
 
   render() {
     const { id, caption, startedWFProcessId } = this.props;
-    const indicatorType = startedWFProcessId ? 'pending' : 'incomplete';
+    const wfCompleteStatus = startedWFProcessId ? CompleteStatus.IN_PROGRESS : CompleteStatus.NOT_STARTED;
 
     return (
       <div className="buttons">
         <button key={id} className="button is-outlined complete-btn" disabled={false} onClick={this.handleClick}>
-          <ButtonWithIndicator caption={caption} indicatorType={indicatorType} />
+          <ButtonWithIndicator caption={caption} completeStatus={wfCompleteStatus} />
         </button>
       </div>
     );

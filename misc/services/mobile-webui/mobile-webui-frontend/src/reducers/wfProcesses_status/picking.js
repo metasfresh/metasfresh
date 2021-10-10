@@ -1,6 +1,7 @@
 import * as types from '../../constants/PickingActionTypes';
 import { original } from 'immer';
 import { updateActivitiesStatus } from './utils';
+import * as CompleteStatus from '../../constants/CompleteStatus';
 
 export const pickingReducer = ({ draftState, action }) => {
   switch (action.type) {
@@ -41,7 +42,6 @@ const reduceOnUpdateQtyPicked = (draftState, payload) => {
   const draftWFProcess = draftState[wfProcessId];
   const draftStep = draftWFProcess.activities[activityId].dataStored.lines[lineId].steps[stepId];
   draftStep.qtyPicked = qtyPicked;
-  draftStep.isComplete = !!(qtyPicked && qtyPicked >= 0);
 
   updateStepStatus({
     draftWFProcess,
@@ -55,51 +55,98 @@ const reduceOnUpdateQtyPicked = (draftState, payload) => {
 
 const updateStepStatus = ({ draftWFProcess, activityId, lineId, stepId }) => {
   const draftStep = draftWFProcess.activities[activityId].dataStored.lines[lineId].steps[stepId];
+  draftStep.completeStatus = computeStepStatus({ draftStep });
+  console.log(`Update step [${activityId} ${lineId} ${stepId} ]: completeStatus=${draftStep.completeStatus}`);
 
-  draftStep.isComplete =
-    !!(draftStep.scannedHUBarcode && draftStep.scannedHUBarcode.length > 0) &&
-    !!(draftStep.qtyPicked && draftStep.qtyPicked >= 0);
-
+  //
+  // Rollup:
   updateLineStatusFromSteps({ draftWFProcess, activityId, lineId });
+};
+
+const computeStepStatus = ({ draftStep }) => {
+  console.log('qtyPicked=', draftStep.qtyPicked);
+  console.log('qtyToPick=', draftStep.qtyToPick);
+  console.log('   => diff=', draftStep.qtyToPick - draftStep.qtyPicked === 0);
+
+  const isStepCompleted =
+    // Barcode is set
+    !!(draftStep.scannedHUBarcode && draftStep.scannedHUBarcode.length > 0) &&
+    // and is completely picked or a reject code is set
+    (draftStep.qtyToPick - draftStep.qtyPicked === 0 || !!draftStep.qtyRejectedReasonCode);
+
+  return isStepCompleted ? CompleteStatus.COMPLETED : CompleteStatus.NOT_STARTED;
 };
 
 const updateLineStatusFromSteps = ({ draftWFProcess, activityId, lineId }) => {
   const draftLine = draftWFProcess.activities[activityId].dataStored.lines[lineId];
+  draftLine.completeStatus = computeLineStatus({ draftLine });
+  console.log(`Update line [${activityId} ${lineId} ]: completeStatus=${draftLine.completeStatus}`);
 
+  //
+  // Rollup:
+  updateActivityStatusFromLines({ draftWFProcess, activityId });
+};
+
+const computeLineStatus = ({ draftLine }) => {
   const stepIds = Object.keys(original(draftLine.steps));
 
-  let isLineCompleted = true;
-  for (let stepId of stepIds) {
-    const draftStep = draftLine.steps[stepId];
-    const isStepCompleted = !!draftStep.isComplete;
+  if (stepIds.length > 0) {
+    let countStepsCompleted = 0;
+    for (let stepId of stepIds) {
+      const draftStep = draftLine.steps[stepId];
+      const stepCompleteStatus = draftStep.completeStatus || CompleteStatus.NOT_STARTED;
 
-    if (!isStepCompleted) {
-      isLineCompleted = false;
-      break;
+      if (stepCompleteStatus === CompleteStatus.COMPLETED) {
+        countStepsCompleted++;
+      }
     }
+
+    if (countStepsCompleted === 0) {
+      return CompleteStatus.NOT_STARTED;
+    } else if (countStepsCompleted === stepIds.length) {
+      return CompleteStatus.COMPLETED;
+    } else {
+      return CompleteStatus.IN_PROGRESS;
+    }
+  } else {
+    // corner case, shall not happen: there are no steps in current line => consider it completed
+    return CompleteStatus.COMPLETED;
   }
-
-  draftLine.isComplete = isLineCompleted;
-
-  updateActivityStatusFromLines({ draftWFProcess, activityId });
 };
 
 const updateActivityStatusFromLines = ({ draftWFProcess, activityId }) => {
   const draftActivity = draftWFProcess.activities[activityId];
+  draftActivity.dataStored.completeStatus = computeActivityStatusFromLines({ draftActivity });
+  console.log(`Update activity [${activityId} ]: completeStatus=${draftActivity.dataStored.completeStatus}`);
 
+  //
+  // Rollup:
+  updateActivitiesStatus({ draftWFProcess });
+};
+
+const computeActivityStatusFromLines = ({ draftActivity }) => {
   const lineIds = Object.keys(original(draftActivity.dataStored.lines));
 
-  let isActivityCompleted = true;
-  for (let lineId of lineIds) {
-    const draftLine = draftActivity.dataStored.lines[lineId];
-    const isLineCompleted = !!draftLine.isComplete;
-    if (!isLineCompleted) {
-      isActivityCompleted = false;
-      break;
+  if (lineIds.length > 0) {
+    let countLinesCompleted = 0;
+    for (let lineId of lineIds) {
+      const draftLine = draftActivity.dataStored.lines[lineId];
+      const lineCompleteStatus = draftLine.completeStatus || CompleteStatus.NOT_STARTED;
+
+      if (lineCompleteStatus === CompleteStatus.COMPLETED) {
+        countLinesCompleted++;
+      }
     }
+
+    if (countLinesCompleted === 0) {
+      return CompleteStatus.NOT_STARTED;
+    } else if (countLinesCompleted === lineIds.length) {
+      return CompleteStatus.COMPLETED;
+    } else {
+      return CompleteStatus.IN_PROGRESS;
+    }
+  } else {
+    // corner case, shall not happen: there are no lines in current activity => consider it completed
+    return CompleteStatus.COMPLETED;
   }
-
-  draftActivity.dataStored.isComplete = isActivityCompleted;
-
-  updateActivitiesStatus({ draftWFProcess });
 };

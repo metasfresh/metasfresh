@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 
 import PickLineButton from './PickLineButton';
+import * as CompleteStatus from '../../../constants/CompleteStatus';
 
 class PickProductsActivity extends Component {
   render() {
@@ -12,7 +13,7 @@ class PickProductsActivity extends Component {
       activityId,
     } = this.props;
     const dataStored = activityState ? activityState.dataStored : {};
-    const { isComplete, isActivityEnabled } = dataStored;
+    const { completeStatus, isActivityEnabled } = dataStored;
 
     return (
       <div className="pick-products-activity-container mt-5">
@@ -26,7 +27,7 @@ class PickProductsActivity extends Component {
                   activityId={activityId}
                   lineId={lineId}
                   isActivityEnabled={isActivityEnabled}
-                  isComplete={isComplete}
+                  completeStatus={completeStatus || CompleteStatus.NOT_STARTED}
                   {...lineItem}
                 />
               );
