@@ -108,12 +108,12 @@ import lombok.experimental.UtilityClass;
 
 	@Builder
 	@Value
-	public class IFAFlags
+	public static class IFAFlags
 	{
-		final boolean isColdChain;
-		final boolean isPrescription;
-		final boolean isNarcotic;
-		final boolean isTFG;
+		boolean isColdChain;
+		boolean isPrescription;
+		boolean isNarcotic;
+		boolean isTFG;
 	}
 
 	public void assertIFAProductFlags(@NonNull final I_I_Pharma_Product ifaProduct, final @NonNull IFAFlags flags)
