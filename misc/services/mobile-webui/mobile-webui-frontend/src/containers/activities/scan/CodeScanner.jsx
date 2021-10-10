@@ -39,7 +39,6 @@ class CodeScanner extends Component {
   }
 
   componentDidMount() {
-    console.log('CodeScanner: mounting...');
     this.loadVideoInputDevices();
   }
 
@@ -128,15 +127,10 @@ class CodeScanner extends Component {
   }
 }
 
-const mapStateToProps = (state) => {
-  return { scanner: state.scanner };
-};
-
 CodeScanner.propTypes = {
   //
   // Props:
-  scanner: PropTypes.object.isRequired,
   onBarcodeScanned: PropTypes.func.isRequired,
 };
 
-export default connect(mapStateToProps, null)(CodeScanner);
+export default connect(null, null)(CodeScanner);
