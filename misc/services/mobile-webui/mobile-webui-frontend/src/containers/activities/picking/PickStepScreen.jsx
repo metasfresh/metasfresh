@@ -4,11 +4,13 @@ import { push } from 'connected-react-router';
 import PropTypes from 'prop-types';
 import { withRouter } from 'react-router';
 import { pushHeaderEntry } from '../../../actions/HeaderActions';
-import toast, { Toaster } from 'react-hot-toast';
 import { updatePickingStepQty } from '../../../actions/PickingActions';
 import { postQtyPicked } from '../../../api/picking';
 import ButtonWithIndicator from '../../../components/ButtonWithIndicator';
 import counterpart from 'counterpart';
+
+import { toastError } from '../../../utils/toast';
+import ScreenToaster from '../../../components/ScreenToaster';
 
 class PickStepScreen extends Component {
   onScanHUButtonClick = () => {
@@ -57,9 +59,7 @@ class PickStepScreen extends Component {
       postQtyPicked({ wfProcessId, activityId, stepId, qtyPicked });
       // TODO: handle the promise
     } else {
-      // show error
-
-      toast(counterpart.translate('activities.picking.invalidQtyPicked'), { type: 'error', style: { color: 'white' } });
+      toastError({ messageKey: 'activities.picking.invalidQtyPicked' });
     }
   };
 
@@ -122,7 +122,7 @@ class PickStepScreen extends Component {
               <ButtonWithIndicator caption={scanButtonCaption} indicatorType={scanButtonStatus} />
             </button>
           </div>
-          <Toaster
+          <ScreenToaster
             position="bottom-center"
             toastOptions={{
               success: {

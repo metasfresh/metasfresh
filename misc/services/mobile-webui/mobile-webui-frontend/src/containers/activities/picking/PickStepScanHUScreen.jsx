@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import toast, { Toaster } from 'react-hot-toast';
+import { toastError } from '../../../utils/toast';
+import ScreenToaster from '../../../components/ScreenToaster';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
 import { goBack } from 'connected-react-router';
@@ -8,7 +9,6 @@ import { goBack } from 'connected-react-router';
 import { updatePickingStepScannedHUBarcode } from '../../../actions/PickingActions';
 
 import CodeScanner from '../scan/CodeScanner';
-import counterpart from 'counterpart';
 
 class PickStepScanHUScreen extends Component {
   onBarcodeScanned = ({ scannedBarcode }) => {
@@ -27,11 +27,7 @@ class PickStepScanHUScreen extends Component {
       goBack();
     } else {
       // show an error to user but keep scanning...
-
-      toast(counterpart.translate('activities.picking.notEligibleHUBarcode'), {
-        type: 'error',
-        style: { color: 'white' },
-      });
+      toastError({ messageKey: 'activities.picking.notEligibleHUBarcode' });
     }
   };
 
@@ -45,21 +41,7 @@ class PickStepScanHUScreen extends Component {
     return (
       <div className="mt-0">
         <CodeScanner onBarcodeScanned={this.onBarcodeScanned} />
-        <Toaster
-          position="bottom-center"
-          toastOptions={{
-            success: {
-              style: {
-                background: 'green',
-              },
-            },
-            error: {
-              style: {
-                background: 'red',
-              },
-            },
-          }}
-        />
+        <ScreenToaster />
       </div>
     );
   }

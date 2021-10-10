@@ -1,10 +1,11 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import toast, { Toaster } from 'react-hot-toast';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
 import { goBack } from 'connected-react-router';
-import counterpart from 'counterpart';
+
+import { toastError } from '../../../utils/toast';
+import ScreenToaster from '../../../components/ScreenToaster';
 
 import { selectWFProcessState } from '../../../reducers/wfProcesses_status/index';
 import { setScannedBarcode } from '../../../actions/ScanActions';
@@ -24,13 +25,12 @@ class ScanScreen extends Component {
         updateWFProcess({ wfProcess: response.data.endpointResponse });
         goBack();
       })
-      .catch((err) => {
-        console.log('postScannedBarcode failed: %o', err);
+      .catch((error) => {
         setScannedBarcode({ wfProcessId, activityId, scannedBarcode: null });
 
-        toast(counterpart.translate('activities.scanBarcode.invalidScannedBarcode'), {
-          type: 'error',
-          style: { color: 'white' },
+        toastError({
+          axiosError: error,
+          fallbackMessageKey: 'activities.scanBarcode.invalidScannedBarcode',
         });
       });
   };
@@ -39,21 +39,7 @@ class ScanScreen extends Component {
     return (
       <div className="mt-0">
         <CodeScanner onBarcodeScanned={this.onBarcodeScanned} />
-        <Toaster
-          position="bottom-center"
-          toastOptions={{
-            success: {
-              style: {
-                background: 'green',
-              },
-            },
-            error: {
-              style: {
-                background: 'red',
-              },
-            },
-          }}
-        />
+        <ScreenToaster />
       </div>
     );
   }
