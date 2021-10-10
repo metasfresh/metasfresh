@@ -1,50 +1,11 @@
 package de.metas.quantity;
 
-import static java.math.BigDecimal.ONE;
-import static java.math.BigDecimal.ZERO;
-
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.util.Iterator;
-import java.util.Objects;
-import java.util.stream.Stream;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.EqualsBuilder;
-import org.adempiere.util.lang.HashcodeBuilder;
-import org.compiere.model.I_C_UOM;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
-
 import de.metas.uom.UOMPrecision;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
@@ -52,6 +13,20 @@ import de.metas.util.Check;
 import de.metas.util.collections.CollectionUtils;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.EqualsBuilder;
+import org.adempiere.util.lang.HashcodeBuilder;
+import org.compiere.model.I_C_UOM;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.Iterator;
+import java.util.Objects;
+import java.util.stream.Stream;
+
+import static java.math.BigDecimal.ONE;
+import static java.math.BigDecimal.ZERO;
 
 /**
  * Immutable Quantity.
@@ -156,11 +131,29 @@ public final class Quantity implements Comparable<Quantity>
 		return CollectionUtils.singleElement(uomIds.asList());
 	}
 
-	public static void assertSameUOM(@NonNull final Quantity... quantities)
+	public static void assertSameUOM(@Nullable final Quantity... quantities)
 	{
-		if(quantities.length > 1)
+		if (quantities == null || quantities.length <= 0)
 		{
-			getCommonUomIdOfAll(quantities);
+			return;
+		}
+
+		final ImmutableListMultimap<UomId, Quantity> qtysByUOM = Stream.of(quantities)
+				.filter(Objects::nonNull)
+				.collect(ImmutableListMultimap.toImmutableListMultimap(
+						Quantity::getUomId,
+						qty -> qty));
+
+		// no quantities it's OK
+		if (qtysByUOM.isEmpty())
+		{
+			return;
+		}
+
+		final ImmutableSet<UomId> uomIds = qtysByUOM.keySet();
+		if (uomIds.size() > 1)
+		{
+			throw new AdempiereException("at least two quantity instances have different UOMs: " + qtysByUOM);
 		}
 	}
 
@@ -223,6 +216,7 @@ public final class Quantity implements Comparable<Quantity>
 	}
 
 	@Override
+	@SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
 	public boolean equals(Object obj)
 	{
 		if (this == obj)
@@ -764,7 +758,7 @@ public final class Quantity implements Comparable<Quantity>
 			@NonNull RoundingMode roundingMode)
 	{
 		final BigDecimal newQty = percent.computePercentageOf(this.qty, precision, roundingMode);
-		
+
 		return this.qty.compareTo(newQty) != 0
 				? new Quantity(newQty, uom)
 				: this;

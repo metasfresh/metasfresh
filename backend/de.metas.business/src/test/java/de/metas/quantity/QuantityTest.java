@@ -26,6 +26,7 @@ import de.metas.uom.UomId;
 import de.metas.uom.impl.UOMTestHelper;
 import de.metas.util.JSONObjectMapper;
 import de.metas.util.lang.Percent;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.IContextAware;
@@ -477,5 +478,63 @@ public class QuantityTest
 			final UomId commonUomId = Quantity.getCommonUomIdOfAll(Quantity.of(1, uom), null, Quantity.of(2, uom), null);
 			assertThat(commonUomId.getRepoId()).isEqualTo(uom.getC_UOM_ID());
 		}
+	}
+
+	@Nested
+	public class assertSameUOM
+	{
+		@Test
+		void empty()
+		{
+			Quantity.assertSameUOM();
+		}
+
+		@Test
+		void nullArray()
+		{
+			Quantity.assertSameUOM((Quantity[])null);
+		}
+
+		@Test
+		void nullQty()
+		{
+			Quantity.assertSameUOM((Quantity)null);
+		}
+
+		@Test
+		void singleQty()
+		{
+			final I_C_UOM uom = uomHelper.createUOM("UOM", 2);
+			Quantity.assertSameUOM(Quantity.of(1, uom));
+		}
+
+		@Test
+		void singleQty_withSomeNullQtys()
+		{
+			final I_C_UOM uom = uomHelper.createUOM("UOM", 2);
+			Quantity.assertSameUOM(null, Quantity.of(1, uom), null);
+		}
+
+		@Test
+		void sameUOM_withSomeNullQtys()
+		{
+			final I_C_UOM uom = uomHelper.createUOM("UOM", 2);
+
+			Quantity.assertSameUOM(Quantity.of(1, uom), null, Quantity.of(2, uom), null);
+		}
+
+		@Test
+		void distinctUOMs_withSomeNullQtys()
+		{
+			final I_C_UOM uom1 = uomHelper.createUOM("UOM1", 2);
+			final I_C_UOM uom2 = uomHelper.createUOM("UOM2", 2);
+
+			assertThatThrownBy(
+					() -> Quantity.assertSameUOM(Quantity.of(1, uom1), null, Quantity.of(2, uom2), null)
+			)
+					.isInstanceOf(AdempiereException.class)
+					.hasMessageStartingWith("at least two quantity instances have different UOMs");
+		}
+
 	}
 }
