@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
+import de.metas.handlingunits.picking.IHUPickingSlotBL;
 import de.metas.handlingunits.picking.PickFrom;
 import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateId;
@@ -87,6 +88,7 @@ public class PickingJobService
 	private final IPackagingDAO packagingDAO = Services.get(IPackagingDAO.class);
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final IHUPickingSlotBL pickingSlotBL = Services.get(IHUPickingSlotBL.class);
 	private final ShipmentScheduleLockRepository shipmentScheduleLockRepository;
 	private final PickingCandidateService pickingCandidateService;
 
@@ -192,7 +194,8 @@ public class PickingJobService
 				.salesOrderDocumentNo(Objects.requireNonNull(item.getSalesOrderDocumentNo()))
 				.customerName(item.getCustomerName())
 				.preparationDate(item.getPreparationDate())
-				.deliveryAddress(item.getCustomerAddress())
+				.deliveryBPLocationId(item.getCustomerLocationId())
+				.deliveryRenderedAddress(item.getCustomerAddress())
 				.lockedBy(lockedBy)
 				.build();
 	}
@@ -298,6 +301,7 @@ public class PickingJobService
 	public void abort(@NonNull final PickingJob pickingJob)
 	{
 		pickingCandidateService.deleteDraftPickingCandidatesByShipmentScheduleId(pickingJob.getShipmentScheduleIds());
+		pickingJob.getPickingSlotId().ifPresent(pickingSlotBL::releasePickingSlotIfPossible);
 		unlockShipmentSchedules(pickingJob.getShipmentScheduleIds(), pickingJob.getLockedBy());
 	}
 

@@ -147,11 +147,11 @@ public class PickingWFProcessHandler implements WFProcessHandler
 
 		return WFProcessHeaderProperties.builder()
 				.entry(WFProcessHeaderProperty.builder()
-						.caption(TranslatableStrings.adElementOrMessage("SalesOrderDocumentNo"))
+						.caption(TranslatableStrings.adElementOrMessage("DocumentNo"))
 						.value(pickingJob.getSalesOrderDocumentNo())
 						.build())
 				.entry(WFProcessHeaderProperty.builder()
-						.caption(TranslatableStrings.adElementOrMessage("CustomerName"))
+						.caption(TranslatableStrings.adElementOrMessage("C_BPartner_Customer_ID"))
 						.value(pickingJob.getCustomerName())
 						.build())
 				.entry(WFProcessHeaderProperty.builder()
@@ -159,8 +159,8 @@ public class PickingWFProcessHandler implements WFProcessHandler
 						.value(pickingJob.getPreparationDate())
 						.build())
 				.entry(WFProcessHeaderProperty.builder()
-						.caption(TranslatableStrings.adElementOrMessage("DeliveryAddress"))
-						.value(pickingJob.getDeliveryAddress())
+						.caption(TranslatableStrings.adElementOrMessage("DeliveryToAddress"))
+						.value(pickingJob.getDeliveryRenderedAddress())
 						.build())
 				.build();
 	}

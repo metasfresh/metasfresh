@@ -36,5 +36,5 @@ public class SetScannedBarcodeRequest
 {
 	@NonNull WFProcess wfProcess;
 	@NonNull WFActivity wfActivity;
-	@Nullable String scannedBarcode;
+	@NonNull String scannedBarcode;
 }
