@@ -1,29 +1,58 @@
-import { current, original, isDraft } from 'immer';
+import { current, isDraft, original } from 'immer';
+import * as CompleteStatus from '../../constants/CompleteStatus';
 
+/**
+ * Updates isActivityEnabled flag for all activities.
+ */
 export const updateActivitiesStatus = ({ draftWFProcess }) => {
   console.log('draftWFProcess=%o', draftWFProcess);
 
-  const activityIds = Object.keys(original(draftWFProcess.activities));
+  const activityIds = Object.keys(
+    isDraft(draftWFProcess.activities) ? original(draftWFProcess.activities) : draftWFProcess.activities
+  );
 
   let previousActivity = null;
   activityIds.forEach((activityId) => {
-    const activity = draftWFProcess.activities[activityId];
-    console.log('activityStatus: %o', activity);
-    console.log('previousActivityStatus: %o', previousActivity);
+    const currentActivity = draftWFProcess.activities[activityId];
+    const currentActivityCompleteStatus = currentActivity.dataStored.completeStatus || CompleteStatus.NOT_STARTED;
 
     let isActivityEnabled;
+
+    //
+    // First activity is always editable
     if (previousActivity == null) {
-      // First activity: always enabled
       isActivityEnabled = true;
-      console.log('=> isActivityEnabled: %o (first activity)', isActivityEnabled);
+      console.log(
+        `[ ${activityId} ${currentActivityCompleteStatus} ]: => isActivityEnabled=${isActivityEnabled} (first currentActivity)`
+      );
     } else {
-      isActivityEnabled = previousActivity.dataStored.isComplete;
-      console.log('isActivityEnabled: %o (checked if prev activity was completed)', isActivityEnabled);
+      const previousActivityCompleteStatus = previousActivity.dataStored.completeStatus || CompleteStatus.NOT_STARTED;
+
+      //
+      // Current activity is editable only if previous activity was completed
+      isActivityEnabled = previousActivityCompleteStatus === CompleteStatus.COMPLETED;
+      console.log(
+        `[ ${activityId} ${currentActivityCompleteStatus} ]: => isActivityEnabled=${isActivityEnabled} (checked if prev currentActivity was completed)`
+      );
+
+      //
+      // If current currentActivity was started
+      // => previous currentActivity is no longer editable
+      if (currentActivityCompleteStatus !== CompleteStatus.NOT_STARTED) {
+        previousActivity.dataStored.isActivityEnabled = false;
+        console.log(
+          `[ ${activityId} ${currentActivityCompleteStatus} ]: => Update [ ${
+            previousActivity.activityId
+          } ${previousActivityCompleteStatus} ] => isActivityEnabled=${
+            draftWFProcess.activities[previousActivity.activityId].dataStored.isActivityEnabled
+          } because current activity is started/completed`
+        );
+      }
     }
 
-    activity.dataStored.isActivityEnabled = isActivityEnabled;
+    currentActivity.dataStored.isActivityEnabled = isActivityEnabled;
 
-    previousActivity = activity;
+    previousActivity = currentActivity;
   });
 };
 
@@ -38,6 +67,8 @@ export const mergeWFProcessToState = ({ draftWFProcess, fromWFProcess }) => {
     draftActivities: draftWFProcess.activities,
     fromActivities: fromWFProcess.activities,
   });
+
+  updateActivitiesStatus({ draftWFProcess });
 
   console.log('AFTER MERGE: %o', isDraft(draftWFProcess) ? current(draftWFProcess) : draftWFProcess);
   console.log('fromWFProcess=%o', fromWFProcess);
@@ -74,16 +105,20 @@ const mergeActivityToState = ({ draftActivity, fromActivity }) => {
 };
 
 const computeActivityDataStoredInitialValue = ({ componentType, componentProps }) => {
+  const template = {
+    completeStatus: CompleteStatus.NOT_STARTED,
+    isActivityEnabled: false,
+  };
+
   switch (componentType) {
     case 'picking/pickProducts': {
       return {
-        isActivityEnabled: false,
-        isComplete: false,
+        ...template,
         lines: componentProps.lines,
       };
     }
     default: {
-      return {};
+      return template;
     }
   }
 };

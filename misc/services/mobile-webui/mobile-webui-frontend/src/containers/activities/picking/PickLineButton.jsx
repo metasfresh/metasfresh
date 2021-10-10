@@ -26,8 +26,7 @@ class PickLineButton extends Component {
   };
 
   render() {
-    const { lineId, caption, isActivityEnabled, isComplete } = this.props;
-    const indicatorType = isComplete ? 'complete' : 'incomplete';
+    const { lineId, caption, isActivityEnabled, completeStatus } = this.props;
     return (
       <div className="buttons">
         <button
@@ -36,7 +35,7 @@ class PickLineButton extends Component {
           disabled={!isActivityEnabled}
           onClick={this.handleClick}
         >
-          <ButtonWithIndicator caption={caption} indicatorType={indicatorType} />
+          <ButtonWithIndicator caption={caption} completeStatus={completeStatus} />
         </button>
       </div>
     );
@@ -51,7 +50,7 @@ PickLineButton.propTypes = {
   lineId: PropTypes.string.isRequired,
   caption: PropTypes.string.isRequired,
   isActivityEnabled: PropTypes.bool.isRequired,
-  isComplete: PropTypes.bool.isRequired,
+  completeStatus: PropTypes.string.isRequired,
   steps: PropTypes.array.isRequired,
   //
   // Actions

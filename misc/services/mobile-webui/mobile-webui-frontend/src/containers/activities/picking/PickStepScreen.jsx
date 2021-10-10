@@ -7,6 +7,7 @@ import { pushHeaderEntry } from '../../../actions/HeaderActions';
 import { updatePickingStepQty } from '../../../actions/PickingActions';
 import { postQtyPicked } from '../../../api/picking';
 import ButtonWithIndicator from '../../../components/ButtonWithIndicator';
+import * as CompleteStatus from '../../../constants/CompleteStatus';
 import counterpart from 'counterpart';
 
 import { toastError } from '../../../utils/toast';
@@ -91,7 +92,8 @@ class PickStepScreen extends Component {
     const scanButtonCaption = isValidCode
       ? `${scannedHUBarcode}`
       : counterpart.translate('activities.picking.scanHUBarcode');
-    const scanButtonStatus = isValidCode ? `complete` : `incomplete`;
+
+    const scanButtonStatus = isValidCode ? CompleteStatus.COMPLETED : CompleteStatus.NOT_STARTED;
 
     return (
       <div className="pt-3 section picking-step-container">
@@ -119,7 +121,7 @@ class PickStepScreen extends Component {
           </div>
           <div className="mt-0">
             <button className="button is-outlined complete-btn" onClick={this.onScanHUButtonClick}>
-              <ButtonWithIndicator caption={scanButtonCaption} indicatorType={scanButtonStatus} />
+              <ButtonWithIndicator caption={scanButtonCaption} completeStatus={scanButtonStatus} />
             </button>
           </div>
           <ScreenToaster

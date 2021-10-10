@@ -1,14 +1,15 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import * as CompleteStatus from '../constants/CompleteStatus';
 
 class Indicator extends Component {
-  getIndicatorColor(indicatorType) {
-    switch (indicatorType) {
-      case 'incomplete':
+  getIndicatorColor(completeStatus) {
+    switch (completeStatus) {
+      case CompleteStatus.NOT_STARTED:
         return 'indicator-red';
-      case 'complete':
+      case CompleteStatus.COMPLETED:
         return 'indicator-green';
-      case 'pending':
+      case CompleteStatus.IN_PROGRESS:
         return 'indicator-yellow';
       default:
         return 'indicator-red';
@@ -16,14 +17,14 @@ class Indicator extends Component {
   }
 
   render() {
-    const { indicatorType } = this.props;
-    const indicatorColor = this.getIndicatorColor(indicatorType);
-    return <span className={indicatorColor}></span>;
+    const { completeStatus } = this.props;
+    const indicatorColor = this.getIndicatorColor(completeStatus);
+    return <span className={indicatorColor} />;
   }
 }
 
 Indicator.propTypes = {
-  indicatorType: PropTypes.string.isRequired,
+  completeStatus: PropTypes.string.isRequired,
 };
 
 export default Indicator;
