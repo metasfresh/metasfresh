@@ -4,6 +4,7 @@ import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
 import de.metas.logging.LogManager;
+import de.metas.material.cockpit.view.mainrecord.MainDataRequestHandler;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateId;
 import de.metas.material.dispo.commons.candidate.CandidateType;
@@ -56,13 +57,14 @@ public final class PPOrderCreatedHandler
 
 	public PPOrderCreatedHandler(
 			@NonNull final CandidateChangeService candidateChangeHandler,
-			@NonNull final CandidateRepositoryRetrieval candidateRepositoryRetrieval)
+			@NonNull final CandidateRepositoryRetrieval candidateRepositoryRetrieval,
+			@NonNull final MainDataRequestHandler mainDataRequestHandler)
 	{
-		super(candidateChangeHandler, candidateRepositoryRetrieval);
+		super(candidateChangeHandler, candidateRepositoryRetrieval, mainDataRequestHandler);
 	}
 
 	@Override
-	public Collection<Class<? extends PPOrderCreatedEvent>> getHandeledEventType()
+	public Collection<Class<? extends PPOrderCreatedEvent>> getHandledEventType()
 	{
 		return ImmutableList.of(PPOrderCreatedEvent.class);
 	}

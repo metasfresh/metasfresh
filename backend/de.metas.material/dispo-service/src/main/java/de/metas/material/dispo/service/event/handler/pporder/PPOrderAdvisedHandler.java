@@ -3,6 +3,7 @@ package de.metas.material.dispo.service.event.handler.pporder;
 import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
 import de.metas.common.util.time.SystemTime;
+import de.metas.material.cockpit.view.mainrecord.MainDataRequestHandler;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateId;
 import de.metas.material.dispo.commons.candidate.CandidateType;
@@ -62,15 +63,16 @@ public final class PPOrderAdvisedHandler
 	public PPOrderAdvisedHandler(
 			@NonNull final CandidateChangeService candidateChangeHandler,
 			@NonNull final CandidateRepositoryRetrieval candidateRepositoryRetrieval,
-			@NonNull final PostMaterialEventService materialEventService)
+			@NonNull final PostMaterialEventService materialEventService,
+			@NonNull final MainDataRequestHandler mainDataRequestHandler)
 	{
-		super(candidateChangeHandler, candidateRepositoryRetrieval);
+		super(candidateChangeHandler, candidateRepositoryRetrieval, mainDataRequestHandler);
 
 		this.materialEventService = materialEventService;
 	}
 
 	@Override
-	public Collection<Class<? extends PPOrderAdvisedEvent>> getHandeledEventType()
+	public Collection<Class<? extends PPOrderAdvisedEvent>> getHandledEventType()
 	{
 		return ImmutableList.of(PPOrderAdvisedEvent.class);
 	}

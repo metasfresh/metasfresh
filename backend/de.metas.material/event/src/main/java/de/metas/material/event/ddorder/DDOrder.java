@@ -1,19 +1,17 @@
 package de.metas.material.event.ddorder;
 
-import java.time.Instant;
-import java.util.List;
-
-import org.compiere.model.I_S_Resource;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+import org.compiere.model.I_S_Resource;
+
+import java.time.Instant;
+import java.util.List;
 
 /*
  * #%L
@@ -84,7 +82,7 @@ public class DDOrder
 			@JsonProperty("materialDispoGroupId") final MaterialDispoGroupId materialDispoGroupId)
 	{
 		this.orgId = orgId;
-		
+
 		// these two might be zero, if the DDOrder was created manually
 		this.plantId = plantId;
 		this.productPlanningId = productPlanningId;

@@ -1,15 +1,7 @@
 package de.metas.material.dispo.service.event.handler.receiptschedule;
 
-import java.math.BigDecimal;
-import java.util.Collection;
-
-import org.slf4j.Logger;
-import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Service;
-
-import com.google.common.collect.ImmutableList;
-
 import ch.qos.logback.classic.Level;
+import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
 import de.metas.logging.LogManager;
 import de.metas.material.dispo.commons.candidate.Candidate;
@@ -23,6 +15,12 @@ import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.receiptschedule.ReceiptScheduleDeletedEvent;
 import de.metas.util.Loggables;
 import lombok.NonNull;
+import org.slf4j.Logger;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+import java.util.Collection;
 
 /*
  * #%L
@@ -65,7 +63,7 @@ public class ReceiptsScheduleDeletedHandler
 	}
 
 	@Override
-	public Collection<Class<? extends ReceiptScheduleDeletedEvent>> getHandeledEventType()
+	public Collection<Class<? extends ReceiptScheduleDeletedEvent>> getHandledEventType()
 	{
 		return ImmutableList.of(ReceiptScheduleDeletedEvent.class);
 	}

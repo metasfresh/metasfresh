@@ -1,20 +1,7 @@
 package de.metas.material.cockpit.view.eventhandler;
 
-import java.time.ZoneId;
-import java.util.Collection;
-import java.util.List;
-
-import de.metas.organization.IOrgDAO;
-import de.metas.organization.OrgId;
-import de.metas.util.Services;
-import org.compiere.util.TimeUtil;
-import org.slf4j.Logger;
-import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Service;
-
-import com.google.common.collect.ImmutableList;
-
 import ch.qos.logback.classic.Level;
+import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
 import de.metas.logging.LogManager;
 import de.metas.material.cockpit.view.MainDataRecordIdentifier;
@@ -26,8 +13,19 @@ import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderAdvisedEvent;
 import de.metas.material.event.pporder.PPOrderCreatedEvent;
 import de.metas.material.event.pporder.PPOrderLine;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
 import de.metas.util.Loggables;
+import de.metas.util.Services;
 import lombok.NonNull;
+import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Service;
+
+import java.time.ZoneId;
+import java.util.Collection;
+import java.util.List;
 
 /*
  * #%L
@@ -66,7 +64,7 @@ public class PPOrderCreatedOrAdvisedEventHandler implements MaterialEventHandler
 	}
 
 	@Override
-	public Collection<Class<? extends AbstractPPOrderEvent>> getHandeledEventType()
+	public Collection<Class<? extends AbstractPPOrderEvent>> getHandledEventType()
 	{
 		return ImmutableList.of(PPOrderCreatedEvent.class, PPOrderAdvisedEvent.class);
 	}
@@ -100,7 +98,7 @@ public class PPOrderCreatedOrAdvisedEventHandler implements MaterialEventHandler
 
 			final UpdateMainDataRequest request = UpdateMainDataRequest.builder()
 					.identifier(identifier)
-					.requiredForProductionQty(line.getQtyRequired())
+					.qtyDemandPPOrder(line.getQtyRequired())
 					.build();
 			requests.add(request);
 		}

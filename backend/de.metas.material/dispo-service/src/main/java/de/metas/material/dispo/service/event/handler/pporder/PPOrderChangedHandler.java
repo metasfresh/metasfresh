@@ -69,7 +69,7 @@ public class PPOrderChangedHandler implements MaterialEventHandler<PPOrderChange
 	}
 
 	@Override
-	public Collection<Class<? extends PPOrderChangedEvent>> getHandeledEventType()
+	public Collection<Class<? extends PPOrderChangedEvent>> getHandledEventType()
 	{
 		return ImmutableList.of(PPOrderChangedEvent.class);
 	}
