@@ -17,6 +17,7 @@ export const setupCounterpart = () => {
       Barcode: 'Barcode',
       QtyToPick: 'Qty to pick',
       QtyPicked: 'Qty picked',
+      PleaseTryAgain: 'Please try again',
     },
     login: {
       submitButton: 'Login',
@@ -43,6 +44,7 @@ export const setupCounterpart = () => {
       Barcode: 'Barcode',
       QtyToPick: 'Qty to pick',
       QtyPicked: 'Menge (Lagereinheit)',
+      PleaseTryAgain: 'Please try again',
     },
     login: {
       submitButton: 'Login',
