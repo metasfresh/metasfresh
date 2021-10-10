@@ -5,8 +5,9 @@ import { push } from 'connected-react-router';
 import { pushHeaderEntry } from '../../actions/HeaderActions';
 
 import { continueWorkflow, startWorkflow } from '../../actions/WorkflowActions';
+import ButtonWithIndicator from '../../components/ButtonWithIndicator';
 
-class WFLauncherItem extends PureComponent {
+class WFLauncherButton extends PureComponent {
   handleClick = () => {
     const { startWorkflow, continueWorkflow, wfParameters, startedWFProcessId, push, pushHeaderEntry } = this.props;
     const action = startedWFProcessId ? continueWorkflow(startedWFProcessId) : startWorkflow({ wfParameters });
@@ -22,28 +23,23 @@ class WFLauncherItem extends PureComponent {
   };
 
   render() {
-    const { caption, startedWFProcessId } = this.props;
+    const { id, caption, startedWFProcessId } = this.props;
+    const indicatorType = startedWFProcessId ? 'pending' : 'incomplete';
 
     return (
-      <div className="ml-3 mr-3 is-light launcher" onClick={this.handleClick}>
-        <div className="box">
-          <div className="columns is-mobile">
-            <div className="column is-12">
-              <div className="columns">
-                <div className="column is-size-4-mobile no-p">{caption}</div>
-                <div className="column is-size-7 no-p">{startedWFProcessId}</div>
-              </div>
-            </div>
-          </div>
-        </div>
+      <div className="buttons">
+        <button key={id} className="button is-outlined complete-btn" disabled={false} onClick={this.handleClick}>
+          <ButtonWithIndicator caption={caption} indicatorType={indicatorType} />
+        </button>
       </div>
     );
   }
 }
 
-WFLauncherItem.propTypes = {
+WFLauncherButton.propTypes = {
   //
   // Props
+  id: PropTypes.string.isRequired,
   caption: PropTypes.string.isRequired,
   startedWFProcessId: PropTypes.string,
   wfParameters: PropTypes.object.isRequired,
@@ -55,4 +51,4 @@ WFLauncherItem.propTypes = {
   pushHeaderEntry: PropTypes.func.isRequired,
 };
 
-export default connect(null, { startWorkflow, continueWorkflow, push, pushHeaderEntry })(WFLauncherItem);
+export default connect(null, { startWorkflow, continueWorkflow, push, pushHeaderEntry })(WFLauncherButton);
