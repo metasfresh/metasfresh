@@ -61,6 +61,7 @@ import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.ad.dao.QueryLimit;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_Relation;
 import org.compiere.model.I_C_BPartner;
@@ -338,6 +339,8 @@ public interface IBPartnerDAO extends ISingletonService
 			@NonNull OrgId targetOrgId);
 
 	BPartnerId cloneBPartnerRecord(@NonNull CloneBPartnerRequest request);
+
+	List<I_C_BPartner> retrieveVendors(@NonNull QueryLimit limit);
 
 	@Value
 	@Builder

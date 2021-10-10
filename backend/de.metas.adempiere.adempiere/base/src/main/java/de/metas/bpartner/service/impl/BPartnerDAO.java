@@ -78,6 +78,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -1868,5 +1869,18 @@ public class BPartnerDAO implements IBPartnerDAO
 				.addInArrayFilter(I_C_BPartner.COLUMNNAME_C_BPartner_ID, bpartnerIds)
 				.create()
 				.list();
+	}
+
+	@Override
+	public List<I_C_BPartner> retrieveVendors(@NonNull QueryLimit limit)
+	{
+		return queryBL.createQueryBuilder(I_C_BPartner.class)
+				.addInArrayFilter(I_C_BPartner.COLUMNNAME_IsVendor, true)
+				.addOnlyActiveRecordsFilter()
+				.orderBy(I_C_BPartner.COLUMNNAME_Name)
+				.orderBy(I_C_BPartner.COLUMNNAME_C_BPartner_ID)
+				.setLimit(limit)
+				.create()
+				.listImmutable(I_C_BPartner.class);
 	}
 }

@@ -291,6 +291,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		CREATE, UPDATE
 	}
 
+	@Nullable
 	private I_C_Invoice_Candidate createInvoiceCandidateForInOutLineOrNull(
 			@NonNull final I_M_InOutLine inOutLineRecord,
 			@Nullable final PaymentTermId paymentTermId,

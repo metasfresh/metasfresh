@@ -87,7 +87,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 	 * @return <code>false</code>, the candidates will be created by {@link C_Order_Handler}.
 	 */
 	@Override
-	public boolean isCreateMissingCandidatesAutomatically(Object model)
+	public boolean isCreateMissingCandidatesAutomatically(final Object model)
 	{
 		return false;
 	}
@@ -344,7 +344,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 	 * If the given ic has no InOut, then <code>QtyDelivered</code>, <code>DeliveryDate</code> and <code>M_InOut_ID</code> are set to <code>null</code>.
 	 */
 	@Override
-	public void setDeliveredData(final I_C_Invoice_Candidate icRecord)
+	public void setDeliveredData(@NonNull final I_C_Invoice_Candidate icRecord)
 	{
 		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 		final InvoiceCandidateRecordService invoiceCandidateRecordService = SpringContextHolder.instance.getBean(InvoiceCandidateRecordService.class);
@@ -400,7 +400,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 	}
 
 	@Override
-	public PriceAndTax calculatePriceAndTax(final I_C_Invoice_Candidate ic)
+	public PriceAndTax calculatePriceAndTax(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		final I_C_OrderLine orderLine = InterfaceWrapperHelper.create(ic.getC_OrderLine(), I_C_OrderLine.class);
 
