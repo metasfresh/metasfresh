@@ -1,4 +1,4 @@
-import { current, isDraft, original } from 'immer';
+import { isDraft, original } from 'immer';
 import * as CompleteStatus from '../../constants/CompleteStatus';
 import { normalizeComponentProps, computeActivityDataStoredInitialValue } from './activityStateHandlers';
 
@@ -6,8 +6,6 @@ import { normalizeComponentProps, computeActivityDataStoredInitialValue } from '
  * Updates isUserEditable flag for all activities.
  */
 export const updateUserEditable = ({ draftWFProcess }) => {
-  console.log('draftWFProcess=%o', draftWFProcess);
-
   const activityIds = Object.keys(
     isDraft(draftWFProcess.activities) ? original(draftWFProcess.activities) : draftWFProcess.activities
   );
@@ -70,9 +68,6 @@ export const mergeWFProcessToState = ({ draftWFProcess, fromWFProcess }) => {
   });
 
   updateUserEditable({ draftWFProcess });
-
-  console.log('AFTER MERGE: %o', isDraft(draftWFProcess) ? current(draftWFProcess) : draftWFProcess);
-  console.log('fromWFProcess=%o', fromWFProcess);
 };
 
 const mergeActivitiesToState = ({ draftActivities, fromActivities }) => {
