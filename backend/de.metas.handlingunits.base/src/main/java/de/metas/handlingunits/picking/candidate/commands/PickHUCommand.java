@@ -15,6 +15,7 @@ import de.metas.handlingunits.picking.PickingCandidateId;
 import de.metas.handlingunits.picking.PickingCandidateIssueToBOMLine;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.picking.PickingCandidateStatus;
+import de.metas.handlingunits.picking.QtyRejectedWithReason;
 import de.metas.handlingunits.picking.requests.PickRequest;
 import de.metas.handlingunits.picking.requests.PickRequest.IssueToPickingOrderRequest;
 import de.metas.handlingunits.storage.IHUProductStorage;
@@ -73,6 +74,7 @@ public class PickHUCommand
 	private final PickFrom pickFrom;
 	private final PickingSlotId pickingSlotId;
 	private final Quantity qtyToPick;
+	private final QtyRejectedWithReason qtyRejected;
 	private final HuPackingInstructionsId packToId;
 	private final boolean autoReview;
 	private final ImmutableList<IssueToPickingOrderRequest> issuesToPickingOrderRequests;
@@ -94,6 +96,7 @@ public class PickHUCommand
 		this.pickingSlotId = request.getPickingSlotId();
 		this.packToId = request.getPackToId();
 		this.qtyToPick = request.getQtyToPick();
+		this.qtyRejected = request.getQtyRejected();
 		this.autoReview = request.isAutoReview();
 		this.issuesToPickingOrderRequests = request.getIssuesToPickingOrder();
 	}
@@ -121,6 +124,11 @@ public class PickHUCommand
 
 		pickingCandidate.pick(qtyToPick);
 		pickingCandidate.packTo(packToId);
+
+		if (qtyRejected != null)
+		{
+			pickingCandidate.rejectPickingPartially(qtyRejected);
+		}
 
 		if (autoReview)
 		{

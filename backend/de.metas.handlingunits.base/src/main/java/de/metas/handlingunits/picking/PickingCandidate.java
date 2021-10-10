@@ -70,6 +70,8 @@ public class PickingCandidate
 	private Quantity qtyPicked;
 	@Nullable
 	private BigDecimal qtyReview;
+	@Nullable
+	private QtyRejectedWithReason qtyRejected;
 
 	@Nullable
 	private HuPackingInstructionsId packToInstructionsId;
@@ -98,6 +100,7 @@ public class PickingCandidate
 			//
 			@NonNull final Quantity qtyPicked,
 			@Nullable final BigDecimal qtyReview,
+			@Nullable final QtyRejectedWithReason qtyRejected,
 			//
 			@Nullable final HuPackingInstructionsId packToInstructionsId,
 			@Nullable final HuId packedToHuId,
@@ -115,8 +118,10 @@ public class PickingCandidate
 		this.pickFrom = pickFrom;
 		this.pickingSlotId = pickingSlotId;
 
+		Quantity.assertSameUOM(qtyPicked, qtyRejected != null ? qtyRejected.toQuantity() : null);
 		this.qtyPicked = qtyPicked;
 		this.qtyReview = qtyReview;
+		this.qtyRejected = qtyRejected;
 
 		this.packToInstructionsId = packToInstructionsId;
 		this.packedToHuId = packedToHuId;
@@ -233,6 +238,15 @@ public class PickingCandidate
 
 		qtyPicked = qtyRejected;
 		pickStatus = PickingCandidatePickStatus.WILL_NOT_BE_PICKED;
+	}
+
+	public void rejectPickingPartially(@NonNull final QtyRejectedWithReason qtyRejected)
+	{
+		assertDraft();
+		// assertNotApproved();
+		Quantity.assertSameUOM(qtyPicked, qtyRejected.toQuantity());
+
+		this.qtyRejected = qtyRejected;
 	}
 
 	public void packTo(@Nullable final HuPackingInstructionsId packToInstructionsId)

@@ -5,6 +5,7 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.picking.PickFrom;
 import de.metas.handlingunits.picking.PickingCandidateId;
+import de.metas.handlingunits.picking.QtyRejectedWithReason;
 import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.product.ProductId;
@@ -58,6 +59,7 @@ public class PickRequest
 	 * Quantity to be picked. If not set, the whole HU shall be picked
 	 */
 	@Nullable Quantity qtyToPick;
+	@Nullable QtyRejectedWithReason qtyRejected;
 
 	boolean autoReview;
 
@@ -70,6 +72,7 @@ public class PickRequest
 			@Nullable HuPackingInstructionsId packToId,
 			@Nullable PickingSlotId pickingSlotId,
 			@Nullable Quantity qtyToPick,
+			@Nullable QtyRejectedWithReason qtyRejected,
 			boolean autoReview)
 	{
 		this.existingPickingCandidateId = existingPickingCandidateId;
@@ -96,6 +99,8 @@ public class PickRequest
 		{
 			throw new AdempiereException("Unknown pick from: " + pickFrom);
 		}
+
+		this.qtyRejected = qtyRejected;
 
 		this.packToId = packToId;
 

@@ -55,28 +55,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
-/*
- * #%L
- * metasfresh-webui-api
- * %%
- * Copyright (C) 2017 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 /**
  * Dedicated DAO'ish class centered around {@link I_M_Picking_Candidate}s
  *
@@ -144,6 +122,9 @@ public class PickingCandidateRepository
 		return loadIssuesToBOMLine(toPickingCandidate(record));
 	}
 
+	/**
+	 * @implNote keep in sync with {@link #updateRecord(I_M_Picking_Candidate, PickingCandidate)}
+	 */
 	private PickingCandidate toPickingCandidate(@NonNull final I_M_Picking_Candidate record)
 	{
 		final I_C_UOM uom = uomsRepo.getById(record.getC_UOM_ID());
@@ -165,6 +146,7 @@ public class PickingCandidateRepository
 				//
 				.qtyPicked(qtyPicked)
 				.qtyReview(qtyReview)
+				.qtyRejected(extractQtyRejected(record, uom))
 				//
 				.packToInstructionsId(HuPackingInstructionsId.ofRepoIdOrNull(record.getPackTo_HU_PI_ID()))
 				.packedToHuId(HuId.ofRepoIdOrNull(record.getM_HU_ID()))
@@ -175,6 +157,26 @@ public class PickingCandidateRepository
 				.build();
 	}
 
+	@Nullable
+	private static QtyRejectedWithReason extractQtyRejected(
+			final @NonNull I_M_Picking_Candidate record,
+			final @NonNull I_C_UOM uom)
+	{
+		final BigDecimal qtyReject = record.getQtyReject();
+		if (qtyReject.signum() <= 0)
+		{
+			return null;
+		}
+
+		final QtyRejectedReasonCode reasonCode = QtyRejectedReasonCode.ofNullableCode(record.getRejectReason())
+				.orElseThrow(() -> new AdempiereException("Reject reason must be set when QtyReject > 0"));
+
+		return QtyRejectedWithReason.of(Quantity.of(qtyReject, uom), reasonCode);
+	}
+
+	/**
+	 * @implNote keep in sync with {@link #toPickingCandidate(I_M_Picking_Candidate)}
+	 */
 	private static void updateRecord(final I_M_Picking_Candidate record, final PickingCandidate from)
 	{
 		record.setStatus(from.getProcessingStatus().getCode());
@@ -187,6 +189,12 @@ public class PickingCandidateRepository
 		record.setQtyPicked(from.getQtyPicked().toBigDecimal());
 		record.setC_UOM_ID(from.getQtyPicked().getUomId().getRepoId());
 		record.setQtyReview(from.getQtyReview());
+
+		if (from.getQtyRejected() != null)
+		{
+			record.setQtyReject(from.getQtyRejected().toBigDecimal());
+			record.setRejectReason(from.getQtyRejected().getReasonCode().getCode());
+		}
 
 		record.setPackTo_HU_PI_ID(HuPackingInstructionsId.toRepoId(from.getPackToInstructionsId()));
 		record.setM_HU_ID(HuId.toRepoId(from.getPackedToHuId()));
@@ -543,7 +551,7 @@ public class PickingCandidateRepository
 				.stream()
 				.collect(ImmutableListMultimap.toImmutableListMultimap(
 						record -> PickingCandidateId.ofRepoId(record.getM_Picking_Candidate_ID()),
-						record -> toPickingCandidateIssueToBOMLine(record)));
+						this::toPickingCandidateIssueToBOMLine));
 	}
 
 	private PickingCandidateIssueToBOMLine toPickingCandidateIssueToBOMLine(final I_M_Picking_Candidate_IssueToOrder record)

@@ -1,6 +1,7 @@
 package de.metas.picking.workflow;
 
 import de.metas.common.util.time.SystemTime;
+import de.metas.handlingunits.picking.QtyRejectedReasonCode;
 import de.metas.picking.rest_api.json.JsonPickingStepEvent;
 import de.metas.picking.workflow.model.PickingJobStepId;
 import de.metas.workflow.rest_api.model.WFActivityId;
@@ -26,6 +27,7 @@ public class PickingJobStepEvent
 
 	@NonNull PickingJobStepEventType eventType;
 	@Nullable BigDecimal qtyPicked;
+	@Nullable QtyRejectedReasonCode qtyRejectedReasonCode;
 
 	public static PickingJobStepEvent ofJson(@NonNull final JsonPickingStepEvent json)
 	{
@@ -36,6 +38,7 @@ public class PickingJobStepEvent
 				.pickingStepId(PickingJobStepId.ofString(json.getPickingStepId()))
 				.eventType(PickingJobStepEventType.ofJson(json.getType()))
 				.qtyPicked(json.getQtyPicked())
+				.qtyRejectedReasonCode(QtyRejectedReasonCode.ofNullableCode(json.getQtyRejectedReasonCode()).orElse(null))
 				.build();
 	}
 

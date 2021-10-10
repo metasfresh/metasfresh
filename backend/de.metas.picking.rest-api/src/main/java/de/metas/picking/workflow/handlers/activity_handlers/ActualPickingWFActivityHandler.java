@@ -24,6 +24,8 @@ package de.metas.picking.workflow.handlers.activity_handlers;
 
 import de.metas.picking.rest_api.json.JsonPickingJob;
 import de.metas.picking.rest_api.json.JsonPickingJobLine;
+import de.metas.picking.rest_api.json.JsonRejectReasonsList;
+import de.metas.picking.workflow.PickingJobService;
 import de.metas.picking.workflow.model.PickingJob;
 import de.metas.picking.workflow.model.PickingJobProgress;
 import de.metas.workflow.rest_api.controller.v2.json.JsonOpts;
@@ -47,8 +49,14 @@ import static de.metas.picking.workflow.handlers.activity_handlers.PickingWFActi
 public class ActualPickingWFActivityHandler implements WFActivityHandler
 {
 	public static final WFActivityType HANDLED_ACTIVITY_TYPE = WFActivityType.ofString("picking.actualPicking");
-
 	private static final UIComponentType COMPONENTTYPE_PICK_PRODUCTS = UIComponentType.ofString("picking/pickProducts");
+
+	private final PickingJobService pickingJobService;
+
+	public ActualPickingWFActivityHandler(@NonNull final PickingJobService pickingJobService)
+	{
+		this.pickingJobService = pickingJobService;
+	}
 
 	@Override
 	public WFActivityType getHandledActivityType()
@@ -64,12 +72,15 @@ public class ActualPickingWFActivityHandler implements WFActivityHandler
 	{
 		final PickingJob pickingJob = getPickingJob(wfProcess);
 
+		final JsonRejectReasonsList qtyRejectedReasons = JsonRejectReasonsList.of(pickingJobService.getQtyRejectedReasons(), jsonOpts);
+
 		final List<JsonPickingJobLine> lines = JsonPickingJob.of(pickingJob, jsonOpts).getLines();
 
 		return UIComponent.builder()
 				.type(COMPONENTTYPE_PICK_PRODUCTS)
 				.properties(Params.builder()
 						.valueObj("lines", lines)
+						.valueObj("qtyRejectedReasons", qtyRejectedReasons)
 						.build())
 				.build();
 	}

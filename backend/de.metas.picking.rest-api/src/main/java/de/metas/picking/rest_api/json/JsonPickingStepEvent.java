@@ -58,4 +58,5 @@ public class JsonPickingStepEvent
 	//
 	// Event Type: PICK
 	@Nullable BigDecimal qtyPicked;
+	@Nullable String qtyRejectedReasonCode;
 }
