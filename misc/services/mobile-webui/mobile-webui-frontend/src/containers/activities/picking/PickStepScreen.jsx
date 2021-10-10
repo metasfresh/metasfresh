@@ -6,6 +6,7 @@ import { withRouter } from 'react-router';
 import { pushHeaderEntry } from '../../../actions/HeaderActions';
 import toast, { Toaster } from 'react-hot-toast';
 import { updatePickingStepQty } from '../../../actions/PickingActions';
+import { postQtyPicked } from '../../../api/picking';
 import ButtonWithIndicator from '../../../components/ButtonWithIndicator';
 
 class PickStepScreen extends Component {
@@ -43,15 +44,16 @@ class PickStepScreen extends Component {
 
   onQtyPickedChanged = (e) => {
     const { updatePickingStepQty, wfProcessId, activityId, lineId, stepId } = this.props;
-    const inputQty = parseInt(e.target.value);
+    const qtyPicked = e.target.value;
+    const inputQty = parseInt(qtyPicked);
     if (isNaN(inputQty)) {
-      updatePickingStepQty({ wfProcessId, activityId, lineId, stepId, qtyPicked: '' });
       return;
     }
 
     const isValidQty = this.validateQtyInput(inputQty);
     if (isValidQty) {
-      updatePickingStepQty({ wfProcessId, activityId, lineId, stepId, qtyPicked: e.target.value });
+      updatePickingStepQty({ wfProcessId, activityId, lineId, stepId, qtyPicked });
+      postQtyPicked({ wfProcessId, activityId, stepId, qtyPicked });
     } else {
       // show error
       toast('Quantity picked is invalid!', { type: 'error', style: { color: 'white' } });
