@@ -31,6 +31,8 @@ import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateId;
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.PickingCandidateSnapshot;
+import de.metas.handlingunits.picking.QtyRejectedReasonCode;
+import de.metas.handlingunits.picking.QtyRejectedWithReason;
 import de.metas.handlingunits.picking.candidate.commands.PickHUResult;
 import de.metas.handlingunits.picking.plan.CreatePickingPlanRequest;
 import de.metas.handlingunits.picking.plan.PickFromHU;
@@ -65,6 +67,7 @@ import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
@@ -370,31 +373,55 @@ public class PickingJobService
 	{
 		final PickingJobStepId stepId = event.getPickingStepId();
 		final PickingJobStep step = pickingJob.getStepById(stepId);
-		final I_C_UOM uom = step.getUOM();
 
-		final Quantity qtyToPick;
-		switch (event.getEventType())
+		try
 		{
-			case PICK:
-				qtyToPick = event.getQtyPicked() != null
-						? Quantity.of(event.getQtyPicked(), uom)
-						: Quantity.zero(uom);
-				break;
-			case UNPICK:
-				qtyToPick = Quantity.zero(uom);
-				break;
-			default:
-				throw new AdempiereException("Event type not handled for " + event);
-		}
+			final I_C_UOM uom = step.getUOM();
 
-		return PickRequest.builder()
-				.existingPickingCandidateId(step.getPickingCandidateId())
-				.shipmentScheduleId(step.getShipmentScheduleId())
-				.pickFrom(PickFrom.ofHuId(step.getHuId()))
-				.qtyToPick(qtyToPick)
-				.pickingSlotId(pickingJob.getPickingSlotId().orElse(null))
-				.autoReview(true)
-				.build();
+			final Quantity qtyPicked;
+			QtyRejectedWithReason qtyRejectedWithReason = null;
+			switch (event.getEventType())
+			{
+				case PICK:
+					qtyPicked = event.getQtyPicked() != null
+							? Quantity.of(event.getQtyPicked(), uom)
+							: Quantity.zero(uom);
+
+					final Quantity qtyRejected = step.getQtyToPick().subtract(qtyPicked);
+					if (qtyRejected.signum() > 0)
+					{
+						final QtyRejectedReasonCode reasonCode = event.getQtyRejectedReasonCode();
+						if (reasonCode == null)
+						{
+							throw new AdempiereException("QtyRejectedReasonCode must be set when we have a non zero QtyRejected=" + qtyRejected);
+						}
+
+						qtyRejectedWithReason = QtyRejectedWithReason.of(qtyRejected, reasonCode);
+					}
+
+					break;
+				case UNPICK:
+					qtyPicked = Quantity.zero(uom);
+					break;
+				default:
+					throw new AdempiereException("Event type not handled for " + event);
+			}
+
+			return PickRequest.builder()
+					.existingPickingCandidateId(step.getPickingCandidateId())
+					.shipmentScheduleId(step.getShipmentScheduleId())
+					.pickFrom(PickFrom.ofHuId(step.getHuId()))
+					.qtyToPick(qtyPicked)
+					.qtyRejected(qtyRejectedWithReason)
+					.pickingSlotId(pickingJob.getPickingSlotId().orElse(null))
+					.autoReview(true)
+					.build();
+		}
+		catch (final Exception ex)
+		{
+			throw AdempiereException.wrapIfNeeded(ex)
+					.setParameter("step", step);
+		}
 	}
 
 	public PickingJob process(@NonNull final PickingJob pickingJob)
@@ -403,5 +430,10 @@ public class PickingJobService
 		pickingCandidateService.process(pickingCandidateIds);
 
 		return pickingJob.withProcessedTrue();
+	}
+
+	public IADReferenceDAO.ADRefList getQtyRejectedReasons()
+	{
+		return pickingCandidateService.getQtyRejectedReasons();
 	}
 }

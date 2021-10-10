@@ -36,6 +36,7 @@ import de.metas.picking.api.PickingConfigRepository;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.springframework.stereotype.Service;
 
@@ -76,6 +77,7 @@ public class PickingCandidateService
 	private final HUReservationService huReservationService;
 	private final IBPartnerBL bpartnersService;
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
 
 	public PickingCandidateService(
 			@NonNull final PickingConfigRepository pickingConfigRepository,
@@ -338,4 +340,8 @@ public class PickingCandidateService
 		pickingCandidateRepository.deletePickingCandidates(draftCandidates);
 	}
 
+	public IADReferenceDAO.ADRefList getQtyRejectedReasons()
+	{
+		return adReferenceDAO.getRefListById(QtyRejectedReasonCode.REFERENCE_ID);
+	}
 }
