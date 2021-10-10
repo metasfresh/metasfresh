@@ -1,41 +1,29 @@
-import { current, isDraft } from 'immer';
+import { current, original, isDraft } from 'immer';
 
-export const extractActivitiesStatus = ({ wfProcess }) => {
-  const activitiesStatus = Object.values(wfProcess.activities).reduce((acc, activity) => {
-    acc[activity.activityId] = {
-      activityId: activity.activityId,
-      isComplete: activity.dataStored.isComplete,
-    };
-    return acc;
-  }, {});
-
-  console.log('Extracted %o from %o', activitiesStatus, wfProcess);
-
-  return activitiesStatus;
-};
-
-export const updateActivitiesStatus = ({ draftWFProcess, activitiesStatus }) => {
-  console.log('Updating WF activities status from %o', activitiesStatus);
+export const updateActivitiesStatus = ({ draftWFProcess }) => {
   console.log('draftWFProcess=%o', draftWFProcess);
 
-  let previousActivityStatus = null;
-  Object.values(activitiesStatus).forEach((activityStatus) => {
-    console.log('activityStatus: %o', activityStatus);
-    console.log('previousActivityStatus: %o', previousActivityStatus);
+  const activityIds = Object.keys(original(draftWFProcess.activities));
+
+  let previousActivity = null;
+  activityIds.forEach((activityId) => {
+    const activity = draftWFProcess.activities[activityId];
+    console.log('activityStatus: %o', activity);
+    console.log('previousActivityStatus: %o', previousActivity);
 
     let isActivityEnabled;
-    if (previousActivityStatus == null) {
+    if (previousActivity == null) {
       // First activity: always enabled
       isActivityEnabled = true;
       console.log('=> isActivityEnabled: %o (first activity)', isActivityEnabled);
     } else {
-      isActivityEnabled = previousActivityStatus.isComplete;
+      isActivityEnabled = previousActivity.dataStored.isComplete;
       console.log('isActivityEnabled: %o (checked if prev activity was completed)', isActivityEnabled);
     }
 
-    draftWFProcess.activities[activityStatus.activityId].dataStored.isActivityEnabled = isActivityEnabled;
+    activity.dataStored.isActivityEnabled = isActivityEnabled;
 
-    previousActivityStatus = activityStatus;
+    previousActivity = activity;
   });
 };
 

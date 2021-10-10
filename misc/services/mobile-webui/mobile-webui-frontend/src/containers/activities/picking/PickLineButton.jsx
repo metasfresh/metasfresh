@@ -25,16 +25,17 @@ class PickLineButton extends Component {
   };
 
   render() {
-    const { lineId, caption, isActivityEnabled } = this.props;
+    const { lineId, caption, isActivityEnabled, isComplete } = this.props;
+    const indicatorType = isComplete ? 'complete' : 'incomplete';
     return (
       <div className="buttons">
         <button
           key={lineId}
           className="button is-outlined complete-btn"
           disabled={!isActivityEnabled}
-          onClick={() => this.handleClick()}
+          onClick={this.handleClick}
         >
-          <ButtonWithIndicator caption={caption} indicatorType="incomplete" />
+          <ButtonWithIndicator caption={caption} indicatorType={indicatorType} />
         </button>
       </div>
     );
@@ -48,8 +49,9 @@ PickLineButton.propTypes = {
   activityId: PropTypes.string.isRequired,
   lineId: PropTypes.string.isRequired,
   caption: PropTypes.string.isRequired,
+  isActivityEnabled: PropTypes.bool.isRequired,
+  isComplete: PropTypes.bool.isRequired,
   steps: PropTypes.array.isRequired,
-  isActivityEnabled: PropTypes.bool,
   //
   // Actions
   push: PropTypes.func.isRequired,
