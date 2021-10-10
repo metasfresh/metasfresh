@@ -5,8 +5,8 @@ import { v4 as uuidv4 } from 'uuid';
 import PropTypes from 'prop-types';
 
 import { continueWorkflow } from '../actions/WorkflowActions';
-import { getWorkflowProcess } from '../reducers/wfProcesses';
-import { getWorkflowProcessStatus } from '../reducers/wfProcesses_status';
+import { selectWFProcess } from '../reducers/wfProcesses';
+import { selectWFProcessState } from '../reducers/wfProcesses_status/index';
 
 import ScanActivity from './activities/scan/ScanActivity';
 import PickProductsActivity from './activities/picking/PickProductsActivity';
@@ -66,8 +66,8 @@ class WFProcessScreen extends PureComponent {
 
 function mapStateToProps(state, { match }) {
   const { workflowId } = match.params;
-  const workflow = getWorkflowProcess(state, workflowId);
-  const workflowProcessStatus = getWorkflowProcessStatus(state, workflowId);
+  const workflow = selectWFProcess(state, workflowId);
+  const workflowProcessStatus = selectWFProcessState(state, workflowId);
 
   return {
     wfProcessId: workflowId,

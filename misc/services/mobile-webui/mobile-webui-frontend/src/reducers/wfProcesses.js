@@ -1,6 +1,6 @@
 import { produce } from 'immer';
 import { createSelector } from 'reselect';
-import * as types from '../constants/ActionTypes';
+import * as types from '../constants/WorkflowActionTypes';
 
 export const initialState = {};
 const initialWorkflowState = {
@@ -12,9 +12,7 @@ const initialWorkflowState = {
 
 const wfSelector = (state, id) => state.wfProcesses[id] || null;
 
-export const getWorkflowProcess = createSelector(wfSelector, (workflow) =>
-  workflow ? workflow : initialWorkflowState
-);
+export const selectWFProcess = createSelector(wfSelector, (workflow) => (workflow ? workflow : initialWorkflowState));
 
 const reducer = produce((draftState, action) => {
   switch (action.type) {

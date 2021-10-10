@@ -2,10 +2,8 @@ import {
   START_WORKFLOW_PROCESS,
   CONTINUE_WORKFLOW_PROCESS,
   ADD_WORKFLOW_STATUS,
-  SET_ACTIVITY_ENABLE_FLAG,
-  SET_ACTIVITY_STATUS,
   UPDATE_WORKFLOW_PROCESS,
-} from '../constants/ActionTypes';
+} from '../constants/WorkflowActionTypes';
 import { startWorkflowRequest, getWorkflowRequest } from '../api/launchers';
 
 /**
@@ -61,24 +59,6 @@ export function continueWorkflow(wfProcessId) {
       .catch((err) => {
         Promise.reject(err);
       });
-  };
-}
-
-/**
- * @method setActivityEnableFlag
- * @summary update the isActivityEnabled activity flag
- */
-export function setActivityEnableFlag({ wfProcessId, activityId, isActivityEnabled }) {
-  return {
-    type: SET_ACTIVITY_ENABLE_FLAG,
-    payload: { wfProcessId, activityId, isActivityEnabled },
-  };
-}
-
-export function setActivityStatus({ wfProcessId, activityId, isComplete }) {
-  return {
-    type: SET_ACTIVITY_STATUS,
-    payload: { wfProcessId, activityId, isComplete },
   };
 }
 

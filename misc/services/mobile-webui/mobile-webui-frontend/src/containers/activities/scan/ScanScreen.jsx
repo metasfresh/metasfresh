@@ -5,10 +5,10 @@ import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
 import { goBack } from 'connected-react-router';
 
-import { getWorkflowProcessStatus } from '../../../reducers/wfProcesses_status';
+import { selectWFProcessState } from '../../../reducers/wfProcesses_status/index';
 import { setScannedBarcode } from '../../../actions/ScanActions';
 import { updateWFProcess } from '../../../actions/WorkflowActions';
-import { postScannedBarcode } from '../../../api';
+import { postScannedBarcode } from '../../../api/scanner';
 
 import CodeScanner from './CodeScanner';
 
@@ -57,7 +57,7 @@ class ScanScreen extends Component {
 
 const mapStateToProps = (state, { match }) => {
   const { workflowId, activityId } = match.params;
-  const wfProcessStatus = getWorkflowProcessStatus(state, workflowId);
+  const wfProcessStatus = selectWFProcessState(state, workflowId);
 
   return {
     wfProcessId: workflowId,

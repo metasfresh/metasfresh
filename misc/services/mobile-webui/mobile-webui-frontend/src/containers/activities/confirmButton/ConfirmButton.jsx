@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
-import { getWorkflowProcessStatus } from '../../../reducers/wfProcesses_status';
+import { selectWFProcessState } from '../../../reducers/wfProcesses_status/index';
 
 class ConfirmButton extends Component {
   constructor(props) {
@@ -71,7 +71,7 @@ class ConfirmButton extends Component {
 
 const mapStateToProps = (state, ownProps) => {
   const { wfProcessId, activityId } = ownProps;
-  const workflowStatus = getWorkflowProcessStatus(state, wfProcessId);
+  const workflowStatus = selectWFProcessState(state, wfProcessId);
   const dataStored = workflowStatus.activities[activityId] ? workflowStatus.activities[activityId].dataStored : {};
 
   return {
