@@ -158,7 +158,8 @@ public class C_Order_StepDef
 					.createQueryBuilder(I_C_Order.class)
 					.addOnlyActiveRecordsFilter()
 					.addEqualsFilter(I_C_Order.COLUMNNAME_Link_Order_ID, orderTable.get(linkedOrderIdentifier).getC_Order_ID())
-					.create().firstOnly(I_C_Order.class);
+					.create()
+					.firstOnly(I_C_Order.class);
 
 			final boolean isSOTrx = DataTableUtil.extractBooleanForColumnName(tableRow, I_C_Order.COLUMNNAME_IsSOTrx);
 			assertThat(purchaseOrder.isSOTrx()).isEqualTo(isSOTrx);

@@ -251,6 +251,7 @@ public interface IBPartnerDAO extends ISingletonService
 	 */
 	I_C_BP_Relation retrieveBillBPartnerRelationFirstEncountered(Object contextProvider, I_C_BPartner partner, I_C_BPartner_Location location);
 
+
 	/**
 	 * Retrieve default/first ship to location.
 	 *

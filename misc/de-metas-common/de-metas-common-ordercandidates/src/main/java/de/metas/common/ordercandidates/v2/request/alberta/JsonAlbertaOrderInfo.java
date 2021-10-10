@@ -27,6 +27,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
@@ -41,6 +42,10 @@ import java.util.List;
 @JsonDeserialize(builder = JsonAlbertaOrderInfo.JsonAlbertaOrderInfoBuilder.class)
 public class JsonAlbertaOrderInfo
 {
+	@JsonProperty("externalId")
+	@NonNull
+	String externalId;
+
 	@JsonProperty("rootId")
 	@Nullable
 	String rootId;
@@ -96,30 +101,6 @@ public class JsonAlbertaOrderInfo
 	@Nullable
 	Instant updated;
 
-	@JsonProperty("salesLineId")
-	@Nullable
-	String salesLineId;
-
-	@JsonProperty("unit")
-	@Nullable
-	String unit;
-
-	@JsonProperty("isPrivateSale")
-	@Nullable
-	Boolean isPrivateSale;
-
-	@JsonProperty("isRentalEquipment")
-	@Nullable
-	Boolean isRentalEquipment;
-
-	@JsonProperty("durationAmount")
-	@Nullable
-	BigDecimal durationAmount;
-
-	@JsonProperty("timePeriod")
-	@Nullable
-	BigDecimal timePeriod;
-
 	@JsonProperty("therapy")
 	@Nullable
 	String therapy;
@@ -127,4 +108,16 @@ public class JsonAlbertaOrderInfo
 	@JsonProperty("therapyTypes")
 	@Nullable
 	List<String> therapyTypes;
+
+	@JsonProperty("deliveryInformation")
+	@Nullable
+	String deliveryInformation;
+
+	@JsonProperty("deliveryNote")
+	@Nullable
+	String deliveryNote;
+
+	@JsonProperty("orderLineInfo")
+	@Nullable
+	JsonAlbertaOrderLineInfo jsonAlbertaOrderLineInfo;
 }
