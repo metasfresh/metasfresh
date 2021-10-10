@@ -2,7 +2,7 @@ import { current, isDraft, original } from 'immer';
 import * as CompleteStatus from '../../constants/CompleteStatus';
 
 /**
- * Updates isActivityEnabled flag for all activities.
+ * Updates isUserEditable flag for all activities.
  */
 export const updateActivitiesStatus = ({ draftWFProcess }) => {
   console.log('draftWFProcess=%o', draftWFProcess);
@@ -16,41 +16,41 @@ export const updateActivitiesStatus = ({ draftWFProcess }) => {
     const currentActivity = draftWFProcess.activities[activityId];
     const currentActivityCompleteStatus = currentActivity.dataStored.completeStatus || CompleteStatus.NOT_STARTED;
 
-    let isActivityEnabled;
+    let isUserEditable;
 
     //
     // First activity is always editable
     if (previousActivity == null) {
-      isActivityEnabled = true;
+      isUserEditable = true;
       console.log(
-        `[ ${activityId} ${currentActivityCompleteStatus} ]: => isActivityEnabled=${isActivityEnabled} (first currentActivity)`
+        `[ ${activityId} ${currentActivityCompleteStatus} ]: => isUserEditable=${isUserEditable} (first currentActivity)`
       );
     } else {
       const previousActivityCompleteStatus = previousActivity.dataStored.completeStatus || CompleteStatus.NOT_STARTED;
 
       //
       // Current activity is editable only if previous activity was completed
-      isActivityEnabled = previousActivityCompleteStatus === CompleteStatus.COMPLETED;
+      isUserEditable = previousActivityCompleteStatus === CompleteStatus.COMPLETED;
       console.log(
-        `[ ${activityId} ${currentActivityCompleteStatus} ]: => isActivityEnabled=${isActivityEnabled} (checked if prev currentActivity was completed)`
+        `[ ${activityId} ${currentActivityCompleteStatus} ]: => isUserEditable=${isUserEditable} (checked if prev currentActivity was completed)`
       );
 
       //
       // If current currentActivity was started
       // => previous currentActivity is no longer editable
       if (currentActivityCompleteStatus !== CompleteStatus.NOT_STARTED) {
-        previousActivity.dataStored.isActivityEnabled = false;
+        previousActivity.dataStored.isUserEditable = false;
         console.log(
           `[ ${activityId} ${currentActivityCompleteStatus} ]: => Update [ ${
             previousActivity.activityId
-          } ${previousActivityCompleteStatus} ] => isActivityEnabled=${
-            draftWFProcess.activities[previousActivity.activityId].dataStored.isActivityEnabled
+          } ${previousActivityCompleteStatus} ] => isUserEditable=${
+            draftWFProcess.activities[previousActivity.activityId].dataStored.isUserEditable
           } because current activity is started/completed`
         );
       }
     }
 
-    currentActivity.dataStored.isActivityEnabled = isActivityEnabled;
+    currentActivity.dataStored.isUserEditable = isUserEditable;
 
     previousActivity = currentActivity;
   });
@@ -107,7 +107,7 @@ const mergeActivityToState = ({ draftActivity, fromActivity }) => {
 const computeActivityDataStoredInitialValue = ({ componentType, componentProps }) => {
   const template = {
     completeStatus: CompleteStatus.NOT_STARTED,
-    isActivityEnabled: false,
+    isUserEditable: false,
   };
 
   switch (componentType) {

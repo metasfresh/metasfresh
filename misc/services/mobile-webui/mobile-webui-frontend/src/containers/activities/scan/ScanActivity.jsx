@@ -9,7 +9,7 @@ const ScanActivity = (props) => {
   const history = useHistory();
   const { activityState } = props;
 
-  const isActivityEnabled = activityState.dataStored.isActivityEnabled;
+  const isUserEditable = activityState.dataStored.isUserEditable;
 
   const scannedBarcode = activityState.dataStored.scannedBarcode;
   const scannedBarcodeCaption = activityState.componentProps.barcodeCaption;
@@ -31,7 +31,7 @@ const ScanActivity = (props) => {
 
   return (
     <div className="mt-0">
-      <button className="button is-outlined complete-btn" disabled={!isActivityEnabled} onClick={handleClick}>
+      <button className="button is-outlined complete-btn" disabled={!isUserEditable} onClick={handleClick}>
         <ButtonWithIndicator caption={scanButtonCaption} completeStatus={activityCompleteStatus} />
       </button>
     </div>
