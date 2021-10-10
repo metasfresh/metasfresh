@@ -5,6 +5,7 @@ import { push } from 'connected-react-router';
 import { pushHeaderEntry } from '../../../actions/HeaderActions';
 
 import ButtonWithIndicator from '../../../components/ButtonWithIndicator';
+import counterpart from 'counterpart';
 
 class PickLineButton extends Component {
   handleClick = () => {
@@ -17,7 +18,7 @@ class PickLineButton extends Component {
       location,
       values: [
         {
-          caption: 'Line',
+          caption: counterpart.translate('activities.picking.PickingLine'),
           value: caption,
         },
       ],

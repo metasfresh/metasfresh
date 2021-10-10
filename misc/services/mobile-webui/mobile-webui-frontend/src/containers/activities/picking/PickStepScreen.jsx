@@ -8,6 +8,7 @@ import toast, { Toaster } from 'react-hot-toast';
 import { updatePickingStepQty } from '../../../actions/PickingActions';
 import { postQtyPicked } from '../../../api/picking';
 import ButtonWithIndicator from '../../../components/ButtonWithIndicator';
+import counterpart from 'counterpart';
 
 class PickStepScreen extends Component {
   onScanHUButtonClick = () => {
@@ -27,15 +28,15 @@ class PickStepScreen extends Component {
       location,
       values: [
         {
-          caption: 'Barcode',
+          caption: counterpart.translate('general.Barcode'),
           value: huBarcode,
         },
         {
-          caption: 'To Pick',
+          caption: counterpart.translate('general.QtyToPick'),
           value: qtyToPick,
         },
         {
-          caption: 'Picked',
+          caption: counterpart.translate('general.QtyPicked'),
           value: qtyPicked,
         },
       ],
@@ -57,7 +58,8 @@ class PickStepScreen extends Component {
       // TODO: handle the promise
     } else {
       // show error
-      toast('Quantity picked is invalid!', { type: 'error', style: { color: 'white' } });
+
+      toast(counterpart.translate('activities.picking.invalidQtyPicked'), { type: 'error', style: { color: 'white' } });
     }
   };
 
@@ -86,34 +88,30 @@ class PickStepScreen extends Component {
     } = this.props;
 
     const isValidCode = !!scannedHUBarcode;
-    const scanButtonCaption = isValidCode ? `${scannedHUBarcode}` : `Scan`;
+    const scanButtonCaption = isValidCode
+      ? `${scannedHUBarcode}`
+      : counterpart.translate('activities.picking.scanHUBarcode');
     const scanButtonStatus = isValidCode ? `complete` : `incomplete`;
 
     return (
       <div className="pt-3 section picking-step-container">
         <div className="picking-step-details centered-text is-size-5">
-          {/* <div className="columns is-mobile">
-            <div className="column is-half has-text-right has-text-weight-bold pt-0 pb-0 pl-0 pr-0">Product:</div>
-            <div className="column is-half has-text-left pt-0 pb-0">{productName}</div>
-          </div>
           <div className="columns is-mobile">
-            <div className="column is-half has-text-right has-text-weight-bold pb-0 pl-0 pr-0">Locator:</div>
-            <div className="column is-half has-text-left pb-0">{locatorName}</div>
-          </div>
-          <div className="columns is-mobile">
-            <div className="column is-half has-text-right has-text-weight-bold pb-0 pl-0 pr-0">UOM:</div>
-            <div className="column is-half has-text-left pb-0">{uom}</div>
-          </div> */}
-          <div className="columns is-mobile">
-            <div className="column is-half has-text-right has-text-weight-bold pb-0 pl-0 pr-0">Barcode:</div>
+            <div className="column is-half has-text-right has-text-weight-bold pb-0 pl-0 pr-0">
+              {counterpart.translate('general.Barcode')}
+            </div>
             <div className="column is-half has-text-left pb-0">{huBarcode}</div>
           </div>
           <div className="columns is-mobile">
-            <div className="column is-half has-text-right has-text-weight-bold pb-0 pl-0 pr-0">Quantity to pick:</div>
+            <div className="column is-half has-text-right has-text-weight-bold pb-0 pl-0 pr-0">
+              {counterpart.translate('general.QtyToPick')}:
+            </div>
             <div className="column is-half has-text-left pb-0">{qtyToPick}</div>
           </div>
           <div className="columns is-mobile">
-            <div className="column is-half has-text-right has-text-weight-bold pb-0 pl-0 pr-0">Quantity picked:</div>
+            <div className="column is-half has-text-right has-text-weight-bold pb-0 pl-0 pr-0">
+              {counterpart.translate('general.QtyPicked')}:
+            </div>
             <div className="column is-half has-text-left pb-0">
               {isValidCode && <input type="number" value={qtyPicked} onChange={(e) => this.onQtyPickedChanged(e)} />}
               {!isValidCode && qtyPicked}

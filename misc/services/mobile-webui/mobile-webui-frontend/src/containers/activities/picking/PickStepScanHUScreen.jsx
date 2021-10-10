@@ -8,6 +8,7 @@ import { goBack } from 'connected-react-router';
 import { updatePickingStepScannedHUBarcode } from '../../../actions/PickingActions';
 
 import CodeScanner from '../scan/CodeScanner';
+import counterpart from 'counterpart';
 
 class PickStepScanHUScreen extends Component {
   onBarcodeScanned = ({ scannedBarcode }) => {
@@ -26,7 +27,11 @@ class PickStepScanHUScreen extends Component {
       goBack();
     } else {
       // show an error to user but keep scanning...
-      toast('Scanned code is invalid!', { type: 'error', style: { color: 'white' } });
+
+      toast(counterpart.translate('activities.picking.notEligibleHUBarcode'), {
+        type: 'error',
+        style: { color: 'white' },
+      });
     }
   };
 

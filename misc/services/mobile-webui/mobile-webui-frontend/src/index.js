@@ -9,9 +9,12 @@ import reportWebVitals from './reportWebVitals';
 import { store } from './store/store';
 import { networkStatusOffline, networkStatusOnline } from './actions/NetworkActions';
 import { load } from 'redux-localstorage-simple';
+import { setupCounterpart } from './utils/translations';
 
 import './index.css';
 import './assets/index.scss';
+
+setupCounterpart();
 
 export const globalStore = store(load());
 
@@ -55,8 +58,7 @@ window.addEventListener('online', () => {
 });
 
 window.addEventListener('beforeinstallprompt', (e) => {
-  let installEvent = e;
-  console.log('Install event triggered:', installEvent);
+  console.log('Install event triggered:', e);
   // e.preventDefault(); - this is going to disable the prompt if uncommented !
   // See if the app is already installed, in that case, do nothing
   if (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) {
