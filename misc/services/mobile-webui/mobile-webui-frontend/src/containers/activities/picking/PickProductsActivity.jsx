@@ -13,7 +13,7 @@ class PickProductsActivity extends Component {
       activityId,
     } = this.props;
     const dataStored = activityState ? activityState.dataStored : {};
-    const { completeStatus, isActivityEnabled } = dataStored;
+    const { completeStatus, isUserEditable } = dataStored;
 
     return (
       <div className="pick-products-activity-container mt-5">
@@ -26,7 +26,7 @@ class PickProductsActivity extends Component {
                   wfProcessId={wfProcessId}
                   activityId={activityId}
                   lineId={lineId}
-                  isActivityEnabled={isActivityEnabled}
+                  isUserEditable={isUserEditable}
                   completeStatus={completeStatus || CompleteStatus.NOT_STARTED}
                   {...lineItem}
                 />

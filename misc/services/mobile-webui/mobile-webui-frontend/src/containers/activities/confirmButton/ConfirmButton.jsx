@@ -30,7 +30,7 @@ class ConfirmButton extends Component {
     const {
       caption,
       componentProps,
-      dataStored: { isActivityEnabled },
+      dataStored: { isUserEditable },
     } = this.props;
     const { isPromptDialogOpen } = this.state;
 
@@ -67,7 +67,7 @@ class ConfirmButton extends Component {
           <button
             className="button is-outlined complete-btn"
             onClick={this.showConfirmDialog}
-            disabled={!isActivityEnabled}
+            disabled={!isUserEditable}
           >
             {btnCaption}
           </button>

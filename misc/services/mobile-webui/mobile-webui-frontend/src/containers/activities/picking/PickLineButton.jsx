@@ -26,13 +26,13 @@ class PickLineButton extends Component {
   };
 
   render() {
-    const { lineId, caption, isActivityEnabled, completeStatus } = this.props;
+    const { lineId, caption, isUserEditable, completeStatus } = this.props;
     return (
       <div className="buttons">
         <button
           key={lineId}
           className="button is-outlined complete-btn"
-          disabled={!isActivityEnabled}
+          disabled={!isUserEditable}
           onClick={this.handleClick}
         >
           <ButtonWithIndicator caption={caption} completeStatus={completeStatus} />
@@ -49,7 +49,7 @@ PickLineButton.propTypes = {
   activityId: PropTypes.string.isRequired,
   lineId: PropTypes.string.isRequired,
   caption: PropTypes.string.isRequired,
-  isActivityEnabled: PropTypes.bool.isRequired,
+  isUserEditable: PropTypes.bool.isRequired,
   completeStatus: PropTypes.string.isRequired,
   steps: PropTypes.array.isRequired,
   //
