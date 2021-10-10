@@ -99,15 +99,18 @@ public class AuthenticationRestController
 		}
 		catch (final Exception ex)
 		{
+			// IMPORTANT: don't return 401 because the frontend + chrome + CORS + axios fuck it up
+			// and return an undefined response to their callers
+
 			if (AdempiereException.isUserValidationError(ex))
 			{
-				return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+				return ResponseEntity.status(HttpStatus.BAD_REQUEST)
 						.body(JsonAuthResponse.error(AdempiereException.extractMessage(ex)));
 			}
 			else
 			{
 				logger.warn("Failed authenticating user {}", request.getUsername(), ex);
-				return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+				return ResponseEntity.status(HttpStatus.BAD_REQUEST)
 						.body(JsonAuthResponse.error("Authentication error. Pls contact the system administrator."));
 			}
 		}
