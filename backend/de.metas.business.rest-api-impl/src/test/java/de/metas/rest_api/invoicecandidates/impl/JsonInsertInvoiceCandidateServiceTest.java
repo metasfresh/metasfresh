@@ -155,7 +155,7 @@ class JsonInsertInvoiceCandidateServiceTest
 		taxRecord.setValidFrom(TimeUtil.parseTimestamp("2019-01-01"));
 		saveRecord(taxRecord);
 
-		final BPartnerCompositeRepository bpartnerCompositeRepository = new BPartnerCompositeRepository(partnerBL, new MockLogEntriesRepository(), new UserRoleRepository());
+		final BPartnerCompositeRepository bpartnerCompositeRepository = new BPartnerCompositeRepository(partnerBL, new BPartnerBL(new UserRepository()), new MockLogEntriesRepository(), new UserRoleRepository());
 		jsonInsertInvoiceCandidateService = new CreateInvoiceCandidatesService(
 				new BPartnerQueryService(),
 				bpartnerCompositeRepository,

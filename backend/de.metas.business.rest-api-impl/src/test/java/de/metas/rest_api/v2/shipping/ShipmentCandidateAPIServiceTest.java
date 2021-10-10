@@ -131,7 +131,7 @@ class ShipmentCandidateAPIServiceTest
 		shipmentCandidateAPIService = new ShipmentCandidateAPIService(
 				new ShipmentScheduleAuditRepository(),
 				new ShipmentScheduleRepository(),
-				new BPartnerCompositeRepository(partnerBL, new MockLogEntriesRepository(), new UserRoleRepository()),
+				new BPartnerCompositeRepository(partnerBL, new BPartnerBL(new UserRepository()), new MockLogEntriesRepository(), new UserRoleRepository()),
 				new ProductRepository(),
 				exportSequenceNumberProvider);
 	}
