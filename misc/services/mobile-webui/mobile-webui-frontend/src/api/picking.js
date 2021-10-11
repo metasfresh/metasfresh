@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-export function postQtyPicked({ wfProcessId, activityId, stepId, qtyPicked }) {
-  return axios.post(`${config.SERVER_URL}/picking/events`, {
+export function postQtyPicked({ wfProcessId, activityId, stepId, qtyPicked, qtyRejectedReasonCode }) {
+  return axios.post(`${window.config.SERVER_URL}/picking/events`, {
     events: [
       {
         wfProcessId,
@@ -9,6 +9,7 @@ export function postQtyPicked({ wfProcessId, activityId, stepId, qtyPicked }) {
         pickingStepId: stepId,
         type: 'PICK',
         qtyPicked: qtyPicked,
+        qtyRejectedReasonCode: qtyRejectedReasonCode,
       },
     ],
   });
