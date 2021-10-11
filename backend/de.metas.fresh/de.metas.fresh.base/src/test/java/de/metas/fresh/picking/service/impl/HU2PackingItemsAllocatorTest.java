@@ -38,11 +38,16 @@ import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
 
+import de.metas.handlingunits.picking.OnOverDelivery;
+import de.metas.handlingunits.picking.PickingCandidateRepository;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.SpringContextHolder;
+import org.hamcrest.MatcherAssert;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import de.metas.handlingunits.AbstractHUTest;
@@ -108,6 +113,7 @@ public class HU2PackingItemsAllocatorTest extends AbstractHUTest
 		huDefIFCO = createHuDefIFCO(helper, COUNT_Tomatoes_Per_IFCO);
 		huDefPalet = createHuDefPalet(helper, huDefIFCO);
 
+		SpringContextHolder.registerJUnitBean(new PickingCandidateRepository());
 	}
 
 	private void setupContext(final int qtyToDeliver)
@@ -121,12 +127,12 @@ public class HU2PackingItemsAllocatorTest extends AbstractHUTest
 			this.itemToPack = PackingItems.newPackingItem(parts);
 
 			// Validate
-			assertThat("Invalid itemToPack - Qty", itemToPack.getQtySum().toBigDecimal(), comparesEqualTo(BigDecimal.valueOf(qtyToDeliver)));
+			MatcherAssert.assertThat("Invalid itemToPack - Qty", itemToPack.getQtySum().toBigDecimal(), comparesEqualTo(BigDecimal.valueOf(qtyToDeliver)));
 		}
 
 		//
 		// Validate initial context state
-		assertThat("Invalid itemToPack - Qty", itemToPack.getQtySum().toBigDecimal(), comparesEqualTo(BigDecimal.valueOf(qtyToDeliver)));
+		MatcherAssert.assertThat("Invalid itemToPack - Qty", itemToPack.getQtySum().toBigDecimal(), comparesEqualTo(BigDecimal.valueOf(qtyToDeliver)));
 
 		new ShipmentScheduleQtyPickedExpectations()
 				.shipmentSchedule(shipmentSchedule)
@@ -153,12 +159,13 @@ public class HU2PackingItemsAllocatorTest extends AbstractHUTest
 					.itemToPack(itemToPack)
 					.packingItems(packingItems)
 					.pickFromHUs(luHUs)
+					.onOverDelivery(OnOverDelivery.FAIL)
 					.allocate();
 
 			// Validate
-			assertThat("Invalid itemToPack - Qty", itemToPack.getQtySum().toBigDecimal(), comparesEqualTo(BigDecimal.valueOf(100 - 30)));
-			assertTrue("We shall have unpacked items", packingItems.hasUnpackedItems());
-			assertTrue("We shall have packed items", packingItems.hasPackedItems());
+			MatcherAssert.assertThat("Invalid itemToPack - Qty", itemToPack.getQtySum().toBigDecimal(), comparesEqualTo(BigDecimal.valueOf(100 - 30)));
+			Assertions.assertTrue(packingItems.hasUnpackedItems(), "We shall have unpacked items");
+			Assertions.assertTrue(packingItems.hasPackedItems(), "We shall have packed items");
 
 			new ShipmentScheduleQtyPickedExpectations()
 					.shipmentSchedule(shipmentSchedule)
@@ -180,12 +187,13 @@ public class HU2PackingItemsAllocatorTest extends AbstractHUTest
 					.itemToPack(itemToPack)
 					.packingItems(packingItems)
 					.pickFromHUs(luHUs)
+					.onOverDelivery(OnOverDelivery.FAIL)
 					.allocate();
 
 			// Validate
-			assertThat("Invalid itemToPack - Qty", itemToPack.getQtySum().toBigDecimal(), comparesEqualTo(BigDecimal.valueOf(100 - 30 - 60)));
-			assertTrue("We shall have unpacked items", packingItems.hasUnpackedItems());
-			assertTrue("We shall have packed items", packingItems.hasPackedItems());
+			MatcherAssert.assertThat("Invalid itemToPack - Qty", itemToPack.getQtySum().toBigDecimal(), comparesEqualTo(BigDecimal.valueOf(100 - 30 - 60)));
+			Assertions.assertTrue(packingItems.hasUnpackedItems(), "We shall have unpacked items");
+			Assertions.assertTrue(packingItems.hasPackedItems(), "We shall have packed items");
 
 			new ShipmentScheduleQtyPickedExpectations()
 					.shipmentSchedule(shipmentSchedule)
@@ -207,12 +215,13 @@ public class HU2PackingItemsAllocatorTest extends AbstractHUTest
 					.itemToPack(itemToPack)
 					.packingItems(packingItems)
 					.pickFromHUs(luHUs)
+					.onOverDelivery(OnOverDelivery.FAIL)
 					.allocate();
 
 			// Validate
-			assertThat("Invalid itemToPack - Qty", itemToPack.getQtySum().toBigDecimal(), comparesEqualTo(BigDecimal.valueOf(0)));
-			assertFalse("We shall NOT have unpacked items", packingItems.hasUnpackedItems());
-			assertTrue("We shall have packed items", packingItems.hasPackedItems());
+			MatcherAssert.assertThat("Invalid itemToPack - Qty", itemToPack.getQtySum().toBigDecimal(), comparesEqualTo(BigDecimal.valueOf(0)));
+			Assertions.assertFalse(packingItems.hasUnpackedItems(), "We shall NOT have unpacked items");
+			Assertions.assertTrue(packingItems.hasPackedItems(), "We shall have packed items");
 
 			new ShipmentScheduleQtyPickedExpectations()
 					.shipmentSchedule(shipmentSchedule)
@@ -239,12 +248,13 @@ public class HU2PackingItemsAllocatorTest extends AbstractHUTest
 					.itemToPack(itemToPack)
 					.packingItems(packingItems)
 					.pickFromHUs(tuHUs)
+					.onOverDelivery(OnOverDelivery.FAIL)
 					.allocate();
 
 			// Validate
-			assertThat("Invalid itemToPack - Qty", itemToPack.getQtySum().toBigDecimal(), comparesEqualTo(BigDecimal.valueOf(100 - 30)));
-			assertTrue("We shall have unpacked items", packingItems.hasUnpackedItems());
-			assertTrue("We shall have packed items", packingItems.hasPackedItems());
+			MatcherAssert.assertThat("Invalid itemToPack - Qty", itemToPack.getQtySum().toBigDecimal(), comparesEqualTo(BigDecimal.valueOf(100 - 30)));
+			Assertions.assertTrue(packingItems.hasUnpackedItems(), "We shall have unpacked items");
+			Assertions.assertTrue(packingItems.hasPackedItems(), "We shall have packed items");
 			new ShipmentScheduleQtyPickedExpectations()
 					.shipmentSchedule(shipmentSchedule)
 					.qtyPicked("30")
@@ -267,12 +277,13 @@ public class HU2PackingItemsAllocatorTest extends AbstractHUTest
 				.itemToPack(itemToPack)
 				.packingItems(packingItems)
 				.pickFromHUs(tuHUs)
+				.onOverDelivery(OnOverDelivery.FAIL)
 				.allocate();
 
 		// Validate
-		assertThat("Invalid itemToPack - Qty", itemToPack.getQtySum().toBigDecimal(), comparesEqualTo(BigDecimal.valueOf(100)));
-		assertTrue("We shall have unpacked items", packingItems.hasUnpackedItems());
-		assertFalse("We shall NOT have packed items", packingItems.hasPackedItems());
+		MatcherAssert.assertThat("Invalid itemToPack - Qty", itemToPack.getQtySum().toBigDecimal(), comparesEqualTo(BigDecimal.valueOf(100)));
+		Assertions.assertTrue(packingItems.hasUnpackedItems(), "We shall have unpacked items");
+		Assertions.assertFalse(packingItems.hasPackedItems(), "We shall NOT have packed items");
 		new ShipmentScheduleQtyPickedExpectations()
 				.shipmentSchedule(shipmentSchedule)
 				.qtyPicked("0")
@@ -292,22 +303,23 @@ public class HU2PackingItemsAllocatorTest extends AbstractHUTest
 		assertThat(aggregateHUs).hasSize(1);
 
 		final I_M_HU aggregateVhu = aggregateHUs.get(0);
-		assertTrue(Services.get(IHandlingUnitsBL.class).isAggregateHU(aggregateVhu));
+		Assertions.assertTrue(Services.get(IHandlingUnitsBL.class).isAggregateHU(aggregateVhu));
 
 		final PackingItemsMap packingItems = PackingItemsMap.ofUnpackedItem(itemToPack);
 		HU2PackingItemsAllocator.builder()
 				.itemToPack(itemToPack)
 				.packingItems(packingItems)
 				.pickFromHU(aggregateVhu)
+				.onOverDelivery(OnOverDelivery.FAIL)
 				.allocate();
 
 		// NOTE: even if we asked to allocate to a non-top level HU
 		// we expect the system to figure this out and to automatically set the QtyPicked record's LU
 
 		// Validate
-		assertThat("Invalid itemToPack - Qty", itemToPack.getQtySum().toBigDecimal(), comparesEqualTo(BigDecimal.valueOf(100 - COUNT_Tomatoes_Per_IFCO)));
-		assertTrue("We shall have unpacked items", packingItems.hasUnpackedItems());
-		assertTrue("We shall have packed items", packingItems.hasPackedItems());
+		MatcherAssert.assertThat("Invalid itemToPack - Qty", itemToPack.getQtySum().toBigDecimal(), comparesEqualTo(BigDecimal.valueOf(100 - COUNT_Tomatoes_Per_IFCO)));
+		Assertions.assertTrue(packingItems.hasUnpackedItems(), "We shall have unpacked items");
+		Assertions.assertTrue(packingItems.hasPackedItems(), "We shall have packed items");
 
 		new ShipmentScheduleQtyPickedExpectations()
 				.shipmentSchedule(shipmentSchedule)
@@ -363,7 +375,7 @@ public class HU2PackingItemsAllocatorTest extends AbstractHUTest
 		return hu[0];
 	}
 
-	private final void assertValidShipmentScheduleLUAssignments(final List<I_M_HU> luHUs)
+	private void assertValidShipmentScheduleLUAssignments(final List<I_M_HU> luHUs)
 	{
 		for (final I_M_HU luHU : luHUs)
 		{
@@ -379,7 +391,7 @@ public class HU2PackingItemsAllocatorTest extends AbstractHUTest
 	 * @param luHU
 	 * @param tuHUs
 	 */
-	private final void assertValidShipmentScheduleTUAssignments(final I_M_HU luHU, final List<I_M_HU> tuHUs)
+	private void assertValidShipmentScheduleTUAssignments(final I_M_HU luHU, final List<I_M_HU> tuHUs)
 	{
 		for (final I_M_HU tuHU : tuHUs)
 		{
@@ -393,18 +405,14 @@ public class HU2PackingItemsAllocatorTest extends AbstractHUTest
 
 	/**
 	 * NOTE: this test assumes the TUs were fully allocated to shipment schedule
-	 *
-	 * @param luHU
-	 * @param vhu
-	 * @param tuHUs
 	 */
-	private final void assertValidShipmentScheduleTUAssignments(final I_M_HU luHU, final I_M_HU tuHU, I_M_HU vhu)
+	private void assertValidShipmentScheduleTUAssignments(final I_M_HU luHU, final I_M_HU tuHU, I_M_HU vhu)
 	{
 		final I_M_ShipmentSchedule_QtyPicked alloc = retrieveM_ShipmentSchedule_QtyPicked_OrNull(shipmentSchedule, luHU, tuHU, vhu);
-		assertNotNull("QtyPicked record shall exist for LU=" + luHU + ", TU=" + tuHU + ", VHU=" + vhu, alloc);
+		Assertions.assertNotNull(alloc, "QtyPicked record shall exist for LU=" + luHU + ", TU=" + tuHU + ", VHU=" + vhu);
 
 		final BigDecimal qtyPicked = alloc.getQtyPicked();
-		assertThat("Invalid QtyPicked", qtyPicked, comparesEqualTo(BigDecimal.valueOf(COUNT_Tomatoes_Per_IFCO)));
+		MatcherAssert.assertThat("Invalid QtyPicked", qtyPicked, comparesEqualTo(BigDecimal.valueOf(COUNT_Tomatoes_Per_IFCO)));
 
 		final BigDecimal huQty = helper.getHUContext()
 				.getHUStorageFactory()
@@ -412,10 +420,10 @@ public class HU2PackingItemsAllocatorTest extends AbstractHUTest
 				.getProductStorage(pTomatoId)
 				.getQty()
 				.toBigDecimal();
-		assertThat("HU Qty shall match QtyPicked", huQty, comparesEqualTo(qtyPicked));
+		MatcherAssert.assertThat("HU Qty shall match QtyPicked", huQty, comparesEqualTo(qtyPicked));
 	}
 
-	private final void assertNoShipmentScheduleTUAssignments(final I_M_HU luHU, final List<I_M_HU> tuHUs)
+	private void assertNoShipmentScheduleTUAssignments(final I_M_HU luHU, final List<I_M_HU> tuHUs)
 	{
 		for (final I_M_HU tuHU : tuHUs)
 		{
@@ -423,12 +431,12 @@ public class HU2PackingItemsAllocatorTest extends AbstractHUTest
 			for (final I_M_HU vhu : vhus)
 			{
 				final I_M_ShipmentSchedule_QtyPicked alloc = retrieveM_ShipmentSchedule_QtyPicked_OrNull(shipmentSchedule, luHU, tuHU, vhu);
-				assertNull("QtyPicked record shall NOT exist for LU=" + luHU + ", TU=" + tuHU + ", VHU=" + vhu, alloc);
+				Assertions.assertNull(alloc, "QtyPicked record shall NOT exist for LU=" + luHU + ", TU=" + tuHU + ", VHU=" + vhu);
 			}
 		}
 	}
 
-	private final I_M_ShipmentSchedule_QtyPicked retrieveM_ShipmentSchedule_QtyPicked_OrNull(final I_M_ShipmentSchedule shipmentSchedule,
+	private I_M_ShipmentSchedule_QtyPicked retrieveM_ShipmentSchedule_QtyPicked_OrNull(final I_M_ShipmentSchedule shipmentSchedule,
 			final I_M_HU luHU,
 			final I_M_HU tuHU,
 			final I_M_HU vhu)

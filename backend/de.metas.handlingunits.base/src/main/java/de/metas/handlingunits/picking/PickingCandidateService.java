@@ -24,11 +24,14 @@ import de.metas.handlingunits.picking.requests.CloseForShipmentSchedulesRequest;
 import de.metas.handlingunits.picking.requests.PickRequest;
 import de.metas.handlingunits.picking.requests.RejectPickingRequest;
 import de.metas.handlingunits.picking.requests.RemoveQtyFromHURequest;
+import de.metas.handlingunits.pporder.api.IHUPPOrderQtyBL;
 import de.metas.handlingunits.sourcehu.HuId2SourceHUsService;
 import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.picking.api.PickingConfigRepository;
 import de.metas.quantity.Quantity;
+import de.metas.util.Services;
 import lombok.NonNull;
+import org.eevolution.api.PPOrderId;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -65,6 +68,7 @@ public class PickingCandidateService
 	private final PickingConfigRepository pickingConfigRepository;
 	private final PickingCandidateRepository pickingCandidateRepository;
 	private final HuId2SourceHUsService sourceHUsRepository;
+	private final IHUPPOrderQtyBL huPPOrderQtyBL = Services.get(IHUPPOrderQtyBL.class);
 
 	public PickingCandidateService(
 			@NonNull final PickingConfigRepository pickingConfigRepository,
@@ -163,12 +167,24 @@ public class PickingCandidateService
 			@NonNull final Set<HuId> pickFromHuIds,
 			@Nullable final ShipmentScheduleId shipmentScheduleId)
 	{
+		final OnOverDelivery onOverDelivery = pickingConfigRepository.getPickingConfig().isAllowOverDelivery()
+				? OnOverDelivery.TAKE_WHOLE_HU
+				: OnOverDelivery.FAIL;
+
+		processForHUIds(pickFromHuIds, shipmentScheduleId, onOverDelivery, null);
+	}
+
+	public void processForHUIds(
+			@NonNull final Set<HuId> pickFromHuIds,
+			@Nullable final ShipmentScheduleId shipmentScheduleId,
+			@NonNull final OnOverDelivery onOverDelivery,
+			@Nullable final PPOrderId orderId)
+	{
 		final List<PickingCandidate> pickingCandidatesToProcess = pickingCandidateRepository.getByHUIds(pickFromHuIds)
 				.stream()
 				.filter(PickingCandidate::isDraft)
 				.filter(pc -> shipmentScheduleId == null || shipmentScheduleId.equals(pc.getShipmentScheduleId()))
 				.collect(ImmutableList.toImmutableList());
-
 		//
 		// Process those picking candidates
 		final ImmutableList<PickingCandidate> processedPickingCandidates = ProcessHUsAndPickingCandidateCommand.builder()
@@ -176,7 +192,8 @@ public class PickingCandidateService
 				.pickingCandidateRepository(pickingCandidateRepository)
 				.pickingCandidates(pickingCandidatesToProcess)
 				.additionalPickFromHuIds(pickFromHuIds)
-				.allowOverDelivery(pickingConfigRepository.getPickingConfig().isAllowOverDelivery())
+				.onOverDelivery(onOverDelivery)
+				.ppOrderId(orderId)
 				.build()
 				.perform();
 
