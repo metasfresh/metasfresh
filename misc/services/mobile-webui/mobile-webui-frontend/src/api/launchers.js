@@ -4,7 +4,7 @@ import axios from 'axios';
  * @summary Get the list of available launchers
  */
 export function getLaunchers() {
-  return axios.get(`${window.config.SERVER_URL}/userWorkflows/launchers`);
+  return axios.get(`${config.SERVER_URL}/userWorkflows/launchers`);
 }
 
 /**
@@ -12,7 +12,7 @@ export function getLaunchers() {
  * @summary Start a workflow from the launchers list
  */
 export function startWorkflowRequest({ wfParameters }) {
-  return axios.post(`${window.config.SERVER_URL}/userWorkflows/wfProcess/start`, { wfParameters });
+  return axios.post(`${config.SERVER_URL}/userWorkflows/wfProcess/start`, { wfParameters });
 }
 
 /**
@@ -20,5 +20,5 @@ export function startWorkflowRequest({ wfParameters }) {
  * @summary Continue a workflow from the launchers list
  */
 export function getWorkflowRequest(wfProcessId) {
-  return axios.get(`${window.config.SERVER_URL}/userWorkflows/wfProcess/${wfProcessId}`);
+  return axios.get(`${config.SERVER_URL}/userWorkflows/wfProcess/${wfProcessId}`);
 }

@@ -78,7 +78,8 @@ const broadcast = new BroadcastChannel('network-status-channel');
 // Any other custom service worker logic can go here.
 self.addEventListener('fetch', (event) => {
   if (event.request.url.endsWith('config.js')) {
-    event.respondWith(new Response('// no-op'));
+    //event.respondWith(new Response('// no-op'));
+    event.respondWith(fetch(event.request));
   } else {
     // Prevent the default, and handle the request ourselves.
     event.respondWith(
