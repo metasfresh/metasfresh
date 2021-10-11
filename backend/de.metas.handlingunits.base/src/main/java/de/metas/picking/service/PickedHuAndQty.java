@@ -11,7 +11,6 @@ import org.eevolution.api.PPOrderId;
 @Builder
 public class PickedHuAndQty
 {
-	@NonNull private final PPOrderId orderId;
 	@NonNull private final HuId originalHUId;
 	@NonNull private final HuId pickedHUId;
 	@NonNull private final Quantity qtyToPick;

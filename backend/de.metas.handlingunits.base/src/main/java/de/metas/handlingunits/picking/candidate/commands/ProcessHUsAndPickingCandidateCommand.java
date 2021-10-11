@@ -181,12 +181,11 @@ public class ProcessHUsAndPickingCandidateCommand
 
 	private void updateManufacturingIssueCandidate(@NonNull final PickedHuAndQty item)
 	{
-		final PPOrderId pickingOrderId = item.getOrderId();
 		final HuId huId = item.getOriginalHUId();
 		final Quantity qtyToUpdate = item.getQtyToPick().subtract(item.getQtyPicked());
 
 		final UpdateDraftReceiptCandidateRequest request = UpdateDraftReceiptCandidateRequest.builder()
-				.pickingOrderId(pickingOrderId)
+				.pickingOrderId(ppOrderId)
 				.huID(huId)
 				.qtyReceived(qtyToUpdate)
 				.build();

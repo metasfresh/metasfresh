@@ -49,7 +49,6 @@ public enum OnOverDelivery implements ReferenceListAwareEnum
 
 	public static OnOverDelivery ofTakeWholeHUFlag(boolean isTakeWholeHU)
 	{
-		final String value = String.valueOf(isTakeWholeHU);
-		return ofCode(value);
+		return isTakeWholeHU ? WHOLE_HU : SPLIT;
 	}
 }
