@@ -66,7 +66,7 @@ public class PickingCandidate
 	private PickingCandidateApprovalStatus approvalStatus;
 
 	@NonNull
-	private PickFrom pickFrom;
+	private final PickFrom pickFrom;
 
 	@NonNull
 	private Quantity qtyPicked;
@@ -95,6 +95,8 @@ public class PickingCandidate
 			@Nullable PickingCandidatePickStatus pickStatus,
 			@Nullable PickingCandidateApprovalStatus approvalStatus,
 			//
+			@NonNull PickFrom pickFrom,
+			//
 			@NonNull Quantity qtyPicked,
 			@Nullable BigDecimal qtyReview,
 			//
@@ -111,6 +113,7 @@ public class PickingCandidate
 		this.pickStatus = CoalesceUtil.coalesce(pickStatus, PickingCandidatePickStatus.TO_BE_PICKED);
 		this.approvalStatus = CoalesceUtil.coalesce(approvalStatus, PickingCandidateApprovalStatus.TO_BE_APPROVED);
 
+		this.pickFrom = pickFrom;
 		this.pickingSlotId = pickingSlotId;
 
 		this.qtyPicked = qtyPicked;
