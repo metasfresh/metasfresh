@@ -153,7 +153,7 @@ class BpartnerRestControllerTest
 		final BPartnerBL partnerBL = new BPartnerBL(new UserRepository());
 		//Services.registerService(IBPartnerBL.class, partnerBL);
 
-		bpartnerCompositeRepository = new BPartnerCompositeRepository(partnerBL, new BPartnerBL(new UserRepository()), new MockLogEntriesRepository(), new UserRoleRepository());
+		bpartnerCompositeRepository = new BPartnerCompositeRepository(partnerBL, new MockLogEntriesRepository(), new UserRoleRepository());
 		currencyRepository = new CurrencyRepository();
 
 		final JsonServiceFactory jsonServiceFactory = new JsonServiceFactory(

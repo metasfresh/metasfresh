@@ -98,7 +98,7 @@ public class FlatrateTerm_Handler extends AbstractInvoiceCandidateHandler
 	}
 
 	@Override
-	public InvoiceCandidateGenerateResult createCandidatesFor(final InvoiceCandidateGenerateRequest request)
+	public InvoiceCandidateGenerateResult createCandidatesFor(@NonNull final InvoiceCandidateGenerateRequest request)
 	{
 		final I_C_Flatrate_Term term = request.getModel(I_C_Flatrate_Term.class);
 
@@ -134,6 +134,7 @@ public class FlatrateTerm_Handler extends AbstractInvoiceCandidateHandler
 		return false;
 	}
 
+	@NonNull
 	private I_C_Invoice_Candidate createCandidateForTerm(@NonNull final I_C_Flatrate_Term term)
 	{
 		if (HandlerTools.isCancelledContract(term))
