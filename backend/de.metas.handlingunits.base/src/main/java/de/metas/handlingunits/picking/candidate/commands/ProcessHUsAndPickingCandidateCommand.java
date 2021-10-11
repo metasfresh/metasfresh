@@ -5,7 +5,6 @@ import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
 import de.metas.common.util.time.SystemTime;
-import de.metas.handlingunits.HUItemType;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -13,9 +12,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.picking.OnOverDelivery;
 import de.metas.handlingunits.picking.PickingCandidate;
-import de.metas.handlingunits.picking.PickingCandidateIssue;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
-import de.metas.handlingunits.pporder.api.CreateIssueCandidateRequest;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
 import de.metas.handlingunits.pporder.api.impl.hu_pporder_issue_producer.CreatePickedReceiptCommand;
 import de.metas.handlingunits.sourcehu.HuId2SourceHUsService;
@@ -25,7 +22,6 @@ import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.logging.LogManager;
-import de.metas.material.event.pporder.PPOrder;
 import de.metas.picking.service.IPackingItem;
 import de.metas.picking.service.PackingItemGroupingKey;
 import de.metas.picking.service.PackingItemPart;
@@ -99,7 +95,7 @@ public class ProcessHUsAndPickingCandidateCommand
 	@Nullable
 	private final PPOrderId ppOrderId;
 
-	final private Map<HuId, PickedHuAndQty> transactioneddHus = new HashMap<>();
+	final private Map<HuId, PickedHuAndQty> transactionedHus = new HashMap<>();
 
 	@Builder
 	private ProcessHUsAndPickingCandidateCommand(
@@ -154,34 +150,35 @@ public class ProcessHUsAndPickingCandidateCommand
 	private void updateAndCreateReceipt()
 	{
 		final ImmutableList<PickingCandidate> pickingCandidates = getPickingCandidates();
-		pickingCandidates.forEach(pc -> {
-			final PickedHuAndQty item =  getPickedHuAndQty(pc);
-			if (item != null)
-			{
-				final HuId pickedHUId = item.getPickedHUId();
-				final HuId orignalHUId = item.getOriginalHUId();
-				if (orignalHUId.getRepoId() != pickedHUId.getRepoId())
-				{
-					// create receipt for the picked HU after split
-					CreatePickedReceiptCommand.builder()
-							.receiveFromHUId(pickedHUId)
-							.movementDate(SystemTime.asZonedDateTime())
-							.qtyToReceive(item.getQtyPicked())
-							.orderId(ppOrderId)
-							.build()
-							.execute();
-
-					// update qty for the original HU
-					updateQtyIssued(item);
-				}
-
-			}
-
-
-		});
+		pickingCandidates.forEach(pc -> updateAnCreateReceiptForPickingCandidate(pc));
 	}
 
-	private void updateQtyIssued(@NonNull final PickedHuAndQty item)
+	private void updateAnCreateReceiptForPickingCandidate(final PickingCandidate pc)
+	{
+		final PickedHuAndQty item =  getPickedHuAndQty(pc);
+		if (item != null)
+		{
+			final HuId pickedHUId = item.getPickedHUId();
+			final HuId orignalHUId = item.getOriginalHUId();
+			if (orignalHUId.getRepoId() != pickedHUId.getRepoId())
+			{
+				// create receipt for the picked HU after split
+				CreatePickedReceiptCommand.builder()
+						.receiveFromHUId(pickedHUId)
+						.movementDate(SystemTime.asZonedDateTime())
+						.qtyToReceive(item.getQtyPicked())
+						.orderId(ppOrderId)
+						.build()
+						.execute();
+
+				// update qty for the original HU
+				updateManufacturingIssueCandidate(item);
+			}
+
+		}
+	}
+
+	private void updateManufacturingIssueCandidate(@NonNull final PickedHuAndQty item)
 	{
 		final PPOrderId pickingOrderId = item.getOrderId();
 		final HuId huId = item.getOriginalHUId();
@@ -219,7 +216,7 @@ public class ProcessHUsAndPickingCandidateCommand
 					.pickFromHU(hu)
 					.allocate();
 
-			transactioneddHus.putAll(allocator.getPickedHUs());
+			transactionedHus.putAll(allocator.getPickedHUs());
 		});
 	}
 
@@ -300,7 +297,7 @@ public class ProcessHUsAndPickingCandidateCommand
 		final HuId initialHuId =  pc.getPickFrom().getHuId();
 		if (initialHuId != null)
 		{
-			return transactioneddHus.get(initialHuId);
+			return transactionedHus.get(initialHuId);
 		}
 
 		return null;
