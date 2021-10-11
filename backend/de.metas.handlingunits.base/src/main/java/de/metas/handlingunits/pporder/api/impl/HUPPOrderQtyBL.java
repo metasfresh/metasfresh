@@ -9,12 +9,12 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.picking.PickingCandidateIssue;
+import de.metas.handlingunits.pporder.api.CreateIssueCandidateRequest;
 import de.metas.handlingunits.pporder.api.HUPPOrderIssueProducer;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyBL;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
 import de.metas.handlingunits.pporder.api.impl.hu_pporder_issue_producer.CreateDraftIssuesCommand;
-import de.metas.handlingunits.pporder.api.impl.hu_pporder_issue_producer.CreatePickedIssueCommand;
 import de.metas.handlingunits.pporder.api.impl.hu_pporder_issue_producer.ReverseDraftIssues;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.material.planning.pporder.DraftPPOrderBOMLineQuantities;
@@ -170,7 +170,7 @@ public class HUPPOrderQtyBL implements IHUPPOrderQtyBL
 		final HuId issueFromHUId = issueToPickingOrder.getIssueFromHUId();
 		final I_M_HU issueFromHU = handlingUnitsBL.getById(issueFromHUId);
 
-		final I_PP_Order_Qty candidate = CreatePickedIssueCommand.builder()
+		final I_PP_Order_Qty candidate = CreateIssueCandidateRequest.builder()
 				.movementDate(SystemTime.asZonedDateTime())
 				.fixedQtyToIssue(issueToPickingOrder.getQtyToIssue())
 				.orderId(pickingOrderId)

@@ -14,6 +14,7 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.picking.OnOverDelivery;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
+import de.metas.picking.service.PickedHuAndQty;
 import de.metas.util.collections.CollectionUtils;
 import lombok.Value;
 import org.adempiere.ad.trx.api.ITrx;
@@ -542,7 +543,17 @@ public class HU2PackingItemsAllocator
 			// Adjust remaining Qty to be packed
 			subtractFromQtyToPackRemaining(qtyPacked);
 
-			pickedHus.put(HuId.ofRepoId(pickFromVHU.getM_HU_ID()), null);
+
+			// updated picked HU
+			final PickedHuAndQty pickedHuAndQty = PickedHuAndQty.builder()
+					.originalHUId(HuId.ofRepoId(pickFromVHU.getM_HU_ID()))
+					.qtyToPick(qtyPacked)
+					.pickedHUId(HuId.ofRepoId(pickFromVHU.getM_HU_ID()))
+					.qtyPicked(qtyPacked)
+					.build();
+
+
+			pickedHus.put(HuId.ofRepoId(pickFromVHU.getM_HU_ID()), pickedHuAndQty);
 		}
 	}
 
@@ -591,8 +602,10 @@ public class HU2PackingItemsAllocator
 
 		// updated picked HU
 		final PickedHuAndQty pickedHuAndQty = PickedHuAndQty.builder()
-					.huId(HuId.ofRepoId(huReceived.getM_HU_ID()))
-					.qty(qtyCU)
+				    .originalHUId(HuId.ofRepoId(pickFromVHU.getM_HU_ID()))
+					.qtyToPick(qtyPacked)
+					.pickedHUId(HuId.ofRepoId(huReceived.getM_HU_ID()))
+					.qtyPicked(qtyCU)
 					.build();
 
 		pickedHus.put(HuId.ofRepoId(pickFromVHU.getM_HU_ID()), pickedHuAndQty);
@@ -724,8 +737,6 @@ public class HU2PackingItemsAllocator
 		return new GenericAllocationSourceDestination(shipmentScheduleQtyPickedStorage, schedule);
 	}
 
-
-
 	public Map<HuId, PickedHuAndQty> getPickedHUs()
 	{
 		return pickedHus;
@@ -748,13 +759,4 @@ public class HU2PackingItemsAllocator
 			return packToDestination(HUListAllocationSourceDestination.of(hu));
 		}
 	}
-
-	@Value
-	@Builder
-	public static class PickedHuAndQty
-	{
-		@NonNull private final HuId huId;
-		@NonNull private final Quantity qty;
-	}
-
 }

@@ -4,12 +4,12 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
+import de.metas.handlingunits.HUItemType;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.OnOverDelivery;
-import de.metas.handlingunits.picking.PickedFrom;
 import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.sourcehu.HuId2SourceHUsService;
@@ -24,12 +24,11 @@ import de.metas.picking.service.PackingItemGroupingKey;
 import de.metas.picking.service.PackingItemPart;
 import de.metas.picking.service.PackingItemPartId;
 import de.metas.picking.service.PackingItems;
+import de.metas.picking.service.PickedHuAndQty;
 import de.metas.picking.service.impl.HU2PackingItemsAllocator;
-import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
-import lombok.Getter;
 import lombok.NonNull;
 import lombok.Singular;
 import org.adempiere.exceptions.AdempiereException;
@@ -87,15 +86,7 @@ public class ProcessHUsAndPickingCandidateCommand
 	private final boolean allowOverDelivery;
 	private final OnOverDelivery takeWholeHU;
 
-	@Builder
-	@Getter
-	private static class PickedHuAndQty
-	{
-		@NonNull private final HuId huId;
-		@NonNull private final Quantity qty;
-	}
-
-	final private Map<HuId, HU2PackingItemsAllocator.PickedHuAndQty> transactioneddHus = new HashMap<>();
+	final private Map<HuId, PickedHuAndQty> transactioneddHus = new HashMap<>();
 
 	@Builder
 	private ProcessHUsAndPickingCandidateCommand(
@@ -138,8 +129,6 @@ public class ProcessHUsAndPickingCandidateCommand
 	{
 		allocateHUsToShipmentSchedule();
 		destroyEmptySourceHUs();
-
-		setPickingCandidatePickedFromIfNeeded();
 
 		return changeStatusToProcessedAndSave();
 	}
@@ -238,33 +227,23 @@ public class ProcessHUsAndPickingCandidateCommand
 	private ImmutableList<PickingCandidate> changeStatusToProcessedAndSave()
 	{
 		final ImmutableList<PickingCandidate> pickingCandidates = getPickingCandidates();
-		pickingCandidates.forEach(PickingCandidate::changeStatusToProcessed);
+		pickingCandidates.forEach(pc -> pc.changeStatusToProcessed(getPickedHUId(pc)));
 		pickingCandidateRepository.saveAll(pickingCandidates);
 
 		return pickingCandidates;
 	}
 
-	private void setPickingCandidatePickedFromIfNeeded()
+	private HuId getPickedHUId(@NonNull final PickingCandidate pc)
 	{
 		final ImmutableList<PickingCandidate> pickingCandidates = getPickingCandidates();
-		final boolean hasPickedHuChanged = !transactioneddHus.isEmpty();
 
-		if (hasPickedHuChanged)
+		final HuId initialHuId =  pc.getPickFrom().getHuId();
+		if (initialHuId != null)
 		{
-			for (PickingCandidate pc : pickingCandidates)
-			{
-				final HuId huId = pc.getPickFrom().getHuId();
-				final HU2PackingItemsAllocator.PickedHuAndQty pickedHuAndQty = transactioneddHus.get(huId);
-				if (pickedHuAndQty != null)
-				{
-					final HuId pickedHuId = pickedHuAndQty.getHuId();
-					final PickedFrom pickedFrom = PickedFrom.builder()
-							.huId(pickedHuId)
-							.qtyPicked(pickedHuAndQty.getQty())
-							.build();
-					pc.setPickedFrom(pickedFrom);
-				}
-			}
+			final PickedHuAndQty item = transactioneddHus.get(initialHuId);
+			return  item.getPickedHUId();
 		}
+
+		return null;
 	}
 }

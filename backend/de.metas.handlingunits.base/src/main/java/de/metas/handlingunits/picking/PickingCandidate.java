@@ -68,9 +68,6 @@ public class PickingCandidate
 	@NonNull
 	private PickFrom pickFrom;
 
-	@Nullable
-	private PickedFrom pickedFrom;
-
 	@NonNull
 	private Quantity qtyPicked;
 	@Nullable
@@ -98,8 +95,6 @@ public class PickingCandidate
 			@Nullable PickingCandidatePickStatus pickStatus,
 			@Nullable PickingCandidateApprovalStatus approvalStatus,
 			//
-			@NonNull PickFrom pickFrom,
-			//
 			@NonNull Quantity qtyPicked,
 			@Nullable BigDecimal qtyReview,
 			//
@@ -116,7 +111,6 @@ public class PickingCandidate
 		this.pickStatus = CoalesceUtil.coalesce(pickStatus, PickingCandidatePickStatus.TO_BE_PICKED);
 		this.approvalStatus = CoalesceUtil.coalesce(approvalStatus, PickingCandidateApprovalStatus.TO_BE_APPROVED);
 
-		this.pickFrom = pickFrom;
 		this.pickingSlotId = pickingSlotId;
 
 		this.qtyPicked = qtyPicked;
@@ -210,18 +204,7 @@ public class PickingCandidate
 
 	public void changeStatusToProcessed()
 	{
-		final HuId huId;
-		// make sure we are using the correct HU
-		if (getPickedFrom() != null && !getPickedFrom().getHuId().equals(getPickFrom().getHuId()))
-		{
-			huId = getPickedFrom().getHuId();
-		}
-		else
-		{
-			huId = getPickFrom().getHuId();
-		}
-
-		changeStatusToProcessed(huId);
+		changeStatusToProcessed(getPickFrom().getHuId());
 	}
 
 	public void changeStatusToProcessed(@Nullable final HuId packedToHuId)
@@ -323,15 +306,5 @@ public class PickingCandidate
 		this.issuesToPickingOrder = issuesToPickingOrder != null
 				? ImmutableList.copyOf(issuesToPickingOrder)
 				: ImmutableList.of();
-	}
-
-	public void setPickedFrom(@NonNull final PickedFrom pickedFrom)
-	{
-		this.pickedFrom = pickedFrom;
-	}
-
-	public boolean IsPickedDifferentHU()
-	{
-		return pickedFrom != null && !pickedFrom.getHuId().equals(pickFrom.getHuId());
 	}
 }
