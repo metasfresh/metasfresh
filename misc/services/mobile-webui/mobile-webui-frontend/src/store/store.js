@@ -11,7 +11,7 @@ import { save } from 'redux-localstorage-simple';
 // import offlineConfig from '@redux-offline/redux-offline/lib/defaults';
 
 export const history = createBrowserHistory({
-  basename: process.env.PUBLIC_URL,
+  basename: '/mobile',
 });
 const composeEnhancer =
   typeof window === 'object' && window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__
