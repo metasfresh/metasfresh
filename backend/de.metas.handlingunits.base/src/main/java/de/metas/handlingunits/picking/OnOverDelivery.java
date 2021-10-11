@@ -9,15 +9,15 @@ import javax.annotation.Nullable;
 
 public enum OnOverDelivery implements ReferenceListAwareEnum
 {
-	WHOLE_HU("true"),
-	SPLIT("false"),
-	/** option for supporting old code, when we have from config that we can over deliver,
-	but we actually get an exception and when from config says we can not over deliver,
-	we can actually over deliver, by taking the whole HU */
-	FALLBACK("fallback");
+	TAKE_WHOLE_HU("take_whole_hu"),
+	SPLIT_HU("split_hu"),
+	FAIL("fail"),
+	;
 
 	@Getter
 	private final String code;
+
+	private static final ReferenceListAwareEnums.ValuesIndex<OnOverDelivery> index = ReferenceListAwareEnums.index(values());
 
 	OnOverDelivery(@NonNull final String code)
 	{
@@ -35,20 +35,8 @@ public enum OnOverDelivery implements ReferenceListAwareEnum
 		return index.ofNullableCode(code);
 	}
 
-	private static final ReferenceListAwareEnums.ValuesIndex<OnOverDelivery> index = ReferenceListAwareEnums.index(values());
-
-	public boolean isSplit()
-	{
-		return SPLIT.equals(this);
-	}
-
-	public boolean isFallback()
-	{
-		return FALLBACK.equals(this);
-	}
-
 	public static OnOverDelivery ofTakeWholeHUFlag(boolean isTakeWholeHU)
 	{
-		return isTakeWholeHU ? WHOLE_HU : SPLIT;
+		return isTakeWholeHU ? TAKE_WHOLE_HU : SPLIT_HU;
 	}
 }

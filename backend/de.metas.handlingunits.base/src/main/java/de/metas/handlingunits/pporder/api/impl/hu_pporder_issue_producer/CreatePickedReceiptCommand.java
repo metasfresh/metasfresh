@@ -11,6 +11,7 @@ import de.metas.handlingunits.pporder.api.CreateReceiptCandidateRequest;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
@@ -164,6 +165,7 @@ public class CreatePickedReceiptCommand
 
 			final I_PP_Order_Qty candidate = huPPOrderQtyDAO.save(CreateReceiptCandidateRequest.builder()
 																		  .orderId(orderId)
+																		  .orgId(OrgId.ofRepoId(hu.getAD_Org_ID()))
 																		  //
 																		  .date(movementDate)
 																		  //

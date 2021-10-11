@@ -45,6 +45,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 /*
@@ -71,11 +72,10 @@ import java.util.Set;
 
 /**
  * Process picking candidate.
- *
+ * <p>
  * The status will be changed from InProgress to Processed.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public class ProcessHUsAndPickingCandidateCommand
 {
@@ -90,8 +90,7 @@ public class ProcessHUsAndPickingCandidateCommand
 
 	private final ImmutableListMultimap<HuId, PickingCandidate> pickingCandidatesByPickFromHUId;
 	private final ImmutableSet<HuId> pickFromHuIds;
-	private final boolean allowOverDelivery;
-	private final OnOverDelivery takeWholeHU;
+	private final OnOverDelivery onOverDelivery;
 	@Nullable
 	private final PPOrderId ppOrderId;
 
@@ -104,9 +103,8 @@ public class ProcessHUsAndPickingCandidateCommand
 			//
 			@NonNull final List<PickingCandidate> pickingCandidates,
 			@NonNull @Singular final Set<HuId> additionalPickFromHuIds,
-			final boolean allowOverDelivery,
-			final OnOverDelivery onOverDelivery,
-			final PPOrderId ppOrderId)
+			@NonNull final OnOverDelivery onOverDelivery,
+			@Nullable final PPOrderId ppOrderId)
 	{
 		Check.assumeNotEmpty(pickingCandidates, "pickingCandidates is not empty");
 		for (PickingCandidate pickingCandidate : pickingCandidates)
@@ -125,14 +123,12 @@ public class ProcessHUsAndPickingCandidateCommand
 				pickingCandidates,
 				pickingCandidate -> pickingCandidate.getPickFrom().getHuId());
 
-		this.pickFromHuIds = ImmutableSet.<HuId> builder()
+		this.pickFromHuIds = ImmutableSet.<HuId>builder()
 				.addAll(pickingCandidatesByPickFromHUId.keySet())
 				.addAll(additionalPickFromHuIds)
 				.build();
 
-		this.allowOverDelivery = allowOverDelivery;
-
-		this.takeWholeHU = onOverDelivery;
+		this.onOverDelivery = onOverDelivery;
 
 		this.ppOrderId = ppOrderId;
 	}
@@ -150,12 +146,18 @@ public class ProcessHUsAndPickingCandidateCommand
 	private void updateAndCreateReceipt()
 	{
 		final ImmutableList<PickingCandidate> pickingCandidates = getPickingCandidates();
-		pickingCandidates.forEach(pc -> updateAnCreateReceiptForPickingCandidate(pc));
+		pickingCandidates.forEach(this::updateAnCreateManufacturingReceiptCandidatesForPickingCandidate);
 	}
 
-	private void updateAnCreateReceiptForPickingCandidate(final PickingCandidate pc)
+	private void updateAnCreateManufacturingReceiptCandidatesForPickingCandidate(final PickingCandidate pc)
 	{
-		final PickedHuAndQty item =  getPickedHuAndQty(pc);
+		if (ppOrderId == null)
+		{
+			return;
+		}
+
+
+		final PickedHuAndQty item = getPickedHuAndQty(pc);
 		if (item != null)
 		{
 			final HuId pickedHUId = item.getPickedHUId();
@@ -184,7 +186,7 @@ public class ProcessHUsAndPickingCandidateCommand
 		final Quantity qtyToUpdate = item.getQtyToPick().subtract(item.getQtyPicked());
 
 		final UpdateDraftReceiptCandidateRequest request = UpdateDraftReceiptCandidateRequest.builder()
-				.pickingOrderId(ppOrderId)
+				.pickingOrderId(Objects.requireNonNull(ppOrderId))
 				.huID(huId)
 				.qtyReceived(qtyToUpdate)
 				.build();
@@ -204,7 +206,6 @@ public class ProcessHUsAndPickingCandidateCommand
 		return handlingUnitsRepo.getByIdsOutOfTrx(pickFromHuIds);
 	}
 
-
 	private void allocateHUToShipmentSchedule(@NonNull final I_M_HU hu)
 	{
 		final List<IPackingItem> itemsToPack = createItemsToPack(HuId.ofRepoId(hu.getM_HU_ID()));
@@ -212,8 +213,7 @@ public class ProcessHUsAndPickingCandidateCommand
 		itemsToPack.forEach(itemToPack -> {
 			final HU2PackingItemsAllocator allocator = HU2PackingItemsAllocator.builder()
 					.itemToPack(itemToPack)
-					.allowOverDelivery(allowOverDelivery)
-					.takeWholeHU(takeWholeHU)
+					.onOverDelivery(onOverDelivery)
 					.pickFromHU(hu)
 					.allocate();
 
@@ -283,7 +283,6 @@ public class ProcessHUsAndPickingCandidateCommand
 		logger.info("Source M_HU with M_HU_ID={} is now destroyed", sourceHU.getM_HU_ID());
 	}
 
-
 	private ImmutableList<PickingCandidate> changeStatusToProcessedAndSave()
 	{
 		final ImmutableList<PickingCandidate> pickingCandidates = getPickingCandidates();
@@ -293,21 +292,18 @@ public class ProcessHUsAndPickingCandidateCommand
 		return pickingCandidates;
 	}
 
-	private PickedHuAndQty getPickedHuAndQty(@Nullable final PickingCandidate pc)
+	@Nullable
+	private PickedHuAndQty getPickedHuAndQty(@NonNull final PickingCandidate pc)
 	{
-		final HuId initialHuId =  pc.getPickFrom().getHuId();
-		if (initialHuId != null)
-		{
-			return transactionedHus.get(initialHuId);
-		}
-
-		return null;
+		final HuId initialHuId = pc.getPickFrom().getHuId();
+		return initialHuId != null ? transactionedHus.get(initialHuId) : null;
 	}
 
-	private HuId getPickedHUId(@Nullable final PickingCandidate pc)
+	@Nullable
+	private HuId getPickedHUId(@NonNull final PickingCandidate pc)
 	{
 		final PickedHuAndQty item = getPickedHuAndQty(pc);
-		return item!=null ? item.getPickedHUId() : null;
+		return item != null ? item.getPickedHUId() : null;
 	}
 
 }

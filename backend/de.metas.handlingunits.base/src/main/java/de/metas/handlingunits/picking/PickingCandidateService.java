@@ -2,11 +2,8 @@ package de.metas.handlingunits.picking;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
-import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.picking.candidate.commands.AddQtyToHUCommand;
 import de.metas.handlingunits.picking.candidate.commands.ClosePickingCandidateCommand;
 import de.metas.handlingunits.picking.candidate.commands.CreatePickingCandidatesCommand;
@@ -27,7 +24,6 @@ import de.metas.handlingunits.picking.requests.CloseForShipmentSchedulesRequest;
 import de.metas.handlingunits.picking.requests.PickRequest;
 import de.metas.handlingunits.picking.requests.RejectPickingRequest;
 import de.metas.handlingunits.picking.requests.RemoveQtyFromHURequest;
-import de.metas.handlingunits.pporder.api.CreateIssueCandidateRequest;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyBL;
 import de.metas.handlingunits.sourcehu.HuId2SourceHUsService;
 import de.metas.inoutcandidate.ShipmentScheduleId;
@@ -171,7 +167,11 @@ public class PickingCandidateService
 			@NonNull final Set<HuId> pickFromHuIds,
 			@Nullable final ShipmentScheduleId shipmentScheduleId)
 	{
-		processForHUIds(pickFromHuIds, shipmentScheduleId, OnOverDelivery.FALLBACK, null);
+		final OnOverDelivery onOverDelivery = pickingConfigRepository.getPickingConfig().isAllowOverDelivery()
+				? OnOverDelivery.TAKE_WHOLE_HU
+				: OnOverDelivery.FAIL;
+
+		processForHUIds(pickFromHuIds, shipmentScheduleId, onOverDelivery, null);
 	}
 
 	public void processForHUIds(
@@ -192,8 +192,8 @@ public class PickingCandidateService
 				.pickingCandidateRepository(pickingCandidateRepository)
 				.pickingCandidates(pickingCandidatesToProcess)
 				.additionalPickFromHuIds(pickFromHuIds)
-				.allowOverDelivery(pickingConfigRepository.getPickingConfig().isAllowOverDelivery())
 				.onOverDelivery(onOverDelivery)
+				.ppOrderId(orderId)
 				.build()
 				.perform();
 
