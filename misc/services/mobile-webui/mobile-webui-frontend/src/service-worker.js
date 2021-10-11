@@ -77,6 +77,12 @@ const broadcast = new BroadcastChannel('network-status-channel');
 
 // Any other custom service worker logic can go here.
 self.addEventListener('fetch', (event) => {
+
+  // Ignore the `config.js`
+  if ( event.request.url.indexOf( '/config.js/' ) !== -1 ) {
+    return false;
+  }
+
   // Prevent the default, and handle the request ourselves.
   event.respondWith(
     (async function () {
