@@ -4,14 +4,20 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
+import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.HUItemType;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.picking.OnOverDelivery;
 import de.metas.handlingunits.picking.PickingCandidate;
+import de.metas.handlingunits.picking.PickingCandidateIssue;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
+import de.metas.handlingunits.pporder.api.CreateIssueCandidateRequest;
+import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
+import de.metas.handlingunits.pporder.api.impl.hu_pporder_issue_producer.CreatePickedReceiptCommand;
 import de.metas.handlingunits.sourcehu.HuId2SourceHUsService;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.handlingunits.storage.IHUStorageFactory;
@@ -19,6 +25,7 @@ import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.logging.LogManager;
+import de.metas.material.event.pporder.PPOrder;
 import de.metas.picking.service.IPackingItem;
 import de.metas.picking.service.PackingItemGroupingKey;
 import de.metas.picking.service.PackingItemPart;
@@ -26,14 +33,17 @@ import de.metas.picking.service.PackingItemPartId;
 import de.metas.picking.service.PackingItems;
 import de.metas.picking.service.PickedHuAndQty;
 import de.metas.picking.service.impl.HU2PackingItemsAllocator;
+import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import org.adempiere.exceptions.AdempiereException;
+import org.eevolution.api.PPOrderId;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -78,6 +88,7 @@ public class ProcessHUsAndPickingCandidateCommand
 	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final transient IHandlingUnitsDAO handlingUnitsRepo = Services.get(IHandlingUnitsDAO.class);
 	private final transient IShipmentSchedulePA shipmentSchedulesRepo = Services.get(IShipmentSchedulePA.class);
+	private final IHUPPOrderQtyDAO huPPOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
 	private final HuId2SourceHUsService sourceHUsRepository;
 	private final PickingCandidateRepository pickingCandidateRepository;
 
@@ -85,6 +96,8 @@ public class ProcessHUsAndPickingCandidateCommand
 	private final ImmutableSet<HuId> pickFromHuIds;
 	private final boolean allowOverDelivery;
 	private final OnOverDelivery takeWholeHU;
+	@Nullable
+	private final PPOrderId ppOrderId;
 
 	final private Map<HuId, PickedHuAndQty> transactioneddHus = new HashMap<>();
 
@@ -96,7 +109,8 @@ public class ProcessHUsAndPickingCandidateCommand
 			@NonNull final List<PickingCandidate> pickingCandidates,
 			@NonNull @Singular final Set<HuId> additionalPickFromHuIds,
 			final boolean allowOverDelivery,
-			final OnOverDelivery takeWholeHU)
+			final OnOverDelivery takeWholeHU,
+			final PPOrderId ppOrderId)
 	{
 		Check.assumeNotEmpty(pickingCandidates, "pickingCandidates is not empty");
 		for (PickingCandidate pickingCandidate : pickingCandidates)
@@ -123,6 +137,8 @@ public class ProcessHUsAndPickingCandidateCommand
 		this.allowOverDelivery = allowOverDelivery;
 
 		this.takeWholeHU = takeWholeHU;
+
+		this.ppOrderId = ppOrderId;
 	}
 
 	public ImmutableList<PickingCandidate> perform()
@@ -130,7 +146,53 @@ public class ProcessHUsAndPickingCandidateCommand
 		allocateHUsToShipmentSchedule();
 		destroyEmptySourceHUs();
 
+		updateAndCreateReceipt();
+
 		return changeStatusToProcessedAndSave();
+	}
+
+	private void updateAndCreateReceipt()
+	{
+		final ImmutableList<PickingCandidate> pickingCandidates = getPickingCandidates();
+		pickingCandidates.forEach(pc -> {
+			final PickedHuAndQty item =  getPickedHuAndQty(pc);
+			if (item != null)
+			{
+				final HuId pickedHUId = item.getPickedHUId();
+				final HuId orignalHUId = item.getOriginalHUId();
+				if (orignalHUId.getRepoId() != pickedHUId.getRepoId())
+				{
+					// create receipt for the picked HU after split
+					CreatePickedReceiptCommand.builder()
+							.receiveFromHUId(pickedHUId)
+							.movementDate(SystemTime.asZonedDateTime())
+							.qtyToReceive(item.getQtyPicked())
+							.orderId(ppOrderId)
+							.build()
+							.execute();
+
+					// update qty for the original HU
+					updateQtyIssued(item);
+				}
+
+			}
+
+
+		});
+	}
+
+	private void updateQtyIssued(@NonNull final PickedHuAndQty item)
+	{
+		final PPOrderId pickingOrderId = item.getOrderId();
+		final HuId huId = item.getOriginalHUId();
+		final Quantity qtyToUpdate = item.getQtyToPick().subtract(item.getQtyPicked());
+
+		final I_PP_Order_Qty candidate = huPPOrderQtyDAO.retrieveOrderQtyForHu(pickingOrderId, huId);
+		if (candidate != null)
+		{
+			candidate.setQty(qtyToUpdate.toBigDecimal());
+			huPPOrderQtyDAO.save(candidate);
+		}
 	}
 
 	private void allocateHUsToShipmentSchedule()
@@ -233,17 +295,21 @@ public class ProcessHUsAndPickingCandidateCommand
 		return pickingCandidates;
 	}
 
-	private HuId getPickedHUId(@NonNull final PickingCandidate pc)
+	private PickedHuAndQty getPickedHuAndQty(@NonNull final PickingCandidate pc)
 	{
-		final ImmutableList<PickingCandidate> pickingCandidates = getPickingCandidates();
-
 		final HuId initialHuId =  pc.getPickFrom().getHuId();
 		if (initialHuId != null)
 		{
-			final PickedHuAndQty item = transactioneddHus.get(initialHuId);
-			return  item.getPickedHUId();
+			return transactioneddHus.get(initialHuId);
 		}
 
 		return null;
 	}
+
+	private HuId getPickedHUId(@NonNull final PickingCandidate pc)
+	{
+		final PickedHuAndQty item = getPickedHuAndQty(pc);
+		return item!=null ? item.getPickedHUId() : null;
+	}
+
 }

@@ -10,13 +10,10 @@ import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.picking.PickingCandidateIssue;
 import de.metas.handlingunits.pporder.api.CreateIssueCandidateRequest;
-import de.metas.handlingunits.pporder.api.HUPPOrderIssueProducer;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyBL;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
-import de.metas.handlingunits.pporder.api.impl.hu_pporder_issue_producer.CreateDraftIssuesCommand;
 import de.metas.handlingunits.pporder.api.impl.hu_pporder_issue_producer.ReverseDraftIssues;
-import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.material.planning.pporder.DraftPPOrderBOMLineQuantities;
 import de.metas.material.planning.pporder.DraftPPOrderQuantities;
 import de.metas.material.planning.pporder.PPOrderUtil;
@@ -162,31 +159,5 @@ public class HUPPOrderQtyBL implements IHUPPOrderQtyBL
 			@NonNull final DraftPPOrderBOMLineQuantities lineToAdd)
 	{
 		return line != null ? line.add(lineToAdd, uomConversionBL) : lineToAdd;
-	}
-
-	@Override
-	public void createIssue(@NonNull final PPOrderId pickingOrderId, @NonNull PickingCandidateIssue issueToPickingOrder)
-	{
-		final HuId issueFromHUId = issueToPickingOrder.getIssueFromHUId();
-		final I_M_HU issueFromHU = handlingUnitsBL.getById(issueFromHUId);
-
-		final I_PP_Order_Qty candidate = CreateIssueCandidateRequest.builder()
-				.movementDate(SystemTime.asZonedDateTime())
-				.fixedQtyToIssue(issueToPickingOrder.getQtyToIssue())
-				.orderId(pickingOrderId)
-				.issueFromHU(issueFromHU)
-				.build()
-				.execute();
-	}
-
-	@Override
-	public void updateQtyIssued(@NonNull final PPOrderId pickingOrderId, @NonNull PickingCandidateIssue issueToPickingOrder)
-	{
-	  	final I_PP_Order_Qty candidate = huPPOrderQtyDAO.retrieveOrderQtyForHu(pickingOrderId, issueToPickingOrder.getIssueFromHUId());
-		if (candidate != null)
-		{
-			candidate.setQty(issueToPickingOrder.getQtyToIssue().toBigDecimal());
-			huPPOrderQtyDAO.save(candidate);
-		}
 	}
 }

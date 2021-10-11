@@ -2,8 +2,11 @@ package de.metas.handlingunits.picking;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.picking.candidate.commands.AddQtyToHUCommand;
 import de.metas.handlingunits.picking.candidate.commands.ClosePickingCandidateCommand;
 import de.metas.handlingunits.picking.candidate.commands.CreatePickingCandidatesCommand;
@@ -24,10 +27,10 @@ import de.metas.handlingunits.picking.requests.CloseForShipmentSchedulesRequest;
 import de.metas.handlingunits.picking.requests.PickRequest;
 import de.metas.handlingunits.picking.requests.RejectPickingRequest;
 import de.metas.handlingunits.picking.requests.RemoveQtyFromHURequest;
+import de.metas.handlingunits.pporder.api.CreateIssueCandidateRequest;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyBL;
 import de.metas.handlingunits.sourcehu.HuId2SourceHUsService;
 import de.metas.inoutcandidate.ShipmentScheduleId;
-import de.metas.order.createFrom.po_from_so.PurchaseTypeEnum;
 import de.metas.picking.api.PickingConfigRepository;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
@@ -168,13 +171,13 @@ public class PickingCandidateService
 			@NonNull final Set<HuId> pickFromHuIds,
 			@Nullable final ShipmentScheduleId shipmentScheduleId)
 	{
-		processForHUIds(pickFromHuIds, shipmentScheduleId, TakeWholeHUEnum.NONE, null);
+		processForHUIds(pickFromHuIds, shipmentScheduleId, OnOverDelivery.FALLBACK, null);
 	}
 
 	public void processForHUIds(
 			@NonNull final Set<HuId> pickFromHuIds,
 			@Nullable final ShipmentScheduleId shipmentScheduleId,
-			@NonNull final TakeWholeHUEnum takeWholeHU,
+			@NonNull final OnOverDelivery takeWholeHU,
 			@Nullable final PPOrderId orderId)
 	{
 		final List<PickingCandidate> pickingCandidatesToProcess = pickingCandidateRepository.getByHUIds(pickFromHuIds)
@@ -194,15 +197,6 @@ public class PickingCandidateService
 				.build()
 				.perform();
 
-		if (orderId != null)
-		{
-			processedPickingCandidates.forEach(pickingCandidate -> {
-				if (pickingCandidate.IsPickedDifferentHU())
-				{
-					updateAndCreateIssue(orderId, pickingCandidate);
-				}
-			});
-		}
 		//
 		// Automatically close those processed picking candidates which are NOT on a rack system picking slot. (gh2740)
 		ClosePickingCandidateCommand.builder()
@@ -211,23 +205,6 @@ public class PickingCandidateService
 				.pickingSlotIsRackSystem(false)
 				.build()
 				.perform();
-	}
-
-	private void updateAndCreateIssue(@NonNull final PPOrderId orderId, @NonNull PickingCandidate pickingCandidate)
-	{
-		// create issue for picked qty
-		final PickingCandidateIssue issueToPickingOrder = PickingCandidateIssue.builder()
-				.issueFromHUId(pickingCandidate.getPickedFrom().getHuId())
-				.qtyToIssue(pickingCandidate.getPickedFrom().getQtyPicked())
-				.build();
-		huPPOrderQtyBL.createIssue(orderId, issueToPickingOrder);
-
-		// update qty remained issue
-		final PickingCandidateIssue issueToUpdate = PickingCandidateIssue.builder()
-			.issueFromHUId(pickingCandidate.getPickFrom().getHuId())
-			.qtyToIssue(pickingCandidate.getQtyPicked().subtract(pickingCandidate.getPickedFrom().getQtyPicked()))
-			.build();
-		huPPOrderQtyBL.updateQtyIssued(orderId, issueToUpdate);
 	}
 
 	public ProcessPickingCandidatesResult process(@NonNull final Set<PickingCandidateId> pickingCandidateIds)

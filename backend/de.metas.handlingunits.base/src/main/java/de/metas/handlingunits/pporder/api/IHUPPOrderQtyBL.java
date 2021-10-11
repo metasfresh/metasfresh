@@ -44,8 +44,4 @@ public interface IHUPPOrderQtyBL extends ISingletonService
 	}
 
 	DraftPPOrderQuantities getDraftPPOrderQuantities(@NonNull PPOrderId ppOrderId);
-
-	void createIssue(@NonNull PPOrderId pickingOrderId, @NonNull PickingCandidateIssue issueToPickingOrder);
-
-	void updateQtyIssued(@NonNull PPOrderId pickingOrderId, @NonNull PickingCandidateIssue issueToPickingOrder);
 }

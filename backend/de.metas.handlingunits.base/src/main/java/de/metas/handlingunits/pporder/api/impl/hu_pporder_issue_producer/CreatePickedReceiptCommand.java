@@ -3,6 +3,7 @@ package de.metas.handlingunits.pporder.api.impl.hu_pporder_issue_producer;
 import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContext;
+import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
@@ -54,6 +55,7 @@ public class CreatePickedReceiptCommand
 	//
 	// Services
 	private static final Logger logger = LogManager.getLogger(CreatePickedReceiptCommand.class);
+	public final IHandlingUnitsDAO huDAO = Services.get(IHandlingUnitsDAO.class);
 	private final transient IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
 	private final transient IHUPPOrderQtyDAO huPPOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
 	private final transient IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
@@ -61,7 +63,7 @@ public class CreatePickedReceiptCommand
 	//
 	// Parameters
 	private final ZonedDateTime movementDate;
-	private final I_M_HU issueFromHU;
+	private final HuId receiveFromHUId;
 	private final PPOrderId orderId;
 
 	//
@@ -72,18 +74,18 @@ public class CreatePickedReceiptCommand
 	@Builder
 	private CreatePickedReceiptCommand(
 			@Nullable final ZonedDateTime movementDate,
-			@Nullable final Quantity fixedQtyToIssue,
-			@NonNull final I_M_HU issueFromHU,
+			@Nullable final Quantity qtyToReceive,
+			@NonNull final HuId receiveFromHUId,
 			@Nullable final PPOrderId orderId)
 	{
-		if (fixedQtyToIssue != null && fixedQtyToIssue.signum() <= 0)
+		if (qtyToReceive != null && qtyToReceive.signum() <= 0)
 		{
-			throw new AdempiereException("fixedQtyToIssue shall be positive or not set at all");
+			throw new AdempiereException("qtyToReceive shall be positive or not set at all");
 		}
 
 		this.movementDate = movementDate != null ? movementDate : SystemTime.asZonedDateTime();
-		this.issueFromHU = issueFromHU;
-		qtyPicked = fixedQtyToIssue;
+		this.receiveFromHUId = receiveFromHUId;
+		qtyPicked = qtyToReceive;
 		this.orderId = orderId;
 	}
 
@@ -94,7 +96,8 @@ public class CreatePickedReceiptCommand
 
 	private I_PP_Order_Qty executeInTrx(final IHUContext huContext)
 	{
-		final I_PP_Order_Qty candidate = createReceiptCandidateOrNull(huContext, issueFromHU);
+		final I_M_HU hu = huDAO.getById(receiveFromHUId);
+		final I_PP_Order_Qty candidate = createReceiptCandidateOrNull(huContext, hu);
 
 		if (qtyPicked != null && qtyPicked.signum() != 0)
 		{
