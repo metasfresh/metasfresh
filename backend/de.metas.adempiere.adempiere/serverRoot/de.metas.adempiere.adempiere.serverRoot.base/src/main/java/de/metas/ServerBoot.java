@@ -36,6 +36,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
+import org.springframework.http.MediaType;
+import org.springframework.web.servlet.config.annotation.ContentNegotiationConfigurer;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -203,6 +205,12 @@ public class ServerBoot implements InitializingBean
 				LOG.warn("Failed finding the default downloads path", e);
 				return null;
 			}
+		}
+
+		@Override
+		public void configureContentNegotiation(final ContentNegotiationConfigurer configurer)
+		{
+			configurer.defaultContentType(MediaType.APPLICATION_JSON);
 		}
 	}
 
