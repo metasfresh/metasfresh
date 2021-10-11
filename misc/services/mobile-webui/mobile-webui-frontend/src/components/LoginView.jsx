@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
 import Cookies from 'js-cookie';
 
 import { useAuth } from '../hooks/useAuth';
 import counterpart from 'counterpart';
+import ScreenToaster from './ScreenToaster';
+import { toastError } from '../utils/toast';
 
 /**
  * @file Functional component.
@@ -17,7 +19,6 @@ function LoginRoute() {
   const auth = useAuth();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState(null);
   const { from } = location.state || { from: { pathname: '/' } };
 
   useEffect(() => {
@@ -35,17 +36,11 @@ function LoginRoute() {
 
   const submitForm = (e) => {
     e.preventDefault();
-    setError(null);
-
     if (username && password) {
       auth
         .login(username, password)
-        .then(() => {
-          history.replace(from);
-        })
-        .catch((err) => {
-          setError(err);
-        });
+        .then(() => history.replace(from))
+        .catch((axiosError) => toastError({ axiosError }));
     }
   };
 
@@ -88,10 +83,10 @@ function LoginRoute() {
                 {counterpart.translate('login.submitButton')}
               </button>
             </div>
-            {error ? <p className="help is-danger">{error}</p> : null}
           </div>
         </form>
       </div>
+      <ScreenToaster />
     </div>
   );
 }
