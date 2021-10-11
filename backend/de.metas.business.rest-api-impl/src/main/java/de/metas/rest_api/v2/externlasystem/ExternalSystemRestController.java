@@ -24,6 +24,7 @@ package de.metas.rest_api.v2.externlasystem;
 
 import de.metas.Profiles;
 import de.metas.common.externalsystem.JsonESRuntimeParameterUpsertRequest;
+import de.metas.common.externalsystem.JsonInvokeExternalSystemParams;
 import de.metas.common.rest_api.v2.CreatePInstanceLogRequest;
 import de.metas.common.rest_api.v2.JsonError;
 import de.metas.common.rest_api.v2.issue.JsonCreateIssueResponse;
@@ -51,6 +52,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.annotation.Nullable;
+
 @RestController
 @RequestMapping(value = { MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/externalsystem" })
 @Profile(Profiles.PROFILE_App)
@@ -74,7 +77,8 @@ public class ExternalSystemRestController
 	public ResponseEntity<?> invokeExternalSystem(
 			@PathVariable final String externalSystemConfigType,
 			@PathVariable final String externalSystemChildConfigValue,
-			@PathVariable final String request)
+			@PathVariable final String request,
+			@RequestBody @Nullable final JsonInvokeExternalSystemParams externalSystemParams)
 	{
 		final ExternalSystemType externalSystemType = ExternalSystemType.ofCodeOrNameOrNull(externalSystemConfigType);
 		if (externalSystemType == null)
@@ -86,6 +90,7 @@ public class ExternalSystemRestController
 						.externalSystemType(externalSystemType)
 						.childSystemConfigValue(externalSystemChildConfigValue)
 						.request(request)
+						.jsonInvokeExternalSystemParams(externalSystemParams)
 						.build();
 
 		return getResponse(externalSystemService.invokeExternalSystem(invokeExternalSystemProcessRequest));

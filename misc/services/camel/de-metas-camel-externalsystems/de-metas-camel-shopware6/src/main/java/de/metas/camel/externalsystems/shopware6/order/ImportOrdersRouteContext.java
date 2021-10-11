@@ -96,6 +96,9 @@ public class ImportOrdersRouteContext
 	@Nullable
 	private final JsonMetasfreshId pInstanceId;
 
+	@Getter(AccessLevel.NONE)
+	private final boolean skipNextImportStartingTimestamp;
+
 	@Nullable
 	@Getter(AccessLevel.NONE)
 	private String shippingBPLocationExternalId;
@@ -160,6 +163,11 @@ public class ImportOrdersRouteContext
 
 	public void setNextImportStartingTimestamp(@NonNull final DateAndImportStatus dateAndImportStatus)
 	{
+		if (this.skipNextImportStartingTimestamp)
+		{
+			return;
+		}
+
 		if (this.nextImportStartingTimestamp == null)
 		{
 			this.nextImportStartingTimestamp = dateAndImportStatus;
@@ -204,7 +212,7 @@ public class ImportOrdersRouteContext
 	@NonNull
 	public Optional<Instant> getNextImportStartingTimestamp()
 	{
-		if (nextImportStartingTimestamp == null)
+		if (this.skipNextImportStartingTimestamp || nextImportStartingTimestamp == null)
 		{
 			return Optional.empty();
 		}

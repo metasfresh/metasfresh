@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-camel-shopware6
+ * de-metas-common-externalsystem
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,28 +20,25 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.shopware6.api.model;
+package de.metas.common.externalsystem;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.Builder;
 import lombok.NonNull;
-import lombok.Singular;
 import lombok.Value;
 
-import java.util.List;
+import java.util.Map;
 
 @Value
-@JsonDeserialize(builder = QueryRequest.QueryRequestBuilder.class)
-public class QueryRequest implements Shopware6QueryRequest
+public class JsonInvokeExternalSystemParams
 {
-	@NonNull
-	@JsonProperty("filter")
-	List<JsonQuery> queries;
+	Map<String, String> params;
 
 	@Builder
-	public QueryRequest(@NonNull @Singular @JsonProperty("filter") final List<JsonQuery> queries)
+	@JsonCreator
+	public JsonInvokeExternalSystemParams(@JsonProperty("params") @NonNull final Map<String, String> params)
 	{
-		this.queries = queries;
+		this.params = params;
 	}
 }
