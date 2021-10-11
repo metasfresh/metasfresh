@@ -1,7 +1,8 @@
 import axios from 'axios';
+import { apiBasePath } from '../constants';
 
 export function postQtyPicked({ wfProcessId, activityId, stepId, qtyPicked, qtyRejectedReasonCode }) {
-  return axios.post(`${config.SERVER_URL}/picking/events`, {
+  return axios.post(`${apiBasePath}/picking/events`, {
     events: [
       {
         wfProcessId,

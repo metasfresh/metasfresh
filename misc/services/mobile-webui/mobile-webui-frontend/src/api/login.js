@@ -1,7 +1,8 @@
 import axios from 'axios';
+import { apiBasePath } from '../constants';
 
 export function loginRequest(username, password) {
-  return axios.post(`${config.SERVER_URL}/auth`, {
+  return axios.post(`${apiBasePath}/auth`, {
     username,
     password,
   });
