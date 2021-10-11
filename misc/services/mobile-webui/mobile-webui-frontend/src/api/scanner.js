@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { apiBasePath } from '../constants';
 
 /**
  * @method scannedBarcode
@@ -10,7 +11,7 @@ import axios from 'axios';
  * @returns
  */
 export function postScannedBarcode({ wfProcessId, activityId, scannedBarcode }) {
-  return axios.post(`${config.SERVER_URL}/userWorkflows/wfProcess/${wfProcessId}/${activityId}/scannedBarcode`, {
+  return axios.post(`${apiBasePath}/userWorkflows/wfProcess/${wfProcessId}/${activityId}/scannedBarcode`, {
     barcode: scannedBarcode,
   });
 }
