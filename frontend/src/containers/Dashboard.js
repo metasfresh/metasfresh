@@ -1,8 +1,7 @@
-import { Hints } from 'intro.js-react';
+// import { Hints } from 'intro.js-react';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-
 import Container from '../components/Container';
 import DraggableWrapper from '../components/dashboard/DraggableWrapper';
 
@@ -73,9 +72,10 @@ export class Dashboard extends Component {
       indicator,
       processStatus,
       includedView,
-      enableTutorial,
+      // enableTutorial,
     } = this.props;
-    const { editmode, hintsEnabled, introHints } = this.state;
+    // const { editmode, hintsEnabled, introHints } = this.state;
+    const { editmode } = this.state;
 
     return (
       <Container
@@ -98,9 +98,11 @@ export class Dashboard extends Component {
           />
         </div>
 
-        {enableTutorial && introHints && introHints.length > 0 && (
+        {/* Uncomment the code below if you want to enable the tutorial feature */}
+
+        {/* {enableTutorial && introHints && introHints.length > 0 && (
           <Hints enabled={hintsEnabled} hints={introHints} />
-        )}
+        )} */}
       </Container>
     );
   }

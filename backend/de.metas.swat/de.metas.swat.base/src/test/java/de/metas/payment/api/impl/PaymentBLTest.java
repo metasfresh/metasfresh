@@ -5,12 +5,14 @@ import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.banking.BankStatementId;
 import de.metas.banking.BankStatementLineId;
 import de.metas.banking.BankStatementLineRefId;
+import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.common.util.time.SystemTime;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.currency.exceptions.NoCurrencyRateFoundException;
 import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.document.engine.DocStatus;
+import de.metas.document.location.impl.DocumentLocationBL;
 import de.metas.invoice.interceptor.C_Invoice;
 import de.metas.money.CurrencyId;
 import de.metas.payment.PaymentId;
@@ -21,6 +23,7 @@ import de.metas.payment.processor.PaymentProcessorService;
 import de.metas.payment.reservation.PaymentReservationCaptureRepository;
 import de.metas.payment.reservation.PaymentReservationRepository;
 import de.metas.payment.reservation.PaymentReservationService;
+import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
@@ -34,7 +37,6 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_C_Payment;
-import org.junit.Assert;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -50,8 +52,7 @@ import java.util.Optional;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -146,24 +147,24 @@ public class PaymentBLTest
 			payment.setOverUnderAmt(BigDecimal.ONE);
 			paymentBL.updateAmounts(payment, I_C_Payment.COLUMNNAME_C_DocType_ID, /* creditMemoAdjusted */false);
 
-			Assert.assertEquals("Incorrect over/under amount", BigDecimal.ZERO, payment.getOverUnderAmt());
-			Assert.assertEquals("Incorrect discount amount", BigDecimal.ZERO, payment.getDiscountAmt());
-			Assert.assertEquals("Incorrect writteoff amount", BigDecimal.ZERO, payment.getWriteOffAmt());
+			Assertions.assertEquals(BigDecimal.ZERO, payment.getOverUnderAmt(), "Incorrect over/under amount");
+			Assertions.assertEquals(BigDecimal.ZERO, payment.getDiscountAmt(), "Incorrect discount amount");
+			Assertions.assertEquals(BigDecimal.ZERO, payment.getWriteOffAmt(), "Incorrect writteoff amount");
 
 			paymentBL.updateAmounts(payment, I_C_Payment.COLUMNNAME_C_DocType_ID, /* creditMemoAdjusted */false);
 
-			Assert.assertEquals("Incorrect over/under amount", BigDecimal.ZERO, payment.getOverUnderAmt());
-			Assert.assertEquals("Incorrect discount amount", BigDecimal.ZERO, payment.getDiscountAmt());
-			Assert.assertEquals("Incorrect writeoff amount", BigDecimal.ZERO, payment.getWriteOffAmt());
+			Assertions.assertEquals(BigDecimal.ZERO, payment.getOverUnderAmt(), "Incorrect over/under amount");
+			Assertions.assertEquals(BigDecimal.ZERO, payment.getDiscountAmt(), "Incorrect discount amount");
+			Assertions.assertEquals(BigDecimal.ZERO, payment.getWriteOffAmt(), "Incorrect writeoff amount");
 
 			payment.setDiscountAmt(BigDecimal.ONE);
 			payment.setWriteOffAmt(BigDecimal.ONE);
 			payment.setOverUnderAmt(BigDecimal.ONE);
 			paymentBL.updateAmounts(payment, I_C_Payment.COLUMNNAME_C_Currency_ID, /* creditMemoAdjusted */false);
 
-			Assert.assertEquals("Incorrect over/under amount", BigDecimal.ZERO, payment.getOverUnderAmt());
-			Assert.assertEquals("Incorrect discount amount", BigDecimal.ZERO, payment.getDiscountAmt());
-			Assert.assertEquals("Incorrect writteoff amount", BigDecimal.ZERO, payment.getWriteOffAmt());
+			Assertions.assertEquals(BigDecimal.ZERO, payment.getOverUnderAmt(), "Incorrect over/under amount");
+			Assertions.assertEquals(BigDecimal.ZERO, payment.getDiscountAmt(), "Incorrect discount amount");
+			Assertions.assertEquals(BigDecimal.ZERO, payment.getWriteOffAmt(), "Incorrect writteoff amount");
 			payment.setC_Currency_ID(currencyEUR.getRepoId());
 			saveRecord(payment);
 
@@ -172,28 +173,28 @@ public class PaymentBLTest
 			payment.setOverUnderAmt(BigDecimal.ONE);
 			paymentBL.onCurrencyChange(payment);
 
-			Assert.assertEquals("Incorrect over/under amount", BigDecimal.ZERO, payment.getOverUnderAmt());
-			Assert.assertEquals("Incorrect discount amount", BigDecimal.ZERO, payment.getDiscountAmt());
-			Assert.assertEquals("Incorrect writteoff amount", BigDecimal.ZERO, payment.getWriteOffAmt());
+			Assertions.assertEquals(BigDecimal.ZERO, payment.getOverUnderAmt(), "Incorrect over/under amount");
+			Assertions.assertEquals(BigDecimal.ZERO, payment.getDiscountAmt(), "Incorrect discount amount");
+			Assertions.assertEquals(BigDecimal.ZERO, payment.getWriteOffAmt(), "Incorrect writteoff amount");
 
 			paymentBL.updateAmounts(payment, I_C_Payment.COLUMNNAME_C_ConversionType_ID, /* creditMemoAdjusted */false);
 
-			Assert.assertEquals("Incorrect over/under amount", BigDecimal.ZERO, payment.getOverUnderAmt());
-			Assert.assertEquals("Incorrect discount amount", BigDecimal.ZERO, payment.getDiscountAmt());
-			Assert.assertEquals("Incorrect writeoff amount", BigDecimal.ZERO, payment.getWriteOffAmt());
+			Assertions.assertEquals(BigDecimal.ZERO, payment.getOverUnderAmt(), "Incorrect over/under amount");
+			Assertions.assertEquals(BigDecimal.ZERO, payment.getDiscountAmt(), "Incorrect discount amount");
+			Assertions.assertEquals(BigDecimal.ZERO, payment.getWriteOffAmt(), "Incorrect writeoff amount");
 
-			Assert.assertEquals("Incorrect over/under amount", BigDecimal.ZERO, payment.getOverUnderAmt());
-			Assert.assertEquals("Incorrect discount amount", BigDecimal.ZERO, payment.getDiscountAmt());
-			Assert.assertEquals("Incorrect writeoff amount", BigDecimal.ZERO, payment.getWriteOffAmt());
+			Assertions.assertEquals(BigDecimal.ZERO, payment.getOverUnderAmt(), "Incorrect over/under amount");
+			Assertions.assertEquals(BigDecimal.ZERO, payment.getDiscountAmt(), "Incorrect discount amount");
+			Assertions.assertEquals(BigDecimal.ZERO, payment.getWriteOffAmt(), "Incorrect writeoff amount");
 
 			payment.setDiscountAmt(BigDecimal.ONE);
 			payment.setWriteOffAmt(BigDecimal.ONE);
 			payment.setOverUnderAmt(BigDecimal.ONE);
 			paymentBL.updateAmounts(payment, I_C_Payment.COLUMNNAME_C_Currency_ID, /* creditMemoAdjusted */false);
 
-			Assert.assertEquals("Incorrect over/under amount", BigDecimal.ZERO, payment.getOverUnderAmt());
-			Assert.assertEquals("Incorrect discount amount", BigDecimal.ZERO, payment.getDiscountAmt());
-			Assert.assertEquals("Incorrect writteoff amount", BigDecimal.ZERO, payment.getWriteOffAmt());
+			Assertions.assertEquals(BigDecimal.ZERO, payment.getOverUnderAmt(), "Incorrect over/under amount");
+			Assertions.assertEquals(BigDecimal.ZERO, payment.getDiscountAmt(), "Incorrect discount amount");
+			Assertions.assertEquals(BigDecimal.ZERO, payment.getWriteOffAmt(), "Incorrect writteoff amount");
 			payment.setC_Currency_ID(currencyEUR.getRepoId());
 			payment.setC_Invoice_ID(getAllInvoices().get(0).getC_Invoice_ID());
 			invoice.setC_Currency_ID(currencyCHF.getRepoId());
@@ -203,9 +204,9 @@ public class PaymentBLTest
 
 			paymentBL.updateAmounts(payment, I_C_Payment.COLUMNNAME_C_Currency_ID, /* creditMemoAdjusted */false);
 
-			Assert.assertEquals("Incorrect over/under amount", 0, payment.getOverUnderAmt().signum());
-			Assert.assertEquals("Incorrect discount amount", 0, payment.getDiscountAmt().signum());
-			Assert.assertEquals("Incorrect writteoff amount", 0, payment.getWriteOffAmt().signum());
+			Assertions.assertEquals(0, payment.getOverUnderAmt().signum(), "Incorrect over/under amount");
+			Assertions.assertEquals(0, payment.getDiscountAmt().signum(), "Incorrect discount amount");
+			Assertions.assertEquals(0, payment.getWriteOffAmt().signum(), "Incorrect writteoff amount");
 
 			payment.setAD_Org_ID(1);
 			// NOTE: Trick to reset the cached invoice, else payment.getC_Invoice() will return the cached invoice
@@ -229,7 +230,7 @@ public class PaymentBLTest
 
 			paymentBL.updateAmounts(payment, I_C_Payment.COLUMNNAME_IsOverUnderPayment, /* creditMemoAdjusted */false);
 
-			Assert.assertEquals("Incorrect writeoff amount", new BigDecimal("10.0"), payment.getWriteOffAmt());
+			Assertions.assertEquals(new BigDecimal("10.0"), payment.getWriteOffAmt(), "Incorrect writeoff amount");
 
 			// Test over/under completion
 			payment.setPayAmt(new BigDecimal("60.0"));
@@ -238,9 +239,9 @@ public class PaymentBLTest
 
 			paymentBL.updateAmounts(payment, I_C_Payment.COLUMNNAME_IsOverUnderPayment, /* creditMemoAdjusted */false);
 
-			Assert.assertEquals("Incorrect over/under amount", BigDecimal.valueOf(-10.0), payment.getOverUnderAmt());
+			Assertions.assertEquals(BigDecimal.valueOf(-10.0), payment.getOverUnderAmt(), "Incorrect over/under amount");
 
-			Assert.assertEquals("Incorrect payment amount in EUR", new BigDecimal("60.0"), payment.getPayAmt());
+			Assertions.assertEquals(new BigDecimal("60.0"), payment.getPayAmt(), "Incorrect payment amount in EUR");
 
 			// Test currency change
 			payment.setC_Currency_ID(currencyCHF.getRepoId());
@@ -248,11 +249,11 @@ public class PaymentBLTest
 
 			paymentBL.updateAmounts(payment, I_C_Payment.COLUMNNAME_C_Currency_ID, /* creditMemoAdjusted */false);
 
-			Assert.assertEquals("Incorrect pay amount", 0, new BigDecimal("120.0").compareTo(payment.getPayAmt()));
+			Assertions.assertEquals(0, new BigDecimal("120.0").compareTo(payment.getPayAmt()), "Incorrect pay amount");
 
 			paymentBL.updateAmounts(payment, null, /* creditMemoAdjusted */false); // B==D
 
-			Assert.assertEquals("Incorrect pay amount", 0, new BigDecimal("120.0").compareTo(payment.getPayAmt()));
+			Assertions.assertEquals(0, new BigDecimal("120.0").compareTo(payment.getPayAmt()), "Incorrect pay amount");
 
 			currencyDAO.setRate(currencyEUR, currencyCHF, new BigDecimal("2.0"));
 			currencyDAO.setRate(currencyCHF, currencyEUR, new BigDecimal("0.5"));
@@ -260,7 +261,7 @@ public class PaymentBLTest
 			// Called manually because we can't test properly with "creditMemoAdjusted" true
 			paymentBL.onPayAmtChange(payment, /* creditMemoAdjusted */false);
 
-			Assert.assertTrue("Incorrect payment amount in CHF", new BigDecimal("120.0").compareTo(payment.getPayAmt()) == 0);
+			Assertions.assertTrue(new BigDecimal("120.0").compareTo(payment.getPayAmt()) == 0, "Incorrect payment amount in CHF");
 
 			payment.setC_Invoice_ID(0);
 			payment.setC_Order_ID(order.getC_Order_ID());
@@ -505,7 +506,9 @@ public class PaymentBLTest
 			final @NonNull PaymentReservationRepository reservationsRepo = new PaymentReservationRepository();
 			final @NonNull PaymentReservationCaptureRepository capturesRepo = new PaymentReservationCaptureRepository();
 			final @NonNull PaymentProcessorService paymentProcessors = new PaymentProcessorService(Optional.empty());
-			c_invoiceInterceptor = new C_Invoice(new PaymentReservationService(reservationsRepo, capturesRepo, paymentProcessors));
+			c_invoiceInterceptor = new C_Invoice(
+					new PaymentReservationService(reservationsRepo, capturesRepo, paymentProcessors),
+					new DocumentLocationBL(new BPartnerBL(new UserRepository())));
 		}
 
 		@SuppressWarnings("ConstantConditions")

@@ -359,20 +359,25 @@ export class RawLookup extends Component {
 
     typeaheadRequest.then((response) => {
       let values = response.data.values || [];
+      const isAlwaysDisplayNewBPartner = response.data
+        .isAlwaysDisplayNewBPartner
+        ? true
+        : false;
       const hasMoreResults = response.data.hasMoreResults ? true : false;
       let list = null;
       const newState = {
         loading: false,
       };
 
+      const optionNew = { key: 'NEW', caption: newRecordCaption };
       if (values.length === 0 && !isModal) {
-        const optionNew = { key: 'NEW', caption: newRecordCaption };
         list = [optionNew];
 
         newState.forceEmpty = true;
         newState.selected = optionNew;
       } else {
         list = values;
+        isAlwaysDisplayNewBPartner && list.unshift(optionNew);
 
         newState.forceEmpty = false;
         newState.selected = advSearchWindowId ? values[1] : values[0];
@@ -578,7 +583,9 @@ export class RawLookup extends Component {
                 <SelectionDropdown
                   loading={loading}
                   options={list}
-                  empty="No results found"
+                  empty={`${counterpart.translate(
+                    'widget.lookup.hasNoResults'
+                  )}`}
                   forceEmpty={forceEmpty}
                   selected={selected}
                   width={

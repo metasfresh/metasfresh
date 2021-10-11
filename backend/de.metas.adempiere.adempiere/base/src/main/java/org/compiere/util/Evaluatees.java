@@ -1,5 +1,18 @@
 package org.compiere.util;
 
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import de.metas.util.Check;
+import groovy.transform.ToString;
+import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.PlainContextAware;
+import org.adempiere.util.api.IRangeAwareParams;
+import org.adempiere.util.lang.ITableRecordReference;
+
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Arrays;
@@ -8,25 +21,11 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
-
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.api.IRangeAwareParams;
-import org.adempiere.util.lang.ITableRecordReference;
-
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.MoreObjects;
-import java.util.Objects;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-
-import de.metas.util.Check;
-import groovy.transform.ToString;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -63,7 +62,7 @@ public final class Evaluatees
 		super();
 	}
 
-	public static Evaluatee2 ofSingleton(final String variableName, final Object value)
+	public static Evaluatee2 ofSingleton(final String variableName, @Nullable final Object value)
 	{
 		return new SingletonEvaluatee(variableName, value);
 	}
@@ -73,12 +72,7 @@ public final class Evaluatees
 		return new SupplierEvaluatee(variableName, supplier);
 	}
 
-	public static Evaluatee ofSupplier(final String variableName, final com.google.common.base.Supplier<?> supplier)
-	{
-		return new GuavaSupplierEvaluatee(variableName, supplier);
-	}
-
-	public static Evaluatee2 ofMap(final Map<String, ? extends Object> map)
+	public static Evaluatee2 ofMap(final Map<String, ?> map)
 	{
 		return new MapEvaluatee(map);
 	}
@@ -123,9 +117,6 @@ public final class Evaluatees
 
 	/**
 	 * Compose all evaluates which are not null
-	 *
-	 * @param evaluatees
-	 * @return
 	 */
 	public static Evaluatee2 composeNotNulls(@NonNull final Evaluatee... evaluatees)
 	{
@@ -153,7 +144,7 @@ public final class Evaluatees
 		public String toString()
 		{
 			return "EMPTY";
-		};
+		}
 
 		@Override
 		public boolean has_Variable(final String variableName)
@@ -161,12 +152,14 @@ public final class Evaluatees
 			return false;
 		}
 
+		@Nullable
 		@Override
 		public String get_ValueAsString(final String variableName)
 		{
 			return null;
 		}
 
+		@Nullable
 		@Override
 		public String get_ValueOldAsString(final String variableName)
 		{
@@ -185,7 +178,7 @@ public final class Evaluatees
 		private final Map<String, Object> map;
 
 		@SuppressWarnings("unchecked")
-		private MapEvaluatee(@NonNull final Map<String, ? extends Object> map)
+		private MapEvaluatee(@NonNull final Map<String, ?> map)
 		{
 			Check.assumeNotNull(map, "map not null");
 			this.map = (Map<String, Object>)map;
@@ -207,6 +200,7 @@ public final class Evaluatees
 			return value;
 		}
 
+		@Nullable
 		@Override
 		public String get_ValueAsString(final String variableName)
 		{
@@ -220,6 +214,7 @@ public final class Evaluatees
 			return map.containsKey(variableName);
 		}
 
+		@Nullable
 		@Override
 		public String get_ValueOldAsString(final String variableName)
 		{
@@ -337,6 +332,7 @@ public final class Evaluatees
 			this.sources = ImmutableList.copyOf(sources);
 		}
 
+		@Nullable
 		@Override
 		public <T> T get_ValueAsObject(final String variableName)
 		{
@@ -353,6 +349,7 @@ public final class Evaluatees
 			return null;
 		}
 
+		@Nullable
 		@Override
 		public String get_ValueAsString(final String variableName)
 		{
@@ -381,6 +378,7 @@ public final class Evaluatees
 			return false;
 		}
 
+		@Nullable
 		@Override
 		public String get_ValueOldAsString(final String variableName)
 		{
@@ -414,7 +412,7 @@ public final class Evaluatees
 		private final Object value;
 		private final String valueStr;
 
-		private SingletonEvaluatee(final String variableName, final Object value)
+		private SingletonEvaluatee(final String variableName, @Nullable final Object value)
 		{
 			super();
 			Check.assumeNotEmpty(variableName, "variableName not empty");
@@ -431,6 +429,7 @@ public final class Evaluatees
 					.toString();
 		}
 
+		@Nullable
 		@Override
 		public <T> T get_ValueAsObject(final String variableName)
 		{
@@ -443,6 +442,7 @@ public final class Evaluatees
 			return valueCasted;
 		}
 
+		@Nullable
 		@Override
 		public String get_ValueAsString(final String variableName)
 		{
@@ -459,6 +459,7 @@ public final class Evaluatees
 			return this.variableName.equals(variableName);
 		}
 
+		@Nullable
 		@Override
 		public String get_ValueOldAsString(final String variableName)
 		{
@@ -486,6 +487,7 @@ public final class Evaluatees
 			this.supplier = supplier;
 		}
 
+		@Nullable
 		@Override
 		public String get_ValueAsString(final String variableName)
 		{
@@ -497,53 +499,7 @@ public final class Evaluatees
 			return valueObj == null ? null : valueObj.toString();
 		}
 
-		@Override
-		public <T> T get_ValueAsObject(final String variableName)
-		{
-			if (!this.variableName.equals(variableName))
-			{
-				return null;
-			}
-
-			final Object valueObj = supplier.get();
-
-			@SuppressWarnings("unchecked")
-			final T valueConv = (T)valueObj;
-			return valueConv;
-		}
-	}
-
-	/**
-	 * Guava Supplier implementation of {@link Evaluatee2}
-	 *
-	 * @author tsa
-	 *
-	 */
-	private static final class GuavaSupplierEvaluatee implements Evaluatee
-	{
-		private final String variableName;
-		private final com.google.common.base.Supplier<?> supplier;
-
-		private GuavaSupplierEvaluatee(final String variableName, final com.google.common.base.Supplier<?> supplier)
-		{
-			super();
-			Check.assumeNotEmpty(variableName, "variableName not empty");
-			Check.assumeNotNull(supplier, "Parameter supplier is not null");
-			this.variableName = variableName;
-			this.supplier = supplier;
-		}
-
-		@Override
-		public String get_ValueAsString(final String variableName)
-		{
-			if (!this.variableName.equals(variableName))
-			{
-				return null;
-			}
-			final Object valueObj = supplier.get();
-			return valueObj == null ? null : valueObj.toString();
-		}
-
+		@Nullable
 		@Override
 		public <T> T get_ValueAsObject(final String variableName)
 		{
@@ -562,10 +518,6 @@ public final class Evaluatees
 
 	/**
 	 * Wraps given <code>evaluatee</code> but it will return <code>null</code> for the <code>excludeVariableName</code>.
-	 *
-	 * @param evaluatee
-	 * @param excludeVariableName
-	 * @return
 	 */
 	public static Evaluatee excludingVariables(final Evaluatee evaluatee, final String excludeVariableName)
 	{
@@ -593,6 +545,7 @@ public final class Evaluatees
 					.toString();
 		}
 
+		@Nullable
 		@Override
 		public <T> T get_ValueAsObject(final String variableName)
 		{
@@ -603,6 +556,7 @@ public final class Evaluatees
 			return parent.get_ValueAsObject(variableName);
 		}
 
+		@Nullable
 		@Override
 		public String get_ValueAsString(final String variableName)
 		{
@@ -614,11 +568,11 @@ public final class Evaluatees
 		}
 
 		@Override
-		public Optional<Object> get_ValueIfExists(final String variableName, final Class<?> targetType)
+		public Optional<Object> get_ValueIfExists(final @NonNull String variableName, final @NonNull Class<?> targetType)
 		{
 			if (excludeVariableName.equals(variableName))
 			{
-				return null;
+				return Optional.empty();
 			}
 			return parent.get_ValueIfExists(variableName, targetType);
 		}
@@ -671,8 +625,7 @@ public final class Evaluatees
 		public Integer get_ValueAsInt(final String variableName, final Integer defaultValue)
 		{
 			final int defaultValueInt = defaultValue != null ? defaultValue : 0;
-			final int value = params.getParameterAsInt(variableName, defaultValueInt);
-			return value;
+			return params.getParameterAsInt(variableName, defaultValueInt);
 		}
 
 		@Override

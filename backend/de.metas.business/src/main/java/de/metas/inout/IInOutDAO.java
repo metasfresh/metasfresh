@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.DocTypeId;
 import de.metas.lang.SOTrx;
+import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.shipping.model.ShipperTransportationId;
@@ -123,4 +124,6 @@ public interface IInOutDAO extends ISingletonService
 	void save(@NonNull I_M_InOut inout);
 
 	void save(@NonNull I_M_InOutLine inoutLine);
+
+	List<I_M_InOutLine> retrieveShipmentLinesForOrderId(Set<OrderId> orderIds);
 }

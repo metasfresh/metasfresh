@@ -1172,11 +1172,11 @@ public final class Env
 		final Timestamp timestamp = parseTimestamp(timestampStr);
 		if (timestamp == null)
 		{
-			final Timestamp sysDate = de.metas.common.util.time.SystemTime.asTimestamp();
+			final Timestamp sysDate = SystemTime.asTimestamp();
 			if (!Adempiere.isUnitTestMode())
 			{
 				// metas: tsa: added a dummy exception to be able to track it quickly
-				s_log.error("No value for '{}' or value '{}' could not be parsed. Returning system date: {}", context, timestampStr, sysDate, new Exception("StackTrace"));
+				s_log.warn("No value for '{}' or value '{}' could not be parsed. Returning system date: {}", context, timestampStr, sysDate);
 			}
 			return sysDate;
 		}

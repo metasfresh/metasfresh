@@ -602,7 +602,7 @@ public class WindowRestController
 		userSession.assertLoggedIn();
 
 		return documentCollection.forDocumentReadonly(documentPath, document -> document.getFieldLookupValuesForQuery(fieldName, query))
-				.transform(page -> JSONLookupValuesPage.of(page, userSession.getAD_Language()));
+				.transform(page -> JSONLookupValuesPage.of(page, userSession.getAD_Language(), userSession.isAlwaysShowNewBPartner()));
 	}
 
 	private JSONLookupValuesList toJSONLookupValuesList(final LookupValuesList lookupValuesList)
