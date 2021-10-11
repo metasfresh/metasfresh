@@ -4,8 +4,10 @@ import de.metas.ui.web.CORSFilter;
 import de.metas.ui.web.WebuiURLs;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.MediaType;
 import org.springframework.session.web.http.CookieSerializer;
 import org.springframework.session.web.http.DefaultCookieSerializer;
+import org.springframework.web.servlet.config.annotation.ContentNegotiationConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import javax.servlet.Filter;
@@ -27,14 +29,20 @@ public class WebConfig implements WebMvcConfigurer
 	public CookieSerializer cookieSerializer()
 	{
 		final DefaultCookieSerializer serializer = new DefaultCookieSerializer();
-		
+
 		final WebuiURLs webuiURLs = WebuiURLs.newInstance();
-		if(webuiURLs.isCrossSiteUsageAllowed())
+		if (webuiURLs.isCrossSiteUsageAllowed())
 		{
 			serializer.setSameSite("None");
 			serializer.setUseSecureCookie(true);
 		}
 		return serializer;
+	}
+
+	@Override
+	public void configureContentNegotiation(final ContentNegotiationConfigurer configurer)
+	{
+		configurer.defaultContentType(MediaType.APPLICATION_JSON);
 	}
 
 	@Bean
