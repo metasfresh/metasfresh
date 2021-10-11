@@ -9,7 +9,6 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.picking.OnOverDelivery;
 import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
@@ -173,13 +172,13 @@ public class ProcessHUsAndPickingCandidateCommand
 						.execute();
 
 				// update qty for the original HU
-				updateManufacturingIssueCandidate(item);
+				updateManufacturingReceiptCandidate(item);
 			}
 
 		}
 	}
 
-	private void updateManufacturingIssueCandidate(@NonNull final PickedHuAndQty item)
+	private void updateManufacturingReceiptCandidate(@NonNull final PickedHuAndQty item)
 	{
 		final HuId huId = item.getOriginalHUId();
 		final Quantity qtyToUpdate = item.getQtyToPick().subtract(item.getQtyPicked());
