@@ -15,6 +15,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Set;
 
+import de.metas.handlingunits.picking.PickingCandidateRepository;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.util.comparator.FixedOrderByKeyComparator;
 
@@ -38,6 +39,7 @@ import de.metas.picking.service.PackingItemsMap;
 import de.metas.picking.service.impl.HU2PackingItemsAllocator;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
+import org.compiere.SpringContextHolder;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -96,6 +98,8 @@ public class HU2PackingItemsAllocatorTwoSchedsTest extends AbstractHUTest
 		huDefIFCOWithTen = createHuDefIFCO(helper, COUNT_Tomatoes_Per_IFCO);
 		huDefIFCOWithEleven = createHuDefIFCO(helper, COUNT_Tomatoes_Per_IFCO + 1);
 		huDefPalet = createHuDefPalet(helper, huDefIFCOWithTen);
+
+		SpringContextHolder.registerJUnitBean(new PickingCandidateRepository());
 	}
 
 	@Override

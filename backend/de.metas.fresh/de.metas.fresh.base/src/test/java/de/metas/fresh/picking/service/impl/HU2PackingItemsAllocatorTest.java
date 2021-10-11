@@ -39,11 +39,13 @@ import java.util.Collections;
 import java.util.List;
 
 import de.metas.handlingunits.picking.OnOverDelivery;
+import de.metas.handlingunits.picking.PickingCandidateRepository;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.SpringContextHolder;
 import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -111,6 +113,7 @@ public class HU2PackingItemsAllocatorTest extends AbstractHUTest
 		huDefIFCO = createHuDefIFCO(helper, COUNT_Tomatoes_Per_IFCO);
 		huDefPalet = createHuDefPalet(helper, huDefIFCO);
 
+		SpringContextHolder.registerJUnitBean(new PickingCandidateRepository());
 	}
 
 	private void setupContext(final int qtyToDeliver)
