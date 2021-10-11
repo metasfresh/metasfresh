@@ -32,6 +32,7 @@ import org.eevolution.api.PPCostCollectorId;
 import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 public interface IHUPPOrderQtyDAO extends ISingletonService
@@ -65,5 +66,5 @@ public interface IHUPPOrderQtyDAO extends ISingletonService
 
 	List<I_PP_Order_Qty> retrieveOrderQtyForFinishedGoodsReceive(PPOrderId ppOrderId);
 
-	I_PP_Order_Qty retrieveOrderQtyForHu(@NonNull PPOrderId ppOrderId, @NonNull HuId huId);
+	Optional<I_PP_Order_Qty> retrieveOrderQtyForHu(@NonNull PPOrderId ppOrderId, @NonNull HuId huId);
 }

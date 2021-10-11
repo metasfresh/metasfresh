@@ -110,7 +110,7 @@ public class HU2PackingItemsAllocator
 	private Quantity _qtyToPackRemaining = null;
 
 	@NonNull
-	final Map<HuId, PickedHuAndQty> pickedHus = new HashMap<>();
+	private final HashMap<HuId, PickedHuAndQty> pickedHus = new HashMap<>();
 
 	/**
 	 * @param pickFromHUs the HUs to assign to the shipment schedule. IMPORTANT: The all need be out of transaction.

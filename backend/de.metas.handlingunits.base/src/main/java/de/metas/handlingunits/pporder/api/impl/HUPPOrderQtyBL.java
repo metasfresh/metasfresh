@@ -57,8 +57,7 @@ public class HUPPOrderQtyBL implements IHUPPOrderQtyBL
 	private final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	private final IHUPPOrderQtyDAO huPPOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
-	private	final IHUPPOrderBL ppOrderBL = Services.get(IHUPPOrderBL.class);
-
+	private final IHUPPOrderBL ppOrderBL = Services.get(IHUPPOrderBL.class);
 
 	@Override
 	public void reverseDraftCandidate(final I_PP_Order_Qty candidate)
@@ -170,14 +169,12 @@ public class HUPPOrderQtyBL implements IHUPPOrderQtyBL
 		final HuId huId = request.getHuID();
 		final Quantity qtyToUpdate = request.getQtyReceived();
 
-		final I_PP_Order_Qty candidate = huPPOrderQtyDAO.retrieveOrderQtyForHu(pickingOrderId, huId);
-		if (candidate != null
-				&& !candidate.isProcessed()
-				&& isReceipt(candidate))
-		{
-			I_M_HU hu = candidate.getM_HU();
-			candidate.setQty(qtyToUpdate.toBigDecimal());
-			huPPOrderQtyDAO.save(candidate);
-		}
+		huPPOrderQtyDAO.retrieveOrderQtyForHu(pickingOrderId, huId)
+				.filter(candidate -> !candidate.isProcessed() && isReceipt(candidate))
+				.ifPresent(candidate -> {
+					I_M_HU hu = candidate.getM_HU();
+					candidate.setQty(qtyToUpdate.toBigDecimal());
+					huPPOrderQtyDAO.save(candidate);
+				});
 	}
 }

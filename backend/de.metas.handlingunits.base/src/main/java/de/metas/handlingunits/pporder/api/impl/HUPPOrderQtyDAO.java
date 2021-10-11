@@ -49,6 +49,7 @@ import org.eevolution.api.PPCostCollectorId;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -95,7 +96,7 @@ public class HUPPOrderQtyDAO implements IHUPPOrderQtyDAO
 		final I_PP_Order_Qty record = newInstance(I_PP_Order_Qty.class);
 
 		record.setPP_Order_ID(request.getOrderId().getRepoId());
-		record.setPP_Order_BOMLine_ID(request.getOrderBOMLineId() != null ? request.getOrderBOMLineId().getRepoId() : -1);
+		record.setPP_Order_BOMLine_ID(PPOrderBOMLineId.toRepoId(request.getOrderBOMLineId()));
 
 		record.setM_Locator_ID(LocatorId.toRepoId(request.getLocatorId()));
 		record.setM_HU_ID(request.getIssueFromHUId().getRepoId());
@@ -169,7 +170,7 @@ public class HUPPOrderQtyDAO implements IHUPPOrderQtyDAO
 	}
 
 	@Override
-	public I_PP_Order_Qty retrieveOrderQtyForHu(
+	public Optional<I_PP_Order_Qty> retrieveOrderQtyForHu(
 			@NonNull final PPOrderId ppOrderId,
 			@NonNull final HuId huId)
 	{
@@ -178,7 +179,6 @@ public class HUPPOrderQtyDAO implements IHUPPOrderQtyDAO
 				.filter(cand -> cand.getM_HU_ID() == huId.getRepoId())
 				.reduce((cand1, cand2) -> {
 					throw new HUException("Expected only one candidate but got: " + cand1 + ", " + cand2);
-				})
-				.orElse(null);
+				});
 	}
 }
