@@ -13,6 +13,7 @@ import de.metas.handlingunits.pporder.api.CreateIssueCandidateRequest;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyBL;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
+import de.metas.handlingunits.pporder.api.UpdateDraftReceiptCandidateRequest;
 import de.metas.handlingunits.pporder.api.impl.hu_pporder_issue_producer.ReverseDraftIssues;
 import de.metas.material.planning.pporder.DraftPPOrderBOMLineQuantities;
 import de.metas.material.planning.pporder.DraftPPOrderQuantities;
@@ -159,5 +160,28 @@ public class HUPPOrderQtyBL implements IHUPPOrderQtyBL
 			@NonNull final DraftPPOrderBOMLineQuantities lineToAdd)
 	{
 		return line != null ? line.add(lineToAdd, uomConversionBL) : lineToAdd;
+	}
+
+	public boolean isReceipt(@NonNull final I_PP_Order_Qty ppOrderQty)
+	{
+		return ppOrderQty.getPP_Order_BOMLine_ID() <= 0;
+	}
+
+	@Override
+	public void updateDraftReceiptCandidate(@NonNull UpdateDraftReceiptCandidateRequest request)
+	{
+		final PPOrderId pickingOrderId = request.getPickingOrderId();
+		final HuId huId = request.getHuID();
+		final Quantity qtyToUpdate = request.getQtyReceived();
+
+		final I_PP_Order_Qty candidate = huPPOrderQtyDAO.retrieveOrderQtyForHu(pickingOrderId, huId);
+		if (candidate != null
+				&& !candidate.isProcessed()
+				&& isReceipt(candidate))
+		{
+			I_M_HU hu = candidate.getM_HU();
+			candidate.setQty(qtyToUpdate.toBigDecimal());
+			huPPOrderQtyDAO.save(candidate);
+		}
 	}
 }

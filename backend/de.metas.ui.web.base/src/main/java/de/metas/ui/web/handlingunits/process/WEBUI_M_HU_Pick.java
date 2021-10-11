@@ -241,7 +241,7 @@ public class WEBUI_M_HU_Pick extends ViewBasedProcessTemplate implements IProces
 		final PPOrderLinesView ppOrderView = (PPOrderLinesView)getView();
 		pickingCandidateService.processForHUIds(ImmutableSet.of(huId),
 												shipmentScheduleId,
-												OnOverDelivery.ofCode(String.valueOf(isTakeWholeHU)),
+												OnOverDelivery.ofTakeWholeHUFlag(isTakeWholeHU),
 												ppOrderView.getPpOrderId());
 	}
 

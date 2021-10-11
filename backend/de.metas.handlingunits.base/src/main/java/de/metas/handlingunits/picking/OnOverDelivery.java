@@ -46,4 +46,10 @@ public enum OnOverDelivery implements ReferenceListAwareEnum
 	{
 		return FALLBACK.equals(this);
 	}
+
+	public static OnOverDelivery ofTakeWholeHUFlag(boolean isTakeWholeHU)
+	{
+		final String value = String.valueOf(isTakeWholeHU);
+		return ofCode(value);
+	}
 }

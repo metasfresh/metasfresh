@@ -13,7 +13,8 @@ import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.picking.OnOverDelivery;
 import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
-import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
+import de.metas.handlingunits.pporder.api.IHUPPOrderQtyBL;
+import de.metas.handlingunits.pporder.api.UpdateDraftReceiptCandidateRequest;
 import de.metas.handlingunits.pporder.api.impl.hu_pporder_issue_producer.CreatePickedReceiptCommand;
 import de.metas.handlingunits.sourcehu.HuId2SourceHUsService;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
@@ -84,7 +85,7 @@ public class ProcessHUsAndPickingCandidateCommand
 	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final transient IHandlingUnitsDAO handlingUnitsRepo = Services.get(IHandlingUnitsDAO.class);
 	private final transient IShipmentSchedulePA shipmentSchedulesRepo = Services.get(IShipmentSchedulePA.class);
-	private final IHUPPOrderQtyDAO huPPOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
+	private final IHUPPOrderQtyBL huPPOrderQtyBL = Services.get(IHUPPOrderQtyBL.class);
 	private final HuId2SourceHUsService sourceHUsRepository;
 	private final PickingCandidateRepository pickingCandidateRepository;
 
@@ -184,12 +185,14 @@ public class ProcessHUsAndPickingCandidateCommand
 		final HuId huId = item.getOriginalHUId();
 		final Quantity qtyToUpdate = item.getQtyToPick().subtract(item.getQtyPicked());
 
-		final I_PP_Order_Qty candidate = huPPOrderQtyDAO.retrieveOrderQtyForHu(pickingOrderId, huId);
-		if (candidate != null)
-		{
-			candidate.setQty(qtyToUpdate.toBigDecimal());
-			huPPOrderQtyDAO.save(candidate);
-		}
+		final UpdateDraftReceiptCandidateRequest request = UpdateDraftReceiptCandidateRequest.builder()
+				.pickingOrderId(pickingOrderId)
+				.huID(huId)
+				.qtyReceived(qtyToUpdate)
+				.build();
+
+		huPPOrderQtyBL.updateDraftReceiptCandidate(request);
+
 	}
 
 	private void allocateHUsToShipmentSchedule()
@@ -292,7 +295,7 @@ public class ProcessHUsAndPickingCandidateCommand
 		return pickingCandidates;
 	}
 
-	private PickedHuAndQty getPickedHuAndQty(@NonNull final PickingCandidate pc)
+	private PickedHuAndQty getPickedHuAndQty(@Nullable final PickingCandidate pc)
 	{
 		final HuId initialHuId =  pc.getPickFrom().getHuId();
 		if (initialHuId != null)
@@ -303,7 +306,7 @@ public class ProcessHUsAndPickingCandidateCommand
 		return null;
 	}
 
-	private HuId getPickedHUId(@NonNull final PickingCandidate pc)
+	private HuId getPickedHUId(@Nullable final PickingCandidate pc)
 	{
 		final PickedHuAndQty item = getPickedHuAndQty(pc);
 		return item!=null ? item.getPickedHUId() : null;
