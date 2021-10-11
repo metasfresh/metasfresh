@@ -8,6 +8,6 @@ import axios from 'axios';
  */
 export function userConfirmation({ wfProcessId, wfActivityId }) {
   return axios.post(
-    `${window.config.SERVER_URL}/userWorkflows/wfProcess/${wfProcessId}/${wfActivityId}/userConfirmation`
+    `${config.SERVER_URL}/userWorkflows/wfProcess/${wfProcessId}/${wfActivityId}/userConfirmation`
   );
 }
