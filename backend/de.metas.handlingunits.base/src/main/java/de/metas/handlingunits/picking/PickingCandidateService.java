@@ -177,7 +177,7 @@ public class PickingCandidateService
 	public void processForHUIds(
 			@NonNull final Set<HuId> pickFromHuIds,
 			@Nullable final ShipmentScheduleId shipmentScheduleId,
-			@NonNull final OnOverDelivery takeWholeHU,
+			@NonNull final OnOverDelivery onOverDelivery,
 			@Nullable final PPOrderId orderId)
 	{
 		final List<PickingCandidate> pickingCandidatesToProcess = pickingCandidateRepository.getByHUIds(pickFromHuIds)
@@ -193,7 +193,7 @@ public class PickingCandidateService
 				.pickingCandidates(pickingCandidatesToProcess)
 				.additionalPickFromHuIds(pickFromHuIds)
 				.allowOverDelivery(pickingConfigRepository.getPickingConfig().isAllowOverDelivery())
-				.takeWholeHU(takeWholeHU)
+				.onOverDelivery(onOverDelivery)
 				.build()
 				.perform();
 

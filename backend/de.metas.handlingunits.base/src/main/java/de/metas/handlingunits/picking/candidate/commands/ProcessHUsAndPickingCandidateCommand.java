@@ -109,7 +109,7 @@ public class ProcessHUsAndPickingCandidateCommand
 			@NonNull final List<PickingCandidate> pickingCandidates,
 			@NonNull @Singular final Set<HuId> additionalPickFromHuIds,
 			final boolean allowOverDelivery,
-			final OnOverDelivery takeWholeHU,
+			final OnOverDelivery onOverDelivery,
 			final PPOrderId ppOrderId)
 	{
 		Check.assumeNotEmpty(pickingCandidates, "pickingCandidates is not empty");
@@ -136,7 +136,7 @@ public class ProcessHUsAndPickingCandidateCommand
 
 		this.allowOverDelivery = allowOverDelivery;
 
-		this.takeWholeHU = takeWholeHU;
+		this.takeWholeHU = onOverDelivery;
 
 		this.ppOrderId = ppOrderId;
 	}
