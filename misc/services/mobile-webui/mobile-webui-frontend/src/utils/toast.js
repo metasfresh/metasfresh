@@ -17,19 +17,23 @@ export const toastError = ({ axiosError, messageKey, fallbackMessageKey }) => {
 };
 
 export const extractUserFriendlyErrorMessageFromAxiosError = ({ axiosError, fallbackMessageKey }) => {
-  if (!axiosError) {
-    return counterpart.translate('general.PleaseTryAgain');
-  }
-  if (
-    axiosError.response &&
-    axiosError.response.data &&
-    axiosError.response.data.endpointResponse &&
-    axiosError.response.data.endpointResponse.errors &&
-    axiosError.response.data.endpointResponse.errors[0] &&
-    axiosError.response.data.endpointResponse.errors[0].message
-  ) {
-    return axiosError.response.data.endpointResponse.errors[0].message;
+  if (axiosError && axiosError.response && axiosError.response.data) {
+    if (
+      axiosError.response.data.endpointResponse &&
+      axiosError.response.data.endpointResponse.errors &&
+      axiosError.response.data.endpointResponse.errors[0] &&
+      axiosError.response.data.endpointResponse.errors[0].message
+    ) {
+      return axiosError.response.data.endpointResponse.errors[0].message;
+    } else if (axiosError.response.data.error) {
+      // usually that the login error case when we get something like { error: "bla bla"}
+      return axiosError.response.data.error;
+    }
   }
 
-  return counterpart.translate(fallbackMessageKey);
+  if (fallbackMessageKey) {
+    return counterpart.translate(fallbackMessageKey);
+  }
+
+  return counterpart.translate('general.PleaseTryAgain');
 };
