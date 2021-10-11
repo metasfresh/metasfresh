@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 export function postQtyPicked({ wfProcessId, activityId, stepId, qtyPicked }) {
-  return axios.post(`${window.config.SERVER_URL}/picking/events`, {
+  return axios.post(`${config.SERVER_URL}/picking/events`, {
     events: [
       {
         wfProcessId,
