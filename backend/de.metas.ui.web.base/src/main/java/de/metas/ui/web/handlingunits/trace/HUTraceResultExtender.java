@@ -4,9 +4,9 @@ import de.metas.handlingunits.trace.HUTraceEventQuery;
 import de.metas.handlingunits.trace.HUTraceRepository;
 import de.metas.process.PInstanceId;
 import de.metas.ui.web.document.filter.DocumentFilter;
+import de.metas.ui.web.document.filter.sql.FilterSql;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
-import de.metas.ui.web.document.filter.sql.SqlParamsCollector;
 import de.metas.ui.web.window.model.sql.SqlOptions;
 import lombok.NonNull;
 
@@ -20,12 +20,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -34,7 +34,7 @@ import lombok.NonNull;
 
 final class HUTraceResultExtender implements SqlDocumentFilterConverter
 {
-	private static final String WHERE_IN_T_SELECTION = "(M_HU_Trace_ID IN (select T_Selection_ID from T_Selection where AD_PInstance_ID=%s))";
+	private static final String WHERE_IN_T_SELECTION = "(M_HU_Trace_ID IN (select T_Selection_ID from T_Selection where AD_PInstance_ID=?))";
 
 	public static HUTraceResultExtender createForRepositoryAndconverter(
 			@NonNull final HUTraceRepository huTraceRepository,
@@ -61,23 +61,21 @@ final class HUTraceResultExtender implements SqlDocumentFilterConverter
 	}
 
 	@Override
-	public String getSql(
-			@NonNull final SqlParamsCollector sqlParamsOut,
+	public FilterSql getSql(
 			@NonNull final DocumentFilter filter,
 			@NonNull final SqlOptions sqlOpts,
 			@NonNull final SqlDocumentFilterConverterContext context)
 	{
 		if (!filter.hasParameters())
 		{
-			return converter.getSql(sqlParamsOut, filter, sqlOpts, context); // do whatever the system usually does
+			return converter.getSql(filter, sqlOpts, context); // do whatever the system usually does
 		}
 		else
 		{
 			final HUTraceEventQuery huTraceQuery = HuTraceQueryCreator.createTraceQueryFromDocumentFilter(filter);
 			final PInstanceId selectionId = huTraceRepository.queryToSelection(huTraceQuery);
 
-			final String sqlPlaceHolder = sqlParamsOut.placeholder(selectionId);
-			return String.format(WHERE_IN_T_SELECTION, sqlPlaceHolder);
+			return FilterSql.ofWhereClause(WHERE_IN_T_SELECTION, selectionId);
 		}
 	}
 }

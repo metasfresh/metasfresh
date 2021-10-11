@@ -27,9 +27,9 @@ import com.jgoodies.common.base.Objects;
 import de.metas.acct.api.IElementValueDAO;
 import de.metas.acct.api.impl.ElementValueId;
 import de.metas.ui.web.document.filter.DocumentFilter;
+import de.metas.ui.web.document.filter.sql.FilterSql;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
-import de.metas.ui.web.document.filter.sql.SqlParamsCollector;
 import de.metas.ui.web.window.model.sql.SqlOptions;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -57,8 +57,7 @@ public class FactAcctFilterConverter implements SqlDocumentFilterConverter
 	}
 
 	@Override
-	public String getSql(
-			@NonNull final SqlParamsCollector ignored_sqlParamsOut,
+	public FilterSql getSql(
 			@NonNull final DocumentFilter filter,
 			@NonNull final SqlOptions sqlOpts,
 			final SqlDocumentFilterConverterContext ignored)
@@ -75,10 +74,10 @@ public class FactAcctFilterConverter implements SqlDocumentFilterConverter
 
 		if (ids.isEmpty())
 		{
-			return "(false)";
+			return FilterSql.ALLOW_NONE;
 		}
 
 		final String columnName = sqlOpts.getTableNameOrAlias() + "." + I_Fact_Acct.COLUMNNAME_Account_ID;
-		return "(" + DB.buildSqlList(columnName, ids) + ")";
+		return FilterSql.ofWhereClause("(" + DB.buildSqlList(columnName, ids) + ")");
 	}
 }

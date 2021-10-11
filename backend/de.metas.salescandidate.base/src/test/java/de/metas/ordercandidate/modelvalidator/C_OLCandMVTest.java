@@ -1,13 +1,13 @@
 package de.metas.ordercandidate.modelvalidator;
 
-import de.metas.ShutdownListener;
-import de.metas.StartupListener;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.document.location.impl.DocumentLocationBL;
 import de.metas.ordercandidate.AbstractOLCandTestSupport;
 import de.metas.ordercandidate.api.OLCandRegistry;
 import de.metas.ordercandidate.api.OLCandValidatorService;
+import de.metas.ordercandidate.location.OLCandLocationsUpdaterService;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
@@ -20,23 +20,16 @@ import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.util.Env;
-import org.junit.Assert;
-import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
 import java.util.Properties;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class,
-		OLCandRegistry.class })
 public class C_OLCandMVTest extends AbstractOLCandTestSupport
 {
 	private final Properties ctx;
@@ -70,9 +63,10 @@ public class C_OLCandMVTest extends AbstractOLCandTestSupport
 				Optional.empty(),
 				Optional.empty());
 		final OLCandValidatorService olCandValidatorService = new OLCandValidatorService(olCandRegistry);
+		final OLCandLocationsUpdaterService olCandLocationsUpdaterService = new OLCandLocationsUpdaterService(new DocumentLocationBL(bpartnerBL));
 
 		// Initialize C_OLCand MV Only!
-		final C_OLCand orderCandidateMV = new C_OLCand(bpartnerBL, olCandValidatorService);
+		final C_OLCand orderCandidateMV = new C_OLCand(bpartnerBL, olCandValidatorService, olCandLocationsUpdaterService);
 		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(orderCandidateMV, null);
 	}
 
@@ -127,7 +121,7 @@ public class C_OLCandMVTest extends AbstractOLCandTestSupport
 		InterfaceWrapperHelper.save(olCand);
 
 		// Assert same product description after saving (MV shall ignore)
-		Assert.assertEquals(olCand.getProductDescription(), customProductDescription);
+		Assertions.assertEquals(olCand.getProductDescription(), customProductDescription);
 	}
 
 	@Test
@@ -142,7 +136,7 @@ public class C_OLCandMVTest extends AbstractOLCandTestSupport
 		InterfaceWrapperHelper.save(olCand);
 
 		// Assert same product description after saving (MV shall ignore)
-		Assert.assertEquals(olCand.getProductDescription(), bpp1.getProductDescription());
+		Assertions.assertEquals(olCand.getProductDescription(), bpp1.getProductDescription());
 	}
 
 	@Test
@@ -157,7 +151,7 @@ public class C_OLCandMVTest extends AbstractOLCandTestSupport
 		InterfaceWrapperHelper.save(olCand);
 
 		// Assert same product description after saving (MV shall ignore)
-		Assert.assertEquals(olCand.getProductDescription(), bpp2.getProductName());
+		Assertions.assertEquals(olCand.getProductDescription(), bpp2.getProductName());
 	}
 
 	/** verifies that the ProductDescription is *not* set if it would be simply identical to the product's name. */

@@ -3,8 +3,6 @@ package de.metas.ui.web.window.descriptor.factory.standard;
 import com.google.common.collect.ImmutableMap;
 import de.metas.adempiere.service.IColumnBL;
 import de.metas.elasticsearch.IESSystem;
-import de.metas.elasticsearch.indexer.engine.ESModelIndexer;
-import de.metas.elasticsearch.indexer.registry.ESModelIndexersRegistry;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
@@ -21,7 +19,6 @@ import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Builder;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
-import de.metas.ui.web.window.descriptor.FullTextSearchLookupDescriptorProvider;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProvider;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProviders;
@@ -49,8 +46,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
-import org.compiere.Adempiere;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.GridFieldDefaultFilterDescriptor;
 import org.compiere.model.GridFieldVO;
 import org.compiere.model.GridTabVO;
@@ -62,7 +57,6 @@ import org.compiere.model.I_AD_UI_ElementField;
 import org.compiere.model.X_AD_UI_ElementField;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Evaluatees;
-import org.elasticsearch.client.Client;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -520,23 +514,25 @@ import java.util.Set;
 			return databaseLookupDescriptorProvider;
 		}
 
-		final ESModelIndexersRegistry esModelIndexersRegistry = SpringContextHolder.instance.getBean(ESModelIndexersRegistry.class);
-		final ESModelIndexer modelIndexer = esModelIndexersRegistry.getFullTextSearchModelIndexer(modelTableName)
-				.orElse(null);
-		if (modelIndexer == null)
-		{
-			return databaseLookupDescriptorProvider;
-		}
-
-		final Client elasticsearchClient = Adempiere.getBean(org.elasticsearch.client.Client.class);
-
-		return FullTextSearchLookupDescriptorProvider.builder()
-				.elasticsearchClient(elasticsearchClient)
-				.modelTableName(modelIndexer.getModelTableName())
-				.esIndexName(modelIndexer.getIndexName())
-				.esSearchFieldNames(modelIndexer.getFullTextSearchFieldNames())
-				.databaseLookupDescriptorProvider(databaseLookupDescriptorProvider)
-				.build();
+		// TODO: implement
+		return databaseLookupDescriptorProvider;
+		// final ESModelIndexersRegistry esModelIndexersRegistry = SpringContextHolder.instance.getBean(ESModelIndexersRegistry.class);
+		// final ESModelIndexer modelIndexer = esModelIndexersRegistry.getFullTextSearchModelIndexer(modelTableName)
+		// 		.orElse(null);
+		// if (modelIndexer == null)
+		// {
+		// 	return databaseLookupDescriptorProvider;
+		// }
+		//
+		// final Client elasticsearchClient = Adempiere.getBean(org.elasticsearch.client.Client.class);
+		//
+		// return FullTextSearchLookupDescriptorProvider.builder()
+		// 		.elasticsearchClient(elasticsearchClient)
+		// 		.modelTableName(modelIndexer.getModelTableName())
+		// 		.esIndexName(modelIndexer.getIndexName())
+		// 		.esSearchFieldNames(modelIndexer.getFullTextSearchFieldNames())
+		// 		.databaseLookupDescriptorProvider(databaseLookupDescriptorProvider)
+		// 		.build();
 	}
 
 	private static ILogicExpression extractReadOnlyLogic(final GridFieldVO gridFieldVO, final boolean keyColumn, final boolean isParentLinkColumn)

@@ -1,17 +1,6 @@
 package de.metas.ui.web.view;
 
-import java.util.ArrayList;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Supplier;
-import java.util.function.UnaryOperator;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.util.lang.SynchronizedMutable;
-
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
@@ -19,6 +8,14 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.model.DocumentQueryOrderByList;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.util.lang.SynchronizedMutable;
+
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Supplier;
+import java.util.function.UnaryOperator;
 
 /*
  * #%L
@@ -102,7 +99,7 @@ final class ViewRowIdsOrderedSelectionsHolder
 
 	public int getQueryLimit()
 	{
-		return getDefaultSelection().getQueryLimit();
+		return getDefaultSelection().getQueryLimit().toIntOrZero();
 	}
 
 	public boolean isQueryLimitHit()

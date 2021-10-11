@@ -25,28 +25,8 @@ package de.metas.shipping.model.validator;
  * #L%
  */
 
-import java.util.List;
-import java.util.Properties;
-import java.util.StringTokenizer;
-
-import de.metas.bpartner.BPartnerId;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_AD_User;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_M_PackageLine;
-import org.compiere.model.MClient;
-import org.compiere.model.MInOut;
-import org.compiere.model.MOrder;
-import org.compiere.model.MSysConfig;
-import org.compiere.model.ModelValidationEngine;
-import org.compiere.model.ModelValidator;
-import org.compiere.model.PO;
-import org.compiere.model.Query;
-import org.compiere.util.Env;
-import org.slf4j.Logger;
-
 import de.metas.bpartner.BPartnerContactId;
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.email.EMail;
 import de.metas.email.EMailAddress;
@@ -60,6 +40,25 @@ import de.metas.shipping.model.I_M_ShippingPackage;
 import de.metas.shipping.model.MMShipperTransportation;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
+import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_M_PackageLine;
+import org.compiere.model.MClient;
+import org.compiere.model.MInOut;
+import org.compiere.model.MOrder;
+import org.compiere.model.ModelValidationEngine;
+import org.compiere.model.ModelValidator;
+import org.compiere.model.PO;
+import org.compiere.model.Query;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
+
+import java.util.List;
+import java.util.Properties;
+import java.util.StringTokenizer;
 
 /**
  * Supposed to send an email to a shipment's receiver when the shipper document is completed.
@@ -85,7 +84,7 @@ public class ShipperTransportationMailNotification implements ModelValidator
 			MMShipperTransportation ship = (MMShipperTransportation)po;
 			{
 				Properties ctx = Env.getCtx();
-				int AD_BoilerPlate_ID = MSysConfig.getIntValue(SYS_CONFIG_SHIP, 0, Env.getAD_Client_ID(ctx), Env.getAD_Org_ID(ctx));
+				int AD_BoilerPlate_ID = Services.get(ISysConfigBL.class).getIntValue(SYS_CONFIG_SHIP, 0, Env.getAD_Client_ID(ctx), Env.getAD_Org_ID(ctx));
 				final MADBoilerPlate text = MADBoilerPlate.get(ctx, AD_BoilerPlate_ID);
 
 				for (I_M_ShippingPackage sp : getShippingPackage(ship.getM_ShipperTransportation_ID()))

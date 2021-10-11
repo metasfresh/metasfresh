@@ -23,6 +23,7 @@ import de.metas.bpartner.composite.BPartnerLocation;
 import de.metas.bpartner.composite.BPartnerLocationAddressPart;
 import de.metas.bpartner.composite.BPartnerLocationType;
 import de.metas.marketing.base.model.CampaignId;
+import de.metas.bpartner.user.role.UserRole;
 import de.metas.common.util.StringUtils;
 import de.metas.common.util.time.SystemTime;
 import de.metas.greeting.GreetingId;
@@ -56,6 +57,8 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_Postal;
+import org.compiere.model.I_C_User_Assigned_Role;
+import org.compiere.model.I_C_User_Role;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
@@ -63,6 +66,7 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.Objects;
 
 import static de.metas.util.StringUtils.trimBlankToNull;
@@ -424,6 +428,7 @@ final class BPartnerCompositesLoader
 			@NonNull final CompositeRelatedRecords relatedRecords)
 	{
 		final RecordChangeLog changeLog = ChangeLogUtil.createContactChangeLog(contactRecord, relatedRecords);
+		final List<UserRole> roles = getUserRoles(contactRecord);
 
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(contactRecord.getC_BPartner_ID());
 		return BPartnerContact.builder()
@@ -446,6 +451,7 @@ final class BPartnerCompositesLoader
 				.fax(trimBlankToNull(contactRecord.getFax()))
 				.greetingId(GreetingId.ofRepoIdOrNull(contactRecord.getC_Greeting_ID()))
 				.orgMappingId(OrgMappingId.ofRepoIdOrNull(contactRecord.getAD_Org_Mapping_ID()))
+				.roles(roles)
 				.changeLog(changeLog)
 				.birthday(TimeUtil.asLocalDate(contactRecord.getBirthday(), SystemTime.zoneId()))
 				.bPartnerLocationId(BPartnerLocationId.ofRepoIdOrNull(contactRecord.getC_BPartner_ID(), contactRecord.getC_BPartner_Location_ID()))
@@ -480,6 +486,28 @@ final class BPartnerCompositesLoader
 			}
 		}
 		return result.build();
+	}
+
+	private static List<UserRole> getUserRoles(final I_AD_User user)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		return queryBL
+				.createQueryBuilder(I_C_User_Role.class)
+				.addOnlyActiveRecordsFilter()
+				.addInSubQueryFilter(I_C_User_Role.COLUMNNAME_C_User_Role_ID, I_C_User_Assigned_Role.COLUMNNAME_C_User_Role_ID,
+						queryBL
+								.createQueryBuilder(I_C_User_Assigned_Role.class)
+								.addOnlyActiveRecordsFilter()
+								.addEqualsFilter(I_C_User_Assigned_Role.COLUMNNAME_AD_User_ID, user.getAD_User_ID())
+								.create())
+				.orderBy(I_C_User_Role.COLUMNNAME_Name)
+				.create()
+				.stream()
+				.map(role -> UserRole.builder()
+						.name(role.getName())
+						.uniquePerBpartner(role.isUniqueForBPartner())
+						.build())
+				.collect(Collectors.toList());
 	}
 
 	/**

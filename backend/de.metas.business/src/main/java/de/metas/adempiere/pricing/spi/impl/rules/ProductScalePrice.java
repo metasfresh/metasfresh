@@ -22,15 +22,7 @@ package de.metas.adempiere.pricing.spi.impl.rules;
  * #L%
  */
 
-
-import java.math.BigDecimal;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.I_M_ProductScalePrice;
-import org.compiere.model.I_M_PriceList;
-import org.compiere.model.I_M_PriceList_Version;
-import org.compiere.model.I_M_ProductPrice;
-
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.IMsgBL;
 import de.metas.money.CurrencyId;
@@ -48,6 +40,16 @@ import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.I_M_ProductScalePrice;
+import org.compiere.model.I_M_PriceList;
+import org.compiere.model.I_M_PriceList_Version;
+import org.compiere.model.I_M_ProductPrice;
+import org.compiere.model.X_M_ProductPrice;
+
+import java.math.BigDecimal;
+import java.util.Objects;
 
 /**
  * Calculate price using {@link I_M_ProductScalePrice}
@@ -57,6 +59,9 @@ import lombok.NonNull;
  */
 public class ProductScalePrice extends AbstractPriceListBasedRule
 {
+
+	public static final AdMessageKey MSG_NO_SCALE_PRICE = AdMessageKey.of("NoScalePrice");
+
 	@Override
 	public boolean applies(final IPricingContext pricingCtx, final IPricingResult result)
 	{
@@ -98,19 +103,27 @@ public class ProductScalePrice extends AbstractPriceListBasedRule
 			return;
 		}
 
-		if (!productPrice.isUseScalePrice())
+		if (Objects.equals(productPrice.getUseScalePrice(), X_M_ProductPrice.USESCALEPRICE_DonTUseScalePrice))
 		{
 			return;
 		}
 
+		final BigDecimal qty = pricingCtx.getQty();
 		final I_M_ProductScalePrice scalePrice = Services.get(IProductPA.class)
 				.retrieveOrCreateScalePrices(productPrice.getM_ProductPrice_ID()
-						, pricingCtx.getQty()
+						, qty
 						, false // createNew
 						, ITrx.TRXNAME_None);
 		if (scalePrice == null)
 		{
-			return;
+			if (Objects.equals(productPrice.getUseScalePrice(), X_M_ProductPrice.USESCALEPRICE_UseScalePriceFallbackToProductPrice))
+			{
+				return;
+			}
+			else
+			{
+				throw new AdempiereException(MSG_NO_SCALE_PRICE, qty);
+			}
 		}
 
 		calculateWithScalePrice(pricingCtx, result, scalePrice);
