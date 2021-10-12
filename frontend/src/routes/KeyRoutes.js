@@ -27,10 +27,13 @@ function propsAreEqual(prevProps, nextProps) {
 }
 
 function queriesAreEqual(prevProps, nextProps) {
-  const { query, windowId } = prevProps;
-  const { query: nextQuery, windowId: nextWindowId } = nextProps;
+  const { match, location } = prevProps;
+  const { match: nextMatch, location: nextLocation } = nextProps;
 
-  if (_.isEqual(query, nextQuery) && windowId === nextWindowId) {
+  if (
+    _.isEqual(location.query, nextLocation.query) &&
+    match.params.windowId === nextMatch.params.windowId
+  ) {
     return true;
   }
 
