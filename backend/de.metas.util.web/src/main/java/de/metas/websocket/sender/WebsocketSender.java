@@ -1,8 +1,10 @@
-package de.metas.ui.web.websocket;
+package de.metas.websocket.sender;
 
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
 import de.metas.util.async.Debouncer;
+import de.metas.websocket.WebsocketEndpointAware;
+import de.metas.websocket.WebsocketTopicName;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
@@ -12,6 +14,7 @@ import org.adempiere.service.ISysConfigBL;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
@@ -51,9 +54,11 @@ import java.util.List;
  * @author metas-dev <dev@metasfresh.com>
  */
 @Component
+@ConditionalOnBean(SimpMessagingTemplate.class)
 public class WebsocketSender implements InitializingBean
 {
 	private static final transient Logger logger = LogManager.getLogger(WebsocketSender.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	private final SimpMessagingTemplate websocketMessagingTemplate;
 	private final WebsocketEventsLog eventsLog = new WebsocketEventsLog();
@@ -109,7 +114,6 @@ public class WebsocketSender implements InitializingBean
 
 	private WebsocketEventsQueue getQueue()
 	{
-		final ITrxManager trxManager = Services.get(ITrxManager.class);
 		final ITrx trx = trxManager.getThreadInheritedTrx(OnTrxMissingPolicy.ReturnTrxNone);
 		if (!trxManager.isActive(trx))
 		{

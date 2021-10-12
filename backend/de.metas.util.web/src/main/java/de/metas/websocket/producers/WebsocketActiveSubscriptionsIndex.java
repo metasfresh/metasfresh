@@ -1,19 +1,18 @@
-package de.metas.ui.web.websocket;
-
-import java.util.HashMap;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
-import org.springframework.stereotype.Component;
+package de.metas.websocket.producers;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.SetMultimap;
-
-import de.metas.ui.web.view.ViewId;
+import de.metas.websocket.WebsocketSessionId;
+import de.metas.websocket.WebsocketSubscriptionId;
+import de.metas.websocket.WebsocketTopicName;
 import lombok.NonNull;
+import org.springframework.stereotype.Component;
+
+import javax.annotation.Nullable;
+import java.util.HashMap;
+import java.util.Set;
 
 /*
  * #%L
@@ -37,7 +36,6 @@ import lombok.NonNull;
  * #L%
  */
 
-@Component
 public class WebsocketActiveSubscriptionsIndex
 {
 	private final SetMultimap<WebsocketTopicName, WebsocketSubscriptionId> subscriptionIdsByTopicName = HashMultimap.create();
@@ -85,12 +83,6 @@ public class WebsocketActiveSubscriptionsIndex
 		}
 
 		return topicNames.build();
-	}
-
-	public boolean hasViewSubscriptions(@NonNull final ViewId viewId)
-	{
-		final WebsocketTopicName topicName = WebsocketTopicNames.buildViewNotificationsTopicName(viewId.toJson());
-		return hasSubscriptionsForTopicName(topicName);
 	}
 
 	public synchronized boolean hasSubscriptionsForTopicName(@NonNull final WebsocketTopicName topicName)

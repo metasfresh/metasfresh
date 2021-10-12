@@ -39,9 +39,9 @@ import de.metas.ui.web.dashboard.json.KPIJsonOptions;
 import de.metas.ui.web.dashboard.websocket.json.JSONDashboardChangedEventsList;
 import de.metas.ui.web.dashboard.websocket.json.JSONDashboardItemDataChangedEvent;
 import de.metas.ui.web.kpi.data.KPIDataContext;
-import de.metas.ui.web.websocket.WebSocketProducer;
-import de.metas.ui.web.websocket.WebsocketSubscriptionId;
-import de.metas.ui.web.websocket.WebsocketTopicName;
+import de.metas.websocket.producers.WebSocketProducer;
+import de.metas.websocket.WebsocketSubscriptionId;
+import de.metas.websocket.WebsocketTopicName;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import lombok.Builder;
 import lombok.Getter;
@@ -101,11 +101,12 @@ class UserDashboardWebsocketProducer implements WebSocketProducer
 	}
 
 	@Override
-	public ImmutableList<JSONDashboardChangedEventsList> produceEvents(final JSONOptions jsonOpts)
+	public ImmutableList<JSONDashboardChangedEventsList> produceEvents()
 	{
 		final Result newResult = computeNewResult();
 		final Result oldResult = lastResultHolder.setValueAndReturnPrevious(newResult);
 		final ImmutableList<UserDashboardItemDataResponse> changesFromOldVersion = newResult.getChangesFromOldVersion(oldResult);
+		final JSONOptions jsonOpts = JSONOptions.newInstance();
 		final ImmutableList<JSONDashboardItemDataChangedEvent> events = toJson(changesFromOldVersion, jsonOpts);
 
 		logger.trace("{}.produceEvents: New Result: {}", this, newResult);
@@ -148,7 +149,7 @@ class UserDashboardWebsocketProducer implements WebSocketProducer
 				.orElse(null);
 
 		// no user dashboard was found.
-		// might be that the user dashboard was deactived in meantime.
+		// might be that the user dashboard was deactivated in meantime.
 		if (dataProvider == null)
 		{
 			return Result.EMPTY;

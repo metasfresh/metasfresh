@@ -1,4 +1,4 @@
-package de.metas.ui.web.websocket;
+package de.metas.websocket.sender;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import de.metas.websocket.WebsocketTopicName;
 import org.slf4j.Logger;
 
 import com.google.common.base.Preconditions;
