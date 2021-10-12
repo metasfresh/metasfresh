@@ -3,14 +3,14 @@ import { connect } from 'react-redux';
 import { push } from 'connected-react-router';
 import PropTypes from 'prop-types';
 import { withRouter } from 'react-router';
-import { pushHeaderEntry } from '../../../actions/HeaderActions';
-import { updatePickingStepQty } from '../../../actions/PickingActions';
-import { postQtyPicked } from '../../../api/picking';
-import ButtonWithIndicator from '../../../components/ButtonWithIndicator';
-import * as CompleteStatus from '../../../constants/CompleteStatus';
 import counterpart from 'counterpart';
 
-import { toastError } from '../../../utils/toast';
+// import { toastError } from '../../../utils/toast';
+// import { postQtyPicked } from '../../../api/picking';
+import { pushHeaderEntry } from '../../../actions/HeaderActions';
+import { updatePickingStepQty } from '../../../actions/PickingActions';
+import ButtonWithIndicator from '../../../components/ButtonWithIndicator';
+import * as CompleteStatus from '../../../constants/CompleteStatus';
 import ScreenToaster from '../../../components/ScreenToaster';
 
 class PickStepScreen extends Component {
@@ -20,12 +20,12 @@ class PickStepScreen extends Component {
       activityId,
       lineId,
       stepId,
-      stepProps: { huBarcode, qtyToPick, qtyPicked },
+      stepProps: { huBarcode, qtyToPick }, //, qtyPicked },
+      push,
+      pushHeaderEntry,
     } = this.props;
-
-    const { push, pushHeaderEntry } = this.props;
-
     const location = `/workflow/${wfProcessId}/activityId/${activityId}/lineId/${lineId}/stepId/${stepId}/scanner`;
+
     push(location);
     pushHeaderEntry({
       location,
@@ -38,38 +38,40 @@ class PickStepScreen extends Component {
           caption: counterpart.translate('general.QtyToPick'),
           value: qtyToPick,
         },
-        {
-          caption: counterpart.translate('general.QtyPicked'),
-          value: qtyPicked,
-        },
+        // {
+        //   caption: counterpart.translate('general.QtyPicked'),
+        //   value: qtyPicked,
+        // },
       ],
     });
   };
 
-  onQtyPickedChanged = (e) => {
-    const { updatePickingStepQty, wfProcessId, activityId, lineId, stepId } = this.props;
-    const qtyPicked = e.target.value;
-    const inputQty = parseInt(qtyPicked);
-    if (isNaN(inputQty)) {
-      return;
-    }
+  // onQtyPickedChanged = (e) => {
+  //   const { updatePickingStepQty, wfProcessId, activityId, lineId, stepId } = this.props;
+  //   const qtyPicked = e.target.value;
+  //   const inputQty = parseInt(qtyPicked);
 
-    const isValidQty = this.validateQtyInput(inputQty);
-    if (isValidQty) {
-      updatePickingStepQty({ wfProcessId, activityId, lineId, stepId, qtyPicked });
-      postQtyPicked({ wfProcessId, activityId, stepId, qtyPicked });
-      // TODO: handle the promise
-    } else {
-      toastError({ messageKey: 'activities.picking.invalidQtyPicked' });
-    }
-  };
+  //   if (isNaN(inputQty)) {
+  //     return;
+  //   }
 
-  validateQtyInput = (numberInput) => {
-    const {
-      stepProps: { qtyToPick },
-    } = this.props;
-    return numberInput >= 0 && numberInput <= qtyToPick;
-  };
+  //   const isValidQty = this.validateQtyInput(inputQty);
+
+  //   if (isValidQty) {
+  //     updatePickingStepQty({ wfProcessId, activityId, lineId, stepId, qtyPicked });
+  //     postQtyPicked({ wfProcessId, activityId, stepId, qtyPicked });
+  //     // TODO: handle the promise
+  //   } else {
+  //     toastError({ messageKey: 'activities.picking.invalidQtyPicked' });
+  //   }
+  // };
+
+  // validateQtyInput = (numberInput) => {
+  //   const {
+  //     stepProps: { qtyToPick },
+  //   } = this.props;
+  //   return numberInput >= 0 && numberInput <= qtyToPick;
+  // };
 
   componentWillUnmount() {
     const {
@@ -85,7 +87,7 @@ class PickStepScreen extends Component {
 
   render() {
     const {
-      stepProps: { huBarcode, qtyToPick, qtyPicked, scannedHUBarcode },
+      stepProps: { huBarcode, qtyToPick, scannedHUBarcode }, // qtyPicked,  },
     } = this.props;
 
     const isValidCode = !!scannedHUBarcode;
@@ -110,7 +112,7 @@ class PickStepScreen extends Component {
             </div>
             <div className="column is-half has-text-left pb-0">{qtyToPick}</div>
           </div>
-          <div className="columns is-mobile">
+          {/*          <div className="columns is-mobile">
             <div className="column is-half has-text-right has-text-weight-bold pb-0 pl-0 pr-0">
               {counterpart.translate('general.QtyPicked')}:
             </div>
@@ -118,7 +120,7 @@ class PickStepScreen extends Component {
               {isValidCode && <input type="number" value={qtyPicked} onChange={(e) => this.onQtyPickedChanged(e)} />}
               {!isValidCode && qtyPicked}
             </div>
-          </div>
+          </div>*/}
           <div className="mt-0">
             <button className="button is-outlined complete-btn" onClick={this.onScanHUButtonClick}>
               <ButtonWithIndicator caption={scanButtonCaption} completeStatus={scanButtonStatus} />
@@ -147,7 +149,6 @@ class PickStepScreen extends Component {
 
 const mapStateToProps = (state, ownProps) => {
   const { workflowId: wfProcessId, activityId, lineId, stepId } = ownProps.match.params;
-
   const stepProps = state.wfProcesses_status[wfProcessId].activities[activityId].dataStored.lines[lineId].steps[stepId];
 
   return {

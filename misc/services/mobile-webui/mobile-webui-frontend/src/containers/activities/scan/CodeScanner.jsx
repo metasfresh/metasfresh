@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { BarcodeFormat, BrowserMultiFormatReader, DecodeHintType } from '@zxing/library';
-import { connect } from 'react-redux';
+// import { connect } from 'react-redux';
 
 class CodeScanner extends Component {
   constructor(props) {
@@ -93,7 +93,7 @@ class CodeScanner extends Component {
         console.log('Got result from camera: %o', result);
         let scannedBarcode = result.getText();
 
-        onBarcodeScanned({ scannedBarcode });
+        onBarcodeScanned({ scannedBarcode }, this.closeCamera);
 
         // don't close the camera. let the caller decide what he wants to do.
       } else if (err) {
@@ -133,4 +133,5 @@ CodeScanner.propTypes = {
   onBarcodeScanned: PropTypes.func.isRequired,
 };
 
-export default connect(null, null)(CodeScanner);
+// export default connect(null, null)(CodeScanner);
+export default CodeScanner;
