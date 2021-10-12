@@ -25,8 +25,6 @@ package de.metas.camel.externalsystems.shopware6.api.model;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonValue;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import de.metas.common.util.CoalesceUtil;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -34,17 +32,15 @@ import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 
-import javax.annotation.Nullable;
 import java.util.List;
 
 @Value
-@JsonDeserialize(builder = MultiJsonFilter.MultiJsonFilterBuilder.class)
 @JsonPropertyOrder({ "type", "operator", "queries" })
 public class MultiJsonFilter
 {
 	@NonNull
 	@JsonProperty("type")
-	MultiJsonFilter.MultiFilterType filterType;
+	MultiJsonFilter.MultiFilterType filterType = MultiFilterType.MULTI;
 
 	@NonNull
 	@JsonProperty("operator")
@@ -57,13 +53,11 @@ public class MultiJsonFilter
 	@Builder
 	public MultiJsonFilter(
 			@NonNull @JsonProperty("operator") final OperatorType operatorType,
-			@Nullable @JsonProperty("type") final MultiJsonFilter.MultiFilterType filterType,
 			@NonNull @JsonProperty("queries") @Singular final List<JsonQuery> jsonQueries
 	)
 	{
 		this.operatorType = operatorType;
 		this.jsonQueryList = jsonQueries;
-		this.filterType = CoalesceUtil.coalesceNotNull(filterType, MultiFilterType.MULTI);
 	}
 
 	@AllArgsConstructor
