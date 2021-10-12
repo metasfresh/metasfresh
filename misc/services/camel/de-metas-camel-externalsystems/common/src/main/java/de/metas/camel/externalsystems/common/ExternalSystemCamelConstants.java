@@ -56,6 +56,8 @@ public class ExternalSystemCamelConstants
 
 	public final String MF_ERROR_ROUTE_ID = "Error-Route";
 
+	public final static String ERROR_WRITE_TO_ADISSUE = "Error-Route-writeToAdIssue";
+
 	public final String MF_LOG_MESSAGE_ROUTE_ID = "Log-Message-Route";
 
 	public static String MF_GET_PRODUCTS_ROUTE_ID = "To-MF_GetProducts-Route";

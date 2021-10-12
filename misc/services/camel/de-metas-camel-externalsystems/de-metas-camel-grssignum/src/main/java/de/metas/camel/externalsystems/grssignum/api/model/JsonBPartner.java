@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-camel-externalsystems-common
+ * de-metas-camel-grssignum
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,38 +20,46 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.common.auth;
+package de.metas.camel.externalsystems.grssignum.api.model;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import de.metas.common.rest_api.common.JsonMetasfreshId;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
 @Value
-public class JsonAuthenticateRequest
+@JsonDeserialize(builder = JsonBPartner.JsonBPartnerBuilder.class)
+public class JsonBPartner
 {
 	@NonNull
-	String grantedAuthority;
-	@NonNull
-	String authKey;
-	@NonNull
-	JsonMetasfreshId pInstance;
+	Integer flag;
+
 	@NonNull
 	String orgCode;
 
+	@NonNull
+	String bPartnerId;
+
+	@NonNull
+	String bPartnerName;
+
+	boolean isActive;
+
 	@Builder
-	@JsonCreator
-	JsonAuthenticateRequest(
-			@JsonProperty("grantedAuthority") @NonNull final String grantedAuthority,
-			@JsonProperty("authKey") @NonNull final String authKey,
-			@JsonProperty("pinstance") @NonNull final JsonMetasfreshId pInstance,
-			@JsonProperty("orgCode") @NonNull final String orgCode)
+	@JsonIgnoreProperties(ignoreUnknown = true)
+	public JsonBPartner(
+			@JsonProperty("FLAG") final @NonNull Integer flag,
+			@JsonProperty("MID") final @NonNull String orgCode,
+			@JsonProperty("MKREDID") final @NonNull String bPartnerId,
+			@JsonProperty("KURZBEZEICHNUNG") final @NonNull String bPartnerName,
+			@JsonProperty("INAKTIV") final int inactive)
 	{
-		this.grantedAuthority = grantedAuthority;
-		this.authKey = authKey;
-		this.pInstance = pInstance;
+		this.flag = flag;
 		this.orgCode = orgCode;
+		this.bPartnerId = bPartnerId;
+		this.bPartnerName = bPartnerName;
+		this.isActive = inactive != 1;
 	}
 }
