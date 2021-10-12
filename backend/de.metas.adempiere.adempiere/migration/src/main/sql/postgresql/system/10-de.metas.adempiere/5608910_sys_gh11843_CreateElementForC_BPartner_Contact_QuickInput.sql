@@ -77,3 +77,12 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 -- URL zum Konzept
 INSERT INTO t_alter_column values('c_bpartner_contact_quickinput','IsInvoiceEmailEnabled','CHAR(1)',null,null)
 ;
+
+-- 2021-10-12T08:38:57.463Z
+-- URL zum Konzept
+UPDATE AD_Element SET EntityType='D',Updated=TO_TIMESTAMP('2021-10-12 10:38:57','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=543189
+;
+-- 2021-10-12T08:44:21.365Z
+-- URL zum Konzept
+UPDATE AD_Column SET EntityType='D',Updated=TO_TIMESTAMP('2021-10-12 10:44:21','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=577716
+;
