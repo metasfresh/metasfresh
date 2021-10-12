@@ -65,11 +65,10 @@ registerRoute(
   })
 );
 
-self.addEventListener('install', function() {
+self.addEventListener('install', function () {
   // Force refreshing the sw on install
   self.skipWaiting();
 });
-
 
 // This allows the web app to trigger skipWaiting via
 // registration.waiting.postMessage({type: 'SKIP_WAITING'})
