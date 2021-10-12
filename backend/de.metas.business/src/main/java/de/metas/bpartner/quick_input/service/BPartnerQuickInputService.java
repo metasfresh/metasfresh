@@ -86,7 +86,6 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.service.ClientId;
-import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BPartner;
@@ -128,7 +127,6 @@ public class BPartnerQuickInputService
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IRequestTypeDAO requestTypeDAO = Services.get(IRequestTypeDAO.class);
 	private final IRequestDAO requestDAO = Services.get(IRequestDAO.class);
-	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final INotificationBL notificationBL = Services.get(INotificationBL.class);
 	private final UserGroupRepository userGroupRepository;
 
@@ -136,8 +134,6 @@ public class BPartnerQuickInputService
 			DYNATTR_UPDATING_NAME_AND_GREETING = new ModelDynAttributeAccessor<>("UPDATING_NAME_AND_GREETING", Boolean.class);
 
 	private final AdMessageKey MSG_C_BPartnerCreatedFrmAnotherOrg_Summary = AdMessageKey.of("MSG_C_BPartnerCreatedFrmAnotherOrg_Summary");
-
-	private static final String SYS_CONFIG_C_BPartner_CreatedFromAnotherOrg_Notify_UserGroup_ID = "C_BPartner_CreatedFromAnotherOrg_Notify_UserGroup_ID";
 
 	public BPartnerQuickInputService(
 			@NonNull final BPartnerQuickInputRepository bpartnerQuickInputRepository,
@@ -381,12 +377,8 @@ public class BPartnerQuickInputService
 				.TargetRecordAction
 				.of(I_R_Request.Table_Name, partnerCreatedFromAnotherOrgRequest.getR_Request_ID());
 
-		final int userGroupRecordId = sysConfigBL.getIntValue(SYS_CONFIG_C_BPartner_CreatedFromAnotherOrg_Notify_UserGroup_ID,
-															  -1,
-															  partnerCreatedFromAnotherOrgRequest.getAD_Client_ID(),
-															  partnerCreatedFromAnotherOrgRequest.getAD_Org_ID());
-
-		final UserGroupId userGroupId = UserGroupId.ofRepoIdOrNull(userGroupRecordId);
+		final OrgId requestOrgId = OrgId.ofRepoId(partnerCreatedFromAnotherOrgRequest.getAD_Org_ID());
+		final UserGroupId userGroupId = orgDAO.getPartnerCreatedFromAnotherOrgNotifyUserGroupID(requestOrgId);
 
 		if (userGroupId == null)
 		{
