@@ -94,14 +94,16 @@ self.addEventListener('fetch', (event) => {
     //  if the network data has not already been received, we update the page with the data in the response.
     //  When the network responds we update the page again with the latest information.
     self.addEventListener('fetch', function (event) {
-      event.respondWith(
-        caches.open(cacheVersion).then(function (cache) {
-          return fetch(event.request).then(function (response) {
-            cache.put(event.request, response.clone());
-            return response;
-          });
-        })
-      );
+      if (event.request.url.startsWith('http')) {
+        event.respondWith(
+          caches.open(cacheVersion).then(function (cache) {
+            return fetch(event.request).then(function (response) {
+              cache.put(event.request, response.clone());
+              return response;
+            });
+          })
+        );
+      }
     });
 
     // Prevent the default, and handle the request ourselves.
