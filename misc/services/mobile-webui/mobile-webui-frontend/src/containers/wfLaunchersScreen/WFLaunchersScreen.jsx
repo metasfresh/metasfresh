@@ -7,6 +7,8 @@ import { populateLaunchers } from '../../actions/LauncherActions';
 import { getLaunchers } from '../../api/launchers';
 import WFLauncherButton from './WFLauncherButton';
 
+import * as ws from '../../utils/websocket';
+
 class WFLaunchersScreen extends Component {
   componentDidMount() {
     const { populateLaunchers } = this.props;
@@ -15,6 +17,26 @@ class WFLaunchersScreen extends Component {
       populateLaunchers(response.data.endpointResponse.launchers);
     });
   }
+
+  componentDidUpdate() {
+    if (!this.wsClient) {
+      this.wsClient = ws.connectAndSubscribe({
+        topic: '/v2/userWorkflows/launchers/2188228',
+        onWebsocketMessage: this.onWebsocketMessage,
+      });
+    }
+  }
+
+  componentWillUnmount() {
+    ws.disconnectClient(this.wsClient);
+    this.wsClient = null;
+  }
+
+  onWebsocketMessage = (message) => {
+    const { populateLaunchers } = this.props;
+    const { launchers } = JSON.parse(message.body);
+    populateLaunchers(launchers);
+  };
 
   render() {
     const { launchers: launchersMap } = this.props;
