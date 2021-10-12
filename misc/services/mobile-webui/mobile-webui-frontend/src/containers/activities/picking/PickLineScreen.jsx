@@ -4,36 +4,37 @@ import { withRouter } from 'react-router';
 import PropTypes from 'prop-types';
 
 import PickStepButtonsGroup from './PickStepButtonsGroup';
+import { selectWFProcessFromState } from '../../../reducers/wfProcesses_status';
 
 class PickLineScreen extends PureComponent {
   render() {
-    const { activityId, wfProcessId, lineId, lineProps } = this.props;
+    const { wfProcessId, activityId, lineId, stepsById } = this.props;
 
-    if (lineProps) {
-      const { steps } = lineProps;
-
-      return (
-        <div className="pt-2 section lines-screen-container">
-          <PickStepButtonsGroup steps={steps} activityId={activityId} wfProcessId={wfProcessId} lineId={lineId} />
-        </div>
-      );
-    }
-
-    return null;
+    return (
+      <div className="pt-2 section lines-screen-container">
+        <PickStepButtonsGroup
+          wfProcessId={wfProcessId}
+          activityId={activityId}
+          lineId={lineId}
+          steps={Object.values(stepsById)}
+        />
+      </div>
+    );
   }
 }
 
 const mapStateToProps = (state, ownProps) => {
   const { workflowId: wfProcessId, activityId, lineId } = ownProps.match.params;
-  const workflow = state.wfProcesses[wfProcessId];
-  const activities = workflow ? workflow.activities : [];
-  const targetActivity = activities.filter((activity) => activity.activityId === activityId);
+  const wfProcess = selectWFProcessFromState(state, wfProcessId);
+  const activity = wfProcess.activities[activityId];
+  const lineProps = activity.componentProps.lines[lineId];
+  const stepsById = lineProps.steps;
 
   return {
     wfProcessId,
     activityId,
     lineId,
-    lineProps: targetActivity.length ? targetActivity[0].componentProps.lines[lineId] : null,
+    stepsById,
   };
 };
 
@@ -43,7 +44,7 @@ PickLineScreen.propTypes = {
   wfProcessId: PropTypes.string.isRequired,
   activityId: PropTypes.string.isRequired,
   lineId: PropTypes.string.isRequired,
-  lineProps: PropTypes.object.isRequired,
+  stepsById: PropTypes.object.isRequired,
 };
 
 export default withRouter(connect(mapStateToProps, null)(PickLineScreen));

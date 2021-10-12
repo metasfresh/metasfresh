@@ -126,21 +126,7 @@ class PickStepScreen extends Component {
               <ButtonWithIndicator caption={scanButtonCaption} completeStatus={scanButtonStatus} />
             </button>
           </div>
-          <ScreenToaster
-            position="bottom-center"
-            toastOptions={{
-              success: {
-                style: {
-                  background: 'green',
-                },
-              },
-              error: {
-                style: {
-                  background: 'red',
-                },
-              },
-            }}
-          />
+          <ScreenToaster />
         </div>
       </div>
     );

@@ -16,6 +16,7 @@ import PickStepScanHUScreen from '../containers/activities/picking/PickStepScanH
 
 import PrivateRoute from './PrivateRoute';
 import { history } from '../store/store';
+import ScreenToaster from '../components/ScreenToaster';
 
 const routesArray = [
   { path: '/', Component: WFLaunchersScreen },
@@ -36,6 +37,7 @@ const childRoutes = (
         <Header appName="Kommissionierung" hidden />
         <ViewHeader />
         <Component />
+        <ScreenToaster />
       </Route>
     ))}
   </div>
