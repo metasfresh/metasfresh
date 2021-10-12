@@ -11,6 +11,7 @@ import lombok.ToString;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Iterator;
+import java.util.Objects;
 import java.util.stream.Stream;
 
 @EqualsAndHashCode
@@ -69,5 +70,10 @@ public class WorkflowLaunchersList implements Iterable<WorkflowLauncher>
 	{
 		return maxStaleAccepted.compareTo(Duration.ZERO) <= 0 // explicitly asked for a fresh value
 				|| SystemTime.asInstant().isAfter(timestamp.plus(maxStaleAccepted));
+	}
+
+	public boolean equalsIgnoringTimestamp(@NonNull final WorkflowLaunchersList other)
+	{
+		return Objects.equals(this.launchers, other.launchers);
 	}
 }
