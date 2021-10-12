@@ -80,6 +80,8 @@ self.addEventListener('message', (event) => {
   }
 });
 
+const cacheVersion = '0.0.1';
+
 // const broadcast = new BroadcastChannel('network-status-channel');
 
 // Any other custom service worker logic can go here.
@@ -88,12 +90,19 @@ self.addEventListener('fetch', (event) => {
     //event.respondWith(new Response('// no-op'));
     event.respondWith(fetch(event.request));
   } else {
-    // network falling back to cache
-    event.respondWith(
-      fetch(event.request).catch(function () {
-        return caches.match(event.request);
-      })
-    );
+    //  Sending a request to the network and the cache. The cache will most likely respond first and,
+    //  if the network data has not already been received, we update the page with the data in the response.
+    //  When the network responds we update the page again with the latest information.
+    self.addEventListener('fetch', function (event) {
+      event.respondWith(
+        caches.open(cacheVersion).then(function (cache) {
+          return fetch(event.request).then(function (response) {
+            cache.put(event.request, response.clone());
+            return response;
+          });
+        })
+      );
+    });
 
     // Prevent the default, and handle the request ourselves.
     /*
