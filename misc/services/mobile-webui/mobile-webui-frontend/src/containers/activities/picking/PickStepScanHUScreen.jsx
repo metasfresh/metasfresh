@@ -124,9 +124,11 @@ PickStepScanHUScreen.propTypes = {
   lineId: PropTypes.string.isRequired,
   stepId: PropTypes.string.isRequired,
   eligibleHUBarcode: PropTypes.string.isRequired,
+  stepProps: PropTypes.object.isRequired,
   // Actions:
   updatePickingStepScannedHUBarcode: PropTypes.func.isRequired,
   goBack: PropTypes.func.isRequired,
+  updatePickingStepQty: PropTypes.func.isRequired,
 };
 
 export default withRouter(

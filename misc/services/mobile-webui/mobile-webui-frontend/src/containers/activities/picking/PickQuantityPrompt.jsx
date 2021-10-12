@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-
+import PropTypes from 'prop-types';
 class PickQuantityPrompt extends Component {
   constructor(props) {
     super(props);
@@ -43,5 +43,10 @@ class PickQuantityPrompt extends Component {
     );
   }
 }
+
+PickQuantityPrompt.propTypes = {
+  onQtyChange: PropTypes.func.isRequired,
+  qtyToPick: PropTypes.string.isRequired,
+};
 
 export default PickQuantityPrompt;
