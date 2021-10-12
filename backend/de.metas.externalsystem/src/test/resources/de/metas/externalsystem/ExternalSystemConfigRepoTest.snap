@@ -51,6 +51,7 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_GRSSi
     "id" : 100001,
     "type" : "GRSSignum",
     "name" : "name",
+    "isActive" : true,
     "childConfig" : {
       "id" : 100002,
       "parentId" : 100001,
@@ -78,6 +79,7 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_GRSSi
     "id" : 100001,
     "type" : "GRSSignum",
     "name" : "name",
+    "isActive" : true,
     "childConfig" : {
       "id" : 100002,
       "parentId" : 100001,
