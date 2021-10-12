@@ -6,6 +6,7 @@
   "dependencies": {
     "@redux-offline/redux-offline": "^2.6.0",
     "@reduxjs/toolkit": "^1.6.1",
+    "@stomp/stompjs": "^6.1.2",
     "@testing-library/jest-dom": "^5.11.4",
     "@testing-library/react": "^11.1.0",
     "@testing-library/user-event": "^12.1.10",
@@ -28,6 +29,7 @@
     "react-scripts": "4.0.3",
     "redux-localstorage-simple": "^2.4.1",
     "reselect": "^4.0.0",
+    "sockjs-client": "^1.5.2",
     "uuid": "^8.3.2",
     "web-vitals": "^0.2.4",
     "workbox-background-sync": "^5.1.3",
