@@ -3,19 +3,19 @@ DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.docs_sales_customs_in
 CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.docs_sales_customs_invoice_footer(p_c_customs_invoice_ID NUMERIC, p_ad_language          character varying)
     RETURNS TABLE
             (
-                catchweight   numeric,
+                nettoTotalWeight   numeric,
                 uom           character varying,
                 QtyPattern    text,
-                bruttoweight  numeric
+                bruttoTotalWeight  numeric
             )
     LANGUAGE 'sql'
 AS
 $BODY$
 
-SELECT SUM(catchweight) AS catchweight,
+SELECT SUM(catchweight) AS nettoTotalWeight,
        UOM,
        QtyPattern,
-       SUM(bruttweight) AS totalWeight
+       SUM(bruttweight) AS bruttoTotalWeight
 FROM (
          SELECT (CASE
                      WHEN il.c_uom_id = 540017 -- harcoded kg

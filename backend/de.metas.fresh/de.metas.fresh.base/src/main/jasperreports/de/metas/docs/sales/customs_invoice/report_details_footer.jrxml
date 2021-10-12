@@ -6,7 +6,7 @@
 	<property name="ireport.zoom" value="1.0"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="jasperreports\dev.xml"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="jasperreports\it.xml"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<property name="com.jaspersoft.studio.unit." value="pixel"/>
 	<property name="com.jaspersoft.studio.unit.pageHeight" value="pixel"/>
@@ -26,14 +26,14 @@
 		<defaultValueExpression><![CDATA[$P{ad_language}]]></defaultValueExpression>
 	</parameter>
 	<queryString>
-		<![CDATA[SELECT catchweight,
+		<![CDATA[SELECT nettoTotalWeight,
        UOM,
        QtyPattern,
-       bruttoweight as totalWeight
+       bruttoTotalWeight
 FROM de_metas_endcustomer_fresh_reports.docs_sales_customs_invoice_footer($P{C_Customs_Invoice_Id}, $P{ad_language});]]>
 	</queryString>
-	<field name="catchweight" class="java.math.BigDecimal">
-		<property name="com.jaspersoft.studio.field.label" value="catchweight"/>
+	<field name="nettototalweight" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="nettototalweight"/>
 	</field>
 	<field name="uom" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="uom"/>
@@ -41,8 +41,8 @@ FROM de_metas_endcustomer_fresh_reports.docs_sales_customs_invoice_footer($P{C_C
 	<field name="qtypattern" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="qtypattern"/>
 	</field>
-	<field name="totalweight" class="java.math.BigDecimal">
-		<property name="com.jaspersoft.studio.field.label" value="totalweight"/>
+	<field name="bruttototalweight" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="bruttototalweight"/>
 	</field>
 	<title>
 		<band height="37">
@@ -51,7 +51,7 @@ FROM de_metas_endcustomer_fresh_reports.docs_sales_customs_invoice_footer($P{C_C
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{catchweight}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{nettototalweight}]]></textFieldExpression>
 				<patternExpression><![CDATA[$F{qtypattern}]]></patternExpression>
 			</textField>
 			<textField>
@@ -80,7 +80,7 @@ FROM de_metas_endcustomer_fresh_reports.docs_sales_customs_invoice_footer($P{C_C
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{totalweight}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{bruttototalweight}]]></textFieldExpression>
 				<patternExpression><![CDATA[$F{qtypattern}]]></patternExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="0.00" isBlankWhenNull="true">
