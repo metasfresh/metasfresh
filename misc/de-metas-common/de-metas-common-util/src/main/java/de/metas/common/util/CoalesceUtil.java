@@ -44,13 +44,18 @@ public class CoalesceUtil
 	}
 
 	@NonNull
-	public <T> T coalesceNotNull(@Nullable final T value1, @NonNull final T value2)
+	public <T> T coalesceNotNull(@Nullable final T value1, @Nullable final T value2)
 	{
-		return value1 == null ? value2 : value1;
+		final T result = value1 == null ? value2 : value1;
+		if (result == null)
+		{
+			throw new NullPointerException("At least one of value1 or value2 has to be not-null");
+		}
+		return result;
 	}
 
 	@Nullable
-	public <T> T coalesce(@Nullable final T value1, @NonNull final Supplier<T> value2)
+	public <T> T coalesce(@Nullable final T value1, @Nullable final Supplier<T> value2)
 	{
 		return value1 != null ? value1 : value2.get();
 	}
@@ -67,9 +72,14 @@ public class CoalesceUtil
 	}
 
 	@NonNull
-	public <T> T coalesceNotNull(@Nullable final T value1, @Nullable final T value2, @NonNull final T value3)
+	public <T> T coalesceNotNull(@Nullable final T value1, @Nullable final T value2, @Nullable final T value3)
 	{
-		return value1 != null ? value1 : (value2 != null ? value2 : value3);
+		final T result = value1 != null ? value1 : (value2 != null ? value2 : value3);
+		if (result == null)
+		{
+			throw new NullPointerException("At least one of value1, value2 or value3 has to be not-null");
+		}
+		return result;
 	}
 
 	/**
@@ -100,7 +110,7 @@ public class CoalesceUtil
 		final T result = coalesce(values);
 		if (result == null)
 		{
-			throw new NullPointerException("At least one parameter must be not-null");
+			throw new NullPointerException("At least one parameter has to be not-null");
 		}
 		return result;
 	}
@@ -111,14 +121,14 @@ public class CoalesceUtil
 	 */
 	@SafeVarargs
 	@Nullable
-	public static <T> T coalesceSuppliers(final Supplier<T>... values)
+	public static <T> T coalesceSuppliers(@Nullable final Supplier<T>... values)
 	{
 		return firstValidValue(Objects::nonNull, values);
 	}
 
 	@SafeVarargs
 	@Nullable
-	public <T> T firstValidValue(@NonNull final Predicate<T> isValidPredicate, final Supplier<T>... values)
+	public <T> T firstValidValue(@NonNull final Predicate<T> isValidPredicate, @Nullable final Supplier<T>... values)
 	{
 		if (values == null || values.length == 0)
 		{
