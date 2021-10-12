@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
-import { goBack } from 'connected-react-router';
+import { go } from 'connected-react-router';
 
 import { toastError } from '../../../utils/toast';
 import { postQtyPicked } from '../../../api/picking';
@@ -22,6 +22,7 @@ class PickStepScanHUScreen extends Component {
       reasonsPanelVisible: false,
       newQuantity: 0,
       scannedBarcode: null,
+      qtyRejected: 0,
     };
   }
 
@@ -52,9 +53,10 @@ class PickStepScanHUScreen extends Component {
       this.setState({ newQuantity: inputQty });
 
       if (inputQty !== qtyToPick) {
-        this.setState({ reasonsPanelVisible: true });
+        const qtyRejected = qtyToPick - inputQty;
+        this.setState({ reasonsPanelVisible: true, qtyRejected });
       } else {
-        this.pushUpdatedQuantity();
+        this.pushUpdatedQuantity({ qty: inputQty });
       }
 
       this.setState({ promptVisible: false });
@@ -64,19 +66,26 @@ class PickStepScanHUScreen extends Component {
   };
 
   hideReasonsPanel = (reason) => {
-    const { goBack } = this.props;
     this.setState({ reasonsPanelVisible: false });
 
-    this.pushUpdatedQuantity(reason);
-    goBack();
+    this.pushUpdatedQuantity({ qty: this.state.newQuantity, reason });
   };
 
-  pushUpdatedQuantity = (reason = null) => {
-    const { updatePickingStepQty, wfProcessId, activityId, lineId, stepId } = this.props;
-    const { newQuantity, scannedBarcode } = this.state;
-    const { updatePickingStepScannedHUBarcode } = this.props;
+  pushUpdatedQuantity = ({ qty = 0, reason = null }) => {
+    const { updatePickingStepQty, updatePickingStepScannedHUBarcode, wfProcessId, activityId, lineId, stepId, go } =
+      this.props;
+    const { scannedBarcode } = this.state;
 
-    console.log('PUSH: ', newQuantity);
+    // TODO: This should be added to the same, not next level
+    // pushHeaderEntry({
+    //   location,
+    //   values: [
+    //     {
+    //       caption: counterpart.translate('general.QtyPicked'),
+    //       value: qtyPicked,
+    //     },
+    //   ],
+    // });
 
     // TODO: We should only set the scanned barcode if the quantity is correct and user submitted any
     // potential reason to wrong quantity.
@@ -89,15 +98,18 @@ class PickStepScanHUScreen extends Component {
       scannedHUBarcode: scannedBarcode,
     });
 
-    updatePickingStepQty({ wfProcessId, activityId, lineId, stepId, qtyPicked: newQuantity });
-    postQtyPicked({ wfProcessId, activityId, stepId, qtyPicked: newQuantity, qtyRejectedReasonCode: reason });
+    updatePickingStepQty({ wfProcessId, activityId, lineId, stepId, qtyPicked: qty });
+    postQtyPicked({ wfProcessId, activityId, stepId, qtyPicked: qty, qtyRejectedReasonCode: reason });
     // TODO: handle the promise
+
+    go(-2);
   };
 
   validateQtyInput = (numberInput) => {
     const {
       stepProps: { qtyToPick },
     } = this.props;
+
     return numberInput >= 0 && numberInput <= qtyToPick;
   };
 
@@ -110,14 +122,14 @@ class PickStepScanHUScreen extends Component {
 
   render() {
     const {
-      stepProps: { qtyToPick },
+      stepProps: { qtyToPick, uom },
     } = this.props;
-    const { promptVisible, reasonsPanelVisible } = this.state;
+    const { promptVisible, reasonsPanelVisible, qtyRejected } = this.state;
 
     return (
       <div className="mt-0">
         {reasonsPanelVisible ? (
-          <QtyReasonsView onHide={this.hideReasonsPanel} />
+          <QtyReasonsView onHide={this.hideReasonsPanel} uom={uom} qtyRejected={qtyRejected} />
         ) : (
           <>
             {promptVisible ? <PickQuantityPrompt qtyToPick={qtyToPick} onQtyChange={this.onQtyPickedChanged} /> : null}
@@ -155,7 +167,7 @@ PickStepScanHUScreen.propTypes = {
   stepProps: PropTypes.object.isRequired,
   // Actions:
   updatePickingStepScannedHUBarcode: PropTypes.func.isRequired,
-  goBack: PropTypes.func.isRequired,
+  go: PropTypes.func.isRequired,
   updatePickingStepQty: PropTypes.func.isRequired,
 };
 
@@ -163,6 +175,6 @@ export default withRouter(
   connect(mapStateToProps, {
     updatePickingStepQty,
     updatePickingStepScannedHUBarcode,
-    goBack,
+    go,
   })(PickStepScanHUScreen)
 );
