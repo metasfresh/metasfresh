@@ -160,7 +160,7 @@ public class WorkflowRestAPIService
 			@NonNull final UserId invokerId,
 			@NonNull final WFProcessId wfProcessId,
 			@NonNull final WFActivityId wfActivityId,
-			@Nullable final String scannedBarcode)
+			@NonNull final String scannedBarcode)
 	{
 		return processWFActivity(
 				invokerId,
@@ -172,7 +172,7 @@ public class WorkflowRestAPIService
 	private WFProcess setScannedBarcode0(
 			@NonNull final WFProcess wfProcess,
 			@NonNull final WFActivity wfActivity,
-			@Nullable final String scannedBarcode)
+			@NonNull final String scannedBarcode)
 	{
 		return wfActivityHandlersRegistry
 				.getFeature(wfActivity.getWfActivityType(), SetScannedBarcodeSupport.class)
