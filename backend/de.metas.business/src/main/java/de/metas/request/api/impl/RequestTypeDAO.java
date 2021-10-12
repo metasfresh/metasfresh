@@ -63,6 +63,13 @@ public class RequestTypeDAO implements IRequestTypeDAO
 
 	}
 
+	@Override
+	public RequestTypeId retrieveBPartnerCreatedFromAnotherOrgRequestTypeId()
+	{
+		//TODO
+		return null;
+	}
+
 	private RequestTypeId retrieveRequestTypeIdByInternalName(final String internalName)
 	{
 		final RequestTypeId requestTypeId = queryBL.createQueryBuilderOutOfTrx(I_R_RequestType.class)

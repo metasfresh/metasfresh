@@ -42,10 +42,13 @@ import de.metas.bpartner.name.strategy.ComputeNameAndGreetingRequest;
 import de.metas.bpartner.quick_input.BPartnerContactQuickInputId;
 import de.metas.bpartner.quick_input.BPartnerQuickInputId;
 import de.metas.bpartner.service.IBPGroupDAO;
+import de.metas.common.util.time.SystemTime;
 import de.metas.document.references.zoom_into.RecordWindowFinder;
 import de.metas.greeting.GreetingId;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.ExplainedOptional;
+import de.metas.i18n.IMsgBL;
 import de.metas.i18n.Language;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
@@ -53,13 +56,18 @@ import de.metas.location.ILocationDAO;
 import de.metas.location.LocationId;
 import de.metas.logging.LogManager;
 import de.metas.marketing.base.model.CampaignId;
+import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.exceptions.PriceListNotFoundException;
 import de.metas.pricing.service.IPriceListDAO;
+import de.metas.request.RequestTypeId;
+import de.metas.request.api.IRequestTypeDAO;
+import de.metas.request.api.RequestCandidate;
 import de.metas.user.api.IUserBL;
+import de.metas.user.api.IUserDAO;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
@@ -73,9 +81,11 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.IAutoCloseable;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Contact_QuickInput;
 import org.compiere.model.I_C_BPartner_QuickInput;
+import org.compiere.model.X_R_Request;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
@@ -104,9 +114,17 @@ public class BPartnerQuickInputService
 	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 	private final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	private final IUserDAO userDAO = Services.get(IUserDAO.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final IRequestTypeDAO requestTypeDAO = Services.get(IRequestTypeDAO.class);
+	// private final IRequestBL requestBL = Services.get(IRequestBL.class); TODO
+
 
 	private static final ModelDynAttributeAccessor<I_C_BPartner_QuickInput, Boolean>
 			DYNATTR_UPDATING_NAME_AND_GREETING = new ModelDynAttributeAccessor<>("UPDATING_NAME_AND_GREETING", Boolean.class);
+
+	private final AdMessageKey MSG_C_BPartnerCreatedFrmAnotherOrg_Summary = AdMessageKey.of("MSG_C_BPartnerCreatedFrmAnotherOrg_Summary");
 
 	public BPartnerQuickInputService(
 			@NonNull final BPartnerQuickInputRepository bpartnerQuickInputRepository,
@@ -186,9 +204,9 @@ public class BPartnerQuickInputService
 			else
 			{
 				return ExplainedOptional.of(NameAndGreeting.builder()
-						.name(companyname)
-						.greetingId(GreetingId.ofRepoIdOrNull(bpartner.getC_Greeting_ID())) // preserve current greeting
-						.build());
+													.name(companyname)
+													.greetingId(GreetingId.ofRepoIdOrNull(bpartner.getC_Greeting_ID())) // preserve current greeting
+													.build());
 			}
 		}
 		else
@@ -268,6 +286,8 @@ public class BPartnerQuickInputService
 		bpartnerCompositeRepository.save(bpartnerComposite);
 		final BPartnerId bpartnerId = bpartnerComposite.getBpartner().getId();
 
+		createRequestPartnerCreatedFromAnotherOrgIfNeeded(bpartnerComposite);
+
 		//
 		// Copy BPartner Attributes
 		bpartnerAttributesRepository.saveAttributes(
@@ -298,6 +318,46 @@ public class BPartnerQuickInputService
 
 		//
 		return bpartnerId;
+	}
+
+	private void createRequestPartnerCreatedFromAnotherOrgIfNeeded(final BPartnerComposite bpartnerComposite)
+	{
+		final OrgId partnerOrgId = bpartnerComposite.getOrgId();
+		final OrgId loginOrgId = Env.getOrgId();
+
+		if (loginOrgId.equals(partnerOrgId))
+		{
+			//nothing to do
+			return;
+		}
+		Env.getLoggedUserId();
+
+		final String loginUserName = userDAO.retrieveUserFullName(Env.getLoggedUserId());
+		final String loginOrgName = orgDAO.retrieveOrgName(loginOrgId);
+		final String partnerName = bpartnerComposite.getBpartner().getName();
+		final String partnerOrgName = orgDAO.retrieveOrgName(partnerOrgId);
+
+		final String summary = msgBL.getMsg(Env.getCtx(), MSG_C_BPartnerCreatedFrmAnotherOrg_Summary, new Object[] {
+				loginUserName,
+				loginOrgName,
+				partnerName,
+				partnerOrgName });
+
+		final RequestTypeId requestTypeId = requestTypeDAO.retrieveBPartnerCreatedFromAnotherOrgRequestTypeId();
+
+		final BPartnerId bPartnerId = bpartnerComposite.getBpartner().getId();
+		final RequestCandidate requestCandidate = RequestCandidate.builder()
+				.summary(summary)
+				.confidentialType(X_R_Request.CONFIDENTIALTYPE_PartnerConfidential)
+				.orgId(partnerOrgId)
+				.recordRef(TableRecordReference.of(I_C_BPartner.Table_Name, bPartnerId))
+				.requestTypeId(requestTypeId)
+				.partnerId(bPartnerId)
+				.dateDelivered(SystemTime.asZonedDateTime())
+
+				.build();
+
+		// requestBL.createRequest(requestCandidate); TODO
 	}
 
 	@NonNull
@@ -367,11 +427,11 @@ public class BPartnerQuickInputService
 		// BPartner Location
 		final BPartnerLocation bpLocation = BPartnerLocation.builder()
 				.locationType(BPartnerLocationType.builder()
-						.billTo(true)
-						.billToDefault(true)
-						.shipTo(true)
-						.shipToDefault(true)
-						.build())
+									  .billTo(true)
+									  .billToDefault(true)
+									  .shipTo(true)
+									  .shipToDefault(true)
+									  .build())
 				.name(".")
 				.existingLocationId(existingLocationId)
 				.build();
@@ -392,25 +452,25 @@ public class BPartnerQuickInputService
 				final boolean isPurchaseContact = template.isVendor();
 
 				contacts.add(BPartnerContact.builder()
-						.transientId(transientId)
-						.contactType(BPartnerContactType.builder()
-								.defaultContact(isDefaultContact)
-								.billToDefault(isDefaultContact)
-								.shipToDefault(isDefaultContact)
-								.sales(isSalesContact)
-								.salesDefault(isSalesContact && isDefaultContact)
-								.purchase(isPurchaseContact)
-								.purchaseDefault(isPurchaseContact && isDefaultContact)
-								.build())
-						.newsletter(contactTemplate.isNewsletter())
-						.membershipContact(contactTemplate.isMembershipContact())
-						.firstName(contactTemplate.getFirstname())
-						.lastName(contactTemplate.getLastname())
-						.name(userBL.buildContactName(contactTemplate.getFirstname(), contactTemplate.getLastname()))
-						.greetingId(GreetingId.ofRepoIdOrNull(contactTemplate.getC_Greeting_ID()))
-						.phone(StringUtils.trimBlankToNull(contactTemplate.getPhone()))
-						.email(StringUtils.trimBlankToNull(contactTemplate.getEMail()))
-						.build());
+									 .transientId(transientId)
+									 .contactType(BPartnerContactType.builder()
+														  .defaultContact(isDefaultContact)
+														  .billToDefault(isDefaultContact)
+														  .shipToDefault(isDefaultContact)
+														  .sales(isSalesContact)
+														  .salesDefault(isSalesContact && isDefaultContact)
+														  .purchase(isPurchaseContact)
+														  .purchaseDefault(isPurchaseContact && isDefaultContact)
+														  .build())
+									 .newsletter(contactTemplate.isNewsletter())
+									 .membershipContact(contactTemplate.isMembershipContact())
+									 .firstName(contactTemplate.getFirstname())
+									 .lastName(contactTemplate.getLastname())
+									 .name(userBL.buildContactName(contactTemplate.getFirstname(), contactTemplate.getLastname()))
+									 .greetingId(GreetingId.ofRepoIdOrNull(contactTemplate.getC_Greeting_ID()))
+									 .phone(StringUtils.trimBlankToNull(contactTemplate.getPhone()))
+									 .email(StringUtils.trimBlankToNull(contactTemplate.getEMail()))
+									 .build());
 			}
 		}
 
