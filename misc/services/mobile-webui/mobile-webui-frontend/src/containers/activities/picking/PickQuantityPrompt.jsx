@@ -27,7 +27,7 @@ class PickQuantityPrompt extends Component {
         <div className="prompt-dialog-screen">
           <article className="message confirm-box is-dark">
             <div className="message-body">
-              <strong>{`${counterpart.translate('activities.picking.quantityToPick')} : ${qtyToPick}`}</strong>
+              <strong>{`${counterpart.translate('general.QtyToPick')} : ${qtyToPick}`}</strong>
               <div>&nbsp;</div>
               <div className="control">
                 <input className="input" type="number" value={this.state.value} onChange={this.changeQuantity} />
