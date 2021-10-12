@@ -64,6 +64,7 @@ import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_FREIG
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_JSON_PATH_CONSTANT_BPARTNER_ID;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_JSON_PATH_CONSTANT_BPARTNER_LOCATION_ID;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_JSON_PATH_SALES_REP_ID;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_ORDER_ID;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_ORDER_NO;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_UPDATED_AFTER_OVERRIDE;
 
@@ -75,6 +76,10 @@ public class InvokeShopware6Action extends InvokeExternalSystemProcess
 	private static final String PARAM_ORDERNO = "OrderNo";
 	@Param(parameterName = PARAM_ORDERNO)
 	private String orderNo;
+
+	private static final String PARAM_ORDERID = "OrderId";
+	@Param(parameterName = PARAM_ORDERID)
+	private String orderId;
 	
 	@Override
 	protected IExternalSystemChildConfigId getExternalChildConfigId()
@@ -128,6 +133,11 @@ public class InvokeShopware6Action extends InvokeExternalSystemProcess
 		if(EmptyUtil.isNotBlank(orderNo))
 		{
 			parameters.put(PARAM_ORDER_NO, orderNo);
+		}
+
+		if(EmptyUtil.isNotBlank(orderId))
+		{
+			parameters.put(PARAM_ORDER_ID, orderId);
 		}
 		
 		return parameters;
