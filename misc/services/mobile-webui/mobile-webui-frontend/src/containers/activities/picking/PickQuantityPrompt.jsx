@@ -33,7 +33,7 @@ class PickQuantityPrompt extends Component {
                 <input className="input" type="number" value={this.state.value} onChange={this.changeQuantity} />
               </div>
               <div className="buttons is-centered mt-4">
-                <button className="button is-success confirm-button" onClick={this.onDialogYes}>
+                <button className="button is-medium btn-green confirm-button" onClick={this.onDialogYes}>
                   {counterpart.translate('activities.picking.confirmDone')}
                 </button>
               </div>

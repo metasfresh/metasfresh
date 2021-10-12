@@ -29,17 +29,24 @@ class QtyReasonsView extends PureComponent {
   };
 
   render() {
-    const { rejectedReasons } = this.props;
+    const { rejectedReasons, uom, qtyRejected } = this.props;
 
     return (
       <div className="pt-3 section picking-step-container">
+        <div className="content">
+          <h5>
+            {`${counterpart.translate('activities.picking.rejectedP1')} ${qtyRejected} ${uom} ${counterpart.translate(
+              'activities.picking.rejectedP2'
+            )}`}
+          </h5>
+        </div>
         <div className="picking-step-details centered-text is-size-5">
           <div className="control">
             {rejectedReasons.map((reason, idx) => (
               <div key={idx} className="columns is-mobile">
                 <div className="column is-full">
                   <label className="radio">
-                    <input type="radio" name={reason.key} onChange={this.setRejectedReason} />
+                    <input className="mr-2" type="radio" name={reason.key} onChange={this.setRejectedReason} />
                     {reason.caption}
                   </label>
                 </div>
@@ -48,7 +55,7 @@ class QtyReasonsView extends PureComponent {
           </div>
           <div className="buttons is-centered mt-4">
             <button
-              className="button is-success confirm-button"
+              className="button is-medium btn-green confirm-button"
               disabled={!this.state.rejectedReason}
               onClick={this.onSubmit}
             >
@@ -75,6 +82,8 @@ const mapStateToProps = (state, ownProps) => {
 QtyReasonsView.propTypes = {
   onHide: PropTypes.func.isRequired,
   rejectedReasons: PropTypes.array.isRequired,
+  uom: PropTypes.string.isRequired,
+  qtyRejected: PropTypes.number.isRequired,
 };
 
 export default withRouter(connect(mapStateToProps)(QtyReasonsView));
