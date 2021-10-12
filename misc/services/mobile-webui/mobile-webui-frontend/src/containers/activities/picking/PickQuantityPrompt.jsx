@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import counterpart from 'counterpart';
 class PickQuantityPrompt extends Component {
   constructor(props) {
     super(props);
@@ -26,14 +27,14 @@ class PickQuantityPrompt extends Component {
         <div className="prompt-dialog-screen">
           <article className="message confirm-box is-dark">
             <div className="message-body">
-              <strong>{`Quantity to pick: ${qtyToPick}`}</strong>
+              <strong>{`${counterpart.translate('activities.picking.quantityToPick')} : ${qtyToPick}`}</strong>
               <div>&nbsp;</div>
               <div className="control">
                 <input className="input" type="number" value={this.state.value} onChange={this.changeQuantity} />
               </div>
-              <div className="buttons is-centered">
+              <div className="buttons is-centered mt-4">
                 <button className="button is-success confirm-button" onClick={this.onDialogYes}>
-                  Done
+                  {counterpart.translate('activities.picking.confirmDone')}
                 </button>
               </div>
             </div>
