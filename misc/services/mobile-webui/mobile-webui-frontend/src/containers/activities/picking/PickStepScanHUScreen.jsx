@@ -8,8 +8,10 @@ import { toastError } from '../../../utils/toast';
 import { postQtyPicked } from '../../../api/picking';
 import { updatePickingStepScannedHUBarcode, updatePickingStepQty } from '../../../actions/PickingActions';
 
+import ScreenToaster from '../../../components/ScreenToaster';
 import CodeScanner from '../scan/CodeScanner';
 import PickQuantityPrompt from './PickQuantityPrompt';
+import QtyReasonsView from './QtyReasonsView';
 
 class PickStepScanHUScreen extends Component {
   constructor(props) {
@@ -17,29 +19,16 @@ class PickStepScanHUScreen extends Component {
 
     this.state = {
       promptVisible: false,
+      reasonsPanelVisible: false,
+      newQuantity: 0,
+      scannedBarcode: null,
     };
   }
 
   onBarcodeScanned = ({ scannedBarcode }, closeCameraCallback) => {
     if (this.isEligibleHUBarcode(scannedBarcode)) {
-      // const { wfProcessId, activityId, lineId, stepId } = this.props;
-      // const { updatePickingStepScannedHUBarcode, goBack } = this.props;
-
-      // TODO: We should only set the scanned barcode if the quantity is correct and user submitted any
-      // potential reason to wrong quantity.
-
-      // updatePickingStepScannedHUBarcode({
-      //   wfProcessId,
-      //   activityId,
-      //   lineId,
-      //   stepId,
-      //   scannedHUBarcode: scannedBarcode,
-      // });
-
-      this.setState({ promptVisible: true });
+      this.setState({ promptVisible: true, scannedBarcode });
       this.closeCameraCallback = closeCameraCallback;
-
-      // goBack();
     } else {
       // show an error to user but keep scanning...
       toastError({ messageKey: 'activities.picking.notEligibleHUBarcode' });
@@ -47,10 +36,11 @@ class PickStepScanHUScreen extends Component {
   };
 
   onQtyPickedChanged = (qty) => {
-    const { updatePickingStepQty, wfProcessId, activityId, lineId, stepId } = this.props;
-    // const { goBack } = this.props;
-    const qtyPicked = qty; //e.target.value;
-    const inputQty = parseInt(qtyPicked);
+    const {
+      stepProps: { qtyToPick },
+    } = this.props;
+
+    const inputQty = parseInt(qty);
 
     if (isNaN(inputQty)) {
       return;
@@ -59,16 +49,49 @@ class PickStepScanHUScreen extends Component {
     const isValidQty = this.validateQtyInput(inputQty);
 
     if (isValidQty) {
-      updatePickingStepQty({ wfProcessId, activityId, lineId, stepId, qtyPicked });
-      postQtyPicked({ wfProcessId, activityId, stepId, qtyPicked });
-      // TODO: handle the promise
-      // in case of qtyRejectedReasons replace path with the url of `rejected reason selection` view
-      // otherwise `goBack()`
+      this.setState({ newQuantity: inputQty });
+
+      if (inputQty !== qtyToPick) {
+        this.setState({ reasonsPanelVisible: true });
+      } else {
+        this.pushUpdatedQuantity();
+      }
 
       this.setState({ promptVisible: false });
     } else {
       toastError({ messageKey: 'activities.picking.invalidQtyPicked' });
     }
+  };
+
+  hideReasonsPanel = (reason) => {
+    const { goBack } = this.props;
+    this.setState({ reasonsPanelVisible: false });
+
+    this.pushUpdatedQuantity(reason);
+    goBack();
+  };
+
+  pushUpdatedQuantity = (reason = null) => {
+    const { updatePickingStepQty, wfProcessId, activityId, lineId, stepId } = this.props;
+    const { newQuantity, scannedBarcode } = this.state;
+    const { updatePickingStepScannedHUBarcode } = this.props;
+
+    console.log('PUSH: ', newQuantity);
+
+    // TODO: We should only set the scanned barcode if the quantity is correct and user submitted any
+    // potential reason to wrong quantity.
+
+    updatePickingStepScannedHUBarcode({
+      wfProcessId,
+      activityId,
+      lineId,
+      stepId,
+      scannedHUBarcode: scannedBarcode,
+    });
+
+    updatePickingStepQty({ wfProcessId, activityId, lineId, stepId, qtyPicked: newQuantity });
+    postQtyPicked({ wfProcessId, activityId, stepId, qtyPicked: newQuantity, qtyRejectedReasonCode: reason });
+    // TODO: handle the promise
   };
 
   validateQtyInput = (numberInput) => {
@@ -89,12 +112,19 @@ class PickStepScanHUScreen extends Component {
     const {
       stepProps: { qtyToPick },
     } = this.props;
-    const { promptVisible } = this.state;
+    const { promptVisible, reasonsPanelVisible } = this.state;
 
     return (
       <div className="mt-0">
-        {promptVisible ? <PickQuantityPrompt qtyToPick={qtyToPick} onQtyChange={this.onQtyPickedChanged} /> : null}
-        <CodeScanner onBarcodeScanned={this.onBarcodeScanned} />
+        {reasonsPanelVisible ? (
+          <QtyReasonsView onHide={this.hideReasonsPanel} />
+        ) : (
+          <>
+            {promptVisible ? <PickQuantityPrompt qtyToPick={qtyToPick} onQtyChange={this.onQtyPickedChanged} /> : null}
+            <CodeScanner onBarcodeScanned={this.onBarcodeScanned} />
+          </>
+        )}
+        <ScreenToaster />
       </div>
     );
   }
