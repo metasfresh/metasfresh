@@ -56,6 +56,8 @@ import de.metas.location.ILocationDAO;
 import de.metas.location.LocationId;
 import de.metas.logging.LogManager;
 import de.metas.marketing.base.model.CampaignId;
+import de.metas.notification.INotificationBL;
+import de.metas.notification.UserNotificationRequest;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.PaymentTermId;
@@ -64,8 +66,12 @@ import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.exceptions.PriceListNotFoundException;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.request.RequestTypeId;
+import de.metas.request.api.IRequestDAO;
 import de.metas.request.api.IRequestTypeDAO;
 import de.metas.request.api.RequestCandidate;
+import de.metas.user.UserGroupId;
+import de.metas.user.UserGroupRepository;
+import de.metas.user.UserGroupUserAssignment;
 import de.metas.user.api.IUserBL;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Check;
@@ -80,17 +86,20 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.service.ClientId;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Contact_QuickInput;
 import org.compiere.model.I_C_BPartner_QuickInput;
+import org.compiere.model.I_R_Request;
 import org.compiere.model.X_R_Request;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -118,13 +127,17 @@ public class BPartnerQuickInputService
 	private final IUserDAO userDAO = Services.get(IUserDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IRequestTypeDAO requestTypeDAO = Services.get(IRequestTypeDAO.class);
-	// private final IRequestBL requestBL = Services.get(IRequestBL.class); TODO
-
+	private final IRequestDAO requestDAO = Services.get(IRequestDAO.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private final INotificationBL notificationBL = Services.get(INotificationBL.class);
+	private final UserGroupRepository userGroupRepository;
 
 	private static final ModelDynAttributeAccessor<I_C_BPartner_QuickInput, Boolean>
 			DYNATTR_UPDATING_NAME_AND_GREETING = new ModelDynAttributeAccessor<>("UPDATING_NAME_AND_GREETING", Boolean.class);
 
 	private final AdMessageKey MSG_C_BPartnerCreatedFrmAnotherOrg_Summary = AdMessageKey.of("MSG_C_BPartnerCreatedFrmAnotherOrg_Summary");
+
+	private static final String SYS_CONFIG_C_BPartner_CreatedFromAnotherOrg_Notify_UserGroup_ID = "C_BPartner_CreatedFromAnotherOrg_Notify_UserGroup_ID";
 
 	public BPartnerQuickInputService(
 			@NonNull final BPartnerQuickInputRepository bpartnerQuickInputRepository,
@@ -135,7 +148,8 @@ public class BPartnerQuickInputService
 			@NonNull final BPartnerCompositeRepository bpartnerCompositeRepository,
 			@NonNull final BPartnerAttributesRepository bpartnerAttributesRepository,
 			@NonNull final BpartnerRelatedRecordsRepository bpartnerRelatedRecordsRepository,
-			@NonNull final BPartnerContactAttributesRepository bpartnerContactAttributesRepository)
+			@NonNull final BPartnerContactAttributesRepository bpartnerContactAttributesRepository,
+			@NonNull final UserGroupRepository userGroupRepository)
 	{
 		this.bpartnerQuickInputRepository = bpartnerQuickInputRepository;
 		this.bpartnerQuickInputAttributesRepository = bpartnerQuickInputAttributesRepository;
@@ -146,6 +160,8 @@ public class BPartnerQuickInputService
 		this.bpartnerAttributesRepository = bpartnerAttributesRepository;
 		this.bpartnerRelatedRecordsRepository = bpartnerRelatedRecordsRepository;
 		this.bpartnerContactAttributesRepository = bpartnerContactAttributesRepository;
+		this.userGroupRepository = userGroupRepository;
+
 	}
 
 	public Optional<AdWindowId> getNewBPartnerWindowId()
@@ -286,7 +302,7 @@ public class BPartnerQuickInputService
 		bpartnerCompositeRepository.save(bpartnerComposite);
 		final BPartnerId bpartnerId = bpartnerComposite.getBpartner().getId();
 
-		createRequestPartnerCreatedFromAnotherOrgIfNeeded(bpartnerComposite);
+		createRequestAndNotifyUserGroupIfNeeded(bpartnerComposite);
 
 		//
 		// Copy BPartner Attributes
@@ -320,7 +336,7 @@ public class BPartnerQuickInputService
 		return bpartnerId;
 	}
 
-	private void createRequestPartnerCreatedFromAnotherOrgIfNeeded(final BPartnerComposite bpartnerComposite)
+	private void createRequestAndNotifyUserGroupIfNeeded(final BPartnerComposite bpartnerComposite)
 	{
 		final OrgId partnerOrgId = bpartnerComposite.getOrgId();
 		final OrgId loginOrgId = Env.getOrgId();
@@ -346,6 +362,56 @@ public class BPartnerQuickInputService
 		final RequestTypeId requestTypeId = requestTypeDAO.retrieveBPartnerCreatedFromAnotherOrgRequestTypeId();
 
 		final BPartnerId bPartnerId = bpartnerComposite.getBpartner().getId();
+		final I_R_Request partnerCreatedFromAnotherOrgRequest = createPartnerCreatedFromAnotherOrgRequest(partnerOrgId, summary, requestTypeId, bPartnerId);
+
+		notifyUserGroupAboutSupplierApprovalExpiration(partnerCreatedFromAnotherOrgRequest,
+													   loginUserName,
+													   loginOrgName,
+													   partnerName,
+													   partnerOrgName);
+	}
+
+	private void notifyUserGroupAboutSupplierApprovalExpiration(@NonNull final I_R_Request partnerCreatedFromAnotherOrgRequest,
+			final String loginUserName,
+			final String loginOrgName,
+			final String partnerName,
+			final String partnerOrgName)
+	{
+		final UserNotificationRequest.TargetRecordAction targetRecordAction = UserNotificationRequest
+				.TargetRecordAction
+				.of(I_R_Request.Table_Name, partnerCreatedFromAnotherOrgRequest.getR_Request_ID());
+
+		final int userGroupRecordId = sysConfigBL.getIntValue(SYS_CONFIG_C_BPartner_CreatedFromAnotherOrg_Notify_UserGroup_ID,
+															  -1,
+															  partnerCreatedFromAnotherOrgRequest.getAD_Client_ID(),
+															  partnerCreatedFromAnotherOrgRequest.getAD_Org_ID());
+
+		final UserGroupId userGroupId = UserGroupId.ofRepoIdOrNull(userGroupRecordId);
+
+		if (userGroupId == null)
+		{
+			// nobody to notify
+			return;
+		}
+
+		userGroupRepository
+				.getByUserGroupId(userGroupId)
+				.streamAssignmentsFor(userGroupId, Instant.now())
+				.map(UserGroupUserAssignment::getUserId)
+				.map(userId -> UserNotificationRequest.builder()
+						.recipientUserId(userId)
+						.contentADMessage(MSG_C_BPartnerCreatedFrmAnotherOrg_Summary)// TODO: Verify if it's ok to have the same message
+						.contentADMessageParam(loginUserName)
+						.contentADMessageParam(loginOrgName)
+						.contentADMessageParam(partnerName)
+						.contentADMessageParam(partnerOrgName)
+						.targetAction(targetRecordAction)
+						.build())
+				.forEach(notificationBL::send);
+	}
+
+	private I_R_Request createPartnerCreatedFromAnotherOrgRequest(final OrgId partnerOrgId, final String summary, final RequestTypeId requestTypeId, final BPartnerId bPartnerId)
+	{
 		final RequestCandidate requestCandidate = RequestCandidate.builder()
 				.summary(summary)
 				.confidentialType(X_R_Request.CONFIDENTIALTYPE_PartnerConfidential)
@@ -357,7 +423,7 @@ public class BPartnerQuickInputService
 
 				.build();
 
-		// requestBL.createRequest(requestCandidate); TODO
+		return requestDAO.createRequest(requestCandidate);
 	}
 
 	@NonNull

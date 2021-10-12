@@ -36,6 +36,7 @@ import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.greeting.GreetingRepository;
 import de.metas.greeting.GreetingStandardType;
+import de.metas.user.UserGroupRepository;
 import de.metas.user.UserRepository;
 import lombok.NonNull;
 import org.adempiere.ad.table.MockLogEntriesRepository;
@@ -53,10 +54,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.refresh;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.adempiere.model.InterfaceWrapperHelper.*;
+import static org.assertj.core.api.Assertions.*;
 
 public class BPartnerQuickInputServiceUpdateNameAndGreetingTest
 {
@@ -88,8 +87,8 @@ public class BPartnerQuickInputServiceUpdateNameAndGreetingTest
 				new BPartnerCompositeRepository(new BPartnerBL(new UserRepository()), new MockLogEntriesRepository()),
 				new BPartnerAttributesRepository(),
 				new BpartnerRelatedRecordsRepository(),
-				new BPartnerContactAttributesRepository()
-		);
+				new BPartnerContactAttributesRepository(),
+				new UserGroupRepository());
 
 		greeting_MR = createGreeting(GreetingStandardType.MR);
 		greeting_MRS = createGreeting(GreetingStandardType.MRS);
@@ -173,7 +172,7 @@ public class BPartnerQuickInputServiceUpdateNameAndGreetingTest
 		bPartnerQuickInputService.updateNameAndGreeting(BPartnerQuickInputId.ofRepoId(partner.getC_BPartner_QuickInput_ID()));
 
 		refresh(partner);
-		assertThat(partner.getBPartnerName()).isEqualTo(firstName+" And " + firstName2 + " "+ lastname);
+		assertThat(partner.getBPartnerName()).isEqualTo(firstName + " And " + firstName2 + " " + lastname);
 		assertThat(partner.getC_Greeting_ID()).isEqualTo(greeting_MR_AND_MRS.getC_Greeting_ID());
 	}
 
@@ -208,8 +207,8 @@ public class BPartnerQuickInputServiceUpdateNameAndGreetingTest
 		bPartnerQuickInputService.updateNameAndGreeting(BPartnerQuickInputId.ofRepoId(partner.getC_BPartner_QuickInput_ID()));
 
 		refresh(partner);
-		assertThat(partner.getBPartnerName()).isEqualTo(firstName+ " "
-														+ lastname+" And " + firstName2 + " "+ lastname2);
+		assertThat(partner.getBPartnerName()).isEqualTo(firstName + " "
+																+ lastname + " And " + firstName2 + " " + lastname2);
 		assertThat(partner.getC_Greeting_ID()).isEqualTo(greeting_MR_AND_MRS.getC_Greeting_ID());
 	}
 
