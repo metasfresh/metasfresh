@@ -46,7 +46,7 @@ class PickQuantityPrompt extends Component {
 
 PickQuantityPrompt.propTypes = {
   onQtyChange: PropTypes.func.isRequired,
-  qtyToPick: PropTypes.string.isRequired,
+  qtyToPick: PropTypes.number.isRequired,
 };
 
 export default PickQuantityPrompt;
