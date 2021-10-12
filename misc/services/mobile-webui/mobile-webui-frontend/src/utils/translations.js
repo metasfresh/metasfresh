@@ -32,6 +32,7 @@ export const setupCounterpart = () => {
         scanHUBarcode: 'Scan HU',
         notEligibleHUBarcode: 'HU barcode not matching',
         invalidQtyPicked: 'Invalid qty picked',
+        confirmDone: 'Done',
       },
     },
   });
@@ -59,6 +60,7 @@ export const setupCounterpart = () => {
         scanHUBarcode: 'Scan HU',
         notEligibleHUBarcode: 'HU barcode not matching',
         invalidQtyPicked: 'Invalid qty picked',
+        confirmDone: 'Done',
       },
     },
   });
