@@ -1,21 +1,19 @@
 package de.metas.rest_api.utils;
 
-import java.util.Map;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.Null;
-import org.compiere.util.Trace;
-
-import de.metas.i18n.ITranslatableString;
 import de.metas.common.rest_api.v1.JsonErrorItem;
 import de.metas.common.rest_api.v1.JsonErrorItem.JsonErrorItemBuilder;
+import de.metas.i18n.ITranslatableString;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.Null;
+import org.compiere.util.Trace;
+
+import javax.annotation.Nullable;
+import java.util.Map;
 
 /*
  * #%L
