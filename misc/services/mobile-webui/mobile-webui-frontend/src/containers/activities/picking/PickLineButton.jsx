@@ -51,7 +51,6 @@ PickLineButton.propTypes = {
   caption: PropTypes.string.isRequired,
   isUserEditable: PropTypes.bool.isRequired,
   completeStatus: PropTypes.string.isRequired,
-  steps: PropTypes.array.isRequired,
   //
   // Actions
   push: PropTypes.func.isRequired,

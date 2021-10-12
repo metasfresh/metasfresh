@@ -13,11 +13,11 @@ class PickStepButtonsGroup extends Component {
             return (
               <PickStepButton
                 key={stepItem.pickingStepId}
-                {...stepItem}
                 wfProcessId={wfProcessId}
                 activityId={activityId}
                 lineId={lineId}
                 stepId={stepItem.pickingStepId}
+                {...stepItem}
               />
             );
           })}

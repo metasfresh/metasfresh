@@ -5,9 +5,7 @@ import { withRouter } from 'react-router';
 import { goBack } from 'connected-react-router';
 
 import { toastError } from '../../../utils/toast';
-import ScreenToaster from '../../../components/ScreenToaster';
 
-import { selectWFProcessState } from '../../../reducers/wfProcesses_status/index';
 import { setScannedBarcode } from '../../../actions/ScanActions';
 import { updateWFProcess } from '../../../actions/WorkflowActions';
 import { postScannedBarcode } from '../../../api/scanner';
@@ -39,21 +37,15 @@ class ScanScreen extends Component {
     return (
       <div className="mt-0">
         <CodeScanner onBarcodeScanned={this.onBarcodeScanned} />
-        <ScreenToaster />
       </div>
     );
   }
 }
 
 const mapStateToProps = (state, { match }) => {
-  const { workflowId, activityId } = match.params;
-  const wfProcessStatus = selectWFProcessState(state, workflowId);
+  const { workflowId: wfProcessId, activityId } = match.params;
 
-  return {
-    wfProcessId: workflowId,
-    activityId,
-    activities: wfProcessStatus.activities, // we need this to enable the next activity post scanning
-  };
+  return { wfProcessId, activityId };
 };
 
 ScanScreen.propTypes = {
@@ -62,7 +54,6 @@ ScanScreen.propTypes = {
   componentProps: PropTypes.object,
   wfProcessId: PropTypes.string.isRequired,
   activityId: PropTypes.string,
-  activities: PropTypes.object,
   //
   // Actions
   setScannedBarcode: PropTypes.func.isRequired,

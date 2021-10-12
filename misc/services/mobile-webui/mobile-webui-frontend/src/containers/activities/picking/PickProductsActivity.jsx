@@ -26,9 +26,9 @@ class PickProductsActivity extends Component {
                   wfProcessId={wfProcessId}
                   activityId={activityId}
                   lineId={lineId}
+                  caption={lineItem.caption}
                   isUserEditable={isUserEditable}
                   completeStatus={completeStatus || CompleteStatus.NOT_STARTED}
-                  {...lineItem}
                 />
               );
             })

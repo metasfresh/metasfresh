@@ -1,66 +1,53 @@
 import React, { PureComponent } from 'react';
 import { withRouter } from 'react-router';
 import { connect } from 'react-redux';
-import { v4 as uuidv4 } from 'uuid';
 import PropTypes from 'prop-types';
 
-import { continueWorkflow } from '../actions/WorkflowActions';
-import { selectWFProcess } from '../reducers/wfProcesses';
-import { selectWFProcessState } from '../reducers/wfProcesses_status/index';
+import { updateWFProcess } from '../actions/WorkflowActions';
+import { selectWFProcessFromState } from '../reducers/wfProcesses_status/index';
 
 import ScanActivity from './activities/scan/ScanActivity';
 import PickProductsActivity from './activities/picking/PickProductsActivity';
 import ConfirmActivity from './activities/confirmButton/ConfirmActivity';
 
 class WFProcessScreen extends PureComponent {
-  componentDidMount() {
-    const { wfProcessId, activities, continueWorkflow } = this.props;
-
-    if (!activities.length) {
-      continueWorkflow(wfProcessId);
-    }
-  }
-
   render() {
-    const { wfProcessId, activities, workflowProcessStatus } = this.props;
-    const { activities: activitiesState } = workflowProcessStatus;
+    const { wfProcess } = this.props;
+    const { id: wfProcessId, activities } = wfProcess;
 
     return (
       <div className="pt-2 section wf-process-container">
         <div className="container pick-products-container">
           <div className="activities">
-            {activities.length > 0 &&
-              activities.map((activityItem) => {
-                let uniqueId = uuidv4();
-
+            {activities &&
+              Object.values(activities).map((activityItem) => {
                 switch (activityItem.componentType) {
                   case 'common/scanBarcode':
                     return (
                       <ScanActivity
-                        key={uniqueId}
+                        key={activityItem.activityId}
                         wfProcessId={wfProcessId}
-                        activityState={activitiesState[activityItem.activityId]}
+                        activityState={activityItem}
                       />
                     );
                   case 'picking/pickProducts':
                     return (
                       <PickProductsActivity
-                        key={uniqueId}
-                        id={uniqueId}
+                        key={activityItem.activityId}
+                        id={activityItem.activityId}
                         wfProcessId={wfProcessId}
                         activityId={activityItem.activityId}
-                        activityState={activitiesState[activityItem.activityId]}
+                        activityState={activityItem}
                         {...activityItem}
                       />
                     );
                   case 'common/confirmButton':
                     return (
                       <ConfirmActivity
-                        key={uniqueId}
-                        id={uniqueId}
+                        key={activityItem.activityId}
+                        id={activityItem.activityId}
                         wfProcessId={wfProcessId}
                         {...activityItem}
-                        {...activitiesState[activityItem.activityId]}
                       />
                     );
                 }
@@ -73,26 +60,19 @@ class WFProcessScreen extends PureComponent {
 }
 
 function mapStateToProps(state, { match }) {
-  const { workflowId } = match.params;
-  const workflow = selectWFProcess(state, workflowId);
-  const workflowProcessStatus = selectWFProcessState(state, workflowId);
+  const { workflowId: wfProcessId } = match.params;
+  const wfProcess = selectWFProcessFromState(state, wfProcessId);
 
-  return {
-    wfProcessId: workflowId,
-    activities: workflow.activities,
-    workflowProcessStatus,
-  };
+  return { wfProcess };
 }
 
 WFProcessScreen.propTypes = {
   //
   // Props
-  wfProcessId: PropTypes.string.isRequired,
-  workflowProcessStatus: PropTypes.object,
-  activities: PropTypes.array,
+  wfProcess: PropTypes.object,
   //
   // Actions
-  continueWorkflow: PropTypes.func.isRequired,
+  updateWFProcess: PropTypes.func.isRequired,
 };
 
-export default withRouter(connect(mapStateToProps, { continueWorkflow })(WFProcessScreen));
+export default withRouter(connect(mapStateToProps, { updateWFProcess })(WFProcessScreen));

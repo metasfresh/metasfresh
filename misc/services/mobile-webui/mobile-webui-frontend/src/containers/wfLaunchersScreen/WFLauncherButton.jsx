@@ -4,22 +4,38 @@ import { connect } from 'react-redux';
 import { push } from 'connected-react-router';
 import { pushHeaderEntry } from '../../actions/HeaderActions';
 
-import { continueWorkflow, startWorkflow } from '../../actions/WorkflowActions';
+import { getWorkflowRequest, startWorkflowRequest } from '../../api/launchers';
+import { updateWFProcess } from '../../actions/WorkflowActions';
+
 import ButtonWithIndicator from '../../components/ButtonWithIndicator';
 import * as CompleteStatus from '../../constants/CompleteStatus';
+import { toastError } from '../../utils/toast';
 
 class WFLauncherButton extends PureComponent {
   handleClick = () => {
-    const { startWorkflow, continueWorkflow, wfParameters, startedWFProcessId, push, pushHeaderEntry } = this.props;
-    const action = startedWFProcessId ? continueWorkflow(startedWFProcessId) : startWorkflow({ wfParameters });
+    const { startedWFProcessId, wfParameters } = this.props;
+    const { updateWFProcess } = this.props;
 
-    action.then(({ endpointResponse: wfProcess }) => {
-      const location = `/workflow/${wfProcess.id}`;
-      push(location);
-      pushHeaderEntry({
-        location,
-        values: wfProcess.headerProperties.entries,
-      });
+    const wfProcessPromise = startedWFProcessId
+      ? getWorkflowRequest(startedWFProcessId)
+      : startWorkflowRequest({ wfParameters });
+
+    wfProcessPromise
+      .then(({ data }) => {
+        const { endpointResponse: wfProcess } = data;
+        updateWFProcess({ wfProcess });
+        this.gotoWFProcessScreen({ wfProcess });
+      })
+      .catch((axiosError) => toastError({ axiosError }));
+  };
+
+  gotoWFProcessScreen = ({ wfProcess }) => {
+    const { push, pushHeaderEntry } = this.props;
+    const location = `/workflow/${wfProcess.id}`;
+    push(location);
+    pushHeaderEntry({
+      location,
+      values: wfProcess.headerProperties.entries,
     });
   };
 
@@ -46,10 +62,13 @@ WFLauncherButton.propTypes = {
   wfParameters: PropTypes.object.isRequired,
   //
   // Actions
-  startWorkflow: PropTypes.func.isRequired,
-  continueWorkflow: PropTypes.func.isRequired,
+  updateWFProcess: PropTypes.func.isRequired,
   push: PropTypes.func.isRequired,
   pushHeaderEntry: PropTypes.func.isRequired,
 };
 
-export default connect(null, { startWorkflow, continueWorkflow, push, pushHeaderEntry })(WFLauncherButton);
+export default connect(null, {
+  updateWFProcess,
+  push,
+  pushHeaderEntry,
+})(WFLauncherButton);

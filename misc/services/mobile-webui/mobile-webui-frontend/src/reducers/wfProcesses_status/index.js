@@ -4,7 +4,7 @@ import { workflowReducer } from './workflow';
 import { scanReducer } from './scan';
 import { pickingReducer } from './picking';
 
-export const selectWFProcessState = createSelector(
+export const selectWFProcessFromState = createSelector(
   (state, wfProcessId) => state.wfProcesses_status[wfProcessId] || null,
   (wfProcess) =>
     wfProcess

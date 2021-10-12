@@ -8,7 +8,6 @@ import { toastError } from '../../../utils/toast';
 import { postQtyPicked } from '../../../api/picking';
 import { updatePickingStepScannedHUBarcode, updatePickingStepQty } from '../../../actions/PickingActions';
 
-import ScreenToaster from '../../../components/ScreenToaster';
 import CodeScanner from '../scan/CodeScanner';
 import PickQuantityPrompt from './PickQuantityPrompt';
 
@@ -96,7 +95,6 @@ class PickStepScanHUScreen extends Component {
       <div className="mt-0">
         {promptVisible ? <PickQuantityPrompt qtyToPick={qtyToPick} onQtyChange={this.onQtyPickedChanged} /> : null}
         <CodeScanner onBarcodeScanned={this.onBarcodeScanned} />
-        <ScreenToaster />
       </div>
     );
   }
