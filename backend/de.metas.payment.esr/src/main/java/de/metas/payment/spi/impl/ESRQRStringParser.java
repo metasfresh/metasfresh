@@ -24,7 +24,7 @@ package de.metas.payment.spi.impl;
 
 import java.util.Properties;
 
-import de.metas.banking.payment.IPaymentString;
+import de.metas.banking.payment.PaymentString;
 import de.metas.banking.payment.IPaymentStringParserFactory;
 import de.metas.banking.payment.spi.IPaymentStringParser;
 import de.metas.util.Check;
@@ -58,7 +58,7 @@ public final class ESRQRStringParser implements IPaymentStringParser
 	 *
 	 */
 	@Override
-	public IPaymentString parse(final Properties ctx, final String paymentTextOriginal) throws IndexOutOfBoundsException
+	public PaymentString parse(final Properties ctx, final String paymentTextOriginal) throws IndexOutOfBoundsException
 	{
 		Check.assumeNotNull(paymentTextOriginal, "paymentText not null");
 

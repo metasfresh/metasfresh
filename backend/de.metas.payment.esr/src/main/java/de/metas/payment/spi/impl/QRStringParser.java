@@ -32,9 +32,8 @@ import java.util.stream.Stream;
 
 import org.apache.commons.lang.StringUtils;
 
-import de.metas.banking.payment.IPaymentString;
 import de.metas.banking.payment.IPaymentStringDataProvider;
-import de.metas.banking.payment.impl.PaymentString;
+import de.metas.banking.payment.PaymentString;
 import de.metas.payment.api.impl.QRPaymentStringDataProvider;
 import de.metas.util.Check;
 
@@ -58,11 +57,11 @@ public final class QRStringParser extends AbstractESRPaymentStringParser
 	 *
 	 */
 	@Override
-	public IPaymentString parse(final Properties ctx, final String paymentTextOriginal) throws IndexOutOfBoundsException
+	public PaymentString parse(final Properties ctx, final String rawPaymentString) throws IndexOutOfBoundsException
 	{
-		Check.assumeNotNull(paymentTextOriginal, "paymentText not null");
+		Check.assumeNotNull(rawPaymentString, "paymentText not null");
 
-		String paymentText = paymentTextOriginal.trim(); // eliminates trailing and leading spaces
+		String paymentText = rawPaymentString.trim(); // eliminates trailing and leading spaces
 
 		// Checking if the prefix string has at least 3 chars
 		if (paymentText.length() < 3)
@@ -115,7 +114,10 @@ public final class QRStringParser extends AbstractESRPaymentStringParser
 		String invoiceInfo = null;
 		String alternateMethod1 = null;
 		String alternateMethod2 = null;
-		
+
+		final Timestamp paymentDate = null;
+		final Timestamp accountDate = null;
+
 		Scanner paymentStringScanner = new Scanner(paymentText);
 		int paymentStringIndex = 0;
 		
@@ -230,16 +232,20 @@ public final class QRStringParser extends AbstractESRPaymentStringParser
 		
 		final List<String> collectedErrors = new ArrayList<>();
 
-		final IPaymentString paymentString = new PaymentString(collectedErrors,
-				paymentTextOriginal,
-				true,
-				amount,
-				ibanAccountNo,
-				referenceType.equals("QRR") ? true : false,
-				reference,
-				unstructuredMessage,
-				currency);
-
+		final PaymentString paymentString = PaymentString.builder()
+				.collectedErrors(collectedErrors)
+				.rawPaymentString(rawPaymentString)
+				.qrPaymentString(true)
+				.IBAN(ibanAccountNo)
+				.amount(amount)
+				.referenceNoComplete(reference)
+				.paymentDate(paymentDate)
+				.accountDate(accountDate)
+				.qrIBAN(referenceType.equals("QRR") ? true : false)
+				.currency(currency)
+				.unstructuredMessage(unstructuredMessage)
+				.build();
+		
 		final IPaymentStringDataProvider dataProvider = new QRPaymentStringDataProvider(paymentString);
 		paymentString.setDataProvider(dataProvider);
 
