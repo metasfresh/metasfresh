@@ -24,9 +24,6 @@ package de.metas.picking.workflow.handlers;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
-import de.metas.cache.CCache;
-import de.metas.common.util.time.SystemTime;
-import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.picking.rest_api.json.JsonPickingEventsList;
@@ -36,7 +33,6 @@ import de.metas.picking.workflow.handlers.activity_handlers.ActualPickingWFActiv
 import de.metas.picking.workflow.handlers.activity_handlers.CompletePickingWFActivityHandler;
 import de.metas.picking.workflow.handlers.activity_handlers.SetPickingSlotWFActivityHandler;
 import de.metas.picking.workflow.model.PickingJob;
-import de.metas.picking.workflow.model.PickingJobCandidate;
 import de.metas.picking.workflow.model.PickingWFProcessStartParams;
 import de.metas.user.UserId;
 import de.metas.workflow.rest_api.model.WFActivity;
@@ -46,48 +42,45 @@ import de.metas.workflow.rest_api.model.WFProcessHandlerId;
 import de.metas.workflow.rest_api.model.WFProcessHeaderProperties;
 import de.metas.workflow.rest_api.model.WFProcessHeaderProperty;
 import de.metas.workflow.rest_api.model.WFProcessId;
-import de.metas.workflow.rest_api.model.WorkflowLauncher;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersList;
 import de.metas.workflow.rest_api.service.WFProcessHandler;
 import de.metas.workflow.rest_api.service.WFProcessesIndex;
 import de.metas.workflow.rest_api.service.WorkflowStartRequest;
-import lombok.Builder;
 import lombok.NonNull;
-import org.adempiere.util.lang.SynchronizedMutable;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Nullable;
 import java.time.Duration;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Set;
 import java.util.function.UnaryOperator;
 
+import static de.metas.picking.workflow.handlers.PickingWFProcessUtils.workflowCaption;
 import static de.metas.picking.workflow.handlers.activity_handlers.PickingWFActivityHelper.extractShipmentScheduleIds;
 import static de.metas.picking.workflow.handlers.activity_handlers.PickingWFActivityHelper.getPickingJob;
 
 @Component
 public class PickingWFProcessHandler implements WFProcessHandler
 {
-	private static final WFProcessHandlerId PROVIDER_ID = WFProcessHandlerId.ofString("picking");
+	static final WFProcessHandlerId HANDLER_ID = WFProcessHandlerId.ofString("picking");
 
 	private final PickingJobService pickingJobService;
 
-	private final WFProcessesIndex wfProcesses = new WFProcessesIndex();
-
-	private final CCache<UserId, SynchronizedMutable<WorkflowLaunchersList>> launchersCache = CCache.<UserId, SynchronizedMutable<WorkflowLaunchersList>>builder()
-			.build();
+	private final WFProcessesIndex wfProcesses;
+	private final PickingWorkflowLaunchersProvider wfLaunchersProvider;
 
 	public PickingWFProcessHandler(
 			@NonNull final PickingJobService pickingJobService)
 	{
 		this.pickingJobService = pickingJobService;
+
+		this.wfProcesses = new WFProcessesIndex();
+		this.wfLaunchersProvider = new PickingWorkflowLaunchersProvider(pickingJobService, wfProcesses);
 	}
 
 	@Override
 	public WFProcessHandlerId getId()
 	{
-		return PROVIDER_ID;
+		return HANDLER_ID;
 	}
 
 	@Override
@@ -95,76 +88,7 @@ public class PickingWFProcessHandler implements WFProcessHandler
 			@NonNull final UserId userId,
 			@NonNull final Duration maxStaleAccepted)
 	{
-		return launchersCache.getOrLoad(userId, SynchronizedMutable::empty)
-				.compute(previousLaunchers -> checkStateAndComputeLaunchers(userId, maxStaleAccepted, previousLaunchers));
-	}
-
-	private WorkflowLaunchersList checkStateAndComputeLaunchers(
-			final @NonNull UserId userId,
-			final @NonNull Duration maxStaleAccepted,
-			final @Nullable WorkflowLaunchersList previousLaunchers)
-	{
-		if (previousLaunchers == null)
-		{
-			// System.out.println("*** No previous value. A new value will be computed!");
-			return computeLaunchers(userId);
-		}
-		else if (previousLaunchers.isStaled(maxStaleAccepted))
-		{
-			// System.out.println("*** Value staled. A new value will be computed!");
-			return computeLaunchers(userId);
-		}
-		else
-		{
-			// System.out.println("*** Value NOT staled");
-			return previousLaunchers;
-		}
-	}
-
-	private WorkflowLaunchersList computeLaunchers(final @NonNull UserId userId)
-	{
-		final ArrayList<WorkflowLauncher> result = new ArrayList<>();
-
-		//
-		// Already started launchers
-		final ImmutableList<WFProcess> existingWFProcesses = wfProcesses.getByInvokerId(userId);
-		existingWFProcesses.stream()
-				.map(PickingWFProcessHandler::toExistingWorkflowLauncher)
-				.forEach(result::add);
-
-		//
-		// New launchers
-		final Set<ShipmentScheduleId> shipmentScheduleIdsAlreadyInPickingJobs = extractShipmentScheduleIds(existingWFProcesses);
-		pickingJobService.streamPickingJobCandidates(userId, shipmentScheduleIdsAlreadyInPickingJobs)
-				.map(PickingWFProcessHandler::toNewWorkflowLauncher)
-				.forEach(result::add);
-
-		return WorkflowLaunchersList.builder()
-				.launchers(ImmutableList.copyOf(result))
-				.timestamp(SystemTime.asInstant())
-				.build();
-	}
-
-	private static WorkflowLauncher toNewWorkflowLauncher(@NonNull final PickingJobCandidate pickingJobCandidate)
-	{
-		return WorkflowLauncher.builder()
-				.handlerId(PROVIDER_ID)
-				.caption(workflowCaption()
-						.salesOrderDocumentNo(pickingJobCandidate.getSalesOrderDocumentNo())
-						.customerName(pickingJobCandidate.getCustomerName())
-						.build())
-				.startedWFProcessId(null)
-				.wfParameters(pickingJobCandidate.getWfProcessStartParams().toParams())
-				.build();
-	}
-
-	private static WorkflowLauncher toExistingWorkflowLauncher(@NonNull final WFProcess wfProcess)
-	{
-		return WorkflowLauncher.builder()
-				.handlerId(PROVIDER_ID)
-				.caption(wfProcess.getCaption())
-				.startedWFProcessId(wfProcess.getId())
-				.build();
+		return wfLaunchersProvider.provideLaunchers(userId, maxStaleAccepted);
 	}
 
 	@Override
@@ -218,8 +142,11 @@ public class PickingWFProcessHandler implements WFProcessHandler
 		final WFProcess wfProcess = createWFProcess(pickingJob);
 		wfProcesses.add(wfProcess);
 
+		wfLaunchersProvider.invalidateCacheByUserId(invokerId);
+
 		return wfProcess;
 	}
+
 
 	@Override
 	public void abort(@NonNull final WFProcessId wfProcessId, @NonNull final UserId callerId)
@@ -238,6 +165,8 @@ public class PickingWFProcessHandler implements WFProcessHandler
 		pickingJobService.abort(pickingJob);
 
 		wfProcesses.remove(wfProcess);
+
+		wfLaunchersProvider.invalidateCacheByUserId(wfProcess.getInvokerId());
 	}
 
 	@Override
@@ -252,7 +181,7 @@ public class PickingWFProcessHandler implements WFProcessHandler
 		final UserId lockedBy = pickingJob.getLockedBy();
 
 		return WFProcess.builder()
-				.id(WFProcessId.random(PROVIDER_ID))
+				.id(WFProcessId.random(HANDLER_ID))
 				.invokerId(lockedBy)
 				.caption(workflowCaption()
 						.salesOrderDocumentNo(pickingJob.getSalesOrderDocumentNo())
@@ -276,14 +205,6 @@ public class PickingWFProcessHandler implements WFProcessHandler
 								.wfActivityType(CompletePickingWFActivityHandler.HANDLED_ACTIVITY_TYPE)
 								.build()))
 				.build();
-	}
-
-	@Builder(builderMethodName = "workflowCaption", builderClassName = "$WorkflowCaptionBuilder")
-	private static ITranslatableString buildWorkflowCaption(
-			@NonNull final String salesOrderDocumentNo,
-			@NonNull final String customerName)
-	{
-		return TranslatableStrings.join(" | ", salesOrderDocumentNo, customerName);
 	}
 
 	public void processStepEvents(

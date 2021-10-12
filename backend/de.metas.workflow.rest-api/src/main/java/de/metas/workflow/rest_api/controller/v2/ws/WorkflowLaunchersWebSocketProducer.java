@@ -1,7 +1,6 @@
 package de.metas.workflow.rest_api.controller.v2.ws;
 
 import com.google.common.collect.ImmutableList;
-import com.jgoodies.common.base.Objects;
 import de.metas.user.UserId;
 import de.metas.user.api.IUserBL;
 import de.metas.util.Services;
@@ -51,8 +50,9 @@ class WorkflowLaunchersWebSocketProducer implements WebSocketProducer
 		final WorkflowLaunchersList newResult = computeNewResult();
 		final WorkflowLaunchersList previousResult = lastResultHolder.setValueAndReturnPrevious(newResult);
 
-		if (Objects.equals(newResult, previousResult))
+		if (previousResult != null && previousResult.equalsIgnoringTimestamp(newResult))
 		{
+			// nothing changed, don't flood the frontend with same information
 			return ImmutableList.of();
 		}
 		else
