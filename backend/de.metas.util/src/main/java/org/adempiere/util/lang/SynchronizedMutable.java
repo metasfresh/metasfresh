@@ -38,6 +38,11 @@ public final class SynchronizedMutable<T> implements IMutable<T>
 		return new SynchronizedMutable<>(value);
 	}
 
+	public static <T> SynchronizedMutable<T> empty()
+	{
+		return new SynchronizedMutable<>(null);
+	}
+
 	@Nullable
 	private T value;
 
