@@ -65,6 +65,9 @@ registerRoute(
   })
 );
 
+// this can be used to invalidate the cache further on (by updating the version)
+const cacheName = '0.0.1'; 
+
 self.addEventListener('install', function () {
   // Force refreshing the sw on install
   self.skipWaiting();
@@ -86,7 +89,15 @@ self.addEventListener('fetch', (event) => {
     //event.respondWith(new Response('// no-op'));
     event.respondWith(fetch(event.request));
   } else {
+    // network falling back to cache
+    event.respondWith(
+      fetch(event.request).catch(function() {
+        return caches.match(event.request);
+      })
+    );
+
     // Prevent the default, and handle the request ourselves.
+    /*
     event.respondWith(
       (async function () {
         // Try to get the response from a cache.
@@ -103,5 +114,6 @@ self.addEventListener('fetch', (event) => {
         });
       })()
     );
+    */
   }
 });
