@@ -430,13 +430,13 @@ class UserRolePermissions implements IUserRolePermissions
 	}
 
 	@Override
-	public String getOrgWhere(@Nullable final String tableName, final Access access)
+	public Optional<String> getOrgWhere(@Nullable final String tableName, final Access access)
 	{
 		final Set<OrgId> adOrgIds = getOrgAccess(tableName, access);
 
 		if (adOrgIds == TABLE_ORGACCESS_ALL || adOrgIds == ORGACCESS_ALL)
 		{
-			return "AD_Org_ID IS NOT NULL";
+			return Optional.empty();
 		}
 
 		//
@@ -458,19 +458,19 @@ class UserRolePermissions implements IUserRolePermissions
 		{
 			if (sb.length() > 0)
 			{
-				return "AD_Org_ID=" + sb;
+				return Optional.of("AD_Org_ID=" + sb);
 			}
 			else
 			{
 				logger.error("No Access Org records");
-				return "AD_Org_ID=-1";    // No Access Record
+				return Optional.of("AD_Org_ID=-1");    // No Access Record
 			}
 		}
 		else
 		{
-			return "AD_Org_ID IN (" + sb + ")";
+			return Optional.of("AD_Org_ID IN (" + sb + ")");
 		}
-	}    // getOrgWhereValue
+	}
 
 	/**
 	 * Access to Org
