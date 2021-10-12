@@ -59,6 +59,15 @@ public class PaymentString
 	@Nullable 
 	private final String IBAN;
 
+	@Nullable 
+	private final String currency;
+	@Nullable 
+	private final boolean qrPaymentString;
+	@Nullable 
+	private final boolean qrIBAN;
+	@Nullable 
+	private final String unstructuredMessage;
+	
 	private IPaymentStringDataProvider dataProvider;
 
 
