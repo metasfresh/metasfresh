@@ -46,6 +46,51 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Alber
 ]
 
 
+de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_GRSSignum_getById=[
+  {
+    "id" : 100001,
+    "type" : "GRSSignum",
+    "name" : "name",
+    "isActive" : true,
+    "childConfig" : {
+      "id" : 100002,
+      "parentId" : 100001,
+      "value" : "testGRSSignumValue",
+      "baseUrl" : "baseUrl",
+      "camelHttpResourceAuthKey" : "authKey"
+    }
+  }
+]
+
+
+de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_GRSSignum_getByTypeAndParent=[
+  {
+    "id" : 100002,
+    "parentId" : 100001,
+    "value" : "testGRSSignumValue",
+    "baseUrl" : "baseUrl",
+    "camelHttpResourceAuthKey" : "authKey"
+  }
+]
+
+
+de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_GRSSignum_getByTypeAndValue=[
+  {
+    "id" : 100001,
+    "type" : "GRSSignum",
+    "name" : "name",
+    "isActive" : true,
+    "childConfig" : {
+      "id" : 100002,
+      "parentId" : 100001,
+      "value" : "testGRSSignumValue",
+      "baseUrl" : "baseUrl",
+      "camelHttpResourceAuthKey" : "authKey"
+    }
+  }
+]
+
+
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopware6_getById=[
   {
     "id" : 100001,

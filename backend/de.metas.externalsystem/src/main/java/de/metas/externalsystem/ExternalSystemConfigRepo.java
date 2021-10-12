@@ -28,8 +28,14 @@ import de.metas.common.util.EmptyUtil;
 import de.metas.common.util.StringUtils;
 import de.metas.externalsystem.alberta.ExternalSystemAlbertaConfig;
 import de.metas.externalsystem.alberta.ExternalSystemAlbertaConfigId;
+import de.metas.externalsystem.grssignum.ExternalSystemGRSSignumConfig;
+import de.metas.externalsystem.grssignum.ExternalSystemGRSSignumConfigId;
+import de.metas.externalsystem.grssignum.ExternalSystemGRSSignumConfig;
+import de.metas.externalsystem.grssignum.ExternalSystemGRSSignumConfigId;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Alberta;
+import de.metas.externalsystem.model.I_ExternalSystem_Config_GRSSignum;
+import de.metas.externalsystem.model.I_ExternalSystem_Config_GRSSignum;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6Mapping;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_WooCommerce;
@@ -79,6 +85,8 @@ public class ExternalSystemConfigRepo
 				return getById(ExternalSystemOtherConfigId.cast(id));
 			case WOO:
 				return getById(ExternalSystemWooCommerceConfigId.cast(id));
+			case GRSSignum:
+				return getById(ExternalSystemGRSSignumConfigId.cast(id));
 			default:
 				throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", id.getType());
 		}
@@ -97,6 +105,9 @@ public class ExternalSystemConfigRepo
 						.map(this::getExternalSystemParentConfig);
 			case WOO:
 				return getWooCommerceConfigByValue(value)
+						.map(this::getExternalSystemParentConfig);
+			case GRSSignum:
+				return getGRSSignumConfigByValue(value)
 						.map(this::getExternalSystemParentConfig);
 			default:
 				throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", type);
@@ -118,6 +129,8 @@ public class ExternalSystemConfigRepo
 				return Optional.of(externalSystemOtherConfigRepository.getById(externalSystemOtherConfigId));
 			case WOO:
 				return getWooCommerceConfigByParentId(id);
+			case GRSSignum:
+				return getGRSSignumConfigByParentId(id);
 			default:
 				throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", externalSystemType);
 		}
@@ -145,6 +158,8 @@ public class ExternalSystemConfigRepo
 				throw new AdempiereException("Method not supported")
 						.appendParametersToMessage()
 						.setParameter("externalSystemType", externalSystemType);
+			case GRSSignum:
+				return getAllByTypeGRS();
 			default:
 				throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", externalSystemType);
 		}
@@ -536,5 +551,70 @@ public class ExternalSystemConfigRepo
 		record.setIsActive(config.getIsActive());
 
 		return record;
+	}
+
+
+	@NonNull
+	private Optional<IExternalSystemChildConfig> getGRSSignumConfigByParentId(@NonNull final ExternalSystemParentConfigId id)
+	{
+		return queryBL.createQueryBuilder(I_ExternalSystem_Config_GRSSignum.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_ExternalSystem_Config_GRSSignum.COLUMNNAME_ExternalSystem_Config_ID, id.getRepoId())
+				.create()
+				.firstOnlyOptional(I_ExternalSystem_Config_GRSSignum.class)
+				.map(this::buildExternalSystemGRSSignumConfig);
+	}
+
+	@NonNull
+	private ExternalSystemParentConfig getById(@NonNull final ExternalSystemGRSSignumConfigId id)
+	{
+		final I_ExternalSystem_Config_GRSSignum config = InterfaceWrapperHelper.load(id, I_ExternalSystem_Config_GRSSignum.class);
+
+		return getExternalSystemParentConfig(config);
+	}
+
+	@NonNull
+	private ExternalSystemParentConfig getExternalSystemParentConfig(@NonNull final I_ExternalSystem_Config_GRSSignum config)
+	{
+		final ExternalSystemParentConfigId parentConfigId = ExternalSystemParentConfigId.ofRepoId(config.getExternalSystem_Config_ID());
+
+		final ExternalSystemGRSSignumConfig child = buildExternalSystemGRSSignumConfig(config);
+
+		return getById(parentConfigId)
+				.childConfig(child)
+				.build();
+	}
+
+	@NonNull
+	private ExternalSystemGRSSignumConfig buildExternalSystemGRSSignumConfig(@NonNull final I_ExternalSystem_Config_GRSSignum config)
+	{
+		return ExternalSystemGRSSignumConfig.builder()
+				.id(ExternalSystemGRSSignumConfigId.ofRepoId(config.getExternalSystem_Config_GRSSignum_ID()))
+				.parentId(ExternalSystemParentConfigId.ofRepoId(config.getExternalSystem_Config_ID()))
+				.value(config.getExternalSystemValue())
+				.camelHttpResourceAuthKey(config.getCamelHttpResourceAuthKey())
+				.baseUrl(config.getBaseURL())
+				.build();
+	}
+
+	@NonNull
+	private Optional<I_ExternalSystem_Config_GRSSignum> getGRSSignumConfigByValue(@NonNull final String value)
+	{
+		return queryBL.createQueryBuilder(I_ExternalSystem_Config_GRSSignum.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_ExternalSystem_Config_GRSSignum.COLUMNNAME_ExternalSystemValue, value)
+				.create()
+				.firstOnlyOptional(I_ExternalSystem_Config_GRSSignum.class);
+	}
+
+	@NonNull
+	private ImmutableList<ExternalSystemParentConfig> getAllByTypeGRS()
+	{
+		return queryBL.createQueryBuilder(I_ExternalSystem_Config_GRSSignum.class)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.stream()
+				.map(this::getExternalSystemParentConfig)
+				.collect(ImmutableList.toImmutableList());
 	}
 }

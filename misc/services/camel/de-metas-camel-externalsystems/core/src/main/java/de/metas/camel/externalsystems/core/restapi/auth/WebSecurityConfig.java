@@ -23,6 +23,7 @@
 package de.metas.camel.externalsystems.core.restapi.auth;
 
 import com.sun.istack.NotNull;
+import de.metas.camel.externalsystems.common.RestServiceRoutes;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -31,9 +32,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
-
-import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.REST_WOOCOMMERCE_PATH;
-import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.WOOCOMMERCE_AUTHORITY;
 
 @Configuration
 @EnableWebSecurity
@@ -55,7 +53,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter
 				.csrf()
 				  .disable()
 				.authorizeRequests()
-				  .antMatchers("/**" + REST_WOOCOMMERCE_PATH).hasAuthority(WOOCOMMERCE_AUTHORITY)
+				  .antMatchers("/**" + RestServiceRoutes.WOO.getPath()).hasAuthority(RestServiceRoutes.WOO.getStringAuthority())
+				  .antMatchers("/**" + RestServiceRoutes.GRS.getPath()).hasAuthority(RestServiceRoutes.GRS.getStringAuthority())
 				  .anyRequest()
 				  .authenticated();
 		//@formatter:on
