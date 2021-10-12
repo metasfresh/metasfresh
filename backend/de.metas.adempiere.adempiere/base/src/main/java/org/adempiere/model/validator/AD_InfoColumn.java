@@ -22,15 +22,13 @@ package org.adempiere.model.validator;
  * #L%
  */
 
-
+import de.metas.util.Check;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.compiere.model.I_AD_InfoColumn;
 import org.compiere.model.ModelValidator;
 
-import de.metas.util.Check;
-
-@Validator(I_AD_InfoColumn.class)
+@Interceptor(I_AD_InfoColumn.class)
 public class AD_InfoColumn
 {
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })

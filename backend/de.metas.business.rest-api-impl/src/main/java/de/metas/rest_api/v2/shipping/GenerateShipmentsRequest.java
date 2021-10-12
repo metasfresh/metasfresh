@@ -24,6 +24,7 @@ package de.metas.rest_api.v2.shipping;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import de.metas.async.AsyncBatchId;
 import de.metas.common.util.EmptyUtil;
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
 import de.metas.handlingunits.shipmentschedule.spi.impl.ShipmentScheduleExternalInfo;
@@ -50,6 +51,9 @@ class GenerateShipmentsRequest
 	
 	@NonNull
 	M_ShipmentSchedule_QuantityTypeToUse quantityTypeToUse;
+
+	@NonNull
+	AsyncBatchId asyncBatchId;
 
 	public ImmutableMap<ShipmentScheduleId, String> extractShipmentDocumentNos()
 	{

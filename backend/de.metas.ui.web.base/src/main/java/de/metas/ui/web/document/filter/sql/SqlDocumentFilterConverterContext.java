@@ -1,15 +1,16 @@
 package de.metas.ui.web.document.filter.sql;
 
-import java.util.Map;
-
 import com.google.common.collect.ImmutableMap;
-
+import de.metas.ui.web.view.ViewId;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.NumberUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+
+import javax.annotation.Nullable;
+import java.util.Map;
 
 /*
  * #%L
@@ -36,13 +37,24 @@ import lombok.Value;
 @Value
 public class SqlDocumentFilterConverterContext
 {
-	public static SqlDocumentFilterConverterContext ofMap(final Map<String, Object> map)
+	public static final SqlDocumentFilterConverterContext EMPTY = new SqlDocumentFilterConverterContext();
+
+	@Nullable ViewId viewId;
+	@NonNull ImmutableMap<String, Object> parameters;
+
+	@Builder
+	private SqlDocumentFilterConverterContext(
+			@Nullable final ViewId viewId,
+			@NonNull @Singular final Map<String, Object> parameters)
 	{
-		if (map == null || map.isEmpty())
-		{
-			return EMPTY;
-		}
-		return new SqlDocumentFilterConverterContext(toImmutableMap(map));
+		this.viewId = viewId;
+		this.parameters = toImmutableMap(parameters);
+	}
+
+	private SqlDocumentFilterConverterContext()
+	{
+		viewId = null;
+		parameters = ImmutableMap.of();
 	}
 
 	private static ImmutableMap<String, Object> toImmutableMap(final Map<String, Object> map)
@@ -60,25 +72,16 @@ public class SqlDocumentFilterConverterContext
 		}
 	}
 
-	public static final SqlDocumentFilterConverterContext EMPTY = new SqlDocumentFilterConverterContext();
-
-	private final ImmutableMap<String, Object> params;
-
-	@Builder
-	private SqlDocumentFilterConverterContext(
-			@NonNull @Singular final ImmutableMap<String, Object> params)
+	public SqlDocumentFilterConverterContext withViewId(@Nullable final ViewId viewId)
 	{
-		this.params = ImmutableMap.copyOf(params);
-	}
-
-	private SqlDocumentFilterConverterContext()
-	{
-		params = ImmutableMap.of();
+		return !ViewId.equals(this.viewId, viewId)
+				? new SqlDocumentFilterConverterContext(viewId, this.parameters)
+				: this;
 	}
 
 	public int getPropertyAsInt(@NonNull final String name, final int defaultValue)
 	{
-		final ImmutableMap<String, Object> params = getParams();
+		final ImmutableMap<String, Object> params = getParameters();
 		final Object value = params.get(name);
 		return NumberUtils.asInt(value, defaultValue);
 	}

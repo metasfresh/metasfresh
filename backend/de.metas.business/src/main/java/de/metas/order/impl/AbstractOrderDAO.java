@@ -7,7 +7,6 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
 import de.metas.document.DocBaseAndSubType;
-import de.metas.document.engine.DocStatus;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderAndLineId;
@@ -256,6 +255,21 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 	}
 
 	@Override
+	@NonNull
+	public List<I_C_OrderLine> retrieveOrderLinesByIds(@NonNull final Set<OrderLineId> orderLineIds)
+	{
+		if (orderLineIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		return queryBL.createQueryBuilder(I_C_OrderLine.class)
+				.addInArrayFilter(I_C_OrderLine.COLUMNNAME_C_OrderLine_ID, orderLineIds)
+				.create()
+				.listImmutable(I_C_OrderLine.class);
+	}
+
+	@Override
 	public boolean hasInOuts(final I_C_Order order)
 	{
 		return retrieveInOutsQuery(order)
@@ -346,6 +360,18 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 			return Optional.ofNullable(getOrderByDocumentNumberQuery(query));
 		}
 		return Optional.empty();
+	}
+
+	@NonNull
+	public Set<OrderId> retrieveIdsByOrderLineIds(@NonNull final Set<OrderLineId> orderLineIds)
+	{
+		return queryBL.createQueryBuilder(I_C_OrderLine.class)
+				.addInArrayFilter(I_C_OrderLine.COLUMNNAME_C_OrderLine_ID, orderLineIds)
+				.create()
+				.stream()
+				.map(I_C_OrderLine::getC_Order_ID)
+				.map(OrderId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	private I_C_Order getOrderByDocumentNumberQuery(final OrderQuery query)

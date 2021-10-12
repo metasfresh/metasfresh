@@ -26,9 +26,7 @@ import de.metas.handlingunits.shipmentschedule.spi.impl.PackageInfo;
 import de.metas.inout.InOutId;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.shipping.model.ShipperTransportationId;
-import lombok.AccessLevel;
 import lombok.Builder;
-import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -40,7 +38,6 @@ import java.util.List;
 public class CreatePackagesForInOutRequest
 {
 	@NonNull
-	@Getter(AccessLevel.NONE)
 	I_M_InOut shipment;
 
 	boolean processed;
@@ -62,13 +59,9 @@ public class CreatePackagesForInOutRequest
 		return InOutId.ofRepoId(shipment.getM_InOut_ID());
 	}
 
+	@Nullable
 	public ShipperTransportationId getShipperTransportationId()
 	{
 		return ShipperTransportationId.ofRepoIdOrNull(shipment.getM_ShipperTransportation_ID());
-	}
-
-	public void setShipperTransportationId(@NonNull final ShipperTransportationId shipperTransportationId)
-	{
-		shipment.setM_ShipperTransportation_ID(shipperTransportationId.getRepoId());
 	}
 }

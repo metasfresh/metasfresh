@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.Multimaps;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner_product.IBPartnerProductDAO;
@@ -319,7 +320,7 @@ public class DesadvBL implements IDesadvBL
 			desadv.setDropShip_BPartner_ID(CoalesceUtil.firstGreaterThanZero(order.getDropShip_BPartner_ID(), order.getC_BPartner_ID()));
 			desadv.setDropShip_Location_ID(CoalesceUtil.firstGreaterThanZero(order.getDropShip_Location_ID(), order.getC_BPartner_Location_ID()));
 
-			desadv.setBill_Location_ID(BPartnerLocationId.toRepoId(orderBL.getBillToLocationId(order)));
+			desadv.setBill_Location_ID(BPartnerLocationAndCaptureId.toBPartnerLocationRepoId(orderBL.getBillToLocationId(order)));
 			// note: the minimal acceptable fulfillment is currently set by a model interceptor
 			InterfaceWrapperHelper.save(desadv);
 		}

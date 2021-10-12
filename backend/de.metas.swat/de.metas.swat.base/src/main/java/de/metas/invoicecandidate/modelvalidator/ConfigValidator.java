@@ -1,6 +1,3 @@
-/**
- *
- */
 package de.metas.invoicecandidate.modelvalidator;
 
 /*
@@ -72,7 +69,7 @@ public class ConfigValidator extends AbstractModuleInterceptor
 	private static final IAggregationListener aggregationListener = new AggregationListenerAdapter()
 	{
 		@Override
-		protected void onEvent(I_C_Aggregation aggregation)
+		protected void onEvent(final I_C_Aggregation aggregation)
 		{
 			Services.get(IInvoiceCandDAO.class).invalidateCandsForAggregationBuilder(aggregation);
 		}
@@ -141,7 +138,7 @@ public class ConfigValidator extends AbstractModuleInterceptor
 	/**
 	 * Setup de.metas.aggregation
 	 */
-	private final void setupAggregations()
+	private void setupAggregations()
 	{
 		//
 		// In case there was no aggregation found, fallback to our legacy IC header/line aggregation key builders

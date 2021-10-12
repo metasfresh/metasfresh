@@ -68,11 +68,11 @@ public class C_OrderLine
 			ol.setQtyEnteredInPriceUOM(qtyEnteredInPriceUOM);
 
 			orderLineBL.updatePrices(OrderLinePriceUpdateRequest.builder()
-					.orderLine(ol)
-					.resultUOM(ResultUOM.PRICE_UOM)
-					.updatePriceEnteredAndDiscountOnlyIfNotAlreadySet(updatePriceEnteredAndDiscountOnlyIfNotAlreadySet)
-					.updateLineNetAmt(true)
-					.build());
+											 .orderLine(ol)
+											 .resultUOM(ResultUOM.PRICE_UOM)
+											 .updatePriceEnteredAndDiscountOnlyIfNotAlreadySet(updatePriceEnteredAndDiscountOnlyIfNotAlreadySet)
+											 .updateLineNetAmt(true)
+											 .build());
 
 			return;
 		}

@@ -1,12 +1,5 @@
 package de.metas.contracts.interceptor;
 
-import static org.adempiere.model.InterfaceWrapperHelper.getContextAware;
-
-import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.ModelValidator;
-
 import de.metas.contracts.model.I_C_SubscriptionProgress;
 import de.metas.contracts.model.X_C_SubscriptionProgress;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
@@ -14,6 +7,10 @@ import de.metas.inoutcandidate.async.CreateMissingShipmentSchedulesWorkpackagePr
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.ModelValidator;
 
 @Interceptor(I_C_SubscriptionProgress.class)
 public class C_SubscriptionProgress
@@ -31,7 +28,7 @@ public class C_SubscriptionProgress
 		{
 			return;
 		}
-		CreateMissingShipmentSchedulesWorkpackageProcessor.scheduleIfNotPostponed(getContextAware(subscriptionProgress));
+		CreateMissingShipmentSchedulesWorkpackageProcessor.scheduleIfNotPostponed(subscriptionProgress);
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)

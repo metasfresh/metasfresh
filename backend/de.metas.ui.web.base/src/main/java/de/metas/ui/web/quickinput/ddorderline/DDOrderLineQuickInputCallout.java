@@ -22,6 +22,7 @@
 
 package de.metas.ui.web.quickinput.ddorderline;
 
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
@@ -82,7 +83,7 @@ public class DDOrderLineQuickInputCallout
 	@Nullable
 	private I_M_HU_PI_Item_Product getDefaultPI(@NonNull final I_DD_Order ddOrder, @NonNull final ProductId productId)
 	{
-		final BPartnerLocationId bpartnerLocationId = BPartnerLocationId.ofRepoIdOrNull(ddOrder.getC_BPartner_ID(), ddOrder.getC_BPartner_Location_ID());
+		final BPartnerLocationAndCaptureId bpartnerLocationId = BPartnerLocationAndCaptureId.ofRepoIdOrNull(ddOrder.getC_BPartner_ID(), ddOrder.getC_BPartner_Location_ID());
 		final ZonedDateTime date = TimeUtil.asZonedDateTime(ddOrder.getDateOrdered());
 		final ClientId clientId = ClientId.ofRepoId(ddOrder.getAD_Client_ID());
 		

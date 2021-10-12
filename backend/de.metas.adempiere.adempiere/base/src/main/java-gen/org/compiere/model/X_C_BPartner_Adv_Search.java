@@ -1,0 +1,177 @@
+// Generated Model - DO NOT CHANGE
+package org.compiere.model;
+
+import javax.annotation.Nullable;
+import java.sql.ResultSet;
+import java.util.Properties;
+
+/** Generated Model for C_BPartner_Adv_Search
+ *  @author metasfresh (generated) 
+ */
+@SuppressWarnings("unused")
+public class X_C_BPartner_Adv_Search extends org.compiere.model.PO implements I_C_BPartner_Adv_Search, org.compiere.model.I_Persistent 
+{
+
+	private static final long serialVersionUID = -1576793867L;
+
+    /** Standard Constructor */
+    public X_C_BPartner_Adv_Search (final Properties ctx, final int C_BPartner_Adv_Search_ID, @Nullable final String trxName)
+    {
+      super (ctx, C_BPartner_Adv_Search_ID, trxName);
+    }
+
+    /** Load Constructor */
+    public X_C_BPartner_Adv_Search (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
+    {
+      super (ctx, rs, trxName);
+    }
+
+
+	/** Load Meta Data */
+	@Override
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
+	{
+		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public void setAddress1 (final @Nullable java.lang.String Address1)
+	{
+		set_ValueNoCheck (COLUMNNAME_Address1, Address1);
+	}
+
+	@Override
+	public java.lang.String getAddress1() 
+	{
+		return get_ValueAsString(COLUMNNAME_Address1);
+	}
+
+	@Override
+	public void setC_BP_Contact_ID (final int C_BP_Contact_ID)
+	{
+		if (C_BP_Contact_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_C_BP_Contact_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_C_BP_Contact_ID, C_BP_Contact_ID);
+	}
+
+	@Override
+	public int getC_BP_Contact_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_BP_Contact_ID);
+	}
+
+	@Override
+	public void setC_BPartner_ID (final int C_BPartner_ID)
+	{
+		if (C_BPartner_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_C_BPartner_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_C_BPartner_ID, C_BPartner_ID);
+	}
+
+	@Override
+	public int getC_BPartner_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_BPartner_ID);
+	}
+
+	@Override
+	public void setC_BPartner_Location_ID (final int C_BPartner_Location_ID)
+	{
+		if (C_BPartner_Location_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_C_BPartner_Location_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_C_BPartner_Location_ID, C_BPartner_Location_ID);
+	}
+
+	@Override
+	public int getC_BPartner_Location_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_BPartner_Location_ID);
+	}
+
+	@Override
+	public void setCity (final @Nullable java.lang.String City)
+	{
+		set_Value (COLUMNNAME_City, City);
+	}
+
+	@Override
+	public java.lang.String getCity() 
+	{
+		return get_ValueAsString(COLUMNNAME_City);
+	}
+
+	@Override
+	public void setES_DocumentId (final java.lang.String ES_DocumentId)
+	{
+		set_ValueNoCheck (COLUMNNAME_ES_DocumentId, ES_DocumentId);
+	}
+
+	@Override
+	public java.lang.String getES_DocumentId() 
+	{
+		return get_ValueAsString(COLUMNNAME_ES_DocumentId);
+	}
+
+	@Override
+	public void setFirstname (final @Nullable java.lang.String Firstname)
+	{
+		set_Value (COLUMNNAME_Firstname, Firstname);
+	}
+
+	@Override
+	public java.lang.String getFirstname() 
+	{
+		return get_ValueAsString(COLUMNNAME_Firstname);
+	}
+
+	@Override
+	public void setIsCompany (final boolean IsCompany)
+	{
+		set_ValueNoCheck (COLUMNNAME_IsCompany, IsCompany);
+	}
+
+	@Override
+	public boolean isCompany() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsCompany);
+	}
+
+	@Override
+	public void setLastname (final @Nullable java.lang.String Lastname)
+	{
+		set_Value (COLUMNNAME_Lastname, Lastname);
+	}
+
+	@Override
+	public java.lang.String getLastname() 
+	{
+		return get_ValueAsString(COLUMNNAME_Lastname);
+	}
+
+	@Override
+	public void setName (final @Nullable java.lang.String Name)
+	{
+		set_ValueNoCheck (COLUMNNAME_Name, Name);
+	}
+
+	@Override
+	public java.lang.String getName() 
+	{
+		return get_ValueAsString(COLUMNNAME_Name);
+	}
+
+	@Override
+	public void setValue (final @Nullable java.lang.String Value)
+	{
+		set_Value (COLUMNNAME_Value, Value);
+	}
+
+	@Override
+	public java.lang.String getValue() 
+	{
+		return get_ValueAsString(COLUMNNAME_Value);
+	}
+}

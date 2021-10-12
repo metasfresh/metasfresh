@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for M_InOut
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1364790290L;
+	private static final long serialVersionUID = 1681125709L;
 
     /** Standard Constructor */
     public X_M_InOut (final Properties ctx, final int M_InOut_ID, @Nullable final String trxName)
@@ -66,7 +66,7 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 	}
 
 	@Override
-	public void setBPartnerAddress (final java.lang.String BPartnerAddress)
+	public void setBPartnerAddress (final @Nullable java.lang.String BPartnerAddress)
 	{
 		set_Value (COLUMNNAME_BPartnerAddress, BPartnerAddress);
 	}
@@ -90,6 +90,21 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 	public int getC_Activity_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Activity_ID);
+	}
+
+	@Override
+	public void setC_Async_Batch_ID (final int C_Async_Batch_ID)
+	{
+		if (C_Async_Batch_ID < 1) 
+			set_Value (COLUMNNAME_C_Async_Batch_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Async_Batch_ID, C_Async_Batch_ID);
+	}
+
+	@Override
+	public int getC_Async_Batch_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Async_Batch_ID);
 	}
 
 	@Override
@@ -120,6 +135,33 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 	public int getC_BPartner_Location_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_BPartner_Location_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_C_Location getC_BPartner_Location_Value()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_BPartner_Location_Value_ID, org.compiere.model.I_C_Location.class);
+	}
+
+	@Override
+	public void setC_BPartner_Location_Value(final org.compiere.model.I_C_Location C_BPartner_Location_Value)
+	{
+		set_ValueFromPO(COLUMNNAME_C_BPartner_Location_Value_ID, org.compiere.model.I_C_Location.class, C_BPartner_Location_Value);
+	}
+
+	@Override
+	public void setC_BPartner_Location_Value_ID (final int C_BPartner_Location_Value_ID)
+	{
+		if (C_BPartner_Location_Value_ID < 1) 
+			set_Value (COLUMNNAME_C_BPartner_Location_Value_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_BPartner_Location_Value_ID, C_BPartner_Location_Value_ID);
+	}
+
+	@Override
+	public int getC_BPartner_Location_Value_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_BPartner_Location_Value_ID);
 	}
 
 	@Override
@@ -249,7 +291,7 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 	}
 
 	@Override
-	public void setChargeAmt (final BigDecimal ChargeAmt)
+	public void setChargeAmt (final @Nullable BigDecimal ChargeAmt)
 	{
 		set_Value (COLUMNNAME_ChargeAmt, ChargeAmt);
 	}
@@ -262,7 +304,7 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 	}
 
 	@Override
-	public void setCreateConfirm (final java.lang.String CreateConfirm)
+	public void setCreateConfirm (final @Nullable java.lang.String CreateConfirm)
 	{
 		set_Value (COLUMNNAME_CreateConfirm, CreateConfirm);
 	}
@@ -274,7 +316,7 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 	}
 
 	@Override
-	public void setCreateFrom (final java.lang.String CreateFrom)
+	public void setCreateFrom (final @Nullable java.lang.String CreateFrom)
 	{
 		set_Value (COLUMNNAME_CreateFrom, CreateFrom);
 	}
@@ -298,7 +340,7 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 	}
 
 	@Override
-	public void setDateOrdered (final java.sql.Timestamp DateOrdered)
+	public void setDateOrdered (final @Nullable java.sql.Timestamp DateOrdered)
 	{
 		set_ValueNoCheck (COLUMNNAME_DateOrdered, DateOrdered);
 	}
@@ -310,7 +352,7 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 	}
 
 	@Override
-	public void setDatePrinted (final java.sql.Timestamp DatePrinted)
+	public void setDatePrinted (final @Nullable java.sql.Timestamp DatePrinted)
 	{
 		set_Value (COLUMNNAME_DatePrinted, DatePrinted);
 	}
@@ -322,7 +364,7 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 	}
 
 	@Override
-	public void setDateReceived (final java.sql.Timestamp DateReceived)
+	public void setDateReceived (final @Nullable java.sql.Timestamp DateReceived)
 	{
 		set_Value (COLUMNNAME_DateReceived, DateReceived);
 	}
@@ -364,6 +406,18 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 		return get_ValueAsString(COLUMNNAME_DeliveryRule);
 	}
 
+	@Override
+	public void setDeliveryToAddress (final @Nullable java.lang.String DeliveryToAddress)
+	{
+		set_Value (COLUMNNAME_DeliveryToAddress, DeliveryToAddress);
+	}
+
+	@Override
+	public java.lang.String getDeliveryToAddress() 
+	{
+		return get_ValueAsString(COLUMNNAME_DeliveryToAddress);
+	}
+
 	/** 
 	 * DeliveryViaRule AD_Reference_ID=152
 	 * Reference name: C_Order DeliveryViaRule
@@ -375,6 +429,10 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 	public static final String DELIVERYVIARULE_Delivery = "D";
 	/** Shipper = S */
 	public static final String DELIVERYVIARULE_Shipper = "S";
+	/** Normalpost = NP */
+	public static final String DELIVERYVIARULE_Normalpost = "NP";
+	/** Luftpost = LU */
+	public static final String DELIVERYVIARULE_Luftpost = "LU";
 	@Override
 	public void setDeliveryViaRule (final java.lang.String DeliveryViaRule)
 	{
@@ -388,7 +446,7 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 	}
 
 	@Override
-	public void setDescription (final java.lang.String Description)
+	public void setDescription (final @Nullable java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
@@ -400,7 +458,7 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 	}
 
 	@Override
-	public void setDescriptionBottom (final java.lang.String DescriptionBottom)
+	public void setDescriptionBottom (final @Nullable java.lang.String DescriptionBottom)
 	{
 		set_Value (COLUMNNAME_DescriptionBottom, DescriptionBottom);
 	}
@@ -512,7 +570,7 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 	}
 
 	@Override
-	public void setDocumentTypeNote (final java.lang.String DocumentTypeNote)
+	public void setDocumentTypeNote (final @Nullable java.lang.String DocumentTypeNote)
 	{
 		throw new IllegalArgumentException ("DocumentTypeNote is virtual column");	}
 
@@ -553,6 +611,33 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 	}
 
 	@Override
+	public org.compiere.model.I_C_Location getDropShip_Location_Value()
+	{
+		return get_ValueAsPO(COLUMNNAME_DropShip_Location_Value_ID, org.compiere.model.I_C_Location.class);
+	}
+
+	@Override
+	public void setDropShip_Location_Value(final org.compiere.model.I_C_Location DropShip_Location_Value)
+	{
+		set_ValueFromPO(COLUMNNAME_DropShip_Location_Value_ID, org.compiere.model.I_C_Location.class, DropShip_Location_Value);
+	}
+
+	@Override
+	public void setDropShip_Location_Value_ID (final int DropShip_Location_Value_ID)
+	{
+		if (DropShip_Location_Value_ID < 1) 
+			set_Value (COLUMNNAME_DropShip_Location_Value_ID, null);
+		else 
+			set_Value (COLUMNNAME_DropShip_Location_Value_ID, DropShip_Location_Value_ID);
+	}
+
+	@Override
+	public int getDropShip_Location_Value_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_DropShip_Location_Value_ID);
+	}
+
+	@Override
 	public void setDropShip_User_ID (final int DropShip_User_ID)
 	{
 		if (DropShip_User_ID < 1) 
@@ -568,7 +653,7 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 	}
 
 	@Override
-	public void setExternalId (final java.lang.String ExternalId)
+	public void setExternalId (final @Nullable java.lang.String ExternalId)
 	{
 		set_Value (COLUMNNAME_ExternalId, ExternalId);
 	}
@@ -580,7 +665,7 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 	}
 
 	@Override
-	public void setExternalResourceURL (final java.lang.String ExternalResourceURL)
+	public void setExternalResourceURL (final @Nullable java.lang.String ExternalResourceURL)
 	{
 		set_Value (COLUMNNAME_ExternalResourceURL, ExternalResourceURL);
 	}
@@ -592,7 +677,7 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 	}
 
 	@Override
-	public void setFreightAmt (final BigDecimal FreightAmt)
+	public void setFreightAmt (final @Nullable BigDecimal FreightAmt)
 	{
 		set_Value (COLUMNNAME_FreightAmt, FreightAmt);
 	}
@@ -632,7 +717,7 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 	}
 
 	@Override
-	public void setGenerateTo (final java.lang.String GenerateTo)
+	public void setGenerateTo (final @Nullable java.lang.String GenerateTo)
 	{
 		set_Value (COLUMNNAME_GenerateTo, GenerateTo);
 	}
@@ -674,8 +759,12 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 	public static final String INCOTERM_DDU_FreiUnverzollt = "DDU";
 	/** DDP_Verzollt = DDP */
 	public static final String INCOTERM_DDP_Verzollt = "DDP";
+	/** DAP - Delivered at Place = DAP */
+	public static final String INCOTERM_DAP_DeliveredAtPlace = "DAP";
+	/** DPU_geliefertBenannterOrtEntladen = DPU */
+	public static final String INCOTERM_DPU_geliefertBenannterOrtEntladen = "DPU";
 	@Override
-	public void setIncoterm (final java.lang.String Incoterm)
+	public void setIncoterm (final @Nullable java.lang.String Incoterm)
 	{
 		set_Value (COLUMNNAME_Incoterm, Incoterm);
 	}
@@ -687,7 +776,7 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 	}
 
 	@Override
-	public void setIncotermLocation (final java.lang.String IncotermLocation)
+	public void setIncotermLocation (final @Nullable java.lang.String IncotermLocation)
 	{
 		set_Value (COLUMNNAME_IncotermLocation, IncotermLocation);
 	}
@@ -699,7 +788,7 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 	}
 
 	@Override
-	public void setInOutLine_includedTab (final java.lang.String InOutLine_includedTab)
+	public void setInOutLine_includedTab (final @Nullable java.lang.String InOutLine_includedTab)
 	{
 		set_Value (COLUMNNAME_InOutLine_includedTab, InOutLine_includedTab);
 	}
@@ -983,7 +1072,7 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 	}
 
 	@Override
-	public void setPickDate (final java.sql.Timestamp PickDate)
+	public void setPickDate (final @Nullable java.sql.Timestamp PickDate)
 	{
 		set_Value (COLUMNNAME_PickDate, PickDate);
 	}
@@ -995,7 +1084,7 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 	}
 
 	@Override
-	public void setPOReference (final java.lang.String POReference)
+	public void setPOReference (final @Nullable java.lang.String POReference)
 	{
 		set_Value (COLUMNNAME_POReference, POReference);
 	}
@@ -1208,7 +1297,7 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 	}
 
 	@Override
-	public void setVolume (final BigDecimal Volume)
+	public void setVolume (final @Nullable BigDecimal Volume)
 	{
 		set_Value (COLUMNNAME_Volume, Volume);
 	}
@@ -1221,7 +1310,7 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 	}
 
 	@Override
-	public void setWeight (final BigDecimal Weight)
+	public void setWeight (final @Nullable BigDecimal Weight)
 	{
 		set_Value (COLUMNNAME_Weight, Weight);
 	}
