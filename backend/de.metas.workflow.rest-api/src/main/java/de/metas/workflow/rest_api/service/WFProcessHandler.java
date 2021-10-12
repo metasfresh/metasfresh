@@ -28,8 +28,10 @@ import de.metas.workflow.rest_api.model.WFProcessHandlerId;
 import de.metas.workflow.rest_api.model.WFProcessHeaderProperties;
 import de.metas.workflow.rest_api.model.WFProcessId;
 import de.metas.workflow.rest_api.model.WorkflowLauncher;
+import de.metas.workflow.rest_api.model.WorkflowLaunchersList;
 import lombok.NonNull;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.function.UnaryOperator;
 
@@ -37,7 +39,7 @@ public interface WFProcessHandler
 {
 	WFProcessHandlerId getId();
 
-	List<WorkflowLauncher> provideLaunchers(final UserId userId);
+	WorkflowLaunchersList provideLaunchers(UserId userId, Duration maxStaleAccepted);
 
 	WFProcess startWorkflow(WorkflowStartRequest request);
 

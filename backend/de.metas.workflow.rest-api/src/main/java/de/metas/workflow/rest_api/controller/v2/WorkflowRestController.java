@@ -33,7 +33,7 @@ import de.metas.workflow.rest_api.controller.v2.json.JsonWorkflowLaunchersList;
 import de.metas.workflow.rest_api.model.WFActivityId;
 import de.metas.workflow.rest_api.model.WFProcess;
 import de.metas.workflow.rest_api.model.WFProcessId;
-import de.metas.workflow.rest_api.model.WorkflowLauncher;
+import de.metas.workflow.rest_api.model.WorkflowLaunchersList;
 import de.metas.workflow.rest_api.service.WorkflowRestAPIService;
 import de.metas.workflow.rest_api.service.WorkflowStartRequest;
 import lombok.NonNull;
@@ -47,7 +47,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
+import java.time.Duration;
 
 @RequestMapping(MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/userWorkflows")
 @RestController
@@ -74,7 +74,7 @@ public class WorkflowRestController
 	{
 		final UserId loggedUserId = Env.getLoggedUserId();
 
-		final List<WorkflowLauncher> launchers = workflowRestAPIService.getLaunchers(loggedUserId);
+		final WorkflowLaunchersList launchers = workflowRestAPIService.getLaunchers(loggedUserId, Duration.ZERO);
 		return JsonWorkflowLaunchersList.of(launchers, newJsonOpts());
 	}
 

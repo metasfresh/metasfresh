@@ -22,7 +22,6 @@
 
 package de.metas.workflow.rest_api.service;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.metas.logging.LogManager;
 import de.metas.user.UserId;
@@ -38,12 +37,13 @@ import de.metas.workflow.rest_api.model.WFActivityStatus;
 import de.metas.workflow.rest_api.model.WFProcess;
 import de.metas.workflow.rest_api.model.WFProcessHeaderProperties;
 import de.metas.workflow.rest_api.model.WFProcessId;
-import de.metas.workflow.rest_api.model.WorkflowLauncher;
+import de.metas.workflow.rest_api.model.WorkflowLaunchersList;
 import lombok.NonNull;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
+import java.time.Duration;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -68,27 +68,30 @@ public class WorkflowRestAPIService
 		this.wfActivityHandlersRegistry = wfActivityHandlersRegistry;
 	}
 
-	public List<WorkflowLauncher> getLaunchers(@NonNull final UserId userId)
+	public WorkflowLaunchersList getLaunchers(
+			@NonNull final UserId userId,
+			@NonNull final Duration maxStaleAccepted)
 	{
 		return wfProcessHandlers.stream()
-				.map(handler -> provideLaunchersNoFail(handler, userId))
-				.flatMap(List::stream)
-				.collect(ImmutableList.toImmutableList());
+				.map(handler -> provideLaunchersNoFail(handler, userId, maxStaleAccepted))
+				.reduce(WorkflowLaunchersList::mergeWith)
+				.orElseGet(WorkflowLaunchersList::emptyNow);
 	}
 
-	private static List<WorkflowLauncher> provideLaunchersNoFail(
+	private static WorkflowLaunchersList provideLaunchersNoFail(
 			@NonNull final WFProcessHandler handler,
-			@NonNull final UserId userId)
+			@NonNull final UserId userId,
+			@NonNull final Duration maxStaleAccepted)
 	{
 		try
 		{
-			final List<WorkflowLauncher> launchers = handler.provideLaunchers(userId);
-			return launchers != null ? launchers : ImmutableList.of();
+			final WorkflowLaunchersList launchers = handler.provideLaunchers(userId, maxStaleAccepted);
+			return launchers != null ? launchers : WorkflowLaunchersList.emptyNow();
 		}
 		catch (final Exception ex)
 		{
 			logger.warn("Failed fetching launchers from {} for {}. Skipped", handler, userId, ex);
-			return ImmutableList.of();
+			return WorkflowLaunchersList.emptyNow();
 		}
 	}
 
