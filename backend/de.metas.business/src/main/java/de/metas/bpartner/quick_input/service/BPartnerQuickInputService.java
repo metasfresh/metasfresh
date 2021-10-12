@@ -42,6 +42,7 @@ import de.metas.bpartner.name.strategy.ComputeNameAndGreetingRequest;
 import de.metas.bpartner.quick_input.BPartnerContactQuickInputId;
 import de.metas.bpartner.quick_input.BPartnerQuickInputId;
 import de.metas.bpartner.service.IBPGroupDAO;
+import de.metas.common.util.time.SystemTime;
 import de.metas.document.references.zoom_into.RecordWindowFinder;
 import de.metas.greeting.GreetingId;
 import de.metas.i18n.BooleanWithReason;
@@ -77,6 +78,7 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Contact_QuickInput;
 import org.compiere.model.I_C_BPartner_QuickInput;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
@@ -410,6 +412,10 @@ public class BPartnerQuickInputService
 						.greetingId(GreetingId.ofRepoIdOrNull(contactTemplate.getC_Greeting_ID()))
 						.phone(StringUtils.trimBlankToNull(contactTemplate.getPhone()))
 						.email(StringUtils.trimBlankToNull(contactTemplate.getEMail()))
+						.birthday(TimeUtil.asLocalDate(contactTemplate.getBirthday(), SystemTime.zoneId()))
+						.invoiceEmailEnabled(de.metas.common.util.StringUtils.toBoolean(contactTemplate.getIsInvoiceEmailEnabled(), null))
+						.phone2(StringUtils.trimBlankToNull(contactTemplate.getPhone2()))
+						.title(StringUtils.trimBlankToNull(contactTemplate.getTitle()))
 						.build());
 			}
 		}
