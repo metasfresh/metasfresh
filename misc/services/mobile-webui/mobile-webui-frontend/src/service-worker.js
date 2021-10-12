@@ -65,9 +65,6 @@ registerRoute(
   })
 );
 
-// this can be used to invalidate the cache further on (by updating the version)
-const cacheName = '0.0.1'; 
-
 self.addEventListener('install', function () {
   // Force refreshing the sw on install
   self.skipWaiting();
@@ -81,7 +78,7 @@ self.addEventListener('message', (event) => {
   }
 });
 
-const broadcast = new BroadcastChannel('network-status-channel');
+// const broadcast = new BroadcastChannel('network-status-channel');
 
 // Any other custom service worker logic can go here.
 self.addEventListener('fetch', (event) => {
@@ -91,7 +88,7 @@ self.addEventListener('fetch', (event) => {
   } else {
     // network falling back to cache
     event.respondWith(
-      fetch(event.request).catch(function() {
+      fetch(event.request).catch(function () {
         return caches.match(event.request);
       })
     );
