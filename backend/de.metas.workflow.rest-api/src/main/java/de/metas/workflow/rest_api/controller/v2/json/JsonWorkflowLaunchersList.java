@@ -25,14 +25,14 @@ package de.metas.workflow.rest_api.controller.v2.json;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.google.common.collect.ImmutableList;
-import de.metas.workflow.rest_api.model.WorkflowLauncher;
+import de.metas.workflow.rest_api.model.WorkflowLaunchersList;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 
+import java.time.Instant;
 import java.util.Comparator;
-import java.util.List;
 
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
@@ -41,9 +41,10 @@ public class JsonWorkflowLaunchersList
 {
 	@Singular
 	@NonNull ImmutableList<JsonWorkflowLauncher> launchers;
+	@NonNull Instant computedTime;
 
 	public static JsonWorkflowLaunchersList of(
-			@NonNull final List<WorkflowLauncher> list,
+			@NonNull final WorkflowLaunchersList list,
 			@NonNull final JsonOpts jsonOpts)
 	{
 		return builder()
@@ -51,6 +52,7 @@ public class JsonWorkflowLaunchersList
 						.map(launcher -> JsonWorkflowLauncher.of(launcher, jsonOpts))
 						.sorted(Comparator.comparing(JsonWorkflowLauncher::getCaption))
 						.collect(ImmutableList.toImmutableList()))
+				.computedTime(list.getTimestamp())
 				.build();
 	}
 }
