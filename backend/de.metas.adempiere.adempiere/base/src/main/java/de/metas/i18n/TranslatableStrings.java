@@ -186,13 +186,13 @@ public class TranslatableStrings
 		{
 			return true;
 		}
-		else if (trl == ConstantTranslatableString.EMPTY)
-		{
-			return true;
-		}
 		else if (trl instanceof ConstantTranslatableString)
 		{
-			return Check.isEmpty(trl.getDefaultValue(), false);
+			return ((ConstantTranslatableString)trl).isEmpty();
+		}
+		else if(trl instanceof ImmutableTranslatableString)
+		{
+			return ((ImmutableTranslatableString)trl).isEmpty();
 		}
 		else
 		{
