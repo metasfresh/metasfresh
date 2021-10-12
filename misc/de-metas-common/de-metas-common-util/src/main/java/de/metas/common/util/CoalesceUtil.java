@@ -57,7 +57,7 @@ public class CoalesceUtil
 	@Nullable
 	public <T> T coalesce(@Nullable final T value1, @Nullable final Supplier<T> value2)
 	{
-		return value1 != null ? value1 : value2.get();
+		return value1 != null ? value1 : (value2 != null ? value2.get() : null);
 	}
 
 	/**
@@ -215,6 +215,7 @@ public class CoalesceUtil
 		return null;
 	}
 
+	@Nullable
 	@SafeVarargs
 	public String firstNotBlank(@Nullable final Supplier<String>... valueSuppliers)
 	{
