@@ -1,10 +1,12 @@
-package de.metas.ui.web.websocket;
+package de.metas.websocket;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
+import java.util.Objects;
+
 import com.fasterxml.jackson.annotation.JsonValue;
 
 import de.metas.util.Check;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NonNull;
 
 /*
@@ -30,20 +32,26 @@ import lombok.NonNull;
  */
 
 @EqualsAndHashCode
-public final class WebsocketSessionId
+public final class WebsocketSubscriptionId
 {
-	@JsonCreator
-	public static WebsocketSessionId ofString(final String sessionId)
+	public static WebsocketSubscriptionId of(
+			@NonNull final WebsocketSessionId sessionId,
+			@NonNull final String subscriptionId)
 	{
-		return new WebsocketSessionId(sessionId);
+		return new WebsocketSubscriptionId(sessionId, subscriptionId);
 	}
 
-	private final String sessionId;
+	@Getter
+	private final WebsocketSessionId sessionId;
+	private final String subscriptionId;
 
-	private WebsocketSessionId(@NonNull final String sessionId)
+	private WebsocketSubscriptionId(
+			@NonNull final WebsocketSessionId sessionId,
+			@NonNull final String subscriptionId)
 	{
-		Check.assumeNotEmpty(sessionId, "sessionId is not empty");
+		Check.assumeNotEmpty(subscriptionId, "subscriptionId is not empty");
 		this.sessionId = sessionId;
+		this.subscriptionId = subscriptionId;
 	}
 
 	/**
@@ -59,6 +67,11 @@ public final class WebsocketSessionId
 	@JsonValue
 	public String getAsString()
 	{
-		return sessionId;
+		return sessionId.getAsString() + "/" + subscriptionId;
+	}
+
+	public boolean isMatchingSessionId(final WebsocketSessionId sessionId)
+	{
+		return Objects.equals(this.sessionId, sessionId);
 	}
 }

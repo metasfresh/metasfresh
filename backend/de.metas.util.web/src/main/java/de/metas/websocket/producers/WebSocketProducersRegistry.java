@@ -1,18 +1,19 @@
-package de.metas.ui.web.websocket;
+package de.metas.websocket.producers;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableMap;
 import de.metas.logging.LogManager;
-import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.util.Check;
+import de.metas.websocket.WebsocketSessionId;
+import de.metas.websocket.WebsocketSubscriptionId;
+import de.metas.websocket.WebsocketTopicName;
+import de.metas.websocket.sender.WebsocketSender;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.concurrent.CustomizableThreadFactory;
 import org.slf4j.Logger;
-import org.springframework.beans.factory.BeanFactoryUtils;
-import org.springframework.context.ApplicationContext;
-import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
-import javax.annotation.PostConstruct;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -58,61 +59,44 @@ import java.util.stream.Stream;
  *
  * @author metas-dev <dev@metasfresh.com>
  */
-@Component
 public final class WebSocketProducersRegistry
 {
 	private static final Logger logger = LogManager.getLogger(WebSocketProducersRegistry.class);
 	private final WebsocketSender websocketSender;
-	private final ApplicationContext context;
+	private final ImmutableMap<String, WebSocketProducerFactory> producerFactoriesByTopicNamePrefix;
 
 	private final ScheduledExecutorService scheduler;
 
-	private final ConcurrentHashMap<String, WebSocketProducerFactory> _producerFactoriesByTopicNamePrefix = new ConcurrentHashMap<>();
 	private final ConcurrentHashMap<WebsocketTopicName, WebSocketProducerInstance> _producersByTopicName = new ConcurrentHashMap<>();
 
 	public WebSocketProducersRegistry(
 			@NonNull final WebsocketSender websocketSender,
-			@NonNull final ApplicationContext context)
+			@NonNull List<WebSocketProducerFactory> factories)
 	{
 		scheduler = Executors.newSingleThreadScheduledExecutor(CustomizableThreadFactory.builder()
 				.setThreadNamePrefix(getClass().getName())
 				.setDaemon(true)
 				.build());
 		this.websocketSender = websocketSender;
-		this.context = context;
+
+		this.producerFactoriesByTopicNamePrefix = factories
+				.stream()
+				.collect(ImmutableMap.toImmutableMap(
+						WebSocketProducersRegistry::extractAndValidateTopicNamePrefix,
+						factory -> factory));
+
+		logger.info("Registered producer factories: {}", producerFactoriesByTopicNamePrefix);
 	}
 
-	@PostConstruct
-	private void registerProducerFactoriesFromContext()
+	private static String extractAndValidateTopicNamePrefix(@NonNull final WebSocketProducerFactory factory)
 	{
-		BeanFactoryUtils.beansOfTypeIncludingAncestors(context, WebSocketProducerFactory.class)
-				.values()
-				.forEach(this::registerProducerFactory);
+		final String topicNamePrefix = factory.getTopicNamePrefix();
+		if (topicNamePrefix == null || Check.isBlank(topicNamePrefix))
+		{
+			throw new AdempiereException("Invalid topicNamePrefix for " + factory);
+		}
+		return topicNamePrefix;
 
-	}
-
-	public void registerProducerFactory(final WebSocketProducerFactory producerFactory)
-	{
-		Check.assumeNotNull(producerFactory, "Parameter producerFactory is not null");
-
-		final String topicNamePrefix = producerFactory.getTopicNamePrefix();
-		Check.assumeNotEmpty(topicNamePrefix, "topicNamePrefix is not empty");
-
-		_producerFactoriesByTopicNamePrefix.compute(topicNamePrefix, (k, existingProducerFactory) -> {
-			if (existingProducerFactory == null)
-			{
-				return producerFactory;
-			}
-			else
-			{
-				throw new IllegalArgumentException("Registering more then one producer factory for same topic prefix is not allowed"
-						+ "\n Topic prefix: " + topicNamePrefix
-						+ "\n Existing producer factory: " + existingProducerFactory
-						+ "\n New producer factory: " + producerFactory);
-			}
-		});
-
-		logger.info("Registered producer factory: {}", producerFactory);
 	}
 
 	@Nullable
@@ -123,7 +107,7 @@ public final class WebSocketProducersRegistry
 			return null;
 		}
 
-		return _producerFactoriesByTopicNamePrefix
+		return producerFactoriesByTopicNamePrefix
 				.entrySet()
 				.stream()
 				.filter(topicPrefixAndFactory -> topicName.startsWith(topicPrefixAndFactory.getKey()))
@@ -133,7 +117,8 @@ public final class WebSocketProducersRegistry
 
 	}
 
-	private WebSocketProducerInstance getWebSocketProducerOrNull(final WebsocketTopicName topicName)
+	@Nullable
+	private WebSocketProducerInstance getWebSocketProducerOrNull(@NonNull final WebsocketTopicName topicName)
 	{
 		return _producersByTopicName.get(topicName);
 	}
@@ -223,7 +208,7 @@ public final class WebSocketProducersRegistry
 		return _producersByTopicName.values()
 				.stream()
 				.filter(producerInstance -> producerType.isInstance(producerInstance.producer))
-				.filter(producerInstance -> producerInstance.hasActiveSubscriptions())
+				.filter(WebSocketProducerInstance::hasActiveSubscriptions)
 				.map(producerInstance -> producerType.cast(producerInstance.producer));
 	}
 
@@ -343,8 +328,7 @@ public final class WebSocketProducersRegistry
 		{
 			try
 			{
-				final JSONOptions jsonOpts = JSONOptions.newInstance();
-				final List<?> events = producer.produceEvents(jsonOpts);
+				final List<?> events = producer.produceEvents();
 				if (events != null && !events.isEmpty())
 				{
 					for (final Object event : events)

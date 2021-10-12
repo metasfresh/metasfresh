@@ -1,7 +1,8 @@
-package de.metas.ui.web.websocket;
+package de.metas.websocket.sender;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import de.metas.websocket.WebsocketTopicName;
 
 /*
  * #%L
@@ -28,10 +29,10 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @lombok.Value
-public final class WebsocketEventLogRecord
+public class WebsocketEventLogRecord
 {
-	private final WebsocketTopicName destination;
-	private final Object payload;
+	WebsocketTopicName destination;
+	Object payload;
 
 	boolean isDestinationMatching(final String destinationFilter)
 	{

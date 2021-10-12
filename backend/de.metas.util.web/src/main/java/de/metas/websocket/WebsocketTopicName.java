@@ -1,4 +1,4 @@
-package de.metas.ui.web.websocket;
+package de.metas.websocket;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
