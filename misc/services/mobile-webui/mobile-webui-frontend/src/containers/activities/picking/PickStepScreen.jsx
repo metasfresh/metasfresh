@@ -5,8 +5,6 @@ import PropTypes from 'prop-types';
 import { withRouter } from 'react-router';
 import counterpart from 'counterpart';
 
-// import { toastError } from '../../../utils/toast';
-// import { postQtyPicked } from '../../../api/picking';
 import { pushHeaderEntry } from '../../../actions/HeaderActions';
 import { updatePickingStepQty } from '../../../actions/PickingActions';
 import ButtonWithIndicator from '../../../components/ButtonWithIndicator';
@@ -20,7 +18,7 @@ class PickStepScreen extends Component {
       activityId,
       lineId,
       stepId,
-      stepProps: { huBarcode, qtyToPick }, //, qtyPicked },
+      stepProps: { huBarcode, qtyToPick },
       push,
       pushHeaderEntry,
     } = this.props;
@@ -38,40 +36,9 @@ class PickStepScreen extends Component {
           caption: counterpart.translate('general.QtyToPick'),
           value: qtyToPick,
         },
-        // {
-        //   caption: counterpart.translate('general.QtyPicked'),
-        //   value: qtyPicked,
-        // },
       ],
     });
   };
-
-  // onQtyPickedChanged = (e) => {
-  //   const { updatePickingStepQty, wfProcessId, activityId, lineId, stepId } = this.props;
-  //   const qtyPicked = e.target.value;
-  //   const inputQty = parseInt(qtyPicked);
-
-  //   if (isNaN(inputQty)) {
-  //     return;
-  //   }
-
-  //   const isValidQty = this.validateQtyInput(inputQty);
-
-  //   if (isValidQty) {
-  //     updatePickingStepQty({ wfProcessId, activityId, lineId, stepId, qtyPicked });
-  //     postQtyPicked({ wfProcessId, activityId, stepId, qtyPicked });
-  //     // TODO: handle the promise
-  //   } else {
-  //     toastError({ messageKey: 'activities.picking.invalidQtyPicked' });
-  //   }
-  // };
-
-  // validateQtyInput = (numberInput) => {
-  //   const {
-  //     stepProps: { qtyToPick },
-  //   } = this.props;
-  //   return numberInput >= 0 && numberInput <= qtyToPick;
-  // };
 
   componentWillUnmount() {
     const {
@@ -112,15 +79,6 @@ class PickStepScreen extends Component {
             </div>
             <div className="column is-half has-text-left pb-0">{qtyToPick}</div>
           </div>
-          {/*          <div className="columns is-mobile">
-            <div className="column is-half has-text-right has-text-weight-bold pb-0 pl-0 pr-0">
-              {counterpart.translate('general.QtyPicked')}:
-            </div>
-            <div className="column is-half has-text-left pb-0">
-              {isValidCode && <input type="number" value={qtyPicked} onChange={(e) => this.onQtyPickedChanged(e)} />}
-              {!isValidCode && qtyPicked}
-            </div>
-          </div>*/}
           <div className="mt-0">
             <button className="button is-outlined complete-btn" onClick={this.onScanHUButtonClick}>
               <ButtonWithIndicator caption={scanButtonCaption} completeStatus={scanButtonStatus} />

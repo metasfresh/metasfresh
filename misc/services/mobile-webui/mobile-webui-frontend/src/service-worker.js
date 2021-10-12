@@ -67,7 +67,9 @@ registerRoute(
 
 self.addEventListener('install', function () {
   // Force refreshing the sw on install
-  self.skipWaiting();
+  if (self.skipWaiting) {
+    self.skipWaiting();
+  }
 });
 
 // This allows the web app to trigger skipWaiting via
@@ -78,7 +80,9 @@ self.addEventListener('message', (event) => {
   }
 });
 
-const broadcast = new BroadcastChannel('network-status-channel');
+const cacheVersion = '0.0.1';
+
+// const broadcast = new BroadcastChannel('network-status-channel');
 
 // Any other custom service worker logic can go here.
 self.addEventListener('fetch', (event) => {
@@ -86,7 +90,24 @@ self.addEventListener('fetch', (event) => {
     //event.respondWith(new Response('// no-op'));
     event.respondWith(fetch(event.request));
   } else {
+    //  Sending a request to the network and the cache. The cache will most likely respond first and,
+    //  if the network data has not already been received, we update the page with the data in the response.
+    //  When the network responds we update the page again with the latest information.
+    self.addEventListener('fetch', function (event) {
+      if (event.request.url.startsWith('http')) {
+        event.respondWith(
+          caches.open(cacheVersion).then(function (cache) {
+            return fetch(event.request).then(function (response) {
+              cache.put(event.request, response.clone());
+              return response;
+            });
+          })
+        );
+      }
+    });
+
     // Prevent the default, and handle the request ourselves.
+    /*
     event.respondWith(
       (async function () {
         // Try to get the response from a cache.
@@ -103,5 +124,12 @@ self.addEventListener('fetch', (event) => {
         });
       })()
     );
+    */
   }
 });
+
+// Uncomment this when quick deploy needed
+// self.addEventListener('activate', (event) => {
+//   // delete caches - !!! To be used only for quick deploys
+//   event.waitUntil(clients.claim());
+// })
