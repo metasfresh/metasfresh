@@ -67,7 +67,9 @@ registerRoute(
 
 self.addEventListener('install', function () {
   // Force refreshing the sw on install
-  self.skipWaiting();
+  if (self.skipWaiting) {
+    self.skipWaiting();
+  }
 });
 
 // This allows the web app to trigger skipWaiting via
@@ -114,3 +116,9 @@ self.addEventListener('fetch', (event) => {
     */
   }
 });
+
+// Uncomment this when quick deploy needed
+// self.addEventListener('activate', (event) => {
+//   // delete caches - !!! To be used only for quick deploys
+//   event.waitUntil(clients.claim());
+// })
