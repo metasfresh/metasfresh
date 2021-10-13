@@ -2026,7 +2026,7 @@ public class FlatrateBL implements IFlatrateBL
 		final I_C_Flatrate_Term term = request.getFlatrateTerm();
 		final ProductId productId = request.getProductId();
 
-		final AdTableId tableId  = tableDAO.retrieveTableId((I_C_Flatrate_Term.Table_Name);
+		final AdTableId tableId  = tableDAO.retrieveAdTableId(I_C_Flatrate_Term.Table_Name);
 
 		final I_C_Invoice_Candidate ic = queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
 				.addOnlyActiveRecordsFilter()
