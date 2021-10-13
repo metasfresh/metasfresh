@@ -22,15 +22,14 @@
 
 package de.metas.contracts.flatrate.process;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.FlatrateTermPriceRequest;
 import de.metas.contracts.IFlatrateBL;
-import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
-import de.metas.pricing.IPricingResult;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
@@ -41,14 +40,12 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.compiere.util.TimeUtil;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 
 public class C_Flatrate_Term_Change_Product extends JavaProcess implements IProcessPrecondition
 {
 	private final IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
 	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
-	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	@Param(parameterName = I_C_Flatrate_Term.COLUMNNAME_M_Product_ID, mandatory = true)
@@ -73,8 +70,34 @@ public class C_Flatrate_Term_Change_Product extends JavaProcess implements IProc
 	@Override
 	protected String doIt() throws Exception
 	{
-		updateFlatrateTermPrice();
+		updateFlatrateTermProductAndPrice();
+
 		return MSG_OK;
+	}
+
+	private void updateFlatrateTermProductAndPrice()
+	{
+		final I_C_Flatrate_Term term = flatrateBL.getById(retrieveSelectedFlatrateTermId());
+		updateFlatrateTermProductAndPrice(term);
+		updateNextFlatrateTermProductAndPrice(term);
+	}
+
+	private void updateFlatrateTermProductAndPrice(@NonNull final I_C_Flatrate_Term term)
+	{
+		final LocalDate date = TimeUtil.asLocalDate(term.getStartDate(), orgDAO.getTimeZone(OrgId.ofRepoId(term.getAD_Org_ID())));
+		final FlatrateTermPriceRequest request = FlatrateTermPriceRequest.builder()
+				.flatrateTerm(term)
+				.productId(retrieveSelectedProductId())
+				.priceDate(date)
+				.build();
+
+		flatrateBL.updateFlatrateTermProductAndPrice(request);
+	}
+
+	private void updateNextFlatrateTermProductAndPrice(@NonNull final I_C_Flatrate_Term term)
+	{
+		final ImmutableList<I_C_Flatrate_Term> termstoUpdate = flatrateBL.retrieveNextFlatrateTerms(term);
+		termstoUpdate.forEach(this::updateFlatrateTermProductAndPrice);
 	}
 
 	final FlatrateTermId retrieveSelectedFlatrateTermId()
@@ -87,28 +110,8 @@ public class C_Flatrate_Term_Change_Product extends JavaProcess implements IProc
 		return ProductId.ofRepoId(p_M_Product_ID);
 	}
 
-	private void updateFlatrateTermPrice()
+	private void updateFlatrateTermProduct(@NonNull final I_C_Flatrate_Term term)
 	{
-		final I_C_Flatrate_Term term = flatrateDAO.retrieveTerm(retrieveSelectedFlatrateTermId());
-
-		final LocalDate date = TimeUtil.asLocalDate(term.getStartDate(), orgDAO.getTimeZone(OrgId.ofRepoId(term.getAD_Org_ID())));
-
-		final FlatrateTermPriceRequest request = FlatrateTermPriceRequest.builder()
-				.flatrateTerm(term)
-				.productId(retrieveSelectedProductId())
-				.priceDate(date)
-				.build();
-
-		final IPricingResult result = flatrateBL.computeFlatrateTermPrice(request);
-
-		term.setPriceActual(result.getPriceStd());
-		flatrateDAO.save(term);
-
-		invalidateInvoiceCandidatesOfFlatrateTerm(term);
-	}
-
-	private void invalidateInvoiceCandidatesOfFlatrateTerm(@NonNull final I_C_Flatrate_Term term)
-	{
-		invoiceCandidateHandlerBL.invalidateCandidatesFor(term);
+		term.setM_Product_ID(p_M_Product_ID);
 	}
 }

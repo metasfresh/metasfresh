@@ -35,6 +35,7 @@ import de.metas.calendar.ICalendarDAO;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.CreateFlatrateTermRequest;
+import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.FlatrateTermPriceRequest;
 import de.metas.contracts.FlatrateTermPricing;
 import de.metas.contracts.IFlatrateBL;
@@ -64,6 +65,7 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.inout.model.I_M_InOutLine;
+import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerDAO;
 import de.metas.invoicecandidate.location.adapter.InvoiceCandidateLocationAdapterFactory;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
@@ -134,6 +136,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
 public class FlatrateBL implements IFlatrateBL
@@ -172,6 +175,7 @@ public class FlatrateBL implements IFlatrateBL
 
 	private final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
 
 	@Override
 	public String beforeCompleteDataEntry(final I_C_Flatrate_DataEntry dataEntry)
@@ -1993,8 +1997,21 @@ public class FlatrateBL implements IFlatrateBL
 				.setParameter("existingContractIds", existingContractsOfTargetType);
 	}
 
+
 	@Override
-	public IPricingResult computeFlatrateTermPrice(@NonNull FlatrateTermPriceRequest request)
+	public void updateFlatrateTermProductAndPrice(@NonNull FlatrateTermPriceRequest request)
+	{
+		final IPricingResult result = computeFlatrateTermPrice(request);
+
+		final I_C_Flatrate_Term term = request.getFlatrateTerm();
+		term.setM_Product_ID(request.getProductId().getRepoId());
+		term.setPriceActual(result.getPriceStd());
+		flatrateDAO.save(term);
+
+		invoiceCandidateHandlerBL.invalidateCandidatesFor(term);
+	}
+
+	private IPricingResult computeFlatrateTermPrice(@NonNull FlatrateTermPriceRequest request)
 	{
 		return FlatrateTermPricing.builder()
 				.term(request.getFlatrateTerm())
@@ -2003,5 +2020,27 @@ public class FlatrateBL implements IFlatrateBL
 				.qty(BigDecimal.ONE)
 				.build()
 				.computeOrThrowEx();
+	}
+
+	@Override
+	public I_C_Flatrate_Term getById(@NonNull final FlatrateTermId flatrateTermId)
+	{
+		return flatrateDAO.getById(flatrateTermId);
+	}
+
+	@Override
+	public ImmutableList<I_C_Flatrate_Term> retrieveNextFlatrateTerms(@NonNull final I_C_Flatrate_Term term)
+	{
+		I_C_Flatrate_Term currentTerm = term;
+
+		final ImmutableList.Builder<I_C_Flatrate_Term> nextFTsBuilder = ImmutableList.<I_C_Flatrate_Term>builder();
+
+		while (currentTerm.getC_FlatrateTerm_Next_ID() > 0)
+		{
+			nextFTsBuilder.add(currentTerm);
+			currentTerm = currentTerm.getC_FlatrateTerm_Next();
+		}
+
+		return nextFTsBuilder.build();
 	}
 }
