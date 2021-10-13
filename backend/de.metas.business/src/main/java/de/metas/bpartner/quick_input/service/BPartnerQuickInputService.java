@@ -42,7 +42,6 @@ import de.metas.bpartner.name.strategy.ComputeNameAndGreetingRequest;
 import de.metas.bpartner.quick_input.BPartnerContactQuickInputId;
 import de.metas.bpartner.quick_input.BPartnerQuickInputId;
 import de.metas.bpartner.service.IBPGroupDAO;
-import de.metas.common.util.time.SystemTime;
 import de.metas.document.references.zoom_into.RecordWindowFinder;
 import de.metas.greeting.GreetingId;
 import de.metas.i18n.BooleanWithReason;
@@ -54,6 +53,7 @@ import de.metas.location.ILocationDAO;
 import de.metas.location.LocationId;
 import de.metas.logging.LogManager;
 import de.metas.marketing.base.model.CampaignId;
+import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PriceListId;
@@ -106,6 +106,7 @@ public class BPartnerQuickInputService
 	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 	private final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	private static final ModelDynAttributeAccessor<I_C_BPartner_QuickInput, Boolean>
 			DYNATTR_UPDATING_NAME_AND_GREETING = new ModelDynAttributeAccessor<>("UPDATING_NAME_AND_GREETING", Boolean.class);
@@ -412,7 +413,7 @@ public class BPartnerQuickInputService
 						.greetingId(GreetingId.ofRepoIdOrNull(contactTemplate.getC_Greeting_ID()))
 						.phone(StringUtils.trimBlankToNull(contactTemplate.getPhone()))
 						.email(StringUtils.trimBlankToNull(contactTemplate.getEMail()))
-						.birthday(TimeUtil.asLocalDate(contactTemplate.getBirthday(), SystemTime.zoneId()))
+						.birthday(TimeUtil.asLocalDate(contactTemplate.getBirthday(), orgDAO.getTimeZone(OrgId.ofRepoIdOrNull(contactTemplate.getAD_Org_ID()))))
 						.invoiceEmailEnabled(de.metas.common.util.StringUtils.toBoolean(contactTemplate.getIsInvoiceEmailEnabled(), null))
 						.phone2(StringUtils.trimBlankToNull(contactTemplate.getPhone2()))
 						.title(StringUtils.trimBlankToNull(contactTemplate.getTitle()))
