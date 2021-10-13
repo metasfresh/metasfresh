@@ -2031,10 +2031,14 @@ public class FlatrateBL implements IFlatrateBL
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_AD_Table_ID, AD_Table_ID)
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_Record_ID, term.getC_Flatrate_Term_ID())
 				.create()
-				.first();
+				.firstOnly(I_C_Invoice_Candidate.class);
 
 		InterfaceWrapperHelper.disableReadOnlyColumnCheck(ic); // disable it because M_Product_ID is not updateable
 		ic.setM_Product_ID(productId.getRepoId());
+		if (ic.isProcessed())
+		{
+			ic.setIsError(true);
+		}
 		invoiceCandDAO.save(ic);
 	}
 
