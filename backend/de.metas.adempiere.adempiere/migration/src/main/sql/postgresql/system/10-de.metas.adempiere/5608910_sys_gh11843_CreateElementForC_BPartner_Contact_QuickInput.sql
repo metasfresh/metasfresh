@@ -86,3 +86,18 @@ UPDATE AD_Element SET EntityType='D',Updated=TO_TIMESTAMP('2021-10-12 10:38:57',
 -- URL zum Konzept
 UPDATE AD_Column SET EntityType='D',Updated=TO_TIMESTAMP('2021-10-12 10:44:21','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=577716
 ;
+
+-- 2021-10-13T08:37:17.791Z
+-- URL zum Konzept
+UPDATE AD_Column SET DefaultValue='Y',Updated=TO_TIMESTAMP('2021-10-13 10:37:17','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=577715
+;
+
+-- 2021-10-13T08:37:21.821Z
+-- URL zum Konzept
+INSERT INTO t_alter_column values('c_bpartner_contact_quickinput','IsDefaultContact','CHAR(1)',null,'Y')
+;
+
+-- 2021-10-13T08:37:21.837Z
+-- URL zum Konzept
+UPDATE C_BPartner_Contact_QuickInput SET IsDefaultContact='Y' WHERE IsDefaultContact IS NULL
+;
