@@ -393,7 +393,7 @@ public class BPartnerQuickInputService
 				.map(UserGroupUserAssignment::getUserId)
 				.map(userId -> UserNotificationRequest.builder()
 						.recipientUserId(userId)
-						.contentADMessage(MSG_C_BPartnerCreatedFromAnotherOrg)// TODO: Verify if it's ok to have the same message
+						.contentADMessage(MSG_C_BPartnerCreatedFromAnotherOrg)
 						.contentADMessageParam(loginUserName)
 						.contentADMessageParam(loginOrgName)
 						.contentADMessageParam(partnerName)
