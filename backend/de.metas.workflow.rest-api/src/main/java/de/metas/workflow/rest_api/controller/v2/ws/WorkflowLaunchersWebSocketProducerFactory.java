@@ -1,8 +1,8 @@
 package de.metas.workflow.rest_api.controller.v2.ws;
 
-import de.metas.user.UserId;
-import de.metas.util.NumberUtils;
+import de.metas.security.UserAuthToken;
 import de.metas.util.web.MetasfreshRestAPIConstants;
+import de.metas.util.web.security.UserAuthTokenService;
 import de.metas.websocket.WebsocketTopicName;
 import de.metas.websocket.producers.WebSocketProducer;
 import de.metas.websocket.producers.WebSocketProducerFactory;
@@ -18,26 +18,14 @@ public class WorkflowLaunchersWebSocketProducerFactory implements WebSocketProdu
 			+ "/userWorkflows/launchers/";
 
 	private final WorkflowRestAPIService workflowRestAPIService;
+	private final UserAuthTokenService userAuthTokenService;
 
-	private static UserId extractUserIdFromTopicName(@NonNull final WebsocketTopicName topicName)
-	{
-		final String topicNameString = topicName.getAsString();
-		if (topicNameString.startsWith(TOPIC_PREFIX))
-		{
-			final int userRepoId = NumberUtils.asInt(topicNameString.substring(TOPIC_PREFIX.length()), -1);
-			final UserId userId = UserId.ofRepoIdOrNull(userRepoId);
-			if (userId != null)
-			{
-				return userId;
-			}
-		}
-
-		throw new AdempiereException("Invalid topic: " + topicName);
-	}
-
-	public WorkflowLaunchersWebSocketProducerFactory(@NonNull final WorkflowRestAPIService workflowRestAPIService)
+	public WorkflowLaunchersWebSocketProducerFactory(
+			@NonNull final WorkflowRestAPIService workflowRestAPIService,
+			@NonNull final UserAuthTokenService userAuthTokenService)
 	{
 		this.workflowRestAPIService = workflowRestAPIService;
+		this.userAuthTokenService = userAuthTokenService;
 	}
 
 	@Override
@@ -46,7 +34,20 @@ public class WorkflowLaunchersWebSocketProducerFactory implements WebSocketProdu
 	@Override
 	public WebSocketProducer createProducer(@NonNull final WebsocketTopicName topicName)
 	{
-		final UserId userId = extractUserIdFromTopicName(topicName);
-		return new WorkflowLaunchersWebSocketProducer(workflowRestAPIService, userId);
+		final UserAuthToken token = extractAuthTokenFromTopicName(topicName);
+		return new WorkflowLaunchersWebSocketProducer(workflowRestAPIService, token.getUserId());
 	}
+
+	private UserAuthToken extractAuthTokenFromTopicName(@NonNull final WebsocketTopicName topicName)
+	{
+		final String topicNameString = topicName.getAsString();
+		if (topicNameString.startsWith(TOPIC_PREFIX))
+		{
+			final String tokenString = topicNameString.substring(TOPIC_PREFIX.length());
+			return userAuthTokenService.getByToken(tokenString);
+		}
+
+		throw new AdempiereException("Invalid topic: " + topicName);
+	}
+
 }

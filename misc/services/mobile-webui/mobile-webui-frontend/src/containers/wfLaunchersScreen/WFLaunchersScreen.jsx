@@ -20,8 +20,9 @@ class WFLaunchersScreen extends Component {
 
   componentDidUpdate() {
     if (!this.wsClient) {
+      const { userToken } = this.props;
       this.wsClient = ws.connectAndSubscribe({
-        topic: '/v2/userWorkflows/launchers/2188228',
+        topic: `/v2/userWorkflows/launchers/${userToken}`,
         onWebsocketMessage: this.onWebsocketMessage,
       });
     }
@@ -58,6 +59,7 @@ WFLaunchersScreen.propTypes = {
   //
   // Props
   launchers: PropTypes.object.isRequired,
+  userToken: PropTypes.string.isRequired,
   //
   // Actions
   populateLaunchers: PropTypes.func.isRequired,
@@ -66,6 +68,7 @@ WFLaunchersScreen.propTypes = {
 const mapStateToProps = (state) => {
   return {
     launchers: state.launchers,
+    userToken: state.appHandler.token,
   };
 };
 
