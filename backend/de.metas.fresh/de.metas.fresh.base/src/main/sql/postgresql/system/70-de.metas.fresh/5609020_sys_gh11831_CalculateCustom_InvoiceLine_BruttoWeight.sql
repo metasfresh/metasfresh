@@ -15,7 +15,7 @@ from (
                       then COALESCE(p.weight, 0) * iol.movementqty
                       else COALESCE(p.weight, 0) * il.invoicedqty end)
                                                                 as productWeight,
-             COALESCE(packingProd.weight * iol.qtyenteredtu, 0) as packageWeight
+             COALESCE(packingProd.weight,0) * iol.qtyenteredtu as packageWeight
 
          from c_customs_invoice_line il
                   join m_inoutline_to_c_customs_invoice_line cil
