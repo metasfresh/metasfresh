@@ -68,3 +68,106 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 ALTER TABLE AD_OrgInfo ADD CONSTRAINT CBPartnerCreatedFromAnotherOrgNotifyUserGroup_ADOrgInfo FOREIGN KEY (C_BPartner_CreatedFromAnotherOrg_Notify_UserGroup_ID) REFERENCES public.AD_UserGroup DEFERRABLE INITIALLY DEFERRED
 ;
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-- 2021-10-13T07:45:06.479Z
+-- URL zum Konzept
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,577719,663473,0,170,TO_TIMESTAMP('2021-10-13 10:45:05','YYYY-MM-DD HH24:MI:SS'),100,10,'D','Y','N','N','N','N','N','N','N','Supplier Approval Expiration Notify User Group',TO_TIMESTAMP('2021-10-13 10:45:05','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-10-13T07:45:06.554Z
+-- URL zum Konzept
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=663473 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2021-10-13T07:45:06.669Z
+-- URL zum Konzept
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(580036) 
+;
+
+-- 2021-10-13T07:45:06.761Z
+-- URL zum Konzept
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=663473
+;
+
+-- 2021-10-13T07:45:06.816Z
+-- URL zum Konzept
+/* DDL */ select AD_Element_Link_Create_Missing_Field(663473)
+;
+
+-- 2021-10-13T07:45:07.794Z
+-- URL zum Konzept
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,577720,663474,0,170,TO_TIMESTAMP('2021-10-13 10:45:06','YYYY-MM-DD HH24:MI:SS'),100,10,'D','Y','N','N','N','N','N','N','N','Partner Created From Another Org Notify UserGroup',TO_TIMESTAMP('2021-10-13 10:45:06','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-10-13T07:45:07.856Z
+-- URL zum Konzept
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=663474 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2021-10-13T07:45:07.936Z
+-- URL zum Konzept
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(580037) 
+;
+
+-- 2021-10-13T07:45:08.026Z
+-- URL zum Konzept
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=663474
+;
+
+-- 2021-10-13T07:45:08.088Z
+-- URL zum Konzept
+/* DDL */ select AD_Element_Link_Create_Missing_Field(663474)
+;
+
+-- 2021-10-13T08:47:55.530Z
+-- URL zum Konzept
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,663473,0,170,540463,592814,'F',TO_TIMESTAMP('2021-10-13 11:47:54','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','N','N',0,'Supplier Approval Expiration Notify User Group',171,0,0,TO_TIMESTAMP('2021-10-13 11:47:54','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-10-13T08:49:02.130Z
+-- URL zum Konzept
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,663474,0,170,540463,592815,'F',TO_TIMESTAMP('2021-10-13 11:49:01','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','N','N',0,'Partner Created From Another Org Notify UserGroup',172,0,0,TO_TIMESTAMP('2021-10-13 11:49:01','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-10-13T08:49:21.470Z
+-- URL zum Konzept
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=210,Updated=TO_TIMESTAMP('2021-10-13 11:49:21','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=592814
+;
+
+-- 2021-10-13T08:49:21.795Z
+-- URL zum Konzept
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=220,Updated=TO_TIMESTAMP('2021-10-13 11:49:21','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=592815
+;
+
+-- 2021-10-13T08:49:22.090Z
+-- URL zum Konzept
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=230,Updated=TO_TIMESTAMP('2021-10-13 11:49:22','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=544524
+;
+
+-- 2021-10-13T08:49:22.412Z
+-- URL zum Konzept
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=240,Updated=TO_TIMESTAMP('2021-10-13 11:49:22','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=544525
+;
+

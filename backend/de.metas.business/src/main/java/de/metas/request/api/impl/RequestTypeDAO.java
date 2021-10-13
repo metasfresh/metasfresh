@@ -42,6 +42,9 @@ public class RequestTypeDAO implements IRequestTypeDAO
 
 	static final String InternalName_OrgSwitch = "S_OrgSwitch";
 
+	static final String InternalName_C_BPartner_CreatedFromAnotherOrg = "C_BPartner_CreatedFromAnotherOrg";
+
+
 	final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@Override
@@ -66,8 +69,8 @@ public class RequestTypeDAO implements IRequestTypeDAO
 	@Override
 	public RequestTypeId retrieveBPartnerCreatedFromAnotherOrgRequestTypeId()
 	{
-		//TODO
-		return null;
+		return retrieveRequestTypeIdByInternalName(InternalName_C_BPartner_CreatedFromAnotherOrg);
+
 	}
 
 	private RequestTypeId retrieveRequestTypeIdByInternalName(final String internalName)

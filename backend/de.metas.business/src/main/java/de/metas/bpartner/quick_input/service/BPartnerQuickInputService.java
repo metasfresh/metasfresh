@@ -133,7 +133,7 @@ public class BPartnerQuickInputService
 	private static final ModelDynAttributeAccessor<I_C_BPartner_QuickInput, Boolean>
 			DYNATTR_UPDATING_NAME_AND_GREETING = new ModelDynAttributeAccessor<>("UPDATING_NAME_AND_GREETING", Boolean.class);
 
-	private final AdMessageKey MSG_C_BPartnerCreatedFrmAnotherOrg_Summary = AdMessageKey.of("MSG_C_BPartnerCreatedFrmAnotherOrg_Summary");
+	private final AdMessageKey MSG_C_BPartnerCreatedFromAnotherOrg = AdMessageKey.of("C_BPartnerCreatedFromAnotherOrg");
 
 	public BPartnerQuickInputService(
 			@NonNull final BPartnerQuickInputRepository bpartnerQuickInputRepository,
@@ -349,7 +349,7 @@ public class BPartnerQuickInputService
 		final String partnerName = bpartnerComposite.getBpartner().getName();
 		final String partnerOrgName = orgDAO.retrieveOrgName(partnerOrgId);
 
-		final String summary = msgBL.getMsg(Env.getCtx(), MSG_C_BPartnerCreatedFrmAnotherOrg_Summary, new Object[] {
+		final String summary = msgBL.getMsg(Env.getCtx(), MSG_C_BPartnerCreatedFromAnotherOrg, new Object[] {
 				loginUserName,
 				loginOrgName,
 				partnerName,
@@ -392,7 +392,7 @@ public class BPartnerQuickInputService
 				.map(UserGroupUserAssignment::getUserId)
 				.map(userId -> UserNotificationRequest.builder()
 						.recipientUserId(userId)
-						.contentADMessage(MSG_C_BPartnerCreatedFrmAnotherOrg_Summary)// TODO: Verify if it's ok to have the same message
+						.contentADMessage(MSG_C_BPartnerCreatedFromAnotherOrg)// TODO: Verify if it's ok to have the same message
 						.contentADMessageParam(loginUserName)
 						.contentADMessageParam(loginOrgName)
 						.contentADMessageParam(partnerName)
