@@ -33,8 +33,7 @@ export const setupCounterpart = () => {
         notEligibleHUBarcode: 'HU barcode not matching',
         invalidQtyPicked: 'Invalid qty picked',
         confirmDone: 'Done',
-        rejectedP1: 'There are',
-        rejectedP2: 'not picked. Why ?',
+        rejectedPrompt: 'There are %(qtyRejected)s %(uom)s not picked. Why ?',
       },
     },
   });

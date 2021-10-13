@@ -1,12 +1,19 @@
-import React, { Component } from 'react';
+import React, { PureComponent, createRef } from 'react';
 import PropTypes from 'prop-types';
 import counterpart from 'counterpart';
-class PickQuantityPrompt extends Component {
+
+class PickQuantityPrompt extends PureComponent {
   constructor(props) {
     super(props);
     this.state = {
       value: 0,
     };
+
+    this.qtyInput = createRef();
+  }
+
+  componentDidMount() {
+    this.qtyInput.current.focus();
   }
 
   changeQuantity = (e) => {
@@ -30,7 +37,13 @@ class PickQuantityPrompt extends Component {
               <strong>{`${counterpart.translate('general.QtyToPick')} : ${qtyToPick}`}</strong>
               <div>&nbsp;</div>
               <div className="control">
-                <input className="input" type="number" value={this.state.value} onChange={this.changeQuantity} />
+                <input
+                  ref={this.qtyInput}
+                  className="input"
+                  type="number"
+                  value={this.state.value}
+                  onChange={this.changeQuantity}
+                />
               </div>
               <div className="buttons is-centered mt-4">
                 <button className="button is-medium btn-green confirm-button" onClick={this.onDialogYes}>
