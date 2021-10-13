@@ -36,6 +36,7 @@ BEGIN
 
     RAISE NOTICE '% !! Deactivated Ad_Schedulers for ExternalSystems !!', CLOCK_TIMESTAMP();
 
+    /* if the data is coming from production, then scramble it */
     IF p_source_instance ILIKE '%prod'
     THEN
         EXECUTE ops.scramble_metasfresh(FALSE);
