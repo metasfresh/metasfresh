@@ -118,7 +118,6 @@ public class FlatrateDAO implements IFlatrateDAO
 		return load(flatrateTermId, I_C_Flatrate_Term.class);
 	}
 
-
 	@Override
 	public List<I_C_Flatrate_Term> retrieveTerms(final I_C_Invoice_Candidate ic)
 	{
@@ -236,7 +235,7 @@ public class FlatrateDAO implements IFlatrateDAO
 	}
 
 	@Cached
-	/* package */List<I_C_Flatrate_Matching> retrieveFlatrateMatchings(
+		/* package */List<I_C_Flatrate_Matching> retrieveFlatrateMatchings(
 			@CacheCtx final Properties ctx,
 			final int flatrateConditionsId,
 			final String trxName)
@@ -934,8 +933,8 @@ public class FlatrateDAO implements IFlatrateDAO
 		if (existingData == null)
 		{
 			existingData = InterfaceWrapperHelper.create(getCtx(bPartner),
-					I_C_Flatrate_Data.class,
-					getTrxName(bPartner));
+														 I_C_Flatrate_Data.class,
+														 getTrxName(bPartner));
 			existingData.setAD_Org_ID(bPartner.getAD_Org_ID());
 			existingData.setC_BPartner_ID(bPartner.getC_BPartner_ID());
 			existingData.setHasContracts(false);
@@ -981,9 +980,9 @@ public class FlatrateDAO implements IFlatrateDAO
 	}
 
 	@Override
-	public I_C_Flatrate_Conditions getConditionsById (final ConditionsId flatrateConditionsId )
+	public I_C_Flatrate_Conditions getConditionsById(final ConditionsId flatrateConditionsId)
 	{
-		return  load(flatrateConditionsId, I_C_Flatrate_Conditions.class);
+		return load(flatrateConditionsId, I_C_Flatrate_Conditions.class);
 	}
 
 	@Override
