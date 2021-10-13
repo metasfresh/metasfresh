@@ -955,7 +955,10 @@ public class WindowRestController
 
 			return newRecordDescriptorsProvider.getNewRecordDescriptor(document.getEntityDescriptor())
 					.getProcessor()
-					.processNewRecordDocument(document);
+					.processNewRecordDocument(document,
+											  userSession.getOrgId(),
+											  userSession.getLoggedUserId(),
+											  userSession.getAD_Language());
 		}));
 	}
 

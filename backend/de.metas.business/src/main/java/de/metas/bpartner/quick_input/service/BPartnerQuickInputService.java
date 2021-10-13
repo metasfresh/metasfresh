@@ -48,8 +48,8 @@ import de.metas.greeting.GreetingId;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.ExplainedOptional;
-import de.metas.i18n.IMsgBL;
 import de.metas.i18n.Language;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.location.ILocationDAO;
@@ -72,6 +72,7 @@ import de.metas.request.api.RequestCandidate;
 import de.metas.user.UserGroupId;
 import de.metas.user.UserGroupRepository;
 import de.metas.user.UserGroupUserAssignment;
+import de.metas.user.UserId;
 import de.metas.user.api.IUserBL;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Check;
@@ -123,7 +124,6 @@ public class BPartnerQuickInputService
 	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 	private final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
-	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final IUserDAO userDAO = Services.get(IUserDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IRequestTypeDAO requestTypeDAO = Services.get(IRequestTypeDAO.class);
@@ -271,7 +271,10 @@ public class BPartnerQuickInputService
 	 * <p>
 	 * Task https://github.com/metasfresh/metasfresh/issues/1090
 	 */
-	public BPartnerId createBPartnerFromTemplate(@NonNull final I_C_BPartner_QuickInput template)
+	public BPartnerId createBPartnerFromTemplate(@NonNull final I_C_BPartner_QuickInput template,
+			@NonNull final OrgId loginOrgId,
+			@NonNull final UserId loggedUserId,
+			@NonNull final String loginLanguage)
 	{
 		Check.assume(!template.isProcessed(), "{} not already processed", template);
 
@@ -299,7 +302,7 @@ public class BPartnerQuickInputService
 		bpartnerCompositeRepository.save(bpartnerComposite);
 		final BPartnerId bpartnerId = bpartnerComposite.getBpartner().getId();
 
-		createRequestAndNotifyUserGroupIfNeeded(bpartnerComposite);
+		createRequestAndNotifyUserGroupIfNeeded(bpartnerComposite, loginOrgId, loggedUserId, loginLanguage);
 
 		//
 		// Copy BPartner Attributes
@@ -333,47 +336,32 @@ public class BPartnerQuickInputService
 		return bpartnerId;
 	}
 
-	private void createRequestAndNotifyUserGroupIfNeeded(final BPartnerComposite bpartnerComposite)
+	private void createRequestAndNotifyUserGroupIfNeeded(final BPartnerComposite bpartnerComposite, final @NonNull OrgId loginOrgId, final @NonNull UserId loggedUserId, final @NonNull String loginLanguage)
 	{
 		final OrgId partnerOrgId = bpartnerComposite.getOrgId();
-		final OrgId loginOrgId = Env.getOrgId();
 
 		if (loginOrgId.equals(partnerOrgId))
 		{
 			//nothing to do
 			return;
 		}
-		Env.getLoggedUserId();
 
-		final String loginUserName = userDAO.retrieveUserFullName(Env.getLoggedUserId());
+		final String loginUserName = userDAO.retrieveUserFullName(loggedUserId);
 		final String loginOrgName = orgDAO.retrieveOrgName(loginOrgId);
 		final String partnerName = bpartnerComposite.getBpartner().getName();
 		final String partnerOrgName = orgDAO.retrieveOrgName(partnerOrgId);
 
-		final String summary = msgBL.getMsg(Env.getCtx(), MSG_C_BPartnerCreatedFromAnotherOrg, new Object[] {
-				loginUserName,
-				loginOrgName,
-				partnerName,
-				partnerOrgName });
+		final String summary = TranslatableStrings.adMessage(MSG_C_BPartnerCreatedFromAnotherOrg,
+															 loginUserName,
+															 loginOrgName,
+															 partnerName,
+															 partnerOrgName).translate(loginLanguage);
 
 		final RequestTypeId requestTypeId = requestTypeDAO.retrieveBPartnerCreatedFromAnotherOrgRequestTypeId();
 
 		final BPartnerId bPartnerId = bpartnerComposite.getBpartner().getId();
 		final I_R_Request partnerCreatedFromAnotherOrgRequest = createPartnerCreatedFromAnotherOrgRequest(partnerOrgId, summary, requestTypeId, bPartnerId);
 
-		notifyUserGroupAboutSupplierApprovalExpiration(partnerCreatedFromAnotherOrgRequest,
-													   loginUserName,
-													   loginOrgName,
-													   partnerName,
-													   partnerOrgName);
-	}
-
-	private void notifyUserGroupAboutSupplierApprovalExpiration(@NonNull final I_R_Request partnerCreatedFromAnotherOrgRequest,
-			final String loginUserName,
-			final String loginOrgName,
-			final String partnerName,
-			final String partnerOrgName)
-	{
 		final UserNotificationRequest.TargetRecordAction targetRecordAction = UserNotificationRequest
 				.TargetRecordAction
 				.of(I_R_Request.Table_Name, partnerCreatedFromAnotherOrgRequest.getR_Request_ID());
