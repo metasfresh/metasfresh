@@ -5,7 +5,7 @@ import { withRouter } from 'react-router';
 import counterpart from 'counterpart';
 import { get } from 'lodash';
 
-import { selectWFProcess } from '../../../reducers/wfProcesses';
+import { selectWFProcessFromState } from '../../../reducers/wfProcesses_status';
 
 class QtyReasonsView extends PureComponent {
   constructor(props) {
@@ -70,8 +70,8 @@ class QtyReasonsView extends PureComponent {
 
 const mapStateToProps = (state, ownProps) => {
   const { workflowId: wfProcessId, activityId } = ownProps.match.params;
-  const workflowProcess = selectWFProcess(state, wfProcessId);
-  const activity = workflowProcess.activities.length ? workflowProcess.activities[activityId - 1] : null;
+  const wfProcess = selectWFProcessFromState(state, wfProcessId);
+  const activity = wfProcess.activities[activityId];
   const rejectedReasons = get(activity, ['componentProps', 'qtyRejectedReasons', 'reasons'], []);
 
   return {
