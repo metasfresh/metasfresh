@@ -46,17 +46,12 @@ public interface IContractsDAO extends ISingletonService
 	/**
 	 *
 	 * Check if the term given as parameter was extended (has a predecessor).
-	 * @param term
-	 * @return
 	 */
 	boolean termHasAPredecessor (I_C_Flatrate_Term term);
 
 	/**
 	 * Sums up the <code>Qty</code> values of all {@link I_C_SubscriptionProgress} records that reference the given
 	 * term.
-	 *
-	 * @param term
-	 * @return
 	 */
 	BigDecimal retrieveSubscriptionProgressQtyForTerm(I_C_Flatrate_Term term);
 

@@ -173,7 +173,6 @@ public class HUShippingFacade
 		final List<ShipmentScheduleWithHU> candidates = getCandidates();
 		if (candidates.isEmpty())
 		{
-			//noinspection ThrowableNotThrown
 			new AdempiereException("No shipment candidates found")
 					.appendParametersToMessage()
 					.setParameter("context", this)
