@@ -34,11 +34,7 @@ class QtyReasonsView extends PureComponent {
     return (
       <div className="pt-3 section picking-step-container">
         <div className="content">
-          <h5>
-            {`${counterpart.translate('activities.picking.rejectedP1')} ${qtyRejected} ${uom} ${counterpart.translate(
-              'activities.picking.rejectedP2'
-            )}`}
-          </h5>
+          <h5>{`${counterpart.translate('activities.picking.rejectedPrompt', { qtyRejected, uom })}`}</h5>
         </div>
         <div className="picking-step-details centered-text is-size-5">
           <div className="control">
