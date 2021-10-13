@@ -413,7 +413,7 @@ public class BPartnerQuickInputService
 						.greetingId(GreetingId.ofRepoIdOrNull(contactTemplate.getC_Greeting_ID()))
 						.phone(StringUtils.trimBlankToNull(contactTemplate.getPhone()))
 						.email(StringUtils.trimBlankToNull(contactTemplate.getEMail()))
-						.birthday(TimeUtil.asLocalDate(contactTemplate.getBirthday(), orgDAO.getTimeZone(OrgId.ofRepoIdOrNull(contactTemplate.getAD_Org_ID()))))
+						.birthday(TimeUtil.asLocalDate(contactTemplate.getBirthday(), orgDAO.getTimeZone(OrgId.ofRepoIdOrAny(contactTemplate.getAD_Org_ID()))))
 						.invoiceEmailEnabled(de.metas.common.util.StringUtils.toBoolean(contactTemplate.getIsInvoiceEmailEnabled(), null))
 						.phone2(StringUtils.trimBlankToNull(contactTemplate.getPhone2()))
 						.title(StringUtils.trimBlankToNull(contactTemplate.getTitle()))
