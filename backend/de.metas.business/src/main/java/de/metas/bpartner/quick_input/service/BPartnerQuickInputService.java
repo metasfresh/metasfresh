@@ -42,10 +42,13 @@ import de.metas.bpartner.name.strategy.ComputeNameAndGreetingRequest;
 import de.metas.bpartner.quick_input.BPartnerContactQuickInputId;
 import de.metas.bpartner.quick_input.BPartnerQuickInputId;
 import de.metas.bpartner.service.IBPGroupDAO;
+import de.metas.common.util.time.SystemTime;
 import de.metas.document.references.zoom_into.RecordWindowFinder;
 import de.metas.greeting.GreetingId;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.ExplainedOptional;
+import de.metas.i18n.IMsgBL;
 import de.metas.i18n.Language;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
@@ -53,13 +56,24 @@ import de.metas.location.ILocationDAO;
 import de.metas.location.LocationId;
 import de.metas.logging.LogManager;
 import de.metas.marketing.base.model.CampaignId;
+import de.metas.notification.INotificationBL;
+import de.metas.notification.UserNotificationRequest;
+import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.exceptions.PriceListNotFoundException;
 import de.metas.pricing.service.IPriceListDAO;
+import de.metas.request.RequestTypeId;
+import de.metas.request.api.IRequestDAO;
+import de.metas.request.api.IRequestTypeDAO;
+import de.metas.request.api.RequestCandidate;
+import de.metas.user.UserGroupId;
+import de.metas.user.UserGroupRepository;
+import de.metas.user.UserGroupUserAssignment;
 import de.metas.user.api.IUserBL;
+import de.metas.user.api.IUserDAO;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
@@ -73,14 +87,19 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.IAutoCloseable;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Contact_QuickInput;
 import org.compiere.model.I_C_BPartner_QuickInput;
+import org.compiere.model.I_R_Request;
+import org.compiere.model.X_R_Request;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -492,29 +511,29 @@ public class BPartnerQuickInputService
 				final boolean isPurchaseContact = template.isVendor();
 
 				contacts.add(BPartnerContact.builder()
-						.transientId(transientId)
-						.contactType(BPartnerContactType.builder()
-								.defaultContact(isDefaultContact)
-								.billToDefault(isDefaultContact)
-								.shipToDefault(isDefaultContact)
-								.sales(isSalesContact)
-								.salesDefault(isSalesContact && isDefaultContact)
-								.purchase(isPurchaseContact)
-								.purchaseDefault(isPurchaseContact && isDefaultContact)
-								.build())
-						.newsletter(contactTemplate.isNewsletter())
-						.membershipContact(contactTemplate.isMembershipContact())
-						.firstName(contactTemplate.getFirstname())
-						.lastName(contactTemplate.getLastname())
-						.name(userBL.buildContactName(contactTemplate.getFirstname(), contactTemplate.getLastname()))
-						.greetingId(GreetingId.ofRepoIdOrNull(contactTemplate.getC_Greeting_ID()))
-						.phone(StringUtils.trimBlankToNull(contactTemplate.getPhone()))
-						.email(StringUtils.trimBlankToNull(contactTemplate.getEMail()))
-						.birthday(TimeUtil.asLocalDate(contactTemplate.getBirthday(), orgDAO.getTimeZone(OrgId.ofRepoIdOrAny(contactTemplate.getAD_Org_ID()))))
-						.invoiceEmailEnabled(de.metas.common.util.StringUtils.toBoolean(contactTemplate.getIsInvoiceEmailEnabled(), null))
-						.phone2(StringUtils.trimBlankToNull(contactTemplate.getPhone2()))
-						.title(StringUtils.trimBlankToNull(contactTemplate.getTitle()))
-						.build());
+									 .transientId(transientId)
+									 .contactType(BPartnerContactType.builder()
+														  .defaultContact(isDefaultContact)
+														  .billToDefault(isDefaultContact)
+														  .shipToDefault(isDefaultContact)
+														  .sales(isSalesContact)
+														  .salesDefault(isSalesContact && isDefaultContact)
+														  .purchase(isPurchaseContact)
+														  .purchaseDefault(isPurchaseContact && isDefaultContact)
+														  .build())
+									 .newsletter(contactTemplate.isNewsletter())
+									 .membershipContact(contactTemplate.isMembershipContact())
+									 .firstName(contactTemplate.getFirstname())
+									 .lastName(contactTemplate.getLastname())
+									 .name(userBL.buildContactName(contactTemplate.getFirstname(), contactTemplate.getLastname()))
+									 .greetingId(GreetingId.ofRepoIdOrNull(contactTemplate.getC_Greeting_ID()))
+									 .phone(StringUtils.trimBlankToNull(contactTemplate.getPhone()))
+									 .email(StringUtils.trimBlankToNull(contactTemplate.getEMail()))
+									 .birthday(TimeUtil.asLocalDate(contactTemplate.getBirthday(), orgDAO.getTimeZone(OrgId.ofRepoIdOrAny(contactTemplate.getAD_Org_ID()))))
+									 .invoiceEmailEnabled(de.metas.common.util.StringUtils.toBoolean(contactTemplate.getIsInvoiceEmailEnabled(), null))
+									 .phone2(StringUtils.trimBlankToNull(contactTemplate.getPhone2()))
+									 .title(StringUtils.trimBlankToNull(contactTemplate.getTitle()))
+									 .build());
 			}
 		}
 
