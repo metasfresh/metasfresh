@@ -106,7 +106,20 @@ self.addEventListener('fetch', (event) => {
     //   }
     // });
 
+    // Network falling back to the cache
+    self.addEventListener('fetch', function (event) {
+      if (event.request.url.startsWith('http')) {
+        event.respondWith(
+          fetch(event.request).catch(function() {
+            return caches.match(event.request);
+          })
+        );
+      }
+    });
+
+
     // Prevent the default, and handle the request ourselves.
+    /*
     event.respondWith(
       (async function () {
         // Try to get the response from a cache.
@@ -123,6 +136,7 @@ self.addEventListener('fetch', (event) => {
         });
       })()
     );
+    */
   }
 });
 
