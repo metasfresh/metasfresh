@@ -24,6 +24,9 @@ public class JsonAuthResponse
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	String language;
 
+ 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	Integer userId;
+
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	String error;
 

@@ -93,6 +93,7 @@ public class AuthenticationRestController
 
 			return ResponseEntity.ok(
 					JsonAuthResponse.ok(userAuthToken.getAuthToken())
+							.userId(userId.getRepoId())
 							.language(adLanguage)
 							.messages(messages.getMessages())
 							.build());
