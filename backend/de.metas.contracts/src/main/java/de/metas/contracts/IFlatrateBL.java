@@ -29,6 +29,7 @@ import de.metas.contracts.model.I_C_Flatrate_DataEntry;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Flatrate_Transition;
 import de.metas.inout.model.I_M_InOutLine;
+import de.metas.pricing.IPricingResult;
 import de.metas.process.PInstanceId;
 import de.metas.util.ISingletonService;
 import lombok.Builder;
@@ -77,6 +78,8 @@ public interface IFlatrateBL extends ISingletonService
 	 * Updates various fields of the given entry, all based of the entry's current Qty_Reported and ActualQty values
 	 */
 	void updateEntry(I_C_Flatrate_DataEntry dataEntry);
+
+	IPricingResult computeFlatrateTermPrice(@NonNull FlatrateTermPriceRequest request);
 
 	/**
 	 * term to extend

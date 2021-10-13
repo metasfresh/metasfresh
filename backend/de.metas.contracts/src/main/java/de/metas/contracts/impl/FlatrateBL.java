@@ -35,6 +35,7 @@ import de.metas.calendar.ICalendarDAO;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.CreateFlatrateTermRequest;
+import de.metas.contracts.FlatrateTermPriceRequest;
 import de.metas.contracts.FlatrateTermPricing;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.IFlatrateDAO;
@@ -72,6 +73,7 @@ import de.metas.logging.LogManager;
 import de.metas.order.OrderAndLineId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
+import de.metas.pricing.IPricingResult;
 import de.metas.process.PInstanceId;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductAndCategoryId;
@@ -1989,5 +1991,17 @@ public class FlatrateBL implements IFlatrateBL
 				.setParameter("bpartnerId", billPartnerId)
 				.setParameter("orgId", term.getAD_Org_ID())
 				.setParameter("existingContractIds", existingContractsOfTargetType);
+	}
+
+	@Override
+	public IPricingResult computeFlatrateTermPrice(@NonNull FlatrateTermPriceRequest request)
+	{
+		return FlatrateTermPricing.builder()
+				.term(request.getFlatrateTerm())
+				.termRelatedProductId(request.getProductId())
+				.priceDate(request.getPriceDate())
+				.qty(BigDecimal.ONE)
+				.build()
+				.computeOrThrowEx();
 	}
 }

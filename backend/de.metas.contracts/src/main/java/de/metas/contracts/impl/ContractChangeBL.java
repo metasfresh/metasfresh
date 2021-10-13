@@ -31,7 +31,9 @@ import java.util.Properties;
 import java.util.stream.Collectors;
 
 import de.metas.common.util.time.SystemTime;
+import de.metas.contracts.FlatrateTermId;
 import de.metas.order.createFrom.LegacyOrderCopyCommand;
+import de.metas.product.ProductId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -528,5 +530,10 @@ public class ContractChangeBL implements IContractChangeBL
 		currentTerm.setIsAutoRenew(false);
 		currentTerm.setContractStatus(X_C_Flatrate_Term.CONTRACTSTATUS_EndingContract);
 		save(currentTerm);
+	}
+
+	public void updateProductForContract(@NonNull final FlatrateTermId currentTerm, @NonNull final ProductId productId)
+	{
+
 	}
 }
