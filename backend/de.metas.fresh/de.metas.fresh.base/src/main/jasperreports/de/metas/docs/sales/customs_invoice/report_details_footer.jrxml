@@ -6,7 +6,7 @@
 	<property name="ireport.zoom" value="1.0"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="jasperreports\dev.xml"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="jasperreports\it.xml"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<property name="com.jaspersoft.studio.unit." value="pixel"/>
 	<property name="com.jaspersoft.studio.unit.pageHeight" value="pixel"/>
@@ -26,23 +26,14 @@
 		<defaultValueExpression><![CDATA[$P{ad_language}]]></defaultValueExpression>
 	</parameter>
 	<queryString>
-		<![CDATA[select
- SUM(il.InvoicedQty) as catchweight,
-       COALESCE(uomt.UOMSymbol, uom.UOMSymbol) AS UOM,
-       CASE
-           WHEN uom.StdPrecision = 0
-               THEN '#,##0'
-           ELSE Substring('#,##0.0000' FROM 0 FOR 7 + uom.StdPrecision :: integer) END AS QtyPattern,
-           sum(coalesce(de_metas_endcustomer_fresh_reports.CalculateCustom_InvoiceLine_BruttoWeight(il.C_Customs_Invoice_Line_ID))) as totalWeight
-          
-from C_Customs_Invoice_Line il
-  LEFT OUTER JOIN C_UOM uom ON uom.C_UOM_ID = il.c_uom_id
-  LEFT OUTER JOIN C_UOM_Trl uomt on uomt.c_UOM_ID = uom.C_UOM_ID and uomt.AD_Language = $P{ad_language}
-where il.C_Customs_Invoice_Id =  $P{C_Customs_Invoice_Id}
-group by uomt.UOMSymbol, uom.UOMSymbol, uom.StdPrecision;]]>
+		<![CDATA[SELECT nettoTotalWeight,
+       UOM,
+       QtyPattern,
+       bruttoTotalWeight
+FROM de_metas_endcustomer_fresh_reports.docs_sales_customs_invoice_footer($P{C_Customs_Invoice_Id}, $P{ad_language});]]>
 	</queryString>
-	<field name="catchweight" class="java.math.BigDecimal">
-		<property name="com.jaspersoft.studio.field.label" value="catchweight"/>
+	<field name="nettototalweight" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="nettototalweight"/>
 	</field>
 	<field name="uom" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="uom"/>
@@ -50,8 +41,8 @@ group by uomt.UOMSymbol, uom.UOMSymbol, uom.StdPrecision;]]>
 	<field name="qtypattern" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="qtypattern"/>
 	</field>
-	<field name="totalweight" class="java.math.BigDecimal">
-		<property name="com.jaspersoft.studio.field.label" value="totalweight"/>
+	<field name="bruttototalweight" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="bruttototalweight"/>
 	</field>
 	<title>
 		<band height="37">
@@ -60,7 +51,7 @@ group by uomt.UOMSymbol, uom.UOMSymbol, uom.StdPrecision;]]>
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{catchweight}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{nettototalweight}]]></textFieldExpression>
 				<patternExpression><![CDATA[$F{qtypattern}]]></patternExpression>
 			</textField>
 			<textField>
@@ -89,7 +80,7 @@ group by uomt.UOMSymbol, uom.UOMSymbol, uom.StdPrecision;]]>
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{totalweight}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{bruttototalweight}]]></textFieldExpression>
 				<patternExpression><![CDATA[$F{qtypattern}]]></patternExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="0.00" isBlankWhenNull="true">

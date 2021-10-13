@@ -14,7 +14,7 @@ from (
                   when il.c_uom_id = 540017 -- harcoded kg
                       then COALESCE(p.weight, 0) * iol.movementqty
                       else COALESCE(p.weight, 0) * il.invoicedqty end)
-                                                               as productWeight,
+                                                                as productWeight,
              COALESCE(packingProd.weight,0) * iol.qtyenteredtu as packageWeight
 
          from c_customs_invoice_line il
