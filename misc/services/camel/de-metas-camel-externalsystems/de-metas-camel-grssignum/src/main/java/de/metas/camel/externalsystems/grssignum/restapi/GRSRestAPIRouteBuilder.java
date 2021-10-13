@@ -110,6 +110,7 @@ public class GRSRestAPIRouteBuilder extends RouteBuilder
 				.autoStartup(false)
 				.doTry()
 					.process(this::restAPIProcessor)
+				    .process(this::prepareSuccessResponse)
 				.doCatch(JsonProcessingException.class)
 			   		.to(direct(ERROR_WRITE_TO_ADISSUE))
 					.process(this::prepareErrorResponse)
@@ -222,5 +223,12 @@ public class GRSRestAPIRouteBuilder extends RouteBuilder
 		exchange.getIn().setBody(jsonError);
 
 		exchange.getIn().setHeader(HTTP_RESPONSE_CODE, httpCode);
+	}
+
+	private void prepareSuccessResponse(@NonNull final Exchange exchange)
+	{
+		exchange.getIn().setBody(null);
+		exchange.getIn().setHeader(HTTP_RESPONSE_CODE, HttpStatus.OK.value()
+		);
 	}
 }

@@ -108,4 +108,13 @@ public class InvokeGRSSignumAction extends InvokeExternalSystemProcess
 				.filter(recordRef -> I_ExternalSystem_Config_GRSSignum.Table_Name.equals(recordRef.getTableName()))
 				.count();
 	}
+
+	@Override
+	protected String getOrgCode()
+	{
+		final ExternalSystemParentConfig config = externalSystemConfigDAO.getById(getExternalChildConfigId());
+
+		return orgDAO.getById(config.getOrgId()).getValue();
+	}
+
 }
