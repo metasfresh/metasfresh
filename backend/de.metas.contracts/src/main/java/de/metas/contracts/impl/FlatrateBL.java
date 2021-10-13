@@ -95,6 +95,8 @@ import de.metas.util.collections.CollectionUtils;
 import de.metas.util.time.InstantInterval;
 import de.metas.workflow.api.IWFExecutionFactory;
 import lombok.NonNull;
+import org.adempiere.ad.dao.ICompositeQueryUpdater;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
@@ -166,6 +168,7 @@ public class FlatrateBL implements IFlatrateBL
 	public static final AdMessageKey MSG_HasOverlapping_Term = AdMessageKey.of("de.metas.flatrate.process.C_Flatrate_Term_Create.OverlappingTerm");
 
 	public static final AdMessageKey MSG_INFINITE_LOOP = AdMessageKey.of("de.metas.contracts.impl.FlatrateBL.extendContract.InfinitLoopError");
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
 
@@ -2008,7 +2011,27 @@ public class FlatrateBL implements IFlatrateBL
 		term.setPriceActual(result.getPriceStd());
 		flatrateDAO.save(term);
 
+		updateProductForInvoiceCandidate(request);
 		invoiceCandidateHandlerBL.invalidateCandidatesFor(term);
+	}
+
+	private void updateProductForInvoiceCandidate(@NonNull FlatrateTermPriceRequest request)
+	{
+		final I_C_Flatrate_Term term = request.getFlatrateTerm();
+		final ProductId productId = request.getProductId();
+
+		final int AD_Table_ID = Services.get(IADTableDAO.class).retrieveTableId(I_C_Flatrate_Term.Table_Name);
+
+		final ICompositeQueryUpdater<I_C_Invoice_Candidate> columnUpdater = queryBL
+				.createCompositeQueryUpdater(I_C_Invoice_Candidate.class)
+				.addSetColumnValue(I_C_Invoice_Candidate.COLUMNNAME_M_Product_ID, productId);
+
+		queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_AD_Table_ID, AD_Table_ID)
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_Record_ID, term.getC_Flatrate_Term_ID())
+				.create()
+				.update(columnUpdater);
 	}
 
 	private IPricingResult computeFlatrateTermPrice(@NonNull FlatrateTermPriceRequest request)
