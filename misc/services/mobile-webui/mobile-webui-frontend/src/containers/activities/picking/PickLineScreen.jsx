@@ -26,7 +26,8 @@ class PickLineScreen extends PureComponent {
 const mapStateToProps = (state, ownProps) => {
   const { workflowId: wfProcessId, activityId, lineId } = ownProps.match.params;
   const wfProcess = selectWFProcessFromState(state, wfProcessId);
-  const activity = wfProcess && wfProcess.activities.length > 0 ? wfProcess.activities[activityId] : null;
+  const activity = wfProcess && wfProcess.activities ? wfProcess.activities[activityId] : null;
+
   const lineProps = activity != null ? activity.componentProps.lines[lineId] : null;
   const stepsById = lineProps != null ? lineProps.steps : {};
 
