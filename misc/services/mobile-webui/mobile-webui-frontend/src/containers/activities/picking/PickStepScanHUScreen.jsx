@@ -98,7 +98,7 @@ class PickStepScanHUScreen extends Component {
       scannedHUBarcode: scannedBarcode,
     });
 
-    updatePickingStepQty({ wfProcessId, activityId, lineId, stepId, qtyPicked: qty });
+    updatePickingStepQty({ wfProcessId, activityId, lineId, stepId, qtyPicked: qty, qtyRejectedReasonCode: reason });
     postQtyPicked({ wfProcessId, activityId, stepId, qtyPicked: qty, qtyRejectedReasonCode: reason });
     // TODO: handle the promise
 
