@@ -82,7 +82,7 @@ self.addEventListener('message', (event) => {
 
 // const cacheVersion = '0.0.1';
 
-const broadcast = new BroadcastChannel('network-status-channel');
+// const broadcast = new BroadcastChannel('network-status-channel');
 
 // Any other custom service worker logic can go here.
 self.addEventListener('fetch', (event) => {
@@ -106,7 +106,19 @@ self.addEventListener('fetch', (event) => {
     //   }
     // });
 
+    // Network falling back to the cache
+    self.addEventListener('fetch', function (event) {
+      if (event.request.url.startsWith('http')) {
+        event.respondWith(
+          fetch(event.request).catch(function () {
+            return caches.match(event.request);
+          })
+        );
+      }
+    });
+
     // Prevent the default, and handle the request ourselves.
+    /*
     event.respondWith(
       (async function () {
         // Try to get the response from a cache.
@@ -123,6 +135,7 @@ self.addEventListener('fetch', (event) => {
         });
       })()
     );
+    */
   }
 });
 
