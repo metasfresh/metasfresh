@@ -54,7 +54,6 @@ import java.util.Collection;
 import java.util.Set;
 import java.util.function.UnaryOperator;
 
-import static de.metas.picking.workflow.handlers.PickingWFProcessUtils.workflowCaption;
 import static de.metas.picking.workflow.handlers.activity_handlers.PickingWFActivityHelper.extractShipmentScheduleIds;
 import static de.metas.picking.workflow.handlers.activity_handlers.PickingWFActivityHelper.getPickingJob;
 
@@ -147,7 +146,6 @@ public class PickingWFProcessHandler implements WFProcessHandler
 		return wfProcess;
 	}
 
-
 	@Override
 	public void abort(@NonNull final WFProcessId wfProcessId, @NonNull final UserId callerId)
 	{
@@ -183,7 +181,7 @@ public class PickingWFProcessHandler implements WFProcessHandler
 		return WFProcess.builder()
 				.id(WFProcessId.random(HANDLER_ID))
 				.invokerId(lockedBy)
-				.caption(workflowCaption()
+				.caption(PickingWFProcessUtils.workflowCaption()
 						.salesOrderDocumentNo(pickingJob.getSalesOrderDocumentNo())
 						.customerName(pickingJob.getCustomerName())
 						.build())
