@@ -2035,10 +2035,6 @@ public class FlatrateBL implements IFlatrateBL
 
 		InterfaceWrapperHelper.disableReadOnlyColumnCheck(ic); // disable it because M_Product_ID is not updateable
 		ic.setM_Product_ID(productId.getRepoId());
-		if (ic.isProcessed())
-		{
-			ic.setIsError(true);
-		}
 		invoiceCandDAO.save(ic);
 	}
 

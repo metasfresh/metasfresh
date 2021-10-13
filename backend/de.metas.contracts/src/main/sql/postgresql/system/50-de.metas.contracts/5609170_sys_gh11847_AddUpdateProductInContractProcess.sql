@@ -89,3 +89,34 @@ UPDATE AD_Val_Rule SET Code='M_Product.AD_Org_ID =@ AD_Org_ID@
   AND EXISTS(SELECT 1 FROM M_Product_Category pc WHERE M_Product.M_Product_Category_ID = pc.M_Product_Category_ID AND pc.M_Product_Category_ID = (SELECT M_Product_Category_ID FROM m_product WHERE m_product.m_product_id = @M_Product_ID@)) ',Updated=TO_TIMESTAMP('2021-10-13 18:35:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Val_Rule_ID=540561
 ;
 
+
+-- 2021-10-13T16:21:54.545706800Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,545066,0,TO_TIMESTAMP('2021-10-13 19:21:54','YYYY-MM-DD HH24:MI:SS'),100,'U','Y','Can not change the product. We got invoiced for this contract.','E',TO_TIMESTAMP('2021-10-13 19:21:54','YYYY-MM-DD HH24:MI:SS'),100,'TermHasInvoices')
+;
+
+-- 2021-10-13T16:21:54.547811800Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Message_Trl (AD_Language,AD_Message_ID, MsgText,MsgTip, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Message_ID, t.MsgText,t.MsgTip, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Message t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Message_ID=545066 AND NOT EXISTS (SELECT 1 FROM AD_Message_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Message_ID=t.AD_Message_ID)
+;
+
+-- 2021-10-13T16:22:21.893029200Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Message SET MsgText='Can not change the product. We got invoices for this contract.',Updated=TO_TIMESTAMP('2021-10-13 19:22:21','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Message_ID=545066
+;
+
+-- 2021-10-13T16:22:33.572742700Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Message_Trl SET IsTranslated='Y', MsgText='Kann das Produkt nicht ändern. Wir haben Rechnungen für diesen Vertrag.',Updated=TO_TIMESTAMP('2021-10-13 19:22:33','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Message_ID=545066
+;
+
+-- 2021-10-13T16:22:38.651508Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Message_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2021-10-13 19:22:38','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=545066
+;
+
+-- 2021-10-13T16:22:43.304816700Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Message_Trl SET IsTranslated='Y', MsgText='Kann das Produkt nicht ändern. Wir haben Rechnungen für diesen Vertrag.',Updated=TO_TIMESTAMP('2021-10-13 19:22:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Message_ID=545066
+;
+
