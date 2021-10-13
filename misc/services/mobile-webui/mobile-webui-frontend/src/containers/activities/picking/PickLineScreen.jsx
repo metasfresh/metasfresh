@@ -26,9 +26,19 @@ class PickLineScreen extends PureComponent {
 const mapStateToProps = (state, ownProps) => {
   const { workflowId: wfProcessId, activityId, lineId } = ownProps.match.params;
   const wfProcess = selectWFProcessFromState(state, wfProcessId);
-  const activity = wfProcess.activities[activityId];
-  const lineProps = activity.componentProps.lines[lineId];
-  const stepsById = lineProps.steps;
+  const activity = wfProcess && wfProcess.activities.length > 0 ? wfProcess.activities[activityId] : null;
+  const lineProps = activity != null ? activity.componentProps.lines[lineId] : null;
+  const stepsById = lineProps != null ? lineProps.steps : {};
+
+  // TODO: handle the case when we didn't find the wfProcess or activity or line
+  // usually that happens when the workflow process is no longer in the state because:
+  // * user refreshed some old link
+  // * for some reason it was taken out from backend side
+  // Possible solutions:
+  // * have a flag here to indicate to the component that we deal with a not found case
+  // * component notifies the user using a nice toast and then forwards him back to launchers
+  //
+  // NOTE to dev: please please check the other Screens where we could have this case and pls handle it
 
   return {
     wfProcessId,
