@@ -54,8 +54,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static org.adempiere.model.InterfaceWrapperHelper.*;
-import static org.assertj.core.api.Assertions.*;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.refresh;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class BPartnerQuickInputServiceUpdateNameAndGreetingTest
 {
@@ -172,7 +174,7 @@ public class BPartnerQuickInputServiceUpdateNameAndGreetingTest
 		bPartnerQuickInputService.updateNameAndGreeting(BPartnerQuickInputId.ofRepoId(partner.getC_BPartner_QuickInput_ID()));
 
 		refresh(partner);
-		assertThat(partner.getBPartnerName()).isEqualTo(firstName + " And " + firstName2 + " " + lastname);
+		assertThat(partner.getBPartnerName()).isEqualTo(firstName+" And " + firstName2 + " "+ lastname);
 		assertThat(partner.getC_Greeting_ID()).isEqualTo(greeting_MR_AND_MRS.getC_Greeting_ID());
 	}
 
@@ -207,8 +209,8 @@ public class BPartnerQuickInputServiceUpdateNameAndGreetingTest
 		bPartnerQuickInputService.updateNameAndGreeting(BPartnerQuickInputId.ofRepoId(partner.getC_BPartner_QuickInput_ID()));
 
 		refresh(partner);
-		assertThat(partner.getBPartnerName()).isEqualTo(firstName + " "
-																+ lastname + " And " + firstName2 + " " + lastname2);
+		assertThat(partner.getBPartnerName()).isEqualTo(firstName+ " "
+														+ lastname+" And " + firstName2 + " "+ lastname2);
 		assertThat(partner.getC_Greeting_ID()).isEqualTo(greeting_MR_AND_MRS.getC_Greeting_ID());
 	}
 
