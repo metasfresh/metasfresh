@@ -73,7 +73,7 @@ public class C_Flatrate_Term_Change_Product extends JavaProcess implements IProc
 	@Override
 	protected String doIt() throws Exception
 	{
-
+		updateFlatrateTermPrice();
 		return MSG_OK;
 	}
 
