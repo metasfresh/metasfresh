@@ -42,7 +42,7 @@ class PickStepButton extends PureComponent {
     } = this.props;
 
     return (
-      <div>
+      <div className="mt-3">
         <button
           key={lineId}
           className="button is-outlined complete-btn pick-higher-btn"
