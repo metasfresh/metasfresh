@@ -65,8 +65,11 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.inout.model.I_M_InOutLine;
+import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerDAO;
+import de.metas.invoicecandidate.api.impl.InvoiceCandBL;
+import de.metas.invoicecandidate.api.impl.InvoiceCandDAO;
 import de.metas.invoicecandidate.location.adapter.InvoiceCandidateLocationAdapterFactory;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -168,6 +171,7 @@ public class FlatrateBL implements IFlatrateBL
 	public static final AdMessageKey MSG_HasOverlapping_Term = AdMessageKey.of("de.metas.flatrate.process.C_Flatrate_Term_Create.OverlappingTerm");
 
 	public static final AdMessageKey MSG_INFINITE_LOOP = AdMessageKey.of("de.metas.contracts.impl.FlatrateBL.extendContract.InfinitLoopError");
+	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
@@ -2022,16 +2026,16 @@ public class FlatrateBL implements IFlatrateBL
 
 		final int AD_Table_ID = Services.get(IADTableDAO.class).retrieveTableId(I_C_Flatrate_Term.Table_Name);
 
-		final ICompositeQueryUpdater<I_C_Invoice_Candidate> columnUpdater = queryBL
-				.createCompositeQueryUpdater(I_C_Invoice_Candidate.class)
-				.addSetColumnValue(I_C_Invoice_Candidate.COLUMNNAME_M_Product_ID, productId);
-
-		queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
+		final I_C_Invoice_Candidate ic = queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_AD_Table_ID, AD_Table_ID)
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_Record_ID, term.getC_Flatrate_Term_ID())
 				.create()
-				.update(columnUpdater);
+				.first();
+
+		InterfaceWrapperHelper.disableReadOnlyColumnCheck(ic); // disable it because M_Product_ID is not updateable
+		ic.setM_Product_ID(productId.getRepoId());
+		invoiceCandDAO.save(ic);
 	}
 
 	private IPricingResult computeFlatrateTermPrice(@NonNull FlatrateTermPriceRequest request)
