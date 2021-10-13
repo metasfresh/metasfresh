@@ -78,3 +78,14 @@ UPDATE AD_Process_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2021-10-13 17:2
 UPDATE AD_Process_Trl SET IsTranslated='Y', Name='Change product',Updated=TO_TIMESTAMP('2021-10-13 17:26:48','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_ID=584924
 ;
 
+-- 2021-10-13T15:34:15.967515Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Val_Rule SET Code='M_Product.AD_Org_ID=@AD_Org_ID@ AND  exists (select 1 from M_Product.M_Product_Category pc where  M_Product.M_Product_Category_ID = pc.M_Product_Category_ID and pc.pc.M_Product_Category_ID=(select M_Product_Category_ID from m_product where m_product.m_product_id = @M_Product_ID@ )) ',Updated=TO_TIMESTAMP('2021-10-13 18:34:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Val_Rule_ID=540561
+;
+
+-- 2021-10-13T15:35:43.301115300Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Val_Rule SET Code='M_Product.AD_Org_ID =@ AD_Org_ID@
+  AND EXISTS(SELECT 1 FROM M_Product_Category pc WHERE M_Product.M_Product_Category_ID = pc.M_Product_Category_ID AND pc.M_Product_Category_ID = (SELECT M_Product_Category_ID FROM m_product WHERE m_product.m_product_id = @M_Product_ID@)) ',Updated=TO_TIMESTAMP('2021-10-13 18:35:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Val_Rule_ID=540561
+;
+
