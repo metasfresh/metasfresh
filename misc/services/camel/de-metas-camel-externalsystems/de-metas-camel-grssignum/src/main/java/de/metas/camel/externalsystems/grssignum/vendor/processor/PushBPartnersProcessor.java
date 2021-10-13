@@ -39,7 +39,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 public class PushBPartnersProcessor implements Processor
 {
 	@Override
-	public void process(final Exchange exchange) throws Exception
+	public void process(final Exchange exchange)
 	{
 		final JsonBPartner jsonBPartner = exchange.getIn().getBody(JsonBPartner.class);
 
@@ -54,7 +54,7 @@ public class PushBPartnersProcessor implements Processor
 		final TokenCredentials credentials = (TokenCredentials)SecurityContextHolder.getContext().getAuthentication().getCredentials();
 
 		final JsonRequestBPartner jsonRequestBPartner = new JsonRequestBPartner();
-		jsonRequestBPartner.setName(jsonBPartner.getBPartnerName());
+		jsonRequestBPartner.setName(jsonBPartner.getName());
 		jsonRequestBPartner.setActive(jsonBPartner.isActive());
 		jsonRequestBPartner.setVendor(true);
 
@@ -64,7 +64,7 @@ public class PushBPartnersProcessor implements Processor
 				.build();
 
 		final JsonRequestBPartnerUpsertItem jsonRequestBPartnerUpsertItem = JsonRequestBPartnerUpsertItem.builder()
-				.bpartnerIdentifier(ExternalIdentifierFormat.asExternalIdentifier(jsonBPartner.getBPartnerId()))
+				.bpartnerIdentifier(ExternalIdentifierFormat.asExternalIdentifier(jsonBPartner.getId()))
 				.bpartnerComposite(jsonRequestComposite)
 				.build();
 

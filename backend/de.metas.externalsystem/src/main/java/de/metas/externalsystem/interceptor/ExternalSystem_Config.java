@@ -44,7 +44,7 @@ public class ExternalSystem_Config
 {
 	public final ExternalSystemConfigRepo externalSystemConfigRepo;
 
-	private final AdMessageKey MSG_EXTERNAL_SYS_CONFIG_CANNOT_CHANGE_TYPE = AdMessageKey.of("External_System_Config_Cannot_Change_Type");
+	private final static AdMessageKey MSG_EXTERNAL_SYS_CONFIG_CANNOT_CHANGE_TYPE = AdMessageKey.of("External_System_Config_Cannot_Change_Type");
 
 	public ExternalSystem_Config(@NonNull final ExternalSystemConfigRepo externalSystemConfigRepo)
 	{

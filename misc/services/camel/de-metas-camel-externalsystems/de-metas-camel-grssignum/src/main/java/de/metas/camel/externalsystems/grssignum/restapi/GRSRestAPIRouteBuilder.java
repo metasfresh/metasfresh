@@ -81,7 +81,7 @@ public class GRSRestAPIRouteBuilder extends RouteBuilder
 	}
 
 	@Override
-	public void configure() throws Exception
+	public void configure()
 	{
 		errorHandler(defaultErrorHandler());
 		onException(Exception.class)
@@ -183,14 +183,7 @@ public class GRSRestAPIRouteBuilder extends RouteBuilder
 
 		exchange.getIn().setBody(requestBody);
 
-		if (endpoint == Endpoint.BPARTNER)
-		{
-			producerTemplate.send("direct:" + endpoint.getTargetRoute(), exchange);
-		}
-		else
-		{
-			throw new RuntimeCamelException("Endpoint not supported! Endpoint=" + endpoint);
-		}
+		producerTemplate.send("direct:" + endpoint.getTargetRoute(), exchange);
 	}
 
 	private void disableRestAPIProcessor(@NonNull final Exchange exchange) throws Exception
@@ -221,7 +214,6 @@ public class GRSRestAPIRouteBuilder extends RouteBuilder
 		final JsonError jsonError = JsonError.ofSingleItem(ErrorBuilderHelper.buildJsonErrorItem(exchange));
 
 		exchange.getIn().setBody(jsonError);
-
 		exchange.getIn().setHeader(HTTP_RESPONSE_CODE, httpCode);
 	}
 

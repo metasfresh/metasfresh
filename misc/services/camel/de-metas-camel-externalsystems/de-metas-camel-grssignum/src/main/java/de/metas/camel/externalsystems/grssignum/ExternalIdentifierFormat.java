@@ -28,7 +28,6 @@ import static de.metas.camel.externalsystems.grssignum.GRSSignumConstants.GRSSIG
 
 public class ExternalIdentifierFormat
 {
-
 	private final static String EXTERNAL_ID_PREFIX = "ext";
 
 	@NonNull

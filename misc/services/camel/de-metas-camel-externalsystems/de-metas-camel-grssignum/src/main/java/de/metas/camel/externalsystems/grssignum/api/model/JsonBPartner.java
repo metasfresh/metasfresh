@@ -37,13 +37,10 @@ public class JsonBPartner
 	Integer flag;
 
 	@NonNull
-	String orgCode;
+	String id;
 
 	@NonNull
-	String bPartnerId;
-
-	@NonNull
-	String bPartnerName;
+	String name;
 
 	boolean isActive;
 
@@ -51,15 +48,13 @@ public class JsonBPartner
 	@JsonIgnoreProperties(ignoreUnknown = true)
 	public JsonBPartner(
 			@JsonProperty("FLAG") final @NonNull Integer flag,
-			@JsonProperty("MID") final @NonNull String orgCode,
-			@JsonProperty("MKREDID") final @NonNull String bPartnerId,
-			@JsonProperty("KURZBEZEICHNUNG") final @NonNull String bPartnerName,
+			@JsonProperty("MKREDID") final @NonNull String id,
+			@JsonProperty("KURZBEZEICHNUNG") final @NonNull String name,
 			@JsonProperty("INAKTIV") final int inactive)
 	{
 		this.flag = flag;
-		this.orgCode = orgCode;
-		this.bPartnerId = bPartnerId;
-		this.bPartnerName = bPartnerName;
+		this.id = id;
+		this.name = name;
 		this.isActive = inactive != 1;
 	}
 }

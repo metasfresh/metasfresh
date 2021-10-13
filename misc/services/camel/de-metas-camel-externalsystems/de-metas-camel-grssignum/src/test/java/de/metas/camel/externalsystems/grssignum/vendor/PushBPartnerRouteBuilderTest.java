@@ -105,8 +105,6 @@ public class PushBPartnerRouteBuilderTest extends CamelTestSupport
 	void pushBPartner() throws Exception
 	{
 		//given
-		final PushBPartnerRouteBuilderTest.MockUpsertBPartnerEP mockUpsertBPartnerEP = new PushBPartnerRouteBuilderTest.MockUpsertBPartnerEP();
-
 		final TokenCredentials tokenCredentials = TokenCredentials.builder()
 				.orgCode("orgCode")
 				.pInstance(JsonMetasfreshId.of(1))
@@ -114,6 +112,7 @@ public class PushBPartnerRouteBuilderTest extends CamelTestSupport
 
 		Mockito.when(authentication.getCredentials()).thenReturn(tokenCredentials);
 
+		final PushBPartnerRouteBuilderTest.MockUpsertBPartnerEP mockUpsertBPartnerEP = new PushBPartnerRouteBuilderTest.MockUpsertBPartnerEP();
 		preparePushRouteForTesting(mockUpsertBPartnerEP);
 
 		context.start();

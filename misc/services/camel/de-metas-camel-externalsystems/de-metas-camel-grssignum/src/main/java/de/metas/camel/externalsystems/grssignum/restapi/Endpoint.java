@@ -27,8 +27,10 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.Optional;
 
 import static de.metas.camel.externalsystems.grssignum.vendor.PushBPartnerRouteBuilder.PUSH_BPARTNERS_ROUTE_ID;
 
@@ -46,13 +48,18 @@ public enum Endpoint
 	@NonNull
 	public static Endpoint ofFlag(@NonNull final Integer flag)
 	{
-		final Endpoint endpoint = flag2Endpoint.get(flag);
+		return ofFlagOptional(flag)
+				.orElseThrow(() -> new RuntimeException("Unknown flag! Flag = " + flag));
+	}
 
-		if (endpoint == null)
+	@NonNull
+	public static Optional<Endpoint> ofFlagOptional(@Nullable final Integer flag)
+	{
+		if (flag == null)
 		{
-			throw new RuntimeException("Unknown flag! Flag = " + flag);
+			return Optional.empty();
 		}
 
-		return endpoint;
+		return Optional.ofNullable(flag2Endpoint.get(flag));
 	}
 }
