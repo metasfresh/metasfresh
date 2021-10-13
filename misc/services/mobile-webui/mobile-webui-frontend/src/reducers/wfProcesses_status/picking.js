@@ -40,11 +40,12 @@ const reduceOnScannedHUBarcode = (draftState, payload) => {
 };
 
 const reduceOnUpdateQtyPicked = (draftState, payload) => {
-  const { wfProcessId, activityId, lineId, stepId, qtyPicked } = payload;
+  const { wfProcessId, activityId, lineId, stepId, qtyPicked, qtyRejectedReasonCode } = payload;
 
   const draftWFProcess = draftState[wfProcessId];
   const draftStep = draftWFProcess.activities[activityId].dataStored.lines[lineId].steps[stepId];
   draftStep.qtyPicked = qtyPicked;
+  draftStep.qtyRejectedReasonCode = qtyRejectedReasonCode;
 
   updateStepStatus({
     draftWFProcess,
@@ -58,6 +59,7 @@ const reduceOnUpdateQtyPicked = (draftState, payload) => {
 
 const updateStepStatus = ({ draftWFProcess, activityId, lineId, stepId }) => {
   const draftStep = draftWFProcess.activities[activityId].dataStored.lines[lineId].steps[stepId];
+
   draftStep.completeStatus = computeStepStatus({ draftStep });
   console.log(`Update step [${activityId} ${lineId} ${stepId} ]: completeStatus=${draftStep.completeStatus}`);
 

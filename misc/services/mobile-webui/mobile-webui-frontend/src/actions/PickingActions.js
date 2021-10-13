@@ -4,10 +4,10 @@ import { UPDATE_PICKING_STEP_QTY, UPDATE_PICKING_STEP_SCANNED_HU_BARCODE } from 
  * @method switchoffLinesVisibility
  * @summary sets the lines visibility to `false` and by doing this the steps will be visible
  */
-export function updatePickingStepQty({ wfProcessId, activityId, lineId, stepId, qtyPicked }) {
+export function updatePickingStepQty({ wfProcessId, activityId, lineId, stepId, qtyPicked, qtyRejectedReasonCode }) {
   return {
     type: UPDATE_PICKING_STEP_QTY,
-    payload: { wfProcessId, activityId, lineId, stepId, qtyPicked },
+    payload: { wfProcessId, activityId, lineId, stepId, qtyPicked, qtyRejectedReasonCode },
   };
 }
 
