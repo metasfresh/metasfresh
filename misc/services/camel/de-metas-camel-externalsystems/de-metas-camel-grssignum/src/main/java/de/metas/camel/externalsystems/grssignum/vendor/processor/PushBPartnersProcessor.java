@@ -55,6 +55,7 @@ public class PushBPartnersProcessor implements Processor
 
 		final JsonRequestBPartner jsonRequestBPartner = new JsonRequestBPartner();
 		jsonRequestBPartner.setName(jsonBPartner.getName());
+		jsonRequestBPartner.setCompanyName(jsonBPartner.getName());
 		jsonRequestBPartner.setActive(jsonBPartner.isActive());
 		jsonRequestBPartner.setVendor(true);
 

@@ -1,5 +1,5 @@
 {
-  "orgCode": "required_but_notImportantInOurTest",
+  "orgCode": "orgCode",
   "externalSystemName": "GRSSignum",
   "command": "required_but_notImportantInOurTest",
   "adPInstanceId": 123,

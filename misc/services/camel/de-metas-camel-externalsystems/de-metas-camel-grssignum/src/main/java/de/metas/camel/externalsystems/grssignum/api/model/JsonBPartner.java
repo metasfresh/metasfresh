@@ -25,6 +25,7 @@ package de.metas.camel.externalsystems.grssignum.api.model;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -34,18 +35,21 @@ import lombok.Value;
 public class JsonBPartner
 {
 	@NonNull
+	@JsonProperty("FLAG")
 	Integer flag;
 
 	@NonNull
+	@JsonProperty("MKREDID")
 	String id;
 
 	@NonNull
+	@JsonProperty("KURZBEZEICHNUNG")
 	String name;
 
+	@JsonProperty("INAKTIV")
 	boolean isActive;
 
 	@Builder
-	@JsonIgnoreProperties(ignoreUnknown = true)
 	public JsonBPartner(
 			@JsonProperty("FLAG") final @NonNull Integer flag,
 			@JsonProperty("MKREDID") final @NonNull String id,
@@ -56,5 +60,11 @@ public class JsonBPartner
 		this.id = id;
 		this.name = name;
 		this.isActive = inactive != 1;
+	}
+
+	@JsonIgnoreProperties(ignoreUnknown = true)
+	@JsonPOJOBuilder(withPrefix = "")
+	static class JsonBPartnerBuilder
+	{
 	}
 }
