@@ -2037,7 +2037,7 @@ public class FlatrateBL implements IFlatrateBL
 
 		while (currentTerm.getC_FlatrateTerm_Next_ID() > 0)
 		{
-			nextFTsBuilder.add(currentTerm);
+			nextFTsBuilder.add(currentTerm.getC_FlatrateTerm_Next());
 			currentTerm = currentTerm.getC_FlatrateTerm_Next();
 		}
 
