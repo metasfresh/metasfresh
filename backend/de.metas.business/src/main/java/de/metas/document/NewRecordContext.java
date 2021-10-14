@@ -1,13 +1,8 @@
-package de.metas.request.api;
-
-import de.metas.request.RequestTypeId;
-import de.metas.util.ISingletonService;
-
 /*
  * #%L
- * de.metas.swat.base
+ * de.metas.business
  * %%
- * Copyright (C) 2016 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -25,15 +20,22 @@ import de.metas.util.ISingletonService;
  * #L%
  */
 
-public interface IRequestTypeDAO extends ISingletonService
+package de.metas.document;
+
+import de.metas.organization.OrgId;
+import de.metas.user.UserId;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+
+@Value
+@Builder
+public class NewRecordContext
 {
-	RequestTypeId retrieveVendorRequestTypeId();
-
-	RequestTypeId retrieveCustomerRequestTypeId();
-
-	RequestTypeId retrieveOrgChangeRequestTypeId();
-
-	RequestTypeId retrieveBPartnerCreatedFromAnotherOrgRequestTypeId();
-
-	RequestTypeId retrieveDefaultRequestTypeIdOrFirstActive();
+	@NonNull
+	final OrgId loginOrgId;
+	@NonNull
+	final UserId loggedUserId;
+	@NonNull
+	final String loginLanguage;
 }
