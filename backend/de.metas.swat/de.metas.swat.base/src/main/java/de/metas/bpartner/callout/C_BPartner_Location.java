@@ -94,7 +94,7 @@ public class C_BPartner_Location
 	}
 
 	@CalloutMethod(columnNames = { I_C_BPartner_Location.COLUMNNAME_ValidFrom})
-	public void updateNextId(final I_C_BPartner_Location bpLocation)
+	public void updatePreviousId(final I_C_BPartner_Location bpLocation)
 	{
 		final int bPartnerId = bpLocation.getC_BPartner_ID();
 		if (bPartnerId <= 0)
