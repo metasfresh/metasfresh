@@ -153,3 +153,28 @@ UPDATE AD_Process_Para SET AD_Reference_Value_ID=541252, AD_Val_Rule_ID=540245,U
 UPDATE AD_Process_Para SET AD_Reference_Value_ID=541252, AD_Val_Rule_ID=540245,Updated=TO_TIMESTAMP('2021-10-14 19:01:46','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=542120
 ;
 
+-- 2021-10-14T16:14:02.214Z
+-- URL zum Konzept
+UPDATE AD_Process SET RefreshAllAfterExecution='Y',Updated=TO_TIMESTAMP('2021-10-14 19:14:02','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=584926
+;
+
+-- 2021-10-14T18:53:33.038Z
+-- URL zum Konzept
+UPDATE AD_Message SET EntityType='D', MsgText='Der Vertrag kann nicht geändert werden, weil es schon Rechnungen zu ihm gibt.',Updated=TO_TIMESTAMP('2021-10-14 21:53:32','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Message_ID=545066
+;
+
+-- 2021-10-14T18:53:56.379Z
+-- URL zum Konzept
+UPDATE AD_Message_Trl SET MsgText='The contract can''t be changed because it already has invoices.',Updated=TO_TIMESTAMP('2021-10-14 21:53:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=545066
+;
+
+-- 2021-10-14T18:54:15.101Z
+-- URL zum Konzept
+UPDATE AD_Message_Trl SET MsgText='Der Vertrag kann nicht geändert werden, weil es schon Rechnungen zu ihm gibt.',Updated=TO_TIMESTAMP('2021-10-14 21:54:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Message_ID=545066
+;
+
+-- 2021-10-14T18:54:42.670Z
+-- URL zum Konzept
+UPDATE AD_Message_Trl SET MsgText='Der Vertrag kann nicht geändert werden, weil es schon Rechnungen zu ihm gibt.',Updated=TO_TIMESTAMP('2021-10-14 21:54:42','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Message_ID=545066
+;
+

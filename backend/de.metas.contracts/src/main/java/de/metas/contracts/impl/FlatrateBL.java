@@ -32,6 +32,9 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.cache.CacheMgt;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
+import de.metas.cache.model.CacheInvalidateRequest;
+import de.metas.cache.model.IModelCacheInvalidationService;
+import de.metas.cache.model.ModelCacheInvalidationTiming;
 import de.metas.calendar.ICalendarBL;
 import de.metas.calendar.ICalendarDAO;
 import de.metas.common.util.CoalesceUtil;
@@ -112,11 +115,14 @@ import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_AD_Org;
+import org.compiere.model.I_AD_PrintFormat;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_PaySelection;
+import org.compiere.model.I_C_PaySelectionLine;
 import org.compiere.model.I_C_Period;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_C_Year;
@@ -184,6 +190,9 @@ public class FlatrateBL implements IFlatrateBL
 	private final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
+
+
+	private final transient IModelCacheInvalidationService modelCacheInvalidationService = Services.get(IModelCacheInvalidationService.class);
 
 	@Override
 	public String beforeCompleteDataEntry(final I_C_Flatrate_DataEntry dataEntry)
@@ -2051,15 +2060,31 @@ public class FlatrateBL implements IFlatrateBL
 
 		term.setBill_User_ID(BPartnerContactId.toRepoId(request.getBillUserId()));
 
+		final int oldFlatrateDataId = term.getC_Flatrate_Data_ID();
 		InterfaceWrapperHelper.disableReadOnlyColumnCheck(term); // disable it because C_Flatrate_Data_ID is not updateable
 
 		final I_C_Flatrate_Data data = flatrateDAO.retrieveOrCreateFlatrateData(bPartnerDAO.getById(bPartnerId));
-		term.setC_Flatrate_Data_ID(data.getC_Flatrate_Data_ID());
+		final int newFlatrateDataId = data.getC_Flatrate_Data_ID();
+		term.setC_Flatrate_Data_ID(newFlatrateDataId);
 
 		flatrateDAO.save(term);
 
 		updateBillBPartnerForInvoiceCandidate(request);
 		invoiceCandidateHandlerBL.invalidateCandidatesFor(term);
+
+		modelCacheInvalidationService.invalidate(
+				CacheInvalidateMultiRequest.of(
+						CacheInvalidateRequest.rootRecord(I_C_Flatrate_Data.Table_Name, oldFlatrateDataId),
+						CacheInvalidateRequest.allChildRecords(I_C_Flatrate_Data.Table_Name, oldFlatrateDataId, I_C_Flatrate_Term.Table_Name)),
+				ModelCacheInvalidationTiming.CHANGE);
+
+
+		modelCacheInvalidationService.invalidate(
+				CacheInvalidateMultiRequest.of(
+						CacheInvalidateRequest.rootRecord(I_C_Flatrate_Data.Table_Name, newFlatrateDataId),
+						CacheInvalidateRequest.allChildRecords(I_C_Flatrate_Data.Table_Name, newFlatrateDataId, I_C_Flatrate_Term.Table_Name)),
+				ModelCacheInvalidationTiming.CHANGE);
+
 	}
 
 	private void updateBillBPartnerForInvoiceCandidate(@NonNull final FlatrateTermBillPartnerRequest request)
@@ -2081,6 +2106,7 @@ public class FlatrateBL implements IFlatrateBL
 		ic.setBill_User_ID(BPartnerContactId.toRepoId(request.getBillUserId()));
 
 		invoiceCandDAO.save(ic);
+
 	}
 
 	private IPricingResult computeFlatrateTermPrice(@NonNull final FlatrateTermPriceRequest request)
