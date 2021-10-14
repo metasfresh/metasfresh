@@ -23,6 +23,9 @@ package de.metas.contracts;
  */
 
 import com.google.common.collect.ImmutableList;
+import de.metas.contracts.FlatrateTermRequest.CreateFlatrateTermRequest;
+import de.metas.contracts.FlatrateTermRequest.FlatrateTermBillPartnerRequest;
+import de.metas.contracts.FlatrateTermRequest.FlatrateTermPriceRequest;
 import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Data;
@@ -30,7 +33,6 @@ import de.metas.contracts.model.I_C_Flatrate_DataEntry;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Flatrate_Transition;
 import de.metas.inout.model.I_M_InOutLine;
-import de.metas.pricing.IPricingResult;
 import de.metas.process.PInstanceId;
 import de.metas.util.ISingletonService;
 import lombok.Builder;
@@ -81,6 +83,7 @@ public interface IFlatrateBL extends ISingletonService
 	void updateEntry(I_C_Flatrate_DataEntry dataEntry);
 
 	void updateFlatrateTermProductAndPrice(@NonNull FlatrateTermPriceRequest request);
+	void updateFlatrateTermBillBPartner(FlatrateTermBillPartnerRequest request);
 
 	I_C_Flatrate_Term getById(@NonNull FlatrateTermId flatrateTermId);
 

@@ -142,6 +142,8 @@ public interface IFlatrateDAO extends ISingletonService
 
 	void save(@NonNull I_C_Flatrate_Term flatrateTerm);
 
+	I_C_Invoice_Candidate retrieveInvoiceCandidate(I_C_Flatrate_Term term);
+
 	@Value
 	@Builder
 	class TermsQuery
