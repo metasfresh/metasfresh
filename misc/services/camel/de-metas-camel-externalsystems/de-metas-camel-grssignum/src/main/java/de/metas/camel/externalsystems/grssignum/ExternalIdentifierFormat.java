@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-camel-externalsystems-common
+ * de-metas-camel-grssignum
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,28 +20,19 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.common.auth;
+package de.metas.camel.externalsystems.grssignum;
 
-import de.metas.common.rest_api.common.JsonMetasfreshId;
-import lombok.Builder;
 import lombok.NonNull;
-import lombok.Value;
 
-@Value
-public class TokenCredentials
+import static de.metas.camel.externalsystems.grssignum.GRSSignumConstants.GRSSIGNUM_SYSTEM_NAME;
+
+public class ExternalIdentifierFormat
 {
-	@NonNull
-	JsonMetasfreshId pInstance;
+	private final static String EXTERNAL_ID_PREFIX = "ext";
 
 	@NonNull
-	String orgCode;
-
-	@Builder
-	TokenCredentials(
-			@NonNull final JsonMetasfreshId pInstance,
-			@NonNull final String orgCode)
+	public static String asExternalIdentifier(@NonNull final String externalId)
 	{
-		this.pInstance = pInstance;
-		this.orgCode = orgCode;
+		return EXTERNAL_ID_PREFIX + "-" + GRSSIGNUM_SYSTEM_NAME + "-" + externalId;
 	}
 }

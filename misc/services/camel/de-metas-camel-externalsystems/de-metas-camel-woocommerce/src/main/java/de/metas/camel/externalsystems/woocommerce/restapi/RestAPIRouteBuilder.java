@@ -22,7 +22,6 @@
 
 package de.metas.camel.externalsystems.woocommerce.restapi;
 
-import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.camel.externalsystems.common.RestServiceAuthority;
 import de.metas.camel.externalsystems.common.RestServiceRoutes;
@@ -161,6 +160,7 @@ public class RestAPIRouteBuilder extends RouteBuilder
 				.grantedAuthority(RestServiceAuthority.WOO.getValue())
 				.authKey(authKey)
 				.pInstance(request.getAdPInstanceId())
+				.orgCode(request.getOrgCode())
 				.build();
 	}
 }

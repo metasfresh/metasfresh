@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-camel-externalsystems-common
+ * de.metas.externalreference
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,28 +20,28 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.common.auth;
+package de.metas.externalreference;
 
-import de.metas.common.rest_api.common.JsonMetasfreshId;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import org.adempiere.exceptions.AdempiereException;
 
-@Value
-public class TokenCredentials
+import static de.metas.externalreference.model.X_S_ExternalReference.EXTERNALSYSTEM_GRSSignum;
+
+@AllArgsConstructor
+@Getter
+public enum GRSSignumExternalSystem implements IExternalSystem
 {
-	@NonNull
-	JsonMetasfreshId pInstance;
+	GRSSIGNUM(EXTERNALSYSTEM_GRSSignum);
 
-	@NonNull
-	String orgCode;
+	public String code;
 
-	@Builder
-	TokenCredentials(
-			@NonNull final JsonMetasfreshId pInstance,
-			@NonNull final String orgCode)
+	public static GRSSignumExternalSystem ofCode(final String code)
 	{
-		this.pInstance = pInstance;
-		this.orgCode = orgCode;
+		if (GRSSIGNUM.getCode().equals(code))
+		{
+			return GRSSIGNUM;
+		}
+		throw new AdempiereException("Unsupported code " + code + " for GRSSignumExternalSystem. Hint: only 'GRSSignum' is allowed");
 	}
 }

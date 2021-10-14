@@ -22,8 +22,11 @@
 
 package de.metas.camel.externalsystems.grssignum.restapi;
 
-import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
-import de.metas.camel.externalsystems.common.ProcessLogger;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import de.metas.camel.externalsystems.common.ErrorBuilderHelper;
 import de.metas.camel.externalsystems.common.RestServiceAuthority;
 import de.metas.camel.externalsystems.common.RestServiceRoutes;
 import de.metas.camel.externalsystems.common.auth.JsonAuthenticateRequest;
@@ -31,17 +34,25 @@ import de.metas.camel.externalsystems.common.auth.JsonExpireTokenResponse;
 import de.metas.camel.externalsystems.common.auth.TokenCredentials;
 import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
+import de.metas.common.rest_api.v2.JsonError;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
+import org.apache.camel.ProducerTemplate;
 import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.spi.RouteController;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.ERROR_WRITE_TO_ADISSUE;
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_PINSTANCE_ID;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.REST_API_AUTHENTICATE_TOKEN;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.REST_API_EXPIRE_TOKEN;
+import static de.metas.camel.externalsystems.common.RouteBuilderHelper.setupJacksonDataFormatFor;
+import static de.metas.camel.externalsystems.grssignum.GRSSignumConstants.JSON_PROPERTY_FLAG;
+import static org.apache.camel.Exchange.HTTP_RESPONSE_CODE;
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 
 @Component
@@ -58,16 +69,19 @@ public class GRSRestAPIRouteBuilder extends RouteBuilder
 	public static final String ENABLE_RESOURCE_ATTACH_AUTHENTICATE_REQ_PROCESSOR_ID = "GRS-ER-AttachAuthenticateReqProcessorId";
 	public static final String DISABLE_RESOURCE_ATTACH_AUTHENTICATE_REQ_PROCESSOR_ID = "GRS-DR-AttachAuthenticateReqProcessorId";
 
-	@NonNull
-	private final ProcessLogger processLogger;
+	private static final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
 
-	public GRSRestAPIRouteBuilder(final @NonNull ProcessLogger processLogger)
+	@NonNull
+	private final ProducerTemplate producerTemplate;
+
+	public GRSRestAPIRouteBuilder(
+			final @NonNull ProducerTemplate producerTemplate)
 	{
-		this.processLogger = processLogger;
+		this.producerTemplate = producerTemplate;
 	}
 
 	@Override
-	public void configure() throws Exception
+	public void configure()
 	{
 		errorHandler(defaultErrorHandler());
 		onException(Exception.class)
@@ -94,11 +108,22 @@ public class GRSRestAPIRouteBuilder extends RouteBuilder
 				.route()
 				.routeId(REST_API_ROUTE_ID)
 				.autoStartup(false)
-				.process(this::restAPIProcessor)
+				.doTry()
+					.process(this::restAPIProcessor)
+				    .process(this::prepareSuccessResponse)
+				.doCatch(JsonProcessingException.class)
+			   		.to(direct(ERROR_WRITE_TO_ADISSUE))
+					.process(this::prepareErrorResponse)
+					.marshal(setupJacksonDataFormatFor(getContext(), JsonError.class))
+				.doCatch(Exception.class)
+				    .to(direct(MF_ERROR_ROUTE_ID))
+				    .process(this::prepareErrorResponse)
+				    .marshal(setupJacksonDataFormatFor(getContext(), JsonError.class))
+				.endDoTry()
 				.end();
 	}
 
-	public void enableRestAPIProcessor(@NonNull final Exchange exchange) throws Exception
+	private void enableRestAPIProcessor(@NonNull final Exchange exchange) throws Exception
 	{
 		final RouteController routeController = getContext().getRouteController();
 
@@ -133,10 +158,11 @@ public class GRSRestAPIRouteBuilder extends RouteBuilder
 				.grantedAuthority(RestServiceAuthority.GRS.getValue())
 				.authKey(authKey)
 				.pInstance(request.getAdPInstanceId())
+				.orgCode(request.getOrgCode())
 				.build();
 	}
 
-	public void restAPIProcessor(@NonNull final Exchange exchange)
+	private void restAPIProcessor(@NonNull final Exchange exchange) throws JsonProcessingException
 	{
 		final TokenCredentials credentials = (TokenCredentials)SecurityContextHolder.getContext().getAuthentication().getCredentials();
 
@@ -145,12 +171,22 @@ public class GRSRestAPIRouteBuilder extends RouteBuilder
 			throw new RuntimeCamelException("Missing credentials!");
 		}
 
+		exchange.getIn().setHeader(HEADER_PINSTANCE_ID, credentials.getPInstance().getValue());
+
 		final String requestBody = exchange.getIn().getBody(String.class);
 
-		processLogger.logMessage(REST_API_ROUTE_ID + " has been called with requestBody:" + requestBody, credentials.getPInstance().getValue());
+		final JsonNode rootJsonNode = objectMapper.readValue(requestBody, JsonNode.class);
+
+		final Integer flag = objectMapper.treeToValue(rootJsonNode.get(JSON_PROPERTY_FLAG), Integer.class);
+
+		final Endpoint endpoint = Endpoint.ofFlag(flag);
+
+		exchange.getIn().setBody(requestBody);
+
+		producerTemplate.send("direct:" + endpoint.getTargetRoute(), exchange);
 	}
 
-	public void disableRestAPIProcessor(@NonNull final Exchange exchange) throws Exception
+	private void disableRestAPIProcessor(@NonNull final Exchange exchange) throws Exception
 	{
 		final JsonExpireTokenResponse response = exchange.getIn().getBody(JsonExpireTokenResponse.class);
 
@@ -158,5 +194,33 @@ public class GRSRestAPIRouteBuilder extends RouteBuilder
 		{
 			getContext().getRouteController().suspendRoute(REST_API_ROUTE_ID);
 		}
+	}
+
+	private void prepareErrorResponse(@NonNull final Exchange exchange)
+	{
+		final Exception exception = exchange.getProperty(Exchange.EXCEPTION_CAUGHT, Exception.class);
+
+		if (exception == null)
+		{
+			exchange.getIn().setBody(null);
+			exchange.getIn().setHeader(HTTP_RESPONSE_CODE, HttpStatus.INTERNAL_SERVER_ERROR.value());
+			return;
+		}
+
+		final int httpCode = exception instanceof JsonProcessingException
+				? HttpStatus.BAD_REQUEST.value()
+				: HttpStatus.INTERNAL_SERVER_ERROR.value();
+
+		final JsonError jsonError = JsonError.ofSingleItem(ErrorBuilderHelper.buildJsonErrorItem(exchange));
+
+		exchange.getIn().setBody(jsonError);
+		exchange.getIn().setHeader(HTTP_RESPONSE_CODE, httpCode);
+	}
+
+	private void prepareSuccessResponse(@NonNull final Exchange exchange)
+	{
+		exchange.getIn().setBody(null);
+		exchange.getIn().setHeader(HTTP_RESPONSE_CODE, HttpStatus.OK.value()
+		);
 	}
 }

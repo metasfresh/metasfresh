@@ -41,8 +41,6 @@ import org.compiere.SpringContextHolder;
 import java.util.HashMap;
 import java.util.Map;
 
-import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_BASE_PATH;
-
 public class InvokeGRSSignumAction extends InvokeExternalSystemProcess
 {
 	public final ExternalSystemConfigRepo externalSystemConfigDAO = SpringContextHolder.instance.getBean(ExternalSystemConfigRepo.class);
@@ -83,7 +81,7 @@ public class InvokeGRSSignumAction extends InvokeExternalSystemProcess
 
 		final Map<String, String> parameters = new HashMap<>();
 		parameters.put(ExternalSystemConstants.PARAM_CAMEL_HTTP_RESOURCE_AUTH_KEY, grsConfig.getCamelHttpResourceAuthKey());
-		parameters.put(PARAM_BASE_PATH, grsConfig.getBaseUrl());
+		parameters.put(ExternalSystemConstants.PARAM_BASE_PATH, grsConfig.getBaseUrl());
 
 		return parameters;
 	}
@@ -108,4 +106,13 @@ public class InvokeGRSSignumAction extends InvokeExternalSystemProcess
 				.filter(recordRef -> I_ExternalSystem_Config_GRSSignum.Table_Name.equals(recordRef.getTableName()))
 				.count();
 	}
+
+	@Override
+	protected String getOrgCode()
+	{
+		final ExternalSystemParentConfig config = externalSystemConfigDAO.getById(getExternalChildConfigId());
+
+		return orgDAO.getById(config.getOrgId()).getValue();
+	}
+
 }
