@@ -2035,6 +2035,11 @@ public class FlatrateBL implements IFlatrateBL
 				.create()
 				.firstOnly(I_C_Invoice_Candidate.class);
 
+		if (ic == null)
+		{
+			return;
+		}
+
 		InterfaceWrapperHelper.disableReadOnlyColumnCheck(ic); // disable it because M_Product_ID is not updateable
 		ic.setM_Product_ID(productId.getRepoId());
 		invoiceCandDAO.save(ic);
