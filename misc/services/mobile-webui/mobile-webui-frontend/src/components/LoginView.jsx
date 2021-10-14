@@ -5,6 +5,7 @@ import Cookies from 'js-cookie';
 import { useAuth } from '../hooks/useAuth';
 import counterpart from 'counterpart';
 import ScreenToaster from './ScreenToaster';
+import OfflineNotifBar from './OfflineNotifBar';
 import { toastError } from '../utils/toast';
 
 /**
@@ -86,6 +87,8 @@ function LoginRoute() {
           </div>
         </form>
       </div>
+
+      <OfflineNotifBar />
       <ScreenToaster />
     </div>
   );

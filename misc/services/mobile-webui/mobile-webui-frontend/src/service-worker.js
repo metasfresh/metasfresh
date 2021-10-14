@@ -153,23 +153,25 @@ self.addEventListener('fetch', (event) => {
 });
 
 // clear previous caches on activation
-self.addEventListener('activate', function(event) {
+self.addEventListener('activate', function (event) {
   event.waitUntil(
-    caches.keys().then(function(cacheNames) {
+    caches.keys().then(function (cacheNames) {
       return Promise.all(
-        cacheNames.filter(function(cacheName) {
-          return true;
-          // Return true if you want to remove this cache,
-          // but remember that caches are shared across
-          // the whole origin
-        }).map(function(cacheName) {
-          return caches.delete(cacheName);
-        })
+        cacheNames
+          .filter(function (cacheName) {
+            console.log('cacheName:', cacheName);
+            return true;
+            // Return true if you want to remove this cache,
+            // but remember that caches are shared across
+            // the whole origin
+          })
+          .map(function (cacheName) {
+            return caches.delete(cacheName);
+          })
       );
     })
   );
 });
-
 
 // Uncomment this when quick deploy needed
 // self.addEventListener('activate', (event) => {
