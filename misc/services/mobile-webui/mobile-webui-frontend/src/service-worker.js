@@ -80,7 +80,7 @@ self.addEventListener('message', (event) => {
   }
 });
 
-// const cacheVersion = '0.0.1';
+// const cacheVersion = '0.0.2';
 
 const broadcast = new BroadcastChannel('network-status-channel');
 
@@ -111,36 +111,65 @@ self.addEventListener('fetch', (event) => {
     (async function () {
       // If we didn't find a match in the cache, use the network.
       if (event.request.url.startsWith('http')) {
+        // rules specific to endpoints
+        if (event.request.url.endsWith('launchers')) {
+          return fetch(event.request).catch(function (response) {
+            // offline launchers work only in online mode
+            console.log('Launchers error:', response);
+          });
+        }
+
         // Try to get the response from a cache.
         const cachedResponse = await caches.match(event.request);
         // Return it if we found one.
         if (cachedResponse) {
           console.log('[ServiceWorkerCache]:', event.request.url);
+          console.log('[CachedResponse]:', cachedResponse);
           return cachedResponse;
         }
 
         return fetch(event.request)
-          .then(function (response) {
-            console.log('NetworkResponse:', response);
-            // put in cache only if correct status
-            if (response.status === 200) {
-              caches.open().then(function (cache) {
-                cache.put(event.request, response.clone());
-              });
-              return response;
+          .then(function (responseNetwork) {
+            console.log('NetworkResponse:', responseNetwork);
+            if (!responseNetwork.ok) {
+              throw new TypeError('Bad response status');
             }
+            // put in cache only if correct status
+            // caches.open(cacheVersion).then(function (cache) {
+            //   cache.put(event.request, responseNetwork);
+            // });
+            return responseNetwork;
           })
-          .catch(function (response) {
+          .catch(function (responseNetworkErr) {
             console.log('OFFLINE - You appear to be offline now');
             broadcast.postMessage({ payload: 'offline' });
 
-            console.log('FailResponse:', response);
+            console.log('FailResponse:', responseNetworkErr);
           });
       }
     })()
   );
   // }
 });
+
+// clear previous caches on activation
+self.addEventListener('activate', function(event) {
+  event.waitUntil(
+    caches.keys().then(function(cacheNames) {
+      return Promise.all(
+        cacheNames.filter(function(cacheName) {
+          return true;
+          // Return true if you want to remove this cache,
+          // but remember that caches are shared across
+          // the whole origin
+        }).map(function(cacheName) {
+          return caches.delete(cacheName);
+        })
+      );
+    })
+  );
+});
+
 
 // Uncomment this when quick deploy needed
 // self.addEventListener('activate', (event) => {
