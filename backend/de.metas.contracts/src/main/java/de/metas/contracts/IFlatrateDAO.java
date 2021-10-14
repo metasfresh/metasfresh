@@ -232,7 +232,7 @@ public interface IFlatrateDAO extends ISingletonService
 	 * that a term is directly created.
 	 *
 	 */
-	I_C_Flatrate_Data retriveOrCreateFlatrateData(I_C_BPartner bPartner);
+	I_C_Flatrate_Data retrieveOrCreateFlatrateData(I_C_BPartner bPartner);
 
 	I_C_Flatrate_Term retrieveAncestorFlatrateTerm(I_C_Flatrate_Term contract);
 

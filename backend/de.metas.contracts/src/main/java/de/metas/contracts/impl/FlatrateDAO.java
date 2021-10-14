@@ -932,7 +932,7 @@ public class FlatrateDAO implements IFlatrateDAO
 	}
 
 	@Override
-	public I_C_Flatrate_Data retriveOrCreateFlatrateData(final I_C_BPartner bPartner)
+	public I_C_Flatrate_Data retrieveOrCreateFlatrateData(final I_C_BPartner bPartner)
 	{
 		I_C_Flatrate_Data existingData = queryBL.createQueryBuilder(I_C_Flatrate_Data.class, bPartner)
 				.addEqualsFilter(I_C_Flatrate_Data.COLUMNNAME_C_BPartner_ID, bPartner.getC_BPartner_ID())

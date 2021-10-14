@@ -101,7 +101,6 @@ import de.metas.workflow.api.IWFExecutionFactory;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.service.IADReferenceDAO;
-import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -1693,7 +1692,7 @@ public class FlatrateBL implements IFlatrateBL
 			newTerm.setAD_User_InCharge_ID(userInCharge.getAD_User_ID());
 		}
 
-		final I_C_Flatrate_Data data = flatrateDAO.retriveOrCreateFlatrateData(bPartner);
+		final I_C_Flatrate_Data data = flatrateDAO.retrieveOrCreateFlatrateData(bPartner);
 		newTerm.setC_Flatrate_Data(data);
 
 		newTerm.setDocAction(X_C_Flatrate_Term.DOCACTION_Prepare);
@@ -2046,10 +2045,15 @@ public class FlatrateBL implements IFlatrateBL
 	{
 		final I_C_Flatrate_Term term = flatrateDAO.getById(request.getFlatrateTermId());
 
-		term.setBill_BPartner_ID(request.getBillBPartnerId().getRepoId());
+		final int bPartnerId = request.getBillBPartnerId().getRepoId();
+		term.setBill_BPartner_ID(bPartnerId);
 		term.setBill_Location_ID(request.getBillLocationId().getRepoId());
 
 		term.setBill_User_ID(BPartnerContactId.toRepoId(request.getBillUserId()));
+
+
+		final I_C_Flatrate_Data data = flatrateDAO.retrieveOrCreateFlatrateData(bPartnerDAO.getById(bPartnerId));
+		term.setC_Flatrate_Data(data);
 
 		flatrateDAO.save(term);
 
