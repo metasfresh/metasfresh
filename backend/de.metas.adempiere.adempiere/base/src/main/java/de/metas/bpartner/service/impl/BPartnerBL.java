@@ -719,18 +719,19 @@ public class BPartnerBL implements IBPartnerBL
 			return;
 		}
 
-		final I_C_BPartner_Location previousLocation = bpartnersRepo.getBPartnerLocationByIdEvenInactive(BPartnerLocationId.ofRepoId(bpLocation.getC_BPartner_ID(), previousId));
-		if (previousLocation == null)
-		{
-			return;
-		}
 		final Timestamp validFrom = bpLocation.getValidFrom();
 		if (validFrom == null)
 		{
 			return;
 		}
+
+		final I_C_BPartner_Location previousLocation = bpartnersRepo.getBPartnerLocationByIdEvenInactive(BPartnerLocationId.ofRepoId(bpLocation.getC_BPartner_ID(), previousId));
+		if (previousLocation == null)
+		{
+			return;
+		}
 		// Don't update the defaults if the current location is still valid.
-		if (validFrom.after(Env.getDate()))
+		if (validFrom.before(Env.getDate()))
 		{
 			bpLocation.setIsBillToDefault(previousLocation.isBillToDefault());
 			bpLocation.setIsShipToDefault(previousLocation.isShipToDefault());
