@@ -94,7 +94,7 @@ public class C_Flatrate_Term_StepDef
 			final String conditionsIdentifier =DataTableUtil.extractStringForColumnName(tableRow,COLUMNNAME_C_Flatrate_Conditions_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 			final I_C_Flatrate_Conditions conditions = conditionsTable.get(conditionsIdentifier);
 			
-			final I_C_Flatrate_Data flatrateData = flatrateDAO.retriveOrCreateFlatrateData(billPartner);
+			final I_C_Flatrate_Data flatrateData = flatrateDAO.retrieveOrCreateFlatrateData(billPartner);
 
 			final I_C_Flatrate_Term contractRecord = InterfaceWrapperHelper.newInstance(I_C_Flatrate_Term.class);
 			contractRecord.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
