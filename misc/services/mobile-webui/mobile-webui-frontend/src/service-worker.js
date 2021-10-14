@@ -123,7 +123,9 @@ self.addEventListener('fetch', (event) => {
             console.log('NetworkResponse:', response);
             // put in cache only if correct status
             if (response.status === 200) {
-              cache.put(event.request, response.clone());
+              caches.open().then(function (cache) {
+                cache.put(event.request, response.clone());
+              });
               return response;
             }
           })
