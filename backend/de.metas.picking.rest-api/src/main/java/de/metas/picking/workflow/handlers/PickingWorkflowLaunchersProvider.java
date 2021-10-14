@@ -19,7 +19,6 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Set;
 
-import static de.metas.picking.workflow.handlers.PickingWFProcessUtils.workflowCaption;
 import static de.metas.picking.workflow.handlers.activity_handlers.PickingWFActivityHelper.extractShipmentScheduleIds;
 
 class PickingWorkflowLaunchersProvider
@@ -96,7 +95,7 @@ class PickingWorkflowLaunchersProvider
 	{
 		return WorkflowLauncher.builder()
 				.handlerId(PickingWFProcessHandler.HANDLER_ID)
-				.caption(workflowCaption()
+				.caption(PickingWFProcessUtils.workflowCaption()
 						.salesOrderDocumentNo(pickingJobCandidate.getSalesOrderDocumentNo())
 						.customerName(pickingJobCandidate.getCustomerName())
 						.build())
