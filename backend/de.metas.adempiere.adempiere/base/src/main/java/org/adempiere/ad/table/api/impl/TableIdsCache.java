@@ -1,15 +1,18 @@
 package org.adempiere.ad.table.api.impl;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.atomic.AtomicInteger;
-
+import com.google.common.base.MoreObjects;
+import com.google.common.base.Stopwatch;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import de.metas.adempiere.service.impl.TooltipType;
+import de.metas.cache.CCache;
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.Value;
 import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.POJOLookupMap;
@@ -20,19 +23,15 @@ import org.compiere.model.I_AD_Table;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 
-import com.google.common.base.MoreObjects;
-import com.google.common.base.Stopwatch;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
-
-import de.metas.cache.CCache;
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
-import lombok.Builder;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.Value;
+import javax.annotation.Nullable;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /*
  * #%L
@@ -94,7 +93,7 @@ public class TableIdsCache
 		}
 		else
 		{
-			return getTableInfoMap().getTableInfo(adTableId).getTableName();
+			return getTableInfo(adTableId).getTableName();
 		}
 	}
 
@@ -107,7 +106,7 @@ public class TableIdsCache
 		}
 		else
 		{
-			return getTableInfoMap().getTableInfo(tableName).getEntityType();
+			return getTableInfo(tableName).getEntityType();
 		}
 	}
 
@@ -120,7 +119,7 @@ public class TableIdsCache
 		}
 		else
 		{
-			return getTableInfoMap().getTableInfo(adTableId).getEntityType();
+			return getTableInfo(adTableId).getEntityType();
 		}
 	}
 
@@ -133,8 +132,48 @@ public class TableIdsCache
 		}
 		else
 		{
-			return getTableInfoMap().getTableInfo(tableName).getTooltipType();
+			return getTableInfo(tableName).getTooltipType();
 		}
+	}
+
+	private TableInfo getTableInfo(final String tableName)
+	{
+		TableInfo tableInfo = getTableInfoMap().getTableInfoOrNull(tableName);
+
+		// Finding no table info for a given table name is pretty unusual,
+		// and when happens it happens when a sysadm user just created the table.
+		// As a solution/workaround we are invalidating the cache and trying it again.
+		if (tableInfo == null)
+		{
+			tableInfoMapHolder.reset();
+			tableInfo = getTableInfoMap().getTableInfoOrNull(tableName);
+			if (tableInfo == null)
+			{
+				throw new AdempiereException("No table info found for `" + tableName + "`");
+			}
+		}
+
+		return tableInfo;
+		}
+
+	private TableInfo getTableInfo(@NonNull final AdTableId adTableId)
+	{
+		TableInfo tableInfo = getTableInfoMap().getTableInfoOrNull(adTableId);
+
+		// Finding no table info for a given table name is pretty unusual,
+		// and when happens it happens when a sysadm user just created the table.
+		// As a solution/workaround we are invalidating the cache and trying it again.
+		if (tableInfo == null)
+		{
+			tableInfoMapHolder.reset();
+			tableInfo = getTableInfoMap().getTableInfoOrNull(adTableId);
+			if (tableInfo == null)
+			{
+				throw new AdempiereException("No table info found for " + adTableId);
+			}
+		}
+
+		return tableInfo;
 	}
 
 	private TableInfoMap getTableInfoMap()
@@ -241,33 +280,18 @@ public class TableIdsCache
 					.toString();
 		}
 
+		@Nullable
 		public TableInfo getTableInfoOrNull(final String tableName)
 		{
 			final TableNameKey tableNameKey = TableNameKey.of(tableName);
 			return tableInfoByTableName.get(tableNameKey);
 		}
 
-		public TableInfo getTableInfo(final String tableName)
+		@Nullable
+		public TableInfo getTableInfoOrNull(final AdTableId adTableId)
 		{
-			final TableInfo tableInfo = getTableInfoOrNull(tableName);
-			if (tableInfo == null)
-			{
-				throw new AdempiereException("No table info found for `" + tableName + "`");
+			return tableInfoByTableId.get(adTableId);
 			}
-			return tableInfo;
-		}
-
-		@NonNull
-		public TableInfo getTableInfo(@NonNull final AdTableId adTableId)
-		{
-			final TableInfo tableInfo = tableInfoByTableId.get(adTableId);
-			if (tableInfo == null)
-			{
-				throw new AdempiereException("No TableName found for " + adTableId);
-			}
-			return tableInfo;
-		}
-
 	}
 
 	private static class JUnitGeneratedTableInfoMap
