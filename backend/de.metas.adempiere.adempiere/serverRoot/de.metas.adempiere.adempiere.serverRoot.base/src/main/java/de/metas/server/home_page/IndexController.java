@@ -1,4 +1,4 @@
-package de.metas;
+package de.metas.server.home_page;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -29,11 +29,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @Controller
 public class IndexController
 {
-	/**
-	 *
-	 * @param model
-	 * @return
-	 */
 	@RequestMapping(path = { "/" })
 	public String home(final Model model)
 	{
