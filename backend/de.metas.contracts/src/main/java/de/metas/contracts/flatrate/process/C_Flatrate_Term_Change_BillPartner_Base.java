@@ -38,10 +38,10 @@ import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.util.Services;
 import lombok.NonNull;
 
+import java.util.Iterator;
 import java.util.List;
-import java.util.function.Consumer;
 
-public abstract class C_Flatrate_Term_Change_InvoicePartner_Base extends JavaProcess implements IProcessPrecondition
+public abstract class C_Flatrate_Term_Change_BillPartner_Base extends JavaProcess implements IProcessPrecondition
 {
 	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 
@@ -75,21 +75,19 @@ public abstract class C_Flatrate_Term_Change_InvoicePartner_Base extends JavaPro
 	{
 		updateFlatrateTermsPartner();
 
-
 		return MSG_OK;
 	}
 
 	private void updateFlatrateTermsPartner()
 	{
-		final List<I_C_Flatrate_Term> flatrateTermsToChange = getFlatrateTermsToChange();
+		final List< I_C_Flatrate_Term > flatrateTermsToChange = getFlatrateTermsToChange();
 
-		flatrateTermsToChange.forEach(term -> updateFlatrateTermPartner(term));
+		flatrateTermsToChange.forEach(this::updateFlatrateTermPartner);
 
 	}
 
-	private void updateFlatrateTermPartner(			final I_C_Flatrate_Term term)
+	private void updateFlatrateTermPartner(final I_C_Flatrate_Term term)
 	{
-
 		C_Flatrate_Term_Change_ProcessHelper.throwExceptionIfTermHasInvoices(term);
 
 		updateFlatrateTermBillBPartner(term);
@@ -98,7 +96,7 @@ public abstract class C_Flatrate_Term_Change_InvoicePartner_Base extends JavaPro
 		nextTerms.forEach(this::updateFlatrateTermBillBPartner);
 	}
 
-	private void updateFlatrateTermBillBPartner(final I_C_Flatrate_Term term )
+	private void updateFlatrateTermBillBPartner(final I_C_Flatrate_Term term)
 	{
 		final BPartnerId bPartnerId = BPartnerId.ofRepoId(p_billBPartnerId);
 		final BPartnerLocationId bPartnerLocationId = BPartnerLocationId.ofRepoId(p_billBPartnerId, p_billLocationId);
@@ -115,5 +113,5 @@ public abstract class C_Flatrate_Term_Change_InvoicePartner_Base extends JavaPro
 		flatrateBL.updateFlatrateTermBillBPartner(request);
 	}
 
-	protected abstract List<I_C_Flatrate_Term> getFlatrateTermsToChange();
+	protected abstract ImmutableList<I_C_Flatrate_Term> getFlatrateTermsToChange();
 }

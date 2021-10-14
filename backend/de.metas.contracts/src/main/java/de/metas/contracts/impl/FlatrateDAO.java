@@ -628,6 +628,13 @@ public class FlatrateDAO implements IFlatrateDAO
 				.iterate(I_C_Flatrate_Term.class);
 	}
 
+	@Override
+	public ImmutableList<I_C_Flatrate_Term> retrieveTermsAsList(@NonNull final FlatrateDataId flatrateDataId)
+	{
+		return getFlatrateTermQueryForFlatrateDataId(flatrateDataId)
+				.listImmutable(I_C_Flatrate_Term.class);
+	}
+
 	private IQuery<I_C_Flatrate_Term> getFlatrateTermQueryForFlatrateDataId(final FlatrateDataId flatrateDataId)
 	{
 		return Services.get(IQueryBL.class).createQueryBuilder(I_C_Flatrate_Term.class)

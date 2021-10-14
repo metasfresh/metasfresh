@@ -123,6 +123,8 @@ public interface IFlatrateDAO extends ISingletonService
 
 	Iterable<I_C_Flatrate_Term> retrieveTerms(@NonNull FlatrateDataId flatrateDataId);
 
+	ImmutableList<I_C_Flatrate_Term> retrieveTermsAsList(@NonNull FlatrateDataId flatrateDataId);
+
 	List<I_C_Flatrate_Term> retrieveTerms(I_C_Flatrate_Data flatrateData);
 
 	List<I_C_Flatrate_Term> retrieveTerms(I_C_BPartner bPartner, I_C_Flatrate_Conditions flatrateConditions);
