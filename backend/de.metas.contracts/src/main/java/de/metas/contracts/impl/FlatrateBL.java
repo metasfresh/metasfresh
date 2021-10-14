@@ -2051,6 +2051,7 @@ public class FlatrateBL implements IFlatrateBL
 
 		term.setBill_User_ID(BPartnerContactId.toRepoId(request.getBillUserId()));
 
+		InterfaceWrapperHelper.disableReadOnlyColumnCheck(term); // disable it because C_Flatrate_Data_ID is not updateable
 
 		final I_C_Flatrate_Data data = flatrateDAO.retrieveOrCreateFlatrateData(bPartnerDAO.getById(bPartnerId));
 		term.setC_Flatrate_Data(data);
