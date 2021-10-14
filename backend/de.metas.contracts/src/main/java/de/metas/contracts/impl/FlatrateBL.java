@@ -28,6 +28,7 @@ import de.metas.acct.api.IProductAcctDAO;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.cache.CacheMgt;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
@@ -483,7 +484,7 @@ public class FlatrateBL implements IFlatrateBL
 				productId,
 				dataEntry.getDate_Reported(),// shipDate
 				orgId,
-				(WarehouseId)null,
+				null,
 				shipToLocationId,
 				SOTrx.SALES);
 
@@ -617,7 +618,7 @@ public class FlatrateBL implements IFlatrateBL
 				productIdForIc,
 				dataEntry.getDate_Reported(), // shipDate
 				OrgId.ofRepoId(dataEntry.getAD_Org_ID()),
-				(WarehouseId)null,
+				null,
 				shipToLocationId,
 				SOTrx.SALES);
 
@@ -1128,7 +1129,7 @@ public class FlatrateBL implements IFlatrateBL
 				// infinite loop detection
 				if (X_C_Flatrate_Transition.EXTENSIONTYPE_ExtendAll.equals(nextTransition.getExtensionType()) && seenFlatrateCondition.containsKey(nextConditions.getC_Flatrate_Conditions_ID()))
 				{
-					throw new AdempiereException(MSG_INFINITE_LOOP, new Object[] { nextConditions.getName(), seenFlatrateCondition.values() });
+					throw new AdempiereException(MSG_INFINITE_LOOP, nextConditions.getName(), seenFlatrateCondition.values());
 				}
 				seenFlatrateCondition.put(nextConditions.getC_Flatrate_Conditions_ID(), nextConditions.getName());
 
@@ -1286,8 +1287,10 @@ public class FlatrateBL implements IFlatrateBL
 		nextTerm.setPlannedQtyPerUnit(currentTerm.getPlannedQtyPerUnit());
 		nextTerm.setIsSimulation(currentTerm.isSimulation());
 
+
 		nextTerm.setBill_BPartner_ID(currentTerm.getBill_BPartner_ID());
-		nextTerm.setBill_Location_ID(currentTerm.getBill_Location_ID());
+		final BPartnerLocationId currentBillLocationId = bPartnerDAO.getCurrentLocation(BPartnerLocationId.ofRepoId(currentTerm.getBill_BPartner_ID(), currentTerm.getBill_Location_ID()));
+		nextTerm.setBill_Location_ID(currentBillLocationId.getRepoId());
 		nextTerm.setBill_User_ID(currentTerm.getBill_User_ID());
 
 		nextTerm.setAD_User_InCharge_ID(currentTerm.getAD_User_InCharge_ID());
@@ -1310,7 +1313,8 @@ public class FlatrateBL implements IFlatrateBL
 
 		nextTerm.setM_PricingSystem_ID(currentTerm.getM_PricingSystem_ID());
 		nextTerm.setDropShip_BPartner_ID(currentTerm.getDropShip_BPartner_ID());
-		nextTerm.setDropShip_Location_ID(currentTerm.getDropShip_Location_ID());
+		final BPartnerLocationId currentDropShipLocationId = bPartnerDAO.getCurrentLocation(BPartnerLocationId.ofRepoId(currentTerm.getDropShip_BPartner_ID(), currentTerm.getDropShip_Location_ID()));
+		nextTerm.setDropShip_Location_ID(currentDropShipLocationId.getRepoId());
 
 		nextTerm.setM_Product_ID(currentTerm.getM_Product_ID());
 		Services.get(IAttributeSetInstanceBL.class).cloneASI(currentTerm, nextTerm);
@@ -1565,7 +1569,7 @@ public class FlatrateBL implements IFlatrateBL
 			{
 				throw new AdempiereException(
 						MSG_ORG_WAREHOUSE_MISSING,
-						new Object[] { msgBL.translate(ctx, I_AD_Org.COLUMNNAME_AD_Org_ID), InterfaceWrapperHelper.loadOutOfTrx(term.getAD_Org_ID(), I_AD_Org.class) });
+						msgBL.translate(ctx, I_AD_Org.COLUMNNAME_AD_Org_ID), InterfaceWrapperHelper.loadOutOfTrx(term.getAD_Org_ID(), I_AD_Org.class));
 			}
 			warehouseId = warehousesForOrg.get(0).getM_Warehouse_ID();
 		}
