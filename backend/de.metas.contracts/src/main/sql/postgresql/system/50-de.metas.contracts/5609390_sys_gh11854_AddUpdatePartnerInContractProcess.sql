@@ -143,3 +143,13 @@ UPDATE AD_Process_Para SET AD_Reference_Value_ID=540392,Updated=TO_TIMESTAMP('20
 UPDATE AD_Process_Para SET AD_Reference_Value_ID=540392,Updated=TO_TIMESTAMP('2021-10-14 18:52:23','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=542124
 ;
 
+-- 2021-10-14T16:01:32.391Z
+-- URL zum Konzept
+UPDATE AD_Process_Para SET AD_Reference_Value_ID=541252, AD_Val_Rule_ID=540245,Updated=TO_TIMESTAMP('2021-10-14 19:01:32','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=542124
+;
+
+-- 2021-10-14T16:01:47.022Z
+-- URL zum Konzept
+UPDATE AD_Process_Para SET AD_Reference_Value_ID=541252, AD_Val_Rule_ID=540245,Updated=TO_TIMESTAMP('2021-10-14 19:01:46','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=542120
+;
+
