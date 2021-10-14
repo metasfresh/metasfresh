@@ -1,4 +1,3 @@
-
 DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.CalculateCustom_InvoiceLine_BruttoWeight( NUMERIC);
 
 CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.CalculateCustom_InvoiceLine_BruttoWeight(p_c_customs_invoice_line_ID NUMERIC)
