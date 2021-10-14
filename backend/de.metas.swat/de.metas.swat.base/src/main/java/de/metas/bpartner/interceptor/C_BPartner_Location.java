@@ -22,17 +22,19 @@ package de.metas.bpartner.interceptor;
  * #L%
  */
 
-
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.util.Services;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.GridTab;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.ModelValidator;
+import org.compiere.util.Env;
 
-import de.metas.bpartner.service.IBPartnerBL;
-import de.metas.util.Services;
+import java.sql.Timestamp;
 
 @Validator(I_C_BPartner_Location.class)
 public class C_BPartner_Location
@@ -68,8 +70,26 @@ public class C_BPartner_Location
 	 * then {@link org.adempiere.bpartner.callout.BPartnerLocation#evalInput(GridTab)} is managing the case.
 	 */
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_NEW)
-	public void updateAddressString(I_C_BPartner_Location bpLocation)
+	public void updateAddressString(final I_C_BPartner_Location bpLocation)
 	{
 		Services.get(IBPartnerBL.class).setAddress(bpLocation);
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }
+			, ifColumnsChanged = { I_C_BPartner_Location.COLUMNNAME_Previous_ID })
+	public void updateNextLocation(final I_C_BPartner_Location bpLocation)
+	{
+		Services.get(IBPartnerBL.class).updateFromPreviousLocationNoSave(bpLocation);
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }
+			, ifColumnsChanged = { I_C_BPartner_Location.COLUMNNAME_ValidFrom })
+	public void noTerminationInPast(final I_C_BPartner_Location bpLocation)
+	{
+		final Timestamp validFrom = bpLocation.getValidFrom();
+		if (validFrom != null && validFrom.before(Env.getDate()))
+		{
+			throw new AdempiereException("@AddressTerminatedInThePast@");
+		}
 	}
 }
