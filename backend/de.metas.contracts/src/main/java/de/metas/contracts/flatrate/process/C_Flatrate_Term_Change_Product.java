@@ -24,12 +24,11 @@ package de.metas.contracts.flatrate.process;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.contracts.FlatrateTermId;
-import de.metas.contracts.FlatrateTermPriceRequest;
+import de.metas.contracts.FlatrateTermRequest.FlatrateTermPriceRequest;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.TranslatableStrings;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
@@ -43,7 +42,6 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_Invoice;
-import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
 import java.time.LocalDate;
