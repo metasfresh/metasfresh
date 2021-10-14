@@ -66,9 +66,9 @@ public class NewRecordDescriptorsProvider
 			addNewRecordDescriptor(NewRecordDescriptor.of(
 					I_C_BPartner.Table_Name,
 					WindowId.of(bpartnerQuickInputAdWindowId),
-					(document, orgId, loggedUserId, ad_language) -> {
+					(document, newRecordContext) -> {
 						final I_C_BPartner_QuickInput template = InterfaceWrapperHelper.getPO(document);
-						final BPartnerId bpartnerId = bpartnerQuickInputService.createBPartnerFromTemplate(template, orgId, loggedUserId, ad_language);
+						final BPartnerId bpartnerId = bpartnerQuickInputService.createBPartnerFromTemplate(template, newRecordContext);
 						return bpartnerId.getRepoId();
 					}));
 		}

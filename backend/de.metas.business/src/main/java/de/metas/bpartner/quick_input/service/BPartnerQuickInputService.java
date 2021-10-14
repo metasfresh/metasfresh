@@ -43,6 +43,7 @@ import de.metas.bpartner.quick_input.BPartnerContactQuickInputId;
 import de.metas.bpartner.quick_input.BPartnerQuickInputId;
 import de.metas.bpartner.service.IBPGroupDAO;
 import de.metas.common.util.time.SystemTime;
+import de.metas.document.NewRecordContext;
 import de.metas.document.references.zoom_into.RecordWindowFinder;
 import de.metas.greeting.GreetingId;
 import de.metas.i18n.AdMessageKey;
@@ -272,9 +273,7 @@ public class BPartnerQuickInputService
 	 * Task https://github.com/metasfresh/metasfresh/issues/1090
 	 */
 	public BPartnerId createBPartnerFromTemplate(@NonNull final I_C_BPartner_QuickInput template,
-			@NonNull final OrgId loginOrgId,
-			@NonNull final UserId loggedUserId,
-			@NonNull final String loginLanguage)
+			@NonNull final NewRecordContext newRecordContext)
 	{
 		Check.assume(!template.isProcessed(), "{} not already processed", template);
 
@@ -302,7 +301,8 @@ public class BPartnerQuickInputService
 		bpartnerCompositeRepository.save(bpartnerComposite);
 		final BPartnerId bpartnerId = bpartnerComposite.getBpartner().getId();
 
-		createRequestAndNotifyUserGroupIfNeeded(bpartnerComposite, loginOrgId, loggedUserId, loginLanguage);
+		createRequestAndNotifyUserGroupIfNeeded(bpartnerComposite,
+												newRecordContext);
 
 		//
 		// Copy BPartner Attributes
@@ -336,9 +336,16 @@ public class BPartnerQuickInputService
 		return bpartnerId;
 	}
 
-	private void createRequestAndNotifyUserGroupIfNeeded(final BPartnerComposite bpartnerComposite, final @NonNull OrgId loginOrgId, final @NonNull UserId loggedUserId, final @NonNull String loginLanguage)
+	private void createRequestAndNotifyUserGroupIfNeeded(final BPartnerComposite bpartnerComposite,
+			final @NonNull NewRecordContext newRecordContext)
 	{
 		final OrgId partnerOrgId = bpartnerComposite.getOrgId();
+
+		final OrgId loginOrgId = newRecordContext.getLoginOrgId();
+
+		final UserId loggedUserId = newRecordContext.getLoggedUserId();
+
+		final String loginLanguage = newRecordContext.getLoginLanguage();
 
 		if (loginOrgId.equals(partnerOrgId))
 		{
