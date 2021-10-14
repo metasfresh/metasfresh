@@ -82,61 +82,63 @@ self.addEventListener('message', (event) => {
 
 // const cacheVersion = '0.0.1';
 
-// const broadcast = new BroadcastChannel('network-status-channel');
+const broadcast = new BroadcastChannel('network-status-channel');
 
 // Any other custom service worker logic can go here.
 self.addEventListener('fetch', (event) => {
-  if (event.request.url.endsWith('config.js')) {
-    //event.respondWith(new Response('// no-op'));
-    event.respondWith(fetch(event.request));
-  } else {
-    //  Sending a request to the network and the cache. The cache will most likely respond first and,
-    //  if the network data has not already been received, we update the page with the data in the response.
-    //  When the network responds we update the page again with the latest information.
-    // self.addEventListener('fetch', function (event) {
-    //   if (event.request.url.startsWith('http')) {
-    //     event.respondWith(
-    //       caches.open(cacheVersion).then(function (cache) {
-    //         return fetch(event.request).then(function (response) {
-    //           cache.put(event.request, response.clone());
-    //           return response;
-    //         });
-    //       })
-    //     );
-    //   }
-    // });
+  // if (event.request.url.endsWith('config.js')) {
+  //   //event.respondWith(new Response('// no-op'));
+  //   event.respondWith(fetch(event.request));
+  // } else {
+  //  Sending a request to the network and the cache. The cache will most likely respond first and,
+  //  if the network data has not already been received, we update the page with the data in the response.
+  //  When the network responds we update the page again with the latest information.
+  // self.addEventListener('fetch', function (event) {
+  //   if (event.request.url.startsWith('http')) {
+  //     event.respondWith(
+  //       caches.open(cacheVersion).then(function (cache) {
+  //         return fetch(event.request).then(function (response) {
+  //           cache.put(event.request, response.clone());
+  //           return response;
+  //         });
+  //       })
+  //     );
+  //   }
+  // });
 
-    // Network falling back to the cache
-    self.addEventListener('fetch', function (event) {
-      if (event.request.url.startsWith('http')) {
-        event.respondWith(
-          fetch(event.request).catch(function () {
-            return caches.match(event.request);
-          })
-        );
+  // Prevent the default, and handle the request ourselves.
+  event.respondWith(
+    (async function () {
+      // Try to get the response from a cache.
+      const cachedResponse = await caches.match(event.request);
+      // Return it if we found one.
+      if (cachedResponse) {
+        console.log('[ServiceWorkerCache]:', event.request.url);
+        return cachedResponse;
       }
-    });
+      // If we didn't find a match in the cache, use the network.
+      if (event.request.url.startsWith('http')) {
+        return fetch(event.request)
+          .then(function (response) {
+            console.log('NetworkResponse:', response);
+            // put in cache only if correct status
+            if (response.status === 200) {
+              caches.open().then(function (cache) {
+                cache.put(event.request, response.clone());
+              });
+              return response;
+            }
+          })
+          .catch(function (response) {
+            console.log('OFFLINE - You appear to be offline now');
+            broadcast.postMessage({ payload: 'offline' });
 
-    // Prevent the default, and handle the request ourselves.
-    /*
-    event.respondWith(
-      (async function () {
-        // Try to get the response from a cache.
-        const cachedResponse = await caches.match(event.request);
-        // Return it if we found one.
-        if (cachedResponse) {
-          console.log('[ServiceWorker] -> Retrieving from cache...');
-          return cachedResponse;
-        }
-        // If we didn't find a match in the cache, use the network.
-        return fetch(event.request).catch(function () {
-          console.log('OFFLINE - You appear to be offline now');
-          broadcast.postMessage({ payload: 'offline' });
-        });
-      })()
-    );
-    */
-  }
+            console.log('FailResponse:', response);
+          });
+      }
+    })()
+  );
+  // }
 });
 
 // Uncomment this when quick deploy needed
