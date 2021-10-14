@@ -23,15 +23,10 @@
 package de.metas.contracts.flatrate.process;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.contracts.FlatrateDataId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.util.Services;
-
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
 
 public class C_Flatrate_Term_Change_BillPartner extends C_Flatrate_Term_Change_BillPartner_Base
 {

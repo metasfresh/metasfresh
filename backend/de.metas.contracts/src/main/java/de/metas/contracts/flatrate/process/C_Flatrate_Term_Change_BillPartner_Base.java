@@ -38,7 +38,6 @@ import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.util.Services;
 import lombok.NonNull;
 
-import java.util.Iterator;
 import java.util.List;
 
 public abstract class C_Flatrate_Term_Change_BillPartner_Base extends JavaProcess implements IProcessPrecondition
