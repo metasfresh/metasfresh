@@ -15,7 +15,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 2021-09-15T10:02:36.599Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,Description,EntityType,Help,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,579830,0,'PreviousID',TO_TIMESTAMP('2021-09-15 13:02:36','YYYY-MM-DD HH24:MI:SS'),100,'Die Adresse, die durch die aktuelle ersetzt wird.','D','Die Adresse, die durch die aktuelle ersetzt wird.','Y','Vorherige Adresse','Vorherige Adresse',TO_TIMESTAMP('2021-09-15 13:02:36','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,Description,EntityType,Help,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,579830,0,'PreviousID',TO_TIMESTAMP('2021-09-15 13:02:36','YYYY-MM-DD HH24:MI:SS'),100,'Die Adresse, die in offenen Auftragsdispos, Rechnungsdispos und Vertragesperioden durch die aktuelle ersetzt wird.','D','Die Adresse, die in offenen Auftragsdispos, Rechnungsdispos und Vertragesperioden durch die aktuelle ersetzt wird.','Y','Vorherige Adresse','Vorherige Adresse',TO_TIMESTAMP('2021-09-15 13:02:36','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2021-09-15T10:02:36.602Z
@@ -25,7 +25,7 @@ INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description
 
 -- 2021-09-15T10:03:03.387Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Element_Trl SET Description='The address that will be replaced by the current one.', Help='The address that will be replaced by the current one.', Name='Previous Address', PrintName='Previous Address',Updated=TO_TIMESTAMP('2021-09-15 13:03:03','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579830 AND AD_Language='en_US'
+UPDATE AD_Element_Trl SET Description='The address that will be replaced by the current one in open sales candidates, billing candidates and flatrate terms.', Help='The address that will be replaced by the current one in open sales candidates, billing candidates and flatrate terms.', Name='Previous Address', PrintName='Previous Address',Updated=TO_TIMESTAMP('2021-09-15 13:03:03','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579830 AND AD_Language='en_US'
 ;
 
 -- 2021-09-15T10:03:03.392Z
@@ -301,3 +301,72 @@ UPDATE AD_Scheduler SET IsActive='N',Updated=TO_TIMESTAMP('2021-10-13 18:06:02',
 UPDATE AD_Process SET AccessLevel='3',Updated=TO_TIMESTAMP('2021-10-13 18:18:09','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=584923
 ;
 
+-- 2021-10-14T12:04:31.198Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,Created,CreatedBy,Description,EntityType,Help,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,580048,0,TO_TIMESTAMP('2021-10-14 15:04:30','YYYY-MM-DD HH24:MI:SS'),100,'Datum ab dem die vorherige Adresse durch diese Adresse ersetzt werden soll','D','Datum ab dem die vorherige Adresse durch diese Adresse ersetzt werden soll','Y','Gültig ab','Gültig ab',TO_TIMESTAMP('2021-10-14 15:04:30','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-10-14T12:04:31.204Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description,Help,Name,PO_Description,PO_Help,PO_Name,PO_PrintName,PrintName,WEBUI_NameBrowse,WEBUI_NameNew,WEBUI_NameNewBreadcrumb, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Element_ID, t.CommitWarning,t.Description,t.Help,t.Name,t.PO_Description,t.PO_Help,t.PO_Name,t.PO_PrintName,t.PrintName,t.WEBUI_NameBrowse,t.WEBUI_NameNew,t.WEBUI_NameNewBreadcrumb, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Element t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Element_ID=580048 AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
+;
+
+-- 2021-10-14T12:04:58.279Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Description='Date from which onwards the previos address shall be replaced with this address', Help='Date from which onwards the previos address shall be replaced with this address', Name='Valid from', PrintName='Valid from',Updated=TO_TIMESTAMP('2021-10-14 15:04:58','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=580048 AND AD_Language='en_US'
+;
+
+-- 2021-10-14T12:04:58.304Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(580048,'en_US')
+;
+
+-- 2021-10-14T12:38:28.307Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET AD_Name_ID=580048, Description='Datum ab dem die vorherige Adresse durch diese Adresse ersetzt werden soll', Help='Datum ab dem die vorherige Adresse durch diese Adresse ersetzt werden soll', Name='Gültig ab',Updated=TO_TIMESTAMP('2021-10-14 15:38:28','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=659672
+;
+
+-- 2021-10-14T12:38:28.308Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(580048)
+;
+
+-- 2021-10-14T12:38:28.325Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=659672
+;
+
+-- 2021-10-14T12:38:28.326Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */ select AD_Element_Link_Create_Missing_Field(659672)
+;
+
+-- 2021-10-14T12:44:18.326Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Index_Table (AD_Client_ID,AD_Index_Table_ID,AD_Org_ID,AD_Table_ID,Created,CreatedBy,EntityType,IsActive,IsUnique,Name,Processing,Updated,UpdatedBy) VALUES (0,540670,0,293,TO_TIMESTAMP('2021-10-14 15:44:18','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','N','Previous_ID_and_ValidFrom','N',TO_TIMESTAMP('2021-10-14 15:44:18','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-10-14T12:44:18.328Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Index_Table_Trl (AD_Language,AD_Index_Table_ID, ErrorMsg, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Index_Table_ID, t.ErrorMsg, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Index_Table t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Index_Table_ID=540670 AND NOT EXISTS (SELECT 1 FROM AD_Index_Table_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Index_Table_ID=t.AD_Index_Table_ID)
+;
+
+-- 2021-10-14T12:44:43.305Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Index_Column (AD_Client_ID,AD_Column_ID,AD_Index_Column_ID,AD_Index_Table_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,576812,541195,540670,0,TO_TIMESTAMP('2021-10-14 15:44:43','YYYY-MM-DD HH24:MI:SS'),100,'D','Y',10,TO_TIMESTAMP('2021-10-14 15:44:43','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-10-14T12:44:52.214Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Index_Column (AD_Client_ID,AD_Column_ID,AD_Index_Column_ID,AD_Index_Table_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,576824,541196,540670,0,TO_TIMESTAMP('2021-10-14 15:44:52','YYYY-MM-DD HH24:MI:SS'),100,'U','Y',20,TO_TIMESTAMP('2021-10-14 15:44:52','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-10-14T12:45:16.069Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Index_Column SET EntityType='D',Updated=TO_TIMESTAMP('2021-10-14 15:45:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Index_Column_ID=541196
+;
+
+-- 2021-10-14T12:47:06.273Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+CREATE INDEX Previous_ID_and_ValidFrom ON C_BPartner_Location (ValidFrom,Previous_ID)
+;
