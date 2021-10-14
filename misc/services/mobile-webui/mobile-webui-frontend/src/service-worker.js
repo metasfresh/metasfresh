@@ -109,15 +109,16 @@ self.addEventListener('fetch', (event) => {
   // Prevent the default, and handle the request ourselves.
   event.respondWith(
     (async function () {
-      // Try to get the response from a cache.
-      const cachedResponse = await caches.match(event.request);
-      // Return it if we found one.
-      if (cachedResponse) {
-        console.log('[ServiceWorkerCache]:', event.request.url);
-        return cachedResponse;
-      }
       // If we didn't find a match in the cache, use the network.
       if (event.request.url.startsWith('http')) {
+        // Try to get the response from a cache.
+        const cachedResponse = await caches.match(event.request);
+        // Return it if we found one.
+        if (cachedResponse) {
+          console.log('[ServiceWorkerCache]:', event.request.url);
+          return cachedResponse;
+        }
+
         return fetch(event.request)
           .then(function (response) {
             console.log('NetworkResponse:', response);
