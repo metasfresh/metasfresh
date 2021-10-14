@@ -133,3 +133,13 @@ INSERT INTO AD_Table_Process (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Table_ID,A
 UPDATE AD_Table_Process SET WEBUI_ViewAction='N',Updated=TO_TIMESTAMP('2021-10-14 18:10:14','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Table_Process_ID=541011
 ;
 
+-- 2021-10-14T15:51:41.884Z
+-- URL zum Konzept
+UPDATE AD_Process_Para SET AD_Reference_Value_ID=540392,Updated=TO_TIMESTAMP('2021-10-14 18:51:41','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=542120
+;
+
+-- 2021-10-14T15:52:23.730Z
+-- URL zum Konzept
+UPDATE AD_Process_Para SET AD_Reference_Value_ID=540392,Updated=TO_TIMESTAMP('2021-10-14 18:52:23','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=542124
+;
+
