@@ -1,5 +1,6 @@
 package de.metas.organization;
 
+import de.metas.user.UserGroupId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.adempiere.service.ClientId;
@@ -113,4 +114,8 @@ public interface IOrgDAO extends ISingletonService
      * @return true if the given org falls under the european One-Stop-Shop (OSS) regulations
      */
 	boolean isEUOneStopShop(@NonNull OrgId orgId);
+
+	UserGroupId getSupplierApprovalExpirationNotifyUserGroupID(OrgId ofRepoId);
+
+	UserGroupId getPartnerCreatedFromAnotherOrgNotifyUserGroupID(OrgId orgId);
 }

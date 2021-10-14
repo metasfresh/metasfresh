@@ -1,13 +1,8 @@
-package de.metas.request.api;
-
-import de.metas.request.RequestTypeId;
-import de.metas.util.ISingletonService;
-
 /*
  * #%L
- * de.metas.swat.base
+ * de.metas.contracts
  * %%
- * Copyright (C) 2016 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -25,15 +20,24 @@ import de.metas.util.ISingletonService;
  * #L%
  */
 
-public interface IRequestTypeDAO extends ISingletonService
+package de.metas.contracts;
+
+import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.organization.OrgId;
+import de.metas.product.ProductId;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+
+import java.time.LocalDate;
+
+@Value
+@Builder
+public class FlatrateTermPriceRequest
 {
-	RequestTypeId retrieveVendorRequestTypeId();
+	@NonNull I_C_Flatrate_Term flatrateTerm;
 
-	RequestTypeId retrieveCustomerRequestTypeId();
+	@NonNull ProductId productId;
 
-	RequestTypeId retrieveOrgChangeRequestTypeId();
-
-	RequestTypeId retrieveBPartnerCreatedFromAnotherOrgRequestTypeId();
-
-	RequestTypeId retrieveDefaultRequestTypeIdOrFirstActive();
+	@NonNull LocalDate priceDate;
 }
