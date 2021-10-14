@@ -2054,7 +2054,7 @@ public class FlatrateBL implements IFlatrateBL
 		InterfaceWrapperHelper.disableReadOnlyColumnCheck(term); // disable it because C_Flatrate_Data_ID is not updateable
 
 		final I_C_Flatrate_Data data = flatrateDAO.retrieveOrCreateFlatrateData(bPartnerDAO.getById(bPartnerId));
-		term.setC_Flatrate_Data(data);
+		term.setC_Flatrate_Data_ID(data.getC_Flatrate_Data_ID());
 
 		flatrateDAO.save(term);
 
