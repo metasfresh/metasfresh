@@ -1,6 +1,8 @@
 // import { globalStore } from './index';
 // import { networkStatusOffline, networkStatusOnline } from './actions/NetworkActions';
 
+import * as strategies from 'workbox-strategies';
+
 /* eslint-disable no-restricted-globals */
 
 // This service worker can be customized!
@@ -64,6 +66,12 @@ registerRoute(
   // createHandlerBoundToURL(process.env.PUBLIC_URL + '/index.html')
   createHandlerBoundToURL('./index.html')
 );
+
+// Rules samples -> https://developers.google.com/web/tools/workbox/guides/route-requests
+registerRoute(new RegExp('.+\\.js$'), new strategies.CacheFirst());
+
+// Rules samples -> https://developers.google.com/web/tools/workbox/guides/route-requests
+registerRoute(new RegExp('.+\\.css$'), new strategies.CacheFirst());
 
 // An example runtime caching route for requests that aren't handled by the
 // precache, in this case same-origin .png requests like those from in public/
