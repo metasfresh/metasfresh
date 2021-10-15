@@ -1,9 +1,15 @@
 import axios from 'axios';
-import { serverVersionUrl } from '../constants';
+import { apiBasePath } from '../constants';
 
 /**
- * @summary Get the information about the latest version. Note: Had to do that splitting due to the info endpoint that resides one level up (!)
+ * @return {Promise<string>} latest server version
  */
-export function heartBeat() {
-  return axios.get(serverVersionUrl);
+export function getServerVersion() {
+  return axios
+    .get(`${apiBasePath}/version`, {
+      headers: {
+        'Cache-Control': 'no-cache',
+      },
+    })
+    .then((response) => response.data);
 }
