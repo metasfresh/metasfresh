@@ -16,7 +16,7 @@ function App() {
       /*
        * Authorization error
        */
-      if (error.response && error.response.status == 401) {
+      if (error.response && error.response.status === 401) {
         auth.logout().finally(() => {
           history.push('/login');
         });
