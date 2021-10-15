@@ -35,6 +35,8 @@ precacheAndRoute([
   { revision: null, url: '/mobile/config.js' },
   { revision: null, url: '/mobile/manifest.json' },
   { revision: null, url: '/mobile/favicon.ico' },
+  { revision: null, url: '/mobile/logo192.png' },
+  { revision: null, url: '/mobile/logo512.png' },
 ]);
 
 // Set up App Shell-style routing, so that all navigation requests
@@ -93,7 +95,7 @@ self.addEventListener('message', (event) => {
   }
 });
 
-const cacheVersion = '0.0.3';
+//const cacheVersion = '0.0.3';
 
 const broadcast = new BroadcastChannel('network-status-channel');
 
@@ -148,9 +150,9 @@ self.addEventListener('fetch', (event) => {
               throw new TypeError('Bad response status');
             }
             // put in cache only if correct status
-            caches.open(cacheVersion).then(function (cache) {
-              cache.put(event.request, responseNetwork.clone());
-            });
+            // caches.open(cacheVersion).then(function (cache) {
+            //   cache.put(event.request, responseNetwork);
+            // });
             return responseNetwork;
           })
           .catch(function (responseNetworkErr) {
@@ -165,26 +167,67 @@ self.addEventListener('fetch', (event) => {
   // }
 });
 
-// clear previous caches on activation
-self.addEventListener('activate', function (event) {
-  event.waitUntil(
-    caches.keys().then(function (cacheNames) {
-      return Promise.all(
-        cacheNames
-          .filter(function (cacheName) {
-            console.log('cacheName:', cacheName);
-            return true;
-            // Return true if you want to remove this cache,
-            // but remember that caches are shared across
-            // the whole origin
-          })
-          .map(function (cacheName) {
-            return caches.delete(cacheName);
-          })
-      );
-    })
-  );
+// Self-Cleaning Service Worker Removal Routine
+// Just like registering a service worker does not immediately take control of the registering page,
+// removal must wait for clients to refresh before unregistering.
+self.addEventListener('activate', function () {
+  // navigator.serviceWorker
+  //   .getRegistrations()
+  //   .then(function (registrations) {
+  //     for (let registration of registrations) {
+  //       registration.unregister();
+  //     }
+  //   })
+  //   .catch(function (err) {
+  //     console.log('Service Worker registration failed: ', err);
+  //   });
+  // self.registration
+  //   .unregister()
+  //   .then(function () {
+  //     return self.clients.matchAll();
+  //   })
+  //   .then(function (clients) {
+  //     clients.forEach((client) => client.navigate(client.url));
+  //   });
+  // event.waitUntil(
+  //   caches.keys().then(function (cacheNames) {
+  //     return Promise.all(
+  //       cacheNames
+  //         .filter(function (cacheName) {
+  //           console.log('cacheName:', cacheName);
+  //           return true;
+  //           // Return true if you want to remove this cache,
+  //           // but remember that caches are shared across
+  //           // the whole origin
+  //         })
+  //         .map(function (cacheName) {
+  //           return caches.delete(cacheName);
+  //         })
+  //     );
+  //   })
+  // );
 });
+
+// clear previous caches on activation
+// self.addEventListener('activate', function (event) {
+//   event.waitUntil(
+//     caches.keys().then(function (cacheNames) {
+//       return Promise.all(
+//         cacheNames
+//           .filter(function (cacheName) {
+//             console.log('cacheName:', cacheName);
+//             return true;
+//             // Return true if you want to remove this cache,
+//             // but remember that caches are shared across
+//             // the whole origin
+//           })
+//           .map(function (cacheName) {
+//             return caches.delete(cacheName);
+//           })
+//       );
+//     })
+//   );
+// });
 
 // Uncomment this when quick deploy needed
 // self.addEventListener('activate', (event) => {
