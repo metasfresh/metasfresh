@@ -70,7 +70,7 @@ public class ExternalSystemRestController
 			@ApiResponse(code = 403, message = "Accessing a related resource is forbidden"),
 			@ApiResponse(code = 422, message = "The request could not be processed")
 	})
-	@PostMapping(path = "{externalSystemConfigType}/{externalSystemChildConfigValue}/{request}")
+	@PostMapping(path = "/invoke/{externalSystemConfigType}/{externalSystemChildConfigValue}/{request}")
 	public ResponseEntity<?> invokeExternalSystem(
 			@PathVariable final String externalSystemConfigType,
 			@PathVariable final String externalSystemChildConfigValue,
@@ -99,7 +99,7 @@ public class ExternalSystemRestController
 			@ApiResponse(code = 422, message = "The request body could not be processed")
 	})
 
-	@PostMapping(path = "{adPInstanceId}/externalstatus/message", consumes = "application/json")
+	@PostMapping(path = "/externalstatus/{adPInstanceId}/message", consumes = "application/json")
 	public ResponseEntity<?> storeLogs(@RequestBody @NonNull final CreatePInstanceLogRequest request, @PathVariable final Integer adPInstanceId)
 	{
 		externalSystemService.storeExternalPinstanceLog(request, PInstanceId.ofRepoId(adPInstanceId));
@@ -113,7 +113,7 @@ public class ExternalSystemRestController
 			@ApiResponse(code = 403, message = "Accessing a related resource is forbidden"),
 			@ApiResponse(code = 422, message = "The request body could not be processed")
 	})
-	@PostMapping(path = "{AD_PInstance_ID}/externalstatus/error", consumes = "application/json", produces = "application/json")
+	@PostMapping(path = "/externalstatus/{AD_PInstance_ID}/error", consumes = "application/json", produces = "application/json")
 	public ResponseEntity<JsonCreateIssueResponse> handleError(@RequestBody @NonNull final JsonError request, @PathVariable final Integer AD_PInstance_ID)
 	{
 		final JsonCreateIssueResponse issueResponse = externalSystemService.createIssue(request, PInstanceId.ofRepoId(AD_PInstance_ID));

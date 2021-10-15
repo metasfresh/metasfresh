@@ -56,7 +56,7 @@ public class LogMessageRouteBuilder extends RouteBuilder
 				.removeHeaders("CamelHttp*")
 				.setHeader(CoreConstants.AUTHORIZATION, simple(CoreConstants.AUTHORIZATION_TOKEN))
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.POST))
-				.toD("{{" + MF_EXTERNAL_SYSTEM_URI + "}}/${header." + HEADER_PINSTANCE_ID + "}/externalstatus/message");
+				.toD("{{" + MF_EXTERNAL_SYSTEM_URI + "}}/externalstatus/${header." + HEADER_PINSTANCE_ID + "}/externalstatus/message");
 		//@formatter:on
 	}
 
