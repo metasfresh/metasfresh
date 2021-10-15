@@ -14,13 +14,16 @@ class WFProcessScreen extends PureComponent {
   render() {
     const { wfProcess } = this.props;
     const { id: wfProcessId, activities } = wfProcess;
+    const activitiesArray = activities ? Object.values(activities) : [];
 
     return (
       <div className="pt-2 section wf-process-container">
         <div className="container pick-products-container">
           <div className="activities">
-            {activities &&
-              Object.values(activities).map((activityItem) => {
+            {activitiesArray.length > 0 &&
+              activitiesArray.map((activityItem, index) => {
+                const isLastActivity = index === activitiesArray.length - 1;
+
                 switch (activityItem.componentType) {
                   case 'common/scanBarcode':
                     return (
@@ -47,7 +50,10 @@ class WFProcessScreen extends PureComponent {
                         key={activityItem.activityId}
                         id={activityItem.activityId}
                         wfProcessId={wfProcessId}
-                        {...activityItem}
+                        activityId={activityItem.activityId}
+                        componentProps={activityItem.componentProps}
+                        isUserEditable={activityItem.dataStored.isUserEditable}
+                        isLastActivity={isLastActivity}
                       />
                     );
                 }
