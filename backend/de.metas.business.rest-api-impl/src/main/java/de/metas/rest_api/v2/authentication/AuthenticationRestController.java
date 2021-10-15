@@ -51,7 +51,8 @@ public class AuthenticationRestController
 
 	public AuthenticationRestController(
 			@NonNull final UserAuthTokenService userAuthTokenService,
-			@NonNull final UserAuthTokenFilterConfiguration userAuthTokenFilterConfiguration, final I18NRestController i18nRestController)
+			@NonNull final UserAuthTokenFilterConfiguration userAuthTokenFilterConfiguration,
+			@NonNull final I18NRestController i18nRestController)
 	{
 		this.userAuthTokenService = userAuthTokenService;
 		this.i18nRestController = i18nRestController;
