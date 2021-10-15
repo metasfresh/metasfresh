@@ -65,7 +65,7 @@ public class MIssue extends X_AD_Issue
 		setName("-");
 		setUserName("?");
 		setDBAddress("-");
-		setSystemStatus("-");
+		setSystemStatus(X_AD_Issue.SYSTEMSTATUS_Implementation);
 		setReleaseNo("-");
 		setVersion(system.getDbVersion());
 		setDatabaseInfo(DB.getDatabaseInfo());
