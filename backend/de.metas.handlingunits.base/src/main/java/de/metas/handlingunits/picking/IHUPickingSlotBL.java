@@ -163,6 +163,8 @@ public interface IHUPickingSlotBL extends IPickingSlotBL, ISingletonService
 
 	ImmutableList<HuId> retrieveAvailableHUIdsToPickForShipmentSchedule(RetrieveAvailableHUIdsToPickRequest retrieveAvailableHUIdsToPickRequest);
 
+	void releasePickingSlotFromJob(@NonNull PickingSlotId pickingSlotId, @NonNull PickingJobId pickingJobId);
+
 	/**
 	 * Search for available fine picking source HUs.<br>
 	 * Those HUs are referenced by {@link I_M_Source_HU} records and are available<br>

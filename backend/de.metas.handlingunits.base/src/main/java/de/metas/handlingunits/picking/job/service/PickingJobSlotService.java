@@ -51,7 +51,7 @@ public class PickingJobSlotService
 
 	public void release(@NonNull final PickingSlotId pickingSlotId, @NonNull final PickingJobId pickingJobId)
 	{
-		pickingSlotBL.releasePickingSlotIfPossible(pickingSlotId, pickingJobId);
+		pickingSlotBL.releasePickingSlotFromJob(pickingSlotId, pickingJobId);
 	}
 
 }

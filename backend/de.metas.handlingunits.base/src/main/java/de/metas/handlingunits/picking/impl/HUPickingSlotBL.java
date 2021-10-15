@@ -585,9 +585,14 @@ public class HUPickingSlotBL
 			return;
 		}
 
+		releaseAndSave(pickingSlot);
+	}
+
+	private void releaseAndSave(final I_M_PickingSlot pickingSlot)
+	{
 		pickingSlot.setC_BPartner_ID(-1);
 		pickingSlot.setC_BPartner_Location_ID(-1);
-		pickingSlot.setM_PickingSlot_ID(-1);
+		pickingSlot.setM_Picking_Job_ID(-1);
 		InterfaceWrapperHelper.save(pickingSlot);
 	}
 
@@ -615,6 +620,23 @@ public class HUPickingSlotBL
 		}
 
 		pickingSlotIds.forEach(this::releasePickingSlotIfPossible);
+	}
+
+	@Override
+	public void releasePickingSlotFromJob(@NonNull final PickingSlotId pickingSlotId, @NonNull final PickingJobId pickingJobId)
+	{
+		final I_M_PickingSlot pickingSlot = pickingSlotDAO.getById(pickingSlotId, I_M_PickingSlot.class);
+		final PickingJobId pickingJobIdOfSlot = PickingJobId.ofRepoIdOrNull(pickingSlot.getM_Picking_Job_ID());
+		if (PickingJobId.equals(pickingJobIdOfSlot, pickingJobId))
+		{
+			releaseAndSave(pickingSlot);
+		}
+		else if (pickingJobIdOfSlot != null)
+		{
+			throw new AdempiereException("Cannot release picking slot from " + pickingJobId + " because is allocated for " + pickingJobIdOfSlot);
+		}
+		// do nothing, it's already released from that job
+		// else {}
 	}
 
 	@Override
