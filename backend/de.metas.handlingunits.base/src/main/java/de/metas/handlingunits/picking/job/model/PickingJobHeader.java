@@ -1,4 +1,4 @@
-package de.metas.picking.workflow.model;
+package de.metas.handlingunits.picking.job.model;
 
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.user.UserId;
@@ -13,9 +13,9 @@ import java.time.ZonedDateTime;
 public class PickingJobHeader
 {
 	@NonNull String salesOrderDocumentNo;
-	@NonNull String customerName;
 	@NonNull ZonedDateTime preparationDate;
-	@NonNull String deliveryRenderedAddress;
+	@NonNull String customerName;
 	@NonNull BPartnerLocationId deliveryBPLocationId;
+	@NonNull String deliveryRenderedAddress;
 	@NonNull UserId lockedBy;
 }

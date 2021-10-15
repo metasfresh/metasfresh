@@ -88,6 +88,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.ZonedDateTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -332,6 +333,18 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		final I_M_ShipmentSchedule shipmentSchedule = shipmentSchedulePA.getById(shipmentScheduleId);
 
 		closeShipmentSchedule(shipmentSchedule);
+	}
+
+	@Override
+	public void closeShipmentSchedules(@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds)
+	{
+		if (shipmentScheduleIds.isEmpty())
+		{
+			return;
+		}
+
+		final Collection<I_M_ShipmentSchedule> shipmentSchedules = shipmentSchedulePA.getByIds(shipmentScheduleIds).values();
+		shipmentSchedules.forEach(this::closeShipmentSchedule);
 	}
 
 	@Override
@@ -847,7 +860,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	public void updateExportStatus(final @NonNull I_M_ShipmentSchedule schedRecord)
 	{
 		final boolean canBeSetBackToPending = sysConfigBL.getBooleanValue(SYSCONFIG_CAN_BE_REEXPORTED_IF_QTYTODELIVER_IS_INCREASED, false, schedRecord.getAD_Client_ID(), schedRecord.getAD_Org_ID());
-		if(!canBeSetBackToPending)
+		if (!canBeSetBackToPending)
 		{
 			return;
 		}

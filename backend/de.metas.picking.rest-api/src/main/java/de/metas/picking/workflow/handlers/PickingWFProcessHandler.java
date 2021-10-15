@@ -24,16 +24,21 @@ package de.metas.picking.workflow.handlers;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
+import de.metas.common.util.time.SystemTime;
+import de.metas.handlingunits.picking.QtyRejectedReasonCode;
+import de.metas.handlingunits.picking.job.model.PickingJob;
+import de.metas.handlingunits.picking.job.model.PickingJobId;
+import de.metas.handlingunits.picking.job.model.PickingJobStepEvent;
+import de.metas.handlingunits.picking.job.model.PickingJobStepEventType;
+import de.metas.handlingunits.picking.job.model.PickingJobStepId;
 import de.metas.i18n.TranslatableStrings;
-import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.picking.rest_api.json.JsonPickingEventsList;
-import de.metas.picking.workflow.PickingJobService;
-import de.metas.picking.workflow.PickingJobStepEvent;
+import de.metas.picking.rest_api.json.JsonPickingStepEvent;
+import de.metas.picking.workflow.PickingJobRestService;
+import de.metas.picking.workflow.PickingWFProcessStartParams;
 import de.metas.picking.workflow.handlers.activity_handlers.ActualPickingWFActivityHandler;
 import de.metas.picking.workflow.handlers.activity_handlers.CompletePickingWFActivityHandler;
 import de.metas.picking.workflow.handlers.activity_handlers.SetPickingSlotWFActivityHandler;
-import de.metas.picking.workflow.model.PickingJob;
-import de.metas.picking.workflow.model.PickingWFProcessStartParams;
 import de.metas.user.UserId;
 import de.metas.workflow.rest_api.model.WFActivity;
 import de.metas.workflow.rest_api.model.WFActivityId;
@@ -44,17 +49,15 @@ import de.metas.workflow.rest_api.model.WFProcessHeaderProperty;
 import de.metas.workflow.rest_api.model.WFProcessId;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersList;
 import de.metas.workflow.rest_api.service.WFProcessHandler;
-import de.metas.workflow.rest_api.service.WFProcessesIndex;
 import de.metas.workflow.rest_api.service.WorkflowStartRequest;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
 import java.util.Collection;
-import java.util.Set;
 import java.util.function.UnaryOperator;
 
-import static de.metas.picking.workflow.handlers.activity_handlers.PickingWFActivityHelper.extractShipmentScheduleIds;
 import static de.metas.picking.workflow.handlers.activity_handlers.PickingWFActivityHelper.getPickingJob;
 
 @Component
@@ -62,18 +65,15 @@ public class PickingWFProcessHandler implements WFProcessHandler
 {
 	static final WFProcessHandlerId HANDLER_ID = WFProcessHandlerId.ofString("picking");
 
-	private final PickingJobService pickingJobService;
+	private final PickingJobRestService pickingJobRestService;
 
-	private final WFProcessesIndex wfProcesses;
 	private final PickingWorkflowLaunchersProvider wfLaunchersProvider;
 
 	public PickingWFProcessHandler(
-			@NonNull final PickingJobService pickingJobService)
+			@NonNull final PickingJobRestService pickingJobRestService)
 	{
-		this.pickingJobService = pickingJobService;
-
-		this.wfProcesses = new WFProcessesIndex();
-		this.wfLaunchersProvider = new PickingWorkflowLaunchersProvider(pickingJobService, wfProcesses);
+		this.pickingJobRestService = pickingJobRestService;
+		this.wfLaunchersProvider = new PickingWorkflowLaunchersProvider(pickingJobRestService);
 	}
 
 	@Override
@@ -93,7 +93,9 @@ public class PickingWFProcessHandler implements WFProcessHandler
 	@Override
 	public WFProcess getWFProcessById(@NonNull final WFProcessId wfProcessId)
 	{
-		return wfProcesses.getById(wfProcessId);
+		final PickingJobId pickingJobId = wfProcessId.getRepoId(PickingJobId::ofRepoId);
+		final PickingJob pickingJob = pickingJobRestService.getPickingJobById(pickingJobId);
+		return toWFProcess(pickingJob);
 	}
 
 	@Override
@@ -101,7 +103,8 @@ public class PickingWFProcessHandler implements WFProcessHandler
 			@NonNull final WFProcessId wfProcessId,
 			@NonNull final UnaryOperator<WFProcess> remappingFunction)
 	{
-		return wfProcesses.compute(wfProcessId, remappingFunction);
+		final WFProcess wfProcess = getWFProcessById(wfProcessId);
+		return remappingFunction.apply(wfProcess);
 	}
 
 	@Override
@@ -134,52 +137,44 @@ public class PickingWFProcessHandler implements WFProcessHandler
 	{
 		final UserId invokerId = request.getInvokerId();
 		final PickingWFProcessStartParams params = PickingWFProcessStartParams.ofParams(request.getWfParameters());
-
-		final Set<ShipmentScheduleId> shipmentScheduleIdsAlreadyInPickingJobs = extractShipmentScheduleIds(wfProcesses.getByInvokerId(invokerId));
-		final PickingJob pickingJob = pickingJobService.createPickingJob(params, invokerId, shipmentScheduleIdsAlreadyInPickingJobs);
-
-		final WFProcess wfProcess = createWFProcess(pickingJob);
-		wfProcesses.add(wfProcess);
+		final PickingJob pickingJob = pickingJobRestService.createPickingJob(params, invokerId);
 
 		wfLaunchersProvider.invalidateCacheByUserId(invokerId);
 
-		return wfProcess;
+		return toWFProcess(pickingJob);
 	}
 
 	@Override
 	public void abort(@NonNull final WFProcessId wfProcessId, @NonNull final UserId callerId)
 	{
-		final WFProcess wfProcess = wfProcesses.getById(wfProcessId);
+		final PickingJobId pickingJobId = wfProcessId.getRepoId(PickingJobId::ofRepoId);
+		final PickingJob pickingJob = pickingJobRestService.getPickingJobById(pickingJobId);
+		final WFProcess wfProcess = toWFProcess(pickingJob);
 		abort(wfProcess, callerId);
 	}
 
 	private void abort(@NonNull final WFProcess wfProcess, final @NonNull UserId callerId)
 	{
 		wfProcess.assertHasAccess(callerId);
-
-		// TODO: call the activity handlers
-
-		final PickingJob pickingJob = getPickingJob(wfProcess);
-		pickingJobService.abort(pickingJob);
-
-		wfProcesses.remove(wfProcess);
-
+		pickingJobRestService.abort(getPickingJob(wfProcess));
 		wfLaunchersProvider.invalidateCacheByUserId(wfProcess.getInvokerId());
 	}
 
 	@Override
 	public void abortAll(final UserId callerId)
 	{
-		wfProcesses.getByInvokerId(callerId)
+		pickingJobRestService.getDraftJobsByPickerId(callerId)
+				.stream()
+				.map(PickingWFProcessHandler::toWFProcess)
 				.forEach(wfProcess -> abort(wfProcess, callerId));
 	}
 
-	private WFProcess createWFProcess(final PickingJob pickingJob)
+	private static WFProcess toWFProcess(final PickingJob pickingJob)
 	{
 		final UserId lockedBy = pickingJob.getLockedBy();
 
 		return WFProcess.builder()
-				.id(WFProcessId.random(HANDLER_ID))
+				.id(WFProcessId.ofIdPart(HANDLER_ID, pickingJob.getId()))
 				.invokerId(lockedBy)
 				.caption(PickingWFProcessUtils.workflowCaption()
 						.salesOrderDocumentNo(pickingJob.getSalesOrderDocumentNo())
@@ -188,17 +183,17 @@ public class PickingWFProcessHandler implements WFProcessHandler
 				.document(pickingJob)
 				.activities(ImmutableList.of(
 						WFActivity.builder()
-								.id(WFActivityId.ofString("1"))
+								.id(WFActivityId.ofString("A1"))
 								.caption(TranslatableStrings.anyLanguage("Scan picking slot"))
 								.wfActivityType(SetPickingSlotWFActivityHandler.HANDLED_ACTIVITY_TYPE)
 								.build(),
 						WFActivity.builder()
-								.id(WFActivityId.ofString("2"))
+								.id(WFActivityId.ofString("A2"))
 								.caption(TranslatableStrings.anyLanguage("Pick"))
 								.wfActivityType(ActualPickingWFActivityHandler.HANDLED_ACTIVITY_TYPE)
 								.build(),
 						WFActivity.builder()
-								.id(WFActivityId.ofString("3"))
+								.id(WFActivityId.ofString("A3"))
 								.caption(TranslatableStrings.anyLanguage("Complete picking"))
 								.wfActivityType(CompletePickingWFActivityHandler.HANDLED_ACTIVITY_TYPE)
 								.build()))
@@ -209,12 +204,11 @@ public class PickingWFProcessHandler implements WFProcessHandler
 			@NonNull final JsonPickingEventsList eventsList,
 			@NonNull final UserId callerId)
 	{
-		final ImmutableListMultimap<WFProcessId, PickingJobStepEvent> eventsByWFProcessId = eventsList
+		final ImmutableListMultimap<WFProcessId, JsonPickingStepEvent> eventsByWFProcessId = eventsList
 				.getEvents()
 				.stream()
-				.map(PickingJobStepEvent::ofJson)
 				.collect(ImmutableListMultimap.toImmutableListMultimap(
-						PickingJobStepEvent::getWfProcessId,
+						event -> WFProcessId.ofString(event.getWfProcessId()),
 						event -> event));
 
 		eventsByWFProcessId
@@ -222,29 +216,57 @@ public class PickingWFProcessHandler implements WFProcessHandler
 				.forEach((wfProcessId, events) -> processStepEvents(wfProcessId, callerId, events));
 	}
 
+	private static PickingJobStepEvent fromJson(@NonNull final JsonPickingStepEvent json)
+	{
+		return PickingJobStepEvent.builder()
+				.timestamp(SystemTime.asInstant())
+				.pickingStepId(PickingJobStepId.ofString(json.getPickingStepId()))
+				.eventType(fromJson(json.getType()))
+				.qtyPicked(json.getQtyPicked())
+				.qtyRejectedReasonCode(QtyRejectedReasonCode.ofNullableCode(json.getQtyRejectedReasonCode()).orElse(null))
+				.build();
+	}
+
+	public static PickingJobStepEventType fromJson(JsonPickingStepEvent.EventType json)
+	{
+		switch (json)
+		{
+			case PICK:
+				return PickingJobStepEventType.PICK;
+			case UNPICK:
+				return PickingJobStepEventType.UNPICK;
+			default:
+				throw new AdempiereException("Unknown event type: " + json);
+		}
+	}
+
 	private void processStepEvents(
 			@NonNull final WFProcessId wfProcessId,
 			@NonNull final UserId callerId,
-			@NonNull final Collection<PickingJobStepEvent> events)
+			@NonNull final Collection<JsonPickingStepEvent> jsonEvents)
 	{
 		changeWFProcessById(
 				wfProcessId,
 				wfProcess -> {
 					wfProcess.assertHasAccess(callerId);
-					assertPickingActivityType(events, wfProcess);
+					assertPickingActivityType(jsonEvents, wfProcess);
+
+					final ImmutableList<PickingJobStepEvent> events = jsonEvents.stream()
+							.map(PickingWFProcessHandler::fromJson)
+							.collect(ImmutableList.toImmutableList());
 
 					return wfProcess.<PickingJob>mapDocument(
-							pickingJob -> pickingJobService.processStepEvents(pickingJob, events)
+							pickingJob -> pickingJobRestService.processStepEvents(pickingJob, events)
 					);
 				});
 	}
 
 	private static void assertPickingActivityType(
-			final @NonNull Collection<PickingJobStepEvent> events,
+			final @NonNull Collection<JsonPickingStepEvent> events,
 			final @NonNull WFProcess wfProcess)
 	{
 		events.stream()
-				.map(PickingJobStepEvent::getWfActivityId)
+				.map(event -> WFActivityId.ofString(event.getWfActivityId()))
 				.distinct()
 				.map(wfProcess::getActivityById)
 				.map(WFActivity::getWfActivityType)

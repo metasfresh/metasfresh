@@ -25,9 +25,9 @@ package de.metas.picking.workflow.handlers.activity_handlers;
 import de.metas.picking.rest_api.json.JsonPickingJob;
 import de.metas.picking.rest_api.json.JsonPickingJobLine;
 import de.metas.picking.rest_api.json.JsonRejectReasonsList;
-import de.metas.picking.workflow.PickingJobService;
-import de.metas.picking.workflow.model.PickingJob;
-import de.metas.picking.workflow.model.PickingJobProgress;
+import de.metas.picking.workflow.PickingJobRestService;
+import de.metas.handlingunits.picking.job.model.PickingJob;
+import de.metas.handlingunits.picking.job.model.PickingJobProgress;
 import de.metas.workflow.rest_api.controller.v2.json.JsonOpts;
 import de.metas.workflow.rest_api.model.UIComponent;
 import de.metas.workflow.rest_api.model.UIComponentType;
@@ -51,11 +51,11 @@ public class ActualPickingWFActivityHandler implements WFActivityHandler
 	public static final WFActivityType HANDLED_ACTIVITY_TYPE = WFActivityType.ofString("picking.actualPicking");
 	private static final UIComponentType COMPONENTTYPE_PICK_PRODUCTS = UIComponentType.ofString("picking/pickProducts");
 
-	private final PickingJobService pickingJobService;
+	private final PickingJobRestService pickingJobRestService;
 
-	public ActualPickingWFActivityHandler(@NonNull final PickingJobService pickingJobService)
+	public ActualPickingWFActivityHandler(@NonNull final PickingJobRestService pickingJobRestService)
 	{
-		this.pickingJobService = pickingJobService;
+		this.pickingJobRestService = pickingJobRestService;
 	}
 
 	@Override
@@ -72,7 +72,7 @@ public class ActualPickingWFActivityHandler implements WFActivityHandler
 	{
 		final PickingJob pickingJob = getPickingJob(wfProcess);
 
-		final JsonRejectReasonsList qtyRejectedReasons = JsonRejectReasonsList.of(pickingJobService.getQtyRejectedReasons(), jsonOpts);
+		final JsonRejectReasonsList qtyRejectedReasons = JsonRejectReasonsList.of(pickingJobRestService.getQtyRejectedReasons(), jsonOpts);
 
 		final List<JsonPickingJobLine> lines = JsonPickingJob.of(pickingJob, jsonOpts).getLines();
 
@@ -98,11 +98,11 @@ public class ActualPickingWFActivityHandler implements WFActivityHandler
 		final PickingJobProgress progress = pickingJob.getProgress();
 		switch (progress)
 		{
-			case NOTHING_PICKED:
+			case NOT_STARTED:
 				return WFActivityStatus.NOT_STARTED;
-			case PARTIAL_PICKED:
+			case IN_PROGRESS:
 				return WFActivityStatus.IN_PROGRESS;
-			case FULLY_PICKED:
+			case DONE:
 				return WFActivityStatus.COMPLETED;
 			default:
 				throw new AdempiereException("Unknown process status: " + progress);

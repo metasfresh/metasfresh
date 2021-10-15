@@ -12,6 +12,7 @@ import de.metas.money.Money;
 import de.metas.order.DeliveryViaRule;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
+import de.metas.organization.OrgId;
 import de.metas.picking.api.IPackagingDAO;
 import de.metas.picking.api.Packageable;
 import de.metas.picking.api.Packageable.PackageableBuilder;
@@ -72,9 +73,9 @@ public class PackagingDAO implements IPackagingDAO
 
 		//
 		// Filter: Customer Location
-		if (query.getCustomerLocationId() != null)
+		if (query.getDeliveryBPLocationId() != null)
 		{
-			queryBuilder.addEqualsFilter(I_M_Packageable_V.COLUMNNAME_C_BPartner_Location_ID, query.getCustomerLocationId());
+			queryBuilder.addEqualsFilter(I_M_Packageable_V.COLUMNNAME_C_BPartner_Location_ID, query.getDeliveryBPLocationId());
 		}
 
 		//
@@ -183,6 +184,7 @@ public class PackagingDAO implements IPackagingDAO
 		final I_C_UOM uom = uomsRepo.getById(record.getC_UOM_ID());
 
 		final PackageableBuilder packageable = Packageable.builder();
+		packageable.orgId(OrgId.ofRepoId(record.getAD_Org_ID()));
 		packageable.customerId(bpartnerId);
 		packageable.customerBPValue(record.getBPartnerValue());
 		packageable.customerName(record.getBPartnerName());

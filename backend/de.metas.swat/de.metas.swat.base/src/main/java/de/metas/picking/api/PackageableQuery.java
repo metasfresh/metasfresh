@@ -44,7 +44,7 @@ public class PackageableQuery
 	public static final PackageableQuery ALL = PackageableQuery.builder().build();
 
 	@Nullable BPartnerId customerId;
-	@Nullable BPartnerLocationId customerLocationId;
+	@Nullable BPartnerLocationId deliveryBPLocationId;
 	@Nullable WarehouseTypeId warehouseTypeId;
 	@Nullable WarehouseId warehouseId;
 	@Nullable LocalDate deliveryDate;

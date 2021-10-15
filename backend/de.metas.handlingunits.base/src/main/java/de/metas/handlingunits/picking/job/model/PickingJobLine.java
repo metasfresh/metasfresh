@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.picking.workflow.model;
+package de.metas.handlingunits.picking.job.model;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.i18n.ITranslatableString;
@@ -39,6 +39,8 @@ import java.util.stream.Stream;
 @Value
 public class PickingJobLine
 {
+	@NonNull PickingJobLineId id;
+
 	@NonNull ProductId productId;
 	@NonNull ITranslatableString productName;
 	@NonNull ImmutableList<PickingJobStep> steps;
@@ -51,11 +53,14 @@ public class PickingJobLine
 	@Builder(toBuilder = true)
 	@SuppressWarnings("OptionalGetWithoutIsPresent")
 	private PickingJobLine(
+			@NonNull final PickingJobLineId id,
 			@NonNull final ProductId productId,
 			@NonNull final ITranslatableString productName,
 			@NonNull final ImmutableList<PickingJobStep> steps)
 	{
 		Check.assumeNotEmpty(steps, "steps not empty");
+
+		this.id = id;
 
 		this.productId = productId;
 		this.productName = productName;
@@ -72,7 +77,7 @@ public class PickingJobLine
 		int countNotDoneSteps = 0;
 		for (final PickingJobStep step : steps)
 		{
-			if (step.isQtyPickedConfirmed())
+			if (step.isSomethingReported())
 			{
 				countDoneSteps++;
 			}
@@ -84,15 +89,15 @@ public class PickingJobLine
 
 		if (countDoneSteps <= 0)
 		{
-			return PickingJobProgress.NOTHING_PICKED;
+			return PickingJobProgress.NOT_STARTED;
 		}
 		else if (countNotDoneSteps <= 0)
 		{
-			return PickingJobProgress.FULLY_PICKED;
+			return PickingJobProgress.DONE;
 		}
 		else
 		{
-			return PickingJobProgress.PARTIAL_PICKED;
+			return PickingJobProgress.IN_PROGRESS;
 		}
 	}
 

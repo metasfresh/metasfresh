@@ -15,6 +15,7 @@ import de.metas.handlingunits.picking.PickingCandidateId;
 import de.metas.handlingunits.picking.PickingCandidateIssueToBOMLine;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.picking.PickingCandidateStatus;
+import de.metas.handlingunits.picking.PickingSlotAllocateRequest;
 import de.metas.handlingunits.picking.QtyRejectedWithReason;
 import de.metas.handlingunits.picking.requests.PickRequest;
 import de.metas.handlingunits.picking.requests.PickRequest.IssueToPickingOrderRequest;
@@ -279,6 +280,9 @@ public class PickHUCommand
 
 		final I_M_ShipmentSchedule shipmentSchedule = getShipmentSchedule();
 		final BPartnerLocationId bpartnerAndLocationId = shipmentScheduleEffectiveBL.getBPartnerLocationId(shipmentSchedule);
-		huPickingSlotBL.allocatePickingSlotIfPossible(pickingSlotId, bpartnerAndLocationId);
+		huPickingSlotBL.allocatePickingSlotIfPossible(PickingSlotAllocateRequest.builder()
+				.pickingSlotId(pickingSlotId)
+				.bpartnerAndLocationId(bpartnerAndLocationId)
+				.build());
 	}
 }

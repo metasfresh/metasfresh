@@ -24,13 +24,12 @@ package de.metas.picking.workflow.handlers.activity_handlers;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.inoutcandidate.ShipmentScheduleId;
-import de.metas.picking.workflow.model.PickingJob;
+import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.workflow.rest_api.model.WFProcess;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
 import java.util.List;
-import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
 @UtilityClass
@@ -48,7 +47,7 @@ public class PickingWFActivityHelper
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
-	public Stream<ShipmentScheduleId> streamShipmentScheduleIds(@NonNull final WFProcess wfProcess)
+	private static Stream<ShipmentScheduleId> streamShipmentScheduleIds(@NonNull final WFProcess wfProcess)
 	{
 		return getPickingJob(wfProcess).streamShipmentScheduleIds();
 	}

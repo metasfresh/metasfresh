@@ -20,13 +20,13 @@
  * #L%
  */
 
-package de.metas.picking.workflow.model;
+package de.metas.handlingunits.picking.job.model;
 
 public enum PickingJobProgress
 {
-	NOTHING_PICKED,
-	PARTIAL_PICKED,
-	FULLY_PICKED;
+	NOT_STARTED,
+	IN_PROGRESS,
+	DONE;
 
-	public boolean isFullyPicked() {return FULLY_PICKED.equals(this);}
+	public boolean isDone() {return DONE.equals(this);}
 }
