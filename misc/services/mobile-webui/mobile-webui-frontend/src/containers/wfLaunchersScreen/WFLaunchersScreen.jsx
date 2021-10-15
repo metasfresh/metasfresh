@@ -13,9 +13,13 @@ class WFLaunchersScreen extends Component {
   componentDidMount() {
     const { populateLaunchers } = this.props;
 
-    getLaunchers().then((response) => {
-      populateLaunchers(response.data.endpointResponse.launchers);
-    });
+    getLaunchers()
+      .then((response) => {
+        populateLaunchers(response.data.endpointResponse.launchers);
+      })
+      .catch((error) => {
+        console.log('ERROR:', error);
+      });
   }
 
   componentDidUpdate() {
