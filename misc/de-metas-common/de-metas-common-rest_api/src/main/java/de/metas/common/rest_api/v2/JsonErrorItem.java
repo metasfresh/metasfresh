@@ -49,6 +49,8 @@ public class JsonErrorItem
 {
 	String message;
 
+	boolean userFriendlyError;
+
 	@JsonInclude(Include.NON_EMPTY)
 	String detail;
 
@@ -83,6 +85,7 @@ public class JsonErrorItem
 	@Builder
 	private JsonErrorItem(
 			@JsonProperty("message") @Nullable final String message,
+			@JsonProperty("userFriendlyError") boolean userFriendlyError,
 			@JsonProperty("detail") @Nullable final String detail,
 			@JsonProperty("stackTrace") @Nullable final String stackTrace,
 			@JsonProperty("parameters") @Nullable @Singular final Map<String, String> parameters,
@@ -94,6 +97,7 @@ public class JsonErrorItem
 			@Nullable final Throwable throwable)
 	{
 		this.message = message;
+		this.userFriendlyError = userFriendlyError;
 		this.detail = detail;
 		this.stackTrace = stackTrace;
 		this.parameters = CoalesceUtil.coalesce(parameters, ImmutableMap.of());
