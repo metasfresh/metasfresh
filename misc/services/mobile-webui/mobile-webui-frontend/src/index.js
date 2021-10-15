@@ -39,10 +39,10 @@ navigator.serviceWorker
       registration
         .unregister()
         .then(function () {
-          return self.clients.matchAll();
+          if (self.clients) return self.clients.matchAll();
         })
         .then(function (clients) {
-          clients.forEach((client) => client.navigate(client.url));
+          if (clients) clients.forEach((client) => client.navigate(client.url));
         });
     }
     // once all remove register new one
