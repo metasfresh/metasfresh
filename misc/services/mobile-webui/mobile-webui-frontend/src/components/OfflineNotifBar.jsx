@@ -5,16 +5,16 @@ import PropTypes from 'prop-types';
 
 class OfflineNotifBar extends Component {
   render() {
-    const { network } = this.props;
+    const { network, headerKey, captionKey } = this.props;
 
     return (
       <div>
         {!network && (
           <article className="message is-warning">
             <div className="message-header">
-              <p>{counterpart.translate('login.offlineMsgHeader')}</p>
+              <p>{counterpart.translate(`${headerKey}`)}</p>
             </div>
-            <div className="message-body">{counterpart.translate('login.offlineMsgContent')}</div>
+            <div className="message-body">{counterpart.translate(`${captionKey}`)}</div>
           </article>
         )}
       </div>
@@ -24,6 +24,8 @@ class OfflineNotifBar extends Component {
 
 OfflineNotifBar.propTypes = {
   network: PropTypes.bool.isRequired,
+  headerKey: PropTypes.string.isRequired,
+  captionKey: PropTypes.string.isRequired,
 };
 
 const mapStateToProps = (state) => {

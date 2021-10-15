@@ -24,6 +24,10 @@ export const setupCounterpart = () => {
       offlineMsgHeader: 'You are offline',
       offlineMsgContent: 'Please find an area with internet connectivity to be able to authenticate.',
     },
+    launchers: {
+      offlineMsgHeader: 'You are offline. Could not retrieve the launchers',
+      offlineMsgContent: 'Please find an area with internet connectivity.',
+    },
     activities: {
       scanBarcode: {
         defaultCaption: 'Scan',
@@ -62,6 +66,10 @@ export const setupCounterpart = () => {
       submitButton: 'Login',
       offlineMsgHeader: 'You are offline',
       offlineMsgContent: 'Please find an area with internet connectivity to be able to authenticate.',
+    },
+    launchers: {
+      offlineMsgHeader: 'You are offline. Could not retrieve the launchers',
+      offlineMsgContent: 'Please find an area with internet connectivity.',
     },
     activities: {
       scanBarcode: {
