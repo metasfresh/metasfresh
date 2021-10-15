@@ -1,25 +1,32 @@
 import axios from 'axios';
+import { unboxAxiosResponse } from '../utils';
 import { apiBasePath } from '../constants';
 
 /**
  * @summary Get the list of available launchers
  */
 export function getLaunchers() {
-  return axios.get(`${apiBasePath}/userWorkflows/launchers`);
+  return axios.get(`${apiBasePath}/userWorkflows/launchers`).then((response) => unboxAxiosResponse(response).launchers);
 }
 
 /**
  * @method startWorkflowRequest
  * @summary Start a workflow from the launchers list
+ * @returns wfProcess
  */
 export function startWorkflowRequest({ wfParameters }) {
-  return axios.post(`${apiBasePath}/userWorkflows/wfProcess/start`, { wfParameters });
+  return axios
+    .post(`${apiBasePath}/userWorkflows/wfProcess/start`, { wfParameters })
+    .then((response) => unboxAxiosResponse(response));
 }
 
 /**
  * @method startWorkflow
  * @summary Continue a workflow from the launchers list
+ * @returns wfProcess
  */
 export function getWorkflowRequest(wfProcessId) {
-  return axios.get(`${apiBasePath}/userWorkflows/wfProcess/${wfProcessId}`);
+  return axios
+    .get(`${apiBasePath}/userWorkflows/wfProcess/${wfProcessId}`)
+    .then((response) => unboxAxiosResponse(response));
 }
