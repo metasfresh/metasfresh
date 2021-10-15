@@ -33,6 +33,7 @@ import de.metas.handlingunits.picking.PickingCandidatePickStatus;
 import de.metas.handlingunits.picking.PickingCandidateStatus;
 import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.order.OrderId;
+import de.metas.organization.OrgId;
 import de.metas.picking.api.Packageable;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -109,6 +110,7 @@ public class ProductsToPickRowsDataFactoryTest
 				.orderDocumentNo("1234")
 				.customer(IntegerLookupValue.of(customerAndLocationId.getBpartnerId().getRepoId(), "customer"))
 				.packageable(Packageable.builder()
+						.orgId(OrgId.ofRepoId(1))
 						.shipmentScheduleId(shipmentScheduleId)
 						//
 						.qtyOrdered(Quantity.of(1000000, uomKg))
