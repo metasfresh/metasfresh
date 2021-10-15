@@ -37,6 +37,14 @@ export const setupCounterpart = () => {
         confirmDone: 'Done',
         rejectedPrompt: 'There are %(qtyRejected)s %(uom)s not picked. Why ?',
       },
+      confirmButton: {
+        default: {
+          caption: 'Confirm',
+          promptQuestion: 'Are you sure?',
+          yes: 'Yes',
+          no: 'No',
+        },
+      },
     },
   });
 
@@ -66,6 +74,14 @@ export const setupCounterpart = () => {
         notEligibleHUBarcode: 'HU barcode not matching',
         invalidQtyPicked: 'Invalid qty picked',
         confirmDone: 'Done',
+      },
+      confirmButton: {
+        default: {
+          caption: 'Confirm',
+          promptQuestion: 'Are you sure?',
+          yes: 'Yes',
+          no: 'No',
+        },
       },
     },
   });
