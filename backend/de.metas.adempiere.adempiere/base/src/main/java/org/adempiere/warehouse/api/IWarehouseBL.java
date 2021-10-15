@@ -61,4 +61,6 @@ public interface IWarehouseBL extends ISingletonService
 
 	@NonNull
 	OrgId getWarehouseOrgId(WarehouseId warehouseId);
+
+	String getLocatorNameById(final LocatorId locatorId);
 }
