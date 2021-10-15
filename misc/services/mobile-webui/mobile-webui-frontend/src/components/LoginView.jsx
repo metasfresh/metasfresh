@@ -88,7 +88,7 @@ function LoginRoute() {
         </form>
       </div>
 
-      <OfflineNotifBar />
+      <OfflineNotifBar headerKey="login.offlineMsgHeader" captionKey="login.offlineMsgContent" />
       <ScreenToaster />
     </div>
   );
