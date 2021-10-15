@@ -19,8 +19,8 @@ class ScanScreen extends Component {
     setScannedBarcode({ wfProcessId, activityId, scannedBarcode });
 
     postScannedBarcode({ wfProcessId, activityId, scannedBarcode })
-      .then((response) => {
-        updateWFProcess({ wfProcess: response.data.endpointResponse });
+      .then((wfProcess) => {
+        updateWFProcess({ wfProcess });
         goBack();
       })
       .catch((error) => {
