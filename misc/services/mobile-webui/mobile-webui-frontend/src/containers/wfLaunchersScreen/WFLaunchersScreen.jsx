@@ -19,6 +19,7 @@ class WFLaunchersScreen extends Component {
       })
       .catch((error) => {
         console.log('ERROR:', error);
+        populateLaunchers([]);
       });
   }
 
