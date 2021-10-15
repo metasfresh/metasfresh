@@ -73,7 +73,8 @@ public class C_Flatrate_Term_Change_Product extends JavaProcess implements IProc
 			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
 		}
 
-		return ProcessPreconditionsResolution.accept();
+		return ProcessPreconditionsResolution
+				.acceptIf(I_C_Flatrate_Term.Table_Name.equals(context.getTableName()));
 	}
 
 	@Override
