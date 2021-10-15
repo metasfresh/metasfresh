@@ -1,8 +1,7 @@
-package de.metas.contracts.model;
-
-import org.adempiere.model.ModelColumn;
+package de.metas.contracts.commission.model;
 
 import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_Customer_Trade_Margin
  *  @author metasfresh (generated) 
@@ -52,7 +51,7 @@ public interface I_C_Customer_Trade_Margin
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set C_Customer_Trade_Margin.
+	 * Set Customer Margin Settings.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -61,7 +60,7 @@ public interface I_C_Customer_Trade_Margin
 	void setC_Customer_Trade_Margin_ID (int C_Customer_Trade_Margin_ID);
 
 	/**
-	 * Get C_Customer_Trade_Margin.
+	 * Get Customer Margin Settings.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true

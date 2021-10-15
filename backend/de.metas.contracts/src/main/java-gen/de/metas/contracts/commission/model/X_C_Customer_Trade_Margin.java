@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
-package de.metas.contracts.model;
+package de.metas.contracts.commission.model;
 
-import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for C_Customer_Trade_Margin
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_C_Customer_Trade_Margin extends org.compiere.model.PO implements I_C_Customer_Trade_Margin, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 349136525L;
+	private static final long serialVersionUID = 383807926L;
 
     /** Standard Constructor */
     public X_C_Customer_Trade_Margin (final Properties ctx, final int C_Customer_Trade_Margin_ID, @Nullable final String trxName)

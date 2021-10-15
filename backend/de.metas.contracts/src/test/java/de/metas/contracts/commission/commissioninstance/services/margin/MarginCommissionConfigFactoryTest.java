@@ -29,9 +29,9 @@ import de.metas.contracts.commission.commissioninstance.businesslogic.hierarchy.
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTriggerType;
 import de.metas.contracts.commission.commissioninstance.services.CommissionConfigProvider;
 import de.metas.contracts.commission.commissioninstance.testhelpers.TestCommissionContractBuilder;
+import de.metas.contracts.commission.model.I_C_Customer_Trade_Margin;
+import de.metas.contracts.commission.model.I_C_Customer_Trade_Margin_Line;
 import de.metas.contracts.flatrate.TypeConditions;
-import de.metas.contracts.model.I_C_Customer_Trade_Margin;
-import de.metas.contracts.model.I_C_Customer_Trade_Margin_Line;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.pricing.trade_margin.CustomerTradeMarginId;
 import de.metas.contracts.pricing.trade_margin.CustomerTradeMarginRepository;
