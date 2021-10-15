@@ -20,18 +20,25 @@
  * #L%
  */
 
-package de.metas.picking.workflow.model;
+package de.metas.handlingunits.picking.job.model;
 
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.order.OrderId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.warehouse.WarehouseTypeId;
+
+import javax.annotation.Nullable;
 
 @Value
 @Builder
 public class PickingJobCandidate
 {
 	@NonNull String salesOrderDocumentNo;
+	@NonNull OrderId salesOrderId;
 	@NonNull String customerName;
-
-	@NonNull PickingWFProcessStartParams wfProcessStartParams;
+	@NonNull BPartnerLocationId deliveryBPLocationId;
+	@Nullable WarehouseTypeId warehouseTypeId;
+	boolean locked;
 }

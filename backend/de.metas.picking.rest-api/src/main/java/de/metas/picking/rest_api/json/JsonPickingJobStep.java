@@ -22,7 +22,7 @@
 
 package de.metas.picking.rest_api.json;
 
-import de.metas.picking.workflow.model.PickingJobStep;
+import de.metas.handlingunits.picking.job.model.PickingJobStep;
 import de.metas.workflow.rest_api.controller.v2.json.JsonOpts;
 import lombok.Builder;
 import lombok.NonNull;
@@ -51,7 +51,7 @@ public class JsonPickingJobStep
 				.pickingStepId(step.getId().getAsString())
 				.productName(step.getProductName().translate(adLanguage))
 				.locatorName(step.getLocatorName())
-				.huBarcode(step.getHuBarcode())
+				.huBarcode(step.getHuBarcode().getAsString())
 				.uom(step.getQtyToPick().getUOMSymbol())
 				.qtyToPick(step.getQtyToPick().toBigDecimal())
 				.qtyPicked(step.getQtyPicked().toBigDecimal())

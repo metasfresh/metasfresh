@@ -1,17 +1,17 @@
-package de.metas.picking.model;
+package de.metas.handlingunits.model;
 
 import org.adempiere.model.ModelColumn;
 
-/** Generated Interface for M_Picking_Config_V2
+/** Generated Interface for M_Picking_Job_Line
  *  @author metasfresh (generated) 
  */
 @SuppressWarnings("unused")
-public interface I_M_Picking_Config_V2 
+public interface I_M_Picking_Job_Line 
 {
 
-	String Table_Name = "M_Picking_Config_V2";
+	String Table_Name = "M_Picking_Job_Line";
 
-//	/** AD_Table_ID=541418 */
+//	/** AD_Table_ID=541907 */
 //	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 
@@ -59,7 +59,7 @@ public interface I_M_Picking_Config_V2
 	 */
 	java.sql.Timestamp getCreated();
 
-	ModelColumn<I_M_Picking_Config_V2, Object> COLUMN_Created = new ModelColumn<>(I_M_Picking_Config_V2.class, "Created", null);
+	ModelColumn<I_M_Picking_Job_Line, Object> COLUMN_Created = new ModelColumn<>(I_M_Picking_Job_Line.class, "Created", null);
 	String COLUMNNAME_Created = "Created";
 
 	/**
@@ -94,71 +94,97 @@ public interface I_M_Picking_Config_V2
 	 */
 	boolean isActive();
 
-	ModelColumn<I_M_Picking_Config_V2, Object> COLUMN_IsActive = new ModelColumn<>(I_M_Picking_Config_V2.class, "IsActive", null);
+	ModelColumn<I_M_Picking_Job_Line, Object> COLUMN_IsActive = new ModelColumn<>(I_M_Picking_Job_Line.class, "IsActive", null);
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Consider Attributes.
+	 * Set Picking Job.
 	 *
-	 * <br>Type: YesNo
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsConsiderAttributes (boolean IsConsiderAttributes);
+	void setM_Picking_Job_ID (int M_Picking_Job_ID);
 
 	/**
-	 * Get Consider Attributes.
+	 * Get Picking Job.
 	 *
-	 * <br>Type: YesNo
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isConsiderAttributes();
+	int getM_Picking_Job_ID();
 
-	ModelColumn<I_M_Picking_Config_V2, Object> COLUMN_IsConsiderAttributes = new ModelColumn<>(I_M_Picking_Config_V2.class, "IsConsiderAttributes", null);
-	String COLUMNNAME_IsConsiderAttributes = "IsConsiderAttributes";
+	de.metas.handlingunits.model.I_M_Picking_Job getM_Picking_Job();
 
-	/**
-	 * Set Picking Review Required.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsPickingReviewRequired (boolean IsPickingReviewRequired);
+	void setM_Picking_Job(de.metas.handlingunits.model.I_M_Picking_Job M_Picking_Job);
+
+	ModelColumn<I_M_Picking_Job_Line, de.metas.handlingunits.model.I_M_Picking_Job> COLUMN_M_Picking_Job_ID = new ModelColumn<>(I_M_Picking_Job_Line.class, "M_Picking_Job_ID", de.metas.handlingunits.model.I_M_Picking_Job.class);
+	String COLUMNNAME_M_Picking_Job_ID = "M_Picking_Job_ID";
 
 	/**
-	 * Get Picking Review Required.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isPickingReviewRequired();
-
-	ModelColumn<I_M_Picking_Config_V2, Object> COLUMN_IsPickingReviewRequired = new ModelColumn<>(I_M_Picking_Config_V2.class, "IsPickingReviewRequired", null);
-	String COLUMNNAME_IsPickingReviewRequired = "IsPickingReviewRequired";
-
-	/**
-	 * Set Picking configuration (V2).
+	 * Set Picking Job Line.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setM_Picking_Config_V2_ID (int M_Picking_Config_V2_ID);
+	void setM_Picking_Job_Line_ID (int M_Picking_Job_Line_ID);
 
 	/**
-	 * Get Picking configuration (V2).
+	 * Get Picking Job Line.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getM_Picking_Config_V2_ID();
+	int getM_Picking_Job_Line_ID();
 
-	ModelColumn<I_M_Picking_Config_V2, Object> COLUMN_M_Picking_Config_V2_ID = new ModelColumn<>(I_M_Picking_Config_V2.class, "M_Picking_Config_V2_ID", null);
-	String COLUMNNAME_M_Picking_Config_V2_ID = "M_Picking_Config_V2_ID";
+	ModelColumn<I_M_Picking_Job_Line, Object> COLUMN_M_Picking_Job_Line_ID = new ModelColumn<>(I_M_Picking_Job_Line.class, "M_Picking_Job_Line_ID", null);
+	String COLUMNNAME_M_Picking_Job_Line_ID = "M_Picking_Job_Line_ID";
+
+	/**
+	 * Set Product.
+	 * Product, Service, Item
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setM_Product_ID (int M_Product_ID);
+
+	/**
+	 * Get Product.
+	 * Product, Service, Item
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getM_Product_ID();
+
+	String COLUMNNAME_M_Product_ID = "M_Product_ID";
+
+	/**
+	 * Set Processed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setProcessed (boolean Processed);
+
+	/**
+	 * Get Processed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isProcessed();
+
+	ModelColumn<I_M_Picking_Job_Line, Object> COLUMN_Processed = new ModelColumn<>(I_M_Picking_Job_Line.class, "Processed", null);
+	String COLUMNNAME_Processed = "Processed";
 
 	/**
 	 * Get Updated.
@@ -170,7 +196,7 @@ public interface I_M_Picking_Config_V2
 	 */
 	java.sql.Timestamp getUpdated();
 
-	ModelColumn<I_M_Picking_Config_V2, Object> COLUMN_Updated = new ModelColumn<>(I_M_Picking_Config_V2.class, "Updated", null);
+	ModelColumn<I_M_Picking_Job_Line, Object> COLUMN_Updated = new ModelColumn<>(I_M_Picking_Job_Line.class, "Updated", null);
 	String COLUMNNAME_Updated = "Updated";
 
 	/**

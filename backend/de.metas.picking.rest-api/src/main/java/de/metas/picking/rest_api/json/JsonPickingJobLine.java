@@ -23,7 +23,7 @@
 package de.metas.picking.rest_api.json;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.picking.workflow.model.PickingJobLine;
+import de.metas.handlingunits.picking.job.model.PickingJobLine;
 import de.metas.workflow.rest_api.controller.v2.json.JsonOpts;
 import lombok.Builder;
 import lombok.NonNull;

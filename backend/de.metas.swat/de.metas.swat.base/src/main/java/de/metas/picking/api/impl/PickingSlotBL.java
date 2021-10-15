@@ -21,8 +21,15 @@ public class PickingSlotBL implements IPickingSlotBL
 	@Override
 	public boolean isAvailableForAnyBPartner(@NonNull final I_M_PickingSlot pickingSlot)
 	{
-		final BPartnerId pickingSlotBPartnerId = BPartnerId.ofRepoIdOrNull(pickingSlot.getC_BPartner_ID());
-		return pickingSlotBPartnerId == null;
+		final BPartnerId pickingSlotBPartnerId = extractBPartnerId(pickingSlot);
+		return pickingSlotBPartnerId == null
+				&& pickingSlot.getM_Picking_Job_ID() <= 0;
+	}
+
+	@Nullable
+	private static BPartnerId extractBPartnerId(final @NonNull I_M_PickingSlot pickingSlot)
+	{
+		return BPartnerId.ofRepoIdOrNull(pickingSlot.getC_BPartner_ID());
 	}
 
 	@Override
@@ -37,7 +44,7 @@ public class PickingSlotBL implements IPickingSlotBL
 
 		//
 		// Check BPartner
-		final BPartnerId pickingSlotBPartnerId = BPartnerId.ofRepoIdOrNull(pickingSlot.getC_BPartner_ID());
+		final BPartnerId pickingSlotBPartnerId = extractBPartnerId(pickingSlot);
 		// Any BPartner Picking Slot
 		if (pickingSlotBPartnerId == null)
 		{

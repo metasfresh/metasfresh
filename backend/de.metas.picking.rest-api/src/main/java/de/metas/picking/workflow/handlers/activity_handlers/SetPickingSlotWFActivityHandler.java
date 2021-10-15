@@ -22,14 +22,10 @@
 
 package de.metas.picking.workflow.handlers.activity_handlers;
 
-import de.metas.bpartner.BPartnerLocationId;
-import de.metas.handlingunits.picking.IHUPickingSlotBL;
-import de.metas.i18n.BooleanWithReason;
-import de.metas.i18n.TranslatableStrings;
+import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.picking.api.PickingSlotBarcode;
 import de.metas.picking.api.PickingSlotIdAndCaption;
-import de.metas.picking.workflow.model.PickingJob;
-import de.metas.util.Services;
+import de.metas.picking.workflow.PickingJobRestService;
 import de.metas.workflow.rest_api.activity_features.set_scanned_barcode.SetScannedBarcodeRequest;
 import de.metas.workflow.rest_api.activity_features.set_scanned_barcode.SetScannedBarcodeSupport;
 import de.metas.workflow.rest_api.controller.v2.json.JsonOpts;
@@ -41,7 +37,6 @@ import de.metas.workflow.rest_api.model.WFActivityType;
 import de.metas.workflow.rest_api.model.WFProcess;
 import de.metas.workflow.rest_api.service.WFActivityHandler;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.api.Params;
 import org.springframework.stereotype.Component;
 
@@ -52,7 +47,9 @@ public class SetPickingSlotWFActivityHandler implements WFActivityHandler, SetSc
 {
 	public static final WFActivityType HANDLED_ACTIVITY_TYPE = WFActivityType.ofString("picking.setPickingSlot");
 
-	private final IHUPickingSlotBL pickingSlotBL = Services.get(IHUPickingSlotBL.class);
+	private final PickingJobRestService pickingJobRestService;
+
+	public SetPickingSlotWFActivityHandler(final PickingJobRestService pickingJobRestService) {this.pickingJobRestService = pickingJobRestService;}
 
 	@Override
 	public WFActivityType getHandledActivityType()
@@ -67,7 +64,6 @@ public class SetPickingSlotWFActivityHandler implements WFActivityHandler, SetSc
 			final @NonNull JsonOpts jsonOpts)
 	{
 		final PickingJob pickingJob = getPickingJob(wfProcess);
-		pickingJob.assertNotProcessed();
 
 		return UIComponent.builder()
 				.type(UIComponentType.SCAN_BARCODE)
@@ -89,25 +85,6 @@ public class SetPickingSlotWFActivityHandler implements WFActivityHandler, SetSc
 	{
 		final PickingSlotBarcode pickingSlotBarcode = PickingSlotBarcode.ofBarcodeString(request.getScannedBarcode());
 		final WFProcess wfProcess = request.getWfProcess();
-		return wfProcess.<PickingJob>mapDocument(pickingJob -> allocateAndSetPickingSlot(pickingJob, pickingSlotBarcode));
-	}
-
-	private PickingJob allocateAndSetPickingSlot(
-			@NonNull final PickingJob pickingJob,
-			@NonNull final PickingSlotBarcode pickingSlotBarcode)
-	{
-		final PickingSlotIdAndCaption pickingSlot = pickingSlotBL.getPickingSlotIdAndCaption(pickingSlotBarcode.getPickingSlotId());
-
-		final BPartnerLocationId deliveryBPLocationId = pickingJob.getDeliveryBPLocationId();
-		final BooleanWithReason allocated = pickingSlotBL.allocatePickingSlotIfPossible(pickingSlot.getPickingSlotId(), deliveryBPLocationId);
-		if (allocated.isFalse())
-		{
-			throw new AdempiereException(TranslatableStrings.builder()
-					.append("Failed allocating picking slot ").append(pickingSlot.getCaption()).append(" because ")
-					.append(allocated.getReason())
-					.build());
-		}
-
-		return pickingJob.withPickingSlot(pickingSlot);
+		return wfProcess.<PickingJob>mapDocument(pickingJob -> pickingJobRestService.allocateAndSetPickingSlot(pickingJob, pickingSlotBarcode));
 	}
 }
