@@ -123,6 +123,8 @@ public interface IFlatrateDAO extends ISingletonService
 
 	Iterable<I_C_Flatrate_Term> retrieveTerms(@NonNull FlatrateDataId flatrateDataId);
 
+	ImmutableList<I_C_Flatrate_Term> retrieveTermsAsList(@NonNull FlatrateDataId flatrateDataId);
+
 	List<I_C_Flatrate_Term> retrieveTerms(I_C_Flatrate_Data flatrateData);
 
 	List<I_C_Flatrate_Term> retrieveTerms(I_C_BPartner bPartner, I_C_Flatrate_Conditions flatrateConditions);
@@ -141,6 +143,8 @@ public interface IFlatrateDAO extends ISingletonService
 	I_C_Flatrate_Conditions getConditionsById (ConditionsId flatrateConditionsId);
 
 	void save(@NonNull I_C_Flatrate_Term flatrateTerm);
+
+	I_C_Invoice_Candidate retrieveInvoiceCandidate(I_C_Flatrate_Term term);
 
 	@Value
 	@Builder
@@ -228,7 +232,7 @@ public interface IFlatrateDAO extends ISingletonService
 	 * that a term is directly created.
 	 *
 	 */
-	I_C_Flatrate_Data retriveOrCreateFlatrateData(I_C_BPartner bPartner);
+	I_C_Flatrate_Data retrieveOrCreateFlatrateData(I_C_BPartner bPartner);
 
 	I_C_Flatrate_Term retrieveAncestorFlatrateTerm(I_C_Flatrate_Term contract);
 

@@ -65,7 +65,6 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.bpartner.service.IBPartnerOrgBL;
-import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.Contracts_Constants;
 import de.metas.contracts.FlatrateTermPricing;
 import de.metas.contracts.IContractsDAO;
@@ -118,36 +117,6 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.workflow.api.IWFExecutionFactory;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.lang.IAutoCloseable;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.Adempiere;
-import org.compiere.model.I_AD_User;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.MNote;
-import org.compiere.model.Query;
-import org.compiere.util.DB;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
-import org.compiere.util.Trx;
-import org.compiere.util.TrxRunnable2;
-import org.slf4j.Logger;
-
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.GregorianCalendar;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
 
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
@@ -469,7 +438,7 @@ public class SubscriptionBL implements ISubscriptionBL
 		newTerm.setDropShip_Location_ID(BPartnerLocationId.toRepoId(shipToPartnerInfo.getBpartnerLocationId()));
 		newTerm.setDropShip_User_ID(BPartnerContactId.toRepoId(shipToPartnerInfo.getContactId()));
 
-		final I_C_Flatrate_Data existingData = Services.get(IFlatrateDAO.class).retriveOrCreateFlatrateData(bill_BPartner);
+		final I_C_Flatrate_Data existingData = Services.get(IFlatrateDAO.class).retrieveOrCreateFlatrateData(bill_BPartner);
 
 		newTerm.setC_Flatrate_Data(existingData);
 

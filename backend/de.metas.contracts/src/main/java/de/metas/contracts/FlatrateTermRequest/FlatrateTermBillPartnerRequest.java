@@ -20,24 +20,29 @@
  * #L%
  */
 
-package de.metas.contracts;
+package de.metas.contracts.FlatrateTermRequest;
 
+import de.metas.bpartner.BPartnerContactId;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.organization.OrgId;
-import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import java.time.LocalDate;
+import javax.annotation.Nullable;
 
 @Value
 @Builder
-public class FlatrateTermPriceRequest
+public class FlatrateTermBillPartnerRequest
 {
-	@NonNull I_C_Flatrate_Term flatrateTerm;
+	@NonNull FlatrateTermId flatrateTermId;
 
-	@NonNull ProductId productId;
+	@NonNull BPartnerId billBPartnerId;
+	@NonNull BPartnerLocationId billLocationId;
 
-	@NonNull LocalDate priceDate;
+	@Nullable
+	BPartnerContactId billUserId;
+
 }
