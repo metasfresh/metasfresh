@@ -20,10 +20,11 @@
  * #L%
  */
 
-package de.metas.picking.workflow.model;
+package de.metas.picking.workflow;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.handlingunits.picking.job.model.PickingJobCandidate;
 import de.metas.order.OrderId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -38,9 +39,17 @@ import javax.annotation.Nullable;
 public class PickingWFProcessStartParams
 {
 	@NonNull OrderId salesOrderId;
-	@NonNull BPartnerLocationId customerLocationId;
+	@NonNull BPartnerLocationId deliveryBPLocationId;
 	@Nullable WarehouseTypeId warehouseTypeId;
-	boolean locked;
+
+	public static PickingWFProcessStartParams of(@NonNull final PickingJobCandidate candidate)
+	{
+		return builder()
+				.salesOrderId(candidate.getSalesOrderId())
+				.deliveryBPLocationId(candidate.getDeliveryBPLocationId())
+				.warehouseTypeId(candidate.getWarehouseTypeId())
+				.build();
+	}
 
 	/**
 	 * @implNote keep in sync with {@link #ofParams(Params)}
@@ -49,10 +58,9 @@ public class PickingWFProcessStartParams
 	{
 		return Params.builder()
 				.value("salesOrderId", salesOrderId.getRepoId())
-				.value("customerId", customerLocationId.getBpartnerId().getRepoId())
-				.value("customerLocationId", customerLocationId.getRepoId())
+				.value("customerId", deliveryBPLocationId.getBpartnerId().getRepoId())
+				.value("customerLocationId", deliveryBPLocationId.getRepoId())
 				.value("warehouseTypeId", warehouseTypeId != null ? warehouseTypeId.getRepoId() : null)
-				.value("locked", locked)
 				.build();
 	}
 
@@ -64,12 +72,11 @@ public class PickingWFProcessStartParams
 		//noinspection ConstantConditions
 		return builder()
 				.salesOrderId(params.getParameterAsId("salesOrderId", OrderId.class))
-				.customerLocationId(
+				.deliveryBPLocationId(
 						BPartnerLocationId.ofRepoIdOrNull(
 								params.getParameterAsId("customerId", BPartnerId.class),
 								params.getParameterAsInt("customerLocationId", -1)))
 				.warehouseTypeId(params.getParameterAsId("warehouseTypeId", WarehouseTypeId.class))
-				.locked(params.getParameterAsBool("locked"))
 				.build();
 	}
 

@@ -1,16 +1,18 @@
 package de.metas.picking.workflow.handlers;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.cache.CCache;
 import de.metas.common.util.time.SystemTime;
+import de.metas.handlingunits.picking.job.model.PickingJobCandidate;
+import de.metas.handlingunits.picking.job.model.PickingJobReference;
 import de.metas.inoutcandidate.ShipmentScheduleId;
-import de.metas.picking.workflow.PickingJobService;
-import de.metas.picking.workflow.model.PickingJobCandidate;
+import de.metas.picking.workflow.PickingJobRestService;
+import de.metas.picking.workflow.PickingWFProcessStartParams;
 import de.metas.user.UserId;
-import de.metas.workflow.rest_api.model.WFProcess;
+import de.metas.workflow.rest_api.model.WFProcessId;
 import de.metas.workflow.rest_api.model.WorkflowLauncher;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersList;
-import de.metas.workflow.rest_api.service.WFProcessesIndex;
 import lombok.NonNull;
 import org.adempiere.util.lang.SynchronizedMutable;
 
@@ -19,22 +21,19 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Set;
 
-import static de.metas.picking.workflow.handlers.activity_handlers.PickingWFActivityHelper.extractShipmentScheduleIds;
+import static de.metas.picking.workflow.handlers.PickingWFProcessHandler.HANDLER_ID;
 
 class PickingWorkflowLaunchersProvider
 {
-	private final PickingJobService pickingJobService;
-	private final WFProcessesIndex wfProcesses;
+	private final PickingJobRestService pickingJobRestService;
 
 	private final CCache<UserId, SynchronizedMutable<WorkflowLaunchersList>> launchersCache = CCache.<UserId, SynchronizedMutable<WorkflowLaunchersList>>builder()
 			.build();
 
 	PickingWorkflowLaunchersProvider(
-			@NonNull final PickingJobService pickingJobService,
-			@NonNull final WFProcessesIndex wfProcesses)
+			@NonNull final PickingJobRestService pickingJobRestService)
 	{
-		this.pickingJobService = pickingJobService;
-		this.wfProcesses = wfProcesses;
+		this.pickingJobRestService = pickingJobRestService;
 	}
 
 	public WorkflowLaunchersList provideLaunchers(
@@ -73,15 +72,19 @@ class PickingWorkflowLaunchersProvider
 
 		//
 		// Already started launchers
-		final ImmutableList<WFProcess> existingWFProcesses = wfProcesses.getByInvokerId(userId);
-		existingWFProcesses.stream()
+		final ImmutableList<PickingJobReference> existingPickingJobs = pickingJobRestService.streamDraftPickingJobReferences(userId)
+				.collect(ImmutableList.toImmutableList());
+		existingPickingJobs.stream()
 				.map(PickingWorkflowLaunchersProvider::toExistingWorkflowLauncher)
 				.forEach(result::add);
 
 		//
 		// New launchers
-		final Set<ShipmentScheduleId> shipmentScheduleIdsAlreadyInPickingJobs = extractShipmentScheduleIds(existingWFProcesses);
-		pickingJobService.streamPickingJobCandidates(userId, shipmentScheduleIdsAlreadyInPickingJobs)
+		final Set<ShipmentScheduleId> shipmentScheduleIdsAlreadyInPickingJobs = existingPickingJobs.stream()
+				.flatMap(existingPickingJob -> existingPickingJob.getShipmentScheduleIds().stream())
+				.collect(ImmutableSet.toImmutableSet());
+
+		pickingJobRestService.streamPickingJobCandidates(userId, shipmentScheduleIdsAlreadyInPickingJobs)
 				.map(PickingWorkflowLaunchersProvider::toNewWorkflowLauncher)
 				.forEach(result::add);
 
@@ -94,22 +97,25 @@ class PickingWorkflowLaunchersProvider
 	private static WorkflowLauncher toNewWorkflowLauncher(@NonNull final PickingJobCandidate pickingJobCandidate)
 	{
 		return WorkflowLauncher.builder()
-				.handlerId(PickingWFProcessHandler.HANDLER_ID)
+				.handlerId(HANDLER_ID)
 				.caption(PickingWFProcessUtils.workflowCaption()
 						.salesOrderDocumentNo(pickingJobCandidate.getSalesOrderDocumentNo())
 						.customerName(pickingJobCandidate.getCustomerName())
 						.build())
 				.startedWFProcessId(null)
-				.wfParameters(pickingJobCandidate.getWfProcessStartParams().toParams())
+				.wfParameters(PickingWFProcessStartParams.of(pickingJobCandidate).toParams())
 				.build();
 	}
 
-	private static WorkflowLauncher toExistingWorkflowLauncher(@NonNull final WFProcess wfProcess)
+	private static WorkflowLauncher toExistingWorkflowLauncher(@NonNull final PickingJobReference pickingJobReference)
 	{
 		return WorkflowLauncher.builder()
-				.handlerId(PickingWFProcessHandler.HANDLER_ID)
-				.caption(wfProcess.getCaption())
-				.startedWFProcessId(wfProcess.getId())
+				.handlerId(HANDLER_ID)
+				.caption(PickingWFProcessUtils.workflowCaption()
+						.salesOrderDocumentNo(pickingJobReference.getSalesOrderDocumentNo())
+						.customerName(pickingJobReference.getCustomerName())
+						.build())
+				.startedWFProcessId(WFProcessId.ofIdPart(HANDLER_ID, pickingJobReference.getPickingJobId()))
 				.build();
 	}
 

@@ -25,13 +25,15 @@ package de.metas.workflow.rest_api.model;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.util.Check;
+import de.metas.util.lang.RepoIdAware;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
-import java.util.UUID;
+import java.util.Objects;
+import java.util.function.Function;
 
 @EqualsAndHashCode
 public final class WFProcessId
@@ -55,9 +57,9 @@ public final class WFProcessId
 		return new WFProcessId(handlerId, idPart);
 	}
 
-	public static WFProcessId random(@NonNull final WFProcessHandlerId handlerId)
+	public static WFProcessId ofIdPart(@NonNull final WFProcessHandlerId handlerId, @NonNull final RepoIdAware idPart)
 	{
-		return new WFProcessId(handlerId, UUID.randomUUID().toString());
+		return new WFProcessId(handlerId, String.valueOf(idPart.getRepoId()));
 	}
 
 	private static final String SEPARATOR = "-";
@@ -98,4 +100,21 @@ public final class WFProcessId
 	{
 		return id != null ? id.getAsString() : null;
 	}
+
+	@NonNull
+	public <ID extends RepoIdAware> ID getRepoId(@NonNull final Function<Integer, ID> idMapper)
+	{
+		try
+		{
+			final int repoIdInt = Integer.parseInt(idPart);
+			return idMapper.apply(repoIdInt);
+		}
+		catch (final Exception ex)
+		{
+			throw new AdempiereException("Failed converting " + this + " to ID", ex);
+		}
+
+	}
+
+	public static boolean equals(@Nullable final WFProcessId id1, @Nullable final WFProcessId id2) {return Objects.equals(id1, id2);}
 }

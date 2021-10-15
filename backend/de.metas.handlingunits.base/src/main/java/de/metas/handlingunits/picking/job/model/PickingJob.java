@@ -20,11 +20,11 @@
  * #L%
  */
 
-package de.metas.picking.workflow.model;
+package de.metas.handlingunits.picking.job.model;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import de.metas.handlingunits.picking.PickingCandidateId;
 import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.api.PickingSlotIdAndCaption;
@@ -34,11 +34,12 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
-import lombok.With;
 import lombok.experimental.Delegate;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
@@ -47,6 +48,9 @@ import java.util.stream.Stream;
 @ToString
 public final class PickingJob
 {
+	@Getter
+	@NonNull private final PickingJobId id;
+
 	@Delegate
 	@NonNull private final PickingJobHeader header;
 
@@ -57,72 +61,67 @@ public final class PickingJob
 	@NonNull private final ImmutableList<PickingJobLine> lines;
 
 	@Getter
-	private final boolean processed;
+	private final PickingJobDocStatus docStatus;
 
 	@Getter
 	private final PickingJobProgress progress;
 
 	@Builder(toBuilder = true)
 	private PickingJob(
+			final @NonNull PickingJobId id,
 			final @NonNull PickingJobHeader header,
 			final @Nullable Optional<PickingSlotIdAndCaption> pickingSlot,
-			final boolean processed, final @NonNull ImmutableList<PickingJobLine> lines)
+			final @NonNull ImmutableList<PickingJobLine> lines,
+			final @NonNull PickingJobDocStatus docStatus)
 	{
 		Check.assumeNotEmpty(lines, "lines not empty");
 
+		this.id = id;
 		this.header = header;
-
 		//noinspection OptionalAssignedToNull
 		this.pickingSlot = pickingSlot != null ? pickingSlot : Optional.empty();
-
 		this.lines = lines;
-
-		this.processed = processed;
+		this.docStatus = docStatus;
 
 		this.progress = computeProgress(lines);
 	}
 
 	private PickingJobProgress computeProgress(@NonNull final ImmutableList<PickingJobLine> lines)
 	{
-		int countFullyPickedLines = 0;
-		int countNotFullyPickedLines = 0;
+		int countPickedLines = 0;
+		int countNotPickedLines = 0;
 		for (final PickingJobLine line : lines)
 		{
-			if (line.getProgress().isFullyPicked())
+			if (line.getProgress().isDone())
 			{
-				countFullyPickedLines++;
+				countPickedLines++;
 			}
 			else
 			{
-				countNotFullyPickedLines++;
+				countNotPickedLines++;
 			}
 		}
 
-		if (countFullyPickedLines <= 0)
+		if (countPickedLines <= 0)
 		{
-			return countNotFullyPickedLines <= 0
-					? PickingJobProgress.FULLY_PICKED // shall NOT happen because we have at least one line
-					: PickingJobProgress.NOTHING_PICKED;
+			return countNotPickedLines <= 0
+					? PickingJobProgress.DONE // shall NOT happen because we have at least one line
+					: PickingJobProgress.NOT_STARTED;
 		}
 		else
 		{
-			return countNotFullyPickedLines <= 0
-					? PickingJobProgress.FULLY_PICKED
-					: PickingJobProgress.PARTIAL_PICKED;
+			return countNotPickedLines <= 0
+					? PickingJobProgress.DONE
+					: PickingJobProgress.IN_PROGRESS;
 		}
 	}
 
 	public void assertNotProcessed()
 	{
-		if (processed)
+		if (docStatus.isProcessed())
 		{
 			throw new AdempiereException("Picking Job was already processed");
 		}
-	}
-
-	public PickingJob withProcessedTrue()
-	{
-		return !processed ? toBuilder().processed(true).build() : this;
 	}
 
 	public Optional<PickingSlotId> getPickingSlotId() {return pickingSlot.map(PickingSlotIdAndCaption::getPickingSlotId);}
@@ -144,6 +143,13 @@ public final class PickingJob
 		return lines.stream().flatMap(PickingJobLine::streamShipmentScheduleId);
 	}
 
+	public PickingJob withDocStatus(final PickingJobDocStatus docStatus)
+	{
+		return !Objects.equals(this.docStatus, docStatus)
+				? toBuilder().docStatus(docStatus).build()
+				: this;
+	}
+
 	public PickingJob withChangedSteps(final UnaryOperator<PickingJobStep> stepMapper)
 	{
 		return withChangedLines(line -> line.withChangedSteps(stepMapper));
@@ -157,20 +163,19 @@ public final class PickingJob
 				: toBuilder().lines(changedLines).build();
 	}
 
-	public PickingJobStep getStepById(@NonNull final PickingJobStepId stepId)
+	public PickingJob applyingEvents(@NonNull final List<PickingJobStepEvent> events)
 	{
-		return lines.stream()
-				.flatMap(line -> line.getSteps().stream())
-				.filter(step -> PickingJobStepId.equals(step.getId(), stepId))
-				.findFirst()
-				.orElseThrow(() -> new AdempiereException("No step found for " + stepId));
-	}
+		assertNotProcessed();
 
-	public ImmutableSet<PickingCandidateId> getPickingCandidateIds()
-	{
-		return lines.stream()
-				.flatMap(line -> line.getSteps().stream())
-				.map(PickingJobStep::getPickingCandidateId)
-				.collect(ImmutableSet.toImmutableSet());
+		if (events.isEmpty())
+		{
+			return this;
+		}
+
+		final ImmutableMap<PickingJobStepId, PickingJobStepEvent> eventsByStepId = PickingJobStepEvent.aggregateByStepId(events);
+		return withChangedSteps(step -> {
+			final PickingJobStepEvent event = eventsByStepId.get(step.getId());
+			return event != null ? step.applyingEvent(event) : step;
+		});
 	}
 }

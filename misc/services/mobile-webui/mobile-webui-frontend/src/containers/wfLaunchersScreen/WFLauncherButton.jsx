@@ -21,8 +21,7 @@ class WFLauncherButton extends PureComponent {
       : startWorkflowRequest({ wfParameters });
 
     wfProcessPromise
-      .then(({ data }) => {
-        const { endpointResponse: wfProcess } = data;
+      .then((wfProcess) => {
         updateWFProcess({ wfProcess });
         this.gotoWFProcessScreen({ wfProcess });
       })

@@ -22,8 +22,8 @@
 
 package de.metas.picking.workflow.handlers.activity_handlers;
 
-import de.metas.picking.workflow.PickingJobService;
-import de.metas.picking.workflow.model.PickingJob;
+import de.metas.picking.workflow.PickingJobRestService;
+import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.workflow.rest_api.activity_features.user_confirmation.UserConfirmationRequest;
 import de.metas.workflow.rest_api.activity_features.user_confirmation.UserConfirmationSupport;
 import de.metas.workflow.rest_api.controller.v2.json.JsonOpts;
@@ -45,12 +45,12 @@ public class CompletePickingWFActivityHandler implements WFActivityHandler, User
 {
 	public static final WFActivityType HANDLED_ACTIVITY_TYPE = WFActivityType.ofString("picking.completePicking");
 
-	private final PickingJobService pickingJobService;
+	private final PickingJobRestService pickingJobRestService;
 
 	public CompletePickingWFActivityHandler(
-			@NonNull final PickingJobService pickingJobService)
+			@NonNull final PickingJobRestService pickingJobRestService)
 	{
-		this.pickingJobService = pickingJobService;
+		this.pickingJobRestService = pickingJobRestService;
 	}
 
 	@Override
@@ -77,7 +77,7 @@ public class CompletePickingWFActivityHandler implements WFActivityHandler, User
 	public WFActivityStatus computeActivityState(final WFProcess wfProcess, final WFActivity completePickingWFActivity)
 	{
 		final PickingJob pickingJob = getPickingJob(wfProcess);
-		return pickingJob.isProcessed() ? WFActivityStatus.COMPLETED : WFActivityStatus.NOT_STARTED;
+		return pickingJob.getDocStatus().isProcessed() ? WFActivityStatus.COMPLETED : WFActivityStatus.NOT_STARTED;
 	}
 
 	@Override
@@ -86,6 +86,6 @@ public class CompletePickingWFActivityHandler implements WFActivityHandler, User
 		final WFProcess wfProcess = request.getWfProcess();
 		request.getWfActivity().getWfActivityType().assertExpected(HANDLED_ACTIVITY_TYPE);
 
-		return wfProcess.mapDocument(pickingJobService::process);
+		return wfProcess.mapDocument(pickingJobRestService::complete);
 	}
 }

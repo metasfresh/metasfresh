@@ -49,11 +49,12 @@ public class WarehouseBL implements IWarehouseBL
 {
 	private final transient Logger logger = LogManager.getLogger(getClass());
 	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
+	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 
 	@Override
 	public I_M_Warehouse getById(@NonNull final WarehouseId warehouseId)
 	{
-		return Services.get(IWarehouseDAO.class).getById(warehouseId);
+		return warehouseDAO.getById(warehouseId);
 	}
 
 	@Override
@@ -66,16 +67,14 @@ public class WarehouseBL implements IWarehouseBL
 	public I_M_Locator getDefaultLocator(@NonNull final WarehouseId warehouseId)
 	{
 		final LocatorId defaultLocatorId = getDefaultLocatorId(warehouseId);
-		return Services.get(IWarehouseDAO.class).getLocatorById(defaultLocatorId);
+		return warehouseDAO.getLocatorById(defaultLocatorId);
 	}
 
 	@Override
 	@NonNull
 	public LocatorId getDefaultLocatorId(@NonNull final WarehouseId warehouseId)
 	{
-		final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
-
-		final List<I_M_Locator> locators = warehousesRepo.getLocators(warehouseId);
+		final List<I_M_Locator> locators = warehouseDAO.getLocators(warehouseId);
 		int activeLocatorsCount = 0;
 		if (!locators.isEmpty())
 		{
@@ -112,7 +111,7 @@ public class WarehouseBL implements IWarehouseBL
 				// Log a warning, in case there are more then one active locators.
 				if (activeLocatorsCount > 1)
 				{
-					final String warehouseName = warehousesRepo.getWarehouseName(warehouseId);
+					final String warehouseName = warehouseDAO.getWarehouseName(warehouseId);
 					logger.warn("No default locator for warehouse {}. Returning the first one: {}", warehouseName, locatorFirst);
 				}
 
@@ -123,12 +122,12 @@ public class WarehouseBL implements IWarehouseBL
 		//
 		// No Locator was found: no default one and non which is active
 		// => Create a new Locator and return it
-		return warehousesRepo.createDefaultLocator(warehouseId);
+		return warehouseDAO.createDefaultLocator(warehouseId);
 	}
 
 	private I_C_Location getC_Location(@NonNull final WarehouseId warehouseId)
 	{
-		final I_M_Warehouse warehouse = Services.get(IWarehouseDAO.class).getById(warehouseId);
+		final I_M_Warehouse warehouse = warehouseDAO.getById(warehouseId);
 		return getC_Location(warehouse);
 	}
 
@@ -136,7 +135,7 @@ public class WarehouseBL implements IWarehouseBL
 	{
 		Check.assumeNotNull(warehouse, "warehouse not null");
 
-		final I_C_BPartner_Location bpLocation = bPartnerDAO.getBPartnerLocationById(BPartnerLocationId.ofRepoIdOrNull(warehouse.getC_BPartner_ID(),warehouse.getC_BPartner_Location_ID()));
+		final I_C_BPartner_Location bpLocation = bPartnerDAO.getBPartnerLocationById(BPartnerLocationId.ofRepoIdOrNull(warehouse.getC_BPartner_ID(), warehouse.getC_BPartner_Location_ID()));
 		Check.assumeNotNull(bpLocation, "C_BPartner_Location_ID not null for {}", warehouse);
 
 		final I_C_Location location = bpLocation.getC_Location();
@@ -159,5 +158,11 @@ public class WarehouseBL implements IWarehouseBL
 	{
 		final I_M_Warehouse warehouseRecord = loadOutOfTrx(warehouseId, I_M_Warehouse.class);
 		return OrgId.ofRepoIdOrAny(warehouseRecord.getAD_Org_ID());
+	}
+
+	@Override
+	public String getLocatorNameById(final LocatorId locatorId)
+	{
+		return warehouseDAO.getLocatorById(locatorId).getValue();
 	}
 }

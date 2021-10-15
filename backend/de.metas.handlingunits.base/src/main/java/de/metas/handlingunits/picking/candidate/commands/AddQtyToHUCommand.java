@@ -19,6 +19,7 @@ import de.metas.handlingunits.picking.IHUPickingSlotBL;
 import de.metas.handlingunits.picking.PickFrom;
 import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
+import de.metas.handlingunits.picking.PickingSlotAllocateRequest;
 import de.metas.handlingunits.picking.requests.AddQtyToHURequest;
 import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
@@ -151,7 +152,10 @@ public class AddQtyToHUCommand
 		addQtyToCandidate(candidate, productId, qtyPicked);
 
 		final BPartnerLocationId bpartnerAndLocationId = shipmentScheduleBL.getBPartnerLocationId(shipmentSchedule);
-		huPickingSlotBL.allocatePickingSlotIfPossible(pickingSlotId, bpartnerAndLocationId);
+		huPickingSlotBL.allocatePickingSlotIfPossible(PickingSlotAllocateRequest.builder()
+						.pickingSlotId(pickingSlotId)
+						.bpartnerAndLocationId(bpartnerAndLocationId)
+						.build());
 
 		return qtyPicked;
 	}

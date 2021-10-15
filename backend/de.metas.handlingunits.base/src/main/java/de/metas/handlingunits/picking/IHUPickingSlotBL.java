@@ -11,6 +11,7 @@ import de.metas.handlingunits.model.I_M_PickingSlot_HU;
 import de.metas.handlingunits.model.I_M_PickingSlot_Trx;
 import de.metas.handlingunits.model.I_M_Source_HU;
 import de.metas.handlingunits.model.X_M_HU;
+import de.metas.handlingunits.picking.job.model.PickingJobId;
 import de.metas.handlingunits.picking.requests.RetrieveAvailableHUIdsToPickRequest;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -123,7 +124,7 @@ public interface IHUPickingSlotBL extends IPickingSlotBL, ISingletonService
 	 * Note: Even if the given <code>pickingSlot</code> already has a HU assigned to itself, this method does not set that HU's <code>C_BPartner_ID</code> and <code>C_BPartner_Lcoation_ID</code>.
 	 * Setting them is the job of the business logic which associates the HU with the <code>M_ShipmentSchedule</code> for which we are doing all this.
 	 */
-	BooleanWithReason allocatePickingSlotIfPossible(@NonNull PickingSlotId pickingSlotId, @NonNull BPartnerLocationId bpartnerAndLocationId);
+	BooleanWithReason allocatePickingSlotIfPossible(@NonNull PickingSlotAllocateRequest request);
 
 	/**
 	 * Release the given dynamic picking slot.<br>
@@ -133,6 +134,8 @@ public interface IHUPickingSlotBL extends IPickingSlotBL, ISingletonService
 	void releasePickingSlotIfPossible(I_M_PickingSlot pickingSlot);
 
 	void releasePickingSlotIfPossible(PickingSlotId pickingSlotId);
+
+	void releasePickingSlotIfPossible(PickingSlotId pickingSlotId, PickingJobId pickingJobId);
 
 	void releasePickingSlotsIfPossible(Collection<PickingSlotId> pickingSlotIds);
 

@@ -33,6 +33,7 @@ import de.metas.money.Money;
 import de.metas.order.DeliveryViaRule;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.shipping.ShipperId;
@@ -62,6 +63,8 @@ import java.util.function.Function;
 @Builder
 public class Packageable
 {
+	@NonNull OrgId orgId;
+
 	@NonNull
 	ShipmentScheduleId shipmentScheduleId;
 

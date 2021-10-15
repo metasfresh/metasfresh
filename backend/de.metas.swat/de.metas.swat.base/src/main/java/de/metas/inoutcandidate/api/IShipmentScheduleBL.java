@@ -75,8 +75,6 @@ public interface IShipmentScheduleBL extends ISingletonService
 
 	/**
 	 * Updates the given shipment schedule's {@link I_M_ShipmentSchedule#COLUMNNAME_BPartnerAddress_Override} field
-	 *
-	 * @param sched
 	 */
 	void updateBPartnerAddressOverrideIfNotYetSet(I_M_ShipmentSchedule sched);
 
@@ -91,9 +89,6 @@ public interface IShipmentScheduleBL extends ISingletonService
 	 * Evaluates if the given shipment schedule's order and effective bPartner allow that different orders' schedules to go into one and the same shipment.
 	 * <p>
 	 * <b>IMPORTANT</b> this column does not evaluate the actual schedule's own {@link I_M_ShipmentSchedule#isAllowConsolidateInOut()} value. As of now, that flag is only for the user's information.
-	 *
-	 * @param sched
-	 * @return
 	 */
 	boolean isSchedAllowsConsolidate(I_M_ShipmentSchedule sched);
 
@@ -110,7 +105,8 @@ public interface IShipmentScheduleBL extends ISingletonService
 	 *
 	 * @return the previous <code>QtyOrdered</code> value of the schedule
 	 *         <li>NOTE: This returned value is never used. Maybe we shall change this method to return void.
-	 * @task 08255
+	 *
+	 * @implNote task 08255
 	 */
 	BigDecimal updateQtyOrdered(I_M_ShipmentSchedule shipmentSchedule);
 
@@ -122,6 +118,8 @@ public interface IShipmentScheduleBL extends ISingletonService
 	void closeShipmentSchedule(I_M_ShipmentSchedule schedule);
 
 	void closeShipmentSchedule(ShipmentScheduleId shipmentScheduleId);
+
+	void closeShipmentSchedules(@NonNull Set<ShipmentScheduleId> shipmentScheduleIds);
 
 	/**
 	 * Reopen the closed shipment schedule given as parameter

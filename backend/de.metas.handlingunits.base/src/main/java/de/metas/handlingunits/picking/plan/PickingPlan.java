@@ -23,9 +23,12 @@
 package de.metas.handlingunits.picking.plan;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.product.ProductId;
+import de.metas.util.GuavaCollectors;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
 
 /**
  * Contains a plan about how a picker can precisely pick.
@@ -35,4 +38,12 @@ import lombok.Value;
 public class PickingPlan
 {
 	@NonNull ImmutableList<PickingPlanLine> lines;
+
+	public ProductId getSingleProductId()
+	{
+		return lines.stream()
+				.map(PickingPlanLine::getProductId)
+				.distinct()
+				.collect(GuavaCollectors.singleElementOrThrow(() -> new AdempiereException("Expected the plan to contain only one product")));
+	}
 }

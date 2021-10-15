@@ -24,8 +24,10 @@ import de.metas.handlingunits.model.X_M_PickingSlot_Trx;
 import de.metas.handlingunits.picking.IHUPickingSlotBL;
 import de.metas.handlingunits.picking.IHUPickingSlotDAO;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
+import de.metas.handlingunits.picking.PickingSlotAllocateRequest;
 import de.metas.handlingunits.picking.impl.HUPickingSlotBLs.RetrieveAvailableHUsToPick;
 import de.metas.handlingunits.picking.impl.HUPickingSlotBLs.RetrieveAvailableHUsToPickFilters;
+import de.metas.handlingunits.picking.job.model.PickingJobId;
 import de.metas.handlingunits.picking.requests.RetrieveAvailableHUIdsToPickRequest;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.i18n.BooleanWithReason;
@@ -83,6 +85,9 @@ public class HUPickingSlotBL
 		extends PickingSlotBL
 		implements IHUPickingSlotBL
 {
+	private final IPickingSlotDAO pickingSlotDAO = Services.get(IPickingSlotDAO.class);
+	private final IHUPickingSlotDAO huPickingSlotDAO = Services.get(IHUPickingSlotDAO.class);
+
 	public static final class QueueActionResult implements IHUPickingSlotBL.IQueueActionResult
 	{
 		private final I_M_PickingSlot_Trx pickingSlotTrx;
@@ -185,7 +190,7 @@ public class HUPickingSlotBL
 	}
 
 	/**
-	 * @param addToQueue  if <code>true</code>, the current HU is not only closed, but also added to the picking slot queue.
+	 * @param addToQueue if <code>true</code>, the current HU is not only closed, but also added to the picking slot queue.
 	 * @return the HU which was unassigned from the given pickingSlot, or <code>null</code>
 	 */
 	private I_M_HU closeCurrentHU(final I_M_PickingSlot pickingSlot, final boolean addToQueue)
@@ -500,16 +505,15 @@ public class HUPickingSlotBL
 	}
 
 	@Override
-	public BooleanWithReason allocatePickingSlotIfPossible(
-			final @NonNull PickingSlotId pickingSlotId,
-			final @NonNull BPartnerLocationId bpartnerAndLocationId)
+	public BooleanWithReason allocatePickingSlotIfPossible(@NonNull final PickingSlotAllocateRequest request)
 	{
-		final I_M_PickingSlot pickingSlot = pickingSlotDAO.getById(pickingSlotId, I_M_PickingSlot.class);
+		final I_M_PickingSlot pickingSlot = pickingSlotDAO.getById(request.getPickingSlotId(), I_M_PickingSlot.class);
 
 		//
 		// Already allocated to same location
 		final BPartnerLocationId pickingSlotBPartnerAndLocationId = BPartnerLocationId.ofRepoIdOrNull(pickingSlot.getC_BPartner_ID(), pickingSlot.getC_BPartner_Location_ID());
-		if (BPartnerLocationId.equals(bpartnerAndLocationId, pickingSlotBPartnerAndLocationId))
+		if (BPartnerLocationId.equals(pickingSlotBPartnerAndLocationId, request.getBpartnerAndLocationId())
+				&& PickingJobId.equals(PickingJobId.ofRepoIdOrNull(pickingSlot.getM_Picking_Job_ID()), request.getPickingJobId()))
 		{
 			return BooleanWithReason.TRUE;
 		}
@@ -528,8 +532,9 @@ public class HUPickingSlotBL
 			return BooleanWithReason.falseBecause("already allocated");
 		}
 
-		pickingSlot.setC_BPartner_ID(bpartnerAndLocationId.getBpartnerId().getRepoId());
-		pickingSlot.setC_BPartner_Location_ID(bpartnerAndLocationId.getRepoId());
+		pickingSlot.setC_BPartner_ID(request.getBpartnerAndLocationId().getBpartnerId().getRepoId());
+		pickingSlot.setC_BPartner_Location_ID(request.getBpartnerAndLocationId().getRepoId());
+		pickingSlot.setM_Picking_Job_ID(PickingJobId.toRepoId(request.getPickingJobId()));
 		InterfaceWrapperHelper.save(pickingSlot);
 
 		return BooleanWithReason.TRUE;
@@ -537,6 +542,11 @@ public class HUPickingSlotBL
 
 	@Override
 	public void releasePickingSlotIfPossible(final I_M_PickingSlot pickingSlot)
+	{
+		releasePickingSlotIfPossible(pickingSlot, null);
+	}
+
+	public void releasePickingSlotIfPossible(final I_M_PickingSlot pickingSlot, final PickingJobId pickingJobId)
 	{
 		//
 		// Not dynamic picking slot; gtfo
@@ -553,8 +563,15 @@ public class HUPickingSlotBL
 		}
 
 		//
+		// If used in a picking job make sure that picking job is provided as param
+		if (!PickingJobId.equals(PickingJobId.ofRepoIdOrNull(pickingSlot.getM_Picking_Job_ID()), pickingJobId))
+		{
+			return;
+		}
+
+		//
 		// There still are PickingSlot-HU assignments; do nothing
-		if (!Services.get(IHUPickingSlotDAO.class).isEmpty(pickingSlot))
+		if (!huPickingSlotDAO.isEmpty(pickingSlot))
 		{
 			return;
 		}
@@ -570,14 +587,22 @@ public class HUPickingSlotBL
 
 		pickingSlot.setC_BPartner_ID(-1);
 		pickingSlot.setC_BPartner_Location_ID(-1);
+		pickingSlot.setM_PickingSlot_ID(-1);
 		InterfaceWrapperHelper.save(pickingSlot);
 	}
 
 	@Override
 	public void releasePickingSlotIfPossible(final PickingSlotId pickingSlotId)
 	{
-		final I_M_PickingSlot pickingSlot = Services.get(IPickingSlotDAO.class).getById(pickingSlotId, I_M_PickingSlot.class);
-		releasePickingSlotIfPossible(pickingSlot);
+		final I_M_PickingSlot pickingSlot = pickingSlotDAO.getById(pickingSlotId, I_M_PickingSlot.class);
+		releasePickingSlotIfPossible(pickingSlot, null);
+	}
+
+	@Override
+	public void releasePickingSlotIfPossible(final PickingSlotId pickingSlotId, final PickingJobId pickingJobId)
+	{
+		final I_M_PickingSlot pickingSlot = pickingSlotDAO.getById(pickingSlotId, I_M_PickingSlot.class);
+		releasePickingSlotIfPossible(pickingSlot, pickingJobId);
 	}
 
 	@Override
