@@ -8,4 +8,3 @@ export function heartBeat() {
   const apiURLpart = apiBasePath.split('/');
   return axios.get(`${apiURLpart[0]}/${apiURLpart[2]}/app/info`);
 }
-
