@@ -73,6 +73,9 @@ registerRoute(new RegExp('.+\\.js$'), new strategies.CacheFirst());
 // Rules samples -> https://developers.google.com/web/tools/workbox/guides/route-requests
 registerRoute(new RegExp('.+\\.css$'), new strategies.CacheFirst());
 
+// Routes for which network connectivity is imperative
+registerRoute(new RegExp('.+/auth$'), new strategies.NetworkOnly());
+
 // An example runtime caching route for requests that aren't handled by the
 // precache, in this case same-origin .png requests like those from in public/
 registerRoute(
