@@ -1288,6 +1288,11 @@ public class TimeUtil
 		return new Timestamp(gc.getTimeInMillis());
 	}
 
+	public static Timestamp asTimestampNotNull(@NonNull final ZonedDateTime zdt)
+	{
+		return Timestamp.from(zdt.toInstant());
+	}
+
 	@Nullable
 	public static Timestamp asTimestamp(@Nullable final Object obj)
 	{
