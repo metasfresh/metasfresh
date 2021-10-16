@@ -24,8 +24,9 @@ package de.metas.contracts.pricing.trade_margin;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
-import de.metas.contracts.model.I_C_Customer_Trade_Margin;
-import de.metas.contracts.model.I_C_Customer_Trade_Margin_Line;
+import de.metas.contracts.commission.model.I_C_Customer_Trade_Margin;
+import de.metas.contracts.commission.model.I_C_Customer_Trade_Margin_Line;
+import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -87,6 +88,8 @@ public class CustomerTradeMarginRepository
 				.seqNo(record.getSeqNo())
 				.marginPercent(record.getMargin())
 				.customerId(BPartnerId.ofRepoIdOrNull(record.getC_BPartner_Customer_ID()))
+				.productCategoryId(ProductCategoryId.ofRepoIdOrNull(record.getM_Product_Category_ID()))
+				.productId(ProductId.ofRepoIdOrNull(record.getM_Product_ID()))
 				.active(record.isActive())
 				.build();
 	}

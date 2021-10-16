@@ -23,6 +23,8 @@
 package de.metas.contracts.pricing.trade_margin;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.product.ProductCategoryId;
+import de.metas.product.ProductId;
 import de.metas.util.lang.Percent;
 import lombok.Builder;
 import lombok.NonNull;
@@ -52,6 +54,12 @@ public class CustomerTradeMarginLine
 	@Nullable
 	BPartnerId customerId;
 
+	@Nullable
+	ProductId productId;
+
+	@Nullable
+	ProductCategoryId productCategoryId;
+
 	@Builder
 	CustomerTradeMarginLine(
 			@Nullable final CustomerTradeMarginLineId customerTradeMarginLineId,
@@ -59,8 +67,9 @@ public class CustomerTradeMarginLine
 			@NonNull final Boolean active,
 			@NonNull final Integer seqNo,
 			@NonNull final Integer marginPercent,
-			@Nullable final BPartnerId customerId
-	)
+			@Nullable final BPartnerId customerId,
+			@Nullable final ProductId productId,
+			@Nullable final ProductCategoryId productCategoryId)
 	{
 		this.customerTradeMarginLineId = customerTradeMarginLineId;
 		this.customerTradeMarginId = customerTradeMarginId;
@@ -68,6 +77,8 @@ public class CustomerTradeMarginLine
 		this.seqNo = seqNo;
 		this.marginPercent = marginPercent;
 		this.customerId = customerId;
+		this.productId = productId;
+		this.productCategoryId = productCategoryId;
 	}
 
 	@NonNull
@@ -83,19 +94,54 @@ public class CustomerTradeMarginLine
 		return customerTradeMarginLineId;
 	}
 
-	public boolean appliesTo(@NonNull final BPartnerId customerCandidateId)
+	public boolean appliesTo(@NonNull final MappingCriteria mappingCriteria)
+	{
+		return appliesToCustomer(mappingCriteria.getCustomerId()) 
+				&& appliesToProduct(mappingCriteria.getProductId())
+				&& appliesToProductCategory(mappingCriteria.getProductCategoryId());
+	}
+
+	private boolean appliesToCustomer(@NonNull final BPartnerId customerCandidateId)
 	{
 		if (this.customerId == null)
 		{
 			return true;
 		}
-
 		return this.customerId.equals(customerCandidateId);
+	}
+
+	private boolean appliesToProduct(@NonNull final ProductId productId)
+	{
+		if (this.productId == null)
+		{
+			return true;
+		}
+		return this.productId.equals(productId);
+	}
+
+	private boolean appliesToProductCategory(@NonNull final ProductCategoryId productCategoryId)
+	{
+		if (this.productCategoryId == null)
+		{
+			return true;
+		}
+		return this.productCategoryId.equals(productCategoryId);
 	}
 
 	@NonNull
 	public Percent getPercent()
 	{
 		return Percent.of(this.marginPercent);
+	}
+
+	@Value
+	@Builder
+	public static class MappingCriteria
+	{
+		@NonNull BPartnerId customerId;
+
+		@NonNull ProductId productId;
+
+		@NonNull ProductCategoryId productCategoryId;
 	}
 }

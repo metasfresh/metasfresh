@@ -24,14 +24,15 @@ package de.metas.contracts.commission.commissioninstance.services.margin;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
+import de.metas.business.BusinessTestHelper;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionConfig;
 import de.metas.contracts.commission.commissioninstance.businesslogic.hierarchy.Hierarchy;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTriggerType;
 import de.metas.contracts.commission.commissioninstance.services.CommissionConfigProvider;
 import de.metas.contracts.commission.commissioninstance.testhelpers.TestCommissionContractBuilder;
+import de.metas.contracts.commission.model.I_C_Customer_Trade_Margin;
+import de.metas.contracts.commission.model.I_C_Customer_Trade_Margin_Line;
 import de.metas.contracts.flatrate.TypeConditions;
-import de.metas.contracts.model.I_C_Customer_Trade_Margin;
-import de.metas.contracts.model.I_C_Customer_Trade_Margin_Line;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.pricing.trade_margin.CustomerTradeMarginId;
 import de.metas.contracts.pricing.trade_margin.CustomerTradeMarginRepository;
@@ -39,9 +40,11 @@ import de.metas.contracts.pricing.trade_margin.CustomerTradeMarginService;
 import de.metas.currency.CurrencyRepository;
 import de.metas.money.MoneyService;
 import de.metas.organization.OrgId;
+import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import lombok.Builder;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_C_UOM;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -83,8 +86,12 @@ public class MarginCommissionConfigFactoryTest
 		final BPartnerId salesRepId = BPartnerId.ofRepoId(1);
 		final BPartnerId customerBPartnerId = BPartnerId.ofRepoId(2);
 		final LocalDate commissionDate = LocalDate.of(2021, 9, 13);
-		final ProductId transactionProductId = ProductId.ofRepoId(104);
-		final ProductId commissionProductId = ProductId.ofRepoId(103);
+
+		final ProductCategoryId categoryId = BusinessTestHelper.createProductCategory("Category", null);
+		
+		final I_C_UOM uomPCE = BusinessTestHelper.createUomPCE();
+		final ProductId transactionProductId = BusinessTestHelper.createProduct("salesProduct", uomPCE, categoryId);
+		final ProductId commissionProductId = BusinessTestHelper.createProduct("comissionProduct", uomPCE, categoryId);
 
 		final I_C_Flatrate_Term mediatedContract = contractAndComplementaryRecordsBuilder()
 				.commissionProductId(commissionProductId)

@@ -8,10 +8,11 @@ import javax.annotation.Nullable;
 /** Generated Model for C_HierarchyCommissionSettings
  *  @author metasfresh (generated) 
  */
+@SuppressWarnings("unused")
 public class X_C_HierarchyCommissionSettings extends org.compiere.model.PO implements I_C_HierarchyCommissionSettings, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 589778521L;
+	private static final long serialVersionUID = -1007640463L;
 
     /** Standard Constructor */
     public X_C_HierarchyCommissionSettings (final Properties ctx, final int C_HierarchyCommissionSettings_ID, @Nullable final String trxName)
@@ -64,7 +65,7 @@ public class X_C_HierarchyCommissionSettings extends org.compiere.model.PO imple
 	}
 
 	@Override
-	public void setDescription (final java.lang.String Description)
+	public void setDescription (final @Nullable java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}

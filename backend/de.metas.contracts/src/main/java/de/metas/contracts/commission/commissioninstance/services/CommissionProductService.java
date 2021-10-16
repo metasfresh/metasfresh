@@ -1,11 +1,11 @@
 package de.metas.contracts.commission.commissioninstance.services;
 
 import de.metas.contracts.ConditionsId;
+import de.metas.contracts.commission.model.I_C_Customer_Trade_Margin;
 import de.metas.contracts.commission.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.commission.model.I_C_HierarchyCommissionSettings;
 import de.metas.contracts.commission.model.I_C_MediatedCommissionSettings;
 import de.metas.contracts.flatrate.TypeConditions;
-import de.metas.contracts.model.I_C_Customer_Trade_Margin;
 import de.metas.logging.LogManager;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;

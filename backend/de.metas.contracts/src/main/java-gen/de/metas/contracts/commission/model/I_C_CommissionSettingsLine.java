@@ -7,6 +7,7 @@ import org.adempiere.model.ModelColumn;
 /** Generated Interface for C_CommissionSettingsLine
  *  @author metasfresh (generated) 
  */
+@SuppressWarnings("unused")
 public interface I_C_CommissionSettingsLine 
 {
 
@@ -73,7 +74,7 @@ public interface I_C_CommissionSettingsLine
 	String COLUMNNAME_C_BPartner_Customer_ID = "C_BPartner_Customer_ID";
 
 	/**
-	 * Set Settings detail.
+	 * Set Sales commission detail.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -82,7 +83,7 @@ public interface I_C_CommissionSettingsLine
 	void setC_CommissionSettingsLine_ID (int C_CommissionSettingsLine_ID);
 
 	/**
-	 * Get Settings detail.
+	 * Get Sales commission detail.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true

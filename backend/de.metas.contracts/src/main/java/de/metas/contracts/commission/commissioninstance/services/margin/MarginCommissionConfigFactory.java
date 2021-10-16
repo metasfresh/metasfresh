@@ -44,8 +44,12 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.pricing.trade_margin.CustomerTradeMargin;
 import de.metas.contracts.pricing.trade_margin.CustomerTradeMarginId;
 import de.metas.contracts.pricing.trade_margin.CustomerTradeMarginLine;
+import de.metas.contracts.pricing.trade_margin.CustomerTradeMarginLine.MappingCriteria;
 import de.metas.contracts.pricing.trade_margin.CustomerTradeMarginService;
 import de.metas.organization.OrgId;
+import de.metas.product.IProductDAO;
+import de.metas.product.ProductCategoryId;
+import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -66,6 +70,7 @@ public class MarginCommissionConfigFactory implements ICommissionConfigFactory
 	private final IContractsDAO contractsDAO = Services.get(IContractsDAO.class);
 
 	private final CustomerTradeMarginService customerTradeMarginService;
+	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 
 	public MarginCommissionConfigFactory(@NonNull final CustomerTradeMarginService customerTradeMarginService)
 	{
@@ -92,7 +97,9 @@ public class MarginCommissionConfigFactory implements ICommissionConfigFactory
 
 		final I_C_Flatrate_Term contract = getContractToEnforce(marginCommissionContracts);
 
-		return createCommissionConfigsFor(contract, contractRequest.getCustomerBPartnerId())
+		final MappingCriteria mappingCriteria = extractMappingCriteria(contractRequest.getSalesProductId(), contractRequest.getCustomerBPartnerId());
+
+		return createCommissionConfigsFor(contract, mappingCriteria)
 				.map(ImmutableList::of)
 				.orElseGet(ImmutableList::of);
 	}
@@ -113,9 +120,22 @@ public class MarginCommissionConfigFactory implements ICommissionConfigFactory
 
 		final I_C_Flatrate_Term contract = getContractToEnforce(marginCommissionContracts);
 
-		return createCommissionConfigsFor(contract, commissionConfigRequest.getCustomerBPartnerId())
+		final MappingCriteria mappingCriteria = extractMappingCriteria(commissionConfigRequest.getSalesProductId(), commissionConfigRequest.getCustomerBPartnerId());
+
+		return createCommissionConfigsFor(contract, mappingCriteria)
 				.map(commissionConfig -> ImmutableMap.of(FlatrateTermId.ofRepoId(contract.getC_Flatrate_Term_ID()), commissionConfig))
 				.orElseGet(ImmutableMap::of);
+	}
+
+	private MappingCriteria extractMappingCriteria(final ProductId salesProductId, final BPartnerId customerBPartnerId)
+	{
+		final ProductCategoryId productCategoryId = productDAO.retrieveProductCategoryByProductId(salesProductId);
+
+		return MappingCriteria.builder()
+				.customerId(customerBPartnerId)
+				.productId(salesProductId)
+				.productCategoryId(productCategoryId)
+				.build();
 	}
 
 	@Override
@@ -139,7 +159,7 @@ public class MarginCommissionConfigFactory implements ICommissionConfigFactory
 	@NonNull
 	private Optional<CommissionConfig> createCommissionConfigsFor(
 			@NonNull final I_C_Flatrate_Term marginCommissionContract,
-			@NonNull final BPartnerId customerBPartnerId)
+			@NonNull final MappingCriteria mappingCriteria)
 	{
 		final ConditionsId conditionsId = ConditionsId.ofRepoId(marginCommissionContract.getC_Flatrate_Conditions_ID());
 		final I_C_Flatrate_Conditions conditions = contractsDAO.getConditionsById(conditionsId, I_C_Flatrate_Conditions.class);
@@ -166,7 +186,7 @@ public class MarginCommissionConfigFactory implements ICommissionConfigFactory
 					.setParameter("C_Flatrate_Term.M_Product_ID", marginCommissionContract.getM_Product_ID());
 		}
 
-		final Optional<CustomerTradeMarginLine> lineForCustomerOpt = customerTradeMargin.getLineForCustomer(customerBPartnerId);
+		final Optional<CustomerTradeMarginLine> lineForCustomerOpt = customerTradeMargin.getLineForCustomer(mappingCriteria);
 
 		if (!lineForCustomerOpt.isPresent())
 		{
