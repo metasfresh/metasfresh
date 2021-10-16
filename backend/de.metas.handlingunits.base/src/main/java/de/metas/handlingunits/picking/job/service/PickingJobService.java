@@ -131,7 +131,6 @@ public class PickingJobService
 				.customerName(item.getCustomerName())
 				.deliveryBPLocationId(item.getCustomerLocationId())
 				.warehouseTypeId(item.getWarehouseTypeId())
-				.locked(item.getLockedBy() != null)
 				.build();
 	}
 
