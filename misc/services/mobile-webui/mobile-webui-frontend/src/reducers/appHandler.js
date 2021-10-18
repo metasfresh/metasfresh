@@ -4,6 +4,7 @@ import * as tokenTypes from '../constants/TokenActionTypes';
 export const initialState = {
   network: true,
   token: null,
+  version: null,
 };
 
 export default function appHandler(state = initialState, action) {
