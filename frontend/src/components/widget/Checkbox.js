@@ -21,6 +21,7 @@ const Checkbox = (props) => {
     filterWidget,
     isFilterActive,
     updateItems,
+    isEdited,
   } = props;
   let { value, defaultValue } = widgetData;
   const prevValue = usePrevious(value);
@@ -46,6 +47,10 @@ const Checkbox = (props) => {
     // application (ex modal)
     if (!initialRender && !updateItems) {
       setInitialRender(true);
+    }
+
+    if (isChanged && value !== prevValue && initialRender && isEdited) {
+      setChanged(false);
     }
 
     // if widget's value changed without user triggering it, update the local state as it
@@ -85,8 +90,11 @@ const Checkbox = (props) => {
     !isFilterActive &&
       updateItems &&
       updateItems({ widgetField, value: !checkedState });
+
     handlePatch(widgetField, newCheckedState, id).then(() => {
-      setChanged(false);
+      if (!isEdited) {
+        setChanged(false);
+      }
     });
   };
 
