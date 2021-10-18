@@ -75,8 +75,6 @@ import java.util.Properties;
 
 public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 {
-	private final InvoiceCandidateRecordService invoiceCandidateRecordService = SpringContextHolder.instance.getBean(InvoiceCandidateRecordService.class);
-
 	private static final Object NO_MODEL = new Object()
 	{
 		@Override
@@ -563,6 +561,8 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 	@Override
 	public void setPickedData(final I_C_Invoice_Candidate ic)
 	{
+		final InvoiceCandidateRecordService invoiceCandidateRecordService = SpringContextHolder.instance.getBean(InvoiceCandidateRecordService.class);
+
 		final IInvoiceCandidateHandler handler = createInvoiceCandidateHandler(ic);
 		handler.setShipmentSchedule(ic);
 
