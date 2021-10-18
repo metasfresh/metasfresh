@@ -22,6 +22,7 @@
 
 package de.metas.picking.api;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.inoutcandidate.ShipmentScheduleId;
@@ -29,6 +30,7 @@ import de.metas.order.OrderId;
 import de.metas.shipping.ShipperId;
 import de.metas.user.UserId;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.WarehouseTypeId;
@@ -62,4 +64,18 @@ public class PackageableQuery
 	boolean includeNotLocked = true;
 
 	@Nullable Set<ShipmentScheduleId> excludeShipmentScheduleIds;
+
+	@Builder.Default
+	@NonNull ImmutableSet<OrderBy> orderBys = ImmutableSet.of(OrderBy.ProductName, OrderBy.PriorityRule, OrderBy.DateOrdered);
+
+	public enum OrderBy
+	{
+		ProductName,
+		PriorityRule,
+		DateOrdered,
+		PreparationDate,
+		SalesOrderId,
+		DeliveryBPLocationId,
+		WarehouseTypeId,
+	}
 }

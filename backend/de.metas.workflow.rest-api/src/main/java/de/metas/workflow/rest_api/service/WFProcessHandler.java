@@ -30,6 +30,7 @@ import de.metas.workflow.rest_api.model.WFProcessId;
 import de.metas.workflow.rest_api.model.WorkflowLauncher;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersList;
 import lombok.NonNull;
+import org.adempiere.ad.dao.QueryLimit;
 
 import java.time.Duration;
 import java.util.List;
@@ -39,7 +40,7 @@ public interface WFProcessHandler
 {
 	WFProcessHandlerId getId();
 
-	WorkflowLaunchersList provideLaunchers(UserId userId, Duration maxStaleAccepted);
+	WorkflowLaunchersList provideLaunchers(UserId userId, QueryLimit suggestedLimit, Duration maxStaleAccepted);
 
 	WFProcess startWorkflow(WorkflowStartRequest request);
 

@@ -51,6 +51,7 @@ import de.metas.workflow.rest_api.model.WorkflowLaunchersList;
 import de.metas.workflow.rest_api.service.WFProcessHandler;
 import de.metas.workflow.rest_api.service.WorkflowStartRequest;
 import lombok.NonNull;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Component;
 
@@ -85,9 +86,10 @@ public class PickingWFProcessHandler implements WFProcessHandler
 	@Override
 	public WorkflowLaunchersList provideLaunchers(
 			@NonNull final UserId userId,
+			@NonNull final QueryLimit suggestedLimit,
 			@NonNull final Duration maxStaleAccepted)
 	{
-		return wfLaunchersProvider.provideLaunchers(userId, maxStaleAccepted);
+		return wfLaunchersProvider.provideLaunchers(userId, suggestedLimit, maxStaleAccepted);
 	}
 
 	@Override

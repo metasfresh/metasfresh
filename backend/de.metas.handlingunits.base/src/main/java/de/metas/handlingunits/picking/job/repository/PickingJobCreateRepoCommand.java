@@ -4,14 +4,12 @@ import de.metas.document.engine.DocStatus;
 import de.metas.handlingunits.model.I_M_Picking_Job;
 import de.metas.handlingunits.model.I_M_Picking_Job_Line;
 import de.metas.handlingunits.model.I_M_Picking_Job_Step;
-import de.metas.handlingunits.picking.PickingCandidateId;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobId;
 import de.metas.handlingunits.picking.job.model.PickingJobLineId;
 import de.metas.organization.OrgId;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.util.TimeUtil;
 
 class PickingJobCreateRepoCommand
 {
@@ -37,7 +35,7 @@ class PickingJobCreateRepoCommand
 		final OrgId orgId = request.getOrgId();
 		record.setAD_Org_ID(orgId.getRepoId());
 		record.setC_Order_ID(request.getSalesOrderId().getRepoId());
-		record.setPreparationDate(TimeUtil.asTimestampNotNull(request.getPreparationDate()));
+		record.setPreparationDate(request.getPreparationDate().toTimestamp());
 		record.setC_BPartner_ID(request.getDeliveryBPLocationId().getBpartnerId().getRepoId());
 		record.setC_BPartner_Location_ID(request.getDeliveryBPLocationId().getRepoId());
 		record.setDeliveryToAddress(request.getDeliveryRenderedAddress());
