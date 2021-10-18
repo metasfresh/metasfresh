@@ -1,5 +1,6 @@
 package de.metas.handlingunits.picking.job.service;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.job.model.PickingJob;
@@ -118,6 +119,12 @@ public class PickingJobService
 						.lockedBy(userId)
 						.includeNotLocked(true)
 						.excludeShipmentScheduleIds(excludeShipmentScheduleIds)
+						.orderBys(ImmutableSet.of(
+								PackageableQuery.OrderBy.PriorityRule,
+								PackageableQuery.OrderBy.PreparationDate,
+								PackageableQuery.OrderBy.SalesOrderId,
+								PackageableQuery.OrderBy.DeliveryBPLocationId,
+								PackageableQuery.OrderBy.WarehouseTypeId))
 						.build())
 				.map(PickingJobService::extractPickingJobCandidate)
 				.distinct();
@@ -126,6 +133,7 @@ public class PickingJobService
 	private static PickingJobCandidate extractPickingJobCandidate(@NonNull final Packageable item)
 	{
 		return PickingJobCandidate.builder()
+				.preparationDate(item.getPreparationDate())
 				.salesOrderId(Objects.requireNonNull(item.getSalesOrderId()))
 				.salesOrderDocumentNo(Objects.requireNonNull(item.getSalesOrderDocumentNo()))
 				.customerName(item.getCustomerName())

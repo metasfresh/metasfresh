@@ -24,6 +24,7 @@ package de.metas.handlingunits.picking.job.model;
 
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.order.OrderId;
+import de.metas.organization.InstantAndOrgId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -35,6 +36,7 @@ import javax.annotation.Nullable;
 @Builder
 public class PickingJobCandidate
 {
+	@NonNull InstantAndOrgId preparationDate;
 	@NonNull String salesOrderDocumentNo;
 	@NonNull OrderId salesOrderId;
 	@NonNull String customerName;

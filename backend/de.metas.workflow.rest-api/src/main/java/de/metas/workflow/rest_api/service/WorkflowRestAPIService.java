@@ -25,6 +25,7 @@ package de.metas.workflow.rest_api.service;
 import com.google.common.collect.ImmutableMap;
 import de.metas.logging.LogManager;
 import de.metas.user.UserId;
+import de.metas.util.Services;
 import de.metas.workflow.rest_api.activity_features.set_scanned_barcode.SetScannedBarcodeRequest;
 import de.metas.workflow.rest_api.activity_features.set_scanned_barcode.SetScannedBarcodeSupport;
 import de.metas.workflow.rest_api.activity_features.user_confirmation.UserConfirmationRequest;
@@ -39,10 +40,11 @@ import de.metas.workflow.rest_api.model.WFProcessHeaderProperties;
 import de.metas.workflow.rest_api.model.WFProcessId;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersList;
 import lombok.NonNull;
+import org.adempiere.ad.dao.QueryLimit;
+import org.adempiere.service.ISysConfigBL;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Nullable;
 import java.time.Duration;
 import java.util.List;
 import java.util.Objects;
@@ -54,6 +56,10 @@ import java.util.function.UnaryOperator;
 public class WorkflowRestAPIService
 {
 	private static final Logger logger = LogManager.getLogger(WorkflowRestAPIService.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+
+	private static final String SYSCONFIG_LaunchersLimitPerHandler = "WorkflowRestAPIService.LaunchersLimitPerProvider";
+	private static final QueryLimit DEFAULT_LaunchersLimitPerHandler = QueryLimit.ofInt(20);
 
 	private final WFProcessHandlersMap wfProcessHandlers;
 	private final WFActivityHandlersRegistry wfActivityHandlersRegistry;
@@ -72,8 +78,10 @@ public class WorkflowRestAPIService
 			@NonNull final UserId userId,
 			@NonNull final Duration maxStaleAccepted)
 	{
+		final QueryLimit suggestedLimitPerHandler = getLaunchersLimitPerHandler();
+
 		return wfProcessHandlers.stream()
-				.map(handler -> provideLaunchersNoFail(handler, userId, maxStaleAccepted))
+				.map(handler -> provideLaunchersNoFail(handler, userId, suggestedLimitPerHandler, maxStaleAccepted))
 				.reduce(WorkflowLaunchersList::mergeWith)
 				.orElseGet(WorkflowLaunchersList::emptyNow);
 	}
@@ -81,11 +89,12 @@ public class WorkflowRestAPIService
 	private static WorkflowLaunchersList provideLaunchersNoFail(
 			@NonNull final WFProcessHandler handler,
 			@NonNull final UserId userId,
+			@NonNull final QueryLimit suggestedLimit,
 			@NonNull final Duration maxStaleAccepted)
 	{
 		try
 		{
-			final WorkflowLaunchersList launchers = handler.provideLaunchers(userId, maxStaleAccepted);
+			final WorkflowLaunchersList launchers = handler.provideLaunchers(userId, suggestedLimit, maxStaleAccepted);
 			return launchers != null ? launchers : WorkflowLaunchersList.emptyNow();
 		}
 		catch (final Exception ex)
@@ -93,6 +102,14 @@ public class WorkflowRestAPIService
 			logger.warn("Failed fetching launchers from {} for {}. Skipped", handler, userId, ex);
 			return WorkflowLaunchersList.emptyNow();
 		}
+	}
+
+	private QueryLimit getLaunchersLimitPerHandler()
+	{
+		final int limitInt = sysConfigBL.getIntValue(SYSCONFIG_LaunchersLimitPerHandler, -100);
+		return limitInt == -100
+				? DEFAULT_LaunchersLimitPerHandler
+				: QueryLimit.ofInt(limitInt);
 	}
 
 	public WFProcess getWFProcessById(@NonNull final WFProcessId wfProcessId)
