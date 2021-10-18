@@ -4,6 +4,7 @@
   "command": "enableRestAPI",
   "adPInstanceId": 123,
   "externalSystemConfigId": 100,
+  "traceId": "traceId",
   "parameters": {
     "CamelHttpResourceAuthKey": "authKey"
   }

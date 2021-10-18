@@ -47,6 +47,8 @@ class JsonExternalSystemRequestTest
 				.externalSystemConfigId(JsonMetasfreshId.of(1))
 				.orgCode("orgCode")
 				.command("command")
+				.traceId("traceId")
+				.writeAuditEndpoint("writeAuditEndpoint")
 				.parameter("parameterName1", "parameterValue1")
 				.parameter("parameterName2", "parameterValue2")
 				.parameter("configMappings", sw6ConfigMappings)

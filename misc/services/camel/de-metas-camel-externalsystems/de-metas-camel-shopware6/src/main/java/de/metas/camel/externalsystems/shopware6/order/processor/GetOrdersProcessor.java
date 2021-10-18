@@ -60,7 +60,6 @@ import java.util.Optional;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_ORG_CODE;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_PINSTANCE_ID;
-import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.ROUTE_PROPERTY_RAW_DATA;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.FIELD_CREATED_AT;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.FIELD_UPDATED_AT;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.PARAMETERS_DATE_GTE;
@@ -118,12 +117,11 @@ public class GetOrdersProcessor implements Processor
 		final String salesRepJSONPath = request.getParameters().get(ExternalSystemConstants.PARAM_JSON_PATH_SALES_REP_ID);
 
 		final ShopwareClient shopwareClient = ShopwareClient.of(clientId, clientSecret, basePath);
-		
+
 		final GetOrdersResponse ordersToProcess = shopwareClient.getOrders(getOrdersRequest, bPartnerIdJSONPath, salesRepJSONPath);
 
 		exchange.getIn().setBody(ordersToProcess.getOrderCandidates());
-		exchange.setProperty(ROUTE_PROPERTY_RAW_DATA, ordersToProcess.getRawData());
-		
+
 		final GetCurrenciesRequest getCurrenciesRequest = GetCurrenciesRequest.builder()
 				.baseUrl(basePath)
 				.clientId(clientId)
@@ -190,7 +188,7 @@ public class GetOrdersProcessor implements Processor
 							   .build())
 				.build();
 	}
-	
+
 	@NonNull
 	@VisibleForTesting
 	public static MultiQueryRequest buildUpdatedAfterQueryRequest(@NonNull final String updatedAfter)

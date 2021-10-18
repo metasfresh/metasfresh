@@ -26,15 +26,22 @@ import com.google.common.annotations.VisibleForTesting;
 import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.camel.externalsystems.core.CamelRouteHelper;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
+import de.metas.common.util.Check;
+import de.metas.common.util.EmptyUtil;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.builder.endpoint.StaticEndpointBuilders;
 import org.springframework.stereotype.Component;
 
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_AUDIT_TRAIL;
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_EXTERNAL_SYSTEM_VALUE;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_PINSTANCE_ID;
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_TARGET_ROUTE;
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_TRACE_ID;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
 import static de.metas.camel.externalsystems.core.CoreConstants.FROM_MF_ROUTE;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_CHILD_CONFIG_VALUE;
 
 @Component
 public class CallDispatcherRouteBuilder extends RouteBuilder
@@ -67,24 +74,16 @@ public class CallDispatcherRouteBuilder extends RouteBuilder
 				.routeId(DISPATCH_ROUTE_ID)
 				.streamCaching()
 				.unmarshal(CamelRouteHelper.setupJacksonDataFormatFor(getContext(), JsonExternalSystemRequest.class))
-				.process(exchange -> {
-					final var request = exchange.getIn().getBody(JsonExternalSystemRequest.class);
-					exchange.getIn().setHeader("targetRoute", request.getExternalSystemName().getName() + "-" + request.getCommand());
-
-					if (request.getAdPInstanceId() != null)
-					{
-						exchange.getIn().setHeader(HEADER_PINSTANCE_ID, request.getAdPInstanceId().getValue());
-					}
-				})
-				.log("routing request to route ${header.targetRoute}")
+				.process(this::processExternalSystemRequest)
+				.log("routing request to route ${header." + HEADER_TARGET_ROUTE + "}")
 				.process(this::logRequestRouted)
-				.toD("direct:${header.targetRoute}", false)
+				.toD("direct:${header." + HEADER_TARGET_ROUTE + "}", false)
 				.process(this::logInvocationDone);
 	}
 
 	private void logRequestRouted(@NonNull final Exchange exchange)
 	{
-		final String targetRoute = exchange.getIn().getHeader("targetRoute", String.class);
+		final String targetRoute = exchange.getIn().getHeader(HEADER_TARGET_ROUTE, String.class);
 
 		processLogger.logMessage("Routing request to: " + targetRoute,
 								 exchange.getIn().getHeader(HEADER_PINSTANCE_ID, Integer.class));
@@ -92,9 +91,31 @@ public class CallDispatcherRouteBuilder extends RouteBuilder
 
 	private void logInvocationDone(@NonNull final Exchange exchange)
 	{
-		final String targetRoute = exchange.getIn().getHeader("targetRoute", String.class);
+		final String targetRoute = exchange.getIn().getHeader(HEADER_TARGET_ROUTE, String.class);
 
 		processLogger.logMessage("Invocation done: " + targetRoute,
 								 exchange.getIn().getHeader(HEADER_PINSTANCE_ID, Integer.class));
+	}
+
+	private void processExternalSystemRequest(@NonNull final Exchange exchange)
+	{
+		final var request = exchange.getIn().getBody(JsonExternalSystemRequest.class);
+		exchange.getIn().setHeader(HEADER_TARGET_ROUTE, request.getExternalSystemName().getName() + "-" + request.getCommand());
+		exchange.getIn().setHeader(HEADER_TRACE_ID, request.getTraceId());
+
+		if (request.getAdPInstanceId() != null)
+		{
+			exchange.getIn().setHeader(HEADER_PINSTANCE_ID, request.getAdPInstanceId().getValue());
+		}
+
+		if (EmptyUtil.isNotBlank(request.getWriteAuditEndpoint()))
+		{
+			exchange.getIn().setHeader(HEADER_AUDIT_TRAIL, request.getWriteAuditEndpoint());
+		}
+
+		if (request.getParameters() != null && Check.isNotBlank(request.getParameters().get(PARAM_CHILD_CONFIG_VALUE)))
+		{
+			exchange.getIn().setHeader(HEADER_EXTERNAL_SYSTEM_VALUE, request.getParameters().get(PARAM_CHILD_CONFIG_VALUE));
+		}
 	}
 }

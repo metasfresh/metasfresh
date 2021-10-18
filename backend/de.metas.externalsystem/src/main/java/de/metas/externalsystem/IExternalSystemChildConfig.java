@@ -25,4 +25,6 @@ package de.metas.externalsystem;
 public interface IExternalSystemChildConfig
 {
 	IExternalSystemChildConfigId getId();
+
+	String getValue();
 }

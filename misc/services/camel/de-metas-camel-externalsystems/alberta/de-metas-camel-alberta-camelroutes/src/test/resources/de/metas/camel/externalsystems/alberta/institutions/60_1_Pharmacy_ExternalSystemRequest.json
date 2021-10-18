@@ -4,6 +4,7 @@
   "command": "syncBPartnerById",
   "adPInstanceId": 10009936,
   "externalSystemConfigId": 1,
+  "traceId": "traceId",
   "parameters": {
     "APIKey": "APIKey",
     "Tenant": "Tenant",

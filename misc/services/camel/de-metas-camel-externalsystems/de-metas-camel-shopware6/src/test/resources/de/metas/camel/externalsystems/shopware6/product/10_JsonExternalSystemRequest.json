@@ -4,6 +4,7 @@
   "command": "getProducts",
   "adPInstanceId": 2,
   "externalSystemConfigId": 1,
+  "traceId": "traceId",
   "parameters": {
     "UpdatedAfter": "1999-08-09T13:35:17Z",
     "ClientSecret": "ClientSecret",

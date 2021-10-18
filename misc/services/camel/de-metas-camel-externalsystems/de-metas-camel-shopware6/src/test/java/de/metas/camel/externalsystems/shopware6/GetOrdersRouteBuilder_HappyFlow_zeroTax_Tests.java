@@ -88,7 +88,7 @@ import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOC
 import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_ORG_CODE;
 import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_REDUCED_VAT_PRODUCT_ID;
 import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_REDUCED_VAT_RATES;
-import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_STORE_RAW_DATA;
+import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_TRACE_ID;
 import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_UPSERT_RUNTIME_PARAMETERS;
 import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.CLEAR_ORDERS_ROUTE_ID;
 import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.CREATE_BPARTNER_UPSERT_REQ_PROCESSOR_ID;
@@ -181,9 +181,6 @@ public class GetOrdersRouteBuilder_HappyFlow_zeroTax_Tests extends CamelTestSupp
 		final ObjectMapper objectMapper = new ObjectMapper();
 		objectMapper.registerModule(new JavaTimeModule());
 
-		final MockEndpoint storeRawDataEndpoint = getMockEndpoint(MOCK_STORE_RAW_DATA);
-		storeRawDataEndpoint.expectedMessageCount(1);
-		
 		// validate BPUpsertCamelRequest
 		final InputStream expectedUpsertBPartnerRequestIS = this.getClass().getResourceAsStream(JSON_UPSERT_BPARTNER_REQUEST);
 
@@ -238,10 +235,6 @@ public class GetOrdersRouteBuilder_HappyFlow_zeroTax_Tests extends CamelTestSupp
 
 		AdviceWith.adviceWith(context, PROCESS_ORDER_ROUTE_ID,
 							  advice -> {
-								  advice.interceptSendToEndpoint("direct:" + ExternalSystemCamelConstants.STORE_RAW_DATA_ROUTE)
-										  .skipSendToOriginalEndpoint()
-										  .to(MOCK_STORE_RAW_DATA);
-
 								  advice.weaveById(CREATE_BPARTNER_UPSERT_REQ_PROCESSOR_ID)
 										  .after()
 										  .to(MOCK_BPARTNER_UPSERT);
@@ -335,6 +328,7 @@ public class GetOrdersRouteBuilder_HappyFlow_zeroTax_Tests extends CamelTestSupp
 
 			final JsonExternalSystemRequest externalSystemRequest = JsonExternalSystemRequest
 					.builder()
+					.traceId(MOCK_TRACE_ID)
 					.externalSystemName(JsonExternalSystemName.of(SHOPWARE6_SYSTEM_NAME))
 					.externalSystemConfigId(JsonMetasfreshId.of(1))
 					.orgCode(MOCK_ORG_CODE)
