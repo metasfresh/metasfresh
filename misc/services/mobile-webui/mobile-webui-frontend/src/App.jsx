@@ -7,6 +7,8 @@ import Routes from './routes';
 import { history } from './store/store';
 
 import './App.css';
+import UpdateCheck from './components/UpdateCheck';
+import { UPDATE_CHECK_INTERVAL } from './constants/index';
 
 function App() {
   const auth = useAuth();
@@ -29,6 +31,7 @@ function App() {
   return (
     <div className="application">
       <Routes />
+      <UpdateCheck updateInterval={UPDATE_CHECK_INTERVAL} />
     </div>
   );
 }
