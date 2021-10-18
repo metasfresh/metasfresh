@@ -117,6 +117,7 @@ public class CalloutInOut extends CalloutEngine
 
 		//
 		inout.setDeliveryRule(order.getDeliveryRule());
+		inout.setSalesRep_ID(order.getSalesRep_ID());
 		inout.setDeliveryViaRule(order.getDeliveryViaRule());
 		inout.setM_Shipper_ID(order.getM_Shipper_ID());
 		inout.setFreightCostRule(order.getFreightCostRule());
