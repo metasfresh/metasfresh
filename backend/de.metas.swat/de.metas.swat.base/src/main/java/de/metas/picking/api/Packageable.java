@@ -33,6 +33,7 @@ import de.metas.money.Money;
 import de.metas.order.DeliveryViaRule;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
+import de.metas.organization.InstantAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -49,7 +50,6 @@ import org.adempiere.warehouse.WarehouseTypeId;
 import org.eevolution.api.PPOrderId;
 
 import javax.annotation.Nullable;
-import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.Optional;
@@ -106,8 +106,8 @@ public class Packageable
 
 	boolean displayed;
 
-	ZonedDateTime deliveryDate;
-	ZonedDateTime preparationDate;
+	InstantAndOrgId deliveryDate;
+	InstantAndOrgId preparationDate;
 
 	@NonNull
 	@Default

@@ -6,6 +6,7 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.picking.PickingCandidateId;
 import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.order.OrderId;
+import de.metas.organization.InstantAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -24,7 +25,7 @@ public class PickingJobCreateRepoRequest
 {
 	@NonNull OrgId orgId;
 	@NonNull OrderId salesOrderId;
-	@NonNull ZonedDateTime preparationDate;
+	@NonNull InstantAndOrgId preparationDate;
 	@NonNull BPartnerLocationId deliveryBPLocationId;
 	@NonNull String deliveryRenderedAddress;
 	@NonNull UserId pickerId;

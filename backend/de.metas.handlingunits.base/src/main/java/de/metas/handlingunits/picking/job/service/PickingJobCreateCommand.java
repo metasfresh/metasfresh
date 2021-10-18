@@ -17,6 +17,7 @@ import de.metas.handlingunits.picking.plan.PickingPlanLine;
 import de.metas.handlingunits.picking.plan.PickingPlanLineType;
 import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.order.OrderId;
+import de.metas.organization.InstantAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.picking.api.IPackagingDAO;
 import de.metas.picking.api.Packageable;
@@ -127,7 +128,7 @@ class PickingJobCreateCommand
 	{
 		@NonNull OrgId orgId;
 		@NonNull OrderId salesOrderId;
-		@NonNull ZonedDateTime preparationDate;
+		@NonNull InstantAndOrgId preparationDate;
 		@NonNull BPartnerLocationId deliveryBPLocationId;
 		@NonNull String deliveryRenderedAddress;
 	}
