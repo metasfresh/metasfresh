@@ -50,6 +50,16 @@ public class PickedData
 
 	Quantity qtyCatch;
 
+	@NonNull
+	public static PickedData of(@NonNull final StockQtyAndUOMQty stockQtyAndUOMQty)
+	{
+		return PickedData.builder()
+				.productId(stockQtyAndUOMQty.getProductId())
+				.qtyPicked(stockQtyAndUOMQty.getStockQty())
+				.qtyPickedInUOM(stockQtyAndUOMQty.getUOMQtyNotNull())
+				.build();
+	}
+
 	@Builder
 	@JsonCreator
 	private PickedData(

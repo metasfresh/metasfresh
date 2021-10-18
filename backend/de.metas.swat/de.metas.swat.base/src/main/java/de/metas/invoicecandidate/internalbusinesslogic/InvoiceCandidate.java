@@ -100,7 +100,7 @@ public class InvoiceCandidate
 			@JsonProperty("uomId") @NonNull final UomId uomId,
 			@JsonProperty("orderedData") @NonNull final OrderedData orderedData,
 			@JsonProperty("deliveredData") @NonNull final DeliveredData deliveredData,
-			@JsonProperty("pickedData") @Nullable final PickedData pickedData,
+			@JsonProperty("pickedData") @NonNull final PickedData pickedData,
 			@JsonProperty("invoicedData") @Nullable final InvoicedData invoicedData, // can be null if the IC is very new
 			@JsonProperty("invoicableQtyBasedOn") @NonNull final InvoicableQtyBasedOn invoicableQtyBasedOn,
 			@JsonProperty("invoiceRule") @NonNull final InvoiceRule invoiceRule,
@@ -304,14 +304,9 @@ public class InvoiceCandidate
 	}
 
 	@NonNull
-	public Optional<StockQtyAndUOMQty> computeQtysPicked()
+	public StockQtyAndUOMQty computeQtysPicked()
 	{
-		if (pickedData == null)
-		{
-			return Optional.empty();
-		}
-
-		return Optional.of(pickedData.computeInvoicableQtyPicked(invoicableQtyBasedOn));
+		return pickedData.computeInvoicableQtyPicked(invoicableQtyBasedOn);
 	}
 
 	/**
@@ -438,8 +433,7 @@ public class InvoiceCandidate
 	{
 		Check.assume(soTrx.isSales(), "QtyToInvoice should not be calculated based on QtyPicked in a purchase flow. soTrx={}", soTrx);
 
-		final StockQtyAndUOMQty qtysToInvoiceCalc = computeQtysPicked()
-				.orElseThrow(() -> new AdempiereException("Missing picking data! C_Invoice_Candidate_ID: " + this.getId()));
+		final StockQtyAndUOMQty qtysToInvoiceCalc = computeQtysPicked();
 
 		return new ToInvoiceExclOverride(
 				ToInvoiceExclOverride.InvoicedQtys.NOT_SUBTRACTED,

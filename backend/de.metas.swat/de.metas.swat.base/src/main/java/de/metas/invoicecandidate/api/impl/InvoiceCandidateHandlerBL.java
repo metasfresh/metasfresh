@@ -70,7 +70,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Properties;
 
 public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
@@ -573,14 +572,9 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 			return;
 		}
 
-		final Optional<StockQtyAndUOMQty> qtysPicked = invoiceCandidateRecordService.ofRecord(ic).computeQtysPicked();
+		final StockQtyAndUOMQty qtysPicked = invoiceCandidateRecordService.ofRecord(ic).computeQtysPicked();
 
-		if (!qtysPicked.isPresent())
-		{
-			return;
-		}
-
-		ic.setQtyPicked(qtysPicked.get().getStockQty().toBigDecimal());
-		ic.setQtyPickedInUOM(qtysPicked.get().getUOMQtyNotNull().toBigDecimal());
+		ic.setQtyPicked(qtysPicked.getStockQty().toBigDecimal());
+		ic.setQtyPickedInUOM(qtysPicked.getUOMQtyNotNull().toBigDecimal());
 	}
 }

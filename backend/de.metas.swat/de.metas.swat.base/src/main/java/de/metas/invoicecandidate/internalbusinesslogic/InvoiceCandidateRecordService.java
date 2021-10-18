@@ -19,6 +19,7 @@ import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
+import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.uom.UOMConversionContext;
 import de.metas.uom.UomId;
@@ -95,7 +96,7 @@ public class InvoiceCandidateRecordService
 
 		if (!isNull(icRecord, I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice_Override))
 		{
-			final BigDecimal qtyToInvoiceOverrideInStockUom =				//
+			final BigDecimal qtyToInvoiceOverrideInStockUom =                //
 					icRecord.getQtyToInvoice_Override()
 							.subtract(icRecord.getQtyToInvoice_OverrideFulfilled());
 
@@ -163,7 +164,10 @@ public class InvoiceCandidateRecordService
 				.orderedData(orderedData)
 				.deliveredData(deliveredData)
 				.invoicedData(invoicedData)
-				.pickedData(pickedData.orElse(null))
+				.pickedData(pickedData.orElseGet(() -> {
+					final StockQtyAndUOMQty defaultPickedData = StockQtyAndUOMQtys.create(icRecord.getQtyPicked(), productId, icRecord.getQtyPickedInUOM(), icUomId);
+					return PickedData.of(defaultPickedData);
+				}))
 				.build();
 	}
 
