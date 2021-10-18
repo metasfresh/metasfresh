@@ -191,6 +191,11 @@ public class ProductRepository
 		bPartnerProduct.setShelfLifeMinDays(0); // FIXME
 		bPartnerProduct.setExclusionFromSaleReason(request.getExclusionFromSalesReason());
 
+		if (request.getUsedForVendor() != null)
+		{
+			bPartnerProduct.setUsedForVendor(request.getUsedForVendor());
+		}
+
 		if (request.getDropShip() != null)
 		{
 			bPartnerProduct.setIsDropShip(request.getDropShip());
@@ -312,6 +317,7 @@ public class ProductRepository
 		record.setIsExcludedFromSale(bPartnerProduct.getIsExcludedFromSales() != null ? bPartnerProduct.getIsExcludedFromSales() : record.isExcludedFromSale());
 		record.setExclusionFromSaleReason(bPartnerProduct.getExclusionFromSalesReason());
 		record.setIsDropShip(bPartnerProduct.getDropShip() != null ? bPartnerProduct.getDropShip() : record.isDropShip());
+		record.setUsedForVendor(Boolean.TRUE.equals(bPartnerProduct.getUsedForVendor()));
 
 		return record;
 	}
@@ -334,6 +340,7 @@ public class ProductRepository
 				.currentVendor(record.isCurrentVendor())
 				.isExcludedFromSales(record.isExcludedFromSale())
 				.dropShip(record.isDropShip())
+				.usedForVendor(record.isUsedForVendor())
 				.build();
 	}
 }

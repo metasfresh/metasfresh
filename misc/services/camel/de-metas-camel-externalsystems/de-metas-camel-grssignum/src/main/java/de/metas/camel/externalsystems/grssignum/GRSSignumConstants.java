@@ -27,4 +27,5 @@ public interface GRSSignumConstants
 	String GRSSIGNUM_SYSTEM_NAME = "GRSSignum";
 
 	String JSON_PROPERTY_FLAG = "FLAG";
+	String DEFAULT_UOM_CODE = "KGM";
 }

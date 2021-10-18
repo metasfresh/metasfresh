@@ -75,4 +75,7 @@ public class CreateBPartnerProductRequest
 
 	@Nullable
 	Boolean dropShip;
+
+	@Nullable
+	Boolean usedForVendor;
 }
