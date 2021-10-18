@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { getServerVersion } from '../api/update';
 import { connect } from 'react-redux';
 import { setVersion } from '../actions/UpdateActions';
+import { networkStatusOffline } from '../actions/NetworkActions';
 
 class UpdateCheck extends Component {
   constructor(props) {
@@ -13,18 +14,28 @@ class UpdateCheck extends Component {
     };
   }
 
-  checkServerVersion = () => {
-    const { currentVersion, setVersion } = this.props;
-    getServerVersion().then((version) => {
-      if (currentVersion === null) {
-        setVersion(version);
-        return;
-      }
-      if (currentVersion !== version) {
-        setVersion(version);
-        window.location.reload();
-      }
-    });
+  checkServerVersion = async () => {
+    const { currentVersion, setVersion, networkStatusOffline } = this.props;
+    getServerVersion()
+      .then((version) => {
+        if (currentVersion === null) {
+          setVersion(version);
+          return;
+        }
+        if (currentVersion !== version) {
+          caches.keys().then((keys) => {
+            for (const key of keys) {
+              caches.delete(key);
+            }
+          });
+
+          setVersion(version);
+          window.location.reload();
+        }
+      })
+      .catch(() => {
+        networkStatusOffline();
+      });
   };
 
   componentDidMount() {
@@ -51,7 +62,8 @@ const mapStateToProps = (state) => {
 UpdateCheck.propTypes = {
   updateInterval: PropTypes.number.isRequired,
   setVersion: PropTypes.func.isRequired,
+  networkStatusOffline: PropTypes.func.isRequired,
   currentVersion: PropTypes.oneOfType([() => null, PropTypes.string]).isRequired,
 };
 
-export default connect(mapStateToProps, { setVersion })(UpdateCheck);
+export default connect(mapStateToProps, { setVersion, networkStatusOffline })(UpdateCheck);
