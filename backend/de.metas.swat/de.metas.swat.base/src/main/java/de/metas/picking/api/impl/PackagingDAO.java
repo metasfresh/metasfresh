@@ -12,6 +12,7 @@ import de.metas.money.Money;
 import de.metas.order.DeliveryViaRule;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
+import de.metas.organization.InstantAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.picking.api.IPackagingDAO;
 import de.metas.picking.api.Packageable;
@@ -184,7 +185,8 @@ public class PackagingDAO implements IPackagingDAO
 		final I_C_UOM uom = uomsRepo.getById(record.getC_UOM_ID());
 
 		final PackageableBuilder packageable = Packageable.builder();
-		packageable.orgId(OrgId.ofRepoId(record.getAD_Org_ID()));
+		final OrgId orgId = OrgId.ofRepoId(record.getAD_Org_ID());
+		packageable.orgId(orgId);
 		packageable.customerId(bpartnerId);
 		packageable.customerBPValue(record.getBPartnerValue());
 		packageable.customerName(record.getBPartnerName());
@@ -212,8 +214,8 @@ public class PackagingDAO implements IPackagingDAO
 		packageable.shipperId(ShipperId.ofRepoIdOrNull(record.getM_Shipper_ID()));
 		packageable.shipperName(record.getShipperName());
 
-		packageable.deliveryDate(TimeUtil.asZonedDateTime(record.getDeliveryDate())); // 01676
-		packageable.preparationDate(TimeUtil.asZonedDateTime(record.getPreparationDate()));
+		packageable.deliveryDate(InstantAndOrgId.ofTimestamp(record.getDeliveryDate(), orgId)); // 01676
+		packageable.preparationDate(InstantAndOrgId.ofTimestamp(record.getPreparationDate(), orgId));
 
 		packageable.bestBeforePolicy(ShipmentAllocationBestBeforePolicy.optionalOfNullableCode(record.getShipmentAllocation_BestBefore_Policy()));
 

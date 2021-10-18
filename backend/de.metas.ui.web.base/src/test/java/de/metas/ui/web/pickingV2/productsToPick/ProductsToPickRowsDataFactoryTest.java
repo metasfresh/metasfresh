@@ -58,6 +58,7 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.Month;
+import java.time.ZoneId;
 import java.util.Collection;
 import java.util.Optional;
 
@@ -109,6 +110,7 @@ public class ProductsToPickRowsDataFactoryTest
 				.orderId(OrderId.ofRepoId(1))
 				.orderDocumentNo("1234")
 				.customer(IntegerLookupValue.of(customerAndLocationId.getBpartnerId().getRepoId(), "customer"))
+				.timeZone(ZoneId.of("Pacific/Guadalcanal"))
 				.packageable(Packageable.builder()
 						.orgId(OrgId.ofRepoId(1))
 						.shipmentScheduleId(shipmentScheduleId)
