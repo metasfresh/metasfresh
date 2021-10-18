@@ -1,6 +1,7 @@
 package de.metas.picking.api.impl;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
@@ -35,7 +36,6 @@ import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.WarehouseTypeId;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_UOM;
-import org.compiere.util.TimeUtil;
 import org.eevolution.api.PPOrderId;
 
 import javax.annotation.Nullable;
@@ -53,17 +53,14 @@ public class PackagingDAO implements IPackagingDAO
 	public Stream<Packageable> stream(@NonNull final PackageableQuery query)
 	{
 		return createQuery(query)
-				.stream(I_M_Packageable_V.class)
+				.iterateAndStream()
 				.map(this::toPackageable);
 	}
 
 	private IQuery<I_M_Packageable_V> createQuery(@NonNull final PackageableQuery query)
 	{
-		final IQueryBuilder<I_M_Packageable_V> queryBuilder = queryBL
-				.createQueryBuilder(I_M_Packageable_V.class)
-				.orderBy(I_M_Packageable_V.COLUMN_ProductName)
-				.orderBy(I_M_Packageable_V.COLUMN_PriorityRule)
-				.orderBy(I_M_Packageable_V.COLUMN_DateOrdered);
+		final IQueryBuilder<I_M_Packageable_V> queryBuilder = queryBL.createQueryBuilder(I_M_Packageable_V.class);
+		setQueryOrderBy(queryBuilder, query.getOrderBys());
 
 		//
 		// Filter: Customer
@@ -152,6 +149,36 @@ public class PackagingDAO implements IPackagingDAO
 
 		//
 		return queryBuilder.create();
+	}
+
+	private static void setQueryOrderBy(
+			@NonNull final IQueryBuilder<I_M_Packageable_V> queryBuilder,
+			@NonNull final ImmutableSet<PackageableQuery.OrderBy> orderBys)
+	{
+		orderBys.forEach(orderBy -> queryBuilder.orderBy(toSqlColumnName(orderBy)));
+	}
+
+	private static String toSqlColumnName(@NonNull final PackageableQuery.OrderBy orderBy)
+	{
+		switch (orderBy)
+		{
+			case ProductName:
+				return I_M_Packageable_V.COLUMNNAME_ProductName;
+			case PriorityRule:
+				return I_M_Packageable_V.COLUMNNAME_PriorityRule;
+			case DateOrdered:
+				return I_M_Packageable_V.COLUMNNAME_DateOrdered;
+			case PreparationDate:
+				return I_M_Packageable_V.COLUMNNAME_PreparationDate;
+			case SalesOrderId:
+				return I_M_Packageable_V.COLUMNNAME_C_OrderSO_ID;
+			case DeliveryBPLocationId:
+				return I_M_Packageable_V.COLUMNNAME_C_BPartner_Location_ID;
+			case WarehouseTypeId:
+				return I_M_Packageable_V.COLUMNNAME_M_Warehouse_Type_ID;
+			default:
+				throw new AdempiereException("Unknown ORDER BY: " + orderBy);
+		}
 	}
 
 	@Override
