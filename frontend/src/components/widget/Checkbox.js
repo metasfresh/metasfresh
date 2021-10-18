@@ -49,6 +49,7 @@ const Checkbox = (props) => {
       setInitialRender(true);
     }
 
+    // only valid for checkboxes in tabs
     if (isChanged && value !== prevValue && initialRender && isEdited) {
       setChanged(false);
     }
@@ -92,6 +93,8 @@ const Checkbox = (props) => {
       updateItems({ widgetField, value: !checkedState });
 
     handlePatch(widgetField, newCheckedState, id).then(() => {
+      // in case of checkboxes in tabs we will always get a websocket request, which ras break
+      // the current state. So don't change it until next render
       if (!isEdited) {
         setChanged(false);
       }
@@ -165,6 +168,7 @@ Checkbox.propTypes = {
   isFilterActive: PropTypes.bool,
   id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   updateItems: PropTypes.func, // function used for updating the filter items before having an active filter
+  isEdited: PropTypes.bool,
 };
 
 export default Checkbox;
