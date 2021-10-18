@@ -127,12 +127,16 @@ public class HandlerTools
 			//DocType
 			final DocTypeId orderDocTypeId = CoalesceUtil.coalesceSuppliers(
 					() -> DocTypeId.ofRepoIdOrNull(order.getC_DocType_ID()),
-					() -> DocTypeId.ofRepoId(order.getC_DocTypeTarget_ID()));
-			final I_C_DocType orderDocType = docTypeBL.getById(orderDocTypeId);
-			final DocTypeId invoiceDocTypeId = DocTypeId.ofRepoIdOrNull(orderDocType.getC_DocTypeInvoice_ID());
-			if (invoiceDocTypeId != null)
+					() -> DocTypeId.ofRepoIdOrNull(order.getC_DocTypeTarget_ID()));
+
+			if(orderDocTypeId != null)
 			{
-				ic.setC_DocTypeInvoice_ID(invoiceDocTypeId.getRepoId());
+				final I_C_DocType orderDocType = docTypeBL.getById(orderDocTypeId);
+				final DocTypeId invoiceDocTypeId = DocTypeId.ofRepoIdOrNull(orderDocType.getC_DocTypeInvoice_ID());
+				if (invoiceDocTypeId != null)
+				{
+					ic.setC_DocTypeInvoice_ID(invoiceDocTypeId.getRepoId());
+				}
 			}
 
 			final Dimension orderLineDimension = dimensionService.getFromRecord(orderLine);
