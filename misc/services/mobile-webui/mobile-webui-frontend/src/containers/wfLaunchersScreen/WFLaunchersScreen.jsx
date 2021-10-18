@@ -9,15 +9,9 @@ import WFLauncherButton from './WFLauncherButton';
 import OfflineNotifBar from '../../components/OfflineNotifBar';
 
 import * as ws from '../../utils/websocket';
-import { getServerVersion } from '../../api/update';
-
 class WFLaunchersScreen extends Component {
   componentDidMount() {
     const { populateLaunchers } = this.props;
-
-    // A way to check how getServerVersion() works
-    // FIXME delete me
-    getServerVersion().then((version) => console.log('Server version: ', version));
 
     getLaunchers().then((launchers) => {
       populateLaunchers(launchers);
