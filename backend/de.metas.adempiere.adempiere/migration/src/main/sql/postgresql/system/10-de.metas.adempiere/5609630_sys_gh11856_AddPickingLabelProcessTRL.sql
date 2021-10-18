@@ -58,3 +58,5 @@ UPDATE AD_Process_Trl SET Description='Create Picking TU Label (Jasper)',Updated
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_Process_Trl SET Description='Kommissionieretikett erzeuge (Jasper)',Updated=TO_TIMESTAMP('2021-10-15 10:55:04','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='nl_NL' AND AD_Process_ID=541194
 ;
+
+
