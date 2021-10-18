@@ -14,6 +14,7 @@ import de.metas.workflow.rest_api.model.WFProcessId;
 import de.metas.workflow.rest_api.model.WorkflowLauncher;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersList;
 import lombok.NonNull;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.util.lang.SynchronizedMutable;
 
 import javax.annotation.Nullable;
@@ -38,26 +39,28 @@ class PickingWorkflowLaunchersProvider
 
 	public WorkflowLaunchersList provideLaunchers(
 			@NonNull final UserId userId,
+			@NonNull final QueryLimit suggestedLimit,
 			@NonNull final Duration maxStaleAccepted)
 	{
 		return launchersCache.getOrLoad(userId, SynchronizedMutable::empty)
-				.compute(previousLaunchers -> checkStateAndComputeLaunchers(userId, maxStaleAccepted, previousLaunchers));
+				.compute(previousLaunchers -> checkStateAndComputeLaunchers(userId, suggestedLimit, maxStaleAccepted, previousLaunchers));
 	}
 
 	private WorkflowLaunchersList checkStateAndComputeLaunchers(
 			final @NonNull UserId userId,
+			final @NonNull QueryLimit suggestedLimit,
 			final @NonNull Duration maxStaleAccepted,
 			final @Nullable WorkflowLaunchersList previousLaunchers)
 	{
 		if (previousLaunchers == null)
 		{
 			//System.out.println("*** No previous value. A new value will be computed!");
-			return computeLaunchers(userId);
+			return computeLaunchers(userId, suggestedLimit);
 		}
 		else if (previousLaunchers.isStaled(maxStaleAccepted))
 		{
 			//System.out.println("*** Value staled. A new value will be computed!");
-			return computeLaunchers(userId);
+			return computeLaunchers(userId, suggestedLimit);
 		}
 		else
 		{
@@ -66,9 +69,11 @@ class PickingWorkflowLaunchersProvider
 		}
 	}
 
-	private WorkflowLaunchersList computeLaunchers(final @NonNull UserId userId)
+	private WorkflowLaunchersList computeLaunchers(
+			final @NonNull UserId userId,
+			final @NonNull QueryLimit limit)
 	{
-		final ArrayList<WorkflowLauncher> result = new ArrayList<>();
+		final ArrayList<WorkflowLauncher> currentResult = new ArrayList<>();
 
 		//
 		// Already started launchers
@@ -76,20 +81,24 @@ class PickingWorkflowLaunchersProvider
 				.collect(ImmutableList.toImmutableList());
 		existingPickingJobs.stream()
 				.map(PickingWorkflowLaunchersProvider::toExistingWorkflowLauncher)
-				.forEach(result::add);
+				.forEach(currentResult::add);
 
 		//
 		// New launchers
-		final Set<ShipmentScheduleId> shipmentScheduleIdsAlreadyInPickingJobs = existingPickingJobs.stream()
-				.flatMap(existingPickingJob -> existingPickingJob.getShipmentScheduleIds().stream())
-				.collect(ImmutableSet.toImmutableSet());
+		if (!limit.isLimitHitOrExceeded(existingPickingJobs))
+		{
+			final Set<ShipmentScheduleId> shipmentScheduleIdsAlreadyInPickingJobs = existingPickingJobs.stream()
+					.flatMap(existingPickingJob -> existingPickingJob.getShipmentScheduleIds().stream())
+					.collect(ImmutableSet.toImmutableSet());
 
-		pickingJobRestService.streamPickingJobCandidates(userId, shipmentScheduleIdsAlreadyInPickingJobs)
-				.map(PickingWorkflowLaunchersProvider::toNewWorkflowLauncher)
-				.forEach(result::add);
+			pickingJobRestService.streamPickingJobCandidates(userId, shipmentScheduleIdsAlreadyInPickingJobs)
+					.limit(limit.minusSizeOf(currentResult).toIntOr(Integer.MAX_VALUE))
+					.map(PickingWorkflowLaunchersProvider::toNewWorkflowLauncher)
+					.forEach(currentResult::add);
+		}
 
 		return WorkflowLaunchersList.builder()
-				.launchers(ImmutableList.copyOf(result))
+				.launchers(ImmutableList.copyOf(currentResult))
 				.timestamp(SystemTime.asInstant())
 				.build();
 	}
