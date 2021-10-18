@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -2060347156L;
+	private static final long serialVersionUID = -1002047364L;
 
     /** Standard Constructor */
     public X_C_Order (final Properties ctx, final int C_Order_ID, @Nullable final String trxName)
@@ -1140,7 +1140,7 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 		return get_ValueAsString(COLUMNNAME_HandOverAddress);
 	}
 
-	/** 
+	/**
 	 * Incoterm AD_Reference_ID=501599
 	 * Reference name: Incoterms
 	 */
@@ -1182,7 +1182,7 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	}
 
 	@Override
-	public java.lang.String getIncoterm() 
+	public java.lang.String getIncoterm()
 	{
 		return get_ValueAsString(COLUMNNAME_Incoterm);
 	}
@@ -1214,6 +1214,8 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	public static final String INVOICERULE_Immediate = "I";
 	/** OrderCompletelyDelivered = C */
 	public static final String INVOICERULE_OrderCompletelyDelivered = "C";
+	/** After Pick = P */
+	public static final String INVOICERULE_AfterPick = "P";
 	@Override
 	public void setInvoiceRule (final java.lang.String InvoiceRule)
 	{

@@ -49,6 +49,8 @@ public class BPartnerCompositeRestUtils
 				return InvoiceRule.Immediate;
 			case OrderCompletelyDelivered:
 				return InvoiceRule.OrderCompletelyDelivered;
+			case AfterPick:
+				return InvoiceRule.AfterPick;
 			default:
 				throw new AdempiereException("Unsupported JsonInvoiceRule " + jsonInvoiceRule);
 		}

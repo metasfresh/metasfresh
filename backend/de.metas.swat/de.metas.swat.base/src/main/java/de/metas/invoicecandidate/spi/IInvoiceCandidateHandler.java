@@ -239,6 +239,8 @@ public interface IInvoiceCandidateHandler
 		return PriceAndTax.NONE;
 	}
 
+	default void setShipmentSchedule(final I_C_Invoice_Candidate ic) { /* do nothing */ };
+
 	/**
 	 * * Method responsible for setting
 	 * <ul>
