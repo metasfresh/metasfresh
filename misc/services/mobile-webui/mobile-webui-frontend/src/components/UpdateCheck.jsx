@@ -33,12 +33,13 @@ class UpdateCheck extends Component {
            * (!) if full path contains `/login` on refresh it will lead to a failed to load resource fetch (404) that would make the service worker
            *     redundant. Due to this we need to redirect to the root of the site when a version change is happaning instead of reloading the page
            */
-          let fullUrl = window.location.href;
-          if (fullUrl.includes('/login')) {
-            window.location.href = '/mobile/';
-          } else {
-            window.location.reload();
-          }
+          // let fullUrl = window.location.href;
+          // if (fullUrl.includes('/login')) {
+          //   window.location.href = '/mobile/';
+          // } else {
+          //   window.location.reload();
+          // }
+          window.location.reload();
         }
       })
       .catch((error) => {
