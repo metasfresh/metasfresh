@@ -31,31 +31,53 @@ export function register(config) {
     // }
 
     console.log('[ServiceWorker] - Found in navigator..');
+    console.log('[ServiceWorker] - swUrl: ', swUrl);
+    console.log('[ServiceWorker] - config: ', config);
 
-    window.addEventListener('load', () => {
-      // const swUrl = `${process.env.PUBLIC_URL}/service-worker.js`;
-      const swUrl = `./service-worker.js`;
+    // direct loading of service worker - as it `load` below didn't work on prod
+    const swUrl = `./service-worker.js`;
+    if (isLocalhost) {
+      // This is running on localhost. Let's check if a service worker still exists or not.
+      checkValidServiceWorker(swUrl, config);
 
-      console.log('[ServiceWorker] - on page load event');
+      // Add some additional logging to localhost, pointing developers to the
+      // service worker/PWA documentation.
+      navigator.serviceWorker.ready.then(() => {
+        console.log(
+          '[ServiceWorker] - This web app is being served cache-first by a service ' +
+            'worker. To learn more, visit https://cra.link/PWA'
+        );
+      });
+    } else {
+      // Is not localhost. Just register service worker
+      console.log('[ServiceWorker] - Registering on Prod server');
+      registerValidSW(swUrl, config);
+    }
 
-      if (isLocalhost) {
-        // This is running on localhost. Let's check if a service worker still exists or not.
-        checkValidServiceWorker(swUrl, config);
+    // window.addEventListener('load', () => {
+    //   // const swUrl = `${process.env.PUBLIC_URL}/service-worker.js`;
+    //   const swUrl = `./service-worker.js`;
 
-        // Add some additional logging to localhost, pointing developers to the
-        // service worker/PWA documentation.
-        navigator.serviceWorker.ready.then(() => {
-          console.log(
-            '[ServiceWorker] - This web app is being served cache-first by a service ' +
-              'worker. To learn more, visit https://cra.link/PWA'
-          );
-        });
-      } else {
-        // Is not localhost. Just register service worker
-        console.log('[ServiceWorker] - Registering on Prod server');
-        registerValidSW(swUrl, config);
-      }
-    });
+    //   console.log('[ServiceWorker] - on page load event');
+
+    //   if (isLocalhost) {
+    //     // This is running on localhost. Let's check if a service worker still exists or not.
+    //     checkValidServiceWorker(swUrl, config);
+
+    //     // Add some additional logging to localhost, pointing developers to the
+    //     // service worker/PWA documentation.
+    //     navigator.serviceWorker.ready.then(() => {
+    //       console.log(
+    //         '[ServiceWorker] - This web app is being served cache-first by a service ' +
+    //           'worker. To learn more, visit https://cra.link/PWA'
+    //       );
+    //     });
+    //   } else {
+    //     // Is not localhost. Just register service worker
+    //     console.log('[ServiceWorker] - Registering on Prod server');
+    //     registerValidSW(swUrl, config);
+    //   }
+    // });
   }
 }
 
