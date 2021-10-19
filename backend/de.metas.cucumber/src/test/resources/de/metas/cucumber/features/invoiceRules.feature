@@ -45,7 +45,7 @@ Feature: invoice rule after delivery
     And after not more than 30s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | s_s_1                            | s_1                   |
-    Then enqueue candidate for invoicing and after not more than (.*)s, the invoice is found
+    Then enqueue candidate for invoicing and after not more than 30s, the invoice is found
       | C_Order_ID.Identifier | C_Invoice_ID.Identifier |
       | o_1                   | invoice_1               |
     And validate created invoices
@@ -98,7 +98,7 @@ Feature: invoice rule after delivery
     And the following qty is picked
       | M_ShipmentSchedule_ID.Identifier | M_Product_ID.Identifier | QtyPicked | M_HU_ID.Identifier |
       | s_s_2                            | p_2                     | 6         | hu_1               |
-    Then enqueue candidate for invoicing and after not more than (.*)s, the invoice is found
+    Then enqueue candidate for invoicing and after not more than 30s, the invoice is found
       | C_Order_ID.Identifier | C_Invoice_ID.Identifier |
       | o_2                   | invoice_2               |
     And validate created invoices
