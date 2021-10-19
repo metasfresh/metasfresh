@@ -260,4 +260,7 @@ public interface I_M_AttributeUse
     public static final org.adempiere.model.ModelColumn<I_M_AttributeUse, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_M_AttributeUse, org.compiere.model.I_AD_User>(I_M_AttributeUse.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
     /** Column name UpdatedBy */
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+
+	// TODO introduce column
+	default String getMandantoryOnReceipt() { return null; } // Y, N, null
 }

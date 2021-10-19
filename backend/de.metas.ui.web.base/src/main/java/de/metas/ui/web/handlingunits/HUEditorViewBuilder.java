@@ -170,7 +170,7 @@ public final class HUEditorViewBuilder
 
 	public HUEditorViewBuilder setAdditionalRelatedProcessDescriptors(@NonNull final List<RelatedProcessDescriptor> additionalRelatedProcessDescriptors)
 	{
-		if (additionalRelatedProcessDescriptors == null || additionalRelatedProcessDescriptors.isEmpty())
+		if (additionalRelatedProcessDescriptors.isEmpty())
 		{
 			this.additionalRelatedProcessDescriptors = null;
 		}
@@ -301,6 +301,7 @@ public final class HUEditorViewBuilder
 		return parameters != null ? ImmutableMap.copyOf(parameters) : ImmutableMap.of();
 	}
 
+	@Nullable
 	public <T> T getParameter(@NonNull final String name)
 	{
 		if (parameters == null)
