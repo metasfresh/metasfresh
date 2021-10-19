@@ -3,8 +3,6 @@ import PropTypes from 'prop-types';
 import { getServerVersion } from '../api/update';
 import { connect } from 'react-redux';
 import { setVersion } from '../actions/UpdateActions';
-import { networkStatusOffline } from '../actions/NetworkActions';
-
 class UpdateCheck extends Component {
   constructor(props) {
     super(props);
@@ -15,7 +13,7 @@ class UpdateCheck extends Component {
   }
 
   checkServerVersion = async () => {
-    const { currentVersion, setVersion, networkStatusOffline } = this.props;
+    const { currentVersion, setVersion } = this.props;
     getServerVersion()
       .then((version) => {
         if (currentVersion === null) {
@@ -30,11 +28,22 @@ class UpdateCheck extends Component {
           });
 
           setVersion(version);
-          window.location.reload();
+
+          /**
+           * (!) if full path contains `/login` on refresh it will lead to a failed to load resource fetch (404) that would make the service worker
+           *     redundant. Due to this we need to redirect to the root of the site when a version change is happaning instead of reloading the page
+           */
+          let fullUrl = window.location.href;
+          if (fullUrl.includes('/login')) {
+            window.location.href = '/';
+          } else {
+            window.location.reload();
+          }
         }
       })
-      .catch(() => {
-        networkStatusOffline();
+      .catch((error) => {
+        console.log('Error from vercheck:', error);
+        // networkStatusOffline();
       });
   };
 
@@ -62,8 +71,7 @@ const mapStateToProps = (state) => {
 UpdateCheck.propTypes = {
   updateInterval: PropTypes.number.isRequired,
   setVersion: PropTypes.func.isRequired,
-  networkStatusOffline: PropTypes.func.isRequired,
   currentVersion: PropTypes.oneOfType([() => null, PropTypes.string]).isRequired,
 };
 
-export default connect(mapStateToProps, { setVersion, networkStatusOffline })(UpdateCheck);
+export default connect(mapStateToProps, { setVersion })(UpdateCheck);

@@ -77,6 +77,7 @@ registerRoute(new RegExp('.+\\.css$'), new strategies.CacheFirst());
 registerRoute(new RegExp('.+/auth$'), new strategies.NetworkOnly());
 registerRoute(new RegExp('.+/launchers$'), new strategies.NetworkOnly());
 registerRoute(new RegExp('.+/version$'), new strategies.NetworkOnly());
+registerRoute(new RegExp('stomp'), new strategies.NetworkOnly());
 
 // An example runtime caching route for requests that aren't handled by the
 // precache, in this case same-origin .png requests like those from in public/
