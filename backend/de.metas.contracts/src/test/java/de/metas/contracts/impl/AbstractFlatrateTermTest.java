@@ -1,12 +1,16 @@
 package de.metas.contracts.impl;
 
 import de.metas.acct.api.AcctSchemaId;
+import de.metas.bpartner.BPartnerContactId;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.contracts.CreateFlatrateTermRequest;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.flatrate.interfaces.I_C_DocType;
 import de.metas.contracts.impl.FlatrateTermDataFactory.ProductAndPricingSystem;
+import de.metas.contracts.location.adapter.ContractDocumentLocationAdapterFactory;
 import de.metas.contracts.model.I_C_Contract_Change;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
@@ -19,12 +23,14 @@ import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.document.dimension.DimensionFactory;
 import de.metas.document.dimension.DimensionService;
 import de.metas.document.dimension.OrderLineDimensionFactory;
+import de.metas.document.location.DocumentLocation;
 import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
 import de.metas.inoutcandidate.api.impl.ShipmentScheduleUpdater;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.invoicecandidate.document.dimension.InvoiceCandidateDimensionFactory;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.location.ICountryAreaBL;
+import de.metas.location.LocationId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductAndCategoryId;
@@ -380,8 +386,15 @@ public abstract class AbstractFlatrateTermTest
 		final I_C_BPartner_Location bpLocation = getBpLocation();
 		final I_AD_User user = getUser();
 
-		contract.setBill_Location_ID(bpLocation.getC_BPartner_Location_ID());
-		contract.setBill_User_ID(user.getAD_User_ID());
+		ContractDocumentLocationAdapterFactory
+				.billLocationAdapter(contract)
+				.setFrom(DocumentLocation.builder()
+								 .bpartnerId(BPartnerId.ofRepoId(bpLocation.getC_BPartner_ID()))
+								 .bpartnerLocationId(BPartnerLocationId.ofRepoId(bpLocation.getC_BPartner_ID(), bpLocation.getC_BPartner_Location_ID()))
+								 .locationId(LocationId.ofRepoId(bpLocation.getC_Location_ID()))
+								 .contactId(BPartnerContactId.ofRepoIdOrNull(user.getC_BPartner_ID(), user.getAD_User_ID()))
+								 .build());
+
 		contract.setDropShip_BPartner_ID(getBpartner().getC_BPartner_ID());
 		contract.setDropShip_Location_ID(bpLocation.getC_BPartner_Location_ID());
 		contract.setDropShip_User_ID(user.getAD_User_ID());

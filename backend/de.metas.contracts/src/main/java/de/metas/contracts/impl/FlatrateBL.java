@@ -24,8 +24,8 @@ package de.metas.contracts.impl;
 
 import ch.qos.logback.classic.Level;
 import de.metas.acct.api.IProductAcctDAO;
+import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
-import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.cache.CacheMgt;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
@@ -42,6 +42,7 @@ import de.metas.contracts.event.FlatrateUserNotificationsProducer;
 import de.metas.contracts.interceptor.C_Flatrate_Term;
 import de.metas.contracts.invoicecandidate.FlatrateDataEntryHandler;
 import de.metas.contracts.location.ContractLocationHelper;
+import de.metas.contracts.location.adapter.ContractDocumentLocationAdapterFactory;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Data;
 import de.metas.contracts.model.I_C_Flatrate_DataEntry;
@@ -57,6 +58,7 @@ import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.document.location.DocumentLocation;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
@@ -1269,9 +1271,17 @@ public class FlatrateBL implements IFlatrateBL
 		nextTerm.setPlannedQtyPerUnit(currentTerm.getPlannedQtyPerUnit());
 		nextTerm.setIsSimulation(currentTerm.isSimulation());
 
-		nextTerm.setBill_BPartner_ID(currentTerm.getBill_BPartner_ID());
-		nextTerm.setBill_Location_ID(currentTerm.getBill_Location_ID());
-		nextTerm.setBill_User_ID(currentTerm.getBill_User_ID());
+		final BPartnerLocationAndCaptureId billToLocationId = getBillToLocationId(currentTerm);
+
+		final BPartnerContactId billToContactId = BPartnerContactId.ofRepoIdOrNull(billToLocationId.getBpartnerId(), currentTerm.getBill_User_ID());
+		ContractDocumentLocationAdapterFactory
+				.billLocationAdapter(nextTerm)
+				.setFrom(DocumentLocation.builder()
+								 .bpartnerId(billToLocationId.getBpartnerId())
+								 .bpartnerLocationId(billToLocationId.getBpartnerLocationId())
+								 .locationId(billToLocationId.getLocationCaptureId())
+								 .contactId(billToContactId)
+								 .build());
 
 		nextTerm.setAD_User_InCharge_ID(currentTerm.getAD_User_InCharge_ID());
 		final I_C_Flatrate_Transition nextTransition = nextConditions.getC_Flatrate_Transition();
@@ -1316,6 +1326,15 @@ public class FlatrateBL implements IFlatrateBL
 		InterfaceWrapperHelper.save(nextTerm);
 
 		return nextTerm;
+	}
+
+	@Override
+	public BPartnerLocationAndCaptureId getBillToLocationId(@NonNull final I_C_Flatrate_Term term)
+	{
+		return BPartnerLocationAndCaptureId.ofRepoIdOrNull(
+				term.getBill_BPartner_ID(),
+				term.getBill_Location_ID(),
+				term.getBill_Location_Value_ID());
 	}
 
 	private Timestamp computeStartDate(@NonNull final I_C_Flatrate_Term contract, final Timestamp nextTermStartDate)
@@ -1660,8 +1679,16 @@ public class FlatrateBL implements IFlatrateBL
 		newTerm.setEndDate(startDate); // will be updated later
 		newTerm.setDropShip_BPartner_ID(bPartner.getC_BPartner_ID());
 
-		newTerm.setBill_BPartner_ID(billPartnerLocation.getC_BPartner_ID()); // note that in case of bPartner relations, this might be a different partner than 'bPartner'.
-		newTerm.setBill_Location_ID(billPartnerLocation.getC_BPartner_Location_ID());
+		final BPartnerLocationAndCaptureId billToLocationId = BPartnerLocationAndCaptureId.ofRepoIdOrNull(billPartnerLocation.getC_BPartner_ID(),// note that in case of bPartner relations, this might be a different partner than 'bPartner'.
+																										  billPartnerLocation.getC_BPartner_Location_ID(),
+																										  billPartnerLocation.getC_Location_ID());
+		ContractDocumentLocationAdapterFactory
+				.billLocationAdapter(newTerm)
+				.setFrom(DocumentLocation.builder()
+								 .bpartnerId(billToLocationId.getBpartnerId())
+								 .bpartnerLocationId(billToLocationId.getBpartnerLocationId())
+								 .locationId(billToLocationId.getLocationCaptureId())
+								 .build());
 
 		if (userInCharge == null)
 		{

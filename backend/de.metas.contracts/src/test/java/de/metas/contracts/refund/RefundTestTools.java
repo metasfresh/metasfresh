@@ -1,43 +1,14 @@
 package de.metas.contracts.refund;
 
-import static de.metas.util.collections.CollectionUtils.singleElement;
-import static java.math.BigDecimal.ONE;
-import static java.math.BigDecimal.TEN;
-import static java.math.BigDecimal.ZERO;
-import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.List;
-
-import javax.annotation.Nullable;
-
-import de.metas.common.util.time.SystemTime;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.wrapper.POJOLookupMap;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_Country;
-import org.compiere.model.I_C_DocType;
-import org.compiere.model.I_C_InvoiceSchedule;
-import org.compiere.model.I_C_Location;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
-import org.compiere.model.X_C_DocType;
-import org.compiere.model.X_C_InvoiceSchedule;
-import org.compiere.util.TimeUtil;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.ConditionsId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.invoicecandidate.FlatrateTerm_Handler;
+import de.metas.contracts.location.adapter.ContractDocumentLocationAdapterFactory;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_RefundConfig;
 import de.metas.contracts.model.I_C_Flatrate_Term;
@@ -52,6 +23,7 @@ import de.metas.contracts.refund.RefundConfig.RefundMode;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.impl.PlainCurrencyDAO;
+import de.metas.document.location.DocumentLocation;
 import de.metas.invoice.InvoiceSchedule;
 import de.metas.invoice.service.InvoiceScheduleRepository;
 import de.metas.invoicecandidate.InvoiceCandidateId;
@@ -68,6 +40,33 @@ import de.metas.util.lang.Percent;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.wrapper.POJOLookupMap;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Country;
+import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_InvoiceSchedule;
+import org.compiere.model.I_C_Location;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
+import org.compiere.model.X_C_DocType;
+import org.compiere.model.X_C_InvoiceSchedule;
+import org.compiere.util.TimeUtil;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.List;
+
+import static de.metas.util.collections.CollectionUtils.singleElement;
+import static java.math.BigDecimal.ONE;
+import static java.math.BigDecimal.TEN;
+import static java.math.BigDecimal.ZERO;
+import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -261,7 +260,7 @@ public class RefundTestTools
 	{
 
 		Check.assumeNotNull(refundContract.getId(),
-				"The given refundContract has to be persisted (i.e. id!=null); refundContract={}", refundContract);
+							"The given refundContract has to be persisted (i.e. id!=null); refundContract={}", refundContract);
 
 		final I_C_Invoice_Candidate invoiceCandidateRecord = InterfaceWrapperHelper.newInstance(I_C_Invoice_Candidate.class);
 		invoiceCandidateRecord.setIsSOTrx(true); // pls keep in sync with C_DocType that we create in this classe's constructor
@@ -309,8 +308,15 @@ public class RefundTestTools
 		contractRecord.setC_Flatrate_Conditions(conditions);
 		contractRecord.setType_Conditions(X_C_Flatrate_Term.TYPE_CONDITIONS_Refund);
 		contractRecord.setDocStatus(X_C_Flatrate_Term.DOCSTATUS_Completed);
-		contractRecord.setBill_BPartner_ID(billBPartnerLocationId.getBpartnerId().getRepoId());
-		contractRecord.setBill_Location_ID(billBPartnerLocationId.getRepoId());
+
+		ContractDocumentLocationAdapterFactory
+				.billLocationAdapter(contractRecord)
+				.setFrom(DocumentLocation.builder()
+								 .bpartnerId(billBPartnerLocationId.getBpartnerId())
+								 .bpartnerLocationId(billBPartnerLocationId)
+
+								 .build());
+
 		contractRecord.setM_Product_ID(productRecord.getM_Product_ID());
 		contractRecord.setStartDate(TimeUtil.asTimestamp(CONTRACT_START_DATE));
 		contractRecord.setEndDate(TimeUtil.asTimestamp(CONTRACT_END_DATE));

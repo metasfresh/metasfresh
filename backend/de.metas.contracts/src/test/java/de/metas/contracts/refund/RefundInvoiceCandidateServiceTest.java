@@ -13,9 +13,14 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.contracts.location.adapter.ContractDocumentLocationAdapterFactory;
 import de.metas.document.dimension.DimensionFactory;
 import de.metas.document.dimension.DimensionService;
+import de.metas.document.location.DocumentLocation;
 import de.metas.invoicecandidate.document.dimension.InvoiceCandidateDimensionFactory;
+import de.metas.location.LocationId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.util.TimeUtil;
@@ -175,8 +180,15 @@ public class RefundInvoiceCandidateServiceTest
 		assertThat(assignableCandidate.getQuantity().toBigDecimal()).isEqualByComparingTo(FIFTEEN); // guard
 
 		final I_C_Flatrate_Term contractRecord = newInstance(I_C_Flatrate_Term.class);
-		contractRecord.setBill_BPartner_ID(assignableRecord.getBill_BPartner_ID());
-		contractRecord.setBill_Location_ID(assignableRecord.getBill_Location_ID());
+
+		ContractDocumentLocationAdapterFactory
+				.billLocationAdapter(contractRecord)
+				.setFrom(DocumentLocation.builder()
+								 .bpartnerId(BPartnerId.ofRepoId(assignableRecord.getBill_BPartner_ID()))
+								 .bpartnerLocationId(BPartnerLocationId.ofRepoId(assignableRecord.getBill_BPartner_ID(), assignableRecord.getBill_Location_ID()))
+								 .locationId(LocationId.ofRepoIdOrNull(assignableRecord.getBill_Location_Value_ID()))
+								 .build());
+
 		contractRecord.setType_Conditions(X_C_Flatrate_Term.TYPE_CONDITIONS_Refund);
 		contractRecord.setC_Flatrate_Conditions_ID(conditionsId.getRepoId());
 		contractRecord.setStartDate(TimeUtil.asTimestamp(NOW));

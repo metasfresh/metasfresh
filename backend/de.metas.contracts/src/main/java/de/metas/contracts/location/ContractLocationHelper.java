@@ -24,6 +24,7 @@ package de.metas.contracts.location;
 
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_SubscriptionProgress;
@@ -37,9 +38,16 @@ public class ContractLocationHelper
 	public static DocumentLocation extractBillLocation(@NonNull final I_C_Flatrate_Term contract)
 	{
 		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(contract.getBill_BPartner_ID());
+
+		final BPartnerLocationAndCaptureId billToLocationId = BPartnerLocationAndCaptureId.ofRepoIdOrNull(
+				bpartnerId,
+				contract.getBill_Location_ID(),
+				contract.getBill_Location_Value_ID());
+
 		return DocumentLocation.builder()
 				.bpartnerId(bpartnerId)
-				.bpartnerLocationId(BPartnerLocationId.ofRepoIdOrNull(bpartnerId, contract.getBill_Location_ID()))
+				.bpartnerLocationId(billToLocationId.getBpartnerLocationId())
+				.locationId(billToLocationId.getLocationCaptureId())
 				.contactId(BPartnerContactId.ofRepoIdOrNull(bpartnerId, contract.getBill_User_ID()))
 				.build();
 	}

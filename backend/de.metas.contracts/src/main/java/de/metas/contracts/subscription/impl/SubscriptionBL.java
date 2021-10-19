@@ -36,6 +36,10 @@ import java.util.Set;
 
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.common.util.time.SystemTime;
+import de.metas.contracts.location.adapter.ContractDocumentLocationAdapterFactory;
+import de.metas.document.location.DocumentLocation;
+import de.metas.order.IOrderBL;
+import de.metas.order.IOrderDAO;
 import de.metas.order.location.adapter.OrderLineDocumentLocationAdapterFactory;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
@@ -157,6 +161,8 @@ public class SubscriptionBL implements ISubscriptionBL
 
 	public static final Logger logger = LogManager.getLogger(SubscriptionBL.class);
 
+	private final IOrderBL orderBL = Services.get(IOrderBL.class);
+
 	@Override
 	public I_C_Flatrate_Term createSubscriptionTerm(
 			@NonNull final I_C_OrderLine ol,
@@ -185,9 +191,17 @@ public class SubscriptionBL implements ISubscriptionBL
 		newTerm.setDeliveryRule(order.getDeliveryRule());
 		newTerm.setDeliveryViaRule(order.getDeliveryViaRule());
 
-		newTerm.setBill_BPartner_ID(order.getBill_BPartner_ID());
-		newTerm.setBill_Location_ID(order.getBill_Location_ID());
-		newTerm.setBill_User_ID(order.getBill_User_ID());
+		final BPartnerLocationAndCaptureId billToLocationId = orderBL.getBillToLocationId(order);
+
+		final BPartnerContactId billToContactId = BPartnerContactId.ofRepoIdOrNull(billToLocationId.getBpartnerId(), order.getBill_User_ID());
+		ContractDocumentLocationAdapterFactory
+				.billLocationAdapter(newTerm)
+				.setFrom(DocumentLocation.builder()
+								 .bpartnerId(billToLocationId.getBpartnerId())
+								 .bpartnerLocationId(billToLocationId.getBpartnerLocationId())
+								 .locationId(billToLocationId.getLocationCaptureId())
+								 .contactId(billToContactId)
+								 .build());
 
 		newTerm.setDropShip_BPartner_ID(ol.getC_BPartner_ID());
 		newTerm.setDropShip_Location_ID(ol.getC_BPartner_Location_ID());
@@ -454,12 +468,17 @@ public class SubscriptionBL implements ISubscriptionBL
 		newTerm.setDeliveryViaRule(olCandRecord.getDeliveryViaRule());
 
 		final I_C_BPartner bill_BPartner = olCandEffectiveValuesBL.getBill_BPartner_Effective(olCandRecord, I_C_BPartner.class);
-		final int bill_Location_ID = BPartnerLocationId.toRepoId(olCandEffectiveValuesBL.getBillLocationEffectiveId(olCandRecord));
-		final int bill_User_ID = BPartnerContactId.toRepoId(olCandEffectiveValuesBL.getBillContactEffectiveId(olCandRecord));
 
-		newTerm.setBill_BPartner_ID(bill_BPartner.getC_BPartner_ID());
-		newTerm.setBill_Location_ID(bill_Location_ID);
-		newTerm.setBill_User_ID(bill_User_ID);
+		final BPartnerLocationAndCaptureId billToLocationId = olCandEffectiveValuesBL.getBillLocationAndCaptureEffectiveId(olCandRecord);
+
+		ContractDocumentLocationAdapterFactory
+				.billLocationAdapter(newTerm)
+				.setFrom(DocumentLocation.builder()
+								 .bpartnerId(billToLocationId.getBpartnerId())
+								 .bpartnerLocationId(billToLocationId.getBpartnerLocationId())
+								 .locationId(billToLocationId.getLocationCaptureId())
+								 .contactId(olCandEffectiveValuesBL.getBillContactEffectiveId(olCandRecord))
+								 .build());
 
 		final BPartnerInfo shipToPartnerInfo = olCandEffectiveValuesBL
 				.getDropShipPartnerInfo(olCandRecord)
@@ -670,8 +689,8 @@ public class SubscriptionBL implements ISubscriptionBL
 			@NonNull final I_C_SubscriptionProgress sp)
 	{
 		Check.errorIf(sp.getEventDate().after(currentDate),
-				"The event date {} of the given subscriptionProgress is after currentDate={}; subscriptionProgress={}",
-				sp.getEventDate(), currentDate, sp);
+					  "The event date {} of the given subscriptionProgress is after currentDate={}; subscriptionProgress={}",
+					  sp.getEventDate(), currentDate, sp);
 
 		if (isPlannedStartPause(sp))
 		{
@@ -1133,12 +1152,12 @@ public class SubscriptionBL implements ISubscriptionBL
 
 		// now compute the new prices
 		orderLineBL.updatePrices(OrderLinePriceUpdateRequest.builder()
-				.orderLine(ol)
-				.priceListIdOverride(subscriptionPLId)
-				.qtyOverride(orderLineQty)
-				.resultUOM(OrderLinePriceUpdateRequest.ResultUOM.PRICE_UOM)
-				.updatePriceEnteredAndDiscountOnlyIfNotAlreadySet(updatePriceEnteredAndDiscountOnlyIfNotAlreadySet)
-				.updateLineNetAmt(true)
-				.build());
+										 .orderLine(ol)
+										 .priceListIdOverride(subscriptionPLId)
+										 .qtyOverride(orderLineQty)
+										 .resultUOM(OrderLinePriceUpdateRequest.ResultUOM.PRICE_UOM)
+										 .updatePriceEnteredAndDiscountOnlyIfNotAlreadySet(updatePriceEnteredAndDiscountOnlyIfNotAlreadySet)
+										 .updateLineNetAmt(true)
+										 .build());
 	}
 }

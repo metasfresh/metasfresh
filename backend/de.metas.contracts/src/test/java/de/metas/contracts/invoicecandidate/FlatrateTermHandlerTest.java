@@ -35,7 +35,10 @@ import org.adempiere.warehouse.WarehouseId;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_Activity;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -89,7 +92,6 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 
 		final I_C_DocType invoiceDocType = createDocType("InvoiceDocType");
 		invoiceDocTypeId = DocTypeId.ofRepoId(invoiceDocType.getC_DocType_ID());
-
 	}
 
 	@Test
@@ -106,7 +108,11 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 				.product(product1)
 				.build();
 
+		@NonNull
+		final BPartnerLocationAndCaptureId bPartnerLocationAndCaptureId	= newBPartnerLocationAndCaptureId();
+
 		final I_C_Flatrate_Term term1 = newFlatrateTerm()
+				.bPartnerLocationAndCaptureId(bPartnerLocationAndCaptureId)
 				.conditions(conditions)
 				.product(product1)
 				.orderLine(orderLine)
@@ -141,6 +147,27 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 		final FlatrateTerm_Handler flatrateTermHandler = new FlatrateTerm_Handler();
 		final InvoiceCandidateGenerateResult candidates = flatrateTermHandler.createCandidatesFor(InvoiceCandidateGenerateRequest.of(flatrateTermHandler, term1));
 		assertInvoiceCandidates(candidates, term1);
+	}
+
+	private BPartnerLocationAndCaptureId newBPartnerLocationAndCaptureId()
+	{
+
+		final I_C_BPartner partner = newInstance(I_C_BPartner.class);
+		partner.setName("Partner");
+		save(partner);
+
+		final I_C_Location location = newInstance(I_C_Location.class);
+		save(location);
+
+		final I_C_BPartner_Location bpLocation = newInstance(I_C_BPartner_Location.class);
+		bpLocation.setC_BPartner_ID(partner.getC_BPartner_ID());
+		bpLocation.setC_Location_ID(location.getC_Location_ID());
+		save(bpLocation);
+
+
+		return BPartnerLocationAndCaptureId.ofRepoIdOrNull(partner.getC_BPartner_ID(),
+														   bpLocation.getC_BPartner_Location_ID(),
+														   location.getC_Location_ID());
 	}
 
 	private I_M_Product createProduct()
@@ -212,6 +239,7 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 
 	@Builder(builderMethodName = "newFlatrateTerm")
 	private I_C_Flatrate_Term createFlatrateTerm(
+			@NonNull final BPartnerLocationAndCaptureId bPartnerLocationAndCaptureId,
 			@NonNull final I_C_Flatrate_Conditions conditions,
 			final I_M_Product product,
 			final I_C_OrderLine orderLine,
@@ -230,6 +258,11 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 		term.setC_Order_Term_ID(orderLine.getC_Order_ID());
 		term.setIsAutoRenew(isAutoRenew);
 		term.setC_UOM_ID(uomId.getRepoId());
+
+		term.setBill_BPartner_ID(bPartnerLocationAndCaptureId.getBpartnerRepoId());
+		term.setBill_Location_ID(bPartnerLocationAndCaptureId.getBPartnerLocationRepoId());
+		term.setBill_Location_Value_ID(bPartnerLocationAndCaptureId.getLocationCaptureRepoId());
+
 		save(term);
 		return term;
 	}
