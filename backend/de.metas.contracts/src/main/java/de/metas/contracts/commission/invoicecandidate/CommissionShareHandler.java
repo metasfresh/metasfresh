@@ -6,6 +6,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.contracts.FlatrateTermId;
+import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.commission.CommissionConstants;
 import de.metas.contracts.commission.model.I_C_Commission_Share;
@@ -91,6 +92,7 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 {
 	protected transient final Logger log = LogManager.getLogger(getClass());
 	private final transient IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
+	private final transient IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 	private final transient IProductAcctDAO productAcctDAO = Services.get(IProductAcctDAO.class);
 	private final transient IProductBL productBL = Services.get(IProductBL.class);
 	private final transient IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
@@ -182,7 +184,7 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 		icRecord.setQtyToInvoice(ZERO); // to be computed
 
 		final BPartnerId bPartnerId = BPartnerId.ofRepoId(commissionShareRecord.getC_BPartner_SalesRep_ID());
-		final BPartnerLocationAndCaptureId commissionToLocationId = BPartnerLocationAndCaptureId.ofRepoId(flatrateTerm.getBill_BPartner_ID(), flatrateTerm.getBill_Location_ID());
+		final BPartnerLocationAndCaptureId commissionToLocationId = flatrateBL.getBillToLocationId(flatrateTerm);
 
 		final PricingSystemId pricingSystemId = bPartnerDAO.retrievePricingSystemIdOrNull(bPartnerId, SOTrx.PURCHASE);
 

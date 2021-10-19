@@ -24,6 +24,7 @@ package de.metas.contracts.bpartner.repository;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.OrgMappingId;
 import de.metas.bpartner.composite.BPartnerComposite;
@@ -33,6 +34,7 @@ import de.metas.contracts.ConditionsId;
 import de.metas.contracts.FlatrateTerm;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.FlatrateTermStatus;
+import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.bpartner.service.OrgChangeBPartnerComposite;
 import de.metas.contracts.model.I_C_Flatrate_Term;
@@ -72,6 +74,7 @@ public class OrgChangeRepository
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
+	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 
 	private final BPartnerCompositeRepository bPartnerCompositeRepo;
 	private final OrgMappingRepository orgMappingRepo;
@@ -137,11 +140,12 @@ public class OrgChangeRepository
 		final ProductId productId = ProductId.ofRepoId(term.getM_Product_ID());
 		final I_C_UOM termUom = uomDAO.getById(CoalesceUtil.coalesce(UomId.ofRepoIdOrNull(term.getC_UOM_ID()), productBL.getStockUOMId(productId)));
 
+		final BPartnerLocationAndCaptureId billPartnerLocationAndCaptureId = flatrateBL.getBillToLocationId(term);
+
 		return FlatrateTerm.builder()
 				.flatrateTermId(flatrateTermId)
 				.orgId(orgId)
-				.billPartnerID(BPartnerId.ofRepoId(term.getBill_BPartner_ID()))
-				.billLocationId(BPartnerLocationId.ofRepoId(term.getBill_BPartner_ID(), term.getBill_Location_ID()))
+				.billPartnerLocationAndCaptureId(billPartnerLocationAndCaptureId)
 				.shipToBPartnerId(BPartnerId.ofRepoIdOrNull(term.getDropShip_BPartner_ID()))
 				.shipToLocationId(BPartnerLocationId.ofRepoIdOrNull(term.getDropShip_BPartner_ID(), term.getDropShip_Location_ID()))
 				.productId(productId)

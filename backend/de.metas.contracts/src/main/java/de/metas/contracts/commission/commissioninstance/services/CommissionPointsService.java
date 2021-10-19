@@ -24,9 +24,9 @@ package de.metas.contracts.commission.commissioninstance.services;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
-import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.contracts.FlatrateTermId;
+import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionPoints;
 import de.metas.contracts.model.I_C_Flatrate_Term;
@@ -76,13 +76,14 @@ public class CommissionPointsService
 			@NonNull final LocalDate requestedDate)
 	{
 		final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
+		final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 		final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 		final IPricingBL pricingBL = Services.get(IPricingBL.class);
 		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 
 		final I_C_Flatrate_Term flatrateTerm = flatrateDAO.retrieveTerm(flatrateTermId);
 
-		final BPartnerLocationAndCaptureId commissionToLocationId = BPartnerLocationAndCaptureId.ofRepoId(flatrateTerm.getBill_BPartner_ID(), flatrateTerm.getBill_Location_ID());
+		final BPartnerLocationAndCaptureId commissionToLocationId = flatrateBL.getBillToLocationId(flatrateTerm);
 
 		final BPartnerId bPartnerId = BPartnerId.ofRepoId(flatrateTerm.getBill_BPartner_ID());
 

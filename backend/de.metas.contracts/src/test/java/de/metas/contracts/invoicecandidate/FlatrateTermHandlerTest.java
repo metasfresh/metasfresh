@@ -3,10 +3,12 @@ package de.metas.contracts.invoicecandidate;
 import de.metas.acct.api.IProductAcctDAO;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.adempiere.model.I_M_Product;
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.impl.ContractsTestBase;
+import de.metas.contracts.location.adapter.ContractDocumentLocationAdapterFactory;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Flatrate_Transition;
@@ -14,6 +16,7 @@ import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.order.model.I_C_OrderLine;
 import de.metas.document.DocTypeId;
 import de.metas.document.engine.DocStatus;
+import de.metas.document.location.DocumentLocation;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
@@ -109,7 +112,7 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 				.build();
 
 		@NonNull
-		final BPartnerLocationAndCaptureId bPartnerLocationAndCaptureId	= newBPartnerLocationAndCaptureId();
+		final BPartnerLocationAndCaptureId bPartnerLocationAndCaptureId = newBPartnerLocationAndCaptureId();
 
 		final I_C_Flatrate_Term term1 = newFlatrateTerm()
 				.bPartnerLocationAndCaptureId(bPartnerLocationAndCaptureId)
@@ -123,25 +126,25 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 		Services.registerService(ITaxBL.class, taxBL);
 
 		Mockito.when(productAcctDAO.retrieveActivityForAcct(
-				clientId,
-				orgId,
-				productId1))
+						clientId,
+						orgId,
+						productId1))
 				.thenReturn(activityId);
 
 		final Properties ctx = Env.getCtx();
 		final TaxCategoryId taxCategoryId = null;
 		Mockito.when(taxBL.getTaxNotNull(
-				ctx,
-				term1,
-				taxCategoryId,
-				term1.getM_Product_ID(),
-				term1.getStartDate(),
-				OrgId.ofRepoId(term1.getAD_Org_ID()),
-				(WarehouseId)null,
-				CoalesceUtil.coalesceSuppliers(
-						() -> BPartnerLocationAndCaptureId.ofRepoIdOrNull(term1.getDropShip_BPartner_ID(), term1.getDropShip_Location_ID()),
-						() -> BPartnerLocationAndCaptureId.ofRepoIdOrNull(term1.getBill_BPartner_ID(), term1.getBill_Location_ID())),
-				SOTrx.SALES))
+						ctx,
+						term1,
+						taxCategoryId,
+						term1.getM_Product_ID(),
+						term1.getStartDate(),
+						OrgId.ofRepoId(term1.getAD_Org_ID()),
+						(WarehouseId)null,
+						CoalesceUtil.coalesceSuppliers(
+								() -> BPartnerLocationAndCaptureId.ofRepoIdOrNull(term1.getDropShip_BPartner_ID(), term1.getDropShip_Location_ID()),
+								() -> BPartnerLocationAndCaptureId.ofRepoIdOrNull(term1.getBill_BPartner_ID(), term1.getBill_Location_ID())),
+						SOTrx.SALES))
 				.thenReturn(TaxId.ofRepoId(3));
 
 		final FlatrateTerm_Handler flatrateTermHandler = new FlatrateTerm_Handler();
@@ -163,7 +166,6 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 		bpLocation.setC_BPartner_ID(partner.getC_BPartner_ID());
 		bpLocation.setC_Location_ID(location.getC_Location_ID());
 		save(bpLocation);
-
 
 		return BPartnerLocationAndCaptureId.ofRepoIdOrNull(partner.getC_BPartner_ID(),
 														   bpLocation.getC_BPartner_Location_ID(),
@@ -259,9 +261,12 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 		term.setIsAutoRenew(isAutoRenew);
 		term.setC_UOM_ID(uomId.getRepoId());
 
-		term.setBill_BPartner_ID(bPartnerLocationAndCaptureId.getBpartnerRepoId());
-		term.setBill_Location_ID(bPartnerLocationAndCaptureId.getBPartnerLocationRepoId());
-		term.setBill_Location_Value_ID(bPartnerLocationAndCaptureId.getLocationCaptureRepoId());
+		ContractDocumentLocationAdapterFactory.billLocationAdapter(term)
+				.setFrom(DocumentLocation.builder()
+								 .bpartnerId(BPartnerId.ofRepoIdOrNull(bPartnerLocationAndCaptureId.getBpartnerRepoId()))
+								 .bpartnerLocationId(bPartnerLocationAndCaptureId.getBpartnerLocationId())
+								 .locationId(bPartnerLocationAndCaptureId.getLocationCaptureId())
+								 .build());
 
 		save(term);
 		return term;

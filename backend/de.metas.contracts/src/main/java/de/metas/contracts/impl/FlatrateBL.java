@@ -459,7 +459,7 @@ public class FlatrateBL implements IFlatrateBL
 
 		final BPartnerLocationAndCaptureId shipToLocationId = CoalesceUtil.coalesceSuppliers(
 				() -> BPartnerLocationAndCaptureId.ofRepoIdOrNull(term.getDropShip_BPartner_ID(), term.getDropShip_Location_ID()),
-				() -> BPartnerLocationAndCaptureId.ofRepoIdOrNull(term.getBill_BPartner_ID(), term.getBill_Location_ID()));
+				() -> getBillToLocationId(term));
 
 		final TaxId taxId = Services.get(ITaxBL.class).getTaxNotNull(
 				ctx,
@@ -593,7 +593,7 @@ public class FlatrateBL implements IFlatrateBL
 
 		final BPartnerLocationAndCaptureId shipToLocationId = CoalesceUtil.coalesceSuppliers(
 				() -> BPartnerLocationAndCaptureId.ofRepoIdOrNull(term.getDropShip_BPartner_ID(), term.getDropShip_Location_ID()),
-				() -> BPartnerLocationAndCaptureId.ofRepoIdOrNull(term.getBill_BPartner_ID(), term.getBill_Location_ID()));
+				() -> getBillToLocationId(term));
 
 		final TaxId taxId = Services.get(ITaxBL.class).getTaxNotNull(
 				ctx,
@@ -1271,17 +1271,9 @@ public class FlatrateBL implements IFlatrateBL
 		nextTerm.setPlannedQtyPerUnit(currentTerm.getPlannedQtyPerUnit());
 		nextTerm.setIsSimulation(currentTerm.isSimulation());
 
-		final BPartnerLocationAndCaptureId billToLocationId = getBillToLocationId(currentTerm);
-
-		final BPartnerContactId billToContactId = BPartnerContactId.ofRepoIdOrNull(billToLocationId.getBpartnerId(), currentTerm.getBill_User_ID());
 		ContractDocumentLocationAdapterFactory
 				.billLocationAdapter(nextTerm)
-				.setFrom(DocumentLocation.builder()
-								 .bpartnerId(billToLocationId.getBpartnerId())
-								 .bpartnerLocationId(billToLocationId.getBpartnerLocationId())
-								 .locationId(billToLocationId.getLocationCaptureId())
-								 .contactId(billToContactId)
-								 .build());
+				.setFrom(ContractLocationHelper.extractBillLocation(currentTerm));
 
 		nextTerm.setAD_User_InCharge_ID(currentTerm.getAD_User_InCharge_ID());
 		final I_C_Flatrate_Transition nextTransition = nextConditions.getC_Flatrate_Transition();
