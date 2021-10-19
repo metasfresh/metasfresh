@@ -317,3 +317,143 @@ UPDATE AD_Ref_List_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2021-10-18 16:
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_Ref_List SET Name='Nach Pick',Updated=TO_TIMESTAMP('2021-10-18 16:16:17','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Ref_List_ID=542903
 ;
+
+-- 2021-10-19T07:46:12.556Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Name='Auf Packzettel (Lagereinheit)', PrintName='Auf Packzettel (Lagereinheit)',Updated=TO_TIMESTAMP('2021-10-19 10:46:12','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=580027 AND AD_Language='de_CH'
+;
+
+-- 2021-10-19T07:46:12.590Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(580027,'de_CH')
+;
+
+-- 2021-10-19T07:46:17.167Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Name='Auf Packzettel (Lagereinheit)', PrintName='Auf Packzettel (Lagereinheit)',Updated=TO_TIMESTAMP('2021-10-19 10:46:17','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=580027 AND AD_Language='de_DE'
+;
+
+-- 2021-10-19T07:46:17.169Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(580027,'de_DE')
+;
+
+-- 2021-10-19T07:46:17.196Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_ad_element_on_ad_element_trl_update(580027,'de_DE')
+;
+
+-- 2021-10-19T07:46:17.199Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnName=NULL, Name='Auf Packzettel (Lagereinheit)', Description=NULL, Help=NULL WHERE AD_Element_ID=580027
+;
+
+-- 2021-10-19T07:46:17.199Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName=NULL, Name='Auf Packzettel (Lagereinheit)', Description=NULL, Help=NULL WHERE AD_Element_ID=580027 AND IsCentrallyMaintained='Y'
+;
+
+-- 2021-10-19T07:46:17.200Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Auf Packzettel (Lagereinheit)', Description=NULL, Help=NULL WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=580027) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 580027)
+;
+
+-- 2021-10-19T07:46:17.215Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_PrintFormatItem pi SET PrintName='Auf Packzettel (Lagereinheit)', Name='Auf Packzettel (Lagereinheit)' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c  WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=580027)
+;
+
+-- 2021-10-19T07:46:17.216Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET Name='Auf Packzettel (Lagereinheit)', Description=NULL, Help=NULL, CommitWarning = NULL WHERE AD_Element_ID = 580027
+;
+
+-- 2021-10-19T07:46:17.217Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_WINDOW SET Name='Auf Packzettel (Lagereinheit)', Description=NULL, Help=NULL WHERE AD_Element_ID = 580027
+;
+
+-- 2021-10-19T07:46:17.217Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu SET   Name = 'Auf Packzettel (Lagereinheit)', Description = NULL, WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 580027
+;
+
+-- 2021-10-19T07:46:21.854Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Name='Auf Packzettel (Lagereinheit)', PrintName='Auf Packzettel (Lagereinheit)',Updated=TO_TIMESTAMP('2021-10-19 10:46:21','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=580027 AND AD_Language='nl_NL'
+;
+
+-- 2021-10-19T07:46:21.856Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(580027,'nl_NL')
+;
+
+-- 2021-10-19T07:46:48.109Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Name='Auf Packzettel', PrintName='Auf Packzettel',Updated=TO_TIMESTAMP('2021-10-19 10:46:48','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=580033 AND AD_Language='de_CH'
+;
+
+-- 2021-10-19T07:46:48.111Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(580033,'de_CH')
+;
+
+-- 2021-10-19T07:46:51.070Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Name='Auf Packzettel', PrintName='Auf Packzettel',Updated=TO_TIMESTAMP('2021-10-19 10:46:51','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=580033 AND AD_Language='de_DE'
+;
+
+-- 2021-10-19T07:46:51.072Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(580033,'de_DE')
+;
+
+-- 2021-10-19T07:46:51.083Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_ad_element_on_ad_element_trl_update(580033,'de_DE')
+;
+
+-- 2021-10-19T07:46:51.084Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnName=NULL, Name='Auf Packzettel', Description=NULL, Help=NULL WHERE AD_Element_ID=580033
+;
+
+-- 2021-10-19T07:46:51.085Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName=NULL, Name='Auf Packzettel', Description=NULL, Help=NULL WHERE AD_Element_ID=580033 AND IsCentrallyMaintained='Y'
+;
+
+-- 2021-10-19T07:46:51.085Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Auf Packzettel', Description=NULL, Help=NULL WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=580033) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 580033)
+;
+
+-- 2021-10-19T07:46:51.097Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_PrintFormatItem pi SET PrintName='Auf Packzettel', Name='Auf Packzettel' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c  WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=580033)
+;
+
+-- 2021-10-19T07:46:51.098Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET Name='Auf Packzettel', Description=NULL, Help=NULL, CommitWarning = NULL WHERE AD_Element_ID = 580033
+;
+
+-- 2021-10-19T07:46:51.099Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_WINDOW SET Name='Auf Packzettel', Description=NULL, Help=NULL WHERE AD_Element_ID = 580033
+;
+
+-- 2021-10-19T07:46:51.100Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu SET   Name = 'Auf Packzettel', Description = NULL, WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 580033
+;
+
+-- 2021-10-19T07:46:54.174Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Name='Auf Packzettel', PrintName='Auf Packzettel',Updated=TO_TIMESTAMP('2021-10-19 10:46:54','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=580033 AND AD_Language='nl_NL'
+;
+
+-- 2021-10-19T07:46:54.176Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(580033,'nl_NL')
+;
