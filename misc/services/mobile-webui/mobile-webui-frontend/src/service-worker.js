@@ -94,7 +94,10 @@ registerRoute(
   })
 );
 
+console.log('[ServiceWorker] waking up!');
+
 self.addEventListener('install', function () {
+  console.log('[ServiceWorker] New one installed!');
   // Force refreshing the sw on install
   if (self.skipWaiting) {
     self.skipWaiting();
@@ -185,6 +188,7 @@ self.addEventListener('fetch', (event) => {
 // Just like registering a service worker does not immediately take control of the registering page,
 // removal must wait for clients to refresh before unregistering.
 self.addEventListener('activate', function () {
+  console.log('[ServiceWorker] New one activated!');
   // navigator.serviceWorker
   //   .getRegistrations()
   //   .then(function (registrations) {
