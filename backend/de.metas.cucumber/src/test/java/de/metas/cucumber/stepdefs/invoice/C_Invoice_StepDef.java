@@ -32,7 +32,6 @@ import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.impl.PlainInvoicingParams;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Recompute;
 import de.metas.order.OrderId;
 import de.metas.payment.paymentterm.IPaymentTermRepository;
 import de.metas.payment.paymentterm.PaymentTermId;
@@ -106,21 +105,18 @@ public class C_Invoice_StepDef
 		final I_C_Order orderRecord = orderTable.get(orderIdentifier);
 		final OrderId targetOrderId = OrderId.ofRepoId(orderRecord.getC_Order_ID());
 
-		final IInvoiceCandDAO.InvoiceableInvoiceCandIdResult invoiceableInvoiceCandId = invoiceCandDAO.getFirstInvoiceableInvoiceCandId(targetOrderId);
-		final InvoiceCandidateId invoiceCandidateId = invoiceableInvoiceCandId.getFirstInvoiceableInvoiceCandId();
-
 		//make sure the given invoice candidate is ready for processing
 		final Supplier<Boolean> noInvoiceCandidateRecompute = () ->
 		{
-			final int countInvoiceCandidateRecompute = queryBL.createQueryBuilder(I_C_Invoice_Candidate_Recompute.class)
-					.addEqualsFilter(I_C_Invoice_Candidate_Recompute.COLUMNNAME_C_Invoice_Candidate_ID, invoiceCandidateId)
-					.create()
-					.count();
+			final IInvoiceCandDAO.InvoiceableInvoiceCandIdResult invoiceableInvoiceCandId = invoiceCandDAO.getFirstInvoiceableInvoiceCandId(targetOrderId);
 
-			return countInvoiceCandidateRecompute == 0;
+			return invoiceableInvoiceCandId.getFirstInvoiceableInvoiceCandId() != null;
 		};
 
 		StepDefUtil.tryAndWait(timeoutSec, 500, noInvoiceCandidateRecompute);
+
+		final IInvoiceCandDAO.InvoiceableInvoiceCandIdResult invoiceableInvoiceCandId = invoiceCandDAO.getFirstInvoiceableInvoiceCandId(targetOrderId);
+		final InvoiceCandidateId invoiceCandidateId = invoiceableInvoiceCandId.getFirstInvoiceableInvoiceCandId();
 
 		//enqueue invoice candidate
 		final I_C_Invoice_Candidate invoiceCandidateRecord = invoiceCandDAO.getById(invoiceCandidateId);
