@@ -237,6 +237,7 @@ class TableCell extends PureComponent {
               rowIndex,
               colIndex,
               isEditable,
+              isEdited,
               supportFieldEdit,
               entity,
               updateHeight,

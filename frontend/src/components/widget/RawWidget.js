@@ -404,6 +404,8 @@ export class RawWidget extends PureComponent {
       fieldName,
       maxLength,
       isFilterActive,
+
+      isEdited,
     } = this.props;
     let tabIndex = this.props.tabIndex;
     const { isFocused, charsTyped } = this.state;
@@ -462,6 +464,7 @@ export class RawWidget extends PureComponent {
           showErrorBorder,
           isFocused,
           isFilterActive,
+          isEdited,
         }}
         ref={this.rawWidget}
         charsTyped={charsTypedCount}
