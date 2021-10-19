@@ -35,7 +35,7 @@ class UpdateCheck extends Component {
            */
           let fullUrl = window.location.href;
           if (fullUrl.includes('/login')) {
-            window.location.href = '/';
+            window.location.href = '/mobile/';
           } else {
             window.location.reload();
           }
