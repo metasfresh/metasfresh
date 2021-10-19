@@ -34,4 +34,6 @@ public class AttributeSetAttribute
 	@NonNull AttributeId attributeId;
 	int seqNo;
 	@NonNull OptionalBoolean mandatoryOnReceipt;
+	@NonNull OptionalBoolean mandatoryOnPicking;
+	@NonNull OptionalBoolean mandatoryOnShipment;
 }
