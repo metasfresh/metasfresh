@@ -146,9 +146,9 @@ public class RequestBLTest
 
 		ddOrder.setIsSOTrx(true);
 
-		ddOrder.setC_BPartner(createPartner("Partner 2"));
+ 		ddOrder.setC_BPartner_ID(createPartner("Partner 2").getC_BPartner_ID());
 
-		ddOrder.setAD_User(createUser("User 2"));
+		ddOrder.setAD_User_ID(createUser("User 2").getAD_User_ID());
 
 		ddOrder.setDatePromised(de.metas.common.util.time.SystemTime.asDayTimestamp());
 
