@@ -297,6 +297,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		switch (invoiceRule)
 		{
 			case Immediate:
+			case AfterPick:
 				return icRecord.getDateOrdered();
 
 			case AfterDelivery:

@@ -331,6 +331,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 			// 07814-IT2 only from now on we have the correct QtyDelivered
 			// note that we need this data to be set before we attempt to compute the price, because the delivered qty and date of delivery might play a role.
 			invoiceCandidateHandlerBL.setDeliveredData(icRecord);
+			invoiceCandidateHandlerBL.setPickedData(icRecord);
 		}
 
 		final InvoiceCandidateRecordService invoiceCandidateRecordService = SpringContextHolder.instance.getBean(InvoiceCandidateRecordService.class);
