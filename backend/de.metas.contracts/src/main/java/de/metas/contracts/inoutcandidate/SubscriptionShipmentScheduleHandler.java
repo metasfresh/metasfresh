@@ -154,8 +154,8 @@ public class SubscriptionShipmentScheduleHandler extends ShipmentScheduleHandler
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 		final IQuery<I_C_Flatrate_Term> itemProductQuery = queryBL.createQueryBuilder(I_M_Product.class)
-				.addEqualsFilter(I_M_Product.COLUMN_ProductType, X_M_Product.PRODUCTTYPE_Item)
-				.andCollectChildren(I_C_Flatrate_Term.COLUMN_M_Product_ID)
+				.addEqualsFilter(I_M_Product.COLUMNNAME_ProductType, X_M_Product.PRODUCTTYPE_Item)
+				.andCollectChildren(I_C_Flatrate_Term.COLUMNNAME_M_Product_ID, I_C_Flatrate_Term.class)
 				.addOnlyActiveRecordsFilter()
 				.create();
 
@@ -163,17 +163,17 @@ public class SubscriptionShipmentScheduleHandler extends ShipmentScheduleHandler
 		return queryBL
 				.createQueryBuilder(I_C_SubscriptionProgress.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_SubscriptionProgress.COLUMN_Status, X_C_SubscriptionProgress.STATUS_Planned)
-				.addEqualsFilter(I_C_SubscriptionProgress.COLUMN_EventType, X_C_SubscriptionProgress.EVENTTYPE_Delivery)
-				.addCompareFilter(I_C_SubscriptionProgress.COLUMN_EventDate, Operator.LESS_OR_EQUAL, eventDateMaximum)
-				.addCompareFilter(I_C_SubscriptionProgress.COLUMN_Qty, Operator.GREATER, ZERO)
-				.addEqualsFilter(I_C_SubscriptionProgress.COLUMN_M_ShipmentSchedule_ID, null) // we didn't do this in the very old code which i found
+				.addEqualsFilter(I_C_SubscriptionProgress.COLUMNNAME_Status, X_C_SubscriptionProgress.STATUS_Planned)
+				.addEqualsFilter(I_C_SubscriptionProgress.COLUMNNAME_EventType, X_C_SubscriptionProgress.EVENTTYPE_Delivery)
+				.addCompareFilter(I_C_SubscriptionProgress.COLUMNNAME_EventDate, Operator.LESS_OR_EQUAL, eventDateMaximum)
+				.addCompareFilter(I_C_SubscriptionProgress.COLUMNNAME_Qty, Operator.GREATER, ZERO)
+				.addEqualsFilter(I_C_SubscriptionProgress.COLUMNNAME_M_ShipmentSchedule_ID, null) // we didn't do this in the very old code which i found
 				.addInSubQueryFilter(
-						I_C_SubscriptionProgress.COLUMN_C_Flatrate_Term_ID,
-						I_C_Flatrate_Term.COLUMN_C_Flatrate_Term_ID,
+						I_C_SubscriptionProgress.COLUMNNAME_C_Flatrate_Term_ID,
+						I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Term_ID,
 						itemProductQuery)
 				.addOnlyContextClient(ctx)
-				.orderBy().addColumn(I_C_SubscriptionProgress.COLUMN_C_SubscriptionProgress_ID).endOrderBy()
+				.orderBy().addColumn(I_C_SubscriptionProgress.COLUMNNAME_C_SubscriptionProgress_ID).endOrderBy()
 				.create()
 				.setOption(IQuery.OPTION_GuaranteedIteratorRequired, true)
 				.setOption(IQuery.OPTION_IteratorBufferSize, 500)
