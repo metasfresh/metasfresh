@@ -67,7 +67,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Calendar;
@@ -97,14 +96,16 @@ public class C_Flatrate_Term
 	private static final String MSG_TERM_ERROR_PERIOD_START_DATE_AFTER_TERM_START_DATE_2P = "Term_Error_PeriodStartDate_After_TermStartDate";
 
 	private final IBPartnerDAO bparnterDAO = Services.get(IBPartnerDAO.class);
-	private final IDocumentLocationBL documentLocationBL = SpringContextHolder.instance.getBean(IDocumentLocationBL.class);
+	private final IDocumentLocationBL documentLocationBL;
 
 
 	private final ContractOrderService contractOrderService;
 
-	public C_Flatrate_Term(@NonNull final ContractOrderService contractOrderService)
+	public C_Flatrate_Term(@NonNull final ContractOrderService contractOrderService,
+			@NonNull final IDocumentLocationBL documentLocationBL)
 	{
 		this.contractOrderService = contractOrderService;
+		this.documentLocationBL = documentLocationBL;
 	}
 
 	@Init
