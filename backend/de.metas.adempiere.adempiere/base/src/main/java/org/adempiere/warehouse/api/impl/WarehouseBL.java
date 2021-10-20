@@ -165,4 +165,10 @@ public class WarehouseBL implements IWarehouseBL
 	{
 		return warehouseDAO.getLocatorById(locatorId).getValue();
 	}
+
+	@Override
+	public String getWarehouseName(@NonNull final WarehouseId warehouseId)
+	{
+		return warehouseDAO.getWarehouseName(warehouseId);
+	}
 }
