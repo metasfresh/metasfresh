@@ -22,7 +22,6 @@ package de.metas.contracts;
  * #L%
  */
 
-import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Data;
 import de.metas.contracts.model.I_C_Flatrate_DataEntry;
