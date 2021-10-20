@@ -55,7 +55,7 @@ public class C_OrderLine
 
 		orderLine.setC_Flatrate_Conditions_ID(flatrateConditionsId);
 
-		int excludeOrderLineId = orderLine.getC_OrderLine_ID();
+		final int excludeOrderLineId = orderLine.getC_OrderLine_ID();
 		setFlatrateConditionsIdToCompensationGroup(flatrateConditionsId, groupId, groupTemplateId, excludeOrderLineId);
 	}
 
@@ -147,6 +147,17 @@ public class C_OrderLine
 			}
 
 			subscriptionBL.updateQtysAndPrices(orderLine, soTrx, true);
+		}
+	}
+
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE,
+			ifColumnsChanged = { de.metas.interfaces.I_C_OrderLine.COLUMNNAME_IsManualDiscount
+			})
+	public void updatePrice(final I_C_OrderLine orderLine)
+	{
+		if (!orderLine.isManualDiscount() && orderLine.getC_Flatrate_Conditions_ID() > 0)
+		{
+			orderLineBL.updatePrices(orderLine);
 		}
 	}
 }
