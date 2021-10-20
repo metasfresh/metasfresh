@@ -5,6 +5,7 @@ import PropTypes from 'prop-types';
 import { withRouter } from 'react-router';
 import counterpart from 'counterpart';
 
+import { postQtyPicked } from '../../../api/picking';
 import { pushHeaderEntry } from '../../../actions/HeaderActions';
 import { updatePickingStepQty } from '../../../actions/PickingActions';
 import ButtonWithIndicator from '../../../components/ButtonWithIndicator';
@@ -40,6 +41,16 @@ class PickStepScreen extends Component {
     });
   };
 
+  onUnpickButtonClick = () => {
+    const { wfProcessId, activityId, lineId, stepId, updatePickingStepQty, push } = this.props;
+
+    // we set qtyPicked to 0, reson = null
+    // send an event to backend (same API like the one for sending normal picked qtys)
+    updatePickingStepQty({ wfProcessId, activityId, lineId, stepId, qtyPicked: 0, qtyRejectedReasonCode: null });
+    postQtyPicked({ wfProcessId, activityId, stepId, qtyPicked: 0, qtyRejectedReasonCode: null });
+    push(`/workflow/${wfProcessId}/activityId/${activityId}/lineId/${lineId}`);
+  };
+
   componentWillUnmount() {
     const {
       stepProps: { qtyPicked },
@@ -54,7 +65,7 @@ class PickStepScreen extends Component {
 
   render() {
     const {
-      stepProps: { huBarcode, qtyToPick, scannedHUBarcode }, // qtyPicked,  },
+      stepProps: { huBarcode, qtyToPick, scannedHUBarcode, qtyPicked },
     } = this.props;
 
     const isValidCode = !!scannedHUBarcode;
@@ -82,6 +93,16 @@ class PickStepScreen extends Component {
           <div className="mt-0">
             <button className="button is-outlined complete-btn" onClick={this.onScanHUButtonClick}>
               <ButtonWithIndicator caption={scanButtonCaption} completeStatus={scanButtonStatus} />
+            </button>
+          </div>
+          {/* Unpick button */}
+          <div className="mt-5">
+            <button
+              className="button is-outlined complete-btn"
+              disabled={!isValidCode || qtyPicked === 0 || qtyPicked === ''}
+              onClick={this.onUnpickButtonClick}
+            >
+              <ButtonWithIndicator caption="Unpick" completeStatus={CompleteStatus.HIDDEN} />
             </button>
           </div>
           <ScreenToaster />
