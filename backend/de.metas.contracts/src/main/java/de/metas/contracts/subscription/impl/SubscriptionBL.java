@@ -140,7 +140,8 @@ public class SubscriptionBL implements ISubscriptionBL
 
 		final BPartnerContactId dropshipContactId = BPartnerContactId.ofRepoIdOrNull(ol.getC_BPartner_ID(), ol.getAD_User_ID());
 
-		final BPartnerLocationAndCaptureId dropshipLocationId = BPartnerLocationAndCaptureId.ofRepoId(ol.getC_BPartner_ID(), ol.getC_BPartner_Location_ID());
+		final BPartnerLocationAndCaptureId dropshipLocationId = orderBL.getShipToLocationId(order);
+
 		ContractDocumentLocationAdapterFactory
 				.dropShipLocationAdapter(newTerm)
 				.setFrom(dropshipLocationId, dropshipContactId);
