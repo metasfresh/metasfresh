@@ -42,7 +42,7 @@ public class ManufacturingWorkflowLaunchersProvider
 	private WorkflowLauncher toWorkflowLauncher(@NonNull final I_PP_Order order)
 	{
 		return WorkflowLauncher.builder()
-				.handlerId(ManufacturingWFProcessHandler.HANDLER_ID)
+				.applicationId(ManufacturingMobileApplication.HANDLER_ID)
 				.caption(TranslatableStrings.anyLanguage(order.getDocumentNo()))
 				.wfParameters(ManufacturingWFProcessStartParams.builder()
 						.ppOrderId(PPOrderId.ofRepoId(order.getPP_Order_ID()))

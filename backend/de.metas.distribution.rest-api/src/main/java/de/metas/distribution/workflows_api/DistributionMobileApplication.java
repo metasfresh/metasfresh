@@ -1,12 +1,15 @@
 package de.metas.distribution.workflows_api;
 
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.user.UserId;
+import de.metas.workflow.rest_api.model.MobileApplicationInfo;
 import de.metas.workflow.rest_api.model.WFProcess;
-import de.metas.workflow.rest_api.model.WFProcessHandlerId;
+import de.metas.workflow.rest_api.model.MobileApplicationId;
 import de.metas.workflow.rest_api.model.WFProcessHeaderProperties;
 import de.metas.workflow.rest_api.model.WFProcessId;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersList;
-import de.metas.workflow.rest_api.service.WFProcessHandler;
+import de.metas.workflow.rest_api.service.MobileApplication;
 import de.metas.workflow.rest_api.service.WorkflowStartRequest;
 import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
@@ -16,14 +19,20 @@ import java.time.Duration;
 import java.util.function.UnaryOperator;
 
 @Component
-public class DistributionWFProcessHandler implements WFProcessHandler
+public class DistributionMobileApplication implements MobileApplication
 {
-	static final WFProcessHandlerId HANDLER_ID = WFProcessHandlerId.ofString("distribution");
+	static final MobileApplicationId HANDLER_ID = MobileApplicationId.ofString("distribution");
+
+	private static final AdMessageKey MSG_Caption = AdMessageKey.of("mobileui.distribution.appName");
+	private static final MobileApplicationInfo APPLICATION_INFO = MobileApplicationInfo.builder()
+			.id(HANDLER_ID)
+			.caption(TranslatableStrings.adMessage(MSG_Caption))
+			.build();
 
 	private final DistributionRestService distributionRestService;
 	private final DistributionWorkflowLaunchersProvider wfLaunchersProvider;
 
-	public DistributionWFProcessHandler(
+	public DistributionMobileApplication(
 			@NonNull final DistributionRestService distributionRestService)
 	{
 		this.distributionRestService = distributionRestService;
@@ -32,10 +41,8 @@ public class DistributionWFProcessHandler implements WFProcessHandler
 	}
 
 	@Override
-	public WFProcessHandlerId getId()
-	{
-		return HANDLER_ID;
-	}
+	@NonNull
+	public MobileApplicationInfo getApplicationInfo() {return APPLICATION_INFO;}
 
 	@Override
 	public WorkflowLaunchersList provideLaunchers(final @NonNull UserId userId, final @NonNull QueryLimit suggestedLimit, final @NonNull Duration maxStaleAccepted)

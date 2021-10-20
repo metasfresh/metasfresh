@@ -31,6 +31,7 @@ import de.metas.handlingunits.picking.job.model.PickingJobId;
 import de.metas.handlingunits.picking.job.model.PickingJobStepEvent;
 import de.metas.handlingunits.picking.job.model.PickingJobStepEventType;
 import de.metas.handlingunits.picking.job.model.PickingJobStepId;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.picking.rest_api.json.JsonPickingEventsList;
 import de.metas.picking.rest_api.json.JsonPickingStepEvent;
@@ -40,15 +41,16 @@ import de.metas.picking.workflow.handlers.activity_handlers.ActualPickingWFActiv
 import de.metas.picking.workflow.handlers.activity_handlers.CompletePickingWFActivityHandler;
 import de.metas.picking.workflow.handlers.activity_handlers.SetPickingSlotWFActivityHandler;
 import de.metas.user.UserId;
+import de.metas.workflow.rest_api.model.MobileApplicationInfo;
 import de.metas.workflow.rest_api.model.WFActivity;
 import de.metas.workflow.rest_api.model.WFActivityId;
 import de.metas.workflow.rest_api.model.WFProcess;
-import de.metas.workflow.rest_api.model.WFProcessHandlerId;
+import de.metas.workflow.rest_api.model.MobileApplicationId;
 import de.metas.workflow.rest_api.model.WFProcessHeaderProperties;
 import de.metas.workflow.rest_api.model.WFProcessHeaderProperty;
 import de.metas.workflow.rest_api.model.WFProcessId;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersList;
-import de.metas.workflow.rest_api.service.WFProcessHandler;
+import de.metas.workflow.rest_api.service.MobileApplication;
 import de.metas.workflow.rest_api.service.WorkflowStartRequest;
 import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
@@ -62,15 +64,21 @@ import java.util.function.UnaryOperator;
 import static de.metas.picking.workflow.handlers.activity_handlers.PickingWFActivityHelper.getPickingJob;
 
 @Component
-public class PickingWFProcessHandler implements WFProcessHandler
+public class PickingMobileApplication implements MobileApplication
 {
-	static final WFProcessHandlerId HANDLER_ID = WFProcessHandlerId.ofString("picking");
+	static final MobileApplicationId HANDLER_ID = MobileApplicationId.ofString("picking");
+
+	private static final AdMessageKey MSG_Caption = AdMessageKey.of("mobileui.picking.appName");
+	private static final MobileApplicationInfo APPLICATION_INFO = MobileApplicationInfo.builder()
+			.id(HANDLER_ID)
+			.caption(TranslatableStrings.adMessage(MSG_Caption))
+			.build();
 
 	private final PickingJobRestService pickingJobRestService;
 
 	private final PickingWorkflowLaunchersProvider wfLaunchersProvider;
 
-	public PickingWFProcessHandler(
+	public PickingMobileApplication(
 			@NonNull final PickingJobRestService pickingJobRestService)
 	{
 		this.pickingJobRestService = pickingJobRestService;
@@ -78,10 +86,8 @@ public class PickingWFProcessHandler implements WFProcessHandler
 	}
 
 	@Override
-	public WFProcessHandlerId getId()
-	{
-		return HANDLER_ID;
-	}
+	@NonNull
+	public MobileApplicationInfo getApplicationInfo() {return APPLICATION_INFO;}
 
 	@Override
 	public WorkflowLaunchersList provideLaunchers(
@@ -167,7 +173,7 @@ public class PickingWFProcessHandler implements WFProcessHandler
 	{
 		pickingJobRestService.getDraftJobsByPickerId(callerId)
 				.stream()
-				.map(PickingWFProcessHandler::toWFProcess)
+				.map(PickingMobileApplication::toWFProcess)
 				.forEach(wfProcess -> abort(wfProcess, callerId));
 	}
 
@@ -254,7 +260,7 @@ public class PickingWFProcessHandler implements WFProcessHandler
 					assertPickingActivityType(jsonEvents, wfProcess);
 
 					final ImmutableList<PickingJobStepEvent> events = jsonEvents.stream()
-							.map(PickingWFProcessHandler::fromJson)
+							.map(PickingMobileApplication::fromJson)
 							.collect(ImmutableList.toImmutableList());
 
 					return wfProcess.<PickingJob>mapDocument(

@@ -22,7 +22,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Set;
 
-import static de.metas.picking.workflow.handlers.PickingWFProcessHandler.HANDLER_ID;
+import static de.metas.picking.workflow.handlers.PickingMobileApplication.HANDLER_ID;
 
 class PickingWorkflowLaunchersProvider
 {
@@ -106,7 +106,7 @@ class PickingWorkflowLaunchersProvider
 	private static WorkflowLauncher toNewWorkflowLauncher(@NonNull final PickingJobCandidate pickingJobCandidate)
 	{
 		return WorkflowLauncher.builder()
-				.handlerId(HANDLER_ID)
+				.applicationId(HANDLER_ID)
 				.caption(PickingWFProcessUtils.workflowCaption()
 						.salesOrderDocumentNo(pickingJobCandidate.getSalesOrderDocumentNo())
 						.customerName(pickingJobCandidate.getCustomerName())
@@ -119,7 +119,7 @@ class PickingWorkflowLaunchersProvider
 	private static WorkflowLauncher toExistingWorkflowLauncher(@NonNull final PickingJobReference pickingJobReference)
 	{
 		return WorkflowLauncher.builder()
-				.handlerId(HANDLER_ID)
+				.applicationId(HANDLER_ID)
 				.caption(PickingWFProcessUtils.workflowCaption()
 						.salesOrderDocumentNo(pickingJobReference.getSalesOrderDocumentNo())
 						.customerName(pickingJobReference.getCustomerName())

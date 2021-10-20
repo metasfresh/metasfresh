@@ -8,12 +8,14 @@ import de.metas.websocket.WebsocketSubscriptionId;
 import de.metas.websocket.producers.WebSocketProducer;
 import de.metas.workflow.rest_api.controller.v2.json.JsonOpts;
 import de.metas.workflow.rest_api.controller.v2.json.JsonWorkflowLaunchersList;
+import de.metas.workflow.rest_api.model.MobileApplicationId;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersList;
 import de.metas.workflow.rest_api.service.WorkflowRestAPIService;
 import lombok.NonNull;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.SynchronizedMutable;
 
+import javax.annotation.Nullable;
 import java.time.Duration;
 import java.util.List;
 
@@ -26,15 +28,18 @@ class WorkflowLaunchersWebSocketProducer implements WebSocketProducer
 	private final IUserBL userBL = Services.get(IUserBL.class);
 	private final WorkflowRestAPIService workflowRestAPIService;
 
+	@Nullable private final MobileApplicationId applicationId;
 	@NonNull private final UserId userId;
 
 	private final SynchronizedMutable<WorkflowLaunchersList> lastResultHolder = SynchronizedMutable.of(null);
 
 	WorkflowLaunchersWebSocketProducer(
 			final @NonNull WorkflowRestAPIService workflowRestAPIService,
+			final @Nullable MobileApplicationId applicationId,
 			final @NonNull UserId userId)
 	{
 		this.workflowRestAPIService = workflowRestAPIService;
+		this.applicationId = applicationId;
 		this.userId = userId;
 	}
 
@@ -74,7 +79,9 @@ class WorkflowLaunchersWebSocketProducer implements WebSocketProducer
 
 	private WorkflowLaunchersList computeNewResult()
 	{
-		return workflowRestAPIService.getLaunchers(userId, getMaxStaleAccepted());
+		return applicationId != null
+				? workflowRestAPIService.getLaunchers(applicationId, userId, getMaxStaleAccepted())
+				: workflowRestAPIService.getLaunchersFromAllApplications(userId, getMaxStaleAccepted());
 	}
 
 	private Duration getMaxStaleAccepted()

@@ -47,33 +47,33 @@ public final class WFProcessId
 			throw new AdempiereException("Invalid format: " + string);
 		}
 
-		final WFProcessHandlerId handlerId = WFProcessHandlerId.ofString(string.substring(0, idx));
+		final MobileApplicationId applicationId = MobileApplicationId.ofString(string.substring(0, idx));
 		final String idPart = string.substring(idx + 1);
 		if (idPart.isEmpty())
 		{
 			throw new AdempiereException("Invalid format: " + string);
 		}
 
-		return new WFProcessId(handlerId, idPart);
+		return new WFProcessId(applicationId, idPart);
 	}
 
-	public static WFProcessId ofIdPart(@NonNull final WFProcessHandlerId handlerId, @NonNull final RepoIdAware idPart)
+	public static WFProcessId ofIdPart(@NonNull final MobileApplicationId applicationId, @NonNull final RepoIdAware idPart)
 	{
-		return new WFProcessId(handlerId, String.valueOf(idPart.getRepoId()));
+		return new WFProcessId(applicationId, String.valueOf(idPart.getRepoId()));
 	}
 
 	private static final String SEPARATOR = "-";
 
 	@Getter
-	private final WFProcessHandlerId handlerId;
+	private final MobileApplicationId applicationId;
 	private final String idPart;
 	private transient String stringRepresentation = null;
 
 	private WFProcessId(
-			@NonNull final WFProcessHandlerId handlerId,
+			@NonNull final MobileApplicationId applicationId,
 			@NonNull final String idPart)
 	{
-		this.handlerId = handlerId;
+		this.applicationId = applicationId;
 		this.idPart = Check.assumeNotEmpty(idPart, "idPart");
 	}
 
@@ -90,7 +90,7 @@ public final class WFProcessId
 		String stringRepresentation = this.stringRepresentation;
 		if (stringRepresentation == null)
 		{
-			stringRepresentation = this.stringRepresentation = handlerId.getAsString() + SEPARATOR + idPart;
+			stringRepresentation = this.stringRepresentation = applicationId.getAsString() + SEPARATOR + idPart;
 		}
 		return stringRepresentation;
 	}
