@@ -31,7 +31,9 @@ import de.metas.document.location.IDocumentLocationBL;
 import de.metas.document.location.RecordBasedLocationAdapter;
 import de.metas.document.location.RenderedAddressAndCapturedLocation;
 import de.metas.document.location.adapter.IDocumentDeliveryLocationAdapter;
+import lombok.Getter;
 import lombok.NonNull;
+import lombok.Setter;
 import org.adempiere.model.InterfaceWrapperHelper;
 
 import javax.annotation.Nullable;
@@ -40,6 +42,10 @@ import java.util.Optional;
 public class ContractDropshipLocationAdapter implements IDocumentDeliveryLocationAdapter, RecordBasedLocationAdapter<ContractDropshipLocationAdapter>
 {
 	private final I_C_Flatrate_Term delegate;
+
+	@Getter
+	@Setter
+	private String deliveryToAddress;
 
 	ContractDropshipLocationAdapter(@NonNull final I_C_Flatrate_Term delegate)
 	{
@@ -50,18 +56,6 @@ public class ContractDropshipLocationAdapter implements IDocumentDeliveryLocatio
 	public boolean isDropShip()
 	{
 		return BPartnerLocationId.ofRepoIdOrNull(getDropShip_BPartner_ID(), getDropShip_Location_ID()) != null;
-	}
-
-	@Override
-	public String getDeliveryToAddress()
-	{
-		return null;
-	}
-
-	@Override
-	public void setDeliveryToAddress(final String address)
-	{
-
 	}
 
 	@Override
