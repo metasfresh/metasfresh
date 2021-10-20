@@ -34,6 +34,7 @@ export const setupCounterpart = () => {
         invalidQtyPicked: 'Invalid qty picked',
         confirmDone: 'Done',
         rejectedPrompt: 'There are %(qtyRejected)s %(uom)s not picked. Why ?',
+        unPickBtn: 'Unpick',
       },
       confirmButton: {
         default: {
@@ -70,6 +71,8 @@ export const setupCounterpart = () => {
         notEligibleHUBarcode: 'HU barcode not matching',
         invalidQtyPicked: 'Invalid qty picked',
         confirmDone: 'Done',
+        rejectedPrompt: 'There are %(qtyRejected)s %(uom)s not picked. Why ?',
+        unPickBtn: 'Unpick',
       },
       confirmButton: {
         default: {
