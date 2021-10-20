@@ -32,6 +32,11 @@ public class InstantAndOrgId implements Comparable<InstantAndOrgId>
 		return new InstantAndOrgId(timestamp.toInstant(), orgId);
 	}
 
+	public static InstantAndOrgId ofTimestamp(@NonNull final java.sql.Timestamp timestamp, final int orgRepoId)
+	{
+		return new InstantAndOrgId(timestamp.toInstant(), OrgId.ofRepoId(orgRepoId));
+	}
+
 	public @NonNull OrgId getOrgId() {return orgId;}
 
 	public Instant toInstant() {return instant;}
