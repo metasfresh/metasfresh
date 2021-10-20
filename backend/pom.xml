@@ -189,6 +189,7 @@
         <module>de.metas.servicerepair.webui</module>
 
         <module>de.metas.picking.rest-api</module>
+        <module>de.metas.distribution.rest-api</module>
 
         <module>metasfresh-webui-api</module>
         <module>metasfresh-dist</module>

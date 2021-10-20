@@ -102,6 +102,11 @@
             <artifactId>de.metas.picking.rest-api</artifactId>
             <version>${metasfresh.version}</version>
         </dependency>
+        <dependency>
+            <groupId>de.metas.distribution</groupId>
+            <artifactId>de.metas.distribution.rest-api</artifactId>
+            <version>${metasfresh.version}</version>
+        </dependency>
     </dependencies>
 
     <build>
