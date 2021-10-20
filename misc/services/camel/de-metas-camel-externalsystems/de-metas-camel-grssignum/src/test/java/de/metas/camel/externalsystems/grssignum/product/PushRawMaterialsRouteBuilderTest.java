@@ -50,11 +50,11 @@ import java.util.Properties;
 import java.util.stream.Collectors;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_UPSERT_PRODUCT_V2_CAMEL_URI;
-import static de.metas.camel.externalsystems.grssignum.product.PushProductsRouteBuilder.PUSH_PRODUCTS_PROCESSOR_ID;
-import static de.metas.camel.externalsystems.grssignum.product.PushProductsRouteBuilder.PUSH_PRODUCTS_ROUTE_ID;
+import static de.metas.camel.externalsystems.grssignum.product.PushRawMaterialsRouteBuilder.PUSH_RAW_MATERIALS_PROCESSOR_ID;
+import static de.metas.camel.externalsystems.grssignum.product.PushRawMaterialsRouteBuilder.PUSH_RAW_MATERIALS_ROUTE_ID;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
-public class PushProductsRouteBuilderTest extends CamelTestSupport
+public class PushRawMaterialsRouteBuilderTest extends CamelTestSupport
 {
 	private static final String MOCK_UPSERT_PRODUCTS = "mock:upsertProductsRoute";
 
@@ -70,7 +70,7 @@ public class PushProductsRouteBuilderTest extends CamelTestSupport
 		final Properties properties = new Properties();
 		try
 		{
-			properties.load(PushProductsRouteBuilderTest.class.getClassLoader().getResourceAsStream("application.properties"));
+			properties.load(PushRawMaterialsRouteBuilderTest.class.getClassLoader().getResourceAsStream("application.properties"));
 			return properties;
 		}
 		catch (final IOException e)
@@ -82,7 +82,7 @@ public class PushProductsRouteBuilderTest extends CamelTestSupport
 	@Override
 	protected RouteBuilder createRouteBuilder()
 	{
-		return new PushProductsRouteBuilder();
+		return new PushRawMaterialsRouteBuilder();
 	}
 
 	@Override
@@ -113,30 +113,30 @@ public class PushProductsRouteBuilderTest extends CamelTestSupport
 
 		Mockito.when(authentication.getCredentials()).thenReturn(tokenCredentials);
 
-		final PushProductsRouteBuilderTest.MockUpsertProductsEP mockUpsertProductsEP = new PushProductsRouteBuilderTest.MockUpsertProductsEP();
+		final PushRawMaterialsRouteBuilderTest.MockUpsertProductsEP mockUpsertProductsEP = new PushRawMaterialsRouteBuilderTest.MockUpsertProductsEP();
 		preparePushRouteForTesting(mockUpsertProductsEP);
 
 		context.start();
 
 		final MockEndpoint pushProductsMockEP = getMockEndpoint(MOCK_UPSERT_PRODUCTS);
-		final InputStream upsertCamelProductsReq = PushProductsRouteBuilderTest.class.getResourceAsStream(JSON_UPSERT_CAMEL_PRODUCT_REQ);
+		final InputStream upsertCamelProductsReq = PushRawMaterialsRouteBuilderTest.class.getResourceAsStream(JSON_UPSERT_CAMEL_PRODUCT_REQ);
 		pushProductsMockEP.expectedBodiesReceived(objectMapper.readValue(upsertCamelProductsReq, ProductUpsertCamelRequest.class));
 
 		final String requestBodyAsString = loadAsString(JSON_PRODUCT);
 
 		//when
-		template.sendBody("direct:" + PUSH_PRODUCTS_ROUTE_ID, requestBodyAsString);
+		template.sendBody("direct:" + PUSH_RAW_MATERIALS_ROUTE_ID, requestBodyAsString);
 
 		//then
 		assertMockEndpointsSatisfied();
 		assertThat(mockUpsertProductsEP.called).isEqualTo(1);
 	}
 
-	private void preparePushRouteForTesting(@NonNull final PushProductsRouteBuilderTest.MockUpsertProductsEP mockUpsertProductsEP) throws Exception
+	private void preparePushRouteForTesting(@NonNull final PushRawMaterialsRouteBuilderTest.MockUpsertProductsEP mockUpsertProductsEP) throws Exception
 	{
-		AdviceWith.adviceWith(context, PUSH_PRODUCTS_ROUTE_ID,
+		AdviceWith.adviceWith(context, PUSH_RAW_MATERIALS_ROUTE_ID,
 							  advice -> {
-								  advice.weaveById(PUSH_PRODUCTS_PROCESSOR_ID)
+								  advice.weaveById(PUSH_RAW_MATERIALS_PROCESSOR_ID)
 										  .after()
 										  .to(MOCK_UPSERT_PRODUCTS);
 
@@ -159,7 +159,7 @@ public class PushProductsRouteBuilderTest extends CamelTestSupport
 
 	private static String loadAsString(@NonNull final String name)
 	{
-		final InputStream inputStream = PushProductsRouteBuilderTest.class.getResourceAsStream(name);
+		final InputStream inputStream = PushRawMaterialsRouteBuilderTest.class.getResourceAsStream(name);
 		return new BufferedReader(
 				new InputStreamReader(inputStream, StandardCharsets.UTF_8))
 				.lines()

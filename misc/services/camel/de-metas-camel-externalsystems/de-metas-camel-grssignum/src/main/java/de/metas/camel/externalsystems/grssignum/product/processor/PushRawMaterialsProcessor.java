@@ -44,7 +44,7 @@ import java.util.stream.Stream;
 
 import static de.metas.camel.externalsystems.grssignum.GRSSignumConstants.DEFAULT_UOM_CODE;
 
-public class PushProductsProcessor implements Processor
+public class PushRawMaterialsProcessor implements Processor
 {
 	@Override
 	public void process(final Exchange exchange) throws Exception
@@ -58,30 +58,30 @@ public class PushProductsProcessor implements Processor
 	}
 
 	@NonNull
-	private ProductUpsertCamelRequest getProductUpsertCamelRequest(@NonNull final JsonProduct jsonProduct)
+	private ProductUpsertCamelRequest getProductUpsertCamelRequest(@NonNull final JsonProduct grsJsonProduct)
 	{
 		final TokenCredentials credentials = (TokenCredentials)SecurityContextHolder.getContext().getAuthentication().getCredentials();
 
 		final JsonRequestProduct requestProduct = new JsonRequestProduct();
 
-		if (jsonProduct.getBPartnerProducts() != null && !Check.isEmpty(jsonProduct.getBPartnerProducts()))
+		if (grsJsonProduct.getBPartnerProducts() != null && !Check.isEmpty(grsJsonProduct.getBPartnerProducts()))
 		{
-			final List<JsonRequestBPartnerProductUpsert> bPartnerProductItems = jsonProduct.getBPartnerProducts()
+			final List<JsonRequestBPartnerProductUpsert> bPartnerProductItems = grsJsonProduct.getBPartnerProducts()
 					.stream()
-					.map(PushProductsProcessor::getJsonRequestBPartnerProductUpsert)
+					.map(PushRawMaterialsProcessor::getJsonRequestBPartnerProductUpsert)
 					.collect(Collectors.toList());
 
 			requestProduct.setBpartnerProductItems(bPartnerProductItems);
 		}
 
-		requestProduct.setCode(jsonProduct.getProductValue());
-		requestProduct.setActive(jsonProduct.isActive());
+		requestProduct.setCode(grsJsonProduct.getProductValue());
+		requestProduct.setActive(grsJsonProduct.isActive());
 		requestProduct.setType(JsonRequestProduct.Type.ITEM);
-		requestProduct.setName(getName(jsonProduct));
+		requestProduct.setName(getName(grsJsonProduct));
 		requestProduct.setUomCode(DEFAULT_UOM_CODE);
 
 		final JsonRequestProductUpsertItem productUpsertItem = JsonRequestProductUpsertItem.builder()
-				.productIdentifier(ExternalIdentifierFormat.asExternalIdentifier(jsonProduct.getProductId()))
+				.productIdentifier(ExternalIdentifierFormat.asExternalIdentifier(grsJsonProduct.getProductId()))
 				.requestProduct(requestProduct)
 				.build();
 
@@ -97,26 +97,26 @@ public class PushProductsProcessor implements Processor
 	}
 
 	@NonNull
-	private static JsonRequestBPartnerProductUpsert getJsonRequestBPartnerProductUpsert(@NonNull final JsonBPartnerProduct bPartnerProductItem)
+	private static JsonRequestBPartnerProductUpsert getJsonRequestBPartnerProductUpsert(@NonNull final JsonBPartnerProduct grsBPartnerProductItem)
 	{
 		final JsonRequestBPartnerProductUpsert jsonRequestBPartnerProductUpsert = new JsonRequestBPartnerProductUpsert();
-		jsonRequestBPartnerProductUpsert.setBpartnerIdentifier(ExternalIdentifierFormat.asExternalIdentifier(bPartnerProductItem.getBpartnerId()));
+		jsonRequestBPartnerProductUpsert.setBpartnerIdentifier(ExternalIdentifierFormat.asExternalIdentifier(grsBPartnerProductItem.getBpartnerId()));
 		jsonRequestBPartnerProductUpsert.setUsedForVendor(true);
-		jsonRequestBPartnerProductUpsert.setCurrentVendor(bPartnerProductItem.isCurrentVendor());
+		jsonRequestBPartnerProductUpsert.setCurrentVendor(grsBPartnerProductItem.isCurrentVendor());
 
 		return jsonRequestBPartnerProductUpsert;
 	}
 
 	@NonNull
-	private static String getName(@NonNull final JsonProduct product)
+	private static String getName(@NonNull final JsonProduct grsProduct)
 	{
-		final String name = Stream.of(product.getName1(), product.getName2())
+		final String name = Stream.of(grsProduct.getName1(), grsProduct.getName2())
 				.filter(Check::isNotBlank)
 				.collect(Collectors.joining(" "));
 
 		if (Check.isBlank(name))
 		{
-			throw new RuntimeException("Missing name for product: " + product.getProductId());
+			throw new RuntimeException("Missing name for product: " + grsProduct.getProductId());
 		}
 
 		return name;

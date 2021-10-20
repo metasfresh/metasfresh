@@ -32,7 +32,7 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
 
-import static de.metas.camel.externalsystems.grssignum.product.PushProductsRouteBuilder.PUSH_PRODUCTS_ROUTE_ID;
+import static de.metas.camel.externalsystems.grssignum.product.PushRawMaterialsRouteBuilder.PUSH_RAW_MATERIALS_ROUTE_ID;
 import static de.metas.camel.externalsystems.grssignum.vendor.PushBPartnerRouteBuilder.PUSH_BPARTNERS_ROUTE_ID;
 
 @AllArgsConstructor
@@ -40,7 +40,7 @@ import static de.metas.camel.externalsystems.grssignum.vendor.PushBPartnerRouteB
 public enum Endpoint
 {
 	BPARTNER(100, PUSH_BPARTNERS_ROUTE_ID),
-	PRODUCT(200, PUSH_PRODUCTS_ROUTE_ID);
+	PRODUCT(200, PUSH_RAW_MATERIALS_ROUTE_ID);
 
 	private final int flag;
 	private final String targetRoute;

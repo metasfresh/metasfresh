@@ -5,7 +5,7 @@ INSERT INTO ExternalSystem_Config (AD_Client_ID,AD_Org_ID,Created,CreatedBy,Exte
 
 -- 2021-10-18T09:40:18.075Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO ExternalSystem_Config_GRSSignum (AD_Client_ID,AD_Org_ID,BaseURL,CamelHttpResourceAuthKey,Created,CreatedBy,ExternalSystem_Config_GRSSignum_ID,ExternalSystem_Config_ID,ExternalSystemValue,IsActive,Updated,UpdatedBy) VALUES (1000000,1000000,'Base-URL','94c706a6-3aea-48c5-82af-272aab80e03d',TO_TIMESTAMP('2021-10-18 12:40:18','YYYY-MM-DD HH24:MI:SS'),100,540000,540006,'GRSSignum','Y',TO_TIMESTAMP('2021-10-18 12:40:18','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO ExternalSystem_Config_GRSSignum (AD_Client_ID,AD_Org_ID,BaseURL,CamelHttpResourceAuthKey,Created,CreatedBy,ExternalSystem_Config_GRSSignum_ID,ExternalSystem_Config_ID,ExternalSystemValue,IsActive,Updated,UpdatedBy) VALUES (1000000,1000000,'Base-URL',NULL,TO_TIMESTAMP('2021-10-18 12:40:18','YYYY-MM-DD HH24:MI:SS'),100,540000,540006,'GRSSignum','Y',TO_TIMESTAMP('2021-10-18 12:40:18','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2021-10-18T09:40:19.982Z

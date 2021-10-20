@@ -23,7 +23,7 @@
 package de.metas.camel.externalsystems.grssignum.product;
 
 import de.metas.camel.externalsystems.grssignum.api.model.JsonProduct;
-import de.metas.camel.externalsystems.grssignum.product.processor.PushProductsProcessor;
+import de.metas.camel.externalsystems.grssignum.product.processor.PushRawMaterialsProcessor;
 import org.apache.camel.builder.RouteBuilder;
 import org.springframework.stereotype.Component;
 
@@ -33,11 +33,11 @@ import static de.metas.camel.externalsystems.common.RouteBuilderHelper.setupJack
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 
 @Component
-public class PushProductsRouteBuilder extends RouteBuilder
+public class PushRawMaterialsRouteBuilder extends RouteBuilder
 {
-	public static final String PUSH_PRODUCTS_ROUTE_ID = "GRSSignum-pushProducts";
+	public static final String PUSH_RAW_MATERIALS_ROUTE_ID = "GRSSignum-pushRawMaterials";
 
-	public static final String PUSH_PRODUCTS_PROCESSOR_ID = "GRSSignum-pushProductsProcessorID";
+	public static final String PUSH_RAW_MATERIALS_PROCESSOR_ID = "GRSSignum-pushRawMaterialsProcessorID";
 
 	@Override
 	public void configure() throws Exception
@@ -46,11 +46,11 @@ public class PushProductsRouteBuilder extends RouteBuilder
 		onException(Exception.class)
 				.to(direct(MF_ERROR_ROUTE_ID));
 
-		from(direct(PUSH_PRODUCTS_ROUTE_ID))
-				.routeId(PUSH_PRODUCTS_ROUTE_ID)
+		from(direct(PUSH_RAW_MATERIALS_ROUTE_ID))
+				.routeId(PUSH_RAW_MATERIALS_ROUTE_ID)
 				.log("Route invoked!")
 				.unmarshal(setupJacksonDataFormatFor(getContext(), JsonProduct.class))
-				.process(new PushProductsProcessor()).id(PUSH_PRODUCTS_PROCESSOR_ID)
+				.process(new PushRawMaterialsProcessor()).id(PUSH_RAW_MATERIALS_PROCESSOR_ID)
 				.to(direct(MF_UPSERT_PRODUCT_V2_CAMEL_URI));
 	}
 }
