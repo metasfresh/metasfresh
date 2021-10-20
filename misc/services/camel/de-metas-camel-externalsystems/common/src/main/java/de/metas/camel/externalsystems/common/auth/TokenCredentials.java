@@ -27,15 +27,26 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
 @Value
 public class TokenCredentials
 {
 	@NonNull
 	JsonMetasfreshId pInstance;
+	@Nullable
+	String externalSystemValue;
+	@Nullable
+	String auditTrailEndpoint;
 
 	@Builder
-	TokenCredentials(@NonNull final JsonMetasfreshId pInstance)
+	TokenCredentials(
+			@NonNull final JsonMetasfreshId pInstance,
+			@Nullable final String externalSystemValue,
+			@Nullable final String auditTrailEndpoint)
 	{
 		this.pInstance = pInstance;
+		this.externalSystemValue = externalSystemValue;
+		this.auditTrailEndpoint = auditTrailEndpoint;
 	}
 }

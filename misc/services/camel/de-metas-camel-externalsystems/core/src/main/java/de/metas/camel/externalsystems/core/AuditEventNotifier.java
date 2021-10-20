@@ -24,6 +24,7 @@ package de.metas.camel.externalsystems.core;
 
 import com.sun.istack.Nullable;
 import de.metas.common.util.Check;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.EmptyUtil;
 import de.metas.common.util.FileUtil;
 import lombok.NonNull;
@@ -42,6 +43,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -134,22 +136,18 @@ public class AuditEventNotifier extends EventNotifierSupport
 	@NonNull
 	private static String getAuditEndpoint(@NonNull final Exchange exchange)
 	{
-		final String externalSystemValue = exchange.getIn().getHeader(HEADER_EXTERNAL_SYSTEM_VALUE, String.class);
-
-		final String value = FileUtil.stripIllegalCharacters(externalSystemValue);
-
-		final String traceId = exchange.getIn().getHeader(HEADER_TRACE_ID, String.class);
-		if (EmptyUtil.isEmpty(traceId))
-		{
-			throw new RuntimeCamelException("traceId cannot be empty at this point!");
-
-		}
 		final String auditTrailEndpoint = exchange.getIn().getHeader(HEADER_AUDIT_TRAIL, String.class);
 		if (EmptyUtil.isEmpty(auditTrailEndpoint))
 		{
 			throw new RuntimeCamelException("auditTrailEndpoint cannot be empty at this point!");
 
 		}
+
+		final String externalSystemValue = exchange.getIn().getHeader(HEADER_EXTERNAL_SYSTEM_VALUE, String.class);
+
+		final String value = FileUtil.stripIllegalCharacters(externalSystemValue);
+
+		final String traceId = CoalesceUtil.coalesceNotNull(exchange.getIn().getHeader(HEADER_TRACE_ID, String.class), UUID.randomUUID().toString());
 
 		final String auditFolderName = DateTimeFormatter.ofPattern("yyyy-MM-dd")
 				.withZone(ZoneId.systemDefault())
@@ -158,8 +156,6 @@ public class AuditEventNotifier extends EventNotifierSupport
 		final String auditFileNameTimeStamp = DateTimeFormatter.ofPattern("yyyy-MM-dd_HHmmssSSS")
 				.withZone(ZoneId.systemDefault())
 				.format(Instant.now());
-
-		exchange.getIn().removeHeader(HEADER_AUDIT_TRAIL);
 
 		final String auditFileName = traceId + "_" + value + "_" + auditFileNameTimeStamp + ".txt";
 

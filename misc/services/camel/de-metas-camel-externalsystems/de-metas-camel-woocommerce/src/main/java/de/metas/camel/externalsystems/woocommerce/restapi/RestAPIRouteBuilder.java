@@ -37,6 +37,12 @@ import org.apache.camel.spi.RouteController;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
+import java.util.UUID;
+
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_AUDIT_TRAIL;
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_EXTERNAL_SYSTEM_VALUE;
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_PINSTANCE_ID;
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_TRACE_ID;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.REST_API_AUTHENTICATE_TOKEN;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.REST_API_EXPIRE_TOKEN;
@@ -94,6 +100,7 @@ public class RestAPIRouteBuilder extends RouteBuilder
 				.route()
 				.routeId(REST_API_ROUTE_ID)
 				.autoStartup(false)
+				.process(this::attachAuditHeaders)
 				.process(this::restAPIProcessor)
 				.end();
 
@@ -101,14 +108,14 @@ public class RestAPIRouteBuilder extends RouteBuilder
 
 	}
 
-	public void enableRestAPIProcessor(@NonNull final Exchange exchange) throws Exception
+	private void enableRestAPIProcessor(@NonNull final Exchange exchange) throws Exception
 	{
 		final RouteController routeController = getContext().getRouteController();
 
 		routeController.resumeRoute(REST_API_ROUTE_ID);
 	}
 
-	public void disableRestAPIProcessor(@NonNull final Exchange exchange) throws Exception
+	private void disableRestAPIProcessor(@NonNull final Exchange exchange) throws Exception
 	{
 		final JsonExpireTokenResponse response = exchange.getIn().getBody(JsonExpireTokenResponse.class);
 
@@ -118,7 +125,22 @@ public class RestAPIRouteBuilder extends RouteBuilder
 		}
 	}
 
-	public void restAPIProcessor(@NonNull final Exchange exchange)
+	private void attachAuditHeaders(@NonNull final Exchange exchange)
+	{
+		final TokenCredentials credentials = (TokenCredentials)SecurityContextHolder.getContext().getAuthentication().getCredentials();
+
+		if (credentials == null)
+		{
+			throw new RuntimeCamelException("Missing credentials!");
+		}
+
+		exchange.getIn().setHeader(HEADER_EXTERNAL_SYSTEM_VALUE, credentials.getExternalSystemValue());
+		exchange.getIn().setHeader(HEADER_AUDIT_TRAIL, credentials.getAuditTrailEndpoint());
+		exchange.getIn().setHeader(HEADER_PINSTANCE_ID, credentials.getPInstance());
+		exchange.getIn().setHeader(HEADER_TRACE_ID, UUID.randomUUID().toString());
+	}
+
+	private void restAPIProcessor(@NonNull final Exchange exchange)
 	{
 		final TokenCredentials credentials = (TokenCredentials)SecurityContextHolder.getContext().getAuthentication().getCredentials();
 
@@ -156,10 +178,15 @@ public class RestAPIRouteBuilder extends RouteBuilder
 			throw new RuntimeCamelException("Missing authKey from request!");
 		}
 
+		final String externalSystemValue = request.getParameters().get(ExternalSystemConstants.PARAM_CHILD_CONFIG_VALUE);
+		final String auditTrailEndpoint = request.getWriteAuditEndpoint();
+
 		return JsonAuthenticateRequest.builder()
 				.grantedAuthority(ExternalSystemCamelConstants.WOOCOMMERCE_AUTHORITY)
 				.authKey(authKey)
 				.pInstance(request.getAdPInstanceId())
+				.externalSystemValue(externalSystemValue)
+				.auditTrailEndpoint(auditTrailEndpoint)
 				.build();
 	}
 }

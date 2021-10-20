@@ -36,7 +36,7 @@ public class FileUtil
 	{
 		if (filename == null)
 		{
-			return null;
+			return "";
 		}
 
 		if (filename.length() == 0)
