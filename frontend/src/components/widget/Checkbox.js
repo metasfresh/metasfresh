@@ -155,7 +155,8 @@ const Checkbox = (props) => {
  * @prop {func} [handlePatch]
  * @prop {string} [widgetField]
  * @prop {string|number} [id]
- * @todo Check props. Which proptype? Required or optional?
+ * @prop {func} [updateItems] - function used for updating the filter items before having an active filter
+ * @prop {bool} [isEdited] - this flag is set only for checkboxes in Tabs
  */
 Checkbox.propTypes = {
   widgetData: PropTypes.object.isRequired,
@@ -167,7 +168,7 @@ Checkbox.propTypes = {
   widgetField: PropTypes.string,
   isFilterActive: PropTypes.bool,
   id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-  updateItems: PropTypes.func, // function used for updating the filter items before having an active filter
+  updateItems: PropTypes.func,
   isEdited: PropTypes.bool,
 };
 
