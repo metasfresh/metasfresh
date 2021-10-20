@@ -12,7 +12,6 @@ import de.metas.email.mailboxes.UserEMailConfig;
 import de.metas.email.templates.MailTemplateId;
 import de.metas.email.templates.MailTextBuilder;
 import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableStrings;
@@ -54,7 +53,7 @@ import java.util.UUID;
 
 public class UserBL implements IUserBL
 {
-	private static final AdMessageKey MSG_UserDelete = AdMessageKey.of("UserDeleteMsg");
+
 
 	private static final Logger logger = LogManager.getLogger(UserBL.class);
 	private final IUserDAO userDAO = Services.get(IUserDAO.class);
@@ -64,7 +63,7 @@ public class UserBL implements IUserBL
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IValuePreferenceDAO valuePreferenceDAO = Services.get(IValuePreferenceDAO.class);
 	private final IRoleDAO roleDAO = Services.get(IRoleDAO.class);
-	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+
 	/**
 	 * @see org.compiere.model.X_AD_MailConfig#CUSTOMTYPE_OrgCompiereUtilLogin
 	 */
@@ -499,16 +498,6 @@ public class UserBL implements IUserBL
 			getUserMailRepository().deleteUserMailByUserId(userId);
 
 			getUserQueryRepository().deleteUserQueryByUserId(userId);
-		}
-		else
-		{
-			final ITranslatableString errorMsg = msgBL.getTranslatableMsgText(MSG_UserDelete);
-			throw new AdempiereException(TranslatableStrings.builder()
-												 .append(errorMsg)
-												 .build())
-					.appendParametersToMessage()
-					.setParameter("AD_User_ID", userRecord.getAD_User_ID())
-					.setParameter("Name", userRecord.getName());
 		}
 	}
 
