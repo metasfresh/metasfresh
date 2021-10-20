@@ -146,7 +146,19 @@ public class WorkflowRestAPIService
 	{
 		wfProcessHandlers
 				.stream()
-				.forEach(handler -> handler.abortAll(callerId));
+				.forEach(handler -> abortAllNoFail(handler, callerId));
+	}
+
+	private static void abortAllNoFail(@NonNull final WFProcessHandler handler, final @NonNull UserId callerId)
+	{
+		try
+		{
+			handler.abortAll(callerId);
+		}
+		catch (Exception ex)
+		{
+			logger.warn("Failed aborting all for {}", handler, ex);
+		}
 	}
 
 	public WFProcessHeaderProperties getHeaderProperties(@NonNull final WFProcess wfProcess)
