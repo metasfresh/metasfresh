@@ -26,6 +26,7 @@ package org.eevolution.api.impl;
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Stream;
 
 import de.metas.document.engine.DocStatus;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -36,6 +37,7 @@ import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_MovementLine;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
+import org.eevolution.api.DDOrderQuery;
 import org.eevolution.api.IDDOrderBL;
 import org.eevolution.api.IDDOrderDAO;
 import org.eevolution.api.IDDOrderMovementBuilder;
@@ -352,5 +354,11 @@ public class DDOrderBL implements IDDOrderBL
 				.list();
 
 		completeDDOrdersIfNeeded(ddOrders);
+	}
+
+	@Override
+	public Stream<I_DD_Order> streamDDOrders(final DDOrderQuery query)
+	{
+		return ddOrderDAO.streamDDOrders(query);
 	}
 }

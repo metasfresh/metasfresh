@@ -34,6 +34,7 @@ import org.eevolution.model.I_DD_OrderLine_Or_Alternative;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.Collection;
+import java.util.stream.Stream;
 
 public interface IDDOrderBL extends ISingletonService
 {
@@ -125,4 +126,5 @@ public interface IDDOrderBL extends ISingletonService
 
 	void completeBackwardDDOrders(I_M_Forecast forecast);
 
+	Stream<I_DD_Order> streamDDOrders(DDOrderQuery query);
 }

@@ -31,10 +31,10 @@ import org.eevolution.model.I_DD_OrderLine_Alternative;
 import org.eevolution.model.I_DD_OrderLine_Or_Alternative;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 public interface IDDOrderDAO extends ISingletonService
 {
-
 	I_DD_Order getById(int ddOrderId);
 
 	/**
@@ -81,4 +81,6 @@ public interface IDDOrderDAO extends ISingletonService
 	void save(I_DD_OrderLine_Or_Alternative ddOrderLineOrAlternative);
 
 	I_DD_OrderLine getLineById(final DDOrderLineId ddOrderLineID);
+
+	Stream<I_DD_Order> streamDDOrders(DDOrderQuery query);
 }
