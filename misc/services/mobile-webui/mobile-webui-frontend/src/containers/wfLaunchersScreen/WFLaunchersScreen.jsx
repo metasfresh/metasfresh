@@ -6,7 +6,7 @@ import PropTypes from 'prop-types';
 import { populateLaunchers } from '../../actions/LauncherActions';
 import { getLaunchers } from '../../api/launchers';
 import WFLauncherButton from './WFLauncherButton';
-import OfflineNotifBar from '../../components/OfflineNotifBar';
+// import OfflineNotifBar from '../../components/OfflineNotifBar';
 
 import * as ws from '../../utils/websocket';
 class WFLaunchersScreen extends Component {
@@ -40,21 +40,21 @@ class WFLaunchersScreen extends Component {
   };
 
   render() {
-    const { launchers: launchersMap, network } = this.props;
+    const { launchers: launchersMap } = this.props;
     const launchers = Object.values(launchersMap);
 
     return (
       <div className="container launchers-container">
-        {!network && (
+        {/* {!network && (
           <div>
             <OfflineNotifBar headerKey="launchers.offlineMsgHeader" captionKey="launchers.offlineMsgContent" />
             <div className="is-full mt-5"></div>
           </div>
-        )}
+        )} */}
         {launchers.length > 0 &&
           launchers.map((launcher) => {
             let key = launcher.startedWFProcessId ? 'started-' + launcher.startedWFProcessId : 'new-' + uuidv4();
-            return <WFLauncherButton key={key} id={key} network={network} {...launcher} />;
+            return <WFLauncherButton key={key} id={key} {...launcher} />;
           })}
       </div>
     );
@@ -66,7 +66,6 @@ WFLaunchersScreen.propTypes = {
   // Props
   launchers: PropTypes.object.isRequired,
   userToken: PropTypes.string.isRequired,
-  network: PropTypes.bool.isRequired,
   //
   // Actions
   populateLaunchers: PropTypes.func.isRequired,
@@ -76,7 +75,6 @@ const mapStateToProps = (state) => {
   return {
     launchers: state.launchers,
     userToken: state.appHandler.token,
-    network: state.appHandler.network,
   };
 };
 
