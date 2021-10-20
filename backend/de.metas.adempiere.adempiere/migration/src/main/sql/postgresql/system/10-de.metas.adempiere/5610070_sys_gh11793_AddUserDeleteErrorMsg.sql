@@ -1,6 +1,6 @@
 -- 2021-10-19T11:26:36.474Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,545067,0,TO_TIMESTAMP('2021-10-19 14:26:36','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Logged in user can not be deleted','E',TO_TIMESTAMP('2021-10-19 14:26:36','YYYY-MM-DD HH24:MI:SS'),100,'UserDeleteMsg')
+INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,545067,0,TO_TIMESTAMP('2021-10-19 14:26:36','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Logged in user can not be deleted','E',TO_TIMESTAMP('2021-10-19 14:26:36','YYYY-MM-DD HH24:MI:SS'),100,'LoggedInUserCannotBeDeleted')
 ;
 
 -- 2021-10-19T11:26:36.492Z

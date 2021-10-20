@@ -3,10 +3,7 @@ package de.metas.adempiere.modelvalidator;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.IMsgBL;
-import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.Language;
-import de.metas.i18n.TranslatableStrings;
 import de.metas.title.Title;
 import de.metas.title.TitleId;
 import de.metas.title.TitleRepository;
@@ -42,12 +39,11 @@ import java.util.Optional;
 @Callout(I_AD_User.class)
 public class AD_User
 {
-	private static final AdMessageKey MSG_UserDelete = AdMessageKey.of("UserDeleteMsg");
+	private static final AdMessageKey MSG_UserDelete = AdMessageKey.of("LoggedInUserCannotBeDeleted");
 
 	private final IBPartnerBL bpPartnerService = Services.get(IBPartnerBL.class);
 	private final TitleRepository titleRepository = SpringContextHolder.instance.getBean(TitleRepository.class);
 	private final IUserBL userBL = Services.get(IUserBL.class);
-	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	@Init
 	public void init()
@@ -115,17 +111,14 @@ public class AD_User
 		bpPartnerService.updateNameAndGreetingFromContacts(bPartnerId);
 	}
 
-	@ModelChange(timings = {ModelValidator.TYPE_BEFORE_DELETE})
-	public void beforeDelete(@NonNull final I_AD_User userRecord)
+	@ModelChange(timings = {ModelValidator.TYPE_BEFORE_DELETE},
+			ifUIAction = true)
+	public void beforeDelete_UIAction(@NonNull final I_AD_User userRecord)
 	{
-		UserId loggedInUserId = Env.getLoggedUserIdIfExists().orElse(null);
+		final UserId loggedInUserId = Env.getLoggedUserIdIfExists().orElse(null);
 		if (loggedInUserId != null && loggedInUserId.getRepoId() == userRecord.getAD_User_ID())
 		{
-			final ITranslatableString errorMsg = msgBL.getTranslatableMsgText(MSG_UserDelete);
-			throw new AdempiereException(TranslatableStrings.builder()
-												 .append(errorMsg)
-												 .build())
-					.appendParametersToMessage()
+			throw new AdempiereException(MSG_UserDelete)
 					.setParameter("AD_User_ID", userRecord.getAD_User_ID())
 					.setParameter("Name", userRecord.getName());
 		}
