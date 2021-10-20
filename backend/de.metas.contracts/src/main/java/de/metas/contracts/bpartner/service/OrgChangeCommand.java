@@ -25,6 +25,8 @@ package de.metas.contracts.bpartner.service;
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.OrgMappingId;
 import de.metas.bpartner.composite.BPartnerBankAccount;
 import de.metas.bpartner.composite.BPartnerComposite;
@@ -46,6 +48,7 @@ import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.bpartner.repository.OrgChangeRepository;
 import de.metas.contracts.bpartner.repository.OrgMappingRepository;
+import de.metas.contracts.location.adapter.ContractDocumentLocationAdapterFactory;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Term;
@@ -53,6 +56,7 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.lang.SOTrx;
 import de.metas.location.ICountryDAO;
+import de.metas.location.LocationId;
 import de.metas.logging.LogManager;
 import de.metas.order.compensationGroup.GroupCategoryId;
 import de.metas.order.compensationGroup.GroupTemplate;
@@ -343,7 +347,13 @@ public class OrgChangeCommand
 			term.setPlannedQtyPerUnit(plannedQtyPerUnit == null ? BigDecimal.ZERO : plannedQtyPerUnit.toBigDecimal());
 			term.setC_UOM_ID(plannedQtyPerUnit == null ? -1 : plannedQtyPerUnit.getUomId().getRepoId());
 
-			term.setDropShip_Location_ID(shipBPartnerLocation.getId().getRepoId());
+			final BPartnerLocationAndCaptureId dropshipLocationId = BPartnerLocationAndCaptureId.ofRepoIdOrNull(
+					BPartnerId.toRepoId(shipBPartnerLocation.getId().getBpartnerId()),
+					BPartnerLocationId.toRepoId(shipBPartnerLocation.getId()),
+					LocationId.toRepoId(shipBPartnerLocation.getExistingLocationId()));
+
+			ContractDocumentLocationAdapterFactory.dropShipLocationAdapter(term)
+					.setFrom(dropshipLocationId);
 
 			term.setDeliveryRule(sourceSubscription.getDeliveryRule() == null ? null : sourceSubscription.getDeliveryRule().getCode());
 			term.setDeliveryViaRule(sourceSubscription.getDeliveryViaRule() == null ? null : sourceSubscription.getDeliveryViaRule().getCode());

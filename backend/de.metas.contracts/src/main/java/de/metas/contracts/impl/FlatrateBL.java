@@ -1680,13 +1680,19 @@ public class FlatrateBL implements IFlatrateBL
 
 		final I_C_BPartner_Location shipToLocationRecord = bPartnerDAO.retrieveBPartnerLocation(bPartnerLocationQuery);
 
-		final BPartnerLocationAndCaptureId shipToLocationId = BPartnerLocationAndCaptureId.ofRepoIdOrNull(shipToLocationRecord.getC_BPartner_ID(),
-																										  shipToLocationRecord.getC_BPartner_Location_ID(),
-																										  shipToLocationRecord.getC_Location_ID());
+		if (shipToLocationRecord != null)
+		{
+			final BPartnerLocationAndCaptureId shipToLocationId = BPartnerLocationAndCaptureId.ofRepoIdOrNull(shipToLocationRecord.getC_BPartner_ID(),
+																											  shipToLocationRecord.getC_BPartner_Location_ID(),
+																											  shipToLocationRecord.getC_Location_ID());
 
-		ContractDocumentLocationAdapterFactory.dropShipLocationAdapter(newTerm)
-				.setFrom(shipToLocationId);
-
+			ContractDocumentLocationAdapterFactory.dropShipLocationAdapter(newTerm)
+					.setFrom(shipToLocationId);
+		}
+		else
+		{
+			newTerm.setDropShip_BPartner_ID(bPartner.getC_BPartner_ID()); // keep the previous behavior
+		}
 		if (userInCharge == null)
 		{
 			newTerm.setAD_User_InCharge_ID(bPartner.getSalesRep_ID());
