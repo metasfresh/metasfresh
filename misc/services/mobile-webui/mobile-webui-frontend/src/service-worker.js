@@ -118,26 +118,6 @@ const broadcast = new BroadcastChannel('network-status-channel');
 
 // Any other custom service worker logic can go here.
 self.addEventListener('fetch', (event) => {
-  // if (event.request.url.endsWith('config.js')) {
-  //   //event.respondWith(new Response('// no-op'));
-  //   event.respondWith(fetch(event.request));
-  // } else {
-  //  Sending a request to the network and the cache. The cache will most likely respond first and,
-  //  if the network data has not already been received, we update the page with the data in the response.
-  //  When the network responds we update the page again with the latest information.
-  // self.addEventListener('fetch', function (event) {
-  //   if (event.request.url.startsWith('http')) {
-  //     event.respondWith(
-  //       caches.open(cacheVersion).then(function (cache) {
-  //         return fetch(event.request).then(function (response) {
-  //           cache.put(event.request, response.clone());
-  //           return response;
-  //         });
-  //       })
-  //     );
-  //   }
-  // });
-
   // Prevent the default, and handle the request ourselves.
   event.respondWith(
     (async function () {
@@ -181,7 +161,6 @@ self.addEventListener('fetch', (event) => {
       }
     })()
   );
-  // }
 });
 
 // Self-Cleaning Service Worker Removal Routine
@@ -189,66 +168,4 @@ self.addEventListener('fetch', (event) => {
 // removal must wait for clients to refresh before unregistering.
 self.addEventListener('activate', function () {
   console.log('[ServiceWorker] New one activated!');
-  // navigator.serviceWorker
-  //   .getRegistrations()
-  //   .then(function (registrations) {
-  //     for (let registration of registrations) {
-  //       registration.unregister();
-  //     }
-  //   })
-  //   .catch(function (err) {
-  //     console.log('Service Worker registration failed: ', err);
-  //   });
-  // self.registration
-  //   .unregister()
-  //   .then(function () {
-  //     return self.clients.matchAll();
-  //   })
-  //   .then(function (clients) {
-  //     clients.forEach((client) => client.navigate(client.url));
-  //   });
-  // event.waitUntil(
-  //   caches.keys().then(function (cacheNames) {
-  //     return Promise.all(
-  //       cacheNames
-  //         .filter(function (cacheName) {
-  //           console.log('cacheName:', cacheName);
-  //           return true;
-  //           // Return true if you want to remove this cache,
-  //           // but remember that caches are shared across
-  //           // the whole origin
-  //         })
-  //         .map(function (cacheName) {
-  //           return caches.delete(cacheName);
-  //         })
-  //     );
-  //   })
-  // );
 });
-
-// clear previous caches on activation
-// self.addEventListener('activate', function (event) {
-//   event.waitUntil(
-//     caches.keys().then(function (cacheNames) {
-//       return Promise.all(
-//         cacheNames
-//           .filter(function (cacheName) {
-//             console.log('cacheName:', cacheName);
-//             return true;
-//             // Return true if you want to remove this cache,
-//             // but remember that caches are shared across
-//             // the whole origin
-//           })
-//           .map(function (cacheName) {
-//             return caches.delete(cacheName);
-//           })
-//       );
-//     })
-//   );
-// });
-
-// Uncomment this when quick deploy needed
-// self.addEventListener('activate', (event) => {
-//   // delete caches - !!! To be used only for quick deploys
-//   event.waitUntil(clients.claim());
-// })
