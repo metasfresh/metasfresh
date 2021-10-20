@@ -40,7 +40,10 @@ public interface WFProcessHandler
 {
 	WFProcessHandlerId getId();
 
-	WorkflowLaunchersList provideLaunchers(UserId userId, QueryLimit suggestedLimit, Duration maxStaleAccepted);
+	WorkflowLaunchersList provideLaunchers(
+			@NonNull final UserId userId,
+			@NonNull final QueryLimit suggestedLimit,
+			@NonNull final Duration maxStaleAccepted);
 
 	WFProcess startWorkflow(WorkflowStartRequest request);
 
