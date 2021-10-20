@@ -12,6 +12,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.TextStyle;
 import java.util.ArrayList;
 import java.util.Date;
@@ -213,6 +214,11 @@ public final class TranslatableStringBuilder
 	}
 
 	public TranslatableStringBuilder appendDateTime(@NonNull final Instant value)
+	{
+		return append(DateTimeTranslatableString.ofDateTime(value));
+	}
+
+	public TranslatableStringBuilder appendDateTime(@NonNull final ZonedDateTime value)
 	{
 		return append(DateTimeTranslatableString.ofDateTime(value));
 	}
