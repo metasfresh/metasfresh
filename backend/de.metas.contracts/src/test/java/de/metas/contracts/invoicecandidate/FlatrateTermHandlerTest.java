@@ -8,6 +8,7 @@ import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.impl.ContractsTestBase;
+import de.metas.contracts.location.ContractLocationHelper;
 import de.metas.contracts.location.adapter.ContractDocumentLocationAdapterFactory;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
@@ -142,8 +143,8 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 						OrgId.ofRepoId(term1.getAD_Org_ID()),
 						(WarehouseId)null,
 						CoalesceUtil.coalesceSuppliers(
-								() -> BPartnerLocationAndCaptureId.ofRepoIdOrNull(term1.getDropShip_BPartner_ID(), term1.getDropShip_Location_ID()),
-								() -> BPartnerLocationAndCaptureId.ofRepoIdOrNull(term1.getBill_BPartner_ID(), term1.getBill_Location_ID())),
+								() -> ContractLocationHelper.extractDropshipLocationId(term1),
+								() -> ContractLocationHelper.extractBillToLocationId(term1)),
 						SOTrx.SALES))
 				.thenReturn(TaxId.ofRepoId(3));
 
