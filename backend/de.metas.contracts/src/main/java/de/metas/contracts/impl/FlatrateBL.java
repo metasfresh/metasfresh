@@ -25,6 +25,7 @@ package de.metas.contracts.impl;
 import ch.qos.logback.classic.Level;
 import de.metas.acct.api.IProductAcctDAO;
 import de.metas.bpartner.BPartnerContactId;
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.cache.CacheMgt;
@@ -1664,16 +1665,27 @@ public class FlatrateBL implements IFlatrateBL
 
 		newTerm.setStartDate(startDate);
 		newTerm.setEndDate(startDate); // will be updated later
-		newTerm.setDropShip_BPartner_ID(bPartner.getC_BPartner_ID());
 
-		final BPartnerLocationAndCaptureId billAndShipToLocationId = BPartnerLocationAndCaptureId.ofRepoIdOrNull(billPartnerLocation.getC_BPartner_ID(),// note that in case of bPartner relations, this might be a different partner than 'bPartner'.
+		final BPartnerLocationAndCaptureId billToLocationId = BPartnerLocationAndCaptureId.ofRepoIdOrNull(billPartnerLocation.getC_BPartner_ID(),// note that in case of bPartner relations, this might be a different partner than 'bPartner'.
 																										  billPartnerLocation.getC_BPartner_Location_ID(),
 																										  billPartnerLocation.getC_Location_ID());
 		ContractDocumentLocationAdapterFactory.billLocationAdapter(newTerm)
-				.setFrom(billAndShipToLocationId);
+				.setFrom(billToLocationId);
+
+		final IBPartnerDAO.BPartnerLocationQuery bPartnerLocationQuery = IBPartnerDAO.BPartnerLocationQuery.builder()
+				.bpartnerId(BPartnerId.ofRepoId(bPartner.getC_BPartner_ID()))
+				.type(IBPartnerDAO.BPartnerLocationQuery.Type.SHIP_TO)
+				.applyTypeStrictly(true)
+				.build();
+
+		final I_C_BPartner_Location shipToLocationRecord = bPartnerDAO.retrieveBPartnerLocation(bPartnerLocationQuery);
+
+		final BPartnerLocationAndCaptureId shipToLocationId = BPartnerLocationAndCaptureId.ofRepoIdOrNull(shipToLocationRecord.getC_BPartner_ID(),
+																										  shipToLocationRecord.getC_BPartner_Location_ID(),
+																										  shipToLocationRecord.getC_Location_ID());
 
 		ContractDocumentLocationAdapterFactory.dropShipLocationAdapter(newTerm)
-				.setFrom(billAndShipToLocationId);
+				.setFrom(shipToLocationId);
 
 		if (userInCharge == null)
 		{
