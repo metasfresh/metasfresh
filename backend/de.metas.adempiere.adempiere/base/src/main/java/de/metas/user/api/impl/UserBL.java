@@ -480,25 +480,24 @@ public class UserBL implements IUserBL
 	@Override
 	public void deleteUserDependency(@NonNull final I_AD_User userRecord)
 	{
-		if (Env.getAD_User_ID() != userRecord.getAD_User_ID())
-		{
-			UserId userId = UserId.ofRepoId(userRecord.getAD_User_ID());
 
-			valuePreferenceDAO.deleteUserPreferenceByUserId(userId);
-			getUserAuthTokenRepository().deleteUserAuthTokenByUserId(userId);
+		UserId userId = UserId.ofRepoId(userRecord.getAD_User_ID());
 
-			userRolePermissionsDAO.deleteUserOrgAccessByUserId(userId);
+		valuePreferenceDAO.deleteUserPreferenceByUserId(userId);
+		getUserAuthTokenRepository().deleteUserAuthTokenByUserId(userId);
 
-			userRolePermissionsDAO.deleteUserOrgAssignmentByUserId(userId);
+		userRolePermissionsDAO.deleteUserOrgAccessByUserId(userId);
 
-			roleDAO.deleteUserRolesByUserId(userId);
+		userRolePermissionsDAO.deleteUserOrgAssignmentByUserId(userId);
 
-			getUserSubstituteRepository().deleteUserSubstituteByUserId(userId);
+		roleDAO.deleteUserRolesByUserId(userId);
 
-			getUserMailRepository().deleteUserMailByUserId(userId);
+		getUserSubstituteRepository().deleteUserSubstituteByUserId(userId);
 
-			getUserQueryRepository().deleteUserQueryByUserId(userId);
-		}
+		getUserMailRepository().deleteUserMailByUserId(userId);
+
+		getUserQueryRepository().deleteUserQueryByUserId(userId);
+
 	}
 
 }
