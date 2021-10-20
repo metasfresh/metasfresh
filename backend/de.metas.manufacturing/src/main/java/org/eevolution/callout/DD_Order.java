@@ -1,5 +1,8 @@
 package org.eevolution.callout;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.document.DocTypeId;
+import de.metas.document.IDocTypeDAO;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.api.ICalloutField;
@@ -43,14 +46,17 @@ import de.metas.util.Services;
 @Callout(I_DD_Order.class)
 public class DD_Order
 {
-	public static final transient DD_Order instance = new DD_Order();
+	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+	private final IDocumentNoBuilderFactory documentNoBuilderFactory = Services.get(IDocumentNoBuilderFactory.class);
 
 	@CalloutMethod(columnNames = { I_DD_Order.COLUMNNAME_C_DocType_ID })
 	public void onC_DocType_ID(final I_DD_Order ddOrder)
 	{
-		final IDocumentNoInfo documentNoInfo = Services.get(IDocumentNoBuilderFactory.class)
+		final IDocumentNoInfo documentNoInfo = documentNoBuilderFactory
 				.createPreliminaryDocumentNoBuilder()
-				.setNewDocType(ddOrder.getC_DocType())
+				.setNewDocType(DocTypeId.optionalOfRepoId(ddOrder.getC_DocType_ID())
+						.map(docTypeDAO::getById)
+						.orElse(null))
 				.setOldDocumentNo(ddOrder.getDocumentNo())
 				.setDocumentModel(ddOrder)
 				.buildOrNull();
@@ -71,16 +77,18 @@ public class DD_Order
 	@CalloutMethod(columnNames = { I_DD_Order.COLUMNNAME_C_BPartner_ID })
 	public void onC_BPartner_ID(final I_DD_Order ddOrder, final ICalloutField calloutField)
 	{
-		final I_C_BPartner bpartner = ddOrder.getC_BPartner();
-		if (bpartner == null || bpartner.getC_BPartner_ID() <= 0)
+		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(ddOrder.getC_BPartner_ID());
+		if (bpartnerId == null)
 		{
 			return;
 		}
 
 		//
 		// BPartner Location (i.e. ShipTo)
+		final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
+		final I_C_BPartner bpartner = bpartnerBL.getById(bpartnerId);
 		final I_C_BPartner_Location shipToLocation = CalloutInOut.suggestShipToLocation(calloutField, bpartner);
-		ddOrder.setC_BPartner_Location(shipToLocation);
+		ddOrder.setC_BPartner_Location_ID(shipToLocation != null ? shipToLocation.getC_BPartner_Location_ID() : -1);
 
 		//
 		// BPartner Contact
@@ -90,13 +98,13 @@ public class DD_Order
 			I_AD_User contact = null;
 			if (shipToLocation != null)
 			{
-				contact = Services.get(IBPartnerBL.class).retrieveUserForLoc(shipToLocation);
+				contact = bpartnerBL.retrieveUserForLoc(shipToLocation);
 			}
 			if (contact == null)
 			{
-				contact = Services.get(IBPartnerBL.class).retrieveShipContact(bpartner);
+				contact = bpartnerBL.retrieveShipContact(bpartner);
 			}
-			ddOrder.setAD_User(contact);
+			ddOrder.setAD_User_ID(contact != null ? contact.getAD_User_ID() : -1);
 		}
 	}
 
@@ -134,6 +142,6 @@ public class DD_Order
 
 		ddOrder.setC_BPartner_ID(order.getC_BPartner_ID());
 		ddOrder.setC_BPartner_Location_ID(order.getC_BPartner_Location_ID());
-		ddOrder.setAD_User_ID(new Integer(order.getAD_User_ID()));
+		ddOrder.setAD_User_ID(order.getAD_User_ID());
 	}
 }
