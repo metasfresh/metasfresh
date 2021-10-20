@@ -113,7 +113,7 @@ public final class LiberoValidator extends AbstractModuleInterceptor
 	@Override
 	protected void registerCallouts(final IProgramaticCalloutProvider calloutsRegistry)
 	{
-		calloutsRegistry.registerAnnotatedCallout(org.eevolution.callout.DD_Order.instance);
+		calloutsRegistry.registerAnnotatedCallout(new org.eevolution.callout.DD_Order());
 		calloutsRegistry.registerAnnotatedCallout(org.eevolution.callout.DD_OrderLine.instance);
 	}
 

@@ -22,21 +22,25 @@ package org.eevolution.api.impl;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.Date;
-
+import de.metas.document.DocTypeQuery;
+import de.metas.document.IDocTypeDAO;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
+import de.metas.material.planning.pporder.LiberoException;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mmovement.api.IMovementBL;
 import org.adempiere.mmovement.api.IMovementDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Movement;
 import org.compiere.model.I_M_MovementLine;
 import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.IDDOrderBL;
@@ -46,19 +50,13 @@ import org.eevolution.model.I_DD_OrderLine;
 import org.eevolution.model.I_DD_OrderLine_Alternative;
 import org.eevolution.model.I_DD_OrderLine_Or_Alternative;
 
-import de.metas.document.DocTypeQuery;
-import de.metas.document.IDocTypeDAO;
-import de.metas.document.engine.IDocument;
-import de.metas.document.engine.IDocumentBL;
-import de.metas.i18n.AdMessageKey;
-import de.metas.material.planning.pporder.LiberoException;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.Date;
 
 public class DD_Order_MovementBuilder implements IDDOrderMovementBuilder
 {
-	
+
 	// services
 	private final IDDOrderBL ddOrderBL = Services.get(IDDOrderBL.class);
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
@@ -74,10 +72,8 @@ public class DD_Order_MovementBuilder implements IDDOrderMovementBuilder
 
 	// state
 	private I_M_Movement _movement;
-	
-	private static final AdMessageKey MSG_DD_Order_NoTransitLocator = AdMessageKey.of("org.eevolution.api.impl.DD_Order_MovementBuilder.DD_Order_DD_Order_NoTransitLocator");
 
-	private final void assumeNoMovementHeaderCreated()
+	private void assumeNoMovementHeaderCreated()
 	{
 		Check.assumeNull(getMovementOrNull(), LiberoException.class, "movement header shall not be created");
 	}
@@ -159,7 +155,7 @@ public class DD_Order_MovementBuilder implements IDDOrderMovementBuilder
 		//
 		// BPartner (i.e. shipper BP)
 		movement.setC_BPartner_ID(order.getC_BPartner_ID());
-		movement.setC_BPartner_Location_ID(order.getC_BPartner_Location_ID());	// shipment address
+		movement.setC_BPartner_Location_ID(order.getC_BPartner_Location_ID());    // shipment address
 		movement.setAD_User_ID(order.getAD_User_ID());
 
 		//
@@ -194,7 +190,7 @@ public class DD_Order_MovementBuilder implements IDDOrderMovementBuilder
 		movement.setUser2_ID(order.getUser2_ID());
 
 		movementsRepo.save(movement);
-		
+
 		return movement;
 	}
 
@@ -238,8 +234,8 @@ public class DD_Order_MovementBuilder implements IDDOrderMovementBuilder
 	}
 
 	private I_M_MovementLine addMovementLine(final I_DD_OrderLine_Or_Alternative fromDDOrderLineOrAlt,
-			final MovementType movementType,
-			final BigDecimal movementQtySrc, final I_C_UOM movementQtyUOM)
+											 final MovementType movementType,
+											 final BigDecimal movementQtySrc, final I_C_UOM movementQtyUOM)
 	{
 		final I_M_Movement movement = getCreateMovementHeader();
 
@@ -287,13 +283,13 @@ public class DD_Order_MovementBuilder implements IDDOrderMovementBuilder
 		final int locatorToId;
 		if (movementType == MovementType.ReceiveFromTransit)
 		{
-			locatorFromId = getInTransitLocatorId(ddOrderLine);
+			locatorFromId = getInTransitLocatorId(ddOrderLine).getRepoId();
 			locatorToId = getLocatorToId(ddOrderLine);
 		}
 		else if (movementType == MovementType.ShipToTransit)
 		{
 			locatorFromId = ddOrderLine.getM_Locator_ID();
-			locatorToId = getInTransitLocatorId(ddOrderLine);
+			locatorToId = getInTransitLocatorId(ddOrderLine).getRepoId();
 		}
 		else if (movementType == MovementType.Direct)
 		{
@@ -319,20 +315,11 @@ public class DD_Order_MovementBuilder implements IDDOrderMovementBuilder
 		return movementLine;
 	}
 
-	private int getInTransitLocatorId(final I_DD_OrderLine ddOrderLine)
+	private LocatorId getInTransitLocatorId(final I_DD_OrderLine ddOrderLine)
 	{
 		final I_DD_Order ddOrder = ddOrderLine.getDD_Order();
-		final I_M_Warehouse warehouseInTransit = ddOrder.getM_Warehouse();
-		final I_M_Locator locatorInTransit = warehouseBL.getDefaultLocator(warehouseInTransit);
-
-		if (locatorInTransit == null)
-		{
-			throw new AdempiereException(MSG_DD_Order_NoTransitLocator)
-					.appendParametersToMessage()
-					.setParameter("Warehouse", warehouseInTransit.getName())
-					;
-		}
-		return locatorInTransit.getM_Locator_ID();
+		final WarehouseId warehouseInTransitId = WarehouseId.ofRepoId(ddOrder.getM_Warehouse_ID());
+		return warehouseBL.getDefaultLocatorId(warehouseInTransitId);
 	}
 
 	private int getLocatorToId(final I_DD_OrderLine ddOrderLine)

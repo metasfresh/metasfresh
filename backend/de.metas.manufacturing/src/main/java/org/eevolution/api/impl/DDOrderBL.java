@@ -27,6 +27,7 @@ import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
 
+import de.metas.document.engine.DocStatus;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.IQuery;
@@ -57,11 +58,13 @@ import de.metas.util.Services;
 public class DDOrderBL implements IDDOrderBL
 {
 	private final transient Logger logger = LogManager.getLogger(getClass());
+	private final IDDOrderDAO ddOrderDAO = Services.get(IDDOrderDAO.class);
+	private final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 
 	@Override
 	public I_DD_Order getById(final int ddOrderId)
 	{
-		return Services.get(IDDOrderDAO.class).getById(ddOrderId);
+		return ddOrderDAO.getById(ddOrderId);
 	}
 
 	@Override
@@ -130,13 +133,12 @@ public class DDOrderBL implements IDDOrderBL
 	@Override
 	public void completeDDOrderIfNeeded(final I_DD_Order ddOrder)
 	{
-		final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
-		if (docActionBL.issDocumentDraftedOrInProgress(ddOrder))
+		if (DocStatus.ofCode(ddOrder.getDocStatus()).isDraftedOrInProgress())
 		{
 			docActionBL.processEx(ddOrder, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 		}
 
-		if (!docActionBL.isDocumentCompleted(ddOrder))
+		if (!DocStatus.ofCode(ddOrder.getDocStatus()).isCompleted())
 		{
 			throw new LiberoException("@Invalid@ @DocStatus@=" + ddOrder.getDocStatus() + " (" + ddOrder + ")");
 		}
@@ -154,12 +156,12 @@ public class DDOrderBL implements IDDOrderBL
 
 		for (final I_DD_Order ddOrder : ddOrders)
 		{
-			if (docActionBL.issDocumentDraftedOrInProgress(ddOrder))
+			if (DocStatus.ofCode(ddOrder.getDocStatus()).isDraftedOrInProgress())
 			{
 				docActionBL.processEx(ddOrder, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 			}
 
-			if (!docActionBL.isDocumentCompleted(ddOrder))
+			if (!DocStatus.ofCode(ddOrder.getDocStatus()).isCompleted())
 			{
 				throw new LiberoException("@Invalid@ @DocStatus@=" + ddOrder.getDocStatus() + " (" + ddOrder + ")");
 			}
@@ -239,9 +241,6 @@ public class DDOrderBL implements IDDOrderBL
 		Check.assumeNotNull(ddOrder, "ddOrder not null");
 		Check.assumeNotNull(ddOrderProcessor, "ddOrderProcessor not null");
 
-		// services
-		final IDDOrderDAO ddOrderDAO = Services.get(IDDOrderDAO.class);
-
 		//
 		// DD Order's Plant
 		// We are getting it because we want to make sure that we will process only the DD Orders from the same plant
@@ -310,7 +309,7 @@ public class DDOrderBL implements IDDOrderBL
 	{
 		//
 		// Complete Forward and Backward DD Orders, if they are on the same plant (08059)
-		processForwardAndBackwardDraftDDOrders(ddOrder, ddOrderToProcess -> completeDDOrderIfNeeded(ddOrderToProcess));
+		processForwardAndBackwardDraftDDOrders(ddOrder, this::completeDDOrderIfNeeded);
 	}
 
 	@Override
@@ -325,7 +324,7 @@ public class DDOrderBL implements IDDOrderBL
 
 			// Set MRP_AlowCleanup to false and save it
 			ddOrderToProcess.setMRP_AllowCleanup(false);
-			Services.get(IDDOrderDAO.class).save(ddOrderToProcess);
+			ddOrderDAO.save(ddOrderToProcess);
 		});
 
 	}
@@ -333,7 +332,6 @@ public class DDOrderBL implements IDDOrderBL
 	@Override
 	public void completeBackwardDDOrders(final I_M_Forecast forecast)
 	{
-		final IDDOrderDAO ddOrderDAO = Services.get(IDDOrderDAO.class);
 
 		//
 		// Retrive backward DD Orders
