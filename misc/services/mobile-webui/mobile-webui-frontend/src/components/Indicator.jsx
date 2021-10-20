@@ -11,6 +11,8 @@ class Indicator extends Component {
         return 'indicator-green';
       case CompleteStatus.IN_PROGRESS:
         return 'indicator-yellow';
+      case CompleteStatus.HIDDEN:
+        return '';
       default:
         return 'indicator-red';
     }
@@ -19,6 +21,7 @@ class Indicator extends Component {
   render() {
     const { completeStatus } = this.props;
     const indicatorColor = this.getIndicatorColor(completeStatus);
+
     return <span className={indicatorColor} />;
   }
 }

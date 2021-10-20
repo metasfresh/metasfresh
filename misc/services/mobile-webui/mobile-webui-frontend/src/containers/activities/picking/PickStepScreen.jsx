@@ -40,6 +40,13 @@ class PickStepScreen extends Component {
     });
   };
 
+  onUnpickButtonClick = () => {
+    const { wfProcessId, activityId, lineId, stepId, updatePickingStepQty } = this.props;
+    updatePickingStepQty({ wfProcessId, activityId, lineId, stepId, qtyPicked: 0 });
+    // we set qtyPicked to 0, reson = null
+    // send an event to backend (same API like the one for sending normal picked qtys)
+  };
+
   componentWillUnmount() {
     const {
       stepProps: { qtyPicked },
@@ -82,6 +89,16 @@ class PickStepScreen extends Component {
           <div className="mt-0">
             <button className="button is-outlined complete-btn" onClick={this.onScanHUButtonClick}>
               <ButtonWithIndicator caption={scanButtonCaption} completeStatus={scanButtonStatus} />
+            </button>
+          </div>
+          {/* Unpick button */}
+          <div className="mt-5">
+            <button
+              className="button is-outlined complete-btn"
+              disabled={!isValidCode}
+              onClick={this.onUnpickButtonClick}
+            >
+              <ButtonWithIndicator caption="Unpick" completeStatus={CompleteStatus.HIDDEN} />
             </button>
           </div>
           <ScreenToaster />
