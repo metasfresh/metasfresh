@@ -119,18 +119,15 @@ public class AD_User
 	public void beforeDelete(@NonNull final I_AD_User userRecord)
 	{
 		UserId loggedInUserId = Env.getLoggedUserIdIfExists().orElse(null);
-		if (loggedInUserId != null )
+		if (loggedInUserId != null && (loggedInUserId.getRepoId() == userRecord.getAD_User_ID()))
 		{
-			if (loggedInUserId.getRepoId() == userRecord.getAD_User_ID())
-			{
-				final ITranslatableString errorMsg = msgBL.getTranslatableMsgText(MSG_UserDelete);
-				throw new AdempiereException(TranslatableStrings.builder()
-													 .append(errorMsg)
-													 .build())
-						.appendParametersToMessage()
-						.setParameter("AD_User_ID", userRecord.getAD_User_ID())
-						.setParameter("Name", userRecord.getName());
-			}
+			final ITranslatableString errorMsg = msgBL.getTranslatableMsgText(MSG_UserDelete);
+			throw new AdempiereException(TranslatableStrings.builder()
+												 .append(errorMsg)
+												 .build())
+					.appendParametersToMessage()
+					.setParameter("AD_User_ID", userRecord.getAD_User_ID())
+					.setParameter("Name", userRecord.getName());
 		}
 		userBL.deleteUserDependency(userRecord);
 	}
