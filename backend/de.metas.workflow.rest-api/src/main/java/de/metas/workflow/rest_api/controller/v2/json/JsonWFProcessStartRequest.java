@@ -27,7 +27,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
-import de.metas.workflow.rest_api.model.WFProcessHandlerId;
+import de.metas.workflow.rest_api.model.MobileApplicationId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -44,18 +44,18 @@ public class JsonWFProcessStartRequest
 	@JsonPOJOBuilder(withPrefix = "")
 	public static class JsonWFProcessStartRequestBuilder {}
 
-	static final String PARAM_WFProcessHandlerId = "wfProcessHandlerId";
-	
+	static final String PARAM_ApplicationId = "applicationId";
+
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	@NonNull Map<String, Object> wfParameters;
 
-	public WFProcessHandlerId getWfProcessHandlerId()
+	public MobileApplicationId getApplicationId()
 	{
-		final Object handlerIdObj = wfParameters.get(PARAM_WFProcessHandlerId);
-		if (handlerIdObj == null)
+		final Object idObj = wfParameters.get(PARAM_ApplicationId);
+		if (idObj == null)
 		{
-			throw new AdempiereException("No `" + PARAM_WFProcessHandlerId + "` found in " + this);
+			throw new AdempiereException("No `" + PARAM_ApplicationId + "` found in " + this);
 		}
-		return WFProcessHandlerId.ofString(handlerIdObj.toString());
+		return MobileApplicationId.ofString(idObj.toString());
 	}
 }

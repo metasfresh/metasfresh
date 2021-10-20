@@ -70,16 +70,16 @@ class DistributionWorkflowLaunchersProvider
 	private WorkflowLauncher toExistingWorkflowLauncher(@NonNull final DDOrderReference ddOrderReference)
 	{
 		return WorkflowLauncher.builder()
-				.handlerId(DistributionWFProcessHandler.HANDLER_ID)
+				.applicationId(DistributionMobileApplication.HANDLER_ID)
 				.caption(computeCaption(ddOrderReference))
-				.startedWFProcessId(WFProcessId.ofIdPart(DistributionWFProcessHandler.HANDLER_ID, ddOrderReference.getDdOrderId()))
+				.startedWFProcessId(WFProcessId.ofIdPart(DistributionMobileApplication.HANDLER_ID, ddOrderReference.getDdOrderId()))
 				.build();
 	}
 
 	private WorkflowLauncher toNewWorkflowLauncher(@NonNull final DDOrderReference ddOrderReference)
 	{
 		return WorkflowLauncher.builder()
-				.handlerId(DistributionWFProcessHandler.HANDLER_ID)
+				.applicationId(DistributionMobileApplication.HANDLER_ID)
 				.caption(computeCaption(ddOrderReference))
 				.wfParameters(DistributionWFProcessStartParams.builder()
 						.ddOrderId(ddOrderReference.getDdOrderId())

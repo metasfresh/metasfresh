@@ -24,7 +24,7 @@ package de.metas.picking.rest_api;
 
 import de.metas.Profiles;
 import de.metas.picking.rest_api.json.JsonPickingEventsList;
-import de.metas.picking.workflow.handlers.PickingWFProcessHandler;
+import de.metas.picking.workflow.handlers.PickingMobileApplication;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import de.metas.workflow.rest_api.controller.v2.json.JsonOpts;
 import lombok.NonNull;
@@ -40,10 +40,10 @@ import org.springframework.web.bind.annotation.RestController;
 @Profile(Profiles.PROFILE_App)
 public class PickingRestController
 {
-	private final PickingWFProcessHandler pickingWorkflowService;
+	private final PickingMobileApplication pickingWorkflowService;
 
 	public PickingRestController(
-			@NonNull final PickingWFProcessHandler pickingWorkflowService)
+			@NonNull final PickingMobileApplication pickingWorkflowService)
 	{
 		this.pickingWorkflowService = pickingWorkflowService;
 	}

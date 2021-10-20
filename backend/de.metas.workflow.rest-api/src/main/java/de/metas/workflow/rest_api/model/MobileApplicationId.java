@@ -31,19 +31,19 @@ import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 
 @EqualsAndHashCode
-public final class WFProcessHandlerId
+public final class MobileApplicationId
 {
 	@JsonCreator
-	public static WFProcessHandlerId ofString(@NonNull final String value)
+	public static MobileApplicationId ofString(@NonNull final String value)
 	{
-		return interner.intern(new WFProcessHandlerId(value));
+		return interner.intern(new MobileApplicationId(value));
 	}
 
-	private static final Interner<WFProcessHandlerId> interner = Interners.newStrongInterner();
+	private static final Interner<MobileApplicationId> interner = Interners.newStrongInterner();
 
 	private final String value;
 
-	private WFProcessHandlerId(@NonNull final String value) {this.value = Check.assumeNotEmpty(value, "value");}
+	private MobileApplicationId(@NonNull final String value) {this.value = Check.assumeNotEmpty(value, "value");}
 
 	@Override
 	@Deprecated

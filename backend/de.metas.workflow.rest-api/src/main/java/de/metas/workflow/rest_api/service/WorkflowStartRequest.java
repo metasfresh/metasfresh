@@ -23,7 +23,7 @@
 package de.metas.workflow.rest_api.service;
 
 import de.metas.user.UserId;
-import de.metas.workflow.rest_api.model.WFProcessHandlerId;
+import de.metas.workflow.rest_api.model.MobileApplicationId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -33,7 +33,7 @@ import org.adempiere.util.api.Params;
 @Builder
 public class WorkflowStartRequest
 {
-	@NonNull WFProcessHandlerId handlerId;
+	@NonNull MobileApplicationId applicationId;
 	@NonNull Params wfParameters;
 	@NonNull UserId invokerId;
 }

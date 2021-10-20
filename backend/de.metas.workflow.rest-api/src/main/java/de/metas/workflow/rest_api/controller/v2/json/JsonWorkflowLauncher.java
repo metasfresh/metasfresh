@@ -39,10 +39,9 @@ import java.util.Map;
 @Builder
 public class JsonWorkflowLauncher
 {
+	@NonNull String applicationId;
 	@NonNull String caption;
-
 	@Nullable String startedWFProcessId;
-
 	@NonNull Map<String, Object> wfParameters;
 
 	public static JsonWorkflowLauncher of(
@@ -53,14 +52,16 @@ public class JsonWorkflowLauncher
 
 		final String caption = workflowLauncher.getCaption().translate(adLanguage);
 		final WFProcessId startedWFProcessId = workflowLauncher.getStartedWFProcessId();
+		final String applicationId = workflowLauncher.getApplicationId().getAsString();
 
 		Params wfParameters = workflowLauncher.getWfParameters();
-		if(startedWFProcessId == null)
+		if (startedWFProcessId == null)
 		{
-			wfParameters = wfParameters.withParameter(JsonWFProcessStartRequest.PARAM_WFProcessHandlerId, workflowLauncher.getHandlerId().getAsString());
+			wfParameters = wfParameters.withParameter(JsonWFProcessStartRequest.PARAM_ApplicationId, applicationId);
 		}
 
 		return builder()
+				.applicationId(applicationId)
 				.caption(caption)
 				.startedWFProcessId(WFProcessId.getAsStringOrNull(startedWFProcessId))
 				.wfParameters(wfParameters.toJson(jsonOpts::convertValueToJson))

@@ -31,6 +31,8 @@ import de.metas.workflow.rest_api.activity_features.set_scanned_barcode.SetScann
 import de.metas.workflow.rest_api.activity_features.user_confirmation.UserConfirmationRequest;
 import de.metas.workflow.rest_api.activity_features.user_confirmation.UserConfirmationSupport;
 import de.metas.workflow.rest_api.controller.v2.json.JsonOpts;
+import de.metas.workflow.rest_api.model.MobileApplicationId;
+import de.metas.workflow.rest_api.model.MobileApplicationInfo;
 import de.metas.workflow.rest_api.model.UIComponent;
 import de.metas.workflow.rest_api.model.WFActivity;
 import de.metas.workflow.rest_api.model.WFActivityId;
@@ -58,64 +60,79 @@ public class WorkflowRestAPIService
 	private static final Logger logger = LogManager.getLogger(WorkflowRestAPIService.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
-	private static final String SYSCONFIG_LaunchersLimitPerHandler = "WorkflowRestAPIService.LaunchersLimitPerProvider";
-	private static final QueryLimit DEFAULT_LaunchersLimitPerHandler = QueryLimit.ofInt(20);
+	private static final String SYSCONFIG_LaunchersLimit = "WorkflowRestAPIService.LaunchersLimit";
+	private static final QueryLimit DEFAULT_LaunchersLimit = QueryLimit.ofInt(20);
 
-	private final WFProcessHandlersMap wfProcessHandlers;
+	private final MobileApplicationsMap applications;
 	private final WFActivityHandlersRegistry wfActivityHandlersRegistry;
 
 	WorkflowRestAPIService(
-			@NonNull final Optional<List<WFProcessHandler>> wfProcessHandlers,
+			@NonNull final Optional<List<MobileApplication>> applications,
 			@NonNull final WFActivityHandlersRegistry wfActivityHandlersRegistry)
 	{
-		this.wfProcessHandlers = WFProcessHandlersMap.of(wfProcessHandlers);
-		logger.info("wfProcessHandlers: {}", this.wfProcessHandlers);
+		this.applications = MobileApplicationsMap.of(applications);
+		logger.info("applications: {}", this.applications);
 
 		this.wfActivityHandlersRegistry = wfActivityHandlersRegistry;
 	}
 
+	public List<MobileApplicationInfo> getMobileApplicationInfos()
+	{
+		return applications.getApplicationInfos();
+	}
+
 	public WorkflowLaunchersList getLaunchers(
+			@NonNull final MobileApplicationId applicationId,
 			@NonNull final UserId userId,
 			@NonNull final Duration maxStaleAccepted)
 	{
-		final QueryLimit suggestedLimitPerHandler = getLaunchersLimitPerHandler();
+		return applications.getById(applicationId)
+				.provideLaunchers(userId, getLaunchersLimit(), maxStaleAccepted);
+	}
 
-		return wfProcessHandlers.stream()
-				.map(handler -> provideLaunchersNoFail(handler, userId, suggestedLimitPerHandler, maxStaleAccepted))
+	@Deprecated
+	public WorkflowLaunchersList getLaunchersFromAllApplications(
+			@NonNull final UserId userId,
+			@NonNull final Duration maxStaleAccepted)
+	{
+		final QueryLimit suggestedLimit = getLaunchersLimit();
+
+		return applications.stream()
+				.map(application -> provideLaunchersNoFail(application, userId, suggestedLimit, maxStaleAccepted))
 				.reduce(WorkflowLaunchersList::mergeWith)
 				.orElseGet(WorkflowLaunchersList::emptyNow);
 	}
 
 	private static WorkflowLaunchersList provideLaunchersNoFail(
-			@NonNull final WFProcessHandler handler,
+			@NonNull final MobileApplication application,
 			@NonNull final UserId userId,
 			@NonNull final QueryLimit suggestedLimit,
 			@NonNull final Duration maxStaleAccepted)
 	{
 		try
 		{
-			final WorkflowLaunchersList launchers = handler.provideLaunchers(userId, suggestedLimit, maxStaleAccepted);
+			final WorkflowLaunchersList launchers = application.provideLaunchers(userId, suggestedLimit, maxStaleAccepted);
 			return launchers != null ? launchers : WorkflowLaunchersList.emptyNow();
 		}
 		catch (final Exception ex)
 		{
-			logger.warn("Failed fetching launchers from {} for {}. Skipped", handler, userId, ex);
+			logger.warn("Failed fetching launchers from {} for {}. Skipped", application, userId, ex);
 			return WorkflowLaunchersList.emptyNow();
 		}
 	}
 
-	private QueryLimit getLaunchersLimitPerHandler()
+	private QueryLimit getLaunchersLimit()
 	{
-		final int limitInt = sysConfigBL.getIntValue(SYSCONFIG_LaunchersLimitPerHandler, -100);
+		final int limitInt = sysConfigBL.getIntValue(SYSCONFIG_LaunchersLimit, -100);
 		return limitInt == -100
-				? DEFAULT_LaunchersLimitPerHandler
+				? DEFAULT_LaunchersLimit
 				: QueryLimit.ofInt(limitInt);
 	}
 
 	public WFProcess getWFProcessById(@NonNull final WFProcessId wfProcessId)
 	{
-		return wfProcessHandlers
-				.getById(wfProcessId.getHandlerId())
+		return applications
+				.getById(wfProcessId.getApplicationId())
 				.getWFProcessById(wfProcessId);
 	}
 
@@ -123,48 +140,48 @@ public class WorkflowRestAPIService
 			@NonNull final WFProcessId wfProcessId,
 			@NonNull final UnaryOperator<WFProcess> remappingFunction)
 	{
-		return wfProcessHandlers
-				.getById(wfProcessId.getHandlerId())
+		return applications
+				.getById(wfProcessId.getApplicationId())
 				.changeWFProcessById(wfProcessId, remappingFunction);
 	}
 
 	public WFProcess startWorkflow(@NonNull final WorkflowStartRequest request)
 	{
-		return wfProcessHandlers
-				.getById(request.getHandlerId())
+		return applications
+				.getById(request.getApplicationId())
 				.startWorkflow(request);
 	}
 
 	public void abortWFProcess(@NonNull final WFProcessId wfProcessId, @NonNull final UserId callerId)
 	{
-		wfProcessHandlers
-				.getById(wfProcessId.getHandlerId())
+		applications
+				.getById(wfProcessId.getApplicationId())
 				.abort(wfProcessId, callerId);
 	}
 
 	public void abortAllWFProcesses(@NonNull final UserId callerId)
 	{
-		wfProcessHandlers
+		applications
 				.stream()
-				.forEach(handler -> abortAllNoFail(handler, callerId));
+				.forEach(application -> abortAllNoFail(application, callerId));
 	}
 
-	private static void abortAllNoFail(@NonNull final WFProcessHandler handler, final @NonNull UserId callerId)
+	private static void abortAllNoFail(@NonNull final MobileApplication application, final @NonNull UserId callerId)
 	{
 		try
 		{
-			handler.abortAll(callerId);
+			application.abortAll(callerId);
 		}
 		catch (Exception ex)
 		{
-			logger.warn("Failed aborting all for {}", handler, ex);
+			logger.warn("Failed aborting all for {}", application, ex);
 		}
 	}
 
 	public WFProcessHeaderProperties getHeaderProperties(@NonNull final WFProcess wfProcess)
 	{
-		return wfProcessHandlers
-				.getById(wfProcess.getId().getHandlerId())
+		return applications
+				.getById(wfProcess.getId().getApplicationId())
 				.getHeaderProperties(wfProcess);
 	}
 

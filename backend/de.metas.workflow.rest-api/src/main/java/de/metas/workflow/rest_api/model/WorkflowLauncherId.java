@@ -46,7 +46,7 @@ public final class WorkflowLauncherId
 	private static final Splitter SPLITTER = Splitter.on("$");
 
 	public static WorkflowLauncherId ofParts(
-			@NonNull final WFProcessHandlerId handlerId,
+			@NonNull final MobileApplicationId applicationId,
 			final Object... parts)
 	{
 		if (parts == null || parts.length <= 0)
@@ -55,7 +55,7 @@ public final class WorkflowLauncherId
 		}
 
 		return new WorkflowLauncherId(
-				handlerId,
+				applicationId,
 				Stream.of(parts)
 						.map(part -> part != null ? part.toString() : "")
 						.collect(ImmutableList.toImmutableList()));
@@ -64,14 +64,14 @@ public final class WorkflowLauncherId
 	@JsonCreator
 	public static WorkflowLauncherId ofString(@NonNull final String stringRepresentation)
 	{
-		WFProcessHandlerId handlerId = null;
+		MobileApplicationId applicationId = null;
 		final ImmutableList.Builder<String> parts = ImmutableList.builder();
 
 		for (final String part : SPLITTER.split(stringRepresentation))
 		{
-			if (handlerId == null)
+			if (applicationId == null)
 			{
-				handlerId = WFProcessHandlerId.ofString(part);
+				applicationId = MobileApplicationId.ofString(part);
 			}
 			else
 			{
@@ -79,26 +79,26 @@ public final class WorkflowLauncherId
 			}
 		}
 
-		if (handlerId == null)
+		if (applicationId == null)
 		{
 			throw new AdempiereException("Invalid string: " + stringRepresentation);
 		}
 
-		final WorkflowLauncherId result = new WorkflowLauncherId(handlerId, parts.build());
+		final WorkflowLauncherId result = new WorkflowLauncherId(applicationId, parts.build());
 		result._stringRepresentation = stringRepresentation;
 		return result;
 	}
 
 	@Getter
-	private final WFProcessHandlerId handlerId;
+	private final MobileApplicationId applicationId;
 	private final ImmutableList<String> parts;
 	private String _stringRepresentation;
 
 	private WorkflowLauncherId(
-			@NonNull final WFProcessHandlerId handlerId,
+			@NonNull final MobileApplicationId applicationId,
 			@NonNull final ImmutableList<String> parts)
 	{
-		this.handlerId = handlerId;
+		this.applicationId = applicationId;
 		this.parts = parts;
 	}
 
@@ -117,7 +117,7 @@ public final class WorkflowLauncherId
 		{
 			_stringRepresentation = stringRepresentation = JOINER
 					.join(Iterables.concat(
-							ImmutableList.of(handlerId.getAsString()),
+							ImmutableList.of(applicationId.getAsString()),
 							parts));
 		}
 		return stringRepresentation;
@@ -132,16 +132,4 @@ public final class WorkflowLauncherId
 	{
 		return NumberUtils.asIntegerOrNull(getPartAsString(index));
 	}
-
-	@Nullable
-	public <T extends RepoIdAware> T getPartAsIdOrNull(final int index, final Class<T> type)
-	{
-		final Integer repoId = getPartAsInt(index);
-		if (repoId == null)
-		{
-			throw new AdempiereException("Invalid ID at index=" + index + " of " + this);
-		}
-		return RepoIdAwares.ofRepoIdOrNull(repoId, type);
-	}
-
 }
