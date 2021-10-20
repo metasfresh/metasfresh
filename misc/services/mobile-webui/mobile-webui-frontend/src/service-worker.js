@@ -144,7 +144,12 @@ self.addEventListener('fetch', (event) => {
           .then(function (responseNetwork) {
             console.log('NetworkResponse:', responseNetwork);
             if (!responseNetwork.ok) {
-              throw new TypeError('Bad response status');
+              if (responseNetwork.status === 400) {
+                // not triggering offline status - as this is  what we get for example on bad authentication (/auth)
+              } else {
+                // here we should have a routine to record the offline request and retry it later
+                throw new TypeError({ status: responseNetwork.status, message: 'OFFLINE_DETECTED' });
+              }
             }
             // put in cache only if correct status
             // caches.open(cacheVersion).then(function (cache) {
@@ -153,7 +158,7 @@ self.addEventListener('fetch', (event) => {
             return responseNetwork;
           })
           .catch(function (responseNetworkErr) {
-            console.log('OFFLINE - You appear to be offline now');
+            console.log('%c[ OFFLINE ] - You appear to be offline now !!!', 'color: #7F00FF');
             broadcast.postMessage({ payload: 'offline' });
 
             console.log('FailResponse:', responseNetworkErr);
