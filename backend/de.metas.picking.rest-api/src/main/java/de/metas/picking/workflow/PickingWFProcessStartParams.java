@@ -29,6 +29,7 @@ import de.metas.order.OrderId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.api.Params;
 import org.adempiere.warehouse.WarehouseTypeId;
 
@@ -69,15 +70,22 @@ public class PickingWFProcessStartParams
 	 */
 	public static PickingWFProcessStartParams ofParams(@NonNull final Params params)
 	{
-		//noinspection ConstantConditions
-		return builder()
-				.salesOrderId(params.getParameterAsId("salesOrderId", OrderId.class))
-				.deliveryBPLocationId(
-						BPartnerLocationId.ofRepoIdOrNull(
-								params.getParameterAsId("customerId", BPartnerId.class),
-								params.getParameterAsInt("customerLocationId", -1)))
-				.warehouseTypeId(params.getParameterAsId("warehouseTypeId", WarehouseTypeId.class))
-				.build();
+		try
+		{
+			//noinspection ConstantConditions
+			return builder()
+					.salesOrderId(params.getParameterAsId("salesOrderId", OrderId.class))
+					.deliveryBPLocationId(
+							BPartnerLocationId.ofRepoIdOrNull(
+									params.getParameterAsId("customerId", BPartnerId.class),
+									params.getParameterAsInt("customerLocationId", -1)))
+					.warehouseTypeId(params.getParameterAsId("warehouseTypeId", WarehouseTypeId.class))
+					.build();
+		}
+		catch (Exception ex)
+		{
+			throw new AdempiereException("Invalid params: " + params, ex);
+		}
 	}
 
 }
