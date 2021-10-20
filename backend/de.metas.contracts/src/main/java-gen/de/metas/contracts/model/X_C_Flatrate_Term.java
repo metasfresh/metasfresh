@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flatrate_Term, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 462018075L;
+	private static final long serialVersionUID = 1352990745L;
 
     /** Standard Constructor */
     public X_C_Flatrate_Term (final Properties ctx, final int C_Flatrate_Term_ID, @Nullable final String trxName)
@@ -654,6 +654,33 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	public int getDropShip_Location_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_DropShip_Location_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_C_Location getDropShip_Location_Value()
+	{
+		return get_ValueAsPO(COLUMNNAME_DropShip_Location_Value_ID, org.compiere.model.I_C_Location.class);
+	}
+
+	@Override
+	public void setDropShip_Location_Value(final org.compiere.model.I_C_Location DropShip_Location_Value)
+	{
+		set_ValueFromPO(COLUMNNAME_DropShip_Location_Value_ID, org.compiere.model.I_C_Location.class, DropShip_Location_Value);
+	}
+
+	@Override
+	public void setDropShip_Location_Value_ID (final int DropShip_Location_Value_ID)
+	{
+		if (DropShip_Location_Value_ID < 1) 
+			set_Value (COLUMNNAME_DropShip_Location_Value_ID, null);
+		else 
+			set_Value (COLUMNNAME_DropShip_Location_Value_ID, DropShip_Location_Value_ID);
+	}
+
+	@Override
+	public int getDropShip_Location_Value_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_DropShip_Location_Value_ID);
 	}
 
 	@Override

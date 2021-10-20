@@ -39,10 +39,7 @@ public class ContractLocationHelper
 	{
 		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(contract.getBill_BPartner_ID());
 
-		final BPartnerLocationAndCaptureId billToLocationId = BPartnerLocationAndCaptureId.ofRepoIdOrNull(
-				bpartnerId,
-				contract.getBill_Location_ID(),
-				contract.getBill_Location_Value_ID());
+		final BPartnerLocationAndCaptureId billToLocationId = extractBillToLocationId(contract);
 
 		return DocumentLocation.builder()
 				.bpartnerId(bpartnerId)
@@ -62,4 +59,20 @@ public class ContractLocationHelper
 				.build();
 	}
 
+	public static BPartnerLocationAndCaptureId extractBillToLocationId(@NonNull final I_C_Flatrate_Term term)
+	{
+		return BPartnerLocationAndCaptureId.ofRepoIdOrNull(
+				term.getBill_BPartner_ID(),
+				term.getBill_Location_ID(),
+				term.getBill_Location_Value_ID());
+	}
+
+
+	public static BPartnerLocationAndCaptureId extractDropshipLocationId(@NonNull final I_C_Flatrate_Term term)
+	{
+		return BPartnerLocationAndCaptureId.ofRepoIdOrNull(
+				term.getDropShip_BPartner_ID(),
+				term.getDropShip_Location_ID(),
+				term.getDropShip_Location_Value_ID());
+	}
 }

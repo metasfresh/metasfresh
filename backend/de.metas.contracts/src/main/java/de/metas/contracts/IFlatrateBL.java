@@ -100,8 +100,6 @@ public interface IFlatrateBL extends ISingletonService
 	 */
 	void extendContractAndNotifyUser(ContractExtendingRequest context);
 
-	BPartnerLocationAndCaptureId getBillToLocationId(@NonNull I_C_Flatrate_Term term);
-
 	/**
 	 * Updates the <code>NoticeDate</code> and <code>EndDate</code> dates of the given term, using the term's values such as <code>StartDate</code>, as well as the {@link I_C_Flatrate_Transition}
 	 * associated with the term.

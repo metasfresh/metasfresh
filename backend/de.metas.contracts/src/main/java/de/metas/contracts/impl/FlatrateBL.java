@@ -58,7 +58,6 @@ import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
-import de.metas.document.location.DocumentLocation;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
@@ -458,8 +457,8 @@ public class FlatrateBL implements IFlatrateBL
 		final TaxCategoryId taxCategoryId = TaxCategoryId.ofRepoIdOrNull(term.getC_TaxCategory_ID());
 
 		final BPartnerLocationAndCaptureId shipToLocationId = CoalesceUtil.coalesceSuppliers(
-				() -> BPartnerLocationAndCaptureId.ofRepoIdOrNull(term.getDropShip_BPartner_ID(), term.getDropShip_Location_ID()),
-				() -> getBillToLocationId(term));
+				() -> ContractLocationHelper.extractDropshipLocationId(term),
+				() -> ContractLocationHelper.extractBillToLocationId(term));
 
 		final TaxId taxId = Services.get(ITaxBL.class).getTaxNotNull(
 				ctx,
@@ -592,8 +591,8 @@ public class FlatrateBL implements IFlatrateBL
 		final TaxCategoryId taxCategoryId = TaxCategoryId.ofRepoIdOrNull(term.getC_TaxCategory_ID());
 
 		final BPartnerLocationAndCaptureId shipToLocationId = CoalesceUtil.coalesceSuppliers(
-				() -> BPartnerLocationAndCaptureId.ofRepoIdOrNull(term.getDropShip_BPartner_ID(), term.getDropShip_Location_ID()),
-				() -> getBillToLocationId(term));
+				() -> ContractLocationHelper.extractDropshipLocationId(term),
+				() -> ContractLocationHelper.extractBillToLocationId(term));
 
 		final TaxId taxId = Services.get(ITaxBL.class).getTaxNotNull(
 				ctx,
@@ -1271,9 +1270,17 @@ public class FlatrateBL implements IFlatrateBL
 		nextTerm.setPlannedQtyPerUnit(currentTerm.getPlannedQtyPerUnit());
 		nextTerm.setIsSimulation(currentTerm.isSimulation());
 
+		final BPartnerContactId billContactId = BPartnerContactId.ofRepoIdOrNull(currentTerm.getBill_BPartner_ID(), currentTerm.getBill_User_ID());
 		ContractDocumentLocationAdapterFactory
 				.billLocationAdapter(nextTerm)
-				.setFrom(ContractLocationHelper.extractBillLocation(currentTerm));
+				.setFrom(ContractLocationHelper.extractBillToLocationId(currentTerm),
+						 billContactId);
+
+		final BPartnerContactId dropshipContactId = BPartnerContactId.ofRepoIdOrNull(currentTerm.getDropShip_BPartner_ID(), currentTerm.getDropShip_User_ID());
+
+		ContractDocumentLocationAdapterFactory
+				.dropShipLocationAdapter(nextTerm)
+				.setFrom(ContractLocationHelper.extractDropshipLocationId(currentTerm), dropshipContactId);
 
 		nextTerm.setAD_User_InCharge_ID(currentTerm.getAD_User_InCharge_ID());
 		final I_C_Flatrate_Transition nextTransition = nextConditions.getC_Flatrate_Transition();
@@ -1294,13 +1301,10 @@ public class FlatrateBL implements IFlatrateBL
 		updateNoticeDate(nextTransition, nextTerm);
 
 		nextTerm.setM_PricingSystem_ID(currentTerm.getM_PricingSystem_ID());
-		nextTerm.setDropShip_BPartner_ID(currentTerm.getDropShip_BPartner_ID());
-		nextTerm.setDropShip_Location_ID(currentTerm.getDropShip_Location_ID());
 
 		nextTerm.setM_Product_ID(currentTerm.getM_Product_ID());
 		Services.get(IAttributeSetInstanceBL.class).cloneASI(currentTerm, nextTerm);
 
-		nextTerm.setDropShip_User_ID(currentTerm.getDropShip_User_ID());
 		nextTerm.setDeliveryRule(currentTerm.getDeliveryRule());
 		nextTerm.setDeliveryViaRule(currentTerm.getDeliveryViaRule());
 
@@ -1318,15 +1322,6 @@ public class FlatrateBL implements IFlatrateBL
 		InterfaceWrapperHelper.save(nextTerm);
 
 		return nextTerm;
-	}
-
-	@Override
-	public BPartnerLocationAndCaptureId getBillToLocationId(@NonNull final I_C_Flatrate_Term term)
-	{
-		return BPartnerLocationAndCaptureId.ofRepoIdOrNull(
-				term.getBill_BPartner_ID(),
-				term.getBill_Location_ID(),
-				term.getBill_Location_Value_ID());
 	}
 
 	private Timestamp computeStartDate(@NonNull final I_C_Flatrate_Term contract, final Timestamp nextTermStartDate)
@@ -1674,13 +1669,8 @@ public class FlatrateBL implements IFlatrateBL
 		final BPartnerLocationAndCaptureId billToLocationId = BPartnerLocationAndCaptureId.ofRepoIdOrNull(billPartnerLocation.getC_BPartner_ID(),// note that in case of bPartner relations, this might be a different partner than 'bPartner'.
 																										  billPartnerLocation.getC_BPartner_Location_ID(),
 																										  billPartnerLocation.getC_Location_ID());
-		ContractDocumentLocationAdapterFactory
-				.billLocationAdapter(newTerm)
-				.setFrom(DocumentLocation.builder()
-								 .bpartnerId(billToLocationId.getBpartnerId())
-								 .bpartnerLocationId(billToLocationId.getBpartnerLocationId())
-								 .locationId(billToLocationId.getLocationCaptureId())
-								 .build());
+		ContractDocumentLocationAdapterFactory.billLocationAdapter(newTerm)
+				.setFrom(billToLocationId);
 
 		if (userInCharge == null)
 		{

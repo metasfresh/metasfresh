@@ -34,9 +34,9 @@ import de.metas.contracts.ConditionsId;
 import de.metas.contracts.FlatrateTerm;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.FlatrateTermStatus;
-import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.bpartner.service.OrgChangeBPartnerComposite;
+import de.metas.contracts.location.ContractLocationHelper;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.order.DeliveryRule;
 import de.metas.order.DeliveryViaRule;
@@ -74,7 +74,6 @@ public class OrgChangeRepository
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
-	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 
 	private final BPartnerCompositeRepository bPartnerCompositeRepo;
 	private final OrgMappingRepository orgMappingRepo;
@@ -140,14 +139,14 @@ public class OrgChangeRepository
 		final ProductId productId = ProductId.ofRepoId(term.getM_Product_ID());
 		final I_C_UOM termUom = uomDAO.getById(CoalesceUtil.coalesce(UomId.ofRepoIdOrNull(term.getC_UOM_ID()), productBL.getStockUOMId(productId)));
 
-		final BPartnerLocationAndCaptureId billPartnerLocationAndCaptureId = flatrateBL.getBillToLocationId(term);
+		final BPartnerLocationAndCaptureId billPartnerLocationAndCaptureId = ContractLocationHelper.extractBillToLocationId(term);
+		final BPartnerLocationAndCaptureId dropshipLPartnerLocationAndCaptureId = ContractLocationHelper.extractDropshipLocationId(term);
 
 		return FlatrateTerm.builder()
 				.flatrateTermId(flatrateTermId)
 				.orgId(orgId)
 				.billPartnerLocationAndCaptureId(billPartnerLocationAndCaptureId)
-				.shipToBPartnerId(BPartnerId.ofRepoIdOrNull(term.getDropShip_BPartner_ID()))
-				.shipToLocationId(BPartnerLocationId.ofRepoIdOrNull(term.getDropShip_BPartner_ID(), term.getDropShip_Location_ID()))
+				.dropshipPartnerLocationAndCaptureId(dropshipLPartnerLocationAndCaptureId)
 				.productId(productId)
 				.flatrateConditionsId(ConditionsId.ofRepoId(term.getC_Flatrate_Conditions_ID()))
 				.isSimulation(term.isSimulation())

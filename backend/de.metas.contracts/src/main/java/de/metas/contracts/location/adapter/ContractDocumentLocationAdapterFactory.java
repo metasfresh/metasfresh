@@ -27,8 +27,13 @@ import lombok.NonNull;
 
 public class ContractDocumentLocationAdapterFactory
 {
-	public static BillLocationAdapter billLocationAdapter(@NonNull final I_C_Flatrate_Term term)
+	public static ContractBillLocationAdapter billLocationAdapter(@NonNull final I_C_Flatrate_Term term)
 	{
-		return new BillLocationAdapter(term);
+		return new ContractBillLocationAdapter(term);
+	}
+
+	public static ContractDropshipLocationAdapter dropShipLocationAdapter(@NonNull final I_C_Flatrate_Term term)
+	{
+		return new ContractDropshipLocationAdapter(term);
 	}
 }

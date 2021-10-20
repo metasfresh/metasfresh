@@ -3,6 +3,7 @@ package de.metas.contracts.refund;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.ConditionsId;
@@ -23,7 +24,6 @@ import de.metas.contracts.refund.RefundConfig.RefundMode;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.impl.PlainCurrencyDAO;
-import de.metas.document.location.DocumentLocation;
 import de.metas.invoice.InvoiceSchedule;
 import de.metas.invoice.service.InvoiceScheduleRepository;
 import de.metas.invoicecandidate.InvoiceCandidateId;
@@ -309,13 +309,12 @@ public class RefundTestTools
 		contractRecord.setType_Conditions(X_C_Flatrate_Term.TYPE_CONDITIONS_Refund);
 		contractRecord.setDocStatus(X_C_Flatrate_Term.DOCSTATUS_Completed);
 
+		final BPartnerLocationAndCaptureId billToLocationId = BPartnerLocationAndCaptureId.ofRepoIdOrNull(billBPartnerLocationId.getBpartnerId(),
+																										  billBPartnerLocationId.getRepoId());
+
 		ContractDocumentLocationAdapterFactory
 				.billLocationAdapter(contractRecord)
-				.setFrom(DocumentLocation.builder()
-								 .bpartnerId(billBPartnerLocationId.getBpartnerId())
-								 .bpartnerLocationId(billBPartnerLocationId)
-
-								 .build());
+				.setFrom(billToLocationId);
 
 		contractRecord.setM_Product_ID(productRecord.getM_Product_ID());
 		contractRecord.setStartDate(TimeUtil.asTimestamp(CONTRACT_START_DATE));

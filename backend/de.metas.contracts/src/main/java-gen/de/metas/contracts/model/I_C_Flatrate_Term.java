@@ -726,6 +726,33 @@ public interface I_C_Flatrate_Term
 	String COLUMNNAME_DropShip_Location_ID = "DropShip_Location_ID";
 
 	/**
+	 * Set Lieferadresse (Address).
+	 * Business Partner Location for shipping to
+	 *
+	 * <br>Type: Location
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDropShip_Location_Value_ID (int DropShip_Location_Value_ID);
+
+	/**
+	 * Get Lieferadresse (Address).
+	 * Business Partner Location for shipping to
+	 *
+	 * <br>Type: Location
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getDropShip_Location_Value_ID();
+
+	@Nullable org.compiere.model.I_C_Location getDropShip_Location_Value();
+
+	void setDropShip_Location_Value(@Nullable org.compiere.model.I_C_Location DropShip_Location_Value);
+
+	ModelColumn<I_C_Flatrate_Term, org.compiere.model.I_C_Location> COLUMN_DropShip_Location_Value_ID = new ModelColumn<>(I_C_Flatrate_Term.class, "DropShip_Location_Value_ID", org.compiere.model.I_C_Location.class);
+	String COLUMNNAME_DropShip_Location_Value_ID = "DropShip_Location_Value_ID";
+
+	/**
 	 * Set Ship Contact.
 	 *
 	 * <br>Type: Table

@@ -208,13 +208,11 @@ public class FlatrateBLTest extends ContractsTestBase
 		currentTerm.setC_Flatrate_Conditions(flatrateConditions);
 		currentTerm.setM_PricingSystem_ID(pricingSystem.getM_PricingSystem_ID());
 
+		final BPartnerLocationAndCaptureId bpartnerLocationId = BPartnerLocationAndCaptureId.ofRepoIdOrNull(bpartner.getC_BPartner_ID(), bpLocation.getC_BPartner_Location_ID(), location.getC_Location_ID());
+
 		ContractDocumentLocationAdapterFactory
 				.billLocationAdapter(currentTerm)
-				.setFrom(DocumentLocation.builder()
-								 .bpartnerId(BPartnerId.ofRepoId(bpartner.getC_BPartner_ID()))
-								 .bpartnerLocationId(BPartnerLocationId.ofRepoId(bpartner.getC_BPartner_ID(), bpLocation.getC_BPartner_Location_ID()))
-								 .locationId(LocationId.ofRepoId(location.getC_Location_ID()))
-								 .build());
+				.setFrom(bpartnerLocationId);
 
 		save(currentTerm);
 
@@ -263,10 +261,10 @@ public class FlatrateBLTest extends ContractsTestBase
 		Services.registerService(ITaxBL.class, taxBL);
 
 		Mockito.when(
-				productAcctDAO.retrieveActivityForAcct(
-						clientId,
-						orgId,
-						ProductId.ofRepoId(product.getM_Product_ID())))
+						productAcctDAO.retrieveActivityForAcct(
+								clientId,
+								orgId,
+								ProductId.ofRepoId(product.getM_Product_ID())))
 				.thenReturn(activityId);
 
 		final Properties ctx = Env.getCtx();

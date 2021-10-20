@@ -4,6 +4,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.contracts.location.ContractLocationHelper;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.i18n.AdMessageKey;
 import de.metas.lang.SOTrx;
@@ -86,14 +87,11 @@ public class FlatrateTermPricing
 	{
 		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
-		final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 
 		final PricingSystemId pricingSystemIdToUse = PricingSystemId.ofRepoIdOrNull(CoalesceUtil.firstGreaterThanZero(term.getM_PricingSystem_ID(), term.getC_Flatrate_Conditions().getM_PricingSystem_ID()));
 
-		final BPartnerId dropShipBPartnerId = BPartnerId.ofRepoIdOrNull(term.getDropShip_BPartner_ID());
-
-		final BPartnerLocationAndCaptureId dropShipLocationId = BPartnerLocationAndCaptureId.ofRepoIdOrNull(dropShipBPartnerId, term.getDropShip_Location_ID());
-		final BPartnerLocationAndCaptureId billLocationId = flatrateBL.getBillToLocationId(term);
+		final BPartnerLocationAndCaptureId dropShipLocationId = ContractLocationHelper.extractDropshipLocationId(term);
+		final BPartnerLocationAndCaptureId billLocationId = ContractLocationHelper.extractBillToLocationId(term);
 
 		final BPartnerLocationAndCaptureId bpLocationIdToUse = dropShipLocationId != null ? dropShipLocationId : billLocationId;
 

@@ -47,6 +47,7 @@ public class FlatrateTerm
 	@NonNull OrgId orgId;
 
 	@NonNull BPartnerLocationAndCaptureId  billPartnerLocationAndCaptureId;
+	@NonNull BPartnerLocationAndCaptureId  dropshipPartnerLocationAndCaptureId;
 
 	@Nullable
 	private BPartnerId shipToBPartnerId;

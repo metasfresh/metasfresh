@@ -22,6 +22,8 @@
 
 package de.metas.contracts.location.adapter;
 
+import de.metas.bpartner.BPartnerContactId;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.document.location.DocumentLocation;
 import de.metas.document.location.IDocumentLocationBL;
@@ -33,9 +35,10 @@ import lombok.NonNull;
 import lombok.Setter;
 import org.adempiere.model.InterfaceWrapperHelper;
 
+import javax.annotation.Nullable;
 import java.util.Optional;
 
-public class BillLocationAdapter implements IDocumentBillLocationAdapter, RecordBasedLocationAdapter<BillLocationAdapter>
+public class ContractBillLocationAdapter implements IDocumentBillLocationAdapter, RecordBasedLocationAdapter<ContractBillLocationAdapter>
 {
 	private final I_C_Flatrate_Term delegate;
 
@@ -43,7 +46,7 @@ public class BillLocationAdapter implements IDocumentBillLocationAdapter, Record
 	@Setter
 	private String billToAddress;
 
-	public BillLocationAdapter(@NonNull final I_C_Flatrate_Term delegate)
+	public ContractBillLocationAdapter(@NonNull final I_C_Flatrate_Term delegate)
 	{
 		this.delegate = delegate;
 	}
@@ -115,9 +118,24 @@ public class BillLocationAdapter implements IDocumentBillLocationAdapter, Record
 	}
 
 	@Override
-	public BillLocationAdapter toOldValues()
+	public ContractBillLocationAdapter toOldValues()
 	{
 		InterfaceWrapperHelper.assertNotOldValues(delegate);
-		return new BillLocationAdapter(InterfaceWrapperHelper.createOld(delegate, I_C_Flatrate_Term.class));
+		return new ContractBillLocationAdapter(InterfaceWrapperHelper.createOld(delegate, I_C_Flatrate_Term.class));
+	}
+
+	public void setFrom(final @NonNull BPartnerLocationAndCaptureId billToLocationId, final @Nullable BPartnerContactId billToContactId)
+	{
+		setBill_BPartner_ID(billToLocationId.getBpartnerRepoId());
+		setBill_Location_ID(billToLocationId.getBPartnerLocationRepoId());
+		setBill_Location_Value_ID(billToLocationId.getLocationCaptureRepoId());
+		setBill_User_ID(billToContactId == null ? -1 : billToContactId.getRepoId());
+	}
+
+	public void setFrom(final @NonNull BPartnerLocationAndCaptureId billToLocationId)
+	{
+		setBill_BPartner_ID(billToLocationId.getBpartnerRepoId());
+		setBill_Location_ID(billToLocationId.getBPartnerLocationRepoId());
+		setBill_Location_Value_ID(billToLocationId.getLocationCaptureRepoId());
 	}
 }
