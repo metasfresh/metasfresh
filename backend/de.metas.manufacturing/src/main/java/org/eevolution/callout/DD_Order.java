@@ -1,8 +1,14 @@
 package org.eevolution.callout;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
+import de.metas.document.sequence.IDocumentNoBuilderFactory;
+import de.metas.document.sequence.impl.IDocumentNoInfo;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.api.ICalloutField;
@@ -14,12 +20,6 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
 import org.eevolution.model.I_DD_Order;
-
-import de.metas.bpartner.service.IBPartnerBL;
-import de.metas.document.sequence.IDocumentNoBuilderFactory;
-import de.metas.document.sequence.impl.IDocumentNoInfo;
-import de.metas.util.Check;
-import de.metas.util.Services;
 
 /*
  * #%L
@@ -47,7 +47,13 @@ import de.metas.util.Services;
 public class DD_Order
 {
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
-	private final IDocumentNoBuilderFactory documentNoBuilderFactory = Services.get(IDocumentNoBuilderFactory.class);
+	private final IDocumentNoBuilderFactory documentNoBuilderFactory;
+
+	public DD_Order(
+			@NonNull final IDocumentNoBuilderFactory documentNoBuilderFactory)
+	{
+		this.documentNoBuilderFactory = documentNoBuilderFactory;
+	}
 
 	@CalloutMethod(columnNames = { I_DD_Order.COLUMNNAME_C_DocType_ID })
 	public void onC_DocType_ID(final I_DD_Order ddOrder)
