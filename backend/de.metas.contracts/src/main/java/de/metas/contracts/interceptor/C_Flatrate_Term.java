@@ -32,6 +32,7 @@ import de.metas.contracts.IFlatrateTermEventService;
 import de.metas.contracts.flatrate.interfaces.I_C_DocType;
 import de.metas.contracts.flatrate.interfaces.I_C_OLCand;
 import de.metas.contracts.impl.FlatrateBL;
+import de.metas.contracts.location.adapter.ContractDocumentLocationAdapterFactory;
 import de.metas.contracts.model.I_C_Contract_Term_Alloc;
 import de.metas.contracts.model.I_C_Flatrate_Data;
 import de.metas.contracts.model.I_C_Flatrate_DataEntry;
@@ -45,6 +46,7 @@ import de.metas.contracts.subscription.ISubscriptionBL;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.IDocTypeDAO.DocTypeCreateRequest;
+import de.metas.document.location.IDocumentLocationBL;
 import de.metas.i18n.IMsgBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.order.IOrderDAO;
@@ -65,6 +67,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Calendar;
@@ -94,6 +97,8 @@ public class C_Flatrate_Term
 	private static final String MSG_TERM_ERROR_PERIOD_START_DATE_AFTER_TERM_START_DATE_2P = "Term_Error_PeriodStartDate_After_TermStartDate";
 
 	private final IBPartnerDAO bparnterDAO = Services.get(IBPartnerDAO.class);
+	private final IDocumentLocationBL documentLocationBL = SpringContextHolder.instance.getBean(IDocumentLocationBL.class);
+
 
 	private final ContractOrderService contractOrderService;
 
@@ -622,5 +627,28 @@ public class C_Flatrate_Term
 		updateContractStatus.updateStatusIfNeededWhenExtendind(term, orderIds);
 		updateContractStatus.updateStatusIfNeededWhenCancelling(term, orderIds);
 		updateContractStatus.updateStausIfNeededWhenVoiding(term);
+	}
+
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE
+	}, ifColumnsChanged = {
+			I_C_Flatrate_Term.COLUMNNAME_Bill_BPartner_ID,
+			I_C_Flatrate_Term.COLUMNNAME_Bill_Location_ID,
+			I_C_Flatrate_Term.COLUMNNAME_Bill_User_ID },
+			skipIfCopying = true)
+	public void updateBillToAddress(final I_C_Flatrate_Term term)
+	{
+		documentLocationBL.updateRenderedAddressAndCapturedLocation(ContractDocumentLocationAdapterFactory.billLocationAdapter(term));
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE
+	}, ifColumnsChanged = {
+			I_C_Flatrate_Term.COLUMNNAME_DropShip_BPartner_ID,
+			I_C_Flatrate_Term.COLUMNNAME_DropShip_Location_ID,
+			I_C_Flatrate_Term.COLUMNNAME_DropShip_User_ID},
+			skipIfCopying = true)
+	public void updateDropshipAddress(final I_C_Flatrate_Term term)
+	{
+		documentLocationBL.updateRenderedAddressAndCapturedLocation(ContractDocumentLocationAdapterFactory.dropShipLocationAdapter(term));
 	}
 }
