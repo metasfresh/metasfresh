@@ -53,6 +53,8 @@ import java.util.UUID;
 
 public class UserBL implements IUserBL
 {
+
+
 	private static final Logger logger = LogManager.getLogger(UserBL.class);
 	private final IUserDAO userDAO = Services.get(IUserDAO.class);
 	private final IClientDAO clientDAO = Services.get(IClientDAO.class);
@@ -478,6 +480,7 @@ public class UserBL implements IUserBL
 	@Override
 	public void deleteUserDependency(@NonNull final I_AD_User userRecord)
 	{
+
 		UserId userId = UserId.ofRepoId(userRecord.getAD_User_ID());
 
 		valuePreferenceDAO.deleteUserPreferenceByUserId(userId);
@@ -494,6 +497,7 @@ public class UserBL implements IUserBL
 		getUserMailRepository().deleteUserMailByUserId(userId);
 
 		getUserQueryRepository().deleteUserQueryByUserId(userId);
+
 	}
 
 }
