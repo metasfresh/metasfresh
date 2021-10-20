@@ -16,6 +16,11 @@ UPDATE AD_Sequence SET IsAutoSequence='Y',Updated=TO_TIMESTAMP('2021-10-14 14:05
 
 -- 2021-10-14T11:06:08.600Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Sequence SET CurrentNext=1,Updated=TO_TIMESTAMP('2021-10-14 14:06:08','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Sequence_ID=555613
+UPDATE AD_Sequence SET CurrentNext=0,Updated=TO_TIMESTAMP('2021-10-14 14:06:08','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Sequence_ID=555613
+;
+
+-- 2021-10-20T07:13:36.903Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Sequence SET DecimalPattern='00000000',Updated=TO_TIMESTAMP('2021-10-20 10:13:36','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Sequence_ID=555613
 ;
 
