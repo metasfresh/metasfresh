@@ -1666,11 +1666,14 @@ public class FlatrateBL implements IFlatrateBL
 		newTerm.setEndDate(startDate); // will be updated later
 		newTerm.setDropShip_BPartner_ID(bPartner.getC_BPartner_ID());
 
-		final BPartnerLocationAndCaptureId billToLocationId = BPartnerLocationAndCaptureId.ofRepoIdOrNull(billPartnerLocation.getC_BPartner_ID(),// note that in case of bPartner relations, this might be a different partner than 'bPartner'.
+		final BPartnerLocationAndCaptureId billAndShipToLocationId = BPartnerLocationAndCaptureId.ofRepoIdOrNull(billPartnerLocation.getC_BPartner_ID(),// note that in case of bPartner relations, this might be a different partner than 'bPartner'.
 																										  billPartnerLocation.getC_BPartner_Location_ID(),
 																										  billPartnerLocation.getC_Location_ID());
 		ContractDocumentLocationAdapterFactory.billLocationAdapter(newTerm)
-				.setFrom(billToLocationId);
+				.setFrom(billAndShipToLocationId);
+
+		ContractDocumentLocationAdapterFactory.dropShipLocationAdapter(newTerm)
+				.setFrom(billAndShipToLocationId);
 
 		if (userInCharge == null)
 		{
