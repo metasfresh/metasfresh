@@ -131,10 +131,8 @@ public class AD_User
 						.setParameter("AD_User_ID", userRecord.getAD_User_ID())
 						.setParameter("Name", userRecord.getName());
 			}
-
-			userBL.deleteUserDependency(userRecord);
 		}
-
+		userBL.deleteUserDependency(userRecord);
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_DELETE },
