@@ -45,15 +45,17 @@ class WFLaunchersScreen extends Component {
 
     return (
       <div className="container launchers-container">
-        {network &&
-          launchers.length > 0 &&
+        {!network && (
+          <div>
+            <OfflineNotifBar headerKey="launchers.offlineMsgHeader" captionKey="launchers.offlineMsgContent" />
+            <div className="is-full mt-5"></div>
+          </div>
+        )}
+        {launchers.length > 0 &&
           launchers.map((launcher) => {
             let key = launcher.startedWFProcessId ? 'started-' + launcher.startedWFProcessId : 'new-' + uuidv4();
-            return <WFLauncherButton key={key} id={key} {...launcher} />;
+            return <WFLauncherButton key={key} id={key} network={network} {...launcher} />;
           })}
-        {!network && (
-          <OfflineNotifBar headerKey="launchers.offlineMsgHeader" captionKey="launchers.offlineMsgContent" />
-        )}
       </div>
     );
   }

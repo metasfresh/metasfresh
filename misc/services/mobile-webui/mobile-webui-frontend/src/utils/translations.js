@@ -25,7 +25,7 @@ export const setupCounterpart = () => {
       offlineMsgContent: 'Please find an area with internet connectivity to be able to authenticate.',
     },
     launchers: {
-      offlineMsgHeader: 'You are offline. Could not retrieve the launchers',
+      offlineMsgHeader: 'You are offline. The launchers are not accessible.',
       offlineMsgContent: 'Please find an area with internet connectivity.',
     },
     activities: {
@@ -68,7 +68,7 @@ export const setupCounterpart = () => {
       offlineMsgContent: 'Please find an area with internet connectivity to be able to authenticate.',
     },
     launchers: {
-      offlineMsgHeader: 'You are offline. Could not retrieve the launchers',
+      offlineMsgHeader: 'You are offline. The launchers are not accessible.',
       offlineMsgContent: 'Please find an area with internet connectivity.',
     },
     activities: {
