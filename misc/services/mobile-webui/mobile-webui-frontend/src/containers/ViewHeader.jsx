@@ -50,7 +50,9 @@ class ViewHeader extends Component {
             return (
               <div key={i} className="columns is-mobile is-size-7">
                 <div className="column is-half has-text-left has-text-weight-bold pt-0 pb-0 pl-1 pr-0">{caption}:</div>
-                <div className="column is-half has-text-left pt-0 pb-0">{value}</div>
+                <div className={classnames('column is-half has-text-left pt-0 pb-0', { 'is-size-4': idx === 1 })}>
+                  {value}
+                </div>
               </div>
             );
           })}
