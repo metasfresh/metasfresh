@@ -19,7 +19,7 @@ class ButtonWithIndicator extends PureComponent {
 
 ButtonWithIndicator.propTypes = {
   caption: PropTypes.string.isRequired,
-  completeStatus: PropTypes.string.isRequired,
+  completeStatus: PropTypes.string,
 };
 
 export default ButtonWithIndicator;
