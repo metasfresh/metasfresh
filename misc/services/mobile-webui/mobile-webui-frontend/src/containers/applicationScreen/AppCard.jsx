@@ -1,13 +1,13 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-
+import counterpart from 'counterpart';
 class AppCard extends Component {
   render() {
-    const { caption } = this.props;
+    const { captionKey } = this.props;
     return (
       <div className="card">
         <div className="card-content has-text-centered">
-          <p className="is-size-4">{caption}</p>
+          <p className="is-size-4">{counterpart.translate(captionKey)}</p>
         </div>
       </div>
     );
@@ -15,7 +15,7 @@ class AppCard extends Component {
 }
 
 AppCard.propTypes = {
-  caption: PropTypes.string.isRequired,
+  captionKey: PropTypes.string.isRequired,
 };
 
 export default AppCard;

@@ -22,6 +22,17 @@ export const setupCounterpart = () => {
     login: {
       submitButton: 'Login',
     },
+    mobileui: {
+      manufacturing: {
+        appName: 'Production',
+      },
+      picking: {
+        appName: 'Picking',
+      },
+      distribution: {
+        appName: 'Distribution',
+      },
+    },
     activities: {
       scanBarcode: {
         defaultCaption: 'Scan',
@@ -61,6 +72,17 @@ export const setupCounterpart = () => {
     },
     login: {
       submitButton: 'Login',
+    },
+    mobileui: {
+      manufacturing: {
+        appName: 'Production',
+      },
+      picking: {
+        appName: 'Picking',
+      },
+      distribution: {
+        appName: 'Distribution',
+      },
     },
     activities: {
       scanBarcode: {

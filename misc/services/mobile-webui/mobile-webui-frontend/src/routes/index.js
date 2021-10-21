@@ -7,7 +7,7 @@ import Header from '../components/Header';
 import ViewHeader from '../containers/ViewHeader';
 import LoginView from '../components/LoginView';
 
-//import WFLaunchersScreen from '../containers/wfLaunchersScreen/WFLaunchersScreen';
+import WFLaunchersScreen from '../containers/wfLaunchersScreen/WFLaunchersScreen';
 import WFProcessScreen from '../containers/WFProcessScreen';
 import ScanScreen from '../containers/activities/scan/ScanScreen';
 import PickLineScreen from '../containers/activities/picking/PickLineScreen';
@@ -21,7 +21,7 @@ import ScreenToaster from '../components/ScreenToaster';
 
 const routesArray = [
   { path: '/', Component: ApplicationsScreen },
-  // { path: '/', Component: WFLaunchersScreen },
+  { path: '/launchers/:launcherId', Component: WFLaunchersScreen },
   { path: '/workflow/:workflowId', Component: WFProcessScreen },
   { path: '/workflow/:workflowId/activityId/:activityId/scanner', Component: ScanScreen },
   { path: '/workflow/:workflowId/activityId/:activityId/lineId/:lineId', Component: PickLineScreen },
