@@ -1,0 +1,15 @@
+.application-container {
+    width: 100%;
+    .card {
+        justify-content: center;
+        align-content: center;
+        flex-direction: column;
+        margin-top: 1.5em;
+        margin-left:1.5em;
+        width: 40%;
+        height: 9.5em;
+        float: left;
+        vertical-align: middle;
+        padding-top: 1.9em;
+    }
+}
