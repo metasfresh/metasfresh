@@ -35,7 +35,6 @@ class PickStepButton extends PureComponent {
     const {
       lineId,
       locatorName,
-      productName,
       uom,
       pickStepState: { qtyPicked, completeStatus },
       qtyToPick,
@@ -63,9 +62,6 @@ class PickStepButton extends PureComponent {
                   <span className="has-text-weight-bold">
                     {qtyPicked} {uom}
                   </span>
-                </div>
-                <div className="row is-full is-size-7">
-                  {counterpart.translate('general.Product')}: {productName}
                 </div>
               </div>
             </div>
