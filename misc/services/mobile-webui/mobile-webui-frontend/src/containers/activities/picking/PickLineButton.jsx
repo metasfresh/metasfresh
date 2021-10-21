@@ -20,6 +20,7 @@ class PickLineButton extends Component {
         {
           caption: counterpart.translate('activities.picking.PickingLine'),
           value: caption,
+          bold: true,
         },
       ],
     });
