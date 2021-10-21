@@ -155,7 +155,7 @@ public class C_OrderLine
 			})
 	public void updatePrice(final I_C_OrderLine orderLine)
 	{
-		if (!orderLine.isManualDiscount() && orderLine.getC_Flatrate_Conditions_ID() > 0)
+		if (!orderLine.isManualDiscount())
 		{
 			orderLineBL.updatePrices(orderLine);
 		}
