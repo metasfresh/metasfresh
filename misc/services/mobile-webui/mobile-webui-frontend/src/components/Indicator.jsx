@@ -11,10 +11,8 @@ class Indicator extends Component {
         return 'indicator-green';
       case CompleteStatus.IN_PROGRESS:
         return 'indicator-yellow';
-      case CompleteStatus.HIDDEN:
-        return '';
       default:
-        return 'indicator-red';
+        return '';
     }
   }
 
