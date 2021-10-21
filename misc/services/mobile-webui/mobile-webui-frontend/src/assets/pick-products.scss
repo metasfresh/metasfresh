@@ -27,6 +27,37 @@
 
 .picking-step-container {}
 
+.picking-row-info {
+  width: 100%;
+}
+
+.picking-to-pick {
+  padding-top: 5px;
+  text-align: right;
+  float: left;
+  width: 25%;
+}
+
+.picking-row-qty {
+  float: left;
+  width: 25%;
+  font-size: 1.5em;
+}
+
+.picking-row-picking {
+  padding-top: 5px;
+  text-align: right;
+  float: left;
+  width: 25%;
+}
+
+.picking-row-picked {
+  float: left;
+  width: 25%;
+  font-size: 1.5em;
+}
+
+
 .pickgoback-btn-green {
   width: 8em;
   color: white;
@@ -53,3 +84,4 @@
 .lines-screen-container {
 }
 .wf-process-container {}
+
