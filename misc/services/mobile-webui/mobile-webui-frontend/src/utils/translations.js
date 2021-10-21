@@ -35,8 +35,8 @@ export const setupCounterpart = () => {
         confirmDone: 'Done',
         rejectedPrompt: 'There are %(qtyRejected)s %(uom)s not picked. Why ?',
         unPickBtn: 'Unpick',
-        toPick: 'To Pick:',
-        picked: 'Picked:',
+        toPick: 'To Pick',
+        picked: 'Picked',
       },
       confirmButton: {
         default: {
@@ -75,8 +75,8 @@ export const setupCounterpart = () => {
         confirmDone: 'Done',
         rejectedPrompt: 'There are %(qtyRejected)s %(uom)s not picked. Why ?',
         unPickBtn: 'Unpick',
-        toPick: 'To Pick:',
-        picked: 'Picked:',
+        toPick: 'To Pick',
+        picked: 'Picked',
       },
       confirmButton: {
         default: {

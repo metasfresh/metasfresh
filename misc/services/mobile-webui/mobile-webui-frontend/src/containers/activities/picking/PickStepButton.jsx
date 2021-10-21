@@ -55,11 +55,11 @@ class PickStepButton extends PureComponent {
                 <div className="row is-full pl-5">{locatorName}</div>
                 <div className="row is-full is-size-7">
                   <div className="picking-row-info">
-                    <div className="picking-to-pick">{counterpart.translate('activities.picking.toPick')}</div>
+                    <div className="picking-to-pick">{counterpart.translate('activities.picking.toPick')}:</div>
                     <div className="picking-row-qty">
                       {qtyToPick} {uom}
                     </div>
-                    <div className="picking-row-picking">{counterpart.translate('activities.picking.picked')}</div>
+                    <div className="picking-row-picking">{counterpart.translate('activities.picking.picked')}:</div>
                     <div className="picking-row-picked">
                       {qtyPicked} {uom}
                     </div>
