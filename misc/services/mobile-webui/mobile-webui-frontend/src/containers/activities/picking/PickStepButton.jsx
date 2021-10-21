@@ -58,7 +58,7 @@ class PickStepButton extends PureComponent {
                   <span className="is-size-4">
                     {qtyToPick} {uom}
                   </span>{' '}
-                  Picked:{' '}
+                  <span className="is-size-6">Picked: </span>
                   <span className="is-size-4">
                     {qtyPicked} {uom}
                   </span>
