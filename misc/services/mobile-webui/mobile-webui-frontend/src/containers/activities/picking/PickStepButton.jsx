@@ -24,7 +24,6 @@ class PickStepButton extends PureComponent {
         {
           caption: counterpart.translate('general.Locator'),
           value: locatorName,
-          bold: true,
         },
       ],
     });
