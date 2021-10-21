@@ -103,7 +103,7 @@ class PickStepScreen extends Component {
               disabled={nothingPicked}
               onClick={this.onUnpickButtonClick}
             >
-              <ButtonWithIndicator caption="Unpick" completeStatus="" />
+              <ButtonWithIndicator caption="Unpick" />
             </button>
           </div>
           <ScreenToaster />

@@ -9,9 +9,11 @@ class ButtonWithIndicator extends PureComponent {
       <div className="full-size-btn">
         <div className="left-btn-side" />
         <div className="caption-btn">{caption}</div>
-        <div className="right-btn-side">
-          <Indicator completeStatus={completeStatus} />
-        </div>
+        {completeStatus && (
+          <div className="right-btn-side">
+            <Indicator completeStatus={completeStatus} />
+          </div>
+        )}
       </div>
     );
   }
