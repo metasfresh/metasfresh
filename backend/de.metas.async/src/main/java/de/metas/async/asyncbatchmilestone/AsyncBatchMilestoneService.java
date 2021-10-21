@@ -27,15 +27,18 @@ import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.api.IAsyncBatchDAO;
 import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.model.I_C_Queue_WorkPackage;
+import de.metas.async.model.validator.C_Queue_WorkPackage;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.function.Supplier;
 
 @Service
-public class AsyncBathMilestoneService
+public class AsyncBatchMilestoneService
 {
 	private final IAsyncBatchDAO asyncBatchDAO = Services.get(IAsyncBatchDAO.class);
 	private final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
@@ -43,7 +46,7 @@ public class AsyncBathMilestoneService
 	private final AsyncBatchMilestoneObserver asyncBatchMilestoneObserver;
 	private final AsyncBatchMilestoneRepo asyncBatchMilestoneRepo;
 
-	public AsyncBathMilestoneService(
+	public AsyncBatchMilestoneService(
 			@NonNull final AsyncBatchMilestoneObserver asyncBatchMilestoneObserver,
 			@NonNull final AsyncBatchMilestoneRepo asyncBatchMilestoneRepo)
 	{
@@ -93,5 +96,38 @@ public class AsyncBathMilestoneService
 				asyncBatchMilestoneObserver.notifyMilestoneProcessedFor(milestone.getIdNotNull(), workPackagesWithErrorCount <= 0);
 			}
 		}
+	}
+
+	/**
+	 * Enqueues and waits for the workpackages to finish, successfully or exceptionally.
+	 * It's mandatory for the given Supplier<> to enqueue workpackages previously assigned to the given async batch.
+	 *
+	 * @param supplier      Supplier<>
+	 * @param asyncBatchId  C_Async_Batch_ID
+	 * @param milestoneName C_Async_Batch_Milestone.Name
+	 * @param <T>           model type
+	 * @return model type of supplier
+	 * @see C_Queue_WorkPackage#processMilestoneFromWP(de.metas.async.model.I_C_Queue_WorkPackage)
+	 */
+	public <T> T executeMilestone(
+			@NonNull final Supplier<T> supplier,
+			@NonNull final AsyncBatchId asyncBatchId,
+			@NonNull final MilestoneName milestoneName)
+	{
+		final AsyncBatchMilestone asyncBatchMilestone = AsyncBatchMilestone.builder()
+				.asyncBatchId(asyncBatchId)
+				.orgId(Env.getOrgId())
+				.milestoneName(milestoneName)
+				.build();
+
+		final AsyncBatchMilestoneId milestoneId = save(asyncBatchMilestone).getIdNotNull();
+
+		asyncBatchMilestoneObserver.observeOn(milestoneId);
+
+		final T result = supplier.get();
+
+		asyncBatchMilestoneObserver.waitToBeProcessed(milestoneId);
+
+		return result;
 	}
 }

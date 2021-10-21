@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.business.rest-api-impl
+ * de.metas.salescandidate.base
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,17 +20,13 @@
  * #L%
  */
 
-package de.metas.rest_api.v2.ordercandidates.impl;
+package de.metas.ordercandidate.service;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IAsyncBatchBL;
-import de.metas.async.asyncbatchmilestone.AsyncBatchMilestone;
-import de.metas.async.asyncbatchmilestone.AsyncBatchMilestoneId;
-import de.metas.async.asyncbatchmilestone.AsyncBatchMilestoneObserver;
-import de.metas.async.asyncbatchmilestone.AsyncBathMilestoneService;
-import de.metas.async.asyncbatchmilestone.MilestoneName;
+import de.metas.async.asyncbatchmilestone.AsyncBatchMilestoneService;
 import de.metas.order.OrderId;
 import de.metas.ordercandidate.api.IOLCandDAO;
 import de.metas.ordercandidate.api.OLCandId;
@@ -40,7 +36,6 @@ import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -49,28 +44,27 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import static de.metas.async.Async_Constants.C_Async_Batch_InternalName_OLCand_Processing;
 import static de.metas.async.Async_Constants.C_OlCandProcessor_ID_Default;
+import static de.metas.async.asyncbatchmilestone.MilestoneName.SALES_ORDER_CREATION;
 
 @Service
 public class OrderService
 {
-	private final IOLCandDAO olCandDAO = Services.get(IOLCandDAO.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final IOLCandDAO olCandDAO = Services.get(IOLCandDAO.class);
 	private final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
 
-	private final AsyncBathMilestoneService asyncBathMilestoneService;
-	private final AsyncBatchMilestoneObserver asyncBatchMilestoneObserver;
+	private final AsyncBatchMilestoneService asyncBatchMilestoneService;
 	private final C_OLCandToOrderEnqueuer olCandToOrderEnqueuer;
 
 	public OrderService(
-			@NonNull final AsyncBathMilestoneService asyncBathMilestoneService,
-			@NonNull final AsyncBatchMilestoneObserver asyncBatchMilestoneObserver,
+			@NonNull final AsyncBatchMilestoneService asyncBatchMilestoneService,
 			@NonNull final C_OLCandToOrderEnqueuer olCandToOrderEnqueuer)
 	{
-		this.asyncBathMilestoneService = asyncBathMilestoneService;
-		this.asyncBatchMilestoneObserver = asyncBatchMilestoneObserver;
+		this.asyncBatchMilestoneService = asyncBatchMilestoneService;
 		this.olCandToOrderEnqueuer = olCandToOrderEnqueuer;
 	}
 
@@ -90,24 +84,6 @@ public class OrderService
 				.collect(ImmutableSet.toImmutableSet());
 
 		return olCandDAO.getOrderIdsByOLCandIds(olCandIds);
-	}
-
-	private void generateOrdersForBatch(@NonNull final AsyncBatchId asyncBatchId)
-	{
-		final AsyncBatchMilestone asyncBatchMilestone = AsyncBatchMilestone.builder()
-				.asyncBatchId(asyncBatchId)
-				.orgId(Env.getOrgId())
-				.milestoneName(MilestoneName.SALES_ORDER_CREATION)
-				.build();
-
-		final AsyncBatchMilestoneId milestoneId = asyncBathMilestoneService.save(asyncBatchMilestone).getIdNotNull();
-
-		asyncBatchMilestoneObserver.observeOn(milestoneId);
-
-		trxManager.runInNewTrx(
-				() -> olCandToOrderEnqueuer.enqueue(C_OlCandProcessor_ID_Default, asyncBatchId));
-
-		asyncBatchMilestoneObserver.waitToBeProcessed(milestoneId);
 	}
 
 	@NonNull
@@ -143,5 +119,16 @@ public class OrderService
 				});
 
 		return ImmutableMap.copyOf(asyncBatchId2OLCands);
+	}
+
+	private void generateOrdersForBatch(@NonNull final AsyncBatchId asyncBatchId)
+	{
+		final Supplier<Void> action = () -> {
+			trxManager.runInNewTrx(
+					() -> olCandToOrderEnqueuer.enqueue(C_OlCandProcessor_ID_Default, asyncBatchId));
+			return null;
+		};
+
+		asyncBatchMilestoneService.executeMilestone(action, asyncBatchId, SALES_ORDER_CREATION);
 	}
 }

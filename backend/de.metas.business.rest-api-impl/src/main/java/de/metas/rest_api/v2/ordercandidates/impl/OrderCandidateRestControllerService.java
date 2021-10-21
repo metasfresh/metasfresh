@@ -42,6 +42,7 @@ import de.metas.impex.InputDataSourceId;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.InvoiceService;
 import de.metas.monitoring.adapter.PerformanceMonitoringService;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
@@ -53,11 +54,12 @@ import de.metas.ordercandidate.api.OLCandRepository;
 import de.metas.ordercandidate.api.OLCandValidationResult;
 import de.metas.ordercandidate.api.OLCandValidatorService;
 import de.metas.ordercandidate.model.I_C_OLCand;
+import de.metas.ordercandidate.service.OrderService;
 import de.metas.organization.OrgId;
 import de.metas.rest_api.utils.IdentifierString;
-import de.metas.rest_api.v2.invoice.impl.InvoiceService;
 import de.metas.rest_api.v2.invoice.impl.JSONInvoiceInfoResponse;
-import de.metas.rest_api.v2.shipping.ShipmentService;
+import de.metas.rest_api.v2.invoice.impl.JsonInvoiceService;
+import de.metas.rest_api.v2.shipping.JsonShipmentService;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.web.exception.MissingResourceException;
@@ -91,9 +93,10 @@ public class OrderCandidateRestControllerService
 	private final PerformanceMonitoringService perfMonService;
 	private final AlbertaOrderService albertaOrderService;
 	private final OLCandValidatorService olCandValidatorService;
-	private final ShipmentService shipmentService;
 	private final InvoiceService invoiceService;
 	private final OrderService orderService;
+	private final JsonInvoiceService jsonInvoiceService;
+	private final JsonShipmentService jsonShipmentService;
 
 	public OrderCandidateRestControllerService(
 			@NonNull final JsonConverters jsonConverters,
@@ -101,18 +104,20 @@ public class OrderCandidateRestControllerService
 			@NonNull final PerformanceMonitoringService perfMonService,
 			@NonNull final AlbertaOrderService albertaOrderService,
 			@NonNull final OLCandValidatorService olCandValidatorService,
-			@NonNull final ShipmentService shipmentService,
 			@NonNull final InvoiceService invoiceService,
-			@NonNull final OrderService orderService)
+			@NonNull final OrderService orderService,
+			@NonNull final JsonShipmentService jsonShipmentService,
+			@NonNull final JsonInvoiceService jsonInvoiceService)
 	{
 		this.jsonConverters = jsonConverters;
 		this.olCandRepo = olCandRepo;
 		this.perfMonService = perfMonService;
 		this.albertaOrderService = albertaOrderService;
 		this.olCandValidatorService = olCandValidatorService;
-		this.shipmentService = shipmentService;
 		this.invoiceService = invoiceService;
 		this.orderService = orderService;
+		this.jsonShipmentService = jsonShipmentService;
+		this.jsonInvoiceService = jsonInvoiceService;
 	}
 
 	public JsonOLCandCreateBulkResponse creatOrderLineCandidatesBulk(
@@ -289,9 +294,9 @@ public class OrderCandidateRestControllerService
 
 		if (request.getShip())
 		{
-			final Set<InOutId> createdShipmentIds = shipmentService.generateShipmentsForOLCands(asyncBatchId2OLCandIds);
+			final Set<InOutId> createdShipmentIds = jsonShipmentService.generateShipmentsForOLCands(asyncBatchId2OLCandIds);
 
-			responseBuilder.shipmentResponse(shipmentService.buildCreateShipmentResponse(createdShipmentIds));
+			responseBuilder.shipmentResponse(jsonShipmentService.buildCreateShipmentResponse(createdShipmentIds));
 		}
 
 		if (request.getInvoice())
@@ -301,7 +306,7 @@ public class OrderCandidateRestControllerService
 			final Set<InvoiceId> invoiceIds = invoiceService.generateInvoicesFromShipmentLines(shipmentLines);
 
 			final List<JSONInvoiceInfoResponse> invoiceInfoResponses = invoiceIds.stream()
-					.map(invoiceId -> invoiceService.getInvoiceInfo(invoiceId, Env.getAD_Language()))
+					.map(invoiceId -> jsonInvoiceService.getInvoiceInfo(invoiceId, Env.getAD_Language()))
 					.collect(ImmutableList.toImmutableList());
 
 			responseBuilder.invoiceInfoResponse(invoiceInfoResponses);
