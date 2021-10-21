@@ -54,12 +54,13 @@ class PickStepButton extends PureComponent {
               <div className="rows">
                 <div className="row is-full">{locatorName}</div>
                 <div className="row is-full is-size-7">
-                  To Pick:{' '}
-                  <span className="has-text-weight-bold">
+                  <span className="is-size-6">To Pick: </span>
+                  <span className="is-size-4">
                     {qtyToPick} {uom}
                   </span>{' '}
+                  <span>To Pick: </span>
                   Picked:{' '}
-                  <span className="has-text-weight-bold">
+                  <span className="is-size-4">
                     {qtyPicked} {uom}
                   </span>
                 </div>
