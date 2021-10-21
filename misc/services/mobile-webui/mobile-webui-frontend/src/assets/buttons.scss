@@ -42,6 +42,9 @@
     width:90%;
     float: left;
     text-align: center;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space:nowrap
 }
 .left-btn-side {
     width: 5%;
