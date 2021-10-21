@@ -149,15 +149,4 @@ public class C_OrderLine
 			subscriptionBL.updateQtysAndPrices(orderLine, soTrx, true);
 		}
 	}
-
-	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE,
-			ifColumnsChanged = { de.metas.interfaces.I_C_OrderLine.COLUMNNAME_IsManualDiscount
-			})
-	public void updatePrice(final I_C_OrderLine orderLine)
-	{
-		if (!orderLine.isManualDiscount())
-		{
-			orderLineBL.updatePrices(orderLine);
-		}
-	}
 }
