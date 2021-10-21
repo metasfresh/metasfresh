@@ -74,6 +74,7 @@ class PickStepScreen extends Component {
       : counterpart.translate('activities.picking.scanHUBarcode');
 
     const scanButtonStatus = isValidCode ? CompleteStatus.COMPLETED : CompleteStatus.NOT_STARTED;
+    const nothingPicked = !isValidCode || !qtyPicked;
 
     return (
       <div className="pt-3 section picking-step-container">
@@ -99,10 +100,10 @@ class PickStepScreen extends Component {
           <div className="mt-5">
             <button
               className="button is-outlined complete-btn"
-              disabled={!isValidCode || qtyPicked === 0 || qtyPicked === ''}
+              disabled={nothingPicked}
               onClick={this.onUnpickButtonClick}
             >
-              <ButtonWithIndicator caption="Unpick" completeStatus={CompleteStatus.HIDDEN} />
+              <ButtonWithIndicator caption="Unpick" completeStatus="" />
             </button>
           </div>
           <ScreenToaster />
