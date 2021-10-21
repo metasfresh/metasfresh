@@ -51,6 +51,7 @@ public class PickingPlanLine
 
 	//
 	// From where to pick?
+	// ... or where to issue?
 	@Nullable PickFromHU pickFromHU;
 	@Nullable PickFromPickingOrder pickFromPickingOrder;
 	@Nullable IssueToBOMLine issueToBOMLine;
