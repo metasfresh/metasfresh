@@ -80,12 +80,13 @@ public class AllAvailableSingletonServicesTest
 			.skipServiceInterface(de.metas.ordercandidate.api.IOLCandBL.class, "spring component")
 			.skipServiceInterface(de.metas.payment.esr.api.IESRBPBankAccountBL.class, "spring component")
 			.skipServiceInterface(de.metas.payment.esr.api.IESRImportBL.class, "spring component")
-			.skipServiceInterface(de.metas.printing.api.IPrintPackageBL.class,"spring component")
+			.skipServiceInterface(de.metas.printing.api.IPrintPackageBL.class, "spring component")
 			.skipServiceInterface(de.metas.procurement.base.IAgentSyncBL.class, "spring component")
 			.skipServiceInterface(de.metas.procurement.base.IServerSyncBL.class, "spring component")
 			.skipServiceInterface(de.metas.hostkey.spi.IHttpSessionProvider.class, "implementation is registered in de.metas.ui.web.base project")
+			.skipServiceInterface(de.metas.handlingunits.ddorder.IHUDDOrderBL.class, "spring component")
 			//
-	;
+			;
 
 	@BeforeEach
 	public void beforeEach()
