@@ -43,11 +43,15 @@ class PickLineButton extends Component {
                 <div className="row is-full pl-5">{caption}</div>
                 <div className="row is-full is-size-7">
                   <div className="picking-row-info">
-                    <div className="picking-to-pick">To Pick:</div>
+                    <div className="picking-to-pick">
+                      {counterpart.translate('activities.picking.pickingBtn.toPick')}:
+                    </div>
                     <div className="picking-row-qty">
                       {qtyToPick} {uom}
                     </div>
-                    <div className="picking-row-picking">Picked:</div>
+                    <div className="picking-row-picking">
+                      {counterpart.translate('activities.picking.pickingBtn.toPick')}:
+                    </div>
                     <div className="picking-row-picked">
                       {qtyPicked} {uom}
                     </div>
