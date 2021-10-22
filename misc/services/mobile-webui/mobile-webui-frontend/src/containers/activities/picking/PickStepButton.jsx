@@ -2,16 +2,13 @@ import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { push } from 'connected-react-router';
+import counterpart from 'counterpart';
+
 import { pushHeaderEntry } from '../../../actions/HeaderActions';
 import Indicator from '../../../components/Indicator';
-import counterpart from 'counterpart';
 import * as CompleteStatus from '../../../constants/CompleteStatus';
 
 class PickStepButton extends PureComponent {
-  constructor(props) {
-    super(props);
-  }
-
   handleClick = () => {
     const { wfProcessId, activityId, lineId, stepId, locatorName } = this.props;
     const { push, pushHeaderEntry } = this.props;
