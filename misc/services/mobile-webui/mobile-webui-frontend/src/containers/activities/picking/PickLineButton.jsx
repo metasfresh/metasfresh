@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import { push } from 'connected-react-router';
 import { pushHeaderEntry } from '../../../actions/HeaderActions';
 
-import ButtonWithIndicator from '../../../components/ButtonWithIndicator';
+import Indicator from '../../../components/Indicator';
 import counterpart from 'counterpart';
 
 class PickLineButton extends Component {
@@ -26,7 +26,8 @@ class PickLineButton extends Component {
   };
 
   render() {
-    const { lineId, caption, isUserEditable, completeStatus } = this.props;
+    const { lineId, caption, uom, qtyPicked, qtyToPick, isUserEditable, completeStatus } = this.props;
+
     return (
       <div className="buttons">
         <button
@@ -35,7 +36,29 @@ class PickLineButton extends Component {
           disabled={!isUserEditable}
           onClick={this.handleClick}
         >
-          <ButtonWithIndicator caption={caption} completeStatus={completeStatus} />
+          <div className="full-size-btn">
+            <div className="left-btn-side" />
+            <div className="caption-btn">
+              <div className="rows">
+                <div className="row is-full pl-5">{caption}</div>
+                <div className="row is-full is-size-7">
+                  <div className="picking-row-info">
+                    <div className="picking-to-pick">To Pick:</div>
+                    <div className="picking-row-qty">
+                      {qtyToPick} {uom}
+                    </div>
+                    <div className="picking-row-picking">Picked:</div>
+                    <div className="picking-row-picked">
+                      {qtyPicked} {uom}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="right-btn-side pt-4">
+              <Indicator completeStatus={completeStatus} />
+            </div>
+          </div>
         </button>
       </div>
     );
@@ -51,6 +74,9 @@ PickLineButton.propTypes = {
   caption: PropTypes.string.isRequired,
   isUserEditable: PropTypes.bool.isRequired,
   completeStatus: PropTypes.string.isRequired,
+  uom: PropTypes.string.isRequired,
+  qtyPicked: PropTypes.number.isRequired,
+  qtyToPick: PropTypes.number.isRequired,
   //
   // Actions
   push: PropTypes.func.isRequired,

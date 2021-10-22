@@ -1,6 +1,8 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
+
 import Indicator from './Indicator';
+
 class ButtonWithIndicator extends PureComponent {
   render() {
     const { caption, completeStatus } = this.props;
