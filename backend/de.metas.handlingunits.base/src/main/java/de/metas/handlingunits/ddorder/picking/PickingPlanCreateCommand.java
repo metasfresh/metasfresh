@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
-import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.storage.IHUStorageFactory;
@@ -31,7 +30,6 @@ import org.eevolution.model.I_DD_OrderLine;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 
 public class PickingPlanCreateCommand
 {
