@@ -10,27 +10,29 @@ package de.metas.tourplanning.integrationtest;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-import java.math.BigDecimal;
-
-import org.adempiere.model.InterfaceWrapperHelper;
-
+import de.metas.handlingunits.ddorder.impl.HUDDOrderBL;
+import de.metas.handlingunits.ddorder.picking.DDOrderPickFromRepository;
+import de.metas.handlingunits.ddorder.picking.DDOrderPickFromService;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.tourplanning.model.I_M_DeliveryDay_Alloc;
 import de.metas.handlingunits.tourplanning.spi.impl.HUShipmentScheduleDeliveryDayHandlerTest;
 import de.metas.inoutcandidate.picking_bom.PickingBOMService;
 import de.metas.tourplanning.model.I_M_DeliveryDay;
+import org.adempiere.model.InterfaceWrapperHelper;
+
+import java.math.BigDecimal;
 
 public class HU_TourInstance_DeliveryDay_ShipmentSchedule_IntegrationTest extends TourInstance_DeliveryDay_ShipmentSchedule_IntegrationTest
 {
@@ -39,7 +41,12 @@ public class HU_TourInstance_DeliveryDay_ShipmentSchedule_IntegrationTest extend
 	{
 		super.afterInit();
 
-		new de.metas.handlingunits.model.validator.Main(new PickingBOMService()).setupTourPlanning();
+		final DDOrderPickFromService ddOrderPickFromService = new DDOrderPickFromService(new DDOrderPickFromRepository());
+		final HUDDOrderBL huDDOrderBL = new HUDDOrderBL(ddOrderPickFromService);
+		new de.metas.handlingunits.model.validator.Main(
+				ddOrderPickFromService,
+				huDDOrderBL,
+				new PickingBOMService()).setupTourPlanning();
 	}
 
 	@Override
@@ -58,7 +65,7 @@ public class HU_TourInstance_DeliveryDay_ShipmentSchedule_IntegrationTest extend
 
 	@Override
 	protected I_M_DeliveryDay_Alloc assertDeliveryDayAlloc(final I_M_DeliveryDay deliveryDayExpected,
-			final de.metas.tourplanning.model.I_M_ShipmentSchedule shipmentSchedule)
+														   final de.metas.tourplanning.model.I_M_ShipmentSchedule shipmentSchedule)
 	{
 		final de.metas.tourplanning.model.I_M_DeliveryDay_Alloc alloc = super.assertDeliveryDayAlloc(
 				deliveryDayExpected,

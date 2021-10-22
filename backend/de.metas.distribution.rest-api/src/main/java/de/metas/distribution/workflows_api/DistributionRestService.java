@@ -23,13 +23,15 @@ import java.util.stream.Stream;
 @Service
 public class DistributionRestService
 {
-	private final IHUDDOrderBL ddOrderBL = Services.get(IHUDDOrderBL.class);
+	private final IHUDDOrderBL ddOrderBL;
 	private final DDOrderPickFromService ddOrderPickFromService;
 	private final DistributionJobLoaderSupportingServices loadingSupportServices;
 
 	public DistributionRestService(
+			@NonNull final IHUDDOrderBL ddOrderBL,
 			@NonNull final DDOrderPickFromService ddOrderPickFromService)
 	{
+		this.ddOrderBL = ddOrderBL;
 		this.ddOrderPickFromService = ddOrderPickFromService;
 
 		this.loadingSupportServices = DistributionJobLoaderSupportingServices.builder()

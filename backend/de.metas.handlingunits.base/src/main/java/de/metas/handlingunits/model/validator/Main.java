@@ -22,24 +22,6 @@ package de.metas.handlingunits.model.validator;
  * #L%
  */
 
-import java.util.Arrays;
-
-import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
-import org.adempiere.ad.dao.impl.EqualsQueryFilter;
-import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
-import org.adempiere.ad.modelvalidator.IModelValidationEngine;
-import org.adempiere.ad.ui.api.ITabCalloutFactory;
-import org.adempiere.mm.attributes.spi.impl.WeightGenerateHUTrxListener;
-import org.adempiere.ui.api.IGridTabSummaryInfoFactory;
-import org.adempiere.util.agg.key.IAggregationKeyRegistry;
-import org.compiere.apps.search.dao.IInvoiceHistoryDAO;
-import org.compiere.apps.search.dao.impl.HUInvoiceHistoryDAO;
-import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_I_Inventory;
-import org.eevolution.model.I_DD_OrderLine;
-import org.springframework.stereotype.Component;
-
 import de.metas.adempiere.callout.OrderFastInput;
 import de.metas.adempiere.gui.search.impl.HUOrderFastInputHandler;
 import de.metas.cache.CacheMgt;
@@ -47,6 +29,8 @@ import de.metas.cache.model.IModelCacheService;
 import de.metas.cache.model.ITableCacheConfig.TrxLevel;
 import de.metas.cache.model.ITableCacheConfigBuilder;
 import de.metas.handlingunits.IHUDocumentHandlerFactory;
+import de.metas.handlingunits.ddorder.IHUDDOrderBL;
+import de.metas.handlingunits.ddorder.picking.DDOrderPickFromService;
 import de.metas.handlingunits.ddorder.spi.impl.DDOrderLineHUDocumentHandler;
 import de.metas.handlingunits.ddorder.spi.impl.ForecastLineHUDocumentHandler;
 import de.metas.handlingunits.document.IHUDocumentFactoryService;
@@ -98,23 +82,47 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.materialtracking.IMaterialTrackingBL;
 import de.metas.materialtracking.spi.IHandlingUnitsInfoFactory;
 import de.metas.materialtracking.spi.IPPOrderMInOutLineRetrievalService;
-import de.metas.order.invoicecandidate.IC_OrderLine_HandlerDAO;
 import de.metas.order.createFrom.po_from_so.IC_Order_CreatePOFromSOsBL;
 import de.metas.order.createFrom.po_from_so.IC_Order_CreatePOFromSOsDAO;
+import de.metas.order.invoicecandidate.IC_OrderLine_HandlerDAO;
 import de.metas.pricing.attributebased.impl.AttributePricing;
 import de.metas.pricing.service.ProductPrices;
 import de.metas.storage.IStorageEngineService;
 import de.metas.tourplanning.api.IDeliveryDayBL;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
+import org.adempiere.ad.dao.impl.EqualsQueryFilter;
+import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
+import org.adempiere.ad.modelvalidator.IModelValidationEngine;
+import org.adempiere.ad.ui.api.ITabCalloutFactory;
+import org.adempiere.mm.attributes.spi.impl.WeightGenerateHUTrxListener;
+import org.adempiere.ui.api.IGridTabSummaryInfoFactory;
+import org.adempiere.util.agg.key.IAggregationKeyRegistry;
+import org.compiere.apps.search.dao.IInvoiceHistoryDAO;
+import org.compiere.apps.search.dao.impl.HUInvoiceHistoryDAO;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_I_Inventory;
+import org.eevolution.model.I_DD_OrderLine;
+import org.springframework.stereotype.Component;
+
+import java.util.Arrays;
 
 @Component
 public final class Main extends AbstractModuleInterceptor
 {
+	private final DDOrderPickFromService ddOrderPickFromService;
+	private final IHUDDOrderBL huDDOrderBL;
 	private final PickingBOMService pickingBOMService;
 
-	public Main(@NonNull final PickingBOMService pickingBOMService)
+	public Main(
+			@NonNull final DDOrderPickFromService ddOrderPickFromService,
+			@NonNull final IHUDDOrderBL huDDOrderBL,
+			@NonNull final PickingBOMService pickingBOMService)
 	{
+		this.ddOrderPickFromService = ddOrderPickFromService;
+		this.huDDOrderBL = huDDOrderBL;
 		this.pickingBOMService = pickingBOMService;
 	}
 
@@ -125,8 +133,8 @@ public final class Main extends AbstractModuleInterceptor
 		engine.addModelValidator(new de.metas.handlingunits.model.validator.M_HU_PI_Version());
 		engine.addModelValidator(new de.metas.handlingunits.model.validator.M_HU_PI_Item());
 		engine.addModelValidator(new de.metas.handlingunits.model.validator.C_OrderLine());
-		engine.addModelValidator(new de.metas.handlingunits.model.validator.DD_Order());
-		engine.addModelValidator(new de.metas.handlingunits.model.validator.DD_OrderLine());
+		engine.addModelValidator(new de.metas.handlingunits.model.validator.DD_Order(ddOrderPickFromService, huDDOrderBL));
+		engine.addModelValidator(new de.metas.handlingunits.model.validator.DD_OrderLine(ddOrderPickFromService));
 		engine.addModelValidator(new de.metas.handlingunits.model.validator.M_HU_PI_Item_Product());
 		engine.addModelValidator(new de.metas.handlingunits.model.validator.C_Order());
 		engine.addModelValidator(new de.metas.handlingunits.model.validator.C_Order_Line_Alloc());
@@ -179,7 +187,7 @@ public final class Main extends AbstractModuleInterceptor
 		// https://github.com/metasfresh/metasfresh/issues/2298
 		engine.addModelValidator(de.metas.handlingunits.picking.interceptor.M_HU.INSTANCE);
 	}
-	
+
 	@Override
 	protected void registerCallouts(@NonNull final IProgramaticCalloutProvider programaticCalloutProvider)
 	{
@@ -216,7 +224,7 @@ public final class Main extends AbstractModuleInterceptor
 		// Register GridTabSummaryInfo entries (08734) - override de.metas.swat implementation
 		final IGridTabSummaryInfoFactory gridTabSummaryInfoFactory = Services.get(IGridTabSummaryInfoFactory.class);
 		gridTabSummaryInfoFactory.register(I_C_Invoice_Candidate.Table_Name, new HUC_Invoice_Candidate_GridTabSummaryInfoProvider(), true); // forceOverride
-		
+
 		registerImportProcesses();
 	}
 
@@ -309,7 +317,7 @@ public final class Main extends AbstractModuleInterceptor
 
 	/**
 	 * Register handling unit specific factories, builders etc
-	 *
+	 * <p>
 	 * NOTE: we are doing it in a separate method because we are calling this method in JUnit tests too
 	 */
 	public void registerFactories()
@@ -432,7 +440,7 @@ public final class Main extends AbstractModuleInterceptor
 		// Register Handlers
 		keyRegistry.registerAggregationKeyValueHandler(registrationKey, new HUShipmentScheduleKeyValueHandler());
 	}
-	
+
 	private void registerImportProcesses()
 	{
 		final IImportProcessFactory importProcessesFactory = Services.get(IImportProcessFactory.class);

@@ -42,7 +42,6 @@ import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.ModelValidator;
 import org.eevolution.api.DDOrderLineId;
@@ -54,7 +53,13 @@ import java.math.BigDecimal;
 @Callout(value = I_DD_OrderLine.class, recursionAvoidanceLevel = Callout.RecursionAvoidanceLevel.CalloutMethod)
 public class DD_OrderLine
 {
-	private final DDOrderPickFromService ddOrderPickFromService = SpringContextHolder.instance.getBean(DDOrderPickFromService.class);
+	private final DDOrderPickFromService ddOrderPickFromService;
+
+	public DD_OrderLine(
+			@NonNull final DDOrderPickFromService ddOrderPickFromService)
+	{
+		this.ddOrderPickFromService = ddOrderPickFromService;
+	}
 
 	@Init
 	public void registerCallout()

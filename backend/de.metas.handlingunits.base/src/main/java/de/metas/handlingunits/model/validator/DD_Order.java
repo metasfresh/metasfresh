@@ -5,12 +5,12 @@ import de.metas.handlingunits.ddorder.IHUDDOrderBL;
 import de.metas.handlingunits.ddorder.picking.DDOrderPickFromService;
 import de.metas.request.service.async.spi.impl.C_Request_CreateFromDDOrder_Async;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.mmovement.api.IMovementBL;
 import org.adempiere.mmovement.api.IMovementDAO;
 import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Movement;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.ModelValidator;
@@ -19,8 +19,6 @@ import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
 
 import java.util.List;
-
-import static org.adempiere.model.InterfaceWrapperHelper.create;
 
 /*
  * #%L
@@ -49,11 +47,18 @@ public class DD_Order
 {
 	private final IMovementBL movementBL = Services.get(IMovementBL.class);
 	private final IMovementDAO movementDAO = Services.get(IMovementDAO.class);
-	private final IHUDDOrderBL huDDOrderBL = Services.get(IHUDDOrderBL.class);
-	private final DDOrderPickFromService ddOrderPickFromService = SpringContextHolder.instance.getBean(DDOrderPickFromService.class);
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
+	private final IHUDDOrderBL huDDOrderBL;
+	private final DDOrderPickFromService ddOrderPickFromService;
 
-	
+	public DD_Order(
+			@NonNull final DDOrderPickFromService ddOrderPickFromService,
+			@NonNull final IHUDDOrderBL huDDOrderBL)
+	{
+		this.ddOrderPickFromService = ddOrderPickFromService;
+		this.huDDOrderBL = huDDOrderBL;
+	}
+
 	@DocValidate(timings = {
 			ModelValidator.TIMING_BEFORE_REVERSEACCRUAL,
 			ModelValidator.TIMING_BEFORE_REVERSECORRECT,
@@ -67,27 +72,27 @@ public class DD_Order
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
 	public void DD_Order_Quarantine_Request(final I_DD_Order ddOrder)
 	{
-		
+
 		final List<Integer> ddOrderLineToQuarantineIds = retrieveLineToQuarantineWarehouseIds(ddOrder);
-		
+
 		C_Request_CreateFromDDOrder_Async.createWorkpackage(ddOrderLineToQuarantineIds);
 
 	}
-	
+
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_REACTIVATE, ModelValidator.TIMING_AFTER_VOID, ModelValidator.TIMING_AFTER_REVERSEACCRUAL, ModelValidator.TIMING_AFTER_REVERSECORRECT })
 	public void DD_Order_voidMovements(final I_DD_Order ddOrder)
 	{
 		// void if creating them automating is activated
 		if (huDDOrderBL.isCreateMovementOnComplete())
 		{
-			final List<I_M_Movement> movements =  movementDAO.retrieveMovementsForDDOrder(ddOrder.getDD_Order_ID());
+			final List<I_M_Movement> movements = movementDAO.retrieveMovementsForDDOrder(ddOrder.getDD_Order_ID());
 			for (final I_M_Movement movement : movements)
 			{
-				movementBL.voidMovement(movement);	
+				movementBL.voidMovement(movement);
 			}
 		}
 	}
-	
+
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
 	public void DD_Order_createMovementsIfNeeded(final I_DD_Order ddOrder)
 	{
@@ -96,8 +101,7 @@ public class DD_Order
 			huDDOrderBL.generateMovements(ddOrder);
 		}
 	}
-	
-	
+
 	private List<Integer> retrieveLineToQuarantineWarehouseIds(final I_DD_Order ddOrder)
 	{
 		return huDDOrderBL.retrieveLines(ddOrder)
