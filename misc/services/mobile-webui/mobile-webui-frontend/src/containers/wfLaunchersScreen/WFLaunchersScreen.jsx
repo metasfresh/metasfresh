@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { v4 as uuidv4 } from 'uuid';
 import PropTypes from 'prop-types';
-
+import { withRouter } from 'react-router';
 import { populateLaunchers } from '../../actions/LauncherActions';
 import { getLaunchers } from '../../api/launchers';
 import WFLauncherButton from './WFLauncherButton';
@@ -11,9 +11,9 @@ import WFLauncherButton from './WFLauncherButton';
 import * as ws from '../../utils/websocket';
 class WFLaunchersScreen extends Component {
   componentDidMount() {
-    const { populateLaunchers } = this.props;
+    const { populateLaunchers, applicationId } = this.props;
 
-    getLaunchers().then((launchers) => {
+    getLaunchers(applicationId).then((launchers) => {
       populateLaunchers(launchers);
     });
   }
@@ -66,16 +66,19 @@ WFLaunchersScreen.propTypes = {
   // Props
   launchers: PropTypes.object.isRequired,
   userToken: PropTypes.string.isRequired,
+  applicationId: PropTypes.string.isRequired,
   //
   // Actions
   populateLaunchers: PropTypes.func.isRequired,
 };
 
-const mapStateToProps = (state) => {
+const mapStateToProps = (state, { match }) => {
+  const { applicationId } = match.params;
   return {
+    applicationId,
     launchers: state.launchers,
     userToken: state.appHandler.token,
   };
 };
 
-export default connect(mapStateToProps, { populateLaunchers })(WFLaunchersScreen);
+export default withRouter(connect(mapStateToProps, { populateLaunchers })(WFLaunchersScreen));
