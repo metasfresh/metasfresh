@@ -1,5 +1,7 @@
 package de.metas.handlingunits.model;
 
+import java.math.BigDecimal;
+import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for DD_OrderLine_HU_Candidate
@@ -50,6 +52,28 @@ public interface I_DD_OrderLine_HU_Candidate
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setC_UOM_ID (int C_UOM_ID);
+
+	/**
+	 * Get UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getC_UOM_ID();
+
+	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
+
+	/**
 	 * Get Created.
 	 * Date this record was created
 	 *
@@ -73,6 +97,31 @@ public interface I_DD_OrderLine_HU_Candidate
 	int getCreatedBy();
 
 	String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
+	 * Set Distribution Order.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setDD_Order_ID (int DD_Order_ID);
+
+	/**
+	 * Get Distribution Order.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getDD_Order_ID();
+
+	org.eevolution.model.I_DD_Order getDD_Order();
+
+	void setDD_Order(org.eevolution.model.I_DD_Order DD_Order);
+
+	ModelColumn<I_DD_OrderLine_HU_Candidate, org.eevolution.model.I_DD_Order> COLUMN_DD_Order_ID = new ModelColumn<>(I_DD_OrderLine_HU_Candidate.class, "DD_Order_ID", org.eevolution.model.I_DD_Order.class);
+	String COLUMNNAME_DD_Order_ID = "DD_Order_ID";
 
 	/**
 	 * Set Distribution Order Line HU Candidate.
@@ -144,10 +193,31 @@ public interface I_DD_OrderLine_HU_Candidate
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Pick Whole HU.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsPickWholeHU (boolean IsPickWholeHU);
+
+	/**
+	 * Get Pick Whole HU.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isPickWholeHU();
+
+	ModelColumn<I_DD_OrderLine_HU_Candidate, Object> COLUMN_IsPickWholeHU = new ModelColumn<>(I_DD_OrderLine_HU_Candidate.class, "IsPickWholeHU", null);
+	String COLUMNNAME_IsPickWholeHU = "IsPickWholeHU";
+
+	/**
 	 * Set Handling Unit.
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	void setM_HU_ID (int M_HU_ID);
@@ -156,17 +226,105 @@ public interface I_DD_OrderLine_HU_Candidate
 	 * Get Handling Unit.
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	int getM_HU_ID();
 
-	de.metas.handlingunits.model.I_M_HU getM_HU();
+	@Nullable de.metas.handlingunits.model.I_M_HU getM_HU();
 
-	void setM_HU(de.metas.handlingunits.model.I_M_HU M_HU);
+	void setM_HU(@Nullable de.metas.handlingunits.model.I_M_HU M_HU);
 
 	ModelColumn<I_DD_OrderLine_HU_Candidate, de.metas.handlingunits.model.I_M_HU> COLUMN_M_HU_ID = new ModelColumn<>(I_DD_OrderLine_HU_Candidate.class, "M_HU_ID", de.metas.handlingunits.model.I_M_HU.class);
 	String COLUMNNAME_M_HU_ID = "M_HU_ID";
+
+	/**
+	 * Set Pick From HU.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setPickFrom_HU_ID (int PickFrom_HU_ID);
+
+	/**
+	 * Get Pick From HU.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getPickFrom_HU_ID();
+
+	de.metas.handlingunits.model.I_M_HU getPickFrom_HU();
+
+	void setPickFrom_HU(de.metas.handlingunits.model.I_M_HU PickFrom_HU);
+
+	ModelColumn<I_DD_OrderLine_HU_Candidate, de.metas.handlingunits.model.I_M_HU> COLUMN_PickFrom_HU_ID = new ModelColumn<>(I_DD_OrderLine_HU_Candidate.class, "PickFrom_HU_ID", de.metas.handlingunits.model.I_M_HU.class);
+	String COLUMNNAME_PickFrom_HU_ID = "PickFrom_HU_ID";
+
+	/**
+	 * Set Quantity (stock unit).
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setQtyPicked (BigDecimal QtyPicked);
+
+	/**
+	 * Get Quantity (stock unit).
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getQtyPicked();
+
+	ModelColumn<I_DD_OrderLine_HU_Candidate, Object> COLUMN_QtyPicked = new ModelColumn<>(I_DD_OrderLine_HU_Candidate.class, "QtyPicked", null);
+	String COLUMNNAME_QtyPicked = "QtyPicked";
+
+	/**
+	 * Set Qty To Pick.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setQtyToPick (BigDecimal QtyToPick);
+
+	/**
+	 * Get Qty To Pick.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getQtyToPick();
+
+	ModelColumn<I_DD_OrderLine_HU_Candidate, Object> COLUMN_QtyToPick = new ModelColumn<>(I_DD_OrderLine_HU_Candidate.class, "QtyToPick", null);
+	String COLUMNNAME_QtyToPick = "QtyToPick";
+
+	/**
+	 * Set Reject Reason.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setRejectReason (@Nullable java.lang.String RejectReason);
+
+	/**
+	 * Get Reject Reason.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getRejectReason();
+
+	ModelColumn<I_DD_OrderLine_HU_Candidate, Object> COLUMN_RejectReason = new ModelColumn<>(I_DD_OrderLine_HU_Candidate.class, "RejectReason", null);
+	String COLUMNNAME_RejectReason = "RejectReason";
 
 	/**
 	 * Get Updated.

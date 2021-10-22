@@ -60,7 +60,7 @@ public class HUWarehouseDAO implements IHUWarehouseDAO
 				.create();
 
 		final Set<WarehouseId> warehouseIds = Services.get(IQueryBL.class).createQueryBuilder(I_M_Warehouse.class, ctx, ITrx.TRXNAME_None)
-				.addEqualsFilter(org.adempiere.warehouse.model.I_M_Warehouse.COLUMNNAME_isPickingWarehouse, true)
+				.addEqualsFilter(I_M_Warehouse.COLUMNNAME_IsPickingWarehouse, true)
 				.addInSubQueryFilter(I_M_Warehouse.COLUMNNAME_M_Warehouse_ID, org.compiere.model.I_M_Locator.COLUMNNAME_M_Warehouse_ID, subQuery)
 				.addOnlyActiveRecordsFilter()
 				.create()
@@ -120,19 +120,6 @@ public class HUWarehouseDAO implements IHUWarehouseDAO
 		final Set<WarehouseId> warehouseIds = retrieveQualityReturnWarehouseIds();
 
 		return Services.get(IWarehouseDAO.class).getByIds(warehouseIds, de.metas.handlingunits.model.I_M_Warehouse.class);
-	}
-
-	@NonNull
-	public WarehouseId retrieveQuarantineWarehouseId()
-	{
-		final I_M_Warehouse warehouse = warehouseDAO.retrieveQuarantineWarehouseOrNull();
-
-		if (warehouse == null)
-		{
-			throw new AdempiereException("@NotFound@ @M_Warehouse_ID@ (@IsQuarantineWarehouse@=@Y@)");
-		}
-
-		return WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID());
 	}
 
 	public Set<WarehouseId> retrieveQualityReturnWarehouseIds()

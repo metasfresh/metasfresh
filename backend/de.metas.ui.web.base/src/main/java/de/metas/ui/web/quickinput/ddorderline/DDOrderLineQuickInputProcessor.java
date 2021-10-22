@@ -24,8 +24,8 @@ package de.metas.ui.web.quickinput.ddorderline;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HUPIItemProductId;
-import de.metas.handlingunits.ddorder.api.DDOrderLineCreateRequest;
-import de.metas.handlingunits.ddorder.api.IHUDDOrderBL;
+import de.metas.handlingunits.ddorder.DDOrderLineCreateRequest;
+import de.metas.handlingunits.ddorder.IHUDDOrderBL;
 import de.metas.product.ProductId;
 import de.metas.ui.web.quickinput.IQuickInputProcessor;
 import de.metas.ui.web.quickinput.QuickInput;

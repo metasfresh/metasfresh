@@ -35,7 +35,7 @@ import java.util.stream.Stream;
 
 public interface IDDOrderDAO extends ISingletonService
 {
-	I_DD_Order getById(int ddOrderId);
+	I_DD_Order getById(DDOrderId ddOrderId);
 
 	/**
 	 * @return active {@link I_DD_OrderLine}s

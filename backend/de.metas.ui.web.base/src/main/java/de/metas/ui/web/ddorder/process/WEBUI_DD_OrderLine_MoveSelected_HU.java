@@ -25,7 +25,7 @@ package de.metas.ui.web.ddorder.process;
 import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsDAO;
-import de.metas.handlingunits.ddorder.api.IHUDDOrderBL;
+import de.metas.handlingunits.ddorder.IHUDDOrderBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
@@ -41,17 +41,17 @@ import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.util.Services;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.SpringContextHolder;
 import org.eevolution.api.DDOrderLineId;
-import org.eevolution.api.IDDOrderDAO;
 import org.eevolution.model.I_DD_OrderLine;
 
 public class WEBUI_DD_OrderLine_MoveSelected_HU extends ViewBasedProcessTemplate implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
 	private final IViewsRepository viewsRepository = SpringContextHolder.instance.getBean(IViewsRepository.class);
-	private final IHUDDOrderBL huDDOrderBL = Services.get(IHUDDOrderBL.class);
-	private final IDDOrderDAO ddOrderDAO = Services.get(IDDOrderDAO.class);
+	private final IHUDDOrderBL ddOrderBL = Services.get(IHUDDOrderBL.class);
 	private final IHandlingUnitsDAO huDAO = Services.get(IHandlingUnitsDAO.class);
+	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 
 	private static final String PARAM_M_HU_ID = I_M_HU.COLUMNNAME_M_HU_ID;
 	@Param(parameterName = PARAM_M_HU_ID, mandatory = true)
@@ -91,19 +91,20 @@ public class WEBUI_DD_OrderLine_MoveSelected_HU extends ViewBasedProcessTemplate
 	}
 
 	@Override
-	protected String doIt() throws Exception
+	protected String doIt()
 	{
 
-		final I_DD_OrderLine selectedDDOrderLine = ddOrderDAO.getLineById(DDOrderLineId.ofRepoId(ddOrderLineId));
+		final I_DD_OrderLine selectedDDOrderLine = ddOrderBL.getLineById(DDOrderLineId.ofRepoId(ddOrderLineId));
 
 		final I_M_HU huToMove = huDAO.getById(HuId.ofRepoId(mHuID));
 
-		huDDOrderBL.createMovements()
-				.setDDOrderLines(ImmutableList.of(selectedDDOrderLine))
-				.setLocatorToIdOverride(paramLocatorToId)
-				.setDoDirectMovements(true)
-				.setFailIfCannotAllocate(true)
+		ddOrderBL.prepareAllocateAndMove()
+				.ofDDOrderLine(selectedDDOrderLine)
+				.failIfCannotAllocate()
 				.allocateHU(huToMove)
+				.thenPrepareGeneratingMovements()
+				.locatorToIdOverride(paramLocatorToId > 0 ? warehouseBL.getLocatorIdByRepoId(paramLocatorToId) : null)
+				.doDirectMovements()
 				.processWithinOwnTrx();
 
 		return MSG_OK;
@@ -165,6 +166,6 @@ public class WEBUI_DD_OrderLine_MoveSelected_HU extends ViewBasedProcessTemplate
 				.orElseThrow(() -> new AdempiereException("No DD_OrderLine was selected!"))
 				.getFieldValueAsInt(I_DD_OrderLine.COLUMNNAME_DD_OrderLine_ID, -1);
 
-		return ddOrderDAO.getLineById(DDOrderLineId.ofRepoId(selectedOrderLineId));
+		return ddOrderBL.getLineById(DDOrderLineId.ofRepoId(selectedOrderLineId));
 	}
 }

@@ -12,8 +12,8 @@ import org.compiere.model.I_M_Movement;
 import org.eevolution.model.I_DD_Order;
 import org.springframework.stereotype.Service;
 
-import de.metas.handlingunits.ddorder.api.IHUDDOrderBL;
-import de.metas.handlingunits.ddorder.api.QuarantineInOutLine;
+import de.metas.handlingunits.ddorder.IHUDDOrderBL;
+import de.metas.handlingunits.ddorder.QuarantineInOutLine;
 import de.metas.handlingunits.inout.IInOutDDOrderBL;
 import de.metas.handlingunits.inout.impl.DistributeAndMoveReceiptCreator.Result.ResultBuilder;
 import de.metas.handlingunits.model.I_M_InOutLine;
@@ -161,7 +161,7 @@ public class DistributeAndMoveReceiptCreator
 
 	@Value
 	@Builder
-	private static final class PartitionedInOutLineRecords
+	private static class PartitionedInOutLineRecords
 	{
 		@Singular("lineToQuarantine")
 		List<QuarantineInOutLine> linesToQuarantine;
@@ -178,8 +178,8 @@ public class DistributeAndMoveReceiptCreator
 		final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 
 		lines.stream()
-				.map(line -> line.getInOutLine())
-				.forEach(receiptLine -> invoiceCandBL.markInvoiceCandInDisputeForReceiptLine(receiptLine));
+				.map(QuarantineInOutLine::getInOutLine)
+				.forEach(invoiceCandBL::markInvoiceCandInDisputeForReceiptLine);
 	}
 
 	private LotNumberQuarantine getQuarantineLotNoOrNull(final I_M_InOutLine inOutLine)

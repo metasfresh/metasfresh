@@ -71,7 +71,7 @@ public class DistributionOrderDocumentReportAdvisor implements DocumentReportAdv
 			@NonNull final TableRecordReference recordRef,
 			@Nullable final PrintFormatId adPrintFormatToUseId)
 	{
-		final int ddOrderId = recordRef.getRecordIdAssumingTableName(I_DD_Order.Table_Name);
+		final DDOrderId ddOrderId = recordRef.getIdAssumingTableName(I_DD_Order.Table_Name, DDOrderId::ofRepoId);
 		final I_DD_Order ddOrder = ddOrderBL.getById(ddOrderId);
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(ddOrder.getC_BPartner_ID());
 		final I_C_BPartner bpartner = util.getBPartnerById(bpartnerId);

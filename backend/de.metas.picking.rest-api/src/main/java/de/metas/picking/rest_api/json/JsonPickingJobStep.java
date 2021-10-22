@@ -27,11 +27,13 @@ import de.metas.workflow.rest_api.controller.v2.json.JsonOpts;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 
 import java.math.BigDecimal;
 
 @Value
 @Builder
+@Jacksonized
 public class JsonPickingJobStep
 {
 	@NonNull String pickingStepId;

@@ -22,9 +22,7 @@ package org.eevolution.model.validator;
  * #L%
  */
 
-
-import java.util.List;
-
+import de.metas.util.Services;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -34,11 +32,10 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.ModelValidator;
 import org.eevolution.api.IDDOrderBL;
-import org.eevolution.api.IDDOrderDAO;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
 
-import de.metas.util.Services;
+import java.util.List;
 
 @Validator(I_DD_Order.class)
 public class DD_Order
@@ -59,11 +56,6 @@ public class DD_Order
 	 */
 	private static final String SYSCONFIG_DisableProcessForwardAndBackwardDraftDDOrders = "org.eevolution.mrp.spi.impl.DDOrderMRPSupplyProducer.DisableProcessForwardAndBackwardDraftDDOrders";
 
-	/**
-	 * Before Delete
-	 *
-	 * @return true of it can be deleted
-	 */
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
 	public void beforeDelete(final I_DD_Order ddOrder)
 	{
@@ -72,13 +64,14 @@ public class DD_Order
 			return;
 		}
 
-		final List<I_DD_OrderLine> ddOrderLines = Services.get(IDDOrderDAO.class).retrieveLines(ddOrder);
+		final List<I_DD_OrderLine> ddOrderLines = Services.get(IDDOrderBL.class).retrieveLines(ddOrder);
 		for (final I_DD_OrderLine ddOrderLine : ddOrderLines)
 		{
 			InterfaceWrapperHelper.delete(ddOrderLine);
 		}
 	}	// beforeDelete
 
+	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	private boolean isProcessForwardAndBackwaredDDOrdersAutomatically(final I_DD_Order ddOrder)
 	{
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);

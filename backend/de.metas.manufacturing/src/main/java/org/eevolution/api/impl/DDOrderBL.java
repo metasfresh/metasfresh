@@ -10,81 +10,72 @@ package org.eevolution.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
-import java.math.BigDecimal;
-import java.util.Collection;
-import java.util.List;
-import java.util.stream.Stream;
-
 import de.metas.document.engine.DocStatus;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.IQuery;
-import org.compiere.model.I_M_Forecast;
-import org.compiere.model.I_M_Locator;
-import org.compiere.model.I_M_MovementLine;
-import org.compiere.model.I_M_Warehouse;
-import org.compiere.model.I_S_Resource;
-import org.eevolution.api.DDOrderQuery;
-import org.eevolution.api.IDDOrderBL;
-import org.eevolution.api.IDDOrderDAO;
-import org.eevolution.api.IDDOrderMovementBuilder;
-import org.eevolution.model.I_DD_Order;
-import org.eevolution.model.I_DD_OrderLine;
-import org.eevolution.model.I_DD_OrderLine_Alternative;
-import org.eevolution.model.I_DD_OrderLine_Or_Alternative;
-import org.slf4j.Logger;
-
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.logging.LogManager;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.exception.NoPlantForWarehouseException;
 import de.metas.material.planning.pporder.LiberoException;
+import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.IProcessor;
 import de.metas.util.Services;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.model.IQuery;
+import org.compiere.model.I_M_Forecast;
+import org.compiere.model.I_M_Locator;
+import org.compiere.model.I_M_MovementLine;
+import org.compiere.model.I_M_Warehouse;
+import org.compiere.model.I_S_Resource;
+import org.eevolution.api.DDOrderId;
+import org.eevolution.api.IDDOrderBL;
+import org.eevolution.api.IDDOrderDAO;
+import org.eevolution.model.I_DD_Order;
+import org.eevolution.model.I_DD_OrderLine;
+import org.eevolution.model.I_DD_OrderLine_Alternative;
+import org.eevolution.model.I_DD_OrderLine_Or_Alternative;
+import org.slf4j.Logger;
+
+import java.math.BigDecimal;
+import java.util.Collection;
+import java.util.List;
 
 public class DDOrderBL implements IDDOrderBL
 {
 	private final transient Logger logger = LogManager.getLogger(getClass());
 	private final IDDOrderDAO ddOrderDAO = Services.get(IDDOrderDAO.class);
 	private final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
+	private final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
+	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
 
 	@Override
-	public I_DD_Order getById(final int ddOrderId)
+	public I_DD_Order getById(final DDOrderId ddOrderId)
 	{
 		return ddOrderDAO.getById(ddOrderId);
 	}
 
 	@Override
-	public BigDecimal getQtyToReceive(final I_DD_OrderLine ddOrderLine)
-	{
-		final I_DD_OrderLine_Or_Alternative ddOrderLineOrAlt = InterfaceWrapperHelper.create(ddOrderLine, I_DD_OrderLine_Or_Alternative.class);
-		return getQtyToReceive(ddOrderLineOrAlt);
-	}
-
-	@Override
-	public BigDecimal getQtyToReceive(final I_DD_OrderLine_Alternative ddOrderLineAlt)
-	{
-		final I_DD_OrderLine_Or_Alternative ddOrderLineOrAlt = InterfaceWrapperHelper.create(ddOrderLineAlt, I_DD_OrderLine_Or_Alternative.class);
-		return getQtyToReceive(ddOrderLineOrAlt);
-	}
-
-	@Override
-	public final BigDecimal getQtyToReceive(final I_DD_OrderLine_Or_Alternative ddOrderLineOrAlt)
+	public final Quantity getQtyToReceive(final I_DD_OrderLine_Or_Alternative ddOrderLineOrAlt)
 	{
 		// QtyOrdered: Qty that we need to move from source to target locator
 		final BigDecimal qtyOrdered = ddOrderLineOrAlt.getQtyOrdered();
@@ -92,14 +83,14 @@ public class DDOrderBL implements IDDOrderBL
 		final BigDecimal qtyDelivered = ddOrderLineOrAlt.getQtyDelivered();
 
 		// Qty (supply) on target warehouse
-		final BigDecimal qtyToReceive = qtyOrdered // Qty that we need to move
+		final BigDecimal qtyToReceiveBD = qtyOrdered // Qty that we need to move
 				.subtract(qtyDelivered); // minus: Qty that we already moved (so it's there, on hand)
 
-		return qtyToReceive;
+		return Quantitys.create(qtyToReceiveBD, UomId.ofRepoId(ddOrderLineOrAlt.getC_UOM_ID()));
 	}
 
 	@Override
-	public final BigDecimal getQtyToShip(final I_DD_OrderLine_Or_Alternative ddOrderLineOrAlt)
+	public final Quantity getQtyToShip(final I_DD_OrderLine_Or_Alternative ddOrderLineOrAlt)
 	{
 		// QtyOrdered: Qty that we need to move from source to target locator
 		final BigDecimal qtyOrdered = ddOrderLineOrAlt.getQtyOrdered();
@@ -109,17 +100,11 @@ public class DDOrderBL implements IDDOrderBL
 		final BigDecimal qtyInTransit = ddOrderLineOrAlt.getQtyInTransit();
 
 		// Qty (demand) on source warehouse
-		final BigDecimal qtyToShip = qtyOrdered // Qty that we need to move
+		final BigDecimal qtyToShipBD = qtyOrdered // Qty that we need to move
 				.subtract(qtyDelivered) // minus: Qty that we already moved (so it's there, on hand)
 				.subtract(qtyInTransit); // minus: Qty that left source locator but did not arrived yet to target locator
 
-		return qtyToShip;
-	}
-
-	@Override
-	public IDDOrderMovementBuilder createMovementBuilder()
-	{
-		return new DD_Order_MovementBuilder();
+		return Quantitys.create(qtyToShipBD, UomId.ofRepoId(ddOrderLineOrAlt.getC_UOM_ID()));
 	}
 
 	@Override
@@ -154,8 +139,6 @@ public class DDOrderBL implements IDDOrderBL
 			return;
 		}
 
-		final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
-
 		for (final I_DD_Order ddOrder : ddOrders)
 		{
 			if (DocStatus.ofCode(ddOrder.getDocStatus()).isDraftedOrInProgress())
@@ -187,18 +170,18 @@ public class DDOrderBL implements IDDOrderBL
 		//
 		// Search for Warehouse's Plant
 		final int adOrgId = ddOrderLine.getAD_Org_ID();
-		final I_M_Locator locatorFrom = ddOrderLine.getM_Locator();
-		Check.assumeNotNull(locatorFrom, "locatorFrom not null");
-		final I_M_Warehouse warehouseFrom = locatorFrom.getM_Warehouse();
+		final int fromLocatorRepoId = ddOrderLine.getM_Locator_ID();
+		final I_M_Warehouse warehouseFrom = warehouseDAO.getWarehouseByLocatorRepoId(ddOrderLine.getM_Locator_ID());
+		Check.assumeNotNull(warehouseFrom, "warehouseFrom not null");
+
 
 		try
 		{
-			final I_S_Resource plantFrom = Services.get(IProductPlanningDAO.class).findPlant(
-					adOrgId, 
-					warehouseFrom, 
-					ddOrderLine.getM_Product_ID(), 
+			return productPlanningDAO.findPlant(
+					adOrgId,
+					warehouseFrom,
+					ddOrderLine.getM_Product_ID(),
 					ddOrderLine.getM_AttributeSetInstance_ID());
-			return plantFrom;
 		}
 		catch (final NoPlantForWarehouseException e)
 		{
@@ -229,13 +212,13 @@ public class DDOrderBL implements IDDOrderBL
 
 	/**
 	 * Retrieve and process backward and forward DD Orders of given <code>ddOrder</code>.
-	 * 
+	 * <p>
 	 * Only following DD Orders will be considered
 	 * <ul>
 	 * <li>only those which are not already processed
 	 * <li>only those which are for same Plant as given <code>ddOrder</code> is
 	 * </ul>
-	 * 
+	 *
 	 * @param ddOrderProcessor processor used to process those DD Orders
 	 */
 	private void processForwardAndBackwardDraftDDOrders(final I_DD_Order ddOrder, final IProcessor<I_DD_Order> ddOrderProcessor)
@@ -357,8 +340,46 @@ public class DDOrderBL implements IDDOrderBL
 	}
 
 	@Override
-	public Stream<I_DD_Order> streamDDOrders(final DDOrderQuery query)
+	public void save(final I_DD_Order ddOrder)
 	{
-		return ddOrderDAO.streamDDOrders(query);
+		ddOrderDAO.save(ddOrder);
+	}
+
+	@Override
+	public void save(final I_DD_OrderLine ddOrderline)
+	{
+		ddOrderDAO.save(ddOrderline);
+	}
+
+	@Override
+	public void save(final I_DD_OrderLine_Or_Alternative ddOrderLineOrAlternative)
+	{
+		ddOrderDAO.save(ddOrderLineOrAlternative);
+	}
+
+	@Override
+	public List<I_DD_OrderLine> retrieveLines(final I_DD_Order order)
+	{
+		return ddOrderDAO.retrieveLines(order);
+	}
+
+	@Override
+	public List<I_DD_OrderLine_Alternative> retrieveAllAlternatives(final I_DD_OrderLine ddOrderLine)
+	{
+		return ddOrderDAO.retrieveAllAlternatives(ddOrderLine);
+	}
+
+	@Override
+	public void updateUomFromProduct(final I_DD_OrderLine ddOrderLine)
+	{
+		final ProductId productId = ProductId.ofRepoIdOrNull(ddOrderLine.getM_Product_ID());
+		if(productId == null)
+		{
+			// nothing to do
+			return;
+		}
+
+		final UomId stockingUomId = productBL.getStockUOMId(productId);
+		ddOrderLine.setC_UOM_ID(stockingUomId.getRepoId());
 	}
 }

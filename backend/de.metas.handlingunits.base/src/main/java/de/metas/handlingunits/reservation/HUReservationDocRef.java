@@ -23,7 +23,7 @@
 package de.metas.handlingunits.reservation;
 
 import de.metas.common.util.CoalesceUtil;
- import de.metas.order.OrderAndLineId;
+import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderLineId;
 import de.metas.project.ProjectId;
 import lombok.Builder;
@@ -36,10 +36,8 @@ import javax.annotation.Nullable;
 @Value
 public class HUReservationDocRef
 {
-	@Nullable
-	OrderLineId salesOrderLineId;
-	@Nullable
-	ProjectId projectId;
+	@Nullable OrderLineId salesOrderLineId;
+	@Nullable ProjectId projectId;
 
 	@Builder
 	private HUReservationDocRef(
@@ -73,4 +71,26 @@ public class HUReservationDocRef
 		return HUReservationDocRef.builder().projectId(projectId).build();
 	}
 
+	public interface CaseMappingFunction<R>
+	{
+		R salesOrderLineId(@NonNull OrderLineId salesOrderLineId);
+
+		R projectId(@NonNull ProjectId projectId);
+	}
+
+	public <R> R map(@NonNull final CaseMappingFunction<R> mappingFunction)
+	{
+		if (salesOrderLineId != null)
+		{
+			return mappingFunction.salesOrderLineId(salesOrderLineId);
+		}
+		else if (projectId != null)
+		{
+			return mappingFunction.projectId(projectId);
+		}
+		else
+		{
+			throw new IllegalStateException("Unknown state: " + this);
+		}
+	}
 }

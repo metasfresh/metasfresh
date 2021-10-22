@@ -22,9 +22,8 @@ package org.eevolution.drp.model.validator;
  * #L%
  */
 
-
-import java.util.List;
-
+import de.metas.quantity.Quantity;
+import de.metas.util.Services;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.mmovement.api.IMovementBL;
@@ -35,41 +34,36 @@ import org.compiere.model.I_M_Movement;
 import org.compiere.model.I_M_MovementLine;
 import org.compiere.model.ModelValidator;
 import org.eevolution.api.IDDOrderBL;
-import org.eevolution.api.IDDOrderDAO;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
 import org.eevolution.model.I_DD_OrderLine_Alternative;
 import org.eevolution.model.I_DD_OrderLine_Or_Alternative;
 
-import de.metas.quantity.Quantity;
-import de.metas.util.Services;
+import java.util.List;
 
 @Validator(I_M_Movement.class)
 public class M_Movement
 {
+	// services
+	private final IMovementBL movementBL = Services.get(IMovementBL.class);
+	private final IMovementDAO movementDAO = Services.get(IMovementDAO.class);
+	private final IDDOrderBL ddOrderBL = Services.get(IDDOrderBL.class);
+
 	/**
 	 * After Movement Complete, update DD_OrderLine
 	 * <ul>
 	 * <li>updates QtyInTransit
 	 * <li>updated QtyDelivered
 	 * </ul>
-	 *
-	 * @param movement
 	 */
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
 	public void afterComplete(final I_M_Movement movement)
 	{
-		// services
-		final IMovementBL movementBL = Services.get(IMovementBL.class);
-		final IMovementDAO movementDAO = Services.get(IMovementDAO.class);
-		final IDDOrderBL ddOrderBL = Services.get(IDDOrderBL.class);
-		final IDDOrderDAO ddOrdersRepo = Services.get(IDDOrderDAO.class);
-
 		if (movement.getDD_Order_ID() > 0)
 		{
 			final I_DD_Order order = movement.getDD_Order();
 			order.setIsInTransit(true);
-			ddOrdersRepo.save(order);
+			ddOrderBL.save(order);
 		}
 
 		final List<I_M_MovementLine> movementLines = movementDAO.retrieveLines(movement);
@@ -108,7 +102,7 @@ public class M_Movement
 				ddOrderLineOrAlt.setQtyDelivered(qtyDeliveredNew.toBigDecimal());
 			}
 
-			ddOrdersRepo.save(ddOrderLineOrAlt);
+			ddOrderBL.save(ddOrderLineOrAlt);
 		}
 	}
 

@@ -293,7 +293,7 @@ public class HUReservationService
 		return huReservationRepository.getByDocumentRef(documentRef);
 	}
 
-	@Builder(builderMethodName = "prepareHUQuery", builderClassName = "ReservationHUQueryBuilder")
+	@Builder(builderMethodName = "prepareHUQuery", builderClassName = "AvailableHUQueryBuilder")
 	private IHUQueryBuilder createHUQuery(
 			@NonNull final WarehouseId warehouseId,
 			@NonNull final ProductId productId,
@@ -324,7 +324,7 @@ public class HUReservationService
 		}
 		else
 		{
-			huQuery.setExcludeReservedToOtherThan(reservedToSalesOrderLineIdOrNotReservedAtAll);
+			huQuery.setExcludeReservedToOtherThan(HUReservationDocRef.ofSalesOrderLineId(reservedToSalesOrderLineIdOrNotReservedAtAll));
 		}
 
 		return huQuery;

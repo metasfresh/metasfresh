@@ -21,10 +21,11 @@ import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.Adempiere;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.TimeUtil;
-import org.eevolution.api.IDDOrderDAO;
+import org.eevolution.api.IDDOrderBL;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
 import org.eevolution.mrp.spi.impl.ddorder.DDOrderProducer;
@@ -43,6 +44,7 @@ import java.util.List;
 @Component
 public class DD_Order_PostMaterialEvent
 {
+	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 	private final ReplenishInfoRepository replenishInfoRepository;
 
 	public DD_Order_PostMaterialEvent(final ReplenishInfoRepository replenishInfoRepository)
@@ -85,7 +87,7 @@ public class DD_Order_PostMaterialEvent
 		final MaterialDispoGroupId groupIdFromDDOrderRequestedEvent = DDOrderProducer.ATTR_DDORDER_REQUESTED_EVENT_GROUP_ID.getValue(ddOrder);
 		ddOrderPojoBuilder.materialDispoGroupId(groupIdFromDDOrderRequestedEvent);
 
-		final List<I_DD_OrderLine> ddOrderLines = Services.get(IDDOrderDAO.class).retrieveLines(ddOrder);
+		final List<I_DD_OrderLine> ddOrderLines = Services.get(IDDOrderBL.class).retrieveLines(ddOrder);
 		for (final I_DD_OrderLine ddOrderLine : ddOrderLines)
 		{
 			final int durationDays = DDOrderUtil.calculateDurationDays(
@@ -96,8 +98,8 @@ public class DD_Order_PostMaterialEvent
 			final DDOrderCreatedEvent event = DDOrderCreatedEvent.builder()
 					.eventDescriptor(EventDescriptor.ofClientAndOrg(ddOrder.getAD_Client_ID(), ddOrder.getAD_Org_ID()))
 					.ddOrder(ddOrderPojoBuilder.build())
-					.fromWarehouseId(WarehouseId.ofRepoId(ddOrderLine.getM_Locator().getM_Warehouse_ID()))
-					.toWarehouseId(WarehouseId.ofRepoId(ddOrderLine.getM_LocatorTo().getM_Warehouse_ID()))
+					.fromWarehouseId(warehouseDAO.getWarehouseIdByLocatorRepoId(ddOrderLine.getM_Locator_ID()))
+					.toWarehouseId(warehouseDAO.getWarehouseIdByLocatorRepoId(ddOrderLine.getM_LocatorTo_ID()))
 					.build();
 
 			events.add(event);

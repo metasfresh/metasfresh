@@ -46,7 +46,7 @@ public interface IMovementBL extends ISingletonService
 	 */
 	Quantity getMovementQty(I_M_MovementLine movementLine, I_C_UOM uom);
 
-	void setMovementQty(I_M_MovementLine movementLine, BigDecimal movementQty, I_C_UOM uom);
+	void setMovementQty(I_M_MovementLine movementLine, Quantity movementQty);
 
 	/**
 	 * Set the correct activities (from and to) in the movement line This is, usually, the activity of the warehouses
