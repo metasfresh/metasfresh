@@ -1,5 +1,6 @@
 package de.metas.handlingunits.attribute.impl;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.HUIteratorListenerAdapter;
 import de.metas.handlingunits.HuId;
@@ -9,21 +10,28 @@ import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
+import de.metas.handlingunits.attribute.exceptions.AttributeNotFoundException;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactoryService;
 import de.metas.handlingunits.impl.HUIterator;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.logging.LogManager;
+import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeCode;
+import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeSetId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSet;
+import org.adempiere.mm.attributes.api.IAttributesBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IContextAware;
@@ -34,6 +42,7 @@ import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.util.List;
 
 public class HUAttributesBL implements IHUAttributesBL
 {
@@ -44,7 +53,9 @@ public class HUAttributesBL implements IHUAttributesBL
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IAttributeStorageFactoryService attributeStorageFactoryService = Services.get(IAttributeStorageFactoryService.class);
 	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+	private final IAttributesBL attributesBL = Services.get(IAttributesBL.class);
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
 
 	@Override
 	@Nullable
@@ -171,4 +182,59 @@ public class HUAttributesBL implements IHUAttributesBL
 		return sysConfigBL.getBooleanValue("de.metas.handlingunits.attributes.AutomaticallySetBestBeforeDate", false);
 	}
 
+	@Override
+	public void validateMandatoryShipmentAttributes(final I_M_HU hu, final ProductId productId)
+	{
+		final IAttributeStorageFactory attributesFactory = attributeStorageFactoryService.createHUAttributeStorageFactory();
+		final AttributeSetId attributeSetId = productBL.getAttributeSetId(productId);
+
+		final ImmutableList<I_M_Attribute> attributesMandatoryOnShipment = attributeDAO.getAttributesByAttributeSetId(attributeSetId).stream()
+				.filter(attribute -> attributesBL
+						.isMandatoryOnShipment(productId,
+											   AttributeId.ofRepoId(attribute.getM_Attribute_ID())))
+				.collect(ImmutableList.toImmutableList());
+
+
+			final IAttributeStorage attributeStorage = attributesFactory.getAttributeStorage(hu);
+
+			attributesMandatoryOnShipment
+					.stream()
+					.forEach(attribute -> {
+								 final Object attributeValue = attributeStorage.getValue(attribute);
+								 if (Check.isEmpty(attributeValue))
+								 {
+									 throw new AttributeNotFoundException(AttributeId.ofRepoId(attribute.getM_Attribute_ID()), attributeStorage);
+								 }
+							 }
+					);
+
+	}
+
+
+	@Override
+	public void validateMandatoryPickingAttributes(final I_M_HU hu, final ProductId productId)
+	{
+		final IAttributeStorageFactory attributesFactory = attributeStorageFactoryService.createHUAttributeStorageFactory();
+		final AttributeSetId attributeSetId = productBL.getAttributeSetId(productId);
+
+		final ImmutableList<I_M_Attribute> attributesMandatoryOnPicking = attributeDAO.getAttributesByAttributeSetId(attributeSetId).stream()
+				.filter(attribute -> attributesBL
+						.isMandatoryOnPicking(productId,
+											   AttributeId.ofRepoId(attribute.getM_Attribute_ID())))
+				.collect(ImmutableList.toImmutableList());
+
+
+		final IAttributeStorage attributeStorage = attributesFactory.getAttributeStorage(hu);
+
+		attributesMandatoryOnPicking
+				.stream()
+				.forEach(attribute -> {
+							 final Object attributeValue = attributeStorage.getValue(attribute);
+							 if (Check.isEmpty(attributeValue))
+							 {
+								 throw new AttributeNotFoundException(AttributeId.ofRepoId(attribute.getM_Attribute_ID()), attributeStorage);
+							 }
+						 }
+				);
+	}
 }

@@ -2,6 +2,7 @@ package de.metas.handlingunits.attribute;
 
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.product.ProductId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeCode;
@@ -68,4 +69,8 @@ public interface IHUAttributesBL extends ISingletonService
 	boolean isAutomaticallySetLotNumber();
 
 	boolean isAutomaticallySetBestBeforeDate();
+
+	void validateMandatoryShipmentAttributes(I_M_HU hu, ProductId productId);
+
+	void validateMandatoryPickingAttributes(I_M_HU hu, ProductId productId);
 }

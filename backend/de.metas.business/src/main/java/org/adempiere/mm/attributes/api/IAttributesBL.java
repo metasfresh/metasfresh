@@ -74,6 +74,9 @@ public interface IAttributesBL extends ISingletonService
 
 	boolean isMandatoryOnShipment(@NonNull ProductId productId, @NonNull AttributeId attributeId);
 
+
+	boolean isMandatoryOnPicking(@NonNull ProductId productId, @NonNull AttributeId attributeId);
+
 	/**
 	 * @return math context of this attribute or DEFAULT_MATHCONTEXT if the attribute's UOM is null
 	 */

@@ -244,6 +244,23 @@ public class AttributesBL implements IAttributesBL
 	}
 
 	@Override
+	public boolean isMandatoryOnPicking(@NonNull final ProductId productId, @NonNull final AttributeId attributeId)
+	{
+		final AttributeSetId attributeSetId = productsService.getAttributeSetId(productId);
+		final Boolean mandatoryOnPicking = attributesRepo.getAttributeSetAttributeId(attributeSetId, attributeId)
+				.map(AttributeSetAttribute::getMandatoryOnPicking)
+				.map(OptionalBoolean::toBooleanOrNull)
+				.orElse(null);
+
+		if (mandatoryOnPicking != null)
+		{
+			return mandatoryOnPicking;
+		}
+
+		return attributesRepo.getAttributeById(attributeId).isMandatory(); // TODO do I need this here?
+	}
+
+	@Override
 	public MathContext getMathContext(final org.compiere.model.I_M_Attribute attribute)
 	{
 		Check.assumeNotNull(attribute, "attribute not null");

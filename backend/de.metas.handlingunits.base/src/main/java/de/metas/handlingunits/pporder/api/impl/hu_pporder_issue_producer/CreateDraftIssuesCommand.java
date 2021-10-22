@@ -7,7 +7,10 @@ import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.attribute.IPPOrderProductAttributeBL;
+import de.metas.handlingunits.attribute.exceptions.AttributeNotFoundException;
+import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.model.I_M_HU;
@@ -21,6 +24,10 @@ import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.logging.LogManager;
 import de.metas.material.planning.pporder.DraftPPOrderQuantities;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
+import de.metas.product.IProductBL;
+import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeSetId;
+import org.compiere.model.I_M_Attribute;
 import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
 import de.metas.product.ProductId;
@@ -84,6 +91,7 @@ public class CreateDraftIssuesCommand
 	private final transient IHUPPOrderQtyDAO huPPOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
 	private final transient IHUPPOrderQtyBL huPPOrderQtyBL = Services.get(IHUPPOrderQtyBL.class);
 	private final transient IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
+	private final transient IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
 
 	//
 	// Parameters
@@ -174,14 +182,19 @@ public class CreateDraftIssuesCommand
 					.setParameter("hu", hu);
 		}
 
-		removeHuFromParentIfAny(huContext, hu);
-
 		final IHUProductStorage productStorage = retrieveProductStorage(huContext, hu);
 		if (productStorage == null)
 		{
 			return null;
 		}
 
+		final ProductId productId = productStorage.getProductId();
+
+
+		huAttributesBL.validateMandatoryPickingAttributes(hu,productId);
+
+
+		removeHuFromParentIfAny(huContext, hu);
 		// Actually create and save the candidate
 		final I_PP_Order_Qty candidate = createIssueCandidateOrNull(hu, productStorage);
 		if (candidate == null)
@@ -273,20 +286,20 @@ public class CreateDraftIssuesCommand
 			}
 
 			final I_PP_Order_Qty candidate = huPPOrderQtyDAO.save(CreateIssueCandidateRequest.builder()
-					.orderId(PPOrderId.ofRepoId(targetBOMLine.getPP_Order_ID()))
-					.orderBOMLineId(PPOrderBOMLineId.ofRepoId(targetBOMLine.getPP_Order_BOMLine_ID()))
-					//
-					.date(movementDate)
-					//
-					.locatorId(warehousesRepo.getLocatorIdByRepoIdOrNull(hu.getM_Locator_ID()))
-					.issueFromHUId(HuId.ofRepoId(hu.getM_HU_ID()))
-					.productId(productId)
-					//
-					.qtyToIssue(qtyToIssue)
-					//
-					.pickingCandidateId(pickingCandidateId)
-					//
-					.build());
+																		  .orderId(PPOrderId.ofRepoId(targetBOMLine.getPP_Order_ID()))
+																		  .orderBOMLineId(PPOrderBOMLineId.ofRepoId(targetBOMLine.getPP_Order_BOMLine_ID()))
+																		  //
+																		  .date(movementDate)
+																		  //
+																		  .locatorId(warehousesRepo.getLocatorIdByRepoIdOrNull(hu.getM_Locator_ID()))
+																		  .issueFromHUId(HuId.ofRepoId(hu.getM_HU_ID()))
+																		  .productId(productId)
+																		  //
+																		  .qtyToIssue(qtyToIssue)
+																		  //
+																		  .pickingCandidateId(pickingCandidateId)
+																		  //
+																		  .build());
 
 			ppOrderProductAttributeBL.addPPOrderProductAttributesFromIssueCandidate(candidate);
 
