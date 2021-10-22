@@ -21,7 +21,7 @@ import ScreenToaster from '../components/ScreenToaster';
 
 const routesArray = [
   { path: '/', Component: ApplicationsScreen },
-  { path: '/launchers/:launcherId', Component: WFLaunchersScreen },
+  { path: '/launchers/:applicationId', Component: WFLaunchersScreen },
   { path: '/workflow/:workflowId', Component: WFProcessScreen },
   { path: '/workflow/:workflowId/activityId/:activityId/scanner', Component: ScanScreen },
   { path: '/workflow/:workflowId/activityId/:activityId/lineId/:lineId', Component: PickLineScreen },

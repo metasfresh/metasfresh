@@ -4,6 +4,7 @@ import { getApplications } from '../../api/applications';
 import { populateApplications } from '../../actions/ApplicationsActions';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
+
 class ApplicationsScreen extends Component {
   componentDidMount() {
     const { populateApplications } = this.props;
@@ -19,7 +20,13 @@ class ApplicationsScreen extends Component {
       <div className="application-container">
         {apps.length &&
           apps.map((appId) => {
-            return <AppCard key={applications[appId].id} captionKey={applications[appId].caption} />;
+            return (
+              <AppCard
+                key={applications[appId].id}
+                appId={applications[appId].id}
+                captionKey={applications[appId].caption}
+              />
+            );
           })}
       </div>
     );
