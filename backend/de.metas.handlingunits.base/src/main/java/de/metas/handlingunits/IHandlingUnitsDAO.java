@@ -44,6 +44,7 @@ import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.IPair;
+import org.adempiere.warehouse.LocatorId;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
@@ -212,7 +213,7 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	 */
 	List<I_M_HU_PI_Version> retrieveAllPIVersions(I_M_HU_PI pi);
 
-	Iterator<I_M_HU> retrieveTopLevelHUsForLocator(final I_M_Locator locator);
+	Iterator<I_M_HU> retrieveTopLevelHUsForLocator(final LocatorId locatorId);
 
 	/**
 	 * @param huUnitType optional, may be {@code null} or empty. If given, then only return items whose {@link I_M_HU_PI_Version} has the given {@link I_M_HU_PI_Version#COLUMN_HU_UnitType}.

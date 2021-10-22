@@ -1,30 +1,11 @@
 package org.eevolution.callout;
 
-import java.math.BigDecimal;
-import java.util.Properties;
-
-/*
- * #%L
- * de.metas.adempiere.libero.libero
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
+import de.metas.i18n.Msg;
+import de.metas.logging.LogManager;
+import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
+import de.metas.uom.LegacyUOMConversionUtils;
+import de.metas.util.Services;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.api.ICalloutField;
@@ -35,17 +16,13 @@ import org.compiere.model.MProduct;
 import org.compiere.model.MStorage;
 import org.compiere.model.MUOM;
 import org.compiere.util.Env;
-import org.eevolution.api.IDDOrderLineBL;
+import org.eevolution.api.IDDOrderBL;
 import org.eevolution.model.I_DD_OrderLine;
 import org.eevolution.model.MDDOrderLine;
 import org.slf4j.Logger;
 
-import de.metas.i18n.Msg;
-import de.metas.logging.LogManager;
-import de.metas.product.IProductBL;
-import de.metas.product.ProductId;
-import de.metas.uom.LegacyUOMConversionUtils;
-import de.metas.util.Services;
+import java.math.BigDecimal;
+import java.util.Properties;
 
 @Callout(I_DD_OrderLine.class)
 public class DD_OrderLine
@@ -55,18 +32,13 @@ public class DD_OrderLine
 	private static final Logger logger = LogManager.getLogger(DD_OrderLine.class);
 
 	/**
-	 * Calls {@link IDDOrderLineBL#setUOMInDDOrderLine(I_DD_OrderLine)}.
-	 *
-	 * @param ddOrderLine
-	 * @param field
-	 *
-	 * @task http://dewiki908/mediawiki/index.php/08583_Erfassung_Packvorschrift_in_DD_Order_ist_crap_%28108882381939%29
+	 * @implSpec task http://dewiki908/mediawiki/index.php/08583_Erfassung_Packvorschrift_in_DD_Order_ist_crap_%28108882381939%29
 	 *       ("UOM In manual DD_OrderLine shall always be the uom of the product ( as talked with Mark) ")
 	 */
 	@CalloutMethod(columnNames = { I_DD_OrderLine.COLUMNNAME_M_Product_ID })
 	public void setUOMInDDOrderLine(final I_DD_OrderLine ddOrderLine, final ICalloutField field)
 	{
-		Services.get(IDDOrderLineBL.class).setUOMInDDOrderLine(ddOrderLine);
+		Services.get(IDDOrderBL.class).updateUomFromProduct(ddOrderLine);
 	}
 
 	@CalloutMethod(columnNames = {

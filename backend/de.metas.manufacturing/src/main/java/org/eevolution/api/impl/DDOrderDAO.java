@@ -9,6 +9,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Forecast;
+import org.eevolution.api.DDOrderId;
 import org.eevolution.api.DDOrderLineId;
 import org.eevolution.api.DDOrderQuery;
 import org.eevolution.api.IDDOrderDAO;
@@ -51,31 +52,25 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 public class DDOrderDAO implements IDDOrderDAO
 {
-
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@Override
-	public I_DD_Order getById(final int ddOrderId)
+	public I_DD_Order getById(@NonNull final DDOrderId ddOrderId)
 	{
 		return InterfaceWrapperHelper.load(ddOrderId, I_DD_Order.class);
 	}
 
 	@Override
-	public List<I_DD_OrderLine> retrieveLines(final I_DD_Order ddOrder)
+	public List<I_DD_OrderLine> retrieveLines(@NonNull final I_DD_Order ddOrder)
 	{
-		Check.assumeNotNull(ddOrder, "ddOrder not null");
-
-		final IQueryBuilder<I_DD_OrderLine> queryBuilder = queryBL
+		final List<I_DD_OrderLine> ddOrderLines = queryBL
 				.createQueryBuilder(I_DD_OrderLine.class, ddOrder)
-				.addEqualsFilter(I_DD_OrderLine.COLUMN_DD_Order_ID, ddOrder.getDD_Order_ID())
-				.addOnlyActiveRecordsFilter();
-
-		queryBuilder.orderBy()
-				.addColumn(I_DD_OrderLine.COLUMN_Line)
-				.addColumn(I_DD_OrderLine.COLUMN_DD_OrderLine_ID);
-
-		final List<I_DD_OrderLine> ddOrderLines = queryBuilder.create()
-				.list(I_DD_OrderLine.class);
+				.addEqualsFilter(I_DD_OrderLine.COLUMNNAME_DD_Order_ID, ddOrder.getDD_Order_ID())
+				.addOnlyActiveRecordsFilter()
+				.orderBy(I_DD_OrderLine.COLUMNNAME_Line)
+				.orderBy(I_DD_OrderLine.COLUMNNAME_DD_OrderLine_ID)
+				.create()
+				.list();
 
 		// Optimization: set DD_Order_ID link
 		for (final I_DD_OrderLine ddOrderLine : ddOrderLines)
@@ -84,7 +79,7 @@ public class DDOrderDAO implements IDDOrderDAO
 		}
 
 		return ddOrderLines;
-	}    // getLines
+	}
 
 	@Override
 	public List<I_DD_OrderLine_Alternative> retrieveAllAlternatives(final I_DD_OrderLine ddOrderLine)
@@ -93,12 +88,12 @@ public class DDOrderDAO implements IDDOrderDAO
 
 		final IQueryBuilder<I_DD_OrderLine_Alternative> queryBuilder = queryBL
 				.createQueryBuilder(I_DD_OrderLine_Alternative.class, ddOrderLine)
-				.addEqualsFilter(I_DD_OrderLine_Alternative.COLUMN_DD_OrderLine_ID, ddOrderLine.getDD_OrderLine_ID())
+				.addEqualsFilter(I_DD_OrderLine_Alternative.COLUMNNAME_DD_OrderLine_ID, ddOrderLine.getDD_OrderLine_ID())
 				// .addOnlyActiveRecordsFilter() // we are retrieving ALL
 				;
 
 		queryBuilder.orderBy()
-				.addColumn(I_DD_OrderLine_Alternative.COLUMN_M_Product_ID);
+				.addColumn(I_DD_OrderLine_Alternative.COLUMNNAME_M_Product_ID);
 
 		return queryBuilder.create()
 				.list(I_DD_OrderLine_Alternative.class);
@@ -190,15 +185,15 @@ public class DDOrderDAO implements IDDOrderDAO
 
 	@Override
 	@NonNull
-	public I_DD_OrderLine getLineById(@NonNull final DDOrderLineId ddOrderLineID)
+	public I_DD_OrderLine getLineById(@NonNull final DDOrderLineId ddOrderLineId)
 	{
-		final I_DD_OrderLine record = InterfaceWrapperHelper.load(ddOrderLineID, I_DD_OrderLine.class);
+		final I_DD_OrderLine record = InterfaceWrapperHelper.load(ddOrderLineId, I_DD_OrderLine.class);
 
 		if (record == null)
 		{
 			throw new AdempiereException("@NotFound@")
 					.appendParametersToMessage()
-					.setParameter("DD_OrderLine_ID", ddOrderLineID);
+					.setParameter("DD_OrderLine_ID", ddOrderLineId);
 		}
 
 		return record;

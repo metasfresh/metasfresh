@@ -29,7 +29,7 @@ import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
-import org.eevolution.api.IDDOrderDAO;
+import org.eevolution.api.IDDOrderBL;
 import org.eevolution.model.I_DD_NetworkDistributionLine;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
@@ -66,7 +66,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 @Service
 public class DDOrderProducer
 {
-	private final IDDOrderDAO ddOrdersRepo = Services.get(IDDOrderDAO.class);
+	private final IDDOrderBL ddOrderBL = Services.get(IDDOrderBL.class);
 	private final IProductPlanningDAO productPlanningsRepo = Services.get(IProductPlanningDAO.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
@@ -111,7 +111,7 @@ public class DDOrderProducer
 
 		ddOrderRecord.setPP_Product_Planning_ID(productPlanning.getPP_Product_Planning_ID());
 
-		ddOrdersRepo.save(ddOrderRecord);
+		ddOrderBL.save(ddOrderRecord);
 
 		for (final DDOrderLine linePojo : ddOrder.getLines())
 		{
@@ -174,7 +174,7 @@ public class DDOrderProducer
 
 			//
 			// Save DD Order Line
-			ddOrdersRepo.save(ddOrderline);
+			ddOrderBL.save(ddOrderline);
 		}
 
 		return ddOrderRecord;

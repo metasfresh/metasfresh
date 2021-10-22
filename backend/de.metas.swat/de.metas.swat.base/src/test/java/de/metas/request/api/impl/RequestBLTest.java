@@ -181,7 +181,7 @@ public class RequestBLTest
 	{
 		final I_DD_OrderLine line = newInstance(I_DD_OrderLine.class);
 		line.setDD_Order(ddOrder);
-		line.setM_Product(createProduct("Product2"));
+		line.setM_Product_ID(createProduct("Product2").getM_Product_ID());
 		line.setDescription("Description DDOrderLine");
 
 		save(line);

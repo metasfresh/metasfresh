@@ -10,18 +10,19 @@ package org.eevolution.api;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
+import de.metas.quantity.Quantity;
 import de.metas.util.ISingletonService;
 import org.compiere.model.I_M_Forecast;
 import org.compiere.model.I_M_MovementLine;
@@ -32,49 +33,26 @@ import org.eevolution.model.I_DD_OrderLine_Alternative;
 import org.eevolution.model.I_DD_OrderLine_Or_Alternative;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
 import java.util.Collection;
-import java.util.stream.Stream;
+import java.util.List;
 
 public interface IDDOrderBL extends ISingletonService
 {
-	I_DD_Order getById(int ddOrderId);
+	I_DD_Order getById(DDOrderId ddOrderId);
 
 	/**
 	 * Gets Qty that needs to be received so far to destination locator.
-	 *
-	 * i.e. QtyOrdered - QtyDelivered
-	 *
+	 * <p>
 	 * The UOM is line's UOM.
 	 */
-	BigDecimal getQtyToReceive(I_DD_OrderLine ddOrderLine);
-
-	/**
-	 * Gets Qty that needs to be received so far to destination locator.
-	 *
-	 * The UOM is line's UOM.
-	 *
-	 * @see #getQtyToReceive(I_DD_OrderLine)
-	 */
-	BigDecimal getQtyToReceive(I_DD_OrderLine_Alternative ddOrderLineAlt);
-
-	/**
-	 * Gets Qty that needs to be received so far to destination locator.
-	 *
-	 * The UOM is line's UOM.
-	 *
-	 * @see #getQtyToReceive(I_DD_OrderLine)
-	 */
-	BigDecimal getQtyToReceive(I_DD_OrderLine_Or_Alternative ddOrderLineOrAlt);
+	Quantity getQtyToReceive(I_DD_OrderLine_Or_Alternative ddOrderLineOrAlt);
 
 	/**
 	 * Gets Qty that needs to be shipped so far from source locator.
-	 *
+	 * <p>
 	 * The UOM is line's UOM.
 	 */
-	BigDecimal getQtyToShip(I_DD_OrderLine_Or_Alternative ddOrderLineOrAlt);
-
-	IDDOrderMovementBuilder createMovementBuilder();
+	Quantity getQtyToShip(I_DD_OrderLine_Or_Alternative ddOrderLineOrAlt);
 
 	/**
 	 * Retrieves the given <code>ddOrderLine</code>'s order and invokes {@link #completeDDOrderIfNeeded(I_DD_Order)}.
@@ -89,25 +67,25 @@ public interface IDDOrderBL extends ISingletonService
 
 	/**
 	 * Complete all of the given DD_Orders.
-	 * 
+	 *
 	 * @param ddOrders DD_Orders to complete.
 	 * @see #completeDDOrderIfNeeded(I_DD_Order)
 	 */
 	void completeDDOrdersIfNeeded(Collection<? extends I_DD_Order> ddOrders);
 
 	/**
-	 * Search for Source Plant based on source locator ({@link I_DD_OrderLine#getM_Locator()}).
+	 * Search for Source Plant based on source locator
 	 */
 	@Nullable
 	I_S_Resource findPlantFromOrNull(I_DD_OrderLine ddOrderLine);
 
 	/**
 	 * Checks if given DD_OrderLine's Movement is about receiving materials to target warehouse.
-	 * 
+	 * <p>
 	 * NOTE: this method assumes that the movementLine is linked to a DD Order line, else an exception will be thrown.
-	 * 
+	 *
 	 * @return <code>true</code> if given DD_OrderLine's Movement is about receiving materials to target warehouse; <code>false</code> if it's about shipping materials from source warehouse to
-	 *         in-transit warehouse.
+	 * in-transit warehouse.
 	 */
 	boolean isMovementReceipt(I_M_MovementLine movementLine);
 
@@ -119,12 +97,22 @@ public interface IDDOrderBL extends ISingletonService
 
 	/**
 	 * {@link I_DD_Order#setMRP_AllowCleanup(boolean)} to <code>false</code> to backward and forward DD Orders, if they are on the same plant.
-	 * 
+	 * <p>
 	 * Task 08059
 	 */
 	void disallowMRPCleanupOnForwardAndBackwardDDOrders(I_DD_Order ddOrder);
 
 	void completeBackwardDDOrders(I_M_Forecast forecast);
 
-	Stream<I_DD_Order> streamDDOrders(DDOrderQuery query);
+	void save(I_DD_Order ddOrder);
+
+	void save(I_DD_OrderLine ddOrderLine);
+
+	void save(I_DD_OrderLine_Or_Alternative ddOrderLineOrAlternative);
+
+	List<I_DD_OrderLine> retrieveLines(I_DD_Order order);
+
+	List<I_DD_OrderLine_Alternative> retrieveAllAlternatives(I_DD_OrderLine ddOrderLine);
+
+	void updateUomFromProduct(I_DD_OrderLine ddOrderLine);
 }

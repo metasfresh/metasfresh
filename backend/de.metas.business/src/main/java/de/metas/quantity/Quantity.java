@@ -699,6 +699,11 @@ public final class Quantity implements Comparable<Quantity>
 		return diff.signum();
 	}
 
+	public boolean isGreaterThan(@NonNull final Quantity other)
+	{
+		return this.compareTo(other) > 0;
+	}
+
 	public Quantity divide(@NonNull final BigDecimal divisor)
 	{
 		if (BigDecimal.ONE.compareTo(divisor) == 0)

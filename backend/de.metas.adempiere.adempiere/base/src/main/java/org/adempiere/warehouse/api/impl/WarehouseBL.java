@@ -27,6 +27,7 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
+import de.metas.product.ResourceId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -42,8 +43,7 @@ import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.util.List;
-
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+import java.util.Optional;
 
 public class WarehouseBL implements IWarehouseBL
 {
@@ -156,7 +156,7 @@ public class WarehouseBL implements IWarehouseBL
 	@NonNull
 	public OrgId getWarehouseOrgId(@NonNull final WarehouseId warehouseId)
 	{
-		final I_M_Warehouse warehouseRecord = loadOutOfTrx(warehouseId, I_M_Warehouse.class);
+		final I_M_Warehouse warehouseRecord = warehouseDAO.getById(warehouseId);
 		return OrgId.ofRepoIdOrAny(warehouseRecord.getAD_Org_ID());
 	}
 
@@ -170,5 +170,30 @@ public class WarehouseBL implements IWarehouseBL
 	public String getWarehouseName(@NonNull final WarehouseId warehouseId)
 	{
 		return warehouseDAO.getWarehouseName(warehouseId);
+	}
+
+	@Override
+	public LocatorId getLocatorIdByRepoId(final int locatorRepoId)
+	{
+		return warehouseDAO.getLocatorIdByRepoId(locatorRepoId);
+	}
+
+	@Override
+	public I_M_Locator getLocatorByRepoId(final int locatorRepoId)
+	{
+		return warehouseDAO.getLocatorByRepoId(locatorRepoId);
+	}
+
+
+	@Override
+	public WarehouseId getInTransitWarehouseId(final OrgId adOrgId)
+	{
+		return warehouseDAO.getInTransitWarehouseId(adOrgId);
+	}
+
+	@Override
+	public Optional<ResourceId> getPlantId(final WarehouseId warehouseId)
+	{
+		return ResourceId.optionalOfRepoId(warehouseDAO.getById(warehouseId).getPP_Plant_ID());
 	}
 }

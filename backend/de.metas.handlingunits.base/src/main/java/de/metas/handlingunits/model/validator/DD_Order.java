@@ -1,27 +1,26 @@
 package de.metas.handlingunits.model.validator;
 
-import static org.adempiere.model.InterfaceWrapperHelper.create;
-
-import java.util.List;
-
+import com.google.common.collect.ImmutableList;
+import de.metas.handlingunits.ddorder.IHUDDOrderBL;
+import de.metas.handlingunits.ddorder.picking.DDOrderPickFromService;
+import de.metas.request.service.async.spi.impl.C_Request_CreateFromDDOrder_Async;
+import de.metas.util.Services;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.mmovement.api.IMovementBL;
 import org.adempiere.mmovement.api.IMovementDAO;
+import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Movement;
+import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.ModelValidator;
-import org.eevolution.api.IDDOrderDAO;
+import org.eevolution.api.DDOrderId;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
 
-import com.google.common.collect.ImmutableList;
+import java.util.List;
 
-import de.metas.handlingunits.ddorder.api.IHUDDOrderBL;
-import de.metas.handlingunits.ddorder.api.IHUDDOrderDAO;
-import de.metas.handlingunits.model.I_M_Warehouse;
-import de.metas.order.model.interceptor.C_Order;
-import de.metas.request.service.async.spi.impl.C_Request_CreateFromDDOrder_Async;
-import de.metas.util.Services;
+import static org.adempiere.model.InterfaceWrapperHelper.create;
 
 /*
  * #%L
@@ -48,16 +47,21 @@ import de.metas.util.Services;
 @Interceptor(I_DD_Order.class)
 public class DD_Order
 {
-	private final IDDOrderDAO ddOrderDAO = Services.get(IDDOrderDAO.class); 
 	private final IMovementBL movementBL = Services.get(IMovementBL.class);
 	private final IMovementDAO movementDAO = Services.get(IMovementDAO.class);
 	private final IHUDDOrderBL huDDOrderBL = Services.get(IHUDDOrderBL.class);
+	private final DDOrderPickFromService ddOrderPickFromService = SpringContextHolder.instance.getBean(DDOrderPickFromService.class);
+	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 
 	
-	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_REVERSEACCRUAL, ModelValidator.TIMING_BEFORE_REVERSECORRECT, ModelValidator.TIMING_BEFORE_VOID, ModelValidator.TIMING_BEFORE_CLOSE })
+	@DocValidate(timings = {
+			ModelValidator.TIMING_BEFORE_REVERSEACCRUAL,
+			ModelValidator.TIMING_BEFORE_REVERSECORRECT,
+			ModelValidator.TIMING_BEFORE_VOID,
+			ModelValidator.TIMING_BEFORE_CLOSE })
 	public void clearHUsScheduledToMoveList(final I_DD_Order ddOrder)
 	{
-		Services.get(IHUDDOrderDAO.class).clearHUsScheduledToMoveList(ddOrder);
+		ddOrderPickFromService.removeDraftSchedules(DDOrderId.ofRepoId(ddOrder.getDD_Order_ID()));
 	}
 
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
@@ -89,16 +93,16 @@ public class DD_Order
 	{
 		if (huDDOrderBL.isCreateMovementOnComplete())
 		{
-			huDDOrderBL.processDDOrderLines(ddOrder);
+			huDDOrderBL.generateMovements(ddOrder);
 		}
 	}
 	
 	
 	private List<Integer> retrieveLineToQuarantineWarehouseIds(final I_DD_Order ddOrder)
 	{
-		return ddOrderDAO.retrieveLines(ddOrder)
+		return huDDOrderBL.retrieveLines(ddOrder)
 				.stream()
-				.filter(ddOrderLine -> isQuarantineWarehouseLine(ddOrderLine))
+				.filter(this::isQuarantineWarehouseLine)
 				.map(I_DD_OrderLine::getDD_OrderLine_ID)
 				.collect(ImmutableList.toImmutableList())
 				;
@@ -106,10 +110,8 @@ public class DD_Order
 
 	private boolean isQuarantineWarehouseLine(final I_DD_OrderLine ddOrderLine)
 	{
-		final I_M_Warehouse warehouse = create(ddOrderLine.getM_LocatorTo().getM_Warehouse(), I_M_Warehouse.class);
-
-		return warehouse.isQuarantineWarehouse();
-
+		final I_M_Warehouse warehouse = warehouseDAO.getWarehouseByLocatorRepoId(ddOrderLine.getM_LocatorTo_ID());
+		return warehouse != null && warehouse.isQuarantineWarehouse();
 	}
 
 }

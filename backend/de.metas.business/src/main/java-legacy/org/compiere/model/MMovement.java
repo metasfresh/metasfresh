@@ -24,6 +24,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Properties;
 
+import de.metas.product.ProductId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mmovement.api.IMovementBL;
 import org.adempiere.mmovement.api.IMovementDAO;
@@ -50,9 +51,9 @@ import de.metas.util.Services;
  *  @author Jorg Janke
  *  @author victor.perez@e-evolution.com, e-Evolution http://www.e-evolution.com
  * 			<li>FR [ 1948157  ]  Is necessary the reference for document reverse
- *  		@see http://sourceforge.net/tracker/?func=detail&atid=879335&aid=1948157&group_id=176962
+ *  		http://sourceforge.net/tracker/?func=detail&atid=879335&aid=1948157&group_id=176962
  * 			<li> FR [ 2520591 ] Support multiples calendar for Org
- *			@see http://sourceforge.net/tracker2/?func=detail&atid=879335&aid=2520591&group_id=176962
+ *			http://sourceforge.net/tracker2/?func=detail&atid=879335&aid=2520591&group_id=176962
  *  @author Armen Rizal, Goodwill Consulting
  * 			<li>BF [ 1745154 ] Cost in Reversing Material Related Docs
  *  @author Teo Sarca, www.arhipac.ro
@@ -420,9 +421,9 @@ public class MMovement extends X_M_Movement implements IDocument
 			MTransaction trxFrom = null;
 
 			//Stock Movement - Counterpart MOrder.reserveStock
-			MProduct product = line.getProduct();
-			if (product != null
-					&& Services.get(IProductBL.class).isStocked(product) )
+			final ProductId productId = line.getProductId();
+			if (productId != null
+					&& Services.get(IProductBL.class).isStocked(productId) )
 			{
 				//Ignore the Material Policy when is Reverse Correction
 				if(!isReversal())

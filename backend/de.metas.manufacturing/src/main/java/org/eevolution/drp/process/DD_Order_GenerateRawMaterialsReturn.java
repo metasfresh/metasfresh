@@ -22,12 +22,22 @@ package org.eevolution.drp.process;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.document.DocTypeQuery;
+import de.metas.document.IDocTypeDAO;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
+import de.metas.organization.OrgId;
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import de.metas.storage.IStorageEngine;
+import de.metas.storage.IStorageEngineService;
+import de.metas.storage.IStorageQuery;
+import de.metas.storage.IStorageRecord;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.ASICopy;
@@ -38,7 +48,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.warehouse.WarehouseId;
-import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
@@ -47,32 +56,19 @@ import org.compiere.model.X_C_DocType;
 import org.compiere.util.TrxRunnable2;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
-import org.eevolution.api.IDDOrderDAO;
+import org.eevolution.api.IDDOrderBL;
 import org.eevolution.model.I_DD_NetworkDistributionLine;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
 import org.eevolution.model.X_DD_Order;
 
-import de.metas.bpartner.BPartnerLocationId;
-import de.metas.document.DocTypeQuery;
-import de.metas.document.IDocTypeDAO;
-import de.metas.document.engine.IDocument;
-import de.metas.document.engine.IDocumentBL;
-import de.metas.organization.OrgId;
-import de.metas.process.JavaProcess;
-import de.metas.process.ProcessInfoParameter;
-import de.metas.product.ProductId;
-import de.metas.storage.IStorageEngine;
-import de.metas.storage.IStorageEngineService;
-import de.metas.storage.IStorageQuery;
-import de.metas.storage.IStorageRecord;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import java.sql.Timestamp;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
- *
- * @author tsa
- * @task http://dewiki908/mediawiki/index.php/08118_Wie_geht_das_zur%C3%BCck%2C_was_noch_bei_der_Linie_steht_%28Prozess%29_%28107566315908%29
+ * @implSpec Task http://dewiki908/mediawiki/index.php/08118_Wie_geht_das_zur%C3%BCck%2C_was_noch_bei_der_Linie_steht_%28Prozess%29_%28107566315908%29
  */
 public class DD_Order_GenerateRawMaterialsReturn extends JavaProcess
 {
@@ -82,7 +78,7 @@ public class DD_Order_GenerateRawMaterialsReturn extends JavaProcess
 	private final transient IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final transient IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
-	private final transient IDDOrderDAO ddOrdersRepo = Services.get(IDDOrderDAO.class);
+	private final transient IDDOrderBL ddOrderBL = Services.get(IDDOrderBL.class);
 
 	//
 	// Parameters
@@ -172,14 +168,14 @@ public class DD_Order_GenerateRawMaterialsReturn extends JavaProcess
 			{
 
 				@Override
-				public void run(final String localTrxName) throws Exception
+				public void run(final String localTrxName)
 				{
 					final I_DD_Order ddOrder = createAndComplete(candidate);
 					addLog("@Created@ " + candidate.getSummary() + ": @DD_Order_ID@=" + ddOrder.getDocumentNo());
 				}
 
 				@Override
-				public boolean doCatch(final Throwable ex) throws Throwable
+				public boolean doCatch(final Throwable ex)
 				{
 					addLog("@NotValid@ " + candidate.getSummary() + ": " + ex.getLocalizedMessage());
 					return true; // rollback
@@ -202,12 +198,12 @@ public class DD_Order_GenerateRawMaterialsReturn extends JavaProcess
 		return MSG_OK;
 	}
 
-	private final WarehouseId getWarehouseId()
+	private WarehouseId getWarehouseId()
 	{
 		return WarehouseId.ofRepoId(p_M_Warehouse_ID);
 	}
 
-	private final ArrayKey mkDDOrderLineCandidateKey(final IStorageRecord storageRecord)
+	private ArrayKey mkDDOrderLineCandidateKey(final IStorageRecord storageRecord)
 	{
 		final ProductId productId = storageRecord.getProductId();
 		final I_M_Locator locator = storageRecord.getLocator();
@@ -260,7 +256,7 @@ public class DD_Order_GenerateRawMaterialsReturn extends JavaProcess
 		ddOrder.setIsInDispute(false);
 		ddOrder.setIsInTransit(false);
 
-		ddOrdersRepo.save(ddOrder);
+		ddOrderBL.save(ddOrder);
 		return ddOrder;
 	}
 
@@ -269,8 +265,7 @@ public class DD_Order_GenerateRawMaterialsReturn extends JavaProcess
 		Check.assume(candidate.isValid(), "candidate is valid: {}", candidate);
 
 		final IAttributeSetInstanceAware attributeSetInstanceAware = candidate.getM_Product();
-		final I_C_UOM uom = candidate.getC_UOM();
-		final BigDecimal qtyToMove = candidate.getQty();
+		final Quantity qtyToMove = Quantity.of(candidate.getQty(), candidate.getC_UOM());
 		final I_DD_NetworkDistributionLine networkLine = candidate.getDD_NetworkDistributionLine();
 		final I_M_Locator locatorFrom = candidate.getM_Locator();
 		final I_M_Locator locatorTo = candidate.getRawMaterialsLocator();
@@ -284,21 +279,21 @@ public class DD_Order_GenerateRawMaterialsReturn extends JavaProcess
 
 		//
 		// Locator From/To
-		ddOrderline.setM_Locator(locatorFrom);
-		ddOrderline.setM_LocatorTo(locatorTo);
+		ddOrderline.setM_Locator_ID(locatorFrom.getM_Locator_ID());
+		ddOrderline.setM_LocatorTo_ID(locatorTo.getM_Locator_ID());
 
 		//
 		// Product, UOM, Qty
-		ddOrderline.setM_Product(attributeSetInstanceAware.getM_Product());
+		ddOrderline.setM_Product_ID(attributeSetInstanceAware.getM_Product_ID());
 
 		final ASICopy asiCopy = ASICopy.newInstance(attributeSetInstanceAware.getM_AttributeSetInstance());
 		ddOrderline.setM_AttributeSetInstance(asiCopy.copy());
 		ddOrderline.setM_AttributeSetInstanceTo(asiCopy.copy());
 
-		ddOrderline.setC_UOM(uom);
-		ddOrderline.setQtyEntered(qtyToMove);
-		ddOrderline.setQtyOrdered(qtyToMove);
-		ddOrderline.setTargetQty(qtyToMove);
+		ddOrderline.setC_UOM_ID(qtyToMove.getUomId().getRepoId());
+		ddOrderline.setQtyEntered(qtyToMove.toBigDecimal());
+		ddOrderline.setQtyOrdered(qtyToMove.toBigDecimal());
+		ddOrderline.setTargetQty(qtyToMove.toBigDecimal());
 
 		//
 		// Dates
@@ -311,6 +306,6 @@ public class DD_Order_GenerateRawMaterialsReturn extends JavaProcess
 		ddOrderline.setDD_AllowPush(networkLine.isDD_AllowPush());
 		ddOrderline.setIsKeepTargetPlant(networkLine.isKeepTargetPlant());
 
-		ddOrdersRepo.save(ddOrderline);
+		ddOrderBL.save(ddOrderline);
 	}
 }
