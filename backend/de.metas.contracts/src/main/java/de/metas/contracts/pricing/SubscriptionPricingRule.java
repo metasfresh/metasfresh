@@ -88,16 +88,17 @@ public class SubscriptionPricingRule implements IPricingRule
 
 		final IPricingResult subscriptionPricingResult = invokePricingEngine(subscriptionPricingCtx.setFailIfNotCalculated());
 
-		final IPricingResult combinedPricingResult = aggregateSubscriptionDiscount(pricingCtx, subscriptionDiscountLine, subscriptionPricingResult);
+		final IPricingResult combinedPricingResult = aggregateSubscriptionDiscount(subscriptionDiscountLine, subscriptionPricingResult);
 
 		copySubscriptionResultIntoResult(combinedPricingResult, result);
 
 		copyDiscountIntoResultIfAllowedByPricingContext(combinedPricingResult, result, pricingCtx);
 	}
 
-	private IPricingResult aggregateSubscriptionDiscount(final @NonNull IPricingContext pricingCtx, @Nullable final SubscriptionDiscountLine subscriptionDiscountLine, final IPricingResult subscriptionPricingResult)
+	private IPricingResult aggregateSubscriptionDiscount(@Nullable final SubscriptionDiscountLine subscriptionDiscountLine, final IPricingResult subscriptionPricingResult)
 	{
-		if (subscriptionDiscountLine != null && subscriptionDiscountLine.isPrioritiseOwnDiscount() && !pricingCtx.isDisallowDiscount())
+		if (subscriptionDiscountLine != null && !subscriptionPricingResult.isDisallowDiscount() &&
+				(!subscriptionPricingResult.isDiscountCalculated() || subscriptionDiscountLine.isPrioritiseOwnDiscount()))
 		{
 			subscriptionPricingResult.setDiscount(subscriptionDiscountLine.getDiscount());
 		}
