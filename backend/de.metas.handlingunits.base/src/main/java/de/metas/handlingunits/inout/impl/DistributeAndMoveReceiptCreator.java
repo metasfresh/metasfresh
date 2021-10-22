@@ -71,13 +71,16 @@ public class DistributeAndMoveReceiptCreator
 	private final transient ILotNumberBL lotNoBL = Services.get(ILotNumberBL.class);
 	private final transient LotNumberQuarantineRepository lotNumberQuarantineRepository;
 
-	private final transient IHUDDOrderBL huDDOrderBL = Services.get(IHUDDOrderBL.class);
+	private final transient IHUDDOrderBL huDDOrderBL;
 	private final transient IInOutDDOrderBL inoutDDOrderBL = Services.get(IInOutDDOrderBL.class);
 	private final transient IInOutMovementBL inoutMovementBL = Services.get(IInOutMovementBL.class);
 
-	public DistributeAndMoveReceiptCreator(@NonNull final LotNumberQuarantineRepository lotNumberQuarantineRepository)
+	public DistributeAndMoveReceiptCreator(
+			@NonNull final LotNumberQuarantineRepository lotNumberQuarantineRepository,
+			@NonNull final IHUDDOrderBL huDDOrderBL)
 	{
 		this.lotNumberQuarantineRepository = lotNumberQuarantineRepository;
+		this.huDDOrderBL = huDDOrderBL;
 	}
 
 	public Result createDocumentsFor(
