@@ -14,15 +14,15 @@ class WFLaunchersScreen extends Component {
     const { populateLaunchers, applicationId } = this.props;
 
     getLaunchers(applicationId).then((launchers) => {
-      populateLaunchers(launchers);
+      populateLaunchers({ applicationId, launchers });
     });
   }
 
   componentDidUpdate() {
     if (!this.wsClient) {
-      const { userToken } = this.props;
+      const { userToken, applicationId } = this.props;
       this.wsClient = ws.connectAndSubscribe({
-        topic: `/v2/userWorkflows/launchers/${userToken}`,
+        topic: `/v2/userWorkflows/launchers/${userToken}/${applicationId}`,
         onWebsocketMessage: this.onWebsocketMessage,
       });
     }
@@ -34,9 +34,9 @@ class WFLaunchersScreen extends Component {
   }
 
   onWebsocketMessage = (message) => {
-    const { populateLaunchers } = this.props;
+    const { populateLaunchers, applicationId } = this.props;
     const { launchers } = JSON.parse(message.body);
-    populateLaunchers(launchers);
+    populateLaunchers({ applicationId, launchers });
   };
 
   render() {
@@ -76,7 +76,7 @@ const mapStateToProps = (state, { match }) => {
   const { applicationId } = match.params;
   return {
     applicationId,
-    launchers: state.launchers,
+    launchers: state.launchers[applicationId],
     userToken: state.appHandler.token,
   };
 };
