@@ -138,7 +138,9 @@ public class AttributeDAO implements IAttributeDAO
 		return AttributeSetAttribute.builder()
 				.attributeId(AttributeId.ofRepoId(record.getM_Attribute_ID()))
 				.seqNo(record.getSeqNo())
-				.mandatoryOnReceipt(OptionalBoolean.ofNullableString(record.getMandantoryOnReceipt()))
+				.mandatoryOnReceipt(OptionalBoolean.ofNullableString(record.getMandatoryOnReceipt()))
+				.mandatoryOnPicking(OptionalBoolean.ofNullableString(record.getMandatoryOnPicking()))
+				.mandatoryOnShipment(OptionalBoolean.ofNullableString(record.getMandatoryOnShipment()))
 				.build();
 	}
 

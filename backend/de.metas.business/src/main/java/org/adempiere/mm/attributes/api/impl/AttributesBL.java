@@ -43,6 +43,7 @@ import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.AttributeSetAttribute;
 import org.adempiere.mm.attributes.AttributeSetId;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributeAction;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributesBL;
@@ -56,6 +57,7 @@ import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Attribute;
+import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_M_Attribute;
 import org.compiere.util.DisplayType;
@@ -220,6 +222,24 @@ public class AttributesBL implements IAttributesBL
 		if (mandatoryOnReceipt != null)
 		{
 			return mandatoryOnReceipt;
+		}
+
+		return attributesRepo.getAttributeById(attributeId).isMandatory();
+	}
+
+
+	//@Override TODO
+	public boolean isMandatoryOnShipment(@NonNull final ProductId productId, @NonNull final AttributeId attributeId)
+	{
+		final AttributeSetId attributeSetId = productsService.getAttributeSetId(productId);
+		final Boolean mandatoryOnShipment = attributesRepo.getAttributeSetAttributeId(attributeSetId, attributeId)
+				.map(AttributeSetAttribute::getMandatoryOnShipment)
+				.map(OptionalBoolean::toBooleanOrNull)
+				.orElse(null);
+
+		if (mandatoryOnShipment != null)
+		{
+			return mandatoryOnShipment;
 		}
 
 		return attributesRepo.getAttributeById(attributeId).isMandatory();
