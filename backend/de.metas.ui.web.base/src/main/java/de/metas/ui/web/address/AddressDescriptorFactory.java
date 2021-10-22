@@ -95,9 +95,7 @@ public class AddressDescriptorFactory
 				.setDocumentType(DocumentType.Address, AddressDescriptor.DocumentTypeId) // we have only one descriptor for all addresses
 				.setCaption(Services.get(IMsgBL.class).getTranslatableMsgText("C_Location_ID"))
 				.setDataBinding(new AddressDataBindingDescriptorBuilder())
-				.disableDefaultTableCallouts()
-				//
-				;
+				.disableDefaultTableCallouts();
 
 		//
 		// Address1 ... Address4 fields
