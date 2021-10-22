@@ -1529,7 +1529,7 @@ public class HUTestHelper
 		return createHUs(huContextEffective, luProducerDestination, totalQtyCU);
 	}
 
-	public static class LUsBuilder
+	public class LUsBuilder
 	{
 		public HuId buildSingleLUId()
 		{
