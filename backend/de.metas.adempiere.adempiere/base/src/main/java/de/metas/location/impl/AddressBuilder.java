@@ -1,26 +1,5 @@
 package de.metas.location.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.create;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-import java.util.Scanner;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_AD_User;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_Country;
-import org.compiere.model.I_C_Location;
-import org.compiere.util.Env;
-import org.slf4j.Logger;
-
 import de.metas.greeting.Greeting;
 import de.metas.greeting.GreetingId;
 import de.metas.greeting.GreetingRepository;
@@ -39,12 +18,12 @@ import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Country;
-import org.compiere.model.I_C_Greeting;
 import org.compiere.model.I_C_Location;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
@@ -53,8 +32,11 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static org.adempiere.model.InterfaceWrapperHelper.create;
 
 /*
  * #%L
@@ -84,7 +66,7 @@ public class AddressBuilder
 	private final ICountryDAO countriesRepo = Services.get(ICountryDAO.class);
 	private final GreetingRepository greetingRepository = SpringContextHolder.instance.getBean(GreetingRepository.class);
 	private final ILocationBL locationBL = Services.get(ILocationBL.class);
-	
+
 	private static final AdMessageKey MSG_AddressBuilder_WrongDisplaySequence = AdMessageKey.of("MSG_AddressBuilder_WrongDisplaySequence");
 
 	/**
@@ -125,7 +107,7 @@ public class AddressBuilder
 
 		private final String name;
 
-		Uservars(String name)
+		Uservars(final String name)
 		{
 			this.name = name;
 		}
@@ -136,7 +118,7 @@ public class AddressBuilder
 		}
 	}
 	
-	private static enum Addressvars
+	private enum Addressvars
 	{
 		BPartner("BP"),
 
@@ -167,7 +149,7 @@ public class AddressBuilder
 
 		private final String name;
 
-		Addressvars(@NonNull String name)
+		Addressvars(@NonNull final String name)
 		{
 			this.name = name;
 		}
@@ -248,8 +230,8 @@ public class AddressBuilder
 			@NonNull final I_C_Location location,
 			String inStr,
 			StringBuilder outStr,
-			String bPartnerBlock,
-			String userBlock,
+			final String bPartnerBlock,
+			final String userBlock,
 			final boolean withBrackets)
 	{
 		final CountryId countryId = CountryId.ofRepoId(location.getC_Country_ID());
@@ -338,7 +320,7 @@ public class AddressBuilder
 			}
 			else if (token.equals(Addressvars.Country.getName()))
 			{
-				String language = adLanguage == null ? Language.getBaseAD_Language() : adLanguage;
+				final String language = adLanguage == null ? Language.getBaseAD_Language() : adLanguage;
 				final String countryName = countriesRepo.getCountryNameById(countryId).translate(language);
 				if (!Check.isEmpty(countryName, true))
 				{
@@ -430,7 +412,7 @@ public class AddressBuilder
 			else if ("PB".equals(token)) // postal box
 			{
 				// if we have box number, added it as it is
-				if (!Check.isBlank(location.getPOBox()))
+				if (location.isPOBoxNum() && !Check.isBlank(location.getPOBox()))
 				{
 					outStr.append(location.getPOBox());
 					// add an automatic new line
@@ -519,7 +501,7 @@ public class AddressBuilder
 	{
 		final Properties ctx = Env.getCtx();
 		final I_C_Country countryLocal = countriesRepo.getDefault(ctx);
-		final boolean isLocal = location.getC_Location() == null ? false : location.getC_Location().getC_Country_ID() == countryLocal.getC_Country_ID();
+		final boolean isLocal = location.getC_Location() != null && location.getC_Location().getC_Country_ID() == countryLocal.getC_Country_ID();
 		return isLocal;
 	}
 
