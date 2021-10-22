@@ -5,6 +5,9 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import de.metas.handlingunits.ddorder.impl.HUDDOrderBL;
+import de.metas.handlingunits.ddorder.picking.DDOrderPickFromRepository;
+import de.metas.handlingunits.ddorder.picking.DDOrderPickFromService;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
@@ -58,7 +61,9 @@ public class DistributeAndMoveReceiptCreatorTest
 
 		Services.registerService(IProductActivityProvider.class, Services.get(IProductAcctDAO.class));
 
-		distributeAndMoveReceiptCreator = new DistributeAndMoveReceiptCreator(new LotNumberQuarantineRepository());
+		distributeAndMoveReceiptCreator = new DistributeAndMoveReceiptCreator(
+				new LotNumberQuarantineRepository(),
+				new HUDDOrderBL(new DDOrderPickFromService(new DDOrderPickFromRepository())));
 	}
 
 	@Test
