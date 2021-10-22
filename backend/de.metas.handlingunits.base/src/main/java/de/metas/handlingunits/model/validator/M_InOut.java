@@ -398,8 +398,9 @@ public class M_InOut
 			// nothing to do TODO: Should I also throw error if a receipt is completed and the isMandatoryOnReceipt flags are not respected?
 			return;
 
-
 		}
+
+		huInOutBL.validateMandatoryOnShipmentAttributes(shipment);
 	}
 
 }

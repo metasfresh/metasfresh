@@ -23,6 +23,7 @@ package de.metas.handlingunits.inout.impl;
  */
 
 import com.google.common.collect.ImmutableCollection;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
 import de.metas.document.DocTypeQuery;
@@ -39,6 +40,10 @@ import de.metas.handlingunits.IHUWarehouseDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.attribute.IHUAttributesDAO;
+import de.metas.handlingunits.attribute.exceptions.AttributeNotFoundException;
+import de.metas.handlingunits.attribute.storage.IAttributeStorage;
+import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
+import de.metas.handlingunits.attribute.storage.IAttributeStorageFactoryService;
 import de.metas.handlingunits.impl.DocumentLUTUConfigurationManager;
 import de.metas.handlingunits.impl.IDocumentLUTUConfigurationManager;
 import de.metas.handlingunits.inout.IHUInOutBL;
@@ -61,16 +66,23 @@ import de.metas.inout.InOutLineId;
 import de.metas.logging.LogManager;
 import de.metas.materialtracking.IMaterialTrackingAttributeBL;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
+import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeSetId;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributeConstants;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.IAttributesBL;
 import org.adempiere.mm.attributes.api.ISerialNoBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_C_DocType;
@@ -99,6 +111,10 @@ public class HUInOutBL implements IHUInOutBL
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final ISerialNoBL serialNoBL = Services.get(ISerialNoBL.class);
+	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+	private final IAttributesBL attributesBL = Services.get(IAttributesBL.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final IAttributeStorageFactoryService attributeStorageFactoryService = Services.get(IAttributeStorageFactoryService.class);
 
 	@Override
 	public I_M_InOut getById(@NonNull final InOutId inoutId)
@@ -368,8 +384,8 @@ public class HUInOutBL implements IHUInOutBL
 		for (final I_M_InOutLine lineRecord : lineRecords)
 		{
 			Check.errorIf(lineRecord.getReversalLine_ID() <= 0,
-					"copyAssignmentsToReversal - current M_InOutLine_ID={} has no reversal line; M_InOut={}",
-					lineRecord.getM_InOutLine_ID(), inOutRecord);
+						  "copyAssignmentsToReversal - current M_InOutLine_ID={} has no reversal line; M_InOut={}",
+						  lineRecord.getM_InOutLine_ID(), inOutRecord);
 
 			huAssignmentBL.copyHUAssignments(lineRecord, lineRecord.getReversalLine());
 		}
@@ -441,6 +457,52 @@ public class HUInOutBL implements IHUInOutBL
 				.createQueryBuilder()
 				.create()
 				.anyMatch();
+	}
+
+	@Override
+	public void validateMandatoryOnShipmentAttributes(final I_M_InOut shipment)
+	{
+		final IAttributeStorageFactory attributesFactory = attributeStorageFactoryService.createHUAttributeStorageFactory();
+
+		final List<I_M_InOutLine> inOutLines = retrieveLines(shipment, I_M_InOutLine.class);
+
+		for (I_M_InOutLine line : inOutLines)
+		{
+			final AttributeSetInstanceId asiID = AttributeSetInstanceId.ofRepoIdOrNull(line.getM_AttributeSetInstance_ID());
+
+			if (asiID == null)
+			{
+				continue;
+			}
+
+			final ProductId productId = ProductId.ofRepoId(line.getM_Product_ID());
+
+			final AttributeSetId attributeSetId = productBL.getAttributeSetId(productId);
+
+			final ImmutableList<I_M_Attribute> attributesMandatoryOnShipment = attributeDAO.getAttributesByAttributeSetId(attributeSetId).stream()
+					.filter(attribute -> attributesBL
+							.isMandatoryOnShipment(productId,
+												   AttributeId.ofRepoId(attribute.getM_Attribute_ID())))
+					.collect(ImmutableList.toImmutableList());
+
+			final List<I_M_HU> husForLine = huAssignmentDAO.retrieveTopLevelHUsForModel(line);
+
+			for (final I_M_HU hu : husForLine)
+			{
+				final IAttributeStorage attributeStorage = attributesFactory.getAttributeStorage(hu);
+
+				attributesMandatoryOnShipment
+						.stream()
+						.forEach(attribute -> {
+									 final Object attributeValue = attributeStorage.getValue(attribute);
+									 if (Check.isEmpty(attributeValue))
+									 {
+										 throw new AttributeNotFoundException(AttributeId.ofRepoId(attribute.getM_Attribute_ID()), attributeStorage);
+									 }
+								 }
+						);
+			}
+		}
 	}
 
 }
