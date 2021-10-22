@@ -5,6 +5,9 @@ import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.HuPackingInstructionsVersionId;
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUAssignmentDAO;
+import de.metas.handlingunits.ddorder.impl.HUDDOrderBL;
+import de.metas.handlingunits.ddorder.picking.DDOrderPickFromRepository;
+import de.metas.handlingunits.ddorder.picking.DDOrderPickFromService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
@@ -34,7 +37,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class HUAssignmentBLTest
 {
-	private Properties ctx;
 	private String trxName;
 	private IContextAware contextProvider;
 
@@ -52,8 +54,13 @@ public class HUAssignmentBLTest
 
 		//
 		// Make sure Main handling units interceptor is registered
-		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new de.metas.handlingunits.model.validator.Main(new PickingBOMService()));
-		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new DD_Order());
+		final DDOrderPickFromService ddOrderPickFromService = new DDOrderPickFromService(new DDOrderPickFromRepository());
+		final HUDDOrderBL huDDOrderBL = new HUDDOrderBL(ddOrderPickFromService);
+		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new de.metas.handlingunits.model.validator.Main(
+				ddOrderPickFromService,
+				huDDOrderBL,
+				new PickingBOMService()));
+		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new DD_Order(ddOrderPickFromService, huDDOrderBL));
 
 		//
 		// BL under test
@@ -62,7 +69,7 @@ public class HUAssignmentBLTest
 
 		//
 		// Setup ctx and trxName
-		ctx = Env.getCtx();
+		final Properties ctx = Env.getCtx();
 		trxName = ITrx.TRXNAME_None;
 		contextProvider = PlainContextAware.newWithTrxName(ctx, trxName);
 

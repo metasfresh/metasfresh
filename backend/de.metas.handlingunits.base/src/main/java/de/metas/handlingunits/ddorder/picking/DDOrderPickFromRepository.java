@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Set;
 
 @Repository
-class DDOrderPickFromRepository
+public class DDOrderPickFromRepository
 {
 	private static final IQueryBL queryBL = Services.get(IQueryBL.class);
 

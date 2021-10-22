@@ -24,9 +24,15 @@ import java.util.List;
 
 class DDOrderLineToAllocateFactory
 {
-	private final IHUDDOrderBL ddOrderBL = Services.get(IHUDDOrderBL.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+	private final IHUDDOrderBL ddOrderBL;
+
+	DDOrderLineToAllocateFactory(
+			@NonNull final IHUDDOrderBL ddOrderBL)
+	{
+		this.ddOrderBL = ddOrderBL;
+	}
 
 	public ImmutableList<DDOrderLineToAllocate> ofDDOrderLine(@NonNull final I_DD_OrderLine ddOrderLine)
 	{

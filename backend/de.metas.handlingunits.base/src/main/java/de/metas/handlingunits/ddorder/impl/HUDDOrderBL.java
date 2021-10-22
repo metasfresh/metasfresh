@@ -34,7 +34,6 @@ import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.compiere.SpringContextHolder;
 import org.eevolution.api.DDOrderId;
 import org.eevolution.api.DDOrderLineId;
 import org.eevolution.api.DDOrderQuery;
@@ -45,6 +44,7 @@ import org.eevolution.model.I_DD_OrderLine;
 import org.eevolution.model.I_DD_OrderLine_Alternative;
 import org.eevolution.model.I_DD_OrderLine_Or_Alternative;
 import org.eevolution.model.X_DD_OrderLine;
+import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.Collection;
@@ -55,6 +55,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
+@Service
 public class HUDDOrderBL implements IHUDDOrderBL
 {
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
@@ -66,10 +67,16 @@ public class HUDDOrderBL implements IHUDDOrderBL
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 	private final IHUAssignmentBL huAssignmentBL = Services.get(IHUAssignmentBL.class);
 	private final IHUInOutDAO huInOutDAO = Services.get(IHUInOutDAO.class);
-	private final DDOrderPickFromService ddOrderPickFromService = SpringContextHolder.instance.getBean(DDOrderPickFromService.class);
-	private final DDOrderLinesAllocatorFactory ddOrderLinesAllocatorFactory = new DDOrderLinesAllocatorFactory(ddOrderPickFromService);
+	private final DDOrderPickFromService ddOrderPickFromService;
+	private final DDOrderLinesAllocatorFactory ddOrderLinesAllocatorFactory;
 
 	private static final String SYSCONFIG_IsCreateMovementOnComplete = "DDOrder_isCreateMovementOnComplete";
+
+	public HUDDOrderBL(@NonNull final DDOrderPickFromService ddOrderPickFromService)
+	{
+		this.ddOrderPickFromService = ddOrderPickFromService;
+		this.ddOrderLinesAllocatorFactory = new DDOrderLinesAllocatorFactory(ddOrderPickFromService, this);
+	}
 
 	@Override
 	public I_DD_Order getById(final DDOrderId ddOrderId)
