@@ -3,13 +3,13 @@ package de.metas.distribution.workflows_api;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.Multimaps;
-import de.metas.ddorder.movement.schedule.DDOrderMoveSchedule;
+import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveSchedule;
 import de.metas.organization.InstantAndOrgId;
 import de.metas.product.ProductId;
 import de.metas.user.UserId;
 import lombok.NonNull;
-import org.eevolution.api.DDOrderId;
-import org.eevolution.api.DDOrderLineId;
+import de.metas.distribution.ddorder.DDOrderId;
+import de.metas.distribution.ddorder.DDOrderLineId;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
 

@@ -25,7 +25,7 @@ package de.metas.ui.web.ddorder.process;
 import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsDAO;
-import de.metas.ddorder.DDOrderService;
+import de.metas.distribution.ddorder.DDOrderService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
@@ -44,7 +44,7 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.SpringContextHolder;
-import org.eevolution.api.DDOrderLineId;
+import de.metas.distribution.ddorder.DDOrderLineId;
 import org.eevolution.model.I_DD_OrderLine;
 
 public class WEBUI_DD_OrderLine_MoveSelected_HU extends ViewBasedProcessTemplate implements IProcessPrecondition, IProcessDefaultParametersProvider

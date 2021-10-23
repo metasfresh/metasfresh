@@ -22,9 +22,11 @@ package de.metas.tourplanning.integrationtest;
  * #L%
  */
 
-import de.metas.ddorder.DDOrderService;
-import de.metas.ddorder.movement.schedule.DDOrderMoveScheduleRepository;
-import de.metas.ddorder.movement.schedule.DDOrderMoveScheduleService;
+import de.metas.distribution.ddorder.DDOrderService;
+import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelDAO;
+import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelService;
+import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleRepository;
+import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleService;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.tourplanning.model.I_M_DeliveryDay_Alloc;
 import de.metas.handlingunits.tourplanning.spi.impl.HUShipmentScheduleDeliveryDayHandlerTest;
@@ -41,8 +43,10 @@ public class HU_TourInstance_DeliveryDay_ShipmentSchedule_IntegrationTest extend
 	{
 		super.afterInit();
 
-		final DDOrderMoveScheduleService ddOrderMoveScheduleService = new DDOrderMoveScheduleService(new DDOrderMoveScheduleRepository());
-		final DDOrderService ddOrderService = new DDOrderService(ddOrderMoveScheduleService);
+		final DDOrderLowLevelDAO ddOrderLowLevelDAO = new DDOrderLowLevelDAO();
+		final DDOrderMoveScheduleService ddOrderMoveScheduleService = new DDOrderMoveScheduleService(ddOrderLowLevelDAO, new DDOrderMoveScheduleRepository());
+		final DDOrderLowLevelService ddOrderLowLevelService = new DDOrderLowLevelService(ddOrderLowLevelDAO);
+		final DDOrderService ddOrderService = new DDOrderService(ddOrderLowLevelDAO, ddOrderLowLevelService, ddOrderMoveScheduleService);
 		new de.metas.handlingunits.model.validator.Main(
 				ddOrderMoveScheduleService,
 				ddOrderService,

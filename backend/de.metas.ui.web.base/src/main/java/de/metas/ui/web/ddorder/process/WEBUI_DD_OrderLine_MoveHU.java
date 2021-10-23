@@ -2,8 +2,8 @@ package de.metas.ui.web.ddorder.process;
 
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.ddorder.DDOrderService;
-import de.metas.ddorder.movement.schedule.DDOrderMoveScheduleService;
+import de.metas.distribution.ddorder.DDOrderService;
+import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.printing.esb.base.util.Check;
@@ -21,7 +21,7 @@ import de.metas.util.Services;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_MovementLine;
-import org.eevolution.api.DDOrderLineId;
+import de.metas.distribution.ddorder.DDOrderLineId;
 import org.eevolution.model.I_DD_OrderLine;
 
 import java.util.List;

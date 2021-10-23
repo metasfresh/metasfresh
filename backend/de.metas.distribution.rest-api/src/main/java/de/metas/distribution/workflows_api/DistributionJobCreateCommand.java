@@ -1,15 +1,15 @@
 package de.metas.distribution.workflows_api;
 
-import de.metas.ddorder.DDOrderService;
-import de.metas.ddorder.movement.schedule.DDOrderMoveScheduleService;
-import de.metas.ddorder.movement.schedule.plan.DDOrderMovePlan;
-import de.metas.ddorder.movement.schedule.plan.DDOrderMovePlanCreateRequest;
+import de.metas.distribution.ddorder.DDOrderService;
+import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleService;
+import de.metas.distribution.ddorder.movement.schedule.plan.DDOrderMovePlan;
+import de.metas.distribution.ddorder.movement.schedule.plan.DDOrderMovePlanCreateRequest;
 import de.metas.logging.LogManager;
 import de.metas.user.UserId;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
-import org.eevolution.api.DDOrderId;
+import de.metas.distribution.ddorder.DDOrderId;
 import org.eevolution.model.I_DD_Order;
 import org.slf4j.Logger;
 

@@ -1,17 +1,19 @@
 package de.metas.handlingunits.impl;
 
+import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelDAO;
+import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelService;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.HuPackingInstructionsVersionId;
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUAssignmentDAO;
-import de.metas.ddorder.DDOrderService;
-import de.metas.ddorder.movement.schedule.DDOrderMoveScheduleRepository;
-import de.metas.ddorder.movement.schedule.DDOrderMoveScheduleService;
+import de.metas.distribution.ddorder.DDOrderService;
+import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleRepository;
+import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
-import de.metas.handlingunits.model.validator.DD_Order;
+import de.metas.distribution.ddorder.interceptor.DD_Order;
 import de.metas.inoutcandidate.picking_bom.PickingBOMService;
 import de.metas.util.Services;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
@@ -54,8 +56,10 @@ public class HUAssignmentBLTest
 
 		//
 		// Make sure Main handling units interceptor is registered
-		final DDOrderMoveScheduleService ddOrderMoveScheduleService = new DDOrderMoveScheduleService(new DDOrderMoveScheduleRepository());
-		final DDOrderService ddOrderService = new DDOrderService(ddOrderMoveScheduleService);
+		final DDOrderLowLevelDAO ddOrderLowLevelDAO = new DDOrderLowLevelDAO();
+		final DDOrderMoveScheduleService ddOrderMoveScheduleService = new DDOrderMoveScheduleService(ddOrderLowLevelDAO, new DDOrderMoveScheduleRepository());
+		final DDOrderLowLevelService ddOrderLowLevelService = new DDOrderLowLevelService(ddOrderLowLevelDAO);
+		final DDOrderService ddOrderService = new DDOrderService(ddOrderLowLevelDAO, ddOrderLowLevelService, ddOrderMoveScheduleService);
 		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new de.metas.handlingunits.model.validator.Main(
 				ddOrderMoveScheduleService,
 				ddOrderService,

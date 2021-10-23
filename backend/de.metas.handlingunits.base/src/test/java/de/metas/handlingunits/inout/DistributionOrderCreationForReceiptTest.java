@@ -1,6 +1,7 @@
 package de.metas.handlingunits.inout;
 
 import de.metas.business.BusinessTestHelper;
+import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelDAO;
 import de.metas.inout.api.IInOutMovementBL;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_InOutLine;
@@ -19,7 +20,6 @@ import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_C_DocType;
-import org.eevolution.api.IDDOrderDAO;
 import org.eevolution.model.I_DD_NetworkDistribution;
 import org.eevolution.model.I_DD_NetworkDistributionLine;
 import org.eevolution.model.I_DD_Order;
@@ -123,7 +123,7 @@ public class DistributionOrderCreationForReceiptTest extends ReceiptSchedule_War
 
 		assertThat(distributionOrder).isNotNull();
 
-		List<I_DD_OrderLine> ddOrderLines = Services.get(IDDOrderDAO.class).retrieveLines(distributionOrder);
+		List<I_DD_OrderLine> ddOrderLines = new DDOrderLowLevelDAO().retrieveLines(distributionOrder);
 
 		final I_DD_OrderLine
 

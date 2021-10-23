@@ -24,7 +24,7 @@ package de.metas.ui.web.ddorder.process;
 
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHandlingUnitsDAO;
-import de.metas.ddorder.DDOrderService;
+import de.metas.distribution.ddorder.DDOrderService;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessExecutionResult;
@@ -38,7 +38,7 @@ import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.util.Services;
 import org.compiere.SpringContextHolder;
-import org.eevolution.api.DDOrderLineId;
+import de.metas.distribution.ddorder.DDOrderLineId;
 import org.eevolution.model.I_DD_OrderLine;
 
 import static de.metas.ui.web.ddorder.HUsToMoveViewFactory.WINDOW_ID;
