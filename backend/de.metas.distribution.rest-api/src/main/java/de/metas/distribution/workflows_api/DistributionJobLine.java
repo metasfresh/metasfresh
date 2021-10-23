@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableList;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import org.eevolution.api.DDOrderLineId;
+import de.metas.distribution.ddorder.DDOrderLineId;
 
 @Value
 @Builder

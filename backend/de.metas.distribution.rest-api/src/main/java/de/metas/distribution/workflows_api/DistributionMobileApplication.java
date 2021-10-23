@@ -18,7 +18,7 @@ import de.metas.workflow.rest_api.service.MobileApplication;
 import de.metas.workflow.rest_api.service.WorkflowStartRequest;
 import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
-import org.eevolution.api.DDOrderId;
+import de.metas.distribution.ddorder.DDOrderId;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;

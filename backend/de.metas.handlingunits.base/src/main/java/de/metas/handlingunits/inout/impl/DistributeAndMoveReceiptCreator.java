@@ -1,7 +1,7 @@
 package de.metas.handlingunits.inout.impl;
 
-import de.metas.ddorder.DDOrderService;
-import de.metas.ddorder.QuarantineInOutLine;
+import de.metas.distribution.ddorder.DDOrderService;
+import de.metas.distribution.ddorder.QuarantineInOutLine;
 import de.metas.handlingunits.inout.IInOutDDOrderBL;
 import de.metas.handlingunits.inout.impl.DistributeAndMoveReceiptCreator.Result.ResultBuilder;
 import de.metas.handlingunits.model.I_M_InOutLine;

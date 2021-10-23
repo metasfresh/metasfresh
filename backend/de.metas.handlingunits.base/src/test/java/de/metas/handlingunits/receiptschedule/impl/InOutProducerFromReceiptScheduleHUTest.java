@@ -26,12 +26,14 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.acct.api.IProductAcctDAO;
 import de.metas.contracts.flatrate.interfaces.I_C_DocType;
+import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelDAO;
+import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelService;
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
-import de.metas.ddorder.DDOrderService;
-import de.metas.ddorder.movement.schedule.DDOrderMoveScheduleRepository;
-import de.metas.ddorder.movement.schedule.DDOrderMoveScheduleService;
+import de.metas.distribution.ddorder.DDOrderService;
+import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleRepository;
+import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleService;
 import de.metas.handlingunits.expectations.HUAttributeExpectation;
 import de.metas.handlingunits.expectations.HUWeightsExpectation;
 import de.metas.handlingunits.inout.impl.DistributeAndMoveReceiptCreator;
@@ -50,6 +52,7 @@ import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
@@ -94,7 +97,12 @@ public class InOutProducerFromReceiptScheduleHUTest extends AbstractRSAllocation
 		SpringContextHolder.registerJUnitBeans(IHUToReceiveValidator.class, ImmutableList.of());
 
 		final LotNumberQuarantineRepository lotNumberQuarantineRepository = new LotNumberQuarantineRepository();
-		final DDOrderService ddOrderService = new DDOrderService(new DDOrderMoveScheduleService(new DDOrderMoveScheduleRepository()));
+		final DDOrderLowLevelDAO ddOrderLowLevelDAO = new DDOrderLowLevelDAO();
+		final DDOrderLowLevelService ddOrderLowLevelService = new DDOrderLowLevelService(ddOrderLowLevelDAO);
+		final DDOrderService ddOrderService = new DDOrderService(
+				ddOrderLowLevelDAO,
+				ddOrderLowLevelService,
+				new DDOrderMoveScheduleService(ddOrderLowLevelDAO, new DDOrderMoveScheduleRepository()));
 		SpringContextHolder.registerJUnitBean(new DistributeAndMoveReceiptCreator(lotNumberQuarantineRepository, ddOrderService));
 	}
 

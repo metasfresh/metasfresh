@@ -2,8 +2,8 @@ package de.metas.distribution.workflows_api;
 
 import de.metas.dao.ValueRestriction;
 import de.metas.document.engine.DocStatus;
-import de.metas.ddorder.DDOrderService;
-import de.metas.ddorder.movement.schedule.DDOrderMoveScheduleService;
+import de.metas.distribution.ddorder.DDOrderService;
+import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleService;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.InstantAndOrgId;
 import de.metas.product.IProductBL;
@@ -13,8 +13,8 @@ import lombok.NonNull;
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
-import org.eevolution.api.DDOrderId;
-import org.eevolution.api.DDOrderQuery;
+import de.metas.distribution.ddorder.DDOrderId;
+import de.metas.distribution.ddorder.DDOrderQuery;
 import org.eevolution.model.I_DD_Order;
 import org.springframework.stereotype.Service;
 

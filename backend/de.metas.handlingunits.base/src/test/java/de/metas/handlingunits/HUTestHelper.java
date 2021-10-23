@@ -27,13 +27,15 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 import de.metas.common.util.time.SystemTime;
+import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelDAO;
+import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelService;
 import de.metas.document.dimension.DimensionFactory;
 import de.metas.document.dimension.DimensionService;
 import de.metas.document.dimension.InOutLineDimensionFactory;
 import de.metas.document.dimension.OrderLineDimensionFactory;
-import de.metas.ddorder.DDOrderService;
-import de.metas.ddorder.movement.schedule.DDOrderMoveScheduleRepository;
-import de.metas.ddorder.movement.schedule.DDOrderMoveScheduleService;
+import de.metas.distribution.ddorder.DDOrderService;
+import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleRepository;
+import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleService;
 import de.metas.inoutcandidate.document.dimension.ReceiptScheduleDimensionFactory;
 import de.metas.invoicecandidate.document.dimension.InvoiceCandidateDimensionFactory;
 import org.adempiere.ad.dao.IQueryBL;
@@ -545,8 +547,10 @@ public class HUTestHelper
 
 	private de.metas.handlingunits.model.validator.Main newHandlingUnitsModelInterceptor()
 	{
-		final DDOrderMoveScheduleService ddOrderMoveScheduleService = new DDOrderMoveScheduleService(new DDOrderMoveScheduleRepository());
-		final DDOrderService ddOrderService = new DDOrderService(ddOrderMoveScheduleService);
+		final DDOrderLowLevelDAO ddOrderLowLevelDAO = new DDOrderLowLevelDAO();
+		final DDOrderMoveScheduleService ddOrderMoveScheduleService = new DDOrderMoveScheduleService(ddOrderLowLevelDAO, new DDOrderMoveScheduleRepository());
+		final DDOrderLowLevelService ddOrderLowLevelService = new DDOrderLowLevelService(ddOrderLowLevelDAO);
+		final DDOrderService ddOrderService = new DDOrderService(ddOrderLowLevelDAO, ddOrderLowLevelService, ddOrderMoveScheduleService);
 		return new de.metas.handlingunits.model.validator.Main(
 				ddOrderMoveScheduleService,
 				ddOrderService,

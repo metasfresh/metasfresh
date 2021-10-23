@@ -1,8 +1,8 @@
 package de.metas.distribution.workflows_api;
 
-import de.metas.ddorder.DDOrderService;
-import de.metas.ddorder.movement.schedule.DDOrderMoveSchedule;
-import de.metas.ddorder.movement.schedule.DDOrderMoveScheduleService;
+import de.metas.distribution.ddorder.DDOrderService;
+import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveSchedule;
+import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleService;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
@@ -14,7 +14,7 @@ import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_M_Locator;
-import org.eevolution.api.DDOrderId;
+import de.metas.distribution.ddorder.DDOrderId;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
 

@@ -33,7 +33,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.eevolution.model.I_DD_Order;
 
-import de.metas.ddorder.hu_spis.DDOrderHUDocumentFactory;
+import de.metas.distribution.ddorder.hu_spis.DDOrderHUDocumentFactory;
 import de.metas.handlingunits.document.IHUDocument;
 import de.metas.handlingunits.document.IHUDocumentFactory;
 import de.metas.handlingunits.document.IHUDocumentFactoryService;

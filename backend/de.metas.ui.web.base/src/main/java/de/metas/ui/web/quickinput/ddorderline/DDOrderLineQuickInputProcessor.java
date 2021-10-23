@@ -24,14 +24,14 @@ package de.metas.ui.web.quickinput.ddorderline;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HUPIItemProductId;
-import de.metas.ddorder.DDOrderLineCreateRequest;
-import de.metas.ddorder.DDOrderService;
+import de.metas.distribution.ddorder.DDOrderLineCreateRequest;
+import de.metas.distribution.ddorder.DDOrderService;
 import de.metas.product.ProductId;
 import de.metas.ui.web.quickinput.IQuickInputProcessor;
 import de.metas.ui.web.quickinput.QuickInput;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import org.compiere.SpringContextHolder;
-import org.eevolution.api.DDOrderLineId;
+import de.metas.distribution.ddorder.DDOrderLineId;
 import org.eevolution.model.I_DD_Order;
 
 import java.math.BigDecimal;

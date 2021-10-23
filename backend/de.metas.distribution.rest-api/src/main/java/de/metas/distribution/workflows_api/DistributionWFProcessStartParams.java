@@ -5,7 +5,7 @@ import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.api.Params;
-import org.eevolution.api.DDOrderId;
+import de.metas.distribution.ddorder.DDOrderId;
 
 @Value
 @Builder

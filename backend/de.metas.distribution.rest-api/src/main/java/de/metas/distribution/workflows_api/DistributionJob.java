@@ -6,7 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
-import org.eevolution.api.DDOrderId;
+import de.metas.distribution.ddorder.DDOrderId;
 
 import javax.annotation.Nullable;
 import java.time.ZonedDateTime;

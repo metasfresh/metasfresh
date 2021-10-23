@@ -1,7 +1,7 @@
 package de.metas.distribution.workflows_api;
 
 import de.metas.handlingunits.HuId;
-import de.metas.ddorder.movement.schedule.DDOrderMoveScheduleId;
+import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleId;
 import de.metas.handlingunits.picking.QtyRejectedReasonCode;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
