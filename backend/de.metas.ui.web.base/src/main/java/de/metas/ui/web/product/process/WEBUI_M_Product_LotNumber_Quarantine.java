@@ -70,8 +70,8 @@ public class WEBUI_M_Product_LotNumber_Quarantine extends ViewBasedProcessTempla
 
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final IHUInOutDAO huInOutDAO = Services.get(IHUInOutDAO.class);
-	private final IHUDDOrderBL huDDOrderBL = Services.get(IHUDDOrderBL.class);
 	private final ILotNumberDateAttributeDAO lotNumberDateAttributeDAO = Services.get(ILotNumberDateAttributeDAO.class);
+	private final IHUDDOrderBL ddOrderBL = SpringContextHolder.instance.getBean(IHUDDOrderBL.class);
 	private final DDOrderPickFromService ddOrderPickFromService = SpringContextHolder.instance.getBean(DDOrderPickFromService.class);
 
 	private final ArrayList<HUToDistribute> husToQuarantine = new ArrayList<>();
@@ -84,7 +84,7 @@ public class WEBUI_M_Product_LotNumber_Quarantine extends ViewBasedProcessTempla
 				.distinct()
 				.forEach(this::createQuarantineHUsByLotNoQuarantineId);
 
-		huDDOrderBL.createQuarantineDDOrderForHUs(husToQuarantine);
+		ddOrderBL.createQuarantineDDOrderForHUs(husToQuarantine);
 
 		setInvoiceCandsInDispute();
 

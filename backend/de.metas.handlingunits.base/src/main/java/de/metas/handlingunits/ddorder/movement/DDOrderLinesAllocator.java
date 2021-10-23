@@ -2,6 +2,7 @@ package de.metas.handlingunits.ddorder.movement;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.IHUContextFactory;
+import de.metas.handlingunits.ddorder.IHUDDOrderBL;
 import de.metas.handlingunits.ddorder.picking.DDOrderPickFromService;
 import de.metas.handlingunits.ddorder.picking.DDOrderPickSchedule;
 import de.metas.handlingunits.ddorder.picking.ScheduleToPickRequest;
@@ -27,6 +28,7 @@ public class DDOrderLinesAllocator
 	private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+	private final IHUDDOrderBL ddOrderBL;
 	private final DDOrderPickFromService ddOrderPickFromService;
 
 	private static final AdMessageKey MSG_DD_Order_NoLine_for_product = AdMessageKey.of("de.metas.handlingunits.ddorder.api.impl.DDOrderLinesAllocator.DD_Order_NoLine_for_product");
@@ -35,9 +37,11 @@ public class DDOrderLinesAllocator
 	private boolean failIfCannotAllocate = false; // default=false for backward compatibility
 
 	DDOrderLinesAllocator(
+			@NonNull final IHUDDOrderBL ddOrderBL,
 			@NonNull final DDOrderPickFromService ddOrderPickFromService,
 			@NonNull final ImmutableList<DDOrderLineToAllocate> ddOrderLines)
 	{
+		this.ddOrderBL = ddOrderBL;
 		this.ddOrderPickFromService = ddOrderPickFromService;
 		this.ddOrderLines = ddOrderLines;
 	}
@@ -92,7 +96,7 @@ public class DDOrderLinesAllocator
 		// TODO make sure we are not calling this method twice
 		final ImmutableList<DDOrderPickSchedule> schedules = ddOrderPickFromService.addScheduleToPickBulk(toScheduleToPickRequest());
 
-		return MovementsFromSchedulesGenerator.fromSchedules(schedules);
+		return MovementsFromSchedulesGenerator.fromSchedules(schedules, ddOrderBL, ddOrderPickFromService);
 	}
 
 	private void allocateHUProductStorage(@NonNull final IHUProductStorage huProductStorage)

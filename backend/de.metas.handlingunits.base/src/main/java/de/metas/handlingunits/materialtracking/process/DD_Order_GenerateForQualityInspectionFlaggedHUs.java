@@ -96,7 +96,7 @@ public class DD_Order_GenerateForQualityInspectionFlaggedHUs extends JavaProcess
 		final OrgId orgId = warehouseBL.getWarehouseOrgId(warehouseToId);
 		final BPartnerLocationId orgBPLocationId = bpartnerOrgBL.retrieveOrgBPLocationId(orgId);
 
-		HUs2DDOrderProducer.newProducer()
+		HUs2DDOrderProducer.newProducer(ddOrderPickFromService)
 				.setLocatorToId(locatorToId)
 				.setBpartnerLocationId(orgBPLocationId)
 				.setHUs(retrieveHUs())

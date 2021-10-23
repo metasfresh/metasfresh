@@ -3,6 +3,7 @@ package de.metas.handlingunits.ddorder.movement;
 import com.google.common.collect.ImmutableList;
 import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.ddorder.IHUDDOrderBL;
+import de.metas.handlingunits.ddorder.picking.DDOrderPickFromService;
 import de.metas.handlingunits.ddorder.picking.DDOrderPickSchedule;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -25,7 +26,8 @@ public class MovementsFromSchedulesGenerator
 {
 	// Services
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
-	private final IHUDDOrderBL ddOrderBL = Services.get(IHUDDOrderBL.class);
+	private final IHUDDOrderBL ddOrderBL;
+	private final DDOrderPickFromService ddOrderPickFromService;
 
 	// Parameters
 	private final ImmutableList<DDOrderPickSchedule> schedules;
@@ -41,17 +43,25 @@ public class MovementsFromSchedulesGenerator
 	private final DDOrdersCache ddOrdersCache = new DDOrdersCache();
 
 	private MovementsFromSchedulesGenerator(
+			@NonNull final IHUDDOrderBL ddOrderBL,
+			@NonNull final DDOrderPickFromService ddOrderPickFromService,
 			@NonNull final List<DDOrderPickSchedule> schedules)
 	{
 		Check.assumeNotEmpty(schedules, "schedules not empty");
+
+		this.ddOrderBL = ddOrderBL;
+		this.ddOrderPickFromService = ddOrderPickFromService;
 		this.schedules = ImmutableList.copyOf(schedules);
 
 		huIdsWithPackingMaterialsTransferred = new MovementBuilder.HuIdsWithPackingMaterialsTransferred();
 	}
 
-	public static MovementsFromSchedulesGenerator fromSchedules(@NonNull final List<DDOrderPickSchedule> schedules)
+	public static MovementsFromSchedulesGenerator fromSchedules(
+			@NonNull final List<DDOrderPickSchedule> schedules,
+			@NonNull final IHUDDOrderBL ddOrderBL,
+			@NonNull final DDOrderPickFromService ddOrderPickFromService)
 	{
-		return new MovementsFromSchedulesGenerator(schedules);
+		return new MovementsFromSchedulesGenerator(ddOrderBL, ddOrderPickFromService, schedules);
 	}
 
 	public MovementsFromSchedulesGenerator locatorToIdOverride(@Nullable final LocatorId locatorToIdOverride)
@@ -154,7 +164,7 @@ public class MovementsFromSchedulesGenerator
 
 	private MovementBuilder createMovementBuilder(@NonNull final DDOrderId ddOrderId)
 	{
-		return new MovementBuilder(ddOrdersCache, huIdsWithPackingMaterialsTransferred, ddOrderId)
+		return new MovementBuilder(ddOrderBL, ddOrderPickFromService, ddOrdersCache, huIdsWithPackingMaterialsTransferred, ddOrderId)
 				.movementDate(movementDate)
 				.locatorToIdOverride(locatorToIdOverride);
 	}

@@ -49,7 +49,7 @@ import org.eevolution.model.I_DD_OrderLine;
 public class WEBUI_DD_OrderLine_MoveSelected_HU extends ViewBasedProcessTemplate implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
 	private final IViewsRepository viewsRepository = SpringContextHolder.instance.getBean(IViewsRepository.class);
-	private final IHUDDOrderBL ddOrderBL = Services.get(IHUDDOrderBL.class);
+	private final IHUDDOrderBL ddOrderBL = SpringContextHolder.instance.getBean(IHUDDOrderBL.class);
 	private final IHandlingUnitsDAO huDAO = Services.get(IHandlingUnitsDAO.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 
