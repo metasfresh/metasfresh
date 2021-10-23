@@ -3,7 +3,7 @@ package de.metas.distribution.workflows_api;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.Multimaps;
-import de.metas.handlingunits.ddorder.picking.DDOrderPickSchedule;
+import de.metas.ddorder.movement.schedule.DDOrderMoveSchedule;
 import de.metas.organization.InstantAndOrgId;
 import de.metas.product.ProductId;
 import de.metas.user.UserId;
@@ -23,7 +23,7 @@ class DistributionJobLoader
 
 	private final HashMap<DDOrderId, I_DD_Order> ddOrdersCache = new HashMap<>();
 	private final HashMap<DDOrderId, ImmutableList<I_DD_OrderLine>> ddOrderLinesCache = new HashMap<>();
-	private final HashMap<DDOrderId, ImmutableListMultimap<DDOrderLineId, DDOrderPickSchedule>> schedulesCache = new HashMap<>();
+	private final HashMap<DDOrderId, ImmutableListMultimap<DDOrderLineId, DDOrderMoveSchedule>> schedulesCache = new HashMap<>();
 
 	public DistributionJobLoader(@NonNull final DistributionJobLoaderSupportingServices loadingSupportServices)
 	{
@@ -80,7 +80,7 @@ class DistributionJobLoader
 				.build();
 	}
 
-	private DistributionJobStep toDistributionJobStep(final DDOrderPickSchedule schedule)
+	private DistributionJobStep toDistributionJobStep(final DDOrderMoveSchedule schedule)
 	{
 		return DistributionJobStep.builder()
 				.id(schedule.getId())
@@ -120,15 +120,15 @@ class DistributionJobLoader
 		return ImmutableList.copyOf(loadingSupportServices.getLines(ddOrder));
 	}
 
-	private List<DDOrderPickSchedule> getSchedules(final DDOrderId ddOrderId, final DDOrderLineId ddOrderLineId)
+	private List<DDOrderMoveSchedule> getSchedules(final DDOrderId ddOrderId, final DDOrderLineId ddOrderLineId)
 	{
 		return schedulesCache.computeIfAbsent(ddOrderId, this::retrieveSchedules)
 				.get(ddOrderLineId);
 	}
 
-	private ImmutableListMultimap<DDOrderLineId, DDOrderPickSchedule> retrieveSchedules(final DDOrderId ddOrderId)
+	private ImmutableListMultimap<DDOrderLineId, DDOrderMoveSchedule> retrieveSchedules(final DDOrderId ddOrderId)
 	{
-		return Multimaps.index(loadingSupportServices.getSchedules(ddOrderId), DDOrderPickSchedule::getDdOrderLineId);
+		return Multimaps.index(loadingSupportServices.getSchedules(ddOrderId), DDOrderMoveSchedule::getDdOrderLineId);
 	}
 
 }

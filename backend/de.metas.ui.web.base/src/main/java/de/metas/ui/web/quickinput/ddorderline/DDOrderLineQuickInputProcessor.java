@@ -24,8 +24,8 @@ package de.metas.ui.web.quickinput.ddorderline;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HUPIItemProductId;
-import de.metas.handlingunits.ddorder.DDOrderLineCreateRequest;
-import de.metas.handlingunits.ddorder.IHUDDOrderBL;
+import de.metas.ddorder.DDOrderLineCreateRequest;
+import de.metas.ddorder.DDOrderService;
 import de.metas.product.ProductId;
 import de.metas.ui.web.quickinput.IQuickInputProcessor;
 import de.metas.ui.web.quickinput.QuickInput;
@@ -39,7 +39,7 @@ import java.util.Set;
 
 public class DDOrderLineQuickInputProcessor implements IQuickInputProcessor
 {
-	private final IHUDDOrderBL ddOrderBL = SpringContextHolder.instance.getBean(IHUDDOrderBL.class);
+	private final DDOrderService ddOrderService = SpringContextHolder.instance.getBean(DDOrderService.class);
 
 	@Override
 	public Set<DocumentId> process(final QuickInput quickInput)
@@ -59,7 +59,7 @@ public class DDOrderLineQuickInputProcessor implements IQuickInputProcessor
 				.qtyEntered(qty)
 				.build();
 
-		final DDOrderLineId ddOrderLineId = ddOrderBL.addDDOrderLine(ddOrderLineCreateRequest);
+		final DDOrderLineId ddOrderLineId = ddOrderService.addDDOrderLine(ddOrderLineCreateRequest);
 
 		final DocumentId documentId = DocumentId.of(ddOrderLineId.getRepoId());
 		return ImmutableSet.of(documentId);

@@ -31,9 +31,9 @@ import de.metas.document.dimension.DimensionFactory;
 import de.metas.document.dimension.DimensionService;
 import de.metas.document.dimension.InOutLineDimensionFactory;
 import de.metas.document.dimension.OrderLineDimensionFactory;
-import de.metas.handlingunits.ddorder.impl.HUDDOrderBL;
-import de.metas.handlingunits.ddorder.picking.DDOrderPickFromRepository;
-import de.metas.handlingunits.ddorder.picking.DDOrderPickFromService;
+import de.metas.ddorder.DDOrderService;
+import de.metas.ddorder.movement.schedule.DDOrderMoveScheduleRepository;
+import de.metas.ddorder.movement.schedule.DDOrderMoveScheduleService;
 import de.metas.inoutcandidate.document.dimension.ReceiptScheduleDimensionFactory;
 import de.metas.invoicecandidate.document.dimension.InvoiceCandidateDimensionFactory;
 import org.adempiere.ad.dao.IQueryBL;
@@ -545,11 +545,11 @@ public class HUTestHelper
 
 	private de.metas.handlingunits.model.validator.Main newHandlingUnitsModelInterceptor()
 	{
-		final DDOrderPickFromService ddOrderPickFromService = new DDOrderPickFromService(new DDOrderPickFromRepository());
-		final HUDDOrderBL huDDOrderBL = new HUDDOrderBL(ddOrderPickFromService);
+		final DDOrderMoveScheduleService ddOrderMoveScheduleService = new DDOrderMoveScheduleService(new DDOrderMoveScheduleRepository());
+		final DDOrderService ddOrderService = new DDOrderService(ddOrderMoveScheduleService);
 		return new de.metas.handlingunits.model.validator.Main(
-				ddOrderPickFromService,
-				huDDOrderBL,
+				ddOrderMoveScheduleService,
+				ddOrderService,
 				new PickingBOMService());
 	}
 

@@ -2,8 +2,8 @@ package de.metas.ui.web.ddorder.process;
 
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.ddorder.IHUDDOrderBL;
-import de.metas.handlingunits.ddorder.picking.DDOrderPickFromService;
+import de.metas.ddorder.DDOrderService;
+import de.metas.ddorder.movement.schedule.DDOrderMoveScheduleService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.printing.esb.base.util.Check;
@@ -51,8 +51,8 @@ import java.util.List;
 public class WEBUI_DD_OrderLine_MoveHU extends ViewBasedProcessTemplate implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
 	// services
-	private final IHUDDOrderBL huDDOrderBL = SpringContextHolder.instance.getBean(IHUDDOrderBL.class);
-	private final DDOrderPickFromService ddOrderPickFromService = SpringContextHolder.instance.getBean(DDOrderPickFromService.class);
+	private final DDOrderService ddOrderService = SpringContextHolder.instance.getBean(DDOrderService.class);
+	private final DDOrderMoveScheduleService ddOrderMoveScheduleService = SpringContextHolder.instance.getBean(DDOrderMoveScheduleService.class);
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 
@@ -93,7 +93,7 @@ public class WEBUI_DD_OrderLine_MoveHU extends ViewBasedProcessTemplate implemen
 		{
 			final DDOrderLineId ddOrderLineId = DDOrderLineId.ofRepoId(getSingleSelectedRow().getId().toInt());
 
-			final List<HuId> huIds = ddOrderPickFromService.retrieveHUIdsScheduledToPick(ddOrderLineId);
+			final List<HuId> huIds = ddOrderMoveScheduleService.retrieveHUIdsScheduledToMove(ddOrderLineId);
 			if (Check.isEmpty(huIds))
 			{
 				return IProcessDefaultParametersProvider.DEFAULT_VALUE_NOTAVAILABLE;
@@ -115,14 +115,13 @@ public class WEBUI_DD_OrderLine_MoveHU extends ViewBasedProcessTemplate implemen
 	protected String doIt()
 	{
 		final DDOrderLineId ddOrderLineId = DDOrderLineId.ofRepoId(getSingleSelectedRow().getId().toInt());
-		final I_DD_OrderLine ddOrderLine = huDDOrderBL.getLineById(ddOrderLineId);
+		final I_DD_OrderLine ddOrderLine = ddOrderService.getLineById(ddOrderLineId);
 		final I_M_HU hu = handlingUnitsBL.getById(p_M_HU_ID);
 
-		huDDOrderBL.prepareAllocateAndMove()
-				.ofDDOrderLine(ddOrderLine)
+		ddOrderService.prepareAllocateFullHUsAndMove()
+				.toDDOrderLine(ddOrderLine)
 				.failIfCannotAllocate()
-				.allocateHU(hu)
-				.thenPrepareGeneratingMovements()
+				.allocateHUAndPrepareGeneratingMovements(hu)
 				.locatorToIdOverride(p_M_LocatorTo_ID > 0 ? warehouseBL.getLocatorIdByRepoId(p_M_LocatorTo_ID) : null)
 				.doDirectMovements()
 				.processWithinOwnTrx();

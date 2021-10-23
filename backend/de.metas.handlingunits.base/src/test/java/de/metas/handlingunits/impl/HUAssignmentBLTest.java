@@ -5,9 +5,9 @@ import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.HuPackingInstructionsVersionId;
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUAssignmentDAO;
-import de.metas.handlingunits.ddorder.impl.HUDDOrderBL;
-import de.metas.handlingunits.ddorder.picking.DDOrderPickFromRepository;
-import de.metas.handlingunits.ddorder.picking.DDOrderPickFromService;
+import de.metas.ddorder.DDOrderService;
+import de.metas.ddorder.movement.schedule.DDOrderMoveScheduleRepository;
+import de.metas.ddorder.movement.schedule.DDOrderMoveScheduleService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
@@ -54,13 +54,13 @@ public class HUAssignmentBLTest
 
 		//
 		// Make sure Main handling units interceptor is registered
-		final DDOrderPickFromService ddOrderPickFromService = new DDOrderPickFromService(new DDOrderPickFromRepository());
-		final HUDDOrderBL huDDOrderBL = new HUDDOrderBL(ddOrderPickFromService);
+		final DDOrderMoveScheduleService ddOrderMoveScheduleService = new DDOrderMoveScheduleService(new DDOrderMoveScheduleRepository());
+		final DDOrderService ddOrderService = new DDOrderService(ddOrderMoveScheduleService);
 		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new de.metas.handlingunits.model.validator.Main(
-				ddOrderPickFromService,
-				huDDOrderBL,
+				ddOrderMoveScheduleService,
+				ddOrderService,
 				new PickingBOMService()));
-		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new DD_Order(ddOrderPickFromService, huDDOrderBL));
+		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new DD_Order(ddOrderMoveScheduleService, ddOrderService));
 
 		//
 		// BL under test

@@ -28,7 +28,7 @@ import de.metas.adempiere.gui.search.impl.DDOrderLineHUPackingAware;
 import de.metas.handlingunits.IHUDocumentHandler;
 import de.metas.handlingunits.IHUDocumentHandlerFactory;
 import de.metas.handlingunits.QtyTU;
-import de.metas.handlingunits.ddorder.picking.DDOrderPickFromService;
+import de.metas.ddorder.movement.schedule.DDOrderMoveScheduleService;
 import de.metas.handlingunits.model.I_DD_OrderLine;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
@@ -53,12 +53,12 @@ import java.math.BigDecimal;
 @Callout(value = I_DD_OrderLine.class, recursionAvoidanceLevel = Callout.RecursionAvoidanceLevel.CalloutMethod)
 public class DD_OrderLine
 {
-	private final DDOrderPickFromService ddOrderPickFromService;
+	private final DDOrderMoveScheduleService ddOrderMoveScheduleService;
 
 	public DD_OrderLine(
-			@NonNull final DDOrderPickFromService ddOrderPickFromService)
+			@NonNull final DDOrderMoveScheduleService ddOrderMoveScheduleService)
 	{
-		this.ddOrderPickFromService = ddOrderPickFromService;
+		this.ddOrderMoveScheduleService = ddOrderMoveScheduleService;
 	}
 
 	@Init
@@ -142,7 +142,7 @@ public class DD_OrderLine
 	public void clearHUsScheduledToMoveList(final I_DD_OrderLine ddOrderLine)
 	{
 		final DDOrderLineId ddOrderLineId = DDOrderLineId.ofRepoId(ddOrderLine.getDD_OrderLine_ID());
-		ddOrderPickFromService.removeAllSchedulesForLine(ddOrderLineId);
+		ddOrderMoveScheduleService.removeAllSchedulesForLine(ddOrderLineId);
 	}
 
 	@ModelChange(timings = {

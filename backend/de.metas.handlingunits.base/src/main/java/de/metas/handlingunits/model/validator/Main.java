@@ -29,10 +29,10 @@ import de.metas.cache.model.IModelCacheService;
 import de.metas.cache.model.ITableCacheConfig.TrxLevel;
 import de.metas.cache.model.ITableCacheConfigBuilder;
 import de.metas.handlingunits.IHUDocumentHandlerFactory;
-import de.metas.handlingunits.ddorder.IHUDDOrderBL;
-import de.metas.handlingunits.ddorder.picking.DDOrderPickFromService;
-import de.metas.handlingunits.ddorder.spi.impl.DDOrderLineHUDocumentHandler;
-import de.metas.handlingunits.ddorder.spi.impl.ForecastLineHUDocumentHandler;
+import de.metas.ddorder.DDOrderService;
+import de.metas.ddorder.movement.schedule.DDOrderMoveScheduleService;
+import de.metas.ddorder.hu_spis.DDOrderLineHUDocumentHandler;
+import de.metas.ddorder.hu_spis.ForecastLineHUDocumentHandler;
 import de.metas.handlingunits.document.IHUDocumentFactoryService;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.invoicecandidate.facet.C_Invoice_Candidate_HUPackingMaterials_FacetCollector;
@@ -112,17 +112,17 @@ import java.util.Arrays;
 @Component
 public final class Main extends AbstractModuleInterceptor
 {
-	private final DDOrderPickFromService ddOrderPickFromService;
-	private final IHUDDOrderBL huDDOrderBL;
+	private final DDOrderMoveScheduleService ddOrderMoveScheduleService;
+	private final DDOrderService ddOrderService;
 	private final PickingBOMService pickingBOMService;
 
 	public Main(
-			@NonNull final DDOrderPickFromService ddOrderPickFromService,
-			@NonNull final IHUDDOrderBL huDDOrderBL,
+			@NonNull final DDOrderMoveScheduleService ddOrderMoveScheduleService,
+			@NonNull final DDOrderService ddOrderService,
 			@NonNull final PickingBOMService pickingBOMService)
 	{
-		this.ddOrderPickFromService = ddOrderPickFromService;
-		this.huDDOrderBL = huDDOrderBL;
+		this.ddOrderMoveScheduleService = ddOrderMoveScheduleService;
+		this.ddOrderService = ddOrderService;
 		this.pickingBOMService = pickingBOMService;
 	}
 
@@ -133,8 +133,8 @@ public final class Main extends AbstractModuleInterceptor
 		engine.addModelValidator(new de.metas.handlingunits.model.validator.M_HU_PI_Version());
 		engine.addModelValidator(new de.metas.handlingunits.model.validator.M_HU_PI_Item());
 		engine.addModelValidator(new de.metas.handlingunits.model.validator.C_OrderLine());
-		engine.addModelValidator(new de.metas.handlingunits.model.validator.DD_Order(ddOrderPickFromService, huDDOrderBL));
-		engine.addModelValidator(new de.metas.handlingunits.model.validator.DD_OrderLine(ddOrderPickFromService));
+		engine.addModelValidator(new de.metas.handlingunits.model.validator.DD_Order(ddOrderMoveScheduleService, ddOrderService));
+		engine.addModelValidator(new de.metas.handlingunits.model.validator.DD_OrderLine(ddOrderMoveScheduleService));
 		engine.addModelValidator(new de.metas.handlingunits.model.validator.M_HU_PI_Item_Product());
 		engine.addModelValidator(new de.metas.handlingunits.model.validator.C_Order());
 		engine.addModelValidator(new de.metas.handlingunits.model.validator.C_Order_Line_Alloc());
