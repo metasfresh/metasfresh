@@ -164,11 +164,6 @@ public class DDOrderLowLevelDAO
 		saveRecord(ddOrderLine);
 	}
 
-	public void save(@NonNull final I_DD_OrderLine_Alternative ddOrderLineAlternative)
-	{
-		saveRecord(ddOrderLineAlternative);
-	}
-
 	public void save(@NonNull final I_DD_OrderLine_Or_Alternative ddOrderLineOrAlternative)
 	{
 		saveRecord(ddOrderLineOrAlternative);
