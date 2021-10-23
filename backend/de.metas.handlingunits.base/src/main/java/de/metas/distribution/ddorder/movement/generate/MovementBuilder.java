@@ -23,19 +23,18 @@ package de.metas.distribution.ddorder.movement.generate;
  */
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.distribution.ddorder.DDOrderId;
+import de.metas.distribution.ddorder.DDOrderLineId;
 import de.metas.distribution.ddorder.DDOrderService;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveSchedule;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleService;
 import de.metas.document.DocTypeId;
-import de.metas.document.DocTypeQuery;
-import de.metas.document.IDocTypeDAO;
-import de.metas.document.engine.IDocument;
-import de.metas.document.engine.IDocumentBL;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.movement.api.IHUMovementBL;
 import de.metas.material.planning.pporder.LiberoException;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
@@ -47,17 +46,13 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mmovement.api.IMovementBL;
-import org.adempiere.mmovement.api.IMovementDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_M_Movement;
 import org.compiere.model.I_M_MovementLine;
-import org.compiere.model.X_C_DocType;
 import org.compiere.util.TimeUtil;
-import de.metas.distribution.ddorder.DDOrderId;
-import de.metas.distribution.ddorder.DDOrderLineId;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
 
@@ -73,12 +68,9 @@ import java.util.Set;
 final class MovementBuilder
 {
 	// services
-	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
-	private final IMovementBL movementBL = Services.get(IMovementBL.class);
-	private final IMovementDAO movementsRepo = Services.get(IMovementDAO.class);
 	private final IHUMovementBL huMovementBL = Services.get(IHUMovementBL.class);
-	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+	private final IMovementBL movementBL = Services.get(IMovementBL.class);
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final DDOrderService ddOrderService;
 	private final DDOrderMoveScheduleService ddOrderMoveScheduleService;
@@ -164,11 +156,7 @@ final class MovementBuilder
 
 		//
 		// Document Type
-		final DocTypeId docTypeId = docTypeDAO.getDocTypeId(DocTypeQuery.builder()
-				.docBaseType(X_C_DocType.DOCBASETYPE_MaterialMovement)
-				.adClientId(movement.getAD_Client_ID())
-				.adOrgId(movement.getAD_Org_ID())
-				.build());
+		final DocTypeId docTypeId = movementBL.getDocTypeId(ClientAndOrgId.ofClientAndOrg(movement.getAD_Client_ID(), movement.getAD_Org_ID()));
 		movement.setC_DocType_ID(docTypeId.getRepoId());
 
 		//
@@ -218,7 +206,7 @@ final class MovementBuilder
 		movement.setUser1_ID(ddOrder.getUser1_ID());
 		movement.setUser2_ID(ddOrder.getUser2_ID());
 
-		movementsRepo.save(movement);
+		movementBL.save(movement);
 
 		return movement;
 	}
@@ -297,7 +285,7 @@ final class MovementBuilder
 		movementLine.setM_LocatorTo_ID(toLocatorId.getRepoId());
 
 		movementBL.setMovementQty(movementLine, schedule.getQtyToPick());
-		movementsRepo.save(movementLine);
+		movementBL.save(movementLine);
 
 		//
 		// Set the activity from the warehouse of locator To
@@ -346,7 +334,8 @@ final class MovementBuilder
 		final I_M_Movement movement = getMovementOrNull();
 		Check.assumeNotNull(movement, LiberoException.class, "movement not null");
 
-		documentBL.processEx(movement, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
+		movementBL.complete(movement);
+
 		return movement;
 	}
 
