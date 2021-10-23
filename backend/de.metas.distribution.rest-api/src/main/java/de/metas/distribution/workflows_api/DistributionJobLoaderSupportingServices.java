@@ -1,8 +1,8 @@
 package de.metas.distribution.workflows_api;
 
-import de.metas.handlingunits.ddorder.IHUDDOrderBL;
-import de.metas.handlingunits.ddorder.picking.DDOrderPickFromService;
-import de.metas.handlingunits.ddorder.picking.DDOrderPickSchedule;
+import de.metas.ddorder.DDOrderService;
+import de.metas.ddorder.movement.schedule.DDOrderMoveSchedule;
+import de.metas.ddorder.movement.schedule.DDOrderMoveScheduleService;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
@@ -23,22 +23,22 @@ import java.util.List;
 
 public class DistributionJobLoaderSupportingServices
 {
-	private final IHUDDOrderBL ddOrderBL;
-	private final DDOrderPickFromService ddOrderPickFromService;
+	private final DDOrderService ddOrderService;
+	private final DDOrderMoveScheduleService ddOrderMoveScheduleService;
 	private final IWarehouseBL warehouseBL;
 	private final IProductBL productBL;
 	private final IOrgDAO orgDAO;
 
 	@Builder
 	private DistributionJobLoaderSupportingServices(
-			@NonNull final IHUDDOrderBL ddOrderBL,
-			@NonNull final DDOrderPickFromService ddOrderPickFromService,
+			@NonNull final DDOrderService ddOrderService,
+			@NonNull final DDOrderMoveScheduleService ddOrderMoveScheduleService,
 			@NonNull final IWarehouseBL warehouseBL,
 			@NonNull final IProductBL productBL,
 			@NonNull final IOrgDAO orgDAO)
 	{
-		this.ddOrderBL = ddOrderBL;
-		this.ddOrderPickFromService = ddOrderPickFromService;
+		this.ddOrderService = ddOrderService;
+		this.ddOrderMoveScheduleService = ddOrderMoveScheduleService;
 		this.warehouseBL = warehouseBL;
 		this.productBL = productBL;
 		this.orgDAO = orgDAO;
@@ -74,17 +74,17 @@ public class DistributionJobLoaderSupportingServices
 
 	public I_DD_Order getDDOrderById(final DDOrderId ddOrderId)
 	{
-		return ddOrderBL.getById(ddOrderId);
+		return ddOrderService.getById(ddOrderId);
 	}
 
 	public List<I_DD_OrderLine> getLines(final I_DD_Order ddOrder)
 	{
-		return ddOrderBL.retrieveLines(ddOrder);
+		return ddOrderService.retrieveLines(ddOrder);
 	}
 
-	public List<DDOrderPickSchedule> getSchedules(final DDOrderId ddOrderId)
+	public List<DDOrderMoveSchedule> getSchedules(final DDOrderId ddOrderId)
 	{
-		return ddOrderPickFromService.getSchedules(ddOrderId);
+		return ddOrderMoveScheduleService.getSchedules(ddOrderId);
 	}
 
 	public ZoneId getTimeZone(final OrgId orgId)

@@ -1,9 +1,9 @@
 package de.metas.distribution.workflows_api;
 
-import de.metas.handlingunits.ddorder.IHUDDOrderBL;
-import de.metas.handlingunits.ddorder.picking.DDOrderPickFromService;
-import de.metas.handlingunits.ddorder.picking.DDOrderPickPlan;
-import de.metas.handlingunits.ddorder.picking.PickingPlanCreateRequest;
+import de.metas.ddorder.DDOrderService;
+import de.metas.ddorder.movement.schedule.DDOrderMoveScheduleService;
+import de.metas.ddorder.movement.schedule.plan.DDOrderMovePlan;
+import de.metas.ddorder.movement.schedule.plan.DDOrderMovePlanCreateRequest;
 import de.metas.logging.LogManager;
 import de.metas.user.UserId;
 import lombok.Builder;
@@ -16,8 +16,8 @@ import org.slf4j.Logger;
 public class DistributionJobCreateCommand
 {
 	private static final Logger logger = LogManager.getLogger(DistributionJobCreateCommand.class);
-	private final IHUDDOrderBL ddOrderBL;
-	private final DDOrderPickFromService ddOrderPickFromService;
+	private final DDOrderService ddOrderService;
+	private final DDOrderMoveScheduleService ddOrderMoveScheduleService;
 	private final DistributionJobLoaderSupportingServices loadingSupportServices;
 
 	private final @NonNull DDOrderId ddOrderId;
@@ -25,15 +25,15 @@ public class DistributionJobCreateCommand
 
 	@Builder
 	private DistributionJobCreateCommand(
-			final @NonNull IHUDDOrderBL ddOrderBL,
-			final @NonNull DDOrderPickFromService ddOrderPickFromService,
+			final @NonNull DDOrderService ddOrderService,
+			final @NonNull DDOrderMoveScheduleService ddOrderMoveScheduleService,
 			final @NonNull DistributionJobLoaderSupportingServices loadingSupportServices,
 			//
 			final @NonNull DDOrderId ddOrderId,
 			final @NonNull UserId responsibleId)
 	{
-		this.ddOrderBL = ddOrderBL;
-		this.ddOrderPickFromService = ddOrderPickFromService;
+		this.ddOrderService = ddOrderService;
+		this.ddOrderMoveScheduleService = ddOrderMoveScheduleService;
 		this.loadingSupportServices = loadingSupportServices;
 		//
 		this.ddOrderId = ddOrderId;
@@ -42,15 +42,15 @@ public class DistributionJobCreateCommand
 
 	public DistributionJob execute()
 	{
-		final I_DD_Order ddOrder = ddOrderBL.getById(ddOrderId);
+		final I_DD_Order ddOrder = ddOrderService.getById(ddOrderId);
 		setResponsible(ddOrder);
 
-		final DDOrderPickPlan plan = ddOrderPickFromService.createPlan(PickingPlanCreateRequest.builder()
+		final DDOrderMovePlan plan = ddOrderMoveScheduleService.createPlan(DDOrderMovePlanCreateRequest.builder()
 				.ddOrder(ddOrder)
 				.failIfNotFullAllocated(true)
 				.build());
 
-		ddOrderPickFromService.savePlan(plan);
+		ddOrderMoveScheduleService.savePlan(plan);
 
 		return new DistributionJobLoader(loadingSupportServices)
 				.load(ddOrder);
@@ -62,7 +62,7 @@ public class DistributionJobCreateCommand
 		if (currentResponsibleId == null)
 		{
 			ddOrder.setAD_User_Responsible_ID(responsibleId.getRepoId());
-			ddOrderBL.save(ddOrder);
+			ddOrderService.save(ddOrder);
 		}
 		else if (!UserId.equals(currentResponsibleId, responsibleId))
 		{

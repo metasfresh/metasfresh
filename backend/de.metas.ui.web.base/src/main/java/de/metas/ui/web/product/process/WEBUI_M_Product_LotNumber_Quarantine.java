@@ -5,9 +5,9 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHandlingUnitsDAO;
-import de.metas.handlingunits.ddorder.picking.DDOrderPickFromService;
-import de.metas.handlingunits.ddorder.IHUDDOrderBL;
-import de.metas.handlingunits.ddorder.producer.HUToDistribute;
+import de.metas.ddorder.DDOrderService;
+import de.metas.ddorder.movement.schedule.DDOrderMoveScheduleService;
+import de.metas.ddorder.producer.HUToDistribute;
 import de.metas.handlingunits.inout.IHUInOutDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
@@ -71,8 +71,8 @@ public class WEBUI_M_Product_LotNumber_Quarantine extends ViewBasedProcessTempla
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final IHUInOutDAO huInOutDAO = Services.get(IHUInOutDAO.class);
 	private final ILotNumberDateAttributeDAO lotNumberDateAttributeDAO = Services.get(ILotNumberDateAttributeDAO.class);
-	private final IHUDDOrderBL ddOrderBL = SpringContextHolder.instance.getBean(IHUDDOrderBL.class);
-	private final DDOrderPickFromService ddOrderPickFromService = SpringContextHolder.instance.getBean(DDOrderPickFromService.class);
+	private final DDOrderService ddOrderService = SpringContextHolder.instance.getBean(DDOrderService.class);
+	private final DDOrderMoveScheduleService ddOrderMoveScheduleService = SpringContextHolder.instance.getBean(DDOrderMoveScheduleService.class);
 
 	private final ArrayList<HUToDistribute> husToQuarantine = new ArrayList<>();
 
@@ -84,7 +84,7 @@ public class WEBUI_M_Product_LotNumber_Quarantine extends ViewBasedProcessTempla
 				.distinct()
 				.forEach(this::createQuarantineHUsByLotNoQuarantineId);
 
-		ddOrderBL.createQuarantineDDOrderForHUs(husToQuarantine);
+		ddOrderService.createQuarantineDDOrderForHUs(husToQuarantine);
 
 		setInvoiceCandsInDispute();
 
@@ -128,7 +128,7 @@ public class WEBUI_M_Product_LotNumber_Quarantine extends ViewBasedProcessTempla
 		for (final I_M_HU hu : husForAttributeStringValue)
 		{
 			final HuId huId = HuId.ofRepoId(hu.getM_HU_ID());
-			if (ddOrderPickFromService.isScheduledToPick(huId))
+			if (ddOrderMoveScheduleService.isScheduledToMove(huId))
 			{
 				// the HU is already quarantined
 				continue;

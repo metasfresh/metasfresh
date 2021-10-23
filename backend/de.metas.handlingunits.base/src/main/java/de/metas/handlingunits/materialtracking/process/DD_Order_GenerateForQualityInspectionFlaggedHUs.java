@@ -3,9 +3,9 @@ package de.metas.handlingunits.materialtracking.process;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
-import de.metas.handlingunits.ddorder.picking.DDOrderPickFromService;
-import de.metas.handlingunits.ddorder.producer.HUs2DDOrderProducer;
-import de.metas.handlingunits.ddorder.producer.HUToDistribute;
+import de.metas.ddorder.movement.schedule.DDOrderMoveScheduleService;
+import de.metas.ddorder.producer.HUs2DDOrderProducer;
+import de.metas.ddorder.producer.HUToDistribute;
 import de.metas.handlingunits.materialtracking.IHUMaterialTrackingBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
@@ -55,7 +55,7 @@ import java.util.Iterator;
 public class DD_Order_GenerateForQualityInspectionFlaggedHUs extends JavaProcess
 {
 	// services
-	private final DDOrderPickFromService ddOrderPickFromService = SpringContextHolder.instance.getBean(DDOrderPickFromService.class);
+	private final DDOrderMoveScheduleService ddOrderMoveScheduleService = SpringContextHolder.instance.getBean(DDOrderMoveScheduleService.class);
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
@@ -96,7 +96,7 @@ public class DD_Order_GenerateForQualityInspectionFlaggedHUs extends JavaProcess
 		final OrgId orgId = warehouseBL.getWarehouseOrgId(warehouseToId);
 		final BPartnerLocationId orgBPLocationId = bpartnerOrgBL.retrieveOrgBPLocationId(orgId);
 
-		HUs2DDOrderProducer.newProducer(ddOrderPickFromService)
+		HUs2DDOrderProducer.newProducer(ddOrderMoveScheduleService)
 				.setLocatorToId(locatorToId)
 				.setBpartnerLocationId(orgBPLocationId)
 				.setHUs(retrieveHUs())
@@ -113,7 +113,7 @@ public class DD_Order_GenerateForQualityInspectionFlaggedHUs extends JavaProcess
 				.addOnlyInWarehouseId(warehouseFromId)
 				.addOnlyWithAttribute(IHUMaterialTrackingBL.ATTRIBUTENAME_IsQualityInspection, IHUMaterialTrackingBL.ATTRIBUTEVALUE_IsQualityInspection_Yes)
 				.addHUStatusToInclude(X_M_HU.HUSTATUS_Active)
-				.addFilter(ddOrderPickFromService.getHUsNotAlreadyScheduledToPickFilter())
+				.addFilter(ddOrderMoveScheduleService.getHUsNotAlreadyScheduledToMoveFilter())
 				//
 				.createQuery()
 				.stream(I_M_HU.class)

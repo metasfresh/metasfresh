@@ -24,7 +24,7 @@ package de.metas.ui.web.ddorder.process;
 
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHandlingUnitsDAO;
-import de.metas.handlingunits.ddorder.IHUDDOrderBL;
+import de.metas.ddorder.DDOrderService;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessExecutionResult;
@@ -48,7 +48,7 @@ public class WEBUI_MoveHUs_HUEditor_Launcher extends ViewBasedProcessTemplate im
 {
 
 	private final IViewsRepository viewsRepo = SpringContextHolder.instance.getBean(IViewsRepository.class);
-	private final IHUDDOrderBL ddOrderBL = SpringContextHolder.instance.getBean(IHUDDOrderBL.class);
+	private final DDOrderService ddOrderService = SpringContextHolder.instance.getBean(DDOrderService.class);
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
 	@Override
@@ -68,7 +68,7 @@ public class WEBUI_MoveHUs_HUEditor_Launcher extends ViewBasedProcessTemplate im
 
 	@Override protected String doIt() throws Exception
 	{
-		final I_DD_OrderLine ddOrderLine = ddOrderBL.getLineById(DDOrderLineId.ofRepoId(getRecord_ID()));
+		final I_DD_OrderLine ddOrderLine = ddOrderService.getLineById(DDOrderLineId.ofRepoId(getRecord_ID()));
 
 		final IView husToMove = createHUEditor(ddOrderLine);
 

@@ -1,8 +1,8 @@
 package de.metas.handlingunits.model.validator;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.handlingunits.ddorder.IHUDDOrderBL;
-import de.metas.handlingunits.ddorder.picking.DDOrderPickFromService;
+import de.metas.ddorder.DDOrderService;
+import de.metas.ddorder.movement.schedule.DDOrderMoveScheduleService;
 import de.metas.request.service.async.spi.impl.C_Request_CreateFromDDOrder_Async;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -48,15 +48,15 @@ public class DD_Order
 	private final IMovementBL movementBL = Services.get(IMovementBL.class);
 	private final IMovementDAO movementDAO = Services.get(IMovementDAO.class);
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
-	private final IHUDDOrderBL huDDOrderBL;
-	private final DDOrderPickFromService ddOrderPickFromService;
+	private final DDOrderService ddOrderService;
+	private final DDOrderMoveScheduleService ddOrderMoveScheduleService;
 
 	public DD_Order(
-			@NonNull final DDOrderPickFromService ddOrderPickFromService,
-			@NonNull final IHUDDOrderBL huDDOrderBL)
+			@NonNull final DDOrderMoveScheduleService ddOrderMoveScheduleService,
+			@NonNull final DDOrderService ddOrderService)
 	{
-		this.ddOrderPickFromService = ddOrderPickFromService;
-		this.huDDOrderBL = huDDOrderBL;
+		this.ddOrderMoveScheduleService = ddOrderMoveScheduleService;
+		this.ddOrderService = ddOrderService;
 	}
 
 	@DocValidate(timings = {
@@ -66,7 +66,7 @@ public class DD_Order
 			ModelValidator.TIMING_BEFORE_CLOSE })
 	public void clearHUsScheduledToMoveList(final I_DD_Order ddOrder)
 	{
-		ddOrderPickFromService.removeDraftSchedules(DDOrderId.ofRepoId(ddOrder.getDD_Order_ID()));
+		ddOrderMoveScheduleService.removeDraftSchedules(DDOrderId.ofRepoId(ddOrder.getDD_Order_ID()));
 	}
 
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
@@ -83,7 +83,7 @@ public class DD_Order
 	public void DD_Order_voidMovements(final I_DD_Order ddOrder)
 	{
 		// void if creating them automating is activated
-		if (huDDOrderBL.isCreateMovementOnComplete())
+		if (ddOrderService.isCreateMovementOnComplete())
 		{
 			final List<I_M_Movement> movements = movementDAO.retrieveMovementsForDDOrder(ddOrder.getDD_Order_ID());
 			for (final I_M_Movement movement : movements)
@@ -96,15 +96,15 @@ public class DD_Order
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
 	public void DD_Order_createMovementsIfNeeded(final I_DD_Order ddOrder)
 	{
-		if (huDDOrderBL.isCreateMovementOnComplete())
+		if (ddOrderService.isCreateMovementOnComplete())
 		{
-			huDDOrderBL.generateMovements(ddOrder);
+			ddOrderService.generateMovements(ddOrder);
 		}
 	}
 
 	private List<Integer> retrieveLineToQuarantineWarehouseIds(final I_DD_Order ddOrder)
 	{
-		return huDDOrderBL.retrieveLines(ddOrder)
+		return ddOrderService.retrieveLines(ddOrder)
 				.stream()
 				.filter(this::isQuarantineWarehouseLine)
 				.map(I_DD_OrderLine::getDD_OrderLine_ID)

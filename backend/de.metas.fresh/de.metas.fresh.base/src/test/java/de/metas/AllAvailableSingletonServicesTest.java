@@ -84,7 +84,6 @@ public class AllAvailableSingletonServicesTest
 			.skipServiceInterface(de.metas.procurement.base.IAgentSyncBL.class, "spring component")
 			.skipServiceInterface(de.metas.procurement.base.IServerSyncBL.class, "spring component")
 			.skipServiceInterface(de.metas.hostkey.spi.IHttpSessionProvider.class, "implementation is registered in de.metas.ui.web.base project")
-			.skipServiceInterface(de.metas.handlingunits.ddorder.IHUDDOrderBL.class, "spring component")
 			//
 			;
 

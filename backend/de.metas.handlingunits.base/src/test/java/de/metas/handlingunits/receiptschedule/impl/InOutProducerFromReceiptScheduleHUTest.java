@@ -29,9 +29,9 @@ import de.metas.contracts.flatrate.interfaces.I_C_DocType;
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
-import de.metas.handlingunits.ddorder.impl.HUDDOrderBL;
-import de.metas.handlingunits.ddorder.picking.DDOrderPickFromRepository;
-import de.metas.handlingunits.ddorder.picking.DDOrderPickFromService;
+import de.metas.ddorder.DDOrderService;
+import de.metas.ddorder.movement.schedule.DDOrderMoveScheduleRepository;
+import de.metas.ddorder.movement.schedule.DDOrderMoveScheduleService;
 import de.metas.handlingunits.expectations.HUAttributeExpectation;
 import de.metas.handlingunits.expectations.HUWeightsExpectation;
 import de.metas.handlingunits.inout.impl.DistributeAndMoveReceiptCreator;
@@ -57,7 +57,6 @@ import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
-import org.junit.Assert;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -95,8 +94,8 @@ public class InOutProducerFromReceiptScheduleHUTest extends AbstractRSAllocation
 		SpringContextHolder.registerJUnitBeans(IHUToReceiveValidator.class, ImmutableList.of());
 
 		final LotNumberQuarantineRepository lotNumberQuarantineRepository = new LotNumberQuarantineRepository();
-		final HUDDOrderBL huDDOrderBL = new HUDDOrderBL(new DDOrderPickFromService(new DDOrderPickFromRepository()));
-		SpringContextHolder.registerJUnitBean(new DistributeAndMoveReceiptCreator(lotNumberQuarantineRepository, huDDOrderBL));
+		final DDOrderService ddOrderService = new DDOrderService(new DDOrderMoveScheduleService(new DDOrderMoveScheduleRepository()));
+		SpringContextHolder.registerJUnitBean(new DistributeAndMoveReceiptCreator(lotNumberQuarantineRepository, ddOrderService));
 	}
 
 	/**

@@ -22,9 +22,9 @@ package de.metas.tourplanning.integrationtest;
  * #L%
  */
 
-import de.metas.handlingunits.ddorder.impl.HUDDOrderBL;
-import de.metas.handlingunits.ddorder.picking.DDOrderPickFromRepository;
-import de.metas.handlingunits.ddorder.picking.DDOrderPickFromService;
+import de.metas.ddorder.DDOrderService;
+import de.metas.ddorder.movement.schedule.DDOrderMoveScheduleRepository;
+import de.metas.ddorder.movement.schedule.DDOrderMoveScheduleService;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.tourplanning.model.I_M_DeliveryDay_Alloc;
 import de.metas.handlingunits.tourplanning.spi.impl.HUShipmentScheduleDeliveryDayHandlerTest;
@@ -41,11 +41,11 @@ public class HU_TourInstance_DeliveryDay_ShipmentSchedule_IntegrationTest extend
 	{
 		super.afterInit();
 
-		final DDOrderPickFromService ddOrderPickFromService = new DDOrderPickFromService(new DDOrderPickFromRepository());
-		final HUDDOrderBL huDDOrderBL = new HUDDOrderBL(ddOrderPickFromService);
+		final DDOrderMoveScheduleService ddOrderMoveScheduleService = new DDOrderMoveScheduleService(new DDOrderMoveScheduleRepository());
+		final DDOrderService ddOrderService = new DDOrderService(ddOrderMoveScheduleService);
 		new de.metas.handlingunits.model.validator.Main(
-				ddOrderPickFromService,
-				huDDOrderBL,
+				ddOrderMoveScheduleService,
+				ddOrderService,
 				new PickingBOMService()).setupTourPlanning();
 	}
 

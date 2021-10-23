@@ -1,7 +1,7 @@
 package de.metas.distribution.workflows_api;
 
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.ddorder.picking.DDOrderPickScheduleId;
+import de.metas.ddorder.movement.schedule.DDOrderMoveScheduleId;
 import de.metas.handlingunits.picking.QtyRejectedReasonCode;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 @Value
 public class DistributionJobStep
 {
-	@NonNull DDOrderPickScheduleId id;
+	@NonNull DDOrderMoveScheduleId id;
 	@NonNull Quantity qtyToMoveTarget;
 
 	//
@@ -29,7 +29,7 @@ public class DistributionJobStep
 
 	@Builder
 	private DistributionJobStep(
-			@NonNull final DDOrderPickScheduleId id,
+			@NonNull final DDOrderMoveScheduleId id,
 			@NonNull final Quantity qtyToMoveTarget,
 			@NonNull final HuId pickFromHUId,
 			@Nullable final HuId actualHUPicked,

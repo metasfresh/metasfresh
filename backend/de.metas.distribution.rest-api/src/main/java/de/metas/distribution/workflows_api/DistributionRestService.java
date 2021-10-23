@@ -2,8 +2,8 @@ package de.metas.distribution.workflows_api;
 
 import de.metas.dao.ValueRestriction;
 import de.metas.document.engine.DocStatus;
-import de.metas.handlingunits.ddorder.IHUDDOrderBL;
-import de.metas.handlingunits.ddorder.picking.DDOrderPickFromService;
+import de.metas.ddorder.DDOrderService;
+import de.metas.ddorder.movement.schedule.DDOrderMoveScheduleService;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.InstantAndOrgId;
 import de.metas.product.IProductBL;
@@ -23,20 +23,20 @@ import java.util.stream.Stream;
 @Service
 public class DistributionRestService
 {
-	private final IHUDDOrderBL ddOrderBL;
-	private final DDOrderPickFromService ddOrderPickFromService;
+	private final DDOrderService ddOrderService;
+	private final DDOrderMoveScheduleService ddOrderMoveScheduleService;
 	private final DistributionJobLoaderSupportingServices loadingSupportServices;
 
 	public DistributionRestService(
-			@NonNull final IHUDDOrderBL ddOrderBL,
-			@NonNull final DDOrderPickFromService ddOrderPickFromService)
+			@NonNull final DDOrderService ddOrderService,
+			@NonNull final DDOrderMoveScheduleService ddOrderMoveScheduleService)
 	{
-		this.ddOrderBL = ddOrderBL;
-		this.ddOrderPickFromService = ddOrderPickFromService;
+		this.ddOrderService = ddOrderService;
+		this.ddOrderMoveScheduleService = ddOrderMoveScheduleService;
 
 		this.loadingSupportServices = DistributionJobLoaderSupportingServices.builder()
-				.ddOrderBL(ddOrderBL)
-				.ddOrderPickFromService(ddOrderPickFromService)
+				.ddOrderService(ddOrderService)
+				.ddOrderMoveScheduleService(ddOrderMoveScheduleService)
 				.warehouseBL(Services.get(IWarehouseBL.class))
 				.productBL(Services.get(IProductBL.class))
 				.orgDAO(Services.get(IOrgDAO.class))
@@ -45,12 +45,12 @@ public class DistributionRestService
 
 	public IADReferenceDAO.ADRefList getQtyRejectedReasons()
 	{
-		return ddOrderPickFromService.getQtyRejectedReasons();
+		return ddOrderMoveScheduleService.getQtyRejectedReasons();
 	}
 
 	public Stream<DDOrderReference> streamActiveReferencesAssignedTo(@NonNull final UserId responsibleId)
 	{
-		return ddOrderBL.streamDDOrders(DDOrderQuery.builder()
+		return ddOrderService.streamDDOrders(DDOrderQuery.builder()
 						.docStatus(DocStatus.Completed)
 						.responsibleId(ValueRestriction.equalsTo(responsibleId))
 						.orderBy(DDOrderQuery.OrderBy.PriorityRule)
@@ -61,7 +61,7 @@ public class DistributionRestService
 
 	public Stream<DDOrderReference> streamActiveReferencesNotAssigned()
 	{
-		return ddOrderBL.streamDDOrders(DDOrderQuery.builder()
+		return ddOrderService.streamDDOrders(DDOrderQuery.builder()
 						.docStatus(DocStatus.Completed)
 						.responsibleId(ValueRestriction.isNull())
 						.orderBy(DDOrderQuery.OrderBy.PriorityRule)
@@ -86,8 +86,8 @@ public class DistributionRestService
 			final @NonNull UserId responsibleId)
 	{
 		return DistributionJobCreateCommand.builder()
-				.ddOrderBL(ddOrderBL)
-				.ddOrderPickFromService(ddOrderPickFromService)
+				.ddOrderService(ddOrderService)
+				.ddOrderMoveScheduleService(ddOrderMoveScheduleService)
 				.loadingSupportServices(loadingSupportServices)
 				//
 				.ddOrderId(ddOrderId)
