@@ -51,7 +51,7 @@ import java.util.List;
 public class WEBUI_DD_OrderLine_MoveHU extends ViewBasedProcessTemplate implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
 	// services
-	private final IHUDDOrderBL huDDOrderBL = Services.get(IHUDDOrderBL.class);
+	private final IHUDDOrderBL huDDOrderBL = SpringContextHolder.instance.getBean(IHUDDOrderBL.class);
 	private final DDOrderPickFromService ddOrderPickFromService = SpringContextHolder.instance.getBean(DDOrderPickFromService.class);
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);

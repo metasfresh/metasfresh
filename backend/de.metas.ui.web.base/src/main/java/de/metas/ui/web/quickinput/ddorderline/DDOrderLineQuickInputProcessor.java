@@ -30,7 +30,7 @@ import de.metas.product.ProductId;
 import de.metas.ui.web.quickinput.IQuickInputProcessor;
 import de.metas.ui.web.quickinput.QuickInput;
 import de.metas.ui.web.window.datatypes.DocumentId;
-import de.metas.util.Services;
+import org.compiere.SpringContextHolder;
 import org.eevolution.api.DDOrderLineId;
 import org.eevolution.model.I_DD_Order;
 
@@ -39,7 +39,7 @@ import java.util.Set;
 
 public class DDOrderLineQuickInputProcessor implements IQuickInputProcessor
 {
-	private final IHUDDOrderBL huddOrderBL = Services.get(IHUDDOrderBL.class);
+	private final IHUDDOrderBL ddOrderBL = SpringContextHolder.instance.getBean(IHUDDOrderBL.class);
 
 	@Override
 	public Set<DocumentId> process(final QuickInput quickInput)
@@ -59,7 +59,7 @@ public class DDOrderLineQuickInputProcessor implements IQuickInputProcessor
 				.qtyEntered(qty)
 				.build();
 
-		final DDOrderLineId ddOrderLineId = huddOrderBL.addDDOrderLine(ddOrderLineCreateRequest);
+		final DDOrderLineId ddOrderLineId = ddOrderBL.addDDOrderLine(ddOrderLineCreateRequest);
 
 		final DocumentId documentId = DocumentId.of(ddOrderLineId.getRepoId());
 		return ImmutableSet.of(documentId);

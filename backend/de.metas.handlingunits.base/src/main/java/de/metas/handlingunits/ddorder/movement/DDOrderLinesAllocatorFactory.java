@@ -8,8 +8,8 @@ import org.eevolution.model.I_DD_OrderLine;
 
 public class DDOrderLinesAllocatorFactory
 {
-	@NonNull private final DDOrderPickFromService ddOrderPickFromService;
 	@NonNull private final IHUDDOrderBL ddOrderBL;
+	@NonNull private final DDOrderPickFromService ddOrderPickFromService;
 
 	public DDOrderLinesAllocatorFactory(
 			final @NonNull DDOrderPickFromService ddOrderPickFromService,
@@ -22,6 +22,6 @@ public class DDOrderLinesAllocatorFactory
 	public DDOrderLinesAllocator ofDDOrderLine(@NonNull final I_DD_OrderLine ddOrderLine)
 	{
 		final ImmutableList<DDOrderLineToAllocate> ddOrderLines = new DDOrderLineToAllocateFactory(ddOrderBL).ofDDOrderLine(ddOrderLine);
-		return new DDOrderLinesAllocator(ddOrderPickFromService, ddOrderLines);
+		return new DDOrderLinesAllocator(ddOrderBL, ddOrderPickFromService, ddOrderLines);
 	}
 }

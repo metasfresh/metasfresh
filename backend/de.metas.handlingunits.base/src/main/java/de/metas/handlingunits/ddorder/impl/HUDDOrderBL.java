@@ -188,7 +188,7 @@ public class HUDDOrderBL implements IHUDDOrderBL
 		final ImmutableList.Builder<I_DD_Order> result = ImmutableList.builder();
 		for (final Entry<BPartnerLocationId, Collection<HUToDistribute>> entry : entries)
 		{
-			final Optional<I_DD_Order> ddOrder = HUs2DDOrderProducer.newProducer()
+			final Optional<I_DD_Order> ddOrder = HUs2DDOrderProducer.newProducer(ddOrderPickFromService)
 					.setLocatorToId(quarantineLocatorId)
 					.setBpartnerLocationId(entry.getKey())
 					.setHUs(entry.getValue().iterator())
@@ -254,7 +254,7 @@ public class HUDDOrderBL implements IHUDDOrderBL
 
 		final ImmutableList<DDOrderPickSchedule> schedules = ddOrderPickFromService.savePlan(plan);
 
-		MovementsFromSchedulesGenerator.fromSchedules(schedules)
+		MovementsFromSchedulesGenerator.fromSchedules(schedules, this, ddOrderPickFromService)
 				.skipCompletingDDOrder() // because usually this code is calling on after complete...
 				.process();
 	}

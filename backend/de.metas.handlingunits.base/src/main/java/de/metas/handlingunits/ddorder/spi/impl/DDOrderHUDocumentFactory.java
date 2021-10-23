@@ -23,7 +23,6 @@ package de.metas.handlingunits.ddorder.spi.impl;
  */
 
 import de.metas.handlingunits.IHandlingUnitsDAO;
-import de.metas.handlingunits.ddorder.IHUDDOrderBL;
 import de.metas.handlingunits.document.IHUDocument;
 import de.metas.handlingunits.document.IHUDocumentFactory;
 import de.metas.handlingunits.document.impl.AbstractHUDocumentFactory;
@@ -37,6 +36,7 @@ import de.metas.uom.UomId;
 import de.metas.util.Services;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.eevolution.api.IDDOrderDAO;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
 
@@ -80,7 +80,7 @@ public class DDOrderHUDocumentFactory extends AbstractHUDocumentFactory<I_DD_Ord
 		final IHUDocumentFactory huFactory = getHandlingUnitsHUDocumentFactory();
 
 		final Set<Integer> seenHuIds = new HashSet<>();
-		for (final I_DD_OrderLine line : Services.get(IHUDDOrderBL.class).retrieveLines(ddOrder))
+		for (final I_DD_OrderLine line : Services.get(IDDOrderDAO.class).retrieveLines(ddOrder))
 		{
 			//
 			// Create HUDocuments

@@ -36,7 +36,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.X_C_DocType;
@@ -92,9 +91,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public class HUs2DDOrderProducer
 {
-	public static HUs2DDOrderProducer newProducer()
+	public static HUs2DDOrderProducer newProducer(
+			@NonNull final DDOrderPickFromService ddOrderPickFromService)
 	{
-		return new HUs2DDOrderProducer();
+		return new HUs2DDOrderProducer(ddOrderPickFromService);
 	}
 
 	// services
@@ -102,9 +102,9 @@ public class HUs2DDOrderProducer
 	private final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
-	private final DDOrderPickFromService ddOrderPickFromService = SpringContextHolder.instance.getBean(DDOrderPickFromService.class);
 	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 	private final IHUMaterialTrackingBL huMaterialTrackingId = Services.get(IHUMaterialTrackingBL.class);
+	private final DDOrderPickFromService ddOrderPickFromService;
 
 	//
 	// Parameters
@@ -122,8 +122,10 @@ public class HUs2DDOrderProducer
 	private OrgId orgId;
 	private final Map<ArrayKey, DDOrderLineCandidate> ddOrderLineCandidates = new LinkedHashMap<>();
 
-	private HUs2DDOrderProducer()
+	private HUs2DDOrderProducer(
+			@NonNull final DDOrderPickFromService ddOrderPickFromService)
 	{
+		this.ddOrderPickFromService = ddOrderPickFromService;
 	}
 
 	public Optional<I_DD_Order> process()

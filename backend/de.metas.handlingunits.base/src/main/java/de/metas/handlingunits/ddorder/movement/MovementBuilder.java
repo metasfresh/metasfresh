@@ -52,7 +52,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Movement;
 import org.compiere.model.I_M_MovementLine;
 import org.compiere.model.X_C_DocType;
@@ -80,9 +79,9 @@ final class MovementBuilder
 	private final IMovementDAO movementsRepo = Services.get(IMovementDAO.class);
 	private final IHUMovementBL huMovementBL = Services.get(IHUMovementBL.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
-	private final IHUDDOrderBL ddOrderBL = Services.get(IHUDDOrderBL.class);
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-	private final DDOrderPickFromService ddOrderPickFromService = SpringContextHolder.instance.getBean(DDOrderPickFromService.class);
+	private final IHUDDOrderBL ddOrderBL;
+	private final DDOrderPickFromService ddOrderPickFromService;
 
 	// parameters
 	private final HuIdsWithPackingMaterialsTransferred huIdsWithPackingMaterialsTransferred;
@@ -97,10 +96,14 @@ final class MovementBuilder
 	private int nextLineNo = 10;
 
 	public MovementBuilder(
+			@NonNull final IHUDDOrderBL ddOrderBL,
+			@NonNull final DDOrderPickFromService ddOrderPickFromService,
 			@NonNull final DDOrdersCache ddOrdersCache,
 			@NonNull final HuIdsWithPackingMaterialsTransferred huIdsWithPackingMaterialsTransferred,
 			@NonNull final DDOrderId ddOrderId)
 	{
+		this.ddOrderBL = ddOrderBL;
+		this.ddOrderPickFromService = ddOrderPickFromService;
 		this.ddOrdersCache = ddOrdersCache;
 		this.huIdsWithPackingMaterialsTransferred = huIdsWithPackingMaterialsTransferred;
 		this.ddOrderId = ddOrderId;

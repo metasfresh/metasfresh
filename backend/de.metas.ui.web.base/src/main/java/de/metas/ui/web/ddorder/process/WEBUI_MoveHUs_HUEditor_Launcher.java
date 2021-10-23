@@ -48,7 +48,7 @@ public class WEBUI_MoveHUs_HUEditor_Launcher extends ViewBasedProcessTemplate im
 {
 
 	private final IViewsRepository viewsRepo = SpringContextHolder.instance.getBean(IViewsRepository.class);
-	private final IHUDDOrderBL ddOrderBL = Services.get(IHUDDOrderBL.class);
+	private final IHUDDOrderBL ddOrderBL = SpringContextHolder.instance.getBean(IHUDDOrderBL.class);
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
 	@Override
