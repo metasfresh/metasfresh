@@ -87,18 +87,18 @@ public abstract class C_Flatrate_Term_Change_BillPartner_Base extends JavaProces
 
 	private void updateFlatrateTermPartner(final I_C_Flatrate_Term term)
 	{
-
 		final ImmutableList<I_C_Flatrate_Term> nextTerms = flatrateBL.retrieveNextFlatrateTerms(term);
 
 		final ImmutableList<I_C_Flatrate_Term> nextTermWithoutInvoices = nextTerms.stream()
 				.filter(nextTerm -> !C_Flatrate_Term_Change_ProcessHelper.termHasInvoices(nextTerm))
 				.collect(ImmutableList.toImmutableList());
 
-		boolean foundTermsWithoutInvoices = (!C_Flatrate_Term_Change_ProcessHelper.termHasInvoices(term))
-				||
-				(!nextTermWithoutInvoices.isEmpty());
+		final boolean currentTermHasNoInvoice = !C_Flatrate_Term_Change_ProcessHelper.termHasInvoices(term);
+		final boolean existNextTermsWithNoInvoices = !nextTermWithoutInvoices.isEmpty();
 
-		if(!foundTermsWithoutInvoices)
+		boolean foundTermsWithoutInvoices = currentTermHasNoInvoice || existNextTermsWithNoInvoices;
+
+		if (!foundTermsWithoutInvoices)
 		{
 			// the term and all its successors are already invoiced.
 			C_Flatrate_Term_Change_ProcessHelper.throwHasInvoicesException();
