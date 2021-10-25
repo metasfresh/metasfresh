@@ -61,6 +61,7 @@ public class ExternalSystemCamelConstants
 	public static final String MF_UPSERT_EXTERNALREFERENCE_CAMEL_URI = "metasfresh.upsert-externalreference.camel.uri";
 
 	public static final String MF_ERROR_ROUTE_ID = "Error-Route";
+	public static String MF_EXTERNAL_SYSTEM_V2_URI = "metasfresh.externalsystem.v2.api.uri";
 
 	public static final String MF_LOG_MESSAGE_ROUTE_ID = "Log-Message-Route";
 
