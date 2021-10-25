@@ -27,6 +27,7 @@ import de.metas.document.location.IDocumentLocationBL;
 import de.metas.order.DeliveryViaRule;
 import de.metas.order.IOrderBL;
 import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
+import de.metas.order.location.adapter.OrderMainLocationAdapter;
 import de.metas.util.Services;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
@@ -75,6 +76,18 @@ public class C_Order
 	public void updateBPartnerAddress(final I_C_Order order)
 	{
 		documentLocationBL.updateRenderedAddressAndCapturedLocation(OrderDocumentLocationAdapterFactory.locationAdapter(order));
+	}
+
+	@CalloutMethod(columnNames = {
+			I_C_Order.COLUMNNAME_C_BPartner_ID,
+			I_C_Order.COLUMNNAME_C_BPartner_Location_ID },
+			skipIfCopying = true)
+	public void updateBPartnerAddressForceUpdateCapturedLocation(final I_C_Order order)
+	{
+		final OrderMainLocationAdapter locationAdapter = OrderDocumentLocationAdapterFactory.locationAdapter(order);
+
+		documentLocationBL.updateRenderedAddressAndCapturedLocation(locationAdapter);
+		documentLocationBL.updateCapturedLocation(locationAdapter);
 	}
 
 	@CalloutMethod(columnNames = {
