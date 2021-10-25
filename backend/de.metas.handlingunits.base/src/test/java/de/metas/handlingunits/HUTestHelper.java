@@ -27,10 +27,15 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 import de.metas.common.util.time.SystemTime;
+import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelDAO;
+import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelService;
 import de.metas.document.dimension.DimensionFactory;
 import de.metas.document.dimension.DimensionService;
 import de.metas.document.dimension.InOutLineDimensionFactory;
 import de.metas.document.dimension.OrderLineDimensionFactory;
+import de.metas.distribution.ddorder.DDOrderService;
+import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleRepository;
+import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleService;
 import de.metas.inoutcandidate.document.dimension.ReceiptScheduleDimensionFactory;
 import de.metas.invoicecandidate.document.dimension.InvoiceCandidateDimensionFactory;
 import org.adempiere.ad.dao.IQueryBL;
@@ -542,7 +547,14 @@ public class HUTestHelper
 
 	private de.metas.handlingunits.model.validator.Main newHandlingUnitsModelInterceptor()
 	{
-		return new de.metas.handlingunits.model.validator.Main(new PickingBOMService());
+		final DDOrderLowLevelDAO ddOrderLowLevelDAO = new DDOrderLowLevelDAO();
+		final DDOrderMoveScheduleService ddOrderMoveScheduleService = new DDOrderMoveScheduleService(ddOrderLowLevelDAO, new DDOrderMoveScheduleRepository());
+		final DDOrderLowLevelService ddOrderLowLevelService = new DDOrderLowLevelService(ddOrderLowLevelDAO);
+		final DDOrderService ddOrderService = new DDOrderService(ddOrderLowLevelDAO, ddOrderLowLevelService, ddOrderMoveScheduleService);
+		return new de.metas.handlingunits.model.validator.Main(
+				ddOrderMoveScheduleService,
+				ddOrderService,
+				new PickingBOMService());
 	}
 
 	/**
@@ -1132,12 +1144,6 @@ public class HUTestHelper
 	/**
 	 * Creates an {@link I_M_HU_PI_Item} with the given {@code qty} ("capacity") and {@code pPartner}<br>
 	 * and links it with the given {@code huDefinition} and {@code includedHuDefinition}.
-	 *
-	 * @param huDefinition
-	 * @param includedHuDefinition
-	 * @param qty
-	 * @param bpartner
-	 * @return
 	 */
 	public I_M_HU_PI_Item createHU_PI_Item_IncludedHU(
 			final I_M_HU_PI huDefinition,
@@ -1296,7 +1302,6 @@ public class HUTestHelper
 	/**
 	 * Create an {@link I_M_HU_Attribute} for the given {@link HUPIAttributeBuilder}.
 	 *
-	 * @param attributeBuilder
 	 * @return {@link I_M_HU_Attribute} created by the builder
 	 */
 	public I_M_HU_PI_Attribute createM_HU_PI_Attribute(final HUPIAttributeBuilder attributeBuilder)
@@ -1525,8 +1530,7 @@ public class HUTestHelper
 
 		//
 		// Create LUs
-		final List<I_M_HU> luHUs = createHUs(huContextEffective, luProducerDestination, totalQtyCU);
-		return luHUs;
+		return createHUs(huContextEffective, luProducerDestination, totalQtyCU);
 	}
 
 	public class LUsBuilder
@@ -1610,9 +1614,6 @@ public class HUTestHelper
 	 * Note: this method performs the load using an {@link IHUContext} that was created with {@link #createMutableHUContextOutOfTransaction()}.
 	 *
 	 * @param producer    used as the loader's {@link IAllocationDestination}
-	 * @param cuProductId
-	 * @param loadCuQty
-	 * @param loadCuUOM
 	 */
 	public final void load(
 			final IHUProducerAllocationDestination producer,
@@ -1730,12 +1731,7 @@ public class HUTestHelper
 	 * <li>propagate the source HUs' Locator, Status etc
 	 * <li>destroy empty source HUs
 	 *
-	 * @param sourceHUs
 	 * @param lutuProducer used as the loader's {@link IAllocationDestination}
-	 * @param qty
-	 * @param product
-	 * @param uom
-	 * @return
 	 */
 	public void transferMaterialToNewHUs(final List<I_M_HU> sourceHUs,
 			final LUTUProducerDestination lutuProducer,
@@ -1798,9 +1794,6 @@ public class HUTestHelper
 	 * This method "destroys" one or many HU(s) according to the given transaction document (e.g. shipment). The source HUs' items are modified in this process. Note that the qtys contained in the
 	 * given source HUs need to be sufficient for the products and qtys of the transaction document. If the given source HUs contain more material than required for the transaction document, then the
 	 * rest is "left back" in the source HU(s).
-	 *
-	 * @param outgoingTrx
-	 * @param sourceHUs
 	 */
 	public void transferHUsToOutgoing(final I_M_Transaction outgoingTrx, final List<I_M_HU> sourceHUs)
 	{
@@ -1826,7 +1819,6 @@ public class HUTestHelper
 	 * creates a {@link de.metas.handlingunits.model.I_M_HU_Trx_Hdr} which references the given transactionDoc.
 	 *
 	 * @param mtrx the material transaction (inventory, receipt etc) that document the "origin" of the products to be added to the new HU
-	 * @param huPI
 	 * @return the newly created HUs that were created from the transaction doc.
 	 * @deprecated this method only uses {@link HUProducerDestination} which will only create a simple plain HU. In almost every scenario that's not what you want test-wise.
 	 * Please remove the deprecation flag and update the doc if and when a good class of testcases come up which justify having the method in this helper..
@@ -1859,13 +1851,6 @@ public class HUTestHelper
 		return destination.getCreatedHUs();
 	}
 
-	/**
-	 * @param sourceHUs
-	 * @param destinationHUs
-	 * @param product
-	 * @param qty
-	 * @param uom
-	 */
 	public void transferMaterialToExistingHUs(final List<I_M_HU> sourceHUs, final List<I_M_HU> destinationHUs, final I_M_Product product, final BigDecimal qty, final I_C_UOM uom)
 	{
 		final IAllocationSource source = HUListAllocationSourceDestination.of(sourceHUs);
@@ -1974,14 +1959,11 @@ public class HUTestHelper
 
 	/**
 	 * Join given <code>tradingUnits</code> to the <code>loadingUnit</code>
-	 *
-	 * @param loadingUnit
-	 * @param tradingUnits
 	 */
 	public void joinHUs(final IHUContext huContext, final I_M_HU loadingUnit, final I_M_HU... tradingUnits)
 	{
 		trxBL.createHUContextProcessorExecutor(huContext)
-				.run((IHUContextProcessor)huContextLocal -> {
+				.run(huContextLocal -> {
 					joinHUs(huContextLocal, loadingUnit, Arrays.asList(tradingUnits));
 					return IHUContextProcessor.NULL_RESULT;
 				});
@@ -1989,13 +1971,6 @@ public class HUTestHelper
 
 	/**
 	 * Configure and use {@link ITUMergeBuilder} to move given <code>sourceHUs</code> customer units (products) on the <code>targetHU</code> with the qty, UOM of that product
-	 *
-	 * @param huContext
-	 * @param sourceHUs
-	 * @param targetHU
-	 * @param cuProductId
-	 * @param cuQty
-	 * @param cuUOM
 	 */
 	public void mergeTUs(
 			final IHUContext huContext,

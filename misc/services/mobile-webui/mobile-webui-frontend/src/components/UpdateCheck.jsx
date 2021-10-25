@@ -72,7 +72,7 @@ const mapStateToProps = (state) => {
 UpdateCheck.propTypes = {
   updateInterval: PropTypes.number.isRequired,
   setVersion: PropTypes.func.isRequired,
-  currentVersion: PropTypes.oneOfType([() => null, PropTypes.string]).isRequired,
+  currentVersion: PropTypes.oneOfType([() => null, PropTypes.string]),
 };
 
 export default connect(mapStateToProps, { setVersion })(UpdateCheck);

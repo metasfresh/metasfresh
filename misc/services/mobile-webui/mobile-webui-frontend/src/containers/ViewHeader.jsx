@@ -46,11 +46,11 @@ class ViewHeader extends Component {
         )}
       >
         {headersEntry.values &&
-          headersEntry.values.map(({ caption, value }, i) => {
+          headersEntry.values.map(({ caption, value, bold }, i) => {
             return (
               <div key={i} className="columns is-mobile is-size-7">
                 <div className="column is-half has-text-left has-text-weight-bold pt-0 pb-0 pl-1 pr-0">{caption}:</div>
-                <div className={classnames('column is-half has-text-left pt-0 pb-0', { 'is-size-4': idx === 1 })}>
+                <div className={classnames('column is-half has-text-left pt-0 pb-0', { 'is-size-4': bold })}>
                   {value}
                 </div>
               </div>

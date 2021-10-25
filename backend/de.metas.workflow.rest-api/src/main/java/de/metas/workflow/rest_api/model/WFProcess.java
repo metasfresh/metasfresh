@@ -32,7 +32,6 @@ import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.Singular;
 import org.adempiere.exceptions.AdempiereException;
 
 import java.util.Objects;
@@ -108,12 +107,14 @@ public final class WFProcess
 		}
 	}
 
-	public void assertHasAccess(@NonNull final UserId userId)
+	public WFProcess assertHasAccess(@NonNull final UserId userId)
 	{
 		if (!hasAccess(userId))
 		{
 			throw new AdempiereException("User does not have access");
 		}
+
+		return this;
 	}
 
 	public boolean hasAccess(@NonNull final UserId userId)

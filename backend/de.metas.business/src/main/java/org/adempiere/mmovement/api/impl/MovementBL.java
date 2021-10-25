@@ -22,18 +22,12 @@ package org.adempiere.mmovement.api.impl;
  * #L%
  */
 
-import java.math.BigDecimal;
-
-import org.adempiere.mmovement.api.IMovementBL;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Locator;
-import org.compiere.model.I_M_Movement;
-import org.compiere.model.I_M_MovementLine;
-
+import de.metas.document.DocTypeId;
+import de.metas.document.DocTypeQuery;
+import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductActivityProvider;
 import de.metas.product.IProductBL;
@@ -41,21 +35,53 @@ import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.IUOMDAO;
 import de.metas.uom.UOMConversionContext;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.mmovement.api.IMovementBL;
+import org.adempiere.mmovement.api.IMovementDAO;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Locator;
+import org.compiere.model.I_M_Movement;
+import org.compiere.model.I_M_MovementLine;
+import org.compiere.model.I_M_Warehouse;
+import org.compiere.model.X_C_DocType;
+
+import java.math.BigDecimal;
 
 public class MovementBL implements IMovementBL
 {
-	private final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
+	private final IMovementDAO movementDAO = Services.get(IMovementDAO.class);
+	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-	
+	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
+
+	@Override
+	public DocTypeId getDocTypeId(@NonNull final ClientAndOrgId clientAndOrgId)
+	{
+		return docTypeDAO.getDocTypeId(DocTypeQuery.builder()
+				.docBaseType(X_C_DocType.DOCBASETYPE_MaterialMovement)
+				.adClientId(clientAndOrgId.getClientId().getRepoId())
+				.adOrgId(clientAndOrgId.getOrgId().getRepoId())
+				.build());
+	}
+
 	@Override
 	public I_C_UOM getC_UOM(final I_M_MovementLine movementLine)
 	{
-		final IProductBL productBL = Services.get(IProductBL.class);
-		return productBL.getStockUOM(movementLine.getM_Product_ID());
+		return uomDAO.getById(getUomId(movementLine));
+	}
+
+	private UomId getUomId(final I_M_MovementLine movementLine)
+	{
+		return productBL.getStockUOMId(movementLine.getM_Product_ID());
 	}
 
 	@Override
@@ -72,14 +98,14 @@ public class MovementBL implements IMovementBL
 	}
 
 	@Override
-	public void setMovementQty(final I_M_MovementLine movementLine, final BigDecimal movementQty, final I_C_UOM uom)
+	public void setMovementQty(final I_M_MovementLine movementLine, final Quantity movementQty)
 	{
 		final ProductId productId = ProductId.ofRepoId(movementLine.getM_Product_ID());
-		final I_C_UOM uomTo = getC_UOM(movementLine);
+		final UomId stockingUomId = getUomId(movementLine);
 
-		final BigDecimal movementQtyConv = uomConversionBL.convertQty(productId, movementQty, uom, uomTo);
+		final Quantity movementQtyConv = uomConversionBL.convertQuantityTo(movementQty, productId, stockingUomId);
 
-		movementLine.setMovementQty(movementQtyConv);
+		movementLine.setMovementQty(movementQtyConv.toBigDecimal());
 	}
 
 	@Override
@@ -108,7 +134,7 @@ public class MovementBL implements IMovementBL
 	 */
 	private ActivityId getActivity(@NonNull final I_M_Locator locator, final ActivityId defaultActivityId)
 	{
-		final org.adempiere.warehouse.model.I_M_Warehouse warehouse = InterfaceWrapperHelper.create(locator.getM_Warehouse(), org.adempiere.warehouse.model.I_M_Warehouse.class);
+		final I_M_Warehouse warehouse = locator.getM_Warehouse();
 
 		final ActivityId warehouseActivityId = ActivityId.ofRepoIdOrNull(warehouse.getC_Activity_ID());
 		if (warehouseActivityId != null)
@@ -133,13 +159,32 @@ public class MovementBL implements IMovementBL
 		// Make sure this is the actual reversal and not the original document which was reversed
 		// i.e. this document was created after the reversal (so Reversal_ID is less than this document's ID)
 		final int movementId = movement.getM_Movement_ID();
+		//noinspection UnnecessaryLocalVariable
 		final boolean reversal = movementId > reversalId;
 		return reversal;
 	}
-	
+
+	@Override
+	public void complete(@NonNull final I_M_Movement movement)
+	{
+		documentBL.processEx(movement, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
+	}
+
 	@Override
 	public void voidMovement(final I_M_Movement movement)
 	{
-		docActionBL.processEx(movement, IDocument.ACTION_Void, IDocument.STATUS_Reversed);
+		documentBL.processEx(movement, IDocument.ACTION_Void, IDocument.STATUS_Reversed);
+	}
+
+	@Override
+	public void save(@NonNull final I_M_Movement movement)
+	{
+		movementDAO.save(movement);
+	}
+
+	@Override
+	public void save(@NonNull final I_M_MovementLine movementLine)
+	{
+		movementDAO.save(movementLine);
 	}
 }

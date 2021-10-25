@@ -194,13 +194,30 @@ public class HUReservationRepository
 		}
 	}
 
-	public IQuery<I_M_HU_Reservation> createQueryReservedToOtherThan(@NonNull final OrderLineId orderLineId)
+	public IQuery<I_M_HU_Reservation> createQueryReservedToOtherThan(@NonNull final HUReservationDocRef documentRef)
 	{
-		return queryBL
+		final IQueryBuilder<I_M_HU_Reservation> queryBuilder = queryBL
 				.createQueryBuilder(I_M_HU_Reservation.class)
-				.addOnlyActiveRecordsFilter()
-				.addNotEqualsFilter(I_M_HU_Reservation.COLUMNNAME_C_OrderLineSO_ID, orderLineId)
-				.create();
+				.addOnlyActiveRecordsFilter();
+
+		documentRef.map(new HUReservationDocRef.CaseMappingFunction<Void>()
+		{
+			@Override
+			public Void salesOrderLineId(@NonNull final OrderLineId salesOrderLineId)
+			{
+				queryBuilder.addNotEqualsFilter(I_M_HU_Reservation.COLUMNNAME_C_OrderLineSO_ID, salesOrderLineId);
+				return null;
+			}
+
+			@Override
+			public Void projectId(@NonNull final ProjectId projectId)
+			{
+				queryBuilder.addNotEqualsFilter(I_M_HU_Reservation.COLUMNNAME_C_Project_ID, projectId);
+				return null;
+			}
+		});
+
+		return queryBuilder.create();
 	}
 
 	public void deleteReservationsByVhuIds(@NonNull final Collection<HuId> vhuIds)

@@ -23,7 +23,7 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
-import static de.metas.common.util.CoalesceUtil.coalesce;
+import static de.metas.common.util.CoalesceUtil.coalesceNotNull;
 import static de.metas.util.Check.assume;
 import static de.metas.util.Check.isEmpty;
 
@@ -76,7 +76,12 @@ public interface IWarehouseDAO extends ISingletonService
 	WarehouseId getWarehouseIdByValue(String value);
 
 	@Deprecated
+	@Nullable
 	WarehouseId getWarehouseIdByLocatorRepoId(int locatorId);
+
+	@Deprecated
+	@Nullable
+	I_M_Warehouse getWarehouseByLocatorRepoId(int locatorId);
 
 	@Deprecated
 	Set<WarehouseId> getWarehouseIdsForLocatorRepoIds(Set<Integer> locatorRepoIds);
@@ -147,11 +152,6 @@ public interface IWarehouseDAO extends ISingletonService
 	 */
 	I_M_Warehouse retrieveWarehouseForIssues(Properties ctx);
 
-	/**
-	 * Retrieve the warehouse marked as IsQuarantineWarehouse.
-	 */
-	org.adempiere.warehouse.model.I_M_Warehouse retrieveQuarantineWarehouseOrNull();
-
 	@Value
 	class WarehouseQuery
 	{
@@ -185,10 +185,12 @@ public interface IWarehouseDAO extends ISingletonService
 			this.value = value;
 			this.externalId = externalId;
 			this.orgId = orgId;
-			this.includeAnyOrg = coalesce(includeAnyOrg, false);
-			this.outOfTrx = coalesce(outOfTrx, false);
+			this.includeAnyOrg = coalesceNotNull(includeAnyOrg, false);
+			this.outOfTrx = coalesceNotNull(outOfTrx, false);
 		}
 	}
+
+	WarehouseId retrieveQuarantineWarehouseId();
 
 	WarehouseId retrieveWarehouseIdBy(WarehouseQuery query);
 
