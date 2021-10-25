@@ -22,6 +22,10 @@
 
 package de.metas.cucumber.stepdefs;
 
+import de.metas.currency.Currency;
+import de.metas.currency.CurrencyCode;
+import de.metas.currency.ICurrencyDAO;
+import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.order.IOrderBL;
@@ -32,6 +36,7 @@ import de.metas.process.IADProcessDAO;
 import de.metas.process.ProcessInfo;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
+import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
@@ -65,6 +70,9 @@ public class C_Order_StepDef
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
+	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
+	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+
 	private final StepDefData<I_C_BPartner> bpartnerTable;
 	private final StepDefData<I_C_Order> orderTable;
 
@@ -155,7 +163,7 @@ public class C_Order_StepDef
 			final boolean isSOTrx = DataTableUtil.extractBooleanForColumnName(tableRow, I_C_Order.COLUMNNAME_IsSOTrx);
 			assertThat(purchaseOrder.isSOTrx()).isEqualTo(isSOTrx);
 
-			final I_C_DocType docType =  load(purchaseOrder.getC_DocTypeTarget_ID(), I_C_DocType.class);
+			final I_C_DocType docType = load(purchaseOrder.getC_DocTypeTarget_ID(), I_C_DocType.class);
 
 			final String docBaseType = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_DocBaseType);
 			assertThat(docType.getDocBaseType()).isEqualTo(docBaseType);
@@ -199,6 +207,46 @@ public class C_Order_StepDef
 		final String externalPurchaseOrderUrl = DataTableUtil.extractStringForColumnName(dataTableRow, I_C_Order.COLUMNNAME_ExternalPurchaseOrderURL);
 
 		assertThat(purchaseOrderRecord.getExternalPurchaseOrderURL()).isEqualTo(externalPurchaseOrderUrl);
+	}
+
+	@And("validate created order")
+	public void validate_created_order(@NonNull final DataTable table)
+	{
+		final Map<String, String> row = table.asMaps().get(0);
+		validateOrder(row);
+	}
+
+	private void validateOrder(@NonNull final Map<String, String> row)
+	{
+		final String identifier = DataTableUtil.extractStringForColumnName(row, "Order.Identifier");
+		final int bpartnerId = DataTableUtil.extractIntForColumnName(row, "c_bpartner_id");
+		final int bpartnerLocationId = DataTableUtil.extractIntForColumnName(row, "c_bpartner_location_id");
+		final Timestamp dateOrdered = DataTableUtil.extractDateTimestampForColumnName(row, "dateordered");
+		final String docbasetype = DataTableUtil.extractStringForColumnName(row, "docbasetype");
+		final String currencyCode = DataTableUtil.extractStringForColumnName(row, "currencyCode");
+		final String deliveryRule = DataTableUtil.extractStringForColumnName(row, "deliveryRule");
+		final String deliveryViaRule = DataTableUtil.extractStringForColumnName(row, "deliveryViaRule");
+		final boolean processed = DataTableUtil.extractBooleanForColumnNameOr(row, "processed", false);
+		final String externalId = DataTableUtil.extractStringForColumnName(row, "externalId");
+		final String docStatus = DataTableUtil.extractStringForColumnName(row, "docStatus");
+
+		final I_C_Order order = orderTable.get(identifier);
+
+		assertThat(order.getExternalId()).isEqualTo(externalId);
+		assertThat(order.getC_BPartner_ID()).isEqualTo(bpartnerId);
+		assertThat(order.getC_BPartner_Location_ID()).isEqualTo(bpartnerLocationId);
+		assertThat(order.getDateOrdered()).isEqualTo(dateOrdered);
+		assertThat(order.getDeliveryRule()).isEqualTo(deliveryRule);
+		assertThat(order.getDeliveryViaRule()).isEqualTo(deliveryViaRule);
+		assertThat(order.isProcessed()).isEqualTo(processed);
+		assertThat(order.getDocStatus()).isEqualTo(docStatus);
+
+		final Currency currency = currencyDAO.getByCurrencyCode(CurrencyCode.ofThreeLetterCode(currencyCode));
+		assertThat(order.getC_Currency_ID()).isEqualTo(currency.getId().getRepoId());
+
+		final I_C_DocType docType = docTypeDAO.getById(order.getC_DocType_ID());
+		assertThat(docType).isNotNull();
+		assertThat(docType.getDocBaseType()).isEqualTo(docbasetype);
 	}
 
 	@Then("the following group compensation order lines were created for externalHeaderId: {string}")

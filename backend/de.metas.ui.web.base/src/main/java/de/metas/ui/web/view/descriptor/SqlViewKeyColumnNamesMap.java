@@ -1,6 +1,5 @@
 package de.metas.ui.web.view.descriptor;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.metas.ui.web.base.model.I_T_WEBUI_ViewSelection;
@@ -389,8 +388,7 @@ public final class SqlViewKeyColumnNamesMap
 	/**
 	 * @return map of (keyColumnName, value) pairs
 	 */
-	@VisibleForTesting
-	SqlComposedKey extractComposedKey(final DocumentId rowId)
+	public SqlComposedKey extractComposedKey(final DocumentId rowId)
 	{
 		return SqlDocumentQueryBuilder.extractComposedKey(rowId, keyFields);
 	}

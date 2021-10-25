@@ -1,15 +1,16 @@
 package de.metas.ui.web.document.filter.sql;
 
-import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterList;
+import de.metas.ui.web.view.descriptor.SqlAndParams;
 import de.metas.ui.web.window.model.sql.SqlOptions;
+import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.compiere.util.DB;
 
 import javax.annotation.Nullable;
+import java.util.HashSet;
 
 /*
  * #%L
@@ -52,41 +53,82 @@ public interface SqlDocumentFilterConverter
 	 * @return SQL
 	 */
 	@Nullable
-	String getSql(SqlParamsCollector sqlParamsOut,
-				  DocumentFilter filter,
-				  final SqlOptions sqlOpts,
-				  final SqlDocumentFilterConverterContext context);
+	FilterSql getSql(DocumentFilter filter,
+					 SqlOptions sqlOpts,
+					 SqlDocumentFilterConverterContext context);
 
-	/* final */
-	default String getSql(
-			@NonNull final SqlParamsCollector sqlParamsOut,
+	@NonNull
+	default FilterSql getSql(
 			@NonNull final DocumentFilterList filters,
 			@NonNull final SqlOptions sqlOpts,
 			@NonNull final SqlDocumentFilterConverterContext context)
 	{
 		if (filters.isEmpty())
 		{
-			return "";
+			return FilterSql.NULL;
 		}
 
-		final StringBuilder sqlWhereClauseBuilder = new StringBuilder();
+		final SqlAndParams.Builder whereClauseBuilder = SqlAndParams.builder();
+		final HashSet<FilterSql.FullTextSearchResult> filterByFTS = new HashSet<>();
+		final SqlAndParams.Builder orderByBuilder = SqlAndParams.builder();
 
 		for (final DocumentFilter filter : filters.toList())
 		{
-			final String sqlFilter = getSql(sqlParamsOut, filter, sqlOpts, context);
-			if (Check.isEmpty(sqlFilter, true))
+			final FilterSql filterSql = getSql(filter, sqlOpts, context);
+			if (filterSql == null)
 			{
 				continue;
 			}
 
-			if (sqlWhereClauseBuilder.length() > 0)
+			//
+			// Where Clause
+			//noinspection StatementWithEmptyBody
+			if (filterSql.isAllowAll())
 			{
-				sqlWhereClauseBuilder.append("\n AND ");
+				// no where clause to be added
 			}
-			sqlWhereClauseBuilder.append(DB.TO_COMMENT(filter.getFilterId())).append("(").append(sqlFilter).append(")");
+			else if (filterSql.isAllowNone())
+			{
+				return FilterSql.ALLOW_NONE;
+			}
+			else
+			{
+				if (filterSql.getWhereClause() != null && !filterSql.getWhereClause().isEmpty())
+				{
+					if (!whereClauseBuilder.isEmpty())
+					{
+						whereClauseBuilder.append("\n AND ");
+					}
+					whereClauseBuilder.append(DB.TO_COMMENT(filter.getFilterId()))
+							.append(filterSql.getSqlComment() != null ? DB.TO_COMMENT(filterSql.getSqlComment()) : "")
+							.append(" (").append(filterSql.getWhereClause()).append(")");
+				}
+			}
+
+			//
+			// Full Text Search
+			if (filterSql.getFilterByFTS() != null)
+			{
+				filterByFTS.add(filterSql.getFilterByFTS());
+			}
+
+			//
+			// ORDER BY
+			if (filterSql.getOrderBy() != null && !filterSql.getOrderBy().isEmpty())
+			{
+				if (!orderByBuilder.isEmpty())
+				{
+					orderByBuilder.append("\n, ");
+				}
+				orderByBuilder.append(DB.TO_COMMENT(filter.getFilterId())).append(filterSql.getOrderBy());
+			}
 		}
 
-		return sqlWhereClauseBuilder.toString();
+		return FilterSql.builder()
+				.whereClause(!whereClauseBuilder.isEmpty() ? whereClauseBuilder.build() : null)
+				.filterByFTS(CollectionUtils.emptyOrSingleElement(filterByFTS))
+				.orderBy(!orderByBuilder.isEmpty() ? orderByBuilder.build() : null)
+				.build();
 	}
 
 	default <T> IQueryFilter<T> createQueryFilter(
@@ -94,8 +136,7 @@ public interface SqlDocumentFilterConverter
 			@NonNull final SqlOptions sqlOpts,
 			@NonNull final SqlDocumentFilterConverterContext context)
 	{
-		final SqlParamsCollector sqlFilterParams = SqlParamsCollector.newInstance();
-		final String sqlFilter = getSql(sqlFilterParams, filters, sqlOpts, context);
-		return TypedSqlQueryFilter.of(sqlFilter, sqlFilterParams.toList());
+		return getSql(filters, sqlOpts, context)
+				.toQueryFilterOrAllowAll();
 	}
 }

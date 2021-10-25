@@ -16,45 +16,7 @@
  *****************************************************************************/
 package org.compiere.apps;
 
-import java.awt.BorderLayout;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.Frame;
-import java.awt.Graphics;
-import java.awt.Image;
-import java.awt.Insets;
-import java.awt.MediaTracker;
-import java.awt.Toolkit;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.File;
-import java.io.IOException;
-import java.util.List;
-
-import javax.annotation.Nullable;
-import javax.swing.JFileChooser;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.images.Images;
-import org.adempiere.pdf.Document;
-import org.adempiere.pdf.viewer.PDFViewerBean;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.MSysConfig;
-import org.compiere.swing.CButton;
-import org.compiere.swing.CComboBox;
-import org.compiere.swing.CDialog;
-import org.compiere.swing.CPanel;
-import org.compiere.swing.CTextArea;
-import org.compiere.util.Env;
-import org.compiere.util.Util;
-import org.slf4j.Logger;
-
 import com.google.common.io.Files;
-
 import de.metas.adempiere.Constants;
 import de.metas.adempiere.form.IClientUI;
 import de.metas.attachments.AttachmentEntry;
@@ -67,6 +29,30 @@ import de.metas.util.Services;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.images.Images;
+import org.adempiere.pdf.Document;
+import org.adempiere.pdf.viewer.PDFViewerBean;
+import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.SpringContextHolder;
+import org.compiere.swing.CButton;
+import org.compiere.swing.CComboBox;
+import org.compiere.swing.CDialog;
+import org.compiere.swing.CPanel;
+import org.compiere.swing.CTextArea;
+import org.compiere.util.Env;
+import org.compiere.util.Util;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
 
 /**
  * Attachment Viewer
@@ -108,13 +94,6 @@ public final class Attachment extends CDialog implements ActionListener
 	/**
 	 * Constructor.
 	 * loads Attachment, if ID <> 0
-	 *
-	 * @param frame frame
-	 * @param WindowNo window no
-	 * @param AD_Attachment_ID attachment
-	 * @param AD_Table_ID table
-	 * @param Record_ID record key
-	 * @param trxName transaction
 	 */
 	public Attachment(final Frame frame, final int WindowNo, final int AD_Attachment_ID_NOTUSED, final int AD_Table_ID, final int Record_ID)
 	{
@@ -204,7 +183,7 @@ public final class Attachment extends CDialog implements ActionListener
 		mainPanel.add(confirmPanel, BorderLayout.SOUTH);
 		confirmPanel.setActionListener(this);
 		bDeleteAll = ConfirmPanel.createDeleteButton(true);
-		if (!MSysConfig.getBooleanValue(Constants.SYSCONFIG_Attachment_HideDeleteAll, false, Env.getAD_Client_ID(Env.getCtx())))
+		if (!Services.get(ISysConfigBL.class).getBooleanValue(Constants.SYSCONFIG_Attachment_HideDeleteAll, false, Env.getAD_Client_ID(Env.getCtx())))
 		{
 			confirmPanel.addButton(bDeleteAll);
 		}

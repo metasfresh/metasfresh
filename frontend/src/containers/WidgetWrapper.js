@@ -28,6 +28,8 @@ import MasterWidget from '../components/widget/MasterWidget';
 import RawWidget from '../components/widget/RawWidget';
 import InlineTabWrapper from '../components/widget/InlineTabWrapper';
 
+const EMPTY_WIDGET_DATA = [{}];
+
 /**
  * @file Class based component.
  * @module WidgetWrapper
@@ -138,7 +140,7 @@ const mapStateToProps = (state, props) => {
     }
 
     default:
-      widgetData = [{}];
+      widgetData = EMPTY_WIDGET_DATA;
 
       break;
   }

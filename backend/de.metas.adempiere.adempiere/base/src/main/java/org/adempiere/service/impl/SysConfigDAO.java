@@ -22,52 +22,105 @@ package org.adempiere.service.impl;
  * #L%
  */
 
-import java.util.List;
-import java.util.Properties;
-
+import com.google.common.base.Stopwatch;
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableMap;
+import de.metas.cache.CCache;
+import de.metas.logging.LogManager;
+import de.metas.organization.ClientAndOrgId;
+import de.metas.organization.OrgId;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
+import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.util.proxy.Cached;
+import org.adempiere.exceptions.DBException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.ISysConfigDAO;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.IQuery.Aggregate;
 import org.compiere.model.I_AD_SysConfig;
-import org.compiere.model.MSysConfig;
-import org.compiere.model.Query;
-import org.compiere.util.Env;
+import org.compiere.util.DB;
 import org.slf4j.Logger;
 import org.springframework.context.ApplicationContext;
 
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
+import javax.annotation.Nullable;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
 
-public class SysConfigDAO extends AbstractSysConfigDAO
+public class SysConfigDAO implements ISysConfigDAO
 {
 	private final Logger logger = LogManager.getLogger(SysConfigDAO.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	private final CCache<Integer, SysConfigMap> cache = CCache.<Integer, SysConfigMap>builder()
+			.tableName(I_AD_SysConfig.Table_Name)
+			.initialCapacity(1)
+			.expireMinutes(CCache.EXPIREMINUTES_Never)
+			.build();
 
 	@Override
-	public I_AD_SysConfig retrieveSysConfig(final Properties ctx, final String name, final int AD_Client_ID, final int AD_Org_ID, final String trxName)
+	public void setValue(
+			@NonNull final String name,
+			@Nullable final String value,
+			@NonNull final ClientAndOrgId clientAndOrgId)
 	{
-		final String whereClause = I_AD_SysConfig.COLUMNNAME_Name + "=?"
-				+ " AND " + I_AD_SysConfig.COLUMNNAME_AD_Client_ID + "=?"
-				+ " AND " + I_AD_SysConfig.COLUMNNAME_AD_Org_ID + "=?";
-
-		final I_AD_SysConfig sysConfig = new Query(ctx, I_AD_SysConfig.Table_Name, whereClause, trxName)
-				.setParameters(name, AD_Client_ID, AD_Org_ID)
+		I_AD_SysConfig sysConfig = queryBL
+				.createQueryBuilder(I_AD_SysConfig.class)
+				.addEqualsFilter(I_AD_SysConfig.COLUMNNAME_Name, name)
+				.addEqualsFilter(I_AD_SysConfig.COLUMNNAME_AD_Client_ID, clientAndOrgId.getClientId())
+				.addEqualsFilter(I_AD_SysConfig.COLUMNNAME_AD_Org_ID, clientAndOrgId.getOrgId())
+				.create()
 				.firstOnly(I_AD_SysConfig.class);
 
-		return sysConfig;
+		final String oldValue;
+		if (sysConfig == null)
+		{
+			oldValue = null;
+			sysConfig = InterfaceWrapperHelper.newInstance(I_AD_SysConfig.class);
+			InterfaceWrapperHelper.setValue(sysConfig, I_AD_SysConfig.COLUMNNAME_AD_Client_ID, clientAndOrgId.getClientId().getRepoId());
+			sysConfig.setName(name);
+			sysConfig.setAD_Org_ID(clientAndOrgId.getOrgId().getRepoId());
+		}
+		else
+		{
+			oldValue = sysConfig.getValue();
+		}
+
+		final String valuePO = value != null ? value : SysConfigEntryValue.NO_VALUE_MARKER;
+		sysConfig.setValue(valuePO);
+		InterfaceWrapperHelper.save(sysConfig);
+		logger.info("Set SysConfig `{}` to `{}` (Old value: `{}`, Client/Org: {})", name, valuePO, oldValue, clientAndOrgId);
 	}
 
 	@Override
-	public String retrieveSysConfigValue(final String Name, final String defaultValue, final int AD_Client_ID, final int AD_Org_ID)
+	public void setValue(final @NonNull String name, final int value, final @NonNull ClientAndOrgId clientAndOrgId)
+	{
+		setValue(name, String.valueOf(value), clientAndOrgId);
+	}
+
+	@Override
+	public void setValue(final @NonNull String name, final boolean value, final @NonNull ClientAndOrgId clientAndOrgId)
+	{
+		setValue(name, StringUtils.ofBoolean(value), clientAndOrgId);
+	}
+
+	@Override
+	public Optional<String> getValue(@NonNull final String name, @NonNull final ClientAndOrgId clientAndOrgId)
 	{
 		final ApplicationContext springApplicationContext = SpringContextHolder.instance.getApplicationContext();
 		if (springApplicationContext != null)
 		{
-			final String springContextValue = springApplicationContext.getEnvironment().getProperty(Name);
-			if (!Check.isEmpty(springContextValue, true))
+			final String springContextValue = springApplicationContext.getEnvironment().getProperty(name);
+			if (springContextValue != null && !Check.isBlank(springContextValue))
 			{
-				logger.debug("Returning the spring context's value {}={} instead of looking up the AD_SysConfig record", new Object[] { Name, springContextValue });
-				return springContextValue.trim();
+				logger.debug("Returning the spring context's value {}={} instead of looking up the AD_SysConfig record", name, springContextValue);
+				return Optional.of(springContextValue.trim());
 			}
 		}
 		else
@@ -76,34 +129,91 @@ public class SysConfigDAO extends AbstractSysConfigDAO
 			// Usually we will get here when we will run some tools based on metasfresh framework.
 
 			final Properties systemProperties = System.getProperties();
-			final String systemPropertyValue = systemProperties.getProperty(Name);
-			if(!Check.isEmpty(systemPropertyValue, true))
+			final String systemPropertyValue = systemProperties.getProperty(name);
+			if (systemPropertyValue != null && !Check.isBlank(systemPropertyValue))
 			{
-				logger.debug("Returning the JVM system property's value {}={} instead of looking up the AD_SysConfig record", new Object[] { Name, systemPropertyValue });
-				return systemPropertyValue.trim();
+				logger.debug("Returning the JVM system property's value {}={} instead of looking up the AD_SysConfig record", name, systemPropertyValue);
+				return Optional.of(systemPropertyValue.trim());
 			}
 		}
 
-		return MSysConfig.getValue(Name, defaultValue, AD_Client_ID, AD_Org_ID);
+		return getMap().getValueAsString(name, clientAndOrgId);
 	}
 
 	@Override
-	@Cached(cacheName = I_AD_SysConfig.Table_Name + "#NamesForPrefix", expireMinutes = Cached.EXPIREMINUTES_Never)
-	public List<String> retrieveNamesForPrefix(final String prefix, final int adClientId, final int adOrgId)
+	public List<String> retrieveNamesForPrefix(
+			@NonNull final String prefix,
+			@NonNull final ClientAndOrgId clientAndOrgId)
 	{
-		Check.errorUnless(!Check.isEmpty(prefix, true), "prefix is empty");
-
-		final String whereClause = I_AD_SysConfig.COLUMNNAME_Name + " LIKE ?"
-				+ " AND " + I_AD_SysConfig.COLUMNNAME_AD_Client_ID + " IN (0,?)"
-				+ " AND " + I_AD_SysConfig.COLUMNNAME_AD_Org_ID + " IN (0,?)"
-				+ " AND " + I_AD_SysConfig.COLUMNNAME_IsActive + "=?";
-
-		final String sqlPrefix = prefix + "%";
-
-		return new Query(Env.getCtx(), I_AD_SysConfig.Table_Name, whereClause, ITrx.TRXNAME_None)
-				.setParameters(sqlPrefix, adClientId, adOrgId, true)
-				.setOrderBy(I_AD_SysConfig.COLUMNNAME_Name)
-				.aggregateList(I_AD_SysConfig.COLUMNNAME_Name, Aggregate.DISTINCT, String.class);
+		return getMap().getNamesForPrefix(prefix, clientAndOrgId);
 	}
 
+	private SysConfigMap getMap()
+	{
+		return cache.getOrLoad(0, this::retrieveMap);
+	}
+
+	private SysConfigMap retrieveMap()
+	{
+		final Stopwatch stopwatch = Stopwatch.createStarted();
+		final ImmutableListMultimap<String, SysConfigEntryValue> entryValuesByName = retrieveSysConfigEntryValues();
+
+		final ImmutableMap<String, SysConfigEntry> entiresByName = entryValuesByName.asMap()
+				.entrySet()
+				.stream()
+				.map(e -> SysConfigEntry.builder()
+						.name(e.getKey())
+						.entryValues(e.getValue())
+						.build())
+				.collect(ImmutableMap.toImmutableMap(
+						SysConfigEntry::getName,
+						entry -> entry
+				));
+
+		final SysConfigMap result = new SysConfigMap(entiresByName);
+
+		logger.info("Retrieved {} in {}", result, stopwatch.stop());
+		return result;
+	}
+
+	protected ImmutableListMultimap<String, SysConfigEntryValue> retrieveSysConfigEntryValues()
+	{
+
+		final String sql = "SELECT Name, Value, AD_Client_ID, AD_Org_ID FROM AD_SysConfig"
+				+ " WHERE IsActive='Y'"
+				+ " ORDER BY Name, AD_Client_ID, AD_Org_ID";
+
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+
+		try
+		{
+			final ImmutableListMultimap.Builder<String, SysConfigEntryValue> resultBuilder = ImmutableListMultimap.builder();
+
+			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
+			rs = pstmt.executeQuery();
+			while (rs.next())
+			{
+				final String name = rs.getString("Name");
+				final String value = rs.getString("Value");
+				final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(
+						ClientId.ofRepoId(rs.getInt("AD_Client_ID")),
+						OrgId.ofRepoId(rs.getInt("AD_Org_ID")));
+
+				final SysConfigEntryValue entryValue = SysConfigEntryValue.of(value, clientAndOrgId);
+
+				resultBuilder.put(name, entryValue);
+			}
+
+			return resultBuilder.build();
+		}
+		catch (final SQLException ex)
+		{
+			throw new DBException(ex, sql);
+		}
+		finally
+		{
+			DB.close(rs, pstmt);
+		}
+	}
 }

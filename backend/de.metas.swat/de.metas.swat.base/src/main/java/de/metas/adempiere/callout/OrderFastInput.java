@@ -22,14 +22,30 @@ package de.metas.adempiere.callout;
  * #L%
  */
 
-import static org.compiere.model.I_C_Order.COLUMNNAME_C_BPartner_ID;
-import static org.compiere.model.I_C_Order.COLUMNNAME_M_Shipper_ID;
-
-import java.math.BigDecimal;
-import java.util.Properties;
-import java.util.Set;
-import java.util.function.Consumer;
-
+import com.google.common.annotations.VisibleForTesting;
+import de.metas.adempiere.form.IClientUI;
+import de.metas.bpartner.BPartnerContactId;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.bpartner_product.IBPartnerProductBL;
+import de.metas.document.location.DocumentLocation;
+import de.metas.freighcost.FreightCostRule;
+import de.metas.interfaces.I_C_OrderLine;
+import de.metas.logging.LogManager;
+import de.metas.order.IOrderBL;
+import de.metas.order.IOrderLineBL;
+import de.metas.order.OrderFreightCostsService;
+import de.metas.order.OrderLinePriceUpdateRequest;
+import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
+import de.metas.order.location.adapter.OrderLineDocumentLocationAdapterFactory;
+import de.metas.product.IProductBL;
+import de.metas.product.IProductDAO;
+import de.metas.product.ProductId;
+import de.metas.shipping.ShipperId;
+import de.metas.uom.UomId;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.callout.api.ICalloutRecord;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -46,28 +62,13 @@ import org.compiere.model.X_M_Product;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
-import com.google.common.annotations.VisibleForTesting;
+import java.math.BigDecimal;
+import java.util.Properties;
+import java.util.Set;
+import java.util.function.Consumer;
 
-import de.metas.adempiere.form.IClientUI;
-import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.BPartnerLocationId;
-import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.bpartner_product.IBPartnerProductBL;
-import de.metas.freighcost.FreightCostRule;
-import de.metas.interfaces.I_C_OrderLine;
-import de.metas.logging.LogManager;
-import de.metas.order.IOrderBL;
-import de.metas.order.IOrderLineBL;
-import de.metas.order.OrderFreightCostsService;
-import de.metas.order.OrderLinePriceUpdateRequest;
-import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
-import de.metas.product.IProductBL;
-import de.metas.product.IProductDAO;
-import de.metas.product.ProductId;
-import de.metas.shipping.ShipperId;
-import de.metas.uom.UomId;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import static org.compiere.model.I_C_Order.COLUMNNAME_C_BPartner_ID;
+import static org.compiere.model.I_C_Order.COLUMNNAME_M_Shipper_ID;
 
 /**
  * This callout's default behavior is determined by {@link ProductQtyOrderFastInputHandler}. To change the behavior, explicitly add further handlers using
@@ -286,14 +287,17 @@ public class OrderFastInput extends CalloutEngine
 		// TODO: i think we shall remove this because createOrderLine also does exactly this thing (seems like it's copy-pasted)
 		if (order.isSOTrx() && order.isDropShip())
 		{
-			final int C_BPartner_ID = order.getDropShip_BPartner_ID() > 0 ? order.getDropShip_BPartner_ID() : order.getC_BPartner_ID();
-			ol.setC_BPartner_ID(C_BPartner_ID);
-
-			final BPartnerLocationId bpLocationId = Services.get(IOrderBL.class).getShipToLocationId(order);
-			ol.setC_BPartner_Location_ID(BPartnerLocationId.toRepoId(bpLocationId));
-
+			final BPartnerLocationAndCaptureId bpLocationId = Services.get(IOrderBL.class).getShipToLocationId(order);
 			final int AD_User_ID = order.getDropShip_User_ID() > 0 ? order.getDropShip_User_ID() : order.getAD_User_ID();
-			ol.setAD_User_ID(AD_User_ID);
+
+			OrderLineDocumentLocationAdapterFactory
+					.locationAdapter(ol)
+					.setFrom(DocumentLocation.builder()
+									 .bpartnerId(bpLocationId.getBpartnerId())
+									 .bpartnerLocationId(bpLocationId.getBpartnerLocationId())
+									 .locationId(bpLocationId.getLocationCaptureId())
+									 .contactId(BPartnerContactId.ofRepoIdOrNull(bpLocationId.getBpartnerId(), AD_User_ID))
+									 .build());
 		}
 		// end: cg: 01717
 
@@ -311,11 +315,11 @@ public class OrderFastInput extends CalloutEngine
 			ol.setPriceEntered(BigDecimal.ZERO);
 		}
 		orderLineBL.updatePrices(OrderLinePriceUpdateRequest.builder()
-				.orderLine(ol)
-				.resultUOM(ResultUOM.PRICE_UOM)
-				.updatePriceEnteredAndDiscountOnlyIfNotAlreadySet(true)
-				.updateLineNetAmt(true)
-				.build());
+										 .orderLine(ol)
+										 .resultUOM(ResultUOM.PRICE_UOM)
+										 .updatePriceEnteredAndDiscountOnlyIfNotAlreadySet(true)
+										 .updateLineNetAmt(true)
+										 .build());
 
 		//
 		// set OL_DONT_UPDATE_ORDER to inform the ol's model validator not to update the order

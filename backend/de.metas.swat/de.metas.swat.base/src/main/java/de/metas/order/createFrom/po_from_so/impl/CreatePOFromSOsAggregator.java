@@ -5,6 +5,7 @@ import de.metas.document.engine.IDocument;
 import de.metas.i18n.IMsgBL;
 import de.metas.order.IOrderBL;
 import de.metas.order.createFrom.po_from_so.PurchaseTypeEnum;
+import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.util.Loggables;
@@ -245,15 +246,15 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 
 			if (salesOrder.isDropShip() && salesOrder.getDropShip_BPartner_ID() != 0)
 			{
-				purchaseOrder.setDropShip_BPartner_ID(salesOrder.getDropShip_BPartner_ID());
-				purchaseOrder.setDropShip_Location_ID(salesOrder.getDropShip_Location_ID());
-				purchaseOrder.setDropShip_User_ID(salesOrder.getDropShip_User_ID());
+				OrderDocumentLocationAdapterFactory
+						.deliveryLocationAdapter(purchaseOrder)
+						.setFromDeliveryLocation(salesOrder);
 			}
 			else
 			{
-				purchaseOrder.setDropShip_BPartner_ID(salesOrder.getC_BPartner_ID());
-				purchaseOrder.setDropShip_Location_ID(salesOrder.getC_BPartner_Location_ID());
-				purchaseOrder.setDropShip_User_ID(salesOrder.getAD_User_ID());
+				OrderDocumentLocationAdapterFactory
+						.deliveryLocationAdapter(purchaseOrder)
+						.setFromShipLocation(salesOrder);
 			}
 
 			// get default drop ship warehouse

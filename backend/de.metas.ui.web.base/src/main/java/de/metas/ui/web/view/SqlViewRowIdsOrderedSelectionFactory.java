@@ -1,19 +1,7 @@
 package de.metas.ui.web.view;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.Set;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.DBException;
-import org.compiere.util.DB;
-import org.slf4j.Logger;
-
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.logging.LogManager;
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.IUserRolePermissionsDAO;
@@ -33,6 +21,17 @@ import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.model.DocumentQueryOrderByList;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.QueryLimit;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.DBException;
+import org.compiere.util.DB;
+import org.slf4j.Logger;
+
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Set;
 
 /*
  * #%L
@@ -95,7 +94,7 @@ public class SqlViewRowIdsOrderedSelectionFactory implements ViewRowIdsOrderedSe
 			final boolean applySecurityRestrictions,
 			final SqlDocumentFilterConverterContext context)
 	{
-		final int queryLimit = extractQueryLimit(viewEvalCtx);
+		final QueryLimit queryLimit = extractQueryLimit(viewEvalCtx);
 
 		//
 		//
@@ -132,13 +131,14 @@ public class SqlViewRowIdsOrderedSelectionFactory implements ViewRowIdsOrderedSe
 				.build();
 	}
 
-	private int extractQueryLimit(final ViewEvaluationCtx viewEvalCtx)
+	private QueryLimit extractQueryLimit(final ViewEvaluationCtx viewEvalCtx)
 	{
 		final UserRolePermissionsKey permissionsKey = viewEvalCtx.getPermissionsKey();
 		final IUserRolePermissions permissions = userRolePermissionsRepo.getUserRolePermissions(permissionsKey);
-		return permissions.getConstraint(WindowMaxQueryRecordsConstraint.class)
-				.orElse(WindowMaxQueryRecordsConstraint.DEFAULT)
-				.getMaxQueryRecordsPerRole();
+		return QueryLimit.ofInt(
+				permissions.getConstraint(WindowMaxQueryRecordsConstraint.class)
+						.orElse(WindowMaxQueryRecordsConstraint.DEFAULT)
+						.getMaxQueryRecordsPerRole());
 	}
 
 	@Override
@@ -165,7 +165,7 @@ public class SqlViewRowIdsOrderedSelectionFactory implements ViewRowIdsOrderedSe
 						.setParameter("filters", filters);
 			}
 
-			final SqlAndParams sqlCreateSelectionLines = viewQueryBuilder.buildSqlCreateSelectionLinesFromSelectionLines(viewEvalCtx, newViewId, fromSelectionId);
+			final SqlAndParams sqlCreateSelectionLines = viewQueryBuilder.buildSqlCreateSelectionLinesFromSelectionLines(newViewId, fromSelectionId);
 			final int linesCount = DB.executeUpdateEx(sqlCreateSelectionLines.getSql(), sqlCreateSelectionLines.getSqlParamsArray(), ITrx.TRXNAME_ThreadInherited);
 
 			if (linesCount > 0)
@@ -248,6 +248,11 @@ public class SqlViewRowIdsOrderedSelectionFactory implements ViewRowIdsOrderedSe
 		// Delete
 		{
 			final SqlAndParams sqlDelete = newSqlViewSelectionQueryBuilder().buildSqlDeleteRowIdsFromSelection(selection.getSelectionId(), rowIds);
+			if(sqlDelete == null)
+			{
+				return selection;
+			}
+
 			final int deleted = DB.executeUpdateEx(sqlDelete.getSql(), sqlDelete.getSqlParamsArray(), ITrx.TRXNAME_ThreadInherited);
 			if (deleted <= 0)
 			{

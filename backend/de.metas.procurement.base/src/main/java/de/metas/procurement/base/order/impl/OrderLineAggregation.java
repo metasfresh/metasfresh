@@ -5,6 +5,7 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
+import de.metas.order.location.adapter.OrderLineDocumentLocationAdapterFactory;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -114,9 +115,7 @@ public class OrderLineAggregation
 
 		//
 		// BPartner/Location/Contact
-		orderLine.setC_BPartner_ID(candidate.getC_BPartner_ID());
-		orderLine.setC_BPartner_Location_ID(order.getC_BPartner_Location_ID());
-		orderLine.setAD_User_ID(order.getAD_User_ID());
+		OrderLineDocumentLocationAdapterFactory.locationAdapter(orderLine).setFromOrderHeader(order);
 
 		//
 		// PMM Contract

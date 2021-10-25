@@ -1,15 +1,15 @@
 package de.metas.ui.web.window.descriptor.sql;
 
-import java.util.Optional;
-import java.util.regex.Pattern;
-
-import org.adempiere.ad.expression.api.IStringExpression;
-
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterDecorator;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverters;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConvertersList;
+import de.metas.ui.web.view.descriptor.SqlAndParams;
 import lombok.NonNull;
+import org.adempiere.ad.expression.api.IStringExpression;
+
+import java.util.Optional;
+import java.util.regex.Pattern;
 
 /*
  * #%L
@@ -21,12 +21,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -41,10 +41,14 @@ public interface SqlEntityBinding
 
 	IStringExpression getSqlWhereClause();
 
-	/** @return field binding or throws exception in case it was not found */
+	/**
+	 * @return field binding or throws exception in case it was not found
+	 */
 	SqlEntityFieldBinding getFieldByFieldName(String fieldName);
 
-	/** @return SQL expression to be used when ordering by given field; if the field was not found and exception will be thrown */
+	/**
+	 * @return SQL expression to be used when ordering by given field; if the field was not found and exception will be thrown
+	 */
 	default SqlOrderByValue getFieldOrderBy(String fieldName)
 	{
 		return getFieldByFieldName(fieldName).getSqlOrderBy();
@@ -55,7 +59,9 @@ public interface SqlEntityBinding
 		throw new UnsupportedOperationException();
 	}
 
-	/** @return registered document filter to SQL converters */
+	/**
+	 * @return registered document filter to SQL converters
+	 */
 	default SqlDocumentFilterConvertersList getFilterConverters()
 	{
 		return SqlDocumentFilterConverters.emptyList();
@@ -77,6 +83,13 @@ public interface SqlEntityBinding
 	{
 		final String tableName = getTableName();
 		return replaceTableNameWithTableAlias(sql, tableName, tableAlias);
+	}
+
+	default SqlAndParams replaceTableNameWithTableAlias(final SqlAndParams sql, @NonNull final String tableAlias)
+	{
+		return SqlAndParams.of(
+				replaceTableNameWithTableAlias(sql.getSql(), tableAlias),
+				sql.getSqlParams());
 	}
 
 	static String replaceTableNameWithTableAlias(final String sql, @NonNull final String tableName, @NonNull final String tableAlias)

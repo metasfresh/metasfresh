@@ -1,5 +1,6 @@
 package de.metas.customs.process;
 
+import de.metas.bpartner.BPartnerContactId;
 import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.compiere.SpringContextHolder;
@@ -75,8 +76,9 @@ public class M_InOut_Create_CustomsInvoice extends JavaProcess implements IProce
 				.getQueryFilterOrElse(ConstantQueryFilter.of(false));
 
 		final BPartnerLocationId bpartnerLocationId = BPartnerLocationId.ofRepoId(p_BPartnerId, p_C_BPartner_Location_ID);
+		final BPartnerContactId bPartnerContactId = p_ContactId != null ? BPartnerContactId.of(p_BPartnerId, p_ContactId) : null;
 
-		final CustomsInvoice customsInvoice = customsInvoiceService.generateNewCustomsInvoice(bpartnerLocationId, p_ContactId, queryFilter);
+		final CustomsInvoice customsInvoice = customsInvoiceService.generateNewCustomsInvoice(bpartnerLocationId, bPartnerContactId, queryFilter);
 
 		if (p_IsComplete && !Check.isEmpty(customsInvoice.getLines()))
 		{

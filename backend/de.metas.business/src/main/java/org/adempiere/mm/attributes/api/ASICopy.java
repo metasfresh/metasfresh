@@ -46,12 +46,12 @@ import lombok.NonNull;
 public class ASICopy
 {
 
-	public static final ASICopy newInstance(@NonNull final I_M_AttributeSetInstance fromASI)
+	public static ASICopy newInstance(@NonNull final I_M_AttributeSetInstance fromASI)
 	{
 		return new ASICopy(fromASI);
 	}
 
-	public static final ASICopy newInstance(@NonNull final AttributeSetInstanceId fromAttributeSetInstanceId)
+	public static ASICopy newInstance(@NonNull final AttributeSetInstanceId fromAttributeSetInstanceId)
 	{
 		final IAttributeDAO attributesDAO = Services.get(IAttributeDAO.class);
 		final I_M_AttributeSetInstance fromASI = attributesDAO.getAttributeSetInstanceById(fromAttributeSetInstanceId);

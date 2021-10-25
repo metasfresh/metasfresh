@@ -47,7 +47,7 @@ public class JsonOrderLines
 	{
 	}
 
-	public ImmutableList<JsonOrderLine> getOrderLinesWithProductId()
+	public ImmutableList<JsonOrderLine> filterForOrderLinesWithProductId()
 	{
 		return orderLines.stream()
 				.filter(ol -> ol.getProductId() != null)

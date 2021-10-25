@@ -1047,7 +1047,7 @@ public class DB
 		}
 		catch (final SQLException e)
 		{
-			throw AdempiereException.wrapIfNeeded(e);
+			throw new DBException(e, functionCall, params);
 		}
 	}
 

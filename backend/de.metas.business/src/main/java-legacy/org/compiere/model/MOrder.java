@@ -477,10 +477,7 @@ public class MOrder extends X_C_Order implements IDocument
 			}
 		}
 		// set to first
-		if (getC_BPartner_Location_ID() == 0 && !locs.isEmpty())
-		{
-			super.setC_BPartner_Location_ID(locs.get(0).getC_BPartner_Location_ID());
-		}
+		//No longer setting any location when no shipping location exists for the bpartner
 		if (getBill_Location_ID() == 0 && !locs.isEmpty())
 		{
 			setBill_Location_ID(locs.get(0).getC_BPartner_Location_ID());

@@ -3,16 +3,12 @@ package de.metas.ui.web.handlingunits;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.IHUQueryBuilder;
-import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.reservation.HUReservationRepository;
+import de.metas.ui.web.document.filter.sql.FilterSql;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
-import de.metas.ui.web.document.filter.sql.SqlParamsCollector;
 import de.metas.ui.web.view.descriptor.SqlAndParams;
 import de.metas.ui.web.window.model.sql.SqlOptions;
-import de.metas.util.Services;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.warehouse.WarehouseId;
 import org.assertj.core.api.ObjectAssert;
 import org.compiere.SpringContextHolder;
 import org.junit.jupiter.api.BeforeEach;
@@ -55,15 +51,13 @@ public class HUIdsSqlDocumentFilterConverterTest
 	private ObjectAssert<SqlAndParams> assertThatGetSqlOf(final HUIdsFilterData huIdsFilterData)
 	{
 		final SqlDocumentFilterConverterContext context = SqlDocumentFilterConverterContext.EMPTY;
-		final SqlParamsCollector sqlParams = SqlParamsCollector.newInstance();
-		final String sql = HUIdsFilterHelper.SQL_DOCUMENT_FILTER_CONVERTER.getSql(
-				sqlParams,
+		final FilterSql sql = HUIdsFilterHelper.SQL_DOCUMENT_FILTER_CONVERTER.getSql(
 				HUIdsFilterHelper.createFilter(huIdsFilterData),
 				SqlOptions.usingTableAlias("dummyTableAlias"),
 				context);
 
 		assert sql != null;
-		return assertThat(SqlAndParams.of(sql, sqlParams));
+		return assertThat(sql.getWhereClause());
 	}
 
 	@Nested
@@ -78,7 +72,7 @@ public class HUIdsSqlDocumentFilterConverterTest
 		private void assertAcceptAll(final HUIdsFilterData data)
 		{
 			assertThatGetSqlOf(data)
-					.isEqualTo(SqlAndParams.of(HUIdsSqlDocumentFilterConverter.SQL_TRUE));
+					.isNull();
 		}
 
 		@Test
@@ -111,8 +105,7 @@ public class HUIdsSqlDocumentFilterConverterTest
 		void initialEmpty()
 		{
 			assertThatGetSqlOf(HUIdsFilterData.ofHUIds(ImmutableList.of()))
-					.extracting(SqlAndParams::getSql)
-					.isEqualTo(HUIdsSqlDocumentFilterConverter.SQL_FALSE);
+					.isEqualTo(FilterSql.ALLOW_NONE.getWhereClause());
 		}
 
 		@Test

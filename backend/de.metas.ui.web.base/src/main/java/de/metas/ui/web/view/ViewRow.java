@@ -1,15 +1,9 @@
 package de.metas.ui.web.view;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.handlingunits.HUEditorRowType;
 import de.metas.ui.web.window.datatypes.DocumentId;
@@ -19,6 +13,12 @@ import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONNullValue;
 import lombok.NonNull;
 import lombok.ToString;
+
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 /*
  * #%L
@@ -286,9 +286,9 @@ public final class ViewRow implements IViewRow
 			}
 		}
 
-		public Builder putFieldValue(final String fieldName, final Object jsonValue)
+		public Builder putFieldValue(final String fieldName, @Nullable final Object jsonValue)
 		{
-			if (JSONNullValue.isNull(jsonValue))
+			if (jsonValue == null || JSONNullValue.isNull(jsonValue))
 			{
 				values.remove(fieldName);
 			}

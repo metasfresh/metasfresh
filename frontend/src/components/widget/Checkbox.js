@@ -2,6 +2,8 @@ import React, { useRef, useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
 
+import usePrevious from '../../hooks/usePrevious';
+
 /**
  * @file Function based component.
  * @module Checkbox
@@ -20,13 +22,16 @@ const Checkbox = (props) => {
     isFilterActive,
     updateItems,
   } = props;
-  let { value, defaultValue } = props.widgetData[0];
+  let { value, defaultValue } = widgetData;
+  const prevValue = usePrevious(value);
 
   const [isChanged, setChanged] = useState(false);
 
   let initialValue =
     updateItems && !isFilterActive && !isChanged ? defaultValue : value;
+
   initialValue = typeof initialValue === 'undefined' ? null : initialValue;
+  const [initialRender, setInitialRender] = useState(false);
   const [checkedState, setCheckedState] = useState(initialValue);
   const [checkedValue, setCheckedValue] = useState(!!initialValue);
 
@@ -36,8 +41,21 @@ const Checkbox = (props) => {
       !isChanged &&
       handlePatch(widgetField, defaultValue, id);
 
+    // we're not setting the initialRender flag for filters, as we don't have a case where
+    // they might be rendered already AND their value could be modified in another part of the
+    // application (ex modal)
+    if (!initialRender && !updateItems) {
+      setInitialRender(true);
+    }
+
+    // if widget's value changed without user triggering it, update the local state as it
+    // was due to a change in a modal or other part of the app
+    if (!isChanged && value !== prevValue && initialRender) {
+      setCheckedState(!checkedState);
+    }
+
     setCheckedValue(isChanged && value === '' ? false : !!checkedState);
-  }, [checkedState]);
+  }, [checkedState, value]);
 
   /**
    * @method handleClear
@@ -67,14 +85,16 @@ const Checkbox = (props) => {
     !isFilterActive &&
       updateItems &&
       updateItems({ widgetField, value: !checkedState });
-    handlePatch(widgetField, newCheckedState, id);
+    handlePatch(widgetField, newCheckedState, id).then(() => {
+      setChanged(false);
+    });
   };
 
   return (
     <div>
       <label
         className={classnames('input-checkbox', {
-          'input-disabled': widgetData[0].readonly || disabled,
+          'input-disabled': widgetData.readonly || disabled,
         })}
         tabIndex={fullScreen ? -1 : tabIndex}
         onKeyDown={(e) => {
@@ -89,7 +109,7 @@ const Checkbox = (props) => {
           type="checkbox"
           className={classnames({ 'is-checked': initialValue })}
           checked={checkedValue}
-          disabled={widgetData[0].readonly || disabled}
+          disabled={widgetData.readonly || disabled}
           onChange={updateCheckedState}
           tabIndex="-1"
         />
@@ -102,7 +122,7 @@ const Checkbox = (props) => {
       </label>
       {filterWidget &&
       !disabled &&
-      !widgetData[0].readonly &&
+      !widgetData.readonly &&
       (checkedState === false || checkedState === true) ? (
         <small className="input-side" onClick={handleClear}>
           (clear)
@@ -116,7 +136,7 @@ const Checkbox = (props) => {
 
 /**
  * @typedef {object} Props Component props
- * @prop {array} widgetData
+ * @prop {object} widgetData
  * @prop {bool} [disabled]
  * @prop {bool} [fullScreen]
  * @prop {number} [tabIndex]
@@ -127,7 +147,7 @@ const Checkbox = (props) => {
  * @todo Check props. Which proptype? Required or optional?
  */
 Checkbox.propTypes = {
-  widgetData: PropTypes.array.isRequired,
+  widgetData: PropTypes.object.isRequired,
   disabled: PropTypes.bool,
   fullScreen: PropTypes.bool,
   tabIndex: PropTypes.number,

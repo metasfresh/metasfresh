@@ -27,10 +27,9 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
-import de.metas.common.rest_api.v2.JsonAttributeInstance;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.common.rest_api.v2.JsonAttributeInstance;
 import lombok.Builder;
-import lombok.NonNull;
 import lombok.Value;
 
 import java.math.BigDecimal;
@@ -44,8 +43,11 @@ import java.util.List;
 public class JsonCreateShipmentInfo
 {
 	@JsonProperty("shipmentScheduleId")
-	@NonNull
+	@Deprecated
 	JsonMetasfreshId shipmentScheduleId;
+
+	@JsonProperty("shipmentScheduleIdentifier ")
+	ShipmentScheduleIdentifier shipmentScheduleIdentifier;
 
 	@JsonProperty("productSearchKey")
 	String productSearchKey;

@@ -27,6 +27,9 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.ui.web.view.descriptor.SqlAndParams;
 import de.metas.ui.web.window.datatypes.json.JSONNullValue;
 import de.metas.util.Check;
+import de.metas.util.NumberUtils;
+import de.metas.util.lang.RepoIdAware;
+import de.metas.util.lang.RepoIdAwares;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -37,6 +40,7 @@ import org.compiere.util.DB;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.Optional;
 import java.util.function.BiConsumer;
 
 @EqualsAndHashCode
@@ -69,6 +73,16 @@ public class SqlComposedKey
 	public Object getValue(@NonNull final String keyColumnName)
 	{
 		return values.get(keyColumnName);
+	}
+
+	public Optional<Integer> getValueAsInteger(@NonNull final String keyColumnName)
+	{
+		return Optional.ofNullable(NumberUtils.asIntegerOrNull(getValue(keyColumnName)));
+	}
+
+	public <T extends RepoIdAware> Optional<T> getValueAsId(@NonNull final String keyColumnName, @NonNull final Class<T> type)
+	{
+		return getValueAsInteger(keyColumnName).map(repoId -> RepoIdAwares.ofRepoIdOrNull(repoId, type));
 	}
 
 	/**

@@ -35,6 +35,7 @@ public interface Shopware6Constants
 
 	//camel route properties
 	String ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT = "GetOrdersRouteContext";
+	String ROUTE_PROPERTY_IMPORT_PRODUCTS_CONTEXT = "GetProductsRouteContext";
 
 	//nodes
 	String JSON_NODE_DATA = "data";
@@ -58,4 +59,5 @@ public interface Shopware6Constants
 	BigDecimal DEFAULT_ORDER_LINE_DISCOUNT = BigDecimal.ZERO;
 	String MULTIPLE_SHIPPING_ADDRESSES_WARN_MESSAGE = "The order had multiple shipping addresses, the process picked the last one!";
 	String FREIGHT_COST_EXTERNAL_LINE_ID_PREFIX = "TaxRate_";
+	String DEFAULT_PRODUCT_UOM = "PCE";
 }

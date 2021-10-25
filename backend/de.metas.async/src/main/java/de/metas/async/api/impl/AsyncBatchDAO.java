@@ -3,10 +3,28 @@
  */
 package de.metas.async.api.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+import de.metas.async.AsyncBatchId;
+import de.metas.async.api.IAsyncBatchDAO;
+import de.metas.async.asyncbatchmilestone.AsyncBatchMilestoneId;
+import de.metas.async.model.I_C_Async_Batch;
+import de.metas.async.model.I_C_Async_Batch_Milestone;
+import de.metas.async.model.I_C_Async_Batch_Type;
+import de.metas.async.model.I_C_Queue_WorkPackage;
+import de.metas.async.model.I_C_Queue_WorkPackage_Notified;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.Query;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
+
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 /*
  * #%L
@@ -30,25 +48,10 @@ import java.util.List;
  * #L%
  */
 
-
-import java.util.Properties;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.Query;
-
-import de.metas.async.AsyncBatchId;
-import de.metas.async.api.IAsyncBatchDAO;
-import de.metas.async.model.I_C_Async_Batch;
-import de.metas.async.model.I_C_Async_Batch_Type;
-import de.metas.async.model.I_C_Queue_WorkPackage;
-import de.metas.async.model.I_C_Queue_WorkPackage_Notified;
-import de.metas.util.Services;
-import lombok.NonNull;
-
 public class AsyncBatchDAO implements IAsyncBatchDAO
 {
+
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@Override
 	public I_C_Async_Batch retrieveAsyncBatchRecord(@NonNull final AsyncBatchId asyncBatchId)
@@ -67,10 +70,15 @@ public class AsyncBatchDAO implements IAsyncBatchDAO
 	}
 
 	@Override
-	public List<I_C_Queue_WorkPackage> retrieveWorkPackages(final I_C_Async_Batch asyncBatch, final Boolean processed)
+	public List<I_C_Queue_WorkPackage> retrieveWorkPackages(
+			@NonNull final I_C_Async_Batch asyncBatch,
+			@Nullable final String trxNameCandidate,
+			@Nullable final Boolean processed)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(asyncBatch);
-		final String trxName = InterfaceWrapperHelper.getTrxName(asyncBatch);
+		final String trxName = Check.isBlank(trxNameCandidate)
+				? InterfaceWrapperHelper.getTrxName(asyncBatch)
+				: trxNameCandidate;
 
 		String whereClause = I_C_Queue_WorkPackage.COLUMNNAME_C_Async_Batch_ID + " = ? ";
 		final List<Object> params = new ArrayList<Object>();
@@ -90,9 +98,9 @@ public class AsyncBatchDAO implements IAsyncBatchDAO
 	}
 
 	@Override
-	public List<I_C_Queue_WorkPackage> retrieveWorkPackages(final I_C_Async_Batch asyncBatch)
+	public List<I_C_Queue_WorkPackage> retrieveWorkPackages(@NonNull final I_C_Async_Batch asyncBatch, @Nullable final String trxName)
 	{
-		return retrieveWorkPackages(asyncBatch, null);
+		return retrieveWorkPackages(asyncBatch, trxName, null);
 	}
 
 	@Override
@@ -134,5 +142,25 @@ public class AsyncBatchDAO implements IAsyncBatchDAO
 				.setOnlyActiveRecords(true)
 				.setParameters(params)
 				.firstOnly(I_C_Queue_WorkPackage_Notified.class);
+	}
+
+	@Override
+	public AsyncBatchId retrieveAsyncBatchIdByMilestone(@NonNull final AsyncBatchMilestoneId milestoneId)
+	{
+		final I_C_Async_Batch_Milestone record = queryBL.createQueryBuilder(I_C_Async_Batch_Milestone.class)
+				.addEqualsFilter(I_C_Async_Batch_Milestone.COLUMN_C_Async_Batch_Milestone_ID, milestoneId)
+				.create()
+				.firstOnlyNotNull(I_C_Async_Batch_Milestone.class);
+
+		return AsyncBatchId.ofRepoId(record.getC_Async_Batch_ID());
+	}
+
+	@Override
+	public List<I_C_Async_Batch_Milestone> retrieveMilestonesForAsyncBatchId(@NonNull final AsyncBatchId id)
+	{
+		return queryBL.createQueryBuilder(I_C_Async_Batch_Milestone.class)
+				.addEqualsFilter(I_C_Async_Batch_Milestone.COLUMNNAME_C_Async_Batch_ID, id)
+				.create()
+				.list();
 	}
 }

@@ -5,24 +5,26 @@ import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.DocBaseAndSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
+import de.metas.document.location.DocumentLocation;
 import de.metas.inoutcandidate.api.IDeliverRequest;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
+import de.metas.inoutcandidate.location.adapter.ShipmentScheduleDocumentLocationAdapterFactory;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.picking_bom.PickingBOMService;
 import de.metas.inoutcandidate.picking_bom.PickingOrderConfig;
 import de.metas.inoutcandidate.spi.ShipmentScheduleHandler;
 import de.metas.interfaces.I_C_OrderLine;
-import org.eevolution.api.PPOrderId;
 import de.metas.order.DeliveryRule;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
+import de.metas.order.location.adapter.OrderLineDocumentLocationAdapterFactory;
 import de.metas.order.OrderLineId;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
@@ -53,6 +55,7 @@ import org.compiere.util.DB;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.PPOrderCreateRequest;
+import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_PP_Order;
 import org.springframework.stereotype.Component;
 
@@ -63,7 +66,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 
-import static de.metas.common.util.CoalesceUtil.firstNotEmptyTrimmed;
 import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
@@ -134,7 +136,7 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 		final I_M_ShipmentSchedule newSched = newInstance(I_M_ShipmentSchedule.class);
 
 		Check.errorUnless(newSched.getAD_Client_ID() == orderLine.getAD_Client_ID(),
-				"The new M_ShipmentSchedule needs to have the same AD_Client_ID as " + orderLine + ", i.e." + newSched.getAD_Client_ID() + " == " + orderLine.getAD_Client_ID());
+						  "The new M_ShipmentSchedule needs to have the same AD_Client_ID as " + orderLine + ", i.e." + newSched.getAD_Client_ID() + " == " + orderLine.getAD_Client_ID());
 
 		updateShipmentScheduleFromOrderLine(newSched, orderLine);
 
@@ -179,13 +181,12 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 
 		shipmentSchedule.setProductDescription(orderLine.getProductDescription());
 
-		shipmentSchedule.setC_BPartner_Location_ID(orderLine.getC_BPartner_Location_ID());
-		shipmentSchedule.setC_BPartner_ID(orderLine.getC_BPartner_ID());
+		ShipmentScheduleDocumentLocationAdapterFactory
+				.mainLocationAdapter(shipmentSchedule)
+				.setFrom(OrderLineDocumentLocationAdapterFactory.locationAdapter(orderLine).toDocumentLocation());
 
 		Check.assume(orderLine.getM_Product_ID() > 0, "{} has M_Product_ID set", orderLine);
 		shipmentSchedule.setM_Product_ID(orderLine.getM_Product_ID());
-		final BPartnerContactId adUserId = BPartnerContactId.ofRepoIdOrNull(orderLine.getC_BPartner_ID(), orderLine.getAD_User_ID());
-		shipmentSchedule.setAD_User_ID(BPartnerContactId.toRepoId(adUserId));
 
 		shipmentSchedule.setAD_Org_ID(orderLine.getAD_Org_ID());
 
@@ -204,12 +205,6 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 		// 04290
 		shipmentSchedule.setM_Warehouse_ID(getWarehouseId(orderLine).getRepoId());
 		final I_C_Order orderRecord = orderDAO.getById(OrderId.ofRepoId(orderLine.getC_Order_ID()), I_C_Order.class);
-
-		final String bPartnerAddress = firstNotEmptyTrimmed(
-				orderLine.getBPartnerAddress(),
-				orderRecord.getDeliveryToAddress(),
-				orderRecord.getBPartnerAddress());
-		shipmentSchedule.setBPartnerAddress(bPartnerAddress);
 
 		updateShipmentScheduleFromOrder(shipmentSchedule, orderRecord);
 
@@ -244,14 +239,29 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 	{
 		shipmentSchedule.setPriorityRule(order.getPriorityRule());
 
-		final BPartnerLocationId billToLocationId = orderBL.getBillToLocationId(order);
-		shipmentSchedule.setBill_BPartner_ID(billToLocationId.getBpartnerId().getRepoId());
-		shipmentSchedule.setBill_Location_ID(billToLocationId.getRepoId());
-		if(orderBL.hasBillToContactId(order))
+		final BPartnerLocationAndCaptureId billToLocationId = orderBL.getBillToLocationId(order);
+		BPartnerContactId billToContactId;
+		if (orderBL.hasBillToContactId(order))
 		{
-			final BPartnerContactId billToContactId = orderBL.getBillToContactId(order);
-			shipmentSchedule.setBill_User_ID(BPartnerContactId.toRepoId(billToContactId));
+			billToContactId = orderBL.getBillToContactId(order);
 		}
+		else if (shipmentSchedule.getBill_BPartner_ID() == billToLocationId.getBpartnerId().getRepoId())
+		{
+			billToContactId = BPartnerContactId.ofRepoIdOrNull(billToLocationId.getBpartnerId(), shipmentSchedule.getBill_User_ID());
+		}
+		else
+		{
+			billToContactId = null;
+		}
+
+		ShipmentScheduleDocumentLocationAdapterFactory
+				.billLocationAdapter(shipmentSchedule)
+				.setFrom(DocumentLocation.builder()
+								 .bpartnerId(billToLocationId.getBpartnerId())
+								 .bpartnerLocationId(billToLocationId.getBpartnerLocationId())
+								 .locationId(billToLocationId.getLocationCaptureId())
+								 .contactId(billToContactId)
+								 .build());
 
 		shipmentSchedule.setDeliveryRule(order.getDeliveryRule());
 		shipmentSchedule.setDeliveryViaRule(order.getDeliveryViaRule());
@@ -261,6 +271,8 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 		final DocBaseAndSubType orderDocBaseTypeAndSubType = Services.get(IDocTypeDAO.class).getDocBaseAndSubTypeById(orderDocTypeId);
 		shipmentSchedule.setC_DocType_ID(orderDocTypeId.getRepoId());
 		shipmentSchedule.setDocSubType(orderDocBaseTypeAndSubType.getDocSubType());
+
+		shipmentSchedule.setC_Async_Batch_ID(order.getC_Async_Batch_ID());
 	}
 
 	/**
@@ -360,31 +372,31 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 		final Quantity qtyOrdered = Quantity.of(salesOrderLine.getQtyOrdered(), stockUOM);
 
 		final I_PP_Order ppOrder = ppOrdersService.createOrder(PPOrderCreateRequest.builder()
-				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(salesOrderLine.getAD_Client_ID(), salesOrderLine.getAD_Org_ID()))
-				.productPlanningId(config.getProductPlanningId())
-				// .materialDispoGroupId(null)
-				//
-				.plantId(config.getPlantId())
-				.warehouseId(warehouseId)
-				.plannerId(config.getPlannerId())
-				//
-				.bomId(config.getBomId())
-				.productId(productId)
-				.attributeSetInstanceId(asiId)
-				.qtyRequired(qtyOrdered)
-				//
-				.dateOrdered(SystemTime.asInstant())
-				.datePromised(TimeUtil.asInstant(salesOrderLine.getDatePromised()))
-				.dateStartSchedule(SystemTime.asInstant())
-				//
-				.salesOrderLineId(OrderLineId.ofRepoId(salesOrderLine.getC_OrderLine_ID()))
-				.customerId(BPartnerId.ofRepoId(salesOrderLine.getC_BPartner_ID()))
-				//
-				.pickingOrder(true)
-				//
-				.completeDocument(true)
-				//
-				.build());
+																	   .clientAndOrgId(ClientAndOrgId.ofClientAndOrg(salesOrderLine.getAD_Client_ID(), salesOrderLine.getAD_Org_ID()))
+																	   .productPlanningId(config.getProductPlanningId())
+																	   // .materialDispoGroupId(null)
+																	   //
+																	   .plantId(config.getPlantId())
+																	   .warehouseId(warehouseId)
+																	   .plannerId(config.getPlannerId())
+																	   //
+																	   .bomId(config.getBomId())
+																	   .productId(productId)
+																	   .attributeSetInstanceId(asiId)
+																	   .qtyRequired(qtyOrdered)
+																	   //
+																	   .dateOrdered(SystemTime.asInstant())
+																	   .datePromised(TimeUtil.asInstant(salesOrderLine.getDatePromised()))
+																	   .dateStartSchedule(SystemTime.asInstant())
+																	   //
+																	   .salesOrderLineId(OrderLineId.ofRepoId(salesOrderLine.getC_OrderLine_ID()))
+																	   .customerId(BPartnerId.ofRepoId(salesOrderLine.getC_BPartner_ID()))
+																	   //
+																	   .pickingOrder(true)
+																	   //
+																	   .completeDocument(true)
+																	   //
+																	   .build());
 
 		return PPOrderId.ofRepoId(ppOrder.getPP_Order_ID());
 	}

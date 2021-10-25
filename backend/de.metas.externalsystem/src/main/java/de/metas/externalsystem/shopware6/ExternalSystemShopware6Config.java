@@ -57,8 +57,10 @@ public class ExternalSystemShopware6Config implements IExternalSystemChildConfig
 	FreightCostConfig freightCostNormalVatConfig;
 	@Nullable
 	FreightCostConfig freightCostReducedVatConfig;
+	@NonNull
+	Boolean isActive;
 
-	@Builder
+	@Builder(toBuilder = true)
 	public ExternalSystemShopware6Config(final @NonNull ExternalSystemShopware6ConfigId id,
 			final @NonNull ExternalSystemParentConfigId parentId,
 			final @NonNull String baseUrl,
@@ -69,7 +71,8 @@ public class ExternalSystemShopware6Config implements IExternalSystemChildConfig
 			final @Nullable String bPartnerLocationIdJSONPath,
 			final @Nullable String salesRepJSONPath,
 			final @Nullable FreightCostConfig freightCostNormalVatConfig,
-			final @Nullable FreightCostConfig freightCostReducedVatConfig)
+			final @Nullable FreightCostConfig freightCostReducedVatConfig,
+			final @NonNull Boolean isActive)
 	{
 		this.id = id;
 		this.parentId = parentId;
@@ -82,6 +85,7 @@ public class ExternalSystemShopware6Config implements IExternalSystemChildConfig
 		this.salesRepJSONPath = salesRepJSONPath;
 		this.freightCostNormalVatConfig = freightCostNormalVatConfig;
 		this.freightCostReducedVatConfig = freightCostReducedVatConfig;
+		this.isActive = isActive;
 	}
 
 	public static ExternalSystemShopware6Config cast(@NonNull final IExternalSystemChildConfig childConfig)

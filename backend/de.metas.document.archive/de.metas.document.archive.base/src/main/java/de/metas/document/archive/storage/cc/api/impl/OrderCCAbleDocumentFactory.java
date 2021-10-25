@@ -1,5 +1,9 @@
 package de.metas.document.archive.storage.cc.api.impl;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*
@@ -42,8 +46,14 @@ public class OrderCCAbleDocumentFactory implements ICCAbleDocumentFactory
 
 		final I_C_Order order = InterfaceWrapperHelper.create(model, I_C_Order.class);
 		final String documentTitle = order.getDocumentNo();
-		final String recipientName = order.getBill_BPartner().getName();
-		final String fax = order.getBill_Location().getFax();
+
+		final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
+
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(order.getBill_BPartner_ID());
+		final String recipientName = partnerDAO.getBPartnerNameById(bpartnerId);
+
+		final BPartnerLocationId billLocationId = BPartnerLocationId.ofRepoId(bpartnerId, order.getBill_Location_ID());
+		final String fax = partnerDAO.getBPartnerLocationByIdEvenInactive(billLocationId).getFax();
 
 		final ICCAbleDocument ccAdapter = new OrderCCAbleDocumentAdapter(documentTitle, recipientName, fax);
 		return ccAdapter;

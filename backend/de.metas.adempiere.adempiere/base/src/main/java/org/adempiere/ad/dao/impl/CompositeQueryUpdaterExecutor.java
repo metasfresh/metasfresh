@@ -22,14 +22,14 @@ package org.adempiere.ad.dao.impl;
  * #L%
  */
 
-import java.math.BigDecimal;
-
+import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryUpdaterExecutor;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.IQueryUpdater;
 import org.compiere.model.IQuery;
 
-import lombok.NonNull;
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /* package */class CompositeQueryUpdaterExecutor<T>
 		extends CompositeQueryUpdater<T>
@@ -64,14 +64,14 @@ import lombok.NonNull;
 	}
 
 	@Override
-	public ICompositeQueryUpdaterExecutor<T> addQueryUpdater(final IQueryUpdater<T> updater)
+	public ICompositeQueryUpdaterExecutor<T> addQueryUpdater(final @NonNull IQueryUpdater<T> updater)
 	{
 		super.addQueryUpdater(updater);
 		return this;
 	}
 
 	@Override
-	public ICompositeQueryUpdaterExecutor<T> addSetColumnValue(final String columnName, final Object value)
+	public ICompositeQueryUpdaterExecutor<T> addSetColumnValue(final String columnName, @Nullable final Object value)
 	{
 		super.addSetColumnValue(columnName, value);
 		return this;
@@ -85,14 +85,14 @@ import lombok.NonNull;
 	}
 
 	@Override
-	public ICompositeQueryUpdaterExecutor<T> addAddValueToColumn(String columnName, BigDecimal valueToAdd)
+	public ICompositeQueryUpdaterExecutor<T> addAddValueToColumn(final String columnName, final BigDecimal valueToAdd)
 	{
 		super.addAddValueToColumn(columnName, valueToAdd);
 		return this;
 	}
 
 	@Override
-	public ICompositeQueryUpdaterExecutor<T> addAddValueToColumn(String columnName, BigDecimal valueToAdd, IQueryFilter<T> onlyWhenFilter)
+	public ICompositeQueryUpdaterExecutor<T> addAddValueToColumn(final String columnName, final BigDecimal valueToAdd, final IQueryFilter<T> onlyWhenFilter)
 	{
 		super.addAddValueToColumn(columnName, valueToAdd, onlyWhenFilter);
 		return this;

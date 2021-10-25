@@ -1,12 +1,5 @@
 package de.metas.async.spi;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.util.api.IParams;
-
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Queue_Element;
 import de.metas.async.model.I_C_Queue_WorkPackage;
@@ -17,6 +10,13 @@ import de.metas.lock.exceptions.LockFailedException;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.util.api.IParams;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 /**
  * Implement what you want adapter for {@link IWorkpackageProcessor2}.
@@ -46,6 +46,7 @@ public abstract class WorkpackageProcessorAdapter implements IWorkpackageProcess
 		this.workpackage = workpackage;
 	}
 
+	@NonNull
 	protected final I_C_Queue_WorkPackage getC_Queue_WorkPackage()
 	{
 		Check.assumeNotNull(workpackage, "workpackage not null");

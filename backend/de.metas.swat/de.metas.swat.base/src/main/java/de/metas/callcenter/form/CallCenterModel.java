@@ -22,35 +22,6 @@ package de.metas.callcenter.form;
  * #L%
  */
 
-
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.MiscUtils;
-import org.compiere.minigrid.ColumnInfo;
-import org.compiere.model.GridTab;
-import org.compiere.model.I_AD_Column;
-import org.compiere.model.I_AD_User;
-import org.compiere.model.I_R_ContactInterest;
-import org.compiere.model.Lookup;
-import org.compiere.model.MGroup;
-import org.compiere.model.MLookupFactory;
-import org.compiere.model.MQuery;
-import org.compiere.model.MQuery.Operator;
-import org.compiere.model.MSysConfig;
-import org.compiere.model.MTable;
-import org.compiere.util.DB;
-import org.compiere.util.DisplayType;
-import org.compiere.util.Env;
-import org.slf4j.Logger;
-
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.callcenter.model.BundleUtil;
 import de.metas.callcenter.model.CallCenterValidator;
@@ -63,6 +34,33 @@ import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.MiscUtils;
+import org.compiere.minigrid.ColumnInfo;
+import org.compiere.model.GridTab;
+import org.compiere.model.I_AD_Column;
+import org.compiere.model.I_AD_User;
+import org.compiere.model.I_R_ContactInterest;
+import org.compiere.model.Lookup;
+import org.compiere.model.MGroup;
+import org.compiere.model.MLookupFactory;
+import org.compiere.model.MQuery;
+import org.compiere.model.MQuery.Operator;
+import org.compiere.model.MTable;
+import org.compiere.util.DB;
+import org.compiere.util.DisplayType;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
+
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
 
 /**
  *
@@ -144,7 +142,7 @@ public class CallCenterModel
 
 	public int getAD_Window_ID()
 	{
-		return MSysConfig.getIntValue("de.metas.callcenter.form.CallCenterModel.AD_Window_ID",
+		return Services.get(ISysConfigBL.class).getIntValue("de.metas.callcenter.form.CallCenterModel.AD_Window_ID",
 				540013, //Request Group Selected Prospects (internal)
 				Env.getAD_Client_ID(m_ctx));
 	}

@@ -1,23 +1,25 @@
 {
-  "data1": {
-    "widgetProps": {
-      "widgetField": "IsDefault",
-      "widgetData": [
+    "data1":
+    {
+        "widgetProps":
         {
-          "displayed": true,
-          "field": "IsDefault",
-          "mandatory": true,
-          "readonly": false,
-          "validStatus": {
-            "valid": true,
-            "initialValue": true,
-            "fieldName": "IsDefault"
-          },
-          "value": true,
-          "viewEditorRenderMode": "always",
-          "widgetType": "YesNo"
+            "widgetData":
+            {
+                "displayed": true,
+                "field": "IsDefault",
+                "mandatory": true,
+                "readonly": false,
+                "validStatus":
+                {
+                    "fieldName": "IsDefault",
+                    "initialValue": true,
+                    "valid": true
+                },
+                "value": true,
+                "viewEditorRenderMode": "always",
+                "widgetType": "YesNo"
+            },
+            "widgetField": "IsDefault"
         }
-      ]
     }
-  }
 }
