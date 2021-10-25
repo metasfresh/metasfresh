@@ -4,7 +4,8 @@ import { connect } from 'react-redux';
 import { push } from 'connected-react-router';
 import { pushHeaderEntry } from '../../../actions/HeaderActions';
 
-import Indicator from '../../../components/Indicator';
+import ButtonWithIndicator from '../../../components/ButtonWithIndicator';
+import ButtonQuantityProp from '../../../components/ButtonQuantityProp';
 import counterpart from 'counterpart';
 
 class PickLineButton extends Component {
@@ -36,33 +37,9 @@ class PickLineButton extends Component {
           disabled={!isUserEditable}
           onClick={this.handleClick}
         >
-          <div className="full-size-btn">
-            <div className="left-btn-side" />
-            <div className="caption-btn">
-              <div className="rows">
-                <div className="row is-full pl-5">{caption}</div>
-                <div className="row is-full is-size-7">
-                  <div className="picking-row-info">
-                    <div className="picking-to-pick">
-                      {counterpart.translate('activities.picking.pickingBtn.toPick')}:
-                    </div>
-                    <div className="picking-row-qty">
-                      {qtyToPick} {uom}
-                    </div>
-                    <div className="picking-row-picking">
-                      {counterpart.translate('activities.picking.pickingBtn.toPick')}:
-                    </div>
-                    <div className="picking-row-picked">
-                      {qtyPicked} {uom}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="right-btn-side pt-4">
-              <Indicator completeStatus={completeStatus} />
-            </div>
-          </div>
+          <ButtonWithIndicator caption={caption} completeStatus={completeStatus}>
+            <ButtonQuantityProp qtyPicked={qtyPicked} qtyToPick={qtyToPick} uom={uom} />
+          </ButtonWithIndicator>
         </button>
       </div>
     );
