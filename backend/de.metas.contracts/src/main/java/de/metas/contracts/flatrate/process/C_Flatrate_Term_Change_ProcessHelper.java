@@ -41,12 +41,22 @@ public class C_Flatrate_Term_Change_ProcessHelper
 
 	protected void throwExceptionIfTermHasInvoices(final I_C_Flatrate_Term term)
 	{
-
-		final List<I_C_Invoice> invoices = flatrateDAO.retrieveInvoicesForFlatrateTerm(term);
-		if (!invoices.isEmpty())
-
+		if (termHasInvoices(term))
 		{
-			throw new AdempiereException(MSG_hasInvoices);
+			throwHasInvoicesException();
 		}
 	}
+
+	protected boolean termHasInvoices(final I_C_Flatrate_Term term)
+	{
+		final List<I_C_Invoice> invoices = flatrateDAO.retrieveInvoicesForFlatrateTerm(term);
+
+		return !invoices.isEmpty();
+	}
+
+	protected void throwHasInvoicesException()
+	{
+		throw new AdempiereException(MSG_hasInvoices);
+	}
+
 }

@@ -79,7 +79,7 @@ public abstract class C_Flatrate_Term_Change_BillPartner_Base extends JavaProces
 
 	private void updateFlatrateTermsPartner()
 	{
-		final List< I_C_Flatrate_Term > flatrateTermsToChange = getFlatrateTermsToChange();
+		final List<I_C_Flatrate_Term> flatrateTermsToChange = getFlatrateTermsToChange();
 
 		flatrateTermsToChange.forEach(this::updateFlatrateTermPartner);
 
@@ -87,16 +87,36 @@ public abstract class C_Flatrate_Term_Change_BillPartner_Base extends JavaProces
 
 	private void updateFlatrateTermPartner(final I_C_Flatrate_Term term)
 	{
-		C_Flatrate_Term_Change_ProcessHelper.throwExceptionIfTermHasInvoices(term);
+
+		final ImmutableList<I_C_Flatrate_Term> nextTerms = flatrateBL.retrieveNextFlatrateTerms(term);
+
+		final ImmutableList<I_C_Flatrate_Term> nextTermWithoutInvoices = nextTerms.stream()
+				.filter(nextTerm -> !C_Flatrate_Term_Change_ProcessHelper.termHasInvoices(nextTerm))
+				.collect(ImmutableList.toImmutableList());
+
+		boolean foundTermsWithoutInvoices = (!C_Flatrate_Term_Change_ProcessHelper.termHasInvoices(term))
+				||
+				(!nextTermWithoutInvoices.isEmpty());
+
+		if(!foundTermsWithoutInvoices)
+		{
+			// the term and all its successors are already invoiced.
+			C_Flatrate_Term_Change_ProcessHelper.throwHasInvoicesException();
+		}
 
 		updateFlatrateTermBillBPartner(term);
 
-		final ImmutableList<I_C_Flatrate_Term> nextTerms = flatrateBL.retrieveNextFlatrateTerms(term);
-		nextTerms.forEach(this::updateFlatrateTermBillBPartner);
+		nextTermWithoutInvoices.forEach(this::updateFlatrateTermBillBPartner);
 	}
 
 	private void updateFlatrateTermBillBPartner(final I_C_Flatrate_Term term)
 	{
+
+		if (C_Flatrate_Term_Change_ProcessHelper.termHasInvoices(term))
+		{
+			// nothing to do;
+			return;
+		}
 		final BPartnerId bPartnerId = BPartnerId.ofRepoId(p_billBPartnerId);
 		final BPartnerLocationId bPartnerLocationId = BPartnerLocationId.ofRepoId(p_billBPartnerId, p_billLocationId);
 
