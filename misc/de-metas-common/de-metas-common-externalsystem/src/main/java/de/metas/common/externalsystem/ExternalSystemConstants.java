@@ -50,6 +50,8 @@ public class ExternalSystemConstants
 	public static final String PARAM_FREIGHT_COST_REDUCED_PRODUCT_ID = "M_FreightCost_ReducedVAT_Product_ID";
 
 	public static final String PARAM_TARGET_PRICE_LIST_ID = "TargetPriceListId";
+	public static final String PARAM_IS_TAX_INCLUDED = "PriceList_IsTaxIncluded";
+	public static final String PARAM_PRICE_LIST_CURRENCY_CODE = "PriceListCurrencyCode";
 
 	public static final String PARAM_UPDATED_AFTER_OVERRIDE = "UpdatedAfterOverride";
 	public static final String PARAM_ORDER_NO = "OrderNo"; // if set, then this shall override PARAM_UPDATED_AFTER*

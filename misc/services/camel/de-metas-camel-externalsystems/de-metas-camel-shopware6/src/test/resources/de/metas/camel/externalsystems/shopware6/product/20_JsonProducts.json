@@ -12,7 +12,7 @@
       "displayGroup": null,
       "price": [
         {
-          "currencyId": "b7d2554b0ce847cd82f3ac9bd1c0dfca",
+          "currencyId": "currencyId",
           "net": 2.24,
           "gross": 2.4,
           "linked": true,

@@ -27,7 +27,9 @@ import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.camel.externalsystems.common.ProcessorHelper;
 import de.metas.camel.externalsystems.common.v2.UpsertProductPriceList;
 import de.metas.camel.externalsystems.shopware6.api.model.product.JsonProduct;
+import de.metas.camel.externalsystems.shopware6.api.model.product.price.JsonPrice;
 import de.metas.camel.externalsystems.shopware6.product.ImportProductsRouteContext;
+import de.metas.camel.externalsystems.shopware6.product.PriceListBasicInfo;
 import de.metas.common.pricing.v2.productprice.JsonRequestProductPrice;
 import de.metas.common.pricing.v2.productprice.JsonRequestProductPriceUpsert;
 import de.metas.common.pricing.v2.productprice.JsonRequestProductPriceUpsertItem;
@@ -38,6 +40,7 @@ import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.ROUTE_PROPERTY_IMPORT_PRODUCTS_CONTEXT;
 import static de.metas.camel.externalsystems.shopware6.common.ExternalIdentifierFormat.formatExternalId;
@@ -56,11 +59,11 @@ public class ProductPriceProcessor implements Processor
 	{
 		final ImportProductsRouteContext context = ProcessorHelper.getPropertyOrThrowError(exchange, ROUTE_PROPERTY_IMPORT_PRODUCTS_CONTEXT, ImportProductsRouteContext.class);
 
-		final String targetPriceListId = context.getTargetPriceListId();
-
 		final JsonProduct product = context.getJsonProduct();
 
-		if (targetPriceListId == null)
+		final PriceListBasicInfo priceListBasicInfo = context.getPriceListBasicInfo();
+
+		if (priceListBasicInfo == null)
 		{
 			exchange.getIn().setBody(null);
 			processLogger.logMessage("Target price list id param is missing! productId: " + product.getId(), context.getPInstanceId());
@@ -84,13 +87,13 @@ public class ProductPriceProcessor implements Processor
 			return;
 		}
 
-		exchange.getIn().setBody(buildUpsertProductPriceRequest(taxCategory, targetPriceListId, context));
+		exchange.getIn().setBody(buildUpsertProductPriceRequest(taxCategory, priceListBasicInfo, context));
 	}
 
 	@NonNull
 	private UpsertProductPriceList buildUpsertProductPriceRequest(
 			@NonNull final TaxCategory taxCategory,
-			@NonNull final String targetPriceListId,
+			@NonNull final PriceListBasicInfo priceListBasicInfo,
 			@NonNull final ImportProductsRouteContext context)
 	{
 		final String productIdentifier = formatExternalId(context.getJsonProduct().getId());
@@ -99,7 +102,8 @@ public class ProductPriceProcessor implements Processor
 		jsonRequestProductPrice.setProductIdentifier(productIdentifier);
 		jsonRequestProductPrice.setOrgCode(context.getOrgCode());
 		jsonRequestProductPrice.setTaxCategory(taxCategory);
-		jsonRequestProductPrice.setPriceStd(BigDecimal.ZERO);
+
+		jsonRequestProductPrice.setPriceStd(getPriceStd(context, priceListBasicInfo));
 
 		final JsonRequestProductPriceUpsertItem jsonRequestProductPriceUpsertItem = JsonRequestProductPriceUpsertItem.builder()
 				.productPriceIdentifier(productIdentifier)
@@ -112,8 +116,58 @@ public class ProductPriceProcessor implements Processor
 				.build();
 
 		return UpsertProductPriceList.builder()
-				.priceListIdentifier(targetPriceListId)
+				.priceListIdentifier(String.valueOf(priceListBasicInfo.getPriceListId().getValue()))
 				.jsonRequestProductPriceUpsert(jsonRequestProductPriceUpsert)
 				.build();
+	}
+
+	@NonNull
+	private BigDecimal getPriceStd(
+			@NonNull final ImportProductsRouteContext context,
+			@NonNull final PriceListBasicInfo targetPriceListInfo)
+	{
+		final String productId = context.getJsonProduct().getId();
+		final List<JsonPrice> prices = context.getJsonProduct().getPrices();
+
+		if (prices == null || prices.isEmpty())
+		{
+			processLogger.logMessage("No price info present for productId: " + productId, context.getPInstanceId());
+			return BigDecimal.ZERO;
+		}
+
+		if (prices.size() > 1)
+		{
+			processLogger.logMessage("More than 1 price present for productId: " + productId, context.getPInstanceId());
+		}
+		final JsonPrice price = prices.get(0);
+
+		final String isoCode = context.getCurrencyInfoProvider().getIsoCodeByCurrencyIdNotNull(price.getCurrencyId());
+
+		if (!isoCode.equals(targetPriceListInfo.getCurrencyCode()))
+		{
+			processLogger.logMessage("Target price list currency code is different from product price currency code for productId: " + productId, context.getPInstanceId());
+			return BigDecimal.ZERO;
+		}
+
+		if (targetPriceListInfo.isTaxIncluded())
+		{
+			if (price.getGross() == null)
+			{
+				processLogger.logMessage("No gross price info present for productId: " + productId, context.getPInstanceId());
+				return BigDecimal.ZERO;
+			}
+
+			return price.getGross();
+		}
+		else
+		{
+			if (price.getNet() == null)
+			{
+				processLogger.logMessage("No net price info present for productId: " + productId, context.getPInstanceId());
+				return BigDecimal.ZERO;
+			}
+
+			return price.getNet();
+		}
 	}
 }
