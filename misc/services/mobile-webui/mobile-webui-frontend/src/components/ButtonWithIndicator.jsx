@@ -1,26 +1,29 @@
-import React, { PureComponent } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
-import Indicator from './Indicator';
-class ButtonWithIndicator extends PureComponent {
-  render() {
-    const { caption, completeStatus } = this.props;
+import cx from 'classnames';
 
-    return (
-      <div className="full-size-btn">
-        <div className="left-btn-side" />
-        <div className="caption-btn">{caption}</div>
-        {completeStatus && (
-          <div className="right-btn-side">
-            <Indicator completeStatus={completeStatus} />
-          </div>
-        )}
+import Indicator from './Indicator';
+
+const ButtonWithIndicator = ({ caption, completeStatus, children }) => (
+  <div className="full-size-btn">
+    <div className="left-btn-side" />
+    <div className="caption-btn">
+      <div className="rows">
+        <div className="row is-full pl-5">{caption}</div>
+        {children}
       </div>
-    );
-  }
-}
+    </div>
+    {completeStatus && (
+      <div className={cx('right-btn-side', { 'pt-4': children })}>
+        <Indicator completeStatus={completeStatus} />
+      </div>
+    )}
+  </div>
+);
 
 ButtonWithIndicator.propTypes = {
   caption: PropTypes.string.isRequired,
+  children: PropTypes.node,
   completeStatus: PropTypes.string,
 };
 

@@ -14,6 +14,7 @@ class PickQuantityPrompt extends PureComponent {
 
   componentDidMount() {
     this.qtyInput.current.focus();
+    this.qtyInput.current.select();
   }
 
   changeQuantity = (e) => {
