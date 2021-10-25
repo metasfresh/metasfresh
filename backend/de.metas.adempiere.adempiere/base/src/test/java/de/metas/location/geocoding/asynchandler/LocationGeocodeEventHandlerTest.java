@@ -98,7 +98,7 @@ public class LocationGeocodeEventHandlerTest
 		InterfaceWrapperHelper.refresh(location);
 		assertThat(location)
 				.extracting(I_C_Location::getLatitude, I_C_Location::getLongitude, I_C_Location::getGeocodingStatus, I_C_Location::getGeocoding_Issue_ID)
-				.containsExactly(latitude, longitude, X_C_Location.GEOCODINGSTATUS_Resolved, null);
+				.containsExactly(latitude, longitude, X_C_Location.GEOCODINGSTATUS_Resolved, -1);
 	}
 
 	@Test
@@ -140,6 +140,6 @@ public class LocationGeocodeEventHandlerTest
 		InterfaceWrapperHelper.refresh(location);
 		assertThat(location)
 				.extracting(I_C_Location::getLatitude, I_C_Location::getLongitude, I_C_Location::getGeocodingStatus, I_C_Location::getGeocoding_Issue_ID)
-				.containsExactly(BigDecimal.ZERO, BigDecimal.ZERO, X_C_Location.GEOCODINGSTATUS_NotResolved, null);
+				.containsExactly(BigDecimal.ZERO, BigDecimal.ZERO, X_C_Location.GEOCODINGSTATUS_NotResolved, -1);
 	}
 }

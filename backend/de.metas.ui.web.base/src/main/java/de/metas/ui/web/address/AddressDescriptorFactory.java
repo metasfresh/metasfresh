@@ -125,8 +125,7 @@ public class AddressDescriptorFactory
 			addressDescriptor.addField(buildFieldDescriptor(IAddressModel.COLUMNNAME_IsPOBoxNum)
 					.setValueClass(Boolean.class)
 					.setWidgetType(DocumentFieldWidgetType.YesNo)
-					.setDataBinding(new AddressFieldBinding(IAddressModel.COLUMNNAME_IsPOBoxNum, false, I_C_Location::isPOBoxNum, AddressFieldBinding::writeValue_IsPOBoxNum))
-					.addCallout(AddressCallout::onC_Country_ID));
+					.setDataBinding(new AddressFieldBinding(IAddressModel.COLUMNNAME_IsPOBoxNum, false, I_C_Location::isPOBoxNum, AddressFieldBinding::writeValue_IsPOBoxNum)));
 
 			addressDescriptor.addField(buildFieldDescriptor(IAddressModel.COLUMNNAME_POBox)
 					.setValueClass(String.class)
