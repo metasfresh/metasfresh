@@ -5,6 +5,7 @@ import { push } from 'connected-react-router';
 import { pushHeaderEntry } from '../../../actions/HeaderActions';
 
 import ButtonWithIndicator from '../../../components/ButtonWithIndicator';
+import ButtonQuantityProp from '../../../components/ButtonQuantityProp';
 import counterpart from 'counterpart';
 
 class PickLineButton extends Component {
@@ -27,7 +28,8 @@ class PickLineButton extends Component {
   };
 
   render() {
-    const { lineId, caption, isUserEditable, completeStatus } = this.props;
+    const { lineId, caption, uom, qtyPicked, qtyToPick, isUserEditable, completeStatus } = this.props;
+
     return (
       <div className="buttons">
         <button
@@ -36,7 +38,9 @@ class PickLineButton extends Component {
           disabled={!isUserEditable}
           onClick={this.handleClick}
         >
-          <ButtonWithIndicator caption={caption} completeStatus={completeStatus} />
+          <ButtonWithIndicator caption={caption} completeStatus={completeStatus}>
+            <ButtonQuantityProp qtyPicked={qtyPicked} qtyToPick={qtyToPick} uom={uom} />
+          </ButtonWithIndicator>
         </button>
       </div>
     );
@@ -52,6 +56,9 @@ PickLineButton.propTypes = {
   caption: PropTypes.string.isRequired,
   isUserEditable: PropTypes.bool.isRequired,
   completeStatus: PropTypes.string.isRequired,
+  uom: PropTypes.string.isRequired,
+  qtyPicked: PropTypes.number.isRequired,
+  qtyToPick: PropTypes.number.isRequired,
   //
   // Actions
   push: PropTypes.func.isRequired,
