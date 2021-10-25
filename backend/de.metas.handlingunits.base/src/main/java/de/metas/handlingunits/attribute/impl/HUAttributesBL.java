@@ -183,7 +183,7 @@ public class HUAttributesBL implements IHUAttributesBL
 	}
 
 	@Override
-	public void validateMandatoryShipmentAttributes(final I_M_HU hu, final ProductId productId)
+	public void validateMandatoryShipmentAttributes(final HuId huId, final ProductId productId)
 	{
 		final IAttributeStorageFactory attributesFactory = attributeStorageFactoryService.createHUAttributeStorageFactory();
 		final AttributeSetId attributeSetId = productBL.getAttributeSetId(productId);
@@ -195,7 +195,7 @@ public class HUAttributesBL implements IHUAttributesBL
 				.collect(ImmutableList.toImmutableList());
 
 
-			final IAttributeStorage attributeStorage = attributesFactory.getAttributeStorage(hu);
+			final IAttributeStorage attributeStorage = attributesFactory.getAttributeStorage(huId);
 
 			attributesMandatoryOnShipment
 					.stream()
@@ -212,7 +212,7 @@ public class HUAttributesBL implements IHUAttributesBL
 
 
 	@Override
-	public void validateMandatoryPickingAttributes(final I_M_HU hu, final ProductId productId)
+	public void validateMandatoryPickingAttributes(final HuId huId, final ProductId productId)
 	{
 		final IAttributeStorageFactory attributesFactory = attributeStorageFactoryService.createHUAttributeStorageFactory();
 		final AttributeSetId attributeSetId = productBL.getAttributeSetId(productId);
@@ -224,7 +224,7 @@ public class HUAttributesBL implements IHUAttributesBL
 				.collect(ImmutableList.toImmutableList());
 
 
-		final IAttributeStorage attributeStorage = attributesFactory.getAttributeStorage(hu);
+		final IAttributeStorage attributeStorage = attributesFactory.getAttributeStorage(handlingUnitsDAO.getById(huId));
 
 		attributesMandatoryOnPicking
 				.stream()

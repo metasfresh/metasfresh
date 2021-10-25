@@ -472,7 +472,7 @@ public class HUInOutBL implements IHUInOutBL
 
 			for (final I_M_HU hu : husForLine)
 			{
-				huAttributesBL.validateMandatoryShipmentAttributes(hu, productId);
+				huAttributesBL.validateMandatoryShipmentAttributes(HuId.ofRepoId(hu.getM_HU_ID()), productId);
 			}
 		}
 	}

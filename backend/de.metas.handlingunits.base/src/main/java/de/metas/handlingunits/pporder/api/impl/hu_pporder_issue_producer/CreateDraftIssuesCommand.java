@@ -191,7 +191,7 @@ public class CreateDraftIssuesCommand
 		final ProductId productId = productStorage.getProductId();
 
 
-		huAttributesBL.validateMandatoryPickingAttributes(hu,productId);
+		huAttributesBL.validateMandatoryPickingAttributes(HuId.ofRepoId(hu.getM_HU_ID()),productId);
 
 
 		removeHuFromParentIfAny(huContext, hu);

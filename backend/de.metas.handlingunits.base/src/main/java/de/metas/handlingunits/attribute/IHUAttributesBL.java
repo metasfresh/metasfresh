@@ -70,7 +70,7 @@ public interface IHUAttributesBL extends ISingletonService
 
 	boolean isAutomaticallySetBestBeforeDate();
 
-	void validateMandatoryShipmentAttributes(I_M_HU hu, ProductId productId);
+	void validateMandatoryShipmentAttributes(HuId huId, ProductId productId);
 
-	void validateMandatoryPickingAttributes(I_M_HU hu, ProductId productId);
+	void validateMandatoryPickingAttributes(HuId huId, ProductId productId);
 }
