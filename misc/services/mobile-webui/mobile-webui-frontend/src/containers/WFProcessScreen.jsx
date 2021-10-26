@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 
 import { updateWFProcess } from '../actions/WorkflowActions';
-import { getActivitiesStatus, selectWFProcessFromState } from '../reducers/wfProcesses_status';
+import { activitiesNotStarted, selectWFProcessFromState } from '../reducers/wfProcesses_status';
 
 import ScanActivity from './activities/scan/ScanActivity';
 import PickProductsActivity from './activities/picking/PickProductsActivity';
@@ -13,7 +13,7 @@ import AbortActivity from './activities/AbortActivity';
 
 class WFProcessScreen extends PureComponent {
   render() {
-    const { wfProcessId, activities, workflowNew } = this.props;
+    const { wfProcessId, activities, workflowNotStarted } = this.props;
 
     return (
       <div className="pt-2 section wf-process-container">
@@ -57,7 +57,7 @@ class WFProcessScreen extends PureComponent {
                     );
                 }
               })}
-            {workflowNew ? <AbortActivity wfProcessId={wfProcessId} /> : null}
+            {workflowNotStarted ? <AbortActivity wfProcessId={wfProcessId} /> : null}
           </div>
         </div>
       </div>
@@ -69,19 +69,19 @@ function mapStateToProps(state, { match }) {
   const { workflowId: wfProcessId } = match.params;
   const wfProcess = selectWFProcessFromState(state, wfProcessId);
   const activities = wfProcess.activities ? Object.values(wfProcess.activities) : [];
-  const activitiesStatus = getActivitiesStatus(state, wfProcessId);
+  const workflowNotStarted = activitiesNotStarted(state, wfProcessId);
 
   return {
     wfProcessId,
     activities,
-    workflowNew: activitiesStatus === 'NOT_STARTED',
+    workflowNotStarted,
   };
 }
 
 WFProcessScreen.propTypes = {
   //
   // Props
-  workflowNew: PropTypes.bool,
+  workflowNotStarted: PropTypes.bool,
   activities: PropTypes.array.isRequired,
   wfProcessId: PropTypes.string.isRequired,
   //

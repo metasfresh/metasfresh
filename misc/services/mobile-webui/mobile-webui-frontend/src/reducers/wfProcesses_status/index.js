@@ -2,6 +2,7 @@ import { produce } from 'immer';
 import { createSelector } from 'reselect';
 import { forEach } from 'lodash';
 
+import { NOT_STARTED } from '../../constants/CompleteStatus';
 import { workflowReducer } from './workflow';
 import { scanReducer } from './scan';
 import { pickingReducer } from './picking';
@@ -27,16 +28,33 @@ const getActivities = createSelector(
   (wfProcess) => (wfProcess ? wfProcess.activities : {})
 );
 
-export const getActivitiesStatus = createSelector(
+const getActivitiesStatuses = createSelector(
   (state, wfProcessId) => getActivities(state, wfProcessId),
   (activities) => {
-    let status = '';
+    const statuses = [];
 
     forEach(activities, (activity) => {
-      status = activity.dataStored.completeStatus;
+      statuses.push(activity.dataStored.completeStatus);
     });
 
-    return status;
+    return statuses;
+  }
+);
+
+export const activitiesNotStarted = createSelector(
+  (state, wfProcessId) => getActivitiesStatuses(state, wfProcessId),
+  (activitiesStatuses) => {
+    let notStarted = true;
+
+    for (let i = 0; i < activitiesStatuses.length; i += 1) {
+      if (activitiesStatuses[i] !== NOT_STARTED) {
+        notStarted = false;
+
+        break;
+      }
+    }
+
+    return notStarted;
   }
 );
 
