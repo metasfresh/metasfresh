@@ -7,10 +7,7 @@ import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
-import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.attribute.IPPOrderProductAttributeBL;
-import de.metas.handlingunits.attribute.exceptions.AttributeNotFoundException;
-import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.model.I_M_HU;
@@ -24,12 +21,6 @@ import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.logging.LogManager;
 import de.metas.material.planning.pporder.DraftPPOrderQuantities;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
-import de.metas.product.IProductBL;
-import org.adempiere.mm.attributes.AttributeId;
-import org.adempiere.mm.attributes.AttributeSetId;
-import org.compiere.model.I_M_Attribute;
-import org.eevolution.api.PPOrderBOMLineId;
-import org.eevolution.api.PPOrderId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
@@ -39,6 +30,8 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.eevolution.api.BOMComponentIssueMethod;
+import org.eevolution.api.PPOrderBOMLineId;
+import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.slf4j.Logger;
 
@@ -91,7 +84,6 @@ public class CreateDraftIssuesCommand
 	private final transient IHUPPOrderQtyDAO huPPOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
 	private final transient IHUPPOrderQtyBL huPPOrderQtyBL = Services.get(IHUPPOrderQtyBL.class);
 	private final transient IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
-	private final transient IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
 
 	//
 	// Parameters
@@ -187,12 +179,6 @@ public class CreateDraftIssuesCommand
 		{
 			return null;
 		}
-
-		final ProductId productId = productStorage.getProductId();
-
-
-		huAttributesBL.validateMandatoryPickingAttributes(HuId.ofRepoId(hu.getM_HU_ID()),productId);
-
 
 		removeHuFromParentIfAny(huContext, hu);
 		// Actually create and save the candidate

@@ -245,6 +245,7 @@ public class WEBUI_HUsToPick_PickCU extends HUsToPickViewBasedProcess implements
 
 		final ProductId productId = getProductId();
 
+		// validating the attributes here because it doesn't make sense to split the HU if it can't be used
 		huAttributesBL.validateMandatoryPickingAttributes(huIdToSplit, productId);
 
 		final List<I_M_HU> splitHUs = HUSplitBuilderCoreEngine.builder()

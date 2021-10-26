@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.OnOverDelivery;
 import de.metas.handlingunits.picking.PickFrom;
@@ -70,6 +71,7 @@ public class WEBUI_M_HU_Pick extends ViewBasedProcessTemplate implements IProces
 {
 	private static final Logger logger = LogManager.getLogger(WEBUI_M_HU_Pick.class);
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	private final IHUAttributesBL huAttributesB = Services.get(IHUAttributesBL.class);
 	private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
 	private final PickingCandidateService pickingCandidateService = SpringContextHolder.instance.getBean(PickingCandidateService.class);
 
@@ -232,6 +234,7 @@ public class WEBUI_M_HU_Pick extends ViewBasedProcessTemplate implements IProces
 	private void pickHU(final HURow row)
 	{
 		final HuId huId = row.getHuId();
+
 		pickingCandidateService.pickHU(PickRequest.builder()
 				.shipmentScheduleId(shipmentScheduleId)
 				.pickFrom(PickFrom.ofHuId(huId))
