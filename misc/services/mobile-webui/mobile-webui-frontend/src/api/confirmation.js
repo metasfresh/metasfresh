@@ -7,6 +7,6 @@ import { apiBasePath } from '../constants';
  * @param {object} `token` - The token to use for authentication
  * @returns
  */
-export function userConfirmation({ wfProcessId, wfActivityId }) {
-  return axios.post(`${apiBasePath}/userWorkflows/wfProcess/${wfProcessId}/${wfActivityId}/userConfirmation`);
+export function userConfirmation({ wfProcessId, activityId }) {
+  return axios.post(`${apiBasePath}/userWorkflows/wfProcess/${wfProcessId}/${activityId}/userConfirmation`);
 }
