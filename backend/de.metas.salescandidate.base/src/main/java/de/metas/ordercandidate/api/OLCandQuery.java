@@ -1,6 +1,7 @@
 package de.metas.ordercandidate.api;
 
 import de.metas.impex.model.I_AD_InputDataSource;
+import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.Value;
@@ -31,23 +32,41 @@ import lombok.Value;
 @Builder
 public class OLCandQuery
 {
-	/** ID (e.g. document number), of a source document in a remote system; multiple OLCands can have the same ID */
-	private String externalHeaderId;
+	/**
+	 * ID (e.g. document number), of a source document in a remote system; multiple OLCands can have the same ID
+	 */
+	String externalHeaderId;
 
-	/** {@link I_AD_InputDataSource#COLUMNNAME_InternalName} of the data source the candidates in question were added with. */
-	private String inputDataSourceName;
+	/**
+	 * {@link I_AD_InputDataSource#COLUMNNAME_InternalName} of the data source the candidates in question were added with.
+	 */
+	String inputDataSourceName;
+
+	String externalLineId;
+
+	OrgId orgId;
 
 	public OLCandQuery(
-			String externalHeaderId,
-			String inputDataSourceName)
+			final String externalHeaderId,
+			final String inputDataSourceName,
+			final String externalLineId,
+			final OrgId orgId)
 	{
 		if (externalHeaderId != null)
 		{
 			Check.assumeNotEmpty(externalHeaderId, "If externalHeaderId is specified, then it may not be empty");
-			Check.assumeNotEmpty(inputDataSourceName, "If externalHeaderId is specified, then inputDataSourceName may not be empty; externalHeaderId={}", externalHeaderId);
+
+			if (inputDataSourceName == null && externalLineId == null)
+			{
+				Check.assumeNotEmpty(inputDataSourceName, "If externalHeaderId is specified, then inputDataSourceName or externalLineId should be defined; externalHeaderId={}", externalHeaderId);
+				Check.assumeNotEmpty(externalLineId, "If externalHeaderId is specified, then inputDataSourceName or externalLineId should be defined; externalHeaderId={}", externalHeaderId);
+			}
 		}
 
 		this.externalHeaderId = externalHeaderId;
 		this.inputDataSourceName = inputDataSourceName;
+
+		this.externalLineId = externalLineId;
+		this.orgId = orgId;
 	}
 }

@@ -1,34 +1,31 @@
 package de.metas.payment.esr.dataimporter.impl.camt54;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.math.BigDecimal;
-
-import javax.annotation.Nullable;
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.IAutoCloseable;
-import org.compiere.util.Env;
-import org.slf4j.Logger;
-
+import ch.qos.logback.classic.Level;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Objects;
-
-import ch.qos.logback.classic.Level;
 import de.metas.i18n.AdMessageKey;
 import de.metas.logging.LogManager;
 import de.metas.payment.camt054_001_02.BankToCustomerDebitCreditNotificationV02;
 import de.metas.payment.camt054_001_06.BankToCustomerDebitCreditNotificationV06;
 import de.metas.payment.esr.dataimporter.ESRStatement;
 import de.metas.payment.esr.dataimporter.IESRDataImporter;
-import de.metas.payment.esr.model.I_ESR_Import;
+import de.metas.payment.esr.model.I_ESR_ImportFile;
 import de.metas.util.Loggables;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IAutoCloseable;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.math.BigDecimal;
 
 /*
  * #%L
@@ -68,7 +65,6 @@ import lombok.NonNull;
  * Also see <a href="https://www.six-interbank-clearing.com/dam/downloads/en/standardization/iso/swiss-recommendations/implementation-guidelines-camt.pdf">Swiss Implementation Guidelines for Cash Management</a>.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public class ESRDataImporterCamt54 implements IESRDataImporter
 {
@@ -78,18 +74,18 @@ public class ESRDataImporterCamt54 implements IESRDataImporter
 	@VisibleForTesting
 	static final BigDecimal CTRL_QTY_NOT_YET_SET = BigDecimal.TEN.negate();
 
-	protected static final AdMessageKey MSG_UNSUPPORTED_CREDIT_DEBIT_CODE_1P =  AdMessageKey.of("ESR_CAMT54_UnsupportedCreditDebitCode");
+	protected static final AdMessageKey MSG_UNSUPPORTED_CREDIT_DEBIT_CODE_1P = AdMessageKey.of("ESR_CAMT54_UnsupportedCreditDebitCode");
 
-	protected static final AdMessageKey MSG_BANK_ACCOUNT_MISMATCH_2P =  AdMessageKey.of("ESR_CAMT54_BankAccountMismatch");
-	
+	protected static final AdMessageKey MSG_BANK_ACCOUNT_MISMATCH_2P = AdMessageKey.of("ESR_CAMT54_BankAccountMismatch");
+
 	protected static final AdMessageKey MSG_MULTIPLE_TRANSACTIONS_TYPES = AdMessageKey.of("ESR_CAMT54_MultipleTransactionsTypes");
 
 	private static final transient Logger logger = LogManager.getLogger(ESRDataImporterCamt54.class);
 
-	private final I_ESR_Import header;
+	private final I_ESR_ImportFile header;
 	private final InputStream input;
 
-	public ESRDataImporterCamt54(@NonNull final I_ESR_Import header, @NonNull final InputStream input)
+	public ESRDataImporterCamt54(@NonNull final I_ESR_ImportFile header, @NonNull final InputStream input)
 	{
 		this.input = input;
 		this.header = header;
@@ -105,12 +101,6 @@ public class ESRDataImporterCamt54 implements IESRDataImporter
 		this.header = null;
 	}
 
-	/**
-	 * check if the shema is version 02
-	 * 
-	 * @param fileName
-	 * @return
-	 */
 	private boolean isVersion2Schema(@NonNull final String namespaceURI)
 	{
 		return Objects.equal("urn:iso:std:iso:20022:tech:xsd:camt.054.001.02", namespaceURI);

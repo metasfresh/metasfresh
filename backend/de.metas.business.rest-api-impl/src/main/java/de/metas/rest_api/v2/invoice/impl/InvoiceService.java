@@ -1,12 +1,23 @@
 package de.metas.rest_api.v2.invoice.impl;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import de.metas.RestUtils;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.allocation.api.C_AllocationHdr_Builder;
 import de.metas.allocation.api.IAllocationBL;
+import de.metas.async.AsyncBatchId;
+import de.metas.async.api.IAsyncBatchBL;
+import de.metas.async.asyncbatchmilestone.AsyncBatchMilestone;
+import de.metas.async.asyncbatchmilestone.AsyncBatchMilestoneId;
+import de.metas.async.asyncbatchmilestone.AsyncBatchMilestoneObserver;
+import de.metas.async.asyncbatchmilestone.AsyncBathMilestoneService;
+import de.metas.async.asyncbatchmilestone.MilestoneName;
+import de.metas.async.model.I_C_Async_Batch;
 import de.metas.banking.BankAccountId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.rest_api.common.JsonExternalId;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.invoice.JsonInvoicePaymentCreateRequest;
 import de.metas.common.rest_api.v2.invoice.JsonPaymentAllocationLine;
 import de.metas.common.util.CoalesceUtil;
@@ -20,11 +31,16 @@ import de.metas.externalreference.ExternalIdentifier;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceQuery;
 import de.metas.invoice.service.IInvoiceDAO;
+import de.metas.invoicecandidate.InvoiceCandidateId;
+import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
+import de.metas.invoicecandidate.api.IInvoicingParams;
+import de.metas.invoicecandidate.api.impl.PlainInvoicingParams;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.payment.TenderType;
+import de.metas.process.PInstanceId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.rest_api.invoicecandidates.response.JsonInvoiceCandidatesResponseItem;
@@ -39,6 +55,7 @@ import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.TaxId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.collections.CollectionUtils;
 import de.metas.util.lang.ExternalId;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
@@ -50,13 +67,22 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
+import org.compiere.model.I_M_InOutLine;
+import org.compiere.util.DB;
+import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+
+import static de.metas.async.Async_Constants.C_Async_Batch_InternalName_InvoiceCandidate_Processing;
+import static org.compiere.util.Env.getCtx;
 
 /*
  * #%L
@@ -92,19 +118,27 @@ public class InvoiceService
 	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IAllocationBL allocationBL = Services.get(IAllocationBL.class);
+	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
+	private final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
 
 	private final CurrencyService currencyService;
 	private final PaymentService paymentService;
 	private final JsonRetrieverService jsonRetrieverService;
+	private final AsyncBatchMilestoneObserver asyncBatchMilestoneObserver;
+	private final AsyncBathMilestoneService asyncBathMilestoneService;
 
 	public InvoiceService(
-			final CurrencyService currencyService,
-			final PaymentService paymentService,
-			final JsonServiceFactory jsonServiceFactory)
+			@NonNull final CurrencyService currencyService,
+			@NonNull final PaymentService paymentService,
+			@NonNull final JsonServiceFactory jsonServiceFactory,
+			@NonNull final AsyncBatchMilestoneObserver asyncBatchMilestoneObserver,
+			@NonNull final AsyncBathMilestoneService asyncBathMilestoneService)
 	{
 		this.currencyService = currencyService;
 		this.paymentService = paymentService;
 		this.jsonRetrieverService = jsonServiceFactory.createRetriever();
+		this.asyncBatchMilestoneObserver = asyncBatchMilestoneObserver;
+		this.asyncBathMilestoneService = asyncBathMilestoneService;
 	}
 
 	public Optional<byte[]> getInvoicePDF(@NonNull final InvoiceId invoiceId)
@@ -142,6 +176,9 @@ public class InvoiceService
 									.currency(currency)
 									.build());
 		}
+
+		result.invoiceId(JsonMetasfreshId.of(invoiceId.getRepoId()));
+
 		return result.build();
 	}
 
@@ -221,6 +258,55 @@ public class InvoiceService
 
 			createAllocationsForPayment(payment, lines);
 		});
+	}
+
+	@NonNull
+	public Set<InvoiceId> generateInvoicesFromShipmentLines(@NonNull final List<I_M_InOutLine> shipmentLines)
+	{
+		final Set<InvoiceCandidateId> invoiceCandidateIds = shipmentLines.stream()
+				.map(invoiceCandDAO::retrieveInvoiceCandidatesForInOutLine)
+				.flatMap(List::stream)
+				.map(I_C_Invoice_Candidate::getC_Invoice_Candidate_ID)
+				.map(InvoiceCandidateId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
+
+		processInvoiceCandidates(invoiceCandidateIds);
+
+		return invoiceCandidateIds.stream()
+				.map(invoiceCandDAO::retrieveIlForIc)
+				.flatMap(List::stream)
+				.map(org.compiere.model.I_C_InvoiceLine::getC_Invoice_ID)
+				.map(InvoiceId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	public void processInvoiceCandidates(@NonNull final Set<InvoiceCandidateId> invoiceCandidateIds)
+	{
+		final ImmutableMap<AsyncBatchId, List<InvoiceCandidateId>> asyncBatchId2InvoiceCandIds = getAsyncBathId2InvoiceCandidateIds(invoiceCandidateIds);
+
+		asyncBatchId2InvoiceCandIds.forEach((asyncBatchId, icIds) -> generateInvoicesForAsyncBatch(ImmutableSet.copyOf(icIds), asyncBatchId));
+	}
+
+	private void generateInvoicesForAsyncBatch(@NonNull final Set<InvoiceCandidateId> invoiceCandIds, @NonNull final AsyncBatchId asyncBatchId)
+	{
+		final I_C_Async_Batch asyncBatch = asyncBatchBL.getAsyncBatchById(asyncBatchId);
+
+		final AsyncBatchMilestoneId milestoneId = newScheduleInvoiceMilestone(asyncBatchId);
+
+		asyncBatchMilestoneObserver.observeOn(milestoneId);
+
+		trxManager.runInNewTrx(() -> {
+			final PInstanceId invoiceCandidatesSelectionId = DB.createT_Selection(invoiceCandIds, null);
+
+			invoiceCandBL.enqueueForInvoicing()
+					.setContext(getCtx())
+					.setC_Async_Batch(asyncBatch)
+					.setInvoicingParams(getDefaultIInvoicingParams())
+					.setFailIfNothingEnqueued(true)
+					.enqueueSelection(invoiceCandidatesSelectionId);
+		});
+
+		asyncBatchMilestoneObserver.waitToBeProcessed(milestoneId);
 	}
 
 	private JsonInvoiceCandidatesResponseItem buildJSONItem(@NonNull final I_C_Invoice_Candidate invoiceCandidate)
@@ -314,5 +400,65 @@ public class InvoiceService
 	private Optional<I_AD_Archive> getLastArchive(@NonNull final InvoiceId invoiceId)
 	{
 		return archiveBL.getLastArchive(TableRecordReference.of(I_C_Invoice.Table_Name, invoiceId));
+	}
+
+	@NonNull
+	private IInvoicingParams getDefaultIInvoicingParams()
+	{
+		final PlainInvoicingParams invoicingParams = new PlainInvoicingParams();
+		invoicingParams.setIgnoreInvoiceSchedule(false);
+		invoicingParams.setSupplementMissingPaymentTermIds(true);
+		invoicingParams.setDateInvoiced(LocalDate.now());
+
+		return invoicingParams;
+	}
+
+	@NonNull
+	private AsyncBatchMilestoneId newScheduleInvoiceMilestone(@NonNull final AsyncBatchId asyncBatchId)
+	{
+		final AsyncBatchMilestone asyncBatchMilestone = AsyncBatchMilestone.builder()
+				.asyncBatchId(asyncBatchId)
+				.orgId(Env.getOrgId())
+				.milestoneName(MilestoneName.INVOICE_CREATION)
+				.build();
+
+		final AsyncBatchMilestone milestone = asyncBathMilestoneService.save(asyncBatchMilestone);
+
+		return milestone.getIdNotNull();
+	}
+
+	@NonNull
+	private ImmutableMap<AsyncBatchId, List<InvoiceCandidateId>> getAsyncBathId2InvoiceCandidateIds(@NonNull final Set<InvoiceCandidateId> invoiceCandidateIds)
+	{
+		if (invoiceCandidateIds.isEmpty())
+		{
+			return ImmutableMap.of();
+		}
+
+		final List<I_C_Invoice_Candidate> invoiceCandidates = invoiceCandDAO.getByIds(invoiceCandidateIds);
+
+		final HashMap<AsyncBatchId, ArrayList<InvoiceCandidateId>> asyncBatchId2InvoiceCand = new HashMap<>();
+
+		invoiceCandidates
+				.forEach(invoiceCandidate -> {
+					final AsyncBatchId currentAsyncBatchId = AsyncBatchId.ofRepoIdOrNone(invoiceCandidate.getC_Async_Batch_ID());
+
+					final ArrayList<InvoiceCandidateId> currentInvoiceCands = new ArrayList<>();
+					currentInvoiceCands.add(InvoiceCandidateId.ofRepoId(invoiceCandidate.getC_Invoice_Candidate_ID()));
+
+					asyncBatchId2InvoiceCand.merge(currentAsyncBatchId, currentInvoiceCands, CollectionUtils::mergeLists);
+				});
+
+		Optional.ofNullable(asyncBatchId2InvoiceCand.get(AsyncBatchId.NONE_ASYNC_BATCH_ID))
+				.ifPresent(noAsyncBatchICIds -> {
+					final AsyncBatchId asyncBatchId = asyncBatchBL.newAsyncBatch(C_Async_Batch_InternalName_InvoiceCandidate_Processing);
+
+					noAsyncBatchICIds.forEach(icID -> invoiceCandBL.setAsyncBatch(icID, asyncBatchId));
+
+					asyncBatchId2InvoiceCand.put(asyncBatchId, noAsyncBatchICIds);
+					asyncBatchId2InvoiceCand.remove(AsyncBatchId.NONE_ASYNC_BATCH_ID);
+				});
+
+		return ImmutableMap.copyOf(asyncBatchId2InvoiceCand);
 	}
 }

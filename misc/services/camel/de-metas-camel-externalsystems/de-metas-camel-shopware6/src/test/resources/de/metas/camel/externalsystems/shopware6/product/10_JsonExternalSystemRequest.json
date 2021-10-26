@@ -1,0 +1,13 @@
+{
+  "orgCode": "001",
+  "externalSystemName": "Shopware6",
+  "command": "getProducts",
+  "adPInstanceId": 2,
+  "externalSystemConfigId": 1,
+  "parameters": {
+    "UpdatedAfter": "1999-08-09T13:35:17Z",
+    "ClientSecret": "ClientSecret",
+    "ClientId": "ClientId",
+    "BasePath": "BasePath"
+  }
+}

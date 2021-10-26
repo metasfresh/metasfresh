@@ -69,7 +69,7 @@ import lombok.Value;
  *
  * Implementors are also related to {@link I_M_IolCandHandler} records.
  *
- * Implementors can be registered by calling {@link IShipmentScheduleHandlerBL#registerHandler(Properties, ShipmentScheduleHandler)}.
+ * Implementors can be registered by calling {@link IShipmentScheduleHandlerBL#registerHandler(ShipmentScheduleHandler)} .
  *
  * Interface methods should only be called by the {@link IShipmentScheduleHandlerBL} implementation.
  *
@@ -121,10 +121,10 @@ public abstract class ShipmentScheduleHandler
 	 * Note:
 	 * <ul>
 	 * <li>The framework will create a {@link I_M_IolCandHandler_Log} record for every object returned by this method.</li>
-	 * <li>Implementors should check for <code>I_M_IolCandHandler_Log</code> to make sure that they don't repeatedly return records are then vetoed by some {@link IInOutCandHandlerListener}</li>
+	 * <li>Implementors should check for <code>I_M_IolCandHandler_Log</code> to make sure that they don't repeatedly return records are then vetoed by some {@link ModelWithoutShipmentScheduleVetoer}</li>
 	 * </ul>
 	 */
-	public abstract Iterator<? extends Object> retrieveModelsWithMissingCandidates(Properties ctx, String trxName);
+	public abstract Iterator<?> retrieveModelsWithMissingCandidates(Properties ctx, String trxName);
 
 	/**
 	 * Creates missing candidates for the given model.
@@ -170,7 +170,7 @@ public abstract class ShipmentScheduleHandler
 
 	/**
 	 * Create a new deliver request for the given <code>sched</code>.<br>
-	 * This method shall be called by {@link IShipmentScheduleHandlerBL#createDeliverRequest(I_M_ShipmentSchedule)}, not directly by a user.
+	 * This method shall be called by {@link IShipmentScheduleHandlerBL#createDeliverRequest(I_M_ShipmentSchedule, I_C_OrderLine)} , not directly by a user.
 	 */
 	public abstract IDeliverRequest createDeliverRequest(I_M_ShipmentSchedule sched, final I_C_OrderLine salesOrderLine);
 

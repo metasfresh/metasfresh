@@ -110,12 +110,25 @@ public class ProductDAO implements IProductDAO
 	@Override
 	public <T extends I_M_Product> T getById(@NonNull final ProductId productId, @NonNull final Class<T> productClass)
 	{
-		final T product = load(productId, productClass); // we can't load out-of-trx, because it's possible that the product was created just now, within the current trx!
+		// we can't load out-of-trx, because it's possible that the product was created just now, within the current trx!
+		return getByIdInTrx(productId, productClass);
+	}
+
+	@Override
+	public <T extends I_M_Product> T getByIdInTrx(@NonNull final ProductId productId, @NonNull final Class<T> productClass)
+	{
+		final T product = load(productId, productClass);
 		if (product == null)
 		{
 			throw new AdempiereException("@NotFound@ @M_Product_ID@: " + productId);
 		}
 		return product;
+	}
+
+	@Override
+	public I_M_Product getByIdInTrx(@NonNull final ProductId productId)
+	{
+		return getByIdInTrx(productId, I_M_Product.class);
 	}
 
 	@Override

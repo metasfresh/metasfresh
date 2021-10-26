@@ -163,7 +163,8 @@ public class GetOrdersProcessor implements Processor
 	}
 
 	@NonNull
-	private QueryRequest buildQueryOrdersRequest(@NonNull final String updatedAfter)
+	@VisibleForTesting
+	public static QueryRequest buildQueryOrdersRequest(@NonNull final String updatedAfter)
 	{
 		final HashMap<String, String> parameters = new HashMap<>();
 		parameters.put(PARAMETERS_DATE_GTE, updatedAfter);

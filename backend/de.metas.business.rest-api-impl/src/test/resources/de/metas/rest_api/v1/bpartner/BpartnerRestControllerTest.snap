@@ -166,7 +166,8 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
         "name" : "c1_name",
         "newsletter" : false,
         "phone" : "c1_phone",
-        "subjectMatterContact" : false
+        "subjectMatterContact" : false,
+        "roles" : [ ]
       },
       {
         "active" : true,
@@ -233,7 +234,8 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
         "name" : "c2_name",
         "newsletter" : false,
         "phone" : "c2_phone",
-        "subjectMatterContact" : false
+        "subjectMatterContact" : false,
+        "roles" : [ ]
       }
     ],
     "locations" : [
@@ -499,6 +501,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateContact_c
         "newsletter" : false,
         "phone" : "contactRecord.phone",
         "subjectMatterContact" : false,
+        "roles" : [ ],
         "value" : "contactRecord.value"
       },
       {
@@ -566,7 +569,8 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateContact_c
         "name" : "newContact-_name",
         "newsletter" : false,
         "phone" : "newContact-_phone",
-        "subjectMatterContact" : false
+        "subjectMatterContact" : false,
+        "roles" : [ ]        
       }
     ],
     "locations" : [
@@ -775,6 +779,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
         "newsletter" : false,
         "phone" : "contactRecord.phone",
         "subjectMatterContact" : false,
+		"roles" : [ ],        
         "value" : "contactRecord.value"
       }
     ],
@@ -984,6 +989,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
         "newsletter" : false,
         "phone" : "contactRecord.phone",
         "subjectMatterContact" : false,
+        "roles" : [ ],        
         "value" : "contactRecord.value"
       }
     ],
@@ -1193,6 +1199,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
         "newsletter" : false,
         "phone" : "contactRecord.phone",
         "subjectMatterContact" : false,
+        "roles" : [ ],        
         "value" : "contactRecord.value"
       }
     ],

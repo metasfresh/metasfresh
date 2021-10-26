@@ -48,7 +48,7 @@ public class FiscalRepresentationBL implements IFiscalRepresentationBL
 		if (fiscalRep.getC_BPartner_Location_ID() > 0)
 		{
 			final BPartnerLocationId bpLocation = BPartnerLocationId.ofRepoId(fiscalRep.getC_BPartner_Representative_ID(), fiscalRep.getC_BPartner_Location_ID());
-			final CountryId countryId = bpartnerDAO.retrieveBPartnerLocationCountryId(bpLocation);
+			final CountryId countryId = bpartnerDAO.getCountryId(bpLocation);
 			fiscalRep.setTo_Country_ID(countryId.getRepoId());
 		}
 	}

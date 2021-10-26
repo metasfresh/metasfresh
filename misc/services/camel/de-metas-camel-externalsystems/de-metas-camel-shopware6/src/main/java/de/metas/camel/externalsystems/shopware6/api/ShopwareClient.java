@@ -44,6 +44,7 @@ import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderTransac
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonPaymentMethod;
 import de.metas.camel.externalsystems.shopware6.api.model.order.OrderCandidate;
 import de.metas.camel.externalsystems.shopware6.api.model.order.OrderDeliveryItem;
+import de.metas.camel.externalsystems.shopware6.api.model.product.JsonProducts;
 import de.metas.common.util.Check;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -415,6 +416,32 @@ public class ShopwareClient
 	}
 
 	@NonNull
+	public Optional<JsonProducts> getProducts(@NonNull final QueryRequest queryRequest)
+	{
+		final URI resourceURI;
+
+		final UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(baseUrl);
+
+		uriBuilder.pathSegment(PathSegmentsEnum.API.getValue())
+				.pathSegment(PathSegmentsEnum.V3.getValue())
+				.pathSegment(PathSegmentsEnum.SEARCH.getValue())
+				.pathSegment(PathSegmentsEnum.PRODUCT.getValue());
+
+		refreshTokenIfExpired();
+
+		resourceURI = uriBuilder.build().toUri();
+
+		final ResponseEntity<JsonProducts> response = performWithRetry(resourceURI, HttpMethod.POST, JsonProducts.class, queryRequest);
+
+		if (response == null || response.getBody() == null)
+		{
+			return Optional.empty();
+		}
+
+		return Optional.of(response.getBody());
+	}
+
+	@NonNull
 	protected Optional<OrderCandidate> getJsonOrderCandidate(@Nullable final JsonNode orderJson,
 			@Nullable final String customIdJSONPath,
 			@Nullable final String salesRepJSONPath)
@@ -455,7 +482,7 @@ public class ShopwareClient
 				orderCandidateBuilder.salesRepId(salesRepId.isEmpty() ? null : salesRepId);
 			}
 
-			return Optional.ofNullable(orderCandidateBuilder.build());
+			return Optional.of(orderCandidateBuilder.build());
 
 		}
 		catch (final JsonProcessingException e)

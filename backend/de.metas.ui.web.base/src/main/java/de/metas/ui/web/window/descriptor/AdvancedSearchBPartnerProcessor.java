@@ -22,22 +22,19 @@
 
 package de.metas.ui.web.window.descriptor;
 
+import de.metas.bpartner.BPartnerContactId;
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.ui.web.view.SqlViewFactory;
 import de.metas.ui.web.view.descriptor.SqlViewKeyColumnNamesMap;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.model.Document;
-import de.metas.user.UserId;
-import de.metas.util.Services;
+import de.metas.ui.web.window.model.sql.SqlComposedKey;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_C_BPartner_Adv_Search_v;
+import org.compiere.model.I_C_BPartner_Adv_Search;
 import org.compiere.model.I_C_Order;
-
-import java.util.List;
-import java.util.Objects;
 
 public class AdvancedSearchBPartnerProcessor implements AdvancedSearchDescriptor.AdvancedSearchSelectionProcessor
 {
@@ -49,36 +46,49 @@ public class AdvancedSearchBPartnerProcessor implements AdvancedSearchDescriptor
 	}
 
 	@Override
-	public void processSelection(final WindowId windowId, final Document document, final String bpartnerFieldName, final String selectionIdStr)
+	public void processSelection(
+			@NonNull final WindowId windowId,
+			@NonNull final Document document,
+			@NonNull final String bpartnerFieldName,
+			@NonNull final String selectionIdStr)
 	{
-		final List<Object> ids = DocumentId.of(selectionIdStr).toComposedKeyParts();
-		final boolean firstValueLocationId = isFirstValueLocationId(windowId);
-		final String locIdStr = (String)(firstValueLocationId ? ids.get(0) : ids.get(1));
-		final String userIdStr = (String)(firstValueLocationId ? ids.get(1) : ids.get(0));
-		final int locId = Integer.parseInt(locIdStr);
-		final UserId userId = UserId.ofRepoIdOrNull(Integer.parseInt(userIdStr));
+		final SqlViewKeyColumnNamesMap keyColumnNamesMap = sqlViewFactory.getKeyColumnNamesMap(windowId);
+		final SqlComposedKey composedKey = keyColumnNamesMap.extractComposedKey(DocumentId.of(selectionIdStr));
 
-		final String locationFieldName = getLocationFieldNameForBPartnerField(bpartnerFieldName);
-		final BPartnerLocationId locationId = Services.get(IBPartnerDAO.class).getBPartnerLocationIdByRepoId(locId);
-
-		document.processValueChange(bpartnerFieldName, locationId.getBpartnerId(), null, false);
-		document.processValueChange(locationFieldName, locationId.getRepoId(), null, false);
-
-		if (userId != null)
+		//
+		// BPartner
+		final BPartnerId bpartnerId = composedKey.getValueAsId(I_C_BPartner_Adv_Search.COLUMNNAME_C_BPartner_ID, BPartnerId.class).orElse(null);
+		if (bpartnerId == null)
 		{
-			final String userIdFieldName = getUserIdFieldNameForBPartnerField(bpartnerFieldName);
-			document.processValueChange(userIdFieldName, userId.getRepoId(), null, false);
+			throw new AdempiereException("@NoSelection@"); // shall not happen
+		}
+		document.processValueChange(bpartnerFieldName, bpartnerId, null, false);
+
+		//
+		// Location
+		final BPartnerLocationId bpLocationId = BPartnerLocationId.ofRepoIdOrNull(
+				bpartnerId,
+				composedKey.getValueAsInteger(I_C_BPartner_Adv_Search.COLUMNNAME_C_BPartner_Location_ID).orElse(-1));
+		if (bpLocationId != null)
+		{
+			final String locationFieldName = getLocationFieldNameForBPartnerField(bpartnerFieldName);
+			document.processValueChange(locationFieldName, bpLocationId.getRepoId(), null, false);
+		}
+
+		//
+		// Contact
+		final BPartnerContactId bpContactId = BPartnerContactId.ofRepoIdOrNull(
+				bpartnerId,
+				composedKey.getValueAsInteger(I_C_BPartner_Adv_Search.COLUMNNAME_C_BP_Contact_ID).orElse(-1));
+		if (bpContactId != null)
+		{
+			final String bpContactIdFieldName = getUserIdFieldNameForBPartnerField(bpartnerFieldName);
+			document.processValueChange(bpContactIdFieldName, bpContactId.getRepoId(), null, false);
 		}
 	}
 
-	private boolean isFirstValueLocationId(final WindowId windowId)
-	{
-		final SqlViewKeyColumnNamesMap keyColumnNamesMap = sqlViewFactory.getKeyColumnNamesMap(windowId);
-		return Objects.equals(keyColumnNamesMap.getKeyColumnNames().get(0), I_C_BPartner_Adv_Search_v.COLUMNNAME_C_BPartner_Location_ID);
-	}
-
 	@NonNull
-	private String getLocationFieldNameForBPartnerField(final String bpartnerFieldName)
+	private static String getLocationFieldNameForBPartnerField(final String bpartnerFieldName)
 	{
 		switch (bpartnerFieldName)
 		{
@@ -96,7 +106,7 @@ public class AdvancedSearchBPartnerProcessor implements AdvancedSearchDescriptor
 	}
 
 	@NonNull
-	private String getUserIdFieldNameForBPartnerField(final String bpartnerFieldName)
+	private static String getUserIdFieldNameForBPartnerField(final String bpartnerFieldName)
 	{
 		switch (bpartnerFieldName)
 		{

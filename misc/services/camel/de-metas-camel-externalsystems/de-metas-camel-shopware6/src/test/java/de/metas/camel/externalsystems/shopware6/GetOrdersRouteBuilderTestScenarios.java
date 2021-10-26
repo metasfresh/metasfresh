@@ -78,8 +78,8 @@ public class GetOrdersRouteBuilderTestScenarios extends CamelTestSupport
 	{
 		final FailingMockUpsertBPartnerProcessor failingMockUpsertBPartnerProcessor = new FailingMockUpsertBPartnerProcessor();
 		final MockErrorRouteEndpointProcessor mockErrorRouteEndpointProcessor = new MockErrorRouteEndpointProcessor();
-		final GetOrdersRouteBuilderTests.MockSuccessfullyClearOrdersProcessor successfullyClearOrdersProcessor = new GetOrdersRouteBuilderTests.MockSuccessfullyClearOrdersProcessor();
-		final GetOrdersRouteBuilderTests.MockSuccessfullyUpsertRuntimeParamsProcessor runtimeParamsProcessor = new GetOrdersRouteBuilderTests.MockSuccessfullyUpsertRuntimeParamsProcessor();
+		final GetOrdersRouteBuilder_HappyFlow_Tests.MockSuccessfullyClearOrdersProcessor successfullyClearOrdersProcessor = new GetOrdersRouteBuilder_HappyFlow_Tests.MockSuccessfullyClearOrdersProcessor();
+		final GetOrdersRouteBuilder_HappyFlow_Tests.MockSuccessfullyUpsertRuntimeParamsProcessor runtimeParamsProcessor = new GetOrdersRouteBuilder_HappyFlow_Tests.MockSuccessfullyUpsertRuntimeParamsProcessor();
 
 		prepareRouteForTesting(failingMockUpsertBPartnerProcessor,
 							   mockErrorRouteEndpointProcessor,
@@ -98,13 +98,13 @@ public class GetOrdersRouteBuilderTestScenarios extends CamelTestSupport
 	private void prepareRouteForTesting(
 			final FailingMockUpsertBPartnerProcessor failingMockUpsertBPartnerProcessor,
 			final MockErrorRouteEndpointProcessor mockErrorRouteEndpointProcessor,
-			final GetOrdersRouteBuilderTests.MockSuccessfullyClearOrdersProcessor olCandClearProcessor,
-			final GetOrdersRouteBuilderTests.MockSuccessfullyUpsertRuntimeParamsProcessor runtimeParamsProcessor) throws Exception
+			final GetOrdersRouteBuilder_HappyFlow_Tests.MockSuccessfullyClearOrdersProcessor olCandClearProcessor,
+			final GetOrdersRouteBuilder_HappyFlow_Tests.MockSuccessfullyUpsertRuntimeParamsProcessor runtimeParamsProcessor) throws Exception
 	{
 		AdviceWith.adviceWith(context, GET_ORDERS_ROUTE_ID,
 							  advice -> advice.weaveById(GET_ORDERS_PROCESSOR_ID)
 									  .replace()
-									  .process(new GetOrdersRouteBuilderTests.MockGetOrdersProcessor()));
+									  .process(new GetOrdersRouteBuilder_HappyFlow_Tests.MockGetOrdersProcessor()));
 
 		AdviceWith.adviceWith(context, PROCESS_ORDER_ROUTE_ID,
 							  advice -> {

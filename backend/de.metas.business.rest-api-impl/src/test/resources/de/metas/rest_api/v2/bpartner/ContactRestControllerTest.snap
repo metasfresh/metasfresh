@@ -61,7 +61,8 @@ de.metas.rest_api.v2.bpartner.ContactRestControllerTest.createOrUpdateContact_cr
     "membershipContact" : false,
     "name" : "jsonContact.name",
     "newsletter" : false,
-    "subjectMatterContact" : false
+    "subjectMatterContact" : false,
+    "roles" : [ ]    
   }
 ]
 
@@ -135,6 +136,7 @@ de.metas.rest_api.v2.bpartner.ContactRestControllerTest.createOrUpdateContact_up
     "newsletter" : false,
     "phone" : "contactRecord.phone",
     "subjectMatterContact" : false,
+    "roles" : [ ],
     "value" : "contactRecord.value"
   }
 ]
@@ -209,6 +211,7 @@ de.metas.rest_api.v2.bpartner.ContactRestControllerTest.createOrUpdateContact_up
     "newsletter" : false,
     "phone" : "contactRecord.phone",
     "subjectMatterContact" : false,
+    "roles" : [ ],
     "value" : "contactRecord.value"
   }
 ]

@@ -52,6 +52,26 @@ public interface I_C_BPartner_Adv_Search_v
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set Contact.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setC_BP_Contact_ID (int C_BP_Contact_ID);
+
+	/**
+	 * Get Contact.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getC_BP_Contact_ID();
+
+	String COLUMNNAME_C_BP_Contact_ID = "C_BP_Contact_ID";
+
+	/**
 	 * Set Business Partner.
 	 *
 	 * <br>Type: Search
@@ -90,27 +110,6 @@ public interface I_C_BPartner_Adv_Search_v
 	int getC_BPartner_Location_ID();
 
 	String COLUMNNAME_C_BPartner_Location_ID = "C_BPartner_Location_ID";
-
-	/**
-	 * Set Contact.
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setC_BP_Contact_ID (int C_BP_Contact_ID);
-
-	/**
-	 * Get Contact.
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getC_BP_Contact_ID();
-
-	ModelColumn<I_C_BPartner_Adv_Search_v, Object> COLUMN_C_BP_Contact_ID = new ModelColumn<>(I_C_BPartner_Adv_Search_v.class, "C_BP_Contact_ID", null);
-	String COLUMNNAME_C_BP_Contact_ID = "C_BP_Contact_ID";
 
 	/**
 	 * Set City Name.

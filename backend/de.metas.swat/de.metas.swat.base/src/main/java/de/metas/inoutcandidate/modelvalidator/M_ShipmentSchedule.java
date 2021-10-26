@@ -13,7 +13,6 @@ import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.invalidation.segments.IShipmentScheduleSegment;
 import de.metas.inoutcandidate.invalidation.segments.ShipmentScheduleSegments;
 import de.metas.inoutcandidate.model.I_M_IolCandHandler_Log;
-import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.util.Check;
@@ -24,7 +23,6 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_Order;
@@ -53,7 +51,6 @@ public class M_ShipmentSchedule
 {
 	private static final AdMessageKey MSG_DECREASE_QTY_ORDERED_BELOW_QTY_ALREADY_DELIVERED_IS_NOT_ALLOWED = //
 			AdMessageKey.of("de.metas.inoutcandidate.DecreaseQtyOrderedBelowQtyAlreadyDeliveredIsNotAllowed");
-	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	private final IShipmentScheduleUpdater shipmentScheduleUpdater = Services.get(IShipmentScheduleUpdater.class);
@@ -69,10 +66,10 @@ public class M_ShipmentSchedule
 
 		// task 07355: we allow QtyOrdered == 0, because an order could be closed before a delivery was made
 		Check.errorIf(qtyOrderedEffective.signum() < 0,
-				"M_ShipmentSchedule {} has QtyOrderedEffective {} (less than 0!)", schedule, qtyOrderedEffective);
+					  "M_ShipmentSchedule {} has QtyOrderedEffective {} (less than 0!)", schedule, qtyOrderedEffective);
 
 		Check.errorIf(schedule.getQtyReserved().signum() < 0,
-				"M_ShipmentSchedule {} has QtyReserved {} (less than 0!)", schedule, schedule.getQtyReserved());
+					  "M_ShipmentSchedule {} has QtyReserved {} (less than 0!)", schedule, schedule.getQtyReserved());
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
@@ -82,23 +79,16 @@ public class M_ShipmentSchedule
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
-	public void updateBPartnerAddressOverride(final I_M_ShipmentSchedule schedule)
+	public void beforeSave_updateRenderedAddressesAndCapturedLocations(@NonNull final I_M_ShipmentSchedule sched)
 	{
-		if (InterfaceWrapperHelper.isValueChanged(schedule, I_M_ShipmentSchedule.COLUMNNAME_C_BPartner_Override_ID)
-				|| InterfaceWrapperHelper.isValueChanged(schedule, I_M_ShipmentSchedule.COLUMNNAME_C_BP_Location_Override_ID)
-				|| InterfaceWrapperHelper.isValueChanged(schedule, I_M_ShipmentSchedule.COLUMNNAME_AD_User_Override_ID)
-				|| Check.isEmpty(schedule.getBPartnerAddress_Override(), true))
-		{
-			schedule.setBPartnerAddress_Override(null);
-			shipmentScheduleBL.updateBPartnerAddressOverrideIfNotYetSet(schedule);
-		}
+		shipmentScheduleBL.updateCapturedLocationsAndRenderedAddresses(sched);
 	}
 
 	/**
 	 * If a shipment schedule is deleted, then this method makes sure that all {@link I_M_IolCandHandler_Log} records which refer to the same record as the schedule are also deleted.<br>
 	 * Otherwise, that referenced record would never be considered again by {@link de.metas.inoutcandidate.spi.ShipmentScheduleHandler#retrieveModelsWithMissingCandidates(Properties, String)}.
 	 *
-	 * @task 08288
+	 * Task 08288
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_DELETE })
 	public void deleteHandlerLog(final I_M_ShipmentSchedule schedule)
@@ -162,9 +152,8 @@ public class M_ShipmentSchedule
 	{
 		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 		final I_M_ShipmentSchedule oldShipmentSchedule = InterfaceWrapperHelper.createOld(shipmentSchedule, I_M_ShipmentSchedule.class);
-		final BPartnerId oldBpartnerId = shipmentScheduleEffectiveBL.getBPartnerId(oldShipmentSchedule);
 
-		return oldBpartnerId;
+		return shipmentScheduleEffectiveBL.getBPartnerId(oldShipmentSchedule);
 	}
 
 	private void invalidateForOldAndNewBPartners(
@@ -266,7 +255,7 @@ public class M_ShipmentSchedule
 
 		if (qtyDelivered.compareTo(qtyOrdered) > 0)
 		{
-			throw new AdempiereException(MSG_DECREASE_QTY_ORDERED_BELOW_QTY_ALREADY_DELIVERED_IS_NOT_ALLOWED, new Object[] { qtyDelivered });
+			throw new AdempiereException(MSG_DECREASE_QTY_ORDERED_BELOW_QTY_ALREADY_DELIVERED_IS_NOT_ALLOWED, qtyDelivered);
 		}
 
 		updateQtyOrderedOfOrderLineAndReserveStock(shipmentSchedule);
@@ -310,7 +299,7 @@ public class M_ShipmentSchedule
 	}
 
 	/**
-	 * Note: keep {@code ifColumnsChanged} in sync with the changeable properties loaded at {@link de.metas.inoutcandidate.ShipmentScheduleRepository#ofRecord(I_M_ShipmentSchedule)}.
+	 * Note: keep {@code ifColumnsChanged} in sync with the changeable properties loaded at de.metas.inoutcandidate.ShipmentScheduleRepository.ofRecord.
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
 			ifColumnsChanged = { I_M_ShipmentSchedule.COLUMNNAME_ExportStatus,

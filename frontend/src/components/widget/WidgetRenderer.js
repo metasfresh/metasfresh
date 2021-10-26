@@ -233,6 +233,8 @@ class WidgetRenderer extends PureComponent {
             />
           );
         } else {
+          dateProps.defaultValue =
+            dateProps.defaultValue === null ? '' : dateProps.defaultValue;
           return (
             <div className={this.getClassNames({ icon: true })}>
               <DatePicker
@@ -489,6 +491,7 @@ class WidgetRenderer extends PureComponent {
               isFilterActive: filterActiveState,
               updateItems,
             }}
+            widgetData={widgetData[0]}
             handlePatch={onPatch}
           />
         );

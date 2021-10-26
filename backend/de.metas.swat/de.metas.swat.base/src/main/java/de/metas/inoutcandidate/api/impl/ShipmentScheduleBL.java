@@ -4,11 +4,14 @@ import ch.qos.logback.classic.Level;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
+import de.metas.async.AsyncBatchId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.common.util.time.SystemTime;
+import de.metas.document.location.DocumentLocation;
+import de.metas.document.location.IDocumentLocationBL;
 import de.metas.freighcost.FreightCostRule;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
@@ -25,6 +28,8 @@ import de.metas.inoutcandidate.api.ShipmentScheduleUserChangeRequest;
 import de.metas.inoutcandidate.api.ShipmentScheduleUserChangeRequestsList;
 import de.metas.inoutcandidate.async.CreateMissingShipmentSchedulesWorkpackageProcessor;
 import de.metas.inoutcandidate.exportaudit.APIExportStatus;
+import de.metas.inoutcandidate.location.ShipmentScheduleLocationsUpdater;
+import de.metas.inoutcandidate.location.adapter.ShipmentScheduleDocumentLocationAdapterFactory;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.lang.SOTrx;
 import de.metas.lock.api.ILockManager;
@@ -69,9 +74,7 @@ import org.adempiere.util.lang.NullAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.compiere.model.I_AD_User;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
@@ -168,13 +171,14 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 
 	// services
 	private static final Logger logger = LogManager.getLogger(ShipmentScheduleBL.class);
-	private final ThreadLocal<Boolean> postponeMissingSchedsCreationUntilClose = ThreadLocal.withInitial(() -> false);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IShipmentScheduleEffectiveBL scheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 	private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	private final ThreadLocal<Boolean> postponeMissingSchedsCreationUntilClose = ThreadLocal.withInitial(() -> false);
 
 	@Override
 	public boolean allMissingSchedsWillBeCreatedLater()
@@ -209,43 +213,25 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		sched.setHeaderAggregationKey(headerAggregationKey);
 	}
 
-	/**
-	 * Make sure that all records have a value for BPartnerAddress_Override
-	 * <p>
-	 * Note: we assume that *if* the value is set, it is as intended by the user
-	 */
 	@Override
-	public void updateBPartnerAddressOverrideIfNotYetSet(final I_M_ShipmentSchedule sched)
+	public void updateCapturedLocationsAndRenderedAddresses(final I_M_ShipmentSchedule sched)
 	{
-		if (!Check.isEmpty(sched.getBPartnerAddress_Override(), true))
-		{
-			return;
-		}
+		// NOTE: atm we are getting it just in time instead of wiring it at construction time,
+		// because if not we have to adapt >300 tests which would fail
+		final IDocumentLocationBL documentLocationBL = SpringContextHolder.instance.getBean(IDocumentLocationBL.class);
 
-		final I_C_BPartner bpartner = shipmentScheduleEffectiveBL.getBPartner(sched);
-		final I_C_BPartner_Location location = shipmentScheduleEffectiveBL.getBPartnerLocation(sched);
-		final I_AD_User user = shipmentScheduleEffectiveBL.getBPartnerContact(sched);
-
-		final IBPartnerBL bPartnerBL = Services.get(IBPartnerBL.class);
-		final String address = bPartnerBL.mkFullAddress(
-				bpartner,
-				location,
-				user,
-				InterfaceWrapperHelper.getTrxName(sched));
-
-		sched.setBPartnerAddress_Override(address);
+		ShipmentScheduleLocationsUpdater.builder()
+				.documentLocationBL(documentLocationBL)
+				.record(sched)
+				.build()
+				.updateAllIfNeeded();
 	}
 
 	@Override
-	public BigDecimal updateQtyOrdered(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
+	public void updateQtyOrdered(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
 	{
-		final BigDecimal oldQtyOrdered = shipmentSchedule.getQtyOrdered(); // going to return it in the end
-
 		final BigDecimal newQtyOrdered = scheduleEffectiveBL.computeQtyOrdered(shipmentSchedule);
-
 		shipmentSchedule.setQtyOrdered(newQtyOrdered);
-
-		return oldQtyOrdered;
 	}
 
 	@Override
@@ -731,13 +717,13 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 						if (iolrecord.getMovementQty().compareTo(shipmentScheduleRecord.getQtyOrdered()) < 0)
 						{
 							logger.debug("inoutLine.MovementQty={} is < shipmentSchedule.qtyOrdered={}; -> closing shipment schedule",
-									iolrecord.getMovementQty(), shipmentScheduleRecord.getQtyOrdered());
+										 iolrecord.getMovementQty(), shipmentScheduleRecord.getQtyOrdered());
 							closeShipmentSchedule(shipmentScheduleRecord);
 						}
 						else
 						{
 							logger.debug("inoutLine.MovementQty={} is >= shipmentSchedule.qtyOrdered={}; -> not closing shipment schedule",
-									iolrecord.getMovementQty(), shipmentScheduleRecord.getQtyOrdered());
+										 iolrecord.getMovementQty(), shipmentScheduleRecord.getQtyOrdered());
 						}
 					}
 				}
@@ -756,8 +742,9 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 
 		if (request.getBPartnerLocationIdOverride() != null)
 		{
-			shipmentSchedule.setC_BPartner_Override_ID(request.getBPartnerLocationIdOverride().getBpartnerId().getRepoId());
-			shipmentSchedule.setC_BP_Location_Override_ID(request.getBPartnerLocationIdOverride().getRepoId());
+			ShipmentScheduleDocumentLocationAdapterFactory
+					.overrideLocationAdapter(shipmentSchedule)
+					.setFrom(DocumentLocation.ofBPartnerLocationId(request.getBPartnerLocationIdOverride()));
 		}
 
 		if (request.getQtyToDeliverStockingUOM() != null)
@@ -847,7 +834,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	public void updateExportStatus(final @NonNull I_M_ShipmentSchedule schedRecord)
 	{
 		final boolean canBeSetBackToPending = sysConfigBL.getBooleanValue(SYSCONFIG_CAN_BE_REEXPORTED_IF_QTYTODELIVER_IS_INCREASED, false, schedRecord.getAD_Client_ID(), schedRecord.getAD_Org_ID());
-		if(!canBeSetBackToPending)
+		if (!canBeSetBackToPending)
 		{
 			return;
 		}
@@ -864,7 +851,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			if (qtyToDeliverWasIncreased)
 			{
 				logger.debug("currentExportStatus={} and qtyToDeliverWasIncreased from {} to {}; -> set export status to {}",
-						APIExportStatus.toCodeOrNull(currentExportStatus), oldSchedRecord.getQtyToDeliver(), schedRecord.getQtyToDeliver(), APIExportStatus.Pending.getCode());
+							 APIExportStatus.toCodeOrNull(currentExportStatus), oldSchedRecord.getQtyToDeliver(), schedRecord.getQtyToDeliver(), APIExportStatus.Pending.getCode());
 				schedRecord.setExportStatus(APIExportStatus.Pending.getCode());
 			}
 		}
@@ -930,19 +917,41 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 				.create()
 				.iterateAndStream()
 				.forEach(record ->
-				{
-					allCounter.incrementAndGet();
-					if (Objects.equals(record.getExportStatus(), newExportStatus.getCode()))
-					{
-						return;
-					}
-					record.setExportStatus(newExportStatus.getCode());
-					updateCanBeExportedAfter(record);
-					InterfaceWrapperHelper.saveRecord(record);
+						 {
+							 allCounter.incrementAndGet();
+							 if (Objects.equals(record.getExportStatus(), newExportStatus.getCode()))
+							 {
+								 return;
+							 }
+							 record.setExportStatus(newExportStatus.getCode());
+							 updateCanBeExportedAfter(record);
+							 InterfaceWrapperHelper.saveRecord(record);
 
-					updatedCounter.incrementAndGet();
-				});
+							 updatedCounter.incrementAndGet();
+						 });
 
 		Loggables.withLogger(logger, Level.INFO).addLog("Updated {} out of {} M_ShipmentSchedule", updatedCounter.get(), allCounter.get());
+	}
+
+	@Override
+	public void setAsyncBatch(@NonNull final ShipmentScheduleId shipmentScheduleId, @NonNull final AsyncBatchId asyncBatchId)
+	{
+		final I_M_ShipmentSchedule shipmentSchedule = shipmentSchedulePA.getById(shipmentScheduleId);
+
+		if (shipmentSchedule.getC_Async_Batch_ID() > 0)
+		{
+			throw new AdempiereException("Reassigning shipmentSchedule.C_Async_Batch_ID is not allowed!");
+		}
+
+		if (shipmentSchedule.isProcessed())
+		{
+			Loggables.withLogger(logger, Level.WARN).addLog("ShipmentScheduleBL.setAsyncBatch(): M_ShipmentScheduled already processed,"
+																	+ " nothing to do! ShipmentScheduleId: {}", shipmentSchedule.getM_ShipmentSchedule_ID());
+			return;
+		}
+
+		shipmentSchedule.setC_Async_Batch_ID(asyncBatchId.getRepoId());
+
+		shipmentSchedulePA.save(shipmentSchedule);
 	}
 }

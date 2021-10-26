@@ -1,19 +1,18 @@
 package org.adempiere.ad.modelvalidator;
 
-import java.util.Map.Entry;
-import java.util.Set;
-
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableSet;
+import de.metas.cache.CacheMgt;
+import de.metas.organization.ClientAndOrgId;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.compiere.model.I_AD_SysConfig;
 import org.compiere.util.DisplayType;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.cache.CacheMgt;
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.util.Map.Entry;
+import java.util.Set;
 
 /*
  * #%L
@@ -97,7 +96,7 @@ import lombok.NonNull;
 	{
 		final boolean removePrefix = true;
 		return Services.get(ISysConfigBL.class)
-				.getValuesForPrefix(SYS_CONFIG_NAME_PREFIX, removePrefix, 0, 0)
+				.getValuesForPrefix(SYS_CONFIG_NAME_PREFIX, removePrefix, ClientAndOrgId.SYSTEM)
 				.entrySet()
 				.stream()
 				.filter(entry -> !DisplayType.toBoolean(entry.getValue())) // =Y

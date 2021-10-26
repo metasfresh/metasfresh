@@ -1,27 +1,7 @@
 package de.metas.ui.web.window.model;
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.Date;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Properties;
-
-import javax.annotation.Nullable;
-import javax.validation.constraints.NotNull;
-
-import org.adempiere.ad.validationRule.IValidationContext;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.util.CtxName;
-import org.compiere.util.DisplayType;
-import org.compiere.util.Env;
-import org.compiere.util.Evaluatee2;
-import org.compiere.util.TimeUtil;
-import org.slf4j.Logger;
-
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.logging.LogManager;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.window.WindowConstants;
@@ -32,6 +12,23 @@ import de.metas.ui.web.window.datatypes.json.DateTimeConverters;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import lombok.NonNull;
+import org.adempiere.ad.validationRule.IValidationContext;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.util.CtxName;
+import org.compiere.util.DisplayType;
+import org.compiere.util.Env;
+import org.compiere.util.Evaluatee2;
+import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.Date;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Properties;
 
 /*
  * #%L
@@ -215,7 +212,7 @@ import lombok.NonNull;
 	}
 
 	@Override
-	public Optional<Object> get_ValueIfExists(final String variableName, final Class<?> targetType)
+	public Optional<Object> get_ValueIfExists(final @NonNull String variableName, final @NonNull Class<?> targetType)
 	{
 		if (variableName == null)
 		{

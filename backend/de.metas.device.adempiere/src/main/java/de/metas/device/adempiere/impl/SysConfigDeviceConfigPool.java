@@ -1,11 +1,23 @@
 package de.metas.device.adempiere.impl;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
-
+import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableSet;
+import de.metas.cache.CacheMgt;
+import de.metas.cache.ICacheResetListener;
+import de.metas.device.adempiere.DeviceConfig;
+import de.metas.device.adempiere.DeviceConfigException;
+import de.metas.device.adempiere.IDeviceConfigPool;
+import de.metas.device.adempiere.IDeviceConfigPoolListener;
+import de.metas.logging.LogManager;
+import de.metas.organization.ClientAndOrgId;
+import de.metas.organization.OrgId;
+import de.metas.util.Check;
+import de.metas.util.GuavaCollectors;
+import de.metas.util.Services;
+import de.metas.util.WeakList;
+import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
@@ -15,24 +27,11 @@ import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_AD_SysConfig;
 import org.slf4j.Logger;
 
-import com.google.common.base.MoreObjects;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableListMultimap;
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.cache.CacheMgt;
-import de.metas.cache.ICacheResetListener;
-import de.metas.device.adempiere.DeviceConfig;
-import de.metas.device.adempiere.DeviceConfigException;
-import de.metas.device.adempiere.IDeviceConfigPool;
-import de.metas.device.adempiere.IDeviceConfigPoolListener;
-import de.metas.logging.LogManager;
-import de.metas.organization.OrgId;
-import de.metas.util.Check;
-import de.metas.util.GuavaCollectors;
-import de.metas.util.Services;
-import de.metas.util.WeakList;
-import lombok.NonNull;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
 
 /*
  * #%L
@@ -77,8 +76,7 @@ import lombok.NonNull;
 	/* package */static final String IPADDRESS_ANY = "0.0.0.0";
 
 	private final IHostIdentifier clientHost;
-	private final ClientId adClientId;
-	private final OrgId adOrgId;
+	private final ClientAndOrgId clientAndOrgId;
 
 	private final ExtendedMemorizingSupplier<ImmutableListMultimap<AttributeCode, DeviceConfig>> //
 	deviceConfigsIndexedByAttributeCodeSupplier = ExtendedMemorizingSupplier.of(() -> loadDeviceConfigsIndexedByAttributeCode());
@@ -93,8 +91,7 @@ import lombok.NonNull;
 			@NonNull final OrgId adOrgId)
 	{
 		this.clientHost = clientHost;
-		this.adClientId = adClientId;
-		this.adOrgId = adOrgId;
+		this.clientAndOrgId = ClientAndOrgId.ofClientAndOrg(adClientId, adOrgId);
 
 		CacheMgt.get().addCacheResetListener(I_AD_SysConfig.Table_Name, cacheResetListener);
 	}
@@ -104,8 +101,7 @@ import lombok.NonNull;
 	{
 		return MoreObjects.toStringHelper(this)
 				.add("clientHost", clientHost)
-				.add("adClientId", adClientId)
-				.add("adOrgId", adOrgId)
+				.add("clientAndOrgId", clientAndOrgId)
 				.toString();
 	}
 
@@ -185,22 +181,18 @@ import lombok.NonNull;
 	}
 
 	/**
-	 * Returns all device names from ordered by their <code>AD_SysConfig</code> keys.
-	 *
-	 * @param adClientId
-	 * @param adOrgId
 	 * @return the list of values from AD_SysConfig, where <code>AD_SysConfig.Name</code> starts with {@value #CFG_DEVICE_NAME_PREFIX}. The values are ordered lexically be the key
 	 */
 	private List<String> getAllDeviceNames()
 	{
-		final Map<String, String> deviceNames = sysConfigBL.getValuesForPrefix(CFG_DEVICE_NAME_PREFIX, adClientId, adOrgId);
+		final Map<String, String> deviceNames = sysConfigBL.getValuesForPrefix(CFG_DEVICE_NAME_PREFIX, clientAndOrgId);
 		return ImmutableList.copyOf(new TreeMap<>(deviceNames).values());
 	}
 
 	private boolean isDeviceAvailableHost(final String deviceName)
 	{
 		final String availableOnSysConfigPrefix = CFG_DEVICE_PREFIX + "." + deviceName + "." + DEVICE_PARAM_AvailableOn;
-		final Collection<String> availableForHosts = sysConfigBL.getValuesForPrefix(availableOnSysConfigPrefix, adClientId, adOrgId).values();
+		final Collection<String> availableForHosts = sysConfigBL.getValuesForPrefix(availableOnSysConfigPrefix, clientAndOrgId).values();
 		if (availableForHosts.isEmpty())
 		{
 			logger.info("Found no SysConfig available hosts for device {}; SysConfig-prefix={}", deviceName, availableOnSysConfigPrefix);
@@ -234,7 +226,7 @@ import lombok.NonNull;
 	{
 		final String attribSysConfigPrefix = CFG_DEVICE_PREFIX + "." + deviceName + "." + DEVICE_PARAM_AttributeInternalName;
 		final ImmutableSet<AttributeCode> assignedAttributeCodes = sysConfigBL
-				.getValuesForPrefix(attribSysConfigPrefix, adClientId, adOrgId)
+				.getValuesForPrefix(attribSysConfigPrefix, clientAndOrgId)
 				.values()
 				.stream()
 				.map(AttributeCode::ofString)
@@ -258,7 +250,7 @@ import lombok.NonNull;
 	private Set<WarehouseId> getDeviceWarehouseIds(final String deviceName)
 	{
 		final String sysconfigPrefix = CFG_DEVICE_PREFIX + "." + deviceName + "." + DEVICE_PARAM_M_Warehouse_ID;
-		return sysConfigBL.getValuesForPrefix(sysconfigPrefix, adClientId, adOrgId)
+		return sysConfigBL.getValuesForPrefix(sysconfigPrefix, clientAndOrgId)
 				.values()
 				.stream()
 				.map(warehouseIdStr -> {
@@ -277,7 +269,6 @@ import lombok.NonNull;
 	}
 
 	/**
-	 * @param deviceName
 	 * @return device implementation classname; never returns null
 	 * @throws DeviceConfigException if no classname was found
 	 */
@@ -290,7 +281,7 @@ import lombok.NonNull;
 
 	private Set<String> getDeviceRequestClassnames(final String deviceName, final AttributeCode attributeCode)
 	{
-		final Map<String, String> requestClassNames = sysConfigBL.getValuesForPrefix(CFG_DEVICE_PREFIX + "." + deviceName + "." + attributeCode.getCode(), adClientId, adOrgId);
+		final Map<String, String> requestClassNames = sysConfigBL.getValuesForPrefix(CFG_DEVICE_PREFIX + "." + deviceName + "." + attributeCode.getCode(), clientAndOrgId);
 		return ImmutableSet.copyOf(requestClassNames.values());
 	}
 
@@ -308,7 +299,7 @@ import lombok.NonNull;
 		// Try by hostname
 		final String deviceKeyWithHostName = prefix + "." + clientHost.getHostName() + "." + suffix;
 		{
-			final String value = sysConfigBL.getValue(deviceKeyWithHostName, adClientId, adOrgId);
+			final String value = sysConfigBL.getValue(deviceKeyWithHostName, clientAndOrgId);
 			if (value != null)
 			{
 				return value;
@@ -319,7 +310,7 @@ import lombok.NonNull;
 		// Try by host's IP
 		final String deviceKeyWithIP = prefix + "." + clientHost.getIP() + "." + suffix;
 		{
-			final String value = sysConfigBL.getValue(deviceKeyWithIP, adClientId, adOrgId);
+			final String value = sysConfigBL.getValue(deviceKeyWithIP, clientAndOrgId);
 			if (value != null)
 			{
 				return value;
@@ -330,7 +321,7 @@ import lombok.NonNull;
 		// Try by any host (i.e. 0.0.0.0)
 		final String deviceKeyWithWildCard = prefix + "." + IPADDRESS_ANY + "." + suffix;
 		{
-			final String value = sysConfigBL.getValue(deviceKeyWithWildCard, adClientId, adOrgId);
+			final String value = sysConfigBL.getValue(deviceKeyWithWildCard, clientAndOrgId);
 			if (value != null)
 			{
 				return value;
@@ -347,7 +338,7 @@ import lombok.NonNull;
 		//
 		// Throw exception
 		final String msg = "@NotFound@: @AD_SysConfig@ " + deviceKeyWithHostName + ", " + deviceKeyWithIP + ", " + deviceKeyWithWildCard
-				+ "; @AD_Client_ID@=" + adClientId + " @AD_Org_ID@=" + adOrgId;
+				+ "; @AD_Client_ID@=" + clientAndOrgId.getClientId() + " @AD_Org_ID@=" + clientAndOrgId.getOrgId();
 		throw new DeviceConfigException(msg);
 	}
 }

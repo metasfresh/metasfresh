@@ -1,9 +1,13 @@
 package org.adempiere.ad.table.api.impl;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import de.metas.adempiere.service.IColumnBL;
+import de.metas.util.Check;
+import de.metas.util.ILoggable;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.callout.api.IADColumnCalloutBL;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
@@ -17,15 +21,9 @@ import org.compiere.model.MColumn;
 import org.compiere.model.M_Element;
 import org.compiere.util.Env;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.adempiere.service.IColumnBL;
-import de.metas.util.Check;
-import de.metas.util.ILoggable;
-import de.metas.util.Loggables;
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
 
 /**
  * Producer class used to given {@link I_AD_Column}s (see {@link #setSourceColumns(List)}) to another table (see {@link #setTargetTable(I_AD_Table)}).
@@ -251,7 +249,6 @@ public class CopyColumnsProducer
 		colTarget.setAD_Process_ID(sourceColumn.getAD_Process_ID());
 		colTarget.setValueMin(sourceColumn.getValueMin());
 		colTarget.setValueMax(sourceColumn.getValueMax());
-		colTarget.setIsSelectionColumn(sourceColumn.isSelectionColumn());
 		colTarget.setReadOnlyLogic(sourceColumn.getReadOnlyLogic());
 		colTarget.setIsSyncDatabase(sourceColumn.getIsSyncDatabase());
 		colTarget.setIsAlwaysUpdateable(sourceColumn.isAlwaysUpdateable());
@@ -259,6 +256,17 @@ public class CopyColumnsProducer
 		colTarget.setDDL_NoForeignKey(sourceColumn.isDDL_NoForeignKey());
 		colTarget.setIsAutoApplyValidationRule(sourceColumn.isAutoApplyValidationRule());
 		colTarget.setIsCalculated(sourceColumn.isCalculated());
+
+		//
+		// Filtering
+		colTarget.setIsSelectionColumn(sourceColumn.isSelectionColumn());
+		colTarget.setSelectionColumnSeqNo(sourceColumn.getSelectionColumnSeqNo());
+		colTarget.setFilterOperator(sourceColumn.getFilterOperator());
+		colTarget.setFilterDefaultValue(sourceColumn.getFilterDefaultValue());
+		colTarget.setIsFacetFilter(sourceColumn.isFacetFilter());
+		colTarget.setFacetFilterSeqNo(sourceColumn.getFacetFilterSeqNo());
+		colTarget.setIsShowFilterInline(sourceColumn.isShowFilterInline());
+		colTarget.setIsShowFilterIncrementButtons(sourceColumn.isShowFilterIncrementButtons());
 
 		InterfaceWrapperHelper.save(colTarget);
 		addLog("@AD_Column_ID@ " + targetTable.getTableName() + "." + colTarget.getColumnName() + ": @Created@"); // metas

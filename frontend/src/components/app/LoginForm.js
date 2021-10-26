@@ -2,6 +2,7 @@ import counterpart from 'counterpart';
 import Moment from 'moment';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
+import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 import classnames from 'classnames';
 
@@ -11,6 +12,8 @@ import {
   loginCompletionRequest,
   loginRequest,
 } from '../../api';
+import { loginSuccess } from '../../actions/AppActions';
+
 import logo from '../../assets/images/metasfresh_logo_green_thumb.png';
 import RawList from '../widget/List/RawList';
 import PasswordRecovery from './PasswordRecovery';
@@ -77,11 +80,14 @@ class LoginForm extends Component {
    * @summary ToDo: Describe the method.
    */
   handleSuccess = () => {
-    const { auth, history } = this.props;
+    const { auth, history, dispatch } = this.props;
 
     getUserLang().then((response) => {
       //GET language shall always return a result
       Moment.locale(response.data['key']);
+
+      // get user session and so on
+      dispatch(loginSuccess(auth.auth));
 
       const redirect = auth.redirectRoute;
 
@@ -385,6 +391,7 @@ LoginForm.propTypes = {
   redirect: PropTypes.any,
   auth: PropTypes.object,
   history: PropTypes.object.isRequired,
+  dispatch: PropTypes.func.isRequired,
 };
 
-export default withRouter(LoginForm);
+export default connect()(withRouter(LoginForm));

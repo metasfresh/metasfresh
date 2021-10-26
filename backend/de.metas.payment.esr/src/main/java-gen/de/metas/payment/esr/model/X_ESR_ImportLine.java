@@ -1,27 +1,28 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package de.metas.payment.esr.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for ESR_ImportLine
  *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public class X_ESR_ImportLine extends org.compiere.model.PO implements I_ESR_ImportLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 243864233L;
+	private static final long serialVersionUID = -2140054709L;
 
     /** Standard Constructor */
-    public X_ESR_ImportLine (final Properties ctx, final int ESR_ImportLine_ID, final String trxName)
+    public X_ESR_ImportLine (final Properties ctx, final int ESR_ImportLine_ID, @Nullable final String trxName)
     {
       super (ctx, ESR_ImportLine_ID, trxName);
     }
 
     /** Load Constructor */
-    public X_ESR_ImportLine (final Properties ctx, final ResultSet rs, final String trxName)
+    public X_ESR_ImportLine (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
@@ -35,7 +36,7 @@ public class X_ESR_ImportLine extends org.compiere.model.PO implements I_ESR_Imp
 	}
 
 	@Override
-	public void setAccountingDate (final java.sql.Timestamp AccountingDate)
+	public void setAccountingDate (final @Nullable java.sql.Timestamp AccountingDate)
 	{
 		set_Value (COLUMNNAME_AccountingDate, AccountingDate);
 	}
@@ -47,7 +48,7 @@ public class X_ESR_ImportLine extends org.compiere.model.PO implements I_ESR_Imp
 	}
 
 	@Override
-	public void setAccountNo (final java.lang.String AccountNo)
+	public void setAccountNo (final @Nullable java.lang.String AccountNo)
 	{
 		set_Value (COLUMNNAME_AccountNo, AccountNo);
 	}
@@ -59,7 +60,7 @@ public class X_ESR_ImportLine extends org.compiere.model.PO implements I_ESR_Imp
 	}
 
 	@Override
-	public void setAmount (final BigDecimal Amount)
+	public void setAmount (final @Nullable BigDecimal Amount)
 	{
 		set_Value (COLUMNNAME_Amount, Amount);
 	}
@@ -72,7 +73,7 @@ public class X_ESR_ImportLine extends org.compiere.model.PO implements I_ESR_Imp
 	}
 
 	@Override
-	public void setBPartner_Value (final java.lang.String BPartner_Value)
+	public void setBPartner_Value (final @Nullable java.lang.String BPartner_Value)
 	{
 		set_Value (COLUMNNAME_BPartner_Value, BPartner_Value);
 	}
@@ -216,7 +217,7 @@ public class X_ESR_ImportLine extends org.compiere.model.PO implements I_ESR_Imp
 	}
 
 	@Override
-	public void setDescription (final java.lang.String Description)
+	public void setDescription (final @Nullable java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
@@ -228,7 +229,7 @@ public class X_ESR_ImportLine extends org.compiere.model.PO implements I_ESR_Imp
 	}
 
 	@Override
-	public void setESR_Amount_Balance (final BigDecimal ESR_Amount_Balance)
+	public void setESR_Amount_Balance (final @Nullable BigDecimal ESR_Amount_Balance)
 	{
 		throw new IllegalArgumentException ("ESR_Amount_Balance is virtual column");	}
 
@@ -240,7 +241,7 @@ public class X_ESR_ImportLine extends org.compiere.model.PO implements I_ESR_Imp
 	}
 
 	@Override
-	public void setESR_DocumentNo (final java.lang.String ESR_DocumentNo)
+	public void setESR_DocumentNo (final @Nullable java.lang.String ESR_DocumentNo)
 	{
 		set_Value (COLUMNNAME_ESR_DocumentNo, ESR_DocumentNo);
 	}
@@ -275,7 +276,7 @@ public class X_ESR_ImportLine extends org.compiere.model.PO implements I_ESR_Imp
 	}
 
 	@Override
-	public void setESRFullReferenceNumber (final java.lang.String ESRFullReferenceNumber)
+	public void setESRFullReferenceNumber (final @Nullable java.lang.String ESRFullReferenceNumber)
 	{
 		set_Value (COLUMNNAME_ESRFullReferenceNumber, ESRFullReferenceNumber);
 	}
@@ -284,6 +285,33 @@ public class X_ESR_ImportLine extends org.compiere.model.PO implements I_ESR_Imp
 	public java.lang.String getESRFullReferenceNumber() 
 	{
 		return get_ValueAsString(COLUMNNAME_ESRFullReferenceNumber);
+	}
+
+	@Override
+	public de.metas.payment.esr.model.I_ESR_ImportFile getESR_ImportFile()
+	{
+		return get_ValueAsPO(COLUMNNAME_ESR_ImportFile_ID, de.metas.payment.esr.model.I_ESR_ImportFile.class);
+	}
+
+	@Override
+	public void setESR_ImportFile(final de.metas.payment.esr.model.I_ESR_ImportFile ESR_ImportFile)
+	{
+		set_ValueFromPO(COLUMNNAME_ESR_ImportFile_ID, de.metas.payment.esr.model.I_ESR_ImportFile.class, ESR_ImportFile);
+	}
+
+	@Override
+	public void setESR_ImportFile_ID (final int ESR_ImportFile_ID)
+	{
+		if (ESR_ImportFile_ID < 1) 
+			set_Value (COLUMNNAME_ESR_ImportFile_ID, null);
+		else 
+			set_Value (COLUMNNAME_ESR_ImportFile_ID, ESR_ImportFile_ID);
+	}
+
+	@Override
+	public int getESR_ImportFile_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_ESR_ImportFile_ID);
 	}
 
 	@Override
@@ -329,7 +357,7 @@ public class X_ESR_ImportLine extends org.compiere.model.PO implements I_ESR_Imp
 	}
 
 	@Override
-	public void setESR_Invoice_Grandtotal (final BigDecimal ESR_Invoice_Grandtotal)
+	public void setESR_Invoice_Grandtotal (final @Nullable BigDecimal ESR_Invoice_Grandtotal)
 	{
 		set_Value (COLUMNNAME_ESR_Invoice_Grandtotal, ESR_Invoice_Grandtotal);
 	}
@@ -342,7 +370,7 @@ public class X_ESR_ImportLine extends org.compiere.model.PO implements I_ESR_Imp
 	}
 
 	@Override
-	public void setESR_Invoice_Openamt (final BigDecimal ESR_Invoice_Openamt)
+	public void setESR_Invoice_Openamt (final @Nullable BigDecimal ESR_Invoice_Openamt)
 	{
 		set_Value (COLUMNNAME_ESR_Invoice_Openamt, ESR_Invoice_Openamt);
 	}
@@ -406,7 +434,7 @@ public class X_ESR_ImportLine extends org.compiere.model.PO implements I_ESR_Imp
 	/** Duplicate_Payment = P */
 	public static final String ESR_PAYMENT_ACTION_Duplicate_Payment = "P";
 	@Override
-	public void setESR_Payment_Action (final java.lang.String ESR_Payment_Action)
+	public void setESR_Payment_Action (final @Nullable java.lang.String ESR_Payment_Action)
 	{
 		set_Value (COLUMNNAME_ESR_Payment_Action, ESR_Payment_Action);
 	}
@@ -418,7 +446,7 @@ public class X_ESR_ImportLine extends org.compiere.model.PO implements I_ESR_Imp
 	}
 
 	@Override
-	public void setESRPostParticipantNumber (final java.lang.String ESRPostParticipantNumber)
+	public void setESRPostParticipantNumber (final @Nullable java.lang.String ESRPostParticipantNumber)
 	{
 		set_Value (COLUMNNAME_ESRPostParticipantNumber, ESRPostParticipantNumber);
 	}
@@ -430,7 +458,7 @@ public class X_ESR_ImportLine extends org.compiere.model.PO implements I_ESR_Imp
 	}
 
 	@Override
-	public void setESRReferenceNumber (final java.lang.String ESRReferenceNumber)
+	public void setESRReferenceNumber (final @Nullable java.lang.String ESRReferenceNumber)
 	{
 		set_Value (COLUMNNAME_ESRReferenceNumber, ESRReferenceNumber);
 	}
@@ -442,7 +470,7 @@ public class X_ESR_ImportLine extends org.compiere.model.PO implements I_ESR_Imp
 	}
 
 	@Override
-	public void setESRTrxType (final java.lang.String ESRTrxType)
+	public void setESRTrxType (final @Nullable java.lang.String ESRTrxType)
 	{
 		set_Value (COLUMNNAME_ESRTrxType, ESRTrxType);
 	}
@@ -454,7 +482,7 @@ public class X_ESR_ImportLine extends org.compiere.model.PO implements I_ESR_Imp
 	}
 
 	@Override
-	public void setImportErrorMsg (final java.lang.String ImportErrorMsg)
+	public void setImportErrorMsg (final @Nullable java.lang.String ImportErrorMsg)
 	{
 		set_Value (COLUMNNAME_ImportErrorMsg, ImportErrorMsg);
 	}
@@ -502,7 +530,7 @@ public class X_ESR_ImportLine extends org.compiere.model.PO implements I_ESR_Imp
 	}
 
 	@Override
-	public void setMatchErrorMsg (final java.lang.String MatchErrorMsg)
+	public void setMatchErrorMsg (final @Nullable java.lang.String MatchErrorMsg)
 	{
 		set_Value (COLUMNNAME_MatchErrorMsg, MatchErrorMsg);
 	}
@@ -529,7 +557,7 @@ public class X_ESR_ImportLine extends org.compiere.model.PO implements I_ESR_Imp
 	}
 
 	@Override
-	public void setPaymentDate (final java.sql.Timestamp PaymentDate)
+	public void setPaymentDate (final @Nullable java.sql.Timestamp PaymentDate)
 	{
 		set_Value (COLUMNNAME_PaymentDate, PaymentDate);
 	}
@@ -553,7 +581,7 @@ public class X_ESR_ImportLine extends org.compiere.model.PO implements I_ESR_Imp
 	}
 
 	@Override
-	public void setSektionNo (final java.lang.String SektionNo)
+	public void setSektionNo (final @Nullable java.lang.String SektionNo)
 	{
 		set_Value (COLUMNNAME_SektionNo, SektionNo);
 	}
@@ -571,7 +599,7 @@ public class X_ESR_ImportLine extends org.compiere.model.PO implements I_ESR_Imp
 	public static final int TYPE_AD_Reference_ID=541287;
 	/** QRR = QRR */
 	public static final String TYPE_QRR = "QRR";
-	/** ISR Reference = ISR Reference */
+	/** ESR = ISR Reference */
 	public static final String TYPE_ESR = "ISR Reference";
 	@Override
 	public void setType (final java.lang.String Type)

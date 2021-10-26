@@ -22,17 +22,11 @@ package org.adempiere.plaf;
  * #L%
  */
 
-import java.util.Map;
-import java.util.Properties;
-import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
-
-import javax.swing.UIDefaults;
-import javax.swing.UIManager;
-
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.service.IDeveloperModeBL.ContextRunnable;
 import org.adempiere.service.ClientId;
@@ -40,6 +34,11 @@ import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_AD_SysConfig;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
+
+import javax.swing.*;
+import java.util.Map;
+import java.util.Properties;
 
 /**
  * {@link UIDefaults} SysConfig repository. It supports following actions:
@@ -134,10 +133,9 @@ public class SysConfigUIDefaultsRepository
 		final String prefix = createSysConfigPrefix() + ".";
 		final boolean removePrefix = true;
 		final Properties ctx = Env.getCtx();
-		final int adClientId = Env.getAD_Client_ID(ctx);
-		final int adOrgId = Env.getAD_Org_ID(ctx);
+		final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(Env.getAD_Client_ID(ctx), Env.getAD_Org_ID(ctx));
 
-		final Map<String, String> map = sysConfigBL.getValuesForPrefix(prefix, removePrefix, adClientId, adOrgId);
+		final Map<String, String> map = sysConfigBL.getValuesForPrefix(prefix, removePrefix, clientAndOrgId);
 
 		for (final Map.Entry<String, String> mapEntry : map.entrySet())
 		{

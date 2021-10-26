@@ -1,29 +1,12 @@
 package org.adempiere.ad.session.impl;
 
-import java.util.Properties;
-
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
+import de.metas.adempiere.form.IClientUI;
+import de.metas.cache.CCache;
+import de.metas.common.util.time.SystemTime;
+import de.metas.logging.LogManager;
+import de.metas.security.IUserRolePermissions;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.session.ISessionBL;
 import org.adempiere.ad.session.MFSession;
 import org.adempiere.ad.trx.api.ITrx;
@@ -37,18 +20,13 @@ import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.slf4j.Logger;
 
-import de.metas.adempiere.form.IClientUI;
-import de.metas.cache.CCache;
-import de.metas.logging.LogManager;
-import de.metas.security.IUserRolePermissions;
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.util.Properties;
 
 public class SessionBL implements ISessionBL
 {
 	private static final Logger logger = LogManager.getLogger(SessionBL.class);
 
-	private static CCache<Integer, MFSession> s_sessions = CCache.newLRUCache(I_AD_Session.Table_Name, 100, 0);
+	private static final CCache<Integer, MFSession> s_sessions = CCache.newLRUCache(I_AD_Session.Table_Name, 100, 0);
 
 	private final InheritableThreadLocal<Boolean> disableChangeLogsThreadLocal = new InheritableThreadLocal<Boolean>()
 	{
@@ -106,7 +84,7 @@ public class SessionBL implements ISessionBL
 
 		sessionPO.setDescription(Adempiere.getBuildVersion() + "_" + Adempiere.getDateVersion() + " " + Adempiere.getImplementationVersion());
 		sessionPO.setAD_Role_ID(Env.getAD_Role_ID(ctx));
-		sessionPO.setLoginDate(Env.getDate(ctx));
+		sessionPO.setLoginDate(SystemTime.asTimestamp());
 
 		// gh #1274: don't invoke hostkeyBL now, because depending on the host key storage
 		// we might not yet be ready to get the host key from the storage

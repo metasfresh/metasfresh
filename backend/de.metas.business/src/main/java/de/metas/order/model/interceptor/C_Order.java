@@ -30,6 +30,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerSupplierApprovalService;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.document.location.IDocumentLocationBL;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
@@ -42,6 +43,7 @@ import de.metas.order.IOrderLinePricingConditions;
 import de.metas.order.OrderId;
 import de.metas.order.impl.OrderLineDetailRepository;
 import de.metas.organization.IOrgDAO;
+import de.metas.order.location.OrderLocationsUpdater;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.api.IPaymentDAO;
@@ -89,23 +91,29 @@ public class C_Order
 	private final IOrderLinePricingConditions orderLinePricingConditions = Services.get(IOrderLinePricingConditions.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
-	private final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final IBPartnerBL bpartnerBL;
 	private final OrderLineDetailRepository orderLineDetailRepository;
 	private final BPartnerSupplierApprovalService partnerSupplierApprovalService;
+	private final IDocumentLocationBL documentLocationBL;
 
 	@VisibleForTesting
 	public static final String AUTO_ASSIGN_TO_SALES_ORDER_BY_EXTERNAL_ORDER_ID_SYSCONFIG = "de.metas.payment.autoAssignToSalesOrderByExternalOrderId.enabled";
 	private static final AdMessageKey MSG_SELECT_CONTACT_WITH_VALID_EMAIL = AdMessageKey.of("de.metas.order.model.interceptor.C_Order.PleaseSelectAContactWithValidEmailAddress");
 
-	public C_Order(final OrderLineDetailRepository orderLineDetailRepository,
-			final BPartnerSupplierApprovalService partnerSupplierApprovalService)
+	public C_Order(
+			@NonNull final IBPartnerBL bpartnerBL,
+			@NonNull final OrderLineDetailRepository orderLineDetailRepository,
+			@NonNull final IDocumentLocationBL documentLocationBL,
+			@NonNull final BPartnerSupplierApprovalService partnerSupplierApprovalService)
 	{
+		this.bpartnerBL = bpartnerBL;
 		this.orderLineDetailRepository = orderLineDetailRepository;
 		this.partnerSupplierApprovalService = partnerSupplierApprovalService;
+		this.documentLocationBL = documentLocationBL;
 
 		final IProgramaticCalloutProvider programmaticCalloutProvider = Services.get(IProgramaticCalloutProvider.class);
 		programmaticCalloutProvider.registerAnnotatedCallout(this);
@@ -132,16 +140,30 @@ public class C_Order
 		}
 
 		final I_M_PriceList pl = priceListDAO.getById(priceListId);
+		if (pl == null)
+		{
+			return;
+		}
 
 		order.setM_PricingSystem_ID(pl.getM_PricingSystem_ID());
 		order.setC_Currency_ID(pl.getC_Currency_ID());
 		order.setIsTaxIncluded(pl.isTaxIncluded());
 	}
 
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
+	public void beforeChange_updateLocationAndRenderedAddress(final I_C_Order order)
+	{
+		OrderLocationsUpdater.builder()
+				.documentLocationBL(documentLocationBL)
+				.record(order)
+				.build()
+				.updateAllIfNeeded();
+	}
+
 	// 03409: Context menu fixes (2012101810000086)
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE },
 			ifColumnsChanged = {
-					// I checked the code of OrderBL.updateAddresses() and MOrderLine.setHeaderInfo() to get this list
+					// I checked the code of OrderBL.updateOrderLineAddressesFromOrder() and MOrderLine.setHeaderInfo() to get this list
 					I_C_Order.COLUMNNAME_C_BPartner_ID,
 					I_C_Order.COLUMNNAME_C_BPartner_Location_ID,
 					I_C_Order.COLUMNNAME_AD_User_ID,
@@ -151,47 +173,10 @@ public class C_Order
 					I_C_Order.COLUMNNAME_M_PriceList_ID,
 					I_C_Order.COLUMNNAME_IsSOTrx,
 					I_C_Order.COLUMNNAME_C_Currency_ID })
-	public void updateOrderLineAddresses(final I_C_Order order)
+	public void afterChange_updateOrderLineAddressesFromOrder(final I_C_Order order)
 	{
-		orderBL.updateAddresses(order);
+		orderBL.updateOrderLineAddressesFromOrder(order);
 	}
-
-	//	// 04579 Cannot change order's warehouse (2013071510000103)
-	//	@DocValidate(timings = ModelValidator.TIMING_BEFORE_REACTIVATE)
-	//	public void unreserveStock(final I_C_Order order) throws Exception
-	//	{
-	//		for (final I_C_OrderLine orderLine : orderDAO.retrieveOrderLines(order, I_C_OrderLine.class))
-	//		{
-	//			if (orderLine.getQtyReserved().signum() <= 0)
-	//			{
-	//				continue; // nothing to do
-	//			}
-	//
-	//			final BigDecimal qtyOrdered = orderLine.getQtyOrdered();
-	//			final BigDecimal qtyEntered = orderLine.getQtyEntered();
-	//			final BigDecimal lineNetAmt = orderLine.getLineNetAmt();
-	//
-	//			// just setting this one to zero would result in negative reservations in case of (partial) deliveries.
-	//			orderLine.setQtyOrdered(orderLine.getQtyDelivered());
-	//			orderLine.setQtyEntered(BigDecimal.ZERO);
-	//			orderLine.setLineNetAmt(BigDecimal.ZERO);
-	//
-	//			// task 08002
-	//			InterfaceWrapperHelper.setDynAttribute(orderLine, IOrderLineBL.DYNATTR_DoNotRecalculatePrices, Boolean.TRUE);
-	//
-	//			orderDAO.save(orderLine);
-	//
-	//			orderDAO.reserveStock(orderLine.getC_Order(), orderLine);
-	//
-	//			orderLine.setQtyOrdered(qtyOrdered);
-	//			orderLine.setQtyEntered(qtyEntered);
-	//			orderLine.setLineNetAmt(lineNetAmt);
-	//			orderDAO.save(orderLine);
-	//
-	//			// task 08002
-	//			InterfaceWrapperHelper.setDynAttribute(orderLine, IOrderLineBL.DYNATTR_DoNotRecalculatePrices, Boolean.FALSE);
-	//		}
-	//	}
 
 	/**
 	 * Updates <code>C_OrderLine.QtyReserved</code> of the given order's lines when the Doctype or DocStatus changes.
@@ -219,6 +204,8 @@ public class C_Order
 	public void validateSalesRep(final I_C_Order order)
 	{
 		final BPartnerId bPartnerId = orderBL.getEffectiveBillPartnerId(order);
+		assert bPartnerId != null;
+
 		final BPartnerId salesRepId = BPartnerId.ofRepoIdOrNull(order.getC_BPartner_SalesRep_ID());
 		bpartnerBL.validateSalesRep(bPartnerId, salesRepId);
 	}
@@ -470,8 +457,6 @@ public class C_Order
 
 	private void validateHaddex(final I_C_Order order)
 	{
-		final IOrderBL orderBL = Services.get(IOrderBL.class);
-
 		orderBL.validateHaddexOrder(order);
 	}
 

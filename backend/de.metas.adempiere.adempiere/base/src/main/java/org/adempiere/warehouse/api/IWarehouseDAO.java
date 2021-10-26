@@ -1,5 +1,6 @@
 package org.adempiere.warehouse.api;
 
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.organization.OrgId;
 import de.metas.util.ISingletonService;
 import de.metas.util.lang.ExternalId;
@@ -151,6 +152,8 @@ public interface IWarehouseDAO extends ISingletonService
 	 * Retrieve the warehouse marked as IsQuarantineWarehouse.
 	 */
 	org.adempiere.warehouse.model.I_M_Warehouse retrieveQuarantineWarehouseOrNull();
+
+	BPartnerLocationAndCaptureId getWarehouseLocationById(WarehouseId warehouseId);
 
 	@Value
 	class WarehouseQuery

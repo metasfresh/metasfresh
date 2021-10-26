@@ -7,6 +7,7 @@ import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.util.Objects;
 
 /*
  * #%L
@@ -30,7 +31,9 @@ import javax.annotation.Nullable;
  * #L%
  */
 
-/** C_Location_ID */
+/**
+ * C_Location_ID
+ */
 @Value
 public class LocationId implements RepoIdAware
 {
@@ -40,7 +43,8 @@ public class LocationId implements RepoIdAware
 		return new LocationId(repoId);
 	}
 
-	@Nullable public static LocationId ofRepoIdOrNull(final int repoId)
+	@Nullable
+	public static LocationId ofRepoIdOrNull(final int repoId)
 	{
 		return repoId > 0 ? ofRepoId(repoId) : null;
 	}
@@ -52,12 +56,12 @@ public class LocationId implements RepoIdAware
 		this.repoId = Check.assumeGreaterThanZero(repoId, "C_Location_ID");
 	}
 
-	public static int toRepoId(final LocationId locationId)
+	public static int toRepoId(@Nullable final LocationId locationId)
 	{
 		return toRepoIdOr(locationId, -1);
 	}
 
-	public static int toRepoIdOr(final LocationId locationId, final int defaultValue)
+	public static int toRepoIdOr(@Nullable final LocationId locationId, final int defaultValue)
 	{
 		return locationId != null ? locationId.getRepoId() : defaultValue;
 	}
@@ -66,5 +70,10 @@ public class LocationId implements RepoIdAware
 	public int getRepoId()
 	{
 		return repoId;
+	}
+
+	public static boolean equals(@Nullable final LocationId id1, @Nullable final LocationId id2)
+	{
+		return Objects.equals(id1, id2);
 	}
 }

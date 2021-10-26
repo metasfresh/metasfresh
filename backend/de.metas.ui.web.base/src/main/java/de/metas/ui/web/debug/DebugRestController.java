@@ -292,7 +292,7 @@ public class DebugRestController
 
 		final UserNotificationRequestBuilder request = UserNotificationRequest.builder()
 				.topic(topic)
-				.recipientUserId(UserId.ofRepoIdOrNull(toUserId))
+				.recipientUserId(UserId.ofRepoId(toUserId))
 				.important(important);
 
 		final UserNotificationTargetType targetType = Check.isEmpty(targetTypeStr) ? null : UserNotificationTargetType.forJsonValue(targetTypeStr);
@@ -364,7 +364,12 @@ public class DebugRestController
 		dashboard(
 				"de.metas.ui.web.dashboard",
 				KPIDataProvider.class.getPackage().getName()
-		);
+		),
+		elasticsearch(
+				"de.metas.fulltextsearch",
+				de.metas.ui.web.document.filter.provider.fullTextSearch.FTSDocumentFilterConverter.class.getPackage().getName()
+		),
+		;
 
 		private final Set<String> loggerNames;
 
@@ -392,16 +397,16 @@ public class DebugRestController
 		//
 		// Get Level to set
 		final Level level;
-		if (Check.isEmpty(levelStr, true))
+		if (Check.isBlank(levelStr))
 		{
-			level = null;
+			throw new AdempiereException("Please provide a `level`");
 		}
 		else
 		{
 			level = LogManager.asLogbackLevel(levelStr);
 			if (level == null)
 			{
-				throw new IllegalArgumentException("level is not valid");
+				throw new AdempiereException("level is not valid: " + levelStr);
 			}
 		}
 

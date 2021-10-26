@@ -56,7 +56,10 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
@@ -82,6 +85,7 @@ public class M_InOut
 	private final IHUMovementBL huMovementBL = Services.get(IHUMovementBL.class);
 	private final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
 	private final IHUSnapshotDAO snapshotDAO = Services.get(IHUSnapshotDAO.class);
+	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 	private final ReturnsServiceFacade returnsServiceFacade;
 
 	public M_InOut(
@@ -376,7 +380,9 @@ public class M_InOut
 
 		if (returnsServiceFacade.isCustomerReturn(returnInOut))
 		{
-			huMovementBL.moveHUsToWarehouse(hus, returnInOut.getM_Warehouse());
+			final WarehouseId warehouseId = WarehouseId.ofRepoId(returnInOut.getM_Warehouse_ID());
+			final I_M_Warehouse warehouse = warehouseDAO.getById(warehouseId);
+			huMovementBL.moveHUsToWarehouse(hus, warehouse);
 		}
 
 		final IContextAware context = InterfaceWrapperHelper.getContextAware(returnInOut);

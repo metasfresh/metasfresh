@@ -326,6 +326,8 @@ export function loginSuccess(auth) {
   return async (dispatch) => {
     const requests = [];
 
+    dispatch({ type: types.LOGIN_SUCCESS });
+
     requests.push(
       getUserSession()
         .then(({ data }) => {

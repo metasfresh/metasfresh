@@ -1,5 +1,6 @@
 package de.metas.ui.web.document.filter.sql;
 
+import de.metas.ui.web.view.descriptor.SqlAndParams;
 import de.metas.ui.web.window.descriptor.sql.SqlEntityBinding;
 import de.metas.ui.web.window.descriptor.sql.SqlSelectValue;
 import de.metas.ui.web.window.model.sql.SqlOptions;
@@ -80,21 +81,21 @@ public class SqlDefaultDocumentFilterConverterTest
 		public void any()
 		{
 			assertThat(SqlDefaultDocumentFilterConverter.buildSqlWhereClause_IsNull("MyColumn", NullOperator.ANY))
-					.isEqualTo("");
+					.isEqualTo(SqlAndParams.EMPTY);
 		}
 
 		@Test
 		public void isNull()
 		{
 			assertThat(SqlDefaultDocumentFilterConverter.buildSqlWhereClause_IsNull("MyColumn", NullOperator.IS_NULL))
-					.isEqualTo("MyColumn IS NULL");
+					.isEqualTo(SqlAndParams.of("MyColumn IS NULL"));
 		}
 
 		@Test
 		public void isNotNull()
 		{
 			assertThat(SqlDefaultDocumentFilterConverter.buildSqlWhereClause_IsNull("MyColumn", NullOperator.IS_NOT_NULL))
-					.isEqualTo("MyColumn IS NOT NULL");
+					.isEqualTo(SqlAndParams.of("MyColumn IS NOT NULL"));
 		}
 	}
 
@@ -104,23 +105,21 @@ public class SqlDefaultDocumentFilterConverterTest
 		@Test
 		public void nullValue()
 		{
-			final String result = SqlDefaultDocumentFilterConverter.buildSqlWhereClause_Equals(
+			final SqlAndParams result = SqlDefaultDocumentFilterConverter.buildSqlWhereClause_Equals(
 					"MyColumn",
 					null,
-					false,
-					SqlParamsCollector.notCollecting());
-			assertThat(result).isEqualTo("MyColumn IS NULL");
+					false);
+			assertThat(result).isEqualTo(SqlAndParams.of("MyColumn IS NULL"));
 		}
 
 		@Test
 		public void nullValue_negate()
 		{
-			final String result = SqlDefaultDocumentFilterConverter.buildSqlWhereClause_Equals(
+			final SqlAndParams result = SqlDefaultDocumentFilterConverter.buildSqlWhereClause_Equals(
 					"MyColumn",
 					null,
-					true,
-					SqlParamsCollector.notCollecting());
-			assertThat(result).isEqualTo("MyColumn IS NOT NULL");
+					true);
+			assertThat(result).isEqualTo(SqlAndParams.of("MyColumn IS NOT NULL"));
 		}
 	}
 
@@ -130,25 +129,23 @@ public class SqlDefaultDocumentFilterConverterTest
 		@Test
 		public void nullValue()
 		{
-			final String result = SqlDefaultDocumentFilterConverter.buildSqlWhereClause_Like(
+			final SqlAndParams result = SqlDefaultDocumentFilterConverter.buildSqlWhereClause_Like(
 					"MyColumn",
 					false,
 					false,
-					null,
-					SqlParamsCollector.notCollecting());
-			assertThat(result).isEqualTo("MyColumn IS NULL");
+					null);
+			assertThat(result).isEqualTo(SqlAndParams.of("MyColumn IS NULL"));
 		}
 
 		@Test
 		public void nullValue_negate()
 		{
-			final String result = SqlDefaultDocumentFilterConverter.buildSqlWhereClause_Like(
+			final SqlAndParams result = SqlDefaultDocumentFilterConverter.buildSqlWhereClause_Like(
 					"MyColumn",
 					true,
 					false,
-					null,
-					SqlParamsCollector.notCollecting());
-			assertThat(result).isEqualTo("MyColumn IS NOT NULL");
+					null);
+			assertThat(result).isEqualTo(SqlAndParams.of("MyColumn IS NOT NULL"));
 		}
 	}
 }

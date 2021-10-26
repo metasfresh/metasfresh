@@ -1,5 +1,7 @@
 package de.metas.ui.web.window.model.sql;
 
+import de.metas.ui.web.view.descriptor.SqlAndParams;
+import de.metas.ui.web.view.descriptor.SqlAndParamsExpression;
 import de.metas.ui.web.window.descriptor.sql.SqlEntityBinding;
 import de.metas.ui.web.window.descriptor.sql.SqlOrderByValue;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
@@ -8,6 +10,8 @@ import lombok.NonNull;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.api.impl.CompositeStringExpression;
 
+import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.Optional;
 
 /*
@@ -34,12 +38,12 @@ import java.util.Optional;
 
 public class SqlDocumentOrderByBuilder
 {
-	public static final SqlDocumentOrderByBuilder newInstance(final SqlEntityBinding entityBinding)
+	public static SqlDocumentOrderByBuilder newInstance(final SqlEntityBinding entityBinding)
 	{
 		return new SqlDocumentOrderByBuilder(entityBinding::getFieldOrderBy);
 	}
 
-	public static final SqlDocumentOrderByBuilder newInstance(final SqlOrderByBindings bindings)
+	public static SqlDocumentOrderByBuilder newInstance(final SqlOrderByBindings bindings)
 	{
 		return new SqlDocumentOrderByBuilder(bindings);
 	}
@@ -53,6 +57,7 @@ public class SqlDocumentOrderByBuilder
 	private final SqlOrderByBindings bindings;
 	private String joinOnTableNameOrAlias;
 	private boolean useColumnNameAlias;
+	private ArrayList<SqlAndParams> beforeOrderBys;
 
 	private SqlDocumentOrderByBuilder(@NonNull final SqlOrderByBindings bindings)
 	{
@@ -71,35 +76,85 @@ public class SqlDocumentOrderByBuilder
 		return this;
 	}
 
+	public SqlDocumentOrderByBuilder beforeOrderBy(@Nullable final SqlAndParams beforeOrderBy)
+	{
+		if (beforeOrderBy != null && !beforeOrderBy.isEmpty())
+		{
+			if (this.beforeOrderBys == null)
+			{
+				this.beforeOrderBys = new ArrayList<>();
+			}
+			this.beforeOrderBys.add(beforeOrderBy);
+		}
+		return this;
+	}
+
+	public SqlDocumentOrderByBuilder beforeOrderBy(@Nullable final String beforeOrderBy)
+	{
+		if (beforeOrderBy != null)
+		{
+			beforeOrderBy(SqlAndParams.of(beforeOrderBy));
+		}
+		return this;
+	}
+
 	/**
 	 * @return SQL order by (e.g. Column1 ASC, Column2 DESC)
 	 */
-	public Optional<IStringExpression> buildSqlOrderBy(final DocumentQueryOrderByList orderBys)
+	public Optional<SqlAndParamsExpression> buildSqlOrderBy(final DocumentQueryOrderByList orderBys)
 	{
 		if (orderBys.isEmpty())
 		{
 			return Optional.empty();
 		}
 
-		final IStringExpression result = orderBys
-				.stream()
-				.map(this::buildSqlOrderBy)
-				.filter(sql -> sql != null && !sql.isNullExpression())
-				.collect(IStringExpression.collectJoining(", "));
+		final SqlAndParamsExpression.Builder result = SqlAndParamsExpression.builder();
 
-		return result != null && !result.isNullExpression()
-				? Optional.of(result)
+		//
+		// First ORDER BYs
+		if (beforeOrderBys != null && !beforeOrderBys.isEmpty())
+		{
+			for (final SqlAndParams beforeOrderBy : beforeOrderBys)
+			{
+				if (!result.isEmpty())
+				{
+					result.append(", ");
+				}
+				result.append(beforeOrderBy);
+			}
+		}
+
+		//
+		// Actual ORDER BY columns
+		{
+			final IStringExpression orderBysExpression = orderBys
+					.stream()
+					.map(this::buildSqlOrderBy)
+					.filter(sql -> sql != null && !sql.isNullExpression())
+					.collect(IStringExpression.collectJoining(", "));
+			if (orderBysExpression != null && !orderBysExpression.isNullExpression())
+			{
+				if (!result.isEmpty())
+				{
+					result.append(", ");
+				}
+				result.append(orderBysExpression);
+			}
+		}
+
+		return !result.isEmpty()
+				? Optional.of(result.build())
 				: Optional.empty();
 	}
 
-	private final IStringExpression buildSqlOrderBy(final DocumentQueryOrderBy orderBy)
+	private IStringExpression buildSqlOrderBy(final DocumentQueryOrderBy orderBy)
 	{
 		final String fieldName = orderBy.getFieldName();
 		final SqlOrderByValue sqlExpression = bindings.getFieldOrderBy(fieldName);
 		return buildSqlOrderBy(sqlExpression, orderBy.isAscending(), orderBy.isNullsLast());
 	}
 
-	private final IStringExpression buildSqlOrderBy(
+	private IStringExpression buildSqlOrderBy(
 			final SqlOrderByValue orderBy,
 			final boolean ascending,
 			final boolean nullsLast)

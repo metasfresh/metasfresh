@@ -22,93 +22,61 @@ package org.adempiere.service.impl;
  * #L%
  */
 
-import java.util.Properties;
-
+import de.metas.organization.ClientAndOrgId;
+import de.metas.organization.OrgId;
+import de.metas.util.Services;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
-import org.compiere.util.Env;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestWatcher;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
-import de.metas.organization.OrgId;
-import de.metas.util.Services;
+import static org.assertj.core.api.Assertions.assertThat;
 
+@ExtendWith(AdempiereTestWatcher.class)
 public class SysConfigBLTests
 {
-	/** Watches current test and dumps the database to console in case of failure */
-	@Rule
-	public final TestWatcher testWatcher = new AdempiereTestWatcher();
-
 	private ISysConfigBL sysConfigBL;
 
-	private Properties ctx;
-	private ClientId adClientId;
-
-	@Before
-	public void init()
+	@BeforeEach
+	public void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
 		sysConfigBL = Services.get(ISysConfigBL.class);
-
-		this.ctx = Env.getCtx();
-		this.adClientId = ClientId.ofRepoId(1);
-		Env.setContext(ctx, "#AD_Client_ID", adClientId.getRepoId());
 	}
 
-	@Test
-	public void testSetGet_String()
+	@Nested
+	class testSetGetString
 	{
-		testSetGet("String1", "Value1", 0);
-		testSetGet("String2", "Value2", 1);
-	}
-
-	private void testSetGet(final String name, final String value, final int AD_Org_ID)
-	{
-		//
-		// Test on same org
+		@Test
+		void sameOrg()
 		{
-			final OrgId adOrgIdToUse = OrgId.ofRepoIdOrAny(AD_Org_ID);
+			final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(ClientId.ofRepoId(1), OrgId.ofRepoId(1));
 
-			sysConfigBL.setValue(name, value, adClientId, adOrgIdToUse);
+			sysConfigBL.setValue("name", "valueStr", clientAndOrgId.getClientId(), clientAndOrgId.getOrgId());
 
-			final String valueGet = sysConfigBL.getValue(name,
-					adClientId.getRepoId(),
-					adOrgIdToUse.getRepoId());
-
-			Assert.assertEquals("Invalid value for " + name + ", AD_Org_ID=" + adOrgIdToUse,
-					value, // expected
-					valueGet// actual
-			);
+			assertThat(sysConfigBL.getValue("name", clientAndOrgId)).isEqualTo("valueStr");
 		}
 
-		//
-		// Test: set the value on AD_Org_ID=0, get value using given Org
+		@Test
+		void setOn_System_getOn_Org1()
 		{
-			sysConfigBL.setValue(name, value, adClientId, OrgId.ANY);
-			final String valueGet = sysConfigBL.getValue(name,
-					adClientId.getRepoId(),
-					OrgId.ANY.getRepoId());
+			sysConfigBL.setValue("name", "valueStr", ClientId.SYSTEM, OrgId.ANY);
 
-			Assert.assertEquals("Invalid value for " + name + ", AD_Org_ID=" + OrgId.ANY,
-					value, // expected
-					valueGet// actual
-			);
-
-			// Test with any other org:
-			final String valueGet_Org = sysConfigBL.getValue(name,
-					adClientId.getRepoId(),
-					AD_Org_ID);
-			Assert.assertEquals("Invalid value for " + name + ", AD_Org_ID=" + AD_Org_ID,
-					value, // expected
-					valueGet_Org// actual
-			);
-
+			final String value = sysConfigBL.getValue("name", ClientAndOrgId.ofClientAndOrg(ClientId.ofRepoId(1), OrgId.ofRepoId(1)));
+			assertThat(value).isEqualTo("valueStr");
 		}
 
+		@Test
+		void setOn_Org0_getOn_Org1()
+		{
+			sysConfigBL.setValue("name", "valueStr", ClientId.ofRepoId(1), OrgId.ANY);
+
+			final String value = sysConfigBL.getValue("name", ClientAndOrgId.ofClientAndOrg(ClientId.ofRepoId(1), OrgId.ofRepoId(1)));
+			assertThat(value).isEqualTo("valueStr");
+		}
 	}
 }

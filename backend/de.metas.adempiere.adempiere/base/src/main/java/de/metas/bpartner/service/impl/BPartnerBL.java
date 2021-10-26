@@ -1,14 +1,18 @@
 package de.metas.bpartner.service.impl;
 
+import com.google.common.base.Joiner;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.bpartner.name.NameAndGreeting;
 import de.metas.bpartner.name.strategy.BPartnerNameAndGreetingStrategies;
 import de.metas.bpartner.name.strategy.BPartnerNameAndGreetingStrategyId;
 import de.metas.bpartner.name.strategy.ComputeNameAndGreetingRequest;
+import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.bpartner.service.BPartnerPrintFormatMap;
 import de.metas.bpartner.service.IBPGroupDAO;
 import de.metas.bpartner.service.IBPartnerAware;
@@ -21,6 +25,8 @@ import de.metas.i18n.Language;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.location.ILocationBL;
+import de.metas.location.ILocationDAO;
+import de.metas.location.LocationId;
 import de.metas.location.impl.AddressBuilder;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
@@ -32,6 +38,7 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
@@ -40,6 +47,7 @@ import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_BPartner_QuickInput;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
@@ -57,6 +65,7 @@ public class BPartnerBL implements IBPartnerBL
 	/* package */static final String SYSCONFIG_C_BPartner_SOTrx_AllowConsolidateInOut_Override = "C_BPartner.SOTrx_AllowConsolidateInOut_Override";
 	private static final AdMessageKey MSG_SALES_REP_EQUALS_BPARTNER = AdMessageKey.of("SALES_REP_EQUALS_BPARTNER");
 
+	private final ILocationDAO locationDAO = Services.get(ILocationDAO.class);
 	private final IBPartnerDAO bpartnersRepo;
 	private final UserRepository userRepository;
 	private final IBPGroupDAO bpGroupDAO;
@@ -110,16 +119,16 @@ public class BPartnerBL implements IBPartnerBL
 
 	@Override
 	public String mkFullAddress(
-			@NonNull final org.compiere.model.I_C_BPartner bPartner,
-			final I_C_BPartner_Location location,
-			final I_AD_User user,
-			@Nullable final String trxName)
+			@NonNull final org.compiere.model.I_C_BPartner bpartner,
+			@Nullable final I_C_BPartner_Location bpLocation,
+			@Nullable final LocationId locationId,
+			@Nullable final I_AD_User bpContact)
 	{
 		final AddressBuilder addressBuilder = AddressBuilder.builder()
-				.orgId(OrgId.ofRepoId(bPartner.getAD_Org_ID()))
-				.adLanguage(bPartner.getAD_Language())
+				.orgId(OrgId.ofRepoId(bpartner.getAD_Org_ID()))
+				.adLanguage(bpartner.getAD_Language())
 				.build();
-		return addressBuilder.buildBPartnerFullAddressString(bPartner, location, user, trxName);
+		return addressBuilder.buildBPartnerFullAddressString(bpartner, bpLocation, locationId, bpContact);
 	}
 
 	@Override
@@ -296,8 +305,6 @@ public class BPartnerBL implements IBPartnerBL
 
 	/**
 	 * Selects the default contact from a list of BPartner users. Returns first user with IsDefaultContact=Y found or first contact.
-	 *
-	 * @return default user/contact.
 	 */
 	@Nullable
 	private I_AD_User getDefaultBPContact(final List<I_AD_User> users)
@@ -340,7 +347,7 @@ public class BPartnerBL implements IBPartnerBL
 		final ILocationBL locationBL = Services.get(ILocationBL.class);
 
 		final String address = locationBL.mkAddress(
-				bpLocation.getC_Location(),
+				locationBL.getRecordById(LocationId.ofRepoId(bpLocation.getC_Location_ID())),
 				bpartner,
 				"",  // bPartnerBlock
 				"" // userBlock
@@ -535,9 +542,36 @@ public class BPartnerBL implements IBPartnerBL
 	}
 
 	@Override
-	public CountryId getBPartnerLocationCountryId(@NonNull final BPartnerLocationId bpLocationId)
+	public CountryId getCountryId(@NonNull BPartnerLocationAndCaptureId bpartnerLocationAndCaptureId)
 	{
-		return bpartnersRepo.retrieveBPartnerLocationCountryId(bpLocationId);
+		final LocationId locationId = getLocationId(bpartnerLocationAndCaptureId);
+		return locationDAO.getCountryIdByLocationId(locationId);
+	}
+
+	@Override
+	public CountryId getCountryId(@NonNull final BPartnerInfo bpartnerInfo)
+	{
+		if (bpartnerInfo.getLocationId() != null)
+		{
+			return locationDAO.getCountryIdByLocationId(bpartnerInfo.getLocationId());
+		}
+		else
+		{
+			return bpartnersRepo.getCountryId(bpartnerInfo.getBpartnerLocationId());
+		}
+	}
+
+	@Override
+	public LocationId getLocationId(@NonNull BPartnerLocationAndCaptureId bpartnerLocationAndCaptureId)
+	{
+		if (bpartnerLocationAndCaptureId.getLocationCaptureId() != null)
+		{
+			return bpartnerLocationAndCaptureId.getLocationCaptureId();
+		}
+		else
+		{
+			return bpartnersRepo.getLocationId(bpartnerLocationAndCaptureId.getBpartnerLocationId());
+		}
 	}
 
 	@Override

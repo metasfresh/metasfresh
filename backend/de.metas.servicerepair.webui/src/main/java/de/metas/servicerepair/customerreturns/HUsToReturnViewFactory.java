@@ -34,7 +34,7 @@ import de.metas.ui.web.handlingunits.HUEditorViewFactoryTemplate;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.ViewFactory;
 import de.metas.ui.web.view.descriptor.ViewLayout;
-import de.metas.ui.web.view.descriptor.annotation.ViewColumnHelper;
+import de.metas.ui.web.view.descriptor.annotation.ViewColumnHelper.ClassViewColumnOverrides;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.MediaType;
 import de.metas.ui.web.window.datatypes.WindowId;
@@ -73,16 +73,16 @@ public class HUsToReturnViewFactory extends HUEditorViewFactoryTemplate
 		viewLayoutBuilder
 				.clearElements()
 				.addElementsFromViewRowClassAndFieldNames(HUEditorRow.class,
-						viewDataType,
-						ViewColumnHelper.ClassViewColumnOverrides.builder(HUEditorRow.FIELDNAME_HUCode).restrictToMediaType(MediaType.SCREEN).build(),
-						ViewColumnHelper.ClassViewColumnOverrides.ofFieldName(HUEditorRow.FIELDNAME_Locator),
-						ViewColumnHelper.ClassViewColumnOverrides.ofFieldName(HUEditorRow.FIELDNAME_Product),
-						ViewColumnHelper.ClassViewColumnOverrides.builder(HUEditorRow.FIELDNAME_PackingInfo).restrictToMediaType(MediaType.SCREEN).build(),
-						ViewColumnHelper.ClassViewColumnOverrides.ofFieldName(HUEditorRow.FIELDNAME_QtyCU),
-						ViewColumnHelper.ClassViewColumnOverrides.ofFieldName(HUEditorRow.FIELDNAME_UOM),
-						ViewColumnHelper.ClassViewColumnOverrides.ofFieldName(HUEditorRow.FIELDNAME_SerialNo),
-						ViewColumnHelper.ClassViewColumnOverrides.ofFieldName(HUEditorRow.FIELDNAME_ServiceContract),
-						ViewColumnHelper.ClassViewColumnOverrides.builder(HUEditorRow.FIELDNAME_HUStatus).restrictToMediaType(MediaType.SCREEN).build());
+														  viewDataType,
+														  ClassViewColumnOverrides.builder(HUEditorRow.FIELDNAME_HUCode).restrictToMediaType(MediaType.SCREEN).build(),
+														  ClassViewColumnOverrides.ofFieldName(HUEditorRow.FIELDNAME_Locator),
+														  ClassViewColumnOverrides.ofFieldName(HUEditorRow.FIELDNAME_Product),
+														  ClassViewColumnOverrides.builder(HUEditorRow.FIELDNAME_PackingInfo).restrictToMediaType(MediaType.SCREEN).build(),
+														  ClassViewColumnOverrides.ofFieldName(HUEditorRow.FIELDNAME_QtyCU),
+														  ClassViewColumnOverrides.ofFieldName(HUEditorRow.FIELDNAME_UOM),
+														  ClassViewColumnOverrides.ofFieldName(HUEditorRow.FIELDNAME_SerialNo),
+														  ClassViewColumnOverrides.ofFieldName(HUEditorRow.FIELDNAME_ServiceContract),
+														  ClassViewColumnOverrides.builder(HUEditorRow.FIELDNAME_HUStatus).restrictToMediaType(MediaType.SCREEN).build());
 	}
 
 	@Override
