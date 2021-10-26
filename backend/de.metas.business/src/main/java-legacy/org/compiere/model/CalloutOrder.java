@@ -31,6 +31,7 @@ import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.location.DocumentLocation;
+import de.metas.document.location.IDocumentLocationBL;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequence.impl.IDocumentNoInfo;
 import de.metas.interfaces.I_C_OrderLine;
@@ -41,7 +42,6 @@ import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderLinePriceAndDiscount;
 import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
-import de.metas.order.OrderLinePriceAndDiscount;
 import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.order.location.adapter.OrderLineDocumentLocationAdapterFactory;
 import de.metas.organization.IOrgDAO;
@@ -76,6 +76,7 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -106,6 +107,8 @@ public class CalloutOrder extends CalloutEngine
 	private static final String DEFAULT_INVOICE_RULE = "DEFAULT_INVOICE_RULE";
 
 	private static final String SYSCONFIG_CopyOrgFromBPartner = "de.metas.order.CopyOrgFromBPartner";
+
+	private final IDocumentLocationBL documentLocationBL = SpringContextHolder.instance.getBean(IDocumentLocationBL.class);
 
 	/**
 	 * C_Order.C_DocTypeTarget_ID changed: - InvoiceRuld/DeliveryRule/PaymentRule - temporary Document Context: - DocSubType - HasCharges - (re-sets Business Partner info of required)
@@ -399,7 +402,7 @@ public class CalloutOrder extends CalloutEngine
 
 				if (isCopyOrgFromBPartner())
 				{
-					final boolean userHasOrgPermissions = Env.getUserRolePermissions().isOrgAccess(bpartnerOrgId, null,Access.WRITE);
+					final boolean userHasOrgPermissions = Env.getUserRolePermissions().isOrgAccess(bpartnerOrgId, null, Access.WRITE);
 
 					if (userHasOrgPermissions)
 					{
@@ -1617,9 +1620,9 @@ public class CalloutOrder extends CalloutEngine
 				final WarehouseId warehouseId = WarehouseId.ofRepoIdOrNull(order.getM_Warehouse_ID());
 				if (warehouseId != null)
 				{
-					final I_M_Warehouse warehouse = Services.get(IWarehouseDAO.class).getById(warehouseId);
-					order.setDropShip_Location_ID(warehouse.getC_BPartner_Location_ID());
+					documentLocationBL.updateRenderedAddressAndCapturedLocation(OrderDocumentLocationAdapterFactory.deliveryLocationAdapter(order));
 				}
+
 				order.setDropShip_User_ID(-1);
 
 			}
