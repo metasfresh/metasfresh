@@ -223,7 +223,7 @@ public class AsyncBatchBL implements IAsyncBatchBL
 			return true;
 		}
 
-		if (isAsyncBatchEligibleToProcess(asyncBatchId))
+		if (!isAsyncBatchEligibleToProcess(asyncBatchId))
 		{
 			return false;
 		}
@@ -243,8 +243,7 @@ public class AsyncBatchBL implements IAsyncBatchBL
 	private boolean isAsyncBatchEligibleToProcess(@NonNull final AsyncBatchId asyncBatchId)
 	{
 		final List<I_C_Async_Batch_Milestone> milestones = asyncBatchDAO.retrieveMilestonesForAsyncBatchId(asyncBatchId);
-
-		return milestones.isEmpty();
+		return milestones.stream().allMatch(I_C_Async_Batch_Milestone::isProcessed);
 	}
 
 	@VisibleForTesting
