@@ -401,9 +401,8 @@ public class M_InOut
 	{
 		if (!shipment.isSOTrx())
 		{
-			// nothing to do TODO: Should I also throw error if a receipt is completed and the isMandatoryOnReceipt flags are not respected?
+			// nothing to do
 			return;
-
 		}
 
 		huInOutBL.validateMandatoryOnShipmentAttributes(shipment);
