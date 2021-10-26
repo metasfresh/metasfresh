@@ -21,7 +21,7 @@ Feature: stock changes accordingly
     And metasfresh initially has M_InventoryLine data
       | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount | OPT.M_Product_ID |
       | 11                        | 21                            | 222                     | 0       | 10       | null             |
-      | 12                        | 22                            | 222                     | 10      | 16       | nul              |
+      | 12                        | 22                            | 222                     | 10      | 16       | null             |
     When complete inventory with inventoryIdentifier '11'
     Then metasfresh has MD_Stock data
       | M_Product_ID.Identifier | QtyOnHand |

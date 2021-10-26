@@ -421,7 +421,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | inventory_1               | 2021-10-12T00:00:00Z | 32323      |
     And metasfresh initially has M_InventoryLine data
       | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount | OPT.M_Product_ID |
-      | inventory_1               | inventoryLine_1               | null                    | 0       | 100      | 2005577          |
+      | inventory_1               | inventoryLine_1               | productIdentifier_1     | 0       | 100      | 2005577          |
     And complete inventory with inventoryIdentifier 'inventory_1'
 
     And a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates' and fulfills with '201' status code
@@ -498,7 +498,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | inventory_1               | 2021-10-12T00:00:00Z | 32323      |
     And metasfresh initially has M_InventoryLine data
       | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount | OPT.M_Product_ID |
-      | inventory_1               | inventoryLine_1               | null                    | 0       | 100      | 2005577          |
+      | inventory_1               | inventoryLine_1               | productIdentifier_2     | 0       | 100      | 2005577          |
     And complete inventory with inventoryIdentifier 'inventory_1'
 
     And a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates' and fulfills with '201' status code
