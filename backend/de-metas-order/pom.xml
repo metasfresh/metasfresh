@@ -34,6 +34,10 @@
     <groupId>de.metas.order</groupId>
     <artifactId>de-metas-order</artifactId>
 
+    <properties>
+        <metasfresh.version>10.0.0</metasfresh.version>
+    </properties>
+
     <version>10.0.0</version>
     <dependencies>
         <dependency>
