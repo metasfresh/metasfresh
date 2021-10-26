@@ -96,7 +96,6 @@ public final class AggregationEngine
 	private final transient IAggregationBL aggregationBL = Services.get(IAggregationBL.class);
 	private final transient IAggregationFactory aggregationFactory = Services.get(IAggregationFactory.class);
 	private final transient IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
-	private final transient IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final transient IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 
 	private final transient IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);

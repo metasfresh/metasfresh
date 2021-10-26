@@ -82,13 +82,13 @@ public class InvoicesRestController
 			@NonNull final CheckInvoiceCandidatesStatusService invoiceCandidateInfoService,
 			@NonNull final EnqueueForInvoicingService enqueueForInvoicingService,
 			@NonNull final CloseInvoiceCandidatesService closeInvoiceCandidatesService,
-			@NonNull final JsonInvoiceService invoicePDFService)
+			@NonNull final JsonInvoiceService jsonInvoiceService)
 	{
 		this.createInvoiceCandidatesService = createInvoiceCandidatesService;
 		this.checkInvoiceCandidatesStatusService = invoiceCandidateInfoService;
 		this.enqueueForInvoicingService = enqueueForInvoicingService;
 		this.closeInvoiceCandidatesService = closeInvoiceCandidatesService;
-		this.jsonInvoiceService = invoicePDFService;
+		this.jsonInvoiceService = jsonInvoiceService;
 	}
 
 	@ApiOperation("Create new invoice candidates")

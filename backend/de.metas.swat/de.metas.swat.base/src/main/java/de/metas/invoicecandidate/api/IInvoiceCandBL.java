@@ -409,5 +409,8 @@ public interface IInvoiceCandBL extends ISingletonService
 
 	void setAsyncBatch(InvoiceCandidateId invoiceCandidateId, AsyncBatchId asyncBatchId);
 
-	BPartnerLocationAndCaptureId getBillLocationId(I_C_Invoice_Candidate ic, boolean useDefaultBillLocationAndContactIfNotOverride);
+	/**
+	 * @param useDefaultBillLocationAndContactIfNotOverride if true and not override-location&contact is given, then take the *current* masterdata values instead of the ic's values. This is actually an invoicing-feature.
+	 */
+	BPartnerLocationAndCaptureId getBillLocationId(@NonNull I_C_Invoice_Candidate ic, boolean useDefaultBillLocationAndContactIfNotOverride);
 }

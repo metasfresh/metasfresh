@@ -183,10 +183,7 @@ public class DeliveryOrderWorkpackageProcessor extends WorkpackageProcessorAdapt
 		archive.setIsDirectEnqueue(true);
 		archive.setIsDirectProcessQueueItem(true);
 
-		if (asyncBatchId != null)
-		{
-			archive.setC_Async_Batch_ID(asyncBatchId.getRepoId());
-		}
+		archive.setC_Async_Batch_ID(AsyncBatchId.toRepoId(asyncBatchId));
 
 		InterfaceWrapperHelper.save(archive);
 	}

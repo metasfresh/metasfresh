@@ -184,7 +184,7 @@ public class OrderService
 	{
 		if (order.getC_Async_Batch_ID() > 0)
 		{
-			return order;
+			return order; // nothing more to be done
 		}
 
 		return trxManager.callInNewTrx(() -> {

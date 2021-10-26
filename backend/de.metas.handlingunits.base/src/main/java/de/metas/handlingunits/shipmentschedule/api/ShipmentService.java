@@ -107,7 +107,7 @@ public class ShipmentService
 		});
 
 		// The process will wait until the schedules are processed because the next call might contain the same shipment schedules as the current one.
-		// In this case enqueing the same shipmentschedule will fail, because it requires a an exclusive lock and the sched is still enqueued from the current lock
+		// In this case enqueing the same shipmentschedule will fail, because it requires an exclusive lock and the sched is still enqueued from the current lock
 		// See ShipmentScheduleEnqueuer.acquireLock(...)
 		return asyncBatchMilestoneService.executeMilestone(generateShipmentsSupplier, request.getAsyncBatchId(), SHIPMENT_CREATION);
 	}
@@ -213,7 +213,7 @@ public class ShipmentService
 
 		if (unassignedScheduleCount > 0)
 		{
-			throw new AdempiereException("Found a number of unassigned scheduleIds! Count: " + unassignedScheduleCount)
+			throw new AdempiereException("All given ids should be assigned to C_Async_Batch_ID=" + AsyncBatchId.toRepoId(asyncBatchId) + ", but there are " + unassignedScheduleCount + " unassigned scheduleIds.")
 					.appendParametersToMessage()
 					.setParameter("scheduleIds", ids);
 		}
