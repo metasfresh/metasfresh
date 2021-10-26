@@ -85,9 +85,6 @@ public class C_OrderLine
 			skipIfCopying = true)
 	public void updateBPartnerAddressForceUpdateCapturedLocation(final I_C_OrderLine orderLine)
 	{
-		final OrderLineMainLocationAdapter locationAdapter = OrderLineDocumentLocationAdapterFactory.locationAdapter(orderLine);
-
-		documentLocationBL.updateRenderedAddressAndCapturedLocation(locationAdapter);
-		documentLocationBL.updateCapturedLocation(locationAdapter);
+		documentLocationBL.updateCapturedLocation(OrderLineDocumentLocationAdapterFactory.locationAdapter(orderLine));
 	}
 }

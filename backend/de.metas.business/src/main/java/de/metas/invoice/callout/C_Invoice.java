@@ -166,19 +166,6 @@ public class C_Invoice
 
 	@CalloutMethod(columnNames = {
 			I_C_Invoice.COLUMNNAME_C_BPartner_ID,
-			I_C_Invoice.COLUMNNAME_C_BPartner_Location_ID },
-			skipIfCopying = true)
-	public void updateBPartnerAddressForceUpdateCapturedLocation(final I_C_Invoice invoice)
-	{
-		final InvoiceDocumentLocationAdapter locationAdapter = InvoiceDocumentLocationAdapterFactory.locationAdapter(invoice);
-
-		documentLocationBL.updateRenderedAddressAndCapturedLocation(locationAdapter);
-		documentLocationBL.updateCapturedLocation(locationAdapter);
-
-	}
-
-	@CalloutMethod(columnNames = {
-			I_C_Invoice.COLUMNNAME_C_BPartner_ID,
 			I_C_Invoice.COLUMNNAME_C_BPartner_Location_ID,
 			I_C_Invoice.COLUMNNAME_AD_User_ID },
 			skipIfCopying = true)
@@ -186,4 +173,15 @@ public class C_Invoice
 	{
 		documentLocationBL.updateRenderedAddressAndCapturedLocation(InvoiceDocumentLocationAdapterFactory.locationAdapter(invoice));
 	}
+
+	@CalloutMethod(columnNames = {
+			I_C_Invoice.COLUMNNAME_C_BPartner_ID,
+			I_C_Invoice.COLUMNNAME_C_BPartner_Location_ID },
+			skipIfCopying = true)
+	public void updateBPartnerAddressForceUpdateCapturedLocation(final I_C_Invoice invoice)
+	{
+		documentLocationBL.updateCapturedLocation(InvoiceDocumentLocationAdapterFactory.locationAdapter(invoice));
+
+	}
+
 }

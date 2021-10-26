@@ -26,6 +26,7 @@ import de.metas.adempiere.model.I_C_Order;
 import de.metas.document.location.IDocumentLocationBL;
 import de.metas.order.DeliveryViaRule;
 import de.metas.order.IOrderBL;
+import de.metas.order.location.adapter.OrderBillLocationAdapter;
 import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.order.location.adapter.OrderMainLocationAdapter;
 import de.metas.util.Services;
@@ -84,10 +85,7 @@ public class C_Order
 			skipIfCopying = true)
 	public void updateBPartnerAddressForceUpdateCapturedLocation(final I_C_Order order)
 	{
-		final OrderMainLocationAdapter locationAdapter = OrderDocumentLocationAdapterFactory.locationAdapter(order);
-
-		documentLocationBL.updateRenderedAddressAndCapturedLocation(locationAdapter);
-		documentLocationBL.updateCapturedLocation(locationAdapter);
+		documentLocationBL.updateCapturedLocation(OrderDocumentLocationAdapterFactory.billLocationAdapter(order));
 	}
 
 	@CalloutMethod(columnNames = {
@@ -98,6 +96,15 @@ public class C_Order
 	public void updateBillToAddress(final I_C_Order order)
 	{
 		documentLocationBL.updateRenderedAddressAndCapturedLocation(OrderDocumentLocationAdapterFactory.billLocationAdapter(order));
+	}
+
+	@CalloutMethod(columnNames = {
+			I_C_Order.COLUMNNAME_Bill_BPartner_ID,
+			I_C_Order.COLUMNNAME_Bill_Location_ID },
+			skipIfCopying = true)
+	public void updateBillToAddressForceUpdateCapturedLocation(final I_C_Order order)
+	{
+		documentLocationBL.updateCapturedLocation(OrderDocumentLocationAdapterFactory.billLocationAdapter(order));
 	}
 
 	@CalloutMethod(columnNames = {
@@ -113,6 +120,18 @@ public class C_Order
 	}
 
 	@CalloutMethod(columnNames = {
+			I_C_Order.COLUMNNAME_IsDropShip,
+			I_C_Order.COLUMNNAME_DropShip_BPartner_ID,
+			I_C_Order.COLUMNNAME_DropShip_Location_ID,
+			I_C_Order.COLUMNNAME_M_Warehouse_ID },
+			skipIfCopying = true)
+	public void updateDeliveryToAddressForceUpdateCaptureLocation(final I_C_Order order)
+	{
+		documentLocationBL.updateCapturedLocation(OrderDocumentLocationAdapterFactory.deliveryLocationAdapter(order));
+	}
+
+
+	@CalloutMethod(columnNames = {
 			I_C_Order.COLUMNNAME_IsUseHandOver_Location,
 			I_C_Order.COLUMNNAME_HandOver_Partner_ID,
 			I_C_Order.COLUMNNAME_HandOver_Location_ID,
@@ -122,4 +141,16 @@ public class C_Order
 	{
 		documentLocationBL.updateRenderedAddressAndCapturedLocation(OrderDocumentLocationAdapterFactory.handOverLocationAdapter(order));
 	}
+
+
+	@CalloutMethod(columnNames = {
+			I_C_Order.COLUMNNAME_IsUseHandOver_Location,
+			I_C_Order.COLUMNNAME_HandOver_Partner_ID,
+			I_C_Order.COLUMNNAME_HandOver_Location_ID},
+			skipIfCopying = true)
+	public void updateHandOverAddressForceUpdateCaptureLocation(final I_C_Order order)
+	{
+		documentLocationBL.updateCapturedLocation(OrderDocumentLocationAdapterFactory.handOverLocationAdapter(order));
+	}
+
 }
