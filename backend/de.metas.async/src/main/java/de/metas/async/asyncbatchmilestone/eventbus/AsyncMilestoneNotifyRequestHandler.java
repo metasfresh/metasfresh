@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.handlingunits.base
+ * de.metas.async
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,30 +20,9 @@
  * #L%
  */
 
-package de.metas.handlingunits.impl;
+package de.metas.async.asyncbatchmilestone.eventbus;
 
-import de.metas.bpartner.BPartnerLocationId;
-import de.metas.organization.OrgId;
-import de.metas.shipping.ShipperId;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
-
-import java.time.LocalDate;
-
-@Value
-@Builder
-public class CreateShipperTransportationRequest
+public interface AsyncMilestoneNotifyRequestHandler
 {
-	@NonNull
-	OrgId orgId;
-
-	@NonNull
-	ShipperId shipperId;
-
-	@NonNull
-	BPartnerLocationId shipperBPartnerAndLocationId;
-
-	@NonNull
-	LocalDate shipDate;
+	void handleRequest(final AsyncMilestoneNotifyRequest request);
 }

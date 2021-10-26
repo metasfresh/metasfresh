@@ -25,6 +25,8 @@ package de.metas.async.asyncbatchmilestone;
 import ch.qos.logback.classic.Level;
 import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IAsyncBatchDAO;
+import de.metas.async.asyncbatchmilestone.eventbus.AsyncMilestoneNotifyRequest;
+import de.metas.async.asyncbatchmilestone.eventbus.AsyncMilestoneNotifyRequestHandler;
 import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.logging.LogManager;
@@ -47,7 +49,7 @@ import static de.metas.async.Async_Constants.SYS_Config_WaitTimeOutMS;
 import static de.metas.async.Async_Constants.SYS_Config_WaitTimeOutMS_DEFAULT_VALUE;
 
 @Service
-public class AsyncBatchMilestoneObserver
+public class AsyncBatchMilestoneObserver implements AsyncMilestoneNotifyRequestHandler
 {
 	private static final Logger logger = LogManager.getLogger(AsyncBatchMilestoneObserver.class);
 	private final IAsyncBatchDAO asyncBatchDAO = Services.get(IAsyncBatchDAO.class);
@@ -55,30 +57,19 @@ public class AsyncBatchMilestoneObserver
 
 	private final Map<AsyncBatchMilestoneId, CompletableFuture<Void>> asyncBatch2Completion = new ConcurrentHashMap<>();
 
+	@Override
+	public void handleRequest(final AsyncMilestoneNotifyRequest request)
+	{
+		Loggables.withLogger(logger, Level.INFO).addLog("Milestone notified as finished; asyncBatchMilestoneId: {}", request.getMilestoneId());
+
+		final AsyncBatchMilestoneId asyncBatchMilestoneId = AsyncBatchMilestoneId.ofRepoId(AsyncBatchId.ofRepoId(request.getAsyncBatchId()), request.getMilestoneId());
+
+		this.notifyMilestoneProcessedFor(asyncBatchMilestoneId, request.getSuccess());
+	}
+
 	public void observeOn(@NonNull final AsyncBatchMilestoneId id)
 	{
 		asyncBatch2Completion.put(id, new CompletableFuture<>());
-	}
-
-	public void notifyMilestoneProcessedFor(@NonNull final AsyncBatchMilestoneId id, final boolean successful)
-	{
-		if (asyncBatch2Completion.get(id) == null)
-		{
-			Loggables.withLogger(logger, Level.WARN).addLog("No observer registered to notify for asyncBatchId: " + id);
-			return;
-		}
-
-		if (successful)
-		{
-			logger.debug("asyncBatchMilestoneId={} completed successfully", id);
-			asyncBatch2Completion.get(id).complete(null);
-		}
-		else
-		{
-			asyncBatch2Completion.get(id).completeExceptionally(new AdempiereException("Workpackage completed exceptionally")
-																		.appendParametersToMessage()
-																		.setParameter("asyncBatchMilestoneId", id));
-		}
 	}
 
 	/**
@@ -136,5 +127,26 @@ public class AsyncBatchMilestoneObserver
 		}
 
 		asyncBatch2Completion.remove(id);
+	}
+
+	private void notifyMilestoneProcessedFor(@NonNull final AsyncBatchMilestoneId id, final boolean successful)
+	{
+		if (asyncBatch2Completion.get(id) == null)
+		{
+			Loggables.withLogger(logger, Level.WARN).addLog("No observer registered to notify for asyncBatchId: " + id);
+			return;
+		}
+
+		if (successful)
+		{
+			logger.debug("asyncBatchMilestoneId={} completed successfully", id);
+			asyncBatch2Completion.get(id).complete(null);
+		}
+		else
+		{
+			asyncBatch2Completion.get(id).completeExceptionally(new AdempiereException("Workpackage completed exceptionally")
+																		.appendParametersToMessage()
+																		.setParameter("asyncBatchMilestoneId", id));
+		}
 	}
 }

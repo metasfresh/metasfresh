@@ -71,6 +71,12 @@
         </dependency>
 
         <dependency>
+            <groupId>de.metas.order</groupId>
+            <artifactId>de-metas-order</artifactId>
+            <version>${metasfresh.version}</version>
+        </dependency>
+
+        <dependency>
             <groupId>de.metas.adempiere.adempiere</groupId>
             <artifactId>de.metas.adempiere.adempiere.base</artifactId>
             <version>${metasfresh.version}</version>

@@ -49,6 +49,7 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -70,6 +71,7 @@ public class AsyncBatchBL implements IAsyncBatchBL
 	private final IAsyncBatchDAO asyncBatchDAO = Services.get(IAsyncBatchDAO.class);
 	private final IWorkPackageQueueFactory workPackageQueueFactory = Services.get(IWorkPackageQueueFactory.class);
 	private final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	private final ReentrantLock lock = new ReentrantLock();
 
@@ -474,11 +476,11 @@ public class AsyncBatchBL implements IAsyncBatchBL
 	@NonNull
 	public AsyncBatchId newAsyncBatch(@NonNull final String asyncBatchType)
 	{
-		final I_C_Async_Batch asyncBatch = newAsyncBatch()
+		final I_C_Async_Batch asyncBatch = trxManager.callInNewTrx(() -> newAsyncBatch()
 				.setContext(getCtx())
 				.setC_Async_Batch_Type(asyncBatchType)
 				.setName(asyncBatchType)
-				.build();
+				.build());
 
 		return AsyncBatchId.ofRepoId(asyncBatch.getC_Async_Batch_ID());
 	}

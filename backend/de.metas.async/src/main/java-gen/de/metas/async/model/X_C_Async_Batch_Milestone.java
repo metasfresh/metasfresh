@@ -1,25 +1,3 @@
-/*
- * #%L
- * de.metas.async
- * %%
- * Copyright (C) 2021 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 // Generated Model - DO NOT CHANGE
 package de.metas.async.model;
 
@@ -34,7 +12,7 @@ import java.util.Properties;
 public class X_C_Async_Batch_Milestone extends org.compiere.model.PO implements I_C_Async_Batch_Milestone, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1749232638L;
+	private static final long serialVersionUID = -1233218021L;
 
     /** Standard Constructor */
     public X_C_Async_Batch_Milestone (final Properties ctx, final int C_Async_Batch_Milestone_ID, @Nullable final String trxName)
@@ -109,6 +87,8 @@ public class X_C_Async_Batch_Milestone extends org.compiere.model.PO implements 
 	public static final String NAME_Rechnungserstellung = "Rechnungserstellung";
 	/** Auftragserstellung = Auftragserstellung */
 	public static final String NAME_Auftragserstellung = "Auftragserstellung";
+	/** Order creation = Order creation */
+	public static final String NAME_OrderCreation = "OrderCreation";
 	@Override
 	public void setName (final java.lang.String Name)
 	{

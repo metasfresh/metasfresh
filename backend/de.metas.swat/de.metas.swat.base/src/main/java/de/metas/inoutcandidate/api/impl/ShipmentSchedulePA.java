@@ -1,6 +1,7 @@
 package de.metas.inoutcandidate.api.impl;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import de.metas.bpartner.BPartnerId;
@@ -51,6 +52,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
@@ -603,4 +605,14 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 				.listIds(ShipmentScheduleId::ofRepoId);
 	}
 
+	@Override
+	public <T extends I_M_ShipmentSchedule> Map<ShipmentScheduleId, T> getByIds(@NonNull final Set<ShipmentScheduleId> ids, @NonNull final Class<T> clazz)
+	{
+		return queryBL.createQueryBuilder(I_M_ShipmentSchedule.class)
+				.addInArrayFilter(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID, ids)
+				.create()
+				.list(clazz)
+				.stream()
+				.collect(ImmutableMap.toImmutableMap(schedule -> ShipmentScheduleId.ofRepoId(schedule.getM_ShipmentSchedule_ID()), Function.identity()));
+	}
 }

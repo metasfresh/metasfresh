@@ -160,6 +160,11 @@
             <version>${metasfresh-common.version}</version>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+            <groupId>de.metas.order</groupId>
+            <artifactId>de-metas-order</artifactId>
+            <version>${metasfresh.version}</version>
+        </dependency>
 
     </dependencies>
 </project>

@@ -10,7 +10,6 @@ import de.metas.aggregation.api.IAggregationFactory;
 import de.metas.aggregation.api.IAggregationKeyBuilder;
 import de.metas.aggregation.model.X_C_Aggregation;
 import de.metas.bpartner.BPartnerContactId;
-import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.BPartnerInfo;
@@ -24,7 +23,6 @@ import de.metas.document.IDocTypeDAO;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inout.InOutId;
 import de.metas.invoice.InvoiceDocBaseType;
-import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IAggregationBL;
 import de.metas.invoicecandidate.api.IInvoiceCandAggregate;
@@ -60,7 +58,6 @@ import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.TimeUtil;
@@ -96,7 +93,6 @@ public final class AggregationEngine
 	private static final transient Logger logger = InvoiceCandidate_Constants.getLogger(AggregationEngine.class);
 	private final transient IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final transient IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
-	private final transient IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final transient IAggregationBL aggregationBL = Services.get(IAggregationBL.class);
 	private final transient IAggregationFactory aggregationFactory = Services.get(IAggregationFactory.class);
 	private final transient IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
@@ -524,28 +520,7 @@ public final class AggregationEngine
 	@NonNull
 	private BPartnerLocationAndCaptureId getBillLocationId(@NonNull final I_C_Invoice_Candidate ic)
 	{
-		final BPartnerLocationAndCaptureId billBPLocationOverrideId = InvoiceCandidateLocationAdapterFactory
-				.billLocationOverrideAdapter(ic)
-				.getBPartnerLocationAndCaptureIdIfExists()
-				.orElse(null);
-		if (billBPLocationOverrideId != null)
-		{
-			return billBPLocationOverrideId;
-		}
-
-		if (useDefaultBillLocationAndContactIfNotOverride)
-		{
-			final BPartnerId bpartnerId = BPartnerId.ofRepoId(ic.getBill_BPartner_ID());
-			final I_C_BPartner_Location defaultBillLocation = bpartnerDAO.retrieveCurrentBillLocationOrNull(bpartnerId);
-			if (defaultBillLocation != null)
-			{
-				return BPartnerLocationAndCaptureId.ofRecord(defaultBillLocation);
-			}
-		}
-
-		return InvoiceCandidateLocationAdapterFactory
-				.billLocationAdapter(ic)
-				.getBPartnerLocationAndCaptureId();
+		return invoiceCandBL.getBillLocationId(ic, useDefaultBillLocationAndContactIfNotOverride);
 	}
 
 	private BPartnerContactId getBillContactId(

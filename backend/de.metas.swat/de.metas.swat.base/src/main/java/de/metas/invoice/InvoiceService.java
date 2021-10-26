@@ -90,11 +90,20 @@ public class InvoiceService
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
-	private void processInvoiceCandidates(@NonNull final Set<InvoiceCandidateId> invoiceCandidateIds)
+	public void processInvoiceCandidates(@NonNull final Set<InvoiceCandidateId> invoiceCandidateIds)
 	{
 		final ImmutableMap<AsyncBatchId, List<InvoiceCandidateId>> asyncBatchId2InvoiceCandIds = getAsyncBathId2InvoiceCandidateIds(invoiceCandidateIds);
 
 		asyncBatchId2InvoiceCandIds.forEach((asyncBatchId, icIds) -> generateInvoicesForAsyncBatch(ImmutableSet.copyOf(icIds), asyncBatchId));
+	}
+
+	@NonNull
+	public List<I_C_Invoice_Candidate> retrieveInvoiceCandsByInOutLines(@NonNull final List<I_M_InOutLine> shipmentLines)
+	{
+		return shipmentLines.stream()
+				.map(invoiceCandDAO::retrieveInvoiceCandidatesForInOutLine)
+				.flatMap(List::stream)
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	@NonNull
@@ -152,15 +161,6 @@ public class InvoiceService
 		};
 
 		asyncBatchMilestoneService.executeMilestone(enqueueInvoiceCandidates, asyncBatchId, INVOICE_CREATION);
-	}
-
-	@NonNull
-	private List<I_C_Invoice_Candidate> retrieveInvoiceCandsByInOutLines(@NonNull final List<I_M_InOutLine> shipmentLines)
-	{
-		return shipmentLines.stream()
-				.map(invoiceCandDAO::retrieveInvoiceCandidatesForInOutLine)
-				.flatMap(List::stream)
-				.collect(ImmutableList.toImmutableList());
 	}
 
 	@NonNull

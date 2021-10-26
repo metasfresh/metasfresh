@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
 import de.metas.async.AsyncBatchId;
 import de.metas.async.QueueWorkPackageId;
 import de.metas.async.api.IAsyncBatchBL;
@@ -44,6 +45,7 @@ import de.metas.handlingunits.shipmentschedule.api.GenerateShipmentsRequest;
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentService;
+import de.metas.handlingunits.shipmentschedule.api.ShippingInfoCache;
 import de.metas.handlingunits.shipmentschedule.spi.impl.ShipmentScheduleExternalInfo;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
@@ -95,7 +97,6 @@ import org.adempiere.mm.attributes.api.CreateAttributeInstanceReq;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
-import org.compiere.model.I_M_Shipper;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
@@ -106,15 +107,12 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
-
-import static de.metas.async.Async_Constants.C_Async_Batch_InternalName_ShipmentSchedule;
+import java.util.stream.Collectors;
 
 @Service
 public class JsonShipmentService
@@ -363,7 +361,7 @@ public class JsonShipmentService
 
 	private void validateRequest(
 			@NonNull final JsonCreateShipmentRequest request,
-			@NonNull final JsonShipmentService.ShippingInfoCache cache)
+			@NonNull final ShippingInfoCache cache)
 	{
 		if (Check.isEmpty(request.getCreateShipmentInfoList()))
 		{
@@ -375,7 +373,7 @@ public class JsonShipmentService
 
 	private void validateJsonCreateShipmentInfo(
 			@NonNull final JsonCreateShipmentInfo createShipmentInfo,
-			@NonNull final JsonShipmentService.ShippingInfoCache cache)
+			@NonNull final ShippingInfoCache cache)
 	{
 		final ShipmentScheduleId shipmentScheduleId = extractShipmentScheduleId(createShipmentInfo);
 
@@ -412,7 +410,7 @@ public class JsonShipmentService
 
 	private void updateShipmentSchedules(
 			@NonNull final List<JsonCreateShipmentInfo> createShipmentInfos,
-			@NonNull final JsonShipmentService.ShippingInfoCache cache)
+			@NonNull final ShippingInfoCache cache)
 	{
 		for (final JsonCreateShipmentInfo createShipmentInfo : createShipmentInfos)
 		{
@@ -429,14 +427,14 @@ public class JsonShipmentService
 
 	private void updateShipmentSchedule(
 			@NonNull final UpdateShipmentScheduleRequest request,
-			@NonNull final JsonShipmentService.ShippingInfoCache cache)
+			@NonNull final ShippingInfoCache cache)
 	{
 		shipmentScheduleBL.applyShipmentScheduleChanges(toApplyShipmentScheduleChangesRequest(request, cache));
 	}
 
 	private ApplyShipmentScheduleChangesRequest toApplyShipmentScheduleChangesRequest(
 			@NonNull final UpdateShipmentScheduleRequest request,
-			@NonNull final JsonShipmentService.ShippingInfoCache cache)
+			@NonNull final ShippingInfoCache cache)
 	{
 		return ApplyShipmentScheduleChangesRequest.builder()
 				.shipmentScheduleId(request.getShipmentScheduleId())
@@ -452,7 +450,7 @@ public class JsonShipmentService
 	@NonNull
 	private Optional<BPartnerLocationId> extractBPartnerLocationId(
 			@NonNull final UpdateShipmentScheduleRequest request,
-			@NonNull final JsonShipmentService.ShippingInfoCache cache)
+			@NonNull final ShippingInfoCache cache)
 	{
 		if (request.getBPartnerLocation() != null)
 		{
@@ -472,7 +470,7 @@ public class JsonShipmentService
 	@Nullable
 	private UpdateShipmentScheduleRequest toUpdateShipmentScheduleRequestOrNull(
 			@NonNull final JsonCreateShipmentInfo createShipmentInfo,
-			@NonNull final JsonShipmentService.ShippingInfoCache cache)
+			@NonNull final ShippingInfoCache cache)
 	{
 		final LocalDateTime deliveryDate = createShipmentInfo.getMovementDate();
 		final LocationBasicInfo bPartnerLocation = LocationBasicInfo.ofNullable(createShipmentInfo.getShipToLocation(), countryCodeFactory)
@@ -703,55 +701,17 @@ public class JsonShipmentService
 				.map(this::buildCreateShipmentCandidate)
 				.collect(ImmutableList.toImmutableList());
 
-		final List<ShipmentScheduleId> scheduleIds = createShipmentCandidates.stream()
-				.map(CreateShipmentInfoCandidate::getShipmentScheduleId)
-				.collect(ImmutableList.toImmutableList());
+		final Map<ShipmentScheduleId, CreateShipmentInfoCandidate> candidateInfoById = Maps.uniqueIndex(createShipmentCandidates, CreateShipmentInfoCandidate::getShipmentScheduleId);
 
-		final ShippingInfoCache shippingInfoCache = initShippingInfoCache();
-		shippingInfoCache.warmUpForShipmentScheduleIds(scheduleIds);
+		final Map<AsyncBatchId, ArrayList<ShipmentScheduleId>> asyncBatchId2ScheduleIds = shipmentService.getShipmentScheduleIdByAsyncBatchId(candidateInfoById.keySet());
 
-		final Map<AsyncBatchId, ArrayList<CreateShipmentInfoCandidate>> asyncBatchId2CreateShipmentInfos = new HashMap<>();
-
-		for (final CreateShipmentInfoCandidate createShipmentInfoCandidate : createShipmentCandidates)
-		{
-			final ArrayList<CreateShipmentInfoCandidate> currentCandidateList = new ArrayList<>();
-			currentCandidateList.add(createShipmentInfoCandidate);
-
-			final AsyncBatchId currentAsyncBatchId = shippingInfoCache.getAsyncBatchId(createShipmentInfoCandidate.getShipmentScheduleId())
-					.orElse(AsyncBatchId.NONE_ASYNC_BATCH_ID);
-
-			asyncBatchId2CreateShipmentInfos.merge(currentAsyncBatchId, currentCandidateList, CollectionUtils::mergeLists);
-		}
-
-		final ArrayList<CreateShipmentInfoCandidate> shipmentSchedulesWithNoAsyncBatchId = asyncBatchId2CreateShipmentInfos.get(AsyncBatchId.NONE_ASYNC_BATCH_ID);
-
-		Optional.ofNullable(shipmentSchedulesWithNoAsyncBatchId)
-				.flatMap(this::assignAsyncBatch)
-				.ifPresent(batchId -> {
-					asyncBatchId2CreateShipmentInfos.put(batchId, shipmentSchedulesWithNoAsyncBatchId);
-					asyncBatchId2CreateShipmentInfos.remove(AsyncBatchId.NONE_ASYNC_BATCH_ID);
-				});
-
-		return ImmutableMap.copyOf(asyncBatchId2CreateShipmentInfos);
-	}
-
-	@NonNull
-	private Optional<AsyncBatchId> assignAsyncBatch(@NonNull final List<CreateShipmentInfoCandidate> shipmentInfoCandidates)
-	{
-		if (shipmentInfoCandidates.isEmpty())
-		{
-			return Optional.empty();
-		}
-
-		final ImmutableSet<ShipmentScheduleId> shipmentScheduleIds = shipmentInfoCandidates.stream()
-				.map(CreateShipmentInfoCandidate::getShipmentScheduleId)
-				.collect(ImmutableSet.toImmutableSet());
-
-		final AsyncBatchId asyncBatchId = asyncBatchBL.newAsyncBatch(C_Async_Batch_InternalName_ShipmentSchedule);
-
-		shipmentService.assignAsyncBatchIdToShipmentSchedules(shipmentScheduleIds, asyncBatchId);
-
-		return Optional.of(asyncBatchId);
+		return asyncBatchId2ScheduleIds.entrySet()
+				.stream()
+				.collect(Collectors.toMap(Map.Entry::getKey,
+										  entry -> entry.getValue()
+												  .stream()
+												  .map(candidateInfoById::get)
+												  .collect(ImmutableList.toImmutableList())));
 	}
 
 	@NonNull
@@ -797,101 +757,7 @@ public class JsonShipmentService
 
 		return shipmentService.retrieveInOutIdsByScheduleIds(shipmentScheduleIdToQtyShipped.keySet());
 	}
-
-	//
-	//
-	//
-	private static class ShippingInfoCache
-	{
-		private final IShipmentScheduleBL shipmentScheduleBL;
-		private final IShipmentScheduleEffectiveBL scheduleEffectiveBL;
-		private final IShipperDAO shipperDAO;
-
-		private final HashMap<ShipmentScheduleId, I_M_ShipmentSchedule> shipmentSchedulesById = new HashMap<>();
-		private final HashMap<String, I_M_Shipper> shipperByInternalName = new HashMap<>();
-
-		@Builder
-		private ShippingInfoCache(
-				@NonNull final IShipmentScheduleBL shipmentScheduleBL,
-				@NonNull final IShipmentScheduleEffectiveBL scheduleEffectiveBL,
-				@NonNull final IShipperDAO shipperDAO)
-		{
-			this.shipmentScheduleBL = shipmentScheduleBL;
-			this.scheduleEffectiveBL = scheduleEffectiveBL;
-			this.shipperDAO = shipperDAO;
-		}
-
-		public void warmUpForShipmentScheduleIds(@NonNull final Collection<ShipmentScheduleId> shipmentScheduleIds)
-		{
-			CollectionUtils.getAllOrLoad(
-					shipmentSchedulesById,
-					shipmentScheduleIds,
-					shipmentScheduleBL::getByIds);
-		}
-
-		public void warmUpForShipperInternalNames(@NonNull final Collection<String> shipperInternalNameCollection)
-		{
-			CollectionUtils.getAllOrLoad(
-					shipperByInternalName,
-					shipperInternalNameCollection,
-					shipperDAO::getByInternalName);
-		}
-
-		private I_M_ShipmentSchedule getShipmentScheduleById(@NonNull final ShipmentScheduleId shipmentScheduleId)
-		{
-			return shipmentSchedulesById.computeIfAbsent(shipmentScheduleId, shipmentScheduleBL::getById);
-		}
-
-		public OrgId getOrgId(@NonNull final ShipmentScheduleId shipmentScheduleId)
-		{
-			final I_M_ShipmentSchedule shipmentSchedule = getShipmentScheduleById(shipmentScheduleId);
-			return OrgId.ofRepoId(shipmentSchedule.getAD_Org_ID());
-		}
-
-		public BPartnerId getBPartnerId(@NonNull final ShipmentScheduleId shipmentScheduleId)
-		{
-			final I_M_ShipmentSchedule shipmentSchedule = getShipmentScheduleById(shipmentScheduleId);
-			return scheduleEffectiveBL.getBPartnerId(shipmentSchedule);
-		}
-
-		public Optional<AsyncBatchId> getAsyncBatchId(@NonNull final ShipmentScheduleId shipmentScheduleId)
-		{
-			final I_M_ShipmentSchedule shipmentSchedule = getShipmentScheduleById(shipmentScheduleId);
-			return Optional.ofNullable(AsyncBatchId.ofRepoIdOrNull(shipmentSchedule.getC_Async_Batch_ID()));
-		}
-
-		@Nullable
-		public ShipperId getShipperId(@Nullable final String shipperInternalName)
-		{
-			if (Check.isBlank(shipperInternalName))
-			{
-				return null;
-			}
-
-			final I_M_Shipper shipper = shipperByInternalName.computeIfAbsent(shipperInternalName, this::loadShipper);
-
-			return shipper != null
-					? ShipperId.ofRepoId(shipper.getM_Shipper_ID())
-					: null;
-		}
-
-		@Nullable
-		public String getTrackingURL(@NonNull final String shipperInternalName)
-		{
-			final I_M_Shipper shipper = shipperByInternalName.computeIfAbsent(shipperInternalName, this::loadShipper);
-
-			return shipper != null
-					? shipper.getTrackingURL()
-					: null;
-		}
-
-		@Nullable
-		private I_M_Shipper loadShipper(@NonNull final String shipperInternalName)
-		{
-			return shipperDAO.getByInternalName(ImmutableSet.of(shipperInternalName)).get(shipperInternalName);
-		}
-	}
-
+	
 	@Value
 	@Builder
 	private static class CreateShipmentInfoCandidate

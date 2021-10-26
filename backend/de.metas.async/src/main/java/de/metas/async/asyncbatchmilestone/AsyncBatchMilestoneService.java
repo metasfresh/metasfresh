@@ -22,15 +22,23 @@
 
 package de.metas.async.asyncbatchmilestone;
 
+import ch.qos.logback.classic.Level;
+import com.google.common.collect.ImmutableSet;
 import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.api.IAsyncBatchDAO;
+import de.metas.async.asyncbatchmilestone.eventbus.AsyncMilestoneEventBusService;
+import de.metas.async.asyncbatchmilestone.eventbus.AsyncMilestoneNotifyRequest;
 import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.model.validator.C_Queue_WorkPackage;
+import de.metas.logging.LogManager;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -40,18 +48,24 @@ import java.util.function.Supplier;
 @Service
 public class AsyncBatchMilestoneService
 {
+	private static final Logger logger = LogManager.getLogger(AsyncBatchMilestoneService.class);
+
 	private final IAsyncBatchDAO asyncBatchDAO = Services.get(IAsyncBatchDAO.class);
 	private final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	private final AsyncBatchMilestoneObserver asyncBatchMilestoneObserver;
 	private final AsyncBatchMilestoneRepo asyncBatchMilestoneRepo;
+	private final AsyncMilestoneEventBusService asyncMilestoneEventBusService;
 
 	public AsyncBatchMilestoneService(
 			@NonNull final AsyncBatchMilestoneObserver asyncBatchMilestoneObserver,
-			@NonNull final AsyncBatchMilestoneRepo asyncBatchMilestoneRepo)
+			@NonNull final AsyncBatchMilestoneRepo asyncBatchMilestoneRepo,
+			@NonNull final AsyncMilestoneEventBusService asyncMilestoneEventBusService)
 	{
 		this.asyncBatchMilestoneObserver = asyncBatchMilestoneObserver;
 		this.asyncBatchMilestoneRepo = asyncBatchMilestoneRepo;
+		this.asyncMilestoneEventBusService = asyncMilestoneEventBusService;
 	}
 
 	@NonNull
@@ -61,9 +75,9 @@ public class AsyncBatchMilestoneService
 	}
 
 	@NonNull
-	public AsyncBatchMilestone save(@NonNull final AsyncBatchMilestone asyncBatchMilestone)
+	public AsyncBatchMilestone saveInNewTrx(@NonNull final AsyncBatchMilestone asyncBatchMilestone)
 	{
-		return asyncBatchMilestoneRepo.save(asyncBatchMilestone);
+		return trxManager.callInNewTrx(() -> asyncBatchMilestoneRepo.save(asyncBatchMilestone));
 	}
 
 	public void processAsyncBatchMilestone(
@@ -85,15 +99,28 @@ public class AsyncBatchMilestoneService
 
 		final int workPackagesFinalized = workPackagesProcessedCount + workPackagesWithErrorCount;
 
+		Loggables.withLogger(logger, Level.INFO).addLog("*** processAsyncBatchMilestone for: asyncBatchID: " + asyncBatch.getC_Async_Batch_ID() +
+																" allWPSize: " + workPackages.size() +
+																" processedWPSize: " + workPackagesProcessedCount +
+																" erroredWPSize: " + workPackagesWithErrorCount +
+																" milestoneIdsToProcess:" + milestones.stream().map(AsyncBatchMilestone::getIdNotNull).collect(ImmutableSet.toImmutableSet()));
+
 		if (workPackagesFinalized >= workPackages.size())
 		{
 			for (final AsyncBatchMilestone milestone : milestones)
 			{
 				final AsyncBatchMilestone finalizedAsyncBatchMilestone = milestone.toBuilder().processed(true).build();
 
-				save(finalizedAsyncBatchMilestone);
+				saveInNewTrx(finalizedAsyncBatchMilestone);
 
-				asyncBatchMilestoneObserver.notifyMilestoneProcessedFor(milestone.getIdNotNull(), workPackagesWithErrorCount <= 0);
+				final AsyncMilestoneNotifyRequest asyncMilestoneRequest = AsyncMilestoneNotifyRequest.builder()
+						.clientId(Env.getClientId())
+						.milestoneId(milestone.getIdNotNull().getRepoId())
+						.asyncBatchId(milestone.getIdNotNull().getAsyncBatchId().getRepoId())
+						.success(workPackagesWithErrorCount <= 0)
+						.build();
+
+				asyncMilestoneEventBusService.postRequest(asyncMilestoneRequest);
 			}
 		}
 	}
@@ -120,7 +147,7 @@ public class AsyncBatchMilestoneService
 				.milestoneName(milestoneName)
 				.build();
 
-		final AsyncBatchMilestoneId milestoneId = save(asyncBatchMilestone).getIdNotNull();
+		final AsyncBatchMilestoneId milestoneId = saveInNewTrx(asyncBatchMilestone).getIdNotNull();
 
 		asyncBatchMilestoneObserver.observeOn(milestoneId);
 

@@ -20,6 +20,7 @@ import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -126,4 +127,6 @@ public interface IInOutDAO extends ISingletonService
 	void save(@NonNull I_M_InOutLine inoutLine);
 
 	List<I_M_InOutLine> retrieveShipmentLinesForOrderId(Set<OrderId> orderIds);
+
+	<T extends I_M_InOut> Map<InOutId, T> getShipmentsByIds(Set<InOutId> inOutIds, Class<T> modelClass);
 }
