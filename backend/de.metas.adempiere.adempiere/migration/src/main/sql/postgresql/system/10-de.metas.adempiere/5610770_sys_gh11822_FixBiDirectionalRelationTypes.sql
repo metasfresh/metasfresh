@@ -1,19 +1,37 @@
-update ad_relationtype set isactive = 'Y', updatedby='99', name = 'C_FlatRate_Term ->C_Invoice_Candidate' where name = 'C_FlatRate_Term<->C_Invoice_Candidate'
+--C_FlatRate_Term<->C_Invoice_Candidate
+-- 2021-10-27T07:59:14.041Z
+-- URL zum Konzept
+UPDATE AD_RelationType SET IsActive='Y',Updated=TO_TIMESTAMP('2021-10-27 09:59:14','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_RelationType_ID=540190
 ;
 
-update ad_relationtype set isactive = 'Y', updatedby='99' where name = 'C_InvoiceCandidate -> C_Flatrate_Term'
+--C_InvoiceCandidate -> C_Flatrate_Term
+-- 2021-10-27T08:01:31.351Z
+-- URL zum Konzept
+UPDATE AD_RelationType SET IsActive='Y',Updated=TO_TIMESTAMP('2021-10-27 10:01:31','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_RelationType_ID=540194
 ;
 
-update ad_relationtype set isactive = 'Y', updatedby='99' where name = 'C_InvoiceCandidate -> Invoice (SO ONLY)'
+--C_InvoiceCandidate -> Invoice (SO ONLY)
+-- 2021-10-27T08:03:26.846Z
+-- URL zum Konzept
+UPDATE AD_RelationType SET IsActive='Y',Updated=TO_TIMESTAMP('2021-10-27 10:03:26','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_RelationType_ID=540116
 ;
 
-update ad_relationtype set isactive = 'Y', updatedby='99' where name = 'C_InvoiceCandidate -> Invoice (PO ONLY)'
+--C_InvoiceCandidate -> Invoice (PO ONLY)
+-- 2021-10-27T08:04:24.950Z
+-- URL zum Konzept
+UPDATE AD_RelationType SET IsActive='Y',Updated=TO_TIMESTAMP('2021-10-27 10:04:24','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_RelationType_ID=540120
 ;
 
-update ad_relationtype set isactive = 'Y', updatedby='99' where name = 'C_Order(SO) -> C_Order(Quotation)'
+--C_Order(SO) -> C_Order(Quotation)
+-- 2021-10-27T08:06:29.748Z
+-- URL zum Konzept
+UPDATE AD_RelationType SET IsActive='Y',Updated=TO_TIMESTAMP('2021-10-27 10:06:29','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_RelationType_ID=540261
 ;
 
-update ad_relationtype set isactive = 'Y', updatedby='99' where name = 'C_Order(Quotation) -> C_Order(SO)'
+--C_Order(Quotation) -> C_Order(SO)
+-- 2021-10-27T08:07:29.622Z
+-- URL zum Konzept
+UPDATE AD_RelationType SET IsActive='Y',Updated=TO_TIMESTAMP('2021-10-27 10:07:29','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_RelationType_ID=540260
 ;
 
 -- 2021-10-20T10:50:20.704Z
@@ -21,17 +39,29 @@ update ad_relationtype set isactive = 'Y', updatedby='99' where name = 'C_Order(
 UPDATE AD_Ref_Table SET WhereClause='exists ( select 1 from C_Order o where o.C_DocType_ID=1000027 and C_Order.C_Order_ID = o.C_Order_ID and @C_BPartner_ID/-1@=o.C_BPartner_ID)',Updated=TO_TIMESTAMP('2021-10-20 13:50:20','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=541184
 ;
 
-update ad_relationtype set isactive = 'Y', updatedby='99' where name = 'M_InOut_ShipmentSchedule'
+--M_InOut_ShipmentSchedule
+-- 2021-10-27T08:51:55.971Z
+-- URL zum Konzept
+UPDATE AD_RelationType SET IsActive='Y',Updated=TO_TIMESTAMP('2021-10-27 10:51:55','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_RelationType_ID=540118
 ;
 
-update ad_relationtype set isactive = 'Y', updatedby='99' where name = 'M_ShipmentSchedule -> Shipment'
+
+--M_ShipmentSchedule -> Shipment
+-- 2021-10-27T08:50:42.636Z
+-- URL zum Konzept
+UPDATE AD_RelationType SET IsActive='Y',Updated=TO_TIMESTAMP('2021-10-27 10:50:42','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_RelationType_ID=540115
 ;
 
-
-update ad_relationtype set isactive = 'Y', updatedby='99' where name = 'M_InventoryLine -> C_Order (PO)'
+--M_InventoryLine -> C_Order (PO)
+-- 2021-10-27T08:49:17.578Z
+-- URL zum Konzept
+UPDATE AD_RelationType SET IsActive='Y',Updated=TO_TIMESTAMP('2021-10-27 10:49:17','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_RelationType_ID=540175
 ;
 
-update ad_relationtype set isactive = 'Y', updatedby='99' where name = 'C_Order (PO) -> M_Inventory_Line'
+--C_Order (PO) -> M_Inventory_Line
+-- 2021-10-27T08:47:38.832Z
+-- URL zum Konzept
+UPDATE AD_RelationType SET IsActive='Y',Updated=TO_TIMESTAMP('2021-10-27 10:47:38','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_RelationType_ID=540174
 ;
 
 -- 2021-10-11T07:16:28.388Z
@@ -39,55 +69,91 @@ update ad_relationtype set isactive = 'Y', updatedby='99' where name = 'C_Order 
 UPDATE AD_Ref_Table SET AD_Window_ID=540205,Updated=TO_TIMESTAMP('2021-10-11 09:16:28','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=540711
 ;
 
-update ad_relationtype set isactive = 'Y', updatedby='99' where name = 'C_Order(SO) -> C_Project'
+-- C_Order(SO) -> C_Project
+-- 2021-10-27T08:09:22.031Z
+-- URL zum Konzept
+UPDATE AD_RelationType SET IsActive='Y',Updated=TO_TIMESTAMP('2021-10-27 10:09:22','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_RelationType_ID=540254
 ;
 
-delete from ad_relationtype where isactive = 'N' and name ILIKE '%C_Project -> Order (SO)%'
+-- C_Project -> Order (SO)
+-- 2021-10-27T08:11:17.541Z
+-- URL zum Konzept
+DELETE FROM AD_RelationType WHERE AD_RelationType_ID=540255
 ;
 
-update ad_relationtype set isactive = 'Y', updatedby='99' where name = 'M_InOut (SO) -> C_Project'
+--M_InOut (SO) -> C_Project
+-- 2021-10-27T08:12:11.345Z
+-- URL zum Konzept
+UPDATE AD_RelationType SET IsActive='Y',Updated=TO_TIMESTAMP('2021-10-27 10:12:11','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_RelationType_ID=540253
 ;
 
-update ad_relationtype set isactive = 'Y', updatedby='99' where name = 'C_Project -> M_InOut(SO)'
+--C_Project -> M_InOut(SO)
+-- 2021-10-27T08:24:16.826Z
+-- URL zum Konzept
+UPDATE AD_RelationType SET IsActive='Y',Updated=TO_TIMESTAMP('2021-10-27 10:24:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_RelationType_ID=540256
 ;
 
-update ad_relationtype set isactive = 'Y', updatedby='99' where name = 'C_Invoice(SO) -> C_Project'
+--C_Invoice(SO) -> C_Project
+-- 2021-10-27T08:13:20.830Z
+-- URL zum Konzept
+UPDATE AD_RelationType SET IsActive='Y',Updated=TO_TIMESTAMP('2021-10-27 10:13:20','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_RelationType_ID=540252
 ;
 
-update ad_relationtype set isactive = 'Y', updatedby='99' where name = 'C_Project -> C_Invoice(SO)'
+--C_Project -> C_Invoice(SO)
+-- 2021-10-27T08:14:35.852Z
+-- URL zum Konzept
+UPDATE AD_RelationType SET IsActive='Y',Updated=TO_TIMESTAMP('2021-10-27 10:14:35','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_RelationType_ID=540257
 ;
 
-update ad_relationtype set isactive = 'Y', updatedby='99' where name = 'C_Order (PO) -> C_Project'
+--C_Order (PO) -> C_Project
+-- 2021-10-27T08:16:23.787Z
+-- URL zum Konzept
+UPDATE AD_RelationType SET IsActive='Y',Updated=TO_TIMESTAMP('2021-10-27 10:16:23','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_RelationType_ID=540267
 ;
 
 delete from ad_relationtype where name ILIKE '%C_Project -> Order (SO)%'
 ;
 
-update ad_relationtype set isactive = 'Y', updatedby='99' where name = 'M_InOut (PO) -> C_Project'
+--M_InOut (PO) -> C_Project
+-- 2021-10-27T08:25:32.662Z
+-- URL zum Konzept
+UPDATE AD_RelationType SET IsActive='Y',Updated=TO_TIMESTAMP('2021-10-27 10:25:32','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_RelationType_ID=540268
 ;
 
-update ad_relationtype set isactive = 'Y', updatedby='99' where name = 'C_Project -> M_InOut (PO)'
+--C_Project -> M_InOut (PO)
+-- 2021-10-27T08:26:40.656Z
+-- URL zum Konzept
+UPDATE AD_RelationType SET IsActive='Y',Updated=TO_TIMESTAMP('2021-10-27 10:26:40','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_RelationType_ID=540271
 ;
 
-update ad_relationtype set isactive = 'Y', updatedby='99' where name = 'C_Invoice (PO) -> C_Project'
+--C_Invoice (PO) -> C_Project
+-- 2021-10-27T08:27:34.126Z
+-- URL zum Konzept
+UPDATE AD_RelationType SET IsActive='Y',Updated=TO_TIMESTAMP('2021-10-27 10:27:34','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_RelationType_ID=540269
 ;
 
-update ad_relationtype set isactive = 'Y', updatedby='99' where name = 'C_Project -> C_Invoice (PO)'
+--C_Project -> C_Invoice (PO)
+-- 2021-10-27T08:28:34.798Z
+-- URL zum Konzept
+UPDATE AD_RelationType SET IsActive='Y',Updated=TO_TIMESTAMP('2021-10-27 10:28:34','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_RelationType_ID=540272
 ;
 
-update ad_relationtype set isactive = 'Y', updatedby='99' where name = 'Fact_Acct -> C_Project'
+--Fact_Acct -> C_Project
+-- 2021-10-27T08:30:57.422Z
+-- URL zum Konzept
+UPDATE AD_RelationType SET IsActive='Y',Updated=TO_TIMESTAMP('2021-10-27 10:30:57','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_RelationType_ID=540258
 ;
 
-update ad_relationtype set isactive = 'Y', updatedby='99' where name = 'C_Project -> Fact_Acct'
+--C_Project -> Fact_Acct
+-- 2021-10-27T08:29:54.651Z
+-- URL zum Konzept
+UPDATE AD_RelationType SET IsActive='Y',Updated=TO_TIMESTAMP('2021-10-27 10:29:54','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_RelationType_ID=540259
 ;
 
 delete from ad_relationtype where name ILIKE  '%C_Order (SO) -> C_Order (PO)%'
 ;
 
 delete from ad_relationtype where name ILIKE  '%C_Order (PO) -> C_Order (SO)%'
-;
-
-delete from ad_relationtype where name ILIKE  '%C_Element <-> C_Eleemnt_Value%'
 ;
 
 --create new reltype C_Element_Value -> C_Element
@@ -308,7 +374,9 @@ UPDATE AD_Ref_Table SET WhereClause='EXISTS (SELECT 1 from C_Project p JOIN Fact
 ;
 
 -- C_PaySelection -> C_Payment
-update ad_relationtype set isactive = 'Y', updatedby= 99 where name ILIKE '%C_PaySelection -> C_Payment'
+-- 2021-10-27T08:32:34.891Z
+-- URL zum Konzept
+UPDATE AD_RelationType SET IsActive='Y',Updated=TO_TIMESTAMP('2021-10-27 10:32:34','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_RelationType_ID=540149
 ;
 
 -- C_Payment -> C_PaySelection
@@ -368,9 +436,10 @@ UPDATE AD_Ref_Table SET AD_Window_ID=195,Updated=TO_TIMESTAMP('2021-10-20 16:04:
 ;
 
 -- AD_Sequence -> C_DocType
-update ad_relationtype set isactive = 'Y', updatedby= 99 where name ILIKE '%AD_Sequence -> C_DocType'
+-- 2021-10-27T08:56:07.831Z
+-- URL zum Konzept
+UPDATE AD_RelationType SET IsActive='Y',Updated=TO_TIMESTAMP('2021-10-27 10:56:07','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_RelationType_ID=540144
 ;
-
 
 -- AD_Table -> AD_Window
 -- 2021-10-25T08:05:02.775Z
@@ -418,9 +487,6 @@ UPDATE AD_Ref_Table SET AD_Key=100,Updated=TO_TIMESTAMP('2021-10-25 10:28:42','Y
 UPDATE AD_Ref_Table SET WhereClause='exists(SELECT 1 from AD_Window w JOIN AD_Tab tt on tt.AD_Window_ID = w.AD_Window_ID JOIN ad_table t on t.AD_Window_ID = w.AD_Window_ID where w.AD_Window_ID = AD_Window.AD_Window_ID and t.AD_Table_ID = @AD_Table_ID/-1@) or exists(SELECT 1 from AD_Window w JOIN AD_Tab tt on tt.AD_Window_ID = w.AD_Window_ID JOIN ad_table t on t.PO_Window_ID = w.AD_Window_ID where w.AD_Window_ID = AD_Window.AD_Window_ID and t.AD_Table_ID = @AD_Table_ID/-1@)',Updated=TO_TIMESTAMP('2021-10-25 10:40:13','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=541437
 ;
 
-
-
-
 -- AD_Window -> AD_Table
 -- 2021-10-25T09:17:58.438Z
 -- URL zum Konzept
@@ -457,10 +523,10 @@ INSERT INTO AD_Ref_Table (AD_Client_ID,AD_Key,AD_Org_ID,AD_Reference_ID,AD_Table
 INSERT INTO AD_RelationType (AD_Client_ID,AD_Org_ID,AD_Reference_Source_ID,AD_Reference_Target_ID,AD_RelationType_ID,Created,CreatedBy,EntityType,IsActive,IsTableRecordIdTarget,Name,Updated,UpdatedBy) VALUES (0,0,541438,541439,540306,TO_TIMESTAMP('2021-10-25 11:21:01','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','N','AD_Window -> AD_Table',TO_TIMESTAMP('2021-10-25 11:21:01','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
-
-
 -- delete `AD_Window <-> AD_Table`
-delete from  ad_relationtype where name ILIKE '%AD_Window <-> AD_Table'
+-- 2021-10-27T08:34:11.204Z
+-- URL zum Konzept
+DELETE FROM AD_RelationType WHERE AD_RelationType_ID=540027
 ;
 
 -- C_DunningDoc -> C_Dunning_Candidate
@@ -559,23 +625,27 @@ UPDATE AD_Ref_Table SET WhereClause='(select 1 from c_dunning_candidate c join c
 UPDATE AD_Ref_Table SET WhereClause='(select 1 from C_Dunning_Candidate c join C_DunningLevel l on c.C_DunningLevel_ID = l.C_DunningLevel_ID    join C_Dunningdoc d on d.C_DunningLevel_ID = l.C_DunningLevel_ID where c.C_Dunning_Candidate_ID = C_Dunning_Candidate.C_Dunning_Candidate_ID and d.C_Dunningdoc_ID = @C_Dunningdoc_ID/-1@)',Updated=TO_TIMESTAMP('2021-10-25 12:49:05','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=541441
 ;
 
-
 -- C_Dunning_Candidate -> C_DunningDoc
-update ad_relationtype set isactive = 'Y', updatedby= 99 where name ILIKE '%C_Dunning_Candidate -> C_DunningDoc%'
+-- 2021-10-27T08:38:25.346Z
+-- URL zum Konzept
+UPDATE AD_RelationType SET IsActive='Y',Updated=TO_TIMESTAMP('2021-10-27 10:38:25','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_RelationType_ID=540150
 ;
 
-
 --C_Bpartner_Org_Masterdata -> C_Bpartner
-update ad_relationtype set isactive = 'Y', updatedby= 99 where name ILIKE '%C_Bpartner_Org_Masterdata -> C_Bpartner%'
+-- 2021-10-27T08:39:36.411Z
+-- URL zum Konzept
+UPDATE AD_RelationType SET IsActive='Y',Updated=TO_TIMESTAMP('2021-10-27 10:39:36','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_RelationType_ID=540265
 ;
 
 --Transportation Order -> DPD Delivery Order
-delete from ad_relationtype  where name ILIKE '%Transportation Order -> DPD Delivery Order%'
+delete from ad_relationtype  where ad_relationtype_id = 540231
 ;
 
 
 --M_PriceListSchema -> M_PriceListSchemaLine
-delete from ad_relationtype where name ILIKE '%M_PriceListSchema -> M_PriceListSchemaLine%'
+-- 2021-10-27T09:00:41.596Z
+-- URL zum Konzept
+DELETE FROM AD_RelationType WHERE AD_RelationType_ID=540232
 ;
 
 -- M_PriceListSchemaLine -> M_PriceListSchema
@@ -644,9 +714,10 @@ UPDATE AD_RelationType SET AD_Reference_Target_ID=541443,Updated=TO_TIMESTAMP('2
 UPDATE AD_Ref_Table SET AD_Key=6612,Updated=TO_TIMESTAMP('2021-10-25 15:17:14','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=541442
 ;
 
-
 -- Async Batch -> C_Queue_WorkPackage
-delete from ad_relationtype where name ILIKE '%Async Batch -> C_Queue_WorkPackage%'
+-- 2021-10-27T08:41:35.698Z
+-- URL zum Konzept
+DELETE FROM AD_RelationType WHERE AD_RelationType_ID=540109
 ;
 
 -- C_Queue_WorkPackage -> Async Batch
@@ -701,7 +772,9 @@ UPDATE AD_RelationType SET AD_Reference_Target_ID=541445,Updated=TO_TIMESTAMP('2
 ;
 
 -- C_Order -> M_Material_Tracking
-update ad_relationtype set isactive = 'Y', updatedby= 99 where name ILIKE '%C_Order -> M_Material_Tracking%'
+-- 2021-10-27T08:43:12.096Z
+-- URL zum Konzept
+UPDATE AD_RelationType SET IsActive='Y',Updated=TO_TIMESTAMP('2021-10-27 10:43:12','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_RelationType_ID=540136
 ;
 
 -- M_Material_Tracking -> C_Order
@@ -776,7 +849,9 @@ UPDATE AD_Ref_Table SET WhereClause='exists (     select 1     from C_Order o   
 ;
 
 -- M_InOut -> Material_Tracking
-update ad_relationtype set isactive = 'Y', updatedby= 99 where name ILIKE '%M_InOut -> Material_Tracking%'
+-- 2021-10-27T08:45:33.402Z
+-- URL zum Konzept
+UPDATE AD_RelationType SET IsActive='Y',Updated=TO_TIMESTAMP('2021-10-27 10:45:33','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_RelationType_ID=540137
 ;
 
 -- Material_Tracking -> M_InOut
@@ -845,6 +920,11 @@ UPDATE AD_RelationType SET AD_Reference_Target_ID=541449,Updated=TO_TIMESTAMP('2
 UPDATE AD_RelationType SET EntityType='D',Updated=TO_TIMESTAMP('2021-10-26 13:59:10','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_RelationType_ID=540311
 ;
 
+-- 2021-10-27T09:23:56.543Z
+-- URL zum Konzept
+UPDATE AD_Ref_Table SET WhereClause='  exists (  select 1  from M_InOut io  join M_InOutLine iol on io.M_InOut_ID = iol.M_InOut_ID and io.isActive = ''Y'' and iol.isactive = ''Y''  join M_Material_Tracking_Ref mtr on  iol.M_InOutLine_ID = mtr.Record_ID and  mtr.AD_Table_ID = ( select ad_Table_ID from AD_Table where tablename = ''M_InOutLine'') and mtr.isActive = ''Y''  join M_Material_Tracking mt on mtr.M_Material_Tracking_ID = mt.M_Material_Tracking_ID and mt.isActive = ''Y''  where   M_InOut.M_InOut_ID = io.M_InOut_ID and   ( io.M_InOut_ID = @M_InOut_ID/-1@ or mt.M_Material_Tracking_ID = @M_Material_Tracking_ID/-1@) ) ',Updated=TO_TIMESTAMP('2021-10-27 11:23:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=541449
+;
+
 -- C_Printing_Queue -> C_Print_Job
 -- 2021-10-26T12:29:33.567Z
 -- URL zum Konzept
@@ -852,7 +932,6 @@ UPDATE AD_RelationType SET IsActive='Y',Updated=TO_TIMESTAMP('2021-10-26 14:29:3
 ;
 
 --C_Print_Job -> C_Printing_Queue
-
 -- 2021-10-26T12:54:28.955Z
 -- URL zum Konzept
 INSERT INTO AD_Reference (AD_Client_ID,AD_Org_ID,AD_Reference_ID,Created,CreatedBy,EntityType,IsActive,IsOrderByValue,Name,Updated,UpdatedBy,ValidationType) VALUES (0,0,541451,TO_TIMESTAMP('2021-10-26 14:54:28','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','N','C_Print_Job_Source',TO_TIMESTAMP('2021-10-26 14:54:28','YYYY-MM-DD HH24:MI:SS'),100,'T')
@@ -912,4 +991,45 @@ UPDATE AD_Ref_Table SET WhereClause='exists( select 1 from C_Print_Job_Line pjl 
 -- 2021-10-26T13:38:40.507Z
 -- URL zum Konzept
 UPDATE AD_RelationType SET IsActive='Y',Updated=TO_TIMESTAMP('2021-10-26 15:38:40','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_RelationType_ID=540135
+;
+
+--M_HU -> M_HU_Trx_Line
+-- 2021-10-27T09:32:32.623Z
+-- URL zum Konzept
+UPDATE AD_RelationType SET IsActive='Y',Updated=TO_TIMESTAMP('2021-10-27 11:32:32','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_RelationType_ID=540208
+;
+
+-- 2021-10-27T09:37:42.298Z
+-- URL zum Konzept
+UPDATE AD_Ref_Table SET AD_Window_ID=540189,Updated=TO_TIMESTAMP('2021-10-27 11:37:42','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=540499
+;
+
+--Auftragskand.<=>Auftrag (Belegebene)
+-- 2021-10-27T09:52:19.164Z
+-- URL zum Konzept
+DELETE FROM AD_RelationType WHERE AD_RelationType_ID=540008
+;
+
+--c_bankstatement -> esr_import
+-- 2021-10-27T10:03:22.382Z
+-- URL zum Konzept
+DELETE FROM AD_RelationType WHERE AD_RelationType_ID=540133
+;
+
+-- esr_import -> c_bankstatement
+-- 2021-10-27T12:47:25.868Z
+-- URL zum Konzept
+UPDATE AD_RelationType SET IsActive='Y',Updated=TO_TIMESTAMP('2021-10-27 14:47:25','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_RelationType_ID=540250
+;
+
+--ExternalConfig -> External Config Log
+-- 2021-10-27T13:42:33.557Z
+-- URL zum Konzept
+UPDATE AD_RelationType SET IsActive='Y',Updated=TO_TIMESTAMP('2021-10-27 15:42:33','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_RelationType_ID=540279
+;
+
+--`AD_Role_Included -> AD_Role`
+-- 2021-10-27T13:52:19.334Z
+-- URL zum Konzept
+UPDATE AD_RelationType SET IsActive='Y',Updated=TO_TIMESTAMP('2021-10-27 15:52:19','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_RelationType_ID=540143
 ;
