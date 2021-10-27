@@ -36,6 +36,7 @@ import lombok.ToString;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.Collection;
@@ -215,8 +216,15 @@ public final class Params implements IParams
 	{
 		final Timestamp value = getParameterAsTimestamp(parameterName);
 		return value != null
-				? value.toLocalDateTime().atZone(SystemTime.zoneId())
+				? value.toInstant().atZone(SystemTime.zoneId())
 				: null;
+	}
+
+	@Override
+	public Instant getParameterAsInstant(final String parameterName)
+	{
+		final Timestamp value = getParameterAsTimestamp(parameterName);
+		return value != null ? value.toInstant() : null;
 	}
 
 	@Override
