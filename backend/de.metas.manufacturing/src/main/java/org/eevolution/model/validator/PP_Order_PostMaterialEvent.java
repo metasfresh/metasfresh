@@ -89,6 +89,7 @@ public class PP_Order_PostMaterialEvent
 			//ModelValidator.TIMING_AFTER_UNCLOSE,
 			//ModelValidator.TIMING_AFTER_VOID
 	})
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE}, ifColumnsChanged = I_PP_Order.COLUMNNAME_QtyDelivered )
 	public void postMaterialEvent_ppOrderDocStatusChange(
 			@NonNull final I_PP_Order ppOrderRecord,
 			@NonNull final DocTimingType type)
