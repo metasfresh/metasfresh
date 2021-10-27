@@ -103,8 +103,7 @@ public class WEBUI_DD_OrderLine_MoveSelected_HU extends ViewBasedProcessTemplate
 				.failIfCannotAllocate()
 				.allocateHUAndPrepareGeneratingMovements(huToMove)
 				.locatorToIdOverride(paramLocatorToId > 0 ? warehouseBL.getLocatorIdByRepoId(paramLocatorToId) : null)
-				.doDirectMovements()
-				.processWithinOwnTrx();
+				.generateDirectMovements();
 
 		return MSG_OK;
 	}

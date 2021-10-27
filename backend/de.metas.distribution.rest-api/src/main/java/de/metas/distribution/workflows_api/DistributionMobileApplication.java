@@ -1,6 +1,8 @@
 package de.metas.distribution.workflows_api;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.distribution.ddorder.DDOrderId;
+import de.metas.distribution.rest_api.JsonDistributionEvent;
 import de.metas.distribution.workflows_api.activity_handlers.MoveWFActivityHandler;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.TranslatableStrings;
@@ -18,7 +20,6 @@ import de.metas.workflow.rest_api.service.MobileApplication;
 import de.metas.workflow.rest_api.service.WorkflowStartRequest;
 import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
-import de.metas.distribution.ddorder.DDOrderId;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
@@ -107,7 +108,8 @@ public class DistributionMobileApplication implements MobileApplication
 	@Override
 	public WFProcess changeWFProcessById(final WFProcessId wfProcessId, final UnaryOperator<WFProcess> remappingFunction)
 	{
-		throw new UnsupportedOperationException(); // TODO impl
+		final WFProcess wfProcess = getWFProcessById(wfProcessId);
+		return remappingFunction.apply(wfProcess);
 	}
 
 	@Override
@@ -132,5 +134,18 @@ public class DistributionMobileApplication implements MobileApplication
 						.value(job.getDropToWarehouse().getCaption())
 						.build())
 				.build();
+	}
+
+	public void processEvent(final JsonDistributionEvent event, final UserId callerId)
+	{
+		final WFProcessId wfProcessId = WFProcessId.ofString(event.getWfProcessId());
+		changeWFProcessById(
+				wfProcessId,
+				wfProcess -> {
+					wfProcess.assertHasAccess(callerId);
+					//assertPickingActivityType(jsonEvents, wfProcess);
+
+					return wfProcess.<DistributionJob>mapDocument(job -> distributionRestService.processEvent(job, event));
+				});
 	}
 }

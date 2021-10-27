@@ -9,7 +9,7 @@ import org.eevolution.model.I_DD_OrderLine;
 
 import java.util.HashMap;
 
-class DDOrdersCache
+final class DDOrdersCache
 {
 	private final DDOrderService ddOrderService;
 

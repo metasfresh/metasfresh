@@ -139,10 +139,10 @@ public class DD_OrderLine
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
-	public void clearHUsScheduledToMoveList(final I_DD_OrderLine ddOrderLine)
+	public void removeNotStartedSchedules(final I_DD_OrderLine ddOrderLine)
 	{
 		final DDOrderLineId ddOrderLineId = DDOrderLineId.ofRepoId(ddOrderLine.getDD_OrderLine_ID());
-		ddOrderMoveScheduleService.removeAllSchedulesForLine(ddOrderLineId);
+		ddOrderMoveScheduleService.removeNotStarted(ddOrderLineId);
 	}
 
 	@ModelChange(timings = {

@@ -23,7 +23,9 @@
 package de.metas.handlingunits.impl;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
 import de.metas.handlingunits.HUIteratorListenerAdapter;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
@@ -122,6 +124,13 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	public List<I_M_HU> getByIds(@NonNull final Collection<HuId> huIds)
 	{
 		return handlingUnitsRepo.getByIds(huIds);
+	}
+
+	@Override
+	public ImmutableMap<HuId, I_M_HU> getByIdsReturningMap(@NonNull final Collection<HuId> huIds)
+	{
+		final List<I_M_HU> hus = handlingUnitsRepo.getByIds(huIds);
+		return Maps.uniqueIndex(hus, hu -> HuId.ofRepoId(hu.getM_HU_ID()));
 	}
 
 	@Override
@@ -254,7 +263,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	@Override
 	public void markDestroyed(@NonNull final IHUContext huContext, final I_M_HU hu)
 	{
-		if(huContext.isDontDestroyHu(HuId.ofRepoId(hu.getM_HU_ID())))
+		if (huContext.isDontDestroyHu(HuId.ofRepoId(hu.getM_HU_ID())))
 		{
 			logger.info("markDestroyed - the given M_HU_ID={} is temporarily protected from destruction; -> nothing to do", hu.getM_HU_ID());
 			return;

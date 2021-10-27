@@ -93,7 +93,7 @@ public class WEBUI_DD_OrderLine_MoveHU extends ViewBasedProcessTemplate implemen
 		{
 			final DDOrderLineId ddOrderLineId = DDOrderLineId.ofRepoId(getSingleSelectedRow().getId().toInt());
 
-			final List<HuId> huIds = ddOrderMoveScheduleService.retrieveHUIdsScheduledToMove(ddOrderLineId);
+			final List<HuId> huIds = ddOrderMoveScheduleService.retrieveHUIdsScheduledButNotMovedYet(ddOrderLineId);
 			if (Check.isEmpty(huIds))
 			{
 				return IProcessDefaultParametersProvider.DEFAULT_VALUE_NOTAVAILABLE;
@@ -123,8 +123,7 @@ public class WEBUI_DD_OrderLine_MoveHU extends ViewBasedProcessTemplate implemen
 				.failIfCannotAllocate()
 				.allocateHUAndPrepareGeneratingMovements(hu)
 				.locatorToIdOverride(p_M_LocatorTo_ID > 0 ? warehouseBL.getLocatorIdByRepoId(p_M_LocatorTo_ID) : null)
-				.doDirectMovements()
-				.processWithinOwnTrx();
+				.generateDirectMovements();
 
 		return MSG_OK;
 	}

@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -56,7 +57,7 @@ import lombok.NonNull;
 public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 {
 	/** Convenient method to create an instance which is scheduling a workpackage on transaction commit, but which is NOT collecting the enqueued models */
-	public static final <ModelType> WorkpackagesOnCommitSchedulerTemplate<ModelType> newModelSchedulerNoCollect(
+	public static <ModelType> WorkpackagesOnCommitSchedulerTemplate<ModelType> newModelSchedulerNoCollect(
 			final Class<? extends IWorkpackageProcessor> workpackageProcessorClass,
 			final Class<ModelType> modelType)
 	{
@@ -65,14 +66,14 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 	}
 
 	/** Convenient method to create an instance which is scheduling a workpackage on transaction commit based on a given {@link IContextAware} */
-	public static final WorkpackagesOnCommitSchedulerTemplate<IContextAware> newContextAwareSchedulerNoCollect(final Class<? extends IWorkpackageProcessor> workpackageProcessorClass)
+	public static WorkpackagesOnCommitSchedulerTemplate<IContextAware> newContextAwareSchedulerNoCollect(final Class<? extends IWorkpackageProcessor> workpackageProcessorClass)
 	{
 		final boolean collectModels = false;
 		return new ModelsScheduler<>(workpackageProcessorClass, IContextAware.class, collectModels);
 	}
 
 	/** Convenient method to create an instance which IS COLLECTING models and schedules a workpackage on transaction commit. */
-	public static final <ModelType> WorkpackagesOnCommitSchedulerTemplate<ModelType> newModelScheduler(
+	public static <ModelType> WorkpackagesOnCommitSchedulerTemplate<ModelType> newModelScheduler(
 			final Class<? extends IWorkpackageProcessor> workpackageProcessorClass,
 			final Class<ModelType> modelType)
 	{
@@ -112,6 +113,12 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 		}
 		scheduleFactory.collect(item);
 	}
+
+	public final void scheduleAll(@NonNull final List<ItemType> items)
+	{
+		items.forEach(this::schedule);
+	}
+
 
 	public WorkpackagesOnCommitSchedulerTemplate<ItemType> setCreateOneWorkpackagePerModel(
 			final boolean createOneWorkpackagePerModel)
@@ -193,7 +200,7 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 		protected String getTrxProperyName()
 		{
 			return WorkpackagesOnCommitSchedulerTemplate.this.trxPropertyName;
-		};
+		}
 
 		@Override
 		protected String extractTrxNameFromItem(final ItemType item)

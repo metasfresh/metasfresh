@@ -31,10 +31,12 @@ public class DistributionJobStep
 	private DistributionJobStep(
 			@NonNull final DDOrderMoveScheduleId id,
 			@NonNull final Quantity qtyToMoveTarget,
+			//
 			@NonNull final HuId pickFromHUId,
 			@Nullable final HuId actualHUPicked,
 			@NonNull final Quantity qtyPicked,
 			@Nullable final QtyRejectedReasonCode qtyNotPickedReasonCode,
+			//
 			final boolean droppedToLocator)
 	{
 		Quantity.assertSameUOM(qtyToMoveTarget, qtyPicked);

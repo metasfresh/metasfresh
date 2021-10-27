@@ -1,6 +1,8 @@
 package de.metas.distribution.ddorder.movement.schedule;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.distribution.ddorder.DDOrderId;
+import de.metas.distribution.ddorder.DDOrderLineId;
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelDAO;
 import de.metas.distribution.ddorder.movement.schedule.plan.DDOrderMovePlan;
 import de.metas.distribution.ddorder.movement.schedule.plan.DDOrderMovePlanCreateCommand;
@@ -9,15 +11,12 @@ import de.metas.distribution.ddorder.movement.schedule.plan.DDOrderMovePlanLine;
 import de.metas.distribution.ddorder.movement.schedule.plan.DDOrderMovePlanStep;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.QtyRejectedReasonCode;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.service.IADReferenceDAO;
-import de.metas.distribution.ddorder.DDOrderId;
-import de.metas.distribution.ddorder.DDOrderLineId;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -45,33 +44,38 @@ public class DDOrderMoveScheduleService
 		return adReferenceDAO.getRefListById(QtyRejectedReasonCode.REFERENCE_ID);
 	}
 
-	public void addScheduleToMove(@NonNull final DDOrderMoveScheduleCreateRequest request)
+	public void createScheduleToMove(@NonNull final DDOrderMoveScheduleCreateRequest request)
 	{
-		ddOrderMoveScheduleRepository.addScheduleToMove(request);
+		ddOrderMoveScheduleRepository.createScheduleToMove(request);
 	}
 
-	public ImmutableList<DDOrderMoveSchedule> addScheduleToMoveBulk(@NonNull final List<DDOrderMoveScheduleCreateRequest> requests)
+	public ImmutableList<DDOrderMoveSchedule> createScheduleToMoveBulk(@NonNull final List<DDOrderMoveScheduleCreateRequest> requests)
 	{
-		return ddOrderMoveScheduleRepository.addScheduleToMoveBulk(requests);
+		return ddOrderMoveScheduleRepository.createScheduleToMoveBulk(requests);
 	}
 
 	public ImmutableList<DDOrderMoveSchedule> getSchedules(@NonNull final DDOrderId ddOrderId) {return ddOrderMoveScheduleRepository.getSchedules(ddOrderId);}
 
-	public void removeDraftSchedules(@NonNull final DDOrderId ddOrderId)
+	public DDOrderMoveSchedule getScheduleById(@NonNull final DDOrderMoveScheduleId id) {return ddOrderMoveScheduleRepository.getById(id);}
+
+	public void removeNotStarted(@NonNull final DDOrderId ddOrderId)
 	{
-		// FIXME: only Draft ones!
-		ddOrderMoveScheduleRepository.removeAllSchedulesForOrder(ddOrderId);
+		ddOrderMoveScheduleRepository.removeNotStarted(ddOrderId);
 	}
 
-	public void removeDraftSchedules(@NonNull final DDOrderLineId ddOrderLineId)
+	public boolean hasInProgressSchedules(@NonNull final DDOrderId ddOrderId)
 	{
-		// FIXME: only Draft ones!
-		ddOrderMoveScheduleRepository.removeAllSchedulesForLine(ddOrderLineId);
+		return ddOrderMoveScheduleRepository.hasInProgressSchedules(ddOrderId);
 	}
 
-	public void removeAllSchedulesForLine(@NonNull final DDOrderLineId ddOrderLineId)
+	public void removeNotStarted(@NonNull final DDOrderLineId ddOrderLineId)
 	{
-		ddOrderMoveScheduleRepository.removeAllSchedulesForLine(ddOrderLineId);
+		ddOrderMoveScheduleRepository.removeNotStarted(ddOrderLineId);
+	}
+
+	public boolean hasInProgressSchedules(@NonNull final DDOrderLineId ddOrderLineId)
+	{
+		return ddOrderMoveScheduleRepository.hasInProgressSchedules(ddOrderLineId);
 	}
 
 	public void removeFromHUsScheduledToPickList(final DDOrderLineId ddOrderLineId, final Set<HuId> huIdsToUnAssign)
@@ -89,10 +93,14 @@ public class DDOrderMoveScheduleService
 		return ddOrderMoveScheduleRepository.isScheduledToMove(huId);
 	}
 
-	public List<HuId> retrieveHUIdsScheduledToMove(final DDOrderLineId ddOrderLineId)
+	public List<HuId> retrieveHUIdsScheduledButNotMovedYet(final DDOrderLineId ddOrderLineId)
 	{
-		// FIXME: only Draft ones
-		return ddOrderMoveScheduleRepository.retrieveHUIdsScheduledToMove(ddOrderLineId);
+		return ddOrderMoveScheduleRepository.retrieveHUIdsScheduledButNotMovedYet(ddOrderLineId);
+	}
+
+	public void save(@NonNull final DDOrderMoveSchedule schedule)
+	{
+		ddOrderMoveScheduleRepository.save(schedule);
 	}
 
 	public DDOrderMovePlan createPlan(@NonNull final DDOrderMovePlanCreateRequest request)
@@ -105,7 +113,7 @@ public class DDOrderMoveScheduleService
 
 	public ImmutableList<DDOrderMoveSchedule> savePlan(@NonNull final DDOrderMovePlan plan)
 	{
-		return addScheduleToMoveBulk(toScheduleToMoveRequest(plan));
+		return createScheduleToMoveBulk(toScheduleToMoveRequest(plan));
 	}
 
 	private static ImmutableList<DDOrderMoveScheduleCreateRequest> toScheduleToMoveRequest(@NonNull final DDOrderMovePlan plan)
@@ -135,28 +143,39 @@ public class DDOrderMoveScheduleService
 		return DDOrderMoveScheduleCreateRequest.builder()
 				.ddOrderId(ddOrderId)
 				.ddOrderLineId(ddOrderLineId)
+				.productId(planStep.getProductId())
+				//
+				// Pick From
+				.pickFromLocatorId(planStep.getPickFromLocatorId())
 				.pickFromHUId(planStep.getPickFromHUId())
 				.qtyToPick(planStep.getQtyToPick())
 				.isPickWholeHU(planStep.isPickWholeHU())
+				//
+				// Drop To
+				.dropToLocatorId(planStep.getDropToLocatorId())
+				//
 				.build();
 	}
 
-	public void splitFromPickHUIfNeeded(@NonNull final DDOrderMoveSchedule schedule)
+	public DDOrderMoveSchedule pickFromHU(@NonNull final DDOrderPickFromRequest request)
 	{
-		if (schedule.getActualHUIdPicked() != null)
-		{
-			return;
-		}
-
-		final I_M_HU newCU = HUTransformService.newInstance()
-				.huToNewSingleCU(HUTransformService.HUsToNewCUsRequest.builder()
-						.sourceHU(handlingUnitsBL.getById(schedule.getPickFromHUId()))
-						.qtyCU(schedule.getQtyToPick())
-						.keepNewCUsUnderSameParent(false)
-						.onlyFromUnreservedHUs(true)
-						.build());
-
-		schedule.setActualHUIdPicked(HuId.ofRepoId(newCU.getM_HU_ID()));
-		ddOrderMoveScheduleRepository.save(schedule);
+		return DDOrderPickFromCommand.builder()
+				.ddOrderLowLevelDAO(ddOrderLowLevelDAO)
+				.ddOrderMoveScheduleRepository(ddOrderMoveScheduleRepository)
+				.handlingUnitsBL(handlingUnitsBL)
+				.request(request)
+				.build()
+				.execute();
 	}
+
+	public DDOrderMoveSchedule dropTo(@NonNull final DDOrderDropToRequest request)
+	{
+		return DDOrderDropToCommand.builder()
+				.ddOrderLowLevelDAO(ddOrderLowLevelDAO)
+				.ddOrderMoveScheduleRepository(ddOrderMoveScheduleRepository)
+				.request(request)
+				.build()
+				.execute();
+	}
+
 }

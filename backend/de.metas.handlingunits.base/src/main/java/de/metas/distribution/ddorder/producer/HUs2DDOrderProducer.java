@@ -3,6 +3,9 @@ package de.metas.distribution.ddorder.producer;
 import ch.qos.logback.classic.Level;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.util.time.SystemTime;
+import de.metas.distribution.ddorder.DDOrderId;
+import de.metas.distribution.ddorder.DDOrderLineId;
+import de.metas.distribution.ddorder.lowlevel.model.I_DD_OrderLine;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleCreateRequest;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleService;
 import de.metas.document.DocTypeId;
@@ -16,7 +19,6 @@ import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.materialtracking.IHUMaterialTrackingBL;
-import de.metas.distribution.ddorder.lowlevel.model.I_DD_OrderLine;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.logging.LogManager;
@@ -42,8 +44,6 @@ import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.Util.ArrayKey;
-import de.metas.distribution.ddorder.DDOrderId;
-import de.metas.distribution.ddorder.DDOrderLineId;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.X_DD_Order;
 import org.slf4j.Logger;
@@ -371,11 +371,10 @@ public class HUs2DDOrderProducer
 
 		//
 		// Locator From/To
-		// final I_M_HU hu = huProductStorage.getM_HU();
-		final LocatorId locatorFromId = ddOrderLineCandidate.getLocatorFromId();
-		final LocatorId locatorToId = getLocatorToId();
-		ddOrderline.setM_Locator_ID(locatorFromId.getRepoId());
-		ddOrderline.setM_LocatorTo_ID(locatorToId.getRepoId());
+		final LocatorId pickFromLocatorId = ddOrderLineCandidate.getLocatorFromId();
+		final LocatorId dropToLocatorId = getLocatorToId();
+		ddOrderline.setM_Locator_ID(pickFromLocatorId.getRepoId());
+		ddOrderline.setM_LocatorTo_ID(dropToLocatorId.getRepoId());
 
 		//
 		// Product, UOM, Qty
@@ -424,10 +423,18 @@ public class HUs2DDOrderProducer
 				.map(pickFromHU -> DDOrderMoveScheduleCreateRequest.builder()
 						.ddOrderId(ddOrderId)
 						.ddOrderLineId(ddOrderLineId)
+						.productId(productId)
+						//
+						// Pick From
+						.pickFromLocatorId(pickFromLocatorId)
 						.pickFromHUId(pickFromHU.getHuId())
 						.qtyToPick(pickFromHU.getQtyToPick())
+						//
+						// Drop To
+						.dropToLocatorId(dropToLocatorId)
+						//
 						.build())
-				.forEach(ddOrderMoveScheduleService::addScheduleToMove);
+				.forEach(ddOrderMoveScheduleService::createScheduleToMove);
 	}
 
 	private static String getDescriptionForLotNoQuarantine(final LotNumberQuarantine lotNumberQuarantine)
