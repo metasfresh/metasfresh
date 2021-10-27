@@ -7,6 +7,7 @@ import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.cache.CCache;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.i18n.ITranslatableString;
+import de.metas.location.LocationId;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
@@ -84,6 +85,7 @@ public class WarehouseDAO implements IWarehouseDAO
 	private final CCache<WarehouseId, ImmutableList<LocatorId>> locatorIdsByWarehouseId = CCache.newCache(I_M_Locator.Table_Name + "#by#M_Warehouse_ID", 10, CCache.EXPIREMINUTES_Never);
 	private final CCache<Integer, WarehouseRoutingsIndex> allWarehouseRoutings = CCache.newCache(I_M_Warehouse_Routing.Table_Name, 1, CCache.EXPIREMINUTES_Never);
 	private final CCache<Integer, WarehouseTypesIndex> allWarehouseTypes = CCache.newCache(I_M_Warehouse_Type.Table_Name, 1, CCache.EXPIREMINUTES_Never);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@Override
 	public I_M_Warehouse getById(@NonNull final WarehouseId warehouseId)
@@ -612,7 +614,8 @@ public class WarehouseDAO implements IWarehouseDAO
 	@Override
 	public org.adempiere.warehouse.model.I_M_Warehouse retrieveQuarantineWarehouseOrNull()
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(org.adempiere.warehouse.model.I_M_Warehouse.class)
+
+		return queryBL.createQueryBuilder(org.adempiere.warehouse.model.I_M_Warehouse.class)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
 				.addEqualsFilter(org.adempiere.warehouse.model.I_M_Warehouse.COLUMNNAME_IsQuarantineWarehouse, true)
@@ -689,5 +692,14 @@ public class WarehouseDAO implements IWarehouseDAO
 	{
 		final I_M_Warehouse warehouse = getById(warehouseId);
 		return BPartnerLocationAndCaptureId.ofRepoId(warehouse.getC_BPartner_ID(), warehouse.getC_BPartner_Location_ID(), warehouse.getC_Location_ID());
+	}
+
+	@Override
+	public final ImmutableSet<WarehouseId> retrieveWarehouseWithLocation(final @NonNull LocationId locationId)
+	{
+		return queryBL.createQueryBuilder(I_M_Warehouse.class)
+				.addEqualsFilter(I_M_Warehouse.COLUMN_C_Location_ID, locationId)
+				.create()
+				.listIds(WarehouseId::ofRepoId);
 	}
 }
