@@ -28,6 +28,7 @@ import de.metas.util.lang.RepoIdAware;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.Collection;
@@ -68,6 +69,8 @@ public interface IParams
 
 	/** @return local date value or <code>null</code> if parameter is missing */
 	ZonedDateTime getParameterAsZonedDateTime(String parameterName);
+
+	Instant getParameterAsInstant(String parameterName);
 
 	/** @return {@link BigDecimal} value or <code>null</code> if parameter is missing or cannot be converted to {@link BigDecimal} */
 	BigDecimal getParameterAsBigDecimal(String parameterName);
