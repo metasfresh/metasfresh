@@ -53,8 +53,6 @@ public class WEBUI_Picking_ForcePickToNewHU extends WEBUI_Picking_PickQtyToNewHU
 	{
 		final HuId packToHuId = createNewHuId();
 
-
-
 		forcePick(getQtyToPack(), packToHuId);
 
 		printPickingLabel(packToHuId);

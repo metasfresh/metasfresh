@@ -74,7 +74,6 @@ public interface IAttributesBL extends ISingletonService
 
 	boolean isMandatoryOnShipment(@NonNull ProductId productId, @NonNull AttributeId attributeId);
 
-
 	boolean isMandatoryOnPicking(@NonNull ProductId productId, @NonNull AttributeId attributeId);
 
 	/**

@@ -240,7 +240,7 @@ public class AttributesBL implements IAttributesBL
 			return mandatoryOnShipment;
 		}
 
-		return attributesRepo.getAttributeById(attributeId).isMandatory(); // TODO do I need this here?
+		return attributesRepo.getAttributeById(attributeId).isMandatory();
 	}
 
 	@Override
@@ -257,7 +257,7 @@ public class AttributesBL implements IAttributesBL
 			return mandatoryOnPicking;
 		}
 
-		return attributesRepo.getAttributeById(attributeId).isMandatory(); // TODO do I need this here?
+		return attributesRepo.getAttributeById(attributeId).isMandatory();
 	}
 
 	@Override
