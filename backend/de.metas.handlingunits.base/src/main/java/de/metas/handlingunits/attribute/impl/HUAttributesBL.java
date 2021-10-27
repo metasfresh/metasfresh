@@ -202,13 +202,7 @@ public class HUAttributesBL implements IHUAttributesBL
 	@Override
 	public void validateMandatoryPickingAttributes(@NonNull final HuId huId, @NonNull final ProductId productId)
 	{
-		final AttributeSetId attributeSetId = productBL.getAttributeSetId(productId);
-
-		final ImmutableList<I_M_Attribute> attributesMandatoryOnPicking = attributeDAO.getAttributesByAttributeSetId(attributeSetId).stream()
-				.filter(attribute -> attributesBL
-						.isMandatoryOnPicking(productId,
-											  AttributeId.ofRepoId(attribute.getM_Attribute_ID())))
-				.collect(ImmutableList.toImmutableList());
+		final ImmutableList<I_M_Attribute> attributesMandatoryOnPicking = attributesBL.getAttributesMandatoryOnPicking(productId);
 
 		validateMandatoryAttributes(huId, productId, attributesMandatoryOnPicking, MSG_MandatoryOnPicking);
 	}
@@ -238,5 +232,7 @@ public class HUAttributesBL implements IHUAttributesBL
 						 }
 				);
 	}
+
+
 
 }

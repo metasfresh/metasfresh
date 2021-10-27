@@ -23,6 +23,7 @@ package org.adempiere.mm.attributes.api.impl;
  */
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner_product.IBPartnerProductDAO;
 import de.metas.i18n.AdMessageKey;
@@ -71,6 +72,7 @@ import java.util.Properties;
 public class AttributesBL implements IAttributesBL
 {
 	private final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final ISysConfigBL sysConfigs = Services.get(ISysConfigBL.class);
 	private final IJavaClassDAO javaClassDAO = Services.get(IJavaClassDAO.class);
 	private final IJavaClassBL javaClassBL = Services.get(IJavaClassBL.class);
@@ -225,7 +227,6 @@ public class AttributesBL implements IAttributesBL
 		return attributesRepo.getAttributeById(attributeId).isMandatory();
 	}
 
-
 	@Override
 	public boolean isMandatoryOnShipment(@NonNull final ProductId productId, @NonNull final AttributeId attributeId)
 	{
@@ -244,9 +245,35 @@ public class AttributesBL implements IAttributesBL
 	}
 
 	@Override
+	public ImmutableList<I_M_Attribute> getAttributesMandatoryOnPicking(final ProductId productId)
+	{
+		final AttributeSetId attributeSetId = productBL.getAttributeSetId(productId);
+		final ImmutableList<I_M_Attribute> attributesMandatoryOnPicking = attributesRepo.getAttributesByAttributeSetId(attributeSetId).stream()
+				.filter(attribute -> isMandatoryOnPicking(productId,
+														  AttributeId.ofRepoId(attribute.getM_Attribute_ID())))
+				.collect(ImmutableList.toImmutableList());
+
+		return attributesMandatoryOnPicking;
+	}
+
+	@Override
+	public ImmutableList<I_M_Attribute> getAttributesMandatoryOnShipment(final ProductId productId)
+	{
+		final AttributeSetId attributeSetId = productBL.getAttributeSetId(productId);
+
+		final ImmutableList<I_M_Attribute> attributesMandatoryOnShipment = attributesRepo.getAttributesByAttributeSetId(attributeSetId).stream()
+				.filter(attribute -> isMandatoryOnShipment(productId,
+														   AttributeId.ofRepoId(attribute.getM_Attribute_ID())))
+				.collect(ImmutableList.toImmutableList());
+
+		return attributesMandatoryOnShipment;
+	}
+
+	@Override
 	public boolean isMandatoryOnPicking(@NonNull final ProductId productId, @NonNull final AttributeId attributeId)
 	{
 		final AttributeSetId attributeSetId = productsService.getAttributeSetId(productId);
+
 		final Boolean mandatoryOnPicking = attributesRepo.getAttributeSetAttributeId(attributeSetId, attributeId)
 				.map(AttributeSetAttribute::getMandatoryOnPicking)
 				.map(OptionalBoolean::toBooleanOrNull)

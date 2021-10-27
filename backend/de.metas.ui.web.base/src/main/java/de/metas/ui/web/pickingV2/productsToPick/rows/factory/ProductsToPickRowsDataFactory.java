@@ -6,6 +6,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactoryService;
@@ -41,7 +42,9 @@ import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.api.AttributeConstants;
+import org.adempiere.mm.attributes.api.IAttributesBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
+import org.compiere.model.I_M_Attribute;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
@@ -86,6 +89,7 @@ public final class ProductsToPickRowsDataFactory
 {
 	private final IDeveloperModeBL developerModeBL = Services.get(IDeveloperModeBL.class);
 	private final IPPOrderBL ppOrdersBL = Services.get(IPPOrderBL.class);
+	private final IAttributesBL attributesBL = Services.get(IAttributesBL.class);
 	private final IBPartnerBL bpartnersService;
 	private final HUReservationService huReservationService;
 	private final PickingCandidateService pickingCandidateService;
@@ -120,6 +124,7 @@ public final class ProductsToPickRowsDataFactory
 	@Builder
 	private ProductsToPickRowsDataFactory(
 			@NonNull final IBPartnerBL bpartnersService,
+			@NonNull final IAttributesBL attributesService,
 			@NonNull final HUReservationService huReservationService,
 			@NonNull final PickingCandidateService pickingCandidateService,
 			//
@@ -334,12 +339,19 @@ public final class ProductsToPickRowsDataFactory
 	{
 		final OrderLineId salesOrderLine = packageable.getSalesOrderLineIdOrNull();
 
-		final Set<HuId> huIds = huReservationService.prepareHUQuery()
+		final ImmutableList<I_M_Attribute> attributesMandatoryOnPicking = attributesBL.getAttributesMandatoryOnPicking(packageable.getProductId());
+
+		final IHUQueryBuilder huQuery = huReservationService.prepareHUQuery()
 				.warehouseId(packageable.getWarehouseId())
 				.productId(packageable.getProductId())
 				.asiId(considerAttributes ? packageable.getAsiId() : null)
 				.reservedToSalesOrderLineIdOrNotReservedAtAll(salesOrderLine)
-				.build()
+				.build();
+
+		attributesMandatoryOnPicking.stream()
+				.forEach(attribute -> huQuery.addOnlyWithAttributeNotNull(AttributeCode.ofString(attribute.getValue())));
+
+		final Set<HuId> huIds = huQuery
 				.listIds();
 
 		warmUpCacheForHuIds(huIds);

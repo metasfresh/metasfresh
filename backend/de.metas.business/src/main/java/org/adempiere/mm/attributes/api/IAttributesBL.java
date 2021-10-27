@@ -26,6 +26,7 @@ import java.math.MathContext;
 import java.util.Date;
 import java.util.Properties;
 
+import com.google.common.collect.ImmutableList;
 import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeListValue;
@@ -73,6 +74,10 @@ public interface IAttributesBL extends ISingletonService
 	boolean isMandatoryOnReceipt(@NonNull ProductId productId, @NonNull AttributeId attributeId);
 
 	boolean isMandatoryOnShipment(@NonNull ProductId productId, @NonNull AttributeId attributeId);
+
+	ImmutableList<I_M_Attribute> getAttributesMandatoryOnPicking(ProductId productId);
+
+	ImmutableList<I_M_Attribute> getAttributesMandatoryOnShipment(ProductId productId);
 
 	boolean isMandatoryOnPicking(@NonNull ProductId productId, @NonNull AttributeId attributeId);
 
