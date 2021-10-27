@@ -86,7 +86,6 @@ public interface IWarehouseDAO extends ISingletonService
 	@Deprecated
 	Set<WarehouseId> getWarehouseIdsForLocatorRepoIds(Set<Integer> locatorRepoIds);
 
-	@Deprecated
 	I_M_Locator getLocatorByRepoId(final int locatorId);
 
 	@Nullable
