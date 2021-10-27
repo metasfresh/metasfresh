@@ -170,6 +170,136 @@ public interface I_DD_OrderLine_HU_Candidate
 	String COLUMNNAME_DD_OrderLine_ID = "DD_OrderLine_ID";
 
 	/**
+	 * Set DropTo Locator.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setDropTo_Locator_ID (int DropTo_Locator_ID);
+
+	/**
+	 * Get DropTo Locator.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getDropTo_Locator_ID();
+
+	String COLUMNNAME_DropTo_Locator_ID = "DropTo_Locator_ID";
+
+	/**
+	 * Set Drop To Movement.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDropTo_Movement_ID (int DropTo_Movement_ID);
+
+	/**
+	 * Get Drop To Movement.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getDropTo_Movement_ID();
+
+	@Nullable org.compiere.model.I_M_Movement getDropTo_Movement();
+
+	void setDropTo_Movement(@Nullable org.compiere.model.I_M_Movement DropTo_Movement);
+
+	ModelColumn<I_DD_OrderLine_HU_Candidate, org.compiere.model.I_M_Movement> COLUMN_DropTo_Movement_ID = new ModelColumn<>(I_DD_OrderLine_HU_Candidate.class, "DropTo_Movement_ID", org.compiere.model.I_M_Movement.class);
+	String COLUMNNAME_DropTo_Movement_ID = "DropTo_Movement_ID";
+
+	/**
+	 * Set Drop To Movement Line.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDropTo_MovementLine_ID (int DropTo_MovementLine_ID);
+
+	/**
+	 * Get Drop To Movement Line.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getDropTo_MovementLine_ID();
+
+	@Nullable org.compiere.model.I_M_MovementLine getDropTo_MovementLine();
+
+	void setDropTo_MovementLine(@Nullable org.compiere.model.I_M_MovementLine DropTo_MovementLine);
+
+	ModelColumn<I_DD_OrderLine_HU_Candidate, org.compiere.model.I_M_MovementLine> COLUMN_DropTo_MovementLine_ID = new ModelColumn<>(I_DD_OrderLine_HU_Candidate.class, "DropTo_MovementLine_ID", org.compiere.model.I_M_MovementLine.class);
+	String COLUMNNAME_DropTo_MovementLine_ID = "DropTo_MovementLine_ID";
+
+	/**
+	 * Set Drop To Warehouse.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setDropTo_Warehouse_ID (int DropTo_Warehouse_ID);
+
+	/**
+	 * Get Drop To Warehouse.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getDropTo_Warehouse_ID();
+
+	String COLUMNNAME_DropTo_Warehouse_ID = "DropTo_Warehouse_ID";
+
+	/**
+	 * Set In Transit Locator.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setInTransit_Locator_ID (int InTransit_Locator_ID);
+
+	/**
+	 * Get In Transit Locator.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getInTransit_Locator_ID();
+
+	String COLUMNNAME_InTransit_Locator_ID = "InTransit_Locator_ID";
+
+	/**
+	 * Set In Transit Warehouse.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setInTransit_Warehouse_ID (int InTransit_Warehouse_ID);
+
+	/**
+	 * Get In Transit Warehouse.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getInTransit_Warehouse_ID();
+
+	String COLUMNNAME_InTransit_Warehouse_ID = "InTransit_Warehouse_ID";
+
+	/**
 	 * Set Active.
 	 * The record is active in the system
 	 *
@@ -239,6 +369,28 @@ public interface I_DD_OrderLine_HU_Candidate
 	String COLUMNNAME_M_HU_ID = "M_HU_ID";
 
 	/**
+	 * Set Product.
+	 * Product, Service, Item
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setM_Product_ID (int M_Product_ID);
+
+	/**
+	 * Get Product.
+	 * Product, Service, Item
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getM_Product_ID();
+
+	String COLUMNNAME_M_Product_ID = "M_Product_ID";
+
+	/**
 	 * Set Pick From HU.
 	 *
 	 * <br>Type: Search
@@ -262,6 +414,96 @@ public interface I_DD_OrderLine_HU_Candidate
 
 	ModelColumn<I_DD_OrderLine_HU_Candidate, de.metas.handlingunits.model.I_M_HU> COLUMN_PickFrom_HU_ID = new ModelColumn<>(I_DD_OrderLine_HU_Candidate.class, "PickFrom_HU_ID", de.metas.handlingunits.model.I_M_HU.class);
 	String COLUMNNAME_PickFrom_HU_ID = "PickFrom_HU_ID";
+
+	/**
+	 * Set Pick From Locator.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setPickFrom_Locator_ID (int PickFrom_Locator_ID);
+
+	/**
+	 * Get Pick From Locator.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getPickFrom_Locator_ID();
+
+	String COLUMNNAME_PickFrom_Locator_ID = "PickFrom_Locator_ID";
+
+	/**
+	 * Set Pick From Movement.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPickFrom_Movement_ID (int PickFrom_Movement_ID);
+
+	/**
+	 * Get Pick From Movement.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getPickFrom_Movement_ID();
+
+	@Nullable org.compiere.model.I_M_Movement getPickFrom_Movement();
+
+	void setPickFrom_Movement(@Nullable org.compiere.model.I_M_Movement PickFrom_Movement);
+
+	ModelColumn<I_DD_OrderLine_HU_Candidate, org.compiere.model.I_M_Movement> COLUMN_PickFrom_Movement_ID = new ModelColumn<>(I_DD_OrderLine_HU_Candidate.class, "PickFrom_Movement_ID", org.compiere.model.I_M_Movement.class);
+	String COLUMNNAME_PickFrom_Movement_ID = "PickFrom_Movement_ID";
+
+	/**
+	 * Set Pick From Movement Line.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPickFrom_MovementLine_ID (int PickFrom_MovementLine_ID);
+
+	/**
+	 * Get Pick From Movement Line.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getPickFrom_MovementLine_ID();
+
+	@Nullable org.compiere.model.I_M_MovementLine getPickFrom_MovementLine();
+
+	void setPickFrom_MovementLine(@Nullable org.compiere.model.I_M_MovementLine PickFrom_MovementLine);
+
+	ModelColumn<I_DD_OrderLine_HU_Candidate, org.compiere.model.I_M_MovementLine> COLUMN_PickFrom_MovementLine_ID = new ModelColumn<>(I_DD_OrderLine_HU_Candidate.class, "PickFrom_MovementLine_ID", org.compiere.model.I_M_MovementLine.class);
+	String COLUMNNAME_PickFrom_MovementLine_ID = "PickFrom_MovementLine_ID";
+
+	/**
+	 * Set Pick From Warehouse.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setPickFrom_Warehouse_ID (int PickFrom_Warehouse_ID);
+
+	/**
+	 * Get Pick From Warehouse.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getPickFrom_Warehouse_ID();
+
+	String COLUMNNAME_PickFrom_Warehouse_ID = "PickFrom_Warehouse_ID";
 
 	/**
 	 * Set Quantity (stock unit).
@@ -325,6 +567,27 @@ public interface I_DD_OrderLine_HU_Candidate
 
 	ModelColumn<I_DD_OrderLine_HU_Candidate, Object> COLUMN_RejectReason = new ModelColumn<>(I_DD_OrderLine_HU_Candidate.class, "RejectReason", null);
 	String COLUMNNAME_RejectReason = "RejectReason";
+
+	/**
+	 * Set Status.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setStatus (java.lang.String Status);
+
+	/**
+	 * Get Status.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getStatus();
+
+	ModelColumn<I_DD_OrderLine_HU_Candidate, Object> COLUMN_Status = new ModelColumn<>(I_DD_OrderLine_HU_Candidate.class, "Status", null);
+	String COLUMNNAME_Status = "Status";
 
 	/**
 	 * Get Updated.

@@ -22,6 +22,7 @@
 
 package de.metas.handlingunits;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -85,6 +86,8 @@ public interface IHandlingUnitsBL extends ISingletonService
 	List<I_M_HU> getVHUs(I_M_HU hu);
 
 	IHUQueryBuilder createHUQueryBuilder();
+
+	ImmutableMap<HuId, I_M_HU> getByIdsReturningMap(@NonNull Collection<HuId> huIds);
 
 	/**
 	 * @return default storage factory

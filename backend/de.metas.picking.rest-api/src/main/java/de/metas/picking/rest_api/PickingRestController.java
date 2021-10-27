@@ -48,13 +48,6 @@ public class PickingRestController
 		this.pickingWorkflowService = pickingWorkflowService;
 	}
 
-	private JsonOpts newJsonOpts()
-	{
-		return JsonOpts.builder()
-				.adLanguage(Env.getADLanguageOrBaseLanguage())
-				.build();
-	}
-
 	@PostMapping("/events")
 	public void postEvents(
 			@RequestBody @NonNull final JsonPickingEventsList eventsList)

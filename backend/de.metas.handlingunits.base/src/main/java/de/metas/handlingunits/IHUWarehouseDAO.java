@@ -24,10 +24,12 @@ package de.metas.handlingunits;
 
 import de.metas.handlingunits.model.I_M_Locator;
 import de.metas.util.ISingletonService;
+import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_Warehouse;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 public interface IHUWarehouseDAO extends ISingletonService
@@ -44,14 +46,7 @@ public interface IHUWarehouseDAO extends ISingletonService
 	 *
 	 * @return after-picking locator or null
 	 */
-	I_M_Locator suggestAfterPickingLocator(int locatorRepoId);
-
-	/**
-	 * Suggests an after-picking locator in the given <code>warehouse</code>.
-	 *
-	 * @return after-picking locator or null
-	 */
-	I_M_Locator suggestAfterPickingLocator(I_M_Warehouse warehouse);
+	Optional<LocatorId> suggestAfterPickingLocatorId(int locatorRepoId);
 
 	/**
 	 * Retrieve the warehouses where the quality returns will be kept.

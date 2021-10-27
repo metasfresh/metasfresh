@@ -76,12 +76,13 @@ public class DDOrderMovePlanCreateCommand
 	public DDOrderMovePlanStep createLinePickPlan(final I_DD_OrderLine ddOrderLine)
 	{
 		final ProductId productId = ProductId.ofRepoId(ddOrderLine.getM_Product_ID());
-		final LocatorId locatorId = warehouseDAO.getLocatorIdByRepoId(ddOrderLine.getM_Locator_ID());
+		final LocatorId pickFromLocatorId = warehouseDAO.getLocatorIdByRepoId(ddOrderLine.getM_Locator_ID());
+		final LocatorId dropToLocatorId = warehouseDAO.getLocatorIdByRepoId(ddOrderLine.getM_LocatorTo_ID());
 		final Quantity targetQty = getQtyEntered(ddOrderLine);
 
 		final AllocableHUsList availableHUs = getAvailableHUsToPick(AllocationGroupingKey.builder()
 				.productId(productId)
-				.locatorId(locatorId)
+				.pickFromLocatorId(pickFromLocatorId)
 				.build());
 		final ArrayList<DDOrderMovePlanLine> planLines = new ArrayList<>();
 		Quantity allocatedQty = targetQty.toZero();
@@ -102,8 +103,10 @@ public class DDOrderMovePlanCreateCommand
 				final DDOrderMovePlanLine planLine;
 				if (huQtyAvailable.isGreaterThan(remainingQtyToAllocate))
 				{
-					//final List<I_M_HU> extractedCUs = splitToCUs(allocableHU, remainingQtyToAllocate);
 					planLine = DDOrderMovePlanLine.builder()
+							.productId(productId)
+							.pickFromLocatorId(pickFromLocatorId)
+							.dropToLocatorId(dropToLocatorId)
 							.pickFromHU(allocableHU.getHu())
 							.qtyToPick(remainingQtyToAllocate)
 							.isPickWholeHU(false)
@@ -112,6 +115,9 @@ public class DDOrderMovePlanCreateCommand
 				else
 				{
 					planLine = DDOrderMovePlanLine.builder()
+							.productId(productId)
+							.pickFromLocatorId(pickFromLocatorId)
+							.dropToLocatorId(dropToLocatorId)
 							.pickFromHU(allocableHU.getHu())
 							.qtyToPick(huQtyAvailable)
 							.isPickWholeHU(true)
@@ -135,7 +141,7 @@ public class DDOrderMovePlanCreateCommand
 			throw new HUException(MSG_CannotFullAllocate)
 					.appendParametersToMessage()
 					.setParameter("Product", ddOrderLine.getM_Product_ID())
-					.setParameter("Locator", locatorId);
+					.setParameter("Locator", pickFromLocatorId);
 
 		}
 
@@ -156,13 +162,13 @@ public class DDOrderMovePlanCreateCommand
 
 	private AllocableHUsList retrieveAvailableHUsToPick(AllocationGroupingKey key)
 	{
-		final LocatorId locatorId = key.getLocatorId();
+		final LocatorId pickFromLocatorId = key.getPickFromLocatorId();
 		final ProductId productId = key.getProductId();
 
 		final ImmutableList<AllocableHU> hus = handlingUnitsDAO.createHUQueryBuilder()
 				.setOnlyTopLevelHUs()
-				.addOnlyInWarehouseId(locatorId.getWarehouseId())
-				.addOnlyInLocatorId(locatorId.getRepoId())
+				.addOnlyInWarehouseId(pickFromLocatorId.getWarehouseId())
+				.addOnlyInLocatorId(pickFromLocatorId.getRepoId())
 				.addOnlyWithProductId(productId)
 				.addHUStatusesToInclude(huStatusBL.getQtyOnHandStatuses())
 				.createQuery()
@@ -186,7 +192,7 @@ public class DDOrderMovePlanCreateCommand
 	private static class AllocationGroupingKey
 	{
 		@NonNull ProductId productId;
-		@NonNull LocatorId locatorId;
+		@NonNull LocatorId pickFromLocatorId;
 	}
 
 	private static class AllocableHU

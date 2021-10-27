@@ -1,16 +1,19 @@
 package de.metas.distribution.workflows_api;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.distribution.ddorder.DDOrderId;
+import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleId;
 import de.metas.user.UserId;
+import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
-import de.metas.distribution.ddorder.DDOrderId;
 
 import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.function.UnaryOperator;
 
 @ToString
 @Getter
@@ -24,7 +27,7 @@ public class DistributionJob
 	@Nullable private final UserId responsibleId;
 	@NonNull private final ImmutableList<DistributionJobLine> lines;
 
-	@Builder
+	@Builder(toBuilder = true)
 	private DistributionJob(
 			final @NonNull DDOrderId ddOrderId,
 			final @NonNull String documentNo,
@@ -42,4 +45,23 @@ public class DistributionJob
 		this.responsibleId = responsibleId;
 		this.lines = ImmutableList.copyOf(lines);
 	}
+
+	public DistributionJob withChangedStep(@NonNull final DDOrderMoveScheduleId id, @NonNull final UnaryOperator<DistributionJobStep> stepMapper)
+	{
+		return withChangedSteps(step -> DDOrderMoveScheduleId.equals(step.getId(), id) ? stepMapper.apply(step) : step);
+	}
+
+	public DistributionJob withChangedSteps(final UnaryOperator<DistributionJobStep> stepMapper)
+	{
+		return withChangedLines(line -> line.withChangedSteps(stepMapper));
+	}
+
+	public DistributionJob withChangedLines(final UnaryOperator<DistributionJobLine> lineMapper)
+	{
+		final ImmutableList<DistributionJobLine> changedLines = CollectionUtils.map(lines, lineMapper);
+		return changedLines.equals(lines)
+				? this
+				: toBuilder().lines(changedLines).build();
+	}
+
 }

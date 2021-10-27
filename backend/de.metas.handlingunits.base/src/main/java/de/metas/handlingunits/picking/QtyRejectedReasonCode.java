@@ -53,4 +53,7 @@ public final class QtyRejectedReasonCode
 	{
 		return getCode();
 	}
+
+	@Nullable
+	public static String toCode(@Nullable QtyRejectedReasonCode reasonCode) {return reasonCode != null ? reasonCode.getCode() : null;}
 }

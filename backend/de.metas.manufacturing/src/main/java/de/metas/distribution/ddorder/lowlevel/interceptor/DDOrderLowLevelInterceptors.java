@@ -35,7 +35,5 @@ public class DDOrderLowLevelInterceptors extends AbstractModuleInterceptor
 		engine.addModelValidator(new de.metas.distribution.ddorder.lowlevel.interceptor.DD_Order(ddOrderLowLevelService));
 		//engine.addModelValidator(new org.eevolution.model.validator.DD_OrderFireMaterialEvent()); // gh #523 - not needed, spring component
 		engine.addModelValidator(new de.metas.distribution.ddorder.lowlevel.interceptor.DD_OrderLine(ddOrderLowLevelService));
-		engine.addModelValidator(new M_Movement(ddOrderLowLevelService));
 	}
-
 }

@@ -1063,7 +1063,7 @@ public class HUTransformService
 		@lombok.Builder(toBuilder = true)
 		private HUsToNewCUsRequest(
 				@Singular("sourceHU") @NonNull final ImmutableList<I_M_HU> sourceHUs,
-				@NonNull ProductId productId,
+				@NonNull final ProductId productId,
 				@NonNull final Quantity qtyCU,
 				@Nullable final Boolean keepNewCUsUnderSameParent,
 				@Nullable final Boolean onlyFromUnreservedHUs)

@@ -57,4 +57,6 @@ public class DDOrderLineId implements RepoIdAware
 	{
 		return getRepoId();
 	}
+
+	public static int toRepoId(@Nullable final DDOrderLineId id) {return id != null ? id.getRepoId() : -1;}
 }

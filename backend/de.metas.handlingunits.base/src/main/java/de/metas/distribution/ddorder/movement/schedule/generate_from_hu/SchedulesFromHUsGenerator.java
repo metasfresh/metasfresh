@@ -2,7 +2,7 @@ package de.metas.distribution.ddorder.movement.schedule.generate_from_hu;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.distribution.ddorder.DDOrderService;
-import de.metas.distribution.ddorder.movement.generate.MovementsFromSchedulesGenerator;
+import de.metas.distribution.ddorder.movement.generate.DirectMovementsFromSchedulesGenerator;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveSchedule;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleCreateRequest;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleService;
@@ -53,16 +53,16 @@ public class SchedulesFromHUsGenerator
 		return this;
 	}
 
-	public MovementsFromSchedulesGenerator allocateHUAndPrepareGeneratingMovements(@NonNull final I_M_HU hu)
+	public DirectMovementsFromSchedulesGenerator allocateHUAndPrepareGeneratingMovements(@NonNull final I_M_HU hu)
 	{
 		return allocateHUsAndPrepareGeneratingMovements(ImmutableList.of(hu));
 	}
 
-	public MovementsFromSchedulesGenerator allocateHUsAndPrepareGeneratingMovements(final List<I_M_HU> hus)
+	public DirectMovementsFromSchedulesGenerator allocateHUsAndPrepareGeneratingMovements(final List<I_M_HU> hus)
 	{
 		final ImmutableList<DDOrderMoveSchedule> schedules = allocateHUsAndGenerateSchedules(hus);
 
-		return MovementsFromSchedulesGenerator.fromSchedules(schedules, ddOrderService, ddOrderMoveScheduleService);
+		return DirectMovementsFromSchedulesGenerator.fromSchedules(schedules, ddOrderService, ddOrderMoveScheduleService);
 	}
 
 	private ImmutableList<DDOrderMoveSchedule> allocateHUsAndGenerateSchedules(@NonNull final List<I_M_HU> hus)
@@ -73,7 +73,7 @@ public class SchedulesFromHUsGenerator
 				.forEach(this::allocateHUProductStorage);
 
 		// TODO make sure we are not calling this method twice
-		return ddOrderMoveScheduleService.addScheduleToMoveBulk(toScheduleToPickRequest());
+		return ddOrderMoveScheduleService.createScheduleToMoveBulk(toScheduleToPickRequest());
 	}
 
 	private ImmutableList<DDOrderMoveScheduleCreateRequest> toScheduleToPickRequest()
@@ -90,14 +90,24 @@ public class SchedulesFromHUsGenerator
 				.map(pickFromHU -> toScheduleToPickRequest(line, pickFromHU));
 	}
 
-	private static DDOrderMoveScheduleCreateRequest toScheduleToPickRequest(@NonNull final DDOrderLineToAllocate line, @NonNull final DDOrderLineToAllocate.PickFromHU pickFromHU)
+	private static DDOrderMoveScheduleCreateRequest toScheduleToPickRequest(
+			@NonNull final DDOrderLineToAllocate line,
+			@NonNull final DDOrderLineToAllocate.PickFromHU pickFromHU)
 	{
 		return DDOrderMoveScheduleCreateRequest.builder()
 				.ddOrderId(line.getDDOrderId())
 				.ddOrderLineId(line.getDDOrderLineId())
+				.productId(line.getProductId())
+				//
+				// Pick From
+				.pickFromLocatorId(line.getPickFromLocatorId())
 				.pickFromHUId(pickFromHU.getHuId())
 				.qtyToPick(pickFromHU.getQty())
 				.isPickWholeHU(true)
+				//
+				// Drop To
+				.dropToLocatorId(line.getDropToLocatorId())
+				//
 				.build();
 	}
 

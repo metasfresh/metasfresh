@@ -9,7 +9,7 @@ import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelDAO;
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelService;
 import de.metas.distribution.ddorder.lowlevel.model.DDOrderLineHUPackingAware;
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.distribution.ddorder.movement.generate.MovementsFromSchedulesGenerator;
+import de.metas.distribution.ddorder.movement.generate.DirectMovementsFromSchedulesGenerator;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveSchedule;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleService;
 import de.metas.distribution.ddorder.movement.schedule.generate_from_hu.SchedulesFromHUsGeneratorFactory;
@@ -26,6 +26,7 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -119,11 +120,16 @@ public class DDOrderService
 
 	public void closeLine(final I_DD_OrderLine ddOrderLine)
 	{
+		final DDOrderLineId ddOrderLineId = DDOrderLineId.ofRepoId(ddOrderLine.getDD_OrderLine_ID());
+		if(ddOrderMoveScheduleService.hasInProgressSchedules(ddOrderLineId))
+		{
+			throw new AdempiereException("Cannot close a line when there are schedules in progress");
+		}
+
 		ddOrderLine.setIsDelivered_Override(X_DD_OrderLine.ISDELIVERED_OVERRIDE_Yes);
 		InterfaceWrapperHelper.save(ddOrderLine);
 
-		final DDOrderLineId ddOrderLineId = DDOrderLineId.ofRepoId(ddOrderLine.getDD_OrderLine_ID());
-		ddOrderMoveScheduleService.removeDraftSchedules(ddOrderLineId);
+		ddOrderMoveScheduleService.removeNotStarted(ddOrderLineId);
 	}
 
 	public void unassignHUs(@NonNull final DDOrderLineId ddOrderLineId, @NonNull final Set<HuId> huIdsToUnassign)
@@ -231,7 +237,7 @@ public class DDOrderService
 		return DDOrderLineId.ofRepoId(ddOrderLine.getDD_OrderLine_ID());
 	}
 
-	public void generateMovements(@NonNull final I_DD_Order ddOrder)
+	public void generateDirectMovements(@NonNull final I_DD_Order ddOrder)
 	{
 		final DDOrderMovePlan plan = ddOrderMoveScheduleService.createPlan(DDOrderMovePlanCreateRequest.builder()
 				.ddOrder(ddOrder)
@@ -240,9 +246,9 @@ public class DDOrderService
 
 		final ImmutableList<DDOrderMoveSchedule> schedules = ddOrderMoveScheduleService.savePlan(plan);
 
-		MovementsFromSchedulesGenerator.fromSchedules(schedules, this, ddOrderMoveScheduleService)
+		DirectMovementsFromSchedulesGenerator.fromSchedules(schedules, this, ddOrderMoveScheduleService)
 				.skipCompletingDDOrder() // because usually this code is calling on after complete...
-				.process();
+				.generateDirectMovements();
 	}
 
 	public boolean isCreateMovementOnComplete() {return sysConfigBL.getBooleanValue(SYSCONFIG_IsCreateMovementOnComplete, false);}

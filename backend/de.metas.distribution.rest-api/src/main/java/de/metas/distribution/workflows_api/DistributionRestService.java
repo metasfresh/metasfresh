@@ -1,20 +1,29 @@
 package de.metas.distribution.workflows_api;
 
 import de.metas.dao.ValueRestriction;
-import de.metas.document.engine.DocStatus;
+import de.metas.distribution.ddorder.DDOrderId;
+import de.metas.distribution.ddorder.DDOrderQuery;
 import de.metas.distribution.ddorder.DDOrderService;
+import de.metas.distribution.ddorder.movement.schedule.DDOrderDropToRequest;
+import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveSchedule;
+import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleId;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleService;
+import de.metas.distribution.ddorder.movement.schedule.DDOrderPickFromRequest;
+import de.metas.distribution.rest_api.JsonDistributionEvent;
+import de.metas.document.engine.DocStatus;
+import de.metas.handlingunits.picking.QtyRejectedReasonCode;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.InstantAndOrgId;
 import de.metas.product.IProductBL;
+import de.metas.quantity.Quantity;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.service.IADReferenceDAO;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
-import de.metas.distribution.ddorder.DDOrderId;
-import de.metas.distribution.ddorder.DDOrderQuery;
+import org.compiere.model.I_C_UOM;
 import org.eevolution.model.I_DD_Order;
 import org.springframework.stereotype.Service;
 
@@ -100,5 +109,37 @@ public class DistributionRestService
 	{
 		return new DistributionJobLoader(loadingSupportServices)
 				.load(ddOrderId);
+	}
+
+	public DistributionJob processEvent(@NonNull final DistributionJob job, @NonNull final JsonDistributionEvent event)
+	{
+		final DDOrderMoveScheduleId scheduleId = DDOrderMoveScheduleId.ofJson(event.getDistributionStepId());
+
+		if (event.getPickFrom() != null)
+		{
+			final I_C_UOM uom = ddOrderMoveScheduleService.getScheduleById(scheduleId).getUOM();
+
+			final DDOrderMoveSchedule changedSchedule = ddOrderMoveScheduleService.pickFromHU(DDOrderPickFromRequest.builder()
+					.scheduleId(scheduleId)
+					.qtyPicked(Quantity.of(event.getPickFrom().getQtyPicked(), uom))
+					.qtyNotPickedReason(QtyRejectedReasonCode.ofNullableCode(event.getPickFrom().getQtyRejectedReasonCode()).orElse(null))
+					.build());
+
+			final DistributionJobStep changedStep = DistributionJobLoader.toDistributionJobStep(changedSchedule);
+			return job.withChangedStep(scheduleId, ignored -> changedStep);
+		}
+		else if (event.getDropTo() != null)
+		{
+			final DDOrderMoveSchedule changedSchedule = ddOrderMoveScheduleService.dropTo(DDOrderDropToRequest.builder()
+					.scheduleId(scheduleId)
+					.build());
+
+			final DistributionJobStep changedStep = DistributionJobLoader.toDistributionJobStep(changedSchedule);
+			return job.withChangedStep(scheduleId, ignored -> changedStep);
+		}
+		else
+		{
+			throw new AdempiereException("Cannot handle: " + event);
+		}
 	}
 }

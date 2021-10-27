@@ -1,6 +1,8 @@
 package de.metas.distribution.ddorder.interceptor;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.distribution.ddorder.DDOrderId;
+import de.metas.distribution.ddorder.DDOrderLineId;
 import de.metas.distribution.ddorder.DDOrderService;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleService;
 import de.metas.request.service.async.spi.impl.C_Request_CreateFromDDOrder_Async;
@@ -8,13 +10,13 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mmovement.api.IMovementBL;
 import org.adempiere.mmovement.api.IMovementDAO;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_M_Movement;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.ModelValidator;
-import de.metas.distribution.ddorder.DDOrderId;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
 
@@ -64,23 +66,30 @@ public class DD_Order
 			ModelValidator.TIMING_BEFORE_REVERSECORRECT,
 			ModelValidator.TIMING_BEFORE_VOID,
 			ModelValidator.TIMING_BEFORE_CLOSE })
-	public void clearHUsScheduledToMoveList(final I_DD_Order ddOrder)
+	public void clearSchedules(final I_DD_Order ddOrder)
 	{
-		ddOrderMoveScheduleService.removeDraftSchedules(DDOrderId.ofRepoId(ddOrder.getDD_Order_ID()));
+		final DDOrderId ddOrderId = DDOrderId.ofRepoId(ddOrder.getDD_Order_ID());
+		if (ddOrderMoveScheduleService.hasInProgressSchedules(ddOrderId))
+		{
+			throw new AdempiereException("Closing/Reversing is not allowed when there are schedules in progress");
+		}
+
+		ddOrderMoveScheduleService.removeNotStarted(ddOrderId);
 	}
 
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
-	public void DD_Order_Quarantine_Request(final I_DD_Order ddOrder)
+	public void createRequestsForQuarantineLines(final I_DD_Order ddOrder)
 	{
-
-		final List<Integer> ddOrderLineToQuarantineIds = retrieveLineToQuarantineWarehouseIds(ddOrder);
-
+		final List<DDOrderLineId> ddOrderLineToQuarantineIds = retrieveLineToQuarantineWarehouseIds(ddOrder);
 		C_Request_CreateFromDDOrder_Async.createWorkpackage(ddOrderLineToQuarantineIds);
-
 	}
 
-	@DocValidate(timings = { ModelValidator.TIMING_AFTER_REACTIVATE, ModelValidator.TIMING_AFTER_VOID, ModelValidator.TIMING_AFTER_REVERSEACCRUAL, ModelValidator.TIMING_AFTER_REVERSECORRECT })
-	public void DD_Order_voidMovements(final I_DD_Order ddOrder)
+	@DocValidate(timings = {
+			ModelValidator.TIMING_AFTER_REACTIVATE,
+			ModelValidator.TIMING_AFTER_VOID,
+			ModelValidator.TIMING_AFTER_REVERSEACCRUAL,
+			ModelValidator.TIMING_AFTER_REVERSECORRECT })
+	public void voidMovements(final I_DD_Order ddOrder)
 	{
 		// void if creating them automating is activated
 		if (ddOrderService.isCreateMovementOnComplete())
@@ -94,22 +103,21 @@ public class DD_Order
 	}
 
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
-	public void DD_Order_createMovementsIfNeeded(final I_DD_Order ddOrder)
+	public void createMovementsIfNeeded(final I_DD_Order ddOrder)
 	{
 		if (ddOrderService.isCreateMovementOnComplete())
 		{
-			ddOrderService.generateMovements(ddOrder);
+			ddOrderService.generateDirectMovements(ddOrder);
 		}
 	}
 
-	private List<Integer> retrieveLineToQuarantineWarehouseIds(final I_DD_Order ddOrder)
+	private List<DDOrderLineId> retrieveLineToQuarantineWarehouseIds(final I_DD_Order ddOrder)
 	{
 		return ddOrderService.retrieveLines(ddOrder)
 				.stream()
 				.filter(this::isQuarantineWarehouseLine)
-				.map(I_DD_OrderLine::getDD_OrderLine_ID)
-				.collect(ImmutableList.toImmutableList())
-				;
+				.map(line -> DDOrderLineId.ofRepoId(line.getDD_OrderLine_ID()))
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	private boolean isQuarantineWarehouseLine(final I_DD_OrderLine ddOrderLine)
@@ -117,5 +125,4 @@ public class DD_Order
 		final I_M_Warehouse warehouse = warehouseDAO.getWarehouseByLocatorRepoId(ddOrderLine.getM_LocatorTo_ID());
 		return warehouse != null && warehouse.isQuarantineWarehouse();
 	}
-
 }

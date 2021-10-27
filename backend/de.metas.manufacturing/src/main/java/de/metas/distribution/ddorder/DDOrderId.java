@@ -35,4 +35,6 @@ public class DDOrderId implements RepoIdAware
 	{
 		return getRepoId();
 	}
+
+	public static int toRepoId(@Nullable final DDOrderId ddOrderId) {return ddOrderId != null ? ddOrderId.getRepoId() : -1;}
 }
