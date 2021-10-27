@@ -770,6 +770,7 @@
             <xsd:element minOccurs="0" name="GLN" type="xsd:string"/>
             <xsd:element name="Name" type="xsd:string"/>
             <xsd:element minOccurs="0" name="Setup_Place_No" type="xsd:string"/>
+            <xsd:element name="C_Location_ID" type="EDI_Exp_C_LocationType"/>
         </xsd:sequence>
         <xsd:attribute ref="AD_Client_Value"/>
         <xsd:attribute ref="ReplicationEvent"/>
