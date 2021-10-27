@@ -45,6 +45,8 @@ import org.adempiere.mmovement.api.IMovementBL;
 import org.adempiere.mmovement.api.IMovementDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Movement;
@@ -62,6 +64,7 @@ public class MovementBL implements IMovementBL
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 
 	@Override
 	public DocTypeId getDocTypeId(@NonNull final ClientAndOrgId clientAndOrgId)
@@ -116,12 +119,12 @@ public class MovementBL implements IMovementBL
 				OrgId.ofRepoId(movementLine.getAD_Org_ID()),
 				ProductId.ofRepoId(movementLine.getM_Product_ID()));
 
-		final I_M_Locator locatorFrom = movementLine.getM_Locator();
+		final I_M_Locator locatorFrom = warehouseDAO.getLocatorByRepoId(movementLine.getM_Locator_ID());
 		final ActivityId activityFromId = getActivity(locatorFrom, productActivityId);
 
 		movementLine.setC_ActivityFrom_ID(ActivityId.toRepoId(activityFromId));
 
-		final I_M_Locator locatorTo = movementLine.getM_LocatorTo();
+		final I_M_Locator locatorTo = warehouseDAO.getLocatorByRepoId(movementLine.getM_LocatorTo_ID());
 		final ActivityId activityToId = getActivity(locatorTo, productActivityId);
 
 		movementLine.setC_Activity_ID(ActivityId.toRepoId(activityToId));
@@ -134,14 +137,11 @@ public class MovementBL implements IMovementBL
 	 */
 	private ActivityId getActivity(@NonNull final I_M_Locator locator, final ActivityId defaultActivityId)
 	{
-		final I_M_Warehouse warehouse = locator.getM_Warehouse();
+		final WarehouseId warehouseId = WarehouseId.ofRepoId(locator.getM_Warehouse_ID());
+		final I_M_Warehouse warehouse = warehouseDAO.getById(warehouseId);
 
 		final ActivityId warehouseActivityId = ActivityId.ofRepoIdOrNull(warehouse.getC_Activity_ID());
-		if (warehouseActivityId != null)
-		{
-			return warehouseActivityId;
-		}
-		return defaultActivityId;
+		return warehouseActivityId != null ? warehouseActivityId : defaultActivityId;
 	}
 
 	@Override
