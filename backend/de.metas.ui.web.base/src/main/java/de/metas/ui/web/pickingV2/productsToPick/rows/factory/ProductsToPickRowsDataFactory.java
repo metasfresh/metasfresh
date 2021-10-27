@@ -124,7 +124,6 @@ public final class ProductsToPickRowsDataFactory
 	@Builder
 	private ProductsToPickRowsDataFactory(
 			@NonNull final IBPartnerBL bpartnersService,
-			@NonNull final IAttributesBL attributesService,
 			@NonNull final HUReservationService huReservationService,
 			@NonNull final PickingCandidateService pickingCandidateService,
 			//
