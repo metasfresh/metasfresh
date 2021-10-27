@@ -11,8 +11,9 @@ const Header = ({ appName, hidden }) => {
   const state = store.getState();
   const location = useLocation();
   const history = useHistory();
-  // const { network } = state.appHandler;
+  const { activeApplication } = state.appHandler;
   const showBackButton = state.appHandler.token && location.pathname !== '/' && location.pathname !== '/login';
+  const applicationName = activeApplication || appName;
 
   const handleClick = () => {
     if (showBackButton) {
@@ -25,7 +26,7 @@ const Header = ({ appName, hidden }) => {
       <div className="columns is-mobile">
         <div className="column pt-1 is-2">{showBackButton ? <BackButton onClickExec={handleClick} /> : null}</div>
         <div className="column is-flex-grow-2 has-text-centered header-title">
-          <h4 className="title is-half is-4 pt-2 pb-3">{appName}</h4>
+          <h4 className="title is-half is-4 pt-2 pb-3">{applicationName}</h4>
           {/* <div className="subtitle">network: {network ? 'online' : 'offline'} </div> */}
         </div>
         <div className="column is-2" />

@@ -2,7 +2,9 @@ import { createBrowserHistory } from 'history';
 import { routerMiddleware } from 'connected-react-router';
 import { applyMiddleware, compose, createStore } from 'redux';
 import thunk from 'redux-thunk';
+
 import createRootReducer from '../reducers';
+import navigationMiddleware from '../services/navigationMiddleware';
 
 // Import the necessary methods for saving and loading
 import { save } from 'redux-localstorage-simple';
@@ -23,7 +25,14 @@ export const store = function configureStore(preloadedState) {
     createRootReducer(history),
     preloadedState,
     // composeEnhancer(offline(offlineConfig), applyMiddleware(routerMiddleware(history), thunk)) // unhook offline due to caching issues
-    composeEnhancer(applyMiddleware(routerMiddleware(history), thunk, save({ ignoreStates: ['appHandler', 'router'] })))
+    composeEnhancer(
+      applyMiddleware(
+        routerMiddleware(history),
+        thunk,
+        navigationMiddleware,
+        save({ ignoreStates: ['appHandler', 'router'] })
+      )
+    )
   );
   return store;
 };
