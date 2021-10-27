@@ -10,7 +10,7 @@ export const setupCounterpart = () => {
   });
 
   counterpart.registerTranslations('en', {
-    appName: 'Picking',
+    appName: 'Mobile UI',
     general: {
       Product: 'Product',
       Locator: 'Locator',
