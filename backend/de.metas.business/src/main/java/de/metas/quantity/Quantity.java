@@ -266,7 +266,7 @@ public final class Quantity implements Comparable<Quantity>
 	 *
 	 * @return true if current Qty/UOM are comparable equal.
 	 */
-	public boolean qtyAndUomCompareToEquals(final Quantity quantity)
+	public boolean qtyAndUomCompareToEquals(@Nullable final Quantity quantity)
 	{
 		if (this == quantity)
 		{
