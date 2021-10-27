@@ -5,8 +5,10 @@ import { apiBasePath } from '../constants';
 /**
  * @summary Get the list of available launchers
  */
-export function getLaunchers() {
-  return axios.get(`${apiBasePath}/userWorkflows/launchers`).then((response) => unboxAxiosResponse(response).launchers);
+export function getLaunchers(applicationId) {
+  return axios
+    .get(`${apiBasePath}/userWorkflows/launchers`, { params: { applicationId } })
+    .then((response) => unboxAxiosResponse(response).launchers);
 }
 
 /**

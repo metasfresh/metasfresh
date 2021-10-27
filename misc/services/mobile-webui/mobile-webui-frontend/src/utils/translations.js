@@ -10,7 +10,7 @@ export const setupCounterpart = () => {
   });
 
   counterpart.registerTranslations('en', {
-    appName: 'Picking',
+    appName: 'Mobile UI',
     general: {
       Product: 'Product',
       Locator: 'Locator',
@@ -21,6 +21,17 @@ export const setupCounterpart = () => {
     },
     login: {
       submitButton: 'Login',
+    },
+    mobileui: {
+      manufacturing: {
+        appName: 'Production',
+      },
+      picking: {
+        appName: 'Picking',
+      },
+      distribution: {
+        appName: 'Distribution',
+      },
     },
     activities: {
       scanBarcode: {
@@ -61,6 +72,17 @@ export const setupCounterpart = () => {
     },
     login: {
       submitButton: 'Login',
+    },
+    mobileui: {
+      manufacturing: {
+        appName: 'Production',
+      },
+      picking: {
+        appName: 'Picking',
+      },
+      distribution: {
+        appName: 'Distribution',
+      },
     },
     activities: {
       scanBarcode: {
