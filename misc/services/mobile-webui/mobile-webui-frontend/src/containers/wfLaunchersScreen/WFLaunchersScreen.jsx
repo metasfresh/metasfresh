@@ -3,12 +3,14 @@ import { connect } from 'react-redux';
 import { v4 as uuidv4 } from 'uuid';
 import PropTypes from 'prop-types';
 import { withRouter } from 'react-router';
+import { map } from 'lodash';
+
 import { populateLaunchers } from '../../actions/LauncherActions';
 import { getLaunchers } from '../../api/launchers';
 import WFLauncherButton from './WFLauncherButton';
 // import OfflineNotifBar from '../../components/OfflineNotifBar';
-
 import * as ws from '../../utils/websocket';
+
 class WFLaunchersScreen extends Component {
   componentDidMount() {
     const { populateLaunchers, applicationId } = this.props;
@@ -40,8 +42,7 @@ class WFLaunchersScreen extends Component {
   };
 
   render() {
-    const { launchers: launchersMap } = this.props;
-    const launchers = Object.values(launchersMap);
+    const { launchers } = this.props;
 
     return (
       <div className="container launchers-container">
@@ -51,11 +52,10 @@ class WFLaunchersScreen extends Component {
             <div className="is-full mt-5"></div>
           </div>
         )} */}
-        {launchers.length > 0 &&
-          launchers.map((launcher) => {
-            let key = launcher.startedWFProcessId ? 'started-' + launcher.startedWFProcessId : 'new-' + uuidv4();
-            return <WFLauncherButton key={key} id={key} {...launcher} />;
-          })}
+        {map(launchers, (launcher) => {
+          let key = launcher.startedWFProcessId ? 'started-' + launcher.startedWFProcessId : 'new-' + uuidv4();
+          return <WFLauncherButton key={key} id={key} {...launcher} />;
+        })}
       </div>
     );
   }

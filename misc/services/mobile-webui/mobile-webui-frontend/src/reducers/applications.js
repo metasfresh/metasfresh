@@ -1,6 +1,6 @@
 import * as types from '../constants/ApplicationsActionTypes';
 
-export const initialState = {};
+const initialState = {};
 
 export default function applications(state = initialState, action) {
   const { payload } = action;
