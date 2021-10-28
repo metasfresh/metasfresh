@@ -13,7 +13,7 @@ import AbortActivity from './activities/AbortActivity';
 
 class WFProcessScreen extends PureComponent {
   render() {
-    const { wfProcessId, activities, workflowNotStarted } = this.props;
+    const { wfProcessId, activities, isWorkflowNotStarted } = this.props;
 
     return (
       <div className="pt-2 section wf-process-container">
@@ -57,7 +57,7 @@ class WFProcessScreen extends PureComponent {
                     );
                 }
               })}
-            {workflowNotStarted ? <AbortActivity wfProcessId={wfProcessId} /> : null}
+            {isWorkflowNotStarted ? <AbortActivity wfProcessId={wfProcessId} /> : null}
           </div>
         </div>
       </div>
@@ -69,19 +69,19 @@ function mapStateToProps(state, { match }) {
   const { workflowId: wfProcessId } = match.params;
   const wfProcess = selectWFProcessFromState(state, wfProcessId);
   const activities = wfProcess.activities ? Object.values(wfProcess.activities) : [];
-  const workflowNotStarted = activitiesNotStarted(state, wfProcessId);
+  const isWorkflowNotStarted = activitiesNotStarted(state, wfProcessId);
 
   return {
     wfProcessId,
     activities,
-    workflowNotStarted,
+    isWorkflowNotStarted,
   };
 }
 
 WFProcessScreen.propTypes = {
   //
   // Props
-  workflowNotStarted: PropTypes.bool,
+  isWorkflowNotStarted: PropTypes.bool,
   activities: PropTypes.array.isRequired,
   wfProcessId: PropTypes.string.isRequired,
   //
