@@ -41,9 +41,8 @@ public class UserApiTest {
     @Test
     public void getUserTest() throws ApiException {
         String albertaApiKey = null;
-        String tenant = null;
         String _id = null;
-        Users response = api.getUser(albertaApiKey, tenant, _id);
+        Users response = api.getUser(albertaApiKey, _id);
 
         // TODO: test validations
     }

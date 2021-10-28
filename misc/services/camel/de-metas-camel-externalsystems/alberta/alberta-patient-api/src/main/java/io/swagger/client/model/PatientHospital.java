@@ -26,7 +26,7 @@ import org.threeten.bp.LocalDate;
  * PatientHospital
  */
 
-@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.JavaClientCodegen", date = "2021-03-05T06:49:14.310Z[GMT]")
+@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.JavaClientCodegen", date = "2021-10-28T16:45:58.313Z[GMT]")
 public class PatientHospital {
   @SerializedName("hospitalId")
   private String hospitalId = null;

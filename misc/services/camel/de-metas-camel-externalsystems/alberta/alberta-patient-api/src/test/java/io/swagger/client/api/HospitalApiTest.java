@@ -41,9 +41,24 @@ public class HospitalApiTest {
     @Test
     public void getHospitalTest() throws ApiException {
         String albertaApiKey = null;
-        String tenant = null;
         String _id = null;
-        Hospital response = api.getHospital(albertaApiKey, tenant, _id);
+        Hospital response = api.getHospital(albertaApiKey, _id);
+
+        // TODO: test validations
+    }
+    /**
+     * Daten der neuen und geänderten Kliniken abrufen
+     *
+     * Szenario - das WaWi fragt bei Alberta nach, wie ob es neue oder geänderte Kliniken gibt
+     *
+     * @throws ApiException
+     *          if the Api call fails
+     */
+    @Test
+    public void getNewAndUpdatedHospitalsTest() throws ApiException {
+        String albertaApiKey = null;
+        String updatedAfter = null;
+        List<Hospital> response = api.getNewAndUpdatedHospitals(albertaApiKey, updatedAfter);
 
         // TODO: test validations
     }

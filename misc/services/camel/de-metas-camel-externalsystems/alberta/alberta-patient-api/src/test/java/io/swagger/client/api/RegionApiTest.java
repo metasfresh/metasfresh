@@ -41,9 +41,8 @@ public class RegionApiTest {
     @Test
     public void getRegionTest() throws ApiException {
         String albertaApiKey = null;
-        String tenant = null;
         String _id = null;
-        Region response = api.getRegion(albertaApiKey, tenant, _id);
+        Region response = api.getRegion(albertaApiKey, _id);
 
         // TODO: test validations
     }

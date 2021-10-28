@@ -26,7 +26,7 @@ import org.threeten.bp.OffsetDateTime;
  * Pharmacy
  */
 
-@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.JavaClientCodegen", date = "2021-03-05T06:49:14.310Z[GMT]")
+@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.JavaClientCodegen", date = "2021-10-28T16:45:58.313Z[GMT]")
 public class Pharmacy {
   @SerializedName("_id")
   private String _id = null;
@@ -121,7 +121,7 @@ public class Pharmacy {
    * Get postalCode
    * @return postalCode
   **/
-  @Schema(example = "599", description = "")
+  @Schema(example = "1127", description = "")
   public String getPostalCode() {
     return postalCode;
   }
@@ -157,7 +157,7 @@ public class Pharmacy {
    * Get phone
    * @return phone
   **/
-  @Schema(example = "03517954798", description = "")
+  @Schema(example = "3517954798", description = "")
   public String getPhone() {
     return phone;
   }
@@ -175,7 +175,7 @@ public class Pharmacy {
    * Get fax
    * @return fax
   **/
-  @Schema(example = "03517954790", description = "")
+  @Schema(example = "3517954790", description = "")
   public String getFax() {
     return fax;
   }

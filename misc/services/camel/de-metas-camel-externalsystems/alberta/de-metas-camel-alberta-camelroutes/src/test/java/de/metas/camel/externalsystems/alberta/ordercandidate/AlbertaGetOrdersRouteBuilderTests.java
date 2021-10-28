@@ -287,7 +287,7 @@ public class AlbertaGetOrdersRouteBuilderTests extends CamelTestSupport
 
 			final Pharmacy pharmacy = json.deserialize(pharmacyStr, Pharmacy.class);
 
-			Mockito.when(pharmacyApi.getPharmacy(any(String.class), any(String.class), any(String.class)))
+			Mockito.when(pharmacyApi.getPharmacy(any(String.class), any(String.class)))
 					.thenReturn(pharmacy);
 
 			return pharmacyApi;
@@ -302,7 +302,7 @@ public class AlbertaGetOrdersRouteBuilderTests extends CamelTestSupport
 
 			final Doctor doctor = json.deserialize(doctorStr, Doctor.class);
 
-			Mockito.when(albertaDoctorApi.getDoctor(any(String.class), any(String.class), any(String.class)))
+			Mockito.when(albertaDoctorApi.getDoctor(any(String.class), any(String.class)))
 					.thenReturn(doctor);
 
 			return albertaDoctorApi;

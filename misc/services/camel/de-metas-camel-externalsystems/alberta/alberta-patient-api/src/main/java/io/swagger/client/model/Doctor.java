@@ -27,7 +27,7 @@ import org.threeten.bp.OffsetDateTime;
  * Doctor
  */
 
-@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.JavaClientCodegen", date = "2021-03-05T06:49:14.310Z[GMT]")
+@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.JavaClientCodegen", date = "2021-10-28T16:45:58.313Z[GMT]")
 public class Doctor {
   @SerializedName("_id")
   private String _id = null;
@@ -238,7 +238,7 @@ public class Doctor {
    * Get phone
    * @return phone
   **/
-  @Schema(example = "0695963782", description = "")
+  @Schema(example = "695963782", description = "")
   public String getPhone() {
     return phone;
   }
@@ -256,7 +256,7 @@ public class Doctor {
    * Get fax
    * @return fax
   **/
-  @Schema(example = "06959796115", description = "")
+  @Schema(example = "6959796115", description = "")
   public String getFax() {
     return fax;
   }

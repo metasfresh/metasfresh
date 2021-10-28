@@ -41,9 +41,24 @@ public class NursingHomeApiTest {
     @Test
     public void geNursingHomeTest() throws ApiException {
         String albertaApiKey = null;
-        String tenant = null;
         String _id = null;
-        NursingHome response = api.geNursingHome(albertaApiKey, tenant, _id);
+        NursingHome response = api.geNursingHome(albertaApiKey, _id);
+
+        // TODO: test validations
+    }
+    /**
+     * Daten der neuen und geänderten Pflegeheime abrufen
+     *
+     * Szenario - das WaWi fragt bei Alberta nach, wie ob es neue oder geänderte Pflegeheime gibt
+     *
+     * @throws ApiException
+     *          if the Api call fails
+     */
+    @Test
+    public void getNewAndUpdatedNursingHomesTest() throws ApiException {
+        String albertaApiKey = null;
+        String updatedAfter = null;
+        List<NursingHome> response = api.getNewAndUpdatedNursingHomes(albertaApiKey, updatedAfter);
 
         // TODO: test validations
     }

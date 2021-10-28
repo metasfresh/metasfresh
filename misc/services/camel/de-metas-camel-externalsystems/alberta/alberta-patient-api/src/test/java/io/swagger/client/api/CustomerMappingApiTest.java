@@ -41,9 +41,8 @@ public class CustomerMappingApiTest {
     @Test
     public void getCustomerMappingTest() throws ApiException {
         String albertaApiKey = null;
-        String tenant = null;
         String customerId = null;
-        CustomerMapping response = api.getCustomerMapping(albertaApiKey, tenant, customerId);
+        CustomerMapping response = api.getCustomerMapping(albertaApiKey, customerId);
 
         // TODO: test validations
     }
