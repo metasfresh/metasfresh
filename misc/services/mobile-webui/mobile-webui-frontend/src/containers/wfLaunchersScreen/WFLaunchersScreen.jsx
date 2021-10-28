@@ -8,7 +8,6 @@ import { map } from 'lodash';
 import { populateLaunchers } from '../../actions/LauncherActions';
 import { getLaunchers } from '../../api/launchers';
 import WFLauncherButton from './WFLauncherButton';
-// import OfflineNotifBar from '../../components/OfflineNotifBar';
 import * as ws from '../../utils/websocket';
 
 class WFLaunchersScreen extends Component {
@@ -46,12 +45,6 @@ class WFLaunchersScreen extends Component {
 
     return (
       <div className="container launchers-container">
-        {/* {!network && (
-          <div>
-            <OfflineNotifBar headerKey="launchers.offlineMsgHeader" captionKey="launchers.offlineMsgContent" />
-            <div className="is-full mt-5"></div>
-          </div>
-        )} */}
         {map(launchers, (launcher) => {
           let key = launcher.startedWFProcessId ? 'started-' + launcher.startedWFProcessId : 'new-' + uuidv4();
           return <WFLauncherButton key={key} id={key} {...launcher} />;
