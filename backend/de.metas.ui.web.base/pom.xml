@@ -71,8 +71,8 @@
         </dependency>
 
         <dependency>
-            <groupId>de.metas.order</groupId>
-            <artifactId>de-metas-order</artifactId>
+            <groupId>de.metas.salesorder</groupId>
+            <artifactId>de-metas-salesorder</artifactId>
             <version>${metasfresh.version}</version>
         </dependency>
 

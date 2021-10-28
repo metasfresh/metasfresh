@@ -282,7 +282,7 @@ public class OrderCandidateRestControllerService
 				.map(OLCandId::ofRepoId)
 				.collect(ImmutableSet.toImmutableSet());
 
-		final Map<AsyncBatchId, List<OLCandId>> asyncBatchId2OLCandIds = orderService.getAsyncBathId2OLCandIds(validOlCandIds);
+		final Map<AsyncBatchId, List<OLCandId>> asyncBatchId2OLCandIds = orderService.getAsyncBatchId2OLCandIds(validOlCandIds);
 
 		final Set<OrderId> orderIds = orderService.generateOrderSync(asyncBatchId2OLCandIds);
 

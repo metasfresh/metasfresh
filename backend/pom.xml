@@ -190,7 +190,7 @@
         <module>metasfresh-webui-api</module>
         <module>metasfresh-dist</module>
 
-        <module>de-metas-order</module>
+        <module>de-metas-salesorder</module>
     </modules>
 
     <dependencyManagement>

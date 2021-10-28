@@ -14,3 +14,9 @@ UPDATE AD_SysConfig SET ConfigurationLevel='S', Description='Feature flag to ena
 UPDATE AD_SysConfig SET ConfigurationLevel='S', EntityType='D',Updated=TO_TIMESTAMP('2021-10-22 21:27:51','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_SysConfig_ID=541421
 ;
 
+-- 2021-10-27T09:14:52.540Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_SysConfig SET ConfigurationLevel='O',Updated=TO_TIMESTAMP('2021-10-27 12:14:52','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_SysConfig_ID=541421
+;
+
+

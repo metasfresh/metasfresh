@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
   ~ #%L
-  ~ de-metas-order
+  ~ de-metas-salesorder
   ~ %%
   ~ Copyright (C) 2021 metas GmbH
   ~ %%
@@ -31,8 +31,8 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>de.metas.order</groupId>
-    <artifactId>de-metas-order</artifactId>
+    <groupId>de.metas.salesorder</groupId>
+    <artifactId>de-metas-salesorder</artifactId>
 
     <properties>
         <metasfresh.version>10.0.0</metasfresh.version>

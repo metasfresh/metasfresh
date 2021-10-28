@@ -23,8 +23,13 @@
 package de.metas.order.interceptor;
 
 import ch.qos.logback.classic.Level;
+import de.metas.async.AsyncBatchId;
+import de.metas.async.asyncbatchmilestone.AsyncBatchMilestone;
+import de.metas.async.asyncbatchmilestone.AsyncBatchMilestoneQuery;
+import de.metas.async.asyncbatchmilestone.AsyncBatchMilestoneService;
 import de.metas.inoutcandidate.async.CreateMissingShipmentSchedulesWorkpackageProcessor;
 import de.metas.logging.LogManager;
+import de.metas.order.DeliveryRule;
 import de.metas.order.OrderId;
 import de.metas.order.service.AutoProcessingOrderService;
 import de.metas.util.Loggables;
@@ -40,7 +45,7 @@ import org.compiere.model.ModelValidator;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
-import static org.compiere.model.X_C_Order.DELIVERYRULE_Availability;
+import java.util.List;
 
 @Interceptor(I_C_Order.class)
 @Component
@@ -54,10 +59,14 @@ public class C_Order_Schedule
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	private final AutoProcessingOrderService autoProcessingOrderService;
+	private final AsyncBatchMilestoneService asyncBatchMilestoneService;
 
-	public C_Order_Schedule(final AutoProcessingOrderService autoProcessingOrderService)
+	public C_Order_Schedule(
+			@NonNull final AutoProcessingOrderService autoProcessingOrderService,
+			@NonNull final AsyncBatchMilestoneService asyncBatchMilestoneService)
 	{
 		this.autoProcessingOrderService = autoProcessingOrderService;
+		this.asyncBatchMilestoneService = asyncBatchMilestoneService;
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
@@ -70,15 +79,46 @@ public class C_Order_Schedule
 
 	private void enqueueGenerateSchedulesAfterCommit(@NonNull final I_C_Order orderRecord)
 	{
-		if (sysConfigBL.getBooleanValue(SYS_Config_AUTO_SHIP_AND_INVOICE, false, orderRecord.getAD_Client_ID(), orderRecord.getAD_Org_ID())
-				&& orderRecord.getDeliveryRule().equals(DELIVERYRULE_Availability))
+		final OrderId orderId = OrderId.ofRepoId(orderRecord.getC_Order_ID());
+
+		if (isEligibleForAutoProcessing(orderRecord))
 		{
-			autoProcessingOrderService.completeShipAndInvoice(OrderId.ofRepoId(orderRecord.getC_Order_ID()));
+			Loggables.withLogger(logger, Level.INFO).addLog("OrderId: {} qualified for auto ship and invoice!", orderId);
+			autoProcessingOrderService.completeShipAndInvoice(orderId);
 		}
 		else
 		{
-			Loggables.withLogger(logger, Level.INFO).addLog("Schedule generating missing shipments for orderId: {}", OrderId.ofRepoId(orderRecord.getC_Order_ID()));
+			Loggables.withLogger(logger, Level.INFO).addLog("Schedule generating missing shipments for orderId: {}", orderId);
 			CreateMissingShipmentSchedulesWorkpackageProcessor.scheduleIfNotPostponed(orderRecord);
 		}
+	}
+
+	private boolean isEligibleForAutoProcessing(@NonNull final I_C_Order orderRecord)
+	{
+		final boolean isAutoShipAndInvoice = sysConfigBL.getBooleanValue(SYS_Config_AUTO_SHIP_AND_INVOICE, false, orderRecord.getAD_Client_ID(), orderRecord.getAD_Org_ID());
+		final boolean isDeliveryRuleAvailability = orderRecord.getDeliveryRule().equals(DeliveryRule.AVAILABILITY.getCode());
+
+		if (!isAutoShipAndInvoice || !isDeliveryRuleAvailability)
+		{
+			return false;
+		}
+
+		//dev-note: check to see if the order is not already involved in another async job
+		final AsyncBatchId asyncBatchId = AsyncBatchId.ofRepoIdOrNull(orderRecord.getC_Async_Batch_ID());
+
+		if (asyncBatchId == null)
+		{
+			return true;
+		}
+
+		final AsyncBatchMilestoneQuery milestoneQuery = AsyncBatchMilestoneQuery.builder()
+				.asyncBatchId(asyncBatchId)
+				.processed(false)
+				.build();
+
+		final List<AsyncBatchMilestone> asyncBatchMilestoneList = asyncBatchMilestoneService.getByQuery(milestoneQuery);
+
+		//dev-note: if there is already an async process in progress working with this order, let it follow it's normal course
+		return asyncBatchMilestoneList.isEmpty();
 	}
 }

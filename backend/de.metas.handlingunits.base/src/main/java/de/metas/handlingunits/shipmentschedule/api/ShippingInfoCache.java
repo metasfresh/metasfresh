@@ -44,7 +44,7 @@ import java.util.HashMap;
 import java.util.Optional;
 
 /**
- * This is a short-term-cache; use it only within one method and one thread. It ca no invalidation mechanisms.
+ * This is a short-term-cache; use it only within one method and one thread. It can load data on demand, but has no invalidation mechanism.
  */
 public class ShippingInfoCache
 {

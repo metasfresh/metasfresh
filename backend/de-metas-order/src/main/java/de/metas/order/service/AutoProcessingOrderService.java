@@ -103,21 +103,21 @@ public class AutoProcessingOrderService
 		final ImmutableSet<ShipmentScheduleId> scheduleIds = orderService.generateSchedules(orderId);
 		if (scheduleIds.isEmpty())
 		{
-			Loggables.withLogger(logger, Level.INFO).addLog("Returning! No shipmentScheduleIds generated for orderId: ", orderId);
+			Loggables.withLogger(logger, Level.INFO).addLog("Returning! No shipmentScheduleIds generated for C_Order_ID={}", orderId.getRepoId());
 			return;
 		}
 
 		final boolean canSchedulesBeFulfilled = shipmentService.canSchedulesBeFulfilled(scheduleIds);
 		if (!canSchedulesBeFulfilled)
 		{
-			Loggables.withLogger(logger, Level.INFO).addLog("Returning! Shipment schedules cannot be fulfilled, shipmentScheduleIds: ", scheduleIds);
+			Loggables.withLogger(logger, Level.INFO).addLog("Returning! Shipment schedules cannot be fulfilled, shipmentScheduleIds: {}", scheduleIds);
 			return;
 		}
 
 		final Set<InOutId> generatedInOutIds = shipmentService.generateShipmentsForScheduleIds(scheduleIds, M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER);
 		if (generatedInOutIds.isEmpty())
 		{
-			Loggables.withLogger(logger, Level.INFO).addLog("Returning! No shipments generated for shipmentScheduleIds: ", scheduleIds);
+			Loggables.withLogger(logger, Level.INFO).addLog("Returning! No shipments generated for shipmentScheduleIds: {}", scheduleIds);
 			return;
 		}
 

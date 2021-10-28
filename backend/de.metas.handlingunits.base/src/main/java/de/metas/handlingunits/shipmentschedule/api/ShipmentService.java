@@ -37,6 +37,7 @@ import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
+import de.metas.order.DeliveryRule;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
@@ -48,9 +49,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.inout.util.ShipmentScheduleAvailableStock;
-import org.adempiere.inout.util.ShipmentScheduleQtyOnHandStorage;
-import org.adempiere.inout.util.ShipmentScheduleQtyOnHandStorageFactory;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
@@ -80,14 +78,10 @@ public class ShipmentService
 	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 
 	private final AsyncBatchMilestoneService asyncBatchMilestoneService;
-	private final ShipmentScheduleQtyOnHandStorageFactory shipmentScheduleQtyOnHandStorageFactory;
 
-	public ShipmentService(
-			@NonNull final AsyncBatchMilestoneService asyncBatchMilestoneService,
-			@NonNull final ShipmentScheduleQtyOnHandStorageFactory shipmentScheduleQtyOnHandStorageFactory)
+	public ShipmentService(@NonNull final AsyncBatchMilestoneService asyncBatchMilestoneService)
 	{
 		this.asyncBatchMilestoneService = asyncBatchMilestoneService;
-		this.shipmentScheduleQtyOnHandStorageFactory = shipmentScheduleQtyOnHandStorageFactory;
 	}
 
 	@NonNull
@@ -145,17 +139,15 @@ public class ShipmentService
 
 		final List<de.metas.inoutcandidate.model.I_M_ShipmentSchedule> shipmentSchedules = ImmutableList.copyOf(shipmentSchedulesByIds.values());
 
-		final ShipmentScheduleQtyOnHandStorage storageContainers = shipmentScheduleQtyOnHandStorageFactory.ofShipmentSchedules(shipmentSchedules);
-
 		boolean canSchedulesBeFulfilled = true;
 
 		for (final de.metas.inoutcandidate.model.I_M_ShipmentSchedule shipmentSchedule : shipmentSchedules)
 		{
-			final ShipmentScheduleAvailableStock availableStock = storageContainers.getStockDetailsMatching(shipmentSchedule);
-			final Quantity orderedQty = shipmentScheduleBL.getQtyOrdered(shipmentSchedule);
+			final Quantity qtyOrdered = shipmentScheduleBL.getQtyOrdered(shipmentSchedule);
+			final Quantity qtyToDeliver = shipmentScheduleBL.getQtyToDeliver(shipmentSchedule);
 
-			if (availableStock == null
-					|| availableStock.getTotalQtyAvailable().compareTo(orderedQty.toBigDecimal()) < 0)
+			if (qtyToDeliver.compareTo(qtyOrdered) < 0
+					|| !shipmentSchedule.getDeliveryRule().equals(DeliveryRule.AVAILABILITY.getCode()))
 			{
 				canSchedulesBeFulfilled = false;
 				break;

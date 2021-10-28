@@ -103,7 +103,7 @@ public class OrderService
 	}
 
 	@NonNull
-	public ImmutableMap<AsyncBatchId, List<OLCandId>> getAsyncBathId2OLCandIds(@NonNull final Set<OLCandId> olCandIds)
+	public ImmutableMap<AsyncBatchId, List<OLCandId>> getAsyncBatchId2OLCandIds(@NonNull final Set<OLCandId> olCandIds)
 	{
 		if (olCandIds.isEmpty())
 		{

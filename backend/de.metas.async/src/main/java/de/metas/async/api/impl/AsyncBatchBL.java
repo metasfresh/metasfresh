@@ -223,7 +223,7 @@ public class AsyncBatchBL implements IAsyncBatchBL
 			return true;
 		}
 
-		if (!isAsyncBatchEligibleToProcess(asyncBatchId))
+		if (!isAllMilestonesAreProcessed(asyncBatchId))
 		{
 			return false;
 		}
@@ -240,7 +240,7 @@ public class AsyncBatchBL implements IAsyncBatchBL
 		return true;
 	}
 
-	private boolean isAsyncBatchEligibleToProcess(@NonNull final AsyncBatchId asyncBatchId)
+	private boolean isAllMilestonesAreProcessed(@NonNull final AsyncBatchId asyncBatchId)
 	{
 		final List<I_C_Async_Batch_Milestone> milestones = asyncBatchDAO.retrieveMilestonesForAsyncBatchId(asyncBatchId);
 		return milestones.stream().allMatch(I_C_Async_Batch_Milestone::isProcessed);

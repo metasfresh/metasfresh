@@ -92,7 +92,7 @@ public class InvoiceService
 
 	public void processInvoiceCandidates(@NonNull final Set<InvoiceCandidateId> invoiceCandidateIds)
 	{
-		final ImmutableMap<AsyncBatchId, List<InvoiceCandidateId>> asyncBatchId2InvoiceCandIds = getAsyncBathId2InvoiceCandidateIds(invoiceCandidateIds);
+		final ImmutableMap<AsyncBatchId, List<InvoiceCandidateId>> asyncBatchId2InvoiceCandIds = getAsyncBatchId2InvoiceCandidateIds(invoiceCandidateIds);
 
 		asyncBatchId2InvoiceCandIds.forEach((asyncBatchId, icIds) -> generateInvoicesForAsyncBatch(ImmutableSet.copyOf(icIds), asyncBatchId));
 	}
@@ -107,7 +107,7 @@ public class InvoiceService
 	}
 
 	@NonNull
-	private ImmutableMap<AsyncBatchId, List<InvoiceCandidateId>> getAsyncBathId2InvoiceCandidateIds(@NonNull final Set<InvoiceCandidateId> invoiceCandidateIds)
+	private ImmutableMap<AsyncBatchId, List<InvoiceCandidateId>> getAsyncBatchId2InvoiceCandidateIds(@NonNull final Set<InvoiceCandidateId> invoiceCandidateIds)
 	{
 		if (invoiceCandidateIds.isEmpty())
 		{
