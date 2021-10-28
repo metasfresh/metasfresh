@@ -111,7 +111,7 @@ public class ContractChangePriceQtyTest extends AbstractFlatrateTermTest
 		save(shipmentSchedule);
 
 		InterfaceWrapperHelper.refresh(firstSubscription);
-		firstSubscription.setM_ShipmentSchedule(shipmentSchedule);
+		firstSubscription.setM_ShipmentSchedule_ID(shipmentSchedule.getM_ShipmentSchedule_ID());
 		save(firstSubscription);
 	}
 
@@ -122,7 +122,7 @@ public class ContractChangePriceQtyTest extends AbstractFlatrateTermTest
 		candidates.forEach(invoiceCand -> assertInvoiceCandidate(invoiceCand, flatrateTerm));
 	}
 
-	private void assertInvoiceCandidate(I_C_Invoice_Candidate invoiceCand, final I_C_Flatrate_Term flatrateTerm)
+	private void assertInvoiceCandidate(final I_C_Invoice_Candidate invoiceCand, final I_C_Flatrate_Term flatrateTerm)
 	{
 		assertThat(invoiceCand.getQtyEntered()).isEqualTo(flatrateTerm.getPlannedQtyPerUnit());
 		assertThat(invoiceCand.getPriceActual()).isEqualTo(flatrateTerm.getPriceActual());
