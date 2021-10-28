@@ -85,7 +85,7 @@ public class C_Order
 			skipIfCopying = true)
 	public void updateBPartnerAddressForceUpdateCapturedLocation(final I_C_Order order)
 	{
-		documentLocationBL.updateCapturedLocation(OrderDocumentLocationAdapterFactory.billLocationAdapter(order));
+		documentLocationBL.updateCapturedLocation(OrderDocumentLocationAdapterFactory.locationAdapter(order));
 	}
 
 	@CalloutMethod(columnNames = {
