@@ -454,7 +454,6 @@ public class HUInOutBL implements IHUInOutBL
 	@Override
 	public void validateMandatoryOnShipmentAttributes(final I_M_InOut shipment)
 	{
-
 		final List<I_M_InOutLine> inOutLines = retrieveLines(shipment, I_M_InOutLine.class);
 
 		for (I_M_InOutLine line : inOutLines)

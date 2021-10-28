@@ -233,6 +233,29 @@ public class HUAttributesBL implements IHUAttributesBL
 				);
 	}
 
+	@Override
+	public boolean areMandatoryPickingAttributesFulfilled(@NonNull final HuId huId,
+			@NonNull final ProductId productId)
+	{
+		final ImmutableList<I_M_Attribute> attributesMandatoryOnPicking = attributesBL.getAttributesMandatoryOnPicking(productId);
 
+		final I_M_HU huRecord = handlingUnitsDAO.getById(huId);
+
+		final IAttributeStorageFactory attributesFactory = attributeStorageFactoryService.createHUAttributeStorageFactory();
+
+		final IAttributeStorage attributeStorage = attributesFactory.getAttributeStorage(huRecord);
+
+		for (final I_M_Attribute attribute : attributesMandatoryOnPicking)
+		{
+			final Object attributeValue = attributeStorage.getValue(attribute);
+
+			if (Check.isEmpty(attributeValue))
+			{
+				return false;
+			}
+		}
+
+		return true;
+	}
 
 }

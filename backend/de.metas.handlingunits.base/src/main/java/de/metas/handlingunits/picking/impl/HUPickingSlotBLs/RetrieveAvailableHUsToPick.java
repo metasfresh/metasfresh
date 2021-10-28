@@ -61,7 +61,6 @@ import java.util.function.Function;
  * {@link HUPickingSlotBL#retrieveAvailableSourceHUs(de.metas.handlingunits.picking.IHUPickingSlotBL.PickingHUsQuery)}.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 @UtilityClass
 public class RetrieveAvailableHUsToPick
@@ -154,8 +153,11 @@ public class RetrieveAvailableHUsToPick
 			return;
 		}
 
-		final ProductId productId =huStorageRecord.getProductId();
-		huAttributesBL.validateMandatoryPickingAttributes(huId, productId);
+		final ProductId productId = huStorageRecord.getProductId();
+		if (!huAttributesBL.areMandatoryPickingAttributesFulfilled(huId, productId))
+		{
+			return;
+		}
 
 		// What was the purpose if this check?
 		// At any rate, it caused the problem that if you selected a top-level VHU as source-HU,
