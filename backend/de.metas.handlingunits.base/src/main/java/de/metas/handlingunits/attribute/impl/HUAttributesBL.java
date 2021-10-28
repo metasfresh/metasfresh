@@ -218,23 +218,22 @@ public class HUAttributesBL implements IHUAttributesBL
 
 		final IAttributeStorage attributeStorage = attributesFactory.getAttributeStorage(huRecord);
 
-		mandatoryAttributes
-				.stream()
-				.forEach(attribute -> {
-							 final Object attributeValue = attributeStorage.getValue(attribute);
-							 if (Check.isEmpty(attributeValue))
-							 {
-								 final String productName = productBL.getProductName(productId);
-								 throw new AdempiereException(
-										 messageKey,
-										 attribute.getName(), productName);
-							 }
-						 }
-				);
+		for (final I_M_Attribute attribute : mandatoryAttributes)
+		{
+			final Object attributeValue = attributeStorage.getValue(attribute);
+			if (Check.isEmpty(attributeValue))
+			{
+				final String productName = productBL.getProductName(productId);
+				throw new AdempiereException(
+						messageKey,
+						attribute.getName(), productName);
+			}
+		}
 	}
 
 	@Override
-	public boolean areMandatoryPickingAttributesFulfilled(@NonNull final HuId huId,
+	public boolean areMandatoryPickingAttributesFulfilled(
+			@NonNull final HuId huId,
 			@NonNull final ProductId productId)
 	{
 		final ImmutableList<I_M_Attribute> attributesMandatoryOnPicking = attributesBL.getAttributesMandatoryOnPicking(productId);

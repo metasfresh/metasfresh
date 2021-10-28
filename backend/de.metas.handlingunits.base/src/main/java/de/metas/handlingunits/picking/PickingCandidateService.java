@@ -191,8 +191,10 @@ public class PickingCandidateService
 				.filter(pc -> shipmentScheduleId == null || shipmentScheduleId.equals(pc.getShipmentScheduleId()))
 				.collect(ImmutableList.toImmutableList());
 
-		pickingCandidatesToProcess.stream()
-				.forEach(pickingCandidate -> validateAttributes(pickingCandidate));
+		for(PickingCandidate pickingCandidate : pickingCandidatesToProcess)
+		{
+			validateAttributes(pickingCandidate);
+		}
 		//
 		// Process those picking candidates
 		final ImmutableList<PickingCandidate> processedPickingCandidates = ProcessHUsAndPickingCandidateCommand.builder()

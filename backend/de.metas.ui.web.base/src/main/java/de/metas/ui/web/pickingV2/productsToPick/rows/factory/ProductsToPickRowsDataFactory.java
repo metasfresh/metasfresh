@@ -298,8 +298,8 @@ public final class ProductsToPickRowsDataFactory
 
 		return rowsWithZeroQty.stream()
 				.sorted(Comparator
-						.<ProductsToPickRow>comparingInt(row -> row.isHuReservedForThisRow() ? 0 : 1) // consider reserved HU first
-						.thenComparing(bestBeforePolicy.comparator(ProductsToPickRow::getExpiringDate))) // then first/last expiring HU
+								.<ProductsToPickRow>comparingInt(row -> row.isHuReservedForThisRow() ? 0 : 1) // consider reserved HU first
+								.thenComparing(bestBeforePolicy.comparator(ProductsToPickRow::getExpiringDate))) // then first/last expiring HU
 				.map(row -> allocateRowFromHU(row, packageable))
 				.filter(Objects::nonNull)
 				.collect(ImmutableList.toImmutableList());
@@ -347,8 +347,10 @@ public final class ProductsToPickRowsDataFactory
 				.reservedToSalesOrderLineIdOrNotReservedAtAll(salesOrderLine)
 				.build();
 
-		attributesMandatoryOnPicking.stream()
-				.forEach(attribute -> huQuery.addOnlyWithAttributeNotNull(AttributeCode.ofString(attribute.getValue())));
+		for (final I_M_Attribute attribute : attributesMandatoryOnPicking)
+		{
+			huQuery.addOnlyWithAttributeNotNull(AttributeCode.ofString(attribute.getValue()));
+		}
 
 		final Set<HuId> huIds = huQuery
 				.listIds();
