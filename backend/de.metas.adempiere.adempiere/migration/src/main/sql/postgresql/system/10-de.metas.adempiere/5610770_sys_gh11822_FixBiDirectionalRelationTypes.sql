@@ -1050,3 +1050,9 @@ UPDATE AD_RelationType SET IsActive='Y',Updated=TO_TIMESTAMP('2021-10-28 10:55:2
 -- URL zum Konzept
 UPDATE AD_RelationType SET Name='RelType C_Element_Value -> Fact_acct',Updated=TO_TIMESTAMP('2021-10-28 10:59:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_RelationType_ID=540234
 ;
+
+-- BankStatementLineRef <-> C_AllocationLine
+-- 2021-10-28T14:52:14.825Z
+-- URL zum Konzept
+DELETE FROM AD_RelationType WHERE AD_RelationType_ID=540114
+;
