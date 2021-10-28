@@ -24,11 +24,12 @@ package de.metas.pricing.service.impl;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Set;
 
 import javax.annotation.Nullable;
 
-import de.metas.common.util.time.SystemTime;
+import de.metas.organization.IOrgDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IAutoCloseable;
@@ -91,6 +92,11 @@ public class PricingBL implements IPricingBL
 {
 	private static final Logger logger = LogManager.getLogger(PricingBL.class);
 
+	private final transient IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+	private final transient IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final transient IPriceListBL priceListBL = Services.get(IPriceListBL.class);
+	private final transient IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
+	
 	private final CompositePriceLimitRule priceLimitRules = new CompositePriceLimitRule();
 
 	@Override
@@ -103,7 +109,7 @@ public class PricingBL implements IPricingBL
 	public IEditablePricingContext createInitialContext(
 			@NonNull final OrgId orgId,
 			@Nullable final ProductId productId,
-			@Nullable BPartnerId bPartnerId,
+			@Nullable final BPartnerId bPartnerId,
 			@Nullable final Quantity quantity,
 			@NonNull final SOTrx soTrx)
 	{
@@ -144,7 +150,7 @@ public class PricingBL implements IPricingBL
 		pricingCtx.setBPartnerId(BPartnerId.ofRepoIdOrNull(C_BPartner_ID));
 		pricingCtx.setConvertPriceToContextUOM(true); // backward compatibility
 
-		if (Qty != null && Qty.signum() != 0)
+		if (Qty.signum() != 0)
 		{
 			pricingCtx.setQty(Qty);
 		}
@@ -162,14 +168,15 @@ public class PricingBL implements IPricingBL
 	public IPricingResult calculatePrice(@NonNull final IPricingContext pricingCtx)
 	{
 		final PlainStringLoggable plainStringLoggable = Loggables.newPlainStringLoggable();
-		try (IAutoCloseable c = Loggables.temporarySetLoggable(plainStringLoggable))
+		try (final IAutoCloseable ignored = Loggables.temporarySetLoggable(plainStringLoggable))
 		{
 			final IPricingResult result = calculatePrice0(pricingCtx);
 			return result.setLoggableMessages(plainStringLoggable.getSingleMessages());
 		}
 		catch (final ProductNotOnPriceListException e)
 		{
-			throw e.setParameter("Log", plainStringLoggable.getConcatenatedMessages()); // augment&rethrow
+			throw e.appendParametersToMessage()
+					.setParameter("Log", plainStringLoggable.getConcatenatedMessages()); // augment&rethrow
 		}
 	}
 
@@ -268,12 +275,10 @@ public class PricingBL implements IPricingBL
 
 	private void setupPriceListAndDate(@NonNull final IEditablePricingContext pricingCtx)
 	{
-		final IPriceListBL priceListBL = Services.get(IPriceListBL.class);
-		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
-		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
-
 		final LocalDate priceDate = pricingCtx.getPriceDate();
 
+		final ZoneId timeZone = orgDAO.getTimeZone(pricingCtx.getOrgId());
+		
 		// M_PricingSystem_ID from C_BPartner if necessary
 		if (pricingCtx.getPricingSystemId() == null
 				&& pricingCtx.getPriceListId() == null
@@ -300,7 +305,7 @@ public class PricingBL implements IPricingBL
 			final I_M_PriceList_Version computedPLV = priceListBL.getCurrentPriceListVersionOrNull(
 					pricingCtx.getPricingSystemId(),
 					pricingCtx.getCountryId(),
-					TimeUtil.asZonedDateTime(pricingCtx.getPriceDate(), SystemTime.zoneId()),
+					TimeUtil.asZonedDateTime(pricingCtx.getPriceDate(), timeZone),
 					pricingCtx.isSkipCheckingPriceListSOTrxFlag() ? null : pricingCtx.getSoTrx(),
 					null);
 
@@ -333,8 +338,10 @@ public class PricingBL implements IPricingBL
 			try
 			{
 				final Boolean processedPLVFiltering = null; // task 09533: the user doesn't know about PLV's processed flag, so we can't filter by it
-				final I_M_PriceList_Version plv = priceListDAO.retrievePriceListVersionOrNull(priceList,
-						TimeUtil.asZonedDateTime(priceDate, de.metas.common.util.time.SystemTime.zoneId()), processedPLVFiltering);
+				final I_M_PriceList_Version plv = priceListDAO.retrievePriceListVersionOrNull(
+						priceList,
+						TimeUtil.asZonedDateTime(priceDate, timeZone),
+						processedPLVFiltering);
 				if (plv != null)
 				{
 					final PriceListVersionId priceListVersionId = PriceListVersionId.ofRepoId(plv.getM_PriceList_Version_ID());
@@ -342,7 +349,7 @@ public class PricingBL implements IPricingBL
 					pricingCtx.setPriceListVersionId(priceListVersionId);
 				}
 			}
-			catch (PriceListVersionNotFoundException e)
+			catch (final PriceListVersionNotFoundException e)
 			{
 				// NOTE: don't fail here because it could be a valid case and some particular pricing rules can handle it.
 				// NOTE2: also pls keep in mind that if we would fail here the whole pricing calculation would fail.
@@ -369,7 +376,7 @@ public class PricingBL implements IPricingBL
 			final I_M_PriceList_Version priceListVersion = pricingCtx.getM_PriceList_Version();
 
 			logger.info("Setting to context: PriceDate={} from M_PriceList_Version={}", priceListVersion.getValidFrom(), priceListVersion);
-			pricingCtx.setPriceDate(TimeUtil.asLocalDate(priceListVersion.getValidFrom()));
+			pricingCtx.setPriceDate(TimeUtil.asLocalDate(priceListVersion.getValidFrom(), timeZone));
 		}
 
 		//
@@ -503,6 +510,7 @@ public class PricingBL implements IPricingBL
 		return AggregatedPricingRule.of(rules);
 	}
 
+	@Nullable
 	private IPricingRule createPricingRuleNoFail(final PricingRuleDescriptor ruleDef)
 	{
 		try
