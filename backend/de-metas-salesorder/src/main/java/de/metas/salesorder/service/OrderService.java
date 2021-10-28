@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-order
+ * de-metas-salesorder
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.order.service;
+package de.metas.salesorder.service;
 
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableMap;

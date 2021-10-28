@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-order
+ * de-metas-salesorder
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.order.interceptor;
+package de.metas.salesorder.interceptor;
 
 import ch.qos.logback.classic.Level;
 import de.metas.async.AsyncBatchId;
@@ -31,7 +31,7 @@ import de.metas.inoutcandidate.async.CreateMissingShipmentSchedulesWorkpackagePr
 import de.metas.logging.LogManager;
 import de.metas.order.DeliveryRule;
 import de.metas.order.OrderId;
-import de.metas.order.service.AutoProcessingOrderService;
+import de.metas.salesorder.service.AutoProcessingOrderService;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
