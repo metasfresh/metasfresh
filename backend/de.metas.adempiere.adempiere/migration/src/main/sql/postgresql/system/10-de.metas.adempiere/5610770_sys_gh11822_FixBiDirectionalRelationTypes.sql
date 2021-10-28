@@ -1028,8 +1028,25 @@ UPDATE AD_RelationType SET IsActive='Y',Updated=TO_TIMESTAMP('2021-10-27 14:47:2
 UPDATE AD_RelationType SET IsActive='Y',Updated=TO_TIMESTAMP('2021-10-27 15:42:33','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_RelationType_ID=540279
 ;
 
---`AD_Role_Included -> AD_Role`
+--AD_Role_Included -> AD_Role
 -- 2021-10-27T13:52:19.334Z
 -- URL zum Konzept
 UPDATE AD_RelationType SET IsActive='Y',Updated=TO_TIMESTAMP('2021-10-27 15:52:19','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_RelationType_ID=540143
+;
+
+-- MD_Candidate Parent -> MD_Candidate
+-- 2021-10-28T08:23:35.682Z
+-- URL zum Konzept
+UPDATE AD_RelationType SET IsActive='Y',Updated=TO_TIMESTAMP('2021-10-28 10:23:35','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_RelationType_ID=540217
+;
+
+--RelType C_Element_Value <-> Fact_acct
+-- 2021-10-28T08:55:27.928Z
+-- URL zum Konzept
+UPDATE AD_RelationType SET IsActive='Y',Updated=TO_TIMESTAMP('2021-10-28 10:55:27','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_RelationType_ID=540234
+;
+
+-- 2021-10-28T08:59:43.824Z
+-- URL zum Konzept
+UPDATE AD_RelationType SET Name='RelType C_Element_Value -> Fact_acct',Updated=TO_TIMESTAMP('2021-10-28 10:59:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_RelationType_ID=540234
 ;
