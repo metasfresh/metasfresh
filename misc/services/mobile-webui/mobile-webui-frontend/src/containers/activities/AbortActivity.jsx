@@ -1,16 +1,17 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
+import { connect } from 'react-redux';
 import counterpart from 'counterpart';
+import { goBack } from 'connected-react-router';
 
 import { abortWorkflowRequest } from '../../api/launchers';
 import ConfirmButton from './confirmButton/ConfirmButton';
-import { history } from '../../store/store';
 
 class AbortActivity extends PureComponent {
   onUserConfirmed = () => {
-    const { wfProcessId } = this.props;
+    const { wfProcessId, goBack } = this.props;
 
-    abortWorkflowRequest(wfProcessId).then(() => history.push('/'));
+    abortWorkflowRequest(wfProcessId).then(goBack);
   };
 
   render() {
@@ -18,7 +19,12 @@ class AbortActivity extends PureComponent {
 
     return (
       <div className="mt-5">
-        <ConfirmButton isCancel={true} isUserEditable={true} caption={caption} onUserConfirmed={this.onUserConfirmed} />
+        <ConfirmButton
+          isCancelMode={true}
+          isUserEditable={true}
+          caption={caption}
+          onUserConfirmed={this.onUserConfirmed}
+        />
       </div>
     );
   }
@@ -26,6 +32,7 @@ class AbortActivity extends PureComponent {
 
 AbortActivity.propTypes = {
   wfProcessId: PropTypes.string.isRequired,
+  goBack: PropTypes.func.isRequired,
 };
 
-export default AbortActivity;
+export default connect(null, { goBack })(AbortActivity);

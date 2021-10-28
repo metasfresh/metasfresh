@@ -28,7 +28,7 @@ class ConfirmButton extends Component {
   };
 
   render() {
-    const { caption, promptQuestion, isUserEditable, isCancel } = this.props;
+    const { caption, promptQuestion, isUserEditable, isCancelMode } = this.props;
     const { isPromptDialogOpen } = this.state;
 
     const captionEffective = caption ? caption : counterpart.translate('activities.confirmButton.default.caption');
@@ -63,7 +63,7 @@ class ConfirmButton extends Component {
         )}
         <div>
           <button
-            className={cx('button is-outlined complete-btn', { 'is-danger': isCancel })}
+            className={cx('button is-outlined complete-btn', { 'is-danger': isCancelMode })}
             onClick={this.showConfirmDialog}
             disabled={!isUserEditable}
           >
@@ -75,11 +75,19 @@ class ConfirmButton extends Component {
   }
 }
 
+/**
+ * @typedef {object} Props Component props
+ * @prop {string} caption
+ * @prop {string} promptQuestion
+ * @prop {bool} isUserEditable
+ * @prop {bool} isCancelMode - controls if button is of rejection type (red instead of green)
+ * @prop {func} onUserConfirmed
+ */
 ConfirmButton.propTypes = {
   caption: PropTypes.string,
   promptQuestion: PropTypes.string,
   isUserEditable: PropTypes.bool,
-  isCancel: PropTypes.bool,
+  isCancelMode: PropTypes.bool,
   //
   onUserConfirmed: PropTypes.func.isRequired,
 };
