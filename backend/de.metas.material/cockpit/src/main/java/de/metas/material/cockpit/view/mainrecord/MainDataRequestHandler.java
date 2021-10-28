@@ -24,6 +24,7 @@ package de.metas.material.cockpit.view.mainrecord;
 
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.Profiles;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.view.MainDataRecordIdentifier;
 import de.metas.util.NumberUtils;
@@ -113,7 +114,7 @@ public class MainDataRequestHandler
 		// was Fresh_QtyMRP, was QtyRequiredForProduction
 		dataRecord.setQtyDemand_PP_Order(computeSum(dataRecord.getQtyDemand_PP_Order(), dataUpdateRequest.getQtyDemandPPOrder()));
 
-		dataRecord.setQtySupplyRequired(computeSum(dataRecord.getQtySupplyRequired(), dataUpdateRequest.getQtySupplyRequired()));
+		dataRecord.setQtySupplyRequired(CoalesceUtil.firstPositiveOrZero(computeSum(dataRecord.getQtySupplyRequired(), dataUpdateRequest.getQtySupplyRequired())));
 
 		if (dataUpdateRequest.getQtyStockEstimateCount() != null)
 		{
@@ -165,22 +166,19 @@ public class MainDataRequestHandler
 	 */
 	public static BigDecimal computeQtySupplyToSchedule(@NonNull final I_MD_Cockpit dataRecord)
 	{
-		return dataRecord.getQtyDemandSum()
-				.subtract(dataRecord.getQtySupplySum())
-				.subtract(dataRecord.getQtyStockCurrent());
+		return CoalesceUtil.firstPositiveOrZero(
+				dataRecord.getQtySupplyRequired().subtract(dataRecord.getQtySupplySum()));
 	}
 
 	/**
-	 * Current stock quantity with added/subtracted pending supplies and issues
+	 * Current pending supplies minus pending demands
 	 *
 	 * @param dataRecord I_MD_Cockpit
 	 * @return dataRecord.QtyStockCurrent + dataRecord.QtySupplySum - dataRecord.QtyDemandSum
 	 */
 	public static BigDecimal computeQtyExpectedSurplus(@NonNull final I_MD_Cockpit dataRecord)
 	{
-		return dataRecord.getQtyStockCurrent()
-				.add(dataRecord.getQtySupplySum())
-				.subtract(dataRecord.getQtyDemandSum());
+		return dataRecord.getQtySupplySum().subtract(dataRecord.getQtyDemandSum());
 	}
 
 	@NonNull

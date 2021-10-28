@@ -151,4 +151,10 @@ public final class PPOrderAdvisedHandler
 		final PPOrderAdvisedEvent ppOrderAdvisedEvent = PPOrderAdvisedEvent.cast(ppOrderEvent);
 		return Flag.of(ppOrderAdvisedEvent.isDirectlyPickSupply());
 	}
+
+	@Override
+	protected void updateMainData(final @NonNull AbstractPPOrderEvent ppOrderEvent)
+	{
+		//dev-note: no updates towards md_cockpit are done at this point as the pp order is just advised
+	}
 }

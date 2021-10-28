@@ -30,6 +30,7 @@ import de.metas.material.event.shipmentschedule.ShipmentScheduleCreatedEvent;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleDeletedEvent;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleUpdatedEvent;
 import de.metas.material.event.stock.StockChangedEvent;
+import de.metas.material.event.stockcandidate.MaterialCandidateChangedEvent;
 import de.metas.material.event.stockcandidate.StockCandidateChangedEvent;
 import de.metas.material.event.stockestimate.StockEstimateCreatedEvent;
 import de.metas.material.event.stockestimate.StockEstimateDeletedEvent;
@@ -116,7 +117,8 @@ import de.metas.material.event.transactions.TransactionDeletedEvent;
 		@JsonSubTypes.Type(name = TransactionCreatedEvent.TYPE, value = TransactionCreatedEvent.class),
 		@JsonSubTypes.Type(name = TransactionDeletedEvent.TYPE, value = TransactionDeletedEvent.class),
 
-		@JsonSubTypes.Type(name = StockCandidateChangedEvent.TYPE, value = StockCandidateChangedEvent.class)
+		@JsonSubTypes.Type(name = StockCandidateChangedEvent.TYPE, value = StockCandidateChangedEvent.class),
+		@JsonSubTypes.Type(name = MaterialCandidateChangedEvent.TYPE, value = MaterialCandidateChangedEvent.class)
 })
 public interface MaterialEvent
 {
