@@ -27,6 +27,9 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+/**
+ * A single attribute from an attribute set. note that we don't have any values in there..this is not about an instance.
+ */
 @Value
 @Builder
 public class AttributeSetAttribute
