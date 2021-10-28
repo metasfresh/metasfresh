@@ -103,7 +103,7 @@ public class SubscriptionBL implements ISubscriptionBL
 	private static final String SYSCONFIG_CREATE_SUBSCRIPTIONPROGRESS_IN_PAST_DAYS = "C_Flatrate_Term.Create_SubscriptionProgressInPastDays";
 
 	public static final Logger logger = LogManager.getLogger(SubscriptionBL.class);
-	public static final int SEQ_NO_START = 10;
+	public static final int SEQNO_FIRST_VALUE = 10;
 	private final ISubscriptionDAO subscriptionDAO = Services.get(ISubscriptionDAO.class);
 
 	@Override
@@ -203,9 +203,9 @@ public class SubscriptionBL implements ISubscriptionBL
 	@lombok.Value
 	private static class PricingSystemTaxCategoryAndIsTaxIncluded
 	{
-		private PricingSystemId pricingSystemId;
-		private TaxCategoryId taxCategoryId;
-		private boolean isTaxIncluded;
+		PricingSystemId pricingSystemId;
+		TaxCategoryId taxCategoryId;
+		boolean isTaxIncluded;
 	}
 
 	private PricingSystemTaxCategoryAndIsTaxIncluded computePricingSystemTaxCategAndIsTaxIncluded(@NonNull final I_C_OrderLine ol, @NonNull final I_C_Flatrate_Term newTerm)
@@ -482,7 +482,7 @@ public class SubscriptionBL implements ISubscriptionBL
 
 		Timestamp eventDate = getEventDate(term);
 
-		int seqNo = SEQ_NO_START;
+		int seqNo = SEQNO_FIRST_VALUE;
 
 		final List<I_C_SubscriptionProgress> deliveries = new ArrayList<>();
 
@@ -1118,6 +1118,8 @@ public class SubscriptionBL implements ISubscriptionBL
 		changeEvent.setContractStatus(X_C_SubscriptionProgress.CONTRACTSTATUS_Running);
 		changeEvent.setEventDate(today);
 		changeEvent.setSeqNo(seqNoToUse);
+		changeEvent.setDropShip_BPartner_ID(term.getDropShip_BPartner_ID());
+		changeEvent.setDropShip_Location_ID(term.getDropShip_Location_ID());
 		addEventValue(changeEvent, eventType, eventValue);
 		save(changeEvent);
 
@@ -1136,7 +1138,7 @@ public class SubscriptionBL implements ISubscriptionBL
 						.mapToInt(I_C_SubscriptionProgress::getSeqNo)
 						.map(Math::incrementExact)
 						.max()//greatest seqNo + 1 before today
-						.orElse(SEQ_NO_START));
+						.orElse(SEQNO_FIRST_VALUE));
 	}
 
 	private void addEventValue(final I_C_SubscriptionProgress changeEvent, final String eventType, @Nullable final Object eventValue)
