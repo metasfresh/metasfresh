@@ -35,7 +35,7 @@ export default function appHandler(state = initialState, action) {
     case SET_ACTIVE_APPLICATION:
       return {
         ...state,
-        activeApplication: payload.applicationName,
+        activeApplication: { ...payload },
       };
     case CLEAR_ACTIVE_APPLICATION:
       return {

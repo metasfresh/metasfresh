@@ -7,6 +7,7 @@ import { map } from 'lodash';
 
 import { populateLaunchers } from '../../actions/LauncherActions';
 import { getLaunchers } from '../../api/launchers';
+import { selectLaunchersFromState } from '../../reducers/launchers';
 import WFLauncherButton from './WFLauncherButton';
 import * as ws from '../../utils/websocket';
 
@@ -67,9 +68,10 @@ WFLaunchersScreen.propTypes = {
 
 const mapStateToProps = (state, { match }) => {
   const { applicationId } = match.params;
+
   return {
     applicationId,
-    launchers: state.launchers[applicationId],
+    launchers: selectLaunchersFromState(state, applicationId),
     userToken: state.appHandler.token,
   };
 };

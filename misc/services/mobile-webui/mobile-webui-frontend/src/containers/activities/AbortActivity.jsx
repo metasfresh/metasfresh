@@ -2,16 +2,16 @@ import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import counterpart from 'counterpart';
-import { goBack } from 'connected-react-router';
+import { push } from 'connected-react-router';
 
 import { abortWorkflowRequest } from '../../api/launchers';
 import ConfirmButton from './confirmButton/ConfirmButton';
 
 class AbortActivity extends PureComponent {
   onUserConfirmed = () => {
-    const { wfProcessId, goBack } = this.props;
+    const { wfProcessId, appId, push } = this.props;
 
-    abortWorkflowRequest(wfProcessId).then(goBack);
+    abortWorkflowRequest(wfProcessId).then(push(`/launchers/${appId}`));
   };
 
   render() {
@@ -30,9 +30,16 @@ class AbortActivity extends PureComponent {
   }
 }
 
-AbortActivity.propTypes = {
-  wfProcessId: PropTypes.string.isRequired,
-  goBack: PropTypes.func.isRequired,
+const mapStateToProps = (state) => {
+  return {
+    appId: state.appHandler.activeApplication.id,
+  };
 };
 
-export default connect(null, { goBack })(AbortActivity);
+AbortActivity.propTypes = {
+  wfProcessId: PropTypes.string.isRequired,
+  appId: PropTypes.string.isRequired,
+  push: PropTypes.func.isRequired,
+};
+
+export default connect(mapStateToProps, { push })(AbortActivity);
