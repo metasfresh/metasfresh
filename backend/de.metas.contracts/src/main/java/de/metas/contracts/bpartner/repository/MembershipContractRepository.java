@@ -96,7 +96,7 @@ public class MembershipContractRepository
 				.addNotEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_ContractStatus, FlatrateTermStatus.Quit.getCode())
 				.addNotEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_ContractStatus, FlatrateTermStatus.Voided.getCode())
 				.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_EndDate, CompareQueryFilter.Operator.GREATER, orgChangeDate)
-				.andCollectChildren(I_C_Flatrate_Term.COLUMNNAME_C_Order_Term_ID, I_C_Order.class)
+				.andCollect(I_C_Flatrate_Term.COLUMNNAME_C_Order_Term_ID, I_C_Order.class)
 				.addEqualsFilter(I_C_Order.COLUMNNAME_AD_Org_ID, orgId)
 				.create()
 				.listIds(OrderId::ofRepoId);
