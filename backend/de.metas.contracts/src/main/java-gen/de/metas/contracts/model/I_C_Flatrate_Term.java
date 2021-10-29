@@ -77,8 +77,7 @@ public interface I_C_Flatrate_Term
 	String COLUMNNAME_AD_PInstance_EndOfTerm_ID = "AD_PInstance_EndOfTerm_ID";
 
 	/**
-	 * Set Betreuer.
-	 * Person, die bei einem fachlichen Problem vom System informiert wird.
+	 * Set Responsible.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -87,8 +86,7 @@ public interface I_C_Flatrate_Term
 	void setAD_User_InCharge_ID (int AD_User_InCharge_ID);
 
 	/**
-	 * Get Betreuer.
-	 * Person, die bei einem fachlichen Problem vom System informiert wird.
+	 * Get Responsible.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -137,6 +135,31 @@ public interface I_C_Flatrate_Term
 	int getBill_Location_ID();
 
 	String COLUMNNAME_Bill_Location_ID = "Bill_Location_ID";
+
+	/**
+	 * Set Rechnungsstandort (Address).
+	 *
+	 * <br>Type: Location
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setBill_Location_Value_ID (int Bill_Location_Value_ID);
+
+	/**
+	 * Get Rechnungsstandort (Address).
+	 *
+	 * <br>Type: Location
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getBill_Location_Value_ID();
+
+	@Nullable org.compiere.model.I_C_Location getBill_Location_Value();
+
+	void setBill_Location_Value(@Nullable org.compiere.model.I_C_Location Bill_Location_Value);
+
+	ModelColumn<I_C_Flatrate_Term, org.compiere.model.I_C_Location> COLUMN_Bill_Location_Value_ID = new ModelColumn<>(I_C_Flatrate_Term.class, "Bill_Location_Value_ID", org.compiere.model.I_C_Location.class);
+	String COLUMNNAME_Bill_Location_Value_ID = "Bill_Location_Value_ID";
 
 	/**
 	 * Set Bill Contact.
@@ -328,7 +351,7 @@ public interface I_C_Flatrate_Term
 	String COLUMNNAME_ChangeOrCancelTerm = "ChangeOrCancelTerm";
 
 	/**
-	 * Set Vertrags-Status.
+	 * Set Contract Status.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -337,7 +360,7 @@ public interface I_C_Flatrate_Term
 	void setContractStatus (@Nullable java.lang.String ContractStatus);
 
 	/**
-	 * Get Vertrags-Status.
+	 * Get Contract Status.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -485,8 +508,8 @@ public interface I_C_Flatrate_Term
 	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Steuerkategorie.
-	 * Steuerkategorie
+	 * Set Tax Category.
+	 * Tax Category
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -495,8 +518,8 @@ public interface I_C_Flatrate_Term
 	void setC_TaxCategory_ID (int C_TaxCategory_ID);
 
 	/**
-	 * Get Steuerkategorie.
-	 * Steuerkategorie
+	 * Get Tax Category.
+	 * Tax Category
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -703,6 +726,33 @@ public interface I_C_Flatrate_Term
 	String COLUMNNAME_DropShip_Location_ID = "DropShip_Location_ID";
 
 	/**
+	 * Set Lieferadresse (Address).
+	 * Business Partner Location for shipping to
+	 *
+	 * <br>Type: Location
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDropShip_Location_Value_ID (int DropShip_Location_Value_ID);
+
+	/**
+	 * Get Lieferadresse (Address).
+	 * Business Partner Location for shipping to
+	 *
+	 * <br>Type: Location
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getDropShip_Location_Value_ID();
+
+	@Nullable org.compiere.model.I_C_Location getDropShip_Location_Value();
+
+	void setDropShip_Location_Value(@Nullable org.compiere.model.I_C_Location DropShip_Location_Value);
+
+	ModelColumn<I_C_Flatrate_Term, org.compiere.model.I_C_Location> COLUMN_DropShip_Location_Value_ID = new ModelColumn<>(I_C_Flatrate_Term.class, "DropShip_Location_Value_ID", org.compiere.model.I_C_Location.class);
+	String COLUMNNAME_DropShip_Location_Value_ID = "DropShip_Location_Value_ID";
+
+	/**
 	 * Set Ship Contact.
 	 *
 	 * <br>Type: Table
@@ -723,7 +773,7 @@ public interface I_C_Flatrate_Term
 	String COLUMNNAME_DropShip_User_ID = "DropShip_User_ID";
 
 	/**
-	 * Set Enddatum.
+	 * Set Contract End.
 	 * Last effective date (inclusive)
 	 *
 	 * <br>Type: Date
@@ -733,7 +783,7 @@ public interface I_C_Flatrate_Term
 	void setEndDate (@Nullable java.sql.Timestamp EndDate);
 
 	/**
-	 * Get Enddatum.
+	 * Get Contract End.
 	 * Last effective date (inclusive)
 	 *
 	 * <br>Type: Date
@@ -905,7 +955,7 @@ public interface I_C_Flatrate_Term
 	String COLUMNNAME_IsSimulation = "IsSimulation";
 
 	/**
-	 * Set Preis inklusive Steuern.
+	 * Set Price incl. Tax.
 	 * Tax is included in the price
 	 *
 	 * <br>Type: YesNo
@@ -915,7 +965,7 @@ public interface I_C_Flatrate_Term
 	void setIsTaxIncluded (boolean IsTaxIncluded);
 
 	/**
-	 * Get Preis inklusive Steuern.
+	 * Get Price incl. Tax.
 	 * Tax is included in the price
 	 *
 	 * <br>Type: YesNo
@@ -951,7 +1001,7 @@ public interface I_C_Flatrate_Term
 	String COLUMNNAME_MasterDocumentNo = "MasterDocumentNo";
 
 	/**
-	 * Set Contract End Date.
+	 * Set Master End Date.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -960,7 +1010,7 @@ public interface I_C_Flatrate_Term
 	void setMasterEndDate (@Nullable java.sql.Timestamp MasterEndDate);
 
 	/**
-	 * Get Contract End Date.
+	 * Get Master End Date.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -972,7 +1022,7 @@ public interface I_C_Flatrate_Term
 	String COLUMNNAME_MasterEndDate = "MasterEndDate";
 
 	/**
-	 * Set Contract Start Date.
+	 * Set Master Start Date.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -981,7 +1031,7 @@ public interface I_C_Flatrate_Term
 	void setMasterStartDate (@Nullable java.sql.Timestamp MasterStartDate);
 
 	/**
-	 * Get Contract Start Date.
+	 * Get Master Start Date.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -1058,9 +1108,6 @@ public interface I_C_Flatrate_Term
 	 * <br>Virtual Column: false
 	 */
 	int getM_Product_ID();
-
-	/** Column definition for M_Product_ID */
-	org.adempiere.model.ModelColumn<I_C_Flatrate_Term, org.compiere.model.I_M_Product> COLUMN_M_Product_ID = new org.adempiere.model.ModelColumn<>(I_C_Flatrate_Term.class, "M_Product_ID", org.compiere.model.I_M_Product.class);
 
 	String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
@@ -1230,7 +1277,7 @@ public interface I_C_Flatrate_Term
 	void setStartDate (java.sql.Timestamp StartDate);
 
 	/**
-	 * Get Anfangsdatum.
+	 * Get Start Date.
 	 * First effective day (inclusive)
 	 *
 	 * <br>Type: Date

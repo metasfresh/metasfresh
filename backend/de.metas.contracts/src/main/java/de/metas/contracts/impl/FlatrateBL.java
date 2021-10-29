@@ -52,6 +52,7 @@ import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.interceptor.C_Flatrate_Term;
 import de.metas.contracts.invoicecandidate.FlatrateDataEntryHandler;
 import de.metas.contracts.location.ContractLocationHelper;
+import de.metas.contracts.location.adapter.ContractDocumentLocationAdapterFactory;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Data;
 import de.metas.contracts.model.I_C_Flatrate_DataEntry;
@@ -482,8 +483,8 @@ public class FlatrateBL implements IFlatrateBL
 		final TaxCategoryId taxCategoryId = TaxCategoryId.ofRepoIdOrNull(term.getC_TaxCategory_ID());
 
 		final BPartnerLocationAndCaptureId shipToLocationId = CoalesceUtil.coalesceSuppliers(
-				() -> BPartnerLocationAndCaptureId.ofRepoIdOrNull(term.getDropShip_BPartner_ID(), term.getDropShip_Location_ID()),
-				() -> BPartnerLocationAndCaptureId.ofRepoIdOrNull(term.getBill_BPartner_ID(), term.getBill_Location_ID()));
+				() -> ContractLocationHelper.extractDropshipLocationId(term),
+				() -> ContractLocationHelper.extractBillToLocationId(term));
 
 		final TaxId taxId = Services.get(ITaxBL.class).getTaxNotNull(
 				ctx,
@@ -616,8 +617,8 @@ public class FlatrateBL implements IFlatrateBL
 		final TaxCategoryId taxCategoryId = TaxCategoryId.ofRepoIdOrNull(term.getC_TaxCategory_ID());
 
 		final BPartnerLocationAndCaptureId shipToLocationId = CoalesceUtil.coalesceSuppliers(
-				() -> BPartnerLocationAndCaptureId.ofRepoIdOrNull(term.getDropShip_BPartner_ID(), term.getDropShip_Location_ID()),
-				() -> BPartnerLocationAndCaptureId.ofRepoIdOrNull(term.getBill_BPartner_ID(), term.getBill_Location_ID()));
+				() -> ContractLocationHelper.extractDropshipLocationId(term),
+				() -> ContractLocationHelper.extractBillToLocationId(term));
 
 		final TaxId taxId = Services.get(ITaxBL.class).getTaxNotNull(
 				ctx,
@@ -1295,11 +1296,17 @@ public class FlatrateBL implements IFlatrateBL
 		nextTerm.setPlannedQtyPerUnit(currentTerm.getPlannedQtyPerUnit());
 		nextTerm.setIsSimulation(currentTerm.isSimulation());
 
+		final BPartnerContactId billContactId = BPartnerContactId.ofRepoIdOrNull(currentTerm.getBill_BPartner_ID(), currentTerm.getBill_User_ID());
+		ContractDocumentLocationAdapterFactory
+				.billLocationAdapter(nextTerm)
+				.setFrom(ContractLocationHelper.extractBillToLocationId(currentTerm),
+						 billContactId);
 
-		nextTerm.setBill_BPartner_ID(currentTerm.getBill_BPartner_ID());
-		final BPartnerLocationId currentBillLocationId = bPartnerDAO.getCurrentLocation(BPartnerLocationId.ofRepoId(currentTerm.getBill_BPartner_ID(), currentTerm.getBill_Location_ID()));
-		nextTerm.setBill_Location_ID(currentBillLocationId.getRepoId());
-		nextTerm.setBill_User_ID(currentTerm.getBill_User_ID());
+		final BPartnerContactId dropshipContactId = BPartnerContactId.ofRepoIdOrNull(currentTerm.getDropShip_BPartner_ID(), currentTerm.getDropShip_User_ID());
+
+		ContractDocumentLocationAdapterFactory
+				.dropShipLocationAdapter(nextTerm)
+				.setFrom(ContractLocationHelper.extractDropshipLocationId(currentTerm), dropshipContactId);
 
 		nextTerm.setAD_User_InCharge_ID(currentTerm.getAD_User_InCharge_ID());
 		final I_C_Flatrate_Transition nextTransition = nextConditions.getC_Flatrate_Transition();
@@ -1327,7 +1334,6 @@ public class FlatrateBL implements IFlatrateBL
 		nextTerm.setM_Product_ID(currentTerm.getM_Product_ID());
 		Services.get(IAttributeSetInstanceBL.class).cloneASI(currentTerm, nextTerm);
 
-		nextTerm.setDropShip_User_ID(currentTerm.getDropShip_User_ID());
 		nextTerm.setDeliveryRule(currentTerm.getDeliveryRule());
 		nextTerm.setDeliveryViaRule(currentTerm.getDeliveryViaRule());
 
@@ -1687,11 +1693,34 @@ public class FlatrateBL implements IFlatrateBL
 
 		newTerm.setStartDate(startDate);
 		newTerm.setEndDate(startDate); // will be updated later
-		newTerm.setDropShip_BPartner_ID(bPartner.getC_BPartner_ID());
 
-		newTerm.setBill_BPartner_ID(billPartnerLocation.getC_BPartner_ID()); // note that in case of bPartner relations, this might be a different partner than 'bPartner'.
-		newTerm.setBill_Location_ID(billPartnerLocation.getC_BPartner_Location_ID());
+		final BPartnerLocationAndCaptureId billToLocationId = BPartnerLocationAndCaptureId.ofRepoIdOrNull(billPartnerLocation.getC_BPartner_ID(),// note that in case of bPartner relations, this might be a different partner than 'bPartner'.
+																										  billPartnerLocation.getC_BPartner_Location_ID(),
+																										  billPartnerLocation.getC_Location_ID());
+		ContractDocumentLocationAdapterFactory.billLocationAdapter(newTerm)
+				.setFrom(billToLocationId);
 
+		final IBPartnerDAO.BPartnerLocationQuery bPartnerLocationQuery = IBPartnerDAO.BPartnerLocationQuery.builder()
+				.bpartnerId(BPartnerId.ofRepoId(bPartner.getC_BPartner_ID()))
+				.type(IBPartnerDAO.BPartnerLocationQuery.Type.SHIP_TO)
+				.applyTypeStrictly(true)
+				.build();
+
+		final I_C_BPartner_Location shipToLocationRecord = bPartnerDAO.retrieveBPartnerLocation(bPartnerLocationQuery);
+
+		if (shipToLocationRecord != null)
+		{
+			final BPartnerLocationAndCaptureId shipToLocationId = BPartnerLocationAndCaptureId.ofRepoIdOrNull(shipToLocationRecord.getC_BPartner_ID(),
+																											  shipToLocationRecord.getC_BPartner_Location_ID(),
+																											  shipToLocationRecord.getC_Location_ID());
+
+			ContractDocumentLocationAdapterFactory.dropShipLocationAdapter(newTerm)
+					.setFrom(shipToLocationId);
+		}
+		else
+		{
+			newTerm.setDropShip_BPartner_ID(bPartner.getC_BPartner_ID()); // keep the previous behavior
+		}
 		if (userInCharge == null)
 		{
 			newTerm.setAD_User_InCharge_ID(bPartner.getSalesRep_ID());
