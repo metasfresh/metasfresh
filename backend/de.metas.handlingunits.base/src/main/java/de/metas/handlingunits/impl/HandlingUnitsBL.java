@@ -581,7 +581,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 
 		return getTopLevelHUs(query).stream()
 				.map(hu -> HuId.ofRepoId(hu.getM_HU_ID()))
-				.collect(GuavaCollectors.toImmutableSet());
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	@Override
@@ -843,7 +843,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
-	public Set<HuId> getVHUIds(@NonNull final HuId huId)
+	public ImmutableSet<HuId> getVHUIds(@NonNull final HuId huId)
 	{
 		final List<I_M_HU> vhus = getVHUs(huId);
 		return extractHuIds(vhus);
@@ -857,7 +857,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
-	public Set<HuId> getVHUIds(@NonNull final Set<HuId> huIds)
+	public ImmutableSet<HuId> getVHUIds(@NonNull final Set<HuId> huIds)
 	{
 		if (huIds.isEmpty())
 		{
