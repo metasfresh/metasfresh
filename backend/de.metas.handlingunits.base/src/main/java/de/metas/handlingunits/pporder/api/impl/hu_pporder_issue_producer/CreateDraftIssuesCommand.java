@@ -21,8 +21,6 @@ import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.logging.LogManager;
 import de.metas.material.planning.pporder.DraftPPOrderQuantities;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
-import org.eevolution.api.PPOrderBOMLineId;
-import org.eevolution.api.PPOrderId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
@@ -32,6 +30,8 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.eevolution.api.BOMComponentIssueMethod;
+import org.eevolution.api.PPOrderBOMLineId;
+import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.slf4j.Logger;
 
@@ -174,14 +174,13 @@ public class CreateDraftIssuesCommand
 					.setParameter("hu", hu);
 		}
 
-		removeHuFromParentIfAny(huContext, hu);
-
 		final IHUProductStorage productStorage = retrieveProductStorage(huContext, hu);
 		if (productStorage == null)
 		{
 			return null;
 		}
 
+		removeHuFromParentIfAny(huContext, hu);
 		// Actually create and save the candidate
 		final I_PP_Order_Qty candidate = createIssueCandidateOrNull(hu, productStorage);
 		if (candidate == null)
@@ -273,20 +272,20 @@ public class CreateDraftIssuesCommand
 			}
 
 			final I_PP_Order_Qty candidate = huPPOrderQtyDAO.save(CreateIssueCandidateRequest.builder()
-					.orderId(PPOrderId.ofRepoId(targetBOMLine.getPP_Order_ID()))
-					.orderBOMLineId(PPOrderBOMLineId.ofRepoId(targetBOMLine.getPP_Order_BOMLine_ID()))
-					//
-					.date(movementDate)
-					//
-					.locatorId(warehousesRepo.getLocatorIdByRepoIdOrNull(hu.getM_Locator_ID()))
-					.issueFromHUId(HuId.ofRepoId(hu.getM_HU_ID()))
-					.productId(productId)
-					//
-					.qtyToIssue(qtyToIssue)
-					//
-					.pickingCandidateId(pickingCandidateId)
-					//
-					.build());
+																		  .orderId(PPOrderId.ofRepoId(targetBOMLine.getPP_Order_ID()))
+																		  .orderBOMLineId(PPOrderBOMLineId.ofRepoId(targetBOMLine.getPP_Order_BOMLine_ID()))
+																		  //
+																		  .date(movementDate)
+																		  //
+																		  .locatorId(warehousesRepo.getLocatorIdByRepoIdOrNull(hu.getM_Locator_ID()))
+																		  .issueFromHUId(HuId.ofRepoId(hu.getM_HU_ID()))
+																		  .productId(productId)
+																		  //
+																		  .qtyToIssue(qtyToIssue)
+																		  //
+																		  .pickingCandidateId(pickingCandidateId)
+																		  //
+																		  .build());
 
 			ppOrderProductAttributeBL.addPPOrderProductAttributesFromIssueCandidate(candidate);
 

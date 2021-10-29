@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
+import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.picking.candidate.commands.AddQtyToHUCommand;
 import de.metas.handlingunits.picking.candidate.commands.ClosePickingCandidateCommand;
 import de.metas.handlingunits.picking.candidate.commands.CreatePickingCandidatesCommand;
@@ -24,10 +25,12 @@ import de.metas.handlingunits.picking.requests.CloseForShipmentSchedulesRequest;
 import de.metas.handlingunits.picking.requests.PickRequest;
 import de.metas.handlingunits.picking.requests.RejectPickingRequest;
 import de.metas.handlingunits.picking.requests.RemoveQtyFromHURequest;
-import de.metas.handlingunits.pporder.api.IHUPPOrderQtyBL;
 import de.metas.handlingunits.sourcehu.HuId2SourceHUsService;
 import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inoutcandidate.api.IShipmentSchedulePA;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.api.PickingConfigRepository;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -68,7 +71,8 @@ public class PickingCandidateService
 	private final PickingConfigRepository pickingConfigRepository;
 	private final PickingCandidateRepository pickingCandidateRepository;
 	private final HuId2SourceHUsService sourceHUsRepository;
-	private final IHUPPOrderQtyBL huPPOrderQtyBL = Services.get(IHUPPOrderQtyBL.class);
+	private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
+	private final IShipmentSchedulePA ShipmentScheduleRepo = Services.get(IShipmentSchedulePA.class);
 
 	public PickingCandidateService(
 			@NonNull final PickingConfigRepository pickingConfigRepository,
@@ -180,11 +184,17 @@ public class PickingCandidateService
 			@NonNull final OnOverDelivery onOverDelivery,
 			@Nullable final PPOrderId orderId)
 	{
+
 		final List<PickingCandidate> pickingCandidatesToProcess = pickingCandidateRepository.getByHUIds(pickFromHuIds)
 				.stream()
 				.filter(PickingCandidate::isDraft)
 				.filter(pc -> shipmentScheduleId == null || shipmentScheduleId.equals(pc.getShipmentScheduleId()))
 				.collect(ImmutableList.toImmutableList());
+
+		for(PickingCandidate pickingCandidate : pickingCandidatesToProcess)
+		{
+			validateAttributes(pickingCandidate);
+		}
 		//
 		// Process those picking candidates
 		final ImmutableList<PickingCandidate> processedPickingCandidates = ProcessHUsAndPickingCandidateCommand.builder()
@@ -205,6 +215,23 @@ public class PickingCandidateService
 				.pickingSlotIsRackSystem(false)
 				.build()
 				.perform();
+	}
+
+	private void validateAttributes(@NonNull final PickingCandidate pickingCandidate)
+	{
+		final HuId huId = pickingCandidate.getPickFrom().getHuId();
+
+		if (huId == null)
+		{
+			// nothing to do
+			return;
+		}
+
+		final ShipmentScheduleId shipmentScheduleId = pickingCandidate.getShipmentScheduleId();
+		final I_M_ShipmentSchedule shipmentScheduleRecord = ShipmentScheduleRepo.getById(shipmentScheduleId);
+		final ProductId productId = ProductId.ofRepoId(shipmentScheduleRecord.getM_Product_ID());
+
+		huAttributesBL.validateMandatoryPickingAttributes(huId, productId);
 	}
 
 	public ProcessPickingCandidatesResult process(@NonNull final Set<PickingCandidateId> pickingCandidateIds)
