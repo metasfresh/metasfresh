@@ -5,7 +5,7 @@ import { withRouter } from 'react-router';
 import { go } from 'connected-react-router';
 
 import { toastError } from '../../../utils/toast';
-import { postQtyPicked } from '../../../api/picking';
+import { postStepPicked } from '../../../api/picking';
 import { updatePickingStepScannedHUBarcode, updatePickingStepQty } from '../../../actions/PickingActions';
 
 import CodeScanner from '../scan/CodeScanner';
@@ -98,7 +98,7 @@ class PickStepScanHUScreen extends Component {
     });
 
     updatePickingStepQty({ wfProcessId, activityId, lineId, stepId, qtyPicked: qty, qtyRejectedReasonCode: reason });
-    postQtyPicked({ wfProcessId, activityId, stepId, qtyPicked: qty, qtyRejectedReasonCode: reason });
+    postStepPicked({ wfProcessId, activityId, stepId, qtyPicked: qty, qtyRejectedReasonCode: reason });
     // TODO: handle the promise
 
     go(-2);

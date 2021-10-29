@@ -5,7 +5,7 @@ import PropTypes from 'prop-types';
 import { withRouter } from 'react-router';
 import counterpart from 'counterpart';
 
-import { postQtyPicked } from '../../../api/picking';
+import { postStepUnPicked } from '../../../api/picking';
 import { pushHeaderEntry } from '../../../actions/HeaderActions';
 import { updatePickingStepQty } from '../../../actions/PickingActions';
 import ButtonWithIndicator from '../../../components/ButtonWithIndicator';
@@ -44,10 +44,8 @@ class PickStepScreen extends Component {
   onUnpickButtonClick = () => {
     const { wfProcessId, activityId, lineId, stepId, updatePickingStepQty, push } = this.props;
 
-    // we set qtyPicked to 0, reson = null
-    // send an event to backend (same API like the one for sending normal picked qtys)
     updatePickingStepQty({ wfProcessId, activityId, lineId, stepId, qtyPicked: 0, qtyRejectedReasonCode: null });
-    postQtyPicked({ wfProcessId, activityId, stepId, qtyPicked: 0, qtyRejectedReasonCode: null });
+    postStepUnPicked({ wfProcessId, activityId, stepId });
     push(`/workflow/${wfProcessId}/activityId/${activityId}/lineId/${lineId}`);
   };
 
