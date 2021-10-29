@@ -410,14 +410,14 @@ public class AddressBuilderTest
 			final String userBlock = null;
 
 			assertEquals(
-					"addr1\naddr2\n121212 City1\nPostfach 1234\nCountry1",
+					"addr1\naddr2\n121212 City1\nPostfach MSG_POBox 1234\nCountry1",
 					builder("de_CH")
 							.buildAddressString(location, isLocalAddress, bPartnerBlock, userBlock));
 
 			isLocalAddress = true;
 
 			assertEquals(
-					"LOCAL: addr1\naddr2\n121212 City1\nPostfach 1234\nCountry1",
+					"LOCAL: addr1\naddr2\n121212 City1\nPostfach MSG_POBox 1234\nCountry1",
 					builder("de_CH")
 							.buildAddressString(location, isLocalAddress, bPartnerBlock, userBlock));
 		}
@@ -431,14 +431,14 @@ public class AddressBuilderTest
 			final String userBlock = null;
 
 			assertEquals(
-					"addr1\naddr2\n121212 City1\nTEST Postfach 1234\nCountry1",
+					"addr1\naddr2\n121212 City1\nTEST Postfach MSG_POBox 1234\nCountry1",
 					builder("de_CH")
 							.buildAddressString(location, isLocalAddress, bPartnerBlock, userBlock));
 
 			isLocalAddress = true;
 
 			assertEquals(
-					"LOCAL: addr1\naddr2\n121212 City1\nTEST Postfach 1234\nCountry1",
+					"LOCAL: addr1\naddr2\n121212 City1\nTEST Postfach MSG_POBox 1234\nCountry1",
 					builder("de_CH")
 							.buildAddressString(location, isLocalAddress, bPartnerBlock, userBlock));
 		}
@@ -473,14 +473,14 @@ public class AddressBuilderTest
 			final String userBlock = null;
 
 			assertEquals(
-					"addr2\naddr1\nPostfach 1234\n121212 City1\nCountry1",
+					"addr2\naddr1\nPostfach MSG_POBox 1234\n121212 City1\nCountry1",
 					builder("de_CH")
 							.buildAddressString(location, isLocalAddress, bPartnerBlock, userBlock));
 
 			isLocalAddress = true;
 
 			assertEquals(
-					"LOCAL: addr2\naddr1\nPostfach 1234\n121212 City1\nCountry1",
+					"LOCAL: addr2\naddr1\nPostfach MSG_POBox 1234\n121212 City1\nCountry1",
 					builder("de_CH")
 							.buildAddressString(location, isLocalAddress, bPartnerBlock, userBlock));
 		}
@@ -515,14 +515,14 @@ public class AddressBuilderTest
 			final String userBlock = null;
 
 			assertEquals(
-					"addr2\naddr1\n1234\n121212 City1\nCountry1",
+					"addr2\naddr1\nMSG_POBox 1234\n121212 City1\nCountry1",
 					builder("de_CH")
 							.buildAddressString(location, isLocalAddress, bPartnerBlock, userBlock));
 
 			isLocalAddress = true;
 
 			assertEquals(
-					"LOCAL: addr2\naddr1\n1234\n121212 City1\nCountry1",
+					"LOCAL: addr2\naddr1\nMSG_POBox 1234\n121212 City1\nCountry1",
 					builder("de_CH")
 							.buildAddressString(location, isLocalAddress, bPartnerBlock, userBlock));
 		}
