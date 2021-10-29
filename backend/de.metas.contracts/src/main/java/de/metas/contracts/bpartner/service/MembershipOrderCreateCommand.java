@@ -39,6 +39,8 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.X_C_Order;
 
+import java.math.BigDecimal;
+
 public class MembershipOrderCreateCommand
 {
 
@@ -71,6 +73,7 @@ public class MembershipOrderCreateCommand
 
 		orderLine.setM_Product_ID(productId.getRepoId());
 		orderLine.setC_Flatrate_Conditions_ID(conditionsId.getRepoId());
+		orderLine.setQtyOrdered(BigDecimal.ONE);
 
 		orderDAO.save(orderLine);
 
