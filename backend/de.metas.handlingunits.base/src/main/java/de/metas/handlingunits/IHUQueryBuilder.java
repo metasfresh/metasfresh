@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.reservation.HUReservationDocRef;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -87,12 +88,12 @@ public interface IHUQueryBuilder
 	 */
 	IQueryFilter<I_M_HU> createQueryFilter();
 
-	/** Retrieves all HUs which are matching our criterias */
+	/** Retrieves all HUs which are matching our criteria */
 	List<I_M_HU> list();
 
-	Set<HuId> listIds();
+	ImmutableSet<HuId> listIds();
 
-	/** Retrieves all HUs which are matching our criterias, but no more then <code>limit</code> number. */
+	/** Retrieves all HUs which are matching our criteria, but no more than <code>limit</code> number. */
 	List<I_M_HU> list(final int limit);
 
 	/**
@@ -107,7 +108,7 @@ public interface IHUQueryBuilder
 	/** Retrieves first {@link I_M_HU} */
 	I_M_HU first();
 
-	/** Counts how many {@link I_M_HU}s are matched by our criterias */
+	/** Counts how many {@link I_M_HU}s are matched by our criteria */
 	int count();
 
 	/**
@@ -132,7 +133,7 @@ public interface IHUQueryBuilder
 
 	/**
 	 * Optionally set the context in which the query will run.<br>
-	 * If omitted, then then {@link org.adempiere.model.PlainContextAware#newWithThreadInheritedTrx()} is used.
+	 * If omitted, then {@link org.adempiere.model.PlainContextAware#newWithThreadInheritedTrx()} is used.
 	 *
 	 * @param contextProvider an instance that can be used as parameter for {@link org.adempiere.model.InterfaceWrapperHelper#getContextAware(Object)}.
 	 * @return this
@@ -259,7 +260,7 @@ public interface IHUQueryBuilder
 
 	/**
 	 * If <code>true</code> then only active HUs will be matched (i.e. IsActive='Y').
-	 * By default this is true.
+	 * By default, this is true.
 	 */
 	IHUQueryBuilder setOnlyActiveHUs(boolean onlyActiveHUs);
 
