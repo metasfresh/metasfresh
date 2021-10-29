@@ -34,8 +34,6 @@ import java.util.List;
 
 public interface IViewRowAttributes
 {
-	DocumentPath getDocumentPath();
-
 	ViewRowAttributesLayout getLayout();
 
 	void processChanges(List<JSONDocumentChangedEvent> events);

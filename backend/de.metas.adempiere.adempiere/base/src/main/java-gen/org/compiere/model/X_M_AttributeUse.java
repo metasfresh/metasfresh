@@ -1,164 +1,168 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for M_AttributeUse
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public class X_M_AttributeUse extends org.compiere.model.PO implements I_M_AttributeUse, org.compiere.model.I_Persistent 
 {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = 570669462L;
+	private static final long serialVersionUID = -1784190118L;
 
     /** Standard Constructor */
-    public X_M_AttributeUse (Properties ctx, int M_AttributeUse_ID, String trxName)
+    public X_M_AttributeUse (final Properties ctx, final int M_AttributeUse_ID, @Nullable final String trxName)
     {
       super (ctx, M_AttributeUse_ID, trxName);
-      /** if (M_AttributeUse_ID == 0)
-        {
-			setM_Attribute_ID (0);
-			setM_AttributeSet_ID (0);
-			setM_AttributeUse_ID (0);
-			setSeqNo (0); // @SQL=SELECT COALESCE(MAX(SeqNo),0)+10 AS DefaultValue FROM M_AttributeUse WHERE M_AttributeSet_ID=@M_AttributeSet_ID@
-        } */
     }
 
     /** Load Constructor */
-    public X_M_AttributeUse (Properties ctx, ResultSet rs, String trxName)
+    public X_M_AttributeUse (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
 
 
-    /** Load Meta Data */
-    @Override
-    protected org.compiere.model.POInfo initPO (Properties ctx)
-    {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
-      return poi;
-    }
-
+	/** Load Meta Data */
 	@Override
-	public org.compiere.model.I_M_Attribute getM_Attribute() throws RuntimeException
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
-		return get_ValueAsPO(COLUMNNAME_M_Attribute_ID, org.compiere.model.I_M_Attribute.class);
+		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	/** 
+	 * MandatoryOnPicking AD_Reference_ID=319
+	 * Reference name: _YesNo
+	 */
+	public static final int MANDATORYONPICKING_AD_Reference_ID=319;
+	/** Yes = Y */
+	public static final String MANDATORYONPICKING_Yes = "Y";
+	/** No = N */
+	public static final String MANDATORYONPICKING_No = "N";
+	@Override
+	public void setMandatoryOnPicking (final @Nullable java.lang.String MandatoryOnPicking)
+	{
+		set_Value (COLUMNNAME_MandatoryOnPicking, MandatoryOnPicking);
 	}
 
 	@Override
-	public void setM_Attribute(org.compiere.model.I_M_Attribute M_Attribute)
+	public java.lang.String getMandatoryOnPicking() 
 	{
-		set_ValueFromPO(COLUMNNAME_M_Attribute_ID, org.compiere.model.I_M_Attribute.class, M_Attribute);
+		return get_ValueAsString(COLUMNNAME_MandatoryOnPicking);
 	}
 
-	/** Set Merkmal.
-		@param M_Attribute_ID 
-		Product Attribute
-	  */
+	/** 
+	 * MandatoryOnReceipt AD_Reference_ID=319
+	 * Reference name: _YesNo
+	 */
+	public static final int MANDATORYONRECEIPT_AD_Reference_ID=319;
+	/** Yes = Y */
+	public static final String MANDATORYONRECEIPT_Yes = "Y";
+	/** No = N */
+	public static final String MANDATORYONRECEIPT_No = "N";
 	@Override
-	public void setM_Attribute_ID (int M_Attribute_ID)
+	public void setMandatoryOnReceipt (final @Nullable java.lang.String MandatoryOnReceipt)
+	{
+		set_Value (COLUMNNAME_MandatoryOnReceipt, MandatoryOnReceipt);
+	}
+
+	@Override
+	public java.lang.String getMandatoryOnReceipt() 
+	{
+		return get_ValueAsString(COLUMNNAME_MandatoryOnReceipt);
+	}
+
+	/** 
+	 * MandatoryOnShipment AD_Reference_ID=319
+	 * Reference name: _YesNo
+	 */
+	public static final int MANDATORYONSHIPMENT_AD_Reference_ID=319;
+	/** Yes = Y */
+	public static final String MANDATORYONSHIPMENT_Yes = "Y";
+	/** No = N */
+	public static final String MANDATORYONSHIPMENT_No = "N";
+	@Override
+	public void setMandatoryOnShipment (final @Nullable java.lang.String MandatoryOnShipment)
+	{
+		set_Value (COLUMNNAME_MandatoryOnShipment, MandatoryOnShipment);
+	}
+
+	@Override
+	public java.lang.String getMandatoryOnShipment() 
+	{
+		return get_ValueAsString(COLUMNNAME_MandatoryOnShipment);
+	}
+
+	@Override
+	public void setM_Attribute_ID (final int M_Attribute_ID)
 	{
 		if (M_Attribute_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_M_Attribute_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_M_Attribute_ID, Integer.valueOf(M_Attribute_ID));
+			set_ValueNoCheck (COLUMNNAME_M_Attribute_ID, M_Attribute_ID);
 	}
 
-	/** Get Merkmal.
-		@return Product Attribute
-	  */
 	@Override
-	public int getM_Attribute_ID () 
+	public int getM_Attribute_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_Attribute_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_Attribute_ID);
 	}
 
 	@Override
-	public org.compiere.model.I_M_AttributeSet getM_AttributeSet() throws RuntimeException
+	public org.compiere.model.I_M_AttributeSet getM_AttributeSet()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_AttributeSet_ID, org.compiere.model.I_M_AttributeSet.class);
 	}
 
 	@Override
-	public void setM_AttributeSet(org.compiere.model.I_M_AttributeSet M_AttributeSet)
+	public void setM_AttributeSet(final org.compiere.model.I_M_AttributeSet M_AttributeSet)
 	{
 		set_ValueFromPO(COLUMNNAME_M_AttributeSet_ID, org.compiere.model.I_M_AttributeSet.class, M_AttributeSet);
 	}
 
-	/** Set Merkmals-Satz.
-		@param M_AttributeSet_ID 
-		Product Attribute Set
-	  */
 	@Override
-	public void setM_AttributeSet_ID (int M_AttributeSet_ID)
+	public void setM_AttributeSet_ID (final int M_AttributeSet_ID)
 	{
 		if (M_AttributeSet_ID < 0) 
 			set_ValueNoCheck (COLUMNNAME_M_AttributeSet_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_M_AttributeSet_ID, Integer.valueOf(M_AttributeSet_ID));
+			set_ValueNoCheck (COLUMNNAME_M_AttributeSet_ID, M_AttributeSet_ID);
 	}
 
-	/** Get Merkmals-Satz.
-		@return Product Attribute Set
-	  */
 	@Override
-	public int getM_AttributeSet_ID () 
+	public int getM_AttributeSet_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_AttributeSet_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_AttributeSet_ID);
 	}
 
-	/** Set M_AttributeUse.
-		@param M_AttributeUse_ID M_AttributeUse	  */
 	@Override
-	public void setM_AttributeUse_ID (int M_AttributeUse_ID)
+	public void setM_AttributeUse_ID (final int M_AttributeUse_ID)
 	{
 		if (M_AttributeUse_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_M_AttributeUse_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_M_AttributeUse_ID, Integer.valueOf(M_AttributeUse_ID));
+			set_ValueNoCheck (COLUMNNAME_M_AttributeUse_ID, M_AttributeUse_ID);
 	}
 
-	/** Get M_AttributeUse.
-		@return M_AttributeUse	  */
 	@Override
-	public int getM_AttributeUse_ID () 
+	public int getM_AttributeUse_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_AttributeUse_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_AttributeUse_ID);
 	}
 
-	/** Set Reihenfolge.
-		@param SeqNo 
-		Method of ordering records; lowest number comes first
-	  */
 	@Override
-	public void setSeqNo (int SeqNo)
+	public void setSeqNo (final int SeqNo)
 	{
-		set_Value (COLUMNNAME_SeqNo, Integer.valueOf(SeqNo));
+		set_Value (COLUMNNAME_SeqNo, SeqNo);
 	}
 
-	/** Get Reihenfolge.
-		@return Method of ordering records; lowest number comes first
-	  */
 	@Override
-	public int getSeqNo () 
+	public int getSeqNo() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_SeqNo);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_SeqNo);
 	}
 }
