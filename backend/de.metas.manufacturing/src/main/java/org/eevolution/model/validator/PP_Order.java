@@ -36,6 +36,7 @@ import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.IPPOrderCostBL;
 import org.eevolution.api.IPPOrderRoutingRepository;
 import org.eevolution.api.PPOrderId;
+import org.eevolution.api.impl.ProductBOMVersionsDAO;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.X_PP_Order;
 
@@ -57,24 +58,27 @@ public class PP_Order
 	private final PostMaterialEventService materialEventService;
 	private final IDocumentNoBuilderFactory documentNoBuilderFactory;
 	private final IPPOrderBOMBL ppOrderBOMBL;
+	private  final ProductBOMVersionsDAO bomVersionsDAO;
 
 	public PP_Order(
 			@NonNull final PPOrderPojoConverter ppOrderConverter,
 			@NonNull final PostMaterialEventService materialEventService,
 			@NonNull final IDocumentNoBuilderFactory documentNoBuilderFactory,
-			@NonNull final IPPOrderBOMBL ppOrderBOMBL)
+			@NonNull final IPPOrderBOMBL ppOrderBOMBL,
+			@NonNull final ProductBOMVersionsDAO bomVersionsDAO)
 	{
 		this.ppOrderConverter = ppOrderConverter;
 		this.materialEventService = materialEventService;
 		this.documentNoBuilderFactory = documentNoBuilderFactory;
 		this.ppOrderBOMBL = ppOrderBOMBL;
+		this.bomVersionsDAO = bomVersionsDAO;
 	}
 
 	@Init
 	public void registerCallouts()
 	{
 		final IProgramaticCalloutProvider calloutsRegistry = Services.get(IProgramaticCalloutProvider.class);
-		calloutsRegistry.registerAnnotatedCallout(new org.eevolution.callout.PP_Order(documentNoBuilderFactory));
+		calloutsRegistry.registerAnnotatedCallout(new org.eevolution.callout.PP_Order(documentNoBuilderFactory, bomVersionsDAO));
 
 		final ITabCalloutFactory tabCalloutRegistry = Services.get(ITabCalloutFactory.class);
 		tabCalloutRegistry.registerTabCalloutForTable(I_PP_Order.Table_Name, org.eevolution.callout.PP_Order_TabCallout.class);

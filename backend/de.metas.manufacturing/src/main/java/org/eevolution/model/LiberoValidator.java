@@ -36,6 +36,7 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_S_Resource;
 import org.compiere.model.I_S_ResourceType;
 import org.compiere.util.Env;
+import org.eevolution.api.impl.ProductBOMVersionsDAO;
 
 /**
  * Libero Validator
@@ -56,25 +57,29 @@ public final class LiberoValidator extends AbstractModuleInterceptor
 	private final PostMaterialEventService materialEventService;
 	private final IDocumentNoBuilderFactory documentNoBuilderFactory;
 	private final IPPOrderBOMBL ppOrderBOMBL;
+	private final ProductBOMVersionsDAO bomVersionsDAO;
 
 	public LiberoValidator()
 	{
 		this(SpringContextHolder.instance.getBean(PPOrderPojoConverter.class),
-				SpringContextHolder.instance.getBean(PostMaterialEventService.class),
-				SpringContextHolder.instance.getBean(IDocumentNoBuilderFactory.class),
-				SpringContextHolder.instance.getBean(IPPOrderBOMBL.class));
+			 SpringContextHolder.instance.getBean(PostMaterialEventService.class),
+			 SpringContextHolder.instance.getBean(IDocumentNoBuilderFactory.class),
+			 SpringContextHolder.instance.getBean(IPPOrderBOMBL.class),
+			 SpringContextHolder.instance.getBean(ProductBOMVersionsDAO.class));
 	}
 
 	public LiberoValidator(
 			@NonNull final PPOrderPojoConverter ppOrderConverter,
 			@NonNull final PostMaterialEventService materialEventService,
 			@NonNull final IDocumentNoBuilderFactory documentNoBuilderFactory,
-			@NonNull final IPPOrderBOMBL ppOrderBOMBL)
+			@NonNull final IPPOrderBOMBL ppOrderBOMBL,
+			@NonNull final ProductBOMVersionsDAO bomVersionsDAO)
 	{
 		this.ppOrderConverter = ppOrderConverter;
 		this.materialEventService = materialEventService;
 		this.documentNoBuilderFactory = documentNoBuilderFactory;
 		this.ppOrderBOMBL = ppOrderBOMBL;
+		this.bomVersionsDAO = bomVersionsDAO;
 	}
 
 	@Override
@@ -91,7 +96,8 @@ public final class LiberoValidator extends AbstractModuleInterceptor
 				ppOrderConverter,
 				materialEventService,
 				documentNoBuilderFactory,
-				ppOrderBOMBL));
+				ppOrderBOMBL,
+				bomVersionsDAO));
 		engine.addModelValidator(new org.eevolution.model.validator.PP_Order_PostMaterialEvent(ppOrderConverter, materialEventService)); // gh #523
 		engine.addModelValidator(new org.eevolution.model.validator.PP_Order_BOM());
 		engine.addModelValidator(new org.eevolution.model.validator.PP_Order_BOMLine());

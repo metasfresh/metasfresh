@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-camel-grssignum
+ * de-metas-camel-externalsystems-common
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,14 +20,25 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.grssignum;
+package de.metas.camel.externalsystems.common.v2;
 
-public interface GRSSignumConstants
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import de.metas.common.rest_api.v2.bom.JsonBOMCreateRequest;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+
+@Value
+@Builder
+@JsonDeserialize(builder = BOMUpsertCamelRequest.BOMUpsertCamelRequestBuilder.class)
+public class BOMUpsertCamelRequest
 {
-	String GRSSIGNUM_SYSTEM_NAME = "GRSSignum";
+	@NonNull
+	@JsonProperty("orgCode")
+	String orgCode;
 
-	String JSON_PROPERTY_FLAG = "FLAG";
-	String DEFAULT_UOM_CODE = "KGM";
-
-	String ROUTE_PROPERTY_PUSH_BOMs_CONTEXT = "PushBOMsRouteContext";
+	@NonNull
+	@JsonProperty("jsonBOMCreateRequest")
+	JsonBOMCreateRequest jsonBOMCreateRequest;
 }

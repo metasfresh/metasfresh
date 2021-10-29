@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-camel-grssignum
+ * de.metas.business
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,14 +20,39 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.grssignum;
+package org.eevolution.api;
 
-public interface GRSSignumConstants
+import de.metas.organization.OrgId;
+import de.metas.product.ProductId;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+
+import javax.annotation.Nullable;
+
+@Value
+@Builder
+public class BOMVersionsCreateRequest
 {
-	String GRSSIGNUM_SYSTEM_NAME = "GRSSignum";
+	@NonNull
+	OrgId orgId;
 
-	String JSON_PROPERTY_FLAG = "FLAG";
-	String DEFAULT_UOM_CODE = "KGM";
+	@NonNull
+	String name;
 
-	String ROUTE_PROPERTY_PUSH_BOMs_CONTEXT = "PushBOMsRouteContext";
+	@NonNull
+	ProductId productId;
+
+	@Nullable
+	String description;
+
+	@NonNull
+	public static BOMVersionsCreateRequest of(@NonNull final BOMCreateRequest bomCreateRequest)
+	{
+		return BOMVersionsCreateRequest.builder()
+				.orgId(bomCreateRequest.getOrgId())
+				.name(bomCreateRequest.getProductName())
+				.productId(bomCreateRequest.getProductId())
+				.build();
+	}
 }

@@ -20,14 +20,31 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.grssignum;
+package de.metas.camel.externalsystems.grssignum.bom;
 
-public interface GRSSignumConstants
+import de.metas.camel.externalsystems.grssignum.api.model.JsonBOM;
+import de.metas.common.util.Check;
+import lombok.NonNull;
+import lombok.experimental.UtilityClass;
+
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+@UtilityClass
+public class JsonBOMUtil
 {
-	String GRSSIGNUM_SYSTEM_NAME = "GRSSignum";
+	@NonNull
+	public String getName(@NonNull final JsonBOM grsBOM)
+	{
+		final String name = Stream.of(grsBOM.getName1(), grsBOM.getName2())
+				.filter(Check::isNotBlank)
+				.collect(Collectors.joining(" "));
 
-	String JSON_PROPERTY_FLAG = "FLAG";
-	String DEFAULT_UOM_CODE = "KGM";
+		if (Check.isBlank(name))
+		{
+			throw new RuntimeException("Missing name for bomProduct: " + grsBOM.getProductId());
+		}
 
-	String ROUTE_PROPERTY_PUSH_BOMs_CONTEXT = "PushBOMsRouteContext";
+		return name;
+	}
 }

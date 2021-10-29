@@ -20,14 +20,21 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.grssignum;
+package de.metas.camel.externalsystems.grssignum.bom;
 
-public interface GRSSignumConstants
+import lombok.NonNull;
+import org.apache.camel.Exchange;
+
+public class ProcessorHelper
 {
-	String GRSSIGNUM_SYSTEM_NAME = "GRSSignum";
+	public static <T> T getPropertyOrThrowError(@NonNull final Exchange exchange, @NonNull final String propertyName, @NonNull final Class<T> propertyClass)
+	{
+		final T property = exchange.getProperty(propertyName, propertyClass);
+		if (property == null)
+		{
+			throw new RuntimeException("Missing route property: " + propertyName + " !");
+		}
 
-	String JSON_PROPERTY_FLAG = "FLAG";
-	String DEFAULT_UOM_CODE = "KGM";
-
-	String ROUTE_PROPERTY_PUSH_BOMs_CONTEXT = "PushBOMsRouteContext";
+		return property;
+	}
 }

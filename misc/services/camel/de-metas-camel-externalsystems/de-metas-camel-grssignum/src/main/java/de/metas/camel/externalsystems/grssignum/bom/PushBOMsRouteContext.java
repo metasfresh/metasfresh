@@ -20,14 +20,17 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.grssignum;
+package de.metas.camel.externalsystems.grssignum.bom;
 
-public interface GRSSignumConstants
+import de.metas.camel.externalsystems.grssignum.api.model.JsonBOM;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+
+@Value
+@Builder
+public class PushBOMsRouteContext
 {
-	String GRSSIGNUM_SYSTEM_NAME = "GRSSignum";
-
-	String JSON_PROPERTY_FLAG = "FLAG";
-	String DEFAULT_UOM_CODE = "KGM";
-
-	String ROUTE_PROPERTY_PUSH_BOMs_CONTEXT = "PushBOMsRouteContext";
+	@NonNull
+	JsonBOM jsonBOM;
 }
