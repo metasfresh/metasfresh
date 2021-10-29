@@ -155,9 +155,9 @@ public class HUShippingFacade
 
 	private void generateShippingDocuments0()
 	{
+		addHUsToShipperTransportationIfNeeded();
 		generateShipmentsFromCandidates();
 		generateInvoicesIfNeeded();
-		addHUsToShipperTransportationIfNeeded();
 		generateShipperDeliveryOrdersIfNeeded();
 	}
 
