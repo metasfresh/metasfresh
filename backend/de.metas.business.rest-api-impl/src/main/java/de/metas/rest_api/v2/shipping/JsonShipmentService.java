@@ -542,14 +542,14 @@ public class JsonShipmentService
 			}
 		}
 
-		final GenerateShipmentsRequest.GenerateShipmentsRequestBuilder generateShipmentsRequestBuilder = GenerateShipmentsRequest.builder()
+		return GenerateShipmentsRequest.builder()
 				.asyncBatchId(asyncBatchId)
 				.scheduleIds(shipmentScheduleIdsBuilder.build())
 				.scheduleToExternalInfo(scheduleId2ExternalInfo.build())
 				.scheduleToQuantityToDeliverOverride(scheduleToQuantityToDeliver.build())
-				.quantityTypeToUse(M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER);
-
-		return generateShipmentsRequestBuilder.build();
+				.quantityTypeToUse(M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER)
+				.isCompleteShipment(true)
+				.build();
 	}
 
 	private Optional<BPartnerId> getBPartnerIdByValue(@Nullable final String bPartnerValue)
@@ -751,6 +751,7 @@ public class JsonShipmentService
 				.scheduleToExternalInfo(ImmutableMap.of())
 				.scheduleToQuantityToDeliverOverride(shipmentScheduleIdToQtyShipped)
 				.quantityTypeToUse(M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER)
+				.isCompleteShipment(true)
 				.build();
 
 		shipmentService.generateShipments(generateShipmentsRequest);

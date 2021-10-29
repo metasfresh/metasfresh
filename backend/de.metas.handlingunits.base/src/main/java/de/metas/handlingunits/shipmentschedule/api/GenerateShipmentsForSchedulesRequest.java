@@ -22,58 +22,26 @@
 
 package de.metas.handlingunits.shipmentschedule.api;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import de.metas.async.AsyncBatchId;
-import de.metas.common.util.EmptyUtil;
-import de.metas.handlingunits.shipmentschedule.spi.impl.ShipmentScheduleExternalInfo;
 import de.metas.inoutcandidate.ShipmentScheduleId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-import java.math.BigDecimal;
-import java.util.Map.Entry;
-
 @Value
 @Builder
-public class GenerateShipmentsRequest
+public class GenerateShipmentsForSchedulesRequest
 {
 	@NonNull
 	ImmutableSet<ShipmentScheduleId> scheduleIds;
 
 	@NonNull
-	ImmutableMap<ShipmentScheduleId, ShipmentScheduleExternalInfo> scheduleToExternalInfo;
-
-	@NonNull
-	ImmutableMap<ShipmentScheduleId, BigDecimal> scheduleToQuantityToDeliverOverride;
-
-	@NonNull
 	M_ShipmentSchedule_QuantityTypeToUse quantityTypeToUse;
-
-	@NonNull
-	AsyncBatchId asyncBatchId;
 
 	@NonNull
 	Boolean isCompleteShipment;
 
 	@Nullable
 	Boolean isShipDateToday;
-
-	public ImmutableMap<ShipmentScheduleId, String> extractShipmentDocumentNos()
-	{
-		final ImmutableMap.Builder<ShipmentScheduleId, String> result = ImmutableMap.builder();
-
-		for (final Entry<ShipmentScheduleId, ShipmentScheduleExternalInfo> entry : scheduleToExternalInfo.entrySet())
-		{
-			final String documentNo = entry.getValue().getDocumentNo();
-			if (EmptyUtil.isBlank(documentNo))
-			{
-				continue;
-			}
-			result.put(entry.getKey(), documentNo);
-		}
-		return result.build();
-	}
 }

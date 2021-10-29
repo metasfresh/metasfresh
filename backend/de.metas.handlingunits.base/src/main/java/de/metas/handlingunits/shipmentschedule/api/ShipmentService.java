@@ -29,6 +29,7 @@ import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.asyncbatchmilestone.AsyncBatchMilestoneService;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
+import de.metas.handlingunits.shipmentschedule.api.impl.ShipmentServiceTestImpl;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
@@ -49,6 +50,9 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
@@ -66,7 +70,7 @@ import static de.metas.async.Async_Constants.C_Async_Batch_InternalName_Shipment
 import static de.metas.async.asyncbatchmilestone.MilestoneName.SHIPMENT_CREATION;
 
 @Service
-public class ShipmentService
+public class ShipmentService implements IShipmentService
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IADPInstanceDAO adPInstanceDAO = Services.get(IADPInstanceDAO.class);
@@ -78,6 +82,19 @@ public class ShipmentService
 	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 
 	private final AsyncBatchMilestoneService asyncBatchMilestoneService;
+
+	@NonNull
+	public static IShipmentService getInstance()
+	{
+		if (Adempiere.isUnitTestMode())
+		{
+			return new ShipmentServiceTestImpl(new ShipmentScheduleWithHUService());
+		}
+		else
+		{
+			return SpringContextHolder.instance.getBean(ShipmentService.class);
+		}
+	}
 
 	public ShipmentService(@NonNull final AsyncBatchMilestoneService asyncBatchMilestoneService)
 	{
@@ -107,25 +124,23 @@ public class ShipmentService
 	}
 
 	@NonNull
-	public Set<InOutId> generateShipmentsForScheduleIds(
-			@NonNull final ImmutableSet<ShipmentScheduleId> scheduleIds,
-			@NonNull final M_ShipmentSchedule_QuantityTypeToUse quantityTypeToUse)
+	public Set<InOutId> generateShipmentsForScheduleIds(@NonNull final GenerateShipmentsForSchedulesRequest request)
 	{
-		if (scheduleIds.isEmpty())
+		if (request.getScheduleIds().isEmpty())
 		{
 			return ImmutableSet.of();
 		}
 
-		final ImmutableMap<AsyncBatchId, ArrayList<ShipmentScheduleId>> asyncBatchId2ScheduleId = getShipmentScheduleIdByAsyncBatchId(scheduleIds);
+		final ImmutableMap<AsyncBatchId, ArrayList<ShipmentScheduleId>> asyncBatchId2ScheduleId = getShipmentScheduleIdByAsyncBatchId(request.getScheduleIds());
 
 		return asyncBatchId2ScheduleId.keySet()
 				.stream()
 				.map(asyncBatchId -> {
 					final ImmutableSet<ShipmentScheduleId> shipmentScheduleIds = ImmutableSet.copyOf(asyncBatchId2ScheduleId.get(asyncBatchId));
 
-					final GenerateShipmentsRequest request = toGenerateShipmentsRequest(asyncBatchId, shipmentScheduleIds, quantityTypeToUse);
+					final GenerateShipmentsRequest generateShipmentsRequest = toGenerateShipmentsRequest(asyncBatchId, shipmentScheduleIds, request.getQuantityTypeToUse(), request.getIsCompleteShipment(), request.getIsShipDateToday());
 
-					generateShipments(request);
+					generateShipments(generateShipmentsRequest);
 
 					return retrieveInOutIdsByScheduleIds(shipmentScheduleIds);
 				})
@@ -222,7 +237,8 @@ public class ShipmentService
 				.adPInstanceId(adPInstanceDAO.createSelectionId())
 				.queryFilters(queryFilters)
 				.quantityType(request.getQuantityTypeToUse())
-				.completeShipments(true)
+				.completeShipments(request.getIsCompleteShipment())
+				.isShipmentDateToday(Boolean.TRUE.equals(request.getIsShipDateToday()))
 				.advisedShipmentDocumentNos(request.extractShipmentDocumentNos())
 				.qtysToDeliverOverride(request.getScheduleToQuantityToDeliverOverride())
 				.build();
@@ -233,10 +249,12 @@ public class ShipmentService
 	}
 
 	@NonNull
-	private GenerateShipmentsRequest toGenerateShipmentsRequest(
+	private static GenerateShipmentsRequest toGenerateShipmentsRequest(
 			@NonNull final AsyncBatchId asyncBatchId,
 			@NonNull final ImmutableSet<ShipmentScheduleId> scheduleIds,
-			@NonNull final M_ShipmentSchedule_QuantityTypeToUse quantityTypeToUse)
+			@NonNull final M_ShipmentSchedule_QuantityTypeToUse quantityTypeToUse,
+			@NonNull final Boolean isCompleteShipment,
+			@Nullable final Boolean isShipDateToday)
 	{
 		return GenerateShipmentsRequest.builder()
 				.asyncBatchId(asyncBatchId)
@@ -244,6 +262,8 @@ public class ShipmentService
 				.scheduleToExternalInfo(ImmutableMap.of())
 				.scheduleToQuantityToDeliverOverride(ImmutableMap.of())
 				.quantityTypeToUse(quantityTypeToUse)
+				.isShipDateToday(isShipDateToday)
+				.isCompleteShipment(isCompleteShipment)
 				.build();
 	}
 

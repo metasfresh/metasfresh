@@ -29,6 +29,7 @@ import de.metas.async.AsyncBatchId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.handlingunits.impl.CreateShipperTransportationRequest;
 import de.metas.handlingunits.impl.ShipperTransportationRepository;
+import de.metas.handlingunits.shipmentschedule.api.GenerateShipmentsForSchedulesRequest;
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentService;
 import de.metas.handlingunits.transportation.InOutToTransportationOrderService;
@@ -114,7 +115,13 @@ public class AutoProcessingOrderService
 			return;
 		}
 
-		final Set<InOutId> generatedInOutIds = shipmentService.generateShipmentsForScheduleIds(scheduleIds, M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER);
+		final GenerateShipmentsForSchedulesRequest request = GenerateShipmentsForSchedulesRequest.builder()
+				.scheduleIds(scheduleIds)
+				.quantityTypeToUse(M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER)
+				.isCompleteShipment(true)
+				.build();
+
+		final Set<InOutId> generatedInOutIds = shipmentService.generateShipmentsForScheduleIds(request);
 		if (generatedInOutIds.isEmpty())
 		{
 			Loggables.withLogger(logger, Level.INFO).addLog("Returning! No shipments generated for shipmentScheduleIds: {}", scheduleIds);

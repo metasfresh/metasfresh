@@ -66,6 +66,27 @@ public interface I_M_ShipmentSchedule_Recompute
 	String COLUMNNAME_C_Async_Batch_ID = "C_Async_Batch_ID";
 
 	/**
+	 * Set Chunk UUID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setChunkUUID (@Nullable java.lang.String ChunkUUID);
+
+	/**
+	 * Get Chunk UUID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getChunkUUID();
+
+	ModelColumn<I_M_ShipmentSchedule_Recompute, Object> COLUMN_ChunkUUID = new ModelColumn<>(I_M_ShipmentSchedule_Recompute.class, "ChunkUUID", null);
+	String COLUMNNAME_ChunkUUID = "ChunkUUID";
+
+	/**
 	 * Set Shipment Candidate.
 	 *
 	 * <br>Type: Search

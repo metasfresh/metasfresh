@@ -40,7 +40,7 @@ public enum MilestoneName implements ReferenceListAwareEnum
 	SALES_ORDER_CREATION(X_C_Async_Batch_Milestone.NAME_Auftragserstellung),
 	SHIPMENT_CREATION(X_C_Async_Batch_Milestone.NAME_Lieferungserstellung),
 	INVOICE_CREATION(X_C_Async_Batch_Milestone.NAME_Rechnungserstellung),
-	ORDER_CREATION(X_C_Async_Batch_Milestone.NAME_OrderCreation),
+	ENQUEUE_SCHEDULE_FOR_ORDER(X_C_Async_Batch_Milestone.NAME_EnqueueScheduleForOrder),
 	;
 
 	@Getter

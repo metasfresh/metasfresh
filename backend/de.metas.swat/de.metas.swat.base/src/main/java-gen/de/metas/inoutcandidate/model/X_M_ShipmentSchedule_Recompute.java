@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_M_ShipmentSchedule_Recompute extends org.compiere.model.PO implements I_M_ShipmentSchedule_Recompute, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1427790260L;
+	private static final long serialVersionUID = 1046235302L;
 
     /** Standard Constructor */
     public X_M_ShipmentSchedule_Recompute (final Properties ctx, final int M_ShipmentSchedule_Recompute_ID, @Nullable final String trxName)
@@ -74,6 +74,18 @@ public class X_M_ShipmentSchedule_Recompute extends org.compiere.model.PO implem
 	public int getC_Async_Batch_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Async_Batch_ID);
+	}
+
+	@Override
+	public void setChunkUUID (final @Nullable java.lang.String ChunkUUID)
+	{
+		set_Value (COLUMNNAME_ChunkUUID, ChunkUUID);
+	}
+
+	@Override
+	public java.lang.String getChunkUUID() 
+	{
+		return get_ValueAsString(COLUMNNAME_ChunkUUID);
 	}
 
 	@Override

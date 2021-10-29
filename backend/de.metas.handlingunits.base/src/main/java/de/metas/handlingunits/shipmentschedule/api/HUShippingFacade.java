@@ -91,7 +91,7 @@ public class HUShippingFacade
 	private final IInOutCandidateBL inOutCandidateBL = Services.get(IInOutCandidateBL.class);
 	private final IInOutDAO shipmentDAO = Services.get(IInOutDAO.class);
 
-	private final ShipmentService shipmentService = SpringContextHolder.instance.getBean(ShipmentService.class);
+	private final IShipmentService shipmentService = ShipmentService.getInstance();
 
 	private final Supplier<ShipperGatewayFacade> shipperGatewayFacadeSupplier = //
 			() -> SpringContextHolder.instance.getBean(ShipperGatewayFacade.class);
@@ -190,7 +190,14 @@ public class HUShippingFacade
 				.map(ShipmentScheduleWithHU::getShipmentScheduleId)
 				.collect(ImmutableSet.toImmutableSet());
 
-		final Set<InOutId> generatedInOutIds = shipmentService.generateShipmentsForScheduleIds(candidatesIds, M_ShipmentSchedule_QuantityTypeToUse.TYPE_PICKED_QTY);
+		final GenerateShipmentsForSchedulesRequest request = GenerateShipmentsForSchedulesRequest.builder()
+				.scheduleIds(candidatesIds)
+				.quantityTypeToUse(M_ShipmentSchedule_QuantityTypeToUse.TYPE_PICKED_QTY)
+				.isShipDateToday(true)
+				.isCompleteShipment(completeShipments)
+				.build();
+
+		final Set<InOutId> generatedInOutIds = shipmentService.generateShipmentsForScheduleIds(request);
 
 		loadGeneratedShipments(generatedInOutIds);
 

@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_C_Async_Batch_Milestone extends org.compiere.model.PO implements I_C_Async_Batch_Milestone, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1233218021L;
+	private static final long serialVersionUID = -1529199707L;
 
     /** Standard Constructor */
     public X_C_Async_Batch_Milestone (final Properties ctx, final int C_Async_Batch_Milestone_ID, @Nullable final String trxName)
@@ -87,8 +87,8 @@ public class X_C_Async_Batch_Milestone extends org.compiere.model.PO implements 
 	public static final String NAME_Rechnungserstellung = "Rechnungserstellung";
 	/** Auftragserstellung = Auftragserstellung */
 	public static final String NAME_Auftragserstellung = "Auftragserstellung";
-	/** Order creation = Order creation */
-	public static final String NAME_OrderCreation = "OrderCreation";
+	/** Enqueue schedule for order = EnqueueScheduleForOrder */
+	public static final String NAME_EnqueueScheduleForOrder = "EnqueueScheduleForOrder";
 	@Override
 	public void setName (final java.lang.String Name)
 	{

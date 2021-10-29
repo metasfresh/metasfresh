@@ -55,10 +55,10 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
 
+import static de.metas.async.Async_Constants.C_Async_Batch_InternalName_EnqueueScheduleForOrder;
 import static de.metas.async.Async_Constants.C_Async_Batch_InternalName_OLCand_Processing;
-import static de.metas.async.Async_Constants.C_Async_Batch_InternalName_Order_Processing;
 import static de.metas.async.Async_Constants.C_OlCandProcessor_ID_Default;
-import static de.metas.async.asyncbatchmilestone.MilestoneName.ORDER_CREATION;
+import static de.metas.async.asyncbatchmilestone.MilestoneName.ENQUEUE_SCHEDULE_FOR_ORDER;
 import static de.metas.async.asyncbatchmilestone.MilestoneName.SALES_ORDER_CREATION;
 import static org.compiere.model.X_C_Invoice.DOCSTATUS_Completed;
 
@@ -176,7 +176,7 @@ public class OrderService
 			return null;
 		};
 
-		asyncBatchMilestoneService.executeMilestone(action, asyncBatchId, ORDER_CREATION);
+		asyncBatchMilestoneService.executeMilestone(action, asyncBatchId, ENQUEUE_SCHEDULE_FOR_ORDER);
 	}
 
 	@NonNull
@@ -188,7 +188,7 @@ public class OrderService
 		}
 
 		return trxManager.callInNewTrx(() -> {
-			final AsyncBatchId currentAsyncBatchId = asyncBatchBL.newAsyncBatch(C_Async_Batch_InternalName_Order_Processing);
+			final AsyncBatchId currentAsyncBatchId = asyncBatchBL.newAsyncBatch(C_Async_Batch_InternalName_EnqueueScheduleForOrder);
 			return orderDAO.assignAsyncBatchId(OrderId.ofRepoId(order.getC_Order_ID()), currentAsyncBatchId);
 		});
 	}
