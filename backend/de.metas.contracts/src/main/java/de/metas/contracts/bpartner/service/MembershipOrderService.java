@@ -29,23 +29,23 @@ import lombok.NonNull;
 import org.springframework.stereotype.Service;
 
 @Service
-public class MembershipContractService
+public class MembershipOrderService
 {
 	private final MembershipContractRepository membershipContractRepo;
 
-	public MembershipContractService(@NonNull final MembershipContractRepository membershipContractRepo)
+	public MembershipOrderService(@NonNull final MembershipContractRepository membershipContractRepo)
 	{
 		this.membershipContractRepo = membershipContractRepo;
 	}
 
-	public void createMembershipContractOrders(@NonNull MembershipContractRequest request)
+	public void createMembershipContractOrders(@NonNull MembershipOrderCreateRequest request)
 	{
 		final ImmutableSet<OrderId> orderIds = membershipContractRepo
 				.retrieveMembershipOrderIds(request.getOrgId(), request.getStartDate());
 
 		for (final OrderId orderId : orderIds)
 		{
-			MembershipContractsCommand.builder()
+			MembershipOrderCreateCommand.builder()
 					.existingMembershipOrderId(orderId)
 					.productId(request.getProductId())
 					.conditionsId(request.getConditionsID())

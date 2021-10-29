@@ -32,7 +32,6 @@ import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderId;
 import de.metas.product.ProductId;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
@@ -40,9 +39,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.X_C_Order;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-
-public class MembershipContractsCommand
+public class MembershipOrderCreateCommand
 {
 
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
@@ -55,7 +52,7 @@ public class MembershipContractsCommand
 	private final ConditionsId conditionsId;
 
 	@Builder
-	public MembershipContractsCommand(@NonNull OrderId existingMembershipOrderId,
+	public MembershipOrderCreateCommand(@NonNull final OrderId existingMembershipOrderId,
 			@NonNull final ProductId productId,
 			@NonNull final ConditionsId conditionsId)
 	{
@@ -88,15 +85,9 @@ public class MembershipContractsCommand
 				.setSkipCalculatedColumns(true)
 				.copyToNew(I_C_Order.class);
 
-		newSalesOrder.setDatePromised(initialMembershipOrder.getDatePromised());
-		newSalesOrder.setPreparationDate(initialMembershipOrder.getPreparationDate());
 		newSalesOrder.setDocStatus(DocStatus.Drafted.getCode());
 		newSalesOrder.setDocAction(X_C_Order.DOCACTION_Complete);
-		newSalesOrder.setRef_Proposal_ID(initialMembershipOrder.getC_Order_ID());
 		orderDAO.save(newSalesOrder);
-
-		initialMembershipOrder.setRef_Order_ID(newSalesOrder.getC_Order_ID());
-		orderDAO.save(initialMembershipOrder);
 
 		return newSalesOrder;
 	}

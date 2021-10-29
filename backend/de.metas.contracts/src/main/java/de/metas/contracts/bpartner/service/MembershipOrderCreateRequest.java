@@ -33,7 +33,7 @@ import java.time.Instant;
 
 @Value
 @Builder
-public class MembershipContractRequest
+public class MembershipOrderCreateRequest
 {
 	@NonNull OrgId orgId;
 	@NonNull ProductId productId;

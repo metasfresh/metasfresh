@@ -23,8 +23,8 @@
 package de.metas.contracts.order.process;
 
 import de.metas.contracts.ConditionsId;
-import de.metas.contracts.bpartner.service.MembershipContractRequest;
-import de.metas.contracts.bpartner.service.MembershipContractService;
+import de.metas.contracts.bpartner.service.MembershipOrderService;
+import de.metas.contracts.bpartner.service.MembershipOrderCreateRequest;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.organization.OrgId;
 import de.metas.process.JavaProcess;
@@ -39,31 +39,31 @@ import java.time.Instant;
 public class C_Order_CreateForAllMembers extends JavaProcess
 
 {
-	final MembershipContractService membershipContractService = SpringContextHolder.instance.getBean(MembershipContractService.class);
+	final MembershipOrderService membershipOrderService = SpringContextHolder.instance.getBean(MembershipOrderService.class);
 
 	@Param(parameterName = I_AD_Org.COLUMNNAME_AD_Org_ID, mandatory = true)
-	private int p_AD_Org_ID;
+	private OrgId p_orgId;
 
 	@Param(parameterName = I_M_Product.COLUMNNAME_M_Product_ID, mandatory = true)
-	private int p_M_Product_ID;
+	private ProductId p_productId;
 
 	@Param(parameterName = I_C_Flatrate_Term.COLUMNNAME_StartDate, mandatory = true)
 	private Instant p_startDate;
 
 	@Param(parameterName = I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Conditions_ID, mandatory = true)
-	private int p_C_FLatrate_Condition_ID;
+	private ConditionsId p_conditionsId;
 
 	@Override
 	protected String doIt() throws Exception
 	{
-		final MembershipContractRequest request = MembershipContractRequest.builder()
-				.orgId(OrgId.ofRepoId(p_AD_Org_ID))
-				.productId(ProductId.ofRepoId(p_M_Product_ID))
-				.conditionsID(ConditionsId.ofRepoId(p_C_FLatrate_Condition_ID))
+		final MembershipOrderCreateRequest request = MembershipOrderCreateRequest.builder()
+				.orgId(p_orgId)
+				.productId(p_productId)
+				.conditionsID(p_conditionsId)
 				.startDate(p_startDate)
 				.build();
 
-		membershipContractService.createMembershipContractOrders(request);
+		membershipOrderService.createMembershipContractOrders(request);
 
 		return MSG_OK;
 	}
