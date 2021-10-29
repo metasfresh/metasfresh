@@ -977,7 +977,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	}
 
 	@Override
-	public void setReservedByHUIds(@NonNull final Collection<HuId> huIds, final boolean reserved)
+	public void setReservedByHUIds(@NonNull final Set<HuId> huIds, final boolean reserved)
 	{
 		if (huIds.isEmpty())
 		{
