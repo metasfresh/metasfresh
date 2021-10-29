@@ -25,7 +25,7 @@ package de.metas.handlingunits.picking.plan;
 import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateSnapshot;
 import de.metas.inoutcandidate.ShipmentScheduleId;
-import de.metas.order.OrderLineId;
+import de.metas.order.OrderAndLineId;
 import de.metas.shipping.ShipperId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -39,7 +39,7 @@ import java.util.Objects;
 public class SourceDocumentInfo
 {
 	@NonNull ShipmentScheduleId shipmentScheduleId;
-	@Nullable OrderLineId salesOrderLineId;
+	@Nullable OrderAndLineId salesOrderLineId;
 	@Nullable ShipperId shipperId;
 	@Nullable PickingCandidateSnapshot existingPickingCandidate;
 

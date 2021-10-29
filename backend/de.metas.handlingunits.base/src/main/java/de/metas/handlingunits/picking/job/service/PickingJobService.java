@@ -1,5 +1,6 @@
 package de.metas.handlingunits.picking.job.service;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.handlingunits.picking.PickingCandidateService;
@@ -8,8 +9,16 @@ import de.metas.handlingunits.picking.job.model.PickingJobCandidate;
 import de.metas.handlingunits.picking.job.model.PickingJobId;
 import de.metas.handlingunits.picking.job.model.PickingJobReference;
 import de.metas.handlingunits.picking.job.model.PickingJobStepEvent;
+import de.metas.handlingunits.picking.job.model.PickingJobStepId;
 import de.metas.handlingunits.picking.job.repository.PickingJobLoaderSupportingServices;
 import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
+import de.metas.handlingunits.picking.job.service.commands.PickingJobAbortCommand;
+import de.metas.handlingunits.picking.job.service.commands.PickingJobAllocatePickingSlotCommand;
+import de.metas.handlingunits.picking.job.service.commands.PickingJobCompleteCommand;
+import de.metas.handlingunits.picking.job.service.commands.PickingJobCreateCommand;
+import de.metas.handlingunits.picking.job.service.commands.PickingJobCreateRequest;
+import de.metas.handlingunits.picking.job.service.commands.PickingJobPickCommand;
+import de.metas.handlingunits.picking.job.service.commands.PickingJobUnPickCommand;
 import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.picking.api.IPackagingDAO;
 import de.metas.picking.api.Packageable;
@@ -19,6 +28,7 @@ import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.service.IADReferenceDAO;
+import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -34,6 +44,7 @@ public class PickingJobService
 	private final PickingJobLockService pickingJobLockService;
 	private final PickingJobSlotService pickingSlotService;
 	private final PickingCandidateService pickingCandidateService;
+	private final PickingJobHUReservationService pickingJobHUReservationService;
 	private final IBPartnerBL bpartnerBL;
 
 	public PickingJobService(
@@ -41,12 +52,14 @@ public class PickingJobService
 			final PickingJobLockService pickingJobLockService,
 			final PickingJobSlotService pickingSlotService,
 			final PickingCandidateService pickingCandidateService,
+			final PickingJobHUReservationService pickingJobHUReservationService,
 			final IBPartnerBL bpartnerBL)
 	{
 		this.pickingSlotService = pickingSlotService;
 		this.pickingJobRepository = pickingJobRepository;
 		this.pickingJobLockService = pickingJobLockService;
 		this.pickingCandidateService = pickingCandidateService;
+		this.pickingJobHUReservationService = pickingJobHUReservationService;
 		this.bpartnerBL = bpartnerBL;
 	}
 
@@ -72,6 +85,7 @@ public class PickingJobService
 				.pickingJobLockService(pickingJobLockService)
 				.pickingCandidateService(pickingCandidateService)
 				.pickingJobSlotService(pickingSlotService)
+				.pickingJobHUReservationService(pickingJobHUReservationService)
 				.bpartnerBL(bpartnerBL)
 				//
 				.request(request)
@@ -85,7 +99,7 @@ public class PickingJobService
 				.pickingJobRepository(pickingJobRepository)
 				.pickingJobLockService(pickingJobLockService)
 				.pickingSlotService(pickingSlotService)
-				.pickingCandidateService(pickingCandidateService)
+				.pickingJobHUReservationService(pickingJobHUReservationService)
 				//
 				.pickingJob(pickingJob)
 				//
@@ -98,6 +112,8 @@ public class PickingJobService
 				.pickingJobRepository(pickingJobRepository)
 				.pickingJobLockService(pickingJobLockService)
 				.pickingSlotService(pickingSlotService)
+				.pickingJobHUReservationService(pickingJobHUReservationService)
+				.pickingCandidateService(pickingCandidateService)
 				//
 				.pickingJob(pickingJob)
 				//
@@ -161,16 +177,67 @@ public class PickingJobService
 				.build().execute();
 	}
 
-	private PickingJob save(@NonNull final PickingJob pickingJob)
-	{
-		pickingJobRepository.save(pickingJob);
-		return pickingJob;
-	}
-
 	public PickingJob processStepEvents(
-			@NonNull final PickingJob pickingJob,
+			@NonNull final PickingJob pickingJob0,
 			@NonNull final List<PickingJobStepEvent> events)
 	{
-		return save(pickingJob.applyingEvents(events));
+		final ImmutableMap<PickingJobStepId, PickingJobStepEvent> eventsByStepId = PickingJobStepEvent.aggregateByStepId(events);
+
+		PickingJob changedPickingJob = pickingJob0;
+		for (final PickingJobStepEvent event : eventsByStepId.values())
+		{
+			try
+			{
+				changedPickingJob = processStepEvent(changedPickingJob, event);
+			}
+			catch (final Exception ex)
+			{
+				throw AdempiereException.wrapIfNeeded(ex)
+						.setParameter("event", event);
+			}
+		}
+
+		return changedPickingJob;
 	}
+
+	public PickingJob processStepEvent(
+			@NonNull final PickingJob pickingJob,
+			@NonNull final PickingJobStepEvent event)
+	{
+		switch (event.getEventType())
+		{
+			case PICK:
+			{
+				assert event.getQtyPicked() != null;
+				return PickingJobPickCommand.builder()
+						.pickingJobRepository(pickingJobRepository)
+						.pickingJobHUReservationService(pickingJobHUReservationService)
+						.pickingCandidateService(pickingCandidateService)
+						//
+						.pickingJob(pickingJob)
+						.pickingJobStepId(event.getPickingStepId())
+						.qtyToPickBD(Objects.requireNonNull(event.getQtyPicked()))
+						.qtyRejectedReasonCode(event.getQtyRejectedReasonCode())
+						//
+						.build().execute();
+			}
+			case UNPICK:
+			{
+				return PickingJobUnPickCommand.builder()
+						.pickingJobRepository(pickingJobRepository)
+						.pickingJobHUReservationService(pickingJobHUReservationService)
+						.pickingCandidateService(pickingCandidateService)
+						//
+						.pickingJob(pickingJob)
+						.onlyPickingJobStepId(event.getPickingStepId())
+						//
+						.build().execute();
+			}
+			default:
+			{
+				throw new AdempiereException("Unhandled event type: " + event);
+			}
+		}
+	}
+
 }

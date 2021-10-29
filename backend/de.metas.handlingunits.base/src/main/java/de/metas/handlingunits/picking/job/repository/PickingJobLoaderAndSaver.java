@@ -19,12 +19,15 @@ import de.metas.handlingunits.picking.job.model.PickingJobLine;
 import de.metas.handlingunits.picking.job.model.PickingJobLineId;
 import de.metas.handlingunits.picking.job.model.PickingJobStep;
 import de.metas.handlingunits.picking.job.model.PickingJobStepId;
+import de.metas.handlingunits.picking.job.model.PickingJobStepPickedInfo;
 import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.api.PickingSlotIdAndCaption;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
@@ -38,6 +41,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.LocatorId;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
@@ -128,7 +132,7 @@ class PickingJobLoaderAndSaver
 			Check.assumeNotNull(existingRecord, "line record shall exist for {}", line);
 
 			// NOTE: atm we have nothing to sync on line level
-			updateRecord(existingRecord, line, docStatus);
+			updateRecord(existingRecord, docStatus);
 			InterfaceWrapperHelper.save(existingRecord);
 
 			saveSteps(line.getSteps(), line.getId(), docStatus);
@@ -264,7 +268,6 @@ class PickingJobLoaderAndSaver
 
 	private void updateRecord(
 			final I_M_Picking_Job_Line record,
-			final PickingJobLine from,
 			final PickingJobDocStatus docStatus)
 	{
 		record.setProcessed(docStatus.isProcessed());
@@ -274,28 +277,49 @@ class PickingJobLoaderAndSaver
 	{
 		final ProductId productId = ProductId.ofRepoId(record.getM_Product_ID());
 		final UomId uomId = UomId.ofRepoId(record.getC_UOM_ID());
-		final LocatorId locatorId = LocatorId.ofRepoId(record.getM_Warehouse_ID(), record.getM_Locator_ID());
-		final HuId huId = HuId.ofRepoId(record.getM_HU_ID());
+		final LocatorId locatorId = LocatorId.ofRepoId(record.getPickFrom_Warehouse_ID(), record.getPickFrom_Locator_ID());
+		final HuId pickFromHUId = HuId.ofRepoId(record.getPickFrom_HU_ID());
 
 		return PickingJobStep.builder()
 				.id(PickingJobStepId.ofRepoId(record.getM_Picking_Job_Step_ID()))
+				.salesOrderAndLineId(OrderAndLineId.ofRepoIds(record.getC_Order_ID(), record.getC_OrderLine_ID()))
 				.shipmentScheduleId(ShipmentScheduleId.ofRepoId(record.getM_ShipmentSchedule_ID()))
-				.pickingCandidateId(PickingCandidateId.ofRepoIdOrNull(record.getM_Picking_Candidate_ID()))
 				//
 				// What?
 				.productId(productId)
 				.productName(loadingSupportingServices().getProductName(productId))
 				.qtyToPick(Quantitys.create(record.getQtyToPick(), uomId))
-				.qtyPicked(Quantitys.create(record.getQtyPicked(), uomId))
-				.qtyRejectedReasonCode(QtyRejectedReasonCode.ofNullableCode(record.getRejectReason()).orElse(null))
 				//
-				// From where?
+				// Pick From
 				.locatorId(locatorId)
 				.locatorName(loadingSupportingServices().getLocatorName(locatorId))
-				.huId(huId)
-				.huBarcode(loadingSupportingServices().getHUBarcode(huId))
+				.pickFromHUId(pickFromHUId)
+				.pickFromHUBarcode(loadingSupportingServices().getHUBarcode(pickFromHUId))
+				.picked(extractPickedInfo(record))
 				//
 				.build();
+	}
+
+	@Nullable
+	private static PickingJobStepPickedInfo extractPickedInfo(final I_M_Picking_Job_Step record)
+	{
+		final PickingCandidateId pickingCandidateId = PickingCandidateId.ofRepoIdOrNull(record.getM_Picking_Candidate_ID());
+
+		if (pickingCandidateId != null)
+		{
+			final UomId uomId = UomId.ofRepoId(record.getC_UOM_ID());
+
+			return PickingJobStepPickedInfo.builder()
+					.qtyPicked(Quantitys.create(record.getQtyPicked(), uomId))
+					.qtyRejectedReasonCode(QtyRejectedReasonCode.ofNullableCode(record.getRejectReason()).orElse(null))
+					.actualPickedHUId(HuId.ofRepoId(record.getPicked_HU_ID()))
+					.pickingCandidateId(pickingCandidateId)
+					.build();
+		}
+		else
+		{
+			return null;
+		}
 	}
 
 	private static void updateRecord(
@@ -303,13 +327,43 @@ class PickingJobLoaderAndSaver
 			@NonNull final PickingJobStep from,
 			@NonNull final PickingJobDocStatus docStatus)
 	{
-		existingRecord.setC_UOM_ID(from.getUOM().getC_UOM_ID());
-		existingRecord.setQtyPicked(from.getQtyPicked().toBigDecimal());
-		existingRecord.setQtyRejectedToPick(from.getQtyRejected().toBigDecimal());
-		existingRecord.setRejectReason(from.getQtyRejectedReasonCode() != null
-				? from.getQtyRejectedReasonCode().getCode()
-				: null);
-		existingRecord.setM_Picking_Candidate_ID(PickingCandidateId.toRepoId(from.getPickingCandidateId()));
 		existingRecord.setProcessed(docStatus.isProcessed());
+
+		// Picked status
+		updateRecord(existingRecord, from.getPicked(), from.getQtyToPick());
+	}
+
+	private static void updateRecord(
+			@NonNull final I_M_Picking_Job_Step existingRecord,
+			@Nullable final PickingJobStepPickedInfo from,
+			@NonNull final Quantity qtyToPick)
+	{
+		final BigDecimal qtyPickedBD;
+		final BigDecimal qtyRejectedBD;
+		final String rejectReason;
+		final HuId actualPickedHUId;
+		final PickingCandidateId pickingCandidateId;
+		if (from != null)
+		{
+			qtyPickedBD = from.getQtyPicked().toBigDecimal();
+			qtyRejectedBD = qtyToPick.subtract(from.getQtyPicked()).toBigDecimal();
+			rejectReason = from.getQtyRejectedReasonCode() != null ? from.getQtyRejectedReasonCode().getCode() : null;
+			actualPickedHUId = from.getActualPickedHUId();
+			pickingCandidateId = from.getPickingCandidateId();
+		}
+		else
+		{
+			qtyPickedBD = BigDecimal.ZERO;
+			qtyRejectedBD = BigDecimal.ZERO;
+			rejectReason = null;
+			actualPickedHUId = null;
+			pickingCandidateId = null;
+		}
+
+		existingRecord.setQtyPicked(qtyPickedBD);
+		existingRecord.setQtyRejectedToPick(qtyRejectedBD);
+		existingRecord.setRejectReason(rejectReason);
+		existingRecord.setPicked_HU_ID(HuId.toRepoId(actualPickedHUId));
+		existingRecord.setM_Picking_Candidate_ID(PickingCandidateId.toRepoId(pickingCandidateId));
 	}
 }

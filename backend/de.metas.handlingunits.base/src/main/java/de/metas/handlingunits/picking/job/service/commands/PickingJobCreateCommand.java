@@ -1,4 +1,4 @@
-package de.metas.handlingunits.picking.job.service;
+package de.metas.handlingunits.picking.job.service.commands;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -10,6 +10,9 @@ import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.repository.PickingJobCreateRepoRequest;
 import de.metas.handlingunits.picking.job.repository.PickingJobLoaderSupportingServices;
 import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
+import de.metas.handlingunits.picking.job.service.PickingJobHUReservationService;
+import de.metas.handlingunits.picking.job.service.PickingJobLockService;
+import de.metas.handlingunits.picking.job.service.PickingJobSlotService;
 import de.metas.handlingunits.picking.plan.CreatePickingPlanRequest;
 import de.metas.handlingunits.picking.plan.PickFromHU;
 import de.metas.handlingunits.picking.plan.PickingPlan;
@@ -29,6 +32,7 @@ import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.LocatorId;
 
@@ -36,14 +40,17 @@ import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Objects;
 
-class PickingJobCreateCommand
+public class PickingJobCreateCommand
 {
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IPackagingDAO packagingDAO = Services.get(IPackagingDAO.class);
 	private final PickingJobRepository pickingJobRepository;
 	private final PickingJobLockService pickingJobLockService;
 	private final PickingCandidateService pickingCandidateService;
+	private final PickingJobHUReservationService pickingJobHUReservationService;
 
 	private final PickingJobCreateRequest request;
+	private static final boolean considerAttributes = false; // TODO make it configurable
 
 	private final PickingJobLoaderSupportingServices loadingSupportServices;
 
@@ -53,6 +60,7 @@ class PickingJobCreateCommand
 			@NonNull final PickingJobLockService pickingJobLockService,
 			@NonNull final PickingJobSlotService pickingJobSlotService,
 			@NonNull final PickingCandidateService pickingCandidateService,
+			@NonNull final PickingJobHUReservationService pickingJobHUReservationService,
 			@NonNull final IBPartnerBL bpartnerBL,
 			//
 			@NonNull PickingJobCreateRequest request)
@@ -60,14 +68,19 @@ class PickingJobCreateCommand
 		this.pickingJobRepository = pickingJobRepository;
 		this.pickingJobLockService = pickingJobLockService;
 		this.pickingCandidateService = pickingCandidateService;
+		this.pickingJobHUReservationService = pickingJobHUReservationService;
 
 		this.request = request;
 
 		this.loadingSupportServices = new PickingJobLoaderSupportingServices(bpartnerBL, pickingJobSlotService);
 	}
 
-	public PickingJob execute()
+	public PickingJob execute() {return trxManager.callInThreadInheritedTrx(this::executeInTrx);}
+
+	private PickingJob executeInTrx()
 	{
+		trxManager.assertThreadInheritedTrxExists();
+
 		final ImmutableList<Packageable> items = packagingDAO
 				.stream(toPackageableQuery(request))
 				.collect(ImmutableList.toImmutableList());
@@ -84,7 +97,7 @@ class PickingJobCreateCommand
 					.map(PickingJobCreateCommand::extractPickingJobHeaderKey)
 					.collect(GuavaCollectors.singleElementOrThrow(() -> new AdempiereException("More than one job found")));
 
-			return pickingJobRepository.createNewAndGet(
+			final PickingJob pickingJob = pickingJobRepository.createNewAndGet(
 					PickingJobCreateRepoRequest.builder()
 							.orgId(headerKey.getOrgId())
 							.salesOrderId(headerKey.getSalesOrderId())
@@ -95,6 +108,10 @@ class PickingJobCreateCommand
 							.lines(toLineRepoRequests(items))
 							.build(),
 					loadingSupportServices);
+
+			pickingJobHUReservationService.reservePickFromHUs(pickingJob);
+
+			return pickingJob;
 		}
 		catch (final Exception ex)
 		{
@@ -161,7 +178,7 @@ class PickingJobCreateCommand
 
 		final PickingPlan plan = pickingCandidateService.createPlan(CreatePickingPlanRequest.builder()
 				.packageables(itemsForProduct)
-				.considerAttributes(false) // TODO make it configurable
+				.considerAttributes(considerAttributes)
 				.build());
 
 		return toLineRepoRequest(plan);
@@ -204,9 +221,10 @@ class PickingJobCreateCommand
 
 			return PickingJobCreateRepoRequest.Step.builder()
 					.shipmentScheduleId(planLine.getSourceDocumentInfo().getShipmentScheduleId())
+					.salesOrderLineId(Objects.requireNonNull(planLine.getSourceDocumentInfo().getSalesOrderLineId()))
 					.locatorId(locatorId)
 					.productId(productId)
-					.huId(pickFromHU.getHuId())
+					.pickFromHUId(pickFromHU.getHuId())
 					.qtyToPick(planLine.getQty())
 					.build();
 		}
@@ -216,5 +234,4 @@ class PickingJobCreateCommand
 			return null;
 		}
 	}
-
 }

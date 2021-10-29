@@ -52,6 +52,58 @@ public interface I_M_Picking_Job_Step
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set Sales order.
+	 * Order
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setC_Order_ID (int C_Order_ID);
+
+	/**
+	 * Get Sales order.
+	 * Order
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getC_Order_ID();
+
+	org.compiere.model.I_C_Order getC_Order();
+
+	void setC_Order(org.compiere.model.I_C_Order C_Order);
+
+	ModelColumn<I_M_Picking_Job_Step, org.compiere.model.I_C_Order> COLUMN_C_Order_ID = new ModelColumn<>(I_M_Picking_Job_Step.class, "C_Order_ID", org.compiere.model.I_C_Order.class);
+	String COLUMNNAME_C_Order_ID = "C_Order_ID";
+
+	/**
+	 * Set Orderline.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setC_OrderLine_ID (int C_OrderLine_ID);
+
+	/**
+	 * Get Orderline.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getC_OrderLine_ID();
+
+	org.compiere.model.I_C_OrderLine getC_OrderLine();
+
+	void setC_OrderLine(org.compiere.model.I_C_OrderLine C_OrderLine);
+
+	ModelColumn<I_M_Picking_Job_Step, org.compiere.model.I_C_OrderLine> COLUMN_C_OrderLine_ID = new ModelColumn<>(I_M_Picking_Job_Step.class, "C_OrderLine_ID", org.compiere.model.I_C_OrderLine.class);
+	String COLUMNNAME_C_OrderLine_ID = "C_OrderLine_ID";
+
+	/**
 	 * Set UOM.
 	 * Unit of Measure
 	 *
@@ -120,53 +172,6 @@ public interface I_M_Picking_Job_Step
 
 	ModelColumn<I_M_Picking_Job_Step, Object> COLUMN_IsActive = new ModelColumn<>(I_M_Picking_Job_Step.class, "IsActive", null);
 	String COLUMNNAME_IsActive = "IsActive";
-
-	/**
-	 * Set Handling Unit.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setM_HU_ID (int M_HU_ID);
-
-	/**
-	 * Get Handling Unit.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getM_HU_ID();
-
-	de.metas.handlingunits.model.I_M_HU getM_HU();
-
-	void setM_HU(de.metas.handlingunits.model.I_M_HU M_HU);
-
-	ModelColumn<I_M_Picking_Job_Step, de.metas.handlingunits.model.I_M_HU> COLUMN_M_HU_ID = new ModelColumn<>(I_M_Picking_Job_Step.class, "M_HU_ID", de.metas.handlingunits.model.I_M_HU.class);
-	String COLUMNNAME_M_HU_ID = "M_HU_ID";
-
-	/**
-	 * Set Locator.
-	 * Warehouse Locator
-	 *
-	 * <br>Type: Locator
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setM_Locator_ID (int M_Locator_ID);
-
-	/**
-	 * Get Locator.
-	 * Warehouse Locator
-	 *
-	 * <br>Type: Locator
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getM_Locator_ID();
-
-	String COLUMNNAME_M_Locator_ID = "M_Locator_ID";
 
 	/**
 	 * Set Picking candidate.
@@ -329,26 +334,94 @@ public interface I_M_Picking_Job_Step
 	String COLUMNNAME_M_ShipmentSchedule_ID = "M_ShipmentSchedule_ID";
 
 	/**
-	 * Set Warehouse.
-	 * Storage Warehouse and Service Point
+	 * Set Picked HU.
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setM_Warehouse_ID (int M_Warehouse_ID);
+	void setPicked_HU_ID (int Picked_HU_ID);
 
 	/**
-	 * Get Warehouse.
-	 * Storage Warehouse and Service Point
+	 * Get Picked HU.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getPicked_HU_ID();
+
+	@Nullable de.metas.handlingunits.model.I_M_HU getPicked_HU();
+
+	void setPicked_HU(@Nullable de.metas.handlingunits.model.I_M_HU Picked_HU);
+
+	ModelColumn<I_M_Picking_Job_Step, de.metas.handlingunits.model.I_M_HU> COLUMN_Picked_HU_ID = new ModelColumn<>(I_M_Picking_Job_Step.class, "Picked_HU_ID", de.metas.handlingunits.model.I_M_HU.class);
+	String COLUMNNAME_Picked_HU_ID = "Picked_HU_ID";
+
+	/**
+	 * Set Pick From HU.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getM_Warehouse_ID();
+	void setPickFrom_HU_ID (int PickFrom_HU_ID);
 
-	String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
+	/**
+	 * Get Pick From HU.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getPickFrom_HU_ID();
+
+	de.metas.handlingunits.model.I_M_HU getPickFrom_HU();
+
+	void setPickFrom_HU(de.metas.handlingunits.model.I_M_HU PickFrom_HU);
+
+	ModelColumn<I_M_Picking_Job_Step, de.metas.handlingunits.model.I_M_HU> COLUMN_PickFrom_HU_ID = new ModelColumn<>(I_M_Picking_Job_Step.class, "PickFrom_HU_ID", de.metas.handlingunits.model.I_M_HU.class);
+	String COLUMNNAME_PickFrom_HU_ID = "PickFrom_HU_ID";
+
+	/**
+	 * Set Pick From Locator.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setPickFrom_Locator_ID (int PickFrom_Locator_ID);
+
+	/**
+	 * Get Pick From Locator.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getPickFrom_Locator_ID();
+
+	String COLUMNNAME_PickFrom_Locator_ID = "PickFrom_Locator_ID";
+
+	/**
+	 * Set Pick From Warehouse.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setPickFrom_Warehouse_ID (int PickFrom_Warehouse_ID);
+
+	/**
+	 * Get Pick From Warehouse.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getPickFrom_Warehouse_ID();
+
+	String COLUMNNAME_PickFrom_Warehouse_ID = "PickFrom_Warehouse_ID";
 
 	/**
 	 * Set Processed.

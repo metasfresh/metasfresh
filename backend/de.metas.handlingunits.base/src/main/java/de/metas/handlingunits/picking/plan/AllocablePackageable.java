@@ -24,7 +24,9 @@ package de.metas.handlingunits.picking.plan;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
+import de.metas.handlingunits.reservation.HUReservationDocRef;
 import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -51,7 +53,7 @@ final class AllocablePackageable
 	@NonNull private final ShipmentScheduleId shipmentScheduleId;
 	@NonNull private final Optional<ShipmentAllocationBestBeforePolicy> bestBeforePolicy;
 	@NonNull private final WarehouseId warehouseId;
-	@Nullable private final OrderLineId salesOrderLineIdOrNull;
+	@Nullable private final OrderAndLineId salesOrderLineIdOrNull;
 	@Nullable private final ShipperId shipperId;
 
 	@Nullable private final PPOrderId pickFromOrderId;
@@ -68,7 +70,7 @@ final class AllocablePackageable
 			@NonNull final ShipmentScheduleId shipmentScheduleId,
 			@Nullable final Optional<ShipmentAllocationBestBeforePolicy> bestBeforePolicy,
 			@NonNull final WarehouseId warehouseId,
-			@Nullable final OrderLineId salesOrderLineIdOrNull,
+			@Nullable final OrderAndLineId salesOrderLineIdOrNull,
 			@Nullable final ShipperId shipperId,
 			@Nullable final PPOrderId pickFromOrderId,
 			@Nullable final IssueToBOMLine issueToBOMLine,
@@ -97,5 +99,10 @@ final class AllocablePackageable
 	public boolean isAllocated()
 	{
 		return getQtyToAllocate().signum() == 0;
+	}
+
+	public Optional<HUReservationDocRef> getReservationRef()
+	{
+		return Optional.ofNullable(salesOrderLineIdOrNull).map(HUReservationDocRef::ofSalesOrderLineId);
 	}
 }

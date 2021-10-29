@@ -1,19 +1,7 @@
 package de.metas.handlingunits.picking.candidate.commands;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
-
-import org.adempiere.ad.service.IADReferenceDAO;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.util.Env;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHUStatusBL;
@@ -27,6 +15,7 @@ import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.picking.PickingCandidateStatus;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleDAO;
+import de.metas.handlingunits.shipmentschedule.api.impl.HUShipmentScheduleBL;
 import de.metas.handlingunits.sourcehu.HuId2SourceHUsService;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.i18n.AdMessageKey;
@@ -34,6 +23,16 @@ import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.ad.service.IADReferenceDAO;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.util.Env;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
 
 /*
  * #%L
@@ -59,16 +58,14 @@ import lombok.NonNull;
 
 /**
  * Unprocess picking candidate.
- *
+ * <p>
  * The status will be changed from Processed to InProgress.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
-public class UnProcessPickingCandidateCommand
+public class UnProcessPickingCandidatesAndRestoreSourceHUsCommand
 {
 	private static final AdMessageKey MSG_WEBUI_PICKING_WRONG_HU_STATUS_3P = AdMessageKey.of("WEBUI_Picking_Wrong_HU_Status");
-	private static final AdMessageKey MSG_WEBUI_PICKING_ALREADY_SHIPPED_2P = AdMessageKey.of("WEBUI_Picking_Already_Shipped");
 
 	private final transient IHUShipmentScheduleDAO huShipmentScheduleDAO = Services.get(IHUShipmentScheduleDAO.class);
 
@@ -79,7 +76,7 @@ public class UnProcessPickingCandidateCommand
 	private I_M_HU _hu = null; // lazy
 
 	@Builder
-	public UnProcessPickingCandidateCommand(
+	public UnProcessPickingCandidatesAndRestoreSourceHUsCommand(
 			@NonNull final HuId2SourceHUsService sourceHUsRepository,
 			@NonNull final PickingCandidateRepository pickingCandidateRepository,
 			@NonNull final HuId huId)
@@ -149,9 +146,6 @@ public class UnProcessPickingCandidateCommand
 
 	/**
 	 * Check if there is already a shipment.
-	 *
-	 * @param hu
-	 * @param qtyPickedList
 	 */
 	private void assertHUIsNotShipped(@NonNull final List<I_M_ShipmentSchedule_QtyPicked> qtyPickedList)
 	{
@@ -160,15 +154,16 @@ public class UnProcessPickingCandidateCommand
 			if (qtyPicked.getM_InOutLine_ID() > 0)
 			{
 				final I_M_HU hu = getM_HU();
-				throw new AdempiereException(MSG_WEBUI_PICKING_ALREADY_SHIPPED_2P, new Object[] { hu.getValue(), qtyPicked.getM_InOutLine().getM_InOut().getDocumentNo() });
+				throw new AdempiereException(
+						HUShipmentScheduleBL.MSG_WEBUI_PICKING_ALREADY_SHIPPED_2P,
+						hu.getValue(),
+						qtyPicked.getM_InOutLine().getM_InOut().getDocumentNo());
 			}
 		}
 	}
 
 	/**
 	 * Generally verify the HU's status.
-	 *
-	 * @param hu
 	 */
 	private void assertHUIsPicked(@NonNull final I_M_HU hu)
 	{
@@ -187,7 +182,7 @@ public class UnProcessPickingCandidateCommand
 		final String currentStatusTrl = adReferenceDAO.retrieveListNameTrl(ctx, X_M_HU.HUSTATUS_AD_Reference_ID, huStatus);
 		final String pickedStatusTrl = adReferenceDAO.retrieveListNameTrl(ctx, X_M_HU.HUSTATUS_AD_Reference_ID, X_M_HU.HUSTATUS_Picked)
 				+ ", " + adReferenceDAO.retrieveListNameTrl(ctx, X_M_HU.HUSTATUS_AD_Reference_ID, X_M_HU.HUSTATUS_Active);
-		throw new AdempiereException(MSG_WEBUI_PICKING_WRONG_HU_STATUS_3P, new Object[] { hu.getValue(), currentStatusTrl, pickedStatusTrl });
+		throw new AdempiereException(MSG_WEBUI_PICKING_WRONG_HU_STATUS_3P, hu.getValue(), currentStatusTrl, pickedStatusTrl);
 	}
 
 	private void updateHUStatusToActive(@NonNull final I_M_HU hu)

@@ -80,6 +80,8 @@ class PickingJobCreateRepoCommand
 		record.setM_Picking_Job_Line_ID(pickingJobLineId.getRepoId());
 		record.setAD_Org_ID(orgId.getRepoId());
 		record.setM_ShipmentSchedule_ID(request.getShipmentScheduleId().getRepoId());
+		record.setC_Order_ID(request.getSalesOrderLineId().getOrderRepoId());
+		record.setC_OrderLine_ID(request.getSalesOrderLineId().getOrderLineRepoId());
 
 		//
 		// What?
@@ -89,9 +91,9 @@ class PickingJobCreateRepoCommand
 
 		//
 		// From where?
-		record.setM_Warehouse_ID(request.getLocatorId().getWarehouseId().getRepoId());
-		record.setM_Locator_ID(request.getLocatorId().getRepoId());
-		record.setM_HU_ID(request.getHuId().getRepoId());
+		record.setPickFrom_Warehouse_ID(request.getLocatorId().getWarehouseId().getRepoId());
+		record.setPickFrom_Locator_ID(request.getLocatorId().getRepoId());
+		record.setPickFrom_HU_ID(request.getPickFromHUId().getRepoId());
 
 		InterfaceWrapperHelper.save(record);
 

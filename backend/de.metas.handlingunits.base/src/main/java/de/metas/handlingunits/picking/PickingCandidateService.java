@@ -19,7 +19,9 @@ import de.metas.handlingunits.picking.candidate.commands.RemoveHUFromPickingSlot
 import de.metas.handlingunits.picking.candidate.commands.RemoveQtyFromHUCommand;
 import de.metas.handlingunits.picking.candidate.commands.ReviewQtyPickedCommand;
 import de.metas.handlingunits.picking.candidate.commands.SetHuPackingInstructionIdCommand;
-import de.metas.handlingunits.picking.candidate.commands.UnProcessPickingCandidateCommand;
+import de.metas.handlingunits.picking.candidate.commands.UnProcessPickingCandidatesAndRestoreSourceHUsCommand;
+import de.metas.handlingunits.picking.candidate.commands.UnProcessPickingCandidatesCommand;
+import de.metas.handlingunits.picking.candidate.commands.UnProcessPickingCandidatesResult;
 import de.metas.handlingunits.picking.plan.CreatePickingPlanCommand;
 import de.metas.handlingunits.picking.plan.CreatePickingPlanRequest;
 import de.metas.handlingunits.picking.plan.PickingPlan;
@@ -36,7 +38,6 @@ import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.service.IADReferenceDAO;
-import org.adempiere.ad.trx.api.ITrxManager;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -75,7 +76,6 @@ public class PickingCandidateService
 	private final HuId2SourceHUsService sourceHUsRepository;
 	private final HUReservationService huReservationService;
 	private final IBPartnerBL bpartnersService;
-	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
 
 	public PickingCandidateService(
@@ -97,13 +97,6 @@ public class PickingCandidateService
 		return pickingCandidateRepository.getByIds(pickingCandidateIds);
 	}
 
-	public List<PickingCandidate> getByShipmentScheduleIdAndStatus(
-			@NonNull final ShipmentScheduleId shipmentScheduleId,
-			@NonNull final PickingCandidateStatus status)
-	{
-		return pickingCandidateRepository.getByShipmentScheduleIdAndStatus(shipmentScheduleId, status);
-	}
-
 	public List<PickingCandidate> getByShipmentScheduleIdsAndStatus(
 			@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds,
 			@NonNull final PickingCandidateStatus status)
@@ -114,26 +107,6 @@ public class PickingCandidateService
 	public boolean existsPickingCandidates(@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds)
 	{
 		return pickingCandidateRepository.existsPickingCandidates(shipmentScheduleIds);
-	}
-
-	public List<PickHUResult> pickHUsBulk(@NonNull final List<PickRequest> requests)
-	{
-		if (requests.isEmpty())
-		{
-			return ImmutableList.of();
-		}
-		else if (requests.size() == 1)
-		{
-			final PickHUResult result = pickHU(requests.get(0));
-			return ImmutableList.of(result);
-		}
-		else
-		{
-			return trxManager.callInThreadInheritedTrx(
-					() -> requests.stream()
-							.map(this::pickHU)
-							.collect(ImmutableList.toImmutableList()));
-		}
 	}
 
 	public PickHUResult pickHU(final PickRequest request)
@@ -235,9 +208,18 @@ public class PickingCandidateService
 				.perform();
 	}
 
-	public void unprocessForHUId(final HuId huId)
+	public UnProcessPickingCandidatesResult unprocess(@NonNull final Set<PickingCandidateId> pickingCandidateIds)
 	{
-		UnProcessPickingCandidateCommand.builder()
+		return UnProcessPickingCandidatesCommand.builder()
+				.pickingCandidateRepository(pickingCandidateRepository)
+				.pickingCandidateIds(pickingCandidateIds)
+				.build()
+				.execute();
+	}
+
+	public void unprocessAndRestoreSourceHUsByHUId(final HuId huId)
+	{
+		UnProcessPickingCandidatesAndRestoreSourceHUsCommand.builder()
 				.sourceHUsRepository(sourceHUsRepository)
 				.pickingCandidateRepository(pickingCandidateRepository)
 				.huId(huId)
@@ -327,6 +309,12 @@ public class PickingCandidateService
 	public void deleteDraftPickingCandidatesByShipmentScheduleId(@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds)
 	{
 		final List<PickingCandidate> draftCandidates = pickingCandidateRepository.getByShipmentScheduleIdsAndStatus(shipmentScheduleIds, PickingCandidateStatus.Draft);
+		deleteDraftPickingCandidates(draftCandidates);
+	}
+
+	public void deleteDraftPickingCandidates(final List<PickingCandidate> draftCandidates)
+	{
+		draftCandidates.forEach(PickingCandidate::assertDraft);
 		pickingCandidateRepository.deletePickingCandidates(draftCandidates);
 	}
 

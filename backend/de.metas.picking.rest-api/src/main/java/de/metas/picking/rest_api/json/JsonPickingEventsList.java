@@ -22,23 +22,29 @@
 
 package de.metas.picking.rest_api.json;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
+import com.google.common.collect.ImmutableList;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
+import org.adempiere.exceptions.AdempiereException;
 
 import java.util.List;
 
 @Value
-@Builder
-@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
-@JsonDeserialize(builder = JsonPickingEventsList.JsonPickingEventsListBuilder.class)
 public class JsonPickingEventsList
 {
-	@JsonPOJOBuilder(withPrefix = "")
-	public static class JsonPickingEventsListBuilder {}
-
 	@NonNull List<JsonPickingStepEvent> events;
+
+	@Builder
+	@Jacksonized
+	public JsonPickingEventsList(@NonNull final List<JsonPickingStepEvent> events)
+	{
+		if (events.isEmpty())
+		{
+			throw new AdempiereException("events shall not be empty");
+		}
+
+		this.events = ImmutableList.copyOf(events);
+	}
 }

@@ -1,4 +1,4 @@
-package de.metas.handlingunits.picking.job.service;
+package de.metas.handlingunits.picking.job.service.commands;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerLocationId;

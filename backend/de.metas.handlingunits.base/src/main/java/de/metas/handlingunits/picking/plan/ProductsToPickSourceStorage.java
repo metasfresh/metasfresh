@@ -22,21 +22,25 @@
 
 package de.metas.handlingunits.picking.plan;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.reservation.HUReservationDocRef;
+import de.metas.handlingunits.reservation.HUReservationEntry;
+import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
-import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import lombok.Value;
 import org.compiere.model.I_C_UOM;
 
-import java.util.Collection;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -44,59 +48,69 @@ final class ProductsToPickSourceStorage
 {
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final HUReservationService huReservationService;
 
-	private final Map<HuId, I_M_HU> husCache = new HashMap<>();
-	private final Map<ReservableStorageKey, ReservableStorage> storages = new HashMap<>();
+	private final HUsLoadingCache husCache;
+	private final Map<ReservableStorageKey, AllocableStorage> storages = new HashMap<>();
 
-	public I_M_HU getHU(final HuId huId)
+	ProductsToPickSourceStorage(
+			@NonNull final HUReservationService huReservationService,
+			@NonNull final HUsLoadingCache husCache)
 	{
-		return husCache.computeIfAbsent(huId, handlingUnitsBL::getById);
+		this.huReservationService = huReservationService;
+		this.husCache = husCache;
 	}
 
-	public void warmUpCacheForHuIds(final Collection<HuId> huIds)
-	{
-		CollectionUtils.getAllOrLoad(husCache, huIds, this::retrieveHUs);
-	}
-
-	private Map<HuId, I_M_HU> retrieveHUs(final Collection<HuId> huIds)
-	{
-		return Maps.uniqueIndex(handlingUnitsBL.getByIds(huIds), hu -> HuId.ofRepoId(hu.getM_HU_ID()));
-	}
-
-	public ReservableStorage getStorage(final HuId huId, final ProductId productId)
+	public AllocableStorage getStorage(final HuId huId, final ProductId productId)
 	{
 		final ReservableStorageKey key = ReservableStorageKey.of(huId, productId);
 		return storages.computeIfAbsent(key, this::retrieveStorage);
 	}
 
-	private ReservableStorage retrieveStorage(final ReservableStorageKey key)
+	private AllocableStorage retrieveStorage(final ReservableStorageKey key)
 	{
 		final ProductId productId = key.getProductId();
-		final I_M_HU hu = getHU(key.getHuId());
 
-		final IHUProductStorage huProductStorage = handlingUnitsBL
-				.getStorageFactory()
-				.getStorage(hu)
-				.getProductStorageOrNull(productId);
+		final HuId topLeveHUId = key.getHuId();
+		final ImmutableSet<HuId> vhuIds = husCache.getVHUIds(topLeveHUId);
 
-		if (huProductStorage == null)
+		final ImmutableMap<HuId, HUReservationEntry> reservationsByVHUId = Maps.uniqueIndex(huReservationService.getEntriesByVHUIds(vhuIds), HUReservationEntry::getVhuId);
+
+		final ArrayList<VHUAllocableStorage> vhuAllocableStorages = new ArrayList<>();
+
+		for (final HuId vhuId : husCache.getVHUIds(topLeveHUId))
 		{
-			final I_C_UOM uom = productBL.getStockUOM(productId);
-			return new ReservableStorage(productId, Quantity.zero(uom));
+			final I_M_HU vhu = husCache.getHUById(vhuId);
+			final IHUProductStorage huProductStorage = handlingUnitsBL
+					.getStorageFactory()
+					.getStorage(vhu)
+					.getProductStorageOrNull(productId);
+
+			if (huProductStorage != null)
+			{
+				final int seqNo = vhuId.getRepoId();
+				final Quantity qtyFreeToAllocate = huProductStorage.getQty();
+				final HUReservationEntry reservation = reservationsByVHUId.get(vhuId);
+				final HUReservationDocRef reservationDocRef = reservation != null ? reservation.getDocumentRef() : null;
+				final VHUAllocableStorage vhuAllocableStorage = new VHUAllocableStorage(seqNo, productId, qtyFreeToAllocate, reservationDocRef);
+				vhuAllocableStorages.add(vhuAllocableStorage);
+			}
 		}
-		else
+
+		if (vhuAllocableStorages.isEmpty())
 		{
-			final Quantity qtyFreeToReserve = huProductStorage.getQty();
-			return new ReservableStorage(productId, qtyFreeToReserve);
+			final I_C_UOM stockingUOM = productBL.getStockUOM(productId);
+			final VHUAllocableStorage vhuAllocableStorage = new VHUAllocableStorage(0, productId, Quantity.zero(stockingUOM), null);
+			vhuAllocableStorages.add(vhuAllocableStorage);
 		}
+
+		return new AllocableStorage(vhuAllocableStorages);
 	}
 
 	@Value(staticConstructor = "of")
 	private static class ReservableStorageKey
 	{
-		@NonNull
-		HuId huId;
-		@NonNull
-		ProductId productId;
+		@NonNull HuId huId;
+		@NonNull ProductId productId;
 	}
 }
