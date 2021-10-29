@@ -73,6 +73,7 @@ public class MembershipOrderCreateCommand
 
 		orderLine.setM_Product_ID(productId.getRepoId());
 		orderLine.setC_Flatrate_Conditions_ID(conditionsId.getRepoId());
+		orderLine.setQtyEntered(BigDecimal.ONE);
 		orderLine.setQtyOrdered(BigDecimal.ONE);
 
 		orderDAO.save(orderLine);
