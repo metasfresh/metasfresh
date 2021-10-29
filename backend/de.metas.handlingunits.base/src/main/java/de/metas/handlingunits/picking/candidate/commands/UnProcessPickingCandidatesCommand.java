@@ -79,8 +79,8 @@ public class UnProcessPickingCandidatesCommand
 		}
 		else if (pickingCandidate.getPickFrom().isPickFromHU())
 		{
-			deleteShipmentScheduleQtyPickedRecords(pickingCandidate);
 			unpickHU(pickingCandidate);
+			deleteShipmentScheduleQtyPickedRecords(pickingCandidate);
 		}
 		else if (pickingCandidate.getPickFrom().isPickFromPickingOrder())
 		{
