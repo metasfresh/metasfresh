@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_Picking_Job_Step extends org.compiere.model.PO implements I_M_Picking_Job_Step, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1003516851L;
+	private static final long serialVersionUID = -596347614L;
 
     /** Standard Constructor */
     public X_M_Picking_Job_Step (final Properties ctx, final int M_Picking_Job_Step_ID, @Nullable final String trxName)
@@ -36,6 +36,60 @@ public class X_M_Picking_Job_Step extends org.compiere.model.PO implements I_M_P
 	}
 
 	@Override
+	public org.compiere.model.I_C_Order getC_Order()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Order_ID, org.compiere.model.I_C_Order.class);
+	}
+
+	@Override
+	public void setC_Order(final org.compiere.model.I_C_Order C_Order)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Order_ID, org.compiere.model.I_C_Order.class, C_Order);
+	}
+
+	@Override
+	public void setC_Order_ID (final int C_Order_ID)
+	{
+		if (C_Order_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_C_Order_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_C_Order_ID, C_Order_ID);
+	}
+
+	@Override
+	public int getC_Order_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Order_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_C_OrderLine getC_OrderLine()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_OrderLine_ID, org.compiere.model.I_C_OrderLine.class);
+	}
+
+	@Override
+	public void setC_OrderLine(final org.compiere.model.I_C_OrderLine C_OrderLine)
+	{
+		set_ValueFromPO(COLUMNNAME_C_OrderLine_ID, org.compiere.model.I_C_OrderLine.class, C_OrderLine);
+	}
+
+	@Override
+	public void setC_OrderLine_ID (final int C_OrderLine_ID)
+	{
+		if (C_OrderLine_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_C_OrderLine_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_C_OrderLine_ID, C_OrderLine_ID);
+	}
+
+	@Override
+	public int getC_OrderLine_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_OrderLine_ID);
+	}
+
+	@Override
 	public void setC_UOM_ID (final int C_UOM_ID)
 	{
 		if (C_UOM_ID < 1) 
@@ -48,48 +102,6 @@ public class X_M_Picking_Job_Step extends org.compiere.model.PO implements I_M_P
 	public int getC_UOM_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_UOM_ID);
-	}
-
-	@Override
-	public de.metas.handlingunits.model.I_M_HU getM_HU()
-	{
-		return get_ValueAsPO(COLUMNNAME_M_HU_ID, de.metas.handlingunits.model.I_M_HU.class);
-	}
-
-	@Override
-	public void setM_HU(final de.metas.handlingunits.model.I_M_HU M_HU)
-	{
-		set_ValueFromPO(COLUMNNAME_M_HU_ID, de.metas.handlingunits.model.I_M_HU.class, M_HU);
-	}
-
-	@Override
-	public void setM_HU_ID (final int M_HU_ID)
-	{
-		if (M_HU_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_M_HU_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_M_HU_ID, M_HU_ID);
-	}
-
-	@Override
-	public int getM_HU_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_M_HU_ID);
-	}
-
-	@Override
-	public void setM_Locator_ID (final int M_Locator_ID)
-	{
-		if (M_Locator_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_M_Locator_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_M_Locator_ID, M_Locator_ID);
-	}
-
-	@Override
-	public int getM_Locator_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_M_Locator_ID);
 	}
 
 	@Override
@@ -234,18 +246,87 @@ public class X_M_Picking_Job_Step extends org.compiere.model.PO implements I_M_P
 	}
 
 	@Override
-	public void setM_Warehouse_ID (final int M_Warehouse_ID)
+	public de.metas.handlingunits.model.I_M_HU getPicked_HU()
 	{
-		if (M_Warehouse_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_M_Warehouse_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_M_Warehouse_ID, M_Warehouse_ID);
+		return get_ValueAsPO(COLUMNNAME_Picked_HU_ID, de.metas.handlingunits.model.I_M_HU.class);
 	}
 
 	@Override
-	public int getM_Warehouse_ID() 
+	public void setPicked_HU(final de.metas.handlingunits.model.I_M_HU Picked_HU)
 	{
-		return get_ValueAsInt(COLUMNNAME_M_Warehouse_ID);
+		set_ValueFromPO(COLUMNNAME_Picked_HU_ID, de.metas.handlingunits.model.I_M_HU.class, Picked_HU);
+	}
+
+	@Override
+	public void setPicked_HU_ID (final int Picked_HU_ID)
+	{
+		if (Picked_HU_ID < 1) 
+			set_Value (COLUMNNAME_Picked_HU_ID, null);
+		else 
+			set_Value (COLUMNNAME_Picked_HU_ID, Picked_HU_ID);
+	}
+
+	@Override
+	public int getPicked_HU_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Picked_HU_ID);
+	}
+
+	@Override
+	public de.metas.handlingunits.model.I_M_HU getPickFrom_HU()
+	{
+		return get_ValueAsPO(COLUMNNAME_PickFrom_HU_ID, de.metas.handlingunits.model.I_M_HU.class);
+	}
+
+	@Override
+	public void setPickFrom_HU(final de.metas.handlingunits.model.I_M_HU PickFrom_HU)
+	{
+		set_ValueFromPO(COLUMNNAME_PickFrom_HU_ID, de.metas.handlingunits.model.I_M_HU.class, PickFrom_HU);
+	}
+
+	@Override
+	public void setPickFrom_HU_ID (final int PickFrom_HU_ID)
+	{
+		if (PickFrom_HU_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_PickFrom_HU_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_PickFrom_HU_ID, PickFrom_HU_ID);
+	}
+
+	@Override
+	public int getPickFrom_HU_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_PickFrom_HU_ID);
+	}
+
+	@Override
+	public void setPickFrom_Locator_ID (final int PickFrom_Locator_ID)
+	{
+		if (PickFrom_Locator_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_PickFrom_Locator_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_PickFrom_Locator_ID, PickFrom_Locator_ID);
+	}
+
+	@Override
+	public int getPickFrom_Locator_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_PickFrom_Locator_ID);
+	}
+
+	@Override
+	public void setPickFrom_Warehouse_ID (final int PickFrom_Warehouse_ID)
+	{
+		if (PickFrom_Warehouse_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_PickFrom_Warehouse_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_PickFrom_Warehouse_ID, PickFrom_Warehouse_ID);
+	}
+
+	@Override
+	public int getPickFrom_Warehouse_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_PickFrom_Warehouse_ID);
 	}
 
 	@Override
@@ -301,7 +382,7 @@ public class X_M_Picking_Job_Step extends org.compiere.model.PO implements I_M_P
 
 	/** 
 	 * RejectReason AD_Reference_ID=541422
-	 * Reference name: M_Picking_Candidate_RejectReason
+	 * Reference name: QtyNotPicked RejectReason
 	 */
 	public static final int REJECTREASON_AD_Reference_ID=541422;
 	/** NotFound = N */

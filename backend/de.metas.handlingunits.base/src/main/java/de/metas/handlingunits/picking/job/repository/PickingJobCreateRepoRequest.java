@@ -3,8 +3,8 @@ package de.metas.handlingunits.picking.job.repository;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.picking.PickingCandidateId;
 import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.organization.InstantAndOrgId;
 import de.metas.organization.OrgId;
@@ -16,8 +16,6 @@ import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 import org.adempiere.warehouse.LocatorId;
-
-import java.time.ZonedDateTime;
 
 @Value
 @Builder
@@ -49,6 +47,7 @@ public class PickingJobCreateRepoRequest
 	public static class Step
 	{
 		@NonNull ShipmentScheduleId shipmentScheduleId;
+		@NonNull OrderAndLineId salesOrderLineId;
 		//
 		// What?
 		@NonNull ProductId productId;
@@ -56,6 +55,6 @@ public class PickingJobCreateRepoRequest
 		//
 		// From where?
 		@NonNull LocatorId locatorId;
-		@NonNull HuId huId;
+		@NonNull HuId pickFromHUId;
 	}
 }

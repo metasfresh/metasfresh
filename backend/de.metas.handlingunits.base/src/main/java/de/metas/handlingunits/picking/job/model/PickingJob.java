@@ -23,7 +23,6 @@
 package de.metas.handlingunits.picking.job.model;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.picking.api.PickingSlotId;
@@ -38,7 +37,6 @@ import lombok.experimental.Delegate;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
-import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.UnaryOperator;
@@ -143,16 +141,22 @@ public final class PickingJob
 		return lines.stream().flatMap(PickingJobLine::streamShipmentScheduleId);
 	}
 
+	public Stream<PickingJobStep> streamSteps() {return lines.stream().flatMap(PickingJobLine::streamSteps);}
+
+	public PickingJobStep getStepById(final PickingJobStepId stepId)
+	{
+		return lines.stream()
+				.flatMap(PickingJobLine::streamSteps)
+				.filter(step -> PickingJobStepId.equals(step.getId(), stepId))
+				.findFirst()
+				.orElseThrow(() -> new AdempiereException("No step found for " + stepId));
+	}
+
 	public PickingJob withDocStatus(final PickingJobDocStatus docStatus)
 	{
 		return !Objects.equals(this.docStatus, docStatus)
 				? toBuilder().docStatus(docStatus).build()
 				: this;
-	}
-
-	public PickingJob withChangedSteps(final UnaryOperator<PickingJobStep> stepMapper)
-	{
-		return withChangedLines(line -> line.withChangedSteps(stepMapper));
 	}
 
 	public PickingJob withChangedLines(final UnaryOperator<PickingJobLine> lineMapper)
@@ -163,19 +167,15 @@ public final class PickingJob
 				: toBuilder().lines(changedLines).build();
 	}
 
-	public PickingJob applyingEvents(@NonNull final List<PickingJobStepEvent> events)
+	public PickingJob withChangedStep(
+			@NonNull final PickingJobStepId stepId,
+			@NonNull final UnaryOperator<PickingJobStep> stepMapper)
 	{
-		assertNotProcessed();
+		return withChangedLines(line -> line.withChangedStep(stepId, stepMapper));
+	}
 
-		if (events.isEmpty())
-		{
-			return this;
-		}
-
-		final ImmutableMap<PickingJobStepId, PickingJobStepEvent> eventsByStepId = PickingJobStepEvent.aggregateByStepId(events);
-		return withChangedSteps(step -> {
-			final PickingJobStepEvent event = eventsByStepId.get(step.getId());
-			return event != null ? step.applyingEvent(event) : step;
-		});
+	public PickingJob withChangedSteps(final UnaryOperator<PickingJobStep> stepMapper)
+	{
+		return withChangedLines(line -> line.withChangedSteps(stepMapper));
 	}
 }

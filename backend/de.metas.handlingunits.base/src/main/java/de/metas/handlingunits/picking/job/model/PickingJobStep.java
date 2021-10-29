@@ -24,11 +24,9 @@ package de.metas.handlingunits.picking.job.model;
 
 import de.metas.handlingunits.HUBarcode;
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.picking.PickingCandidateId;
-import de.metas.handlingunits.picking.QtyRejectedReasonCode;
-import de.metas.handlingunits.picking.QtyRejectedWithReason;
 import de.metas.i18n.ITranslatableString;
 import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.order.OrderAndLineId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
@@ -40,8 +38,6 @@ import org.adempiere.warehouse.LocatorId;
 import org.compiere.model.I_C_UOM;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
-import java.util.Optional;
 
 @Value
 @ToString
@@ -49,158 +45,84 @@ public class PickingJobStep
 {
 	@NonNull PickingJobStepId id;
 
+	@NonNull OrderAndLineId salesOrderAndLineId;
 	@NonNull ShipmentScheduleId shipmentScheduleId;
-	@Nullable PickingCandidateId pickingCandidateId;
 
 	//
 	// What?
 	@NonNull ProductId productId;
 	@NonNull ITranslatableString productName;
 	@NonNull Quantity qtyToPick;
-	@NonNull Quantity qtyPicked;
-	@Nullable QtyRejectedReasonCode qtyRejectedReasonCode;
 
 	//
-	// From where?
+	// Pick From
 	@NonNull LocatorId locatorId;
 	@NonNull String locatorName;
+	@NonNull HuId pickFromHUId;
+	@NonNull HUBarcode pickFromHUBarcode;
 
-	@NonNull HuId huId;
-	@NonNull HUBarcode huBarcode;
+	@Nullable PickingJobStepPickedInfo picked;
 
 	@Builder(toBuilder = true)
 	private PickingJobStep(
 			@NonNull final PickingJobStepId id,
+			@NonNull final OrderAndLineId salesOrderAndLineId,
 			@NonNull final ShipmentScheduleId shipmentScheduleId,
-			@Nullable final PickingCandidateId pickingCandidateId,
 			//
 			// What?
 			@NonNull final ProductId productId,
 			@NonNull final ITranslatableString productName,
 			@NonNull final Quantity qtyToPick,
-			@Nullable final Quantity qtyPicked,
-			@Nullable final QtyRejectedReasonCode qtyRejectedReasonCode,
 			//
-			// From where?
+			// Pick From
 			@NonNull final LocatorId locatorId,
 			@NonNull final String locatorName,
-			@NonNull final HuId huId,
-			@NonNull final HUBarcode huBarcode)
+			@NonNull final HuId pickFromHUId,
+			@NonNull final HUBarcode pickFromHUBarcode,
+			//
+			@Nullable PickingJobStepPickedInfo picked)
 	{
 		this.id = id;
+		this.salesOrderAndLineId = salesOrderAndLineId;
 		this.shipmentScheduleId = shipmentScheduleId;
-		this.pickingCandidateId = pickingCandidateId;
 		this.productId = productId;
 		this.productName = productName;
-
-		Quantity.assertSameUOM(qtyToPick, qtyPicked); // make sure they have the same UOM
 		this.qtyToPick = qtyToPick;
-		this.qtyPicked = qtyPicked != null ? qtyPicked : qtyToPick.toZero();
-		this.qtyRejectedReasonCode = validateQtyRejectedReasonCode(qtyRejectedReasonCode, this.qtyToPick, this.qtyPicked);
 
 		this.locatorId = locatorId;
 		this.locatorName = locatorName;
-		this.huId = huId;
-		this.huBarcode = huBarcode;
-	}
+		this.pickFromHUId = pickFromHUId;
+		this.pickFromHUBarcode = pickFromHUBarcode;
+		this.picked = picked;
 
-	private static QtyRejectedReasonCode validateQtyRejectedReasonCode(
-			final @Nullable QtyRejectedReasonCode qtyRejectedReasonCode,
-			final @NonNull Quantity qtyToPick,
-			final @NonNull Quantity qtyPicked)
-	{
-		if (isSomethingReported(qtyPicked, qtyRejectedReasonCode))
+		if (this.picked != null)
 		{
-			final Quantity qtyRejected = qtyToPick.subtract(qtyPicked);
-			if (qtyRejected.signum() < 0)
-			{
-				throw new AdempiereException("Maximum allowed qty to pick is " + qtyToPick);
-			}
-			else if (qtyRejected.signum() > 0)
-			{
-				if (qtyRejectedReasonCode == null)
-				{
-					throw new AdempiereException("Reject reason must be provided when QtyRejected != 0");
-				}
-				return qtyRejectedReasonCode;
-			}
-			else // qtyRejected == 0
-			{
-				if (qtyRejectedReasonCode != null)
-				{
-					throw new AdempiereException("No reject reason needs to be provided when the whole qty was picked");
-				}
-				return null;
-			}
-		}
-		else
-		{
-			// nothing reported
-			return null;
+			Quantity.assertSameUOM(qtyToPick, this.picked.getQtyPicked()); // make sure they have the same UOM
+			this.picked.validateQtyRejectedReasonCode(this.qtyToPick);
 		}
 	}
 
-	public I_C_UOM getUOM()
-	{
-		return qtyToPick.getUOM();
-	}
+	public I_C_UOM getUOM() {return qtyToPick.getUOM();}
 
-	public Quantity getQtyRejected()
+	public void assertNotPicked()
 	{
-		return qtyToPick.subtract(qtyPicked);
-	}
-
-	public Optional<QtyRejectedWithReason> getQtyRejectedWithReason()
-	{
-		return qtyRejectedReasonCode != null
-				? Optional.of(QtyRejectedWithReason.of(getQtyRejected(), qtyRejectedReasonCode))
-				: Optional.empty();
-	}
-
-	public boolean isSomethingReported()
-	{
-		return isSomethingReported(qtyPicked, qtyRejectedReasonCode);
-	}
-
-	private static boolean isSomethingReported(@Nullable final Quantity qtyPicked, @Nullable final QtyRejectedReasonCode qtyRejectedReasonCode)
-	{
-		final boolean qtyPickedNotZero = qtyPicked != null && qtyPicked.signum() != 0;
-		return qtyPickedNotZero || qtyRejectedReasonCode != null;
-	}
-
-	public PickingJobStep applyingEvent(@NonNull final PickingJobStepEvent event)
-	{
-		final PickingJobStepEventType eventType = event.getEventType();
-		switch (eventType)
+		if (isPicked())
 		{
-			case PICK:
-			{
-				final BigDecimal qtyPicked = event.getQtyPicked();
-				if (qtyPicked == null)
-				{
-					throw new AdempiereException("qtyPicked must be provided in " + event);
-				}
-				return toBuilder()
-						.qtyPicked(Quantity.of(qtyPicked, getUOM()))
-						.qtyRejectedReasonCode(event.getQtyRejectedReasonCode())
-						.build();
-			}
-			case UNPICK:
-			{
-				return toBuilder()
-						.qtyPicked(null)
-						.qtyRejectedReasonCode(null)
-						.build();
-			}
-			default:
-			{
-				throw new AdempiereException("Unknown event type: " + eventType);
-			}
+			throw new AdempiereException("Step already picked: " + getId());
 		}
 	}
 
-	public PickingJobStep withPickingCandidateId(@NonNull final PickingCandidateId pickingCandidateId)
+	public void assertPicked()
 	{
-		return toBuilder().pickingCandidateId(pickingCandidateId).build();
+		if (!isPicked())
+		{
+			throw new AdempiereException("Step was not picked: " + getId());
+		}
 	}
+
+	public boolean isPicked() {return picked != null;}
+
+	public PickingJobStep reduceWithPickedEvent(@NonNull PickingJobStepPickedInfo picked) {return toBuilder().picked(picked).build();}
+
+	public PickingJobStep reduceWithUnpickEvent() {return toBuilder().picked(null).build();}
 }

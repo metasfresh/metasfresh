@@ -56,7 +56,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /**
- * Dedicated DAO'ish class centered around {@link I_M_Picking_Candidate}s
+ * Dedicated DAO-ish class centered around {@link I_M_Picking_Candidate}s
  *
  * @author metas-dev <dev@metasfresh.com>
  */

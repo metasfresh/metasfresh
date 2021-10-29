@@ -33,6 +33,8 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import java.util.Objects;
+import java.util.Optional;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
@@ -51,7 +53,6 @@ public class PickingJobLine
 	@NonNull PickingJobProgress progress;
 
 	@Builder(toBuilder = true)
-	@SuppressWarnings("OptionalGetWithoutIsPresent")
 	private PickingJobLine(
 			@NonNull final PickingJobLineId id,
 			@NonNull final ProductId productId,
@@ -67,8 +68,24 @@ public class PickingJobLine
 		this.steps = steps;
 
 		this.progress = computeProgress(steps);
-		this.qtyToPick = steps.stream().map(PickingJobStep::getQtyToPick).reduce(Quantity::add).get();
-		this.qtyPicked = steps.stream().map(PickingJobStep::getQtyPicked).reduce(Quantity::add).get();
+		this.qtyToPick = computeQtyToPick(steps);
+		this.qtyPicked = computeQtyPicked(steps).orElseGet(this.qtyToPick::toZero);
+	}
+
+	@NonNull
+	private static Quantity computeQtyToPick(final @NonNull ImmutableList<PickingJobStep> steps)
+	{
+		//noinspection OptionalGetWithoutIsPresent
+		return steps.stream().map(PickingJobStep::getQtyToPick).reduce(Quantity::add).get();
+	}
+
+	private static Optional<Quantity> computeQtyPicked(final @NonNull ImmutableList<PickingJobStep> steps)
+	{
+		return steps.stream()
+				.map(PickingJobStep::getPicked)
+				.filter(Objects::nonNull)
+				.map(PickingJobStepPickedInfo::getQtyPicked)
+				.reduce(Quantity::add);
 	}
 
 	private static PickingJobProgress computeProgress(@NonNull ImmutableList<PickingJobStep> steps)
@@ -77,7 +94,7 @@ public class PickingJobLine
 		int countNotDoneSteps = 0;
 		for (final PickingJobStep step : steps)
 		{
-			if (step.isSomethingReported())
+			if (step.isPicked())
 			{
 				countDoneSteps++;
 			}
@@ -106,6 +123,8 @@ public class PickingJobLine
 		return steps.stream().map(PickingJobStep::getShipmentScheduleId);
 	}
 
+	public Stream<PickingJobStep> streamSteps() {return steps.stream();}
+
 	public PickingJobLine withChangedSteps(@NonNull final UnaryOperator<PickingJobStep> stepMapper)
 	{
 		final ImmutableList<PickingJobStep> changedSteps = CollectionUtils.map(steps, stepMapper);
@@ -114,4 +133,13 @@ public class PickingJobLine
 				: toBuilder().steps(changedSteps).build();
 	}
 
+	public PickingJobLine withChangedStep(
+			@NonNull final PickingJobStepId stepId,
+			@NonNull final UnaryOperator<PickingJobStep> stepMapper)
+	{
+		return withChangedSteps(
+				step -> PickingJobStepId.equals(step.getId(), stepId)
+						? stepMapper.apply(step)
+						: step);
+	}
 }
