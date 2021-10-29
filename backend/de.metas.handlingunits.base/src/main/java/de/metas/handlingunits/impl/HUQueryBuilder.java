@@ -36,7 +36,6 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.handlingunits.picking.IHUPickingSlotDAO;
 import de.metas.handlingunits.reservation.HUReservationDocRef;
 import de.metas.handlingunits.reservation.HUReservationRepository;
-import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -559,7 +558,7 @@ import java.util.Set;
 	}
 
 	@Override
-	public Set<HuId> listIds()
+	public ImmutableSet<HuId> listIds()
 	{
 		final IQuery<I_M_HU> query = createQuery();
 		return query.listIds(HuId::ofRepoId);
@@ -777,7 +776,7 @@ import java.util.Set;
 	{
 		if (product == null)
 		{
-			return addOnlyWithProductIds(Collections.<Integer>emptyList());
+			return addOnlyWithProductIds(Collections.emptyList());
 		}
 		final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
 		return addOnlyWithProductId(productId);
