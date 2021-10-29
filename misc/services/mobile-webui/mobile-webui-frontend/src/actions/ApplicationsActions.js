@@ -19,10 +19,10 @@ export function populateApplications({ applications }) {
  * @method setActiveApplication
  * @summary set the current active application name
  */
-export function setActiveApplication(applicationName) {
+export function setActiveApplication({ id, caption }) {
   return {
     type: SET_ACTIVE_APPLICATION,
-    payload: { applicationName },
+    payload: { id, caption },
   };
 }
 

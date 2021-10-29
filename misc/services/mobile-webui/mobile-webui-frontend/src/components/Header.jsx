@@ -13,7 +13,7 @@ const Header = ({ appName, hidden }) => {
   const history = useHistory();
   const { activeApplication } = state.appHandler;
   const showBackButton = state.appHandler.token && location.pathname !== '/' && location.pathname !== '/login';
-  const applicationName = activeApplication || appName;
+  const applicationName = activeApplication ? activeApplication.caption : appName;
 
   const handleClick = () => {
     if (showBackButton) {

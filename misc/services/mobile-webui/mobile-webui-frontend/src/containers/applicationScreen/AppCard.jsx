@@ -1,16 +1,16 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { push } from 'connected-react-router';
+import { replace } from 'connected-react-router';
 
 import { setActiveApplication } from '../../actions/ApplicationsActions';
 
 class AppCard extends PureComponent {
   handleAppClick = () => {
-    const { push, appId, captionKey, setActiveApplication } = this.props;
+    const { replace, appId, captionKey, setActiveApplication } = this.props;
 
-    setActiveApplication(captionKey);
-    push(`/launchers/${appId}`);
+    setActiveApplication({ id: appId, caption: captionKey });
+    replace(`/launchers/${appId}`);
   };
 
   render() {
@@ -31,8 +31,8 @@ class AppCard extends PureComponent {
 AppCard.propTypes = {
   captionKey: PropTypes.string.isRequired,
   appId: PropTypes.string.isRequired,
-  push: PropTypes.func.isRequired,
+  replace: PropTypes.func.isRequired,
   setActiveApplication: PropTypes.func.isRequired,
 };
 
-export default connect(null, { push, setActiveApplication })(AppCard);
+export default connect(null, { replace, setActiveApplication })(AppCard);
