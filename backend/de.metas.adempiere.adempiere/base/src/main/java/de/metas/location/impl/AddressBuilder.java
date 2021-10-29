@@ -416,10 +416,12 @@ public class AddressBuilder
 			{
 				if (location.isPOBoxNum())
 				{
+					outStr.append(msgBL.getTranslatableMsgText(MSG_POBox).translate(language));
 					// if we have box number, added it as it is
-					outStr.append(Check.isBlank(location.getPOBox()) ?
-							msgBL.getTranslatableMsgText(MSG_POBox).translate(language) :
-							location.getPOBox());
+					if (!Check.isBlank(location.getPOBox()))
+					{
+						outStr.append(' ').append(location.getPOBox());
+					}
 
 					// add an automatic new line
 					if (!explicitBreaks)
