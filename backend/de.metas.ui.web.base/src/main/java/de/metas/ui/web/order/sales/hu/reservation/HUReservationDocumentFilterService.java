@@ -1,6 +1,7 @@
 package de.metas.ui.web.order.sales.hu.reservation;
 
 import de.metas.handlingunits.IHUQueryBuilder;
+import de.metas.handlingunits.reservation.HUReservationDocRef;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.order.OrderLine;
 import de.metas.order.OrderLineId;
@@ -61,11 +62,14 @@ public class HUReservationDocumentFilterService
 
 	private IHUQueryBuilder createHUQuery(@NonNull final OrderLine salesOrderLine)
 	{
+		final OrderLineId salesOrderLineId = salesOrderLine.getId();
+		final HUReservationDocRef reservationDocRef = salesOrderLineId != null ? HUReservationDocRef.ofSalesOrderLineId(salesOrderLineId) : null;
+
 		return huReservationService.prepareHUQuery()
 				.warehouseId(salesOrderLine.getWarehouseId())
 				.productId(salesOrderLine.getProductId())
 				.asiId(salesOrderLine.getAsiId())
-				.reservedToSalesOrderLineIdOrNotReservedAtAll(salesOrderLine.getId())
+				.reservedToDocumentOrNotReservedAtAll(reservationDocRef)
 				.build();
 	}
 
@@ -78,11 +82,14 @@ public class HUReservationDocumentFilterService
 
 	private IHUQueryBuilder createHUQueryIgnoreAttributes(final Packageable packageable)
 	{
+		final OrderLineId salesOrderLineId = packageable.getSalesOrderLineIdOrNull();
+		final HUReservationDocRef reservationDocRef = salesOrderLineId != null ? HUReservationDocRef.ofSalesOrderLineId(salesOrderLineId) : null;
+
 		return huReservationService.prepareHUQuery()
 				.warehouseId(packageable.getWarehouseId())
 				.productId(packageable.getProductId())
 				.asiId(null) // ignore attributes
-				.reservedToSalesOrderLineIdOrNotReservedAtAll(packageable.getSalesOrderLineIdOrNull())
+				.reservedToDocumentOrNotReservedAtAll(reservationDocRef)
 				.build();
 	}
 }
