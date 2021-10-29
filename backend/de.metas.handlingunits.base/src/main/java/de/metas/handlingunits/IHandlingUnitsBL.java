@@ -79,9 +79,9 @@ public interface IHandlingUnitsBL extends ISingletonService
 
 	List<I_M_HU> getVHUs(HuId huId);
 
-	Set<HuId> getVHUIds(HuId huId);
+	ImmutableSet<HuId> getVHUIds(HuId huId);
 
-	Set<HuId> getVHUIds(Set<HuId> huIds);
+	ImmutableSet<HuId> getVHUIds(Set<HuId> huIds);
 
 	List<I_M_HU> getVHUs(I_M_HU hu);
 
@@ -273,7 +273,7 @@ public interface IHandlingUnitsBL extends ISingletonService
 		 * If the filter returns {@code false} for a given HU, then neither that HU or its parents will be added to the result.
 		 */
 		@Default
-		Predicate<I_M_HU> filter = hu -> true;
+		@NonNull Predicate<I_M_HU> filter = hu -> true;
 	}
 
 	/**
