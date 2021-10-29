@@ -6,7 +6,7 @@ import { go } from 'connected-react-router';
 
 import { toastError } from '../../../utils/toast';
 import { postStepPicked } from '../../../api/picking';
-import { updatePickingStepScannedHUBarcode, updatePickingStepQty } from '../../../actions/PickingActions';
+import { updatePickingStepQty, updatePickingStepScannedHUBarcode } from '../../../actions/PickingActions';
 
 import CodeScanner from '../scan/CodeScanner';
 import PickQuantityPrompt from './PickQuantityPrompt';
@@ -97,11 +97,25 @@ class PickStepScanHUScreen extends Component {
       scannedHUBarcode: scannedBarcode,
     });
 
-    updatePickingStepQty({ wfProcessId, activityId, lineId, stepId, qtyPicked: qty, qtyRejectedReasonCode: reason });
-    postStepPicked({ wfProcessId, activityId, stepId, qtyPicked: qty, qtyRejectedReasonCode: reason });
-    // TODO: handle the promise
-
-    go(-2);
+    postStepPicked({
+      wfProcessId,
+      activityId,
+      stepId,
+      qtyPicked: qty,
+      qtyRejectedReasonCode: reason,
+    })
+      .then(() => {
+        updatePickingStepQty({
+          wfProcessId,
+          activityId,
+          lineId,
+          stepId,
+          qtyPicked: qty,
+          qtyRejectedReasonCode: reason,
+        });
+        go(-2);
+      })
+      .catch((axiosError) => toastError({ axiosError }));
   };
 
   validateQtyInput = (numberInput) => {

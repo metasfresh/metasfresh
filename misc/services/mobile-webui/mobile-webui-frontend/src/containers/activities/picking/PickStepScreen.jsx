@@ -11,6 +11,7 @@ import { updatePickingStepQty } from '../../../actions/PickingActions';
 import ButtonWithIndicator from '../../../components/ButtonWithIndicator';
 import * as CompleteStatus from '../../../constants/CompleteStatus';
 import ScreenToaster from '../../../components/ScreenToaster';
+import { toastError } from '../../../utils/toast';
 
 class PickStepScreen extends Component {
   onScanHUButtonClick = () => {
@@ -44,9 +45,16 @@ class PickStepScreen extends Component {
   onUnpickButtonClick = () => {
     const { wfProcessId, activityId, lineId, stepId, updatePickingStepQty, push } = this.props;
 
-    updatePickingStepQty({ wfProcessId, activityId, lineId, stepId, qtyPicked: 0, qtyRejectedReasonCode: null });
-    postStepUnPicked({ wfProcessId, activityId, stepId });
-    push(`/workflow/${wfProcessId}/activityId/${activityId}/lineId/${lineId}`);
+    postStepUnPicked({
+      wfProcessId,
+      activityId,
+      stepId,
+    })
+      .then(() => {
+        updatePickingStepQty({ wfProcessId, activityId, lineId, stepId, qtyPicked: 0, qtyRejectedReasonCode: null });
+        push(`/workflow/${wfProcessId}/activityId/${activityId}/lineId/${lineId}`);
+      })
+      .catch((axiosError) => toastError({ axiosError }));
   };
 
   componentWillUnmount() {
