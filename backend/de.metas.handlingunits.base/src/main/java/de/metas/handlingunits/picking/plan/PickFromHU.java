@@ -32,12 +32,10 @@ import javax.annotation.Nullable;
 import java.time.LocalDate;
 
 @Value
-@Builder
 public class PickFromHU
 {
 	@NonNull HuId huId;
 	boolean huReservedForThisLine;
-
 	@NonNull LocatorId locatorId;
 
 	//
@@ -47,4 +45,25 @@ public class PickFromHU
 	@Nullable String serialNo;
 	@Nullable String lotNumber;
 	@Nullable String repackNumber;
+
+	@Builder
+	private PickFromHU(
+			@NonNull final HuId huId,
+			final boolean huReservedForThisLine,
+			@NonNull final LocatorId locatorId,
+			@Nullable final String huCode,
+			@Nullable final LocalDate expiringDate,
+			@Nullable final String serialNo,
+			@Nullable final String lotNumber,
+			@Nullable final String repackNumber)
+	{
+		this.huId = huId;
+		this.huReservedForThisLine = huReservedForThisLine;
+		this.locatorId = locatorId;
+		this.huCode = huCode != null ? huCode : huId.toHUValue();
+		this.expiringDate = expiringDate;
+		this.serialNo = serialNo;
+		this.lotNumber = lotNumber;
+		this.repackNumber = repackNumber;
+	}
 }
