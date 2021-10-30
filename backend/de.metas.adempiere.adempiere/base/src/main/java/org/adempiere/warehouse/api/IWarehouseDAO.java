@@ -1,5 +1,6 @@
 package org.adempiere.warehouse.api;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.organization.OrgId;
 import de.metas.util.ISingletonService;
 import de.metas.util.lang.ExternalId;
@@ -104,6 +105,8 @@ public interface IWarehouseDAO extends ISingletonService
 	<T extends I_M_Locator> List<T> getLocators(WarehouseId warehouseId, Class<T> modelType);
 
 	List<LocatorId> getLocatorIds(WarehouseId warehouseId);
+
+	ImmutableSet<LocatorId> getLocatorIdsByWarehouseIds(@NonNull Collection<WarehouseId> warehouseIds);
 
 	/**
 	 * Retrieve warehouses for a specific docBaseType

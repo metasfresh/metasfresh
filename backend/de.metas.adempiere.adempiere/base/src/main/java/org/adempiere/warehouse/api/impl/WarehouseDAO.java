@@ -356,6 +356,14 @@ public class WarehouseDAO implements IWarehouseDAO
 	}
 
 	@Override
+	public ImmutableSet<LocatorId> getLocatorIdsByWarehouseIds(@NonNull final Collection<WarehouseId> warehouseIds)
+	{
+		return warehouseIds.stream()
+				.flatMap(warehouseId -> getLocatorIds(warehouseId).stream())
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	@Override
 	public List<I_M_Warehouse> getWarehousesAllowedForDocBaseType(@NonNull final String docBaseType)
 	{
 		final Set<WarehouseId> allWarehouseIds = getAllWarehouseIds();
@@ -671,12 +679,12 @@ public class WarehouseDAO implements IWarehouseDAO
 			queryBuilder.addEqualsFilter(I_M_Warehouse.COLUMNNAME_ExternalId, query.getExternalId().getValue().trim());
 		}
 
-		final int productRepoId = queryBuilder
+		final int warehouseRepoId = queryBuilder
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.firstId();
 
-		return WarehouseId.ofRepoIdOrNull(productRepoId);
+		return WarehouseId.ofRepoIdOrNull(warehouseRepoId);
 	}
 
 	@Override
