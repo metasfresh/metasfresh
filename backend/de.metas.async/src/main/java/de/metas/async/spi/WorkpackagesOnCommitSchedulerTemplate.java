@@ -25,6 +25,8 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 
+import static de.metas.async.AsyncBatchId.NONE_ASYNC_BATCH_ID;
+
 /*
  * #%L
  * de.metas.async
