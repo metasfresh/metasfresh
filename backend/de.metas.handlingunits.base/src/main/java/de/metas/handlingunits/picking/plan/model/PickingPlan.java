@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.handlingunits.picking.plan;
+package de.metas.handlingunits.picking.plan.model;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.product.ProductId;

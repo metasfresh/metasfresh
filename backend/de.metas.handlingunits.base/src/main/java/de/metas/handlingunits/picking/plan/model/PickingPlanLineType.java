@@ -20,27 +20,13 @@
  * #L%
  */
 
-package de.metas.handlingunits.picking.plan;
+package de.metas.handlingunits.picking.plan.model;
 
-import de.metas.handlingunits.HuId;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
-import org.eevolution.api.PPOrderBOMLineId;
-
-import javax.annotation.Nullable;
-
-@Value
-@Builder(toBuilder = true)
-public class IssueToBOMLine
+public enum PickingPlanLineType
 {
-	@NonNull PPOrderBOMLineId issueToOrderBOMLineId;
-	@Nullable HuId issueFromHUId;
-
-	public IssueToBOMLine withIssueFromHUId(@NonNull final HuId issueFromHUId)
-	{
-		return !HuId.equals(this.issueFromHUId, issueFromHUId)
-				? toBuilder().issueFromHUId(issueFromHUId).build()
-				: this;
-	}
+	PICK_FROM_HU,
+	PICK_FROM_HU_ALTERNATIVE,
+	PICK_FROM_PICKING_ORDER,
+	ISSUE_COMPONENTS_TO_PICKING_ORDER,
+	UNALLOCABLE,
 }

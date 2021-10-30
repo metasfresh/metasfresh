@@ -20,9 +20,10 @@
  * #L%
  */
 
-package de.metas.handlingunits.picking.plan;
+package de.metas.handlingunits.picking.plan.generator.allocableHUStorages;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.handlingunits.picking.plan.generator.AllocablePackageable;
 import de.metas.quantity.Quantity;
 import lombok.NonNull;
 import lombok.ToString;
@@ -31,7 +32,7 @@ import java.util.Comparator;
 import java.util.List;
 
 @ToString
-class AllocableStorage
+public class AllocableStorage
 {
 	private final ImmutableList<VHUAllocableStorage> vhuStorages;
 

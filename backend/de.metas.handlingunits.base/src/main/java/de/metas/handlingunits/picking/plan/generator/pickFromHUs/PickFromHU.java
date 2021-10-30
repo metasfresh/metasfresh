@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.handlingunits.picking.plan;
+package de.metas.handlingunits.picking.plan.generator.pickFromHUs;
 
 import de.metas.handlingunits.HuId;
 import lombok.Builder;

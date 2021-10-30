@@ -20,14 +20,14 @@
  * #L%
  */
 
-package de.metas.handlingunits.picking.plan;
+package de.metas.handlingunits.picking.plan.generator;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
+import de.metas.handlingunits.picking.plan.model.IssueToBOMLine;
 import de.metas.handlingunits.reservation.HUReservationDocRef;
 import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.order.OrderAndLineId;
-import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.shipping.ShipperId;
@@ -45,7 +45,7 @@ import java.util.Optional;
 @SuppressWarnings({ "OptionalUsedAsFieldOrParameterType", "OptionalAssignedToNull" })
 @Getter
 @ToString
-final class AllocablePackageable
+public final class AllocablePackageable
 {
 	@NonNull private final BPartnerId customerId;
 	@NonNull private final ProductId productId;

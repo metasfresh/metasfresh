@@ -22,13 +22,13 @@ package de.metas.handlingunits;
  * #L%
  */
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
-
 import com.google.common.collect.ImmutableSet;
+import de.metas.bpartner.BPartnerId;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.reservation.HUReservationDocRef;
+import de.metas.product.ProductId;
+import de.metas.storage.IStorageQuery;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
@@ -37,18 +37,15 @@ import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.ModelColumn;
+import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Attribute;
 
-import de.metas.bpartner.BPartnerId;
-import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_HU_PI_Version;
-import de.metas.order.OrderLineId;
-import de.metas.product.ProductId;
-import de.metas.storage.IStorageQuery;
-
-import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
 
 /**
  * Developer friendly Query Builder which is oriented on Handling Units concerns.
@@ -467,7 +464,11 @@ public interface IHUQueryBuilder
 	 */
 	IHUQueryBuilder setExcludeReserved();
 
-	IHUQueryBuilder addOnlyInLocatorIds(Collection<Integer> locatorIds);
+	IHUQueryBuilder addOnlyInLocatorId(@NonNull LocatorId locatorId);
+
+	IHUQueryBuilder addOnlyInLocatorRepoIds(Collection<Integer> locatorIds);
+
+	IHUQueryBuilder addOnlyInLocatorIds(Collection<LocatorId> locatorIds);
 
 	/**
 	 * If true = include only the HUs which have a product with {@link org.compiere.model.I_M_Product#COLUMNNAME_IsStocked} = true

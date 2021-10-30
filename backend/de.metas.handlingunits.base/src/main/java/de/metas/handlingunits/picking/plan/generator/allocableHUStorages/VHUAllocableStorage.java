@@ -1,5 +1,6 @@
-package de.metas.handlingunits.picking.plan;
+package de.metas.handlingunits.picking.plan.generator.allocableHUStorages;
 
+import de.metas.handlingunits.picking.plan.generator.AllocablePackageable;
 import de.metas.handlingunits.reservation.HUReservationDocRef;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;

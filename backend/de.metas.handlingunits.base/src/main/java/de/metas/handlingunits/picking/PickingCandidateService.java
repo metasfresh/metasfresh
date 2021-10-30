@@ -22,9 +22,9 @@ import de.metas.handlingunits.picking.candidate.commands.SetHuPackingInstruction
 import de.metas.handlingunits.picking.candidate.commands.UnProcessPickingCandidatesAndRestoreSourceHUsCommand;
 import de.metas.handlingunits.picking.candidate.commands.UnProcessPickingCandidatesCommand;
 import de.metas.handlingunits.picking.candidate.commands.UnProcessPickingCandidatesResult;
-import de.metas.handlingunits.picking.plan.CreatePickingPlanCommand;
-import de.metas.handlingunits.picking.plan.CreatePickingPlanRequest;
-import de.metas.handlingunits.picking.plan.PickingPlan;
+import de.metas.handlingunits.picking.plan.generator.CreatePickingPlanCommand;
+import de.metas.handlingunits.picking.plan.generator.CreatePickingPlanRequest;
+import de.metas.handlingunits.picking.plan.model.PickingPlan;
 import de.metas.handlingunits.picking.requests.AddQtyToHURequest;
 import de.metas.handlingunits.picking.requests.CloseForShipmentSchedulesRequest;
 import de.metas.handlingunits.picking.requests.PickRequest;

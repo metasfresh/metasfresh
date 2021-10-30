@@ -1,4 +1,4 @@
-package de.metas.handlingunits.picking.plan;
+package de.metas.handlingunits.picking.plan.generator.pickFromHUs;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
@@ -21,7 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-class HUsLoadingCache
+public class HUsLoadingCache
 {
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
