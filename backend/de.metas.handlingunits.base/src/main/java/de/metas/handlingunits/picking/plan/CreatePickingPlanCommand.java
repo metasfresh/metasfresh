@@ -84,6 +84,7 @@ public class CreatePickingPlanCommand
 	//
 	// Params
 	private final ImmutableList<Packageable> packageables;
+	private final boolean fallbackLotNumberToHUValue;
 
 	//
 	// State
@@ -97,12 +98,16 @@ public class CreatePickingPlanCommand
 			@NonNull final HUReservationService huReservationService,
 			@NonNull final PickingCandidateRepository pickingCandidateRepository,
 			//
-			@NonNull final CreatePickingPlanRequest request)
+			@NonNull final CreatePickingPlanRequest request,
+			@Nullable final Boolean fallbackLotNumberToHUValue)
 	{
 		this.bpartnersService = bpartnersService;
 		this.pickingCandidateRepository = pickingCandidateRepository;
 
 		this.packageables = request.getPackageables();
+		this.fallbackLotNumberToHUValue = fallbackLotNumberToHUValue != null
+				? fallbackLotNumberToHUValue
+				: developerModeBL.isEnabled();
 
 		this.husCache = new HUsLoadingCache(ATTRIBUTES);
 		this.storages = new ProductsToPickSourceStorage(huReservationService, husCache);
@@ -445,17 +450,9 @@ public class CreatePickingPlanCommand
 	@Nullable
 	private String buildLotNumberFromHuId(@Nullable final HuId huId)
 	{
-		if (huId == null)
-		{
-			return null;
-		}
-
-		if (!developerModeBL.isEnabled())
-		{
-			return null;
-		}
-
-		return "<" + huId.getRepoId() + ">";
+		return huId != null && fallbackLotNumberToHUValue
+				? "<" + huId.toHUValue() + ">"
+				: null;
 	}
 
 	private LocatorId getLocatorIdByHuId(final HuId huId)

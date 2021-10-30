@@ -30,7 +30,6 @@ import lombok.NonNull;
 import lombok.Value;
 
 import java.util.Collection;
-import java.util.List;
 
 @Value
 public class CreatePickingPlanRequest
