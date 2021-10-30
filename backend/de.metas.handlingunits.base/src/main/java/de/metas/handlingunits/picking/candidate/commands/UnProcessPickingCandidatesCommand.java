@@ -130,16 +130,6 @@ public class UnProcessPickingCandidatesCommand
 		{
 			throw new AdempiereException("Cannot unprocess because the actual picked HU was alterned in meantime");
 		}
-
-		// HULoader.of(pickFromSource, packToDestination).load(request);
-		// final I_M_HU packedToHU = packToDestination.getSingleCreatedHU()
-		// 		.orElseThrow(() -> new AdempiereException("Nothing packed for " + pickingCandidate));
-		//
-		// addShipmentScheduleQtyPickedAndUpdateHU(shipmentSchedule, packedToHU, qtyPicked, huContext);
-		//
-		// huContext.flush();
-		//
-		// return HuId.ofRepoId(packedToHU.getM_HU_ID());
 	}
 
 	private I_M_ShipmentSchedule getShipmentScheduleById(@NonNull final ShipmentScheduleId shipmentScheduleId)
