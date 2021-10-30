@@ -4,12 +4,20 @@ import java.time.LocalDate;
 import java.util.List;
 
 import de.metas.invoice.InvoiceDocBaseType;
+import de.metas.user.UserId;
 import org.compiere.model.I_C_DocType;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
+import de.metas.payment.paymentterm.PaymentTermId;
+import org.compiere.model.I_C_DocType;
+
+import javax.annotation.Nullable;
+import java.time.LocalDate;
+import java.util.List;
 
 public interface IInvoiceHeader
 {
@@ -33,13 +41,11 @@ public interface IInvoiceHeader
 
 	int getM_PriceList_ID();
 
-	int getBill_Location_ID();
-
-	BPartnerId getBillBPartnerId();
-
-	int getBill_User_ID();
+	BPartnerInfo getBillTo();
 
 	BPartnerId getSalesPartnerId();
+
+	UserId getSalesRepId();
 
 	// 03805 : add getter for C_Currency_ID
 	CurrencyId getCurrencyId();
@@ -64,7 +70,8 @@ public interface IInvoiceHeader
 
 	boolean isTaxIncluded();
 
-	int getC_PaymentTerm_ID();
+	@Nullable
+	PaymentTermId getPaymentTermId();
 
 	String getExternalId();
 

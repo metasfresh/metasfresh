@@ -25,17 +25,17 @@ package de.metas.handlingunits.shipmentschedule.api;
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import de.metas.async.AsyncBatchId;
 import de.metas.async.QueueWorkPackageId;
+import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.api.IWorkPackageBlockBuilder;
 import de.metas.async.api.IWorkPackageBuilder;
 import de.metas.async.api.IWorkPackageQueue;
-import de.metas.async.event.WorkpackagesProcessedWaiter;
+import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.spi.impl.SizeBasedWorkpackagePrio;
 import de.metas.common.util.EmptyUtil;
-import de.metas.event.IEventBus;
-import de.metas.event.IEventBusFactory;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.shipmentschedule.async.GenerateInOutFromShipmentSchedules;
 import de.metas.i18n.IMsgBL;
@@ -80,7 +80,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
 
-import static de.metas.async.Async_Constants.WORKPACKAGE_LIFECYCLE_TOPIC;
 import static de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters.PARAM_PREFIX_AdvisedShipmentDocumentNo;
 import static de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters.PARAM_PREFIX_QtyToDeliver_Override;
 
@@ -100,7 +99,7 @@ public class ShipmentScheduleEnqueuer
 	private final ILockManager lockManager = Services.get(ILockManager.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IWorkPackageQueueFactory workPackageQueueFactory = Services.get(IWorkPackageQueueFactory.class);
-	private final IEventBusFactory eventBusFactory = Services.get(IEventBusFactory.class);
+	private final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
 
 	private Properties _ctx;
 	private String _trxNameInitial;
@@ -143,12 +142,10 @@ public class ShipmentScheduleEnqueuer
 			}
 		});
 
-		// this will directly return if the ShipmentScheduleWorkPackageParameters indicate not to wait
-		result.getValue().waitForWorkpackagesDone();
-
 		return result.getValue();
 	}
 
+	@NonNull
 	private Result createWorkpackages0(
 			@NonNull final IContextAware localCtx,
 			@NonNull final ShipmentScheduleWorkPackageParameters workPackageParameters,
@@ -184,17 +181,7 @@ public class ShipmentScheduleEnqueuer
 
 		boolean doEnqueueCurrentPackage = true;
 
-		final WorkpackagesProcessedWaiter workpackagesProcessedWaiter;
-		if (workPackageParameters.isWaitUtilProcessed())
-		{
-			final IEventBus eventBus = eventBusFactory.getEventBus(WORKPACKAGE_LIFECYCLE_TOPIC);
-			workpackagesProcessedWaiter = WorkpackagesProcessedWaiter.create(eventBus);
-		}
-		else
-		{
-			workpackagesProcessedWaiter = WorkpackagesProcessedWaiter.NOOP;
-		}
-		final Result result = new Result(workpackagesProcessedWaiter);
+		final Result result = new Result();
 
 		while (shipmentSchedules.hasNext())
 		{
@@ -232,8 +219,13 @@ public class ShipmentScheduleEnqueuer
 							.setPriority(SizeBasedWorkpackagePrio.INSTANCE)
 							.bindToTrxName(localCtx.getTrxName());
 
+					if (shipmentSchedule.getC_Async_Batch_ID() > 0)
+					{
+						final I_C_Async_Batch asyncBatch = asyncBatchBL.getAsyncBatchById(AsyncBatchId.ofRepoId(shipmentSchedule.getC_Async_Batch_ID()));
+						workpackageBuilder.setC_Async_Batch(asyncBatch);
+					}
+
 					workpackageBuilder
-							.setCorrelationId(workpackagesProcessedWaiter.getCorrelationId())
 							.parameters()
 							.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_QuantityType, workPackageParameters.getQuantityType())
 							.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_IsCompleteShipments, workPackageParameters.isCompleteShipments())
@@ -358,13 +350,6 @@ public class ShipmentScheduleEnqueuer
 
 		private final List<QueueWorkPackageId> enqueuedWorkpackageIds = new ArrayList<>();
 
-		private final WorkpackagesProcessedWaiter workpackagesProcessedWaiter;
-
-		private Result(@NonNull final WorkpackagesProcessedWaiter workpackagesProcessedWaiter)
-		{
-			this.workpackagesProcessedWaiter = workpackagesProcessedWaiter;
-		}
-
 		public int getEnqueuedPackagesCount()
 		{
 			return enqueuedWorkpackageIds.size();
@@ -383,11 +368,6 @@ public class ShipmentScheduleEnqueuer
 		private void incSkipped()
 		{
 			skippedPackagesCount++;
-		}
-
-		public void waitForWorkpackagesDone()
-		{
-			workpackagesProcessedWaiter.waitForWorkpackagesDone(getEnqueuedPackagesCount());
 		}
 	}
 
@@ -414,8 +394,6 @@ public class ShipmentScheduleEnqueuer
 
 		boolean completeShipments;
 		boolean isShipmentDateToday;
-
-		boolean waitUtilProcessed;
 
 		/**
 		 * Can be used if the caller thinks that the shipping in which the respective shipment-schedules end up shall have the given documentNos.

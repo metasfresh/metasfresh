@@ -22,6 +22,7 @@
         <module>common</module>
         <module>de-metas-camel-shopware6</module>
         <module>de-metas-camel-woocommerce</module>
+        <module>de-metas-camel-grssignum</module>
     </modules>
 
     <dependencies>

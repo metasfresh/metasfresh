@@ -1,119 +1,100 @@
 package de.metas.payment.esr.model;
 
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for ESR_PostFinanceUserNumber
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public interface I_ESR_PostFinanceUserNumber 
 {
 
-    /** TableName=ESR_PostFinanceUserNumber */
-    public static final String Table_Name = "ESR_PostFinanceUserNumber";
+	String Table_Name = "ESR_PostFinanceUserNumber";
 
-    /** AD_Table_ID=540860 */
-//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=540860 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 3 - Client - Org
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
-
-    /** Load Meta Data */
 
 	/**
-	 * Get Mandant.
-	 * Mandant für diese Installation.
+	 * Get Client.
+	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Client_ID();
+	int getAD_Client_ID();
 
-    /** Column name AD_Client_ID */
-    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
 	 * Set Organisation.
-	 * Organisatorische Einheit des Mandanten
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Org_ID (int AD_Org_ID);
+	void setAD_Org_ID (int AD_Org_ID);
 
 	/**
 	 * Get Organisation.
-	 * Organisatorische Einheit des Mandanten
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Org_ID();
+	int getAD_Org_ID();
 
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Bankverbindung.
-	 * Bankverbindung des Geschäftspartners
+	 * Set Partner Bank Account.
+	 * Bank Account of the Business Partner
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setC_BP_BankAccount_ID (int C_BP_BankAccount_ID);
+	void setC_BP_BankAccount_ID (int C_BP_BankAccount_ID);
 
 	/**
-	 * Get Bankverbindung.
-	 * Bankverbindung des Geschäftspartners
+	 * Get Partner Bank Account.
+	 * Bank Account of the Business Partner
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getC_BP_BankAccount_ID();
+	int getC_BP_BankAccount_ID();
 
-	public org.compiere.model.I_C_BP_BankAccount getC_BP_BankAccount();
-
-	public void setC_BP_BankAccount(org.compiere.model.I_C_BP_BankAccount C_BP_BankAccount);
-
-    /** Column definition for C_BP_BankAccount_ID */
-    public static final org.adempiere.model.ModelColumn<I_ESR_PostFinanceUserNumber, org.compiere.model.I_C_BP_BankAccount> COLUMN_C_BP_BankAccount_ID = new org.adempiere.model.ModelColumn<I_ESR_PostFinanceUserNumber, org.compiere.model.I_C_BP_BankAccount>(I_ESR_PostFinanceUserNumber.class, "C_BP_BankAccount_ID", org.compiere.model.I_C_BP_BankAccount.class);
-    /** Column name C_BP_BankAccount_ID */
-    public static final String COLUMNNAME_C_BP_BankAccount_ID = "C_BP_BankAccount_ID";
+	String COLUMNNAME_C_BP_BankAccount_ID = "C_BP_BankAccount_ID";
 
 	/**
-	 * Get Erstellt.
-	 * Datum, an dem dieser Eintrag erstellt wurde
+	 * Get Created.
+	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getCreated();
+	java.sql.Timestamp getCreated();
 
-    /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_ESR_PostFinanceUserNumber, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_ESR_PostFinanceUserNumber, Object>(I_ESR_PostFinanceUserNumber.class, "Created", null);
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
+	ModelColumn<I_ESR_PostFinanceUserNumber, Object> COLUMN_Created = new ModelColumn<>(I_ESR_PostFinanceUserNumber.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Erstellt durch.
-	 * Nutzer, der diesen Eintrag erstellt hat
+	 * Get Created By.
+	 * User who created this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getCreatedBy();
+	int getCreatedBy();
 
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
 	 * Set ESR_PostFinanceUserNumber.
@@ -122,7 +103,7 @@ public interface I_ESR_PostFinanceUserNumber
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setESR_PostFinanceUserNumber_ID (int ESR_PostFinanceUserNumber_ID);
+	void setESR_PostFinanceUserNumber_ID (int ESR_PostFinanceUserNumber_ID);
 
 	/**
 	 * Get ESR_PostFinanceUserNumber.
@@ -131,86 +112,77 @@ public interface I_ESR_PostFinanceUserNumber
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getESR_PostFinanceUserNumber_ID();
+	int getESR_PostFinanceUserNumber_ID();
 
-    /** Column definition for ESR_PostFinanceUserNumber_ID */
-    public static final org.adempiere.model.ModelColumn<I_ESR_PostFinanceUserNumber, Object> COLUMN_ESR_PostFinanceUserNumber_ID = new org.adempiere.model.ModelColumn<I_ESR_PostFinanceUserNumber, Object>(I_ESR_PostFinanceUserNumber.class, "ESR_PostFinanceUserNumber_ID", null);
-    /** Column name ESR_PostFinanceUserNumber_ID */
-    public static final String COLUMNNAME_ESR_PostFinanceUserNumber_ID = "ESR_PostFinanceUserNumber_ID";
+	ModelColumn<I_ESR_PostFinanceUserNumber, Object> COLUMN_ESR_PostFinanceUserNumber_ID = new ModelColumn<>(I_ESR_PostFinanceUserNumber.class, "ESR_PostFinanceUserNumber_ID", null);
+	String COLUMNNAME_ESR_PostFinanceUserNumber_ID = "ESR_PostFinanceUserNumber_ID";
 
 	/**
-	 * Set ESR Teilnehmernummer.
+	 * Set ESR Participant.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setESR_RenderedAccountNo (java.lang.String ESR_RenderedAccountNo);
+	void setESR_RenderedAccountNo (java.lang.String ESR_RenderedAccountNo);
 
 	/**
-	 * Get ESR Teilnehmernummer.
+	 * Get ESR Participant.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getESR_RenderedAccountNo();
+	java.lang.String getESR_RenderedAccountNo();
 
-    /** Column definition for ESR_RenderedAccountNo */
-    public static final org.adempiere.model.ModelColumn<I_ESR_PostFinanceUserNumber, Object> COLUMN_ESR_RenderedAccountNo = new org.adempiere.model.ModelColumn<I_ESR_PostFinanceUserNumber, Object>(I_ESR_PostFinanceUserNumber.class, "ESR_RenderedAccountNo", null);
-    /** Column name ESR_RenderedAccountNo */
-    public static final String COLUMNNAME_ESR_RenderedAccountNo = "ESR_RenderedAccountNo";
+	ModelColumn<I_ESR_PostFinanceUserNumber, Object> COLUMN_ESR_RenderedAccountNo = new ModelColumn<>(I_ESR_PostFinanceUserNumber.class, "ESR_RenderedAccountNo", null);
+	String COLUMNNAME_ESR_RenderedAccountNo = "ESR_RenderedAccountNo";
 
 	/**
-	 * Set Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Set Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsActive (boolean IsActive);
+	void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Get Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isActive();
+	boolean isActive();
 
-    /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_ESR_PostFinanceUserNumber, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_ESR_PostFinanceUserNumber, Object>(I_ESR_PostFinanceUserNumber.class, "IsActive", null);
-    /** Column name IsActive */
-    public static final String COLUMNNAME_IsActive = "IsActive";
+	ModelColumn<I_ESR_PostFinanceUserNumber, Object> COLUMN_IsActive = new ModelColumn<>(I_ESR_PostFinanceUserNumber.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Get Aktualisiert.
-	 * Datum, an dem dieser Eintrag aktualisiert wurde
+	 * Get Updated.
+	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getUpdated();
+	java.sql.Timestamp getUpdated();
 
-    /** Column definition for Updated */
-    public static final org.adempiere.model.ModelColumn<I_ESR_PostFinanceUserNumber, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_ESR_PostFinanceUserNumber, Object>(I_ESR_PostFinanceUserNumber.class, "Updated", null);
-    /** Column name Updated */
-    public static final String COLUMNNAME_Updated = "Updated";
+	ModelColumn<I_ESR_PostFinanceUserNumber, Object> COLUMN_Updated = new ModelColumn<>(I_ESR_PostFinanceUserNumber.class, "Updated", null);
+	String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Aktualisiert durch.
-	 * Nutzer, der diesen Eintrag aktualisiert hat
+	 * Get Updated By.
+	 * User who updated this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getUpdatedBy();
+	int getUpdatedBy();
 
-    /** Column name UpdatedBy */
-    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 }

@@ -1,5 +1,6 @@
 package de.metas.handlingunits.inout;
 
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.business.BusinessTestHelper;
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelDAO;
 import de.metas.inout.api.IInOutMovementBL;
@@ -199,7 +200,7 @@ public class DistributionOrderCreationForReceiptTest extends ReceiptSchedule_War
 
 	private I_M_InOut createReceipt(final I_M_Locator receiptLocator)
 	{
-		final I_C_BPartner receiptPartner = createBPartner("Receipt Partner");
+		final BPartnerLocationId receiptPartner = createBPartner("Receipt Partner");
 
 		// NOTE: we need to use some dummy transaction, else movement generation will fail
 		final String trxName = Services.get(ITrxManager.class).createTrxName("DummyTrx", true);
@@ -207,7 +208,7 @@ public class DistributionOrderCreationForReceiptTest extends ReceiptSchedule_War
 		final I_M_InOut receipt = create(ctx, I_M_InOut.class, trxName);
 		receipt.setAD_Org_ID(receiptLocator.getAD_Org_ID());
 		receipt.setM_Warehouse_ID(receiptLocator.getM_Warehouse_ID());
-		receipt.setC_BPartner_ID(receiptPartner.getC_BPartner_ID());
+		receipt.setC_BPartner_ID(receiptPartner.getBpartnerId().getRepoId());
 		save(receipt);
 
 		return receipt;

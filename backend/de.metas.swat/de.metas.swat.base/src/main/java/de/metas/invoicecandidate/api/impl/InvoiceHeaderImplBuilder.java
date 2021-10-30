@@ -1,12 +1,15 @@
 package de.metas.invoicecandidate.api.impl;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.service.IPriceListDAO;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.StringUtils;
 import de.metas.util.collections.CollectionUtils;
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.ObjectUtils;
@@ -40,11 +43,11 @@ public class InvoiceHeaderImplBuilder
 
 	private final Set<Integer> M_PriceList_IDs = new LinkedHashSet<>();
 
-	private int Bill_BPartner_ID;
-	private int Bill_Location_ID;
-	private Set<Integer> Bill_User_IDs = new LinkedHashSet<>(); // avoid NPE
+	private BPartnerInfo billTo;
 
 	private int Sales_BPartner_ID;
+
+	private int SalesRep_User_ID;
 
 	// 03805: add attribute C_Currency_ID
 	private int C_Currency_ID;
@@ -96,12 +99,11 @@ public class InvoiceHeaderImplBuilder
 		invoiceHeader.setDateInvoiced(getDateInvoiced());
 		invoiceHeader.setDateAcct(getDateAcct());
 
-		// BPartner/Location/User
-		invoiceHeader.setBillBPartnerId(BPartnerId.ofRepoId(getBill_BPartner_ID()));
-		invoiceHeader.setBill_Location_ID(getBill_Location_ID());
-		invoiceHeader.setBill_User_ID(getBill_User_ID());
-
+		// BPartner/Location/Contact
+		invoiceHeader.setBillTo(getBillTo());
 		invoiceHeader.setSalesPartnerId(BPartnerId.ofRepoIdOrNull(getSales_BPartner_ID()));
+
+		invoiceHeader.setSalesRepId(UserId.ofRepoIdOrNull(get_SaleRep_ID()));
 
 		// Descriptions
 		invoiceHeader.setDescription(getDescription());
@@ -216,24 +218,24 @@ public class InvoiceHeaderImplBuilder
 		normalizeIDAndAddIfValid(M_PriceList_IDs, priceListId);
 	}
 
-	public int getBill_Location_ID()
+	public void setBillTo(@NonNull final BPartnerInfo billTo)
 	{
-		return Bill_Location_ID;
+		if (this.billTo == null)
+		{
+			this.billTo = billTo;
+		}
+		else if (!BPartnerInfo.equals(this.billTo, billTo))
+		{
+			if (!BPartnerInfo.equals(this.billTo.withLocationId(null), billTo.withLocationId(null)))
+			{
+				throw new AdempiereException("BillTo not matching: new=" + billTo + ", previous=" + this.billTo);
+			}
+		}
 	}
 
-	public void setBill_Location_ID(final int billBPLocationID)
+	public BPartnerInfo getBillTo()
 	{
-		Bill_Location_ID = checkOverrideID("Bill_Location_ID", Bill_Location_ID, billBPLocationID);
-	}
-
-	public int getBill_BPartner_ID()
-	{
-		return Bill_BPartner_ID;
-	}
-
-	public void setBill_BPartner_ID(final int bill_BPartner_ID)
-	{
-		Bill_BPartner_ID = checkOverrideID("Bill_BPartner_ID", Bill_BPartner_ID, bill_BPartner_ID);
+		return billTo;
 	}
 
 	public int getSales_BPartner_ID()
@@ -241,19 +243,21 @@ public class InvoiceHeaderImplBuilder
 		return Sales_BPartner_ID;
 	}
 
+	public int get_SaleRep_ID ()
+	{
+		return SalesRep_User_ID;
+	}
+
+
 	public void setC_BPartner_SalesRep_ID(final int sales_BPartner_ID)
 	{
 		Sales_BPartner_ID = checkOverrideID("Sales_BPartner_ID", Sales_BPartner_ID, sales_BPartner_ID);
 	}
 
-	public int getBill_User_ID()
-	{
-		return CollectionUtils.singleElementOrDefault(Bill_User_IDs, -1);
-	}
 
-	public void setBill_User_ID(final int bill_User_ID)
+	public void setSalesRep_ID(final int salesRep_ID)
 	{
-		normalizeIDAndAddIfValid(Bill_User_IDs, bill_User_ID);
+		SalesRep_User_ID = checkOverrideID("SalesRep_ID", SalesRep_User_ID, salesRep_ID);
 	}
 
 	public int getC_Currency_ID()
@@ -318,7 +322,7 @@ public class InvoiceHeaderImplBuilder
 		this.taxIncluded = checkOverrideBoolean("IsTaxIncluded", this.taxIncluded, taxIncluded);
 	}
 
-	private static final void normalizeAndAddIfNotNull(final Set<String> collection, final String element)
+	private static void normalizeAndAddIfNotNull(final Set<String> collection, final String element)
 	{
 		if (element == null)
 		{
@@ -334,7 +338,7 @@ public class InvoiceHeaderImplBuilder
 		collection.add(elementNorm);
 	}
 
-	private static final void normalizeIDAndAddIfValid(final Set<Integer> collection, final int id)
+	private static void normalizeIDAndAddIfValid(final Set<Integer> collection, final int id)
 	{
 		if (id <= 0)
 		{
@@ -344,7 +348,7 @@ public class InvoiceHeaderImplBuilder
 		collection.add(id);
 	}
 
-	private static final <T> T checkOverride(final String name, final T value, final T valueNew)
+	private static <T> T checkOverride(final String name, final T value, final T valueNew)
 	{
 		if (value == null)
 		{
@@ -361,12 +365,12 @@ public class InvoiceHeaderImplBuilder
 		else
 		{
 			throw new AdempiereException("Overriding field " + name + " not allowed"
-					+ "\n Current value: " + value
-					+ "\n New value: " + valueNew);
+												 + "\n Current value: " + value
+												 + "\n New value: " + valueNew);
 		}
 	}
 
-	private static final int checkOverrideID(final String name, final int id, final int idNew)
+	private static int checkOverrideID(final String name, final int id, final int idNew)
 	{
 		if (id <= 0)
 		{
@@ -374,7 +378,7 @@ public class InvoiceHeaderImplBuilder
 		}
 		else if (idNew <= 0)
 		{
-			return id <= 0 ? -1 : id;
+			return id;
 		}
 		else if (id == idNew)
 		{
@@ -383,12 +387,12 @@ public class InvoiceHeaderImplBuilder
 		else
 		{
 			throw new AdempiereException("Overriding field " + name + " not allowed"
-					+ "\n Current value: " + id
-					+ "\n New value: " + idNew);
+												 + "\n Current value: " + id
+												 + "\n New value: " + idNew);
 		}
 	}
 
-	private static final <T> T checkOverrideModel(final String name, final T model, final T modelNew)
+	private static <T> T checkOverrideModel(final String name, final T model, final T modelNew)
 	{
 		if (model == null)
 		{
@@ -417,12 +421,12 @@ public class InvoiceHeaderImplBuilder
 		else
 		{
 			throw new IllegalStateException("Internal error: invalid ID " + modelIdToUse
-					+ "\n Model: " + model
-					+ "\n Model new: " + modelNew);
+													+ "\n Model: " + model
+													+ "\n Model new: " + modelNew);
 		}
 	}
 
-	private static final boolean checkOverrideBoolean(final String name, final Boolean value, final boolean valueNew)
+	private static boolean checkOverrideBoolean(final String name, final Boolean value, final boolean valueNew)
 	{
 		if (value == null)
 		{
@@ -435,8 +439,8 @@ public class InvoiceHeaderImplBuilder
 		}
 
 		throw new AdempiereException("Overriding field " + name + " not allowed"
-				+ "\n Current value: " + value
-				+ "\n New value: " + valueNew);
+											 + "\n Current value: " + value
+											 + "\n New value: " + valueNew);
 	}
 
 	public void setExternalId(final String externalId)

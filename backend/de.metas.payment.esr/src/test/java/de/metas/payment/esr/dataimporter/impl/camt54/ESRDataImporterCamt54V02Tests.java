@@ -7,6 +7,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import java.io.InputStream;
 import java.math.BigDecimal;
 
+import de.metas.payment.esr.model.I_ESR_ImportFile;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
 import org.assertj.core.api.Condition;
@@ -61,7 +62,7 @@ public class ESRDataImporterCamt54V02Tests
 		final InputStream inputStream = getClass().getResourceAsStream("/camt54_v02.xml");
 		assertThat(inputStream).isNotNull();
 
-		final ESRStatement importData = new ESRDataImporterCamt54(newInstance(I_ESR_Import.class), inputStream).importData();
+		final ESRStatement importData = new ESRDataImporterCamt54(newInstance(I_ESR_ImportFile.class), inputStream).importData();
 
 		// no errors
 		assertThat(importData.getErrorMsgs()).isEmpty();
@@ -84,7 +85,7 @@ public class ESRDataImporterCamt54V02Tests
 		final InputStream inputStream = getClass().getResourceAsStream("/camt54_no_Btch_v02.xml");
 		assertThat(inputStream).isNotNull();
 
-		final ESRStatement importData = new ESRDataImporterCamt54(newInstance(I_ESR_Import.class), inputStream).importData();
+		final ESRStatement importData = new ESRDataImporterCamt54(newInstance(I_ESR_ImportFile.class), inputStream).importData();
 
 		assertThat(importData.getTransactions()).hasSize(10);
 
@@ -99,9 +100,6 @@ public class ESRDataImporterCamt54V02Tests
 		assertThat(importData.getCtrlQty()).isNull();
 	}
 
-	/**
-	 * Verifies the behavior of {@link ESRDataImporterCamt54#iterateEntryDetails(ESRStatementBuilder, BigDecimal, ReportEntry8)} a bit closer.
-	 */
 	@Test
 	public void testMissingCtrlQtyUnit()
 	{
@@ -235,7 +233,7 @@ public class ESRDataImporterCamt54V02Tests
 	public void testMissingEsrReference()
 	{
 		final ESRStatement importData = performWithMissingOrAmbigousEsrReference("/camt54_one_ESR_reference_missing_v02.xml");
-		
+
 		assertThat(importData.getTransactions())
 				.as("those nine transactions that have a reference set, also have a non-empty string")
 				.filteredOn(t -> t.getEsrReferenceNumber() != null)
@@ -260,7 +258,7 @@ public class ESRDataImporterCamt54V02Tests
 		final InputStream inputStream = getClass().getResourceAsStream(xmlResourceName);
 		assertThat(inputStream).as("Unable to load %s", xmlResourceName).isNotNull();
 
-		final ESRStatement importData = new ESRDataImporterCamt54(newInstance(I_ESR_Import.class), inputStream).importData();
+		final ESRStatement importData = new ESRDataImporterCamt54(newInstance(I_ESR_ImportFile.class), inputStream).importData();
 
 		assertThat(importData.getCtrlQty()).isEqualByComparingTo("10");
 		assertThat(importData.getTransactions()).hasSize(10);
@@ -274,7 +272,6 @@ public class ESRDataImporterCamt54V02Tests
 
 		return importData;
 	}
-	
 
 	/**
 	 * Verifies that are 2 QRR  transaction lines
@@ -285,17 +282,16 @@ public class ESRDataImporterCamt54V02Tests
 		final InputStream inputStream = getClass().getResourceAsStream("/camt54_v02_QRR.xml");
 		assertThat(inputStream).isNotNull();
 
-		final ESRStatement importData = new ESRDataImporterCamt54(newInstance(I_ESR_Import.class), inputStream).importData();
-		
+		final ESRStatement importData = new ESRDataImporterCamt54(newInstance(I_ESR_ImportFile.class), inputStream).importData();
+
 		assertThat(importData.getTransactions())
-		.filteredOn(t -> t.getType().equals(ESRType.TYPE_QRR))
-		.hasSize(3)
-		.allSatisfy(t -> {
-			assertThat(t.getEsrParticipantNo()).isNotEmpty();
-		});
+				.filteredOn(t -> t.getType().equals(ESRType.TYPE_QRR))
+				.hasSize(3)
+				.allSatisfy(t -> {
+					assertThat(t.getEsrParticipantNo()).isNotEmpty();
+				});
 	}
-	
-	
+
 	/**
 	 * Verifies that we can't mix ESR and QRR in the same entry
 	 */
@@ -306,10 +302,9 @@ public class ESRDataImporterCamt54V02Tests
 		final InputStream inputStream = getClass().getResourceAsStream("/camt54_v02_QRR_MultipleTrxTypes.xml");
 		assertThat(inputStream).isNotNull();
 
-		
 		assertThatThrownBy(() -> {
-			new ESRDataImporterCamt54(newInstance(I_ESR_Import.class), inputStream).importData();
+			new ESRDataImporterCamt54(newInstance(I_ESR_ImportFile.class), inputStream).importData();
 		}).isInstanceOf(AdempiereException.class)
-		  .hasMessage(ESRDataImporterCamt54.MSG_MULTIPLE_TRANSACTIONS_TYPES.toAD_Message());
+				.hasMessage(ESRDataImporterCamt54.MSG_MULTIPLE_TRANSACTIONS_TYPES.toAD_Message());
 	}
 }

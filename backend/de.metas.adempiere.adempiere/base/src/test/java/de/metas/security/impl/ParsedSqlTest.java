@@ -1,14 +1,12 @@
 package de.metas.security.impl;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
+import de.metas.security.impl.ParsedSql.SqlSelect;
+import de.metas.security.impl.ParsedSql.TableNameAndAlias;
+import org.junit.jupiter.api.Test;
 
 import java.util.stream.Collectors;
 
-import org.junit.Test;
-
-import de.metas.security.impl.ParsedSql.SqlSelect;
-import de.metas.security.impl.ParsedSql.TableNameAndAlias;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class ParsedSqlTest
 {
@@ -256,7 +254,8 @@ public class ParsedSqlTest
 	{
 		final String sql = "SELECT p.M_Product_ID, p.Discontinued, p.Value, p.Name, BOM_Qty_Available(p.M_Product_ID,?) AS QtyAvailable, bomQtyList(p.M_Product_ID, pr.M_PriceList_Version_ID) AS PriceList, bomQtyStd(p.M_Product_ID, pr.M_PriceList_Version_ID) AS PriceStd, BOM_Qty_OnHand(p.M_Product_ID,?) AS QtyOnHand, BOM_Qty_Reserved(p.M_Product_ID,?) AS QtyReserved, BOM_Qty_Ordered(p.M_Product_ID,?) AS QtyOrdered, bomQtyStd(p.M_Product_ID, pr.M_PriceList_Version_ID)-bomQtyLimit(p.M_Product_ID, pr.M_PriceList_Version_ID) AS Margin, bomQtyLimit(p.M_Product_ID, pr.M_PriceList_Version_ID) AS PriceLimit, pa.IsInstanceAttribute FROM M_Product p INNER JOIN M_ProductPrice pr ON (p.M_Product_ID=pr.M_Product_ID) LEFT OUTER JOIN M_AttributeSet pa ON (p.M_AttributeSet_ID=pa.M_AttributeSet_ID) WHERE p.IsSummary='N' AND p.IsActive='Y' AND pr.IsActive='Y' AND pr.M_PriceList_Version_ID=? AND EXISTS (SELECT * FROM M_Storage s INNER JOIN M_AttributeSetInstance asi ON (s.M_AttributeSetInstance_ID=asi.M_AttributeSetInstance_ID) WHERE s.M_Product_ID=p.M_Product_ID AND asi.SerNo LIKE '33' AND asi.Lot LIKE '33' AND asi.M_Lot_ID=101 AND TRUNC(asi.GuaranteeDate)<TO_DATE('2003-10-16','YYYY-MM-DD') AND asi.M_AttributeSetInstance_ID IN (SELECT M_AttributeSetInstance_ID FROM M_AttributeInstance WHERE (M_Attribute_ID=103 AND Value LIKE '33') AND (M_Attribute_ID=102 AND M_AttributeValue_ID=106))) AND p.M_AttributeSetInstance_ID IN (SELECT M_AttributeSetInstance_ID FROM M_AttributeInstance WHERE (M_Attribute_ID=101 AND M_AttributeValue_ID=105) AND (M_Attribute_ID=100 AND M_AttributeValue_ID=102)) AND p.AD_Client_ID IN(0,11) AND p.AD_Org_ID IN(0,11,12) ORDER BY QtyAvailable DESC, Margin DESC";
 		final ParsedSql actual = ParsedSql.parse(sql);
-		assertEquals("AccessSqlParser[M_AttributeInstance|M_Storage=s,M_AttributeSetInstance=asi|M_AttributeInstance|M_Product=p,M_ProductPrice=pr,M_AttributeSet=pa|3]", toString(actual));
+		assertThat(toString(actual))
+				.isEqualTo("AccessSqlParser[M_AttributeInstance|M_Storage=s,M_AttributeSetInstance=asi|M_AttributeInstance|M_Product=p,M_ProductPrice=pr,M_AttributeSet=pa|3]");
 	}
 
 	/**
@@ -267,26 +266,26 @@ public class ParsedSqlTest
 	{
 		final String sql = "SELECT p.M_Product_ID, p.Discontinued, p.Value, p.Name, BOM_Qty_Available(p.M_Product_ID,?) AS QtyAvailable, bomQtyList(p.M_Product_ID, pr.M_PriceList_Version_ID) AS PriceList, bomQtyStd(p.M_Product_ID, pr.M_PriceList_Version_ID) AS PriceStd, BOM_Qty_OnHand(p.M_Product_ID,?) AS QtyOnHand, BOM_Qty_Reserved(p.M_Product_ID,?) AS QtyReserved, BOM_Qty_Ordered(p.M_Product_ID,?) AS QtyOrdered, bomQtyStd(p.M_Product_ID, pr.M_PriceList_Version_ID)-bomQtyLimit(p.M_Product_ID, pr.M_PriceList_Version_ID) AS Margin, bomQtyLimit(p.M_Product_ID, pr.M_PriceList_Version_ID) AS PriceLimit, pa.IsInstanceAttribute FROM M_Product p INNER JOIN M_ProductPrice pr ON (p.M_Product_ID=pr.M_Product_ID) LEFT OUTER JOIN M_AttributeSet pa ON (p.M_AttributeSet_ID=pa.M_AttributeSet_ID) WHERE p.IsSummary='N' AND p.IsActive='Y' AND pr.IsActive='Y' AND pr.M_PriceList_Version_ID=? AND p.M_AttributeSetInstance_ID IN (SELECT M_AttributeSetInstance_ID FROM M_AttributeInstance WHERE (M_Attribute_ID=100 AND M_AttributeValue_ID=101)) ORDER BY QtyAvailable DESC, Margin DESC";
 		final ParsedSql actual = ParsedSql.parse(sql);
-		assertEquals("AccessSqlParser[M_AttributeInstance|M_Product=p,M_ProductPrice=pr,M_AttributeSet=pa|1]", toString(actual));
+		assertThat(toString(actual))
+				.isEqualTo("AccessSqlParser[M_AttributeInstance|M_Product=p,M_ProductPrice=pr,M_AttributeSet=pa|1]");
 	}
 
 	private static String toString(final ParsedSql sql)
 	{
-		return new StringBuilder("AccessSqlParser[")
-				.append(sql.getSqlSelects()
-						.stream()
-						.map(sqlSelect -> toString(sqlSelect))
-						.collect(Collectors.joining("|")))
-				.append("|").append(sql.getMainSqlIndex())
-				.append("]")
-				.toString();
+		return "AccessSqlParser["
+				+ sql.getSqlSelects()
+				.stream()
+				.map(ParsedSqlTest::toString)
+				.collect(Collectors.joining("|"))
+				+ "|" + sql.getMainSqlIndex()
+				+ "]";
 	}
 
 	private static String toString(final ParsedSql.SqlSelect sqlSelect)
 	{
 		return sqlSelect.getTableNameAndAliases()
 				.stream()
-				.map(tableNameAndAlias -> toString(tableNameAndAlias))
+				.map(ParsedSqlTest::toString)
 				.collect(Collectors.joining(","));
 	}
 
@@ -300,13 +299,10 @@ public class ParsedSqlTest
 		}
 		else
 		{
-			return new StringBuilder(tableName).append("=").append(alias).toString();
+			return tableName + "=" + alias;
 		}
 	}
 
-	/**
-	 * <li>teo_sarca - [ 1652623 ] AccessSqlParser.getTableInfo(String) - tablename parsing bug
-	 */
 	@Test
 	public void tableNameParsing_1()
 	{
@@ -367,7 +363,7 @@ public class ParsedSqlTest
 	 * (please note the lower case "on")
 	 * </pre>
 	 *
-	 * @see https://sourceforge.net/tracker/?func=detail&aid=2840157&group_id=176962&atid=879332
+	 * See https://sourceforge.net/tracker/?func=detail&aid=2840157&group_id=176962&atid=879332
 	 */
 	@Test
 	public void test_BF2840157()
@@ -416,6 +412,31 @@ public class ParsedSqlTest
 		final String expectedWhereClause = "noise where noise NOISE Where noise where noise from  from noise frOm noise noiseFROM on  noise on on noise from  where  on  noise from  where  on ";
 
 		assertThat(expectedWhereClause).isEqualTo(adaptInnerWhereClause);
+	}
+
+	@Test
+	public void queryContains_IS_NOT_DISTINCT_FROM()
+	{
+		final String sql = "SELECT"
+				+ "\n ?"
+				+ "\n , row_number() OVER (ORDER BY fts.Line, (master.Name) ASC NULLS LAST, (master.Lastname) ASC NULLS LAST, (##) ASC NULLS LAST, (master.C_BP_Contact_ID) ASC NULLS LAST)"
+				+ "\n , master.C_BPartner_Location_ID, master.C_BP_Contact_ID"
+				+ "\n FROM C_BPartner_Adv_Search_v master"
+				+ "\n INNER JOIN T_ES_FTS_Search_Result fts ON (fts.Search_UUID=? AND master.C_BPartner_ID=fts.IntKey1 AND (fts.IntKey2 IS NULL OR master.C_BPartner_Location_ID IS NOT DISTINCT FROM fts.IntKey2) AND (fts.IntKey3 IS NULL OR master.C_BP_Contact_ID IS NOT DISTINCT FROM fts.IntKey3))"
+				+ "\n WHERE 1=1";
+
+		final ParsedSql actual = ParsedSql.parse(sql);
+
+		final ParsedSql expected = ParsedSql.builder()
+				.sqlSelect(SqlSelect.builder()
+						.sql(sql)
+						.tableNameAndAlias(TableNameAndAlias.ofTableNameAndAlias("C_BPartner_Adv_Search_v", "master"))
+						.tableNameAndAlias(TableNameAndAlias.ofTableNameAndAlias("T_ES_FTS_Search_Result", "fts"))
+						.build())
+				.mainSqlIndex(0)
+				.build();
+
+		assertThat(actual).isEqualTo(expected);
 	}
 
 }

@@ -22,19 +22,25 @@
 
 package org.adempiere.warehouse.api.impl;
 
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.document.location.DocumentLocation;
 import de.metas.location.CountryId;
+import de.metas.location.ILocationDAO;
+import de.metas.location.LocationId;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.product.ResourceId;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_M_Locator;
@@ -47,9 +53,10 @@ import java.util.Optional;
 
 public class WarehouseBL implements IWarehouseBL
 {
-	private final transient Logger logger = LogManager.getLogger(getClass());
-	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
+	private static final Logger logger = LogManager.getLogger(WarehouseBL.class);
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
+	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+	private final ILocationDAO locationDAO = Services.get(ILocationDAO.class);
 
 	@Override
 	public I_M_Warehouse getById(@NonNull final WarehouseId warehouseId)
@@ -133,15 +140,25 @@ public class WarehouseBL implements IWarehouseBL
 
 	private I_C_Location getC_Location(final I_M_Warehouse warehouse)
 	{
-		Check.assumeNotNull(warehouse, "warehouse not null");
-
-		final I_C_BPartner_Location bpLocation = bPartnerDAO.getBPartnerLocationById(BPartnerLocationId.ofRepoIdOrNull(warehouse.getC_BPartner_ID(), warehouse.getC_BPartner_Location_ID()));
-		Check.assumeNotNull(bpLocation, "C_BPartner_Location_ID not null for {}", warehouse);
-
-		final I_C_Location location = bpLocation.getC_Location();
-		Check.assumeNotNull(location, "C_Location_ID not null for {}, {}", bpLocation, warehouse);
+		final BPartnerLocationId bpLocationId = extractBPartnerLocationId(warehouse);
+		final LocationId locationId = getLocationIdFromBPartnerLocationId(bpLocationId);
+		final I_C_Location location = locationDAO.getById(locationId);
+		if (location == null)
+		{
+			throw new AdempiereException("No location found for " + locationId);
+		}
 
 		return location;
+	}
+
+	private LocationId getLocationIdFromBPartnerLocationId(@NonNull final BPartnerLocationId bpLocationId)
+	{
+		final I_C_BPartner_Location bpLocation = bpartnerDAO.getBPartnerLocationByIdEvenInactive(bpLocationId);
+		if (bpLocation == null)
+		{
+			throw new AdempiereException("No location found for " + bpLocationId);
+		}
+		return LocationId.ofRepoId(bpLocation.getC_Location_ID());
 	}
 
 	@Nullable
@@ -158,6 +175,33 @@ public class WarehouseBL implements IWarehouseBL
 	{
 		final I_M_Warehouse warehouseRecord = warehouseDAO.getById(warehouseId);
 		return OrgId.ofRepoIdOrAny(warehouseRecord.getAD_Org_ID());
+	}
+
+	@Override
+	public DocumentLocation getPlainDocumentLocation(@NonNull final WarehouseId warehouseId)
+	{
+		final BPartnerLocationAndCaptureId bpLocationId = warehouseDAO.getWarehouseLocationById(warehouseId);
+
+		final IBPartnerBL partnerBL = SpringContextHolder.instance.getBean(IBPartnerBL.class); // NOTE: keep it local because if declared as a field would fail a lot of junit tests
+		final LocationId locationId = partnerBL.getLocationId(bpLocationId);
+
+		return DocumentLocation.builder()
+				.bpartnerId(bpLocationId.getBpartnerId())
+				.bpartnerLocationId(bpLocationId.getBpartnerLocationId())
+				.locationId(locationId)
+				.contactId(null) // N/A
+				.bpartnerAddress(null) // N/A
+				.build();
+	}
+
+	private static BPartnerLocationId extractBPartnerLocationId(final I_M_Warehouse warehouse)
+	{
+		final BPartnerLocationId warehouseBPLocationId = BPartnerLocationId.ofRepoIdOrNull(warehouse.getC_BPartner_ID(), warehouse.getC_BPartner_Location_ID());
+		if (warehouseBPLocationId == null)
+		{
+			throw new AdempiereException("@NotFound@ @C_BPartner_Location_ID@ (@M_Warehouse_ID@:" + warehouse.getName() + ")");
+		}
+		return warehouseBPLocationId;
 	}
 
 	@Override

@@ -109,7 +109,7 @@ Shopware | metasfresh-column | mandatory in mf | metasfresh-json | note |
 ---- | ---- | ---- | ---- | ---- |
 JsonOrderLine.id |  `externalLineId` | Y | JsonOLCandCreateRequest.externalLineId |  |
 JsonOrderLine.productId |  `M_Product_ID` | Y | JsonOLCandCreateRequest.productIdentifier | "ext-Shopware6-{{productId}}" |
-JsonOrderLine.unitPrice |  `m_productprice_id` | N | JsonOLCandCreateRequest.price | |
+JsonOrderLine.unitPrice |  `m_productprice_id` | N | JsonOLCandCreateRequest.price | ..if the JsonOrderLine is a bundle-main-item, then use const `ZERO` as price |
 JsonOrderLine.quantity |  `qtyentered` | Y | JsonOLCandCreateRequest.qty | |
 JsonOrderLine.description |  `description` | N | JsonOLCandCreateRequest.description | |
 JsonOrderLine.position |  `line` | N | JsonOLCandCreateRequest.line | |

@@ -23,6 +23,7 @@
 package de.metas.externalsystem;
 
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
+import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -36,13 +37,18 @@ public class ExternalSystemParentConfig
 	ExternalSystemParentConfigId id;
 	ExternalSystemType type;
 	String name;
+	Boolean isActive;
+	OrgId orgId;
 	IExternalSystemChildConfig childConfig;
 
-	@Builder
+
+	@Builder(toBuilder = true)
 	public ExternalSystemParentConfig(
 			@NonNull final ExternalSystemParentConfigId id,
 			@NonNull final ExternalSystemType type,
 			@NonNull final String name,
+			@NonNull final Boolean isActive,
+			@NonNull final OrgId orgId,
 			@NonNull final IExternalSystemChildConfig childConfig)
 	{
 		if (!type.equals(childConfig.getId().getType()))
@@ -56,7 +62,9 @@ public class ExternalSystemParentConfig
 		this.id = id;
 		this.type = type;
 		this.name = name;
+		this.orgId = orgId;
 		this.childConfig = childConfig;
+		this.isActive = isActive;
 	}
 
 	public ITableRecordReference getTableRecordReference()

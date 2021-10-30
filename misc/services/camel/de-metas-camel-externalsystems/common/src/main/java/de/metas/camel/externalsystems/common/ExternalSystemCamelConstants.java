@@ -50,11 +50,13 @@ public class ExternalSystemCamelConstants
 
 	public static String MF_LOOKUP_EXTERNALREFERENCE_CAMEL_URI = "metasfresh.lookup-externalreference.camel.uri";
 
-	public static String MF_EXTERNAL_SYSTEM_URI = "metasfresh.externalsystem.api.uri";
+	public static String MF_EXTERNAL_SYSTEM_V2_URI = "metasfresh.externalsystem.v2.api.uri";
 
 	public static String MF_UPSERT_EXTERNALREFERENCE_CAMEL_URI = "metasfresh.upsert-externalreference.camel.uri";
 
 	public final String MF_ERROR_ROUTE_ID = "Error-Route";
+
+	public final static String ERROR_WRITE_TO_ADISSUE = "Error-Route-writeToAdIssue";
 
 	public final String MF_LOG_MESSAGE_ROUTE_ID = "Log-Message-Route";
 
@@ -72,10 +74,6 @@ public class ExternalSystemCamelConstants
 
 	public static String MF_ENQUEUE_PURCHASE_CANDIDATES_V2_CAMEL_URI = "To-MF_Enqueue_Purchases_Candidate-Route";
 
-	public static String REST_WOOCOMMERCE_PATH = "/woocommerce";
-
 	public static String REST_API_AUTHENTICATE_TOKEN = "Core-registerToken";
 	public static String REST_API_EXPIRE_TOKEN = "Core-expireToken";
-
-	public static String WOOCOMMERCE_AUTHORITY = "WOO";
 }

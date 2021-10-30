@@ -1,5 +1,6 @@
 package org.compiere.util;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 
 /*
@@ -39,37 +40,41 @@ public interface Evaluatee2 extends Evaluatee
 	/**
 	 * Check if variableName exists.
 	 * Note: that in case when is not sure if the variable exist, the implementation of this method should return true
-	 * @param variableName
-	 * @return true if the variable exists 
+	 * @return true if the variable exists
 	 */
-	public boolean has_Variable(String variableName);
+	boolean has_Variable(String variableName);
 	
 	/**
 	 * 	Get Old Variable Value
 	 *	@param variableName name
 	 *	@return value
 	 */
-	public String get_ValueOldAsString (String variableName);
-	
-	default Integer get_ValueOldAsInt(final String variableName, final Integer defaultValue)
+	@Nullable
+	String get_ValueOldAsString(String variableName);
+
+	@Nullable
+	default Integer get_ValueOldAsInt(final String variableName, @Nullable final Integer defaultValue)
 	{
 		final String valueStr = get_ValueOldAsString(variableName);
 		return Evaluatee.convertToInteger(variableName, valueStr, defaultValue);
 	}
-	
-	default Boolean get_ValueOldAsBoolean(final String variableName, final Boolean defaultValue)
+
+	@Nullable
+	default Boolean get_ValueOldAsBoolean(final String variableName, @Nullable final Boolean defaultValue)
 	{
 		final String valueStr = get_ValueOldAsString(variableName);
 		return DisplayType.toBoolean(valueStr, defaultValue);
 	}
 
-	default BigDecimal get_ValueOldAsBigDecimal(final String variableName, final BigDecimal defaultValue)
+	@Nullable
+	default BigDecimal get_ValueOldAsBigDecimal(final String variableName, @Nullable final BigDecimal defaultValue)
 	{
 		final String valueStr = get_ValueOldAsString(variableName);
 		return Evaluatee.convertToBigDecimal(variableName, valueStr, defaultValue);
 	}
-	
-	default java.util.Date get_ValueOldAsDate(final String variableName, final java.util.Date defaultValue)
+
+	@Nullable
+	default java.util.Date get_ValueOldAsDate(final String variableName, @Nullable final java.util.Date defaultValue)
 	{
 		final String valueStr = get_ValueOldAsString(variableName);
 		return Evaluatee.convertToDate(variableName, valueStr, defaultValue);

@@ -166,7 +166,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 		//
 		// Update invoice candidates in chunks
 		final ICUpdateResult result = new ICUpdateResult();
-		try (final IAutoCloseable updateInProgressCloseable = invoiceCandBL.setUpdateProcessInProgress())
+		try (final IAutoCloseable ignored = invoiceCandBL.setUpdateProcessInProgress())
 		{
 			trxItemProcessorExecutorService.<I_C_Invoice_Candidate, ICUpdateResult> createExecutor()
 					.setContext(getCtx(), getTrxName()) // if called from process or wp-processor then getTrxName() is null because *we* want to manage the trx => commit after each chunk
@@ -199,7 +199,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 								if (!icRecord.isError())
 								{
 									logger.debug("Updated invoice candidate");
-									result.addInvoiceCandidate(icRecord);
+									result.addInvoiceCandidate();
 									final ITrx currentTrx = trxManager.getThreadInheritedTrx(OnTrxMissingPolicy.ReturnTrxNone);
 									if (trxManager.isActive(currentTrx))
 									{
@@ -278,7 +278,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 			headerKeys.asMap().forEach(this::processAsync);
 		}
 
-		private void processAsync(String headerKey, Collection<Integer> processedRecords)
+		private void processAsync(final String headerKey, final Collection<Integer> processedRecords)
 		{
 			final Collection<I_C_Invoice_Candidate> refreshedAssociatedInvoiceCandidates = invoiceCandBL.getRefreshedAssociatedInvoiceCandidates(invoiceCandDAO.retrieveForHeaderAggregationKey(getCtx(), headerKey, getTrxName()), processedRecords);
 			invoiceCandDAO.saveAll(refreshedAssociatedInvoiceCandidates);
@@ -331,6 +331,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 			// 07814-IT2 only from now on we have the correct QtyDelivered
 			// note that we need this data to be set before we attempt to compute the price, because the delivered qty and date of delivery might play a role.
 			invoiceCandidateHandlerBL.setDeliveredData(icRecord);
+			invoiceCandidateHandlerBL.setPickedData(icRecord);
 		}
 
 		final InvoiceCandidateRecordService invoiceCandidateRecordService = SpringContextHolder.instance.getBean(InvoiceCandidateRecordService.class);
@@ -531,7 +532,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 		private int countOk = 0;
 		private int countErrors = 0;
 
-		public void addInvoiceCandidate(final I_C_Invoice_Candidate ic)
+		public void addInvoiceCandidate()
 		{
 			countOk++;
 		}

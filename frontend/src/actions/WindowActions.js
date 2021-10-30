@@ -44,6 +44,7 @@ import {
   SET_PRINTING_OPTIONS,
   RESET_PRINTING_OPTIONS,
   TOGGLE_PRINTING_OPTION,
+  SET_SPINNER,
 } from '../constants/ActionTypes';
 import { createView } from './ViewActions';
 import { PROCESS_NAME } from '../constants/Constants';
@@ -529,9 +530,13 @@ export function createSearchWindow({
       refRowIds: [rowId],
       isModal,
     })
-  ).then(({ windowId, viewId }) => {
-    dispatch(openRawModal({ windowId, viewId, title }));
-  });
+  )
+    .then(({ windowId, viewId }) => {
+      dispatch(openRawModal({ windowId, viewId, title }));
+    })
+    .finally(() => {
+      dispatch(setSpinner(false));
+    });
 }
 
 /*
@@ -551,6 +556,9 @@ export function createWindow({
   let documentId = docId || 'NEW';
   return (dispatch) => {
     if (documentId === 'SEARCH') {
+      // set the `showSpinner` flag to true to show the spinner while data is fetched
+      dispatch(setSpinner(true));
+
       // use specific function for search window creation
       createSearchWindow({
         windowId: windowType,
@@ -1431,5 +1439,17 @@ export function togglePrintingOption(target) {
   return {
     type: TOGGLE_PRINTING_OPTION,
     payload: target,
+  };
+}
+
+/**
+ * @method setSpinner
+ * @summary - action. It sets the `showSpinner` in the store to the boolean value passed in the action
+ * @param {boolean} data
+ */
+export function setSpinner(data) {
+  return {
+    type: SET_SPINNER,
+    payload: data,
   };
 }

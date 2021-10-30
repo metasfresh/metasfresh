@@ -31,6 +31,8 @@ import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.servicerepair.project.model.ServiceRepairProjectCostCollector;
 import de.metas.servicerepair.project.model.ServiceRepairProjectCostCollectorId;
+import de.metas.servicerepair.project.model.ServiceRepairProjectCostCollectorType;
+import de.metas.util.Check;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import lombok.Builder;
@@ -88,27 +90,6 @@ class QuotationLineAggregator
 		return this;
 	}
 
-	public QuotationLineAggregator addNegated(@NonNull final ServiceRepairProjectCostCollector costCollector)
-	{
-		Check.assumeEquals(extractKey(costCollector), key, "key does not match for {}. Expected: {}", costCollector, key);
-
-		qty = qty.add(costCollector.getQtyReservedOrConsumed().negate());
-		costCollectorIds.add(costCollector.getId());
-
-		return this;
-	}
-
-	public void addAsDetails(@NonNull final List<ServiceRepairProjectCostCollector> costCollectors)
-	{
-		costCollectors.forEach(this::addAsDetail);
-	}
-
-	private void addAsDetail(@NonNull final ServiceRepairProjectCostCollector costCollector)
-	{
-		final OrderLineDetailCreateRequest detail = priceCalculator.computeOrderLineDetailCreateRequest(costCollector);
-		details.add(detail);
-	}
-
 	public void createOrderLines(@NonNull final OrderFactory orderFactory)
 	{
 		if (this.orderLineBuilderUsed != null)
@@ -122,18 +103,18 @@ class QuotationLineAggregator
 				.qty(qty)
 				.manualPrice(isZeroPrice() ? Money.zero(priceCalculator.getCurrencyId()) : null)
 				.description(description)
+				.hideWhenPrinting(isHideWhenPrinting())
 				.details(details);
-	}
-
-	public QuotationLineAggregator zeroPrice(@Nullable final Boolean zeroPrice)
-	{
-		this.zeroPrice = zeroPrice;
-		return this;
 	}
 
 	private boolean isZeroPrice()
 	{
 		return zeroPrice != null ? zeroPrice : key.isZeroPrice();
+	}
+
+	private boolean isHideWhenPrinting()
+	{
+		return key.getType() == ServiceRepairProjectCostCollectorType.SparePartsOwnedByCustomer;
 	}
 
 	public Stream<Map.Entry<ServiceRepairProjectCostCollectorId, OrderAndLineId>> streamQuotationLineIdsIndexedByCostCollectorId()

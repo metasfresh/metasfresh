@@ -33,9 +33,15 @@ public class TokenCredentials
 	@NonNull
 	JsonMetasfreshId pInstance;
 
+	@NonNull
+	String orgCode;
+
 	@Builder
-	TokenCredentials(@NonNull final JsonMetasfreshId pInstance)
+	TokenCredentials(
+			@NonNull final JsonMetasfreshId pInstance,
+			@NonNull final String orgCode)
 	{
 		this.pInstance = pInstance;
+		this.orgCode = orgCode;
 	}
 }

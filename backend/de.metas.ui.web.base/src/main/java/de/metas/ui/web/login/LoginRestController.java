@@ -15,6 +15,7 @@ import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.dashboard.UserDashboardSessionContextHolder;
 import de.metas.ui.web.kpi.data.KPIDataContext;
 import de.metas.ui.web.login.exceptions.NotAuthenticatedException;
+import de.metas.ui.web.login.exceptions.NotLoggedInException;
 import de.metas.ui.web.login.json.JSONLoginAuthRequest;
 import de.metas.ui.web.login.json.JSONLoginAuthResponse;
 import de.metas.ui.web.login.json.JSONLoginRole;
@@ -137,7 +138,7 @@ public class LoginRestController
 		getLoginService()
 				.getCtx()
 				.getUserIdIfExists()
-				.orElseThrow(NotAuthenticatedException::new);
+				.orElseThrow(NotLoggedInException::new);
 	}
 
 	@PostMapping("/authenticate")

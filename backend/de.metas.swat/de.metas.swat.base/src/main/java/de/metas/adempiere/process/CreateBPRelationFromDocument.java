@@ -29,6 +29,8 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.document.location.DocumentLocation;
+import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.util.Services;
@@ -161,8 +163,12 @@ public class CreateBPRelationFromDocument extends JavaProcess
 			// order.setC_BPartner_ID(rel.getC_BPartner_ID());
 			// order.setC_BPartner_Location_ID(rel.getC_BPartner_Location_ID());
 			//
-			order.setBill_BPartner_ID(rel.getC_BPartnerRelation_ID());
-			order.setBill_Location_ID(rel.getC_BPartnerRelation_Location_ID());
+			OrderDocumentLocationAdapterFactory
+					.billLocationAdapter(order)
+					.setFrom(DocumentLocation.builder()
+									 .bpartnerId(BPartnerId.ofRepoIdOrNull(rel.getC_BPartnerRelation_ID()))
+									 .bpartnerLocationId(BPartnerLocationId.ofRepoIdOrNull(rel.getC_BPartnerRelation_ID(), rel.getC_BPartnerRelation_Location_ID()))
+									 .build());
 		}
 
 		InterfaceWrapperHelper.save(order);

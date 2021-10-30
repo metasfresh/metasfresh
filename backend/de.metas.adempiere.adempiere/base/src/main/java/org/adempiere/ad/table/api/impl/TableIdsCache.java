@@ -43,12 +43,12 @@ import java.util.concurrent.atomic.AtomicInteger;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -61,7 +61,7 @@ public class TableIdsCache
 
 	private static final Logger logger = LogManager.getLogger(TableIdsCache.class);
 
-	private final CCache<Integer, TableInfoMap> tableInfoMapHolder = CCache.<Integer, TableInfoMap> builder()
+	private final CCache<Integer, TableInfoMap> tableInfoMapHolder = CCache.<Integer, TableInfoMap>builder()
 			.tableName("AD_Table")
 			.initialCapacity(1)
 			.expireMinutes(CCache.EXPIREMINUTES_Never)
@@ -154,7 +154,7 @@ public class TableIdsCache
 		}
 
 		return tableInfo;
-		}
+	}
 
 	private TableInfo getTableInfo(@NonNull final AdTableId adTableId)
 	{
@@ -291,7 +291,7 @@ public class TableIdsCache
 		public TableInfo getTableInfoOrNull(final AdTableId adTableId)
 		{
 			return tableInfoByTableId.get(adTableId);
-			}
+		}
 	}
 
 	private static class JUnitGeneratedTableInfoMap

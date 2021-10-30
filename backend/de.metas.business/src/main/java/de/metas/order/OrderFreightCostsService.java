@@ -1,22 +1,7 @@
 package de.metas.order;
 
-import static de.metas.common.util.CoalesceUtil.coalesceSuppliers;
-import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
-
-import java.math.BigDecimal;
-import java.util.Optional;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_OrderLine;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
-import org.slf4j.Logger;
-import org.springframework.stereotype.Service;
-
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -31,6 +16,7 @@ import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.order.BPartnerOrderParamsRepository.BPartnerOrderParamsQuery;
+import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.organization.OrgId;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingResult;
@@ -41,6 +27,19 @@ import de.metas.product.ProductId;
 import de.metas.shipping.ShipperId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_OrderLine;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.Optional;
+
+import static de.metas.common.util.CoalesceUtil.coalesceSuppliers;
+import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 
 /*
  * #%L
@@ -187,12 +186,17 @@ public class OrderFreightCostsService
 	{
 		final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
 
-		final BPartnerId shipToBPartnerId = BPartnerId.ofRepoIdOrNull(orderRecord.getC_BPartner_ID());
-
-		final BPartnerLocationId shipToBPLocationId = BPartnerLocationId.ofRepoIdOrNull(shipToBPartnerId, orderRecord.getC_BPartner_Location_ID());
+		final BPartnerLocationAndCaptureId shipToBPLocationId = OrderDocumentLocationAdapterFactory
+				.locationAdapter(orderRecord)
+				.getBPartnerLocationAndCaptureIdIfExists()
+				.orElse(null);
 		final CountryId shipToCountryId = shipToBPLocationId != null
-				? bpartnerBL.getBPartnerLocationCountryId(shipToBPLocationId)
+				? bpartnerBL.getCountryId(shipToBPLocationId)
 				: null;
+
+		final BPartnerId shipToBPartnerId = shipToBPLocationId != null
+				? shipToBPLocationId.getBpartnerId()
+				: BPartnerId.ofRepoIdOrNull(orderRecord.getC_BPartner_ID());
 
 		final FreightCostRule freightCostRule = FreightCostRule.ofNullableCodeOr(orderRecord.getFreightCostRule(), FreightCostRule.FreightIncluded);
 
@@ -338,9 +342,7 @@ public class OrderFreightCostsService
 		final int bpartnerRecordId = salesOrder.getC_BPartner_ID();
 		final BPartnerLocationId bpLocationId = BPartnerLocationId.ofRepoId(bpartnerRecordId, locationRecordId);
 
-		final CountryId countryId = bpartnerDAO.retrieveBPartnerLocationCountryId(bpLocationId);
-
-		return countryId;
+		return bpartnerDAO.getCountryId(bpLocationId);
 	}
 
 	private Optional<Money> computeShipmentValueAmt(@NonNull final OrderId orderId)

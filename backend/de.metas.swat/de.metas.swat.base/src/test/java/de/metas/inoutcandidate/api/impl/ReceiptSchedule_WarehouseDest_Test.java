@@ -129,8 +129,8 @@ public class ReceiptSchedule_WarehouseDest_Test extends ReceiptScheduleTestBase
 		final I_M_MovementLine movementLine = movementLines.get(0);
 		// Check Movement Line warehouses
 		Assertions.assertEquals(
-				receipt.getM_Warehouse(),
-							movementLine.getM_Locator().getM_Warehouse(), "Invalid movement line Locator (from)");
+				receipt.getM_Warehouse_ID(),
+							movementLine.getM_Locator().getM_Warehouse_ID(), "Invalid movement line Locator (from)");
 		Assertions.assertEquals(
 				schedule.getM_Warehouse_Dest_ID(),
 							movementLine.getM_LocatorTo().getM_Warehouse_ID(), "Invalid movement line Locator (to)");

@@ -1,14 +1,9 @@
 package de.metas.invoicecandidate.api.impl;
 
-import java.time.LocalDate;
-import java.util.List;
-
-import de.metas.invoice.InvoiceDocBaseType;
-import org.compiere.model.I_C_DocType;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.BPartnerInfo;
+import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoicecandidate.api.IInvoiceCandAggregate;
 import de.metas.invoicecandidate.api.IInvoiceHeader;
 import de.metas.invoicecandidate.api.IInvoiceLineRW;
@@ -16,13 +11,22 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.organization.OrgId;
+import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import lombok.Getter;
 import lombok.Setter;
+import org.compiere.model.I_C_DocType;
+
+import javax.annotation.Nullable;
+import java.time.LocalDate;
+import java.util.List;
 
 /* package */class InvoiceHeaderImpl implements IInvoiceHeader
 {
-	/** @return builder */
+	/**
+	 * @return builder
+	 */
 	public static InvoiceHeaderImplBuilder builder()
 	{
 		return new InvoiceHeaderImplBuilder();
@@ -46,17 +50,17 @@ import lombok.Setter;
 
 	private int M_PriceList_ID;
 
-	private int Bill_Location_ID;
-
 	@Getter
 	@Setter
-	private BPartnerId billBPartnerId;
-
-	private int Bill_User_ID;
+	private BPartnerInfo billTo;
 
 	@Getter
 	@Setter
 	private BPartnerId salesPartnerId;
+
+	@Getter
+	@Setter
+	private UserId salesRepId;
 
 	// 03805: add attribute C_Currency_ID
 	@Getter
@@ -75,9 +79,9 @@ import lombok.Setter;
 	private I_C_DocType docTypeInvoice;
 
 	private boolean taxIncluded;
-	private String  externalId;
+	private String externalId;
 
-	private int C_PaymentTerm_ID = -1;
+	private PaymentTermId paymentTermId;
 
 	private int C_Async_Batch_ID;
 
@@ -94,9 +98,7 @@ import lombok.Setter;
 				+ ", AD_Org_ID=" + OrgId.toRepoId(orgId)
 				+ ", M_PriceList_ID=" + M_PriceList_ID
 				+ ", isSOTrx=" + isSOTrx
-				+ ", Bill_BPartner_ID=" + BPartnerId.toRepoId(billBPartnerId)
-				+ ", Bill_Location_ID=" + Bill_Location_ID
-				+ ", Bill_User_ID=" + Bill_User_ID
+				+ ", billTo=" + billTo
 				+ ", currencyId=" + currencyId
 				+ ", C_Order_ID=" + C_Order_ID
 				+ ", docTypeInvoiceId=" + docTypeInvoice
@@ -156,18 +158,6 @@ import lombok.Setter;
 		return M_PriceList_ID;
 	}
 
-	@Override
-	public int getBill_Location_ID()
-	{
-		return Bill_Location_ID;
-	}
-
-	@Override
-	public int getBill_User_ID()
-	{
-		return Bill_User_ID;
-	}
-
 	public void setLines(final List<IInvoiceCandAggregate> lines)
 	{
 		this.lines = lines;
@@ -201,16 +191,6 @@ import lombok.Setter;
 	public void setM_PriceList_ID(final int M_PriceList_ID)
 	{
 		this.M_PriceList_ID = M_PriceList_ID;
-	}
-
-	public void setBill_Location_ID(final int bill_Location_ID)
-	{
-		Bill_Location_ID = bill_Location_ID;
-	}
-
-	public void setBill_User_ID(final int bill_User_ID)
-	{
-		Bill_User_ID = bill_User_ID;
 	}
 
 	@Override
@@ -313,15 +293,15 @@ import lombok.Setter;
 		return totalNetAmt;
 	}
 
-	public void setC_PaymentTerm_ID(final int paymentTermId)
+	public void setPaymentTermId(@Nullable final PaymentTermId paymentTermId)
 	{
-		C_PaymentTerm_ID = paymentTermId;
+		this.paymentTermId = paymentTermId;
 	}
 
 	@Override
-	public int getC_PaymentTerm_ID()
+	public PaymentTermId getPaymentTermId()
 	{
-		return C_PaymentTerm_ID;
+		return paymentTermId;
 	}
 
 	@Override

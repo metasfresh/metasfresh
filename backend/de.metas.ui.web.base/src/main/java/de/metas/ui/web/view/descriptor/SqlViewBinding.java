@@ -30,7 +30,7 @@ import de.metas.ui.web.accounting.filters.FactAcctFilterConverter;
 import de.metas.ui.web.bpartner.filter.BPartnerExportFilterConverter;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.provider.NullDocumentFilterDescriptorsProvider;
-import de.metas.ui.web.document.filter.provider.fullTextSearch.FullTextSearchSqlDocumentFilterConverter;
+import de.metas.ui.web.document.filter.provider.fullTextSearch.FTSDocumentFilterConverter;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterDecorator;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverters;
@@ -360,7 +360,7 @@ public class SqlViewBinding implements SqlEntityBinding
 
 		private Builder()
 		{
-			filterConverters.converter(FullTextSearchSqlDocumentFilterConverter.instance);
+			filterConverters.converter(FTSDocumentFilterConverter.instance);
 			filterConverters.converter(GeoLocationFilterConverter.instance);
 			filterConverters.converter(FactAcctFilterConverter.instance);
 			// filterConverters2.whenFilterIdStartsWith(FacetsDocumentFilterDescriptorsProviderFactory.FILTER_ID_PREFIX, converter);

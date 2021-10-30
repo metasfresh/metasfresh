@@ -1,27 +1,28 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for C_Invoice
  *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1382519327L;
+	private static final long serialVersionUID = -209734604L;
 
     /** Standard Constructor */
-    public X_C_Invoice (final Properties ctx, final int C_Invoice_ID, final String trxName)
+    public X_C_Invoice (final Properties ctx, final int C_Invoice_ID, @Nullable final String trxName)
     {
       super (ctx, C_Invoice_ID, trxName);
     }
 
     /** Load Constructor */
-    public X_C_Invoice (final Properties ctx, final ResultSet rs, final String trxName)
+    public X_C_Invoice (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
@@ -110,7 +111,7 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 	}
 
 	@Override
-	public void setBPartnerAddress (final java.lang.String BPartnerAddress)
+	public void setBPartnerAddress (final @Nullable java.lang.String BPartnerAddress)
 	{
 		set_Value (COLUMNNAME_BPartnerAddress, BPartnerAddress);
 	}
@@ -164,6 +165,33 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 	public int getC_BPartner_Location_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_BPartner_Location_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_C_Location getC_BPartner_Location_Value()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_BPartner_Location_Value_ID, org.compiere.model.I_C_Location.class);
+	}
+
+	@Override
+	public void setC_BPartner_Location_Value(final org.compiere.model.I_C_Location C_BPartner_Location_Value)
+	{
+		set_ValueFromPO(COLUMNNAME_C_BPartner_Location_Value_ID, org.compiere.model.I_C_Location.class, C_BPartner_Location_Value);
+	}
+
+	@Override
+	public void setC_BPartner_Location_Value_ID (final int C_BPartner_Location_Value_ID)
+	{
+		if (C_BPartner_Location_Value_ID < 1) 
+			set_Value (COLUMNNAME_C_BPartner_Location_Value_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_BPartner_Location_Value_ID, C_BPartner_Location_Value_ID);
+	}
+
+	@Override
+	public int getC_BPartner_Location_Value_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_BPartner_Location_Value_ID);
 	}
 
 	@Override
@@ -338,19 +366,6 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 	}
 
 	@Override
-	public void setChargeAmt (final BigDecimal ChargeAmt)
-	{
-		set_Value (COLUMNNAME_ChargeAmt, ChargeAmt);
-	}
-
-	@Override
-	public BigDecimal getChargeAmt() 
-	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_ChargeAmt);
-		return bd != null ? bd : BigDecimal.ZERO;
-	}
-
-	@Override
 	public void setC_Invoice_ID (final int C_Invoice_ID)
 	{
 		if (C_Invoice_ID < 1) 
@@ -363,18 +378,6 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 	public int getC_Invoice_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Invoice_ID);
-	}
-
-	@Override
-	public void setCopyFrom (final java.lang.String CopyFrom)
-	{
-		set_Value (COLUMNNAME_CopyFrom, CopyFrom);
-	}
-
-	@Override
-	public java.lang.String getCopyFrom() 
-	{
-		return get_ValueAsString(COLUMNNAME_CopyFrom);
 	}
 
 	@Override
@@ -450,7 +453,32 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 	}
 
 	@Override
-	public void setCreateAdjustmentCharge (final java.lang.String CreateAdjustmentCharge)
+	public void setChargeAmt (final @Nullable BigDecimal ChargeAmt)
+	{
+		set_Value (COLUMNNAME_ChargeAmt, ChargeAmt);
+	}
+
+	@Override
+	public BigDecimal getChargeAmt() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_ChargeAmt);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setCopyFrom (final @Nullable java.lang.String CopyFrom)
+	{
+		set_Value (COLUMNNAME_CopyFrom, CopyFrom);
+	}
+
+	@Override
+	public java.lang.String getCopyFrom() 
+	{
+		return get_ValueAsString(COLUMNNAME_CopyFrom);
+	}
+
+	@Override
+	public void setCreateAdjustmentCharge (final @Nullable java.lang.String CreateAdjustmentCharge)
 	{
 		set_Value (COLUMNNAME_CreateAdjustmentCharge, CreateAdjustmentCharge);
 	}
@@ -462,7 +490,7 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 	}
 
 	@Override
-	public void setCreateCreditMemo (final java.lang.String CreateCreditMemo)
+	public void setCreateCreditMemo (final @Nullable java.lang.String CreateCreditMemo)
 	{
 		set_Value (COLUMNNAME_CreateCreditMemo, CreateCreditMemo);
 	}
@@ -474,7 +502,7 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 	}
 
 	@Override
-	public void setCreateDta (final java.lang.String CreateDta)
+	public void setCreateDta (final @Nullable java.lang.String CreateDta)
 	{
 		set_Value (COLUMNNAME_CreateDta, CreateDta);
 	}
@@ -486,7 +514,7 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 	}
 
 	@Override
-	public void setCreateFrom (final java.lang.String CreateFrom)
+	public void setCreateFrom (final @Nullable java.lang.String CreateFrom)
 	{
 		set_Value (COLUMNNAME_CreateFrom, CreateFrom);
 	}
@@ -507,7 +535,7 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 	/** Doppellieferung = CMD */
 	public static final String CREDITMEMOREASON_Doppellieferung = "CMD";
 	@Override
-	public void setCreditMemoReason (final java.lang.String CreditMemoReason)
+	public void setCreditMemoReason (final @Nullable java.lang.String CreditMemoReason)
 	{
 		set_Value (COLUMNNAME_CreditMemoReason, CreditMemoReason);
 	}
@@ -543,7 +571,7 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 	}
 
 	@Override
-	public void setDateOrdered (final java.sql.Timestamp DateOrdered)
+	public void setDateOrdered (final @Nullable java.sql.Timestamp DateOrdered)
 	{
 		set_ValueNoCheck (COLUMNNAME_DateOrdered, DateOrdered);
 	}
@@ -555,7 +583,7 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 	}
 
 	@Override
-	public void setDatePrinted (final java.sql.Timestamp DatePrinted)
+	public void setDatePrinted (final @Nullable java.sql.Timestamp DatePrinted)
 	{
 		set_Value (COLUMNNAME_DatePrinted, DatePrinted);
 	}
@@ -567,7 +595,7 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 	}
 
 	@Override
-	public void setDescription (final java.lang.String Description)
+	public void setDescription (final @Nullable java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
@@ -579,7 +607,7 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 	}
 
 	@Override
-	public void setDescriptionBottom (final java.lang.String DescriptionBottom)
+	public void setDescriptionBottom (final @Nullable java.lang.String DescriptionBottom)
 	{
 		set_Value (COLUMNNAME_DescriptionBottom, DescriptionBottom);
 	}
@@ -638,7 +666,7 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 	}
 
 	@Override
-	public void setDocBaseType (final java.lang.String DocBaseType)
+	public void setDocBaseType (final @Nullable java.lang.String DocBaseType)
 	{
 		throw new IllegalArgumentException ("DocBaseType is virtual column");	}
 
@@ -702,7 +730,7 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 	}
 
 	@Override
-	public void setDunningGrace (final java.sql.Timestamp DunningGrace)
+	public void setDunningGrace (final @Nullable java.sql.Timestamp DunningGrace)
 	{
 		set_Value (COLUMNNAME_DunningGrace, DunningGrace);
 	}
@@ -714,7 +742,7 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 	}
 
 	@Override
-	public void setExternalId (final java.lang.String ExternalId)
+	public void setExternalId (final @Nullable java.lang.String ExternalId)
 	{
 		set_Value (COLUMNNAME_ExternalId, ExternalId);
 	}
@@ -726,7 +754,7 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 	}
 
 	@Override
-	public void setGenerateTo (final java.lang.String GenerateTo)
+	public void setGenerateTo (final @Nullable java.lang.String GenerateTo)
 	{
 		set_Value (COLUMNNAME_GenerateTo, GenerateTo);
 	}
@@ -782,7 +810,7 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 	/** DDP_Verzollt = DDP */
 	public static final String INCOTERM_DDP_Verzollt = "DDP";
 	@Override
-	public void setIncoterm (final java.lang.String Incoterm)
+	public void setIncoterm (final @Nullable java.lang.String Incoterm)
 	{
 		set_Value (COLUMNNAME_Incoterm, Incoterm);
 	}
@@ -794,7 +822,7 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 	}
 
 	@Override
-	public void setIncotermLocation (final java.lang.String IncotermLocation)
+	public void setIncotermLocation (final @Nullable java.lang.String IncotermLocation)
 	{
 		set_Value (COLUMNNAME_IncotermLocation, IncotermLocation);
 	}
@@ -803,6 +831,18 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 	public java.lang.String getIncotermLocation() 
 	{
 		return get_ValueAsString(COLUMNNAME_IncotermLocation);
+	}
+
+	@Override
+	public void setInvoice_includedTab (final @Nullable java.lang.String Invoice_includedTab)
+	{
+		set_Value (COLUMNNAME_Invoice_includedTab, Invoice_includedTab);
+	}
+
+	@Override
+	public java.lang.String getInvoice_includedTab() 
+	{
+		return get_ValueAsString(COLUMNNAME_Invoice_includedTab);
 	}
 
 	/** 
@@ -819,7 +859,7 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 	/** Uncollectable = U */
 	public static final String INVOICECOLLECTIONTYPE_Uncollectable = "U";
 	@Override
-	public void setInvoiceCollectionType (final java.lang.String InvoiceCollectionType)
+	public void setInvoiceCollectionType (final @Nullable java.lang.String InvoiceCollectionType)
 	{
 		set_Value (COLUMNNAME_InvoiceCollectionType, InvoiceCollectionType);
 	}
@@ -828,18 +868,6 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 	public java.lang.String getInvoiceCollectionType() 
 	{
 		return get_ValueAsString(COLUMNNAME_InvoiceCollectionType);
-	}
-
-	@Override
-	public void setInvoice_includedTab (final java.lang.String Invoice_includedTab)
-	{
-		set_Value (COLUMNNAME_Invoice_includedTab, Invoice_includedTab);
-	}
-
-	@Override
-	public java.lang.String getInvoice_includedTab() 
-	{
-		return get_ValueAsString(COLUMNNAME_Invoice_includedTab);
 	}
 
 	@Override
@@ -1077,7 +1105,7 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 	}
 
 	@Override
-	public void setPOReference (final java.lang.String POReference)
+	public void setPOReference (final @Nullable java.lang.String POReference)
 	{
 		set_Value (COLUMNNAME_POReference, POReference);
 	}
@@ -1098,18 +1126,6 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 	public boolean isPosted() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_Posted);
-	}
-
-	@Override
-	public org.compiere.model.I_AD_Issue getPostingError_Issue()
-	{
-		return get_ValueAsPO(COLUMNNAME_PostingError_Issue_ID, org.compiere.model.I_AD_Issue.class);
-	}
-
-	@Override
-	public void setPostingError_Issue(final org.compiere.model.I_AD_Issue PostingError_Issue)
-	{
-		set_ValueFromPO(COLUMNNAME_PostingError_Issue_ID, org.compiere.model.I_AD_Issue.class, PostingError_Issue);
 	}
 
 	@Override
@@ -1206,7 +1222,7 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 	}
 
 	@Override
-	public void setSalesPartnerCode (final java.lang.String SalesPartnerCode)
+	public void setSalesPartnerCode (final @Nullable java.lang.String SalesPartnerCode)
 	{
 		set_Value (COLUMNNAME_SalesPartnerCode, SalesPartnerCode);
 	}
@@ -1312,7 +1328,7 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 	}
 
 	@Override
-	public void setUserFlag (final java.lang.String UserFlag)
+	public void setUserFlag (final @Nullable java.lang.String UserFlag)
 	{
 		set_Value (COLUMNNAME_UserFlag, UserFlag);
 	}

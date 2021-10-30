@@ -1,4 +1,4 @@
-import { Hints, Steps } from 'intro.js-react';
+// import { Hints, Steps } from 'intro.js-react';
 import PropTypes from 'prop-types';
 import React, { PureComponent } from 'react';
 
@@ -284,7 +284,7 @@ export default class MasterWindow extends PureComponent {
       allowShortcut,
       includedView,
       processStatus,
-      enableTutorial,
+      // enableTutorial,
       onRefreshTab,
       onSortTable,
     } = this.props;
@@ -292,10 +292,10 @@ export default class MasterWindow extends PureComponent {
       dropzoneFocused,
       newRow,
       modalTitle,
-      introEnabled,
-      hintsEnabled,
-      introSteps,
-      introHints,
+      // introEnabled,
+      // hintsEnabled,
+      // introSteps,
+      // introHints,
     } = this.state;
     const dataId = master.docId;
     const docNoData = master.data.DocumentNo;
@@ -357,7 +357,12 @@ export default class MasterWindow extends PureComponent {
           />
         )}
 
-        {enableTutorial && introSteps && introSteps.length > 0 && (
+        {/* 
+          Temporarly disabled the tutorial components. Activating this back implies adding the intro.js and intro.js-react deps 
+          the package.json file. Note: Another usage is also in the Dashboard component.
+        */}
+
+        {/* {enableTutorial && introSteps && introSteps.length > 0 && (
           <Steps
             enabled={introEnabled}
             steps={introSteps}
@@ -368,7 +373,7 @@ export default class MasterWindow extends PureComponent {
 
         {enableTutorial && introHints && introHints.length > 0 && (
           <Hints enabled={hintsEnabled} hints={introHints} />
-        )}
+        )} */}
       </Container>
     );
   }

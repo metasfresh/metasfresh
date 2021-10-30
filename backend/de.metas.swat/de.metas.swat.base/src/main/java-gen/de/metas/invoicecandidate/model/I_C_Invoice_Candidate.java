@@ -270,6 +270,58 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_Bill_Location_Override_ID = "Bill_Location_Override_ID";
 
 	/**
+	 * Set Rechungsadresse abw..
+	 * Standort des Geschäftspartners für die Rechnungsstellung
+	 *
+	 * <br>Type: Location
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setBill_Location_Override_Value_ID (int Bill_Location_Override_Value_ID);
+
+	/**
+	 * Get Rechungsadresse abw..
+	 * Standort des Geschäftspartners für die Rechnungsstellung
+	 *
+	 * <br>Type: Location
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getBill_Location_Override_Value_ID();
+
+	@Nullable org.compiere.model.I_C_Location getBill_Location_Override_Value();
+
+	void setBill_Location_Override_Value(@Nullable org.compiere.model.I_C_Location Bill_Location_Override_Value);
+
+	ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_C_Location> COLUMN_Bill_Location_Override_Value_ID = new ModelColumn<>(I_C_Invoice_Candidate.class, "Bill_Location_Override_Value_ID", org.compiere.model.I_C_Location.class);
+	String COLUMNNAME_Bill_Location_Override_Value_ID = "Bill_Location_Override_Value_ID";
+
+	/**
+	 * Set Rechnungsstandort (Address).
+	 *
+	 * <br>Type: Location
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setBill_Location_Value_ID (int Bill_Location_Value_ID);
+
+	/**
+	 * Get Rechnungsstandort (Address).
+	 *
+	 * <br>Type: Location
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getBill_Location_Value_ID();
+
+	@Nullable org.compiere.model.I_C_Location getBill_Location_Value();
+
+	void setBill_Location_Value(@Nullable org.compiere.model.I_C_Location Bill_Location_Value);
+
+	ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_C_Location> COLUMN_Bill_Location_Value_ID = new ModelColumn<>(I_C_Invoice_Candidate.class, "Bill_Location_Value_ID", org.compiere.model.I_C_Location.class);
+	String COLUMNNAME_Bill_Location_Value_ID = "Bill_Location_Value_ID";
+
+	/**
 	 * Set Bill Contact.
 	 *
 	 * <br>Type: Table
@@ -689,7 +741,7 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_C_Order_BPartner = "C_Order_BPartner";
 
 	/**
-	 * Set Group.
+	 * Set Order Compensation Group.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -698,7 +750,7 @@ public interface I_C_Invoice_Candidate
 	void setC_Order_CompensationGroup_ID (int C_Order_CompensationGroup_ID);
 
 	/**
-	 * Get Group.
+	 * Get Order Compensation Group.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -1827,7 +1879,7 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_IsInvoicingError = "IsInvoicingError";
 
 	/**
-	 * Set Invoice manually allocated.
+	 * Set Manuell.
 	 * Dies ist ein manueller Vorgang
 	 *
 	 * <br>Type: YesNo
@@ -1837,7 +1889,7 @@ public interface I_C_Invoice_Candidate
 	void setIsManual (boolean IsManual);
 
 	/**
-	 * Get Invoice manually allocated.
+	 * Get Manuell.
 	 * Dies ist ein manueller Vorgang
 	 *
 	 * <br>Type: YesNo
@@ -2302,6 +2354,27 @@ public interface I_C_Invoice_Candidate
 	int getM_Product_ID();
 
 	String COLUMNNAME_M_Product_ID = "M_Product_ID";
+
+	/**
+	 * Set Shipment Candidate.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_ShipmentSchedule_ID (int M_ShipmentSchedule_ID);
+
+	/**
+	 * Get Shipment Candidate.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_ShipmentSchedule_ID();
+
+	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_M_ShipmentSchedule_ID = new ModelColumn<>(I_C_Invoice_Candidate.class, "M_ShipmentSchedule_ID", null);
+	String COLUMNNAME_M_ShipmentSchedule_ID = "M_ShipmentSchedule_ID";
 
 	/**
 	 * Set Invoiced Amount.
@@ -2875,6 +2948,48 @@ public interface I_C_Invoice_Candidate
 
 	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_QtyOrderedOverUnder = new ModelColumn<>(I_C_Invoice_Candidate.class, "QtyOrderedOverUnder", null);
 	String COLUMNNAME_QtyOrderedOverUnder = "QtyOrderedOverUnder";
+
+	/**
+	 * Set Quantity (stock unit).
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQtyPicked (@Nullable BigDecimal QtyPicked);
+
+	/**
+	 * Get Quantity (stock unit).
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getQtyPicked();
+
+	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_QtyPicked = new ModelColumn<>(I_C_Invoice_Candidate.class, "QtyPicked", null);
+	String COLUMNNAME_QtyPicked = "QtyPicked";
+
+	/**
+	 * Set QtyPickedInUOM.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQtyPickedInUOM (@Nullable BigDecimal QtyPickedInUOM);
+
+	/**
+	 * Get QtyPickedInUOM.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getQtyPickedInUOM();
+
+	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_QtyPickedInUOM = new ModelColumn<>(I_C_Invoice_Candidate.class, "QtyPickedInUOM", null);
+	String COLUMNNAME_QtyPickedInUOM = "QtyPickedInUOM";
 
 	/**
 	 * Set To invoice eff.( stock unit).

@@ -38,16 +38,20 @@ public class JsonAuthenticateRequest
 	String authKey;
 	@NonNull
 	JsonMetasfreshId pInstance;
+	@NonNull
+	String orgCode;
 
 	@Builder
 	@JsonCreator
 	JsonAuthenticateRequest(
 			@JsonProperty("grantedAuthority") @NonNull final String grantedAuthority,
 			@JsonProperty("authKey") @NonNull final String authKey,
-			@JsonProperty("pinstance") @NonNull final JsonMetasfreshId pInstance)
+			@JsonProperty("pinstance") @NonNull final JsonMetasfreshId pInstance,
+			@JsonProperty("orgCode") @NonNull final String orgCode)
 	{
 		this.grantedAuthority = grantedAuthority;
 		this.authKey = authKey;
 		this.pInstance = pInstance;
+		this.orgCode = orgCode;
 	}
 }

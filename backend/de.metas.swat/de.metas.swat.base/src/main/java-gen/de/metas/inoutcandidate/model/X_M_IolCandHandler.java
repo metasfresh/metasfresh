@@ -1,26 +1,27 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package de.metas.inoutcandidate.model;
 
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for M_IolCandHandler
  *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public class X_M_IolCandHandler extends org.compiere.model.PO implements I_M_IolCandHandler, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -368330067L;
+	private static final long serialVersionUID = -1140899552L;
 
     /** Standard Constructor */
-    public X_M_IolCandHandler (Properties ctx, int M_IolCandHandler_ID, String trxName)
+    public X_M_IolCandHandler (final Properties ctx, final int M_IolCandHandler_ID, @Nullable final String trxName)
     {
       super (ctx, M_IolCandHandler_ID, trxName);
     }
 
     /** Load Constructor */
-    public X_M_IolCandHandler (Properties ctx, ResultSet rs, String trxName)
+    public X_M_IolCandHandler (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
@@ -28,13 +29,13 @@ public class X_M_IolCandHandler extends org.compiere.model.PO implements I_M_Iol
 
 	/** Load Meta Data */
 	@Override
-	protected org.compiere.model.POInfo initPO(Properties ctx)
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
 	}
 
 	@Override
-	public void setClassname (java.lang.String Classname)
+	public void setClassname (final java.lang.String Classname)
 	{
 		set_Value (COLUMNNAME_Classname, Classname);
 	}
@@ -42,16 +43,16 @@ public class X_M_IolCandHandler extends org.compiere.model.PO implements I_M_Iol
 	@Override
 	public java.lang.String getClassname() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Classname);
+		return get_ValueAsString(COLUMNNAME_Classname);
 	}
 
 	@Override
-	public void setM_IolCandHandler_ID (int M_IolCandHandler_ID)
+	public void setM_IolCandHandler_ID (final int M_IolCandHandler_ID)
 	{
 		if (M_IolCandHandler_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_M_IolCandHandler_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_M_IolCandHandler_ID, Integer.valueOf(M_IolCandHandler_ID));
+			set_ValueNoCheck (COLUMNNAME_M_IolCandHandler_ID, M_IolCandHandler_ID);
 	}
 
 	@Override
@@ -61,7 +62,7 @@ public class X_M_IolCandHandler extends org.compiere.model.PO implements I_M_Iol
 	}
 
 	@Override
-	public void setTableName (java.lang.String TableName)
+	public void setTableName (final java.lang.String TableName)
 	{
 		set_Value (COLUMNNAME_TableName, TableName);
 	}
@@ -69,6 +70,6 @@ public class X_M_IolCandHandler extends org.compiere.model.PO implements I_M_Iol
 	@Override
 	public java.lang.String getTableName() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_TableName);
+		return get_ValueAsString(COLUMNNAME_TableName);
 	}
 }

@@ -31,8 +31,12 @@ import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
 
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.business.BusinessTestHelper;
 import de.metas.invoice.InvoiceDocBaseType;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_MatchInv;
 import org.compiere.model.X_C_DocType;
 import org.junit.Assert;
@@ -172,9 +176,11 @@ public class LegacyTwoShipmentsAndTwoInvoicesTests extends AbstractAggregationEn
 	{
 		final int qtyOrdered = 40;
 
+		final I_C_BPartner bPartner = BusinessTestHelper.createBPartner("test-bp");
+		
 		final I_C_Invoice_Candidate ic = createInvoiceCandidate()
 				.setInstanceName("ic")
-				.setBillBPartnerId(1)
+				.setBillBPartnerId(bPartner.getC_BPartner_ID())
 				.setPriceEntered(1)
 				.setQtyOrdered(qtyOrdered)
 				.setSOTrx(false)

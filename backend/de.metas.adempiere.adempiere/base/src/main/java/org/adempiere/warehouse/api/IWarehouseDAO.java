@@ -1,6 +1,7 @@
 package org.adempiere.warehouse.api;
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.organization.OrgId;
 import de.metas.util.ISingletonService;
 import de.metas.util.lang.ExternalId;
@@ -153,6 +154,8 @@ public interface IWarehouseDAO extends ISingletonService
 	 * Same as {@link #retrieveWarehouseForIssuesOrNull(Properties)} but it will fail if no warehouse found.
 	 */
 	I_M_Warehouse retrieveWarehouseForIssues(Properties ctx);
+
+	BPartnerLocationAndCaptureId getWarehouseLocationById(WarehouseId warehouseId);
 
 	@Value
 	class WarehouseQuery

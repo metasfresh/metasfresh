@@ -3,6 +3,8 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Alber
     "id" : 100001,
     "type" : "Alberta",
     "name" : "name",
+    "isActive" : true,
+    "orgId" : 0,
     "childConfig" : {
       "id" : 100002,
       "parentId" : 100001,
@@ -13,7 +15,6 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Alber
     }
   }
 ]
-
 
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Alberta_getByTypeAndParent=[
   {
@@ -26,12 +27,54 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Alber
   }
 ]
 
+de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_GRSSignum_getByTypeAndParent=[
+  {
+    "id" : 100002,
+    "parentId" : 100001,
+    "value" : "testGRSSignumValue",
+    "baseUrl" : "baseUrl",
+    "camelHttpResourceAuthKey" : "authKey"
+  }
+]
+
+de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopware6_getByTypeAndParent=[
+  {
+    "id" : 100002,
+    "parentId" : 100001,
+    "baseUrl" : "baseUrl",
+    "clientId" : "id",
+    "clientSecret" : "secret",
+    "externalSystemShopware6ConfigMappingList" : [
+      {
+        "seqNo" : 10,
+        "docTypeOrderId" : 10000,
+        "paymentRule" : "K",
+        "bpartnerIfExists" : "UPDATE_MERGE",
+        "bpartnerIfNotExists" : "FAIL",
+        "bpartnerLocationIfExists" : "DONT_UPDATE",
+        "bpartnerLocationIfNotExists" : "CREATE",
+        "isInvoiceEmailEnabled" : true,
+        "paymentTermId" : 10000,
+        "sw6CustomerGroup" : "testWithAnä",
+        "sw6PaymentMethod" : "test",
+        "description" : "test"
+      }
+    ],
+    "bPartnerIdJSONPath" : "/test/bp",
+    "bPartnerLocationIdJSONPath" : "/test/bpl",
+    "salesRepJSONPath" : "/test/salesrep",
+    "isActive" : true
+  }
+]
+
 
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Alberta_getByTypeAndValue=[
   {
     "id" : 100001,
     "type" : "Alberta",
     "name" : "name",
+    "isActive" : true,
+    "orgId" : 0,
     "childConfig" : {
       "id" : 100002,
       "parentId" : 100001,
@@ -44,11 +87,60 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Alber
 ]
 
 
+de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_GRSSignum_getById=[
+  {
+    "id" : 100001,
+    "type" : "GRSSignum",
+    "name" : "name",
+    "isActive" : true,
+    "orgId" : 0,
+    "childConfig" : {
+      "id" : 100002,
+      "parentId" : 100001,
+      "value" : "testGRSSignumValue",
+      "baseUrl" : "baseUrl",
+      "camelHttpResourceAuthKey" : "authKey"
+    }
+  }
+]
+
+
+de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_GRSSignum_getByTypeAndParent=[
+  {
+    "id" : 100002,
+    "parentId" : 100001,
+    "value" : "testGRSSignumValue",
+    "baseUrl" : "baseUrl",
+    "camelHttpResourceAuthKey" : "authKey"
+  }
+]
+
+
+de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_GRSSignum_getByTypeAndValue=[
+  {
+    "id" : 100001,
+    "type" : "GRSSignum",
+    "name" : "name",
+    "isActive" : true,
+    "orgId" : 0,
+    "childConfig" : {
+      "id" : 100002,
+      "parentId" : 100001,
+      "value" : "testGRSSignumValue",
+      "baseUrl" : "baseUrl",
+      "camelHttpResourceAuthKey" : "authKey"
+    }
+  }
+]
+
+
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopware6_getById=[
   {
     "id" : 100001,
     "type" : "Shopware6",
     "name" : "name",
+    "isActive" : true,
+    "orgId" : 0,
     "childConfig" : {
       "id" : 100002,
       "parentId" : 100001,
@@ -58,7 +150,31 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
       "externalSystemShopware6ConfigMappingList" : [ ],
       "bPartnerIdJSONPath" : "/test/bp",
       "bPartnerLocationIdJSONPath" : "/test/bpl",
-      "salesRepJSONPath" : "/test/salesrep"
+      "salesRepJSONPath" : "/test/salesrep",
+      "isActive" : true
+    }
+  }
+]
+
+
+de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopware6_getByQuery=[
+  {
+    "id" : 100001,
+    "type" : "Shopware6",
+    "name" : "name",
+    "isActive" : false,
+    "orgId" : 0,
+    "childConfig" : {
+      "id" : 100002,
+      "parentId" : 100001,
+      "baseUrl" : "baseUrl",
+      "clientId" : "id",
+      "clientSecret" : "secret",
+      "externalSystemShopware6ConfigMappingList" : [ ],
+      "bPartnerIdJSONPath" : "/test/bp",
+      "bPartnerLocationIdJSONPath" : "/test/bpl",
+      "salesRepJSONPath" : "/test/salesrep",
+      "isActive" : false
     }
   }
 ]
@@ -89,7 +205,8 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
     ],
     "bPartnerIdJSONPath" : "/test/bp",
     "bPartnerLocationIdJSONPath" : "/test/bpl",
-    "salesRepJSONPath" : "/test/salesrep"
+    "salesRepJSONPath" : "/test/salesrep",
+    "isActive" : true
   }
 ]
 
@@ -99,6 +216,8 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
     "id" : 100001,
     "type" : "Shopware6",
     "name" : "name",
+    "isActive" : true,
+    "orgId" : 0,
     "childConfig" : {
       "id" : 100002,
       "parentId" : 100001,
@@ -108,7 +227,31 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
       "externalSystemShopware6ConfigMappingList" : [ ],
       "bPartnerIdJSONPath" : "/test/bp",
       "bPartnerLocationIdJSONPath" : "/test/bpl",
-      "salesRepJSONPath" : "/test/salesrep"
+      "salesRepJSONPath" : "/test/salesrep",
+      "isActive" : true
+    }
+  }
+]
+
+
+de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopware6_store=[
+  {
+    "id" : 100001,
+    "type" : "Shopware6",
+    "name" : "name",
+    "isActive" : true,
+    "orgId" : 0,
+    "childConfig" : {
+      "id" : 100002,
+      "parentId" : 100001,
+      "baseUrl" : "new-baseURL",
+      "clientId" : "new-clientId",
+      "clientSecret" : "new-clientSecret",
+      "externalSystemShopware6ConfigMappingList" : [ ],
+      "bPartnerIdJSONPath" : "/test/bp",
+      "bPartnerLocationIdJSONPath" : "/test/bpl",
+      "salesRepJSONPath" : "/test/salesrep",
+      "isActive" : true
     }
   }
 ]
@@ -119,6 +262,8 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Wooco
     "id" : 100001,
     "type" : "WOO",
     "name" : "name",
+    "isActive" : true,
+    "orgId" : 0,
     "childConfig" : {
       "id" : 100002,
       "parentId" : 100001,
@@ -134,6 +279,8 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Wooco
     "id" : 100001,
     "type" : "WOO",
     "name" : "name",
+    "isActive" : true,
+    "orgId" : 0,
     "childConfig" : {
       "id" : 100002,
       "parentId" : 100001,
@@ -148,6 +295,8 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Other_Config
     "id" : 100001,
     "type" : "Other",
     "name" : "name",
+    "isActive" : true,
+    "orgId" : 0,
     "childConfig" : {
       "id" : {
         "externalSystemParentConfigId" : 100001

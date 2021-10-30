@@ -32,7 +32,6 @@ import org.compiere.model.X_C_BP_SupplierApproval;
 
 import javax.annotation.Nullable;
 import java.util.Arrays;
-import java.util.Optional;
 
 public enum SupplierApproval implements ReferenceListAwareEnum
 {

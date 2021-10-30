@@ -6,6 +6,7 @@ import de.metas.CommandLineParser.CommandLineOptions;
 import de.metas.dao.selection.QuerySelectionToDeleteHelper;
 import de.metas.dao.selection.model.I_T_Query_Selection;
 import de.metas.logging.LogManager;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.util.Check;
 import de.metas.util.ConnectionUtil;
 import de.metas.util.Services;
@@ -153,7 +154,7 @@ public class ServerBoot implements InitializingBean
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 		return new ArrayList<>(sysConfigBL
-				.getValuesForPrefix(SYSCONFIG_PREFIX_APP_SPRING_PROFILES_ACTIVE, 0, 0)
+				.getValuesForPrefix(SYSCONFIG_PREFIX_APP_SPRING_PROFILES_ACTIVE, ClientAndOrgId.SYSTEM)
 				.values());
 	}
 

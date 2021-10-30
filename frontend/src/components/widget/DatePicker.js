@@ -224,11 +224,6 @@ class DatePicker extends Component {
     this.picker = c;
   };
 
-  /**
-   * @method render
-   * @summary ToDo: Describe the method
-   * @todo Write the documentation
-   */
   render() {
     return (
       <div tabIndex="-1" onKeyDown={this.handleKeydown} className="datepicker">

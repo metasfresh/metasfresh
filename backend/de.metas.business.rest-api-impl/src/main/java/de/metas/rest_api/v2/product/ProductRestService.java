@@ -590,6 +590,23 @@ public class ProductRestService
 			builder.dropShip(existingBPartnerProduct.getDropShip());
 		}
 
+		//isUsedForVendor
+		if (jsonRequestBPartnerProductUpsert.isUsedForVendorSet())
+		{
+			if (jsonRequestBPartnerProductUpsert.getUsedForVendor() == null)
+			{
+				logger.debug("Ignoring boolean property \"usedForVendor\" : null ");
+			}
+			else
+			{
+				builder.usedForVendor(jsonRequestBPartnerProductUpsert.getUsedForVendor());
+			}
+		}
+		else
+		{
+			builder.usedForVendor(existingBPartnerProduct.getUsedForVendor());
+		}
+
 		builder.productId(existingBPartnerProduct.getProductId());
 
 		return builder.build();
@@ -785,6 +802,7 @@ public class ProductRestService
 				.isExcludedFromSales(jsonRequestBPartnerProductUpsert.getExcludedFromSales())
 				.exclusionFromSalesReason(jsonRequestBPartnerProductUpsert.getExclusionFromSalesReason())
 				.dropShip(jsonRequestBPartnerProductUpsert.getDropShip())
+				.usedForVendor(jsonRequestBPartnerProductUpsert.getUsedForVendor())
 				.productId(productId)
 				.build();
 	}

@@ -1,12 +1,12 @@
 package de.metas.invoicecandidate.api.impl;
 
-import java.util.Properties;
-
-import javax.annotation.Nullable;
-
+import de.metas.async.AsyncBatchId;
 import de.metas.invoicecandidate.api.IInvoiceCandUpdateSchedulerRequest;
 import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
+import java.util.Properties;
 
 /*
  * #%L
@@ -31,25 +31,30 @@ import lombok.Value;
  */
 
 @Value
-public final class InvoiceCandUpdateSchedulerRequest implements IInvoiceCandUpdateSchedulerRequest
+public class InvoiceCandUpdateSchedulerRequest implements IInvoiceCandUpdateSchedulerRequest
 {
-	public static final InvoiceCandUpdateSchedulerRequest of (
+	public static InvoiceCandUpdateSchedulerRequest of (
 			@NonNull final Properties ctx,
-			@Nullable final String trxName)
+			@Nullable final String trxName,
+			@Nullable final AsyncBatchId asyncBatchId)
 	{
-		return new InvoiceCandUpdateSchedulerRequest(ctx, trxName);
+		return new InvoiceCandUpdateSchedulerRequest(ctx, trxName, asyncBatchId);
 	}
 
 	String trxName;
 	Properties ctx;
+	AsyncBatchId asyncBatchId;
 
 	private InvoiceCandUpdateSchedulerRequest(
 			@NonNull final Properties ctx,
-			@Nullable final String trxName)
+			@Nullable final String trxName,
+			@Nullable final AsyncBatchId asyncBatchId)
 	{
 		this.ctx = ctx;
 
 		// transaction name it's OK to be null
 		this.trxName = trxName;
+
+		this.asyncBatchId = asyncBatchId;
 	}
 }

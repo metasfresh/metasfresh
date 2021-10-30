@@ -1,14 +1,14 @@
 package de.metas.ui.web.view;
 
-import java.util.Objects;
-
-import javax.annotation.Nullable;
-
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.model.DocumentQueryOrderByList;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.ad.dao.QueryLimit;
+
+import javax.annotation.Nullable;
+import java.util.Objects;
 
 /*
  * #%L
@@ -39,7 +39,7 @@ public class ViewRowIdsOrderedSelection
 	long size;
 	DocumentQueryOrderByList orderBys;
 
-	int queryLimit;
+	QueryLimit queryLimit;
 	boolean queryLimitHit;
 
 	@Builder(toBuilder = true)
@@ -47,16 +47,16 @@ public class ViewRowIdsOrderedSelection
 			@NonNull final ViewId viewId,
 			final long size,
 			@Nullable final DocumentQueryOrderByList orderBys,
-			final int queryLimit)
+			@Nullable final QueryLimit queryLimit)
 	{
 		this.viewId = viewId;
 		this.size = size;
 		this.orderBys = orderBys != null ? orderBys : DocumentQueryOrderByList.EMPTY;
-		this.queryLimit = queryLimit;
+		this.queryLimit = queryLimit != null ? queryLimit : QueryLimit.NO_LIMIT;
 
-		this.queryLimitHit = queryLimit > 0
+		this.queryLimitHit = this.queryLimit.isLimited()
 				&& size > 0
-				&& size >= queryLimit;
+				&& size >= this.queryLimit.toInt();
 	}
 
 	public static boolean equals(@Nullable final ViewRowIdsOrderedSelection s1, @Nullable final ViewRowIdsOrderedSelection s2)

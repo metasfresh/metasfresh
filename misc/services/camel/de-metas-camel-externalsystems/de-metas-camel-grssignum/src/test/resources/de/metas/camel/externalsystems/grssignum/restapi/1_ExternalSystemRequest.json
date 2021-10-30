@@ -1,0 +1,11 @@
+{
+  "orgCode": "orgCode",
+  "externalSystemName": "GRSSignum",
+  "command": "required_but_notImportantInOurTest",
+  "adPInstanceId": 123,
+  "externalSystemConfigId": 100,
+  "parameters": {
+    "CamelHttpResourceAuthKey": "authKey",
+    "baseURL": "baseURL"
+  }
+}

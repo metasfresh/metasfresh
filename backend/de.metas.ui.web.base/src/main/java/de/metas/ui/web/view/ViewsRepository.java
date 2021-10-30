@@ -4,6 +4,7 @@ import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Streams;
+import de.metas.elasticsearch.model.I_T_ES_FTS_Search_Result;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.base.model.I_T_WEBUI_ViewSelection;
 import de.metas.ui.web.base.model.I_T_WEBUI_ViewSelectionLine;
@@ -124,6 +125,7 @@ public class ViewsRepository implements IViewsRepository
 		{
 			truncateTable(I_T_WEBUI_ViewSelection.Table_Name);
 			truncateTable(I_T_WEBUI_ViewSelectionLine.Table_Name);
+			truncateTable(I_T_ES_FTS_Search_Result.Table_Name);
 		}
 		else
 		{

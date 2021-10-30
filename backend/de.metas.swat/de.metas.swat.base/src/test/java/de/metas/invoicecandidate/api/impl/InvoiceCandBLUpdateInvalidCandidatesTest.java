@@ -29,7 +29,11 @@ import static org.junit.Assert.assertThat;
 
 import java.math.BigDecimal;
 
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.business.BusinessTestHelper;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -54,9 +58,11 @@ public class InvoiceCandBLUpdateInvalidCandidatesTest extends AbstractICTestSupp
 	@Test
 	public void testQtyToInvoice_AfterDelivery()
 	{
+		final I_C_BPartner bPartner = BusinessTestHelper.createBPartner("test-bp");
+
 		final I_C_Invoice_Candidate ic1 = createInvoiceCandidate()
 				.setInstanceName("ic1")
-				.setBillBPartnerId(1)
+				.setBillBPartnerId(bPartner.getC_BPartner_ID())
 				.setPriceEntered(1)
 				.setQtyOrdered(3)
 				.setSOTrx(false)

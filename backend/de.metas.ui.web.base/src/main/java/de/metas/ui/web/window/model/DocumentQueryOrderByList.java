@@ -1,17 +1,7 @@
 package de.metas.ui.web.window.model;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
-import java.util.function.Consumer;
-import java.util.stream.Collector;
-import java.util.stream.Stream;
-
-import javax.annotation.Nullable;
-
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
-
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy.FieldValueExtractor;
@@ -20,6 +10,14 @@ import de.metas.util.GuavaCollectors;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;
+
+import javax.annotation.Nullable;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Objects;
+import java.util.function.Consumer;
+import java.util.stream.Collector;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -47,7 +45,7 @@ import lombok.ToString;
 @ToString
 public class DocumentQueryOrderByList
 {
-	public static final DocumentQueryOrderByList ofList(@Nullable final List<DocumentQueryOrderBy> list)
+	public static DocumentQueryOrderByList ofList(@Nullable final List<DocumentQueryOrderBy> list)
 	{
 		return list != null && !list.isEmpty()
 				? new DocumentQueryOrderByList(list)

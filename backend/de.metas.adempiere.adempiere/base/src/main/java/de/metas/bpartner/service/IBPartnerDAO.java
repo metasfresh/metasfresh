@@ -22,6 +22,23 @@
 
 package de.metas.bpartner.service;
 
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
+import java.util.stream.Stream;
+
+import javax.annotation.Nullable;
+
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
+import de.metas.location.LocationId;
+import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BP_Relation;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
+
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerContactId;
@@ -44,6 +61,7 @@ import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.ad.dao.QueryLimit;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_Relation;
 import org.compiere.model.I_C_BPartner;
@@ -116,6 +134,8 @@ public interface IBPartnerDAO extends ISingletonService
 	@NonNull
 	BPartnerLocationId getBPartnerLocationIdByRepoId(final int repoId);
 
+	ImmutableSet<BPartnerLocationId> getBPartnerLocationIdsByRepoIds(@NonNull Set<Integer> repoIds);
+
 	/**
 	 * @deprecated in all cases i can imagine, if the caller has a {@code bpartnerLocationId}, they need the actual record, even if it is inactive.
 	 * Think e.g. of a completed shipment. Therefore, please consider using {@link #getBPartnerLocationByIdEvenInactive(BPartnerLocationId)} instead.
@@ -130,6 +150,8 @@ public interface IBPartnerDAO extends ISingletonService
 	@Nullable
 	I_C_BPartner_Location getBPartnerLocationByIdInTrx(BPartnerLocationId bpartnerLocationId);
 
+	BPartnerLocationAndCaptureId getBPartnerLocationAndCaptureIdInTrx(@NonNull BPartnerLocationId bpartnerLocationId);
+
 	boolean existsAndIsActive(BPartnerLocationId bpartnerLocationId);
 
 	List<I_C_BPartner_Location> retrieveBPartnerLocations(BPartnerId bpartnerId);
@@ -140,9 +162,9 @@ public interface IBPartnerDAO extends ISingletonService
 
 	Set<CountryId> retrieveBPartnerLocationCountryIds(BPartnerId bpartnerId);
 
-	CountryId retrieveBPartnerLocationCountryId(BPartnerLocationId bpLocationId);
+	CountryId getCountryIdInTrx(BPartnerLocationId bpLocationId);
 
-	CountryId retrieveBPartnerLocationCountryIdInTrx(BPartnerLocationId bpLocationId);
+	LocationId getLocationId(@NonNull BPartnerLocationId bpLocationId);
 
 	/**
 	 * @return Contacts of the partner, ordered by ad_user_ID, ascending
@@ -159,6 +181,8 @@ public interface IBPartnerDAO extends ISingletonService
 	<T extends I_C_BPartner> T getByIdInTrx(@NonNull BPartnerId bpartnerId, @NonNull Class<T> modelClass);
 
 	Optional<BPartnerContactId> getContactIdByExternalId(BPartnerId bpartnerId, ExternalId externalId);
+
+	ImmutableSet<BPartnerContactId> getContactIdsByRepoIds(@NonNull Set<Integer> repoIds);
 
 	@Nullable
 	I_AD_User getContactById(BPartnerContactId contactId);
@@ -259,8 +283,7 @@ public interface IBPartnerDAO extends ISingletonService
 	@Nullable
 	CountryId getDefaultShipToLocationCountryIdOrNull(BPartnerId bpartnerId);
 
-	CountryId getBPartnerLocationCountryId(BPartnerLocationId bpartnerLocationId);
-
+	CountryId getCountryId(BPartnerLocationId bpLocationId);
 	/**
 	 * Retrieve default/first bill to location.
 	 *
@@ -315,6 +338,8 @@ public interface IBPartnerDAO extends ISingletonService
 			@NonNull OrgId targetOrgId);
 
 	BPartnerId cloneBPartnerRecord(@NonNull CloneBPartnerRequest request);
+
+	List<I_C_BPartner> retrieveVendors(@NonNull QueryLimit limit);
 
 	@Value
 	@Builder
@@ -375,7 +400,7 @@ public interface IBPartnerDAO extends ISingletonService
 
 	List<GeographicalCoordinatesWithBPartnerLocationId> getGeoCoordinatesByBPartnerLocationIds(Collection<Integer> bpartnerLocationRepoIds);
 
-	BPartnerLocationId retrieveCurrentBillLocationOrNull(BPartnerId partnerId);
+	I_C_BPartner_Location retrieveCurrentBillLocationOrNull(BPartnerId partnerId);
 
 	BPartnerLocationId retrieveLastUpdatedLocation(BPartnerId bpartnerId);
 	

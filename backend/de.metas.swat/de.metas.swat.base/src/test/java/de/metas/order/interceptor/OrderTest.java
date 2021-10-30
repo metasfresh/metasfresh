@@ -7,6 +7,7 @@ import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.document.location.impl.DocumentLocationBL;
 import de.metas.order.impl.OrderLineDetailRepository;
 import de.metas.order.model.interceptor.C_Order;
 import de.metas.user.UserGroupRepository;
@@ -56,10 +57,12 @@ public class OrderTest
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
+
+		final BPartnerBL bpartnerBL = new BPartnerBL(new UserRepository());
+		final DocumentLocationBL documentLocationBL = new DocumentLocationBL(bpartnerBL);
 		final OrderLineDetailRepository orderLineDetailRepository = new OrderLineDetailRepository();
 		final BPartnerSupplierApprovalService partnerSupplierApprovalService = new BPartnerSupplierApprovalService(new BPartnerSupplierApprovalRepository(), new UserGroupRepository());
-		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new C_Order(orderLineDetailRepository, partnerSupplierApprovalService));
+		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new C_Order(bpartnerBL, orderLineDetailRepository, documentLocationBL, partnerSupplierApprovalService));
 	}
 
 	@Test

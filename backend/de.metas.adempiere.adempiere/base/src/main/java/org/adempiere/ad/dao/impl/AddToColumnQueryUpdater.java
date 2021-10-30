@@ -1,16 +1,16 @@
 package org.adempiere.ad.dao.impl;
 
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.Properties;
-
+import de.metas.util.Check;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.ISqlQueryFilter;
 import org.adempiere.ad.dao.ISqlQueryUpdater;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
 
-import de.metas.util.Check;
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Properties;
 
 /*
  * #%L
@@ -40,9 +40,8 @@ class AddToColumnQueryUpdater<T> implements ISqlQueryUpdater<T>
 	private final BigDecimal value;
 	private final IQueryFilter<T> onlyWhenFilter;
 
-	public AddToColumnQueryUpdater(final String columnName, final BigDecimal value, final IQueryFilter<T> onlyWhenFilter)
+	public AddToColumnQueryUpdater(final String columnName, final BigDecimal value, @Nullable final IQueryFilter<T> onlyWhenFilter)
 	{
-		super();
 		Check.assumeNotEmpty(columnName, "columnName not empty");
 		this.columnName = columnName;
 
@@ -100,8 +99,7 @@ class AddToColumnQueryUpdater<T> implements ISqlQueryUpdater<T>
 		
 		final BigDecimal valueNew = valueOld.add(value);
 
-		final boolean updated = InterfaceWrapperHelper.setValue(model, columnName, valueNew);
-		return updated;
+		return InterfaceWrapperHelper.setValue(model, columnName, valueNew);
 	}
 
 }

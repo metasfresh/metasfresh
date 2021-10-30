@@ -21,24 +21,23 @@
  */
 package org.compiere.util;
 
+import de.metas.logging.LogManager;
+import de.metas.util.StringUtils;
+import lombok.NonNull;
+
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Optional;
 
-import de.metas.logging.LogManager;
-
-import javax.annotation.Nullable;
-
 /**
  * Evaluator source.
- *
+ * <p>
  * To create {@link Evaluatee} instances, please use {@link Evaluatees}.
- *
- * @author Jorg Janke
- * @version $Id: Evaluatee.java,v 1.2 2006/07/30 00:54:35 jjanke Exp $
  */
 public interface Evaluatee
 {
+	@Nullable
 	@SuppressWarnings("unchecked")
 	default <T> T get_ValueAsObject(final String variableName)
 	{
@@ -51,130 +50,176 @@ public interface Evaluatee
 	 * @param variableName name
 	 * @return value
 	 */
+	@Nullable
 	String get_ValueAsString(String variableName);
 
 	/**
 	 * Get variable value as integer.
 	 *
-	 * @param variableName
-	 * @param defaultValue
-	 * @return
-	 * 		<ul>
-	 *         <li>integer value
-	 *         <li>or <code>defaultValue</code> in case no value was found
-	 *         <li>or <code>defaultValue</code> in case the value was not parseable as integer
-	 *         </ul>
+	 * @return <ul>
+	 * <li>integer value
+	 * <li>or <code>defaultValue</code> in case no value was found
+	 * <li>or <code>defaultValue</code> in case the value was not parsable as integer
+	 * </ul>
 	 */
-	default Integer get_ValueAsInt(final String variableName, final Integer defaultValue)
+	@Nullable
+	default Integer get_ValueAsInt(final String variableName, @Nullable final Integer defaultValue)
 	{
-		final String valueStr = get_ValueAsString(variableName);
-		return convertToInteger(variableName, valueStr, defaultValue);
+		final Object valueObj = get_ValueAsObject(variableName);
+		return convertToInteger(variableName, valueObj, defaultValue);
 	}
 
 	/**
 	 * @return default value or null; never throws exception
 	 */
-	/* private */static Integer convertToInteger(final String variableName, String valueStr, final Integer defaultValue)
+	/* private */
+	@Nullable
+	static Integer convertToInteger(final String variableName, @Nullable final Object valueObj, @Nullable final Integer defaultValue)
 	{
-		if (Env.isPropertyValueNull(variableName, valueStr))
+		if (valueObj == null)
 		{
 			return defaultValue;
 		}
+		else if (valueObj instanceof Number)
+		{
+			return ((Number)valueObj).intValue();
+		}
+		else
+		{
+			String valueStr = valueObj.toString();
+			if (valueStr == null
+					|| Env.isPropertyValueNull(variableName, valueStr))
+			{
+				return defaultValue;
+			}
 
-		valueStr = valueStr.trim();
-		if (valueStr.isEmpty())
-		{
-			return defaultValue;
-		}
+			valueStr = valueStr.trim();
+			if (valueStr.isEmpty())
+			{
+				return defaultValue;
+			}
 
-		try
-		{
-			return Integer.parseInt(valueStr);
-		}
-		catch (final Exception e)
-		{
-			LogManager.getLogger(Evaluatee.class).warn("Failed converting {}={} to Integer. Returning default value: {}", variableName, valueStr, defaultValue, e);
-			return defaultValue;
+			try
+			{
+				return Integer.parseInt(valueStr);
+			}
+			catch (final Exception e)
+			{
+				LogManager.getLogger(Evaluatee.class).warn("Failed converting {}={} to Integer. Returning default value: {}", variableName, valueStr, defaultValue, e);
+				return defaultValue;
+			}
 		}
 	}
 
 	/**
 	 * Get variable value as boolean.
 	 *
-	 * @param variableName
-	 * @param defaultValue
-	 * @return
-	 * 		<ul>
-	 *         <li>boolean value
-	 *         <li>or <code>defaultValue</code> in case no value was found
-	 *         <li>or <code>defaultValue</code> in case the value was not parseable as boolean
-	 *         </ul>
+	 * @return <ul>
+	 * <li>boolean value
+	 * <li>or <code>defaultValue</code> in case no value was found
+	 * <li>or <code>defaultValue</code> in case the value was not parsable as boolean
+	 * </ul>
 	 */
-	default Boolean get_ValueAsBoolean(final String variableName, final Boolean defaultValue)
+	@Nullable
+	default Boolean get_ValueAsBoolean(final String variableName, @Nullable final Boolean defaultValue)
 	{
-		final String valueStr = get_ValueAsString(variableName);
-		return DisplayType.toBoolean(valueStr, defaultValue);
+		final Object valueObj = get_ValueAsObject(variableName);
+		return StringUtils.toBoolean(valueObj, defaultValue);
 	}
 
-	default BigDecimal get_ValueAsBigDecimal(final String variableName, final BigDecimal defaultValue)
+	@Nullable
+	default BigDecimal get_ValueAsBigDecimal(final String variableName, @Nullable final BigDecimal defaultValue)
 	{
-		final String valueStr = get_ValueAsString(variableName);
-		return convertToBigDecimal(variableName, valueStr, defaultValue);
+		final Object valueObj = get_ValueAsObject(variableName);
+		return convertToBigDecimal(variableName, valueObj, defaultValue);
 	}
 
 	/**
 	 * @return default value or null; never throws exception
 	 */
-	/* private */static BigDecimal convertToBigDecimal(final String variableName, String valueStr, final BigDecimal defaultValue)
+	/* private */
+	@Nullable
+	static BigDecimal convertToBigDecimal(final String variableName, @Nullable final Object valueObj, @Nullable final BigDecimal defaultValue)
 	{
-		if (Env.isPropertyValueNull(variableName, valueStr))
+		if (valueObj == null)
 		{
-			return defaultValue;
+			return null;
 		}
+		else if (valueObj instanceof BigDecimal)
+		{
+			return (BigDecimal)valueObj;
+		}
+		else if (valueObj instanceof Integer)
+		{
+			return BigDecimal.valueOf((Integer)valueObj);
+		}
+		else
+		{
+			String valueStr = valueObj.toString();
+			if (valueStr == null || Env.isPropertyValueNull(variableName, valueStr))
+			{
+				return defaultValue;
+			}
 
-		valueStr = valueStr.trim();
-		if (valueStr.isEmpty())
-		{
-			return defaultValue;
-		}
+			valueStr = valueStr.trim();
+			if (valueStr.isEmpty())
+			{
+				return defaultValue;
+			}
 
-		try
-		{
-			return new BigDecimal(valueStr);
-		}
-		catch (final Exception e)
-		{
-			LogManager.getLogger(Evaluatee.class).warn("Failed converting {}={} to BigDecimal. Returning default value: {}", variableName, valueStr, defaultValue, e);
-			return defaultValue;
+			try
+			{
+				return new BigDecimal(valueStr);
+			}
+			catch (final Exception e)
+			{
+				LogManager.getLogger(Evaluatee.class).warn("Failed converting {}={} to BigDecimal. Returning default value: {}", variableName, valueStr, defaultValue, e);
+				return defaultValue;
+			}
 		}
 	}
 
+	@Nullable
 	default java.util.Date get_ValueAsDate(final String variableName, @Nullable final java.util.Date defaultValue)
 	{
-		final String valueStr = get_ValueAsString(variableName);
-		return convertToDate(variableName, valueStr, defaultValue);
+		final Object valueObj = get_ValueAsObject(variableName);
+		return convertToDate(variableName, valueObj, defaultValue);
 	}
 
-	/* private */static java.util.Date convertToDate(final String variableName, final String valueStr, final java.util.Date defaultValue)
+	/* private */
+	@Nullable
+	static java.util.Date convertToDate(final String variableName, @Nullable final Object valueObj, @Nullable final java.util.Date defaultValue)
 	{
-		if (valueStr == null || valueStr.isEmpty())
+		if (valueObj == null)
 		{
 			return defaultValue;
 		}
+		else if (TimeUtil.isDateOrTimeObject(valueObj))
+		{
+			return TimeUtil.asDate(valueObj);
+		}
+		else
+		{
+			final String valueStr = valueObj.toString();
+			if (valueStr == null || valueStr.isEmpty())
+			{
+				return defaultValue;
+			}
 
-		try
-		{
-			final Timestamp value = Env.parseTimestamp(valueStr);
-			return value == null ? defaultValue : value;
-		}
-		catch (final Exception e)
-		{
-			LogManager.getLogger(Evaluatee.class).warn("Failed converting {}={} to Date. Returning default value: {}", variableName, valueStr, defaultValue, e);
-			return defaultValue;
+			try
+			{
+				final Timestamp value = Env.parseTimestamp(valueStr);
+				return value == null ? defaultValue : value;
+			}
+			catch (final Exception e)
+			{
+				LogManager.getLogger(Evaluatee.class).warn("Failed converting {}={} to Date. Returning default value: {}", variableName, valueStr, defaultValue, e);
+				return defaultValue;
+			}
 		}
 	}
 
-	default Optional<Object> get_ValueIfExists(final String variableName, final Class<?> targetType)
+	default Optional<Object> get_ValueIfExists(@NonNull final String variableName, @NonNull final Class<?> targetType)
 	{
 		if (Integer.class.equals(targetType)
 				|| int.class.equals(targetType))
@@ -204,9 +249,8 @@ public interface Evaluatee
 		}
 	}
 
-
 	default Evaluatee andComposeWith(final Evaluatee other)
 	{
 		return Evaluatees.compose(this, other);
 	}
-}	// Evaluatee
+}

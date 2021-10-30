@@ -226,9 +226,9 @@ public final class CollectionUtils
 	 */
 	public static <T, R> R extractSingleElement(
 			@NonNull final Collection<T> collection,
-			@NonNull final Function<T, R> extractFuntion)
+			@NonNull final Function<T, R> extractFunction)
 	{
-		final ImmutableList<R> extractedElements = extractDistinctElements(collection, extractFuntion);
+		final ImmutableList<R> extractedElements = extractDistinctElements(collection, extractFunction);
 		return singleElement(extractedElements);
 	}
 
@@ -238,44 +238,44 @@ public final class CollectionUtils
 	@Nullable
 	public static <T, R> R extractSingleElementOrDefault(
 			@NonNull final Collection<T> collection,
-			@NonNull final Function<T, R> extractFuntion,
+			@NonNull final Function<T, R> extractFunction,
 			@Nullable final R defaultValue)
 	{
-		final ImmutableList<R> extractedElements = extractDistinctElements(collection, extractFuntion);
+		final ImmutableList<R> extractedElements = extractDistinctElements(collection, extractFunction);
 		return singleElementOrDefault(extractedElements, defaultValue);
 	}
 
 	public static <T, R> boolean hasDifferentValues(
 			@NonNull final Collection<T> collection,
-			@NonNull final Function<T, R> extractFuntion)
+			@NonNull final Function<T, R> extractFunction)
 	{
 		if (collection.isEmpty())
 		{
 			return false;
 		}
 
-		final ImmutableList<R> extractedElements = extractDistinctElements(collection, extractFuntion);
+		final ImmutableList<R> extractedElements = extractDistinctElements(collection, extractFunction);
 		return extractedElements.size() > 1;
 	}
 
 	public static <R, T> ImmutableList<R> extractDistinctElements(
 			@NonNull final Collection<T> collection,
-			@NonNull final Function<T, R> extractFuntion)
+			@NonNull final Function<T, R> extractFunction)
 	{
 		return collection
 				.stream()
-				.map(extractFuntion)
+				.map(extractFunction)
 				.distinct()
 				.collect(ImmutableList.toImmutableList());
 	}
 
 	public static <R, T> ImmutableSet<R> extractDistinctElementsIntoSet(
 			@NonNull final Collection<T> collection,
-			@NonNull final Function<T, R> extractFuntion)
+			@NonNull final Function<T, R> extractFunction)
 	{
 		return collection
 				.stream()
-				.map(extractFuntion)
+				.map(extractFunction)
 				.distinct()
 				.collect(ImmutableSet.toImmutableSet());
 	}
@@ -394,4 +394,33 @@ public final class CollectionUtils
 				.collect(ImmutableList.toImmutableList());
 	}
 
+	@Nullable
+	public static <T> T emptyOrSingleElement(@Nullable final Collection<T> collection)
+	{
+		if (collection == null)
+		{
+			return null;
+		}
+
+		final int size = collection.size();
+		if (size == 0)
+		{
+			return null;
+		}
+		else if (size == 1)
+		{
+			return collection.iterator().next();
+		}
+		else
+		{
+			throw Check.mkEx("The given collection needs to have ZERO or ONE item, but has " + size + " items; collection=" + collection);
+		}
+	}
+
+	@NonNull
+	public static <T> ArrayList<T> mergeLists(@NonNull final ArrayList<T> list1,@NonNull final ArrayList<T> list2)
+	{
+		list1.addAll(list2);
+		return list1;
+	}
 }
