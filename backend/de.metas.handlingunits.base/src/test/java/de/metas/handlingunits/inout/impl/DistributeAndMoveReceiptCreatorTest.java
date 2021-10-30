@@ -8,6 +8,8 @@ import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleReposi
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleService;
 import de.metas.handlingunits.inout.impl.DistributeAndMoveReceiptCreator.Result;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule_Alloc;
+import de.metas.handlingunits.reservation.HUReservationRepository;
+import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
@@ -64,12 +66,16 @@ public class DistributeAndMoveReceiptCreatorTest
 
 		final DDOrderLowLevelDAO ddOrderLowLevelDAO = new DDOrderLowLevelDAO();
 		final DDOrderLowLevelService ddOrderLowLevelService = new DDOrderLowLevelService(ddOrderLowLevelDAO);
+		final HUReservationService huReservationService = new HUReservationService(new HUReservationRepository());
 		distributeAndMoveReceiptCreator = new DistributeAndMoveReceiptCreator(
 				new LotNumberQuarantineRepository(),
 				new DDOrderService(
 						ddOrderLowLevelDAO,
 						ddOrderLowLevelService,
-						new DDOrderMoveScheduleService(ddOrderLowLevelDAO, new DDOrderMoveScheduleRepository())));
+						new DDOrderMoveScheduleService(
+								ddOrderLowLevelDAO,
+								new DDOrderMoveScheduleRepository(),
+								huReservationService)));
 	}
 
 	@Test

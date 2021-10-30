@@ -20,21 +20,27 @@
  * #L%
  */
 
-package de.metas.handlingunits.picking.plan;
+package de.metas.handlingunits.picking.plan.model;
 
-import com.google.common.collect.ImmutableList;
+import de.metas.handlingunits.HuId;
 import lombok.Builder;
 import lombok.NonNull;
-import lombok.Singular;
 import lombok.Value;
-import org.eevolution.api.PPOrderId;
+import org.eevolution.api.PPOrderBOMLineId;
+
+import javax.annotation.Nullable;
 
 @Value
-@Builder
-public class PickFromPickingOrder
+@Builder(toBuilder = true)
+public class IssueToBOMLine
 {
-	@NonNull PPOrderId orderId;
+	@NonNull PPOrderBOMLineId issueToOrderBOMLineId;
+	@Nullable HuId issueFromHUId;
 
-	@Singular
-	@NonNull ImmutableList<PickingPlanLine> issueToBOMLines;
+	public IssueToBOMLine withIssueFromHUId(@NonNull final HuId issueFromHUId)
+	{
+		return !HuId.equals(this.issueFromHUId, issueFromHUId)
+				? toBuilder().issueFromHUId(issueFromHUId).build()
+				: this;
+	}
 }

@@ -70,6 +70,8 @@ import de.metas.handlingunits.model.I_M_HU_Trx_Hdr;
 import de.metas.handlingunits.model.X_M_HU_PI_Attribute;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
+import de.metas.handlingunits.reservation.HUReservationRepository;
+import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.spi.IHUPackingMaterialCollectorSource;
 import de.metas.handlingunits.storage.impl.PlainProductStorage;
 import de.metas.handlingunits.test.HUListAssertsBuilder;
@@ -545,7 +547,11 @@ public class HUTestHelper
 	private de.metas.handlingunits.model.validator.Main newHandlingUnitsModelInterceptor()
 	{
 		final DDOrderLowLevelDAO ddOrderLowLevelDAO = new DDOrderLowLevelDAO();
-		final DDOrderMoveScheduleService ddOrderMoveScheduleService = new DDOrderMoveScheduleService(ddOrderLowLevelDAO, new DDOrderMoveScheduleRepository());
+		final HUReservationService huReservationService = new HUReservationService(new HUReservationRepository());
+		final DDOrderMoveScheduleService ddOrderMoveScheduleService = new DDOrderMoveScheduleService(
+				ddOrderLowLevelDAO,
+				new DDOrderMoveScheduleRepository(),
+				huReservationService);
 		final DDOrderLowLevelService ddOrderLowLevelService = new DDOrderLowLevelService(ddOrderLowLevelDAO);
 		final DDOrderService ddOrderService = new DDOrderService(ddOrderLowLevelDAO, ddOrderLowLevelService, ddOrderMoveScheduleService);
 		return new de.metas.handlingunits.model.validator.Main(

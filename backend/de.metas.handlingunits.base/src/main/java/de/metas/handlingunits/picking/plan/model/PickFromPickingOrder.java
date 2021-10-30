@@ -20,13 +20,21 @@
  * #L%
  */
 
-package de.metas.handlingunits.picking.plan;
+package de.metas.handlingunits.picking.plan.model;
 
-public enum PickingPlanLineType
+import com.google.common.collect.ImmutableList;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Singular;
+import lombok.Value;
+import org.eevolution.api.PPOrderId;
+
+@Value
+@Builder
+public class PickFromPickingOrder
 {
-	PICK_FROM_HU,
-	PICK_FROM_HU_ALTERNATIVE,
-	PICK_FROM_PICKING_ORDER,
-	ISSUE_COMPONENTS_TO_PICKING_ORDER,
-	UNALLOCABLE,
+	@NonNull PPOrderId orderId;
+
+	@Singular
+	@NonNull ImmutableList<PickingPlanLine> issueToBOMLines;
 }

@@ -16,5 +16,5 @@ import de.metas.distribution.ddorder.DDOrderId;
 public class DDOrderMovePlan
 {
 	@NonNull DDOrderId ddOrderId;
-	@NonNull ImmutableList<DDOrderMovePlanStep> lines;
+	@NonNull ImmutableList<DDOrderMovePlanLine> lines;
 }

@@ -1,4 +1,4 @@
-package de.metas.handlingunits.picking.plan;
+package de.metas.handlingunits.picking.plan.generator.pickFromHUs;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -10,36 +10,35 @@ import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.reservation.HUReservation;
 import de.metas.handlingunits.reservation.HUReservationService;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.warehouse.LocatorId;
-import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.api.IWarehouseDAO;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Set;
 
-class PickFromHUsSupplier
+public class PickFromHUsSupplier
 {
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 	private final HUReservationService huReservationService;
+	@Getter
 	private final HUsLoadingCache husCache;
 
 	private static final AttributeCode ATTR_SerialNo;
 	private static final AttributeCode ATTR_LotNumber;
 	private static final AttributeCode ATTR_BestBeforeDate;
 	private static final AttributeCode ATTR_RepackNumber;
-	static final ImmutableSet<AttributeCode> ATTRIBUTES = ImmutableSet.of(
+	public static final ImmutableSet<AttributeCode> ATTRIBUTES = ImmutableSet.of(
 			ATTR_SerialNo = AttributeConstants.ATTR_SerialNo,
 			ATTR_LotNumber = AttributeConstants.ATTR_LotNumber,
 			ATTR_BestBeforeDate = AttributeConstants.ATTR_BestBeforeDate,
@@ -52,33 +51,31 @@ class PickFromHUsSupplier
 	@Builder
 	private PickFromHUsSupplier(
 			@NonNull final HUReservationService huReservationService,
-			@NonNull final HUsLoadingCache husCache,
+			@Nullable final HUsLoadingCache sharedHUsCache,
 			final boolean considerAttributes,
 			final boolean fallbackLotNumberToHUValue)
 	{
 		this.huReservationService = huReservationService;
-		this.husCache = husCache;
+		this.husCache = sharedHUsCache != null ? sharedHUsCache : new HUsLoadingCache(ATTRIBUTES);
 		this.considerAttributes = considerAttributes;
 		this.fallbackLotNumberToHUValue = fallbackLotNumberToHUValue;
 	}
 
-	public List<PickFromHU> getEligiblePickFromHUs(
-			@NonNull final AllocablePackageable packageable,
-			@NonNull final ShipmentAllocationBestBeforePolicy bestBeforePolicy)
+	public ImmutableList<PickFromHU> getEligiblePickFromHUs(@NonNull final PickFromHUsGetRequest request)
 	{
 		final ArrayList<PickFromHU> result = new ArrayList<>();
 
-		getVHUIdsAlreadyReserved(packageable)
+		getVHUIdsAlreadyReserved(request)
 				.stream()
 				.map(vhuId -> createPickFromHUByVHUId(vhuId).withHuReservedForThisLine(true))
 				.forEach(result::add);
 
-		getVHUIdsEligibleToAllocateAndNotReservedAtAll(packageable)
+		getVHUIdsEligibleToAllocateAndNotReservedAtAll(request)
 				.stream()
 				.map(this::createPickFromHUByVHUId)
 				.forEach(result::add);
 
-		result.sort(getAllocationOrder(bestBeforePolicy));
+		result.sort(getAllocationOrder(request.getBestBeforePolicy()));
 
 		return ImmutableList.copyOf(result);
 	}
@@ -116,30 +113,28 @@ class PickFromHUsSupplier
 				: null;
 	}
 
-	private ImmutableSet<HuId> getVHUIdsAlreadyReserved(final AllocablePackageable packageable)
+	private ImmutableSet<HuId> getVHUIdsAlreadyReserved(@NonNull final PickFromHUsGetRequest request)
 	{
-		return packageable.getReservationRef()
+		return request.getReservationRef()
 				.flatMap(huReservationService::getByDocumentRef)
 				.map(HUReservation::getVhuIds)
 				.orElseGet(ImmutableSet::of);
 	}
 
-	private ImmutableSet<HuId> getVHUIdsEligibleToAllocateAndNotReservedAtAll(final AllocablePackageable packageable)
+	private ImmutableSet<HuId> getVHUIdsEligibleToAllocateAndNotReservedAtAll(@NonNull final PickFromHUsGetRequest request)
 	{
-		final Set<WarehouseId> pickingWarehouseIds = warehouseDAO.getWarehouseIdsOfSamePickingGroup(packageable.getWarehouseId());
-
 		final IHUQueryBuilder vhuQuery = handlingUnitsDAO
 				.createHUQueryBuilder()
 				.addPIVersionToInclude(HuPackingInstructionsVersionId.VIRTUAL)
-				.addOnlyInWarehouseIds(pickingWarehouseIds)
-				.addOnlyWithProductId(packageable.getProductId())
+				.addOnlyInLocatorIds(Check.assumeNotEmpty(request.getPickFromLocatorIds(), "no pick from locators set: {}", request))
+				.addOnlyWithProductId(request.getProductId())
 				.addHUStatusToInclude(X_M_HU.HUSTATUS_Active)
 				.setExcludeReserved();
 
 		// ASI
 		if (considerAttributes)
 		{
-			final ImmutableAttributeSet attributeSet = attributeDAO.getImmutableAttributeSetById(packageable.getAsiId());
+			final ImmutableAttributeSet attributeSet = attributeDAO.getImmutableAttributeSetById(request.getAsiId());
 			// TODO: shall we consider only storage relevant attributes?
 			vhuQuery.addOnlyWithAttributes(attributeSet);
 			vhuQuery.allowSqlWhenFilteringAttributes(huReservationService.isAllowSqlWhenFilteringHUAttributes());

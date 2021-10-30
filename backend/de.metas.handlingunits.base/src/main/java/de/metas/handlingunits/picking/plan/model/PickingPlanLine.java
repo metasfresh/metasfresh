@@ -20,8 +20,9 @@
  * #L%
  */
 
-package de.metas.handlingunits.picking.plan;
+package de.metas.handlingunits.picking.plan.model;
 
+import de.metas.handlingunits.picking.plan.generator.pickFromHUs.PickFromHU;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import lombok.Builder;

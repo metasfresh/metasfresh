@@ -1,4 +1,4 @@
-package de.metas.handlingunits.picking.plan;
+package de.metas.handlingunits.picking.plan.generator;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
@@ -11,6 +11,11 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
+import de.metas.handlingunits.picking.plan.model.PickingPlan;
+import de.metas.handlingunits.picking.plan.model.PickingPlanLine;
+import de.metas.handlingunits.picking.plan.model.PickingPlanLineType;
+import de.metas.handlingunits.picking.plan.model.SourceDocumentInfo;
+import de.metas.handlingunits.picking.plan.generator.pickFromHUs.PickFromHU;
 import de.metas.handlingunits.reservation.HUReservation;
 import de.metas.handlingunits.reservation.HUReservationDocRef;
 import de.metas.handlingunits.reservation.HUReservationRepository;

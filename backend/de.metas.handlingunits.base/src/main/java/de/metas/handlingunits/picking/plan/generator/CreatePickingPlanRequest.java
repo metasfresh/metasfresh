@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.handlingunits.picking.plan;
+package de.metas.handlingunits.picking.plan.generator;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.picking.api.Packageable;

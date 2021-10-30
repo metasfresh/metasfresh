@@ -7,12 +7,13 @@ import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelDAO;
 import de.metas.distribution.ddorder.movement.schedule.plan.DDOrderMovePlan;
 import de.metas.distribution.ddorder.movement.schedule.plan.DDOrderMovePlanCreateCommand;
 import de.metas.distribution.ddorder.movement.schedule.plan.DDOrderMovePlanCreateRequest;
-import de.metas.distribution.ddorder.movement.schedule.plan.DDOrderMovePlanLine;
 import de.metas.distribution.ddorder.movement.schedule.plan.DDOrderMovePlanStep;
+import de.metas.distribution.ddorder.movement.schedule.plan.DDOrderMovePlanLine;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.QtyRejectedReasonCode;
+import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryFilter;
@@ -30,13 +31,16 @@ public class DDOrderMoveScheduleService
 	private final DDOrderMoveScheduleRepository ddOrderMoveScheduleRepository;
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
+	private final HUReservationService huReservationService;
 
 	public DDOrderMoveScheduleService(
 			@NonNull final DDOrderLowLevelDAO ddOrderLowLevelDAO,
-			@NonNull final DDOrderMoveScheduleRepository ddOrderMoveScheduleRepository)
+			@NonNull final DDOrderMoveScheduleRepository ddOrderMoveScheduleRepository,
+			@NonNull final HUReservationService huReservationService)
 	{
 		this.ddOrderLowLevelDAO = ddOrderLowLevelDAO;
 		this.ddOrderMoveScheduleRepository = ddOrderMoveScheduleRepository;
+		this.huReservationService = huReservationService;
 	}
 
 	public IADReferenceDAO.ADRefList getQtyRejectedReasons()
@@ -107,6 +111,7 @@ public class DDOrderMoveScheduleService
 	{
 		return DDOrderMovePlanCreateCommand.builder()
 				.ddOrderLowLevelDAO(ddOrderLowLevelDAO)
+				.huReservationService(huReservationService)
 				.request(request)
 				.build().execute();
 	}
@@ -126,7 +131,7 @@ public class DDOrderMoveScheduleService
 	}
 
 	private static Stream<DDOrderMoveScheduleCreateRequest> toScheduleToMoveRequest(
-			@NonNull final DDOrderMovePlanStep planLine,
+			@NonNull final DDOrderMovePlanLine planLine,
 			@NonNull final DDOrderId ddOrderId)
 	{
 		final DDOrderLineId ddOrderLineId = planLine.getDdOrderLineId();
@@ -136,7 +141,7 @@ public class DDOrderMoveScheduleService
 	}
 
 	private static DDOrderMoveScheduleCreateRequest toScheduleToMoveRequest(
-			@NonNull final DDOrderMovePlanLine planStep,
+			@NonNull final DDOrderMovePlanStep planStep,
 			@NonNull final DDOrderId ddOrderId,
 			@NonNull final DDOrderLineId ddOrderLineId)
 	{

@@ -28,6 +28,8 @@ import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelService;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleRepository;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleService;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
+import de.metas.handlingunits.reservation.HUReservationRepository;
+import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.tourplanning.model.I_M_DeliveryDay_Alloc;
 import de.metas.handlingunits.tourplanning.spi.impl.HUShipmentScheduleDeliveryDayHandlerTest;
 import de.metas.inoutcandidate.picking_bom.PickingBOMService;
@@ -44,7 +46,11 @@ public class HU_TourInstance_DeliveryDay_ShipmentSchedule_IntegrationTest extend
 		super.afterInit();
 
 		final DDOrderLowLevelDAO ddOrderLowLevelDAO = new DDOrderLowLevelDAO();
-		final DDOrderMoveScheduleService ddOrderMoveScheduleService = new DDOrderMoveScheduleService(ddOrderLowLevelDAO, new DDOrderMoveScheduleRepository());
+		final HUReservationService huReservationService = new HUReservationService(new HUReservationRepository());
+		final DDOrderMoveScheduleService ddOrderMoveScheduleService = new DDOrderMoveScheduleService(
+				ddOrderLowLevelDAO,
+				new DDOrderMoveScheduleRepository(),
+				huReservationService);
 		final DDOrderLowLevelService ddOrderLowLevelService = new DDOrderLowLevelService(ddOrderLowLevelDAO);
 		final DDOrderService ddOrderService = new DDOrderService(ddOrderLowLevelDAO, ddOrderLowLevelService, ddOrderMoveScheduleService);
 		new de.metas.handlingunits.model.validator.Main(

@@ -1,30 +1,30 @@
 package de.metas.distribution.ddorder.movement.schedule.plan;
 
-import com.google.common.collect.ImmutableList;
+import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import de.metas.distribution.ddorder.DDOrderLineId;
+import org.adempiere.warehouse.LocatorId;
 
 @Value
 @Builder
 public class DDOrderMovePlanStep
 {
-	@NonNull DDOrderLineId ddOrderLineId;
-	@NonNull Quantity qtyToPickTarget;
-	@NonNull ImmutableList<DDOrderMovePlanLine> steps;
+	@NonNull ProductId productId;
 
-	public boolean isFullyAllocated()
-	{
-		return qtyToPickTarget.subtract(getQtyToPick()).isZero();
-	}
+	//
+	// Pick From
+	@NonNull LocatorId pickFromLocatorId;
+	@NonNull I_M_HU pickFromHU;
+	@NonNull Quantity qtyToPick;
+	boolean isPickWholeHU;
 
-	public Quantity getQtyToPick()
-	{
-		return steps.stream()
-				.map(DDOrderMovePlanLine::getQtyToPick)
-				.reduce(Quantity::add)
-				.orElseGet(qtyToPickTarget::toZero);
-	}
+	//
+	// Drop To
+	@NonNull LocatorId dropToLocatorId;
+
+	public HuId getPickFromHUId() {return HuId.ofRepoId(pickFromHU.getM_HU_ID());}
 }

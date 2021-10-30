@@ -56,6 +56,7 @@ import org.adempiere.util.lang.EqualsBuilder;
 import org.adempiere.util.lang.HashcodeBuilder;
 import org.adempiere.util.lang.ObjectUtils;
 import org.adempiere.util.text.annotation.ToStringBuilder;
+import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Attribute;
@@ -390,7 +391,7 @@ import java.util.Set;
 			final IQuery<I_M_HU_Storage> huStoragesQuery = huStoragesQueryBuilder.create();
 
 			filters.addInSubQueryFilter(I_M_HU.COLUMN_M_HU_ID,
-										I_M_HU_Storage.COLUMN_M_HU_ID, huStoragesQuery);
+					I_M_HU_Storage.COLUMN_M_HU_ID, huStoragesQuery);
 		}
 
 		//
@@ -438,8 +439,8 @@ import java.util.Set;
 						.addEqualsFilter(I_M_HU_Item.COLUMNNAME_M_HU_ID, parentHUId)
 						.create();
 				filters.addInSubQueryFilter(I_M_HU.COLUMN_M_HU_Item_Parent_ID,
-											I_M_HU_Item.COLUMN_M_HU_Item_ID,
-											parentHUItemQuery);
+						I_M_HU_Item.COLUMN_M_HU_Item_ID,
+						parentHUItemQuery);
 			}
 		}
 
@@ -724,12 +725,26 @@ import java.util.Set;
 	@Override
 	public HUQueryBuilder addOnlyInLocatorId(final int locatorId)
 	{
+		locators.addOnlyInLocatorRepoId(locatorId);
+		return this;
+	}
+
+	@Override
+	public HUQueryBuilder addOnlyInLocatorId(@NonNull final LocatorId locatorId)
+	{
 		locators.addOnlyInLocatorId(locatorId);
 		return this;
 	}
 
 	@Override
-	public IHUQueryBuilder addOnlyInLocatorIds(final Collection<Integer> locatorIds)
+	public IHUQueryBuilder addOnlyInLocatorRepoIds(final Collection<Integer> locatorIds)
+	{
+		locators.addOnlyInLocatorRepoIds(locatorIds);
+		return this;
+	}
+
+	@Override
+	public IHUQueryBuilder addOnlyInLocatorIds(final Collection<LocatorId> locatorIds)
 	{
 		locators.addOnlyInLocatorIds(locatorIds);
 		return this;

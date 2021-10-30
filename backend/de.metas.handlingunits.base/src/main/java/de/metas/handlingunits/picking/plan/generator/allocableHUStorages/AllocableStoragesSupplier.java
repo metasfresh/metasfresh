@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.handlingunits.picking.plan;
+package de.metas.handlingunits.picking.plan.generator.allocableHUStorages;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -28,6 +28,7 @@ import com.google.common.collect.Maps;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.picking.plan.generator.pickFromHUs.HUsLoadingCache;
 import de.metas.handlingunits.reservation.HUReservationDocRef;
 import de.metas.handlingunits.reservation.HUReservationEntry;
 import de.metas.handlingunits.reservation.HUReservationService;
@@ -44,7 +45,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-final class ProductsToPickSourceStorage
+public final class AllocableStoragesSupplier
 {
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
@@ -53,7 +54,7 @@ final class ProductsToPickSourceStorage
 	private final HUsLoadingCache husCache;
 	private final Map<ReservableStorageKey, AllocableStorage> storages = new HashMap<>();
 
-	ProductsToPickSourceStorage(
+	public AllocableStoragesSupplier(
 			@NonNull final HUReservationService huReservationService,
 			@NonNull final HUsLoadingCache husCache)
 	{

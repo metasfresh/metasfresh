@@ -1,26 +1,31 @@
 package de.metas.distribution.ddorder.movement.schedule.plan;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.distribution.ddorder.DDOrderId;
 import de.metas.distribution.ddorder.DDOrderLineId;
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelDAO;
-import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.picking.plan.generator.pickFromHUs.HUsLoadingCache;
+import de.metas.handlingunits.picking.plan.generator.pickFromHUs.PickFromHU;
+import de.metas.handlingunits.picking.plan.generator.pickFromHUs.PickFromHUsGetRequest;
+import de.metas.handlingunits.picking.plan.generator.pickFromHUs.PickFromHUsSupplier;
+import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.i18n.AdMessageKey;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
+import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_UOM;
@@ -30,15 +35,13 @@ import org.eevolution.model.I_DD_OrderLine;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Optional;
 
 public class DDOrderMovePlanCreateCommand
 {
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IHUStorageFactory storageFactory = Services.get(IHandlingUnitsBL.class).getStorageFactory();
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
-	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-	private final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 	private final DDOrderLowLevelDAO ddOrderLowLevelDAO;
 
 	private static final AdMessageKey MSG_CannotFullAllocate = AdMessageKey.of("de.metas.handlingunits.ddorder.api.impl.HUDDOrderBL.NoHu_For_Product");
@@ -50,16 +53,23 @@ public class DDOrderMovePlanCreateCommand
 
 	//
 	// State
+	private final PickFromHUsSupplier pickFromHUsSupplier;
 	private final HashMap<AllocationGroupingKey, AllocableHUsList> allocableHUsLists = new HashMap<>();
 
 	@Builder
 	private DDOrderMovePlanCreateCommand(
 			final @NonNull DDOrderLowLevelDAO ddOrderLowLevelDAO,
+			final @NonNull HUReservationService huReservationService,
+			//
 			final @NonNull DDOrderMovePlanCreateRequest request)
 	{
 		this.ddOrderLowLevelDAO = ddOrderLowLevelDAO;
 		this.ddOrder = request.getDdOrder();
 		this.failIfNotFullAllocated = request.isFailIfNotFullAllocated();
+
+		this.pickFromHUsSupplier = PickFromHUsSupplier.builder()
+				.huReservationService(huReservationService)
+				.build();
 	}
 
 	public DDOrderMovePlan execute()
@@ -68,12 +78,12 @@ public class DDOrderMovePlanCreateCommand
 				.ddOrderId(DDOrderId.ofRepoId(ddOrder.getDD_Order_ID()))
 				.lines(ddOrderLowLevelDAO.retrieveLines(ddOrder)
 						.stream()
-						.map(this::createLinePickPlan)
+						.map(this::createPlanStep)
 						.collect(ImmutableList.toImmutableList()))
 				.build();
 	}
 
-	public DDOrderMovePlanStep createLinePickPlan(final I_DD_OrderLine ddOrderLine)
+	public DDOrderMovePlanLine createPlanStep(final I_DD_OrderLine ddOrderLine)
 	{
 		final ProductId productId = ProductId.ofRepoId(ddOrderLine.getM_Product_ID());
 		final LocatorId pickFromLocatorId = warehouseDAO.getLocatorIdByRepoId(ddOrderLine.getM_Locator_ID());
@@ -84,7 +94,7 @@ public class DDOrderMovePlanCreateCommand
 				.productId(productId)
 				.pickFromLocatorId(pickFromLocatorId)
 				.build());
-		final ArrayList<DDOrderMovePlanLine> planLines = new ArrayList<>();
+		final ArrayList<DDOrderMovePlanStep> planLines = new ArrayList<>();
 		Quantity allocatedQty = targetQty.toZero();
 
 		for (final AllocableHU allocableHU : availableHUs)
@@ -100,10 +110,10 @@ public class DDOrderMovePlanCreateCommand
 				final Quantity huQtyAvailable = allocableHU.getQtyAvailableToAllocate();
 				// TODO: handle/convert when HU's UOM != DD_OrderLine's UOM
 
-				final DDOrderMovePlanLine planLine;
+				final DDOrderMovePlanStep planLine;
 				if (huQtyAvailable.isGreaterThan(remainingQtyToAllocate))
 				{
-					planLine = DDOrderMovePlanLine.builder()
+					planLine = DDOrderMovePlanStep.builder()
 							.productId(productId)
 							.pickFromLocatorId(pickFromLocatorId)
 							.dropToLocatorId(dropToLocatorId)
@@ -114,7 +124,7 @@ public class DDOrderMovePlanCreateCommand
 				}
 				else
 				{
-					planLine = DDOrderMovePlanLine.builder()
+					planLine = DDOrderMovePlanStep.builder()
 							.productId(productId)
 							.pickFromLocatorId(pickFromLocatorId)
 							.dropToLocatorId(dropToLocatorId)
@@ -130,7 +140,7 @@ public class DDOrderMovePlanCreateCommand
 			}
 		}
 
-		final DDOrderMovePlanStep linePlan = DDOrderMovePlanStep.builder()
+		final DDOrderMovePlanLine linePlan = DDOrderMovePlanLine.builder()
 				.ddOrderLineId(DDOrderLineId.ofRepoId(ddOrderLine.getDD_OrderLine_ID()))
 				.qtyToPickTarget(targetQty)
 				.steps(ImmutableList.copyOf(planLines))
@@ -162,25 +172,25 @@ public class DDOrderMovePlanCreateCommand
 
 	private AllocableHUsList retrieveAvailableHUsToPick(AllocationGroupingKey key)
 	{
-		final LocatorId pickFromLocatorId = key.getPickFromLocatorId();
 		final ProductId productId = key.getProductId();
+		final ImmutableList<PickFromHU> husEligibleToPick = pickFromHUsSupplier.getEligiblePickFromHUs(
+				PickFromHUsGetRequest.builder()
+						.pickFromLocatorId(key.getPickFromLocatorId())
+						.productId(productId)
+						.asiId(AttributeSetInstanceId.NONE)
+						.bestBeforePolicy(ShipmentAllocationBestBeforePolicy.Expiring_First)
+						.reservationRef(Optional.empty()) // TODO introduce some DD Order Step reservation
+						.build());
 
-		final ImmutableList<AllocableHU> hus = handlingUnitsDAO.createHUQueryBuilder()
-				.setOnlyTopLevelHUs()
-				.addOnlyInWarehouseId(pickFromLocatorId.getWarehouseId())
-				.addOnlyInLocatorId(pickFromLocatorId.getRepoId())
-				.addOnlyWithProductId(productId)
-				.addHUStatusesToInclude(huStatusBL.getQtyOnHandStatuses())
-				.createQuery()
-				.setOrderBy(queryBL.createQueryOrderByBuilder(I_M_HU.class)
-						.addColumn(I_M_HU.COLUMNNAME_M_Locator_ID)
-						.addColumn(I_M_HU.COLUMNNAME_M_HU_ID)
-						.createQueryOrderBy())
-				.stream()
-				.map(hu -> new AllocableHU(storageFactory, hu, productId))
-				.collect(ImmutableList.toImmutableList());
-
+		final ImmutableList<AllocableHU> hus = CollectionUtils.map(husEligibleToPick, pickFromHU -> toAllocableHU(pickFromHU, productId));
 		return new AllocableHUsList(hus);
+	}
+
+	private AllocableHU toAllocableHU(@NonNull final PickFromHU pickFromHU, @NonNull final ProductId productId)
+	{
+		final HUsLoadingCache husCache = pickFromHUsSupplier.getHusCache();
+		final I_M_HU hu = husCache.getHUById(pickFromHU.getHuId());
+		return new AllocableHU(storageFactory, hu, productId);
 	}
 
 	//
