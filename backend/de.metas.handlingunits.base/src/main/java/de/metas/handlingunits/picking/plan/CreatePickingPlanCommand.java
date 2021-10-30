@@ -23,13 +23,9 @@
 package de.metas.handlingunits.picking.plan;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.common.util.CoalesceUtil;
-import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.PickFrom;
 import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateIssueToBOMLine;
@@ -40,25 +36,20 @@ import de.metas.order.OrderAndLineId;
 import de.metas.picking.api.Packageable;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.AttributeCode;
-import org.adempiere.mm.attributes.api.AttributeConstants;
-import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
-import org.adempiere.warehouse.LocatorId;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.api.QtyCalculationsBOM;
 import org.eevolution.api.QtyCalculationsBOMLine;
 
 import javax.annotation.Nullable;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -66,30 +57,17 @@ import java.util.stream.Stream;
 
 public class CreatePickingPlanCommand
 {
-	private final IDeveloperModeBL developerModeBL = Services.get(IDeveloperModeBL.class);
 	private final IPPOrderBL ppOrdersBL = Services.get(IPPOrderBL.class);
 	private final IBPartnerBL bpartnersService;
 	private final PickingCandidateRepository pickingCandidateRepository;
 
-	private static final AttributeCode ATTR_SerialNo;
-	private static final AttributeCode ATTR_LotNumber;
-	private static final AttributeCode ATTR_BestBeforeDate;
-	private static final AttributeCode ATTR_RepackNumber;
-	private static final ImmutableSet<AttributeCode> ATTRIBUTES = ImmutableSet.of(
-			ATTR_SerialNo = AttributeConstants.ATTR_SerialNo,
-			ATTR_LotNumber = AttributeConstants.ATTR_LotNumber,
-			ATTR_BestBeforeDate = AttributeConstants.ATTR_BestBeforeDate,
-			ATTR_RepackNumber = AttributeConstants.ATTR_RepackNumber);
-
 	//
 	// Params
 	private final ImmutableList<Packageable> packageables;
-	private final boolean fallbackLotNumberToHUValue;
 
 	//
 	// State
-	private final HUsLoadingCache husCache;
-	private final EligibleHUsSupplier eligibleHUsSupplier;
+	private final PickFromHUsSupplier pickFromHUsSupplier;
 	private final ProductsToPickSourceStorage storages;
 
 	@Builder
@@ -101,20 +79,21 @@ public class CreatePickingPlanCommand
 			@NonNull final CreatePickingPlanRequest request,
 			@Nullable final Boolean fallbackLotNumberToHUValue)
 	{
+		final IDeveloperModeBL developerModeBL = Services.get(IDeveloperModeBL.class);
 		this.bpartnersService = bpartnersService;
 		this.pickingCandidateRepository = pickingCandidateRepository;
 
 		this.packageables = request.getPackageables();
-		this.fallbackLotNumberToHUValue = fallbackLotNumberToHUValue != null
-				? fallbackLotNumberToHUValue
-				: developerModeBL.isEnabled();
 
-		this.husCache = new HUsLoadingCache(ATTRIBUTES);
+		final HUsLoadingCache husCache = new HUsLoadingCache(PickFromHUsSupplier.ATTRIBUTES);
 		this.storages = new ProductsToPickSourceStorage(huReservationService, husCache);
-		this.eligibleHUsSupplier = EligibleHUsSupplier.builder()
+		this.pickFromHUsSupplier = PickFromHUsSupplier.builder()
 				.huReservationService(huReservationService)
 				.husCache(husCache)
 				.considerAttributes(request.isConsiderAttributes())
+				.fallbackLotNumberToHUValue(fallbackLotNumberToHUValue != null
+						? fallbackLotNumberToHUValue
+						: developerModeBL.isEnabled())
 				.build();
 	}
 
@@ -123,7 +102,7 @@ public class CreatePickingPlanCommand
 		final ImmutableList<PickingPlanLine> lines = packageables
 				.stream()
 				.map(CreatePickingPlanCommand::toAllocablePackageable)
-				.flatMap(this::createLineAndStream)
+				.flatMap(this::createLinesAndStream)
 				.collect(ImmutableList.toImmutableList());
 
 		return PickingPlan.builder()
@@ -164,7 +143,7 @@ public class CreatePickingPlanCommand
 				.build();
 	}
 
-	private Stream<PickingPlanLine> createLineAndStream(final AllocablePackageable packageable)
+	private Stream<PickingPlanLine> createLinesAndStream(final AllocablePackageable packageable)
 	{
 		final ArrayList<PickingPlanLine> lines = new ArrayList<>();
 		lines.addAll(createLinesFromExistingPickingCandidates(packageable));
@@ -179,7 +158,7 @@ public class CreatePickingPlanCommand
 
 		if (!packageable.isAllocated())
 		{
-			lines.add(createQtyNotAvailableRowForRemainingQtyToAllocate(packageable));
+			lines.add(createUnallocableLineForRemainingQtyToAllocate(packageable));
 		}
 
 		return lines.stream();
@@ -211,17 +190,15 @@ public class CreatePickingPlanCommand
 		final PickFrom pickFrom = existingPickingCandidate.getPickFrom();
 		if (pickFrom.isPickFromHU())
 		{
-			final TopLevelHUInfo pickFromHU;
+			final PickFromHU pickFromHU;
 			final Quantity qty = existingPickingCandidate.getQtyPicked();
 			if (pickFrom.getHuId() != null)
 			{
 				final ProductId productId = packageable.getProductId();
 				final AllocableStorage storage = storages.getStorage(pickFrom.getHuId(), productId);
 				storage.forceAllocate(packageable, qty);
-				pickFromHU = TopLevelHUInfo.builder()
-						.topLevelHUId(pickFrom.getHuId())
-						.hasHUReservationsForRequestedDocument(storage.hasReservedQtyFor(packageable))
-						.build();
+				pickFromHU = pickFromHUsSupplier.createPickFromHUByTopLevelHUId(pickFrom.getHuId())
+						.withHuReservedForThisLine(storage.hasReservedQtyFor(packageable));
 			}
 			else
 			{
@@ -229,7 +206,7 @@ public class CreatePickingPlanCommand
 			}
 
 			return prepareLine_PickFromHU(packageable)
-					.pickFromHUId(pickFromHU)
+					.pickFromHU(pickFromHU)
 					.qty(qty)
 					.existingPickingCandidate(existingPickingCandidate)
 					.build();
@@ -258,43 +235,24 @@ public class CreatePickingPlanCommand
 		}
 	}
 
-	private List<PickingPlanLine> createLinesFromEligibleHUs(final AllocablePackageable packageable)
+	private ImmutableList<PickingPlanLine> createLinesFromEligibleHUs(final AllocablePackageable packageable)
 	{
 		if (packageable.isAllocated())
 		{
 			return ImmutableList.of();
 		}
 
-		final List<TopLevelHUInfo> husEligibleToPick = eligibleHUsSupplier.getTopLevelHUsPossibleToAllocate(packageable);
-
-		final List<PickingPlanLine> lineWithZeroQty = husEligibleToPick.stream()
-				.map(pickFromHU -> createZeroQtyLineFromHU(packageable, pickFromHU))
-				.collect(ImmutableList.toImmutableList());
-
 		final ShipmentAllocationBestBeforePolicy bestBeforePolicy = getBestBeforePolicy(packageable);
+		final List<PickFromHU> husEligibleToPick = pickFromHUsSupplier.getEligiblePickFromHUs(packageable, bestBeforePolicy);
 
-		return lineWithZeroQty.stream()
-				.sorted(Comparator.
-								<PickingPlanLine>comparingInt(line -> isHUReservedForThisLine(line) ? 0 : 1) // consider reserved HU first
-								.thenComparing(bestBeforePolicy.comparator(CreatePickingPlanCommand::getExpiringDate)) // then first/last expiring HU
-						// then by HUId
-				)
+		return husEligibleToPick.stream()
+				.map(pickFromHU -> createZeroQtyLineFromHU(packageable, pickFromHU))
 				.map(line -> allocateLineFromHU(line, packageable))
 				.filter(Objects::nonNull)
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private static boolean isHUReservedForThisLine(final PickingPlanLine line)
-	{
-		return line.getPickFromHU() != null && line.getPickFromHU().isHuReservedForThisLine();
-	}
-
-	@Nullable
-	private static LocalDate getExpiringDate(final PickingPlanLine line)
-	{
-		return line.getPickFromHU() != null ? line.getPickFromHU().getExpiringDate() : null;
-	}
-
+	@NonNull
 	private ShipmentAllocationBestBeforePolicy getBestBeforePolicy(final AllocablePackageable packageable)
 	{
 		return packageable.getBestBeforePolicy()
@@ -302,19 +260,14 @@ public class CreatePickingPlanCommand
 	}
 
 	@Nullable
-	private PickingPlanLine allocateLineFromHU(final PickingPlanLine line, final AllocablePackageable packageable)
+	private PickingPlanLine allocateLineFromHU(final PickingPlanLine zeroQtyLine, final AllocablePackageable packageable)
 	{
 		if (packageable.isAllocated())
 		{
 			return null;
 		}
 
-		final PickFromHU pickFromHU = line.getPickFromHU();
-		if (pickFromHU == null)
-		{
-			throw new AdempiereException("No pickFromHU set for " + line);
-		}
-
+		final PickFromHU pickFromHU = Check.assumeNotNull(zeroQtyLine.getPickFromHU(), "No pickFromHU set for {}", zeroQtyLine);
 		final AllocableStorage storage = storages.getStorage(pickFromHU.getHuId(), packageable.getProductId());
 		final Quantity qty = storage.allocate(packageable);
 		if (qty.isZero())
@@ -322,30 +275,32 @@ public class CreatePickingPlanCommand
 			return null;
 		}
 
-		return line.withQty(qty);
+		return zeroQtyLine.withQty(qty);
 	}
 
 	private PickingPlanLine createZeroQtyLineFromHU(
 			@NonNull final AllocablePackageable packageable,
-			@NonNull final TopLevelHUInfo hu)
+			@NonNull final PickFromHU hu)
 	{
+		final Quantity zero = packageable.getQtyToAllocate().toZero();
+
 		if (packageable.getIssueToBOMLine() == null)
 		{
 			return prepareLine_PickFromHU(packageable)
-					.pickFromHUId(hu)
-					.qty(packageable.getQtyToAllocate().toZero())
+					.pickFromHU(hu)
+					.qty(zero)
 					.build();
 		}
 		else
 		{
 			return prepareLine_IssueComponentsToPickingOrder(packageable)
-					.issueToBOMLine(packageable.getIssueToBOMLine().withIssueFromHUId(hu.getTopLevelHUId()))
-					.qty(packageable.getQtyToAllocate().toZero())
+					.issueToBOMLine(packageable.getIssueToBOMLine().withIssueFromHUId(hu.getHuId()))
+					.qty(zero)
 					.build();
 		}
 	}
 
-	private PickingPlanLine createQtyNotAvailableRowForRemainingQtyToAllocate(@NonNull final AllocablePackageable packageable)
+	private PickingPlanLine createUnallocableLineForRemainingQtyToAllocate(@NonNull final AllocablePackageable packageable)
 	{
 		final Quantity qty = packageable.getQtyToAllocate();
 		packageable.allocateQty(qty);
@@ -394,39 +349,10 @@ public class CreatePickingPlanCommand
 			@NonNull final ProductId productId,
 			@NonNull final Quantity qty,
 			//
-			@Nullable final TopLevelHUInfo pickFromHUId,
+			@Nullable final PickFromHU pickFromHU,
 			@Nullable final PickFromPickingOrder pickFromPickingOrder,
 			@Nullable final IssueToBOMLine issueToBOMLine)
 	{
-		final PickFromHU pickFromHU;
-		if (pickFromHUId != null)
-		{
-			final LocatorId locatorId = getLocatorIdByHuId(pickFromHUId.getTopLevelHUId());
-			final ImmutableAttributeSet attributes = husCache.getHUAttributes(pickFromHUId.getTopLevelHUId());
-
-			pickFromHU = PickFromHU.builder()
-					.huId(pickFromHUId.getTopLevelHUId())
-					.huReservedForThisLine(pickFromHUId.isHasHUReservationsForRequestedDocument())
-					.locatorId(locatorId)
-					//
-					.huCode(String.valueOf(pickFromHUId.getTopLevelHUId().getRepoId()))
-					.serialNo(attributes.getValueAsStringIfExists(ATTR_SerialNo).orElse(null))
-					.lotNumber(attributes.getValueAsStringIfExists(ATTR_LotNumber).orElseGet(() -> buildLotNumberFromHuId(pickFromHUId.getTopLevelHUId())))
-					.expiringDate(attributes.getValueAsLocalDateIfExists(ATTR_BestBeforeDate).orElse(null))
-					.repackNumber(attributes.getValueAsStringIfExists(ATTR_RepackNumber).orElse(null))
-					//
-					.build();
-		}
-		else if (pickFromPickingOrder != null)
-		{
-			pickFromHU = null;
-		}
-		else
-		{
-			// this is the NOT ALLOCABLE case
-			pickFromHU = null;
-		}
-
 		if (CoalesceUtil.countNotNulls(pickFromHU, pickFromPickingOrder, issueToBOMLine) > 1)
 		{
 			throw new AdempiereException("Maxim one of the following shall be set: " + Arrays.asList(pickFromHU, pickFromPickingOrder, issueToBOMLine));
@@ -445,20 +371,6 @@ public class CreatePickingPlanCommand
 				//
 				.build()
 				;
-	}
-
-	@Nullable
-	private String buildLotNumberFromHuId(@Nullable final HuId huId)
-	{
-		return huId != null && fallbackLotNumberToHUValue
-				? "<" + huId.toHUValue() + ">"
-				: null;
-	}
-
-	private LocatorId getLocatorIdByHuId(final HuId huId)
-	{
-		final I_M_HU hu = husCache.getHUById(huId);
-		return IHandlingUnitsBL.extractLocatorId(hu);
 	}
 
 	private PickingPlanLine createLinesFromPickingOrder(
@@ -493,7 +405,7 @@ public class CreatePickingPlanCommand
 
 		if (!bomLinePackageable.isAllocated())
 		{
-			lines.add(createQtyNotAvailableRowForRemainingQtyToAllocate(bomLinePackageable));
+			lines.add(createUnallocableLineForRemainingQtyToAllocate(bomLinePackageable));
 		}
 
 		return lines;

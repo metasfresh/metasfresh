@@ -26,6 +26,7 @@ import de.metas.handlingunits.HuId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.With;
 import org.adempiere.warehouse.LocatorId;
 
 import javax.annotation.Nullable;
@@ -35,6 +36,7 @@ import java.time.LocalDate;
 public class PickFromHU
 {
 	@NonNull HuId huId;
+	@With
 	boolean huReservedForThisLine;
 	@NonNull LocatorId locatorId;
 
