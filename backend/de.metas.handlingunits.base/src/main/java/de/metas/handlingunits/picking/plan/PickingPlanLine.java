@@ -62,5 +62,13 @@ public class PickingPlanLine
 				? this
 				: toBuilder().qty(qty).build();
 	}
+
+	public PickingPlanLine withTypeAndQty(@NonNull PickingPlanLineType type, @NonNull final Quantity qty)
+	{
+		return this.type.equals(type) && Objects.equals(this.qty, qty)
+				? this
+				: toBuilder().type(type).qty(qty).build();
+	}
+
 }
 

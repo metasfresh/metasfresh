@@ -55,10 +55,10 @@ class AllocableStorage
 			qtyAllocatedTotal = Quantity.addNullables(qtyAllocatedTotal, qtyAllocated);
 		}
 
-		return qtyAllocatedTotal != null
-				? qtyAllocatedTotal
-				: allocable.getQtyToAllocate().toZero();
+		return qtyAllocatedTotal != null ? qtyAllocatedTotal : zero(allocable);
 	}
+
+	private static Quantity zero(final AllocablePackageable allocable) {return allocable.getQtyToAllocate().toZero();}
 
 	public void forceAllocate(@NonNull final AllocablePackageable allocable, @NonNull final Quantity qtyToAllocate)
 	{
@@ -100,5 +100,13 @@ class AllocableStorage
 	public boolean hasReservedQtyFor(@NonNull final AllocablePackageable allocable)
 	{
 		return vhuStorages.stream().anyMatch(vhuStorage -> vhuStorage.isReservedOnlyFor(allocable));
+	}
+
+	public Quantity getQtyFreeToAllocateFor(final AllocablePackageable allocable)
+	{
+		return vhuStorages.stream()
+				.map(vhuStorage -> vhuStorage.getQtyFreeToAllocateFor(allocable))
+				.reduce(Quantity::add)
+				.orElseGet(() -> zero(allocable));
 	}
 }

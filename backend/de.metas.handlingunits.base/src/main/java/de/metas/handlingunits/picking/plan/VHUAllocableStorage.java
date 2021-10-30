@@ -35,23 +35,18 @@ class VHUAllocableStorage
 		return allocate(allocable, allocable.getQtyToAllocate());
 	}
 
-	public Quantity allocate(@NonNull final AllocablePackageable allocable, @NonNull final Quantity qtyToAllocate)
+	public Quantity allocate(
+			@NonNull final AllocablePackageable allocable,
+			@NonNull final Quantity requestedQtyToAllocate)
 	{
-		// Nothing required to allocate
-		if (qtyToAllocate.isZero())
+		// Nothing requested to allocate
+		if (requestedQtyToAllocate.isZero())
 		{
-			return qtyToAllocate.toZero();
+			return requestedQtyToAllocate.toZero();
 		}
 
-		//
-		// In case this VHU storage is reserved for some other document
-		// then don't touch it
-		if (isReserved() && !isReservedOnlyFor(allocable))
-		{
-			return qtyToAllocate.toZero();
-		}
-
-		final Quantity qtyToAllocateEffective = computeEffectiveQtyToAllocate(qtyToAllocate);
+		final Quantity qtyFreeToAllocateEffective = getQtyFreeToAllocateFor(allocable);
+		final Quantity qtyToAllocateEffective = computeEffectiveQtyToAllocate(requestedQtyToAllocate, qtyFreeToAllocateEffective);
 		forceAllocate(allocable, qtyToAllocateEffective);
 		return qtyToAllocateEffective;
 	}
@@ -61,6 +56,13 @@ class VHUAllocableStorage
 		assertSameProductId(allocable);
 		qtyFreeToAllocate = qtyFreeToAllocate.subtract(qtyToAllocate);
 		allocable.allocateQty(qtyToAllocate);
+	}
+
+	public Quantity getQtyFreeToAllocateFor(final AllocablePackageable allocable)
+	{
+		return isReserved() && !isReservedOnlyFor(allocable)
+				? qtyFreeToAllocate.toZero()
+				: qtyFreeToAllocate;
 	}
 
 	private boolean isReserved()
@@ -84,17 +86,21 @@ class VHUAllocableStorage
 		}
 	}
 
-	private Quantity computeEffectiveQtyToAllocate(@NonNull final Quantity requestedQtyToAllocate)
+	private static Quantity computeEffectiveQtyToAllocate(
+			@NonNull final Quantity requestedQtyToAllocate,
+			@NonNull final Quantity qtyFreeToAllocate)
 	{
 		if (requestedQtyToAllocate.signum() <= 0)
 		{
 			return requestedQtyToAllocate.toZero();
 		}
-		if (qtyFreeToAllocate.signum() <= 0)
+		else if (qtyFreeToAllocate.signum() <= 0)
 		{
 			return requestedQtyToAllocate.toZero();
 		}
-
-		return requestedQtyToAllocate.min(qtyFreeToAllocate);
+		else
+		{
+			return requestedQtyToAllocate.min(qtyFreeToAllocate);
+		}
 	}
 }

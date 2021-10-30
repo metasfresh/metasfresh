@@ -14,6 +14,7 @@ import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
+import org.adempiere.warehouse.LocatorId;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -108,5 +109,11 @@ class HUsLoadingCache
 		final I_M_HU hu = getHUById(huId);
 		final IAttributeStorage attributes = attributesFactory.getAttributeStorage(hu);
 		return ImmutableAttributeSet.createSubSet(attributes, a -> attributesToConsider.contains(AttributeCode.ofString(a.getValue())));
+	}
+
+	public LocatorId getLocatorIdByHuId(final HuId huId)
+	{
+		final I_M_HU hu = getHUById(huId);
+		return IHandlingUnitsBL.extractLocatorId(hu);
 	}
 }
