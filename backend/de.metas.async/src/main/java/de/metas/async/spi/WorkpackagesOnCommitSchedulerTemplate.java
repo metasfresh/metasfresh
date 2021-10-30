@@ -30,6 +30,8 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static de.metas.async.AsyncBatchId.NONE_ASYNC_BATCH_ID;
+
 /*
  * #%L
  * de.metas.async

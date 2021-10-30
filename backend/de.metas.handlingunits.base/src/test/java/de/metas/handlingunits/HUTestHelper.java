@@ -1,7 +1,8 @@
 package de.metas.handlingunits;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.service.BPartnerLocationInfoRepository;
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.common.util.time.SystemTime;
 import de.metas.dimension.model.I_DIM_Dimension_Spec;
 import de.metas.distribution.ddorder.DDOrderService;
@@ -13,6 +14,8 @@ import de.metas.document.dimension.DimensionFactory;
 import de.metas.document.dimension.DimensionService;
 import de.metas.document.dimension.InOutLineDimensionFactory;
 import de.metas.document.dimension.OrderLineDimensionFactory;
+import de.metas.document.location.IDocumentLocationBL;
+import de.metas.document.location.impl.DocumentLocationBL;
 import de.metas.handlingunits.allocation.IAllocationDestination;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationResult;
@@ -88,6 +91,7 @@ import de.metas.quantity.Capacity;
 import de.metas.quantity.Quantity;
 import de.metas.uom.CreateUOMConversionRequest;
 import de.metas.uom.UomId;
+import de.metas.user.UserRepository;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
