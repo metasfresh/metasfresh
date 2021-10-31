@@ -1327,9 +1327,6 @@ public class FlatrateBL implements IFlatrateBL
 		updateNoticeDate(nextTransition, nextTerm);
 
 		nextTerm.setM_PricingSystem_ID(currentTerm.getM_PricingSystem_ID());
-		nextTerm.setDropShip_BPartner_ID(currentTerm.getDropShip_BPartner_ID());
-		final BPartnerLocationId currentDropShipLocationId = bPartnerDAO.getCurrentLocation(BPartnerLocationId.ofRepoId(currentTerm.getDropShip_BPartner_ID(), currentTerm.getDropShip_Location_ID()));
-		nextTerm.setDropShip_Location_ID(currentDropShipLocationId.getRepoId());
 
 		nextTerm.setM_Product_ID(currentTerm.getM_Product_ID());
 		Services.get(IAttributeSetInstanceBL.class).cloneASI(currentTerm, nextTerm);
