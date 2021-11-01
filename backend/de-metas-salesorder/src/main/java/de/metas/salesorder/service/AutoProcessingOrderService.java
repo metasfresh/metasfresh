@@ -112,7 +112,9 @@ public class AutoProcessingOrderService
 				.map(InvoiceCandidateId::ofRepoId)
 				.collect(ImmutableSet.toImmutableSet());
 
-		invoiceService.processInvoiceCandidates(invoiceCandidateIds);
+
+
+		invoiceService.processInvoiceCandidates(invoiceCandidateIds, true);
 	}
 
 	public void completeShipAndInvoice(@NonNull final OrderId orderId)
@@ -167,7 +169,7 @@ public class AutoProcessingOrderService
 				.map(InvoiceCandidateId::ofRepoId)
 				.collect(ImmutableSet.toImmutableSet());
 
-		invoiceService.processInvoiceCandidates(invoiceCandidateIds);
+		invoiceService.processInvoiceCandidates(invoiceCandidateIds, false);
 	}
 
 	private boolean sameShippingAndBillingAddress(

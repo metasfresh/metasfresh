@@ -84,7 +84,7 @@ public class InvoiceService
 				.map(InvoiceCandidateId::ofRepoId)
 				.collect(ImmutableSet.toImmutableSet());
 
-		processInvoiceCandidates(invoiceCandidateIds);
+		processInvoiceCandidates(invoiceCandidateIds, false);
 
 		return invoiceCandidateIds.stream()
 				.map(invoiceCandDAO::retrieveIlForIc)
@@ -94,11 +94,11 @@ public class InvoiceService
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
-	public void processInvoiceCandidates(@NonNull final Set<InvoiceCandidateId> invoiceCandidateIds)
+	public void processInvoiceCandidates(@NonNull final Set<InvoiceCandidateId> invoiceCandidateIds, final boolean useDefaultInvoiceParams)
 	{
 		final ImmutableMap<AsyncBatchId, List<InvoiceCandidateId>> asyncBatchId2InvoiceCandIds = getAsyncBatchId2InvoiceCandidateIds(invoiceCandidateIds);
 
-		asyncBatchId2InvoiceCandIds.forEach((asyncBatchId, icIds) -> generateInvoicesForAsyncBatch(ImmutableSet.copyOf(icIds), asyncBatchId));
+		asyncBatchId2InvoiceCandIds.forEach((asyncBatchId, icIds) -> generateInvoicesForAsyncBatch(ImmutableSet.copyOf(icIds), asyncBatchId, useDefaultInvoiceParams));
 	}
 
 	@NonNull
@@ -161,7 +161,8 @@ public class InvoiceService
 		return ImmutableMap.copyOf(asyncBatchId2InvoiceCand);
 	}
 
-	private void generateInvoicesForAsyncBatch(@NonNull final Set<InvoiceCandidateId> invoiceCandIds, @NonNull final AsyncBatchId asyncBatchId)
+	private void generateInvoicesForAsyncBatch(@NonNull final Set<InvoiceCandidateId> invoiceCandIds, @NonNull final AsyncBatchId asyncBatchId,
+			boolean useDefaultInvoiceParams)
 	{
 		final I_C_Async_Batch asyncBatch = asyncBatchBL.getAsyncBatchById(asyncBatchId);
 
@@ -172,7 +173,7 @@ public class InvoiceService
 				invoiceCandBL.enqueueForInvoicing()
 						.setContext(getCtx())
 						.setC_Async_Batch(asyncBatch)
-						.setInvoicingParams(getDefaultIInvoicingParams())
+						.setInvoicingParams(getIInvoicingParams(useDefaultInvoiceParams))
 						.setFailIfNothingEnqueued(true)
 						.enqueueSelection(invoiceCandidatesSelectionId);
 			});
@@ -184,9 +185,14 @@ public class InvoiceService
 	}
 
 	@NonNull
-	private IInvoicingParams getDefaultIInvoicingParams()
+	private IInvoicingParams getIInvoicingParams(final boolean useDefaultInvoiceParams)
 	{
 		final PlainInvoicingParams invoicingParams = new PlainInvoicingParams();
+
+		if(useDefaultInvoiceParams)
+		{
+			return invoicingParams;
+		}
 		invoicingParams.setIgnoreInvoiceSchedule(false);
 		invoicingParams.setSupplementMissingPaymentTermIds(true);
 		invoicingParams.setDateInvoiced(LocalDate.now());
