@@ -38,6 +38,8 @@ import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
 import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
+import de.metas.order.IOrderDAO;
+import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.IOrgDAO;
@@ -135,6 +137,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	private final transient Logger logger = InvoiceCandidate_Constants.getLogger(InvoiceCandDAO.class);
 
 	private final transient IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final transient IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 
 	private static final ModelDynAttributeAccessor<I_C_Invoice_Candidate, Boolean> DYNATTR_IC_Avoid_Recreate //
 			= new ModelDynAttributeAccessor<>(IInvoiceCandDAO.class.getName() + "Avoid_Recreate", Boolean.class);
@@ -371,6 +374,22 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				//
 				.create()
 				.list(I_C_Invoice_Candidate.class);
+	}
+
+	@Override
+	public List<I_C_Invoice_Candidate> retrieveInvoiceCandidatesForOrderId(final OrderId orderId)
+	{
+		final List<OrderAndLineId> orderAndLineIds = orderDAO.retrieveAllOrderLineIds(orderId);
+
+		final List<I_C_Invoice_Candidate> invoiceCandidatesForOrder = new ArrayList<>();
+
+		for (OrderAndLineId orderAndLineId : orderAndLineIds)
+		{
+			final List<I_C_Invoice_Candidate> candidates = retrieveInvoiceCandidatesForOrderLineId(orderAndLineId.getOrderLineId());
+			invoiceCandidatesForOrder.addAll(candidates);
+		}
+
+		return invoiceCandidatesForOrder;
 	}
 
 	@Nullable

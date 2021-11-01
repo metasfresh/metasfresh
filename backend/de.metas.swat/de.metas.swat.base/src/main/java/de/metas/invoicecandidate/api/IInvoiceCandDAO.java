@@ -299,6 +299,7 @@ public interface IInvoiceCandDAO extends ISingletonService
 
 	List<I_C_Invoice_Candidate> retrieveInvoiceCandidatesForOrderLineId(OrderLineId orderLineId);
 
+	List<I_C_Invoice_Candidate> retrieveInvoiceCandidatesForOrderId(OrderId orderId);
 	/**
 	 * Return the active <code>M_InOutLine</code>s for the given invoice candidate.
 	 * <p>

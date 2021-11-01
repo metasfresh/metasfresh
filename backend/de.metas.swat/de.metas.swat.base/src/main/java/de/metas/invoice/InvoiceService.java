@@ -110,21 +110,6 @@ public class InvoiceService
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	@NonNull
-	public List<I_C_Invoice_Candidate> retrieveInvoiceCandsByOrderId(@NonNull final OrderId orderId)
-	{
-		final List<OrderAndLineId> orderAndLineIds = orderDAO.retrieveAllOrderLineIds(orderId);
-
-		final List<I_C_Invoice_Candidate> invoiceCandidatesForOrder = new ArrayList<>();
-
-		for (OrderAndLineId orderAndLineId : orderAndLineIds)
-		{
-			final List<I_C_Invoice_Candidate> candidates = invoiceCandDAO.retrieveInvoiceCandidatesForOrderLineId(orderAndLineId.getOrderLineId());
-			invoiceCandidatesForOrder.addAll(candidates);
-		}
-
-		return invoiceCandidatesForOrder;
-	}
 
 	@NonNull
 	private ImmutableMap<AsyncBatchId, List<InvoiceCandidateId>> getAsyncBatchId2InvoiceCandidateIds(@NonNull final Set<InvoiceCandidateId> invoiceCandidateIds)

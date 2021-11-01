@@ -23,6 +23,7 @@
 package de.metas.salesorder.service;
 
 import ch.qos.logback.classic.Level;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.async.AsyncBatchId;
@@ -31,6 +32,9 @@ import de.metas.async.asyncbatchmilestone.AsyncBatchMilestoneService;
 import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.async.CreateMissingShipmentSchedulesWorkpackageProcessor;
+import de.metas.invoicecandidate.api.IInvoiceCandDAO;
+import de.metas.invoicecandidate.async.spi.impl.CreateMissingInvoiceCandidatesWorkpackageProcessor;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
@@ -72,6 +76,7 @@ public class OrderService
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IOLCandDAO olCandDAO = Services.get(IOLCandDAO.class);
 	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
+	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 
 	private final AsyncBatchMilestoneService asyncBatchMilestoneService;
 	private final C_OLCandToOrderEnqueuer olCandToOrderEnqueuer;
@@ -153,6 +158,22 @@ public class OrderService
 		return shipmentSchedulePA.retrieveScheduleIdsByOrderId(orderId);
 	}
 
+	@NonNull
+	public List<I_C_Invoice_Candidate> generateInvoiceCandidates(@NonNull final OrderId orderId)
+	{
+		final I_C_Order order = orderDAO.getById(orderId);
+
+		if (!order.getDocStatus().equals(DOCSTATUS_Completed))
+		{
+			Loggables.withLogger(logger, Level.INFO).addLog("Returning! Order not COMPLETED!");
+			return ImmutableList.of();
+		}
+
+		generateMissingInvoiceCandidatesFromOrder(order);
+
+		return invoiceCandDAO.retrieveInvoiceCandidatesForOrderId(orderId);
+	}
+
 	private void generateOrdersForBatch(@NonNull final AsyncBatchId asyncBatchId)
 	{
 		final Supplier<Void> action = () -> {
@@ -162,6 +183,21 @@ public class OrderService
 		};
 
 		asyncBatchMilestoneService.executeMilestone(action, asyncBatchId, SALES_ORDER_CREATION);
+	}
+
+	private void generateMissingInvoiceCandidatesFromOrder(@NonNull final I_C_Order order)
+	{
+		final I_C_Order orderWithAsyncBatch = assignAsyncBatchToOrderIfMissing(order);
+
+		final AsyncBatchId asyncBatchId = AsyncBatchId.ofRepoId(orderWithAsyncBatch.getC_Async_Batch_ID());
+
+		final Supplier<Void> action = () -> {
+			trxManager.runInNewTrx(
+					() -> CreateMissingInvoiceCandidatesWorkpackageProcessor.schedule(orderWithAsyncBatch));
+			return null;
+		};
+
+		asyncBatchMilestoneService.executeMilestone(action, asyncBatchId, ENQUEUE_SCHEDULE_FOR_ORDER);
 	}
 
 	private void generateMissingShipmentSchedulesFromOrder(@NonNull final I_C_Order order)
@@ -178,7 +214,6 @@ public class OrderService
 
 		asyncBatchMilestoneService.executeMilestone(action, asyncBatchId, ENQUEUE_SCHEDULE_FOR_ORDER);
 	}
-
 	@NonNull
 	private I_C_Order assignAsyncBatchToOrderIfMissing(@NonNull final I_C_Order order)
 	{

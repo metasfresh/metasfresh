@@ -29,6 +29,7 @@ import de.metas.async.asyncbatchmilestone.AsyncBatchMilestoneQuery;
 import de.metas.async.asyncbatchmilestone.AsyncBatchMilestoneService;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.inoutcandidate.async.CreateMissingShipmentSchedulesWorkpackageProcessor;
+import de.metas.invoicecandidate.async.spi.impl.CreateMissingInvoiceCandidatesWorkpackageProcessor;
 import de.metas.logging.LogManager;
 import de.metas.order.DeliveryRule;
 import de.metas.order.OrderId;
@@ -127,6 +128,27 @@ public class C_Order_Schedule
 		return asyncBatchMilestoneList.isEmpty();
 	}
 
+	private boolean isEligibleForInvoiceCreation(@NonNull final I_C_Order orderRecord)
+	{
+		//dev-note: check to see if the order is not already involved in another async job
+		final AsyncBatchId asyncBatchId = AsyncBatchId.ofRepoIdOrNull(orderRecord.getC_Async_Batch_ID());
+
+		if (asyncBatchId == null)
+		{
+			return true;
+		}
+
+		final AsyncBatchMilestoneQuery milestoneQuery = AsyncBatchMilestoneQuery.builder()
+				.asyncBatchId(asyncBatchId)
+				.processed(false)
+				.build();
+
+		final List<AsyncBatchMilestone> asyncBatchMilestoneList = asyncBatchMilestoneService.getByQuery(milestoneQuery);
+
+		//dev-note: if there is already an async process in progress working with this order, let it follow it's normal course
+		return asyncBatchMilestoneList.isEmpty();
+	}
+
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
 	public void createInvoicesForFlatrateTerms(@NonNull final org.compiere.model.I_C_Order orderRecord)
 	{
@@ -153,7 +175,16 @@ public class C_Order_Schedule
 	{
 		final OrderId orderId = OrderId.ofRepoId(orderRecord.getC_Order_ID());
 
-		autoProcessingOrderService.createAndCompleteInvoices(orderId);
+		if (isEligibleForInvoiceCreation(orderRecord))
+		{
+			Loggables.withLogger(logger, Level.INFO).addLog("OrderId: {} qualified for auto ship and invoice!", orderId);
+			autoProcessingOrderService.createAndCompleteInvoices(orderId);
+		}
+		else
+		{
+			Loggables.withLogger(logger, Level.INFO).addLog("Invoice generating missing candidates for orderId: {}", orderId);
+			CreateMissingInvoiceCandidatesWorkpackageProcessor.schedule(orderRecord);
+		}
 
 	}
 }
