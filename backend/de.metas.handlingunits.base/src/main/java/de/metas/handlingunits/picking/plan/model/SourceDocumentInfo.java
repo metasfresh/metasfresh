@@ -54,5 +54,4 @@ public class SourceDocumentInfo
 	{
 		return withExistingPickingCandidate(existingPickingCandidate != null ? existingPickingCandidate.snapshot() : null);
 	}
-
 }

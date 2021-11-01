@@ -10,6 +10,7 @@ import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.reservation.HUReservation;
 import de.metas.handlingunits.reservation.HUReservationService;
+import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
@@ -24,7 +25,7 @@ import org.adempiere.warehouse.LocatorId;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.List;
+import java.util.Set;
 
 public class PickFromHUsSupplier
 {
@@ -63,21 +64,26 @@ public class PickFromHUsSupplier
 
 	public ImmutableList<PickFromHU> getEligiblePickFromHUs(@NonNull final PickFromHUsGetRequest request)
 	{
-		final ArrayList<PickFromHU> result = new ArrayList<>();
+		final ArrayList<PickFromHU> pickFromHUs = new ArrayList<>();
 
 		getVHUIdsAlreadyReserved(request)
 				.stream()
-				.map(vhuId -> createPickFromHUByVHUId(vhuId).withHuReservedForThisLine(true))
-				.forEach(result::add);
+				.map(this::createPickFromHUByVHUId)
+				.map(PickFromHU::withHuReservedForThisLine)
+				.forEach(pickFromHUs::add);
 
 		getVHUIdsEligibleToAllocateAndNotReservedAtAll(request)
 				.stream()
 				.map(this::createPickFromHUByVHUId)
-				.forEach(result::add);
+				.forEach(pickFromHUs::add);
 
-		result.sort(getAllocationOrder(request.getBestBeforePolicy()));
+		final ProductId productId = request.getProductId();
+		final ImmutableSet<HuId> huIds = pickFromHUs.stream().map(PickFromHU::getHuId).collect(ImmutableSet.toImmutableSet());
 
-		return ImmutableList.copyOf(result);
+		return pickFromHUs.stream()
+				.map(pickFromHU -> withAlternatives(pickFromHU, productId, huIds))
+				.sorted(getAllocationOrder(request.getBestBeforePolicy()))
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	private PickFromHU createPickFromHUByVHUId(final @NonNull HuId vhuId)
@@ -143,7 +149,19 @@ public class PickFromHUsSupplier
 		return vhuQuery.listIds();
 	}
 
-	public Comparator<PickFromHU> getAllocationOrder(@NonNull final ShipmentAllocationBestBeforePolicy bestBeforePolicy)
+	private PickFromHU withAlternatives(@NonNull final PickFromHU pickFromHU, @NonNull final ProductId productId, @NonNull final Set<HuId> huIds)
+	{
+		final HuId pickFromHUId = pickFromHU.getHuId();
+
+		final AlternativePickFromKeys alternatives = huIds.stream()
+				.filter(huId -> !HuId.equals(huId, pickFromHUId))
+				.map(huId -> AlternativePickFromKey.of(huId, productId))
+				.collect(AlternativePickFromKeys.collect());
+
+		return pickFromHU.withAlternatives(alternatives);
+	}
+
+	private Comparator<PickFromHU> getAllocationOrder(@NonNull final ShipmentAllocationBestBeforePolicy bestBeforePolicy)
 	{
 		return Comparator.
 				<PickFromHU>comparingInt(pickFromHU -> pickFromHU.isHuReservedForThisLine() ? 0 : 1) // consider reserved HU first

@@ -30,6 +30,7 @@ import lombok.ToString;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 @ToString
 public class AllocableStorage
@@ -103,11 +104,17 @@ public class AllocableStorage
 		return vhuStorages.stream().anyMatch(vhuStorage -> vhuStorage.isReservedOnlyFor(allocable));
 	}
 
-	public Quantity getQtyFreeToAllocateFor(final AllocablePackageable allocable)
+	public boolean hasQtyFreeToAllocate()
 	{
 		return vhuStorages.stream()
-				.map(vhuStorage -> vhuStorage.getQtyFreeToAllocateFor(allocable))
+				.anyMatch(vhuStorage -> vhuStorage.hasQtyFreeToAllocateFor(null));
+	}
+
+	public Optional<Quantity> getQtyFreeToAllocate()
+	{
+		return vhuStorages.stream()
+				.map(vhuStorage -> vhuStorage.getQtyFreeToAllocateFor(null))
 				.reduce(Quantity::add)
-				.orElseGet(() -> zero(allocable));
+				.filter(Quantity::isPositive);
 	}
 }

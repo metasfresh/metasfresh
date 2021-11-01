@@ -48,6 +48,9 @@ public class PickFromHU
 	@Nullable String lotNumber;
 	@Nullable String repackNumber;
 
+	@With
+	@NonNull AlternativePickFromKeys alternatives;
+
 	@Builder
 	private PickFromHU(
 			@NonNull final HuId huId,
@@ -57,7 +60,8 @@ public class PickFromHU
 			@Nullable final LocalDate expiringDate,
 			@Nullable final String serialNo,
 			@Nullable final String lotNumber,
-			@Nullable final String repackNumber)
+			@Nullable final String repackNumber,
+			@Nullable final AlternativePickFromKeys alternatives)
 	{
 		this.huId = huId;
 		this.huReservedForThisLine = huReservedForThisLine;
@@ -67,5 +71,11 @@ public class PickFromHU
 		this.serialNo = serialNo;
 		this.lotNumber = lotNumber;
 		this.repackNumber = repackNumber;
+		this.alternatives = alternatives != null ? alternatives : AlternativePickFromKeys.EMPTY;
+	}
+
+	public PickFromHU withHuReservedForThisLine()
+	{
+		return withHuReservedForThisLine(true);
 	}
 }
