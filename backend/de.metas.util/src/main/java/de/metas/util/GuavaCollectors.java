@@ -13,11 +13,13 @@ import lombok.experimental.UtilityClass;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
@@ -390,6 +392,18 @@ public final class GuavaCollectors
 		final Supplier<List<T>> supplier = ArrayList::new;
 		final BiConsumer<List<T>, T> accumulator = List::add;
 		final BinaryOperator<List<T>> combiner = (acc1, acc2) -> {
+			acc1.addAll(acc2);
+			return acc1;
+		};
+
+		return Collector.of(supplier, accumulator, combiner, finisher);
+	}
+
+	public static <T, R> Collector<T, ?, R> collectUsingHashSetAccumulator(@NonNull final Function<HashSet<T>, R> finisher)
+	{
+		final Supplier<HashSet<T>> supplier = HashSet::new;
+		final BiConsumer<HashSet<T>, T> accumulator = HashSet::add;
+		final BinaryOperator<HashSet<T>> combiner = (acc1, acc2) -> {
 			acc1.addAll(acc2);
 			return acc1;
 		};
