@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.business.rest-api-impl
+ * de.metas.handlingunits.base
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,25 +20,25 @@
  * #L%
  */
 
-package de.metas.rest_api.v2.shipping;
+package de.metas.handlingunits.shipmentschedule.api;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.async.AsyncBatchId;
 import de.metas.common.util.EmptyUtil;
-import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
 import de.metas.handlingunits.shipmentschedule.spi.impl.ShipmentScheduleExternalInfo;
 import de.metas.inoutcandidate.ShipmentScheduleId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.math.BigDecimal;
 import java.util.Map.Entry;
 
 @Value
 @Builder
-class GenerateShipmentsRequest
+public class GenerateShipmentsRequest
 {
 	@NonNull
 	ImmutableSet<ShipmentScheduleId> scheduleIds;
@@ -48,12 +48,18 @@ class GenerateShipmentsRequest
 
 	@NonNull
 	ImmutableMap<ShipmentScheduleId, BigDecimal> scheduleToQuantityToDeliverOverride;
-	
+
 	@NonNull
 	M_ShipmentSchedule_QuantityTypeToUse quantityTypeToUse;
 
 	@NonNull
 	AsyncBatchId asyncBatchId;
+
+	@NonNull
+	Boolean isCompleteShipment;
+
+	@Nullable
+	Boolean isShipDateToday;
 
 	public ImmutableMap<ShipmentScheduleId, String> extractShipmentDocumentNos()
 	{

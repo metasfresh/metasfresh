@@ -3,6 +3,7 @@ package de.metas.order.impl;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import de.metas.async.AsyncBatchId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
@@ -372,6 +373,18 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 				.map(I_C_OrderLine::getC_Order_ID)
 				.map(OrderId::ofRepoId)
 				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	@Override
+	public I_C_Order assignAsyncBatchId(@NonNull final OrderId orderId, @NonNull final AsyncBatchId asyncBatchId)
+	{
+		final I_C_Order orderRecord = getById(orderId);
+
+		orderRecord.setC_Async_Batch_ID(asyncBatchId.getRepoId());
+
+		save(orderRecord);
+
+		return orderRecord;
 	}
 
 	private I_C_Order getOrderByDocumentNumberQuery(final OrderQuery query)

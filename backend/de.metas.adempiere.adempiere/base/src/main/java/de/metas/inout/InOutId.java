@@ -7,6 +7,8 @@ import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.business
@@ -43,7 +45,7 @@ public class InOutId implements RepoIdAware
 		return repoId > 0 ? new InOutId(repoId) : null;
 	}
 
-	public static int toRepoId(final InOutId id)
+	public static int toRepoId(@Nullable final InOutId id)
 	{
 		return id != null ? id.getRepoId() : -1;
 	}
