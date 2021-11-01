@@ -93,7 +93,7 @@ const Checkbox = (props) => {
       updateItems({ widgetField, value: !checkedState });
 
     handlePatch(widgetField, newCheckedState, id).then(() => {
-      // in case of checkboxes in tabs we will always get a websocket request, which ras break
+      // in case of checkboxes in tabs/Attributes we will always get a websocket request, which can break
       // the current state. So don't change it until next render
       if (!isEdited) {
         setChanged(false);
