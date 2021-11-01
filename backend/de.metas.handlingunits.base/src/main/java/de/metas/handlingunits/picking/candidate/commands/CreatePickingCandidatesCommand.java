@@ -38,8 +38,6 @@ import lombok.NonNull;
 
 public class CreatePickingCandidatesCommand
 {
-	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
-	private final IShipmentSchedulePA shipmentSchedulesRepo = Services.get(IShipmentSchedulePA.class);
 	private final PickingCandidateRepository pickingCandidateRepository;
 
 	private final ShipmentScheduleId shipmentScheduleId;

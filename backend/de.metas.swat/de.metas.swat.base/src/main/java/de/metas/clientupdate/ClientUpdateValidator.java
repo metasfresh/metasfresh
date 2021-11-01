@@ -25,25 +25,21 @@ package de.metas.clientupdate;
  * #L%
  */
 
-
-import java.text.MessageFormat;
-
-import javax.swing.JOptionPane;
-
-import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
-import org.adempiere.ad.session.MFSession;
-import org.adempiere.service.ISysConfigBL;
-import org.compiere.Adempiere;
-import org.compiere.model.I_AD_System;
-import org.compiere.util.DB;
-import org.compiere.util.Env;
-import org.compiere.util.Ini;
-import org.slf4j.Logger;
-
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
+import org.adempiere.ad.service.ISystemBL;
+import org.adempiere.ad.session.MFSession;
+import org.adempiere.service.ISysConfigBL;
+import org.compiere.Adempiere;
+import org.compiere.util.Env;
+import org.compiere.util.Ini;
+import org.slf4j.Logger;
+
+import javax.swing.*;
+import java.text.MessageFormat;
 
 /**
  * This model validator starts a thread which check if the Client Application is up2date.
@@ -138,7 +134,7 @@ public class ClientUpdateValidator extends AbstractModuleInterceptor
 			log.info("Adempiere ImplementationVersion=" + clientVersion + "! Not checking against DB");
 			return;
 		}
-		final String newVersion = DB.getSQLValueStringEx(null, "SELECT " + I_AD_System.COLUMNNAME_LastBuildInfo + " FROM " + I_AD_System.Table_Name);
+		final String newVersion = Services.get(ISystemBL.class).get().getLastBuildInfo();
 		log.info("Build DB=" + newVersion);
 		log.info("Build Cl=" + clientVersion);
 		// Identical DB version

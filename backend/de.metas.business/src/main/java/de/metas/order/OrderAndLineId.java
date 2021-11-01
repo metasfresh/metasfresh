@@ -84,6 +84,14 @@ public class OrderAndLineId
 		return new OrderAndLineId(orderId, orderLineId);
 	}
 
+	@Nullable
+	public static OrderAndLineId ofNullable(@Nullable final OrderId orderId, @Nullable final OrderLineId orderLineId)
+	{
+		return orderId != null && orderLineId != null
+				? new OrderAndLineId(orderId, orderLineId)
+				: null;
+	}
+
 	public static int getOrderRepoIdOr(final OrderAndLineId orderAndLineId, final int defaultValue)
 	{
 		return orderAndLineId != null ? orderAndLineId.getOrderRepoId() : defaultValue;

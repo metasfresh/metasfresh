@@ -60,6 +60,9 @@ public class AttributeConstants
 	public static final AttributeCode ATTR_LotNumber = AttributeCode.ofString(ATTR_LotNumber_String);
 	public static final AttributeCode ATTR_LotNumberDate = AttributeCode.ofString("HU_LotNumberDate");
 
+	public static final String ATTR_RepackNumber_String = "RepackNumber";
+	public static final AttributeCode ATTR_RepackNumber = AttributeCode.ofString(ATTR_RepackNumber_String);
+
 	public static final AttributeCode RouterPassword = AttributeCode.ofString("RouterPassword");
 	public static final AttributeCode RouterMAC1 = AttributeCode.ofString("RouterMAC1");
 	public static final AttributeCode RouterMAC2 = AttributeCode.ofString("RouterMAC2");

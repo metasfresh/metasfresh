@@ -36,12 +36,12 @@ import java.util.Objects;
 public class Dimension implements Comparable<Dimension>
 {
 	@With
-	@Nullable
-	ProjectId projectId;
+	@Nullable ProjectId projectId;
+
 	int campaignId;
+
 	@With
-	@Nullable
-	ActivityId activityId;
+	@Nullable ActivityId activityId;
 
 	// todo propagation for these 2
 	int user1_ID;

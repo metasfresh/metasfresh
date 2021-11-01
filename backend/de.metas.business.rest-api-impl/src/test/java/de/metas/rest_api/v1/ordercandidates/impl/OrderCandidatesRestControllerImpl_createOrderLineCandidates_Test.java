@@ -166,7 +166,7 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 
 	private static final DocBaseAndSubType DOCTYPE_SALES_INVOICE = DocBaseAndSubType.of("ARI", "KV");
 
-	private OrderCandidatesRestControllerImpl orderCandidatesRestControllerImpl;
+	private OrderCandidatesRestController orderCandidatesRestControllerImpl;
 
 	private OLCandBL olCandBL;
 
@@ -257,7 +257,7 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 				jsonServiceFactory,
 				new JsonRequestConsolidateService());
 
-		orderCandidatesRestControllerImpl = new OrderCandidatesRestControllerImpl(
+		orderCandidatesRestControllerImpl = new OrderCandidatesRestController(
 				jsonConverters,
 				new OLCandRepository(),
 				bpartnerRestController,
