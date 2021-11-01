@@ -89,7 +89,7 @@ public class BOMRestService
 
 		final ImmutableList<BOMCreateRequest.BOMLine> bomLines = request.getBomLines()
 				.stream()
-				.map(line -> buildBOMLine(line, org))
+				.map(line -> buildBOMLine(line, orgId))
 				.collect(ImmutableList.toImmutableList());
 
 		final BOMCreateRequest bomRequest = BOMCreateRequest.builder()
@@ -99,6 +99,7 @@ public class BOMRestService
 				.productName(request.getName())
 				.uomId(bomUOMId)
 				.isActive(request.getIsActive())
+				.validFrom(request.getValidFrom())
 				.lines(bomLines)
 				.build();
 
