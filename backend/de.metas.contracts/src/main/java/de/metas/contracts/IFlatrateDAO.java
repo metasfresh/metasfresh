@@ -48,6 +48,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Period;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
@@ -152,6 +153,8 @@ public interface IFlatrateDAO extends ISingletonService
 			@NonNull BPartnerId bPartnerId,
 			@NonNull Instant date,
 			@NonNull OrgId orgId);
+
+	boolean orderPartnerHasExistingRunningTerms(@NonNull I_C_Order order);
 
 	@Value
 	@Builder

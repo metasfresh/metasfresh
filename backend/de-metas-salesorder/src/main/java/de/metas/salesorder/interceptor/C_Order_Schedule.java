@@ -27,8 +27,6 @@ import de.metas.async.AsyncBatchId;
 import de.metas.async.asyncbatchmilestone.AsyncBatchMilestone;
 import de.metas.async.asyncbatchmilestone.AsyncBatchMilestoneQuery;
 import de.metas.async.asyncbatchmilestone.AsyncBatchMilestoneService;
-import de.metas.bpartner.BPartnerId;
-import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.inoutcandidate.async.CreateMissingShipmentSchedulesWorkpackageProcessor;
 import de.metas.logging.LogManager;
@@ -47,12 +45,10 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.ModelValidator;
-import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.Set;
 
 @Interceptor(I_C_Order.class)
 @Component
@@ -131,10 +127,23 @@ public class C_Order_Schedule
 		return asyncBatchMilestoneList.isEmpty();
 	}
 
-
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
-	public void createInvoicesForFltrateTerms(@NonNull final org.compiere.model.I_C_Order orderRecord)
+	public void createInvoicesForFlatrateTerms(@NonNull final org.compiere.model.I_C_Order orderRecord)
 	{
+
+		final boolean autoInvoiceFlatrateTerm = orgDAO.isAutoInvoiceFlatrateTerm(OrgId.ofRepoId(orderRecord.getAD_Org_ID()));
+		if (!autoInvoiceFlatrateTerm)
+		{
+			// nothing to do
+			return;
+		}
+
+		if(flatrateDAO.orderPartnerHasExistingRunningTerms(orderRecord))
+		{
+			// there are already running terms for this partner. Nothing to do
+			return;
+		}
+
 		trxManager
 				.getTrxListenerManager(InterfaceWrapperHelper.getTrxName(orderRecord))
 				.runAfterCommit(() -> enqueueGenerateInvoicesAfterCommit(orderRecord));
@@ -144,23 +153,7 @@ public class C_Order_Schedule
 	{
 		final OrderId orderId = OrderId.ofRepoId(orderRecord.getC_Order_ID());
 
-		final boolean autoInvoiceFlatrateTerm = orgDAO.isAutoInvoiceFlatrateTerm(OrgId.ofRepoId(orderRecord.getAD_Org_ID()));
-		if(!autoInvoiceFlatrateTerm)
-		{
-			// nothing to do
-			return;
-		}
+		autoProcessingOrderService.createAndCompleteInvoices(orderId);
 
-		final Set<FlatrateTermId> flatrateTermIds = flatrateDAO.retrieveAllRunningSubscriptionIds(BPartnerId.ofRepoId(orderRecord.getBill_BPartner_ID()),
-																								  TimeUtil.asInstant(orderRecord.getDateOrdered()),
-																								  OrgId.ofRepoId(orderRecord.getAD_Org_ID()));
-		if (flatrateTermIds.isEmpty())
-		{
-			autoProcessingOrderService.createAndCompleteInvoices(orderId);
-		}
-		else
-		{
-			Loggables.withLogger(logger, Level.INFO).addLog("The order {} already has running contract terms", orderId);
-		}
 	}
 }

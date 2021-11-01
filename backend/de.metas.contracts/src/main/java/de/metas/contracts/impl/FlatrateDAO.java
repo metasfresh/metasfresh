@@ -38,7 +38,6 @@ import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy;
-import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
@@ -54,6 +53,7 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Period;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
@@ -1020,8 +1020,6 @@ public class FlatrateDAO implements IFlatrateDAO
 		return ic;
 	}
 
-
-
 	@Cached(cacheName = I_C_Flatrate_Term.Table_Name + "#by#bPartnerId#typeConditions")
 	public List<I_C_Flatrate_Term> retrieveTerms(
 			@NonNull final BPartnerId bPartnerId,
@@ -1043,13 +1041,32 @@ public class FlatrateDAO implements IFlatrateDAO
 			@NonNull final Instant date,
 			@NonNull final OrgId orgId)
 	{
+		return existingSubscriptionsQueryBuilder(orgId, bPartnerId, date)
+				.create()
+				.listIds(FlatrateTermId::ofRepoId);
+	}
+
+	private IQueryBuilder<I_C_Flatrate_Term> existingSubscriptionsQueryBuilder(@NonNull final OrgId orgId, @NonNull final BPartnerId bPartnerId, @NonNull final Instant date)
+	{
 		return queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_AD_Org_ID, orgId)
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Bill_BPartner_ID, bPartnerId)
 				.addNotEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_ContractStatus, FlatrateTermStatus.Quit.getCode())
 				.addNotEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_ContractStatus, FlatrateTermStatus.Voided.getCode())
-				.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_EndDate, CompareQueryFilter.Operator.GREATER, date)
-				.create()
-				.listIds(FlatrateTermId::ofRepoId);
+				.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_EndDate, Operator.GREATER, date);
+	}
+
+	@Override
+	public boolean orderPartnerHasExistingRunningTerms(@NonNull final I_C_Order order)
+	{
+
+		final IQueryBuilder<I_C_Flatrate_Term> flatrateTermIQueryBuilder = existingSubscriptionsQueryBuilder(OrgId.ofRepoId(order.getAD_Org_ID()),
+																											 BPartnerId.ofRepoId(order.getBill_BPartner_ID()),
+																											 TimeUtil.asInstant(order.getDateOrdered()));
+
+		flatrateTermIQueryBuilder.addNotEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_C_Order_Term_ID, order.getC_Order_ID());
+
+		return flatrateTermIQueryBuilder.create()
+				.anyMatch();
 	}
 }
