@@ -24,15 +24,12 @@ select distinct nextval('pp_product_bomversions_seq'),
                 M_Product_ID,
                 max(name)
 from pp_product_bom
-group by M_Product_ID;
+group by M_Product_ID
+;
 
 update pp_product_bom
 set pp_product_bomversions_id = version.pp_product_bomversions_id
 from pp_product_bom bom
          inner join pp_product_bomversions version on bom.m_product_id = version.m_product_id
-where bom.pp_product_bom_id = pp_product_bom.pp_product_bom_id;
-
-update pp_product_planning
-set pp_product_bomversions_id = bom.pp_product_bomversions_id
-from pp_product_bom bom
-where bom.pp_product_bom_id = pp_product_planning.pp_product_bom_id;
+where bom.pp_product_bom_id = pp_product_bom.pp_product_bom_id
+;

@@ -398,5 +398,8 @@ UPDATE AD_Menu SET AD_Element_ID=575470, Description='Maintain Product Bill of M
 INSERT INTO t_alter_column values('pp_product_bom','ValidFrom','TIMESTAMP WITH TIME ZONE',null,null)
 ;
 
-alter table pp_product_planning drop column pp_product_bom_id
+update pp_product_planning
+set pp_product_bomversions_id = bom.pp_product_bomversions_id
+from pp_product_bom bom
+where bom.pp_product_bom_id = pp_product_planning.pp_product_bom_id
 ;
