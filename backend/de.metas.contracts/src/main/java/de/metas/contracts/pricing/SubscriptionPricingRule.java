@@ -19,6 +19,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.model.I_M_PriceList;
+import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -63,12 +64,6 @@ public class SubscriptionPricingRule implements IPricingRule
 			return false;
 		}
 
-		if (flatrateConditions.getM_PricingSystem_ID() <= 0)
-		{
-			logger.debug("Not applying because the flatrateConditions of the referencedObject has no pricing system; referencedObject={}; flatrateConditions={}", referencedObject, flatrateConditions);
-			return false;
-		}
-
 		return true;
 	}
 
@@ -78,27 +73,44 @@ public class SubscriptionPricingRule implements IPricingRule
 			@NonNull final IPricingResult result)
 	{
 		final Object referencedObject = pricingCtx.getReferencedObject();
-
 		final I_C_Flatrate_Conditions conditions = ContractPricingUtil.getC_Flatrate_Conditions(referencedObject);
-		final I_M_PriceList subscriptionPriceList = retrievePriceListForConditionsAndCountry(pricingCtx.getCountryId(), conditions);
 
-		final SubscriptionDiscountLine subscriptionDiscountLine = getSubscriptionDiscountOrNull(pricingCtx, conditions);
+		// discount
+		final SubscriptionDiscountLine subscriptionDiscountLine;
+		if (!pricingCtx.isDisallowDiscount())
+		{
+			subscriptionDiscountLine = getSubscriptionDiscountOrNull(pricingCtx, conditions);
+		}
+		else
+		{
+			subscriptionDiscountLine = null;
+		}
 
-		final IEditablePricingContext subscriptionPricingCtx = copyPricingCtxButInsertPriceList(pricingCtx, subscriptionPriceList);
-
-		final IPricingResult subscriptionPricingResult = invokePricingEngine(subscriptionPricingCtx.setFailIfNotCalculated());
+		// price
+		final IPricingResult subscriptionPricingResult;
+		if (conditions.getM_PricingSystem_ID() > 0)
+		{
+			final I_M_PriceList subscriptionPriceList = retrievePriceListForConditionsAndCountry(pricingCtx.getCountryId(), conditions);
+			final IEditablePricingContext subscriptionPricingCtx = copyPricingCtxButInsertPriceList(pricingCtx, subscriptionPriceList);
+			subscriptionPricingResult = invokePricingEngine(subscriptionPricingCtx.setFailIfNotCalculated());
+		}
+		else
+		{
+			subscriptionPricingResult = result;
+		}
 
 		final IPricingResult combinedPricingResult = aggregateSubscriptionDiscount(subscriptionDiscountLine, subscriptionPricingResult);
-
 		copySubscriptionResultIntoResult(combinedPricingResult, result);
-
 		copyDiscountIntoResultIfAllowedByPricingContext(combinedPricingResult, result, pricingCtx);
 	}
 
-	private IPricingResult aggregateSubscriptionDiscount(@Nullable final SubscriptionDiscountLine subscriptionDiscountLine, final IPricingResult subscriptionPricingResult)
+	private IPricingResult aggregateSubscriptionDiscount(
+			@Nullable final SubscriptionDiscountLine subscriptionDiscountLine,
+			@NonNull final IPricingResult subscriptionPricingResult)
 	{
-		if (subscriptionDiscountLine != null && !subscriptionPricingResult.isDisallowDiscount() &&
-				(!subscriptionPricingResult.isDiscountCalculated() || subscriptionDiscountLine.isPrioritiseOwnDiscount()))
+		if (subscriptionDiscountLine != null
+				&& !subscriptionPricingResult.isDisallowDiscount()
+				&& (!subscriptionPricingResult.isDiscountCalculated() || subscriptionDiscountLine.isPrioritiseOwnDiscount()))
 		{
 			subscriptionPricingResult.setDiscount(subscriptionDiscountLine.getDiscount());
 		}
@@ -172,6 +184,11 @@ public class SubscriptionPricingRule implements IPricingRule
 			@NonNull final IPricingResult subscriptionPricingResult,
 			@NonNull final IPricingResult result)
 	{
+		if (Util.same(subscriptionPricingResult, result))
+		{
+			return;
+		}
+
 		result.setCurrencyId(subscriptionPricingResult.getCurrencyId());
 		result.setPriceUomId(subscriptionPricingResult.getPriceUomId());
 		result.setCalculated(subscriptionPricingResult.isCalculated());
