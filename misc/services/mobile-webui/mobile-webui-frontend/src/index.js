@@ -1,7 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
-
 import { ProvideAuth } from './hooks/useAuth';
 import App from './App';
 import * as serviceWorkerRegistration from './serviceWorkerRegistration';
