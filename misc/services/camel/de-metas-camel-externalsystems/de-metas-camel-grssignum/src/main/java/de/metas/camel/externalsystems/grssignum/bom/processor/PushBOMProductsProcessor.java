@@ -23,17 +23,18 @@
 package de.metas.camel.externalsystems.grssignum.bom.processor;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.camel.externalsystems.common.ProcessorHelper;
 import de.metas.camel.externalsystems.common.auth.TokenCredentials;
 import de.metas.camel.externalsystems.common.v2.BOMUpsertCamelRequest;
 import de.metas.camel.externalsystems.grssignum.ExternalIdentifierFormat;
 import de.metas.camel.externalsystems.grssignum.api.model.JsonBOM;
 import de.metas.camel.externalsystems.grssignum.api.model.JsonBOMLine;
 import de.metas.camel.externalsystems.grssignum.bom.JsonBOMUtil;
-import de.metas.camel.externalsystems.grssignum.bom.ProcessorHelper;
 import de.metas.camel.externalsystems.grssignum.bom.PushBOMsRouteContext;
 import de.metas.common.rest_api.v2.JsonQuantity;
 import de.metas.common.rest_api.v2.bom.JsonBOMCreateRequest;
 import de.metas.common.rest_api.v2.bom.JsonCreateBOMLine;
+import de.metas.common.util.time.SystemTime;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
@@ -79,6 +80,7 @@ public class PushBOMProductsProcessor implements Processor
 				.productIdentifier(ExternalIdentifierFormat.asExternalIdentifier(jsonBOM.getProductId()))
 				.name(JsonBOMUtil.getName(jsonBOM))
 				.isActive(jsonBOM.isActive())
+				.validFrom(SystemTime.asInstant())
 				.bomLines(bomLines)
 				.build();
 

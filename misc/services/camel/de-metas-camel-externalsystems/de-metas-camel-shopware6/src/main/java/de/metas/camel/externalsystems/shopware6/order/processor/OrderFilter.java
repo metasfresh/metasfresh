@@ -24,11 +24,11 @@ package de.metas.camel.externalsystems.shopware6.order.processor;
 
 import de.metas.camel.externalsystems.common.DateAndImportStatus;
 import de.metas.camel.externalsystems.shopware6.api.ShopwareClient;
-import de.metas.camel.externalsystems.shopware6.api.model.order.OrderCandidate;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderTransaction;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderTransactions;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonPaymentMethod;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonStateMachine;
+import de.metas.camel.externalsystems.shopware6.api.model.order.OrderCandidate;
 import de.metas.camel.externalsystems.shopware6.api.model.order.PaymentMethodType;
 import de.metas.camel.externalsystems.shopware6.api.model.order.TechnicalNameEnum;
 import de.metas.camel.externalsystems.shopware6.order.ImportOrdersRouteContext;
@@ -40,7 +40,7 @@ import org.apache.camel.Processor;
 import java.util.Optional;
 import java.util.logging.Logger;
 
-import static de.metas.camel.externalsystems.shopware6.ProcessorHelper.getPropertyOrThrowError;
+import static de.metas.camel.externalsystems.common.ProcessorHelper.getPropertyOrThrowError;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT;
 
 public class OrderFilter implements Processor

@@ -20,13 +20,15 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.grssignum.product;
+package de.metas.camel.externalsystems.grssignum.bom;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import de.metas.camel.externalsystems.common.auth.TokenCredentials;
+import de.metas.camel.externalsystems.common.v2.BOMUpsertCamelRequest;
 import de.metas.camel.externalsystems.common.v2.ProductUpsertCamelRequest;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.common.util.time.SystemTime;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
@@ -46,20 +48,25 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_UPSERT_BOM_V2_CAMEL_URI;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_UPSERT_PRODUCT_V2_CAMEL_URI;
-import static de.metas.camel.externalsystems.grssignum.product.PushRawMaterialsRouteBuilder.PUSH_RAW_MATERIALS_PROCESSOR_ID;
-import static de.metas.camel.externalsystems.grssignum.product.PushRawMaterialsRouteBuilder.PUSH_RAW_MATERIALS_ROUTE_ID;
+import static de.metas.camel.externalsystems.grssignum.bom.PushBOMProductsRouteBuilder.PUSH_BOM_PRODUCTS_ROUTE_ID;
+import static de.metas.camel.externalsystems.grssignum.bom.PushBOMProductsRouteBuilder.PUSH_BOM_PRODUCTS_ROUTE_PROCESSOR_ID;
+import static de.metas.camel.externalsystems.grssignum.bom.PushBOMProductsRouteBuilder.PUSH_PRODUCT_ROUTE_PROCESSOR_ID;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
-public class PushRawMaterialsRouteBuilderTest extends CamelTestSupport
+public class PushBOMProductsRouteBuilderTest extends CamelTestSupport
 {
+	private static final String MOCK_PUSH_BOM_PRODUCTS = "mock:pushBOMProductsRoute";
 	private static final String MOCK_UPSERT_PRODUCTS = "mock:upsertProductsRoute";
 
-	private static final String JSON_PRODUCT = "1_JsonProduct.json";
+	private static final String JSON_BOM = "0_JsonBOM.json";
 	private static final String JSON_UPSERT_CAMEL_PRODUCT_REQ = "10_ProductUpsertCamelRequest.json";
+	private static final String JSON_BOM_UPSERT_CAMEL_REQ = "20_BOMUpsertCamelRequest.json";
 
 	private Authentication authentication;
 	private final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
@@ -70,7 +77,7 @@ public class PushRawMaterialsRouteBuilderTest extends CamelTestSupport
 		final Properties properties = new Properties();
 		try
 		{
-			properties.load(PushRawMaterialsRouteBuilderTest.class.getClassLoader().getResourceAsStream("application.properties"));
+			properties.load(PushBOMProductsRouteBuilderTest.class.getClassLoader().getResourceAsStream("application.properties"));
 			return properties;
 		}
 		catch (final IOException e)
@@ -82,7 +89,7 @@ public class PushRawMaterialsRouteBuilderTest extends CamelTestSupport
 	@Override
 	protected RouteBuilder createRouteBuilder()
 	{
-		return new PushRawMaterialsRouteBuilder();
+		return new PushBOMProductsRouteBuilder();
 	}
 
 	@Override
@@ -103,9 +110,11 @@ public class PushRawMaterialsRouteBuilderTest extends CamelTestSupport
 	}
 
 	@Test
-	void upsertRawMaterials() throws Exception
+	void pushBOMProducts() throws Exception
 	{
 		//given
+		SystemTime.setTimeSource(() -> Instant.parse("2021-11-01T20:00:00.00Z").toEpochMilli());
+
 		final TokenCredentials tokenCredentials = TokenCredentials.builder()
 				.orgCode("orgCode")
 				.pInstance(JsonMetasfreshId.of(1))
@@ -113,37 +122,63 @@ public class PushRawMaterialsRouteBuilderTest extends CamelTestSupport
 
 		Mockito.when(authentication.getCredentials()).thenReturn(tokenCredentials);
 
-		final PushRawMaterialsRouteBuilderTest.MockUpsertProductsEP mockUpsertProductsEP = new PushRawMaterialsRouteBuilderTest.MockUpsertProductsEP();
-		preparePushRouteForTesting(mockUpsertProductsEP);
+		final PushBOMProductsRouteBuilderTest.MockPushBOMsEP mockPushBOMsEP = new PushBOMProductsRouteBuilderTest.MockPushBOMsEP();
+		final PushBOMProductsRouteBuilderTest.MockUpsertProductsEP mockUpsertProductsEP = new PushBOMProductsRouteBuilderTest.MockUpsertProductsEP();
+		preparePushRouteForTesting(mockPushBOMsEP, mockUpsertProductsEP);
 
 		context.start();
 
 		final MockEndpoint pushProductsMockEP = getMockEndpoint(MOCK_UPSERT_PRODUCTS);
-		final InputStream upsertCamelProductsReq = PushRawMaterialsRouteBuilderTest.class.getResourceAsStream(JSON_UPSERT_CAMEL_PRODUCT_REQ);
+		final InputStream upsertCamelProductsReq = PushBOMProductsRouteBuilderTest.class.getResourceAsStream(JSON_UPSERT_CAMEL_PRODUCT_REQ);
 		pushProductsMockEP.expectedBodiesReceived(objectMapper.readValue(upsertCamelProductsReq, ProductUpsertCamelRequest.class));
 
-		final String requestBodyAsString = loadAsString(JSON_PRODUCT);
+		final MockEndpoint pushBOMProductsMockEP = getMockEndpoint(MOCK_PUSH_BOM_PRODUCTS);
+		final InputStream bomUpsertCamelReq = PushBOMProductsRouteBuilderTest.class.getResourceAsStream(JSON_BOM_UPSERT_CAMEL_REQ);
+		pushBOMProductsMockEP.expectedBodiesReceived(objectMapper.readValue(bomUpsertCamelReq, BOMUpsertCamelRequest.class));
+
+		final String requestBodyAsString = loadAsString(JSON_BOM);
 
 		//when
-		template.sendBody("direct:" + PUSH_RAW_MATERIALS_ROUTE_ID, requestBodyAsString);
+		template.sendBody("direct:" + PUSH_BOM_PRODUCTS_ROUTE_ID, requestBodyAsString);
 
 		//then
 		assertMockEndpointsSatisfied();
+		assertThat(mockPushBOMsEP.called).isEqualTo(1);
 		assertThat(mockUpsertProductsEP.called).isEqualTo(1);
 	}
 
-	private void preparePushRouteForTesting(@NonNull final PushRawMaterialsRouteBuilderTest.MockUpsertProductsEP mockUpsertProductsEP) throws Exception
+	private void preparePushRouteForTesting(@NonNull final PushBOMProductsRouteBuilderTest.MockPushBOMsEP mockPushBOMsEP,
+			@NonNull final PushBOMProductsRouteBuilderTest.MockUpsertProductsEP mockUpsertProductsEP) throws Exception
 	{
-		AdviceWith.adviceWith(context, PUSH_RAW_MATERIALS_ROUTE_ID,
+		AdviceWith.adviceWith(context, PUSH_BOM_PRODUCTS_ROUTE_ID,
 							  advice -> {
-								  advice.weaveById(PUSH_RAW_MATERIALS_PROCESSOR_ID)
+								  advice.weaveById(PUSH_PRODUCT_ROUTE_PROCESSOR_ID)
 										  .after()
 										  .to(MOCK_UPSERT_PRODUCTS);
 
 								  advice.interceptSendToEndpoint("direct:" + MF_UPSERT_PRODUCT_V2_CAMEL_URI)
 										  .skipSendToOriginalEndpoint()
 										  .process(mockUpsertProductsEP);
+
+								  advice.weaveById(PUSH_BOM_PRODUCTS_ROUTE_PROCESSOR_ID)
+										  .after()
+										  .to(MOCK_PUSH_BOM_PRODUCTS);
+
+								  advice.interceptSendToEndpoint("direct:" + MF_UPSERT_BOM_V2_CAMEL_URI)
+										  .skipSendToOriginalEndpoint()
+										  .process(mockPushBOMsEP);
 							  });
+	}
+
+	private static class MockPushBOMsEP implements Processor
+	{
+		private int called = 0;
+
+		@Override
+		public void process(final Exchange exchange)
+		{
+			called++;
+		}
 	}
 
 	private static class MockUpsertProductsEP implements Processor
@@ -159,11 +194,10 @@ public class PushRawMaterialsRouteBuilderTest extends CamelTestSupport
 
 	private static String loadAsString(@NonNull final String name)
 	{
-		final InputStream inputStream = PushRawMaterialsRouteBuilderTest.class.getResourceAsStream(name);
+		final InputStream inputStream = PushBOMProductsRouteBuilderTest.class.getResourceAsStream(name);
 		return new BufferedReader(
 				new InputStreamReader(inputStream, StandardCharsets.UTF_8))
 				.lines()
 				.collect(Collectors.joining("\n"));
 	}
-
 }
