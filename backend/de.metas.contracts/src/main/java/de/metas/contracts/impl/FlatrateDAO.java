@@ -7,6 +7,7 @@ import de.metas.cache.annotation.CacheTrx;
 import de.metas.contracts.ConditionsId;
 import de.metas.contracts.FlatrateDataId;
 import de.metas.contracts.FlatrateTermId;
+import de.metas.contracts.FlatrateTermStatus;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
@@ -37,6 +38,7 @@ import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy;
+import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
@@ -65,10 +67,12 @@ import org.slf4j.Logger;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 import static de.metas.contracts.model.X_C_Flatrate_Term.CONTRACTSTATUS_Quit;
 import static de.metas.contracts.model.X_C_Flatrate_Term.CONTRACTSTATUS_Voided;
@@ -1031,5 +1035,21 @@ public class FlatrateDAO implements IFlatrateDAO
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_AD_Org_ID, orgId.getRepoId())
 				.create()
 				.list(I_C_Flatrate_Term.class);
+	}
+
+	@Override
+	public Set<FlatrateTermId> retrieveAllRunningSubscriptionIds(
+			@NonNull final BPartnerId bPartnerId,
+			@NonNull final Instant date,
+			@NonNull final OrgId orgId)
+	{
+		return queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_AD_Org_ID, orgId)
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Bill_BPartner_ID, bPartnerId)
+				.addNotEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_ContractStatus, FlatrateTermStatus.Quit.getCode())
+				.addNotEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_ContractStatus, FlatrateTermStatus.Voided.getCode())
+				.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_EndDate, CompareQueryFilter.Operator.GREATER, date)
+				.create()
+				.listIds(FlatrateTermId::ofRepoId);
 	}
 }

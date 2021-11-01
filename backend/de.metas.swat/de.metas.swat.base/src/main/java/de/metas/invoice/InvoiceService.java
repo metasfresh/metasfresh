@@ -35,6 +35,9 @@ import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoicingParams;
 import de.metas.invoicecandidate.api.impl.PlainInvoicingParams;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.order.IOrderDAO;
+import de.metas.order.OrderAndLineId;
+import de.metas.order.OrderId;
 import de.metas.process.PInstanceId;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
@@ -63,6 +66,7 @@ public class InvoiceService
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 
 	private final AsyncBatchMilestoneService asyncBatchMilestoneService;
 
@@ -104,6 +108,22 @@ public class InvoiceService
 				.map(invoiceCandDAO::retrieveInvoiceCandidatesForInOutLine)
 				.flatMap(List::stream)
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	@NonNull
+	public List<I_C_Invoice_Candidate> retrieveInvoiceCandsByOrderId(@NonNull final OrderId orderId)
+	{
+		final List<OrderAndLineId> orderAndLineIds = orderDAO.retrieveAllOrderLineIds(orderId);
+
+		final List<I_C_Invoice_Candidate> invoiceCandidatesForOrder = new ArrayList<>();
+
+		for (OrderAndLineId orderAndLineId : orderAndLineIds)
+		{
+			final List<I_C_Invoice_Candidate> candidates = invoiceCandDAO.retrieveInvoiceCandidatesForOrderLineId(orderAndLineId.getOrderLineId());
+			invoiceCandidatesForOrder.addAll(candidates);
+		}
+
+		return invoiceCandidatesForOrder;
 	}
 
 	@NonNull

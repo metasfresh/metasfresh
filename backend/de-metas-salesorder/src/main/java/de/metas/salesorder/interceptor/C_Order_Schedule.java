@@ -27,10 +27,15 @@ import de.metas.async.AsyncBatchId;
 import de.metas.async.asyncbatchmilestone.AsyncBatchMilestone;
 import de.metas.async.asyncbatchmilestone.AsyncBatchMilestoneQuery;
 import de.metas.async.asyncbatchmilestone.AsyncBatchMilestoneService;
+import de.metas.bpartner.BPartnerId;
+import de.metas.contracts.FlatrateTermId;
+import de.metas.contracts.IFlatrateDAO;
 import de.metas.inoutcandidate.async.CreateMissingShipmentSchedulesWorkpackageProcessor;
 import de.metas.logging.LogManager;
 import de.metas.order.DeliveryRule;
 import de.metas.order.OrderId;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
 import de.metas.salesorder.service.AutoProcessingOrderService;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
@@ -42,10 +47,12 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.ModelValidator;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Set;
 
 @Interceptor(I_C_Order.class)
 @Component
@@ -57,6 +64,8 @@ public class C_Order_Schedule
 
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
 
 	private final AutoProcessingOrderService autoProcessingOrderService;
 	private final AsyncBatchMilestoneService asyncBatchMilestoneService;
@@ -120,5 +129,38 @@ public class C_Order_Schedule
 
 		//dev-note: if there is already an async process in progress working with this order, let it follow it's normal course
 		return asyncBatchMilestoneList.isEmpty();
+	}
+
+
+	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
+	public void createInvoicesForFltrateTerms(@NonNull final org.compiere.model.I_C_Order orderRecord)
+	{
+		trxManager
+				.getTrxListenerManager(InterfaceWrapperHelper.getTrxName(orderRecord))
+				.runAfterCommit(() -> enqueueGenerateInvoicesAfterCommit(orderRecord));
+	}
+
+	private void enqueueGenerateInvoicesAfterCommit(@NonNull final org.compiere.model.I_C_Order orderRecord)
+	{
+		final OrderId orderId = OrderId.ofRepoId(orderRecord.getC_Order_ID());
+
+		final boolean autoInvoiceFlatrateTerm = orgDAO.isAutoInvoiceFlatrateTerm(OrgId.ofRepoId(orderRecord.getAD_Org_ID()));
+		if(!autoInvoiceFlatrateTerm)
+		{
+			// nothing to do
+			return;
+		}
+
+		final Set<FlatrateTermId> flatrateTermIds = flatrateDAO.retrieveAllRunningSubscriptionIds(BPartnerId.ofRepoId(orderRecord.getBill_BPartner_ID()),
+																								  TimeUtil.asInstant(orderRecord.getDateOrdered()),
+																								  OrgId.ofRepoId(orderRecord.getAD_Org_ID()));
+		if (flatrateTermIds.isEmpty())
+		{
+			autoProcessingOrderService.createAndCompleteInvoices(orderId);
+		}
+		else
+		{
+			Loggables.withLogger(logger, Level.INFO).addLog("The order {} already has running contract terms", orderId);
+		}
 	}
 }

@@ -54,10 +54,12 @@ import org.compiere.model.I_M_Product;
 
 import javax.annotation.Nullable;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 public interface IFlatrateDAO extends ISingletonService
 {
@@ -145,6 +147,11 @@ public interface IFlatrateDAO extends ISingletonService
 	void save(@NonNull I_C_Flatrate_Term flatrateTerm);
 
 	I_C_Invoice_Candidate retrieveInvoiceCandidate(I_C_Flatrate_Term term);
+
+	Set<FlatrateTermId> retrieveAllRunningSubscriptionIds(
+			@NonNull BPartnerId bPartnerId,
+			@NonNull Instant date,
+			@NonNull OrgId orgId);
 
 	@Value
 	@Builder

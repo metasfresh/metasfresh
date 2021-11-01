@@ -27,6 +27,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.async.AsyncBatchId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
+import de.metas.contracts.IContractsDAO;
+import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.handlingunits.impl.CreateShipperTransportationRequest;
 import de.metas.handlingunits.impl.ShipperTransportationRepository;
 import de.metas.handlingunits.shipmentschedule.api.GenerateShipmentsForSchedulesRequest;
@@ -97,6 +99,20 @@ public class AutoProcessingOrderService
 		this.shipperDeliveryService = shipperDeliveryService;
 		this.shipperTransportationRepository = shipperTransportationRepository;
 		this.inOutToTransportationOrderService = inOutToTransportationOrderService;
+	}
+
+
+	public void createAndCompleteInvoices(@NonNull final OrderId orderId)
+	{
+		final List<I_C_Invoice_Candidate> invoiceCandidates = invoiceService.retrieveInvoiceCandsByOrderId(orderId);
+
+		final Set<InvoiceCandidateId> invoiceCandidateIds = invoiceCandidates
+				.stream()
+				.map(I_C_Invoice_Candidate::getC_Invoice_Candidate_ID)
+				.map(InvoiceCandidateId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
+
+		invoiceService.processInvoiceCandidates(invoiceCandidateIds);
 	}
 
 	public void completeShipAndInvoice(@NonNull final OrderId orderId)
