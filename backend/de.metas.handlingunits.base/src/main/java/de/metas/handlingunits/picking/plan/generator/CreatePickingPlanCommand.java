@@ -33,6 +33,10 @@ import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.picking.PickingCandidateStatus;
 import de.metas.handlingunits.picking.plan.generator.allocableHUStorages.AllocableStorage;
 import de.metas.handlingunits.picking.plan.generator.allocableHUStorages.AllocableStoragesSupplier;
+import de.metas.handlingunits.picking.plan.generator.pickFromHUs.AlternativePickFrom;
+import de.metas.handlingunits.picking.plan.generator.pickFromHUs.AlternativePickFromKey;
+import de.metas.handlingunits.picking.plan.generator.pickFromHUs.AlternativePickFromKeys;
+import de.metas.handlingunits.picking.plan.generator.pickFromHUs.AlternativePickFromsList;
 import de.metas.handlingunits.picking.plan.generator.pickFromHUs.HUsLoadingCache;
 import de.metas.handlingunits.picking.plan.generator.pickFromHUs.PickFromHU;
 import de.metas.handlingunits.picking.plan.generator.pickFromHUs.PickFromHUsGetRequest;
@@ -65,6 +69,7 @@ import org.eevolution.api.QtyCalculationsBOMLine;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -116,14 +121,19 @@ public class CreatePickingPlanCommand
 
 	public PickingPlan execute()
 	{
-		final ImmutableList<PickingPlanLine> lines = packageables
+		ImmutableList<PickingPlanLine> lines = packageables
 				.stream()
 				.map(CreatePickingPlanCommand::toAllocablePackageable)
 				.flatMap(this::createLinesAndStream)
 				.collect(ImmutableList.toImmutableList());
 
+		lines = lines.stream()
+				.map(this::updateAlternativeKeys)
+				.collect(ImmutableList.toImmutableList());
+
 		return PickingPlan.builder()
 				.lines(lines)
+				.alternatives(getRelevantAlternativesFor(lines))
 				.build();
 	}
 
@@ -464,5 +474,47 @@ public class CreatePickingPlanCommand
 						.issueFromHUId(candidate.getIssueFromHUId())
 						.build())
 				.build();
+	}
+
+	private PickingPlanLine updateAlternativeKeys(@NonNull final PickingPlanLine line)
+	{
+		final PickFromHU pickFromHU = line.getPickFromHU();
+		if (pickFromHU == null)
+		{
+			return line;
+		}
+
+		final AlternativePickFromKeys alternativeKeys = pickFromHU.getAlternatives()
+				.filter(alternativeKey -> storages.getStorage(alternativeKey.getHuId(), alternativeKey.getProductId()).hasQtyFreeToAllocate());
+
+		return line.withPickFromHU(pickFromHU.withAlternatives(alternativeKeys));
+	}
+
+	private AlternativePickFromsList getRelevantAlternativesFor(final List<PickingPlanLine> lines)
+	{
+		final HashSet<AlternativePickFromKey> keysConsidered = new HashSet<>();
+		final ArrayList<AlternativePickFrom> alternatives = new ArrayList<>();
+		for (final PickingPlanLine line : lines)
+		{
+			final PickFromHU pickFromHU = line.getPickFromHU();
+			if (pickFromHU == null)
+			{
+				continue;
+			}
+
+			for (final AlternativePickFromKey key : pickFromHU.getAlternatives())
+			{
+				if (keysConsidered.add(key))
+				{
+					storages.getStorage(key.getHuId(), key.getProductId())
+							.getQtyFreeToAllocate()
+							.filter(Quantity::isPositive)
+							.map(availableQty -> AlternativePickFrom.of(key, availableQty))
+							.ifPresent(alternatives::add);
+				}
+			}
+		}
+
+		return AlternativePickFromsList.ofList(alternatives);
 	}
 }

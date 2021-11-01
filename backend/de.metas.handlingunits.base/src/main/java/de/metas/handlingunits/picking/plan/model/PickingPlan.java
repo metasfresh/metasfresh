@@ -23,10 +23,12 @@
 package de.metas.handlingunits.picking.plan.model;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.handlingunits.picking.plan.generator.pickFromHUs.AlternativePickFromsList;
 import de.metas.product.ProductId;
 import de.metas.util.GuavaCollectors;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 
@@ -37,7 +39,9 @@ import org.adempiere.exceptions.AdempiereException;
 @Builder(toBuilder = true)
 public class PickingPlan
 {
-	@NonNull ImmutableList<PickingPlanLine> lines;
+	@NonNull @Singular ImmutableList<PickingPlanLine> lines;
+
+	@NonNull AlternativePickFromsList alternatives;
 
 	public ProductId getSingleProductId()
 	{

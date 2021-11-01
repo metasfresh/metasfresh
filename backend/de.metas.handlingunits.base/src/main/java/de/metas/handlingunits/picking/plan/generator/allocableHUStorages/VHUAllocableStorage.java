@@ -46,7 +46,7 @@ class VHUAllocableStorage
 			return requestedQtyToAllocate.toZero();
 		}
 
-		final Quantity qtyFreeToAllocateEffective = getQtyFreeToAllocateFor(allocable);
+		final Quantity qtyFreeToAllocateEffective = getQtyFreeToAllocateFor(allocable.getReservationRef().orElse(null));
 		final Quantity qtyToAllocateEffective = computeEffectiveQtyToAllocate(requestedQtyToAllocate, qtyFreeToAllocateEffective);
 		forceAllocate(allocable, qtyToAllocateEffective);
 		return qtyToAllocateEffective;
@@ -59,9 +59,14 @@ class VHUAllocableStorage
 		allocable.allocateQty(qtyToAllocate);
 	}
 
-	public Quantity getQtyFreeToAllocateFor(final AllocablePackageable allocable)
+	public boolean hasQtyFreeToAllocateFor(@Nullable final HUReservationDocRef reservationDocRef)
 	{
-		return isReserved() && !isReservedOnlyFor(allocable)
+		return getQtyFreeToAllocateFor(reservationDocRef).isPositive();
+	}
+
+	public Quantity getQtyFreeToAllocateFor(@Nullable final HUReservationDocRef reservationDocRef)
+	{
+		return isReserved() && !isReservedOnlyFor(reservationDocRef)
 				? qtyFreeToAllocate.toZero()
 				: qtyFreeToAllocate;
 	}
@@ -73,7 +78,13 @@ class VHUAllocableStorage
 
 	public boolean isReservedOnlyFor(@NonNull final AllocablePackageable allocable)
 	{
-		return reservationDocRef != null && HUReservationDocRef.equals(reservationDocRef, allocable.getReservationRef().orElse(null));
+		return isReservedOnlyFor(allocable.getReservationRef().orElse(null));
+	}
+
+	public boolean isReservedOnlyFor(@Nullable final HUReservationDocRef reservationDocRef)
+	{
+		return this.reservationDocRef != null
+				&& HUReservationDocRef.equals(this.reservationDocRef, reservationDocRef);
 	}
 
 	private void assertSameProductId(final AllocablePackageable allocable)

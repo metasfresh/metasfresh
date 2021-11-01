@@ -25,7 +25,6 @@ package de.metas.handlingunits.picking.plan.model;
 public enum PickingPlanLineType
 {
 	PICK_FROM_HU,
-	PICK_FROM_HU_ALTERNATIVE,
 	PICK_FROM_PICKING_ORDER,
 	ISSUE_COMPONENTS_TO_PICKING_ORDER,
 	UNALLOCABLE,

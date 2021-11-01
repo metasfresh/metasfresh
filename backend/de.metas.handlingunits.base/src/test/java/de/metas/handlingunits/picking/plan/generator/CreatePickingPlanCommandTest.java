@@ -2,6 +2,7 @@ package de.metas.handlingunits.picking.plan.generator;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.bpartner.service.impl.BPartnerBL;
@@ -11,11 +12,15 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
+import de.metas.handlingunits.picking.plan.generator.pickFromHUs.AlternativePickFrom;
+import de.metas.handlingunits.picking.plan.generator.pickFromHUs.AlternativePickFromKey;
+import de.metas.handlingunits.picking.plan.generator.pickFromHUs.AlternativePickFromKeys;
+import de.metas.handlingunits.picking.plan.generator.pickFromHUs.AlternativePickFromsList;
+import de.metas.handlingunits.picking.plan.generator.pickFromHUs.PickFromHU;
 import de.metas.handlingunits.picking.plan.model.PickingPlan;
 import de.metas.handlingunits.picking.plan.model.PickingPlanLine;
 import de.metas.handlingunits.picking.plan.model.PickingPlanLineType;
 import de.metas.handlingunits.picking.plan.model.SourceDocumentInfo;
-import de.metas.handlingunits.picking.plan.generator.pickFromHUs.PickFromHU;
 import de.metas.handlingunits.reservation.HUReservation;
 import de.metas.handlingunits.reservation.HUReservationDocRef;
 import de.metas.handlingunits.reservation.HUReservationRepository;
@@ -44,6 +49,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -146,13 +152,21 @@ class CreatePickingPlanCommandTest
 				.build().execute();
 	}
 
+	private AlternativePickFromKeys alternativeKeys(final HuId... huIds)
+	{
+		return AlternativePickFromKeys.ofSet(Stream.of(huIds)
+				.map(huId -> AlternativePickFromKey.of(huId, productId))
+				.collect(ImmutableSet.toImmutableSet()));
+	}
+
 	@Test
 	void scenario_3HUs_1KgAlreadyReserved()
 	{
 		final HuId huId1 = createCU("30", wh1_loc1);
 		final HuId huId2 = createCU("30", wh1_loc1);
-		final HuId huId3 = createCU("40", wh1_loc1);
+		final HuId huId3 = createCU("1000", wh1_loc1);
 		final HuId huId3_reservedPart = makeHUReservation(huId3, Quantity.of("1", uomKg));
+		POJOLookupMap.get().dumpStatus("HUs", "M_HU_Storage");
 
 		final PickingPlan plan = createPlan(
 				packageable().qtyToDeliver(Quantity.of("100", uomKg)).warehouseId(wh1_loc1.getWarehouseId()).build()
@@ -166,30 +180,37 @@ class CreatePickingPlanCommandTest
 				.sourceDocumentInfo(SourceDocumentInfo.builder().shipmentScheduleId(shipmentScheduleId).salesOrderLineId(salesOrderAndLineId).build())
 				.productId(productId);
 
-		assertThat(plan.getLines()).hasSize(4);
-		assertThat(plan.getLines().get(0))
+		assertThat(plan)
 				.usingRecursiveComparison()
-				.isEqualTo(expectedPlanLineBuilder
-						.qty(Quantity.of("1.000", uomKg))
-						.pickFromHU(PickFromHU.builder().huId(huId3_reservedPart).huReservedForThisLine(true).locatorId(wh1_loc1).build())
-						.build());
-		assertThat(plan.getLines().get(1))
-				.usingRecursiveComparison()
-				.isEqualTo(expectedPlanLineBuilder
-						.qty(Quantity.of("30.000", uomKg))
-						.pickFromHU(PickFromHU.builder().huId(huId1).huReservedForThisLine(false).locatorId(wh1_loc1).build())
-						.build());
-		assertThat(plan.getLines().get(2))
-				.usingRecursiveComparison()
-				.isEqualTo(expectedPlanLineBuilder
-						.qty(Quantity.of("30.000", uomKg))
-						.pickFromHU(PickFromHU.builder().huId(huId2).huReservedForThisLine(false).locatorId(wh1_loc1).build())
-						.build());
-		assertThat(plan.getLines().get(3))
-				.usingRecursiveComparison()
-				.isEqualTo(expectedPlanLineBuilder
-						.qty(Quantity.of("39.000", uomKg))
-						.pickFromHU(PickFromHU.builder().huId(huId3).huReservedForThisLine(false).locatorId(wh1_loc1).build())
-						.build());
+				.isEqualTo(
+						PickingPlan.builder()
+								.line(expectedPlanLineBuilder
+										.qty(Quantity.of("1.000", uomKg))
+										.pickFromHU(PickFromHU.builder().huId(huId3_reservedPart).huReservedForThisLine(true).locatorId(wh1_loc1)
+												.alternatives(alternativeKeys(huId3))
+												.build())
+										.build())
+								.line(expectedPlanLineBuilder
+										.qty(Quantity.of("30.000", uomKg))
+										.pickFromHU(PickFromHU.builder().huId(huId1).huReservedForThisLine(false).locatorId(wh1_loc1)
+												.alternatives(alternativeKeys(huId3))
+												.build())
+										.build())
+								.line(expectedPlanLineBuilder
+										.qty(Quantity.of("30.000", uomKg))
+										.pickFromHU(PickFromHU.builder().huId(huId2).huReservedForThisLine(false).locatorId(wh1_loc1)
+												.alternatives(alternativeKeys(huId3))
+												.build())
+										.build())
+								.line(expectedPlanLineBuilder
+										.qty(Quantity.of("39.000", uomKg))
+										.pickFromHU(PickFromHU.builder().huId(huId3).huReservedForThisLine(false).locatorId(wh1_loc1)
+												.alternatives(AlternativePickFromKeys.EMPTY)
+												.build())
+										.build())
+								.alternatives(AlternativePickFromsList.ofList(ImmutableList.of(
+										AlternativePickFrom.of(AlternativePickFromKey.of(huId3, productId), Quantity.of("960.000", uomKg))
+								)))
+								.build());
 	}
 }

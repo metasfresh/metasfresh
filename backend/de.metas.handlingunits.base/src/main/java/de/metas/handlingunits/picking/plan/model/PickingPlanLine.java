@@ -28,6 +28,8 @@ import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.With;
+import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
@@ -39,7 +41,6 @@ import java.util.Objects;
  * <li>from where to pick it</li>
  */
 @Value
-@Builder(toBuilder = true)
 public class PickingPlanLine
 {
 	@NonNull PickingPlanLineType type;
@@ -53,9 +54,64 @@ public class PickingPlanLine
 	//
 	// From where to pick?
 	// ... or where to issue?
+	@With
 	@Nullable PickFromHU pickFromHU;
 	@Nullable PickFromPickingOrder pickFromPickingOrder;
 	@Nullable IssueToBOMLine issueToBOMLine;
+
+	@Builder(toBuilder = true)
+	private PickingPlanLine(
+			@NonNull final PickingPlanLineType type,
+			@NonNull final SourceDocumentInfo sourceDocumentInfo,
+			//
+			@NonNull final ProductId productId,
+			@NonNull final Quantity qty,
+			//
+			@Nullable final PickFromHU pickFromHU,
+			@Nullable final PickFromPickingOrder pickFromPickingOrder,
+			@Nullable final IssueToBOMLine issueToBOMLine)
+	{
+		this.type = type;
+		this.sourceDocumentInfo = sourceDocumentInfo;
+		this.productId = productId;
+		this.qty = qty;
+
+		switch (type)
+		{
+			case PICK_FROM_HU:
+			{
+				this.pickFromHU = pickFromHU;
+				this.pickFromPickingOrder = null;
+				this.issueToBOMLine = null;
+				break;
+			}
+			case PICK_FROM_PICKING_ORDER:
+			{
+				this.pickFromHU = null;
+				this.pickFromPickingOrder = pickFromPickingOrder;
+				this.issueToBOMLine = null;
+				break;
+			}
+			case ISSUE_COMPONENTS_TO_PICKING_ORDER:
+			{
+				this.pickFromHU = null;
+				this.pickFromPickingOrder = null;
+				this.issueToBOMLine = issueToBOMLine;
+				break;
+			}
+			case UNALLOCABLE:
+			{
+				this.pickFromHU = null;
+				this.pickFromPickingOrder = null;
+				this.issueToBOMLine = null;
+				break;
+			}
+			default:
+			{
+				throw new AdempiereException("Unknown type: " + type);
+			}
+		}
+	}
 
 	public PickingPlanLine withQty(@NonNull final Quantity qty)
 	{
@@ -63,13 +119,5 @@ public class PickingPlanLine
 				? this
 				: toBuilder().qty(qty).build();
 	}
-
-	public PickingPlanLine withTypeAndQty(@NonNull PickingPlanLineType type, @NonNull final Quantity qty)
-	{
-		return this.type.equals(type) && Objects.equals(this.qty, qty)
-				? this
-				: toBuilder().type(type).qty(qty).build();
-	}
-
 }
 
