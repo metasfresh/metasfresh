@@ -546,6 +546,11 @@ public final class Quantity implements Comparable<Quantity>
 		return ONE.compareTo(qty) == 0;
 	}
 
+	public boolean isPositive()
+	{
+		return signum() > 0;
+	}
+
 	/**
 	 * Adds given quantity and returns the result.
 	 * Assumes that the UOMs are equal.
