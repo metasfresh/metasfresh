@@ -1,8 +1,8 @@
 /*
  * #%L
- * metasfresh-webui-api
+ * de.metas.handlingunits.base
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,19 +20,9 @@
  * #L%
  */
 
-package de.metas.ui.web.inout.process;
-
-import java.util.List;
-import java.util.Objects;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.IQuery;
-import org.compiere.model.I_M_Package;
-import org.springframework.stereotype.Service;
+package de.metas.handlingunits.transportation;
 
 import com.google.common.collect.ImmutableList;
-
 import de.metas.handlingunits.IHUShipperTransportationBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.impl.CreatePackagesForInOutRequest;
@@ -50,6 +40,14 @@ import de.metas.util.GuavaCollectors;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.IQuery;
+import org.compiere.model.I_M_Package;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Objects;
 
 @Service
 public class InOutToTransportationOrderService
@@ -67,7 +65,7 @@ public class InOutToTransportationOrderService
 	 * - assume that all the HUs are already packed correctly
 	 * - add the HUs to Transportation Order by calling "huShipperTransportationBL.addHUsToShipperTransportation"
 	 */
-	public void addShipmentsToTransportationOrder(@NonNull final ShipperTransportationId transportationOrderId, @NonNull final ImmutableList<InOutId> inOutIds)
+	public List<I_M_Package> addShipmentsToTransportationOrder(@NonNull final ShipperTransportationId transportationOrderId, @NonNull final ImmutableList<InOutId> inOutIds)
 	{
 		final IShipperTransportationDAO shipperTransportationDAO = Services.get(IShipperTransportationDAO.class);
 		final I_M_ShipperTransportation transportationOrder = shipperTransportationDAO.retrieve(transportationOrderId);
@@ -75,6 +73,8 @@ public class InOutToTransportationOrderService
 		final IHUShipperTransportationBL huShipperTransportationBL = Services.get(IHUShipperTransportationBL.class);
 
 		final ImmutableList<I_M_InOut> selectedInOuts = retrieveAllInOuts(inOutIds);
+
+		final ImmutableList.Builder<I_M_Package> createdPackagesCollector = ImmutableList.builder();
 
 		final ShipperTransportationId shipperTransportationId = ShipperTransportationId.ofRepoId(Objects.requireNonNull(transportationOrder).getM_ShipperTransportation_ID());
 		for (final I_M_InOut inOut : selectedInOuts)
@@ -88,24 +88,32 @@ public class InOutToTransportationOrderService
 				}
 
 				final CreatePackagesForInOutRequest createPackagesForInOutRequest = CreatePackagesForInOutRequest.ofShipment(inOut);
-				huShipperTransportationBL.addInOutWithoutHUToShipperTransportation(shipperTransportationId, ImmutableList.of(createPackagesForInOutRequest));
+				final ImmutableList<I_M_Package> createdPackages = huShipperTransportationBL.addInOutWithoutHUToShipperTransportation(shipperTransportationId, ImmutableList.of(createPackagesForInOutRequest));
 
 				InterfaceWrapperHelper.save(inOut);
 				Loggables.addLog("M_InOut={} added to M_ShipperTransportation_ID={}", inOut.getM_InOut_ID(), shipperTransportationId);
+
+				createdPackagesCollector.addAll(createdPackages);
 			}
 			else
 			{
 				final ImmutableList<I_M_HU> husFiltered = selectOnlyHUsWithoutShipperTransportation(inOut);
-				final boolean anyAdded = !huShipperTransportationBL.addHUsToShipperTransportation(shipperTransportationId, husFiltered).isEmpty();
+				final List<I_M_Package> createdPackages = huShipperTransportationBL.addHUsToShipperTransportation(shipperTransportationId, husFiltered);
+
+				final boolean anyAdded = !createdPackages.isEmpty();
 				if (anyAdded)
 				{
 					// only link the InOut and the ShipperTransportation if any HUs were added.
 					inOut.setM_ShipperTransportation_ID(shipperTransportationId.getRepoId());
 					InterfaceWrapperHelper.save(inOut);
 					Loggables.addLog("HUs added to M_ShipperTransportation_ID={}", shipperTransportationId);
+
+					createdPackagesCollector.addAll(createdPackages);
 				}
 			}
 		}
+
+		return createdPackagesCollector.build();
 	}
 
 	// this was made in extreme haste.

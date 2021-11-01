@@ -60,12 +60,14 @@ public class ShipmentRestController
 
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
-	private final de.metas.rest_api.v2.shipping.ShipmentService shipmentService;
+	private final de.metas.rest_api.v2.shipping.JsonShipmentService jsonShipmentService;
 	private final de.metas.rest_api.v2.shipping.mpackage.ShippingPackageService shippingPackageService;
 
-	public ShipmentRestController(@NonNull final ShipmentService shipmentService, final ShippingPackageService shippingPackageService)
+	public ShipmentRestController(
+			@NonNull final JsonShipmentService jsonShipmentService,
+			@NonNull final ShippingPackageService shippingPackageService)
 	{
-		this.shipmentService = shipmentService;
+		this.jsonShipmentService = jsonShipmentService;
 		this.shippingPackageService = shippingPackageService;
 	}
 
@@ -76,7 +78,7 @@ public class ShipmentRestController
 
 		try
 		{
-			final ImmutableSet<QueueWorkPackageId> result = shipmentService.updateShipmentSchedulesAndGenerateShipments(request);
+			final ImmutableSet<QueueWorkPackageId> result = jsonShipmentService.updateShipmentSchedulesAndGenerateShipments(request);
 
 			final ImmutableList<JsonMetasfreshId> workPackageIds = wrapWorkPackageIds(result);
 			final JsonCreateShipmentResponse jsonCreateShipmentResponse = JsonCreateShipmentResponse
@@ -130,7 +132,7 @@ public class ShipmentRestController
 
 		try
 		{
-			final JsonProcessCompositeResponse response = shipmentService.processShipmentSchedules(request);
+			final JsonProcessCompositeResponse response = jsonShipmentService.processShipmentSchedules(request);
 
 			log.debug("*** processShipments: Execution done!");
 
