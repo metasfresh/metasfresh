@@ -1,5 +1,6 @@
 package de.metas.contracts.pricing;
 
+import ch.qos.logback.classic.Level;
 import de.metas.contracts.ConditionsId;
 import de.metas.contracts.SubscriptionDiscountLine;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
@@ -15,6 +16,8 @@ import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.rules.IPricingRule;
 import de.metas.pricing.service.IPricingBL;
+import de.metas.util.ILoggable;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -44,15 +47,16 @@ public class SubscriptionPricingRule implements IPricingRule
 			@NonNull final IPricingContext pricingCtx,
 			@NonNull final IPricingResult result)
 	{
+		final ILoggable loggable = Loggables.withLogger(logger, Level.DEBUG);
 		if (result.isCalculated())
 		{
-			logger.debug("Not applying because already calculated");
+			loggable.addLog("Not applying because already calculated");
 			return false;
 		}
 
 		if (pricingCtx.getCountryId() == null)
 		{
-			logger.debug("Not applying because pricingCtx has no C_Country_ID; pricingCtx={}", pricingCtx);
+			loggable.addLog("Not applying because pricingCtx has no C_Country_ID; pricingCtx={}", pricingCtx);
 			return false;
 		}
 
@@ -60,7 +64,7 @@ public class SubscriptionPricingRule implements IPricingRule
 		final I_C_Flatrate_Conditions flatrateConditions = ContractPricingUtil.getC_Flatrate_Conditions(referencedObject);
 		if (flatrateConditions == null)
 		{
-			logger.debug("Not applying because referencedObject has no C_Flatrate_Conditions; referencedObject={}", referencedObject);
+			loggable.addLog("Not applying because referencedObject has no C_Flatrate_Conditions; referencedObject={}", referencedObject);
 			return false;
 		}
 
@@ -72,10 +76,12 @@ public class SubscriptionPricingRule implements IPricingRule
 			@NonNull final IPricingContext pricingCtx,
 			@NonNull final IPricingResult result)
 	{
+		final ILoggable loggable = Loggables.withLogger(logger, Level.DEBUG);
+
 		final Object referencedObject = pricingCtx.getReferencedObject();
 		final I_C_Flatrate_Conditions conditions = ContractPricingUtil.getC_Flatrate_Conditions(referencedObject);
 
-		// discount
+		// subscription-discount
 		final SubscriptionDiscountLine subscriptionDiscountLine;
 		if (!pricingCtx.isDisallowDiscount())
 		{
@@ -83,16 +89,19 @@ public class SubscriptionPricingRule implements IPricingRule
 		}
 		else
 		{
+			loggable.addLog("pricingCtx does not allow discounts; -> not considering C_Subscr_Discount; pricingCtx={}", pricingCtx);
 			subscriptionDiscountLine = null;
 		}
 
-		// price
+		// alternate pricing-system
 		final IPricingResult subscriptionPricingResult;
 		if (conditions.getM_PricingSystem_ID() > 0)
 		{
+			loggable.addLog("START Invoking pricing engine with M_PricingSystem_ID={}", conditions.getM_PricingSystem_ID());
 			final I_M_PriceList subscriptionPriceList = retrievePriceListForConditionsAndCountry(pricingCtx.getCountryId(), conditions);
 			final IEditablePricingContext subscriptionPricingCtx = copyPricingCtxButInsertPriceList(pricingCtx, subscriptionPriceList);
 			subscriptionPricingResult = invokePricingEngine(subscriptionPricingCtx.setFailIfNotCalculated());
+			loggable.addLog("END Invoking pricing engine with M_PricingSystem_ID={}", conditions.getM_PricingSystem_ID());
 		}
 		else
 		{
@@ -186,7 +195,7 @@ public class SubscriptionPricingRule implements IPricingRule
 	{
 		if (Util.same(subscriptionPricingResult, result))
 		{
-			return;
+			return; // no need to copy anything
 		}
 
 		result.setCurrencyId(subscriptionPricingResult.getCurrencyId());
