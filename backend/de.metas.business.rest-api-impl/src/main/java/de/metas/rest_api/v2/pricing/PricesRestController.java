@@ -92,7 +92,7 @@ public class PricesRestController
 		return ResponseEntity.ok().body(responseUpsert);
 	}
 
-	@ApiOperation("Create or update product price by price list identifier")
+	@ApiOperation("Create or update product price to the latest price list version of the given price list identifier")
 	@ApiResponses(value = {
 			@ApiResponse(code = 200, message = "Successfully processed the request"),
 			@ApiResponse(code = 401, message = "You are not authorized to consume this resource"),

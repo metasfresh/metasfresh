@@ -338,6 +338,7 @@ export class RawList extends PureComponent {
       compositeWidgetData, // for composite lookups - all the widgets data
       field,
       listHash,
+      wrapperElement,
     } = this.props;
 
     let value = '';
@@ -372,6 +373,15 @@ export class RawList extends PureComponent {
     placeholder = this.props.lookupList
       ? this.props.properties.emptyText
       : placeholder;
+
+    let width = this.dropdown ? this.dropdown.offsetWidth : 0;
+
+    if (wrapperElement) {
+      const wrapperWidth = wrapperElement.offsetWidth;
+      const offset = this.dropdown.offsetLeft;
+
+      width = wrapperWidth - offset;
+    }
 
     const classicDropdown = (
       <TetherComponent
@@ -475,7 +485,7 @@ export class RawList extends PureComponent {
               options={this.state.dropdownList}
               empty={`${counterpart.translate('widget.list.hasNoResults')}`}
               selected={this.state.selected}
-              width={this.dropdown.offsetWidth}
+              width={width}
               onChange={this.handleTemporarySelection}
               onSelect={this.handleSelect}
               onCancel={this.handleCancel}
@@ -577,6 +587,7 @@ RawList.propTypes = {
   isMultiselect: PropTypes.bool,
   compositeWidgetData: PropTypes.array,
   field: PropTypes.string,
+  wrapperElement: PropTypes.node,
 };
 
 RawList.defaultProps = {

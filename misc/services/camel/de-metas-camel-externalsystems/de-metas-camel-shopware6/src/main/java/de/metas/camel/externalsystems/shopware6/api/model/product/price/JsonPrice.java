@@ -20,79 +20,39 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.shopware6.api.model.product;
+package de.metas.camel.externalsystems.shopware6.api.model.product.price;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
-import de.metas.camel.externalsystems.shopware6.api.model.JsonTax;
-import de.metas.camel.externalsystems.shopware6.api.model.product.price.JsonPrice;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
-import java.time.ZonedDateTime;
-import java.util.List;
+import java.math.BigDecimal;
 
 @Value
 @Builder
-@JsonDeserialize(builder = JsonProduct.JsonProductBuilder.class)
-public class JsonProduct
+@JsonDeserialize(builder = JsonPrice.JsonPriceBuilder.class)
+public class JsonPrice
 {
 	@NonNull
-	@JsonProperty("id")
-	String id;
+	@JsonProperty("currencyId")
+	String currencyId;
 
 	@Nullable
-	@JsonProperty("name")
-	String name;
-
-	@NonNull
-	@JsonProperty("productNumber")
-	String productNumber;
+	@JsonProperty("net")
+	BigDecimal net;
 
 	@Nullable
-	@JsonProperty("ean")
-	String ean;
-
-	@Nullable
-	@JsonProperty("unitId")
-	String unitId;
-
-	@Nullable
-	@JsonProperty("tax")
-	JsonTax jsonTax;
-
-	@NonNull
-	@JsonProperty("createdAt")
-	ZonedDateTime createdAt;
-
-	@Nullable
-	@JsonProperty("updatedAt")
-	ZonedDateTime updatedAt;
-
-	@Nullable
-	@JsonProperty("price")
-	List<JsonPrice> prices;
+	@JsonProperty("gross")
+	BigDecimal gross;
 
 	@JsonIgnoreProperties(ignoreUnknown = true)
 	@JsonPOJOBuilder(withPrefix = "")
-	static class JsonProductBuilder
+	public static class JsonPriceBuilder
 	{
-	}
-
-	@JsonIgnore
-	@NonNull
-	public ZonedDateTime getUpdatedAtNonNull()
-	{
-		if (updatedAt != null)
-		{
-			return updatedAt;
-		}
-
-		return createdAt;
 	}
 }
