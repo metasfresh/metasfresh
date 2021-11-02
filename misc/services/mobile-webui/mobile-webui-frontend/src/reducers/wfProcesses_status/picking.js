@@ -8,10 +8,6 @@ const COMPONENT_TYPE = 'picking/pickProducts';
 
 export const pickingReducer = ({ draftState, action }) => {
   switch (action.type) {
-    case types.UPDATE_PICKING_STEP_SCANNED_HU_BARCODE: {
-      return reduceOnScannedHUBarcode(draftState, action.payload);
-    }
-
     case types.UPDATE_PICKING_STEP_QTY: {
       return reduceOnUpdateQtyPicked(draftState, action.payload);
     }
@@ -22,28 +18,12 @@ export const pickingReducer = ({ draftState, action }) => {
   }
 };
 
-const reduceOnScannedHUBarcode = (draftState, payload) => {
-  const { wfProcessId, activityId, lineId, stepId, scannedHUBarcode } = payload;
+const reduceOnUpdateQtyPicked = (draftState, payload) => {
+  const { wfProcessId, activityId, lineId, stepId, scannedHUBarcode, qtyPicked, qtyRejectedReasonCode } = payload;
 
   const draftWFProcess = draftState[wfProcessId];
   const draftStep = draftWFProcess.activities[activityId].dataStored.lines[lineId].steps[stepId];
   draftStep.scannedHUBarcode = scannedHUBarcode;
-
-  updateStepStatus({
-    draftWFProcess,
-    activityId,
-    lineId,
-    stepId,
-  });
-
-  return draftState;
-};
-
-const reduceOnUpdateQtyPicked = (draftState, payload) => {
-  const { wfProcessId, activityId, lineId, stepId, qtyPicked, qtyRejectedReasonCode } = payload;
-
-  const draftWFProcess = draftState[wfProcessId];
-  const draftStep = draftWFProcess.activities[activityId].dataStored.lines[lineId].steps[stepId];
   draftStep.qtyPicked = qtyPicked;
   draftStep.qtyRejectedReasonCode = qtyRejectedReasonCode;
 
