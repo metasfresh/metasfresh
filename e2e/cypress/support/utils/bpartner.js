@@ -1,5 +1,5 @@
-import config from "../../config";
-import { wrapRequest, findByName } from "./utils";
+import config from '../../config';
+import { wrapRequest, findByName } from './utils';
 
 export class BPartner {
   constructor({ name, ...vals }) {
@@ -127,15 +127,15 @@ export class BPartner {
 
   static applyBPartner(bPartner) {
     const basicUri = `${config.API_URL}/window/123`;
-    cy.get(".avatar").should("be.visible");
+    cy.get('.avatar').should('be.visible');
     return cy
       .request({
         url: `${basicUri}/NEW`,
-        method: "PATCH",
+        method: 'PATCH',
         body: JSON.stringify([]),
         headers: {
-          "Content-Type": "application/json",
-          accept: "application/json",
+          'Content-Type': 'application/json',
+          accept: 'application/json',
         },
       })
       .then((newResponse) => {
@@ -146,13 +146,13 @@ export class BPartner {
 
         const basicDataObject = [
           {
-            op: "replace",
-            path: "CompanyName",
+            op: 'replace',
+            path: 'CompanyName',
             value: bPartner.name,
           },
           {
-            op: "replace",
-            path: "Name2",
+            op: 'replace',
+            path: 'Name2',
             value: bPartner.name,
           },
         ];
@@ -160,11 +160,11 @@ export class BPartner {
         return cy
           .request({
             url: `${basicUri}/${bPartner.id}`,
-            method: "PATCH",
+            method: 'PATCH',
             body: JSON.stringify(basicDataObject),
             headers: {
-              "Content-Type": "application/json",
-              accept: "application/json",
+              'Content-Type': 'application/json',
+              accept: 'application/json',
             },
           })
           .then(() => {
@@ -174,11 +174,11 @@ export class BPartner {
               return cy
                 .request({
                   url: `${basicUri}/${bPartner.id}?advanced=true`,
-                  method: "PATCH",
+                  method: 'PATCH',
                   body: JSON.stringify(dataObject),
                   headers: {
-                    "Content-Type": "application/json",
-                    accept: "application/json",
+                    'Content-Type': 'application/json',
+                    accept: 'application/json',
                   },
                 })
                 .then(() => bPartner);
@@ -190,22 +190,14 @@ export class BPartner {
   static getVendorData(basicUri, bPartner) {
     const dataObject = [];
 
-    if (
-      bPartner.isVendor ||
-      bPartner.vendorDiscountSchema ||
-      bPartner.vendorPricingSystem ||
-      bPartner.isCustomer ||
-      bPartner.customerPricingSystem ||
-      bPartner.bPartnerLocations ||
-      bPartner.dunning
-    ) {
+    if (bPartner.isVendor || bPartner.vendorDiscountSchema || bPartner.vendorPricingSystem || bPartner.isCustomer || bPartner.customerPricingSystem || bPartner.bPartnerLocations || bPartner.dunning) {
       const vendorRequest = wrapRequest(
         cy.request({
           url: `${basicUri}/${bPartner.id}/AD_Tab-224`,
-          method: "GET",
+          method: 'GET',
           headers: {
-            "Content-Type": "application/json",
-            accept: "application/json",
+            'Content-Type': 'application/json',
+            accept: 'application/json',
           },
         })
       );
@@ -213,10 +205,10 @@ export class BPartner {
       const vendorDiscountSchemaRequest = wrapRequest(
         cy.request({
           url: `${basicUri}/${bPartner.id}/AD_Tab-224/${bPartner.id}/field/PO_DiscountSchema_ID/dropdown`,
-          method: "GET",
+          method: 'GET',
           headers: {
-            "Content-Type": "application/json",
-            accept: "application/json",
+            'Content-Type': 'application/json',
+            accept: 'application/json',
           },
         })
       );
@@ -224,10 +216,10 @@ export class BPartner {
       const vendorPricingSystemRequest = wrapRequest(
         cy.request({
           url: `${basicUri}/${bPartner.id}/AD_Tab-224/${bPartner.id}/field/PO_PricingSystem_ID/dropdown`,
-          method: "GET",
+          method: 'GET',
           headers: {
-            "Content-Type": "application/json",
-            accept: "application/json",
+            'Content-Type': 'application/json',
+            accept: 'application/json',
           },
         })
       );
@@ -235,10 +227,10 @@ export class BPartner {
       const vendorPaymentTermRequest = wrapRequest(
         cy.request({
           url: `${basicUri}/${bPartner.id}/AD_Tab-224/${bPartner.id}/field/PO_PaymentTerm_ID/dropdown`,
-          method: "GET",
+          method: 'GET',
           headers: {
-            "Content-Type": "application/json",
-            accept: "application/json",
+            'Content-Type': 'application/json',
+            accept: 'application/json',
           },
         })
       );
@@ -246,10 +238,10 @@ export class BPartner {
       const bPartnerRequest = wrapRequest(
         cy.request({
           url: `${basicUri}/${bPartner.id}/AD_Tab-223`,
-          method: "GET",
+          method: 'GET',
           headers: {
-            "Content-Type": "application/json",
-            accept: "application/json",
+            'Content-Type': 'application/json',
+            accept: 'application/json',
           },
         })
       );
@@ -257,10 +249,10 @@ export class BPartner {
       const cDiscountSchemaRequest = wrapRequest(
         cy.request({
           url: `${basicUri}/${bPartner.id}/AD_Tab-223/${bPartner.id}/field/M_DiscountSchema_ID/dropdown`,
-          method: "GET",
+          method: 'GET',
           headers: {
-            "Content-Type": "application/json",
-            accept: "application/json",
+            'Content-Type': 'application/json',
+            accept: 'application/json',
           },
         })
       );
@@ -268,10 +260,10 @@ export class BPartner {
       const cPricingSystemRequest = wrapRequest(
         cy.request({
           url: `${basicUri}/${bPartner.id}/AD_Tab-223/${bPartner.id}/field/M_PricingSystem_ID/dropdown`,
-          method: "GET",
+          method: 'GET',
           headers: {
-            "Content-Type": "application/json",
-            accept: "application/json",
+            'Content-Type': 'application/json',
+            accept: 'application/json',
           },
         })
       );
@@ -279,10 +271,10 @@ export class BPartner {
       const cPaymentTermRequest = wrapRequest(
         cy.request({
           url: `${basicUri}/${bPartner.id}/AD_Tab-223/${bPartner.id}/field/C_PaymentTerm_ID/dropdown`,
-          method: "GET",
+          method: 'GET',
           headers: {
-            "Content-Type": "application/json",
-            accept: "application/json",
+            'Content-Type': 'application/json',
+            accept: 'application/json',
           },
         })
       );
@@ -290,10 +282,10 @@ export class BPartner {
       const cDunningRequest = wrapRequest(
         cy.request({
           url: `${basicUri}/${bPartner.id}/AD_Tab-223/${bPartner.id}/field/C_Dunning_ID/dropdown`,
-          method: "GET",
+          method: 'GET',
           headers: {
-            "Content-Type": "application/json",
-            accept: "application/json",
+            'Content-Type': 'application/json',
+            accept: 'application/json',
           },
         })
       );
@@ -324,20 +316,17 @@ export class BPartner {
         const isVendorValue = vendorResponse.fieldsByName.IsVendor.value;
         if (bPartner.isVendor && !isVendorValue) {
           dataObject.push({
-            op: "replace",
-            path: "IsVendor",
+            op: 'replace',
+            path: 'IsVendor',
             value: true,
           });
         }
 
-        const vendorDiscountSchema = findByName(
-          vendorDiscountSchemaResponse,
-          bPartner.vendorDiscountSchema
-        );
+        const vendorDiscountSchema = findByName(vendorDiscountSchemaResponse, bPartner.vendorDiscountSchema);
         if (bPartner.vendorDiscountSchema && vendorDiscountSchema) {
           dataObject.push({
-            op: "replace",
-            path: "PO_DiscountSchema_ID",
+            op: 'replace',
+            path: 'PO_DiscountSchema_ID',
             value: {
               key: vendorDiscountSchema.key,
               caption: vendorDiscountSchema.caption,
@@ -345,14 +334,11 @@ export class BPartner {
           });
         }
 
-        const vendorPricingSystem = findByName(
-          vendorPricingSystemResponse,
-          bPartner.vendorPricingSystem
-        );
+        const vendorPricingSystem = findByName(vendorPricingSystemResponse, bPartner.vendorPricingSystem);
         if (bPartner.vendorPricingSystem && vendorPricingSystem) {
           dataObject.push({
-            op: "replace",
-            path: "PO_PricingSystem_ID",
+            op: 'replace',
+            path: 'PO_PricingSystem_ID',
             value: {
               key: vendorPricingSystem.key,
               caption: vendorPricingSystem.caption,
@@ -360,14 +346,11 @@ export class BPartner {
           });
         }
 
-        const vendorPaymentTerm = findByName(
-          vendorPaymentTermResponse,
-          bPartner.vendorPaymentTerm
-        );
+        const vendorPaymentTerm = findByName(vendorPaymentTermResponse, bPartner.vendorPaymentTerm);
         if (bPartner.vendorPaymentTerm && vendorPaymentTerm) {
           dataObject.push({
-            op: "replace",
-            path: "PO_PaymentTerm_ID",
+            op: 'replace',
+            path: 'PO_PaymentTerm_ID',
             value: {
               key: vendorPaymentTerm.key,
               caption: vendorPaymentTerm.caption,
@@ -378,27 +361,24 @@ export class BPartner {
         const isCustomerValue = bPartnerResponse.fieldsByName.IsCustomer.value;
         if (bPartner.isCustomer && !isCustomerValue) {
           dataObject.push({
-            op: "replace",
-            path: "IsCustomer",
+            op: 'replace',
+            path: 'IsCustomer',
             value: true,
           });
         }
         if (bPartner.customerDunning) {
           dataObject.push({
-            op: "replace",
-            path: "C_Dunning_ID",
+            op: 'replace',
+            path: 'C_Dunning_ID',
             value: bPartner.customerDunning,
           });
         }
 
-        const discountSchema = findByName(
-          discountSchemaResponse,
-          bPartner.customerDiscountSchema
-        );
+        const discountSchema = findByName(discountSchemaResponse, bPartner.customerDiscountSchema);
         if (bPartner.customerDiscountSchema && discountSchema) {
           dataObject.push({
-            op: "replace",
-            path: "M_DiscountSchema_ID",
+            op: 'replace',
+            path: 'M_DiscountSchema_ID',
             value: {
               key: discountSchema.key,
               caption: discountSchema.caption,
@@ -406,14 +386,11 @@ export class BPartner {
           });
         }
 
-        const pricingSystem = findByName(
-          pricingSystemResponse,
-          bPartner.customerPricingSystem
-        );
+        const pricingSystem = findByName(pricingSystemResponse, bPartner.customerPricingSystem);
         if (bPartner.customerPricingSystem && pricingSystem) {
           dataObject.push({
-            op: "replace",
-            path: "M_PricingSystem_ID",
+            op: 'replace',
+            path: 'M_PricingSystem_ID',
             value: {
               key: pricingSystem.key,
               caption: pricingSystem.caption,
@@ -421,14 +398,11 @@ export class BPartner {
           });
         }
 
-        const paymentTerm = findByName(
-          paymentTermResponse,
-          bPartner.paymentTerm
-        );
+        const paymentTerm = findByName(paymentTermResponse, bPartner.paymentTerm);
         if (bPartner.paymentTerm && paymentTerm) {
           dataObject.push({
-            op: "replace",
-            path: "C_PaymentTerm_ID",
+            op: 'replace',
+            path: 'C_PaymentTerm_ID',
             value: {
               key: paymentTerm.key,
               caption: paymentTerm.caption,
@@ -439,8 +413,8 @@ export class BPartner {
         const dunning = findByName(dunningResponse, bPartner.dunning);
         if (bPartner.dunning && dunning) {
           dataObject.push({
-            op: "replace",
-            path: "C_Dunning_ID",
+            op: 'replace',
+            path: 'C_Dunning_ID',
             value: {
               key: dunning.key,
               caption: dunning.caption,
@@ -460,16 +434,13 @@ export class BPartner {
       bPartner.bPartnerLocations.forEach(function (bPartnerLocation) {
         applyLocation(bPartnerLocation);
       });
-      cy.get("table tbody tr").should(
-        "have.length",
-        bPartner.bPartnerLocations.length
-      );
+      cy.get('table tbody tr').should('have.length', bPartner.bPartnerLocations.length);
     }
     if (bPartner.contacts.length > 0) {
       bPartner.contacts.forEach(function (bPartnerContact) {
         applyContact(bPartnerContact);
       });
-      cy.get("table tbody tr").should("have.length", bPartner.contacts.length);
+      cy.get('table tbody tr').should('have.length', bPartner.contacts.length);
     }
 
     if (bPartner.bank) {
@@ -479,58 +450,37 @@ export class BPartner {
 }
 
 function applyLocation(bPartnerLocation) {
-  cy.selectTab("C_BPartner_Location");
+  cy.selectTab('C_BPartner_Location');
   cy.pressAddNewButton();
   cy.log(`applyLocation - bPartnerLocation.name = ${bPartnerLocation.name}`);
-  cy.writeIntoStringField(
-    "Name",
-    `${bPartnerLocation.name}`,
-    true /*modal*/,
-    false,
-    true
-  );
-  cy.get(".panel-modal-header-title").click();
+  cy.writeIntoStringField('Name', `${bPartnerLocation.name}`, true /*modal*/, false, true);
+  cy.get('.panel-modal-header-title').click();
 
-  cy.editAddress("C_Location_ID", function (url) {
-    cy.writeIntoStringField("Address1", " ", null, url);
-    cy.writeIntoStringField("City", bPartnerLocation.city, null, url);
-    cy.writeIntoLookupListField(
-      "C_Country_ID",
-      bPartnerLocation.country,
-      bPartnerLocation.country,
-      false /*typeList */,
-      false /*modal THIS MUST BE FALSE EVEN IF IT'S A MODAL!*/,
-      url
-    );
+  cy.editAddress('C_Location_ID', function (url) {
+    cy.writeIntoStringField('Address1', ' ', null, url);
+    cy.writeIntoStringField('City', bPartnerLocation.city, null, url);
+    cy.writeIntoLookupListField('C_Country_ID', bPartnerLocation.country, bPartnerLocation.country, false /*typeList */, false /*modal THIS MUST BE FALSE EVEN IF IT'S A MODAL!*/, url);
   });
-  cy.get(".form-field-Address").should("contain", bPartnerLocation.city);
+  cy.get('.form-field-Address').should('contain', bPartnerLocation.city);
   cy.pressDoneButton();
 }
 
 function applyContact(bPartnerContact) {
-  cy.selectTab("AD_User");
+  cy.selectTab('AD_User');
   cy.pressAddNewButton();
-  cy.writeIntoStringField(
-    "Firstname",
-    bPartnerContact.firstName,
-    true /*modal*/
-  );
-  cy.writeIntoStringField("Lastname", bPartnerContact.lastName, true /*modal*/);
+  cy.writeIntoStringField('Firstname', bPartnerContact.firstName, true /*modal*/);
+  cy.writeIntoStringField('Lastname', bPartnerContact.lastName, true /*modal*/);
 
   if (bPartnerContact.isDefaultContact) {
-    cy.clickOnCheckBox(
-      "IsDefaultContact",
-      true /*expectedPatchValue*/,
-      true /*modal*/
-    );
+    cy.clickOnCheckBox('IsDefaultContact', true /*expectedPatchValue*/, true /*modal*/);
   }
   cy.pressDoneButton();
 }
 
 function applyBank(bank) {
-  cy.selectTab("C_BP_BankAccount");
+  cy.selectTab('C_BP_BankAccount');
   cy.pressAddNewButton();
-  cy.writeIntoLookupListField("C_Bank_ID", bank, bank, false, true);
-  cy.writeIntoStringField("A_Name", "Test Account", true);
+  cy.writeIntoLookupListField('C_Bank_ID', bank, bank, false, true);
+  cy.writeIntoStringField('A_Name', 'Test Account', true);
   cy.pressDoneButton();
 }
