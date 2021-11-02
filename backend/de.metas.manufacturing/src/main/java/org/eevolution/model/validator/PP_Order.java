@@ -23,6 +23,7 @@ import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.ui.api.ITabCalloutFactory;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -35,7 +36,9 @@ import org.compiere.model.ModelValidator;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.IPPOrderCostBL;
 import org.eevolution.api.IPPOrderRoutingRepository;
+import org.eevolution.api.IProductBOMDAO;
 import org.eevolution.api.PPOrderId;
+import org.eevolution.api.ProductBOMId;
 import org.eevolution.api.impl.ProductBOMVersionsDAO;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.X_PP_Order;
@@ -54,11 +57,12 @@ public class PP_Order
 	private final IPPOrderBOMDAO ppOrderBOMDAO = Services.get(IPPOrderBOMDAO.class);
 	private final IPPOrderCostBL orderCostsService = Services.get(IPPOrderCostBL.class);
 	private final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
+	private final IProductBOMDAO productBOMDAO = Services.get(IProductBOMDAO.class);
 	private final PPOrderPojoConverter ppOrderConverter;
 	private final PostMaterialEventService materialEventService;
 	private final IDocumentNoBuilderFactory documentNoBuilderFactory;
 	private final IPPOrderBOMBL ppOrderBOMBL;
-	private  final ProductBOMVersionsDAO bomVersionsDAO;
+	private final ProductBOMVersionsDAO bomVersionsDAO;
 
 	public PP_Order(
 			@NonNull final PPOrderPojoConverter ppOrderConverter,
@@ -206,7 +210,7 @@ public class PP_Order
 		createWorkflowAndBOM(ppOrderRecord);
 	}
 
-	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = { I_PP_Order.COLUMNNAME_QtyEntered, I_PP_Order.COLUMNNAME_AD_Workflow_ID})
+	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = { I_PP_Order.COLUMNNAME_QtyEntered, I_PP_Order.COLUMNNAME_AD_Workflow_ID })
 	public void updateAndPostEventOnQtyEnteredChange(final I_PP_Order ppOrderRecord)
 	{
 		if (ppOrderBL.isSomethingProcessed(ppOrderRecord))
@@ -250,6 +254,23 @@ public class PP_Order
 
 			orderCostsService.deleteByOrderId(ppOrderId);
 			deleteWorkflowAndBOM(ppOrderId);
+		}
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_NEW },
+			ifColumnsChanged = { I_PP_Order.COLUMNNAME_M_Product_ID, I_PP_Order.COLUMNNAME_PP_Product_BOM_ID })
+	public void validateBOMAndProduct(@NonNull final I_PP_Order ppOrder)
+	{
+		final ProductBOMId bomId = ProductBOMId.ofRepoId(ppOrder.getPP_Product_BOM_ID());
+
+		final ProductId productIdOfBOM = productBOMDAO.getBOMProductId(bomId);
+
+		if (ppOrder.getM_Product_ID() != productIdOfBOM.getRepoId())
+		{
+			throw new AdempiereException("PP_Order.M_Product_ID and PP_Order.PP_Product_BOM_ID.M_Product_ID don't match!")
+					.appendParametersToMessage()
+					.setParameter("PP_Order.M_Product_ID", ppOrder.getM_Product_ID())
+					.setParameter("PP_Order.PP_Product_BOM_ID.M_Product_ID", productIdOfBOM.getRepoId());
 		}
 	}
 }

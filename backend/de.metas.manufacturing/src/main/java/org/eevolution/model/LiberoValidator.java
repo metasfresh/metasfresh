@@ -87,9 +87,9 @@ public final class LiberoValidator extends AbstractModuleInterceptor
 	{
 		//
 		// Master data
-		engine.addModelValidator(new org.eevolution.model.validator.PP_Product_BOM());
+		engine.addModelValidator(new org.eevolution.model.validator.PP_Product_BOM(bomVersionsDAO));
 		engine.addModelValidator(new org.eevolution.model.validator.PP_Product_BOMLine());
-		engine.addModelValidator(new org.eevolution.model.validator.PP_Product_Planning());
+		engine.addModelValidator(new org.eevolution.model.validator.PP_Product_Planning(bomVersionsDAO));
 
 		// PP_Order related
 		engine.addModelValidator(new org.eevolution.model.validator.PP_Order(

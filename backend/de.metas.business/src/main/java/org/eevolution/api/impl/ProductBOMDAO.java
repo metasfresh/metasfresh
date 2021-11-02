@@ -350,6 +350,7 @@ public class ProductBOMDAO implements IProductBOMDAO
 	}
 
 	@Override
+	@NonNull
 	public ProductId getBOMProductId(@NonNull final ProductBOMId bomId)
 	{
 		final I_PP_Product_BOM bom = getById(bomId);

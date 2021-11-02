@@ -8,11 +8,15 @@ import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.ui.api.ITabCalloutFactory;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.CopyRecordFactory;
 import org.compiere.model.ModelValidator;
 import org.eevolution.api.IProductBOMBL;
+import org.eevolution.api.ProductBOMVersionsId;
+import org.eevolution.api.impl.ProductBOMVersionsDAO;
 import org.eevolution.callout.PP_Product_BOM_TabCallout;
 import org.eevolution.model.I_PP_Product_BOM;
+import org.eevolution.model.I_PP_Product_BOMVersions;
 import org.eevolution.model.impl.PP_Product_BOM_POCopyRecordSupport;
 
 /*
@@ -41,6 +45,12 @@ import org.eevolution.model.impl.PP_Product_BOM_POCopyRecordSupport;
 public class PP_Product_BOM
 {
 	private final IProductBOMBL bomService = Services.get(IProductBOMBL.class);
+	private final ProductBOMVersionsDAO bomVersionsDAO;
+
+	public PP_Product_BOM(final ProductBOMVersionsDAO bomVersionsDAO)
+	{
+		this.bomVersionsDAO = bomVersionsDAO;
+	}
 
 	@Init
 	public void init(final IModelValidationEngine engine)
@@ -48,7 +58,7 @@ public class PP_Product_BOM
 		CopyRecordFactory.enableForTableName(I_PP_Product_BOM.Table_Name);
 		CopyRecordFactory.registerCopyRecordSupport(I_PP_Product_BOM.Table_Name, PP_Product_BOM_POCopyRecordSupport.class);
 
-		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(new org.eevolution.callout.PP_Product_BOM());
+		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(new org.eevolution.callout.PP_Product_BOM(bomVersionsDAO));
 		Services.get(ITabCalloutFactory.class).registerTabCalloutForTable(I_PP_Product_BOM.Table_Name, PP_Product_BOM_TabCallout.class);
 	}
 
@@ -57,5 +67,25 @@ public class PP_Product_BOM
 	{
 		final ProductId productId = ProductId.ofRepoId(bom.getM_Product_ID());
 		bomService.updateIsBOMFlag(productId);
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
+			ifColumnsChanged = { I_PP_Product_BOM.COLUMNNAME_PP_Product_BOMVersions_ID, I_PP_Product_BOM.COLUMNNAME_M_Product_ID })
+	public void validateBOMVersions(final I_PP_Product_BOM bom)
+	{
+		final int productId = bom.getM_Product_ID();
+
+		final ProductBOMVersionsId bomVersionsId = ProductBOMVersionsId.ofRepoId(bom.getPP_Product_BOMVersions_ID());
+
+		final I_PP_Product_BOMVersions bomVersions = bomVersionsDAO.getBOMVersions(bomVersionsId);
+
+		if (productId != bomVersions.getM_Product_ID())
+		{
+			throw new AdempiereException("PP_Product_BOM.PP_Product_BOMVersions_ID.M_Product_ID and PP_Product_BOM.M_Product_Id don't match!")
+					.appendParametersToMessage()
+					.setParameter("PP_Product_BOM", bom)
+					.setParameter("PP_Product_BOMVersions", bomVersions);
+		}
+
 	}
 }
