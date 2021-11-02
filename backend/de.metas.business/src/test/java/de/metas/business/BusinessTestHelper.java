@@ -335,7 +335,7 @@ public class BusinessTestHelper
 			final String name,
 			final boolean isIssueWarehouse)
 	{
-		final org.adempiere.warehouse.model.I_M_Warehouse warehouse = newInstanceOutOfTrx(org.adempiere.warehouse.model.I_M_Warehouse.class);
+		final I_M_Warehouse warehouse = newInstanceOutOfTrx(I_M_Warehouse.class);
 		POJOWrapper.setInstanceName(warehouse, name);
 		warehouse.setValue(name);
 		warehouse.setName(name);

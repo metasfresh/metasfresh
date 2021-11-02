@@ -40,6 +40,7 @@ import lombok.experimental.UtilityClass;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.apache.http.Header;
+import org.apache.http.HttpHeaders;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
@@ -52,6 +53,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.compiere.model.I_AD_User_AuthToken;
 import org.compiere.util.Env;
+import org.springframework.http.MediaType;
 
 import javax.annotation.Nullable;
 import java.io.ByteArrayOutputStream;
@@ -156,7 +158,8 @@ public class RESTUtil
 
 	private void setHeaders(@NonNull final HttpRequestBase request, @NonNull final String userAuthToken)
 	{
-		request.addHeader("content-type", "application/json");
+		request.addHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
+		request.addHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
 		request.addHeader(UserAuthTokenFilter.HEADER_Authorization, userAuthToken);
 	}
 

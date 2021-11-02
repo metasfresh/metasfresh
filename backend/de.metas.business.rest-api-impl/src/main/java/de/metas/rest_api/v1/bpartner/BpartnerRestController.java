@@ -72,6 +72,10 @@ import static de.metas.common.rest_api.v1.SwaggerDocConstants.LOCATION_IDENTIFIE
 import static de.metas.common.rest_api.v1.SwaggerDocConstants.NEXT_DOC;
 import static de.metas.common.rest_api.v1.SwaggerDocConstants.SINCE_DOC;
 
+/**
+ * @deprecated please consider migrating to version 2 of this API.
+ */
+@Deprecated
 @RequestMapping(value = {
 		MetasfreshRestAPIConstants.ENDPOINT_API_DEPRECATED + "/bpartner",
 		MetasfreshRestAPIConstants.ENDPOINT_API_V1 + "/bpartner" })

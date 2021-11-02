@@ -239,6 +239,10 @@ public class AdempiereException extends RuntimeException
 		this.adLanguage = captureLanguageOnConstructionTime ? Env.getAD_Language() : null;
 		this.messageTrl = message;
 		this.mdcContextMap = captureMDCContextMap();
+
+		// when this constructor is called, usually we have nice error messages,
+		// so we can consider those user-friendly errors
+		this.userValidationError = true;
 	}
 
 	public AdempiereException(@NonNull final AdMessageKey messageKey)

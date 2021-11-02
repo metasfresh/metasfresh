@@ -181,7 +181,7 @@ public class ApiAuditService
 		}
 
 		final OrgId orgId = Env.getOrgId();
-		final ImmutableList<ApiAuditConfig> apiAuditConfigs = apiAuditConfigRepository.getAllConfigsByOrgId(orgId);
+		final ImmutableList<ApiAuditConfig> apiAuditConfigs = apiAuditConfigRepository.getActiveConfigsByOrgId(orgId);
 
 		return apiAuditConfigs.stream()
 				.filter(config -> config.matchesRequest(requestWrapper.getFullPath(), requestWrapper.getHttpMethodString()))

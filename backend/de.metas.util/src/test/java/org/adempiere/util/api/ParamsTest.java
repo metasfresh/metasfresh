@@ -1,17 +1,15 @@
 package org.adempiere.util.api;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-
 import com.google.common.collect.ImmutableMap;
-
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
 import de.metas.util.lang.ReferenceListAwareEnums.ValuesIndex;
 import de.metas.util.lang.RepoIdAwaresTest.DummyRepoIdAware;
 import lombok.Getter;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -23,12 +21,12 @@ import lombok.Getter;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -39,7 +37,7 @@ public class ParamsTest
 {
 	private enum TestRegularEnum
 	{
-		OPTION1, OPTION2;
+		OPTION1, OPTION2
 	}
 
 	public enum TestReferenceListAwareEnum implements ReferenceListAwareEnum
@@ -62,11 +60,25 @@ public class ParamsTest
 		}
 	}
 
+	@SuppressWarnings("SameParameterValue")
 	private static Params singleParam(final String parameterName, final Object value)
 	{
-		return Params.ofMap(ImmutableMap.<String, Object> builder()
+		return Params.ofMap(ImmutableMap.<String, Object>builder()
 				.put(parameterName, value)
 				.build());
+	}
+
+	@Test
+	public void nullParameters()
+	{
+		final Params params = Params.builder()
+				.value("param1", (String)null)
+				.value("param2", (String)null)
+				.build();
+
+		assertThat(params.getParameterNames()).containsExactly("param1", "param2");
+		assertThat(params.getParameterAsObject("param1")).isNull();
+		assertThat(params.getParameterAsObject("param2")).isNull();
 	}
 
 	@Nested
@@ -76,14 +88,14 @@ public class ParamsTest
 		public void regularEnum()
 		{
 			final Params params = singleParam("param", TestRegularEnum.OPTION1.name());
-			assertThat(params.getParameterAsEnum("param", TestRegularEnum.class).get()).isSameAs(TestRegularEnum.OPTION1);
+			assertThat(params.getParameterAsEnum("param", TestRegularEnum.class).orElse(null)).isSameAs(TestRegularEnum.OPTION1);
 		}
 
 		@Test
 		public void referenceListAwareEnum()
 		{
 			final Params params = singleParam("param", TestReferenceListAwareEnum.OPTION1.getCode());
-			assertThat(params.getParameterAsEnum("param", TestReferenceListAwareEnum.class).get()).isSameAs(TestReferenceListAwareEnum.OPTION1);
+			assertThat(params.getParameterAsEnum("param", TestReferenceListAwareEnum.class).orElse(null)).isSameAs(TestReferenceListAwareEnum.OPTION1);
 		}
 	}
 
