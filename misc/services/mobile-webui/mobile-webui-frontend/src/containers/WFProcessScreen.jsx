@@ -9,6 +9,7 @@ import { selectWFProcessFromState } from '../reducers/wfProcesses_status/index';
 import ScanActivity from './activities/scan/ScanActivity';
 import PickProductsActivity from './activities/picking/PickProductsActivity';
 import ConfirmActivity from './activities/confirmButton/ConfirmActivity';
+import ManufacturingActivity from './activities/manufacturing/ManufacturingActivity';
 
 class WFProcessScreen extends PureComponent {
   render() {
@@ -54,6 +55,15 @@ class WFProcessScreen extends PureComponent {
                         componentProps={activityItem.componentProps}
                         isUserEditable={activityItem.dataStored.isUserEditable}
                         isLastActivity={isLastActivity}
+                      />
+                    );
+                  case 'manufacturing/activity':
+                    return (
+                      <ManufacturingActivity
+                        key={activityItem.activityId}
+                        id={activityItem.activityId}
+                        wfProcessId={wfProcessId}
+                        activityState={activityItem}
                       />
                     );
                 }
