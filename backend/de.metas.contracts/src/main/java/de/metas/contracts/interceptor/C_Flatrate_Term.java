@@ -98,8 +98,8 @@ public class C_Flatrate_Term
 
 	private final IBPartnerDAO bparnterDAO = Services.get(IBPartnerDAO.class);
 	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
-	private final IDocumentLocationBL documentLocationBL;
 
+	private final IDocumentLocationBL documentLocationBL;
 
 	private final ContractOrderService contractOrderService;
 
@@ -676,4 +676,6 @@ public class C_Flatrate_Term
 	{
 		flatrateBL.ensureOneContractOfGivenType(term, TypeConditions.MEDIATED_COMMISSION);
 	}
+
+
 }

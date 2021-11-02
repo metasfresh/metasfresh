@@ -29,7 +29,7 @@ import de.metas.async.asyncbatchmilestone.AsyncBatchMilestoneQuery;
 import de.metas.async.asyncbatchmilestone.AsyncBatchMilestoneService;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.inoutcandidate.async.CreateMissingShipmentSchedulesWorkpackageProcessor;
-import de.metas.invoicecandidate.async.spi.impl.CreateMissingInvoiceCandidatesWorkpackageProcessor;
+import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.logging.LogManager;
 import de.metas.order.DeliveryRule;
 import de.metas.order.OrderId;
@@ -130,6 +130,18 @@ public class C_Order_Schedule
 
 	private boolean isEligibleForInvoiceCreation(@NonNull final I_C_Order orderRecord)
 	{
+		final boolean autoInvoiceFlatrateTerm = orgDAO.isAutoInvoiceFlatrateTerm(OrgId.ofRepoId(orderRecord.getAD_Org_ID()));
+		if (!autoInvoiceFlatrateTerm)
+		{
+			// nothing to do
+			return false;
+		}
+
+		if (flatrateDAO.orderPartnerHasExistingRunningTerms(orderRecord))
+		{
+			// there are already running terms for this partner. Nothing to do
+			return false;
+		}
 		//dev-note: check to see if the order is not already involved in another async job
 		final AsyncBatchId asyncBatchId = AsyncBatchId.ofRepoIdOrNull(orderRecord.getC_Async_Batch_ID());
 
@@ -152,23 +164,16 @@ public class C_Order_Schedule
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
 	public void createInvoicesForFlatrateTerms(@NonNull final org.compiere.model.I_C_Order orderRecord)
 	{
-
-		final boolean autoInvoiceFlatrateTerm = orgDAO.isAutoInvoiceFlatrateTerm(OrgId.ofRepoId(orderRecord.getAD_Org_ID()));
-		if (!autoInvoiceFlatrateTerm)
-		{
-			// nothing to do
-			return;
-		}
-
-		if(flatrateDAO.orderPartnerHasExistingRunningTerms(orderRecord))
-		{
-			// there are already running terms for this partner. Nothing to do
-			return;
-		}
-
 		trxManager
 				.getTrxListenerManager(InterfaceWrapperHelper.getTrxName(orderRecord))
 				.runAfterCommit(() -> enqueueGenerateInvoicesAfterCommit(orderRecord));
+	}
+
+	@DocValidate(timings = { ModelValidator.TIMING_AFTER_REACTIVATE, ModelValidator.TIMING_AFTER_CLOSE })
+	public void invalidateInvoiceCandidates(final de.metas.adempiere.model.I_C_Order order)
+	{
+		final IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
+		invoiceCandidateHandlerBL.invalidateCandidatesFor(order);
 	}
 
 	private void enqueueGenerateInvoicesAfterCommit(@NonNull final org.compiere.model.I_C_Order orderRecord)
@@ -183,7 +188,9 @@ public class C_Order_Schedule
 		else
 		{
 			Loggables.withLogger(logger, Level.INFO).addLog("Invoice generating missing candidates for orderId: {}", orderId);
-			CreateMissingInvoiceCandidatesWorkpackageProcessor.schedule(orderRecord);
+
+			final IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
+			invoiceCandidateHandlerBL.invalidateCandidatesFor(orderRecord);
 		}
 
 	}

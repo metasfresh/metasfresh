@@ -379,17 +379,10 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	@Override
 	public List<I_C_Invoice_Candidate> retrieveInvoiceCandidatesForOrderId(final OrderId orderId)
 	{
-		final List<OrderAndLineId> orderAndLineIds = orderDAO.retrieveAllOrderLineIds(orderId);
-
-		final List<I_C_Invoice_Candidate> invoiceCandidatesForOrder = new ArrayList<>();
-
-		for (OrderAndLineId orderAndLineId : orderAndLineIds)
-		{
-			final List<I_C_Invoice_Candidate> candidates = retrieveInvoiceCandidatesForOrderLineId(orderAndLineId.getOrderLineId());
-			invoiceCandidatesForOrder.addAll(candidates);
-		}
-
-		return invoiceCandidatesForOrder;
+		return queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_C_Order_ID, orderId)
+				.create()
+				.list();
 	}
 
 	@Nullable

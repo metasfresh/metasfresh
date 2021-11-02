@@ -138,3 +138,26 @@ INSERT INTO t_alter_column values('ad_orginfo','IsAutoInvoiceFlatrateTerm','CHAR
 UPDATE AD_OrgInfo SET IsAutoInvoiceFlatrateTerm='N' WHERE IsAutoInvoiceFlatrateTerm IS NULL
 ;
 
+
+
+-- 2021-11-01T20:56:52.109Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Reference_ID,AD_Ref_List_ID,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value,ValueName) VALUES (0,0,541374,542918,TO_TIMESTAMP('2021-11-01 22:56:51','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Rechnungsdispo',TO_TIMESTAMP('2021-11-01 22:56:51','YYYY-MM-DD HH24:MI:SS'),100,'Rechnungsdispo','Rechnungsdispo')
+;
+
+-- 2021-11-01T20:56:52.113Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Ref_List_Trl (AD_Language,AD_Ref_List_ID, Description,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Ref_List_ID, t.Description,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Ref_List t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Ref_List_ID=542918 AND NOT EXISTS (SELECT 1 FROM AD_Ref_List_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Ref_List_ID=t.AD_Ref_List_ID)
+;
+
+-- 2021-11-01T20:57:01.850Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List SET EntityType='de.metas.async',Updated=TO_TIMESTAMP('2021-11-01 22:57:01','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Ref_List_ID=542918
+;
+
+
+
+-- 2021-11-02T08:34:23.031Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO C_Async_Batch_Type (AD_Client_ID,AD_Org_ID,C_Async_Batch_Type_ID,Created,CreatedBy,InternalName,IsActive,NotificationType,SkipTimeoutMillis,Updated,UpdatedBy) VALUES (1000000,1000000,540020,TO_TIMESTAMP('2021-11-02 10:34:23','YYYY-MM-DD HH24:MI:SS'),2188223,'EnqueueInvoiceCandidateForOrder','Y','ABP',0,TO_TIMESTAMP('2021-11-02 10:34:23','YYYY-MM-DD HH24:MI:SS'),2188223)
+;

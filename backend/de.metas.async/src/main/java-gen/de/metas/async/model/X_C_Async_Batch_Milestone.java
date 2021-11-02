@@ -89,6 +89,8 @@ public class X_C_Async_Batch_Milestone extends org.compiere.model.PO implements 
 	public static final String NAME_Auftragserstellung = "Auftragserstellung";
 	/** Enqueue schedule for order = EnqueueScheduleForOrder */
 	public static final String NAME_EnqueueScheduleForOrder = "EnqueueScheduleForOrder";
+	/** Rechnungsdispo = Rechnungsdispo */
+	public static final String NAME_Rechnungsdispo = "Rechnungsdispo";
 	@Override
 	public void setName (final java.lang.String Name)
 	{
