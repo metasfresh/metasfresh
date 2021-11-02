@@ -22,6 +22,8 @@
 
 package de.metas.handlingunits.picking.job.model;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.google.common.collect.ImmutableList;
 import de.metas.i18n.ITranslatableString;
 import de.metas.inoutcandidate.ShipmentScheduleId;
@@ -39,6 +41,7 @@ import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
 @Value
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public class PickingJobLine
 {
 	@NonNull PickingJobLineId id;

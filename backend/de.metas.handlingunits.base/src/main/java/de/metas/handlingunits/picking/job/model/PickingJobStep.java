@@ -22,6 +22,9 @@
 
 package de.metas.handlingunits.picking.job.model;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HUBarcode;
 import de.metas.handlingunits.HuId;
 import de.metas.i18n.ITranslatableString;
@@ -41,6 +44,7 @@ import javax.annotation.Nullable;
 
 @Value
 @ToString
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public class PickingJobStep
 {
 	@NonNull PickingJobStepId id;
@@ -60,6 +64,7 @@ public class PickingJobStep
 	@NonNull String locatorName;
 	@NonNull HuId pickFromHUId;
 	@NonNull HUBarcode pickFromHUBarcode;
+	@NonNull ImmutableSet<PickingJobPickFromAlternativeId> pickFromAlternativeIds;
 
 	@Nullable PickingJobStepPickedInfo picked;
 
@@ -79,6 +84,7 @@ public class PickingJobStep
 			@NonNull final String locatorName,
 			@NonNull final HuId pickFromHUId,
 			@NonNull final HUBarcode pickFromHUBarcode,
+			@NonNull ImmutableSet<PickingJobPickFromAlternativeId> pickFromAlternativeIds,
 			//
 			@Nullable PickingJobStepPickedInfo picked)
 	{
@@ -93,6 +99,7 @@ public class PickingJobStep
 		this.locatorName = locatorName;
 		this.pickFromHUId = pickFromHUId;
 		this.pickFromHUBarcode = pickFromHUBarcode;
+		this.pickFromAlternativeIds = pickFromAlternativeIds;
 		this.picked = picked;
 
 		if (this.picked != null)

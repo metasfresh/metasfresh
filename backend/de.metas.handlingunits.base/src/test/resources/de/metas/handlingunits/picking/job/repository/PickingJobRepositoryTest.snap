@@ -1,0 +1,70 @@
+de.metas.handlingunits.picking.job.repository.PickingJobRepositoryTest.createNewAndGet_then_getById=[ {
+  "id" : 100002,
+  "header" : {
+    "salesOrderDocumentNo" : "docno-2",
+    "preparationDate" : "2021-11-02T07:39:16Z",
+    "customerName" : "bpname-3",
+    "deliveryBPLocationId" : {
+      "repoId" : 4,
+      "bpartnerId" : 3
+    },
+    "deliveryRenderedAddress" : "deliveryRenderedAddress",
+    "lockedBy" : 5
+  },
+  "pickingSlot" : null,
+  "lines" : [ {
+    "id" : 100004,
+    "productId" : 6,
+    "productName" : {
+      "defaultValue" : "productName-6",
+      "ad_Languages" : [ ]
+    },
+    "steps" : [ {
+      "id" : 100005,
+      "salesOrderAndLineId" : {
+        "orderId" : 2,
+        "orderLineId" : 8,
+        "orderRepoId" : 2,
+        "orderLineRepoId" : 8
+      },
+      "shipmentScheduleId" : 7,
+      "productId" : 6,
+      "productName" : {
+        "defaultValue" : "productName-6",
+        "ad_Languages" : [ ]
+      },
+      "qtyToPick" : {
+        "qty" : "100",
+        "uomId" : 100001
+      },
+      "locatorId" : "9_10",
+      "locatorName" : "locatorName-10",
+      "pickFromHUId" : 11,
+      "pickFromHUBarcode" : {
+        "asString" : "11"
+      },
+      "pickFromAlternativeIds" : [ 100003 ],
+      "picked" : null
+    } ],
+    "qtyToPick" : {
+      "qty" : "100",
+      "uomId" : 100001
+    },
+    "qtyPicked" : {
+      "qty" : "0",
+      "uomId" : 100001
+    },
+    "progress" : "NOT_STARTED"
+  } ],
+  "pickFromAlternatives" : [ {
+    "id" : 100003,
+    "pickFromHUId" : 1001,
+    "productId" : 6,
+    "qtyAvailable" : {
+      "qty" : "999",
+      "uomId" : 100001
+    }
+  } ],
+  "docStatus" : "Drafted",
+  "progress" : "NOT_STARTED"
+} ]

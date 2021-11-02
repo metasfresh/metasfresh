@@ -6,6 +6,7 @@ import lombok.NonNull;
 import lombok.ToString;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 @EqualsAndHashCode
 @ToString
@@ -24,4 +25,6 @@ public class AlternativePickFromsList
 	{
 		return !list.isEmpty() ? new AlternativePickFromsList(list) : EMPTY;
 	}
+
+	public Stream<AlternativePickFrom> stream() {return pickFroms.stream();}
 }

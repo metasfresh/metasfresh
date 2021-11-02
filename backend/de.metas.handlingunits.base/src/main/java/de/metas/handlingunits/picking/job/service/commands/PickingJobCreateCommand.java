@@ -7,6 +7,7 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.job.model.PickingJob;
+import de.metas.handlingunits.picking.job.repository.DefaultPickingJobLoaderSupportingServices;
 import de.metas.handlingunits.picking.job.repository.PickingJobCreateRepoRequest;
 import de.metas.handlingunits.picking.job.repository.PickingJobLoaderSupportingServices;
 import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
@@ -72,7 +73,7 @@ public class PickingJobCreateCommand
 
 		this.request = request;
 
-		this.loadingSupportServices = new PickingJobLoaderSupportingServices(bpartnerBL, pickingJobSlotService);
+		this.loadingSupportServices = new DefaultPickingJobLoaderSupportingServices(bpartnerBL, pickingJobSlotService);
 	}
 
 	public PickingJob execute() {return trxManager.callInThreadInheritedTrx(this::executeInTrx);}
@@ -172,18 +173,6 @@ public class PickingJobCreateCommand
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private PickingJobCreateRepoRequest.Line toLineRepoRequest(@NonNull final Collection<Packageable> itemsForProduct)
-	{
-		Check.assumeNotEmpty(itemsForProduct, "itemsForProduct");
-
-		final PickingPlan plan = pickingCandidateService.createPlan(CreatePickingPlanRequest.builder()
-				.packageables(itemsForProduct)
-				.considerAttributes(considerAttributes)
-				.build());
-
-		return toLineRepoRequest(plan);
-	}
-
 	@Value
 	@Builder
 	private static class PickingJobLineKey
@@ -198,8 +187,15 @@ public class PickingJobCreateCommand
 				.build();
 	}
 
-	private static PickingJobCreateRepoRequest.Line toLineRepoRequest(@NonNull final PickingPlan plan)
+	private PickingJobCreateRepoRequest.Line toLineRepoRequest(@NonNull final Collection<Packageable> itemsForProduct)
 	{
+		Check.assumeNotEmpty(itemsForProduct, "itemsForProduct");
+
+		final PickingPlan plan = pickingCandidateService.createPlan(CreatePickingPlanRequest.builder()
+				.packageables(itemsForProduct)
+				.considerAttributes(considerAttributes)
+				.build());
+
 		return PickingJobCreateRepoRequest.Line.builder()
 				.productId(plan.getSingleProductId())
 				.steps(plan.getLines()
@@ -207,6 +203,10 @@ public class PickingJobCreateCommand
 						.map(PickingJobCreateCommand::toStepCreateRepoRequest)
 						.filter(Objects::nonNull)
 						.collect(ImmutableList.toImmutableList()))
+				.pickFromAlternatives(plan.getAlternatives()
+						.stream()
+						.map(alt -> PickingJobCreateRepoRequest.PickFromAlternative.of(alt.getHuId(), alt.getAvailableQty()))
+						.collect(ImmutableSet.toImmutableSet()))
 				.build();
 	}
 
@@ -216,16 +216,17 @@ public class PickingJobCreateCommand
 		if (PickingPlanLineType.PICK_FROM_HU.equals(planLine.getType()))
 		{
 			final PickFromHU pickFromHU = Objects.requireNonNull(planLine.getPickFromHU());
-			final LocatorId locatorId = pickFromHU.getLocatorId();
+			final LocatorId pickFromLocatorId = pickFromHU.getLocatorId();
 			final ProductId productId = planLine.getProductId();
 
 			return PickingJobCreateRepoRequest.Step.builder()
 					.shipmentScheduleId(planLine.getSourceDocumentInfo().getShipmentScheduleId())
 					.salesOrderLineId(Objects.requireNonNull(planLine.getSourceDocumentInfo().getSalesOrderLineId()))
-					.locatorId(locatorId)
+					.pickFromLocatorId(pickFromLocatorId)
 					.productId(productId)
 					.pickFromHUId(pickFromHU.getHuId())
 					.qtyToPick(planLine.getQty())
+					.pickFromHUIdsAlternatives(pickFromHU.getAlternatives().getHuIds())
 					.build();
 		}
 		else

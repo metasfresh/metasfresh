@@ -22,6 +22,8 @@
 
 package de.metas.picking.rest_api.json;
 
+import com.google.common.collect.ImmutableSet;
+import de.metas.handlingunits.picking.job.model.PickingJobPickFromAlternativeId;
 import de.metas.handlingunits.picking.job.model.PickingJobStep;
 import de.metas.handlingunits.picking.job.model.PickingJobStepPickedInfo;
 import de.metas.workflow.rest_api.controller.v2.json.JsonOpts;
@@ -31,6 +33,7 @@ import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
 import java.math.BigDecimal;
+import java.util.Set;
 
 @Value
 @Builder
@@ -46,6 +49,8 @@ public class JsonPickingJobStep
 	@NonNull BigDecimal qtyToPick;
 	@NonNull BigDecimal qtyPicked;
 
+	@NonNull Set<String> pickFromAlternativeIds;
+
 	public static JsonPickingJobStep of(final PickingJobStep step, final JsonOpts jsonOpts)
 	{
 		final String adLanguage = jsonOpts.getAdLanguage();
@@ -60,6 +65,10 @@ public class JsonPickingJobStep
 				.uom(step.getQtyToPick().getUOMSymbol())
 				.qtyToPick(step.getQtyToPick().toBigDecimal())
 				.qtyPicked(picked != null ? picked.getQtyPicked().toBigDecimal() : BigDecimal.ZERO)
+				.pickFromAlternativeIds(step.getPickFromAlternativeIds()
+						.stream()
+						.map(PickingJobPickFromAlternativeId::getAsString)
+						.collect(ImmutableSet.toImmutableSet()))
 				.build();
 	}
 }

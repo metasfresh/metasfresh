@@ -22,6 +22,8 @@
 
 package de.metas.handlingunits.picking.job.model;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.inoutcandidate.ShipmentScheduleId;
@@ -44,6 +46,7 @@ import java.util.stream.Stream;
 
 @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 @ToString
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public final class PickingJob
 {
 	@Getter
@@ -59,6 +62,9 @@ public final class PickingJob
 	@NonNull private final ImmutableList<PickingJobLine> lines;
 
 	@Getter
+	@NonNull private final ImmutableSet<PickingJobPickFromAlternative> pickFromAlternatives;
+
+	@Getter
 	private final PickingJobDocStatus docStatus;
 
 	@Getter
@@ -70,6 +76,7 @@ public final class PickingJob
 			final @NonNull PickingJobHeader header,
 			final @Nullable Optional<PickingSlotIdAndCaption> pickingSlot,
 			final @NonNull ImmutableList<PickingJobLine> lines,
+			final @NonNull ImmutableSet<PickingJobPickFromAlternative> pickFromAlternatives,
 			final @NonNull PickingJobDocStatus docStatus)
 	{
 		Check.assumeNotEmpty(lines, "lines not empty");
@@ -79,6 +86,7 @@ public final class PickingJob
 		//noinspection OptionalAssignedToNull
 		this.pickingSlot = pickingSlot != null ? pickingSlot : Optional.empty();
 		this.lines = lines;
+		this.pickFromAlternatives = pickFromAlternatives;
 		this.docStatus = docStatus;
 
 		this.progress = computeProgress(lines);

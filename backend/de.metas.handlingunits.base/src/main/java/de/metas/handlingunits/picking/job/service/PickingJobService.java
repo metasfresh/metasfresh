@@ -10,6 +10,7 @@ import de.metas.handlingunits.picking.job.model.PickingJobId;
 import de.metas.handlingunits.picking.job.model.PickingJobReference;
 import de.metas.handlingunits.picking.job.model.PickingJobStepEvent;
 import de.metas.handlingunits.picking.job.model.PickingJobStepId;
+import de.metas.handlingunits.picking.job.repository.DefaultPickingJobLoaderSupportingServices;
 import de.metas.handlingunits.picking.job.repository.PickingJobLoaderSupportingServices;
 import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobAbortCommand;
@@ -70,7 +71,7 @@ public class PickingJobService
 
 	private PickingJobLoaderSupportingServices newLoadingSupportServices()
 	{
-		return new PickingJobLoaderSupportingServices(bpartnerBL, pickingSlotService);
+		return new DefaultPickingJobLoaderSupportingServices(bpartnerBL, pickingSlotService);
 	}
 
 	public List<PickingJob> getDraftJobsByPickerId(@NonNull final UserId pickerId)

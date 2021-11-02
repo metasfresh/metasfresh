@@ -2,6 +2,7 @@ package de.metas.handlingunits.picking.plan.generator.pickFromHUs;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.UnmodifiableIterator;
+import de.metas.handlingunits.HuId;
 import de.metas.util.GuavaCollectors;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
@@ -44,4 +45,6 @@ public class AlternativePickFromKeys implements Iterable<AlternativePickFromKey>
 
 	@Override
 	public UnmodifiableIterator<AlternativePickFromKey> iterator() {return keys.iterator();}
+
+	public ImmutableSet<HuId> getHuIds() {return keys.stream().map(AlternativePickFromKey::getHuId).collect(ImmutableSet.toImmutableSet());}
 }
