@@ -124,7 +124,7 @@ public class CreateBOM_StepDef
 			final String productIdentifier = DataTableUtil.extractStringForColumnName(dataTableRow, "M_Product_ID.Identifier");
 			final String bomVersionsIdentifier = DataTableUtil.extractStringForColumnName(dataTableRow, "PP_Product_BOMVersions_ID.Identifier");
 			final String productValue = DataTableUtil.extractStringForColumnName(dataTableRow, "ProductValue");
-			final String uomCode = DataTableUtil.extractStringForColumnName(dataTableRow, "uomCode");
+			final String uomCode = DataTableUtil.extractStringForColumnName(dataTableRow, "UomCode");
 			final Instant validFrom = DataTableUtil.extractInstantForColumnName(dataTableRow, "ValidFrom");
 
 			final I_C_UOM bomProductExpectedUOM = uomDao.getByX12DE355(X12DE355.ofCode(uomCode));
