@@ -19,6 +19,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.LocatorId;
 
 class PickingJobCreateRepoCommand
 {
@@ -47,6 +48,7 @@ class PickingJobCreateRepoCommand
 				.flatMap(line -> line.getPickFromAlternatives()
 						.stream()
 						.map(alt -> PickFromAlternativeCreateRequest.builder()
+								.pickFromLocatorId(alt.getPickFromLocatorId())
 								.pickFromHUId(alt.getPickFromHUId())
 								.productId(line.getProductId())
 								.qtyAvailable(alt.getQtyAvailable())
@@ -143,7 +145,7 @@ class PickingJobCreateRepoCommand
 		record.setM_Picking_Job_ID(pickingJobId.getRepoId());
 		record.setM_Picking_Job_Step_ID(pickingJobStepId.getRepoId());
 		record.setAD_Org_ID(request.getOrgId().getRepoId());
-		record.setM_Picking_Job_HUAlternative_ID(loader.getPickingJobHUAlternativeId(pickingJobId, alternativeHUId, productId));
+		record.setM_Picking_Job_HUAlternative_ID(loader.getPickingJobHUAlternativeId(pickingJobId, alternativeHUId, productId).getRepoId());
 		InterfaceWrapperHelper.save(record);
 
 		loader.addAlreadyLoadedFromDB(record);
@@ -154,6 +156,8 @@ class PickingJobCreateRepoCommand
 		final I_M_Picking_Job_HUAlternative record = InterfaceWrapperHelper.newInstance(I_M_Picking_Job_HUAlternative.class);
 		record.setM_Picking_Job_ID(from.getPickingJobId().getRepoId());
 		record.setAD_Org_ID(request.getOrgId().getRepoId());
+		record.setPickFrom_Warehouse_ID(from.getPickFromLocatorId().getWarehouseId().getRepoId());
+		record.setPickFrom_Locator_ID(from.getPickFromLocatorId().getRepoId());
 		record.setPickFrom_HU_ID(from.getPickFromHUId().getRepoId());
 		record.setM_Product_ID(from.getProductId().getRepoId());
 		record.setC_UOM_ID(from.getQtyAvailable().getUomId().getRepoId());
@@ -173,6 +177,7 @@ class PickingJobCreateRepoCommand
 	@Builder
 	private static class PickFromAlternativeCreateRequest
 	{
+		@NonNull LocatorId pickFromLocatorId;
 		@NonNull HuId pickFromHUId;
 		@NonNull ProductId productId;
 		@NonNull Quantity qtyAvailable;

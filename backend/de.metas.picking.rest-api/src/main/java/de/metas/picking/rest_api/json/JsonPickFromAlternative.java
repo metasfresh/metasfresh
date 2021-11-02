@@ -14,6 +14,7 @@ import java.math.BigDecimal;
 public class JsonPickFromAlternative
 {
 	@NonNull String id;
+	@NonNull String locatorName;
 	@NonNull String huBarcode;
 	@NonNull String uom;
 	@NonNull BigDecimal qtyAvailable;
@@ -22,7 +23,8 @@ public class JsonPickFromAlternative
 	{
 		return builder()
 				.id(from.getId().getAsString())
-				.huBarcode(from.getPickFromHUBarcode().getAsString())
+				.locatorName(from.getLocatorInfo().getCaption())
+				.huBarcode(from.getPickFromHU().getBarcode().getAsString())
 				.uom(from.getQtyAvailable().getUOMSymbol())
 				.qtyAvailable(from.getQtyAvailable().toBigDecimal())
 				.build();

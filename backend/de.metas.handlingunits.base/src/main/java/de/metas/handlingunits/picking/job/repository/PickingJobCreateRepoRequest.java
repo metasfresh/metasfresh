@@ -49,6 +49,7 @@ public class PickingJobCreateRepoRequest
 	@Value(staticConstructor = "of")
 	public static class PickFromAlternative
 	{
+		@NonNull LocatorId pickFromLocatorId;
 		@NonNull HuId pickFromHUId;
 		@NonNull Quantity qtyAvailable;
 	}

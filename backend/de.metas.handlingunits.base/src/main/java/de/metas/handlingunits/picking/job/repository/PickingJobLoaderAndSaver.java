@@ -14,6 +14,8 @@ import de.metas.handlingunits.model.I_M_Picking_Job_Step;
 import de.metas.handlingunits.model.I_M_Picking_Job_Step_HUAlternative;
 import de.metas.handlingunits.picking.PickingCandidateId;
 import de.metas.handlingunits.picking.QtyRejectedReasonCode;
+import de.metas.handlingunits.picking.job.model.HUInfo;
+import de.metas.handlingunits.picking.job.model.LocatorInfo;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobDocStatus;
 import de.metas.handlingunits.picking.job.model.PickingJobHeader;
@@ -195,7 +197,7 @@ class PickingJobLoaderAndSaver
 		pickingJobStepAlternatives.put(pickingJobStepId, record);
 	}
 
-	public int getPickingJobHUAlternativeId(
+	public PickingJobPickFromAlternativeId getPickingJobHUAlternativeId(
 			@NonNull final PickingJobId pickingJobId,
 			@NonNull final HuId alternativeHUId,
 			@NonNull final ProductId productId)
@@ -204,7 +206,7 @@ class PickingJobLoaderAndSaver
 				.stream()
 				.filter(record -> HuId.equals(HuId.ofRepoId(record.getPickFrom_HU_ID()), alternativeHUId)
 						&& ProductId.equals(ProductId.ofRepoId(record.getM_Product_ID()), productId))
-				.mapToInt(I_M_Picking_Job_HUAlternative::getM_Picking_Job_HUAlternative_ID)
+				.map(record -> PickingJobPickFromAlternativeId.ofRepoId(record.getM_Picking_Job_HUAlternative_ID()))
 				.findFirst()
 				.orElseThrow(() -> new AdempiereException("No HU alternative found for " + pickingJobId + ", " + alternativeHUId + ", " + productId
 						+ ". Available HU alternatives are: " + pickingJobHUAlternatives));
@@ -288,7 +290,7 @@ class PickingJobLoaderAndSaver
 						.collect(ImmutableList.toImmutableList()))
 				.pickFromAlternatives(pickingJobHUAlternatives.get(pickingJobId)
 						.stream()
-						.map(PickingJobLoaderAndSaver::fromRecord)
+						.map(this::fromRecord)
 						.collect(ImmutableSet.toImmutableSet()))
 				.build();
 	}
@@ -342,10 +344,14 @@ class PickingJobLoaderAndSaver
 				.qtyToPick(Quantitys.create(record.getQtyToPick(), uomId))
 				//
 				// Pick From
-				.locatorId(locatorId)
-				.locatorName(loadingSupportingServices().getLocatorName(locatorId))
-				.pickFromHUId(pickFromHUId)
-				.pickFromHUBarcode(HUBarcode.ofHuId(pickFromHUId))
+				.pickFromLocator(LocatorInfo.builder()
+						.id(locatorId)
+						.caption(loadingSupportingServices().getLocatorName(locatorId))
+						.build())
+				.pickFromHU(HUInfo.builder()
+						.id(pickFromHUId)
+						.barcode(HUBarcode.ofHuId(pickFromHUId))
+						.build())
 				.pickFromAlternativeIds(pickingJobStepAlternatives.get(pickingJobStepId)
 						.stream()
 						.map(stepAlternativeRecord -> PickingJobPickFromAlternativeId.ofRepoId(stepAlternativeRecord.getM_Picking_Job_HUAlternative_ID()))
@@ -422,14 +428,21 @@ class PickingJobLoaderAndSaver
 		existingRecord.setM_Picking_Candidate_ID(PickingCandidateId.toRepoId(pickingCandidateId));
 	}
 
-	private static PickingJobPickFromAlternative fromRecord(final I_M_Picking_Job_HUAlternative record)
+	private PickingJobPickFromAlternative fromRecord(final I_M_Picking_Job_HUAlternative record)
 	{
+		final LocatorId locatorId = LocatorId.ofRepoId(record.getPickFrom_Warehouse_ID(), record.getPickFrom_Locator_ID());
 		final HuId pickFromHUId = HuId.ofRepoId(record.getPickFrom_HU_ID());
 
 		return PickingJobPickFromAlternative.builder()
 				.id(PickingJobPickFromAlternativeId.ofRepoId(record.getM_Picking_Job_HUAlternative_ID()))
-				.pickFromHUId(pickFromHUId)
-				.pickFromHUBarcode(HUBarcode.ofHuId(pickFromHUId))
+				.locatorInfo(LocatorInfo.builder()
+						.id(locatorId)
+						.caption(loadingSupportingServices().getLocatorName(locatorId))
+						.build())
+				.pickFromHU(HUInfo.builder()
+						.id(pickFromHUId)
+						.barcode(HUBarcode.ofHuId(pickFromHUId))
+						.build())
 				.productId(ProductId.ofRepoId(record.getM_Product_ID()))
 				.qtyAvailable(Quantitys.create(record.getQtyAvailable(), UomId.ofRepoId(record.getC_UOM_ID())))
 				.build();

@@ -39,7 +39,7 @@ public class PickingJobHUReservationService
 				.documentRef(HUReservationDocRef.ofPickingJobStepId(step.getId()))
 				.productId(step.getProductId())
 				.qtyToReserve(step.getQtyToPick())
-				.huId(step.getPickFromHUId())
+				.huId(step.getPickFromHU().getId())
 				.build());
 	}
 

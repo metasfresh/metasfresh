@@ -1,7 +1,8 @@
 package de.metas.handlingunits.model;
 
-import java.math.BigDecimal;
 import org.adempiere.model.ModelColumn;
+
+import java.math.BigDecimal;
 
 /** Generated Interface for M_Picking_Job_HUAlternative
  *  @author metasfresh (generated) 
@@ -212,6 +213,46 @@ public interface I_M_Picking_Job_HUAlternative
 
 	ModelColumn<I_M_Picking_Job_HUAlternative, de.metas.handlingunits.model.I_M_HU> COLUMN_PickFrom_HU_ID = new ModelColumn<>(I_M_Picking_Job_HUAlternative.class, "PickFrom_HU_ID", de.metas.handlingunits.model.I_M_HU.class);
 	String COLUMNNAME_PickFrom_HU_ID = "PickFrom_HU_ID";
+
+	/**
+	 * Set Pick From Locator.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setPickFrom_Locator_ID (int PickFrom_Locator_ID);
+
+	/**
+	 * Get Pick From Locator.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getPickFrom_Locator_ID();
+
+	String COLUMNNAME_PickFrom_Locator_ID = "PickFrom_Locator_ID";
+
+	/**
+	 * Set Pick From Warehouse.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setPickFrom_Warehouse_ID (int PickFrom_Warehouse_ID);
+
+	/**
+	 * Get Pick From Warehouse.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getPickFrom_Warehouse_ID();
+
+	String COLUMNNAME_PickFrom_Warehouse_ID = "PickFrom_Warehouse_ID";
 
 	/**
 	 * Set Available Quantity.

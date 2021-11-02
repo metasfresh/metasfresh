@@ -74,7 +74,10 @@ class PickingJobRepositoryTest
 						.line(PickingJobCreateRepoRequest.Line.builder()
 								.productId(ProductId.ofRepoId(6))
 								.pickFromAlternatives(ImmutableSet.of(
-										PickingJobCreateRepoRequest.PickFromAlternative.of(HuId.ofRepoId(1001), Quantity.of(999, uomEach))
+										PickingJobCreateRepoRequest.PickFromAlternative.of(
+												LocatorId.ofRepoId(21, 22),
+												HuId.ofRepoId(1001),
+												Quantity.of(999, uomEach))
 								))
 								.step(PickingJobCreateRepoRequest.Step.builder()
 										.shipmentScheduleId(ShipmentScheduleId.ofRepoId(7))

@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_Picking_Job_HUAlternative extends org.compiere.model.PO implements I_M_Picking_Job_HUAlternative, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1587519940L;
+	private static final long serialVersionUID = -1560565620L;
 
     /** Standard Constructor */
     public X_M_Picking_Job_HUAlternative (final Properties ctx, final int M_Picking_Job_HUAlternative_ID, @Nullable final String trxName)
@@ -132,6 +132,36 @@ public class X_M_Picking_Job_HUAlternative extends org.compiere.model.PO impleme
 	public int getPickFrom_HU_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_PickFrom_HU_ID);
+	}
+
+	@Override
+	public void setPickFrom_Locator_ID (final int PickFrom_Locator_ID)
+	{
+		if (PickFrom_Locator_ID < 1) 
+			set_Value (COLUMNNAME_PickFrom_Locator_ID, null);
+		else 
+			set_Value (COLUMNNAME_PickFrom_Locator_ID, PickFrom_Locator_ID);
+	}
+
+	@Override
+	public int getPickFrom_Locator_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_PickFrom_Locator_ID);
+	}
+
+	@Override
+	public void setPickFrom_Warehouse_ID (final int PickFrom_Warehouse_ID)
+	{
+		if (PickFrom_Warehouse_ID < 1) 
+			set_Value (COLUMNNAME_PickFrom_Warehouse_ID, null);
+		else 
+			set_Value (COLUMNNAME_PickFrom_Warehouse_ID, PickFrom_Warehouse_ID);
+	}
+
+	@Override
+	public int getPickFrom_Warehouse_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_PickFrom_Warehouse_ID);
 	}
 
 	@Override

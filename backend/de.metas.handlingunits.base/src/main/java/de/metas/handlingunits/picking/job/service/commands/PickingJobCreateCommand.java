@@ -205,7 +205,7 @@ public class PickingJobCreateCommand
 						.collect(ImmutableList.toImmutableList()))
 				.pickFromAlternatives(plan.getAlternatives()
 						.stream()
-						.map(alt -> PickingJobCreateRepoRequest.PickFromAlternative.of(alt.getHuId(), alt.getAvailableQty()))
+						.map(alt -> PickingJobCreateRepoRequest.PickFromAlternative.of(alt.getLocatorId(), alt.getHuId(), alt.getAvailableQty()))
 						.collect(ImmutableSet.toImmutableSet()))
 				.build();
 	}

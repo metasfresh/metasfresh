@@ -152,10 +152,10 @@ class CreatePickingPlanCommandTest
 				.build().execute();
 	}
 
-	private AlternativePickFromKeys alternativeKeys(final HuId... huIds)
+	private AlternativePickFromKeys alternativeKeys(final LocatorId locatorId, final HuId... huIds)
 	{
 		return AlternativePickFromKeys.ofSet(Stream.of(huIds)
-				.map(huId -> AlternativePickFromKey.of(huId, productId))
+				.map(huId -> AlternativePickFromKey.of(locatorId, huId, productId))
 				.collect(ImmutableSet.toImmutableSet()));
 	}
 
@@ -187,19 +187,19 @@ class CreatePickingPlanCommandTest
 								.line(expectedPlanLineBuilder
 										.qty(Quantity.of("1.000", uomKg))
 										.pickFromHU(PickFromHU.builder().huId(huId3_reservedPart).huReservedForThisLine(true).locatorId(wh1_loc1)
-												.alternatives(alternativeKeys(huId3))
+												.alternatives(alternativeKeys(wh1_loc1, huId3))
 												.build())
 										.build())
 								.line(expectedPlanLineBuilder
 										.qty(Quantity.of("30.000", uomKg))
 										.pickFromHU(PickFromHU.builder().huId(huId1).huReservedForThisLine(false).locatorId(wh1_loc1)
-												.alternatives(alternativeKeys(huId3))
+												.alternatives(alternativeKeys(wh1_loc1, huId3))
 												.build())
 										.build())
 								.line(expectedPlanLineBuilder
 										.qty(Quantity.of("30.000", uomKg))
 										.pickFromHU(PickFromHU.builder().huId(huId2).huReservedForThisLine(false).locatorId(wh1_loc1)
-												.alternatives(alternativeKeys(huId3))
+												.alternatives(alternativeKeys(wh1_loc1, huId3))
 												.build())
 										.build())
 								.line(expectedPlanLineBuilder
@@ -209,7 +209,7 @@ class CreatePickingPlanCommandTest
 												.build())
 										.build())
 								.alternatives(AlternativePickFromsList.ofList(ImmutableList.of(
-										AlternativePickFrom.of(AlternativePickFromKey.of(huId3, productId), Quantity.of("960.000", uomKg))
+										AlternativePickFrom.of(AlternativePickFromKey.of(wh1_loc1, huId3, productId), Quantity.of("960.000", uomKg))
 								)))
 								.build());
 	}
