@@ -220,24 +220,30 @@ export default class Attributes extends Component {
         value,
       }).then((response) => {
         if (response.data && response.data.length) {
-          const fields = response.data[0].fieldsByName;
+          const { fieldsByName, id } = response.data[0];
+          const hasCheckbox = JSON.stringify(fieldsByName).includes('YesNo');
+          const updatedDataState = this.state.data;
 
-          Object.keys(fields).map((fieldName) => {
-            this.setState(
-              (prevState) => ({
-                data: {
-                  ...prevState.data,
-                  [fieldName]: {
-                    ...prevState.data[fieldName],
-                    value,
-                  },
-                },
-              }),
-              () => {
-                cb && cb();
-              }
-            );
+          Object.keys(fieldsByName).map((fieldName) => {
+            updatedDataState[fieldName] = {
+              ...updatedDataState[fieldName],
+              ...fieldsByName[fieldName],
+            };
           });
+
+          this.setState({ data: updatedDataState }, cb);
+
+          if (hasCheckbox) {
+            getLayout(attributeType, id).then((response) => {
+              const { elements } = response.data;
+
+              this.setState({
+                layout: elements,
+                loading: false,
+              });
+            });
+          }
+
           return Promise.resolve(true);
         }
         return Promise.resolve(false);
