@@ -135,6 +135,13 @@ public interface IQuery<T>
 	}
 
 	/**
+	 * Same as {@link #list(Class)} but instead of returning a list it will return a Map indexed by model's {@link RepoIdAware}.
+	 *
+	 * @param idMapper function to turn int values into {@link RepoIdAware}, like {@link de.metas.user.UserId#ofRepoId(int)}.
+	 */
+	<ID extends RepoIdAware, ET extends T> Map<ID, ET> mapByRepoIdAware(final IntFunction<ID> idMapper, Class<ET> clazz) throws DBException;
+
+	/**
 	 * @return first ID or -1 if no records are found.
 	 *         No exception is thrown if multiple results exist, they are just ignored.
 	 */

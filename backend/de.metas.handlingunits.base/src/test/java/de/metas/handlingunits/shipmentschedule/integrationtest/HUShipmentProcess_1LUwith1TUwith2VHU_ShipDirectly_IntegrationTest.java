@@ -1,8 +1,28 @@
 package de.metas.handlingunits.shipmentschedule.integrationtest;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import de.metas.handlingunits.expectations.HUsExpectation;
+import de.metas.handlingunits.expectations.ShipmentScheduleQtyPickedExpectations;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_ShipmentSchedule;
+import de.metas.handlingunits.model.X_M_HU;
+import de.metas.handlingunits.model.X_M_HU_Item;
+import de.metas.handlingunits.model.X_M_HU_PI_Item;
+import de.metas.inout.IInOutDAO;
+import de.metas.util.Services;
+import de.metas.util.collections.CollectionUtils;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IMutable;
+import org.adempiere.util.lang.Mutable;
+import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_InOutLine;
+import org.compiere.model.I_M_Package;
+import org.junit.jupiter.api.Assertions;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -26,29 +46,6 @@ import java.math.BigDecimal;
  * #L%
  */
 
-import java.util.Arrays;
-import java.util.List;
-
-import org.adempiere.ad.wrapper.POJOLookupMap;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.IMutable;
-import org.adempiere.util.lang.Mutable;
-import org.compiere.model.I_M_InOut;
-import org.compiere.model.I_M_InOutLine;
-import org.compiere.model.I_M_Package;
-import org.junit.Assert;
-
-import de.metas.handlingunits.expectations.HUsExpectation;
-import de.metas.handlingunits.expectations.ShipmentScheduleQtyPickedExpectations;
-import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_ShipmentSchedule;
-import de.metas.handlingunits.model.X_M_HU;
-import de.metas.handlingunits.model.X_M_HU_PI_Item;
-import de.metas.inout.IInOutDAO;
-import de.metas.util.Services;
-import de.metas.util.collections.CollectionUtils;
-import org.junit.jupiter.api.Assertions;
-
 /**
  * Test case:
  * <ul>
@@ -63,7 +60,7 @@ import org.junit.jupiter.api.Assertions;
  * Task http://dewiki908/mediawiki/index.php/08715_Kennzeichen_Gebinde_ausblenden_auf_Lsch._%28Gastro%29%2C_TU_auf_LKW_Verdichtung_%28109809505901%29
  */
 
-public class HUShipmentProcess_1TUwith2VHU_ShipDirectly_IntegrationTest extends AbstractHUShipmentProcessIntegrationTest
+public class HUShipmentProcess_1LUwith1TUwith2VHU_ShipDirectly_IntegrationTest extends AbstractHUShipmentProcessIntegrationTest
 {
 	private ShipmentScheduleQtyPickedExpectations afterPick_ShipmentScheduleQtyPickedExpectations = null;
 
@@ -88,46 +85,60 @@ public class HUShipmentProcess_1TUwith2VHU_ShipDirectly_IntegrationTest extends 
 
 		//
 		// Create initial TU
+		final IMutable<I_M_HU> lu = new Mutable<>();
 		final IMutable<I_M_HU> tu = new Mutable<>();
 		final IMutable<I_M_HU> vhu1 = new Mutable<>();
 		final IMutable<I_M_HU> vhu2 = new Mutable<>();
 		//@formatter:off
 		afterPick_HUExpectations = new HUsExpectation()
-			//
-			// TU
-			.newHUExpectation()
-				.capture(tu)
-				.huStatus(X_M_HU.HUSTATUS_Picked)
-				.huPI(piTU)
-				.bPartner(bpartner)
-				.bPartnerLocation(bpartnerLocation)
-				.item()
-					.itemType(X_M_HU_PI_Item.ITEMTYPE_Material)
-					.huPIItem(piTU_Item)
+
+		//
+		// LU
+		.newHUExpectation()
+			.capture(lu)
+			.huPI(piLU)
+			.huStatus(X_M_HU.HUSTATUS_Picked)
+			.bPartner(bpartner)
+			.bPartnerLocation(bpartnerLocation)
+			.item(piLU_Item)
+				.itemType(X_M_HU_Item.ITEMTYPE_HandlingUnit)
+				.includedHU()
 					//
-					// VHU 1
-					.includedVirtualHU()
-						.capture(vhu1)
-						.huStatus(X_M_HU.HUSTATUS_Picked)
-						.virtualPIItem()
-							.storage()
-								.product(product).uom(productUOM).qty("10")
+					// TU
+					.capture(tu)
+					.huStatus(X_M_HU.HUSTATUS_Picked)
+					.huPI(piTU)
+					.bPartner(bpartner)
+					.bPartnerLocation(bpartnerLocation)
+					.item()
+						.itemType(X_M_HU_PI_Item.ITEMTYPE_Material)
+						.huPIItem(piTU_Item)
+						//
+						// VHU 1
+						.includedVirtualHU()
+							.capture(vhu1)
+							.huStatus(X_M_HU.HUSTATUS_Picked)
+							.virtualPIItem()
+								.storage()
+									.product(product).uom(productUOM).qty("10")
+									.endExpectation()
 								.endExpectation()
 							.endExpectation()
-						.endExpectation()
-					//
-					// VHU 2
-					.includedVirtualHU()
-						.capture(vhu2)
-						.huStatus(X_M_HU.HUSTATUS_Picked)
-						.virtualPIItem()
-							.storage()
-								.product(product).uom(productUOM).qty("10")
+						//
+						// VHU 2
+						.includedVirtualHU()
+							.capture(vhu2)
+							.huStatus(X_M_HU.HUSTATUS_Picked)
+							.virtualPIItem()
+								.storage()
+									.product(product).uom(productUOM).qty("10")
+									.endExpectation()
 								.endExpectation()
 							.endExpectation()
 						.endExpectation()
 					.endExpectation()
-				.endExpectation();
+				.endExpectation()
+			.endExpectation();
 		//@formatter:on
 		afterPick_HUExpectations.createHUs();
 
@@ -138,11 +149,11 @@ public class HUShipmentProcess_1TUwith2VHU_ShipDirectly_IntegrationTest extends 
 		afterPick_ShipmentScheduleQtyPickedExpectations = new ShipmentScheduleQtyPickedExpectations()
 			.newShipmentScheduleQtyPickedExpectation()
 				.shipmentSchedule(shipmentSchedule1)
-				.noLU().tu(tu).vhu(vhu1).qtyPicked("10")
+				.lu(lu).tu(tu).vhu(vhu1).qtyPicked("10")
 				.endExpectation()
 			.newShipmentScheduleQtyPickedExpectation()
 				.shipmentSchedule(shipmentSchedule2)
-				.noLU().tu(tu).vhu(vhu2).qtyPicked("10")
+				.lu(lu).tu(tu).vhu(vhu2).qtyPicked("10")
 				.endExpectation();
 		//@formatter:on
 		afterPick_ShipmentScheduleQtyPickedExpectations.createM_ShipmentSchedule_QtyPickeds(helper.getContextProvider());
