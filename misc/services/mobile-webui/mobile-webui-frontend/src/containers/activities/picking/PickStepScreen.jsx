@@ -11,6 +11,7 @@ import { updatePickingStepQty } from '../../../actions/PickingActions';
 import ButtonWithIndicator from '../../../components/ButtonWithIndicator';
 import * as CompleteStatus from '../../../constants/CompleteStatus';
 import ScreenToaster from '../../../components/ScreenToaster';
+import NotFoundActivity from '../NotFoundActivity';
 import { toastError } from '../../../utils/toast';
 
 class PickStepScreen extends Component {
@@ -72,6 +73,9 @@ class PickStepScreen extends Component {
   render() {
     const {
       stepProps: { huBarcode, qtyToPick, scannedHUBarcode, qtyPicked },
+      wfProcessId,
+      activityId,
+      stepId,
     } = this.props;
 
     const isValidCode = !!scannedHUBarcode;
@@ -114,6 +118,7 @@ class PickStepScreen extends Component {
           </div>
           <ScreenToaster />
         </div>
+        {!nothingPicked && <NotFoundActivity wfProcessId={wfProcessId} activityId={activityId} stepId={stepId} />}
       </div>
     );
   }

@@ -60,6 +60,9 @@ export const setupCounterpart = () => {
         abort: {
           caption: 'Abort',
         },
+        notfound: {
+          caption: 'Not found',
+        },
       },
     },
   });
