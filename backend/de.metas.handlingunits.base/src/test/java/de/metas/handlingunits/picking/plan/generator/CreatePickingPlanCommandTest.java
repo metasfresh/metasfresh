@@ -2,7 +2,6 @@ package de.metas.handlingunits.picking.plan.generator;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.bpartner.service.impl.BPartnerBL;
@@ -12,16 +11,7 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
-import de.metas.handlingunits.picking.plan.generator.pickFromHUs.AlternativePickFrom;
-import de.metas.handlingunits.picking.plan.generator.pickFromHUs.AlternativePickFromKey;
-import de.metas.handlingunits.picking.plan.generator.pickFromHUs.AlternativePickFromKeys;
-import de.metas.handlingunits.picking.plan.generator.pickFromHUs.AlternativePickFromsList;
-import de.metas.handlingunits.picking.plan.generator.pickFromHUs.PickFromHU;
 import de.metas.handlingunits.picking.plan.model.PickingPlan;
-import de.metas.handlingunits.picking.plan.model.PickingPlanLine;
-import de.metas.handlingunits.picking.plan.model.PickingPlanLineType;
-import de.metas.handlingunits.picking.plan.model.SourceDocumentInfo;
-import de.metas.handlingunits.reservation.HUReservation;
 import de.metas.handlingunits.reservation.HUReservationDocRef;
 import de.metas.handlingunits.reservation.HUReservationRepository;
 import de.metas.handlingunits.reservation.HUReservationService;
@@ -33,25 +23,26 @@ import de.metas.picking.api.Packageable;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.user.UserRepository;
-import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Warehouse;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.util.Optional;
-import java.util.stream.Stream;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static io.github.jsonSnapshot.SnapshotMatcher.expect;
+import static io.github.jsonSnapshot.SnapshotMatcher.start;
 
 @ExtendWith(AdempiereTestWatcher.class)
 class CreatePickingPlanCommandTest
@@ -71,6 +62,12 @@ class CreatePickingPlanCommandTest
 	private final BPartnerLocationId customerLocationId = BPartnerLocationId.ofRepoId(3, 4);
 	private final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(2);
 	private final OrderAndLineId salesOrderAndLineId = OrderAndLineId.ofRepoIds(300, 301);
+
+	@BeforeAll
+	static void beforeAll()
+	{
+		start(AdempiereTestHelper.SNAPSHOT_CONFIG, AdempiereTestHelper.createSnapshotJsonFunction());
+	}
 
 	@BeforeEach
 	void beforeEach()
@@ -98,9 +95,9 @@ class CreatePickingPlanCommandTest
 		return HuId.ofRepoId(cu.getM_HU_ID());
 	}
 
-	private HuId makeHUReservation(final HuId huId, Quantity qtyToReserve)
+	private void makeHUReservation(final HuId huId, Quantity qtyToReserve)
 	{
-		final HUReservation result = huReservationService.makeReservation(ReserveHUsRequest.builder()
+		huReservationService.makeReservation(ReserveHUsRequest.builder()
 						.qtyToReserve(qtyToReserve)
 						.documentRef(HUReservationDocRef.ofSalesOrderLineId(salesOrderAndLineId))
 						.productId(productId)
@@ -108,8 +105,6 @@ class CreatePickingPlanCommandTest
 						.huId(huId)
 						.build())
 				.orElseThrow(() -> new AdempiereException("Cannot reserve"));
-
-		return CollectionUtils.singleElement(result.getVhuIds());
 	}
 
 	@Builder(builderMethodName = "packageable", builderClassName = "TestPackageableBuilder")
@@ -152,20 +147,13 @@ class CreatePickingPlanCommandTest
 				.build().execute();
 	}
 
-	private AlternativePickFromKeys alternativeKeys(final LocatorId locatorId, final HuId... huIds)
-	{
-		return AlternativePickFromKeys.ofSet(Stream.of(huIds)
-				.map(huId -> AlternativePickFromKey.of(locatorId, huId, productId))
-				.collect(ImmutableSet.toImmutableSet()));
-	}
-
 	@Test
 	void scenario_3HUs_1KgAlreadyReserved()
 	{
-		final HuId huId1 = createCU("30", wh1_loc1);
-		final HuId huId2 = createCU("30", wh1_loc1);
+		createCU("30", wh1_loc1);
+		createCU("30", wh1_loc1);
 		final HuId huId3 = createCU("1000", wh1_loc1);
-		final HuId huId3_reservedPart = makeHUReservation(huId3, Quantity.of("1", uomKg));
+		makeHUReservation(huId3, Quantity.of("1", uomKg));
 		POJOLookupMap.get().dumpStatus("HUs", "M_HU_Storage");
 
 		final PickingPlan plan = createPlan(
@@ -175,42 +163,6 @@ class CreatePickingPlanCommandTest
 		System.out.println("PLAN:\n" + Joiner.on("\n").join(plan.getLines()));
 		POJOLookupMap.get().dumpStatus("After run", "M_HU", "M_HU_Storage", "M_HU_Reservation");
 
-		final PickingPlanLine.PickingPlanLineBuilder expectedPlanLineBuilder = PickingPlanLine.builder()
-				.type(PickingPlanLineType.PICK_FROM_HU)
-				.sourceDocumentInfo(SourceDocumentInfo.builder().shipmentScheduleId(shipmentScheduleId).salesOrderLineId(salesOrderAndLineId).build())
-				.productId(productId);
-
-		assertThat(plan)
-				.usingRecursiveComparison()
-				.isEqualTo(
-						PickingPlan.builder()
-								.line(expectedPlanLineBuilder
-										.qty(Quantity.of("1.000", uomKg))
-										.pickFromHU(PickFromHU.builder().huId(huId3_reservedPart).huReservedForThisLine(true).locatorId(wh1_loc1)
-												.alternatives(alternativeKeys(wh1_loc1, huId3))
-												.build())
-										.build())
-								.line(expectedPlanLineBuilder
-										.qty(Quantity.of("30.000", uomKg))
-										.pickFromHU(PickFromHU.builder().huId(huId1).huReservedForThisLine(false).locatorId(wh1_loc1)
-												.alternatives(alternativeKeys(wh1_loc1, huId3))
-												.build())
-										.build())
-								.line(expectedPlanLineBuilder
-										.qty(Quantity.of("30.000", uomKg))
-										.pickFromHU(PickFromHU.builder().huId(huId2).huReservedForThisLine(false).locatorId(wh1_loc1)
-												.alternatives(alternativeKeys(wh1_loc1, huId3))
-												.build())
-										.build())
-								.line(expectedPlanLineBuilder
-										.qty(Quantity.of("39.000", uomKg))
-										.pickFromHU(PickFromHU.builder().huId(huId3).huReservedForThisLine(false).locatorId(wh1_loc1)
-												.alternatives(AlternativePickFromKeys.EMPTY)
-												.build())
-										.build())
-								.alternatives(AlternativePickFromsList.ofList(ImmutableList.of(
-										AlternativePickFrom.of(AlternativePickFromKey.of(wh1_loc1, huId3, productId), Quantity.of("960.000", uomKg))
-								)))
-								.build());
+		expect(plan).toMatchSnapshot();
 	}
 }
