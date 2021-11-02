@@ -78,6 +78,10 @@ public class ExternalSystemCamelConstants
 
 	public static final String MF_ENQUEUE_PURCHASE_CANDIDATES_V2_CAMEL_URI = "To-MF_Enqueue_Purchases_Candidate-Route";
 
+	public static final String MF_SEQ_NO_ROUTE_ID = "To-MF_Seq_No-Route";
+
+	public static final String MF_SEQ_NO_V2_URI = "metasfresh.seqno.v2.api.uri";
+
 	public static final String REST_WOOCOMMERCE_PATH = "/woocommerce";
 
 	public static final String REST_API_AUTHENTICATE_TOKEN = "Core-registerToken";
