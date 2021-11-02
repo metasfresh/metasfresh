@@ -1,5 +1,7 @@
 package de.metas.order;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.google.common.collect.ImmutableSet;
 import de.metas.logging.LogManager;
 import lombok.NonNull;
@@ -34,6 +36,7 @@ import java.util.Set;
  */
 
 @Value
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public class OrderAndLineId
 {
 	private static final Logger logger = LogManager.getLogger(OrderAndLineId.class);
