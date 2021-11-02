@@ -70,7 +70,4 @@ public class SwaggerDocConstants
 	public static final String CREATE_OR_MERGE_SYNC_ADVISE_DOC = "Defaults to CREATE_OR_MERGE, if not specified";
 
 	public static final String PARENT_SYNC_ADVISE_DOC = "Defaults to the parent resource's sync advise, if not specified";
-
-	public static final String AD_SEQ_NO_ID_DOC = "AD_SeqNo_ID for the seqNo to be retrieved";
-
 }

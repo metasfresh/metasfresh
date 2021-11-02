@@ -36,7 +36,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import static de.metas.common.rest_api.v1.SwaggerDocConstants.AD_SEQ_NO_ID_DOC;
+import static de.metas.common.rest_api.v2.SwaggerDocConstants.AD_SEQ_NO_ID_DOC;
 
 @RestController
 @RequestMapping(value = { MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/seqNo" })
