@@ -179,6 +179,13 @@ public final class TranslatableStringBuilder
 		return append(NumberTranslatableString.of(value, displayType));
 	}
 
+	public TranslatableStringBuilder appendQty(@NonNull final BigDecimal qty, @NonNull final String uom)
+	{
+		return append(NumberTranslatableString.of(qty, DisplayType.Quantity))
+				.append(" ")
+				.append(uom);
+	}
+
 	public TranslatableStringBuilder append(@NonNull final Amount amount)
 	{
 		return append(NumberTranslatableString.of(amount.getAsBigDecimal(), DisplayType.Amount))
