@@ -80,6 +80,6 @@ public class ProductBOMVersionsDAO
 				.addEqualsFilter(I_PP_Product_BOMVersions.COLUMNNAME_M_Product_ID, productId.getRepoId())
 				.addOnlyActiveRecordsFilter()
 				.create()
-				.firstOptional(I_PP_Product_BOMVersions.class);
+				.firstOnlyOptional(I_PP_Product_BOMVersions.class);
 	}
 }
