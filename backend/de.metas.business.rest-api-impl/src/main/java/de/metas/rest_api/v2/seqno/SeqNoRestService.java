@@ -27,6 +27,7 @@ import de.metas.document.sequence.DocSequenceId;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ClientId;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -44,7 +45,9 @@ public class SeqNoRestService
 	@NonNull
 	public JsonSeqNoResponse getNextSeqNo(@NonNull final Integer sequenceId)
 	{
-		final String nextSeqNo = Optional.ofNullable(documentNoFactory.forSequenceId(DocSequenceId.ofRepoId(sequenceId)).build())
+		final String nextSeqNo = Optional.ofNullable(documentNoFactory.forSequenceId(DocSequenceId.ofRepoId(sequenceId))
+															 .setClientId(ClientId.SYSTEM)
+															 .build())
 				.orElseThrow(() -> new AdempiereException("Failed to compute sequenceId")
 						.appendParametersToMessage()
 						.setParameter("adSequenceId", sequenceId));
