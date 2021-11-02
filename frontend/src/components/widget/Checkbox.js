@@ -21,6 +21,7 @@ const Checkbox = (props) => {
     filterWidget,
     isFilterActive,
     updateItems,
+    isEdited,
   } = props;
   let { value, defaultValue } = widgetData;
   const prevValue = usePrevious(value);
@@ -161,6 +162,7 @@ Checkbox.propTypes = {
   isFilterActive: PropTypes.bool,
   id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   updateItems: PropTypes.func, // function used for updating the filter items before having an active filter
+  isEdited: PropTypes.bool,
 };
 
 export default Checkbox;
