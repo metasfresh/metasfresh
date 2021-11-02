@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import counterpart from 'counterpart';
+import cx from 'classnames';
 
 class ConfirmButton extends Component {
   constructor(props) {
@@ -27,7 +28,7 @@ class ConfirmButton extends Component {
   };
 
   render() {
-    const { caption, promptQuestion, isUserEditable } = this.props;
+    const { caption, promptQuestion, isUserEditable, isCancel } = this.props;
     const { isPromptDialogOpen } = this.state;
 
     const captionEffective = caption ? caption : counterpart.translate('activities.confirmButton.default.caption');
@@ -62,7 +63,7 @@ class ConfirmButton extends Component {
         )}
         <div>
           <button
-            className="button is-outlined complete-btn"
+            className={cx('button is-outlined complete-btn', { 'is-danger': isCancel })}
             onClick={this.showConfirmDialog}
             disabled={!isUserEditable}
           >
@@ -78,6 +79,7 @@ ConfirmButton.propTypes = {
   caption: PropTypes.string,
   promptQuestion: PropTypes.string,
   isUserEditable: PropTypes.bool,
+  isCancel: PropTypes.bool,
   //
   onUserConfirmed: PropTypes.func.isRequired,
 };

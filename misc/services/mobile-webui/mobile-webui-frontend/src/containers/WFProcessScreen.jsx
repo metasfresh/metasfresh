@@ -4,26 +4,25 @@ import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 
 import { updateWFProcess } from '../actions/WorkflowActions';
-import { selectWFProcessFromState } from '../reducers/wfProcesses_status/index';
+import { getActivitiesStatus, selectWFProcessFromState } from '../reducers/wfProcesses_status';
 
 import ScanActivity from './activities/scan/ScanActivity';
 import PickProductsActivity from './activities/picking/PickProductsActivity';
 import ConfirmActivity from './activities/confirmButton/ConfirmActivity';
 import ManufacturingActivity from './activities/manufacturing/ManufacturingActivity';
+import AbortActivity from './activities/AbortActivity';
 
 class WFProcessScreen extends PureComponent {
   render() {
-    const { wfProcess } = this.props;
-    const { id: wfProcessId, activities } = wfProcess;
-    const activitiesArray = activities ? Object.values(activities) : [];
+    const { wfProcessId, activities, workflowNew } = this.props;
 
     return (
       <div className="pt-2 section wf-process-container">
         <div className="container pick-products-container">
           <div className="activities">
-            {activitiesArray.length > 0 &&
-              activitiesArray.map((activityItem, index) => {
-                const isLastActivity = index === activitiesArray.length - 1;
+            {activities.length > 0 &&
+              activities.map((activityItem, index) => {
+                const isLastActivity = index === activities.length - 1;
 
                 switch (activityItem.componentType) {
                   case 'common/scanBarcode':
@@ -68,6 +67,7 @@ class WFProcessScreen extends PureComponent {
                     );
                 }
               })}
+            {workflowNew ? <AbortActivity wfProcessId={wfProcessId} /> : null}
           </div>
         </div>
       </div>
@@ -78,14 +78,22 @@ class WFProcessScreen extends PureComponent {
 function mapStateToProps(state, { match }) {
   const { workflowId: wfProcessId } = match.params;
   const wfProcess = selectWFProcessFromState(state, wfProcessId);
+  const activities = wfProcess.activities ? Object.values(wfProcess.activities) : [];
+  const activitiesStatus = getActivitiesStatus(state, wfProcessId);
 
-  return { wfProcess };
+  return {
+    wfProcessId,
+    activities,
+    workflowNew: activitiesStatus === 'NOT_STARTED',
+  };
 }
 
 WFProcessScreen.propTypes = {
   //
   // Props
-  wfProcess: PropTypes.object,
+  workflowNew: PropTypes.bool,
+  activities: PropTypes.array.isRequired,
+  wfProcessId: PropTypes.string.isRequired,
   //
   // Actions
   updateWFProcess: PropTypes.func.isRequired,
