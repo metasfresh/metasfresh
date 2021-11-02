@@ -76,6 +76,7 @@ class PickStepScreen extends Component {
       wfProcessId,
       activityId,
       stepId,
+      lineId,
     } = this.props;
 
     const isValidCode = !!scannedHUBarcode;
@@ -118,7 +119,7 @@ class PickStepScreen extends Component {
           </div>
           <ScreenToaster />
         </div>
-        {!nothingPicked && <NotFoundActivity wfProcessId={wfProcessId} activityId={activityId} stepId={stepId} />}
+        {!nothingPicked && <NotFoundActivity {...{ wfProcessId, activityId, stepId, lineId }} />}
       </div>
     );
   }
