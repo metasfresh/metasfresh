@@ -21,6 +21,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.adempiere.ad.wrapper.POJOWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_BP_BankAccount;
@@ -39,6 +40,7 @@ import org.compiere.model.I_M_Product_Category;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
 import org.compiere.model.X_C_UOM;
+import org.eevolution.model.I_PP_Product_BOMVersions;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -392,5 +394,14 @@ public class BusinessTestHelper
 	public static OrgId createOrgWithTimeZone()
 	{
 		return AdempiereTestHelper.createOrgWithTimeZone();
+	}
+
+	public I_PP_Product_BOMVersions createBOMVersions(final ProductId productId)
+	{
+		final I_PP_Product_BOMVersions bomVersions = InterfaceWrapperHelper.newInstance(I_PP_Product_BOMVersions.class);
+		bomVersions.setM_Product_ID(productId.getRepoId());
+		bomVersions.setName("BOM Versions");
+		InterfaceWrapperHelper.save(bomVersions);
+		return bomVersions;
 	}
 }
