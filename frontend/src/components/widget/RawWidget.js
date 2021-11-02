@@ -108,7 +108,7 @@ export class RawWidget extends PureComponent {
    *
    * @param {string} type - toggles between text/password
    */
-  setWidgetType = (type) => (this.rawWidget.type = type);
+  setWidgetType = (type) => (this.rawWidget.current.type = type);
 
   /**
    * @method showErrorPopup
