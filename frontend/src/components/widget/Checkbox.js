@@ -49,6 +49,11 @@ const Checkbox = (props) => {
       setInitialRender(true);
     }
 
+    // only valid for checkboxes in tabs
+    if (isChanged && value !== prevValue && initialRender && isEdited) {
+      setChanged(false);
+    }
+
     // if widget's value changed without user triggering it, update the local state as it
     // was due to a change in a modal or other part of the app
     if (!isChanged && value !== prevValue && initialRender) {
@@ -86,6 +91,7 @@ const Checkbox = (props) => {
     !isFilterActive &&
       updateItems &&
       updateItems({ widgetField, value: !checkedState });
+
     handlePatch(widgetField, newCheckedState, id).then(() => {
       // in case of checkboxes in tabs/Attributes we will always get a websocket request, which can break
       // the current state. So don't change it until next render
