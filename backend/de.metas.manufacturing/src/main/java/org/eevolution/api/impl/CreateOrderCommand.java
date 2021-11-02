@@ -75,7 +75,6 @@ final class CreateOrderCommand
 	private final IPPOrderDAO ppOrdersRepo = Services.get(IPPOrderDAO.class);
 	private final IProductPlanningDAO productPlanningsRepo = Services.get(IProductPlanningDAO.class);
 	private final IProductBOMDAO bomsRepo = Services.get(IProductBOMDAO.class);
-	private final ProductBOMVersionsDAO bomVersionsRepo;
 	private final IDocTypeDAO docTypesRepo = Services.get(IDocTypeDAO.class);
 	private final IOrderDAO ordersRepo = Services.get(IOrderDAO.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
@@ -83,12 +82,9 @@ final class CreateOrderCommand
 	private final PPOrderCreateRequest request;
 
 	@Builder
-	private CreateOrderCommand(
-			@NonNull final PPOrderCreateRequest request,
-			@NonNull final ProductBOMVersionsDAO bomVersionsRepo)
+	private CreateOrderCommand(@NonNull final PPOrderCreateRequest request)
 	{
 		this.request = request;
-		this.bomVersionsRepo = bomVersionsRepo;
 	}
 
 	public I_PP_Order execute()
