@@ -2,16 +2,16 @@ import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import counterpart from 'counterpart';
-import { push } from 'connected-react-router';
 
 import { abortWorkflowRequest } from '../../api/launchers';
+import { redirectToAppLaunchers } from '../../actions/RoutingActions';
 import ConfirmButton from './confirmButton/ConfirmButton';
 
 class AbortActivity extends PureComponent {
   onUserConfirmed = () => {
-    const { wfProcessId, appId, push } = this.props;
+    const { wfProcessId, appId, redirectToAppLaunchers } = this.props;
 
-    abortWorkflowRequest(wfProcessId).then(push(`/launchers/${appId}`));
+    abortWorkflowRequest(wfProcessId).then(redirectToAppLaunchers(appId));
   };
 
   render() {
@@ -31,15 +31,17 @@ class AbortActivity extends PureComponent {
 }
 
 const mapStateToProps = (state) => {
+  const { activeApplication } = state.appHandler;
+
   return {
-    appId: state.appHandler.activeApplication.id,
+    appId: activeApplication ? activeApplication.id : null,
   };
 };
 
 AbortActivity.propTypes = {
   wfProcessId: PropTypes.string.isRequired,
   appId: PropTypes.string.isRequired,
-  push: PropTypes.func.isRequired,
+  redirectToAppLaunchers: PropTypes.func.isRequired,
 };
 
-export default connect(mapStateToProps, { push })(AbortActivity);
+export default connect(mapStateToProps, { redirectToAppLaunchers })(AbortActivity);
