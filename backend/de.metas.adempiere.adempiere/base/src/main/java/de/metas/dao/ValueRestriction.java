@@ -98,39 +98,39 @@ public final class ValueRestriction<T>
 
 	public <RecordType> void appendFilter(@NonNull final IQueryBuilder<RecordType> queryBuilder, @NonNull final String columnName)
 	{
-		map(new CaseMappingFunction<T, Object>()
+		map(new CaseMappingFunction<T, Void>()
 		{
 
 			@Override
-			public RecordType anyValue()
+			public Void anyValue()
 			{
 				// do nothing
 				return null;
 			}
 
 			@Override
-			public RecordType valueIsNull()
+			public Void valueIsNull()
 			{
 				queryBuilder.addEqualsFilter(columnName, null);
 				return null;
 			}
 
 			@Override
-			public RecordType valueIsNotNull()
+			public Void valueIsNotNull()
 			{
 				queryBuilder.addNotNull(columnName);
 				return null;
 			}
 
 			@Override
-			public RecordType valueEqualsTo(@NonNull final T value)
+			public Void valueEqualsTo(@NonNull final T value)
 			{
 				queryBuilder.addEqualsFilter(columnName, value);
 				return null;
 			}
 
 			@Override
-			public RecordType valueEqualsToOrNull(@NonNull final T value)
+			public Void valueEqualsToOrNull(@NonNull final T value)
 			{
 				//noinspection unchecked
 				queryBuilder.addInArrayFilter(columnName, null, value);
