@@ -908,7 +908,7 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 		final JsonOLCand olCand = olCands.get(0);
 
 		// assert That the OLCand record has the C_BPartner_Location_ID that was not specified in JSON, but looked up
-		final List<I_C_OLCand> olCandRecords = POJOLookupMap.getNonNull().getRecords(I_C_OLCand.class);
+		final List<I_C_OLCand> olCandRecords = POJOLookupMap.get().getRecords(I_C_OLCand.class);
 		assertThat(olCandRecords).hasSize(1)
 				.extracting(COLUMNNAME_C_OLCand_ID)
 				.contains(olCand.getId());
@@ -1034,7 +1034,7 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 		assertThat(olCand.getBillBPartner().getBpartner().getChangeInfo().getLastUpdatedMillis()).isEqualTo(FIXED_TIME.toInstant().toEpochMilli());
 
 		// assert That the OLCand record has the C_BPartner_Location_ID that was not specified in JSON, but looked up
-		final List<I_C_OLCand> olCandRecords = POJOLookupMap.getNonNull().getRecords(I_C_OLCand.class);
+		final List<I_C_OLCand> olCandRecords = POJOLookupMap.get().getRecords(I_C_OLCand.class);
 		assertThat(olCandRecords).hasSize(1)
 				.extracting(COLUMNNAME_C_OLCand_ID)
 				.contains(olCand.getId());
@@ -1075,7 +1075,7 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 		final JsonOLCand jsonOLCand = assertResultOKForTest_1_JSON(result);
 		expect(jsonOLCand).toMatchSnapshot();
 
-		final List<I_C_BPartner_Location> bplRecords = POJOLookupMap.getNonNull().getRecords(I_C_BPartner_Location.class);
+		final List<I_C_BPartner_Location> bplRecords = POJOLookupMap.get().getRecords(I_C_BPartner_Location.class);
 		assertThat(bplRecords)
 				.extracting(COLUMNNAME_ExternalId, "shipTo", "billTo", "billToDefault")
 				.containsExactlyInAnyOrder(
@@ -1148,7 +1148,7 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 		final JsonOLCand jsonOLCand = assertResultOKForTest_1_JSON(result);
 		expect(jsonOLCand).toMatchSnapshot();
 
-		final List<I_C_BPartner_Location> bplRecords = POJOLookupMap.getNonNull().getRecords(I_C_BPartner_Location.class);
+		final List<I_C_BPartner_Location> bplRecords = POJOLookupMap.get().getRecords(I_C_BPartner_Location.class);
 		assertThat(bplRecords)
 				.extracting(COLUMNNAME_ExternalId, "shipTo", "billTo", "billToDefault")
 				.containsExactlyInAnyOrder(
