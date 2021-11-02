@@ -2,6 +2,7 @@ package de.metas.handlingunits.picking.job.model;
 
 import com.google.common.collect.ImmutableMap;
 import de.metas.common.util.time.SystemTime;
+import de.metas.handlingunits.HUBarcode;
 import de.metas.handlingunits.picking.QtyRejectedReasonCode;
 import lombok.Builder;
 import lombok.NonNull;
@@ -22,6 +23,7 @@ public class PickingJobStepEvent
 	@NonNull PickingJobStepId pickingStepId;
 
 	@NonNull PickingJobStepEventType eventType;
+	@NonNull HUBarcode huBarcode;
 	@Nullable BigDecimal qtyPicked;
 	@Nullable QtyRejectedReasonCode qtyRejectedReasonCode;
 

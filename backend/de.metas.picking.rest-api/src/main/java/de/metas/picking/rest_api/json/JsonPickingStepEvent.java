@@ -52,7 +52,7 @@ public class JsonPickingStepEvent
 
 	//
 	// Common
-	@Nullable String huBarcode;
+	@NonNull String huBarcode;
 
 	//
 	// Event Type: PICK
