@@ -48,7 +48,6 @@ public class C_Order
 	public void setDeliveryViaRule(final I_C_Order order, final ICalloutField field)
 	{
 		final DeliveryViaRule deliveryViaRule = orderBL.findDeliveryViaRule(order).orElse(null);
-
 		if (deliveryViaRule != null)
 		{
 			order.setDeliveryViaRule(deliveryViaRule.getCode());
