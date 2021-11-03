@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_ExternalSystem_Config extends org.compiere.model.PO implements I_ExternalSystem_Config, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1599257210L;
+	private static final long serialVersionUID = 1560993557L;
 
     /** Standard Constructor */
     public X_ExternalSystem_Config (final Properties ctx, final int ExternalSystem_Config_ID, @Nullable final String trxName)
@@ -32,6 +32,18 @@ public class X_ExternalSystem_Config extends org.compiere.model.PO implements I_
 	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public void setAuditFileFolder (final java.lang.String AuditFileFolder)
+	{
+		set_Value (COLUMNNAME_AuditFileFolder, AuditFileFolder);
+	}
+
+	@Override
+	public java.lang.String getAuditFileFolder() 
+	{
+		return get_ValueAsString(COLUMNNAME_AuditFileFolder);
 	}
 
 	@Override
@@ -84,10 +96,10 @@ public class X_ExternalSystem_Config extends org.compiere.model.PO implements I_
 	public static final String TYPE_Shopware6 = "S6";
 	/** Other = Other */
 	public static final String TYPE_Other = "Other";
-	/** RabbitMQ REST API = RabbitMQ */
-	public static final String TYPE_RabbitMQRESTAPI = "RabbitMQ";
 	/** WooCommerce = WOO */
 	public static final String TYPE_WooCommerce = "WOO";
+	/** RabbitMQ REST API = RabbitMQ */
+	public static final String TYPE_RabbitMQRESTAPI = "RabbitMQ";
 	@Override
 	public void setType (final java.lang.String Type)
 	{
@@ -98,5 +110,17 @@ public class X_ExternalSystem_Config extends org.compiere.model.PO implements I_
 	public java.lang.String getType() 
 	{
 		return get_ValueAsString(COLUMNNAME_Type);
+	}
+
+	@Override
+	public void setWriteAudit (final boolean WriteAudit)
+	{
+		set_Value (COLUMNNAME_WriteAudit, WriteAudit);
+	}
+
+	@Override
+	public boolean isWriteAudit() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_WriteAudit);
 	}
 }

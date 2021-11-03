@@ -11,7 +11,9 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Alber
       "apiKey" : "apiKey",
       "baseUrl" : "baseUrl",
       "tenant" : "tenant"
-    }
+    },
+    "writeAudit" : false,
+    "auditFileFolder" : "auditFileFolder"
   }
 ]
 
@@ -41,7 +43,9 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Alber
       "apiKey" : "apiKey",
       "baseUrl" : "baseUrl",
       "tenant" : "tenant"
-    }
+    },
+    "writeAudit" : false,
+    "auditFileFolder" : "auditFileFolder"
   }
 ]
 
@@ -57,11 +61,13 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Rabbi
       "parentId" : 100001,
       "value" : "testRabbitMQValue",
       "routingKey" : "routingKey",
-      "authToken" : "authToken",
       "remoteUrl" : "remoteURL",
+      "authToken" : "authToken",
       "isSyncBPartnerToRabbitMQ" : true,
       "syncBPartnerToRabbitMQ" : true
-    }
+    },
+    "writeAudit" : false,
+    "auditFileFolder" : "auditFileFolder"
   }
 ]
 
@@ -72,8 +78,8 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Rabbi
     "parentId" : 100001,
     "value" : "testRabbitMQValue",
     "routingKey" : "routingKey",
-    "authToken" : "authToken",
     "remoteUrl" : "remoteURL",
+    "authToken" : "authToken",
     "isSyncBPartnerToRabbitMQ" : true,
     "syncBPartnerToRabbitMQ" : true
   }
@@ -85,6 +91,7 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Rabbi
     "id" : 100001,
     "type" : "RabbitMQ",
     "name" : "name",
+    "isActive" : true,
     "childConfig" : {
       "id" : 100002,
       "parentId" : 100001,
@@ -95,7 +102,8 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Rabbi
       "isSyncBPartnerToRabbitMQ" : true,
       "syncBPartnerToRabbitMQ" : true
     },
-    "isActive" : true
+    "writeAudit" : false,
+    "auditFileFolder" : "auditFileFolder"
   }
 ]
 
@@ -116,8 +124,11 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
       "bPartnerIdJSONPath" : "/test/bp",
       "bPartnerLocationIdJSONPath" : "/test/bpl",
       "salesRepJSONPath" : "/test/salesrep",
-      "isActive" : true
-    }
+      "isActive" : true,
+      "value" : "testShopware6Value"
+    },
+    "writeAudit" : false,
+    "auditFileFolder" : "auditFileFolder"
   }
 ]
 
@@ -138,8 +149,11 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
       "bPartnerIdJSONPath" : "/test/bp",
       "bPartnerLocationIdJSONPath" : "/test/bpl",
       "salesRepJSONPath" : "/test/salesrep",
-      "isActive" : false
-    }
+      "isActive" : false,
+      "value" : "testShopware6Value"
+    },
+    "writeAudit" : false,
+    "auditFileFolder" : "auditFileFolder"
   }
 ]
 
@@ -170,7 +184,8 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
     "bPartnerIdJSONPath" : "/test/bp",
     "bPartnerLocationIdJSONPath" : "/test/bpl",
     "salesRepJSONPath" : "/test/salesrep",
-    "isActive" : true
+    "isActive" : true,
+    "value" : "testShopware6Value"
   }
 ]
 
@@ -191,8 +206,11 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
       "bPartnerIdJSONPath" : "/test/bp",
       "bPartnerLocationIdJSONPath" : "/test/bpl",
       "salesRepJSONPath" : "/test/salesrep",
-      "isActive" : true
-    }
+      "isActive" : true,
+      "value" : "testShopware6Value"
+    },
+    "writeAudit" : false,
+    "auditFileFolder" : "auditFileFolder"
   }
 ]
 
@@ -213,8 +231,11 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
       "bPartnerIdJSONPath" : "/test/bp",
       "bPartnerLocationIdJSONPath" : "/test/bpl",
       "salesRepJSONPath" : "/test/salesrep",
-      "isActive" : true
-    }
+      "isActive" : true,
+      "value" : "new-value"
+    },
+    "writeAudit" : false,
+    "auditFileFolder" : "auditFileFolder"
   }
 ]
 
@@ -230,7 +251,9 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Wooco
       "parentId" : 100001,
       "value" : "testWoocommerceValue",
       "camelHttpResourceAuthKey" : "authKey"
-    }
+    },
+    "writeAudit" : false,
+    "auditFileFolder" : "auditFileFolder"
   }
 ]
 
@@ -245,7 +268,9 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Wooco
       "id" : 100002,
       "parentId" : 100001,
       "value" : "testWoocommerceValue"
-    }
+    },
+    "writeAudit" : false,
+    "auditFileFolder" : "auditFileFolder"
   }
 ]
 
@@ -272,6 +297,8 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Other_Config
           "value" : "value2"
         }
       ]
-    }
+    },
+    "writeAudit" : false,
+    "auditFileFolder" : "auditFileFolder"
   }
 ]

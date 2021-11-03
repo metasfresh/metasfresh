@@ -64,7 +64,7 @@ public class ExternalSystemConfigRepo
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final ExternalSystemOtherConfigRepository externalSystemOtherConfigRepository;
 
-	public ExternalSystemConfigRepo(final ExternalSystemOtherConfigRepository externalSystemOtherConfigRepository)
+	public ExternalSystemConfigRepo(@NonNull final ExternalSystemOtherConfigRepository externalSystemOtherConfigRepository)
 	{
 		this.externalSystemOtherConfigRepository = externalSystemOtherConfigRepository;
 	}
@@ -132,7 +132,7 @@ public class ExternalSystemConfigRepo
 				final ExternalSystemOtherConfigId externalSystemOtherConfigId = ExternalSystemOtherConfigId.ofExternalSystemParentConfigId(id);
 				return Optional.of(externalSystemOtherConfigRepository.getById(externalSystemOtherConfigId));
 			case RabbitMQ:
-				return getRabbitMQConfigByParentId(id);				
+				return getRabbitMQConfigByParentId(id);
 			case WOO:
 				return getWooCommerceConfigByParentId(id);
 			default:
@@ -155,11 +155,6 @@ public class ExternalSystemConfigRepo
 			case Shopware6:
 				storeShopware6Config(config);
 				return;
-			case Alberta:
-			case Other:
-				throw new AdempiereException("Method not supported for externalSystemType="+config.getType())
-						.appendParametersToMessage()
-						.setParameter("externalSystemType", config.getType());
 			default:
 				throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", config.getType());
 		}
@@ -174,16 +169,10 @@ public class ExternalSystemConfigRepo
 		{
 			case Shopware6:
 				return getShopware6ConfigByQuery(query);
-			case Alberta:
-			case Other:
-				throw new AdempiereException("Method not supported")
-						.appendParametersToMessage()
-						.setParameter("externalSystemType", externalSystemType);
 			default:
 				throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", externalSystemType);
 		}
 	}
-
 
 	@NonNull
 	private Optional<I_ExternalSystem_Config_Alberta> getAlbertaConfigByValue(@NonNull final String value)
@@ -375,6 +364,7 @@ public class ExternalSystemConfigRepo
 				.bPartnerLocationIdJSONPath(config.getJSONPathConstantBPartnerLocationID())
 				.salesRepJSONPath(config.getJSONPathSalesRepID())
 				.isActive(config.isActive())
+				.value(config.getExternalSystemValue())
 				.build();
 	}
 
@@ -421,7 +411,9 @@ public class ExternalSystemConfigRepo
 				.type(ExternalSystemType.ofCode(externalSystemConfigRecord.getType()))
 				.id(ExternalSystemParentConfigId.ofRepoId(externalSystemConfigRecord.getExternalSystem_Config_ID()))
 				.name(externalSystemConfigRecord.getName())
-				.isActive(externalSystemConfigRecord.isActive());
+				.isActive(externalSystemConfigRecord.isActive())
+				.writeAudit(externalSystemConfigRecord.isWriteAudit())
+				.auditFileFolder(externalSystemConfigRecord.getAuditFileFolder());
 	}
 
 	private ExternalSystemParentConfig getById(@NonNull final ExternalSystemOtherConfigId id)
@@ -550,6 +542,7 @@ public class ExternalSystemConfigRepo
 		record.setJSONPathSalesRepID(config.getSalesRepJSONPath());
 
 		record.setIsActive(config.getIsActive());
+		record.setExternalSystemValue(config.getValue());
 
 		if (config.getFreightCostNormalVatConfig() != null)
 		{
