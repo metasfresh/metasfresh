@@ -37,7 +37,9 @@ import java.util.Arrays;
 @AllArgsConstructor
 public enum MilestoneName implements ReferenceListAwareEnum
 {
+	/** Create sales orders from C_OLCands. */
 	SALES_ORDER_CREATION(X_C_Async_Batch_Milestone.NAME_Auftragserstellung),
+	
 	SHIPMENT_CREATION(X_C_Async_Batch_Milestone.NAME_Lieferungserstellung),
 	INVOICE_CREATION(X_C_Async_Batch_Milestone.NAME_Rechnungserstellung),
 	ENQUEUE_SCHEDULE_FOR_ORDER(X_C_Async_Batch_Milestone.NAME_EnqueueScheduleForOrder),
