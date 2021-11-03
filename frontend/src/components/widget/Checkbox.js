@@ -156,7 +156,8 @@ const Checkbox = (props) => {
  * @prop {string} [widgetField]
  * @prop {string|number} [id]
  * @prop {func} [updateItems] - function used for updating the filter items before having an active filter
- * @prop {bool} [isEdited] - this flag is set only for checkboxes in Tabs
+ * @prop {bool} [isEdited] - this flag is set for checkboxes in Tabs/Attributes, where we have additional
+ *                           requests which would otherwise break the current flow
  */
 Checkbox.propTypes = {
   widgetData: PropTypes.object.isRequired,
