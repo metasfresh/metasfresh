@@ -43,7 +43,7 @@ export function setActiveApplication({ id, caption }) {
 
 /**
  * @method clearActiveApplication
- * @summary celar the current active application
+ * @summary clear the current active application
  */
 export function clearActiveApplication() {
   return {
