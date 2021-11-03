@@ -25,6 +25,7 @@ import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
 import de.metas.lang.SOTrx;
 import de.metas.location.LocationId;
 import de.metas.logging.LogManager;
+import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingResult;
@@ -54,6 +55,7 @@ import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import java.math.BigDecimal;
+import java.time.ZoneId;
 import java.util.Iterator;
 
 import static java.math.BigDecimal.ONE;
@@ -98,6 +100,7 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 	private final transient IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 	private final transient IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final transient IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+	private final transient IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final transient ITaxDAO taxDAO = Services.get(ITaxDAO.class);
 
@@ -196,7 +199,8 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 		final PricingSystemId pricingSystemId = bPartnerDAO.retrievePricingSystemIdOrNull(bPartnerId, soTrx);
 
 		final PriceListId priceListId = priceListDAO.retrievePriceListIdByPricingSyst(pricingSystemId, commissionToLocationId, soTrx);
-
+		final ZoneId timeZone = orgDAO.getTimeZone(orgId);
+		
 		final IEditablePricingContext pricingContext = pricingBL
 				.createInitialContext(
 						orgId,
@@ -205,7 +209,7 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 						Quantitys.create(ONE, commissionProductId),
 						soTrx)
 				.setPriceListId(priceListId)
-				.setPriceDate(TimeUtil.asLocalDate(icRecord.getDateOrdered()))
+				.setPriceDate(TimeUtil.asLocalDate(icRecord.getDateOrdered(), timeZone))
 				.setFailIfNotCalculated();
 		final IPricingResult pricingResult = pricingBL.calculatePrice(pricingContext);
 
@@ -296,7 +300,7 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 	/**
 	 * <ul>
 	 * <li>QtyEntered := sum of all 3 C_Commission_Share.PointsSum_* columns
-	 * <li>C_UOM_ID := {@link #COMMISSION_PRODUCT_ID}'s stock UOM
+	 * <li>C_UOM_ID := the commission product's stock UOM
 	 * <li>QtyOrdered := QtyEntered
 	 * <li>DateOrdered := C_Commission_Share.Created
 	 * <li>C_Order_ID: -1

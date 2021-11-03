@@ -119,6 +119,7 @@ public class PriceListVersion extends AbstractPriceListBasedRule
 				: BooleanWithReason.falseBecause(reason);
 	}
 
+	@Nullable
 	private I_M_ProductPrice getProductPriceOrNull(final ProductId productId,
 			final I_M_PriceList_Version ctxPriceListVersion,
 			final ZonedDateTime promisedDate)

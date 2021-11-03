@@ -25,6 +25,8 @@ package de.metas.inoutcandidate.shippertransportation;
 import com.google.common.collect.ImmutableSet;
 import de.metas.async.AsyncBatchId;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
 import de.metas.shipper.gateway.commons.ShipperGatewayFacade;
 import de.metas.shipper.gateway.spi.model.DeliveryOrderCreateRequest;
 import de.metas.shipping.IShipperDAO;
@@ -41,6 +43,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Collection;
 import java.util.Set;
 
@@ -73,7 +76,7 @@ public class ShipperDeliveryService
 		final I_M_Shipper shipper = Services.get(IShipperDAO.class).getById(shipperId);
 		final String shipperGatewayId = shipper.getShipperGateway();
 		// no ShipperGateway, so no API to call/no courier to request
-		if (Check.isEmpty(shipperGatewayId, true))
+		if (Check.isBlank(shipperGatewayId))
 		{
 			return;
 		}
@@ -103,6 +106,11 @@ public class ShipperDeliveryService
 
 	private LocalDate getPickupDate(@NonNull final I_M_ShipperTransportation shipperTransportation)
 	{
-		return CoalesceUtil.coalesce(TimeUtil.asLocalDate(shipperTransportation.getDateToBeFetched()), TimeUtil.asLocalDate(shipperTransportation.getDateDoc()));
+		final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+		final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(shipperTransportation.getAD_Org_ID()));
+		
+		return CoalesceUtil.coalesceNotNull(
+				TimeUtil.asLocalDate(shipperTransportation.getDateToBeFetched(), timeZone),
+				TimeUtil.asLocalDate(shipperTransportation.getDateDoc(), timeZone));
 	}
 }
