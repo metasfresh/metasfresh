@@ -33,7 +33,7 @@
     "@babel/runtime": "7.16.0",
     "babel-plugin-dynamic-import-node": "2.3.3",
     "@cypress/react": "5.10.3",
-    "@cypress/webpack-dev-server": "1.5.0",
+    "@cypress/webpack-dev-server": "1.7.0",
     "@cypress/webpack-preprocessor": "5.9.1",
     "babel-eslint": "10.1.0",
     "babel-loader": "8.2.2",
