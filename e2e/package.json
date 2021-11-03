@@ -62,9 +62,9 @@
   "dependencies": {
     "axios": "0.24.0",
     "cypress-localstorage-commands": "1.6.0",
-    "cypress-skip-and-only-ui": "^1.2.11",
-    "immutable": "^4.0.0-rc.14",
-    "js-base64": "3.6.1",
+    "cypress-skip-and-only-ui": "^1.2.12",
+    "immutable": "^4.0.0",
+    "js-base64": "3.7.2",
     "luxon": "2.0.2",
     "moment": "2.29.1",
     "numeral": "^2.0.6",
