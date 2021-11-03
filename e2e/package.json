@@ -50,8 +50,8 @@
     "mocha-multi-reporters": "1.5.1",
     "prettier": "2.4.1",
     "react-hot-loader": "4.13.0",
-    "webpack": "5.52.0",
-    "webpack-dev-server": "4.1.0",
+    "webpack": "5.61.0",
+    "webpack-dev-server": "4.4.0",
     "webpack-git-hash": "^1.0.2"
   },
   "devDependenciesComments": {
