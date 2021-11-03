@@ -93,11 +93,6 @@ import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuild
 import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.OLCAND_REQ_PROCESSOR_ID;
 import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.PROCESS_ORDER_ROUTE_ID;
 import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.UPSERT_RUNTIME_PARAMS_ROUTE_ID;
-import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_CONFIG_MAPPINGS;
-import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_FREIGHT_COST_NORMAL_PRODUCT_ID;
-import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_NORMAL_VAT_RATES;
-import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_FREIGHT_COST_REDUCED_PRODUCT_ID;
-import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_REDUCED_VAT_RATES;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -303,22 +298,6 @@ public class GetOrdersRouteBuilder_HappyFlow_zeroTax_Tests extends CamelTestSupp
 
 			final InputStream shopwareMappingsIS = GetOrdersRouteBuilder_HappyFlow_zeroTax_Tests.class.getResourceAsStream(JSON_SHOPWARE_MAPPINGS);
 			final JsonExternalSystemShopware6ConfigMappings shopware6ConfigMappings = mapper.readValue(shopwareMappingsIS, JsonExternalSystemShopware6ConfigMappings.class);
-
-			final Map<String, String> parameters = new HashMap<>();
-			parameters.put(PARAM_NORMAL_VAT_RATES, MOCK_NORMAL_VAT_RATES);
-			parameters.put(PARAM_FREIGHT_COST_NORMAL_PRODUCT_ID, String.valueOf(MOCK_NORMAL_VAT_PRODUCT_ID));
-			parameters.put(PARAM_REDUCED_VAT_RATES, MOCK_REDUCED_VAT_RATES);
-			parameters.put(PARAM_FREIGHT_COST_REDUCED_PRODUCT_ID, String.valueOf(MOCK_REDUCED_VAT_PRODUCT_ID));
-			parameters.put(PARAM_CONFIG_MAPPINGS, mapper.writeValueAsString(shopware6ConfigMappings));
-
-			final JsonExternalSystemRequest externalSystemRequest = JsonExternalSystemRequest
-					.builder()
-					.externalSystemName(JsonExternalSystemName.of(SHOPWARE6_SYSTEM_NAME))
-					.externalSystemConfigId(JsonMetasfreshId.of(1))
-					.orgCode(MOCK_ORG_CODE)
-					.command("command")
-					.parameters(parameters)
-					.build();
 
 			final ProcessLogger processLogger = Mockito.mock(ProcessLogger.class);
 			final ProducerTemplate producerTemplate = Mockito.mock(ProducerTemplate.class);

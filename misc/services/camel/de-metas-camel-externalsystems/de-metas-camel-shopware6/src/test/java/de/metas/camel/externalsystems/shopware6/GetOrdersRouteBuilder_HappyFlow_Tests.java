@@ -504,9 +504,9 @@ public class GetOrdersRouteBuilder_HappyFlow_Tests extends CamelTestSupport
 		final JsonExternalSystemShopware6ConfigMappings shopware6ConfigMappings = mapper.readValue(shopwareMappingsIS, JsonExternalSystemShopware6ConfigMappings.class);
 
 		final Map<String, String> parameters = new HashMap<>();
-		parameters.put(PARAM_FREIGHT_COST_NORMAL_VAT_RATES, MOCK_NORMAL_VAT_RATES);
+		parameters.put(PARAM_NORMAL_VAT_RATES, MOCK_NORMAL_VAT_RATES);
 		parameters.put(PARAM_FREIGHT_COST_NORMAL_PRODUCT_ID, String.valueOf(MOCK_NORMAL_VAT_PRODUCT_ID));
-		parameters.put(PARAM_FREIGHT_COST_REDUCED_VAT_RATES, MOCK_REDUCED_VAT_RATES);
+		parameters.put(PARAM_REDUCED_VAT_RATES, MOCK_REDUCED_VAT_RATES);
 		parameters.put(PARAM_FREIGHT_COST_REDUCED_PRODUCT_ID, String.valueOf(MOCK_REDUCED_VAT_PRODUCT_ID));
 		parameters.put(PARAM_ORDER_ID, orderId);
 		parameters.put(PARAM_ORDER_NO, orderNo);
