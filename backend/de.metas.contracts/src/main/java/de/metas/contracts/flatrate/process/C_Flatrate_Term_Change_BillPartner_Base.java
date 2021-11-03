@@ -96,12 +96,6 @@ public abstract class C_Flatrate_Term_Change_BillPartner_Base extends JavaProces
 
 	private void updateFlatrateTermBillBPartner(final I_C_Flatrate_Term term)
 	{
-
-		if (C_Flatrate_Term_Change_ProcessHelper.termHasInvoices(term))
-		{
-			// nothing to do;
-			return;
-		}
 		final BPartnerId bPartnerId = BPartnerId.ofRepoId(p_billBPartnerId);
 		final BPartnerLocationId bPartnerLocationId = BPartnerLocationId.ofRepoId(p_billBPartnerId, p_billLocationId);
 
