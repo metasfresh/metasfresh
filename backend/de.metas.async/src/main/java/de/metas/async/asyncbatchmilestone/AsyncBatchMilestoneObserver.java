@@ -58,7 +58,7 @@ public class AsyncBatchMilestoneObserver implements AsyncMilestoneNotifyRequestH
 	private final Map<AsyncBatchMilestoneId, CompletableFuture<Void>> asyncBatch2Completion = new ConcurrentHashMap<>();
 
 	@Override
-	public void handleRequest(final AsyncMilestoneNotifyRequest request)
+	public void handleRequest(@NonNull final AsyncMilestoneNotifyRequest request)
 	{
 		Loggables.withLogger(logger, Level.INFO).addLog("Milestone notified as finished; asyncBatchMilestoneId: {}", request.getMilestoneId());
 

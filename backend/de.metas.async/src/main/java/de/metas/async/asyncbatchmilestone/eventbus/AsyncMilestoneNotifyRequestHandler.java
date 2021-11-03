@@ -22,7 +22,9 @@
 
 package de.metas.async.asyncbatchmilestone.eventbus;
 
+import lombok.NonNull;
+
 public interface AsyncMilestoneNotifyRequestHandler
 {
-	void handleRequest(final AsyncMilestoneNotifyRequest request);
+	void handleRequest(@NonNull final AsyncMilestoneNotifyRequest request);
 }
