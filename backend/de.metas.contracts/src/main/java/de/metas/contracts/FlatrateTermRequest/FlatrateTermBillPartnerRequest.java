@@ -45,4 +45,6 @@ public class FlatrateTermBillPartnerRequest
 	@Nullable
 	BPartnerContactId billUserId;
 
+	boolean termHasInvoices;
+
 }

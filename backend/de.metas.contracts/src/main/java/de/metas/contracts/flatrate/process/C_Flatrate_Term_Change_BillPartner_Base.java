@@ -122,11 +122,14 @@ public abstract class C_Flatrate_Term_Change_BillPartner_Base extends JavaProces
 
 		final BPartnerContactId bPartnerContactId = BPartnerContactId.ofRepoIdOrNull(p_billBPartnerId, p_billUserId);
 
+		final boolean termHasInvoices = C_Flatrate_Term_Change_ProcessHelper.termHasInvoices(term);
+
 		final FlatrateTermBillPartnerRequest request = FlatrateTermBillPartnerRequest.builder()
 				.flatrateTermId(FlatrateTermId.ofRepoId(term.getC_Flatrate_Term_ID()))
 				.billBPartnerId(bPartnerId)
 				.billLocationId(bPartnerLocationId)
 				.billUserId(bPartnerContactId)
+				.termHasInvoices(termHasInvoices)
 				.build();
 
 		flatrateBL.updateFlatrateTermBillBPartner(request);
