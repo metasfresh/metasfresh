@@ -15,8 +15,6 @@ class ConfirmActivity extends PureComponent {
   };
 
   render() {
-    console.log('CONFIRM PROPS: ', this.props);
-
     const {
       caption,
       componentProps: { promptQuestion },

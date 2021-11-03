@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package org.eevolution.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for PP_Order_Node
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_PP_Order_Node extends org.compiere.model.PO implements I_PP_Order_Node, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1283789944L;
+	private static final long serialVersionUID = -2107378870L;
 
     /** Standard Constructor */
     public X_PP_Order_Node (final Properties ctx, final int PP_Order_Node_ID, @Nullable final String trxName)
@@ -296,6 +296,18 @@ public class X_PP_Order_Node extends org.compiere.model.PO implements I_PP_Order
 	public int getMovingTime() 
 	{
 		return get_ValueAsInt(COLUMNNAME_MovingTime);
+	}
+
+	@Override
+	public void setName (final @Nullable java.lang.String Name)
+	{
+		set_Value (COLUMNNAME_Name, Name);
+	}
+
+	@Override
+	public java.lang.String getName() 
+	{
+		return get_ValueAsString(COLUMNNAME_Name);
 	}
 
 	@Override

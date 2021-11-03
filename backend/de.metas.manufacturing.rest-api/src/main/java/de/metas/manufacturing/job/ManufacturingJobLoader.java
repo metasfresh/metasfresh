@@ -96,8 +96,10 @@ class ManufacturingJobLoader
 
 		return ManufacturingJobActivity.builder()
 				.id(ManufacturingJobActivityId.ofRepoId(ppOrderRoutingActivityId.getRepoId()))
-				.code(from.getCode())
-				.type(from.getType());
+				.name(from.getName())
+				.type(from.getType())
+				.orderRoutingActivityId(from.getId())
+				.status(from.getStatus());
 	}
 
 	private ManufacturingJobActivity.RawMaterialsIssue toRawMaterialsIssue(final @NonNull PPOrderRoutingActivity from)

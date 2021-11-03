@@ -47,7 +47,7 @@ import java.time.Instant;
  * #L%
  */
 
-@Builder
+@Builder(toBuilder = true)
 @EqualsAndHashCode
 @ToString
 @Getter
@@ -59,6 +59,7 @@ public final class PPOrderRoutingActivity
 	@Nullable private PPOrderRoutingActivityId id;
 	@NonNull private final PPRoutingActivityType type;
 	@NonNull private final PPOrderRoutingActivityCode code;
+	@NonNull private final String name;
 	@NonNull private final PPRoutingActivityId routingActivityId;
 
 	private final boolean subcontracting;
@@ -104,6 +105,8 @@ public final class PPOrderRoutingActivity
 	@Nullable private Instant dateStart;
 	@Nullable private Instant dateFinish;
 
+	public PPOrderRoutingActivity copy() {return toBuilder().build();}
+
 	public PPOrderId getOrderId()
 	{
 		return getId().getOrderId();
@@ -119,7 +122,7 @@ public final class PPOrderRoutingActivity
 		return getSetupTimeRequired().minus(getSetupTimeReal());
 	}
 
-	public Duration getDurationTotalBooked() { return getSetupTimeReal().plus(getDurationReal());}
+	public Duration getDurationTotalBooked() {return getSetupTimeReal().plus(getDurationReal());}
 
 	public boolean isSomethingProcessed()
 	{

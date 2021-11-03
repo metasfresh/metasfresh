@@ -15,6 +15,8 @@ import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.api.IPPOrderRoutingRepository;
 import org.eevolution.api.ManufacturingOrderQuery;
 import org.eevolution.api.PPOrderId;
+import org.eevolution.api.PPOrderRouting;
+import org.eevolution.api.PPOrderRoutingActivityId;
 import org.eevolution.model.I_PP_Order;
 import org.springframework.stereotype.Service;
 
@@ -26,6 +28,7 @@ public class ManufacturingJobService
 {
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IPPOrderDAO ppOrderDAO;
+	private final IPPOrderRoutingRepository ppOrderRoutingActivity;
 	private final ManufacturingJobLoaderSupportingServices loadingSupportServices;
 
 	public ManufacturingJobService()
@@ -34,7 +37,7 @@ public class ManufacturingJobService
 				.productBL(Services.get(IProductBL.class))
 				.ppOrderDAO(ppOrderDAO = Services.get(IPPOrderDAO.class))
 				.ppOrderBOMBL(Services.get(IPPOrderBOMBL.class))
-				.ppOrderRoutingRepository(Services.get(IPPOrderRoutingRepository.class))
+				.ppOrderRoutingRepository(ppOrderRoutingActivity = Services.get(IPPOrderRoutingRepository.class))
 				.build();
 	}
 
@@ -132,4 +135,24 @@ public class ManufacturingJobService
 		return new ManufacturingJobLoader(loadingSupportServices);
 	}
 
+	public ManufacturingJob withActivityCompleted(ManufacturingJob job, ManufacturingJobActivityId jobActivityId)
+	{
+		final PPOrderId ppOrderId = job.getPpOrderId();
+		final ManufacturingJobActivity jobActivity = job.getActivityById(jobActivityId);
+		final PPOrderRoutingActivityId orderRoutingActivityId = jobActivity.getOrderRoutingActivityId();
+
+		final PPOrderRouting orderRouting = ppOrderRoutingActivity.getByOrderId(ppOrderId);
+		final PPOrderRouting orderRoutingBeforeChange = orderRouting.copy();
+		orderRouting.completeActivity(orderRoutingActivityId);
+
+		if (!orderRouting.equals(orderRoutingBeforeChange))
+		{
+			ppOrderRoutingActivity.save(orderRouting);
+			return getJobById(ppOrderId);
+		}
+		else
+		{
+			return job;
+		}
+	}
 }

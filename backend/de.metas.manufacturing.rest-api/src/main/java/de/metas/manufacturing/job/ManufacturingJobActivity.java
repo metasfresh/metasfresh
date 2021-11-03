@@ -8,7 +8,8 @@ import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import org.eevolution.api.PPOrderRoutingActivityCode;
+import org.eevolution.api.PPOrderRoutingActivityId;
+import org.eevolution.api.PPOrderRoutingActivityStatus;
 
 import javax.annotation.Nullable;
 
@@ -17,11 +18,14 @@ import javax.annotation.Nullable;
 public class ManufacturingJobActivity
 {
 	@NonNull ManufacturingJobActivityId id;
-	@NonNull PPOrderRoutingActivityCode code;
+	@NonNull String name;
 	@NonNull PPRoutingActivityType type;
 
 	@Nullable RawMaterialsIssue rawMaterialsIssue;
 	@Nullable FinishedGoodsReceive finishedGoodsReceive;
+
+	@NonNull PPOrderRoutingActivityId orderRoutingActivityId;
+	@NonNull PPOrderRoutingActivityStatus status;
 
 	//
 	//

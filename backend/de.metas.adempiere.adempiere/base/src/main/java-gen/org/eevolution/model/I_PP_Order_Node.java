@@ -487,6 +487,27 @@ public interface I_PP_Order_Node
 	String COLUMNNAME_MovingTime = "MovingTime";
 
 	/**
+	 * Set Name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setName (@Nullable java.lang.String Name);
+
+	/**
+	 * Get Name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getName();
+
+	ModelColumn<I_PP_Order_Node, Object> COLUMN_Name = new ModelColumn<>(I_PP_Order_Node.class, "Name", null);
+	String COLUMNNAME_Name = "Name";
+
+	/**
 	 * Set Overlap Units.
 	 * Overlap Units are number of units that must be completed before they are moved the next activity
 	 *

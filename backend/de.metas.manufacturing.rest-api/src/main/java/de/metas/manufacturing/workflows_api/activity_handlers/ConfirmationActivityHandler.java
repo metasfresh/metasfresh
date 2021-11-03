@@ -1,5 +1,10 @@
 package de.metas.manufacturing.workflows_api.activity_handlers;
 
+import de.metas.manufacturing.job.ManufacturingJob;
+import de.metas.manufacturing.job.ManufacturingJobActivityId;
+import de.metas.manufacturing.workflows_api.ManufacturingRestService;
+import de.metas.workflow.rest_api.activity_features.user_confirmation.UserConfirmationRequest;
+import de.metas.workflow.rest_api.activity_features.user_confirmation.UserConfirmationSupport;
 import de.metas.workflow.rest_api.controller.v2.json.JsonOpts;
 import de.metas.workflow.rest_api.model.UIComponent;
 import de.metas.workflow.rest_api.model.UIComponentType;
@@ -12,9 +17,13 @@ import lombok.NonNull;
 import org.springframework.stereotype.Component;
 
 @Component
-public class ConfirmationActivityHandler implements WFActivityHandler
+public class ConfirmationActivityHandler implements WFActivityHandler, UserConfirmationSupport
 {
 	public static final WFActivityType HANDLED_ACTIVITY_TYPE = WFActivityType.ofString("manufacturing.confirmation");
+
+	private final ManufacturingRestService manufacturingRestService;
+
+	public ConfirmationActivityHandler(final ManufacturingRestService manufacturingRestService) {this.manufacturingRestService = manufacturingRestService;}
 
 	@Override
 	public WFActivityType getHandledActivityType() {return HANDLED_ACTIVITY_TYPE;}
@@ -31,5 +40,17 @@ public class ConfirmationActivityHandler implements WFActivityHandler
 	public WFActivityStatus computeActivityState(final WFProcess wfProcess, final WFActivity wfActivity)
 	{
 		return WFActivityStatus.NOT_STARTED;
+	}
+
+	@Override
+	public WFProcess userConfirmed(@NonNull final UserConfirmationRequest request)
+	{
+		final WFProcess wfProcess = request.getWfProcess();
+		request.getWfActivity().getWfActivityType().assertExpected(HANDLED_ACTIVITY_TYPE);
+
+		final ManufacturingJobActivityId jobActivityId = request.getWfActivity().getId().getAsId(ManufacturingJobActivityId.class);
+
+		final ManufacturingJob changedJob = manufacturingRestService.withActivityCompleted(wfProcess.getDocumentAs(ManufacturingJob.class), jobActivityId);
+		return ManufacturingRestService.toWFProcess(changedJob);
 	}
 }

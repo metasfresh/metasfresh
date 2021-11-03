@@ -9,7 +9,8 @@ import { selectWFProcessFromState } from '../reducers/wfProcesses_status/index';
 import ScanActivity from './activities/scan/ScanActivity';
 import PickProductsActivity from './activities/picking/PickProductsActivity';
 import ConfirmActivity from './activities/confirmButton/ConfirmActivity';
-import ManufacturingActivity from './activities/manufacturing/ManufacturingActivity';
+import RawMaterialsIssueActivity from './activities/manufacturing/RawMaterialsIssueActivity';
+import MaterialReceiptActivity from './activities/manufacturing/MaterialReceiptActivity';
 
 class WFProcessScreen extends PureComponent {
   render() {
@@ -52,14 +53,24 @@ class WFProcessScreen extends PureComponent {
                         id={activityItem.activityId}
                         wfProcessId={wfProcessId}
                         activityId={activityItem.activityId}
+                        caption={activityItem.caption}
                         componentProps={activityItem.componentProps}
                         isUserEditable={activityItem.dataStored.isUserEditable}
                         isLastActivity={isLastActivity}
                       />
                     );
-                  case 'manufacturing/activity':
+                  case 'manufacturing/rawMaterialsIssue':
                     return (
-                      <ManufacturingActivity
+                      <RawMaterialsIssueActivity
+                        key={activityItem.activityId}
+                        id={activityItem.activityId}
+                        wfProcessId={wfProcessId}
+                        activityState={activityItem}
+                      />
+                    );
+                  case 'manufacturing/materialReceipt':
+                    return (
+                      <MaterialReceiptActivity
                         key={activityItem.activityId}
                         id={activityItem.activityId}
                         wfProcessId={wfProcessId}

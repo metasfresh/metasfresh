@@ -53,7 +53,6 @@ import java.time.Instant;
 
 final class CreateOrderRoutingCommand
 {
-	private final IPPRoutingRepository routingRepo = Services.get(IPPRoutingRepository.class);
 
 	private final PPRouting routing;
 	private final PPOrderId ppOrderId;
@@ -68,6 +67,8 @@ final class CreateOrderRoutingCommand
 			@NonNull final Quantity qtyOrdered,
 			@NonNull final Instant dateStartSchedule)
 	{
+		final IPPRoutingRepository routingRepo = Services.get(IPPRoutingRepository.class);
+
 		routing = routingRepo.getById(routingId);
 		this.ppOrderId = ppOrderId;
 
@@ -190,6 +191,7 @@ final class CreateOrderRoutingCommand
 				.type(activity.getType())
 				.routingActivityId(activity.getId())
 				.code(PPOrderRoutingActivityCode.ofString(activity.getCode()))
+				.name(activity.getName())
 				//
 				.subcontracting(activity.isSubcontracting())
 				.subcontractingVendorId(activity.getSubcontractingVendorId())
