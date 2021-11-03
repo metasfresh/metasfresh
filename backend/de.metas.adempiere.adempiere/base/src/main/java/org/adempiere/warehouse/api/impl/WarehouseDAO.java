@@ -81,9 +81,23 @@ public class WarehouseDAO implements IWarehouseDAO
 {
 	private static final Logger logger = LogManager.getLogger(WarehouseDAO.class);
 
-	private final CCache<WarehouseId, ImmutableList<LocatorId>> locatorIdsByWarehouseId = CCache.newCache(I_M_Locator.Table_Name + "#by#M_Warehouse_ID", 10, CCache.EXPIREMINUTES_Never);
-	private final CCache<Integer, WarehouseRoutingsIndex> allWarehouseRoutings = CCache.newCache(I_M_Warehouse_Routing.Table_Name, 1, CCache.EXPIREMINUTES_Never);
-	private final CCache<Integer, WarehouseTypesIndex> allWarehouseTypes = CCache.newCache(I_M_Warehouse_Type.Table_Name, 1, CCache.EXPIREMINUTES_Never);
+	private final CCache<WarehouseId, ImmutableList<LocatorId>> locatorIdsByWarehouseId = CCache.<WarehouseId, ImmutableList<LocatorId>>builder()
+			.tableName(I_M_Locator.Table_Name)
+			.initialCapacity(10)
+			.expireMinutes(CCache.EXPIREMINUTES_Never)
+			.build();
+	
+	private final CCache<Integer, WarehouseRoutingsIndex> allWarehouseRoutings = CCache.<Integer, WarehouseRoutingsIndex>builder()
+			.tableName(I_M_Warehouse_Routing.Table_Name)
+			.initialCapacity(1)
+			.expireMinutes(CCache.EXPIREMINUTES_Never)
+			.build();
+
+	private final CCache<Integer, WarehouseTypesIndex> allWarehouseTypes = CCache.<Integer, WarehouseTypesIndex>builder()
+			.tableName(I_M_Warehouse_Type.Table_Name)
+			.initialCapacity(1)
+			.expireMinutes(CCache.EXPIREMINUTES_Never)
+			.build();
 
 	@Override
 	public I_M_Warehouse getById(@NonNull final WarehouseId warehouseId)
