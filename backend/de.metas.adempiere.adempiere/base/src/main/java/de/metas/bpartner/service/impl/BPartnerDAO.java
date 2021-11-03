@@ -1326,7 +1326,7 @@ public class BPartnerDAO implements IBPartnerDAO
 				.build();
 	}
 
-	private String getFilterColumnNameForType(BPartnerLocationQuery.Type type)
+	private String getFilterColumnNameForType(final BPartnerLocationQuery.Type type)
 	{
 		switch (type)
 		{
@@ -1869,6 +1869,25 @@ public class BPartnerDAO implements IBPartnerDAO
 				.addInArrayFilter(I_C_BPartner.COLUMNNAME_C_BPartner_ID, bpartnerIds)
 				.create()
 				.list();
+	}
+
+	@Override
+	public BPartnerLocationId getCurrentLocation(final BPartnerLocationId locationId)
+	{
+		int currentLocationId = locationId.getRepoId();
+		int previousLocationId = currentLocationId;
+		while (currentLocationId > 0)
+		{
+			currentLocationId = queryBL.createQueryBuilder(I_C_BPartner_Location.class)
+					.addEqualsFilter(I_C_BPartner_Location.COLUMNNAME_Previous_ID, currentLocationId)
+					.create()
+					.firstIdOnly();
+			if (currentLocationId > 0)
+			{
+				previousLocationId = currentLocationId;
+			}
+		}
+		return BPartnerLocationId.ofRepoId(locationId.getBpartnerId(),previousLocationId);
 	}
 
 	@Override

@@ -131,6 +131,12 @@ public class BPartnerContact
 	private String fax;
 
 	@Nullable
+	private String title;
+
+	@Nullable
+	private String phone2;
+
+	@Nullable
 	private String mobilePhone;
 
 	@Nullable
@@ -188,6 +194,8 @@ public class BPartnerContact
 			@Nullable final BPartnerContactType contactType,
 			@Nullable final RecordChangeLog changeLog,
 			@Nullable final OrgMappingId orgMappingId,
+			@Nullable final String title,
+			@Nullable final String phone2,
 			@Nullable final BPartnerLocationId bPartnerLocationId,
 			@Nullable final List<UserRole> roles)
 	{
@@ -219,6 +227,8 @@ public class BPartnerContact
 		this.orgMappingId = orgMappingId;
 		this.bPartnerLocationId = bPartnerLocationId;
 		this.birthday = birthday;
+		this.phone2 = phone2;
+		this.title = title;
 		this.roles = roles;
 	}
 

@@ -204,7 +204,7 @@ public interface IUserRolePermissions
 
 	String getClientWhere(@Nullable String tableName, @Nullable String tableAlias, Access access);
 
-	String getOrgWhere(@Nullable String tableName, Access access);
+	Optional<String> getOrgWhere(@Nullable String tableName, Access access);
 
 	String getAD_Org_IDs_AsString();
 

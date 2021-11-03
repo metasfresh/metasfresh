@@ -3,7 +3,7 @@ DROP VIEW IF EXISTS ad_tab_v
 
 CREATE OR REPLACE VIEW ad_tab_v AS
 SELECT
-     -- trl.ad_language
+    (select bl.ad_language from ad_language bl where bl.isbaselanguage='Y' order by isactive desc limit 1), -- trl.ad_language
     t.ad_tab_id
      , t.Template_Tab_ID
      , t.ad_window_id
@@ -62,4 +62,3 @@ FROM ad_tab t
 WHERE t.isactive = 'Y'::bpchar
   AND tbl.isactive = 'Y'::bpchar
 ;
-

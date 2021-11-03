@@ -18,6 +18,7 @@ import de.metas.organization.OrgTypeId;
 import de.metas.organization.StoreCreditCardNumberMode;
 import de.metas.pricing.PricingSystemId;
 import de.metas.security.permissions.Access;
+import de.metas.user.UserGroupId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -194,6 +195,9 @@ public class OrgDAO implements IOrgDAO
 				.reportsPathPrefix(record.getReportPrefix())
 				.timeZone(timeZone)
 				//
+				.partnerCreatedFromAnotherOrgNotifyUserGroupID(UserGroupId.ofRepoIdOrNull(record.getC_BPartner_CreatedFromAnotherOrg_Notify_UserGroup_ID()))
+				.supplierApprovalExpirationNotifyUserGroupID(UserGroupId.ofRepoIdOrNull(record.getC_BP_SupplierApproval_Expiration_Notify_UserGroup_ID()))
+				//
 				.build();
 	}
 
@@ -322,6 +326,18 @@ public class OrgDAO implements IOrgDAO
 			throw new AdempiereException("No Organization found for ID: " + orgId);
 		}
 		return org.isEUOneStopShop();
+	}
+
+	@Override
+	public UserGroupId getSupplierApprovalExpirationNotifyUserGroupID(final OrgId orgId)
+	{
+		return getOrgInfoById(orgId).getSupplierApprovalExpirationNotifyUserGroupID();
+	}
+
+	@Override
+	public UserGroupId getPartnerCreatedFromAnotherOrgNotifyUserGroupID(final OrgId orgId)
+	{
+		return getOrgInfoById(orgId).getPartnerCreatedFromAnotherOrgNotifyUserGroupID();
 	}
 
 }

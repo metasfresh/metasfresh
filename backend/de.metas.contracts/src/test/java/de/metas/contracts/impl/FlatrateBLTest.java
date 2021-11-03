@@ -35,6 +35,9 @@ import java.sql.Timestamp;
 
 import java.util.Properties;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.contracts.location.adapter.ContractDocumentLocationAdapterFactory;
+import de.metas.document.location.DocumentLocation;
 import de.metas.lang.SOTrx;
 import de.metas.acct.api.IProductAcctDAO;
 import de.metas.adempiere.model.I_M_Product;
@@ -55,6 +58,7 @@ import de.metas.contracts.model.X_C_Flatrate_DataEntry;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Transition;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
+import de.metas.location.LocationId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.rules.MockedPricingRule;
 import de.metas.product.ProductId;
@@ -203,8 +207,13 @@ public class FlatrateBLTest extends ContractsTestBase
 		currentTerm.setEndDate(day(2014, 7, 27));
 		currentTerm.setC_Flatrate_Conditions(flatrateConditions);
 		currentTerm.setM_PricingSystem_ID(pricingSystem.getM_PricingSystem_ID());
-		currentTerm.setBill_BPartner_ID(bpartner.getC_BPartner_ID());
-		currentTerm.setBill_Location_ID(bpLocation.getC_BPartner_Location_ID());
+
+		final BPartnerLocationAndCaptureId bpartnerLocationId = BPartnerLocationAndCaptureId.ofRepoIdOrNull(bpartner.getC_BPartner_ID(), bpLocation.getC_BPartner_Location_ID(), location.getC_Location_ID());
+
+		ContractDocumentLocationAdapterFactory
+				.billLocationAdapter(currentTerm)
+				.setFrom(bpartnerLocationId);
+
 		save(currentTerm);
 
 		final I_M_PriceList priceList = newInstance(I_M_PriceList.class);
@@ -252,10 +261,10 @@ public class FlatrateBLTest extends ContractsTestBase
 		Services.registerService(ITaxBL.class, taxBL);
 
 		Mockito.when(
-				productAcctDAO.retrieveActivityForAcct(
-						clientId,
-						orgId,
-						ProductId.ofRepoId(product.getM_Product_ID())))
+						productAcctDAO.retrieveActivityForAcct(
+								clientId,
+								orgId,
+								ProductId.ofRepoId(product.getM_Product_ID())))
 				.thenReturn(activityId);
 
 		final Properties ctx = Env.getCtx();

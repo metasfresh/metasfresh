@@ -2,7 +2,7 @@
  * #%L
  * de.metas.contracts
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.contracts;
+package de.metas.contracts.FlatrateTermRequest;
 
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.organization.OrgId;

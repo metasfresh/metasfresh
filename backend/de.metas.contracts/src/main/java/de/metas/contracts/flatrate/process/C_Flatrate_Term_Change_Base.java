@@ -80,7 +80,7 @@ public abstract class C_Flatrate_Term_Change_Base extends JavaProcess
 		final Iterable<I_C_Flatrate_Term> flatrateTerms = getFlatrateTermsToChange();
 		flatrateTerms.forEach(currentTerm -> contractChangeBL.cancelContract(currentTerm, contractChangeParameters));
 
-		return "@Success@";
+		return MSG_OK;
 	}
 
 	protected abstract Iterable<I_C_Flatrate_Term> getFlatrateTermsToChange();
