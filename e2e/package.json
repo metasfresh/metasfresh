@@ -30,7 +30,7 @@
     "@babel/preset-env": "7.16.0",
     "@babel/preset-react": "7.16.0",
     "@babel/register": "7.16.0",
-    "@babel/runtime": "7.15.4",
+    "@babel/runtime": "7.16.0",
     "babel-plugin-dynamic-import-node": "2.3.3",
     "@cypress/react": "5.10.3",
     "@cypress/webpack-dev-server": "1.5.0",
