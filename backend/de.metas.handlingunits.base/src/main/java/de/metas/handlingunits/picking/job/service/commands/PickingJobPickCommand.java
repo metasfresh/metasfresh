@@ -88,7 +88,7 @@ public class PickingJobPickCommand
 
 		final PickHUResult pickResult = pickingCandidateService.pickHU(PickRequest.builder()
 				.shipmentScheduleId(initialStep.getShipmentScheduleId())
-				.pickFrom(PickFrom.ofHuId(initialStep.getPickFromHUId()))
+				.pickFrom(PickFrom.ofHuId(initialStep.getPickFromHU().getId()))
 				.packToId(HuPackingInstructionsId.VIRTUAL)
 				.qtyToPick(qtyToPick)
 				.qtyRejected(qtyRejectedWithReason)

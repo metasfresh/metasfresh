@@ -22,8 +22,9 @@
 
 package de.metas.handlingunits.picking.job.model;
 
-import de.metas.handlingunits.HUBarcode;
-import de.metas.handlingunits.HuId;
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.google.common.collect.ImmutableSet;
 import de.metas.i18n.ITranslatableString;
 import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.order.OrderAndLineId;
@@ -34,13 +35,13 @@ import lombok.NonNull;
 import lombok.ToString;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.warehouse.LocatorId;
 import org.compiere.model.I_C_UOM;
 
 import javax.annotation.Nullable;
 
 @Value
 @ToString
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public class PickingJobStep
 {
 	@NonNull PickingJobStepId id;
@@ -56,10 +57,9 @@ public class PickingJobStep
 
 	//
 	// Pick From
-	@NonNull LocatorId locatorId;
-	@NonNull String locatorName;
-	@NonNull HuId pickFromHUId;
-	@NonNull HUBarcode pickFromHUBarcode;
+	@NonNull LocatorInfo pickFromLocator;
+	@NonNull HUInfo pickFromHU;
+	@NonNull ImmutableSet<PickingJobPickFromAlternativeId> pickFromAlternativeIds;
 
 	@Nullable PickingJobStepPickedInfo picked;
 
@@ -75,10 +75,9 @@ public class PickingJobStep
 			@NonNull final Quantity qtyToPick,
 			//
 			// Pick From
-			@NonNull final LocatorId locatorId,
-			@NonNull final String locatorName,
-			@NonNull final HuId pickFromHUId,
-			@NonNull final HUBarcode pickFromHUBarcode,
+			@NonNull final LocatorInfo pickFromLocator,
+			@NonNull final HUInfo pickFromHU,
+			@NonNull ImmutableSet<PickingJobPickFromAlternativeId> pickFromAlternativeIds,
 			//
 			@Nullable PickingJobStepPickedInfo picked)
 	{
@@ -89,10 +88,9 @@ public class PickingJobStep
 		this.productName = productName;
 		this.qtyToPick = qtyToPick;
 
-		this.locatorId = locatorId;
-		this.locatorName = locatorName;
-		this.pickFromHUId = pickFromHUId;
-		this.pickFromHUBarcode = pickFromHUBarcode;
+		this.pickFromLocator = pickFromLocator;
+		this.pickFromHU = pickFromHU;
+		this.pickFromAlternativeIds = pickFromAlternativeIds;
 		this.picked = picked;
 
 		if (this.picked != null)

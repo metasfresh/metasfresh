@@ -45,10 +45,14 @@ public class JsonPickingStepEvent
 
 	//
 	// Event Type
-	@NonNull EventType type;
-
 	public enum EventType
 	{PICK, UNPICK}
+
+	@NonNull EventType type;
+
+	//
+	// Common
+	@NonNull String huBarcode;
 
 	//
 	// Event Type: PICK

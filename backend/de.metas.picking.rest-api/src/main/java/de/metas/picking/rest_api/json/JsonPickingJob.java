@@ -38,6 +38,7 @@ import java.util.List;
 public class JsonPickingJob
 {
 	@NonNull List<JsonPickingJobLine> lines;
+	@NonNull List<JsonPickFromAlternative> pickFromAlternatives;
 
 	public static JsonPickingJob of(
 			@NonNull final PickingJob pickingJob,
@@ -47,6 +48,10 @@ public class JsonPickingJob
 				.lines(pickingJob.getLines()
 						.stream()
 						.map(line -> JsonPickingJobLine.of(line, jsonOpts))
+						.collect(ImmutableList.toImmutableList()))
+				.pickFromAlternatives(pickingJob.getPickFromAlternatives()
+						.stream()
+						.map(JsonPickFromAlternative::of)
 						.collect(ImmutableList.toImmutableList()))
 				.build();
 	}

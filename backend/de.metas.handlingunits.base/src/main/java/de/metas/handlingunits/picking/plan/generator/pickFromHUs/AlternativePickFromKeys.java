@@ -1,7 +1,10 @@
 package de.metas.handlingunits.picking.plan.generator.pickFromHUs;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.UnmodifiableIterator;
+import de.metas.handlingunits.HuId;
 import de.metas.util.GuavaCollectors;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
@@ -13,6 +16,7 @@ import java.util.stream.Collector;
 
 @EqualsAndHashCode
 @ToString
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public class AlternativePickFromKeys implements Iterable<AlternativePickFromKey>
 {
 	public static final AlternativePickFromKeys EMPTY = new AlternativePickFromKeys(ImmutableSet.of());
@@ -44,4 +48,6 @@ public class AlternativePickFromKeys implements Iterable<AlternativePickFromKey>
 
 	@Override
 	public UnmodifiableIterator<AlternativePickFromKey> iterator() {return keys.iterator();}
+
+	public ImmutableSet<HuId> getHuIds() {return keys.stream().map(AlternativePickFromKey::getHuId).collect(ImmutableSet.toImmutableSet());}
 }

@@ -1,5 +1,7 @@
 package de.metas.handlingunits;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.util.Check;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
@@ -15,6 +17,7 @@ public final class HUBarcode
 		this.stringRepresentation = stringRepresentation;
 	}
 
+	@JsonCreator
 	public static HUBarcode ofBarcodeString(@NonNull final String barcode)
 	{
 		return new HUBarcode(barcode);
@@ -29,5 +32,6 @@ public final class HUBarcode
 	@Deprecated
 	public String toString() {return getAsString();}
 
+	@JsonValue
 	public String getAsString() {return stringRepresentation;}
 }
