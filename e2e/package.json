@@ -29,7 +29,7 @@
     "@babel/polyfill": "7.12.1",
     "@babel/preset-env": "7.16.0",
     "@babel/preset-react": "7.16.0",
-    "@babel/register": "7.15.3",
+    "@babel/register": "7.16.0",
     "@babel/runtime": "7.15.4",
     "babel-plugin-dynamic-import-node": "2.3.3",
     "@cypress/react": "5.10.3",
