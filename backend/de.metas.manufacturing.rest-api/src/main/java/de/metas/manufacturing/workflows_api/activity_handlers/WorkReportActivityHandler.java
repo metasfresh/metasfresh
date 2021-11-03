@@ -1,4 +1,4 @@
-package de.metas.manufacturing.workflows_api;
+package de.metas.manufacturing.workflows_api.activity_handlers;
 
 import de.metas.workflow.rest_api.controller.v2.json.JsonOpts;
 import de.metas.workflow.rest_api.model.UIComponent;
@@ -12,22 +12,18 @@ import lombok.NonNull;
 import org.springframework.stereotype.Component;
 
 @Component
-public class ManufacturingActivityHandler implements WFActivityHandler
+public class WorkReportActivityHandler implements WFActivityHandler
 {
-	public static final WFActivityType HANDLED_ACTIVITY_TYPE = WFActivityType.ofString("manufacturing.activity");
-	private static final UIComponentType COMPONENT_TYPE = UIComponentType.ofString("manufacturing/activity");
+	public static final WFActivityType HANDLED_ACTIVITY_TYPE = WFActivityType.ofString("manufacturing.workReport");
 
 	@Override
-	public WFActivityType getHandledActivityType()
-	{
-		return HANDLED_ACTIVITY_TYPE;
-	}
+	public WFActivityType getHandledActivityType() {return HANDLED_ACTIVITY_TYPE;}
 
 	@Override
 	public UIComponent getUIComponent(final @NonNull WFProcess wfProcess, final @NonNull WFActivity wfActivity, final @NonNull JsonOpts jsonOpts)
 	{
 		return UIComponent.builder()
-				.type(COMPONENT_TYPE)
+				.type(UIComponentType.CONFIRM_BUTTON)
 				.build();
 	}
 

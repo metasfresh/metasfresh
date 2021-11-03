@@ -6,6 +6,7 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.logging.LogManager;
 import de.metas.material.planning.pporder.PPRoutingActivityId;
 import de.metas.material.planning.pporder.PPRoutingActivityTemplateId;
+import de.metas.material.planning.pporder.PPRoutingActivityType;
 import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
@@ -22,7 +23,7 @@ import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.time.Duration;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 /*
  * #%L
@@ -56,11 +57,12 @@ public final class PPOrderRoutingActivity
 	private static final Logger logger = LogManager.getLogger(PPOrderRoutingActivity.class);
 
 	@Nullable private PPOrderRoutingActivityId id;
+	@NonNull private final PPRoutingActivityType type;
 	@NonNull private final PPOrderRoutingActivityCode code;
 	@NonNull private final PPRoutingActivityId routingActivityId;
 
 	private final boolean subcontracting;
-	private final BPartnerId subcontractingVendorId;
+	@Nullable private final BPartnerId subcontractingVendorId;
 
 	private final boolean milestone;
 
@@ -99,8 +101,8 @@ public final class PPOrderRoutingActivity
 	@NonNull private Quantity qtyDelivered;
 	@NonNull private Quantity qtyScrapped;
 	@NonNull private Quantity qtyRejected;
-	@Nullable private LocalDateTime dateStart;
-	@Nullable private LocalDateTime dateFinish;
+	@Nullable private Instant dateStart;
+	@Nullable private Instant dateFinish;
 
 	public PPOrderId getOrderId()
 	{
@@ -201,7 +203,7 @@ public final class PPOrderRoutingActivity
 
 		if (getDateFinish() != null)
 		{
-			setDateFinish(de.metas.common.util.time.SystemTime.asLocalDateTime());
+			setDateFinish(SystemTime.asInstant());
 		}
 
 		if (!Objects.equal(getDurationRequired(), getDurationReal()))
@@ -244,7 +246,7 @@ public final class PPOrderRoutingActivity
 
 		if (getDateFinish() == null)
 		{
-			setDateFinish(SystemTime.asLocalDateTime());
+			setDateFinish(SystemTime.asInstant());
 		}
 	}
 

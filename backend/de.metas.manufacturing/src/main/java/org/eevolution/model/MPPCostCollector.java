@@ -44,20 +44,15 @@ import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.LiberoException;
 import de.metas.material.planning.pporder.OrderBOMLineQtyChangeRequest;
 import de.metas.material.planning.pporder.OrderQtyChangeRequest;
-import de.metas.workflow.WFDurationUnit;
-import lombok.NonNull;
-import org.eevolution.api.PPOrderBOMLineId;
-import org.eevolution.api.PPOrderId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
-import de.metas.util.time.DurationUtils;
+import de.metas.workflow.WFDurationUnit;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_DocType;
-import org.compiere.model.I_C_UOM;
 import org.compiere.model.MDocType;
 import org.compiere.model.MPeriod;
 import org.compiere.model.MTransaction;
@@ -73,6 +68,8 @@ import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.IPPOrderRoutingRepository;
 import org.eevolution.api.PPCostCollectorQuantities;
 import org.eevolution.api.PPOrderActivityProcessReport;
+import org.eevolution.api.PPOrderBOMLineId;
+import org.eevolution.api.PPOrderId;
 import org.eevolution.api.PPOrderRouting;
 import org.eevolution.api.PPOrderRoutingActivity;
 import org.eevolution.api.PPOrderRoutingActivityId;
@@ -82,7 +79,6 @@ import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.time.LocalDate;
-import java.time.temporal.TemporalUnit;
 import java.util.List;
 import java.util.Properties;
 
@@ -369,7 +365,7 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument
 
 		orderRouting.reportProgress(PPOrderActivityProcessReport.builder()
 				.activityId(activity.getId())
-				.finishDate(TimeUtil.asLocalDateTime(getMovementDate()))
+				.finishDate(getMovementDate().toInstant())
 				.qtyProcessed(qtys.getMovementQty())
 				.qtyScrapped(qtys.getScrappedQty())
 				.qtyRejected(qtys.getRejectedQty())

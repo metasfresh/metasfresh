@@ -45,7 +45,6 @@ import de.metas.material.planning.pporder.PPOrderUtil;
 import de.metas.material.planning.pporder.PPRouting;
 import de.metas.material.planning.pporder.PPRoutingActivityTemplateId;
 import de.metas.material.planning.pporder.PPRoutingId;
-import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderLineId;
 import de.metas.organization.ClientAndOrgId;
@@ -348,7 +347,7 @@ public class PPOrderBL implements IPPOrderBL
 		final PPOrderRouting orderRouting = CreateOrderRoutingCommand.builder()
 				.routingId(PPRoutingId.ofRepoId(ppOrderRecord.getAD_Workflow_ID()))
 				.ppOrderId(PPOrderId.ofRepoId(ppOrderRecord.getPP_Order_ID()))
-				.dateStartSchedule(TimeUtil.asLocalDateTime(ppOrderRecord.getDateStartSchedule()))
+				.dateStartSchedule(ppOrderRecord.getDateStartSchedule().toInstant())
 				.qtyOrdered(getQuantities(ppOrderRecord).getQtyRequiredToProduce())
 				.build()
 				.execute();

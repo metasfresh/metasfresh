@@ -11,6 +11,7 @@ import de.metas.material.planning.ResourceType;
 import de.metas.material.planning.pporder.LiberoException;
 import de.metas.material.planning.pporder.PPRoutingActivityId;
 import de.metas.material.planning.pporder.PPRoutingActivityTemplateId;
+import de.metas.material.planning.pporder.PPRoutingActivityType;
 import de.metas.material.planning.pporder.PPRoutingId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
@@ -50,11 +51,12 @@ import org.eevolution.model.I_PP_Order_Workflow;
 
 import javax.annotation.Nullable;
 import java.time.Duration;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -264,6 +266,7 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 
 		return PPOrderRoutingActivity.builder()
 				.id(PPOrderRoutingActivityId.ofRepoId(orderId, record.getPP_Order_Node_ID()))
+				.type(PPRoutingActivityType.ofCode(record.getPP_Activity_Type()))
 				.code(PPOrderRoutingActivityCode.ofString(record.getValue()))
 				.routingActivityId(PPRoutingActivityId.ofAD_WF_Node_ID(routingId, record.getAD_WF_Node_ID()))
 				//
@@ -296,8 +299,8 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 				.qtyDelivered(Quantity.of(record.getQtyDelivered(), uom))
 				.qtyScrapped(Quantity.of(record.getQtyScrap(), uom))
 				.qtyRejected(Quantity.of(record.getQtyReject(), uom))
-				.dateStart(TimeUtil.asLocalDateTime(record.getDateStart()))
-				.dateFinish(TimeUtil.asLocalDateTime(record.getDateFinish()))
+				.dateStart(TimeUtil.asInstant(record.getDateStart()))
+				.dateFinish(TimeUtil.asInstant(record.getDateFinish()))
 				//
 				.build();
 	}
@@ -333,7 +336,7 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 	}
 
 	@Override
-	public List<PPOrderRoutingActivitySchedule> getActivitySchedulesByDateAndResource(final LocalDateTime date, final ResourceId resourceId)
+	public List<PPOrderRoutingActivitySchedule> getActivitySchedulesByDateAndResource(final Instant date, final ResourceId resourceId)
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_PP_Order_Node.class)
@@ -346,11 +349,11 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private IQueryFilter<I_PP_Order_Node> createActivityScheduleIntersectsWithDayTimeSlotFilter(final LocalDateTime dateTime, final ResourceId resourceId)
+	private IQueryFilter<I_PP_Order_Node> createActivityScheduleIntersectsWithDayTimeSlotFilter(final Instant dateTime, final ResourceId resourceId)
 	{
 		final ResourceType resourceType = Services.get(IResourceDAO.class).getResourceTypeByResourceId(resourceId);
-		final LocalDateTime dayStart = resourceType.getDayStart(dateTime);
-		final LocalDateTime dayEnd = resourceType.getDayEnd(dateTime);
+		final Instant dayStart = resourceType.getDayStart(dateTime);
+		final Instant dayEnd = resourceType.getDayEnd(dateTime);
 
 		final ICompositeQueryFilter<I_PP_Order_Node> filters = Services.get(IQueryBL.class).createCompositeQueryFilter(I_PP_Order_Node.class)
 				.setJoinOr();
@@ -390,13 +393,13 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 		return filters;
 	}
 
-	private PPOrderRoutingActivitySchedule toPPOrderRoutingActivitySchedule(final I_PP_Order_Node activity)
+	private PPOrderRoutingActivitySchedule toPPOrderRoutingActivitySchedule(final I_PP_Order_Node record)
 	{
-		final PPOrderId orderId = PPOrderId.ofRepoId(activity.getPP_Order_ID());
+		final PPOrderId orderId = PPOrderId.ofRepoId(record.getPP_Order_ID());
 		return PPOrderRoutingActivitySchedule.builder()
-				.orderRoutingActivityId(PPOrderRoutingActivityId.ofRepoId(orderId, activity.getPP_Order_Node_ID()))
-				.scheduledStartDate(TimeUtil.asLocalDateTime(activity.getDateStartSchedule()))
-				.scheduledEndDate(TimeUtil.asLocalDateTime(activity.getDateFinishSchedule()))
+				.orderRoutingActivityId(PPOrderRoutingActivityId.ofRepoId(orderId, record.getPP_Order_Node_ID()))
+				.scheduledStartDate(Objects.requireNonNull(record.getDateStartSchedule()).toInstant())
+				.scheduledEndDate(Objects.requireNonNull(record.getDateFinishSchedule()).toInstant())
 				.build();
 	}
 
@@ -614,6 +617,8 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 	private void updateOrderNodeRecord(final I_PP_Order_Node record, final PPOrderRoutingActivity from)
 	{
 		final WFDurationUnit durationUnit = from.getDurationUnit();
+
+		record.setPP_Activity_Type(from.getType().getCode());
 
 		record.setIsActive(true);
 		record.setValue(from.getCode().getAsString());
