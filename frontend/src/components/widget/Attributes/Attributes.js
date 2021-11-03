@@ -221,10 +221,17 @@ export default class Attributes extends Component {
       }).then((response) => {
         if (response.data && response.data.length) {
           const { fieldsByName, id } = response.data[0];
-          const hasCheckbox = JSON.stringify(fieldsByName).includes('YesNo');
+          let fetchLayout = false;
           const updatedDataState = this.state.data;
 
           Object.keys(fieldsByName).map((fieldName) => {
+            if (
+              updatedDataState[fieldName].displayed !==
+              fieldsByName[fieldName].displayed
+            ) {
+              fetchLayout = true;
+            }
+
             updatedDataState[fieldName] = {
               ...updatedDataState[fieldName],
               ...fieldsByName[fieldName],
@@ -233,7 +240,7 @@ export default class Attributes extends Component {
 
           this.setState({ data: updatedDataState }, cb);
 
-          if (hasCheckbox) {
+          if (fetchLayout) {
             getLayout(attributeType, id).then((response) => {
               const { elements } = response.data;
 
