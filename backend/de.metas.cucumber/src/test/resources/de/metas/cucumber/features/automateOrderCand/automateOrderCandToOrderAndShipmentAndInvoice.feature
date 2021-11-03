@@ -584,3 +584,4 @@ Feature: Process order candidate and automatically generate shipment and invoice
     And validate created invoice lines
       | Invoice.Identifier | productIdentifier.m_product_id | qtyinvoiced | processed |
       | invoice_1          | 2005577                        | 8           | true      |
+    And set sys config boolean value false for sys config AUTO_SHIP_AND_INVOICE
