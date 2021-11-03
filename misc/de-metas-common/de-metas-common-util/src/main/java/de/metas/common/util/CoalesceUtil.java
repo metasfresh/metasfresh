@@ -26,6 +26,7 @@ import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -270,5 +271,22 @@ public class CoalesceUtil
 		}
 
 		return count;
+	}
+
+	@NonNull
+	public BigDecimal firstPositiveOrZero(final BigDecimal... values)
+	{
+		if (values == null || values.length == 0)
+		{
+			return BigDecimal.ZERO;
+		}
+		for (final BigDecimal value : values)
+		{
+			if (value != null && value.signum() > 0)
+			{
+				return value;
+			}
+		}
+		return BigDecimal.ZERO;
 	}
 }

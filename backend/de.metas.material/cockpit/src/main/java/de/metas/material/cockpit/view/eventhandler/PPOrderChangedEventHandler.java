@@ -144,6 +144,7 @@ public class PPOrderChangedEventHandler implements MaterialEventHandler<PPOrderC
 		final MainDataRecordIdentifier mainDataRecordIdentifier = MainDataRecordIdentifier.builder()
 				.productDescriptor(ppOrderChangedEvent.getPpOrderAfterChanges().getProductDescriptor())
 				.date(TimeUtil.getDay(ppOrderChangedEvent.getPpOrderAfterChanges().getDatePromised(), orgZoneId))
+				.warehouseId(ppOrderChangedEvent.getPpOrderAfterChanges().getWarehouseId())
 				.build();
 
 		final BigDecimal newQtyOpen = ppOrderChangedEvent.getPpOrderAfterChanges().getQtyOpen();

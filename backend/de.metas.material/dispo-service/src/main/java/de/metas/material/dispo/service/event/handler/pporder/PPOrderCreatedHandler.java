@@ -4,7 +4,9 @@ import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
 import de.metas.logging.LogManager;
+import de.metas.material.cockpit.view.MainDataRecordIdentifier;
 import de.metas.material.cockpit.view.mainrecord.MainDataRequestHandler;
+import de.metas.material.cockpit.view.mainrecord.UpdateMainDataRequest;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateId;
 import de.metas.material.dispo.commons.candidate.CandidateType;
@@ -18,12 +20,16 @@ import de.metas.material.event.pporder.AbstractPPOrderEvent;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderCreatedEvent;
+import de.metas.organization.IOrgDAO;
 import de.metas.util.Loggables;
+import de.metas.util.Services;
 import lombok.NonNull;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
+import java.time.ZoneId;
 import java.util.Collection;
 
 /*
@@ -54,6 +60,8 @@ public final class PPOrderCreatedHandler
 		extends PPOrderAdvisedOrCreatedHandler<PPOrderCreatedEvent>
 {
 	private static final Logger logger = LogManager.getLogger(PPOrderCreatedHandler.class);
+
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	public PPOrderCreatedHandler(
 			@NonNull final CandidateChangeService candidateChangeHandler,
@@ -125,5 +133,24 @@ public final class PPOrderCreatedHandler
 	protected Flag extractIsDirectlyPickSupply(@NonNull final AbstractPPOrderEvent ppOrderEvent)
 	{
 		return Flag.FALSE_DONT_UPDATE;
+	}
+
+	@Override
+	protected void updateMainData(final @NonNull AbstractPPOrderEvent ppOrderEvent)
+	{
+		final ZoneId orgZoneId = orgDAO.getTimeZone(ppOrderEvent.getEventDescriptor().getOrgId());
+
+		final MainDataRecordIdentifier mainDataRecordIdentifier = MainDataRecordIdentifier.builder()
+				.warehouseId(ppOrderEvent.getPpOrder().getWarehouseId())
+				.productDescriptor(ppOrderEvent.getPpOrder().getProductDescriptor())
+				.date(TimeUtil.getDay(ppOrderEvent.getPpOrder().getDatePromised(), orgZoneId))
+				.build();
+
+		final UpdateMainDataRequest updateMainDataRequest = UpdateMainDataRequest.builder()
+				.identifier(mainDataRecordIdentifier)
+				.qtySupplyPPOrder(ppOrderEvent.getPpOrder().getQtyOpen())
+				.build();
+
+		mainDataRequestHandler.handleDataUpdateRequest(updateMainDataRequest);
 	}
 }

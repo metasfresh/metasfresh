@@ -40,20 +40,13 @@ public class MD_Cockpit
 {
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_NEW },
 			ifColumnsChanged = { I_MD_Cockpit.COLUMNNAME_MDCandidateQtyStock,
-					I_MD_Cockpit.COLUMNNAME_QtySupply_PP_Order,
-					I_MD_Cockpit.COLUMNNAME_QtySupply_PurchaseOrder,
 					I_MD_Cockpit.COLUMNNAME_QtySupplyRequired,
-					I_MD_Cockpit.COLUMNNAME_QtyDemand_SalesOrder,
 					I_MD_Cockpit.COLUMNNAME_QtySupplySum,
 					I_MD_Cockpit.COLUMNNAME_QtyDemandSum
 			})
 	public void updateCounts(@NonNull final I_MD_Cockpit cockpit)
 	{
-		final BigDecimal qtyStockCurrent = cockpit.getMDCandidateQtyStock()
-				.add(cockpit.getQtyDemand_SalesOrder())
-				.subtract(cockpit.getQtySupplyRequired())
-				.subtract(cockpit.getQtySupply_PP_Order())
-				.subtract(cockpit.getQtySupply_PurchaseOrder());
+		final BigDecimal qtyStockCurrent = cockpit.getMDCandidateQtyStock();
 
 		cockpit.setQtyStockCurrent(qtyStockCurrent);
 		cockpit.setQtySupplyToSchedule(computeQtySupplyToSchedule(cockpit));
