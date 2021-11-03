@@ -227,7 +227,6 @@ public class CoalesceUtil
 
 	@Nullable
 	@SafeVarargs
-	@Nullable
 	public String firstNotBlank(@Nullable final Supplier<String>... valueSuppliers)
 	{
 		if(valueSuppliers == null || valueSuppliers.length == 0)
