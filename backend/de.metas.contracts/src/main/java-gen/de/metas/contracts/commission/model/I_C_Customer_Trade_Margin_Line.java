@@ -1,26 +1,4 @@
-/*
- * #%L
- * de.metas.contracts
- * %%
- * Copyright (C) 2021 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-package de.metas.contracts.model;
+package de.metas.contracts.commission.model;
 
 import org.adempiere.model.ModelColumn;
 
@@ -94,7 +72,7 @@ public interface I_C_Customer_Trade_Margin_Line
 	String COLUMNNAME_C_BPartner_Customer_ID = "C_BPartner_Customer_ID";
 
 	/**
-	 * Set C_Customer_Trade_Margin.
+	 * Set Customer Margin Settings.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -103,7 +81,7 @@ public interface I_C_Customer_Trade_Margin_Line
 	void setC_Customer_Trade_Margin_ID (int C_Customer_Trade_Margin_ID);
 
 	/**
-	 * Get C_Customer_Trade_Margin.
+	 * Get Customer Margin Settings.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -111,15 +89,15 @@ public interface I_C_Customer_Trade_Margin_Line
 	 */
 	int getC_Customer_Trade_Margin_ID();
 
-	de.metas.contracts.model.I_C_Customer_Trade_Margin getC_Customer_Trade_Margin();
+	de.metas.contracts.commission.model.I_C_Customer_Trade_Margin getC_Customer_Trade_Margin();
 
-	void setC_Customer_Trade_Margin(de.metas.contracts.model.I_C_Customer_Trade_Margin C_Customer_Trade_Margin);
+	void setC_Customer_Trade_Margin(de.metas.contracts.commission.model.I_C_Customer_Trade_Margin C_Customer_Trade_Margin);
 
-	ModelColumn<I_C_Customer_Trade_Margin_Line, de.metas.contracts.model.I_C_Customer_Trade_Margin> COLUMN_C_Customer_Trade_Margin_ID = new ModelColumn<>(I_C_Customer_Trade_Margin_Line.class, "C_Customer_Trade_Margin_ID", de.metas.contracts.model.I_C_Customer_Trade_Margin.class);
+	ModelColumn<I_C_Customer_Trade_Margin_Line, de.metas.contracts.commission.model.I_C_Customer_Trade_Margin> COLUMN_C_Customer_Trade_Margin_ID = new ModelColumn<>(I_C_Customer_Trade_Margin_Line.class, "C_Customer_Trade_Margin_ID", de.metas.contracts.commission.model.I_C_Customer_Trade_Margin.class);
 	String COLUMNNAME_C_Customer_Trade_Margin_ID = "C_Customer_Trade_Margin_ID";
 
 	/**
-	 * Set C_Customer_Trade_Margin_Line.
+	 * Set Line.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -128,7 +106,7 @@ public interface I_C_Customer_Trade_Margin_Line
 	void setC_Customer_Trade_Margin_Line_ID (int C_Customer_Trade_Margin_Line_ID);
 
 	/**
-	 * Get C_Customer_Trade_Margin_Line.
+	 * Get Line.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -209,6 +187,50 @@ public interface I_C_Customer_Trade_Margin_Line
 
 	ModelColumn<I_C_Customer_Trade_Margin_Line, Object> COLUMN_Margin = new ModelColumn<>(I_C_Customer_Trade_Margin_Line.class, "Margin", null);
 	String COLUMNNAME_Margin = "Margin";
+
+	/**
+	 * Set Product Category.
+	 * Category of a Product
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_Product_Category_ID (int M_Product_Category_ID);
+
+	/**
+	 * Get Product Category.
+	 * Category of a Product
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_Product_Category_ID();
+
+	String COLUMNNAME_M_Product_Category_ID = "M_Product_Category_ID";
+
+	/**
+	 * Set Product.
+	 * Product, Service, Item
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_Product_ID (int M_Product_ID);
+
+	/**
+	 * Get Product.
+	 * Product, Service, Item
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_Product_ID();
+
+	String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
 	 * Set SeqNo.

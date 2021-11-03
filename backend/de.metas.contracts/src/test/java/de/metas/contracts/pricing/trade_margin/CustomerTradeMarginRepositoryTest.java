@@ -22,8 +22,8 @@
 
 package de.metas.contracts.pricing.trade_margin;
 
-import de.metas.contracts.model.I_C_Customer_Trade_Margin;
-import de.metas.contracts.model.I_C_Customer_Trade_Margin_Line;
+import de.metas.contracts.commission.model.I_C_Customer_Trade_Margin;
+import de.metas.contracts.commission.model.I_C_Customer_Trade_Margin_Line;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;

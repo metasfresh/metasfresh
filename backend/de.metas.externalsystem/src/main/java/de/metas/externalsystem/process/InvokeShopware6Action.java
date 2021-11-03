@@ -48,6 +48,7 @@ import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_JSON_
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_JSON_PATH_CONSTANT_BPARTNER_LOCATION_ID;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_JSON_PATH_SALES_REP_ID;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_NORMAL_VAT_RATES;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_ORDER_ID;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_ORDER_NO;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_REDUCED_VAT_RATES;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_UOM_MAPPINGS;
@@ -61,6 +62,10 @@ public class InvokeShopware6Action extends InvokeExternalSystemProcess
 	@Param(parameterName = PARAM_ORDERNO)
 	private String orderNo;
 
+	private static final String PARAM_ORDERID = "OrderId";
+	@Param(parameterName = PARAM_ORDERID)
+	private String orderId;
+	
 	@Override
 	protected IExternalSystemChildConfigId getExternalChildConfigId()
 	{
@@ -116,6 +121,11 @@ public class InvokeShopware6Action extends InvokeExternalSystemProcess
 			parameters.put(PARAM_ORDER_NO, orderNo);
 		}
 
+		if(EmptyUtil.isNotBlank(orderId))
+		{
+			parameters.put(PARAM_ORDER_ID, orderId);
+		}
+		
 		parameters.putAll(invokeShopwareService.getPriceListParams(shopware6Config.getPriceListId()));
 
 		return parameters;

@@ -168,7 +168,7 @@ Checkbox.propTypes = {
   widgetField: PropTypes.string,
   isFilterActive: PropTypes.bool,
   id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-  updateItems: PropTypes.func,
+  updateItems: PropTypes.func, // function used for updating the filter items before having an active filter
   isEdited: PropTypes.bool,
 };
 

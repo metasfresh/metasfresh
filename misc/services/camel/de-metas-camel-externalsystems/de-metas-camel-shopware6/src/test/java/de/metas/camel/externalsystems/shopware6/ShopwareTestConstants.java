@@ -33,6 +33,8 @@ public interface ShopwareTestConstants
 
 	int MOCK_NORMAL_VAT_PRODUCT_ID = 1001;
 	int MOCK_REDUCED_VAT_PRODUCT_ID = 1002;
+	String MOCK_ORDER_ID = "1111";
+	String MOCK_ORDER_NO = "2222";
 
 	String MOCK_NORMAL_VAT_RATES = "7.7,19,0";
 	String MOCK_REDUCED_VAT_RATES = "5.5,12";

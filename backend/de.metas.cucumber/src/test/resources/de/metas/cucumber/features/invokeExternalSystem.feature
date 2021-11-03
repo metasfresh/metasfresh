@@ -8,8 +8,6 @@ Feature: external system invocation using metasfresh api
     And add external system parent-child pair
       | ExternalSystem_Config_ID.Identifier | Type | ExternalSystemValue |
       |                                     | S6   | testS6              |
-    And add external system parent-child pair
-      | ExternalSystem_Config_ID.Identifier | Type | ExternalSystemValue |
       |                                     | A    | testAlberta         |
 
   @from:cucumber
@@ -23,3 +21,19 @@ Feature: external system invocation using metasfresh api
     When the metasfresh REST-API endpoint path 'api/externalsystem/A/testAlberta/test' receives a 'POST' request
 
     Then a new metasfresh AD_PInstance_Log is stored for the external system 'A' invocation
+
+  @from:cucumber
+  Scenario: Invoke external system for Shopware with reqBody
+    When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/externalsystem/S6/testS6/test' and fulfills with '200' status code
+  """
+{
+    "params": {
+        "OrderId": "111",
+        "OrderNo": "222"
+    }
+}
+  """
+    Then a new metasfresh AD_PInstance_Para is stored for the external system invocation
+      | param.key | param.value |
+      | OrderId   | 111         |
+      | OrderNo   | 222         |

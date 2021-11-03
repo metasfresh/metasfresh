@@ -22,7 +22,6 @@ package de.metas.contracts.commission.model;
  * #L%
  */
 
-import de.metas.contracts.model.I_C_Customer_Trade_Margin;
 import org.adempiere.model.ModelColumn;
 
 public interface I_C_Flatrate_Conditions extends de.metas.contracts.model.I_C_Flatrate_Conditions
@@ -71,6 +70,6 @@ public interface I_C_Flatrate_Conditions extends de.metas.contracts.model.I_C_Fl
 	 */
 	int getC_Customer_Trade_Margin_ID();
 
-	ModelColumn<de.metas.contracts.model.I_C_Flatrate_Conditions, I_C_Customer_Trade_Margin> COLUMN_C_Customer_Trade_Margin_ID = new ModelColumn<>(de.metas.contracts.model.I_C_Flatrate_Conditions.class, "C_Customer_Trade_Margin_ID", de.metas.contracts.model.I_C_Customer_Trade_Margin.class);
+	ModelColumn<de.metas.contracts.model.I_C_Flatrate_Conditions, I_C_Customer_Trade_Margin> COLUMN_C_Customer_Trade_Margin_ID = new ModelColumn<>(de.metas.contracts.model.I_C_Flatrate_Conditions.class, "C_Customer_Trade_Margin_ID", de.metas.contracts.commission.model.I_C_Customer_Trade_Margin.class);
 	String COLUMNNAME_C_Customer_Trade_Margin_ID = "C_Customer_Trade_Margin_ID";
 }

@@ -23,7 +23,7 @@
 package de.metas.contracts.pricing.trade_margin;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.bpartner.BPartnerId;
+import de.metas.contracts.pricing.trade_margin.CustomerTradeMarginLine.MappingCriteria;
 import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -84,10 +84,12 @@ public class CustomerTradeMargin
 		return customerTradeMarginId;
 	}
 
-	public Optional<CustomerTradeMarginLine> getLineForCustomer(@NonNull final BPartnerId customerId)
+	@NonNull
+	public Optional<CustomerTradeMarginLine> getLineForCustomer(
+			@NonNull final MappingCriteria mappingCriteria)
 	{
 		return lines.stream()
-				.filter(line -> line.appliesTo(customerId))
+				.filter(line -> line.appliesTo(mappingCriteria))
 				.findFirst();
  	}
 }

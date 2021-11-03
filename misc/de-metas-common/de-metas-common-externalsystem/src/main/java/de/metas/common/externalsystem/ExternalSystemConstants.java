@@ -55,6 +55,7 @@ public class ExternalSystemConstants
 
 	public static final String PARAM_UPDATED_AFTER_OVERRIDE = "UpdatedAfterOverride";
 	public static final String PARAM_ORDER_NO = "OrderNo"; // if set, then this shall override PARAM_UPDATED_AFTER*
+	public static final String PARAM_ORDER_ID = "OrderId"; // if set, then this shall override PARAM_UPDATED_AFTER*
 	public static final String PARAM_ROOT_BPARTNER_ID_FOR_USERS = "RootBPartnerID";
 
 	public static final String PARAM_ALBERTA_ID = "Alberta_Id";
