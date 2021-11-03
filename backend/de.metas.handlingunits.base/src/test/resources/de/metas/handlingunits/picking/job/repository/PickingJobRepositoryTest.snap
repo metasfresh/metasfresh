@@ -16,22 +16,20 @@ de.metas.handlingunits.picking.job.repository.PickingJobRepositoryTest.createNew
     "id" : 100004,
     "productId" : 6,
     "productName" : {
-      "defaultValue" : "productName-6",
-      "ad_Languages" : [ ]
+      "ad_Languages" : [ ],
+      "defaultValue" : "productName-6"
     },
     "steps" : [ {
       "id" : 100005,
       "salesOrderAndLineId" : {
         "orderId" : 2,
-        "orderLineId" : 8,
-        "orderRepoId" : 2,
-        "orderLineRepoId" : 8
+        "orderLineId" : 8
       },
       "shipmentScheduleId" : 7,
       "productId" : 6,
       "productName" : {
-        "defaultValue" : "productName-6",
-        "ad_Languages" : [ ]
+        "ad_Languages" : [ ],
+        "defaultValue" : "productName-6"
       },
       "qtyToPick" : {
         "qty" : "100",

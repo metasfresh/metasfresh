@@ -23,6 +23,7 @@ class JsonPickingEventsListTest
 								.wfActivityId("wfActivityId")
 								.pickingStepId("pickingStepId")
 								.type(JsonPickingStepEvent.EventType.PICK)
+								.huBarcode("1234567")
 								.qtyPicked(new BigDecimal("123.45"))
 								.build()
 				))
