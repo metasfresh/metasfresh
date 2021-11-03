@@ -1,68 +1,9 @@
 package de.metas.contracts.subscription.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-
-/*
- * #%L
- * de.metas.contracts
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.GregorianCalendar;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
-
-import de.metas.bpartner.BPartnerLocationAndCaptureId;
-import de.metas.common.util.time.SystemTime;
-import de.metas.order.location.adapter.OrderLineDocumentLocationAdapterFactory;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.lang.IAutoCloseable;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.Adempiere;
-import org.compiere.model.I_AD_User;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.MNote;
-import org.compiere.model.Query;
-import org.compiere.util.DB;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
-import org.compiere.util.Trx;
-import org.compiere.util.TrxRunnable2;
-import org.slf4j.Logger;
-
 import com.google.common.base.Preconditions;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.BPartnerContactId;
-import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.common.util.time.SystemTime;
@@ -71,6 +12,7 @@ import de.metas.contracts.FlatrateTermPricing;
 import de.metas.contracts.IContractsDAO;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.flatrate.interfaces.I_C_OLCand;
+import de.metas.contracts.location.adapter.ContractDocumentLocationAdapterFactory;
 import de.metas.contracts.model.I_C_Contract_Term_Alloc;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Data;
@@ -96,9 +38,11 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.monitoring.api.IMonitoringBL;
+import de.metas.order.IOrderBL;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLinePriceUpdateRequest;
+import de.metas.order.location.adapter.OrderLineDocumentLocationAdapterFactory;
 import de.metas.ordercandidate.api.IOLCandBL;
 import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
 import de.metas.pricing.IPricingResult;
@@ -157,6 +101,8 @@ public class SubscriptionBL implements ISubscriptionBL
 
 	public static final Logger logger = LogManager.getLogger(SubscriptionBL.class);
 
+	private final IOrderBL orderBL = Services.get(IOrderBL.class);
+
 	@Override
 	public I_C_Flatrate_Term createSubscriptionTerm(
 			@NonNull final I_C_OrderLine ol,
@@ -185,13 +131,20 @@ public class SubscriptionBL implements ISubscriptionBL
 		newTerm.setDeliveryRule(order.getDeliveryRule());
 		newTerm.setDeliveryViaRule(order.getDeliveryViaRule());
 
-		newTerm.setBill_BPartner_ID(order.getBill_BPartner_ID());
-		newTerm.setBill_Location_ID(order.getBill_Location_ID());
-		newTerm.setBill_User_ID(order.getBill_User_ID());
+		final BPartnerLocationAndCaptureId billToLocationId = orderBL.getBillToLocationId(order);
 
-		newTerm.setDropShip_BPartner_ID(ol.getC_BPartner_ID());
-		newTerm.setDropShip_Location_ID(ol.getC_BPartner_Location_ID());
-		newTerm.setDropShip_User_ID(ol.getAD_User_ID());
+		final BPartnerContactId billToContactId = BPartnerContactId.ofRepoIdOrNull(billToLocationId.getBpartnerId(), order.getBill_User_ID());
+		ContractDocumentLocationAdapterFactory
+				.billLocationAdapter(newTerm)
+				.setFrom(billToLocationId, billToContactId);
+
+		final BPartnerContactId dropshipContactId = BPartnerContactId.ofRepoIdOrNull(ol.getC_BPartner_ID(), ol.getAD_User_ID());
+
+		final BPartnerLocationAndCaptureId dropshipLocationId = orderBL.getShipToLocationId(order);
+
+		ContractDocumentLocationAdapterFactory
+				.dropShipLocationAdapter(newTerm)
+				.setFrom(dropshipLocationId, dropshipContactId);
 
 		I_C_Flatrate_Data existingData = fetchFlatrateData(ol, order);
 		if (existingData == null)
@@ -454,20 +407,20 @@ public class SubscriptionBL implements ISubscriptionBL
 		newTerm.setDeliveryViaRule(olCandRecord.getDeliveryViaRule());
 
 		final I_C_BPartner bill_BPartner = olCandEffectiveValuesBL.getBill_BPartner_Effective(olCandRecord, I_C_BPartner.class);
-		final int bill_Location_ID = BPartnerLocationId.toRepoId(olCandEffectiveValuesBL.getBillLocationEffectiveId(olCandRecord));
-		final int bill_User_ID = BPartnerContactId.toRepoId(olCandEffectiveValuesBL.getBillContactEffectiveId(olCandRecord));
 
-		newTerm.setBill_BPartner_ID(bill_BPartner.getC_BPartner_ID());
-		newTerm.setBill_Location_ID(bill_Location_ID);
-		newTerm.setBill_User_ID(bill_User_ID);
+		final BPartnerLocationAndCaptureId billToLocationId = olCandEffectiveValuesBL.getBillLocationAndCaptureEffectiveId(olCandRecord);
+
+		ContractDocumentLocationAdapterFactory
+				.billLocationAdapter(newTerm)
+				.setFrom(billToLocationId, olCandEffectiveValuesBL.getBillContactEffectiveId(olCandRecord));
 
 		final BPartnerInfo shipToPartnerInfo = olCandEffectiveValuesBL
 				.getDropShipPartnerInfo(olCandRecord)
 				.orElseGet(() -> olCandEffectiveValuesBL.getBuyerPartnerInfo(olCandRecord));
 
-		newTerm.setDropShip_BPartner_ID(BPartnerId.toRepoId(shipToPartnerInfo.getBpartnerId()));
-		newTerm.setDropShip_Location_ID(BPartnerLocationId.toRepoId(shipToPartnerInfo.getBpartnerLocationId()));
-		newTerm.setDropShip_User_ID(BPartnerContactId.toRepoId(shipToPartnerInfo.getContactId()));
+		ContractDocumentLocationAdapterFactory
+				.dropShipLocationAdapter(newTerm)
+				.setFrom(shipToPartnerInfo);
 
 		final I_C_Flatrate_Data existingData = Services.get(IFlatrateDAO.class).retriveOrCreateFlatrateData(bill_BPartner);
 
@@ -670,8 +623,8 @@ public class SubscriptionBL implements ISubscriptionBL
 			@NonNull final I_C_SubscriptionProgress sp)
 	{
 		Check.errorIf(sp.getEventDate().after(currentDate),
-				"The event date {} of the given subscriptionProgress is after currentDate={}; subscriptionProgress={}",
-				sp.getEventDate(), currentDate, sp);
+					  "The event date {} of the given subscriptionProgress is after currentDate={}; subscriptionProgress={}",
+					  sp.getEventDate(), currentDate, sp);
 
 		if (isPlannedStartPause(sp))
 		{
@@ -1133,12 +1086,12 @@ public class SubscriptionBL implements ISubscriptionBL
 
 		// now compute the new prices
 		orderLineBL.updatePrices(OrderLinePriceUpdateRequest.builder()
-				.orderLine(ol)
-				.priceListIdOverride(subscriptionPLId)
-				.qtyOverride(orderLineQty)
-				.resultUOM(OrderLinePriceUpdateRequest.ResultUOM.PRICE_UOM)
-				.updatePriceEnteredAndDiscountOnlyIfNotAlreadySet(updatePriceEnteredAndDiscountOnlyIfNotAlreadySet)
-				.updateLineNetAmt(true)
-				.build());
+										 .orderLine(ol)
+										 .priceListIdOverride(subscriptionPLId)
+										 .qtyOverride(orderLineQty)
+										 .resultUOM(OrderLinePriceUpdateRequest.ResultUOM.PRICE_UOM)
+										 .updatePriceEnteredAndDiscountOnlyIfNotAlreadySet(updatePriceEnteredAndDiscountOnlyIfNotAlreadySet)
+										 .updateLineNetAmt(true)
+										 .build());
 	}
 }
