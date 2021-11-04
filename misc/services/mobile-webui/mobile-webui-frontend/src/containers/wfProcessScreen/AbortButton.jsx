@@ -5,9 +5,9 @@ import counterpart from 'counterpart';
 
 import { abortWorkflowRequest } from '../../api/launchers';
 import { redirectToAppLaunchers } from '../../actions/RoutingActions';
-import ConfirmButton from './confirmButton/ConfirmButton';
+import ConfirmButton from '../activities/confirmButton/ConfirmButton';
 
-class AbortActivity extends PureComponent {
+class AbortButton extends PureComponent {
   onUserConfirmed = () => {
     const { wfProcessId, appId, redirectToAppLaunchers } = this.props;
 
@@ -38,10 +38,10 @@ const mapStateToProps = (state) => {
   };
 };
 
-AbortActivity.propTypes = {
+AbortButton.propTypes = {
   wfProcessId: PropTypes.string.isRequired,
   appId: PropTypes.string.isRequired,
   redirectToAppLaunchers: PropTypes.func.isRequired,
 };
 
-export default connect(mapStateToProps, { redirectToAppLaunchers })(AbortActivity);
+export default connect(mapStateToProps, { redirectToAppLaunchers })(AbortButton);
