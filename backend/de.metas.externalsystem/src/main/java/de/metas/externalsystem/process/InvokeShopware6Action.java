@@ -39,6 +39,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_BASE_PATH;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_CHILD_CONFIG_VALUE;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_CLIENT_ID;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_CLIENT_SECRET;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_CONFIG_MAPPINGS;
@@ -98,6 +99,7 @@ public class InvokeShopware6Action extends InvokeExternalSystemProcess
 		parameters.put(PARAM_JSON_PATH_SALES_REP_ID, shopware6Config.getSalesRepJSONPath());
 		parameters.put(PARAM_CONFIG_MAPPINGS, invokeShopwareService.getConfigMappings(shopware6Config));
 		parameters.put(PARAM_UOM_MAPPINGS, invokeShopwareService.getUOMMappings(shopware6Config));
+		parameters.put(PARAM_CHILD_CONFIG_VALUE, shopware6Config.getValue());
 
 		if (shopware6Config.getFreightCostNormalVatConfig() != null)
 		{

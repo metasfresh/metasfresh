@@ -32,6 +32,10 @@ public class ExternalSystemCamelConstants
 	public static String HEADER_PINSTANCE_ID = "pInstanceId";
 	public static String HEADER_PRICE_LIST_VERSION_IDENTIFIER = "priceListVersionIdentifier";
 	public static String HEADER_PRICE_LIST_IDENTIFIER = "priceListIdentifier";
+	public static String HEADER_TARGET_ROUTE = "targetRoute";
+	public static String HEADER_EXTERNAL_SYSTEM_VALUE = "externalSystemValue";
+	public static String HEADER_AUDIT_TRAIL = "auditTrailEndpoint";
+	public static String HEADER_TRACE_ID = "traceId";
 
 	public static String MF_UPSERT_BPARTNER_CAMEL_URI = "metasfresh.upsert-bpartner.camel.uri";
 
@@ -57,12 +61,9 @@ public class ExternalSystemCamelConstants
 	public static String MF_EXTERNAL_SYSTEM_URI = "metasfresh.externalsystem.api.uri";
 
 	public static String MF_EXTERNAL_SYSTEM_V2_URI = "metasfresh.externalsystem.v2.api.uri";
-	
+
 	public static String MF_UPSERT_EXTERNALREFERENCE_CAMEL_URI = "metasfresh.upsert-externalreference.camel.uri";
-
-	public static String ROUTE_PROPERTY_RAW_DATA = "GetOrdersRawData";
-	public static String STORE_RAW_DATA_URI = "externalSystem.raw-data.uri";
-
+	
 	public static String MF_ERROR_ROUTE_ID = "Error-Route";
 
 	public static String ERROR_WRITE_TO_ADISSUE = "Error-Route-writeToAdIssue";
@@ -78,8 +79,9 @@ public class ExternalSystemCamelConstants
 	public static String MF_CREATE_ORDER_PAYMENT_ROUTE_ID = "To-MF_CreateOrderPayment-Route";
 
 	public static String MF_UPSERT_RUNTIME_PARAMETERS_ROUTE_ID = "To-MF_UpsertRuntimeParameters-Route";
+	public static String MF_SEQ_NO_ROUTE_ID = "To-MF_Seq_No-Route";
 
-	public static String STORE_RAW_DATA_ROUTE = "Store-Raw-Data-Route";
+	public static String MF_SEQ_NO_V2_URI = "metasfresh.seqno.v2.api.uri";
 
 	public static String MF_ATTACHMENT_ROUTE_ID = "To-MF_PushAttachment-Route";
 

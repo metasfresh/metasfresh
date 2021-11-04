@@ -12,7 +12,9 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Alber
       "apiKey" : "apiKey",
       "baseUrl" : "baseUrl",
       "tenant" : "tenant"
-    }
+    },
+    "writeAudit" : true,
+    "auditFileFolder" : "auditFileFolder"
   }
 ]
 
@@ -25,46 +27,6 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Alber
     "apiKey" : "apiKey",
     "baseUrl" : "baseUrl",
     "tenant" : "tenant"
-  }
-]
-
-de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_GRSSignum_getByTypeAndParent=[
-  {
-    "id" : 100002,
-    "parentId" : 100001,
-    "value" : "testGRSSignumValue",
-    "baseUrl" : "baseUrl",
-    "camelHttpResourceAuthKey" : "authKey"
-  }
-]
-
-de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopware6_getByTypeAndParent=[
-  {
-    "id" : 100002,
-    "parentId" : 100001,
-    "baseUrl" : "baseUrl",
-    "clientId" : "id",
-    "clientSecret" : "secret",
-    "externalSystemShopware6ConfigMappingList" : [
-      {
-        "seqNo" : 10,
-        "docTypeOrderId" : 10000,
-        "paymentRule" : "K",
-        "bpartnerIfExists" : "UPDATE_MERGE",
-        "bpartnerIfNotExists" : "FAIL",
-        "bpartnerLocationIfExists" : "DONT_UPDATE",
-        "bpartnerLocationIfNotExists" : "CREATE",
-        "isInvoiceEmailEnabled" : true,
-        "paymentTermId" : 10000,
-        "sw6CustomerGroup" : "testWithAnä",
-        "sw6PaymentMethod" : "test",
-        "description" : "test"
-      }
-    ],
-    "bPartnerIdJSONPath" : "/test/bp",
-    "bPartnerLocationIdJSONPath" : "/test/bpl",
-    "salesRepJSONPath" : "/test/salesrep",
-    "isActive" : true
   }
 ]
 
@@ -83,7 +45,9 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Alber
       "apiKey" : "apiKey",
       "baseUrl" : "baseUrl",
       "tenant" : "tenant"
-    }
+    },
+    "writeAudit" : true,
+    "auditFileFolder" : "auditFileFolder"
   }
 ]
 
@@ -101,7 +65,8 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_GRSSi
       "value" : "testGRSSignumValue",
       "baseUrl" : "baseUrl",
       "camelHttpResourceAuthKey" : "authKey"
-    }
+    },
+    "writeAudit" : false
   }
 ]
 
@@ -130,7 +95,8 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_GRSSi
       "value" : "testGRSSignumValue",
       "baseUrl" : "baseUrl",
       "camelHttpResourceAuthKey" : "authKey"
-    }
+    },
+    "writeAudit" : false
   }
 ]
 
@@ -151,7 +117,9 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Rabbi
       "authToken" : "authToken",
       "isSyncBPartnerToRabbitMQ" : true,
       "syncBPartnerToRabbitMQ" : true
-    }
+    },
+    "writeAudit" : true,
+    "auditFileFolder" : "auditFileFolder"
   }
 ]
 
@@ -186,7 +154,9 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Rabbi
       "authToken" : "authToken",
       "isSyncBPartnerToRabbitMQ" : true,
       "syncBPartnerToRabbitMQ" : true
-    }
+    },
+    "writeAudit" : true,
+    "auditFileFolder" : "auditFileFolder"
   }
 ]
 
@@ -216,8 +186,11 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
       "bPartnerLocationIdJSONPath" : "/test/bpl",
       "salesRepJSONPath" : "/test/salesrep",
       "priceListId" : 1,
-      "isActive" : true
-    }
+      "isActive" : true,
+      "value" : "testShopware6Value"
+    },
+    "writeAudit" : true,
+    "auditFileFolder" : "auditFileFolder"
   }
 ]
 
@@ -247,8 +220,11 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
       "bPartnerLocationIdJSONPath" : "/test/bpl",
       "salesRepJSONPath" : "/test/salesrep",
       "priceListId" : 1,
-      "isActive" : false
-    }
+      "isActive" : false,
+      "value" : "testShopware6Value"
+    },
+    "writeAudit" : true,
+    "auditFileFolder" : "auditFileFolder"
   }
 ]
 
@@ -287,7 +263,8 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
     "bPartnerLocationIdJSONPath" : "/test/bpl",
     "salesRepJSONPath" : "/test/salesrep",
     "priceListId" : 1,
-    "isActive" : true
+    "isActive" : true,
+    "value" : "testShopware6Value"
   }
 ]
 
@@ -317,8 +294,11 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
       "bPartnerLocationIdJSONPath" : "/test/bpl",
       "salesRepJSONPath" : "/test/salesrep",
       "priceListId" : 1,
-      "isActive" : true
-    }
+      "isActive" : true,
+      "value" : "testShopware6Value"
+    },
+    "writeAudit" : true,
+    "auditFileFolder" : "auditFileFolder"
   }
 ]
 
@@ -342,8 +322,11 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
       "bPartnerLocationIdJSONPath" : "/test/bpl",
       "salesRepJSONPath" : "/test/salesrep",
       "priceListId" : 2,
-      "isActive" : true
-    }
+      "isActive" : true,
+      "value" : "new-value"
+    },
+    "writeAudit" : true,
+    "auditFileFolder" : "auditFileFolder"
   }
 ]
 
@@ -360,7 +343,9 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Wooco
       "parentId" : 100001,
       "value" : "testWoocommerceValue",
       "camelHttpResourceAuthKey" : "authKey"
-    }
+    },
+    "writeAudit" : true,
+    "auditFileFolder" : "auditFileFolder"
   }
 ]
 
@@ -376,7 +361,9 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Wooco
       "id" : 100002,
       "parentId" : 100001,
       "value" : "testWoocommerceValue"
-    }
+    },
+    "writeAudit" : true,
+    "auditFileFolder" : "auditFileFolder"
   }
 ]
 
@@ -404,6 +391,8 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Other_Config
           "value" : "value2"
         }
       ]
-    }
+    },
+    "writeAudit" : true,
+    "auditFileFolder" : "auditFileFolder"
   }
 ]

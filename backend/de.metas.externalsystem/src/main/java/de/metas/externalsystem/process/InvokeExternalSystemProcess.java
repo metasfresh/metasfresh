@@ -27,6 +27,7 @@ import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.externalsystem.ExternalSystemConfigRepo;
+import de.metas.externalsystem.ExternalSystemConfigService;
 import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.ExternalSystemType;
@@ -64,6 +65,8 @@ public abstract class InvokeExternalSystemProcess extends JavaProcess implements
 
 	public final ExternalSystemConfigRepo externalSystemConfigDAO = SpringContextHolder.instance.getBean(ExternalSystemConfigRepo.class);
 	public final RuntimeParametersRepository runtimeParametersRepository = SpringContextHolder.instance.getBean(RuntimeParametersRepository.class);
+	private final ExternalSystemConfigService externalSystemConfigService = SpringContextHolder.instance.getBean(ExternalSystemConfigService.class);
+
 	public final IADPInstanceDAO pInstanceDAO = Services.get(IADPInstanceDAO.class);
 
 	public static final String PARAM_CHILD_CONFIG_ID = "ChildConfigId";
@@ -94,6 +97,7 @@ public abstract class InvokeExternalSystemProcess extends JavaProcess implements
 		return MSG_OK;
 	}
 
+	@NonNull
 	protected JsonExternalSystemRequest getRequest()
 	{
 		final ExternalSystemParentConfig config = externalSystemConfigDAO.getById(getExternalChildConfigId());
@@ -105,6 +109,8 @@ public abstract class InvokeExternalSystemProcess extends JavaProcess implements
 				.orgCode(getOrgCode())
 				.command(externalRequest)
 				.adPInstanceId(JsonMetasfreshId.of(PInstanceId.toRepoId(getPinstanceId())))
+				.traceId(externalSystemConfigService.getTraceId())
+				.writeAuditEndpoint(config.getAuditEndpointIfEnabled())
 				.build();
 	}
 

@@ -25,6 +25,7 @@ package de.metas.camel.externalsystems.shopware6;
 public interface ShopwareTestConstants
 {
 	String MOCK_ORG_CODE = "orgCode";
+	String MOCK_TRACE_ID = "traceId";
 
 	String MOCK_EUR_CODE = "EUR";
 	String MOCK_UNIT_CODE = "kg";
@@ -44,5 +45,4 @@ public interface ShopwareTestConstants
 	String MOCK_OL_CAND_CLEAR = "mock:olCandClear";
 	String MOCK_CREATE_PAYMENT = "mock:createPayment";
 	String MOCK_UPSERT_RUNTIME_PARAMETERS = "mock:upsertRuntimeParams";
-	String MOCK_STORE_RAW_DATA = "mock:storeRawData";
 }

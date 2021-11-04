@@ -33,6 +33,7 @@ import de.metas.common.rest_api.v1.JsonErrorItem;
 import de.metas.common.rest_api.v2.JsonApiResponse;
 import de.metas.common.util.Check;
 import de.metas.common.util.StringUtils;
+import de.metas.common.util.CoalesceUtil;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
@@ -153,7 +154,8 @@ public class ErrorReportRouteBuilder extends RouteBuilder
 				.builder()
 				.orgCode(exchange.getIn().getHeader(HEADER_ORG_CODE, String.class));
 
-		final Exception exception = exchange.getProperty(Exchange.EXCEPTION_CAUGHT, Exception.class);
+		final Exception exception = CoalesceUtil.coalesce(exchange.getProperty(Exchange.EXCEPTION_CAUGHT, Exception.class),
+														  exchange.getIn().getHeader(Exchange.EXCEPTION_CAUGHT, Exception.class));
 		if (exception == null)
 		{
 			errorBuilder.message("No error message available!");

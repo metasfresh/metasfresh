@@ -35,6 +35,18 @@ public class X_ExternalSystem_Config extends org.compiere.model.PO implements I_
 	}
 
 	@Override
+	public void setAuditFileFolder (final java.lang.String AuditFileFolder)
+	{
+		set_Value (COLUMNNAME_AuditFileFolder, AuditFileFolder);
+	}
+
+	@Override
+	public java.lang.String getAuditFileFolder() 
+	{
+		return get_ValueAsString(COLUMNNAME_AuditFileFolder);
+	}
+
+	@Override
 	public void setDescription (final @Nullable java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
@@ -84,12 +96,12 @@ public class X_ExternalSystem_Config extends org.compiere.model.PO implements I_
 	public static final String TYPE_Shopware6 = "S6";
 	/** Other = Other */
 	public static final String TYPE_Other = "Other";
-	/** RabbitMQ REST API = RabbitMQ */
-	public static final String TYPE_RabbitMQRESTAPI = "RabbitMQ";
 	/** WooCommerce = WOO */
 	public static final String TYPE_WooCommerce = "WOO";
 	/** GRSSignum = GRS */
 	public static final String TYPE_GRSSignum = "GRS";
+	/** RabbitMQ REST API = RabbitMQ */
+	public static final String TYPE_RabbitMQRESTAPI = "RabbitMQ";
 	@Override
 	public void setType (final java.lang.String Type)
 	{
@@ -100,5 +112,17 @@ public class X_ExternalSystem_Config extends org.compiere.model.PO implements I_
 	public java.lang.String getType() 
 	{
 		return get_ValueAsString(COLUMNNAME_Type);
+	}
+
+	@Override
+	public void setWriteAudit (final boolean WriteAudit)
+	{
+		set_Value (COLUMNNAME_WriteAudit, WriteAudit);
+	}
+
+	@Override
+	public boolean isWriteAudit() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_WriteAudit);
 	}
 }

@@ -24,12 +24,17 @@ package de.metas.externalsystem;
 
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
 import de.metas.organization.OrgId;
+import de.metas.util.Check;
+import lombok.AccessLevel;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
+
+import javax.annotation.Nullable;
 
 @Value
 public class ExternalSystemParentConfig
@@ -40,7 +45,10 @@ public class ExternalSystemParentConfig
 	Boolean isActive;
 	OrgId orgId;
 	IExternalSystemChildConfig childConfig;
+	Boolean writeAudit;
 
+	@Getter(AccessLevel.NONE)
+	String auditFileFolder;
 
 	@Builder(toBuilder = true)
 	public ExternalSystemParentConfig(
@@ -49,7 +57,9 @@ public class ExternalSystemParentConfig
 			@NonNull final String name,
 			@NonNull final Boolean isActive,
 			@NonNull final OrgId orgId,
-			@NonNull final IExternalSystemChildConfig childConfig)
+			@NonNull final IExternalSystemChildConfig childConfig,
+			@NonNull final Boolean writeAudit,
+			@Nullable final String auditFileFolder)
 	{
 		if (!type.equals(childConfig.getId().getType()))
 		{
@@ -65,10 +75,26 @@ public class ExternalSystemParentConfig
 		this.orgId = orgId;
 		this.childConfig = childConfig;
 		this.isActive = isActive;
+		this.writeAudit = writeAudit;
+		
+		this.auditFileFolder = writeAudit
+				? Check.assumeNotNull(auditFileFolder, "If writeAudit==true, then auditFileFolder is set")
+				: null;
 	}
 
 	public ITableRecordReference getTableRecordReference()
 	{
 		return TableRecordReference.of(I_ExternalSystem_Config.Table_Name, this.id);
+	}
+
+	@Nullable
+	public String getAuditEndpointIfEnabled()
+	{
+		if (writeAudit)
+		{
+			return auditFileFolder;
+		}
+
+		return null;
 	}
 }

@@ -616,6 +616,7 @@ public class WarehouseDAO implements IWarehouseDAO
 
 	private static final AdMessageKey MSG_M_Warehouse_NoQuarantineWarehouse = AdMessageKey.of("M_Warehouse_NoQuarantineWarehouse");
 
+	@Nullable
 	@Override
 	@Cached(cacheName = I_M_Warehouse.Table_Name + "#" + I_M_Warehouse.COLUMNNAME_IsIssueWarehouse)
 	public I_M_Warehouse retrieveWarehouseForIssuesOrNull(@CacheCtx final Properties ctx)

@@ -193,11 +193,6 @@ public class ExternalSystemConfigRepo
 			case Shopware6:
 				storeShopware6Config(config);
 				return;
-			case Alberta:
-			case Other:
-				throw new AdempiereException("Method not supported for externalSystemType=" + config.getType())
-						.appendParametersToMessage()
-						.setParameter("externalSystemType", config.getType());
 			default:
 				throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", config.getType());
 		}
@@ -212,11 +207,6 @@ public class ExternalSystemConfigRepo
 		{
 			case Shopware6:
 				return getShopware6ConfigByQuery(query);
-			case Alberta:
-			case Other:
-				throw new AdempiereException("Method not supported")
-						.appendParametersToMessage()
-						.setParameter("externalSystemType", externalSystemType);
 			default:
 				throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", externalSystemType);
 		}
@@ -414,6 +404,7 @@ public class ExternalSystemConfigRepo
 				.bPartnerLocationIdJSONPath(config.getJSONPathConstantBPartnerLocationID())
 				.salesRepJSONPath(config.getJSONPathSalesRepID())
 				.isActive(config.isActive())
+				.value(config.getExternalSystemValue())
 				.build();
 	}
 
@@ -461,7 +452,9 @@ public class ExternalSystemConfigRepo
 				.id(ExternalSystemParentConfigId.ofRepoId(externalSystemConfigRecord.getExternalSystem_Config_ID()))
 				.name(externalSystemConfigRecord.getName())
 				.orgId(OrgId.ofRepoId(externalSystemConfigRecord.getAD_Org_ID()))
-				.isActive(externalSystemConfigRecord.isActive());
+				.isActive(externalSystemConfigRecord.isActive())
+				.writeAudit(externalSystemConfigRecord.isWriteAudit())
+				.auditFileFolder(externalSystemConfigRecord.getAuditFileFolder());
 	}
 
 	private ExternalSystemParentConfig getById(@NonNull final ExternalSystemOtherConfigId id)
@@ -591,6 +584,7 @@ public class ExternalSystemConfigRepo
 
 		record.setM_PriceList_ID(NumberUtils.asInteger(config.getPriceListId(), -1));
 		record.setIsActive(config.getIsActive());
+		record.setExternalSystemValue(config.getValue());
 
 		if (config.getFreightCostNormalVatConfig() != null)
 		{
