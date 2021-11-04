@@ -50,11 +50,10 @@ public class HUIdsSqlDocumentFilterConverterTest
 
 	private ObjectAssert<SqlAndParams> assertThatGetSqlOf(final HUIdsFilterData huIdsFilterData)
 	{
-		final SqlDocumentFilterConverterContext context = SqlDocumentFilterConverterContext.EMPTY;
 		final FilterSql sql = HUIdsFilterHelper.SQL_DOCUMENT_FILTER_CONVERTER.getSql(
 				HUIdsFilterHelper.createFilter(huIdsFilterData),
 				SqlOptions.usingTableAlias("dummyTableAlias"),
-				context);
+				SqlDocumentFilterConverterContext.builder().build());
 
 		assert sql != null;
 		return assertThat(sql.getWhereClause());

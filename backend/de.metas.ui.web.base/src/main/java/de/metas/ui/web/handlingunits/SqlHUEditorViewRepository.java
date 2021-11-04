@@ -618,7 +618,14 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 			final ViewRowIdsOrderedSelection fromSelection,
 			final DocumentQueryOrderByList orderBys)
 	{
-		return viewSelectionFactory.createOrderedSelectionFromSelection(viewEvalCtx, fromSelection, DocumentFilterList.EMPTY, orderBys, SqlDocumentFilterConverterContext.EMPTY);
+		return viewSelectionFactory.createOrderedSelectionFromSelection(
+				viewEvalCtx,
+				fromSelection,
+				DocumentFilterList.EMPTY,
+				orderBys,
+				SqlDocumentFilterConverterContext.builder()
+						.userRolePermissionsKey(viewEvalCtx.getPermissionsKey())
+						.build());
 	}
 
 	@Override
