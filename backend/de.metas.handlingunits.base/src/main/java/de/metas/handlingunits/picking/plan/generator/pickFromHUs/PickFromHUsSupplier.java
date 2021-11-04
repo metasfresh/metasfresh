@@ -132,6 +132,7 @@ public class PickFromHUsSupplier
 	{
 		final IHUQueryBuilder vhuQuery = handlingUnitsDAO
 				.createHUQueryBuilder()
+				.setOnlyTopLevelHUs(false)
 				.addPIVersionToInclude(HuPackingInstructionsVersionId.VIRTUAL)
 				.addOnlyInLocatorIds(Check.assumeNotEmpty(request.getPickFromLocatorIds(), "no pick from locators set: {}", request))
 				.addOnlyWithProductId(request.getProductId())
