@@ -9,6 +9,96 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.174
+## Features
+* metasfresh
+  * https://github.com/metasfresh/metasfresh/issues/11679
+  * https://github.com/metasfresh/metasfresh/issues/11720
+  * https://github.com/metasfresh/metasfresh/issues/11728
+  * https://github.com/metasfresh/metasfresh/pull/11737
+  * https://github.com/metasfresh/metasfresh/issues/11744
+  * https://github.com/metasfresh/metasfresh/issues/11748
+  * https://github.com/metasfresh/metasfresh/issues/11750
+  * https://github.com/metasfresh/metasfresh/issues/11701
+  * https://github.com/metasfresh/metasfresh/issues/11758
+  * https://github.com/metasfresh/metasfresh/issues/11762
+  * https://github.com/metasfresh/metasfresh/issues/11763
+  * https://github.com/metasfresh/metasfresh/pull/11767
+  * https://github.com/metasfresh/metasfresh/issues/11769
+  * https://github.com/metasfresh/metasfresh/pull/11771
+  * https://github.com/metasfresh/metasfresh/issues/11772
+  * https://github.com/metasfresh/metasfresh/pull/11774
+  * https://github.com/metasfresh/metasfresh/pull/11776
+  * https://github.com/metasfresh/metasfresh/pull/11777
+  * https://github.com/metasfresh/metasfresh/issues/11784
+  * https://github.com/metasfresh/metasfresh/pull/11785
+  * https://github.com/metasfresh/metasfresh/issues/11789
+  * https://github.com/metasfresh/metasfresh/issues/11508
+  * https://github.com/metasfresh/metasfresh/issues/11797
+  * https://github.com/metasfresh/metasfresh/issues/11798
+  * https://github.com/metasfresh/metasfresh/issues/11803
+  * https://github.com/metasfresh/metasfresh/issues/11806
+  * https://github.com/metasfresh/metasfresh/issues/11812
+  * https://github.com/metasfresh/metasfresh/issues/11814
+  * https://github.com/metasfresh/metasfresh/issues/11817
+  * https://github.com/metasfresh/metasfresh/issues/11818
+  * https://github.com/metasfresh/metasfresh/issues/11821
+  * https://github.com/metasfresh/metasfresh/issues/11822
+  * https://github.com/metasfresh/metasfresh/pull/11829
+  * https://github.com/metasfresh/metasfresh/issues/11831
+  * https://github.com/metasfresh/metasfresh/issues/11832
+  * https://github.com/metasfresh/metasfresh/issues/11834
+  * https://github.com/metasfresh/metasfresh/pull/11836
+  * https://github.com/metasfresh/metasfresh/issues/11840
+  * https://github.com/metasfresh/metasfresh/issues/11841
+  * https://github.com/metasfresh/metasfresh/issues/11843
+  * https://github.com/metasfresh/metasfresh/issues/11847
+  * https://github.com/metasfresh/metasfresh/issues/11848
+  * https://github.com/metasfresh/metasfresh/pull/11849
+  * https://github.com/metasfresh/metasfresh/issues/11850
+  * https://github.com/metasfresh/metasfresh/issues/11851
+  * https://github.com/metasfresh/metasfresh/issues/11854
+  * https://github.com/metasfresh/metasfresh/issues/11860
+  * https://github.com/metasfresh/metasfresh/issues/11863
+  * https://github.com/metasfresh/metasfresh/issues/11864
+  * https://github.com/metasfresh/metasfresh/issues/11866
+  * https://github.com/metasfresh/metasfresh/issues/11868
+  * https://github.com/metasfresh/metasfresh/issues/11872
+  * https://github.com/metasfresh/metasfresh/issues/11873
+  * https://github.com/metasfresh/metasfresh/issues/11880
+  * https://github.com/metasfresh/metasfresh/issues/11884
+  * https://github.com/metasfresh/metasfresh/issues/11890
+  * https://github.com/metasfresh/metasfresh/issues/11898
+  * https://github.com/metasfresh/metasfresh/issues/11906
+  * https://github.com/metasfresh/metasfresh/issues/11908
+  * https://github.com/metasfresh/metasfresh/issues/11909
+  * https://github.com/metasfresh/metasfresh/pull/11912
+  * https://github.com/metasfresh/metasfresh/issues/11913
+  * https://github.com/metasfresh/metasfresh/pull/11918
+  * https://github.com/metasfresh/metasfresh/pull/11922
+  
+## Fixes
+* metasfresh
+  * https://github.com/metasfresh/metasfresh/issues/11766
+  * https://github.com/metasfresh/metasfresh/issues/11778
+  * https://github.com/metasfresh/metasfresh/issues/11780
+  * https://github.com/metasfresh/metasfresh/pull/11786
+  * https://github.com/metasfresh/metasfresh/issues/11791
+  * https://github.com/metasfresh/metasfresh/pull/11792
+  * https://github.com/metasfresh/metasfresh/issues/11793
+  * https://github.com/metasfresh/metasfresh/issues/11800
+  * https://github.com/metasfresh/metasfresh/pull/11802
+  * https://github.com/metasfresh/metasfresh/issues/11809
+  * https://github.com/metasfresh/metasfresh/issues/11810
+  * https://github.com/metasfresh/metasfresh/pull/11823
+  * https://github.com/metasfresh/metasfresh/issues/11825
+  * https://github.com/metasfresh/metasfresh/issues/11838
+  * https://github.com/metasfresh/metasfresh/issues/11856
+  * https://github.com/metasfresh/metasfresh/pull/11858
+  * https://github.com/metasfresh/metasfresh/issues/11895
+  * https://github.com/metasfresh/metasfresh/pull/11897
+  * https://github.com/metasfresh/metasfresh/pull/11915
+
 # metasfresh 5.173
 ## Features
 * metasfresh
