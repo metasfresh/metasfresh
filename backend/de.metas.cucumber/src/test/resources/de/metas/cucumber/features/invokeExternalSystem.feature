@@ -19,12 +19,16 @@ Feature: external system invocation using metasfresh api
   @from:cucumber
   Scenario: The request is good and the external service Alberta is invoked via the correct process
     When the metasfresh REST-API endpoint path 'api/externalsystem/A/testAlberta/test' receives a 'POST' request
-
     Then a new metasfresh AD_PInstance_Log is stored for the external system 'A' invocation
 
   @from:cucumber
+  Scenario: Invoke external system for Shopware without reqBody
+    When the metasfresh REST-API endpoint path 'api/v2/externalsystem/invoke/S6/testS6/test' receives a 'POST' request
+    Then a new metasfresh AD_PInstance_Log is stored for the external system 'S6' invocation
+    
+  @from:cucumber
   Scenario: Invoke external system for Shopware with reqBody
-    When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/externalsystem/S6/testS6/test' and fulfills with '200' status code
+    When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/externalsystem/invoke/S6/testS6/test' and fulfills with '200' status code
   """
 {
     "params": {

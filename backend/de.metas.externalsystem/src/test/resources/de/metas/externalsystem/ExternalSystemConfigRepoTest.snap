@@ -16,6 +16,7 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Alber
   }
 ]
 
+
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Alberta_getByTypeAndParent=[
   {
     "id" : 100002,
@@ -140,6 +141,7 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Rabbi
     "type" : "RabbitMQ",
     "name" : "name",
     "isActive" : true,
+    "orgId" : 0,
     "childConfig" : {
       "id" : 100002,
       "parentId" : 100001,
@@ -174,6 +176,7 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Rabbi
     "type" : "RabbitMQ",
     "name" : "name",
     "isActive" : true,
+    "orgId" : 0,
     "childConfig" : {
       "id" : 100002,
       "parentId" : 100001,

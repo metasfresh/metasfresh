@@ -547,7 +547,7 @@ public class WarehouseDAO implements IWarehouseDAO
 		locator.setY(request.getY());
 		locator.setZ(request.getZ());
 		locator.setX1(request.getX1());
-		locator.setDateLastInventory(TimeUtil.asTimestampNotNull(request.getDateLastInventory()));
+		locator.setDateLastInventory(TimeUtil.asTimestamp(request.getDateLastInventory()));
 		InterfaceWrapperHelper.saveRecord(locator);
 
 		return LocatorId.ofRepoId(warehouseId, locator.getM_Locator_ID());

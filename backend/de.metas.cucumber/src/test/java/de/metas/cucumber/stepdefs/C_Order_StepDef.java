@@ -223,7 +223,7 @@ public class C_Order_StepDef
 		assertThat(purchaseOrderRecord.getExternalPurchaseOrderURL()).isEqualTo(externalPurchaseOrderUrl);
 	}
 
-	@And("validate created order")
+	@And("validate the created orders")
 	public void validate_created_order(@NonNull final DataTable table)
 	{
 		final Map<String, String> row = table.asMaps().get(0);
@@ -232,7 +232,7 @@ public class C_Order_StepDef
 
 	private void validateOrder(@NonNull final Map<String, String> row)
 	{
-		final String identifier = DataTableUtil.extractStringForColumnName(row, "Order.Identifier");
+		final String identifier = DataTableUtil.extractStringForColumnName(row, "C_Order_ID.Identifier");
 		final int bpartnerId = DataTableUtil.extractIntForColumnName(row, "c_bpartner_id");
 		final int bpartnerLocationId = DataTableUtil.extractIntForColumnName(row, "c_bpartner_location_id");
 		final Timestamp dateOrdered = DataTableUtil.extractDateTimestampForColumnName(row, "dateordered");
