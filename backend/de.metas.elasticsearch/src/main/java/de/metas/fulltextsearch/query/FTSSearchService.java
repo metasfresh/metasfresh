@@ -36,6 +36,7 @@ import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ISysConfigBL;
 import org.compiere.util.CtxName;
 import org.compiere.util.CtxNames;
 import org.compiere.util.Evaluatees;
@@ -69,10 +70,12 @@ public class FTSSearchService
 	private final FTSConfigService ftsConfigService;
 	private final FTSSearchResultRepository ftsSearchResultRepository;
 	private final IESSystem elasticsearchSystem = Services.get(IESSystem.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	private static final CtxName CTXNAME_query = CtxNames.parse("query");
 
-	private static final int RESULT_MAX_SIZE = 100;
+	private static final String SYSCONFIG_ResultMaxSize = "fulltextsearch.query.limit";
+	private static final int DEFAULT_ResultMaxSize = 100;
 
 	public FTSSearchService(
 			@NonNull final FTSConfigService ftsConfigService,
@@ -111,7 +114,7 @@ public class FTSSearchService
 					.search(new SearchRequest()
 									.indices(ftsConfig.getEsIndexName())
 									.source(SearchSourceBuilder.fromXContent(parser)
-											.size(RESULT_MAX_SIZE)),
+											.size(getResultMaxSize())),
 							RequestOptions.DEFAULT
 					);
 
@@ -131,6 +134,11 @@ public class FTSSearchService
 		{
 			throw AdempiereException.wrapIfNeeded(ex);
 		}
+	}
+
+	private int getResultMaxSize()
+	{
+		return sysConfigBL.getIntValue(SYSCONFIG_ResultMaxSize, DEFAULT_ResultMaxSize);
 	}
 
 	private static FTSSearchResultItem extractFTSSearchResultItem(
