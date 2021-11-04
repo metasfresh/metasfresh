@@ -1,12 +1,14 @@
 package org.compiere.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for AD_WF_Node
  *  @author metasfresh (generated) 
  */
+@SuppressWarnings("unused")
 public interface I_AD_WF_Node 
 {
 
@@ -155,7 +157,7 @@ public interface I_AD_WF_Node
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Prozess.
+	 * Set Process.
 	 * Process or Report
 	 *
 	 * <br>Type: TableDir
@@ -165,7 +167,7 @@ public interface I_AD_WF_Node
 	void setAD_Process_ID (int AD_Process_ID);
 
 	/**
-	 * Get Prozess.
+	 * Get Process.
 	 * Process or Report
 	 *
 	 * <br>Type: TableDir
@@ -884,6 +886,27 @@ public interface I_AD_WF_Node
 
 	ModelColumn<I_AD_WF_Node, Object> COLUMN_OverlapUnits = new ModelColumn<>(I_AD_WF_Node.class, "OverlapUnits", null);
 	String COLUMNNAME_OverlapUnits = "OverlapUnits";
+
+	/**
+	 * Set Manufacturing Activity Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPP_Activity_Type (@Nullable java.lang.String PP_Activity_Type);
+
+	/**
+	 * Get Manufacturing Activity Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getPP_Activity_Type();
+
+	ModelColumn<I_AD_WF_Node, Object> COLUMN_PP_Activity_Type = new ModelColumn<>(I_AD_WF_Node.class, "PP_Activity_Type", null);
+	String COLUMNNAME_PP_Activity_Type = "PP_Activity_Type";
 
 	/**
 	 * Set Priorität.

@@ -20,6 +20,7 @@ class ConfirmButton extends Component {
    */
   onDialogYes = () => {
     const { onUserConfirmed } = this.props;
+    this.hideConfirmDialog();
     onUserConfirmed();
   };
 

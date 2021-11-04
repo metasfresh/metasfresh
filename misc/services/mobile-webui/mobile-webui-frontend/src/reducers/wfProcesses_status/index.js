@@ -5,6 +5,7 @@ import { forEach } from 'lodash';
 import { NOT_STARTED } from '../../constants/CompleteStatus';
 import { workflowReducer } from './workflow';
 import { scanReducer } from './scan';
+import { activityUserConfirmationReducer } from './confirmation';
 import { pickingReducer } from './picking';
 
 const getWfProcess = (state, wfProcessId) => state.wfProcesses_status[wfProcessId] || null;
@@ -61,6 +62,7 @@ export const activitiesNotStarted = createSelector(
 const reducer = produce((draftState, action) => {
   draftState = workflowReducer({ draftState, action });
   draftState = scanReducer({ draftState, action });
+  draftState = activityUserConfirmationReducer({ draftState, action });
   draftState = pickingReducer({ draftState, action });
 
   return draftState;

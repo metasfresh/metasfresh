@@ -8,7 +8,7 @@ import ViewHeader from '../containers/ViewHeader';
 import LoginView from '../components/LoginView';
 
 import WFLaunchersScreen from '../containers/wfLaunchersScreen/WFLaunchersScreen';
-import WFProcessScreen from '../containers/WFProcessScreen';
+import WFProcessScreen from '../containers/wfProcessScreen/WFProcessScreen';
 import ScanScreen from '../containers/activities/scan/ScanScreen';
 import PickLineScreen from '../containers/activities/picking/PickLineScreen';
 import PickStepScreen from '../containers/activities/picking/PickStepScreen';

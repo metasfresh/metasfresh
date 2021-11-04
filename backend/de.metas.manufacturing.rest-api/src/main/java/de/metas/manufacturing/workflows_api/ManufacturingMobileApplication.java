@@ -1,13 +1,11 @@
 package de.metas.manufacturing.workflows_api;
 
-import com.google.common.collect.ImmutableList;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.manufacturing.job.ManufacturingJob;
 import de.metas.user.UserId;
 import de.metas.workflow.rest_api.model.MobileApplicationId;
 import de.metas.workflow.rest_api.model.MobileApplicationInfo;
-import de.metas.workflow.rest_api.model.WFActivity;
-import de.metas.workflow.rest_api.model.WFActivityId;
 import de.metas.workflow.rest_api.model.WFProcess;
 import de.metas.workflow.rest_api.model.WFProcessHeaderProperties;
 import de.metas.workflow.rest_api.model.WFProcessId;
@@ -20,7 +18,6 @@ import org.eevolution.api.PPOrderId;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
-import java.util.Objects;
 import java.util.function.UnaryOperator;
 
 @Component
@@ -54,36 +51,17 @@ public class ManufacturingMobileApplication implements MobileApplication
 			@NonNull final QueryLimit suggestedLimit,
 			@NonNull final Duration maxStaleAccepted)
 	{
-		return wfLaunchersProvider.provideLaunchers(userId, suggestedLimit, maxStaleAccepted);
+		return wfLaunchersProvider.provideLaunchers(userId, suggestedLimit);
 	}
 
 	@Override
 	public WFProcess startWorkflow(final WorkflowStartRequest request)
 	{
 		final UserId invokerId = request.getInvokerId();
-		final ManufacturingWFProcessStartParams params = ManufacturingWFProcessStartParams.ofParams(request.getWfParameters());
-		final PPOrderId ppOrderId = params.getPpOrderId();
+		final PPOrderId ppOrderId = ManufacturingWFProcessStartParams.ofParams(request.getWfParameters()).getPpOrderId();
 
 		final ManufacturingJob job = manufacturingRestService.createJob(ppOrderId, invokerId);
-		return toWFProcess(job);
-	}
-
-	private static WFProcess toWFProcess(final ManufacturingJob job)
-	{
-		return WFProcess.builder()
-				.id(WFProcessId.ofIdPart(HANDLER_ID, job.getPpOrderId()))
-				.invokerId(Objects.requireNonNull(job.getResponsibleId()))
-				.caption(TranslatableStrings.anyLanguage("" + job.getPpOrderId().getRepoId())) // TODO
-				.document(job)
-				.activities(job.getActivities()
-						.stream()
-						.map(jobActivity -> WFActivity.builder()
-								.id(WFActivityId.ofString(String.valueOf(jobActivity.getPpOrderRoutingActivityId().getRepoId())))
-								.caption(TranslatableStrings.anyLanguage(jobActivity.getCode().getAsString()))
-								.wfActivityType(ManufacturingActivityHandler.HANDLED_ACTIVITY_TYPE)
-								.build())
-						.collect(ImmutableList.toImmutableList()))
-				.build();
+		return ManufacturingRestService.toWFProcess(job);
 	}
 
 	@Override
@@ -103,13 +81,14 @@ public class ManufacturingMobileApplication implements MobileApplication
 	{
 		final PPOrderId ppOrderId = wfProcessId.getRepoId(PPOrderId::ofRepoId);
 		final ManufacturingJob job = manufacturingRestService.getJobById(ppOrderId);
-		return toWFProcess(job);
+		return ManufacturingRestService.toWFProcess(job);
 	}
 
 	@Override
 	public WFProcess changeWFProcessById(final WFProcessId wfProcessId, final UnaryOperator<WFProcess> remappingFunction)
 	{
-		throw new UnsupportedOperationException(); // TODO
+		final WFProcess wfProcess = getWFProcessById(wfProcessId);
+		return remappingFunction.apply(wfProcess);
 	}
 
 	@Override
