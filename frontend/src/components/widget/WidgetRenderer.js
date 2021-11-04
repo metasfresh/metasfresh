@@ -119,6 +119,7 @@ class WidgetRenderer extends PureComponent {
       disconnected,
       isFilterActive, // flag used to identify if the component belongs to an active filter
       updateItems,
+      suppressChange,
     } = this.props;
 
     const filterActiveState =
@@ -490,6 +491,7 @@ class WidgetRenderer extends PureComponent {
               filterWidget,
               isFilterActive: filterActiveState,
               updateItems,
+              suppressChange,
             }}
             widgetData={widgetData[0]}
             handlePatch={onPatch}
