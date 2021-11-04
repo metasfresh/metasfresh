@@ -1,40 +1,30 @@
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
-import ButtonWithIndicator from '../../../components/ButtonWithIndicator';
+import RawMaterialsIssueLineButton from './RawMaterialsIssueLineButton';
 
-class RawMaterialsIssueActivity extends Component {
+class RawMaterialsIssueActivity extends PureComponent {
   render() {
     const {
       activityState: {
         componentProps: { lines },
-      },
-    } = this.props;
-
-    console.log(lines);
-
-    return (
-      <div className="mfg-rawMaterialsIssue-activity-container mt-5">
-        {lines.length > 0 ? lines.map((line, lineIndex) => this.renderLineButton(line, lineIndex)) : null}
-      </div>
-    );
-  }
-
-  renderLineButton = (line, lineIndex) => {
-    const {
-      activityState: {
         dataStored: { isUserEditable },
       },
     } = this.props;
 
-    const lineId = '' + lineIndex;
     return (
-      <div className="buttons">
-        <button key={lineId} className="button is-outlined complete-btn" disabled={!isUserEditable}>
-          <ButtonWithIndicator key={lineId} caption={'Issue: ' + line.productName} />
-        </button>
+      <div className="mfg-rawMaterialsIssue-activity-container mt-5">
+        {lines.map((line, lineIndex) => {
+          return (
+            <RawMaterialsIssueLineButton
+              key={lineIndex}
+              productName={line.productName}
+              isUserEditable={isUserEditable}
+            />
+          );
+        })}
       </div>
     );
-  };
+  }
 }
 
 RawMaterialsIssueActivity.propTypes = {
