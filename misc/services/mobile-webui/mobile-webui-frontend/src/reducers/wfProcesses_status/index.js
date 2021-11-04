@@ -2,6 +2,7 @@ import { produce } from 'immer';
 import { createSelector } from 'reselect';
 import { workflowReducer } from './workflow';
 import { scanReducer } from './scan';
+import { activityUserConfirmationReducer } from './confirmation';
 import { pickingReducer } from './picking';
 
 export const selectWFProcessFromState = createSelector(
@@ -21,6 +22,7 @@ export const selectWFProcessFromState = createSelector(
 const reducer = produce((draftState, action) => {
   draftState = workflowReducer({ draftState, action });
   draftState = scanReducer({ draftState, action });
+  draftState = activityUserConfirmationReducer({ draftState, action });
   draftState = pickingReducer({ draftState, action });
   return draftState;
 }, {});

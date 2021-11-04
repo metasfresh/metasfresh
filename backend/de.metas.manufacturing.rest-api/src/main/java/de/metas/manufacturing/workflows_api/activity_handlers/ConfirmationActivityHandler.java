@@ -5,9 +5,9 @@ import de.metas.manufacturing.job.ManufacturingJobActivityId;
 import de.metas.manufacturing.workflows_api.ManufacturingRestService;
 import de.metas.workflow.rest_api.activity_features.user_confirmation.UserConfirmationRequest;
 import de.metas.workflow.rest_api.activity_features.user_confirmation.UserConfirmationSupport;
+import de.metas.workflow.rest_api.activity_features.user_confirmation.UserConfirmationSupportUtil;
 import de.metas.workflow.rest_api.controller.v2.json.JsonOpts;
 import de.metas.workflow.rest_api.model.UIComponent;
-import de.metas.workflow.rest_api.model.UIComponentType;
 import de.metas.workflow.rest_api.model.WFActivity;
 import de.metas.workflow.rest_api.model.WFActivityStatus;
 import de.metas.workflow.rest_api.model.WFActivityType;
@@ -31,9 +31,10 @@ public class ConfirmationActivityHandler implements WFActivityHandler, UserConfi
 	@Override
 	public UIComponent getUIComponent(final @NonNull WFProcess wfProcess, final @NonNull WFActivity wfActivity, final @NonNull JsonOpts jsonOpts)
 	{
-		return UIComponent.builder()
-				.type(UIComponentType.CONFIRM_BUTTON)
-				.build();
+		return UserConfirmationSupportUtil.createUIComponent(
+				UserConfirmationSupportUtil.UIComponentProps.builder()
+						.confirmed(wfActivity.getStatus().isCompleted())
+						.build());
 	}
 
 	@Override
