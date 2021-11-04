@@ -38,6 +38,7 @@ export const setupCounterpart = () => {
         defaultCaption: 'Scan',
         invalidScannedBarcode: 'Scanned code is invalid',
       },
+      abortText: 'Abort',
       picking: {
         PickingLine: 'Picking Line',
         scanHUBarcode: 'Scan HU',
@@ -55,6 +56,9 @@ export const setupCounterpart = () => {
           promptQuestion: 'Are you sure?',
           yes: 'Yes',
           no: 'No',
+        },
+        abort: {
+          caption: 'Abort',
         },
       },
     },

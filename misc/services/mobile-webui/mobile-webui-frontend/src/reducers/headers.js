@@ -10,6 +10,8 @@ export const initialState = {
   ],
 };
 
+const launchersUrlRegExp = /\/launchers\/[A-Z]\w+/gi;
+
 export default function reducer(state = initialState, action) {
   const { payload } = action;
 
@@ -48,11 +50,18 @@ export default function reducer(state = initialState, action) {
         location: { pathname },
       } = payload;
 
-      const newEntries = removeEntries({
-        entriesArray: state.entries,
-        startLocation: pathname,
-        inclusive: false,
-      });
+      let newEntries = null;
+
+      // clear header on main urls
+      if (pathname === '/' || launchersUrlRegExp.test(pathname)) {
+        newEntries = [...initialState.entries];
+      } else {
+        newEntries = removeEntries({
+          entriesArray: state.entries,
+          startLocation: pathname,
+          inclusive: false,
+        });
+      }
 
       // console.log('@@router/LOCATION_CHANGE: pathname=%o', pathname);
       // console.log('@@router/LOCATION_CHANGE=>newEntries:', newEntries);

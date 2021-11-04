@@ -4,18 +4,8 @@ import { connect } from 'react-redux';
 import { map } from 'lodash';
 
 import AppCard from './AppCard';
-import { getApplications } from '../../api/applications';
-import { populateApplications } from '../../actions/ApplicationsActions';
 
 class ApplicationsScreen extends Component {
-  componentDidMount() {
-    const { populateApplications } = this.props;
-
-    getApplications().then(({ applications }) => {
-      populateApplications({ applications });
-    });
-  }
-
   render() {
     const { applications } = this.props;
 
@@ -38,8 +28,6 @@ const mapStateToProps = ({ applications }) => {
 ApplicationsScreen.propTypes = {
   // Props
   applications: PropTypes.object.isRequired,
-  // Actions
-  populateApplications: PropTypes.func.isRequired,
 };
 
-export default connect(mapStateToProps, { populateApplications })(ApplicationsScreen);
+export default connect(mapStateToProps)(ApplicationsScreen);
