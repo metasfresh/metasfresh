@@ -28,7 +28,6 @@ import de.metas.acct.api.IProductAcctDAO;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
-import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.cache.CacheMgt;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
@@ -39,11 +38,11 @@ import de.metas.calendar.ICalendarBL;
 import de.metas.calendar.ICalendarDAO;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
-import de.metas.contracts.FlatrateTermRequest.CreateFlatrateTermRequest;
 import de.metas.contracts.FlatrateTermId;
+import de.metas.contracts.FlatrateTermPricing;
+import de.metas.contracts.FlatrateTermRequest.CreateFlatrateTermRequest;
 import de.metas.contracts.FlatrateTermRequest.FlatrateTermBillPartnerRequest;
 import de.metas.contracts.FlatrateTermRequest.FlatrateTermPriceRequest;
-import de.metas.contracts.FlatrateTermPricing;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.IFlatrateTermEventService;
@@ -116,14 +115,11 @@ import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_AD_Org;
-import org.compiere.model.I_AD_PrintFormat;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_DocType;
-import org.compiere.model.I_C_PaySelection;
-import org.compiere.model.I_C_PaySelectionLine;
 import org.compiere.model.I_C_Period;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_C_Year;
@@ -148,7 +144,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
 public class FlatrateBL implements IFlatrateBL
@@ -191,7 +186,6 @@ public class FlatrateBL implements IFlatrateBL
 	private final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
-
 
 	private final transient IModelCacheInvalidationService modelCacheInvalidationService = Services.get(IModelCacheInvalidationService.class);
 
@@ -2043,7 +2037,6 @@ public class FlatrateBL implements IFlatrateBL
 				.setParameter("existingContractIds", existingContractsOfTargetType);
 	}
 
-
 	@Override
 	public void updateFlatrateTermProductAndPrice(@NonNull final FlatrateTermPriceRequest request)
 	{
@@ -2057,7 +2050,6 @@ public class FlatrateBL implements IFlatrateBL
 		updateProductForInvoiceCandidate(request);
 		invoiceCandidateHandlerBL.invalidateCandidatesFor(term);
 	}
-
 
 	private void updateProductForInvoiceCandidate(@NonNull final FlatrateTermPriceRequest request)
 	{
@@ -2075,6 +2067,7 @@ public class FlatrateBL implements IFlatrateBL
 		ic.setM_Product_ID(productId.getRepoId());
 		invoiceCandDAO.save(ic);
 	}
+
 	@Override
 	public void updateFlatrateTermBillBPartner(@NonNull final FlatrateTermBillPartnerRequest request)
 	{
@@ -2095,15 +2088,17 @@ public class FlatrateBL implements IFlatrateBL
 
 		flatrateDAO.save(term);
 
-		updateBillBPartnerForInvoiceCandidate(request);
-		invoiceCandidateHandlerBL.invalidateCandidatesFor(term);
+		if (!request.isTermHasInvoices())
+		{
+			updateBillBPartnerForInvoiceCandidate(request);
+			invoiceCandidateHandlerBL.invalidateCandidatesFor(term);
+		}
 
 		modelCacheInvalidationService.invalidate(
 				CacheInvalidateMultiRequest.of(
 						CacheInvalidateRequest.rootRecord(I_C_Flatrate_Data.Table_Name, oldFlatrateDataId),
 						CacheInvalidateRequest.allChildRecords(I_C_Flatrate_Data.Table_Name, oldFlatrateDataId, I_C_Flatrate_Term.Table_Name)),
 				ModelCacheInvalidationTiming.CHANGE);
-
 
 		modelCacheInvalidationService.invalidate(
 				CacheInvalidateMultiRequest.of(
