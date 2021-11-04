@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 
 import { updateWFProcess } from '../actions/WorkflowActions';
-import { selectWFProcessFromState } from '../reducers/wfProcesses_status/index';
+import { activitiesNotStarted, selectWFProcessFromState } from '../reducers/wfProcesses_status/index';
 
 import ScanActivity from './activities/scan/ScanActivity';
 import PickProductsActivity from './activities/picking/PickProductsActivity';
