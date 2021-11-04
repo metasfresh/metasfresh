@@ -22,6 +22,7 @@
 
 package de.metas.audit.apirequest.config;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.metas.audit.apirequest.HttpMethod;
 import de.metas.organization.OrgId;
 import de.metas.user.UserGroupId;
@@ -39,6 +40,7 @@ public class ApiAuditConfig
 {
 	@NonNull
 	ApiAuditConfigId apiAuditConfigId;
+	boolean active;
 
 	@NonNull
 	OrgId orgId;
@@ -66,6 +68,7 @@ public class ApiAuditConfig
 
 	@NonNull
 	@Builder.Default
+	@JsonIgnore // not needed in snapshot-testing
 	AntPathMatcher antPathMatcher = new AntPathMatcher();
 
 	public boolean matchesRequest(@NonNull final String requestPath, @NonNull final String httpMethod)

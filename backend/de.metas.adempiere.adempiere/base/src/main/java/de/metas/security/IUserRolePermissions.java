@@ -211,7 +211,7 @@ public interface IUserRolePermissions
 	// FRESH-560: Retrieve the org IDs also as a list
 	Set<OrgId> getAD_Org_IDs_AsSet();
 
-	Set<KeyNamePair> getLoginClients();
+	Set<ClientId> getLoginClientIds();
 
 	Set<OrgResource> getLoginOrgs();
 

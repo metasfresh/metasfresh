@@ -54,7 +54,7 @@ public class ProductsToPick_PickAndPackSelected extends ProductsToPickViewBasedP
 			return ProcessPreconditionsResolution.rejectWithInternalReason("only picker shall pick");
 		}
 
-		if (!rowsService.anyRowsEligibleForPicking(getValidRowsForPickAndPack()))
+		if (rowsService.noRowsEligibleForPicking(getValidRowsForPickAndPack()))
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("select only rows that can be picked");
 		}

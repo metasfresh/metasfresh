@@ -34,8 +34,8 @@ import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_Reservation;
 import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.handlingunits.picking.IHUPickingSlotDAO;
+import de.metas.handlingunits.reservation.HUReservationDocRef;
 import de.metas.handlingunits.reservation.HUReservationRepository;
-import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -57,6 +57,7 @@ import org.adempiere.util.lang.EqualsBuilder;
 import org.adempiere.util.lang.HashcodeBuilder;
 import org.adempiere.util.lang.ObjectUtils;
 import org.adempiere.util.text.annotation.ToStringBuilder;
+import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Attribute;
@@ -135,7 +136,7 @@ import java.util.Set;
 	private final Set<HuPackingInstructionsVersionId> _huPIVersionIdsToInclude = new HashSet<>();
 	private boolean _excludeHUsOnPickingSlot = false;
 
-	private OrderLineId _excludeReservedToOtherThanOrderLineId = null;
+	private HUReservationDocRef _excludeReservedToOtherThanRef = null;
 	private boolean _excludeReserved = false;
 
 	private IQuery<I_M_HU> huSubQueryFilter = null;
@@ -191,7 +192,7 @@ import java.util.Set;
 		this._huIdsToAlwaysInclude.addAll(from._huIdsToAlwaysInclude);
 		this._huPIVersionIdsToInclude.addAll(from._huPIVersionIdsToInclude);
 		this._excludeHUsOnPickingSlot = from._excludeHUsOnPickingSlot;
-		this._excludeReservedToOtherThanOrderLineId = from._excludeReservedToOtherThanOrderLineId;
+		this._excludeReservedToOtherThanRef = from._excludeReservedToOtherThanRef;
 		this._excludeReserved = from._excludeReserved;
 
 		this.huSubQueryFilter = from.huSubQueryFilter == null ? null : from.huSubQueryFilter.copy();
@@ -235,7 +236,7 @@ import java.util.Set;
 				.append(_huIdsToAlwaysInclude)
 				.append(_huPIVersionIdsToInclude)
 				.append(_excludeHUsOnPickingSlot)
-				.append(_excludeReservedToOtherThanOrderLineId)
+				.append(_excludeReservedToOtherThanRef)
 				.append(_excludeReserved)
 				.append(otherFilters)
 				.append(huSubQueryFilter)
@@ -280,7 +281,7 @@ import java.util.Set;
 				.append(_huIdsToAlwaysInclude, other._huIdsToAlwaysInclude)
 				.append(_huPIVersionIdsToInclude, other._huPIVersionIdsToInclude)
 				.append(_excludeHUsOnPickingSlot, other._excludeHUsOnPickingSlot)
-				.append(_excludeReservedToOtherThanOrderLineId, other._excludeReservedToOtherThanOrderLineId)
+				.append(_excludeReservedToOtherThanRef, other._excludeReservedToOtherThanRef)
 				.append(_excludeReserved, other._excludeReserved)
 				.append(otherFilters, other.otherFilters)
 				.append(huSubQueryFilter, other.huSubQueryFilter)
@@ -535,10 +536,10 @@ import java.util.Set;
 
 		//
 		// Exclude those which are reserved to other order line than the one specified
-		if (_excludeReservedToOtherThanOrderLineId != null)
+		if (_excludeReservedToOtherThanRef != null)
 		{
 			final IQuery<I_M_HU_Reservation> //
-					excludeSubQuery = huReservationRepository.createQueryReservedToOtherThan(_excludeReservedToOtherThanOrderLineId);
+					excludeSubQuery = huReservationRepository.createQueryReservedToOtherThan(_excludeReservedToOtherThanRef);
 
 			final ICompositeQueryFilter<I_M_HU> //
 					notReservedToOtherOrderLineFilter = queryBL
@@ -583,7 +584,7 @@ import java.util.Set;
 	}
 
 	@Override
-	public Set<HuId> listIds()
+	public ImmutableSet<HuId> listIds()
 	{
 		final IQuery<I_M_HU> query = createQuery();
 		return query.listIds(HuId::ofRepoId);
@@ -749,12 +750,26 @@ import java.util.Set;
 	@Override
 	public HUQueryBuilder addOnlyInLocatorId(final int locatorId)
 	{
+		locators.addOnlyInLocatorRepoId(locatorId);
+		return this;
+	}
+
+	@Override
+	public HUQueryBuilder addOnlyInLocatorId(@NonNull final LocatorId locatorId)
+	{
 		locators.addOnlyInLocatorId(locatorId);
 		return this;
 	}
 
 	@Override
-	public IHUQueryBuilder addOnlyInLocatorIds(final Collection<Integer> locatorIds)
+	public IHUQueryBuilder addOnlyInLocatorRepoIds(final Collection<Integer> locatorIds)
+	{
+		locators.addOnlyInLocatorRepoIds(locatorIds);
+		return this;
+	}
+
+	@Override
+	public IHUQueryBuilder addOnlyInLocatorIds(final Collection<LocatorId> locatorIds)
 	{
 		locators.addOnlyInLocatorIds(locatorIds);
 		return this;
@@ -1165,9 +1180,9 @@ import java.util.Set;
 	}
 
 	@Override
-	public IHUQueryBuilder setExcludeReservedToOtherThan(@NonNull final OrderLineId orderLineId)
+	public IHUQueryBuilder setExcludeReservedToOtherThan(@Nullable final HUReservationDocRef documentRef)
 	{
-		_excludeReservedToOtherThanOrderLineId = orderLineId;
+		_excludeReservedToOtherThanRef = documentRef;
 		return this;
 	}
 

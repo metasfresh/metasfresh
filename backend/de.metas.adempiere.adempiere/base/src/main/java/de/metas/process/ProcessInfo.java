@@ -866,7 +866,7 @@ public final class ProcessInfo implements Serializable
 								adOrgId,
 								adUserId,
 								Env.getLocalDate(processCtx))
-						.orNull();
+						.orElse(null);
 				adRoleId = role == null ? null : role.getRoleId();
 			}
 			Env.setContext(processCtx, Env.CTXNAME_AD_Role_ID, RoleId.toRepoId(adRoleId, Env.CTXVALUE_AD_Role_ID_NONE));

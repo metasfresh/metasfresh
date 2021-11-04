@@ -1,5 +1,6 @@
 package de.metas.organization.impl;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.cache.CCache;
@@ -45,6 +46,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -90,6 +92,32 @@ public class OrgDAO implements IOrgDAO
 				.firstOnly(I_AD_Org.class);
 	}
 
+	@Override
+	public List<I_AD_Org> getByIds(final Set<OrgId> orgIds)
+	{
+		if (orgIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_AD_Org.class)
+				.addInArrayFilter(I_AD_Org.COLUMNNAME_AD_Org_ID, orgIds)
+				.create()
+				.listImmutable(I_AD_Org.class);
+	}
+
+	@Override
+	public List<I_AD_Org> getAllActiveOrgs()
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilderOutOfTrx(I_AD_Org.class)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.list();
+
+	}
+
+	@SuppressWarnings("OptionalAssignedToNull")
 	@Override
 	public OrgInfo createOrUpdateOrgInfo(@NonNull final OrgInfoUpdateRequest request)
 	{
@@ -207,13 +235,13 @@ public class OrgDAO implements IOrgDAO
 		{
 			final HashMap<String, AdImageId> result = new HashMap<>();
 			final AdImageId logoId = AdImageId.ofRepoIdOrNull(orgInfo.getLogo_ID());
-			if(logoId != null)
+			if (logoId != null)
 			{
 				result.put(I_AD_OrgInfo.COLUMNNAME_Logo_ID, logoId);
 			}
 
 			final AdImageId reportBottomLogoId = AdImageId.ofRepoIdOrNull(orgInfo.getReportBottom_Logo_ID());
-			if(reportBottomLogoId != null)
+			if (reportBottomLogoId != null)
 			{
 				result.put(I_AD_OrgInfo.COLUMNNAME_ReportBottom_Logo_ID, reportBottomLogoId);
 			}
@@ -231,7 +259,7 @@ public class OrgDAO implements IOrgDAO
 					final AdImageId imageId = InterfaceWrapperHelper.getValue(orgInfo, columnName)
 							.map(AdImageId::ofNullableObject)
 							.orElse(null);
-					if(imageId != null)
+					if (imageId != null)
 					{
 						result.put(columnName, imageId);
 					}
@@ -338,6 +366,12 @@ public class OrgDAO implements IOrgDAO
 	public UserGroupId getPartnerCreatedFromAnotherOrgNotifyUserGroupID(final OrgId orgId)
 	{
 		return getOrgInfoById(orgId).getPartnerCreatedFromAnotherOrgNotifyUserGroupID();
+	}
+
+	@Override
+	public String getOrgName(@NonNull final OrgId orgId)
+	{
+		return getById(orgId).getName();
 	}
 
 }

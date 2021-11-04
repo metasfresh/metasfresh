@@ -1,10 +1,10 @@
 package de.metas.security.impl;
 
-import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
 import de.metas.cache.CCache;
 import de.metas.cache.CacheMgt;
 import de.metas.document.DocTypeId;
@@ -55,7 +55,9 @@ import de.metas.security.requests.RemoveWorkflowAccessRequest;
 import de.metas.user.UserGroupId;
 import de.metas.user.UserId;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
+import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
@@ -71,8 +73,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.tree.AdTreeId;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.adempiere.util.proxy.Cached;
-import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Column_Access;
 import org.compiere.model.I_AD_Document_Action_Access;
 import org.compiere.model.I_AD_Form;
@@ -97,28 +97,31 @@ import org.compiere.model.I_AD_Workflow_Access;
 import org.compiere.model.I_C_OrgAssignment;
 import org.compiere.model.X_AD_Table_Access;
 import org.compiere.util.DB;
-import org.compiere.util.DisplayType;
-import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 {
 	private static final transient Logger logger = LogManager.getLogger(UserRolePermissionsDAO.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final IRoleDAO roleDAO = Services.get(IRoleDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private static final Set<String> ROLE_DEPENDENT_TABLENAMES = ImmutableSet.of(
+
+	private static final ImmutableSet<String> ROLE_DEPENDENT_TABLENAMES = ImmutableSet.of(
 			// I_AD_Role.Table_Name // NEVER include the AD_Role
 			I_AD_User_Roles.Table_Name, // User to Role assignment (see https://github.com/metasfresh/metasfresh-webui-api/issues/482)
 			// Included role
@@ -143,8 +146,9 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 
 	/**
 	 * Aggregated permissions per key
+	 
 	 */
-	private CCache<UserRolePermissionsKey, IUserRolePermissions> //
+	private final CCache<UserRolePermissionsKey, IUserRolePermissions> //
 			permissionsByKey = CCache.<UserRolePermissionsKey, IUserRolePermissions>builder()
 			.tableName(I_AD_Role.Table_Name)
 			.build();
@@ -152,8 +156,44 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 	/**
 	 * Individual (not-aggregated) permissions per key
 	 */
-	private CCache<UserRolePermissionsKey, UserRolePermissions> individialPermissionsByKey = CCache.<UserRolePermissionsKey, UserRolePermissions>builder()
+	private final CCache<UserRolePermissionsKey, UserRolePermissions> individialPermissionsByKey = CCache.<UserRolePermissionsKey, UserRolePermissions>builder()
 			.tableName(I_AD_Role.Table_Name)
+			.build();
+
+	private final CCache<RoleOrgPermissionsCacheKey, OrgPermissions> roleOrgPermissionsCache = CCache.<RoleOrgPermissionsCacheKey, OrgPermissions>builder()
+			.tableName(I_AD_Role_OrgAccess.Table_Name)
+			.build();
+
+	private final CCache<UserOrgPermissionsCacheKey, OrgPermissions> userOrgPermissionsCache = CCache.<UserOrgPermissionsCacheKey, OrgPermissions>builder()
+			.tableName(I_AD_User_OrgAccess.Table_Name)
+			.build();
+
+	private final CCache<RoleId, ElementPermissions> windowPermissionsCache = CCache.<RoleId, ElementPermissions>builder()
+			.tableName(I_AD_Window_Access.Table_Name)
+			.build();
+
+	private final CCache<RoleId, ElementPermissions> processPermissionsCache = CCache.<RoleId, ElementPermissions>builder()
+			.tableName(I_AD_Process_Access.Table_Name)
+			.build();
+
+	private final CCache<RoleId, ElementPermissions> taskPermissionsCache = CCache.<RoleId, ElementPermissions>builder()
+			.tableName(I_AD_Task_Access.Table_Name)
+			.build();
+
+	private final CCache<RoleId, ElementPermissions> formPermissionsCache = CCache.<RoleId, ElementPermissions>builder()
+			.tableName(I_AD_Form_Access.Table_Name)
+			.build();
+
+	private final CCache<RoleId, ElementPermissions> workflowPermissionsCache = CCache.<RoleId, ElementPermissions>builder()
+			.tableName(I_AD_Workflow_Access.Table_Name)
+			.build();
+
+	private final CCache<RoleId, TablePermissions> tablePermissionsCache = CCache.<RoleId, TablePermissions>builder()
+			.tableName(I_AD_Table_Access.Table_Name)
+			.build();
+
+	private final CCache<RoleId, TableColumnPermissions> columnPermissionsCache = CCache.<RoleId, TableColumnPermissions>builder()
+			.tableName(I_AD_Column_Access.Table_Name)
 			.build();
 
 	@Override
@@ -171,7 +211,7 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 	@Override
 	public void resetCacheAfterTrxCommit()
 	{
-		final ITrx trx = Services.get(ITrxManager.class).getTrxOrNull(ITrx.TRXNAME_ThreadInherited);
+		final ITrx trx = trxManager.getTrxOrNull(ITrx.TRXNAME_ThreadInherited);
 
 		// If running out of transaction, reset the cache now
 		if (trx == null)
@@ -250,7 +290,7 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 			@NonNull final LocalDate date)
 	{
 		final ImmutableList.Builder<IUserRolePermissions> permissionsWithOrgAccess = ImmutableList.builder();
-		for (final RoleId roleId : Services.get(IRoleDAO.class).getUserRoleIds(adUserId))
+		for (final RoleId roleId : roleDAO.getUserRoleIds(adUserId))
 		{
 			final IUserRolePermissions permissions = getUserRolePermissions(roleId, adUserId, clientId, date);
 			if (permissions.isOrgAccess(adOrgId, null, Access.READ)) // readonly access is fine for us
@@ -269,7 +309,7 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 			final UserId adUserId,
 			final LocalDate date)
 	{
-		for (final RoleId roleId : Services.get(IRoleDAO.class).getUserRoleIds(adUserId))
+		for (final RoleId roleId : roleDAO.getUserRoleIds(adUserId))
 		{
 			final IUserRolePermissions permissions = getUserRolePermissions(roleId, adUserId, clientId, date);
 			if (permissions.isOrgAccess(adOrgId, null, Access.READ)) // readonly access is fine for us
@@ -278,7 +318,7 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 			}
 		}
 
-		return Optional.absent();
+		return Optional.empty();
 	}
 
 	@Override
@@ -294,7 +334,7 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 			final LocalDate date,
 			final Predicate<IUserRolePermissions> matcher)
 	{
-		for (final RoleId roleId : Services.get(IRoleDAO.class).getUserRoleIds(adUserId))
+		for (final RoleId roleId : roleDAO.getUserRoleIds(adUserId))
 		{
 			final IUserRolePermissions permissions = getUserRolePermissions(roleId, adUserId, clientId, date);
 
@@ -334,7 +374,7 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 
 		try
 		{
-			final IRolesTreeNode rootRole = Services.get(IRoleDAO.class).retrieveRolesTree(adRoleId, adUserId, date);
+			final IRolesTreeNode rootRole = roleDAO.retrieveRolesTree(adRoleId, adUserId, date);
 			return rootRole.aggregateBottomUp(new IRolesTreeNode.BottomUpAggregator<UserRolePermissions, UserRolePermissionsBuilder>()
 			{
 				@Override
@@ -387,7 +427,7 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 		final AdTreeId adTreeOrgId = role.getOrgTreeId();
 		if (role.isUseUserOrgAccess())
 		{
-			return retrieveUserOrgPermissions(adUserId, adTreeOrgId);
+			return getUserOrgPermissions(adUserId, adTreeOrgId);
 		}
 		else
 		{
@@ -409,7 +449,7 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 
 				//
 				// now add all orgs
-				final List<I_AD_Org> clientOrgs = Services.get(IOrgDAO.class).retrieveClientOrgs(clientId.getRepoId());
+				final List<I_AD_Org> clientOrgs = orgDAO.retrieveClientOrgs(clientId.getRepoId());
 				for (final I_AD_Org org : clientOrgs)
 				{
 					// skip inative orgs
@@ -419,7 +459,7 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 					}
 
 					final OrgId orgId = OrgId.ofRepoId(org.getAD_Org_ID());
-					final OrgResource orgResource = OrgResource.of(clientId, orgId);
+					final OrgResource orgResource = OrgResource.of(clientId, orgId, org.isSummary());
 					final OrgPermission orgPermission = OrgPermission.ofResourceAndReadOnly(orgResource, false);
 					builder.addPermission(orgPermission);
 				}
@@ -427,37 +467,51 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 			}
 			else
 			{
-				return retrieveRoleOrgPermissions(role.getId(), adTreeOrgId);
+				return getRoleOrgPermissions(role.getId(), adTreeOrgId);
 			}
 		}
 
 	}
 
-	@Cached(cacheName = I_AD_User_OrgAccess.Table_Name + "#by#AD_User_ID")
-	public OrgPermissions retrieveUserOrgPermissions(final UserId adUserId, final AdTreeId adTreeOrgId)
+	private OrgPermissions getUserOrgPermissions(UserId userId, AdTreeId adTreeOrgId)
 	{
-		final IQuery<I_AD_Org> activeOrgsQuery = Services.get(IQueryBL.class)
-				.createQueryBuilderOutOfTrx(I_AD_Org.class)
-				.addOnlyActiveRecordsFilter()
-				.create();
+		return userOrgPermissionsCache.getOrLoad(
+				UserOrgPermissionsCacheKey.of(userId, adTreeOrgId),
+				this::retrieveUserOrgPermissions);
+	}
 
-		final List<I_AD_User_OrgAccess> orgAccessesList = Services.get(IQueryBL.class)
+	private OrgPermissions retrieveUserOrgPermissions(final UserOrgPermissionsCacheKey key)
+	{
+		final UserId adUserId = key.getUserId();
+		final AdTreeId adTreeOrgId = key.getAdTreeOrgId();
+
+		final ImmutableMap<OrgId, I_AD_Org> activeOrgsById = Maps.uniqueIndex(
+				orgDAO.getAllActiveOrgs(),
+				org -> OrgId.ofRepoId(org.getAD_Org_ID()));
+
+		final OrgPermissions.Builder builder = OrgPermissions.builder(adTreeOrgId);
+		if (activeOrgsById.isEmpty())
+		{
+			return builder.build();
+		}
+
+		final List<I_AD_User_OrgAccess> orgAccessesList = queryBL
 				.createQueryBuilderOutOfTrx(I_AD_User_OrgAccess.class)
 				.addEqualsFilter(I_AD_User_OrgAccess.COLUMNNAME_AD_User_ID, adUserId)
 				.addOnlyActiveRecordsFilter()
-				.addInSubQueryFilter(I_AD_User_OrgAccess.COLUMNNAME_AD_Org_ID, I_AD_Org.COLUMNNAME_AD_Org_ID, activeOrgsQuery)
+				.addInArrayFilter(I_AD_User_OrgAccess.COLUMNNAME_AD_Org_ID, activeOrgsById.keySet())
 				.create()
 				.list();
 
-		final OrgPermissions.Builder builder = OrgPermissions.builder(adTreeOrgId);
 		for (final I_AD_User_OrgAccess oa : orgAccessesList)
 		{
 			// NOTE: we are fetching the AD_Client_ID from OrgAccess and not from AD_Org (very important for Org=0 like) !
 			final ClientId clientId = ClientId.ofRepoId(oa.getAD_Client_ID());
 			final OrgId orgId = OrgId.ofRepoId(oa.getAD_Org_ID());
-			final OrgResource resource = OrgResource.of(clientId, orgId);
+			final boolean isGroupingOrg = activeOrgsById.get(orgId).isSummary();
+			final OrgResource resource = OrgResource.of(clientId, orgId, isGroupingOrg);
 			final OrgPermission permission = OrgPermission.ofResourceAndReadOnly(resource, oa.isReadOnly());
-			builder.addPermissionRecursivelly(permission);
+			builder.addPermissionRecursively(permission);
 		}
 
 		return builder.build();
@@ -498,85 +552,121 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 				.build();
 	}
 
-	@Cached(cacheName = I_AD_Role_OrgAccess.Table_Name + "#by#AD_User_ID")
-	public OrgPermissions retrieveRoleOrgPermissions(final RoleId adRoleId, final AdTreeId adTreeOrgId)
+	private OrgPermissions getRoleOrgPermissions(final RoleId adRoleId, final AdTreeId adTreeOrgId)
 	{
-		final IQuery<I_AD_Org> activeOrgsQuery = Services.get(IQueryBL.class)
-				.createQueryBuilderOutOfTrx(I_AD_Org.class)
-				.addOnlyActiveRecordsFilter()
-				.create();
+		return roleOrgPermissionsCache.getOrLoad(
+				RoleOrgPermissionsCacheKey.of(adRoleId, adTreeOrgId),
+				this::retrieveRoleOrgPermissions);
+	}
 
-		final List<I_AD_Role_OrgAccess> orgAccessesList = Services.get(IQueryBL.class)
+	private OrgPermissions retrieveRoleOrgPermissions(final RoleOrgPermissionsCacheKey key)
+	{
+		final RoleId adRoleId = key.getRoleId();
+		final AdTreeId adTreeOrgId = key.getAdTreeOrgId();
+
+		final ImmutableMap<OrgId, I_AD_Org> activeOrgsById = Maps.uniqueIndex(
+				orgDAO.getAllActiveOrgs(),
+				org -> OrgId.ofRepoId(org.getAD_Org_ID()));
+
+		final OrgPermissions.Builder builder = OrgPermissions.builder(adTreeOrgId);
+		if (activeOrgsById.isEmpty())
+		{
+			return builder.build();
+		}
+
+		final List<I_AD_Role_OrgAccess> orgAccessesList = queryBL
 				.createQueryBuilderOutOfTrx(I_AD_Role_OrgAccess.class)
 				.addEqualsFilter(I_AD_Role_OrgAccess.COLUMNNAME_AD_Role_ID, adRoleId)
 				.addOnlyActiveRecordsFilter()
-				.addInSubQueryFilter(I_AD_Role_OrgAccess.COLUMNNAME_AD_Org_ID, I_AD_Org.COLUMNNAME_AD_Org_ID, activeOrgsQuery)
+				.addInArrayFilter(I_AD_Role_OrgAccess.COLUMNNAME_AD_Org_ID, activeOrgsById.keySet())
 				.create()
 				.list();
 
-		final OrgPermissions.Builder builder = OrgPermissions.builder(adTreeOrgId);
 		for (final I_AD_Role_OrgAccess oa : orgAccessesList)
 		{
 			// NOTE: we are fetching the AD_Client_ID from OrgAccess and not from AD_Org (very important for Org=0 like) !
 			final ClientId clientId = ClientId.ofRepoId(oa.getAD_Client_ID());
 			final OrgId orgId = OrgId.ofRepoId(oa.getAD_Org_ID());
-			final OrgResource resource = OrgResource.of(clientId, orgId);
+			final boolean isGroupingOrg = activeOrgsById.get(orgId).isSummary();
+			final OrgResource resource = OrgResource.of(clientId, orgId, isGroupingOrg);
 			final OrgPermission permission = OrgPermission.ofResourceAndReadOnly(resource, oa.isReadOnly());
-			builder.addPermissionRecursivelly(permission);
+			builder.addPermissionRecursively(permission);
 		}
 
 		return builder.build();
 	}
 
-	@Cached(cacheName = I_AD_Window_Access.Table_Name + "#Accesses")
-	public ElementPermissions retrieveWindowPermissions(final RoleId adRoleId, final ClientId adClientId)
+	ElementPermissions getWindowPermissions(final RoleId adRoleId)
 	{
-		return retrieveElementPermissions(adRoleId, adClientId,
+		return windowPermissionsCache.getOrLoad(adRoleId, this::retrieveWindowPermissions0);
+	}
+
+	private ElementPermissions retrieveWindowPermissions0(final RoleId adRoleId)
+	{
+		return retrieveElementPermissions(adRoleId,
 				I_AD_Window_Access.class,
 				I_AD_Window.Table_Name,
 				I_AD_Window_Access.COLUMNNAME_AD_Window_ID);
 	}
 
-	@Cached(cacheName = I_AD_Process_Access.Table_Name + "#Accesses")
-	public ElementPermissions retrieveProcessPermissions(final RoleId adRoleId, final ClientId adClientId)
+	ElementPermissions getProcessPermissions(final RoleId adRoleId)
 	{
-		return retrieveElementPermissions(adRoleId, adClientId,
+		return processPermissionsCache.getOrLoad(adRoleId, this::retrieveProcessPermissions0);
+	}
+
+	private ElementPermissions retrieveProcessPermissions0(final RoleId adRoleId)
+	{
+		return retrieveElementPermissions(adRoleId,
 				I_AD_Process_Access.class,
 				I_AD_Process.Table_Name,
 				I_AD_Process_Access.COLUMNNAME_AD_Process_ID);
 	}
 
-	@Cached(cacheName = I_AD_Task_Access.Table_Name + "#Accesses")
-	public ElementPermissions retrieveTaskPermissions(final RoleId adRoleId, final ClientId adClientId)
+	ElementPermissions getTaskPermissions(final RoleId adRoleId)
 	{
-		return retrieveElementPermissions(adRoleId, adClientId,
+		return taskPermissionsCache.getOrLoad(adRoleId, this::retrieveTaskPermissions0);
+	}
+
+	private ElementPermissions retrieveTaskPermissions0(final RoleId adRoleId)
+	{
+		return retrieveElementPermissions(adRoleId,
 				I_AD_Task_Access.class,
 				I_AD_Task.Table_Name,
 				I_AD_Task_Access.COLUMNNAME_AD_Task_ID);
 	}
 
-	@Cached(cacheName = I_AD_Form_Access.Table_Name + "#Accesses")
-	public ElementPermissions retrieveFormPermissions(final RoleId adRoleId, final ClientId adClientId)
+	ElementPermissions getFormPermissions(final RoleId adRoleId)
 	{
-		return retrieveElementPermissions(adRoleId, adClientId,
+		return formPermissionsCache.getOrLoad(adRoleId, this::retrieveFormPermissions0);
+	}
+
+	private ElementPermissions retrieveFormPermissions0(final RoleId adRoleId)
+	{
+		return retrieveElementPermissions(adRoleId,
 				I_AD_Form_Access.class,
 				I_AD_Form.Table_Name,
 				I_AD_Form_Access.COLUMNNAME_AD_Form_ID);
 	}
 
-	@Cached(cacheName = I_AD_Workflow_Access.Table_Name + "#Accesses")
-	public ElementPermissions retrieveWorkflowPermissions(final RoleId adRoleId, final ClientId adClientId)
+	ElementPermissions getWorkflowPermissions(final RoleId adRoleId)
 	{
-		return retrieveElementPermissions(adRoleId, adClientId,
+		return workflowPermissionsCache.getOrLoad(adRoleId, this::retrieveWorkflowPermissions0);
+	}
+
+	private ElementPermissions retrieveWorkflowPermissions0(final RoleId adRoleId)
+	{
+		return retrieveElementPermissions(adRoleId,
 				I_AD_Workflow_Access.class,
 				I_AD_Workflow.Table_Name,
 				I_AD_Workflow_Access.COLUMNNAME_AD_Workflow_ID);
 	}
 
-	final <AccessTableType> ElementPermissions retrieveElementPermissions(final RoleId adRoleId, final ClientId adClientId, final Class<AccessTableType> accessTableClass, final String elementTableName, final String elementColumnName)
+	private <AccessTableType> ElementPermissions retrieveElementPermissions(
+			final RoleId adRoleId,
+			final Class<AccessTableType> accessTableClass,
+			final String elementTableName,
+			final String elementColumnName)
 	{
-		final Properties ctx = Env.getCtx();
-
 		//
 		// EntityType filter: filter out those elements where EntityType is not displayed
 		final String accessTableName = InterfaceWrapperHelper.getTableName(accessTableClass);
@@ -588,8 +678,8 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 		final String COLUMNNAME_AD_Role_ID = "AD_Role_ID";
 		final String COLUMNNAME_IsReadWrite = "IsReadWrite";
 
-		final List<Map<String, Object>> accessesList = Services.get(IQueryBL.class)
-				.createQueryBuilder(accessTableClass, ctx, ITrx.TRXNAME_None)
+		final List<Map<String, Object>> accessesList = queryBL
+				.createQueryBuilderOutOfTrx(accessTableClass)
 				.addEqualsFilter(COLUMNNAME_AD_Role_ID, adRoleId)
 				.addOnlyActiveRecordsFilter()
 				.filter(entityTypeFilter)
@@ -602,7 +692,7 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 		{
 			final int elementId = (int)accessItem.get(elementColumnName);
 			final ElementResource resource = ElementResource.of(elementTableName, elementId);
-			final boolean readWrite = DisplayType.toBoolean(accessItem.get(COLUMNNAME_IsReadWrite), false);
+			final boolean readWrite = StringUtils.toBoolean(accessItem.get(COLUMNNAME_IsReadWrite));
 			final ElementPermission access = ElementPermission.ofReadWriteFlag(resource, readWrite);
 			elementAccessesBuilder.addPermission(access);
 		}
@@ -610,10 +700,14 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 		return elementAccessesBuilder.build();
 	}
 
-	@Cached(cacheName = I_AD_Table_Access.Table_Name + "#Accesses")
-	public TablePermissions retrieveTablePermissions(@NonNull final RoleId adRoleId)
+	TablePermissions getTablePermissions(@NonNull final RoleId adRoleId)
 	{
-		final List<I_AD_Table_Access> tableAccessRecords = Services.get(IQueryBL.class)
+		return tablePermissionsCache.getOrLoad(adRoleId, this::retrieveTablePermissions0);
+	}
+
+	private TablePermissions retrieveTablePermissions0(@NonNull final RoleId adRoleId)
+	{
+		final List<I_AD_Table_Access> tableAccessRecords = queryBL
 				.createQueryBuilderOutOfTrx(I_AD_Table_Access.class)
 				.addEqualsFilter(I_AD_Table_Access.COLUMNNAME_AD_Role_ID, adRoleId)
 				.addOnlyActiveRecordsFilter()
@@ -623,8 +717,7 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 		final TablePermissions.Builder permissionsCollector = TablePermissions.builder();
 
 		// Default permission: allow all because actually this is an "exclude" list (if no include options were found).
-		final HashSet<Access> defaultPermissionAccesses = new HashSet<>();
-		defaultPermissionAccesses.addAll(TablePermission.ALL_ACCESSES);
+		final HashSet<Access> defaultPermissionAccesses = new HashSet<>(TablePermission.ALL_ACCESSES);
 
 		for (final I_AD_Table_Access tableAccessRecord : tableAccessRecords)
 		{
@@ -644,10 +737,6 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 					{
 						permissionAccesses.add(Access.READ);
 						// permissionAccesses.remove(Access.WRITE); // not needed
-					}
-					else
-					{
-						// nothing granted
 					}
 				}
 				// include access
@@ -713,12 +802,15 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 		return permissionsCollector.build();
 	}    // loadTableAccess
 
-	@Cached(cacheName = I_AD_Column_Access.Table_Name + "#Accesses")
-	public TableColumnPermissions retrieveTableColumnPermissions(final RoleId adRoleId)
+	TableColumnPermissions getTableColumnPermissions(final RoleId adRoleId)
 	{
-		final Properties ctx = Env.getCtx();
-		final List<I_AD_Column_Access> columnAccessList = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_Column_Access.class, ctx, ITrx.TRXNAME_None)
+		return columnPermissionsCache.getOrLoad(adRoleId, this::retrieveTableColumnPermissions0);
+	}
+
+	private TableColumnPermissions retrieveTableColumnPermissions0(final RoleId adRoleId)
+	{
+		final List<I_AD_Column_Access> columnAccessList = queryBL
+				.createQueryBuilderOutOfTrx(I_AD_Column_Access.class)
 				.addEqualsFilter(I_AD_Column_Access.COLUMNNAME_AD_Role_ID, adRoleId)
 				.addOnlyActiveRecordsFilter()
 				.create()
@@ -745,10 +837,6 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 				{
 					permission.addAccess(Access.READ);
 					// permission.removeAccess(Access.WRITE); // not needed
-				}
-				else
-				{
-					// nothing granted
 				}
 			}
 			// include access
@@ -857,7 +945,7 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 	@Override
 	public List<I_AD_Role_OrgAccess> retrieveRoleOrgAccessRecordsForOrg(@NonNull final OrgId adOrgId)
 	{
-		return Services.get(IQueryBL.class)
+		return queryBL
 				.createQueryBuilder(I_AD_Role_OrgAccess.class)
 				.addEqualsFilter(I_AD_Role_OrgAccess.COLUMNNAME_AD_Org_ID, adOrgId)
 				// .addOnlyActiveRecordsFilter() // NOTE: retrieve all
@@ -909,7 +997,7 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 			@NonNull final AdWindowId adWindowId,
 			@NonNull final Consumer<I_AD_Window_Access> updater)
 	{
-		I_AD_Window_Access windowAccess = Services.get(IQueryBL.class)
+		I_AD_Window_Access windowAccess = queryBL
 				.createQueryBuilder(I_AD_Window_Access.class)
 				.addEqualsFilter(I_AD_Window_Access.COLUMNNAME_AD_Role_ID, roleId)
 				.addEqualsFilter(I_AD_Window_Access.COLUMNNAME_AD_Window_ID, adWindowId)
@@ -977,7 +1065,7 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 			@NonNull final AdProcessId adProcessId,
 			@NonNull final Consumer<I_AD_Process_Access> updater)
 	{
-		I_AD_Process_Access processAccess = Services.get(IQueryBL.class)
+		I_AD_Process_Access processAccess = queryBL
 				.createQueryBuilder(I_AD_Process_Access.class)
 				.addEqualsFilter(I_AD_Process_Access.COLUMN_AD_Role_ID, roleId)
 				.addEqualsFilter(I_AD_Process_Access.COLUMN_AD_Process_ID, adProcessId)
@@ -1047,7 +1135,7 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 	{
 		Preconditions.checkArgument(adFormId > 0, "adFormId > 0");
 
-		I_AD_Form_Access formAccess = Services.get(IQueryBL.class)
+		I_AD_Form_Access formAccess = queryBL
 				.createQueryBuilder(I_AD_Form_Access.class)
 				.addEqualsFilter(I_AD_Form_Access.COLUMNNAME_AD_Role_ID, roleId)
 				.addEqualsFilter(I_AD_Form_Access.COLUMNNAME_AD_Form_ID, adFormId)
@@ -1117,7 +1205,7 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 	{
 		Preconditions.checkArgument(adTaskId > 0, "adTaskId > 0");
 
-		I_AD_Task_Access taskAccess = Services.get(IQueryBL.class)
+		I_AD_Task_Access taskAccess = queryBL
 				.createQueryBuilder(I_AD_Task_Access.class)
 				.addEqualsFilter(I_AD_Task_Access.COLUMNNAME_AD_Role_ID, roleId)
 				.addEqualsFilter(I_AD_Task_Access.COLUMNNAME_AD_Task_ID, adTaskId)
@@ -1187,7 +1275,7 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 	{
 		Preconditions.checkArgument(adWorkflowId > 0, "adWorkflowId > 0");
 
-		I_AD_Workflow_Access workflowAccess = Services.get(IQueryBL.class)
+		I_AD_Workflow_Access workflowAccess = queryBL
 				.createQueryBuilder(I_AD_Workflow_Access.class)
 				.addEqualsFilter(I_AD_Workflow_Access.COLUMNNAME_AD_Role_ID, roleId)
 				.addEqualsFilter(I_AD_Workflow_Access.COLUMNNAME_AD_Workflow_ID, adWorkflowId)
@@ -1230,9 +1318,7 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 				request.getOrgId(),
 				request.getDocTypeId(),
 				request.getDocActionRefListId(),
-				access -> {
-					access.setIsActive(true);
-				});
+				access -> access.setIsActive(true));
 	}
 
 	@Override
@@ -1259,7 +1345,7 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 	{
 		Preconditions.checkArgument(docActionRefListId > 0, "docActionRefListId > 0");
 
-		I_AD_Document_Action_Access docActionAccess = Services.get(IQueryBL.class)
+		I_AD_Document_Action_Access docActionAccess = queryBL
 				.createQueryBuilder(I_AD_Document_Action_Access.class)
 				.addEqualsFilter(I_AD_Document_Action_Access.COLUMNNAME_AD_Role_ID, roleId)
 				.addEqualsFilter(I_AD_Document_Action_Access.COLUMNNAME_C_DocType_ID, docTypeId)
@@ -1328,7 +1414,7 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 			@NonNull final Principal principal,
 			@NonNull final TableRecordReference recordRef)
 	{
-		return Services.get(IQueryBL.class)
+		return queryBL
 				.createQueryBuilder(I_AD_Private_Access.class)
 				.addEqualsFilter(I_AD_Private_Access.COLUMNNAME_AD_User_ID, principal.getUserId())
 				.addEqualsFilter(I_AD_Private_Access.COLUMNNAME_AD_UserGroup_ID, principal.getUserGroupId())
@@ -1353,5 +1439,19 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 				.addEqualsFilter(I_C_OrgAssignment.COLUMNNAME_AD_User_ID, userId)
 				.create()
 				.delete();
+	}
+
+	@Value(staticConstructor = "of")
+	private static class RoleOrgPermissionsCacheKey
+	{
+		RoleId roleId;
+		AdTreeId adTreeOrgId;
+	}
+
+	@Value(staticConstructor = "of")
+	private static class UserOrgPermissionsCacheKey
+	{
+		UserId userId;
+		AdTreeId adTreeOrgId;
 	}
 }

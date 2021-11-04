@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs;
 
+import de.metas.common.util.EmptyUtil;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
@@ -93,6 +94,8 @@ public class C_Order_StepDef
 			final String bpartnerIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_C_BPartner_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 			final I_C_BPartner bpartner = bpartnerTable.get(bpartnerIdentifier);
 			final int warehouseId = DataTableUtil.extractIntOrMinusOneForColumnName(tableRow, "OPT.Warehouse_ID");
+			final String poReference = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_POReference);
+			final int paymentTermId = DataTableUtil.extractIntOrMinusOneForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_C_PaymentTerm_ID);
 
 			final I_C_Order order = newInstance(I_C_Order.class);
 			order.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
@@ -100,6 +103,16 @@ public class C_Order_StepDef
 			order.setM_Warehouse_ID(warehouseId);
 			order.setIsSOTrx(DataTableUtil.extractBooleanForColumnName(tableRow, I_C_Order.COLUMNNAME_IsSOTrx));
 			order.setDateOrdered(DataTableUtil.extractDateTimestampForColumnName(tableRow, I_C_Order.COLUMNNAME_DateOrdered));
+
+			if (EmptyUtil.isNotBlank(poReference))
+			{
+				order.setPOReference(poReference);
+			}
+
+			if (paymentTermId > 0)
+			{
+				order.setC_PaymentTerm_ID(paymentTermId);
+			}
 
 			saveRecord(order);
 
@@ -262,7 +275,7 @@ public class C_Order_StepDef
 			final String groupCompensationType = DataTableUtil.extractStringForColumnName(tableRow, I_C_OrderLine.COLUMNNAME_GroupCompensationType);
 			final String groupCompensationAmtType = DataTableUtil.extractStringForColumnName(tableRow, I_C_OrderLine.COLUMNNAME_GroupCompensationAmtType);
 
-			final I_C_Order	orderRecord = queryBL.createQueryBuilder(I_C_Order.class)
+			final I_C_Order orderRecord = queryBL.createQueryBuilder(I_C_Order.class)
 					.addEqualsFilter(I_C_Order.COLUMNNAME_ExternalId, externalHeaderId)
 					.create()
 					.firstOnlyNotNull(I_C_Order.class);

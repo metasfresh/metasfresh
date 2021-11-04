@@ -78,7 +78,6 @@ import org.compiere.SpringContextHolder;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
-import org.compiere.util.KeyNamePair;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 import org.slf4j.Logger;
@@ -94,9 +93,9 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Immutable
@@ -418,15 +417,13 @@ class UserRolePermissions implements IUserRolePermissions
 	}
 
 	@Override
-	public Set<KeyNamePair> getLoginClients()
+	public Set<ClientId> getLoginClientIds()
 	{
-		final Set<KeyNamePair> clientsList = new TreeSet<>();
-		for (final OrgResource orgResource : getLoginOrgs())
-		{
-			clientsList.add(orgResource.asClientKeyNamePair());
-		}
-
-		return clientsList;
+		return getLoginOrgs()
+				.stream()
+				.map(OrgResource::getClientId)
+				.filter(Objects::nonNull)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	@Override

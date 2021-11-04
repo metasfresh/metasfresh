@@ -437,12 +437,19 @@ public class UserBL implements IUserBL
 	}
 
 	@Override
+	public Language getUserLanguage(@NonNull final UserId userId)
+	{
+		final I_AD_User user = getById(userId);
+		return getUserLanguage(user);
+	}
+
+	@Override
 	public Language getUserLanguage(@NonNull final I_AD_User userRecord)
 	{
 		final String languageStr = CoalesceUtil.coalesceSuppliers(
-				() -> userRecord.getAD_Language(),
+				userRecord::getAD_Language,
 				() -> getBPartnerLanguage(userRecord),
-				() -> Env.getADLanguageOrBaseLanguage());
+				Env::getADLanguageOrBaseLanguage);
 
 		return Language.getLanguage(languageStr);
 	}

@@ -1,7 +1,8 @@
-de.metas.audit.apirequest.config.ApiAuditConfigRepositoryTest.getAllConfigsByOrgId=[
+de.metas.audit.apirequest.config.ApiAuditConfigRepositoryTest.getActiveConfigsByOrgId=[
   [
     {
       "apiAuditConfigId" : 100001,
+      "active" : true,
       "orgId" : 1,
       "seqNo" : 10,
       "isInvokerWaitsForResponse" : true,
@@ -13,17 +14,6 @@ de.metas.audit.apirequest.config.ApiAuditConfigRepositoryTest.getAllConfigsByOrg
       "pathPrefix" : "pathPrefix",
       "notifyUserInCharge" : "ALWAYS",
       "userGroupInChargeId" : 1,
-      "antPathMatcher" : {
-        "pathSeparator" : "/",
-        "pathSeparatorPatternCache" : {
-          "endsOnWildCard" : "/*",
-          "endsOnDoubleWildCard" : "/**"
-        },
-        "caseSensitive" : true,
-        "trimTokens" : false,
-        "tokenizedPatternCache" : { },
-        "stringMatcherCache" : { }
-      },
       "invokerWaitsForResponse" : true
     }
   ]

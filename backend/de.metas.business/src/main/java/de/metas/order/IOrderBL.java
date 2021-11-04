@@ -253,7 +253,9 @@ public interface IOrderBL extends ISingletonService
 
 	boolean isHaddexOrder(I_C_Order order);
 
-	void closeOrder(final OrderId orderId);
+	void closeOrder(OrderId orderId);
 
-	Optional<DeliveryViaRule> findDeliveryViaRule(final I_C_Order orderRecord);
+	Optional<DeliveryViaRule> findDeliveryViaRule(I_C_Order orderRecord);
+
+	String getDocumentNoById(OrderId orderId);
 }

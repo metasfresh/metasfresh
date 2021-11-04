@@ -59,6 +59,7 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
@@ -374,7 +375,10 @@ public final class AggregationEngine
 			final OrderId orderId = OrderId.ofRepoIdOrNull(icRecord.getC_Order_ID());
 			if (orderId != null)
 			{
-				invoiceHeader.setExternalId(orderDAO.getById(orderId).getExternalId());
+				final I_C_Order order = orderDAO.getById(orderId);
+				invoiceHeader.setExternalId(order.getExternalId());
+				invoiceHeader.setSalesRep_ID(order.getSalesRep_ID());
+
 			}
 
 			// why not using DateToInvoice[_Override] if available?

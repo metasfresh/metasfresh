@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableSetMultimap;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.cache.CCache;
 import de.metas.cache.annotation.CacheCtx;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ITranslatableString;
 import de.metas.location.LocationId;
 import de.metas.logging.LogManager;
@@ -81,6 +82,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 public class WarehouseDAO implements IWarehouseDAO
 {
 	private static final Logger logger = LogManager.getLogger(WarehouseDAO.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final CCache<WarehouseId, ImmutableList<LocatorId>> locatorIdsByWarehouseId = CCache.<WarehouseId, ImmutableList<LocatorId>>builder()
 			.tableName(I_M_Locator.Table_Name)
@@ -99,7 +101,6 @@ public class WarehouseDAO implements IWarehouseDAO
 			.initialCapacity(1)
 			.expireMinutes(CCache.EXPIREMINUTES_Never)
 			.build();
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@Override
 	public I_M_Warehouse getById(@NonNull final WarehouseId warehouseId)
@@ -144,7 +145,7 @@ public class WarehouseDAO implements IWarehouseDAO
 
 	private WarehouseRoutingsIndex retrieveWarehouseRoutingIndex()
 	{
-		final List<WarehouseRouting> routings = Services.get(IQueryBL.class)
+		final List<WarehouseRouting> routings = queryBL
 				.createQueryBuilderOutOfTrx(I_M_Warehouse_Routing.class)
 				.addOnlyActiveRecordsFilter()
 				.create()
@@ -228,7 +229,7 @@ public class WarehouseDAO implements IWarehouseDAO
 	@Override
 	public WarehouseId getWarehouseIdByValue(@NonNull final String value)
 	{
-		final WarehouseId warehouseId = Services.get(IQueryBL.class)
+		final WarehouseId warehouseId = queryBL
 				.createQueryBuilderOutOfTrx(I_M_Warehouse.class)
 				.addEqualsFilter(I_M_Warehouse.COLUMN_Value, value)
 				.addOnlyActiveRecordsFilter()
@@ -254,6 +255,13 @@ public class WarehouseDAO implements IWarehouseDAO
 		}
 
 		return WarehouseId.ofRepoId(locator.getM_Warehouse_ID());
+	}
+
+	@Override
+	public I_M_Warehouse getWarehouseByLocatorRepoId(final int locatorId)
+	{
+		final WarehouseId warehouseId = getWarehouseIdByLocatorRepoId(locatorId);
+		return warehouseId != null ? getById(warehouseId) : null;
 	}
 
 	@Override
@@ -316,13 +324,13 @@ public class WarehouseDAO implements IWarehouseDAO
 	}
 
 	@Override
-	public <T extends I_M_Locator> T getLocatorById(@NonNull final LocatorId locatorId, @NonNull Class<T> modelClass)
+	public <T extends I_M_Locator> T getLocatorById(@NonNull final LocatorId locatorId, @NonNull final Class<T> modelClass)
 	{
 		return loadOutOfTrx(locatorId, modelClass);
 	}
 
 	@Override
-	public <T extends I_M_Locator> T getLocatorByIdInTrx(@NonNull final LocatorId locatorId, @NonNull Class<T> modelClass)
+	public <T extends I_M_Locator> T getLocatorByIdInTrx(@NonNull final LocatorId locatorId, @NonNull final Class<T> modelClass)
 	{
 		return load(locatorId, modelClass);
 	}
@@ -349,7 +357,7 @@ public class WarehouseDAO implements IWarehouseDAO
 
 	private ImmutableList<LocatorId> retrieveLocatorIds(final WarehouseId warehouseId)
 	{
-		return Services.get(IQueryBL.class)
+		return queryBL
 				.createQueryBuilderOutOfTrx(I_M_Locator.class)
 				.addEqualsFilter(I_M_Locator.COLUMN_M_Warehouse_ID, warehouseId)
 				.orderBy(I_M_Locator.COLUMN_X)
@@ -361,6 +369,14 @@ public class WarehouseDAO implements IWarehouseDAO
 				.stream()
 				.map(locatorRepoId -> LocatorId.ofRepoId(warehouseId, locatorRepoId))
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	@Override
+	public ImmutableSet<LocatorId> getLocatorIdsByWarehouseIds(@NonNull final Collection<WarehouseId> warehouseIds)
+	{
+		return warehouseIds.stream()
+				.flatMap(warehouseId -> getLocatorIds(warehouseId).stream())
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	@Override
@@ -382,7 +398,7 @@ public class WarehouseDAO implements IWarehouseDAO
 	@Cached(cacheName = I_M_Warehouse.Table_Name + "#InTransitForOrg")
 	public Optional<WarehouseId> getInTransitWarehouseIdIfExists(@NonNull final OrgId adOrgId)
 	{
-		final WarehouseId warehouseId = Services.get(IQueryBL.class)
+		final WarehouseId warehouseId = queryBL
 				.createQueryBuilderOutOfTrx(I_M_Warehouse.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_Warehouse.COLUMNNAME_AD_Org_ID, adOrgId)
@@ -404,7 +420,7 @@ public class WarehouseDAO implements IWarehouseDAO
 
 	private Set<WarehouseId> getWarehouseIdsByOrgId(@NonNull final OrgId orgId)
 	{
-		return Services.get(IQueryBL.class)
+		return queryBL
 				.createQueryBuilderOutOfTrx(I_M_Warehouse.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_Warehouse.COLUMNNAME_AD_Org_ID, orgId)
@@ -422,20 +438,17 @@ public class WarehouseDAO implements IWarehouseDAO
 
 	public Set<WarehouseId> getAllWarehouseIds()
 	{
-		final Set<WarehouseId> warehouseIds = Services.get(IQueryBL.class)
+		return queryBL
 				.createQueryBuilderOutOfTrx(I_M_Warehouse.class)
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.listIds(WarehouseId::ofRepoId);
-		return warehouseIds;
 	}
 
 	// TODO: implement a way to reset a cache when I_M_Warehouse_PickingGroup is changed
 	@Cached(cacheName = I_M_Warehouse.Table_Name)
 	public WarehousePickingGroupsIndex retrieveWarehouseGroups()
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-
 		final ImmutableSetMultimap<Integer, WarehouseId> warehouseIdsByPickingGroupId = queryBL.createQueryBuilder(I_M_Warehouse.class)
 				.addOnlyActiveRecordsFilter()
 				.addNotNull(I_M_Warehouse.COLUMNNAME_M_Warehouse_PickingGroup_ID)
@@ -534,17 +547,18 @@ public class WarehouseDAO implements IWarehouseDAO
 		locator.setY(request.getY());
 		locator.setZ(request.getZ());
 		locator.setX1(request.getX1());
-		locator.setDateLastInventory(TimeUtil.asTimestamp(request.getDateLastInventory()));
+		locator.setDateLastInventory(TimeUtil.asTimestampNotNull(request.getDateLastInventory()));
 		InterfaceWrapperHelper.saveRecord(locator);
 
 		return LocatorId.ofRepoId(warehouseId, locator.getM_Locator_ID());
 	}
 
+	@Nullable
 	@Override
 	@Cached(cacheName = I_M_Locator.Table_Name + "#By#" + I_M_Locator.COLUMNNAME_M_Warehouse_ID + "#" + I_M_Locator.COLUMNNAME_Value)
 	public LocatorId retrieveLocatorIdByValueAndWarehouseId(@NonNull final String locatorValue, final WarehouseId warehouseId)
 	{
-		final int locatorRepoId = Services.get(IQueryBL.class)
+		final int locatorRepoId = queryBL
 				.createQueryBuilder(I_M_Locator.class)
 				.addEqualsFilter(I_M_Locator.COLUMNNAME_M_Warehouse_ID, warehouseId)
 				.addEqualsFilter(I_M_Locator.COLUMNNAME_Value, locatorValue)
@@ -578,7 +592,7 @@ public class WarehouseDAO implements IWarehouseDAO
 
 	private WarehouseTypesIndex retrieveWarehouseTypesIndex()
 	{
-		final List<WarehouseType> warehouseTypes = Services.get(IQueryBL.class)
+		final List<WarehouseType> warehouseTypes = queryBL
 				.createQueryBuilderOutOfTrx(I_M_Warehouse_Type.class)
 				.addOnlyActiveRecordsFilter()
 				.create()
@@ -600,18 +614,17 @@ public class WarehouseDAO implements IWarehouseDAO
 				.build();
 	}
 
-	public static final String MSG_M_Warehouse_NoQuarantineWarehouse = "M_Warehouse_NoQuarantineWarehouse";
+	private static final AdMessageKey MSG_M_Warehouse_NoQuarantineWarehouse = AdMessageKey.of("M_Warehouse_NoQuarantineWarehouse");
 
 	@Override
-	@Cached(cacheName = I_M_Warehouse.Table_Name + "#" + org.adempiere.warehouse.model.I_M_Warehouse.COLUMNNAME_IsIssueWarehouse)
+	@Cached(cacheName = I_M_Warehouse.Table_Name + "#" + I_M_Warehouse.COLUMNNAME_IsIssueWarehouse)
 	public I_M_Warehouse retrieveWarehouseForIssuesOrNull(@CacheCtx final Properties ctx)
 	{
-		final I_M_Warehouse warehouse = Services.get(IQueryBL.class).createQueryBuilder(I_M_Warehouse.class, ctx, ITrx.TRXNAME_None)
-				.addEqualsFilter(org.adempiere.warehouse.model.I_M_Warehouse.COLUMNNAME_IsIssueWarehouse, true)
+		return queryBL.createQueryBuilder(I_M_Warehouse.class, ctx, ITrx.TRXNAME_None)
+				.addEqualsFilter(I_M_Warehouse.COLUMNNAME_IsIssueWarehouse, true)
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.firstOnly(I_M_Warehouse.class);
-		return warehouse;
 	}
 
 	@Override
@@ -626,16 +639,22 @@ public class WarehouseDAO implements IWarehouseDAO
 	}
 
 	@Override
-	public org.adempiere.warehouse.model.I_M_Warehouse retrieveQuarantineWarehouseOrNull()
+	public WarehouseId retrieveQuarantineWarehouseId()
 	{
-
-		return queryBL.createQueryBuilder(org.adempiere.warehouse.model.I_M_Warehouse.class)
+		final WarehouseId warehouseId = queryBL.createQueryBuilder(I_M_Warehouse.class)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
-				.addEqualsFilter(org.adempiere.warehouse.model.I_M_Warehouse.COLUMNNAME_IsQuarantineWarehouse, true)
+				.addEqualsFilter(I_M_Warehouse.COLUMNNAME_IsQuarantineWarehouse, true)
 				.orderBy(I_M_Warehouse.COLUMNNAME_M_Warehouse_ID)
 				.create()
-				.first();
+				.firstId(WarehouseId::ofRepoIdOrNull);
+
+		if (warehouseId == null)
+		{
+			throw new AdempiereException(MSG_M_Warehouse_NoQuarantineWarehouse);
+		}
+
+		return warehouseId;
 	}
 
 	@Nullable
@@ -677,12 +696,12 @@ public class WarehouseDAO implements IWarehouseDAO
 			queryBuilder.addEqualsFilter(I_M_Warehouse.COLUMNNAME_ExternalId, query.getExternalId().getValue().trim());
 		}
 
-		final int productRepoId = queryBuilder
+		final int warehouseRepoId = queryBuilder
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.firstId();
 
-		return WarehouseId.ofRepoIdOrNull(productRepoId);
+		return WarehouseId.ofRepoIdOrNull(warehouseRepoId);
 	}
 
 	@Override
