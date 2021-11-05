@@ -35,6 +35,7 @@ import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.externalreference.GetExternalReferenceByRecordIdReq;
 import de.metas.externalreference.bpartner.BPartnerExternalReferenceType;
 import de.metas.externalsystem.ExternalSystemConfigRepo;
+import de.metas.externalsystem.ExternalSystemConfigService;
 import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.alberta.ExternalSystemAlbertaConfig;
@@ -74,16 +75,18 @@ public class InvokeAlbertaService
 	private final AlbertaRoleRepository albertaRoleRepository;
 	private final ExternalReferenceRepository externalReferenceRepository;
 	private final ExternalSystemConfigRepo externalSystemConfigDAO;
-
+	private final ExternalSystemConfigService externalSystemConfigService;
 
 	public InvokeAlbertaService(
 			@NonNull final AlbertaRoleRepository albertaRoleRepository,
 			@NonNull final ExternalReferenceRepository externalReferenceRepository,
-			@NonNull final ExternalSystemConfigRepo externalSystemConfigDAO)
+			@NonNull final ExternalSystemConfigRepo externalSystemConfigDAO,
+			@NonNull final ExternalSystemConfigService externalSystemConfigService)
 	{
 		this.albertaRoleRepository = albertaRoleRepository;
 		this.externalReferenceRepository = externalReferenceRepository;
 		this.externalSystemConfigDAO = externalSystemConfigDAO;
+		this.externalSystemConfigService = externalSystemConfigService;
 	}
 
 	@NonNull
@@ -100,7 +103,7 @@ public class InvokeAlbertaService
 				.map(this::toOptionalAlbertaBPartnerReference)
 				.filter(Optional::isPresent)
 				.map(Optional::get)
-				.map(albertaReference -> this.toJsonExternalSystemRequest(orgId, configId, pInstanceId, albertaReference));
+				.map(albertaReference -> this.toSyncBPartnerExternalSystemRequest(orgId, configId, pInstanceId, albertaReference));
 	}
 
 	@NonNull
@@ -130,7 +133,7 @@ public class InvokeAlbertaService
 	}
 
 	@NonNull
-	private JsonExternalSystemRequest toJsonExternalSystemRequest(
+	private JsonExternalSystemRequest toSyncBPartnerExternalSystemRequest(
 			@NonNull final OrgId orgId,
 			@NonNull final ExternalSystemAlbertaConfigId configId,
 			@NonNull final PInstanceId pInstanceId,
@@ -145,6 +148,8 @@ public class InvokeAlbertaService
 				.orgCode(orgDAO.getById(orgId).getValue())
 				.command(EXTERNAL_SYSTEM_COMMAND_SYNC_BPARTNER)
 				.adPInstanceId(JsonMetasfreshId.of(PInstanceId.toRepoId(pInstanceId)))
+				.traceId(externalSystemConfigService.getTraceId())
+				.writeAuditEndpoint(config.getAuditEndpointIfEnabled())
 				.build();
 	}
 
@@ -162,6 +167,7 @@ public class InvokeAlbertaService
 		parameters.put(ExternalSystemConstants.PARAM_TENANT, albertaConfig.getTenant());
 		parameters.put(ExternalSystemConstants.PARAM_ALBERTA_ID, albertaBPartnerReference.getExternalReference());
 		parameters.put(ExternalSystemConstants.PARAM_ALBERTA_ROLE, albertaBPartnerReference.getAlbertaRoleType().name());
+		parameters.put(ExternalSystemConstants.PARAM_CHILD_CONFIG_VALUE, albertaConfig.getValue());
 
 		return parameters;
 	}

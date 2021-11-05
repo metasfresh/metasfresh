@@ -62,7 +62,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
  */
 public class UserQueryRepository
 {
-	public static final Builder builder()
+	public static Builder builder()
 	{
 		return new Builder();
 	}
@@ -226,6 +226,7 @@ public class UserQueryRepository
 	}
 
 	@VisibleForTesting
+	@Nullable
 	IUserQuery createUserQuery(final I_AD_UserQuery adUserQuery)
 	{
 		final String code = adUserQuery.getCode();
@@ -245,14 +246,9 @@ public class UserQueryRepository
 			}
 
 			final UserQueryRestriction row = parseUserQuerySegment(segmentStr);
-			if (row != null)
-			{
-				row.setInternalParameter(computeIsInternalParameter(adUserQuery, row));
-
-				row.setMandatory(computeIsMandatory(adUserQuery, row));
-
-				userQueryRestrictions.add(row);
-			}
+			row.setInternalParameter(computeIsInternalParameter(adUserQuery, row));
+			row.setMandatory(computeIsMandatory(adUserQuery, row));
+			userQueryRestrictions.add(row);
 		}
 
 		final int id = adUserQuery.getAD_UserQuery_ID();
@@ -262,6 +258,7 @@ public class UserQueryRepository
 	}
 
 	@VisibleForTesting
+	@NonNull
 	final UserQueryRestriction parseUserQuerySegment(final String segment)
 	{
 		final UserQueryRestriction row = new UserQueryRestriction();
@@ -345,8 +342,6 @@ public class UserQueryRepository
 	/**
 	 * Saves the given rows to {@link MQuery} and to given user query.
 	 *
-	 * @param rows
-	 * @param query
 	 * @param userQueryName user query name where to save or <code>null</code>
 	 */
 	public void saveRowsToQuery(final List<IUserQueryRestriction> rows, final MQuery query, final String userQueryName)

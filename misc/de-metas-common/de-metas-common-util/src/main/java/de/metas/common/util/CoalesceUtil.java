@@ -127,6 +127,15 @@ public class CoalesceUtil
 	}
 
 	@SafeVarargs
+	@NonNull
+	public static <T> T coalesceSuppliersNotNull(@NonNull final Supplier<T>... values)
+	{
+		return Check.assumeNotNull(
+				firstValidValue(Objects::nonNull, values),
+				"At least one of the given suppliers={} has to return not-null", (Object[])values);
+	}
+	
+	@SafeVarargs
 	@Nullable
 	public <T> T firstValidValue(@NonNull final Predicate<T> isValidPredicate, @Nullable final Supplier<T>... values)
 	{
@@ -217,6 +226,7 @@ public class CoalesceUtil
 
 	@Nullable
 	@SafeVarargs
+	@Nullable
 	public String firstNotBlank(@Nullable final Supplier<String>... valueSuppliers)
 	{
 		if(valueSuppliers == null || valueSuppliers.length == 0)

@@ -46,8 +46,7 @@ public class ExternalSystemMessageSender
 
 	public ExternalSystemMessageSender(
 			@NonNull final RabbitTemplate rabbitTemplate,
-			@NonNull @Qualifier(QUEUE_NAME_MF_TO_ES) final Queue queue
-	)
+			@NonNull @Qualifier(QUEUE_NAME_MF_TO_ES) final Queue queue)
 	{
 		this.rabbitTemplate = rabbitTemplate;
 		this.queue = queue;

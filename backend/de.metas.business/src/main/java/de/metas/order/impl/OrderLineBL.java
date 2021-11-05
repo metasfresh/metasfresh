@@ -13,7 +13,6 @@ import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeBL;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.location.DocumentLocation;
-import de.metas.document.location.adapter.IDocumentLocationAdapterTemplate;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.interfaces.I_C_OrderLine;
@@ -30,8 +29,6 @@ import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLinePriceAndDiscount;
-import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
-import de.metas.order.location.adapter.OrderLineDocumentLocationAdapterFactory;
 import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.order.location.adapter.OrderLineDocumentLocationAdapterFactory;
 import de.metas.organization.IOrgDAO;
@@ -516,25 +513,29 @@ public class OrderLineBL implements IOrderLineBL
 	/**
 	 * task 07080
 	 */
+	@NonNull
 	static ZonedDateTime getPriceDate(
 			final org.compiere.model.I_C_OrderLine orderLine,
 			final I_C_Order order)
 	{
-		ZonedDateTime date = TimeUtil.asZonedDateTime(orderLine.getDatePromised());
+		final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+		final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(order.getAD_Org_ID()));
+		
+		ZonedDateTime date = TimeUtil.asZonedDateTime(orderLine.getDatePromised(), timeZone);
 		// if null, then get date promised from order
 		if (date == null)
 		{
-			date = TimeUtil.asZonedDateTime(order.getDatePromised());
+			date = TimeUtil.asZonedDateTime(order.getDatePromised(), timeZone);
 		}
 		// still null, then get date ordered from order line
 		if (date == null)
 		{
-			date = TimeUtil.asZonedDateTime(orderLine.getDateOrdered());
+			date = TimeUtil.asZonedDateTime(orderLine.getDateOrdered(), timeZone);
 		}
 		// still null, then get date ordered from order
 		if (date == null)
 		{
-			date = TimeUtil.asZonedDateTime(order.getDateOrdered());
+			date = TimeUtil.asZonedDateTime(order.getDateOrdered(), timeZone);
 		}
 		return date;
 	}
@@ -860,6 +861,7 @@ public class OrderLineBL implements IOrderLineBL
 		if (productId == null)
 		{
 			orderLine.setM_Product_DocumentNote(null);
+			return;
 		}
 
 		final I_C_Order order = orderLine.getC_Order();

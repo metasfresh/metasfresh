@@ -89,7 +89,7 @@ public class AsyncBathMilestoneService
 
 		final int workPackagesFinalized = workPackagesProcessedCount + workPackagesWithErrorCount;
 
-		Loggables.withLogger(logger, Level.DEBUG).addLog("*** processAsyncBatchMilestone for: asyncBatchID: " + asyncBatch.getC_Async_Batch_ID() +
+		Loggables.withLogger(logger, Level.INFO).addLog("*** processAsyncBatchMilestone for: asyncBatchID: " + asyncBatch.getC_Async_Batch_ID() +
 							" allWPSize: " + workPackages.size() +
 							" processedWPSize: " + workPackagesProcessedCount +
 							" erroredWPSize: " + workPackagesWithErrorCount +
