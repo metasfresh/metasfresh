@@ -133,7 +133,7 @@ public class CreateMissingBPartnerProcessor implements Processor
 	{
 		try
 		{
-			final Doctor doctor = doctorApi.getDoctor(connectionDetails.getApiKey(), connectionDetails.getTenant(), doctorId);
+			final Doctor doctor = doctorApi.getDoctor(connectionDetails.getApiKey(), doctorId);
 
 			return DataMapper.mapDoctorToUpsertRequest(doctor, orgCode);
 		}
@@ -152,7 +152,7 @@ public class CreateMissingBPartnerProcessor implements Processor
 	{
 		try
 		{
-			final Pharmacy pharmacy = pharmacyApi.getPharmacy(connectionDetails.getApiKey(), connectionDetails.getTenant(), pharmacyId);
+			final Pharmacy pharmacy = pharmacyApi.getPharmacy(connectionDetails.getApiKey(), pharmacyId);
 
 			return DataMapper.mapPharmacyToUpsertRequest(pharmacy, orgCode);
 		}

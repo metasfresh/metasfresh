@@ -28,6 +28,7 @@ import lombok.Getter;
 import lombok.ToString;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 
@@ -129,26 +130,40 @@ public class JsonAlbertaPatient
 
 	@ApiModelProperty(position = 140)
 	@Nullable
+	private String classification;
+
+	@ApiModelProperty(hidden = true)
+	private boolean classificationSet;
+
+	@ApiModelProperty(position = 150)
+	@Nullable
+	private BigDecimal careDegree;
+
+	@ApiModelProperty(hidden = true)
+	private boolean careDegreeSet;
+
+	@ApiModelProperty(position = 160)
+	@Nullable
 	private Instant createdAt;
 
 	@ApiModelProperty(hidden = true)
 	private boolean createdAtSet;
 
-	@ApiModelProperty(position = 150)
+	@ApiModelProperty(position = 170)
 	@Nullable
 	private String createdByIdentifier;
 
 	@ApiModelProperty(hidden = true)
 	private boolean createdByIdentifierSet;
 
-	@ApiModelProperty(position = 160)
+	@ApiModelProperty(position = 180)
 	@Nullable
 	private Instant updatedAt;
 
 	@ApiModelProperty(hidden = true)
 	private boolean updatedAtSet;
 
-	@ApiModelProperty(position = 170)
+	@ApiModelProperty(position = 190)
 	@Nullable
 	private String updateByIdentifier;
 
@@ -231,6 +246,18 @@ public class JsonAlbertaPatient
 	{
 		this.deactivationComment = deactivationComment;
 		this.deactivationCommentSet = true;
+	}
+
+	public void setClassification(@Nullable final String classification)
+	{
+		this.classification = classification;
+		this.classificationSet = true;
+	}
+
+	public void setCareDegree(@Nullable final BigDecimal careDegree)
+	{
+		this.careDegree = careDegree;
+		this.careDegreeSet = true;
 	}
 
 	public void setCreatedAt(@Nullable final Instant createdAt)
