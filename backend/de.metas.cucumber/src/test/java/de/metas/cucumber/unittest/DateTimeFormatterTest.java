@@ -20,15 +20,14 @@
  * #L%
  */
 
-package de.metas.cucumber;
+package de.metas.cucumber.unittest;
 
-import org.assertj.core.api.Assertions;
 import org.junit.Test;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 public class DateTimeFormatterTest
 {
