@@ -7,6 +7,7 @@ import counterpart from 'counterpart';
 import { pushHeaderEntry } from '../../../actions/HeaderActions';
 import Indicator from '../../../components/Indicator';
 import * as CompleteStatus from '../../../constants/CompleteStatus';
+import PickAlternatives from './PickAlternatives';
 
 class PickStepButton extends PureComponent {
   handleClick = () => {
@@ -70,6 +71,7 @@ class PickStepButton extends PureComponent {
             </div>
           </div>
         </button>
+        <PickAlternatives {...this.props} />
       </div>
     );
   }
