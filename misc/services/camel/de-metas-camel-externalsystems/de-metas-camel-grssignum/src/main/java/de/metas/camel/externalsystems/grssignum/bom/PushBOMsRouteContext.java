@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-camel-alberta-camelroutes
+ * de-metas-camel-grssignum
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,21 +20,17 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.alberta;
+package de.metas.camel.externalsystems.grssignum.bom;
 
+import de.metas.camel.externalsystems.grssignum.api.model.JsonBOM;
+import lombok.Builder;
 import lombok.NonNull;
-import org.apache.camel.Exchange;
+import lombok.Value;
 
-public class ProcessorHelper
+@Value
+@Builder
+public class PushBOMsRouteContext
 {
-	public static  <T> T getPropertyOrThrowError(@NonNull final Exchange exchange, @NonNull final String propertyName, @NonNull final Class<T> propertyClass)
-	{
-		final T property = exchange.getProperty(propertyName, propertyClass);
-		if (property == null)
-		{
-			throw new RuntimeException("Missing route property: " + propertyName + " !");
-		}
-
-		return property;
-	}
+	@NonNull
+	JsonBOM jsonBOM;
 }

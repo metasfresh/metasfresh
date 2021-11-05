@@ -22,13 +22,13 @@
 
 package de.metas.camel.externalsystems.alberta.patient;
 
-import de.metas.camel.externalsystems.alberta.ProcessorHelper;
 import de.metas.camel.externalsystems.alberta.patient.processor.CreateBPRelationReqProcessor;
 import de.metas.camel.externalsystems.alberta.patient.processor.CreateBPartnerReqProcessor;
 import de.metas.camel.externalsystems.alberta.patient.processor.PatientsRuntimeParametersProcessor;
 import de.metas.camel.externalsystems.alberta.patient.processor.PrepareApiClientsProcessor;
 import de.metas.camel.externalsystems.alberta.patient.processor.RetrievePatientsProcessor;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
+import de.metas.camel.externalsystems.common.ProcessorHelper;
 import de.metas.camel.externalsystems.common.v2.BPUpsertCamelRequest;
 import de.metas.common.bpartner.v2.request.JsonRequestBPartnerUpsert;
 import de.metas.common.bpartner.v2.request.JsonRequestBPartnerUpsertItem;

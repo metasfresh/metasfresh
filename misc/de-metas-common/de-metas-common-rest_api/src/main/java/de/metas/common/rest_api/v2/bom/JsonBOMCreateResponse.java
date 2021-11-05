@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-camel-shopware6
+ * de-metas-common-rest_api
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,25 +20,25 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.shopware6;
+package de.metas.common.rest_api.v2.bom;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
+import lombok.Builder;
 import lombok.NonNull;
-import org.apache.camel.Exchange;
+import lombok.Value;
 
-/**
- * @deprecated please use (and extend if needed) {@link de.metas.camel.externalsystems.common.ProcessorHelper}.
- */
-@Deprecated
-public class ProcessorHelper
+@Value
+@Builder
+@JsonDeserialize(builder = JsonBOMCreateResponse.JsonBOMCreateResponseBuilder.class)
+public class JsonBOMCreateResponse
 {
-	public static <T> T getPropertyOrThrowError(@NonNull final Exchange exchange, @NonNull final String propertyName, @NonNull final Class<T> propertyClass)
+	public static JsonBOMCreateResponse of(@NonNull final JsonMetasfreshId createdBOMProductId)
 	{
-		final T property = exchange.getProperty(propertyName, propertyClass);
-		if (property == null)
-		{
-			throw new RuntimeException("Missing route property: " + propertyName + " !");
-		}
-
-		return property;
+		return new JsonBOMCreateResponse(createdBOMProductId);
 	}
+
+	@JsonProperty("createdBOMProductId")
+	JsonMetasfreshId createdBOMProductId;
 }

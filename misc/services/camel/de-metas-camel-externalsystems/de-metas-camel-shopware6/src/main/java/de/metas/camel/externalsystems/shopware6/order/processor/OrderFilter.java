@@ -43,6 +43,7 @@ import org.apache.camel.Processor;
 import javax.annotation.Nullable;
 import java.util.Optional;
 
+import static de.metas.camel.externalsystems.common.ProcessorHelper.getPropertyOrThrowError;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT;
 
 public class OrderFilter implements Processor
