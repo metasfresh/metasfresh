@@ -408,12 +408,10 @@ public class MOrder extends X_C_Order implements IDocument
 	 * Set Business Partner Defaults & Details.
 	 * SOTrx should be set.
 	 *
-	 * @param bp business partner
+	 * FIXME: keep in sync / merge with de.metas.order.impl.{@link de.metas.order.impl.OrderBL#setBPartner(I_C_Order, I_C_BPartner)}
 	 */
 	public void setBPartner(final I_C_BPartner bp)
 	{
-		// FIXME: keep in sync / merge with de.metas.adempiere.service.impl.OrderBL.setBPartner(I_C_Order, I_C_BPartner)
-
 		if (bp == null)
 		{
 			return;
