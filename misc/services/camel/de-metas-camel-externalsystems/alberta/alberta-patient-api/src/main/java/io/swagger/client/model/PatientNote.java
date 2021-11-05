@@ -26,7 +26,7 @@ import java.math.BigDecimal;
  * PatientNote
  */
 
-@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.JavaClientCodegen", date = "2021-10-28T16:35:13.786Z[GMT]")
+@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.JavaClientCodegen", date = "2021-11-05T09:14:03.653Z[GMT]")
 public class PatientNote {
   @SerializedName("status")
   private BigDecimal status = null;
