@@ -1,8 +1,8 @@
 # swagger-java-client
 
 Patient - Warenwirtschaft (Basis)
-- API version: 1.0.6
-  - Build date: 2021-10-20T09:37:07.084Z[GMT]
+- API version: 1.0.7
+  - Build date: 2021-11-05T09:14:03.653Z[GMT]
 
 Synchronisation der Patienten mit der Warenwirtschaft
 
@@ -115,6 +115,8 @@ Class | Method | HTTP request | Description
 *PatientApi* | [**addPatient**](docs/PatientApi.md#addPatient) | **POST** /patient | Patient hinzufügen
 *PatientApi* | [**getCreatedPatients**](docs/PatientApi.md#getCreatedPatients) | **GET** /patient | Patienten je nach Status abrufen
 *PatientApi* | [**updatePatient**](docs/PatientApi.md#updatePatient) | **PUT** /patient | Patient ändern
+*PatientNoteApi* | [**patientNote**](docs/PatientNoteApi.md#patientNote) | **POST** /patientNote | PatientenNotiz erstellen
+*PatientNoteApi* | [**patientNotePatch**](docs/PatientNoteApi.md#patientNotePatch) | **PATCH** /patientNote/{id} | PatientenNotiz ändern
 *PayerApi* | [**getNewAndUpdatedPayers**](docs/PayerApi.md#getNewAndUpdatedPayers) | **GET** /payer | Daten der neuen und geänderten Kostenträger abrufen
 *PayerApi* | [**getPayer**](docs/PayerApi.md#getPayer) | **GET** /payer/{_id} | Daten eines einzelnen Kostenträgers abrufen
 *PharmacyApi* | [**getNewAndUpdatedPharmacies**](docs/PharmacyApi.md#getNewAndUpdatedPharmacies) | **GET** /pharmacy | Daten der neuen und geänderten Apotheken abrufen
@@ -136,6 +138,8 @@ Class | Method | HTTP request | Description
  - [PatientBillingAddress](docs/PatientBillingAddress.md)
  - [PatientDeliveryAddress](docs/PatientDeliveryAddress.md)
  - [PatientHospital](docs/PatientHospital.md)
+ - [PatientNote](docs/PatientNote.md)
+ - [PatientNoteMapping](docs/PatientNoteMapping.md)
  - [PatientPayer](docs/PatientPayer.md)
  - [PatientPrimaryDoctorInstitution](docs/PatientPrimaryDoctorInstitution.md)
  - [Payer](docs/Payer.md)
