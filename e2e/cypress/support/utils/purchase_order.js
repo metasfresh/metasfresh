@@ -60,6 +60,12 @@ export class PurchaseOrderLine {
     return this;
   }
 
+  setHU(hu) {
+    cy.log(`PurchaseOrderLine - setHU = ${hu}`);
+    this.hu = hu;
+    return this;
+  }
+
   setQuantity(quantity) {
     cy.log(`PurchaseOrderLine - setQuantity = ${quantity}`);
     this.quantity = quantity;
@@ -68,7 +74,7 @@ export class PurchaseOrderLine {
 }
 
 function applyPurchaseOrder(purchaseOrder) {
-  describe(`Create new Purchase Order`, function() {
+  describe(`Create new Purchase Order`, function () {
     cy.visitWindow('181', 'NEW');
 
     cy.writeIntoLookupListField('C_BPartner_ID', purchaseOrder.bPartner, purchaseOrder.bPartner);
@@ -91,7 +97,7 @@ function applyPurchaseOrder(purchaseOrder) {
       cy.selectInListField('M_Warehouse_ID', purchaseOrder.warehouse);
     }
 
-    purchaseOrder.lines.forEach(function(purchaseOrderLine) {
+    purchaseOrder.lines.forEach(function (purchaseOrderLine) {
       applyPurchaseOrderLine(purchaseOrderLine);
     });
     cy.get('table tbody tr').should('have.length', purchaseOrder.lines.length);
@@ -102,6 +108,7 @@ function applyPurchaseOrderLine(purchaseOrderLine) {
   cy.selectTab('C_OrderLine');
   cy.pressBatchEntryButton();
   cy.writeIntoLookupListField('M_Product_ID', purchaseOrderLine.product, purchaseOrderLine.product);
+  cy.writeIntoLookupListField('M_HU_PI_Item_Product_ID', purchaseOrderLine.hu, purchaseOrderLine.hu);
   cy.writeIntoStringField('Qty', purchaseOrderLine.quantity);
   cy.closeBatchEntry();
 

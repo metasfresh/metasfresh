@@ -12,8 +12,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
         "value" : "dataEntryTab_description",
         "anyLanguage" : false
       },
-      "supportQuickInput" : false,
       "queryOnActivate" : true,
+      "newRecordInputMode" : "ALL_AVAILABLE_METHODS",
       "singleRowDetailLayout" : false,
       "subTabLayouts" : [
         {
@@ -656,8 +656,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
             ],
             "empty" : false
           },
-          "supportQuickInput" : false,
           "queryOnActivate" : true,
+          "newRecordInputMode" : "ALL_AVAILABLE_METHODS",
           "singleRowDetailLayout" : true,
           "subTabLayouts" : [ ],
           "empty" : false
@@ -1302,8 +1302,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
             ],
             "empty" : false
           },
-          "supportQuickInput" : false,
           "queryOnActivate" : true,
+          "newRecordInputMode" : "ALL_AVAILABLE_METHODS",
           "singleRowDetailLayout" : true,
           "subTabLayouts" : [ ],
           "empty" : false
@@ -1540,8 +1540,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "closableMode" : "INITIALLY_CLOSED"
             }
           ],
-          "supportQuickInput" : false,
           "queryOnActivate" : true,
+          "newRecordInputMode" : "ALL_METHODS",
           "singleRowDetailView" : true
         },
         {
@@ -1760,13 +1760,13 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "closableMode" : "INITIALLY_CLOSED"
             }
           ],
-          "supportQuickInput" : false,
           "queryOnActivate" : true,
+          "newRecordInputMode" : "ALL_METHODS",
           "singleRowDetailView" : true
         }
       ],
-      "supportQuickInput" : false,
-      "queryOnActivate" : true
+      "queryOnActivate" : true,
+      "newRecordInputMode" : "ALL_METHODS"
     }
   ]
 ]
@@ -2405,11 +2405,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                           "active" : true
                         }
                       },
-                      "cached" : true,
-                      "numericKey" : false
+                      "numericKey" : false,
+                      "cached" : true
                     },
-                    "highVolume" : false,
-                    "numericKey" : true
+                    "numericKey" : true,
+                    "highVolume" : false
                   },
                   "present" : true
                 },
@@ -3352,11 +3352,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                           "active" : true
                         }
                       },
-                      "cached" : true,
-                      "numericKey" : false
+                      "numericKey" : false,
+                      "cached" : true
                     },
-                    "highVolume" : false,
-                    "numericKey" : true
+                    "numericKey" : true,
+                    "highVolume" : false
                   },
                   "present" : true
                 },

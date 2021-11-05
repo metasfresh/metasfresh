@@ -43,6 +43,7 @@ public interface CandidateHandler
 	class OnNewOrChangeAdvise
 	{
 		public static final OnNewOrChangeAdvise DEFAULT = OnNewOrChangeAdvise.builder().build();
+		public static final OnNewOrChangeAdvise DONT_UPDATE = OnNewOrChangeAdvise.builder().attemptUpdate(false).build();
 
 		public static OnNewOrChangeAdvise attemptUpdate(final boolean attemptUpdate)
 		{

@@ -19,6 +19,7 @@ import de.metas.organization.OrgTypeId;
 import de.metas.organization.StoreCreditCardNumberMode;
 import de.metas.pricing.PricingSystemId;
 import de.metas.security.permissions.Access;
+import de.metas.user.UserGroupId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -162,11 +163,13 @@ public class OrgDAO implements IOrgDAO
 	}
 
 	@Override
+	
 	public OrgInfo getOrgInfoByIdInTrx(final OrgId adOrgId)
 	{
 		return retrieveOrgInfo(adOrgId, ITrx.TRXNAME_ThreadInherited);
 	}
-
+	
+	@NonNull
 	private OrgInfo retrieveOrgInfo(@NonNull final OrgId orgId, final String trxName)
 	{
 		final I_AD_OrgInfo record = retrieveOrgInfoRecordOrNull(orgId, trxName);
@@ -219,6 +222,9 @@ public class OrgDAO implements IOrgDAO
 				.orgBPartnerLocationId(BPartnerLocationId.ofRepoIdOrNull(record.getOrg_BPartner_ID(), record.getOrgBP_Location_ID()))
 				.reportsPathPrefix(record.getReportPrefix())
 				.timeZone(timeZone)
+				//
+				.partnerCreatedFromAnotherOrgNotifyUserGroupID(UserGroupId.ofRepoIdOrNull(record.getC_BPartner_CreatedFromAnotherOrg_Notify_UserGroup_ID()))
+				.supplierApprovalExpirationNotifyUserGroupID(UserGroupId.ofRepoIdOrNull(record.getC_BP_SupplierApproval_Expiration_Notify_UserGroup_ID()))
 				//
 				.build();
 	}
@@ -348,6 +354,18 @@ public class OrgDAO implements IOrgDAO
 			throw new AdempiereException("No Organization found for ID: " + orgId);
 		}
 		return org.isEUOneStopShop();
+	}
+
+	@Override
+	public UserGroupId getSupplierApprovalExpirationNotifyUserGroupID(final OrgId orgId)
+	{
+		return getOrgInfoById(orgId).getSupplierApprovalExpirationNotifyUserGroupID();
+	}
+
+	@Override
+	public UserGroupId getPartnerCreatedFromAnotherOrgNotifyUserGroupID(final OrgId orgId)
+	{
+		return getOrgInfoById(orgId).getPartnerCreatedFromAnotherOrgNotifyUserGroupID();
 	}
 
 	@Override

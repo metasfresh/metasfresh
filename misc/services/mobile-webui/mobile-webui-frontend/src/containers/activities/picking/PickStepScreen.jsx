@@ -43,15 +43,31 @@ class PickStepScreen extends Component {
   };
 
   onUnpickButtonClick = () => {
-    const { wfProcessId, activityId, lineId, stepId, updatePickingStepQty, push } = this.props;
+    const {
+      wfProcessId,
+      activityId,
+      lineId,
+      stepId,
+      stepProps: { scannedHUBarcode },
+    } = this.props;
+    const { updatePickingStepQty, push } = this.props;
 
     postStepUnPicked({
       wfProcessId,
       activityId,
       stepId,
+      huBarcode: scannedHUBarcode,
     })
       .then(() => {
-        updatePickingStepQty({ wfProcessId, activityId, lineId, stepId, qtyPicked: 0, qtyRejectedReasonCode: null });
+        updatePickingStepQty({
+          wfProcessId,
+          activityId,
+          lineId,
+          stepId,
+          scannedHUBarcode: null,
+          qtyPicked: 0,
+          qtyRejectedReasonCode: null,
+        });
         push(`/workflow/${wfProcessId}/activityId/${activityId}/lineId/${lineId}`);
       })
       .catch((axiosError) => toastError({ axiosError }));
@@ -59,11 +75,11 @@ class PickStepScreen extends Component {
 
   componentWillUnmount() {
     const {
-      stepProps: { qtyPicked },
       wfProcessId,
       activityId,
       lineId,
       stepId,
+      stepProps: { qtyPicked },
       updatePickingStepQty,
     } = this.props;
     qtyPicked === '' && updatePickingStepQty({ wfProcessId, activityId, lineId, stepId, qtyPicked: 0 });

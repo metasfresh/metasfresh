@@ -20,7 +20,7 @@ import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.X_PP_Order;
 
 import javax.annotation.Nullable;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -163,8 +163,8 @@ public class PPOrderDAO implements IPPOrderDAO
 	@Override
 	public void changeOrderScheduling(
 			@NonNull final PPOrderId orderId,
-			@NonNull final LocalDateTime scheduledStartDate,
-			@NonNull final LocalDateTime scheduledFinishDate)
+			@NonNull final Instant scheduledStartDate,
+			@NonNull final Instant scheduledFinishDate)
 	{
 		final I_PP_Order order = getById(orderId);
 		order.setDateStartSchedule(TimeUtil.asTimestamp(scheduledStartDate));

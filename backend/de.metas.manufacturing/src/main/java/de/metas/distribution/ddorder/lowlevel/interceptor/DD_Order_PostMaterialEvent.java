@@ -1,5 +1,6 @@
 package de.metas.distribution.ddorder.lowlevel.interceptor;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelService;
 import de.metas.material.event.ModelProductDescriptorExtractor;
@@ -70,7 +71,7 @@ public class DD_Order_PostMaterialEvent
 		events.forEach(event -> materialEventService.postEventAfterNextCommit(event));
 	}
 
-	private DDOrderBuilder createAndInitPPOrderPojoBuilder(@NonNull final I_DD_Order ddOrderRecord)
+	public static DDOrderBuilder createAndInitPPOrderPojoBuilder(@NonNull final I_DD_Order ddOrderRecord)
 	{
 		final DDOrderBuilder ddOrderPojoBuilder = DDOrder.builder()
 				.datePromised(TimeUtil.asInstant(ddOrderRecord.getDatePromised()))
@@ -98,7 +99,7 @@ public class DD_Order_PostMaterialEvent
 			final int durationDays = DDOrderUtil.calculateDurationDays(
 					ddOrder.getPP_Product_Planning(), ddOrderLine.getDD_NetworkDistributionLine());
 
-			ddOrderPojoBuilder.line(createDDOrderLinePojo(ddOrderLine, ddOrder, durationDays));
+			ddOrderPojoBuilder.lines(ImmutableList.of(createDDOrderLinePojo(replenishInfoRepository, ddOrderLine, ddOrder, durationDays)));
 
 			final DDOrderCreatedEvent event = DDOrderCreatedEvent.builder()
 					.eventDescriptor(EventDescriptor.ofClientAndOrg(ddOrder.getAD_Client_ID(), ddOrder.getAD_Org_ID()))
@@ -112,7 +113,8 @@ public class DD_Order_PostMaterialEvent
 		return events;
 	}
 
-	private DDOrderLine createDDOrderLinePojo(
+	public static DDOrderLine createDDOrderLinePojo(
+			@NonNull final ReplenishInfoRepository replenishInfoRepository,
 			@NonNull final I_DD_OrderLine ddOrderLine,
 			@NonNull final I_DD_Order ddOrder,
 			final int durationDays)
@@ -130,6 +132,7 @@ public class DD_Order_PostMaterialEvent
 				.bPartnerId(bPartnerId)
 				.ddOrderLineId(ddOrderLine.getDD_OrderLine_ID())
 				.qty(ddOrderLine.getQtyDelivered())
+				.qtyPending(ddOrderLine.getQtyOrdered().subtract(ddOrderLine.getQtyDelivered()))
 				.networkDistributionLineId(ddOrderLine.getDD_NetworkDistributionLine_ID())
 				.salesOrderLineId(ddOrderLine.getC_OrderLineSO_ID())
 				.durationDays(durationDays)

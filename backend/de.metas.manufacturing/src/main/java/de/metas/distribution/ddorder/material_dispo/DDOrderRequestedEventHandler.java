@@ -6,6 +6,7 @@ import static de.metas.document.engine.IDocument.STATUS_Completed;
 import java.util.Collection;
 import java.util.Date;
 
+import ch.qos.logback.classic.Level;
 import org.compiere.util.TimeUtil;
 import org.eevolution.model.I_DD_Order;
 import org.slf4j.Logger;
@@ -14,8 +15,6 @@ import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-
-import ch.qos.logback.classic.Level;
 import de.metas.Profiles;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.logging.LogManager;
@@ -62,7 +61,7 @@ public class DDOrderRequestedEventHandler implements MaterialEventHandler<DDOrde
 	}
 
 	@Override
-	public Collection<Class<? extends DDOrderRequestedEvent>> getHandeledEventType()
+	public Collection<Class<? extends DDOrderRequestedEvent>> getHandledEventType()
 	{
 		return ImmutableList.of(DDOrderRequestedEvent.class);
 	}

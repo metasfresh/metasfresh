@@ -130,7 +130,7 @@ export class RawLookup extends Component {
       (top + 20 > filter.boundingRect.bottom ||
         top - 20 < filter.boundingRect.top)
     ) {
-      this.props.onDropdownListToggle(false);
+      this.dropdownListToggle(false);
     }
   };
 
@@ -154,7 +154,7 @@ export class RawLookup extends Component {
       updateItems,
     } = this.props;
     let selected = select;
-    let mainProp = mainProperty[0];
+    let mainProp = mainProperty;
 
     this.setState({
       selected: null,
@@ -187,7 +187,7 @@ export class RawLookup extends Component {
         });
     } else {
       if (subentity === 'quickInput') {
-        onChange(mainProperty[0].field, selected, () =>
+        onChange(mainProperty.field, selected, () =>
           setNextProperty(mainProp.field)
         );
       } else {
@@ -234,7 +234,7 @@ export class RawLookup extends Component {
         windowId: newRecordWindowId,
         modalType: 'window',
         dataId: 'NEW',
-        triggerField: filterWidget ? parameterName : mainProperty[0].field,
+        triggerField: filterWidget ? parameterName : mainProperty.field,
       })
     );
   };
@@ -245,7 +245,7 @@ export class RawLookup extends Component {
         isFocused: false,
       },
       () => {
-        this.props.onDropdownListToggle(false, mouse);
+        this.dropdownListToggle(false, mouse);
       }
     );
   }
@@ -271,7 +271,7 @@ export class RawLookup extends Component {
         windowId: advSearchWindowId,
         modalType: 'window',
         dataId: 'SEARCH',
-        triggerField: filterWidget ? parameterName : mainProperty[0].field,
+        triggerField: filterWidget ? parameterName : mainProperty.field,
         parentWindowId: windowType,
         parentDocumentId: dataId,
         parentFieldId: item.field,
@@ -291,12 +291,18 @@ export class RawLookup extends Component {
         },
         () => {
           if (!mandatory && mouse) {
-            this.props.onDropdownListToggle(true);
+            this.dropdownListToggle(true);
           }
         }
       );
     }
   }
+
+  dropdownListToggle = (val, mouse) => {
+    const { item } = this.props;
+
+    this.props.onDropdownListToggle(val, item.field, mouse);
+  };
 
   typeaheadRequest = () => {
     const {
@@ -319,14 +325,14 @@ export class RawLookup extends Component {
     } = this.props;
 
     // -- shape placeholder with the clearValueText in case this exists
-    const placeholder = mainProperty[0].clearValueText
-      ? mainProperty[0].clearValueText
+    const placeholder = mainProperty.clearValueText
+      ? mainProperty.clearValueText
       : this.props.placeholder;
     const inputValue = this.inputSearch.value;
     let typeaheadRequest;
     const typeaheadParams = {
       docId: filterWidget ? viewId : dataId,
-      propertyName: filterWidget ? parameterName : mainProperty[0].field,
+      propertyName: filterWidget ? parameterName : mainProperty.field,
       query: inputValue,
       rowId,
       tabId,
@@ -337,7 +343,7 @@ export class RawLookup extends Component {
         windowType,
         viewId,
         dataId,
-        mainProperty[0].field,
+        mainProperty.field,
         inputValue
       );
     } else if (viewId && !filterWidget) {
@@ -401,12 +407,7 @@ export class RawLookup extends Component {
   };
 
   handleChange = (handleChangeOnFocus, allowEmpty) => {
-    const {
-      handleInputEmptyStatus,
-      enableAutofocus,
-      isOpen,
-      onDropdownListToggle,
-    } = this.props;
+    const { handleInputEmptyStatus, enableAutofocus, isOpen } = this.props;
 
     enableAutofocus();
 
@@ -420,7 +421,7 @@ export class RawLookup extends Component {
       !allowEmpty && handleInputEmptyStatus && handleInputEmptyStatus(false);
 
       if (!isOpen) {
-        onDropdownListToggle(true);
+        this.dropdownListToggle(true);
       }
 
       this.setState(
@@ -454,7 +455,7 @@ export class RawLookup extends Component {
     if (!filterWidget && !!defaultValue && this.inputSearch) {
       const init = [defaultValue];
       const inputValue = defaultValue.caption;
-      const clearValueText = this.props.mainProperty[0].clearValueText;
+      const clearValueText = this.props.mainProperty.clearValueText;
       const placeholder = clearValueText
         ? clearValueText
         : this.props.placeholder;

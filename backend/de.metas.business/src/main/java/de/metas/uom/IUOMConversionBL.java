@@ -129,21 +129,6 @@ public interface IUOMConversionBL extends ISingletonService, QuantityUOMConverte
 			I_C_UOM uomFrom);
 
 	/**
-	 * Convert price from <code>uomFrom</code> to <code>uomTo</code>
-	 *
-	 * @param uomFrom        may not be <code>null</code>.
-	 * @param uomTo          may not be <code>null</code>.
-	 * @param pricePrecision precision to be used for resulting price
-	 * @return converted price using <code>pricePrecision</code>; never return NULL.
-	 */
-	BigDecimal convertPrice(
-			int productId,
-			BigDecimal price,
-			I_C_UOM uomFrom,
-			I_C_UOM uomTo,
-			int pricePrecision);
-
-	/**
 	 * Rounds given qty to UOM standard precision.
 	 * <p>
 	 * If qty's actual precision is bigger than UOM standard precision then the qty WON'T be rounded.

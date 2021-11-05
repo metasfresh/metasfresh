@@ -1,6 +1,7 @@
 package de.metas.handlingunits.picking.job.repository;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.HuId;
 import de.metas.inoutcandidate.ShipmentScheduleId;
@@ -40,6 +41,17 @@ public class PickingJobCreateRepoRequest
 	{
 		@NonNull ProductId productId;
 		@Singular @NonNull ImmutableList<Step> steps;
+
+		@Builder.Default
+		@NonNull ImmutableSet<PickFromAlternative> pickFromAlternatives = ImmutableSet.of();
+	}
+
+	@Value(staticConstructor = "of")
+	public static class PickFromAlternative
+	{
+		@NonNull LocatorId pickFromLocatorId;
+		@NonNull HuId pickFromHUId;
+		@NonNull Quantity qtyAvailable;
 	}
 
 	@Value
@@ -54,7 +66,10 @@ public class PickingJobCreateRepoRequest
 		@NonNull Quantity qtyToPick;
 		//
 		// From where?
-		@NonNull LocatorId locatorId;
+		@NonNull LocatorId pickFromLocatorId;
 		@NonNull HuId pickFromHUId;
+
+		@Builder.Default
+		@NonNull ImmutableSet<HuId> pickFromHUIdsAlternatives = ImmutableSet.of();
 	}
 }

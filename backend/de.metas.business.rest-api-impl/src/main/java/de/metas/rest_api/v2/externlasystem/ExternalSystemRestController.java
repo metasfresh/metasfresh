@@ -24,6 +24,7 @@ package de.metas.rest_api.v2.externlasystem;
 
 import de.metas.Profiles;
 import de.metas.common.externalsystem.JsonESRuntimeParameterUpsertRequest;
+import de.metas.common.externalsystem.JsonInvokeExternalSystemParams;
 import de.metas.common.rest_api.v2.CreatePInstanceLogRequest;
 import de.metas.common.rest_api.v2.JsonError;
 import de.metas.common.rest_api.v2.issue.JsonCreateIssueResponse;
@@ -36,6 +37,7 @@ import de.metas.rest_api.v2.externlasystem.dto.InvokeExternalSystemProcessReques
 import de.metas.rest_api.v2.process.response.RunProcessResponse;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import lombok.NonNull;
@@ -50,6 +52,8 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import javax.annotation.Nullable;
 
 @RestController
 @RequestMapping(value = { MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/externalsystem" })
@@ -74,7 +78,8 @@ public class ExternalSystemRestController
 	public ResponseEntity<?> invokeExternalSystem(
 			@PathVariable final String externalSystemConfigType,
 			@PathVariable final String externalSystemChildConfigValue,
-			@PathVariable final String request)
+			@ApiParam("The actual request like `getOrders` of the external system invocation process") @PathVariable final String request,
+			@RequestBody @Nullable final JsonInvokeExternalSystemParams externalSystemParams)
 	{
 		final ExternalSystemType externalSystemType = ExternalSystemType.ofCodeOrNameOrNull(externalSystemConfigType);
 		if (externalSystemType == null)
@@ -86,12 +91,14 @@ public class ExternalSystemRestController
 						.externalSystemType(externalSystemType)
 						.childSystemConfigValue(externalSystemChildConfigValue)
 						.request(request)
+						.jsonInvokeExternalSystemParams(externalSystemParams)
 						.build();
 
 		return getResponse(externalSystemService.invokeExternalSystem(invokeExternalSystemProcessRequest));
 	}
 
-	@ApiOperation("Store external AD_PInstance logs")
+	@ApiOperation("Enables an external system to create an `AD_PInstance_Log`." 
+			+ "\nThe `AD_PInstance_ID` is the one the external system was invoked with.")
 	@ApiResponses(value = {
 			@ApiResponse(code = 200, message = "Successfully stored external AD_PInstance logs"),
 			@ApiResponse(code = 401, message = "You are not authorized to store AD_PInstance logs"),
@@ -99,14 +106,18 @@ public class ExternalSystemRestController
 			@ApiResponse(code = 422, message = "The request body could not be processed")
 	})
 
-	@PostMapping(path = "/externalstatus/{adPInstanceId}/message", consumes = "application/json")
-	public ResponseEntity<?> storeLogs(@RequestBody @NonNull final CreatePInstanceLogRequest request, @PathVariable final Integer adPInstanceId)
+	@PostMapping(path = "/externalstatus/{AD_PInstance_ID}/message", consumes = "application/json")
+	public ResponseEntity<?> storeLogs(
+			@RequestBody @NonNull final CreatePInstanceLogRequest request,
+			@PathVariable final Integer AD_PInstance_ID)
 	{
-		externalSystemService.storeExternalPinstanceLog(request, PInstanceId.ofRepoId(adPInstanceId));
+		externalSystemService.storeExternalPinstanceLog(request, PInstanceId.ofRepoId(AD_PInstance_ID));
 		return ResponseEntity.ok().build();
 	}
 
-	@ApiOperation("Create an AD_Issue. Note: it's not necessary that the process in question was started by the `invoke` endpoint.")
+	@ApiOperation("Create an AD_Issue. "
+			+ "\nThe `AD_PInstance_ID` is the one the external system was invoked with."
+			+ "\nNote: it's not necessary that the process in question was started by the `invoke` endpoint.")
 	@ApiResponses(value = {
 			@ApiResponse(code = 200, message = "Successfully created issue"),
 			@ApiResponse(code = 401, message = "You are not authorized to create new issue"),
@@ -114,7 +125,9 @@ public class ExternalSystemRestController
 			@ApiResponse(code = 422, message = "The request body could not be processed")
 	})
 	@PostMapping(path = "/externalstatus/{AD_PInstance_ID}/error", consumes = "application/json", produces = "application/json")
-	public ResponseEntity<JsonCreateIssueResponse> handleError(@RequestBody @NonNull final JsonError request, @PathVariable final Integer AD_PInstance_ID)
+	public ResponseEntity<JsonCreateIssueResponse> handleError(
+			@RequestBody @NonNull final JsonError request,
+			@PathVariable final Integer AD_PInstance_ID)
 	{
 		final JsonCreateIssueResponse issueResponse = externalSystemService.createIssue(request, PInstanceId.ofRepoId(AD_PInstance_ID));
 		return ResponseEntity.ok(issueResponse);

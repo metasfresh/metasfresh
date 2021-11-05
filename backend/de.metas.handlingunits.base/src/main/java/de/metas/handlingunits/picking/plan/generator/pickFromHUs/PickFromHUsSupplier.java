@@ -25,7 +25,6 @@ import org.adempiere.warehouse.LocatorId;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.Set;
 
 public class PickFromHUsSupplier
 {
@@ -78,10 +77,12 @@ public class PickFromHUsSupplier
 				.forEach(pickFromHUs::add);
 
 		final ProductId productId = request.getProductId();
-		final ImmutableSet<HuId> huIds = pickFromHUs.stream().map(PickFromHU::getHuId).collect(ImmutableSet.toImmutableSet());
+		final AlternativePickFromKeys alternatives = pickFromHUs.stream()
+				.map(pickFromHU -> toAlternativePickFromKey(pickFromHU, productId))
+				.collect(AlternativePickFromKeys.collect());
 
 		return pickFromHUs.stream()
-				.map(pickFromHU -> withAlternatives(pickFromHU, productId, huIds))
+				.map(pickFromHU -> withAlternatives(pickFromHU, productId, alternatives))
 				.sorted(getAllocationOrder(request.getBestBeforePolicy()))
 				.collect(ImmutableList.toImmutableList());
 	}
@@ -131,6 +132,7 @@ public class PickFromHUsSupplier
 	{
 		final IHUQueryBuilder vhuQuery = handlingUnitsDAO
 				.createHUQueryBuilder()
+				.setOnlyTopLevelHUs(false)
 				.addPIVersionToInclude(HuPackingInstructionsVersionId.VIRTUAL)
 				.addOnlyInLocatorIds(Check.assumeNotEmpty(request.getPickFromLocatorIds(), "no pick from locators set: {}", request))
 				.addOnlyWithProductId(request.getProductId())
@@ -149,16 +151,18 @@ public class PickFromHUsSupplier
 		return vhuQuery.listIds();
 	}
 
-	private PickFromHU withAlternatives(@NonNull final PickFromHU pickFromHU, @NonNull final ProductId productId, @NonNull final Set<HuId> huIds)
+	private PickFromHU withAlternatives(
+			@NonNull final PickFromHU pickFromHU,
+			@NonNull final ProductId productId,
+			@NonNull final AlternativePickFromKeys alternatives)
 	{
-		final HuId pickFromHUId = pickFromHU.getHuId();
+		final AlternativePickFromKey excludeKey = toAlternativePickFromKey(pickFromHU, productId);
+		return pickFromHU.withAlternatives(alternatives.filter(alternativePickFromKey -> !alternativePickFromKey.equals(excludeKey)));
+	}
 
-		final AlternativePickFromKeys alternatives = huIds.stream()
-				.filter(huId -> !HuId.equals(huId, pickFromHUId))
-				.map(huId -> AlternativePickFromKey.of(huId, productId))
-				.collect(AlternativePickFromKeys.collect());
-
-		return pickFromHU.withAlternatives(alternatives);
+	private static AlternativePickFromKey toAlternativePickFromKey(@NonNull final PickFromHU pickFromHU, @NonNull final ProductId productId)
+	{
+		return AlternativePickFromKey.of(pickFromHU.getLocatorId(), pickFromHU.getHuId(), productId);
 	}
 
 	private Comparator<PickFromHU> getAllocationOrder(@NonNull final ShipmentAllocationBestBeforePolicy bestBeforePolicy)

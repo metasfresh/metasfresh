@@ -6,7 +6,7 @@ import { go } from 'connected-react-router';
 
 import { toastError } from '../../../utils/toast';
 import { postStepPicked } from '../../../api/picking';
-import { updatePickingStepQty, updatePickingStepScannedHUBarcode } from '../../../actions/PickingActions';
+import { updatePickingStepQty } from '../../../actions/PickingActions';
 
 import CodeScanner from '../scan/CodeScanner';
 import PickQuantityPrompt from './PickQuantityPrompt';
@@ -41,13 +41,11 @@ class PickStepScanHUScreen extends Component {
     } = this.props;
 
     const inputQty = parseInt(qty);
-
     if (isNaN(inputQty)) {
       return;
     }
 
     const isValidQty = this.validateQtyInput(inputQty);
-
     if (isValidQty) {
       this.setState({ newQuantity: inputQty });
 
@@ -71,8 +69,7 @@ class PickStepScanHUScreen extends Component {
   };
 
   pushUpdatedQuantity = ({ qty = 0, reason = null }) => {
-    const { updatePickingStepQty, updatePickingStepScannedHUBarcode, wfProcessId, activityId, lineId, stepId, go } =
-      this.props;
+    const { updatePickingStepQty, wfProcessId, activityId, lineId, stepId, go } = this.props;
     const { scannedBarcode } = this.state;
 
     // TODO: This should be added to the same, not next level
@@ -89,18 +86,11 @@ class PickStepScanHUScreen extends Component {
     // TODO: We should only set the scanned barcode if the quantity is correct and user submitted any
     // potential reason to wrong quantity.
 
-    updatePickingStepScannedHUBarcode({
-      wfProcessId,
-      activityId,
-      lineId,
-      stepId,
-      scannedHUBarcode: scannedBarcode,
-    });
-
     postStepPicked({
       wfProcessId,
       activityId,
       stepId,
+      huBarcode: scannedBarcode,
       qtyPicked: qty,
       qtyRejectedReasonCode: reason,
     })
@@ -110,6 +100,7 @@ class PickStepScanHUScreen extends Component {
           activityId,
           lineId,
           stepId,
+          scannedHUBarcode: scannedBarcode,
           qtyPicked: qty,
           qtyRejectedReasonCode: reason,
         });
@@ -178,7 +169,6 @@ PickStepScanHUScreen.propTypes = {
   eligibleHUBarcode: PropTypes.string.isRequired,
   stepProps: PropTypes.object.isRequired,
   // Actions:
-  updatePickingStepScannedHUBarcode: PropTypes.func.isRequired,
   go: PropTypes.func.isRequired,
   updatePickingStepQty: PropTypes.func.isRequired,
 };
@@ -186,7 +176,6 @@ PickStepScanHUScreen.propTypes = {
 export default withRouter(
   connect(mapStateToProps, {
     updatePickingStepQty,
-    updatePickingStepScannedHUBarcode,
     go,
   })(PickStepScanHUScreen)
 );

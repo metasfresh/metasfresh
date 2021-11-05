@@ -12,7 +12,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.dataentry.DataEntryFieldId;
 import de.metas.dataentry.DataEntryListValueId;
-import de.metas.dataentry.data.DataEntryCreatedUpdatedInfo;
+import de.metas.CreatedUpdatedInfo;
 import de.metas.dataentry.data.DataEntryRecordField;
 import de.metas.dataentry.data.DataEntryRecordFieldDate;
 import de.metas.dataentry.data.DataEntryRecordFieldListValue;
@@ -97,7 +97,7 @@ public class JSONDataEntryRecordMapper
 		final ImmutableList.Builder<DataEntryRecordField<?>> result = ImmutableList.builder();
 
 		final JSONDataEntryRecord record = delegate.readValue(recordString);
-		final Map<Integer, DataEntryCreatedUpdatedInfo> createdUpdatedInfos = record.getCreatedUpdatedInfos();
+		final Map<Integer, CreatedUpdatedInfo> createdUpdatedInfos = record.getCreatedUpdatedInfos();
 
 		for (final Entry<Integer, LocalDate> data : record.getDates().entrySet())
 		{

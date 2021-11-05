@@ -6,13 +6,19 @@ import { withRouter } from 'react-router';
 import { map } from 'lodash';
 
 import { populateLaunchers } from '../../actions/LauncherActions';
+import { setActiveApplication } from '../../actions/ApplicationsActions';
 import { getLaunchers } from '../../api/launchers';
+import { selectLaunchersFromState } from '../../reducers/launchers';
 import WFLauncherButton from './WFLauncherButton';
 import * as ws from '../../utils/websocket';
 
 class WFLaunchersScreen extends Component {
   componentDidMount() {
-    const { populateLaunchers, applicationId } = this.props;
+    const { populateLaunchers, applicationId, activeApplication, setActiveApplication } = this.props;
+
+    if (!activeApplication) {
+      setActiveApplication({ id: applicationId });
+    }
 
     getLaunchers(applicationId).then((launchers) => {
       populateLaunchers({ applicationId, launchers });
@@ -60,18 +66,22 @@ WFLaunchersScreen.propTypes = {
   launchers: PropTypes.object.isRequired,
   userToken: PropTypes.string.isRequired,
   applicationId: PropTypes.string.isRequired,
+  activeApplication: PropTypes.object,
   //
   // Actions
   populateLaunchers: PropTypes.func.isRequired,
+  setActiveApplication: PropTypes.func.isRequired,
 };
 
 const mapStateToProps = (state, { match }) => {
   const { applicationId } = match.params;
+
   return {
     applicationId,
-    launchers: state.launchers[applicationId],
+    activeApplication: state.appHandler.activeApplication,
+    launchers: selectLaunchersFromState(state, applicationId),
     userToken: state.appHandler.token,
   };
 };
 
-export default withRouter(connect(mapStateToProps, { populateLaunchers })(WFLaunchersScreen));
+export default withRouter(connect(mapStateToProps, { populateLaunchers, setActiveApplication })(WFLaunchersScreen));

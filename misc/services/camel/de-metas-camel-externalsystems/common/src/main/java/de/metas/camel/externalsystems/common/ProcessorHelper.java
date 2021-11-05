@@ -23,13 +23,16 @@
 package de.metas.camel.externalsystems.common;
 
 import lombok.NonNull;
+import lombok.experimental.UtilityClass;
 import org.apache.camel.Exchange;
 
+@UtilityClass
 public class ProcessorHelper
 {
-	public static <T> T getPropertyOrThrowError(@NonNull final Exchange exchange, @NonNull final String propertyName, @NonNull final Class<T> propertyClass)
+	public <T> T getPropertyOrThrowError(@NonNull final Exchange exchange, @NonNull final String propertyName, @NonNull final Class<T> propertyClass)
 	{
 		final T property = exchange.getProperty(propertyName, propertyClass);
+
 		if (property == null)
 		{
 			throw new RuntimeException("Missing route property: " + propertyName + " !");

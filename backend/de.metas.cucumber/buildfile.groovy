@@ -6,8 +6,9 @@
 @Library('misc')
 import de.metas.jenkins.MvnConf
 
+
 def build(
-        final MvnConf mvnConf,
+        final MvnConf mvnConf, 
         final Map scmVars) {
 
     final String VERSIONS_PLUGIN = 'org.codehaus.mojo:versions-maven-plugin:2.7'

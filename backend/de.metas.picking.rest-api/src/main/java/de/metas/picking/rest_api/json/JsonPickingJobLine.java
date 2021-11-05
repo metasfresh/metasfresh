@@ -30,6 +30,7 @@ import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Value
@@ -38,6 +39,8 @@ import java.util.List;
 public class JsonPickingJobLine
 {
 	@NonNull String caption;
+	@NonNull String uom;
+	@NonNull BigDecimal qtyToPick;
 	@NonNull List<JsonPickingJobStep> steps;
 
 	public static JsonPickingJobLine of(
@@ -48,6 +51,8 @@ public class JsonPickingJobLine
 
 		return builder()
 				.caption(line.getProductName().translate(adLanguage))
+				.uom(line.getQtyToPick().getUOMSymbol())
+				.qtyToPick(line.getQtyToPick().toBigDecimal())
 				.steps(line.getSteps()
 						.stream()
 						.map(step -> JsonPickingJobStep.of(step, jsonOpts))

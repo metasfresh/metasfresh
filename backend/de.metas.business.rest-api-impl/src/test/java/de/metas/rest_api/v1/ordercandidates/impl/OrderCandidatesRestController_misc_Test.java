@@ -24,10 +24,12 @@ package de.metas.rest_api.v1.ordercandidates.impl;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import de.metas.CreatedUpdatedInfo;
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryId;
 import de.metas.common.ordercandidates.v1.response.JsonAttachment;
 import de.metas.common.rest_api.v1.attachment.JsonAttachmentType;
+import de.metas.user.UserId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.util.MimeType;
 import org.junit.jupiter.api.AfterAll;
@@ -35,6 +37,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.net.URI;
+import java.time.ZonedDateTime;
 
 import static io.github.jsonSnapshot.SnapshotMatcher.expect;
 import static io.github.jsonSnapshot.SnapshotMatcher.start;
@@ -83,6 +86,7 @@ public class OrderCandidatesRestController_misc_Test
 				.type(AttachmentEntry.Type.URL)
 				.url(new URI("https://metasfresh.com"))
 				.mimeType(MimeType.TYPE_TextPlain)
+				.createdUpdatedInfo(CreatedUpdatedInfo.createNew(UserId.ofRepoId(10), ZonedDateTime.now()))
 				.build();
 
 		final JsonAttachment jsonAttachment = OrderCandidatesRestController.toJsonAttachment(

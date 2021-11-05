@@ -51,6 +51,27 @@ public interface I_ExternalSystem_Config
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set Audit log folder.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setAuditFileFolder (java.lang.String AuditFileFolder);
+
+	/**
+	 * Get Audit log folder.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getAuditFileFolder();
+
+	ModelColumn<I_ExternalSystem_Config, Object> COLUMN_AuditFileFolder = new ModelColumn<>(I_ExternalSystem_Config.class, "AuditFileFolder", null);
+	String COLUMNNAME_AuditFileFolder = "AuditFileFolder";
+
+	/**
 	 * Get Created.
 	 * Date this record was created
 	 *
@@ -208,4 +229,27 @@ public interface I_ExternalSystem_Config
 	int getUpdatedBy();
 
 	String COLUMNNAME_UpdatedBy = "UpdatedBy";
+
+	/**
+	 * Set Audit log.
+	 * When activated, all messages that are exchanged between metasfresh and the external systems are logged.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setWriteAudit (boolean WriteAudit);
+
+	/**
+	 * Get Audit log.
+	 * When activated, all messages that are exchanged between metasfresh and the external systems are logged.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isWriteAudit();
+
+	ModelColumn<I_ExternalSystem_Config, Object> COLUMN_WriteAudit = new ModelColumn<>(I_ExternalSystem_Config.class, "WriteAudit", null);
+	String COLUMNNAME_WriteAudit = "WriteAudit";
 }

@@ -8,7 +8,7 @@ import de.metas.order.OrderLineId;
 import de.metas.order.OrderLineRepository;
 import de.metas.picking.api.Packageable;
 import de.metas.ui.web.document.filter.DocumentFilter;
-import de.metas.ui.web.handlingunits.HUIdsFilterHelper;
+import de.metas.ui.web.handlingunits.filter.HUIdsFilterHelper;
 import lombok.NonNull;
 import org.springframework.stereotype.Service;
 

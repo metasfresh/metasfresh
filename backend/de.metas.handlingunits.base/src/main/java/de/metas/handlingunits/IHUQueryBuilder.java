@@ -60,6 +60,7 @@ import java.util.Set;
  * @author tsa
  *
  */
+@SuppressWarnings("UnusedReturnValue")
 public interface IHUQueryBuilder
 {
 	/**
@@ -412,17 +413,14 @@ public interface IHUQueryBuilder
 	 *
 	 * If the given list {@code null} this method will do nothing. If it is empty, no HUs will be considered.
 	 */
-	IHUQueryBuilder addOnlyHUIds(Collection<Integer> onlyHUIds);
+	IHUQueryBuilder addOnlyHUIds(Collection<HuId> onlyHUIds);
 
 	/**
 	 * Adds HUs which needs to be excluded when we retrieve them.
 	 */
-	IHUQueryBuilder addHUsToExclude(Collection<I_M_HU> husToExclude);
+	IHUQueryBuilder addHUIdsToExclude(Collection<HuId> huIdsToExclude);
 
-	/**
-	 * Adds HUs which needs to be excluded when we retrieve them.
-	 */
-	IHUQueryBuilder addHUIdsToExclude(Collection<Integer> huIdsToExclude);
+	IHUQueryBuilder addHUIdsToAlwaysInclude(Collection<HuId> huIdsToAlwaysInclude);
 
 	/**
 	 * Adds the {@link I_M_HU_PI_Version} to include.
