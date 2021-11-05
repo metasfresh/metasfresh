@@ -46,6 +46,8 @@ public class ExternalSystemCamelConstants
 
 	public static final String MF_UPSERT_BPRELATION_CAMEL_URI = "metasfresh.upsert-bprelation.camel.uri";
 
+	public static final String MF_UPSERT_BPRELATION_V2_CAMEL_URI = "metasfresh.upsert-bprelation-v2.camel.uri";
+
 	public static String MF_UPSERT_PRODUCT_V2_CAMEL_URI = "metasfresh.upsert-product-v2.camel.uri";
 
 	public static String MF_UPSERT_PRODUCT_PRICE_V2_CAMEL_URI = "metasfresh.upsert-product-price-v2.camel.uri";

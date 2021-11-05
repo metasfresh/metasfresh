@@ -214,7 +214,7 @@ public class GetPatientsRouteTests extends CamelTestSupport
 					advice.weaveById(CREATE_UPSERT_BPARTNER_RELATION_REQUEST_PROCESSOR_ID)
 							.after()
 							.to(MOCK_UPSERT_BPARTNER_RELATION_REQUEST);
-					advice.interceptSendToEndpoint("{{" + ExternalSystemCamelConstants.MF_UPSERT_BPRELATION_CAMEL_URI + "}}")
+					advice.interceptSendToEndpoint("{{" + ExternalSystemCamelConstants.MF_UPSERT_BPRELATION_V2_CAMEL_URI + "}}")
 							.skipSendToOriginalEndpoint()
 							.process(mockBPartnerRelationUpsertResponse);
 				});
