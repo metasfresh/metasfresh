@@ -135,6 +135,8 @@ public final class ProductBL implements IProductBL
 	{
 		// we don't know if the product of productId was already committed, so we can't load it out-of-trx
 		final I_M_Product product = InterfaceWrapperHelper.load(productId, I_M_Product.class);
+		Check.assumeNotNull(product, "Unable to load M_Product record for M_Product_ID={}", productId);
+
 		return Check.assumeNotNull(getStockUOM(product), "The uom for productId={} may not be null", productId);
 	}
 

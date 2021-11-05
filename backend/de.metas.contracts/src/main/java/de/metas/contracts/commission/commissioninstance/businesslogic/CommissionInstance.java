@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 import de.metas.contracts.commission.Beneficiary;
-import de.metas.contracts.commission.commissioninstance.businesslogic.sales.SalesCommissionShare;
+import de.metas.contracts.commission.commissioninstance.businesslogic.sales.CommissionShare;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTriggerData;
 import lombok.Builder;
 import lombok.Data;
@@ -47,26 +47,26 @@ public class CommissionInstance
 	private CommissionTriggerData currentTriggerData;
 
 	/** Each share means that commission will be paid to some {@link Beneficiary} in accordance to some commission contract and hierarchy. */
-	private final List<SalesCommissionShare> shares;
+	private final List<CommissionShare> shares;
 
 	@JsonCreator
 	@Builder(toBuilder = true)
 	private CommissionInstance(
 			@JsonProperty("id") @Nullable final CommissionInstanceId id,
 			@JsonProperty("currentTriggerData") @NonNull final CommissionTriggerData currentTriggerData,
-			@JsonProperty("shares") @Singular final List<SalesCommissionShare> shares)
+			@JsonProperty("shares") @Singular final List<CommissionShare> shares)
 	{
 		this.id = id;
 		this.currentTriggerData = currentTriggerData;
 		this.shares = new ArrayList<>(shares);
 	}
 
-	public void addShares(@NonNull final ImmutableList<SalesCommissionShare> shares)
+	public void addShares(@NonNull final ImmutableList<CommissionShare> shares)
 	{
 		this.shares.addAll(shares);
 	}
 
-	public ImmutableList<SalesCommissionShare> getShares()
+	public ImmutableList<CommissionShare> getShares()
 	{
 		return ImmutableList.copyOf(shares);
 	}

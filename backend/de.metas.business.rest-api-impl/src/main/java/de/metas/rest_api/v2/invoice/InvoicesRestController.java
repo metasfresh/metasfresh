@@ -41,8 +41,8 @@ import de.metas.rest_api.invoicecandidates.response.JsonCreateInvoiceCandidatesR
 import de.metas.rest_api.invoicecandidates.response.JsonEnqueueForInvoicingResponse;
 import de.metas.rest_api.invoicecandidates.response.JsonReverseInvoiceResponse;
 import de.metas.rest_api.utils.JsonErrors;
-import de.metas.rest_api.v2.invoice.impl.InvoiceService;
 import de.metas.rest_api.v2.invoice.impl.JSONInvoiceInfoResponse;
+import de.metas.rest_api.v2.invoice.impl.JsonInvoiceService;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -71,7 +71,7 @@ public class InvoicesRestController
 {
 	private static final Logger logger = LogManager.getLogger(InvoicesRestController.class);
 
-	private final InvoiceService invoiceService;
+	private final JsonInvoiceService jsonInvoiceService;
 	private final CheckInvoiceCandidatesStatusService checkInvoiceCandidatesStatusService;
 	private final CreateInvoiceCandidatesService createInvoiceCandidatesService;
 	private final EnqueueForInvoicingService enqueueForInvoicingService;
@@ -82,13 +82,13 @@ public class InvoicesRestController
 			@NonNull final CheckInvoiceCandidatesStatusService invoiceCandidateInfoService,
 			@NonNull final EnqueueForInvoicingService enqueueForInvoicingService,
 			@NonNull final CloseInvoiceCandidatesService closeInvoiceCandidatesService,
-			@NonNull final InvoiceService invoicePDFService)
+			@NonNull final JsonInvoiceService jsonInvoiceService)
 	{
 		this.createInvoiceCandidatesService = createInvoiceCandidatesService;
 		this.checkInvoiceCandidatesStatusService = invoiceCandidateInfoService;
 		this.enqueueForInvoicingService = enqueueForInvoicingService;
 		this.closeInvoiceCandidatesService = closeInvoiceCandidatesService;
-		this.invoiceService = invoicePDFService;
+		this.jsonInvoiceService = jsonInvoiceService;
 	}
 
 	@ApiOperation("Create new invoice candidates")
@@ -155,7 +155,7 @@ public class InvoicesRestController
 			return ResponseEntity.notFound().build();
 		}
 
-		final Optional<byte[]> invoicePDF = invoiceService.getInvoicePDF(invoiceId);
+		final Optional<byte[]> invoicePDF = jsonInvoiceService.getInvoicePDF(invoiceId);
 
 		if (invoicePDF.isPresent())
 		{
@@ -185,7 +185,7 @@ public class InvoicesRestController
 		final String ad_language = Env.getAD_Language();
 		try
 		{
-			final JSONInvoiceInfoResponse invoiceInfo = invoiceService.getInvoiceInfo(invoiceId, ad_language);
+			final JSONInvoiceInfoResponse invoiceInfo = jsonInvoiceService.getInvoiceInfo(invoiceId, ad_language);
 			return ResponseEntity.ok(invoiceInfo);
 		}
 		catch (final Exception ex)
@@ -209,7 +209,7 @@ public class InvoicesRestController
 
 		try
 		{
-			final Optional<JsonReverseInvoiceResponse> response = invoiceService.reverseInvoice(invoiceId);
+			final Optional<JsonReverseInvoiceResponse> response = jsonInvoiceService.reverseInvoice(invoiceId);
 
 			return response.isPresent()
 					? ResponseEntity.ok(response.get())
@@ -235,7 +235,7 @@ public class InvoicesRestController
 	{
 		try
 		{
-			invoiceService.createInboundPaymentFromJson(request);
+			jsonInvoiceService.createInboundPaymentFromJson(request);
 
 			return ResponseEntity.ok().build();
 		}

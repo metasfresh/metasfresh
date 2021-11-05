@@ -33,6 +33,7 @@ import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateBulkRequest;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateRequest;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandProcessRequest;
 import de.metas.common.ordercandidates.v2.request.alberta.JsonAlbertaOrderInfo;
+import de.metas.common.ordercandidates.v2.request.alberta.JsonAlbertaOrderLineInfo;
 import de.metas.common.ordercandidates.v2.response.JsonGenerateOrdersResponse;
 import de.metas.common.ordercandidates.v2.response.JsonOLCandClearingResponse;
 import de.metas.common.ordercandidates.v2.response.JsonOLCandCreateBulkResponse;
@@ -42,6 +43,7 @@ import de.metas.impex.InputDataSourceId;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.InvoiceService;
 import de.metas.monitoring.adapter.PerformanceMonitoringService;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
@@ -55,13 +57,15 @@ import de.metas.ordercandidate.api.OLCandValidatorService;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.organization.OrgId;
 import de.metas.rest_api.utils.IdentifierString;
-import de.metas.rest_api.v2.invoice.impl.InvoiceService;
 import de.metas.rest_api.v2.invoice.impl.JSONInvoiceInfoResponse;
-import de.metas.rest_api.v2.shipping.ShipmentService;
+import de.metas.rest_api.v2.invoice.impl.JsonInvoiceService;
+import de.metas.rest_api.v2.shipping.JsonShipmentService;
+import de.metas.salesorder.service.OrderService;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.web.exception.MissingResourceException;
-import de.metas.vertical.healthcare.alberta.order.AlbertaOrderCompositeInfo;
+import de.metas.vertical.healthcare.alberta.order.AlbertaOrderInfo;
+import de.metas.vertical.healthcare.alberta.order.AlbertaOrderLineInfo;
 import de.metas.vertical.healthcare.alberta.order.service.AlbertaOrderService;
 import lombok.NonNull;
 import org.compiere.model.I_M_InOutLine;
@@ -72,6 +76,7 @@ import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import static de.metas.async.Async_Constants.C_Async_Batch_InternalName_OLCand_Processing;
@@ -91,9 +96,10 @@ public class OrderCandidateRestControllerService
 	private final PerformanceMonitoringService perfMonService;
 	private final AlbertaOrderService albertaOrderService;
 	private final OLCandValidatorService olCandValidatorService;
-	private final ShipmentService shipmentService;
 	private final InvoiceService invoiceService;
 	private final OrderService orderService;
+	private final JsonInvoiceService jsonInvoiceService;
+	private final JsonShipmentService jsonShipmentService;
 
 	public OrderCandidateRestControllerService(
 			@NonNull final JsonConverters jsonConverters,
@@ -101,18 +107,20 @@ public class OrderCandidateRestControllerService
 			@NonNull final PerformanceMonitoringService perfMonService,
 			@NonNull final AlbertaOrderService albertaOrderService,
 			@NonNull final OLCandValidatorService olCandValidatorService,
-			@NonNull final ShipmentService shipmentService,
 			@NonNull final InvoiceService invoiceService,
-			@NonNull final OrderService orderService)
+			@NonNull final OrderService orderService,
+			@NonNull final JsonShipmentService jsonShipmentService,
+			@NonNull final JsonInvoiceService jsonInvoiceService)
 	{
 		this.jsonConverters = jsonConverters;
 		this.olCandRepo = olCandRepo;
 		this.perfMonService = perfMonService;
 		this.albertaOrderService = albertaOrderService;
 		this.olCandValidatorService = olCandValidatorService;
-		this.shipmentService = shipmentService;
 		this.invoiceService = invoiceService;
 		this.orderService = orderService;
+		this.jsonShipmentService = jsonShipmentService;
+		this.jsonInvoiceService = jsonInvoiceService;
 	}
 
 	public JsonOLCandCreateBulkResponse creatOrderLineCandidatesBulk(
@@ -212,41 +220,6 @@ public class OrderCandidateRestControllerService
 		return olCand;
 	}
 
-	public void createAlbertaOrderRecords(
-			@Nullable final String orgCode,
-			@NonNull final OLCand olCand,
-			@NonNull final JsonAlbertaOrderInfo jsonAlbertaOrderInfo,
-			@NonNull final MasterdataProvider masterdataProvider)
-	{
-		final AlbertaOrderCompositeInfo albertaOrderCompositeInfo = AlbertaOrderCompositeInfo.builder()
-				.orgId(OrgId.ofRepoId(olCand.getAD_Org_ID()))
-				.olCandId(OLCandId.ofRepoId(olCand.getId()))
-				.rootId(jsonAlbertaOrderInfo.getRootId())
-				.creationDate(jsonAlbertaOrderInfo.getCreationDate())
-				.startDate(jsonAlbertaOrderInfo.getStartDate())
-				.endDate(jsonAlbertaOrderInfo.getEndDate())
-				.dayOfDelivery(jsonAlbertaOrderInfo.getDayOfDelivery())
-				.nextDelivery(jsonAlbertaOrderInfo.getNextDelivery())
-				.doctorBPartnerId(resolveExternalBPartnerIdentifier(orgCode, jsonAlbertaOrderInfo.getDoctorBPartnerIdentifier(), masterdataProvider))
-				.pharmacyBPartnerId(resolveExternalBPartnerIdentifier(orgCode, jsonAlbertaOrderInfo.getPharmacyBPartnerIdentifier(), masterdataProvider))
-				.isInitialCare(jsonAlbertaOrderInfo.getIsInitialCare())
-				.isSeriesOrder(jsonAlbertaOrderInfo.getIsSeriesOrder())
-				.isArchived(jsonAlbertaOrderInfo.getIsArchived())
-				.annotation(jsonAlbertaOrderInfo.getAnnotation())
-				.updated(jsonAlbertaOrderInfo.getUpdated())
-				.salesLineId(jsonAlbertaOrderInfo.getSalesLineId())
-				.unit(jsonAlbertaOrderInfo.getUnit())
-				.isPrivateSale(jsonAlbertaOrderInfo.getIsPrivateSale())
-				.isRentalEquipment(jsonAlbertaOrderInfo.getIsRentalEquipment())
-				.durationAmount(jsonAlbertaOrderInfo.getDurationAmount())
-				.timePeriod(jsonAlbertaOrderInfo.getTimePeriod())
-				.therapy(jsonAlbertaOrderInfo.getTherapy())
-				.therapyTypes(jsonAlbertaOrderInfo.getTherapyTypes())
-				.build();
-
-		albertaOrderService.saveAlbertaOrderCompositeInfo(albertaOrderCompositeInfo);
-	}
-
 	@NonNull
 	public JsonOLCandClearingResponse clearOLCandidates(@NonNull final JsonOLCandClearRequest clearRequest)
 	{
@@ -277,7 +250,7 @@ public class OrderCandidateRestControllerService
 				.map(OLCandId::ofRepoId)
 				.collect(ImmutableSet.toImmutableSet());
 
-		final Map<AsyncBatchId, List<OLCandId>> asyncBatchId2OLCandIds = orderService.getAsyncBathId2OLCandIds(validOlCandIds);
+		final Map<AsyncBatchId, List<OLCandId>> asyncBatchId2OLCandIds = orderService.getAsyncBatchId2OLCandIds(validOlCandIds);
 
 		final Set<OrderId> orderIds = orderService.generateOrderSync(asyncBatchId2OLCandIds);
 
@@ -289,9 +262,9 @@ public class OrderCandidateRestControllerService
 
 		if (request.getShip())
 		{
-			final Set<InOutId> createdShipmentIds = shipmentService.generateShipmentsForOLCands(asyncBatchId2OLCandIds);
+			final Set<InOutId> createdShipmentIds = jsonShipmentService.generateShipmentsForOLCands(asyncBatchId2OLCandIds);
 
-			responseBuilder.shipmentResponse(shipmentService.buildCreateShipmentResponse(createdShipmentIds));
+			responseBuilder.shipmentResponse(jsonShipmentService.buildCreateShipmentResponse(createdShipmentIds));
 		}
 
 		if (request.getInvoice())
@@ -301,7 +274,7 @@ public class OrderCandidateRestControllerService
 			final Set<InvoiceId> invoiceIds = invoiceService.generateInvoicesFromShipmentLines(shipmentLines);
 
 			final List<JSONInvoiceInfoResponse> invoiceInfoResponses = invoiceIds.stream()
-					.map(invoiceId -> invoiceService.getInvoiceInfo(invoiceId, Env.getAD_Language()))
+					.map(invoiceId -> jsonInvoiceService.getInvoiceInfo(invoiceId, Env.getAD_Language()))
 					.collect(ImmutableList.toImmutableList());
 
 			responseBuilder.invoiceInfoResponse(invoiceInfoResponses);
@@ -392,5 +365,60 @@ public class OrderCandidateRestControllerService
 				.stream()
 				.map(OLCand::unbox)
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	private void createAlbertaOrderRecords(
+			@Nullable final String orgCode,
+			@NonNull final OLCand olCand,
+			@NonNull final JsonAlbertaOrderInfo jsonAlbertaOrderInfo,
+			@NonNull final MasterdataProvider masterdataProvider)
+	{
+		final OLCandId olCandId = OLCandId.ofRepoId(olCand.getId());
+
+		final AlbertaOrderLineInfo albertaOrderLineInfo = jsonAlbertaOrderInfo.getJsonAlbertaOrderLineInfo() != null
+				? buildAlbertaOrderLineInfo(jsonAlbertaOrderInfo.getJsonAlbertaOrderLineInfo(), olCandId)
+				: null;
+
+		final AlbertaOrderInfo albertaOrderInfo = AlbertaOrderInfo.builder()
+				.orgId(OrgId.ofRepoId(olCand.getAD_Org_ID()))
+				.olCandId(olCandId)
+				.externalId(jsonAlbertaOrderInfo.getExternalId())
+				.rootId(jsonAlbertaOrderInfo.getRootId())
+				.creationDate(jsonAlbertaOrderInfo.getCreationDate())
+				.startDate(jsonAlbertaOrderInfo.getStartDate())
+				.endDate(jsonAlbertaOrderInfo.getEndDate())
+				.dayOfDelivery(jsonAlbertaOrderInfo.getDayOfDelivery())
+				.nextDelivery(jsonAlbertaOrderInfo.getNextDelivery())
+				.doctorBPartnerId(resolveExternalBPartnerIdentifier(orgCode, jsonAlbertaOrderInfo.getDoctorBPartnerIdentifier(), masterdataProvider))
+				.pharmacyBPartnerId(resolveExternalBPartnerIdentifier(orgCode, jsonAlbertaOrderInfo.getPharmacyBPartnerIdentifier(), masterdataProvider))
+				.isInitialCare(jsonAlbertaOrderInfo.getIsInitialCare())
+				.isSeriesOrder(jsonAlbertaOrderInfo.getIsSeriesOrder())
+				.isArchived(jsonAlbertaOrderInfo.getIsArchived())
+				.annotation(jsonAlbertaOrderInfo.getAnnotation())
+				.deliveryInformation(jsonAlbertaOrderInfo.getDeliveryInformation())
+				.deliveryNote(jsonAlbertaOrderInfo.getDeliveryNote())
+				.updated(jsonAlbertaOrderInfo.getUpdated())
+				.orderLine(albertaOrderLineInfo)
+				.therapy(jsonAlbertaOrderInfo.getTherapy())
+				.therapyTypes(jsonAlbertaOrderInfo.getTherapyTypes())
+				.build();
+
+		albertaOrderService.saveAlbertaOrderInfo(albertaOrderInfo);
+	}
+
+	@NonNull
+	private AlbertaOrderLineInfo buildAlbertaOrderLineInfo(@NonNull final JsonAlbertaOrderLineInfo jsonAlbertaOrderLineInfo, @NonNull final OLCandId olCandId)
+	{
+		return AlbertaOrderLineInfo.builder()
+				.externalId(jsonAlbertaOrderLineInfo.getExternalId())
+				.olCandId(olCandId)
+				.salesLineId(jsonAlbertaOrderLineInfo.getSalesLineId())
+				.unit(jsonAlbertaOrderLineInfo.getUnit())
+				.isPrivateSale(jsonAlbertaOrderLineInfo.getIsPrivateSale())
+				.isRentalEquipment(jsonAlbertaOrderLineInfo.getIsRentalEquipment())
+				.durationAmount(jsonAlbertaOrderLineInfo.getDurationAmount())
+				.timePeriod(jsonAlbertaOrderLineInfo.getTimePeriod())
+				.updated(jsonAlbertaOrderLineInfo.getUpdated())
+				.build();
 	}
 }

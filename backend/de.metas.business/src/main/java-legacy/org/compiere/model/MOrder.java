@@ -592,8 +592,6 @@ public class MOrder extends X_C_Order implements IDocument
 		// line.setQtyReserved(BigDecimal.ZERO);
 		line.setDateDelivered(null);
 		line.setDateInvoiced(null);
-		// don't copy linked lines
-		line.setLink_OrderLine_ID(0);
 		// Tax
 		// MOrder otherOrder = fromLine.getC_Order ();
 		// if (getC_BPartner_ID() != otherOrder.getC_BPartner_ID())

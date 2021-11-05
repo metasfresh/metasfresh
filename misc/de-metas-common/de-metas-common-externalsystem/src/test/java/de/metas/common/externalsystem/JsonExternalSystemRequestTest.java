@@ -42,14 +42,18 @@ class JsonExternalSystemRequestTest
 	void serializeDeserialize() throws IOException
 	{
 		final String sw6ConfigMappings = getExternalSystemShopware6ConfigMappings();
+		final String sw6UOMMappings = getExternalSystemShopware6UOMMappings();
 
 		final JsonExternalSystemRequest requestDeserialized = JsonExternalSystemRequest.builder().externalSystemName(JsonExternalSystemName.of("externalSystem"))
 				.externalSystemConfigId(JsonMetasfreshId.of(1))
 				.orgCode("orgCode")
 				.command("command")
+				.traceId("traceId")
+				.writeAuditEndpoint("writeAuditEndpoint")
 				.parameter("parameterName1", "parameterValue1")
 				.parameter("parameterName2", "parameterValue2")
 				.parameter("configMappings", sw6ConfigMappings)
+				.parameter("UOMMappings", sw6UOMMappings)
 				.build();
 
 		final String valueAsString = mapper.writeValueAsString(requestDeserialized);
@@ -72,7 +76,13 @@ class JsonExternalSystemRequestTest
 		assertThat(externalSystemShopware6ConfigMapping.getDocTypeOrder()).isEqualTo("testDocTypeOrder");
 		assertThat(externalSystemShopware6ConfigMapping.getSeqNo()).isEqualTo(10);
 
+		final JsonUOMMappings uomMappings = mapper.readValue(requestDeserialized.getParameters().get("UOMMappings"), JsonUOMMappings.class);
 
+		final JsonUOMMapping jsonUOMMapping = uomMappings.getJsonUOMMappingList().get(0);
+		assertThat(jsonUOMMapping).isNotNull();
+		assertThat(jsonUOMMapping.getExternalCode()).isEqualTo("externalCode");
+		assertThat(jsonUOMMapping.getUom().getCode()).isEqualTo("code");
+		assertThat(jsonUOMMapping.getUom().getId().getValue()).isEqualTo(2);
 	}
 
 	private String getExternalSystemShopware6ConfigMappings() throws JsonProcessingException
@@ -96,5 +106,26 @@ class JsonExternalSystemRequestTest
 
 		return mapper.writeValueAsString(externalSystemShopware6ConfigMappings);
 
+	}
+
+	private String getExternalSystemShopware6UOMMappings() throws JsonProcessingException
+	{
+		final JsonUOMMapping jsonUOMMapping =
+				JsonUOMMapping.builder()
+						.externalCode("externalCode")
+						.uom(JsonUOM.builder()
+									 .id(JsonMetasfreshId.of(2))
+									 .code("code")
+									 .build())
+						.build();
+
+		final List<JsonUOMMapping> uomMappings = new ArrayList<>();
+		uomMappings.add(jsonUOMMapping);
+
+		final JsonUOMMappings jsonUOMMappings = JsonUOMMappings.builder()
+				.jsonUOMMappingList(uomMappings)
+				.build();
+
+		return mapper.writeValueAsString(jsonUOMMappings);
 	}
 }

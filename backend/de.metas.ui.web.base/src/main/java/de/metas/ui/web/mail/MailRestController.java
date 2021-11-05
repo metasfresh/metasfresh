@@ -2,6 +2,7 @@ package de.metas.ui.web.mail;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.attachments.EmailAttachment;
 import de.metas.email.EMail;
 import de.metas.email.EMailAddress;
 import de.metas.email.EMailAttachment;
@@ -14,15 +15,11 @@ import de.metas.letters.model.MADBoilerPlate;
 import de.metas.letters.model.MADBoilerPlate.BoilerPlateContext;
 import de.metas.logging.LogManager;
 import de.metas.printing.esb.base.util.Check;
-import de.metas.report.DocumentReportFlavor;
-import de.metas.report.ReportResultData;
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.mail.WebuiEmail.WebuiEmailBuilder;
 import de.metas.ui.web.mail.WebuiMailRepository.WebuiEmailRemovedEvent;
 import de.metas.ui.web.mail.json.JSONEmail;
 import de.metas.ui.web.mail.json.JSONEmailRequest;
-import de.metas.ui.web.print.WebuiDocumentPrintRequest;
-import de.metas.ui.web.print.WebuiDocumentPrintService;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValue;
@@ -50,6 +47,7 @@ import org.compiere.model.I_AD_User;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.context.event.EventListener;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -67,6 +65,8 @@ import java.util.Set;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
+
+import static de.metas.attachments.AttachmentTags.TAGNAME_SEND_VIA_EMAIL;
 
 /*
  * #%L
@@ -107,7 +107,7 @@ public class MailRestController
 	private final WebuiMailAttachmentsRepository mailAttachmentsRepo;
 	private final MailService mailService;
 	private final DocumentCollection documentCollection;
-	private final WebuiDocumentPrintService documentPrintService;
+	private final MailRestService mailRestService;
 
 	private static final String PATCH_FIELD_To = "to";
 	private static final String PATCH_FIELD_Subject = "subject";
@@ -122,14 +122,14 @@ public class MailRestController
 			@NonNull final WebuiMailAttachmentsRepository mailAttachmentsRepo,
 			@NonNull final MailService mailService,
 			@NonNull final DocumentCollection documentCollection,
-			@NonNull final WebuiDocumentPrintService documentPrintService)
+			@NonNull final MailRestService mailRestService)
 	{
 		this.userSession = userSession;
 		this.mailRepo = mailRepo;
 		this.mailAttachmentsRepo = mailAttachmentsRepo;
 		this.mailService = mailService;
 		this.documentCollection = documentCollection;
-		this.documentPrintService = documentPrintService;
+		this.mailRestService = mailRestService;
 	}
 
 	private void assertReadable(final WebuiEmail email)
@@ -178,16 +178,17 @@ public class MailRestController
 		{
 			try
 			{
-				final ReportResultData contextDocumentPrint = documentPrintService.createDocumentPrint(WebuiDocumentPrintRequest.builder()
-						.flavor(DocumentReportFlavor.EMAIL)
-						.documentPath(contextDocumentPath)
-						.userId(userSession.getLoggedUserId())
-						.roleId(userSession.getLoggedRoleId())
-						.build());
+				final List<EmailAttachment> attachments = mailRestService.getEmailAttachments(contextDocumentPath, TAGNAME_SEND_VIA_EMAIL);
 
-				attachFile(emailId, () -> mailAttachmentsRepo.createAttachment(emailId, 
-																			   contextDocumentPrint.getReportFilename(), 
-																			   contextDocumentPrint.getReportData()));
+				for (final EmailAttachment attachment : attachments)
+				{
+					final Supplier<LookupValue> attachmentProducer = () -> mailAttachmentsRepo
+							.createAttachment(emailId,
+											  attachment.getFilename(),
+											  new ByteArrayResource(attachment.getAttachmentDataSupplier().get()));
+
+					attachFile(emailId, attachmentProducer);
+				}
 			}
 			catch (final Exception ex)
 			{

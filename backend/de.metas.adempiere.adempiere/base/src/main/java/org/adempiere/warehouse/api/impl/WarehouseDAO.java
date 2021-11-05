@@ -8,6 +8,7 @@ import de.metas.cache.CCache;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ITranslatableString;
+import de.metas.location.LocationId;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
@@ -83,9 +84,23 @@ public class WarehouseDAO implements IWarehouseDAO
 	private static final Logger logger = LogManager.getLogger(WarehouseDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	private final CCache<WarehouseId, ImmutableList<LocatorId>> locatorIdsByWarehouseId = CCache.newCache(I_M_Locator.Table_Name + "#by#M_Warehouse_ID", 10, CCache.EXPIREMINUTES_Never);
-	private final CCache<Integer, WarehouseRoutingsIndex> allWarehouseRoutings = CCache.newCache(I_M_Warehouse_Routing.Table_Name, 1, CCache.EXPIREMINUTES_Never);
-	private final CCache<Integer, WarehouseTypesIndex> allWarehouseTypes = CCache.newCache(I_M_Warehouse_Type.Table_Name, 1, CCache.EXPIREMINUTES_Never);
+	private final CCache<WarehouseId, ImmutableList<LocatorId>> locatorIdsByWarehouseId = CCache.<WarehouseId, ImmutableList<LocatorId>>builder()
+			.tableName(I_M_Locator.Table_Name)
+			.initialCapacity(10)
+			.expireMinutes(CCache.EXPIREMINUTES_Never)
+			.build();
+	
+	private final CCache<Integer, WarehouseRoutingsIndex> allWarehouseRoutings = CCache.<Integer, WarehouseRoutingsIndex>builder()
+			.tableName(I_M_Warehouse_Routing.Table_Name)
+			.initialCapacity(1)
+			.expireMinutes(CCache.EXPIREMINUTES_Never)
+			.build();
+
+	private final CCache<Integer, WarehouseTypesIndex> allWarehouseTypes = CCache.<Integer, WarehouseTypesIndex>builder()
+			.tableName(I_M_Warehouse_Type.Table_Name)
+			.initialCapacity(1)
+			.expireMinutes(CCache.EXPIREMINUTES_Never)
+			.build();
 
 	@Override
 	public I_M_Warehouse getById(@NonNull final WarehouseId warehouseId)
@@ -309,13 +324,13 @@ public class WarehouseDAO implements IWarehouseDAO
 	}
 
 	@Override
-	public <T extends I_M_Locator> T getLocatorById(@NonNull final LocatorId locatorId, @NonNull Class<T> modelClass)
+	public <T extends I_M_Locator> T getLocatorById(@NonNull final LocatorId locatorId, @NonNull final Class<T> modelClass)
 	{
 		return loadOutOfTrx(locatorId, modelClass);
 	}
 
 	@Override
-	public <T extends I_M_Locator> T getLocatorByIdInTrx(@NonNull final LocatorId locatorId, @NonNull Class<T> modelClass)
+	public <T extends I_M_Locator> T getLocatorByIdInTrx(@NonNull final LocatorId locatorId, @NonNull final Class<T> modelClass)
 	{
 		return load(locatorId, modelClass);
 	}
@@ -538,6 +553,7 @@ public class WarehouseDAO implements IWarehouseDAO
 		return LocatorId.ofRepoId(warehouseId, locator.getM_Locator_ID());
 	}
 
+	@Nullable
 	@Override
 	@Cached(cacheName = I_M_Locator.Table_Name + "#By#" + I_M_Locator.COLUMNNAME_M_Warehouse_ID + "#" + I_M_Locator.COLUMNNAME_Value)
 	public LocatorId retrieveLocatorIdByValueAndWarehouseId(@NonNull final String locatorValue, final WarehouseId warehouseId)
@@ -600,6 +616,7 @@ public class WarehouseDAO implements IWarehouseDAO
 
 	private static final AdMessageKey MSG_M_Warehouse_NoQuarantineWarehouse = AdMessageKey.of("M_Warehouse_NoQuarantineWarehouse");
 
+	@Nullable
 	@Override
 	@Cached(cacheName = I_M_Warehouse.Table_Name + "#" + I_M_Warehouse.COLUMNNAME_IsIssueWarehouse)
 	public I_M_Warehouse retrieveWarehouseForIssuesOrNull(@CacheCtx final Properties ctx)
@@ -709,5 +726,14 @@ public class WarehouseDAO implements IWarehouseDAO
 	{
 		final I_M_Warehouse warehouse = getById(warehouseId);
 		return BPartnerLocationAndCaptureId.ofRepoId(warehouse.getC_BPartner_ID(), warehouse.getC_BPartner_Location_ID(), warehouse.getC_Location_ID());
+	}
+
+	@Override
+	public final ImmutableSet<WarehouseId> retrieveWarehouseWithLocation(final @NonNull LocationId locationId)
+	{
+		return queryBL.createQueryBuilder(I_M_Warehouse.class)
+				.addEqualsFilter(I_M_Warehouse.COLUMN_C_Location_ID, locationId)
+				.create()
+				.listIds(WarehouseId::ofRepoId);
 	}
 }

@@ -24,6 +24,7 @@ package org.adempiere.warehouse.api;
 
 import de.metas.document.location.DocumentLocation;
 import de.metas.location.CountryId;
+import de.metas.location.LocationId;
 import de.metas.organization.OrgId;
 import de.metas.product.ResourceId;
 import de.metas.util.ISingletonService;
@@ -78,4 +79,6 @@ public interface IWarehouseBL extends ISingletonService
 	WarehouseId getInTransitWarehouseId(OrgId adOrgId);
 
 	Optional<ResourceId> getPlantId(WarehouseId warehouseId);
+
+	void updateWarehouseLocation(@NonNull LocationId oldLocationId, @NonNull LocationId newLocationId);
 }

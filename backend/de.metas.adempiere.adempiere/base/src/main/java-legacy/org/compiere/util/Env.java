@@ -313,6 +313,11 @@ public final class Env
 	public static final String DYNATTR_TabNo = "TabNo";
 
 	/**
+	 * To be used when setting the current user ID in context
+	 */
+	public static final String DYNATTR_AD_User_ID = "AD_User_ID";
+
+	/**
 	 * Matches any key which is about window context (i.e. starts with "WindowNo|").
 	 */
 	private static final Predicate<Object> CTXNAME_MATCHER_AnyWindow = key -> {

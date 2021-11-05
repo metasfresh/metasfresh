@@ -175,4 +175,13 @@ public class UserAuthTokenRepository
 		InterfaceWrapperHelper.saveRecord(record);
 		return fromRecord(record);
 	}
+
+	public void deleteUserAuthTokenByUserId(@NonNull final UserId userId)
+	{
+		Services.get(IQueryBL.class)
+				.createQueryBuilder(I_AD_User_AuthToken.class)
+				.addEqualsFilter(I_AD_User_AuthToken.COLUMN_AD_User_ID, userId)
+				.create()
+				.delete();
+	}
 }

@@ -22,6 +22,24 @@ INSERT INTO C_Flatrate_Conditions (AD_Client_ID,AD_Org_ID,C_Flatrate_Conditions_
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE C_Flatrate_Conditions SET C_Flatrate_Transition_ID=1000003,Updated=TO_TIMESTAMP('2021-07-08 20:08:09','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Flatrate_Conditions_ID=540047
 ;
+-- NOTE: if this UPDATE fails, you have a really long-time-running metasfresh instance.
+-- You can then insert the missing c_flatrate_conditions record with 
+--
+-- INSERT INTO public.c_flatrate_transition (ad_client_id, ad_org_id, c_flatrate_conditions_next_id, c_flatrate_transition_id, created, createdby, description, isactive, isautocompletenewterm, isnotifyuserincharge, name, termduration, termdurationunit, termofnotice, updated, updatedby, docaction, docstatus, processing, termofnoticeunit, processed, c_calendar_contract_id, deliveryintervalunit, deliveryinterval, endswithcalendaryear, extensiontype) 
+-- select 1000000, 1000000, null, 1000003, '2015-07-15 11:37:45.000000', 100, null, 'Y', 'Y', 'N', '1 Jahr, autom. verlängern', 1, 'year', 0, '2015-07-15 11:37:54.000000', 100, 'RE', 'CO', 'N', 'day', 'Y', 1000000, null, 0, 'N', 'EO'
+-- where not exists (select 1 from public.c_flatrate_transition where c_flatrate_transition_id=1000003)
+-- ;
+--
+-- If that insert fails, because there is already a c_flatrate_conditions with name "1 Jahr, autom. verlängern", then you can do the following,
+-- where 1000002 is that existing record's c_flatrate_transition_id:
+-- begin;
+-- update c_flatrate_conditions set c_flatrate_transition_ID=1000003 where c_flatrate_transition_id=1000002;
+-- update c_contract_change set c_flatrate_transition_ID=1000003 where c_flatrate_transition_id=1000002;
+-- update c_flatrate_matching set c_flatrate_transition_ID=1000003 where c_flatrate_transition_id=1000002;
+-- update c_flatrate_transition set c_flatrate_transition_ID=1000003 where c_flatrate_transition_id=1000002;
+-- commit;
+--
+
 
 -- 2021-07-08T17:08:13.804Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator

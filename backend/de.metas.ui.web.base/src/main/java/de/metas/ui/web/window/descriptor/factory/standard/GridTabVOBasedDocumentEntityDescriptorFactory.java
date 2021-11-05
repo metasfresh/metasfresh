@@ -3,8 +3,13 @@ package de.metas.ui.web.window.descriptor.factory.standard;
 import com.google.common.collect.ImmutableMap;
 import de.metas.adempiere.service.IColumnBL;
 import de.metas.elasticsearch.IESSystem;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IModelTranslationMap;
+import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
+import de.metas.reflist.ReferenceId;
 import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
 import de.metas.ui.web.process.ProcessId;
 import de.metas.ui.web.session.WebRestApiContextProvider;
@@ -19,9 +24,11 @@ import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Builder;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+import de.metas.ui.web.window.descriptor.IncludedTabNewRecordInputMode;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProvider;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProviders;
+import de.metas.ui.web.window.descriptor.QuickInputSupportDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
@@ -40,7 +47,9 @@ import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.adempiere.ad.expression.api.IExpression;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.expression.api.impl.LogicExpressionCompiler;
+import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.table.api.impl.TableIdsCache;
 import org.adempiere.ad.validationRule.IValidationRuleFactory;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -219,14 +228,15 @@ import java.util.Set;
 				.setDetailId(detailId)
 				.setInternalName(gridTabVO.getInternalName())
 				//
-				.setCaption(gridTabVO.getNameTrls(), gridTabVO.getName())
-				.setDescription(gridTabVO.getDescriptionTrls(), gridTabVO.getDescription())
+				.setCaption(gridTabVO.getNameTrls())
+				.setDescription(gridTabVO.getDescriptionTrls())
 				//
 				.setReadonlyLogic(readonlyLogic)
 				.setAllowCreateNewLogic(allowCreateNewLogic)
 				.setAllowDeleteLogic(allowDeleteLogic)
 				.setDisplayLogic(displayLogic)
-				.setAllowQuickInput(gridTabVO.isAllowQuickInput())
+				.setQuickInputSupport(QuickInputSupportDescriptorLoader.extractFrom(gridTabVO))
+				.setIncludedTabNewRecordInputMode(IncludedTabNewRecordInputMode.ofNullableCodeOrAllAvailable(gridTabVO.getIncludedTabNewRecordInputMode()))
 				//
 				.setDataBinding(dataBinding)
 				.setHighVolume(gridTabVO.IsHighVolume)
@@ -759,7 +769,8 @@ import java.util.Set;
 			@NonNull final String tableName)
 	{
 		final I_AD_Tab labelsTab = labelsUIElement.getLabels_Tab();
-		final String labelsTableName = labelsTab.getAD_Table().getTableName();
+		final AdTableId adTableId = AdTableId.ofRepoId(labelsTab.getAD_Table_ID());
+		final String labelsTableName = TableIdsCache.instance.getTableName(adTableId);
 
 		final String linkColumnName;
 		if (labelsTab.getParent_Column_ID() > 0)
@@ -820,6 +831,7 @@ import java.util.Set;
 				.labelsValueColumnName(labelsValueColumnName)
 				.labelsValuesLookupDescriptor(labelsValuesLookupDescriptor)
 				.labelsLinkColumnName(labelsLinkColumnName)
+				.labelsValueReferenceId(ReferenceId.ofRepoIdOrNull(referenceValueIDToUse))
 				.tableName(tableName)
 				.linkColumnName(linkColumnName)
 				.build();

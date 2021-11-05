@@ -83,9 +83,7 @@
             <groupId>org.apache.camel</groupId>
             <artifactId>camel-jackson</artifactId>
             <version>${camel.version}</version>
-            <scope>compile</scope>
         </dependency>
     </dependencies>
-
 
 </project>

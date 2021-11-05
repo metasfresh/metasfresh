@@ -64,13 +64,13 @@ public class M_InOut_StepDef
 		this.shipmentScheduleTable = shipmentScheduleTable;
 	}
 
-	@And("validate created shipments")
+	@And("validate the created shipments")
 	public void validate_created_shipments(@NonNull final DataTable table)
 	{
 		final List<Map<String, String>> dataTable = table.asMaps();
 		for (final Map<String, String> row : dataTable)
 		{
-			final String identifier = DataTableUtil.extractStringForColumnName(row, "Shipment.Identifier");
+			final String identifier = DataTableUtil.extractStringForColumnName(row, "M_InOut_ID.Identifier");
 			final int bpartnerId = DataTableUtil.extractIntForColumnName(row, "c_bpartner_id");
 			final int bpartnerLocationId = DataTableUtil.extractIntForColumnName(row, "c_bpartner_location_id");
 			final Timestamp dateOrdered = DataTableUtil.extractDateTimestampForColumnName(row, "dateordered");

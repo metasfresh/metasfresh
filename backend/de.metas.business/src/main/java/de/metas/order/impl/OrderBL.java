@@ -472,18 +472,10 @@ public class OrderBL implements IOrderBL
 	}
 
 	@Override
-	public DeliveryViaRule evaluateOrderDeliveryViaRule(@NonNull final I_C_Order order)
-	{
-		final DeliveryViaRule orderDeliveryViaRule = DeliveryViaRule.ofNullableCode(order.getDeliveryViaRule());
-		return orderDeliveryViaRule != null
-				? orderDeliveryViaRule
-				: findDeliveryViaRule(order);
-	}
-
-	private DeliveryViaRule findDeliveryViaRule(final I_C_Order orderRecord)
+	public Optional<DeliveryViaRule> findDeliveryViaRule(final I_C_Order orderRecord)
 	{
 		final BPartnerOrderParams params = retrieveBPartnerParams(orderRecord);
-		return params.getDeliveryViaRule().orElse(null);
+		return params.getDeliveryViaRule();
 	}
 
 	private BPartnerOrderParams retrieveBPartnerParams(@NonNull final I_C_Order orderRecord)
@@ -745,6 +737,7 @@ public class OrderBL implements IOrderBL
 				.setFrom(DocumentLocation.builder()
 								 .bpartnerId(newBPartnerLocationId.getBpartnerId())
 								 .bpartnerLocationId(newBPartnerLocationId.getBpartnerLocationId())
+								 .locationId(newBPartnerLocationId.getLocationCaptureId())
 								 .contactId(newContactId)
 								 .build());
 

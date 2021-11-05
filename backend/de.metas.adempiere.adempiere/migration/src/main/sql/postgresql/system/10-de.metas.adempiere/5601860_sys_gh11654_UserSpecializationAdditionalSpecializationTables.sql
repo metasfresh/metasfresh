@@ -1,0 +1,9 @@
+-- 2021-08-24T14:52:54.038Z
+-- URL zum Konzept
+/* DDL */ CREATE TABLE public.AD_User_Occupation_Specialization (AD_Client_ID NUMERIC(10) NOT NULL, AD_Org_ID NUMERIC(10) NOT NULL, AD_User_ID NUMERIC(10), AD_User_Occupation_Specialization_ID NUMERIC(10) NOT NULL, Created TIMESTAMP WITH TIME ZONE NOT NULL, CreatedBy NUMERIC(10) NOT NULL, CRM_Occupation_ID NUMERIC(10), IsActive CHAR(1) CHECK (IsActive IN ('Y','N')) NOT NULL, Updated TIMESTAMP WITH TIME ZONE NOT NULL, UpdatedBy NUMERIC(10) NOT NULL, CONSTRAINT ADUser_ADUserOccupationSpecialization FOREIGN KEY (AD_User_ID) REFERENCES public.AD_User DEFERRABLE INITIALLY DEFERRED, CONSTRAINT AD_User_Occupation_Specialization_Key PRIMARY KEY (AD_User_Occupation_Specialization_ID), CONSTRAINT CRMOccupation_ADUserOccupationSpecialization FOREIGN KEY (CRM_Occupation_ID) REFERENCES public.CRM_Occupation DEFERRABLE INITIALLY DEFERRED)
+;
+
+-- 2021-08-25T06:20:32.979Z
+-- URL zum Konzept
+/* DDL */ CREATE TABLE public.AD_User_Occupation_AdditionalSpecialization (AD_Client_ID NUMERIC(10) NOT NULL, AD_Org_ID NUMERIC(10) NOT NULL, AD_User_ID NUMERIC(10), AD_User_Occupation_AdditionalSpecialization_ID NUMERIC(10) NOT NULL, Created TIMESTAMP WITH TIME ZONE NOT NULL, CreatedBy NUMERIC(10) NOT NULL, CRM_Occupation_ID NUMERIC(10), IsActive CHAR(1) CHECK (IsActive IN ('Y','N')) NOT NULL, Updated TIMESTAMP WITH TIME ZONE NOT NULL, UpdatedBy NUMERIC(10) NOT NULL, CONSTRAINT ADUser_ADUserOccupationAdditionalSpecialization FOREIGN KEY (AD_User_ID) REFERENCES public.AD_User DEFERRABLE INITIALLY DEFERRED, CONSTRAINT AD_User_Occupation_AdditionalSpecialization_Key PRIMARY KEY (AD_User_Occupation_AdditionalSpecialization_ID), CONSTRAINT CRMOccupation_ADUserOccupationAdditionalSpecialization FOREIGN KEY (CRM_Occupation_ID) REFERENCES public.CRM_Occupation DEFERRABLE INITIALLY DEFERRED)
+;

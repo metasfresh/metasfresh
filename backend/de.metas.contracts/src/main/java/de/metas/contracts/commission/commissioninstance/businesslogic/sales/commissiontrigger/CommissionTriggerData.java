@@ -1,21 +1,21 @@
 package de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger;
 
-import static de.metas.common.util.CoalesceUtil.coalesce;
-
-import java.time.Instant;
-import java.time.LocalDate;
-
-import javax.annotation.Nullable;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionPoints;
+import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
-import de.metas.util.lang.Percent;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
+import java.time.Instant;
+import java.time.LocalDate;
+
+import static de.metas.common.util.CoalesceUtil.coalesce;
 
 /*
  * #%L
@@ -39,7 +39,9 @@ import lombok.Value;
  * #L%
  */
 
-/** Contains data from a commission trigger. Not deltas, just the base points which the trigger currently has */
+/**
+ * Contains data from a commission trigger. Not deltas, just the base points which the trigger currently has
+ */
 @Value
 public class CommissionTriggerData
 {
@@ -51,7 +53,9 @@ public class CommissionTriggerData
 
 	boolean invoiceCandidateWasDeleted;
 
-	/** Exact timestamp of this trigger. E.g. if one invoice candidate is changed, there might be two triggers wit different timestamps that relate to the same IC. */
+	/**
+	 * Exact timestamp of this trigger. E.g. if one invoice candidate is changed, there might be two triggers wit different timestamps that relate to the same IC.
+	 */
 	Instant timestamp;
 
 	LocalDate triggerDocumentDate;
@@ -62,7 +66,11 @@ public class CommissionTriggerData
 
 	CommissionPoints invoicedBasePoints;
 
-	Percent tradedCommissionPercent;
+	ProductId productId;
+
+	Quantity totalQtyInvolved;
+
+	CurrencyId documentCurrencyId;
 
 	@Builder
 	@JsonCreator
@@ -76,7 +84,9 @@ public class CommissionTriggerData
 			@JsonProperty("forecastedBasePoints") @NonNull final CommissionPoints forecastedBasePoints,
 			@JsonProperty("invoiceableBasePoints") @NonNull final CommissionPoints invoiceableBasePoints,
 			@JsonProperty("invoicedBasePoints") @NonNull final CommissionPoints invoicedBasePoints,
-			@JsonProperty("tradedCommissionPercent") @Nullable final Percent tradedCommissionPercent)
+			@JsonProperty("productId") @NonNull final ProductId productId,
+			@JsonProperty("totalQtyInvolved") @NonNull final Quantity totalQtyInvolved,
+			@JsonProperty("documentCurrencyId") @NonNull final CurrencyId documentCurrencyId)
 	{
 		this.timestamp = timestamp;
 		this.triggerDocumentDate = triggerDocumentDate;
@@ -89,6 +99,15 @@ public class CommissionTriggerData
 		this.forecastedBasePoints = coalesce(forecastedBasePoints, CommissionPoints.ZERO);
 		this.invoiceableBasePoints = coalesce(invoiceableBasePoints, CommissionPoints.ZERO);
 		this.invoicedBasePoints = coalesce(invoicedBasePoints, CommissionPoints.ZERO);
-		this.tradedCommissionPercent = coalesce(tradedCommissionPercent, Percent.ZERO);
+		this.productId = productId;
+		this.totalQtyInvolved = totalQtyInvolved;
+		this.documentCurrencyId = documentCurrencyId;
+	}
+
+	public CommissionPoints getCommissionBase()
+	{
+		return forecastedBasePoints
+				.add(invoiceableBasePoints)
+				.add(invoicedBasePoints);
 	}
 }
