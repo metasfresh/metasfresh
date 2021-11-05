@@ -508,7 +508,10 @@ public final class SqlViewSelectionQueryBuilder
 	{
 		final String sqlTableAlias = getTableAlias();
 		final SqlViewKeyColumnNamesMap keyColumnNamesMap = getSqlViewKeyColumnNamesMap();
-		final FilterSql filterSql = toFilterSql(filters, filterConverterCtx, SqlOptions.usingTableName(getTableName()));
+		final FilterSql filterSql = toFilterSql(
+				filters,
+				filterConverterCtx.withUserRolePermissionsKey(viewEvalCtx.getPermissionsKey()),
+				SqlOptions.usingTableName(getTableName()));
 
 		final DocumentQueryOrderByList orderBysEffective = orderBys.stream()
 				.flatMap(this::flatMapEffectiveFieldNames)
