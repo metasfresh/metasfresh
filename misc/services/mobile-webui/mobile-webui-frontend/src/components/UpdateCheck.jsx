@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { getServerVersion } from '../api/update';
 import { connect } from 'react-redux';
 import { setVersion } from '../actions/UpdateActions';
+import { REGISTER_SERVICE_WORKER } from '../constants/index';
 class UpdateCheck extends Component {
   constructor(props) {
     super(props);
@@ -49,9 +50,11 @@ class UpdateCheck extends Component {
   };
 
   componentDidMount() {
-    const { updateInterval } = this.props;
-    let intervalId = setInterval(this.checkServerVersion, updateInterval);
-    this.setState({ intervalId: intervalId });
+    if (REGISTER_SERVICE_WORKER) {
+      const { updateInterval } = this.props;
+      let intervalId = setInterval(this.checkServerVersion, updateInterval);
+      this.setState({ intervalId: intervalId });
+    }
   }
 
   componentWillUnmount() {
