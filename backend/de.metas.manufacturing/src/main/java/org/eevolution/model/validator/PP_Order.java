@@ -3,6 +3,7 @@ package org.eevolution.model.validator;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeBL;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
+import de.metas.i18n.AdMessageKey;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.pporder.PPOrderChangedEvent;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
@@ -267,7 +268,8 @@ public class PP_Order
 
 		if (ppOrder.getM_Product_ID() != productIdOfBOM.getRepoId())
 		{
-			throw new AdempiereException("PP_Order.M_Product_ID and PP_Order.PP_Product_BOM_ID.M_Product_ID don't match!")
+			throw new AdempiereException(AdMessageKey.of("PP_Order_BOM_Doesnt_Match"))
+					.markAsUserValidationError()
 					.appendParametersToMessage()
 					.setParameter("PP_Order.M_Product_ID", ppOrder.getM_Product_ID())
 					.setParameter("PP_Order.PP_Product_BOM_ID.M_Product_ID", productIdOfBOM.getRepoId());

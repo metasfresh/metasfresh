@@ -1,5 +1,6 @@
 package org.eevolution.model.validator;
 
+import de.metas.i18n.AdMessageKey;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
@@ -81,7 +82,8 @@ public class PP_Product_BOM
 
 		if (productId != bomVersions.getM_Product_ID())
 		{
-			throw new AdempiereException("PP_Product_BOM.PP_Product_BOMVersions_ID.M_Product_ID and PP_Product_BOM.M_Product_Id don't match!")
+			throw new AdempiereException(AdMessageKey.of("PP_Product_BOMVersions_BOM_Doesnt_Match"))
+					.markAsUserValidationError()
 					.appendParametersToMessage()
 					.setParameter("PP_Product_BOM", bom)
 					.setParameter("PP_Product_BOMVersions", bomVersions);

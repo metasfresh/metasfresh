@@ -1,6 +1,7 @@
 package org.eevolution.model.validator;
 
 import com.google.common.annotations.VisibleForTesting;
+import de.metas.i18n.AdMessageKey;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.product.ProductId;
 import lombok.NonNull;
@@ -81,7 +82,7 @@ public class PP_Product_Planning
 				.ifPresent(bomVersions -> {
 					if (bomVersions.getM_Product_ID() != productId.getRepoId())
 					{
-						throw new AdempiereException("PP_Product_Planning.PP_Product_BOMVersions_ID.M_Product_ID and PP_Product_Planning.M_Product_Id don't match!")
+						throw new AdempiereException(AdMessageKey.of("PP_Product_Planning_BOM_Doesnt_Match"))
 								.appendParametersToMessage()
 								.setParameter("bomVersion", bomVersions)
 								.setParameter("productPlanning", planning)

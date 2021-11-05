@@ -1,5 +1,7 @@
 package org.eevolution.process;
 
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.ITranslatableString;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
@@ -146,7 +148,12 @@ public class PP_Product_BOM_Check extends JavaProcess implements IProcessPrecond
 
 		// Get Default BOM from this product
 		final I_PP_Product_BOM bom = productBOMDAO.getDefaultBOMByProductId(ProductId.ofRepoId(product.getM_Product_ID()))
-				.orElseThrow(() -> new AdempiereException("No Default BOM found for " + product.getValue() + "_" + product.getName()));
+				.orElseThrow(() -> {
+					final ITranslatableString errorMsg = msgBL.getTranslatableMsgText(AdMessageKey.of("NO_Default_PP_Product_BOM_For_Product"),
+																					  product.getValue() + "_" + product.getName());
+
+					return new AdempiereException(errorMsg);
+				});
 
 		// Check All BOM Lines
 		for (final I_PP_Product_BOMLine tbomline : productBOMDAO.retrieveLines(bom))
