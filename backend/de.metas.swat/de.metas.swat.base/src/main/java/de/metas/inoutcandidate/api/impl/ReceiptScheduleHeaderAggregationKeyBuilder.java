@@ -23,7 +23,7 @@ package de.metas.inoutcandidate.api.impl;
  */
 
 
-import org.adempiere.util.agg.key.AbstractHeaderAggregationKeyBuilder;
+import org.compiere.aggregation.AbstractHeaderAggregationKeyBuilder;
 
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 

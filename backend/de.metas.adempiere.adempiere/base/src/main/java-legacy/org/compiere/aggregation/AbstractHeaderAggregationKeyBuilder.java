@@ -1,10 +1,8 @@
-package org.adempiere.util.agg.key;
-
 /*
  * #%L
- * de.metas.swat.base
+ * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,8 +20,12 @@ package org.adempiere.util.agg.key;
  * #L%
  */
 
+package org.compiere.aggregation;
+
 import java.util.List;
 
+import org.adempiere.util.agg.key.AbstractAggregationKeyBuilder;
+import org.adempiere.util.agg.key.IAggregationKeyRegistry;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 
