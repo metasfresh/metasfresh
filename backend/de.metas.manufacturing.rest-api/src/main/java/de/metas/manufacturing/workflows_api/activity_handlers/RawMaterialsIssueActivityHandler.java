@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.manufacturing.job.ManufacturingJob;
 import de.metas.manufacturing.job.ManufacturingJobActivity;
 import de.metas.manufacturing.job.ManufacturingJobActivityId;
+import de.metas.manufacturing.job.RawMaterialsIssue;
 import de.metas.manufacturing.workflows_api.activity_handlers.json.JsonRawMaterialsIssueLine;
 import de.metas.workflow.rest_api.controller.v2.json.JsonOpts;
 import de.metas.workflow.rest_api.model.UIComponent;
@@ -34,7 +35,7 @@ public class RawMaterialsIssueActivityHandler implements WFActivityHandler
 		final ManufacturingJobActivity jobActivity = wfProcess
 				.getDocumentAs(ManufacturingJob.class)
 				.getActivityById(wfActivity.getId().getAsId(ManufacturingJobActivityId.class));
-		final ManufacturingJobActivity.RawMaterialsIssue rawMaterialsIssue = Objects.requireNonNull(jobActivity.getRawMaterialsIssue());
+		final RawMaterialsIssue rawMaterialsIssue = Objects.requireNonNull(jobActivity.getRawMaterialsIssue());
 
 		final ImmutableList<JsonRawMaterialsIssueLine> lines = rawMaterialsIssue.getLines()
 				.stream()

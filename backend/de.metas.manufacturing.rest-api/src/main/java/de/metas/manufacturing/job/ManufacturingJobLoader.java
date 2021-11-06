@@ -1,13 +1,19 @@
 package de.metas.manufacturing.job;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.Multimaps;
+import de.metas.handlingunits.HUBarcode;
+import de.metas.manufacturing.order.PPOrderIssueSchedule;
 import de.metas.material.planning.pporder.OrderBOMLineQuantities;
 import de.metas.material.planning.pporder.PPOrderQuantities;
 import de.metas.product.ProductId;
 import de.metas.user.UserId;
+import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.eevolution.api.BOMComponentType;
+import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.api.PPOrderRouting;
 import org.eevolution.api.PPOrderRoutingActivity;
@@ -16,7 +22,9 @@ import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 
 import javax.annotation.Nullable;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
 
@@ -27,6 +35,7 @@ class ManufacturingJobLoader
 	private final HashMap<PPOrderId, I_PP_Order> ppOrders = new HashMap<>();
 	private final HashMap<PPOrderId, PPOrderRouting> routings = new HashMap<>();
 	private final HashMap<PPOrderId, ImmutableList<I_PP_Order_BOMLine>> bomLines = new HashMap<>();
+	private final HashMap<PPOrderId, ImmutableListMultimap<PPOrderBOMLineId, PPOrderIssueSchedule>> issueSchedules = new HashMap<>();
 
 	ManufacturingJobLoader(@NonNull final ManufacturingJobLoaderSupportingServices supportingServices)
 	{
@@ -48,10 +57,16 @@ class ManufacturingJobLoader
 				.build();
 	}
 
-	public ManufacturingJobLoader addToCache(@NonNull final I_PP_Order ppOrder)
+	public void addToCache(@NonNull final I_PP_Order ppOrder)
 	{
 		ppOrders.put(PPOrderId.ofRepoId(ppOrder.getPP_Order_ID()), ppOrder);
-		return this;
+	}
+
+	public void addToCache(List<PPOrderIssueSchedule> schedules)
+	{
+		final PPOrderId ppOrderId = CollectionUtils.extractSingleElement(schedules, PPOrderIssueSchedule::getPpOrderId);
+		final ImmutableListMultimap<PPOrderBOMLineId, PPOrderIssueSchedule> schedulesByBOMLineId = Multimaps.index(schedules, PPOrderIssueSchedule::getPpOrderBOMLineId);
+		issueSchedules.put(ppOrderId, schedulesByBOMLineId);
 	}
 
 	private I_PP_Order getPPOrderRecordById(final PPOrderId ppOrderId)
@@ -67,6 +82,11 @@ class ManufacturingJobLoader
 	private ImmutableList<I_PP_Order_BOMLine> getBOMLines(final PPOrderId ppOrderId)
 	{
 		return bomLines.computeIfAbsent(ppOrderId, supportingServices::getOrderBOMLines);
+	}
+
+	private ImmutableListMultimap<PPOrderBOMLineId, PPOrderIssueSchedule> getIssueSchedules(final PPOrderId ppOrderId)
+	{
+		return issueSchedules.computeIfAbsent(ppOrderId, supportingServices::getIssueSchedules);
 	}
 
 	private ManufacturingJobActivity toJobActivity(@NonNull final PPOrderRoutingActivity from)
@@ -102,9 +122,9 @@ class ManufacturingJobLoader
 				.status(from.getStatus());
 	}
 
-	private ManufacturingJobActivity.RawMaterialsIssue toRawMaterialsIssue(final @NonNull PPOrderRoutingActivity from)
+	private RawMaterialsIssue toRawMaterialsIssue(final @NonNull PPOrderRoutingActivity from)
 	{
-		return ManufacturingJobActivity.RawMaterialsIssue.builder()
+		return RawMaterialsIssue.builder()
 				.lines(getBOMLines(from.getOrderId())
 						.stream()
 						.map(this::toRawMaterialsIssueLine)
@@ -114,7 +134,7 @@ class ManufacturingJobLoader
 	}
 
 	@Nullable
-	private ManufacturingJobActivity.RawMaterialsIssueLine toRawMaterialsIssueLine(@NonNull final I_PP_Order_BOMLine orderBOMLine)
+	private RawMaterialsIssueLine toRawMaterialsIssueLine(@NonNull final I_PP_Order_BOMLine orderBOMLine)
 	{
 		final BOMComponentType bomComponentType = BOMComponentType.ofCode(orderBOMLine.getComponentType());
 		if (!bomComponentType.isIssue())
@@ -122,40 +142,67 @@ class ManufacturingJobLoader
 			return null;
 		}
 
+		final PPOrderId ppOrderId = PPOrderId.ofRepoId(orderBOMLine.getPP_Order_ID());
+		final PPOrderBOMLineId ppOrderBOMLineId = PPOrderBOMLineId.ofRepoId(orderBOMLine.getPP_Order_BOMLine_ID());
 		final ProductId productId = ProductId.ofRepoId(orderBOMLine.getM_Product_ID());
 		final OrderBOMLineQuantities bomLineQuantities = supportingServices.getQuantities(orderBOMLine);
 
-		return ManufacturingJobActivity.RawMaterialsIssueLine.builder()
+		return RawMaterialsIssueLine.builder()
 				.productId(productId)
 				.productName(supportingServices.getProductName(productId))
 				.qtyToIssue(bomLineQuantities.getQtyRequired())
 				.qtyIssued(bomLineQuantities.getQtyIssuedOrReceived())
+				.steps(getIssueSchedules(ppOrderId)
+						.get(ppOrderBOMLineId)
+						.stream()
+						.sorted(Comparator.comparing(PPOrderIssueSchedule::getSeqNo))
+						.map(this::toRawMaterialsIssueStep)
+						.collect(ImmutableList.toImmutableList()))
 				.build();
 	}
 
-	private ManufacturingJobActivity.FinishedGoodsReceive toFinishedGoodsReceive(final @NonNull PPOrderRoutingActivity from)
+	private RawMaterialsIssueStep toRawMaterialsIssueStep(final PPOrderIssueSchedule schedule)
 	{
-		final ManufacturingJobActivity.FinishedGoodsReceiveLine finishedGood = toFinishedGoodsReceiveLine(from.getOrderId());
+		return RawMaterialsIssueStep.builder()
+				.id(schedule.getId())
+				.productId(schedule.getProductId())
+				.productName(supportingServices.getProductName(schedule.getProductId()))
+				.qtyToIssue(schedule.getQtyToIssue())
+				.issueFromLocator(LocatorInfo.builder()
+						.id(schedule.getIssueFromLocatorId())
+						.caption(supportingServices.getLocatorName(schedule.getIssueFromLocatorId()))
+						.build())
+				.issueFromHU(HUInfo.builder()
+						.id(schedule.getIssueFromHUId())
+						.barcode(HUBarcode.ofHuId(schedule.getIssueFromHUId()))
+						.build())
+				.issued(schedule.getIssued())
+				.build();
+	}
 
-		final Stream<ManufacturingJobActivity.FinishedGoodsReceiveLine> coProducts = getBOMLines(from.getOrderId())
+	private FinishedGoodsReceive toFinishedGoodsReceive(final @NonNull PPOrderRoutingActivity from)
+	{
+		final FinishedGoodsReceiveLine finishedGood = toFinishedGoodsReceiveLine(from.getOrderId());
+
+		final Stream<FinishedGoodsReceiveLine> coProducts = getBOMLines(from.getOrderId())
 				.stream()
 				.map(this::toFinishedGoodsReceiveLine)
 				.filter(Objects::nonNull);
 
-		return ManufacturingJobActivity.FinishedGoodsReceive.builder()
+		return FinishedGoodsReceive.builder()
 				.lines(Stream.concat(Stream.of(finishedGood), coProducts)
 						.collect(ImmutableList.toImmutableList()))
 				.build();
 	}
 
 	@Nullable
-	private ManufacturingJobActivity.FinishedGoodsReceiveLine toFinishedGoodsReceiveLine(@NonNull final PPOrderId ppOrderId)
+	private FinishedGoodsReceiveLine toFinishedGoodsReceiveLine(@NonNull final PPOrderId ppOrderId)
 	{
 		final I_PP_Order ppOrder = getPPOrderRecordById(ppOrderId);
 		final ProductId productId = ProductId.ofRepoId(ppOrder.getM_Product_ID());
 		final PPOrderQuantities orderQuantities = supportingServices.getQuantities(ppOrder);
 
-		return ManufacturingJobActivity.FinishedGoodsReceiveLine.builder()
+		return FinishedGoodsReceiveLine.builder()
 				.productId(productId)
 				.productName(supportingServices.getProductName(productId))
 				.qtyToReceive(orderQuantities.getQtyRequiredToProduce())
@@ -166,7 +213,7 @@ class ManufacturingJobLoader
 	}
 
 	@Nullable
-	private ManufacturingJobActivity.FinishedGoodsReceiveLine toFinishedGoodsReceiveLine(@NonNull final I_PP_Order_BOMLine orderBOMLine)
+	private FinishedGoodsReceiveLine toFinishedGoodsReceiveLine(@NonNull final I_PP_Order_BOMLine orderBOMLine)
 	{
 		final BOMComponentType bomComponentType = BOMComponentType.ofCode(orderBOMLine.getComponentType());
 		if (!bomComponentType.isByOrCoProduct())
@@ -177,7 +224,7 @@ class ManufacturingJobLoader
 		final ProductId productId = ProductId.ofRepoId(orderBOMLine.getM_Product_ID());
 		final OrderBOMLineQuantities bomLineQuantities = supportingServices.getQuantities(orderBOMLine);
 
-		return ManufacturingJobActivity.FinishedGoodsReceiveLine.builder()
+		return FinishedGoodsReceiveLine.builder()
 				.productId(productId)
 				.productName(supportingServices.getProductName(productId))
 				.qtyToReceive(bomLineQuantities.getQtyRequired().negate())

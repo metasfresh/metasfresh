@@ -1,6 +1,6 @@
 package de.metas.manufacturing.workflows_api.activity_handlers.json;
 
-import de.metas.manufacturing.job.ManufacturingJobActivity;
+import de.metas.manufacturing.job.FinishedGoodsReceiveLine;
 import de.metas.workflow.rest_api.controller.v2.json.JsonOpts;
 import lombok.Builder;
 import lombok.NonNull;
@@ -20,7 +20,7 @@ public class JsonFinishedGoodsReceiveLine
 	@NonNull BigDecimal qtyReceived;
 
 	public static JsonFinishedGoodsReceiveLine of(
-			final ManufacturingJobActivity.FinishedGoodsReceiveLine from,
+			final FinishedGoodsReceiveLine from,
 			final JsonOpts jsonOpts)
 	{
 		return builder()
