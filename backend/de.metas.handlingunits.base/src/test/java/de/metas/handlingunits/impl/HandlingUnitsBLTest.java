@@ -39,7 +39,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * #L%
  */
 
-public class HandlingUnitsBLTests
+public class HandlingUnitsBLTest
 {
 	private HUTestHelper helper;
 
