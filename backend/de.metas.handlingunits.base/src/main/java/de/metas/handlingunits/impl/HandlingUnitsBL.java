@@ -70,7 +70,6 @@ import de.metas.organization.ClientAndOrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
-import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -753,6 +752,22 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		else
 		{
 			return QtyTU.ONE;
+		}
+	}
+
+	@Override
+	public HuPackingInstructionsId getPackingInstructionsId(@NonNull final I_M_HU hu)
+	{
+		final HuPackingInstructionsVersionId piVersionId = HuPackingInstructionsVersionId.ofRepoId(hu.getM_HU_PI_Version_ID());
+		final HuPackingInstructionsId knownPackingInstructionsId = piVersionId.getKnownPackingInstructionsIdOrNull();
+		if (knownPackingInstructionsId != null)
+		{
+			return knownPackingInstructionsId;
+		}
+		else
+		{
+			final I_M_HU_PI_Version piVersion = handlingUnitsRepo.retrievePIVersionById(piVersionId);
+			return HuPackingInstructionsId.ofRepoId(piVersion.getM_HU_PI_ID());
 		}
 	}
 

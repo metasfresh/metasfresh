@@ -403,6 +403,8 @@ public interface IHandlingUnitsBL extends ISingletonService
 
 	QtyTU getTUsCount(final I_M_HU tuOrAggregatedTU);
 
+	HuPackingInstructionsId getPackingInstructionsId(@NonNull I_M_HU hu);
+
 	@Nullable
 	I_M_HU_PI getPI(I_M_HU hu);
 
