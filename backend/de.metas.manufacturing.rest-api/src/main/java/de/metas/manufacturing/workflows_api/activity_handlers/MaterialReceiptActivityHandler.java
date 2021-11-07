@@ -1,6 +1,7 @@
 package de.metas.manufacturing.workflows_api.activity_handlers;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.manufacturing.job.FinishedGoodsReceive;
 import de.metas.manufacturing.job.ManufacturingJob;
 import de.metas.manufacturing.job.ManufacturingJobActivity;
 import de.metas.manufacturing.job.ManufacturingJobActivityId;
@@ -34,7 +35,7 @@ public class MaterialReceiptActivityHandler implements WFActivityHandler
 		final ManufacturingJobActivity jobActivity = wfProcess
 				.getDocumentAs(ManufacturingJob.class)
 				.getActivityById(wfActivity.getId().getAsId(ManufacturingJobActivityId.class));
-		final ManufacturingJobActivity.FinishedGoodsReceive finishedGoodsReceive = Objects.requireNonNull(jobActivity.getFinishedGoodsReceive());
+		final FinishedGoodsReceive finishedGoodsReceive = Objects.requireNonNull(jobActivity.getFinishedGoodsReceive());
 
 		final ImmutableList<JsonFinishedGoodsReceiveLine> lines = finishedGoodsReceive.getLines()
 				.stream()

@@ -72,6 +72,7 @@ import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.api.IPPOrderRoutingRepository;
+import org.eevolution.api.ManufacturingOrderQuery;
 import org.eevolution.api.PPOrderCreateRequest;
 import org.eevolution.api.PPOrderDocBaseType;
 import org.eevolution.api.PPOrderId;
@@ -97,6 +98,7 @@ import java.time.ZonedDateTime;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Stream;
 
 public class PPOrderBL implements IPPOrderBL
 {
@@ -124,12 +126,24 @@ public class PPOrderBL implements IPPOrderBL
 	}
 
 	@Override
+	public void save(final I_PP_Order ppOrder)
+	{
+		ppOrdersRepo.save(ppOrder);
+	}
+
+	@Override
 	public I_PP_Order createOrder(@NonNull final PPOrderCreateRequest request)
 	{
 		return CreateOrderCommand.builder()
 				.request(request)
 				.build()
 				.execute();
+	}
+
+	@Override
+	public Stream<I_PP_Order> streamManufacturingOrders(final ManufacturingOrderQuery query)
+	{
+		return ppOrdersRepo.streamManufacturingOrders(query);
 	}
 
 	@Override
