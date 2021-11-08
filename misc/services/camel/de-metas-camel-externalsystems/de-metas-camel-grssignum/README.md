@@ -61,7 +61,7 @@ KRED.STDKRED | `IsCurrentVendor` | Y | JsonRequestBPartnerProductUpsert.currentV
 
 * `JsonBOM` - payload sent to the camel http endpoint
   * see: `de.metas.camel.externalsystems.grssignum.api.model.JsonBOM`
-  * note: during the push `JsonBOM` call there will be also an product upsertm how it works?
+  * note: during the push `JsonBOM` call there will be also an product upsert; how it works?
     * first we need to invoke the endpoint `api/v2/products/orgCode` with `JsonRequestProductUpsert` as payload to upsert the product ( making sure we have the latest version of that product in our system )
     * then we need to invoke the endpoint `api/v2/bom/version/{orgCode}` with `JsonBOMCreateRequest` as payload to push boms
 
