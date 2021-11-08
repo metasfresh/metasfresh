@@ -52,6 +52,7 @@ public class BPRelationRouteBuilderV2 extends RouteBuilder
 		from("{{" + ExternalSystemCamelConstants.MF_UPSERT_BPRELATION_V2_CAMEL_URI + "}}")
 				.routeId(ROUTE_ID)
 				.streamCaching()
+				.log("Route invoked")
 				.process(this::getBPRelationsCamelRequest)
 				.marshal(CamelRouteHelper.setupJacksonDataFormatFor(getContext(), JsonRequestBPRelationsUpsert.class))
 				.removeHeaders("CamelHttp*")
@@ -69,9 +70,7 @@ public class BPRelationRouteBuilderV2 extends RouteBuilder
 		{
 			throw new RuntimeCamelException("The route " + ROUTE_ID + " requires the body to be instanceof BPRelationsCamelRequest V2. However, it is " + (request == null ? "null" : request.getClass().getName()));
 		}
-
 		final BPRelationsCamelRequest bpRelationsCamelRequest = (BPRelationsCamelRequest)request;
-		log.info("Route invoked");
 		exchange.getIn().setHeader("bpartnerIdentifier", bpRelationsCamelRequest.getBpartnerIdentifier());
 		exchange.getIn().setBody(bpRelationsCamelRequest.getJsonRequestBPRelationsUpsert());
 	}
