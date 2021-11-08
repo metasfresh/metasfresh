@@ -148,6 +148,7 @@ const normalizePickingLines = (lines) => {
       ...line,
       steps: line.steps.reduce((accum, step) => {
         accum[step.pickingStepId] = step;
+        accum[step.pickingStepId].altSteps = {};
         return accum;
       }, {}),
     };

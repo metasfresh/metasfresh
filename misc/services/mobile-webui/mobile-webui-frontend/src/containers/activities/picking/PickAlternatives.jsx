@@ -3,20 +3,20 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 class PickAlternatives extends Component {
   renderAlternatives = ({ diffToPick }) => {
-    const { pickFromAlternativeIds, pickFromAlternatives } = this.props;
+    // const { pickFromAlternativeIds, pickFromAlternatives } = this.props;
 
-    let totalQty = 0;
+    // let totalQty = 0;
 
-    const alternativeHUs = pickFromAlternatives.reduce((accumulator, item) => {
-      if (pickFromAlternativeIds.includes(item.id) && totalQty < diffToPick && diffToPick) {
-        accumulator.push(item);
-        totalQty += item.qtyAvailable;
-      }
-      return accumulator;
-    }, []);
+    // const alternativeHUs = pickFromAlternatives.reduce((accumulator, item) => {
+    //   if (pickFromAlternativeIds.includes(item.id) && totalQty < diffToPick && diffToPick) {
+    //     accumulator.push(item);
+    //     totalQty += item.qtyAvailable;
+    //   }
+    //   return accumulator;
+    // }, []);
 
-    console.log('DIFFtoPick:', diffToPick);
-    console.log('ALTHUs', alternativeHUs);
+    // console.log('DIFFtoPick:', diffToPick);
+    // console.log('ALTHUs', alternativeHUs);
 
     // calculate here - filter to achieve the amount
     return <div>DIFF: {diffToPick}</div>;
