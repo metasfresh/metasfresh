@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.core.to_mf.v1;
+package de.metas.camel.externalsystems.core.to_mf.v2;
 
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.camel.externalsystems.common.BPRelationsCamelRequest;
@@ -28,44 +28,50 @@ import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 import de.metas.camel.externalsystems.core.CamelRouteHelper;
 import de.metas.camel.externalsystems.core.CoreConstants;
 import de.metas.common.bprelation.request.JsonRequestBPRelationsUpsert;
+import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.builder.endpoint.dsl.HttpEndpointBuilderFactory;
 import org.springframework.stereotype.Component;
 
+import static de.metas.camel.externalsystems.core.to_mf.v2.UnpackV2ResponseRouteBuilder.UNPACK_V2_API_RESPONSE;
+import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
+
 @Component
-@Deprecated
-public class BPRelationRouteBuilder extends RouteBuilder
+public class BPRelationRouteBuilderV2 extends RouteBuilder
 {
 	@VisibleForTesting
-	static final String ROUTE_ID = "To-MF_Upsert-BPRelation";
+	static final String ROUTE_ID = "To-MF_Upsert-BPRelation_V2";
 
 	@Override
 	public void configure()
 	{
 		errorHandler(noErrorHandler());
 
-		from("{{" + ExternalSystemCamelConstants.MF_UPSERT_BPRELATION_CAMEL_URI + "}}")
+		from("{{" + ExternalSystemCamelConstants.MF_UPSERT_BPRELATION_V2_CAMEL_URI + "}}")
 				.routeId(ROUTE_ID)
 				.streamCaching()
-				.process(exchange -> {
-					final var lookupRequest = exchange.getIn().getBody();
-					if (!(lookupRequest instanceof BPRelationsCamelRequest))
-					{
-						throw new RuntimeCamelException("The route " + ROUTE_ID + " requires the body to be instanceof BPRelationsCamelRequest. However, it is " + (lookupRequest == null ? "null" : lookupRequest.getClass().getName()));
-					}
-
-					final BPRelationsCamelRequest bpRelationsCamelRequest = (BPRelationsCamelRequest)lookupRequest;
-					log.info("Route invoked");
-					exchange.getIn().setHeader("bpartnerIdentifier", bpRelationsCamelRequest.getBpartnerIdentifier());
-					exchange.getIn().setBody(bpRelationsCamelRequest.getJsonRequestBPRelationsUpsert());
-				})
+				.log("Route invoked")
+				.process(this::getBPRelationsCamelRequest)
 				.marshal(CamelRouteHelper.setupJacksonDataFormatFor(getContext(), JsonRequestBPRelationsUpsert.class))
 				.removeHeaders("CamelHttp*")
 				.setHeader(CoreConstants.AUTHORIZATION, simple(CoreConstants.AUTHORIZATION_TOKEN))
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.PUT))
-				.toD("{{metasfresh.upsert-bprelation.api.uri}}/${header.bpartnerIdentifier}");
+				.toD("{{metasfresh.upsert-bprelation-v2.api.uri}}/${header.bpartnerIdentifier}")
 
+				.to(direct(UNPACK_V2_API_RESPONSE));
+	}
+
+	private void getBPRelationsCamelRequest(@NonNull final Exchange exchange)
+	{
+		final var request = exchange.getIn().getBody();
+		if (!(request instanceof BPRelationsCamelRequest))
+		{
+			throw new RuntimeCamelException("The route " + ROUTE_ID + " requires the body to be instanceof BPRelationsCamelRequest V2. However, it is " + (request == null ? "null" : request.getClass().getName()));
+		}
+		final BPRelationsCamelRequest bpRelationsCamelRequest = (BPRelationsCamelRequest)request;
+		exchange.getIn().setHeader("bpartnerIdentifier", bpRelationsCamelRequest.getBpartnerIdentifier());
+		exchange.getIn().setBody(bpRelationsCamelRequest.getJsonRequestBPRelationsUpsert());
 	}
 }
