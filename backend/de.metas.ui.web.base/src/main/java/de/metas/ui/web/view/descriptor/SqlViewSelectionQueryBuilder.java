@@ -558,9 +558,10 @@ public final class SqlViewSelectionQueryBuilder
 
 				if (sqlSelectDisplayValue != null && addedFieldNames.add(sqlSelectDisplayValue.getColumnNameAlias()) && !sqlSelectValue.isVirtualColumn())
 				{
-					sqlSourceTableBuilder.append("\n, ").append(sqlSelectDisplayValue
-							.withJoinOnTableNameOrAlias(getTableName())
-							.toSqlStringWithColumnNameAlias(viewEvalCtx.toEvaluatee()));
+					sqlSourceTableBuilder.append("\n, ")
+							.append(sqlSelectDisplayValue
+									.withJoinOnTableNameOrAlias(getTableName())
+									.toSqlStringWithColumnNameAlias(viewEvalCtx.toEvaluatee()));
 				}
 
 				if (addedFieldNames.add(sqlSelectValue.getColumnNameAlias()))
