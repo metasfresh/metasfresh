@@ -57,6 +57,8 @@ import java.util.Optional;
 @ToString
 public class SqlForFetchingLookupById
 {
+	private static final int INDEX_Name = 2; // in SQL indices are 1-based
+
 	private final String keyColumnNameFQ;
 	private final boolean numericKey;
 	private final String additionalWhereClause;
@@ -85,17 +87,19 @@ public class SqlForFetchingLookupById
 				.composer()
 				.append("SELECT ")
 				.append("\n ARRAY[")
-				.append(keyColumnNameFQ).append("::text") // 0
-				.append(", ").append(displayColumn) // 1
-				.append(", ").append(descriptionColumn != null ? descriptionColumn : SQL_NULL) // 2
-				.append(",").append(activeColumn != null ? activeColumn : "NULL") // 3
-				.append(", ").append(validationMsgColumn != null ? validationMsgColumn : SQL_NULL) // 4
+				.append(keyColumnNameFQ).append("::text") // 1
+				.append(", ").append(displayColumn) // 2 = INDEX_Name
+				.append(", ").append(descriptionColumn != null ? descriptionColumn : SQL_NULL) // 3
+				.append(",").append(activeColumn != null ? activeColumn : "NULL") // 4
+				.append(", ").append(validationMsgColumn != null ? validationMsgColumn : SQL_NULL) // 5
 				.append("]")
 				.append("\n FROM ").append(sqlFrom)
 				.build();
 
 		parameters = ImmutableSet.copyOf(sqlSelectFrom.getParameters());
 	}
+
+	public int getNameSqlArrayIndex() {return INDEX_Name;}
 
 	public IStringExpression toStringExpression(@NonNull final String joinOnColumnNameFQ)
 	{
