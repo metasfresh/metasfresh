@@ -27,8 +27,8 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IAsyncBatchBL;
-import de.metas.async.asyncbatchmilestone.AsyncBatchMilestoneService;
 import de.metas.async.model.I_C_Async_Batch;
+import de.metas.async.service.AsyncBatchService;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
@@ -53,7 +53,6 @@ import java.util.Set;
 import java.util.function.Supplier;
 
 import static de.metas.async.Async_Constants.C_Async_Batch_InternalName_InvoiceCandidate_Processing;
-import static de.metas.async.asyncbatchmilestone.MilestoneName.INVOICE_CREATION;
 import static org.compiere.util.Env.getCtx;
 
 @Service
@@ -64,11 +63,11 @@ public class InvoiceService
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 
-	private final AsyncBatchMilestoneService asyncBatchMilestoneService;
+	private final AsyncBatchService asyncBatchService;
 
-	public InvoiceService(@NonNull final AsyncBatchMilestoneService asyncBatchMilestoneService)
+	public InvoiceService(@NonNull final AsyncBatchService asyncBatchService)
 	{
-		this.asyncBatchMilestoneService = asyncBatchMilestoneService;
+		this.asyncBatchService = asyncBatchService;
 	}
 
 	@NonNull
@@ -160,7 +159,7 @@ public class InvoiceService
 			return null;
 		};
 
-		asyncBatchMilestoneService.executeMilestone(enqueueInvoiceCandidates, asyncBatchId, INVOICE_CREATION);
+		asyncBatchService.executeBatch(enqueueInvoiceCandidates, asyncBatchId);
 	}
 
 	@NonNull

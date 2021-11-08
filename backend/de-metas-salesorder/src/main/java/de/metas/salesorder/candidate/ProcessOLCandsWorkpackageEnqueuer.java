@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.salescandidate.base
+ * de-metas-salesorder
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,32 +20,39 @@
  * #L%
  */
 
-package de.metas.ordercandidate.api.async;
+package de.metas.salesorder.candidate;
 
 import de.metas.async.AsyncBatchId;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Nullable;
-
-import static de.metas.ordercandidate.api.async.C_OLCandToOrderWorkpackageProcessor.OLCandProcessor_ID;
 import static org.compiere.util.Env.getCtx;
 
 @Service
-public class C_OLCandToOrderEnqueuer
+public class ProcessOLCandsWorkpackageEnqueuer
 {
+	public static final String WP_PARAM_SHIP = "SHIP";
+	public static final String WP_PARAM_INVOICE = "INVOICE";
+	public static final String WP_PARAM_CLOSE_ORDER = "CLOSE_ORDER";
+	public static final String WP_PARAM_VALID_OLCANDIDS_SELECTIONID = "VALID_OLCANDIDS_SELECTIONID";
+
 	private final IWorkPackageQueueFactory workPackageQueueFactory = Services.get(IWorkPackageQueueFactory.class);
 
-	public void enqueue(@NonNull final Integer olCandProcessorId, @Nullable final AsyncBatchId asyncBatchId)
+	public void enqueue(@NonNull final ProcessOLCandsRequest request, @Nullable final AsyncBatchId processOLCandsBatchId)
 	{
-		workPackageQueueFactory.getQueueForEnqueuing(getCtx(), C_OLCandToOrderWorkpackageProcessor.class)
+		workPackageQueueFactory.getQueueForEnqueuing(getCtx(), ProcessOLCandsWorkpackageProcessor.class)
 				.newBlock()
 				.setContext(getCtx())
 				.newWorkpackage()
-				.parameter(OLCandProcessor_ID, olCandProcessorId)
-				.setC_Async_Batch_ID(asyncBatchId)
+				.bindToThreadInheritedTrx()
+				.setC_Async_Batch_ID(processOLCandsBatchId)
+				.parameter(WP_PARAM_VALID_OLCANDIDS_SELECTIONID, request.getPInstanceId())
+				.parameter(WP_PARAM_SHIP, request.isShip())
+				.parameter(WP_PARAM_INVOICE, request.isInvoice())
+				.parameter(WP_PARAM_CLOSE_ORDER, request.isCloseOrder())
 				.build();
 	}
 }

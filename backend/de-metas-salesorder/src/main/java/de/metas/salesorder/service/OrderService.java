@@ -27,7 +27,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IAsyncBatchBL;
-import de.metas.async.asyncbatchmilestone.AsyncBatchMilestoneService;
+import de.metas.async.service.AsyncBatchService;
 import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.async.CreateMissingShipmentSchedulesWorkpackageProcessor;
@@ -58,8 +58,6 @@ import java.util.function.Supplier;
 import static de.metas.async.Async_Constants.C_Async_Batch_InternalName_EnqueueScheduleForOrder;
 import static de.metas.async.Async_Constants.C_Async_Batch_InternalName_OLCand_Processing;
 import static de.metas.async.Async_Constants.C_OlCandProcessor_ID_Default;
-import static de.metas.async.asyncbatchmilestone.MilestoneName.ENQUEUE_SCHEDULE_FOR_ORDER;
-import static de.metas.async.asyncbatchmilestone.MilestoneName.SALES_ORDER_CREATION;
 import static org.compiere.model.X_C_Invoice.DOCSTATUS_Completed;
 
 @Service
@@ -73,14 +71,14 @@ public class OrderService
 	private final IOLCandDAO olCandDAO = Services.get(IOLCandDAO.class);
 	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 
-	private final AsyncBatchMilestoneService asyncBatchMilestoneService;
+	private final AsyncBatchService asyncBatchService;
 	private final C_OLCandToOrderEnqueuer olCandToOrderEnqueuer;
 
 	public OrderService(
-			@NonNull final AsyncBatchMilestoneService asyncBatchMilestoneService,
+			@NonNull final AsyncBatchService asyncBatchService,
 			@NonNull final C_OLCandToOrderEnqueuer olCandToOrderEnqueuer)
 	{
-		this.asyncBatchMilestoneService = asyncBatchMilestoneService;
+		this.asyncBatchService = asyncBatchService;
 		this.olCandToOrderEnqueuer = olCandToOrderEnqueuer;
 	}
 
@@ -161,7 +159,7 @@ public class OrderService
 			return null;
 		};
 
-		asyncBatchMilestoneService.executeMilestone(action, asyncBatchId, SALES_ORDER_CREATION);
+		asyncBatchService.executeBatch(action, asyncBatchId);
 	}
 
 	private void generateMissingShipmentSchedulesFromOrder(@NonNull final I_C_Order order)
@@ -176,7 +174,7 @@ public class OrderService
 			return null;
 		};
 
-		asyncBatchMilestoneService.executeMilestone(action, asyncBatchId, ENQUEUE_SCHEDULE_FOR_ORDER);
+		asyncBatchService.executeBatch(action, asyncBatchId);
 	}
 
 	@NonNull

@@ -46,4 +46,6 @@ public class CreateShipperTransportationRequest
 
 	@NonNull
 	LocalDate shipDate;
+
+	boolean assignAnonymouslyPickedHUs;
 }
