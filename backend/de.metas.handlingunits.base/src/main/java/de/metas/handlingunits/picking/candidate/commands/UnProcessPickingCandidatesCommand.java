@@ -105,9 +105,16 @@ public class UnProcessPickingCandidatesCommand
 		//
 		// Case: When PickFrom HU was destroyed
 		// * replace the pick From HU with the actually packed HU
+		final boolean usePackedHUIdAsPickFrom;
 		if (handlingUnitsBL.isDestroyed(pickFromHU))
 		{
-			pickingCandidate.changeStatusToDraft(true);
+			usePackedHUIdAsPickFrom = true;
+		}
+		//
+		// Case: When PickFrom HU was used as the PackTo HU
+		else if(HuId.equals(pickFromHUId, packedToHUId))
+		{
+			usePackedHUIdAsPickFrom = true;
 		}
 		//
 		// Case: When Pick From HU is not destroyed
@@ -136,9 +143,10 @@ public class UnProcessPickingCandidatesCommand
 
 			// NOTE: don't expect packedTOHUId to be empty/destroyed because it might be we packed several lines in same box
 
-			pickingCandidate.changeStatusToDraft(false);
+			usePackedHUIdAsPickFrom = false;
 		}
 
+		pickingCandidate.changeStatusToDraft(usePackedHUIdAsPickFrom);
 		pickingCandidateRepository.save(pickingCandidate);
 
 		huShipmentScheduleBL.deleteByTopLevelHUAndShipmentScheduleId(packedToHUId, pickingCandidate.getShipmentScheduleId());
