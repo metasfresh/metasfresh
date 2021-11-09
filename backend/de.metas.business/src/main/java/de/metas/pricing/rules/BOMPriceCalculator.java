@@ -152,7 +152,6 @@ public class BOMPriceCalculator
 		return bomsRepo.retrieveLines(bom);
 	}
 
-	@NonNull
 	private I_PP_Product_BOM getBOMIfEligible()
 	{
 		final I_M_Product bomProduct = productsRepo.getById(bomProductId);
