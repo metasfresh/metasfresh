@@ -26,6 +26,7 @@ const routesArray = [
   { path: '/workflow/:workflowId/activityId/:activityId/scanner', Component: ScanScreen },
   { path: '/workflow/:workflowId/activityId/:activityId/lineId/:lineId', Component: PickLineScreen },
   { path: '/workflow/:workflowId/activityId/:activityId/lineId/:lineId/stepId/:stepId', Component: PickStepScreen },
+  { path: '/workflow/:workflowId/activityId/:activityId/lineId/:lineId/altStepId/:stepId', Component: PickStepScreen },
   {
     path: '/workflow/:workflowId/activityId/:activityId/lineId/:lineId/stepId/:stepId/scanner',
     Component: PickStepScanHUScreen,

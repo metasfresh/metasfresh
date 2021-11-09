@@ -89,7 +89,7 @@ PickAltStepButton.propTypes = {
   huBarcode: PropTypes.string,
   uom: PropTypes.string,
   qtyPicked: PropTypes.number,
-  qtyToPick: PropTypes.number.isRequired,
+  qtyAvailable: PropTypes.number.isRequired,
   pickStepState: PropTypes.object,
   //
   // Actions
