@@ -29,6 +29,8 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
 @Value
 public class JsonAuthenticateRequest
 {
@@ -40,6 +42,10 @@ public class JsonAuthenticateRequest
 	JsonMetasfreshId pInstance;
 	@NonNull
 	String orgCode;
+	@Nullable
+	String externalSystemValue;
+	@Nullable
+	String auditTrailEndpoint;
 
 	@Builder
 	@JsonCreator
@@ -47,11 +53,15 @@ public class JsonAuthenticateRequest
 			@JsonProperty("grantedAuthority") @NonNull final String grantedAuthority,
 			@JsonProperty("authKey") @NonNull final String authKey,
 			@JsonProperty("pinstance") @NonNull final JsonMetasfreshId pInstance,
+			@JsonProperty("externalSystemValue") @Nullable final String externalSystemValue,
+			@JsonProperty("auditTrailEndpoint") @Nullable final String auditTrailEndpoint,
 			@JsonProperty("orgCode") @NonNull final String orgCode)
 	{
 		this.grantedAuthority = grantedAuthority;
 		this.authKey = authKey;
 		this.pInstance = pInstance;
+		this.externalSystemValue = externalSystemValue;
+		this.auditTrailEndpoint = auditTrailEndpoint;
 		this.orgCode = orgCode;
 	}
 }

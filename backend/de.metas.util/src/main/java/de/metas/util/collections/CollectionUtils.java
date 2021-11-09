@@ -57,10 +57,7 @@ public final class CollectionUtils
 	 */
 	public static <ET, CT extends Collection<ET>> String toString(final CT collection, final String separator)
 	{
-		// Use default element string converter
-		final Converter<String, ET> elementStringConverter = null;
-
-		return toString(collection, separator, elementStringConverter);
+		return toString(collection, separator, null);
 	}
 
 	/**
@@ -71,9 +68,10 @@ public final class CollectionUtils
 	 * @param elementStringConverter converter to be used when converting one list element to string
 	 * @return string representation
 	 */
-	public static <ET, CT extends Collection<ET>> String toString(final CT collection,
-																  final String separator,
-																  @Nullable final Converter<String, ET> elementStringConverter)
+	public static <ET, CT extends Collection<ET>> String toString(
+			@Nullable final CT collection,
+			@Nullable final String separator,
+			@Nullable final Converter<String, ET> elementStringConverter)
 	{
 		if (collection == null)
 		{
@@ -189,8 +187,7 @@ public final class CollectionUtils
 	@Nullable
 	public static <T> T singleElementOrNull(final Collection<T> collection)
 	{
-		final T defaultValue = null;
-		return singleElementOrDefault(collection, defaultValue);
+		return singleElementOrDefault(collection, null);
 	}
 
 	/**
@@ -198,7 +195,7 @@ public final class CollectionUtils
 	 * <p>
 	 * If the collection has more elements or no element then <code>defaultValue</code> will be returned.
 	 *
-	 * @param defaultValue value to be returned in case there are more then one elements or no element
+	 * @param defaultValue value to be returned in case there are more than one element or no element
 	 * @see de.metas.util.reducers.Reducers#singleValue()
 	 */
 	@Nullable
@@ -395,13 +392,8 @@ public final class CollectionUtils
 	}
 
 	@Nullable
-	public static <T> T emptyOrSingleElement(@Nullable final Collection<T> collection)
+	public static <T> T emptyOrSingleElement(@NonNull final Collection<T> collection)
 	{
-		if (collection == null)
-		{
-			return null;
-		}
-
 		final int size = collection.size();
 		if (size == 0)
 		{
@@ -418,9 +410,36 @@ public final class CollectionUtils
 	}
 
 	@NonNull
-	public static <T> ArrayList<T> mergeLists(@NonNull final ArrayList<T> list1,@NonNull final ArrayList<T> list2)
+	public static <T> ArrayList<T> mergeLists(@NonNull final ArrayList<T> list1, @NonNull final ArrayList<T> list2)
 	{
 		list1.addAll(list2);
 		return list1;
+	}
+
+	public static <T> ImmutableSet<T> difference(@NonNull final ImmutableSet<T> set, @Nullable Collection<T> excludes)
+	{
+		if (set.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+		else if (excludes == null || excludes.isEmpty())
+		{
+			return set;
+		}
+		else
+		{
+			final ImmutableSet<T> result = set.stream()
+					.filter(e -> !excludes.contains(e))
+					.collect(ImmutableSet.toImmutableSet());
+
+			if (result.size() == set.size())
+			{
+				return set;
+			}
+			else
+			{
+				return result;
+			}
+		}
 	}
 }

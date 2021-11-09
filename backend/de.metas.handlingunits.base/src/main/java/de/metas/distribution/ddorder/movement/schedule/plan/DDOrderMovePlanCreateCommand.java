@@ -94,7 +94,7 @@ public class DDOrderMovePlanCreateCommand
 				.productId(productId)
 				.pickFromLocatorId(pickFromLocatorId)
 				.build());
-		final ArrayList<DDOrderMovePlanStep> planLines = new ArrayList<>();
+		final ArrayList<DDOrderMovePlanStep> planSteps = new ArrayList<>();
 		Quantity allocatedQty = targetQty.toZero();
 
 		for (final AllocableHU allocableHU : availableHUs)
@@ -110,10 +110,10 @@ public class DDOrderMovePlanCreateCommand
 				final Quantity huQtyAvailable = allocableHU.getQtyAvailableToAllocate();
 				// TODO: handle/convert when HU's UOM != DD_OrderLine's UOM
 
-				final DDOrderMovePlanStep planLine;
+				final DDOrderMovePlanStep planStep;
 				if (huQtyAvailable.isGreaterThan(remainingQtyToAllocate))
 				{
-					planLine = DDOrderMovePlanStep.builder()
+					planStep = DDOrderMovePlanStep.builder()
 							.productId(productId)
 							.pickFromLocatorId(pickFromLocatorId)
 							.dropToLocatorId(dropToLocatorId)
@@ -124,7 +124,7 @@ public class DDOrderMovePlanCreateCommand
 				}
 				else
 				{
-					planLine = DDOrderMovePlanStep.builder()
+					planStep = DDOrderMovePlanStep.builder()
 							.productId(productId)
 							.pickFromLocatorId(pickFromLocatorId)
 							.dropToLocatorId(dropToLocatorId)
@@ -134,19 +134,19 @@ public class DDOrderMovePlanCreateCommand
 							.build();
 				}
 
-				planLines.add(planLine);
-				allocableHU.addQtyAllocated(planLine.getQtyToPick());
-				allocatedQty = allocatedQty.add(planLine.getQtyToPick());
+				planSteps.add(planStep);
+				allocableHU.addQtyAllocated(planStep.getQtyToPick());
+				allocatedQty = allocatedQty.add(planStep.getQtyToPick());
 			}
 		}
 
-		final DDOrderMovePlanLine linePlan = DDOrderMovePlanLine.builder()
+		final DDOrderMovePlanLine planLine = DDOrderMovePlanLine.builder()
 				.ddOrderLineId(DDOrderLineId.ofRepoId(ddOrderLine.getDD_OrderLine_ID()))
 				.qtyToPickTarget(targetQty)
-				.steps(ImmutableList.copyOf(planLines))
+				.steps(ImmutableList.copyOf(planSteps))
 				.build();
 
-		if (failIfNotFullAllocated && !linePlan.isFullyAllocated())
+		if (failIfNotFullAllocated && !planLine.isFullyAllocated())
 		{
 			throw new HUException(MSG_CannotFullAllocate)
 					.appendParametersToMessage()
@@ -155,7 +155,7 @@ public class DDOrderMovePlanCreateCommand
 
 		}
 
-		return linePlan;
+		return planLine;
 	}
 
 	@NonNull

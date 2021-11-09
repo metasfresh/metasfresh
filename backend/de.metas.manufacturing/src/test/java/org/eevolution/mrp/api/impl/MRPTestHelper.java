@@ -24,6 +24,7 @@ import de.metas.material.replenish.ReplenishInfoRepository;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.organization.OrgInfoUpdateRequest;
+import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.uom.CreateUOMConversionRequest;
 import de.metas.uom.IUOMConversionDAO;
@@ -63,8 +64,10 @@ import org.compiere.util.TimeUtil;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.api.PPOrderDocBaseType;
+import org.eevolution.api.impl.ProductBOMVersionsDAO;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Product_BOM;
+import org.eevolution.model.I_PP_Product_BOMVersions;
 import org.eevolution.util.DDNetworkBuilder;
 import org.eevolution.util.PPProductPlanningBuilder;
 import org.eevolution.util.ProductBOMBuilder;
@@ -287,7 +290,8 @@ public class MRPTestHelper
 				postMaterialEventService,
 				new DocumentNoBuilderFactory(Optional.empty()),
 				new PPOrderBOMBL(),
-				new DDOrderLowLevelService(new DDOrderLowLevelDAO()));
+				new DDOrderLowLevelService(new DDOrderLowLevelDAO()),
+				new ProductBOMVersionsDAO());
 	}
 
 	public Timestamp getToday()
@@ -605,6 +609,15 @@ public class MRPTestHelper
 		Services.get(IPPOrderDAO.class).save(ppOrder);
 
 		return ppOrder;
+	}
+
+	public I_PP_Product_BOMVersions createBOMVersions(final ProductId productId)
+	{
+		final I_PP_Product_BOMVersions bomVersions = InterfaceWrapperHelper.newInstance(I_PP_Product_BOMVersions.class, contextProvider);
+		bomVersions.setM_Product_ID(productId.getRepoId());
+		bomVersions.setName("BOM Versions");
+		InterfaceWrapperHelper.save(bomVersions);
+		return bomVersions;
 	}
 
 	private void setCommonProperties(final I_PP_Order ppOrder)

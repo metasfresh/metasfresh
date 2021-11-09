@@ -137,7 +137,6 @@ public class CreateSalesOrderFromProposalCommand
 			final I_C_OrderLine fromProposalLine = InterfaceWrapperHelper.create(from, I_C_OrderLine.class);
 
 			newSalesOrderLine.setRef_ProposalLine_ID(fromProposalLine.getC_OrderLine_ID());
-			orderDAO.save(newSalesOrderLine);
 		}
 	}
 

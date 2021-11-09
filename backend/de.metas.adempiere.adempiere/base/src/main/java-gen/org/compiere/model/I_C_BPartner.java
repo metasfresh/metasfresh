@@ -1160,6 +1160,29 @@ public interface I_C_BPartner
 	String COLUMNNAME_HaddexControlNr = "HaddexControlNr";
 
 	/**
+	 * Set Internal Name.
+	 * Generally used to give records a name that can be safely referenced from code.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setInternalName (@Nullable java.lang.String InternalName);
+
+	/**
+	 * Get Internal Name.
+	 * Generally used to give records a name that can be safely referenced from code.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getInternalName();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_InternalName = new ModelColumn<>(I_C_BPartner.class, "InternalName", null);
+	String COLUMNNAME_InternalName = "InternalName";
+
+	/**
 	 * Set Druckformat Rechnung.
 	 * Print Format for printing Invoices
 	 *

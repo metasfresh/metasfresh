@@ -33,5 +33,7 @@ public interface IRequestTypeDAO extends ISingletonService
 
 	RequestTypeId retrieveOrgChangeRequestTypeId();
 
+	RequestTypeId retrieveBPartnerCreatedFromAnotherOrgRequestTypeId();
+
 	RequestTypeId retrieveDefaultRequestTypeIdOrFirstActive();
 }

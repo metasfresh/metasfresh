@@ -24,6 +24,7 @@ package de.metas.camel.externalsystems.core.restapi.auth;
 
 import com.sun.istack.NotNull;
 import de.metas.camel.externalsystems.common.RestServiceRoutes;
+import org.apache.camel.ProducerTemplate;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -39,10 +40,14 @@ import org.springframework.security.web.authentication.www.BasicAuthenticationFi
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter
 {
 	private final TokenAuthProvider tokenAuthProvider;
+	private final ProducerTemplate producerTemplate;
 
-	public WebSecurityConfig(@NotNull final TokenAuthProvider tokenAuthProvider)
+	public WebSecurityConfig(
+			@NotNull final TokenAuthProvider tokenAuthProvider,
+			@NotNull final ProducerTemplate producerTemplate)
 	{
 		this.tokenAuthProvider = tokenAuthProvider;
+		this.producerTemplate = producerTemplate;
 	}
 
 	@Override
@@ -60,6 +65,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter
 		//@formatter:on
 
 		http.addFilterBefore(new AuthenticationFilter(authenticationManager()), BasicAuthenticationFilter.class);
+		http.addFilterAfter(new AuditTrailFilter(producerTemplate), AuthenticationFilter.class);
 	}
 
 	@Bean

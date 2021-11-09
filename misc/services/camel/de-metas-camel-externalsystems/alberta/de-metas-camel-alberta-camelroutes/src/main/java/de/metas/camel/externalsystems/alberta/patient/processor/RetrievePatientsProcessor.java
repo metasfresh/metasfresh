@@ -22,10 +22,10 @@
 
 package de.metas.camel.externalsystems.alberta.patient.processor;
 
-import de.metas.camel.externalsystems.alberta.ProcessorHelper;
 import de.metas.camel.externalsystems.alberta.common.AlbertaConnectionDetails;
 import de.metas.camel.externalsystems.alberta.patient.GetPatientsRouteConstants;
 import de.metas.camel.externalsystems.alberta.patient.GetPatientsRouteContext;
+import de.metas.camel.externalsystems.common.ProcessorHelper;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import io.swagger.client.ApiException;
 import io.swagger.client.api.PatientApi;

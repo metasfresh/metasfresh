@@ -42,8 +42,8 @@ import de.metas.order.IOrderLineBL;
 import de.metas.order.IOrderLinePricingConditions;
 import de.metas.order.OrderId;
 import de.metas.order.impl.OrderLineDetailRepository;
-import de.metas.organization.IOrgDAO;
 import de.metas.order.location.OrderLocationsUpdater;
+import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.api.IPaymentDAO;
@@ -213,7 +213,7 @@ public class C_Order
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = { I_C_Order.COLUMNNAME_C_BPartner_ID })
 	public void setDeliveryViaRule(final I_C_Order order)
 	{
-		final DeliveryViaRule deliveryViaRule = orderBL.evaluateOrderDeliveryViaRule(order);
+		final DeliveryViaRule deliveryViaRule = orderBL.findDeliveryViaRule(order).orElse(null);
 
 		if (deliveryViaRule != null)
 		{
@@ -476,6 +476,26 @@ public class C_Order
 	public void validateSupplierApprovalsOnChange(final I_C_Order order)
 	{
 		validateSupplierApprovals(order);
+	}
+
+	@ModelChange(timings = {
+			ModelValidator.TYPE_BEFORE_CHANGE
+	}, ifColumnsChanged = I_C_Order.COLUMNNAME_DatePromised )
+	public void updateOrderLineFromContract(final I_C_Order order)
+	{
+		orderDAO.retrieveOrderLines(order)
+				.stream()
+				.filter(line -> line.getC_Flatrate_Conditions_ID() > 0)
+				.forEach(orderLineBL::updatePrices);
+	}
+
+	@DocValidate(timings = ModelValidator.TIMING_BEFORE_VOID )
+	public void validateVoidActionForMediatedOrder(final I_C_Order order)
+	{
+		if (orderBL.isMediated(order))
+		{
+			throw new AdempiereException("'Void' action is not permitted for mediated orders!");
+		}
 	}
 
 	private void validateSupplierApprovals(final I_C_Order order)

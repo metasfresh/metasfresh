@@ -30,7 +30,7 @@ import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.product.ProductId;
-import de.metas.ui.web.handlingunits.HUIdsFilterHelper;
+import de.metas.ui.web.handlingunits.filter.HUIdsFilterHelper;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IView;

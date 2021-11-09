@@ -17,6 +17,7 @@ import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.service.ClientId;
 import org.compiere.util.Env;
+import org.compiere.util.KeyNamePair;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -199,11 +200,11 @@ public interface IUserRolePermissions
 
 	boolean isCanReport(int AD_Table_ID);
 
-	boolean isOrgAccess(OrgId OrgId, Access access);
+	boolean isOrgAccess(OrgId OrgId, String tableName, Access access);
 
 	String getClientWhere(@Nullable String tableName, @Nullable String tableAlias, Access access);
 
-	String getOrgWhere(@Nullable String tableName, Access access);
+	Optional<String> getOrgWhere(@Nullable String tableName, Access access);
 
 	String getAD_Org_IDs_AsString();
 

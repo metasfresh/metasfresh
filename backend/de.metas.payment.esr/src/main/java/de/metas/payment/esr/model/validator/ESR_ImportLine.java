@@ -101,7 +101,7 @@ public class ESR_ImportLine
 		{
 			if (invoice.getC_BPartner_ID() != esrImportLine.getC_BPartner_ID())
 			{
-				esrImportLine.setC_Invoice(null);
+				esrImportLine.setC_Invoice_ID(-1);
 			}
 
 			// In case the bpartner was unset then set again to the same value, there's nothing to do

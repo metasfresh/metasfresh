@@ -5,6 +5,8 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.document.dimension.DimensionFactory;
 import de.metas.document.dimension.DimensionService;
 import de.metas.document.dimension.MDCandidateDimensionFactory;
+import de.metas.material.cockpit.view.ddorderdetail.DDOrderDetailRequestHandler;
+import de.metas.material.cockpit.view.mainrecord.MainDataRequestHandler;
 import de.metas.material.dispo.commons.RequestMaterialOrderService;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
@@ -132,7 +134,9 @@ public class SupplyProposalEvaluatorTests
 				candidateRepositoryCommands,
 				candidateChangeHandler,
 				supplyProposalEvaluator,
-				new RequestMaterialOrderService(candidateRepositoryRetrieval, postMaterialEventService));
+				new RequestMaterialOrderService(candidateRepositoryRetrieval, postMaterialEventService),
+				new DDOrderDetailRequestHandler(),
+				new MainDataRequestHandler());
 	}
 
 	/**

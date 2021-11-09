@@ -65,11 +65,13 @@ public interface SqlDocumentFilterConverter
 	{
 		if (filters.isEmpty())
 		{
-			return FilterSql.NULL;
+			return FilterSql.ALLOW_ALL;
 		}
 
 		final SqlAndParams.Builder whereClauseBuilder = SqlAndParams.builder();
+		boolean whereClauseAllowNone = false;
 		final HashSet<FilterSql.FullTextSearchResult> filterByFTS = new HashSet<>();
+		final HashSet<FilterSql.RecordsToAlwaysIncludeSql> alwaysIncludeSqls = new HashSet<>();
 		final SqlAndParams.Builder orderByBuilder = SqlAndParams.builder();
 
 		for (final DocumentFilter filter : filters.toList())
@@ -82,34 +84,46 @@ public interface SqlDocumentFilterConverter
 
 			//
 			// Where Clause
-			//noinspection StatementWithEmptyBody
-			if (filterSql.isAllowAll())
+			if (!whereClauseAllowNone)
 			{
-				// no where clause to be added
-			}
-			else if (filterSql.isAllowNone())
-			{
-				return FilterSql.ALLOW_NONE;
-			}
-			else
-			{
-				if (filterSql.getWhereClause() != null && !filterSql.getWhereClause().isEmpty())
+				final SqlAndParams filterWhereClause = filterSql.getWhereClause();
+				if (filterWhereClause != null && !filterWhereClause.isEmpty())
 				{
-					if (!whereClauseBuilder.isEmpty())
+					// Got and ALLOW NONE where clause
+					if (SqlAndParams.equals(filterWhereClause, FilterSql.ALLOW_NONE.getWhereClause()))
 					{
-						whereClauseBuilder.append("\n AND ");
+						whereClauseAllowNone = true;
+						whereClauseBuilder.clear();
+						// NOTE: we cleared the code from all other filters because it makes no sense.
+						// bellow we will add the SQL code for this filter together with the filterId and sql comment if any.
+						// this will be the only filter that we will keep in the resulting where clause.
+
+						filterByFTS.clear();
 					}
-					whereClauseBuilder.append(DB.TO_COMMENT(filter.getFilterId()))
+
+					whereClauseBuilder
+							.appendIfNotEmpty("\n AND ")
+							.append(DB.TO_COMMENT(filter.getFilterId()))
 							.append(filterSql.getSqlComment() != null ? DB.TO_COMMENT(filterSql.getSqlComment()) : "")
-							.append(" (").append(filterSql.getWhereClause()).append(")");
+							.append(" (").append(filterWhereClause).append(")");
 				}
 			}
 
 			//
 			// Full Text Search
-			if (filterSql.getFilterByFTS() != null)
+			if (!whereClauseAllowNone)
 			{
-				filterByFTS.add(filterSql.getFilterByFTS());
+				if (filterSql.getFilterByFTS() != null)
+				{
+					filterByFTS.add(filterSql.getFilterByFTS());
+				}
+			}
+
+			//
+			// Always Include SQLs
+			if (filterSql.getAlwaysIncludeSql() != null)
+			{
+				alwaysIncludeSqls.add(filterSql.getAlwaysIncludeSql());
 			}
 
 			//
@@ -124,11 +138,21 @@ public interface SqlDocumentFilterConverter
 			}
 		}
 
-		return FilterSql.builder()
-				.whereClause(!whereClauseBuilder.isEmpty() ? whereClauseBuilder.build() : null)
-				.filterByFTS(CollectionUtils.emptyOrSingleElement(filterByFTS))
-				.orderBy(!orderByBuilder.isEmpty() ? orderByBuilder.build() : null)
-				.build();
+		//
+		// Allow NONE
+		if (whereClauseAllowNone && alwaysIncludeSqls.isEmpty())
+		{
+			return FilterSql.ALLOW_NONE;
+		}
+		else
+		{
+			return FilterSql.builder()
+					.whereClause(!whereClauseBuilder.isEmpty() ? whereClauseBuilder.build() : null)
+					.filterByFTS(CollectionUtils.emptyOrSingleElement(filterByFTS))
+					.alwaysIncludeSql(FilterSql.RecordsToAlwaysIncludeSql.mergeOrNull(alwaysIncludeSqls))
+					.orderBy(!orderByBuilder.isEmpty() ? orderByBuilder.build() : null)
+					.build();
+		}
 	}
 
 	default <T> IQueryFilter<T> createQueryFilter(
@@ -137,6 +161,6 @@ public interface SqlDocumentFilterConverter
 			@NonNull final SqlDocumentFilterConverterContext context)
 	{
 		return getSql(filters, sqlOpts, context)
-				.toQueryFilterOrAllowAll();
+				.toQueryFilterOrAllowAll(sqlOpts);
 	}
 }

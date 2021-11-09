@@ -1,6 +1,8 @@
 package de.metas.manufacturing.job;
 
 import de.metas.dao.ValueRestriction;
+import de.metas.handlingunits.reservation.HUReservationService;
+import de.metas.manufacturing.order.PPOrderIssueScheduleRepository;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.InstantAndOrgId;
@@ -10,8 +12,9 @@ import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
-import org.adempiere.exceptions.AdempiereException;
-import org.eevolution.api.IPPOrderDAO;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.warehouse.api.IWarehouseBL;
+import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.IPPOrderRoutingRepository;
 import org.eevolution.api.ManufacturingOrderQuery;
 import org.eevolution.api.PPOrderId;
@@ -26,25 +29,35 @@ import java.util.stream.Stream;
 @Service
 public class ManufacturingJobService
 {
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-	private final IPPOrderDAO ppOrderDAO;
+	private final IPPOrderBL ppOrderBL;
 	private final IPPOrderRoutingRepository ppOrderRoutingActivity;
+	private final PPOrderIssueScheduleRepository ppOrderIssueScheduleRepository;
+	private final HUReservationService huReservationService;
 	private final ManufacturingJobLoaderSupportingServices loadingSupportServices;
 
-	public ManufacturingJobService()
+	public ManufacturingJobService(
+			final PPOrderIssueScheduleRepository ppOrderIssueScheduleRepository,
+			final HUReservationService huReservationService)
 	{
+		this.ppOrderIssueScheduleRepository = ppOrderIssueScheduleRepository;
+
 		this.loadingSupportServices = ManufacturingJobLoaderSupportingServices.builder()
+				.warehouseBL(Services.get(IWarehouseBL.class))
 				.productBL(Services.get(IProductBL.class))
-				.ppOrderDAO(ppOrderDAO = Services.get(IPPOrderDAO.class))
+				.ppOrderBL(ppOrderBL = Services.get(IPPOrderBL.class))
 				.ppOrderBOMBL(Services.get(IPPOrderBOMBL.class))
 				.ppOrderRoutingRepository(ppOrderRoutingActivity = Services.get(IPPOrderRoutingRepository.class))
+				.ppOrderIssueScheduleRepository(ppOrderIssueScheduleRepository)
 				.build();
+		this.huReservationService = huReservationService;
 	}
 
-	public ManufacturingJob getJobById(final PPOrderId ppOrderId)
-	{
-		return newLoader().load(ppOrderId);
-	}
+	public ManufacturingJob getJobById(final PPOrderId ppOrderId) {return newLoader().load(ppOrderId);}
+
+	@NonNull
+	private ManufacturingJobLoader newLoader() {return new ManufacturingJobLoader(loadingSupportServices);}
 
 	public Stream<ManufacturingJobReference> streamJobReferencesForUser(
 			final @NonNull UserId responsibleId,
@@ -71,7 +84,7 @@ public class ManufacturingJobService
 
 	private Stream<ManufacturingJobReference> streamAlreadyStartedJobs(@NonNull final UserId responsibleId)
 	{
-		return ppOrderDAO.streamManufacturingOrders(ManufacturingOrderQuery.builder()
+		return ppOrderBL.streamManufacturingOrders(ManufacturingOrderQuery.builder()
 						.onlyCompleted(true)
 						.responsibleId(ValueRestriction.equalsTo(responsibleId))
 						.build())
@@ -80,7 +93,7 @@ public class ManufacturingJobService
 
 	private Stream<ManufacturingJobReference> streamJobCandidatesToCreate()
 	{
-		return ppOrderDAO.streamManufacturingOrders(ManufacturingOrderQuery.builder()
+		return ppOrderBL.streamManufacturingOrders(ManufacturingOrderQuery.builder()
 						.onlyCompleted(true)
 						.responsibleId(ValueRestriction.isNull())
 						.build())
@@ -101,38 +114,17 @@ public class ManufacturingJobService
 
 	public ManufacturingJob createJob(final PPOrderId ppOrderId, final UserId responsibleId)
 	{
-		final I_PP_Order ppOrder = ppOrderDAO.getById(ppOrderId);
-
-		setResponsible(ppOrder, responsibleId);
-
-		return newLoader()
-				.addToCache(ppOrder)
-				.load(ppOrderId);
-	}
-
-	private void setResponsible(@NonNull final I_PP_Order ppOrder, @NonNull final UserId responsibleId)
-	{
-		final UserId previousResponsibleId = UserId.ofRepoIdOrNullIfSystem(ppOrder.getAD_User_Responsible_ID());
-		if (UserId.equals(previousResponsibleId, responsibleId))
-		{
-			//noinspection UnnecessaryReturnStatement
-			return;
-		}
-		else if (previousResponsibleId != null)
-		{
-			throw new AdempiereException("Order is already assigned");
-		}
-		else
-		{
-			ppOrder.setAD_User_Responsible_ID(responsibleId.getRepoId());
-			ppOrderDAO.save(ppOrder);
-		}
-	}
-
-	@NonNull
-	private ManufacturingJobLoader newLoader()
-	{
-		return new ManufacturingJobLoader(loadingSupportServices);
+		return ManufacturingJobCreateCommand.builder()
+				.trxManager(trxManager)
+				.ppOrderBL(ppOrderBL)
+				.huReservationService(huReservationService)
+				.orderIssueScheduleRepository(ppOrderIssueScheduleRepository)
+				.loadingSupportServices(loadingSupportServices)
+				//
+				.ppOrderId(ppOrderId)
+				.responsibleId(responsibleId)
+				.build()
+				.execute();
 	}
 
 	public ManufacturingJob withActivityCompleted(ManufacturingJob job, ManufacturingJobActivityId jobActivityId)

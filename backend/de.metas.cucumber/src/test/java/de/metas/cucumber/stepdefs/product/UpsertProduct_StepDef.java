@@ -285,7 +285,7 @@ public class UpsertProduct_StepDef
 		final String code = DataTableUtil.extractStringOrNullForColumnName(dataTableEntries, "Code");
 		final String name = DataTableUtil.extractStringForColumnName(dataTableEntries, "Name");
 		final String type = DataTableUtil.extractStringOrNullForColumnName(dataTableEntries, "Type");
-		final String UOMCode = DataTableUtil.extractStringOrNullForColumnName(dataTableEntries, "uomCode");
+		final String UOMCode = DataTableUtil.extractStringOrNullForColumnName(dataTableEntries, "UomCode");
 		final String ean = DataTableUtil.extractStringOrNullForColumnName(dataTableEntries, "OPT.EAN");
 		final String gtin = DataTableUtil.extractStringOrNullForColumnName(dataTableEntries, "OPT.GTIN");
 		final String description = DataTableUtil.extractStringOrNullForColumnName(dataTableEntries, "OPT.Description");

@@ -96,6 +96,7 @@ import org.compiere.model.I_C_BP_Relation;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
+import org.compiere.model.X_C_BP_Relation;
 import org.compiere.model.X_C_Location;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -954,6 +955,7 @@ public class BPartnerDAO implements IBPartnerDAO
 				.anyMatch(bpartnerLocation -> bpartnerLocation.getC_BPartner_Location_ID() != excludeBPLocationId);
 	}
 
+	@Nullable
 	@Override
 	public I_C_BP_Relation retrieveBillBPartnerRelationFirstEncountered(final Object contextProvider, final I_C_BPartner partner, final I_C_BPartner_Location location)
 	{
@@ -992,7 +994,7 @@ public class BPartnerDAO implements IBPartnerDAO
 
 		return query.first(I_C_BP_Relation.class);
 	}
-
+	
 	@Nullable
 	@Override
 	@Cached(cacheName = I_C_BPartner_Location.Table_Name + "#by#" + I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID + "#" + I_C_BPartner_Location.COLUMNNAME_IsBillToDefault)
@@ -1044,6 +1046,7 @@ public class BPartnerDAO implements IBPartnerDAO
 		return null;
 	}
 
+	@Nullable
 	@Override
 	public I_C_BPartner_Location retrieveShipToLocation(
 			final Properties ctx,
@@ -1323,7 +1326,7 @@ public class BPartnerDAO implements IBPartnerDAO
 				.build();
 	}
 
-	private String getFilterColumnNameForType(BPartnerLocationQuery.Type type)
+	private String getFilterColumnNameForType(final BPartnerLocationQuery.Type type)
 	{
 		switch (type)
 		{
@@ -1583,6 +1586,7 @@ public class BPartnerDAO implements IBPartnerDAO
 		return path;
 	}
 
+	@Nullable
 	private BPartnerId getParentIdInTrx(@NonNull final BPartnerId bpartnerId)
 	{
 		return queryBL
@@ -1865,6 +1869,25 @@ public class BPartnerDAO implements IBPartnerDAO
 				.addInArrayFilter(I_C_BPartner.COLUMNNAME_C_BPartner_ID, bpartnerIds)
 				.create()
 				.list();
+	}
+
+	@Override
+	public BPartnerLocationId getCurrentLocation(final BPartnerLocationId locationId)
+	{
+		int currentLocationId = locationId.getRepoId();
+		int previousLocationId = currentLocationId;
+		while (currentLocationId > 0)
+		{
+			currentLocationId = queryBL.createQueryBuilder(I_C_BPartner_Location.class)
+					.addEqualsFilter(I_C_BPartner_Location.COLUMNNAME_Previous_ID, currentLocationId)
+					.create()
+					.firstIdOnly();
+			if (currentLocationId > 0)
+			{
+				previousLocationId = currentLocationId;
+			}
+		}
+		return BPartnerLocationId.ofRepoId(locationId.getBpartnerId(),previousLocationId);
 	}
 
 	@Override

@@ -1,35 +1,12 @@
 package de.metas.payment.esr;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-/*
- * #%L
- * de.metas.payment.esr
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import org.adempiere.ad.validationRule.impl.PlainValidationContext;
-import org.compiere.util.NamePair;
-
 import de.metas.payment.esr.model.I_ESR_ImportLine;
 import de.metas.payment.esr.validationRule.ESRPaymentActionValidationRule;
 import de.metas.util.Check;
+import org.adempiere.ad.validationRule.impl.PlainValidationContext;
+import org.compiere.util.NamePair;
+
+import static org.assertj.core.api.Assertions.*;
 
 public final class ESRValidationRuleTools
 {
@@ -72,8 +49,7 @@ public final class ESRValidationRuleTools
 	}
 
 	/**
-	 *
-	 * @param action may not be {@code null}.
+	 * @param action             may not be {@code null}.
 	 * @param plainValidationCtx
 	 * @return
 	 */
@@ -87,8 +63,7 @@ public final class ESRValidationRuleTools
 	}
 
 	/**
-	 *
-	 * @param action may not be {@code null}.
+	 * @param action     may not be {@code null}.
 	 * @param importLine
 	 * @return
 	 */

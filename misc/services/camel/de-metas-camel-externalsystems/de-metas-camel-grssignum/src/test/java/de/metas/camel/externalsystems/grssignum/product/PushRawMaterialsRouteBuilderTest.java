@@ -103,7 +103,7 @@ public class PushRawMaterialsRouteBuilderTest extends CamelTestSupport
 	}
 
 	@Test
-	void pushBPartner() throws Exception
+	void upsertRawMaterials() throws Exception
 	{
 		//given
 		final TokenCredentials tokenCredentials = TokenCredentials.builder()

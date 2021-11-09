@@ -2,6 +2,7 @@ package de.metas.attachments;
 
 import com.google.common.base.Preconditions;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.CreatedUpdatedInfo;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Singular;
@@ -17,7 +18,6 @@ import java.net.URI;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -49,6 +49,8 @@ public class AttachmentEntry
 
 	Map<TableRecordReference, String> linkedRecord2AttachmentName;
 
+	CreatedUpdatedInfo createdUpdatedInfo;
+	
 	@lombok.Builder(toBuilder = true)
 	private AttachmentEntry(
 			@Nullable final AttachmentEntryId id,
@@ -59,7 +61,8 @@ public class AttachmentEntry
 			@Nullable final URI url,
 			@Nullable final AttachmentTags tags,
 			@Singular final Set<TableRecordReference> linkedRecords,
-			@Nullable final Map<TableRecordReference, String> linkedRecord2AttachmentName)
+			@Nullable final Map<TableRecordReference, String> linkedRecord2AttachmentName,
+			@NonNull final CreatedUpdatedInfo createdUpdatedInfo)
 	{
 		this.id = id;
 		this.name = name == null ? "?" : name;
@@ -70,6 +73,8 @@ public class AttachmentEntry
 
 		this.linkedRecords = linkedRecords;
 		this.linkedRecord2AttachmentName = linkedRecord2AttachmentName;
+		
+		this.createdUpdatedInfo=createdUpdatedInfo;
 
 		if (type == Type.Data)
 		{
@@ -89,9 +94,7 @@ public class AttachmentEntry
 
 	public String toStringX()
 	{
-		final StringBuilder sb = new StringBuilder(getName());
-		sb.append(" - ").append(getMimeType());
-		return sb.toString();
+		return getName() + " - " + getMimeType();
 	}
 
 	public boolean isPDF()

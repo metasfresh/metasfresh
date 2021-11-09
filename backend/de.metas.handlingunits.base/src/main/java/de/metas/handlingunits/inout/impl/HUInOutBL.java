@@ -435,7 +435,7 @@ public class HUInOutBL implements IHUInOutBL
 			return true;
 		}
 		final ImmutableSet<HuId> topLevelHUs = handlingUnitsBL.getTopLevelHUs(huIds);
-		return !handlingUnitsBL.createHUQueryBuilder().addOnlyHUIds(HuId.toRepoIds(topLevelHUs))
+		return !handlingUnitsBL.createHUQueryBuilder().addOnlyHUIds(topLevelHUs)
 				.addHUStatusToInclude(X_M_HU.HUSTATUS_Planning)
 				.addOnlyWithAttribute(AttributeConstants.ATTR_SerialNo, serialNoAttr.getValue())
 				.createQueryBuilder()

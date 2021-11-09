@@ -28,4 +28,6 @@ public interface GRSSignumConstants
 
 	String JSON_PROPERTY_FLAG = "FLAG";
 	String DEFAULT_UOM_CODE = "KGM";
+
+	String ROUTE_PROPERTY_PUSH_BOMs_CONTEXT = "PushBOMsRouteContext";
 }

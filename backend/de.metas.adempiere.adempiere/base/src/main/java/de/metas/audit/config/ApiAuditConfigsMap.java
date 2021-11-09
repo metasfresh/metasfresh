@@ -3,6 +3,8 @@ package de.metas.audit.config;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+import de.metas.audit.apirequest.config.ApiAuditConfig;
+import de.metas.audit.apirequest.config.ApiAuditConfigId;
 import de.metas.organization.OrgId;
 import lombok.NonNull;
 import lombok.ToString;
@@ -11,7 +13,7 @@ import org.adempiere.exceptions.AdempiereException;
 import java.util.List;
 
 @ToString
-final class ApiAuditConfigsMap
+public final class ApiAuditConfigsMap
 {
 	public static ApiAuditConfigsMap ofList(@NonNull final List<ApiAuditConfig> list)
 	{

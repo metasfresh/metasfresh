@@ -21,6 +21,7 @@ const Checkbox = (props) => {
     filterWidget,
     isFilterActive,
     updateItems,
+    isEdited,
   } = props;
   let { value, defaultValue } = widgetData;
   const prevValue = usePrevious(value);
@@ -46,6 +47,11 @@ const Checkbox = (props) => {
     // application (ex modal)
     if (!initialRender && !updateItems) {
       setInitialRender(true);
+    }
+
+    // only valid for checkboxes in tabs
+    if (isChanged && value !== prevValue && initialRender && isEdited) {
+      setChanged(false);
     }
 
     // if widget's value changed without user triggering it, update the local state as it
@@ -85,8 +91,13 @@ const Checkbox = (props) => {
     !isFilterActive &&
       updateItems &&
       updateItems({ widgetField, value: !checkedState });
+
     handlePatch(widgetField, newCheckedState, id).then(() => {
-      setChanged(false);
+      // in case of checkboxes in tabs we will always get a websocket request, which ras break
+      // the current state. So don't change it until next render
+      if (!isEdited) {
+        setChanged(false);
+      }
     });
   };
 
@@ -144,7 +155,8 @@ const Checkbox = (props) => {
  * @prop {func} [handlePatch]
  * @prop {string} [widgetField]
  * @prop {string|number} [id]
- * @todo Check props. Which proptype? Required or optional?
+ * @prop {func} [updateItems] - function used for updating the filter items before having an active filter
+ * @prop {bool} [isEdited] - this flag is set only for checkboxes in Tabs
  */
 Checkbox.propTypes = {
   widgetData: PropTypes.object.isRequired,
@@ -157,6 +169,7 @@ Checkbox.propTypes = {
   isFilterActive: PropTypes.bool,
   id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   updateItems: PropTypes.func, // function used for updating the filter items before having an active filter
+  isEdited: PropTypes.bool,
 };
 
 export default Checkbox;
