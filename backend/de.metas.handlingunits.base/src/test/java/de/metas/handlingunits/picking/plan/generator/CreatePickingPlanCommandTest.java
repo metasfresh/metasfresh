@@ -22,6 +22,7 @@ import de.metas.organization.OrgId;
 import de.metas.picking.api.Packageable;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.test.SnapshotFunctionFactory;
 import de.metas.user.UserRepository;
 import lombok.Builder;
 import lombok.NonNull;
@@ -64,10 +65,7 @@ class CreatePickingPlanCommandTest
 	private final OrderAndLineId salesOrderAndLineId = OrderAndLineId.ofRepoIds(300, 301);
 
 	@BeforeAll
-	static void beforeAll()
-	{
-		start(AdempiereTestHelper.SNAPSHOT_CONFIG, AdempiereTestHelper.createSnapshotJsonFunction());
-	}
+	static void beforeAll() {start(AdempiereTestHelper.SNAPSHOT_CONFIG, SnapshotFunctionFactory.newFunction());}
 
 	@BeforeEach
 	void beforeEach()

@@ -122,5 +122,11 @@ public class PickingJobStep
 
 	public PickingJobStep reduceWithPickedEvent(@NonNull PickingJobStepPickedInfo picked) {return toBuilder().picked(picked).build();}
 
-	public PickingJobStep reduceWithUnpickEvent() {return toBuilder().picked(null).build();}
+	public PickingJobStep reduceWithUnpickEvent(@NonNull PickingJobStepUnpickInfo unpicked)
+	{
+		return toBuilder()
+				.pickFromHU(unpicked.getPickFromHU() != null ? unpicked.getPickFromHU() : this.pickFromHU)
+				.picked(null)
+				.build();
+	}
 }

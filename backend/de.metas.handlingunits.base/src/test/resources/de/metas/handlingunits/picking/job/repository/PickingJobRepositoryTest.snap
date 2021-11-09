@@ -1,77 +1,59 @@
 de.metas.handlingunits.picking.job.repository.PickingJobRepositoryTest.createNewAndGet_then_getById=[ {
-  "id" : 100002,
+  "docStatus" : "Drafted",
   "header" : {
-    "salesOrderDocumentNo" : "docno-2",
-    "preparationDate" : "2021-11-02T07:39:16Z",
     "customerName" : "bpname-3",
     "deliveryBPLocationId" : {
-      "repoId" : 4,
-      "bpartnerId" : 3
+      "bpartnerId" : 3,
+      "repoId" : 4
     },
     "deliveryRenderedAddress" : "deliveryRenderedAddress",
-    "lockedBy" : 5
+    "lockedBy" : 5,
+    "preparationDate" : "2021-11-02T07:39:16Z",
+    "salesOrderDocumentNo" : "docno-2"
   },
-  "pickingSlot" : null,
+  "id" : 100002,
   "lines" : [ {
     "id" : 100004,
     "productId" : 6,
-    "productName" : {
-      "ad_Languages" : [ ],
-      "defaultValue" : "productName-6"
-    },
+    "productName" : "productName-6",
+    "progress" : "NOT_STARTED",
+    "qtyPicked" : "0 Ea",
+    "qtyToPick" : "100 Ea",
     "steps" : [ {
       "id" : 100005,
+      "pickFromAlternativeIds" : [ 100003 ],
+      "pickFromHU" : {
+        "barcode" : "11",
+        "id" : 11
+      },
+      "pickFromLocator" : {
+        "caption" : "locatorName-10",
+        "id" : "9_10"
+      },
+      "picked" : null,
+      "productId" : 6,
+      "productName" : "productName-6",
+      "qtyToPick" : "100 Ea",
       "salesOrderAndLineId" : {
         "orderId" : 2,
         "orderLineId" : 8
       },
-      "shipmentScheduleId" : 7,
-      "productId" : 6,
-      "productName" : {
-        "ad_Languages" : [ ],
-        "defaultValue" : "productName-6"
-      },
-      "qtyToPick" : {
-        "qty" : "100",
-        "uomId" : 100001
-      },
-      "pickFromLocator" : {
-        "id" : "9_10",
-        "caption" : "locatorName-10"
-      },
-      "pickFromHU" : {
-        "id" : 11,
-        "barcode" : "11"
-      },
-      "pickFromAlternativeIds" : [ 100003 ],
-      "picked" : null
-    } ],
-    "qtyToPick" : {
-      "qty" : "100",
-      "uomId" : 100001
-    },
-    "qtyPicked" : {
-      "qty" : "0",
-      "uomId" : 100001
-    },
-    "progress" : "NOT_STARTED"
+      "shipmentScheduleId" : 7
+    } ]
   } ],
   "pickFromAlternatives" : [ {
     "id" : 100003,
     "locatorInfo" : {
-      "id" : "21_22",
-      "caption" : "locatorName-22"
+      "caption" : "locatorName-22",
+      "id" : "21_22"
     },
     "pickFromHU" : {
-      "id" : 1001,
-      "barcode" : "1001"
+      "barcode" : "1001",
+      "id" : 1001
     },
     "productId" : 6,
-    "qtyAvailable" : {
-      "qty" : "999",
-      "uomId" : 100001
-    }
+    "qtyAvailable" : "999 Ea"
   } ],
-  "docStatus" : "Drafted",
+  "pickingSlot" : null,
   "progress" : "NOT_STARTED"
 } ]

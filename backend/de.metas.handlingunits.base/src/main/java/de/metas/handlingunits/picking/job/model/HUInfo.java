@@ -12,4 +12,12 @@ public class HUInfo
 {
 	@NonNull HuId id;
 	@NonNull HUBarcode barcode;
+
+	public static HUInfo ofHuId(@NonNull final HuId huId)
+	{
+		return builder()
+				.id(huId)
+				.barcode(HUBarcode.ofHuId(huId))
+				.build();
+	}
 }

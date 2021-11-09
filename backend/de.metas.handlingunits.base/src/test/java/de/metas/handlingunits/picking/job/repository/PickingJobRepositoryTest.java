@@ -12,6 +12,7 @@ import de.metas.organization.InstantAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.test.SnapshotFunctionFactory;
 import de.metas.user.UserId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.LocatorId;
@@ -38,10 +39,7 @@ class PickingJobRepositoryTest
 	private I_C_UOM uomEach;
 
 	@BeforeAll
-	static void beforeAll()
-	{
-		start(AdempiereTestHelper.SNAPSHOT_CONFIG, AdempiereTestHelper.createSnapshotJsonFunction());
-	}
+	static void beforeAll() {start(AdempiereTestHelper.SNAPSHOT_CONFIG, SnapshotFunctionFactory.newFunction());}
 
 	@BeforeEach
 	void beforeEach()

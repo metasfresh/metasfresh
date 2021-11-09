@@ -64,7 +64,8 @@ public class PickingCandidate
 	private PickingCandidateApprovalStatus approvalStatus;
 
 	@NonNull
-	private final PickFrom pickFrom;
+	@Setter(AccessLevel.PRIVATE)
+	private PickFrom pickFrom;
 
 	@NonNull
 	private Quantity qtyPicked;
@@ -201,8 +202,14 @@ public class PickingCandidate
 		}
 	}
 
-	public void changeStatusToDraft()
+	public void changeStatusToDraft(final boolean usePackedHuIdAsPickFrom)
 	{
+		if (usePackedHuIdAsPickFrom)
+		{
+			final HuId packedToHuId = Objects.requireNonNull(getPackedToHuId());
+			setPickFrom(PickFrom.ofHuId(packedToHuId));
+		}
+		setPackedToHuId(null);
 		setProcessingStatus(PickingCandidateStatus.Draft);
 	}
 

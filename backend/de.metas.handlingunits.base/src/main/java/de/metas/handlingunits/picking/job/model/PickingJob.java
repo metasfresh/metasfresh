@@ -41,6 +41,7 @@ import org.adempiere.exceptions.AdempiereException;
 import javax.annotation.Nullable;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
@@ -182,7 +183,19 @@ public final class PickingJob
 		return withChangedLines(line -> line.withChangedStep(stepId, stepMapper));
 	}
 
-	public PickingJob withChangedSteps(final UnaryOperator<PickingJobStep> stepMapper)
+	public PickingJob withChangedSteps(
+			@NonNull final Set<PickingJobStepId> stepIds,
+			@NonNull final UnaryOperator<PickingJobStep> stepMapper)
+	{
+		if (stepIds.isEmpty())
+		{
+			return this;
+		}
+
+		return withChangedLines(line -> line.withChangedSteps(stepIds, stepMapper));
+	}
+
+	public PickingJob withChangedSteps(@NonNull final UnaryOperator<PickingJobStep> stepMapper)
 	{
 		return withChangedLines(line -> line.withChangedSteps(stepMapper));
 	}

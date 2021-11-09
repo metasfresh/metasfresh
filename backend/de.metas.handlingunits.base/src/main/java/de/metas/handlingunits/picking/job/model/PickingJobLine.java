@@ -37,6 +37,7 @@ import lombok.Value;
 
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
@@ -142,6 +143,16 @@ public class PickingJobLine
 	{
 		return withChangedSteps(
 				step -> PickingJobStepId.equals(step.getId(), stepId)
+						? stepMapper.apply(step)
+						: step);
+	}
+
+	public PickingJobLine withChangedSteps(
+			@NonNull final Set<PickingJobStepId> stepIds,
+			@NonNull final UnaryOperator<PickingJobStep> stepMapper)
+	{
+		return withChangedSteps(
+				step -> stepIds.contains(step.getId())
 						? stepMapper.apply(step)
 						: step);
 	}
