@@ -56,6 +56,7 @@ import java.util.stream.Stream;
 @Service
 public class StockRepository
 {
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	public BigDecimal getQtyOnHandForProductAndWarehouseIds(
 			@NonNull final ProductId productId,
@@ -236,7 +237,6 @@ public class StockRepository
 
 	private IQuery<I_MD_Stock> createStockDataItemQuery(@NonNull final StockDataQuery query)
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final IQueryBuilder<I_MD_Stock> queryBuilder = queryBL.createQueryBuilder(I_MD_Stock.class);
 
 		queryBuilder.addEqualsFilter(I_MD_Stock.COLUMN_M_Product_ID, query.getProductId());
