@@ -331,7 +331,10 @@ public class AdempiereTestHelper
 	 * Create JSON serialization function to be used by {@link SnapshotMatcher#start(SnapshotConfig, Function)}.
 	 * <p>
 	 * The function is using our {@link JsonObjectMapperHolder#newJsonObjectMapper()} with a pretty printer.
+	 *
+	 * @deprecated  Consider using de.metas.test.SnapshotFunctionFactory
 	 */
+	@Deprecated
 	public static Function<Object, String> createSnapshotJsonFunction()
 	{
 		final ObjectMapper jsonObjectMapper = JsonObjectMapperHolder.newJsonObjectMapper();
