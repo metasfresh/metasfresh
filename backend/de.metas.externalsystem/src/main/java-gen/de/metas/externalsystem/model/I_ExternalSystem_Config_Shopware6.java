@@ -5,16 +5,16 @@ import org.adempiere.model.ModelColumn;
 import javax.annotation.Nullable;
 
 /** Generated Interface for ExternalSystem_Config_Shopware6
- *  @author metasfresh (generated)
+ *  @author metasfresh (generated) 
  */
 @SuppressWarnings("unused")
-public interface I_ExternalSystem_Config_Shopware6
+public interface I_ExternalSystem_Config_Shopware6 
 {
 
 	String Table_Name = "ExternalSystem_Config_Shopware6";
 
-	//	/** AD_Table_ID=541585 */
-	//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=541585 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 
 	/**
@@ -189,19 +189,19 @@ public interface I_ExternalSystem_Config_Shopware6
 	 * Set Value.
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setExternalSystemValue (@Nullable java.lang.String ExternalSystemValue);
+	void setExternalSystemValue (java.lang.String ExternalSystemValue);
 
 	/**
 	 * Get Value.
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getExternalSystemValue();
+	java.lang.String getExternalSystemValue();
 
 	ModelColumn<I_ExternalSystem_Config_Shopware6, Object> COLUMN_ExternalSystemValue = new ModelColumn<>(I_ExternalSystem_Config_Shopware6.class, "ExternalSystemValue", null);
 	String COLUMNNAME_ExternalSystemValue = "ExternalSystemValue";

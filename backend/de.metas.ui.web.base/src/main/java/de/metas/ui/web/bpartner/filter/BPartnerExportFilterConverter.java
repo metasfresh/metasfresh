@@ -24,9 +24,9 @@ package de.metas.ui.web.bpartner.filter;
 
 import com.jgoodies.common.base.Objects;
 import de.metas.ui.web.document.filter.DocumentFilter;
+import de.metas.ui.web.document.filter.sql.FilterSql;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
-import de.metas.ui.web.document.filter.sql.SqlParamsCollector;
 import de.metas.ui.web.window.model.sql.SqlOptions;
 import de.metas.util.Check;
 import lombok.NonNull;
@@ -52,8 +52,7 @@ public class BPartnerExportFilterConverter implements SqlDocumentFilterConverter
 	}
 
 	@Override
-	public String getSql(
-			@NonNull final SqlParamsCollector ignored_sqlParamsOut,
+	public FilterSql getSql(
 			@NonNull final DocumentFilter filter,
 			@NonNull final SqlOptions sqlOpts,
 			final SqlDocumentFilterConverterContext ignored)
@@ -64,8 +63,9 @@ public class BPartnerExportFilterConverter implements SqlDocumentFilterConverter
 		Check.assumeNotEmpty(postalFrom, "PostalFrom not empty");
 		Check.assumeNotEmpty(postalTo, "PostalTo not empty");
 
-		return sqlOpts.getTableNameOrAlias() + "." + I_C_BPartner_Export.COLUMNNAME_Postal + " >= '" + postalFrom
-				+ "' AND " + sqlOpts.getTableNameOrAlias() + "." + I_C_BPartner_Export.COLUMNNAME_Postal
-				+ " <= '" + postalTo + "'";
+		return FilterSql.ofWhereClause(
+				sqlOpts.getTableNameOrAlias() + "." + I_C_BPartner_Export.COLUMNNAME_Postal + " >= '" + postalFrom
+						+ "' AND " + sqlOpts.getTableNameOrAlias() + "." + I_C_BPartner_Export.COLUMNNAME_Postal
+						+ " <= '" + postalTo + "'");
 	}
 }

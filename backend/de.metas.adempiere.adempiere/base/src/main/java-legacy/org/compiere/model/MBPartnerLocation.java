@@ -16,19 +16,10 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import java.sql.ResultSet;
-import java.util.List;
-import java.util.Properties;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.exceptions.FillMandatoryException;
-import org.adempiere.model.InterfaceWrapperHelper;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.location.CountryId;
 import de.metas.location.ICountryDAO;
 import de.metas.util.Check;
@@ -36,6 +27,14 @@ import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.FillMandatoryException;
+import org.adempiere.model.InterfaceWrapperHelper;
+
+import javax.annotation.Nullable;
+import java.sql.ResultSet;
+import java.util.List;
+import java.util.Properties;
 
 /**
  * Partner Location Model
@@ -43,10 +42,13 @@ import lombok.NonNull;
  * @author Jorg Janke
  * @version $Id: MBPartnerLocation.java,v 1.3 2006/07/30 00:51:03 jjanke Exp $
  */
-@SuppressWarnings("serial")
 public class MBPartnerLocation extends X_C_BPartner_Location
 {
-	public MBPartnerLocation(Properties ctx, int C_BPartner_Location_ID, String trxName)
+
+	private static final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private static final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+
+	public MBPartnerLocation(final Properties ctx, final int C_BPartner_Location_ID, final String trxName)
 	{
 		super(ctx, C_BPartner_Location_ID, trxName);
 		if (is_new())
@@ -61,7 +63,7 @@ public class MBPartnerLocation extends X_C_BPartner_Location
 	}
 
 	@Deprecated
-	public MBPartnerLocation(I_C_BPartner bp)
+	public MBPartnerLocation(final I_C_BPartner bp)
 	{
 		this(InterfaceWrapperHelper.getCtx(bp),
 				0,
@@ -71,7 +73,7 @@ public class MBPartnerLocation extends X_C_BPartner_Location
 		set_ValueNoCheck("C_BPartner_ID", bp.getC_BPartner_ID());
 	}
 
-	public MBPartnerLocation(Properties ctx, ResultSet rs, String trxName)
+	public MBPartnerLocation(final Properties ctx, final ResultSet rs, final String trxName)
 	{
 		super(ctx, rs, trxName);
 	}
@@ -79,15 +81,14 @@ public class MBPartnerLocation extends X_C_BPartner_Location
 	@Override
 	public String toString()
 	{
-		final StringBuilder sb = new StringBuilder("MBPartnerLocation[ID=").append(get_ID())
-				.append(",C_Location_ID=").append(getC_Location_ID())
-				.append(",Name=").append(getName())
-				.append("]");
-		return sb.toString();
+		return "MBPartnerLocation[ID=" + get_ID()
+				+ ",C_Location_ID=" + getC_Location_ID()
+				+ ",Name=" + getName()
+				+ "]";
 	}
 
 	@Override
-	protected boolean beforeSave(boolean newRecord)
+	protected boolean beforeSave(final boolean newRecord)
 	{
 		if (getC_Location_ID() <= 0)
 		{
@@ -97,10 +98,12 @@ public class MBPartnerLocation extends X_C_BPartner_Location
 		// Set New Name only if new record
 		if (newRecord)
 		{
+			final int cBPartnerId = getC_BPartner_ID();
 			setName(MakeUniqueNameCommand.builder()
 					.name(getName())
 					.address(getC_Location())
-					.existingNames(getOtherLocationNames(getC_BPartner_ID(), getC_BPartner_Location_ID()))
+					.companyName(bpartnerDAO.getBPartnerNameById(BPartnerId.ofRepoId(cBPartnerId)))
+					.existingNames(getOtherLocationNames(cBPartnerId, getC_BPartner_Location_ID()))
 					.maxLength(getPOInfo().getFieldLength(I_C_BPartner_Location.COLUMNNAME_Name))
 					.build()
 					.execute());
@@ -113,7 +116,7 @@ public class MBPartnerLocation extends X_C_BPartner_Location
 			final int bpartnerId,
 			final int bpartnerLocationIdToExclude)
 	{
-		return Services.get(IQueryBL.class)
+		return queryBL
 				.createQueryBuilder(I_C_BPartner_Location.class)
 				.addEqualsFilter(I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID, bpartnerId)
 				.addNotEqualsFilter(I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID, bpartnerLocationIdToExclude)
@@ -127,6 +130,7 @@ public class MBPartnerLocation extends X_C_BPartner_Location
 		private final ICountryDAO countriesRepo = Services.get(ICountryDAO.class);
 
 		private final String nameInitial;
+		private final String companyName;
 		private final I_C_Location address;
 		private final List<String> existingNames;
 		private final int maxLength;
@@ -134,10 +138,12 @@ public class MBPartnerLocation extends X_C_BPartner_Location
 		@Builder
 		private MakeUniqueNameCommand(
 				@Nullable final String name,
+				@Nullable final String companyName,
 				@NonNull final I_C_Location address,
 				@Nullable final List<String> existingNames,
 				final int maxLength)
 		{
+			this.companyName = companyName;
 			this.address = address;
 			this.existingNames = existingNames != null ? existingNames : ImmutableList.of();
 			this.maxLength = maxLength > 0 ? maxLength : Integer.MAX_VALUE;
@@ -167,22 +173,17 @@ public class MBPartnerLocation extends X_C_BPartner_Location
 
 			//
 			// City
-			{
-				defaultName = appendToName(defaultName, address.getCity());
-				if (isValidUniqueName(defaultName))
-				{
-					return defaultName;
-				}
-			}
+			defaultName = appendToName(defaultName, address.getCity());
 
 			//
 			// Address1
+			defaultName = appendToName(defaultName, address.getAddress1());
+
+			// Company Name
+			defaultName = appendToName(defaultName, companyName);
+			if (isValidUniqueName(defaultName))
 			{
-				defaultName = appendToName(defaultName, address.getAddress1());
-				if (isValidUniqueName(defaultName))
-				{
-					return defaultName;
-				}
+				return defaultName;
 			}
 
 			//

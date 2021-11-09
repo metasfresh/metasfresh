@@ -23,6 +23,8 @@ package de.metas.testsupport;
  */
 
 import de.metas.adempiere.model.I_M_Product;
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.impl.PlainCurrencyBL;
 import de.metas.util.Check;
@@ -195,18 +197,13 @@ public class AbstractTestSupport
 
 	/**
 	 * Gets/creates a BPartner with given Value
-	 *
-	 * @param bpValue
-	 * @return bpartner
 	 */
 	public I_C_BPartner bpartner(final String bpValue)
 	{
-		final POJOLookupMap db = POJOLookupMap.get();
-		I_C_BPartner bpartner = db.getFirstOnly(I_C_BPartner.class, pojo -> Objects.equals(pojo.getValue(), bpValue));
-
-		if (bpartner == null)
+		I_C_BPartner bpartner = Services.get(IBPartnerDAO.class).retrieveBPartnerByValue(Env.getCtx(), bpValue);
+ 		if (bpartner == null)
 		{
-			bpartner = db.newInstance(Env.getCtx(), I_C_BPartner.class);
+			bpartner = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
 			bpartner.setValue(bpValue);
 			bpartner.setName(bpValue);
 

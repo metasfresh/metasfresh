@@ -1,0 +1,39 @@
+{
+  "total": 1,
+  "data": [
+    {
+      "shippingMethodId": "shippingMethodId",
+      "shippingDateLatest": "2021-03-03T00:00:00.000+00:00",
+      "shippingOrderAddress": {
+        "countryId": "countryId",
+        "firstName": "firstName",
+        "lastName": "lastName",
+        "street": "ShippingAddressStreet",
+        "zipcode": "0000123",
+        "city": "Test City",
+        "phoneNumber": "phoneNumber",
+        "additionalAddressLine1": "additionalAddressLine1",
+        "additionalAddressLine2": "additionalAddressLine2",
+        "orderId": "orderId",
+        "versionId": "shippingAddressVersion_notUpToDate",
+        "createdAt": "2021-02-25T15:27:34.518+00:00",
+        "updatedAt": "2021-02-26T15:27:34.518+00:00",
+        "id": "shippingAddressId"
+      },
+      "shippingCosts": {
+        "unitPrice": 7.5,
+        "quantity": 1,
+        "totalPrice": 7.5,
+        "calculatedTaxes": [],
+        "taxRules": [],
+        "referencePrice": null,
+        "listPrice": null,
+        "extensions": [],
+        "apiAlias": "calculated_price"
+      },
+      "stateId": "notImportant",
+      "id": "deliveryId"
+    }
+  ],
+  "aggregations": []
+}

@@ -1,18 +1,20 @@
 package de.metas.inoutcandidate.model;
 
+import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for M_ReceiptSchedule_Alloc
  *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public interface I_M_ReceiptSchedule_Alloc 
 {
 
-    /** TableName=M_ReceiptSchedule_Alloc */
-    public static final String Table_Name = "M_ReceiptSchedule_Alloc";
+	String Table_Name = "M_ReceiptSchedule_Alloc";
 
-    /** AD_Table_ID=540530 */
-//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=540530 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 
 	/**
@@ -23,10 +25,9 @@ public interface I_M_ReceiptSchedule_Alloc
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Client_ID();
+	int getAD_Client_ID();
 
-    /** Column name AD_Client_ID */
-    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
 	 * Set Organisation.
@@ -36,7 +37,7 @@ public interface I_M_ReceiptSchedule_Alloc
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Org_ID (int AD_Org_ID);
+	void setAD_Org_ID (int AD_Org_ID);
 
 	/**
 	 * Get Organisation.
@@ -46,10 +47,9 @@ public interface I_M_ReceiptSchedule_Alloc
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Org_ID();
+	int getAD_Org_ID();
 
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
 	 * Set Catch UOM.
@@ -59,7 +59,7 @@ public interface I_M_ReceiptSchedule_Alloc
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setCatch_UOM_ID (int Catch_UOM_ID);
+	void setCatch_UOM_ID (int Catch_UOM_ID);
 
 	/**
 	 * Get Catch UOM.
@@ -69,10 +69,9 @@ public interface I_M_ReceiptSchedule_Alloc
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getCatch_UOM_ID();
+	int getCatch_UOM_ID();
 
-    /** Column name Catch_UOM_ID */
-    public static final String COLUMNNAME_Catch_UOM_ID = "Catch_UOM_ID";
+	String COLUMNNAME_Catch_UOM_ID = "Catch_UOM_ID";
 
 	/**
 	 * Get Created.
@@ -82,12 +81,10 @@ public interface I_M_ReceiptSchedule_Alloc
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getCreated();
+	java.sql.Timestamp getCreated();
 
-    /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_M_ReceiptSchedule_Alloc, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_M_ReceiptSchedule_Alloc, Object>(I_M_ReceiptSchedule_Alloc.class, "Created", null);
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
+	ModelColumn<I_M_ReceiptSchedule_Alloc, Object> COLUMN_Created = new ModelColumn<>(I_M_ReceiptSchedule_Alloc.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
 
 	/**
 	 * Get Created By.
@@ -97,10 +94,9 @@ public interface I_M_ReceiptSchedule_Alloc
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getCreatedBy();
+	int getCreatedBy();
 
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
 	 * Set Status.
@@ -111,7 +107,7 @@ public interface I_M_ReceiptSchedule_Alloc
 	 * @deprecated Please don't use it because this is a virtual column
 	 */
 	@Deprecated
-	public void setDocStatus (java.lang.String DocStatus);
+	void setDocStatus (@Nullable java.lang.String DocStatus);
 
 	/**
 	 * Get Status.
@@ -122,12 +118,10 @@ public interface I_M_ReceiptSchedule_Alloc
 	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
 	@Deprecated
-	public java.lang.String getDocStatus();
+	@Nullable java.lang.String getDocStatus();
 
-    /** Column definition for DocStatus */
-    public static final org.adempiere.model.ModelColumn<I_M_ReceiptSchedule_Alloc, Object> COLUMN_DocStatus = new org.adempiere.model.ModelColumn<I_M_ReceiptSchedule_Alloc, Object>(I_M_ReceiptSchedule_Alloc.class, "DocStatus", null);
-    /** Column name DocStatus */
-    public static final String COLUMNNAME_DocStatus = "DocStatus";
+	ModelColumn<I_M_ReceiptSchedule_Alloc, Object> COLUMN_DocStatus = new ModelColumn<>(I_M_ReceiptSchedule_Alloc.class, "DocStatus", null);
+	String COLUMNNAME_DocStatus = "DocStatus";
 
 	/**
 	 * Set Active.
@@ -137,7 +131,7 @@ public interface I_M_ReceiptSchedule_Alloc
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsActive (boolean IsActive);
+	void setIsActive (boolean IsActive);
 
 	/**
 	 * Get Active.
@@ -147,12 +141,10 @@ public interface I_M_ReceiptSchedule_Alloc
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isActive();
+	boolean isActive();
 
-    /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_M_ReceiptSchedule_Alloc, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_M_ReceiptSchedule_Alloc, Object>(I_M_ReceiptSchedule_Alloc.class, "IsActive", null);
-    /** Column name IsActive */
-    public static final String COLUMNNAME_IsActive = "IsActive";
+	ModelColumn<I_M_ReceiptSchedule_Alloc, Object> COLUMN_IsActive = new ModelColumn<>(I_M_ReceiptSchedule_Alloc.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
 	 * Set Shipment/ Receipt.
@@ -164,7 +156,7 @@ public interface I_M_ReceiptSchedule_Alloc
 	 * @deprecated Please don't use it because this is a virtual column
 	 */
 	@Deprecated
-	public void setM_InOut_ID (int M_InOut_ID);
+	void setM_InOut_ID (int M_InOut_ID);
 
 	/**
 	 * Get Shipment/ Receipt.
@@ -176,18 +168,16 @@ public interface I_M_ReceiptSchedule_Alloc
 	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
 	@Deprecated
-	public int getM_InOut_ID();
+	int getM_InOut_ID();
 
 	@Deprecated
-	public org.compiere.model.I_M_InOut getM_InOut();
+	@Nullable org.compiere.model.I_M_InOut getM_InOut();
 
 	@Deprecated
-	public void setM_InOut(org.compiere.model.I_M_InOut M_InOut);
+	void setM_InOut(@Nullable org.compiere.model.I_M_InOut M_InOut);
 
-    /** Column definition for M_InOut_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_ReceiptSchedule_Alloc, org.compiere.model.I_M_InOut> COLUMN_M_InOut_ID = new org.adempiere.model.ModelColumn<I_M_ReceiptSchedule_Alloc, org.compiere.model.I_M_InOut>(I_M_ReceiptSchedule_Alloc.class, "M_InOut_ID", org.compiere.model.I_M_InOut.class);
-    /** Column name M_InOut_ID */
-    public static final String COLUMNNAME_M_InOut_ID = "M_InOut_ID";
+	ModelColumn<I_M_ReceiptSchedule_Alloc, org.compiere.model.I_M_InOut> COLUMN_M_InOut_ID = new ModelColumn<>(I_M_ReceiptSchedule_Alloc.class, "M_InOut_ID", org.compiere.model.I_M_InOut.class);
+	String COLUMNNAME_M_InOut_ID = "M_InOut_ID";
 
 	/**
 	 * Set Receipt Line.
@@ -197,7 +187,7 @@ public interface I_M_ReceiptSchedule_Alloc
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setM_InOutLine_ID (int M_InOutLine_ID);
+	void setM_InOutLine_ID (int M_InOutLine_ID);
 
 	/**
 	 * Get Receipt Line.
@@ -207,16 +197,14 @@ public interface I_M_ReceiptSchedule_Alloc
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getM_InOutLine_ID();
+	int getM_InOutLine_ID();
 
-	public org.compiere.model.I_M_InOutLine getM_InOutLine();
+	@Nullable org.compiere.model.I_M_InOutLine getM_InOutLine();
 
-	public void setM_InOutLine(org.compiere.model.I_M_InOutLine M_InOutLine);
+	void setM_InOutLine(@Nullable org.compiere.model.I_M_InOutLine M_InOutLine);
 
-    /** Column definition for M_InOutLine_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_ReceiptSchedule_Alloc, org.compiere.model.I_M_InOutLine> COLUMN_M_InOutLine_ID = new org.adempiere.model.ModelColumn<I_M_ReceiptSchedule_Alloc, org.compiere.model.I_M_InOutLine>(I_M_ReceiptSchedule_Alloc.class, "M_InOutLine_ID", org.compiere.model.I_M_InOutLine.class);
-    /** Column name M_InOutLine_ID */
-    public static final String COLUMNNAME_M_InOutLine_ID = "M_InOutLine_ID";
+	ModelColumn<I_M_ReceiptSchedule_Alloc, org.compiere.model.I_M_InOutLine> COLUMN_M_InOutLine_ID = new ModelColumn<>(I_M_ReceiptSchedule_Alloc.class, "M_InOutLine_ID", org.compiere.model.I_M_InOutLine.class);
+	String COLUMNNAME_M_InOutLine_ID = "M_InOutLine_ID";
 
 	/**
 	 * Set Wareneingangsdispo - Wareneingangszeile.
@@ -225,7 +213,7 @@ public interface I_M_ReceiptSchedule_Alloc
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setM_ReceiptSchedule_Alloc_ID (int M_ReceiptSchedule_Alloc_ID);
+	void setM_ReceiptSchedule_Alloc_ID (int M_ReceiptSchedule_Alloc_ID);
 
 	/**
 	 * Get Wareneingangsdispo - Wareneingangszeile.
@@ -234,12 +222,10 @@ public interface I_M_ReceiptSchedule_Alloc
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getM_ReceiptSchedule_Alloc_ID();
+	int getM_ReceiptSchedule_Alloc_ID();
 
-    /** Column definition for M_ReceiptSchedule_Alloc_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_ReceiptSchedule_Alloc, Object> COLUMN_M_ReceiptSchedule_Alloc_ID = new org.adempiere.model.ModelColumn<I_M_ReceiptSchedule_Alloc, Object>(I_M_ReceiptSchedule_Alloc.class, "M_ReceiptSchedule_Alloc_ID", null);
-    /** Column name M_ReceiptSchedule_Alloc_ID */
-    public static final String COLUMNNAME_M_ReceiptSchedule_Alloc_ID = "M_ReceiptSchedule_Alloc_ID";
+	ModelColumn<I_M_ReceiptSchedule_Alloc, Object> COLUMN_M_ReceiptSchedule_Alloc_ID = new ModelColumn<>(I_M_ReceiptSchedule_Alloc.class, "M_ReceiptSchedule_Alloc_ID", null);
+	String COLUMNNAME_M_ReceiptSchedule_Alloc_ID = "M_ReceiptSchedule_Alloc_ID";
 
 	/**
 	 * Set Material Receipt Candidates.
@@ -248,7 +234,7 @@ public interface I_M_ReceiptSchedule_Alloc
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setM_ReceiptSchedule_ID (int M_ReceiptSchedule_ID);
+	void setM_ReceiptSchedule_ID (int M_ReceiptSchedule_ID);
 
 	/**
 	 * Get Material Receipt Candidates.
@@ -257,16 +243,14 @@ public interface I_M_ReceiptSchedule_Alloc
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getM_ReceiptSchedule_ID();
+	int getM_ReceiptSchedule_ID();
 
-	public de.metas.inoutcandidate.model.I_M_ReceiptSchedule getM_ReceiptSchedule();
+	de.metas.inoutcandidate.model.I_M_ReceiptSchedule getM_ReceiptSchedule();
 
-	public void setM_ReceiptSchedule(de.metas.inoutcandidate.model.I_M_ReceiptSchedule M_ReceiptSchedule);
+	void setM_ReceiptSchedule(de.metas.inoutcandidate.model.I_M_ReceiptSchedule M_ReceiptSchedule);
 
-    /** Column definition for M_ReceiptSchedule_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_ReceiptSchedule_Alloc, de.metas.inoutcandidate.model.I_M_ReceiptSchedule> COLUMN_M_ReceiptSchedule_ID = new org.adempiere.model.ModelColumn<I_M_ReceiptSchedule_Alloc, de.metas.inoutcandidate.model.I_M_ReceiptSchedule>(I_M_ReceiptSchedule_Alloc.class, "M_ReceiptSchedule_ID", de.metas.inoutcandidate.model.I_M_ReceiptSchedule.class);
-    /** Column name M_ReceiptSchedule_ID */
-    public static final String COLUMNNAME_M_ReceiptSchedule_ID = "M_ReceiptSchedule_ID";
+	ModelColumn<I_M_ReceiptSchedule_Alloc, de.metas.inoutcandidate.model.I_M_ReceiptSchedule> COLUMN_M_ReceiptSchedule_ID = new ModelColumn<>(I_M_ReceiptSchedule_Alloc.class, "M_ReceiptSchedule_ID", de.metas.inoutcandidate.model.I_M_ReceiptSchedule.class);
+	String COLUMNNAME_M_ReceiptSchedule_ID = "M_ReceiptSchedule_ID";
 
 	/**
 	 * Set Zugewiesene Menge.
@@ -275,7 +259,7 @@ public interface I_M_ReceiptSchedule_Alloc
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setQtyAllocated (java.math.BigDecimal QtyAllocated);
+	void setQtyAllocated (@Nullable BigDecimal QtyAllocated);
 
 	/**
 	 * Get Zugewiesene Menge.
@@ -284,12 +268,10 @@ public interface I_M_ReceiptSchedule_Alloc
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getQtyAllocated();
+	BigDecimal getQtyAllocated();
 
-    /** Column definition for QtyAllocated */
-    public static final org.adempiere.model.ModelColumn<I_M_ReceiptSchedule_Alloc, Object> COLUMN_QtyAllocated = new org.adempiere.model.ModelColumn<I_M_ReceiptSchedule_Alloc, Object>(I_M_ReceiptSchedule_Alloc.class, "QtyAllocated", null);
-    /** Column name QtyAllocated */
-    public static final String COLUMNNAME_QtyAllocated = "QtyAllocated";
+	ModelColumn<I_M_ReceiptSchedule_Alloc, Object> COLUMN_QtyAllocated = new ModelColumn<>(I_M_ReceiptSchedule_Alloc.class, "QtyAllocated", null);
+	String COLUMNNAME_QtyAllocated = "QtyAllocated";
 
 	/**
 	 * Set Allocated catch.
@@ -298,7 +280,7 @@ public interface I_M_ReceiptSchedule_Alloc
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setQtyAllocatedInCatchUOM (java.math.BigDecimal QtyAllocatedInCatchUOM);
+	void setQtyAllocatedInCatchUOM (@Nullable BigDecimal QtyAllocatedInCatchUOM);
 
 	/**
 	 * Get Allocated catch.
@@ -307,12 +289,10 @@ public interface I_M_ReceiptSchedule_Alloc
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getQtyAllocatedInCatchUOM();
+	BigDecimal getQtyAllocatedInCatchUOM();
 
-    /** Column definition for QtyAllocatedInCatchUOM */
-    public static final org.adempiere.model.ModelColumn<I_M_ReceiptSchedule_Alloc, Object> COLUMN_QtyAllocatedInCatchUOM = new org.adempiere.model.ModelColumn<I_M_ReceiptSchedule_Alloc, Object>(I_M_ReceiptSchedule_Alloc.class, "QtyAllocatedInCatchUOM", null);
-    /** Column name QtyAllocatedInCatchUOM */
-    public static final String COLUMNNAME_QtyAllocatedInCatchUOM = "QtyAllocatedInCatchUOM";
+	ModelColumn<I_M_ReceiptSchedule_Alloc, Object> COLUMN_QtyAllocatedInCatchUOM = new ModelColumn<>(I_M_ReceiptSchedule_Alloc.class, "QtyAllocatedInCatchUOM", null);
+	String COLUMNNAME_QtyAllocatedInCatchUOM = "QtyAllocatedInCatchUOM";
 
 	/**
 	 * Set Minderwertige Menge.
@@ -322,7 +302,7 @@ public interface I_M_ReceiptSchedule_Alloc
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setQtyWithIssues (java.math.BigDecimal QtyWithIssues);
+	void setQtyWithIssues (BigDecimal QtyWithIssues);
 
 	/**
 	 * Get Minderwertige Menge.
@@ -332,12 +312,10 @@ public interface I_M_ReceiptSchedule_Alloc
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getQtyWithIssues();
+	BigDecimal getQtyWithIssues();
 
-    /** Column definition for QtyWithIssues */
-    public static final org.adempiere.model.ModelColumn<I_M_ReceiptSchedule_Alloc, Object> COLUMN_QtyWithIssues = new org.adempiere.model.ModelColumn<I_M_ReceiptSchedule_Alloc, Object>(I_M_ReceiptSchedule_Alloc.class, "QtyWithIssues", null);
-    /** Column name QtyWithIssues */
-    public static final String COLUMNNAME_QtyWithIssues = "QtyWithIssues";
+	ModelColumn<I_M_ReceiptSchedule_Alloc, Object> COLUMN_QtyWithIssues = new ModelColumn<>(I_M_ReceiptSchedule_Alloc.class, "QtyWithIssues", null);
+	String COLUMNNAME_QtyWithIssues = "QtyWithIssues";
 
 	/**
 	 * Set Catch quantity with issues.
@@ -346,7 +324,7 @@ public interface I_M_ReceiptSchedule_Alloc
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setQtyWithIssuesInCatchUOM (java.math.BigDecimal QtyWithIssuesInCatchUOM);
+	void setQtyWithIssuesInCatchUOM (@Nullable BigDecimal QtyWithIssuesInCatchUOM);
 
 	/**
 	 * Get Catch quantity with issues.
@@ -355,12 +333,10 @@ public interface I_M_ReceiptSchedule_Alloc
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getQtyWithIssuesInCatchUOM();
+	BigDecimal getQtyWithIssuesInCatchUOM();
 
-    /** Column definition for QtyWithIssuesInCatchUOM */
-    public static final org.adempiere.model.ModelColumn<I_M_ReceiptSchedule_Alloc, Object> COLUMN_QtyWithIssuesInCatchUOM = new org.adempiere.model.ModelColumn<I_M_ReceiptSchedule_Alloc, Object>(I_M_ReceiptSchedule_Alloc.class, "QtyWithIssuesInCatchUOM", null);
-    /** Column name QtyWithIssuesInCatchUOM */
-    public static final String COLUMNNAME_QtyWithIssuesInCatchUOM = "QtyWithIssuesInCatchUOM";
+	ModelColumn<I_M_ReceiptSchedule_Alloc, Object> COLUMN_QtyWithIssuesInCatchUOM = new ModelColumn<>(I_M_ReceiptSchedule_Alloc.class, "QtyWithIssuesInCatchUOM", null);
+	String COLUMNNAME_QtyWithIssuesInCatchUOM = "QtyWithIssuesInCatchUOM";
 
 	/**
 	 * Set Qualitätsabzug %.
@@ -371,7 +347,7 @@ public interface I_M_ReceiptSchedule_Alloc
 	 * @deprecated Please don't use it because this is a virtual column
 	 */
 	@Deprecated
-	public void setQualityDiscountPercent (java.math.BigDecimal QualityDiscountPercent);
+	void setQualityDiscountPercent (@Nullable BigDecimal QualityDiscountPercent);
 
 	/**
 	 * Get Qualitätsabzug %.
@@ -382,12 +358,10 @@ public interface I_M_ReceiptSchedule_Alloc
 	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
 	@Deprecated
-	public java.math.BigDecimal getQualityDiscountPercent();
+	BigDecimal getQualityDiscountPercent();
 
-    /** Column definition for QualityDiscountPercent */
-    public static final org.adempiere.model.ModelColumn<I_M_ReceiptSchedule_Alloc, Object> COLUMN_QualityDiscountPercent = new org.adempiere.model.ModelColumn<I_M_ReceiptSchedule_Alloc, Object>(I_M_ReceiptSchedule_Alloc.class, "QualityDiscountPercent", null);
-    /** Column name QualityDiscountPercent */
-    public static final String COLUMNNAME_QualityDiscountPercent = "QualityDiscountPercent";
+	ModelColumn<I_M_ReceiptSchedule_Alloc, Object> COLUMN_QualityDiscountPercent = new ModelColumn<>(I_M_ReceiptSchedule_Alloc.class, "QualityDiscountPercent", null);
+	String COLUMNNAME_QualityDiscountPercent = "QualityDiscountPercent";
 
 	/**
 	 * Set Qualität-Notiz.
@@ -398,7 +372,7 @@ public interface I_M_ReceiptSchedule_Alloc
 	 * @deprecated Please don't use it because this is a virtual column
 	 */
 	@Deprecated
-	public void setQualityNote (java.lang.String QualityNote);
+	void setQualityNote (@Nullable java.lang.String QualityNote);
 
 	/**
 	 * Get Qualität-Notiz.
@@ -409,12 +383,10 @@ public interface I_M_ReceiptSchedule_Alloc
 	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
 	@Deprecated
-	public java.lang.String getQualityNote();
+	@Nullable java.lang.String getQualityNote();
 
-    /** Column definition for QualityNote */
-    public static final org.adempiere.model.ModelColumn<I_M_ReceiptSchedule_Alloc, Object> COLUMN_QualityNote = new org.adempiere.model.ModelColumn<I_M_ReceiptSchedule_Alloc, Object>(I_M_ReceiptSchedule_Alloc.class, "QualityNote", null);
-    /** Column name QualityNote */
-    public static final String COLUMNNAME_QualityNote = "QualityNote";
+	ModelColumn<I_M_ReceiptSchedule_Alloc, Object> COLUMN_QualityNote = new ModelColumn<>(I_M_ReceiptSchedule_Alloc.class, "QualityNote", null);
+	String COLUMNNAME_QualityNote = "QualityNote";
 
 	/**
 	 * Get Updated.
@@ -424,12 +396,10 @@ public interface I_M_ReceiptSchedule_Alloc
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getUpdated();
+	java.sql.Timestamp getUpdated();
 
-    /** Column definition for Updated */
-    public static final org.adempiere.model.ModelColumn<I_M_ReceiptSchedule_Alloc, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_M_ReceiptSchedule_Alloc, Object>(I_M_ReceiptSchedule_Alloc.class, "Updated", null);
-    /** Column name Updated */
-    public static final String COLUMNNAME_Updated = "Updated";
+	ModelColumn<I_M_ReceiptSchedule_Alloc, Object> COLUMN_Updated = new ModelColumn<>(I_M_ReceiptSchedule_Alloc.class, "Updated", null);
+	String COLUMNNAME_Updated = "Updated";
 
 	/**
 	 * Get Updated By.
@@ -439,8 +409,7 @@ public interface I_M_ReceiptSchedule_Alloc
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getUpdatedBy();
+	int getUpdatedBy();
 
-    /** Column name UpdatedBy */
-    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 }

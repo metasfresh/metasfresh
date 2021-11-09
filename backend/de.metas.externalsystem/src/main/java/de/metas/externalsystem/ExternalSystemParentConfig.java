@@ -23,12 +23,16 @@
 package de.metas.externalsystem;
 
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
+import lombok.AccessLevel;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
+
+import javax.annotation.Nullable;
 
 @Value
 public class ExternalSystemParentConfig
@@ -36,14 +40,22 @@ public class ExternalSystemParentConfig
 	ExternalSystemParentConfigId id;
 	ExternalSystemType type;
 	String name;
+	Boolean isActive;
 	IExternalSystemChildConfig childConfig;
+	Boolean writeAudit;
 
-	@Builder
+	@Getter(AccessLevel.NONE)
+	String auditFileFolder;
+
+	@Builder(toBuilder = true)
 	public ExternalSystemParentConfig(
 			@NonNull final ExternalSystemParentConfigId id,
 			@NonNull final ExternalSystemType type,
 			@NonNull final String name,
-			@NonNull final IExternalSystemChildConfig childConfig)
+			@NonNull final Boolean isActive,
+			@NonNull final IExternalSystemChildConfig childConfig,
+			@NonNull final Boolean writeAudit,
+			@NonNull final String auditFileFolder)
 	{
 		if (!type.equals(childConfig.getId().getType()))
 		{
@@ -57,10 +69,24 @@ public class ExternalSystemParentConfig
 		this.type = type;
 		this.name = name;
 		this.childConfig = childConfig;
+		this.isActive = isActive;
+		this.writeAudit = writeAudit;
+		this.auditFileFolder = auditFileFolder;
 	}
 
 	public ITableRecordReference getTableRecordReference()
 	{
 		return TableRecordReference.of(I_ExternalSystem_Config.Table_Name, this.id);
+	}
+
+	@Nullable
+	public String getAuditEndpointIfEnabled()
+	{
+		if (writeAudit)
+		{
+			return auditFileFolder;
+		}
+
+		return null;
 	}
 }

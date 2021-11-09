@@ -3,11 +3,14 @@ package de.metas.contracts.commission.commissioninstance.services;
 import de.metas.contracts.ConditionsId;
 import de.metas.contracts.commission.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.commission.model.I_C_HierarchyCommissionSettings;
+import de.metas.contracts.commission.model.I_C_MediatedCommissionSettings;
+import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.logging.LogManager;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Product;
 import org.slf4j.Logger;
@@ -46,9 +49,21 @@ public class CommissionProductService
 	public ProductId getCommissionProduct(@NonNull final ConditionsId conditionsId)
 	{
 		final I_C_Flatrate_Conditions conditionsRecord = InterfaceWrapperHelper.loadOutOfTrx(conditionsId, I_C_Flatrate_Conditions.class);
-		final I_C_HierarchyCommissionSettings commissionSettings = InterfaceWrapperHelper.loadOutOfTrx(conditionsRecord.getC_HierarchyCommissionSettings_ID(), I_C_HierarchyCommissionSettings.class);
+		final TypeConditions typeConditions = TypeConditions.ofCode(conditionsRecord.getType_Conditions());
 
-		return ProductId.ofRepoId(commissionSettings.getCommission_Product_ID());
+		switch (typeConditions)
+		{
+			case COMMISSION:
+				final I_C_HierarchyCommissionSettings commissionSettings = InterfaceWrapperHelper.loadOutOfTrx(conditionsRecord.getC_HierarchyCommissionSettings_ID(), I_C_HierarchyCommissionSettings.class);
+				return ProductId.ofRepoId(commissionSettings.getCommission_Product_ID());
+			case MEDIATED_COMMISSION:
+				final I_C_MediatedCommissionSettings mediatedCommissionSettings = InterfaceWrapperHelper.loadOutOfTrx(conditionsRecord.getC_MediatedCommissionSettings_ID(), I_C_MediatedCommissionSettings.class);
+				return ProductId.ofRepoId(mediatedCommissionSettings.getCommission_Product_ID());
+			default:
+				throw new AdempiereException("Unexpected typeConditions for C_Flatrate_Conditions_ID:" + conditionsId)
+						.appendParametersToMessage()
+						.setParameter("typeConditions", typeConditions);
+		}
 	}
 
 	public boolean productPreventsCommissioning(@Nullable final ProductId productId)

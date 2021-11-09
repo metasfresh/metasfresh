@@ -1,30 +1,28 @@
 package de.metas.contracts.commission.commissioninstance.testhelpers;
 
-import static de.metas.common.util.CoalesceUtil.coalesce;
-import static de.metas.common.util.CoalesceUtil.coalesceSuppliers;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-import java.time.LocalDate;
-
-import javax.annotation.Nullable;
-
 import de.metas.business.BusinessTestHelper;
 import de.metas.common.util.time.SystemTime;
+import de.metas.contracts.flatrate.TypeConditions;
+import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.document.engine.IDocument;
 import de.metas.organization.OrgId;
+import de.metas.product.ProductId;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.util.TimeUtil;
 
-import de.metas.contracts.commission.CommissionConstants;
-import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.document.engine.IDocument;
-import de.metas.product.ProductId;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
+import javax.annotation.Nullable;
+import java.time.LocalDate;
+
+import static de.metas.common.util.CoalesceUtil.coalesce;
+import static de.metas.common.util.CoalesceUtil.coalesceSuppliers;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -121,7 +119,7 @@ public class TestCommissionContract
 		termRecord.setC_Flatrate_Conditions_ID(C_Flatrate_Conditions_ID);
 		termRecord.setNote("name=" + effectiveContractName + " (parentSalesRepName=" + parentSalesRepName + ")");
 		termRecord.setDocStatus(IDocument.STATUS_Completed);
-		termRecord.setType_Conditions(CommissionConstants.TYPE_CONDITIONS_COMMISSION);
+		termRecord.setType_Conditions(TypeConditions.COMMISSION.getCode());
 		termRecord.setM_Product_ID(commissionProductId.getRepoId());
 		termRecord.setStartDate(TimeUtil.asTimestamp(date.minusDays(10)));
 		termRecord.setEndDate(TimeUtil.asTimestamp(date.plusDays(10)));

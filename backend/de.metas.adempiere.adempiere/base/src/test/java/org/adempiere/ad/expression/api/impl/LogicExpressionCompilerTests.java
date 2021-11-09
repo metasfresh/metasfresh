@@ -22,16 +22,9 @@ package org.adempiere.ad.expression.api.impl;
  * #L%
  */
 
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.not;
-
-import java.util.Properties;
-
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.expression.exceptions.ExpressionCompileException;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.service.ISysConfigDAO;
-import org.adempiere.service.impl.PlainSysConfigDAO;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.util.Env;
@@ -42,7 +35,10 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-import de.metas.util.Services;
+import java.util.Properties;
+
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.not;
 
 @ExtendWith(AdempiereTestWatcher.class)
 public class LogicExpressionCompilerTests
@@ -61,9 +57,6 @@ public class LogicExpressionCompilerTests
 	{
 		AdempiereTestHelper.get().init();
 		compiler = LogicExpressionCompiler.instance;
-
-		// 05199: registering PlainSysConfigDAO because on some machines this service is not detected
-		Services.registerService(ISysConfigDAO.class, new PlainSysConfigDAO());
 	}
 
 	/**

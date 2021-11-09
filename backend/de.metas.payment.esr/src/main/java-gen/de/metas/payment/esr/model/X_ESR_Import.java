@@ -1,27 +1,28 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package de.metas.payment.esr.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for ESR_Import
  *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public class X_ESR_Import extends org.compiere.model.PO implements I_ESR_Import, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 819668944L;
+	private static final long serialVersionUID = 256216166L;
 
     /** Standard Constructor */
-    public X_ESR_Import (Properties ctx, int ESR_Import_ID, String trxName)
+    public X_ESR_Import (final Properties ctx, final int ESR_Import_ID, @Nullable final String trxName)
     {
       super (ctx, ESR_Import_ID, trxName);
     }
 
     /** Load Constructor */
-    public X_ESR_Import (Properties ctx, ResultSet rs, String trxName)
+    public X_ESR_Import (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
@@ -29,18 +30,18 @@ public class X_ESR_Import extends org.compiere.model.PO implements I_ESR_Import,
 
 	/** Load Meta Data */
 	@Override
-	protected org.compiere.model.POInfo initPO(Properties ctx)
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
 	}
 
 	@Override
-	public void setAD_AttachmentEntry_ID (int AD_AttachmentEntry_ID)
+	public void setAD_AttachmentEntry_ID (final int AD_AttachmentEntry_ID)
 	{
 		if (AD_AttachmentEntry_ID < 1) 
 			set_Value (COLUMNNAME_AD_AttachmentEntry_ID, null);
 		else 
-			set_Value (COLUMNNAME_AD_AttachmentEntry_ID, Integer.valueOf(AD_AttachmentEntry_ID));
+			set_Value (COLUMNNAME_AD_AttachmentEntry_ID, AD_AttachmentEntry_ID);
 	}
 
 	@Override
@@ -50,12 +51,12 @@ public class X_ESR_Import extends org.compiere.model.PO implements I_ESR_Import,
 	}
 
 	@Override
-	public void setC_BP_BankAccount_ID (int C_BP_BankAccount_ID)
+	public void setC_BP_BankAccount_ID (final int C_BP_BankAccount_ID)
 	{
 		if (C_BP_BankAccount_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_C_BP_BankAccount_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_C_BP_BankAccount_ID, Integer.valueOf(C_BP_BankAccount_ID));
+			set_ValueNoCheck (COLUMNNAME_C_BP_BankAccount_ID, C_BP_BankAccount_ID);
 	}
 
 	@Override
@@ -74,20 +75,19 @@ public class X_ESR_Import extends org.compiere.model.PO implements I_ESR_Import,
 	/** camt.54 = camt.54 */
 	public static final String DATATYPE_Camt54 = "camt.54";
 	@Override
-	public void setDataType (java.lang.String DataType)
+	public void setDataType (final @Nullable java.lang.String DataType)
 	{
-
 		set_Value (COLUMNNAME_DataType, DataType);
 	}
 
 	@Override
 	public java.lang.String getDataType() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_DataType);
+		return get_ValueAsString(COLUMNNAME_DataType);
 	}
 
 	@Override
-	public void setDateDoc (java.sql.Timestamp DateDoc)
+	public void setDateDoc (final java.sql.Timestamp DateDoc)
 	{
 		set_Value (COLUMNNAME_DateDoc, DateDoc);
 	}
@@ -99,7 +99,7 @@ public class X_ESR_Import extends org.compiere.model.PO implements I_ESR_Import,
 	}
 
 	@Override
-	public void setDescription (java.lang.String Description)
+	public void setDescription (final @Nullable java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
@@ -107,42 +107,42 @@ public class X_ESR_Import extends org.compiere.model.PO implements I_ESR_Import,
 	@Override
 	public java.lang.String getDescription() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Description);
+		return get_ValueAsString(COLUMNNAME_Description);
 	}
 
 	@Override
-	public void setESR_Control_Amount (java.math.BigDecimal ESR_Control_Amount)
+	public void setESR_Control_Amount (final @Nullable BigDecimal ESR_Control_Amount)
 	{
 		set_Value (COLUMNNAME_ESR_Control_Amount, ESR_Control_Amount);
 	}
 
 	@Override
-	public java.math.BigDecimal getESR_Control_Amount() 
+	public BigDecimal getESR_Control_Amount() 
 	{
-		BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_ESR_Control_Amount);
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_ESR_Control_Amount);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
-	public void setESR_Control_Trx_Qty (java.math.BigDecimal ESR_Control_Trx_Qty)
+	public void setESR_Control_Trx_Qty (final @Nullable BigDecimal ESR_Control_Trx_Qty)
 	{
 		set_Value (COLUMNNAME_ESR_Control_Trx_Qty, ESR_Control_Trx_Qty);
 	}
 
 	@Override
-	public java.math.BigDecimal getESR_Control_Trx_Qty() 
+	public BigDecimal getESR_Control_Trx_Qty() 
 	{
-		BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_ESR_Control_Trx_Qty);
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_ESR_Control_Trx_Qty);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
-	public void setESR_Import_ID (int ESR_Import_ID)
+	public void setESR_Import_ID (final int ESR_Import_ID)
 	{
 		if (ESR_Import_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_ESR_Import_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_ESR_Import_ID, Integer.valueOf(ESR_Import_ID));
+			set_ValueNoCheck (COLUMNNAME_ESR_Import_ID, ESR_Import_ID);
 	}
 
 	@Override
@@ -152,19 +152,19 @@ public class X_ESR_Import extends org.compiere.model.PO implements I_ESR_Import,
 	}
 
 	@Override
-	public void setESR_Trx_Qty (java.math.BigDecimal ESR_Trx_Qty)
+	public void setESR_Trx_Qty (final @Nullable BigDecimal ESR_Trx_Qty)
 	{
 		throw new IllegalArgumentException ("ESR_Trx_Qty is virtual column");	}
 
 	@Override
-	public java.math.BigDecimal getESR_Trx_Qty() 
+	public BigDecimal getESR_Trx_Qty() 
 	{
-		BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_ESR_Trx_Qty);
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_ESR_Trx_Qty);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
-	public void setHash (java.lang.String Hash)
+	public void setHash (final @Nullable java.lang.String Hash)
 	{
 		set_Value (COLUMNNAME_Hash, Hash);
 	}
@@ -172,13 +172,25 @@ public class X_ESR_Import extends org.compiere.model.PO implements I_ESR_Import,
 	@Override
 	public java.lang.String getHash() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Hash);
+		return get_ValueAsString(COLUMNNAME_Hash);
 	}
 
 	@Override
-	public void setIsReceipt (boolean IsReceipt)
+	public void setIsArchiveFile (final boolean IsArchiveFile)
 	{
-		set_Value (COLUMNNAME_IsReceipt, Boolean.valueOf(IsReceipt));
+		set_Value (COLUMNNAME_IsArchiveFile, IsArchiveFile);
+	}
+
+	@Override
+	public boolean isArchiveFile() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsArchiveFile);
+	}
+
+	@Override
+	public void setIsReceipt (final boolean IsReceipt)
+	{
+		set_Value (COLUMNNAME_IsReceipt, IsReceipt);
 	}
 
 	@Override
@@ -188,9 +200,9 @@ public class X_ESR_Import extends org.compiere.model.PO implements I_ESR_Import,
 	}
 
 	@Override
-	public void setIsReconciled (boolean IsReconciled)
+	public void setIsReconciled (final boolean IsReconciled)
 	{
-		set_Value (COLUMNNAME_IsReconciled, Boolean.valueOf(IsReconciled));
+		set_Value (COLUMNNAME_IsReconciled, IsReconciled);
 	}
 
 	@Override
@@ -200,9 +212,9 @@ public class X_ESR_Import extends org.compiere.model.PO implements I_ESR_Import,
 	}
 
 	@Override
-	public void setIsValid (boolean IsValid)
+	public void setIsValid (final boolean IsValid)
 	{
-		set_Value (COLUMNNAME_IsValid, Boolean.valueOf(IsValid));
+		set_Value (COLUMNNAME_IsValid, IsValid);
 	}
 
 	@Override
@@ -212,9 +224,9 @@ public class X_ESR_Import extends org.compiere.model.PO implements I_ESR_Import,
 	}
 
 	@Override
-	public void setProcessed (boolean Processed)
+	public void setProcessed (final boolean Processed)
 	{
-		set_Value (COLUMNNAME_Processed, Boolean.valueOf(Processed));
+		set_Value (COLUMNNAME_Processed, Processed);
 	}
 
 	@Override
@@ -224,7 +236,7 @@ public class X_ESR_Import extends org.compiere.model.PO implements I_ESR_Import,
 	}
 
 	@Override
-	public void setProcessing (boolean Processing)
+	public void setProcessing (final boolean Processing)
 	{
 		throw new IllegalArgumentException ("Processing is virtual column");	}
 

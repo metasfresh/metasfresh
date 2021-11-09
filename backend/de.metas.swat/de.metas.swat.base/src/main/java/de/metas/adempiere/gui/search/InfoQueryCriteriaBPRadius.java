@@ -22,20 +22,19 @@ package de.metas.adempiere.gui.search;
  * #L%
  */
 
-
-import java.awt.Dimension;
-import java.util.List;
-
+import de.metas.util.Check;
+import de.metas.util.Services;
+import org.adempiere.service.ISysConfigBL;
 import org.compiere.apps.search.IInfoSimple;
 import org.compiere.apps.search.InfoQueryCriteriaBPRadiusAbstract;
 import org.compiere.grid.ed.VNumber;
 import org.compiere.model.I_AD_InfoColumn;
-import org.compiere.model.MSysConfig;
 import org.compiere.swing.CTextField;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 
-import de.metas.util.Check;
+import java.awt.*;
+import java.util.List;
 
 public class InfoQueryCriteriaBPRadius extends InfoQueryCriteriaBPRadiusAbstract
 {
@@ -46,7 +45,7 @@ public class InfoQueryCriteriaBPRadius extends InfoQueryCriteriaBPRadiusAbstract
 	@Override
 	public void init(IInfoSimple parent, I_AD_InfoColumn infoColumn, String searchText)
 	{
-		final int defaultRadius = MSysConfig.getIntValue(SYSCONFIG_DefaultRadius, 0, Env.getAD_Client_ID(Env.getCtx()));
+		final int defaultRadius = Services.get(ISysConfigBL.class).getIntValue(SYSCONFIG_DefaultRadius, 0, Env.getAD_Client_ID(Env.getCtx()));
 		//
 		fieldCityZip = new CTextField();
 		fieldCityZip.setPreferredSize(new Dimension(200, (int)fieldCityZip.getPreferredSize().getHeight()));

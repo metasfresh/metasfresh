@@ -29,6 +29,7 @@ import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.allocation.api.IAllocationDAO;
+import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.model.I_C_Queue_WorkPackage;
@@ -59,6 +60,7 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceSchedule;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
@@ -80,6 +82,7 @@ import de.metas.invoicecandidate.api.InvoiceCandidateQuery;
 import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
 import de.metas.invoicecandidate.async.spi.impl.InvoiceCandWorkpackageProcessor;
 import de.metas.invoicecandidate.exceptions.InconsistentUpdateException;
+import de.metas.invoicecandidate.location.adapter.InvoiceCandidateLocationAdapterFactory;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Detail;
@@ -1110,9 +1113,9 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		splitCand.setIsSOTrx(ic.isSOTrx());
 		splitCand.setC_ILCandHandler(ic.getC_ILCandHandler());
 
-		splitCand.setBill_BPartner_ID(ic.getBill_BPartner_ID());
-		splitCand.setBill_Location_ID(ic.getBill_Location_ID());
-		splitCand.setBill_User_ID(ic.getBill_User_ID());
+		InvoiceCandidateLocationAdapterFactory
+				.billLocationAdapter(splitCand)
+				.setFrom(ic);
 
 		splitCand.setC_Invoice_Candidate_Agg_ID(ic.getC_Invoice_Candidate_Agg_ID());
 		aggregationBL.setHeaderAggregationKey(splitCand);
@@ -1530,7 +1533,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		InterfaceWrapperHelper.save(invoiceCandidate);
 	}
 
-	private void setApprovalForInvoicing(final Collection<I_C_Invoice_Candidate> invoiceCandidates, final boolean approved)
+	private void setApprovalForInvoicing(@NonNull final Collection<I_C_Invoice_Candidate> invoiceCandidates, final boolean approved)
 	{
 		if (invoiceCandidates.isEmpty())
 		{
@@ -1547,130 +1550,128 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	@Override
 	public void handleCompleteForInvoice(@NonNull final org.compiere.model.I_C_Invoice invoice)
 	{
-		if (isCreatedByInvoicingJustNow(invoice))
-		{
-			return; // nothing to do for us
-		}
-
-		//
-		// Skip reversal invoice completion because we handle the reversal case in "handleReversalForInvoice"
-		final int reversalInvoiceId = invoice.getReversal_ID();
-		final boolean isReversal = reversalInvoiceId > 0 && invoice.getC_Invoice_ID() > reversalInvoiceId;
-		if (isReversal)
-		{
-			// This is the actual reversal invoice. Skip it. It shall be dealt with in the handleReversalForInvoice() method
-			return;
-		}
-
-		final Properties ctx = InterfaceWrapperHelper.getCtx(invoice);
-		final String trxName = InterfaceWrapperHelper.getTrxName(invoice);
-
-		final boolean isCreditMemo = Services.get(IInvoiceBL.class).isCreditMemo(invoice);
-		final de.metas.invoicecandidate.model.I_C_Invoice invoiceExt = InterfaceWrapperHelper.create(invoice, de.metas.invoicecandidate.model.I_C_Invoice.class);
-		final boolean creditMemoReinvoicable = invoiceExt.isCreditedInvoiceReinvoicable(); // task 08927: this is only relevant if isCreditMemo, see below
-
-		for (final I_C_InvoiceLine il : Services.get(IInvoiceDAO.class).retrieveLines(invoice))
+		if (!isCreatedByInvoicingJustNow(invoice))
 		{
 			//
-			// Invalidate existing candidates that belong to 'il'
-			// NOTE: in case invoice was not created from invoice candidates (e.g. Kommissionierung or Credit memo)
-			// here we will get ZERO candidates
+			// Skip reversal invoice completion because we handle the reversal case in "handleReversalForInvoice"
+			final int reversalInvoiceId = invoice.getReversal_ID();
+			final boolean isReversal = reversalInvoiceId > 0 && invoice.getC_Invoice_ID() > reversalInvoiceId;
+			if (isReversal)
 			{
-				final List<I_C_Invoice_Candidate> invoiceCands = invoiceCandDAO.retrieveIcForIl(il);
-				invoiceCandDAO.invalidateCands(invoiceCands);
+				// This is the actual reversal invoice. Skip it. It shall be dealt with in the handleReversalForInvoice() method
+				return;
 			}
 
-			final Set<I_C_Invoice_Candidate> toLinkAgainstIl = new TreeSet<>(Comparator.comparing(I_C_Invoice_Candidate::getC_Invoice_Candidate_ID));
+			final Properties ctx = InterfaceWrapperHelper.getCtx(invoice);
+			final String trxName = InterfaceWrapperHelper.getTrxName(invoice);
 
-			if (il.getC_OrderLine_ID() > 0)
+			final boolean isCreditMemo = Services.get(IInvoiceBL.class).isCreditMemo(invoice);
+			final de.metas.invoicecandidate.model.I_C_Invoice invoiceExt = InterfaceWrapperHelper.create(invoice, de.metas.invoicecandidate.model.I_C_Invoice.class);
+			final boolean creditMemoReinvoicable = invoiceExt.isCreditedInvoiceReinvoicable(); // task 08927: this is only relevant if isCreditMemo, see below
+
+			for (final I_C_InvoiceLine il : Services.get(IInvoiceDAO.class).retrieveLines(invoice))
 			{
 				//
-				// If 'il' has an order line, make sure that this order line also has invoice candidates and that those candidates also refer 'il'
-
-				final TableRecordReference olReference = TableRecordReference.of(I_C_OrderLine.Table_Name, il.getC_OrderLine_ID()); // no need to load the OL just yet
-				final List<I_C_Invoice_Candidate> existingICs = invoiceCandDAO.retrieveReferencing(olReference);
-				if (existingICs.isEmpty())
+				// Invalidate existing candidates that belong to 'il'
+				// NOTE: in case invoice was not created from invoice candidates (e.g. Kommissionierung or Credit memo)
+				// here we will get ZERO candidates
 				{
-					final I_C_OrderLine ol = InterfaceWrapperHelper.create(il.getC_OrderLine(), I_C_OrderLine.class);
-					// NOTE: in case 'invoice' was not created from invoice candidates, it's a big chance here to get zero existing ICs
-					// so we need to create them now
+					final List<I_C_Invoice_Candidate> invoiceCands = invoiceCandDAO.retrieveIcForIl(il);
+					invoiceCandDAO.invalidateCands(invoiceCands);
+				}
 
-					logger.debug("Current C_InvoiceLine {} has a C_OrderLine {} which is not referenced by any C_Invoice_Candidate", new Object[] { il, ol });
-					final IInvoiceCandidateHandlerBL creatorBL = Services.get(IInvoiceCandidateHandlerBL.class);
-					final List<I_C_Invoice_Candidate> invoiceCandsNew = creatorBL.createMissingCandidatesFor(ol);
+				final Set<I_C_Invoice_Candidate> toLinkAgainstIl = new TreeSet<>(Comparator.comparing(I_C_Invoice_Candidate::getC_Invoice_Candidate_ID));
 
-					logger.debug("Created C_Invoice_Candidates for C_OrderLine {}: {}", new Object[] { ol, invoiceCandsNew });
-					toLinkAgainstIl.addAll(invoiceCandsNew);
-
+				if (il.getC_OrderLine_ID() > 0)
+				{
 					//
-					// Make sure the invoice candidates are valid before we link to them, because their C_Invoice_Candidate_Agg_ID is copied to the ila
-					updateInvalid()
-							.setContext(ctx, trxName)
-							.setTaggedWithAnyTag()
-							.setOnlyC_Invoice_Candidates(invoiceCandsNew)
-							.update();
-				}
-				else
-				{
-					// task 04868, G03T010: even if invoice candidates exist, there might be no link in case the invoice has been created "old school", like new MInvoice(...), or by crediting an
-					// invoice
-					toLinkAgainstIl.addAll(existingICs);
-				}
-			}
+					// If 'il' has an order line, make sure that this order line also has invoice candidates and that those candidates also refer 'il'
 
-			if (il.getRef_InvoiceLine_ID() > 0)                                // note: this is (also) the case for credit memos, see IInvoiceBL.creditInvoice() and the invocations it makes
-			{
-				//
-				// task 08927: if il e.g. belongs to the credit memo of an inoutLine or a quality inspection, still get the invoice candidate
-				// note that if there is already an invoice, then we assume that the invoice line either has ICs, or that it shall not have any, so we don't try to create missing ICs here
-				toLinkAgainstIl.addAll(invoiceCandDAO.retrieveIcForIl(il.getRef_InvoiceLine()));
-			}
-
-			for (final I_C_Invoice_Candidate icToLink : toLinkAgainstIl)
-			{
-				//
-				// Make sure invoice candidate is fresh before we actually use it (task 06162, also see javadoc of updateInvalid method)
-				InterfaceWrapperHelper.refresh(icToLink);
-
-				// final BigDecimal qtyInvoiced = getQtyToInvoice(icToLink); // why on earth should we use the ic's QtyToInvoice, as opposed to the Qty that *was* actually invoiced to start with?
-				final StockQtyAndUOMQty qtysInvoiced;
-				final UomId ilUomId = UomId.ofRepoId(il.getC_UOM_ID());
-				final ProductId ilProductId = ProductId.ofRepoId(il.getM_Product_ID());
-
-				final String note;
-				if (isCreditMemo)
-				{
-					final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
-
-					// task 08927
-					note = "@C_DocType_ID@=" + docTypeDAO.getById(invoice.getC_DocType_ID()).getName() + ", @IsCreditedInvoiceReinvoicable@=" + creditMemoReinvoicable;
-					if (creditMemoReinvoicable)
+					final TableRecordReference olReference = TableRecordReference.of(I_C_OrderLine.Table_Name, il.getC_OrderLine_ID()); // no need to load the OL just yet
+					final List<I_C_Invoice_Candidate> existingICs = invoiceCandDAO.retrieveReferencing(olReference);
+					if (existingICs.isEmpty())
 					{
-						qtysInvoiced = StockQtyAndUOMQtys
-								.create(il.getQtyInvoiced(), ilProductId, il.getQtyEntered(), ilUomId)
-								.negate(); // this will allow the user to re-invoice, just as if the credit memo was a reversal
+						final I_C_OrderLine ol = InterfaceWrapperHelper.create(il.getC_OrderLine(), I_C_OrderLine.class);
+						// NOTE: in case 'invoice' was not created from invoice candidates, it's a big chance here to get zero existing ICs
+						// so we need to create them now
+
+					logger.debug("Current C_InvoiceLine {} has a C_OrderLine {} which is not referenced by any C_Invoice_Candidate",  il, ol);
+						final IInvoiceCandidateHandlerBL creatorBL = Services.get(IInvoiceCandidateHandlerBL.class);
+						final List<I_C_Invoice_Candidate> invoiceCandsNew = creatorBL.createMissingCandidatesFor(ol);
+
+					logger.debug("Created C_Invoice_Candidates for C_OrderLine {}: {}",  ol, invoiceCandsNew);
+						toLinkAgainstIl.addAll(invoiceCandsNew);
+
+						//
+						// Make sure the invoice candidates are valid before we link to them, because their C_Invoice_Candidate_Agg_ID is copied to the ila
+						updateInvalid()
+								.setContext(ctx, trxName)
+								.setTaggedWithAnyTag()
+								.setOnlyC_Invoice_Candidates(invoiceCandsNew)
+								.update();
 					}
 					else
 					{
-						qtysInvoiced = StockQtyAndUOMQtys.createZero(ilProductId, ilUomId);
+						// task 04868, G03T010: even if invoice candidates exist, there might be no link in case the invoice has been created "old school", like new MInvoice(...), or by crediting an
+						// invoice
+						toLinkAgainstIl.addAll(existingICs);
 					}
 				}
-				else
-				{
-					note = "";
-					qtysInvoiced = StockQtyAndUOMQtys
-							.create(il.getQtyInvoiced(), ilProductId, il.getQtyEntered(), ilUomId); // the standard case
-				}
-				createUpdateIla(icToLink, il, qtysInvoiced, note);
-				// note: if an ILA is created, the icToLink is automatically invalidated via C_Invoice_Line_Alloc model validator
-			}
 
-			//
-			// Unset ApprovalForInvoicing flag in case we credit memoed + reinvoiceable our invoice
-			if (isCreditMemo && creditMemoReinvoicable)
-			{
+				if (il.getRef_InvoiceLine_ID() > 0)                                // note: this is (also) the case for credit memos, see IInvoiceBL.creditInvoice() and the invocations it makes
+				{
+					//
+					// task 08927: if il e.g. belongs to the credit memo of an inoutLine or a quality inspection, still get the invoice candidate
+					// note that if there is already an invoice, then we assume that the invoice line either has ICs, or that it shall not have any, so we don't try to create missing ICs here
+					toLinkAgainstIl.addAll(invoiceCandDAO.retrieveIcForIl(il.getRef_InvoiceLine()));
+				}
+
+				for (final I_C_Invoice_Candidate icToLink : toLinkAgainstIl)
+				{
+					//
+					// Make sure invoice candidate is fresh before we actually use it (task 06162, also see javadoc of updateInvalid method)
+					InterfaceWrapperHelper.refresh(icToLink);
+
+					// final BigDecimal qtyInvoiced = getQtyToInvoice(icToLink); // why on earth should we use the ic's QtyToInvoice, as opposed to the Qty that *was* actually invoiced to start with?
+					final StockQtyAndUOMQty qtysInvoiced;
+					final UomId ilUomId = UomId.ofRepoId(il.getC_UOM_ID());
+					final ProductId ilProductId = ProductId.ofRepoId(il.getM_Product_ID());
+
+					final String note;
+					if (isCreditMemo)
+					{
+						final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+
+						// task 08927
+						note = "@C_DocType_ID@=" + docTypeDAO.getById(invoice.getC_DocType_ID()).getName() + ", @IsCreditedInvoiceReinvoicable@=" + creditMemoReinvoicable;
+						if (creditMemoReinvoicable)
+						{
+							qtysInvoiced = StockQtyAndUOMQtys
+									.create(il.getQtyInvoiced(), ilProductId, il.getQtyEntered(), ilUomId)
+									.negate(); // this will allow the user to re-invoice, just as if the credit memo was a reversal
+						}
+						else
+						{
+							qtysInvoiced = StockQtyAndUOMQtys.createZero(ilProductId, ilUomId);
+						}
+					}
+					else
+					{
+						note = "";
+						qtysInvoiced = StockQtyAndUOMQtys
+								.create(il.getQtyInvoiced(), ilProductId, il.getQtyEntered(), ilUomId); // the standard case
+					}
+					createUpdateIla(icToLink, il, qtysInvoiced, note);
+					// note: if an ILA is created, the icToLink is automatically invalidated via C_Invoice_Line_Alloc model validator
+				}
+
 				setApprovalForInvoicing(toLinkAgainstIl, false);
 			}
+		}
+		else
+		{
+			final List<I_C_Invoice_Candidate> invoiceCandidates = invoiceCandDAO.retrieveInvoiceCandidates(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()));
+			setApprovalForInvoicing(invoiceCandidates, false);
 		}
 	}
 
@@ -1737,12 +1738,14 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		ic.setProcessed_Calc(processedCalc);
 		ic.setProcessed(processed);
 
-		// 08459
-		// If the IC is processed, the qtyToInvoice must turn 0
 		if (processed)
 		{
+			// 08459
+			// If the IC is processed, the qtyToInvoice must turn 0
 			ic.setQtyToInvoiceInPriceUOM(ZERO);
 			ic.setQtyToInvoice(ZERO);
+
+			ic.setApprovalForInvoicing(false);
 		}
 	}
 
@@ -2349,7 +2352,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 		final List<I_C_Invoice_Candidate> invoiceCands = new ArrayList<>();
 
-		final MInvoice invoicePO = (MInvoice)InterfaceWrapperHelper.getPO(invoice);
+		final MInvoice invoicePO = InterfaceWrapperHelper.getPO(invoice);
 		for (final MInvoiceLine ilPO : invoicePO.getLines(true))
 		{
 			final I_C_InvoiceLine il = InterfaceWrapperHelper.create(ilPO, I_C_InvoiceLine.class);
@@ -2441,5 +2444,22 @@ public class InvoiceCandBL implements IInvoiceCandBL
 					return ic;
 				})
 				.collect(Collectors.toSet());
+	}
+
+	@Override
+	public void setAsyncBatch(@NonNull final InvoiceCandidateId invoiceCandidateId, @NonNull final AsyncBatchId asyncBatchId)
+	{
+		final I_C_Invoice_Candidate invoiceCandidate = invoiceCandDAO.getById(invoiceCandidateId);
+
+		if (invoiceCandidate.isProcessed())
+		{
+			Loggables.withLogger(logger, Level.WARN).addLog("InvoiceCandBL.setAsyncBatch(): C_Invoice_Candidate already processed,"
+																	+ " nothing to do! InvoiceCandidateId: {}", invoiceCandidate.getC_Invoice_Candidate_ID());
+			return;
+		}
+
+		invoiceCandidate.setC_Async_Batch_ID(asyncBatchId.getRepoId());
+
+		invoiceCandDAO.save(invoiceCandidate);
 	}
 }

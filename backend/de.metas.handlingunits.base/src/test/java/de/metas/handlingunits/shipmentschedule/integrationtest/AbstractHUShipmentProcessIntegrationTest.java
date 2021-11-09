@@ -23,7 +23,6 @@ package de.metas.handlingunits.shipmentschedule.integrationtest;
  */
 
 import ch.qos.logback.classic.Level;
-import de.metas.bpartner.service.BPartnerLocationInfoRepository;
 import de.metas.contracts.flatrate.interfaces.I_C_DocType;
 import de.metas.handlingunits.AbstractHUTest;
 import de.metas.handlingunits.HUTestHelper;
@@ -90,7 +89,7 @@ import static de.metas.business.BusinessTestHelper.createWarehouse;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 /**
  * HU Shipment Process:
@@ -210,7 +209,6 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 		// Services
 		// this.huShipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
 		// this.huShipmentScheduleDAO = Services.get(IHUShipmentScheduleDAO.class);
-		SpringContextHolder.registerJUnitBean(new BPartnerLocationInfoRepository());
 		SpringContextHolder.registerJUnitBean(new ShipperTransportationRepository());
 		huShipperTransportationBL = Services.get(IHUShipperTransportationBL.class);
 		huPackageDAO = Services.get(IHUPackageDAO.class);

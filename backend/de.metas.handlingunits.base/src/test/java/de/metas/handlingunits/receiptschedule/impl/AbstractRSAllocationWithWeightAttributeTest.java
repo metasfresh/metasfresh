@@ -22,15 +22,7 @@ package de.metas.handlingunits.receiptschedule.impl;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.util.Collections;
-import java.util.List;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_M_AttributeSetInstance;
-
+import de.metas.greeting.GreetingRepository;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -53,6 +45,16 @@ import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_M_AttributeSetInstance;
+
+import java.math.BigDecimal;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Base class for quickly setting up tests with RS-HU-WeightAttribute allocations & operations
@@ -88,6 +90,8 @@ public class AbstractRSAllocationWithWeightAttributeTest extends AbstractWeightA
 	@Override
 	protected void afterInitialize()
 	{
+		SpringContextHolder.registerJUnitBean(new GreetingRepository());
+
 		//
 		// Important! We don't want the HUContext to rebuild itself when it's duplicated
 		//
@@ -148,7 +152,13 @@ public class AbstractRSAllocationWithWeightAttributeTest extends AbstractWeightA
 		{
 			final I_C_BPartner bpartner = InterfaceWrapperHelper.newInstance(I_C_BPartner.class, helper.contextProvider);
 			InterfaceWrapperHelper.save(bpartner);
-			receiptSchedule.setC_BPartner_ID(bpartner.getC_BPartner_ID());
+
+			final I_C_BPartner_Location bpartnerLocation = InterfaceWrapperHelper.newInstance(I_C_BPartner_Location.class, helper.contextProvider);
+			bpartnerLocation.setC_BPartner_ID(bpartner.getC_BPartner_ID());
+			InterfaceWrapperHelper.save(bpartnerLocation);
+
+			receiptSchedule.setC_BPartner_ID(bpartnerLocation.getC_BPartner_ID());
+			receiptSchedule.setC_BPartner_Location_ID(bpartnerLocation.getC_BPartner_Location_ID());
 		}
 
 		//
@@ -275,8 +285,6 @@ public class AbstractRSAllocationWithWeightAttributeTest extends AbstractWeightA
 	 * Set WeightGross to given HUs using the standard value ({@link #weightGrossPaloxe}).
 	 *
 	 * After that, it will test if the HUs weights are matching our standard expectations ({@link #standardPaloxeWeightExpectation}).
-	 *
-	 * @param hus
 	 */
 	protected void setWeightGrossToStandardAndTest(final List<I_M_HU> hus)
 	{

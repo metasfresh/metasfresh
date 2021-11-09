@@ -22,16 +22,15 @@
 
 package de.metas.impexp.spreadsheet.excel;
 
-import javax.annotation.concurrent.Immutable;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.TimeUtil;
-
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.TimeUtil;
+
+import javax.annotation.concurrent.Immutable;
 
 /**
  * Cell value.

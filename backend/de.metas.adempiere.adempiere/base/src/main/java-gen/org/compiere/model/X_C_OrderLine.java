@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1131851300L;
+	private static final long serialVersionUID = -1248532788L;
 
     /** Standard Constructor */
     public X_C_OrderLine (final Properties ctx, final int C_OrderLine_ID, @Nullable final String trxName)
@@ -148,6 +148,33 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	public int getC_BPartner_Location_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_BPartner_Location_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_C_Location getC_BPartner_Location_Value()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_BPartner_Location_Value_ID, org.compiere.model.I_C_Location.class);
+	}
+
+	@Override
+	public void setC_BPartner_Location_Value(final org.compiere.model.I_C_Location C_BPartner_Location_Value)
+	{
+		set_ValueFromPO(COLUMNNAME_C_BPartner_Location_Value_ID, org.compiere.model.I_C_Location.class, C_BPartner_Location_Value);
+	}
+
+	@Override
+	public void setC_BPartner_Location_Value_ID (final int C_BPartner_Location_Value_ID)
+	{
+		if (C_BPartner_Location_Value_ID < 1) 
+			set_Value (COLUMNNAME_C_BPartner_Location_Value_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_BPartner_Location_Value_ID, C_BPartner_Location_Value_ID);
+	}
+
+	@Override
+	public int getC_BPartner_Location_Value_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_BPartner_Location_Value_ID);
 	}
 
 	@Override
@@ -759,6 +786,18 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	public boolean isGroupCompensationLine() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsGroupCompensationLine);
+	}
+
+	@Override
+	public void setIsHideWhenPrinting (final boolean IsHideWhenPrinting)
+	{
+		set_Value (COLUMNNAME_IsHideWhenPrinting, IsHideWhenPrinting);
+	}
+
+	@Override
+	public boolean isHideWhenPrinting() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsHideWhenPrinting);
 	}
 
 	@Override
@@ -1655,6 +1694,17 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_TaxAmtInfo);
 		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setTradeBom_Product_ID (final int TradeBom_Product_ID)
+	{
+		throw new IllegalArgumentException ("TradeBom_Product_ID is virtual column");	}
+
+	@Override
+	public int getTradeBom_Product_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_TradeBom_Product_ID);
 	}
 
 	@Override

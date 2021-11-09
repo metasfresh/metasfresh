@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_ReceiptSchedule, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1118049416L;
+	private static final long serialVersionUID = -1270828138L;
 
     /** Standard Constructor */
     public X_M_ReceiptSchedule (final Properties ctx, final int M_ReceiptSchedule_ID, @Nullable final String trxName)
@@ -120,30 +120,18 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 	}
 
 	@Override
-	public void setCanBeExportedFrom (final @Nullable java.sql.Timestamp CanBeExportedFrom)
+	public void setC_BP_Location_Override_ID (final int C_BP_Location_Override_ID)
 	{
-		set_Value (COLUMNNAME_CanBeExportedFrom, CanBeExportedFrom);
-	}
-
-	@Override
-	public java.sql.Timestamp getCanBeExportedFrom() 
-	{
-		return get_ValueAsTimestamp(COLUMNNAME_CanBeExportedFrom);
-	}
-
-	@Override
-	public void setCatch_UOM_ID (final int Catch_UOM_ID)
-	{
-		if (Catch_UOM_ID < 1) 
-			set_Value (COLUMNNAME_Catch_UOM_ID, null);
+		if (C_BP_Location_Override_ID < 1) 
+			set_Value (COLUMNNAME_C_BP_Location_Override_ID, null);
 		else 
-			set_Value (COLUMNNAME_Catch_UOM_ID, Catch_UOM_ID);
+			set_Value (COLUMNNAME_C_BP_Location_Override_ID, C_BP_Location_Override_ID);
 	}
 
 	@Override
-	public int getCatch_UOM_ID() 
+	public int getC_BP_Location_Override_ID() 
 	{
-		return get_ValueAsInt(COLUMNNAME_Catch_UOM_ID);
+		return get_ValueAsInt(COLUMNNAME_C_BP_Location_Override_ID);
 	}
 
 	@Override
@@ -189,21 +177,6 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 	public int getC_BPartner_Override_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_BPartner_Override_ID);
-	}
-
-	@Override
-	public void setC_BP_Location_Override_ID (final int C_BP_Location_Override_ID)
-	{
-		if (C_BP_Location_Override_ID < 1) 
-			set_Value (COLUMNNAME_C_BP_Location_Override_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_BP_Location_Override_ID, C_BP_Location_Override_ID);
-	}
-
-	@Override
-	public int getC_BP_Location_Override_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_C_BP_Location_Override_ID);
 	}
 
 	@Override
@@ -333,6 +306,33 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 	}
 
 	@Override
+	public void setCanBeExportedFrom (final @Nullable java.sql.Timestamp CanBeExportedFrom)
+	{
+		set_Value (COLUMNNAME_CanBeExportedFrom, CanBeExportedFrom);
+	}
+
+	@Override
+	public java.sql.Timestamp getCanBeExportedFrom() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_CanBeExportedFrom);
+	}
+
+	@Override
+	public void setCatch_UOM_ID (final int Catch_UOM_ID)
+	{
+		if (Catch_UOM_ID < 1) 
+			set_Value (COLUMNNAME_Catch_UOM_ID, null);
+		else 
+			set_Value (COLUMNNAME_Catch_UOM_ID, Catch_UOM_ID);
+	}
+
+	@Override
+	public int getCatch_UOM_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Catch_UOM_ID);
+	}
+
+	@Override
 	public void setDateOrdered (final @Nullable java.sql.Timestamp DateOrdered)
 	{
 		set_ValueNoCheck (COLUMNNAME_DateOrdered, DateOrdered);
@@ -415,6 +415,10 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 	public static final String DELIVERYVIARULE_Delivery = "D";
 	/** Shipper = S */
 	public static final String DELIVERYVIARULE_Shipper = "S";
+	/** Normalpost = NP */
+	public static final String DELIVERYVIARULE_Normalpost = "NP";
+	/** Luftpost = LU */
+	public static final String DELIVERYVIARULE_Luftpost = "LU";
 	@Override
 	public void setDeliveryViaRule (final java.lang.String DeliveryViaRule)
 	{
@@ -438,6 +442,10 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 	public static final String DELIVERYVIARULE_OVERRIDE_Delivery = "D";
 	/** Shipper = S */
 	public static final String DELIVERYVIARULE_OVERRIDE_Shipper = "S";
+	/** Normalpost = NP */
+	public static final String DELIVERYVIARULE_OVERRIDE_Normalpost = "NP";
+	/** Luftpost = LU */
+	public static final String DELIVERYVIARULE_OVERRIDE_Luftpost = "LU";
 	@Override
 	public void setDeliveryViaRule_Override (final @Nullable java.lang.String DeliveryViaRule_Override)
 	{
@@ -593,18 +601,6 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 	}
 
 	@Override
-	public void setMovementDate (final @Nullable java.sql.Timestamp MovementDate)
-	{
-		set_Value (COLUMNNAME_MovementDate, MovementDate);
-	}
-
-	@Override
-	public java.sql.Timestamp getMovementDate() 
-	{
-		return get_ValueAsTimestamp(COLUMNNAME_MovementDate);
-	}
-
-	@Override
 	public void setM_Product_ID (final int M_Product_ID)
 	{
 		if (M_Product_ID < 1) 
@@ -688,6 +684,18 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 	public int getM_Warehouse_Override_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_Warehouse_Override_ID);
+	}
+
+	@Override
+	public void setMovementDate (final @Nullable java.sql.Timestamp MovementDate)
+	{
+		set_Value (COLUMNNAME_MovementDate, MovementDate);
+	}
+
+	@Override
+	public java.sql.Timestamp getMovementDate() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_MovementDate);
 	}
 
 	/** 

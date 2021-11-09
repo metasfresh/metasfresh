@@ -23,6 +23,8 @@ package org.adempiere.mm.attributes.countryattribute.impl;
  */
 
 
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
+import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.countryattribute.ICountryAware;
 import org.adempiere.mm.attributes.countryattribute.ICountryAwareFactory;
@@ -79,13 +81,16 @@ public class OrderLineCountryAware implements ICountryAware
 	{
 		final I_C_Order order = getOrder();
 
-		final BPartnerLocationId bpLocationId = BPartnerLocationId.ofRepoIdOrNull(order.getC_BPartner_ID(), order.getC_BPartner_Location_ID());
+		final BPartnerLocationAndCaptureId bpLocationId = OrderDocumentLocationAdapterFactory
+				.locationAdapter(order)
+				.getBPartnerLocationAndCaptureIdIfExists()
+				.orElse(null);
 		if (bpLocationId == null)
 		{
 			return null;
 		}
 		
-		final CountryId countryId = Services.get(IBPartnerBL.class).getBPartnerLocationCountryId(bpLocationId);
+		final CountryId countryId = Services.get(IBPartnerBL.class).getCountryId(bpLocationId);
 		return Services.get(ICountryDAO.class).getById(countryId);
 	}
 

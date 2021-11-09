@@ -113,17 +113,7 @@ public class C_Invoice_Candidate_Builder
 	{
 		final Properties ctx = Env.getCtx();
 		final String trxName = ITrx.TRXNAME_ThreadInherited; // Services.get(ITrxManager.class).createTrxName("createInvoiceCandidate");
-
-		//
-		// Configure the BPartner
-		{
-			final I_C_BPartner billPartner;
-			billPartner = InterfaceWrapperHelper.create(ctx, I_C_BPartner.class, trxName);
-			billPartner.setC_BPartner_ID(billBPartnerId.getRepoId());
-
-			InterfaceWrapperHelper.save(billPartner);
-		}
-
+		
 		final I_C_Invoice_Candidate ic = InterfaceWrapperHelper.create(ctx, I_C_Invoice_Candidate.class, trxName);
 		POJOWrapper.setInstanceName(ic, instanceName);
 
@@ -287,12 +277,18 @@ public class C_Invoice_Candidate_Builder
 		return ic;
 	}
 
+	/**
+	 * Needs to be an existing partner's ID
+	 */
 	public C_Invoice_Candidate_Builder setBillBPartnerId(final int billBPartnerId)
 	{
 		return setBillBPartnerId(BPartnerId.ofRepoId(billBPartnerId));
 	}
 
-	public C_Invoice_Candidate_Builder setBillBPartnerId(final BPartnerId billBPartnerId)
+	/**
+	 * Needs to be an existing partner's ID
+	 */
+	public C_Invoice_Candidate_Builder setBillBPartnerId(@NonNull final BPartnerId billBPartnerId)
 	{
 		this.billBPartnerId = billBPartnerId;
 		return this;

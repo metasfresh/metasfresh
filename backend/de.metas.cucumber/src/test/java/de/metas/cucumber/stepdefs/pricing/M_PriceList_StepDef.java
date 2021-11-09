@@ -65,7 +65,7 @@ public class M_PriceList_StepDef
 	private final StepDefData<I_M_PriceList> priceListTable;
 	private final StepDefData<I_M_PriceList_Version> priceListVersionTable;
 	private final StepDefData<I_M_ProductPrice> productPriceTable;
-
+	
 	private final ITaxBL taxBL = Services.get(ITaxBL.class);
 
 	public M_PriceList_StepDef(
@@ -196,7 +196,7 @@ public class M_PriceList_StepDef
 		m_priceList_Version.setName(name);
 		m_priceList_Version.setDescription(description);
 		m_priceList_Version.setValidFrom(validFrom);
-
+		
 		saveRecord(m_priceList_Version);
 
 		final String recordIdentifier = DataTableUtil.extractRecordIdentifier(row, I_M_PriceList_Version.Table_Name);
@@ -218,7 +218,7 @@ public class M_PriceList_StepDef
 		final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_ProductPrice.COLUMNNAME_M_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 		final I_M_Product product = productTable.get(productIdentifier);
 		final BigDecimal priceStd = DataTableUtil.extractBigDecimalForColumnName(tableRow, I_M_ProductPrice.COLUMNNAME_PriceStd);
-
+		
 
 		final String taxCategoryInternalName = DataTableUtil.extractStringForColumnName(tableRow, I_M_ProductPrice.COLUMNNAME_C_TaxCategory_ID + "." + I_C_TaxCategory.COLUMNNAME_InternalName);
 		final Optional<TaxCategoryId> taxCategoryId = taxBL.getTaxCategoryIdByInternalName(taxCategoryInternalName);

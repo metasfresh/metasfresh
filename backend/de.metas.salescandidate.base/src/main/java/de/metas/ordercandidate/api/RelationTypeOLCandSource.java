@@ -1,6 +1,7 @@
 package de.metas.ordercandidate.api;
 
 import com.google.common.base.MoreObjects;
+import de.metas.async.AsyncBatchId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.DocTypeId;
 import de.metas.document.references.related_documents.relation_type.RelationTypeRelatedDocumentsProvidersFactory;
@@ -141,6 +142,7 @@ final class RelationTypeOLCandSource implements OLCandSource
 				.orderDocTypeId(orderDocTypeId)
 				.salesRepId(salesRepId)
 				.orderLineGroup(orderLineGroup)
+				.asyncBatchId(AsyncBatchId.ofRepoIdOrNull(olCandRecord.getC_Async_Batch_ID()))
 				.build();
 	}
 }

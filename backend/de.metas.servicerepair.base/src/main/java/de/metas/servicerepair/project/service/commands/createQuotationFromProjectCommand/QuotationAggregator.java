@@ -65,7 +65,7 @@ public class QuotationAggregator
 	private final ProjectQuotationPriceCalculator priceCalculator;
 
 	private final ArrayList<ServiceRepairProjectCostCollector> costCollectorsToAggregate = new ArrayList<>();
-	private AtomicInteger nextRepairingGroupIndex = new AtomicInteger(1);
+	private final AtomicInteger nextRepairingGroupIndex = new AtomicInteger(1);
 	private QuotationLineIdsByCostCollectorIdIndex generatedQuotationLineIdsIndexedByCostCollectorId;
 
 	@Builder
@@ -208,7 +208,7 @@ public class QuotationAggregator
 			throw new AdempiereException("Unknown key type: " + key);
 		}
 	}
-
+	
 	private OrderFactory newOrderFactory()
 	{
 		return OrderFactory.newSalesOrder()
@@ -225,6 +225,7 @@ public class QuotationAggregator
 				.projectId(project.getProjectId());
 	}
 
+	
 	public final QuotationLineIdsByCostCollectorIdIndex getQuotationLineIdsIndexedByCostCollectorId()
 	{
 		Objects.requireNonNull(generatedQuotationLineIdsIndexedByCostCollectorId, "generatedQuotationLineIdsIndexedByCostCollectorId");

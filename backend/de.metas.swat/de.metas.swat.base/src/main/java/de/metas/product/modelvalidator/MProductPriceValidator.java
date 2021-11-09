@@ -22,9 +22,8 @@ package de.metas.product.modelvalidator;
  * #L%
  */
 
-
-import java.math.BigDecimal;
-
+import de.metas.product.IProductPA;
+import de.metas.util.Services;
 import org.adempiere.model.I_M_ProductScalePrice;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_ProductPrice;
@@ -32,9 +31,10 @@ import org.compiere.model.MClient;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
+import org.compiere.model.X_M_ProductPrice;
 
-import de.metas.product.IProductPA;
-import de.metas.util.Services;
+import java.math.BigDecimal;
+import java.util.Objects;
 
 public class MProductPriceValidator implements ModelValidator
 {
@@ -80,7 +80,8 @@ public class MProductPriceValidator implements ModelValidator
 		}
 
 		final I_M_ProductPrice productPrice = InterfaceWrapperHelper.create(po, I_M_ProductPrice.class);
-		if (!productPrice.isUseScalePrice())
+		final String useScalePrice = productPrice.getUseScalePrice();
+		if (Objects.equals(useScalePrice, X_M_ProductPrice.USESCALEPRICE_DonTUseScalePrice))
 		{
 			return null;
 		}
@@ -93,7 +94,7 @@ public class MProductPriceValidator implements ModelValidator
 		{
 			final IProductPA productPA = Services.get(IProductPA.class);
 
-			if (productPrice.isUseScalePrice())
+			if (!Objects.equals(useScalePrice, X_M_ProductPrice.USESCALEPRICE_DonTUseScalePrice))
 			{
 				final String trxName = InterfaceWrapperHelper.getTrxName(productPrice);
 				final I_M_ProductScalePrice productScalePrice = productPA.retrieveOrCreateScalePrices(

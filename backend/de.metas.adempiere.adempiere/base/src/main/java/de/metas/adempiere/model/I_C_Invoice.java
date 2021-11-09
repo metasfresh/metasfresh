@@ -25,9 +25,7 @@ package de.metas.adempiere.model;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.X_C_DocType;
 
-import de.metas.document.model.IDocumentLocation;
-
-public interface I_C_Invoice extends org.compiere.model.I_C_Invoice, IDocumentLocation
+public interface I_C_Invoice extends org.compiere.model.I_C_Invoice
 {
 	/**
 	 * Doctype for adjustment charges (invoices) resulting from delivery differences.
@@ -56,50 +54,50 @@ public interface I_C_Invoice extends org.compiere.model.I_C_Invoice, IDocumentLo
 
 	// 04258
 
-	public static String COLUMNNAME_DescriptionBottom = "DescriptionBottom";
+	String COLUMNNAME_DescriptionBottom = "DescriptionBottom";
 
-	public String getDescriptionBottom();
+	String getDescriptionBottom();
 
-	public void setDescriptionBottom(String DescriptionBottom);
+	void setDescriptionBottom(String DescriptionBottom);
 
-	public static final String COLUMNNAME_Incoterm = "Incoterm";
+	// String COLUMNNAME_Incoterm = "Incoterm";
 
-	public String getIncoterm();
+	String getIncoterm();
 
-	public void setIncoterm(String Incoterm);
+	void setIncoterm(String Incoterm);
 
-	public static final String COLUMNNAME_IncotermLocation = "IncotermLocation";
+	// String COLUMNNAME_IncotermLocation = "IncotermLocation";
 
-	public String getIncotermLocation();
+	String getIncotermLocation();
 
-	public void setIncotermLocation(String IncotermLocation);
+	void setIncotermLocation(String IncotermLocation);
 
-	public static final String COLUMNNAME_IsUseBPartnerAddress = "IsUseBPartnerAddress";
+	String COLUMNNAME_IsUseBPartnerAddress = "IsUseBPartnerAddress";
 
-	public boolean isUseBPartnerAddress();
+	boolean isUseBPartnerAddress();
 
-	public void setIsUseBPartnerAddress(boolean IsUseBPartnerAddress);
+	void setIsUseBPartnerAddress(boolean IsUseBPartnerAddress);
 
 	// 02527
 	/** Column name M_AttributeSetInstance_ID */
-	public static final String COLUMNNAME_M_AttributeSetInstance_ID = "M_AttributeSetInstance_ID";
+	String COLUMNNAME_M_AttributeSetInstance_ID = "M_AttributeSetInstance_ID";
 
 	/** Set Attribute Set Instance */
-	public void setM_AttributeSetInstance_ID(int M_AttributeSetInstance_ID);
+	void setM_AttributeSetInstance_ID(int M_AttributeSetInstance_ID);
 
 	/** Get Attribute Set Instance */
-	public int getM_AttributeSetInstance_ID();
+	int getM_AttributeSetInstance_ID();
 
-	public I_M_AttributeSetInstance getM_AttributeSetInstance() throws RuntimeException;
+	I_M_AttributeSetInstance getM_AttributeSetInstance() throws RuntimeException;
 
 	// 02527 end
 
 	/**
-	 * @task http://dewiki908/mediawiki/index.php/08927_Add_feature_Gutgeschriebener_Betrag_erneut_abrechenbar_%28101267285473%29
+	 * Task http://dewiki908/mediawiki/index.php/08927_Add_feature_Gutgeschriebener_Betrag_erneut_abrechenbar_%28101267285473%29
 	 */
 	// @formatter:off
-	public static final String COLUMNNAME_IsCreditedInvoiceReinvoicable = "IsCreditedInvoiceReinvoicable";
-	public void setIsCreditedInvoiceReinvoicable(boolean IsCreditedInvoiceReinvoicable);
-	public boolean isCreditedInvoiceReinvoicable();
+	// String COLUMNNAME_IsCreditedInvoiceReinvoicable = "IsCreditedInvoiceReinvoicable";
+	void setIsCreditedInvoiceReinvoicable(boolean IsCreditedInvoiceReinvoicable);
+	boolean isCreditedInvoiceReinvoicable();
 	// @formatter:on
 }

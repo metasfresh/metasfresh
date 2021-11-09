@@ -22,9 +22,10 @@ package de.metas.logging;
  * #L%
  */
 
-import java.util.Map;
-import java.util.Properties;
-
+import ch.qos.logback.classic.Level;
+import de.metas.organization.ClientAndOrgId;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.net.NetUtils;
@@ -32,9 +33,8 @@ import org.compiere.Adempiere;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
-import ch.qos.logback.classic.Level;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import java.util.Map;
+import java.util.Properties;
 
 /**
  * Sets log level which is configured in {@link ISysConfigBL}.
@@ -163,13 +163,12 @@ class SysConfigLoggerCustomizer implements ILoggerCustomizer
 	private Map<String, String> getPropertiesMap()
 	{
 		final Properties ctx = Env.getCtx();
-		final int adClientId = Env.getAD_Client_ID(ctx);
-		final int adOrgId = Env.getAD_Org_ID(ctx);
+		final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(Env.getClientId(ctx), Env.getOrgId(ctx));
 		final boolean removePrefix = false; // keep the prefix, our BL is relying on that
 
 		// Load the properties map from underlying database
-		// NOTE: we assume it's cached on that level
-		return Services.get(ISysConfigBL.class).getValuesForPrefix(CFG_C_LOGGER_LEVEL_PREFIX, removePrefix, adClientId, adOrgId);
+		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+		return sysConfigBL.getValuesForPrefix(CFG_C_LOGGER_LEVEL_PREFIX, removePrefix, clientAndOrgId);
 	}
 
 	@Override

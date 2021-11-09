@@ -46,7 +46,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 		+ "Note that given the respective use-case, either `bpartner.code` `bpartner.externalId` might be `null`, but not both at once.")
 @Value
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
-public final class JsonResponseComposite
+public class JsonResponseComposite
 {
 	// TODO if an org is given, then verify whether the current user has access to the given org
 	@ApiModelProperty

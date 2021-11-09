@@ -1,0 +1,10 @@
+{
+  "runtimeParameters": [
+    {
+      "externalSystemParentConfigId": 1,
+      "request": "getProducts",
+      "name": "UpdatedAfter",
+      "value": "2021-06-21T07:44:09.708Z"
+    }
+  ]
+}

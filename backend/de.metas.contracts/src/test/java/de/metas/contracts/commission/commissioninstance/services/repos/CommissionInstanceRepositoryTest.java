@@ -1,22 +1,25 @@
 package de.metas.contracts.commission.commissioninstance.services.repos;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.commission.Beneficiary;
+import de.metas.contracts.commission.Payer;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionInstance;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionInstanceId;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionPoints;
-import de.metas.contracts.commission.commissioninstance.businesslogic.algorithms.HierarchyConfig;
-import de.metas.contracts.commission.commissioninstance.businesslogic.algorithms.HierarchyContract;
+import de.metas.contracts.commission.commissioninstance.businesslogic.algorithms.hierarchy.HierarchyConfig;
+import de.metas.contracts.commission.commissioninstance.businesslogic.algorithms.hierarchy.HierarchyContract;
 import de.metas.contracts.commission.commissioninstance.businesslogic.hierarchy.HierarchyLevel;
-import de.metas.contracts.commission.commissioninstance.businesslogic.sales.SalesCommissionFact;
-import de.metas.contracts.commission.commissioninstance.businesslogic.sales.SalesCommissionShare;
-import de.metas.contracts.commission.commissioninstance.businesslogic.sales.SalesCommissionState;
+import de.metas.contracts.commission.commissioninstance.businesslogic.sales.CommissionFact;
+import de.metas.contracts.commission.commissioninstance.businesslogic.sales.CommissionShare;
+import de.metas.contracts.commission.commissioninstance.businesslogic.sales.CommissionState;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTriggerData;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTriggerType;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.salesinvoicecandidate.SalesInvoiceCandidateDocumentId;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.salesinvoiceline.SalesInvoiceLineDocumentId;
 import de.metas.contracts.commission.commissioninstance.services.CommissionConfigFactory;
+import de.metas.contracts.commission.commissioninstance.services.CommissionConfigProvider;
 import de.metas.contracts.commission.commissioninstance.services.CommissionConfigStagingDataService;
 import de.metas.contracts.commission.commissioninstance.services.CommissionProductService;
 import de.metas.contracts.commission.commissioninstance.testhelpers.TestCommissionConfig;
@@ -32,6 +35,7 @@ import de.metas.contracts.commission.model.I_C_Commission_Share;
 import de.metas.invoice.InvoiceLineId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.lang.SOTrx;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.util.lang.Percent;
@@ -100,7 +104,8 @@ class CommissionInstanceRepositoryTest
 
 	private OrgId orgId = OrgId.ofRepoId(20);
 	private ProductId commissionProductId;
-	
+	private BPartnerId payerId;
+
 	@BeforeEach
 	void beforeEach()
 	{
@@ -116,7 +121,9 @@ class CommissionInstanceRepositoryTest
 		final CommissionConfigStagingDataService commissionConfigStagingDataService = new CommissionConfigStagingDataService();
 		final CommissionConfigFactory commissionConfigFactory = new CommissionConfigFactory(commissionConfigStagingDataService, new CommissionProductService());
 		final CommissionRecordStagingService commissionInstanceRecordStagingService = new CommissionRecordStagingService();
-		commissionInstanceRepository = new CommissionInstanceRepository(commissionConfigFactory, commissionInstanceRecordStagingService);
+		final CommissionConfigProvider commissionConfigProvider = new CommissionConfigProvider(ImmutableList.of(commissionConfigFactory));
+		commissionInstanceRepository = new CommissionInstanceRepository(commissionInstanceRecordStagingService, commissionConfigProvider);
+		payerId = BPartnerId.ofRepoId(1001);
 	}
 
 	@BeforeAll
@@ -173,6 +180,8 @@ class CommissionInstanceRepositoryTest
 				.commissionShareTestRecord(TestCommissionShare.builder()
 						.commissionProductId(commissionProductId)
 						.salesRepBPartnerId(C_BPartner_SalesRep_1_ID)
+						.payerBPartnerId(payerId)
+						.isSOTrx(false)
 						.flatrateTermId(configData.getBpartnerId2FlatrateTermId().get(C_BPartner_SalesRep_1_ID))
 						.levelHierarchy(10)
 						.pointsSum_Forecasted("1")
@@ -207,6 +216,8 @@ class CommissionInstanceRepositoryTest
 				.commissionShareTestRecord(TestCommissionShare.builder()
 						.commissionProductId(commissionProductId)
 						.salesRepBPartnerId(C_BPartner_SalesRep_2_ID)
+						.payerBPartnerId(payerId)
+						.isSOTrx(false)
 						.flatrateTermId(configData.getBpartnerId2FlatrateTermId().get(C_BPartner_SalesRep_2_ID))
 						.levelHierarchy(20)
 						.pointsSum_Forecasted("2")
@@ -269,6 +280,8 @@ class CommissionInstanceRepositoryTest
 						.flatrateTermId(configData.getBpartnerId2FlatrateTermId().get(C_BPartner_SalesRep_1_ID))
 						.commissionProductId(commissionProductId)
 						.salesRepBPartnerId(C_BPartner_SalesRep_1_ID)
+						.payerBPartnerId(payerId)
+						.isSOTrx(false)
 						.build())
 				.build()
 				.createCommissionData();
@@ -354,45 +367,49 @@ class CommissionInstanceRepositoryTest
 						.invoiceableBasePoints(CommissionPoints.of("11"))
 						.invoicedBasePoints(CommissionPoints.of("12"))
 						.build())
-				.share(SalesCommissionShare.builder()
+				.share(CommissionShare.builder()
 						.config(config)
+						.soTrx(SOTrx.PURCHASE)
+						.payer(Payer.of(payerId))
 						.beneficiary(beneficiary1)
 						.level(HierarchyLevel.of(10))
-						.fact(SalesCommissionFact.builder()
+						.fact(CommissionFact.builder()
 								.points(CommissionPoints.of("10"))
-								.state(SalesCommissionState.FORECASTED)
+								.state(CommissionState.FORECASTED)
 								.timestamp(Instant.parse("2019-09-17T11:49:25Z")).build())
-						.fact(SalesCommissionFact.builder()
-								.state(SalesCommissionState.FORECASTED)
+						.fact(CommissionFact.builder()
+								.state(CommissionState.FORECASTED)
 								.points(CommissionPoints.of("-9"))
 								.timestamp(Instant.parse("2019-09-17T11:49:35Z")).build())
-						.fact(SalesCommissionFact.builder()
-								.state(SalesCommissionState.INVOICEABLE)
+						.fact(CommissionFact.builder()
+								.state(CommissionState.INVOICEABLE)
 								.points(CommissionPoints.of("1.1"))
 								.timestamp(Instant.parse("2019-09-17T11:49:45Z")).build())
-						.fact(SalesCommissionFact.builder()
+						.fact(CommissionFact.builder()
 								.points(CommissionPoints.of("1.2"))
-								.state(SalesCommissionState.INVOICED)
+								.state(CommissionState.INVOICED)
 								.timestamp(Instant.parse("2019-09-17T11:49:55Z")).build())
 						.build())
-				.share(SalesCommissionShare.builder()
+				.share(CommissionShare.builder()
 						.config(config)
 						.beneficiary(beneficiary2)
 						.level(HierarchyLevel.of(20))
-						.fact(SalesCommissionFact.builder()
+						.payer(Payer.of(payerId))
+						.soTrx(SOTrx.PURCHASE)
+						.fact(CommissionFact.builder()
 								.points(CommissionPoints.of("2"))
-								.state(SalesCommissionState.FORECASTED)
+								.state(CommissionState.FORECASTED)
 								.timestamp(Instant.parse("2019-09-17T11:50:05Z")).build())
-						.fact(SalesCommissionFact.builder()
-								.state(SalesCommissionState.INVOICEABLE)
+						.fact(CommissionFact.builder()
+								.state(CommissionState.INVOICEABLE)
 								.points(CommissionPoints.of("2.1"))
 								.timestamp(Instant.parse("2019-09-17T11:50:15Z")).build())
-						.fact(SalesCommissionFact.builder()
-								.state(SalesCommissionState.INVOICED)
+						.fact(CommissionFact.builder()
+								.state(CommissionState.INVOICED)
 								.points(CommissionPoints.of("10"))
 								.timestamp(Instant.parse("2019-09-17T11:50:25Z")).build())
-						.fact(SalesCommissionFact.builder()
-								.state(SalesCommissionState.INVOICED)
+						.fact(CommissionFact.builder()
+								.state(CommissionState.INVOICED)
 								.points(CommissionPoints.of("-7.8"))
 								.timestamp(Instant.parse("2019-09-17T11:50:35Z")).build())
 						.build())

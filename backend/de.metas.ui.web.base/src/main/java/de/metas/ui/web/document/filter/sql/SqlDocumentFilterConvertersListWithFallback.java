@@ -57,8 +57,7 @@ import lombok.ToString;
 	}
 
 	@Override
-	public String getSql(
-			@NonNull final SqlParamsCollector sqlParamsOut,
+	public FilterSql getSql(
 			@NonNull final DocumentFilter filter,
 			@NonNull final SqlOptions sqlOpts,
 			@NonNull final SqlDocumentFilterConverterContext context)
@@ -68,7 +67,6 @@ import lombok.ToString;
 		final SqlDocumentFilterConverter effectiveConverter = converters.getConverterOrDefault(filterId, defaultConverter);
 
 		// Convert the filter to SQL using the effective converter
-		final String sqlFilter = effectiveConverter.getSql(sqlParamsOut, filter, sqlOpts, context);
-		return sqlFilter;
+		return effectiveConverter.getSql(filter, sqlOpts, context);
 	}
 }

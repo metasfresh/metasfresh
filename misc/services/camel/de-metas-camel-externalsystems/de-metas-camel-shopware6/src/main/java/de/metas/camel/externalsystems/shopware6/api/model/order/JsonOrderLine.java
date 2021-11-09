@@ -43,8 +43,12 @@ public class JsonOrderLine
 	@JsonProperty("id")
 	String id;
 
+	/**
+	 * Note: it's {@code @Nullable} to avoid NPEs with faulty order lines, 
+	 * but jsonOrderLines with null productId will be ignored, see {@link JsonOrderLines#filterForOrderLinesWithProductId()}.
+	 */
 	@JsonProperty("productId")
-	@NonNull
+	@Nullable
 	String productId;
 
 	@NonNull

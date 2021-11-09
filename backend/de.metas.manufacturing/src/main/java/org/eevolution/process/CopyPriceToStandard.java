@@ -16,49 +16,6 @@
 
 package org.eevolution.process;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-
-/*
- * #%L
- * de.metas.adempiere.libero.libero
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.math.BigDecimal;
-import java.util.Collection;
-import java.util.List;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
-import org.compiere.Adempiere;
-import org.compiere.model.IQuery;
-import org.compiere.model.I_M_Cost;
-import org.compiere.model.I_M_PriceList;
-import org.compiere.model.I_M_PriceList_Version;
-import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_ProductPrice;
-import org.compiere.model.POInfo;
-import org.compiere.util.Env;
-
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAcctSchemaDAO;
@@ -80,6 +37,26 @@ import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.compiere.Adempiere;
+import org.compiere.model.IQuery;
+import org.compiere.model.I_M_Cost;
+import org.compiere.model.I_M_PriceList;
+import org.compiere.model.I_M_PriceList_Version;
+import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_ProductPrice;
+import org.compiere.model.POInfo;
+import org.compiere.util.Env;
+
+import java.math.BigDecimal;
+import java.util.Collection;
+import java.util.List;
+
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 /**
  * CopyPriceToStandard
@@ -197,7 +174,7 @@ public class CopyPriceToStandard extends JavaProcess
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_ProductPrice.class)
-				.addEqualsFilter(I_M_ProductPrice.COLUMN_M_PriceList_Version_ID, priceListVersionId)
+				.addEqualsFilter(I_M_ProductPrice.COLUMNNAME_M_PriceList_Version_ID, priceListVersionId)
 				.addNotEqualsFilter(I_M_ProductPrice.COLUMN_PriceStd, BigDecimal.ZERO)
 				.create()
 				.list();

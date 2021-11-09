@@ -1,16 +1,23 @@
 package de.metas.invoicecandidate.api;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
+import com.google.common.collect.ImmutableSet;
+import de.metas.adempiere.model.I_C_Invoice;
+import de.metas.aggregation.model.I_C_Aggregation;
+import de.metas.bpartner.BPartnerId;
+import de.metas.invoice.InvoiceId;
+import de.metas.invoicecandidate.InvoiceCandidateId;
+import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.invoicecandidate.model.I_C_Invoice_Detail;
+import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
+import de.metas.invoicecandidate.model.I_M_ProductGroup;
+import de.metas.money.CurrencyId;
+import de.metas.order.OrderId;
+import de.metas.order.OrderLineId;
+import de.metas.process.PInstanceId;
+import de.metas.util.ISingletonService;
+import lombok.NonNull;
+import lombok.Value;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.IContextAware;
@@ -21,6 +28,16 @@ import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_InvoiceSchedule;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 
 /*
  * #%L
@@ -43,24 +60,6 @@ import org.compiere.model.I_M_InOutLine;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
-import de.metas.adempiere.model.I_C_Invoice;
-import de.metas.aggregation.model.I_C_Aggregation;
-import de.metas.bpartner.BPartnerId;
-import de.metas.invoice.InvoiceId;
-import de.metas.invoicecandidate.InvoiceCandidateId;
-import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
-import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.invoicecandidate.model.I_C_Invoice_Detail;
-import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
-import de.metas.invoicecandidate.model.I_M_ProductGroup;
-import de.metas.money.CurrencyId;
-import de.metas.order.OrderId;
-import de.metas.order.OrderLineId;
-import de.metas.process.PInstanceId;
-import de.metas.util.ISingletonService;
-import lombok.NonNull;
-import lombok.Value;
 
 public interface IInvoiceCandDAO extends ISingletonService
 {
@@ -139,6 +138,13 @@ public interface IInvoiceCandDAO extends ISingletonService
 	 * Invalidates the invoice candidates identified by given query.
 	 */
 	void invalidateCandsFor(IQueryBuilder<I_C_Invoice_Candidate> icQueryBuilder);
+
+	/**
+	 * Invalidates the invoice candidates identified by given invoice candidate ids.
+	 *
+	 * @param invoiceCandidateIds ids to invalidate
+	 */
+	void invalidateCandsFor(@NonNull final ImmutableSet<InvoiceCandidateId> invoiceCandidateIds);
 
 	/**
 	 * Invalidates the invoice candidates identified by given query.
@@ -376,7 +382,7 @@ public interface IInvoiceCandDAO extends ISingletonService
 	InvoiceableInvoiceCandIdResult getFirstInvoiceableInvoiceCandId(OrderId orderId);
 
 	@Value
-	public static class InvoiceableInvoiceCandIdResult
+	class InvoiceableInvoiceCandIdResult
 	{
 		InvoiceCandidateId firstInvoiceableInvoiceCandId;
 

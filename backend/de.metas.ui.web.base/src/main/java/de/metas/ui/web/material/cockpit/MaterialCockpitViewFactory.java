@@ -125,6 +125,7 @@ public class MaterialCockpitViewFactory
 				.setHasTreeSupport(displayIncludedRows)
 				.setTreeCollapsible(true)
 				.setTreeExpandedDepth(ViewLayout.TreeExpandedDepth_AllCollapsed)
+				.setAllowOpeningRowDetails(false)
 				.addElementsFromViewRowClass(MaterialCockpitRow.class, viewDataType)
 				.setFilters(materialCockpitFilters.getFilterDescriptors().getAll());
 

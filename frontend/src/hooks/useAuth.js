@@ -1,5 +1,5 @@
 import React, { useState, useContext, createContext } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useStore } from 'react-redux';
 import PropTypes from 'prop-types';
 import { loginWithToken, localLoginRequest, logoutRequest } from '../api';
 import Auth from '../services/Auth';
@@ -33,6 +33,8 @@ export const useAuth = () => {
 function useProvideAuth() {
   const auth = new Auth();
   const dispatch = useDispatch();
+  const store = useStore();
+
   // controls if user is authenticated and stores in the local storage as well as local value
   const [isLoggedIn, setLoggedIn] = useState(localStorage.isLogged);
   // flag indicating if there's an ongoing authentication request
@@ -76,14 +78,11 @@ function useProvideAuth() {
   };
 
   const login = () => {
-    setAuthRequestPending(true);
-
-    return dispatch(loginAction(auth))
-      .then(() => {
-        setAuthRequestPending(false);
+    if (!store.getState().appHandler.isLogged) {
+      return dispatch(loginAction(auth)).then(() => {
         _loginSuccess();
-      })
-      .catch(() => setAuthRequestPending(false));
+      });
+    }
   };
 
   const _logoutSuccess = () => {
