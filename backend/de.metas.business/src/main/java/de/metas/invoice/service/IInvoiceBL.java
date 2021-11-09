@@ -4,6 +4,7 @@ import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyPrecision;
+import de.metas.document.DocBaseAndSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.ICopyHandler;
 import de.metas.document.ICopyHandlerBL;
@@ -13,6 +14,7 @@ import de.metas.invoice.BPartnerInvoicingInfo;
 import de.metas.invoice.InvoiceCreditContext;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.service.impl.AdjustmentChargeCreateRequest;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.payment.PaymentRule;
@@ -297,7 +299,7 @@ public interface IInvoiceBL extends ISingletonService
 	 *
 	 * @return adjustmentCharge {@link de.metas.adempiere.model.I_C_Invoice}
 	 */
-	de.metas.adempiere.model.I_C_Invoice adjustmentCharge(I_C_Invoice invoice, String docSubType);
+	de.metas.adempiere.model.I_C_Invoice adjustmentCharge(AdjustmentChargeCreateRequest adjustmentChargeCreateRequest);
 
 	/**
 	 * Updates {@link I_C_InvoiceLine}'s {@link I_C_InvoiceLine#COLUMNNAME_IsPriceReadOnly IsPriceReadOnly}, {@link I_C_InvoiceLine#COLUMNNAME_IsQtyReadOnly IsQtyReadOnly} and
