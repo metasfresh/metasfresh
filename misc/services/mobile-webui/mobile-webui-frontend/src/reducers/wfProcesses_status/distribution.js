@@ -1,5 +1,6 @@
-import * as types from '../../constants/PickingActionTypes';
 import { original } from 'immer';
+
+import * as types from '../../constants/DistributionActionTypes';
 import { updateUserEditable } from './utils';
 import * as CompleteStatus from '../../constants/CompleteStatus';
 import { registerHandler } from './activityStateHandlers';
@@ -8,7 +9,7 @@ const COMPONENT_TYPE = 'distribution/move';
 
 export const distributionReducer = ({ draftState, action }) => {
   switch (action.type) {
-    case types.UPDATE_PICKING_STEP_QTY: {
+    case types.UPDATE_DISTRIBUTION_STEP_QTY: {
       return reduceOnUpdateQtyPicked(draftState, action.payload);
     }
 
@@ -50,14 +51,14 @@ const updateStepStatus = ({ draftWFProcess, activityId, lineId, stepId }) => {
 
 const computeStepStatus = ({ draftStep }) => {
   console.log('qtyPicked=', draftStep.qtyPicked);
-  console.log('qtyToPick=', draftStep.qtyToPick);
-  console.log('   => diff=', draftStep.qtyToPick - draftStep.qtyPicked === 0);
+  console.log('qtyToMove=', draftStep.qtyToMove);
+  console.log('   => diff=', draftStep.qtyToMove - draftStep.qtyPicked === 0);
 
   const isStepCompleted =
     // Barcode is set
     !!(draftStep.scannedHUBarcode && draftStep.scannedHUBarcode.length > 0) &&
     // and is completely picked or a reject code is set
-    (draftStep.qtyToPick - draftStep.qtyPicked === 0 || !!draftStep.qtyRejectedReasonCode);
+    (draftStep.qtyToMove - draftStep.qtyPicked === 0 || !!draftStep.qtyRejectedReasonCode);
 
   return isStepCompleted ? CompleteStatus.COMPLETED : CompleteStatus.NOT_STARTED;
 };
