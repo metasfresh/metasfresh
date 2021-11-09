@@ -208,6 +208,11 @@ public class PickingCandidateService
 				.execute();
 	}
 
+	public UnProcessPickingCandidatesResult unprocess(@NonNull final PickingCandidateId pickingCandidateId)
+	{
+		return unprocess(ImmutableSet.of(pickingCandidateId));
+	}
+
 	public UnProcessPickingCandidatesResult unprocess(@NonNull final Set<PickingCandidateId> pickingCandidateIds)
 	{
 		return UnProcessPickingCandidatesCommand.builder()

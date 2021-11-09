@@ -389,6 +389,7 @@ class PickingJobLoaderAndSaver
 			@NonNull final PickingJobDocStatus docStatus)
 	{
 		existingRecord.setProcessed(docStatus.isProcessed());
+		existingRecord.setPickFrom_HU_ID(from.getPickFromHU().getId().getRepoId());
 
 		// Picked status
 		updateRecord(existingRecord, from.getPicked(), from.getQtyToPick());

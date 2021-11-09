@@ -21,7 +21,7 @@ import java.util.Objects;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(AdempiereTestWatcher.class)
-public class ProcessPickingCandidatesCommand_PickFromHU_Test
+public class ProcessAndUnProcessPickingCandidatesCommand_PickFromHU_Test
 {
 	private ProcessPickingCandidatesCommandTestHelper helper;
 	private PickingCandidateRepository pickingCandidateRepository;
@@ -29,7 +29,7 @@ public class ProcessPickingCandidatesCommand_PickFromHU_Test
 	private ProductId productId;
 
 	@BeforeEach
-	public void init()
+	public void beforeEach()
 	{
 		this.helper = new ProcessPickingCandidatesCommandTestHelper();
 		this.pickingCandidateRepository = helper.pickingCandidateRepository;
@@ -61,24 +61,28 @@ public class ProcessPickingCandidatesCommand_PickFromHU_Test
 				.pickingCandidateId(pickingCandidateId)
 				.build()
 				.execute();
-
+		final HuId packedToHUId;
 		{
 			final PickingCandidate pickingCandidate = pickingCandidateRepository.getById(pickingCandidateId);
 			assertThat(pickingCandidate.getQtyPicked()).isEqualTo(Quantity.of("10", uomEach));
 			assertThat(pickingCandidate.getPickFrom()).isEqualTo(PickFrom.ofHuId(pickFromVHUId));
-			assertThat(pickingCandidate.getPackedToHuId())
-					.isNotNull()
-					.isNotEqualTo(pickFromVHUId);
+			assertThat(packedToHUId = pickingCandidate.getPackedToHuId()).isNotNull().isNotEqualTo(pickFromVHUId);
+			HUStorageExpectation.newExpectation().product(productId).qty(Quantity.of("90", uomEach)).assertExpected(pickFromVHUId);
+			HUStorageExpectation.newExpectation().product(productId).qty(Quantity.of("10", uomEach)).assertExpected(pickingCandidate.getPackedToHuId());
+		}
 
-			HUStorageExpectation.newExpectation()
-					.product(productId)
-					.qty(Quantity.of("90", uomEach))
-					.assertExpected(pickFromVHUId);
-
-			HUStorageExpectation.newExpectation()
-					.product(productId)
-					.qty(Quantity.of("10", uomEach))
-					.assertExpected(pickingCandidate.getPackedToHuId());
+		UnProcessPickingCandidatesCommand.builder()
+				.pickingCandidateRepository(pickingCandidateRepository)
+				.pickingCandidateId(pickingCandidateId)
+				.build()
+				.execute();
+		{
+			final PickingCandidate pickingCandidate = pickingCandidateRepository.getById(pickingCandidateId);
+			assertThat(pickingCandidate.getQtyPicked()).isEqualTo(Quantity.of("10", uomEach));
+			assertThat(pickingCandidate.getPickFrom()).isEqualTo(PickFrom.ofHuId(pickFromVHUId));
+			assertThat(pickingCandidate.getPackedToHuId()).isNull();
+			HUStorageExpectation.newExpectation().product(productId).qty(Quantity.of("100", uomEach)).assertExpected(pickFromVHUId);
+			HUStorageExpectation.newExpectation().product(productId).qty(Quantity.of("0", uomEach)).assertExpected(packedToHUId);
 		}
 	}
 
@@ -93,12 +97,23 @@ public class ProcessPickingCandidatesCommand_PickFromHU_Test
 				.pickingCandidateId(pickingCandidateId)
 				.build()
 				.execute();
-
 		{
 			final PickingCandidate pickingCandidate = pickingCandidateRepository.getById(pickingCandidateId);
 			assertThat(pickingCandidate.getQtyPicked()).isEqualTo(Quantity.of("100", uomEach));
 			assertThat(pickingCandidate.getPickFrom()).isEqualTo(PickFrom.ofHuId(pickFromVHUId));
 			assertThat(pickingCandidate.getPackedToHuId()).isEqualTo(pickFromVHUId);
+		}
+
+		UnProcessPickingCandidatesCommand.builder()
+				.pickingCandidateRepository(pickingCandidateRepository)
+				.pickingCandidateId(pickingCandidateId)
+				.build()
+				.execute();
+		{
+			final PickingCandidate pickingCandidate = pickingCandidateRepository.getById(pickingCandidateId);
+			assertThat(pickingCandidate.getQtyPicked()).isEqualTo(Quantity.of("100", uomEach));
+			assertThat(pickingCandidate.getPickFrom()).isEqualTo(PickFrom.ofHuId(pickFromVHUId));
+			assertThat(pickingCandidate.getPackedToHuId()).isNull();
 		}
 	}
 
@@ -114,24 +129,27 @@ public class ProcessPickingCandidatesCommand_PickFromHU_Test
 				.pickingCandidateId(pickingCandidateId)
 				.build()
 				.execute();
-
+		final HuId packedToHUId;
 		{
 			final PickingCandidate pickingCandidate = pickingCandidateRepository.getById(pickingCandidateId);
 			assertThat(pickingCandidate.getQtyPicked()).isEqualTo(Quantity.of("100", uomEach));
 			assertThat(pickingCandidate.getPickFrom()).isEqualTo(PickFrom.ofHuId(pickFromVHUId));
-			assertThat(pickingCandidate.getPackedToHuId())
-					.isNotNull()
-					.isNotEqualTo(pickFromVHUId);
+			assertThat(packedToHUId = pickingCandidate.getPackedToHuId()).isNotNull().isNotEqualTo(pickFromVHUId);
+			HUStorageExpectation.newExpectation().product(productId).qty(Quantity.of("0", uomEach)).assertExpected(pickFromVHUId);
+			HUStorageExpectation.newExpectation().product(productId).qty(Quantity.of("100", uomEach)).assertExpected(pickingCandidate.getPackedToHuId());
+		}
 
-			HUStorageExpectation.newExpectation()
-					.product(productId)
-					.qty(Quantity.of("0", uomEach))
-					.assertExpected(pickFromVHUId);
-
-			HUStorageExpectation.newExpectation()
-					.product(productId)
-					.qty(Quantity.of("100", uomEach))
-					.assertExpected(pickingCandidate.getPackedToHuId());
+		UnProcessPickingCandidatesCommand.builder()
+				.pickingCandidateRepository(pickingCandidateRepository)
+				.pickingCandidateId(pickingCandidateId)
+				.build()
+				.execute();
+		{
+			final PickingCandidate pickingCandidate = pickingCandidateRepository.getById(pickingCandidateId);
+			assertThat(pickingCandidate.getQtyPicked()).isEqualTo(Quantity.of("100", uomEach));
+			assertThat(pickingCandidate.getPickFrom()).isEqualTo(PickFrom.ofHuId(packedToHUId));
+			assertThat(pickingCandidate.getPackedToHuId()).isNull();
+			HUStorageExpectation.newExpectation().product(productId).qty(Quantity.of("100", uomEach)).assertExpected(packedToHUId);
 		}
 	}
 
