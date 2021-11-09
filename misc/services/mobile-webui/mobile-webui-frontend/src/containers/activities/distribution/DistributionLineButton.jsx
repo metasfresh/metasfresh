@@ -17,7 +17,7 @@ class LineButton extends PureComponent {
         location,
         values: [
           {
-            caption: counterpart.translate('activities.picking.PickingLine'),
+            caption: counterpart.translate('activities.distribution.DistributionLine'),
             value: caption,
             bold: true,
           },
@@ -27,12 +27,12 @@ class LineButton extends PureComponent {
   };
 
   render() {
-    const { caption, uom, qtyPicked, qtyToPick, completeStatus, appId } = this.props;
+    const { caption, uom, qtyPicked, qtyToMove, completeStatus, appId } = this.props;
 
     return (
       <>
         <ButtonWithIndicator caption={caption} completeStatus={completeStatus}>
-          <ButtonQuantityProp qtyPicked={qtyPicked} qtyTarget={qtyToPick} uom={uom} appId={appId} />
+          <ButtonQuantityProp qtyPicked={qtyPicked} qtyTarget={qtyToMove} uom={uom} appId={appId} />
         </ButtonWithIndicator>
       </>
     );
@@ -50,7 +50,7 @@ LineButton.propTypes = {
   completeStatus: PropTypes.string.isRequired,
   uom: PropTypes.string.isRequired,
   qtyPicked: PropTypes.number.isRequired,
-  qtyToPick: PropTypes.number.isRequired,
+  qtyToMove: PropTypes.number.isRequired,
   appId: PropTypes.string.isRequired,
   onHandleClick: PropTypes.func.isRequired,
   //

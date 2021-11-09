@@ -7,6 +7,7 @@ import { workflowReducer } from './workflow';
 import { scanReducer } from './scan';
 import { activityUserConfirmationReducer } from './confirmation';
 import { pickingReducer } from './picking';
+import { distributionReducer } from './distribution';
 
 const getWfProcess = (state, wfProcessId) => state.wfProcesses_status[wfProcessId] || null;
 
@@ -64,6 +65,7 @@ const reducer = produce((draftState, action) => {
   draftState = scanReducer({ draftState, action });
   draftState = activityUserConfirmationReducer({ draftState, action });
   draftState = pickingReducer({ draftState, action });
+  draftState = distributionReducer({ draftState, action });
 
   return draftState;
 }, {});
