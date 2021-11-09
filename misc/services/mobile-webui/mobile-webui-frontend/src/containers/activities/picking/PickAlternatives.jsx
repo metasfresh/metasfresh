@@ -6,7 +6,7 @@ class PickAlternatives extends Component {
   renderAlternatives = ({ diffToPick }) => {
     // const { pickFromAlternativeIds, pickFromAlternatives, altSteps } = this.props;
 
-    const { altSteps, wfProcessId, activityId, lineId } = this.props;
+    const { altSteps, wfProcessId, activityId, lineId, stepId } = this.props;
     const { genSteps } = altSteps;
 
     console.log('G:', genSteps);
@@ -35,7 +35,8 @@ class PickAlternatives extends Component {
                 wfProcessId={wfProcessId}
                 activityId={activityId}
                 lineId={lineId}
-                stepId={stepItem.id}
+                stepId={stepId}
+                altStepId={stepItem.id}
                 {...stepItem}
               />
             );

@@ -10,10 +10,10 @@ import { pushHeaderEntry } from '../../../actions/HeaderActions';
 
 class PickAltStepButton extends PureComponent {
   handleClick = () => {
-    const { wfProcessId, activityId, lineId, stepId, locatorName } = this.props;
+    const { wfProcessId, activityId, lineId, stepId, altStepId, locatorName } = this.props;
     const { push, pushHeaderEntry } = this.props;
 
-    const location = `/workflow/${wfProcessId}/activityId/${activityId}/lineId/${lineId}/altStepId/${stepId}`;
+    const location = `/workflow/${wfProcessId}/activityId/${activityId}/lineId/${lineId}/stepId/${stepId}/altStepId/${altStepId}`;
     push(location);
     pushHeaderEntry({
       location,
@@ -84,6 +84,7 @@ PickAltStepButton.propTypes = {
   activityId: PropTypes.string.isRequired,
   lineId: PropTypes.string.isRequired,
   stepId: PropTypes.string.isRequired,
+  altStepId: PropTypes.string.isRequired,
   productName: PropTypes.string.isRequired,
   locatorName: PropTypes.string.isRequired,
   huBarcode: PropTypes.string,
