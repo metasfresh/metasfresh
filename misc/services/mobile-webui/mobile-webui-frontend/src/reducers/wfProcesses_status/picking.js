@@ -27,6 +27,12 @@ const reduceOnUpdateQtyPicked = (draftState, payload) => {
   draftStep.qtyPicked = qtyPicked;
   draftStep.qtyRejectedReasonCode = qtyRejectedReasonCode;
 
+  // update here the remaining qtyToPick (diff remaining to be picked with alternative steps)
+
+  // also generate the alternative steps and populate the `genSteps`
+
+  // sync pickFromAlternatives
+
   updateStepStatus({
     draftWFProcess,
     activityId,
@@ -149,6 +155,9 @@ const normalizePickingLines = (lines) => {
       steps: line.steps.reduce((accum, step) => {
         accum[step.pickingStepId] = step;
         accum[step.pickingStepId].altSteps = {};
+        accum[step.pickingStepId].altSteps.qtyToPick = 0;
+        accum[step.pickingStepId].altSteps.genSteps = [];
+
         return accum;
       }, {}),
     };
@@ -166,6 +175,6 @@ registerHandler({
   },
   computeActivityDataStoredInitialValue: ({ componentProps }) => {
     console.log('computeActivityDataStoredInitialValue for ', componentProps);
-    return { lines: componentProps.lines };
+    return { lines: componentProps.lines, pickFromAlternatives: componentProps.pickFromAlternatives };
   },
 });
