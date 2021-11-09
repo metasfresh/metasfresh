@@ -1,7 +1,6 @@
 package de.metas.handlingunits.picking.job.service.commands;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.bpartner.service.impl.BPartnerBL;
@@ -83,10 +82,11 @@ public class PickingJobTestHelper
 		pickingCandidateRepository = new PickingCandidateRepository();
 		final BPartnerBL bpartnerBL = new BPartnerBL(new UserRepository());
 		final HUReservationService huReservationService = new HUReservationService(new HUReservationRepository());
+		final PickingJobRepository pickingJobRepository = new PickingJobRepository();
 		pickingJobService = new PickingJobService(
-				new PickingJobRepository(),
+				pickingJobRepository,
 				new PickingJobLockService(new InMemoryShipmentScheduleLockRepository()),
-				new PickingJobSlotService(),
+				new PickingJobSlotService(pickingJobRepository),
 				new PickingCandidateService(
 						new PickingConfigRepository(),
 						pickingCandidateRepository,
