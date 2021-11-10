@@ -15,16 +15,11 @@ import { toastError } from '../../../utils/toast';
 
 class PickAltStepScreen extends Component {
   onScanHUButtonClick = () => {
-    const {
-      wfProcessId,
-      activityId,
-      lineId,
-      stepId,
-      stepProps: { huBarcode, qtyToPick },
-      push,
-      pushHeaderEntry,
-      altStepId,
-    } = this.props;
+    const { wfProcessId, activityId, lineId, stepId, altStepId, stepProps, push, pushHeaderEntry } = this.props;
+
+    const { huBarcode, qtyToPick } = stepProps;
+    console.log('P:', this.props);
+
     const location = `/workflow/${wfProcessId}/activityId/${activityId}/lineId/${lineId}/stepId/${stepId}/altStepId/${altStepId}/scanner`;
 
     push(location);
@@ -33,11 +28,11 @@ class PickAltStepScreen extends Component {
       values: [
         {
           caption: counterpart.translate('general.Barcode'),
-          value: huBarcode,
+          value: altStepId ? stepProps.altSteps.genSteps[altStepId].huBarcode : huBarcode,
         },
         {
           caption: counterpart.translate('general.QtyToPick'),
-          value: qtyToPick,
+          value: altStepId ? stepProps.altSteps.genSteps[altStepId].qtyAvailable : qtyToPick,
         },
       ],
     });

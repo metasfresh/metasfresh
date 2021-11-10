@@ -146,7 +146,7 @@ class PickStepScanHUScreen extends Component {
 }
 
 const mapStateToProps = (state, { match }) => {
-  const { workflowId: wfProcessId, activityId, lineId, stepId } = match.params;
+  const { workflowId: wfProcessId, activityId, lineId, stepId, altStepId } = match.params;
 
   const stepProps = state.wfProcesses_status[wfProcessId].activities[activityId].dataStored.lines[lineId].steps[stepId];
 
@@ -157,6 +157,7 @@ const mapStateToProps = (state, { match }) => {
     stepId,
     stepProps,
     eligibleHUBarcode: stepProps.huBarcode,
+    altStepId,
   };
 };
 
