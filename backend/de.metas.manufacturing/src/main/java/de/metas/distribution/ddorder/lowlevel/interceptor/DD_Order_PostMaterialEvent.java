@@ -25,6 +25,7 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.TimeUtil;
 import org.eevolution.model.I_DD_Order;
@@ -67,21 +68,20 @@ public class DD_Order_PostMaterialEvent
 
 		final List<DDOrderCreatedEvent> events = createEvents(ddOrder);
 
-		final PostMaterialEventService materialEventService = Adempiere.getBean(PostMaterialEventService.class);
-		events.forEach(event -> materialEventService.postEventAfterNextCommit(event));
+		final PostMaterialEventService materialEventService = SpringContextHolder.instance.getBean(PostMaterialEventService.class);
+		events.forEach(materialEventService::postEventAfterNextCommit);
 	}
 
 	public static DDOrderBuilder createAndInitPPOrderPojoBuilder(@NonNull final I_DD_Order ddOrderRecord)
 	{
-		final DDOrderBuilder ddOrderPojoBuilder = DDOrder.builder()
-				.datePromised(TimeUtil.asInstant(ddOrderRecord.getDatePromised()))
+		return DDOrder.builder()
+				.datePromised(TimeUtil.asInstantNonNull(ddOrderRecord.getDatePromised()))
 				.ddOrderId(ddOrderRecord.getDD_Order_ID())
 				.docStatus(ddOrderRecord.getDocStatus())
 				.orgId(OrgId.ofRepoId(ddOrderRecord.getAD_Org_ID()))
 				.plantId(ddOrderRecord.getPP_Plant_ID())
 				.productPlanningId(ddOrderRecord.getPP_Product_Planning_ID())
 				.shipperId(ddOrderRecord.getM_Shipper_ID());
-		return ddOrderPojoBuilder;
 	}
 
 	private List<DDOrderCreatedEvent> createEvents(@NonNull final I_DD_Order ddOrder)
@@ -119,7 +119,7 @@ public class DD_Order_PostMaterialEvent
 			@NonNull final I_DD_Order ddOrder,
 			final int durationDays)
 	{
-		final ModelProductDescriptorExtractor productDescriptorFactory = Adempiere.getBean(ModelProductDescriptorExtractor.class);
+		final ModelProductDescriptorExtractor productDescriptorFactory = SpringContextHolder.instance.getBean(ModelProductDescriptorExtractor.class);
 
 		final int bPartnerId = CoalesceUtil.firstGreaterThanZero(ddOrderLine.getC_BPartner_ID(), ddOrder.getC_BPartner_ID());
 

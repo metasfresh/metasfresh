@@ -337,7 +337,7 @@ public class CandidateRepositoryWriteService
 				"The given MD_Candidate is not new and its ID is different from the ID of the given Candidate; MD_Candidate=%s; candidate=%s",
 				candidateRecord, candidate);
 
-		final I_MD_Candidate candidateRecordToUse = CoalesceUtil.coalesce(candidateRecord, newInstance(I_MD_Candidate.class));
+		final I_MD_Candidate candidateRecordToUse = CoalesceUtil.coalesceNotNull(candidateRecord, newInstance(I_MD_Candidate.class));
 
 		updateCandidateRecordFromCandidate(candidateRecordToUse, candidate, preserveExistingSeqNo);
 
