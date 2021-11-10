@@ -125,7 +125,7 @@ class DistributionStepScreen extends Component {
             disabled={noHUPicked}
             onClick={this.onUnpickHUButtonClick}
           >
-            <ButtonWithIndicator caption="Unpick" />
+            <ButtonWithIndicator caption={counterpart.translate('activities.picking.unPickBtn')} />
           </button>
         </div>
 
@@ -141,7 +141,7 @@ class DistributionStepScreen extends Component {
             disabled={noLocatorPicked}
             onClick={this.onUnpickLocatorButtonClick}
           >
-            <ButtonWithIndicator caption="Unpick" />
+            <ButtonWithIndicator caption={counterpart.translate('activities.picking.unPickBtn')} />
           </button>
         </div>
       </>

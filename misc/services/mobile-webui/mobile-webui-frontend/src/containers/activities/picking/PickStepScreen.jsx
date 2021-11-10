@@ -120,7 +120,7 @@ class PickStepScreen extends Component {
             disabled={nothingPicked}
             onClick={this.onUnpickButtonClick}
           >
-            <ButtonWithIndicator caption="Unpick" />
+            <ButtonWithIndicator caption={counterpart.translate('activities.picking.unPickBtn')} />
           </button>
         </div>
       </>
