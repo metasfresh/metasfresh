@@ -5,12 +5,22 @@ export function updateDistributionStepQty({
   activityId,
   lineId,
   stepId,
-  scannedHUBarcode,
+  droppedToLocator,
+  actualHUPicked,
   qtyPicked,
   qtyRejectedReasonCode,
 }) {
   return {
     type: UPDATE_DISTRIBUTION_STEP_QTY,
-    payload: { wfProcessId, activityId, lineId, stepId, scannedHUBarcode, qtyPicked, qtyRejectedReasonCode },
+    payload: {
+      wfProcessId,
+      activityId,
+      lineId,
+      stepId,
+      droppedToLocator,
+      actualHUPicked,
+      qtyPicked,
+      qtyRejectedReasonCode,
+    },
   };
 }

@@ -45,7 +45,6 @@ class PickStepScreen extends Component {
       stepProps: { scannedHUBarcode },
       dispatch,
     } = this.props;
-    const { updatePickingStepQty } = this.props;
 
     postStepUnPicked({
       wfProcessId,
