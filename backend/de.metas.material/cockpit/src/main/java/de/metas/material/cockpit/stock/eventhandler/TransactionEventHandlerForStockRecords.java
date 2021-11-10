@@ -88,11 +88,10 @@ public class TransactionEventHandlerForStockRecords
 
 		final StockChangeSourceInfo stockChangeSourceInfo = StockChangeSourceInfo.ofTransactionId(event.getTransactionId());
 
-		final StockDataUpdateRequest request = StockDataUpdateRequest.builder()
+		return StockDataUpdateRequest.builder()
 				.identifier(identifier)
 				.onHandQtyChange(event.getQuantityDelta())
 				.sourceInfo(stockChangeSourceInfo)
 				.build();
-		return request;
 	}
 }

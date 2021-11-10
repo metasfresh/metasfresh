@@ -75,28 +75,31 @@ public class DDOrderRequestedEventHandler implements MaterialEventHandler<DDOrde
 	@Override
 	public void handleEvent(@NonNull final DDOrderRequestedEvent distributionOrderEvent)
 	{
-		createDDOrder(distributionOrderEvent);
+		createDDOrders(distributionOrderEvent);
 	}
 
 	@VisibleForTesting
-	I_DD_Order createDDOrder(@NonNull final DDOrderRequestedEvent ddOrderRequestedEvent)
+	ImmutableList<I_DD_Order> createDDOrders(@NonNull final DDOrderRequestedEvent ddOrderRequestedEvent)
 	{
 		final DDOrder ddOrder = ddOrderRequestedEvent.getDdOrder();
 		final Date dateOrdered = TimeUtil.asDate(ddOrderRequestedEvent.getDateOrdered());
 
-		final I_DD_Order ddOrderRecord = ddOrderProducer.createDDOrder(ddOrder, dateOrdered);
+		final ImmutableList<I_DD_Order> ddOrderRecords = ddOrderProducer.createDDOrders(ddOrder, dateOrdered);
 
-		Loggables.withLogger(logger, Level.DEBUG).addLog(
-				"Created ddOrder; DD_Order_ID={}; DocumentNo={}",
-				ddOrderRecord.getDD_Order_ID(), ddOrderRecord.getDocumentNo());
-
-		if (ddOrderRecord.getPP_Product_Planning().isDocComplete())
+		for (final I_DD_Order ddOrderRecord : ddOrderRecords)
 		{
-			Services.get(IDocumentBL.class).processEx(ddOrderRecord, ACTION_Complete, STATUS_Completed);
 			Loggables.withLogger(logger, Level.DEBUG).addLog(
-					"Completed ddOrder; DD_Order_ID={}; DocumentNo={}",
+					"Created ddOrder; DD_Order_ID={}; DocumentNo={}",
 					ddOrderRecord.getDD_Order_ID(), ddOrderRecord.getDocumentNo());
+
+			if (ddOrderRecord.getPP_Product_Planning().isDocComplete())
+			{
+				Services.get(IDocumentBL.class).processEx(ddOrderRecord, ACTION_Complete, STATUS_Completed);
+				Loggables.withLogger(logger, Level.DEBUG).addLog(
+						"Completed ddOrder; DD_Order_ID={}; DocumentNo={}",
+						ddOrderRecord.getDD_Order_ID(), ddOrderRecord.getDocumentNo());
+			}
 		}
-		return ddOrderRecord;
+		return ddOrderRecords;
 	}
 }
