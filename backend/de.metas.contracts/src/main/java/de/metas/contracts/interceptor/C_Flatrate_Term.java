@@ -677,7 +677,7 @@ public class C_Flatrate_Term
 		flatrateBL.ensureOneContractOfGivenType(term, TypeConditions.MEDIATED_COMMISSION);
 	}
 
-	@ModelChange(timings = ModelValidator.TYPE_BEFORE_NEW)
+	@ModelChange(timings = ModelValidator.TYPE_AFTER_NEW)
 	public void setC_Flatrate_Term_Master(final I_C_Flatrate_Term term)
 	{
 		final I_C_Flatrate_Term ancestor = Services.get(IFlatrateDAO.class).retrieveAncestorFlatrateTerm(term);
