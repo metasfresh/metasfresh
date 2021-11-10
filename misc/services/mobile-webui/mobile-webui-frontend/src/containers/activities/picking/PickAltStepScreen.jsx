@@ -16,11 +16,12 @@ import { toastError } from '../../../utils/toast';
 class PickAltStepScreen extends Component {
   onScanHUButtonClick = () => {
     const { wfProcessId, activityId, lineId, stepId, altStepId, stepProps, push, pushHeaderEntry } = this.props;
-
     const { huBarcode, qtyToPick } = stepProps;
-    console.log('P:', this.props);
 
     const location = `/workflow/${wfProcessId}/activityId/${activityId}/lineId/${lineId}/stepId/${stepId}/altStepId/${altStepId}/scanner`;
+
+    const headerHuCode = altStepId ? stepProps.altSteps.genSteps[altStepId].huBarcode : huBarcode;
+    const headerQtyToPick = altStepId ? stepProps.altSteps.genSteps[altStepId].qtyAvailable : qtyToPick;
 
     push(location);
     pushHeaderEntry({
@@ -28,11 +29,11 @@ class PickAltStepScreen extends Component {
       values: [
         {
           caption: counterpart.translate('general.Barcode'),
-          value: altStepId ? stepProps.altSteps.genSteps[altStepId].huBarcode : huBarcode,
+          value: headerHuCode,
         },
         {
           caption: counterpart.translate('general.QtyToPick'),
-          value: altStepId ? stepProps.altSteps.genSteps[altStepId].qtyAvailable : qtyToPick,
+          value: headerQtyToPick,
         },
       ],
     });
