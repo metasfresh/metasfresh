@@ -62,6 +62,7 @@ public enum BOMComponentType implements ReferenceListAwareEnum
 		return componentType != null ? componentType.getCode() : null;
 	}
 
+	@NonNull
 	public static BOMComponentType ofCode(@NonNull final String code)
 	{
 		final BOMComponentType type = typesByCode.get(code);
