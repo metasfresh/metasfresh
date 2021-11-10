@@ -87,6 +87,7 @@ public class CandidateRepositoryWriteService
 {
 	private final DimensionService dimensionService;
 	private final StockChangeDetailRepo stockChangeDetailRepo;
+	private final IForecastDAO forecastDAO = Services.get(IForecastDAO.class);
 
 	public CandidateRepositoryWriteService(
 			@NonNull final DimensionService dimensionService,
@@ -274,7 +275,7 @@ public class CandidateRepositoryWriteService
 		{
 			previousTime = DateAndSeqNo
 					.builder()
-					.date(TimeUtil.asInstant(oldCandidateRecord.getDateProjected()))
+					.date(TimeUtil.asInstantNonNull(oldCandidateRecord.getDateProjected()))
 					.seqNo(oldCandidateRecord.getSeqNo())
 					.build();
 		}
@@ -363,8 +364,6 @@ public class CandidateRepositoryWriteService
 			@NonNull final Candidate candidate,
 			final boolean preserveExistingSeqNo)
 	{
-		final IForecastDAO forecastRepo = Services.get(IForecastDAO.class);
-
 		final MaterialDescriptor materialDescriptor = candidate.getMaterialDescriptor();
 
 		candidateRecord.setAD_Org_ID(candidate.getOrgId().getRepoId());
@@ -391,16 +390,16 @@ public class CandidateRepositoryWriteService
 		if (demandDetail != null)
 		{
 			final int forecastLineId = demandDetail.getForecastLineId();
-			if (forecastLineId > 0 && forecastLineId != IdConstants.UNSPECIFIED_REPO_ID)
+			if (IdConstants.toRepoId(forecastLineId) > 0)
 			{
-				final I_M_ForecastLine forecastLine = forecastRepo.getForecastLineById(forecastLineId);
+				final I_M_ForecastLine forecastLine = forecastDAO.getForecastLineById(forecastLineId);
 
 				final Dimension forecastLineDimension = dimensionService.getFromRecord(forecastLine);
 				dimensionService.updateRecord(candidateRecord, forecastLineDimension);
 			}
 		}
 
-		updatCandidateRecordFromDemandDetail(candidateRecord, demandDetail);
+		updateCandidateRecordFromDemandDetail(candidateRecord, demandDetail);
 
 		if (candidate.getBusinessCase() != null)
 		{
@@ -452,7 +451,7 @@ public class CandidateRepositoryWriteService
 	 * <p>
 	 * Note that we have them as physical columns for performance reasons.
 	 */
-	private void updatCandidateRecordFromDemandDetail(
+	private void updateCandidateRecordFromDemandDetail(
 			@NonNull final I_MD_Candidate candidateRecord,
 			@Nullable final DemandDetail demandDetail)
 	{
@@ -464,34 +463,19 @@ public class CandidateRepositoryWriteService
 		final boolean demandDetailWouldResetOrderId = demandDetail.getOrderId() == 0 && candidateRecord.getC_OrderSO_ID() > 0;
 		if (!demandDetailWouldResetOrderId)
 		{
-			candidateRecord.setC_OrderSO_ID(demandDetail.getOrderId());
-		}
-		final boolean orderLineIdShallBeSetToZero = demandDetail.getOrderId() == NULL_REPO_ID;
-		if (orderLineIdShallBeSetToZero)
-		{
-			candidateRecord.setC_OrderSO_ID(0);
+			candidateRecord.setC_OrderSO_ID(IdConstants.toRepoId(demandDetail.getOrderId()));
 		}
 
 		final boolean demandDetailWouldResetForecastId = demandDetail.getForecastId() == 0 && candidateRecord.getM_Forecast_ID() > 0;
 		if (!demandDetailWouldResetForecastId)
 		{
-			candidateRecord.setM_Forecast_ID(demandDetail.getForecastId());
-		}
-		final boolean forecastLineIdShallBeSetToZero = demandDetail.getForecastId() == NULL_REPO_ID;
-		if (forecastLineIdShallBeSetToZero)
-		{
-			candidateRecord.setM_Forecast_ID(0);
+			candidateRecord.setM_Forecast_ID(IdConstants.toRepoId(demandDetail.getForecastId()));
 		}
 
 		final boolean demandDetailWouldResetShipmentScheduleId = demandDetail.getShipmentScheduleId() == 0 && candidateRecord.getM_ShipmentSchedule_ID() > 0;
 		if (!demandDetailWouldResetShipmentScheduleId)
 		{
-			candidateRecord.setM_ShipmentSchedule_ID(demandDetail.getShipmentScheduleId());
-		}
-		final boolean shipmentScheduleIdShallBeSetToZero = demandDetail.getShipmentScheduleId() == NULL_REPO_ID;
-		if (shipmentScheduleIdShallBeSetToZero)
-		{
-			candidateRecord.setM_ShipmentSchedule_ID(0);
+			candidateRecord.setM_ShipmentSchedule_ID(IdConstants.toRepoId(demandDetail.getShipmentScheduleId()));
 		}
 	}
 
