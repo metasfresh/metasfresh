@@ -40,7 +40,7 @@ public class OLCandProcessorDescriptor_StepDef
 		final OLCandProcessorDescriptor olCandProcessor = olCandProcessorRepo.getById(1000003);
 		olCandBL.process(olCandProcessor, null);
 
-		Thread.sleep(5000); // TODO this is jus a workaround. instead we need to wait for the processing to be cone
+		Thread.sleep(10000); // TODO this is jus a workaround. instead we need to wait for the processing to be done; issue for that is underway
 	}
 
 }
