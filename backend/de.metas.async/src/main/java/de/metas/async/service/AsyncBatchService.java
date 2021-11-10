@@ -35,6 +35,7 @@ import de.metas.logging.LogManager;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
@@ -50,6 +51,7 @@ public class AsyncBatchService
 
 	private final IAsyncBatchDAO asyncBatchDAO = Services.get(IAsyncBatchDAO.class);
 	private final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	private final AsyncBatchObserver asyncBatchObserver;
 	private final AsyncBatchEventBusService asyncBatchEventBusService;
@@ -109,7 +111,7 @@ public class AsyncBatchService
 	{
 		asyncBatchObserver.observeOn(asyncBatchId);
 
-		final T result = supplier.get();
+		final T result = trxManager.callInNewTrx(supplier::get);
 
 		asyncBatchObserver.waitToBeProcessed(asyncBatchId);
 

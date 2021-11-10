@@ -39,7 +39,6 @@ import de.metas.process.PInstanceId;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
-import org.adempiere.ad.trx.api.ITrxManager;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.DB;
 import org.springframework.stereotype.Service;
@@ -59,7 +58,6 @@ import static org.compiere.util.Env.getCtx;
 public class InvoiceService
 {
 	private final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
-	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 
@@ -145,16 +143,14 @@ public class InvoiceService
 		final I_C_Async_Batch asyncBatch = asyncBatchBL.getAsyncBatchById(asyncBatchId);
 
 		final Supplier<Void> enqueueInvoiceCandidates = () -> {
-			trxManager.runInNewTrx(() -> {
-				final PInstanceId invoiceCandidatesSelectionId = DB.createT_Selection(invoiceCandIds, null);
+			final PInstanceId invoiceCandidatesSelectionId = DB.createT_Selection(invoiceCandIds, null);
 
-				invoiceCandBL.enqueueForInvoicing()
-						.setContext(getCtx())
-						.setC_Async_Batch(asyncBatch)
-						.setInvoicingParams(getDefaultIInvoicingParams())
-						.setFailIfNothingEnqueued(true)
-						.enqueueSelection(invoiceCandidatesSelectionId);
-			});
+			invoiceCandBL.enqueueForInvoicing()
+					.setContext(getCtx())
+					.setC_Async_Batch(asyncBatch)
+					.setInvoicingParams(getDefaultIInvoicingParams())
+					.setFailIfNothingEnqueued(true)
+					.enqueueSelection(invoiceCandidatesSelectionId);
 
 			return null;
 		};

@@ -64,7 +64,7 @@ import de.metas.util.web.exception.MissingResourceException;
 import de.metas.vertical.healthcare.alberta.order.AlbertaOrderCompositeInfo;
 import de.metas.vertical.healthcare.alberta.order.service.AlbertaOrderService;
 import lombok.NonNull;
-import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.util.DB;
 import org.springframework.stereotype.Service;
 
@@ -85,7 +85,6 @@ public class OrderCandidateRestControllerService
 	private static final String DATA_SOURCE_INTERNAL_NAME = "SOURCE." + OrderCandidatesRestController.class.getName();
 
 	private final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
-	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IOLCandDAO olCandDAO = Services.get(IOLCandDAO.class);
 
 	private final JsonConverters jsonConverters;
@@ -396,19 +395,16 @@ public class OrderCandidateRestControllerService
 		final AsyncBatchId processOLCandsAsyncBatchId = asyncBatchBL.newAsyncBatch(C_Async_Batch_InternalName_ProcessOLCands);
 
 		final Supplier<Void> action = () -> {
-			trxManager.runInNewTrx(
-					() -> {
-						final PInstanceId validOLCandIdsSelectionId = DB.createT_Selection(validOlCandIds, null);
+			final PInstanceId validOLCandIdsSelectionId = DB.createT_Selection(validOlCandIds, ITrx.TRXNAME_None);
 
-						final ProcessOLCandsRequest enqueueRequest = ProcessOLCandsRequest.builder()
-								.pInstanceId(validOLCandIdsSelectionId)
-								.ship(request.getShip())
-								.invoice(request.getInvoice())
-								.closeOrder(request.getCloseOrder())
-								.build();
+			final ProcessOLCandsRequest enqueueRequest = ProcessOLCandsRequest.builder()
+					.pInstanceId(validOLCandIdsSelectionId)
+					.ship(request.getShip())
+					.invoice(request.getInvoice())
+					.closeOrder(request.getCloseOrder())
+					.build();
 
-						processOLCandsWorkpackageEnqueuer.enqueue(enqueueRequest, processOLCandsAsyncBatchId);
-					});
+			processOLCandsWorkpackageEnqueuer.enqueue(enqueueRequest, processOLCandsAsyncBatchId);
 
 			return null;
 		};

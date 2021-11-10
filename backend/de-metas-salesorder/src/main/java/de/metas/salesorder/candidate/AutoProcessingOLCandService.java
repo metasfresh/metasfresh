@@ -53,6 +53,7 @@ public class AutoProcessingOLCandService
 
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final OrderService orderService;
 	private final ShipmentService shipmentService;
@@ -70,8 +71,7 @@ public class AutoProcessingOLCandService
 
 	public void processOLCands(final @NonNull ProcessOLCandsRequest request)
 	{
-		final Set<OLCandId> olCandIds = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_OLCand.class)
+		final Set<OLCandId> olCandIds = queryBL.createQueryBuilder(I_C_OLCand.class)
 				.setOnlySelection(request.getPInstanceId())
 				.create()
 				.stream()

@@ -123,11 +123,11 @@ public class ShipmentService implements IShipmentService
 					.setParameter("GenerateShipmentsRequest", request);
 		}
 
-		final Supplier<ShipmentScheduleEnqueuer.Result> generateShipmentsSupplier = () -> trxManager.callInNewTrx(() -> {
+		final Supplier<ShipmentScheduleEnqueuer.Result> generateShipmentsSupplier = () -> {
 			validateAsyncBatchAssignment(request.getScheduleIds(), request.getAsyncBatchId());
 
 			return enqueueShipmentSchedules(request);
-		});
+		};
 
 		// The process will wait until the schedules are processed because the next call might contain the same shipment schedules as the current one.
 		// In this case enqueing the same shipmentschedule will fail, because it requires an exclusive lock and the sched is still enqueued from the current lock

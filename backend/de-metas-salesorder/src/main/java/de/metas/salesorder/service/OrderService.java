@@ -154,8 +154,7 @@ public class OrderService
 	private void generateOrdersForBatch(@NonNull final AsyncBatchId asyncBatchId)
 	{
 		final Supplier<Void> action = () -> {
-			trxManager.runInNewTrx(
-					() -> olCandToOrderEnqueuer.enqueue(C_OlCandProcessor_ID_Default, asyncBatchId));
+			olCandToOrderEnqueuer.enqueue(C_OlCandProcessor_ID_Default, asyncBatchId);
 			return null;
 		};
 
@@ -169,8 +168,7 @@ public class OrderService
 		final AsyncBatchId asyncBatchId = AsyncBatchId.ofRepoId(orderWithAsyncBatch.getC_Async_Batch_ID());
 
 		final Supplier<Void> action = () -> {
-			trxManager.runInNewTrx(
-					() -> CreateMissingShipmentSchedulesWorkpackageProcessor.scheduleIfNotPostponed(orderWithAsyncBatch));
+			CreateMissingShipmentSchedulesWorkpackageProcessor.scheduleIfNotPostponed(orderWithAsyncBatch);
 			return null;
 		};
 

@@ -34,7 +34,7 @@ public interface IWorkpackageProcessorContextFactory extends ISingletonService
 	 *
 	 * It should only be called from {@code WorkpackageProcessorTask#beforeWorkpackageProcessing()} && {@code WorkpackageProcessorTask#afterWorkpackageProcessed(boolean)} ()}
 	 *
-	 * @return the async batch Id that was formerly associate with the current thread, or <code>null</code>.
+	 * @return the async batch Id that was formerly associated with the current thread, or {@code null}.
 	 */
 	AsyncBatchId setThreadInheritedWorkpackageAsyncBatch(AsyncBatchId asyncBatch);
 
