@@ -35,6 +35,10 @@ const routesArray = [
     path: '/workflow/:workflowId/activityId/:activityId/lineId/:lineId/stepId/:stepId/scanner',
     Component: PickStepScanHUScreen,
   },
+  {
+    path: '/workflow/:workflowId/activityId/:activityId/lineId/:lineId/stepId/:stepId/altStepId/:altStepId/scanner',
+    Component: PickStepScanHUScreen,
+  },
 ];
 
 const childRoutes = (

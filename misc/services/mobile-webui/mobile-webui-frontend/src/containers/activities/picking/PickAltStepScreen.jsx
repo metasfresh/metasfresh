@@ -23,8 +23,9 @@ class PickAltStepScreen extends Component {
       stepProps: { huBarcode, qtyToPick },
       push,
       pushHeaderEntry,
+      altStepId,
     } = this.props;
-    const location = `/workflow/${wfProcessId}/activityId/${activityId}/lineId/${lineId}/stepId/${stepId}/scanner`;
+    const location = `/workflow/${wfProcessId}/activityId/${activityId}/lineId/${lineId}/stepId/${stepId}/altStepId/${altStepId}/scanner`;
 
     push(location);
     pushHeaderEntry({
