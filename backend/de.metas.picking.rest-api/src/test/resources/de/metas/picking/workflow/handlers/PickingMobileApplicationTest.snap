@@ -76,7 +76,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
       "value" : "bpname-666"
     }, {
       "caption" : "PreparationDate",
-      "value" : "09.11.2021 10:58:52"
+      "value" : "09.11.2021 08:58:52"
     }, {
       "caption" : "DeliveryToAddress",
       "value" : "deliveryRenderedAddress"
@@ -164,7 +164,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.completeJob=[ {
       "value" : "bpname-666"
     }, {
       "caption" : "PreparationDate",
-      "value" : "09.11.2021 10:58:52"
+      "value" : "09.11.2021 08:58:52"
     }, {
       "caption" : "DeliveryToAddress",
       "value" : "deliveryRenderedAddress"
@@ -252,7 +252,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.createJobAndGet=
       "value" : "bpname-666"
     }, {
       "caption" : "PreparationDate",
-      "value" : "09.11.2021 10:58:52"
+      "value" : "09.11.2021 08:58:52"
     }, {
       "caption" : "DeliveryToAddress",
       "value" : "deliveryRenderedAddress"
@@ -340,7 +340,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.pickUsingAlterna
       "value" : "bpname-666"
     }, {
       "caption" : "PreparationDate",
-      "value" : "09.11.2021 10:58:52"
+      "value" : "09.11.2021 08:58:52"
     }, {
       "caption" : "DeliveryToAddress",
       "value" : "deliveryRenderedAddress"
