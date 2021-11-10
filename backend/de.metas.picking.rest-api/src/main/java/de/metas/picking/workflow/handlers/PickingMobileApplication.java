@@ -32,6 +32,7 @@ import de.metas.handlingunits.picking.job.model.PickingJobId;
 import de.metas.handlingunits.picking.job.model.PickingJobStepEvent;
 import de.metas.handlingunits.picking.job.model.PickingJobStepEventType;
 import de.metas.handlingunits.picking.job.model.PickingJobStepId;
+import de.metas.handlingunits.picking.job.model.PickingJobStepPickFromKey;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.picking.rest_api.json.JsonPickingEventsList;
@@ -225,18 +226,6 @@ public class PickingMobileApplication implements MobileApplication
 				.forEach((wfProcessId, events) -> processStepEvents(wfProcessId, callerId, events));
 	}
 
-	private static PickingJobStepEvent fromJson(@NonNull final JsonPickingStepEvent json)
-	{
-		return PickingJobStepEvent.builder()
-				.timestamp(SystemTime.asInstant())
-				.pickingStepId(PickingJobStepId.ofString(json.getPickingStepId()))
-				.eventType(fromJson(json.getType()))
-				.huBarcode(HUBarcode.ofBarcodeString(json.getHuBarcode()))
-				.qtyPicked(json.getQtyPicked())
-				.qtyRejectedReasonCode(QtyRejectedReasonCode.ofNullableCode(json.getQtyRejectedReasonCode()).orElse(null))
-				.build();
-	}
-
 	public static PickingJobStepEventType fromJson(JsonPickingStepEvent.EventType json)
 	{
 		switch (json)
@@ -261,15 +250,39 @@ public class PickingMobileApplication implements MobileApplication
 					wfProcess.assertHasAccess(callerId);
 					assertPickingActivityType(jsonEvents, wfProcess);
 
-					final ImmutableList<PickingJobStepEvent> events = jsonEvents.stream()
-							.map(PickingMobileApplication::fromJson)
-							.collect(ImmutableList.toImmutableList());
-
 					return wfProcess.<PickingJob>mapDocument(
-							pickingJob -> pickingJobRestService.processStepEvents(pickingJob, events)
+							pickingJob -> processStepEvents(pickingJob, jsonEvents)
 					);
 				});
 	}
+
+	private PickingJob processStepEvents(@NonNull final PickingJob pickingJob, @NonNull final Collection<JsonPickingStepEvent> jsonEvents)
+	{
+		final ImmutableList<PickingJobStepEvent> events = jsonEvents.stream()
+				.map(json -> fromJson(json, pickingJob))
+				.collect(ImmutableList.toImmutableList());
+
+		return pickingJobRestService.processStepEvents(pickingJob, events);
+	}
+
+	private static PickingJobStepEvent fromJson(@NonNull final JsonPickingStepEvent json, @NonNull final PickingJob pickingJob)
+	{
+		final PickingJobStepId pickingStepId = PickingJobStepId.ofString(json.getPickingStepId());
+		final HUBarcode huBarcode = HUBarcode.ofBarcodeString(json.getHuBarcode());
+		final PickingJobStepPickFromKey pickFromKey = pickingJob.getStepById(pickingStepId).getPickFromByHUBarcode(huBarcode).getPickFromKey();
+
+		return PickingJobStepEvent.builder()
+				.timestamp(SystemTime.asInstant())
+				.pickingStepId(pickingStepId)
+				.pickFromKey(pickFromKey)
+				.eventType(fromJson(json.getType()))
+				.huBarcode(huBarcode)
+				.qtyPicked(json.getQtyPicked())
+				.qtyRejected(json.getQtyRejected())
+				.qtyRejectedReasonCode(QtyRejectedReasonCode.ofNullableCode(json.getQtyRejectedReasonCode()).orElse(null))
+				.build();
+	}
+
 
 	private static void assertPickingActivityType(
 			final @NonNull Collection<JsonPickingStepEvent> events,

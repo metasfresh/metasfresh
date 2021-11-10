@@ -118,25 +118,25 @@ class PickingJobCreateRepoCommand
 		record.setQtyToPick(step.getQtyToPick().toBigDecimal());
 
 		//
-		// From where?
-		record.setPickFrom_Warehouse_ID(step.getPickFromLocatorId().getWarehouseId().getRepoId());
-		record.setPickFrom_Locator_ID(step.getPickFromLocatorId().getRepoId());
-		record.setPickFrom_HU_ID(step.getPickFromHUId().getRepoId());
+		// Main PickFrom
+		record.setPickFrom_Warehouse_ID(step.getMainPickFrom().getPickFromLocatorId().getWarehouseId().getRepoId());
+		record.setPickFrom_Locator_ID(step.getMainPickFrom().getPickFromLocatorId().getRepoId());
+		record.setPickFrom_HU_ID(step.getMainPickFrom().getPickFromHUId().getRepoId());
 
 		InterfaceWrapperHelper.save(record);
 		loader.addAlreadyLoadedFromDB(record);
-
 		final PickingJobStepId pickingJobStepId = PickingJobStepId.ofRepoId(record.getM_Picking_Job_Step_ID());
-		step.getPickFromHUIdsAlternatives()
-				.forEach(alternativeHuId -> createStepHUAlternativeRecord(
-						alternativeHuId,
+
+		step.getPickFromAlternatives()
+				.forEach(pickFrom -> createStepHUAlternativeRecord(
+						pickFrom,
 						step.getProductId(),
 						pickingJobStepId,
 						pickingJobId));
 	}
 
 	private void createStepHUAlternativeRecord(
-			@NonNull final HuId alternativeHUId,
+			@NonNull final PickingJobCreateRepoRequest.StepPickFrom pickFrom,
 			@NonNull final ProductId productId,
 			@NonNull final PickingJobStepId pickingJobStepId,
 			@NonNull final PickingJobId pickingJobId)
@@ -145,7 +145,10 @@ class PickingJobCreateRepoCommand
 		record.setM_Picking_Job_ID(pickingJobId.getRepoId());
 		record.setM_Picking_Job_Step_ID(pickingJobStepId.getRepoId());
 		record.setAD_Org_ID(request.getOrgId().getRepoId());
-		record.setM_Picking_Job_HUAlternative_ID(loader.getPickingJobHUAlternativeId(pickingJobId, alternativeHUId, productId).getRepoId());
+		record.setM_Picking_Job_HUAlternative_ID(loader.getPickingJobHUAlternativeId(pickingJobId, pickFrom.getPickFromHUId(), productId).getRepoId());
+		record.setPickFrom_Warehouse_ID(pickFrom.getPickFromLocatorId().getWarehouseId().getRepoId());
+		record.setPickFrom_Locator_ID(pickFrom.getPickFromLocatorId().getRepoId());
+		record.setPickFrom_HU_ID(pickFrom.getPickFromHUId().getRepoId());
 		InterfaceWrapperHelper.save(record);
 
 		loader.addAlreadyLoadedFromDB(record);

@@ -25,6 +25,7 @@ package de.metas.handlingunits.picking.job.model;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.google.common.collect.ImmutableSet;
+import de.metas.handlingunits.HUBarcode;
 import de.metas.i18n.ITranslatableString;
 import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.order.OrderAndLineId;
@@ -34,10 +35,10 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.ToString;
 import lombok.Value;
-import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_UOM;
 
-import javax.annotation.Nullable;
+import java.util.Objects;
+import java.util.function.UnaryOperator;
 
 @Value
 @ToString
@@ -57,11 +58,8 @@ public class PickingJobStep
 
 	//
 	// Pick From
-	@NonNull LocatorInfo pickFromLocator;
-	@NonNull HUInfo pickFromHU;
-	@NonNull ImmutableSet<PickingJobPickFromAlternativeId> pickFromAlternativeIds;
-
-	@Nullable PickingJobStepPickedInfo picked;
+	@NonNull PickingJobStepPickFromMap pickFroms;
+	@NonNull PickingJobProgress progress;
 
 	@Builder(toBuilder = true)
 	private PickingJobStep(
@@ -75,11 +73,7 @@ public class PickingJobStep
 			@NonNull final Quantity qtyToPick,
 			//
 			// Pick From
-			@NonNull final LocatorInfo pickFromLocator,
-			@NonNull final HUInfo pickFromHU,
-			@NonNull ImmutableSet<PickingJobPickFromAlternativeId> pickFromAlternativeIds,
-			//
-			@Nullable PickingJobStepPickedInfo picked)
+			@NonNull PickingJobStepPickFromMap pickFroms)
 	{
 		this.id = id;
 		this.salesOrderAndLineId = salesOrderAndLineId;
@@ -87,46 +81,47 @@ public class PickingJobStep
 		this.productId = productId;
 		this.productName = productName;
 		this.qtyToPick = qtyToPick;
-
-		this.pickFromLocator = pickFromLocator;
-		this.pickFromHU = pickFromHU;
-		this.pickFromAlternativeIds = pickFromAlternativeIds;
-		this.picked = picked;
-
-		if (this.picked != null)
-		{
-			Quantity.assertSameUOM(qtyToPick, this.picked.getQtyPicked()); // make sure they have the same UOM
-			this.picked.validateQtyRejectedReasonCode(this.qtyToPick);
-		}
+		this.pickFroms = pickFroms;
+		this.progress = pickFroms.computeProgress(qtyToPick);
 	}
 
 	public I_C_UOM getUOM() {return qtyToPick.getUOM();}
 
-	public void assertNotPicked()
+	public PickingJobStep reduceWithPickedEvent(
+			@NonNull PickingJobStepPickFromKey key,
+			@NonNull PickingJobStepPickedTo pickedTo)
 	{
-		if (isPicked())
-		{
-			throw new AdempiereException("Step already picked: " + getId());
-		}
+		return withChangedPickFroms(pickFroms -> pickFroms.reduceWithPickedEvent(key, pickedTo));
 	}
 
-	public void assertPicked()
+	public PickingJobStep reduceWithUnpickEvent(
+			@NonNull PickingJobStepPickFromKey key,
+			@NonNull PickingJobStepUnpickInfo unpicked)
 	{
-		if (!isPicked())
-		{
-			throw new AdempiereException("Step was not picked: " + getId());
-		}
+		return withChangedPickFroms(pickFroms -> pickFroms.reduceWithUnpickEvent(key, unpicked));
 	}
 
-	public boolean isPicked() {return picked != null;}
-
-	public PickingJobStep reduceWithPickedEvent(@NonNull PickingJobStepPickedInfo picked) {return toBuilder().picked(picked).build();}
-
-	public PickingJobStep reduceWithUnpickEvent(@NonNull PickingJobStepUnpickInfo unpicked)
+	private PickingJobStep withChangedPickFroms(@NonNull final UnaryOperator<PickingJobStepPickFromMap> mapper)
 	{
-		return toBuilder()
-				.pickFromHU(unpicked.getPickFromHU() != null ? unpicked.getPickFromHU() : this.pickFromHU)
-				.picked(null)
-				.build();
+		final PickingJobStepPickFromMap newPickFroms = mapper.apply(this.pickFroms);
+		return !Objects.equals(this.pickFroms, newPickFroms)
+				? toBuilder().pickFroms(newPickFroms).build()
+				: this;
 	}
+
+	public ImmutableSet<PickingJobStepPickFromKey> getPickFromKeys()
+	{
+		return pickFroms.getKeys();
+	}
+
+	public PickingJobStepPickFrom getPickFrom(@NonNull final PickingJobStepPickFromKey key)
+	{
+		return pickFroms.getPickFrom(key);
+	}
+
+	public PickingJobStepPickFrom getPickFromByHUBarcode(@NonNull final HUBarcode huBarcode)
+	{
+		return pickFroms.getPickFromByHUBarcode(huBarcode);
+	}
+
 }

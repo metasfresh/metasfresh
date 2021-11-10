@@ -2,8 +2,6 @@ package de.metas.handlingunits.picking.job.repository;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
-import de.metas.handlingunits.HUBarcode;
-import de.metas.handlingunits.HuId;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.order.OrderId;
@@ -16,11 +14,13 @@ import lombok.NonNull;
 import org.adempiere.warehouse.LocatorId;
 
 import java.sql.Timestamp;
-import java.time.ZoneOffset;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
 public class MockedPickingJobLoaderSupportingServices implements PickingJobLoaderSupportingServices
 {
+	public static final ZoneId ZONE_ID = ZoneId.of("Europe/London");
+
 	@Override
 	public void warmUpCachesFrom(@NonNull final ImmutableList<Packageable> items)
 	{
@@ -42,7 +42,7 @@ public class MockedPickingJobLoaderSupportingServices implements PickingJobLoade
 	@Override
 	public ZonedDateTime toZonedDateTime(@NonNull final Timestamp timestamp, @NonNull final OrgId orgId)
 	{
-		return timestamp.toInstant().atZone(ZoneOffset.UTC);
+		return timestamp.toInstant().atZone(ZONE_ID);
 	}
 
 	@Override

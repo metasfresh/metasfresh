@@ -1,5 +1,7 @@
 package de.metas.handlingunits.model;
 
+import java.math.BigDecimal;
+import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for M_Picking_Job_Step_HUAlternative
@@ -50,6 +52,28 @@ public interface I_M_Picking_Job_Step_HUAlternative
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_UOM_ID (int C_UOM_ID);
+
+	/**
+	 * Get UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_UOM_ID();
+
+	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
+
+	/**
 	 * Get Created.
 	 * Date this record was created
 	 *
@@ -96,6 +120,31 @@ public interface I_M_Picking_Job_Step_HUAlternative
 
 	ModelColumn<I_M_Picking_Job_Step_HUAlternative, Object> COLUMN_IsActive = new ModelColumn<>(I_M_Picking_Job_Step_HUAlternative.class, "IsActive", null);
 	String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set Picking candidate.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_Picking_Candidate_ID (int M_Picking_Candidate_ID);
+
+	/**
+	 * Get Picking candidate.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_Picking_Candidate_ID();
+
+	@Nullable de.metas.handlingunits.model.I_M_Picking_Candidate getM_Picking_Candidate();
+
+	void setM_Picking_Candidate(@Nullable de.metas.handlingunits.model.I_M_Picking_Candidate M_Picking_Candidate);
+
+	ModelColumn<I_M_Picking_Job_Step_HUAlternative, de.metas.handlingunits.model.I_M_Picking_Candidate> COLUMN_M_Picking_Candidate_ID = new ModelColumn<>(I_M_Picking_Job_Step_HUAlternative.class, "M_Picking_Candidate_ID", de.metas.handlingunits.model.I_M_Picking_Candidate.class);
+	String COLUMNNAME_M_Picking_Candidate_ID = "M_Picking_Candidate_ID";
 
 	/**
 	 * Set Picking Job HU Alternative.
@@ -192,6 +241,159 @@ public interface I_M_Picking_Job_Step_HUAlternative
 
 	ModelColumn<I_M_Picking_Job_Step_HUAlternative, de.metas.handlingunits.model.I_M_Picking_Job_Step> COLUMN_M_Picking_Job_Step_ID = new ModelColumn<>(I_M_Picking_Job_Step_HUAlternative.class, "M_Picking_Job_Step_ID", de.metas.handlingunits.model.I_M_Picking_Job_Step.class);
 	String COLUMNNAME_M_Picking_Job_Step_ID = "M_Picking_Job_Step_ID";
+
+	/**
+	 * Set Picked HU.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPicked_HU_ID (int Picked_HU_ID);
+
+	/**
+	 * Get Picked HU.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getPicked_HU_ID();
+
+	@Nullable de.metas.handlingunits.model.I_M_HU getPicked_HU();
+
+	void setPicked_HU(@Nullable de.metas.handlingunits.model.I_M_HU Picked_HU);
+
+	ModelColumn<I_M_Picking_Job_Step_HUAlternative, de.metas.handlingunits.model.I_M_HU> COLUMN_Picked_HU_ID = new ModelColumn<>(I_M_Picking_Job_Step_HUAlternative.class, "Picked_HU_ID", de.metas.handlingunits.model.I_M_HU.class);
+	String COLUMNNAME_Picked_HU_ID = "Picked_HU_ID";
+
+	/**
+	 * Set Pick From HU.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setPickFrom_HU_ID (int PickFrom_HU_ID);
+
+	/**
+	 * Get Pick From HU.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getPickFrom_HU_ID();
+
+	de.metas.handlingunits.model.I_M_HU getPickFrom_HU();
+
+	void setPickFrom_HU(de.metas.handlingunits.model.I_M_HU PickFrom_HU);
+
+	ModelColumn<I_M_Picking_Job_Step_HUAlternative, de.metas.handlingunits.model.I_M_HU> COLUMN_PickFrom_HU_ID = new ModelColumn<>(I_M_Picking_Job_Step_HUAlternative.class, "PickFrom_HU_ID", de.metas.handlingunits.model.I_M_HU.class);
+	String COLUMNNAME_PickFrom_HU_ID = "PickFrom_HU_ID";
+
+	/**
+	 * Set Pick From Locator.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setPickFrom_Locator_ID (int PickFrom_Locator_ID);
+
+	/**
+	 * Get Pick From Locator.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getPickFrom_Locator_ID();
+
+	String COLUMNNAME_PickFrom_Locator_ID = "PickFrom_Locator_ID";
+
+	/**
+	 * Set Pick From Warehouse.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setPickFrom_Warehouse_ID (int PickFrom_Warehouse_ID);
+
+	/**
+	 * Get Pick From Warehouse.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getPickFrom_Warehouse_ID();
+
+	String COLUMNNAME_PickFrom_Warehouse_ID = "PickFrom_Warehouse_ID";
+
+	/**
+	 * Set Quantity (stock unit).
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQtyPicked (@Nullable BigDecimal QtyPicked);
+
+	/**
+	 * Get Quantity (stock unit).
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getQtyPicked();
+
+	ModelColumn<I_M_Picking_Job_Step_HUAlternative, Object> COLUMN_QtyPicked = new ModelColumn<>(I_M_Picking_Job_Step_HUAlternative.class, "QtyPicked", null);
+	String COLUMNNAME_QtyPicked = "QtyPicked";
+
+	/**
+	 * Set Qty Rejected To Pick.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQtyRejectedToPick (@Nullable BigDecimal QtyRejectedToPick);
+
+	/**
+	 * Get Qty Rejected To Pick.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getQtyRejectedToPick();
+
+	ModelColumn<I_M_Picking_Job_Step_HUAlternative, Object> COLUMN_QtyRejectedToPick = new ModelColumn<>(I_M_Picking_Job_Step_HUAlternative.class, "QtyRejectedToPick", null);
+	String COLUMNNAME_QtyRejectedToPick = "QtyRejectedToPick";
+
+	/**
+	 * Set Reject Reason.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setRejectReason (@Nullable java.lang.String RejectReason);
+
+	/**
+	 * Get Reject Reason.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getRejectReason();
+
+	ModelColumn<I_M_Picking_Job_Step_HUAlternative, Object> COLUMN_RejectReason = new ModelColumn<>(I_M_Picking_Job_Step_HUAlternative.class, "RejectReason", null);
+	String COLUMNNAME_RejectReason = "RejectReason";
 
 	/**
 	 * Get Updated.

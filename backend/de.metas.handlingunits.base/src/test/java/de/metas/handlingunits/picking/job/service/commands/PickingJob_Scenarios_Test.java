@@ -13,7 +13,8 @@ import de.metas.handlingunits.picking.job.model.PickingJobStep;
 import de.metas.handlingunits.picking.job.model.PickingJobStepEvent;
 import de.metas.handlingunits.picking.job.model.PickingJobStepEventType;
 import de.metas.handlingunits.picking.job.model.PickingJobStepId;
-import de.metas.handlingunits.picking.job.model.PickingJobStepPickedInfo;
+import de.metas.handlingunits.picking.job.model.PickingJobStepPickFromKey;
+import de.metas.handlingunits.picking.job.model.PickingJobStepPickedTo;
 import de.metas.order.OrderAndLineId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -68,6 +69,7 @@ class PickingJob_Scenarios_Test
 		// Pick the whole quantity
 		pickingJob = helper.pickingJobService.processStepEvent(pickingJob, PickingJobStepEvent.builder()
 				.pickingStepId(stepId)
+				.pickFromKey(PickingJobStepPickFromKey.MAIN)
 				.eventType(PickingJobStepEventType.PICK)
 				.huBarcode(HUBarcode.ofHuId(vhu1))
 				.qtyPicked(new BigDecimal("100"))
@@ -76,11 +78,11 @@ class PickingJob_Scenarios_Test
 		HuId pickFromHUId;
 		{
 			System.out.println("After pick: " + pickingJob);
-			assertThat(pickFromHUId = pickingJob.getStepById(stepId).getPickFromHU().getId()).isNotEqualTo(vhu1);
+			assertThat(pickFromHUId = pickingJob.getStepById(stepId).getPickFrom(PickingJobStepPickFromKey.MAIN).getPickFromHU().getId()).isNotEqualTo(vhu1);
 			HUStorageExpectation.newExpectation().product(productId).qty("100").assertExpected(pickFromHUId);
 			HUStorageExpectation.newExpectation().product(productId).qty("30").assertExpected(vhu1);
 
-			final PickingJobStepPickedInfo picked = pickingJob.getStepById(stepId).getPicked();
+			final PickingJobStepPickedTo picked = pickingJob.getStepById(stepId).getPickFrom(PickingJobStepPickFromKey.MAIN).getPickedTo();
 			assertThat(picked).isNotNull();
 			assertThat(picked.getQtyPicked()).isEqualTo(Quantity.of("100", helper.uomEach));
 			assertThat(picked.getActualPickedHUId()).isEqualTo(pickFromHUId);
@@ -95,13 +97,14 @@ class PickingJob_Scenarios_Test
 		// Unpick
 		pickingJob = helper.pickingJobService.processStepEvent(pickingJob, PickingJobStepEvent.builder()
 				.pickingStepId(stepId)
+				.pickFromKey(PickingJobStepPickFromKey.MAIN)
 				.eventType(PickingJobStepEventType.UNPICK)
 				.huBarcode(HUBarcode.ofHuId(vhu1))
 				.build());
 		{
 			System.out.println("After unpick: " + pickingJob);
-			assertThat(pickingJob.getStepById(stepId).getPickFromHU()).isEqualTo(HUInfo.ofHuId(pickFromHUId));
-			assertThat(pickingJob.getStepById(stepId).getPicked()).isNull();
+			assertThat(pickingJob.getStepById(stepId).getPickFrom(PickingJobStepPickFromKey.MAIN).getPickFromHU()).isEqualTo(HUInfo.ofHuId(pickFromHUId));
+			assertThat(pickingJob.getStepById(stepId).getPickFrom(PickingJobStepPickFromKey.MAIN).getPickedTo()).isNull();
 			HUStorageExpectation.newExpectation().product(productId).qty("100").assertExpected(pickFromHUId);
 		}
 	}
@@ -130,6 +133,7 @@ class PickingJob_Scenarios_Test
 
 		pickingJob = helper.pickingJobService.processStepEvent(pickingJob, PickingJobStepEvent.builder()
 				.pickingStepId(stepId)
+				.pickFromKey(PickingJobStepPickFromKey.MAIN)
 				.eventType(PickingJobStepEventType.PICK)
 				.huBarcode(HUBarcode.ofHuId(vhu1))
 				.qtyPicked(new BigDecimal("100"))
@@ -138,12 +142,12 @@ class PickingJob_Scenarios_Test
 		{
 			System.out.println("After pick: " + pickingJob);
 
-			assertThat(pickingJob.getStepById(stepId).getPickFromHU()).isEqualTo(HUInfo.ofHuId(vhu1));
+			assertThat(pickingJob.getStepById(stepId).getPickFrom(PickingJobStepPickFromKey.MAIN).getPickFromHU()).isEqualTo(HUInfo.ofHuId(vhu1));
 
-			final PickingJobStepPickedInfo picked = pickingJob.getStepById(stepId).getPicked();
+			final PickingJobStepPickedTo picked = pickingJob.getStepById(stepId).getPickFrom(PickingJobStepPickFromKey.MAIN).getPickedTo();
 			assertThat(picked)
 					.isNotNull()
-					.isEqualTo(PickingJobStepPickedInfo.builder()
+					.isEqualTo(PickingJobStepPickedTo.builder()
 							.qtyPicked(Quantity.of("100", helper.uomEach))
 							.actualPickedHUId(vhu1)
 							.pickingCandidateId(picked.getPickingCandidateId()) // N/A
@@ -152,13 +156,14 @@ class PickingJob_Scenarios_Test
 
 		pickingJob = helper.pickingJobService.processStepEvent(pickingJob, PickingJobStepEvent.builder()
 				.pickingStepId(stepId)
+				.pickFromKey(PickingJobStepPickFromKey.MAIN)
 				.eventType(PickingJobStepEventType.UNPICK)
 				.huBarcode(HUBarcode.ofHuId(vhu1))
 				.build());
 		{
 			System.out.println("After unpick: " + pickingJob);
-			assertThat(pickingJob.getStepById(stepId).getPickFromHU()).isEqualTo(HUInfo.ofHuId(vhu1));
-			assertThat(pickingJob.getStepById(stepId).getPicked()).isNull();
+			assertThat(pickingJob.getStepById(stepId).getPickFrom(PickingJobStepPickFromKey.MAIN).getPickFromHU()).isEqualTo(HUInfo.ofHuId(vhu1));
+			assertThat(pickingJob.getStepById(stepId).getPickFrom(PickingJobStepPickFromKey.MAIN).getPickedTo()).isNull();
 		}
 	}
 

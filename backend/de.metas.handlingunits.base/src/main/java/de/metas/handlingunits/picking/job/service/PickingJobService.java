@@ -1,6 +1,6 @@
 package de.metas.handlingunits.picking.job.service;
 
-import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.job.model.PickingJob;
@@ -8,7 +8,6 @@ import de.metas.handlingunits.picking.job.model.PickingJobCandidate;
 import de.metas.handlingunits.picking.job.model.PickingJobId;
 import de.metas.handlingunits.picking.job.model.PickingJobReference;
 import de.metas.handlingunits.picking.job.model.PickingJobStepEvent;
-import de.metas.handlingunits.picking.job.model.PickingJobStepId;
 import de.metas.handlingunits.picking.job.repository.PickingJobLoaderSupportingServices;
 import de.metas.handlingunits.picking.job.repository.PickingJobLoaderSupportingServicesFactory;
 import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
@@ -179,10 +178,10 @@ public class PickingJobService
 			@NonNull final PickingJob pickingJob0,
 			@NonNull final List<PickingJobStepEvent> events)
 	{
-		final ImmutableMap<PickingJobStepId, PickingJobStepEvent> eventsByStepId = PickingJobStepEvent.aggregateByStepId(events);
+		final ImmutableCollection<PickingJobStepEvent> aggregatedEvents = PickingJobStepEvent.aggregateByStepIdAndPickFromKey(events).values();
 
 		PickingJob changedPickingJob = pickingJob0;
-		for (final PickingJobStepEvent event : eventsByStepId.values())
+		for (final PickingJobStepEvent event : aggregatedEvents)
 		{
 			try
 			{
@@ -209,12 +208,13 @@ public class PickingJobService
 				assert event.getQtyPicked() != null;
 				return PickingJobPickCommand.builder()
 						.pickingJobRepository(pickingJobRepository)
-						.pickingJobHUReservationService(pickingJobHUReservationService)
 						.pickingCandidateService(pickingCandidateService)
 						//
 						.pickingJob(pickingJob)
 						.pickingJobStepId(event.getPickingStepId())
+						.pickFromKey(event.getPickFromKey())
 						.qtyToPickBD(Objects.requireNonNull(event.getQtyPicked()))
+						.qtyRejectedBD(event.getQtyRejected())
 						.qtyRejectedReasonCode(event.getQtyRejectedReasonCode())
 						//
 						.build().execute();
@@ -228,6 +228,7 @@ public class PickingJobService
 						//
 						.pickingJob(pickingJob)
 						.onlyPickingJobStepId(event.getPickingStepId())
+						.onlyPickFromKey(event.getPickFromKey())
 						//
 						.build().execute();
 			}
