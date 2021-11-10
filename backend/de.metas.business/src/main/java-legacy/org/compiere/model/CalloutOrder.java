@@ -249,7 +249,6 @@ public class CalloutOrder extends CalloutEngine
 							InvoiceRule.ofNullableCode(bpartner.getInvoiceRule()) :
 							InvoiceRule.ofNullableCode(bpartner.getPO_InvoiceRule());
 
-
 					if (invoiceRule != null)
 					{
 						order.setInvoiceRule(invoiceRule.getCode());
@@ -364,7 +363,9 @@ public class CalloutOrder extends CalloutEngine
 		final String sql = "SELECT p.AD_Language,p.C_PaymentTerm_ID,"
 				+ " COALESCE(p.M_PriceList_ID,g.M_PriceList_ID) AS M_PriceList_ID, p.PaymentRule,p.POReference,"
 				+ " p.SO_Description,p.IsDiscountPrinted,"
-				+ " p.InvoiceRule,p.DeliveryRule,p.FreightCostRule,DeliveryViaRule,"
+				+ " p.InvoiceRule,"
+				+ " p." + I_C_BPartner.COLUMNNAME_PO_InvoiceRule + ", "
+				+ " p.DeliveryRule,p.FreightCostRule,DeliveryViaRule,"
 				+ " lship.C_BPartner_Location_ID,c.AD_User_ID,"
 				+ " COALESCE(p.PO_PriceList_ID,g.PO_PriceList_ID) AS PO_PriceList_ID, p.PaymentRulePO,p.PO_PaymentTerm_ID,"
 				+ " lbill.C_BPartner_Location_ID AS Bill_Location_ID, "
@@ -568,7 +569,9 @@ public class CalloutOrder extends CalloutEngine
 					}
 
 					// InvoiceRule
-					final String invoiceRule = rs.getString("InvoiceRule");
+					final String invoiceRule = IsSOTrx ? rs.getString(I_C_BPartner.COLUMNNAME_InvoiceRule) :
+							rs.getString(I_C_BPartner.COLUMNNAME_PO_InvoiceRule);
+
 					if (!Check.isEmpty(invoiceRule, true))
 					{
 						order.setInvoiceRule(invoiceRule);
@@ -717,7 +720,9 @@ public class CalloutOrder extends CalloutEngine
 		final String sql = "SELECT p.AD_Language,p.C_PaymentTerm_ID,"
 				+ "p.M_PriceList_ID,p.PaymentRule,p.POReference,"
 				+ "p.SO_Description,p.IsDiscountPrinted,"
-				+ "p.InvoiceRule,p.DeliveryRule,p.FreightCostRule,DeliveryViaRule,"
+				+ "p.InvoiceRule,"
+				+ "p." + I_C_BPartner.COLUMNNAME_PO_InvoiceRule + ","
+				+ "p.DeliveryRule,p.FreightCostRule,DeliveryViaRule,"
 				+ "stats." + I_C_BPartner_Stats.COLUMNNAME_SO_CreditUsed + ", "
 				+ "stats." + I_C_BPartner_Stats.COLUMNNAME_SOCreditStatus + ", "
 				+ "c.AD_User_ID,"
@@ -885,11 +890,14 @@ public class CalloutOrder extends CalloutEngine
 					{
 						order.setC_PaymentTerm_ID(paymentTermId);
 					}
+
 					// InvoiceRule
-					s = rs.getString("InvoiceRule");
-					if (s != null && s.length() != 0)
+					final String invoiceRule = IsSOTrx ? rs.getString(I_C_BPartner.COLUMNNAME_InvoiceRule) :
+							rs.getString(I_C_BPartner.COLUMNNAME_PO_InvoiceRule);
+
+					if (!Check.isEmpty(invoiceRule, true))
 					{
-						order.setInvoiceRule(s);
+						order.setInvoiceRule(invoiceRule);
 					}
 				}
 			}
