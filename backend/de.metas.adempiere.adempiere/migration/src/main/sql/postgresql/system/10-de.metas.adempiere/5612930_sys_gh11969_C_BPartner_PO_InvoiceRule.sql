@@ -82,6 +82,10 @@ WHERE c.ad_table_id = get_Table_ID('C_BPartner')
 
 
 
+
+UPDATE C_BPartner set PO_InvoiceRule = InvoiceRule;
+
+
 -----------------------
 
 
