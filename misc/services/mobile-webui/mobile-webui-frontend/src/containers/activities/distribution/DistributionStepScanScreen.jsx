@@ -12,7 +12,6 @@ import StepScanScreenComponent from '../StepScanScreenComponent';
 function DistributionStepScanScreen(WrappedComponent) {
   const mapStateToProps = (state, { match }) => {
     const { workflowId: wfProcessId, activityId, lineId, stepId, appId, locatorId } = match.params;
-
     const wfProcess = selectWFProcessFromState(state, wfProcessId);
     const stepProps = wfProcess.activities[activityId].dataStored.lines[lineId].steps[stepId];
 
@@ -24,7 +23,7 @@ function DistributionStepScanScreen(WrappedComponent) {
       stepProps,
       appId,
       targetQty: stepProps.qtyToPick,
-      eligibleBarcode: stepProps.huBarcode,
+      eligibleBarcode: locatorId ? stepProps.locatorBarcode : stepProps.actualHUPicked,
       locatorId,
     };
   };
@@ -46,13 +45,14 @@ function DistributionStepScanScreen(WrappedComponent) {
       const { updateDistributionStepQty, wfProcessId, activityId, lineId, stepId, go, locatorId } = this.props;
       const { scannedBarcode } = this.state;
 
+      // TODO: Update on the backend
       if (locatorId) {
         updateDistributionStepQty({
           wfProcessId,
           activityId,
           lineId,
           stepId,
-          droppedToLocator: scannedBarcode,
+          locatorBarcode: scannedBarcode,
           qtyPicked: qty,
           qtyRejectedReasonCode: reason,
         });

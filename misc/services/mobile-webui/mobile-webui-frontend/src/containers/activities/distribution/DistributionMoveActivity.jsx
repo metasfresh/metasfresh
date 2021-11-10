@@ -11,10 +11,10 @@ const getLinePickingQuantities = (line) => {
   let uom = '';
 
   forEach(line.steps, (step) => {
-    const { qtyPicked, qtyToPick, uom: stepUom } = step;
+    const { qtyPicked, qtyToMove, uom: stepUom } = step;
 
     picked += qtyPicked;
-    toMove += qtyToPick;
+    toMove += qtyToMove;
     uom = stepUom;
   });
 

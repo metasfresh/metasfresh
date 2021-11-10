@@ -23,7 +23,9 @@ const getStepComponent = (appId) => {
 class StepScreen extends PureComponent {
   onScanButtonClick = (locatorId) => {
     const { wfProcessId, activityId, lineId, stepId, dispatch, appId } = this.props;
-    const location = `/workflow/${wfProcessId}/activityId/${activityId}/lineId/${lineId}/stepId/${stepId}/scanner/${appId}/${locatorId}`;
+    const location = `/workflow/${wfProcessId}/activityId/${activityId}/lineId/${lineId}/stepId/${stepId}/scanner/${appId}${
+      locatorId ? `/${locatorId}` : ''
+    }`;
 
     dispatch(push(location));
   };

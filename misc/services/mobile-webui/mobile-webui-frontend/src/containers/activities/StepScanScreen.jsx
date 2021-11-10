@@ -2,14 +2,14 @@ import React from 'react';
 import { useParams } from 'react-router-dom';
 
 import PickStepScanScreen from './picking/PickStepScanScreen';
-import DistributionStepScreen from './distribution/DistributionStepScreen';
+import DistributionStepScanScreen from './distribution/DistributionStepScanScreen';
 
 const getStepComponent = (appId, locator) => {
   switch (appId) {
     case 'picking':
       return { Component: PickStepScanScreen };
     case 'distribution':
-      return { Component: DistributionStepScreen, modifier: locator };
+      return { Component: DistributionStepScanScreen, modifier: locator };
     default:
       return null;
   }

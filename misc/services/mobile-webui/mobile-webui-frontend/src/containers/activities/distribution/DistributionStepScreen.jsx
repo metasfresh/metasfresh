@@ -20,7 +20,8 @@ class DistributionStepScreen extends Component {
       dispatch,
       onScanButtonClick,
     } = this.props;
-    onScanButtonClick(locator);
+    const locatorId = locator ? dropToLocator.caption : null;
+    onScanButtonClick(locatorId);
 
     dispatch(
       pushHeaderEntry({
@@ -49,7 +50,7 @@ class DistributionStepScreen extends Component {
         activityId,
         lineId,
         stepId,
-        droppedToLocator: null,
+        scannedLocator: null,
         qtyPicked: 0,
         qtyRejectedReasonCode: null,
       })
@@ -88,15 +89,15 @@ class DistributionStepScreen extends Component {
 
   render() {
     const {
-      stepProps: { huBarcode, qtyToMove, actualHUPicked, droppedToLocator, qtyPicked },
+      stepProps: { dropToLocator, qtyToMove, actualHUPicked, qtyPicked, scannedLocator },
     } = this.props;
 
     const isValidHUCode = !!actualHUPicked;
-    const isValidLocatorCode = !!droppedToLocator;
+    const isValidLocatorCode = !!scannedLocator;
 
     const scanHUCaption = isValidHUCode ? `${actualHUPicked}` : counterpart.translate('activities.distribution.scanHU');
     const scanLocatorCaption = isValidLocatorCode
-      ? `${droppedToLocator}`
+      ? `${scannedLocator}`
       : counterpart.translate('activities.distribution.scanLocator');
 
     const scanHUButtonStatus = isValidHUCode ? CompleteStatus.COMPLETED : CompleteStatus.NOT_STARTED;
@@ -110,7 +111,7 @@ class DistributionStepScreen extends Component {
           <div className="column is-half has-text-right has-text-weight-bold pb-0 pl-0 pr-0">
             {counterpart.translate('general.DropToLocator')}
           </div>
-          <div className="column is-half has-text-left pb-0">{huBarcode}</div>
+          <div className="column is-half has-text-left pb-0">{dropToLocator.barcode}</div>
         </div>
         <div className="columns is-mobile">
           <div className="column is-half has-text-right has-text-weight-bold pb-0 pl-0 pr-0">

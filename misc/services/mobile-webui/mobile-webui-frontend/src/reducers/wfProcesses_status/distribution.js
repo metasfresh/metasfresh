@@ -18,21 +18,13 @@ export const distributionReducer = ({ draftState, action }) => {
 };
 
 const reduceOnUpdateQtyPicked = (draftState, payload) => {
-  const {
-    wfProcessId,
-    activityId,
-    lineId,
-    stepId,
-    actualHUPicked,
-    droppedToLocator,
-    qtyPicked,
-    qtyRejectedReasonCode,
-  } = payload;
+  const { wfProcessId, activityId, lineId, stepId, actualHUPicked, locatorBarcode, qtyPicked, qtyRejectedReasonCode } =
+    payload;
 
   const draftWFProcess = draftState[wfProcessId];
   const draftStep = draftWFProcess.activities[activityId].dataStored.lines[lineId].steps[stepId];
   draftStep.actualHuPicked = actualHUPicked;
-  draftStep.droppedToLocator = droppedToLocator;
+  draftStep.locatorBarcode = locatorBarcode;
   draftStep.qtyPicked = qtyPicked;
   draftStep.qtyRejectedReasonCode = qtyRejectedReasonCode;
 
@@ -64,7 +56,7 @@ const computeStepStatus = ({ draftStep }) => {
 
   const isStepCompleted =
     // Barcode is set
-    !!(draftStep.actualHUPicked && draftStep.droppedToLocator) &&
+    !!(draftStep.actualHUPicked && draftStep.locatorBarcode) &&
     // and is completely picked or a reject code is set
     (draftStep.qtyToMove - draftStep.qtyPicked === 0 || !!draftStep.qtyRejectedReasonCode);
 

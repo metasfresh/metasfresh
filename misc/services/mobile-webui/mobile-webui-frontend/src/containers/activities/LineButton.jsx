@@ -41,12 +41,7 @@ function LineButton(WrappedComponent) {
     wfProcessId: PropTypes.string.isRequired,
     activityId: PropTypes.string.isRequired,
     lineId: PropTypes.string.isRequired,
-    caption: PropTypes.string.isRequired,
     isUserEditable: PropTypes.bool.isRequired,
-    completeStatus: PropTypes.string.isRequired,
-    uom: PropTypes.string.isRequired,
-    qtyPicked: PropTypes.number.isRequired,
-    qtyToPick: PropTypes.number.isRequired,
     //
     // Actions
     dispatch: PropTypes.func.isRequired,

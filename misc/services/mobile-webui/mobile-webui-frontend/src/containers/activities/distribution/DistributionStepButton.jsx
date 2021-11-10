@@ -7,7 +7,7 @@ import ApplicationStepButton from '../StepButton';
 import Indicator from '../../../components/Indicator';
 import * as CompleteStatus from '../../../constants/CompleteStatus';
 
-class PickStepButton extends PureComponent {
+class DistributionStepButton extends PureComponent {
   handleClick = () => {
     const { locatorName } = this.props;
     const { dispatch, onHandleClick } = this.props;
@@ -75,7 +75,7 @@ class PickStepButton extends PureComponent {
   }
 }
 
-PickStepButton.propTypes = {
+DistributionStepButton.propTypes = {
   //
   // Props
   wfProcessId: PropTypes.string.isRequired,
@@ -95,4 +95,4 @@ PickStepButton.propTypes = {
   dispatch: PropTypes.func.isRequired,
 };
 
-export default ApplicationStepButton(PickStepButton);
+export default ApplicationStepButton(DistributionStepButton);
