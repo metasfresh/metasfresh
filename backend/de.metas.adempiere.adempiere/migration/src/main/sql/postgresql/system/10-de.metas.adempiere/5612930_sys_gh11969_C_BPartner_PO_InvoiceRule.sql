@@ -59,6 +59,11 @@ INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_El
 ;
 
 
+-- 2021-11-10T15:51:25.697Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */ SELECT public.db_alter_table('C_BPartner','ALTER TABLE public.C_BPartner ADD COLUMN PO_InvoiceRule VARCHAR(250)')
+;
+
 
 
 -----------------------
