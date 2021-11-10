@@ -6,6 +6,7 @@ import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobStep;
 import de.metas.handlingunits.picking.job.model.PickingJobStepEvent;
 import de.metas.handlingunits.picking.job.model.PickingJobStepEventType;
+import de.metas.handlingunits.picking.job.model.PickingJobStepPickFromKey;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobCreateRequest;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobTestHelper;
 import de.metas.order.OrderAndLineId;
@@ -97,8 +98,9 @@ class PickingJobService_Snapshot_Test
 				pickingJob,
 				PickingJobStepEvent.builder()
 						.pickingStepId(step.getId())
+						.pickFromKey(PickingJobStepPickFromKey.MAIN)
 						.eventType(PickingJobStepEventType.PICK)
-						.huBarcode(step.getPickFromHU().getBarcode())
+						.huBarcode(step.getPickFrom(PickingJobStepPickFromKey.MAIN).getPickFromHU().getBarcode())
 						.qtyPicked(new BigDecimal("100"))
 						.build());
 

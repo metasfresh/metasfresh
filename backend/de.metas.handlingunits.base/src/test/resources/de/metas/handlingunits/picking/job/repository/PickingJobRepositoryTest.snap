@@ -17,22 +17,42 @@ de.metas.handlingunits.picking.job.repository.PickingJobRepositoryTest.createNew
     "productId" : 6,
     "productName" : "productName-6",
     "progress" : "NOT_STARTED",
-    "qtyPicked" : "0 Ea",
     "qtyToPick" : "100 Ea",
     "steps" : [ {
       "id" : 100005,
-      "pickFromAlternativeIds" : [ 100003 ],
-      "pickFromHU" : {
-        "barcode" : "11",
-        "id" : 11
+      "pickFroms" : {
+        "map" : {
+          "100003" : {
+            "pickFromHU" : {
+              "barcode" : "1001",
+              "id" : 1001
+            },
+            "pickFromKey" : "100003",
+            "pickFromLocator" : {
+              "caption" : "locatorName-22",
+              "id" : "21_22"
+            },
+            "pickedTo" : null
+          },
+          "MAIN" : {
+            "pickFromHU" : {
+              "barcode" : "11",
+              "id" : 11
+            },
+            "pickFromKey" : "MAIN",
+            "pickFromLocator" : {
+              "caption" : "locatorName-10",
+              "id" : "9_10"
+            },
+            "pickedTo" : null
+          }
+        },
+        "qtyPickedSum" : null,
+        "reportedOnAllPickFroms" : false
       },
-      "pickFromLocator" : {
-        "caption" : "locatorName-10",
-        "id" : "9_10"
-      },
-      "picked" : null,
       "productId" : 6,
       "productName" : "productName-6",
+      "progress" : "NOT_STARTED",
       "qtyToPick" : "100 Ea",
       "salesOrderAndLineId" : {
         "orderId" : 2,

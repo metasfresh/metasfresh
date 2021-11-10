@@ -6,6 +6,7 @@ import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobLine;
 import de.metas.handlingunits.picking.job.model.PickingJobStep;
 import de.metas.handlingunits.picking.job.model.PickingJobStepId;
+import de.metas.handlingunits.picking.job.model.PickingJobStepPickFromKey;
 import de.metas.handlingunits.reservation.HUReservationDocRef;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.reservation.ReserveHUsRequest;
@@ -41,7 +42,7 @@ public class PickingJobHUReservationService
 								.documentRef(HUReservationDocRef.ofPickingJobStepId(step.getId()))
 								.productId(step.getProductId())
 								.qtyToReserve(step.getQtyToPick())
-								.huId(step.getPickFromHU().getId())
+								.huId(step.getPickFrom(PickingJobStepPickFromKey.MAIN).getPickFromHU().getId())
 								.build())
 				.orElseThrow(() -> new AdempiereException("Cannot reserve HU for " + step)); // shall not happen
 	}

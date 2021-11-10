@@ -17,22 +17,30 @@ de.metas.handlingunits.picking.job.service.PickingJobService_Snapshot_Test.abort
     "productId" : 100161,
     "productName" : "productName-100161",
     "progress" : "NOT_STARTED",
-    "qtyPicked" : "0 Ea",
     "qtyToPick" : "100 Ea",
     "steps" : [ {
       "id" : 100253,
-      "pickFromAlternativeIds" : [ ],
-      "pickFromHU" : {
-        "barcode" : "100201",
-        "id" : 100201
+      "pickFroms" : {
+        "map" : {
+          "MAIN" : {
+            "pickFromHU" : {
+              "barcode" : "100201",
+              "id" : 100201
+            },
+            "pickFromKey" : "MAIN",
+            "pickFromLocator" : {
+              "caption" : "locatorName-100160",
+              "id" : "100159_100160"
+            },
+            "pickedTo" : null
+          }
+        },
+        "qtyPickedSum" : null,
+        "reportedOnAllPickFroms" : false
       },
-      "pickFromLocator" : {
-        "caption" : "locatorName-100160",
-        "id" : "100159_100160"
-      },
-      "picked" : null,
       "productId" : 100161,
       "productName" : "productName-100161",
+      "progress" : "NOT_STARTED",
       "qtyToPick" : "100 Ea",
       "salesOrderAndLineId" : {
         "orderId" : 1,
@@ -66,27 +74,35 @@ de.metas.handlingunits.picking.job.service.PickingJobService_Snapshot_Test.compl
     "productId" : 100161,
     "productName" : "productName-100161",
     "progress" : "DONE",
-    "qtyPicked" : "100 Ea",
     "qtyToPick" : "100 Ea",
     "steps" : [ {
       "id" : 100253,
-      "pickFromAlternativeIds" : [ ],
-      "pickFromHU" : {
-        "barcode" : "100201",
-        "id" : 100201
-      },
-      "pickFromLocator" : {
-        "caption" : "locatorName-100160",
-        "id" : "100159_100160"
-      },
-      "picked" : {
-        "actualPickedHUId" : 100201,
-        "pickingCandidateId" : 100255,
-        "qtyPicked" : "100 Ea",
-        "qtyRejectedReasonCode" : null
+      "pickFroms" : {
+        "map" : {
+          "MAIN" : {
+            "pickFromHU" : {
+              "barcode" : "100201",
+              "id" : 100201
+            },
+            "pickFromKey" : "MAIN",
+            "pickFromLocator" : {
+              "caption" : "locatorName-100160",
+              "id" : "100159_100160"
+            },
+            "pickedTo" : {
+              "actualPickedHUId" : 100201,
+              "pickingCandidateId" : 100255,
+              "qtyPicked" : "100 Ea",
+              "qtyRejected" : null
+            }
+          }
+        },
+        "qtyPickedSum" : "100 Ea",
+        "reportedOnAllPickFroms" : true
       },
       "productId" : 100161,
       "productName" : "productName-100161",
+      "progress" : "DONE",
       "qtyToPick" : "100 Ea",
       "salesOrderAndLineId" : {
         "orderId" : 1,
@@ -120,22 +136,30 @@ de.metas.handlingunits.picking.job.service.PickingJobService_Snapshot_Test.creat
     "productId" : 100161,
     "productName" : "productName-100161",
     "progress" : "NOT_STARTED",
-    "qtyPicked" : "0 Ea",
     "qtyToPick" : "100 Ea",
     "steps" : [ {
       "id" : 100253,
-      "pickFromAlternativeIds" : [ ],
-      "pickFromHU" : {
-        "barcode" : "100201",
-        "id" : 100201
+      "pickFroms" : {
+        "map" : {
+          "MAIN" : {
+            "pickFromHU" : {
+              "barcode" : "100201",
+              "id" : 100201
+            },
+            "pickFromKey" : "MAIN",
+            "pickFromLocator" : {
+              "caption" : "locatorName-100160",
+              "id" : "100159_100160"
+            },
+            "pickedTo" : null
+          }
+        },
+        "qtyPickedSum" : null,
+        "reportedOnAllPickFroms" : false
       },
-      "pickFromLocator" : {
-        "caption" : "locatorName-100160",
-        "id" : "100159_100160"
-      },
-      "picked" : null,
       "productId" : 100161,
       "productName" : "productName-100161",
+      "progress" : "NOT_STARTED",
       "qtyToPick" : "100 Ea",
       "salesOrderAndLineId" : {
         "orderId" : 1,

@@ -38,7 +38,6 @@ import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.warehouse.LocatorId;
 
 import java.util.Collection;
 import java.util.Objects;
@@ -248,27 +247,35 @@ public class PickingJobCreateCommand
 	private PickingJobCreateRepoRequest.Step createStepRequest_PickFromHU(final @NonNull PickingPlanLine planLine)
 	{
 		final ProductId productId = planLine.getProductId();
-
-		final PickFromHU pickFromHU = Objects.requireNonNull(planLine.getPickFromHU());
-		final LocatorId pickFromLocatorId = pickFromHU.getLocatorId();
-		final ImmutableSet<HuId> pickFromHUIdsAlternatives = pickFromHU.getAlternatives().getHuIds();
 		final Quantity qtyToPick = planLine.getQty();
 
-		final HuId pickFromHUId = extractTopLevelCUIfNeeded(pickFromHU.getHuId(), productId, qtyToPick);
+		final PickFromHU pickFromHU = Objects.requireNonNull(planLine.getPickFromHU());
+
+		final PickingJobCreateRepoRequest.StepPickFrom mainPickFrom = PickingJobCreateRepoRequest.StepPickFrom.builder()
+				.pickFromLocatorId(pickFromHU.getLocatorId())
+				.pickFromHUId(extractTopLevelCUIfNeeded(pickFromHU.getHuId(), productId, qtyToPick))
+				.build();
+
+		final ImmutableSet<PickingJobCreateRepoRequest.StepPickFrom> pickFromAlternatives = pickFromHU.getAlternatives()
+				.stream()
+				.map(alt -> PickingJobCreateRepoRequest.StepPickFrom.builder()
+						.pickFromLocatorId(alt.getLocatorId())
+						.pickFromHUId(alt.getHuId())
+						.build())
+				.collect(ImmutableSet.toImmutableSet());
 
 		return PickingJobCreateRepoRequest.Step.builder()
 				.shipmentScheduleId(planLine.getSourceDocumentInfo().getShipmentScheduleId())
 				.salesOrderLineId(Objects.requireNonNull(planLine.getSourceDocumentInfo().getSalesOrderLineId()))
-				.pickFromLocatorId(pickFromLocatorId)
 				.productId(productId)
-				.pickFromHUId(pickFromHUId)
 				.qtyToPick(qtyToPick)
-				.pickFromHUIdsAlternatives(pickFromHUIdsAlternatives)
+				.mainPickFrom(mainPickFrom)
+				.pickFromAlternatives(pickFromAlternatives)
 				.build();
 	}
 
 	/**
-	 * If the given HU is a top level CU and it has the storage quantity greater than the qty we have to pick,
+	 * If the given HU is a top level CU, and it has the storage quantity greater than the qty we have to pick,
 	 * then split out a top level CU for the qty we have to pick.
 	 * <p>
 	 * Why we do this?
