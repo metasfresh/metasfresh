@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import counterpart from 'counterpart';
+import { push } from 'connected-react-router';
 
 import { postStepUnPicked } from '../../../api/picking';
 import { updatePickingStepQty } from '../../../actions/PickingActions';
@@ -44,7 +45,7 @@ class PickStepScreen extends Component {
       stepProps: { scannedHUBarcode },
       dispatch,
     } = this.props;
-    const { updatePickingStepQty, push } = this.props;
+    const { updatePickingStepQty } = this.props;
 
     postStepUnPicked({
       wfProcessId,
@@ -139,8 +140,6 @@ PickStepScreen.propTypes = {
   onScanButtonClick: PropTypes.func.isRequired,
   //
   // Actions
-  updatePickingStepQty: PropTypes.func.isRequired,
-  push: PropTypes.func.isRequired,
   dispatch: PropTypes.func.isRequired,
 };
 

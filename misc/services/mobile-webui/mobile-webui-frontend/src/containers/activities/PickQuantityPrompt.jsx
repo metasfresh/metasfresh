@@ -28,14 +28,14 @@ class PickQuantityPrompt extends PureComponent {
   };
 
   render() {
-    const { qtyToPick } = this.props;
+    const { qtyTarget } = this.props;
 
     return (
       <div>
         <div className="prompt-dialog-screen">
           <article className="message confirm-box is-dark">
             <div className="message-body">
-              <strong>{`${counterpart.translate('general.QtyToPick')} : ${qtyToPick}`}</strong>
+              <strong>{`${counterpart.translate('general.QtyToPick')} : ${qtyTarget}`}</strong>
               <div>&nbsp;</div>
               <div className="control">
                 <input
@@ -61,7 +61,7 @@ class PickQuantityPrompt extends PureComponent {
 
 PickQuantityPrompt.propTypes = {
   onQtyChange: PropTypes.func.isRequired,
-  qtyToPick: PropTypes.number.isRequired,
+  qtyTarget: PropTypes.number.isRequired,
 };
 
 export default PickQuantityPrompt;

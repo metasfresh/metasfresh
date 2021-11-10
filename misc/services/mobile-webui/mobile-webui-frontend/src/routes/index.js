@@ -12,7 +12,7 @@ import WFProcessScreen from '../containers/wfProcessScreen/WFProcessScreen';
 import ScanScreen from '../containers/activities/scan/ScanScreen';
 import LineScreen from '../containers/activities/LineScreen';
 import StepScreen from '../containers/activities/StepScreen';
-import PickStepScanHUScreen from '../containers/activities/picking/PickStepScanHUScreen';
+import StepScanScreen from '../containers/activities/StepScanScreen';
 import ApplicationsScreen from '../containers/applicationScreen/ApplicationsScreen';
 
 import PrivateRoute from './PrivateRoute';
@@ -27,8 +27,8 @@ const routesArray = [
   { path: '/workflow/:workflowId/activityId/:activityId/lineId/:lineId', Component: LineScreen },
   { path: '/workflow/:workflowId/activityId/:activityId/lineId/:lineId/stepId/:stepId', Component: StepScreen },
   {
-    path: '/workflow/:workflowId/activityId/:activityId/lineId/:lineId/stepId/:stepId/scanner',
-    Component: PickStepScanHUScreen,
+    path: '/workflow/:workflowId/activityId/:activityId/lineId/:lineId/stepId/:stepId/scanner/:appId/:locatorId?',
+    Component: StepScanScreen,
   },
 ];
 

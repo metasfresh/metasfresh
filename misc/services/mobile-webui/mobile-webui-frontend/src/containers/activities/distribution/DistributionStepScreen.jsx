@@ -8,13 +8,13 @@ import * as CompleteStatus from '../../../constants/CompleteStatus';
 import { pushHeaderEntry } from '../../../actions/HeaderActions';
 
 class DistributionStepScreen extends Component {
-  handleScanButtonClick = () => {
+  handleScanButtonClick = (locator) => {
     const {
       stepProps: { dropToLocator, qtyToMove },
       dispatch,
       onScanButtonClick,
     } = this.props;
-    onScanButtonClick();
+    onScanButtonClick(locator);
 
     dispatch(
       pushHeaderEntry({
@@ -130,7 +130,7 @@ class DistributionStepScreen extends Component {
         </div>
 
         <div className="mt-0">
-          <button className="button is-outlined complete-btn" onClick={this.handleScanButtonClick}>
+          <button className="button is-outlined complete-btn" onClick={() => this.handleScanButtonClick(true)}>
             <ButtonWithIndicator caption={scanLocatorCaption} completeStatus={scanLocatorButtonStatus} />
           </button>
         </div>
@@ -160,7 +160,6 @@ DistributionStepScreen.propTypes = {
   onScanButtonClick: PropTypes.func.isRequired,
   //
   // Actions
-  updatePickingStepQty: PropTypes.func.isRequired,
   dispatch: PropTypes.func.isRequired,
 };
 
