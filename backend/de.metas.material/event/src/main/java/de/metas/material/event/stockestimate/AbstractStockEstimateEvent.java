@@ -50,6 +50,8 @@ public abstract class AbstractStockEstimateEvent implements MaterialEvent
 
 	private final int freshQtyOnHandLineId;
 
+	private final int qtyStockEstimateSeqNo;
+	
 	private final Instant eventDate;
 
 	public AbstractStockEstimateEvent(
@@ -59,6 +61,7 @@ public abstract class AbstractStockEstimateEvent implements MaterialEvent
 			final int plantId,
 			final int freshQtyOnHandId,
 			final int freshQtyOnHandLineId,
+			final int qtyStockEstimateSeqNo, 
 			@NonNull final Instant eventDate
 	)
 	{
@@ -68,6 +71,7 @@ public abstract class AbstractStockEstimateEvent implements MaterialEvent
 		this.plantId = plantId;
 		this.freshQtyOnHandId = freshQtyOnHandId;
 		this.freshQtyOnHandLineId = freshQtyOnHandLineId;
+		this.qtyStockEstimateSeqNo = qtyStockEstimateSeqNo;
 		this.eventDate = eventDate;
 	}
 

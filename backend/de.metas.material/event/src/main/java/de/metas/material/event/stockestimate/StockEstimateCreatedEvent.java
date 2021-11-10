@@ -52,10 +52,18 @@ public class StockEstimateCreatedEvent extends AbstractStockEstimateEvent
 			@JsonProperty("plantId") final int plantId,
 			@JsonProperty("freshQtyOnHandId") final int freshQtyOnHandId,
 			@JsonProperty("freshQtyOnHandLineId") final int freshQtyOnHandLineId,
+			@JsonProperty("qtyStockEstimateSeqNo") final int qtyStockEstimateSeqNo,
 			@NonNull @JsonProperty("eventDate") final Instant eventDate
 	)
 	{
-		super(eventDescriptor, materialDescriptor, date, plantId, freshQtyOnHandId, freshQtyOnHandLineId, eventDate);
+		super(eventDescriptor, 
+			  materialDescriptor, 
+			  date, 
+			  plantId, 
+			  freshQtyOnHandId, 
+			  freshQtyOnHandLineId, 
+			  qtyStockEstimateSeqNo, 
+			  eventDate);
 	}
 
 	@Override

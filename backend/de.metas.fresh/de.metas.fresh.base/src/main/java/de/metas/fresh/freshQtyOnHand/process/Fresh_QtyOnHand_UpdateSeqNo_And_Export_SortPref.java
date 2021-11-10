@@ -51,8 +51,10 @@ import de.metas.fresh.model.I_Fresh_QtyOnHand_Line;
 import de.metas.fresh.model.I_X_MRP_ProductInfo_V;
 import de.metas.i18n.IMsgBL;
 
+import javax.annotation.Nullable;
+
 /**
- * @task http://dewiki908/mediawiki/index.php/08924_Sortierung_Zählliste-Sortierbegriffe_(101643853730)
+ * task http://dewiki908/mediawiki/index.php/08924_Sortierung_Zählliste-Sortierbegriffe_(101643853730)
  */
 public class Fresh_QtyOnHand_UpdateSeqNo_And_Export_SortPref extends JavaProcess
 {
@@ -128,8 +130,8 @@ public class Fresh_QtyOnHand_UpdateSeqNo_And_Export_SortPref extends JavaProcess
 	 * 
 	 * @param contextProviderForNewRecords used when creating the new {@link I_AD_User_SortPref_Line}.
 	 * @param dateDoc needed for the localized description in the {@link I_AD_User_SortPref_Hdr} that we change in this method.
-	 * @return
 	 */
+	@Nullable
 	private I_AD_User_SortPref_Line resetAndRetrieveSortPrefLineOrNull(final PlainContextAware contextProviderForNewRecords,
 			final Timestamp dateDoc)
 	{
@@ -148,7 +150,7 @@ public class Fresh_QtyOnHand_UpdateSeqNo_And_Export_SortPref extends JavaProcess
 		if (mrpProductInfoSortPrefs == null)
 		{
 			logger.debug("Found no default AD_User_SortPref_Hdr for AD_InfoWindow_ID={} (tableName {})",
-					new Object[] { mrpInfoWindow.getAD_InfoWindow_ID(), I_X_MRP_ProductInfo_V.Table_Name });
+					mrpInfoWindow.getAD_InfoWindow_ID(), I_X_MRP_ProductInfo_V.Table_Name);
 			return null;
 		}
 
@@ -189,11 +191,10 @@ public class Fresh_QtyOnHand_UpdateSeqNo_And_Export_SortPref extends JavaProcess
 				.addColumn(I_Fresh_QtyOnHand_Line.COLUMNNAME_ProductName)
 				.addColumn(I_Fresh_QtyOnHand_Line.COLUMNNAME_M_Product_ID); // note: same M_Product_ID => same Group and Name
 
-		final Iterator<I_Fresh_QtyOnHand_Line> linesWithDateDoc = linesWithDateDocQueryBuilder
+		return linesWithDateDocQueryBuilder
 				.create()
 				.setOption(IQuery.OPTION_GuaranteedIteratorRequired, false)
 				.setOption(IQuery.OPTION_IteratorBufferSize, 1000)
 				.iterate(I_Fresh_QtyOnHand_Line.class);
-		return linesWithDateDoc;
 	}
 }

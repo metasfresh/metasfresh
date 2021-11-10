@@ -58,6 +58,7 @@ public class MainRowWithSubRows
 	private final Map<Integer, CountingSubRowBucket> countingSubRows = new LinkedHashMap<>();
 	@NonNull
 	private final IProductBL productBL = Services.get(IProductBL.class);
+	@NonNull
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 
 	public static MainRowWithSubRows create(@NonNull final MainRowBucketId productIdAndDate)
@@ -212,7 +213,8 @@ public class MainRowWithSubRows
 
 	private void addStockRecordToCounting(@NonNull final I_MD_Stock stockRecord)
 	{
-		final int plantId = stockRecord.getM_Warehouse().getPP_Plant_ID();
+		final I_M_Warehouse warehouseRecord = warehouseDAO.getById(WarehouseId.ofRepoId(stockRecord.getM_Warehouse_ID()));
+		final int plantId = warehouseRecord.getPP_Plant_ID();
 		final CountingSubRowBucket countingSubRow = countingSubRows.computeIfAbsent(plantId, CountingSubRowBucket::create);
 		countingSubRow.addStockRecord(stockRecord);
 	}
@@ -252,6 +254,7 @@ public class MainRowWithSubRows
 				.qtyInventoryTime(mainRow.getQtyInventoryTime())
 				.qtyStockEstimateCount(mainRow.getQtyStockEstimateCount())
 				.qtyStockEstimateTime(mainRow.getQtyStockEstimateTime())
+				.qtyStockEstimateSeqNo(mainRow.getQtyStockEstimateSeqNo())
 				.pmmQtyPromised(mainRow.getPmmQtyPromised())
 				.allIncludedCockpitRecordIds(mainRow.getCockpitRecordIds())
 				.allIncludedStockRecordIds(mainRow.getStockRecordIds());

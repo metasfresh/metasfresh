@@ -120,6 +120,7 @@ public class MainDataRequestHandler
 		{
 			dataRecord.setQtyStockEstimateCount(dataUpdateRequest.getQtyStockEstimateCount());
 			dataRecord.setQtyStockEstimateTime(TimeUtil.asTimestamp(dataUpdateRequest.getQtyStockEstimateTime()));
+			dataRecord.setQtyStockEstimateSeqNo(CoalesceUtil.coalesceNotNull(dataUpdateRequest.getQtyStockEstimateSeqNo(), 0));
 		}
 
 		dataRecord.setQtyInventoryCount(computeSum(dataRecord.getQtyInventoryCount(), dataUpdateRequest.getQtyInventoryCount()));

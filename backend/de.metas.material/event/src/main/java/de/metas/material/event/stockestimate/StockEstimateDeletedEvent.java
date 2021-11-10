@@ -60,7 +60,14 @@ public class StockEstimateDeletedEvent extends AbstractStockEstimateEvent
 			@NonNull @JsonProperty("eventDate") final Instant eventDate
 	)
 	{
-		super(eventDescriptor, materialDescriptor, date, plantId, freshQtyOnHandId, freshQtyOnHandLineId, eventDate);
+		super(eventDescriptor,
+			  materialDescriptor,
+			  date,
+			  plantId,
+			  freshQtyOnHandId,
+			  freshQtyOnHandLineId,
+			  0 /*qtyStockEstimateSeqNo*/,
+			  eventDate);
 	}
 
 	@Override
