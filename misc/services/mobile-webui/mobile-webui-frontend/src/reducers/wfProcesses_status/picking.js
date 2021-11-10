@@ -157,24 +157,24 @@ const normalizePickingLines = (lines) => {
         accum[step.pickingStepId].altSteps = {};
         accum[step.pickingStepId].altSteps.qtyToPick = 0;
         // Mock generated steps
-        accum[step.pickingStepId].altSteps.genSteps = [
-          {
-            id: '1000353',
+        accum[step.pickingStepId].altSteps.genSteps = {
+          1000514: {
+            id: '1000514',
             locatorName: 'Hauptlager',
             huBarcode: '1000425',
             uom: 'Kg',
             qtyAvailable: 45,
             qtyPicked: 0,
           },
-          {
+          1000515: {
             id: '1000353',
             locatorName: 'Hauptlager',
-            huBarcode: '1000255',
+            huBarcode: '1000451',
             uom: 'Kg',
             qtyAvailable: 25,
             qtyPicked: 0,
           },
-        ];
+        };
 
         return accum;
       }, {}),

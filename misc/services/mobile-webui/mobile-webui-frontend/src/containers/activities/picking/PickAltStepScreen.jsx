@@ -87,8 +87,12 @@ class PickAltStepScreen extends Component {
 
   render() {
     const {
-      stepProps: { huBarcode, qtyToPick, scannedHUBarcode, qtyPicked },
+      stepProps: { altSteps },
+      altStepId,
     } = this.props;
+
+    const { genSteps } = altSteps;
+    const { huBarcode, qtyAvailable: qtyToPick, qtyPicked, scannedHUBarcode } = genSteps[altStepId];
 
     const isValidCode = !!scannedHUBarcode;
     const scanButtonCaption = isValidCode
@@ -136,7 +140,8 @@ class PickAltStepScreen extends Component {
 }
 
 const mapStateToProps = (state, ownProps) => {
-  const { workflowId: wfProcessId, activityId, lineId, stepId } = ownProps.match.params;
+  const { workflowId: wfProcessId, activityId, lineId, stepId, altStepId } = ownProps.match.params;
+
   const stepProps = state.wfProcesses_status[wfProcessId].activities[activityId].dataStored.lines[lineId].steps[stepId];
 
   return {
@@ -145,6 +150,7 @@ const mapStateToProps = (state, ownProps) => {
     lineId,
     stepId,
     stepProps,
+    altStepId,
   };
 };
 
@@ -155,6 +161,7 @@ PickAltStepScreen.propTypes = {
   activityId: PropTypes.string.isRequired,
   lineId: PropTypes.string.isRequired,
   stepId: PropTypes.string.isRequired,
+  altStepId: PropTypes.string.isRequired,
   stepProps: PropTypes.object.isRequired,
   //
   // Actions

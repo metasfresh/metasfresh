@@ -27,17 +27,17 @@ class PickAlternatives extends Component {
     return (
       <div>
         DIFF: {diffToPick}
-        {genSteps.length > 0 &&
-          genSteps.map((stepItem) => {
+        {Object.keys(genSteps).length > 0 &&
+          Object.keys(genSteps).map((altStepKey) => {
             return (
               <PickAltStepButton
-                key={stepItem.id}
+                key={genSteps[altStepKey].id}
                 wfProcessId={wfProcessId}
                 activityId={activityId}
                 lineId={lineId}
                 stepId={stepId}
-                altStepId={stepItem.id}
-                {...stepItem}
+                altStepId={genSteps[altStepKey].id}
+                {...genSteps[altStepKey]}
               />
             );
           })}
