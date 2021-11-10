@@ -167,7 +167,7 @@ const normalizePickingLines = (lines) => {
             qtyPicked: 0,
           },
           1000515: {
-            id: '1000353',
+            id: '1000515',
             locatorName: 'Hauptlager',
             huBarcode: '1000451',
             uom: 'Kg',

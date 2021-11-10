@@ -9,7 +9,6 @@ class PickAlternatives extends Component {
     const { altSteps, wfProcessId, activityId, lineId, stepId } = this.props;
     const { genSteps } = altSteps;
 
-    console.log('G:', genSteps);
     // let totalQty = 0;
 
     // const alternativeHUs = pickFromAlternatives.reduce((accumulator, item) => {
