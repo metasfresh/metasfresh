@@ -769,16 +769,16 @@ public class JsonPersisterService
 		{
 			if (jsonBPartner.getInvoiceRule() == null)
 			{
-				bpartner.setInvoiceRule(null);
+				bpartner.setCustomerInvoiceRule(null);
 			}
 			else
 			{
-				bpartner.setInvoiceRule(BPartnerCompositeRestUtils.getInvoiceRule(jsonBPartner.getInvoiceRule()));
+				bpartner.setCustomerInvoiceRule(BPartnerCompositeRestUtils.getInvoiceRule(jsonBPartner.getInvoiceRule()));
 			}
 		}
 		else if (isUpdateRemove)
 		{
-			bpartner.setInvoiceRule(null);
+			bpartner.setCustomerInvoiceRule(null);
 		}
 
 		// metasfreshId - we will never update it

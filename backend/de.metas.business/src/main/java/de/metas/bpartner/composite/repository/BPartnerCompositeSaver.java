@@ -178,9 +178,14 @@ final class BPartnerCompositeSaver
 
 		bpartnerRecord.setIsVendor(bpartner.isVendor());
 		bpartnerRecord.setIsCustomer(bpartner.isCustomer());
-		if (bpartner.getInvoiceRule() != null)
+		if (bpartner.getCustomerInvoiceRule() != null)
 		{
-			bpartnerRecord.setInvoiceRule(bpartner.getInvoiceRule().getCode());
+			bpartnerRecord.setInvoiceRule(bpartner.getCustomerInvoiceRule().getCode());
+		}
+
+		if(bpartner.getVendorInvoiceRule() != null)
+		{
+			bpartnerRecord.setPO_InvoiceRule(bpartner.getVendorInvoiceRule().getCode());
 		}
 
 		bpartnerRecord.setVATaxID(bpartner.getVatId());

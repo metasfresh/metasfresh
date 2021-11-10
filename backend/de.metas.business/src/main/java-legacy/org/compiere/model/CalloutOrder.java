@@ -38,6 +38,7 @@ import de.metas.logging.MetasfreshLastError;
 import de.metas.order.DeliveryRule;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderLineBL;
+import de.metas.order.InvoiceRule;
 import de.metas.order.OrderLinePriceAndDiscount;
 import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
@@ -244,10 +245,14 @@ public class CalloutOrder extends CalloutEngine
 
 				// InvoiceRule
 				{
-					final String invoiceRule = bpartner.getInvoiceRule();
-					if (invoiceRule != null && invoiceRule.length() != 0)
+					final InvoiceRule invoiceRule = isSOTrx ?
+							InvoiceRule.ofNullableCode(bpartner.getInvoiceRule()) :
+							InvoiceRule.ofNullableCode(bpartner.getPO_InvoiceRule());
+
+
+					if (invoiceRule != null)
 					{
-						order.setInvoiceRule(invoiceRule);
+						order.setInvoiceRule(invoiceRule.getCode());
 					}
 				}
 
