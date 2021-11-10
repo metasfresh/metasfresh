@@ -22,6 +22,8 @@
 
 package de.metas.invoice.process;
 
+import de.metas.invoice.InvoiceId;
+import de.metas.invoice.service.IInvoiceBL;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
@@ -44,6 +46,7 @@ import java.util.stream.Collectors;
 public class C_Invoice_CreateRelation extends JavaProcess implements IProcessPrecondition
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 
 	@Param(parameterName = I_C_Invoice_Relation.COLUMNNAME_C_Invoice_From_ID, mandatory = true)
 	private int fromInvoiceRepoId;
@@ -60,6 +63,11 @@ public class C_Invoice_CreateRelation extends JavaProcess implements IProcessPre
 		if (context.isMoreThanOneSelected())
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
+		}
+		final I_C_Invoice invoice = invoiceBL.getById(InvoiceId.ofRepoId(context.getSingleSelectedRecordId()));
+		if (invoiceBL.isVendorInvoice(invoiceBL.getC_DocType(invoice).getDocBaseType()))
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("Only Sales invoices accepted.");
 		}
 		return ProcessPreconditionsResolution.accept();
 	}

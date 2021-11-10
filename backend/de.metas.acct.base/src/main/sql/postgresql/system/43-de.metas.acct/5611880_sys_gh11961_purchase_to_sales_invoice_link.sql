@@ -995,3 +995,16 @@ UPDATE AD_UserQuery SET Code='AND<^>Sales_Invoice_Count<^>=<^>0<^>',Updated=TO_T
 UPDATE AD_UserQuery SET IsShowAllParams='Y',Updated=TO_TIMESTAMP('2021-11-09 15:09:42','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UserQuery_ID=540111
 ;
 
+-- 2021-11-10T08:42:25.539Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Val_Rule SET Code='C_Invoice.IsSOTrx = ''N''
+  AND C_Invoice.isActive = ''Y''
+  AND C_Invoice.C_DocType_ID IN (SELECT C_DocType_ID FROM C_DocType WHERE DocBaseType = ''API'' AND DocSubType IS NULL)
+  AND AD_Org_ID =@AD_Org_ID/-1@
+  AND NOT EXISTS(SELECT *
+                 FROM C_Invoice_Relation rel
+                 WHERE C_Invoice.C_Invoice_ID = rel.C_Invoice_From_ID
+                   AND rel.C_Invoice_To_ID = @C_Invoice_ID/-1@
+                   AND rel.C_Invoice_Relation_Type = ''POtoSO'')',Updated=TO_TIMESTAMP('2021-11-10 10:42:25','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Val_Rule_ID=540565
+;
+
