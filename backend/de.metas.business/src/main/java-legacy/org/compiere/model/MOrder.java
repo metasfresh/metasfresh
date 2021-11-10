@@ -140,6 +140,10 @@ public class MOrder extends X_C_Order implements IDocument
 			setDeliveryRule(DeliveryRule.AVAILABILITY.getCode());
 			setFreightCostRule(FreightCostRule.FreightIncluded.getCode());
 			// The invoiceRule should be already set. Don't change it.
+			if(getInvoiceRule() == null)
+			{
+				setInvoiceRule(INVOICERULE_AfterDelivery);
+			}
 			setPaymentRule(PaymentRule.OnCredit.getCode());
 			setPriorityRule(PRIORITYRULE_Medium);
 			setDeliveryViaRule(DeliveryViaRule.Pickup.getCode());
