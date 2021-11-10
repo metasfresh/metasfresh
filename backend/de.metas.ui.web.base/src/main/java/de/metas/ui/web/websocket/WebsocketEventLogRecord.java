@@ -28,10 +28,10 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @lombok.Value
-public final class WebsocketEventLogRecord
+public class WebsocketEventLogRecord
 {
-	private final WebsocketTopicName destination;
-	private final Object payload;
+	WebsocketTopicName destination;
+	Object payload;
 
 	boolean isDestinationMatching(final String destinationFilter)
 	{
