@@ -5,8 +5,8 @@ import { push } from 'connected-react-router';
 import counterpart from 'counterpart';
 
 import { pushHeaderEntry } from '../../../actions/HeaderActions';
-// import Indicator from '../../../components/Indicator';
-// import * as CompleteStatus from '../../../constants/CompleteStatus';
+import Indicator from '../../../components/Indicator';
+import * as CompleteStatus from '../../../constants/CompleteStatus';
 
 class PickAltStepButton extends PureComponent {
   handleClick = () => {
@@ -29,7 +29,8 @@ class PickAltStepButton extends PureComponent {
   goBackToPickingSteps = () => this.setState({ activePickingStep: false });
 
   render() {
-    const { lineId, locatorName, uom, qtyPicked, qtyAvailable } = this.props;
+    const { lineId, locatorName, uom, qtyPicked, qtyAvailable, pickStepState, altStepId } = this.props;
+    const { completeStatus } = pickStepState.altSteps.genSteps[altStepId];
 
     return (
       <div className="mt-3">
@@ -59,9 +60,9 @@ class PickAltStepButton extends PureComponent {
               </div>
             </div>
 
-            {/* <div className="right-btn-side pt-4">
+            <div className="right-btn-side pt-4">
               <Indicator completeStatus={completeStatus || CompleteStatus.NOT_STARTED} />
-            </div> */}
+            </div>
           </div>
         </button>
       </div>
