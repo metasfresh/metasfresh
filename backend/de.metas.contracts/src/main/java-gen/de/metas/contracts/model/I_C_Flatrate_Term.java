@@ -275,6 +275,33 @@ public interface I_C_Flatrate_Term
 	String COLUMNNAME_C_Flatrate_Term_ID = "C_Flatrate_Term_ID";
 
 	/**
+	 * Set Flatrate Term Master.
+	 * Is the ID of the first C_Flatrate_Term from entire hierarchy chain
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Flatrate_Term_Master_ID (int C_Flatrate_Term_Master_ID);
+
+	/**
+	 * Get Flatrate Term Master.
+	 * Is the ID of the first C_Flatrate_Term from entire hierarchy chain
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Flatrate_Term_Master_ID();
+
+	@Nullable de.metas.contracts.model.I_C_Flatrate_Term getC_Flatrate_Term_Master();
+
+	void setC_Flatrate_Term_Master(@Nullable de.metas.contracts.model.I_C_Flatrate_Term C_Flatrate_Term_Master);
+
+	ModelColumn<I_C_Flatrate_Term, de.metas.contracts.model.I_C_Flatrate_Term> COLUMN_C_Flatrate_Term_Master_ID = new ModelColumn<>(I_C_Flatrate_Term.class, "C_Flatrate_Term_Master_ID", de.metas.contracts.model.I_C_Flatrate_Term.class);
+	String COLUMNNAME_C_Flatrate_Term_Master_ID = "C_Flatrate_Term_Master_ID";
+
+	/**
 	 * Set Nachfolgende Vertragsperiode.
 	 *
 	 * <br>Type: Table
@@ -508,6 +535,29 @@ public interface I_C_Flatrate_Term
 	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
+	 * Set Ausschreibungs-Antwort.
+	 * Request for Quotation Response Line
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_RfQResponseLine_ID (int C_RfQResponseLine_ID);
+
+	/**
+	 * Get Ausschreibungs-Antwort.
+	 * Request for Quotation Response Line
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_RfQResponseLine_ID();
+
+	ModelColumn<I_C_Flatrate_Term, Object> COLUMN_C_RfQResponseLine_ID = new ModelColumn<>(I_C_Flatrate_Term.class, "C_RfQResponseLine_ID", null);
+	String COLUMNNAME_C_RfQResponseLine_ID = "C_RfQResponseLine_ID";
+
+	/**
 	 * Set Tax Category.
 	 * Tax Category
 	 *
@@ -596,8 +646,8 @@ public interface I_C_Flatrate_Term
 	String COLUMNNAME_DeliveryRule = "DeliveryRule";
 
 	/**
-	 * Set Lieferung.
-	 * Wie der Auftrag geliefert wird
+	 * Set Delivery Via.
+	 * How the order will be delivered
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -606,8 +656,8 @@ public interface I_C_Flatrate_Term
 	void setDeliveryViaRule (@Nullable java.lang.String DeliveryViaRule);
 
 	/**
-	 * Get Lieferung.
-	 * Wie der Auftrag geliefert wird
+	 * Get Delivery Via.
+	 * How the order will be delivered
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -1093,7 +1143,7 @@ public interface I_C_Flatrate_Term
 	 * Set Product.
 	 * Product, Service, Item
 	 *
-	 * <br>Type: Search
+	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1103,7 +1153,7 @@ public interface I_C_Flatrate_Term
 	 * Get Product.
 	 * Product, Service, Item
 	 *
-	 * <br>Type: Search
+	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1179,6 +1229,27 @@ public interface I_C_Flatrate_Term
 
 	ModelColumn<I_C_Flatrate_Term, Object> COLUMN_PlannedQtyPerUnit = new ModelColumn<>(I_C_Flatrate_Term.class, "PlannedQtyPerUnit", null);
 	String COLUMNNAME_PlannedQtyPerUnit = "PlannedQtyPerUnit";
+
+	/**
+	 * Set Lieferprodukt.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPMM_Product_ID (int PMM_Product_ID);
+
+	/**
+	 * Get Lieferprodukt.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getPMM_Product_ID();
+
+	ModelColumn<I_C_Flatrate_Term, Object> COLUMN_PMM_Product_ID = new ModelColumn<>(I_C_Flatrate_Term.class, "PMM_Product_ID", null);
+	String COLUMNNAME_PMM_Product_ID = "PMM_Product_ID";
 
 	/**
 	 * Set Abschlusskorrektur vorbereiten.
@@ -1267,7 +1338,28 @@ public interface I_C_Flatrate_Term
 	String COLUMNNAME_Processing = "Processing";
 
 	/**
-	 * Set Anfangsdatum.
+	 * Set Planmenge Folgejahr.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setQtyPlanned_NextYear (BigDecimal QtyPlanned_NextYear);
+
+	/**
+	 * Get Planmenge Folgejahr.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getQtyPlanned_NextYear();
+
+	ModelColumn<I_C_Flatrate_Term, Object> COLUMN_QtyPlanned_NextYear = new ModelColumn<>(I_C_Flatrate_Term.class, "QtyPlanned_NextYear", null);
+	String COLUMNNAME_QtyPlanned_NextYear = "QtyPlanned_NextYear";
+
+	/**
+	 * Set Start Date.
 	 * First effective day (inclusive)
 	 *
 	 * <br>Type: Date
@@ -1332,7 +1424,7 @@ public interface I_C_Flatrate_Term
 	String COLUMNNAME_TerminationMemo = "TerminationMemo";
 
 	/**
-	 * Set Termination Reason.
+	 * Set Reason ofTermination .
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -1341,7 +1433,7 @@ public interface I_C_Flatrate_Term
 	void setTerminationReason (@Nullable java.lang.String TerminationReason);
 
 	/**
-	 * Get Termination Reason.
+	 * Get Reason ofTermination .
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
