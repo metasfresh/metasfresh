@@ -8,6 +8,12 @@ import * as CompleteStatus from '../../../constants/CompleteStatus';
 import { pushHeaderEntry } from '../../../actions/HeaderActions';
 
 class DistributionStepScreen extends Component {
+  /**
+   * @method handleScanButtonClick
+   * @summary Redirects the user to the scanner screen and sets the header parameters
+   * @param {bool} locator - depending on this param we either use the flow for scanning HU or drop to locator.
+   *                         This way we can reuse all of the components.
+   */
   handleScanButtonClick = (locator) => {
     const {
       stepProps: { dropToLocator, qtyToMove },

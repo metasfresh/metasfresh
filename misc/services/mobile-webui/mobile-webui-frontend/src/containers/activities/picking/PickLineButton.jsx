@@ -7,7 +7,7 @@ import ButtonWithIndicator from '../../../components/ButtonWithIndicator';
 import ButtonQuantityProp from '../../../components/ButtonQuantityProp';
 import { pushHeaderEntry } from '../../../actions/HeaderActions';
 
-class LineButton extends PureComponent {
+class PickLineButton extends PureComponent {
   handleClick = () => {
     const { dispatch, caption, onHandleClick } = this.props;
 
@@ -39,7 +39,7 @@ class LineButton extends PureComponent {
   }
 }
 
-LineButton.propTypes = {
+PickLineButton.propTypes = {
   //
   // Props
   wfProcessId: PropTypes.string.isRequired,
@@ -58,4 +58,4 @@ LineButton.propTypes = {
   dispatch: PropTypes.func.isRequired,
 };
 
-export default ApplicationLineButton(LineButton);
+export default ApplicationLineButton(PickLineButton);
