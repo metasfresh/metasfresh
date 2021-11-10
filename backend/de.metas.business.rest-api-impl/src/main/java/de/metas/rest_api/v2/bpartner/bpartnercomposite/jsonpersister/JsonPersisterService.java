@@ -894,11 +894,24 @@ public class JsonPersisterService
 		{
 			if (jsonBPartner.getInvoiceRule() == null)
 			{
-				bpartner.setInvoiceRule(null);
+				bpartner.setCustomerInvoiceRule(null);
 			}
 			else
 			{
-				bpartner.setInvoiceRule(BPartnerCompositeRestUtils.getInvoiceRule(jsonBPartner.getInvoiceRule()));
+				bpartner.setCustomerInvoiceRule(BPartnerCompositeRestUtils.getInvoiceRule(jsonBPartner.getInvoiceRule()));
+			}
+		}
+
+		// poInvoiceRule
+		if (jsonBPartner.isPoInvoiceRuleSet())
+		{
+			if (jsonBPartner.getPoInvoiceRule() == null)
+			{
+				bpartner.setVendorInvoiceRule(null);
+			}
+			else
+			{
+				bpartner.setVendorInvoiceRule(BPartnerCompositeRestUtils.getInvoiceRule(jsonBPartner.getPoInvoiceRule()));
 			}
 		}
 
