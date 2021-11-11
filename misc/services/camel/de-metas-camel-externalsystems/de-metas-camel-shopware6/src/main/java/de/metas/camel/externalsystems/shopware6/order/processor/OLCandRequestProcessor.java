@@ -39,7 +39,6 @@ import de.metas.common.bpartner.v2.response.JsonResponseBPartnerCompositeUpsert;
 import de.metas.common.bpartner.v2.response.JsonResponseBPartnerCompositeUpsertItem;
 import de.metas.common.bpartner.v2.response.JsonResponseUpsertItem;
 import de.metas.common.externalsystem.JsonExternalSystemShopware6ConfigMapping;
-import de.metas.common.rest_api.v2.JSONPaymentRule;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateBulkRequest;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateRequest;
 import de.metas.common.ordercandidates.v2.request.JsonOrderDocType;
@@ -47,6 +46,7 @@ import de.metas.common.ordercandidates.v2.request.JsonOrderLineGroup;
 import de.metas.common.ordercandidates.v2.request.JsonRequestBPartnerLocationAndContact;
 import de.metas.common.ordercandidates.v2.request.JsonSalesPartner;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.common.rest_api.v2.JSONPaymentRule;
 import de.metas.common.util.Check;
 import de.metas.common.util.CoalesceUtil;
 import lombok.NonNull;
@@ -269,9 +269,18 @@ public class OLCandRequestProcessor implements Processor
 				? ZERO
 				: orderLine.getUnitPrice();
 
+		final String productIdentifier;
+		if (orderLine.getPayload() != null && Check.isNotBlank(orderLine.getPayload().getProductNumber()))
+		{
+			productIdentifier = VALUE_PREFIX + "-" + orderLine.getPayload().getProductNumber();
+		}
+		else
+		{
+			productIdentifier = ExternalIdentifierFormat.formatExternalId(orderLine.getProductId());
+		}
 		return olCandCreateRequestBuilder
 				.externalLineId(orderLine.getId())
-				.productIdentifier(ExternalIdentifierFormat.formatExternalId(orderLine.getProductId()))
+				.productIdentifier(productIdentifier)
 				.price(price)
 				.qty(orderLine.getQuantity())
 				.description(orderLine.getDescription())
@@ -367,7 +376,7 @@ public class OLCandRequestProcessor implements Processor
 				.filter(config -> config.isGroupMatching(customerGroupValue) && config.isPaymentMethodMatching(candidatePaymentMethod.getValue()))
 				.findFirst();
 
-		if(matchingConfigOpt.isPresent())
+		if (matchingConfigOpt.isPresent())
 		{
 			final JsonExternalSystemShopware6ConfigMapping matchingConfig = matchingConfigOpt.get();
 			olCandCreateRequestBuilder
@@ -375,9 +384,9 @@ public class OLCandRequestProcessor implements Processor
 					.paymentRule(JSONPaymentRule.ofCodeOrNull(matchingConfig.getPaymentRule()))
 					.paymentTerm(Check.isBlank(matchingConfig.getPaymentTermValue())
 										 ? null
-										 : VALUE_PREFIX + "-" + matchingConfig.getPaymentTermValue());	
+										 : VALUE_PREFIX + "-" + matchingConfig.getPaymentTermValue());
 		}
-		
+
 	}
 
 	@NonNull
