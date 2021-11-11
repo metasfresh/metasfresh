@@ -72,7 +72,7 @@ class PickStepScanHUScreen extends Component {
   pushUpdatedQuantity = ({ qty = 0, reason = null }) => {
     const { updatePickingStepQty, updateAltPickingStepQty, wfProcessId, activityId, lineId, stepId, altStepId, go } =
       this.props;
-    const { scannedBarcode } = this.state;
+    const { scannedBarcode, qtyRejected } = this.state;
 
     // TODO: This should be added to the same, not next level
     // pushHeaderEntry({
@@ -94,6 +94,7 @@ class PickStepScanHUScreen extends Component {
       stepId,
       huBarcode: scannedBarcode,
       qtyPicked: qty,
+      qtyRejected,
       qtyRejectedReasonCode: reason,
     })
       .then(() => {
