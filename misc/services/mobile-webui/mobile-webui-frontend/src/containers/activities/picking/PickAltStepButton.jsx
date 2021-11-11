@@ -31,7 +31,8 @@ class PickAltStepButton extends PureComponent {
   render() {
     const { lineId, locatorName, pickStepState, altStepId } = this.props;
     const genStepState = pickStepState.altSteps.genSteps[altStepId];
-    const { completeStatus, qtyAvailable, qtyPicked, uom } = genStepState;
+    const { qtyAvailable, qtyPicked, uom, scannedHUBarcode } = genStepState;
+    const completeStatus = scannedHUBarcode ? CompleteStatus.COMPLETED : CompleteStatus.NOT_STARTED;
 
     return (
       <div className="mt-3">
