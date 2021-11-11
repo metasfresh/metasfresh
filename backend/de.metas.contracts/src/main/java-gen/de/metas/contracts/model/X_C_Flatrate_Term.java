@@ -969,21 +969,6 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	}
 
 	@Override
-	public void setPMM_Product_ID (final int PMM_Product_ID)
-	{
-		if (PMM_Product_ID < 1) 
-			set_Value (COLUMNNAME_PMM_Product_ID, null);
-		else 
-			set_Value (COLUMNNAME_PMM_Product_ID, PMM_Product_ID);
-	}
-
-	@Override
-	public int getPMM_Product_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_PMM_Product_ID);
-	}
-
-	@Override
 	public void setPrepareClosing (final @Nullable java.lang.String PrepareClosing)
 	{
 		set_Value (COLUMNNAME_PrepareClosing, PrepareClosing);
@@ -1030,19 +1015,6 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	public boolean isProcessing() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_Processing);
-	}
-
-	@Override
-	public void setQtyPlanned_NextYear (final BigDecimal QtyPlanned_NextYear)
-	{
-		set_Value (COLUMNNAME_QtyPlanned_NextYear, QtyPlanned_NextYear);
-	}
-
-	@Override
-	public BigDecimal getQtyPlanned_NextYear() 
-	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyPlanned_NextYear);
-		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
