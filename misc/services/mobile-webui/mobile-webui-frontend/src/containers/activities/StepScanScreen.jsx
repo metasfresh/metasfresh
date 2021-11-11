@@ -4,6 +4,7 @@ import { useParams } from 'react-router-dom';
 import PickStepScanScreen from './picking/PickStepScanScreen';
 import DistributionStepScanScreen from './distribution/DistributionStepScanScreen';
 
+// if locator param is defined, Scanner component will be initiated to scan locator instead of HU
 const getStepComponent = (appId, locator) => {
   switch (appId) {
     case 'picking':

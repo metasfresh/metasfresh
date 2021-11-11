@@ -14,13 +14,14 @@ class DistributionStepScreen extends Component {
    * @param {bool} locator - depending on this param we either use the flow for scanning HU or drop to locator.
    *                         This way we can reuse all of the components.
    */
-  handleScanButtonClick = (locator) => {
+  handleScanButtonClick = (e, locator) => {
     const {
       stepProps: { dropToLocator, qtyToMove },
       dispatch,
       onScanButtonClick,
     } = this.props;
     const locatorId = locator ? dropToLocator.caption : null;
+
     onScanButtonClick(locatorId);
 
     dispatch(

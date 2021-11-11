@@ -6,7 +6,7 @@ import CodeScanner from './scan/CodeScanner';
 import PickQuantityPrompt from './PickQuantityPrompt';
 import QtyReasonsView from './QtyReasonsView';
 
-class StepScanScreen extends Component {
+class StepScanScreenComponent extends Component {
   constructor(props) {
     super(props);
 
@@ -78,6 +78,7 @@ class StepScanScreen extends Component {
     const {
       stepProps: { uom },
       qtyTarget,
+      qtyCaption,
     } = this.props;
     const { promptVisible, reasonsPanelVisible, qtyRejected } = this.state;
 
@@ -87,7 +88,9 @@ class StepScanScreen extends Component {
           <QtyReasonsView onHide={this.hideReasonsPanel} uom={uom} qtyRejected={qtyRejected} />
         ) : (
           <>
-            {promptVisible ? <PickQuantityPrompt qtyTarget={qtyTarget} onQtyChange={this.onQtyPickedChanged} /> : null}
+            {promptVisible ? (
+              <PickQuantityPrompt qtyTarget={qtyTarget} qtyCaption={qtyCaption} onQtyChange={this.onQtyPickedChanged} />
+            ) : null}
             <CodeScanner onBarcodeScanned={this.onBarcodeScanned} />
           </>
         )}
@@ -96,7 +99,7 @@ class StepScanScreen extends Component {
   }
 }
 
-StepScanScreen.propTypes = {
+StepScanScreenComponent.propTypes = {
   componentProps: PropTypes.object,
   wfProcessId: PropTypes.string.isRequired,
   activityId: PropTypes.string.isRequired,
@@ -104,9 +107,10 @@ StepScanScreen.propTypes = {
   stepId: PropTypes.string.isRequired,
   eligibleBarcode: PropTypes.string.isRequired,
   qtyTarget: PropTypes.number.isRequired,
+  qtyCaption: PropTypes.string.isRequired,
   stepProps: PropTypes.object.isRequired,
   pushUpdatedQuantity: PropTypes.func.isRequired,
   setScannedBarcode: PropTypes.func.isRequired,
 };
 
-export default StepScanScreen;
+export default StepScanScreenComponent;

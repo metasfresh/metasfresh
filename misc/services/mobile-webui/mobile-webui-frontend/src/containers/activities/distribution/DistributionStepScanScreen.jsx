@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
 import { go } from 'connected-react-router';
+import counterpart from 'counterpart';
 
 import { selectWFProcessFromState } from '../../../reducers/wfProcesses_status';
 import { updateDistributionStepQty } from '../../../actions/DistributionActions';
@@ -22,8 +23,8 @@ function DistributionStepScanScreen(WrappedComponent) {
       stepId,
       stepProps,
       appId,
-      targetQty: stepProps.qtyToPick,
-      eligibleBarcode: locatorId ? stepProps.locatorBarcode : stepProps.actualHUPicked,
+      qtyTarget: stepProps.qtyToMove,
+      eligibleBarcode: locatorId ? stepProps.dropToLocator.barcode : stepProps.pickFromHU.barcode,
       locatorId,
     };
   };
@@ -76,6 +77,7 @@ function DistributionStepScanScreen(WrappedComponent) {
         <WrappedComponent
           pushUpdatedQuantity={this.pushUpdatedQuantity}
           setScannedBarcode={this.setScannedBarcode}
+          qtyCaption={counterpart.translate('general.QtyToMove')}
           {...this.props}
         />
       );

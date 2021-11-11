@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
 import { go } from 'connected-react-router';
+import counterpart from 'counterpart';
 
 import { selectWFProcessFromState } from '../../../reducers/wfProcesses_status';
 import { toastError } from '../../../utils/toast';
@@ -89,6 +90,7 @@ function PickStepScanScreen(WrappedComponent) {
         <WrappedComponent
           pushUpdatedQuantity={this.pushUpdatedQuantity}
           setScannedBarcode={this.setScannedBarcode}
+          qtyCaption={counterpart.translate('general.QtyToPick')}
           {...this.props}
         />
       );

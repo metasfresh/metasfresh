@@ -18,6 +18,7 @@ export const setupCounterpart = () => {
       QtyToPick: 'Qty to pick',
       QtyPicked: 'Qty picked',
       QtyMoved: 'Qty moved',
+      QtyToMove: 'Qty to move',
       DropToLocator: 'Drop to locator',
       PleaseTryAgain: 'Please try again',
     },

@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 
 import StepButton from './DistributionStepButton';
 
-const PickLineScreen = (props) => {
+const DistributionLineScreen = (props) => {
   const { wfProcessId, activityId, lineId, steps } = props;
 
   return (
@@ -18,6 +18,7 @@ const PickLineScreen = (props) => {
                 activityId={activityId}
                 lineId={lineId}
                 stepId={stepItem.id}
+                locatorName={stepItem.productName}
                 {...stepItem}
               />
             );
@@ -27,7 +28,7 @@ const PickLineScreen = (props) => {
   );
 };
 
-PickLineScreen.propTypes = {
+DistributionLineScreen.propTypes = {
   //
   // Props
   wfProcessId: PropTypes.string.isRequired,
@@ -36,4 +37,4 @@ PickLineScreen.propTypes = {
   steps: PropTypes.array.isRequired,
 };
 
-export default PickLineScreen;
+export default DistributionLineScreen;
