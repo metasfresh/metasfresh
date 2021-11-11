@@ -452,9 +452,9 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	}
 
 	@Override
-	public int getC_RfQResponseLine_ID() 
+	public int getC_Order_Term_ID()
 	{
-		return get_ValueAsInt(COLUMNNAME_C_RfQResponseLine_ID);
+		return get_ValueAsInt(COLUMNNAME_C_Order_Term_ID);
 	}
 
 	@Override
