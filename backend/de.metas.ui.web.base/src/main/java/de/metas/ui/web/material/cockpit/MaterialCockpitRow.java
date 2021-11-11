@@ -82,7 +82,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 public class MaterialCockpitRow implements IViewRow
 {
 	/**
-	 * Please keep its prefix in sync with {@link MaterialCockpitViewFactory#SYSCFG_DisplayIncludedRows}
+	 * Please keep its prefix in sync with {@link MaterialCockpitViewFactory#SYSCFG_DisplayIncludedRows}.
 	 */
 	public static final String SYSCFG_PREFIX = "de.metas.ui.web.material.cockpit.field";
 
@@ -94,7 +94,9 @@ public class MaterialCockpitRow implements IViewRow
 	private static final String SEPARATOR = "-";
 	private static final Joiner DOCUMENT_ID_JOINER = Joiner.on(SEPARATOR).skipNulls();
 
+	@Getter
 	private final LocalDate date;
+
 	@Getter
 	private final int productId;
 
@@ -353,25 +355,24 @@ public class MaterialCockpitRow implements IViewRow
 			final Quantity qtyExpectedSurplus,
 			final Quantity qtyStockCurrent,
 			final Quantity qtyOnHandStock,
-
+			@NonNull final ProductId productId,
+			@NonNull final LocalDate date,
 			@Singular final List<MaterialCockpitRow> includedRows,
 			@NonNull final Set<Integer> allIncludedCockpitRecordIds,
 			@NonNull final Set<Integer> allIncludedStockRecordIds)
 	{
-		Check.errorIf(includedRows.isEmpty(), "The given includedRows may not be empty");
-
 		this.rowType = DefaultRowType.Row;
 
-		this.date = extractDate(includedRows);
+		this.date = date;
 
 		this.dimensionGroupOrNull = null;
 
-		this.productId = extractProductId(includedRows);
+		this.productId = productId.getRepoId();
 
 		this.documentId = DocumentId.of(DOCUMENT_ID_JOINER.join(
 				"main",
 				date,
-				productId));
+				productId.getRepoId()));
 
 		this.documentPath = DocumentPath.rootDocumentPath(
 				MaterialCockpitUtil.WINDOWID_MaterialCockpitView,
@@ -379,7 +380,7 @@ public class MaterialCockpitRow implements IViewRow
 
 		final IProductDAO productDAO = Services.get(IProductDAO.class);
 
-		final I_M_Product productRecord = productDAO.getById(ProductId.ofRepoId(productId));
+		final I_M_Product productRecord = productDAO.getById(productId);
 		final I_M_Product_Category productCategoryRecord = productDAO.getProductCategoryById(ProductCategoryId.ofRepoId(productRecord.getM_Product_Category_ID()));
 
 		this.productValue = productRecord.getValue();
@@ -687,5 +688,4 @@ public class MaterialCockpitRow implements IViewRow
 	{
 		return values.get(this);
 	}
-
 }

@@ -66,7 +66,7 @@ public class StockEstimateDeletedEvent extends AbstractStockEstimateEvent
 			  plantId,
 			  freshQtyOnHandId,
 			  freshQtyOnHandLineId,
-			  0 /*qtyStockEstimateSeqNo*/,
+			  null /*qtyStockEstimateSeqNo*/,
 			  eventDate);
 	}
 

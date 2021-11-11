@@ -73,3 +73,21 @@ UPDATE AD_Process SET Value='Fresh_QtyOnHand_UpdateSeqNo_And_Export_SortPref',Up
 UPDATE AD_Process SET Description='Aktualisiert die Sortierung für das aktuelle Belegdatum (alle verarbeiteten Zählbestände!) und übernimmt sie in das Material-cockpit', Name='Sortierun Aktualisieren',Updated=TO_TIMESTAMP('2021-11-10 16:32:54','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=540577
 ;
 
+
+
+-- 2021-11-10T19:41:22.547Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET SortNo=-10,Updated=TO_TIMESTAMP('2021-11-10 20:41:22','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=555213
+;
+
+-- 2021-11-10T23:55:54.685Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET DefaultValue='',Updated=TO_TIMESTAMP('2021-11-11 00:55:54','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=578380
+;
+
+-- 2021-11-10T23:55:55.975Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO t_alter_column values('md_cockpit','QtyStockEstimateSeqNo','NUMERIC(10)',null,null)
+;
+
+

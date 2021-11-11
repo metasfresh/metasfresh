@@ -236,6 +236,8 @@ public class MainRowWithSubRows
 	public MaterialCockpitRow createMainRowWithSubRows()
 	{
 		final MainRowBuilder mainRowBuilder = MaterialCockpitRow.mainRowBuilder()
+				.productId(productIdAndDate.getProductId())
+				.date(productIdAndDate.getDate())
 				.qtyMaterialentnahme(mainRow.getQtyMaterialentnahme())
 				.qtyDemandPPOrder(mainRow.getQtyDemandPPOrder())
 				.qtyStockCurrent(mainRow.getQtyStockCurrent())
@@ -262,13 +264,21 @@ public class MainRowWithSubRows
 		for (final CountingSubRowBucket subRowBucket : countingSubRows.values())
 		{
 			final MaterialCockpitRow subRow = subRowBucket.createIncludedRow(this);
-			mainRowBuilder.includedRow(subRow);
+			final boolean subRowIsEmpty = subRow.getAllIncludedStockRecordIds().isEmpty() && subRow.getAllIncludedCockpitRecordIds().isEmpty();
+			if (!subRowIsEmpty)
+			{
+				mainRowBuilder.includedRow(subRow);
+			}
 		}
 
 		for (final DimensionGroupSubRowBucket subRowBucket : dimensionGroupSubRows.values())
 		{
 			final MaterialCockpitRow subRow = subRowBucket.createIncludedRow(this);
-			mainRowBuilder.includedRow(subRow);
+			final boolean subRowIsEmpty = subRow.getAllIncludedStockRecordIds().isEmpty() && subRow.getAllIncludedCockpitRecordIds().isEmpty();
+			if (!subRowIsEmpty)
+			{
+				mainRowBuilder.includedRow(subRow);
+			}
 		}
 
 		return mainRowBuilder.build();
