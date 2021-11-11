@@ -12,10 +12,28 @@ export const pickingReducer = ({ draftState, action }) => {
       return reduceOnUpdateQtyPicked(draftState, action.payload);
     }
 
+    case types.UPDATE_ALT_PICKING_STEP_QTY: {
+      return reduceOnAlternatePickingQty(draftState, action.payload);
+    }
+
     default: {
       return draftState;
     }
   }
+};
+
+const reduceOnAlternatePickingQty = (draftState, payload) => {
+  const { wfProcessId, activityId, lineId, stepId, altStepId, scannedHUBarcode, qtyPicked, qtyRejectedReasonCode } =
+    payload;
+
+  const draftWFProcess = draftState[wfProcessId];
+  const draftAltStep =
+    draftWFProcess.activities[activityId].dataStored.lines[lineId].steps[stepId].altSteps.genSteps[altStepId];
+  draftAltStep.scannedHUBarcode = scannedHUBarcode;
+  draftAltStep.qtyPicked = qtyPicked;
+  draftAltStep.qtyRejectedReasonCode = qtyRejectedReasonCode;
+
+  return draftState;
 };
 
 const reduceOnUpdateQtyPicked = (draftState, payload) => {
