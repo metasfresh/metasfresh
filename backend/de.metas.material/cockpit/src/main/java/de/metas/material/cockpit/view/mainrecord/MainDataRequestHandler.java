@@ -127,13 +127,14 @@ public class MainDataRequestHandler
 		}
 		dataRecord.setQtyStockEstimateCount(CoalesceUtil.coalesceNotNull(dataUpdateRequest.getQtyStockEstimateCount(), BigDecimal.ZERO));
 
-		if (dataUpdateRequest.getQtyStockEstimateSeqNo() == null)
+		final Integer qtyStockEstimateSeqNo = dataUpdateRequest.getQtyStockEstimateSeqNo();
+		if (qtyStockEstimateSeqNo == null || qtyStockEstimateSeqNo == 0)
 		{
-			InterfaceWrapperHelper.setValue(dataRecord, I_MD_Cockpit.COLUMNNAME_QtyStockEstimateSeqNo, null);
+			dataRecord.setQtyStockEstimateSeqNo(99999);
 		}
 		else
 		{
-			dataRecord.setQtyStockEstimateSeqNo(dataUpdateRequest.getQtyStockEstimateSeqNo());
+			dataRecord.setQtyStockEstimateSeqNo(qtyStockEstimateSeqNo);
 		}
 
 		dataRecord.setQtyInventoryCount(computeSum(dataRecord.getQtyInventoryCount(), dataUpdateRequest.getQtyInventoryCount()));
