@@ -125,9 +125,10 @@ class PickStepScanHUScreen extends Component {
   };
 
   render() {
-    const {
-      stepProps: { qtyToPick, uom },
-    } = this.props;
+    const { stepProps, altStepId } = this.props;
+    const { qtyToPick, uom } = stepProps;
+    const targetQty = altStepId ? stepProps.altSteps.genSteps[altStepId].qtyAvailable : qtyToPick;
+
     const { promptVisible, reasonsPanelVisible, qtyRejected } = this.state;
 
     return (
@@ -136,7 +137,7 @@ class PickStepScanHUScreen extends Component {
           <QtyReasonsView onHide={this.hideReasonsPanel} uom={uom} qtyRejected={qtyRejected} />
         ) : (
           <>
-            {promptVisible ? <PickQuantityPrompt qtyToPick={qtyToPick} onQtyChange={this.onQtyPickedChanged} /> : null}
+            {promptVisible ? <PickQuantityPrompt qtyToPick={targetQty} onQtyChange={this.onQtyPickedChanged} /> : null}
             <CodeScanner onBarcodeScanned={this.onBarcodeScanned} />
           </>
         )}
@@ -169,6 +170,7 @@ PickStepScanHUScreen.propTypes = {
   stepId: PropTypes.string.isRequired,
   eligibleHUBarcode: PropTypes.string.isRequired,
   stepProps: PropTypes.object.isRequired,
+  altStepId: PropTypes.string,
   // Actions:
   go: PropTypes.func.isRequired,
   updatePickingStepQty: PropTypes.func.isRequired,
