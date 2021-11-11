@@ -113,6 +113,7 @@ class PickingWorkflowLaunchersProvider
 						.build())
 				.startedWFProcessId(null)
 				.wfParameters(PickingWFProcessStartParams.of(pickingJobCandidate).toParams())
+				.partiallyHandledBefore(pickingJobCandidate.isPartiallyPickedBefore())
 				.build();
 	}
 

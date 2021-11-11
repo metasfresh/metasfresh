@@ -47,6 +47,7 @@
     white-space:nowrap
 }
 .left-btn-side {
+    position: absolute;
     width: 5%;
     float: left;
 }
@@ -92,4 +93,8 @@
     border-color: $indicator-yellow-border;
     box-shadow: 0px 0px 4px 1px $indicator-yellow;
     margin-bottom: 5px;
+}
+
+.warning-sign {
+    color: $indicator-yellow;
 }

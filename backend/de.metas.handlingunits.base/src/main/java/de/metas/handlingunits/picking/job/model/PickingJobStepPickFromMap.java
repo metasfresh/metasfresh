@@ -89,7 +89,10 @@ public class PickingJobStepPickFromMap
 	public PickingJobProgress computeProgress(@NonNull final Quantity qtyToPick)
 	{
 		// Consider picked if user reported on all PickFroms
-		if (reportedOnAllPickFroms)
+		// FIXME: until we cannot pick alternatives on frontend side we cannot enforce this rule,
+		// because that would not allow us to partial pick on a picking job.
+		if (map.get(PickingJobStepPickFromKey.MAIN).isPicked())
+		//if (reportedOnAllPickFroms)
 		{
 			return PickingJobProgress.DONE;
 		}
