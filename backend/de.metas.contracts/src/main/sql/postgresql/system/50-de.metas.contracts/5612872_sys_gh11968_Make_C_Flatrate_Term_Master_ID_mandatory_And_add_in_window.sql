@@ -115,3 +115,14 @@ INSERT INTO t_alter_column values('c_flatrate_term','C_Flatrate_Term_Master_ID',
 ;
 
 
+
+-- 2021-11-11T09:14:37.983663800Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,668442,0,540859,541104,594988,'F',TO_TIMESTAMP('2021-11-11 11:14:37','YYYY-MM-DD HH24:MI:SS'),100,'Is the ID of the first C_Flatrate_Term from entire hierarchy chain','Y','N','N','Y','N','N','N',0,'Master Flatrate Laufzeit',470,0,0,TO_TIMESTAMP('2021-11-11 11:14:37','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-11-11T09:14:48.479399200Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsAdvancedField='Y',Updated=TO_TIMESTAMP('2021-11-11 11:14:48','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=594988
+;
+
