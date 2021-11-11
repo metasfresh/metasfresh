@@ -119,6 +119,7 @@ class PickStepScanHUScreen extends Component {
             scannedHUBarcode: scannedBarcode,
             qtyPicked: qty,
             qtyRejectedReasonCode: reason,
+            qtyRejected,
           });
         }
         go(-2);

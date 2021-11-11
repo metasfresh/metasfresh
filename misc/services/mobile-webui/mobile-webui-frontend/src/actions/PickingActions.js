@@ -8,10 +8,20 @@ export function updatePickingStepQty({
   scannedHUBarcode,
   qtyPicked,
   qtyRejectedReasonCode,
+  qtyRejected,
 }) {
   return {
     type: UPDATE_PICKING_STEP_QTY,
-    payload: { wfProcessId, activityId, lineId, stepId, scannedHUBarcode, qtyPicked, qtyRejectedReasonCode },
+    payload: {
+      wfProcessId,
+      activityId,
+      lineId,
+      stepId,
+      scannedHUBarcode,
+      qtyPicked,
+      qtyRejectedReasonCode,
+      qtyRejected,
+    },
   };
 }
 

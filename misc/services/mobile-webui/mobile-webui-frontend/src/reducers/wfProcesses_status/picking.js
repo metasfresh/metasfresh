@@ -37,13 +37,16 @@ const reduceOnAlternatePickingQty = (draftState, payload) => {
 };
 
 const reduceOnUpdateQtyPicked = (draftState, payload) => {
-  const { wfProcessId, activityId, lineId, stepId, scannedHUBarcode, qtyPicked, qtyRejectedReasonCode } = payload;
+  const { wfProcessId, activityId, lineId, stepId, scannedHUBarcode, qtyPicked, qtyRejectedReasonCode, qtyRejected } =
+    payload;
 
   const draftWFProcess = draftState[wfProcessId];
   const draftStep = draftWFProcess.activities[activityId].dataStored.lines[lineId].steps[stepId];
   draftStep.scannedHUBarcode = scannedHUBarcode;
   draftStep.qtyPicked = qtyPicked;
   draftStep.qtyRejectedReasonCode = qtyRejectedReasonCode;
+
+  console.log('QtyRejected =====>', qtyRejected);
 
   // update here the remaining qtyToPick (diff remaining to be picked with alternative steps)
 
