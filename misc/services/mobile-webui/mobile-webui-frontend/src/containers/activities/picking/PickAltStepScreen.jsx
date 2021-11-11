@@ -7,7 +7,7 @@ import counterpart from 'counterpart';
 
 import { postStepUnPicked } from '../../../api/picking';
 import { pushHeaderEntry } from '../../../actions/HeaderActions';
-import { updatePickingStepQty } from '../../../actions/PickingActions';
+import { updateAltPickingStepQty } from '../../../actions/PickingActions';
 import ButtonWithIndicator from '../../../components/ButtonWithIndicator';
 import * as CompleteStatus from '../../../constants/CompleteStatus';
 import ScreenToaster from '../../../components/ScreenToaster';
@@ -48,7 +48,7 @@ class PickAltStepScreen extends Component {
       altStepId,
       stepProps: { altSteps },
     } = this.props;
-    const { updatePickingStepQty, push } = this.props;
+    const { updateAltPickingStepQty, push } = this.props;
 
     const { genSteps } = altSteps;
     const { scannedHUBarcode } = genSteps[altStepId];
@@ -60,11 +60,12 @@ class PickAltStepScreen extends Component {
       huBarcode: scannedHUBarcode,
     })
       .then(() => {
-        updatePickingStepQty({
+        updateAltPickingStepQty({
           wfProcessId,
           activityId,
           lineId,
           stepId,
+          altStepId,
           scannedHUBarcode: null,
           qtyPicked: 0,
           qtyRejectedReasonCode: null,
@@ -80,10 +81,11 @@ class PickAltStepScreen extends Component {
       activityId,
       lineId,
       stepId,
+      altStepId,
       stepProps: { qtyPicked },
-      updatePickingStepQty,
+      updateAltPickingStepQty,
     } = this.props;
-    qtyPicked === '' && updatePickingStepQty({ wfProcessId, activityId, lineId, stepId, qtyPicked: 0 });
+    qtyPicked === '' && updateAltPickingStepQty({ wfProcessId, activityId, lineId, stepId, altStepId, qtyPicked: 0 });
   }
 
   render() {
@@ -166,9 +168,11 @@ PickAltStepScreen.propTypes = {
   stepProps: PropTypes.object.isRequired,
   //
   // Actions
-  updatePickingStepQty: PropTypes.func.isRequired,
+  updateAltPickingStepQty: PropTypes.func.isRequired,
   push: PropTypes.func.isRequired,
   pushHeaderEntry: PropTypes.func.isRequired,
 };
 
-export default withRouter(connect(mapStateToProps, { updatePickingStepQty, push, pushHeaderEntry })(PickAltStepScreen));
+export default withRouter(
+  connect(mapStateToProps, { updateAltPickingStepQty, push, pushHeaderEntry })(PickAltStepScreen)
+);
