@@ -52,7 +52,6 @@ class PickAltStepScreen extends Component {
 
     const { genSteps } = altSteps;
     const { scannedHUBarcode } = genSteps[altStepId];
-    console.log('Sc:', scannedHUBarcode);
 
     postStepUnPicked({
       wfProcessId,

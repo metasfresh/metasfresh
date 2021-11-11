@@ -176,18 +176,18 @@ const normalizePickingLines = (lines) => {
         accum[step.pickingStepId].altSteps.qtyToPick = 0;
         // Mock generated steps
         accum[step.pickingStepId].altSteps.genSteps = {
-          1000514: {
-            id: '1000514',
+          1000819: {
+            id: '1000819',
             locatorName: 'Hauptlager',
-            huBarcode: '1000425',
+            huBarcode: '1000437',
             uom: 'Kg',
             qtyAvailable: 45,
             qtyPicked: 0,
           },
-          1000515: {
-            id: '1000515',
+          1000820: {
+            id: '1000820',
             locatorName: 'Hauptlager',
-            huBarcode: '1000451',
+            huBarcode: '1000463',
             uom: 'Kg',
             qtyAvailable: 25,
             qtyPicked: 0,
