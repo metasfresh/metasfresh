@@ -142,3 +142,109 @@ UPDATE AD_RelationType SET AD_Reference_Source_ID=540744,Updated=TO_TIMESTAMP('2
 UPDATE AD_RelationType SET AD_Reference_Source_ID=540744,Updated=TO_TIMESTAMP('2017-08-30 14:57:46','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_RelationType_ID=540187
 ;
 
+-- 2021-11-10T08:42:25.539Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Val_Rule SET Code='C_Invoice.IsSOTrx = ''N''
+  AND C_Invoice.isActive = ''Y''
+  AND C_Invoice.C_DocType_ID IN (SELECT C_DocType_ID FROM C_DocType WHERE DocBaseType = ''API'' AND DocSubType IS NULL)
+  AND AD_Org_ID =@AD_Org_ID/-1@
+  AND NOT EXISTS(SELECT *
+                 FROM C_Invoice_Relation rel
+                 WHERE C_Invoice.C_Invoice_ID = rel.C_Invoice_From_ID
+                   AND rel.C_Invoice_To_ID = @C_Invoice_ID/-1@
+                   AND rel.C_Invoice_Relation_Type = ''POtoSO'')',Updated=TO_TIMESTAMP('2021-11-10 10:42:25','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Val_Rule_ID=540565
+;
+
+-- 2021-11-11T07:15:07.647Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_RelationType SET Name='C_Invoice (PO) -> C_Invoice (SO) via C_Invoice_Relation',Updated=TO_TIMESTAMP('2021-11-11 09:15:07','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_RelationType_ID=540324
+;
+
+-- 2021-11-11T07:19:04.850Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_Table SET WhereClause='EXISTS           (               SELECT 1               from C_Invoice_Relation ir                        JOIN C_Invoice poInv on ir.c_invoice_from_id = poInv.c_invoice_id                 AND poInv.c_invoice_id = @C_Invoice_ID/-1@                 AND ir.c_invoice_from_id=c_invoice.c_invoice_id           )',Updated=TO_TIMESTAMP('2021-11-11 09:19:04','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=541481
+;
+
+-- 2021-11-11T07:19:13.138Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_Table SET AD_Display=NULL,Updated=TO_TIMESTAMP('2021-11-11 09:19:13','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=541481
+;
+
+-- 2021-11-11T07:19:52.960Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_RelationType (AD_Client_ID,AD_Org_ID,AD_Reference_Source_ID,AD_Reference_Target_ID,AD_RelationType_ID,Created,CreatedBy,Description,EntityType,IsActive,IsTableRecordIdTarget,Name,Role_Source,Role_Target,Updated,UpdatedBy) VALUES (0,0,336,541481,540332,TO_TIMESTAMP('2021-11-11 09:19:52','YYYY-MM-DD HH24:MI:SS'),100,'Reverse lookup via C_Invoice_Relation(PurchaseToSales)','D','Y','N','C_Invoice (SO) -> C_Invoice (PO) via C_Invoice_Relation','Invoice','Invoice',TO_TIMESTAMP('2021-11-11 09:19:52','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-11-11T07:26:24.640Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_Table SET WhereClause='EXISTS           (               SELECT 1               from C_Invoice_Relation ir                        JOIN C_Invoice poInv on ir.c_invoice_from_id = poInv.c_invoice_id                 AND poInv.c_invoice_id = @C_Invoice_ID/-1@                 AND ir.c_invoice_to_id=c_invoice.c_invoice_id           )',Updated=TO_TIMESTAMP('2021-11-11 09:26:24','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=541481
+;
+
+-- 2021-11-11T07:29:47.255Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Reference SET Description='From -> To',Updated=TO_TIMESTAMP('2021-11-11 09:29:47','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=541481
+;
+
+-- 2021-11-11T07:30:09.618Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Reference (AD_Client_ID,AD_Org_ID,AD_Reference_ID,Created,CreatedBy,Description,EntityType,IsActive,IsOrderByValue,Name,Updated,UpdatedBy,ValidationType) VALUES (0,0,541496,TO_TIMESTAMP('2021-11-11 09:30:09','YYYY-MM-DD HH24:MI:SS'),100,'From <- To','D','Y','N','C_Invoice via C_Invoice_Relation(reverse lookup)',TO_TIMESTAMP('2021-11-11 09:30:09','YYYY-MM-DD HH24:MI:SS'),100,'T')
+;
+
+-- 2021-11-11T07:30:09.619Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Reference_Trl (AD_Language,AD_Reference_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Reference_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Reference t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Reference_ID=541496 AND NOT EXISTS (SELECT 1 FROM AD_Reference_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Reference_ID=t.AD_Reference_ID)
+;
+
+-- 2021-11-11T07:33:29.757Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Ref_Table (AD_Client_ID,AD_Key,AD_Org_ID,AD_Reference_ID,AD_Table_ID,Created,CreatedBy,EntityType,IsActive,IsValueDisplayed,ShowInactiveValues,Updated,UpdatedBy,WhereClause) VALUES (0,3484,0,541496,318,TO_TIMESTAMP('2021-11-11 09:33:29','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','N','N',TO_TIMESTAMP('2021-11-11 09:33:29','YYYY-MM-DD HH24:MI:SS'),100,'EXISTS(SELECT 1 from C_Invoice_Relation ir JOIN C_Invoice soInv on ir.c_invoice_from_id @C_Invoice_ID/-1@ AND ir.c_invoice_to_id = c_invoice.c_invoice_id)')
+;
+
+-- 2021-11-11T07:34:46.286Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_Table SET WhereClause='EXISTS(SELECT 1 from C_Invoice_Relation ir where ir.c_invoice_from_id @ C_Invoice_ID / -1@ AND ir.c_invoice_to_id = c_invoice.c_invoice_id)',Updated=TO_TIMESTAMP('2021-11-11 09:34:46','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=541496
+;
+
+-- 2021-11-11T07:36:18.269Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_Table SET WhereClause='EXISTS(SELECT 1 from C_Invoice_Relation ir where ir.c_invoice_from_id = @C_Invoice_ID/-1@ AND ir.c_invoice_to_id = c_invoice.c_invoice_id)',Updated=TO_TIMESTAMP('2021-11-11 09:36:18','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=541481
+;
+
+-- 2021-11-11T07:36:55.352Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Reference SET Description='C_Invoice_To_ID - > C_Invoice_From_ID',Updated=TO_TIMESTAMP('2021-11-11 09:36:55','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=541496
+;
+
+-- 2021-11-11T07:37:08.269Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Reference SET Description='C_Invoice_To_ID - > C_Invoice_From_ID (reverse lookup)',Updated=TO_TIMESTAMP('2021-11-11 09:37:08','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=541496
+;
+
+-- 2021-11-11T07:37:29.908Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_Table SET WhereClause='EXISTS(SELECT 1 from C_Invoice_Relation ir where ir.c_invoice_to_id = @C_Invoice_ID/-1@ AND ir.c_invoice_from_id = c_invoice.c_invoice_id)',Updated=TO_TIMESTAMP('2021-11-11 09:37:29','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=541496
+;
+
+-- 2021-11-11T07:38:02.831Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Reference SET Description='C_Invoice_From_ID -> C_Invoice_To_ID',Updated=TO_TIMESTAMP('2021-11-11 09:38:02','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=541481
+;
+
+-- 2021-11-11T07:42:43.726Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_RelationType SET AD_Reference_Target_ID=541496,Updated=TO_TIMESTAMP('2021-11-11 09:42:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_RelationType_ID=540332
+;
+
+-- 2021-11-11T07:54:02.512Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_RelationType SET Role_Source='', Role_Target='',Updated=TO_TIMESTAMP('2021-11-11 09:54:02','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_RelationType_ID=540332
+;
+
+-- 2021-11-11T10:31:11.416Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_Table SET AD_Window_ID=183,Updated=TO_TIMESTAMP('2021-11-11 12:31:11','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=541496
+;
+
+-- 2021-11-11T11:39:52.544Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET DefaultValue='@SQL=SELECT c_invoice_from_id FROM c_invoice_relation WHERE c_invoice_to_id=@C_Invoice_ID/-1@ AND c_invoice_relation_type=''POtoSO''',Updated=TO_TIMESTAMP('2021-11-11 13:39:52','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=542137

@@ -29,15 +29,16 @@ import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Invoice_Relation;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 
 /**
  * Process used to create associations between C_Invoice records.
@@ -64,10 +65,15 @@ public class C_Invoice_CreateRelation extends JavaProcess implements IProcessPre
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
 		}
-		final I_C_Invoice invoice = invoiceBL.getById(InvoiceId.ofRepoId(context.getSingleSelectedRecordId()));
+		final InvoiceId toInvoiceId = InvoiceId.ofRepoId(context.getSingleSelectedRecordId());
+		final I_C_Invoice invoice = invoiceBL.getById(toInvoiceId);
 		if (invoiceBL.isVendorInvoice(invoiceBL.getC_DocType(invoice).getDocBaseType()))
 		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("Only Sales invoices accepted.");
+			return ProcessPreconditionsResolution.rejectWithInternalReason("Only Sales Invoices accepted.");
+		}
+		if (recordAlreadyExists(null, toInvoiceId, null))
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("A relation already exists.");
 		}
 		return ProcessPreconditionsResolution.accept();
 	}
@@ -75,25 +81,38 @@ public class C_Invoice_CreateRelation extends JavaProcess implements IProcessPre
 	@Override
 	protected String doIt() throws Exception
 	{
-		final List<Integer> existingSalesInvoicesAssociatedWithSelectedPurchaseInvoice = queryBL.createQueryBuilder(I_C_Invoice_Relation.class)
-				.addEqualsFilter(I_C_Invoice_Relation.COLUMN_C_Invoice_Relation_Type, relationToCreate)
-				.addEqualsFilter(I_C_Invoice_Relation.COLUMNNAME_C_Invoice_From_ID, fromInvoiceRepoId)
-				.create()
-				.list()
-				.stream()
-				.map(I_C_Invoice_Relation::getC_Invoice_To_ID)
-				.collect(Collectors.toList());
+		final InvoiceId fromInvoiceId = InvoiceId.ofRepoId(fromInvoiceRepoId);
+		final InvoiceId toInvoiceID = InvoiceId.ofRepoId(getRecord_ID());
 
-		final I_C_Invoice fromInvoice = InterfaceWrapperHelper.load(fromInvoiceRepoId, I_C_Invoice.class);
-		final List<I_C_Invoice> selectedToRecords = getSelectedIncludedRecords(I_C_Invoice.class);
-
-		InterfaceWrapperHelper.saveAll(
-				selectedToRecords.stream()
-						.filter(inv -> fromInvoice.getAD_Org_ID() == inv.getAD_Org_ID()) //same organization
-						.filter(inv -> !existingSalesInvoicesAssociatedWithSelectedPurchaseInvoice.contains(inv.getC_Invoice_ID())) //not already existing
-						.map(this::createRelation)
-						.collect(Collectors.toList()));
+		final boolean alreadyExists = recordAlreadyExists(fromInvoiceId, toInvoiceID, relationToCreate);
+		if (alreadyExists)
+		{
+			return MSG_OK;
+		}
+		final I_C_Invoice fromInvoice = invoiceBL.getById(fromInvoiceId);
+		final I_C_Invoice toInvoice = invoiceBL.getById(toInvoiceID);
+		if (fromInvoice.getAD_Org_ID() != toInvoice.getAD_Org_ID())
+		{
+			return MSG_Error + "DifferentOrgs";
+		}
+		InterfaceWrapperHelper.save(createRelation(toInvoice));
 		return MSG_OK;
+	}
+
+	private boolean recordAlreadyExists(@Nullable final InvoiceId fromInvoiceId, final InvoiceId toInvoiceID, @Nullable final String relationType)
+	{
+		final IQueryBuilder<I_C_Invoice_Relation> queryBuilder = queryBL.createQueryBuilder(I_C_Invoice_Relation.class)
+				.addEqualsFilter(I_C_Invoice_Relation.COLUMNNAME_C_Invoice_To_ID, toInvoiceID);
+		if (!Check.isBlank(relationType))
+		{
+			queryBuilder.addEqualsFilter(I_C_Invoice_Relation.COLUMN_C_Invoice_Relation_Type, relationType);
+		}
+		if (fromInvoiceId != null)
+		{
+			queryBuilder.addEqualsFilter(I_C_Invoice_Relation.COLUMNNAME_C_Invoice_From_ID, fromInvoiceId);
+		}
+		return queryBuilder.create()
+				.anyMatch();
 	}
 
 	private I_C_Invoice_Relation createRelation(@NonNull final I_C_Invoice toInvoice)
