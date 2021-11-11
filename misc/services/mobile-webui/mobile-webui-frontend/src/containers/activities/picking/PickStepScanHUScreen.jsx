@@ -156,7 +156,7 @@ const mapStateToProps = (state, { match }) => {
     lineId,
     stepId,
     stepProps,
-    eligibleHUBarcode: stepProps.huBarcode,
+    eligibleHUBarcode: altStepId ? stepProps.altSteps.genSteps[altStepId].huBarcode : stepProps.huBarcode,
     altStepId,
   };
 };
