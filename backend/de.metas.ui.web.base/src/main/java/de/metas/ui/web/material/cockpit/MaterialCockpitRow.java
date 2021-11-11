@@ -100,6 +100,14 @@ public class MaterialCockpitRow implements IViewRow
 	@Getter
 	private final int productId;
 
+	public static final String FIELDNAME_QtyStockEstimateSeqNo = I_MD_Cockpit.COLUMNNAME_QtyStockEstimateSeqNo;
+	@ViewColumn(fieldName = FIELDNAME_QtyStockEstimateSeqNo, //
+			captionKey = FIELDNAME_QtyStockEstimateSeqNo, //
+			widgetType = DocumentFieldWidgetType.Integer, //
+			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 5, //
+					displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX) })
+	private final Integer qtyStockEstimateSeqNo;
+
 	@ViewColumn(widgetType = DocumentFieldWidgetType.Text, //
 			captionKey = I_MD_Cockpit.COLUMNNAME_ProductValue, //
 			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 10) })
@@ -262,14 +270,6 @@ public class MaterialCockpitRow implements IViewRow
 					displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX) })
 	private final BigDecimal qtyStockCurrent;
 
-	public static final String FIELDNAME_QtyStockEstimateSeqNo = I_MD_Cockpit.COLUMNNAME_QtyStockEstimateSeqNo;
-	@ViewColumn(fieldName = FIELDNAME_QtyStockEstimateSeqNo, //
-			captionKey = FIELDNAME_QtyStockEstimateSeqNo, //
-			widgetType = DocumentFieldWidgetType.Integer, //
-			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 200, //
-					displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX) })
-	private final Integer qtyStockEstimateSeqNo;
-	
 	public static final String FIELDNAME_QtyStockEstimateCount = I_MD_Cockpit.COLUMNNAME_QtyStockEstimateCount;
 	@ViewColumn(fieldName = FIELDNAME_QtyStockEstimateCount, //
 			captionKey = FIELDNAME_QtyStockEstimateCount, //
@@ -285,7 +285,7 @@ public class MaterialCockpitRow implements IViewRow
 			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 220, //
 					displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX) })
 	private final Instant qtyStockEstimateTime;
-	
+
 	public static final String FIELDNAME_QtyInventoryCount = I_MD_Cockpit.COLUMNNAME_QtyInventoryCount;
 	@ViewColumn(fieldName = FIELDNAME_QtyInventoryCount, //
 			captionKey = FIELDNAME_QtyInventoryCount, //

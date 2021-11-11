@@ -29,7 +29,6 @@ import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.view.MainDataRecordIdentifier;
 import de.metas.util.NumberUtils;
 import lombok.NonNull;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.IQuery;
 import org.compiere.util.TimeUtil;
 import org.springframework.context.annotation.Profile;
@@ -117,6 +116,20 @@ public class MainDataRequestHandler
 
 		dataRecord.setQtySupplyRequired(CoalesceUtil.firstPositiveOrZero(computeSum(dataRecord.getQtySupplyRequired(), dataUpdateRequest.getQtySupplyRequired())));
 
+		updateQtyStockEstimateColumns(dataRecord, dataUpdateRequest);
+
+		dataRecord.setQtyInventoryCount(computeSum(dataRecord.getQtyInventoryCount(), dataUpdateRequest.getQtyInventoryCount()));
+		dataRecord.setQtyInventoryTime(TimeUtil.asTimestamp(TimeUtil.max(TimeUtil.asInstant(dataRecord.getDateGeneral()),
+																		 dataUpdateRequest.getQtyInventoryTime())));
+
+		dataRecord.setQtySupplySum(computeQtySupply_Sum(dataRecord));
+		dataRecord.setQtyDemandSum(computeQtyDemand_Sum(dataRecord));
+	}
+
+	private static void updateQtyStockEstimateColumns(
+			@NonNull final I_MD_Cockpit dataRecord, 
+			@NonNull final UpdateMainDataRequest dataUpdateRequest)
+	{
 		if (dataUpdateRequest.getQtyStockEstimateCount() != null)
 		{
 			dataRecord.setQtyStockEstimateTime(TimeUtil.asTimestamp(dataUpdateRequest.getQtyStockEstimateTime()));
@@ -136,13 +149,6 @@ public class MainDataRequestHandler
 		{
 			dataRecord.setQtyStockEstimateSeqNo(qtyStockEstimateSeqNo);
 		}
-
-		dataRecord.setQtyInventoryCount(computeSum(dataRecord.getQtyInventoryCount(), dataUpdateRequest.getQtyInventoryCount()));
-		dataRecord.setQtyInventoryTime(TimeUtil.asTimestamp(TimeUtil.max(TimeUtil.asInstant(dataRecord.getDateGeneral()),
-																		 dataUpdateRequest.getQtyInventoryTime())));
-
-		dataRecord.setQtySupplySum(computeQtySupply_Sum(dataRecord));
-		dataRecord.setQtyDemandSum(computeQtyDemand_Sum(dataRecord));
 	}
 
 	/**
