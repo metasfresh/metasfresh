@@ -36,9 +36,10 @@ class PickStepScanHUScreen extends Component {
   };
 
   onQtyPickedChanged = (qty) => {
-    const {
-      stepProps: { qtyToPick },
-    } = this.props;
+    const { stepProps, altStepId } = this.props;
+
+    const { qtyToPick } = stepProps;
+    const targetQty = altStepId ? stepProps.altSteps.genSteps[altStepId].qtyAvailable : qtyToPick;
 
     const inputQty = parseInt(qty);
     if (isNaN(inputQty)) {
@@ -49,8 +50,8 @@ class PickStepScanHUScreen extends Component {
     if (isValidQty) {
       this.setState({ newQuantity: inputQty });
 
-      if (inputQty !== qtyToPick) {
-        const qtyRejected = qtyToPick - inputQty;
+      if (inputQty !== targetQty) {
+        const qtyRejected = targetQty - inputQty;
         this.setState({ reasonsPanelVisible: true, qtyRejected });
       } else {
         this.pushUpdatedQuantity({ qty: inputQty });
@@ -110,11 +111,11 @@ class PickStepScanHUScreen extends Component {
   };
 
   validateQtyInput = (numberInput) => {
-    const {
-      stepProps: { qtyToPick },
-    } = this.props;
+    const { stepProps, altStepId } = this.props;
+    const { qtyToPick } = stepProps;
+    const targetQty = altStepId ? stepProps.altSteps.genSteps[altStepId].qtyAvailable : qtyToPick;
 
-    return numberInput >= 0 && numberInput <= qtyToPick;
+    return numberInput >= 0 && numberInput <= targetQty;
   };
 
   isEligibleHUBarcode = (scannedBarcode) => {
