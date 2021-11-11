@@ -6,7 +6,7 @@ import { go } from 'connected-react-router';
 
 import { toastError } from '../../../utils/toast';
 import { postStepPicked } from '../../../api/picking';
-import { updatePickingStepQty } from '../../../actions/PickingActions';
+import { updatePickingStepQty, updateAltPickingStepQty } from '../../../actions/PickingActions';
 
 import CodeScanner from '../scan/CodeScanner';
 import PickQuantityPrompt from './PickQuantityPrompt';
@@ -70,7 +70,8 @@ class PickStepScanHUScreen extends Component {
   };
 
   pushUpdatedQuantity = ({ qty = 0, reason = null }) => {
-    const { updatePickingStepQty, wfProcessId, activityId, lineId, stepId, altStepId, go } = this.props;
+    const { updatePickingStepQty, updateAltPickingStepQty, wfProcessId, activityId, lineId, stepId, altStepId, go } =
+      this.props;
     const { scannedBarcode } = this.state;
 
     // TODO: This should be added to the same, not next level
@@ -97,7 +98,17 @@ class PickStepScanHUScreen extends Component {
     })
       .then(() => {
         if (altStepId) {
-          console.log('Updating qty for altStepId');
+          // doing updates for the alternate step
+          updateAltPickingStepQty({
+            wfProcessId,
+            activityId,
+            lineId,
+            stepId,
+            altStepId,
+            scannedHUBarcode: scannedBarcode,
+            qtyPicked: qty,
+            qtyRejectedReasonCode: reason,
+          });
         } else {
           updatePickingStepQty({
             wfProcessId,
@@ -179,11 +190,13 @@ PickStepScanHUScreen.propTypes = {
   // Actions:
   go: PropTypes.func.isRequired,
   updatePickingStepQty: PropTypes.func.isRequired,
+  updateAltPickingStepQty: PropTypes.func.isRequired,
 };
 
 export default withRouter(
   connect(mapStateToProps, {
     updatePickingStepQty,
+    updateAltPickingStepQty,
     go,
   })(PickStepScanHUScreen)
 );

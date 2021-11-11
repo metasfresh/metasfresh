@@ -45,9 +45,13 @@ class PickAltStepScreen extends Component {
       activityId,
       lineId,
       stepId,
-      stepProps: { scannedHUBarcode },
+      altStepId,
+      stepProps: { altSteps },
     } = this.props;
     const { updatePickingStepQty, push } = this.props;
+
+    const { genSteps } = altSteps;
+    const { scannedHUBarcode } = genSteps[altStepId];
 
     postStepUnPicked({
       wfProcessId,
