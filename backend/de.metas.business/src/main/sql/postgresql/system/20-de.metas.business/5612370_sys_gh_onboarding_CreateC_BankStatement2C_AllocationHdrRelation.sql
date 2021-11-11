@@ -1,4 +1,21 @@
 
+
+-- 2021-11-04T12:50:03.620Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Reference (AD_Client_ID,AD_Org_ID,AD_Reference_ID,Created,CreatedBy,EntityType,IsActive,IsOrderByValue,Name,Updated,UpdatedBy,ValidationType) VALUES (0,0,541469,TO_TIMESTAMP('2021-11-04 13:50:03','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','N','RelType_Source_C_BankStatment_C_AllocationHdr',TO_TIMESTAMP('2021-11-04 13:50:03','YYYY-MM-DD HH24:MI:SS'),100,'T')
+;
+
+-- 2021-11-04T12:50:03.621Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Reference_Trl (AD_Language,AD_Reference_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Reference_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Reference t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Reference_ID=541469 AND NOT EXISTS (SELECT 1 FROM AD_Reference_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Reference_ID=t.AD_Reference_ID)
+;
+
+-- 2021-11-04T12:50:28.519Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Ref_Table (AD_Client_ID,AD_Key,AD_Org_ID,AD_Reference_ID,AD_Table_ID,Created,CreatedBy,EntityType,IsActive,IsValueDisplayed,ShowInactiveValues,Updated,UpdatedBy) VALUES (0,4909,0,541469,392,TO_TIMESTAMP('2021-11-04 13:50:28','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','N','N',TO_TIMESTAMP('2021-11-04 13:50:28','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+
 -- 2021-11-05T14:40:26.230Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 INSERT INTO AD_Reference (AD_Client_ID,AD_Org_ID,AD_Reference_ID,Created,CreatedBy,EntityType,IsActive,IsOrderByValue,Name,Updated,UpdatedBy,ValidationType) VALUES (0,0,541477,TO_TIMESTAMP('2021-11-05 15:40:23','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','N','RelType_Source_C_AllocationHdr -> C_BankStatement',TO_TIMESTAMP('2021-11-05 15:40:23','YYYY-MM-DD HH24:MI:SS'),100,'T')
