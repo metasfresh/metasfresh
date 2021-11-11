@@ -677,10 +677,10 @@ public class C_Flatrate_Term
 		flatrateBL.ensureOneContractOfGivenType(term, TypeConditions.MEDIATED_COMMISSION);
 	}
 
-	@ModelChange(timings = ModelValidator.TYPE_BEFORE_NEW)
-	public void setC_Flatrate_Term_Master(final I_C_Flatrate_Term term)
+	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_COMPLETE })
+	public void setC_Flatrate_Term_Master(@NonNull final I_C_Flatrate_Term term)
 	{
-		if (term.getC_Flatrate_Term_Master_ID() > 0)
+		if (term.getC_Flatrate_Term_Master_ID() <= 0)
 		{
 			final I_C_Flatrate_Term ancestor = Services.get(IFlatrateDAO.class).retrieveAncestorFlatrateTerm(term);
 			if (ancestor == null)
