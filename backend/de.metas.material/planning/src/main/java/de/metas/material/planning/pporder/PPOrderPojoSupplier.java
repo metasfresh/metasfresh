@@ -241,7 +241,14 @@ public class PPOrderPojoSupplier
 
 			final ProductDescriptor productDescriptor = productDescriptorFactory.createProductDescriptor(productBomLine);
 
-			final boolean receipt = BOMComponentType.ofCode(productBomLine.getComponentType()).isReceipt();
+			final BOMComponentType bomComponentType = BOMComponentType.ofCode(productBomLine.getComponentType());
+			if(bomComponentType.isVariant())
+			{
+				logger.debug("BOM Line skipped because it's a variant: {}", productBomLine);
+				continue;
+			}
+			
+			final boolean receipt = bomComponentType.isReceipt();
 
 			final PPOrderLine intermediatePPOrderLine = PPOrderLine.builder()
 					.productBomLineId(productBomLine.getPP_Product_BOMLine_ID())

@@ -1294,12 +1294,12 @@ public class InterfaceWrapperHelper
 	 *
 	 * If column was not found in <code>model</code> a warning will be logged but no exception will be thrown
 	 *
-	 * @param model
-	 * @param columnName
-	 * @param value
 	 * @return true if value was set
 	 */
-	public static boolean setValue(final Object model, final String columnName, final Object value)
+	public static boolean setValue(
+			@NonNull final Object model,
+			@NonNull final String columnName, 
+			@Nullable final Object value)
 	{
 		final boolean throwExIfColumnNotFound = false;
 		return setValue(model, columnName, value, throwExIfColumnNotFound);
@@ -1310,8 +1310,6 @@ public class InterfaceWrapperHelper
 	 *
 	 * If a column was not found in <code>model</code>, an exception will be thrown.
 	 *
-	 * @param model
-	 * @param values
 	 * @return true if all values were set
 	 */
 	public static boolean setValues(final Object model, final Map<String, Object> values)
@@ -1339,9 +1337,6 @@ public class InterfaceWrapperHelper
 			@Nullable final Object value,
 			final boolean throwExIfColumnNotFound)
 	{
-		Check.assumeNotNull(model, "model is not null");
-		Check.assumeNotNull(columnName, "columnName is not null");
-
 		return helpers.setValue(model, columnName, value, throwExIfColumnNotFound);
 	}
 

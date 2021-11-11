@@ -29,6 +29,7 @@ import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.view.MainDataRecordIdentifier;
 import de.metas.util.NumberUtils;
 import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.IQuery;
 import org.compiere.util.TimeUtil;
 import org.springframework.context.annotation.Profile;
@@ -118,8 +119,21 @@ public class MainDataRequestHandler
 
 		if (dataUpdateRequest.getQtyStockEstimateCount() != null)
 		{
-			dataRecord.setQtyStockEstimateCount(dataUpdateRequest.getQtyStockEstimateCount());
 			dataRecord.setQtyStockEstimateTime(TimeUtil.asTimestamp(dataUpdateRequest.getQtyStockEstimateTime()));
+		}
+		else
+		{
+			dataRecord.setQtyStockEstimateTime(null);
+		}
+		dataRecord.setQtyStockEstimateCount(CoalesceUtil.coalesceNotNull(dataUpdateRequest.getQtyStockEstimateCount(), BigDecimal.ZERO));
+
+		if (dataUpdateRequest.getQtyStockEstimateSeqNo() == null)
+		{
+			InterfaceWrapperHelper.setValue(dataRecord, I_MD_Cockpit.COLUMNNAME_QtyStockEstimateSeqNo, null);
+		}
+		else
+		{
+			dataRecord.setQtyStockEstimateSeqNo(dataUpdateRequest.getQtyStockEstimateSeqNo());
 		}
 
 		dataRecord.setQtyInventoryCount(computeSum(dataRecord.getQtyInventoryCount(), dataUpdateRequest.getQtyInventoryCount()));
@@ -159,7 +173,7 @@ public class MainDataRequestHandler
 	}
 
 	/**
-	 *  The quantity required according to material disposition that is not yet addressed by purchase order, production-receipt or distribution order.
+	 * The quantity required according to material disposition that is not yet addressed by purchase order, production-receipt or distribution order.
 	 *
 	 * @param dataRecord I_MD_Cockpit
 	 * @return dataRecord.QtySupplyRequired - dataRecord.QtySupplySum
@@ -182,7 +196,7 @@ public class MainDataRequestHandler
 	}
 
 	@NonNull
-	private static BigDecimal computeSum(@NonNull final BigDecimal ...args)
+	private static BigDecimal computeSum(@NonNull final BigDecimal... args)
 	{
 		final BigDecimal sum = Stream.of(args)
 				.reduce(BigDecimal::add)
