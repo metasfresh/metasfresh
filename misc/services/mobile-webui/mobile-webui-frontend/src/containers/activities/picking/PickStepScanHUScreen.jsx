@@ -70,7 +70,7 @@ class PickStepScanHUScreen extends Component {
   };
 
   pushUpdatedQuantity = ({ qty = 0, reason = null }) => {
-    const { updatePickingStepQty, wfProcessId, activityId, lineId, stepId, go } = this.props;
+    const { updatePickingStepQty, wfProcessId, activityId, lineId, stepId, altStepId, go } = this.props;
     const { scannedBarcode } = this.state;
 
     // TODO: This should be added to the same, not next level
@@ -96,15 +96,19 @@ class PickStepScanHUScreen extends Component {
       qtyRejectedReasonCode: reason,
     })
       .then(() => {
-        updatePickingStepQty({
-          wfProcessId,
-          activityId,
-          lineId,
-          stepId,
-          scannedHUBarcode: scannedBarcode,
-          qtyPicked: qty,
-          qtyRejectedReasonCode: reason,
-        });
+        if (altStepId) {
+          console.log('Updating qty for altStepId');
+        } else {
+          updatePickingStepQty({
+            wfProcessId,
+            activityId,
+            lineId,
+            stepId,
+            scannedHUBarcode: scannedBarcode,
+            qtyPicked: qty,
+            qtyRejectedReasonCode: reason,
+          });
+        }
         go(-2);
       })
       .catch((axiosError) => toastError({ axiosError }));
