@@ -2,7 +2,9 @@ package de.metas.handlingunits.picking.job.repository;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.HUBarcode;
@@ -14,6 +16,7 @@ import de.metas.handlingunits.model.I_M_Picking_Job_Step;
 import de.metas.handlingunits.model.I_M_Picking_Job_Step_HUAlternative;
 import de.metas.handlingunits.picking.PickingCandidateId;
 import de.metas.handlingunits.picking.QtyRejectedReasonCode;
+import de.metas.handlingunits.picking.QtyRejectedWithReason;
 import de.metas.handlingunits.picking.job.model.HUInfo;
 import de.metas.handlingunits.picking.job.model.LocatorInfo;
 import de.metas.handlingunits.picking.job.model.PickingJob;
@@ -26,7 +29,10 @@ import de.metas.handlingunits.picking.job.model.PickingJobPickFromAlternative;
 import de.metas.handlingunits.picking.job.model.PickingJobPickFromAlternativeId;
 import de.metas.handlingunits.picking.job.model.PickingJobStep;
 import de.metas.handlingunits.picking.job.model.PickingJobStepId;
-import de.metas.handlingunits.picking.job.model.PickingJobStepPickedInfo;
+import de.metas.handlingunits.picking.job.model.PickingJobStepPickFrom;
+import de.metas.handlingunits.picking.job.model.PickingJobStepPickFromKey;
+import de.metas.handlingunits.picking.job.model.PickingJobStepPickFromMap;
+import de.metas.handlingunits.picking.job.model.PickingJobStepPickedTo;
 import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
@@ -49,8 +55,10 @@ import org.adempiere.warehouse.LocatorId;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
@@ -164,6 +172,27 @@ class PickingJobLoaderAndSaver
 
 			updateRecord(existingRecord, step, docStatus);
 			InterfaceWrapperHelper.save(existingRecord);
+
+			saveStepPickFromAlternatives(step);
+		}
+	}
+
+	private void saveStepPickFromAlternatives(final PickingJobStep step)
+	{
+		final ImmutableMap<PickingJobStepPickFromKey, I_M_Picking_Job_Step_HUAlternative> records = Maps.uniqueIndex(
+				pickingJobStepAlternatives.get(step.getId()),
+				record -> PickingJobStepPickFromKey.alternative(extractAlternativeId(record)));
+
+		for (final PickingJobStepPickFromKey pickFromKey : step.getPickFromKeys())
+		{
+			if (pickFromKey.isAlternative())
+			{
+				final PickingJobStepPickFrom pickFrom = step.getPickFrom(pickFromKey);
+				final I_M_Picking_Job_Step_HUAlternative record = Objects.requireNonNull(records.get(pickFromKey));
+
+				updateRecord(record, pickFrom);
+				InterfaceWrapperHelper.save(record);
+			}
 		}
 	}
 
@@ -204,9 +233,9 @@ class PickingJobLoaderAndSaver
 	{
 		return pickingJobHUAlternatives.get(pickingJobId)
 				.stream()
-				.filter(record -> HuId.equals(HuId.ofRepoId(record.getPickFrom_HU_ID()), alternativeHUId)
-						&& ProductId.equals(ProductId.ofRepoId(record.getM_Product_ID()), productId))
-				.map(record -> PickingJobPickFromAlternativeId.ofRepoId(record.getM_Picking_Job_HUAlternative_ID()))
+				.filter(alt -> HuId.equals(HuId.ofRepoId(alt.getPickFrom_HU_ID()), alternativeHUId)
+						&& ProductId.equals(ProductId.ofRepoId(alt.getM_Product_ID()), productId))
+				.map(alt -> PickingJobPickFromAlternativeId.ofRepoId(alt.getM_Picking_Job_HUAlternative_ID()))
 				.findFirst()
 				.orElseThrow(() -> new AdempiereException("No HU alternative found for " + pickingJobId + ", " + alternativeHUId + ", " + productId
 						+ ". Available HU alternatives are: " + pickingJobHUAlternatives));
@@ -330,8 +359,14 @@ class PickingJobLoaderAndSaver
 		final PickingJobStepId pickingJobStepId = PickingJobStepId.ofRepoId(record.getM_Picking_Job_Step_ID());
 		final ProductId productId = ProductId.ofRepoId(record.getM_Product_ID());
 		final UomId uomId = UomId.ofRepoId(record.getC_UOM_ID());
-		final LocatorId locatorId = LocatorId.ofRepoId(record.getPickFrom_Warehouse_ID(), record.getPickFrom_Locator_ID());
-		final HuId pickFromHUId = HuId.ofRepoId(record.getPickFrom_HU_ID());
+
+		final ArrayList<PickingJobStepPickFrom> pickFroms = new ArrayList<>();
+		pickFroms.add(extractMainPickFrom(record));
+
+		pickingJobStepAlternatives.get(pickingJobStepId)
+				.stream()
+				.map(this::extractPickFrom)
+				.forEach(pickFroms::add);
 
 		return PickingJobStep.builder()
 				.id(pickingJobStepId)
@@ -344,6 +379,18 @@ class PickingJobLoaderAndSaver
 				.qtyToPick(Quantitys.create(record.getQtyToPick(), uomId))
 				//
 				// Pick From
+				.pickFroms(PickingJobStepPickFromMap.ofList(pickFroms))
+				//
+				.build();
+	}
+
+	private PickingJobStepPickFrom extractMainPickFrom(final I_M_Picking_Job_Step record)
+	{
+		final LocatorId locatorId = LocatorId.ofRepoId(record.getPickFrom_Warehouse_ID(), record.getPickFrom_Locator_ID());
+		final HuId pickFromHUId = HuId.ofRepoId(record.getPickFrom_HU_ID());
+
+		return PickingJobStepPickFrom.builder()
+				.pickFromKey(PickingJobStepPickFromKey.MAIN)
 				.pickFromLocator(LocatorInfo.builder()
 						.id(locatorId)
 						.caption(loadingSupportingServices().getLocatorName(locatorId))
@@ -352,27 +399,74 @@ class PickingJobLoaderAndSaver
 						.id(pickFromHUId)
 						.barcode(HUBarcode.ofHuId(pickFromHUId))
 						.build())
-				.pickFromAlternativeIds(pickingJobStepAlternatives.get(pickingJobStepId)
-						.stream()
-						.map(stepAlternativeRecord -> PickingJobPickFromAlternativeId.ofRepoId(stepAlternativeRecord.getM_Picking_Job_HUAlternative_ID()))
-						.collect(ImmutableSet.toImmutableSet()))
-				.picked(extractPickedInfo(record))
-				//
+				.pickedTo(extractPickedTo(record))
 				.build();
 	}
 
+	private PickingJobStepPickFrom extractPickFrom(final I_M_Picking_Job_Step_HUAlternative record)
+	{
+		final PickingJobPickFromAlternativeId alternativeId = extractAlternativeId(record);
+
+		final LocatorId pickFromLocatorId = LocatorId.ofRepoId(record.getPickFrom_Warehouse_ID(), record.getPickFrom_Locator_ID());
+		final HuId pickFromHUId = HuId.ofRepoId(record.getPickFrom_HU_ID());
+
+		return PickingJobStepPickFrom.builder()
+				.pickFromKey(PickingJobStepPickFromKey.alternative(alternativeId))
+				.pickFromLocator(LocatorInfo.builder()
+						.id(pickFromLocatorId)
+						.caption(loadingSupportingServices().getLocatorName(pickFromLocatorId))
+						.build())
+				.pickFromHU(HUInfo.ofHuId(pickFromHUId))
+				.pickedTo(extractPickedTo(record))
+				.build();
+	}
+
+	@NonNull
+	private static PickingJobPickFromAlternativeId extractAlternativeId(final I_M_Picking_Job_Step_HUAlternative record)
+	{
+		return PickingJobPickFromAlternativeId.ofRepoId(record.getM_Picking_Job_HUAlternative_ID());
+	}
+
 	@Nullable
-	private static PickingJobStepPickedInfo extractPickedInfo(final I_M_Picking_Job_Step record)
+	private static PickingJobStepPickedTo extractPickedTo(final I_M_Picking_Job_Step record)
 	{
 		final PickingCandidateId pickingCandidateId = PickingCandidateId.ofRepoIdOrNull(record.getM_Picking_Candidate_ID());
-
 		if (pickingCandidateId != null)
 		{
 			final UomId uomId = UomId.ofRepoId(record.getC_UOM_ID());
+			final Quantity qtyPicked = Quantitys.create(record.getQtyPicked(), uomId);
+			final QtyRejectedWithReason qtyRejected = QtyRejectedReasonCode.ofNullableCode(record.getRejectReason())
+					.map(reason -> QtyRejectedWithReason.of(Quantitys.create(record.getQtyRejectedToPick(), uomId), reason))
+					.orElse(null);
 
-			return PickingJobStepPickedInfo.builder()
-					.qtyPicked(Quantitys.create(record.getQtyPicked(), uomId))
-					.qtyRejectedReasonCode(QtyRejectedReasonCode.ofNullableCode(record.getRejectReason()).orElse(null))
+			return PickingJobStepPickedTo.builder()
+					.qtyPicked(qtyPicked)
+					.qtyRejected(qtyRejected)
+					.actualPickedHUId(HuId.ofRepoId(record.getPicked_HU_ID()))
+					.pickingCandidateId(pickingCandidateId)
+					.build();
+		}
+		else
+		{
+			return null;
+		}
+	}
+
+	@Nullable
+	private static PickingJobStepPickedTo extractPickedTo(final I_M_Picking_Job_Step_HUAlternative record)
+	{
+		final PickingCandidateId pickingCandidateId = PickingCandidateId.ofRepoIdOrNull(record.getM_Picking_Candidate_ID());
+		if (pickingCandidateId != null)
+		{
+			final UomId uomId = UomId.ofRepoId(record.getC_UOM_ID());
+			final Quantity qtyPicked = Quantitys.create(record.getQtyPicked(), uomId);
+			final QtyRejectedWithReason qtyRejected = QtyRejectedReasonCode.ofNullableCode(record.getRejectReason())
+					.map(reason -> QtyRejectedWithReason.of(Quantitys.create(record.getQtyRejectedToPick(), uomId), reason))
+					.orElse(null);
+
+			return PickingJobStepPickedTo.builder()
+					.qtyPicked(qtyPicked)
+					.qtyRejected(qtyRejected)
 					.actualPickedHUId(HuId.ofRepoId(record.getPicked_HU_ID()))
 					.pickingCandidateId(pickingCandidateId)
 					.build();
@@ -388,29 +482,36 @@ class PickingJobLoaderAndSaver
 			@NonNull final PickingJobStep from,
 			@NonNull final PickingJobDocStatus docStatus)
 	{
+
 		existingRecord.setProcessed(docStatus.isProcessed());
 
-		// Picked status
-		updateRecord(existingRecord, from.getPicked(), from.getQtyToPick());
+		updateRecord(existingRecord, from.getPickFrom(PickingJobStepPickFromKey.MAIN));
 	}
 
 	private static void updateRecord(
 			@NonNull final I_M_Picking_Job_Step existingRecord,
-			@Nullable final PickingJobStepPickedInfo from,
-			@NonNull final Quantity qtyToPick)
+			@NonNull final PickingJobStepPickFrom mainPickFrom)
+	{
+		existingRecord.setPickFrom_HU_ID(mainPickFrom.getPickFromHU().getId().getRepoId());
+		updateRecord(existingRecord, mainPickFrom.getPickedTo());
+	}
+
+	private static void updateRecord(
+			@NonNull final I_M_Picking_Job_Step existingRecord,
+			@Nullable final PickingJobStepPickedTo pickedTo)
 	{
 		final BigDecimal qtyPickedBD;
 		final BigDecimal qtyRejectedBD;
 		final String rejectReason;
 		final HuId actualPickedHUId;
 		final PickingCandidateId pickingCandidateId;
-		if (from != null)
+		if (pickedTo != null)
 		{
-			qtyPickedBD = from.getQtyPicked().toBigDecimal();
-			qtyRejectedBD = qtyToPick.subtract(from.getQtyPicked()).toBigDecimal();
-			rejectReason = from.getQtyRejectedReasonCode() != null ? from.getQtyRejectedReasonCode().getCode() : null;
-			actualPickedHUId = from.getActualPickedHUId();
-			pickingCandidateId = from.getPickingCandidateId();
+			qtyPickedBD = pickedTo.getQtyPicked().toBigDecimal();
+			qtyRejectedBD = pickedTo.getQtyRejected() != null ? pickedTo.getQtyRejected().toBigDecimal() : BigDecimal.ZERO;
+			rejectReason = pickedTo.getQtyRejected() != null ? pickedTo.getQtyRejected().getReasonCode().getCode() : null;
+			actualPickedHUId = pickedTo.getActualPickedHUId();
+			pickingCandidateId = pickedTo.getPickingCandidateId();
 		}
 		else
 		{
@@ -421,6 +522,48 @@ class PickingJobLoaderAndSaver
 			pickingCandidateId = null;
 		}
 
+		existingRecord.setQtyPicked(qtyPickedBD);
+		existingRecord.setQtyRejectedToPick(qtyRejectedBD);
+		existingRecord.setRejectReason(rejectReason);
+		existingRecord.setPicked_HU_ID(HuId.toRepoId(actualPickedHUId));
+		existingRecord.setM_Picking_Candidate_ID(PickingCandidateId.toRepoId(pickingCandidateId));
+	}
+
+	private static void updateRecord(final I_M_Picking_Job_Step_HUAlternative existingRecord, final PickingJobStepPickFrom pickFrom)
+	{
+		existingRecord.setPickFrom_HU_ID(pickFrom.getPickFromHU().getId().getRepoId());
+		updateRecord(existingRecord, pickFrom.getPickedTo());
+
+	}
+
+	private static void updateRecord(final I_M_Picking_Job_Step_HUAlternative existingRecord, final PickingJobStepPickedTo pickedTo)
+	{
+		final UomId uomId;
+		final BigDecimal qtyPickedBD;
+		final BigDecimal qtyRejectedBD;
+		final String rejectReason;
+		final HuId actualPickedHUId;
+		final PickingCandidateId pickingCandidateId;
+		if (pickedTo != null)
+		{
+			uomId = pickedTo.getQtyPicked().getUomId();
+			qtyPickedBD = pickedTo.getQtyPicked().toBigDecimal();
+			qtyRejectedBD = pickedTo.getQtyRejected() != null ? pickedTo.getQtyRejected().toBigDecimal() : BigDecimal.ZERO;
+			rejectReason = pickedTo.getQtyRejected() != null ? pickedTo.getQtyRejected().getReasonCode().getCode() : null;
+			actualPickedHUId = pickedTo.getActualPickedHUId();
+			pickingCandidateId = pickedTo.getPickingCandidateId();
+		}
+		else
+		{
+			uomId = null;
+			qtyPickedBD = BigDecimal.ZERO;
+			qtyRejectedBD = BigDecimal.ZERO;
+			rejectReason = null;
+			actualPickedHUId = null;
+			pickingCandidateId = null;
+		}
+
+		existingRecord.setC_UOM_ID(UomId.toRepoId(uomId));
 		existingRecord.setQtyPicked(qtyPickedBD);
 		existingRecord.setQtyRejectedToPick(qtyRejectedBD);
 		existingRecord.setRejectReason(rejectReason);

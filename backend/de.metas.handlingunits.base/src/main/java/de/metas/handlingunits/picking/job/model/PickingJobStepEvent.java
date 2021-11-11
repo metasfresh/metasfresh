@@ -21,18 +21,20 @@ public class PickingJobStepEvent
 	@NonNull Instant timestamp = SystemTime.asInstant();
 
 	@NonNull PickingJobStepId pickingStepId;
+	@NonNull PickingJobStepPickFromKey pickFromKey;
 
 	@NonNull PickingJobStepEventType eventType;
 	@NonNull HUBarcode huBarcode;
 	@Nullable BigDecimal qtyPicked;
+	@Nullable BigDecimal qtyRejected;
 	@Nullable QtyRejectedReasonCode qtyRejectedReasonCode;
 
-	public static ImmutableMap<PickingJobStepId, PickingJobStepEvent> aggregateByStepId(@NonNull final Collection<PickingJobStepEvent> events)
+	public static ImmutableMap<PickingJobStepIdAndPickFromKey, PickingJobStepEvent> aggregateByStepIdAndPickFromKey(@NonNull final Collection<PickingJobStepEvent> events)
 	{
 		return events
 				.stream()
 				.collect(ImmutableMap.toImmutableMap(
-						PickingJobStepEvent::getPickingStepId,
+						event -> PickingJobStepIdAndPickFromKey.of(event.getPickingStepId(), event.getPickFromKey()),
 						event -> event,
 						PickingJobStepEvent::latest));
 	}

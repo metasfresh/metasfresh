@@ -214,7 +214,7 @@ public class UnProcessPickingCandidatesAndRestoreSourceHUsCommand
 
 	private void changeStatusToDraftAndSave(final PickingCandidate pickingCandidate)
 	{
-		pickingCandidate.changeStatusToDraft();
+		pickingCandidate.changeStatusToDraft(false);
 		pickingCandidateRepository.save(pickingCandidate);
 	}
 }

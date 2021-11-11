@@ -1,0 +1,350 @@
+de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
+  "activities" : [ {
+    "activityId" : "A1",
+    "caption" : "Scan picking slot",
+    "componentProps" : {
+      "barcodeCaption" : null
+    },
+    "componentType" : "common/scanBarcode",
+    "status" : "NOT_STARTED"
+  }, {
+    "activityId" : "A2",
+    "caption" : "Pick",
+    "componentProps" : {
+      "lines" : [ {
+        "caption" : "productName-100161",
+        "qtyToPick" : 100,
+        "steps" : [ {
+          "huBarcode" : "100238",
+          "locatorName" : "locatorName-100160",
+          "mainPickFrom" : {
+            "alternativeId" : "MAIN",
+            "huBarcode" : "100238",
+            "locatorName" : "locatorName-100160",
+            "qtyPicked" : 0,
+            "qtyRejected" : null,
+            "qtyRejectedReasonCode" : null
+          },
+          "pickFromAlternativeIds" : [ "100289" ],
+          "pickFromAlternatives" : {
+            "100289" : {
+              "alternativeId" : "100289",
+              "huBarcode" : "100201",
+              "locatorName" : "locatorName-100160",
+              "qtyPicked" : 0,
+              "qtyRejected" : null,
+              "qtyRejectedReasonCode" : null
+            }
+          },
+          "pickingStepId" : "100291",
+          "productName" : "productName-100161",
+          "qtyPicked" : 0,
+          "qtyToPick" : 100,
+          "uom" : "Ea"
+        } ],
+        "uom" : "Ea"
+      } ],
+      "pickFromAlternatives" : [ {
+        "huBarcode" : "100201",
+        "id" : "100289",
+        "locatorName" : "locatorName-100160",
+        "qtyAvailable" : 70,
+        "uom" : "Ea"
+      } ],
+      "qtyRejectedReasons" : {
+        "reasons" : [ ]
+      }
+    },
+    "componentType" : "picking/pickProducts",
+    "status" : "NOT_STARTED"
+  }, {
+    "activityId" : "A3",
+    "caption" : "Complete picking",
+    "componentProps" : {
+      "confirmed" : false,
+      "question" : "Are you sure?"
+    },
+    "componentType" : "common/confirmButton",
+    "status" : "NOT_STARTED"
+  } ],
+  "headerProperties" : {
+    "entries" : [ {
+      "caption" : "DocumentNo",
+      "value" : "docno-1"
+    }, {
+      "caption" : "C_BPartner_Customer_ID",
+      "value" : "bpname-666"
+    }, {
+      "caption" : "PreparationDate",
+      "value" : "09.11.2021 08:58:52"
+    }, {
+      "caption" : "DeliveryToAddress",
+      "value" : "deliveryRenderedAddress"
+    } ]
+  },
+  "id" : "picking-100288"
+} ]
+
+
+de.metas.picking.workflow.handlers.PickingMobileApplicationTest.completeJob=[ {
+  "activities" : [ {
+    "activityId" : "A1",
+    "caption" : "Scan picking slot",
+    "componentProps" : {
+      "barcodeCaption" : null
+    },
+    "componentType" : "common/scanBarcode",
+    "status" : "NOT_STARTED"
+  }, {
+    "activityId" : "A2",
+    "caption" : "Pick",
+    "componentProps" : {
+      "lines" : [ {
+        "caption" : "productName-100161",
+        "qtyToPick" : 100,
+        "steps" : [ {
+          "huBarcode" : "100238",
+          "locatorName" : "locatorName-100160",
+          "mainPickFrom" : {
+            "alternativeId" : "MAIN",
+            "huBarcode" : "100238",
+            "locatorName" : "locatorName-100160",
+            "qtyPicked" : 100,
+            "qtyRejected" : null,
+            "qtyRejectedReasonCode" : null
+          },
+          "pickFromAlternativeIds" : [ "100289" ],
+          "pickFromAlternatives" : {
+            "100289" : {
+              "alternativeId" : "100289",
+              "huBarcode" : "100201",
+              "locatorName" : "locatorName-100160",
+              "qtyPicked" : 0,
+              "qtyRejected" : null,
+              "qtyRejectedReasonCode" : null
+            }
+          },
+          "pickingStepId" : "100291",
+          "productName" : "productName-100161",
+          "qtyPicked" : 100,
+          "qtyToPick" : 100,
+          "uom" : "Ea"
+        } ],
+        "uom" : "Ea"
+      } ],
+      "pickFromAlternatives" : [ {
+        "huBarcode" : "100201",
+        "id" : "100289",
+        "locatorName" : "locatorName-100160",
+        "qtyAvailable" : 70,
+        "uom" : "Ea"
+      } ],
+      "qtyRejectedReasons" : {
+        "reasons" : [ ]
+      }
+    },
+    "componentType" : "picking/pickProducts",
+    "status" : "NOT_STARTED"
+  }, {
+    "activityId" : "A3",
+    "caption" : "Complete picking",
+    "componentProps" : {
+      "confirmed" : false,
+      "question" : "Are you sure?"
+    },
+    "componentType" : "common/confirmButton",
+    "status" : "NOT_STARTED"
+  } ],
+  "headerProperties" : {
+    "entries" : [ {
+      "caption" : "DocumentNo",
+      "value" : "docno-1"
+    }, {
+      "caption" : "C_BPartner_Customer_ID",
+      "value" : "bpname-666"
+    }, {
+      "caption" : "PreparationDate",
+      "value" : "09.11.2021 08:58:52"
+    }, {
+      "caption" : "DeliveryToAddress",
+      "value" : "deliveryRenderedAddress"
+    } ]
+  },
+  "id" : "picking-100288"
+} ]
+
+
+de.metas.picking.workflow.handlers.PickingMobileApplicationTest.createJobAndGet=[ {
+  "activities" : [ {
+    "activityId" : "A1",
+    "caption" : "Scan picking slot",
+    "componentProps" : {
+      "barcodeCaption" : null
+    },
+    "componentType" : "common/scanBarcode",
+    "status" : "NOT_STARTED"
+  }, {
+    "activityId" : "A2",
+    "caption" : "Pick",
+    "componentProps" : {
+      "lines" : [ {
+        "caption" : "productName-100161",
+        "qtyToPick" : 100,
+        "steps" : [ {
+          "huBarcode" : "100238",
+          "locatorName" : "locatorName-100160",
+          "mainPickFrom" : {
+            "alternativeId" : "MAIN",
+            "huBarcode" : "100238",
+            "locatorName" : "locatorName-100160",
+            "qtyPicked" : 0,
+            "qtyRejected" : null,
+            "qtyRejectedReasonCode" : null
+          },
+          "pickFromAlternativeIds" : [ "100289" ],
+          "pickFromAlternatives" : {
+            "100289" : {
+              "alternativeId" : "100289",
+              "huBarcode" : "100201",
+              "locatorName" : "locatorName-100160",
+              "qtyPicked" : 0,
+              "qtyRejected" : null,
+              "qtyRejectedReasonCode" : null
+            }
+          },
+          "pickingStepId" : "100291",
+          "productName" : "productName-100161",
+          "qtyPicked" : 0,
+          "qtyToPick" : 100,
+          "uom" : "Ea"
+        } ],
+        "uom" : "Ea"
+      } ],
+      "pickFromAlternatives" : [ {
+        "huBarcode" : "100201",
+        "id" : "100289",
+        "locatorName" : "locatorName-100160",
+        "qtyAvailable" : 70,
+        "uom" : "Ea"
+      } ],
+      "qtyRejectedReasons" : {
+        "reasons" : [ ]
+      }
+    },
+    "componentType" : "picking/pickProducts",
+    "status" : "NOT_STARTED"
+  }, {
+    "activityId" : "A3",
+    "caption" : "Complete picking",
+    "componentProps" : {
+      "confirmed" : false,
+      "question" : "Are you sure?"
+    },
+    "componentType" : "common/confirmButton",
+    "status" : "NOT_STARTED"
+  } ],
+  "headerProperties" : {
+    "entries" : [ {
+      "caption" : "DocumentNo",
+      "value" : "docno-1"
+    }, {
+      "caption" : "C_BPartner_Customer_ID",
+      "value" : "bpname-666"
+    }, {
+      "caption" : "PreparationDate",
+      "value" : "09.11.2021 08:58:52"
+    }, {
+      "caption" : "DeliveryToAddress",
+      "value" : "deliveryRenderedAddress"
+    } ]
+  },
+  "id" : "picking-100288"
+} ]
+
+
+de.metas.picking.workflow.handlers.PickingMobileApplicationTest.pickUsingAlternatives=[ {
+  "activities" : [ {
+    "activityId" : "A1",
+    "caption" : "Scan picking slot",
+    "componentProps" : {
+      "barcodeCaption" : null
+    },
+    "componentType" : "common/scanBarcode",
+    "status" : "NOT_STARTED"
+  }, {
+    "activityId" : "A2",
+    "caption" : "Pick",
+    "componentProps" : {
+      "lines" : [ {
+        "caption" : "productName-100161",
+        "qtyToPick" : 100,
+        "steps" : [ {
+          "huBarcode" : "100238",
+          "locatorName" : "locatorName-100160",
+          "mainPickFrom" : {
+            "alternativeId" : "MAIN",
+            "huBarcode" : "100238",
+            "locatorName" : "locatorName-100160",
+            "qtyPicked" : 70,
+            "qtyRejected" : 30,
+            "qtyRejectedReasonCode" : "damaged"
+          },
+          "pickFromAlternativeIds" : [ "100289" ],
+          "pickFromAlternatives" : {
+            "100289" : {
+              "alternativeId" : "100289",
+              "huBarcode" : "100201",
+              "locatorName" : "locatorName-100160",
+              "qtyPicked" : 30,
+              "qtyRejected" : 1,
+              "qtyRejectedReasonCode" : "damaged"
+            }
+          },
+          "pickingStepId" : "100291",
+          "productName" : "productName-100161",
+          "qtyPicked" : 70,
+          "qtyToPick" : 100,
+          "uom" : "Ea"
+        } ],
+        "uom" : "Ea"
+      } ],
+      "pickFromAlternatives" : [ {
+        "huBarcode" : "100201",
+        "id" : "100289",
+        "locatorName" : "locatorName-100160",
+        "qtyAvailable" : 70,
+        "uom" : "Ea"
+      } ],
+      "qtyRejectedReasons" : {
+        "reasons" : [ ]
+      }
+    },
+    "componentType" : "picking/pickProducts",
+    "status" : "NOT_STARTED"
+  }, {
+    "activityId" : "A3",
+    "caption" : "Complete picking",
+    "componentProps" : {
+      "confirmed" : false,
+      "question" : "Are you sure?"
+    },
+    "componentType" : "common/confirmButton",
+    "status" : "NOT_STARTED"
+  } ],
+  "headerProperties" : {
+    "entries" : [ {
+      "caption" : "DocumentNo",
+      "value" : "docno-1"
+    }, {
+      "caption" : "C_BPartner_Customer_ID",
+      "value" : "bpname-666"
+    }, {
+      "caption" : "PreparationDate",
+      "value" : "09.11.2021 08:58:52"
+    }, {
+      "caption" : "DeliveryToAddress",
+      "value" : "deliveryRenderedAddress"
+    } ]
+  },
+  "id" : "picking-100288"
+} ]

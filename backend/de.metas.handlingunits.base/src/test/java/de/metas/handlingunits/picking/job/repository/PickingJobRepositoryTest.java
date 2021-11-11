@@ -12,6 +12,7 @@ import de.metas.organization.InstantAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.test.SnapshotFunctionFactory;
 import de.metas.user.UserId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.LocatorId;
@@ -38,10 +39,7 @@ class PickingJobRepositoryTest
 	private I_C_UOM uomEach;
 
 	@BeforeAll
-	static void beforeAll()
-	{
-		start(AdempiereTestHelper.SNAPSHOT_CONFIG, AdempiereTestHelper.createSnapshotJsonFunction());
-	}
+	static void beforeAll() {start(AdempiereTestHelper.SNAPSHOT_CONFIG, SnapshotFunctionFactory.newFunction());}
 
 	@BeforeEach
 	void beforeEach()
@@ -84,10 +82,15 @@ class PickingJobRepositoryTest
 										.salesOrderLineId(OrderAndLineId.ofRepoIds(salesOrderId, 8))
 										.productId(ProductId.ofRepoId(6))
 										.qtyToPick(Quantity.of(100, uomEach))
-										.pickFromLocatorId(LocatorId.ofRepoId(9, 10))
-										.pickFromHUId(HuId.ofRepoId(11))
-										.pickFromHUIdsAlternatives(ImmutableSet.of(
-												HuId.ofRepoId(1001)
+										.mainPickFrom(PickingJobCreateRepoRequest.StepPickFrom.builder()
+												.pickFromLocatorId(LocatorId.ofRepoId(9, 10))
+												.pickFromHUId(HuId.ofRepoId(11))
+												.build())
+										.pickFromAlternatives(ImmutableSet.of(
+												PickingJobCreateRepoRequest.StepPickFrom.builder()
+														.pickFromLocatorId(LocatorId.ofRepoId(21, 22))
+														.pickFromHUId(HuId.ofRepoId(1001))
+														.build()
 										))
 										.build())
 								.build())

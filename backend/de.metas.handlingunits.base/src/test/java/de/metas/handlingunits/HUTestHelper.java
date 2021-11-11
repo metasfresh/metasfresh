@@ -149,6 +149,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
@@ -1415,10 +1416,34 @@ public class HUTestHelper
 		return createHUs(huContext, huPI, productIdToLoad, Quantity.of(qtyToLoad, qtyToLoadUOM));
 	}
 
-	/**
-	 * Create HUs using {@link HUProducerDestination}.<br>
-	 * <b>Important:</b> If you expect e.g. an LU with multiple included TUs, then don't use this method; see the javadoc of {@link HUProducerDestination}.
-	 */
+	public Optional<I_M_HU> createSingleHU(
+			final I_M_HU_PI huPI,
+			final ProductId productIdToLoad,
+			final Quantity qtyToLoad)
+	{
+		final HUProducerDestination destination;
+		HULoader.builder()
+				.source(createDummySourceDestination(productIdToLoad,
+						new BigDecimal("100000000"),  // qtyCapacity
+						qtyToLoad.getUOM(),  // UOM
+						true)) // fullyLoaded => empty
+				.destination(destination = HUProducerDestination.of(huPI))
+				.load(AllocationUtils.builder()
+						.setHUContext(huContext)
+						.setProduct(productIdToLoad)
+						.setQuantity(qtyToLoad)
+						.setDate(getTodayZonedDateTime())
+						.setFromReferencedModel(null)
+						.setForceQtyAllocation(true)
+						.create());
+
+		return destination.getSingleCreatedHU();
+	}
+
+		/**
+		 * Create HUs using {@link HUProducerDestination}.<br>
+		 * <b>Important:</b> If you expect e.g. an LU with multiple included TUs, then don't use this method; see the javadoc of {@link HUProducerDestination}.
+		 */
 	public List<I_M_HU> createHUs(
 			final IHUContext huContext,
 			final I_M_HU_PI huPI,

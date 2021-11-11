@@ -32,11 +32,13 @@ import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
 
 import java.util.Objects;
 import java.util.function.UnaryOperator;
 
+@ToString
 public final class WFProcess
 {
 	@Getter

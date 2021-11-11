@@ -91,6 +91,6 @@ public class Picking_Terminal_StepDef
 				.pickingCandidateId(PickingCandidateId.ofRepoId(pickingCandidate.getM_Picking_Candidate_ID()))
 				.build();
 
-		processPickingCandidatesCommand.perform();
+		processPickingCandidatesCommand.execute();
 	}
 }

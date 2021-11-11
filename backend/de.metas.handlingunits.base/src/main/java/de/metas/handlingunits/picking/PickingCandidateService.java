@@ -205,7 +205,12 @@ public class PickingCandidateService
 				.pickingCandidateRepository(pickingCandidateRepository)
 				.pickingCandidateIds(pickingCandidateIds)
 				.build()
-				.perform();
+				.execute();
+	}
+
+	public UnProcessPickingCandidatesResult unprocess(@NonNull final PickingCandidateId pickingCandidateId)
+	{
+		return unprocess(ImmutableSet.of(pickingCandidateId));
 	}
 
 	public UnProcessPickingCandidatesResult unprocess(@NonNull final Set<PickingCandidateId> pickingCandidateIds)

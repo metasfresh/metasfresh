@@ -27,21 +27,20 @@ import org.adempiere.exceptions.AdempiereException;
 
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 public class UnProcessPickingCandidatesCommand
 {
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
-
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IHUShipmentScheduleBL huShipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
 	private final PickingCandidateRepository pickingCandidateRepository;
 
 	private final ImmutableSet<PickingCandidateId> pickingCandidateIds;
 
-	private final Map<ShipmentScheduleId, I_M_ShipmentSchedule> shipmentSchedulesCache = new HashMap<>();
+	private final HashMap<ShipmentScheduleId, I_M_ShipmentSchedule> shipmentSchedulesCache = new HashMap<>();
 
 	@Builder
 	private UnProcessPickingCandidatesCommand(
@@ -79,8 +78,7 @@ public class UnProcessPickingCandidatesCommand
 		}
 		else if (pickingCandidate.getPickFrom().isPickFromHU())
 		{
-			unpickHU(pickingCandidate);
-			deleteShipmentScheduleQtyPickedRecords(pickingCandidate);
+			processInTrx_unpackHU(pickingCandidate);
 		}
 		else if (pickingCandidate.getPickFrom().isPickFromPickingOrder())
 		{
@@ -91,12 +89,9 @@ public class UnProcessPickingCandidatesCommand
 		{
 			throw new AdempiereException("Unknow " + pickingCandidate.getPickFrom());
 		}
-
-		pickingCandidate.changeStatusToDraft();
-		pickingCandidateRepository.save(pickingCandidate);
 	}
 
-	private void unpickHU(final PickingCandidate pickingCandidate)
+	private void processInTrx_unpackHU(@NonNull final PickingCandidate pickingCandidate)
 	{
 		final HuId packedToHUId = pickingCandidate.getPackedToHuId();
 		if (packedToHUId == null)
@@ -104,48 +99,68 @@ public class UnProcessPickingCandidatesCommand
 			return;
 		}
 
-		final I_M_ShipmentSchedule shipmentSchedule = getShipmentScheduleById(pickingCandidate.getShipmentScheduleId());
-		final ProductId productId = ProductId.ofRepoId(shipmentSchedule.getM_Product_ID());
+		final HuId pickFromHUId = pickingCandidate.getPickFrom().getHuId();
+		final I_M_HU pickFromHU = handlingUnitsBL.getById(pickFromHUId);
 
-		final Quantity qtyPicked = pickingCandidate.getQtyPicked();
-
-		final IHUContext huContext = huContextFactory.createMutableHUContextForProcessing();
-
-		HULoader.builder()
-				.source(HUListAllocationSourceDestination.ofHUId(packedToHUId).setDestroyEmptyHUs(true))
-				.destination(HUListAllocationSourceDestination.ofHUId(pickingCandidate.getPickFrom().getHuId()))
-				.allowPartialUnloads(false)
-				.allowPartialLoads(false)
-				.forceLoad(true)
-				.load(AllocationUtils.builder()
-						.setHUContext(huContext)
-						.setProduct(productId)
-						.setQuantity(qtyPicked)
-						.setFromReferencedTableRecord(pickingCandidate.getId().toTableRecordReference())
-						.setForceQtyAllocation(true)
-						.create());
-
-		final I_M_HU packedToHU = handlingUnitsBL.getById(packedToHUId);
-		if (!huContext.getHUStorageFactory().getStorage(packedToHU).isEmpty())
+		//
+		// Case: When PickFrom HU was destroyed
+		// * replace the pick From HU with the actually packed HU
+		final boolean usePackedHUIdAsPickFrom;
+		if (handlingUnitsBL.isDestroyed(pickFromHU))
 		{
-			throw new AdempiereException("Cannot unprocess because the actual picked HU was alterned in meantime");
+			usePackedHUIdAsPickFrom = true;
 		}
+		//
+		// Case: When PickFrom HU was used as the PackTo HU
+		else if(HuId.equals(pickFromHUId, packedToHUId))
+		{
+			usePackedHUIdAsPickFrom = true;
+		}
+		//
+		// Case: When Pick From HU is not destroyed
+		// * just move back the products from our packed HU back to pick From HU
+		else
+		{
+			final ProductId productId = getProductId(pickingCandidate);
+			final Quantity qtyPicked = pickingCandidate.getQtyPicked();
+			final PickingCandidateId pickingCandidateId = Objects.requireNonNull(pickingCandidate.getId());
+
+			final IHUContext huContext = huContextFactory.createMutableHUContextForProcessing();
+
+			HULoader.builder()
+					.source(HUListAllocationSourceDestination.ofHUId(packedToHUId).setDestroyEmptyHUs(true))
+					.destination(HUListAllocationSourceDestination.of(pickFromHU))
+					.allowPartialUnloads(false)
+					.allowPartialLoads(false)
+					.forceLoad(true)
+					.load(AllocationUtils.builder()
+							.setHUContext(huContext)
+							.setProduct(productId)
+							.setQuantity(qtyPicked)
+							.setFromReferencedTableRecord(pickingCandidateId.toTableRecordReference())
+							.setForceQtyAllocation(true)
+							.create());
+
+			// NOTE: don't expect packedTOHUId to be empty/destroyed because it might be we packed several lines in same box
+
+			usePackedHUIdAsPickFrom = false;
+		}
+
+		pickingCandidate.changeStatusToDraft(usePackedHUIdAsPickFrom);
+		pickingCandidateRepository.save(pickingCandidate);
+
+		huShipmentScheduleBL.deleteByTopLevelHUAndShipmentScheduleId(packedToHUId, pickingCandidate.getShipmentScheduleId());
+	}
+
+	@NonNull
+	private ProductId getProductId(final PickingCandidate pickingCandidate)
+	{
+		final I_M_ShipmentSchedule shipmentSchedule = getShipmentScheduleById(pickingCandidate.getShipmentScheduleId());
+		return ProductId.ofRepoId(shipmentSchedule.getM_Product_ID());
 	}
 
 	private I_M_ShipmentSchedule getShipmentScheduleById(@NonNull final ShipmentScheduleId shipmentScheduleId)
 	{
 		return shipmentSchedulesCache.computeIfAbsent(shipmentScheduleId, huShipmentScheduleBL::getById);
 	}
-
-	private void deleteShipmentScheduleQtyPickedRecords(@NonNull final PickingCandidate pickingCandidate)
-	{
-		final HuId packedToHuId = pickingCandidate.getPackedToHuId();
-		if (packedToHuId == null)
-		{
-			return;
-		}
-
-		huShipmentScheduleBL.deleteByTopLevelHUAndShipmentScheduleId(packedToHuId, pickingCandidate.getShipmentScheduleId());
-	}
-
 }
