@@ -152,7 +152,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 		return database;
 	}
 
-	public static void destroyThreadLocalStorage()
+	private static void destroyThreadLocalStorage()
 	{
 		final POJOLookupMap threadInstance = threadInstanceRef.get();
 		if (threadInstance == null)
@@ -704,7 +704,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 
 	public void clear()
 	{
-		nextIdSupplier.reset();
+		POJOLookupMap.resetToDefaultNextIdSupplier();
 		cachedObjects.clear();
 	}
 
