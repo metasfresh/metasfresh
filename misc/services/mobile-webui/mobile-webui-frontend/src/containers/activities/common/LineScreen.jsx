@@ -40,7 +40,7 @@ const mapStateToProps = (state, ownProps) => {
   const lineProps = activity != null ? activity.componentProps.lines[lineId] : null;
   const stepsById = lineProps != null ? lineProps.steps : {};
 
-  const appId = state.appHandler.activeApplication ? state.appHandler.activeApplication.id : null;
+  const appId = state.applications.activeApplication ? state.applications.activeApplication.id : null;
 
   // TODO: handle the case when we didn't find the wfProcess or activity or line
   // usually that happens when the workflow process is no longer in the state because:

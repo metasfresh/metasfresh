@@ -51,7 +51,7 @@ const mapStateToProps = (state, ownProps) => {
   const { workflowId: wfProcessId, activityId, lineId, stepId } = ownProps.match.params;
   const activity = selectWFProcessFromState(state, wfProcessId).activities[activityId];
   const stepProps = activity.dataStored.lines[lineId].steps[stepId];
-  const appId = state.appHandler.activeApplication ? state.appHandler.activeApplication.id : null;
+  const appId = state.applications.activeApplication ? state.applications.activeApplication.id : null;
 
   return {
     wfProcessId,

@@ -8,7 +8,7 @@ const mapStateToProps = (state, ownProps) => {
 
   return {
     stepState: state.wfProcesses_status[wfProcessId].activities[activityId].dataStored.lines[lineId].steps[stepId],
-    appId: state.appHandler.activeApplication ? state.appHandler.activeApplication.id : null,
+    appId: state.applications.activeApplication ? state.applications.activeApplication.id : null,
   };
 };
 

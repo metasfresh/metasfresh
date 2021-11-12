@@ -87,7 +87,10 @@ function DistributionStepScanScreen(WrappedComponent) {
               activityId,
               lineId,
               stepId,
-              actualHUPicked: scannedBarcode,
+              actualHUPicked: {
+                barcode: scannedBarcode,
+                caption: scannedBarcode,
+              },
               qtyPicked: qty,
               qtyRejectedReasonCode: reason,
             });

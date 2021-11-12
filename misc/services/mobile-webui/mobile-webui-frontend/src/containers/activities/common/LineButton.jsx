@@ -3,8 +3,8 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { push } from 'connected-react-router';
 
-const mapStateToProps = ({ appHandler }) => ({
-  appId: appHandler.activeApplication ? appHandler.activeApplication.id : null,
+const mapStateToProps = ({ applications }) => ({
+  appId: applications.activeApplication ? applications.activeApplication.id : null,
 });
 
 function LineButton(WrappedComponent) {

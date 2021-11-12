@@ -116,7 +116,9 @@ class DistributionStepScreen extends Component {
     const isValidHUCode = !!actualHUPicked;
     const isValidLocatorCode = !!scannedLocator;
 
-    const scanHUCaption = isValidHUCode ? `${actualHUPicked}` : counterpart.translate('activities.distribution.scanHU');
+    const scanHUCaption = isValidHUCode
+      ? `${actualHUPicked.caption}`
+      : counterpart.translate('activities.distribution.scanHU');
     const scanLocatorCaption = isValidLocatorCode
       ? `${scannedLocator}`
       : counterpart.translate('activities.distribution.scanLocator');
