@@ -1,9 +1,9 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-import PickStepButton from './PickStepButton';
+import StepButton from './DistributionStepButton';
 
-const PickLineScreen = (props) => {
+const DistributionLineScreen = (props) => {
   const { wfProcessId, activityId, lineId, steps } = props;
 
   return (
@@ -12,12 +12,13 @@ const PickLineScreen = (props) => {
         {steps.length > 0 &&
           steps.map((stepItem, idx) => {
             return (
-              <PickStepButton
+              <StepButton
                 key={idx}
                 wfProcessId={wfProcessId}
                 activityId={activityId}
                 lineId={lineId}
-                stepId={stepItem.pickingStepId}
+                stepId={stepItem.id}
+                locatorName={stepItem.productName}
                 {...stepItem}
               />
             );
@@ -27,7 +28,7 @@ const PickLineScreen = (props) => {
   );
 };
 
-PickLineScreen.propTypes = {
+DistributionLineScreen.propTypes = {
   //
   // Props
   wfProcessId: PropTypes.string.isRequired,
@@ -36,4 +37,4 @@ PickLineScreen.propTypes = {
   steps: PropTypes.array.isRequired,
 };
 
-export default PickLineScreen;
+export default DistributionLineScreen;

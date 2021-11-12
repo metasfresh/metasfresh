@@ -2,12 +2,12 @@ import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import counterpart from 'counterpart';
 
-import StepButton from '../common/StepButton';
 import { pushHeaderEntry } from '../../../actions/HeaderActions';
+import StepButton from '../common/StepButton';
 import Indicator from '../../../components/Indicator';
 import * as CompleteStatus from '../../../constants/CompleteStatus';
 
-class PickStepButton extends PureComponent {
+class DistributionStepButton extends PureComponent {
   handleClick = () => {
     const { locatorName } = this.props;
     const { dispatch, onHandleClick } = this.props;
@@ -32,7 +32,7 @@ class PickStepButton extends PureComponent {
       locatorName,
       uom,
       stepState: { qtyPicked, completeStatus },
-      qtyToPick,
+      qtyToMove,
     } = this.props;
 
     return (
@@ -50,11 +50,13 @@ class PickStepButton extends PureComponent {
                 <div className="row is-full pl-5">{locatorName}</div>
                 <div className="row is-full is-size-7">
                   <div className="picking-row-info">
-                    <div className="picking-to-pick">{counterpart.translate('activities.picking.target')}:</div>
+                    <div className="picking-to-pick">{counterpart.translate('activities.distribution.target')}:</div>
                     <div className="picking-row-qty">
-                      {qtyToPick} {uom}
+                      {qtyToMove} {uom}
                     </div>
-                    <div className="picking-row-picking">{counterpart.translate('activities.picking.picked')}:</div>
+                    <div className="picking-row-picking">
+                      {counterpart.translate('activities.distribution.picked')}:
+                    </div>
                     <div className="picking-row-picked">
                       {qtyPicked} {uom}
                     </div>
@@ -73,7 +75,7 @@ class PickStepButton extends PureComponent {
   }
 }
 
-PickStepButton.propTypes = {
+DistributionStepButton.propTypes = {
   //
   // Props
   wfProcessId: PropTypes.string.isRequired,
@@ -85,7 +87,7 @@ PickStepButton.propTypes = {
   huBarcode: PropTypes.string,
   uom: PropTypes.string,
   qtyPicked: PropTypes.number,
-  qtyToPick: PropTypes.number.isRequired,
+  qtyToMove: PropTypes.number.isRequired,
   stepState: PropTypes.object,
   onHandleClick: PropTypes.func.isRequired,
   //
@@ -93,4 +95,4 @@ PickStepButton.propTypes = {
   dispatch: PropTypes.func.isRequired,
 };
 
-export default StepButton(PickStepButton);
+export default StepButton(DistributionStepButton);

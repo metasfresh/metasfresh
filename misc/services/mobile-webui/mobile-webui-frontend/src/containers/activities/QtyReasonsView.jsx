@@ -5,7 +5,7 @@ import { withRouter } from 'react-router';
 import counterpart from 'counterpart';
 import { get } from 'lodash';
 
-import { selectWFProcessFromState } from '../../../reducers/wfProcesses_status';
+import { selectWFProcessFromState } from '../../reducers/wfProcesses_status';
 
 class QtyReasonsView extends PureComponent {
   constructor(props) {
