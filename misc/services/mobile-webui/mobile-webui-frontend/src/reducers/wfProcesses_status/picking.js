@@ -157,14 +157,14 @@ const normalizePickingLines = (lines) => {
 registerHandler({
   componentType: COMPONENT_TYPE,
   normalizeComponentProps: ({ componentProps }) => {
-    console.log('normalizeComponentProps for ', componentProps);
+    console.log('picking: normalizeComponentProps for ', componentProps);
     return {
       ...componentProps,
       lines: normalizePickingLines(componentProps.lines),
     };
   },
   computeActivityDataStoredInitialValue: ({ componentProps }) => {
-    console.log('computeActivityDataStoredInitialValue for ', componentProps);
+    console.log('picking: computeActivityDataStoredInitialValue for ', componentProps);
     return { lines: componentProps.lines };
   },
 });
