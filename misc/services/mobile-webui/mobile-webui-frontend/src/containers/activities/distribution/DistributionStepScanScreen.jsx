@@ -5,10 +5,12 @@ import { withRouter } from 'react-router';
 import { go } from 'connected-react-router';
 import counterpart from 'counterpart';
 
+import { postStepDistributionMove } from '../../../api/distribution';
 import { selectWFProcessFromState } from '../../../reducers/wfProcesses_status';
 import { updateDistributionStepQty } from '../../../actions/DistributionActions';
 
-import StepScanScreenComponent from '../StepScanScreenComponent';
+import StepScanScreenComponent from '../common/StepScanScreenComponent';
+import { toastError } from '../../../utils/toast';
 
 function DistributionStepScanScreen(WrappedComponent) {
   const mapStateToProps = (state, { match }) => {
@@ -46,30 +48,53 @@ function DistributionStepScanScreen(WrappedComponent) {
       const { updateDistributionStepQty, wfProcessId, activityId, lineId, stepId, go, locatorId } = this.props;
       const { scannedBarcode } = this.state;
 
-      // TODO: Update on the backend
       if (locatorId) {
-        updateDistributionStepQty({
+        postStepDistributionMove({
           wfProcessId,
           activityId,
-          lineId,
           stepId,
-          locatorBarcode: scannedBarcode,
-          qtyPicked: qty,
-          qtyRejectedReasonCode: reason,
-        });
+          dropTo: {
+            qtyPicked: qty,
+            qtyRejectedReasonCode: reason,
+          },
+        })
+          .then(() => {
+            updateDistributionStepQty({
+              wfProcessId,
+              activityId,
+              lineId,
+              stepId,
+              locatorBarcode: scannedBarcode,
+              qtyPicked: qty,
+              qtyRejectedReasonCode: reason,
+            });
+            go(-1);
+          })
+          .catch((axiosError) => toastError({ axiosError }));
       } else {
-        updateDistributionStepQty({
+        postStepDistributionMove({
           wfProcessId,
           activityId,
-          lineId,
           stepId,
-          actualHUPicked: scannedBarcode,
-          qtyPicked: qty,
-          qtyRejectedReasonCode: reason,
-        });
+          pickFrom: {
+            qtyPicked: qty,
+            qtyRejectedReasonCode: reason,
+          },
+        })
+          .then(() => {
+            updateDistributionStepQty({
+              wfProcessId,
+              activityId,
+              lineId,
+              stepId,
+              actualHUPicked: scannedBarcode,
+              qtyPicked: qty,
+              qtyRejectedReasonCode: reason,
+            });
+            go(-2);
+          })
+          .catch((axiosError) => toastError({ axiosError }));
       }
-
-      go(-2);
     };
 
     render() {

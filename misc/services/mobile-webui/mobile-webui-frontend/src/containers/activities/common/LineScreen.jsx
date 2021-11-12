@@ -3,10 +3,10 @@ import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
 import PropTypes from 'prop-types';
 
-import PickLineScreen from './picking/PickLineScreen';
-import DistributionLineScreen from './distribution/DistributionLineScreen';
+import PickLineScreen from '../picking/PickLineScreen';
+import DistributionLineScreen from '../distribution/DistributionLineScreen';
 
-import { selectWFProcessFromState } from '../../reducers/wfProcesses_status';
+import { selectWFProcessFromState } from '../../../reducers/wfProcesses_status';
 
 const getLineComponent = (appId) => {
   switch (appId) {

@@ -1,11 +1,15 @@
 import React, { Component } from 'react';
 import counterpart from 'counterpart';
 import PropTypes from 'prop-types';
+import { push } from 'connected-react-router';
 
-import { updateDistributionStepQty } from '../../../actions/DistributionActions';
-import ButtonWithIndicator from '../../../components/ButtonWithIndicator';
 import * as CompleteStatus from '../../../constants/CompleteStatus';
+import { postStepDistributionMove } from '../../../api/distribution';
+import { updateDistributionStepQty } from '../../../actions/DistributionActions';
 import { pushHeaderEntry } from '../../../actions/HeaderActions';
+import { toastError } from '../../../utils/toast';
+
+import ButtonWithIndicator from '../../../components/ButtonWithIndicator';
 
 class DistributionStepScreen extends Component {
   /**
@@ -44,35 +48,51 @@ class DistributionStepScreen extends Component {
   onUnpickLocatorButtonClick = () => {
     const { wfProcessId, activityId, lineId, stepId, dispatch } = this.props;
 
-    // TODO: Update on the backend
-    dispatch(
-      updateDistributionStepQty({
-        wfProcessId,
-        activityId,
-        lineId,
-        stepId,
-        scannedLocator: null,
-        qtyPicked: 0,
-        qtyRejectedReasonCode: null,
+    postStepDistributionMove({
+      wfProcessId,
+      activityId,
+      stepId,
+    })
+      .then(() => {
+        dispatch(
+          updateDistributionStepQty({
+            wfProcessId,
+            activityId,
+            lineId,
+            stepId,
+            scannedLocator: null,
+            qtyPicked: 0,
+            qtyRejectedReasonCode: null,
+          })
+        );
+        dispatch(push(`/workflow/${wfProcessId}/activityId/${activityId}/lineId/${lineId}`));
       })
-    );
+      .catch((axiosError) => toastError({ axiosError }));
   };
 
   onUnpickHUButtonClick = () => {
     const { wfProcessId, activityId, lineId, stepId, dispatch } = this.props;
 
-    // TODO: Update on the backend
-    dispatch(
-      updateDistributionStepQty({
-        wfProcessId,
-        activityId,
-        lineId,
-        stepId,
-        actualHUPicked: null,
-        qtyPicked: 0,
-        qtyRejectedReasonCode: null,
+    postStepDistributionMove({
+      wfProcessId,
+      activityId,
+      stepId,
+    })
+      .then(() => {
+        dispatch(
+          updateDistributionStepQty({
+            wfProcessId,
+            activityId,
+            lineId,
+            stepId,
+            actualHUPicked: null,
+            qtyPicked: 0,
+            qtyRejectedReasonCode: null,
+          })
+        );
+        dispatch(push(`/workflow/${wfProcessId}/activityId/${activityId}/lineId/${lineId}`));
       })
-    );
+      .catch((axiosError) => toastError({ axiosError }));
   };
 
   componentWillUnmount() {
@@ -137,8 +157,8 @@ class DistributionStepScreen extends Component {
           </button>
         </div>
 
-        <div className="mt-0">
-          <button className="button is-outlined complete-btn" onClick={() => this.handleScanButtonClick(true)}>
+        <div className="mt-5">
+          <button className="button is-outlined complete-btn" onClick={(e) => this.handleScanButtonClick(e, true)}>
             <ButtonWithIndicator caption={scanLocatorCaption} completeStatus={scanLocatorButtonStatus} />
           </button>
         </div>

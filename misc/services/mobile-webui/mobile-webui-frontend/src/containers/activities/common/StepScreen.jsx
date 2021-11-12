@@ -4,10 +4,10 @@ import { push } from 'connected-react-router';
 import PropTypes from 'prop-types';
 import { withRouter } from 'react-router';
 
-import { selectWFProcessFromState } from '../../reducers/wfProcesses_status';
-import ScreenToaster from '../../components/ScreenToaster';
-import PickStepScreen from './picking/PickStepScreen';
-import DistributionStepScreen from './distribution/DistributionStepScreen';
+import { selectWFProcessFromState } from '../../../reducers/wfProcesses_status';
+import ScreenToaster from '../../../components/ScreenToaster';
+import PickStepScreen from '../picking/PickStepScreen';
+import DistributionStepScreen from '../distribution/DistributionStepScreen';
 
 const getStepComponent = (appId) => {
   switch (appId) {

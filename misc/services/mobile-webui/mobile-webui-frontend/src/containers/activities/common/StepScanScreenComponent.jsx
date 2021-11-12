@@ -1,10 +1,10 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 
-import { toastError } from '../../utils/toast';
-import CodeScanner from './scan/CodeScanner';
-import PickQuantityPrompt from './PickQuantityPrompt';
-import QtyReasonsView from './QtyReasonsView';
+import { toastError } from '../../../utils/toast';
+import CodeScanner from '../scan/CodeScanner';
+import PickQuantityPrompt from '../PickQuantityPrompt';
+import QtyReasonsView from '../QtyReasonsView';
 
 class StepScanScreenComponent extends Component {
   constructor(props) {

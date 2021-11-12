@@ -2,7 +2,7 @@ import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import counterpart from 'counterpart';
 
-import ApplicationStepButton from '../StepButton';
+import StepButton from '../common/StepButton';
 import { pushHeaderEntry } from '../../../actions/HeaderActions';
 import Indicator from '../../../components/Indicator';
 import * as CompleteStatus from '../../../constants/CompleteStatus';
@@ -93,4 +93,4 @@ PickStepButton.propTypes = {
   dispatch: PropTypes.func.isRequired,
 };
 
-export default ApplicationStepButton(PickStepButton);
+export default StepButton(PickStepButton);

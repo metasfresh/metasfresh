@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import counterpart from 'counterpart';
 
 import { pushHeaderEntry } from '../../../actions/HeaderActions';
-import ApplicationStepButton from '../StepButton';
+import StepButton from '../common/StepButton';
 import Indicator from '../../../components/Indicator';
 import * as CompleteStatus from '../../../constants/CompleteStatus';
 
@@ -95,4 +95,4 @@ DistributionStepButton.propTypes = {
   dispatch: PropTypes.func.isRequired,
 };
 
-export default ApplicationStepButton(DistributionStepButton);
+export default StepButton(DistributionStepButton);

@@ -10,9 +10,9 @@ import LoginView from '../components/LoginView';
 import WFLaunchersScreen from '../containers/wfLaunchersScreen/WFLaunchersScreen';
 import WFProcessScreen from '../containers/wfProcessScreen/WFProcessScreen';
 import ScanScreen from '../containers/activities/scan/ScanScreen';
-import LineScreen from '../containers/activities/LineScreen';
-import StepScreen from '../containers/activities/StepScreen';
-import StepScanScreen from '../containers/activities/StepScanScreen';
+import LineScreen from '../containers/activities/common/LineScreen';
+import StepScreen from '../containers/activities/common/StepScreen';
+import StepScanScreen from '../containers/activities/common/StepScanScreen';
 import ApplicationsScreen from '../containers/applicationScreen/ApplicationsScreen';
 
 import PrivateRoute from './PrivateRoute';

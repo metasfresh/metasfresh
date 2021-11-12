@@ -2,7 +2,7 @@ import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import counterpart from 'counterpart';
 
-import ApplicationLineButton from '../LineButton';
+import LineButton from '../common/LineButton';
 import ButtonWithIndicator from '../../../components/ButtonWithIndicator';
 import ButtonQuantityProp from '../../../components/ButtonQuantityProp';
 import { pushHeaderEntry } from '../../../actions/HeaderActions';
@@ -58,4 +58,4 @@ DistributionLineButton.propTypes = {
   dispatch: PropTypes.func.isRequired,
 };
 
-export default ApplicationLineButton(DistributionLineButton);
+export default LineButton(DistributionLineButton);

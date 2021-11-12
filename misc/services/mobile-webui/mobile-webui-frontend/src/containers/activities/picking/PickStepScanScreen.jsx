@@ -10,7 +10,7 @@ import { toastError } from '../../../utils/toast';
 import { postStepPicked } from '../../../api/picking';
 import { updatePickingStepQty } from '../../../actions/PickingActions';
 
-import StepScanScreenComponent from '../StepScanScreenComponent';
+import StepScanScreenComponent from '../common/StepScanScreenComponent';
 
 function PickStepScanScreen(WrappedComponent) {
   const mapStateToProps = (state, { match }) => {
