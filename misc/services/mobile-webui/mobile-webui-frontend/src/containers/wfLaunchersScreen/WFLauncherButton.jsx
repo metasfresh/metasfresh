@@ -39,13 +39,13 @@ class WFLauncherButton extends PureComponent {
   };
 
   render() {
-    const { id, caption, startedWFProcessId } = this.props;
+    const { id, caption, startedWFProcessId, showWarningSign } = this.props;
     const wfCompleteStatus = startedWFProcessId ? CompleteStatus.IN_PROGRESS : CompleteStatus.NOT_STARTED;
 
     return (
       <div className="buttons">
         <button key={id} className="button is-outlined complete-btn" disabled={false} onClick={this.handleClick}>
-          <ButtonWithIndicator caption={caption} completeStatus={wfCompleteStatus} />
+          <ButtonWithIndicator caption={caption} showWarningSign={showWarningSign} completeStatus={wfCompleteStatus} />
         </button>
       </div>
     );
@@ -59,6 +59,7 @@ WFLauncherButton.propTypes = {
   caption: PropTypes.string.isRequired,
   startedWFProcessId: PropTypes.string,
   wfParameters: PropTypes.object.isRequired,
+  showWarningSign: PropTypes.bool,
   //
   // Actions
   updateWFProcess: PropTypes.func.isRequired,

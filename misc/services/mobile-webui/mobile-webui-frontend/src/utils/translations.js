@@ -17,6 +17,9 @@ export const setupCounterpart = () => {
       Barcode: 'Barcode',
       QtyToPick: 'Qty to pick',
       QtyPicked: 'Qty picked',
+      QtyMoved: 'Qty moved',
+      QtyToMove: 'Qty to move',
+      DropToLocator: 'Drop to locator',
       PleaseTryAgain: 'Please try again',
     },
     login: {
@@ -47,8 +50,15 @@ export const setupCounterpart = () => {
         confirmDone: 'Done',
         rejectedPrompt: 'There are %(qtyRejected)s %(uom)s not picked. Why ?',
         unPickBtn: 'Unpick',
-        toPick: 'To Pick',
+        target: 'To Pick',
         picked: 'Picked',
+      },
+      distribution: {
+        DistributionLine: 'Distribution Line',
+        target: 'To Move',
+        picked: 'Picked',
+        scanHU: 'Scan pick from HU',
+        scanLocator: 'Scan drop from Locator',
       },
       confirmButton: {
         default: {
@@ -101,7 +111,7 @@ export const setupCounterpart = () => {
         confirmDone: 'Done',
         rejectedPrompt: 'There are %(qtyRejected)s %(uom)s not picked. Why ?',
         unPickBtn: 'Unpick',
-        toPick: 'To Pick',
+        target: 'To Pick',
         picked: 'Picked',
       },
       confirmButton: {

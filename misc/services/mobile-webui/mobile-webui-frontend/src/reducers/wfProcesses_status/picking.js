@@ -72,7 +72,7 @@ const updateLineStatusFromSteps = ({ draftWFProcess, activityId, lineId }) => {
   updateActivityStatusFromLines({ draftWFProcess, activityId });
 };
 
-const computeLineStatus = ({ draftLine }) => {
+export const computeLineStatus = ({ draftLine }) => {
   const stepIds = Object.keys(original(draftLine.steps));
 
   if (stepIds.length > 0) {
@@ -99,7 +99,7 @@ const computeLineStatus = ({ draftLine }) => {
   }
 };
 
-const updateActivityStatusFromLines = ({ draftWFProcess, activityId }) => {
+export const updateActivityStatusFromLines = ({ draftWFProcess, activityId }) => {
   const draftActivity = draftWFProcess.activities[activityId];
   draftActivity.dataStored.completeStatus = computeActivityStatusFromLines({ draftActivity });
   console.log(`Update activity [${activityId} ]: completeStatus=${draftActivity.dataStored.completeStatus}`);
@@ -109,7 +109,7 @@ const updateActivityStatusFromLines = ({ draftWFProcess, activityId }) => {
   updateUserEditable({ draftWFProcess });
 };
 
-const computeActivityStatusFromLines = ({ draftActivity }) => {
+export const computeActivityStatusFromLines = ({ draftActivity }) => {
   const lineIds = Object.keys(original(draftActivity.dataStored.lines));
 
   if (lineIds.length > 0) {

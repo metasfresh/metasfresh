@@ -6,7 +6,6 @@ import { push } from 'connected-react-router';
 import { useAuth } from './hooks/useAuth';
 import useConstructor from './hooks/useConstructor';
 import Routes from './routes';
-// import { history } from './store/store';
 
 import './App.css';
 import UpdateCheck from './components/UpdateCheck';
