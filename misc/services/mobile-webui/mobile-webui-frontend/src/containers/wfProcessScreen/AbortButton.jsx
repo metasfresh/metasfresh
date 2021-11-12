@@ -31,7 +31,7 @@ class AbortButton extends PureComponent {
 }
 
 const mapStateToProps = (state) => {
-  const { activeApplication } = state.appHandler;
+  const { activeApplication } = state.applications;
 
   return {
     appId: activeApplication ? activeApplication.id : null,
