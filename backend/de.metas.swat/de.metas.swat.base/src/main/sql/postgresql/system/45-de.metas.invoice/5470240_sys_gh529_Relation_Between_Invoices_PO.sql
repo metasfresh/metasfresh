@@ -248,3 +248,409 @@ UPDATE AD_Ref_Table SET AD_Window_ID=183,Updated=TO_TIMESTAMP('2021-11-11 12:31:
 -- 2021-11-11T11:39:52.544Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_Process_Para SET DefaultValue='@SQL=SELECT c_invoice_from_id FROM c_invoice_relation WHERE c_invoice_to_id=@C_Invoice_ID/-1@ AND c_invoice_relation_type=''POtoSO''',Updated=TO_TIMESTAMP('2021-11-11 13:39:52','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=542137
+;
+
+-- 2021-11-12T12:21:21.927Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Description='', Name='Rechnung', PrintName='Rechnung',Updated=TO_TIMESTAMP('2021-11-12 14:21:21','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=580170 AND AD_Language='de_CH'
+;
+
+-- 2021-11-12T12:21:21.956Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(580170,'de_CH')
+;
+
+-- 2021-11-12T12:21:31.416Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Description='', Name='Rechnung', PrintName='Rechnung',Updated=TO_TIMESTAMP('2021-11-12 14:21:31','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=580170 AND AD_Language='de_DE'
+;
+
+-- 2021-11-12T12:21:31.417Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(580170,'de_DE')
+;
+
+-- 2021-11-12T12:21:31.424Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_ad_element_on_ad_element_trl_update(580170,'de_DE')
+;
+
+-- 2021-11-12T12:21:31.427Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnName='C_Invoice_To_ID', Name='Rechnung', Description='', Help=NULL WHERE AD_Element_ID=580170
+;
+
+-- 2021-11-12T12:21:31.428Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='C_Invoice_To_ID', Name='Rechnung', Description='', Help=NULL, AD_Element_ID=580170 WHERE UPPER(ColumnName)='C_INVOICE_TO_ID' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2021-11-12T12:21:31.429Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='C_Invoice_To_ID', Name='Rechnung', Description='', Help=NULL WHERE AD_Element_ID=580170 AND IsCentrallyMaintained='Y'
+;
+
+-- 2021-11-12T12:21:31.430Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Rechnung', Description='', Help=NULL WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=580170) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 580170)
+;
+
+-- 2021-11-12T12:21:31.437Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_PrintFormatItem pi SET PrintName='Rechnung', Name='Rechnung' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c  WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=580170)
+;
+
+-- 2021-11-12T12:21:31.438Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET Name='Rechnung', Description='', Help=NULL, CommitWarning = NULL WHERE AD_Element_ID = 580170
+;
+
+-- 2021-11-12T12:21:31.440Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_WINDOW SET Name='Rechnung', Description='', Help=NULL WHERE AD_Element_ID = 580170
+;
+
+-- 2021-11-12T12:21:31.441Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu SET   Name = 'Rechnung', Description = '', WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 580170
+;
+
+-- 2021-11-12T12:21:41.198Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Description='', Name='Rechnung', PrintName='Rechnung',Updated=TO_TIMESTAMP('2021-11-12 14:21:41','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=580170 AND AD_Language='nl_NL'
+;
+
+-- 2021-11-12T12:21:41.199Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(580170,'nl_NL')
+;
+
+-- 2021-11-12T12:21:50.582Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Description='', Name='Invoice', PrintName='Invoice',Updated=TO_TIMESTAMP('2021-11-12 14:21:50','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=580170 AND AD_Language='en_US'
+;
+
+-- 2021-11-12T12:21:50.583Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(580170,'en_US')
+;
+
+-- 2021-11-12T12:42:06.048Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Description='Anzahl Debitoren Rechnungen', PrintName='Anzahl Debitoren Rechnungen',Updated=TO_TIMESTAMP('2021-11-12 14:42:06','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=580172 AND AD_Language='de_CH'
+;
+
+-- 2021-11-12T12:42:06.049Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(580172,'de_CH')
+;
+
+-- 2021-11-12T12:42:08.317Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Description='Anzahl Debitoren Rechnungen', PrintName='Anzahl Debitoren Rechnungen',Updated=TO_TIMESTAMP('2021-11-12 14:42:08','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=580172 AND AD_Language='de_DE'
+;
+
+-- 2021-11-12T12:42:08.319Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(580172,'de_DE')
+;
+
+-- 2021-11-12T12:42:08.332Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_ad_element_on_ad_element_trl_update(580172,'de_DE')
+;
+
+-- 2021-11-12T12:42:08.333Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnName='Sales_Invoice_Count', Name='Sales invoice count', Description='Anzahl Debitoren Rechnungen', Help=NULL WHERE AD_Element_ID=580172
+;
+
+-- 2021-11-12T12:42:08.334Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='Sales_Invoice_Count', Name='Sales invoice count', Description='Anzahl Debitoren Rechnungen', Help=NULL, AD_Element_ID=580172 WHERE UPPER(ColumnName)='SALES_INVOICE_COUNT' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2021-11-12T12:42:08.335Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='Sales_Invoice_Count', Name='Sales invoice count', Description='Anzahl Debitoren Rechnungen', Help=NULL WHERE AD_Element_ID=580172 AND IsCentrallyMaintained='Y'
+;
+
+-- 2021-11-12T12:42:08.335Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Sales invoice count', Description='Anzahl Debitoren Rechnungen', Help=NULL WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=580172) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 580172)
+;
+
+-- 2021-11-12T12:42:08.343Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_PrintFormatItem pi SET PrintName='Anzahl Debitoren Rechnungen', Name='Sales invoice count' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c  WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=580172)
+;
+
+-- 2021-11-12T12:42:08.344Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET Name='Sales invoice count', Description='Anzahl Debitoren Rechnungen', Help=NULL, CommitWarning = NULL WHERE AD_Element_ID = 580172
+;
+
+-- 2021-11-12T12:42:08.345Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_WINDOW SET Name='Sales invoice count', Description='Anzahl Debitoren Rechnungen', Help=NULL WHERE AD_Element_ID = 580172
+;
+
+-- 2021-11-12T12:42:08.346Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu SET   Name = 'Sales invoice count', Description = 'Anzahl Debitoren Rechnungen', WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 580172
+;
+
+-- 2021-11-12T12:42:33.261Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Description='Anzahl zugeordneter debitoren Rechnungen', Name='Anzahl zugeordneter debitoren Rechnungen', PrintName='Anzahl zugeordneter debitoren Rechnungen',Updated=TO_TIMESTAMP('2021-11-12 14:42:33','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=580172 AND AD_Language='nl_NL'
+;
+
+-- 2021-11-12T12:42:33.262Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(580172,'nl_NL')
+;
+
+-- 2021-11-12T12:42:34.039Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Name='Anzahl zugeordneter debitoren Rechnungen',Updated=TO_TIMESTAMP('2021-11-12 14:42:34','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=580172 AND AD_Language='de_DE'
+;
+
+-- 2021-11-12T12:42:34.040Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(580172,'de_DE')
+;
+
+-- 2021-11-12T12:42:34.052Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_ad_element_on_ad_element_trl_update(580172,'de_DE')
+;
+
+-- 2021-11-12T12:42:34.053Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnName='Sales_Invoice_Count', Name='Anzahl zugeordneter debitoren Rechnungen', Description='Anzahl Debitoren Rechnungen', Help=NULL WHERE AD_Element_ID=580172
+;
+
+-- 2021-11-12T12:42:34.054Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='Sales_Invoice_Count', Name='Anzahl zugeordneter debitoren Rechnungen', Description='Anzahl Debitoren Rechnungen', Help=NULL, AD_Element_ID=580172 WHERE UPPER(ColumnName)='SALES_INVOICE_COUNT' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2021-11-12T12:42:34.055Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='Sales_Invoice_Count', Name='Anzahl zugeordneter debitoren Rechnungen', Description='Anzahl Debitoren Rechnungen', Help=NULL WHERE AD_Element_ID=580172 AND IsCentrallyMaintained='Y'
+;
+
+-- 2021-11-12T12:42:34.056Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Anzahl zugeordneter debitoren Rechnungen', Description='Anzahl Debitoren Rechnungen', Help=NULL WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=580172) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 580172)
+;
+
+-- 2021-11-12T12:42:34.063Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_PrintFormatItem pi SET PrintName='Anzahl Debitoren Rechnungen', Name='Anzahl zugeordneter debitoren Rechnungen' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c  WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=580172)
+;
+
+-- 2021-11-12T12:42:34.064Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET Name='Anzahl zugeordneter debitoren Rechnungen', Description='Anzahl Debitoren Rechnungen', Help=NULL, CommitWarning = NULL WHERE AD_Element_ID = 580172
+;
+
+-- 2021-11-12T12:42:34.065Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_WINDOW SET Name='Anzahl zugeordneter debitoren Rechnungen', Description='Anzahl Debitoren Rechnungen', Help=NULL WHERE AD_Element_ID = 580172
+;
+
+-- 2021-11-12T12:42:34.066Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu SET   Name = 'Anzahl zugeordneter debitoren Rechnungen', Description = 'Anzahl Debitoren Rechnungen', WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 580172
+;
+
+-- 2021-11-12T12:43:17.666Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Description='Anzahl zugeordneter debitoren Rechnungen', Name='Anzahl Debitoren Rechnungen ',Updated=TO_TIMESTAMP('2021-11-12 14:43:17','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=580172 AND AD_Language='de_CH'
+;
+
+-- 2021-11-12T12:43:17.667Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(580172,'de_CH')
+;
+
+-- 2021-11-12T12:43:20.925Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Name='Anzahl Debitoren Rechnungen',Updated=TO_TIMESTAMP('2021-11-12 14:43:20','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=580172 AND AD_Language='de_DE'
+;
+
+-- 2021-11-12T12:43:20.926Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(580172,'de_DE')
+;
+
+-- 2021-11-12T12:43:20.931Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_ad_element_on_ad_element_trl_update(580172,'de_DE')
+;
+
+-- 2021-11-12T12:43:20.932Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnName='Sales_Invoice_Count', Name='Anzahl Debitoren Rechnungen', Description='Anzahl Debitoren Rechnungen', Help=NULL WHERE AD_Element_ID=580172
+;
+
+-- 2021-11-12T12:43:20.932Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='Sales_Invoice_Count', Name='Anzahl Debitoren Rechnungen', Description='Anzahl Debitoren Rechnungen', Help=NULL, AD_Element_ID=580172 WHERE UPPER(ColumnName)='SALES_INVOICE_COUNT' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2021-11-12T12:43:20.933Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='Sales_Invoice_Count', Name='Anzahl Debitoren Rechnungen', Description='Anzahl Debitoren Rechnungen', Help=NULL WHERE AD_Element_ID=580172 AND IsCentrallyMaintained='Y'
+;
+
+-- 2021-11-12T12:43:20.934Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Anzahl Debitoren Rechnungen', Description='Anzahl Debitoren Rechnungen', Help=NULL WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=580172) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 580172)
+;
+
+-- 2021-11-12T12:43:20.941Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_PrintFormatItem pi SET PrintName='Anzahl Debitoren Rechnungen', Name='Anzahl Debitoren Rechnungen' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c  WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=580172)
+;
+
+-- 2021-11-12T12:43:20.942Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET Name='Anzahl Debitoren Rechnungen', Description='Anzahl Debitoren Rechnungen', Help=NULL, CommitWarning = NULL WHERE AD_Element_ID = 580172
+;
+
+-- 2021-11-12T12:43:20.943Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_WINDOW SET Name='Anzahl Debitoren Rechnungen', Description='Anzahl Debitoren Rechnungen', Help=NULL WHERE AD_Element_ID = 580172
+;
+
+-- 2021-11-12T12:43:20.944Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu SET   Name = 'Anzahl Debitoren Rechnungen', Description = 'Anzahl Debitoren Rechnungen', WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 580172
+;
+
+-- 2021-11-12T12:43:25.219Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Name='Anzahl Debitoren Rechnungen',Updated=TO_TIMESTAMP('2021-11-12 14:43:25','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=580172 AND AD_Language='de_CH'
+;
+
+-- 2021-11-12T12:43:25.220Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(580172,'de_CH')
+;
+
+-- 2021-11-12T12:43:40.864Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Name='Anzahl Debitoren Rechnungen ', PrintName='Anzahl Debitoren Rechnungen ',Updated=TO_TIMESTAMP('2021-11-12 14:43:40','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=580172 AND AD_Language='nl_NL'
+;
+
+-- 2021-11-12T12:43:40.865Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(580172,'nl_NL')
+;
+
+-- 2021-11-12T12:43:50.542Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Description='Anzahl zugeordneter debitoren Rechnungen',Updated=TO_TIMESTAMP('2021-11-12 14:43:50','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=580172 AND AD_Language='de_DE'
+;
+
+-- 2021-11-12T12:43:50.543Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(580172,'de_DE')
+;
+
+-- 2021-11-12T12:43:50.554Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_ad_element_on_ad_element_trl_update(580172,'de_DE')
+;
+
+-- 2021-11-12T12:43:50.555Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnName='Sales_Invoice_Count', Name='Anzahl Debitoren Rechnungen', Description='Anzahl zugeordneter debitoren Rechnungen', Help=NULL WHERE AD_Element_ID=580172
+;
+
+-- 2021-11-12T12:43:50.556Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='Sales_Invoice_Count', Name='Anzahl Debitoren Rechnungen', Description='Anzahl zugeordneter debitoren Rechnungen', Help=NULL, AD_Element_ID=580172 WHERE UPPER(ColumnName)='SALES_INVOICE_COUNT' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2021-11-12T12:43:50.556Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='Sales_Invoice_Count', Name='Anzahl Debitoren Rechnungen', Description='Anzahl zugeordneter debitoren Rechnungen', Help=NULL WHERE AD_Element_ID=580172 AND IsCentrallyMaintained='Y'
+;
+
+-- 2021-11-12T12:43:50.557Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Anzahl Debitoren Rechnungen', Description='Anzahl zugeordneter debitoren Rechnungen', Help=NULL WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=580172) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 580172)
+;
+
+-- 2021-11-12T12:43:50.564Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET Name='Anzahl Debitoren Rechnungen', Description='Anzahl zugeordneter debitoren Rechnungen', Help=NULL, CommitWarning = NULL WHERE AD_Element_ID = 580172
+;
+
+-- 2021-11-12T12:43:50.565Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_WINDOW SET Name='Anzahl Debitoren Rechnungen', Description='Anzahl zugeordneter debitoren Rechnungen', Help=NULL WHERE AD_Element_ID = 580172
+;
+
+-- 2021-11-12T12:43:50.566Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu SET   Name = 'Anzahl Debitoren Rechnungen', Description = 'Anzahl zugeordneter debitoren Rechnungen', WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 580172
+;
+
+-- 2021-11-12T12:44:11.543Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Description='Number of associated debtor invoices', Name='Debtor invoice count', PrintName='Debtor invoice count',Updated=TO_TIMESTAMP('2021-11-12 14:44:11','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=580172 AND AD_Language='en_US'
+;
+
+-- 2021-11-12T12:44:11.544Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(580172,'en_US')
+;
+
+-- 2021-11-12T12:46:19.982Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET Description='', Name='Assign debtor invoice',Updated=TO_TIMESTAMP('2021-11-12 14:46:19','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_ID=584937
+;
+
+-- 2021-11-12T12:46:29.135Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process SET Description='', Help=NULL, Name='Debitoren Rechnung zuordnen',Updated=TO_TIMESTAMP('2021-11-12 14:46:29','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=584937
+;
+
+-- 2021-11-12T12:46:29.099Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET Description='', Name='Debitoren Rechnung zuordnen',Updated=TO_TIMESTAMP('2021-11-12 14:46:29','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Process_ID=584937
+;
+
+-- 2021-11-12T12:46:32.849Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET Description='', Name='Debitoren Rechnung zuordnen',Updated=TO_TIMESTAMP('2021-11-12 14:46:32','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=584937
+;
+
+-- 2021-11-12T12:47:48.559Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET Description='', Name='Debitoren Rechnung Zuordnen aufheben',Updated=TO_TIMESTAMP('2021-11-12 14:47:48','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=584938
+;
+
+-- 2021-11-12T12:47:52.914Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process SET Description='', Help=NULL, Name='Debitoren Rechnung Zuordnen aufheben',Updated=TO_TIMESTAMP('2021-11-12 14:47:52','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=584938
+;
+
+-- 2021-11-12T12:47:52.911Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET Description='', Name='Debitoren Rechnung Zuordnen aufheben',Updated=TO_TIMESTAMP('2021-11-12 14:47:52','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Process_ID=584938
+;
+
+-- 2021-11-12T12:48:11.134Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET Description='',Updated=TO_TIMESTAMP('2021-11-12 14:48:11','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_ID=584938
+;
+
+-- 2021-11-12T12:48:13.555Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET Description='',Updated=TO_TIMESTAMP('2021-11-12 14:48:13','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='nl_NL' AND AD_Process_ID=584938
+;
