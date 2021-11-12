@@ -250,6 +250,8 @@ UPDATE AD_Ref_Table SET AD_Window_ID=183,Updated=TO_TIMESTAMP('2021-11-11 12:31:
 UPDATE AD_Process_Para SET DefaultValue='@SQL=SELECT c_invoice_from_id FROM c_invoice_relation WHERE c_invoice_to_id=@C_Invoice_ID/-1@ AND c_invoice_relation_type=''POtoSO''',Updated=TO_TIMESTAMP('2021-11-11 13:39:52','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=542137
 ;
 
+
+--TRLs
 -- 2021-11-12T12:21:21.927Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_Element_Trl SET Description='', Name='Rechnung', PrintName='Rechnung',Updated=TO_TIMESTAMP('2021-11-12 14:21:21','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=580170 AND AD_Language='de_CH'
