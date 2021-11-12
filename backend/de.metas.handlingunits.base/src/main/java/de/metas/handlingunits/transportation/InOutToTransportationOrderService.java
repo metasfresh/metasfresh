@@ -79,7 +79,7 @@ public class InOutToTransportationOrderService
 		final ShipperTransportationId shipperTransportationId = ShipperTransportationId.ofRepoId(Objects.requireNonNull(transportationOrder).getM_ShipperTransportation_ID());
 		for (final I_M_InOut inOut : selectedInOuts)
 		{
-			final List<I_M_HU> husToTest = retrieveAllNonAnonymousHUs(inOut);
+			final List<I_M_HU> husToTest = retrieveShipmentHUs(inOut, transportationOrder.isAssignAnonymouslyPickedHUs());
 			if (husToTest.isEmpty())
 			{
 				if (inOut.getM_ShipperTransportation_ID() != 0)
@@ -97,7 +97,7 @@ public class InOutToTransportationOrderService
 			}
 			else
 			{
-				final ImmutableList<I_M_HU> husFiltered = selectOnlyHUsWithoutShipperTransportation(inOut);
+				final ImmutableList<I_M_HU> husFiltered = selectOnlyHUsWithoutShipperTransportation(husToTest);
 				final List<I_M_Package> createdPackages = huShipperTransportationBL.addHUsToShipperTransportation(shipperTransportationId, husFiltered);
 
 				final boolean anyAdded = !createdPackages.isEmpty();
@@ -117,7 +117,7 @@ public class InOutToTransportationOrderService
 	}
 
 	// this was made in extreme haste.
-	private static ImmutableList<I_M_HU> retrieveAllNonAnonymousHUs(final org.compiere.model.I_M_InOut inOut)
+	private static ImmutableList<I_M_HU> retrieveShipmentHUs(final org.compiere.model.I_M_InOut inOut, final boolean assignAnonymouslyPickedHUs)
 	{
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
@@ -126,8 +126,7 @@ public class InOutToTransportationOrderService
 		final ImmutableList.Builder<I_M_HU> result = ImmutableList.builder();
 		for (final I_M_HU hu : allHUs)
 		{
-
-			if (!handlingUnitsBL.isAnonymousHuPickedOnTheFly(hu))
+			if (assignAnonymouslyPickedHUs || !handlingUnitsBL.isAnonymousHuPickedOnTheFly(hu))
 			{
 				result.add(hu);
 			}
@@ -149,9 +148,8 @@ public class InOutToTransportationOrderService
 	}
 
 	@NonNull
-	private static ImmutableList<I_M_HU> selectOnlyHUsWithoutShipperTransportation(final I_M_InOut inOut)
+	private static ImmutableList<I_M_HU> selectOnlyHUsWithoutShipperTransportation(@NonNull final List<I_M_HU> huList)
 	{
-		final List<I_M_HU> huList = retrieveAllNonAnonymousHUs(inOut);
 		final ImmutableList<Integer> allHuIds = huList.stream().map(I_M_HU::getM_HU_ID).collect(GuavaCollectors.toImmutableList());
 
 		final ImmutableList<Integer> alreadyInHUs = findAllHUsWithAShipperTransportation(allHuIds);

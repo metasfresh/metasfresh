@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.salescandidate.base
+ * de-metas-salesorder
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,32 +20,33 @@
  * #L%
  */
 
-package de.metas.ordercandidate.api.async;
+package de.metas.salesorder.async;
 
-import de.metas.async.AsyncBatchId;
 import de.metas.async.processor.IWorkPackageQueueFactory;
+import de.metas.order.OrderId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.compiere.model.I_C_Order;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Nullable;
-
-import static de.metas.ordercandidate.api.async.C_OLCandToOrderWorkpackageProcessor.OLCandProcessor_ID;
 import static org.compiere.util.Env.getCtx;
 
 @Service
-public class C_OLCandToOrderEnqueuer
+public class CompleteShipAndInvoiceEnqueuer
 {
+	public static final String WP_PARAM_C_Order_ID = I_C_Order.COLUMNNAME_C_Order_ID;
+
 	private final IWorkPackageQueueFactory workPackageQueueFactory = Services.get(IWorkPackageQueueFactory.class);
 
-	public void enqueue(@NonNull final Integer olCandProcessorId, @Nullable final AsyncBatchId asyncBatchId)
+	public void enqueue(@NonNull final OrderId orderId, @Nullable final String trxName)
 	{
-		workPackageQueueFactory.getQueueForEnqueuing(getCtx(), C_OLCandToOrderWorkpackageProcessor.class)
+		workPackageQueueFactory.getQueueForEnqueuing(getCtx(), CompleteShipAndInvoiceWorkpackageProcessor.class)
 				.newBlock()
 				.setContext(getCtx())
 				.newWorkpackage()
-				.parameter(OLCandProcessor_ID, olCandProcessorId)
-				.setC_Async_Batch_ID(asyncBatchId)
+				.bindToTrxName(trxName)
+				.parameter(WP_PARAM_C_Order_ID, orderId)
 				.build();
 	}
 }

@@ -320,6 +320,7 @@ class WorkpackageProcessorTask implements Runnable
 	{
 		// If the current workpackage's processor creates a follow-up-workpackage, the asyncBatch and priority will be forwarded.
 		contextFactory.setThreadInheritedAsyncBatch(AsyncBatchId.ofRepoIdOrNull(workPackage.getC_Async_Batch_ID()));
+		contextFactory.setThreadInheritedWorkpackageAsyncBatch(AsyncBatchId.ofRepoIdOrNull(workPackage.getC_Async_Batch_ID()));
 
 		final String priority = workPackage.getPriority();
 		contextFactory.setThreadInheritedPriority(priority);
@@ -425,6 +426,7 @@ class WorkpackageProcessorTask implements Runnable
 		// get rid of inherited AsyncBatchId and priority
 		// actually it's not necessary, but we are doing it for safety reasons
 		contextFactory.setThreadInheritedAsyncBatch(null);
+		contextFactory.setThreadInheritedWorkpackageAsyncBatch(null);
 		contextFactory.setThreadInheritedPriority(null);
 
 		try

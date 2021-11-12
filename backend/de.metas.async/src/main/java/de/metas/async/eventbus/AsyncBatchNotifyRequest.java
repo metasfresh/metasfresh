@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.async.asyncbatchmilestone.eventbus;
+package de.metas.async.eventbus;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -31,16 +31,12 @@ import lombok.Value;
 import org.adempiere.service.ClientId;
 
 @Value
-@JsonDeserialize(builder = AsyncMilestoneNotifyRequest.AsyncMilestoneNotifyRequestBuilder.class)
-public class AsyncMilestoneNotifyRequest
+@JsonDeserialize(builder = AsyncBatchNotifyRequest.AsyncBatchNotifyRequestBuilder.class)
+public class AsyncBatchNotifyRequest
 {
 	@JsonProperty("clientId")
 	@NonNull
 	ClientId clientId;
-
-	@JsonProperty("milestoneId")
-	@NonNull
-	Integer milestoneId;
 
 	@JsonProperty("asyncBatchId")
 	@NonNull
@@ -52,14 +48,12 @@ public class AsyncMilestoneNotifyRequest
 
 	@JsonCreator
 	@Builder
-	public AsyncMilestoneNotifyRequest(
+	public AsyncBatchNotifyRequest(
 			@JsonProperty("clientId") @NonNull final ClientId clientId,
-			@JsonProperty("milestoneId") @NonNull final Integer milestoneId,
 			@JsonProperty("asyncBatchId") @NonNull final Integer asyncBatchId,
 			@JsonProperty("success") @NonNull final Boolean success)
 	{
 		this.clientId = clientId;
-		this.milestoneId = milestoneId;
 		this.asyncBatchId = asyncBatchId;
 		this.success = success;
 	}

@@ -35,7 +35,6 @@ import de.metas.async.api.IAsyncBatchDAO;
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.model.I_C_Async_Batch;
-import de.metas.async.model.I_C_Async_Batch_Milestone;
 import de.metas.async.model.I_C_Async_Batch_Type;
 import de.metas.async.model.I_C_Queue_Block;
 import de.metas.async.model.I_C_Queue_WorkPackage;
@@ -49,7 +48,6 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -71,7 +69,6 @@ public class AsyncBatchBL implements IAsyncBatchBL
 	private final IAsyncBatchDAO asyncBatchDAO = Services.get(IAsyncBatchDAO.class);
 	private final IWorkPackageQueueFactory workPackageQueueFactory = Services.get(IWorkPackageQueueFactory.class);
 	private final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
-	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	private final ReentrantLock lock = new ReentrantLock();
 
@@ -173,7 +170,7 @@ public class AsyncBatchBL implements IAsyncBatchBL
 
 			asyncBatch.setProcessed(checkProcessed(asyncBatch));
 			asyncBatch.setIsProcessing(checkProcessing(asyncBatch));
-			
+
 			save(asyncBatch);
 		}
 		finally
@@ -193,9 +190,9 @@ public class AsyncBatchBL implements IAsyncBatchBL
 		final Properties ctx = Env.getCtx();
 		final IWorkPackageQueue queue = workPackageQueueFactory.getQueueForEnqueuing(ctx, CheckProcessedAsynBatchWorkpackageProcessor.class);
 		queue.setAsyncBatchIdForNewWorkpackages(asyncBatchId);
-		
+
 		final I_C_Queue_Block queueBlock = queue.enqueueBlock(ctx);
-		
+
 		final IWorkpackagePrioStrategy prio = NullWorkpackagePrio.INSTANCE; // don't specify a particular prio. this is OK because we assume that there is a dedicated queue/thread for CheckProcessedAsynBatchWorkpackageProcessor
 
 		final I_C_Queue_WorkPackage queueWorkpackage = queue.newBlock()
@@ -223,11 +220,6 @@ public class AsyncBatchBL implements IAsyncBatchBL
 			return true;
 		}
 
-		if (!isAllMilestonesAreProcessed(asyncBatchId))
-		{
-			return false;
-		}
-
 		final boolean processed = checkProcessed(asyncBatchRecord);
 		if (!processed)
 		{
@@ -240,14 +232,8 @@ public class AsyncBatchBL implements IAsyncBatchBL
 		return true;
 	}
 
-	private boolean isAllMilestonesAreProcessed(@NonNull final AsyncBatchId asyncBatchId)
-	{
-		final List<I_C_Async_Batch_Milestone> milestones = asyncBatchDAO.retrieveMilestonesForAsyncBatchId(asyncBatchId);
-		return milestones.stream().allMatch(I_C_Async_Batch_Milestone::isProcessed);
-	}
-
 	@VisibleForTesting
-	/* package */boolean checkProcessed(@NonNull final I_C_Async_Batch asyncBatch)
+		/* package */boolean checkProcessed(@NonNull final I_C_Async_Batch asyncBatch)
 	{
 		// if (asyncBatch.isProcessed())
 		// {
@@ -349,7 +335,7 @@ public class AsyncBatchBL implements IAsyncBatchBL
 		final int countEnqueued = asyncBatch.getCountEnqueued();
 		return countEnqueued > 0;
 	}
-	
+
 	private int getProcessedTimeOffsetMillis()
 	{
 		return Services.get(ISysConfigBL.class).getIntValue("de.metas.async.api.impl.AsyncBatchBL_ProcessedOffsetMillis", 1);
@@ -455,31 +441,14 @@ public class AsyncBatchBL implements IAsyncBatchBL
 		return asyncBatchDAO.retrieveAsyncBatchRecord(asyncBatchId);
 	}
 
-	public void updateProcessedFromMilestones(@NonNull final AsyncBatchId asyncBatchId)
-	{
-		final boolean allMilestonesAreProcessed = asyncBatchDAO.retrieveMilestonesForAsyncBatchId(asyncBatchId)
-				.stream()
-				.allMatch(I_C_Async_Batch_Milestone::isProcessed);
-
-		if (allMilestonesAreProcessed)
-		{
-			final I_C_Async_Batch asyncBatch = asyncBatchDAO.retrieveAsyncBatchRecord(asyncBatchId);
-
-			asyncBatch.setProcessed(true);
-			asyncBatch.setIsProcessing(false);
-
-			queueDAO.save(asyncBatch);
-		}
-	}
-
 	@NonNull
 	public AsyncBatchId newAsyncBatch(@NonNull final String asyncBatchType)
 	{
-		final I_C_Async_Batch asyncBatch = trxManager.callInNewTrx(() -> newAsyncBatch()
+		final I_C_Async_Batch asyncBatch = newAsyncBatch()
 				.setContext(getCtx())
 				.setC_Async_Batch_Type(asyncBatchType)
 				.setName(asyncBatchType)
-				.build());
+				.build();
 
 		return AsyncBatchId.ofRepoId(asyncBatch.getC_Async_Batch_ID());
 	}
