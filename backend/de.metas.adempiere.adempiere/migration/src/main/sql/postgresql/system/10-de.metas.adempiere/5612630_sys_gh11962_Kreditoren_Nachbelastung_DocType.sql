@@ -1,6 +1,6 @@
 -- 2021-11-09T12:18:16.004Z
 -- URL zum Konzept
-INSERT INTO C_DocType (AD_Client_ID,AD_Org_ID,C_DocType_ID,Created,CreatedBy,DocBaseType,DocumentCopies,EntityType,GL_Category_ID,HasCharges,HasProforma,IsActive,IsCopyDescriptionToDocument,IsCreateCounter,IsDefault,IsDefaultCounterDoc,IsDocNoControlled,IsExcludeFromCommision,IsIndexed,IsInTransit,IsOverwriteDateOnComplete,IsOverwriteSeqOnComplete,IsPickQAConfirm,IsShipConfirm,IsSOTrx,IsSplitWhenDifference,Name,PrintName,Updated,UpdatedBy) VALUES (1000000,1000000,541024,TO_TIMESTAMP('2021-11-09 13:18:15','YYYY-MM-DD HH24:MI:SS'),100,'API',1,'D',1000006,'N','N','Y','Y','Y','N','N','Y','N','N','N','N','N','N','N','N','N','Kreditoren Nachbelastung','Kreditoren Nachbelastung',TO_TIMESTAMP('2021-11-09 13:18:15','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO C_DocType (AD_Client_ID,AD_Org_ID,C_DocType_ID,Created,CreatedBy,DocBaseType,DocumentCopies,EntityType,GL_Category_ID,HasCharges,HasProforma,IsActive,IsCopyDescriptionToDocument,IsCreateCounter,IsDefault,IsDefaultCounterDoc,IsDocNoControlled,IsIndexed,IsInTransit,IsOverwriteDateOnComplete,IsOverwriteSeqOnComplete,IsPickQAConfirm,IsShipConfirm,IsSOTrx,IsSplitWhenDifference,Name,PrintName,Updated,UpdatedBy) VALUES (1000000,1000000,541024,TO_TIMESTAMP('2021-11-09 13:18:15','YYYY-MM-DD HH24:MI:SS'),100,'API',1,'D',1000006,'N','N','Y','Y','Y','N','N','Y','N','N','N','N','N','N','N','N','Kreditoren Nachbelastung','Kreditoren Nachbelastung',TO_TIMESTAMP('2021-11-09 13:18:15','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2021-11-09T12:18:16.148Z
