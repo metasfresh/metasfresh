@@ -32,7 +32,7 @@ class PickLineButton extends PureComponent {
     return (
       <>
         <ButtonWithIndicator caption={caption} completeStatus={completeStatus}>
-          <ButtonQuantityProp qtyPicked={qtyPicked} qtyTarget={qtyToPick} uom={uom} appId={appId} />
+          <ButtonQuantityProp qtyPicked={qtyPicked} qtyCurrent={qtyToPick} uom={uom} appId={appId} />
         </ButtonWithIndicator>
       </>
     );

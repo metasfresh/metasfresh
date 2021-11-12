@@ -32,7 +32,7 @@ class DistributionLineButton extends PureComponent {
     return (
       <>
         <ButtonWithIndicator caption={caption} completeStatus={completeStatus}>
-          <ButtonQuantityProp qtyPicked={qtyPicked} qtyTarget={qtyToMove} uom={uom} appId={appId} />
+          <ButtonQuantityProp qtyPicked={qtyPicked} qtyCurrent={qtyToMove} uom={uom} appId={appId} />
         </ButtonWithIndicator>
       </>
     );
