@@ -23,8 +23,12 @@ const reduceOnUpdateQtyPicked = (draftState, payload) => {
 
   const draftWFProcess = draftState[wfProcessId];
   const draftStep = draftWFProcess.activities[activityId].dataStored.lines[lineId].steps[stepId];
-  draftStep.actualHUPicked = actualHUPicked;
-  draftStep.locatorBarcode = locatorBarcode;
+  if (actualHUPicked !== undefined) {
+    draftStep.actualHUPicked = actualHUPicked;
+  }
+  if (locatorBarcode !== undefined) {
+    draftStep.locatorBarcode = locatorBarcode;
+  }
   draftStep.qtyPicked = qtyPicked;
   draftStep.qtyRejectedReasonCode = qtyRejectedReasonCode;
 
