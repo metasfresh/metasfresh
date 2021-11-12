@@ -88,7 +88,7 @@ PickAltStepButton.propTypes = {
   lineId: PropTypes.string.isRequired,
   stepId: PropTypes.string.isRequired,
   altStepId: PropTypes.string.isRequired,
-  productName: PropTypes.string.isRequired,
+  productName: PropTypes.string,
   locatorName: PropTypes.string.isRequired,
   huBarcode: PropTypes.string,
   uom: PropTypes.string,

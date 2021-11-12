@@ -40,17 +40,16 @@ const generateAlternativeSteps = ({ draftState, wfProcessId, activityId, lineId,
   const draftDataStored = draftState[wfProcessId].activities[activityId].dataStored;
   const draftDataStoredOrig = original(draftDataStored);
   const draftStep = draftState[wfProcessId].activities[activityId].dataStored.lines[lineId].steps[stepId];
+  const { pickFromAlternatives } = draftDataStoredOrig;
 
-  for (const [idx, altItem] of draftDataStoredOrig.pickFromAlternatives) {
-    console.log('AltITEM:', altItem);
-    console.log('Index:', idx);
-    if (altItem.qtyAvailable > qtyRejected) {
-      draftDataStored.pickFromAlternatives[idx].qtyAvailable = altItem.qtyAvailable - qtyRejected;
-      draftStep.altSteps.genSteps[altItem.id] = {
-        id: altItem.id,
-        locatorName: altItem.locatorName,
-        huBarcode: altItem.huBarcode,
-        uom: altItem.uom,
+  for (let idx = 0; idx < pickFromAlternatives.length; idx++) {
+    if (pickFromAlternatives[idx].qtyAvailable > qtyRejected) {
+      draftDataStored.pickFromAlternatives[idx].qtyAvailable = pickFromAlternatives[idx].qtyAvailable - qtyRejected;
+      draftStep.altSteps.genSteps[pickFromAlternatives[idx].id] = {
+        id: pickFromAlternatives[idx].id,
+        locatorName: pickFromAlternatives[idx].locatorName,
+        huBarcode: pickFromAlternatives[idx].huBarcode,
+        uom: pickFromAlternatives[idx].uom,
         qtyAvailable: qtyRejected,
         qtyPicked: 0,
       };
