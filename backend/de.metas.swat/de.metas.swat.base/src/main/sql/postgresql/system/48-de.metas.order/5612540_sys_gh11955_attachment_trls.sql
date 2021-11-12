@@ -81,7 +81,7 @@ INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description
 
 -- 2021-11-09T08:31:32.833Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Element_Trl SET Name='Angehängte', PrintName='Angehängte',Updated=TO_TIMESTAMP('2021-11-09 10:31:32','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=580202 AND AD_Language='de_CH'
+UPDATE AD_Element_Trl SET Name='Angehängt', PrintName='Angehängte',Updated=TO_TIMESTAMP('2021-11-09 10:31:32','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=580202 AND AD_Language='de_CH'
 ;
 
 -- 2021-11-09T08:31:32.834Z
@@ -91,7 +91,7 @@ UPDATE AD_Element_Trl SET Name='Angehängte', PrintName='Angehängte',Updated=TO
 
 -- 2021-11-09T08:31:39.192Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Element_Trl SET Name='Angehängte', PrintName='Angehängte',Updated=TO_TIMESTAMP('2021-11-09 10:31:39','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=580202 AND AD_Language='de_DE'
+UPDATE AD_Element_Trl SET Name='Angehängte', PrintName='Angehängt',Updated=TO_TIMESTAMP('2021-11-09 10:31:39','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=580202 AND AD_Language='de_DE'
 ;
 
 -- 2021-11-09T08:31:39.193Z
@@ -106,47 +106,47 @@ UPDATE AD_Element_Trl SET Name='Angehängte', PrintName='Angehängte',Updated=TO
 
 -- 2021-11-09T08:31:39.219Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Column SET ColumnName='IsDirectlyAttachToPurchaseOrder', Name='Angehängte', Description=NULL, Help=NULL WHERE AD_Element_ID=580202
+UPDATE AD_Column SET ColumnName='IsDirectlyAttachToPurchaseOrder', Name='Angehängt', Description=NULL, Help=NULL WHERE AD_Element_ID=580202
 ;
 
 -- 2021-11-09T08:31:39.220Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Process_Para SET ColumnName='IsDirectlyAttachToPurchaseOrder', Name='Angehängte', Description=NULL, Help=NULL, AD_Element_ID=580202 WHERE UPPER(ColumnName)='ISDIRECTLYATTACHTOPURCHASEORDER' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+UPDATE AD_Process_Para SET ColumnName='IsDirectlyAttachToPurchaseOrder', Name='Angehängt', Description=NULL, Help=NULL, AD_Element_ID=580202 WHERE UPPER(ColumnName)='ISDIRECTLYATTACHTOPURCHASEORDER' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
 ;
 
 -- 2021-11-09T08:31:39.221Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Process_Para SET ColumnName='IsDirectlyAttachToPurchaseOrder', Name='Angehängte', Description=NULL, Help=NULL WHERE AD_Element_ID=580202 AND IsCentrallyMaintained='Y'
+UPDATE AD_Process_Para SET ColumnName='IsDirectlyAttachToPurchaseOrder', Name='Angehängt', Description=NULL, Help=NULL WHERE AD_Element_ID=580202 AND IsCentrallyMaintained='Y'
 ;
 
 -- 2021-11-09T08:31:39.221Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Field SET Name='Angehängte', Description=NULL, Help=NULL WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=580202) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 580202)
+UPDATE AD_Field SET Name='Angehängt', Description=NULL, Help=NULL WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=580202) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 580202)
 ;
 
 -- 2021-11-09T08:31:39.237Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_PrintFormatItem pi SET PrintName='Angehängte', Name='Angehängte' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c  WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=580202)
+UPDATE AD_PrintFormatItem pi SET PrintName='Angehängte', Name='Angehängt' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c  WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=580202)
 ;
 
 -- 2021-11-09T08:31:39.239Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Tab SET Name='Angehängte', Description=NULL, Help=NULL, CommitWarning = NULL WHERE AD_Element_ID = 580202
+UPDATE AD_Tab SET Name='Angehängt', Description=NULL, Help=NULL, CommitWarning = NULL WHERE AD_Element_ID = 580202
 ;
 
 -- 2021-11-09T08:31:39.240Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_WINDOW SET Name='Angehängte', Description=NULL, Help=NULL WHERE AD_Element_ID = 580202
+UPDATE AD_WINDOW SET Name='Angehängt', Description=NULL, Help=NULL WHERE AD_Element_ID = 580202
 ;
 
 -- 2021-11-09T08:31:39.240Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Menu SET   Name = 'Angehängte', Description = NULL, WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 580202
+UPDATE AD_Menu SET   Name = 'Angehängt', Description = NULL, WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 580202
 ;
 
 -- 2021-11-09T08:31:43.919Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Element_Trl SET Name='Angehängte', PrintName='Angehängte',Updated=TO_TIMESTAMP('2021-11-09 10:31:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=580202 AND AD_Language='nl_NL'
+UPDATE AD_Element_Trl SET Name='Angehängte', PrintName='Angehängt',Updated=TO_TIMESTAMP('2021-11-09 10:31:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=580202 AND AD_Language='nl_NL'
 ;
 
 -- 2021-11-09T08:31:43.920Z
@@ -156,12 +156,12 @@ UPDATE AD_Element_Trl SET Name='Angehängte', PrintName='Angehängte',Updated=TO
 
 -- 2021-11-09T08:57:50.752Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Message_Trl SET MsgText='Missing vendor for lines: {0}',Updated=TO_TIMESTAMP('2021-11-09 10:57:50','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Message_ID=545079
+UPDATE AD_Message_Trl SET MsgText='Lieferantenangabe für Zeile {0} fehlt',Updated=TO_TIMESTAMP('2021-11-09 10:57:50','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Message_ID=545079
 ;
 
 -- 2021-11-09T08:57:53.147Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Message_Trl SET MsgText='Missing vendor for lines: {0}',Updated=TO_TIMESTAMP('2021-11-09 10:57:53','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=545079
+UPDATE AD_Message_Trl SET MsgText='Missing vendor for line {0}',Updated=TO_TIMESTAMP('2021-11-09 10:57:53','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=545079
 ;
 
 -- 2021-11-09T08:57:55.645Z
@@ -171,5 +171,5 @@ UPDATE AD_Message_Trl SET MsgText='Missing vendor for lines: {0}',Updated=TO_TIM
 
 -- 2021-11-09T08:57:58.666Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Message_Trl SET MsgText='Missing vendor for lines: {0}',Updated=TO_TIMESTAMP('2021-11-09 10:57:58','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Message_ID=545079
+UPDATE AD_Message_Trl SET MsgText='Lieferantenangabe für Zeile {0} fehlt',Updated=TO_TIMESTAMP('2021-11-09 10:57:58','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Message_ID=545079
 ;
