@@ -58,23 +58,23 @@ public class OrderAttachmentRow implements IViewRow
 {
 	private static final String SYS_CONFIG_PREFIX = "de.metas.ui.web.order.attachmenteditor.OrderAttachmentRow.field";
 
-	public static final String FIELD_IsDirectlyAttachToPurchaseOrder = "IsDirectlyAttachToPurchaseOrder";
-	@Getter
-	@ViewColumn(seqNo = 10, widgetType = DocumentFieldWidgetType.YesNo,
-			widgetSize = WidgetSize.Small,
-			captionKey = FIELD_IsDirectlyAttachToPurchaseOrder,
-			fieldName = FIELD_IsDirectlyAttachToPurchaseOrder,
-			editor = ViewEditorRenderMode.NEVER)
-	private final Boolean isDirectlyAttachToPurchaseOrder;
-
 	public static final String FIELD_AttachmentId = "AttachmentId";
 	@Getter
-	@ViewColumn(seqNo = 15, widgetType = DocumentFieldWidgetType.YesNo,
+	@ViewColumn(seqNo = 10, widgetType = DocumentFieldWidgetType.YesNo,
 			widgetSize = WidgetSize.Small,
 			captionKey = "AD_AttachmentEntry_ID",
 			fieldName = FIELD_AttachmentId,
 			editor = ViewEditorRenderMode.NEVER)
 	private final Integer attachmentEntryId;
+		
+	public static final String FIELD_IsDirectlyAttachToPurchaseOrder = "IsDirectlyAttachToPurchaseOrder";
+	@Getter
+	@ViewColumn(seqNo = 15, widgetType = DocumentFieldWidgetType.YesNo,
+			widgetSize = WidgetSize.Small,
+			captionKey = FIELD_IsDirectlyAttachToPurchaseOrder,
+			fieldName = FIELD_IsDirectlyAttachToPurchaseOrder,
+			editor = ViewEditorRenderMode.NEVER)
+	private final Boolean isDirectlyAttachToPurchaseOrder;
 
 	public static final String FIELD_IsAttachToPurchaseOrder = "IsAttachToPurchaseOrder";
 	@Getter
