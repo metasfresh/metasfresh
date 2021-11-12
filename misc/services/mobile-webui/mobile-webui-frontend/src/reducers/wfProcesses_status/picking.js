@@ -36,6 +36,42 @@ const reduceOnAlternatePickingQty = (draftState, payload) => {
   return draftState;
 };
 
+const generateAlternativeSteps = ({ draftState, wfProcessId, activityId, lineId, stepId, qtyRejected }) => {
+  const draftDataStored = draftState[wfProcessId].activities[activityId].dataStored;
+  const draftDataStoredOrig = original(draftDataStored);
+  const draftStep = draftState[wfProcessId].activities[activityId].dataStored.lines[lineId].steps[stepId];
+
+  for (const [idx, altItem] of draftDataStoredOrig.pickFromAlternatives) {
+    console.log('AltITEM:', altItem);
+    console.log('Index:', idx);
+    if (altItem.qtyAvailable > qtyRejected) {
+      draftDataStored.pickFromAlternatives[idx].qtyAvailable = altItem.qtyAvailable - qtyRejected;
+      draftStep.altSteps.genSteps[altItem.id] = {
+        id: altItem.id,
+        locatorName: altItem.locatorName,
+        huBarcode: altItem.huBarcode,
+        uom: altItem.uom,
+        qtyAvailable: qtyRejected,
+        qtyPicked: 0,
+      };
+      break;
+    }
+  }
+
+  // console.log('QTY REJECTED NOW => ', qtyRejected);
+  // console.log('STEP:', draftStep);
+
+  // const remainingQty = qtyRejected - 1;
+
+  // console.log('Remaining QTY:', remainingQty);
+
+  // if (remainingQty > 0) {
+  //   generateAlternativeSteps({ draftState, wfProcessId, activityId, lineId, stepId, qtyRejected: remainingQty });
+  // }
+
+  return draftState;
+};
+
 const reduceOnUpdateQtyPicked = (draftState, payload) => {
   const { wfProcessId, activityId, lineId, stepId, scannedHUBarcode, qtyPicked, qtyRejectedReasonCode, qtyRejected } =
     payload;
@@ -47,6 +83,8 @@ const reduceOnUpdateQtyPicked = (draftState, payload) => {
   draftStep.qtyRejectedReasonCode = qtyRejectedReasonCode;
 
   console.log('QtyRejected =====>', qtyRejected);
+
+  draftState = generateAlternativeSteps({ draftState, wfProcessId, activityId, lineId, stepId, qtyRejected });
 
   // update here the remaining qtyToPick (diff remaining to be picked with alternative steps)
 
