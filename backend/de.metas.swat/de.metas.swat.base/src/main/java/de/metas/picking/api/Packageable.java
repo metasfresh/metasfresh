@@ -139,6 +139,8 @@ public class Packageable
 	@Nullable
 	PPOrderId pickFromOrderId;
 
+	int packToHUPIItemProductId;
+
 	@Nullable
 	UserId lockedBy;
 

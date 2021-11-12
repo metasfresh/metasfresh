@@ -108,9 +108,9 @@ FROM (
              -- Picking/Manufacturing
              s.PickFrom_Order_ID,
 
-            --
-            -- Packing
-            coalesce(s.M_HU_PI_Item_Product_Override_ID, s.M_HU_PI_Item_Product_ID) AS PackTo_HU_PI_Item_Product_ID,
+             --
+             -- Packing
+             coalesce(s.M_HU_PI_Item_Product_Override_ID, s.M_HU_PI_Item_Product_ID) AS PackTo_HU_PI_Item_Product_ID,
 
              --
              -- Locking
@@ -158,3 +158,4 @@ SELECT db_alter_view(
 
 DROP VIEW IF EXISTS m_packageable_v$new
 ;
+
