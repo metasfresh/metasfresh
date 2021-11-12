@@ -22,21 +22,26 @@ package de.metas.bpartner.interceptor;
  * #L%
  */
 
-
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.location.LocationId;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.GridTab;
 import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.ModelValidator;
-
-import de.metas.bpartner.service.IBPartnerBL;
-import de.metas.util.Services;
 
 @Validator(I_C_BPartner_Location.class)
 public class C_BPartner_Location
 {
+	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
+
 	@Init
 	public void setupCallouts()
 	{
@@ -71,5 +76,16 @@ public class C_BPartner_Location
 	public void updateAddressString(I_C_BPartner_Location bpLocation)
 	{
 		Services.get(IBPartnerBL.class).setAddress(bpLocation);
+	}
+
+	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = I_C_BPartner_Location.COLUMNNAME_C_Location_ID)
+	public void updateWarehouseLocation(@NonNull final I_C_BPartner_Location bpLocation)
+	{
+		final LocationId newLocationId = LocationId.ofRepoId(bpLocation.getC_Location_ID());
+
+		final I_C_BPartner_Location bpLocationOld = InterfaceWrapperHelper.createOld(bpLocation, I_C_BPartner_Location.class);
+		final LocationId oldLocationId = LocationId.ofRepoIdOrNull(bpLocationOld.getC_Location_ID());
+
+		warehouseBL.updateWarehouseLocation(oldLocationId, newLocationId);
 	}
 }

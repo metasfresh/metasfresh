@@ -1,45 +1,8 @@
 package de.metas.contracts.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
-
-/*
- * #%L
- * de.metas.contracts
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.List;
-
-import de.metas.common.util.time.SystemTime;
-import org.adempiere.ad.dao.ICompositeQueryFilter;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.IQueryOrderBy.Direction;
-import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
-import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
-import org.adempiere.util.proxy.Cached;
-import org.compiere.model.IQuery;
-import org.compiere.model.IQuery.Aggregate;
-
 import de.metas.bpartner.BPartnerId;
+import de.metas.common.util.time.SystemTime;
+import de.metas.contracts.ConditionsId;
 import de.metas.contracts.IContractsDAO;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
@@ -53,6 +16,22 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.order.OrderId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.ICompositeQueryFilter;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryOrderBy.Direction;
+import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
+import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.proxy.Cached;
+import org.compiere.model.IQuery;
+import org.compiere.model.IQuery.Aggregate;
+
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.List;
+
+import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 
 public class ContractsDAO implements IContractsDAO
 {
@@ -212,5 +191,13 @@ public class ContractsDAO implements IContractsDAO
 				.endOrderBy()
 				.create()
 				.first();
+	}
+
+
+	@Override
+	@NonNull
+	public <T extends I_C_Flatrate_Conditions> T getConditionsById(@NonNull final ConditionsId conditionsId, @NonNull final  Class<T> modelClass)
+	{
+		return InterfaceWrapperHelper.load(conditionsId, modelClass);
 	}
 }

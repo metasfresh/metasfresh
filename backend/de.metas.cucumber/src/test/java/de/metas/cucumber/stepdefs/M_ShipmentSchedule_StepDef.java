@@ -22,7 +22,6 @@
 
 package de.metas.cucumber.stepdefs;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.metas.inoutcandidate.ShipmentScheduleId;
@@ -235,7 +234,12 @@ public class M_ShipmentSchedule_StepDef
 		final String shipmentScheduleIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID + ".Identifier");
 		final I_M_ShipmentSchedule shipmentSchedule = shipmentScheduleTable.get(shipmentScheduleIdentifier);
 
+		final I_M_ShipmentSchedule refreshedSchedule = queryBL.createQueryBuilder(I_M_ShipmentSchedule.class)
+				.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID, shipmentSchedule.getM_ShipmentSchedule_ID())
+				.create()
+				.firstOnlyNotNull(I_M_ShipmentSchedule.class);
+
 		assertNotNull(shipmentSchedule);
-		assertEquals(shipmentSchedule.isClosed(), Boolean.TRUE);
+		assertEquals(Boolean.TRUE, refreshedSchedule.isClosed());
 	}
 }

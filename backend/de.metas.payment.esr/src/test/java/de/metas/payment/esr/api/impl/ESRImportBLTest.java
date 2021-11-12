@@ -146,7 +146,7 @@ public class ESRImportBLTest extends ESRTestBase
 		final CurrencyId currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
 		final I_C_BP_BankAccount account = createBankAccount(true,
-															 Env.getAD_Org_ID(getCtx()),
+															 org.getAD_Org_ID(),
 															 Env.getAD_User_ID(getCtx()),
 															 "01-059931-0",
 															 currencyEUR);
@@ -249,8 +249,12 @@ public class ESRImportBLTest extends ESRTestBase
 
 		final CurrencyId currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
+		final I_AD_Org org = newInstance(I_AD_Org.class);
+		org.setValue("105");
+		save(org);
+
 		final I_C_BP_BankAccount account = createBankAccount(true,
-															 Env.getAD_Org_ID(getCtx()),
+															 org.getAD_Org_ID(),
 															 Env.getAD_User_ID(getCtx()),
 															 "01-059931-0",
 															 currencyEUR);
@@ -266,9 +270,7 @@ public class ESRImportBLTest extends ESRTestBase
 		partner.setValue("partner1");
 		save(partner);
 
-		final I_AD_Org org = newInstance(I_AD_Org.class);
-		org.setValue("105");
-		save(org);
+
 
 		esrImport.setAD_Org_ID(org.getAD_Org_ID());
 		save(esrImport);

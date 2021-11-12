@@ -22,27 +22,30 @@
 
 package de.metas.common.util;
 
+import com.google.common.collect.ImmutableList;
 import lombok.NonNull;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class NumberUtils
 {
-	@Nullable
-	public static List<BigDecimal> asBigDecimalListOrNull(@Nullable final String value, @NonNull final String separator)
+	@NonNull
+	public static ImmutableList<BigDecimal> asBigDecimalList(@Nullable final String value, @NonNull final String separator)
 	{
 		if (Check.isBlank(value))
 		{
-			return null;
+			return ImmutableList.of();
 		}
 
 		return Arrays.stream(value.split(separator))
 				.map(NumberUtils::asBigDecimal)
-				.collect(Collectors.toList());
+				.filter(Objects::nonNull)
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	@Nullable

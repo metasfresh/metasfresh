@@ -25,8 +25,9 @@ package de.metas.camel.externalsystems.shopware6.product.processor;
 import de.metas.camel.externalsystems.common.v2.ProductUpsertCamelRequest;
 import de.metas.camel.externalsystems.shopware6.ProcessorHelper;
 import de.metas.camel.externalsystems.shopware6.api.ShopwareClient;
-import de.metas.camel.externalsystems.shopware6.api.model.JsonFilter;
 import de.metas.camel.externalsystems.shopware6.api.model.JsonQuery;
+import de.metas.camel.externalsystems.shopware6.api.model.MultiJsonFilter;
+import de.metas.camel.externalsystems.shopware6.api.model.MultiQueryRequest;
 import de.metas.camel.externalsystems.shopware6.api.model.QueryRequest;
 import de.metas.camel.externalsystems.shopware6.api.model.product.JsonProduct;
 import de.metas.camel.externalsystems.shopware6.api.model.product.JsonProducts;
@@ -59,7 +60,7 @@ public class GetProductsProcessor implements Processor
 
 		final ShopwareClient shopwareClient = context.getShopwareClient();
 
-		final QueryRequest getProductsRequest = buildQueryProductsRequest(context.getNextImportStartingTimestamp());
+		final MultiQueryRequest getProductsRequest = buildQueryProductsRequest(context.getNextImportStartingTimestamp());
 
 		final Optional<JsonProducts> jsonProductsOptional = shopwareClient.getProducts(getProductsRequest);
 
@@ -88,15 +89,14 @@ public class GetProductsProcessor implements Processor
 	}
 
 	@NonNull
-	private QueryRequest buildQueryProductsRequest(@NonNull final Instant updatedAfter)
+	private MultiQueryRequest buildQueryProductsRequest(@NonNull final Instant updatedAfter)
 	{
 		final HashMap<String, String> parameters = new HashMap<>();
 		parameters.put(PARAMETERS_DATE_GTE, updatedAfter.toString());
 
-		return QueryRequest.builder()
-				.filter(JsonFilter.builder()
-								.filterType(JsonFilter.FilterType.MULTI)
-								.operatorType(JsonFilter.OperatorType.OR)
+		return MultiQueryRequest.builder()
+				.filter(MultiJsonFilter.builder()
+								.operatorType(MultiJsonFilter.OperatorType.OR)
 								.jsonQuery(JsonQuery.builder()
 												   .field(FIELD_UPDATED_AT)
 												   .queryType(JsonQuery.QueryType.RANGE)

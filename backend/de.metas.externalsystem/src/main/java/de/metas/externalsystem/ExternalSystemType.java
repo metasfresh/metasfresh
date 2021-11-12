@@ -42,6 +42,7 @@ public enum ExternalSystemType implements ReferenceListAwareEnum
 {
 	Alberta(X_ExternalSystem_Config.TYPE_Alberta, "Alberta", InvokeAlbertaAction.class.getName()),
 	Shopware6(X_ExternalSystem_Config.TYPE_Shopware6, "Shopware6", InvokeShopware6Action.class.getName()),
+	RabbitMQ(X_ExternalSystem_Config.TYPE_RabbitMQRESTAPI, "RabbitMQRESTAPI", null),
 	Other(X_ExternalSystem_Config.TYPE_Other, "Other", InvokeOtherAction.class.getName()),
 	WOO(X_ExternalSystem_Config.TYPE_WooCommerce, "WOO", InvokeWooCommerceAction.class.getName())
 	;
