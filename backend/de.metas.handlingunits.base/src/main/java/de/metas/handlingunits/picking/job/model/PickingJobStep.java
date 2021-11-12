@@ -26,6 +26,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HUBarcode;
+import de.metas.handlingunits.picking.PackToSpec;
 import de.metas.i18n.ITranslatableString;
 import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.order.OrderAndLineId;
@@ -35,6 +36,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.ToString;
 import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 import org.compiere.model.I_C_UOM;
 
 import java.util.Objects;
@@ -59,9 +61,15 @@ public class PickingJobStep
 	//
 	// Pick From
 	@NonNull PickingJobStepPickFromMap pickFroms;
+
+	//
+	// Pick To Specification
+	@NonNull PackToSpec packToSpec;
+
 	@NonNull PickingJobProgress progress;
 
 	@Builder(toBuilder = true)
+	@Jacksonized
 	private PickingJobStep(
 			@NonNull final PickingJobStepId id,
 			@NonNull final OrderAndLineId salesOrderAndLineId,
@@ -73,7 +81,10 @@ public class PickingJobStep
 			@NonNull final Quantity qtyToPick,
 			//
 			// Pick From
-			@NonNull PickingJobStepPickFromMap pickFroms)
+			@NonNull final PickingJobStepPickFromMap pickFroms,
+			//
+			// Pick To Specification
+			@NonNull final PackToSpec packToSpec)
 	{
 		this.id = id;
 		this.salesOrderAndLineId = salesOrderAndLineId;
@@ -82,7 +93,9 @@ public class PickingJobStep
 		this.productName = productName;
 		this.qtyToPick = qtyToPick;
 		this.pickFroms = pickFroms;
-		this.progress = pickFroms.computeProgress(qtyToPick);
+		this.packToSpec = packToSpec;
+
+		this.progress = this.pickFroms.getProgress();
 	}
 
 	public I_C_UOM getUOM() {return qtyToPick.getUOM();}

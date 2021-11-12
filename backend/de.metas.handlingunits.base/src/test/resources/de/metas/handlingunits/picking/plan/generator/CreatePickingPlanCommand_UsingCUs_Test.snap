@@ -1,15 +1,15 @@
-de.metas.handlingunits.picking.plan.generator.CreatePickingPlanCommandTest.scenario_3HUs_1KgAlreadyReserved=[ {
+de.metas.handlingunits.picking.plan.generator.CreatePickingPlanCommand_UsingCUs_Test.scenario_3HUs_1KgAlreadyReserved=[ {
   "alternatives" : {
     "pickFroms" : [ {
       "availableQty" : "960.000 Kg",
-      "huId" : 100237,
+      "huId" : 1000002,
       "key" : {
-        "huId" : 100237,
-        "locatorId" : "100161_100163",
-        "productId" : 100160
+        "huId" : 1000002,
+        "locatorId" : "1000003_1000004",
+        "productId" : 1000006
       },
-      "locatorId" : "100161_100163",
-      "productId" : 100160
+      "locatorId" : "1000003_1000004",
+      "productId" : 1000006
     } ]
   },
   "lines" : [ {
@@ -17,25 +17,29 @@ de.metas.handlingunits.picking.plan.generator.CreatePickingPlanCommandTest.scena
     "pickFromHU" : {
       "alternatives" : {
         "keys" : [ {
-          "huId" : 100237,
-          "locatorId" : "100161_100163",
-          "productId" : 100160
+          "huId" : 1000002,
+          "locatorId" : "1000003_1000004",
+          "productId" : 1000006
         } ]
       },
       "expiringDate" : null,
-      "huCode" : "100272",
-      "huId" : 100272,
+      "huCode" : "1000003",
+      "huId" : 1000003,
       "huReservedForThisLine" : true,
-      "locatorId" : "100161_100163",
+      "locatorId" : "1000003_1000004",
       "lotNumber" : null,
       "repackNumber" : null,
       "serialNo" : null
     },
     "pickFromPickingOrder" : null,
-    "productId" : 100160,
+    "productId" : 1000006,
     "qty" : "1.000 Kg",
     "sourceDocumentInfo" : {
       "existingPickingCandidate" : null,
+      "packToSpec" : {
+        "genericPackingInstructionsId" : 101,
+        "tuPackingInstructionsId" : null
+      },
       "salesOrderLineId" : {
         "orderId" : 300,
         "orderLineId" : 301
@@ -49,25 +53,29 @@ de.metas.handlingunits.picking.plan.generator.CreatePickingPlanCommandTest.scena
     "pickFromHU" : {
       "alternatives" : {
         "keys" : [ {
-          "huId" : 100237,
-          "locatorId" : "100161_100163",
-          "productId" : 100160
+          "huId" : 1000002,
+          "locatorId" : "1000003_1000004",
+          "productId" : 1000006
         } ]
       },
       "expiringDate" : null,
-      "huCode" : "100165",
-      "huId" : 100165,
+      "huCode" : "1000000",
+      "huId" : 1000000,
       "huReservedForThisLine" : false,
-      "locatorId" : "100161_100163",
+      "locatorId" : "1000003_1000004",
       "lotNumber" : null,
       "repackNumber" : null,
       "serialNo" : null
     },
     "pickFromPickingOrder" : null,
-    "productId" : 100160,
+    "productId" : 1000006,
     "qty" : "30.000 Kg",
     "sourceDocumentInfo" : {
       "existingPickingCandidate" : null,
+      "packToSpec" : {
+        "genericPackingInstructionsId" : 101,
+        "tuPackingInstructionsId" : null
+      },
       "salesOrderLineId" : {
         "orderId" : 300,
         "orderLineId" : 301
@@ -81,25 +89,29 @@ de.metas.handlingunits.picking.plan.generator.CreatePickingPlanCommandTest.scena
     "pickFromHU" : {
       "alternatives" : {
         "keys" : [ {
-          "huId" : 100237,
-          "locatorId" : "100161_100163",
-          "productId" : 100160
+          "huId" : 1000002,
+          "locatorId" : "1000003_1000004",
+          "productId" : 1000006
         } ]
       },
       "expiringDate" : null,
-      "huCode" : "100201",
-      "huId" : 100201,
+      "huCode" : "1000001",
+      "huId" : 1000001,
       "huReservedForThisLine" : false,
-      "locatorId" : "100161_100163",
+      "locatorId" : "1000003_1000004",
       "lotNumber" : null,
       "repackNumber" : null,
       "serialNo" : null
     },
     "pickFromPickingOrder" : null,
-    "productId" : 100160,
+    "productId" : 1000006,
     "qty" : "30.000 Kg",
     "sourceDocumentInfo" : {
       "existingPickingCandidate" : null,
+      "packToSpec" : {
+        "genericPackingInstructionsId" : 101,
+        "tuPackingInstructionsId" : null
+      },
       "salesOrderLineId" : {
         "orderId" : 300,
         "orderLineId" : 301
@@ -115,19 +127,23 @@ de.metas.handlingunits.picking.plan.generator.CreatePickingPlanCommandTest.scena
         "keys" : [ ]
       },
       "expiringDate" : null,
-      "huCode" : "100237",
-      "huId" : 100237,
+      "huCode" : "1000002",
+      "huId" : 1000002,
       "huReservedForThisLine" : false,
-      "locatorId" : "100161_100163",
+      "locatorId" : "1000003_1000004",
       "lotNumber" : null,
       "repackNumber" : null,
       "serialNo" : null
     },
     "pickFromPickingOrder" : null,
-    "productId" : 100160,
+    "productId" : 1000006,
     "qty" : "39.000 Kg",
     "sourceDocumentInfo" : {
       "existingPickingCandidate" : null,
+      "packToSpec" : {
+        "genericPackingInstructionsId" : 101,
+        "tuPackingInstructionsId" : null
+      },
       "salesOrderLineId" : {
         "orderId" : 300,
         "orderLineId" : 301
@@ -137,5 +153,5 @@ de.metas.handlingunits.picking.plan.generator.CreatePickingPlanCommandTest.scena
     },
     "type" : "PICK_FROM_HU"
   } ],
-  "singleProductId" : 100160
+  "singleProductId" : 1000006
 } ]

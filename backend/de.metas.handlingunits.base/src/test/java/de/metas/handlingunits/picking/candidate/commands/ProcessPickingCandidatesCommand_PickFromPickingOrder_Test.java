@@ -1,12 +1,12 @@
 package de.metas.handlingunits.picking.candidate.commands;
 
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.expectations.HUStorageExpectation;
 import de.metas.handlingunits.expectations.ShipmentScheduleQtyPickedExpectations;
 import de.metas.handlingunits.model.I_PP_Cost_Collector;
 import de.metas.handlingunits.model.I_PP_Order;
 import de.metas.handlingunits.model.I_PP_Order_BOMLine;
+import de.metas.handlingunits.picking.PackToSpec;
 import de.metas.handlingunits.picking.PickFrom;
 import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateId;
@@ -113,7 +113,7 @@ public class ProcessPickingCandidatesCommand_PickFromPickingOrder_Test
 					.shipmentScheduleId(shipmentScheduleId)
 					.pickFrom(PickFrom.ofPickingOrderId(pickingOrderId))
 					.qtyPicked(finishedGoodQtyToPick)
-					.packToInstructionsId(HuPackingInstructionsId.VIRTUAL)
+					.packToSpec(PackToSpec.VIRTUAL)
 					.issueToPickingOrder(PickingCandidateIssueToBOMLine.builder()
 							.issueToOrderBOMLineId(pickingOrderBOMLineId_chocolate)
 							.issueFromHUId(componentPickFromHUId)
@@ -127,7 +127,9 @@ public class ProcessPickingCandidatesCommand_PickFromPickingOrder_Test
 
 		ProcessPickingCandidatesCommand.builder()
 				.pickingCandidateRepository(helper.pickingCandidateRepository)
-				.pickingCandidateId(pickingCandidateId)
+				.request(ProcessPickingCandidatesRequest.builder()
+						.pickingCandidateId(pickingCandidateId)
+						.build())
 				.build()
 				.execute();
 

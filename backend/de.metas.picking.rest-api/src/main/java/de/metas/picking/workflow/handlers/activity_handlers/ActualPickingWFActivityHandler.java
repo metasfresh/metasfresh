@@ -90,8 +90,7 @@ public class ActualPickingWFActivityHandler implements WFActivityHandler
 		return computeActivityState(pickingJob);
 	}
 
-	@NonNull
-	private WFActivityStatus computeActivityState(final PickingJob pickingJob)
+	public static WFActivityStatus computeActivityState(final PickingJob pickingJob)
 	{
 		final PickingJobProgress progress = pickingJob.getProgress();
 		switch (progress)

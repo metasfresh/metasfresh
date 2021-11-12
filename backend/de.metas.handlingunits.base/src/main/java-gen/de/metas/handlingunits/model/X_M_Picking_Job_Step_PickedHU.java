@@ -6,23 +6,23 @@ import java.sql.ResultSet;
 import java.util.Properties;
 import javax.annotation.Nullable;
 
-/** Generated Model for M_Picking_Job_Step_HUAlternative
+/** Generated Model for M_Picking_Job_Step_PickedHU
  *  @author metasfresh (generated) 
  */
 @SuppressWarnings("unused")
-public class X_M_Picking_Job_Step_HUAlternative extends org.compiere.model.PO implements I_M_Picking_Job_Step_HUAlternative, org.compiere.model.I_Persistent 
+public class X_M_Picking_Job_Step_PickedHU extends org.compiere.model.PO implements I_M_Picking_Job_Step_PickedHU, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1026348487L;
+	private static final long serialVersionUID = -2004018572L;
 
     /** Standard Constructor */
-    public X_M_Picking_Job_Step_HUAlternative (final Properties ctx, final int M_Picking_Job_Step_HUAlternative_ID, @Nullable final String trxName)
+    public X_M_Picking_Job_Step_PickedHU (final Properties ctx, final int M_Picking_Job_Step_PickedHU_ID, @Nullable final String trxName)
     {
-      super (ctx, M_Picking_Job_Step_HUAlternative_ID, trxName);
+      super (ctx, M_Picking_Job_Step_PickedHU_ID, trxName);
     }
 
     /** Load Constructor */
-    public X_M_Picking_Job_Step_HUAlternative (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
+    public X_M_Picking_Job_Step_PickedHU (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
@@ -48,6 +48,33 @@ public class X_M_Picking_Job_Step_HUAlternative extends org.compiere.model.PO im
 	public int getC_UOM_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_UOM_ID);
+	}
+
+	@Override
+	public de.metas.handlingunits.model.I_M_Picking_Candidate getM_Picking_Candidate()
+	{
+		return get_ValueAsPO(COLUMNNAME_M_Picking_Candidate_ID, de.metas.handlingunits.model.I_M_Picking_Candidate.class);
+	}
+
+	@Override
+	public void setM_Picking_Candidate(final de.metas.handlingunits.model.I_M_Picking_Candidate M_Picking_Candidate)
+	{
+		set_ValueFromPO(COLUMNNAME_M_Picking_Candidate_ID, de.metas.handlingunits.model.I_M_Picking_Candidate.class, M_Picking_Candidate);
+	}
+
+	@Override
+	public void setM_Picking_Candidate_ID (final int M_Picking_Candidate_ID)
+	{
+		if (M_Picking_Candidate_ID < 1) 
+			set_Value (COLUMNNAME_M_Picking_Candidate_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_Picking_Candidate_ID, M_Picking_Candidate_ID);
+	}
+
+	@Override
+	public int getM_Picking_Candidate_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_Picking_Candidate_ID);
 	}
 
 	@Override
@@ -105,21 +132,6 @@ public class X_M_Picking_Job_Step_HUAlternative extends org.compiere.model.PO im
 	}
 
 	@Override
-	public void setM_Picking_Job_Step_HUAlternative_ID (final int M_Picking_Job_Step_HUAlternative_ID)
-	{
-		if (M_Picking_Job_Step_HUAlternative_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_M_Picking_Job_Step_HUAlternative_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_M_Picking_Job_Step_HUAlternative_ID, M_Picking_Job_Step_HUAlternative_ID);
-	}
-
-	@Override
-	public int getM_Picking_Job_Step_HUAlternative_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_M_Picking_Job_Step_HUAlternative_ID);
-	}
-
-	@Override
 	public de.metas.handlingunits.model.I_M_Picking_Job_Step getM_Picking_Job_Step()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_Picking_Job_Step_ID, de.metas.handlingunits.model.I_M_Picking_Job_Step.class);
@@ -147,6 +159,21 @@ public class X_M_Picking_Job_Step_HUAlternative extends org.compiere.model.PO im
 	}
 
 	@Override
+	public void setM_Picking_Job_Step_PickedHU_ID (final int M_Picking_Job_Step_PickedHU_ID)
+	{
+		if (M_Picking_Job_Step_PickedHU_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_M_Picking_Job_Step_PickedHU_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_M_Picking_Job_Step_PickedHU_ID, M_Picking_Job_Step_PickedHU_ID);
+	}
+
+	@Override
+	public int getM_Picking_Job_Step_PickedHU_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_Picking_Job_Step_PickedHU_ID);
+	}
+
+	@Override
 	public de.metas.handlingunits.model.I_M_HU getPicked_HU()
 	{
 		return get_ValueAsPO(COLUMNNAME_Picked_HU_ID, de.metas.handlingunits.model.I_M_HU.class);
@@ -162,9 +189,9 @@ public class X_M_Picking_Job_Step_HUAlternative extends org.compiere.model.PO im
 	public void setPicked_HU_ID (final int Picked_HU_ID)
 	{
 		if (Picked_HU_ID < 1) 
-			set_Value (COLUMNNAME_Picked_HU_ID, null);
+			set_ValueNoCheck (COLUMNNAME_Picked_HU_ID, null);
 		else 
-			set_Value (COLUMNNAME_Picked_HU_ID, Picked_HU_ID);
+			set_ValueNoCheck (COLUMNNAME_Picked_HU_ID, Picked_HU_ID);
 	}
 
 	@Override
@@ -201,66 +228,15 @@ public class X_M_Picking_Job_Step_HUAlternative extends org.compiere.model.PO im
 	}
 
 	@Override
-	public void setPickFrom_Locator_ID (final int PickFrom_Locator_ID)
+	public void setQtyPicked (final BigDecimal QtyPicked)
 	{
-		if (PickFrom_Locator_ID < 1) 
-			set_Value (COLUMNNAME_PickFrom_Locator_ID, null);
-		else 
-			set_Value (COLUMNNAME_PickFrom_Locator_ID, PickFrom_Locator_ID);
+		set_Value (COLUMNNAME_QtyPicked, QtyPicked);
 	}
 
 	@Override
-	public int getPickFrom_Locator_ID() 
+	public BigDecimal getQtyPicked() 
 	{
-		return get_ValueAsInt(COLUMNNAME_PickFrom_Locator_ID);
-	}
-
-	@Override
-	public void setPickFrom_Warehouse_ID (final int PickFrom_Warehouse_ID)
-	{
-		if (PickFrom_Warehouse_ID < 1) 
-			set_Value (COLUMNNAME_PickFrom_Warehouse_ID, null);
-		else 
-			set_Value (COLUMNNAME_PickFrom_Warehouse_ID, PickFrom_Warehouse_ID);
-	}
-
-	@Override
-	public int getPickFrom_Warehouse_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_PickFrom_Warehouse_ID);
-	}
-
-	@Override
-	public void setQtyRejectedToPick (final @Nullable BigDecimal QtyRejectedToPick)
-	{
-		set_Value (COLUMNNAME_QtyRejectedToPick, QtyRejectedToPick);
-	}
-
-	@Override
-	public BigDecimal getQtyRejectedToPick() 
-	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyRejectedToPick);
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyPicked);
 		return bd != null ? bd : BigDecimal.ZERO;
-	}
-
-	/** 
-	 * RejectReason AD_Reference_ID=541422
-	 * Reference name: QtyNotPicked RejectReason
-	 */
-	public static final int REJECTREASON_AD_Reference_ID=541422;
-	/** NotFound = N */
-	public static final String REJECTREASON_NotFound = "N";
-	/** Damaged = D */
-	public static final String REJECTREASON_Damaged = "D";
-	@Override
-	public void setRejectReason (final @Nullable java.lang.String RejectReason)
-	{
-		set_Value (COLUMNNAME_RejectReason, RejectReason);
-	}
-
-	@Override
-	public java.lang.String getRejectReason() 
-	{
-		return get_ValueAsString(COLUMNNAME_RejectReason);
 	}
 }

@@ -11,23 +11,27 @@ de.metas.handlingunits.picking.job.repository.PickingJobRepositoryTest.createNew
     "preparationDate" : "2021-11-02T07:39:16Z",
     "salesOrderDocumentNo" : "docno-2"
   },
-  "id" : 100002,
+  "id" : 1000000,
   "lines" : [ {
-    "id" : 100004,
+    "id" : 1000000,
     "productId" : 6,
     "productName" : "productName-6",
     "progress" : "NOT_STARTED",
     "qtyToPick" : "100 Ea",
     "steps" : [ {
-      "id" : 100005,
+      "id" : 1000000,
+      "packToSpec" : {
+        "genericPackingInstructionsId" : null,
+        "tuPackingInstructionsId" : 6789
+      },
       "pickFroms" : {
         "map" : {
-          "100003" : {
+          "1000000" : {
             "pickFromHU" : {
               "barcode" : "1001",
               "id" : 1001
             },
-            "pickFromKey" : "100003",
+            "pickFromKey" : "1000000",
             "pickFromLocator" : {
               "caption" : "locatorName-22",
               "id" : "21_22"
@@ -47,8 +51,8 @@ de.metas.handlingunits.picking.job.repository.PickingJobRepositoryTest.createNew
             "pickedTo" : null
           }
         },
-        "qtyPickedSum" : null,
-        "reportedOnAllPickFroms" : false
+        "progress" : "NOT_STARTED",
+        "qtyPickedSum" : null
       },
       "productId" : 6,
       "productName" : "productName-6",
@@ -62,7 +66,7 @@ de.metas.handlingunits.picking.job.repository.PickingJobRepositoryTest.createNew
     } ]
   } ],
   "pickFromAlternatives" : [ {
-    "id" : 100003,
+    "id" : 1000000,
     "locatorInfo" : {
       "caption" : "locatorName-22",
       "id" : "21_22"

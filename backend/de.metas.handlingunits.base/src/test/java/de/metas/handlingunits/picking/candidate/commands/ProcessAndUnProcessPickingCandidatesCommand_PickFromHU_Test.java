@@ -1,8 +1,8 @@
 package de.metas.handlingunits.picking.candidate.commands;
 
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.expectations.HUStorageExpectation;
+import de.metas.handlingunits.picking.PackToSpec;
 import de.metas.handlingunits.picking.PickFrom;
 import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateId;
@@ -38,13 +38,13 @@ public class ProcessAndUnProcessPickingCandidatesCommand_PickFromHU_Test
 	}
 
 	@NonNull
-	private PickingCandidateId createPickingCandidate(final HuId pickFromHUId, final Quantity qtyPicked, HuPackingInstructionsId packToInstructionsId)
+	private PickingCandidateId createPickingCandidate(final HuId pickFromHUId, final Quantity qtyPicked, PackToSpec packToSpec)
 	{
 		final PickingCandidate pickingCandidate = PickingCandidate.builder()
 				.shipmentScheduleId(helper.createShipmentSchedule(productId))
 				.pickFrom(PickFrom.ofHuId(pickFromHUId))
 				.qtyPicked(qtyPicked)
-				.packToInstructionsId(packToInstructionsId)
+				.packToSpec(packToSpec)
 				.build();
 		pickingCandidateRepository.save(pickingCandidate);
 		return Objects.requireNonNull(pickingCandidate.getId());
@@ -54,11 +54,13 @@ public class ProcessAndUnProcessPickingCandidatesCommand_PickFromHU_Test
 	public void packTo_lessQtyThanPickFrom()
 	{
 		final HuId pickFromVHUId = helper.createVHU(productId, Quantity.of("100", uomEach));
-		final PickingCandidateId pickingCandidateId = createPickingCandidate(pickFromVHUId, Quantity.of("10", uomEach), HuPackingInstructionsId.VIRTUAL);
+		final PickingCandidateId pickingCandidateId = createPickingCandidate(pickFromVHUId, Quantity.of("10", uomEach), PackToSpec.VIRTUAL);
 
 		ProcessPickingCandidatesCommand.builder()
 				.pickingCandidateRepository(pickingCandidateRepository)
-				.pickingCandidateId(pickingCandidateId)
+				.request(ProcessPickingCandidatesRequest.builder()
+						.pickingCandidateId(pickingCandidateId)
+						.build())
 				.build()
 				.execute();
 		final HuId packedToHUId;
@@ -90,11 +92,13 @@ public class ProcessAndUnProcessPickingCandidatesCommand_PickFromHU_Test
 	public void packTo_sameQtyAsPickFrom_samePackingInstructions()
 	{
 		final HuId pickFromVHUId = helper.createVHU(productId, Quantity.of("100", uomEach));
-		final PickingCandidateId pickingCandidateId = createPickingCandidate(pickFromVHUId, Quantity.of("100", uomEach), HuPackingInstructionsId.VIRTUAL);
+		final PickingCandidateId pickingCandidateId = createPickingCandidate(pickFromVHUId, Quantity.of("100", uomEach), PackToSpec.VIRTUAL);
 
 		ProcessPickingCandidatesCommand.builder()
 				.pickingCandidateRepository(pickingCandidateRepository)
-				.pickingCandidateId(pickingCandidateId)
+				.request(ProcessPickingCandidatesRequest.builder()
+						.pickingCandidateId(pickingCandidateId)
+						.build())
 				.build()
 				.execute();
 		{
@@ -121,12 +125,14 @@ public class ProcessAndUnProcessPickingCandidatesCommand_PickFromHU_Test
 	public void packTo_sameQtyAsPickFrom_but_DifferentPackingInstructions()
 	{
 		final HuId pickFromVHUId = helper.createVHU(productId, Quantity.of("100", uomEach));
-		final HuPackingInstructionsId packToInstructionsId = helper.createTUPackingInstructions(productId, Quantity.of("100", uomEach));
-		final PickingCandidateId pickingCandidateId = createPickingCandidate(pickFromVHUId, Quantity.of("100", uomEach), packToInstructionsId);
+		final PackToSpec packToSpec = helper.createTUPackingInstructions(productId, Quantity.of("100", uomEach));
+		final PickingCandidateId pickingCandidateId = createPickingCandidate(pickFromVHUId, Quantity.of("100", uomEach), packToSpec);
 
 		ProcessPickingCandidatesCommand.builder()
 				.pickingCandidateRepository(pickingCandidateRepository)
-				.pickingCandidateId(pickingCandidateId)
+				.request(ProcessPickingCandidatesRequest.builder()
+						.pickingCandidateId(pickingCandidateId)
+						.build())
 				.build()
 				.execute();
 		final HuId packedToHUId;

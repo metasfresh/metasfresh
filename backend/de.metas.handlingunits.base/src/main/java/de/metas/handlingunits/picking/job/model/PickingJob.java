@@ -95,32 +95,8 @@ public final class PickingJob
 
 	private PickingJobProgress computeProgress(@NonNull final ImmutableList<PickingJobLine> lines)
 	{
-		int countPickedLines = 0;
-		int countNotPickedLines = 0;
-		for (final PickingJobLine line : lines)
-		{
-			if (line.getProgress().isDone())
-			{
-				countPickedLines++;
-			}
-			else
-			{
-				countNotPickedLines++;
-			}
-		}
-
-		if (countPickedLines <= 0)
-		{
-			return countNotPickedLines <= 0
-					? PickingJobProgress.DONE // shall NOT happen because we have at least one line
-					: PickingJobProgress.NOT_STARTED;
-		}
-		else
-		{
-			return countNotPickedLines <= 0
-					? PickingJobProgress.DONE
-					: PickingJobProgress.IN_PROGRESS;
-		}
+		final ImmutableSet<PickingJobProgress> lineProgresses = lines.stream().map(PickingJobLine::getProgress).collect(ImmutableSet.toImmutableSet());
+		return PickingJobProgress.reduce(lineProgresses);
 	}
 
 	public void assertNotProcessed()
