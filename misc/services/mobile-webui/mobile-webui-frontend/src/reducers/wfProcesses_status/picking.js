@@ -41,9 +41,10 @@ const generateAlternativeSteps = ({ draftState, wfProcessId, activityId, lineId,
   const draftDataStoredOrig = original(draftDataStored);
   const draftStep = draftState[wfProcessId].activities[activityId].dataStored.lines[lineId].steps[stepId];
   const { pickFromAlternatives } = draftDataStoredOrig;
+  let remainingQtyRejected;
 
   for (let idx = 0; idx < pickFromAlternatives.length; idx++) {
-    if (pickFromAlternatives[idx].qtyAvailable > qtyRejected) {
+    if (pickFromAlternatives[idx].qtyAvailable >= qtyRejected) {
       draftDataStored.pickFromAlternatives[idx].qtyAvailable = pickFromAlternatives[idx].qtyAvailable - qtyRejected;
       draftStep.altSteps.genSteps[pickFromAlternatives[idx].id] = {
         id: pickFromAlternatives[idx].id,
@@ -54,6 +55,27 @@ const generateAlternativeSteps = ({ draftState, wfProcessId, activityId, lineId,
         qtyPicked: 0,
       };
       break;
+    } else {
+      remainingQtyRejected = qtyRejected - pickFromAlternatives[idx].qtyAvailable;
+      draftDataStored.pickFromAlternatives[idx].qtyAvailable = 0;
+      draftStep.altSteps.genSteps[pickFromAlternatives[idx].id] = {
+        id: pickFromAlternatives[idx].id,
+        locatorName: pickFromAlternatives[idx].locatorName,
+        huBarcode: pickFromAlternatives[idx].huBarcode,
+        uom: pickFromAlternatives[idx].uom,
+        qtyAvailable: pickFromAlternatives[idx].qtyAvailable,
+        qtyPicked: 0,
+      };
+      if (remainingQtyRejected > 0) {
+        generateAlternativeSteps({
+          draftState,
+          wfProcessId,
+          activityId,
+          lineId,
+          stepId,
+          qtyRejected: remainingQtyRejected,
+        });
+      }
     }
   }
 
@@ -214,25 +236,27 @@ const normalizePickingLines = (lines) => {
         accum[step.pickingStepId] = step;
         accum[step.pickingStepId].altSteps = {};
         accum[step.pickingStepId].altSteps.qtyToPick = 0;
-        // Mock generated steps
-        accum[step.pickingStepId].altSteps.genSteps = {
-          1000819: {
-            id: '1000819',
-            locatorName: 'Hauptlager',
-            huBarcode: '1000437',
-            uom: 'Kg',
-            qtyAvailable: 45,
-            qtyPicked: 0,
-          },
-          1000820: {
-            id: '1000820',
-            locatorName: 'Hauptlager',
-            huBarcode: '1000463',
-            uom: 'Kg',
-            qtyAvailable: 25,
-            qtyPicked: 0,
-          },
-        };
+        accum[step.pickingStepId].altSteps.genSteps = {};
+
+        // Mock generated steps - used for testing w/o real data
+        // accum[step.pickingStepId].altSteps.genSteps = {
+        //   1000819: {
+        //     id: '1000819',
+        //     locatorName: 'Hauptlager',
+        //     huBarcode: '1000437',
+        //     uom: 'Kg',
+        //     qtyAvailable: 45,
+        //     qtyPicked: 0,
+        //   },
+        //   1000820: {
+        //     id: '1000820',
+        //     locatorName: 'Hauptlager',
+        //     huBarcode: '1000463',
+        //     uom: 'Kg',
+        //     qtyAvailable: 25,
+        //     qtyPicked: 0,
+        //   },
+        // };
 
         return accum;
       }, {}),
