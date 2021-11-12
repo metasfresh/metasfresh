@@ -7,11 +7,11 @@ import AppCard from './AppCard';
 
 class ApplicationsScreen extends Component {
   render() {
-    const { applications } = this.props;
+    const { availableApplications } = this.props;
 
     return (
       <div className="application-container columns ml-0">
-        {map(applications, (app) => {
+        {map(availableApplications, (app) => {
           return <AppCard key={app.id} appId={app.id} captionKey={app.caption} />;
         })}
       </div>
@@ -21,13 +21,13 @@ class ApplicationsScreen extends Component {
 
 const mapStateToProps = ({ applications }) => {
   return {
-    applications,
+    availableApplications: applications.availableApplications,
   };
 };
 
 ApplicationsScreen.propTypes = {
   // Props
-  applications: PropTypes.object.isRequired,
+  availableApplications: PropTypes.object.isRequired,
 };
 
 export default connect(mapStateToProps)(ApplicationsScreen);

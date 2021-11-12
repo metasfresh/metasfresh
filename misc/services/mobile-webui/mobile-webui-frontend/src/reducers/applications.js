@@ -1,7 +1,7 @@
 import * as types from '../constants/ApplicationsActionTypes';
 
 const initialState = {
-  apps: {},
+  availableApplications: {},
   activeApplication: null,
 };
 
@@ -19,15 +19,14 @@ export default function applications(state = initialState, action) {
         activeApplication: null,
       };
     case types.POPULATE_APPLICATIONS: {
-      const apps = payload.applications.reduce((acc, application) => {
-        acc[application.id] = application.caption;
-
+      const availableApplications = payload.applications.reduce((acc, application) => {
+        acc[application.id] = application;
         return acc;
       }, {});
 
       return {
         ...state,
-        apps,
+        availableApplications,
       };
     }
     default:
