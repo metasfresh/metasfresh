@@ -3,11 +3,10 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import PickAltStepButton from './PickAltStepButton';
 class PickAlternatives extends Component {
-  renderAlternatives = ({ diffToPick }) => {
+  renderAlternatives = () => {
     // const { pickFromAlternativeIds, pickFromAlternatives, altSteps } = this.props;
 
-    const { altSteps, wfProcessId, activityId, lineId, stepId } = this.props;
-    const { genSteps } = altSteps;
+    const { genSteps, wfProcessId, activityId, lineId, stepId } = this.props;
 
     // let totalQty = 0;
 
@@ -25,7 +24,6 @@ class PickAlternatives extends Component {
     // calculate here - filter to achieve the amount
     return (
       <div>
-        DIFF: {diffToPick}
         {Object.keys(genSteps).length > 0 &&
           Object.keys(genSteps).map((altStepKey) => {
             return (
@@ -45,15 +43,7 @@ class PickAlternatives extends Component {
   };
 
   render() {
-    const { qtyPicked, qtyToPick } = this.props;
-    const diffToPick = qtyToPick - qtyPicked;
-
-    return (
-      <div>
-        PickAlternatives remaining to pick {diffToPick}
-        {this.renderAlternatives({ diffToPick })}
-      </div>
-    );
+    return <div>{this.renderAlternatives()}</div>;
   }
 }
 
@@ -66,14 +56,17 @@ PickAlternatives.propTypes = {
   qtyToPick: PropTypes.number.isRequired,
   pickFromAlternativeIds: PropTypes.array,
   pickFromAlternatives: PropTypes.array,
-  altSteps: PropTypes.object,
+  genSteps: PropTypes.object,
 };
 
 const mapStateToProps = (state, ownProps) => {
-  const { wfProcessId, activityId } = ownProps;
+  const { wfProcessId, activityId, lineId, stepId } = ownProps;
 
   return {
     pickFromAlternatives: state.wfProcesses_status[wfProcessId].activities[activityId].dataStored.pickFromAlternatives,
+    genSteps:
+      state.wfProcesses_status[wfProcessId].activities[activityId].dataStored.lines[lineId].steps[stepId].altSteps
+        .genSteps,
   };
 };
 
