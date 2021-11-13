@@ -1,7 +1,9 @@
 package de.metas.handlingunits.model;
 
-import java.math.BigDecimal;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for M_Picking_Job_Step_PickedHU
  *  @author metasfresh (generated) 
@@ -149,7 +151,7 @@ public interface I_M_Picking_Job_Step_PickedHU
 	 * Set Picking Job HU Alternative.
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	void setM_Picking_Job_HUAlternative_ID (int M_Picking_Job_HUAlternative_ID);
@@ -158,14 +160,14 @@ public interface I_M_Picking_Job_Step_PickedHU
 	 * Get Picking Job HU Alternative.
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	int getM_Picking_Job_HUAlternative_ID();
 
-	de.metas.handlingunits.model.I_M_Picking_Job_HUAlternative getM_Picking_Job_HUAlternative();
+	@Nullable de.metas.handlingunits.model.I_M_Picking_Job_HUAlternative getM_Picking_Job_HUAlternative();
 
-	void setM_Picking_Job_HUAlternative(de.metas.handlingunits.model.I_M_Picking_Job_HUAlternative M_Picking_Job_HUAlternative);
+	void setM_Picking_Job_HUAlternative(@Nullable de.metas.handlingunits.model.I_M_Picking_Job_HUAlternative M_Picking_Job_HUAlternative);
 
 	ModelColumn<I_M_Picking_Job_Step_PickedHU, de.metas.handlingunits.model.I_M_Picking_Job_HUAlternative> COLUMN_M_Picking_Job_HUAlternative_ID = new ModelColumn<>(I_M_Picking_Job_Step_PickedHU.class, "M_Picking_Job_HUAlternative_ID", de.metas.handlingunits.model.I_M_Picking_Job_HUAlternative.class);
 	String COLUMNNAME_M_Picking_Job_HUAlternative_ID = "M_Picking_Job_HUAlternative_ID";
