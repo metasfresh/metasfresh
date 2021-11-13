@@ -29,9 +29,10 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.camel.externalsystems.shopware6.api.model.GetBearerRequest;
+import de.metas.camel.externalsystems.shopware6.api.model.MultiQueryRequest;
+import de.metas.camel.externalsystems.shopware6.api.model.Shopware6QueryRequest;
 import de.metas.camel.externalsystems.shopware6.api.model.JsonOauthResponse;
 import de.metas.camel.externalsystems.shopware6.api.model.PathSegmentsEnum;
-import de.metas.camel.externalsystems.shopware6.api.model.QueryRequest;
 import de.metas.camel.externalsystems.shopware6.api.model.country.JsonCountry;
 import de.metas.camel.externalsystems.shopware6.api.model.currency.JsonCurrencies;
 import de.metas.camel.externalsystems.shopware6.api.model.customer.JsonCustomerGroups;
@@ -50,6 +51,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.Value;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
@@ -103,12 +105,12 @@ public class ShopwareClient
 	}
 
 	@NonNull
-	public List<OrderCandidate> getOrders(@NonNull final QueryRequest queryRequest,
+	public GetOrdersResponse getOrders(@NonNull final Shopware6QueryRequest queryRequest,
 			@Nullable final String customIdentifierJSONPath,
 			@Nullable final String salesRepJSONPath)
 	{
 		final URI resourceURI;
-		final List<OrderCandidate> orderCandidates = new ArrayList<>();
+		final ImmutableList.Builder<OrderCandidate> orderCandidates = ImmutableList.builder();
 
 		final UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(baseUrl);
 
@@ -123,9 +125,9 @@ public class ShopwareClient
 
 		final ResponseEntity<String> response = performWithRetry(resourceURI, HttpMethod.POST, String.class, queryRequest);
 
-		if (response == null || response.getBody() == null)
+		if (response == null || Check.isBlank(response.getBody()))
 		{
-			return orderCandidates;
+			return new GetOrdersResponse(ImmutableList.of(), null);
 		}
 		else
 		{
@@ -152,8 +154,14 @@ public class ShopwareClient
 				}
 			}
 		}
+		return new GetOrdersResponse(orderCandidates.build(), response.getBody());
+	}
 
-		return orderCandidates;
+	@Value
+	public static class GetOrdersResponse
+	{
+		ImmutableList<OrderCandidate> orderCandidates;
+		String rawData;
 	}
 
 	@NonNull
@@ -187,7 +195,6 @@ public class ShopwareClient
 		{
 			throw new RuntimeException(e);
 		}
-
 	}
 
 	@NonNull
@@ -416,7 +423,7 @@ public class ShopwareClient
 	}
 
 	@NonNull
-	public Optional<JsonProducts> getProducts(@NonNull final QueryRequest queryRequest)
+	public Optional<JsonProducts> getProducts(@NonNull final MultiQueryRequest queryRequest)
 	{
 		final URI resourceURI;
 
@@ -477,7 +484,8 @@ public class ShopwareClient
 				return Optional.empty();
 			}
 
-			if (Check.isNotBlank(salesRepJSONPath)){
+			if (Check.isNotBlank(salesRepJSONPath))
+			{
 				final String salesRepId = orderJson.at(salesRepJSONPath).asText();
 				orderCandidateBuilder.salesRepId(salesRepId.isEmpty() ? null : salesRepId);
 			}
@@ -489,7 +497,6 @@ public class ShopwareClient
 		{
 			throw new RuntimeException(e);
 		}
-
 	}
 
 	@NonNull
@@ -558,14 +565,14 @@ public class ShopwareClient
 			}
 			catch (final UnauthorizedException unauthorizedException)
 			{
-				logger.log(Level.WARNING, "Will refresh authToken as an UnauthorizedException was thrown while calling: " + resourceURI.toString());
+				logger.log(Level.WARNING, "Will refresh authToken as an UnauthorizedException was thrown while calling: " + resourceURI);
 				refreshToken();
 				retryCount++;
 				retry = retryCount < 2;
 			}
 			catch (final Throwable t)
 			{
-				logger.log(Level.SEVERE, "Exception while calling: " + resourceURI.toString(), t);
+				logger.log(Level.SEVERE, "Exception while calling: " + resourceURI, t);
 				throw t;
 			}
 		}

@@ -22,6 +22,7 @@
 
 package org.adempiere.warehouse.api.impl;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
@@ -48,6 +49,8 @@ import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.util.List;
+
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 public class WarehouseBL implements IWarehouseBL
 {
@@ -200,5 +203,21 @@ public class WarehouseBL implements IWarehouseBL
 			throw new AdempiereException("@NotFound@ @C_BPartner_Location_ID@ (@M_Warehouse_ID@:" + warehouse.getName() + ")");
 		}
 		return warehouseBPLocationId;
+	}
+
+	@Override
+	public void updateWarehouseLocation(@NonNull final LocationId oldLocationId, @NonNull final LocationId newLocationId)
+	{
+		final ImmutableSet<WarehouseId> warehouseIds = warehouseDAO.retrieveWarehouseWithLocation(oldLocationId);
+
+		warehouseIds.forEach(warehouseId -> updateWarehouseLocation(warehouseId, newLocationId));
+	}
+
+	private void updateWarehouseLocation(@NonNull final WarehouseId warehouseId, @NonNull final LocationId locationId)
+	{
+		final I_M_Warehouse warehouse = warehouseDAO.getById(warehouseId);
+		warehouse.setC_Location_ID(locationId.getRepoId());
+
+		save(warehouse);
 	}
 }

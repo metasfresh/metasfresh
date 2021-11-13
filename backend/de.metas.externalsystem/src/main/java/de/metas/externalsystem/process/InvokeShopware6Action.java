@@ -29,6 +29,7 @@ import de.metas.common.externalsystem.JsonExternalSystemShopware6ConfigMapping;
 import de.metas.common.externalsystem.JsonExternalSystemShopware6ConfigMappings;
 import de.metas.common.ordercandidates.v2.request.JsonOrderDocType;
 import de.metas.common.rest_api.v2.SyncAdvise;
+import de.metas.common.util.EmptyUtil;
 import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.ExternalSystemType;
@@ -41,6 +42,7 @@ import de.metas.order.impl.DocTypeService;
 import de.metas.payment.paymentterm.IPaymentTermRepository;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.process.IProcessPreconditionsContext;
+import de.metas.process.Param;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -52,6 +54,7 @@ import java.util.List;
 import java.util.Map;
 
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_BASE_PATH;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_CHILD_CONFIG_VALUE;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_CLIENT_ID;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_CLIENT_SECRET;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_CONFIG_MAPPINGS;
@@ -62,6 +65,7 @@ import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_FREIG
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_JSON_PATH_CONSTANT_BPARTNER_ID;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_JSON_PATH_CONSTANT_BPARTNER_LOCATION_ID;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_JSON_PATH_SALES_REP_ID;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_ORDER_NO;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_UPDATED_AFTER_OVERRIDE;
 
 public class InvokeShopware6Action extends InvokeExternalSystemProcess
@@ -69,6 +73,10 @@ public class InvokeShopware6Action extends InvokeExternalSystemProcess
 	private final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
 	private final DocTypeService docTypeService = SpringContextHolder.instance.getBean(DocTypeService.class);
 
+	private static final String PARAM_ORDERNO = "OrderNo";
+	@Param(parameterName = PARAM_ORDERNO)
+	private String orderNo;
+	
 	@Override
 	protected IExternalSystemChildConfigId getExternalChildConfigId()
 	{
@@ -88,7 +96,7 @@ public class InvokeShopware6Action extends InvokeExternalSystemProcess
 	}
 
 	@Override
-	protected Map<String, String> extractExternalSystemParameters(final ExternalSystemParentConfig externalSystemParentConfig)
+	protected Map<String, String> extractExternalSystemParameters(@NonNull final ExternalSystemParentConfig externalSystemParentConfig)
 	{
 		final ExternalSystemShopware6Config shopware6Config = ExternalSystemShopware6Config.cast(externalSystemParentConfig.getChildConfig());
 
@@ -100,6 +108,7 @@ public class InvokeShopware6Action extends InvokeExternalSystemProcess
 		parameters.put(PARAM_JSON_PATH_CONSTANT_BPARTNER_LOCATION_ID, shopware6Config.getBPartnerLocationIdJSONPath());
 		parameters.put(PARAM_JSON_PATH_SALES_REP_ID, shopware6Config.getSalesRepJSONPath());
 		parameters.put(PARAM_CONFIG_MAPPINGS, getConfigMappings(shopware6Config));
+		parameters.put(PARAM_CHILD_CONFIG_VALUE, shopware6Config.getValue());
 
 		if (shopware6Config.getFreightCostNormalVatConfig() != null)
 		{
@@ -118,6 +127,11 @@ public class InvokeShopware6Action extends InvokeExternalSystemProcess
 			parameters.put(PARAM_UPDATED_AFTER_OVERRIDE, getSinceParameterValue().toInstant().toString());
 		}
 
+		if(EmptyUtil.isNotBlank(orderNo))
+		{
+			parameters.put(PARAM_ORDER_NO, orderNo);
+		}
+		
 		return parameters;
 	}
 

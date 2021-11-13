@@ -23,9 +23,9 @@
 package de.metas.cucumber.stepdefs.apiauditfilter;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.audit.request.ApiRequestAudit;
-import de.metas.audit.request.ApiRequestAuditId;
-import de.metas.audit.request.ApiRequestAuditRepository;
+import de.metas.audit.apirequest.request.ApiRequestAudit;
+import de.metas.audit.apirequest.request.ApiRequestAuditId;
+import de.metas.audit.apirequest.request.ApiRequestAuditRepository;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.util.EmptyUtil;
 import de.metas.cucumber.stepdefs.DataTableUtil;

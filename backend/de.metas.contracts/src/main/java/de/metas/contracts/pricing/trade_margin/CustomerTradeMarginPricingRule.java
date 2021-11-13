@@ -29,7 +29,7 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionContract;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionInstance;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionPoints;
-import de.metas.contracts.commission.commissioninstance.businesslogic.sales.SalesCommissionShare;
+import de.metas.contracts.commission.commissioninstance.businesslogic.sales.CommissionShare;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTriggerDocument;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTriggerType;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.PlainTriggerDocumentId;
@@ -155,7 +155,7 @@ public class CustomerTradeMarginPricingRule implements IPricingRule
 			return;
 		}
 
-		final Map<SalesCommissionShare, CommissionPoints> share2TradedCommissionPoints = customerTradeMarginService
+		final Map<CommissionShare, CommissionPoints> share2TradedCommissionPoints = customerTradeMarginService
 				.getTradedCommissionPointsFor(
 						customerTradeMarginSettings.get(),
 						forecastCommissionInstance.get().getShares());
@@ -168,9 +168,9 @@ public class CustomerTradeMarginPricingRule implements IPricingRule
 
 		Money customerTradeMarginPerPriceUOMSum = Money.zero(result.getCurrencyId());
 
-		for (final Entry<SalesCommissionShare, CommissionPoints> shareAndPoints : share2TradedCommissionPoints.entrySet())
+		for (final Entry<CommissionShare, CommissionPoints> shareAndPoints : share2TradedCommissionPoints.entrySet())
 		{
-			final SalesCommissionShare share = shareAndPoints.getKey();
+			final CommissionShare share = shareAndPoints.getKey();
 			try (final MDCCloseable shareMDC = TableRecordMDC.putTableRecordReference(I_C_Commission_Share.Table_Name, share.getId()))
 			{
 				final CommissionContract salesRepCommissionContract = share.getContract();
