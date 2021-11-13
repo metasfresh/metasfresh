@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 
@@ -16,6 +17,7 @@ public class PickingJobStepPickFromKey implements Comparable<PickingJobStepPickF
 {
 	public static final PickingJobStepPickFromKey MAIN = new PickingJobStepPickFromKey(null);
 
+	@Getter
 	@Nullable PickingJobPickFromAlternativeId alternativeId;
 
 	private PickingJobStepPickFromKey(@Nullable final PickingJobPickFromAlternativeId alternativeId)

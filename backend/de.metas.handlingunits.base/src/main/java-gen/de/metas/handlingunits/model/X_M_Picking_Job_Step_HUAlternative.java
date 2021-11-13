@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_Picking_Job_Step_HUAlternative extends org.compiere.model.PO implements I_M_Picking_Job_Step_HUAlternative, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 326193033L;
+	private static final long serialVersionUID = 1026348487L;
 
     /** Standard Constructor */
     public X_M_Picking_Job_Step_HUAlternative (final Properties ctx, final int M_Picking_Job_Step_HUAlternative_ID, @Nullable final String trxName)
@@ -48,33 +48,6 @@ public class X_M_Picking_Job_Step_HUAlternative extends org.compiere.model.PO im
 	public int getC_UOM_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_UOM_ID);
-	}
-
-	@Override
-	public de.metas.handlingunits.model.I_M_Picking_Candidate getM_Picking_Candidate()
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Picking_Candidate_ID, de.metas.handlingunits.model.I_M_Picking_Candidate.class);
-	}
-
-	@Override
-	public void setM_Picking_Candidate(final de.metas.handlingunits.model.I_M_Picking_Candidate M_Picking_Candidate)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Picking_Candidate_ID, de.metas.handlingunits.model.I_M_Picking_Candidate.class, M_Picking_Candidate);
-	}
-
-	@Override
-	public void setM_Picking_Candidate_ID (final int M_Picking_Candidate_ID)
-	{
-		if (M_Picking_Candidate_ID < 1) 
-			set_Value (COLUMNNAME_M_Picking_Candidate_ID, null);
-		else 
-			set_Value (COLUMNNAME_M_Picking_Candidate_ID, M_Picking_Candidate_ID);
-	}
-
-	@Override
-	public int getM_Picking_Candidate_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_M_Picking_Candidate_ID);
 	}
 
 	@Override
@@ -255,19 +228,6 @@ public class X_M_Picking_Job_Step_HUAlternative extends org.compiere.model.PO im
 	public int getPickFrom_Warehouse_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_PickFrom_Warehouse_ID);
-	}
-
-	@Override
-	public void setQtyPicked (final @Nullable BigDecimal QtyPicked)
-	{
-		set_Value (COLUMNNAME_QtyPicked, QtyPicked);
-	}
-
-	@Override
-	public BigDecimal getQtyPicked() 
-	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyPicked);
-		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override

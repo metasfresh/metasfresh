@@ -6,21 +6,18 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.HuPackingInstructionsId;
+import de.metas.handlingunits.IHUCapacityBL;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
+import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.allocation.IHUProducerAllocationDestination;
-import de.metas.handlingunits.allocation.impl.AllocationUtils;
-import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
-import de.metas.handlingunits.allocation.impl.HULoader;
-import de.metas.handlingunits.allocation.impl.HUProducerDestination;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.X_M_HU;
+import de.metas.handlingunits.picking.PackToSpec;
 import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateId;
 import de.metas.handlingunits.picking.PickingCandidateIssueToBOMLine;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
+import de.metas.handlingunits.picking.candidate.commands.PackToHUsProducer.PackToInfo;
 import de.metas.handlingunits.pporder.api.HUPPOrderIssueProducer.ProcessIssueCandidatesPolicy;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
@@ -31,12 +28,10 @@ import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
-import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.NonNull;
-import lombok.Singular;
-import lombok.Value;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.LocatorId;
@@ -44,11 +39,8 @@ import org.eevolution.api.PPOrderId;
 
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
-
+import java.util.stream.Collectors;
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -75,7 +67,6 @@ public class ProcessPickingCandidatesCommand
 {
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
-	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
 	private final IHUShipmentScheduleBL huShipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
 	private final IInvoiceCandBL invoiceCandidatesService = Services.get(IInvoiceCandBL.class);
@@ -94,17 +85,22 @@ public class ProcessPickingCandidatesCommand
 	@Builder
 	private ProcessPickingCandidatesCommand(
 			@NonNull final PickingCandidateRepository pickingCandidateRepository,
-			//
-			@NonNull @Singular final Set<PickingCandidateId> pickingCandidateIds)
+			@NonNull final ProcessPickingCandidatesRequest request)
 	{
-		Check.assumeNotEmpty(pickingCandidateIds, "pickingCandidateIds is not empty");
-
 		this.pickingCandidateRepository = pickingCandidateRepository;
 
-		this.pickingCandidateIds = ImmutableSet.copyOf(pickingCandidateIds);
+		this.pickingCandidateIds = request.getPickingCandidateIds();
 
 		this.shipmentSchedulesCache = new ShipmentSchedulesCache(huShipmentScheduleBL);
-		this.packToMap = new PackToMap();
+
+		final PackToHUsProducer packToHUsProducer = PackToHUsProducer.builder()
+				.handlingUnitsBL(Services.get(IHandlingUnitsBL.class))
+				.huPIItemProductBL(Services.get(IHUPIItemProductBL.class))
+				.huCapacityBL(Services.get(IHUCapacityBL.class))
+				.alwaysPackEachCandidateInItsOwnHU(request.isAlwaysPackEachCandidateInItsOwnHU())
+				.build();
+
+		this.packToMap = new PackToMap(packToHUsProducer);
 	}
 
 	public ProcessPickingCandidatesResult execute()
@@ -194,43 +190,18 @@ public class ProcessPickingCandidatesCommand
 		final I_M_ShipmentSchedule shipmentSchedule = shipmentSchedulesCache.getById(pickingCandidate.getShipmentScheduleId());
 		final ProductId productId = ProductId.ofRepoId(shipmentSchedule.getM_Product_ID());
 		final Quantity qtyPicked = pickingCandidate.getQtyPicked();
-		final I_M_HU pickFromHU = handlingUnitsBL.getById(pickFromHUId);
-		final PackToInfo packToInfo = packToMap.getPackToInfo(pickingCandidate.getId());
+		final PickingCandidateId pickingCandidateId = Objects.requireNonNull(pickingCandidate.getId());
 
-		//
-		// Case: the PickFrom HU can be considered already packed
-		// i.e. it's an HU with exactly required qty and same packing instructions
-		final I_M_HU packedToHU;
-		if (packToMap.isOnlyOnePickingCandidatePackedTo(packToInfo)
-				&& huContext.getHUStorageFactory().isSingleProductWithQtyEqualsTo(pickFromHU, productId, qtyPicked)
-				&& HuPackingInstructionsId.equals(packToInfo.getPackToInstructionsId(), handlingUnitsBL.getPackingInstructionsId(pickFromHU)))
-		{
-			packedToHU = pickFromHU;
-		}
-		//
-		// Case: We have to split out and pack our HU
-		else
-		{
-			final PickingCandidateId pickingCandidateId = Objects.requireNonNull(pickingCandidate.getId());
-
-			final IHUProducerAllocationDestination packToDestination;
-			HULoader.builder()
-					.source(HUListAllocationSourceDestination.of(pickFromHU).setDestroyEmptyHUs(true))
-					.destination(packToDestination = packToMap.getPackToDestination(packToInfo))
-					.load(AllocationUtils.builder()
-							.setHUContext(huContext)
-							.setProduct(productId)
-							.setQuantity(qtyPicked)
-							.setFromReferencedTableRecord(pickingCandidateId.toTableRecordReference())
-							.setForceQtyAllocation(true)
-							.create());
-
-			packedToHU = packToDestination.getSingleCreatedHU()
-					.orElseThrow(() -> new AdempiereException("Nothing packed for " + pickingCandidate));
-		}
+		final I_M_HU packedToHU = packToMap.packToSingleHU(
+				huContext,
+				pickFromHUId,
+				productId,
+				qtyPicked,
+				pickingCandidateId);
 
 		addShipmentScheduleQtyPickedAndUpdateHU(shipmentSchedule, packedToHU, qtyPicked, huContext);
 		huContext.flush();
+
 		return HuId.ofRepoId(packedToHU.getM_HU_ID());
 	}
 
@@ -350,27 +321,31 @@ public class ProcessPickingCandidatesCommand
 			final I_M_ShipmentSchedule shipmentSchedule = getById(shipmentScheduleId);
 			return huShipmentScheduleBL.getBPartnerLocationId(shipmentSchedule);
 		}
+
+		public ProductId getProductId(@NonNull final ShipmentScheduleId shipmentScheduleId)
+		{
+			final I_M_ShipmentSchedule shipmentSchedule = getById(shipmentScheduleId);
+			return ProductId.ofRepoId(shipmentSchedule.getM_Product_ID());
+		}
 	}
 
-	@Value
-	@Builder
-	private static class PackToInfo
-	{
-		@NonNull HuPackingInstructionsId packToInstructionsId;
-		@NonNull BPartnerLocationId shipToBPLocationId;
-		@NonNull LocatorId shipFromLocatorId;
-		int packageNo;
-	}
+	//
+	//
+	// --------------------------------------------------------------------------------
+	//
+	//
 
 	private static class PackToMap
 	{
-		private static final int PACKAGE_NO_ZERO = 0;
-		private final AtomicInteger nextPackageNo = new AtomicInteger(100);
+		private final PackToHUsProducer packToHUsProducer;
 
 		private final HashMap<PickingCandidateId, PackToInfo> packToInfos = new HashMap<>();
 		private final HashMultimap<PackToInfo, PickingCandidateId> pickingCandidateIdsByPackToInfo = HashMultimap.create();
 
-		private final Map<PackToInfo, IHUProducerAllocationDestination> packToDestinations = new HashMap<>();
+		public PackToMap(@NonNull final PackToHUsProducer packToHUsProducer)
+		{
+			this.packToHUsProducer = packToHUsProducer;
+		}
 
 		public void setupPackToInfosFromPickingCandidates(
 				@NonNull final List<PickingCandidate> pickingCandidates,
@@ -378,7 +353,7 @@ public class ProcessPickingCandidatesCommand
 		{
 			for (final PickingCandidate pickingCandidate : pickingCandidates)
 			{
-				final PackToInfo packToDestinationInfo = extractPackToInfo(pickingCandidate, nextPackageNo, shipmentSchedulesCache);
+				final PackToInfo packToDestinationInfo = extractPackToInfo(pickingCandidate, shipmentSchedulesCache);
 				final PickingCandidateId pickingCandidateId = Objects.requireNonNull(pickingCandidate.getId());
 
 				this.packToInfos.put(pickingCandidateId, packToDestinationInfo);
@@ -386,32 +361,60 @@ public class ProcessPickingCandidatesCommand
 			}
 		}
 
-		private static PackToInfo extractPackToInfo(
+		private PackToInfo extractPackToInfo(
 				@NonNull final PickingCandidate pickingCandidate,
-				@NonNull final AtomicInteger nextPackageNo,
 				@NonNull final ShipmentSchedulesCache shipmentSchedulesCache)
 		{
-			final HuPackingInstructionsId packToInstructionsId = pickingCandidate.getPackToInstructionsId();
-			if (packToInstructionsId == null)
+			final PackToSpec packToSpec = pickingCandidate.getPackToSpec();
+			if (packToSpec == null)
 			{
 				throw new AdempiereException("Pack To Instructions shall be specified for " + pickingCandidate);
 			}
 
-			// PackageNo: if we deal with virtual handling units, pack each candidate individually (in a new VHU).
-			// If we deal with some real packing instructions then we pack all candidates with same instructions in same HU.
-			final int packageNo = packToInstructionsId.isVirtual() ? nextPackageNo.getAndIncrement() : PACKAGE_NO_ZERO;
-
 			final ShipmentScheduleId shipmentScheduleId = pickingCandidate.getShipmentScheduleId();
 
-			return PackToInfo.builder()
-					.packToInstructionsId(packToInstructionsId)
-					.shipToBPLocationId(shipmentSchedulesCache.getShipToBPLocationId(shipmentScheduleId))
-					.shipFromLocatorId(shipmentSchedulesCache.getShipFromLocatorId(shipmentScheduleId))
-					.packageNo(packageNo)
-					.build();
+			return packToHUsProducer.extractPackToInfo(
+					packToSpec,
+					shipmentSchedulesCache.getShipToBPLocationId(shipmentScheduleId),
+					shipmentSchedulesCache.getShipFromLocatorId(shipmentScheduleId));
 		}
 
-		public PackToInfo getPackToInfo(final PickingCandidateId pickingCandidateId)
+		public I_M_HU packToSingleHU(
+				@NonNull final IHUContext huContext,
+				@NonNull final HuId pickFromHUId,
+				@NonNull final ProductId productId,
+				@NonNull final Quantity qtyPicked,
+				@NonNull final PickingCandidateId pickingCandidateId)
+		{
+			final PackToInfo packToInfo = getPackToInfo(pickingCandidateId);
+			final boolean checkIfAlreadyPacked = isOnlyOnePickingCandidatePackedTo(packToInfo);
+			final List<I_M_HU> packedToHUs = packToHUsProducer.packToHU(
+					huContext,
+					pickFromHUId,
+					packToInfo,
+					productId,
+					qtyPicked,
+					pickingCandidateId.toTableRecordReference(),
+					checkIfAlreadyPacked);
+
+			if (packedToHUs.isEmpty())
+			{
+				throw new AdempiereException("Nothing was packed from " + pickFromHUId);
+			}
+			else if (packedToHUs.size() != 1)
+			{
+				final String packedHUsDisplayStr = packedToHUs.stream().map(hu -> String.valueOf(hu.getM_HU_ID())).collect(Collectors.joining(", "));
+				throw new AdempiereException("More than one HU was packed from " + pickFromHUId + ": " + packedHUsDisplayStr)
+						.appendParametersToMessage()
+						.setParameter("qtyPicked", qtyPicked);
+			}
+			else
+			{
+				return CollectionUtils.singleElement(packedToHUs);
+			}
+		}
+
+		private PackToInfo getPackToInfo(final PickingCandidateId pickingCandidateId)
 		{
 			final PackToInfo packToInfo = packToInfos.get(pickingCandidateId);
 			if (packToInfo == null)
@@ -421,27 +424,9 @@ public class ProcessPickingCandidatesCommand
 			return packToInfo;
 		}
 
-		public boolean isOnlyOnePickingCandidatePackedTo(final PackToInfo packToInfo)
+		private boolean isOnlyOnePickingCandidatePackedTo(final PackToInfo packToInfo)
 		{
 			return pickingCandidateIdsByPackToInfo.get(packToInfo).size() == 1;
-		}
-
-		public IHUProducerAllocationDestination getPackToDestination(final PackToInfo packToInfo)
-		{
-			return packToDestinations.computeIfAbsent(packToInfo, PackToMap::createPackToDestination);
-		}
-
-		private static IHUProducerAllocationDestination createPackToDestination(final PackToInfo packToInfo)
-		{
-			final HuPackingInstructionsId packToInstructionsId = packToInfo.getPackToInstructionsId();
-			final BPartnerLocationId shipToBPLocationId = packToInfo.getShipToBPLocationId();
-			final LocatorId shipFromLocatorId = packToInfo.getShipFromLocatorId();
-
-			return HUProducerDestination.of(packToInstructionsId)
-					.setMaxHUsToCreate(1)
-					.setBPartnerAndLocationId(shipToBPLocationId)
-					.setHUStatus(X_M_HU.HUSTATUS_Picked)
-					.setLocatorId(shipFromLocatorId);
 		}
 	}
 }

@@ -271,6 +271,7 @@ public class PickingJobCreateCommand
 				.qtyToPick(qtyToPick)
 				.mainPickFrom(mainPickFrom)
 				.pickFromAlternatives(pickFromAlternatives)
+				.packToSpec(planLine.getSourceDocumentInfo().getPackToSpec())
 				.build();
 	}
 

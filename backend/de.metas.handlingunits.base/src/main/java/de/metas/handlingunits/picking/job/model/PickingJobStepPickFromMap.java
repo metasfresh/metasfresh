@@ -9,6 +9,7 @@ import de.metas.handlingunits.HUBarcode;
 import de.metas.quantity.Quantity;
 import de.metas.util.collections.CollectionUtils;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
@@ -26,8 +27,9 @@ public class PickingJobStepPickFromMap
 {
 	@NonNull private final ImmutableMap<PickingJobStepPickFromKey, PickingJobStepPickFrom> map;
 
-	private final boolean reportedOnAllPickFroms;
 	@NonNull private final Optional<Quantity> qtyPickedSum;
+	@Getter
+	private final PickingJobProgress progress;
 
 	public static PickingJobStepPickFromMap ofList(@NonNull List<PickingJobStepPickFrom> pickFroms)
 	{
@@ -43,23 +45,24 @@ public class PickingJobStepPickFromMap
 
 		this.map = map;
 
-		boolean reportedOnAllPickFroms = true;
-		Quantity qtyPickedSum = null;
-		for (final PickingJobStepPickFrom pickFrom : map.values())
-		{
-			if (pickFrom.isPicked())
-			{
-				final PickingJobStepPickedTo pickedTo = Objects.requireNonNull(pickFrom.getPickedTo());
-				qtyPickedSum = Quantity.addNullables(qtyPickedSum, pickedTo.getQtyPicked());
-			}
-			else
-			{
-				reportedOnAllPickFroms = false;
-			}
-		}
+		this.qtyPickedSum = computeQtyPickedSum(map);
+		this.progress = computeProgress(map);
+	}
 
-		this.reportedOnAllPickFroms = reportedOnAllPickFroms;
-		this.qtyPickedSum = Optional.ofNullable(qtyPickedSum);
+	private static Optional<Quantity> computeQtyPickedSum(final @NonNull ImmutableMap<PickingJobStepPickFromKey, PickingJobStepPickFrom> map)
+	{
+		return map.values()
+				.stream()
+				.map(PickingJobStepPickFrom::getPickedTo)
+				.filter(Objects::nonNull)
+				.map(PickingJobStepPickedTo::getQtyPicked)
+				.reduce(Quantity::add);
+	}
+
+	private static PickingJobProgress computeProgress(final @NonNull ImmutableMap<PickingJobStepPickFromKey, PickingJobStepPickFrom> map)
+	{
+		final boolean isSomethingReported = map.values().stream().anyMatch(PickingJobStepPickFrom::isPicked);
+		return isSomethingReported ? PickingJobProgress.DONE : PickingJobProgress.NOT_STARTED;
 	}
 
 	public ImmutableSet<PickingJobStepPickFromKey> getKeys()
@@ -84,49 +87,6 @@ public class PickingJobStepPickFromMap
 				.filter(pickFrom -> pickFrom.getPickFromHU().getBarcode().equals(huBarcode))
 				.findFirst()
 				.orElseThrow(() -> new AdempiereException("No HU found for " + huBarcode));
-	}
-
-	public PickingJobProgress computeProgress(@NonNull final Quantity qtyToPick)
-	{
-		// Consider picked if user reported on all PickFroms
-		// FIXME: until we cannot pick alternatives on frontend side we cannot enforce this rule,
-		// because that would not allow us to partial pick on a picking job.
-		if (map.get(PickingJobStepPickFromKey.MAIN).isPicked())
-		//if (reportedOnAllPickFroms)
-		{
-			return PickingJobProgress.DONE;
-		}
-
-		// Definitely not picked if user did not report on any of the PickFroms
-		if (!qtyPickedSum.isPresent())
-		{
-			return PickingJobProgress.NOT_STARTED;
-		}
-
-		// Consider picked if user actually picked the whole required qty
-		final Quantity qtyToPickRemaining = qtyToPick.subtract(qtyPickedSum.get());
-		return qtyToPickRemaining.isZero()
-				? PickingJobProgress.DONE
-				: PickingJobProgress.IN_PROGRESS;
-	}
-
-	public boolean isPicked(@NonNull final Quantity qtyToPick)
-	{
-		// Consider picked if user reported on all PickFroms
-		if (reportedOnAllPickFroms)
-		{
-			return true;
-		}
-
-		// Definitely not picked if user did not report on any of the PickFroms
-		if (!qtyPickedSum.isPresent())
-		{
-			return false;
-		}
-
-		// Consider picked if user actually picked the whole required qty
-		final Quantity qtyToPickRemaining = qtyToPick.subtract(qtyPickedSum.get());
-		return qtyToPickRemaining.isZero();
 	}
 
 	public PickingJobStepPickFromMap reduceWithPickedEvent(

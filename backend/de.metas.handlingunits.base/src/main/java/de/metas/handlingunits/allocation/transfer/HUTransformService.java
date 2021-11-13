@@ -120,13 +120,15 @@ public class HUTransformService
 		return builderForHUcontext().huContext(huContext).build();
 	}
 
-	private final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-	private final transient IHUDocumentFactoryService huDocumentFactoryService = Services.get(IHUDocumentFactoryService.class);
-	private final transient IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
+	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	private final IHUDocumentFactoryService huDocumentFactoryService = Services.get(IHUDocumentFactoryService.class);
+	private final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
+	private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
+	private final IHUCapacityBL huCapacityBL = Services.get(IHUCapacityBL.class);
 
 	//
-	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	private final IHUContext huContext;
 	private final ImmutableList<TableRecordReference> referencedObjects;
@@ -151,7 +153,7 @@ public class HUTransformService
 
 		final Properties effectiveCtx = ctx != null ? ctx : Env.getCtx();
 		final String effectiveTrxName = CoalesceUtil.coalesce(trxName, ITrx.TRXNAME_ThreadInherited);
-		final IMutableHUContext mutableHUContext = Services.get(IHUContextFactory.class).createMutableHUContext(effectiveCtx, effectiveTrxName);
+		final IMutableHUContext mutableHUContext = huContextFactory.createMutableHUContext(effectiveCtx, effectiveTrxName);
 		if (emptyHUListener != null)
 		{
 			mutableHUContext.addEmptyHUListener(emptyHUListener);
@@ -528,8 +530,6 @@ public class HUTransformService
 			tuHUsToAttachToLU = tuToNewTUs(sourceTuHU, qtyTU);
 		}
 
-		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-
 		tuHUsToAttachToLU.forEach(tuToAttach -> {
 			final I_M_HU_PI piOfChildHU = handlingUnitsBL.getPI(tuToAttach);
 
@@ -563,15 +563,11 @@ public class HUTransformService
 	 * @param tuPIItemProduct       the PI item product to specify both the PI and capacity of the target TU
 	 */
 	public List<I_M_HU> cuToNewTUs(
-			final I_M_HU cuHU,
-			final Quantity qtyCU,
-			final I_M_HU_PI_Item_Product tuPIItemProduct,
+			@NonNull final I_M_HU cuHU,
+			@NonNull final Quantity qtyCU,
+			@NonNull final I_M_HU_PI_Item_Product tuPIItemProduct,
 			final boolean isOwnPackingMaterials)
 	{
-		Preconditions.checkNotNull(cuHU, "Param 'cuHU' may not be null");
-		Preconditions.checkNotNull(qtyCU, "Param 'qtyCU' may not be null");
-		Preconditions.checkNotNull(tuPIItemProduct, "Param 'tuPIItemProduct' may not be null");
-
 		final LUTUProducerDestination destination = new LUTUProducerDestination();
 		destination.setTUPI(tuPIItemProduct.getM_HU_PI_Item().getM_HU_PI_Version().getM_HU_PI());
 		destination.setIsHUPlanningReceiptOwnerPM(isOwnPackingMaterials);
@@ -579,7 +575,7 @@ public class HUTransformService
 		// gh #1759: explicitly take the capacity from the tuPIItemProduct which the user selected
 		final ProductId productId = ProductId.ofRepoId(tuPIItemProduct.getM_Product_ID());
 		final I_C_UOM uom = IHUPIItemProductBL.extractUOMOrNull(tuPIItemProduct);
-		final Capacity capacity = Services.get(IHUCapacityBL.class).getCapacity(tuPIItemProduct, productId, uom);
+		final Capacity capacity = huCapacityBL.getCapacity(tuPIItemProduct, productId, uom);
 		destination.addCUPerTU(capacity);
 
 		destination.setNoLU();

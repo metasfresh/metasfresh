@@ -1,5 +1,6 @@
 package de.metas.handlingunits.picking.job.service.commands;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.business.BusinessTestHelper;
 import de.metas.handlingunits.HUBarcode;
@@ -15,6 +16,7 @@ import de.metas.handlingunits.picking.job.model.PickingJobStepEventType;
 import de.metas.handlingunits.picking.job.model.PickingJobStepId;
 import de.metas.handlingunits.picking.job.model.PickingJobStepPickFromKey;
 import de.metas.handlingunits.picking.job.model.PickingJobStepPickedTo;
+import de.metas.handlingunits.picking.job.model.PickingJobStepPickedToHU;
 import de.metas.order.OrderAndLineId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -47,7 +49,7 @@ class PickingJob_Scenarios_Test
 		final HuId vhu1 = helper.createVHU(productId, "130");
 		System.out.println("VHU1: " + vhu1);
 
-		final OrderAndLineId orderAndLineId = OrderAndLineId.ofRepoIds(1, 2);
+		final OrderAndLineId orderAndLineId = helper.createOrderAndLineId("salesOrder001");
 		helper.packageable()
 				.orderAndLineId(orderAndLineId)
 				.productId(productId)
@@ -82,15 +84,22 @@ class PickingJob_Scenarios_Test
 			HUStorageExpectation.newExpectation().product(productId).qty("100").assertExpected(pickFromHUId);
 			HUStorageExpectation.newExpectation().product(productId).qty("30").assertExpected(vhu1);
 
-			final PickingJobStepPickedTo picked = pickingJob.getStepById(stepId).getPickFrom(PickingJobStepPickFromKey.MAIN).getPickedTo();
-			assertThat(picked).isNotNull();
-			assertThat(picked.getQtyPicked()).isEqualTo(Quantity.of("100", helper.uomEach));
-			assertThat(picked.getActualPickedHUId()).isEqualTo(pickFromHUId);
-			HUStorageExpectation.newExpectation().product(productId).qty(picked.getQtyPicked()).assertExpected(pickFromHUId);
+			{
+				final PickingJobStepPickedTo pickedTo = pickingJob.getStepById(stepId).getPickFrom(PickingJobStepPickFromKey.MAIN).getPickedTo();
+				assertThat(pickedTo).isNotNull();
+				assertThat(pickedTo.getQtyPicked()).isEqualTo(Quantity.of("100", helper.uomEach));
 
-			final PickingCandidate pickingCandidate = helper.pickingCandidateRepository.getById(picked.getPickingCandidateId());
-			assertThat(pickingCandidate.getPickFrom()).isEqualTo(PickFrom.ofHuId(pickFromHUId));
-			assertThat(pickingCandidate.getPackedToHuId()).isEqualTo(pickFromHUId);
+				assertThat(pickedTo.getActualPickedHUs()).hasSize(1);
+				{
+					final PickingJobStepPickedToHU pickedToHU = pickedTo.getActualPickedHUs().get(0);
+					assertThat(pickedToHU.getActualPickedHUId()).isEqualTo(pickFromHUId);
+					HUStorageExpectation.newExpectation().product(productId).qty(pickedTo.getQtyPicked()).assertExpected(pickFromHUId);
+
+					final PickingCandidate pickingCandidate = helper.pickingCandidateRepository.getById(pickedToHU.getPickingCandidateId());
+					assertThat(pickingCandidate.getPickFrom()).isEqualTo(PickFrom.ofHuId(pickFromHUId));
+					assertThat(pickingCandidate.getPackedToHuId()).isEqualTo(pickFromHUId);
+				}
+			}
 		}
 
 		//
@@ -115,7 +124,7 @@ class PickingJob_Scenarios_Test
 		final ProductId productId = BusinessTestHelper.createProductId("P1", helper.uomEach);
 		final HuId vhu1 = helper.createVHU(productId, "100");
 
-		final OrderAndLineId orderAndLineId = OrderAndLineId.ofRepoIds(1, 2);
+		final OrderAndLineId orderAndLineId = helper.createOrderAndLineId("salesOrder002");
 		helper.packageable()
 				.orderAndLineId(orderAndLineId)
 				.productId(productId)
@@ -144,13 +153,17 @@ class PickingJob_Scenarios_Test
 
 			assertThat(pickingJob.getStepById(stepId).getPickFrom(PickingJobStepPickFromKey.MAIN).getPickFromHU()).isEqualTo(HUInfo.ofHuId(vhu1));
 
-			final PickingJobStepPickedTo picked = pickingJob.getStepById(stepId).getPickFrom(PickingJobStepPickFromKey.MAIN).getPickedTo();
-			assertThat(picked)
+			final PickingJobStepPickedTo pickedTo = pickingJob.getStepById(stepId).getPickFrom(PickingJobStepPickFromKey.MAIN).getPickedTo();
+			assertThat(pickedTo)
 					.isNotNull()
 					.isEqualTo(PickingJobStepPickedTo.builder()
-							.qtyPicked(Quantity.of("100", helper.uomEach))
-							.actualPickedHUId(vhu1)
-							.pickingCandidateId(picked.getPickingCandidateId()) // N/A
+							.actualPickedHUs(ImmutableList.of(
+									PickingJobStepPickedToHU.builder()
+											.qtyPicked(Quantity.of("100", helper.uomEach))
+											.pickFromHUId(vhu1)
+											.actualPickedHUId(vhu1)
+											.pickingCandidateId(pickedTo.getActualPickedHUs().get(0).getPickingCandidateId()) // N/A
+											.build()))
 							.build());
 		}
 

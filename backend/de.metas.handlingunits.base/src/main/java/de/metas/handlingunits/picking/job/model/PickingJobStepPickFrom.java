@@ -47,9 +47,6 @@ public class PickingJobStepPickFrom
 
 	public PickingJobStepPickFrom withUnPickedEvent(@NonNull PickingJobStepUnpickInfo unpicked)
 	{
-		return toBuilder()
-				.pickFromHU(unpicked.getPickFromHU())
-				.pickedTo(null)
-				.build();
+		return toBuilder().pickedTo(null).build();
 	}
 }

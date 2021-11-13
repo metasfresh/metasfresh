@@ -46,7 +46,7 @@ import static io.github.jsonSnapshot.SnapshotMatcher.expect;
 import static io.github.jsonSnapshot.SnapshotMatcher.start;
 
 @ExtendWith(AdempiereTestWatcher.class)
-class CreatePickingPlanCommandTest
+class CreatePickingPlanCommand_UsingCUs_Test
 {
 	//
 	// Services

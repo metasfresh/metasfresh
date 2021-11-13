@@ -27,6 +27,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import de.metas.handlingunits.HUIteratorListenerAdapter;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.HuPackingInstructionsItemId;
@@ -36,6 +37,7 @@ import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHUDisplayNameBuilder;
 import de.metas.handlingunits.IHUIterator;
+import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -53,6 +55,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
+import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.model.X_M_HU;
@@ -104,6 +107,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 
 	private final IHUStorageFactory storageFactory = new DefaultHUStorageFactory();
 	private final IHandlingUnitsDAO handlingUnitsRepo = Services.get(IHandlingUnitsDAO.class);
+	private final IHUPIItemProductDAO huPIItemProductDAO = Services.get(IHUPIItemProductDAO.class);
 	private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
 	private final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
 	private final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
@@ -759,6 +763,11 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	public HuPackingInstructionsId getPackingInstructionsId(@NonNull final I_M_HU hu)
 	{
 		final HuPackingInstructionsVersionId piVersionId = HuPackingInstructionsVersionId.ofRepoId(hu.getM_HU_PI_Version_ID());
+		return getPackingInstructionsId(piVersionId);
+	}
+
+	private HuPackingInstructionsId getPackingInstructionsId(@NonNull final HuPackingInstructionsVersionId piVersionId)
+	{
 		final HuPackingInstructionsId knownPackingInstructionsId = piVersionId.getKnownPackingInstructionsIdOrNull();
 		if (knownPackingInstructionsId != null)
 		{
@@ -771,12 +780,36 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		}
 	}
 
+	@Override
+	public HuPackingInstructionsId getPackingInstructionsId(@NonNull final HuPackingInstructionsItemId piItemId)
+	{
+		final I_M_HU_PI_Item piItem = handlingUnitsRepo.getPackingInstructionItemById(piItemId);
+		final HuPackingInstructionsVersionId piVersionId = HuPackingInstructionsVersionId.ofRepoId(piItem.getM_HU_PI_Version_ID());
+		return getPackingInstructionsId(piVersionId);
+	}
+
 	@Nullable
 	@Override
 	public I_M_HU_PI getPI(final I_M_HU hu)
 	{
 		final I_M_HU_PI_Version piVersion = getPIVersion(hu);
-		return piVersion != null ? piVersion.getM_HU_PI() : null;
+		return piVersion != null ? getPI(piVersion) : null;
+	}
+
+	private I_M_HU_PI getPI(@NonNull final I_M_HU_PI_Version piVersion)
+	{
+		return piVersion.getM_HU_PI();
+	}
+
+	@Override
+	public I_M_HU_PI getPI(@NonNull final HuPackingInstructionsId id) {return handlingUnitsRepo.getPackingInstructionById(id);}
+
+	@Override
+	public I_M_HU_PI getPI(@NonNull final HUPIItemProductId huPIItemProductId)
+	{
+		final I_M_HU_PI_Item_Product huPIItemProduct = huPIItemProductDAO.getById(huPIItemProductId);
+		final HuPackingInstructionsItemId packingInstructionsItemId = HuPackingInstructionsItemId.ofRepoId(huPIItemProduct.getM_HU_PI_Item_ID());
+		return getPI(packingInstructionsItemId);
 	}
 
 	@Override
@@ -794,6 +827,15 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		return piItemId != null
 				? handlingUnitsRepo.getPackingInstructionItemById(piItemId)
 				: null;
+	}
+
+	@Override
+	public I_M_HU_PI getPI(@NonNull final HuPackingInstructionsItemId piItemId)
+	{
+		final I_M_HU_PI_Item piItem = handlingUnitsRepo.getPackingInstructionItemById(piItemId);
+		final HuPackingInstructionsVersionId piVersionId = HuPackingInstructionsVersionId.ofRepoId(piItem.getM_HU_PI_Version_ID());
+		final I_M_HU_PI_Version piVersion = handlingUnitsRepo.retrievePIVersionById(piVersionId);
+		return getPI(piVersion);
 	}
 
 	@NonNull

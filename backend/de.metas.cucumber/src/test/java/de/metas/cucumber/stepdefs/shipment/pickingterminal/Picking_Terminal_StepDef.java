@@ -31,6 +31,7 @@ import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.picking.PickingCandidateId;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.picking.candidate.commands.ProcessPickingCandidatesCommand;
+import de.metas.handlingunits.picking.candidate.commands.ProcessPickingCandidatesRequest;
 import de.metas.uom.UomId;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -88,7 +89,9 @@ public class Picking_Terminal_StepDef
 
 		final ProcessPickingCandidatesCommand processPickingCandidatesCommand = ProcessPickingCandidatesCommand.builder()
 				.pickingCandidateRepository(pickingCandidateRepository)
-				.pickingCandidateId(PickingCandidateId.ofRepoId(pickingCandidate.getM_Picking_Candidate_ID()))
+				.request(ProcessPickingCandidatesRequest.builder()
+						.pickingCandidateId(PickingCandidateId.ofRepoId(pickingCandidate.getM_Picking_Candidate_ID()))
+						.build())
 				.build();
 
 		processPickingCandidatesCommand.execute();
