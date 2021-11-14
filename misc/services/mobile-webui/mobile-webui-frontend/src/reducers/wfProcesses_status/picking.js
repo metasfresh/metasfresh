@@ -43,7 +43,13 @@ const generateAlternativeSteps = ({ draftState, wfProcessId, activityId, lineId,
   const { pickFromAlternatives } = draftDataStoredOrig;
   let remainingQtyRejected;
 
+  console.log('qtyRejectedOutsideFor:', qtyRejected);
+
   for (let idx = 0; idx < pickFromAlternatives.length; idx++) {
+    if (!qtyRejected) break;
+
+    console.log('qtyRejectedWithinFOR:', qtyRejected);
+
     if (pickFromAlternatives[idx].qtyAvailable >= qtyRejected) {
       draftDataStored.pickFromAlternatives[idx].qtyAvailable = pickFromAlternatives[idx].qtyAvailable - qtyRejected;
       draftStep.altSteps.genSteps[pickFromAlternatives[idx].id] = {
@@ -56,7 +62,13 @@ const generateAlternativeSteps = ({ draftState, wfProcessId, activityId, lineId,
       };
       break;
     } else {
+      console.log('id:', pickFromAlternatives[idx].id);
+      console.log('qtyAvailable:', pickFromAlternatives[idx].qtyAvailable);
+
       remainingQtyRejected = qtyRejected - pickFromAlternatives[idx].qtyAvailable;
+
+      console.log('Passing further remaining => ', remainingQtyRejected);
+
       draftDataStored.pickFromAlternatives[idx].qtyAvailable = 0;
       draftStep.altSteps.genSteps[pickFromAlternatives[idx].id] = {
         id: pickFromAlternatives[idx].id,
