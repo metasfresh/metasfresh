@@ -88,6 +88,7 @@ const generateAlternativeSteps = ({ draftState, wfProcessId, activityId, lineId,
           qtyRejected: remainingQtyRejected,
         });
       }
+      break;
     }
   }
 
