@@ -88,21 +88,20 @@ class PickStepScanHUScreen extends Component {
     // TODO: We should only set the scanned barcode if the quantity is correct and user submitted any
     // potential reason to wrong quantity.
 
-    console.log('update:', updateAltPickingStepQty, go, postStepPicked, altStepId);
-    console.log('qtyRR:', qtyRejected);
+    // console.log('update:', updateAltPickingStepQty, go, postStepPicked, altStepId);
+    // console.log('qtyRR:', qtyRejected);
 
-    updatePickingStepQty({
-      wfProcessId,
-      activityId,
-      lineId,
-      stepId,
-      scannedHUBarcode: scannedBarcode,
-      qtyPicked: qty,
-      qtyRejectedReasonCode: reason,
-      qtyRejected,
-    });
+    // updatePickingStepQty({
+    //   wfProcessId,
+    //   activityId,
+    //   lineId,
+    //   stepId,
+    //   scannedHUBarcode: scannedBarcode,
+    //   qtyPicked: qty,
+    //   qtyRejectedReasonCode: reason,
+    //   qtyRejected,
+    // });
 
-    /*
     postStepPicked({
       wfProcessId,
       activityId,
@@ -140,7 +139,6 @@ class PickStepScanHUScreen extends Component {
         go(-2);
       })
       .catch((axiosError) => toastError({ axiosError }));
-      */
   };
 
   validateQtyInput = (numberInput) => {
