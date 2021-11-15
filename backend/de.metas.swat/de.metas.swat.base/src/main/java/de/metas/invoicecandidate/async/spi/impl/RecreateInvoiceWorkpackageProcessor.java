@@ -7,6 +7,8 @@ import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
+import de.metas.contracts.ICommissionTriggerService;
+import de.metas.i18n.AdMessageKey;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
@@ -18,6 +20,8 @@ import de.metas.lock.api.ILockCommand;
 import de.metas.lock.api.ILockManager;
 import de.metas.lock.api.LockOwner;
 import de.metas.logging.LogManager;
+import de.metas.notification.INotificationBL;
+import de.metas.notification.UserNotificationRequest;
 import de.metas.process.PInstanceId;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
@@ -25,9 +29,11 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_PInstance;
+import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_Invoice;
-import org.compiere.model.I_C_Payment;
+import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import java.util.Iterator;
@@ -44,7 +50,13 @@ public class RecreateInvoiceWorkpackageProcessor extends WorkpackageProcessorAda
 	private final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
 	private final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
+	private final transient INotificationBL notificationBL = Services.get(INotificationBL.class);
 	private final ILockManager lockManager = Services.get(ILockManager.class);
+
+	private final ICommissionTriggerService commissionTriggerService = SpringContextHolder.instance.getBean(ICommissionTriggerService.class);
+
+	private final static AdMessageKey MSG_SKIPPED_INVOICE_NON_PAYMENT_ALLOC_INVOLVED = AdMessageKey.of("MSG_SKIPPED_INVOICE_NON_PAYMENT_ALLOC_INVOLVED");
+	private static final AdMessageKey MSG_SKIPPED_INVOICE_DUE_TO_COMMISSION = AdMessageKey.of("MSG_SKIPPED_INVOICE_DUE_TO_COMMISSION");
 
 	@Override
 	public Result processWorkPackage(@NonNull final I_C_Queue_WorkPackage workpackage, @NonNull final String trxName)
@@ -120,10 +132,31 @@ public class RecreateInvoiceWorkpackageProcessor extends WorkpackageProcessorAda
 	{
 		final I_C_Invoice inv = InterfaceWrapperHelper.create(invoice, I_C_Invoice.class);
 
-		final List<I_C_Payment> availablePayments = allocationDAO.retrieveInvoicePayments(inv);
+		if (hasAnyNonPaymentAllocations(inv))
+		{
+			final UserNotificationRequest userNotificationRequest = UserNotificationRequest.builder()
+					.contentADMessage(MSG_SKIPPED_INVOICE_NON_PAYMENT_ALLOC_INVOLVED)
+					.contentADMessageParam(inv.getDocumentNo())
+					.recipientUserId(Env.getLoggedUserId())
+					.build();
+			notificationBL.send(userNotificationRequest);
 
-		// if there is no payment and is paid (can be payed with credit memo, but no real payment), we can not void
-		return !(invoice.isPaid() && availablePayments.isEmpty());
+			return false;
+		}
+
+		if (commissionTriggerService.isSubjectToCommission(InvoiceId.ofRepoId(invoice.getC_Invoice_ID())))
+		{
+			final UserNotificationRequest userNotificationRequest = UserNotificationRequest.builder()
+					.contentADMessage(MSG_SKIPPED_INVOICE_DUE_TO_COMMISSION)
+					.contentADMessageParam(inv.getDocumentNo())
+					.recipientUserId(Env.getLoggedUserId())
+					.build();
+			notificationBL.send(userNotificationRequest);
+
+			return false;
+		}
+
+		return true;
 	}
 
 	@NonNull
@@ -135,5 +168,13 @@ public class RecreateInvoiceWorkpackageProcessor extends WorkpackageProcessorAda
 		invoicingParams.setSupplementMissingPaymentTermIds(true);
 
 		return invoicingParams;
+	}
+
+	private boolean hasAnyNonPaymentAllocations(@NonNull final I_C_Invoice invoice)
+	{
+		final List<I_C_AllocationLine> availableAllocationLines = allocationDAO.retrieveAllocationLines(invoice);
+
+		return availableAllocationLines.stream()
+				.anyMatch(allocationLine -> allocationLine.getC_Payment_ID() <= 0);
 	}
 }
