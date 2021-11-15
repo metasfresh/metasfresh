@@ -82,9 +82,10 @@ class PickStepScreen extends Component {
   }
 
   render() {
-    const {
-      stepProps: { huBarcode, qtyToPick, scannedHUBarcode, qtyPicked },
-    } = this.props;
+    console.log('P:', this.props);
+
+    const { stepProps, altStepId } = this.props;
+    const { huBarcode, qtyToPick, scannedHUBarcode, qtyPicked } = stepProps;
 
     const isValidCode = !!scannedHUBarcode;
     const scanButtonCaption = isValidCode
@@ -94,19 +95,22 @@ class PickStepScreen extends Component {
     const scanButtonStatus = isValidCode ? CompleteStatus.COMPLETED : CompleteStatus.NOT_STARTED;
     const nothingPicked = !isValidCode || !qtyPicked;
 
+    const customHuCode = altStepId ? stepProps.altSteps.genSteps[altStepId].huBarcode : huBarcode;
+    const customQtyToPick = altStepId ? stepProps.altSteps.genSteps[altStepId].qtyAvailable : qtyToPick;
+
     return (
       <>
         <div className="columns is-mobile">
           <div className="column is-half has-text-right has-text-weight-bold pb-0 pl-0 pr-0">
             {counterpart.translate('general.Barcode')}
           </div>
-          <div className="column is-half has-text-left pb-0">{huBarcode}</div>
+          <div className="column is-half has-text-left pb-0">{customHuCode}</div>
         </div>
         <div className="columns is-mobile">
           <div className="column is-half has-text-right has-text-weight-bold pb-0 pl-0 pr-0">
             {counterpart.translate('general.QtyToPick')}:
           </div>
-          <div className="column is-half has-text-left pb-0">{qtyToPick}</div>
+          <div className="column is-half has-text-left pb-0">{customQtyToPick}</div>
         </div>
         <div className="mt-0">
           <button className="button is-outlined complete-btn" onClick={this.onScanHUButtonClick}>
