@@ -6,7 +6,6 @@ import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.api.IWorkPackageBlockBuilder;
 import de.metas.async.api.IWorkPackageBuilder;
-import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.user.UserId;
 import de.metas.util.Check;
@@ -392,18 +391,12 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 				@NonNull final Collection<Object> modelsToEnqueue,
 				@Nullable final AsyncBatchId asyncBatchId)
 		{
-			final IWorkPackageBuilder builder = blockBuilder.newWorkpackage()
+			blockBuilder.newWorkpackage()
 					.setUserInChargeId(userIdInCharge)
 					.parameters(parameters)
-					.addElements(modelsToEnqueue);
-
-			if (asyncBatchId != null)
-			{
-				final I_C_Async_Batch asyncBatch = asyncBatchBL.getAsyncBatchById(asyncBatchId);
-				builder.setC_Async_Batch(asyncBatch);
-			}
-
-			builder.build();
+					.addElements(modelsToEnqueue)
+					.setC_Async_Batch_ID(asyncBatchId)
+					.build();
 		}
 
 		private void createAndSubmitWorkpackagesByAsyncBatch(@NonNull final IWorkPackageBlockBuilder blockBuilder)

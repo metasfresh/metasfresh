@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.async
+ * de-metas-salesorder
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,9 +20,23 @@
  * #L%
  */
 
-package de.metas.async.asyncbatchmilestone.eventbus;
+package de.metas.salesorder.candidate;
 
-public interface AsyncMilestoneNotifyRequestHandler
+import de.metas.process.PInstanceId;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+
+@Value
+@Builder
+public class ProcessOLCandsRequest
 {
-	void handleRequest(final AsyncMilestoneNotifyRequest request);
+	@NonNull
+	PInstanceId pInstanceId;
+
+	boolean ship;
+
+	boolean invoice;
+
+	boolean closeOrder;
 }

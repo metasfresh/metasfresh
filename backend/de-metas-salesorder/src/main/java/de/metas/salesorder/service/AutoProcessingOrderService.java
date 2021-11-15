@@ -42,7 +42,6 @@ import de.metas.inoutcandidate.shippertransportation.ShipperDeliveryService;
 import de.metas.invoice.InvoiceService;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
-import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.logging.LogManager;
 import de.metas.order.OrderId;
@@ -75,7 +74,6 @@ public class AutoProcessingOrderService
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
-	private final IInvoiceCandDAO invoiceCandidateDAO = Services.get(IInvoiceCandDAO.class);
 
 	private final OrderService orderService;
 	private final ShipmentService shipmentService;
@@ -99,25 +97,6 @@ public class AutoProcessingOrderService
 		this.shipperDeliveryService = shipperDeliveryService;
 		this.shipperTransportationRepository = shipperTransportationRepository;
 		this.inOutToTransportationOrderService = inOutToTransportationOrderService;
-	}
-
-
-	public void createAndCompleteInvoices(@NonNull final OrderId orderId)
-	{
-		final List<I_C_Invoice_Candidate> candidates = orderService.generateInvoiceCandidates(orderId);
-		if (candidates.isEmpty())
-		{
-			Loggables.withLogger(logger, Level.INFO).addLog("Returning! No Invoice Candidates generated for C_Order_ID={}", orderId.getRepoId());
-			return;
-		}
-
-		final Set<InvoiceCandidateId> invoiceCandidateIds = candidates
-				.stream()
-				.map(I_C_Invoice_Candidate::getC_Invoice_Candidate_ID)
-				.map(InvoiceCandidateId::ofRepoId)
-				.collect(ImmutableSet.toImmutableSet());
-
-		invoiceService.processInvoiceCandidates(invoiceCandidateIds, true);
 	}
 
 	public void completeShipAndInvoice(@NonNull final OrderId orderId)
@@ -172,7 +151,7 @@ public class AutoProcessingOrderService
 				.map(InvoiceCandidateId::ofRepoId)
 				.collect(ImmutableSet.toImmutableSet());
 
-		invoiceService.processInvoiceCandidates(invoiceCandidateIds, false);
+		invoiceService.processInvoiceCandidates(invoiceCandidateIds);
 	}
 
 	private boolean sameShippingAndBillingAddress(
@@ -237,6 +216,7 @@ public class AutoProcessingOrderService
 				.shipperBPartnerAndLocationId(shipFromBPWarehouseLocation.getBpartnerLocationId())
 				.orgId(OrgId.ofRepoId(shipment.getAD_Org_ID()))
 				.shipDate(shipDate)
+				.assignAnonymouslyPickedHUs(true)
 				.build();
 
 		final ShipperTransportationId shipperTransportationId = shipperTransportationRepository.create(createShipperTransportationRequest);

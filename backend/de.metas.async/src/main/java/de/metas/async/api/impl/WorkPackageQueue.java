@@ -473,7 +473,7 @@ public class WorkPackageQueue implements IWorkPackageQueue
 		//
 
 		// C_Async_Batch_ID - get it from context if available
-		// set only if is not new workpackage; the first new one is always for the the async batch itself and we do want to track it
+		// set only if is not new workpackage; the first new one is always for the async batch itself and we do want to track it
 		if (!asyncBatchForNewWorkpackagesSet)
 		{
 			final AsyncBatchId asyncBatchId = getAsyncBatchIdForNewWorkpackage();
