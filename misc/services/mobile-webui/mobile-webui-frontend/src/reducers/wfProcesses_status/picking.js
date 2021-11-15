@@ -12,98 +12,10 @@ export const pickingReducer = ({ draftState, action }) => {
       return reduceOnUpdateQtyPicked(draftState, action.payload);
     }
 
-    case types.UPDATE_ALT_PICKING_STEP_QTY: {
-      return reduceOnAlternatePickingQty(draftState, action.payload);
-    }
-
     default: {
       return draftState;
     }
   }
-};
-
-const reduceOnAlternatePickingQty = (draftState, payload) => {
-  const { wfProcessId, activityId, lineId, stepId, altStepId, scannedHUBarcode, qtyPicked, qtyRejectedReasonCode } =
-    payload;
-
-  const draftWFProcess = draftState[wfProcessId];
-  const draftAltStep =
-    draftWFProcess.activities[activityId].dataStored.lines[lineId].steps[stepId].altSteps.genSteps[altStepId];
-  draftAltStep.scannedHUBarcode = scannedHUBarcode;
-  draftAltStep.qtyPicked = qtyPicked;
-  draftAltStep.qtyRejectedReasonCode = qtyRejectedReasonCode;
-
-  return draftState;
-};
-
-const generateAlternativeSteps = ({ draftState, wfProcessId, activityId, lineId, stepId, qtyRejected }) => {
-  const draftDataStored = draftState[wfProcessId].activities[activityId].dataStored;
-  const draftDataStoredOrig = original(draftDataStored);
-  const draftStep = draftState[wfProcessId].activities[activityId].dataStored.lines[lineId].steps[stepId];
-  const { pickFromAlternatives } = draftDataStoredOrig;
-  let remainingQtyRejected;
-
-  console.log('qtyRejectedOutsideFor:', qtyRejected);
-
-  for (let idx = 0; idx < pickFromAlternatives.length; idx++) {
-    if (!qtyRejected) break;
-
-    console.log('qtyRejectedWithinFOR:', qtyRejected);
-
-    if (pickFromAlternatives[idx].qtyAvailable >= qtyRejected) {
-      draftDataStored.pickFromAlternatives[idx].qtyAvailable = pickFromAlternatives[idx].qtyAvailable - qtyRejected;
-      draftStep.altSteps.genSteps[pickFromAlternatives[idx].id] = {
-        id: pickFromAlternatives[idx].id,
-        locatorName: pickFromAlternatives[idx].locatorName,
-        huBarcode: pickFromAlternatives[idx].huBarcode,
-        uom: pickFromAlternatives[idx].uom,
-        qtyAvailable: qtyRejected,
-        qtyPicked: 0,
-      };
-      break;
-    } else {
-      console.log('id:', pickFromAlternatives[idx].id);
-      console.log('qtyAvailable:', pickFromAlternatives[idx].qtyAvailable);
-
-      remainingQtyRejected = qtyRejected - pickFromAlternatives[idx].qtyAvailable;
-
-      console.log('Passing further remaining => ', remainingQtyRejected);
-
-      draftDataStored.pickFromAlternatives[idx].qtyAvailable = 0;
-      draftStep.altSteps.genSteps[pickFromAlternatives[idx].id] = {
-        id: pickFromAlternatives[idx].id,
-        locatorName: pickFromAlternatives[idx].locatorName,
-        huBarcode: pickFromAlternatives[idx].huBarcode,
-        uom: pickFromAlternatives[idx].uom,
-        qtyAvailable: pickFromAlternatives[idx].qtyAvailable,
-        qtyPicked: 0,
-      };
-      if (remainingQtyRejected > 0) {
-        generateAlternativeSteps({
-          draftState,
-          wfProcessId,
-          activityId,
-          lineId,
-          stepId,
-          qtyRejected: remainingQtyRejected,
-        });
-      }
-      break;
-    }
-  }
-
-  // console.log('QTY REJECTED NOW => ', qtyRejected);
-  // console.log('STEP:', draftStep);
-
-  // const remainingQty = qtyRejected - 1;
-
-  // console.log('Remaining QTY:', remainingQty);
-
-  // if (remainingQty > 0) {
-  //   generateAlternativeSteps({ draftState, wfProcessId, activityId, lineId, stepId, qtyRejected: remainingQty });
-  // }
-
-  return draftState;
 };
 
 const reduceOnUpdateQtyPicked = (draftState, payload) => {
@@ -132,7 +44,14 @@ const reduceOnUpdateQtyPicked = (draftState, payload) => {
 
   if (!altStepId) {
     console.log('QtyRejected =====>', qtyRejected);
-    draftState = generateAlternativeSteps({ draftState, wfProcessId, activityId, lineId, stepId, qtyRejected });
+    draftState = generateAlternativeSteps({
+      draftState,
+      wfProcessId,
+      activityId,
+      lineId,
+      stepId,
+      qtyToAllocate: qtyRejected,
+    });
   }
 
   updateStepStatus({
@@ -143,6 +62,71 @@ const reduceOnUpdateQtyPicked = (draftState, payload) => {
   });
 
   return draftState;
+};
+
+const generateAlternativeSteps = ({ draftState, wfProcessId, activityId, lineId, stepId, qtyToAllocate }) => {
+  const draftDataStored = draftState[wfProcessId].activities[activityId].dataStored;
+  const draftDataStoredOrig = original(draftDataStored);
+  const draftStep = draftDataStored.lines[lineId].steps[stepId];
+  const { pickFromAlternatives: alternativesPool } = draftDataStoredOrig;
+
+  console.log('qtyRejectedOutsideFor:', qtyToAllocate);
+
+  let qtyToAllocateRemaining = qtyToAllocate;
+
+  for (let idx = 0; idx < alternativesPool.length; idx++) {
+    const alternativesPoolItem = alternativesPool[idx];
+    deallocateQtyAvailable({ alternativesPoolItem, stepId });
+  }
+
+  for (let idx = 0; idx < alternativesPool.length; idx++) {
+    if (qtyToAllocateRemaining === 0) {
+      break;
+    } else {
+      const alternativesPoolItem = alternativesPool[idx];
+      const qtyAvailableToAllocateInThisStep = computeQtyAvailableToAllocate({ alternativesPoolItem });
+
+      const qtyToAllocateThisStep = Math.min(qtyToAllocateRemaining, qtyAvailableToAllocateInThisStep);
+
+      draftStep.altSteps.genSteps[alternativesPoolItem.id] = {
+        id: alternativesPoolItem.id,
+        locatorName: alternativesPoolItem.locatorName,
+        huBarcode: alternativesPoolItem.huBarcode,
+        uom: alternativesPoolItem.uom,
+        qtyAvailable: qtyToAllocateThisStep,
+      };
+
+      allocateQtyAvailable({
+        alternativesPoolItem,
+        stepId,
+        qtyToAllocate: qtyToAllocateThisStep,
+      });
+
+      qtyToAllocateRemaining = qtyToAllocateRemaining - qtyToAllocateThisStep;
+    }
+  }
+
+  return draftState;
+};
+
+const computeQtyAvailableToAllocate = ({ alternativesPoolItem }) => {
+  return alternativesPoolItem.qtyAvailable - computeQtyAllocated({ alternativesPoolItem });
+};
+
+const computeQtyAllocated = ({ alternativesPoolItem }) => {
+  if (!alternativesPoolItem.allocatedQtys) {
+    return 0;
+  }
+
+  return Object.values(alternativesPoolItem.allocatedQtys).reduce((acc, qty) => acc + qty, 0);
+};
+
+const allocateQtyAvailable = ({ alternativesPoolItem, stepId, qtyToAllocate }) => {
+  alternativesPoolItem.allocatedQtys[stepId] = qtyToAllocate;
+};
+
+const deallocateQtyAvailable = ({ alternativesPoolItem, stepId }) => {
+  delete alternativesPoolItem.allocatedQtys[stepId];
 };
 
 const updateStepStatus = ({ draftWFProcess, activityId, lineId, stepId }) => {
@@ -160,6 +144,8 @@ const computeStepStatus = ({ draftStep }) => {
   console.log('qtyPicked=', draftStep.qtyPicked);
   console.log('qtyToPick=', draftStep.qtyToPick);
   console.log('   => diff=', draftStep.qtyToPick - draftStep.qtyPicked === 0);
+
+  // NOTE: for now we consider a step completed if the user reported something on it
 
   const isStepCompleted =
     // Barcode is set
