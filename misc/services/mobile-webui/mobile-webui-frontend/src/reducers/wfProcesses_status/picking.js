@@ -287,7 +287,7 @@ registerHandler({
     };
   },
   computeActivityDataStoredInitialValue: ({ componentProps }) => {
-    console.log('computeActivityDataStoredInitialValue for ', componentProps);
+    console.log('picking: computeActivityDataStoredInitialValue for ', componentProps);
     return { lines: componentProps.lines, pickFromAlternatives: componentProps.pickFromAlternatives };
   },
 });
