@@ -113,11 +113,11 @@ PickStepButton.propTypes = {
   qtyPicked: PropTypes.number,
   qtyToPick: PropTypes.number.isRequired,
   stepState: PropTypes.object,
-  onHandleClick: PropTypes.func.isRequired,
   pickFromAlternatives: PropTypes.object,
   //
-  // Actions
+  // Actions/Functions
   dispatch: PropTypes.func.isRequired,
+  onHandleClick: PropTypes.func.isRequired,
 };
 
 export default StepButton(PickStepButton);
