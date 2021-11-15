@@ -242,29 +242,27 @@ const normalizePickingLines = (lines) => {
       ...line,
       steps: line.steps.reduce((accum, step) => {
         accum[step.pickingStepId] = step;
-        accum[step.pickingStepId].altSteps = {};
-        accum[step.pickingStepId].altSteps.qtyToPick = 0;
-        accum[step.pickingStepId].altSteps.genSteps = {};
+        accum[step.pickingStepId].altSteps = { qtyToPick: 0, genSteps: {} };
 
         // Mock generated steps - used for testing w/o real data
-        accum[step.pickingStepId].altSteps.genSteps = {
-          1000819: {
-            id: '1000819',
-            locatorName: 'Hauptlager',
-            huBarcode: '1000437',
-            uom: 'Kg',
-            qtyAvailable: 45,
-            qtyPicked: 0,
-          },
-          1000820: {
-            id: '1000820',
-            locatorName: 'Hauptlager',
-            huBarcode: '1000463',
-            uom: 'Kg',
-            qtyAvailable: 25,
-            qtyPicked: 0,
-          },
-        };
+        // accum[step.pickingStepId].altSteps.genSteps = {
+        //   1000819: {
+        //     id: '1000819',
+        //     locatorName: 'Hauptlager',
+        //     huBarcode: '1000437',
+        //     uom: 'Kg',
+        //     qtyAvailable: 45,
+        //     qtyPicked: 0,
+        //   },
+        //   1000820: {
+        //     id: '1000820',
+        //     locatorName: 'Hauptlager',
+        //     huBarcode: '1000463',
+        //     uom: 'Kg',
+        //     qtyAvailable: 25,
+        //     qtyPicked: 0,
+        //   },
+        // };
 
         return accum;
       }, {}),

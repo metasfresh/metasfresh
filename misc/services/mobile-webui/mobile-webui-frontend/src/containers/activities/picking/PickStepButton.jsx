@@ -68,7 +68,7 @@ class PickStepButton extends PureComponent {
                     </div>
                     <div className="picking-row-picking">{counterpart.translate('activities.picking.picked')}:</div>
                     <div className="picking-row-picked">
-                      {qtyPicked} {uom}
+                      {altStepId ? stepState.altSteps.genSteps[altStepId].qtyPicked : qtyPicked} {uom}
                     </div>
                   </div>
                 </div>
