@@ -23,9 +23,9 @@
 package de.metas.util.web.audit;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.audit.ApiAuditLoggable;
-import de.metas.audit.request.ApiRequestAudit;
-import de.metas.audit.request.Status;
+import de.metas.audit.apirequest.ApiAuditLoggable;
+import de.metas.audit.apirequest.request.ApiRequestAudit;
+import de.metas.audit.apirequest.request.Status;
 import de.metas.util.Loggables;
 import lombok.NonNull;
 import org.adempiere.util.lang.IAutoCloseable;

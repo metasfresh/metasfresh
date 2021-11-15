@@ -750,6 +750,7 @@ public class OrderBL implements IOrderBL
 				.setFrom(DocumentLocation.builder()
 								 .bpartnerId(newBPartnerLocationId.getBpartnerId())
 								 .bpartnerLocationId(newBPartnerLocationId.getBpartnerLocationId())
+								 .locationId(newBPartnerLocationId.getLocationCaptureId())
 								 .contactId(newContactId)
 								 .build());
 

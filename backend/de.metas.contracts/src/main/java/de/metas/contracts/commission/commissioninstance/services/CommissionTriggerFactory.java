@@ -1,16 +1,18 @@
 package de.metas.contracts.commission.commissioninstance.services;
 
-import org.springframework.stereotype.Service;
-
-import de.metas.contracts.commission.Beneficiary;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.contracts.commission.Customer;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionPoints;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTrigger;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTriggerData;
-import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTriggerDocument;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTriggerData.CommissionTriggerDataBuilder;
+import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTriggerDocument;
+import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.springframework.stereotype.Service;
 
 /*
  * #%L
@@ -37,9 +39,13 @@ import lombok.NonNull;
 @Service
 public class CommissionTriggerFactory
 {
+
+	private final IBPartnerOrgBL bPartnerOrgBL = Services.get(IBPartnerOrgBL.class);
+
 	/**
 	 * @param documentDeleted might be true for invoice candidates
 	 */
+	@NonNull
 	public CommissionTrigger createForDocument(
 			@NonNull final CommissionTriggerDocument commissionTriggerDocument,
 			final boolean documentDeleted)
@@ -47,21 +53,21 @@ public class CommissionTriggerFactory
 		final CommissionTriggerData triggerData = createForRequest(commissionTriggerDocument, documentDeleted);
 
 		final Customer customer = Customer.of(commissionTriggerDocument.getCustomerBPartnerId());
-		
-		// set benefiary to be the customer-bpartner, because at this point we don't know if 
-		// * the customer is also a samesrep and 
-		// * if they might get something out of their own purchase too.
-		final Beneficiary beneficiary = Beneficiary.of(commissionTriggerDocument.getCustomerBPartnerId());
+
+		final BPartnerId orgBPartnerId = bPartnerOrgBL.retrieveLinkedBPartnerId(commissionTriggerDocument.getOrgId())
+				.orElseThrow(() -> new AdempiereException("NO BPartner found for org:" + commissionTriggerDocument.getOrgId()));
 
 		final CommissionTrigger trigger = CommissionTrigger.builder()
 				.customer(customer)
-				.beneficiary(beneficiary)
+				.salesRepId(commissionTriggerDocument.getSalesRepBPartnerId())
+				.orgBPartnerId(orgBPartnerId)
 				.commissionTriggerData(triggerData)
 				.build();
 
 		return trigger;
 	}
 
+	@NonNull
 	private CommissionTriggerData createForRequest(
 			@NonNull final CommissionTriggerDocument commissionTriggerDocument,
 			final boolean documentDeleted)

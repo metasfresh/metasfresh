@@ -57,6 +57,7 @@ import org.compiere.util.TimeUtil;
 import javax.annotation.Nullable;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -196,7 +197,7 @@ class OrderAttachmentRowsLoader
 	}
 
 	@NonNull
-	private OrderAttachmentRow buildRowFromPrescription(@NonNull final TableRecordReference recordReference,@NonNull final AttachmentEntry attachmentEntry)
+	private OrderAttachmentRow buildRowFromPrescription(@NonNull final TableRecordReference recordReference, @NonNull final AttachmentEntry attachmentEntry)
 	{
 		final I_Alberta_PrescriptionRequest prescriptionRequest = Optional.ofNullable(prescriptionRequestRecordRefs.get(recordReference))
 				.orElseThrow(() -> new AdempiereException("No I_Alberta_PrescriptionRequest present for given record reference: " + recordReference));
@@ -326,17 +327,19 @@ class OrderAttachmentRowsLoader
 				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
 
-		if (Check.isEmpty(salesOrderLineIds))
+		final HashSet<OrderId> salesOrderIds = new HashSet<>();
+		if (!Check.isEmpty(salesOrderLineIds))
 		{
-			return Optional.empty();
+			orderDAO.retrieveOrderLinesByIds(salesOrderLineIds)
+					.stream()
+					.map(I_C_OrderLine::getC_Order_ID)
+					.map(OrderId::ofRepoId)
+					.forEach(salesOrderIds::add);
 		}
-
-		final Set<OrderId> salesOrderIds = orderDAO.retrieveOrderLinesByIds(salesOrderLineIds)
-				.stream()
-				.map(I_C_OrderLine::getC_Order_ID)
-				.map(OrderId::ofRepoId)
-				.collect(ImmutableSet.toImmutableSet());
-
+		if (purchaseOrder.getLink_Order_ID() > 0) // C_OrderLine.Link_OrderLine_ID might be null, but there might be a 1:1 linked sales order
+		{
+			salesOrderIds.add(OrderId.ofRepoId(purchaseOrder.getLink_Order_ID()));
+		}
 		return Optional.of(orderDAO.getByIds(salesOrderIds));
 	}
 

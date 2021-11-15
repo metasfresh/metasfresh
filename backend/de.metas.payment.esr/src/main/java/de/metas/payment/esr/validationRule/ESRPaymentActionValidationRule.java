@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package de.metas.payment.esr.validationRule;
 
@@ -13,23 +13,22 @@ package de.metas.payment.esr.validationRule;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-
+import com.google.common.collect.ImmutableSet;
+import de.metas.payment.esr.model.I_ESR_ImportLine;
+import de.metas.payment.esr.model.X_ESR_ImportLine;
+import de.metas.util.StringUtils;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.validationRule.AbstractJavaValidationRule;
 import org.adempiere.ad.validationRule.IValidationContext;
@@ -37,15 +36,14 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.Env;
 import org.compiere.util.NamePair;
 
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.payment.esr.model.I_ESR_ImportLine;
-import de.metas.payment.esr.model.X_ESR_ImportLine;
-import de.metas.util.StringUtils;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 /**
  * @author ad
- * 
+ *
  */
 public class ESRPaymentActionValidationRule extends AbstractJavaValidationRule
 {
@@ -109,7 +107,6 @@ public class ESRPaymentActionValidationRule extends AbstractJavaValidationRule
 		overPaymentGroup.add(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Allocate_Payment_With_Next_Invoice);
 		overPaymentGroup.add(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Money_Was_Transfered_Back_to_Partner);
 		overPaymentGroup.add(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Unable_To_Assign_Income); // metas-tsa: added per Mark request
-		overPaymentGroup.add(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Duplicate_Payment); 
 
 		final List<String> noActionGroup = new ArrayList<String>();
 		// only show <code>X_ESR_ImportLine.ESR_PAYMENT_ACTION_Unable_To_Assign_Income</code> action when c_invoice_id is empty
