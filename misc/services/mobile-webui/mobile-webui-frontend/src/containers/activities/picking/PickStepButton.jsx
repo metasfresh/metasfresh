@@ -29,12 +29,19 @@ class PickStepButton extends PureComponent {
 
   render() {
     const {
+      appId,
+      wfProcessId,
+      activityId,
+      huBarcode,
+      pickFromAlternatives,
       lineId,
       locatorName,
       uom,
       stepState: { qtyPicked, completeStatus },
       qtyToPick,
+      stepId,
       altStepId,
+      stepState,
     } = this.props;
 
     return (
@@ -73,7 +80,18 @@ class PickStepButton extends PureComponent {
             </div>
           </div>
         </button>
-        {!altStepId && <PickAlternatives {...this.props} />}
+        {!altStepId && (
+          <PickAlternatives
+            appId={appId}
+            wfProcessId={wfProcessId}
+            activityId={activityId}
+            lineId={lineId}
+            huBarcode={huBarcode}
+            pickFromAlternatives={pickFromAlternatives}
+            stepState={stepState}
+            stepId={stepId}
+          />
+        )}
       </div>
     );
   }
@@ -82,6 +100,7 @@ class PickStepButton extends PureComponent {
 PickStepButton.propTypes = {
   //
   // Props
+  appId: PropTypes.string.isRequired,
   wfProcessId: PropTypes.string.isRequired,
   activityId: PropTypes.string.isRequired,
   lineId: PropTypes.string.isRequired,
@@ -95,6 +114,7 @@ PickStepButton.propTypes = {
   qtyToPick: PropTypes.number.isRequired,
   stepState: PropTypes.object,
   onHandleClick: PropTypes.func.isRequired,
+  pickFromAlternatives: PropTypes.object,
   //
   // Actions
   dispatch: PropTypes.func.isRequired,
