@@ -49,7 +49,10 @@ class PickStepButton extends PureComponent {
 
             <div className="caption-btn">
               <div className="rows">
-                <div className="row is-full pl-5">{locatorName}</div>
+                <div className="row is-full pl-5">
+                  {altStepId ? 'ALT:' : ''}
+                  {locatorName}
+                </div>
                 <div className="row is-full is-size-7">
                   <div className="picking-row-info">
                     <div className="picking-to-pick">{counterpart.translate('activities.picking.target')}:</div>
