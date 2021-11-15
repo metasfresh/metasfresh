@@ -108,7 +108,7 @@ public class CreatePurchaseCandidatesService
 		this.warehouseService = warehouseService;
 	}
 
-	public Optional<JsonPurchaseCandidate> createCandidate(@RequestBody final JsonPurchaseCandidateCreateItem request)
+	public Optional<JsonPurchaseCandidate> createCandidate(@NonNull final JsonPurchaseCandidateCreateItem request)
 	{
 		final Optional<PurchaseCandidateId> alreadyCreatedCandId = retrieveAlreadyCreatedCandId(request);
 		if (alreadyCreatedCandId.isPresent())
@@ -130,7 +130,7 @@ public class CreatePurchaseCandidatesService
 								   .build());
 	}
 
-	public PurchaseCandidate toPurchaseCandidate(final JsonPurchaseCandidateCreateItem request)
+	public PurchaseCandidate toPurchaseCandidate(@NonNull final JsonPurchaseCandidateCreateItem request)
 	{
 		final OrgId orgId = RestUtils.retrieveOrgIdOrDefault(request.getOrgCode());
 		final ProductId productId = getProductByIdentifier(orgId, request.getProductIdentifier());
@@ -196,7 +196,7 @@ public class CreatePurchaseCandidatesService
 
 	}
 
-	private AttributeSetInstanceId getAttributeSetInstanceId(final @Nullable JsonAttributeSetInstance attributeSetInstance)
+	private AttributeSetInstanceId getAttributeSetInstanceId(@Nullable final JsonAttributeSetInstance attributeSetInstance)
 	{
 		if (attributeSetInstance == null || Check.isEmpty(attributeSetInstance.getAttributeInstances()))
 		{
@@ -212,7 +212,7 @@ public class CreatePurchaseCandidatesService
 		return AttributeSetInstanceId.ofRepoId(attributeSetInstanceBL.createASIFromAttributeSet(attributeSetBuilder.build()).getM_AttributeSetInstance_ID());
 	}
 
-	private ZonedDateTime getOrDefaultDatePromised(final @Nullable ZonedDateTime purchaseDatePromised, final OrgId orgId)
+	private ZonedDateTime getOrDefaultDatePromised(@Nullable final ZonedDateTime purchaseDatePromised, final OrgId orgId)
 	{
 		return purchaseDatePromised != null ?
 				purchaseDatePromised :
@@ -220,7 +220,7 @@ public class CreatePurchaseCandidatesService
 	}
 
 	@NonNull
-	private BPartnerId getBPartnerId(final OrgId orgId,
+	private BPartnerId getBPartnerId(@NonNull final OrgId orgId,
 			@NonNull final JsonVendor vendor)
 	{
 		final String bpartnerIdentifierStr = vendor.getBpartnerIdentifier();

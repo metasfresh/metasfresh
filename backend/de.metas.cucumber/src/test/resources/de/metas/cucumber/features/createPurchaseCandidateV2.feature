@@ -29,7 +29,7 @@ Feature: create or update Purchase Candidate
 
     Given the purchase candidate enqueue-status request is set in context
     Then the metasfresh REST-API endpoint path 'api/v2/order/purchase/enqueueForOrdering' receives a 'POST' request with the payload from context and responds with '202' status code
-    And a PurchaseOrder with externalId 'H1' is created after not more than 10 seconds and has values
+    And a PurchaseOrder with externalId 'H1' is created after not more than 30 seconds and has values
       | ExternalPurchaseOrderURL     | POReference |
       | www.ExternalReferenceURL.com | poRef1      |
 

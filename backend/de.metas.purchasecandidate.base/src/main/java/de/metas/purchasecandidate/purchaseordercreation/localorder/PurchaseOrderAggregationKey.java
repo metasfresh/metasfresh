@@ -71,6 +71,7 @@ public class PurchaseOrderAggregationKey implements Comparable<PurchaseOrderAggr
 				.forecastLineId(purchaseOrderItem.getForecastLineId())
 				.dimension(purchaseOrderItem.getDimension())
 				.externalPurchaseOrderUrl(purchaseOrderItem.getExternalPurchaseOrderUrl())
+				.poReference(purchaseOrderItem.getPOReference())
 				.build();
 	}
 

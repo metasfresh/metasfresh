@@ -107,7 +107,7 @@ import java.util.Set;
 		this.userNotifications = userNotifications;
 	}
 
-	public void addCandidate(final PurchaseOrderItem purchaseOrderItem)
+	public void addCandidate(@NonNull final PurchaseOrderItem purchaseOrderItem)
 	{
 		final OrderLineBuilder orderLineBuilder = orderFactory
 				.orderLineByProductAndUom(
