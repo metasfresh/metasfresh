@@ -139,6 +139,7 @@ PickStepScreen.propTypes = {
   activityId: PropTypes.string.isRequired,
   lineId: PropTypes.string.isRequired,
   stepId: PropTypes.string.isRequired,
+  altStepId: PropTypes.string,
   stepProps: PropTypes.object.isRequired,
   onScanButtonClick: PropTypes.func.isRequired,
   //
