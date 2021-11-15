@@ -19,7 +19,7 @@ function StepButton(WrappedComponent) {
       const { dispatch } = this.props;
 
       const mainStepPath = `/workflow/${wfProcessId}/activityId/${activityId}/lineId/${lineId}/stepId/${stepId}`;
-      const location = altStepId ? `${mainStepPath}/altStepId/${altStepId}` : `${mainStepPath}`;
+      const location = altStepId ? `${mainStepPath}/altStepId/${altStepId}` : mainStepPath;
 
       dispatch(push(location));
     };
