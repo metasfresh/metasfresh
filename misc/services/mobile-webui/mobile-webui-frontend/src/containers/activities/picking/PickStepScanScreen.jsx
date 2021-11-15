@@ -14,7 +14,7 @@ import StepScanScreenComponent from '../common/StepScanScreenComponent';
 
 function PickStepScanScreen(WrappedComponent) {
   const mapStateToProps = (state, { match }) => {
-    const { workflowId: wfProcessId, activityId, lineId, stepId, appId } = match.params;
+    const { workflowId: wfProcessId, activityId, lineId, stepId, appId, altStepId } = match.params;
 
     const wfProcess = selectWFProcessFromState(state, wfProcessId);
     const stepProps = wfProcess.activities[activityId].dataStored.lines[lineId].steps[stepId];
@@ -24,6 +24,7 @@ function PickStepScanScreen(WrappedComponent) {
       activityId,
       lineId,
       stepId,
+      altStepId,
       stepProps,
       appId,
       qtyTarget: stepProps.qtyToPick,

@@ -12,12 +12,13 @@ import { pushHeaderEntry } from '../../../actions/HeaderActions';
 
 class PickStepScreen extends Component {
   onScanHUButtonClick = () => {
-    const {
-      stepProps: { huBarcode, qtyToPick },
-      dispatch,
-      onScanButtonClick,
-    } = this.props;
+    const { stepProps, dispatch, onScanButtonClick, altStepId } = this.props;
+    const { huBarcode, qtyToPick } = stepProps;
+
     onScanButtonClick();
+
+    const headerHuCode = altStepId ? stepProps.altSteps.genSteps[altStepId].huBarcode : huBarcode;
+    const headerQtyToPick = altStepId ? stepProps.altSteps.genSteps[altStepId].qtyAvailable : qtyToPick;
 
     dispatch(
       pushHeaderEntry({
@@ -25,11 +26,11 @@ class PickStepScreen extends Component {
         values: [
           {
             caption: counterpart.translate('general.Barcode'),
-            value: huBarcode,
+            value: headerHuCode,
           },
           {
             caption: counterpart.translate('general.QtyToPick'),
-            value: qtyToPick,
+            value: headerQtyToPick,
           },
         ],
       })
