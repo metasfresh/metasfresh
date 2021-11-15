@@ -1,40 +1,28 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import PickAltStepButton from './PickAltStepButton';
+import PickStepButton from './PickStepButton';
 class PickAlternatives extends Component {
   renderAlternatives = () => {
-    // const { pickFromAlternativeIds, pickFromAlternatives, altSteps } = this.props;
-
     const { genSteps, wfProcessId, activityId, lineId, stepId } = this.props;
 
-    // let totalQty = 0;
-
-    // const alternativeHUs = pickFromAlternatives.reduce((accumulator, item) => {
-    //   if (pickFromAlternativeIds.includes(item.id) && totalQty < diffToPick && diffToPick) {
-    //     accumulator.push(item);
-    //     totalQty += item.qtyAvailable;
-    //   }
-    //   return accumulator;
-    // }, []);
-
-    // console.log('DIFFtoPick:', diffToPick);
-    // console.log('ALTHUs', alternativeHUs);
-
-    // calculate here - filter to achieve the amount
     return (
       <div>
         {Object.keys(genSteps).length > 0 &&
           Object.keys(genSteps).map((altStepKey) => {
             return (
-              <PickAltStepButton
+              <PickStepButton
                 key={genSteps[altStepKey].id}
                 wfProcessId={wfProcessId}
                 activityId={activityId}
                 lineId={lineId}
                 stepId={stepId}
                 altStepId={genSteps[altStepKey].id}
-                {...genSteps[altStepKey]}
+                productName=""
+                qtyToPick={genSteps[altStepKey].qtyAvailable}
+                locatorName={genSteps[altStepKey].locatorName}
+                uom={genSteps[altStepKey].uom}
+                qtyPicked={genSteps[altStepKey].qtyPicked}
               />
             );
           })}

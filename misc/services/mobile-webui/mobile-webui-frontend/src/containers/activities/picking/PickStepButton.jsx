@@ -34,6 +34,7 @@ class PickStepButton extends PureComponent {
       uom,
       stepState: { qtyPicked, completeStatus },
       qtyToPick,
+      altStepId,
     } = this.props;
 
     return (
@@ -69,7 +70,7 @@ class PickStepButton extends PureComponent {
             </div>
           </div>
         </button>
-        <PickAlternatives {...this.props} />
+        {!altStepId && <PickAlternatives {...this.props} />}
       </div>
     );
   }
@@ -82,6 +83,7 @@ PickStepButton.propTypes = {
   activityId: PropTypes.string.isRequired,
   lineId: PropTypes.string.isRequired,
   stepId: PropTypes.string.isRequired,
+  altStepId: PropTypes.string,
   productName: PropTypes.string.isRequired,
   locatorName: PropTypes.string.isRequired,
   huBarcode: PropTypes.string,
