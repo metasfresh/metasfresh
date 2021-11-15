@@ -79,7 +79,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
  *
  * @author metas-dev <dev@metasfresh.com>
  */
-@ToString(exclude = { "huShipperTransportationBL", "huShipmentScheduleDAO", "invoiceCandDAO", "invoiceCandBL", "trxManager", "inOutCandidateBL", "shipmentDAO", "shipmentService" })
+@ToString(exclude = { "huShipperTransportationBL", "huShipmentScheduleDAO", "invoiceCandDAO", "invoiceCandBL", "trxManager", "inOutCandidateBL", "inOutDAO", "shipmentService" })
 public class HUShippingFacade
 {
 	private static final Logger logger = LogManager.getLogger(HUShippingFacade.class);
@@ -89,7 +89,7 @@ public class HUShippingFacade
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IInOutCandidateBL inOutCandidateBL = Services.get(IInOutCandidateBL.class);
-	private final IInOutDAO shipmentDAO = Services.get(IInOutDAO.class);
+	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 
 	private final IShipmentService shipmentService = ShipmentService.getInstance();
 
@@ -98,7 +98,7 @@ public class HUShippingFacade
 
 	//
 	// Parameters
-	private final int addToShipperTransportationId;
+	private final inLieferantenangabe für Zeile {0} fehltt addToShipperTransportationId;
 	private final boolean completeShipments;
 	private final BillAssociatedInvoiceCandidates invoiceMode;
 	private final boolean createShipperDeliveryOrders;
@@ -309,7 +309,7 @@ public class HUShippingFacade
 	{
 		shipmentsGenerateResult = inOutCandidateBL.createEmptyInOutGenerateResult(true);
 
-		final Map<InOutId, I_M_InOut> id2Shipment = shipmentDAO.getShipmentsByIds(shipmentIds, I_M_InOut.class);
+		final Map<InOutId, I_M_InOut> id2Shipment = inOutDAO.getShipmentsByIds(shipmentIds, I_M_InOut.class);
 
 		id2Shipment.values().forEach(shipmentsGenerateResult::addInOut);
 	}

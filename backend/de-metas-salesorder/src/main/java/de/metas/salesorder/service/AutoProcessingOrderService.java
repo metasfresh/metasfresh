@@ -101,7 +101,7 @@ public class AutoProcessingOrderService
 		this.inOutToTransportationOrderService = inOutToTransportationOrderService;
 	}
 
-
+	TODO check it it shall be removed
 	public void createAndCompleteInvoices(@NonNull final OrderId orderId)
 	{
 		final List<I_C_Invoice_Candidate> candidates = orderService.generateInvoiceCandidates(orderId);
@@ -172,7 +172,7 @@ public class AutoProcessingOrderService
 				.map(InvoiceCandidateId::ofRepoId)
 				.collect(ImmutableSet.toImmutableSet());
 
-		invoiceService.processInvoiceCandidates(invoiceCandidateIds, false);
+		invoiceService.processInvoiceCandidates(invoiceCandidateIds);
 	}
 
 	private boolean sameShippingAndBillingAddress(
@@ -237,6 +237,7 @@ public class AutoProcessingOrderService
 				.shipperBPartnerAndLocationId(shipFromBPWarehouseLocation.getBpartnerLocationId())
 				.orgId(OrgId.ofRepoId(shipment.getAD_Org_ID()))
 				.shipDate(shipDate)
+				.assignAnonymouslyPickedHUs(true)
 				.build();
 
 		final ShipperTransportationId shipperTransportationId = shipperTransportationRepository.create(createShipperTransportationRequest);

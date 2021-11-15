@@ -27,11 +27,9 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.metas.async.AsyncBatchId;
 import de.metas.async.QueueWorkPackageId;
-import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.api.IWorkPackageBlockBuilder;
 import de.metas.async.api.IWorkPackageBuilder;
 import de.metas.async.api.IWorkPackageQueue;
-import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.spi.impl.SizeBasedWorkpackagePrio;
@@ -99,7 +97,6 @@ public class ShipmentScheduleEnqueuer
 	private final ILockManager lockManager = Services.get(ILockManager.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IWorkPackageQueueFactory workPackageQueueFactory = Services.get(IWorkPackageQueueFactory.class);
-	private final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
 
 	private Properties _ctx;
 	private String _trxNameInitial;
@@ -217,13 +214,8 @@ public class ShipmentScheduleEnqueuer
 							.newWorkpackage()
 							.setUserInChargeId(Env.getLoggedUserIdIfExists().orElse(null))
 							.setPriority(SizeBasedWorkpackagePrio.INSTANCE)
-							.bindToTrxName(localCtx.getTrxName());
-
-					if (shipmentSchedule.getC_Async_Batch_ID() > 0)
-					{
-						final I_C_Async_Batch asyncBatch = asyncBatchBL.getAsyncBatchById(AsyncBatchId.ofRepoId(shipmentSchedule.getC_Async_Batch_ID()));
-						workpackageBuilder.setC_Async_Batch(asyncBatch);
-					}
+							.bindToTrxName(localCtx.getTrxName())
+							.setC_Async_Batch_ID(AsyncBatchId.ofRepoIdOrNull(shipmentSchedule.getC_Async_Batch_ID()));
 
 					workpackageBuilder
 							.parameters()
