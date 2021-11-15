@@ -6,6 +6,7 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.flatrate.interfaces.I_C_DocType;
 import de.metas.dimension.model.I_DIM_Dimension_Spec;
 import de.metas.handlingunits.HUConstants;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
@@ -16,12 +17,14 @@ import de.metas.handlingunits.allocation.impl.HUProducerDestination;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
+import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_Locator;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.model.I_M_Warehouse;
 import de.metas.handlingunits.model.I_PP_Cost_Collector;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
+import de.metas.handlingunits.picking.PackToSpec;
 import de.metas.handlingunits.picking.PickingCandidateId;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.inoutcandidate.ShipmentScheduleId;
@@ -111,13 +114,12 @@ class ProcessPickingCandidatesCommandTestHelper
 		InterfaceWrapperHelper.save(dim);
 	}
 
-	public HuPackingInstructionsId createTUPackingInstructions(final ProductId productId, final Quantity cusPerTU)
+	public PackToSpec createTUPackingInstructions(final ProductId productId, final Quantity cusPerTU)
 	{
 		final I_M_HU_PI tuPI = huTestHelper.createHUDefinition("TU", X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
 		final I_M_HU_PI_Item tuPIItem = huTestHelper.createHU_PI_Item_Material(tuPI);
-		huTestHelper.assignProduct(tuPIItem, productId, cusPerTU);
-
-		return HuPackingInstructionsId.ofRepoId(tuPI.getM_HU_PI_ID());
+		final I_M_HU_PI_Item_Product huPIItemProduct = huTestHelper.assignProduct(tuPIItem, productId, cusPerTU);
+		return PackToSpec.ofTUPackingInstructionsId(HUPIItemProductId.ofRepoId(huPIItemProduct.getM_HU_PI_Item_Product_ID()));
 	}
 
 	public HuId createVHU(final ProductId productId, final Quantity qty)

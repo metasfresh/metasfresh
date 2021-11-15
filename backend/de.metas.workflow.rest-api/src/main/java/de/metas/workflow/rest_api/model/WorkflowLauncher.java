@@ -42,4 +42,6 @@ public class WorkflowLauncher
 
 	@Builder.Default
 	@NonNull Params wfParameters = Params.EMPTY;
+
+	boolean partiallyHandledBefore;
 }

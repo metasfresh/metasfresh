@@ -82,10 +82,7 @@ public class PickingJobLine
 
 	private static PickingJobProgress computeProgress(@NonNull ImmutableList<PickingJobStep> steps)
 	{
-		final ImmutableSet<PickingJobProgress> stepProgresses = steps.stream()
-				.map(PickingJobStep::getProgress)
-				.collect(ImmutableSet.toImmutableSet());
-
+		final ImmutableSet<PickingJobProgress> stepProgresses = steps.stream().map(PickingJobStep::getProgress).collect(ImmutableSet.toImmutableSet());
 		return PickingJobProgress.reduce(stepProgresses);
 	}
 

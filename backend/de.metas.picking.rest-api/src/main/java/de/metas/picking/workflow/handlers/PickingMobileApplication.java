@@ -196,16 +196,19 @@ public class PickingMobileApplication implements MobileApplication
 								.id(WFActivityId.ofString("A1"))
 								.caption(TranslatableStrings.anyLanguage("Scan picking slot"))
 								.wfActivityType(SetPickingSlotWFActivityHandler.HANDLED_ACTIVITY_TYPE)
+								.status(SetPickingSlotWFActivityHandler.computeActivityState(pickingJob))
 								.build(),
 						WFActivity.builder()
 								.id(WFActivityId.ofString("A2"))
 								.caption(TranslatableStrings.anyLanguage("Pick"))
 								.wfActivityType(ActualPickingWFActivityHandler.HANDLED_ACTIVITY_TYPE)
+								.status(ActualPickingWFActivityHandler.computeActivityState(pickingJob))
 								.build(),
 						WFActivity.builder()
 								.id(WFActivityId.ofString("A3"))
 								.caption(TranslatableStrings.anyLanguage("Complete picking"))
 								.wfActivityType(CompletePickingWFActivityHandler.HANDLED_ACTIVITY_TYPE)
+								.status(CompletePickingWFActivityHandler.computeActivityState(pickingJob))
 								.build()))
 				.build();
 	}
@@ -282,7 +285,6 @@ public class PickingMobileApplication implements MobileApplication
 				.qtyRejectedReasonCode(QtyRejectedReasonCode.ofNullableCode(json.getQtyRejectedReasonCode()).orElse(null))
 				.build();
 	}
-
 
 	private static void assertPickingActivityType(
 			final @NonNull Collection<JsonPickingStepEvent> events,

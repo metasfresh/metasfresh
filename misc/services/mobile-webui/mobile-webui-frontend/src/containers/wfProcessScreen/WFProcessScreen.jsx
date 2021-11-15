@@ -11,6 +11,7 @@ import PickProductsActivity from '../activities/picking/PickProductsActivity';
 import ConfirmActivity from '../activities/confirmButton/ConfirmActivity';
 import RawMaterialsIssueActivity from '../activities/manufacturing/RawMaterialsIssueActivity';
 import MaterialReceiptActivity from '../activities/manufacturing/MaterialReceiptActivity';
+import DistributionMoveActivity from '../activities/distribution/DistributionMoveActivity';
 import AbortButton from './AbortButton';
 
 class WFProcessScreen extends PureComponent {
@@ -74,6 +75,16 @@ class WFProcessScreen extends PureComponent {
                         id={activityItem.activityId}
                         wfProcessId={wfProcessId}
                         activityState={activityItem}
+                      />
+                    );
+                  case 'distribution/move':
+                    return (
+                      <DistributionMoveActivity
+                        key={activityItem.activityId}
+                        id={activityItem.activityId}
+                        wfProcessId={wfProcessId}
+                        activityState={activityItem}
+                        {...activityItem}
                       />
                     );
                 }

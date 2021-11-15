@@ -1,4 +1,4 @@
-de.metas.handlingunits.picking.plan.generator.CreatePickingPlanCommandTest.scenario_3HUs_1KgAlreadyReserved=[ {
+de.metas.handlingunits.picking.plan.generator.CreatePickingPlanCommand_UsingCUs_Test.scenario_3HUs_1KgAlreadyReserved=[ {
   "alternatives" : {
     "pickFroms" : [ {
       "availableQty" : "960.000 Kg",
@@ -36,6 +36,10 @@ de.metas.handlingunits.picking.plan.generator.CreatePickingPlanCommandTest.scena
     "qty" : "1.000 Kg",
     "sourceDocumentInfo" : {
       "existingPickingCandidate" : null,
+      "packToSpec" : {
+        "genericPackingInstructionsId" : 101,
+        "tuPackingInstructionsId" : null
+      },
       "salesOrderLineId" : {
         "orderId" : 300,
         "orderLineId" : 301
@@ -68,6 +72,10 @@ de.metas.handlingunits.picking.plan.generator.CreatePickingPlanCommandTest.scena
     "qty" : "30.000 Kg",
     "sourceDocumentInfo" : {
       "existingPickingCandidate" : null,
+      "packToSpec" : {
+        "genericPackingInstructionsId" : 101,
+        "tuPackingInstructionsId" : null
+      },
       "salesOrderLineId" : {
         "orderId" : 300,
         "orderLineId" : 301
@@ -100,6 +108,10 @@ de.metas.handlingunits.picking.plan.generator.CreatePickingPlanCommandTest.scena
     "qty" : "30.000 Kg",
     "sourceDocumentInfo" : {
       "existingPickingCandidate" : null,
+      "packToSpec" : {
+        "genericPackingInstructionsId" : 101,
+        "tuPackingInstructionsId" : null
+      },
       "salesOrderLineId" : {
         "orderId" : 300,
         "orderLineId" : 301
@@ -128,6 +140,10 @@ de.metas.handlingunits.picking.plan.generator.CreatePickingPlanCommandTest.scena
     "qty" : "39.000 Kg",
     "sourceDocumentInfo" : {
       "existingPickingCandidate" : null,
+      "packToSpec" : {
+        "genericPackingInstructionsId" : 101,
+        "tuPackingInstructionsId" : null
+      },
       "salesOrderLineId" : {
         "orderId" : 300,
         "orderLineId" : 301

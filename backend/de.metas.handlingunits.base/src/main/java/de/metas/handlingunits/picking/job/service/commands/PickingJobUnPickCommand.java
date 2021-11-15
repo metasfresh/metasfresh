@@ -2,16 +2,15 @@ package de.metas.handlingunits.picking.job.service.commands;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
-import com.google.common.collect.ImmutableSet;
-import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateService;
-import de.metas.handlingunits.picking.job.model.HUInfo;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobStep;
 import de.metas.handlingunits.picking.job.model.PickingJobStepId;
+import de.metas.handlingunits.picking.job.model.PickingJobStepPickFrom;
 import de.metas.handlingunits.picking.job.model.PickingJobStepPickFromKey;
 import de.metas.handlingunits.picking.job.model.PickingJobStepPickedTo;
+import de.metas.handlingunits.picking.job.model.PickingJobStepPickedToHU;
 import de.metas.handlingunits.picking.job.model.PickingJobStepUnpickInfo;
 import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
 import de.metas.handlingunits.picking.job.service.PickingJobHUReservationService;
@@ -24,7 +23,6 @@ import org.adempiere.ad.trx.api.ITrxManager;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
-import java.util.Objects;
 import java.util.stream.Stream;
 
 public class PickingJobUnPickCommand
@@ -109,8 +107,6 @@ public class PickingJobUnPickCommand
 
 		pickingCandidateService.deleteDraftPickingCandidates(unprocessedPickingCandidates);
 
-		reserveHUs(pickingJob);
-
 		return pickingJob;
 	}
 
@@ -132,35 +128,23 @@ public class PickingJobUnPickCommand
 			@NonNull final PickingJobStep step,
 			@NonNull final PickingJobStepPickFromKey pickFromKey)
 	{
-		final PickingJobStepPickedTo picked = step.getPickFrom(pickFromKey).getPickedTo();
-		if (picked == null)
+		final PickingJobStepPickFrom pickFrom = step.getPickFrom(pickFromKey);
+		final PickingJobStepPickedTo pickedTo = pickFrom.getPickedTo();
+		if (pickedTo == null)
 		{
 			return step;
 		}
 
-		final PickingCandidate unprocessedPickingCandidate = pickingCandidateService.unprocess(picked.getPickingCandidateId())
-				.getSinglePickingCandidate();
-		unprocessedPickingCandidates.add(unprocessedPickingCandidate);
-
-		// NOTE: Pick From HU might be changed as a result of unprocessing in case the original Pick From HU was destroyed
-		final HuId pickFromHUId = Objects.requireNonNull(unprocessedPickingCandidate.getPickFrom().getHuId());
+		for (final PickingJobStepPickedToHU pickedToHU : pickedTo.getActualPickedHUs())
+		{
+			final PickingCandidate unprocessedPickingCandidate = pickingCandidateService.unprocess(pickedToHU.getPickingCandidateId())
+					.getSinglePickingCandidate();
+			unprocessedPickingCandidates.add(unprocessedPickingCandidate);
+		}
 
 		return step.reduceWithUnpickEvent(
 				pickFromKey,
-				PickingJobStepUnpickInfo.builder()
-						.pickFromHU(HUInfo.ofHuId(pickFromHUId))
-						.build());
-	}
-
-	private void reserveHUs(final PickingJob pickingJob)
-	{
-		final ImmutableSet<PickingJobStepId> stepIdsWithMainPickFroms = unpickInstructionsMap.values()
-				.stream()
-				.filter(StepUnpickInstructions::isMainPickFrom)
-				.map(StepUnpickInstructions::getStepId)
-				.collect(ImmutableSet.toImmutableSet());
-
-		stepIdsWithMainPickFroms.forEach(stepId -> pickingJobHUReservationService.reservePickFromHU(pickingJob, stepId));
+				PickingJobStepUnpickInfo.builder().build());
 	}
 
 	//
@@ -173,7 +157,5 @@ public class PickingJobUnPickCommand
 	{
 		@NonNull PickingJobStepId stepId;
 		@NonNull PickingJobStepPickFromKey pickFromKey;
-
-		public boolean isMainPickFrom() {return pickFromKey.isMain();}
 	}
 }

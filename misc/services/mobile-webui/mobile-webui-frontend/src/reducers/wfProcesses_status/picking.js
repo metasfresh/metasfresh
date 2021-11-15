@@ -171,7 +171,7 @@ const updateLineStatusFromSteps = ({ draftWFProcess, activityId, lineId }) => {
   updateActivityStatusFromLines({ draftWFProcess, activityId });
 };
 
-const computeLineStatus = ({ draftLine }) => {
+export const computeLineStatus = ({ draftLine }) => {
   const stepIds = Object.keys(original(draftLine.steps));
 
   if (stepIds.length > 0) {
@@ -198,7 +198,7 @@ const computeLineStatus = ({ draftLine }) => {
   }
 };
 
-const updateActivityStatusFromLines = ({ draftWFProcess, activityId }) => {
+export const updateActivityStatusFromLines = ({ draftWFProcess, activityId }) => {
   const draftActivity = draftWFProcess.activities[activityId];
   draftActivity.dataStored.completeStatus = computeActivityStatusFromLines({ draftActivity });
   console.log(`Update activity [${activityId} ]: completeStatus=${draftActivity.dataStored.completeStatus}`);
@@ -208,7 +208,7 @@ const updateActivityStatusFromLines = ({ draftWFProcess, activityId }) => {
   updateUserEditable({ draftWFProcess });
 };
 
-const computeActivityStatusFromLines = ({ draftActivity }) => {
+export const computeActivityStatusFromLines = ({ draftActivity }) => {
   const lineIds = Object.keys(original(draftActivity.dataStored.lines));
 
   if (lineIds.length > 0) {
@@ -252,24 +252,24 @@ const normalizePickingLines = (lines) => {
         accum[step.pickingStepId].altSteps.genSteps = {};
 
         // Mock generated steps - used for testing w/o real data
-        // accum[step.pickingStepId].altSteps.genSteps = {
-        //   1000819: {
-        //     id: '1000819',
-        //     locatorName: 'Hauptlager',
-        //     huBarcode: '1000437',
-        //     uom: 'Kg',
-        //     qtyAvailable: 45,
-        //     qtyPicked: 0,
-        //   },
-        //   1000820: {
-        //     id: '1000820',
-        //     locatorName: 'Hauptlager',
-        //     huBarcode: '1000463',
-        //     uom: 'Kg',
-        //     qtyAvailable: 25,
-        //     qtyPicked: 0,
-        //   },
-        // };
+        accum[step.pickingStepId].altSteps.genSteps = {
+          1000819: {
+            id: '1000819',
+            locatorName: 'Hauptlager',
+            huBarcode: '1000437',
+            uom: 'Kg',
+            qtyAvailable: 45,
+            qtyPicked: 0,
+          },
+          1000820: {
+            id: '1000820',
+            locatorName: 'Hauptlager',
+            huBarcode: '1000463',
+            uom: 'Kg',
+            qtyAvailable: 25,
+            qtyPicked: 0,
+          },
+        };
 
         return accum;
       }, {}),
@@ -280,7 +280,7 @@ const normalizePickingLines = (lines) => {
 registerHandler({
   componentType: COMPONENT_TYPE,
   normalizeComponentProps: ({ componentProps }) => {
-    console.log('normalizeComponentProps for ', componentProps);
+    console.log('picking: normalizeComponentProps for ', componentProps);
     return {
       ...componentProps,
       lines: normalizePickingLines(componentProps.lines),

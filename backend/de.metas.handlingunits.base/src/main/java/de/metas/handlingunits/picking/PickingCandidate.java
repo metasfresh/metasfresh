@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.quantity.Quantity;
@@ -74,11 +73,9 @@ public class PickingCandidate
 	@Nullable
 	private QtyRejectedWithReason qtyRejected;
 
-	@Nullable
-	private HuPackingInstructionsId packToInstructionsId;
-	@Nullable
+	@Nullable private PackToSpec packToSpec;
 	@Setter(AccessLevel.PRIVATE)
-	private HuId packedToHuId;
+	@Nullable private HuId packedToHuId;
 
 	@NonNull
 	private final ShipmentScheduleId shipmentScheduleId;
@@ -103,7 +100,7 @@ public class PickingCandidate
 			@Nullable final BigDecimal qtyReview,
 			@Nullable final QtyRejectedWithReason qtyRejected,
 			//
-			@Nullable final HuPackingInstructionsId packToInstructionsId,
+			@Nullable final PackToSpec packToSpec,
 			@Nullable final HuId packedToHuId,
 			//
 			@NonNull final ShipmentScheduleId shipmentScheduleId,
@@ -124,7 +121,7 @@ public class PickingCandidate
 		this.qtyReview = qtyReview;
 		this.qtyRejected = qtyRejected;
 
-		this.packToInstructionsId = packToInstructionsId;
+		this.packToSpec = packToSpec;
 		this.packedToHuId = packedToHuId;
 
 		this.shipmentScheduleId = shipmentScheduleId;
@@ -202,13 +199,8 @@ public class PickingCandidate
 		}
 	}
 
-	public void changeStatusToDraft(final boolean usePackedHuIdAsPickFrom)
+	public void changeStatusToDraft()
 	{
-		if (usePackedHuIdAsPickFrom)
-		{
-			final HuId packedToHuId = Objects.requireNonNull(getPackedToHuId());
-			setPickFrom(PickFrom.ofHuId(packedToHuId));
-		}
 		setPackedToHuId(null);
 		setProcessingStatus(PickingCandidateStatus.Draft);
 	}
@@ -234,7 +226,7 @@ public class PickingCandidate
 		assertDraft();
 
 		this.qtyPicked = qtyPicked;
-		pickStatus = computePickOrPackStatus(this.packToInstructionsId);
+		pickStatus = computePickOrPackStatus(this.packToSpec);
 		approvalStatus = computeApprovalStatus(this.qtyPicked, this.qtyReview, this.pickStatus);
 	}
 
@@ -256,7 +248,7 @@ public class PickingCandidate
 		this.qtyRejected = qtyRejected;
 	}
 
-	public void packTo(@Nullable final HuPackingInstructionsId packToInstructionsId)
+	public void packTo(@Nullable final PackToSpec packToSpec)
 	{
 		assertDraft();
 
@@ -265,8 +257,8 @@ public class PickingCandidate
 			throw new AdempiereException("Invalid status when changing packing instructions: " + pickStatus);
 		}
 
-		this.packToInstructionsId = packToInstructionsId;
-		pickStatus = computePickOrPackStatus(this.packToInstructionsId);
+		this.packToSpec = packToSpec;
+		pickStatus = computePickOrPackStatus(this.packToSpec);
 	}
 
 	public void reviewPicking(final BigDecimal qtyReview)
@@ -316,9 +308,9 @@ public class PickingCandidate
 		}
 	}
 
-	private static PickingCandidatePickStatus computePickOrPackStatus(@Nullable final HuPackingInstructionsId packToInstructionsId)
+	private static PickingCandidatePickStatus computePickOrPackStatus(@Nullable final PackToSpec packToSpec)
 	{
-		return packToInstructionsId != null ? PickingCandidatePickStatus.PACKED : PickingCandidatePickStatus.PICKED;
+		return packToSpec != null ? PickingCandidatePickStatus.PACKED : PickingCandidatePickStatus.PICKED;
 	}
 
 	public boolean isPickFromPickingOrder()

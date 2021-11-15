@@ -1,4 +1,3 @@
-import { find } from 'lodash';
 import {
   POPULATE_APPLICATIONS,
   SET_ACTIVE_APPLICATION,
@@ -25,13 +24,7 @@ export function setActiveApplication({ id, caption }) {
     if (!caption) {
       const state = getState();
 
-      find(state.applications, (item) => {
-        if (item.id === id) {
-          caption = item.caption;
-
-          return item;
-        }
-      });
+      caption = state.applications.apps[id];
     }
 
     dispatch({

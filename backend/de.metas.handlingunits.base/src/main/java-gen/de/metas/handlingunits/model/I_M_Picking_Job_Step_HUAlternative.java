@@ -1,8 +1,9 @@
 package de.metas.handlingunits.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for M_Picking_Job_Step_HUAlternative
  *  @author metasfresh (generated) 
@@ -122,31 +123,6 @@ public interface I_M_Picking_Job_Step_HUAlternative
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Picking candidate.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setM_Picking_Candidate_ID (int M_Picking_Candidate_ID);
-
-	/**
-	 * Get Picking candidate.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getM_Picking_Candidate_ID();
-
-	@Nullable de.metas.handlingunits.model.I_M_Picking_Candidate getM_Picking_Candidate();
-
-	void setM_Picking_Candidate(@Nullable de.metas.handlingunits.model.I_M_Picking_Candidate M_Picking_Candidate);
-
-	ModelColumn<I_M_Picking_Job_Step_HUAlternative, de.metas.handlingunits.model.I_M_Picking_Candidate> COLUMN_M_Picking_Candidate_ID = new ModelColumn<>(I_M_Picking_Job_Step_HUAlternative.class, "M_Picking_Candidate_ID", de.metas.handlingunits.model.I_M_Picking_Candidate.class);
-	String COLUMNNAME_M_Picking_Candidate_ID = "M_Picking_Candidate_ID";
-
-	/**
 	 * Set Picking Job HU Alternative.
 	 *
 	 * <br>Type: Search
@@ -243,31 +219,6 @@ public interface I_M_Picking_Job_Step_HUAlternative
 	String COLUMNNAME_M_Picking_Job_Step_ID = "M_Picking_Job_Step_ID";
 
 	/**
-	 * Set Picked HU.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setPicked_HU_ID (int Picked_HU_ID);
-
-	/**
-	 * Get Picked HU.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getPicked_HU_ID();
-
-	@Nullable de.metas.handlingunits.model.I_M_HU getPicked_HU();
-
-	void setPicked_HU(@Nullable de.metas.handlingunits.model.I_M_HU Picked_HU);
-
-	ModelColumn<I_M_Picking_Job_Step_HUAlternative, de.metas.handlingunits.model.I_M_HU> COLUMN_Picked_HU_ID = new ModelColumn<>(I_M_Picking_Job_Step_HUAlternative.class, "Picked_HU_ID", de.metas.handlingunits.model.I_M_HU.class);
-	String COLUMNNAME_Picked_HU_ID = "Picked_HU_ID";
-
-	/**
 	 * Set Pick From HU.
 	 *
 	 * <br>Type: Search
@@ -331,27 +282,6 @@ public interface I_M_Picking_Job_Step_HUAlternative
 	int getPickFrom_Warehouse_ID();
 
 	String COLUMNNAME_PickFrom_Warehouse_ID = "PickFrom_Warehouse_ID";
-
-	/**
-	 * Set Quantity (stock unit).
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setQtyPicked (@Nullable BigDecimal QtyPicked);
-
-	/**
-	 * Get Quantity (stock unit).
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	BigDecimal getQtyPicked();
-
-	ModelColumn<I_M_Picking_Job_Step_HUAlternative, Object> COLUMN_QtyPicked = new ModelColumn<>(I_M_Picking_Job_Step_HUAlternative.class, "QtyPicked", null);
-	String COLUMNNAME_QtyPicked = "QtyPicked";
 
 	/**
 	 * Set Qty Rejected To Pick.

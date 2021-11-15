@@ -26,6 +26,8 @@ import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.handlingunits.HUPIItemProductId;
+import de.metas.handlingunits.picking.PackToSpec;
 import de.metas.handlingunits.picking.PickFrom;
 import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateIssueToBOMLine;
@@ -147,27 +149,33 @@ public class CreatePickingPlanCommand
 				.toZeroIfNegative();
 
 		return AllocablePackageable.builder()
+				.sourceDocumentInfo(extractSourceDocumentInfo(packageable))
 				.customerId(packageable.getCustomerId())
 				.productId(packageable.getProductId())
 				.asiId(packageable.getAsiId())
-				.shipmentScheduleId(packageable.getShipmentScheduleId())
 				.bestBeforePolicy(packageable.getBestBeforePolicy())
 				.warehouseId(packageable.getWarehouseId())
-				.salesOrderLineIdOrNull(OrderAndLineId.ofNullable(packageable.getSalesOrderId(), packageable.getSalesOrderLineIdOrNull()))
-				.shipperId(packageable.getShipperId())
 				.pickFromOrderId(packageable.getPickFromOrderId())
 				.qtyToAllocateTarget(qtyToAllocateTarget)
 				.build();
 	}
 
-	private SourceDocumentInfo extractSourceDocumentInfo(@NonNull final AllocablePackageable packageable)
+	private static SourceDocumentInfo extractSourceDocumentInfo(@NonNull final Packageable packageable)
 	{
 		return SourceDocumentInfo.builder()
 				.shipmentScheduleId(packageable.getShipmentScheduleId())
-				.salesOrderLineId(packageable.getSalesOrderLineIdOrNull())
+				.salesOrderLineId(OrderAndLineId.ofNullable(packageable.getSalesOrderId(), packageable.getSalesOrderLineIdOrNull()))
 				.shipperId(packageable.getShipperId())
+				.packToSpec(extractPackToSpec(packageable))
 				.existingPickingCandidate(null)
 				.build();
+	}
+
+	private static PackToSpec extractPackToSpec(@NonNull final Packageable packageable)
+	{
+		return PackToSpec.ofTUPackingInstructionsId(
+				HUPIItemProductId.optionalOfRepoId(packageable.getPackToHUPIItemProductId())
+						.orElse(HUPIItemProductId.VIRTUAL_HU));
 	}
 
 	private Stream<PickingPlanLine> createLinesAndStream(final AllocablePackageable packageable)
@@ -201,7 +209,9 @@ public class CreatePickingPlanCommand
 
 	private List<PickingPlanLine> createLinesFromExistingPickingCandidates(@NonNull final AllocablePackageable packageable)
 	{
-		final List<PickingCandidate> pickingCandidates = pickingCandidateRepository.getByShipmentScheduleIdAndStatus(packageable.getShipmentScheduleId(), PickingCandidateStatus.Draft);
+		final List<PickingCandidate> pickingCandidates = pickingCandidateRepository.getByShipmentScheduleIdAndStatus(
+				packageable.getSourceDocumentInfo().getShipmentScheduleId(),
+				PickingCandidateStatus.Draft);
 
 		return pickingCandidates
 				.stream()
@@ -346,7 +356,7 @@ public class CreatePickingPlanCommand
 
 		return prepareLine()
 				.type(PickingPlanLineType.UNALLOCABLE)
-				.sourceDocumentInfo(extractSourceDocumentInfo(packageable))
+				.sourceDocumentInfo(packageable.getSourceDocumentInfo())
 				.productId(packageable.getProductId())
 				//.issueToOrderBOMLineId(packageable.getIssueToOrderBOMLineId()) // TODO
 				.qty(qty)
@@ -357,7 +367,7 @@ public class CreatePickingPlanCommand
 	{
 		return prepareLine()
 				.type(PickingPlanLineType.PICK_FROM_HU)
-				.sourceDocumentInfo(extractSourceDocumentInfo(packageable))
+				.sourceDocumentInfo(packageable.getSourceDocumentInfo())
 				.productId(packageable.getProductId());
 	}
 
@@ -365,7 +375,7 @@ public class CreatePickingPlanCommand
 	{
 		return prepareLine()
 				.type(PickingPlanLineType.PICK_FROM_PICKING_ORDER)
-				.sourceDocumentInfo(extractSourceDocumentInfo(finishedGoodPackageable))
+				.sourceDocumentInfo(finishedGoodPackageable.getSourceDocumentInfo())
 				.productId(finishedGoodPackageable.getProductId());
 	}
 
@@ -373,7 +383,7 @@ public class CreatePickingPlanCommand
 	{
 		return prepareLine()
 				.type(PickingPlanLineType.ISSUE_COMPONENTS_TO_PICKING_ORDER)
-				.sourceDocumentInfo(extractSourceDocumentInfo(packageable))
+				.sourceDocumentInfo(packageable.getSourceDocumentInfo())
 				.productId(packageable.getProductId())
 				.issueToBOMLine(packageable.getIssueToBOMLine());
 

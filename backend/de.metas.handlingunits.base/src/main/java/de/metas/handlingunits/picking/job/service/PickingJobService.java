@@ -152,7 +152,15 @@ public class PickingJobService
 				.customerName(item.getCustomerName())
 				.deliveryBPLocationId(item.getCustomerLocationId())
 				.warehouseTypeId(item.getWarehouseTypeId())
+				.partiallyPickedBefore(computePartiallyPickedBefore(item))
 				.build();
+	}
+
+	private static boolean computePartiallyPickedBefore(final Packageable item)
+	{
+		return item.getQtyPickedPlanned().signum() != 0
+				|| item.getQtyPickedNotDelivered().signum() != 0
+				|| item.getQtyPickedAndDelivered().signum() != 0;
 	}
 
 	public IADReferenceDAO.ADRefList getQtyRejectedReasons()

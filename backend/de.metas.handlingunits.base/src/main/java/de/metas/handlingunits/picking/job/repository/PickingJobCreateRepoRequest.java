@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.picking.job.model.PickingJobStepPickFromKey;
+import de.metas.handlingunits.picking.PackToSpec;
 import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
@@ -71,6 +71,8 @@ public class PickingJobCreateRepoRequest
 
 		@Builder.Default
 		@NonNull ImmutableSet<StepPickFrom> pickFromAlternatives = ImmutableSet.of();
+
+		@NonNull PackToSpec packToSpec;
 	}
 
 	@Value

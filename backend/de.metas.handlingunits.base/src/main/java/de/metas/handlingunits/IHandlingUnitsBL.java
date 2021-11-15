@@ -408,10 +408,18 @@ public interface IHandlingUnitsBL extends ISingletonService
 	@Nullable
 	I_M_HU_PI getPI(I_M_HU hu);
 
+	I_M_HU_PI getPI(@NonNull HuPackingInstructionsId id);
+
+	I_M_HU_PI getPI(@NonNull HUPIItemProductId huPIItemProductId);
+
 	I_M_HU_PI_Version getPIVersion(I_M_HU hu);
 
 	@Nullable
 	I_M_HU_PI_Item getPIItem(I_M_HU_Item huItem);
+
+	I_M_HU_PI getPI(@NonNull HuPackingInstructionsItemId piItemId);
+
+	HuPackingInstructionsId getPackingInstructionsId(@NonNull HuPackingInstructionsItemId piItemId);
 
 	@NonNull
 	I_M_HU_PI getIncludedPI(@NonNull I_M_HU_Item huItem);

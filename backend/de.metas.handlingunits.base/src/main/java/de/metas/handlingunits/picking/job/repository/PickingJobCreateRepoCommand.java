@@ -1,12 +1,15 @@
 package de.metas.handlingunits.picking.job.repository;
 
 import de.metas.document.engine.DocStatus;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.model.I_M_Picking_Job;
 import de.metas.handlingunits.model.I_M_Picking_Job_HUAlternative;
 import de.metas.handlingunits.model.I_M_Picking_Job_Line;
 import de.metas.handlingunits.model.I_M_Picking_Job_Step;
 import de.metas.handlingunits.model.I_M_Picking_Job_Step_HUAlternative;
+import de.metas.handlingunits.picking.PackToSpec;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobId;
 import de.metas.handlingunits.picking.job.model.PickingJobLineId;
@@ -18,6 +21,7 @@ import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.LocatorId;
 
@@ -122,6 +126,32 @@ class PickingJobCreateRepoCommand
 		record.setPickFrom_Warehouse_ID(step.getMainPickFrom().getPickFromLocatorId().getWarehouseId().getRepoId());
 		record.setPickFrom_Locator_ID(step.getMainPickFrom().getPickFromLocatorId().getRepoId());
 		record.setPickFrom_HU_ID(step.getMainPickFrom().getPickFromHUId().getRepoId());
+
+		//
+		// Packing
+		step.getPackToSpec()
+				.map(new PackToSpec.CaseMapper<Void>()
+				{
+					@Override
+					public Void packToVirtualHU()
+					{
+						record.setPackTo_HU_PI_Item_Product_ID(HUPIItemProductId.VIRTUAL_HU.getRepoId());
+						return null;
+					}
+
+					@Override
+					public Void packToTU(final HUPIItemProductId tuPackingInstructionsId)
+					{
+						record.setPackTo_HU_PI_Item_Product_ID(tuPackingInstructionsId.getRepoId());
+						return null;
+					}
+
+					@Override
+					public Void packToGenericHU(final HuPackingInstructionsId genericPackingInstructionsId)
+					{
+						throw new AdempiereException("Packing to generic packing instructions is not supported: " + genericPackingInstructionsId);
+					}
+				});
 
 		InterfaceWrapperHelper.save(record);
 		loader.addAlreadyLoadedFromDB(record);
