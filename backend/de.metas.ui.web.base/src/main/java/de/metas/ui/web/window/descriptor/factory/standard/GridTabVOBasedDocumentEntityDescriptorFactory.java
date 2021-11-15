@@ -227,6 +227,7 @@ import java.util.Set;
 				.setAllowDeleteLogic(allowDeleteLogic)
 				.setDisplayLogic(displayLogic)
 				.setAllowQuickInput(gridTabVO.isAllowQuickInput())
+				.setAutodetectDefaultDateFilter(gridTabVO.isAutodetectDefaultDateFilter())
 				//
 				.setDataBinding(dataBinding)
 				.setHighVolume(gridTabVO.IsHighVolume)

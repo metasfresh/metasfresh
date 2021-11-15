@@ -14,14 +14,19 @@ import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvide
 import de.metas.ui.web.document.filter.provider.ImmutableDocumentFilterDescriptorsProvider;
 import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.window.datatypes.PanelLayoutType;
+import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDefaultFilterDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
+import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.element.api.AdTabId;
+import org.adempiere.ad.window.api.IADWindowDAO;
 import org.adempiere.service.ISysConfigBL;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_AD_Tab;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
@@ -60,6 +65,7 @@ public class StandardDocumentFilterDescriptorsProviderFactory implements Documen
 	private final ISysConfigBL sysConfigs = Services.get(ISysConfigBL.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final IViewsRepository viewsRepository;
+	private final DocumentDescriptorFactory documentDescriptors = SpringContextHolder.instance.getBean(DocumentDescriptorFactory.class);
 
 	private static final String FILTER_ID_DefaultDate = "default-date";
 
@@ -83,10 +89,11 @@ public class StandardDocumentFilterDescriptorsProviderFactory implements Documen
 			@Nullable final String tableName_NOTUSED,
 			@NonNull final Collection<DocumentFieldDescriptor> fields)
 	{
-		return createFiltersProvider(fields);
+		return createFiltersProvider(fields, adTabId_NOTUSED);
 	}
 
-	private DocumentFilterDescriptorsProvider createFiltersProvider(@NonNull final Collection<DocumentFieldDescriptor> fields)
+	private DocumentFilterDescriptorsProvider createFiltersProvider(@NonNull final Collection<DocumentFieldDescriptor> fields,
+			@Nullable final AdTabId adTabId)
 	{
 		final List<DocumentFieldDescriptor> fieldsForDefaultFiltering = fields.stream()
 				.filter(DocumentFieldDescriptor::hasFileringInfo)
@@ -100,6 +107,14 @@ public class StandardDocumentFilterDescriptorsProviderFactory implements Documen
 				.sorted(Comparator.comparing(field -> field.getDefaultFilterInfo().getFacetFilterSeqNo()))
 				.collect(ImmutableList.toImmutableList());
 
+		boolean isAutodetectDefaultDateFilter = true;
+		if (adTabId != null)
+		{
+			final I_AD_Tab adTab = Services.get(IADWindowDAO.class).getTabByIdInTrx(adTabId);
+			final DocumentEntityDescriptor documentEntityDescriptor = documentDescriptors.getDocumentEntityDescriptor(adTab.getAD_Window_ID());
+			isAutodetectDefaultDateFilter = documentEntityDescriptor.isIsAutodetectDefaultDateFilter();
+		}
+
 		//
 		// Default filters
 		DocumentFilterDescriptor defaultDateFilter = null;
@@ -109,7 +124,7 @@ public class StandardDocumentFilterDescriptorsProviderFactory implements Documen
 		{
 			final DocumentFilterParamDescriptor.Builder filterParam = createFilterParam(field);
 
-			if (defaultDateFilter == null && filterParam.getWidgetType().isDateOrTime())
+			if (isAutodetectDefaultDateFilter && defaultDateFilter == null && filterParam.getWidgetType().isDateOrTime())
 			{
 				defaultDateFilter = DocumentFilterDescriptor.builder()
 						.setFilterId(FILTER_ID_DefaultDate)

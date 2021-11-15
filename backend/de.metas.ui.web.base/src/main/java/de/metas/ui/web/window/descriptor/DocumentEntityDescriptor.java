@@ -122,6 +122,8 @@ public class DocumentEntityDescriptor
 	private final ILogicExpression displayLogic;
 	@Getter
 	private final boolean allowQuickInput;
+	@Getter
+	private final boolean IsAutodetectDefaultDateFilter ;
 
 	private final ImmutableMap<String, DocumentFieldDescriptor> fields;
 	@Getter
@@ -175,6 +177,7 @@ public class DocumentEntityDescriptor
 		readonlyLogic = builder.getReadonlyLogic();
 		displayLogic = builder.getDisplayLogic();
 		allowQuickInput = builder.isAllowQuickInput();
+		IsAutodetectDefaultDateFilter = builder.isAutodetectDefaultDateFilter();
 
 		fields = ImmutableMap.copyOf(builder.getFields());
 		idFields = builder.getIdFields();
@@ -473,6 +476,9 @@ public class DocumentEntityDescriptor
 
 		@Getter
 		private boolean singleRowDetail = false;
+
+		@Getter
+		private boolean autodetectDefaultDateFilter = true;
 
 		// Legacy
 		private Optional<AdTabId> _adTabId = Optional.empty();
@@ -982,6 +988,12 @@ public class DocumentEntityDescriptor
 		public boolean isAllowQuickInput()
 		{
 			return _allowQuickInput;
+		}
+
+		public Builder setAutodetectDefaultDateFilter(final boolean autodetectDefaultDateFilter)
+		{
+			this.autodetectDefaultDateFilter = autodetectDefaultDateFilter;
+            return this;
 		}
 
 		/**
