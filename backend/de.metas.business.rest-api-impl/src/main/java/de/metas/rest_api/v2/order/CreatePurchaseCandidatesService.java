@@ -156,6 +156,7 @@ public class CreatePurchaseCandidatesService
 				.orgId(orgId)
 				.externalHeaderId(ExternalId.of(request.getExternalHeaderId()))
 				.externalLineId(ExternalId.of(request.getExternalLineId()))
+				.poReference(request.getPoReference())
 				.externalPurchaseOrderUrl(request.getExternalPurchaseOrderUrl())
 				.productId(productId)
 				.warehouseId(warehouseService.getWarehouseByIdentifier(orgId, request.getWarehouseIdentifier()))

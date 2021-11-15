@@ -43,6 +43,7 @@ public class PurchaseOrderAggregationKey implements Comparable<PurchaseOrderAggr
 {
 	OrgId orgId;
 	ExternalId externalId;
+	String poReference;
 	WarehouseId warehouseId;
 	BPartnerId vendorId;
 	ZonedDateTime datePromised;
@@ -55,6 +56,7 @@ public class PurchaseOrderAggregationKey implements Comparable<PurchaseOrderAggr
 			.thenComparing(PurchaseOrderAggregationKey::getVendorId)
 			.thenComparing(PurchaseOrderAggregationKey::getDatePromised)
 			.thenComparing(PurchaseOrderAggregationKey::getDimension)
+			.thenComparing(PurchaseOrderAggregationKey::getPoReference)
 			.thenComparing(PurchaseOrderAggregationKey::getExternalId, Comparator.nullsFirst(Comparator.naturalOrder()))
 			.thenComparing(PurchaseOrderAggregationKey::getExternalPurchaseOrderUrl, Comparator.nullsFirst(Comparator.naturalOrder()));
 
@@ -77,6 +79,7 @@ public class PurchaseOrderAggregationKey implements Comparable<PurchaseOrderAggr
 		return PurchaseOrderAggregationKey.builder()
 				.orgId(purchaseCandidate.getOrgId())
 				.externalId(purchaseCandidate.getExternalHeaderId())
+				.poReference(purchaseCandidate.getPOReference())
 				.warehouseId(purchaseCandidate.getWarehouseId())
 				.vendorId(purchaseCandidate.getVendorId())
 				.datePromised(purchaseCandidate.getPurchaseDatePromised())

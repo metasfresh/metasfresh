@@ -1217,4 +1217,8 @@ public interface I_C_PurchaseCandidate
 	int getVendor_ID();
 
 	String COLUMNNAME_Vendor_ID = "Vendor_ID";
+
+	void setPOReference(String poReference);
+	String getPOReference();
+	
 }
