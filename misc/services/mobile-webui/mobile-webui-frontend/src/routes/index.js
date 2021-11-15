@@ -38,10 +38,6 @@ const routesArray = [
     path: '/workflow/:workflowId/activityId/:activityId/lineId/:lineId/stepId/:stepId/altStepId/:altStepId/scanner/:appId/:locatorId?',
     Component: StepScanScreen,
   },
-  {
-    path: '/workflow/:workflowId/activityId/:activityId/lineId/:lineId/stepId/:stepId/altStepId/:altStepId/scanner',
-    Component: StepScanScreen,
-  },
 ];
 
 const childRoutes = (
