@@ -47,10 +47,6 @@ class PickStepScreen extends Component {
       dispatch,
     } = this.props;
 
-    console.log('P:', wfProcessId, activityId, lineId, stepId, dispatch, push, postStepUnPicked, toastError);
-    console.log('scannedHUBarcode:', scannedHUBarcode);
-
-    /*
     postStepUnPicked({
       wfProcessId,
       activityId,
@@ -72,7 +68,6 @@ class PickStepScreen extends Component {
         dispatch(push(`/workflow/${wfProcessId}/activityId/${activityId}/lineId/${lineId}`));
       })
       .catch((axiosError) => toastError({ axiosError }));
-      */
   };
 
   componentWillUnmount() {
