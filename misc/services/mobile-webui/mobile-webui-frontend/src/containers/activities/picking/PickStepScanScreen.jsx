@@ -27,8 +27,8 @@ function PickStepScanScreen(WrappedComponent) {
       altStepId,
       stepProps,
       appId,
-      qtyTarget: stepProps.qtyToPick,
-      eligibleBarcode: stepProps.huBarcode,
+      qtyTarget: altStepId ? stepProps.altSteps.genSteps[altStepId].qtyAvailable : stepProps.qtyToPick,
+      eligibleBarcode: altStepId ? stepProps.altSteps.genSteps[altStepId].huBarcode : stepProps.huBarcode,
     };
   };
 
