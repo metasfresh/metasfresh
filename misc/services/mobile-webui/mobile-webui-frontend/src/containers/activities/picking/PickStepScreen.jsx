@@ -83,8 +83,6 @@ class PickStepScreen extends Component {
   }
 
   render() {
-    console.log('P:', this.props);
-
     const { stepProps, altStepId } = this.props;
     const { huBarcode, qtyToPick, scannedHUBarcode, qtyPicked } = stepProps;
 

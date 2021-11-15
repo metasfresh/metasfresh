@@ -46,8 +46,22 @@ function PickStepScanScreen(WrappedComponent) {
     };
 
     pushUpdatedQuantity = ({ qty = 0, reason = null }) => {
-      const { updatePickingStepQty, wfProcessId, activityId, lineId, stepId, go } = this.props;
+      const { updatePickingStepQty, wfProcessId, activityId, lineId, stepId, go, altStepId } = this.props;
       const { scannedBarcode } = this.state;
+
+      if (altStepId) {
+        updatePickingStepQty({
+          wfProcessId,
+          activityId,
+          lineId,
+          stepId,
+          altStepId,
+          scannedHUBarcode: scannedBarcode,
+          qtyPicked: qty,
+          qtyRejectedReasonCode: reason,
+        });
+        return;
+      }
 
       // TODO: This should be added to the same, not next level
       // pushHeaderEntry({
@@ -77,6 +91,7 @@ function PickStepScanScreen(WrappedComponent) {
             activityId,
             lineId,
             stepId,
+            altStepId,
             scannedHUBarcode: scannedBarcode,
             qtyPicked: qty,
             qtyRejectedReasonCode: reason,
@@ -104,6 +119,7 @@ function PickStepScanScreen(WrappedComponent) {
     activityId: PropTypes.string.isRequired,
     lineId: PropTypes.string.isRequired,
     stepId: PropTypes.string.isRequired,
+    altStepId: PropTypes.string,
     eligibleBarcode: PropTypes.string.isRequired,
     stepProps: PropTypes.object.isRequired,
     // Actions:

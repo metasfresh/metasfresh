@@ -40,8 +40,6 @@ PickAlternatives.propTypes = {
   activityId: PropTypes.string.isRequired,
   lineId: PropTypes.string.isRequired,
   stepId: PropTypes.string.isRequired,
-  qtyPicked: PropTypes.number.isRequired,
-  qtyToPick: PropTypes.number.isRequired,
   pickFromAlternativeIds: PropTypes.array,
   pickFromAlternatives: PropTypes.array,
   genSteps: PropTypes.object,

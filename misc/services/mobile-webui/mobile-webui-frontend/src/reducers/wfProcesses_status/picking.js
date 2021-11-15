@@ -107,24 +107,33 @@ const generateAlternativeSteps = ({ draftState, wfProcessId, activityId, lineId,
 };
 
 const reduceOnUpdateQtyPicked = (draftState, payload) => {
-  const { wfProcessId, activityId, lineId, stepId, scannedHUBarcode, qtyPicked, qtyRejectedReasonCode, qtyRejected } =
-    payload;
+  const {
+    wfProcessId,
+    activityId,
+    lineId,
+    stepId,
+    altStepId,
+    scannedHUBarcode,
+    qtyPicked,
+    qtyRejectedReasonCode,
+    qtyRejected,
+  } = payload;
 
   const draftWFProcess = draftState[wfProcessId];
-  const draftStep = draftWFProcess.activities[activityId].dataStored.lines[lineId].steps[stepId];
+
+  const draftStep = altStepId
+    ? draftWFProcess.activities[activityId].dataStored.lines[lineId].steps[stepId].altSteps.genSteps[altStepId]
+    : draftWFProcess.activities[activityId].dataStored.lines[lineId].steps[stepId];
   draftStep.scannedHUBarcode = scannedHUBarcode;
   draftStep.qtyPicked = qtyPicked;
   draftStep.qtyRejectedReasonCode = qtyRejectedReasonCode;
 
-  console.log('QtyRejected =====>', qtyRejected);
+  console.log('ALT_STEP_ID =>', altStepId);
 
-  draftState = generateAlternativeSteps({ draftState, wfProcessId, activityId, lineId, stepId, qtyRejected });
-
-  // update here the remaining qtyToPick (diff remaining to be picked with alternative steps)
-
-  // also generate the alternative steps and populate the `genSteps`
-
-  // sync pickFromAlternatives
+  if (!altStepId) {
+    console.log('QtyRejected =====>', qtyRejected);
+    draftState = generateAlternativeSteps({ draftState, wfProcessId, activityId, lineId, stepId, qtyRejected });
+  }
 
   updateStepStatus({
     draftWFProcess,
