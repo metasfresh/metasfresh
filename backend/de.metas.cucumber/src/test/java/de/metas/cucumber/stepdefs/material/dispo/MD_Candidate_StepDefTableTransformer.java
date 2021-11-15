@@ -23,6 +23,7 @@
 package de.metas.cucumber.stepdefs.material.dispo;
 
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.product.ProductId;
@@ -30,6 +31,8 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.datatable.TableTransformer;
 import io.cucumber.java.DataTableType;
 import lombok.NonNull;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_M_Product;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -38,6 +41,14 @@ import java.util.Map;
 
 public class MD_Candidate_StepDefTableTransformer implements TableTransformer<MD_Candidate_StepDefTable>
 {
+
+	private final StepDefData<I_M_Product> productStepDefData;
+
+	public MD_Candidate_StepDefTableTransformer(final StepDefData<I_M_Product> productStepDefData)
+	{
+		this.productStepDefData = productStepDefData;
+	}
+
 	@DataTableType
 	@Override
 	public MD_Candidate_StepDefTable transform(@NonNull final DataTable dataTable)
@@ -49,15 +60,12 @@ public class MD_Candidate_StepDefTableTransformer implements TableTransformer<MD
 		for (final Map<String, String> dataTableRow : dataTableRows)
 		{
 			final String identifier = DataTableUtil.extractRecordIdentifier(dataTableRow,"MD_Candidate");
-
 			final CandidateType type = CandidateType.ofCode(dataTableRow.get("Type"));
 			final CandidateBusinessCase businessCase = CandidateBusinessCase.ofCodeOrNull(dataTableRow.get("BusinessCase"));
-
-			final int productId = DataTableUtil.extractIntForColumnName(dataTableRow, "M_Product_ID");
-
+			final String productIdentifier = DataTableUtil.extractStringForColumnName(dataTableRow,"M_Product_ID.Identifier");
+			final int productId = productStepDefData.get(productIdentifier).getM_Product_ID();
 			final Instant time = DataTableUtil.extractInstantForColumnName(dataTableRow, "Time");
 			BigDecimal qty = DataTableUtil.extractBigDecimalForColumnName(dataTableRow, "DisplayQty");
-
 			if (type.equals(CandidateType.DEMAND) || type.equals(CandidateType.INVENTORY_DOWN))
 			{
 				qty = qty.negate();

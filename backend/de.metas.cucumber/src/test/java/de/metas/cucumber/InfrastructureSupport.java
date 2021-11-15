@@ -38,7 +38,7 @@ public class InfrastructureSupport
 	private final static transient Logger logger = LogManager.getLogger(InfrastructureSupport.class);
 
 	@Getter
-	private final boolean runAgainstDockerizedDatabase = true;
+	private final boolean runAgainstDockerizedDatabase = false;
 
 	@Getter
 	private String dbHost;
