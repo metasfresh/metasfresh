@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.handlingunits.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for M_Picking_Job_Step
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_Picking_Job_Step extends org.compiere.model.PO implements I_M_Picking_Job_Step, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -62783103L;
+	private static final long serialVersionUID = -710066865L;
 
     /** Standard Constructor */
     public X_M_Picking_Job_Step (final Properties ctx, final int M_Picking_Job_Step_ID, @Nullable final String trxName)
@@ -231,33 +231,6 @@ public class X_M_Picking_Job_Step extends org.compiere.model.PO implements I_M_P
 	public int getPackTo_HU_PI_Item_Product_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_PackTo_HU_PI_Item_Product_ID);
-	}
-
-	@Override
-	public de.metas.handlingunits.model.I_M_HU getPicked_HU()
-	{
-		return get_ValueAsPO(COLUMNNAME_Picked_HU_ID, de.metas.handlingunits.model.I_M_HU.class);
-	}
-
-	@Override
-	public void setPicked_HU(final de.metas.handlingunits.model.I_M_HU Picked_HU)
-	{
-		set_ValueFromPO(COLUMNNAME_Picked_HU_ID, de.metas.handlingunits.model.I_M_HU.class, Picked_HU);
-	}
-
-	@Override
-	public void setPicked_HU_ID (final int Picked_HU_ID)
-	{
-		if (Picked_HU_ID < 1) 
-			set_Value (COLUMNNAME_Picked_HU_ID, null);
-		else 
-			set_Value (COLUMNNAME_Picked_HU_ID, Picked_HU_ID);
-	}
-
-	@Override
-	public int getPicked_HU_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_Picked_HU_ID);
 	}
 
 	@Override

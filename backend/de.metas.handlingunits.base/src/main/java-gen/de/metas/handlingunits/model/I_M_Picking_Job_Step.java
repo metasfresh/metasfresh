@@ -330,31 +330,6 @@ public interface I_M_Picking_Job_Step
 	String COLUMNNAME_PackTo_HU_PI_Item_Product_ID = "PackTo_HU_PI_Item_Product_ID";
 
 	/**
-	 * Set Picked HU.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setPicked_HU_ID (int Picked_HU_ID);
-
-	/**
-	 * Get Picked HU.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getPicked_HU_ID();
-
-	@Nullable de.metas.handlingunits.model.I_M_HU getPicked_HU();
-
-	void setPicked_HU(@Nullable de.metas.handlingunits.model.I_M_HU Picked_HU);
-
-	ModelColumn<I_M_Picking_Job_Step, de.metas.handlingunits.model.I_M_HU> COLUMN_Picked_HU_ID = new ModelColumn<>(I_M_Picking_Job_Step.class, "Picked_HU_ID", de.metas.handlingunits.model.I_M_HU.class);
-	String COLUMNNAME_Picked_HU_ID = "Picked_HU_ID";
-
-	/**
 	 * Set Pick From HU.
 	 *
 	 * <br>Type: Search
