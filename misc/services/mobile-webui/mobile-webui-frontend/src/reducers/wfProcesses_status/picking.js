@@ -31,6 +31,8 @@ const reduceOnUpdateQtyPicked = (draftState, payload) => {
     qtyRejected,
   } = payload;
 
+  console.log('Original:', original(draftState));
+
   const draftWFProcess = draftState[wfProcessId];
 
   const draftStep = altStepId
@@ -64,7 +66,7 @@ const reduceOnUpdateQtyPicked = (draftState, payload) => {
   return draftState;
 };
 
-const generateAlternativeSteps = ({ draftState, wfProcessId, activityId, lineId, stepId, qtyToAllocate }) => {
+export const generateAlternativeSteps = ({ draftState, wfProcessId, activityId, lineId, stepId, qtyToAllocate }) => {
   const draftDataStored = draftState[wfProcessId].activities[activityId].dataStored;
   const draftDataStoredOrig = original(draftDataStored);
   const draftStep = draftDataStored.lines[lineId].steps[stepId];
