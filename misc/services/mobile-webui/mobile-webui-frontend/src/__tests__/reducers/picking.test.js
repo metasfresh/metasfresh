@@ -6,7 +6,7 @@ describe('picking unit tests', () => {
   describe('generate alternative steps function', () => {
     it('should generate no steps when ...', () => {
       const initialState = produce(rawstateJson, (draftState) => {
-        generateAlternativeSteps({
+        draftState = generateAlternativeSteps({
           draftState,
           wfProcessId: 'picking-1000001',
           activityId: 'A2',
