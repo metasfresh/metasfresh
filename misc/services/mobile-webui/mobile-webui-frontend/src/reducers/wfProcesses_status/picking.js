@@ -72,13 +72,12 @@ export const generateAlternativeSteps = ({ draftState, wfProcessId, activityId, 
   const draftStep = draftDataStored.lines[lineId].steps[stepId];
   const { pickFromAlternatives: alternativesPool } = draftDataStoredOrig;
 
-  console.log('qtyToAllocate:', qtyToAllocate);
+  console.log('qtyToAllocate ===>', qtyToAllocate);
 
   let qtyToAllocateRemaining = qtyToAllocate;
 
   for (let idx = 0; idx < alternativesPool.length; idx++) {
-    const alternativesPoolItem = alternativesPool[idx];
-    deallocateQtyAvailable({ alternativesPoolItem, stepId });
+    deallocateQtyAvailable({ idx, stepId, draftDataStored });
   }
 
   for (let idx = 0; idx < alternativesPool.length; idx++) {
@@ -101,7 +100,6 @@ export const generateAlternativeSteps = ({ draftState, wfProcessId, activityId, 
       allocateQtyAvailable({
         idx,
         draftDataStored,
-        alternativesPoolItem,
         stepId,
         qtyToAllocate: qtyToAllocateThisStep,
       });
@@ -125,16 +123,18 @@ const computeQtyAllocated = ({ alternativesPoolItem }) => {
   return Object.values(alternativesPoolItem.allocatedQtys).reduce((acc, qty) => acc + qty, 0);
 };
 
-const allocateQtyAvailable = ({ idx, draftDataStored, alternativesPoolItem, stepId, qtyToAllocate }) => {
-  if (!alternativesPoolItem.allocatedQtys) {
+const allocateQtyAvailable = ({ idx, draftDataStored, stepId, qtyToAllocate }) => {
+  const alternativesPoolItemOrig = original(draftDataStored.pickFromAlternatives[idx]);
+  if (!alternativesPoolItemOrig.allocatedQtys) {
     draftDataStored.pickFromAlternatives[idx].allocatedQtys = {};
   }
   draftDataStored.pickFromAlternatives[idx].allocatedQtys[stepId] = qtyToAllocate;
 };
 
-const deallocateQtyAvailable = ({ alternativesPoolItem, stepId }) => {
-  if (alternativesPoolItem.allocatedQtys) {
-    delete alternativesPoolItem.allocatedQtys[stepId];
+const deallocateQtyAvailable = ({ idx, stepId, draftDataStored }) => {
+  const alternativesPoolItemOrig = original(draftDataStored.pickFromAlternatives[idx]);
+  if (alternativesPoolItemOrig.allocatedQtys) {
+    delete draftDataStored.pickFromAlternatives[idx].allocatedQtys[stepId];
   }
 };
 
