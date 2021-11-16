@@ -4,7 +4,6 @@ import { generateAlternativeSteps } from '../../reducers/wfProcesses_status/pick
 
 describe('picking unit tests', () => {
   describe('generate alternative steps function', () => {
-
     const wfProcessId = 'picking-1000001';
     const activityId = 'A2';
     const lineId = 0;
@@ -26,8 +25,30 @@ describe('picking unit tests', () => {
         return draftState;
       });
 
-      const { genSteps } = initialState[wfProcessId].activities[activityId].dataStored.lines[lineId].steps[stepId].altSteps;
+      const { genSteps } =
+        initialState[wfProcessId].activities[activityId].dataStored.lines[lineId].steps[stepId].altSteps;
       expect(genSteps).toMatchObject({});
     });
+
+    // it('should generate steps when called with quantity to allocate greater than zero', () => {
+    //     const initialState = produce(rawstateJson, (draftState) => {
+    //       const draftStateWFProcesses = draftState['wfProcesses_status'];
+
+    //       draftState = generateAlternativeSteps({
+    //         draftState: draftStateWFProcesses,
+    //         wfProcessId,
+    //         activityId,
+    //         lineId,
+    //         stepId,
+    //         qtyToAllocate: 30,
+    //       });
+
+    //       return draftState;
+    //     });
+
+    //     const { genSteps } = initialState[wfProcessId].activities[activityId].dataStored.lines[lineId].steps[stepId].altSteps;
+    //     console.log('GenSteps:', genSteps);
+    //     //expect(genSteps).toMatchObject({});
+    //   });
   });
 });
