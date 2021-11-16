@@ -4,9 +4,10 @@ import { generateAlternativeSteps } from '../../reducers/wfProcesses_status/pick
 
 describe('picking unit tests', () => {
   describe('generate alternative steps function', () => {
-    it('should generate no steps when ...', () => {
+    it('should generate no steps when called with zero quantity to allocate', () => {
       const initialState = produce(rawstateJson, (draftState) => {
         const draftStateWFProcesses = draftState['wfProcesses_status'];
+
         draftState = generateAlternativeSteps({
           draftState: draftStateWFProcesses,
           wfProcessId: 'picking-1000001',

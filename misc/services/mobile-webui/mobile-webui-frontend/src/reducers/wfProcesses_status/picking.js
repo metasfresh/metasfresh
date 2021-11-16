@@ -72,7 +72,7 @@ export const generateAlternativeSteps = ({ draftState, wfProcessId, activityId, 
   const draftStep = draftDataStored.lines[lineId].steps[stepId];
   const { pickFromAlternatives: alternativesPool } = draftDataStoredOrig;
 
-  console.log('qtyRejectedOutsideFor:', qtyToAllocate);
+  console.log('qtyToAllocate:', qtyToAllocate);
 
   let qtyToAllocateRemaining = qtyToAllocate;
 
@@ -128,7 +128,9 @@ const allocateQtyAvailable = ({ alternativesPoolItem, stepId, qtyToAllocate }) =
 };
 
 const deallocateQtyAvailable = ({ alternativesPoolItem, stepId }) => {
-  delete alternativesPoolItem.allocatedQtys[stepId];
+  if (alternativesPoolItem.allocatedQtys) {
+    delete alternativesPoolItem.allocatedQtys[stepId];
+  }
 };
 
 const updateStepStatus = ({ draftWFProcess, activityId, lineId, stepId }) => {
