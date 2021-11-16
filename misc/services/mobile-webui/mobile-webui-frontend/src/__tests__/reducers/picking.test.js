@@ -2,14 +2,14 @@ import rawstateJson from '../fixtures/rawstate.json';
 import { produce } from 'immer';
 import { generateAlternativeSteps } from '../../reducers/wfProcesses_status/picking';
 
+const wfProcessId = 'picking-1000001';
+const activityId = 'A2';
+const lineId = 0;
+const stepId = '1000001';
+
 describe('picking unit tests', () => {
   describe('generate alternative steps function', () => {
     it('should generate no steps when called with zero quantity to allocate', () => {
-      const wfProcessId = 'picking-1000001';
-      const activityId = 'A2';
-      const lineId = 0;
-      const stepId = '1000001';
-
       const initialState = produce(rawstateJson, (draftState) => {
         const draftStateWFProcesses = draftState['wfProcesses_status'];
 
@@ -31,11 +31,6 @@ describe('picking unit tests', () => {
     });
 
     it('should generate one step when called with quantity to allocate smaller than the qty available in the first available step from the pool', () => {
-      const wfProcessId = 'picking-1000001';
-      const activityId = 'A2';
-      const lineId = 0;
-      const stepId = '1000001';
-
       const initialState = produce(rawstateJson, (draftState) => {
         generateAlternativeSteps({
           draftState: draftState['wfProcesses_status'],
@@ -63,11 +58,6 @@ describe('picking unit tests', () => {
     });
 
     it('should generate three steps when called with higher quantity to allocate (i.e. 500)', () => {
-      const wfProcessId = 'picking-1000001';
-      const activityId = 'A2';
-      const lineId = 0;
-      const stepId = '1000001';
-
       const initialState = produce(rawstateJson, (draftState) => {
         generateAlternativeSteps({
           draftState: draftState['wfProcesses_status'],
