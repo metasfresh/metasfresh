@@ -3,6 +3,7 @@ import * as CompleteStatus from '../../constants/CompleteStatus';
 import {
   normalizeComponentProps,
   computeActivityDataStoredInitialValue,
+  mergeActivityDataStored,
   computeActivityStatus,
 } from './activityStateHandlers';
 
@@ -105,6 +106,12 @@ const mergeActivityToState = ({ draftActivity, fromActivity }) => {
         componentProps: componentPropsNormalized,
       }),
     };
+  } else {
+    draftActivity.dataStored = mergeActivityDataStored({
+      componentType: draftActivity.componentType,
+      draftActivity,
+      fromActivity,
+    });
   }
 
   const completeStatus = computeActivityStatus({ draftActivity });

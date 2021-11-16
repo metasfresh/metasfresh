@@ -292,4 +292,9 @@ registerHandler({
     console.log('picking: computeActivityDataStoredInitialValue for ', componentProps);
     return { lines: componentProps.lines, pickFromAlternatives: componentProps.pickFromAlternatives };
   },
+
+  mergeActivityDataStored: ({ componentType, draftActivityDataStored, fromActivity }) => {
+    // FIXME merge state from backend!!!
+    console.log(`!!!!!!!!!!!!! componentType=${componentType}`, draftActivityDataStored, fromActivity);
+  },
 });

@@ -34,6 +34,15 @@ export const computeActivityDataStoredInitialValue = ({ componentType, component
   }
 };
 
+export const mergeActivityDataStored = ({ componentType, draftActivityDataStored, fromActivity }) => {
+  const componentHandlers = registeredHandlers[componentType];
+  if (componentHandlers && componentHandlers.mergeActivityDataStored) {
+    return componentHandlers.mergeActivityDataStored({ componentType, draftActivityDataStored, fromActivity });
+  } else {
+    return {};
+  }
+};
+
 export const computeActivityStatus = ({ draftActivity }) => {
   const componentHandlers = registeredHandlers[draftActivity.componentType];
   if (componentHandlers && componentHandlers.computeActivityStatus) {
