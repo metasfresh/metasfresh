@@ -48,11 +48,16 @@ describe('picking unit tests', () => {
 
         return draftState;
       });
-      
 
+      const { pickFromAlternatives } = initialState['wfProcesses_status'][wfProcessId].activities[activityId].dataStored;
       const { genSteps } =
         initialState['wfProcesses_status'][wfProcessId].activities[activityId].dataStored.lines[lineId].steps[stepId]
           .altSteps;
+
+      // check the allocatedQtys object within the pickFromAlternatives item (poolItem)
+      expect(pickFromAlternatives[0].allocatedQtys[stepId]).toEqual(30);
+  
+      // check the quantity available within the corresponding generated step
       expect(genSteps['1000019'].qtyAvailable).toEqual(30);
     });
   });
