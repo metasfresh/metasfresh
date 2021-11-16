@@ -1,0 +1,41 @@
+{
+  "remittanceAdviceList": [
+    {
+      "senderId": "gln-2234567890123",
+      "recipientId": "gln-1234567890123",
+      "documentNumber": "677550",
+      "sendDate": "2021-10-09T09:44:00Z",
+      "documentDate": "2021-10-08T22:00:00Z",
+      "remittanceAdviceType": "INBOUND",
+      "remittedAmountSum": 486014.25,
+      "remittanceAmountCurrencyISO": "CHF",
+      "serviceFeeAmount": 12959.91,
+      "serviceFeeCurrencyISO": "CHF",
+      "paymentDiscountAmountSum": 0,
+      "lines": [
+        {
+          "invoiceIdentifier": "doc-F136248",
+          "remittedAmount": 4467.58,
+          "dateInvoiced": "2021-09-06T22:00:00Z",
+          "bpartnerIdentifier": "gln-4234567890123",
+          "invoiceBaseDocType": "ARI",
+          "invoiceGrossAmount": 4551.25,
+          "paymentDiscountAmount": 41.99,
+          "serviceFeeAmount": 41.68,
+          "serviceFeeVatRate": 7.7
+        },
+        {
+          "invoiceIdentifier": "doc-G101619",
+          "remittedAmount": 140.78,
+          "dateInvoiced": "2021-09-06T22:00:00Z",
+          "bpartnerIdentifier": "gln-6234567890123",
+          "invoiceBaseDocType": "ARC",
+          "invoiceGrossAmount": 140.43,
+          "paymentDiscountAmount": 1.97,
+          "serviceFeeAmount": 2.32,
+          "serviceFeeVatRate": 7.7
+        }
+      ]
+    }
+  ]
+}
