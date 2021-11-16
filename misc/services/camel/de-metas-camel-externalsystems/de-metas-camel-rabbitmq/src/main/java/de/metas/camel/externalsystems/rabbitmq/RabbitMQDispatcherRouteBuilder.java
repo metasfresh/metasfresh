@@ -49,8 +49,6 @@ public class RabbitMQDispatcherRouteBuilder extends RouteBuilder
 	@VisibleForTesting
 	static final String RABBITMQ_ENDPOINT_ID = "rabbitMQEndpointId";
 	@VisibleForTesting
-	static final String RABBITMQ_PUBLISH_ENDPOINT = "/messages/publish";
-	@VisibleForTesting
 	static final String RABBITMQ_MESSAGE_SENDER = "RabbitMQMessageSender";
 
 	public static final String RABBITMQ_DISPATCHER_ROUTE_ID = "RabbitMQDispatcher";
@@ -105,7 +103,7 @@ public class RabbitMQDispatcherRouteBuilder extends RouteBuilder
 
 		exchange.getIn().removeHeaders("CamelHttp*");
 		exchange.getIn().setHeader(AUTHORIZATION, dispatchMessageRequest.getAuthToken());
-		exchange.getIn().setHeader(Exchange.HTTP_URI, dispatchMessageRequest.getUrl() + RABBITMQ_PUBLISH_ENDPOINT);
+		exchange.getIn().setHeader(Exchange.HTTP_URI, dispatchMessageRequest.getUrl());
 		exchange.getIn().setHeader(Exchange.HTTP_METHOD, HttpEndpointBuilderFactory.HttpMethods.POST);
 		exchange.getIn().setBody(dispatchMessageRequest.getMessage());
 	}

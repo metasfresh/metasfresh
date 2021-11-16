@@ -2,11 +2,11 @@ package de.metas.material.event;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-
 import de.metas.material.event.attributes.AttributesChangedEvent;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.ddorder.DDOrderAdvisedEvent;
 import de.metas.material.event.ddorder.DDOrderCreatedEvent;
+import de.metas.material.event.ddorder.DDOrderDeletedEvent;
 import de.metas.material.event.ddorder.DDOrderDocStatusChangedEvent;
 import de.metas.material.event.ddorder.DDOrderRequestedEvent;
 import de.metas.material.event.forecast.ForecastCreatedEvent;
@@ -30,6 +30,8 @@ import de.metas.material.event.shipmentschedule.ShipmentScheduleCreatedEvent;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleDeletedEvent;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleUpdatedEvent;
 import de.metas.material.event.stock.StockChangedEvent;
+import de.metas.material.event.stockcandidate.MaterialCandidateChangedEvent;
+import de.metas.material.event.stockcandidate.StockCandidateChangedEvent;
 import de.metas.material.event.stockestimate.StockEstimateCreatedEvent;
 import de.metas.material.event.stockestimate.StockEstimateDeletedEvent;
 import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
@@ -65,17 +67,17 @@ import de.metas.material.event.transactions.TransactionDeletedEvent;
  * Also thanks to <a href="https://reinhard.codes/2015/09/16/lomboks-builder-annotation-and-inheritance">https://reinhard.codes/2015/09/16/lomboks-builder-annotation-and-inheritance/</a> for the hint about using builder with inheritance, but I didn't get it to fly when i also had to provide allargsconstructors to the concrete sub classes
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
 @JsonSubTypes({
-	
+
 		@JsonSubTypes.Type(name = AttributesChangedEvent.TYPE, value = AttributesChangedEvent.class),
 
 		@JsonSubTypes.Type(name = DDOrderAdvisedEvent.TYPE, value = DDOrderAdvisedEvent.class),
 		@JsonSubTypes.Type(name = DDOrderCreatedEvent.TYPE, value = DDOrderCreatedEvent.class),
 		@JsonSubTypes.Type(name = DDOrderDocStatusChangedEvent.TYPE, value = DDOrderDocStatusChangedEvent.class),
 		@JsonSubTypes.Type(name = DDOrderRequestedEvent.TYPE, value = DDOrderRequestedEvent.class),
+		@JsonSubTypes.Type(name = DDOrderDeletedEvent.TYPE, value = DDOrderDeletedEvent.class),
 
 		@JsonSubTypes.Type(name = ForecastCreatedEvent.TYPE, value = ForecastCreatedEvent.class),
 
@@ -111,9 +113,12 @@ import de.metas.material.event.transactions.TransactionDeletedEvent;
 		@JsonSubTypes.Type(name = StockEstimateDeletedEvent.TYPE, value = StockEstimateDeletedEvent.class),
 
 		@JsonSubTypes.Type(name = SupplyRequiredEvent.TYPE, value = SupplyRequiredEvent.class),
-		
+
 		@JsonSubTypes.Type(name = TransactionCreatedEvent.TYPE, value = TransactionCreatedEvent.class),
-		@JsonSubTypes.Type(name = TransactionDeletedEvent.TYPE, value = TransactionDeletedEvent.class)
+		@JsonSubTypes.Type(name = TransactionDeletedEvent.TYPE, value = TransactionDeletedEvent.class),
+
+		@JsonSubTypes.Type(name = StockCandidateChangedEvent.TYPE, value = StockCandidateChangedEvent.class),
+		@JsonSubTypes.Type(name = MaterialCandidateChangedEvent.TYPE, value = MaterialCandidateChangedEvent.class)
 })
 public interface MaterialEvent
 {

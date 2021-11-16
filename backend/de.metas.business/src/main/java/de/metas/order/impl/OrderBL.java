@@ -109,7 +109,6 @@ import java.math.BigDecimal;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -472,18 +471,10 @@ public class OrderBL implements IOrderBL
 	}
 
 	@Override
-	public DeliveryViaRule evaluateOrderDeliveryViaRule(@NonNull final I_C_Order order)
-	{
-		final DeliveryViaRule orderDeliveryViaRule = DeliveryViaRule.ofNullableCode(order.getDeliveryViaRule());
-		return orderDeliveryViaRule != null
-				? orderDeliveryViaRule
-				: findDeliveryViaRule(order);
-	}
-
-	private DeliveryViaRule findDeliveryViaRule(final I_C_Order orderRecord)
+	public Optional<DeliveryViaRule> findDeliveryViaRule(final I_C_Order orderRecord)
 	{
 		final BPartnerOrderParams params = retrieveBPartnerParams(orderRecord);
-		return params.getDeliveryViaRule().orElse(null);
+		return params.getDeliveryViaRule();
 	}
 
 	private BPartnerOrderParams retrieveBPartnerParams(@NonNull final I_C_Order orderRecord)
@@ -549,10 +540,12 @@ public class OrderBL implements IOrderBL
 				: null;
 	}
 
+	/**
+	 * FIXME: keep in sync / merge with org.compiere.model.{@link MOrder#setBPartner(org.compiere.model.I_C_BPartner)}.
+	 */
 	@Override
 	public void setBPartner(final org.compiere.model.I_C_Order order, final org.compiere.model.I_C_BPartner bp)
 	{
-		// FIXME: keep in sync / merge with org.compiere.model.MOrder.setBPartner(MBPartner)
 		if (bp == null)
 		{
 			return;
@@ -671,45 +664,23 @@ public class OrderBL implements IOrderBL
 	@Override
 	public void setBPLocation(final org.compiere.model.I_C_Order order, final org.compiere.model.I_C_BPartner bp)
 	{
-		final List<I_C_BPartner_Location> locations = bpartnerDAO.retrieveBPartnerLocations(bp);
-
-		// Set Locations
-		final List<I_C_BPartner_Location> shipLocations = new ArrayList<>();
-		boolean foundLoc = false;
-		for (final I_C_BPartner_Location loc : locations)
-		{
-			if (loc.isShipTo() && loc.isActive())
-			{
-				shipLocations.add(loc);
-			}
-
-			final org.compiere.model.I_C_BPartner_Location bpLoc = InterfaceWrapperHelper.create(loc, org.compiere.model.I_C_BPartner_Location.class);
-			if (bpLoc.isShipToDefault())
-			{
-				setBPartnerLocation(order, bpLoc);
-				foundLoc = true;
-			}
-		}
-
-		// set first ship location if is not set
-		if (!foundLoc)
-		{
-			if (!shipLocations.isEmpty())
-			{
-				setBPartnerLocation(order, shipLocations.get(0));
-			}
-			//No longer setting any location when no shipping location exists for the bpartner
-		}
-
-		if (!foundLoc)
+		final I_C_BPartner_Location shipToLocationId = bpartnerDAO.retrieveBPartnerLocation(BPartnerLocationQuery.builder()
+				.bpartnerId(BPartnerId.ofRepoId(bp.getC_BPartner_ID()))
+				.type(Type.SHIP_TO)
+				.build());
+		if (shipToLocationId == null)
 		{
 			logger.error("MOrder.setBPartner - Has no Ship To Address: {}", bp);
+		}
+		else
+		{
+			setBPartnerLocation(order, shipToLocationId);
 		}
 	}
 
 	public void setBPartnerLocation(@NonNull final I_C_Order order, @Nullable final I_C_BPartner_Location bpartnerLocation)
 	{
-		BPartnerLocationAndCaptureId bpartnerLocationAndCaptureId = bpartnerLocation != null ? BPartnerLocationAndCaptureId.ofRecord(bpartnerLocation) : null;
+		final BPartnerLocationAndCaptureId bpartnerLocationAndCaptureId = bpartnerLocation != null ? BPartnerLocationAndCaptureId.ofRecord(bpartnerLocation) : null;
 		OrderDocumentLocationAdapterFactory.locationAdapter(order).setLocationAndResetRenderedAddress(bpartnerLocationAndCaptureId);
 	}
 
@@ -790,7 +761,7 @@ public class OrderBL implements IOrderBL
 	}
 
 	@Override
-	public boolean isTaxIncluded(@NonNull final org.compiere.model.I_C_Order order, Tax tax)
+	public boolean isTaxIncluded(@NonNull final org.compiere.model.I_C_Order order, final Tax tax)
 	{
 		if (tax != null && tax.isWholeTax())
 		{
@@ -1051,12 +1022,7 @@ public class OrderBL implements IOrderBL
 		}
 
 		final DocTypeId docTypeTargetId = DocTypeId.ofRepoIdOrNull(order.getC_DocTypeTarget_ID());
-		if (docTypeTargetId != null)
-		{
-			return docTypeTargetId;
-		}
-
-		return null;
+		return docTypeTargetId;
 	}
 
 	@Override
@@ -1121,7 +1087,7 @@ public class OrderBL implements IOrderBL
 			return;
 		}
 
-		boolean hasHaddexLine = orderDAO.retrieveOrderLines(order)
+		final boolean hasHaddexLine = orderDAO.retrieveOrderLines(order)
 				.stream()
 				.anyMatch(lineId -> productBL.isHaddexProduct(ProductId.ofRepoId(lineId.getM_Product_ID())));
 
@@ -1165,15 +1131,10 @@ public class OrderBL implements IOrderBL
 			return false;
 		}
 
-		if (partner.getDateHaddexCheck() == null)
-		{
-			return false;
-		}
-
-		return true;
+		return partner.getDateHaddexCheck() != null;
 	}
 
-	private int getMaxHaddexAgeInMonths(int clientID, int orgID)
+	private int getMaxHaddexAgeInMonths(final int clientID, final int orgID)
 	{
 		final int months = sysConfigBL.getIntValue(SYS_CONFIG_MAX_HADDEX_AGE_IN_MONTHS, 24, clientID, orgID);
 		if (months > 0)
@@ -1189,5 +1150,11 @@ public class OrderBL implements IOrderBL
 		documentBL.processEx(order, X_C_Order.DOCACTION_Close);
 
 		Loggables.withLogger(logger, Level.DEBUG).addLog("Order closed for C_Order_ID={}", order.getC_Order_ID());
+	}
+
+	@Override
+	public String getDocumentNoById(@NonNull final OrderId orderId)
+	{
+		return getById(orderId).getDocumentNo();
 	}
 }

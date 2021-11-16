@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.externalsystem.model;
 
-import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for ExternalSystem_Config
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_ExternalSystem_Config extends org.compiere.model.PO implements I_ExternalSystem_Config, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1560993557L;
+	private static final long serialVersionUID = 1815985496L;
 
     /** Standard Constructor */
     public X_ExternalSystem_Config (final Properties ctx, final int ExternalSystem_Config_ID, @Nullable final String trxName)
@@ -98,6 +98,8 @@ public class X_ExternalSystem_Config extends org.compiere.model.PO implements I_
 	public static final String TYPE_Other = "Other";
 	/** WooCommerce = WOO */
 	public static final String TYPE_WooCommerce = "WOO";
+	/** GRSSignum = GRS */
+	public static final String TYPE_GRSSignum = "GRS";
 	/** RabbitMQ REST API = RabbitMQ */
 	public static final String TYPE_RabbitMQRESTAPI = "RabbitMQ";
 	@Override

@@ -69,7 +69,7 @@ public final class PurchaseCandidateAdvisedHandler
 	}
 
 	@Override
-	public Collection<Class<? extends PurchaseCandidateAdvisedEvent>> getHandeledEventType()
+	public Collection<Class<? extends PurchaseCandidateAdvisedEvent>> getHandledEventType()
 	{
 		return ImmutableList.of(PurchaseCandidateAdvisedEvent.class);
 	}

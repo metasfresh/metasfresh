@@ -44,11 +44,13 @@ import de.metas.audit.data.service.CompositeDataAuditService;
 import de.metas.audit.data.service.GenericDataExportAuditRequest;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.JsonApiResponse;
+import de.metas.common.rest_api.v2.JsonErrorItem;
 import de.metas.i18n.AdMessageKey;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
 import de.metas.organization.OrgId;
 import de.metas.process.PInstanceId;
+import de.metas.rest_api.utils.v2.JsonErrors;
 import de.metas.user.UserGroupId;
 import de.metas.user.UserGroupRepository;
 import de.metas.user.UserGroupUserAssignment;
@@ -148,10 +150,10 @@ public class ApiAuditService
 
 		// allow up to 50MB large results in API responses; thx to https://stackoverflow.com/a/62543241/1012103
 		this.webClient = WebClient.builder().exchangeStrategies(ExchangeStrategies.builder()
-													   .codecs(configurer -> configurer
-															   .defaultCodecs()
-															   .maxInMemorySize(50 * 1024 * 1024))
-													   .build())
+																		.codecs(configurer -> configurer
+																				.defaultCodecs()
+																				.maxInMemorySize(50 * 1024 * 1024))
+																		.build())
 				.build();
 		this.callerId2Scheduler = new ConcurrentHashMap<>();
 		this.objectMapper = JsonObjectMapperHolder.newJsonObjectMapper();
@@ -191,7 +193,7 @@ public class ApiAuditService
 		}
 
 		final OrgId orgId = Env.getOrgId();
-		final ImmutableList<ApiAuditConfig> apiAuditConfigs = apiAuditConfigRepository.getAllConfigsByOrgId(orgId);
+		final ImmutableList<ApiAuditConfig> apiAuditConfigs = apiAuditConfigRepository.getActiveConfigsByOrgId(orgId);
 
 		return apiAuditConfigs.stream()
 				.filter(config -> config.matchesRequest(requestWrapper.getFullPath(), requestWrapper.getHttpMethodString()))
@@ -201,7 +203,7 @@ public class ApiAuditService
 	public void processHttpCall(
 			@NonNull final HttpServletRequest request,
 			@NonNull final HttpServletResponse response,
-			@NonNull final ApiAuditConfig apiAuditConfig)
+			@NonNull final ApiAuditConfig apiAuditConfig) throws IOException
 	{
 		final OrgId orgId = apiAuditConfig.getOrgId();
 
@@ -240,7 +242,7 @@ public class ApiAuditService
 		catch (final Exception e)
 		{
 			apiAuditLoggable.addLog("Caught {} with message={}", e.getClass().getName(), e.getMessage(), e);
-			throw AdempiereException.wrapIfNeeded(e);
+			handleErrorResponse(requestAudit, e, response);
 		}
 		finally
 		{
@@ -527,11 +529,19 @@ public class ApiAuditService
 			forwardSomeResponseHttpHeaders(actualAPIResponse.getHttpHeaders(), httpServletResponse);
 		}
 
+		buildHttpResponse(httpServletResponse, apiResponse, actualAPIResponse.getStatusCode());
+	}
+
+	private void buildHttpResponse(
+			@NonNull final HttpServletResponse httpServletResponse,
+			@NonNull final JsonApiResponse apiResponse,
+			final int statusCode) throws IOException
+	{
 		final String stringToForward = objectMapper.writeValueAsString(apiResponse);
 
 		httpServletResponse.setContentType(APPLICATION_JSON_VALUE);
 		httpServletResponse.setCharacterEncoding(StandardCharsets.UTF_8.name());
-		httpServletResponse.setStatus(actualAPIResponse.getStatusCode());
+		httpServletResponse.setStatus(statusCode);
 
 		httpServletResponse.resetBuffer();
 		if (stringToForward != null)
@@ -603,6 +613,22 @@ public class ApiAuditService
 		final GenericDataExportAuditRequest auditRequest = genericRequestBuilder.build();
 
 		compositeDataAuditService.performDataAuditForRequest(auditRequest);
+	}
+
+	private void handleErrorResponse(
+			@NonNull final ApiRequestAudit apiRequestAudit,
+			@NonNull final Exception e,
+			@NonNull final HttpServletResponse httpServletResponse) throws IOException
+	{
+		final String language = Env.getADLanguageOrBaseLanguage();
+		final JsonErrorItem error = JsonErrors.ofThrowable(e, language);
+
+		final JsonApiResponse apiResponse = JsonApiResponse.builder()
+				.requestId(JsonMetasfreshId.of(apiRequestAudit.getIdNotNull().getRepoId()))
+				.endpointResponse(error)
+				.build();
+
+		buildHttpResponse(httpServletResponse, apiResponse, HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 	}
 
 	@Value

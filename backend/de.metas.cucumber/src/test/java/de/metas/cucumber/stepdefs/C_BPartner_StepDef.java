@@ -44,18 +44,19 @@ import java.util.Map;
 import static org.assertj.core.api.Assertions.*;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_AD_Language;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_C_BPartner_SalesRep_ID;
+import static org.compiere.model.I_C_BPartner.COLUMNNAME_InvoiceRule;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_IsCustomer;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_IsSalesRep;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_IsVendor;
+import static org.compiere.model.X_C_BPartner.DELIVERYRULE_Force;
 
 public class C_BPartner_StepDef
 {
 	public static final int BP_GROUP_ID = BPGroupId.ofRepoId(1000000).getRepoId();
 
 	private final StepDefData<I_C_BPartner> bPartnerTable;
-	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final StepDefData<I_M_PricingSystem> pricingSystemTable;
-
+	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 
 	public C_BPartner_StepDef(
 			@NonNull final StepDefData<I_C_BPartner> bPartnerTable,
@@ -92,6 +93,15 @@ public class C_BPartner_StepDef
 		bPartnerRecord.setIsVendor(StringUtils.toBoolean(tableRow.get("OPT." + COLUMNNAME_IsVendor), false));
 		bPartnerRecord.setIsCustomer(StringUtils.toBoolean(tableRow.get("OPT." + COLUMNNAME_IsCustomer), false));
 		bPartnerRecord.setIsSalesRep(StringUtils.toBoolean(tableRow.get("OPT." + COLUMNNAME_IsSalesRep), false));
+
+		final String invoiceRule = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_InvoiceRule);
+
+		if (EmptyUtil.isNotBlank(invoiceRule))
+		{
+			bPartnerRecord.setInvoiceRule(invoiceRule);
+		}
+
+		bPartnerRecord.setDeliveryRule(DELIVERYRULE_Force);
 
 		final String pricingSystemIdentifier = tableRow.get(I_M_PricingSystem.COLUMNNAME_M_PricingSystem_ID + ".Identifier");
 		if (EmptyUtil.isNotBlank(pricingSystemIdentifier))

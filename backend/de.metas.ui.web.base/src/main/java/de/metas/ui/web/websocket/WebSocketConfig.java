@@ -5,35 +5,27 @@ import de.metas.ui.web.WebuiURLs;
 import de.metas.ui.web.session.UserSession;
 import lombok.NonNull;
 import org.slf4j.Logger;
-import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
-import org.springframework.messaging.MessageHeaders;
 import org.springframework.messaging.converter.MappingJackson2MessageConverter;
 import org.springframework.messaging.converter.MessageConverter;
-import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.messaging.support.ChannelInterceptor;
-import org.springframework.stereotype.Component;
 import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.StompWebSocketEndpointRegistration;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
-import org.springframework.web.socket.messaging.AbstractSubProtocolEvent;
-import org.springframework.web.socket.messaging.SessionDisconnectEvent;
-import org.springframework.web.socket.messaging.SessionSubscribeEvent;
-import org.springframework.web.socket.messaging.SessionUnsubscribeEvent;
 import org.springframework.web.socket.server.HandshakeInterceptor;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /*
  * #%L
@@ -61,8 +53,6 @@ import java.util.Set;
 @EnableWebSocketMessageBroker
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer
 {
-	private static final Logger logger = LogManager.getLogger(WebSocketConfig.class);
-
 	private static final String ENDPOINT = "/stomp";
 
 	@Override
@@ -80,8 +70,9 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer
 		{
 			endpoint.setAllowedOrigins(webuiURLs.getFrontendURL()); // the endpoint for websocket connections	
 		}
+
 		endpoint
-				.addInterceptors(new WebsocketHandshakeInterceptor())
+				.addInterceptors(new AuthorizationHandshakeInterceptor())
 				.withSockJS();
 	}
 
@@ -118,7 +109,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer
 	@Override
 	public void configureClientInboundChannel(final ChannelRegistration registration)
 	{
-		registration.interceptors(new WebsocketChannelInterceptor());
+		registration.interceptors(new LoggingChannelInterceptor());
 
 		// NOTE: atm we don't care if the inbound messages arrived in the right order
 		// When and If we would care we would restrict the taskExecutor()'s corePoolSize to ONE.
@@ -132,9 +123,9 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer
 		return true;
 	}
 
-	private static class WebsocketChannelInterceptor implements ChannelInterceptor
+	private static class LoggingChannelInterceptor implements ChannelInterceptor
 	{
-		private static final Logger logger = LogManager.getLogger(WebsocketChannelInterceptor.class);
+		private static final Logger logger = LogManager.getLogger(LoggingChannelInterceptor.class);
 
 		@Override
 		public void afterSendCompletion(final @NonNull Message<?> message, final @NonNull MessageChannel channel, final boolean sent, final Exception ex)
@@ -156,9 +147,9 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer
 
 	}
 
-	private static class WebsocketHandshakeInterceptor implements HandshakeInterceptor
+	private static class AuthorizationHandshakeInterceptor implements HandshakeInterceptor
 	{
-		private static final Logger logger = LogManager.getLogger(WebsocketHandshakeInterceptor.class);
+		private static final Logger logger = LogManager.getLogger(AuthorizationHandshakeInterceptor.class);
 
 		@Override
 		public boolean beforeHandshake(@NonNull final ServerHttpRequest request, final @NonNull ServerHttpResponse response, final @NonNull WebSocketHandler wsHandler, final @NonNull Map<String, Object> attributes)
@@ -185,104 +176,6 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer
 		public void afterHandshake(final @NonNull ServerHttpRequest request, final @NonNull ServerHttpResponse response, final @NonNull WebSocketHandler wsHandler, final Exception exception)
 		{
 			// nothing
-		}
-	}
-
-	//
-	//
-	// Event handlers
-	//
-	//
-
-	private static WebsocketTopicName extractTopicName(final AbstractSubProtocolEvent event)
-	{
-		return WebsocketTopicName.ofString(SimpMessageHeaderAccessor.getDestination(event.getMessage().getHeaders()));
-	}
-
-	private static WebsocketSubscriptionId extractUniqueSubscriptionId(final AbstractSubProtocolEvent event)
-	{
-		final MessageHeaders headers = event.getMessage().getHeaders();
-		final WebsocketSessionId sessionId = WebsocketSessionId.ofString(SimpMessageHeaderAccessor.getSessionId(headers));
-		final String simpSubscriptionId = SimpMessageHeaderAccessor.getSubscriptionId(headers);
-		return WebsocketSubscriptionId.of(sessionId, simpSubscriptionId);
-	}
-
-	@Component
-	public static class WebsocketSubscribeEventListener implements ApplicationListener<SessionSubscribeEvent>
-	{
-		private final WebsocketActiveSubscriptionsIndex activeSubscriptionsIndex;
-		private final WebSocketProducersRegistry websocketProducersRegistry;
-
-		public WebsocketSubscribeEventListener(
-				@NonNull final WebsocketActiveSubscriptionsIndex activeSubscriptionsIndex,
-				@NonNull final WebSocketProducersRegistry websocketProducersRegistry)
-		{
-			this.activeSubscriptionsIndex = activeSubscriptionsIndex;
-			this.websocketProducersRegistry = websocketProducersRegistry;
-		}
-
-		@Override
-		public void onApplicationEvent(final @NonNull SessionSubscribeEvent event)
-		{
-			final WebsocketSubscriptionId subscriptionId = extractUniqueSubscriptionId(event);
-			final WebsocketTopicName topicName = extractTopicName(event);
-
-			activeSubscriptionsIndex.addSubscription(subscriptionId, topicName);
-			websocketProducersRegistry.onTopicSubscribed(subscriptionId, topicName);
-
-			logger.debug("Subscribed to topicName={} [ subscriptionId={} ]", topicName, subscriptionId);
-		}
-	}
-
-	@Component
-	public static class WebsocketUnsubscribeEventListener implements ApplicationListener<SessionUnsubscribeEvent>
-	{
-		private final WebsocketActiveSubscriptionsIndex activeSubscriptionsIndex;
-		private final WebSocketProducersRegistry websocketProducersRegistry;
-
-		public WebsocketUnsubscribeEventListener(
-				@NonNull final WebsocketActiveSubscriptionsIndex activeSubscriptionsIndex,
-				@NonNull final WebSocketProducersRegistry websocketProducersRegistry)
-		{
-			this.activeSubscriptionsIndex = activeSubscriptionsIndex;
-			this.websocketProducersRegistry = websocketProducersRegistry;
-		}
-
-		@Override
-		public void onApplicationEvent(final @NonNull SessionUnsubscribeEvent event)
-		{
-			final WebsocketSubscriptionId subscriptionId = extractUniqueSubscriptionId(event);
-
-			final WebsocketTopicName topicName = activeSubscriptionsIndex.removeSubscriptionAndGetTopicName(subscriptionId);
-			websocketProducersRegistry.onTopicUnsubscribed(subscriptionId, topicName);
-
-			logger.debug("Unsubscribed from topicName={} [ subscriptionId={} ]", topicName, subscriptionId);
-		}
-	}
-
-	@Component
-	public static class WebsocketDisconnectEventListener implements ApplicationListener<SessionDisconnectEvent>
-	{
-		private final WebsocketActiveSubscriptionsIndex activeSubscriptionsIndex;
-		private final WebSocketProducersRegistry websocketProducersRegistry;
-
-		public WebsocketDisconnectEventListener(
-				@NonNull final WebsocketActiveSubscriptionsIndex activeSubscriptionsIndex,
-				@NonNull final WebSocketProducersRegistry websocketProducersRegistry)
-		{
-			this.activeSubscriptionsIndex = activeSubscriptionsIndex;
-			this.websocketProducersRegistry = websocketProducersRegistry;
-		}
-
-		@Override
-		public void onApplicationEvent(final SessionDisconnectEvent event)
-		{
-			final WebsocketSessionId sessionId = WebsocketSessionId.ofString(event.getSessionId());
-			final Set<WebsocketTopicName> topicNames = activeSubscriptionsIndex.removeSessionAndGetTopicNames(sessionId);
-
-			websocketProducersRegistry.onSessionDisconnect(sessionId, topicNames);
-
-			logger.debug("Disconnected from topicName={} [ sessionId={} ]", topicNames, sessionId);
 		}
 	}
 }

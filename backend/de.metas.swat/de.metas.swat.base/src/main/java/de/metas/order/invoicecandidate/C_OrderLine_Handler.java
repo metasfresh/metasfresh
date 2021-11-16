@@ -9,6 +9,8 @@ import de.metas.document.dimension.Dimension;
 import de.metas.document.dimension.DimensionService;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.location.DocumentLocation;
+import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoicecandidate.InvoiceCandidateIds;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
@@ -26,6 +28,7 @@ import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
 import de.metas.lang.SOTrx;
 import de.metas.order.IOrderLineBL;
+import de.metas.order.OrderLineId;
 import de.metas.order.compensationGroup.Group;
 import de.metas.order.compensationGroup.GroupCompensationAmtType;
 import de.metas.order.compensationGroup.GroupCompensationLine;
@@ -72,6 +75,7 @@ import java.util.Properties;
 public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 {
 	private final DimensionService dimensionService = SpringContextHolder.instance.getBean(DimensionService.class);
+	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 
 	/**
@@ -87,7 +91,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 	 * @return <code>false</code>, the candidates will be created by {@link C_Order_Handler}.
 	 */
 	@Override
-	public boolean isCreateMissingCandidatesAutomatically(Object model)
+	public boolean isCreateMissingCandidatesAutomatically(final Object model)
 	{
 		return false;
 	}
@@ -165,12 +169,6 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 
 		icRecord.setDescription(orderLine.getDescription()); // 03439
 
-		if (orderLine.getPriceEntered().compareTo(orderLine.getPriceStd()) == 0)
-		{
-			icRecord.setBase_Commission_Points_Per_Price_UOM(orderLine.getBase_Commission_Points_Per_Price_UOM());
-			icRecord.setTraded_Commission_Percent(orderLine.getTraded_Commission_Percent());
-		}
-
 		final I_C_Order order = InterfaceWrapperHelper.create(orderLine.getC_Order(), I_C_Order.class);
 
 		setBPartnerData(icRecord, orderLine);
@@ -204,7 +202,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		DocumentLocation orderDeliveryLocation = OrderDocumentLocationAdapterFactory
 				.deliveryLocationAdapter(order)
 				.toDocumentLocation();
-		if(orderDeliveryLocation.getBpartnerLocationId() == null)
+		if (orderDeliveryLocation.getBpartnerLocationId() == null)
 		{
 			orderDeliveryLocation = OrderDocumentLocationAdapterFactory
 					.locationAdapter(order)
@@ -350,7 +348,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 	 * If the given ic has no InOut, then <code>QtyDelivered</code>, <code>DeliveryDate</code> and <code>M_InOut_ID</code> are set to <code>null</code>.
 	 */
 	@Override
-	public void setDeliveredData(final I_C_Invoice_Candidate icRecord)
+	public void setDeliveredData(@NonNull final I_C_Invoice_Candidate icRecord)
 	{
 		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 		final InvoiceCandidateRecordService invoiceCandidateRecordService = SpringContextHolder.instance.getBean(InvoiceCandidateRecordService.class);
@@ -406,7 +404,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 	}
 
 	@Override
-	public PriceAndTax calculatePriceAndTax(final I_C_Invoice_Candidate ic)
+	public PriceAndTax calculatePriceAndTax(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		final I_C_OrderLine orderLine = InterfaceWrapperHelper.create(ic.getC_OrderLine(), I_C_OrderLine.class);
 
@@ -443,6 +441,25 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 	{
 		final org.compiere.model.I_C_OrderLine orderLine = ic.getC_OrderLine();
 		setBPartnerData(ic, orderLine);
+	}
+
+	public void setShipmentSchedule(@NonNull final I_C_Invoice_Candidate ic)
+	{
+		final OrderLineId orderLineId = OrderLineId.ofRepoIdOrNull(ic.getC_OrderLine_ID());
+
+		if (orderLineId == null)
+		{
+			return;
+		}
+
+		final ShipmentScheduleId shipmentScheduleId = shipmentSchedulePA.getShipmentScheduleIdByOrderLineId(orderLineId);
+
+		if (shipmentScheduleId == null)
+		{
+			return;
+		}
+
+		ic.setM_ShipmentSchedule_ID(shipmentScheduleId.getRepoId());
 	}
 
 	private void setBPartnerData(@NonNull final I_C_Invoice_Candidate ic, @NonNull final org.compiere.model.I_C_OrderLine orderLine)

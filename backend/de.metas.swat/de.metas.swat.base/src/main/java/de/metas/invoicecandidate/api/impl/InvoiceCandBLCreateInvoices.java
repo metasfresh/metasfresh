@@ -48,6 +48,7 @@ import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.tax.api.Tax;
+import de.metas.user.UserId;
 import de.metas.user.api.IUserBL;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
@@ -372,6 +373,8 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			invoice.setIsTaxIncluded(invoiceHeader.isTaxIncluded()); // tasks 04119
 
 			invoice.setAD_Org_ID(invoiceHeader.getOrgId().getRepoId());
+
+			invoice.setSalesRep_ID(UserId.toRepoId(invoiceHeader.getSalesRepId()));
 
 			setC_DocType(invoice, invoiceHeader);
 

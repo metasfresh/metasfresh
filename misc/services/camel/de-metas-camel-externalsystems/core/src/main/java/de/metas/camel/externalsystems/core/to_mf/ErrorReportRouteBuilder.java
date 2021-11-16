@@ -22,15 +22,23 @@
 
 package de.metas.camel.externalsystems.core.to_mf;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import de.metas.camel.externalsystems.common.JsonObjectMapperHolder;
+import de.metas.camel.externalsystems.common.LogMessageRequest;
 import de.metas.camel.externalsystems.core.CamelRouteHelper;
 import de.metas.camel.externalsystems.core.CoreConstants;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v1.JsonError;
 import de.metas.common.rest_api.v1.JsonErrorItem;
+import de.metas.common.rest_api.v2.JsonApiResponse;
+import de.metas.common.util.Check;
+import de.metas.common.util.StringUtils;
 import de.metas.common.util.CoalesceUtil;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.builder.endpoint.dsl.HttpEndpointBuilderFactory;
+import org.apache.camel.http.base.HttpOperationFailedException;
 import org.springframework.stereotype.Component;
 
 import java.io.PrintWriter;
@@ -42,15 +50,17 @@ import java.util.Optional;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_ORG_CODE;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_PINSTANCE_ID;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
-import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_EXTERNAL_SYSTEM_URI;
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_EXTERNAL_SYSTEM_V2_URI;
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_LOG_MESSAGE_ROUTE_ID;
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 
 @Component
 public class ErrorReportRouteBuilder extends RouteBuilder
 {
-	private final DateTimeFormatter FILE_TIMESTAMP_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd_HHmmssSSS");
+	private static final DateTimeFormatter FILE_TIMESTAMP_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd_HHmmssSSS");
 
 	public final static String ERROR_WRITE_TO_FILE = "Error-Route-writeToFile";
+	public final static String ERROR_SEND_LOG_MESSAGE = "Error-Route-sendLogMessage";
 	public final static String ERROR_WRITE_TO_ADISSUE = "Error-Route-writeToAdIssue";
 
 	@Override
@@ -66,7 +76,7 @@ public class ErrorReportRouteBuilder extends RouteBuilder
 				.streamCaching()
 				.multicast()
 					.parallelProcessing(true)
-					.to(direct(ERROR_WRITE_TO_FILE), direct(ERROR_WRITE_TO_ADISSUE))
+					.to(direct(ERROR_WRITE_TO_FILE), direct(ERROR_SEND_LOG_MESSAGE))
 				.end();
 
 		from(direct(ERROR_WRITE_TO_FILE))
@@ -83,7 +93,15 @@ public class ErrorReportRouteBuilder extends RouteBuilder
 				.removeHeaders("CamelHttp*")
 				.setHeader(CoreConstants.AUTHORIZATION, simple(CoreConstants.AUTHORIZATION_TOKEN))
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.POST))
-				.toD("{{" + MF_EXTERNAL_SYSTEM_URI + "}}/${header." + HEADER_PINSTANCE_ID + "}/externalstatus/error");
+				.toD("{{" + MF_EXTERNAL_SYSTEM_V2_URI + "}}/externalstatus/${header." + HEADER_PINSTANCE_ID + "}/error");
+
+		from(direct(ERROR_SEND_LOG_MESSAGE))
+				.routeId(ERROR_SEND_LOG_MESSAGE)
+				.log("Route invoked")
+
+				.process(this::prepareErrorLogMessage)
+
+				.to(direct(MF_LOG_MESSAGE_ROUTE_ID));
 		//@formatter:on
 	}
 
@@ -123,6 +141,15 @@ public class ErrorReportRouteBuilder extends RouteBuilder
 			throw new RuntimeException("No PInstanceId available!");
 		}
 
+		final JsonErrorItem errorItem = getErrorItem(exchange);
+
+		exchange.getIn().setBody(JsonError.ofSingleItem(errorItem));
+	}
+
+	@NonNull
+	private JsonErrorItem getErrorItem(@NonNull final Exchange exchange)
+	{
+
 		final JsonErrorItem.JsonErrorItemBuilder errorBuilder = JsonErrorItem
 				.builder()
 				.orgCode(exchange.getIn().getHeader(HEADER_ORG_CODE, String.class));
@@ -132,7 +159,7 @@ public class ErrorReportRouteBuilder extends RouteBuilder
 		if (exception == null)
 		{
 			errorBuilder.message("No error message available!");
-		}
+	}
 		else
 		{
 			final StringWriter sw = new StringWriter();
@@ -142,7 +169,7 @@ public class ErrorReportRouteBuilder extends RouteBuilder
 			errorBuilder.message(exception.getLocalizedMessage());
 			errorBuilder.stackTrace(sw.toString());
 
-			final Optional<StackTraceElement> sourceStackTraceElem = exception.getStackTrace() != null
+			final Optional<StackTraceElement> sourceStackTraceElem = exception.getStackTrace() != null && exception.getStackTrace().length > 0
 					? Optional.ofNullable(exception.getStackTrace()[0])
 					: Optional.empty();
 
@@ -151,6 +178,63 @@ public class ErrorReportRouteBuilder extends RouteBuilder
 				errorBuilder.sourceMethodName(sourceStackTraceElem.get().getMethodName());
 			});
 		}
-		exchange.getIn().setBody(JsonError.ofSingleItem(errorBuilder.build()));
+
+		return errorBuilder.build();
+	}
+
+	@NonNull
+	private Optional<Integer> getAPIRequestId(@NonNull final Exchange exchange)
+	{
+		final Exception exception = exchange.getProperty(Exchange.EXCEPTION_CAUGHT, Exception.class);
+
+		if (!(exception instanceof HttpOperationFailedException))
+		{
+			return Optional.empty();
+		}
+		final String response = ((HttpOperationFailedException)exception).getResponseBody();
+
+		if (Check.isBlank(response))
+		{
+			return Optional.empty();
+		}
+
+		try
+		{
+			final JsonApiResponse apiResponse = JsonObjectMapperHolder.sharedJsonObjectMapper().readValue(response, JsonApiResponse.class);
+
+			return Optional.ofNullable(JsonMetasfreshId.toValue(apiResponse.getRequestId()));
+		}
+		catch (final JsonProcessingException e)
+		{
+			return Optional.empty();
+		}
+	}
+
+	private void prepareErrorLogMessage(@NonNull final Exchange exchange)
+	{
+		final Integer pInstanceId = exchange.getIn().getHeader(HEADER_PINSTANCE_ID, Integer.class);
+
+		if (pInstanceId == null)
+		{
+			throw new RuntimeException("No PInstanceId available!");
+		}
+
+		final JsonErrorItem errorItem = getErrorItem(exchange);
+
+		final StringBuilder logMessageBuilder = new StringBuilder();
+
+		getAPIRequestId(exchange)
+				.ifPresent(apiRequestId -> logMessageBuilder.append("ApiRequestAuditId: ")
+						.append(apiRequestId)
+						.append(";"));
+
+		logMessageBuilder.append(" Error: ").append(StringUtils.removeCRLF(errorItem.toString()));
+
+		final LogMessageRequest logMessageRequest = LogMessageRequest.builder()
+				.logMessage(logMessageBuilder.toString())
+				.pInstanceId(JsonMetasfreshId.of(pInstanceId))
+				.build();
+
+		exchange.getIn().setBody(logMessageRequest);
 	}
 }

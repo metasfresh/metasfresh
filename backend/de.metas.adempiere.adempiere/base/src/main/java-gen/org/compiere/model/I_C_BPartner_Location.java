@@ -1,7 +1,8 @@
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
 
 /** Generated Interface for C_BPartner_Location
  *  @author metasfresh (generated) 
@@ -726,6 +727,28 @@ public interface I_C_BPartner_Location
 	String COLUMNNAME_Phone2 = "Phone2";
 
 	/**
+	 * Set Previous Address.
+	 * The address that will be replaced by the current one.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPrevious_ID (int Previous_ID);
+
+	/**
+	 * Get Previous Address.
+	 * The address that will be replaced by the current one.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getPrevious_ID();
+
+	String COLUMNNAME_Previous_ID = "Previous_ID";
+
+	/**
 	 * Set Setup Place No..
 	 *
 	 * <br>Type: String
@@ -770,6 +793,27 @@ public interface I_C_BPartner_Location
 	int getUpdatedBy();
 
 	String COLUMNNAME_UpdatedBy = "UpdatedBy";
+
+	/**
+	 * Set Valid From.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setValidFrom (@Nullable java.sql.Timestamp ValidFrom);
+
+	/**
+	 * Get Valid From.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getValidFrom();
+
+	ModelColumn<I_C_BPartner_Location, Object> COLUMN_ValidFrom = new ModelColumn<>(I_C_BPartner_Location.class, "ValidFrom", null);
+	String COLUMNNAME_ValidFrom = "ValidFrom";
 
 	/**
 	 * Set Visitors Address.

@@ -1,7 +1,11 @@
 package de.metas.invoice.service.impl;
 
-import java.util.Properties;
-
+import de.metas.adempiere.model.I_C_InvoiceLine;
+import de.metas.document.ICopyHandlerBL;
+import de.metas.document.IDocLineCopyHandler;
+import de.metas.i18n.IMsgBL;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_OrderLine;
@@ -9,12 +13,7 @@ import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.MInvoice;
 import org.compiere.model.MInvoiceLine;
 
-import de.metas.adempiere.model.I_C_InvoiceLine;
-import de.metas.document.ICopyHandlerBL;
-import de.metas.document.IDocLineCopyHandler;
-import de.metas.i18n.IMsgBL;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import java.util.Properties;
 
 public final class InvoiceBL extends AbstractInvoiceBL
 {

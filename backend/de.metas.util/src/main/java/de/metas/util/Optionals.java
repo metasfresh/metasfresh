@@ -1,9 +1,11 @@
 package de.metas.util;
 
+import lombok.NonNull;
+import lombok.experimental.UtilityClass;
+
 import java.util.Optional;
 import java.util.function.Supplier;
-
-import lombok.experimental.UtilityClass;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -31,7 +33,7 @@ import lombok.experimental.UtilityClass;
 public class Optionals
 {
 	@SafeVarargs
-	public static final <T> Optional<T> firstPresentOfSuppliers(final Supplier<Optional<T>>... suppliers)
+	public static <T> Optional<T> firstPresentOfSuppliers(final Supplier<Optional<T>>... suppliers)
 	{
 		if (suppliers == null || suppliers.length == 0)
 		{
@@ -48,5 +50,15 @@ public class Optionals
 		}
 
 		return Optional.empty();
+	}
+
+	/**
+	 * To be used until we upgrade to Java9 where we have Optional.stream
+	 */
+	@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
+	public static <T> Stream<T> stream(@NonNull final Optional<T> optional)
+	{
+		//noinspection OptionalIsPresent
+		return optional.isPresent() ? Stream.of(optional.get()) : Stream.empty();
 	}
 }

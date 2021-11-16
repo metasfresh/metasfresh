@@ -487,6 +487,13 @@ public class SqlDocumentQueryBuilder
 				sqlWhereClauseBuilder.appendIfNotEmpty("\n AND ");
 				sqlWhereClauseBuilder.append(" /* FTS */ (\n").append(filtersSql.getFilterByFTS().buildExistsWhereClause(entityBinding.getTableAlias())).append(")\n");
 			}
+
+			if(filtersSql.getAlwaysIncludeSql() != null)
+			{
+				// TODO implement support
+				// but atm is quite unusual to have it here
+				throw new AdempiereException("Always include SQL is not supported");
+			}
 		}
 
 		//

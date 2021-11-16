@@ -3,6 +3,7 @@ package org.eevolution.api;
 import de.metas.manufacturing.order.exportaudit.APIExportStatus;
 import de.metas.material.planning.pporder.OrderQtyChangeRequest;
 import de.metas.material.planning.pporder.PPOrderQuantities;
+import de.metas.order.OrderLineId;
 import de.metas.process.PInstanceId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
@@ -94,4 +95,6 @@ public interface IPPOrderBL extends ISingletonService
 	void updateCanBeExportedFrom(@NonNull I_PP_Order ppOrder);
 
 	void updateExportStatus(@NonNull APIExportStatus newExportStatus, @NonNull PInstanceId pinstanceId);
+
+	void setC_OrderLine(@NonNull PPOrderId ppOrderId, @NonNull OrderLineId orderLineId);
 }

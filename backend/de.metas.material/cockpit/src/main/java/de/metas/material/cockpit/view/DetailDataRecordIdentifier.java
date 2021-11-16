@@ -1,12 +1,11 @@
 package de.metas.material.cockpit.view;
 
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.compiere.model.IQuery;
-
 import de.metas.material.cockpit.model.I_MD_Cockpit_DocumentDetail;
 import de.metas.util.Check;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.compiere.model.IQuery;
 
 /*
  * #%L

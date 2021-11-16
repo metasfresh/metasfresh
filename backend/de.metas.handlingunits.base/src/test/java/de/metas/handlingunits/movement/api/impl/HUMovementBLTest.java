@@ -4,12 +4,12 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.IContextAware;
-import org.adempiere.warehouse.model.I_M_Warehouse;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Acct;
+import org.compiere.model.I_M_Warehouse;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -52,7 +52,7 @@ public class HUMovementBLTest
 	}
 
 	/**
-	 * @task http://dewiki908/mediawiki/index.php/07689_Korrektur_zu_Kostenstellenwechsel_%28102909571093%29
+	 * @implNote task http://dewiki908/mediawiki/index.php/07689_Korrektur_zu_Kostenstellenwechsel_%28102909571093%29
 	 */
 	@Test
 	public void test_setPackingMaterialCActivity()

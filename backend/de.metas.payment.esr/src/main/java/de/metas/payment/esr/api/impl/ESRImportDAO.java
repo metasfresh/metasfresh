@@ -433,7 +433,6 @@ public class ESRImportDAO implements IESRImportDAO
 																					  .docStatus(DocStatus.Completed)
 																					  .dateTrx(esrLine.getPaymentDate())
 																					  .bpartnerId(bpartnerId)
-																					  .invoiceId(InvoiceId.ofRepoIdOrNull(esrLine.getC_Invoice_ID()))
 																					  .payAmt(trxAmt)
 																					  .build())
 				.stream().iterator();
