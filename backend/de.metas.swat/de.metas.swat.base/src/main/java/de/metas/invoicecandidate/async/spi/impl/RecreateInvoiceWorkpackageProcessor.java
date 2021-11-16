@@ -144,7 +144,7 @@ public class RecreateInvoiceWorkpackageProcessor extends WorkpackageProcessorAda
 			return false;
 		}
 
-		if (commissionTriggerService.isSubjectToCommission(InvoiceId.ofRepoId(invoice.getC_Invoice_ID())))
+		if (commissionTriggerService.isContainsCommissionTriggers(InvoiceId.ofRepoId(invoice.getC_Invoice_ID())))
 		{
 			final UserNotificationRequest userNotificationRequest = UserNotificationRequest.builder()
 					.contentADMessage(MSG_SKIPPED_INVOICE_DUE_TO_COMMISSION)

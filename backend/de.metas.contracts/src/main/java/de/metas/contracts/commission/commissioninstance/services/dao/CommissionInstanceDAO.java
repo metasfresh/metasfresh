@@ -41,8 +41,10 @@ public class CommissionInstanceDAO
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	@NonNull
-	public List<I_C_Commission_Instance> retrieveRecordsForSalesInvoiceCandDocIds(@NonNull final Set<SalesInvoiceCandidateDocumentId> salesCandDocIds)
+	/**
+	 * @return true if any of the {@code salesCandDocIds}'s {@link InvoiceCandidateId}s is referenced by a commission instance.
+	 */
+	public boolean isICsReferencedByCommissionInstances(@NonNull final Set<SalesInvoiceCandidateDocumentId> salesCandDocIds)
 	{
 		final ImmutableSet<InvoiceCandidateId> invoiceCandidateIds = salesCandDocIds.stream()
 				.map(SalesInvoiceCandidateDocumentId::getInvoiceCandidateId)
@@ -51,11 +53,13 @@ public class CommissionInstanceDAO
 		return queryBL.createQueryBuilder(I_C_Commission_Instance.class)
 				.addInArrayFilter(I_C_Commission_Instance.COLUMNNAME_C_Invoice_Candidate_ID, invoiceCandidateIds)
 				.create()
-				.list();
+				.anyMatch();
 	}
 
-	@NonNull
-	public List<I_C_Commission_Instance> retrieveRecordsForSalesInvoiceLineIds(@NonNull final Set<SalesInvoiceLineDocumentId> salesInvoiceLineDocumentIds)
+	/**
+	 * @return true if any of the {@code salesCandDocIds}'s {@link InvoiceLineId}s is referenced by a commission instance.
+	 */
+	public boolean isILsReferencedByCommissionInstances(@NonNull final Set<SalesInvoiceLineDocumentId> salesInvoiceLineDocumentIds)
 	{
 		final ImmutableSet<InvoiceLineId> invoiceLineIds = salesInvoiceLineDocumentIds.stream()
 				.map(SalesInvoiceLineDocumentId::getInvoiceLineId)
@@ -64,6 +68,6 @@ public class CommissionInstanceDAO
 		return queryBL.createQueryBuilder(I_C_Commission_Instance.class)
 				.addInArrayFilter(I_C_Commission_Instance.COLUMNNAME_C_InvoiceLine_ID, invoiceLineIds)
 				.create()
-				.list();
+				.anyMatch();
 	}
 }

@@ -24,7 +24,10 @@ package de.metas.contracts;
 
 import de.metas.invoice.InvoiceId;
 
+/**
+ * Note: we have this interface, because the implementation is in de.metas.contract and we need to use it here.
+ */
 public interface ICommissionTriggerService
 {
-	boolean isSubjectToCommission(final InvoiceId invoiceId);
+	boolean isContainsCommissionTriggers(InvoiceId invoiceId);
 }
