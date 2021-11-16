@@ -95,6 +95,7 @@ public class C_Flatrate_Term
 	private static final String MSG_TERM_ERROR_YEAR_WITHOUT_PERIODS_2P = "Term_Error_Range_Without_Periods";
 	private static final String MSG_TERM_ERROR_PERIOD_END_DATE_BEFORE_TERM_END_DATE_2P = "Term_Error_PeriodEndDate_Before_TermEndDate";
 	private static final String MSG_TERM_ERROR_PERIOD_START_DATE_AFTER_TERM_START_DATE_2P = "Term_Error_PeriodStartDate_After_TermStartDate";
+	private static final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
 
 	private final IBPartnerDAO bparnterDAO = Services.get(IBPartnerDAO.class);
 	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
@@ -270,10 +271,8 @@ public class C_Flatrate_Term
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
 	public void updateFlatrateData(final I_C_Flatrate_Term term)
 	{
-		final IFlatrateDAO flatrateDB = Services.get(IFlatrateDAO.class);
-
 		final I_C_Flatrate_Data flatrateData = term.getC_Flatrate_Data();
-		final List<I_C_Flatrate_Term> terms = flatrateDB.retrieveTerms(flatrateData);
+		final List<I_C_Flatrate_Term> terms = flatrateDAO.retrieveTerms(flatrateData);
 		if (terms.size() == 1)
 		{
 			Check.assume(
@@ -583,7 +582,7 @@ public class C_Flatrate_Term
 	{
 		if (!Check.isEmpty(term.getDocumentNo(), true) && Check.isEmpty(term.getMasterDocumentNo(), true))
 		{
-			final I_C_Flatrate_Term ancestor = Services.get(IFlatrateDAO.class).retrieveAncestorFlatrateTerm(term);
+			final I_C_Flatrate_Term ancestor = flatrateDAO.retrieveAncestorFlatrateTerm(term);
 			if (ancestor == null)
 			{
 				term.setMasterDocumentNo(term.getDocumentNo());
@@ -675,5 +674,18 @@ public class C_Flatrate_Term
 	public void ensureOneMediatedContractBeforeComplete(@NonNull final I_C_Flatrate_Term term)
 	{
 		flatrateBL.ensureOneContractOfGivenType(term, TypeConditions.MEDIATED_COMMISSION);
+	}
+
+	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_COMPLETE })
+	public void setC_Flatrate_Term_Master(@NonNull final I_C_Flatrate_Term term)
+	{
+		if (term.getC_Flatrate_Term_Master_ID() <= 0)
+		{
+			final I_C_Flatrate_Term ancestor = flatrateDAO.retrieveAncestorFlatrateTerm(term);
+			if (ancestor == null)
+			{
+				term.setC_Flatrate_Term_Master_ID(term.getC_Flatrate_Term_ID());
+			}
+		}
 	}
 }
