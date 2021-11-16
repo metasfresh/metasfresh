@@ -242,7 +242,7 @@ public interface IQuery<T>
 	IQuery<T> setOptions(Map<String, Object> options);
 
 	/**
-	 * Check if there items for query criteria.
+	 * Check if there are items for the query criteria.
 	 *
 	 * @return true if exists, false otherwise
 	 */

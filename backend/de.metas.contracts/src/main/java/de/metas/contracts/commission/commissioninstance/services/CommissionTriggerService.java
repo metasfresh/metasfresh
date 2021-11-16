@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.contracts.commission;
+package de.metas.contracts.commission.commissioninstance.services;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.contracts.ICommissionTriggerService;
@@ -55,7 +55,7 @@ public class CommissionTriggerService implements ICommissionTriggerService
 	}
 
 	@Override
-	public boolean isSubjectToCommission(@NonNull final InvoiceId invoiceId)
+	public boolean isContainsCommissionTriggers(@NonNull final InvoiceId invoiceId)
 	{
 		final Set<SalesInvoiceLineDocumentId> invoiceLineIds = invoiceDAO.retrieveLines(invoiceId)
 				.stream()
@@ -64,15 +64,13 @@ public class CommissionTriggerService implements ICommissionTriggerService
 				.map(SalesInvoiceLineDocumentId::new)
 				.collect(ImmutableSet.toImmutableSet());
 
-		final boolean linesSubjectToCommission = commissionInstanceDAO.retrieveRecordsForSalesInvoiceLineIds(invoiceLineIds).size() > 0;
-
+		final boolean linesSubjectToCommission = commissionInstanceDAO.isILsReferencedByCommissionInstances(invoiceLineIds);
 		if (linesSubjectToCommission)
 		{
 			return true;
 		}
 
 		final List<I_C_Invoice_Candidate> invoiceCandidates = invoiceCandDAO.retrieveInvoiceCandidates(invoiceId);
-
 		if (invoiceCandidates.isEmpty())
 		{
 			return false;
@@ -84,6 +82,6 @@ public class CommissionTriggerService implements ICommissionTriggerService
 				.map(SalesInvoiceCandidateDocumentId::new)
 				.collect(ImmutableSet.toImmutableSet());
 
-		return commissionInstanceDAO.retrieveRecordsForSalesInvoiceCandDocIds(invoiceCandIdSet).size() > 0;
+		return commissionInstanceDAO.isICsReferencedByCommissionInstances(invoiceCandIdSet);
 	}
 }
