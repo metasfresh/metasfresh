@@ -9,6 +9,6 @@
     "RemoteURL": "https://test",
     "RoutingKey": "key",
     "BPartnerId": "bpIdentifier",
-    "RabbitMQAuthToken": "token"
+    "AuthToken": "token"
   }
 }

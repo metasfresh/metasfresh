@@ -20,20 +20,28 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.grssignum;
+package de.metas.camel.externalsystems.grssignum.client.model;
 
-public interface GRSSignumConstants
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+
+@Value
+@Builder
+@JsonDeserialize(builder = DispatchRequest.DispatchRequestBuilder.class)
+public class DispatchRequest
 {
-	String GRSSIGNUM_SYSTEM_NAME = "GRSSignum";
+	@NonNull
+	@JsonProperty("url")
+	String url;
 
-	String JSON_PROPERTY_FLAG = "FLAG";
-	String DEFAULT_UOM_CODE = "KGM";
+	@NonNull
+	@JsonProperty("authToken")
+	String authToken;
 
-	String ROUTE_PROPERTY_PUSH_BOMs_CONTEXT = "PushBOMsRouteContext";
-
-	String ROUTE_PROPERTY_EXPORT_BPARTNER_CONTEXT = "ExportBPartnerRouteContext";
-
-	String EXPORT_BPARTNER_RETRY_COUNT = "export.bpartner.retry.count";
-
-	String EXPORT_BPARTNER_RETRY_DELAY = "export.bpartner.retry.delay.ms";
+	@NonNull
+	@JsonProperty("message")
+	String request;
 }

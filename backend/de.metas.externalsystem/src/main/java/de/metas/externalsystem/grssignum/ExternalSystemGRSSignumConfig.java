@@ -35,14 +35,26 @@ public class ExternalSystemGRSSignumConfig implements IExternalSystemChildConfig
 {
 	@NonNull
 	ExternalSystemGRSSignumConfigId id;
+
 	@NonNull
 	ExternalSystemParentConfigId parentId;
+
 	@NonNull
 	String value;
+
 	@NonNull
 	String baseUrl;
+
+	@NonNull
+	String tenantId;
+
 	@Nullable
 	String camelHttpResourceAuthKey;
+
+	@Nullable
+	String authToken;
+
+	boolean syncBPartnersToRestEndpoint;
 
 	@Builder
 	ExternalSystemGRSSignumConfig(
@@ -50,13 +62,19 @@ public class ExternalSystemGRSSignumConfig implements IExternalSystemChildConfig
 			@NonNull final ExternalSystemParentConfigId parentId,
 			@NonNull final String value,
 			@NonNull final String baseUrl,
-			@Nullable final String camelHttpResourceAuthKey)
+			@NonNull final String tenantId,
+			@Nullable final String camelHttpResourceAuthKey,
+			@Nullable final String authToken,
+			final boolean syncBPartnersToRestEndpoint)
 	{
 		this.id = id;
 		this.parentId = parentId;
 		this.value = value;
 		this.baseUrl = baseUrl;
+		this.tenantId = tenantId;
 		this.camelHttpResourceAuthKey = camelHttpResourceAuthKey;
+		this.authToken = authToken;
+		this.syncBPartnersToRestEndpoint = syncBPartnersToRestEndpoint;
 	}
 
 	public static ExternalSystemGRSSignumConfig cast(@NonNull final IExternalSystemChildConfig childConfig)

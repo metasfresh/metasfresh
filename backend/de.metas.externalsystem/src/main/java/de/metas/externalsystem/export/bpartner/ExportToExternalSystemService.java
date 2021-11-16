@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.externalsystem.rabbitmqhttp;
+package de.metas.externalsystem.export.bpartner;
 
 import ch.qos.logback.classic.Level;
 import com.google.common.annotations.VisibleForTesting;
@@ -31,7 +31,6 @@ import de.metas.audit.data.repository.DataExportAuditLogRepository;
 import de.metas.audit.data.repository.DataExportAuditRepository;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.externalsystem.JsonExternalSystemName;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
@@ -41,6 +40,7 @@ import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.IExternalSystemChildConfig;
+import de.metas.externalsystem.IExternalSystemChildConfigId;
 import de.metas.externalsystem.rabbitmq.ExternalSystemMessageSender;
 import de.metas.logging.LogManager;
 import de.metas.organization.IOrgDAO;
@@ -57,32 +57,26 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-/**
- * Service to export BPartners (on future maybe other sorts of data) to external systems via {@link ExternalSystemType#RabbitMQ}.
- */
 @Service
-public class RabbitMQExternalSystemService
+public abstract class ExportToExternalSystemService
 {
-	private static final Logger logger = LogManager.getLogger(RabbitMQExternalSystemService.class);
+	private static final Logger logger = LogManager.getLogger(ExportToExternalSystemService.class);
 
-	private final static String EXTERNAL_SYSTEM_COMMAND_EXPORT_BPARTNER = "exportBPartner";
-
-	private final ExternalSystemConfigRepo externalSystemConfigRepo;
-	private final ExternalSystemMessageSender externalSystemMessageSender;
-	private final DataExportAuditLogRepository dataExportAuditLogRepository;
-	private final DataExportAuditRepository dataExportAuditRepository;
-	private final Debouncer<BPartnerId> syncBPartnerDebouncer;
-	private final ExternalSystemConfigService externalSystemConfigService;
+	protected final ExternalSystemConfigRepo externalSystemConfigRepo;
+	protected final DataExportAuditRepository dataExportAuditRepository;
+	protected final DataExportAuditLogRepository dataExportAuditLogRepository;
+	protected final ExternalSystemMessageSender externalSystemMessageSender;
+	protected final Debouncer<BPartnerId> syncBPartnerDebouncer;
+	protected final ExternalSystemConfigService externalSystemConfigService;
 
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
-	public RabbitMQExternalSystemService(
+	protected ExportToExternalSystemService(
 			@NonNull final ExternalSystemConfigRepo externalSystemConfigRepo,
 			@NonNull final ExternalSystemMessageSender externalSystemMessageSender,
 			@NonNull final DataExportAuditLogRepository dataExportAuditLogRepository,
@@ -96,8 +90,8 @@ public class RabbitMQExternalSystemService
 		this.externalSystemConfigService = externalSystemConfigService;
 		this.syncBPartnerDebouncer = Debouncer.<BPartnerId>builder()
 				.name("syncBPartnerDebouncer")
-				.bufferMaxSize(sysConfigBL.getIntValue("de.metas.externalsystem.rabbitmqhttp.debouncer.bufferMaxSize", 100))
-				.delayInMillis(sysConfigBL.getIntValue("de.metas.externalsystem.rabbitmqhttp.debouncer.delayInMillis", 5000))
+				.bufferMaxSize(sysConfigBL.getIntValue("de.metas.externalsystem.debouncer.bufferMaxSize", 100))
+				.delayInMillis(sysConfigBL.getIntValue("de.metas.externalsystem.debouncer.delayInMillis", 5000))
 				.distinct(true)
 				.consumer(this::syncBPartners)
 				.build();
@@ -107,32 +101,34 @@ public class RabbitMQExternalSystemService
 	 * Sends a {@link JsonExternalSystemRequest} that requests metasfresh-externalsystems to export the given {@code bpartnerId}.
 	 */
 	public void exportBPartner(
-			@NonNull final ExternalSystemRabbitMQConfigId externalSystemConfigRabbitMQId,
+			@NonNull final IExternalSystemChildConfigId externalSystemChildConfigId,
 			@NonNull final BPartnerId bpartnerId,
 			@Nullable final PInstanceId pInstanceId)
 	{
-		toJsonExternalSystemRequest(externalSystemConfigRabbitMQId, bpartnerId, pInstanceId)
+		toJsonExternalSystemRequest(externalSystemChildConfigId, bpartnerId, pInstanceId)
 				.ifPresent(externalSystemMessageSender::send);
 	}
 
 	/**
-	 * Similar to {@link #exportBPartner(ExternalSystemRabbitMQConfigId, BPartnerId, PInstanceId)}, but
+	 * Similar to {@link #exportBPartner(IExternalSystemChildConfigId, BPartnerId, PInstanceId)}, but
 	 * <li>uses a debouncer, so it might send the same {@code bPartnerId} just once</li>
 	 * <li>uses the export-audit-log to check to which external systems the respective bpartner was exported in the past; then re-exports it to those systems</li>
 	 */
 	public void enqueueBPartnerSync(@NonNull final BPartnerId bPartnerId)
 	{
+		Loggables.withLogger(logger, Level.DEBUG).addLog("BPartnerId: {} enqueued to be synced.", bPartnerId);
+
 		syncBPartnerDebouncer.add(bPartnerId);
 	}
 
 	@VisibleForTesting
 	@NonNull
-	protected Optional<JsonExternalSystemRequest> toJsonExternalSystemRequest(
-			@NonNull final ExternalSystemRabbitMQConfigId externalSystemConfigRabbitMQId,
+	public Optional<JsonExternalSystemRequest> toJsonExternalSystemRequest(
+			@NonNull final IExternalSystemChildConfigId externalSystemChildConfigId,
 			@NonNull final BPartnerId bpartnerId,
 			@Nullable final PInstanceId pInstanceId)
 	{
-		final ExternalSystemParentConfig config = externalSystemConfigRepo.getById(externalSystemConfigRabbitMQId);
+		final ExternalSystemParentConfig config = externalSystemConfigRepo.getById(externalSystemChildConfigId);
 
 		if (!config.getIsActive())
 		{
@@ -140,67 +136,39 @@ public class RabbitMQExternalSystemService
 			return Optional.empty();
 		}
 
-		final ExternalSystemRabbitMQConfig rabbitMQConfig = ExternalSystemRabbitMQConfig.cast(config.getChildConfig());
-
-		if (!rabbitMQConfig.isSyncBPartnerToRabbitMQ())
+		if (!isSyncBPartnerEnabled(config.getChildConfig()))
 		{
-			Loggables.withLogger(logger, Level.DEBUG).addLog("RabbitMQConfig: {} isSyncBPartnerToRabbitMQ = false! No action is performed!", externalSystemConfigRabbitMQId);
+			Loggables.withLogger(logger, Level.DEBUG).addLog("ExternalSystemChildConfig: {} isSyncBPartners to external system is false! No action is performed!", config.getChildConfig().getId());
 			return Optional.empty();
 		}
 
 		final I_C_BPartner bpartner = bPartnerDAO.getById(bpartnerId);
+
 		final String orgCode = orgDAO.getById(bpartner.getAD_Org_ID()).getValue();
 
 		return Optional.of(JsonExternalSystemRequest.builder()
-								   .externalSystemName(JsonExternalSystemName.of(ExternalSystemType.RabbitMQ.getName()))
+								   .externalSystemName(JsonExternalSystemName.of(getExternalSystemType().getName()))
 								   .externalSystemConfigId(JsonMetasfreshId.of(config.getId().getRepoId()))
 								   .orgCode(orgCode)
 								   .adPInstanceId(JsonMetasfreshId.ofOrNull(PInstanceId.toRepoId(pInstanceId)))
-								   .command(EXTERNAL_SYSTEM_COMMAND_EXPORT_BPARTNER)
-								   .parameters(buildParameters(rabbitMQConfig, bpartnerId))
+								   .command(getExternalCommand())
+								   .parameters(buildParameters(config.getChildConfig(), bpartnerId))
 								   .traceId(externalSystemConfigService.getTraceId())
 								   .writeAuditEndpoint(config.getAuditEndpointIfEnabled())
 								   .build());
-	}
-
-	@NonNull
-	private ImmutableSet<ExternalSystemRabbitMQConfigId> getRabbitMQConfigsToSyncWith(@NonNull final DataExportAuditId dataExportAuditId)
-	{
-		final ImmutableSet<Integer> externalSystemConfigIds = dataExportAuditLogRepository.getExternalSystemConfigIds(dataExportAuditId);
-
-		return externalSystemConfigIds.stream()
-				.map(id -> externalSystemConfigRepo.getChildByParentIdAndType(ExternalSystemParentConfigId.ofRepoId(id), ExternalSystemType.RabbitMQ))
-				.filter(Optional::isPresent)
-				.map(Optional::get)
-				.map(IExternalSystemChildConfig::getId)
-				.map(ExternalSystemRabbitMQConfigId::cast)
-				.collect(ImmutableSet.toImmutableSet());
-	}
-
-	@NonNull
-	private Map<String, String> buildParameters(
-			@NonNull final ExternalSystemRabbitMQConfig rabbitMQConfig,
-			@NonNull final BPartnerId bpartnerId)
-	{
-		final Map<String, String> parameters = new HashMap<>();
-
-		parameters.put(ExternalSystemConstants.PARAM_RABBITMQ_HTTP_URL, rabbitMQConfig.getRemoteUrl());
-		parameters.put(ExternalSystemConstants.PARAM_RABBITMQ_HTTP_ROUTING_KEY, rabbitMQConfig.getRoutingKey());
-		parameters.put(ExternalSystemConstants.PARAM_BPARTNER_ID, String.valueOf(bpartnerId.getRepoId()));
-		parameters.put(ExternalSystemConstants.PARAM_RABBIT_MQ_AUTH_TOKEN, rabbitMQConfig.getAuthToken());
-		parameters.put(ExternalSystemConstants.PARAM_CHILD_CONFIG_VALUE, rabbitMQConfig.getValue());
-
-		return parameters;
 	}
 
 	private void syncBPartners(@NonNull final Collection<BPartnerId> bPartnerIdList)
 	{
 		if (bPartnerIdList.isEmpty())
 		{
+			Loggables.withLogger(logger, Level.DEBUG).addLog("BPartnerId list to sync empty! No action is performed!");
 			return;
 		}
-		if (!externalSystemConfigRepo.isAnyConfigActive(ExternalSystemType.RabbitMQ))
+
+		if (!externalSystemConfigRepo.isAnyConfigActive(getExternalSystemType()))
 		{
+			Loggables.withLogger(logger, Level.DEBUG).addLog("No active config found for external system type: {}! No action is performed!", getExternalSystemType());
 			return; // nothing to do
 		}
 
@@ -214,16 +182,38 @@ public class RabbitMQExternalSystemService
 		final Optional<DataExportAudit> dataExportAudit = dataExportAuditRepository.getByTableRecordReference(bPartnerRecordReference);
 		if (!dataExportAudit.isPresent())
 		{
+			Loggables.withLogger(logger, Level.DEBUG).addLog("No dataExportAudit found for bPartnerRecordReference: {}! No action is performed!", bPartnerRecordReference);
 			return;
 		}
 
-		final ImmutableSet<ExternalSystemRabbitMQConfigId> rabbitMQConfigIds = getRabbitMQConfigsToSyncWith(dataExportAudit.get().getId());
+		final ImmutableSet<IExternalSystemChildConfigId> externalSystemConfigIds = getExternalSystemConfigsToSyncWith(dataExportAudit.get().getId());
 
-		if (rabbitMQConfigIds.isEmpty())
+		if (externalSystemConfigIds.isEmpty())
 		{
+			Loggables.withLogger(logger, Level.DEBUG).addLog("No externalSystemConfigIds found for DataExportAuditId: {}! No action is performed!", dataExportAudit.get().getId());
 			return;
 		}
 
-		rabbitMQConfigIds.forEach(id -> exportBPartner(id, bPartnerId, null));
+		externalSystemConfigIds.forEach(id -> exportBPartner(id, bPartnerId, null));
 	}
+
+	@NonNull
+	private ImmutableSet<IExternalSystemChildConfigId> getExternalSystemConfigsToSyncWith(@NonNull final DataExportAuditId dataExportAuditId)
+	{
+		return dataExportAuditLogRepository.getExternalSystemConfigIds(dataExportAuditId)
+				.stream()
+				.map(id -> externalSystemConfigRepo.getChildByParentIdAndType(ExternalSystemParentConfigId.ofRepoId(id), getExternalSystemType()))
+				.filter(Optional::isPresent)
+				.map(Optional::get)
+				.map(IExternalSystemChildConfig::getId)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	protected abstract Map<String, String> buildParameters(@NonNull final IExternalSystemChildConfig childConfig, @NonNull final BPartnerId bPartnerId);
+
+	protected abstract boolean isSyncBPartnerEnabled(@NonNull final IExternalSystemChildConfig childConfig);
+
+	protected abstract ExternalSystemType getExternalSystemType();
+
+	protected abstract String getExternalCommand();
 }

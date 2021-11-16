@@ -311,4 +311,18 @@ public class DataExportAudit_StepDef
 
 		InterfaceWrapperHelper.save(bPartnerLocation);
 	}
+
+	@And("the following c_bpartner is changed")
+	public void change_bpartner(@NonNull final DataTable dataTable)
+	{
+		final Map<String, String> tableRow = dataTable.asMaps().get(0);
+
+		final String bpartner = DataTableUtil.extractStringForColumnName(tableRow, I_C_BPartner.COLUMNNAME_C_BPartner_ID + ".Identifier");
+
+		final I_C_BPartner bPartner = bpartnerTable.get(bpartner);
+
+		bPartner.setName2("not-relevant");
+
+		InterfaceWrapperHelper.save(bPartner);
+	}
 }

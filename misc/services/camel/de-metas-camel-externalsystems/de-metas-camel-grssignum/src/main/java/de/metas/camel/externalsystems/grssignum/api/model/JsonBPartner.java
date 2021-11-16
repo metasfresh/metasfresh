@@ -22,6 +22,7 @@
 
 package de.metas.camel.externalsystems.grssignum.api.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -29,6 +30,8 @@ import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
 
 @Value
 @JsonDeserialize(builder = JsonBPartner.JsonBPartnerBuilder.class)
@@ -47,24 +50,35 @@ public class JsonBPartner
 	String name;
 
 	@JsonProperty("INAKTIV")
-	boolean isActive;
+	Integer inactiveBit;
+
+	@JsonProperty("MID")
+	String tenantId;
 
 	@Builder
 	public JsonBPartner(
 			@JsonProperty("FLAG") final @NonNull Integer flag,
 			@JsonProperty("MKREDID") final @NonNull String id,
 			@JsonProperty("KURZBEZEICHNUNG") final @NonNull String name,
-			@JsonProperty("INAKTIV") final int inactive)
+			@JsonProperty("INAKTIV") final int inactive,
+			@JsonProperty("MID") final @Nullable String tenantId)
 	{
 		this.flag = flag;
 		this.id = id;
 		this.name = name;
-		this.isActive = inactive != 1;
+		this.inactiveBit = inactive;
+		this.tenantId = tenantId;
 	}
 
 	@JsonIgnoreProperties(ignoreUnknown = true)
 	@JsonPOJOBuilder(withPrefix = "")
-	static class JsonBPartnerBuilder
+	public static class JsonBPartnerBuilder
 	{
+	}
+
+	@JsonIgnore
+	public boolean isActive()
+	{
+		return inactiveBit != 1;
 	}
 }

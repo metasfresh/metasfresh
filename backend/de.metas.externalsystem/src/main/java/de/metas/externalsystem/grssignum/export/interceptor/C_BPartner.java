@@ -20,37 +20,37 @@
  * #L%
  */
 
-package de.metas.externalsystem.rabbitmqhttp.interceptor;
+package de.metas.externalsystem.grssignum.export.interceptor;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.externalsystem.rabbitmqhttp.ExportToRabbitMQService;
+import de.metas.externalsystem.grssignum.ExportToGRSService;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
-@Interceptor(I_C_BPartner_Location.class)
+@Interceptor(I_C_BPartner.class)
 @Component
-public class C_BPartner_Location
+public class C_BPartner
 {
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
-	private final ExportToRabbitMQService exportToRabbitMQService;
+	private final ExportToGRSService exportToGRSService;
 
-	public C_BPartner_Location(@NonNull final ExportToRabbitMQService exportToRabbitMQService)
+	public C_BPartner(@NonNull final ExportToGRSService exportToGRSService)
 	{
-		this.exportToRabbitMQService = exportToRabbitMQService;
+		this.exportToGRSService = exportToGRSService;
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE)
-	public void afterSave(@NonNull final I_C_BPartner_Location bPartnerLocation)
+	public void triggerSyncBPartnerWithExternalSystem(@NonNull final I_C_BPartner bPartner)
 	{
-		final BPartnerId bpartnerId = BPartnerId.ofRepoId(bPartnerLocation.getC_BPartner_ID());
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(bPartner.getC_BPartner_ID());
 
-		trxManager.runAfterCommit(() -> exportToRabbitMQService.enqueueBPartnerSync(bpartnerId));
+		trxManager.runAfterCommit(() -> exportToGRSService.enqueueBPartnerSync(bpartnerId));
 	}
 }

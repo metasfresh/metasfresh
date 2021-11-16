@@ -20,20 +20,22 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.grssignum;
+package de.metas.camel.externalsystems.grssignum.bpartner;
 
-public interface GRSSignumConstants
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+
+@Value
+@Builder
+public class ExportBPartnerRouteContext
 {
-	String GRSSIGNUM_SYSTEM_NAME = "GRSSignum";
+	@NonNull
+	String remoteUrl;
 
-	String JSON_PROPERTY_FLAG = "FLAG";
-	String DEFAULT_UOM_CODE = "KGM";
+	@NonNull
+	String authToken;
 
-	String ROUTE_PROPERTY_PUSH_BOMs_CONTEXT = "PushBOMsRouteContext";
-
-	String ROUTE_PROPERTY_EXPORT_BPARTNER_CONTEXT = "ExportBPartnerRouteContext";
-
-	String EXPORT_BPARTNER_RETRY_COUNT = "export.bpartner.retry.count";
-
-	String EXPORT_BPARTNER_RETRY_DELAY = "export.bpartner.retry.delay.ms";
+	@NonNull
+	String tenantId;
 }
