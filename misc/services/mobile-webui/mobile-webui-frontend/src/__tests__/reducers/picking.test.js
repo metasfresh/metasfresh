@@ -4,22 +4,30 @@ import { generateAlternativeSteps } from '../../reducers/wfProcesses_status/pick
 
 describe('picking unit tests', () => {
   describe('generate alternative steps function', () => {
+
+    const wfProcessId = 'picking-1000001';
+    const activityId = 'A2';
+    const lineId = 0;
+    const stepId = '1000001';
+
     it('should generate no steps when called with zero quantity to allocate', () => {
       const initialState = produce(rawstateJson, (draftState) => {
         const draftStateWFProcesses = draftState['wfProcesses_status'];
 
         draftState = generateAlternativeSteps({
           draftState: draftStateWFProcesses,
-          wfProcessId: 'picking-1000001',
-          activityId: 'A2',
-          lineId: '0',
-          stepId: '1000001',
+          wfProcessId,
+          activityId,
+          lineId,
+          stepId,
           qtyToAllocate: 0,
         });
 
         return draftState;
       });
-      console.log('initialState:', initialState);
+
+      const { genSteps } = initialState[wfProcessId].activities[activityId].dataStored.lines[lineId].steps[stepId].altSteps;
+      expect(genSteps).toMatchObject({});
     });
   });
 });
