@@ -99,6 +99,8 @@ export const generateAlternativeSteps = ({ draftState, wfProcessId, activityId, 
       };
 
       allocateQtyAvailable({
+        idx,
+        draftDataStored,
         alternativesPoolItem,
         stepId,
         qtyToAllocate: qtyToAllocateThisStep,
@@ -123,14 +125,11 @@ const computeQtyAllocated = ({ alternativesPoolItem }) => {
   return Object.values(alternativesPoolItem.allocatedQtys).reduce((acc, qty) => acc + qty, 0);
 };
 
-const allocateQtyAvailable = ({ alternativesPoolItem, stepId, qtyToAllocate }) => {
-  console.log('alternativesPoolItem => ', alternativesPoolItem);
-  console.log('stepId => ', stepId);
-  console.log('qtyToAllocate => ', qtyToAllocate);
+const allocateQtyAvailable = ({ idx, draftDataStored, alternativesPoolItem, stepId, qtyToAllocate }) => {
   if (!alternativesPoolItem.allocatedQtys) {
-    alternativesPoolItem.allocatedQtys = {};
+    draftDataStored.pickFromAlternatives[idx].allocatedQtys = {};
   }
-  alternativesPoolItem.allocatedQtys[stepId] = qtyToAllocate;
+  draftDataStored.pickFromAlternatives[idx].allocatedQtys[stepId] = qtyToAllocate;
 };
 
 const deallocateQtyAvailable = ({ alternativesPoolItem, stepId }) => {

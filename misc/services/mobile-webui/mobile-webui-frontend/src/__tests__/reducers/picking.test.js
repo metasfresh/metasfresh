@@ -48,6 +48,7 @@ describe('picking unit tests', () => {
 
         return draftState;
       });
+      
 
       const { genSteps } =
         initialState['wfProcesses_status'][wfProcessId].activities[activityId].dataStored.lines[lineId].steps[stepId]
