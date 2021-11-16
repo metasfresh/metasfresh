@@ -30,7 +30,7 @@ describe('picking unit tests', () => {
       expect(genSteps).toMatchObject({});
     });
 
-    it('should generate no steps when called with quantity to allocate greater than zero', () => {
+    it('should generate one step when called with quantity to allocate smaller than the qty available in the first available step from the pool', () => {
       const wfProcessId = 'picking-1000001';
       const activityId = 'A2';
       const lineId = 0;
@@ -62,7 +62,7 @@ describe('picking unit tests', () => {
       expect(genSteps['1000019'].qtyAvailable).toEqual(30);
     });
 
-    it('should generate no steps when called with quantity to allocate greater than zero', () => {
+    it('should generate three steps when called with higher quantity to allocate (i.e. 500)', () => {
       const wfProcessId = 'picking-1000001';
       const activityId = 'A2';
       const lineId = 0;
@@ -75,33 +75,27 @@ describe('picking unit tests', () => {
           activityId,
           lineId,
           stepId,
-          qtyToAllocate: 400,
+          qtyToAllocate: 500,
         });
 
         return draftState;
       });
 
-      console.log(
-        'InitialSTATE:',
-        initialState['wfProcesses_status'][wfProcessId].activities[activityId].dataStored.pickFromAlternatives
-      );
-      console.log(
-        'GenSTEPS:',
+      const { pickFromAlternatives } =
+        initialState['wfProcesses_status'][wfProcessId].activities[activityId].dataStored;
+      const { genSteps } =
         initialState['wfProcesses_status'][wfProcessId].activities[activityId].dataStored.lines[lineId].steps[stepId]
-          .altSteps.genSteps
-      );
+          .altSteps;
 
-      // const { pickFromAlternatives } =
-      //   initialState['wfProcesses_status'][wfProcessId].activities[activityId].dataStored;
-      // const { genSteps } =
-      //   initialState['wfProcesses_status'][wfProcessId].activities[activityId].dataStored.lines[lineId].steps[stepId]
-      //     .altSteps;
+      // check the allocatedQtys object within the pickFromAlternatives item (poolItem)
+      expect(pickFromAlternatives[0].allocatedQtys[stepId]).toEqual(320);
+      expect(pickFromAlternatives[1].allocatedQtys[stepId]).toEqual(20);
+      expect(pickFromAlternatives[2].allocatedQtys[stepId]).toEqual(160);
 
-      // // check the allocatedQtys object within the pickFromAlternatives item (poolItem)
-      // expect(pickFromAlternatives[0].allocatedQtys[stepId]).toEqual(30);
-
-      // // check the quantity available within the corresponding generated step
-      // expect(genSteps['1000019'].qtyAvailable).toEqual(30);
+      // check the quantity available within the corresponding generated step
+      expect(genSteps['1000019'].qtyAvailable).toEqual(320);
+      expect(genSteps['1000020'].qtyAvailable).toEqual(20);
+      expect(genSteps['1000021'].qtyAvailable).toEqual(160);
     });
   });
 });
