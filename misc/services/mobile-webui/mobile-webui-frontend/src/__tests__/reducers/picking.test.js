@@ -31,28 +31,28 @@ describe('picking unit tests', () => {
     });
 
     it('should generate no steps when called with quantity to allocate greater than zero', () => {
-        const wfProcessId = 'picking-1000001';
-        const activityId = 'A2';
-        const lineId = 0;
-        const stepId = '1000001';
+      const wfProcessId = 'picking-1000001';
+      const activityId = 'A2';
+      const lineId = 0;
+      const stepId = '1000001';
 
-        const initialState = produce(rawstateJson, (draftState) => {
-          generateAlternativeSteps({
-            draftState: draftState['wfProcesses_status'],
-            wfProcessId,
-            activityId,
-            lineId,
-            stepId,
-            qtyToAllocate: 30,
-          });
-  
-          return draftState;
+      const initialState = produce(rawstateJson, (draftState) => {
+        generateAlternativeSteps({
+          draftState: draftState['wfProcesses_status'],
+          wfProcessId,
+          activityId,
+          lineId,
+          stepId,
+          qtyToAllocate: 30,
         });
-  
-        const { genSteps } =
-          initialState['wfProcesses_status'][wfProcessId].activities[activityId].dataStored.lines[lineId].steps[stepId].altSteps;
-        expect(genSteps['1000019'].qtyAvailable).toEqual(30);
-    });
 
+        return draftState;
+      });
+
+      const { genSteps } =
+        initialState['wfProcesses_status'][wfProcessId].activities[activityId].dataStored.lines[lineId].steps[stepId]
+          .altSteps;
+      expect(genSteps['1000019'].qtyAvailable).toEqual(30);
+    });
   });
 });

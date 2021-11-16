@@ -127,9 +127,9 @@ const allocateQtyAvailable = ({ alternativesPoolItem, stepId, qtyToAllocate }) =
   console.log('alternativesPoolItem => ', alternativesPoolItem);
   console.log('stepId => ', stepId);
   console.log('qtyToAllocate => ', qtyToAllocate);
-  // if (!alternativesPoolItem.allocatedQtys) {
-  //   alternativesPoolItem.allocatedQtys = {};
-  // }
+  if (!alternativesPoolItem.allocatedQtys) {
+    alternativesPoolItem.allocatedQtys = {};
+  }
   alternativesPoolItem.allocatedQtys[stepId] = qtyToAllocate;
 };
 
