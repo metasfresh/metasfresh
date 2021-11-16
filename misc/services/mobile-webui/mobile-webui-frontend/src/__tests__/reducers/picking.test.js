@@ -77,12 +77,12 @@ describe('picking unit tests', () => {
         initialState['wfProcesses_status'][wfProcessId].activities[activityId].dataStored.lines[lineId].steps[stepId]
           .altSteps;
 
-      // check the allocatedQtys object within the pickFromAlternatives item (poolItem)
+      // check the allocatedQtys objects within the pickFromAlternatives items
       expect(pickFromAlternatives[0].allocatedQtys[stepId]).toEqual(320);
       expect(pickFromAlternatives[1].allocatedQtys[stepId]).toEqual(20);
       expect(pickFromAlternatives[2].allocatedQtys[stepId]).toEqual(160);
 
-      // check the quantity available within the corresponding generated step
+      // check the quantity available within the corresponding generated steps
       expect(genSteps['1000019'].qtyAvailable).toEqual(320);
       expect(genSteps['1000020'].qtyAvailable).toEqual(20);
       expect(genSteps['1000021'].qtyAvailable).toEqual(160);
