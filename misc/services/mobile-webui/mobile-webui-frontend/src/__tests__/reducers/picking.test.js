@@ -4,12 +4,12 @@ import { generateAlternativeSteps } from '../../reducers/wfProcesses_status/pick
 
 describe('picking unit tests', () => {
   describe('generate alternative steps function', () => {
-    const wfProcessId = 'picking-1000001';
-    const activityId = 'A2';
-    const lineId = 0;
-    const stepId = '1000001';
-
     it('should generate no steps when called with zero quantity to allocate', () => {
+      const wfProcessId = 'picking-1000001';
+      const activityId = 'A2';
+      const lineId = 0;
+      const stepId = '1000001';
+
       const initialState = produce(rawstateJson, (draftState) => {
         const draftStateWFProcesses = draftState['wfProcesses_status'];
 
@@ -30,25 +30,29 @@ describe('picking unit tests', () => {
       expect(genSteps).toMatchObject({});
     });
 
-    // it('should generate steps when called with quantity to allocate greater than zero', () => {
-    //     const initialState = produce(rawstateJson, (draftState) => {
-    //       const draftStateWFProcesses = draftState['wfProcesses_status'];
+    it('should generate no steps when called with quantity to allocate greater than zero', () => {
+        const wfProcessId = 'picking-1000001';
+        const activityId = 'A2';
+        const lineId = 0;
+        const stepId = '1000001';
 
-    //       draftState = generateAlternativeSteps({
-    //         draftState: draftStateWFProcesses,
-    //         wfProcessId,
-    //         activityId,
-    //         lineId,
-    //         stepId,
-    //         qtyToAllocate: 30,
-    //       });
+        const initialState = produce(rawstateJson, (draftState) => {
+          generateAlternativeSteps({
+            draftState: draftState['wfProcesses_status'],
+            wfProcessId,
+            activityId,
+            lineId,
+            stepId,
+            qtyToAllocate: 30,
+          });
+  
+          return draftState;
+        });
+  
+        const { genSteps } =
+          initialState['wfProcesses_status'][wfProcessId].activities[activityId].dataStored.lines[lineId].steps[stepId].altSteps;
+        expect(genSteps['1000019'].qtyAvailable).toEqual(30);
+    });
 
-    //       return draftState;
-    //     });
-
-    //     const { genSteps } = initialState[wfProcessId].activities[activityId].dataStored.lines[lineId].steps[stepId].altSteps;
-    //     console.log('GenSteps:', genSteps);
-    //     //expect(genSteps).toMatchObject({});
-    //   });
   });
 });
