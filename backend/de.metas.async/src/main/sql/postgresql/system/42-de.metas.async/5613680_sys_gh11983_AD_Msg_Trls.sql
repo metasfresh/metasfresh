@@ -58,3 +58,13 @@ UPDATE AD_Message_Trl SET MsgText='Invoice {0} skipped due to credit memo alloca
 ',Updated=TO_TIMESTAMP('2021-11-16 11:49:21','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=545082
 ;
 
+-- 2021-11-16T10:06:56.788Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Message SET MsgText='Rechnung {0} übersprungen weil Provisionsauslöser',Updated=TO_TIMESTAMP('2021-11-16 12:06:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Message_ID=545083
+;
+
+-- 2021-11-16T10:07:22.163Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Message SET MsgText='Rechnung {0} übersprungen weil einer Gutschrift zugeordnet',Updated=TO_TIMESTAMP('2021-11-16 12:07:22','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Message_ID=545082
+;
+
