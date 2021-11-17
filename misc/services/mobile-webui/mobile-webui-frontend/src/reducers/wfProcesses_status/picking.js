@@ -297,7 +297,28 @@ registerHandler({
     console.log('@@@@[mergeActivityDataStored]');
     // FIXME merge state from backend!!!
     console.log(`!!!!!!!!!!!!! componentType=${componentType}`);
-    console.log('draftActivityDataStored:', original(draftActivityDataStored));
     console.log('fromActivity', fromActivity);
+
+    const { lines } = fromActivity.componentProps;
+
+    // loop within steps
+    for (let lineIdx = 0; lineIdx < lines.length; lineIdx++) {
+      for (let stepIdx = 0; stepIdx < lines[lineIdx].steps.length; stepIdx++) {
+        let step = lines[lineIdx].steps[stepIdx];
+        // console.log('STEP:', step);
+        // console.log('STEP_IDX:', stepIdx);
+        let { qtyRejected } = lines[lineIdx].steps[stepIdx].mainPickFrom;
+
+        // if we have qtyRejected in the mainPickFrom clear the previous genSteps
+        console.log('Rejected:', qtyRejected);
+        if (qtyRejected) {
+          draftActivityDataStored.dataStored.lines[lineIdx].steps[step.pickingStepId].altSteps.genSteps = {};
+          // generateAlternativeStepsPostBackendFetch({ draftActivityDataStored });
+          // then regenerate
+        }
+      }
+    }
+    console.log('draftActivityDataStored now:', original(draftActivityDataStored));
+    return draftActivityDataStored;
   },
 });
