@@ -290,7 +290,7 @@ public class BPartnerQuickInputService
 		trxManager.assertThreadInheritedTrxExists();
 
 		final BPartnerComposite bpartnerComposite = toBPartnerComposite(template);
-		bpartnerCompositeRepository.save(bpartnerComposite);
+		bpartnerCompositeRepository.save(bpartnerComposite, true);
 
 		//
 		// Update the location of all contacts
@@ -298,7 +298,7 @@ public class BPartnerQuickInputService
 		bpartnerComposite
 				.getContacts()
 				.forEach(contact -> contact.setBPartnerLocationId(bpartnerLocationId));
-		bpartnerCompositeRepository.save(bpartnerComposite);
+		bpartnerCompositeRepository.save(bpartnerComposite, true);
 		final BPartnerId bpartnerId = bpartnerComposite.getBpartner().getId();
 
 		createRequestAndNotifyUserGroupIfNeeded(bpartnerComposite,

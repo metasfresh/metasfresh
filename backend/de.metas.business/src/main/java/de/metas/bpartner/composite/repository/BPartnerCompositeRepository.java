@@ -259,9 +259,9 @@ public class BPartnerCompositeRepository
 		return loader.retrieveByIds(bpartnerIds);
 	}
 
-	public void save(@NonNull final BPartnerComposite bpartnerComposite)
+	public void save(@NonNull final BPartnerComposite bpartnerComposite, final boolean validatePermissions)
 	{
 		final BPartnerCompositeSaver saver = new BPartnerCompositeSaver(bpartnerBL);
-		saver.save(bpartnerComposite);
+		saver.save(bpartnerComposite, validatePermissions );
 	}
 }
