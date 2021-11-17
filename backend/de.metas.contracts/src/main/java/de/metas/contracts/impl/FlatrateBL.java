@@ -72,6 +72,7 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.inout.model.I_M_InOutLine;
+import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerDAO;
@@ -179,7 +180,6 @@ public class FlatrateBL implements IFlatrateBL
 
 	public static final AdMessageKey MSG_INFINITE_LOOP = AdMessageKey.of("de.metas.contracts.impl.FlatrateBL.extendContract.InfinitLoopError");
 	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
-	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
@@ -194,6 +194,9 @@ public class FlatrateBL implements IFlatrateBL
 
 
 	private final transient IModelCacheInvalidationService modelCacheInvalidationService = Services.get(IModelCacheInvalidationService.class);
+	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 
 	@Override
 	public String beforeCompleteDataEntry(final I_C_Flatrate_DataEntry dataEntry)
@@ -238,12 +241,12 @@ public class FlatrateBL implements IFlatrateBL
 							.retrieveListNameTranslatableString(
 									X_C_Flatrate_DataEntry.DOCSTATUS_AD_Reference_ID,
 									X_C_Flatrate_DataEntry.DOCSTATUS_Completed);
-
+					final ITranslatableString uomName = uomDAO.getName(UomId.ofRepoId(invoicingEntry.getC_UOM_ID()));
 					return msgBL.getMsg(ctx,
 										FlatrateBL.MSG_FLATRATEBL_INVOICING_ENTRY_NOT_CO_3P,
 										new Object[] {
 												invoicingEntry.getC_Period().getName(),
-												invoicingEntry.getC_UOM().getName(),
+												uomName,
 												competed.translate(Env.getAD_Language()) });
 				}
 			}
@@ -750,7 +753,7 @@ public class FlatrateBL implements IFlatrateBL
 					if (X_C_Flatrate_DataEntry.DOCSTATUS_Completed.equals(invoicingEntry.getDocStatus()))
 					{
 						// ok
-						final I_C_Invoice_Candidate ic = invoicingEntry.getC_Invoice_Candidate();
+						final I_C_Invoice_Candidate ic = this.invoiceCandDAO.getById(InvoiceCandidateId.ofRepoId(invoicingEntry.getC_Invoice_Candidate_ID()));
 						if (auxEntry
 								|| invoicingEntry.isSimulation()
 								|| ic != null && ic.getC_Invoice_Candidate_ID() > 0 && ic.isProcessed())
@@ -814,7 +817,7 @@ public class FlatrateBL implements IFlatrateBL
 			final String trxName)
 	{
 		final IFlatrateDAO flatrateDB = Services.get(IFlatrateDAO.class);
-		final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+		final IUOMDAO uomDAO = this.uomDAO;
 
 		final List<I_M_Product> products = flatrateDB.retrieveHoldingFeeProducts(flatrateTerm.getC_Flatrate_Conditions());
 
@@ -1858,7 +1861,7 @@ public class FlatrateBL implements IFlatrateBL
 		}
 		else if (newProductId != null)
 		{
-			final ProductCategoryId newProductCategoryId = Services.get(IProductDAO.class).retrieveProductCategoryByProductId(newProductId);
+			final ProductCategoryId newProductCategoryId = productDAO.retrieveProductCategoryByProductId(newProductId);
 			final List<I_C_Flatrate_Matching> flatrateMatchings = flatrateDAO.retrieveFlatrateMatchings(term.getC_Flatrate_Conditions());
 
 			for (final I_C_Flatrate_Matching matching : flatrateMatchings)
@@ -1869,7 +1872,7 @@ public class FlatrateBL implements IFlatrateBL
 					return true;
 				}
 
-				if (matching.getM_Product() == null && (newProductCategoryId.getRepoId() == matching.getM_Product_Category_Matching_ID()))
+				if (matching.getM_Product_ID() <= 0 && (newProductCategoryId.getRepoId() == matching.getM_Product_Category_Matching_ID()))
 				{
 					// there is one matching with the same category as the given product
 					return true;
@@ -1880,7 +1883,7 @@ public class FlatrateBL implements IFlatrateBL
 		// there is no product in the first term but there is a product set in the second term
 		else if (productId != null)
 		{
-			final ProductCategoryId productCategoryId = Services.get(IProductDAO.class).retrieveProductCategoryByProductId(productId);
+			final ProductCategoryId productCategoryId = productDAO.retrieveProductCategoryByProductId(productId);
 			final List<I_C_Flatrate_Matching> flatrateMatchings = flatrateDAO.retrieveFlatrateMatchings(newTerm.getC_Flatrate_Conditions());
 
 			for (final I_C_Flatrate_Matching matching : flatrateMatchings)
@@ -1891,7 +1894,7 @@ public class FlatrateBL implements IFlatrateBL
 					return true;
 				}
 
-				if (matching.getM_Product() == null && (productCategoryId.getRepoId() == matching.getM_Product_Category_Matching_ID()))
+				if (matching.getM_Product_ID() <= 0 && (productCategoryId.getRepoId() == matching.getM_Product_Category_Matching_ID()))
 				{
 
 					// there is one matching with the same category as the given product
@@ -1908,7 +1911,7 @@ public class FlatrateBL implements IFlatrateBL
 
 			for (final I_C_Flatrate_Matching newFlatrateMatching : newFlatrateMatchings)
 			{
-				final org.compiere.model.I_M_Product newFMProduct = newFlatrateMatching.getM_Product();
+				final org.compiere.model.I_M_Product newFMProduct = productDAO.getById(newFlatrateMatching.getM_Product_ID());
 
 				if (newFMProduct != null)
 				{
@@ -1920,7 +1923,7 @@ public class FlatrateBL implements IFlatrateBL
 							return true;
 						}
 
-						if (flatrateMatching.getM_Product() == null && (newFMProduct.getM_Product_Category_ID() == flatrateMatching.getM_Product_Category_Matching_ID()))
+						if (flatrateMatching.getM_Product_ID() <= 0 && (newFMProduct.getM_Product_Category_ID() == flatrateMatching.getM_Product_Category_Matching_ID()))
 						{
 							// there is a matching for the category if the given products
 
@@ -1931,19 +1934,19 @@ public class FlatrateBL implements IFlatrateBL
 				// product is null. Check the product category
 				else
 				{
-					final org.compiere.model.I_M_Product_Category newFMProductCategory = newFlatrateMatching.getM_Product_Category_Matching();
+					final org.compiere.model.I_M_Product_Category newFMProductCategory = productDAO.getProductCategoryById(ProductCategoryId.ofRepoId(newFlatrateMatching.getM_Product_Category_Matching_ID()));
 
 					for (final I_C_Flatrate_Matching flatrateMatching : flatrateMatchings)
 					{
-						final org.compiere.model.I_M_Product matchingProduct = flatrateMatching.getM_Product();
-
-						if (flatrateMatching.getM_Product() != null && (matchingProduct.getM_Product_Category_ID() == newFMProductCategory.getM_Product_Category_ID()))
+						final org.compiere.model.I_M_Product matchingProduct = productDAO.getById(flatrateMatching.getM_Product_ID());
+						
+						if (flatrateMatching.getM_Product_ID() > 0 && (matchingProduct.getM_Product_Category_ID() == newFMProductCategory.getM_Product_Category_ID()))
 						{
 							// the term is for a product that matches the given product category
 							return true;
 						}
 
-						if (flatrateMatching.getM_Product() != null)
+						if (flatrateMatching.getM_Product_ID() > 0)
 						{
 							// the matching is only for the product set. Doesn't fit the new matching product.
 							continue;
