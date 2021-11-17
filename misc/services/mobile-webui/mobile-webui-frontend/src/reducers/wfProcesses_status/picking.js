@@ -87,7 +87,11 @@ export const generateAlternativeSteps = ({ draftState, wfProcessId, activityId, 
       const alternativesPoolItem = alternativesPool[idx];
       const qtyAvailableToAllocateInThisStep = computeQtyAvailableToAllocate({ alternativesPoolItem });
 
+      console.log('qtyToAllocateRemaining =>', qtyToAllocateRemaining);
+      console.log('qtyAvailableToAllocateInThisStep=>', qtyAvailableToAllocateInThisStep);
+
       const qtyToAllocateThisStep = Math.min(qtyToAllocateRemaining, qtyAvailableToAllocateInThisStep);
+      console.log('AFTER_MIN: ', qtyToAllocateThisStep);
 
       draftStep.altSteps.genSteps[alternativesPoolItem.id] = {
         id: alternativesPoolItem.id,
@@ -95,6 +99,7 @@ export const generateAlternativeSteps = ({ draftState, wfProcessId, activityId, 
         huBarcode: alternativesPoolItem.huBarcode,
         uom: alternativesPoolItem.uom,
         qtyAvailable: qtyToAllocateThisStep,
+        qtyPicked: 0,
       };
 
       allocateQtyAvailable({
