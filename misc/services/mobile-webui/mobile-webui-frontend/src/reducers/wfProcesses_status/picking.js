@@ -279,6 +279,56 @@ const normalizePickingLines = (lines) => {
   });
 };
 
+// TODO: use single generating fnct for alt steps - (DRY) - when no time pressure, do the gen only on activity
+const generateAlternativeStepsPostBackendFetch = ({ draftDataStored, lineId, stepId, qtyToAllocate }) => {
+  console.log('draftActivityDataStored in generate:', original(draftDataStored));
+  console.log('lineId:', lineId);
+  console.log('stepId:', stepId);
+
+  const draftDataStoredOrig = original(draftDataStored);
+
+  const draftStep = draftDataStored.lines[lineId].steps[stepId];
+  const { pickFromAlternatives: alternativesPool } = draftDataStoredOrig;
+
+  console.log('qtyToAllocate ===>', qtyToAllocate);
+
+  let qtyToAllocateRemaining = qtyToAllocate;
+
+  for (let idx = 0; idx < alternativesPool.length; idx++) {
+    deallocateQtyAvailable({ idx, stepId, draftDataStored });
+  }
+
+  for (let idx = 0; idx < alternativesPool.length; idx++) {
+    if (qtyToAllocateRemaining === 0) {
+      break;
+    } else {
+      const alternativesPoolItem = alternativesPool[idx];
+      const qtyAvailableToAllocateInThisStep = computeQtyAvailableToAllocate({ alternativesPoolItem });
+
+      const qtyToAllocateThisStep = Math.min(qtyToAllocateRemaining, qtyAvailableToAllocateInThisStep);
+
+      draftStep.altSteps.genSteps[alternativesPoolItem.id] = {
+        id: alternativesPoolItem.id,
+        locatorName: alternativesPoolItem.locatorName,
+        huBarcode: alternativesPoolItem.huBarcode,
+        uom: alternativesPoolItem.uom,
+        qtyAvailable: qtyToAllocateThisStep,
+      };
+
+      allocateQtyAvailable({
+        idx,
+        draftDataStored,
+        stepId,
+        qtyToAllocate: qtyToAllocateThisStep,
+      });
+
+      qtyToAllocateRemaining = qtyToAllocateRemaining - qtyToAllocateThisStep;
+    }
+  }
+
+  return draftDataStored;
+};
+
 registerHandler({
   componentType: COMPONENT_TYPE,
   normalizeComponentProps: ({ componentProps }) => {
@@ -294,31 +344,28 @@ registerHandler({
   },
 
   mergeActivityDataStored: ({ componentType, draftActivityDataStored, fromActivity }) => {
-    console.log('@@@@[mergeActivityDataStored]');
-    // FIXME merge state from backend!!!
-    console.log(`!!!!!!!!!!!!! componentType=${componentType}`);
-    console.log('fromActivity', fromActivity);
-
     const { lines } = fromActivity.componentProps;
+    console.log('componentType =>', componentType);
 
     // loop within steps
     for (let lineIdx = 0; lineIdx < lines.length; lineIdx++) {
       for (let stepIdx = 0; stepIdx < lines[lineIdx].steps.length; stepIdx++) {
         let step = lines[lineIdx].steps[stepIdx];
-        // console.log('STEP:', step);
-        // console.log('STEP_IDX:', stepIdx);
         let { qtyRejected } = lines[lineIdx].steps[stepIdx].mainPickFrom;
 
         // if we have qtyRejected in the mainPickFrom clear the previous genSteps
-        console.log('Rejected:', qtyRejected);
         if (qtyRejected) {
           draftActivityDataStored.dataStored.lines[lineIdx].steps[step.pickingStepId].altSteps.genSteps = {};
-          // generateAlternativeStepsPostBackendFetch({ draftActivityDataStored });
           // then regenerate
+          generateAlternativeStepsPostBackendFetch({
+            draftDataStored: draftActivityDataStored.dataStored,
+            qtyToAllocate: qtyRejected,
+            lineId: lineIdx,
+            stepId: step.pickingStepId,
+          });
         }
       }
     }
-    console.log('draftActivityDataStored now:', original(draftActivityDataStored));
     return draftActivityDataStored;
   },
 });
