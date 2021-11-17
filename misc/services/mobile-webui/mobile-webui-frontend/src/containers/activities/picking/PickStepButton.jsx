@@ -44,6 +44,13 @@ class PickStepButton extends PureComponent {
       stepState,
     } = this.props;
 
+    const stepCompleteStatus = completeStatus || CompleteStatus.NOT_STARTED;
+    const altStepCompleteStatus =
+      altStepId && stepState.altSteps.genSteps[altStepId].qtyPicked > 0
+        ? CompleteStatus.COMPLETED
+        : CompleteStatus.NOT_STARTED;
+    const indicatorCompleteStatus = altStepId ? altStepCompleteStatus : stepCompleteStatus;
+
     return (
       <div className="mt-3">
         <button
@@ -76,7 +83,7 @@ class PickStepButton extends PureComponent {
             </div>
 
             <div className="right-btn-side pt-4">
-              <Indicator completeStatus={completeStatus || CompleteStatus.NOT_STARTED} />
+              <Indicator completeStatus={indicatorCompleteStatus} />
             </div>
           </div>
         </button>

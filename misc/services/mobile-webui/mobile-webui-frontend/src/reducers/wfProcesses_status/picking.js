@@ -313,6 +313,7 @@ const generateAlternativeStepsPostBackendFetch = ({ draftDataStored, lineId, ste
         huBarcode: alternativesPoolItem.huBarcode,
         uom: alternativesPoolItem.uom,
         qtyAvailable: qtyToAllocateThisStep,
+        qtyPicked: 0,
       };
 
       allocateQtyAvailable({
