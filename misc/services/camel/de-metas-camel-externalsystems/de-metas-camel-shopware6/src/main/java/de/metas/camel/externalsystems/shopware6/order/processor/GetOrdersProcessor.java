@@ -38,6 +38,7 @@ import de.metas.camel.externalsystems.shopware6.order.OrderQueryHelper;
 import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.common.externalsystem.JsonExternalSystemShopware6ConfigMappings;
+import de.metas.common.externalsystem.JsonProductLookup;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.util.Check;
 import de.metas.common.util.NumberUtils;
@@ -134,6 +135,10 @@ public class GetOrdersProcessor implements Processor
 	{
 		final String bpLocationCustomJsonPath = request.getParameters().get(ExternalSystemConstants.PARAM_JSON_PATH_CONSTANT_BPARTNER_LOCATION_ID);
 
+		final String productLookup = request.getParameters().get(ExternalSystemConstants.PARAM_PRODUCT_LOOKUP);
+
+		Check.assumeNotNull(productLookup, "JsonExternalSystemRequest.parameters[ProductLookup] can't be missing");
+
 		final boolean skipNextImportStartingTimestamp = BooleanUtils.isNotTrue(shopware6QueryRequest.getIsQueryByDate());
 
 		return ImportOrdersRouteContext.builder()
@@ -146,6 +151,7 @@ public class GetOrdersProcessor implements Processor
 				.currencyInfoProvider(currencyInfoProvider)
 				.taxProductIdProvider(getTaxProductIdProvider(request))
 				.skipNextImportStartingTimestamp(skipNextImportStartingTimestamp)
+				.jsonProductLookup(JsonProductLookup.valueOf(productLookup))
 				.build();
 	}
 

@@ -31,6 +31,7 @@ import de.metas.camel.externalsystems.shopware6.currency.CurrencyInfoProvider;
 import de.metas.camel.externalsystems.shopware6.order.processor.TaxProductIdProvider;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.common.externalsystem.JsonExternalSystemShopware6ConfigMappings;
+import de.metas.common.externalsystem.JsonProductLookup;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -121,6 +122,9 @@ public class ImportOrdersRouteContext
 
 	@Nullable
 	private JsonCustomerGroup bPartnerCustomerGroup;
+
+	@NonNull
+	private JsonProductLookup jsonProductLookup;
 
 	@NonNull
 	public OrderCandidate getOrderNotNull()
