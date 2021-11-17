@@ -286,13 +286,28 @@ const generateAlternativeStepsPostBackendFetch = ({ draftDataStored, lineId, ste
   console.log('stepId:', stepId);
 
   const draftDataStoredOrig = original(draftDataStored);
-
+  const stepData = draftDataStoredOrig.lines[lineId].steps[stepId];
   const draftStep = draftDataStored.lines[lineId].steps[stepId];
   const { pickFromAlternatives: alternativesPool } = draftDataStoredOrig;
 
   console.log('qtyToAllocate ===>', qtyToAllocate);
 
   let qtyToAllocateRemaining = qtyToAllocate;
+
+  // loop among the items and for the ones that do have `qtyPicked` -> for each we allocate to the pool (pickFromAlternatives in the root of dataStored)
+  for (let [keyAltStep, altStepItem] of Object.entries(stepData.pickFromAlternatives)) {
+    console.log('QTY_PICKED_altStep:', altStepItem.qtyPicked);
+    let poolIdx = alternativesPool.findIndex((element) => element.id === keyAltStep);
+
+    if (altStepItem.qtyPicked > 0) {
+      allocateQtyAvailable({
+        idx: poolIdx,
+        draftDataStored,
+        stepId,
+        qtyToAllocate: altStepItem.qtyPicked,
+      });
+    }
+  }
 
   for (let idx = 0; idx < alternativesPool.length; idx++) {
     deallocateQtyAvailable({ idx, stepId, draftDataStored });
