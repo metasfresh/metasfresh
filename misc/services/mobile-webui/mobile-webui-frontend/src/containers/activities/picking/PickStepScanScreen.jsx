@@ -50,19 +50,20 @@ function PickStepScanScreen(WrappedComponent) {
       const { scannedBarcode } = this.state;
       const qtyRejected = qtyTarget - qty;
 
-      if (altStepId) {
-        updatePickingStepQty({
-          wfProcessId,
-          activityId,
-          lineId,
-          stepId,
-          altStepId,
-          scannedHUBarcode: scannedBarcode,
-          qtyPicked: qty,
-          qtyRejectedReasonCode: reason,
-        });
-        return;
-      }
+      // if (altStepId) {
+      //   updatePickingStepQty({
+      //     wfProcessId,
+      //     activityId,
+      //     lineId,
+      //     stepId,
+      //     altStepId,
+      //     scannedHUBarcode: scannedBarcode,
+      //     qtyPicked: qty,
+      //     qtyRejectedReasonCode: reason,
+      //     qtyRejected,
+      //   });
+      //   return;
+      // }
 
       // TODO: This should be added to the same, not next level
       // pushHeaderEntry({

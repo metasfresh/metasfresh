@@ -43,9 +43,9 @@ const reduceOnUpdateQtyPicked = (draftState, payload) => {
   draftStep.qtyRejectedReasonCode = qtyRejectedReasonCode;
 
   console.log('ALT_STEP_ID =>', altStepId);
+  console.log('QtyRejected =====>', qtyRejected);
 
-  if (!altStepId) {
-    console.log('QtyRejected =====>', qtyRejected);
+  if (!altStepId && qtyRejected) {
     draftState = generateAlternativeSteps({
       draftState,
       wfProcessId,
@@ -287,9 +287,6 @@ const normalizePickingLines = (lines) => {
 // TODO: use single generating fnct for alt steps - (DRY) - when no time pressure, do the gen only on activity
 const generateAlternativeStepsPostBackendFetch = ({ draftDataStored, lineId, stepId, qtyToAllocate }) => {
   console.log('draftActivityDataStored in generate:', original(draftDataStored));
-  console.log('lineId:', lineId);
-  console.log('stepId:', stepId);
-
   const draftDataStoredOrig = original(draftDataStored);
   const stepData = draftDataStoredOrig.lines[lineId].steps[stepId];
   const draftStep = draftDataStored.lines[lineId].steps[stepId];
@@ -311,6 +308,9 @@ const generateAlternativeStepsPostBackendFetch = ({ draftDataStored, lineId, ste
         stepId,
         qtyToAllocate: altStepItem.qtyPicked,
       });
+    } else {
+      // delete the corresponding genStep as the BE says there is no qtyPicked for it
+      delete draftStep.altSteps.genSteps[keyAltStep];
     }
   }
 
