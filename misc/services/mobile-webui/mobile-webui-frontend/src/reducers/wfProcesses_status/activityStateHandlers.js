@@ -5,11 +5,13 @@ export const registerHandler = ({
   normalizeComponentProps,
   computeActivityDataStoredInitialValue,
   computeActivityStatus,
+  mergeActivityDataStored,
 }) => {
   registeredHandlers[componentType] = {
     normalizeComponentProps,
     computeActivityDataStoredInitialValue,
     computeActivityStatus,
+    mergeActivityDataStored,
   };
 
   console.log(`Registered handlers for ${componentType}`);

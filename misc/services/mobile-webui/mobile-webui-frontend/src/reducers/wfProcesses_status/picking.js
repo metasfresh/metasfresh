@@ -294,7 +294,10 @@ registerHandler({
   },
 
   mergeActivityDataStored: ({ componentType, draftActivityDataStored, fromActivity }) => {
+    console.log('@@@@[mergeActivityDataStored]');
     // FIXME merge state from backend!!!
-    console.log(`!!!!!!!!!!!!! componentType=${componentType}`, draftActivityDataStored, fromActivity);
+    console.log(`!!!!!!!!!!!!! componentType=${componentType}`);
+    console.log('draftActivityDataStored:', original(draftActivityDataStored));
+    console.log('fromActivity', fromActivity);
   },
 });
