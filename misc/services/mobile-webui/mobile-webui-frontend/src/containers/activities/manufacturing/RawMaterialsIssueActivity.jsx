@@ -1,35 +1,50 @@
-import React, { PureComponent } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
-import RawMaterialsIssueLineButton from './RawMaterialsIssueLineButton';
 
-class RawMaterialsIssueActivity extends PureComponent {
-  render() {
-    const {
-      activityState: {
-        componentProps: { lines },
-        dataStored: { isUserEditable },
-      },
-    } = this.props;
+import LineButton from './RawMaterialsIssueLineButton';
+import * as CompleteStatus from '../../../constants/CompleteStatus';
 
-    return (
-      <div className="mfg-rawMaterialsIssue-activity-container mt-5">
-        {lines.map((line, lineIndex) => {
-          return (
-            <RawMaterialsIssueLineButton
-              key={lineIndex}
-              productName={line.productName}
-              isUserEditable={isUserEditable}
-            />
-          );
-        })}
-      </div>
-    );
-  }
-}
+const RawMaterialsIssueActivity = (props) => {
+  const {
+    activityState: {
+      componentProps: { lines },
+      dataStored,
+    },
+    wfProcessId,
+    id,
+  } = props;
+  const data = dataStored ? dataStored : {};
+  const { completeStatus, isUserEditable } = data;
+
+  return (
+    <div className="mfg-rawMaterialsIssue-activity-container mt-5">
+      {lines && lines.length > 0
+        ? lines.map((lineItem, lineIndex) => {
+            const lineId = '' + lineIndex;
+
+            return (
+              <LineButton
+                key={lineId}
+                wfProcessId={wfProcessId}
+                activityId={id}
+                lineId={lineId}
+                caption={lineItem.productName}
+                isUserEditable={isUserEditable}
+                completeStatus={completeStatus || CompleteStatus.NOT_STARTED}
+                qtyIssued={lineItem.qtyIssued}
+                qtyToIssue={lineItem.qtyToIssue}
+                uom={lineItem.uom}
+              />
+            );
+          })
+        : null}
+    </div>
+  );
+};
 
 RawMaterialsIssueActivity.propTypes = {
   wfProcessId: PropTypes.string,
-  activityId: PropTypes.string,
+  id: PropTypes.string,
   componentProps: PropTypes.object,
   activityState: PropTypes.object,
 };
