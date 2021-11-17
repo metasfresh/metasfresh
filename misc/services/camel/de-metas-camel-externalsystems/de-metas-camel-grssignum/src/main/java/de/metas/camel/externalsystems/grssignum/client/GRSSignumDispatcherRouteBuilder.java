@@ -54,14 +54,14 @@ public class GRSSignumDispatcherRouteBuilder extends RouteBuilder
 		final String maximumRedeliveries = CamelRouteUtil.resolveProperty(getContext(), EXPORT_BPARTNER_RETRY_COUNT, "0");
 		final String redeliveryDelay = CamelRouteUtil.resolveProperty(getContext(), EXPORT_BPARTNER_RETRY_DELAY, "0");
 
-		from(GRS_DEADLETTER_ROUTE_ID)
-				.routeId(GRS_DEADLETTER_ROUTE_ID)
-				.to(direct(MF_ERROR_ROUTE_ID));
-
 		errorHandler(deadLetterChannel(GRS_DEADLETTER_ROUTE_ID)
 							 .logHandled(true)
 							 .maximumRedeliveries(Integer.parseInt(maximumRedeliveries))
 							 .redeliveryDelay(Integer.parseInt(redeliveryDelay)));
+
+		from(GRS_DEADLETTER_ROUTE_ID)
+				.routeId(GRS_DEADLETTER_ROUTE_ID)
+				.to(direct(MF_ERROR_ROUTE_ID));
 
 		from(direct(GRS_DISPATCHER_ROUTE_ID))
 				.routeId(GRS_DISPATCHER_ROUTE_ID)
