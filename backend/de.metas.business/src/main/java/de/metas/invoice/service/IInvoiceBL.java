@@ -186,7 +186,6 @@ public interface IInvoiceBL extends ISingletonService
 	boolean testAllocation(I_C_Invoice invoice, boolean ignoreProcessed);
 
 	/**
-	 * @param order
 	 * @param docTypeTargetId invoice's document type
 	 * @param dateInvoiced may be <code>null</code>
 	 * @param dateAcct may be <code>null</code> (see task 08438)

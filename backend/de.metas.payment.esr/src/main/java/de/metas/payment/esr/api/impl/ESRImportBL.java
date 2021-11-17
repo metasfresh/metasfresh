@@ -822,10 +822,6 @@ public class ESRImportBL implements IESRImportBL
 			documentBL.processEx(payment, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 			final boolean ignoreProcessed = false;
 
-			final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
-			invoiceBL.testAllocation(invoice, ignoreProcessed);
-			invoiceDAO.save(invoice);
-
 			importLine.setC_Payment_ID(payment.getC_Payment_ID());
 			esrImportDAO.save(importLine);
 

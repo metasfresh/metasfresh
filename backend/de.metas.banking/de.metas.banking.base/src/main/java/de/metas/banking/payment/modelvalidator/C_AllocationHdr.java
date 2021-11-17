@@ -157,11 +157,8 @@ public class C_AllocationHdr
 	 * Update all given pay selection lines.
 	 * <p>
 	 * NOTE: pay selection lines shall ALL be part of the same {@link I_C_PaySelection}.
-	 *
-	 * @param context
-	 * @param paySelectionLines
 	 */
-	private final void updatePaySelectionLines(final Collection<I_C_PaySelectionLine> paySelectionLines)
+	private void updatePaySelectionLines(final Collection<I_C_PaySelectionLine> paySelectionLines)
 	{
 		// shall not happen
 		if (paySelectionLines.isEmpty())

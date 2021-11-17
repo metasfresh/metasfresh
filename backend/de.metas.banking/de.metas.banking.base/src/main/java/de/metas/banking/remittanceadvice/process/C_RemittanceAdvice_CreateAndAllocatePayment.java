@@ -105,7 +105,7 @@ public class C_RemittanceAdvice_CreateAndAllocatePayment extends JavaProcess
 	@RunOutOfTrx
 	protected String doIt() throws Exception
 	{
-		final IQueryFilter<I_C_RemittanceAdvice> processFilter = getProcessInfo().getQueryFilterOrElse(ConstantQueryFilter.of(false));
+		final IQueryFilter<I_C_RemittanceAdvice> processFilter = getProcessInfo().getQueryFilterOrElse(null);
 		if (processFilter == null)
 		{
 			throw new AdempiereException("@NoSelection@");
