@@ -26,6 +26,8 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
 @Value
 @Builder
 public class ExportBPartnerRouteContext
@@ -33,7 +35,7 @@ public class ExportBPartnerRouteContext
 	@NonNull
 	String remoteUrl;
 
-	@NonNull
+	@Nullable
 	String authToken;
 
 	@NonNull

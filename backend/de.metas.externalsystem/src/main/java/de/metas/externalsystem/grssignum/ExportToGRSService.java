@@ -32,9 +32,7 @@ import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.IExternalSystemChildConfig;
 import de.metas.externalsystem.export.bpartner.ExportToExternalSystemService;
 import de.metas.externalsystem.rabbitmq.ExternalSystemMessageSender;
-import de.metas.util.Check;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -65,19 +63,10 @@ public class ExportToGRSService extends ExportToExternalSystemService
 
 		final Map<String, String> parameters = new HashMap<>();
 
-		final String authToken = grsSignumConfig.getAuthToken();
-
-		if (Check.isBlank(authToken))
-		{
-			throw new AdempiereException("Missing authToken for ExternalSystemGRSSignumConfig")
-					.appendParametersToMessage()
-					.setParameter("ExternalSystemGRSSignumConfigId", grsSignumConfig.getId());
-		}
-
 		parameters.put(ExternalSystemConstants.PARAM_EXTERNAL_SYSTEM_HTTP_URL, grsSignumConfig.getBaseUrl());
 		parameters.put(ExternalSystemConstants.PARAM_TENANT_ID, grsSignumConfig.getTenantId());
 		parameters.put(ExternalSystemConstants.PARAM_CHILD_CONFIG_VALUE, grsSignumConfig.getValue());
-		parameters.put(ExternalSystemConstants.PARAM_EXTERNAL_SYSTEM_AUTH_TOKEN, authToken);
+		parameters.put(ExternalSystemConstants.PARAM_EXTERNAL_SYSTEM_AUTH_TOKEN, grsSignumConfig.getAuthToken());
 		parameters.put(ExternalSystemConstants.PARAM_BPARTNER_ID, String.valueOf(bPartnerId.getRepoId()));
 
 		return parameters;

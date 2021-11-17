@@ -81,19 +81,14 @@ public class GRSSignumExportBPartnerRouteBuilder extends RouteBuilder
 			throw new RuntimeException("Missing mandatory param: " + ExternalSystemConstants.PARAM_EXTERNAL_SYSTEM_HTTP_URL);
 		}
 
-		final String authToken = request.getParameters().get(ExternalSystemConstants.PARAM_EXTERNAL_SYSTEM_AUTH_TOKEN);
-
-		if (Check.isBlank(authToken))
-		{
-			throw new RuntimeException("Missing mandatory param: " + ExternalSystemConstants.PARAM_EXTERNAL_SYSTEM_AUTH_TOKEN);
-		}
-
 		final String tenantId = request.getParameters().get(ExternalSystemConstants.PARAM_TENANT_ID);
 
 		if (Check.isBlank(tenantId))
 		{
 			throw new RuntimeException("Missing mandatory param: " + ExternalSystemConstants.PARAM_TENANT_ID);
 		}
+
+		final String authToken = request.getParameters().get(ExternalSystemConstants.PARAM_EXTERNAL_SYSTEM_AUTH_TOKEN);
 
 		final ExportBPartnerRouteContext context = ExportBPartnerRouteContext.builder()
 				.remoteUrl(remoteUrl)

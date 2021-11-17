@@ -28,6 +28,8 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
 @Value
 @Builder
 @JsonDeserialize(builder = DispatchRequest.DispatchRequestBuilder.class)
@@ -37,7 +39,7 @@ public class DispatchRequest
 	@JsonProperty("url")
 	String url;
 
-	@NonNull
+	@Nullable
 	@JsonProperty("authToken")
 	String authToken;
 
