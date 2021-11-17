@@ -1,6 +1,7 @@
 package de.metas.contracts.impl;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.async.AsyncBatchId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
@@ -22,6 +23,7 @@ import de.metas.contracts.model.X_C_Flatrate_DataEntry;
 import de.metas.costing.ChargeId;
 import de.metas.document.engine.IDocument;
 import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.ITranslatableString;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.logging.LogManager;
@@ -29,6 +31,7 @@ import de.metas.organization.OrgId;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
+import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -80,6 +83,7 @@ import static de.metas.contracts.model.X_C_Flatrate_Term.DOCSTATUS_Completed;
 import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
 import static org.adempiere.model.InterfaceWrapperHelper.getTrxName;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -111,6 +115,7 @@ public class FlatrateDAO implements IFlatrateDAO
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
+	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
 	@Override
 	public I_C_Flatrate_Term getById(final int flatrateTermId)
@@ -708,7 +713,7 @@ public class FlatrateDAO implements IFlatrateDAO
 
 			if (matching.getM_Product_ID() > 0)
 			{
-				result.add(InterfaceWrapperHelper.create(matching.getM_Product(), I_M_Product.class));
+				result.add(InterfaceWrapperHelper.load(matching.getM_Product_ID(), I_M_Product.class));
 			}
 			else
 			{
@@ -829,9 +834,10 @@ public class FlatrateDAO implements IFlatrateDAO
 
 		if (processedCands.length() > 0)
 		{
+			final ITranslatableString name = uomDAO.getName(UomId.ofRepoId(dataEntry.getC_UOM_ID()));
 			throw new AdempiereException(
 					MSP_DATA_ENTRY_ERROR_INVOICE_CAND_PROCESSED_3P,
-					new Object[] { dataEntry.getC_UOM().getName(), dataEntry.getC_Period().getName(), processedCands.toString() });
+					name, dataEntry.getC_Period().getName(), processedCands.toString() );
 		}
 
 		return null;
@@ -929,7 +935,7 @@ public class FlatrateDAO implements IFlatrateDAO
 
 				.andCollectChildren(I_C_Flatrate_DataEntry.COLUMN_C_Flatrate_Term_ID)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_Flatrate_DataEntry.COLUMN_M_Product_DataEntry_ID, product.getM_Product_ID())
+				.addEqualsFilter(I_C_Flatrate_DataEntry.COLUMNNAME_M_Product_DataEntry_ID, product.getM_Product_ID())
 				.addInSubQueryFilter(I_C_Flatrate_DataEntry.COLUMNNAME_C_Period_ID, I_C_Period.COLUMNNAME_C_Period_ID, periodQuery)
 				.create()
 				.firstOnly(I_C_Flatrate_DataEntry.class);
@@ -1068,5 +1074,15 @@ public class FlatrateDAO implements IFlatrateDAO
 
 		return flatrateTermIQueryBuilder.create()
 				.anyMatch();
+	}
+
+	@Override
+	public void assignAsyncBatchId(
+			@NonNull final FlatrateTermId flatrateTermId, 
+			@NonNull final AsyncBatchId asyncBatchId)
+	{
+		final I_C_Flatrate_Term flatrateTerm = getById(flatrateTermId);
+		flatrateTerm.setC_Async_Batch_ID(asyncBatchId.getRepoId());
+		saveRecord(flatrateTerm);
 	}
 }

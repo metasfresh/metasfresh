@@ -23,6 +23,7 @@ package de.metas.contracts;
  */
 
 import com.google.common.collect.ImmutableList;
+import de.metas.async.AsyncBatchId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
@@ -155,6 +156,8 @@ public interface IFlatrateDAO extends ISingletonService
 			@NonNull OrgId orgId);
 
 	boolean orderPartnerHasExistingRunningTerms(@NonNull I_C_Order order);
+
+	void assignAsyncBatchId(FlatrateTermId ofRepoId, AsyncBatchId currentAsyncBatchId);
 
 	@Value
 	@Builder

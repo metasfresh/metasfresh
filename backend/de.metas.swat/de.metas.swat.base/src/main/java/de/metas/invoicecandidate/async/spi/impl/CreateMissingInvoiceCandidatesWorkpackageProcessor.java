@@ -16,12 +16,14 @@ import de.metas.logging.TableRecordMDC;
 import de.metas.user.UserId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.Env;
 import org.slf4j.MDC.MDCCloseable;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
@@ -90,7 +92,6 @@ public class CreateMissingInvoiceCandidatesWorkpackageProcessor extends Workpack
 					break;
 				}
 			}
-
 			return isCreateCandidates;
 		}
 
@@ -112,6 +113,7 @@ public class CreateMissingInvoiceCandidatesWorkpackageProcessor extends Workpack
 			return TableRecordReference.of(model);
 		}
 
+		@Nullable
 		@Override
 		protected UserId extractUserInChargeOrNull(final Object model)
 		{
@@ -137,7 +139,7 @@ public class CreateMissingInvoiceCandidatesWorkpackageProcessor extends Workpack
 	private final transient IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
 
 	@Override
-	public Result processWorkPackage(final I_C_Queue_WorkPackage workpackage, final String localTrxName)
+	public Result processWorkPackage(@NonNull final I_C_Queue_WorkPackage workpackage, final String localTrxName)
 	{
 		try (final IAutoCloseable ignored = invoiceCandBL.setUpdateProcessInProgress())
 		{

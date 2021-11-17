@@ -34,6 +34,7 @@ public class CreateMissingShipmentSchedulesWorkpackageProcessor extends Workpack
 	private static final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
 	private static final IWorkPackageQueueFactory workPackageQueueFactory = Services.get(IWorkPackageQueueFactory.class);
 	private static final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
+	private static final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
 
 	public static void scheduleIfNotPostponed(final IContextAware ctxAware)
 	{
@@ -43,8 +44,6 @@ public class CreateMissingShipmentSchedulesWorkpackageProcessor extends Workpack
 
 	public static void scheduleIfNotPostponed(@NonNull final Object model)
 	{
-		final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
-
 		final AsyncBatchId asyncBatchId = asyncBatchBL
 				.getAsyncBatchId(model)
 				.orElse(null);

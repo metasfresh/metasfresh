@@ -77,6 +77,11 @@ public class InvoiceService
 				.map(InvoiceCandidateId::ofRepoId)
 				.collect(ImmutableSet.toImmutableSet());
 
+		return generateInvoicesFromInvoiceCandidateIds(invoiceCandidateIds);
+	}
+
+	public ImmutableSet<InvoiceId> generateInvoicesFromInvoiceCandidateIds(@NonNull final Set<InvoiceCandidateId> invoiceCandidateIds)
+	{
 		processInvoiceCandidates(invoiceCandidateIds);
 
 		return invoiceCandidateIds.stream()

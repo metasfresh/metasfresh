@@ -98,7 +98,7 @@ public class HUShippingFacade
 
 	//
 	// Parameters
-	private final inLieferantenangabe für Zeile {0} fehltt addToShipperTransportationId;
+	private final int addToShipperTransportationId;
 	private final boolean completeShipments;
 	private final BillAssociatedInvoiceCandidates invoiceMode;
 	private final boolean createShipperDeliveryOrders;
