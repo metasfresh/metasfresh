@@ -63,6 +63,11 @@ public class AddressDescriptorFactory
 	private static final String SYSCONFIG_UsePostalLookup = "de.metas.ui.web.address.UsePostalLookup";
 	private static final String SYSCONFIG_AllowPOBoxAddress = "de.metas.ui.web.address.AllowPOBoxAddress";
 
+	private static final String SYSCONFIG_ShowAddress3 = "de.metas.ui.web.address.ShowAddress3";
+	private static final String SYSCONFIG_ShowAddress4 = "de.metas.ui.web.address.ShowAddress4";
+
+	private ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+
 	public AddressDescriptor getAddressDescriptor()
 	{
 		final int key = 0; // some dummy key
@@ -79,7 +84,19 @@ public class AddressDescriptorFactory
 	private boolean isAllowPOBoxAddress()
 	{
 		final boolean defaultWhenNotFound = false; // don't allow POBox address by default
-		return Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_AllowPOBoxAddress, defaultWhenNotFound);
+		return sysConfigBL.getBooleanValue(SYSCONFIG_AllowPOBoxAddress, defaultWhenNotFound);
+	}
+
+	private boolean isShowAddress3()
+	{
+		final boolean defaultWhenNotFound = true; //show Address3 field by default
+		return sysConfigBL.getBooleanValue(SYSCONFIG_ShowAddress3, defaultWhenNotFound);
+	}
+
+	private boolean isShowAddress4()
+	{
+		final boolean defaultWhenNotFound = true; //show Address4 field by default
+		return sysConfigBL.getBooleanValue(SYSCONFIG_ShowAddress4, defaultWhenNotFound);
 	}
 
 	private AddressDescriptor createAddressDescriptor()
@@ -108,17 +125,25 @@ public class AddressDescriptorFactory
 				.setValueClass(String.class)
 				.setWidgetType(DocumentFieldWidgetType.Text)
 				.setDataBinding(new AddressFieldBinding(IAddressModel.COLUMNNAME_Address2, false, I_C_Location::getAddress2, AddressFieldBinding::writeValue_Address2)));
-		//
-		addressDescriptor.addField(buildFieldDescriptor(IAddressModel.COLUMNNAME_Address3)
-				.setValueClass(String.class)
-				.setWidgetType(DocumentFieldWidgetType.Text)
-				.setDataBinding(new AddressFieldBinding(IAddressModel.COLUMNNAME_Address3, false, I_C_Location::getAddress3, AddressFieldBinding::writeValue_Address3)));
-		//
-		addressDescriptor.addField(buildFieldDescriptor(IAddressModel.COLUMNNAME_Address4)
-				.setValueClass(String.class)
-				.setWidgetType(DocumentFieldWidgetType.Text)
-				.setDataBinding(new AddressFieldBinding(IAddressModel.COLUMNNAME_Address4, false, I_C_Location::getAddress4, AddressFieldBinding::writeValue_Address4)));
-		//
+
+		final boolean allowAddress3 = isShowAddress3();
+		if(allowAddress3)
+		{
+			addressDescriptor.addField(buildFieldDescriptor(IAddressModel.COLUMNNAME_Address3)
+					.setValueClass(String.class)
+					.setWidgetType(DocumentFieldWidgetType.Text)
+					.setDataBinding(new AddressFieldBinding(IAddressModel.COLUMNNAME_Address3, false, I_C_Location::getAddress3, AddressFieldBinding::writeValue_Address3)));
+		}
+
+		final boolean showAddress4 = isShowAddress4();
+		if(showAddress4)
+		{
+			addressDescriptor.addField(buildFieldDescriptor(IAddressModel.COLUMNNAME_Address4)
+					.setValueClass(String.class)
+					.setWidgetType(DocumentFieldWidgetType.Text)
+					.setDataBinding(new AddressFieldBinding(IAddressModel.COLUMNNAME_Address4, false, I_C_Location::getAddress4, AddressFieldBinding::writeValue_Address4)));
+		}
+
 		final boolean allowPOBoxAddress = isAllowPOBoxAddress();
 		if (allowPOBoxAddress)
 		{
@@ -188,6 +213,8 @@ public class AddressDescriptorFactory
 		// Build it and return
 		return addressDescriptor.build();
 	}
+
+
 
 	private DocumentFieldDescriptor.Builder buildFieldDescriptor(final String columnName)
 	{
