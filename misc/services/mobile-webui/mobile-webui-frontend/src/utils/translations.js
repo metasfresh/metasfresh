@@ -71,6 +71,11 @@ export const setupCounterpart = () => {
           caption: 'Abort',
         },
       },
+      mfg: {
+        ProductName: 'Product Name',
+        target: 'To issue',
+        picked: 'Issued',
+      },
     },
   });
 

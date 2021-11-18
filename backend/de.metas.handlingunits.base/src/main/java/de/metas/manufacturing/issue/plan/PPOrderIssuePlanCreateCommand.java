@@ -1,7 +1,6 @@
 package de.metas.manufacturing.issue.plan;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.picking.plan.generator.pickFromHUs.PickFromHUsSupplier;
 import de.metas.handlingunits.reservation.HUReservationService;
@@ -16,13 +15,10 @@ import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.LocatorId;
-import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.adempiere.warehouse.api.IWarehouseBL;
 import org.eevolution.api.BOMComponentType;
-import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
-import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 
 import java.util.ArrayList;
@@ -32,10 +28,9 @@ public class PPOrderIssuePlanCreateCommand
 {
 	//
 	// Services
-	private final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
 	private final IPPOrderBOMBL ppOrderBOMBL = Services.get(IPPOrderBOMBL.class);
-	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 
 	private static final AdMessageKey MSG_CannotFullAllocate = AdMessageKey.of("PPOrderIssuePlanCreateCommand.CannotFullyAllocated");
 
@@ -45,7 +40,6 @@ public class PPOrderIssuePlanCreateCommand
 
 	//
 	// State
-	private ImmutableSet<LocatorId> orderPickFromLocatorIds;
 	private final AllocableHUsMap allocableHUsMap;
 
 	@Builder
@@ -67,11 +61,6 @@ public class PPOrderIssuePlanCreateCommand
 
 	public PPOrderIssuePlan execute()
 	{
-		final I_PP_Order order = ppOrderBL.getById(ppOrderId);
-
-		final WarehouseId warehouseId = WarehouseId.ofRepoId(order.getM_Warehouse_ID());
-		this.orderPickFromLocatorIds = ImmutableSet.copyOf(warehouseDAO.getLocatorIds(warehouseId));
-
 		final ImmutableList<PPOrderIssuePlanStep> steps = ppOrderBOMBL.retrieveOrderBOMLines(ppOrderId, I_PP_Order_BOMLine.class)
 				.stream()
 				.flatMap(this::createSteps)
@@ -92,25 +81,36 @@ public class PPOrderIssuePlanCreateCommand
 
 		final PPOrderBOMLineId orderBOMLineId = PPOrderBOMLineId.ofRepoId(orderBOMLine.getPP_Order_BOMLine_ID());
 		final ProductId productId = ProductId.ofRepoId(orderBOMLine.getM_Product_ID());
-		final ImmutableSet<LocatorId> pickFromLocatorIds = getPickFromLocatorIds(orderBOMLine);
+		final LocatorId pickFromLocatorId = getPickFromLocatorId(orderBOMLine);
 
 		final Quantity targetQty = ppOrderBOMBL.getQuantities(orderBOMLine).getRemainingQtyToIssue();
 		Quantity allocatedQty = targetQty.toZero();
 		final ArrayList<PPOrderIssuePlanStep> planSteps = new ArrayList<>();
-
-		final AllocableHUsList availableHUs = allocableHUsMap.getAllocableHUs(AllocableHUsGroupingKey.of(productId, pickFromLocatorIds));
+		final AllocableHUsList availableHUs = allocableHUsMap.getAllocableHUs(AllocableHUsGroupingKey.of(productId, pickFromLocatorId));
 		for (final AllocableHU allocableHU : availableHUs)
 		{
 			final Quantity remainingQtyToAllocate = targetQty.subtract(allocatedQty);
+
+			//
+			// Case 1: We fully allocated everything,
+			// but we are just creating these placeholder lines for possible alternatives
 			if (remainingQtyToAllocate.signum() <= 0)
 			{
-				// if we allocated entire qty, exit
-				break;
+				planSteps.add(PPOrderIssuePlanStep.builder()
+						.orderBOMLineId(orderBOMLineId)
+						.productId(productId)
+						.qtyToIssue(targetQty.toZero())
+						.pickFromLocatorId(allocableHU.getLocatorId())
+						.pickFromHU(allocableHU.getHu())
+						.isAlternative(true)
+						.build());
 			}
 			else // if (remainingQtyToAllocate.signum() > 0)
 			{
 				final Quantity huQtyAvailable = allocableHU.getQtyAvailableToAllocate(remainingQtyToAllocate.getUomId());
 
+				//
+				// Case 2: Current HU has enough qty to allocate the remaining Qty
 				final PPOrderIssuePlanStep planStep;
 				if (huQtyAvailable.isGreaterThan(remainingQtyToAllocate))
 				{
@@ -120,12 +120,15 @@ public class PPOrderIssuePlanCreateCommand
 							.qtyToIssue(remainingQtyToAllocate)
 							.pickFromLocatorId(allocableHU.getLocatorId())
 							.pickFromHU(allocableHU.getHu())
+							.isAlternative(false)
 							.build();
 
 					allocableHU.addQtyAllocated(remainingQtyToAllocate);
 					allocatedQty = targetQty; // fully allocated
 				}
-				else // huQtyAvailable <= remainingQtyToAllocate
+				//
+				// Case 3: current HU has not enough qty to allocate the remaining Qty
+				else
 				{
 					planStep = PPOrderIssuePlanStep.builder()
 							.orderBOMLineId(orderBOMLineId)
@@ -134,6 +137,7 @@ public class PPOrderIssuePlanCreateCommand
 							//.isPickWholeHU(true)
 							.pickFromLocatorId(allocableHU.getLocatorId())
 							.pickFromHU(allocableHU.getHu())
+							.isAlternative(false)
 							.build();
 
 					allocableHU.addQtyAllocated(huQtyAvailable);
@@ -147,34 +151,19 @@ public class PPOrderIssuePlanCreateCommand
 		final Quantity qtyToAllocate = targetQty.subtract(allocatedQty);
 		if (qtyToAllocate.signum() != 0)
 		{
-			throw new AdempiereException(MSG_CannotFullAllocate)
-					.appendParametersToMessage()
-					.setParameter("M_Product_ID", productBL.getProductName(productId))
-					.setParameter("QtyToIssue", targetQty)
-					.setParameter("l", qtyToAllocate);
+			throw new AdempiereException(MSG_CannotFullAllocate,
+					productBL.getProductName(productId),
+					warehouseBL.getLocatorNameById(pickFromLocatorId),
+					qtyToAllocate,
+					targetQty)
+					.markAsUserValidationError();
 		}
 
 		return planSteps.stream();
 	}
 
-	private ImmutableSet<LocatorId> getPickFromLocatorIds(@NonNull final I_PP_Order_BOMLine orderBOMLine)
+	private static LocatorId getPickFromLocatorId(@NonNull final I_PP_Order_BOMLine orderBOMLine)
 	{
-		final WarehouseId linePickFromWarehouseId = WarehouseId.ofRepoIdOrNull(orderBOMLine.getM_Warehouse_ID());
-		if (linePickFromWarehouseId != null)
-		{
-			final LocatorId linePickFromLocatorId = LocatorId.ofRepoIdOrNull(linePickFromWarehouseId, orderBOMLine.getM_Locator_ID());
-			if (linePickFromLocatorId != null)
-			{
-				return ImmutableSet.of(linePickFromLocatorId);
-			}
-			else
-			{
-				return ImmutableSet.copyOf(warehouseDAO.getLocatorIds(linePickFromWarehouseId));
-			}
-		}
-		else
-		{
-			return orderPickFromLocatorIds;
-		}
+		return LocatorId.ofRepoId(orderBOMLine.getM_Warehouse_ID(), orderBOMLine.getM_Locator_ID());
 	}
 }

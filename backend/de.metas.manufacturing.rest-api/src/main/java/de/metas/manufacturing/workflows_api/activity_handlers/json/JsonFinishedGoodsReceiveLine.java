@@ -1,6 +1,7 @@
 package de.metas.manufacturing.workflows_api.activity_handlers.json;
 
-import de.metas.manufacturing.job.FinishedGoodsReceiveLine;
+import com.google.common.collect.ImmutableList;
+import de.metas.manufacturing.job.model.FinishedGoodsReceiveLine;
 import de.metas.workflow.rest_api.controller.v2.json.JsonOpts;
 import lombok.Builder;
 import lombok.NonNull;
@@ -18,9 +19,11 @@ public class JsonFinishedGoodsReceiveLine
 	@NonNull String uom;
 	@NonNull BigDecimal qtyToReceive;
 	@NonNull BigDecimal qtyReceived;
+	@NonNull ImmutableList<JsonReceiveToNewPackingMaterialTarget> availablePackingMaterials;
 
 	public static JsonFinishedGoodsReceiveLine of(
 			final FinishedGoodsReceiveLine from,
+			final ImmutableList<JsonReceiveToNewPackingMaterialTarget> availablePackingMaterials,
 			final JsonOpts jsonOpts)
 	{
 		return builder()
@@ -28,6 +31,7 @@ public class JsonFinishedGoodsReceiveLine
 				.uom(from.getQtyToReceive().getUOMSymbol())
 				.qtyToReceive(from.getQtyToReceive().toBigDecimal())
 				.qtyReceived(from.getQtyReceived().toBigDecimal())
+				.availablePackingMaterials(availablePackingMaterials)
 				.build();
 	}
 }

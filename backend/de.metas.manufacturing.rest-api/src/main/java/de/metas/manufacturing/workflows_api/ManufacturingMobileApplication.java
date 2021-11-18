@@ -2,7 +2,8 @@ package de.metas.manufacturing.workflows_api;
 
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.TranslatableStrings;
-import de.metas.manufacturing.job.ManufacturingJob;
+import de.metas.manufacturing.job.model.ManufacturingJob;
+import de.metas.manufacturing.workflows_api.rest_api.json.JsonManufacturingOrderEvent;
 import de.metas.user.UserId;
 import de.metas.workflow.rest_api.model.MobileApplicationId;
 import de.metas.workflow.rest_api.model.MobileApplicationInfo;
@@ -95,5 +96,16 @@ public class ManufacturingMobileApplication implements MobileApplication
 	public WFProcessHeaderProperties getHeaderProperties(final @NonNull WFProcess wfProcess)
 	{
 		return WFProcessHeaderProperties.EMPTY; // TODO
+	}
+
+	public void processEvent(final JsonManufacturingOrderEvent event, final UserId callerId)
+	{
+		final WFProcessId wfProcessId = WFProcessId.ofString(event.getWfProcessId());
+		changeWFProcessById(
+				wfProcessId,
+				wfProcess -> {
+					wfProcess.assertHasAccess(callerId);
+					return wfProcess.<ManufacturingJob>mapDocument(job -> manufacturingRestService.processEvent(job, event));
+				});
 	}
 }

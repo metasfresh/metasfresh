@@ -17,6 +17,7 @@ import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Optional;
 
@@ -40,6 +41,8 @@ class AllocableHUsMap
 		this.pickFromHUsSupplier = pickFromHUsSupplier;
 	}
 
+	public Collection<AllocableHU> getAllAllocableHUsInvolved() {return allocableHUs.values();}
+
 	public AllocableHUsList getAllocableHUs(@NonNull final AllocableHUsGroupingKey key)
 	{
 		return groups.computeIfAbsent(key, this::retrieveAvailableHUsToPick);
@@ -50,14 +53,14 @@ class AllocableHUsMap
 		final ProductId productId = key.getProductId();
 		final ImmutableList<PickFromHU> husEligibleToPick = pickFromHUsSupplier.getEligiblePickFromHUs(
 				PickFromHUsGetRequest.builder()
-						.pickFromLocatorIds(key.getPickFromLocatorIds())
+						.pickFromLocatorId(key.getPickFromLocatorId())
 						.productId(productId)
 						.asiId(AttributeSetInstanceId.NONE) // TODO match attributes
 						.bestBeforePolicy(ShipmentAllocationBestBeforePolicy.Expiring_First)
 						.reservationRef(Optional.empty()) // TODO introduce some PP Order reservation
 						.build());
 
-		final ImmutableList<AllocableHU> hus = CollectionUtils.map(husEligibleToPick, pickFromHU -> toAllocableHU(pickFromHU.getHuId(), productId));
+		final ImmutableList<AllocableHU> hus = CollectionUtils.map(husEligibleToPick, hu -> toAllocableHU(hu.getHuId(), productId));
 		return new AllocableHUsList(hus);
 	}
 
