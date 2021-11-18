@@ -181,13 +181,27 @@ const updateLineStatusFromSteps = ({ draftWFProcess, activityId, lineId }) => {
 };
 
 export const computeLineStatus = ({ draftLine }) => {
-  const stepIds = Object.keys(original(draftLine.steps));
+  const stepItems = original(draftLine.steps);
+  const stepIds = Object.keys(stepItems);
 
   if (stepIds.length > 0) {
     let countStepsCompleted = 0;
     for (let stepId of stepIds) {
+      let sumAltStepsQtysPicked = 0;
+      let remainingQty = stepItems[stepId].mainPickFrom.qtyRejected;
+
       const draftStep = draftLine.steps[stepId];
-      const stepCompleteStatus = draftStep.completeStatus || CompleteStatus.NOT_STARTED;
+      let stepCompleteStatus = draftStep.completeStatus || CompleteStatus.NOT_STARTED;
+
+      let { genSteps } = stepItems[stepId].altSteps;
+      for (let altItem in genSteps) {
+        sumAltStepsQtysPicked = sumAltStepsQtysPicked + genSteps[altItem].qtyPicked;
+      }
+
+      if (remainingQty - sumAltStepsQtysPicked === 0) {
+        stepCompleteStatus = CompleteStatus.COMPLETED;
+        draftLine.steps[stepId].completeStatus = stepCompleteStatus;
+      }
 
       if (stepCompleteStatus === CompleteStatus.COMPLETED) {
         countStepsCompleted++;
@@ -305,6 +319,8 @@ registerHandler({
 
     // loop within steps
     for (let lineIdx = 0; lineIdx < lines.length; lineIdx++) {
+      computeLineStatus({ draftLine: draftActivityDataStored.dataStored.lines[lineIdx] });
+
       for (let stepIdx = 0; stepIdx < lines[lineIdx].steps.length; stepIdx++) {
         let step = lines[lineIdx].steps[stepIdx];
         // let { qtyRejected } = lines[lineIdx].steps[stepIdx].mainPickFrom;
@@ -326,7 +342,6 @@ registerHandler({
         draftActivityDataStored.dataStored.lines[lineIdx].steps[step.pickingStepId].pickFromAlternatives =
           pickFromAlternatives;
 
-        console.log('GenSteps:', genSteps);
         draftActivityDataStored.dataStored.lines[lineIdx].steps[step.pickingStepId].altSteps.genSteps = genSteps;
       }
     }
