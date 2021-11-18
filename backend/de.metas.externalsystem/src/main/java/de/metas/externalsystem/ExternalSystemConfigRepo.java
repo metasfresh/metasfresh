@@ -498,6 +498,7 @@ public class ExternalSystemConfigRepo
 				.devId(config.getDevId())
 				.redirectUrl(config.getRedirectURL())
 				.apiMode(ApiMode.valueOf(config.getAPI_Mode()))
+				.value(config.getExternalSystemValue())
 				.build();
 	}
 
