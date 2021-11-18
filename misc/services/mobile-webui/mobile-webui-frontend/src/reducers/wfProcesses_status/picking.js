@@ -284,72 +284,6 @@ const normalizePickingLines = (lines) => {
   });
 };
 
-// TODO: use single generating fnct for alt steps - (DRY) - when no time pressure, do the gen only on activity
-const generateAlternativeStepsPostBackendFetch = ({ draftDataStored, lineId, stepId, qtyToAllocate }) => {
-  console.log('draftActivityDataStored in generate:', original(draftDataStored));
-  const draftDataStoredOrig = original(draftDataStored);
-  const stepData = draftDataStoredOrig.lines[lineId].steps[stepId];
-  const draftStep = draftDataStored.lines[lineId].steps[stepId];
-  const { pickFromAlternatives: alternativesPool } = draftDataStoredOrig;
-
-  console.log('qtyToAllocate ===>', qtyToAllocate);
-
-  let qtyToAllocateRemaining = qtyToAllocate;
-
-  // loop among the items and for the ones that do have `qtyPicked` -> for each we allocate to the pool (pickFromAlternatives in the root of dataStored)
-  for (let [keyAltStep, altStepItem] of Object.entries(stepData.pickFromAlternatives)) {
-    console.log('QTY_PICKED_altStep:', altStepItem.qtyPicked);
-    let poolIdx = alternativesPool.findIndex((element) => element.id === keyAltStep);
-
-    if (altStepItem.qtyPicked > 0) {
-      allocateQtyAvailable({
-        idx: poolIdx,
-        draftDataStored,
-        stepId,
-        qtyToAllocate: altStepItem.qtyPicked,
-      });
-    } else {
-      // delete the corresponding genStep as the BE says there is no qtyPicked for it
-      delete draftStep.altSteps.genSteps[keyAltStep];
-    }
-  }
-
-  for (let idx = 0; idx < alternativesPool.length; idx++) {
-    deallocateQtyAvailable({ idx, stepId, draftDataStored });
-  }
-
-  for (let idx = 0; idx < alternativesPool.length; idx++) {
-    if (qtyToAllocateRemaining === 0) {
-      break;
-    } else {
-      const alternativesPoolItem = alternativesPool[idx];
-      const qtyAvailableToAllocateInThisStep = computeQtyAvailableToAllocate({ alternativesPoolItem });
-
-      const qtyToAllocateThisStep = Math.min(qtyToAllocateRemaining, qtyAvailableToAllocateInThisStep);
-
-      draftStep.altSteps.genSteps[alternativesPoolItem.id] = {
-        id: alternativesPoolItem.id,
-        locatorName: alternativesPoolItem.locatorName,
-        huBarcode: alternativesPoolItem.huBarcode,
-        uom: alternativesPoolItem.uom,
-        qtyAvailable: qtyToAllocateThisStep,
-        qtyPicked: 0,
-      };
-
-      allocateQtyAvailable({
-        idx,
-        draftDataStored,
-        stepId,
-        qtyToAllocate: qtyToAllocateThisStep,
-      });
-
-      qtyToAllocateRemaining = qtyToAllocateRemaining - qtyToAllocateThisStep;
-    }
-  }
-
-  return draftDataStored;
-};
-
 registerHandler({
   componentType: COMPONENT_TYPE,
   normalizeComponentProps: ({ componentProps }) => {
@@ -368,19 +302,21 @@ registerHandler({
     const { lines } = fromActivity.componentProps;
     console.log('componentType =>', componentType);
     console.log('FROM activity:', fromActivity);
+    let genSteps = {};
 
     // loop within steps
     for (let lineIdx = 0; lineIdx < lines.length; lineIdx++) {
       for (let stepIdx = 0; stepIdx < lines[lineIdx].steps.length; stepIdx++) {
         let step = lines[lineIdx].steps[stepIdx];
-        let { qtyRejected } = lines[lineIdx].steps[stepIdx].mainPickFrom;
+        // let { qtyRejected } = lines[lineIdx].steps[stepIdx].mainPickFrom;
 
+        // allocateQtys in sync with the data received from the BE
         let pickFromAlternatives = fromActivity.componentProps.pickFromAlternatives;
         for (let altKey in pickFromAlternatives) {
-          console.log('StepHERE:', step);
-          console.log('pickFromAlternatives[altKey]= ', pickFromAlternatives[altKey].id);
-          console.log('QTY:', step.pickFromAlternatives[pickFromAlternatives[altKey].id].qtyPicked);
           if (step.pickFromAlternatives[pickFromAlternatives[altKey].id].qtyPicked > 0) {
+            genSteps[pickFromAlternatives[altKey].id] = pickFromAlternatives[altKey];
+            genSteps[pickFromAlternatives[altKey].id].qtyPicked =
+              step.pickFromAlternatives[pickFromAlternatives[altKey].id].qtyPicked;
             pickFromAlternatives[altKey].allocatedQtys = {
               [pickFromAlternatives[altKey].id]: step.pickFromAlternatives[pickFromAlternatives[altKey].id].qtyPicked,
             };
@@ -391,17 +327,20 @@ registerHandler({
         draftActivityDataStored.dataStored.lines[lineIdx].steps[step.pickingStepId].pickFromAlternatives =
           pickFromAlternatives;
 
+        console.log('GenSteps:', genSteps);
+        draftActivityDataStored.dataStored.lines[lineIdx].steps[step.pickingStepId].altSteps.genSteps = genSteps;
+
         // if we have qtyRejected in the mainPickFrom clear the previous genSteps
-        if (qtyRejected) {
-          draftActivityDataStored.dataStored.lines[lineIdx].steps[step.pickingStepId].altSteps.genSteps = {};
-          // then regenerate
-          generateAlternativeStepsPostBackendFetch({
-            draftDataStored: draftActivityDataStored.dataStored,
-            qtyToAllocate: qtyRejected,
-            lineId: lineIdx,
-            stepId: step.pickingStepId,
-          });
-        }
+        // if (qtyRejected) {
+        //   draftActivityDataStored.dataStored.lines[lineIdx].steps[step.pickingStepId].altSteps.genSteps = {};
+        //   // then regenerate
+        //   draftActivityDataStored.dataStored = generateAlternativeStepsPostBackendFetch({
+        //     draftDataStored: draftActivityDataStored.dataStored,
+        //     qtyToAllocate: qtyRejected,
+        //     lineId: lineIdx,
+        //     stepId: step.pickingStepId,
+        //   });
+        // }
       }
     }
     return draftActivityDataStored;
