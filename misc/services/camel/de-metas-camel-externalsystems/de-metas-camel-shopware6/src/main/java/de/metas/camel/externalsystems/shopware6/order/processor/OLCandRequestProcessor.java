@@ -39,6 +39,7 @@ import de.metas.common.bpartner.v2.response.JsonResponseBPartnerCompositeUpsert;
 import de.metas.common.bpartner.v2.response.JsonResponseBPartnerCompositeUpsertItem;
 import de.metas.common.bpartner.v2.response.JsonResponseUpsertItem;
 import de.metas.common.externalsystem.JsonExternalSystemShopware6ConfigMapping;
+import de.metas.common.externalsystem.JsonProductLookup;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateBulkRequest;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateRequest;
 import de.metas.common.ordercandidates.v2.request.JsonOrderDocType;
@@ -52,6 +53,7 @@ import de.metas.common.util.CoalesceUtil;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
+import org.apache.camel.RuntimeCamelException;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -140,7 +142,7 @@ public class OLCandRequestProcessor implements Processor
 		}
 
 		orderLines.stream()
-				.map(orderLine -> processOrderLine(olCandCreateRequestBuilder, orderLine))
+				.map(orderLine -> processOrderLine(olCandCreateRequestBuilder, orderLine, context.getJsonProductLookup()))
 				.forEach(olCandCreateBulkRequestBuilder::request);
 
 		final TaxProductIdProvider taxProductIdProvider = context.getTaxProductIdProvider();
@@ -260,7 +262,8 @@ public class OLCandRequestProcessor implements Processor
 
 	private JsonOLCandCreateRequest processOrderLine(
 			@NonNull final JsonOLCandCreateRequest.JsonOLCandCreateRequestBuilder olCandCreateRequestBuilder,
-			@NonNull final JsonOrderLine orderLine)
+			@NonNull final JsonOrderLine orderLine,
+			@NonNull final JsonProductLookup lookup)
 	{
 		final JsonOrderLineGroup jsonOrderLineGroup = getJsonOrderLineGroup(orderLine);
 
@@ -269,18 +272,9 @@ public class OLCandRequestProcessor implements Processor
 				? ZERO
 				: orderLine.getUnitPrice();
 
-		final String productIdentifier;
-		if (orderLine.getPayload() != null && Check.isNotBlank(orderLine.getPayload().getProductNumber()))
-		{
-			productIdentifier = VALUE_PREFIX + "-" + orderLine.getPayload().getProductNumber();
-		}
-		else
-		{
-			productIdentifier = ExternalIdentifierFormat.formatExternalId(orderLine.getProductId());
-		}
 		return olCandCreateRequestBuilder
 				.externalLineId(orderLine.getId())
-				.productIdentifier(productIdentifier)
+				.productIdentifier(getProductIdentifier(orderLine, lookup))
 				.price(price)
 				.qty(orderLine.getQuantity())
 				.description(orderLine.getDescription())
@@ -410,5 +404,27 @@ public class OLCandRequestProcessor implements Processor
 						.qty(BigDecimal.ONE)
 						.build()
 		);
+	}
+
+	@NonNull
+	private String getProductIdentifier(@NonNull final JsonOrderLine orderLine, @NonNull final JsonProductLookup lookup)
+	{
+		if (orderLine.getPayload() == null || Check.isBlank(orderLine.getPayload().getProductNumber()))
+		{
+			return ExternalIdentifierFormat.formatExternalId(orderLine.getProductIdNotNull());
+		}
+
+		switch (lookup)
+		{
+			case ProductNumber -> {
+				return VALUE_PREFIX + "-" + orderLine.getPayload().getProductNumber();
+			}
+
+			case ProductId -> {
+				return ExternalIdentifierFormat.formatExternalId(orderLine.getProductIdNotNull());
+			}
+
+			default -> throw new RuntimeCamelException("Unsupported JsonProductLookupMode " + lookup);
+		}
 	}
 }

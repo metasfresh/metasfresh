@@ -42,6 +42,7 @@ import de.metas.externalsystem.rabbitmqhttp.ExternalSystemRabbitMQConfigId;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6Config;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6ConfigId;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6ConfigMapping;
+import de.metas.externalsystem.shopware6.ProductLookup;
 import de.metas.externalsystem.woocommerce.ExternalSystemWooCommerceConfig;
 import de.metas.externalsystem.woocommerce.ExternalSystemWooCommerceConfigId;
 import de.metas.pricing.PriceListId;
@@ -395,6 +396,7 @@ public class ExternalSystemConfigRepo
 				.bPartnerLocationIdJSONPath(config.getJSONPathConstantBPartnerLocationID())
 				.salesRepJSONPath(config.getJSONPathSalesRepID())
 				.isActive(config.isActive())
+				.productLookup(ProductLookup.ofCode(config.getProductLookup()))
 				.build();
 	}
 
@@ -570,6 +572,8 @@ public class ExternalSystemConfigRepo
 		record.setJSONPathSalesRepID(config.getSalesRepJSONPath());
 
 		record.setIsActive(config.getIsActive());
+
+		record.setProductLookup(config.getProductLookup().getCode());
 
 		if (config.getFreightCostNormalVatConfig() != null)
 		{
