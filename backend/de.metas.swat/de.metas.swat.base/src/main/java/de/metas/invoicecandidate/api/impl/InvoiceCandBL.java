@@ -2134,6 +2134,14 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			{
 				for (final I_C_Invoice_Candidate candidate : invoiceCandDAO.retrieveIcForIl(ilRecord))
 				{
+					final InvoiceRule candidateInvoiceRule = InvoiceRule.ofCode(candidate.getInvoiceRule());
+
+					if (!canCloseBasedOnInvoiceRule(candidateInvoiceRule))
+					{
+						logger.debug("candidate.invoiceRule={} ; => not closing invoice candidate with id={}", candidateInvoiceRule, candidate.getC_Invoice_Candidate_ID());
+						continue;
+					}
+
 					try (final MDCCloseable candidateMDC = TableRecordMDC.putTableRecordReference(candidate))
 					{
 						if (ilRecord.getQtyInvoiced().compareTo(candidate.getQtyOrdered()) < 0)
@@ -2150,6 +2158,20 @@ public class InvoiceCandBL implements IInvoiceCandBL
 					}
 				}
 			}
+		}
+	}
+
+	private boolean canCloseBasedOnInvoiceRule(@NonNull final InvoiceRule candidateInvoiceRule)
+	{
+		switch (candidateInvoiceRule)
+		{
+			case AfterDelivery:
+			case AfterOrderDelivered:
+			case CustomerScheduleAfterDelivery:
+			case OrderCompletelyDelivered:
+				return true;
+			default:
+				return false;
 		}
 	}
 
