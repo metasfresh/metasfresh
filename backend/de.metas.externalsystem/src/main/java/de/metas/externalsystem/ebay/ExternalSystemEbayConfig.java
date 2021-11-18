@@ -36,6 +36,8 @@ public class ExternalSystemEbayConfig implements IExternalSystemChildConfig
 	@NonNull
 	ExternalSystemParentConfigId parentId;
 	@NonNull
+	String value;
+	@NonNull
 	String appId;
 	@NonNull
 	String certId;
@@ -50,6 +52,7 @@ public class ExternalSystemEbayConfig implements IExternalSystemChildConfig
 	public ExternalSystemEbayConfig(
 			@NonNull final ExternalSystemEbayConfigId id,
 			@NonNull final ExternalSystemParentConfigId parentId,
+			@NonNull final String value,
 			@NonNull final String appId,
 			@NonNull final String certId,
 			@NonNull final String devId,
@@ -58,6 +61,7 @@ public class ExternalSystemEbayConfig implements IExternalSystemChildConfig
 	{
 		this.id = id;
 		this.parentId = parentId;
+		this.value = value;
 		this.appId = appId;
 		this.certId = certId;
 		this.devId = devId;
@@ -70,4 +74,5 @@ public class ExternalSystemEbayConfig implements IExternalSystemChildConfig
 	{
 		return (ExternalSystemEbayConfig)childConfig;
 	}
+
 }

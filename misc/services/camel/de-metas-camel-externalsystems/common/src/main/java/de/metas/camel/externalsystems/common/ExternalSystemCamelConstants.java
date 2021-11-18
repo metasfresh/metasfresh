@@ -31,6 +31,10 @@ public class ExternalSystemCamelConstants
 	public static final String HEADER_BPARTNER_IDENTIFIER = "bPartnerIdentifier";
 	public static final String HEADER_PINSTANCE_ID = "pInstanceId";
 	public static final String HEADER_PRICE_LIST_VERSION_IDENTIFIER = "priceListVersionIdentifier";
+	public static final String HEADER_TARGET_ROUTE = "targetRoute";
+	public static final String HEADER_EXTERNAL_SYSTEM_VALUE = "externalSystemValue";
+	public static final String HEADER_AUDIT_TRAIL = "auditTrailEndpoint";
+	public static final String HEADER_TRACE_ID = "traceId";
 
 	public static final String MF_UPSERT_BPARTNER_CAMEL_URI = "metasfresh.upsert-bpartner.camel.uri";
 
@@ -56,9 +60,6 @@ public class ExternalSystemCamelConstants
 
 	public static final String MF_UPSERT_EXTERNALREFERENCE_CAMEL_URI = "metasfresh.upsert-externalreference.camel.uri";
 
-	public static final String ROUTE_PROPERTY_RAW_DATA = "GetOrdersRawData";
-	public static final String STORE_RAW_DATA_URI = "externalSystem.raw-data.uri";
-
 	public static final String MF_ERROR_ROUTE_ID = "Error-Route";
 
 	public static final String MF_LOG_MESSAGE_ROUTE_ID = "Log-Message-Route";
@@ -73,11 +74,13 @@ public class ExternalSystemCamelConstants
 
 	public static final String MF_UPSERT_RUNTIME_PARAMETERS_ROUTE_ID = "To-MF_UpsertRuntimeParameters-Route";
 
-	public static final String STORE_RAW_DATA_ROUTE = "Store-Raw-Data-Route";
-
 	public static final String MF_ATTACHMENT_ROUTE_ID = "To-MF_PushAttachment-Route";
 
 	public static final String MF_ENQUEUE_PURCHASE_CANDIDATES_V2_CAMEL_URI = "To-MF_Enqueue_Purchases_Candidate-Route";
+
+	public static final String MF_SEQ_NO_ROUTE_ID = "To-MF_Seq_No-Route";
+
+	public static final String MF_SEQ_NO_V2_URI = "metasfresh.seqno.v2.api.uri";
 
 	public static final String REST_WOOCOMMERCE_PATH = "/woocommerce";
 

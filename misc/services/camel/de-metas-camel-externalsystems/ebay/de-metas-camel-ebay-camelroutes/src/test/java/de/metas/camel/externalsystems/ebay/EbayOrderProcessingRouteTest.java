@@ -178,7 +178,9 @@ public class EbayOrderProcessingRouteTest
 				"command",
 				null,
 				JsonMetasfreshId.of(1),
-				parameters);
+				parameters,
+				"traceId",
+				"auditendpoint");
 
 		// put mock clients into body
 		Map<String, Object> body = new HashMap<>();
