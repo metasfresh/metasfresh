@@ -910,8 +910,10 @@ public class HUTransformService
 
 			return ImmutableList.of(newLuHU);
 		}
-
-		return tuToTopLevelHUs(sourceTuHU, qtyTU, luPIItem, isOwnPackingMaterials);
+		else
+		{
+			return tuToTopLevelHUs(sourceTuHU, qtyTU, luPIItem, isOwnPackingMaterials);
+		}
 	}
 
 	/**
