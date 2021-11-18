@@ -17,12 +17,15 @@ export const workflowReducer = ({ draftState, action }) => {
         };
       }
 
-      mergeWFProcessToState({
+      console.log('**** BUG **** ===----->', draftWFProcess);
+      const resultOfMerge = mergeWFProcessToState({
         draftWFProcess: draftWFProcess,
         fromWFProcess,
       });
 
-      draftState[fromWFProcess.id] = draftWFProcess;
+      draftState[fromWFProcess.id] = resultOfMerge;
+
+      console.log('OOOOO:', original(draftState));
       return draftState;
     }
 

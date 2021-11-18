@@ -73,6 +73,8 @@ export const mergeWFProcessToState = ({ draftWFProcess, fromWFProcess }) => {
   });
 
   updateUserEditable({ draftWFProcess });
+
+  return draftWFProcess;
 };
 
 const mergeActivitiesToState = ({ draftActivities, fromActivities }) => {
