@@ -367,12 +367,20 @@ registerHandler({
   mergeActivityDataStored: ({ componentType, draftActivityDataStored, fromActivity }) => {
     const { lines } = fromActivity.componentProps;
     console.log('componentType =>', componentType);
+    console.log('FROM activity:', fromActivity);
 
     // loop within steps
     for (let lineIdx = 0; lineIdx < lines.length; lineIdx++) {
       for (let stepIdx = 0; stepIdx < lines[lineIdx].steps.length; stepIdx++) {
         let step = lines[lineIdx].steps[stepIdx];
         let { qtyRejected } = lines[lineIdx].steps[stepIdx].mainPickFrom;
+
+        let pickFromAlternatives = fromActivity.componentProps.pickFromAlternatives;
+        for (let altKey in pickFromAlternatives) {
+          pickFromAlternatives[altKey].allocatedQtys = {};
+        }
+        draftActivityDataStored.dataStored.lines[lineIdx].steps[step.pickingStepId].pickFromAlternatives =
+          pickFromAlternatives;
 
         // if we have qtyRejected in the mainPickFrom clear the previous genSteps
         if (qtyRejected) {
