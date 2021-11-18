@@ -274,7 +274,8 @@ public class PPOrderLineRow implements IViewRow
 		this.processed = processed;
 		this.issueOrReceiveCandidateStatus = null;
 
-		this.product = JSONLookupValueTool.createProductLookupValue(ppOrderBomLine.getM_Product());
+		final ProductId productId = ProductId.ofRepoId(ppOrderBomLine.getM_Product_ID());
+		this.product = JSONLookupValueTool.createProductLookupValue(Services.get(IProductDAO.class).getById(productId));
 		this.uom = JSONLookupValueTool.createUOMLookupValue(qtyPlan.getUOM());
 
 		this.packingInfo = packingInfoOrNull;
