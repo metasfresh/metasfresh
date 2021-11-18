@@ -43,7 +43,7 @@ const mapStateToProps = (state, ownProps) => {
   const wfProcess = selectWFProcessFromState(state, wfProcessId);
   const activity = wfProcess && wfProcess.activities ? wfProcess.activities[activityId] : null;
 
-  const lineProps = activity != null ? activity.componentProps.lines[lineId] : null;
+  const lineProps = activity != null ? activity.dataStored.lines[lineId] : null;
   const stepsById = lineProps != null ? lineProps.steps : {};
 
   const appId = state.applications.activeApplication ? state.applications.activeApplication.id : null;

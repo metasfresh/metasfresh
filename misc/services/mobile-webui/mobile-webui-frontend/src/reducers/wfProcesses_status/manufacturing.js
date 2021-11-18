@@ -2,7 +2,7 @@ import * as types from '../../constants/ManufacturingActionTypes';
 import { registerHandler } from './activityStateHandlers';
 import { computeLineStatus, updateActivityStatusFromLines } from './picking';
 
-const COMPONENT_TYPE = 'manufacturing/rawMaterialIssue';
+const COMPONENT_TYPE = 'manufacturing/rawMaterialsIssue';
 
 export const manufacturingReducer = ({ draftState, action }) => {
   switch (action.type) {
@@ -17,14 +17,12 @@ export const manufacturingReducer = ({ draftState, action }) => {
 };
 
 const reduceOnUpdateQtyPicked = (draftState, payload) => {
-  const { wfProcessId, activityId, lineId, qtyIssued } = payload;
-
-  console.log('PAYLOAD: ', payload);
+  const { wfProcessId, activityId, lineId, qtyPicked } = payload;
 
   const draftWFProcess = draftState[wfProcessId];
   const draftActivityLine = draftWFProcess.activities[activityId].dataStored.lines[lineId];
 
-  draftActivityLine.qtyIssued = qtyIssued;
+  draftActivityLine.qtyIssued = qtyPicked;
 
   updateLineStatus({
     draftWFProcess,

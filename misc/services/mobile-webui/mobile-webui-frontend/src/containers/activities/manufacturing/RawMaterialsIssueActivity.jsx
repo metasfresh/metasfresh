@@ -6,15 +6,12 @@ import * as CompleteStatus from '../../../constants/CompleteStatus';
 
 const RawMaterialsIssueActivity = (props) => {
   const {
-    activityState: {
-      componentProps: { lines },
-      dataStored,
-    },
+    activityState: { dataStored },
     wfProcessId,
     id,
   } = props;
   const data = dataStored ? dataStored : {};
-  const { completeStatus, isUserEditable } = data;
+  const { isUserEditable, lines } = data;
 
   return (
     <div className="mfg-rawMaterialsIssue-activity-container mt-5">
@@ -30,7 +27,7 @@ const RawMaterialsIssueActivity = (props) => {
                 lineId={lineId}
                 caption={lineItem.productName}
                 isUserEditable={isUserEditable}
-                completeStatus={completeStatus || CompleteStatus.NOT_STARTED}
+                completeStatus={lineItem.completeStatus || CompleteStatus.NOT_STARTED}
                 qtyIssued={lineItem.qtyIssued}
                 qtyToIssue={lineItem.qtyToIssue}
                 uom={lineItem.uom}

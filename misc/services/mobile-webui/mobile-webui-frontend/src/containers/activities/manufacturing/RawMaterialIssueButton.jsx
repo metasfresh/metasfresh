@@ -95,7 +95,7 @@ class RawMaterialIssueButton extends PureComponent {
 RawMaterialIssueButton.propTypes = {
   //
   // Props
-  onClick: PropTypes.string.isRequired,
+  onClick: PropTypes.func.isRequired,
   line: PropTypes.object.isRequired,
 };
 
