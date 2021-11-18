@@ -2,15 +2,21 @@ package de.metas.manufacturing.workflows_api.activity_handlers;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
+import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHUPIItemProductDAO;
+import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.model.I_M_HU_PI;
+import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.manufacturing.job.model.FinishedGoodsReceive;
 import de.metas.manufacturing.job.model.FinishedGoodsReceiveLine;
 import de.metas.manufacturing.job.model.ManufacturingJob;
 import de.metas.manufacturing.job.model.ManufacturingJobActivity;
 import de.metas.manufacturing.job.model.ManufacturingJobActivityId;
 import de.metas.manufacturing.workflows_api.activity_handlers.json.JsonFinishedGoodsReceiveLine;
-import de.metas.manufacturing.workflows_api.activity_handlers.json.JsonReceiveToNewPackingMaterialTarget;
+import de.metas.manufacturing.workflows_api.activity_handlers.json.JsonAggregateToNewLU;
+import de.metas.product.ProductId;
 import de.metas.util.Services;
 import de.metas.workflow.rest_api.controller.v2.json.JsonOpts;
 import de.metas.workflow.rest_api.model.UIComponent;
@@ -26,6 +32,8 @@ import org.compiere.util.Env;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 @Component
@@ -34,6 +42,7 @@ public class MaterialReceiptActivityHandler implements WFActivityHandler
 	public static final WFActivityType HANDLED_ACTIVITY_TYPE = WFActivityType.ofString("manufacturing.materialReceipt");
 	private static final UIComponentType COMPONENT_TYPE = UIComponentType.ofString("manufacturing/materialReceipt");
 
+	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final IHUPIItemProductDAO huPIItemProductDAO = Services.get(IHUPIItemProductDAO.class);
 
 	@Override
@@ -64,19 +73,36 @@ public class MaterialReceiptActivityHandler implements WFActivityHandler
 			@Nullable final BPartnerId customerId,
 			@NonNull final JsonOpts jsonOpts)
 	{
-		final ImmutableList<JsonReceiveToNewPackingMaterialTarget> availablePackingMaterials = huPIItemProductDAO.retrieveTUs(Env.getCtx(), line.getProductId(), customerId, true)
-				.stream()
-				.map(this::toJson)
-				.collect(ImmutableList.toImmutableList());
+		final List<JsonAggregateToNewLU> availablePackingMaterials = getAvailablePackingMaterials(line.getProductId(), customerId);
+
 		return JsonFinishedGoodsReceiveLine.of(line, availablePackingMaterials, jsonOpts);
 	}
 
-	private JsonReceiveToNewPackingMaterialTarget toJson(final I_M_HU_PI_Item_Product record)
+	@NonNull
+	private List<JsonAggregateToNewLU> getAvailablePackingMaterials(final ProductId productId, final @Nullable BPartnerId customerId)
 	{
-		return JsonReceiveToNewPackingMaterialTarget.builder()
-				.id(String.valueOf(record.getM_HU_PI_Item_Product_ID()))
-				.caption(record.getName())
-				.build();
+		final ArrayList<JsonAggregateToNewLU> availablePackingMaterials = new ArrayList<>();
+		final List<I_M_HU_PI_Item_Product> tuPIItemProducts = huPIItemProductDAO.retrieveTUs(Env.getCtx(), productId, customerId, true);
+		for (final I_M_HU_PI_Item_Product tuPIItemProduct : tuPIItemProducts)
+		{
+			final HuPackingInstructionsId tuPIId = HuPackingInstructionsId.ofRepoId(tuPIItemProduct.getM_HU_PI_Item().getM_HU_PI_Version().getM_HU_PI_ID());
+
+			final List<I_M_HU_PI_Item> luPI_Items = handlingUnitsDAO.retrieveParentPIItemsForParentPI(
+					tuPIId,
+					X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit,
+					customerId);
+
+			for (final I_M_HU_PI_Item luPI_Item : luPI_Items)
+			{
+				final I_M_HU_PI luPI = luPI_Item.getM_HU_PI_Version().getM_HU_PI();
+				availablePackingMaterials.add(
+						JsonAggregateToNewLU.builder()
+								.luPIItemId(HuPackingInstructionsId.ofRepoId(luPI_Item.getM_HU_PI_Item_ID()).getRepoId())
+								.caption(luPI.getName())
+								.build());
+			}
+		}
+		return availablePackingMaterials;
 	}
 
 	@Override

@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.Multimaps;
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HUBarcode;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueSchedule;
 import de.metas.manufacturing.job.model.FinishedGoodsReceive;
 import de.metas.manufacturing.job.model.FinishedGoodsReceiveLine;
@@ -67,6 +68,7 @@ public class ManufacturingJobLoader
 				.responsibleId(UserId.ofRepoId(ppOrder.getAD_User_Responsible_ID()))
 				.activities(routing.getActivities()
 						.stream()
+						.sorted(Comparator.comparing(activity -> activity.getCode().getAsString()))
 						.map(this::toJobActivity)
 						.collect(ImmutableList.toImmutableList()))
 				.build();
@@ -223,7 +225,8 @@ public class ManufacturingJobLoader
 				.productName(supportingServices.getProductName(productId))
 				.qtyToReceive(orderQuantities.getQtyRequiredToProduce())
 				.qtyReceived(orderQuantities.getQtyReceived())
-				.isByOrCoProduct(true)
+				.coProductBOMLineId(null)
+				.aggregateToLUId(HuId.ofRepoIdOrNull(ppOrder.getCurrent_Receiving_LU_HU_ID()))
 				.build();
 
 	}
@@ -245,7 +248,7 @@ public class ManufacturingJobLoader
 				.productName(supportingServices.getProductName(productId))
 				.qtyToReceive(bomLineQuantities.getQtyRequired().negate())
 				.qtyReceived(bomLineQuantities.getQtyIssuedOrReceived().negate())
-				.isByOrCoProduct(true)
+				.coProductBOMLineId(PPOrderBOMLineId.ofRepoId(orderBOMLine.getPP_Order_BOMLine_ID()))
 				.build();
 	}
 }

@@ -44,4 +44,13 @@ public class ManufacturingJob
 		final ImmutableList<ManufacturingJobActivity> activitiesNew = CollectionUtils.map(activities, activity -> activity.withChangedRawMaterialsIssueStep(issueScheduleId, mapper));
 		return withActivities(activitiesNew);
 	}
+
+	public ManufacturingJob withChangedReceiveLine(
+			@NonNull final FinishedGoodsReceiveLineId id,
+			@NonNull UnaryOperator<FinishedGoodsReceiveLine> mapper)
+	{
+		final ImmutableList<ManufacturingJobActivity> activitiesNew = CollectionUtils.map(activities, activity -> activity.withChangedReceiveLine(id, mapper));
+		return withActivities(activitiesNew);
+	}
+
 }

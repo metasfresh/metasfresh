@@ -22,6 +22,7 @@ public class ManufacturingJobActivity
 
 	@With
 	@Nullable RawMaterialsIssue rawMaterialsIssue;
+	@With
 	@Nullable FinishedGoodsReceive finishedGoodsReceive;
 
 	@NonNull PPOrderRoutingActivityId orderRoutingActivityId;
@@ -40,4 +41,19 @@ public class ManufacturingJobActivity
 			return this;
 		}
 	}
+
+	public ManufacturingJobActivity withChangedReceiveLine(
+			@NonNull final FinishedGoodsReceiveLineId id,
+			@NonNull UnaryOperator<FinishedGoodsReceiveLine> mapper)
+	{
+		if (finishedGoodsReceive != null)
+		{
+			return withFinishedGoodsReceive(finishedGoodsReceive.withChangedReceiveLine(id, mapper));
+		}
+		else
+		{
+			return this;
+		}
+	}
+
 }
