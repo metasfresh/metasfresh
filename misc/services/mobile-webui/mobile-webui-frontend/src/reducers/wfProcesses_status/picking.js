@@ -301,7 +301,6 @@ registerHandler({
   mergeActivityDataStored: ({ componentType, draftActivityDataStored, fromActivity }) => {
     const { lines } = fromActivity.componentProps;
     console.log('componentType =>', componentType);
-    console.log('FROM activity:', fromActivity);
     let genSteps = {};
 
     // loop within steps
@@ -329,18 +328,6 @@ registerHandler({
 
         console.log('GenSteps:', genSteps);
         draftActivityDataStored.dataStored.lines[lineIdx].steps[step.pickingStepId].altSteps.genSteps = genSteps;
-
-        // if we have qtyRejected in the mainPickFrom clear the previous genSteps
-        // if (qtyRejected) {
-        //   draftActivityDataStored.dataStored.lines[lineIdx].steps[step.pickingStepId].altSteps.genSteps = {};
-        //   // then regenerate
-        //   draftActivityDataStored.dataStored = generateAlternativeStepsPostBackendFetch({
-        //     draftDataStored: draftActivityDataStored.dataStored,
-        //     qtyToAllocate: qtyRejected,
-        //     lineId: lineIdx,
-        //     stepId: step.pickingStepId,
-        //   });
-        // }
       }
     }
     return draftActivityDataStored;

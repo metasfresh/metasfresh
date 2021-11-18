@@ -106,14 +106,13 @@ const mergeActivityToState = ({ draftActivity, fromActivity }) => {
         componentProps: componentPropsNormalized,
       }),
     };
-  } else {
-    // draftActivity.dataStored =
-    mergeActivityDataStored({
-      componentType: draftActivity.componentType,
-      draftActivityDataStored: draftActivity,
-      fromActivity,
-    });
   }
+
+  mergeActivityDataStored({
+    componentType: draftActivity.componentType,
+    draftActivityDataStored: draftActivity,
+    fromActivity,
+  });
 
   const completeStatus = computeActivityStatus({ draftActivity });
   if (completeStatus != null) {
