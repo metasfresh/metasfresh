@@ -126,8 +126,7 @@ public class AddressDescriptorFactory
 				.setWidgetType(DocumentFieldWidgetType.Text)
 				.setDataBinding(new AddressFieldBinding(IAddressModel.COLUMNNAME_Address2, false, I_C_Location::getAddress2, AddressFieldBinding::writeValue_Address2)));
 
-		final boolean allowAddress3 = isShowAddress3();
-		if(allowAddress3)
+		if(isShowAddress3())
 		{
 			addressDescriptor.addField(buildFieldDescriptor(IAddressModel.COLUMNNAME_Address3)
 					.setValueClass(String.class)
@@ -135,8 +134,7 @@ public class AddressDescriptorFactory
 					.setDataBinding(new AddressFieldBinding(IAddressModel.COLUMNNAME_Address3, false, I_C_Location::getAddress3, AddressFieldBinding::writeValue_Address3)));
 		}
 
-		final boolean showAddress4 = isShowAddress4();
-		if(showAddress4)
+		if(isShowAddress4())
 		{
 			addressDescriptor.addField(buildFieldDescriptor(IAddressModel.COLUMNNAME_Address4)
 					.setValueClass(String.class)
