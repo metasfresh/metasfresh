@@ -66,7 +66,7 @@ public class AddressDescriptorFactory
 	private static final String SYSCONFIG_ShowAddress3 = "de.metas.ui.web.address.ShowAddress3";
 	private static final String SYSCONFIG_ShowAddress4 = "de.metas.ui.web.address.ShowAddress4";
 
-	private ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	public AddressDescriptor getAddressDescriptor()
 	{
@@ -77,7 +77,7 @@ public class AddressDescriptorFactory
 	private boolean isUsePostalLookup()
 	{
 		final boolean defaultWhenNotFound = false; // don't use postal lookup by default
-		return Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_UsePostalLookup, defaultWhenNotFound);
+		return sysConfigBL.getBooleanValue(SYSCONFIG_UsePostalLookup, defaultWhenNotFound);
 
 	}
 
