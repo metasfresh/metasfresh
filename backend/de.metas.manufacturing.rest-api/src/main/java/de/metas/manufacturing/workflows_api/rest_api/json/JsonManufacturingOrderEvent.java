@@ -1,6 +1,7 @@
 package de.metas.manufacturing.workflows_api.rest_api.json;
 
 import de.metas.common.util.CoalesceUtil;
+import de.metas.manufacturing.workflows_api.activity_handlers.json.JsonAggregateToLU;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -37,6 +38,9 @@ public class JsonManufacturingOrderEvent
 	@Jacksonized
 	public static class ReceiveFrom
 	{
+		@NonNull String lineId;
+		@NonNull BigDecimal qtyReceived;
+		@NonNull JsonAggregateToLU aggregateToLU;
 	}
 
 	@Nullable ReceiveFrom receiveFrom;

@@ -1,10 +1,12 @@
 package de.metas.manufacturing.workflows_api;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.picking.QtyRejectedReasonCode;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleId;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleProcessRequest;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.manufacturing.job.model.FinishedGoodsReceiveLineId;
 import de.metas.manufacturing.job.model.ManufacturingJob;
 import de.metas.manufacturing.job.model.ManufacturingJobActivity;
 import de.metas.manufacturing.job.model.ManufacturingJobActivityId;
@@ -128,7 +130,13 @@ public class ManufacturingRestService
 		}
 		else if (event.getReceiveFrom() != null)
 		{
-			throw new UnsupportedOperationException(); // TODO implement Receipt endpoint
+			final JsonManufacturingOrderEvent.ReceiveFrom receiveFrom = event.getReceiveFrom();
+			return manufacturingJobService.receiveGoodsAndAggregateToLU(
+					job,
+					FinishedGoodsReceiveLineId.ofString(receiveFrom.getLineId()),
+					receiveFrom.getAggregateToLU(),
+					receiveFrom.getQtyReceived(),
+					SystemTime.asZonedDateTime());
 		}
 		else
 		{

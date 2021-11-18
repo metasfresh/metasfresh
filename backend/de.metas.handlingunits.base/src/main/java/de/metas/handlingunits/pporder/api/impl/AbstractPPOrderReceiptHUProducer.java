@@ -146,17 +146,15 @@ import java.util.Map;
 				throw new AdempiereException("Quantity to receive was not determined");
 			}
 
-			return createReceiptCandidatesAndPlanningHUs_InTrx(qtyCUsTotal);
+			return createReceiptCandidatesAndHUs(qtyCUsTotal);
 		});
 	}
 
 	@Override
 	public I_M_HU receiveVHU(@NonNull final Quantity qtyToReceive)
 	{
-		this.processReceiptCandidates = true;
 		this.receiveOneVHU = true;
-
-		final List<I_M_HU> vhus = trxManager.callInThreadInheritedTrx(() -> createReceiptCandidatesAndPlanningHUs_InTrx(qtyToReceive));
+		final List<I_M_HU> vhus = receiveHUs(qtyToReceive);
 
 		if (vhus.isEmpty())
 		{
@@ -172,7 +170,14 @@ import java.util.Map;
 		}
 	}
 
-	private List<I_M_HU> createReceiptCandidatesAndPlanningHUs_InTrx(@NonNull final Quantity qtyToReceive)
+	@Override
+	public List<I_M_HU> receiveHUs(@NonNull final Quantity qtyToReceive)
+	{
+		this.processReceiptCandidates = true;
+		return trxManager.callInThreadInheritedTrx(() -> createReceiptCandidatesAndHUs(qtyToReceive));
+	}
+
+	private List<I_M_HU> createReceiptCandidatesAndHUs(@NonNull final Quantity qtyToReceive)
 	{
 		//
 		// Create HU Context
@@ -473,7 +478,7 @@ import java.util.Map;
 
 			final LocatorId effectiveLocatorId = CoalesceUtil.coalesceSuppliers(
 					() -> locatorId,
-					() -> huTransaction.getLocatorId(),
+					huTransaction::getLocatorId,
 					() -> IHandlingUnitsBL.extractLocatorIdOrNull(topLevelHU));
 			if (effectiveLocatorId == null)
 			{
