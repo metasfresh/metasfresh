@@ -82,6 +82,12 @@ public class PayableDocument
 	@Getter
 	private final boolean creditMemo;
 
+	/** 
+	 * We need this when allocating the payment of a remittance advice (REMADV) against a credit-memo.
+	 * Because the REMADVS payment is diminished by the credit-memo, 
+	 * but there might be a payment-discount (skonto) that was held back when the original invoice was paid and which is now part of the current remittance payment. 
+	 * So we do need to allocate the positive-amount payment with the negative-amount credit-memo.  
+	 */
 	@Getter
 	private final boolean allowAllocateAgainstDifferentSignumPayment;
 	
