@@ -377,7 +377,16 @@ registerHandler({
 
         let pickFromAlternatives = fromActivity.componentProps.pickFromAlternatives;
         for (let altKey in pickFromAlternatives) {
-          pickFromAlternatives[altKey].allocatedQtys = {};
+          console.log('StepHERE:', step);
+          console.log('pickFromAlternatives[altKey]= ', pickFromAlternatives[altKey].id);
+          console.log('QTY:', step.pickFromAlternatives[pickFromAlternatives[altKey].id].qtyPicked);
+          if (step.pickFromAlternatives[pickFromAlternatives[altKey].id].qtyPicked > 0) {
+            pickFromAlternatives[altKey].allocatedQtys = {
+              [pickFromAlternatives[altKey].id]: step.pickFromAlternatives[pickFromAlternatives[altKey].id].qtyPicked,
+            };
+          } else {
+            pickFromAlternatives[altKey].allocatedQtys = {};
+          }
         }
         draftActivityDataStored.dataStored.lines[lineIdx].steps[step.pickingStepId].pickFromAlternatives =
           pickFromAlternatives;
