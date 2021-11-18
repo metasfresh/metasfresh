@@ -24,6 +24,7 @@ package de.metas.camel.externalsystems.grssignum.client;
 
 import de.metas.camel.externalsystems.common.CamelRouteUtil;
 import de.metas.camel.externalsystems.grssignum.client.model.DispatchRequest;
+import de.metas.common.util.Check;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.RuntimeCamelException;
@@ -93,9 +94,14 @@ public class GRSSignumDispatcherRouteBuilder extends RouteBuilder
 		final DispatchRequest dispatchMessageRequest = (DispatchRequest)dispatchMessageRequestCandidate;
 
 		exchange.getIn().removeHeaders("CamelHttp*");
-		exchange.getIn().setHeader(AUTHORIZATION, dispatchMessageRequest.getAuthToken());
 		exchange.getIn().setHeader(HTTP_URI, dispatchMessageRequest.getUrl());
 		exchange.getIn().setHeader(Exchange.HTTP_METHOD, HttpEndpointBuilderFactory.HttpMethods.PUT);
+
+		if (Check.isNotBlank(dispatchMessageRequest.getAuthToken()))
+		{
+			exchange.getIn().setHeader(AUTHORIZATION, dispatchMessageRequest.getAuthToken());
+		}
+
 		exchange.getIn().setBody(dispatchMessageRequest.getRequest());
 	}
 }
