@@ -38,7 +38,6 @@ export const computeActivityDataStoredInitialValue = ({ componentType, component
 
 export const mergeActivityDataStored = ({ componentType, draftActivityDataStored, fromActivity }) => {
   const componentHandlers = registeredHandlers[componentType];
-  console.log('CALLED ============================>', mergeActivityDataStored);
   if (componentHandlers && componentHandlers.mergeActivityDataStored) {
     return componentHandlers.mergeActivityDataStored({ componentType, draftActivityDataStored, fromActivity });
   } else {
