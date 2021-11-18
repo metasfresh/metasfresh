@@ -16,7 +16,6 @@ import de.metas.manufacturing.job.model.ManufacturingJobActivityId;
 import de.metas.manufacturing.job.model.RawMaterialsIssue;
 import de.metas.manufacturing.job.model.RawMaterialsIssueLine;
 import de.metas.manufacturing.job.model.RawMaterialsIssueStep;
-import de.metas.manufacturing.order.PPOrderAvailableHUToIssueMap;
 import de.metas.material.planning.pporder.OrderBOMLineQuantities;
 import de.metas.material.planning.pporder.PPOrderQuantities;
 import de.metas.organization.InstantAndOrgId;
@@ -49,7 +48,6 @@ public class ManufacturingJobLoader
 	private final HashMap<PPOrderId, PPOrderRouting> routings = new HashMap<>();
 	private final HashMap<PPOrderId, ImmutableList<I_PP_Order_BOMLine>> bomLines = new HashMap<>();
 	private final HashMap<PPOrderId, ImmutableListMultimap<PPOrderBOMLineId, PPOrderIssueSchedule>> issueSchedules = new HashMap<>();
-	private final HashMap<PPOrderId, PPOrderAvailableHUToIssueMap> availableHUsToIssueByOrderId = new HashMap<>();
 
 	public ManufacturingJobLoader(@NonNull final ManufacturingJobLoaderSupportingServices supportingServices)
 	{
@@ -71,7 +69,6 @@ public class ManufacturingJobLoader
 						.stream()
 						.map(this::toJobActivity)
 						.collect(ImmutableList.toImmutableList()))
-				.availableHUsToIssueMap(getAvailableHUToIssueMap(ppOrderId))
 				.build();
 	}
 
@@ -85,11 +82,6 @@ public class ManufacturingJobLoader
 		final PPOrderId ppOrderId = CollectionUtils.extractSingleElement(schedules, PPOrderIssueSchedule::getPpOrderId);
 		final ImmutableListMultimap<PPOrderBOMLineId, PPOrderIssueSchedule> schedulesByBOMLineId = Multimaps.index(schedules, PPOrderIssueSchedule::getPpOrderBOMLineId);
 		issueSchedules.put(ppOrderId, schedulesByBOMLineId);
-	}
-
-	public void addToCache(@NonNull final PPOrderId ppOrderId, @NonNull final PPOrderAvailableHUToIssueMap availableHUToIssueMap)
-	{
-		availableHUsToIssueByOrderId.put(ppOrderId, availableHUToIssueMap);
 	}
 
 	private I_PP_Order getPPOrderRecordById(final PPOrderId ppOrderId)
@@ -110,11 +102,6 @@ public class ManufacturingJobLoader
 	private ImmutableListMultimap<PPOrderBOMLineId, PPOrderIssueSchedule> getIssueSchedules(final PPOrderId ppOrderId)
 	{
 		return issueSchedules.computeIfAbsent(ppOrderId, supportingServices::getIssueSchedules);
-	}
-
-	private PPOrderAvailableHUToIssueMap getAvailableHUToIssueMap(final PPOrderId ppOrderId)
-	{
-		return availableHUsToIssueByOrderId.computeIfAbsent(ppOrderId, supportingServices::getAvailableHUToIssueMap);
 	}
 
 	private ManufacturingJobActivity toJobActivity(@NonNull final PPOrderRoutingActivity from)

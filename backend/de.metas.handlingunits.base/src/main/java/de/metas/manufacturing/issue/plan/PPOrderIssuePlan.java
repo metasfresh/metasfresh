@@ -13,6 +13,4 @@ public class PPOrderIssuePlan
 	@NonNull PPOrderId orderId;
 
 	@NonNull ImmutableList<PPOrderIssuePlanStep> steps;
-
-	@NonNull AlternativeIssueFromList alternatives;
 }

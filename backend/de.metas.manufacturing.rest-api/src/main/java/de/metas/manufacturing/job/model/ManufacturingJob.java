@@ -3,7 +3,6 @@ package de.metas.manufacturing.job.model;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleId;
-import de.metas.manufacturing.order.PPOrderAvailableHUToIssueMap;
 import de.metas.user.UserId;
 import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
@@ -29,8 +28,6 @@ public class ManufacturingJob
 
 	@With
 	@NonNull ImmutableList<ManufacturingJobActivity> activities;
-
-	@NonNull PPOrderAvailableHUToIssueMap availableHUsToIssueMap;
 
 	public ManufacturingJobActivity getActivityById(@NonNull ManufacturingJobActivityId id)
 	{

@@ -6,8 +6,6 @@ import com.google.common.collect.Multimaps;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueSchedule;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleService;
 import de.metas.i18n.ITranslatableString;
-import de.metas.manufacturing.order.PPOrderAvailableHUToIssueMap;
-import de.metas.manufacturing.order.PPOrderAvailableHUToIssueRepository;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.OrderBOMLineQuantities;
 import de.metas.material.planning.pporder.PPOrderQuantities;
@@ -39,7 +37,6 @@ public class ManufacturingJobLoaderSupportingServices
 	@NonNull IPPOrderBOMBL ppOrderBOMBL;
 	@NonNull IPPOrderRoutingRepository ppOrderRoutingRepository;
 	@NonNull PPOrderIssueScheduleService ppOrderIssueScheduleService;
-	@NonNull PPOrderAvailableHUToIssueRepository ppOrderAvailableHUToIssueRepository;
 
 	public ZoneId getTimeZone(final OrgId orgId) {return orgDAO.getTimeZone(orgId);}
 
@@ -60,10 +57,5 @@ public class ManufacturingJobLoaderSupportingServices
 	public ImmutableListMultimap<PPOrderBOMLineId, PPOrderIssueSchedule> getIssueSchedules(@NonNull final PPOrderId ppOrderId)
 	{
 		return Multimaps.index(ppOrderIssueScheduleService.getByOrderId(ppOrderId), PPOrderIssueSchedule::getPpOrderBOMLineId);
-	}
-
-	public PPOrderAvailableHUToIssueMap getAvailableHUToIssueMap(final PPOrderId ppOrderId)
-	{
-		return ppOrderAvailableHUToIssueRepository.getByOrderId(ppOrderId);
 	}
 }

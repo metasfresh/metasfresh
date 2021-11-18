@@ -10,7 +10,6 @@ import de.metas.manufacturing.job.model.ManufacturingJobActivity;
 import de.metas.manufacturing.job.model.ManufacturingJobActivityId;
 import de.metas.manufacturing.job.model.ManufacturingJobReference;
 import de.metas.manufacturing.job.service.commands.create_job.ManufacturingJobCreateCommand;
-import de.metas.manufacturing.order.PPOrderAvailableHUToIssueRepository;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.InstantAndOrgId;
@@ -42,17 +41,14 @@ public class ManufacturingJobService
 	private final IPPOrderBL ppOrderBL;
 	private final IPPOrderRoutingRepository ppOrderRoutingActivity;
 	private final PPOrderIssueScheduleService ppOrderIssueScheduleService;
-	private final PPOrderAvailableHUToIssueRepository ppOrderAvailableHUToIssueRepository;
 	private final HUReservationService huReservationService;
 	private final ManufacturingJobLoaderSupportingServices loadingSupportServices;
 
 	public ManufacturingJobService(
 			final PPOrderIssueScheduleService ppOrderIssueScheduleService,
-			final PPOrderAvailableHUToIssueRepository ppOrderAvailableHUToIssueRepository,
 			final HUReservationService huReservationService)
 	{
 		this.ppOrderIssueScheduleService = ppOrderIssueScheduleService;
-		this.ppOrderAvailableHUToIssueRepository = ppOrderAvailableHUToIssueRepository;
 		this.huReservationService = huReservationService;
 
 		this.loadingSupportServices = ManufacturingJobLoaderSupportingServices.builder()
@@ -63,7 +59,6 @@ public class ManufacturingJobService
 				.ppOrderBOMBL(Services.get(IPPOrderBOMBL.class))
 				.ppOrderRoutingRepository(ppOrderRoutingActivity = Services.get(IPPOrderRoutingRepository.class))
 				.ppOrderIssueScheduleService(ppOrderIssueScheduleService)
-				.ppOrderAvailableHUToIssueRepository(ppOrderAvailableHUToIssueRepository)
 				.build();
 	}
 
@@ -132,7 +127,6 @@ public class ManufacturingJobService
 				.ppOrderBL(ppOrderBL)
 				.huReservationService(huReservationService)
 				.ppOrderIssueScheduleService(ppOrderIssueScheduleService)
-				.orderAvailableHUToIssueRepository(ppOrderAvailableHUToIssueRepository)
 				.loadingSupportServices(loadingSupportServices)
 				//
 				.ppOrderId(ppOrderId)

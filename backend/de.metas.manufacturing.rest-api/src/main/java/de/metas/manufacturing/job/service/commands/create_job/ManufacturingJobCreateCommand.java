@@ -10,9 +10,6 @@ import de.metas.manufacturing.issue.plan.PPOrderIssuePlanStep;
 import de.metas.manufacturing.job.model.ManufacturingJob;
 import de.metas.manufacturing.job.service.ManufacturingJobLoader;
 import de.metas.manufacturing.job.service.ManufacturingJobLoaderSupportingServices;
-import de.metas.manufacturing.order.PPOrderAvailableHUToIssue;
-import de.metas.manufacturing.order.PPOrderAvailableHUToIssueMap;
-import de.metas.manufacturing.order.PPOrderAvailableHUToIssueRepository;
 import de.metas.user.UserId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -30,7 +27,6 @@ public class ManufacturingJobCreateCommand
 	private final IPPOrderBL ppOrderBL;
 	private final HUReservationService huReservationService;
 	private final PPOrderIssueScheduleService ppOrderIssueScheduleService;
-	private final PPOrderAvailableHUToIssueRepository orderAvailableHUToIssueRepository;
 	private final ManufacturingJobLoaderSupportingServices loadingSupportServices;
 
 	// Params
@@ -47,7 +43,6 @@ public class ManufacturingJobCreateCommand
 			@NonNull final IPPOrderBL ppOrderBL,
 			@NonNull final HUReservationService huReservationService,
 			@NonNull final PPOrderIssueScheduleService ppOrderIssueScheduleService,
-			@NonNull final PPOrderAvailableHUToIssueRepository orderAvailableHUToIssueRepository,
 			@NonNull final ManufacturingJobLoaderSupportingServices loadingSupportServices,
 			//
 			@NonNull final PPOrderId ppOrderId,
@@ -57,7 +52,6 @@ public class ManufacturingJobCreateCommand
 		this.ppOrderBL = ppOrderBL;
 		this.huReservationService = huReservationService;
 		this.ppOrderIssueScheduleService = ppOrderIssueScheduleService;
-		this.orderAvailableHUToIssueRepository = orderAvailableHUToIssueRepository;
 		this.loadingSupportServices = loadingSupportServices;
 
 		this.ppOrderId = ppOrderId;
@@ -79,7 +73,6 @@ public class ManufacturingJobCreateCommand
 		setResponsible();
 
 		final PPOrderIssuePlan plan = createIssuePlan();
-		createAvailableHUsToIssue(plan);
 		createIssueSchedules(plan);
 
 		return loader.load(ppOrderId);
@@ -111,23 +104,6 @@ public class ManufacturingJobCreateCommand
 				.ppOrderId(ppOrderId)
 				.build()
 				.execute();
-	}
-
-	private void createAvailableHUsToIssue(final PPOrderIssuePlan plan)
-	{
-		final PPOrderAvailableHUToIssueMap availableHUToIssueMap = plan.getAlternatives()
-				.stream()
-				.map(alternative -> PPOrderAvailableHUToIssue.builder()
-						.locatorId(alternative.getLocatorId())
-						.huId(alternative.getHuId())
-						.productId(alternative.getProductId())
-						.availableQty(alternative.getAvailableQty())
-						.build())
-				.collect(PPOrderAvailableHUToIssueMap.collect());
-
-		orderAvailableHUToIssueRepository.save(availableHUToIssueMap, ppOrderId);
-
-		loader.addToCache(ppOrderId, availableHUToIssueMap);
 	}
 
 	private void createIssueSchedules(final PPOrderIssuePlan plan)

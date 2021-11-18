@@ -66,12 +66,9 @@ public class PPOrderIssuePlanCreateCommand
 				.flatMap(this::createSteps)
 				.collect(ImmutableList.toImmutableList());
 
-		final AlternativeIssueFromList alternatives = computeAlternatives();
-
 		return PPOrderIssuePlan.builder()
 				.orderId(ppOrderId)
 				.steps(steps)
-				.alternatives(alternatives)
 				.build();
 	}
 
@@ -169,24 +166,4 @@ public class PPOrderIssuePlanCreateCommand
 	{
 		return LocatorId.ofRepoId(orderBOMLine.getM_Warehouse_ID(), orderBOMLine.getM_Locator_ID());
 	}
-
-	private AlternativeIssueFromList computeAlternatives()
-	{
-		return allocableHUsMap.getAllAllocableHUsInvolved()
-				.stream()
-				.filter(AllocableHU::hasQtyAvailable)
-				.map(PPOrderIssuePlanCreateCommand::toAlternativeIssueFrom)
-				.collect(AlternativeIssueFromList.collect());
-	}
-
-	private static AlternativeIssueFrom toAlternativeIssueFrom(final AllocableHU allocableHU)
-	{
-		return AlternativeIssueFrom.builder()
-				.locatorId(allocableHU.getLocatorId())
-				.huId(allocableHU.getHuId())
-				.productId(allocableHU.getProductId())
-				.availableQty(allocableHU.getQtyAvailableToAllocateInHuUom())
-				.build();
-	}
-
 }

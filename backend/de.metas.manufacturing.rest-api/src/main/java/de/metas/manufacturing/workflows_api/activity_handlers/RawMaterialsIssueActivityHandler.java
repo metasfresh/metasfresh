@@ -5,7 +5,6 @@ import de.metas.manufacturing.job.model.ManufacturingJob;
 import de.metas.manufacturing.job.model.ManufacturingJobActivity;
 import de.metas.manufacturing.job.model.ManufacturingJobActivityId;
 import de.metas.manufacturing.job.model.RawMaterialsIssue;
-import de.metas.manufacturing.workflows_api.activity_handlers.json.JsonAvailableHUToIssue;
 import de.metas.manufacturing.workflows_api.activity_handlers.json.JsonRawMaterialsIssueLine;
 import de.metas.workflow.rest_api.controller.v2.json.JsonOpts;
 import de.metas.workflow.rest_api.model.UIComponent;
@@ -37,11 +36,6 @@ public class RawMaterialsIssueActivityHandler implements WFActivityHandler
 		final ManufacturingJobActivity jobActivity = job.getActivityById(wfActivity.getId().getAsId(ManufacturingJobActivityId.class));
 		final RawMaterialsIssue rawMaterialsIssue = Objects.requireNonNull(jobActivity.getRawMaterialsIssue());
 
-		final ImmutableList<JsonAvailableHUToIssue> availableHUs = job.getAvailableHUsToIssueMap()
-				.stream()
-				.map(JsonAvailableHUToIssue::of)
-				.collect(ImmutableList.toImmutableList());
-
 		final ImmutableList<JsonRawMaterialsIssueLine> lines = rawMaterialsIssue.getLines()
 				.stream()
 				.map(line -> JsonRawMaterialsIssueLine.of(line, jsonOpts))
@@ -51,7 +45,6 @@ public class RawMaterialsIssueActivityHandler implements WFActivityHandler
 				.type(COMPONENT_TYPE)
 				.properties(Params.builder()
 						.valueObj("lines", lines)
-						.valueObj("availableHUs", availableHUs)
 						.build())
 				.build();
 	}
