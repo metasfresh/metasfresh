@@ -1,5 +1,5 @@
 import * as types from '../../constants/PickingActionTypes';
-import { original } from 'immer';
+import { original, isDraft } from 'immer';
 import { updateUserEditable } from './utils';
 import * as CompleteStatus from '../../constants/CompleteStatus';
 import { registerHandler } from './activityStateHandlers';
@@ -181,27 +181,27 @@ const updateLineStatusFromSteps = ({ draftWFProcess, activityId, lineId }) => {
 };
 
 export const computeLineStatus = ({ draftLine }) => {
-  const stepItems = original(draftLine.steps);
+  const stepItems = isDraft(draftLine) ? original(draftLine.steps) : draftLine;
   const stepIds = Object.keys(stepItems);
 
   if (stepIds.length > 0) {
     let countStepsCompleted = 0;
     for (let stepId of stepIds) {
-      // let sumAltStepsQtysPicked = 0;
-      // let remainingQty = stepItems[stepId].mainPickFrom.qtyRejected;
+      let sumAltStepsQtysPicked = 0;
+      let remainingQty = stepItems[stepId].mainPickFrom.qtyRejected;
 
       const draftStep = draftLine.steps[stepId];
       let stepCompleteStatus = draftStep.completeStatus || CompleteStatus.NOT_STARTED;
 
-      // let { genSteps } = stepItems[stepId].altSteps;
-      // for (let altItem in genSteps) {
-      //   sumAltStepsQtysPicked = sumAltStepsQtysPicked + genSteps[altItem].qtyPicked;
-      // }
+      let { genSteps } = stepItems[stepId].altSteps;
+      for (let altItem in genSteps) {
+        sumAltStepsQtysPicked = sumAltStepsQtysPicked + genSteps[altItem].qtyPicked;
+      }
 
-      // if (remainingQty - sumAltStepsQtysPicked === 0) {
-      //   stepCompleteStatus = CompleteStatus.COMPLETED;
-      //   draftLine.steps[stepId].completeStatus = stepCompleteStatus;
-      // }
+      if (remainingQty - sumAltStepsQtysPicked === 0) {
+        stepCompleteStatus = CompleteStatus.COMPLETED;
+        draftLine.steps[stepId].completeStatus = stepCompleteStatus;
+      }
 
       if (stepCompleteStatus === CompleteStatus.COMPLETED) {
         countStepsCompleted++;
@@ -319,7 +319,7 @@ registerHandler({
 
     // loop within steps
     for (let lineIdx = 0; lineIdx < lines.length; lineIdx++) {
-      // computeLineStatus({ draftLine: draftActivityDataStored.dataStored.lines[lineIdx] });
+      computeLineStatus({ draftLine: draftActivityDataStored.dataStored.lines[lineIdx] });
 
       for (let stepIdx = 0; stepIdx < lines[lineIdx].steps.length; stepIdx++) {
         let step = lines[lineIdx].steps[stepIdx];
