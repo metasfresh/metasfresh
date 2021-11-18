@@ -69,8 +69,7 @@ public class C_AllocationHdr
 	 * After {@link I_C_AllocationHdr} was completed/reversed/voided/reactivated,
 	 * update all {@link I_C_PaySelectionLine}s which were not already processed and which are about the invoices from this allocation.
 	 *
-	 * @param allocationHdr
-	 * @task 08972
+	 * task 08972
 	 */
 	@DocValidate(timings = {
 			ModelValidator.TIMING_AFTER_COMPLETE,

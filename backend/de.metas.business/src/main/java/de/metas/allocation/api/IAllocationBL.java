@@ -24,7 +24,6 @@ public interface IAllocationBL extends ISingletonService
 	I_C_AllocationHdr autoAllocateAvailablePayments(I_C_Invoice invoice);
 
 	/**
-	 *
 	 * This method creates an allocation between the given invoice and incoming payment that belong to the same C_BPartner, have the {@link I_C_Payment#isAutoAllocateAvailableAmt()} flag set and is
 	 * not yet fully allocated.
 	 *

@@ -21,6 +21,8 @@ import de.metas.payment.api.IPaymentDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
+import javax.validation.constraints.Null;
+
 public class AllocationBL implements IAllocationBL
 {
 	@Override
@@ -105,6 +107,7 @@ public class AllocationBL implements IAllocationBL
 				.createAndComplete();
 	}
 
+	@Null
 	@Override
 	public I_C_AllocationHdr autoAllocateSpecificPayment(
 			org.compiere.model.I_C_Invoice invoice,
