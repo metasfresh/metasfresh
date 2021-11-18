@@ -43,9 +43,8 @@ import de.metas.payment.api.IPaymentBL;
 import de.metas.util.Services;
 
 /**
- * @author cg
- *
- *         Interceptor for processing allocation
+ * Interceptor for processing allocation.
+ * Note the package-name: this is only for testing.
  */
 public class C_AllocationHdr_ProcessInterceptor implements IProcessInterceptor
 {
