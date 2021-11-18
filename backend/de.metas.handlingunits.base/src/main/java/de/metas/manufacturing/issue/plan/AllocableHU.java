@@ -1,5 +1,6 @@
 package de.metas.manufacturing.issue.plan;
 
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.storage.IHUStorageFactory;
@@ -13,21 +14,22 @@ import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.LocatorId;
 
-@ToString(exclude = "storageFactory")
+@ToString(exclude = { "storageFactory", "uomConverter" })
 class AllocableHU
 {
 	private final IHUStorageFactory storageFactory;
 	private final QuantityUOMConverter uomConverter;
 
 	@Getter
-	private final I_M_HU hu;
-
-	private final ProductId productId;
+	@NonNull private final I_M_HU hu;
 
 	@Getter
-	private final LocatorId locatorId;
+	@NonNull private final ProductId productId;
 
-	private Quantity _storageQtyInHuUom;
+	@Getter
+	@NonNull private final LocatorId locatorId;
+
+	private Quantity _storageQtyInHuUom; // lazy
 	private Quantity qtyAllocatedInHuUom;
 
 	public AllocableHU(
@@ -44,12 +46,14 @@ class AllocableHU
 		this.locatorId = IHandlingUnitsBL.extractLocatorId(hu);
 	}
 
+	public HuId getHuId() {return HuId.ofRepoId(getHu().getM_HU_ID());}
+
 	public Quantity getQtyAvailableToAllocate(final UomId uomId)
 	{
 		return uomConverter.convertQuantityTo(getQtyAvailableToAllocateInHuUom(), productId, uomId);
 	}
 
-	private Quantity getQtyAvailableToAllocateInHuUom()
+	public Quantity getQtyAvailableToAllocateInHuUom()
 	{
 		final Quantity qtyStorageInHuUom = getStorageQtyInHuUom();
 		return qtyAllocatedInHuUom != null
@@ -89,4 +93,8 @@ class AllocableHU
 		this.qtyAllocatedInHuUom = newQtyAllocatedInHuUom;
 	}
 
+	public boolean hasQtyAvailable()
+	{
+		return getQtyAvailableToAllocateInHuUom().signum() > 0;
+	}
 }

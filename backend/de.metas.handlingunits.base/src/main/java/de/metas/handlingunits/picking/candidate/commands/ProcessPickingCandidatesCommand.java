@@ -20,6 +20,7 @@ import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.picking.candidate.commands.PackToHUsProducer.PackToInfo;
 import de.metas.handlingunits.pporder.api.HUPPOrderIssueProducer.ProcessIssueCandidatesPolicy;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
+import de.metas.handlingunits.pporder.api.IssueCandidateGeneratedBy;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.handlingunits.util.CatchWeightHelper;
 import de.metas.inoutcandidate.ShipmentScheduleId;
@@ -254,7 +255,7 @@ public class ProcessPickingCandidatesCommand
 				.movementDate(SystemTime.asZonedDateTime())
 				.processCandidates(ProcessIssueCandidatesPolicy.ALWAYS)
 				.changeHUStatusToIssued(false)
-				.pickingCandidateId(pickingCandidateId)
+				.generatedBy(IssueCandidateGeneratedBy.ofPickingCandidateId(pickingCandidateId))
 				.createIssue(issueFromHU);
 	}
 

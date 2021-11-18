@@ -1,7 +1,7 @@
 package de.metas.manufacturing.workflows_api.activity_handlers;
 
-import de.metas.manufacturing.job.ManufacturingJob;
-import de.metas.manufacturing.job.ManufacturingJobActivityId;
+import de.metas.manufacturing.job.model.ManufacturingJob;
+import de.metas.manufacturing.job.model.ManufacturingJobActivityId;
 import de.metas.manufacturing.workflows_api.ManufacturingRestService;
 import de.metas.workflow.rest_api.activity_features.user_confirmation.UserConfirmationRequest;
 import de.metas.workflow.rest_api.activity_features.user_confirmation.UserConfirmationSupport;

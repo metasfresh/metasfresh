@@ -1,8 +1,8 @@
 package de.metas.manufacturing.workflows_api.activity_handlers.json;
 
-import de.metas.handlingunits.picking.QtyRejectedReasonCode;
-import de.metas.manufacturing.job.RawMaterialsIssueStep;
-import de.metas.manufacturing.order.PPOrderIssueSchedule;
+import de.metas.handlingunits.picking.QtyRejectedWithReason;
+import de.metas.manufacturing.job.model.RawMaterialsIssueStep;
+import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueSchedule;
 import de.metas.workflow.rest_api.controller.v2.json.JsonOpts;
 import lombok.Builder;
 import lombok.NonNull;
@@ -18,27 +18,42 @@ import java.math.BigDecimal;
 public class JsonRawMaterialsIssueLineStep
 {
 	@NonNull String id;
+	boolean isAlternativeIssue;
+	@NonNull String productId;
 	@NonNull String productName;
 	@NonNull String locatorName;
 	@NonNull String huBarcode;
 	@NonNull String uom;
 	@NonNull BigDecimal qtyToIssue;
-	@NonNull BigDecimal qtyIssued;
+	@Nullable BigDecimal qtyIssued;
+	@Nullable BigDecimal qtyRejected;
 	@Nullable String qtyRejectedReasonCode;
 
 	public static JsonRawMaterialsIssueLineStep of(RawMaterialsIssueStep step, JsonOpts jsonOpts)
 	{
-		final PPOrderIssueSchedule.Issued issued = step.getIssued();
-		
-		return builder()
+		final JsonRawMaterialsIssueLineStepBuilder builder = builder()
 				.id(String.valueOf(step.getId().getRepoId()))
+				.isAlternativeIssue(step.isAlternativeIssue())
+				.productId(String.valueOf(step.getProductId().getRepoId()))
 				.productName(step.getProductName().translate(jsonOpts.getAdLanguage()))
 				.locatorName(step.getIssueFromLocator().getCaption())
 				.huBarcode(step.getIssueFromHU().getBarcode().getAsString())
 				.uom(step.getQtyToIssue().getUOMSymbol())
-				.qtyToIssue(step.getQtyToIssue().toBigDecimal())
-				.qtyIssued(issued != null ? issued.getQtyIssued().toBigDecimal() : BigDecimal.ZERO)
-				.qtyRejectedReasonCode(issued != null ? QtyRejectedReasonCode.toCode(issued.getQtyRejectedReasonCode()) : null)
-				.build();
+				.qtyToIssue(step.getQtyToIssue().toBigDecimal());
+
+		final PPOrderIssueSchedule.Issued issued = step.getIssued();
+		if (issued != null)
+		{
+			builder.qtyIssued(issued.getQtyIssued().toBigDecimal());
+
+			final QtyRejectedWithReason qtyRejected = issued.getQtyRejected();
+			if (qtyRejected != null)
+			{
+				builder.qtyRejected(qtyRejected.toBigDecimal());
+				builder.qtyRejectedReasonCode(qtyRejected.getReasonCode().toJson());
+			}
+		}
+
+		return builder.build();
 	}
 }

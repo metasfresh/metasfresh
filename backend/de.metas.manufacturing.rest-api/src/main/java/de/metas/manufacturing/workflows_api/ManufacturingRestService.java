@@ -1,16 +1,20 @@
 package de.metas.manufacturing.workflows_api;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.handlingunits.picking.QtyRejectedReasonCode;
+import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleId;
+import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleProcessRequest;
 import de.metas.i18n.TranslatableStrings;
-import de.metas.manufacturing.job.ManufacturingJob;
-import de.metas.manufacturing.job.ManufacturingJobActivity;
-import de.metas.manufacturing.job.ManufacturingJobActivityId;
-import de.metas.manufacturing.job.ManufacturingJobReference;
-import de.metas.manufacturing.job.ManufacturingJobService;
+import de.metas.manufacturing.job.model.ManufacturingJob;
+import de.metas.manufacturing.job.model.ManufacturingJobActivity;
+import de.metas.manufacturing.job.model.ManufacturingJobActivityId;
+import de.metas.manufacturing.job.model.ManufacturingJobReference;
+import de.metas.manufacturing.job.service.ManufacturingJobService;
 import de.metas.manufacturing.workflows_api.activity_handlers.ConfirmationActivityHandler;
 import de.metas.manufacturing.workflows_api.activity_handlers.MaterialReceiptActivityHandler;
 import de.metas.manufacturing.workflows_api.activity_handlers.RawMaterialsIssueActivityHandler;
 import de.metas.manufacturing.workflows_api.activity_handlers.WorkReportActivityHandler;
+import de.metas.manufacturing.workflows_api.rest_api.json.JsonManufacturingOrderEvent;
 import de.metas.user.UserId;
 import de.metas.workflow.rest_api.model.WFActivity;
 import de.metas.workflow.rest_api.model.WFActivityId;
@@ -108,4 +112,27 @@ public class ManufacturingRestService
 	}
 
 	public ManufacturingJob withActivityCompleted(ManufacturingJob job, ManufacturingJobActivityId jobActivityId) {return manufacturingJobService.withActivityCompleted(job, jobActivityId);}
+
+	public ManufacturingJob processEvent(final ManufacturingJob job, final JsonManufacturingOrderEvent event)
+	{
+		if (event.getIssueTo() != null)
+		{
+			final JsonManufacturingOrderEvent.IssueTo issueTo = event.getIssueTo();
+			return manufacturingJobService.issueRawMaterials(job, PPOrderIssueScheduleProcessRequest.builder()
+					.ppOrderId(job.getPpOrderId())
+					.issueScheduleId(PPOrderIssueScheduleId.ofString(issueTo.getIssueStepId()))
+					.qtyIssued(issueTo.getQtyIssued())
+					.qtyRejected(issueTo.getQtyRejected())
+					.qtyRejectedReasonCode(QtyRejectedReasonCode.ofNullableCode(issueTo.getQtyRejectedReasonCode()).orElse(null))
+					.build());
+		}
+		else if (event.getReceiveFrom() != null)
+		{
+			throw new UnsupportedOperationException(); // TODO implement Receipt endpoint
+		}
+		else
+		{
+			throw new AdempiereException("Cannot handle: " + event);
+		}
+	}
 }
