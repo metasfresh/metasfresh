@@ -20,21 +20,20 @@
  * #L%
  */
 
-package de.metas.externalsystem.rabbitmqhttp.process;
+package de.metas.externalsystem.export.bpartner;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.ExternalSystemType;
-import de.metas.externalsystem.rabbitmqhttp.ExternalSystemRabbitMQConfigId;
-import de.metas.externalsystem.rabbitmqhttp.RabbitMQExternalSystemService;
+import de.metas.externalsystem.IExternalSystemChildConfigId;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
-import de.metas.process.Param;
+import de.metas.process.PInstanceId;
 import de.metas.process.ProcessPreconditionsResolution;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -44,22 +43,17 @@ import org.compiere.model.I_C_BPartner;
 import javax.annotation.Nullable;
 import java.util.Iterator;
 
-public class C_BPartner_SyncTo_RabbitMQ_HTTP extends JavaProcess implements IProcessPrecondition, IProcessDefaultParametersProvider
+public abstract class C_BPartner_SyncTo_ExternalSystem extends JavaProcess implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
-	private final RabbitMQExternalSystemService rabbitMQExternalSystemService = SpringContextHolder.instance.getBean(RabbitMQExternalSystemService.class);
 	private final ExternalSystemConfigRepo externalSystemConfigRepo = SpringContextHolder.instance.getBean(ExternalSystemConfigRepo.class);
-
-	private static final String PARAM_EXTERNAL_SYSTEM_CONFIG_RABBITMQ_HTTP_ID = "ExternalSystem_Config_RabbitMQ_HTTP_ID";
-	@Param(parameterName = PARAM_EXTERNAL_SYSTEM_CONFIG_RABBITMQ_HTTP_ID)
-	private int externalSystemConfigRabbitMQId;
 
 	@Nullable
 	@Override
 	public Object getParameterDefaultValue(final IProcessDefaultParameter parameter)
 	{
-		if (PARAM_EXTERNAL_SYSTEM_CONFIG_RABBITMQ_HTTP_ID.equals(parameter.getColumnName()))
+		if (getExternalSystemParam().equals(parameter.getColumnName()))
 		{
-			final ImmutableList<ExternalSystemParentConfig> activeConfigs = externalSystemConfigRepo.getAllByType(ExternalSystemType.RabbitMQ)
+			final ImmutableList<ExternalSystemParentConfig> activeConfigs = externalSystemConfigRepo.getAllByType(getExternalSystemType())
 					.stream()
 					.filter(ExternalSystemParentConfig::getIsActive)
 					.collect(ImmutableList.toImmutableList());
@@ -74,33 +68,33 @@ public class C_BPartner_SyncTo_RabbitMQ_HTTP extends JavaProcess implements IPro
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
 	{
-
 		if (context.isNoSelection())
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
 
-		if (externalSystemConfigRepo.isAnyConfigActive(ExternalSystemType.RabbitMQ))
+		if (!externalSystemConfigRepo.isAnyConfigActive(getExternalSystemType()))
 		{
-			return ProcessPreconditionsResolution.accept();
+			return ProcessPreconditionsResolution.reject();
 		}
-		return ProcessPreconditionsResolution.reject();
+
+		return ProcessPreconditionsResolution.accept();
 	}
 
 	@Override
 	protected String doIt() throws Exception
 	{
-		addLog("Calling with params: externalSystemConfigRabbitMQId {}", externalSystemConfigRabbitMQId);
+		addLog("Calling with params: externalSystemChildConfigId: {}", getExternalSystemChildConfigId());
 
 		final Iterator<I_C_BPartner> bPartnerIterator = getSelectedBPartnerRecords();
 
-		final ExternalSystemRabbitMQConfigId externalSystemRabbitMQConfigId = ExternalSystemRabbitMQConfigId.ofRepoId(externalSystemConfigRabbitMQId);
+		final IExternalSystemChildConfigId externalSystemChildConfigId = getExternalSystemChildConfigId();
 
 		while (bPartnerIterator.hasNext())
 		{
 			final BPartnerId bPartnerId = BPartnerId.ofRepoId(bPartnerIterator.next().getC_BPartner_ID());
 
-			rabbitMQExternalSystemService.exportBPartner(externalSystemRabbitMQConfigId, bPartnerId, getPinstanceId());
+			exportBPartner(externalSystemChildConfigId, bPartnerId, getPinstanceId());
 		}
 
 		return JavaProcess.MSG_OK;
@@ -115,4 +109,15 @@ public class C_BPartner_SyncTo_RabbitMQ_HTTP extends JavaProcess implements IPro
 				.create()
 				.iterate(I_C_BPartner.class);
 	}
+
+	protected abstract void exportBPartner(
+			@NonNull final IExternalSystemChildConfigId externalSystemChildConfigId,
+			@NonNull final BPartnerId bpartnerId,
+			@Nullable final PInstanceId pInstanceId);
+
+	protected abstract ExternalSystemType getExternalSystemType();
+
+	protected abstract IExternalSystemChildConfigId getExternalSystemChildConfigId();
+
+	protected abstract String getExternalSystemParam();
 }

@@ -31,18 +31,6 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Alber
 ]
 
 
-de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Alberta_getByTypeAndParent=[
-  {
-    "id" : 100002,
-    "parentId" : 100001,
-    "value" : "testAlbertaValue",
-    "apiKey" : "apiKey",
-    "baseUrl" : "baseUrl",
-    "tenant" : "tenant"
-  }
-]
-
-
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Alberta_getByTypeAndValue=[
   {
     "id" : 100001,
@@ -76,7 +64,10 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_GRSSi
       "parentId" : 100001,
       "value" : "testGRSSignumValue",
       "baseUrl" : "baseUrl",
-      "camelHttpResourceAuthKey" : "authKey"
+      "tenantId" : "tenantId",
+      "camelHttpResourceAuthKey" : "authKey",
+      "authToken" : "authToken",
+      "syncBPartnersToRestEndpoint" : true
     },
     "writeAudit" : false
   }
@@ -89,7 +80,10 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_GRSSi
     "parentId" : 100001,
     "value" : "testGRSSignumValue",
     "baseUrl" : "baseUrl",
-    "camelHttpResourceAuthKey" : "authKey"
+    "tenantId" : "tenantId",
+    "camelHttpResourceAuthKey" : "authKey",
+    "authToken" : "authToken",
+    "syncBPartnersToRestEndpoint" : false
   }
 ]
 
@@ -105,8 +99,11 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_GRSSi
       "id" : 100002,
       "parentId" : 100001,
       "value" : "testGRSSignumValue",
+      "tenantId" : "tenantId",
       "baseUrl" : "baseUrl",
-      "camelHttpResourceAuthKey" : "authKey"
+      "camelHttpResourceAuthKey" : "authKey",
+      "authToken" : "authToken",
+      "syncBPartnersToRestEndpoint" : true
     },
     "writeAudit" : false
   }

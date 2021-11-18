@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-camel-grssignum
+ * de.metas.adempiere.adempiere.migration-sql
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,20 +20,13 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.grssignum;
+-- 2021-11-16T14:29:47.990Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_SysConfig SET ConfigurationLevel='S', Name='de.metas.externalsystem.debouncer.bufferMaxSize',Updated=TO_TIMESTAMP('2021-11-16 16:29:47','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_SysConfig_ID=541398
+;
 
-public interface GRSSignumConstants
-{
-	String GRSSIGNUM_SYSTEM_NAME = "GRSSignum";
+-- 2021-11-16T14:30:00.572Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_SysConfig SET ConfigurationLevel='S', Name='de.metas.externalsystem.debouncer.delayInMillis',Updated=TO_TIMESTAMP('2021-11-16 16:30:00','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_SysConfig_ID=541399
+;
 
-	String JSON_PROPERTY_FLAG = "FLAG";
-	String DEFAULT_UOM_CODE = "KGM";
-
-	String ROUTE_PROPERTY_PUSH_BOMs_CONTEXT = "PushBOMsRouteContext";
-
-	String ROUTE_PROPERTY_EXPORT_BPARTNER_CONTEXT = "ExportBPartnerRouteContext";
-
-	String EXPORT_BPARTNER_RETRY_COUNT = "export.bpartner.retry.count";
-
-	String EXPORT_BPARTNER_RETRY_DELAY = "export.bpartner.retry.delay.ms";
-}

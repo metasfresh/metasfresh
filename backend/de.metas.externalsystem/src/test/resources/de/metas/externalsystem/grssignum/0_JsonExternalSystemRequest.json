@@ -1,16 +1,16 @@
 {
   "traceId": "traceId",
   "orgCode": "orgCode",
-  "externalSystemName": "RabbitMQRESTAPI",
+  "externalSystemName": "GRSSignum",
   "command": "exportBPartner",
   "adPInstanceId": 3,
   "externalSystemConfigId": 1,
   "writeAuditEndpoint": "fileFolder",
   "parameters": {
-    "RemoteURL": "https://test",
-    "RoutingKey": "key",
+    "RemoteURL": "baseUrl",
     "BPartnerId": "1000000",
     "AuthToken": "authToken",
-    "ChildConfigValue": "value"
+    "ChildConfigValue": "grsValue",
+    "TenantId": "tenantId"
   }
 }

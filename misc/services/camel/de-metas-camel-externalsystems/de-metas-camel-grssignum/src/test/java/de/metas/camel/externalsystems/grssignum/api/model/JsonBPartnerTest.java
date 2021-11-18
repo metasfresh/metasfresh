@@ -39,6 +39,7 @@ public class JsonBPartnerTest
 		final String candidate = "{\n"
 				+ "    \"FLAG\": 100,\n"
 				+ "    \"MID\": \"HOM\",\n"
+				+ "    \"DUMMYVALUE\": \"TEST\",\n"
 				+ "    \"MKREDID\": \"102\",\n"
 				+ "    \"KURZBEZEICHNUNG\": \"test company name\",\n"
 				+ "    \"INAKTIV\": 0\n"
@@ -53,8 +54,30 @@ public class JsonBPartnerTest
 				.id("102")
 				.name("test company name")
 				.inactive(0)
+				.tenantId("HOM")
 				.build();
 
 		assertThat(partner).isEqualTo(expectedBPartner);
+	}
+
+	@Test
+	public void serialize_deserialize_test() throws Exception
+	{
+		//given
+		final JsonBPartner bPartner = JsonBPartner.builder()
+				.flag(100)
+				.id("102")
+				.name("test company name")
+				.inactive(0)
+				.tenantId("HOM")
+				.build();
+
+		//when
+		final String serialized = objectMapper.writeValueAsString(bPartner);
+
+		final JsonBPartner deserialized = objectMapper.readValue(serialized, JsonBPartner.class);
+
+		//then
+		assertThat(deserialized).isEqualTo(bPartner);
 	}
 }

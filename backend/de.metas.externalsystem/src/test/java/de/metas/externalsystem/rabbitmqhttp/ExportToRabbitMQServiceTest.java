@@ -55,26 +55,26 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
 
-public class RabbitMQExternalSystemServiceTest
+public class ExportToRabbitMQServiceTest
 {
 	private static final String JSON_EXTERNAL_SYSTEM_REQUEST = "0_JsonExternalSystemRequest.json";
 
 	private JsonExternalSystemRequest expectedJsonExternalSystemRequest;
-	private RabbitMQExternalSystemService rabbitMQExternalSystemService;
-	private ExternalSystemConfigService externalSystemConfigServiceMock;
+	private ExportToRabbitMQService exportToRabbitMQService;
 
 	@BeforeEach
 	public void init() throws IOException
 	{
-		externalSystemConfigServiceMock = Mockito.mock(ExternalSystemConfigService.class);
+		final ExternalSystemConfigService externalSystemConfigServiceMock = Mockito.mock(ExternalSystemConfigService.class);
+		Mockito.when(externalSystemConfigServiceMock.getTraceId()).thenReturn("traceId");
 
 		AdempiereTestHelper.get().init();
 
-		rabbitMQExternalSystemService = new RabbitMQExternalSystemService(new ExternalSystemConfigRepo(new ExternalSystemOtherConfigRepository()),
-																		  new ExternalSystemMessageSender(new RabbitTemplate(), new Queue(QUEUE_NAME_MF_TO_ES)),
-																		  new DataExportAuditLogRepository(),
-																		  new DataExportAuditRepository(),
-																		  externalSystemConfigServiceMock);
+		exportToRabbitMQService = new ExportToRabbitMQService(new ExternalSystemConfigRepo(new ExternalSystemOtherConfigRepository()),
+															  new DataExportAuditRepository(),
+															  new DataExportAuditLogRepository(),
+															  new ExternalSystemMessageSender(new RabbitTemplate(), new Queue(QUEUE_NAME_MF_TO_ES)),
+															  externalSystemConfigServiceMock);
 
 		createPrerequisites();
 
@@ -87,8 +87,6 @@ public class RabbitMQExternalSystemServiceTest
 	public void given_whenToJsonExternalSystemRequest_thenReturnExternalSystemRequest()
 	{
 		// given
-		Mockito.when(externalSystemConfigServiceMock.getTraceId()).thenReturn("traceId");
-
 		final PInstanceId pInstanceId = PInstanceId.ofRepoId(3);
 		final ExternalSystemRabbitMQConfigId externalSystemRabbitMQConfigId = ExternalSystemRabbitMQConfigId.ofRepoId(2);
 
@@ -105,7 +103,8 @@ public class RabbitMQExternalSystemServiceTest
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(bpartner.getC_BPartner_ID());
 
 		// when
-		final Optional<JsonExternalSystemRequest> externalSystemRequest = rabbitMQExternalSystemService.toJsonExternalSystemRequest(externalSystemRabbitMQConfigId, bpartnerId, pInstanceId);
+		final Optional<JsonExternalSystemRequest> externalSystemRequest = exportToRabbitMQService.toJsonExternalSystemRequest(
+				externalSystemRabbitMQConfigId, bpartnerId, pInstanceId);
 
 		// then
 		assertThat(externalSystemRequest).isPresent();
