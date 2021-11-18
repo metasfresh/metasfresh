@@ -197,7 +197,8 @@ public class PaymentAllocationService
 
 		// for purchase invoices and sales credit memos, we need to negate
 		// but not for sales invoices and purchase credit memos
-		final boolean negateAmounts = soTrx.isPurchase() ^ paymentAllocationPayableItem.isInvoiceIsCreditMemo();
+		final boolean invoiceIsCreditMemo = paymentAllocationPayableItem.isInvoiceIsCreditMemo();
+		final boolean negateAmounts = soTrx.isPurchase() ^ invoiceIsCreditMemo;
 		
 		return PayableDocument.builder()
 				.invoiceId(paymentAllocationPayableItem.getInvoiceId())
@@ -214,6 +215,8 @@ public class PaymentAllocationService
 				.invoiceProcessingFeeCalculation(invoiceProcessingFeeCalculation)
 				.date(paymentAllocationPayableItem.getDateInvoiced())
 				.clientAndOrgId(paymentAllocationPayableItem.getClientAndOrgId())
+				//.creditMemo(paymentAllocationPayableItem.isInvoiceIsCreditMemo()) // we don't want the credit memo to be wrapped as IPaymentDocument
+				.allowAllocateAgainstDifferentSignumPayment(invoiceIsCreditMemo) // we want the invoice with negative amount to be allocated against the payment with positive amount. the credit-memo and the payment need to be added up in a way 
 				.build();
 	}
 

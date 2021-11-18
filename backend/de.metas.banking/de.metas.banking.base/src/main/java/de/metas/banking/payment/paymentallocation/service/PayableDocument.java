@@ -77,8 +77,14 @@ public class PayableDocument
 	private final TableRecordReference reference;
 	@Getter
 	private final PayableDocumentType type;
+	
+	/** Will cause this payable to be wrapped as payment, so it can be allocated agains another invoice. */
 	@Getter
 	private final boolean creditMemo;
+
+	@Getter
+	private final boolean allowAllocateAgainstDifferentSignumPayment;
+	
 	//
 	@Getter
 	@VisibleForTesting
@@ -110,6 +116,7 @@ public class PayableDocument
 			@NonNull final String documentNo,
 			@NonNull final SOTrx soTrx,
 			final boolean creditMemo,
+			final boolean allowAllocateAgainstDifferentSignumPayment,
 			//
 			@NonNull final Money openAmt,
 			@NonNull final AllocationAmounts amountsToAllocate,
@@ -153,6 +160,7 @@ public class PayableDocument
 		this.documentNo = documentNo;
 		this.soTrx = soTrx;
 		this.creditMemo = creditMemo;
+		this.allowAllocateAgainstDifferentSignumPayment = allowAllocateAgainstDifferentSignumPayment;
 
 		if (!CurrencyId.equals(openAmt.getCurrencyId(), amountsToAllocate.getCurrencyId()))
 		{

@@ -726,7 +726,10 @@ public class PaymentAllocationBuilder
 		final boolean positivePaymentAmtToAllocate = payment.getAmountToAllocateInitial().signum() >= 0;
 		if (positiveInvoiceAmtToAllocate != positivePaymentAmtToAllocate)
 		{
-			return false;
+			if(!payable.isAllowAllocateAgainstDifferentSignumPayment())
+			{
+				return false;
+			}
 		}
 
 		//
