@@ -57,8 +57,8 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Rabbi
       "parentId" : 100001,
       "value" : "testRabbitMQValue",
       "routingKey" : "routingKey",
-      "authToken" : "authToken",
       "remoteUrl" : "remoteURL",
+      "authToken" : "authToken",
       "isSyncBPartnerToRabbitMQ" : true,
       "syncBPartnerToRabbitMQ" : true
     }
@@ -72,8 +72,8 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Rabbi
     "parentId" : 100001,
     "value" : "testRabbitMQValue",
     "routingKey" : "routingKey",
-    "authToken" : "authToken",
     "remoteUrl" : "remoteURL",
+    "authToken" : "authToken",
     "isSyncBPartnerToRabbitMQ" : true,
     "syncBPartnerToRabbitMQ" : true
   }
@@ -85,6 +85,7 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Rabbi
     "id" : 100001,
     "type" : "RabbitMQ",
     "name" : "name",
+    "isActive" : true,
     "childConfig" : {
       "id" : 100002,
       "parentId" : 100001,
@@ -94,8 +95,7 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Rabbi
       "authToken" : "authToken",
       "isSyncBPartnerToRabbitMQ" : true,
       "syncBPartnerToRabbitMQ" : true
-    },
-    "isActive" : true
+    }
   }
 ]
 
@@ -116,7 +116,8 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
       "bPartnerIdJSONPath" : "/test/bp",
       "bPartnerLocationIdJSONPath" : "/test/bpl",
       "salesRepJSONPath" : "/test/salesrep",
-      "isActive" : true
+      "isActive" : true,
+      "productLookup" : "ProductNumber"
     }
   }
 ]
@@ -138,7 +139,8 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
       "bPartnerIdJSONPath" : "/test/bp",
       "bPartnerLocationIdJSONPath" : "/test/bpl",
       "salesRepJSONPath" : "/test/salesrep",
-      "isActive" : false
+      "isActive" : false,
+      "productLookup" : "ProductNumber"
     }
   }
 ]
@@ -170,7 +172,8 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
     "bPartnerIdJSONPath" : "/test/bp",
     "bPartnerLocationIdJSONPath" : "/test/bpl",
     "salesRepJSONPath" : "/test/salesrep",
-    "isActive" : true
+    "isActive" : true,
+    "productLookup" : "ProductNumber"
   }
 ]
 
@@ -191,7 +194,8 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
       "bPartnerIdJSONPath" : "/test/bp",
       "bPartnerLocationIdJSONPath" : "/test/bpl",
       "salesRepJSONPath" : "/test/salesrep",
-      "isActive" : true
+      "isActive" : true,
+      "productLookup" : "ProductNumber"
     }
   }
 ]
@@ -213,7 +217,8 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
       "bPartnerIdJSONPath" : "/test/bp",
       "bPartnerLocationIdJSONPath" : "/test/bpl",
       "salesRepJSONPath" : "/test/salesrep",
-      "isActive" : true
+      "isActive" : true,
+      "productLookup" : "ProductNumber"
     }
   }
 ]

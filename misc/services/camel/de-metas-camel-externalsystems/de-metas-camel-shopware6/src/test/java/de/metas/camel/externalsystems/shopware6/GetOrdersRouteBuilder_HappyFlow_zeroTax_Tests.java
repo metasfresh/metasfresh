@@ -53,6 +53,7 @@ import de.metas.camel.externalsystems.shopware6.order.processor.GetOrdersProcess
 import de.metas.common.externalsystem.JsonESRuntimeParameterUpsertRequest;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.common.externalsystem.JsonExternalSystemShopware6ConfigMappings;
+import de.metas.common.externalsystem.JsonProductLookup;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandClearRequest;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateBulkRequest;
 import de.metas.common.rest_api.v2.order.JsonOrderPaymentCreateRequest;
@@ -302,7 +303,9 @@ public class GetOrdersRouteBuilder_HappyFlow_zeroTax_Tests extends CamelTestSupp
 			final ProcessLogger processLogger = Mockito.mock(ProcessLogger.class);
 			final ProducerTemplate producerTemplate = Mockito.mock(ProducerTemplate.class);
 
-			final JsonExternalSystemRequest externalSystemRequest = GetOrdersRouteBuilder_HappyFlow_Tests.createJsonExternalSystemRequestBuilder().build();
+			final JsonExternalSystemRequest externalSystemRequest = GetOrdersRouteBuilder_HappyFlow_Tests.createJsonExternalSystemRequestBuilder()
+					.productLookup(JsonProductLookup.ProductId)
+					.build();
 			final Shopware6QueryRequest queryRequest = OrderQueryHelper.buildShopware6QueryRequest(externalSystemRequest);
 
 			final ImportOrdersRouteContext ordersContext = new GetOrdersProcessor(processLogger, producerTemplate)
