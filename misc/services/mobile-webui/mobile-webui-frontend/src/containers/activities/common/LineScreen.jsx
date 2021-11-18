@@ -5,15 +5,21 @@ import PropTypes from 'prop-types';
 
 import PickLineScreen from '../picking/PickLineScreen';
 import DistributionLineScreen from '../distribution/DistributionLineScreen';
+import RawMaterialIssueLineScreen from '../manufacturing/RawMaterialIssueLineScreen';
 
 import { selectWFProcessFromState } from '../../../reducers/wfProcesses_status';
 
-const getLineComponent = (appId) => {
+const getLineComponent = (appId, componentType) => {
   switch (appId) {
     case 'picking':
       return PickLineScreen;
     case 'distribution':
       return DistributionLineScreen;
+    case 'mfg':
+      if (componentType === 'manufacturing/rawMaterialsIssue') {
+        return RawMaterialIssueLineScreen;
+      }
+      return null;
     default:
       return null;
   }
@@ -21,8 +27,8 @@ const getLineComponent = (appId) => {
 
 class LineScreen extends PureComponent {
   render() {
-    const { appId } = this.props;
-    const Component = getLineComponent(appId);
+    const { appId, componentType } = this.props;
+    const Component = getLineComponent(appId, componentType);
 
     return (
       <div className="pt-2 section lines-screen-container">
@@ -37,7 +43,7 @@ const mapStateToProps = (state, ownProps) => {
   const wfProcess = selectWFProcessFromState(state, wfProcessId);
   const activity = wfProcess && wfProcess.activities ? wfProcess.activities[activityId] : null;
 
-  const lineProps = activity != null ? activity.componentProps.lines[lineId] : null;
+  const lineProps = activity != null ? activity.dataStored.lines[lineId] : null;
   const stepsById = lineProps != null ? lineProps.steps : {};
 
   const appId = state.applications.activeApplication ? state.applications.activeApplication.id : null;
@@ -57,6 +63,8 @@ const mapStateToProps = (state, ownProps) => {
     activityId,
     lineId,
     steps: Object.values(stepsById),
+    componentType: activity.componentType,
+    lineProps,
     appId,
   };
 };
@@ -69,6 +77,8 @@ LineScreen.propTypes = {
   lineId: PropTypes.string.isRequired,
   steps: PropTypes.array.isRequired,
   appId: PropTypes.string.isRequired,
+  componentType: PropTypes.string.isRequired,
+  lineProps: PropTypes.object.isRequired,
 };
 
 export default withRouter(connect(mapStateToProps)(LineScreen));
