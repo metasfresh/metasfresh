@@ -97,10 +97,11 @@ public class PaymentAllocationService
 		final I_C_Payment payment = paymentAllocationCriteria.getPayment();
 
 		final PaymentDocument paymentDocument = toPaymentDocument(payment);
+		final ZonedDateTime paymentDate = TimeUtil.asZonedDateTime(paymentDocument.getDateTrx(), ZoneId.systemDefault());
 
 		final ImmutableList<PayableDocument> invoiceDocuments = paymentAllocationCriteria.getPaymentAllocationPayableItems()
 				.stream()
-				.map(paymentAllocationPayableItem -> toPayableDocument(paymentAllocationPayableItem, paymentDocument))
+				.map(paymentAllocationPayableItem -> toPayableDocument(paymentAllocationPayableItem, paymentDate))
 				.collect(ImmutableList.toImmutableList());
 
 		final LocalDate dateTrx = TimeUtil.asLocalDate(paymentAllocationCriteria.getDateTrx());
@@ -150,7 +151,7 @@ public class PaymentAllocationService
 
 	private PayableDocument toPayableDocument(
 			final PaymentAllocationPayableItem paymentAllocationPayableItem,
-			final PaymentDocument paymentDocument)
+			final ZonedDateTime paymentDate)
 	{
 		final Money openAmt = moneyService.toMoney(paymentAllocationPayableItem.getOpenAmt());
 		final Money payAmt = moneyService.toMoney(paymentAllocationPayableItem.getPayAmt());
@@ -175,7 +176,7 @@ public class PaymentAllocationService
 			invoiceProcessingFeeCalculation = invoiceProcessingServiceCompanyService.createFeeCalculationForPayment(
 					InvoiceProcessingFeeWithPrecalculatedAmountRequest.builder()
 							.orgId(paymentAllocationPayableItem.getClientAndOrgId().getOrgId())
-							.paymentDate(TimeUtil.asZonedDateTime(paymentDocument.getDateTrx(), ZoneId.systemDefault()))
+							.paymentDate(paymentDate)
 							.customerId(paymentAllocationPayableItem.getBPartnerId())
 							.invoiceId(paymentAllocationPayableItem.getInvoiceId())
 							.feeAmountIncludingTax(serviceFeeAmt)
@@ -196,20 +197,20 @@ public class PaymentAllocationService
 
 		// for purchase invoices and sales credit memos, we need to negate
 		// but not for sales invoices and purchase credit memos
-		final boolean negateOpenAmt = soTrx.isPurchase() ^ paymentAllocationPayableItem.isInvoiceIsCreditMemo();
+		final boolean negateAmounts = soTrx.isPurchase() ^ paymentAllocationPayableItem.isInvoiceIsCreditMemo();
 		
 		return PayableDocument.builder()
 				.invoiceId(paymentAllocationPayableItem.getInvoiceId())
 				.bpartnerId(paymentAllocationPayableItem.getBPartnerId())
 				.documentNo(paymentAllocationPayableItem.getDocumentNo())
 				.soTrx(soTrx)
-				.openAmt(openAmt.negateIf(negateOpenAmt))
+				.openAmt(openAmt.negateIf(negateAmounts))
 				.amountsToAllocate(AllocationAmounts.builder()
 										   .payAmt(payAmt)
 										   .discountAmt(discountAmt)
 										   .invoiceProcessingFee(invoiceProcessingFee)
 										   .build()
-										   .negateIf(soTrx.isPurchase()))
+										   .negateIf(negateAmounts))
 				.invoiceProcessingFeeCalculation(invoiceProcessingFeeCalculation)
 				.date(paymentAllocationPayableItem.getDateInvoiced())
 				.clientAndOrgId(paymentAllocationPayableItem.getClientAndOrgId())
