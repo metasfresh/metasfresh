@@ -194,12 +194,16 @@ public class PaymentAllocationService
 
 		final SOTrx soTrx = SOTrx.ofBoolean(paymentAllocationPayableItem.isSOTrx());
 
+		// for purchase invoices and sales credit memos, we need to negate
+		// but not for sales invoices and purchase credit memos
+		final boolean negateOpenAmt = soTrx.isPurchase() ^ paymentAllocationPayableItem.isInvoiceIsCreditMemo();
+		
 		return PayableDocument.builder()
 				.invoiceId(paymentAllocationPayableItem.getInvoiceId())
 				.bpartnerId(paymentAllocationPayableItem.getBPartnerId())
 				.documentNo(paymentAllocationPayableItem.getDocumentNo())
 				.soTrx(soTrx)
-				.openAmt(openAmt.negateIf(soTrx.isPurchase()))
+				.openAmt(openAmt.negateIf(negateOpenAmt))
 				.amountsToAllocate(AllocationAmounts.builder()
 										   .payAmt(payAmt)
 										   .discountAmt(discountAmt)
