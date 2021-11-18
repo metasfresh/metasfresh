@@ -43,5 +43,8 @@ public class BPartnerBankAccountsSaveRequest
 	@Nullable
 	final OrgId orgId;
 
+	/**
+	 * Use-Case for {@code false}: when transferring a customer to another org, the user who does the transfer might not have access to the target-org. Still we need to be able to create the bank-account in that target-org.
+	 */
 	boolean validatePermissions;
 }
