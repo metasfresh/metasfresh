@@ -108,3 +108,61 @@ INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Reference_ID,AD_Ref_List_ID,C
 INSERT INTO AD_Ref_List_Trl (AD_Language,AD_Ref_List_ID, Description,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Ref_List_ID, t.Description,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Ref_List t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Ref_List_ID=542953 AND NOT EXISTS (SELECT 1 FROM AD_Ref_List_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Ref_List_ID=t.AD_Ref_List_ID)
 ;
 
+
+
+
+-- 2021-11-18T09:37:24.992313900Z
+-- URL zum Konzept
+INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Reference_ID,AD_Ref_List_ID,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value,ValueName) VALUES (0,0,541332,542954,TO_TIMESTAMP('2021-11-18 11:37:24','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Rechtsberater',TO_TIMESTAMP('2021-11-18 11:37:24','YYYY-MM-DD HH24:MI:SS'),100,'R','Rechtsberater')
+;
+
+-- 2021-11-18T09:37:25.171759300Z
+-- URL zum Konzept
+INSERT INTO AD_Ref_List_Trl (AD_Language,AD_Ref_List_ID, Description,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Ref_List_ID, t.Description,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Ref_List t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Ref_List_ID=542954 AND NOT EXISTS (SELECT 1 FROM AD_Ref_List_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Ref_List_ID=t.AD_Ref_List_ID)
+;
+
+-- 2021-11-18T09:37:31.292375200Z
+-- URL zum Konzept
+INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Reference_ID,AD_Ref_List_ID,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value,ValueName) VALUES (0,0,541332,542955,TO_TIMESTAMP('2021-11-18 11:37:30','YYYY-MM-DD HH24:MI:SS'),100,'U','Y','Schätzer',TO_TIMESTAMP('2021-11-18 11:37:30','YYYY-MM-DD HH24:MI:SS'),100,'S','Schätzer')
+;
+
+-- 2021-11-18T09:37:31.385256600Z
+-- URL zum Konzept
+INSERT INTO AD_Ref_List_Trl (AD_Language,AD_Ref_List_ID, Description,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Ref_List_ID, t.Description,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Ref_List t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Ref_List_ID=542955 AND NOT EXISTS (SELECT 1 FROM AD_Ref_List_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Ref_List_ID=t.AD_Ref_List_ID)
+;
+
+-- 2021-11-18T09:37:37.762214400Z
+-- URL zum Konzept
+INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Reference_ID,AD_Ref_List_ID,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value,ValueName) VALUES (0,0,541332,542956,TO_TIMESTAMP('2021-11-18 11:37:37','YYYY-MM-DD HH24:MI:SS'),100,'U','Y','Vorstand',TO_TIMESTAMP('2021-11-18 11:37:37','YYYY-MM-DD HH24:MI:SS'),100,'V','Vorstand')
+;
+
+-- 2021-11-18T09:37:37.826295800Z
+-- URL zum Konzept
+INSERT INTO AD_Ref_List_Trl (AD_Language,AD_Ref_List_ID, Description,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Ref_List_ID, t.Description,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Ref_List t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Ref_List_ID=542956 AND NOT EXISTS (SELECT 1 FROM AD_Ref_List_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Ref_List_ID=t.AD_Ref_List_ID)
+;
+
+-- 2021-11-18T09:37:46.061385700Z
+-- URL zum Konzept
+UPDATE AD_Ref_List SET EntityType='D',Updated=TO_TIMESTAMP('2021-11-18 11:37:45','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Ref_List_ID=542956
+;
+
+-- 2021-11-18T09:37:50.020269Z
+-- URL zum Konzept
+UPDATE AD_Ref_List SET EntityType='D',Updated=TO_TIMESTAMP('2021-11-18 11:37:49','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Ref_List_ID=542955
+;
+
+-- 2021-11-18T09:38:08.418807300Z
+-- URL zum Konzept
+UPDATE AD_Ref_List SET EntityType='U',Updated=TO_TIMESTAMP('2021-11-18 11:38:08','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Ref_List_ID=542954
+;
+
+-- 2021-11-18T09:38:15.654815600Z
+-- URL zum Konzept
+UPDATE AD_Ref_List SET EntityType='U',Updated=TO_TIMESTAMP('2021-11-18 11:38:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Ref_List_ID=542955
+;
+
+-- 2021-11-18T09:38:22.743178200Z
+-- URL zum Konzept
+UPDATE AD_Ref_List SET EntityType='U',Updated=TO_TIMESTAMP('2021-11-18 11:38:22','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Ref_List_ID=542956
+;
+
