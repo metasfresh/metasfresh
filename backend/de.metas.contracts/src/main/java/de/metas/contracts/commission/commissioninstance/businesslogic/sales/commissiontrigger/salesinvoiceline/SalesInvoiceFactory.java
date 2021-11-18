@@ -22,6 +22,7 @@ import de.metas.money.Money;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.uom.UomId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.compiere.model.I_C_Invoice;
@@ -71,6 +72,7 @@ public class SalesInvoiceFactory
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final IInvoiceLineBL invoiceLineBL = Services.get(IInvoiceLineBL.class);
+	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 
 	public SalesInvoiceFactory(@NonNull final CommissionProductService commissionProductService)
 	{
@@ -145,8 +147,19 @@ public class SalesInvoiceFactory
 				final List<I_C_Invoice_Candidate> invoiceCandidates = invoiceCandDAO.retrieveIcForIl(invoiceLineRecord);
 				if (!invoiceCandidates.isEmpty())
 				{
-					logger.debug("C_InvoiceLine is not manual as it has {} C_Invoice_Candidates; -> return empty", invoiceLineRecord.getM_Product_ID());
-					continue;
+					if (!invoiceIsCreditMemo)
+					{
+
+						logger.debug("C_InvoiceLine is not manual as it has {} C_Invoice_Candidates; -> return empty", invoiceLineRecord.getM_Product_ID());
+						continue;
+					}
+
+					final List<I_C_InvoiceLine> referringLines = invoiceDAO.retrieveReferringLines(InvoiceLineId.ofRepoId(invoiceLineRecord.getC_Invoice_ID(), invoiceLineRecord.getC_InvoiceLine_ID()));
+					if (Check.isEmpty(referringLines))
+					{
+						logger.debug("C_InvoiceLine belongs to a credit memo and is not manual as it has {} C_Invoice_Candidates; -> return empty", invoiceLineRecord.getM_Product_ID());
+						continue;
+					}
 				}
 
 				final CommissionPoints invoicedCommissionPoints = extractInvoicedCommissionPoints(invoiceRecord, invoiceLineRecord)
