@@ -203,7 +203,7 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 		final I_PP_Order ppOrder = createPP_OrderAndValidateBomLine("100", productBOM);
 		final I_PP_Order_BOMLine ppOrderBOMLine_Folie = ppOrderBOMDAO.retrieveOrderBOMLine(ppOrder, pFolie);
 		Assertions.assertNotNull(ppOrderBOMLine_Folie, "Order BOM Line for Folie shall exist");
-		Assertions.assertEquals(uomMillimeter, ppOrderBOMLine_Folie.getC_UOM(), "Invalid PP_Order UOM");
+		Assertions.assertEquals(uomMillimeter.getC_UOM_ID(), ppOrderBOMLine_Folie.getC_UOM_ID(), "Invalid PP_Order UOM");
 		MatcherAssert.assertThat("Invalid PP_Order QtyRequired",
 				ppOrderBOMLine_Folie.getQtyRequiered(),
 				// Expected: 100(QtyOrdered) x 260(QtyBOM) +10% scrap [millimeters]
@@ -276,7 +276,7 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 			ppOrder = createPP_OrderAndValidateBomLine("100", productBOM);
 			final I_PP_Order_BOMLine ppOrderBOMLine_Folie = ppOrderBOMDAO.retrieveOrderBOMLine(ppOrder, pFolie);
 			Assertions.assertNotNull(ppOrderBOMLine_Folie, "Order BOM Line for Folie shall exist");
-			Assertions.assertEquals(uomMillimeter, ppOrderBOMLine_Folie.getC_UOM(), "Invalid PP_Order UOM");
+			Assertions.assertEquals(uomMillimeter.getC_UOM_ID(), ppOrderBOMLine_Folie.getC_UOM_ID(), "Invalid PP_Order UOM");
 			MatcherAssert.assertThat("Invalid PP_Order QtyRequired",
 					ppOrderBOMLine_Folie.getQtyRequiered(),
 					Matchers.comparesEqualTo(new BigDecimal("28600")) // = 100(QtyOrdered) x 260(QtyBOM) +10% scrap [millimeters]
@@ -474,7 +474,7 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 					ppOrder = createPP_OrderAndValidateBomLine(qtyOrderedStr, productBOM);
 					final I_PP_Order_BOMLine ppOrderBOMLine_Folie = ppOrderBOMDAO.retrieveOrderBOMLine(ppOrder, pFolie);
 					Assertions.assertNotNull(ppOrderBOMLine_Folie, "Order BOM Line for Folie shall exist");
-					Assertions.assertEquals(uomMillimeter, ppOrderBOMLine_Folie.getC_UOM(), "Invalid PP_Order UOM");
+					Assertions.assertEquals(uomMillimeter.getC_UOM_ID(), ppOrderBOMLine_Folie.getC_UOM_ID(), "Invalid PP_Order UOM");
 					MatcherAssert.assertThat("Invalid PP_Order QtyRequired",
 							ppOrderBOMLine_Folie.getQtyRequiered(),
 							Matchers.comparesEqualTo(ppOrderBOMLine_Folie_QtyRequired_Expected));
@@ -549,7 +549,7 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 		final I_PP_Order ppOrder = createPP_OrderAndValidateBomLine(qtyOrderedStr, productBOM);
 		final I_PP_Order_BOMLine ppOrderBOMLine_Folie = ppOrderBOMDAO.retrieveOrderBOMLine(ppOrder, pFolie);
 		Assertions.assertNotNull(ppOrderBOMLine_Folie, "Order BOM Line for Folie shall exist");
-		Assertions.assertEquals(uomMillimeter, ppOrderBOMLine_Folie.getC_UOM(), "Invalid PP_Order UOM");
+		Assertions.assertEquals(uomMillimeter.getC_UOM_ID(), ppOrderBOMLine_Folie.getC_UOM_ID(), "Invalid PP_Order UOM");
 		MatcherAssert.assertThat("Invalid PP_Order QtyRequired",
 				ppOrderBOMLine_Folie.getQtyRequiered(),
 				Matchers.comparesEqualTo(ppOrderBOMLine_Folie_QtyRequired_Expected));
