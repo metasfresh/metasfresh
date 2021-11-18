@@ -95,7 +95,6 @@ public class C_Invoice // 03771
 	private void autoAllocateAvailablePayments(final I_C_Invoice invoice)
 	{
 		allocationBL.autoAllocateAvailablePayments(invoice);
-		testAndMarkAsPaid(invoice);
 	}
 
 	private void ensureUOMsAreNotNull(@NonNull final I_C_Invoice invoice)
@@ -236,7 +235,6 @@ public class C_Invoice // 03771
 			// Allocate the minimum between parent invoice open amt and what is left of the creditMemo's grand Total
 			invoiceBL.allocateCreditMemo(parentInvoice, creditMemo, amtToAllocate);
 		}
-		testAndMarkAsPaid(creditMemo);
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_DELETE })
@@ -294,7 +292,6 @@ public class C_Invoice // 03771
 			paymentDAO.save(payment);
 
 			allocationBL.autoAllocateSpecificPayment(invoice, payment, true);
-			testAndMarkAsPaid(invoice);
 		}
 	}
 
@@ -305,7 +302,6 @@ public class C_Invoice // 03771
 		{
 			final I_C_Payment payment = paymentBL.getById(PaymentId.ofRepoId(order.getC_Payment_ID()));
 			allocationBL.autoAllocateSpecificPayment(invoice, payment, true);
-			testAndMarkAsPaid(invoice);
 		}
 	}
 

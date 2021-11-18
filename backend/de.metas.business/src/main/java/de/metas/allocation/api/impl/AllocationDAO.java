@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import de.metas.allocation.api.PaymentAllocationId;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -147,7 +148,7 @@ public class AllocationDAO implements IAllocationDAO
 	}
 
 	@Cached(cacheName = I_C_AllocationLine.Table_Name + "#By#" + I_C_AllocationLine.COLUMNNAME_C_AllocationHdr_ID + "#retrieveAll")
-	/* package */ List<I_C_AllocationLine> retrieveLines(final @CacheCtx Properties ctx,
+		/* package */ List<I_C_AllocationLine> retrieveLines(final @CacheCtx Properties ctx,
 			final int allocationHdrId,
 			final boolean retrieveAll,
 			final @CacheTrx String trxName)
@@ -425,5 +426,11 @@ public class AllocationDAO implements IAllocationDAO
 				.collect(ImmutableSetMultimap.toImmutableSetMultimap(
 						record -> PaymentId.ofRepoId(record.getC_Payment_ID()),
 						record -> InvoiceId.ofRepoIdOrNull(record.getC_Invoice_ID())));
+	}
+
+	@Override
+	public @NonNull I_C_AllocationHdr getById(@NonNull final PaymentAllocationId allocationId)
+	{
+		return InterfaceWrapperHelper.load(allocationId, I_C_AllocationHdr.class);
 	}
 }
