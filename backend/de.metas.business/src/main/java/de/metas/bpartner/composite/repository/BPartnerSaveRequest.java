@@ -38,5 +38,9 @@ public class BPartnerSaveRequest
 	@Nullable
 	private OrgId orgId;
 
+
+	/**
+	 * Use-Case for {@code false}: when transferring a customer to another org, the user who does the transfer might not have access to the target-org.
+	 */
 	boolean validatePermissions;
 }
