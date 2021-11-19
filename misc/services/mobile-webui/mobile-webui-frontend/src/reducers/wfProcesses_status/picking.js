@@ -311,7 +311,7 @@ export const mergeActivityDataStoredAndGenerateAltSteps = ({ draftActivityDataSt
 
   // loop within steps
   for (let lineIdx = 0; lineIdx < lines.length; lineIdx++) {
-    console.log('ABOUT_TO_SEND:', draftActivityDataStored.dataStored.lines[lineIdx]);
+    // console.log('ABOUT_TO_SEND:', draftActivityDataStored.dataStored.lines[lineIdx]);
     // computeLineStatus({ draftLine: draftActivityDataStored.dataStored.lines[lineIdx] });
 
     for (let stepIdx = 0; stepIdx < lines[lineIdx].steps.length; stepIdx++) {
