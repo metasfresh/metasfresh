@@ -306,6 +306,7 @@ const normalizePickingLines = (lines) => {
 };
 
 export const mergeActivityDataStoredAndGenerateAltSteps = ({ draftActivityDataStored, fromActivity }) => {
+  console.log('FROM_ACTIVITY:', JSON.stringify(fromActivity));
   const { lines } = fromActivity.componentProps;
   let genSteps = {};
 
