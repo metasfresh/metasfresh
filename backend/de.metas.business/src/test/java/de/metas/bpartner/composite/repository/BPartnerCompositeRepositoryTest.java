@@ -159,7 +159,7 @@ class BPartnerCompositeRepositoryTest
 						).build())
 				.build();
 
-		bpartnerCompositeRepository.save(bpartnerComposite);
+		bpartnerCompositeRepository.save(bpartnerComposite, true);
 
 		final BPartnerId bpartnerId = bpartnerComposite.getBpartner().getId();
 		Assertions.assertThat(bpartnerId).isNotNull();
@@ -205,7 +205,7 @@ class BPartnerCompositeRepositoryTest
 						.build())
 				.build();
 
-		bpartnerCompositeRepository.save(bpartnerComposite);
+		bpartnerCompositeRepository.save(bpartnerComposite, true);
 
 		final BPartnerId bpartnerId = bpartnerComposite.getBpartner().getId();
 		Assertions.assertThat(bpartnerId).isNotNull();

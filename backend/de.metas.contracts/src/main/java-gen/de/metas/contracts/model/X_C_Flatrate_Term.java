@@ -249,6 +249,33 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	}
 
 	@Override
+	public de.metas.contracts.model.I_C_Flatrate_Term getC_Flatrate_Term_Master()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Flatrate_Term_Master_ID, de.metas.contracts.model.I_C_Flatrate_Term.class);
+	}
+
+	@Override
+	public void setC_Flatrate_Term_Master(final de.metas.contracts.model.I_C_Flatrate_Term C_Flatrate_Term_Master)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Flatrate_Term_Master_ID, de.metas.contracts.model.I_C_Flatrate_Term.class, C_Flatrate_Term_Master);
+	}
+
+	@Override
+	public void setC_Flatrate_Term_Master_ID (final int C_Flatrate_Term_Master_ID)
+	{
+		if (C_Flatrate_Term_Master_ID < 1) 
+			set_Value (COLUMNNAME_C_Flatrate_Term_Master_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Flatrate_Term_Master_ID, C_Flatrate_Term_Master_ID);
+	}
+
+	@Override
+	public int getC_Flatrate_Term_Master_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Flatrate_Term_Master_ID);
+	}
+
+	@Override
 	public de.metas.contracts.model.I_C_Flatrate_Term getC_FlatrateTerm_Next()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_FlatrateTerm_Next_ID, de.metas.contracts.model.I_C_Flatrate_Term.class);
@@ -440,7 +467,7 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	}
 
 	@Override
-	public int getC_Order_Term_ID() 
+	public int getC_Order_Term_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Order_Term_ID);
 	}
@@ -1075,6 +1102,24 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	public static final String TERMINATIONREASON_IncorrectlyRecorded = "Err";
 	/** OrgChange = Os */
 	public static final String TERMINATIONREASON_OrgChange = "Os";
+	/** DoubleEntry = De */
+	public static final String TERMINATIONREASON_DoubleEntry = "De";
+	/** PoliticalReasons = Po */
+	public static final String TERMINATIONREASON_PoliticalReasons = "Po";
+	/** RealEstateSold = Iv */
+	public static final String TERMINATIONREASON_RealEstateSold = "Iv";
+	/** AddressUnknown = Ua */
+	public static final String TERMINATIONREASON_AddressUnknown = "Ua";
+	/** Deceased = Ve */
+	public static final String TERMINATIONREASON_Deceased = "Ve";
+	/** NotPaid = Ng */
+	public static final String TERMINATIONREASON_NotPaid = "Ng";
+	/** Complaint = Re */
+	public static final String TERMINATIONREASON_Complaint = "Re";
+	/** DueToAge = Al */
+	public static final String TERMINATIONREASON_DueToAge = "Al";
+	/** Termination = Ku */
+	public static final String TERMINATIONREASON_Termination = "Ku";
 	@Override
 	public void setTerminationReason (final @Nullable java.lang.String TerminationReason)
 	{

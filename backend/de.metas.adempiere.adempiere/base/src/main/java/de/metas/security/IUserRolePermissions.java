@@ -213,6 +213,8 @@ public interface IUserRolePermissions
 
 	Set<KeyNamePair> getLoginClients();
 
+	OrgIdAccessList getOrgAccess(@Nullable String tableName, Access access);
+
 	Set<OrgResource> getLoginOrgs();
 
 	UserMenuInfo getMenuInfo();
