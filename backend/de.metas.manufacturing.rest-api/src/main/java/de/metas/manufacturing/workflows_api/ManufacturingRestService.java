@@ -1,6 +1,7 @@
 package de.metas.manufacturing.workflows_api;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.picking.QtyRejectedReasonCode;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleId;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleProcessRequest;
@@ -101,9 +102,7 @@ public class ManufacturingRestService
 			case IN_PROGRESS:
 				return WFActivityStatus.IN_PROGRESS;
 			case COMPLETED:
-				return WFActivityStatus.COMPLETED;
 			case CLOSED:
-				return WFActivityStatus.COMPLETED;
 			case VOIDED:
 				return WFActivityStatus.COMPLETED;
 			default:
@@ -128,7 +127,13 @@ public class ManufacturingRestService
 		}
 		else if (event.getReceiveFrom() != null)
 		{
-			throw new UnsupportedOperationException(); // TODO implement Receipt endpoint
+			final JsonManufacturingOrderEvent.ReceiveFrom receiveFrom = event.getReceiveFrom();
+			return manufacturingJobService.receiveGoodsAndAggregateToLU(
+					job,
+					receiveFrom.getFinishedGoodsReceiveLineId(),
+					receiveFrom.getAggregateToLU(),
+					receiveFrom.getQtyReceived(),
+					SystemTime.asZonedDateTime());
 		}
 		else
 		{

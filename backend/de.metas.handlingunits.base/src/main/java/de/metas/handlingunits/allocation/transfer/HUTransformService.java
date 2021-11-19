@@ -558,9 +558,9 @@ public class HUTransformService
 	 * Creates one or more TUs (depending on the given quantity and the TU capacity) and joins, splits and/or distributes the source CU to them.<br>
 	 * If the user goes with the full quantity of the source CU and if the source CU fits into one TU, then it remains unchanged.
 	 *
-	 * @param cuHU                  the currently selected source CU line
-	 * @param qtyCU                 the CU-quantity to join or split
-	 * @param tuPIItemProduct       the PI item product to specify both the PI and capacity of the target TU
+	 * @param cuHU            the currently selected source CU line
+	 * @param qtyCU           the CU-quantity to join or split
+	 * @param tuPIItemProduct the PI item product to specify both the PI and capacity of the target TU
 	 */
 	public List<I_M_HU> cuToNewTUs(
 			@NonNull final I_M_HU cuHU,
@@ -795,7 +795,7 @@ public class HUTransformService
 	}
 
 	/**
-	 * @param parentItem         may be {@code null} if the childHU in question is removed from it's parent HU.
+	 * @param parentItem may be {@code null} if the childHU in question is removed from it's parent HU.
 	 */
 	private void setParent(
 			@NonNull final I_M_HU childHU,
@@ -879,7 +879,14 @@ public class HUTransformService
 					// create the new parent-item that will link sourceTuHU with newLuHU
 					final I_M_HU_PI piOfChildHU = handlingUnitsBL.getPI(sourceTuHU);
 					final I_M_HU_PI_Item parentPIItem = handlingUnitsDAO.retrieveParentPIItemForChildHUOrNull(newLuHU, piOfChildHU, huContext);
-					Check.errorIf(parentPIItem == null, "parentPIItem==null for parentHU={} and piOfChildHU={}", newLuHU, piOfChildHU);
+					if (parentPIItem == null)
+					{
+						throw new AdempiereException("LU `" + handlingUnitsBL.getDisplayName(newLuHU) + "` cannot stack TU `" + handlingUnitsBL.getDisplayName(sourceTuHU) + "` because there is no link between them.")
+								.setParameter("sourceTuHU", sourceTuHU)
+								.setParameter("piOfChildHU", piOfChildHU)
+								.setParameter("newLuHU", newLuHU);
+					}
+
 					newParentItemOfSourceTuHU = handlingUnitsDAO.createHUItemIfNotExists(newLuHU, parentPIItem).getLeft();
 				}
 			}
@@ -910,8 +917,10 @@ public class HUTransformService
 
 			return ImmutableList.of(newLuHU);
 		}
-
-		return tuToTopLevelHUs(sourceTuHU, qtyTU, luPIItem, isOwnPackingMaterials);
+		else
+		{
+			return tuToTopLevelHUs(sourceTuHU, qtyTU, luPIItem, isOwnPackingMaterials);
+		}
 	}
 
 	/**

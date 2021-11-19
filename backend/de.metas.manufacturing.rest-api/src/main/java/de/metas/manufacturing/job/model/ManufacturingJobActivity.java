@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.With;
+import org.adempiere.exceptions.AdempiereException;
 import org.eevolution.api.PPOrderRoutingActivityId;
 import org.eevolution.api.PPOrderRoutingActivityStatus;
 
@@ -22,10 +23,20 @@ public class ManufacturingJobActivity
 
 	@With
 	@Nullable RawMaterialsIssue rawMaterialsIssue;
+	@With
 	@Nullable FinishedGoodsReceive finishedGoodsReceive;
 
 	@NonNull PPOrderRoutingActivityId orderRoutingActivityId;
 	@NonNull PPOrderRoutingActivityStatus status;
+
+	public FinishedGoodsReceive getFinishedGoodsReceiveAssumingNotNull()
+	{
+		if (finishedGoodsReceive == null)
+		{
+			throw new AdempiereException("Not an material receiving activity");
+		}
+		return finishedGoodsReceive;
+	}
 
 	public ManufacturingJobActivity withChangedRawMaterialsIssueStep(
 			@NonNull final PPOrderIssueScheduleId issueScheduleId,
@@ -40,4 +51,19 @@ public class ManufacturingJobActivity
 			return this;
 		}
 	}
+
+	public ManufacturingJobActivity withChangedReceiveLine(
+			@NonNull final FinishedGoodsReceiveLineId id,
+			@NonNull UnaryOperator<FinishedGoodsReceiveLine> mapper)
+	{
+		if (finishedGoodsReceive != null)
+		{
+			return withFinishedGoodsReceive(finishedGoodsReceive.withChangedReceiveLine(id, mapper));
+		}
+		else
+		{
+			return this;
+		}
+	}
+
 }
