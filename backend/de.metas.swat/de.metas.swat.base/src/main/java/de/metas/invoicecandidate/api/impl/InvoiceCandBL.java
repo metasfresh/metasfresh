@@ -352,7 +352,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		{
 			isAllCandidatesInGroupDeliveredCache = threadInheritedTrx
 					.getProperty("InvoicecandBL#isAllCandidatesInGroupDeliveredCache",
-							() -> CACHE_BUILDER_IS_ALL_CANDIDATES_IN_GROUP_DELIVERED.build());
+								 () -> CACHE_BUILDER_IS_ALL_CANDIDATES_IN_GROUP_DELIVERED.build());
 		}
 		return isAllCandidatesInGroupDeliveredCache.getOrLoad(ic.getHeaderAggregationKey(), () -> isAllCandidatesInGroupDelivered0(ic));
 	}
@@ -444,8 +444,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				final ITranslatableString currSymbol = targetCurrency.getSymbol();
 
 				final String msg = msgBL.getMsg(ctx,
-						MSG_INVOICE_CAND_BL_BELOW_INVOICE_MIN_AMT_5P,
-						new Object[] { dateToday, actualAmt, currSymbol, invoiceSched.getAmt(), currSymbol });
+												MSG_INVOICE_CAND_BL_BELOW_INVOICE_MIN_AMT_5P,
+												new Object[] { dateToday, actualAmt, currSymbol, invoiceSched.getAmt(), currSymbol });
 				ic.setInvoiceScheduleAmtStatus(msg);
 				return;
 			}
@@ -652,13 +652,13 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 				amendSchedulerResult(ic,
-						msgBL.getMsg(ctx,
-								MSG_INVOICE_CAND_BL_STATUS_ORDER_NOT_CO_1P,
-								new Object[] {
-										adReferenceDAO.retrieveListNameTrl(
-												DocStatus.AD_REFERENCE_ID,
-												ol.getC_Order_ID() > 0 ? ol.getC_Order().getDocStatus() : "<null>") // "<null>" shouldn't happen
-								}));
+									 msgBL.getMsg(ctx,
+												  MSG_INVOICE_CAND_BL_STATUS_ORDER_NOT_CO_1P,
+												  new Object[] {
+														  adReferenceDAO.retrieveListNameTrl(
+																  DocStatus.AD_REFERENCE_ID,
+																  ol.getC_Order_ID() > 0 ? ol.getC_Order().getDocStatus() : "<null>") // "<null>" shouldn't happen
+												  }));
 
 				ic.setDiscount(ZERO);
 			}
@@ -674,7 +674,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 		final InvoiceRule invoiceRule = getInvoiceRule(ic);
 		Check.assume(InvoiceRule.CustomerScheduleAfterDelivery.equals(invoiceRule),
-				"Method is only called if invoice rule is " + InvoiceRule.CustomerScheduleAfterDelivery);
+					 "Method is only called if invoice rule is " + InvoiceRule.CustomerScheduleAfterDelivery);
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(ic);
 
@@ -941,7 +941,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		{
 			// don't log (per Mark request) because those could be a lot and because user has no opportunity to react
 			final String msg = msgBL.getMsg(ctx, MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_IS_TO_CLEAR,
-					new Object[] { ic.getC_Invoice_Candidate_ID() });
+											new Object[] { ic.getC_Invoice_Candidate_ID() });
 			Loggables.withLogger(logger, Level.DEBUG).addLog(msg);
 			return true;
 		}
@@ -950,7 +950,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		{
 			// don't log (per Mark request) because those could be a lot and because user has no opportunity to react
 			final String msg = msgBL.getMsg(ctx, MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_IS_IN_DISPUTE,
-					new Object[] { ic.getC_Invoice_Candidate_ID() });
+											new Object[] { ic.getC_Invoice_Candidate_ID() });
 			Loggables.withLogger(logger, Level.DEBUG).addLog(msg);
 			return true;
 		}
@@ -958,7 +958,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		if (ic.isSimulation())
 		{
 			Loggables.withLogger(logger, Level.DEBUG).addLog(" #isSkipCandidateFromInvoicing: Skipping IC: {},"
-					+ " as it's a simulation and it shouldn't be invoiced!", ic.getC_Invoice_Candidate_ID());
+																	 + " as it's a simulation and it shouldn't be invoiced!", ic.getC_Invoice_Candidate_ID());
 			return true;
 		}
 
@@ -969,7 +969,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				&& (dateToInvoice == null || dateToInvoice.isAfter(getToday())))
 		{
 			final String msg = msgBL.getMsg(ctx, MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_DATE_TO_INVOICE,
-					new Object[] { ic.getC_Invoice_Candidate_ID(), TimeUtil.asTimestamp(dateToInvoice), TimeUtil.asTimestamp(getToday()) });
+											new Object[] { ic.getC_Invoice_Candidate_ID(), TimeUtil.asTimestamp(dateToInvoice), TimeUtil.asTimestamp(getToday()) });
 			Loggables.withLogger(logger, Level.DEBUG).addLog(msg);
 			return true;
 		}
@@ -1068,7 +1068,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 							date,
 							soTrx);
 			logger.debug("C_Invoice_Candidate has M_PricingSystem_ID={}, effective C_BPartner_Location_ID={}, DateOrdered={} and SOTrx={}; -> return M_PriceList={}",
-					icRecord.getM_PricingSystem_ID(), partnerLocation.getC_BPartner_Location_ID(), date, icRecord.isSOTrx(), result);
+						 icRecord.getM_PricingSystem_ID(), partnerLocation.getC_BPartner_Location_ID(), date, icRecord.isSOTrx(), result);
 			return result;
 		}
 
@@ -1224,13 +1224,16 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	}
 
 	@Override
-	public I_C_Invoice_Line_Alloc createUpdateIla(
-			@NonNull final I_C_Invoice_Candidate invoiceCand,
-			@NonNull final I_C_InvoiceLine invoiceLine,
-			@NonNull final StockQtyAndUOMQty qtysInvoiced,
-			@Nullable final String note)
+	public I_C_Invoice_Line_Alloc createUpdateIla(InvoiceCandidateAllocCreateRequest request)
 	{
+		final I_C_Invoice_Candidate invoiceCand = request.getInvoiceCand();
+		final I_C_InvoiceLine invoiceLine = request.getInvoiceLine();
+		final String note = request.getNote();
+		final InvoiceLineAllocType invoiceLineAllocType = request.getInvoiceLineAllocType();
+
+		final StockQtyAndUOMQty qtysInvoiced = request.getQtysInvoiced();
 		final Properties ctx = InterfaceWrapperHelper.getCtx(invoiceCand);
+
 		Check.assume(Env.getAD_Client_ID(ctx) == invoiceCand.getAD_Client_ID(), "AD_Client_ID of " + invoiceCand + " and of its CTX are the same");
 
 		final I_C_Invoice_Line_Alloc existingIla = invoiceCandDAO.retrieveIlaForIcAndIl(invoiceCand, invoiceLine);
@@ -1238,6 +1241,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		if (existingIla != null)
 		{
 			translateAndPrependNote(existingIla, note);
+			existingIla.setC_Invoice_Line_Alloc_Type(invoiceLineAllocType.getCode());
 
 			//
 			// FIXME in follow-up task! (06162)
@@ -1269,6 +1273,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		newIla.setPriceEntered_Override(InterfaceWrapperHelper.getValueOrNull(invoiceCand, I_C_Invoice_Candidate.COLUMNNAME_PriceEntered_Override));
 
 		translateAndPrependNote(newIla, note);
+		newIla.setC_Invoice_Line_Alloc_Type(invoiceLineAllocType.getCode());
 
 		InterfaceWrapperHelper.save(newIla); // model validator C_Invoice_Line_Alloc will invalidate 'invoiceCand'
 
@@ -1436,6 +1441,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				final StockQtyAndUOMQty qtyInvoicedForIla;
 				final String note;
 
+				final InvoiceLineAllocType invoiceLineAllocType;
+
 				final I_C_Invoice_Candidate invoiceCandidate = ilaToReverse.getC_Invoice_Candidate();
 				invoiceCandidate.setProcessed_Override(null); // reset processed_override, because now that the invoice was reversed, the users might want to do something new with the IC.
 
@@ -1472,6 +1479,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 							.negate();
 
 					note = "@C_InvoiceLine@  @QtyInvoiced@ = " + il.getQtyInvoiced() + " @IsCreditedInvoiceReinvoicable@='Y'; ignoring overlap, because credit memo";
+
+					invoiceLineAllocType = InvoiceLineAllocType.CreditMemoReinvoiceable;
 				}
 
 				else if (creditMemo && !creditedInvoiceReinvoicable && (creditedInvoiceIsReversed || creditMemoCreditsInvoice))
@@ -1479,6 +1488,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 					// the original credit memo's ila also has QtyInvoiced=0
 					qtyInvoicedForIla = StockQtyAndUOMQtys.createZero(productId, uomId);
 					note = "@C_InvoiceLine@  @QtyInvoiced@ = " + il.getQtyInvoiced() + " @IsCreditedInvoiceReinvoicable@='N'";
+
+					invoiceLineAllocType = InvoiceLineAllocType.CreditMemoNotReinvoiceable;
 				}
 				else
 				{
@@ -1508,15 +1519,22 @@ public class InvoiceCandBL implements IInvoiceCandBL
 					note = "@C_InvoiceLine@  @QtyInvoiced@ = " + reversalQtyInvoiced
 							+ ", @C_Invoice_Candidate@ @QtyInvoiced@ = " + qtyInvoicedForIc
 							+ ", (=>overlap=" + overlap + ")";
+
+					invoiceLineAllocType = InvoiceLineAllocType.CreditMemoNotReinvoiceable; // TODO I am not sure this is OK!
+
 				}
 
 				invoiceCandDAO.save(invoiceCandidate);
 
-				createUpdateIla(
-						invoiceCandidate,
-						reversalLine,
-						qtyInvoicedForIla,
-						note);
+				final InvoiceCandidateAllocCreateRequest request = InvoiceCandidateAllocCreateRequest.builder()
+						.invoiceCand(invoiceCandidate)
+						.invoiceLine(reversalLine)
+						.qtysInvoiced(qtyInvoicedForIla)
+						.note(note)
+						.invoiceLineAllocType(invoiceLineAllocType)
+						.build();
+
+				createUpdateIla(request);
 			}
 		}
 	}
@@ -1595,11 +1613,11 @@ public class InvoiceCandBL implements IInvoiceCandBL
 						// NOTE: in case 'invoice' was not created from invoice candidates, it's a big chance here to get zero existing ICs
 						// so we need to create them now
 
-					logger.debug("Current C_InvoiceLine {} has a C_OrderLine {} which is not referenced by any C_Invoice_Candidate",  il, ol);
+						logger.debug("Current C_InvoiceLine {} has a C_OrderLine {} which is not referenced by any C_Invoice_Candidate", il, ol);
 						final IInvoiceCandidateHandlerBL creatorBL = Services.get(IInvoiceCandidateHandlerBL.class);
 						final List<I_C_Invoice_Candidate> invoiceCandsNew = creatorBL.createMissingCandidatesFor(ol);
 
-					logger.debug("Created C_Invoice_Candidates for C_OrderLine {}: {}",  ol, invoiceCandsNew);
+						logger.debug("Created C_Invoice_Candidates for C_OrderLine {}: {}", ol, invoiceCandsNew);
 						toLinkAgainstIl.addAll(invoiceCandsNew);
 
 						//
@@ -1638,6 +1656,9 @@ public class InvoiceCandBL implements IInvoiceCandBL
 					final ProductId ilProductId = ProductId.ofRepoId(il.getM_Product_ID());
 
 					final String note;
+
+					final InvoiceLineAllocType invoiceLineAllocType;
+
 					if (isCreditMemo)
 					{
 						final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
@@ -1649,10 +1670,14 @@ public class InvoiceCandBL implements IInvoiceCandBL
 							qtysInvoiced = StockQtyAndUOMQtys
 									.create(il.getQtyInvoiced(), ilProductId, il.getQtyEntered(), ilUomId)
 									.negate(); // this will allow the user to re-invoice, just as if the credit memo was a reversal
+
+							invoiceLineAllocType = InvoiceLineAllocType.CreditMemoReinvoiceable;
 						}
 						else
 						{
 							qtysInvoiced = StockQtyAndUOMQtys.createZero(ilProductId, ilUomId);
+
+							invoiceLineAllocType = InvoiceLineAllocType.CreditMemoNotReinvoiceable;
 						}
 					}
 					else
@@ -1660,8 +1685,19 @@ public class InvoiceCandBL implements IInvoiceCandBL
 						note = "";
 						qtysInvoiced = StockQtyAndUOMQtys
 								.create(il.getQtyInvoiced(), ilProductId, il.getQtyEntered(), ilUomId); // the standard case
+
+						invoiceLineAllocType = InvoiceLineAllocType.CreatedFromIC;
 					}
-					createUpdateIla(icToLink, il, qtysInvoiced, note);
+
+					final InvoiceCandidateAllocCreateRequest request = InvoiceCandidateAllocCreateRequest.builder()
+							.invoiceCand(icToLink)
+							.invoiceLine(il)
+							.qtysInvoiced(qtysInvoiced)
+							.note(note)
+							.invoiceLineAllocType(invoiceLineAllocType)
+							.build();
+
+					createUpdateIla(request);
 					// note: if an ILA is created, the icToLink is automatically invalidated via C_Invoice_Line_Alloc model validator
 				}
 
@@ -1792,9 +1828,9 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			final InconsistentUpdateException iue = (InconsistentUpdateException)e;
 			final Properties ctx = InterfaceWrapperHelper.getCtx(ic);
 			note = new MNote(ctx,
-					iue.getAdMessageHeadLine().toAD_Message(),
-					iue.getAdUserToNotifyId(),
-					ITrx.TRXNAME_None // save it out-of-trx
+							 iue.getAdMessageHeadLine().toAD_Message(),
+							 iue.getAdUserToNotifyId(),
+							 ITrx.TRXNAME_None // save it out-of-trx
 			);
 			note.setTextMsg(e.getMessage());
 			note.setAD_Table_ID(Services.get(IADTableDAO.class).retrieveTableId(I_C_Invoice_Candidate.Table_Name));
@@ -2047,11 +2083,11 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			final ProductAndCategoryAndManufacturerId product = productsRepo.retrieveProductAndCategoryAndManufacturerByProductId(productId);
 
 			final PricingConditionsBreak appliedBreak = pricingConditions.pickApplyingBreak(PricingConditionsBreakQuery.builder()
-					.attributes(attributes)
-					.product(product)
-					.qty(qty)
-					.price(priceActual)
-					.build());
+																									.attributes(attributes)
+																									.product(product)
+																									.qty(qty)
+																									.price(priceActual)
+																									.build());
 
 			qualityDiscountPercentage = appliedBreak != null ? appliedBreak.getQualityDiscountPercentage() : null;
 		}
@@ -2135,13 +2171,13 @@ public class InvoiceCandBL implements IInvoiceCandBL
 						if (ilRecord.getQtyInvoiced().compareTo(candidate.getQtyOrdered()) < 0)
 						{
 							logger.debug("invoiceLine.qtyInvoiced={} is < invoiceCandidate.qtyOrdered={}; -> closing invoice candidate",
-									ilRecord.getQtyInvoiced(), candidate.getQtyOrdered());
+										 ilRecord.getQtyInvoiced(), candidate.getQtyOrdered());
 							closeInvoiceCandidate(candidate);
 						}
 						else
 						{
 							logger.debug("invoiceLine.qtyInvoiced={} is >= invoiceCandidate.qtyOrdered={}; -> not closing invoice candidate",
-									ilRecord.getQtyInvoiced(), candidate.getQtyOrdered());
+										 ilRecord.getQtyInvoiced(), candidate.getQtyOrdered());
 						}
 					}
 				}
@@ -2247,7 +2283,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			final I_C_Invoice_Candidate firstInvoiceableCandRecord = invoiceCandDAO.getById(invoiceableInvoiceCandIdResult.getFirstInvoiceableInvoiceCandId());
 
 			logger.debug("C_Order_ID={} of this freight-cost invoice candidate has other invoicable C_Invoice_Candidate_ID={}; -> set DeliveryDate its DeliveryDate={}",
-					orderId.getRepoId(), firstInvoiceableCandRecord.getC_Invoice_Candidate_ID(), firstInvoiceableCandRecord.getDeliveryDate());
+						 orderId.getRepoId(), firstInvoiceableCandRecord.getC_Invoice_Candidate_ID(), firstInvoiceableCandRecord.getDeliveryDate());
 			icRecord.setDeliveryDate(firstInvoiceableCandRecord.getDeliveryDate());
 		}
 		else if (hasICsToWaitFor)
@@ -2315,8 +2351,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		for (final ExternalHeaderIdWithExternalLineIds headerWithLineIds : headerAndLineIds)
 		{
 			multiQuery.query(InvoiceCandidateQuery.builder()
-					.externalIds(headerWithLineIds)
-					.build());
+									 .externalIds(headerWithLineIds)
+									 .build());
 		}
 
 		return invoiceCandDAO.createSelectionByQuery(multiQuery.build(), pInstanceId);
@@ -2393,8 +2429,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		final IInvoiceGenerateResult result = invoiceCandBL.generateInvoices()
 				.setContext(ctx, trxName)
 				.setInvoicingParams(new PlainInvoicingParams()
-						.setStoreInvoicesInResult(true)
-						.setAssumeOneInvoice(true))
+											.setStoreInvoicesInResult(true)
+											.setAssumeOneInvoice(true))
 				.generateInvoices(invoiceCands.iterator());
 
 		final I_C_Invoice newInvoice;

@@ -14,7 +14,9 @@ import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.invoice.service.IInvoiceLineBL;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
+import de.metas.invoicecandidate.api.impl.InvoiceLineAllocType;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
 import de.metas.money.CurrencyId;
@@ -22,7 +24,6 @@ import de.metas.money.Money;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.uom.UomId;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.compiere.model.I_C_Invoice;
@@ -145,19 +146,32 @@ public class SalesInvoiceFactory
 					continue;
 				}
 				final List<I_C_Invoice_Candidate> invoiceCandidates = invoiceCandDAO.retrieveIcForIl(invoiceLineRecord);
+
+				boolean isCreditMemoNotReinvoiceable = false;
 				if (!invoiceCandidates.isEmpty())
 				{
-					if (!invoiceIsCreditMemo)
+					if(invoiceIsCreditMemo)
 					{
 
-						logger.debug("C_InvoiceLine is not manual as it has {} C_Invoice_Candidates; -> return empty", invoiceLineRecord.getM_Product_ID());
-						continue;
+						for (final I_C_Invoice_Candidate invoiceCandidate : invoiceCandidates)
+						{
+							final I_C_Invoice_Line_Alloc alloc = invoiceCandDAO.retrieveIlaForIcAndIl(invoiceCandidate, invoiceLineRecord);
+
+							final InvoiceLineAllocType invoiceLineAllocType = InvoiceLineAllocType.ofCodeNullable(alloc.getC_Invoice_Line_Alloc_Type());
+
+							if (invoiceLineAllocType == null || !invoiceLineAllocType.IsCreditMemoNotReinvoiceable())
+							{
+								logger.debug("C_InvoiceLine is not manual as it has a C_Invoice_Line_Allocation with the type {}; -> return empty", invoiceLineAllocType);
+								isCreditMemoNotReinvoiceable = false;
+								break;
+							}
+							isCreditMemoNotReinvoiceable = true;
+						}
 					}
 
-					final List<I_C_InvoiceLine> referringLines = invoiceDAO.retrieveReferringLines(InvoiceLineId.ofRepoId(invoiceLineRecord.getC_Invoice_ID(), invoiceLineRecord.getC_InvoiceLine_ID()));
-					if (Check.isEmpty(referringLines))
+					if(!isCreditMemoNotReinvoiceable)
 					{
-						logger.debug("C_InvoiceLine belongs to a credit memo and is not manual as it has {} C_Invoice_Candidates; -> return empty", invoiceLineRecord.getM_Product_ID());
+						logger.debug("C_InvoiceLine is not manual as it has {} C_Invoice_Candidates and it is not a reinvoiceable credit memo; -> return empty", invoiceCandidates.size() );
 						continue;
 					}
 				}

@@ -693,7 +693,15 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 					for (final I_C_Invoice_Candidate candForIlVO : candsForIlVO)
 					{
 						final StockQtyAndUOMQty qtysInvoiced = aggregate.getAllocatedQty(candForIlVO, ilVO);
-						invoiceCandBL.createUpdateIla(candForIlVO, invoiceLine, qtysInvoiced, null/* note */); // TODO
+
+						final InvoiceCandidateAllocCreateRequest request = InvoiceCandidateAllocCreateRequest.builder()
+								.invoiceCand(candForIlVO)
+								.invoiceLine(invoiceLine)
+								.qtysInvoiced(qtysInvoiced)
+								.note(null)
+								.invoiceLineAllocType(InvoiceLineAllocType.CreatedFromIC)
+								.build();
+						invoiceCandBL.createUpdateIla(request); // TODO
 
 						// #870
 						// Make sure the Qty and Price override are set to null when an invoiceline is created
