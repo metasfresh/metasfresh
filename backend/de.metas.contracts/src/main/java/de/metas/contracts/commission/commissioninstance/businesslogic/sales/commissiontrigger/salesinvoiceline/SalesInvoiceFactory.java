@@ -171,7 +171,7 @@ public class SalesInvoiceFactory
 
 					if(isCreditMemoReinvoiceable)
 					{
-						logger.debug("C_InvoiceLine is a reinvoiceable credit memo line; -> return empty", invoiceCandidates.size() );
+						logger.debug("C_InvoiceLine_ID={} is a reinvoiceable credit memo line; -> skip it", invoiceLineRecord.getC_InvoiceLine_ID() );
 						continue;
 					}
 				}
