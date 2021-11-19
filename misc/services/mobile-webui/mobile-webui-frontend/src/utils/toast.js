@@ -3,6 +3,8 @@ import counterpart from 'counterpart';
 import { unboxAxiosResponse } from './index';
 
 export const toastError = ({ axiosError, messageKey, fallbackMessageKey }) => {
+  console.log('ERROR =>', axiosError);
+
   let message;
   if (axiosError) {
     message = extractUserFriendlyErrorMessageFromAxiosError({ axiosError, fallbackMessageKey });

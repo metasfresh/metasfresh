@@ -46,10 +46,8 @@ const reduceOnUpdateQtyPicked = (draftState, payload) => {
   console.log('QtyRejected =====>', qtyRejected);
 
   if (!altStepId && qtyRejected) {
-    draftState = generateAlternativeSteps({
-      draftState,
-      wfProcessId,
-      activityId,
+    draftState[wfProcessId].activities[activityId].dataStored = generateAlternativeSteps({
+      draftDataStored: draftState[wfProcessId].activities[activityId].dataStored,
       lineId,
       stepId,
       qtyToAllocate: qtyRejected,
@@ -66,8 +64,8 @@ const reduceOnUpdateQtyPicked = (draftState, payload) => {
   return draftState;
 };
 
-export const generateAlternativeSteps = ({ draftState, wfProcessId, activityId, lineId, stepId, qtyToAllocate }) => {
-  const draftDataStored = draftState[wfProcessId].activities[activityId].dataStored;
+export const generateAlternativeSteps = ({ draftDataStored, lineId, stepId, qtyToAllocate }) => {
+  //const draftDataStored = draftState[wfProcessId].activities[activityId].dataStored;
   const draftDataStoredOrig = original(draftDataStored);
   const draftStep = draftDataStored.lines[lineId].steps[stepId];
   const { pickFromAlternatives: alternativesPool } = draftDataStoredOrig;
@@ -113,7 +111,7 @@ export const generateAlternativeSteps = ({ draftState, wfProcessId, activityId, 
     }
   }
 
-  return draftState;
+  return draftDataStored;
 };
 
 const computeQtyAvailableToAllocate = ({ alternativesPoolItem }) => {
@@ -324,12 +322,16 @@ registerHandler({
 
       for (let stepIdx = 0; stepIdx < lines[lineIdx].steps.length; stepIdx++) {
         let step = lines[lineIdx].steps[stepIdx];
-        // let { qtyRejected } = lines[lineIdx].steps[stepIdx].mainPickFrom;
+        console.log('STEP:', step);
+        let { qtyRejected } = lines[lineIdx].steps[stepIdx].mainPickFrom;
 
         // allocateQtys in sync with the data received from the BE
         let pickFromAlternatives = fromActivity.componentProps.pickFromAlternatives;
         for (let altKey in pickFromAlternatives) {
-          if (step.pickFromAlternatives[pickFromAlternatives[altKey].id].qtyPicked > 0) {
+          if (
+            step.pickFromAlternatives[pickFromAlternatives[altKey].id] &&
+            step.pickFromAlternatives[pickFromAlternatives[altKey].id].qtyPicked > 0
+          ) {
             genSteps[pickFromAlternatives[altKey].id] = pickFromAlternatives[altKey];
             genSteps[pickFromAlternatives[altKey].id].qtyPicked =
               step.pickFromAlternatives[pickFromAlternatives[altKey].id].qtyPicked;
@@ -344,8 +346,14 @@ registerHandler({
           pickFromAlternatives;
 
         draftActivityDataStored.dataStored.lines[lineIdx].steps[step.pickingStepId].altSteps.genSteps = genSteps;
+
+        // In case we have no generated steps and there is a qtyRejected to be filled - we need to generate those alternatives
+        if (Object.keys(genSteps).length === 0 && qtyRejected) {
+          console.log('WE NEED TO REGENERATE NEW ALTS: ', qtyRejected);
+        }
       }
     }
+
     return draftActivityDataStored;
   },
 });
