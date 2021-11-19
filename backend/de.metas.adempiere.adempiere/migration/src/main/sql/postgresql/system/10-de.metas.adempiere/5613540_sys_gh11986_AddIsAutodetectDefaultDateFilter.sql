@@ -183,3 +183,14 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=669113
 /* DDL */ select AD_Element_Link_Create_Missing_Field(669113)
 ;
 
+-- 2021-11-19T12:15:57.189Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET SeqNo=440, SeqNoGrid=NULL,Updated=TO_TIMESTAMP('2021-11-19 14:15:57','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=669113
+;
+
+-- 2021-11-19T12:16:03.596Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET SeqNoGrid=440,Updated=TO_TIMESTAMP('2021-11-19 14:16:03','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=669113
+;
+
+

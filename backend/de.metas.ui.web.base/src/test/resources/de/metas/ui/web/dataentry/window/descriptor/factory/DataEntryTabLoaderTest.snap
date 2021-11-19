@@ -1793,6 +1793,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
       "readonlyLogic" : "1=0",
       "displayLogic" : "1=1",
       "allowQuickInput" : false,
+      "IsAutodetectDefaultDateFilter" : true,
       "fields" : { },
       "idFields" : [ ],
       "includedEntitiesByDetailId" : {
@@ -1815,6 +1816,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
           "readonlyLogic" : "1=0",
           "displayLogic" : "1=1",
           "allowQuickInput" : false,
+          "IsAutodetectDefaultDateFilter" : true,
           "fields" : {
             "1111" : {
               "fieldName" : "1111",
@@ -1859,8 +1861,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "mandatory" : false,
                   "dataEntryFieldId" : 1111,
                   "fieldType" : "TEXT",
-                  "defaultOrderByAscending" : true,
-                  "defaultOrderBy" : false
+                  "defaultOrderBy" : false,
+                  "defaultOrderByAscending" : true
                 },
                 "present" : true
               },
@@ -1913,8 +1915,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "mandatory" : false,
                   "dataEntryFieldId" : 1111,
                   "fieldType" : "CREATED_UPDATED_INFO",
-                  "defaultOrderByAscending" : true,
-                  "defaultOrderBy" : false
+                  "defaultOrderBy" : false,
+                  "defaultOrderByAscending" : true
                 },
                 "present" : true
               },
@@ -1967,8 +1969,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "mandatory" : false,
                   "dataEntryFieldId" : 1112,
                   "fieldType" : "LONG_TEXT",
-                  "defaultOrderByAscending" : true,
-                  "defaultOrderBy" : false
+                  "defaultOrderBy" : false,
+                  "defaultOrderByAscending" : true
                 },
                 "present" : true
               },
@@ -2021,8 +2023,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "mandatory" : false,
                   "dataEntryFieldId" : 1112,
                   "fieldType" : "CREATED_UPDATED_INFO",
-                  "defaultOrderByAscending" : true,
-                  "defaultOrderBy" : false
+                  "defaultOrderBy" : false,
+                  "defaultOrderByAscending" : true
                 },
                 "present" : true
               },
@@ -2075,8 +2077,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "mandatory" : false,
                   "dataEntryFieldId" : 1113,
                   "fieldType" : "NUMBER",
-                  "defaultOrderByAscending" : true,
-                  "defaultOrderBy" : false
+                  "defaultOrderBy" : false,
+                  "defaultOrderByAscending" : true
                 },
                 "present" : true
               },
@@ -2129,8 +2131,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "mandatory" : false,
                   "dataEntryFieldId" : 1113,
                   "fieldType" : "CREATED_UPDATED_INFO",
-                  "defaultOrderByAscending" : true,
-                  "defaultOrderBy" : false
+                  "defaultOrderBy" : false,
+                  "defaultOrderByAscending" : true
                 },
                 "present" : true
               },
@@ -2183,8 +2185,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "mandatory" : false,
                   "dataEntryFieldId" : 1121,
                   "fieldType" : "DATE",
-                  "defaultOrderByAscending" : true,
-                  "defaultOrderBy" : false
+                  "defaultOrderBy" : false,
+                  "defaultOrderByAscending" : true
                 },
                 "present" : true
               },
@@ -2237,8 +2239,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "mandatory" : false,
                   "dataEntryFieldId" : 1121,
                   "fieldType" : "CREATED_UPDATED_INFO",
-                  "defaultOrderByAscending" : true,
-                  "defaultOrderBy" : false
+                  "defaultOrderBy" : false,
+                  "defaultOrderByAscending" : true
                 },
                 "present" : true
               },
@@ -2291,8 +2293,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "mandatory" : false,
                   "dataEntryFieldId" : 1122,
                   "fieldType" : "YESNO",
-                  "defaultOrderByAscending" : true,
-                  "defaultOrderBy" : false
+                  "defaultOrderBy" : false,
+                  "defaultOrderByAscending" : true
                 },
                 "present" : true
               },
@@ -2345,8 +2347,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "mandatory" : false,
                   "dataEntryFieldId" : 1122,
                   "fieldType" : "CREATED_UPDATED_INFO",
-                  "defaultOrderByAscending" : true,
-                  "defaultOrderBy" : false
+                  "defaultOrderBy" : false,
+                  "defaultOrderByAscending" : true
                 },
                 "present" : true
               },
@@ -2405,11 +2407,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                           "active" : true
                         }
                       },
-                      "cached" : true,
-                      "numericKey" : false
+                      "numericKey" : false,
+                      "cached" : true
                     },
-                    "highVolume" : false,
-                    "numericKey" : true
+                    "numericKey" : true,
+                    "highVolume" : false
                   },
                   "present" : true
                 },
@@ -2437,8 +2439,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "mandatory" : false,
                   "dataEntryFieldId" : 1123,
                   "fieldType" : "LIST",
-                  "defaultOrderByAscending" : true,
-                  "defaultOrderBy" : false
+                  "defaultOrderBy" : false,
+                  "defaultOrderByAscending" : true
                 },
                 "present" : true
               },
@@ -2491,8 +2493,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "mandatory" : false,
                   "dataEntryFieldId" : 1123,
                   "fieldType" : "CREATED_UPDATED_INFO",
-                  "defaultOrderByAscending" : true,
-                  "defaultOrderBy" : false
+                  "defaultOrderBy" : false,
+                  "defaultOrderByAscending" : true
                 },
                 "present" : true
               },
@@ -2544,8 +2546,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "columnName" : "DataEntry_SubTab_ID",
                   "mandatory" : true,
                   "fieldType" : "SUB_TAB_ID",
-                  "defaultOrderByAscending" : true,
-                  "defaultOrderBy" : false
+                  "defaultOrderBy" : false,
+                  "defaultOrderByAscending" : true
                 },
                 "present" : true
               },
@@ -2598,8 +2600,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "columnName" : "documentLinkColumnName",
                   "mandatory" : true,
                   "fieldType" : "PARENT_LINK_ID",
-                  "defaultOrderByAscending" : true,
-                  "defaultOrderBy" : false
+                  "defaultOrderBy" : false,
+                  "defaultOrderByAscending" : true
                 },
                 "present" : true
               },
@@ -2653,8 +2655,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "columnName" : "DataEntry_SubTab_ID",
                   "mandatory" : true,
                   "fieldType" : "SUB_TAB_ID",
-                  "defaultOrderByAscending" : true,
-                  "defaultOrderBy" : false
+                  "defaultOrderBy" : false,
+                  "defaultOrderByAscending" : true
                 },
                 "present" : true
               },
@@ -2708,8 +2710,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "columnName" : "documentLinkColumnName",
                 "mandatory" : true,
                 "fieldType" : "PARENT_LINK_ID",
-                "defaultOrderByAscending" : true,
-                "defaultOrderBy" : false
+                "defaultOrderBy" : false,
+                "defaultOrderByAscending" : true
               },
               "present" : true
             },
@@ -2741,7 +2743,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
             "present" : false
           },
           "cloneEnabled" : false,
-          "printable" : false
+          "printable" : false,
+          "isAutodetectDefaultDateFilter" : true
         },
         "DataEntry_SubTab-12" : {
           "documentType" : "Window",
@@ -2762,6 +2765,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
           "readonlyLogic" : "1=0",
           "displayLogic" : "1=1",
           "allowQuickInput" : false,
+          "IsAutodetectDefaultDateFilter" : true,
           "fields" : {
             "1211" : {
               "fieldName" : "1211",
@@ -2806,8 +2810,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "mandatory" : false,
                   "dataEntryFieldId" : 1211,
                   "fieldType" : "TEXT",
-                  "defaultOrderByAscending" : true,
-                  "defaultOrderBy" : false
+                  "defaultOrderBy" : false,
+                  "defaultOrderByAscending" : true
                 },
                 "present" : true
               },
@@ -2860,8 +2864,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "mandatory" : false,
                   "dataEntryFieldId" : 1211,
                   "fieldType" : "CREATED_UPDATED_INFO",
-                  "defaultOrderByAscending" : true,
-                  "defaultOrderBy" : false
+                  "defaultOrderBy" : false,
+                  "defaultOrderByAscending" : true
                 },
                 "present" : true
               },
@@ -2914,8 +2918,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "mandatory" : false,
                   "dataEntryFieldId" : 1212,
                   "fieldType" : "LONG_TEXT",
-                  "defaultOrderByAscending" : true,
-                  "defaultOrderBy" : false
+                  "defaultOrderBy" : false,
+                  "defaultOrderByAscending" : true
                 },
                 "present" : true
               },
@@ -2968,8 +2972,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "mandatory" : false,
                   "dataEntryFieldId" : 1212,
                   "fieldType" : "CREATED_UPDATED_INFO",
-                  "defaultOrderByAscending" : true,
-                  "defaultOrderBy" : false
+                  "defaultOrderBy" : false,
+                  "defaultOrderByAscending" : true
                 },
                 "present" : true
               },
@@ -3022,8 +3026,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "mandatory" : false,
                   "dataEntryFieldId" : 1213,
                   "fieldType" : "NUMBER",
-                  "defaultOrderByAscending" : true,
-                  "defaultOrderBy" : false
+                  "defaultOrderBy" : false,
+                  "defaultOrderByAscending" : true
                 },
                 "present" : true
               },
@@ -3076,8 +3080,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "mandatory" : false,
                   "dataEntryFieldId" : 1213,
                   "fieldType" : "CREATED_UPDATED_INFO",
-                  "defaultOrderByAscending" : true,
-                  "defaultOrderBy" : false
+                  "defaultOrderBy" : false,
+                  "defaultOrderByAscending" : true
                 },
                 "present" : true
               },
@@ -3130,8 +3134,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "mandatory" : false,
                   "dataEntryFieldId" : 1221,
                   "fieldType" : "DATE",
-                  "defaultOrderByAscending" : true,
-                  "defaultOrderBy" : false
+                  "defaultOrderBy" : false,
+                  "defaultOrderByAscending" : true
                 },
                 "present" : true
               },
@@ -3184,8 +3188,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "mandatory" : false,
                   "dataEntryFieldId" : 1221,
                   "fieldType" : "CREATED_UPDATED_INFO",
-                  "defaultOrderByAscending" : true,
-                  "defaultOrderBy" : false
+                  "defaultOrderBy" : false,
+                  "defaultOrderByAscending" : true
                 },
                 "present" : true
               },
@@ -3238,8 +3242,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "mandatory" : false,
                   "dataEntryFieldId" : 1222,
                   "fieldType" : "YESNO",
-                  "defaultOrderByAscending" : true,
-                  "defaultOrderBy" : false
+                  "defaultOrderBy" : false,
+                  "defaultOrderByAscending" : true
                 },
                 "present" : true
               },
@@ -3292,8 +3296,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "mandatory" : false,
                   "dataEntryFieldId" : 1222,
                   "fieldType" : "CREATED_UPDATED_INFO",
-                  "defaultOrderByAscending" : true,
-                  "defaultOrderBy" : false
+                  "defaultOrderBy" : false,
+                  "defaultOrderByAscending" : true
                 },
                 "present" : true
               },
@@ -3352,11 +3356,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                           "active" : true
                         }
                       },
-                      "cached" : true,
-                      "numericKey" : false
+                      "numericKey" : false,
+                      "cached" : true
                     },
-                    "highVolume" : false,
-                    "numericKey" : true
+                    "numericKey" : true,
+                    "highVolume" : false
                   },
                   "present" : true
                 },
@@ -3384,8 +3388,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "mandatory" : false,
                   "dataEntryFieldId" : 1223,
                   "fieldType" : "LIST",
-                  "defaultOrderByAscending" : true,
-                  "defaultOrderBy" : false
+                  "defaultOrderBy" : false,
+                  "defaultOrderByAscending" : true
                 },
                 "present" : true
               },
@@ -3438,8 +3442,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "mandatory" : false,
                   "dataEntryFieldId" : 1223,
                   "fieldType" : "CREATED_UPDATED_INFO",
-                  "defaultOrderByAscending" : true,
-                  "defaultOrderBy" : false
+                  "defaultOrderBy" : false,
+                  "defaultOrderByAscending" : true
                 },
                 "present" : true
               },
@@ -3491,8 +3495,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "columnName" : "DataEntry_SubTab_ID",
                   "mandatory" : true,
                   "fieldType" : "SUB_TAB_ID",
-                  "defaultOrderByAscending" : true,
-                  "defaultOrderBy" : false
+                  "defaultOrderBy" : false,
+                  "defaultOrderByAscending" : true
                 },
                 "present" : true
               },
@@ -3545,8 +3549,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "columnName" : "documentLinkColumnName",
                   "mandatory" : true,
                   "fieldType" : "PARENT_LINK_ID",
-                  "defaultOrderByAscending" : true,
-                  "defaultOrderBy" : false
+                  "defaultOrderBy" : false,
+                  "defaultOrderByAscending" : true
                 },
                 "present" : true
               },
@@ -3600,8 +3604,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "columnName" : "DataEntry_SubTab_ID",
                   "mandatory" : true,
                   "fieldType" : "SUB_TAB_ID",
-                  "defaultOrderByAscending" : true,
-                  "defaultOrderBy" : false
+                  "defaultOrderBy" : false,
+                  "defaultOrderByAscending" : true
                 },
                 "present" : true
               },
@@ -3655,8 +3659,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "columnName" : "documentLinkColumnName",
                 "mandatory" : true,
                 "fieldType" : "PARENT_LINK_ID",
-                "defaultOrderByAscending" : true,
-                "defaultOrderBy" : false
+                "defaultOrderBy" : false,
+                "defaultOrderByAscending" : true
               },
               "present" : true
             },
@@ -3688,7 +3692,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
             "present" : false
           },
           "cloneEnabled" : false,
-          "printable" : false
+          "printable" : false,
+          "isAutodetectDefaultDateFilter" : true
         }
       },
       "dataBinding" : {
@@ -3712,7 +3717,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
         "present" : false
       },
       "cloneEnabled" : false,
-      "printable" : false
+      "printable" : false,
+      "isAutodetectDefaultDateFilter" : true
     }
   ]
 ]
