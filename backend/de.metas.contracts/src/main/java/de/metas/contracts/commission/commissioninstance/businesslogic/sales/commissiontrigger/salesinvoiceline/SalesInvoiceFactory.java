@@ -161,7 +161,8 @@ public class SalesInvoiceFactory
 
 							if (invoiceLineAllocType == null || invoiceLineAllocType.isCreditMemoReinvoiceable())
 							{
-								logger.debug("C_InvoiceLine is not manual as it has a C_Invoice_Line_Allocation with the type {}; -> return empty", invoiceLineAllocType);
+								logger.debug("C_InvoiceLine_ID={} is a reinvoiceable credit memo line as it has  C_Invoice_Line_Allocation_ID={} with the type {}", 
+								invoiceLineRecord.getC_InvoiceLine_ID(), alloc.getC_Invoice_Line_Alloc_ID(), invoiceLineAllocType);
 								isCreditMemoReinvoiceable = true;
 								break;
 							}
