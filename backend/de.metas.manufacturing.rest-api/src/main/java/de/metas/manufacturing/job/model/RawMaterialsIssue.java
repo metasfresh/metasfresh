@@ -24,4 +24,9 @@ public class RawMaterialsIssue
 		final ImmutableList<RawMaterialsIssueLine> linesNew = CollectionUtils.map(lines, line -> line.withChangedRawMaterialsIssueStep(issueScheduleId, mapper));
 		return withLines(linesNew);
 	}
+
+	public boolean containsRawMaterialsIssueStep(final PPOrderIssueScheduleId issueScheduleId)
+	{
+		return lines.stream().anyMatch(line -> line.containsRawMaterialsIssueStep(issueScheduleId));
+	}
 }

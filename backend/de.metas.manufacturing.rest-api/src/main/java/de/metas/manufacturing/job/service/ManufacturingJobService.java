@@ -188,6 +188,7 @@ public class ManufacturingJobService
 	public ManufacturingJob issueRawMaterials(@NonNull final ManufacturingJob job, @NonNull final PPOrderIssueScheduleProcessRequest request)
 	{
 		return job.withChangedRawMaterialsIssueStep(request.getIssueScheduleId(), step -> {
+			step.assertNotIssued();
 			final PPOrderIssueSchedule issueSchedule = ppOrderIssueScheduleService.issue(request);
 			return step.withIssued(issueSchedule.getIssued());
 		});

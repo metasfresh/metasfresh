@@ -35,4 +35,9 @@ public class RawMaterialsIssueLine
 
 		return withSteps(stepsNew);
 	}
+
+	public boolean containsRawMaterialsIssueStep(final PPOrderIssueScheduleId issueScheduleId)
+	{
+		return steps.stream().anyMatch(step -> PPOrderIssueScheduleId.equals(step.getId(), issueScheduleId));
+	}
 }
