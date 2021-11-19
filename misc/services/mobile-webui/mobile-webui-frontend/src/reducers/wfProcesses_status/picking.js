@@ -43,7 +43,7 @@ const reduceOnUpdateQtyPicked = (draftState, payload) => {
   console.log('ALT_STEP_ID =>', altStepId);
   console.log('QtyRejected =====>', qtyRejected);
 
-  if (!altStepId && qtyRejected) {
+  if (qtyRejected) {
     draftState[wfProcessId].activities[activityId].dataStored = generateAlternativeSteps({
       draftDataStored: draftState[wfProcessId].activities[activityId].dataStored,
       lineId,
@@ -360,8 +360,8 @@ registerHandler({
         draftActivityDataStored.dataStored.lines[lineIdx].steps[step.pickingStepId].altSteps.genSteps = genSteps;
 
         // In case we have no generated steps and there is a qtyRejected to be filled - we need to generate those alternatives
-        // if ((Object.keys(genSteps).length === 0 && qtyRejected) || qtyRejected - totalAltQtys > 0) {
-        if (Object.keys(genSteps).length === 0 && qtyRejected) {
+        if ((Object.keys(genSteps).length === 0 && qtyRejected) || qtyRejected - totalAltQtys > 0) {
+          // if (Object.keys(genSteps).length === 0 && qtyRejected) {
           draftActivityDataStored.dataStored = generateAlternativeSteps({
             draftDataStored: draftActivityDataStored.dataStored,
             lineId: lineIdx,
