@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
+import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HUIteratorListenerAdapter;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
@@ -833,6 +834,12 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	public I_M_HU_PI getPI(@NonNull final HuPackingInstructionsItemId piItemId)
 	{
 		final I_M_HU_PI_Item piItem = handlingUnitsRepo.getPackingInstructionItemById(piItemId);
+		return getPI(piItem);
+	}
+
+	@Override
+	public I_M_HU_PI getPI(@NonNull final I_M_HU_PI_Item piItem)
+	{
 		final HuPackingInstructionsVersionId piVersionId = HuPackingInstructionsVersionId.ofRepoId(piItem.getM_HU_PI_Version_ID());
 		final I_M_HU_PI_Version piVersion = handlingUnitsRepo.retrievePIVersionById(piVersionId);
 		return getPI(piVersion);
@@ -1040,4 +1047,14 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	{
 		return attributeStorageFactoryService.createHUAttributeStorageFactory().getImmutableAttributeSet(hu);
 	}
+
+	@Override
+	public List<I_M_HU_PI_Item> retrieveParentPIItemsForParentPI(
+			@NonNull HuPackingInstructionsId packingInstructionsId,
+			@Nullable String huUnitType,
+			@Nullable BPartnerId bpartnerId)
+	{
+		return handlingUnitsRepo.retrieveParentPIItemsForParentPI(packingInstructionsId, huUnitType, bpartnerId);
+	}
+
 }

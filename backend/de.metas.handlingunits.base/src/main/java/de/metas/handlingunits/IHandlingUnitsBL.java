@@ -252,6 +252,11 @@ public interface IHandlingUnitsBL extends ISingletonService
 
 	ImmutableAttributeSet getImmutableAttributeSet(@NonNull I_M_HU hu);
 
+	List<I_M_HU_PI_Item> retrieveParentPIItemsForParentPI(
+			@NonNull HuPackingInstructionsId packingInstructionsId,
+			@Nullable String huUnitType,
+			@Nullable BPartnerId bpartnerId);
+
 	@Builder
 	@Value
 	class TopLevelHusQuery
@@ -420,6 +425,8 @@ public interface IHandlingUnitsBL extends ISingletonService
 	I_M_HU_PI getPI(@NonNull HuPackingInstructionsItemId piItemId);
 
 	HuPackingInstructionsId getPackingInstructionsId(@NonNull HuPackingInstructionsItemId piItemId);
+
+	I_M_HU_PI getPI(@NonNull I_M_HU_PI_Item piItem);
 
 	@NonNull
 	I_M_HU_PI getIncludedPI(@NonNull I_M_HU_Item huItem);
