@@ -71,6 +71,10 @@ export const generateAlternativeSteps = ({ draftDataStored, lineId, stepId, qtyT
   const { pickFromAlternatives: alternativesPool } = draftDataStoredOrig;
 
   console.log('qtyToAllocate ===>', qtyToAllocate);
+  console.log('draftDataStored =>', draftDataStoredOrig);
+  console.log('LineId:', lineId);
+  console.log('StepId:', stepId);
+  console.log('DRAFT_STEP:', draftStep);
 
   let qtyToAllocateRemaining = qtyToAllocate;
 
@@ -89,8 +93,10 @@ export const generateAlternativeSteps = ({ draftDataStored, lineId, stepId, qtyT
       console.log('qtyAvailableToAllocateInThisStep=>', qtyAvailableToAllocateInThisStep);
 
       const qtyToAllocateThisStep = Math.min(qtyToAllocateRemaining, qtyAvailableToAllocateInThisStep);
-      console.log('AFTER_MIN: ', qtyToAllocateThisStep);
 
+      if (!draftStep.altSteps) {
+        draftStep.altSteps.genSteps = {};
+      }
       draftStep.altSteps.genSteps[alternativesPoolItem.id] = {
         id: alternativesPoolItem.id,
         locatorName: alternativesPoolItem.locatorName,
@@ -349,7 +355,12 @@ registerHandler({
 
         // In case we have no generated steps and there is a qtyRejected to be filled - we need to generate those alternatives
         if (Object.keys(genSteps).length === 0 && qtyRejected) {
-          console.log('WE NEED TO REGENERATE NEW ALTS: ', qtyRejected);
+          draftActivityDataStored.dataStored = generateAlternativeSteps({
+            draftDataStored: draftActivityDataStored.dataStored,
+            lineId: lineIdx,
+            stepId: step.pickingStepId,
+            qtyToAllocate: qtyRejected,
+          });
         }
       }
     }
