@@ -94,7 +94,7 @@ public class GRSSignumDispatcherRouteBuilder extends RouteBuilder
 
 		exchange.getIn().removeHeaders("CamelHttp*");
 		exchange.getIn().setHeader(HTTP_URI, dispatchMessageRequest.getUrl());
-		exchange.getIn().setHeader(Exchange.HTTP_METHOD, HttpEndpointBuilderFactory.HttpMethods.PUT);
+		exchange.getIn().setHeader(Exchange.HTTP_METHOD, HttpEndpointBuilderFactory.HttpMethods.POST);
 
 		if (Check.isNotBlank(dispatchMessageRequest.getAuthToken()))
 		{
