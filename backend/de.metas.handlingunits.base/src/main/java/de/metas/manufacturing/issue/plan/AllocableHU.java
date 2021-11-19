@@ -21,7 +21,7 @@ class AllocableHU
 	private final QuantityUOMConverter uomConverter;
 
 	@Getter
-	@NonNull private final I_M_HU hu;
+	@NonNull private final I_M_HU topLevelHU;
 
 	@Getter
 	@NonNull private final ProductId productId;
@@ -35,18 +35,18 @@ class AllocableHU
 	public AllocableHU(
 			@NonNull final IHUStorageFactory storageFactory,
 			@NonNull final QuantityUOMConverter uomConverter,
-			@NonNull final I_M_HU hu,
+			@NonNull final I_M_HU topLevelHU,
 			@NonNull final ProductId productId)
 	{
 		this.storageFactory = storageFactory;
 		this.uomConverter = uomConverter;
-		this.hu = hu;
+		this.topLevelHU = topLevelHU;
 		this.productId = productId;
 
-		this.locatorId = IHandlingUnitsBL.extractLocatorId(hu);
+		this.locatorId = IHandlingUnitsBL.extractLocatorId(topLevelHU);
 	}
 
-	public HuId getHuId() {return HuId.ofRepoId(getHu().getM_HU_ID());}
+	public HuId getHuId() {return HuId.ofRepoId(getTopLevelHU().getM_HU_ID());}
 
 	public Quantity getQtyAvailableToAllocate(final UomId uomId)
 	{
@@ -66,7 +66,7 @@ class AllocableHU
 		Quantity storageQtyInHuUom = this._storageQtyInHuUom;
 		if (storageQtyInHuUom == null)
 		{
-			storageQtyInHuUom = this._storageQtyInHuUom = storageFactory.getStorage(hu).getProductStorage(productId).getQty();
+			storageQtyInHuUom = this._storageQtyInHuUom = storageFactory.getStorage(topLevelHU).getProductStorage(productId).getQty();
 		}
 		return storageQtyInHuUom;
 	}

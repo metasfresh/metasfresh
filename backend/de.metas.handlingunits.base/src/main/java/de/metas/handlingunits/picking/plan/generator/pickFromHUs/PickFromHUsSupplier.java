@@ -99,7 +99,7 @@ public class PickFromHUsSupplier
 		final ImmutableAttributeSet attributes = husCache.getHUAttributes(topLevelHUId);
 
 		return PickFromHU.builder()
-				.huId(topLevelHUId)
+				.topLevelHUId(topLevelHUId)
 				.huReservedForThisLine(false)
 				.locatorId(locatorId)
 				//
@@ -162,7 +162,7 @@ public class PickFromHUsSupplier
 
 	private static AlternativePickFromKey toAlternativePickFromKey(@NonNull final PickFromHU pickFromHU, @NonNull final ProductId productId)
 	{
-		return AlternativePickFromKey.of(pickFromHU.getLocatorId(), pickFromHU.getHuId(), productId);
+		return AlternativePickFromKey.of(pickFromHU.getLocatorId(), pickFromHU.getTopLevelHUId(), productId);
 	}
 
 	private Comparator<PickFromHU> getAllocationOrder(@NonNull final ShipmentAllocationBestBeforePolicy bestBeforePolicy)
@@ -170,6 +170,6 @@ public class PickFromHUsSupplier
 		return Comparator.
 				<PickFromHU>comparingInt(pickFromHU -> pickFromHU.isHuReservedForThisLine() ? 0 : 1) // consider reserved HU first
 				.thenComparing(bestBeforePolicy.comparator(PickFromHU::getExpiringDate)) // then first/last expiring HU
-				.thenComparing(PickFromHU::getHuId); // then by HUId
+				.thenComparing(PickFromHU::getTopLevelHUId); // then by HUId
 	}
 }
