@@ -1441,8 +1441,6 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				final StockQtyAndUOMQty qtyInvoicedForIla;
 				final String note;
 
-				final InvoiceLineAllocType invoiceLineAllocType;
-
 				final I_C_Invoice_Candidate invoiceCandidate = ilaToReverse.getC_Invoice_Candidate();
 				invoiceCandidate.setProcessed_Override(null); // reset processed_override, because now that the invoice was reversed, the users might want to do something new with the IC.
 
@@ -1480,7 +1478,6 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 					note = "@C_InvoiceLine@  @QtyInvoiced@ = " + il.getQtyInvoiced() + " @IsCreditedInvoiceReinvoicable@='Y'; ignoring overlap, because credit memo";
 
-					invoiceLineAllocType = InvoiceLineAllocType.CreditMemoReinvoiceable;
 				}
 
 				else if (creditMemo && !creditedInvoiceReinvoicable && (creditedInvoiceIsReversed || creditMemoCreditsInvoice))
@@ -1489,7 +1486,6 @@ public class InvoiceCandBL implements IInvoiceCandBL
 					qtyInvoicedForIla = StockQtyAndUOMQtys.createZero(productId, uomId);
 					note = "@C_InvoiceLine@  @QtyInvoiced@ = " + il.getQtyInvoiced() + " @IsCreditedInvoiceReinvoicable@='N'";
 
-					invoiceLineAllocType = InvoiceLineAllocType.CreditMemoNotReinvoiceable;
 				}
 				else
 				{
@@ -1520,8 +1516,16 @@ public class InvoiceCandBL implements IInvoiceCandBL
 							+ ", @C_Invoice_Candidate@ @QtyInvoiced@ = " + qtyInvoicedForIc
 							+ ", (=>overlap=" + overlap + ")";
 
-					invoiceLineAllocType = InvoiceLineAllocType.CreditMemoNotReinvoiceable;
+				}
 
+				final InvoiceLineAllocType invoiceLineAllocType;
+				if (qtyInvoicedForIla.signum() == 0)
+				{
+					invoiceLineAllocType = InvoiceLineAllocType.CreditMemoNotReinvoiceable;
+				}
+				else
+				{
+					invoiceLineAllocType = InvoiceLineAllocType.CreditMemoReinvoiceable;
 				}
 
 				invoiceCandDAO.save(invoiceCandidate);
