@@ -229,6 +229,15 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	}
 
 	@Override
+	@NonNull
+	public ImmutableSet<InvoiceCandidateId> retrieveReferencingIds(@NonNull final TableRecordReference reference)
+	{
+		return retrieveInvoiceCandidatesForRecordQuery(reference)
+				.create()
+				.listIds(InvoiceCandidateId::ofRepoId);
+	}
+	
+	@Override
 	public int deleteAllReferencingInvoiceCandidates(@NonNull final Object model)
 	{
 		final String tableName = InterfaceWrapperHelper.getModelTableName(model);

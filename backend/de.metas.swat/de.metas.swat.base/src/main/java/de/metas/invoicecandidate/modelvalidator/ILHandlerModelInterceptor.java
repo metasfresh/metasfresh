@@ -1,17 +1,19 @@
 package de.metas.invoicecandidate.modelvalidator;
 
+import com.google.common.base.MoreObjects;
+import de.metas.document.engine.IDocumentBL;
+import de.metas.invoicecandidate.api.InvoiceSyncCreationService;
+import de.metas.invoicecandidate.async.spi.impl.CreateMissingInvoiceCandidatesWorkpackageProcessor;
+import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.CandidatesAutoCreateMode;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.AbstractModelInterceptor;
 import org.adempiere.ad.modelvalidator.DocTimingType;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Client;
-
-import com.google.common.base.MoreObjects;
-
-import de.metas.document.engine.IDocumentBL;
-import de.metas.invoicecandidate.async.spi.impl.CreateMissingInvoiceCandidatesWorkpackageProcessor;
-import de.metas.util.Check;
-import de.metas.util.Services;
 
 /*
  * #%L
@@ -39,34 +41,27 @@ import de.metas.util.Services;
  * Interceptor used to intercept invoice candidates relevant documents and manage their life cycle.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 final class ILHandlerModelInterceptor extends AbstractModelInterceptor
 {
-	public static final Builder builder()
+	public static Builder builder()
 	{
 		return new Builder();
 	}
 
 	private final String tableName;
 	private final boolean isDocument;
-	private final boolean isCreateInvoiceCandidates;
+	private final CandidatesAutoCreateMode candidatesAutoCreateMode;
 	private final DocTimingType createInvoiceCandidatesTiming;
+	private final InvoiceSyncCreationService invoiceSyncCreationService = SpringContextHolder.instance.getBean(InvoiceSyncCreationService.class);
 
-	private ILHandlerModelInterceptor(final Builder builder)
+	private ILHandlerModelInterceptor(@NonNull final Builder builder)
 	{
 		this.tableName = builder.getTableName();
-		this.isCreateInvoiceCandidates = builder.isCreateInvoiceCandidates();
+		this.candidatesAutoCreateMode = builder.getCandidatesAutoCreateMode();
 		this.createInvoiceCandidatesTiming = builder.getCreateInvoiceCandidatesTiming();
 
-		if (Services.get(IDocumentBL.class).isDocumentTable(tableName))
-		{
-			isDocument = true;
-		}
-		else
-		{
-			isDocument = false;
-		}
+		this.isDocument = Services.get(IDocumentBL.class).isDocumentTable(tableName);
 	}
 
 	@Override
@@ -74,7 +69,7 @@ final class ILHandlerModelInterceptor extends AbstractModelInterceptor
 	{
 		return MoreObjects.toStringHelper(this)
 				.add("tableName", tableName)
-				.add("isCreateInvoiceCandidates", isCreateInvoiceCandidates)
+				.add("isCreateInvoiceCandidates", candidatesAutoCreateMode)
 				.add("createInvoiceCandidatesTiming", createInvoiceCandidatesTiming)
 				.toString();
 	}
@@ -82,8 +77,8 @@ final class ILHandlerModelInterceptor extends AbstractModelInterceptor
 	@Override
 	protected void onInit(final IModelValidationEngine engine, final I_AD_Client client)
 	{
-		final boolean interceptDocValidate = isDocument && (isCreateInvoiceCandidates);
-		final boolean interceptModelChange = (!isDocument && isCreateInvoiceCandidates);
+		final boolean interceptDocValidate = isDocument && (candidatesAutoCreateMode.isDoSomething());
+		final boolean interceptModelChange = (!isDocument && candidatesAutoCreateMode.isDoSomething());
 
 		if (interceptDocValidate)
 		{
@@ -96,7 +91,7 @@ final class ILHandlerModelInterceptor extends AbstractModelInterceptor
 	}
 
 	@Override
-	public void onDocValidate(final Object model, final DocTimingType timing) throws Exception
+	public void onDocValidate(final Object model, final DocTimingType timing)
 	{
 		Check.assume(isDocument, "isDocument flag is set"); // shall not happen
 
@@ -109,7 +104,7 @@ final class ILHandlerModelInterceptor extends AbstractModelInterceptor
 	}
 
 	@Override
-	public void onModelChange(final Object model, final ModelChangeType changeType) throws Exception
+	public void onModelChange(final Object model, final ModelChangeType changeType)
 	{
 		//
 		// Create missing invoice candidates for given pseudo-document
@@ -119,23 +114,36 @@ final class ILHandlerModelInterceptor extends AbstractModelInterceptor
 		}
 	}
 
-	/** Creates missing invoice candidates for given model, if this is enabled. */
-	private final void createMissingInvoiceCandidates(final Object model)
+	/**
+	 * Creates missing invoice candidates for given model, if this is enabled.
+	 */
+	private void createMissingInvoiceCandidates(final Object model)
 	{
 		// Skip creating the invoice candidates if this is disabled.
-		if (!isCreateInvoiceCandidates)
+		if (!candidatesAutoCreateMode.isDoSomething())
 		{
 			return;
 		}
+		switch (candidatesAutoCreateMode)
+		{
+			case DONT:
+				break;
+			case CREATE_CANDIDATES:
+				CreateMissingInvoiceCandidatesWorkpackageProcessor.schedule(model);
+				break;
+			case CREATE_CANDIDATES_AND_INVOICES:
+				invoiceSyncCreationService.generateIcsAndInvoices(model);
+		}
 
-		CreateMissingInvoiceCandidatesWorkpackageProcessor.schedule(model);
 	}
 
-	/** {@link ILHandlerModelInterceptor} instance builder */
+	/**
+	 * {@link ILHandlerModelInterceptor} instance builder
+	 */
 	public static final class Builder
 	{
 		private String tableName;
-		private boolean createInvoiceCandidates = false;
+		private CandidatesAutoCreateMode candidatesAutoCreateMode = CandidatesAutoCreateMode.DONT;
 		private DocTimingType createInvoiceCandidatesTiming = DocTimingType.AFTER_COMPLETE;
 
 		private Builder()
@@ -148,27 +156,27 @@ final class ILHandlerModelInterceptor extends AbstractModelInterceptor
 			return new ILHandlerModelInterceptor(this);
 		}
 
-		public Builder setTableName(String tableName)
+		public Builder setTableName(@NonNull final String tableName)
 		{
 			this.tableName = tableName;
 			return this;
 		}
 
-		private final String getTableName()
+		private String getTableName()
 		{
 			Check.assumeNotEmpty(tableName, "tableName not empty");
 			return tableName;
 		}
 
-		public Builder setCreateInvoiceCandidates(boolean createInvoiceCandidates)
+		public Builder setCandidatesAutoCreateMode(@NonNull final CandidatesAutoCreateMode candidatesAutoCreateMode)
 		{
-			this.createInvoiceCandidates = createInvoiceCandidates;
+			this.candidatesAutoCreateMode = candidatesAutoCreateMode;
 			return this;
 		}
 
-		private boolean isCreateInvoiceCandidates()
+		private CandidatesAutoCreateMode getCandidatesAutoCreateMode()
 		{
-			return createInvoiceCandidates;
+			return candidatesAutoCreateMode;
 		}
 
 		private DocTimingType getCreateInvoiceCandidatesTiming()
@@ -176,9 +184,8 @@ final class ILHandlerModelInterceptor extends AbstractModelInterceptor
 			return createInvoiceCandidatesTiming;
 		}
 
-		public Builder setCreateInvoiceCandidatesTiming(DocTimingType createInvoiceCandidatesTiming)
+		public Builder setCreateInvoiceCandidatesTiming(@NonNull final DocTimingType createInvoiceCandidatesTiming)
 		{
-			Check.assumeNotNull(createInvoiceCandidatesTiming, "createInvoiceCandidatesTiming not null");
 			this.createInvoiceCandidatesTiming = createInvoiceCandidatesTiming;
 			return this;
 		}

@@ -837,7 +837,7 @@ public class FlatrateDAO implements IFlatrateDAO
 			final ITranslatableString name = uomDAO.getName(UomId.ofRepoId(dataEntry.getC_UOM_ID()));
 			throw new AdempiereException(
 					MSP_DATA_ENTRY_ERROR_INVOICE_CAND_PROCESSED_3P,
-					name, dataEntry.getC_Period().getName(), processedCands.toString() );
+					name, dataEntry.getC_Period().getName(), processedCands.toString());
 		}
 
 		return null;
@@ -1063,26 +1063,22 @@ public class FlatrateDAO implements IFlatrateDAO
 	}
 
 	@Override
-	public boolean orderPartnerHasExistingRunningTerms(@NonNull final I_C_Order order)
+	public boolean bpartnerHasExistingRunningTerms(@NonNull final I_C_Flatrate_Term flatrateTerm)
 	{
+		if (flatrateTerm.getC_Order_Term_ID() < 0)
+		{
+			throw new IllegalArgumentException("This method only works with flatrateTerms that have C_Order_Term_ID>0. Given flatrateTerm=" + flatrateTerm);
+		}
+		final Instant instant = TimeUtil.asInstant(flatrateTerm.getC_Order_Term().getDateOrdered());
 
-		final IQueryBuilder<I_C_Flatrate_Term> flatrateTermIQueryBuilder = existingSubscriptionsQueryBuilder(OrgId.ofRepoId(order.getAD_Org_ID()),
-																											 BPartnerId.ofRepoId(order.getBill_BPartner_ID()),
-																											 TimeUtil.asInstant(order.getDateOrdered()));
+		final IQueryBuilder<I_C_Flatrate_Term> queryBuilder = //
+				existingSubscriptionsQueryBuilder(OrgId.ofRepoId(flatrateTerm.getAD_Org_ID()),
+												  BPartnerId.ofRepoId(flatrateTerm.getBill_BPartner_ID()),
+												  instant);
 
-		flatrateTermIQueryBuilder.addNotEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_C_Order_Term_ID, order.getC_Order_ID());
+		queryBuilder.addNotEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_C_Order_Term_ID, flatrateTerm.getC_Order_Term_ID());
 
-		return flatrateTermIQueryBuilder.create()
+		return queryBuilder.create()
 				.anyMatch();
-	}
-
-	@Override
-	public void assignAsyncBatchId(
-			@NonNull final FlatrateTermId flatrateTermId, 
-			@NonNull final AsyncBatchId asyncBatchId)
-	{
-		final I_C_Flatrate_Term flatrateTerm = getById(flatrateTermId);
-		flatrateTerm.setC_Async_Batch_ID(asyncBatchId.getRepoId());
-		saveRecord(flatrateTerm);
 	}
 }

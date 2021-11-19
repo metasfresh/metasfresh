@@ -68,7 +68,7 @@ public class C_ILCandHandler
 
 				final ILHandlerModelInterceptor modelInterceptor = ILHandlerModelInterceptor.builder()
 						.setTableName(tableName)
-						.setCreateInvoiceCandidates(handler.isCreateMissingCandidatesAutomatically())
+						.setCandidatesAutoCreateMode(handler.getCandidatesAutoCreateMode())
 						.setCreateInvoiceCandidatesTiming(handler.getAutomaticallyCreateMissingCandidatesDocTiming())
 						.build();
 				engine.addModelValidator(modelInterceptor);

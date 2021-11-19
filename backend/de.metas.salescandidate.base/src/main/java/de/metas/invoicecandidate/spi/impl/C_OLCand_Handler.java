@@ -17,6 +17,7 @@ import de.metas.lang.SOTrx;
 import de.metas.ordercandidate.api.IOLCandBL;
 import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
 import de.metas.ordercandidate.model.I_C_OLCand;
+import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.PricingSystemId;
@@ -31,6 +32,7 @@ import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.service.ClientId;
@@ -39,6 +41,7 @@ import org.adempiere.warehouse.WarehouseId;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
+import java.time.ZoneId;
 import java.util.Iterator;
 import java.util.Properties;
 
@@ -60,19 +63,22 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 {
 	private final C_OLCand_HandlerDAO dao = new C_OLCand_HandlerDAO();
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	@Override
-	public boolean isCreateMissingCandidatesAutomatically()
+	public CandidatesAutoCreateMode getCandidatesAutoCreateMode()
 	{
-		return true;
+		return CandidatesAutoCreateMode.CREATE_CANDIDATES;
 	}
 
 	@Override
-	public boolean isCreateMissingCandidatesAutomatically(final Object model)
+	public CandidatesAutoCreateMode getCandidatesAutoCreateMode(final Object model)
 	{
 		final I_C_OLCand olCandRecord = create(model, I_C_OLCand.class);
 
-		return isEligibleForInvoiceCandidateCreate(olCandRecord);
+		return isEligibleForInvoiceCandidateCreate(olCandRecord) 
+				? CandidatesAutoCreateMode.CREATE_CANDIDATES 
+				: CandidatesAutoCreateMode.DONT;
 	}
 
 	@Override
@@ -85,7 +91,7 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 	public Iterator<I_C_OLCand> retrieveAllModelsWithMissingCandidates(final int limit)
 	{
 		return dao.retrieveMissingCandidatesQuery(Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
-				.setLimit(limit)
+				.setLimit(QueryLimit.ofInt(limit))
 				.create()
 				.iterate(I_C_OLCand.class);
 	}
@@ -290,12 +296,13 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 	@Override
 	public PriceAndTax calculatePriceAndTax(@NonNull final I_C_Invoice_Candidate ic)
 	{
+		final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(ic.getAD_Org_ID()));
 		final I_C_OLCand olc = getOLCand(ic);
 		final IPricingResult pricingResult = Services.get(IOLCandBL.class).computePriceActual(
 				olc,
 				null,
 				PricingSystemId.NULL,
-				TimeUtil.asLocalDate(olc.getDateCandidate()));
+				TimeUtil.asLocalDate(olc.getDateCandidate(), timeZone));
 
 		return PriceAndTax.builder()
 				.priceUOMId(pricingResult.getPriceUomId())

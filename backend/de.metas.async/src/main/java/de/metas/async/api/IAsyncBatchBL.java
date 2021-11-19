@@ -4,10 +4,16 @@
 package de.metas.async.api;
 
 import de.metas.async.AsyncBatchId;
+import de.metas.async.Async_Constants;
 import de.metas.async.model.I_C_Async_Batch;
+import de.metas.async.model.I_C_Queue_Block;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.model.I_C_Queue_WorkPackage_Notified;
+import de.metas.async.spi.IWorkpackagePrioStrategy;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
+import org.adempiere.util.lang.IPair;
+import org.adempiere.util.lang.ImmutablePair;
 
 import java.util.Optional;
 
@@ -49,7 +55,8 @@ public interface IAsyncBatchBL extends ISingletonService
 
 	/**
 	 * Enqueue batch for the de.metas.async.processor.impl.CheckProcessedAsynBatchWorkpackageProcessor processor. Call
-	 * {@link IWorkPackageQueue#enqueueWorkPackage(de.metas.async.model.I_C_Queue_Block, String)} with priority = <code>null</code>. This is OK because we assume that there is a dedicated queue/thread
+	 * {@link IWorkPackageQueue#enqueueWorkPackage(I_C_Queue_Block, IWorkpackagePrioStrategy)} with priority = <code>null</code>. 
+	 * This is OK because we assume that there is a dedicated queue/thread
 	 * for CheckProcessedAsynBatchWorkpackageProcessor
 	 */
 	void enqueueAsyncBatch(AsyncBatchId asyncBatchId);
@@ -78,6 +85,13 @@ public interface IAsyncBatchBL extends ISingletonService
 	void markWorkpackageNotified(I_C_Queue_WorkPackage_Notified workpackageNotified);
 
 	Optional<AsyncBatchId> getAsyncBatchId(Object model);
+
+	/**
+	 * @param asyncBatchInternalName see {@link Async_Constants}
+	 */
+	@NonNull <T> ImmutablePair<AsyncBatchId, T> assignAsyncBatchToContractIfMissing(
+			@NonNull T model,
+			@NonNull String asyncBatchInternalName);
 
 	I_C_Async_Batch getAsyncBatchById(AsyncBatchId asyncBatchId);
 

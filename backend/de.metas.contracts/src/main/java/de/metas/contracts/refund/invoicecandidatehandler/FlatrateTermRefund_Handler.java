@@ -9,6 +9,9 @@ import java.sql.Timestamp;
 import java.util.Iterator;
 import java.util.function.Consumer;
 
+import de.metas.contracts.refund.CandidateAssignmentService;
+import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
+import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.CandidatesAutoCreateMode;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_UOM;
 
@@ -60,7 +63,7 @@ public class FlatrateTermRefund_Handler
 	}
 
 	/**
-	 * @return an empty iterator; invoice candidates that need to be there are created from {@link InvoiceCandidateAssignmentService}.
+	 * @return an empty iterator; invoice candidates that need to be there are created from {@link CandidateAssignmentService}.
 	 */
 	@Override
 	public Iterator<I_C_Flatrate_Term> retrieveTermsWithMissingCandidates(final int limit)
@@ -70,10 +73,11 @@ public class FlatrateTermRefund_Handler
 				.iterator();
 	}
 
+	@NonNull
 	@Override
-	public boolean isMissingInvoiceCandidate(final I_C_Flatrate_Term flatrateTerm)
+	public CandidatesAutoCreateMode isMissingInvoiceCandidate(final I_C_Flatrate_Term flatrateTerm)
 	{
-		return false;
+		return CandidatesAutoCreateMode.DONT;
 	}
 
 	/**
@@ -100,7 +104,7 @@ public class FlatrateTermRefund_Handler
 	}
 
 	/**
-	 * @return {@link PriceAndTax#NONE} because the tax remains unchanged and the price is updated in {@link InvoiceCandidateAssignmentService}.
+	 * return {@link PriceAndTax#NONE} because the tax remains unchanged and the price is updated in {@link CandidateAssignmentService}.
 	 */
 	@Override
 	public PriceAndTax calculatePriceAndTax(@NonNull final I_C_Invoice_Candidate invoiceCandidateRecord)

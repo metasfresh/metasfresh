@@ -26,6 +26,7 @@ package de.metas.async.api.impl;
 
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.async.AsyncBatchId;
+import de.metas.async.Async_Constants;
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.api.IAsyncBatchBuilder;
 import de.metas.async.api.IAsyncBatchDAO;
@@ -48,6 +49,9 @@ import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.lang.IPair;
+import org.adempiere.util.lang.ImmutablePair;
+import org.adempiere.util.lang.Mutable;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -430,6 +434,28 @@ public class AsyncBatchBL implements IAsyncBatchBL
 		return asyncBatchId.map(AsyncBatchId::ofRepoIdOrNull);
 	}
 
+	@Override
+	public @NonNull <T> ImmutablePair<AsyncBatchId, T> assignAsyncBatchToContractIfMissing(
+			@NonNull final T model,
+			@NonNull final String asyncBatchInternalName)
+	{
+		final Optional<AsyncBatchId> asyncBatchId = getAsyncBatchId(model);
+		if (asyncBatchId.isPresent())
+		{
+			return ImmutablePair.of(asyncBatchId.get(), model);
+		}
+		final Mutable<ImmutablePair<AsyncBatchId, T>> result = new Mutable<>();
+		trxManager.runInNewTrx(() -> {
+
+			final AsyncBatchId currentAsyncBatchId = newAsyncBatch(asyncBatchInternalName);
+			InterfaceWrapperHelper.setValue(model, I_C_Async_Batch.COLUMNNAME_C_Async_Batch_ID, currentAsyncBatchId.getRepoId());
+
+			InterfaceWrapperHelper.saveRecord(model);
+			result.setValue(ImmutablePair.of(currentAsyncBatchId, model));
+		});
+		return result.getValueNotNull();
+	}
+		
 	public I_C_Async_Batch getAsyncBatchById(@NonNull final AsyncBatchId asyncBatchId)
 	{
 		return asyncBatchDAO.retrieveAsyncBatchRecord(asyncBatchId);
