@@ -91,6 +91,8 @@ export const generateAlternativeSteps = ({ draftDataStored, lineId, stepId, qtyT
 
       const qtyToAllocateThisStep = Math.min(qtyToAllocateRemaining, qtyAvailableToAllocateInThisStep);
 
+      if (qtyToAllocateThisStep === 0) break;
+
       if (!draftStep.altSteps) {
         draftStep.altSteps.genSteps = {};
       }
@@ -331,6 +333,7 @@ registerHandler({
         let step = lines[lineIdx].steps[stepIdx];
         console.log('STEP:', step);
         let { qtyRejected } = lines[lineIdx].steps[stepIdx].mainPickFrom;
+        let totalAltQtys = 0;
 
         // allocateQtys in sync with the data received from the BE
         let pickFromAlternatives = fromActivity.componentProps.pickFromAlternatives;
@@ -339,6 +342,8 @@ registerHandler({
             step.pickFromAlternatives[pickFromAlternatives[altKey].id] &&
             step.pickFromAlternatives[pickFromAlternatives[altKey].id].qtyPicked > 0
           ) {
+            totalAltQtys = totalAltQtys + step.pickFromAlternatives[pickFromAlternatives[altKey].id].qtyPicked;
+
             genSteps[pickFromAlternatives[altKey].id] = pickFromAlternatives[altKey];
             genSteps[pickFromAlternatives[altKey].id].qtyPicked =
               step.pickFromAlternatives[pickFromAlternatives[altKey].id].qtyPicked;
@@ -355,6 +360,7 @@ registerHandler({
         draftActivityDataStored.dataStored.lines[lineIdx].steps[step.pickingStepId].altSteps.genSteps = genSteps;
 
         // In case we have no generated steps and there is a qtyRejected to be filled - we need to generate those alternatives
+        // if ((Object.keys(genSteps).length === 0 && qtyRejected) || qtyRejected - totalAltQtys > 0) {
         if (Object.keys(genSteps).length === 0 && qtyRejected) {
           draftActivityDataStored.dataStored = generateAlternativeSteps({
             draftDataStored: draftActivityDataStored.dataStored,
