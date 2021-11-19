@@ -513,7 +513,7 @@ public class GridTabVO implements Evaluatee, Serializable
 	private String CommitWarning;
 	private Map<String, String> commitWarningTrls = null;
 	/** Detect default date filter	*/
-	private boolean IsAutodetectDefaultDateFilter=true;
+	private boolean IsAutodetectDefaultDateFilter;
 	/** Where			*/
 	private String WhereClause;
 //	private static final IStringExpression DEFAULT_WhereClauseExpression = IStringExpression.NULL;
