@@ -75,8 +75,8 @@ public enum InvoiceLineAllocType implements ReferenceListAwareEnum
 
 	private static final ImmutableMap<String, InvoiceLineAllocType> typesByCode = Maps.uniqueIndex(Arrays.asList(values()), InvoiceLineAllocType::getCode);
 
-	public boolean IsCreditMemoNotReinvoiceable()
+	public static boolean isTypeOfStandaloneCreditMemo(@NonNull final InvoiceLineAllocType type)
 	{
-		return this == CreditMemoNotReinvoiceable;
+		return CreditMemoReinvoiceable == type;
 	}
 }

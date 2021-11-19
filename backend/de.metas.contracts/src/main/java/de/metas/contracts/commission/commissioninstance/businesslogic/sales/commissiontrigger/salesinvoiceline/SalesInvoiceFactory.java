@@ -147,7 +147,7 @@ public class SalesInvoiceFactory
 				}
 				final List<I_C_Invoice_Candidate> invoiceCandidates = invoiceCandDAO.retrieveIcForIl(invoiceLineRecord);
 
-				boolean isCreditMemoNotReinvoiceable = false;
+				boolean isStandaloneCreditMemo = true;
 				if (!invoiceCandidates.isEmpty())
 				{
 					if(invoiceIsCreditMemo)
@@ -159,19 +159,19 @@ public class SalesInvoiceFactory
 
 							final InvoiceLineAllocType invoiceLineAllocType = InvoiceLineAllocType.ofCodeNullable(alloc.getC_Invoice_Line_Alloc_Type());
 
-							if (invoiceLineAllocType == null || !invoiceLineAllocType.IsCreditMemoNotReinvoiceable())
+							if (invoiceLineAllocType == null || InvoiceLineAllocType.isTypeOfStandaloneCreditMemo(invoiceLineAllocType))
 							{
 								logger.debug("C_InvoiceLine is not manual as it has a C_Invoice_Line_Allocation with the type {}; -> return empty", invoiceLineAllocType);
-								isCreditMemoNotReinvoiceable = false;
+								isStandaloneCreditMemo = true;
 								break;
 							}
-							isCreditMemoNotReinvoiceable = true;
+							isStandaloneCreditMemo = false;
 						}
 					}
 
-					if(!isCreditMemoNotReinvoiceable)
+					if(isStandaloneCreditMemo)
 					{
-						logger.debug("C_InvoiceLine is not manual as it has {} C_Invoice_Candidates and it is not a reinvoiceable credit memo; -> return empty", invoiceCandidates.size() );
+						logger.debug("C_InvoiceLine is not manual as it has {} C_Invoice_Candidates and it is a reinvoiceable credit memo; -> return empty", invoiceCandidates.size() );
 						continue;
 					}
 				}
