@@ -102,9 +102,7 @@ public class ManufacturingRestService
 			case IN_PROGRESS:
 				return WFActivityStatus.IN_PROGRESS;
 			case COMPLETED:
-				return WFActivityStatus.COMPLETED;
 			case CLOSED:
-				return WFActivityStatus.COMPLETED;
 			case VOIDED:
 				return WFActivityStatus.COMPLETED;
 			default:
