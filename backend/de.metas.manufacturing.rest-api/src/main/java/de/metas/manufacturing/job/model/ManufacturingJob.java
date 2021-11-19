@@ -5,6 +5,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleId;
 import de.metas.user.UserId;
 import de.metas.util.collections.CollectionUtils;
+import de.metas.workflow.rest_api.model.WFActivityId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -28,6 +29,11 @@ public class ManufacturingJob
 
 	@With
 	@NonNull ImmutableList<ManufacturingJobActivity> activities;
+
+	public ManufacturingJobActivity getActivityById(@NonNull WFActivityId wfActivityId)
+	{
+		return getActivityById(wfActivityId.getAsId(ManufacturingJobActivityId.class));
+	}
 
 	public ManufacturingJobActivity getActivityById(@NonNull ManufacturingJobActivityId id)
 	{

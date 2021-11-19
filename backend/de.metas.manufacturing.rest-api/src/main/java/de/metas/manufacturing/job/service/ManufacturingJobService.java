@@ -2,6 +2,7 @@ package de.metas.manufacturing.job.service;
 
 import de.metas.dao.ValueRestriction;
 import de.metas.handlingunits.HUBarcode;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsItemId;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -15,6 +16,7 @@ import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueSchedule;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleProcessRequest;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleService;
 import de.metas.handlingunits.reservation.HUReservationService;
+import de.metas.manufacturing.job.model.CurrentReceivingHU;
 import de.metas.manufacturing.job.model.FinishedGoodsReceiveLineId;
 import de.metas.manufacturing.job.model.ManufacturingJob;
 import de.metas.manufacturing.job.model.ManufacturingJobActivity;
@@ -201,18 +203,18 @@ public class ManufacturingJobService
 		final PPOrderId ppOrderId = job.getPpOrderId();
 
 		return job.withChangedReceiveLine(lineId, line -> {
-			final HuId aggregateToLUId = receiveGoodsAndAggregateToLU(
+			final CurrentReceivingHU currentReceivingHU = trxManager.callInThreadInheritedTrx(() -> receiveGoodsAndAggregateToLU(
 					ppOrderId,
 					line.getCoProductBOMLineId(),
 					aggregateToLU,
 					qtyToReceiveBD,
-					date);
+					date));
 
-			return line.withAggregateToLUId(aggregateToLUId);
+			return line.withCurrentReceivingHU(currentReceivingHU);
 		});
 	}
 
-	private HuId receiveGoodsAndAggregateToLU(
+	private CurrentReceivingHU receiveGoodsAndAggregateToLU(
 			final @NonNull PPOrderId ppOrderId,
 			final @Nullable PPOrderBOMLineId coProductBOMLineId,
 			final @NonNull JsonAggregateToLU aggregateToLU,
@@ -240,12 +242,13 @@ public class ManufacturingJobService
 			huProducer = ppOrderBL.receivingMainProduct(ppOrderId);
 		}
 
+		final HUPIItemProductId tuPIItemProductId = aggregateToLU.getTUPIItemProductId();
 		final Quantity qtyToReceive = Quantitys.create(qtyToReceiveBD, uomId);
 
 		final List<I_M_HU> tusOrVhus = huProducer
 				.movementDate(date)
 				.locatorId(locatorId)
-				.receiveHUs(qtyToReceive);
+				.receiveTUs(qtyToReceive, tuPIItemProductId);
 
 		final HuId luId = aggregateTUsToLU(tusOrVhus, aggregateToLU);
 
@@ -255,15 +258,20 @@ public class ManufacturingJobService
 		if (coProductLine != null)
 		{
 			coProductLine.setCurrent_Receiving_LU_HU_ID(luId.getRepoId());
+			coProductLine.setCurrent_Receiving_TU_PI_Item_Product_ID(tuPIItemProductId.getRepoId());
 			ppOrderBOMBL.save(coProductLine);
 		}
 		else
 		{
 			ppOrder.setCurrent_Receiving_LU_HU_ID(luId.getRepoId());
+			ppOrder.setCurrent_Receiving_TU_PI_Item_Product_ID(tuPIItemProductId.getRepoId());
 			ppOrderBL.save(ppOrder);
 		}
 
-		return luId;
+		return CurrentReceivingHU.builder()
+				.tuPIItemProductId(tuPIItemProductId)
+				.aggregateToLUId(luId)
+				.build();
 	}
 
 	private HuId aggregateTUsToLU(
@@ -274,9 +282,9 @@ public class ManufacturingJobService
 
 		I_M_HU lu = null;
 		I_M_HU_PI_Item luPIItem = null;
-		if (aggregateToLU.getExistingLUBarcode() != null)
+		if (aggregateToLU.getExistingLU() != null)
 		{
-			lu = handlingUnitsDAO.getById(HUBarcode.ofBarcodeString(aggregateToLU.getExistingLUBarcode()).toHuId());
+			lu = handlingUnitsDAO.getById(HUBarcode.ofBarcodeString(aggregateToLU.getExistingLU().getHuBarcode()).toHuId());
 		}
 		else
 		{

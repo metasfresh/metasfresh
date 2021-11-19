@@ -3,6 +3,7 @@ package de.metas.manufacturing.workflows_api.rest_api;
 import de.metas.Profiles;
 import de.metas.manufacturing.workflows_api.ManufacturingMobileApplication;
 import de.metas.manufacturing.workflows_api.rest_api.json.JsonManufacturingOrderEvent;
+import de.metas.manufacturing.workflows_api.rest_api.json.JsonManufacturingOrderEventResult;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import lombok.NonNull;
 import org.compiere.util.Env;
@@ -27,9 +28,10 @@ public class ManufacturingMobileRestController
 	}
 
 	@PostMapping("/event")
-	public void postEvents(
+	public JsonManufacturingOrderEventResult postEvents(
 			@RequestBody @NonNull final JsonManufacturingOrderEvent event)
 	{
-		manufacturingMobileApplication.processEvent(event, Env.getLoggedUserId());
+		return manufacturingMobileApplication.processEvent(event, Env.getLoggedUserId());
+
 	}
 }

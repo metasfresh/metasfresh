@@ -233,6 +233,27 @@ public interface I_PP_Order_BOMLine
 	String COLUMNNAME_Current_Receiving_LU_HU_ID = "Current_Receiving_LU_HU_ID";
 
 	/**
+	 * Set Current Receiving TU instructions.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCurrent_Receiving_TU_PI_Item_Product_ID (int Current_Receiving_TU_PI_Item_Product_ID);
+
+	/**
+	 * Get Current Receiving TU instructions.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getCurrent_Receiving_TU_PI_Item_Product_ID();
+
+	ModelColumn<I_PP_Order_BOMLine, Object> COLUMN_Current_Receiving_TU_PI_Item_Product_ID = new ModelColumn<>(I_PP_Order_BOMLine.class, "Current_Receiving_TU_PI_Item_Product_ID", null);
+	String COLUMNNAME_Current_Receiving_TU_PI_Item_Product_ID = "Current_Receiving_TU_PI_Item_Product_ID";
+
+	/**
 	 * Set Lieferdatum.
 	 * Date when the product was delivered
 	 *

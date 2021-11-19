@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_PP_Order_BOMLine extends org.compiere.model.PO implements I_PP_Order_BOMLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1442743430L;
+	private static final long serialVersionUID = 78059498L;
 
     /** Standard Constructor */
     public X_PP_Order_BOMLine (final Properties ctx, final int PP_Order_BOMLine_ID, @Nullable final String trxName)
@@ -154,6 +154,21 @@ public class X_PP_Order_BOMLine extends org.compiere.model.PO implements I_PP_Or
 	public int getCurrent_Receiving_LU_HU_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_Current_Receiving_LU_HU_ID);
+	}
+
+	@Override
+	public void setCurrent_Receiving_TU_PI_Item_Product_ID (final int Current_Receiving_TU_PI_Item_Product_ID)
+	{
+		if (Current_Receiving_TU_PI_Item_Product_ID < 1) 
+			set_Value (COLUMNNAME_Current_Receiving_TU_PI_Item_Product_ID, null);
+		else 
+			set_Value (COLUMNNAME_Current_Receiving_TU_PI_Item_Product_ID, Current_Receiving_TU_PI_Item_Product_ID);
+	}
+
+	@Override
+	public int getCurrent_Receiving_TU_PI_Item_Product_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Current_Receiving_TU_PI_Item_Product_ID);
 	}
 
 	@Override

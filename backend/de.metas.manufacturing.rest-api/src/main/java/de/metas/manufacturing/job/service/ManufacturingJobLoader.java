@@ -2,11 +2,14 @@ package de.metas.manufacturing.job.service;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Multimaps;
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HUBarcode;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueSchedule;
+import de.metas.manufacturing.job.model.CurrentReceivingHU;
 import de.metas.manufacturing.job.model.FinishedGoodsReceive;
 import de.metas.manufacturing.job.model.FinishedGoodsReceiveLine;
 import de.metas.manufacturing.job.model.HUInfo;
@@ -153,7 +156,7 @@ public class ManufacturingJobLoader
 	@Nullable
 	private RawMaterialsIssueLine toRawMaterialsIssueLine(@NonNull final I_PP_Order_BOMLine orderBOMLine)
 	{
-		final BOMComponentType bomComponentType = BOMComponentType.ofCode(orderBOMLine.getComponentType());
+		final BOMComponentType bomComponentType = BOMComponentType.optionalOfNullableCode(orderBOMLine.getComponentType()).orElse(BOMComponentType.Component);
 		if (!bomComponentType.isIssue())
 		{
 			return null;
@@ -208,8 +211,8 @@ public class ManufacturingJobLoader
 				.filter(Objects::nonNull);
 
 		return FinishedGoodsReceive.builder()
-				.lines(Stream.concat(Stream.of(finishedGood), coProducts)
-						.collect(ImmutableList.toImmutableList()))
+				.linesById(Stream.concat(Stream.of(finishedGood), coProducts)
+						.collect(ImmutableMap.toImmutableMap(FinishedGoodsReceiveLine::getId, line -> line)))
 				.build();
 	}
 
@@ -226,15 +229,31 @@ public class ManufacturingJobLoader
 				.qtyToReceive(orderQuantities.getQtyRequiredToProduce())
 				.qtyReceived(orderQuantities.getQtyReceived())
 				.coProductBOMLineId(null)
-				.aggregateToLUId(HuId.ofRepoIdOrNull(ppOrder.getCurrent_Receiving_LU_HU_ID()))
+				.currentReceivingHU(extractCurrentReceivingHU(ppOrder))
 				.build();
 
+	}
+
+	private static CurrentReceivingHU extractCurrentReceivingHU(final I_PP_Order ppOrder)
+	{
+		final HuId luId = HuId.ofRepoIdOrNull(ppOrder.getCurrent_Receiving_LU_HU_ID());
+		if (luId != null)
+		{
+			return CurrentReceivingHU.builder()
+					.aggregateToLUId(luId)
+					.tuPIItemProductId(HUPIItemProductId.ofRepoIdOrNone(ppOrder.getCurrent_Receiving_TU_PI_Item_Product_ID()))
+					.build();
+		}
+		else
+		{
+			return null;
+		}
 	}
 
 	@Nullable
 	private FinishedGoodsReceiveLine toFinishedGoodsReceiveLine(@NonNull final I_PP_Order_BOMLine orderBOMLine)
 	{
-		final BOMComponentType bomComponentType = BOMComponentType.ofCode(orderBOMLine.getComponentType());
+		final BOMComponentType bomComponentType = BOMComponentType.optionalOfNullableCode(orderBOMLine.getComponentType()).orElse(BOMComponentType.Component);
 		if (!bomComponentType.isByOrCoProduct())
 		{
 			return null;
@@ -249,6 +268,24 @@ public class ManufacturingJobLoader
 				.qtyToReceive(bomLineQuantities.getQtyRequired().negate())
 				.qtyReceived(bomLineQuantities.getQtyIssuedOrReceived().negate())
 				.coProductBOMLineId(PPOrderBOMLineId.ofRepoId(orderBOMLine.getPP_Order_BOMLine_ID()))
+				.currentReceivingHU(extractCurrentReceivingHU(orderBOMLine))
 				.build();
 	}
+
+	private static CurrentReceivingHU extractCurrentReceivingHU(final I_PP_Order_BOMLine ppOrderBOMLine)
+	{
+		final HuId luId = HuId.ofRepoIdOrNull(ppOrderBOMLine.getCurrent_Receiving_LU_HU_ID());
+		if (luId != null)
+		{
+			return CurrentReceivingHU.builder()
+					.aggregateToLUId(luId)
+					.tuPIItemProductId(HUPIItemProductId.ofRepoIdOrNone(ppOrderBOMLine.getCurrent_Receiving_TU_PI_Item_Product_ID()))
+					.build();
+		}
+		else
+		{
+			return null;
+		}
+	}
+
 }

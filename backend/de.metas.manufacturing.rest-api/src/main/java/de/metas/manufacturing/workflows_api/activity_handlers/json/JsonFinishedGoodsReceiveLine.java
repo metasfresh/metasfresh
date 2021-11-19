@@ -1,7 +1,6 @@
 package de.metas.manufacturing.workflows_api.activity_handlers.json;
 
-import com.google.common.collect.ImmutableList;
-import de.metas.handlingunits.HUBarcode;
+import de.metas.manufacturing.job.model.CurrentReceivingHU;
 import de.metas.manufacturing.job.model.FinishedGoodsReceiveLine;
 import de.metas.workflow.rest_api.controller.v2.json.JsonOpts;
 import lombok.Builder;
@@ -11,7 +10,6 @@ import lombok.extern.jackson.Jacksonized;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.util.List;
 
 @Value
 @Builder
@@ -25,12 +23,13 @@ public class JsonFinishedGoodsReceiveLine
 	@NonNull BigDecimal qtyToReceive;
 	@NonNull BigDecimal qtyReceived;
 
-	@Nullable JsonAggregateToLU aggregateToLU;
-	@NonNull ImmutableList<JsonAggregateToNewLU> aggregateToNewLUTargets;
+	@Nullable JsonAggregateToExistingLU currentReceivingHU;
+
+	@NonNull JsonAggregateToNewLUList availableReceivingTargets;
 
 	public static JsonFinishedGoodsReceiveLine of(
 			@NonNull final FinishedGoodsReceiveLine from,
-			@NonNull final List<JsonAggregateToNewLU> aggregateToNewLUTargets,
+			@NonNull final JsonAggregateToNewLUList aggregateToNewLUTargets,
 			@NonNull final JsonOpts jsonOpts)
 	{
 		return builder()
@@ -39,17 +38,19 @@ public class JsonFinishedGoodsReceiveLine
 				.uom(from.getQtyToReceive().getUOMSymbol())
 				.qtyToReceive(from.getQtyToReceive().toBigDecimal())
 				.qtyReceived(from.getQtyReceived().toBigDecimal())
-				.aggregateToLU(extractJsonAggregateToLU(from))
-				.aggregateToNewLUTargets(ImmutableList.copyOf(aggregateToNewLUTargets))
+				.currentReceivingHU(extractJsonAggregateToExistingLU(from))
+				.availableReceivingTargets(aggregateToNewLUTargets)
 				.build();
 	}
 
-	private static JsonAggregateToLU extractJsonAggregateToLU(final FinishedGoodsReceiveLine line)
+	public static JsonAggregateToExistingLU extractJsonAggregateToExistingLU(final FinishedGoodsReceiveLine line)
 	{
-		if (line.getAggregateToLUId() != null)
+		final CurrentReceivingHU currentReceivingHU = line.getCurrentReceivingHU();
+		if (currentReceivingHU != null)
 		{
-			return JsonAggregateToLU.builder()
-					.existingLUBarcode(HUBarcode.ofHuId(line.getAggregateToLUId()).getAsString())
+			return JsonAggregateToExistingLU.builder()
+					.huBarcode(currentReceivingHU.getAggregateToLUBarcode().getAsString())
+					.tuPIItemProductId(currentReceivingHU.getTuPIItemProductId().getRepoId())
 					.build();
 		}
 		else

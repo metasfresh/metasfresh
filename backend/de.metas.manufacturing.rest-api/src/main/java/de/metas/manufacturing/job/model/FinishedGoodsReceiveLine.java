@@ -1,6 +1,5 @@
 package de.metas.manufacturing.job.model;
 
-import de.metas.handlingunits.HuId;
 import de.metas.i18n.ITranslatableString;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -10,6 +9,7 @@ import lombok.Value;
 import org.eevolution.api.PPOrderBOMLineId;
 
 import javax.annotation.Nullable;
+import java.util.Objects;
 
 @Value
 public class FinishedGoodsReceiveLine
@@ -21,7 +21,7 @@ public class FinishedGoodsReceiveLine
 	@NonNull Quantity qtyReceived;
 	@Nullable PPOrderBOMLineId coProductBOMLineId;
 
-	@Nullable HuId aggregateToLUId;
+	@Nullable CurrentReceivingHU currentReceivingHU;
 
 	@Builder(toBuilder = true)
 	private FinishedGoodsReceiveLine(
@@ -30,7 +30,7 @@ public class FinishedGoodsReceiveLine
 			@NonNull final Quantity qtyToReceive,
 			@NonNull final Quantity qtyReceived,
 			@Nullable final PPOrderBOMLineId coProductBOMLineId,
-			@Nullable final HuId aggregateToLUId)
+			@Nullable final CurrentReceivingHU currentReceivingHU)
 	{
 		this.productId = productId;
 		this.productName = productName;
@@ -38,17 +38,17 @@ public class FinishedGoodsReceiveLine
 		this.qtyReceived = qtyReceived;
 		this.coProductBOMLineId = coProductBOMLineId;
 
-		this.aggregateToLUId = aggregateToLUId;
+		this.currentReceivingHU = currentReceivingHU;
 
 		this.id = coProductBOMLineId == null
 				? FinishedGoodsReceiveLineId.FINISHED_GOODS
 				: FinishedGoodsReceiveLineId.ofCOProductBOMLineId(coProductBOMLineId);
 	}
 
-	public FinishedGoodsReceiveLine withAggregateToLUId(@NonNull final HuId aggregateToLUId)
+	public FinishedGoodsReceiveLine withCurrentReceivingHU(@NonNull final CurrentReceivingHU currentReceivingHU)
 	{
-		return !HuId.equals(this.aggregateToLUId, aggregateToLUId)
-				? toBuilder().aggregateToLUId(aggregateToLUId).build()
+		return !Objects.equals(this.currentReceivingHU, currentReceivingHU)
+				? toBuilder().currentReceivingHU(currentReceivingHU).build()
 				: this;
 	}
 }
