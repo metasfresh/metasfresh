@@ -1520,7 +1520,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 							+ ", @C_Invoice_Candidate@ @QtyInvoiced@ = " + qtyInvoicedForIc
 							+ ", (=>overlap=" + overlap + ")";
 
-					invoiceLineAllocType = InvoiceLineAllocType.CreditMemoNotReinvoiceable; // TODO I am not sure this is OK!
+					invoiceLineAllocType = InvoiceLineAllocType.CreditMemoNotReinvoiceable;
 
 				}
 
