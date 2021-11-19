@@ -71,7 +71,7 @@ public class EbayApiTest
 		CredentialUtil.dump();
 	}
 
-	//@Test
+	@Test
 	public void testLoadOrders() throws Exception
 	{
 
