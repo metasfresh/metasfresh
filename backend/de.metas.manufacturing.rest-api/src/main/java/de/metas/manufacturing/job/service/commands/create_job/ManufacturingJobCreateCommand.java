@@ -123,7 +123,7 @@ public class ManufacturingJobCreateCommand
 							.seqNo(seqNo)
 							.productId(planStep.getProductId())
 							.qtyToIssue(planStep.getQtyToIssue())
-							.issueFromHUId(planStep.getPickFromHUId())
+							.issueFromHUId(planStep.getPickFromTopLevelHUId())
 							.issueFromLocatorId(planStep.getPickFromLocatorId())
 							.isAlternativeIssue(planStep.isAlternative())
 							.build());

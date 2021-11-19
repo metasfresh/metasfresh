@@ -74,7 +74,8 @@ public class PPOrderIssuePlanCreateCommand
 
 	private Stream<PPOrderIssuePlanStep> createSteps(final I_PP_Order_BOMLine orderBOMLine)
 	{
-		if (!BOMComponentType.ofCode(orderBOMLine.getComponentType()).isIssue())
+		final BOMComponentType bomComponentType = BOMComponentType.optionalOfNullableCode(orderBOMLine.getComponentType()).orElse(BOMComponentType.Component);
+		if (!bomComponentType.isIssue())
 		{
 			return Stream.of();
 		}
@@ -101,7 +102,7 @@ public class PPOrderIssuePlanCreateCommand
 						.productId(productId)
 						.qtyToIssue(targetQty.toZero())
 						.pickFromLocatorId(allocableHU.getLocatorId())
-						.pickFromHU(allocableHU.getHu())
+						.pickFromTopLevelHU(allocableHU.getTopLevelHU())
 						.isAlternative(true)
 						.build());
 			}
@@ -119,7 +120,7 @@ public class PPOrderIssuePlanCreateCommand
 							.productId(productId)
 							.qtyToIssue(remainingQtyToAllocate)
 							.pickFromLocatorId(allocableHU.getLocatorId())
-							.pickFromHU(allocableHU.getHu())
+							.pickFromTopLevelHU(allocableHU.getTopLevelHU())
 							.isAlternative(false)
 							.build();
 
@@ -136,7 +137,7 @@ public class PPOrderIssuePlanCreateCommand
 							.qtyToIssue(huQtyAvailable)
 							//.isPickWholeHU(true)
 							.pickFromLocatorId(allocableHU.getLocatorId())
-							.pickFromHU(allocableHU.getHu())
+							.pickFromTopLevelHU(allocableHU.getTopLevelHU())
 							.isAlternative(false)
 							.build();
 

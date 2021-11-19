@@ -97,6 +97,7 @@ public class MaterialReceiptActivityHandler implements WFActivityHandler
 		}
 
 		final ArrayList<JsonAggregateToNewLU> availablePackingMaterials = new ArrayList<>();
+		final ArrayList<String> debugMessages = new ArrayList<>();
 		for (final I_M_HU_PI_Item_Product tuPIItemProduct : tuPIItemProducts)
 		{
 			final HuPackingInstructionsItemId tuPackingInstructionsItemId = HuPackingInstructionsItemId.ofRepoId(tuPIItemProduct.getM_HU_PI_Item_ID());
@@ -107,26 +108,33 @@ public class MaterialReceiptActivityHandler implements WFActivityHandler
 					X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit,
 					customerId);
 
-			for (final I_M_HU_PI_Item luPackingInstructionsItem : luPackingInstructionsItems)
+			if (!luPackingInstructionsItems.isEmpty())
 			{
-				final I_M_HU_PI luPackingInstructions = handlingUnitsBL.getPI(luPackingInstructionsItem);
-				availablePackingMaterials.add(
-						JsonAggregateToNewLU.builder()
-								.caption(luPackingInstructions.getName())
-								.tuCaption(tuPIItemProduct.getName())
-								.luPIItemId(HuPackingInstructionsId.ofRepoId(luPackingInstructionsItem.getM_HU_PI_Item_ID()).getRepoId())
-								.tuPIItemProductId(HUPIItemProductId.ofRepoId(tuPIItemProduct.getM_HU_PI_Item_Product_ID()).getRepoId())
-								.build());
+				for (final I_M_HU_PI_Item luPackingInstructionsItem : luPackingInstructionsItems)
+				{
+					final I_M_HU_PI luPackingInstructions = handlingUnitsBL.getPI(luPackingInstructionsItem);
+					availablePackingMaterials.add(
+							JsonAggregateToNewLU.builder()
+									.caption(luPackingInstructions.getName())
+									.tuCaption(tuPIItemProduct.getName())
+									.luPIItemId(HuPackingInstructionsId.ofRepoId(luPackingInstructionsItem.getM_HU_PI_Item_ID()).getRepoId())
+									.tuPIItemProductId(HUPIItemProductId.ofRepoId(tuPIItemProduct.getM_HU_PI_Item_Product_ID()).getRepoId())
+									.build());
+				}
+			}
+			else
+			{
+				debugMessages.add("Ignoring " + tuPackingInstructionsId + " (" + tuPIItemProduct + ") because it has no LU PI Items");
 			}
 		}
 
 		if (availablePackingMaterials.isEmpty())
 		{
-			return JsonAggregateToNewLUList.emptyBecause("None of the TUs found are assigned to an LU");
+			return JsonAggregateToNewLUList.emptyBecause("None of the TUs found are assigned to an LU", debugMessages);
 		}
 		else
 		{
-			return JsonAggregateToNewLUList.ofList(availablePackingMaterials);
+			return JsonAggregateToNewLUList.ofList(availablePackingMaterials, debugMessages);
 		}
 	}
 
