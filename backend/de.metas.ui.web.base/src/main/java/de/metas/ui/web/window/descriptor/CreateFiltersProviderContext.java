@@ -38,5 +38,6 @@ public class CreateFiltersProviderContext
 	@Nullable
 	final String tableName;
 
-	final boolean isAutodetectDefaultDateFilter;
+	@Builder.Default
+	boolean isAutodetectDefaultDateFilter = true;
 }
