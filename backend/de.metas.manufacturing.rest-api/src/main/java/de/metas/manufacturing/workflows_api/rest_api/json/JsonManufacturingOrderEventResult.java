@@ -1,5 +1,6 @@
 package de.metas.manufacturing.workflows_api.rest_api.json;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import de.metas.manufacturing.workflows_api.activity_handlers.json.JsonAggregateToExistingLU;
 import lombok.Data;
 import lombok.NonNull;
@@ -18,5 +19,6 @@ public class JsonManufacturingOrderEventResult
 
 	//
 	// Receive result
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	@Nullable JsonAggregateToExistingLU existingLU;
 }
