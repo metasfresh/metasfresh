@@ -178,9 +178,9 @@ public class ShipmentService implements IShipmentService
 		{
 			final Quantity qtyOrdered = shipmentScheduleBL.getQtyOrdered(shipmentSchedule);
 			final Quantity qtyToDeliver = shipmentScheduleBL.getQtyToDeliver(shipmentSchedule);
+			final DeliveryRule deliveryRule = DeliveryRule.ofCode(shipmentSchedule.getDeliveryRule());
 
-			if (qtyToDeliver.compareTo(qtyOrdered) < 0
-					|| !shipmentSchedule.getDeliveryRule().equals(DeliveryRule.AVAILABILITY.getCode()))
+			if (qtyToDeliver.compareTo(qtyOrdered) < 0 || !deliveryRule.isBasedOnDelivery())
 			{
 				canSchedulesBeFulfilled = false;
 				break;

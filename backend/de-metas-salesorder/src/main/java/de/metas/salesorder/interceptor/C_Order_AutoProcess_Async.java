@@ -96,9 +96,7 @@ public class C_Order_AutoProcess_Async
 
 		final DeliveryRule deliveryRule = DeliveryRule.ofCode(orderRecord.getDeliveryRule());
 
-		final boolean deliveryBasedOnAvailability = deliveryRule.isAvailability() || deliveryRule.isCompleteOrder() || deliveryRule.isCompleteOrderOrLine();
-
-		final boolean canDoAutoShipAndInvoice = featureEnabled && deliveryBasedOnAvailability;
+		final boolean canDoAutoShipAndInvoice = featureEnabled && deliveryRule.isBasedOnDelivery();
 		if (!canDoAutoShipAndInvoice)
 		{
 			return false;
