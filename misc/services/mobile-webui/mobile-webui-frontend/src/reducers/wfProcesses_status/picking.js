@@ -1,5 +1,5 @@
 import * as types from '../../constants/PickingActionTypes';
-import { original } from 'immer';
+import { original, isDraft } from 'immer';
 import { updateUserEditable } from './utils';
 import * as CompleteStatus from '../../constants/CompleteStatus';
 import { registerHandler } from './activityStateHandlers';
@@ -30,8 +30,6 @@ const reduceOnUpdateQtyPicked = (draftState, payload) => {
     qtyRejectedReasonCode,
     qtyRejected,
   } = payload;
-
-  console.log('Original:', original(draftState));
 
   const draftWFProcess = draftState[wfProcessId];
 
@@ -65,16 +63,15 @@ const reduceOnUpdateQtyPicked = (draftState, payload) => {
 };
 
 export const generateAlternativeSteps = ({ draftDataStored, lineId, stepId, qtyToAllocate }) => {
-  //const draftDataStored = draftState[wfProcessId].activities[activityId].dataStored;
-  const draftDataStoredOrig = original(draftDataStored);
+  const draftDataStoredOrig = isDraft(draftDataStored) ? original(draftDataStored) : draftDataStored;
   const draftStep = draftDataStored.lines[lineId].steps[stepId];
   const { pickFromAlternatives: alternativesPool } = draftDataStoredOrig;
 
-  console.log('qtyToAllocate ===>', qtyToAllocate);
-  console.log('draftDataStored =>', draftDataStoredOrig);
-  console.log('LineId:', lineId);
-  console.log('StepId:', stepId);
-  console.log('DRAFT_STEP:', draftStep);
+  // console.log('qtyToAllocate ===>', qtyToAllocate);
+  // console.log('draftDataStored =>', draftDataStoredOrig);
+  // console.log('LineId:', lineId);
+  // console.log('StepId:', stepId);
+  // console.log('DRAFT_STEP:', draftStep);
 
   let qtyToAllocateRemaining = qtyToAllocate;
 
@@ -133,7 +130,9 @@ const computeQtyAllocated = ({ alternativesPoolItem }) => {
 };
 
 const allocateQtyAvailable = ({ idx, draftDataStored, stepId, qtyToAllocate }) => {
-  const alternativesPoolItemOrig = original(draftDataStored.pickFromAlternatives[idx]);
+  const alternativesPoolItemOrig = isDraft(draftDataStored)
+    ? original(draftDataStored.pickFromAlternatives[idx])
+    : draftDataStored.pickFromAlternatives[idx];
   if (!alternativesPoolItemOrig.allocatedQtys) {
     draftDataStored.pickFromAlternatives[idx].allocatedQtys = {};
   }
@@ -141,7 +140,9 @@ const allocateQtyAvailable = ({ idx, draftDataStored, stepId, qtyToAllocate }) =
 };
 
 const deallocateQtyAvailable = ({ idx, stepId, draftDataStored }) => {
-  const alternativesPoolItemOrig = original(draftDataStored.pickFromAlternatives[idx]);
+  const alternativesPoolItemOrig = isDraft(draftDataStored.pickFromAlternatives[idx])
+    ? original(draftDataStored.pickFromAlternatives[idx])
+    : draftDataStored.pickFromAlternatives[idx];
   if (alternativesPoolItemOrig.allocatedQtys) {
     delete draftDataStored.pickFromAlternatives[idx].allocatedQtys[stepId];
   }
