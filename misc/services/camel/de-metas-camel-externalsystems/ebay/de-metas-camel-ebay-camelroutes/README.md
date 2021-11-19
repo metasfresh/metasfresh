@@ -2,7 +2,7 @@
 
 In order to run the unit test you need two things configured:
 
-1. ebay-test-creds.yaml in src/test/resources. Format see: 
+1. ebay-test-creds.yaml in src/test/resources. Format see: https://github.com/eBay/ebay-oauth-java-client/blob/master/src/test/resources/ebay-config-sample.yaml
 
 2. ebay-user for sandbox (see: application.properties)
 
