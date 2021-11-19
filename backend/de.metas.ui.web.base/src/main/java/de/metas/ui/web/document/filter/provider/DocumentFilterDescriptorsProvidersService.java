@@ -5,6 +5,7 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
+import de.metas.ui.web.window.descriptor.CreateFiltersProviderContext;
 import org.adempiere.ad.element.api.AdTabId;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
@@ -57,14 +58,13 @@ public final class DocumentFilterDescriptorsProvidersService
 	}
 
 	public DocumentFilterDescriptorsProvider createFiltersProvider(
-			@Nullable final AdTabId adTabId,
-			@Nullable final String tableName,
+			@NonNull final CreateFiltersProviderContext context,
 			@NonNull final Collection<DocumentFieldDescriptor> fields)
 	{
 		final ImmutableList<DocumentFilterDescriptorsProvider> providers = providerFactories
 				.stream()
 				.filter(DocumentFilterDescriptorsProviderFactory::isActive)
-				.map(provider -> provider.createFiltersProvider(adTabId, tableName, fields))
+				.map(provider -> provider.createFiltersProvider(context, fields))
 				.filter(NullDocumentFilterDescriptorsProvider::isNotNull)
 				.collect(ImmutableList.toImmutableList());
 

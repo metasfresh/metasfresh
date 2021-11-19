@@ -14,6 +14,7 @@ import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvide
 import de.metas.ui.web.document.filter.provider.ImmutableDocumentFilterDescriptorsProvider;
 import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.window.datatypes.PanelLayoutType;
+import de.metas.ui.web.window.descriptor.CreateFiltersProviderContext;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDefaultFilterDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
@@ -22,14 +23,12 @@ import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.element.api.AdTabId;
 import org.adempiere.ad.window.api.IADWindowDAO;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Tab;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -84,16 +83,13 @@ public class StandardDocumentFilterDescriptorsProviderFactory implements Documen
 	}
 
 	@Override
-	public DocumentFilterDescriptorsProvider createFiltersProvider(
-			@Nullable final AdTabId adTabId_NOTUSED,
-			@Nullable final String tableName_NOTUSED,
+	public DocumentFilterDescriptorsProvider createFiltersProvider(@NonNull final CreateFiltersProviderContext context,
 			@NonNull final Collection<DocumentFieldDescriptor> fields)
 	{
-		return createFiltersProvider(fields, adTabId_NOTUSED);
+		return createFiltersProvider(fields, context.isAutodetectDefaultDateFilter());
 	}
 
-	private DocumentFilterDescriptorsProvider createFiltersProvider(@NonNull final Collection<DocumentFieldDescriptor> fields,
-			@Nullable final AdTabId adTabId)
+	private DocumentFilterDescriptorsProvider createFiltersProvider(@NonNull final Collection<DocumentFieldDescriptor> fields, final boolean isAutodetectDefaultDateFilter)
 	{
 		final List<DocumentFieldDescriptor> fieldsForDefaultFiltering = fields.stream()
 				.filter(DocumentFieldDescriptor::hasFileringInfo)
@@ -106,14 +102,6 @@ public class StandardDocumentFilterDescriptorsProviderFactory implements Documen
 				.filter(field -> field.getDefaultFilterInfo().isFacetFilter())
 				.sorted(Comparator.comparing(field -> field.getDefaultFilterInfo().getFacetFilterSeqNo()))
 				.collect(ImmutableList.toImmutableList());
-
-		boolean isAutodetectDefaultDateFilter = true;
-		if (adTabId != null)
-		{
-			final I_AD_Tab adTab = Services.get(IADWindowDAO.class).getTabByIdInTrx(adTabId);
-			final DocumentEntityDescriptor documentEntityDescriptor = documentDescriptors.getDocumentEntityDescriptor(adTab.getAD_Window_ID());
-			isAutodetectDefaultDateFilter = documentEntityDescriptor.isIsAutodetectDefaultDateFilter();
-		}
 
 		//
 		// Default filters

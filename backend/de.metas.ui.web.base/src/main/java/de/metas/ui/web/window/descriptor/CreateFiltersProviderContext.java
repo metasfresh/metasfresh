@@ -1,18 +1,8 @@
-package de.metas.ui.web.document.filter.provider;
-
-import de.metas.ui.web.window.descriptor.CreateFiltersProviderContext;
-import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
-import lombok.NonNull;
-import org.adempiere.ad.element.api.AdTabId;
-
-import javax.annotation.Nullable;
-import java.util.Collection;
-
 /*
  * #%L
- * metasfresh-webui-api
+ * de.metas.ui.web.base
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -30,15 +20,23 @@ import java.util.Collection;
  * #L%
  */
 
-public interface DocumentFilterDescriptorsProviderFactory
+package de.metas.ui.web.window.descriptor;
+
+import lombok.Builder;
+import lombok.Value;
+import org.adempiere.ad.element.api.AdTabId;
+
+import javax.annotation.Nullable;
+
+@Value
+@Builder
+public class CreateFiltersProviderContext
 {
 	@Nullable
-	DocumentFilterDescriptorsProvider createFiltersProvider(
-			@NonNull CreateFiltersProviderContext context,
-			@NonNull Collection<DocumentFieldDescriptor> fields);
+	final AdTabId adTabId;
 
-	default boolean isActive()
-	{
-		return true;
-	}
+	@Nullable
+	final String tableName;
+
+	final boolean isAutodetectDefaultDateFilter;
 }

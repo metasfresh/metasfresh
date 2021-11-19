@@ -1084,7 +1084,13 @@ public class DocumentEntityDescriptor
 			final AdTabId adTabId = getAdTabId().orElse(null);
 			final Collection<DocumentFieldDescriptor> fields = getFields().values();
 
-			return filterDescriptorsProvidersService.createFiltersProvider(adTabId, tableName, fields);
+			final CreateFiltersProviderContext context = CreateFiltersProviderContext.builder()
+					.adTabId(adTabId)
+					.tableName(tableName)
+					.isAutodetectDefaultDateFilter(isAutodetectDefaultDateFilter())
+					.build();
+
+			return filterDescriptorsProvidersService.createFiltersProvider(context, fields);
 		}
 
 		public Builder setFilterDescriptorsProvidersService(final DocumentFilterDescriptorsProvidersService filterDescriptorsProvidersService)
