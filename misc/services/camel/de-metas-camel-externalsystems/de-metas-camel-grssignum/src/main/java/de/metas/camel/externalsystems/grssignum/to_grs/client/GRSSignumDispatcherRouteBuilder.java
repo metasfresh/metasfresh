@@ -74,7 +74,7 @@ public class GRSSignumDispatcherRouteBuilder extends RouteBuilder
 				//dev-note: we need the whole route to be replayed in case of redelivery
 				.errorHandler(noErrorHandler())
 				.log("invoked")
-				.marshal(CamelRouteUtil.setupJacksonDataFormatFor(getContext(), String.class))
+				//.marshal(CamelRouteUtil.setupJacksonDataFormatFor(getContext(), String.class))
 				//dev-note: the actual path is computed in this.extractAndAttachGRSSignumHttpRequest()
 				.to("https://placeholder").id(GRS_ENDPOINT_ID);
 	}
