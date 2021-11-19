@@ -317,7 +317,7 @@ public class CreatePickingPlanCommand
 		}
 
 		final PickFromHU pickFromHU = Check.assumeNotNull(zeroQtyLine.getPickFromHU(), "No pickFromHU set for {}", zeroQtyLine);
-		final AllocableStorage storage = storages.getStorage(pickFromHU.getHuId(), packageable.getProductId());
+		final AllocableStorage storage = storages.getStorage(pickFromHU.getTopLevelHUId(), packageable.getProductId());
 		final Quantity qty = storage.allocate(packageable);
 		if (qty.isZero())
 		{
@@ -343,7 +343,7 @@ public class CreatePickingPlanCommand
 		else
 		{
 			return prepareLine_IssueComponentsToPickingOrder(packageable)
-					.issueToBOMLine(packageable.getIssueToBOMLine().withIssueFromHUId(hu.getHuId()))
+					.issueToBOMLine(packageable.getIssueToBOMLine().withIssueFromHUId(hu.getTopLevelHUId()))
 					.qty(zero)
 					.build();
 		}

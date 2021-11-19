@@ -2,11 +2,15 @@ package de.metas.manufacturing.workflows_api;
 
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.manufacturing.job.model.FinishedGoodsReceiveLine;
 import de.metas.manufacturing.job.model.ManufacturingJob;
+import de.metas.manufacturing.workflows_api.activity_handlers.json.JsonFinishedGoodsReceiveLine;
 import de.metas.manufacturing.workflows_api.rest_api.json.JsonManufacturingOrderEvent;
+import de.metas.manufacturing.workflows_api.rest_api.json.JsonManufacturingOrderEventResult;
 import de.metas.user.UserId;
 import de.metas.workflow.rest_api.model.MobileApplicationId;
 import de.metas.workflow.rest_api.model.MobileApplicationInfo;
+import de.metas.workflow.rest_api.model.WFActivityId;
 import de.metas.workflow.rest_api.model.WFProcess;
 import de.metas.workflow.rest_api.model.WFProcessHeaderProperties;
 import de.metas.workflow.rest_api.model.WFProcessId;
@@ -98,14 +102,38 @@ public class ManufacturingMobileApplication implements MobileApplication
 		return WFProcessHeaderProperties.EMPTY; // TODO
 	}
 
-	public void processEvent(final JsonManufacturingOrderEvent event, final UserId callerId)
+	public JsonManufacturingOrderEventResult processEvent(final JsonManufacturingOrderEvent event, final UserId callerId)
 	{
 		final WFProcessId wfProcessId = WFProcessId.ofString(event.getWfProcessId());
-		changeWFProcessById(
+		final WFProcess changedWFProcess = changeWFProcessById(
 				wfProcessId,
 				wfProcess -> {
 					wfProcess.assertHasAccess(callerId);
 					return wfProcess.<ManufacturingJob>mapDocument(job -> manufacturingRestService.processEvent(job, event));
 				});
+
+		return extractProcessEventResult(changedWFProcess, event);
+	}
+
+	@NonNull
+	private JsonManufacturingOrderEventResult extractProcessEventResult(
+			final WFProcess changedWFProcess,
+			final JsonManufacturingOrderEvent event)
+	{
+		final WFActivityId wfActivityId = WFActivityId.ofString(event.getWfActivityId());
+		final JsonManufacturingOrderEventResult result = new JsonManufacturingOrderEventResult(changedWFProcess.getId().getAsString(), wfActivityId.getAsString());
+
+		final JsonManufacturingOrderEvent.ReceiveFrom receiveFrom = event.getReceiveFrom();
+		if (receiveFrom != null)
+		{
+			final FinishedGoodsReceiveLine receiveLine = changedWFProcess.getDocumentAs(ManufacturingJob.class)
+					.getActivityById(wfActivityId)
+					.getFinishedGoodsReceiveAssumingNotNull()
+					.getLineById(receiveFrom.getFinishedGoodsReceiveLineId());
+
+			result.setExistingLU(JsonFinishedGoodsReceiveLine.extractJsonAggregateToExistingLU(receiveLine));
+		}
+
+		return result;
 	}
 }

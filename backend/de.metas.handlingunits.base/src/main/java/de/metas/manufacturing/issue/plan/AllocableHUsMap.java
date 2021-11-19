@@ -60,7 +60,7 @@ class AllocableHUsMap
 						.reservationRef(Optional.empty()) // TODO introduce some PP Order reservation
 						.build());
 
-		final ImmutableList<AllocableHU> hus = CollectionUtils.map(husEligibleToPick, hu -> toAllocableHU(hu.getHuId(), productId));
+		final ImmutableList<AllocableHU> hus = CollectionUtils.map(husEligibleToPick, hu -> toAllocableHU(hu.getTopLevelHUId(), productId));
 		return new AllocableHUsList(hus);
 	}
 
@@ -73,14 +73,14 @@ class AllocableHUsMap
 	private AllocableHU createAllocableHU(@NonNull final AllocableHUKey key)
 	{
 		final HUsLoadingCache husCache = pickFromHUsSupplier.getHusCache();
-		final I_M_HU hu = husCache.getHUById(key.getHuId());
-		return new AllocableHU(storageFactory, uomConverter, hu, key.getProductId());
+		final I_M_HU topLevelHU = husCache.getHUById(key.getTopLevelHUId());
+		return new AllocableHU(storageFactory, uomConverter, topLevelHU, key.getProductId());
 	}
 
 	@Value(staticConstructor = "of")
 	private static class AllocableHUKey
 	{
-		@NonNull HuId huId;
+		@NonNull HuId topLevelHUId;
 		@NonNull ProductId productId;
 	}
 }

@@ -1,5 +1,6 @@
 package de.metas.manufacturing.job.service.commands.create_job;
 
+import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueSchedule;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleCreateRequest;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleService;
@@ -15,7 +16,6 @@ import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
-import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_PP_Order;
 
@@ -24,7 +24,7 @@ import java.util.ArrayList;
 public class ManufacturingJobCreateCommand
 {
 	private final ITrxManager trxManager;
-	private final IPPOrderBL ppOrderBL;
+	private final IHUPPOrderBL ppOrderBL;
 	private final HUReservationService huReservationService;
 	private final PPOrderIssueScheduleService ppOrderIssueScheduleService;
 	private final ManufacturingJobLoaderSupportingServices loadingSupportServices;
@@ -40,7 +40,7 @@ public class ManufacturingJobCreateCommand
 	@Builder
 	private ManufacturingJobCreateCommand(
 			@NonNull final ITrxManager trxManager,
-			@NonNull final IPPOrderBL ppOrderBL,
+			@NonNull final IHUPPOrderBL ppOrderBL,
 			@NonNull final HUReservationService huReservationService,
 			@NonNull final PPOrderIssueScheduleService ppOrderIssueScheduleService,
 			@NonNull final ManufacturingJobLoaderSupportingServices loadingSupportServices,
@@ -123,7 +123,7 @@ public class ManufacturingJobCreateCommand
 							.seqNo(seqNo)
 							.productId(planStep.getProductId())
 							.qtyToIssue(planStep.getQtyToIssue())
-							.issueFromHUId(planStep.getPickFromHUId())
+							.issueFromHUId(planStep.getPickFromTopLevelHUId())
 							.issueFromLocatorId(planStep.getPickFromLocatorId())
 							.isAlternativeIssue(planStep.isAlternative())
 							.build());

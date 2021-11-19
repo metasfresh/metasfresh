@@ -189,7 +189,7 @@ public class DDOrderMovePlanCreateCommand
 	private AllocableHU toAllocableHU(@NonNull final PickFromHU pickFromHU, @NonNull final ProductId productId)
 	{
 		final HUsLoadingCache husCache = pickFromHUsSupplier.getHusCache();
-		final I_M_HU hu = husCache.getHUById(pickFromHU.getHuId());
+		final I_M_HU hu = husCache.getHUById(pickFromHU.getTopLevelHUId());
 		return new AllocableHU(storageFactory, hu, productId);
 	}
 
