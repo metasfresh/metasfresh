@@ -15,18 +15,13 @@ import de.metas.ui.web.document.filter.provider.ImmutableDocumentFilterDescripto
 import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.window.datatypes.PanelLayoutType;
 import de.metas.ui.web.window.descriptor.CreateFiltersProviderContext;
-import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDefaultFilterDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
-import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.window.api.IADWindowDAO;
 import org.adempiere.service.ISysConfigBL;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_AD_Tab;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -64,7 +59,6 @@ public class StandardDocumentFilterDescriptorsProviderFactory implements Documen
 	private final ISysConfigBL sysConfigs = Services.get(ISysConfigBL.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final IViewsRepository viewsRepository;
-	private final DocumentDescriptorFactory documentDescriptors = SpringContextHolder.instance.getBean(DocumentDescriptorFactory.class);
 
 	private static final String FILTER_ID_DefaultDate = "default-date";
 

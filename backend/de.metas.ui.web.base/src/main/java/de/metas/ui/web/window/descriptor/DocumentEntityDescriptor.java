@@ -123,7 +123,7 @@ public class DocumentEntityDescriptor
 	@Getter
 	private final boolean allowQuickInput;
 	@Getter
-	private final boolean IsAutodetectDefaultDateFilter ;
+	private final boolean autodetectDefaultDateFilter;
 
 	private final ImmutableMap<String, DocumentFieldDescriptor> fields;
 	@Getter
@@ -177,7 +177,7 @@ public class DocumentEntityDescriptor
 		readonlyLogic = builder.getReadonlyLogic();
 		displayLogic = builder.getDisplayLogic();
 		allowQuickInput = builder.isAllowQuickInput();
-		IsAutodetectDefaultDateFilter = builder.isAutodetectDefaultDateFilter();
+		autodetectDefaultDateFilter = builder.isAutodetectDefaultDateFilter();
 
 		fields = ImmutableMap.copyOf(builder.getFields());
 		idFields = builder.getIdFields();
