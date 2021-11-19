@@ -28,6 +28,10 @@ import static de.metas.camel.externalsystems.ebay.EbayConstants.ROUTE_PROPERTY_E
 
 import java.io.IOException;
 import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -96,10 +100,14 @@ public class GetEbayOrdersProcessor implements Processor
 			processLogger.logMessage("Ebay:GetOrders process started!" + Instant.now(), request.getAdPInstanceId().getValue());
 		}
 
+		//get last date or start with now-60 (max is 90 supported by ebay). 
+		//Truncated to millis (Java9+) e.g. 2021-09-20T13:54:27.000Z - more is not accepted by ebay. 
 		final String updatedAfter = CoalesceUtil.coalesceNotNull(
 				request.getParameters().get(ExternalSystemConstants.PARAM_UPDATED_AFTER),
-				Instant.ofEpochMilli(0).toString());
+				Instant.now().minus(60, ChronoUnit.DAYS).truncatedTo( ChronoUnit.MILLIS ).toString());  
 
+		
+		
 		final ApiMode apiMode = ApiMode.valueOf(request.getParameters().get(ExternalSystemConstants.PARAM_API_MODE));
 
 		final OAuth2Api oAuth2Api = Optional.ofNullable(exchange.getIn().getHeader(ROUTE_PROPERTY_EBAY_AUTH_CLIENT, OAuth2Api.class))
@@ -115,10 +123,15 @@ public class GetEbayOrdersProcessor implements Processor
 			final OrderApi orderApi;
 			if (exchange.getIn().getHeader(EbayConstants.ROUTE_PROPERTY_EBAY_CLIENT) == null)
 			{
-				log.debug("Constructing ebay api client");
+				log.debug("Constructing ebay api client for endpoint {}", apiMode.getEnvironment().getApiEndpoint());
 
+				//the generated client is static, therefore apply current api mode each time.
 				ApiClient defaultClient = Configuration.getDefaultApiClient();
-				defaultClient.setBasePath(apiMode.getEnvironment().getApiEndpoint());
+				if(apiMode == ApiMode.SANDBOX) {
+					defaultClient.setBasePath("https://api.sandbox.ebay.com/sell/fulfillment/v1");
+				} else {
+					defaultClient.setBasePath("https://api.ebay.com/sell/fulfillment/v1");
+				}
 
 				// Configure OAuth2 access token for authorization: api_auth
 				OAuth api_auth = (OAuth)defaultClient.getAuthentication("api_auth");
@@ -135,7 +148,7 @@ public class GetEbayOrdersProcessor implements Processor
 			}
 
 			String fieldGroups = null;
-			String filter = "lastmodifieddate:".concat(updatedAfter);
+			String filter = "lastmodifieddate:[".concat(updatedAfter).concat("..]");
 			String limit = "50";
 			String offset = null;
 			String orderIds = null;
@@ -162,7 +175,7 @@ public class GetEbayOrdersProcessor implements Processor
 		}
 
 	}
-
+	
 	private OAuthResponse getAuthResponse(@NonNull final Map<String, String> parameters, @NonNull final OAuth2Api oAuth2Api) throws IOException
 	{
 		final ApiMode apiMode = ApiMode.valueOf(parameters.get(ExternalSystemConstants.PARAM_API_MODE));
