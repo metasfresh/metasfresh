@@ -106,7 +106,6 @@ describe('picking unit tests', () => {
       const resultedData = mergeActivityDataStoredAndGenerateAltSteps({ draftActivityDataStored, fromActivity });
       console.log('Resulted data:', resultedData);
 
-
       const dataStored = resultedData.dataStored;
       const { lines } = dataStored;
       const { steps } = lines[0];
