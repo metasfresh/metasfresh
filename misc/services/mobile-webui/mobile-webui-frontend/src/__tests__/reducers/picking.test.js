@@ -106,6 +106,16 @@ describe('picking unit tests', () => {
       const resultedData = mergeActivityDataStoredAndGenerateAltSteps({ draftActivityDataStored, fromActivity });
       console.log('Resulted data:', resultedData);
 
+
+      const dataStored = resultedData.dataStored;
+      const { lines } = dataStored;
+      const { steps } = lines[0];
+
+      const targetStep = steps['1000040'];
+
+      expect(targetStep.qtyPicked).toEqual(2);
+      expect(targetStep.mainPickFrom.qtyRejected).toEqual(53);
+
       // const { genSteps } =
       //   initialState['wfProcesses_status'][wfProcessId].activities[activityId].dataStored.lines[lineId].steps[stepId]
       //     .altSteps;
