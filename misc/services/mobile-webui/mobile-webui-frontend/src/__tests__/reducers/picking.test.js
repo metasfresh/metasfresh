@@ -62,7 +62,7 @@ describe('picking unit tests', () => {
       expect(genSteps['1000019'].qtyAvailable).toEqual(30);
     });
 
-    it.skip('should generate three steps when called with higher quantity to allocate (i.e. 500)', () => {
+    it('should generate three steps when called with higher quantity to allocate (i.e. 500)', () => {
       const initialState = produce(rawstateJson, (draftState) => {
         const draftStateWFProcesses = draftState['wfProcesses_status'];
         const dataStored = draftStateWFProcesses[wfProcessId].activities[activityId].dataStored;
