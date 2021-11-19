@@ -1481,7 +1481,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		return isInvoice(docBaseType);
 	}
 
-	private final boolean isInvoice(final String docBaseType)
+	private boolean isInvoice(final String docBaseType)
 	{
 		final InvoiceDocBaseType invoiceDocBaseType = InvoiceDocBaseType.ofNullableCode(docBaseType);
 		return invoiceDocBaseType != null && (invoiceDocBaseType.equals(InvoiceDocBaseType.CustomerInvoice) || invoiceDocBaseType.equals(InvoiceDocBaseType.VendorInvoice));

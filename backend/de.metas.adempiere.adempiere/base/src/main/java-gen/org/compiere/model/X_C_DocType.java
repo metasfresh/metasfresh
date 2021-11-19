@@ -79,14 +79,14 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	@Override
 	public void setC_DocTypeDifference_ID (final int C_DocTypeDifference_ID)
 	{
-		if (C_DocTypeDifference_ID < 1) 
+		if (C_DocTypeDifference_ID < 1)
 			set_Value (COLUMNNAME_C_DocTypeDifference_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_C_DocTypeDifference_ID, C_DocTypeDifference_ID);
 	}
 
 	@Override
-	public int getC_DocTypeDifference_ID() 
+	public int getC_DocTypeDifference_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_C_DocTypeDifference_ID);
 	}
@@ -94,14 +94,14 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	@Override
 	public void setC_DocType_ID (final int C_DocType_ID)
 	{
-		if (C_DocType_ID < 0) 
+		if (C_DocType_ID < 0)
 			set_ValueNoCheck (COLUMNNAME_C_DocType_ID, null);
-		else 
+		else
 			set_ValueNoCheck (COLUMNNAME_C_DocType_ID, C_DocType_ID);
 	}
 
 	@Override
-	public int getC_DocType_ID() 
+	public int getC_DocType_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_C_DocType_ID);
 	}
