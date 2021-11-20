@@ -47,8 +47,18 @@ public class ManufacturingJob
 			@NonNull final PPOrderIssueScheduleId issueScheduleId,
 			@NonNull UnaryOperator<RawMaterialsIssueStep> mapper)
 	{
+		if (!containsRawMaterialsIssueStep(issueScheduleId))
+		{
+			throw new AdempiereException("Cannot find issue step");
+		}
+
 		final ImmutableList<ManufacturingJobActivity> activitiesNew = CollectionUtils.map(activities, activity -> activity.withChangedRawMaterialsIssueStep(issueScheduleId, mapper));
 		return withActivities(activitiesNew);
+	}
+
+	private boolean containsRawMaterialsIssueStep(final PPOrderIssueScheduleId issueScheduleId)
+	{
+		return activities.stream().anyMatch(activity -> activity.containsRawMaterialsIssueStep(issueScheduleId));
 	}
 
 	public ManufacturingJob withChangedReceiveLine(

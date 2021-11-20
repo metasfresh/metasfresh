@@ -66,4 +66,8 @@ public class ManufacturingJobActivity
 		}
 	}
 
+	public boolean containsRawMaterialsIssueStep(final PPOrderIssueScheduleId issueScheduleId)
+	{
+		return rawMaterialsIssue != null && rawMaterialsIssue.containsRawMaterialsIssueStep(issueScheduleId);
+	}
 }
