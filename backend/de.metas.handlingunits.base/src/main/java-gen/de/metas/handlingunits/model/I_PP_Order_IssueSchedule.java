@@ -304,6 +304,27 @@ public interface I_PP_Order_IssueSchedule
 	String COLUMNNAME_PP_Order_IssueSchedule_ID = "PP_Order_IssueSchedule_ID";
 
 	/**
+	 * Set Processed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setProcessed (boolean Processed);
+
+	/**
+	 * Get Processed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isProcessed();
+
+	ModelColumn<I_PP_Order_IssueSchedule, Object> COLUMN_Processed = new ModelColumn<>(I_PP_Order_IssueSchedule.class, "Processed", null);
+	String COLUMNNAME_Processed = "Processed";
+
+	/**
 	 * Set Quantity Issued.
 	 *
 	 * <br>Type: Quantity
