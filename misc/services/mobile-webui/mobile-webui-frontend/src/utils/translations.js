@@ -75,6 +75,14 @@ export const setupCounterpart = () => {
         ProductName: 'Product Name',
         target: 'To issue',
         picked: 'Issued',
+        receipts: {
+          pickPromptTitle: 'Quantity to receive',
+          receiveTarget: 'Receive target',
+          receiveQty: 'Receive quantity',
+          qtyBtnCaption: 'Received quantity',
+          existingHU: 'Existing HU',
+          newHU: 'New HU',
+        },
       },
     },
   });

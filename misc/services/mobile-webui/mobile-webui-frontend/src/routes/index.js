@@ -15,6 +15,9 @@ import StepScreen from '../containers/activities/common/StepScreen';
 import StepScanScreen from '../containers/activities/common/StepScanScreen';
 import ApplicationsScreen from '../containers/applicationScreen/ApplicationsScreen';
 
+import ReceiptReceiveTargetScreen from '../containers/activities/manufacturing/ReceiptReceiveTargetScreen';
+import ReceiptNewHUScreen from '../containers/activities/manufacturing/ReceiptNewHUScreen';
+
 import PrivateRoute from './PrivateRoute';
 import { history } from '../store/store';
 import ScreenToaster from '../components/ScreenToaster';
@@ -29,6 +32,15 @@ const routesArray = [
   {
     path: '/workflow/:workflowId/activityId/:activityId/lineId/:lineId/stepId/:stepId/scanner/:appId/:locatorId?',
     Component: StepScanScreen,
+  },
+  // application specific - mfg
+  {
+    path: '/workflow/:workflowId/activityId/:activityId/lineId/:lineId/receipt/target',
+    Component: ReceiptReceiveTargetScreen,
+  },
+  {
+    path: '/workflow/:workflowId/activityId/:activityId/lineId/:lineId/receipt/receive/hu',
+    Component: ReceiptNewHUScreen,
   },
 ];
 

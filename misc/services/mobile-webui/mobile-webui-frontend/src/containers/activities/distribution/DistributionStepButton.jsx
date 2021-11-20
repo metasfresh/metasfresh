@@ -9,8 +9,7 @@ import * as CompleteStatus from '../../../constants/CompleteStatus';
 
 class DistributionStepButton extends PureComponent {
   handleClick = () => {
-    const { locatorName } = this.props;
-    const { dispatch, onHandleClick } = this.props;
+    const { locatorName, location, dispatch, onHandleClick } = this.props;
 
     onHandleClick();
     dispatch(

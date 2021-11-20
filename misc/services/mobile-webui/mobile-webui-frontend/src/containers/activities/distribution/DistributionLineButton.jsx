@@ -9,7 +9,7 @@ import { pushHeaderEntry } from '../../../actions/HeaderActions';
 
 class DistributionLineButton extends PureComponent {
   handleClick = () => {
-    const { dispatch, caption, onHandleClick } = this.props;
+    const { dispatch, caption, onHandleClick, location } = this.props;
 
     onHandleClick();
     dispatch(

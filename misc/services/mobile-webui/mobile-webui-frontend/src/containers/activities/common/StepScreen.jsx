@@ -60,6 +60,7 @@ const mapStateToProps = (state, ownProps) => {
     stepId,
     stepProps,
     appId,
+    location: ownProps.location,
   };
 };
 

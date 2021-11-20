@@ -20,10 +20,17 @@ class StepScanScreenComponent extends Component {
   }
 
   onBarcodeScanned = ({ scannedBarcode }, closeCameraCallback) => {
+    const { qtyTarget } = this.props;
+
     if (this.isEligibleBarcode(scannedBarcode)) {
-      this.setState({ promptVisible: true });
-      this.props.setScannedBarcode(scannedBarcode);
       this.closeCameraCallback = closeCameraCallback;
+
+      // in some cases we don't need store quantity (ie manufacturing receipts)
+      if (qtyTarget !== null) {
+        this.setState({ promptVisible: true });
+      }
+
+      this.props.setScannedBarcode(scannedBarcode);
     } else {
       // show an error to user but keep scanning...
       toastError({ messageKey: 'activities.picking.notEligibleHUBarcode' });
@@ -71,7 +78,8 @@ class StepScanScreenComponent extends Component {
     const { eligibleBarcode } = this.props;
 
     console.log(`checking ${eligibleBarcode} vs ${scannedBarcode}`);
-    return scannedBarcode === eligibleBarcode;
+    // in some cases we accept whatever code user scans and we're not constraining it
+    return eligibleBarcode === null ? true : scannedBarcode === eligibleBarcode;
   };
 
   render() {
