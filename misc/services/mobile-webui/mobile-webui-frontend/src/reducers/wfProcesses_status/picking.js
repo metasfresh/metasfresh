@@ -62,7 +62,7 @@ const reduceOnUpdateQtyPicked = (draftState, payload) => {
   return draftState;
 };
 
-export const generateAlternativeSteps = ({ draftDataStored, lineId, stepId, qtyToAllocate }) => {
+export const generateAlternativeSteps = ({ draftDataStored, lineId, stepId, qtyToAllocate, skipDeallocation }) => {
   const draftDataStoredOrig = isDraft(draftDataStored) ? original(draftDataStored) : draftDataStored;
   const draftStep = draftDataStored.lines[lineId].steps[stepId];
   const { pickFromAlternatives: alternativesPool } = draftDataStoredOrig;
@@ -75,8 +75,10 @@ export const generateAlternativeSteps = ({ draftDataStored, lineId, stepId, qtyT
 
   let qtyToAllocateRemaining = qtyToAllocate;
 
-  for (let idx = 0; idx < alternativesPool.length; idx++) {
-    deallocateQtyAvailable({ idx, stepId, draftDataStored });
+  if (!skipDeallocation) {
+    for (let idx = 0; idx < alternativesPool.length; idx++) {
+      deallocateQtyAvailable({ idx, stepId, draftDataStored });
+    }
   }
 
   for (let idx = 0; idx < alternativesPool.length; idx++) {
@@ -96,13 +98,18 @@ export const generateAlternativeSteps = ({ draftDataStored, lineId, stepId, qtyT
       if (!draftStep.altSteps) {
         draftStep.altSteps.genSteps = {};
       }
+
+      let prevQtyPicked = draftStep.altSteps.genSteps[alternativesPoolItem.id]
+        ? draftStep.altSteps.genSteps[alternativesPoolItem.id].qtyPicked
+        : 0;
+
       draftStep.altSteps.genSteps[alternativesPoolItem.id] = {
         id: alternativesPoolItem.id,
         locatorName: alternativesPoolItem.locatorName,
         huBarcode: alternativesPoolItem.huBarcode,
         uom: alternativesPoolItem.uom,
         qtyAvailable: qtyToAllocateThisStep,
-        qtyPicked: 0,
+        qtyPicked: prevQtyPicked > 0 ? prevQtyPicked : 0,
       };
 
       allocateQtyAvailable({
@@ -333,7 +340,7 @@ export const mergeActivityDataStoredAndGenerateAltSteps = ({ draftActivityDataSt
           genSteps[pickFromAlternatives[altKey].id].qtyPicked =
             step.pickFromAlternatives[pickFromAlternatives[altKey].id].qtyPicked;
           pickFromAlternatives[altKey].allocatedQtys = {
-            [pickFromAlternatives[altKey].id]: step.pickFromAlternatives[pickFromAlternatives[altKey].id].qtyPicked,
+            [pickFromAlternatives[altKey].id]: pickFromAlternatives[altKey].qtyAvailable,
           };
         } else {
           pickFromAlternatives[altKey].allocatedQtys = {};
@@ -345,8 +352,10 @@ export const mergeActivityDataStoredAndGenerateAltSteps = ({ draftActivityDataSt
       draftActivityDataStored.dataStored.lines[lineIdx].steps[step.pickingStepId].altSteps.genSteps = genSteps;
 
       // In case we have no generated steps and there is a qtyRejected to be filled - we need to generate those alternatives
-      if ((Object.keys(genSteps).length === 0 && qtyRejected) || qtyRejected - totalAltQtys > 0) {
-        // if (Object.keys(genSteps).length === 0 && qtyRejected) {
+      // if ((Object.keys(genSteps).length === 0 && qtyRejected) || qtyRejected - totalAltQtys > 0) {
+      const remainingQtyDiff = qtyRejected - totalAltQtys;
+
+      if ((Object.keys(genSteps).length === 0 && qtyRejected) || remainingQtyDiff > 0) {
         draftActivityDataStored.dataStored = generateAlternativeSteps({
           draftDataStored: draftActivityDataStored.dataStored,
           lineId: lineIdx,

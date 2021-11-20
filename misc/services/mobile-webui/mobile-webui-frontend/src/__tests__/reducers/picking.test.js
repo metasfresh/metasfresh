@@ -104,7 +104,7 @@ describe('picking unit tests', () => {
 
     it('should generate correct steps when receiving data fromActivity', () => {
       const resultedData = mergeActivityDataStoredAndGenerateAltSteps({ draftActivityDataStored, fromActivity });
-      console.log('Resulted data:', resultedData);
+      // console.log('Resulted data:', resultedData);
 
       const dataStored = resultedData.dataStored;
       const { lines } = dataStored;
@@ -114,6 +114,18 @@ describe('picking unit tests', () => {
 
       expect(targetStep.qtyPicked).toEqual(2);
       expect(targetStep.mainPickFrom.qtyRejected).toEqual(53);
+
+      const { genSteps } = targetStep.altSteps;
+      console.log('targetStep:', targetStep.altSteps.genSteps);
+
+      // The generated steps for the ones flagged by the BE with already picked qtys should be present
+      expect(genSteps['1000488'].qtyAvailable).toEqual(14);
+      expect(genSteps['1000488'].qtyPicked).toEqual(4);
+
+      expect(genSteps['1000489'].qtyAvailable).toEqual(5);
+      expect(genSteps['1000489'].qtyPicked).toEqual(1);
+
+      // expect to have the alternative steps for which we already picked present
 
       // const { genSteps } =
       //   initialState['wfProcesses_status'][wfProcessId].activities[activityId].dataStored.lines[lineId].steps[stepId]
