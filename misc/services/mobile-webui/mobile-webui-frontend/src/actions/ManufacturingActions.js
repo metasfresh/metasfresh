@@ -27,10 +27,10 @@ export function updateManufacturingReceiptTarget({ wfProcessId, activityId, line
   };
 }
 
-export function updateManufacturingReceiptQty({ wfProcessId, activityId, lineId, quantity }) {
+export function updateManufacturingReceiptQty({ wfProcessId, activityId, lineId, qtyPicked }) {
   return {
     type: UPDATE_MANUFACTURING_RECEIPT_QTY,
-    payload: { wfProcessId, activityId, lineId, quantity },
+    payload: { wfProcessId, activityId, lineId, qtyPicked },
   };
 }
 
@@ -53,13 +53,15 @@ export function updateManufacturingReceipt({ wfProcessId, activityId, lineId }) 
           aggregateToLU,
         },
       };
-      manufacturingReceiptReqest({ wfProcessId, activityId, receiptObject }).then((resp) => {
+      return manufacturingReceiptReqest({ wfProcessId, activityId, receiptObject }).then((resp) => {
         if (aggregateToLU.newLU) {
           dispatch(
             updateManufacturingReceiptTarget({ wfProcessId, activityId, lineId, target: { ...resp.data.existingLU } })
           );
         }
       });
+    } else {
+      return Promise.reject('No line found');
     }
   };
 }

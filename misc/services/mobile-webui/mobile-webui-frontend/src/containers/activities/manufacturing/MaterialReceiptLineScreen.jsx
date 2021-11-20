@@ -3,14 +3,24 @@ import PropTypes from 'prop-types';
 import { push, go } from 'connected-react-router';
 import counterpart from 'counterpart';
 
-import { updateManufacturingReceiptQty } from '../../../actions/ManufacturingActions';
+import { updateManufacturingReceiptQty, updateManufacturingReceipt } from '../../../actions/ManufacturingActions';
 import PickQuantityButton from './PickQuantityButton';
+import { toastError } from '../../../utils/toast';
 
 class MaterialReceiptLineScreen extends PureComponent {
   handleQuantityChange = (qtyPicked) => {
-    const { dispatch, wfProcessId, activityId, lineId } = this.props;
+    const { dispatch, wfProcessId, activityId, lineId, lineProps } = this.props;
 
     dispatch(updateManufacturingReceiptQty({ wfProcessId, activityId, lineId, qtyPicked }));
+
+    if (lineProps.aggregateToLU) {
+      updateManufacturingReceipt({
+        wfProcessId,
+        activityId,
+        lineId,
+      }).catch((axiosError) => toastError({ axiosError }));
+    }
+
     dispatch(go(-1));
   };
 
