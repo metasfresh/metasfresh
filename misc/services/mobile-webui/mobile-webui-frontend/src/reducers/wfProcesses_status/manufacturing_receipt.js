@@ -1,6 +1,7 @@
 import * as types from '../../constants/ManufacturingActionTypes';
+import * as CompleteStatus from '../../constants/CompleteStatus';
 import { registerHandler } from './activityStateHandlers';
-import { computeLineStatus, updateActivityStatusFromLines } from './picking';
+import { updateActivityStatusFromLines } from './picking';
 
 const COMPONENT_TYPE = 'manufacturing/materialReceipt';
 
@@ -66,12 +67,23 @@ const reduceOnUpdateQtyPicked = (draftState, payload) => {
 
 const updateLineStatus = ({ draftWFProcess, activityId, lineId }) => {
   const draftLine = draftWFProcess.activities[activityId].dataStored.lines[lineId];
-  draftLine.completeStatus = computeLineStatus({ draftLine });
+
+  draftLine.completeStatus = computeLineStatus(draftLine);
   console.log(`Update line [${activityId} ${lineId} ]: completeStatus=${draftLine.completeStatus}`);
 
   //
   // Rollup:
   updateActivityStatusFromLines({ draftWFProcess, activityId });
+};
+
+const computeLineStatus = ({ qtyToReceive, qtyReceived, aggregateToLU }) => {
+  if (qtyToReceive === qtyReceived && aggregateToLU) {
+    return CompleteStatus.COMPLETED;
+  } else if (qtyToReceive === qtyReceived || aggregateToLU) {
+    return CompleteStatus.IN_PROGRESS;
+  } else {
+    return CompleteStatus.NOT_STARTED;
+  }
 };
 
 const normalizeLines = (lines) => {

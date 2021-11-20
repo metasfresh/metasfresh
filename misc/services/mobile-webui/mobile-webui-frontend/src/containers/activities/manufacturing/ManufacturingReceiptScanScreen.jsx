@@ -65,7 +65,7 @@ function ManufacturingReceiptScanScreen(WrappedComponent) {
           lineId,
         }).catch((axiosError) => toastError({ axiosError }));
       }
-      go(-1);
+      go(-2);
     };
 
     render() {

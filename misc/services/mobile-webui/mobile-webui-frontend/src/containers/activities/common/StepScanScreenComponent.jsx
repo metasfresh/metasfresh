@@ -114,7 +114,7 @@ StepScanScreenComponent.propTypes = {
   lineId: PropTypes.string.isRequired,
   stepId: PropTypes.string,
   eligibleBarcode: PropTypes.string,
-  qtyTarget: PropTypes.number.isRequired,
+  qtyTarget: PropTypes.number,
   qtyCaption: PropTypes.string.isRequired,
   stepProps: PropTypes.object.isRequired,
   pushUpdatedQuantity: PropTypes.func,

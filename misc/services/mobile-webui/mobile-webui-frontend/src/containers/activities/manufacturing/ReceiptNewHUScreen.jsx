@@ -30,7 +30,7 @@ class ReceiptNewHUScreen extends PureComponent {
       }).catch((axiosError) => toastError({ axiosError }));
     }
 
-    go(-1);
+    go(-2);
   };
 
   render() {
