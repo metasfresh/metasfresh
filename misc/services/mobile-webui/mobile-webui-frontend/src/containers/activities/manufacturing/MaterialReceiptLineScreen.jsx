@@ -14,11 +14,13 @@ class MaterialReceiptLineScreen extends PureComponent {
     dispatch(updateManufacturingReceiptQty({ wfProcessId, activityId, lineId, qtyPicked }));
 
     if (lineProps.aggregateToLU) {
-      updateManufacturingReceipt({
-        wfProcessId,
-        activityId,
-        lineId,
-      }).catch((axiosError) => toastError({ axiosError }));
+      dispatch(
+        updateManufacturingReceipt({
+          wfProcessId,
+          activityId,
+          lineId,
+        })
+      ).catch((axiosError) => toastError({ axiosError }));
     }
 
     dispatch(go(-1));
