@@ -4,31 +4,47 @@ import { computeLineStatus, updateActivityStatusFromLines } from './picking';
 
 const COMPONENT_TYPE = 'manufacturing/materialReceipt';
 
-// export function updateManufacturingReceiptTarget({ wfProcessId, activityId, lineId, target }) {
-//   return {
-//     type: UPDATE_MANUFACTURING_RECEIPT_TARGET,
-//     payload: { wfProcessId, activityId, lineId, target },
-//   };
-// }
-
-// export function updateManufacturingReceiptQty({ wfProcessId, activityId, lineId, quantity }) {
-//   return {
-//     type: UPDATE_MANUFACTURING_RECEIPT_QTY,
-//     payload: { wfProcessId, activityId, lineId, quantity },
-//   };
-// }
-
 export const manufacturingReducer = ({ draftState, action }) => {
   switch (action.type) {
     case types.UPDATE_MANUFACTURING_RECEIPT_QTY: {
       return reduceOnUpdateQtyPicked(draftState, action.payload);
     }
-    // UPDATE_MANUFACTURING_RECEIPT_TARGET
-
+    case types.UPDATE_MANUFACTURING_RECEIPT_TARGET: {
+      return updateTarget(draftState, action.payload);
+    }
     default: {
       return draftState;
     }
   }
+};
+
+const updateTarget = (draftState, payload) => {
+  const { wfProcessId, activityId, lineId, target } = payload;
+
+  const draftWFProcess = draftState[wfProcessId];
+  const draftActivityLine = draftWFProcess.activities[activityId].dataStored.lines[lineId];
+
+  if (target.scannedBarcode) {
+    const productId = draftActivityLine.availableReceivingTargets.values[0].tuPIItemProductId;
+    draftActivityLine.aggregateToLU = {
+      existingHU: {
+        huBarcode: target.scannedBarcode,
+        tuPIItemProductId: productId,
+      },
+    };
+  } else {
+    draftActivityLine.aggregateToLU = {
+      newLU: { ...target },
+    };
+  }
+
+  updateLineStatus({
+    draftWFProcess,
+    activityId,
+    lineId,
+  });
+
+  return draftState;
 };
 
 const reduceOnUpdateQtyPicked = (draftState, payload) => {
@@ -37,7 +53,7 @@ const reduceOnUpdateQtyPicked = (draftState, payload) => {
   const draftWFProcess = draftState[wfProcessId];
   const draftActivityLine = draftWFProcess.activities[activityId].dataStored.lines[lineId];
 
-  draftActivityLine.qtyIssued = qtyPicked;
+  draftActivityLine.qtyReceived = qtyPicked;
 
   updateLineStatus({
     draftWFProcess,

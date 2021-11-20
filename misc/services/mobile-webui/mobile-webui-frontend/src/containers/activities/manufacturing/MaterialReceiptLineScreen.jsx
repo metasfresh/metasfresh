@@ -3,15 +3,15 @@ import PropTypes from 'prop-types';
 import { push, go } from 'connected-react-router';
 import counterpart from 'counterpart';
 
-// import { updateManufacturingReceiptQty } from '../../../actions/ManufacturingActions';
+import { updateManufacturingReceiptQty } from '../../../actions/ManufacturingActions';
 import PickQuantityButton from './PickQuantityButton';
 
 class MaterialReceiptLineScreen extends PureComponent {
   handleQuantityChange = (qtyPicked) => {
-    //   const { dispatch, wfProcessId, activityId, lineId } = this.props;
-    console.log('qtyPicked: ', qtyPicked, go);
-    //   dispatch(updateManufacturingReceiptQty({ wfProcessId, activityId, lineId, qtyPicked }));
-    //   dispatch(go(-1));
+    const { dispatch, wfProcessId, activityId, lineId } = this.props;
+
+    dispatch(updateManufacturingReceiptQty({ wfProcessId, activityId, lineId, qtyPicked }));
+    dispatch(go(-1));
   };
 
   handleClick = () => {

@@ -5,9 +5,8 @@ import { withRouter } from 'react-router';
 import { go } from 'connected-react-router';
 import counterpart from 'counterpart';
 
-// import { postStepDistributionMove } from '../../../api/distribution';
-// import { selectWFProcessFromState } from '../../../reducers/wfProcesses_status';
 import { updateManufacturingReceiptTarget } from '../../../actions/ManufacturingActions';
+import { selectWFProcessFromState } from '../../../reducers/wfProcesses_status';
 
 import StepScanScreenComponent from '../common/StepScanScreenComponent';
 // import { toastError } from '../../../utils/toast';
@@ -18,11 +17,16 @@ function ManufacturingReceiptScanScreen(WrappedComponent) {
   const mapStateToProps = (state, { match }) => {
     const { workflowId: wfProcessId, activityId, lineId, appId } = match.params;
 
+    const wfProcess = selectWFProcessFromState(state, wfProcessId);
+    const activity = wfProcess && wfProcess.activities ? wfProcess.activities[activityId] : null;
+    const lineProps = activity != null ? activity.dataStored.lines[lineId] : null;
+
     return {
       wfProcessId,
       activityId,
       lineId,
       appId,
+      lineProps,
       stepProps: EMPTY_OBJECT,
       qtyTarget: null,
       eligibleBarcode: null,
@@ -41,61 +45,36 @@ function ManufacturingReceiptScanScreen(WrappedComponent) {
     setScannedBarcode = (scannedBarcode) => {
       this.setState({ scannedBarcode });
 
-      // const { updateManufacturingReceiptTarget, wfProcessId, activityId, lineId, stepId, go } = this.props;
-      // const { scannedBarcode } = this.state;
+      const { updateManufacturingReceiptTarget, wfProcessId, activityId, lineId, go, lineProps } = this.props;
 
-      console.log('pushUpdatedQuantity: ', scannedBarcode);
+      updateManufacturingReceiptTarget({ wfProcessId, activityId, lineId, target: { scannedBarcode } });
 
-      // if (locatorId) {
-      //   postStepDistributionMove({
-      //     wfProcessId,
-      //     activityId,
-      //     stepId,
-      //     dropTo: {
-      //       qtyPicked: qty,
-      //       qtyRejectedReasonCode: reason,
-      //     },
-      //   })
-      //     .then(() => {
-      //       updateDistributionStepQty({
-      //         wfProcessId,
-      //         activityId,
-      //         lineId,
-      //         stepId,
-      //         locatorBarcode: scannedBarcode,
-      //         qtyPicked: qty,
-      //         qtyRejectedReasonCode: reason,
-      //       });
-      //       go(-1);
-      //     })
-      //     .catch((axiosError) => toastError({ axiosError }));
-      // } else {
-      //   postStepDistributionMove({
-      //     wfProcessId,
-      //     activityId,
-      //     stepId,
-      //     pickFrom: {
-      //       qtyPicked: qty,
-      //       qtyRejectedReasonCode: reason,
-      //     },
-      //   })
-      //     .then(() => {
-      //       updateDistributionStepQty({
-      //         wfProcessId,
-      //         activityId,
-      //         lineId,
-      //         stepId,
-      //         actualHUPicked: {
-      //           barcode: scannedBarcode,
-      //           caption: scannedBarcode,
-      //         },
-      //         qtyPicked: qty,
-      //         qtyRejectedReasonCode: reason,
-      //       });
+      // TODO: If quantity is already picked, update on the backend
+      if (lineProps.qtyReceived) {
+        // postStepDistributionMove({
+        //   wfProcessId,
+        //   activityId,
+        //   stepId,
+        //   dropTo: {
+        //     qtyPicked: qty,
+        //     qtyRejectedReasonCode: reason,
+        //   },
+        // })
+        //   .then(() => {
+        //     updateDistributionStepQty({
+        //       wfProcessId,
+        //       activityId,
+        //       lineId,
+        //       stepId,
+        //       locatorBarcode: scannedBarcode,
+        //       qtyPicked: qty,
+        //       qtyRejectedReasonCode: reason,
+        //     });
+        //     go(-1);
+        //   })
+        //   .catch((axiosError) => toastError({ axiosError }));
+      }
       go(-1);
-      //     })
-      //     .catch((axiosError) => toastError({ axiosError }));
-      // }
     };
 
     render() {
@@ -111,14 +90,10 @@ function ManufacturingReceiptScanScreen(WrappedComponent) {
   }
 
   Wrapped.propTypes = {
-    componentProps: PropTypes.object,
     wfProcessId: PropTypes.string.isRequired,
     activityId: PropTypes.string.isRequired,
     lineId: PropTypes.string.isRequired,
-    stepId: PropTypes.string,
-    eligibleBarcode: PropTypes.string,
-    stepProps: PropTypes.object.isRequired,
-    locatorId: PropTypes.string,
+    lineProps: PropTypes.object.isRequired,
 
     // Actions:
     go: PropTypes.func.isRequired,
