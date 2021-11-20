@@ -5,11 +5,11 @@ import { withRouter } from 'react-router';
 import { go } from 'connected-react-router';
 import counterpart from 'counterpart';
 
-import { updateManufacturingReceiptTarget } from '../../../actions/ManufacturingActions';
+import { updateManufacturingReceiptTarget, updateManufacturingReceipt } from '../../../actions/ManufacturingActions';
 import { selectWFProcessFromState } from '../../../reducers/wfProcesses_status';
 
 import StepScanScreenComponent from '../common/StepScanScreenComponent';
-// import { toastError } from '../../../utils/toast';
+import { toastError } from '../../../utils/toast';
 
 const EMPTY_OBJECT = {};
 
@@ -45,34 +45,25 @@ function ManufacturingReceiptScanScreen(WrappedComponent) {
     setScannedBarcode = (scannedBarcode) => {
       this.setState({ scannedBarcode });
 
-      const { updateManufacturingReceiptTarget, wfProcessId, activityId, lineId, go, lineProps } = this.props;
+      const {
+        updateManufacturingReceiptTarget,
+        updateManufacturingReceipt,
+        wfProcessId,
+        activityId,
+        lineId,
+        go,
+        lineProps,
+      } = this.props;
 
-      updateManufacturingReceiptTarget({ wfProcessId, activityId, lineId, target: { scannedBarcode } });
+      updateManufacturingReceiptTarget({ wfProcessId, activityId, lineId, target: { huBarcode: scannedBarcode } });
 
       // TODO: If quantity is already picked, update on the backend
       if (lineProps.qtyReceived) {
-        // postStepDistributionMove({
-        //   wfProcessId,
-        //   activityId,
-        //   stepId,
-        //   dropTo: {
-        //     qtyPicked: qty,
-        //     qtyRejectedReasonCode: reason,
-        //   },
-        // })
-        //   .then(() => {
-        //     updateDistributionStepQty({
-        //       wfProcessId,
-        //       activityId,
-        //       lineId,
-        //       stepId,
-        //       locatorBarcode: scannedBarcode,
-        //       qtyPicked: qty,
-        //       qtyRejectedReasonCode: reason,
-        //     });
-        //     go(-1);
-        //   })
-        //   .catch((axiosError) => toastError({ axiosError }));
+        updateManufacturingReceipt({
+          wfProcessId,
+          activityId,
+          lineId,
+        }).catch((axiosError) => toastError({ axiosError }));
       }
       go(-1);
     };
@@ -98,11 +89,13 @@ function ManufacturingReceiptScanScreen(WrappedComponent) {
     // Actions:
     go: PropTypes.func.isRequired,
     updateManufacturingReceiptTarget: PropTypes.func.isRequired,
+    updateManufacturingReceipt: PropTypes.func.isRequired,
   };
 
   return withRouter(
     connect(mapStateToProps, {
       updateManufacturingReceiptTarget,
+      updateManufacturingReceipt,
       go,
     })(Wrapped)
   );

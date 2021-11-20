@@ -2,9 +2,11 @@ import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { push } from 'connected-react-router';
+import { withRouter } from 'react-router';
 
-const mapStateToProps = ({ applications }) => ({
+const mapStateToProps = ({ applications }, { location }) => ({
   appId: applications.activeApplication ? applications.activeApplication.id : null,
+  location,
 });
 
 function LineButton(WrappedComponent) {
@@ -47,7 +49,7 @@ function LineButton(WrappedComponent) {
     dispatch: PropTypes.func.isRequired,
   };
 
-  return connect(mapStateToProps)(Wrapped);
+  return withRouter(connect(mapStateToProps)(Wrapped));
 }
 
 export default LineButton;

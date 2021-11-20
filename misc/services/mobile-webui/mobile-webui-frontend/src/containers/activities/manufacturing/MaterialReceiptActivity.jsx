@@ -28,8 +28,8 @@ const MaterialReceiptActivity = (props) => {
                 caption={lineItem.productName}
                 isUserEditable={true}
                 completeStatus={lineItem.completeStatus || CompleteStatus.NOT_STARTED}
-                qtyIssued={lineItem.qtyIssued}
-                qtyToIssue={lineItem.qtyToIssue}
+                qtyCurrent={lineItem.qtyReceived}
+                qtyTarget={lineItem.qtyToReceive}
                 uom={lineItem.uom}
               />
             );

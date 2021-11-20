@@ -5,13 +5,30 @@ import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
 
 import { selectWFProcessFromState } from '../../../reducers/wfProcesses_status';
-import { updateManufacturingReceiptTarget } from '../../../actions/ManufacturingActions';
+import { updateManufacturingReceiptTarget, updateManufacturingReceipt } from '../../../actions/ManufacturingActions';
+import { toastError } from '../../../utils/toast';
 
 class ReceiptNewHUScreen extends PureComponent {
   handleClick = (target) => {
-    const { wfProcessId, activityId, lineId, updateManufacturingReceiptTarget, go } = this.props;
+    const {
+      updateManufacturingReceiptTarget,
+      updateManufacturingReceipt,
+      wfProcessId,
+      activityId,
+      lineId,
+      go,
+      lineProps,
+    } = this.props;
 
     updateManufacturingReceiptTarget({ wfProcessId, activityId, lineId, target });
+
+    if (lineProps.qtyReceived) {
+      updateManufacturingReceipt({
+        wfProcessId,
+        activityId,
+        lineId,
+      }).catch((axiosError) => toastError({ axiosError }));
+    }
 
     go(-1);
   };
@@ -72,7 +89,10 @@ ReceiptNewHUScreen.propTypes = {
 
   // Actons
   updateManufacturingReceiptTarget: PropTypes.func.isRequired,
+  updateManufacturingReceipt: PropTypes.func.isRequired,
   go: PropTypes.func.isRequired,
 };
 
-export default withRouter(connect(mapStateToProps, { go, updateManufacturingReceiptTarget })(ReceiptNewHUScreen));
+export default withRouter(
+  connect(mapStateToProps, { go, updateManufacturingReceiptTarget, updateManufacturingReceipt })(ReceiptNewHUScreen)
+);

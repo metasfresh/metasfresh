@@ -24,11 +24,11 @@ const updateTarget = (draftState, payload) => {
   const draftWFProcess = draftState[wfProcessId];
   const draftActivityLine = draftWFProcess.activities[activityId].dataStored.lines[lineId];
 
-  if (target.scannedBarcode) {
+  if (target.huBarcode) {
     const productId = draftActivityLine.availableReceivingTargets.values[0].tuPIItemProductId;
     draftActivityLine.aggregateToLU = {
       existingHU: {
-        huBarcode: target.scannedBarcode,
+        huBarcode: target.huBarcode,
         tuPIItemProductId: productId,
       },
     };

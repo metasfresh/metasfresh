@@ -27,12 +27,12 @@ class MaterialReceiptLineButton extends PureComponent {
   };
 
   render() {
-    const { caption, uom, qtyIssued, qtyToIssue, completeStatus, appId } = this.props;
+    const { caption, uom, qtyCurrent, qtyTarget, completeStatus, appId } = this.props;
 
     return (
       <>
         <ButtonWithIndicator caption={caption} completeStatus={completeStatus}>
-          <ButtonQuantityProp qtyCurrent={qtyIssued} qtyTarget={qtyToIssue} uom={uom} appId={appId} />
+          <ButtonQuantityProp qtyCurrent={qtyCurrent} qtyTarget={qtyTarget} uom={uom} appId={appId} />
         </ButtonWithIndicator>
       </>
     );
@@ -49,8 +49,8 @@ MaterialReceiptLineButton.propTypes = {
   isUserEditable: PropTypes.bool.isRequired,
   completeStatus: PropTypes.string.isRequired,
   uom: PropTypes.string.isRequired,
-  qtyIssued: PropTypes.number.isRequired,
-  qtyToIssue: PropTypes.number.isRequired,
+  qtyCurrent: PropTypes.number.isRequired,
+  qtyTarget: PropTypes.number.isRequired,
   appId: PropTypes.string.isRequired,
   onHandleClick: PropTypes.func.isRequired,
   location: PropTypes.object.isRequired,
