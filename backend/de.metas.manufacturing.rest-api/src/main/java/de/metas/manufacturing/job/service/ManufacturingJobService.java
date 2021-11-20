@@ -173,9 +173,11 @@ public class ManufacturingJobService
 	{
 		final I_PP_Order ppOrder = ppOrderBL.getById(ppOrderId);
 		final UserId currentResponsibleId = ManufacturingJobLoader.extractResponsibleId(ppOrder);
+
+		//noinspection StatementWithEmptyBody
 		if (currentResponsibleId == null)
 		{
-			// already unassigned
+			// already unassigned, do nothing
 		}
 		else if (UserId.equals(currentResponsibleId, responsibleId))
 		{
