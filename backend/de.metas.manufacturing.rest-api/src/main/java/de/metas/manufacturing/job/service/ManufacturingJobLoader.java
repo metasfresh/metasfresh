@@ -70,7 +70,7 @@ public class ManufacturingJobLoader
 				.documentNo(ppOrder.getDocumentNo())
 				.customerId(BPartnerId.ofRepoIdOrNull(ppOrder.getC_BPartner_ID()))
 				.datePromised(InstantAndOrgId.ofTimestamp(ppOrder.getDatePromised(), ppOrder.getAD_Org_ID()).toZonedDateTime(supportingServices::getTimeZone))
-				.responsibleId(UserId.ofRepoId(ppOrder.getAD_User_Responsible_ID()))
+				.responsibleId(extractResponsibleId(ppOrder))
 				.allowUserReporting(ppOrderDocStatus.isCompleted())
 				.activities(routing.getActivities()
 						.stream()
@@ -78,6 +78,12 @@ public class ManufacturingJobLoader
 						.map(this::toJobActivity)
 						.collect(ImmutableList.toImmutableList()))
 				.build();
+	}
+
+	@Nullable
+	public static UserId extractResponsibleId(final I_PP_Order ppOrder)
+	{
+		return UserId.ofRepoIdOrNullIfSystem(ppOrder.getAD_User_Responsible_ID());
 	}
 
 	public void addToCache(@NonNull final I_PP_Order ppOrder)

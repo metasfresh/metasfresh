@@ -80,7 +80,7 @@ public class ManufacturingJobCreateCommand
 
 	private void setResponsible()
 	{
-		final UserId previousResponsibleId = UserId.ofRepoIdOrNullIfSystem(ppOrder.getAD_User_Responsible_ID());
+		final UserId previousResponsibleId = ManufacturingJobLoader.extractResponsibleId(ppOrder);
 		if (UserId.equals(previousResponsibleId, responsibleId))
 		{
 			//noinspection UnnecessaryReturnStatement

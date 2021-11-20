@@ -164,6 +164,31 @@ public class ManufacturingJobService
 				.execute();
 	}
 
+	public void abortJob(@NonNull final PPOrderId ppOrderId, @NonNull final UserId responsibleId)
+	{
+		unassignFromResponsible(ppOrderId, responsibleId);
+	}
+
+	private void unassignFromResponsible(final @NonNull PPOrderId ppOrderId, final @NonNull UserId responsibleId)
+	{
+		final I_PP_Order ppOrder = ppOrderBL.getById(ppOrderId);
+		final UserId currentResponsibleId = ManufacturingJobLoader.extractResponsibleId(ppOrder);
+		if (currentResponsibleId == null)
+		{
+			// already unassigned
+		}
+		else if (UserId.equals(currentResponsibleId, responsibleId))
+		{
+			ppOrder.setAD_User_Responsible_ID(-1);
+			ppOrderBL.save(ppOrder);
+		}
+		else
+		{
+			throw new AdempiereException("Cannot unassign " + ppOrder.getDocumentNo()
+					+ " because its assigned to a different responsible than the one we thought (expected: " + responsibleId + ", actual: " + currentResponsibleId + ")");
+		}
+	}
+
 	public ManufacturingJob withActivityCompleted(ManufacturingJob job, ManufacturingJobActivityId jobActivityId)
 	{
 		final PPOrderId ppOrderId = job.getPpOrderId();
