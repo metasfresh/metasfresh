@@ -3,6 +3,7 @@ package de.metas.manufacturing.job.model;
 import de.metas.i18n.ITranslatableString;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.workflow.rest_api.model.WFActivityStatus;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -22,6 +23,8 @@ public class FinishedGoodsReceiveLine
 	@Nullable PPOrderBOMLineId coProductBOMLineId;
 
 	@Nullable CurrentReceivingHU currentReceivingHU;
+
+	@NonNull WFActivityStatus status;
 
 	@Builder(toBuilder = true)
 	private FinishedGoodsReceiveLine(
@@ -43,6 +46,21 @@ public class FinishedGoodsReceiveLine
 		this.id = coProductBOMLineId == null
 				? FinishedGoodsReceiveLineId.FINISHED_GOODS
 				: FinishedGoodsReceiveLineId.ofCOProductBOMLineId(coProductBOMLineId);
+
+		this.status = computeStatus(qtyToReceive, qtyReceived);
+	}
+
+	private static WFActivityStatus computeStatus(
+			@NonNull final Quantity qtyToReceive,
+			@NonNull final Quantity qtyReceived)
+	{
+		if (qtyReceived.isZero())
+		{
+			return WFActivityStatus.NOT_STARTED;
+		}
+
+		final Quantity qtyToReceiveRemaining = qtyToReceive.subtract(qtyReceived);
+		return qtyToReceiveRemaining.signum() != 0 ? WFActivityStatus.IN_PROGRESS : WFActivityStatus.COMPLETED;
 	}
 
 	public FinishedGoodsReceiveLine withCurrentReceivingHU(@NonNull final CurrentReceivingHU currentReceivingHU)

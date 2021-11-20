@@ -45,16 +45,16 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
 
-public class ManufacturingJobLoader
+public class ManufacturingJobLoaderAndSaver
 {
-	private final ManufacturingJobLoaderSupportingServices supportingServices;
+	private final ManufacturingJobLoaderAndSaverSupportingServices supportingServices;
 
 	private final HashMap<PPOrderId, I_PP_Order> ppOrders = new HashMap<>();
 	private final HashMap<PPOrderId, PPOrderRouting> routings = new HashMap<>();
 	private final HashMap<PPOrderId, ImmutableList<I_PP_Order_BOMLine>> bomLines = new HashMap<>();
 	private final HashMap<PPOrderId, ImmutableListMultimap<PPOrderBOMLineId, PPOrderIssueSchedule>> issueSchedules = new HashMap<>();
 
-	public ManufacturingJobLoader(@NonNull final ManufacturingJobLoaderSupportingServices supportingServices)
+	public ManufacturingJobLoaderAndSaver(@NonNull final ManufacturingJobLoaderAndSaverSupportingServices supportingServices)
 	{
 		this.supportingServices = supportingServices;
 	}
@@ -103,7 +103,7 @@ public class ManufacturingJobLoader
 		return ppOrders.computeIfAbsent(ppOrderId, supportingServices::getPPOrderRecordById);
 	}
 
-	private PPOrderRouting getRouting(final PPOrderId ppOrderId)
+	public PPOrderRouting getRouting(final PPOrderId ppOrderId)
 	{
 		return routings.computeIfAbsent(ppOrderId, supportingServices::getOrderRouting);
 	}
@@ -144,11 +144,11 @@ public class ManufacturingJobLoader
 		final PPOrderRoutingActivityId ppOrderRoutingActivityId = Objects.requireNonNull(from.getId());
 
 		return ManufacturingJobActivity.builder()
-				.id(ManufacturingJobActivityId.ofRepoId(ppOrderRoutingActivityId.getRepoId()))
+				.id(ManufacturingJobActivityId.of(ppOrderRoutingActivityId))
 				.name(from.getName())
 				.type(from.getType())
 				.orderRoutingActivityId(from.getId())
-				.status(from.getStatus());
+				.routingActivityStatus(from.getStatus());
 	}
 
 	private RawMaterialsIssue toRawMaterialsIssue(final @NonNull PPOrderRoutingActivity from)
@@ -297,4 +297,26 @@ public class ManufacturingJobLoader
 		}
 	}
 
+	public void saveActivityStatuses(final ManufacturingJob job)
+	{
+		final PPOrderId ppOrderId = job.getPpOrderId();
+		final PPOrderRouting routing = getRouting(ppOrderId);
+		final PPOrderRouting routingBeforeChange = routing.copy();
+
+		for (ManufacturingJobActivity jobActivity : job.getActivities())
+		{
+			final PPOrderRoutingActivityId ppOrderRoutingActivityId = jobActivity.getId().toPPOrderRoutingActivityId(ppOrderId);
+			routing.getActivityById(ppOrderRoutingActivityId).changeStatusTo(jobActivity.getRoutingActivityStatus());
+		}
+
+		if (!routing.equals(routingBeforeChange))
+		{
+			saveRouting(routing);
+		}
+	}
+
+	public void saveRouting(final PPOrderRouting routing)
+	{
+		supportingServices.saveOrderRouting(routing);
+	}
 }

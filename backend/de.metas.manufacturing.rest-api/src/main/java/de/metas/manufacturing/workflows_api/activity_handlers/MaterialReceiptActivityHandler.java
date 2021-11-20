@@ -141,6 +141,6 @@ public class MaterialReceiptActivityHandler implements WFActivityHandler
 	@Override
 	public WFActivityStatus computeActivityState(final WFProcess wfProcess, final WFActivity wfActivity)
 	{
-		return WFActivityStatus.NOT_STARTED;
+		return wfActivity.getStatus();
 	}
 }

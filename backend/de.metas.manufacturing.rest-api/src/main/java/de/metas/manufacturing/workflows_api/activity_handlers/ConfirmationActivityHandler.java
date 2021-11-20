@@ -40,7 +40,7 @@ public class ConfirmationActivityHandler implements WFActivityHandler, UserConfi
 	@Override
 	public WFActivityStatus computeActivityState(final WFProcess wfProcess, final WFActivity wfActivity)
 	{
-		return WFActivityStatus.NOT_STARTED;
+		return wfActivity.getStatus();
 	}
 
 	@Override

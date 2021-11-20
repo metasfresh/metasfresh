@@ -68,10 +68,9 @@ public class ManufacturingJobService
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final IHUPPOrderBL ppOrderBL;
 	private final IPPOrderBOMBL ppOrderBOMBL;
-	private final IPPOrderRoutingRepository ppOrderRoutingActivity;
 	private final PPOrderIssueScheduleService ppOrderIssueScheduleService;
 	private final HUReservationService huReservationService;
-	private final ManufacturingJobLoaderSupportingServices loadingSupportServices;
+	private final ManufacturingJobLoaderAndSaverSupportingServices loadingAndSavingSupportServices;
 
 	public ManufacturingJobService(
 			final PPOrderIssueScheduleService ppOrderIssueScheduleService,
@@ -80,13 +79,13 @@ public class ManufacturingJobService
 		this.ppOrderIssueScheduleService = ppOrderIssueScheduleService;
 		this.huReservationService = huReservationService;
 
-		this.loadingSupportServices = ManufacturingJobLoaderSupportingServices.builder()
+		this.loadingAndSavingSupportServices = ManufacturingJobLoaderAndSaverSupportingServices.builder()
 				.orgDAO(Services.get(IOrgDAO.class))
 				.warehouseBL(Services.get(IWarehouseBL.class))
 				.productBL(Services.get(IProductBL.class))
 				.ppOrderBL(ppOrderBL = Services.get(IHUPPOrderBL.class))
 				.ppOrderBOMBL(ppOrderBOMBL = Services.get(IPPOrderBOMBL.class))
-				.ppOrderRoutingRepository(ppOrderRoutingActivity = Services.get(IPPOrderRoutingRepository.class))
+				.ppOrderRoutingRepository(Services.get(IPPOrderRoutingRepository.class))
 				.ppOrderIssueScheduleService(ppOrderIssueScheduleService)
 				.build();
 	}
@@ -94,7 +93,10 @@ public class ManufacturingJobService
 	public ManufacturingJob getJobById(final PPOrderId ppOrderId) {return newLoader().load(ppOrderId);}
 
 	@NonNull
-	private ManufacturingJobLoader newLoader() {return new ManufacturingJobLoader(loadingSupportServices);}
+	private ManufacturingJobLoaderAndSaver newLoader() {return new ManufacturingJobLoaderAndSaver(loadingAndSavingSupportServices);}
+
+	@NonNull
+	private ManufacturingJobLoaderAndSaver newSaver() {return new ManufacturingJobLoaderAndSaver(loadingAndSavingSupportServices);}
 
 	public Stream<ManufacturingJobReference> streamJobReferencesForUser(
 			final @NonNull UserId responsibleId,
@@ -143,8 +145,8 @@ public class ManufacturingJobService
 				.ppOrderId(PPOrderId.ofRepoId(ppOrder.getPP_Order_ID()))
 				.documentNo(ppOrder.getDocumentNo())
 				.datePromised(InstantAndOrgId.ofTimestamp(ppOrder.getDatePromised(), ppOrder.getAD_Org_ID()).toZonedDateTime(orgDAO::getTimeZone))
-				.productName(loadingSupportServices.getProductName(ProductId.ofRepoId(ppOrder.getM_Product_ID())))
-				.qtyRequiredToProduce(loadingSupportServices.getQuantities(ppOrder).getQtyRequiredToProduce())
+				.productName(loadingAndSavingSupportServices.getProductName(ProductId.ofRepoId(ppOrder.getM_Product_ID())))
+				.qtyRequiredToProduce(loadingAndSavingSupportServices.getQuantities(ppOrder).getQtyRequiredToProduce())
 				.isJobStarted(isJobStarted)
 				.build();
 	}
@@ -156,7 +158,7 @@ public class ManufacturingJobService
 				.ppOrderBL(ppOrderBL)
 				.huReservationService(huReservationService)
 				.ppOrderIssueScheduleService(ppOrderIssueScheduleService)
-				.loadingSupportServices(loadingSupportServices)
+				.loadingSupportServices(loadingAndSavingSupportServices)
 				//
 				.ppOrderId(ppOrderId)
 				.responsibleId(responsibleId)
@@ -172,7 +174,7 @@ public class ManufacturingJobService
 	private void unassignFromResponsible(final @NonNull PPOrderId ppOrderId, final @NonNull UserId responsibleId)
 	{
 		final I_PP_Order ppOrder = ppOrderBL.getById(ppOrderId);
-		final UserId currentResponsibleId = ManufacturingJobLoader.extractResponsibleId(ppOrder);
+		final UserId currentResponsibleId = ManufacturingJobLoaderAndSaver.extractResponsibleId(ppOrder);
 
 		//noinspection StatementWithEmptyBody
 		if (currentResponsibleId == null)
@@ -212,26 +214,37 @@ public class ManufacturingJobService
 
 	private boolean changeRoutingActivityStatusToCompleted(final PPOrderId ppOrderId, final PPOrderRoutingActivityId orderRoutingActivityId)
 	{
-		final PPOrderRouting orderRouting = ppOrderRoutingActivity.getByOrderId(ppOrderId);
+		final ManufacturingJobLoaderAndSaver saver = newSaver();
+		final PPOrderRouting orderRouting = saver.getRouting(ppOrderId);
 		final PPOrderRouting orderRoutingBeforeChange = orderRouting.copy();
 		orderRouting.completeActivity(orderRoutingActivityId);
 
 		boolean jobNeedsReload = false;
 		if (!orderRouting.equals(orderRoutingBeforeChange))
 		{
-			ppOrderRoutingActivity.save(orderRouting);
+			saver.saveRouting(orderRouting);
 			jobNeedsReload = true;
 		}
+
 		return jobNeedsReload;
+	}
+
+	private void saveActivityStatuses(@NonNull final ManufacturingJob job)
+	{
+		newSaver().saveActivityStatuses(job);
 	}
 
 	public ManufacturingJob issueRawMaterials(@NonNull final ManufacturingJob job, @NonNull final PPOrderIssueScheduleProcessRequest request)
 	{
-		return job.withChangedRawMaterialsIssueStep(request.getIssueScheduleId(), step -> {
+		final ManufacturingJob changedJob = job.withChangedRawMaterialsIssueStep(request.getIssueScheduleId(), step -> {
 			step.assertNotIssued();
 			final PPOrderIssueSchedule issueSchedule = ppOrderIssueScheduleService.issue(request);
 			return step.withIssued(issueSchedule.getIssued());
 		});
+
+		saveActivityStatuses(changedJob);
+
+		return changedJob;
 	}
 
 	public ManufacturingJob receiveGoodsAndAggregateToLU(
@@ -243,7 +256,7 @@ public class ManufacturingJobService
 	{
 		final PPOrderId ppOrderId = job.getPpOrderId();
 
-		return job.withChangedReceiveLine(lineId, line -> {
+		final ManufacturingJob changedJob = job.withChangedReceiveLine(lineId, line -> {
 			final CurrentReceivingHU currentReceivingHU = trxManager.callInThreadInheritedTrx(() -> receiveGoodsAndAggregateToLU(
 					ppOrderId,
 					line.getCoProductBOMLineId(),
@@ -253,6 +266,10 @@ public class ManufacturingJobService
 
 			return line.withCurrentReceivingHU(currentReceivingHU);
 		});
+
+		saveActivityStatuses(changedJob);
+
+		return changedJob;
 	}
 
 	private CurrentReceivingHU receiveGoodsAndAggregateToLU(

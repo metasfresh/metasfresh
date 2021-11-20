@@ -2,25 +2,28 @@ package de.metas.manufacturing.job.model;
 
 import com.google.common.collect.ImmutableMap;
 import de.metas.util.collections.CollectionUtils;
+import de.metas.workflow.rest_api.model.WFActivityStatus;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import lombok.With;
 import org.adempiere.exceptions.AdempiereException;
 
+import java.util.Objects;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
 @Value
 public class FinishedGoodsReceive
 {
-	@With
 	@NonNull ImmutableMap<FinishedGoodsReceiveLineId, FinishedGoodsReceiveLine> linesById;
 
-	@Builder
-	public FinishedGoodsReceive(@NonNull final ImmutableMap<FinishedGoodsReceiveLineId, FinishedGoodsReceiveLine> linesById)
+	@NonNull WFActivityStatus status;
+
+	@Builder(toBuilder = true)
+	private FinishedGoodsReceive(@NonNull final ImmutableMap<FinishedGoodsReceiveLineId, FinishedGoodsReceiveLine> linesById)
 	{
 		this.linesById = linesById;
+		this.status = WFActivityStatus.computeStatusFromLines(linesById.values(), FinishedGoodsReceiveLine::getStatus);
 	}
 
 	public Stream<FinishedGoodsReceiveLine> streamLines() {return linesById.values().stream();}
@@ -38,5 +41,10 @@ public class FinishedGoodsReceive
 	public FinishedGoodsReceive withChangedReceiveLine(final FinishedGoodsReceiveLineId id, final UnaryOperator<FinishedGoodsReceiveLine> mapper)
 	{
 		return withLinesById(CollectionUtils.mapValue(this.linesById, id, mapper));
+	}
+
+	private FinishedGoodsReceive withLinesById(final ImmutableMap<FinishedGoodsReceiveLineId, FinishedGoodsReceiveLine> linesById)
+	{
+		return Objects.equals(this.linesById, linesById) ? this : toBuilder().linesById(linesById).build();
 	}
 }

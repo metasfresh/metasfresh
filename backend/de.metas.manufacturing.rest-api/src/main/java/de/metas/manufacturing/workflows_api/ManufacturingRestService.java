@@ -19,14 +19,12 @@ import de.metas.manufacturing.workflows_api.rest_api.json.JsonManufacturingOrder
 import de.metas.user.UserId;
 import de.metas.workflow.rest_api.model.WFActivity;
 import de.metas.workflow.rest_api.model.WFActivityId;
-import de.metas.workflow.rest_api.model.WFActivityStatus;
 import de.metas.workflow.rest_api.model.WFProcess;
 import de.metas.workflow.rest_api.model.WFProcessId;
 import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.exceptions.AdempiereException;
 import org.eevolution.api.PPOrderId;
-import org.eevolution.api.PPOrderRoutingActivityStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.Objects;
@@ -67,7 +65,7 @@ public class ManufacturingRestService
 		final WFActivity.WFActivityBuilder builder = WFActivity.builder()
 				.id(WFActivityId.ofId(jobActivity.getId()))
 				.caption(TranslatableStrings.anyLanguage(jobActivity.getName()))
-				.status(toWFActivityStatus(jobActivity.getStatus()));
+				.status(jobActivity.getStatus());
 
 		switch (jobActivity.getType())
 		{
@@ -96,23 +94,6 @@ public class ManufacturingRestService
 						.map(ManufacturingRestService::toWFActivity)
 						.collect(ImmutableList.toImmutableList()))
 				.build();
-	}
-
-	private static WFActivityStatus toWFActivityStatus(final @NonNull PPOrderRoutingActivityStatus status)
-	{
-		switch (status)
-		{
-			case NOT_STARTED:
-				return WFActivityStatus.NOT_STARTED;
-			case IN_PROGRESS:
-				return WFActivityStatus.IN_PROGRESS;
-			case COMPLETED:
-			case CLOSED:
-			case VOIDED:
-				return WFActivityStatus.COMPLETED;
-			default:
-				throw new AdempiereException("Unknown status: " + status);
-		}
 	}
 
 	public ManufacturingJob withActivityCompleted(ManufacturingJob job, ManufacturingJobActivityId jobActivityId) {return manufacturingJobService.withActivityCompleted(job, jobActivityId);}

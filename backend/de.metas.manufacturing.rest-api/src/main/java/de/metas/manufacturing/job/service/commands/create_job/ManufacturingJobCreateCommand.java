@@ -9,8 +9,8 @@ import de.metas.manufacturing.issue.plan.PPOrderIssuePlan;
 import de.metas.manufacturing.issue.plan.PPOrderIssuePlanCreateCommand;
 import de.metas.manufacturing.issue.plan.PPOrderIssuePlanStep;
 import de.metas.manufacturing.job.model.ManufacturingJob;
-import de.metas.manufacturing.job.service.ManufacturingJobLoader;
-import de.metas.manufacturing.job.service.ManufacturingJobLoaderSupportingServices;
+import de.metas.manufacturing.job.service.ManufacturingJobLoaderAndSaver;
+import de.metas.manufacturing.job.service.ManufacturingJobLoaderAndSaverSupportingServices;
 import de.metas.user.UserId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -27,14 +27,14 @@ public class ManufacturingJobCreateCommand
 	private final IHUPPOrderBL ppOrderBL;
 	private final HUReservationService huReservationService;
 	private final PPOrderIssueScheduleService ppOrderIssueScheduleService;
-	private final ManufacturingJobLoaderSupportingServices loadingSupportServices;
+	private final ManufacturingJobLoaderAndSaverSupportingServices loadingSupportServices;
 
 	// Params
 	private final PPOrderId ppOrderId;
 	private final UserId responsibleId;
 
 	// State
-	private ManufacturingJobLoader loader;
+	private ManufacturingJobLoaderAndSaver loader;
 	private I_PP_Order ppOrder;
 
 	@Builder
@@ -43,7 +43,7 @@ public class ManufacturingJobCreateCommand
 			@NonNull final IHUPPOrderBL ppOrderBL,
 			@NonNull final HUReservationService huReservationService,
 			@NonNull final PPOrderIssueScheduleService ppOrderIssueScheduleService,
-			@NonNull final ManufacturingJobLoaderSupportingServices loadingSupportServices,
+			@NonNull final ManufacturingJobLoaderAndSaverSupportingServices loadingSupportServices,
 			//
 			@NonNull final PPOrderId ppOrderId,
 			@NonNull final UserId responsibleId)
@@ -65,7 +65,7 @@ public class ManufacturingJobCreateCommand
 
 	private ManufacturingJob executeInTrx()
 	{
-		loader = new ManufacturingJobLoader(loadingSupportServices);
+		loader = new ManufacturingJobLoaderAndSaver(loadingSupportServices);
 
 		ppOrder = ppOrderBL.getById(ppOrderId);
 		loader.addToCache(ppOrder);
@@ -80,7 +80,7 @@ public class ManufacturingJobCreateCommand
 
 	private void setResponsible()
 	{
-		final UserId previousResponsibleId = ManufacturingJobLoader.extractResponsibleId(ppOrder);
+		final UserId previousResponsibleId = ManufacturingJobLoaderAndSaver.extractResponsibleId(ppOrder);
 		if (UserId.equals(previousResponsibleId, responsibleId))
 		{
 			//noinspection UnnecessaryReturnStatement

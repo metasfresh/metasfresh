@@ -66,6 +66,6 @@ public class RawMaterialsIssueActivityHandler implements WFActivityHandler
 	@Override
 	public WFActivityStatus computeActivityState(final WFProcess wfProcess, final WFActivity wfActivity)
 	{
-		return getRawMaterialsIssue(wfProcess, wfActivity).getStatus();
+		return wfActivity.getStatus();
 	}
 }
