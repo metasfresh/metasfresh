@@ -114,6 +114,8 @@ public class ManufacturingRestService
 
 	public ManufacturingJob processEvent(final ManufacturingJob job, final JsonManufacturingOrderEvent event)
 	{
+		job.assertUserReporting();
+
 		if (event.getIssueTo() != null)
 		{
 			final JsonManufacturingOrderEvent.IssueTo issueTo = event.getIssueTo();

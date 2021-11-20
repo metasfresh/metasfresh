@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Multimaps;
 import de.metas.bpartner.BPartnerId;
+import de.metas.document.engine.DocStatus;
 import de.metas.handlingunits.HUBarcode;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
@@ -61,6 +62,7 @@ public class ManufacturingJobLoader
 	public ManufacturingJob load(final PPOrderId ppOrderId)
 	{
 		final I_PP_Order ppOrder = getPPOrderRecordById(ppOrderId);
+		final DocStatus ppOrderDocStatus = DocStatus.ofCode(ppOrder.getDocStatus());
 		final PPOrderRouting routing = getRouting(ppOrderId);
 
 		return ManufacturingJob.builder()
@@ -69,6 +71,7 @@ public class ManufacturingJobLoader
 				.customerId(BPartnerId.ofRepoIdOrNull(ppOrder.getC_BPartner_ID()))
 				.datePromised(InstantAndOrgId.ofTimestamp(ppOrder.getDatePromised(), ppOrder.getAD_Org_ID()).toZonedDateTime(supportingServices::getTimeZone))
 				.responsibleId(UserId.ofRepoId(ppOrder.getAD_User_Responsible_ID()))
+				.allowUserReporting(ppOrderDocStatus.isCompleted())
 				.activities(routing.getActivities()
 						.stream()
 						.sorted(Comparator.comparing(activity -> activity.getCode().getAsString()))
@@ -171,7 +174,7 @@ public class ManufacturingJobLoader
 				.productId(productId)
 				.productName(supportingServices.getProductName(productId))
 				.qtyToIssue(bomLineQuantities.getQtyRequired())
-				.qtyIssued(bomLineQuantities.getQtyIssuedOrReceived())
+				//.qtyIssued(bomLineQuantities.getQtyIssuedOrReceived())
 				.steps(getIssueSchedules(ppOrderId)
 						.get(ppOrderBOMLineId)
 						.stream()

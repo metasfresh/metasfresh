@@ -29,11 +29,20 @@ public class ManufacturingJobActivity
 	@NonNull PPOrderRoutingActivityId orderRoutingActivityId;
 	@NonNull PPOrderRoutingActivityStatus status;
 
+	public RawMaterialsIssue getRawMaterialsIssueAssumingNotNull()
+	{
+		if (rawMaterialsIssue == null)
+		{
+			throw new AdempiereException("Not a raw materials issuing activity");
+		}
+		return rawMaterialsIssue;
+	}
+
 	public FinishedGoodsReceive getFinishedGoodsReceiveAssumingNotNull()
 	{
 		if (finishedGoodsReceive == null)
 		{
-			throw new AdempiereException("Not an material receiving activity");
+			throw new AdempiereException("Not a material receiving activity");
 		}
 		return finishedGoodsReceive;
 	}

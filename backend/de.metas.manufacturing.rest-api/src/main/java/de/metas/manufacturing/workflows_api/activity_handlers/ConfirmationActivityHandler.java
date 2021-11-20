@@ -51,7 +51,10 @@ public class ConfirmationActivityHandler implements WFActivityHandler, UserConfi
 
 		final ManufacturingJobActivityId jobActivityId = request.getWfActivity().getId().getAsId(ManufacturingJobActivityId.class);
 
-		final ManufacturingJob changedJob = manufacturingRestService.withActivityCompleted(wfProcess.getDocumentAs(ManufacturingJob.class), jobActivityId);
+		final ManufacturingJob job = wfProcess.getDocumentAs(ManufacturingJob.class);
+		job.assertUserReporting();
+
+		final ManufacturingJob changedJob = manufacturingRestService.withActivityCompleted(job, jobActivityId);
 		return ManufacturingRestService.toWFProcess(changedJob);
 	}
 }

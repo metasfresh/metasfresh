@@ -170,19 +170,32 @@ public class ManufacturingJobService
 		final ManufacturingJobActivity jobActivity = job.getActivityById(jobActivityId);
 		final PPOrderRoutingActivityId orderRoutingActivityId = jobActivity.getOrderRoutingActivityId();
 
+		boolean jobNeedsReload = changeRoutingActivityStatusToCompleted(ppOrderId, orderRoutingActivityId);
+
+		if (job.isLastActivity(jobActivityId))
+		{
+			ppOrderBL.closeOrder(ppOrderId);
+			jobNeedsReload = true;
+		}
+
+		//
+		return jobNeedsReload ? getJobById(ppOrderId) : job;
+
+	}
+
+	private boolean changeRoutingActivityStatusToCompleted(final PPOrderId ppOrderId, final PPOrderRoutingActivityId orderRoutingActivityId)
+	{
 		final PPOrderRouting orderRouting = ppOrderRoutingActivity.getByOrderId(ppOrderId);
 		final PPOrderRouting orderRoutingBeforeChange = orderRouting.copy();
 		orderRouting.completeActivity(orderRoutingActivityId);
 
+		boolean jobNeedsReload = false;
 		if (!orderRouting.equals(orderRoutingBeforeChange))
 		{
 			ppOrderRoutingActivity.save(orderRouting);
-			return getJobById(ppOrderId);
+			jobNeedsReload = true;
 		}
-		else
-		{
-			return job;
-		}
+		return jobNeedsReload;
 	}
 
 	public ManufacturingJob issueRawMaterials(@NonNull final ManufacturingJob job, @NonNull final PPOrderIssueScheduleProcessRequest request)

@@ -4,21 +4,21 @@ import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleId;
 import de.metas.user.UserId;
+import de.metas.util.Check;
 import de.metas.util.collections.CollectionUtils;
 import de.metas.workflow.rest_api.model.WFActivityId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import lombok.With;
 import org.adempiere.exceptions.AdempiereException;
 import org.eevolution.api.PPOrderId;
 
 import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
+import java.util.Objects;
 import java.util.function.UnaryOperator;
 
 @Value
-@Builder
 public class ManufacturingJob
 {
 	@NonNull PPOrderId ppOrderId;
@@ -26,9 +26,37 @@ public class ManufacturingJob
 	@Nullable BPartnerId customerId;
 	@NonNull ZonedDateTime datePromised;
 	@Nullable UserId responsibleId;
-
-	@With
+	boolean allowUserReporting;
 	@NonNull ImmutableList<ManufacturingJobActivity> activities;
+
+	@Builder(toBuilder = true)
+	private ManufacturingJob(
+			@NonNull final PPOrderId ppOrderId,
+			@NonNull final String documentNo,
+			@Nullable final BPartnerId customerId,
+			@NonNull final ZonedDateTime datePromised,
+			@Nullable final UserId responsibleId,
+			final boolean allowUserReporting,
+			@NonNull final ImmutableList<ManufacturingJobActivity> activities)
+	{
+		Check.assumeNotEmpty(activities, "activities is not empty");
+
+		this.ppOrderId = ppOrderId;
+		this.documentNo = documentNo;
+		this.customerId = customerId;
+		this.datePromised = datePromised;
+		this.responsibleId = responsibleId;
+		this.allowUserReporting = allowUserReporting;
+		this.activities = activities;
+	}
+
+	public void assertUserReporting()
+	{
+		if (!allowUserReporting)
+		{
+			throw new AdempiereException("Cannot report to this manufacturing job. It was already closed, voided or revered.");
+		}
+	}
 
 	public ManufacturingJobActivity getActivityById(@NonNull WFActivityId wfActivityId)
 	{
@@ -41,6 +69,12 @@ public class ManufacturingJob
 				.filter(activity -> ManufacturingJobActivityId.equals(activity.getId(), id))
 				.findFirst()
 				.orElseThrow(() -> new AdempiereException("No activity found for " + id));
+	}
+
+	public boolean isLastActivity(@NonNull final ManufacturingJobActivityId jobActivityId)
+	{
+		final ManufacturingJobActivity lastActivity = activities.get(activities.size() - 1);
+		return ManufacturingJobActivityId.equals(lastActivity.getId(), jobActivityId);
 	}
 
 	public ManufacturingJob withChangedRawMaterialsIssueStep(
@@ -56,6 +90,13 @@ public class ManufacturingJob
 		return withActivities(activitiesNew);
 	}
 
+	private ManufacturingJob withActivities(final ImmutableList<ManufacturingJobActivity> activitiesNew)
+	{
+		return !Objects.equals(this.activities, activitiesNew)
+				? toBuilder().activities(activitiesNew).build()
+				: this;
+	}
+
 	private boolean containsRawMaterialsIssueStep(final PPOrderIssueScheduleId issueScheduleId)
 	{
 		return activities.stream().anyMatch(activity -> activity.containsRawMaterialsIssueStep(issueScheduleId));
@@ -68,5 +109,4 @@ public class ManufacturingJob
 		final ImmutableList<ManufacturingJobActivity> activitiesNew = CollectionUtils.map(activities, activity -> activity.withChangedReceiveLine(id, mapper));
 		return withActivities(activitiesNew);
 	}
-
 }
