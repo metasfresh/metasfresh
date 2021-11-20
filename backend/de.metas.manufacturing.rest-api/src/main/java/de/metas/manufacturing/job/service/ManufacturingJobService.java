@@ -300,7 +300,9 @@ public class ManufacturingJobService
 			huProducer = ppOrderBL.receivingMainProduct(ppOrderId);
 		}
 
-		final HUPIItemProductId tuPIItemProductId = aggregateToLU.getTUPIItemProductId();
+		final HUPIItemProductId tuPIItemProductId = aggregateToLU.getTUPIItemProductId()
+				.orElseGet(() -> HUPIItemProductId.ofRepoIdOrNone(ppOrder.getCurrent_Receiving_TU_PI_Item_Product_ID()));
+
 		final Quantity qtyToReceive = Quantitys.create(qtyToReceiveBD, uomId);
 
 		final List<I_M_HU> tusOrVhus = huProducer
