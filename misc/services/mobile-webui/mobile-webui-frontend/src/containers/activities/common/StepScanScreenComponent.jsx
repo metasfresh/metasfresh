@@ -112,12 +112,12 @@ StepScanScreenComponent.propTypes = {
   wfProcessId: PropTypes.string.isRequired,
   activityId: PropTypes.string.isRequired,
   lineId: PropTypes.string.isRequired,
-  stepId: PropTypes.string.isRequired,
-  eligibleBarcode: PropTypes.string.isRequired,
+  stepId: PropTypes.string,
+  eligibleBarcode: PropTypes.string,
   qtyTarget: PropTypes.number.isRequired,
   qtyCaption: PropTypes.string.isRequired,
   stepProps: PropTypes.object.isRequired,
-  pushUpdatedQuantity: PropTypes.func.isRequired,
+  pushUpdatedQuantity: PropTypes.func,
   setScannedBarcode: PropTypes.func.isRequired,
 };
 

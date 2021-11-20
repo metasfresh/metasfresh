@@ -4,11 +4,26 @@ import { computeLineStatus, updateActivityStatusFromLines } from './picking';
 
 const COMPONENT_TYPE = 'manufacturing/materialReceipt';
 
+// export function updateManufacturingReceiptTarget({ wfProcessId, activityId, lineId, target }) {
+//   return {
+//     type: UPDATE_MANUFACTURING_RECEIPT_TARGET,
+//     payload: { wfProcessId, activityId, lineId, target },
+//   };
+// }
+
+// export function updateManufacturingReceiptQty({ wfProcessId, activityId, lineId, quantity }) {
+//   return {
+//     type: UPDATE_MANUFACTURING_RECEIPT_QTY,
+//     payload: { wfProcessId, activityId, lineId, quantity },
+//   };
+// }
+
 export const manufacturingReducer = ({ draftState, action }) => {
   switch (action.type) {
     case types.UPDATE_MANUFACTURING_RECEIPT_QTY: {
       return reduceOnUpdateQtyPicked(draftState, action.payload);
     }
+    // UPDATE_MANUFACTURING_RECEIPT_TARGET
 
     default: {
       return draftState;
@@ -43,12 +58,23 @@ const updateLineStatus = ({ draftWFProcess, activityId, lineId }) => {
   updateActivityStatusFromLines({ draftWFProcess, activityId });
 };
 
+const normalizeLines = (lines) => {
+  return lines.map((line) => {
+    const aggregateToLU = line.aggregateToLU || null;
+    return {
+      ...line,
+      aggregateToLU,
+    };
+  });
+};
+
 registerHandler({
   componentType: COMPONENT_TYPE,
   normalizeComponentProps: ({ componentProps }) => {
     console.log('normalizeComponentProps for ', componentProps);
     return {
       ...componentProps,
+      lines: normalizeLines(componentProps.lines),
     };
   },
   computeActivityDataStoredInitialValue: ({ componentProps }) => {

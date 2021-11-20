@@ -2,8 +2,8 @@ import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import counterpart from 'counterpart';
 
-import * as CompleteStatus from '../../../constants/CompleteStatus';
-import Indicator from '../../../components/Indicator';
+// import * as CompleteStatus from '../../../constants/CompleteStatus';
+// import Indicator from '../../../components/Indicator';
 import PickQuantityPrompt from '../PickQuantityPrompt';
 import { toastError } from '../../../utils/toast';
 
@@ -43,7 +43,7 @@ class PickQuantityButton extends PureComponent {
   hideDialog = () => this.setState({ isDialogOpen: false });
 
   render() {
-    const { completeStatus, qtyTarget, caption } = this.props;
+    const { /*completeStatus,*/ qtyTarget, caption, isDisabled } = this.props;
     const { isDialogOpen } = this.state;
 
     return (
@@ -56,7 +56,11 @@ class PickQuantityButton extends PureComponent {
           />
         )}
         <div className="mt-3">
-          <button className="button is-outlined complete-btn pick-higher-btn" onClick={this.showDialog}>
+          <button
+            className="button is-outlined complete-btn pick-higher-btn"
+            disabled={isDisabled}
+            onClick={this.showDialog}
+          >
             <div className="full-size-btn">
               <div className="left-btn-side" />
               <div className="caption-btn">
@@ -64,9 +68,9 @@ class PickQuantityButton extends PureComponent {
                   <div className="row is-full pl-5">{caption}</div>
                 </div>
               </div>
-              <div className="right-btn-side pt-4">
+              {/*              <div className="right-btn-side pt-4">
                 <Indicator completeStatus={completeStatus || CompleteStatus.NOT_STARTED} />
-              </div>
+              </div>*/}
             </div>
           </button>
         </div>
@@ -80,9 +84,10 @@ PickQuantityButton.propTypes = {
   // Props
   onClick: PropTypes.func.isRequired,
   qtyTarget: PropTypes.number.isRequired,
-  completeStatus: PropTypes.number.isRequired,
+  // completeStatus: PropTypes.number.isRequired,
   uom: PropTypes.string.isRequired,
   caption: PropTypes.string.isRequired,
+  isDisabled: PropTypes.bool,
 };
 
 export default PickQuantityButton;

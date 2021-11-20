@@ -6,30 +6,26 @@ import { go } from 'connected-react-router';
 import counterpart from 'counterpart';
 
 // import { postStepDistributionMove } from '../../../api/distribution';
-import { selectWFProcessFromState } from '../../../reducers/wfProcesses_status';
-import { updateDistributionStepQty } from '../../../actions/DistributionActions';
+// import { selectWFProcessFromState } from '../../../reducers/wfProcesses_status';
+import { updateManufacturingReceiptTarget } from '../../../actions/ManufacturingActions';
 
 import StepScanScreenComponent from '../common/StepScanScreenComponent';
 // import { toastError } from '../../../utils/toast';
 
-function ManufacturingHUScanScreen(WrappedComponent) {
+const EMPTY_OBJECT = {};
+
+function ManufacturingReceiptScanScreen(WrappedComponent) {
   const mapStateToProps = (state, { match }) => {
-    const { workflowId: wfProcessId, activityId, lineId, stepId, appId, locatorId } = match.params;
-    const wfProcess = selectWFProcessFromState(state, wfProcessId);
-    const stepProps = wfProcess.activities[activityId].dataStored.lines[lineId].steps[stepId];
+    const { workflowId: wfProcessId, activityId, lineId, appId } = match.params;
 
     return {
       wfProcessId,
       activityId,
       lineId,
-      stepId,
-      stepProps,
       appId,
-      // qtyTarget: stepProps.qtyToMove,
+      stepProps: EMPTY_OBJECT,
       qtyTarget: null,
-      // eligibleBarcode: locatorId ? stepProps.dropToLocator.barcode : stepProps.pickFromHU.barcode,
       eligibleBarcode: null,
-      locatorId,
     };
   };
 
@@ -45,7 +41,7 @@ function ManufacturingHUScanScreen(WrappedComponent) {
     setScannedBarcode = (scannedBarcode) => {
       this.setState({ scannedBarcode });
 
-      // const { updateDistributionStepQty, wfProcessId, activityId, lineId, stepId, go, locatorId } = this.props;
+      // const { updateManufacturingReceiptTarget, wfProcessId, activityId, lineId, stepId, go } = this.props;
       // const { scannedBarcode } = this.state;
 
       console.log('pushUpdatedQuantity: ', scannedBarcode);
@@ -107,7 +103,7 @@ function ManufacturingHUScanScreen(WrappedComponent) {
         <WrappedComponent
           pushUpdatedQuantity={this.pushUpdatedQuantity}
           setScannedBarcode={this.setScannedBarcode}
-          qtyCaption={counterpart.translate('mfg.receipts.pickPromptTitle')}
+          qtyCaption={counterpart.translate('activities.mfg.receipts.pickPromptTitle')}
           {...this.props}
         />
       );
@@ -119,22 +115,22 @@ function ManufacturingHUScanScreen(WrappedComponent) {
     wfProcessId: PropTypes.string.isRequired,
     activityId: PropTypes.string.isRequired,
     lineId: PropTypes.string.isRequired,
-    stepId: PropTypes.string.isRequired,
-    eligibleBarcode: PropTypes.string.isRequired,
+    stepId: PropTypes.string,
+    eligibleBarcode: PropTypes.string,
     stepProps: PropTypes.object.isRequired,
     locatorId: PropTypes.string,
 
     // Actions:
     go: PropTypes.func.isRequired,
-    updateDistributionStepQty: PropTypes.func.isRequired,
+    updateManufacturingReceiptTarget: PropTypes.func.isRequired,
   };
 
   return withRouter(
     connect(mapStateToProps, {
-      updateDistributionStepQty,
+      updateManufacturingReceiptTarget,
       go,
     })(Wrapped)
   );
 }
 
-export default ManufacturingHUScanScreen(StepScanScreenComponent);
+export default ManufacturingReceiptScanScreen(StepScanScreenComponent);

@@ -7,8 +7,6 @@ import { withRouter } from 'react-router';
 
 import { selectWFProcessFromState } from '../../../reducers/wfProcesses_status';
 
-// import { updateManufacturingIssueQty } from '../../../actions/ManufacturingActions';
-
 class ReceiptReceiveTargetScreen extends PureComponent {
   handleNewHUClick = () => {
     const { wfProcessId, activityId, lineId } = this.props;
@@ -21,7 +19,7 @@ class ReceiptReceiveTargetScreen extends PureComponent {
   handleScanClick = () => {
     const { wfProcessId, activityId, lineId, dispatch, appId } = this.props;
     const stepId = 'receipt';
-    const location = `/workflow/${wfProcessId}/activityId/${activityId}/lineId/${lineId}/stepId/${stepId}/scanner/${appId}}`;
+    const location = `/workflow/${wfProcessId}/activityId/${activityId}/lineId/${lineId}/stepId/${stepId}/scanner/${appId}`;
 
     dispatch(push(location));
   };

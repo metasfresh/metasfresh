@@ -5,12 +5,13 @@ import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
 
 import { selectWFProcessFromState } from '../../../reducers/wfProcesses_status';
-// import { updateManufacturingIssueQty } from '../../../actions/ManufacturingActions';
+import { updateManufacturingReceiptTarget } from '../../../actions/ManufacturingActions';
 
 class ReceiptNewHUScreen extends PureComponent {
   handleClick = (target) => {
-    // const { wfProcessId, activityId, lineId } = this.props;
-    console.log('ID/CAPTION: ', target);
+    const { wfProcessId, activityId, lineId, updateManufacturingReceiptTarget, go } = this.props;
+
+    updateManufacturingReceiptTarget({ wfProcessId, activityId, lineId, target });
 
     go(-1);
   };
@@ -68,8 +69,10 @@ ReceiptNewHUScreen.propTypes = {
   activityId: PropTypes.string.isRequired,
   lineProps: PropTypes.object.isRequired,
   lineId: PropTypes.string.isRequired,
-  // dispatch: PropTypes.func.isRequired,
-  // appId: PropTypes.string.isRequired,
+
+  // Actons
+  updateManufacturingReceiptTarget: PropTypes.func.isRequired,
+  go: PropTypes.func.isRequired,
 };
 
-export default withRouter(connect(mapStateToProps, { go })(ReceiptNewHUScreen));
+export default withRouter(connect(mapStateToProps, { go, updateManufacturingReceiptTarget })(ReceiptNewHUScreen));

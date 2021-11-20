@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 
 import PickStepScanScreen from '../picking/PickStepScanScreen';
 import DistributionStepScanScreen from '../distribution/DistributionStepScanScreen';
+import ManufacturingReceiptScanScreen from '../manufacturing/ManufacturingReceiptScanScreen';
 
 // if locator param is defined, Scanner component will be initiated to scan locator instead of HU
 const getStepComponent = (appId, locator) => {
@@ -11,6 +12,8 @@ const getStepComponent = (appId, locator) => {
       return { Component: PickStepScanScreen };
     case 'distribution':
       return { Component: DistributionStepScanScreen, modifier: locator };
+    case 'mfg':
+      return { Component: ManufacturingReceiptScanScreen };
     default:
       return null;
   }

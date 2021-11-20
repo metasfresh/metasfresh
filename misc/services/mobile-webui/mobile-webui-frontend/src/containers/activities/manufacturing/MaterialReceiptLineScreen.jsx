@@ -1,16 +1,16 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
-import { push } from 'connected-react-router';
+import { push, go } from 'connected-react-router';
 import counterpart from 'counterpart';
 
-// import { updateManufacturingIssueQty } from '../../../actions/ManufacturingActions';
+// import { updateManufacturingReceiptQty } from '../../../actions/ManufacturingActions';
 import PickQuantityButton from './PickQuantityButton';
 
 class MaterialReceiptLineScreen extends PureComponent {
   handleQuantityChange = (qtyPicked) => {
     //   const { dispatch, wfProcessId, activityId, lineId } = this.props;
-    console.log('qtyPicked: ', qtyPicked);
-    //   dispatch(updateManufacturingIssueQty({ wfProcessId, activityId, lineId, qtyPicked }));
+    console.log('qtyPicked: ', qtyPicked, go);
+    //   dispatch(updateManufacturingReceiptQty({ wfProcessId, activityId, lineId, qtyPicked }));
     //   dispatch(go(-1));
   };
 
@@ -24,7 +24,7 @@ class MaterialReceiptLineScreen extends PureComponent {
 
   render() {
     const {
-      lineProps: { uom, qtyReceived, qtyToReceive, productName },
+      lineProps: { uom, qtyReceived, qtyToReceive, productName, aggregateToLU },
     } = this.props;
     let caption = counterpart.translate('activities.mfg.receipts.receiveQty');
     let targetCaption = counterpart.translate('activities.mfg.receipts.receiveTarget'); // or packing material
@@ -47,6 +47,7 @@ class MaterialReceiptLineScreen extends PureComponent {
           <PickQuantityButton
             qtyCurrent={qtyReceived}
             qtyTarget={qtyToReceive}
+            isDisabled={aggregateToLU === null}
             onClick={this.handleQuantityChange}
             {...{ uom, productName, caption }}
           />
