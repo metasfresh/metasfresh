@@ -100,7 +100,6 @@ describe('picking unit tests', () => {
       expect(genSteps['1000019'].qtyAvailable).toEqual(320);
       expect(genSteps['1000020'].qtyAvailable).toEqual(20);
       expect(genSteps['1000021'].qtyAvailable).toEqual(160);
-
     });
 
     it('should generate correct steps when receiving data fromActivity', () => {
