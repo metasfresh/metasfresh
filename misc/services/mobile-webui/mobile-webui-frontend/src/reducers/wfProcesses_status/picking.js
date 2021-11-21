@@ -62,7 +62,7 @@ const reduceOnUpdateQtyPicked = (draftState, payload) => {
   return draftState;
 };
 
-export const generateAlternativeSteps = ({ draftDataStored, lineId, stepId, qtyToAllocate, skipDeallocation }) => {
+export const generateAlternativeSteps = ({ draftDataStored, lineId, stepId, qtyToAllocate }) => {
   const draftDataStoredOrig = isDraft(draftDataStored) ? original(draftDataStored) : draftDataStored;
   const draftStep = draftDataStored.lines[lineId].steps[stepId];
   const { pickFromAlternatives: alternativesPool } = draftDataStoredOrig;
@@ -75,10 +75,8 @@ export const generateAlternativeSteps = ({ draftDataStored, lineId, stepId, qtyT
 
   let qtyToAllocateRemaining = qtyToAllocate;
 
-  if (!skipDeallocation) {
-    for (let idx = 0; idx < alternativesPool.length; idx++) {
-      deallocateQtyAvailable({ idx, stepId, draftDataStored });
-    }
+  for (let idx = 0; idx < alternativesPool.length; idx++) {
+    draftDataStored.pickFromAlternatives[idx] = deallocateQtyAvailable({ idx, stepId, draftDataStored });
   }
 
   for (let idx = 0; idx < alternativesPool.length; idx++) {
@@ -139,9 +137,10 @@ const computeQtyAllocated = ({ alternativesPoolItem }) => {
 };
 
 const allocateQtyAvailable = ({ idx, draftDataStored, stepId, qtyToAllocate }) => {
-  const alternativesPoolItemOrig = isDraft(draftDataStored)
-    ? original(draftDataStored.pickFromAlternatives[idx])
-    : draftDataStored.pickFromAlternatives[idx];
+  const alternativesPoolItemOrig =
+    isDraft(draftDataStored) && isDraft(draftDataStored.pickFromAlternatives[idx])
+      ? original(draftDataStored.pickFromAlternatives[idx])
+      : draftDataStored.pickFromAlternatives[idx];
   if (!alternativesPoolItemOrig.allocatedQtys) {
     draftDataStored.pickFromAlternatives[idx].allocatedQtys = {};
   }
@@ -152,9 +151,13 @@ const deallocateQtyAvailable = ({ idx, stepId, draftDataStored }) => {
   const alternativesPoolItemOrig = isDraft(draftDataStored.pickFromAlternatives[idx])
     ? original(draftDataStored.pickFromAlternatives[idx])
     : draftDataStored.pickFromAlternatives[idx];
+
+  const alternativesPoolItemClone = { ...alternativesPoolItemOrig };
+  alternativesPoolItemClone.allocatedQtys = { ...alternativesPoolItemOrig.allocatedQtys };
   if (alternativesPoolItemOrig.allocatedQtys) {
-    delete draftDataStored.pickFromAlternatives[idx].allocatedQtys[stepId];
+    delete alternativesPoolItemClone.allocatedQtys[stepId];
   }
+  return alternativesPoolItemClone;
 };
 
 const updateStepStatus = ({ draftWFProcess, activityId, lineId, stepId }) => {
@@ -354,8 +357,12 @@ export const mergeActivityDataStoredAndGenerateAltSteps = ({ draftActivityDataSt
       // In case we have no generated steps and there is a qtyRejected to be filled - we need to generate those alternatives
       // if ((Object.keys(genSteps).length === 0 && qtyRejected) || qtyRejected - totalAltQtys > 0) {
       const remainingQtyDiff = qtyRejected - totalAltQtys;
+      console.log('G_STEPS:', genSteps);
+      console.log('QTY_rejected:', qtyRejected);
+      console.log('remainingQtyDiff:', remainingQtyDiff);
 
       if ((Object.keys(genSteps).length === 0 && qtyRejected) || remainingQtyDiff > 0) {
+        console.log('EXECUTING gen');
         draftActivityDataStored.dataStored = generateAlternativeSteps({
           draftDataStored: draftActivityDataStored.dataStored,
           lineId: lineIdx,
