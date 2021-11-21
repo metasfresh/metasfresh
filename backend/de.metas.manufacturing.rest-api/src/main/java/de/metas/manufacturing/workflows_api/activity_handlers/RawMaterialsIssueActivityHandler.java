@@ -21,8 +21,6 @@ import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.util.api.Params;
 import org.springframework.stereotype.Component;
 
-import java.util.Objects;
-
 @Component
 public class RawMaterialsIssueActivityHandler implements WFActivityHandler
 {
@@ -37,9 +35,7 @@ public class RawMaterialsIssueActivityHandler implements WFActivityHandler
 	@Override
 	public UIComponent getUIComponent(final @NonNull WFProcess wfProcess, final @NonNull WFActivity wfActivity, final @NonNull JsonOpts jsonOpts)
 	{
-		final ManufacturingJob job = wfProcess.getDocumentAs(ManufacturingJob.class);
-		final ManufacturingJobActivity jobActivity = job.getActivityById(wfActivity.getId());
-		final RawMaterialsIssue rawMaterialsIssue = Objects.requireNonNull(jobActivity.getRawMaterialsIssue());
+		final RawMaterialsIssue rawMaterialsIssue = getRawMaterialsIssue(wfProcess, wfActivity);
 
 		final ImmutableList<JsonRawMaterialsIssueLine> lines = rawMaterialsIssue.getLines()
 				.stream()
@@ -59,9 +55,17 @@ public class RawMaterialsIssueActivityHandler implements WFActivityHandler
 				.build();
 	}
 
+	@NonNull
+	private static RawMaterialsIssue getRawMaterialsIssue(final @NonNull WFProcess wfProcess, final @NonNull WFActivity wfActivity)
+	{
+		final ManufacturingJob job = wfProcess.getDocumentAs(ManufacturingJob.class);
+		final ManufacturingJobActivity jobActivity = job.getActivityById(wfActivity.getId());
+		return jobActivity.getRawMaterialsIssueAssumingNotNull();
+	}
+
 	@Override
 	public WFActivityStatus computeActivityState(final WFProcess wfProcess, final WFActivity wfActivity)
 	{
-		return WFActivityStatus.NOT_STARTED;
+		return wfActivity.getStatus();
 	}
 }

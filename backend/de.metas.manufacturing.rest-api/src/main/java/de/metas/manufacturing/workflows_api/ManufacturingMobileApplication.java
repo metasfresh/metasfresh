@@ -72,7 +72,8 @@ public class ManufacturingMobileApplication implements MobileApplication
 	@Override
 	public void abort(final WFProcessId wfProcessId, final UserId callerId)
 	{
-		throw new UnsupportedOperationException(); // TODO
+		final ManufacturingJob job = getManufacturingJob(wfProcessId);
+		manufacturingRestService.abortJob(job.getPpOrderId(), callerId);
 	}
 
 	@Override
@@ -84,9 +85,14 @@ public class ManufacturingMobileApplication implements MobileApplication
 	@Override
 	public WFProcess getWFProcessById(final WFProcessId wfProcessId)
 	{
-		final PPOrderId ppOrderId = wfProcessId.getRepoId(PPOrderId::ofRepoId);
-		final ManufacturingJob job = manufacturingRestService.getJobById(ppOrderId);
+		final ManufacturingJob job = getManufacturingJob(wfProcessId);
 		return ManufacturingRestService.toWFProcess(job);
+	}
+
+	private ManufacturingJob getManufacturingJob(final WFProcessId wfProcessId)
+	{
+		final PPOrderId ppOrderId = wfProcessId.getRepoId(PPOrderId::ofRepoId);
+		return manufacturingRestService.getJobById(ppOrderId);
 	}
 
 	@Override

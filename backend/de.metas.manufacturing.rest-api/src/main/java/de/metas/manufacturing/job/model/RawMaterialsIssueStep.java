@@ -35,9 +35,14 @@ public class RawMaterialsIssueStep
 	@With
 	@Nullable PPOrderIssueSchedule.Issued issued;
 
+	public boolean isIssued()
+	{
+		return issued != null;
+	}
+
 	public void assertNotIssued()
 	{
-		if (issued != null)
+		if (isIssued())
 		{
 			throw new AdempiereException("Already issued");
 		}

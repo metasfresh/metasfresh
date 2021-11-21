@@ -28,7 +28,7 @@ import org.eevolution.model.I_PP_Order_BOMLine;
 import java.time.ZoneId;
 
 @Builder
-public class ManufacturingJobLoaderSupportingServices
+public class ManufacturingJobLoaderAndSaverSupportingServices
 {
 	@NonNull IOrgDAO orgDAO;
 	@NonNull IWarehouseBL warehouseBL;
@@ -47,6 +47,8 @@ public class ManufacturingJobLoaderSupportingServices
 	public I_PP_Order getPPOrderRecordById(@NonNull final PPOrderId ppOrderId) {return ppOrderBL.getById(ppOrderId);}
 
 	public PPOrderRouting getOrderRouting(@NonNull final PPOrderId ppOrderId) {return ppOrderRoutingRepository.getByOrderId(ppOrderId);}
+
+	public void saveOrderRouting(@NonNull final PPOrderRouting routing) {ppOrderRoutingRepository.save(routing);}
 
 	public ImmutableList<I_PP_Order_BOMLine> getOrderBOMLines(@NonNull final PPOrderId ppOrderId) {return ImmutableList.copyOf(ppOrderBOMBL.retrieveOrderBOMLines(ppOrderId, I_PP_Order_BOMLine.class));}
 

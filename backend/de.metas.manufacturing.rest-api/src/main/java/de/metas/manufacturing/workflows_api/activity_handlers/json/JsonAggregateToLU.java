@@ -10,6 +10,7 @@ import lombok.extern.jackson.Jacksonized;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
+import java.util.Optional;
 
 @Value
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
@@ -33,10 +34,12 @@ public class JsonAggregateToLU
 		this.existingLU = existingLU;
 	}
 
-	public HUPIItemProductId getTUPIItemProductId()
+	public Optional<HUPIItemProductId> getTUPIItemProductId()
 	{
-		return CoalesceUtil.coalesceSuppliers(
+		final HUPIItemProductId tuPIItemProductId = CoalesceUtil.coalesceSuppliers(
 				() -> newLU != null ? HUPIItemProductId.ofRepoId(newLU.getTuPIItemProductId()) : null,
-				() -> existingLU != null ? HUPIItemProductId.ofRepoId(existingLU.getTuPIItemProductId()) : null);
+				() -> existingLU != null ? HUPIItemProductId.ofRepoIdOrNull(existingLU.getTuPIItemProductId()) : null);
+
+		return Optional.ofNullable(tuPIItemProductId);
 	}
 }

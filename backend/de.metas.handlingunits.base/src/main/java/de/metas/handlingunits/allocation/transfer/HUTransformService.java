@@ -534,7 +534,13 @@ public class HUTransformService
 			final I_M_HU_PI piOfChildHU = handlingUnitsBL.getPI(tuToAttach);
 
 			final I_M_HU_PI_Item parentPIItem = handlingUnitsDAO.retrieveParentPIItemForChildHUOrNull(luHU, piOfChildHU, huContext);
-			Check.errorIf(parentPIItem == null, "parentPIItem==null for parentHU={} and piOfChildHU={}", luHU, piOfChildHU);
+			if (parentPIItem == null)
+			{
+				throw new AdempiereException("LU `" + handlingUnitsBL.getDisplayName(luHU) + "` cannot stack TU `" + handlingUnitsBL.getDisplayName(tuToAttach) + "` because there is no link between them.")
+						.setParameter("tuToAttach", tuToAttach)
+						.setParameter("piOfChildHU", piOfChildHU)
+						.setParameter("luHU", luHU);
+			}
 
 			final I_M_HU_Item parentItem = handlingUnitsDAO.createHUItemIfNotExists(luHU, parentPIItem).getLeft();
 

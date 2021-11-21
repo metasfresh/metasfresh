@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Multimaps;
 import de.metas.bpartner.BPartnerId;
+import de.metas.document.engine.DocStatus;
 import de.metas.handlingunits.HUBarcode;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
@@ -44,16 +45,16 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
 
-public class ManufacturingJobLoader
+public class ManufacturingJobLoaderAndSaver
 {
-	private final ManufacturingJobLoaderSupportingServices supportingServices;
+	private final ManufacturingJobLoaderAndSaverSupportingServices supportingServices;
 
 	private final HashMap<PPOrderId, I_PP_Order> ppOrders = new HashMap<>();
 	private final HashMap<PPOrderId, PPOrderRouting> routings = new HashMap<>();
 	private final HashMap<PPOrderId, ImmutableList<I_PP_Order_BOMLine>> bomLines = new HashMap<>();
 	private final HashMap<PPOrderId, ImmutableListMultimap<PPOrderBOMLineId, PPOrderIssueSchedule>> issueSchedules = new HashMap<>();
 
-	public ManufacturingJobLoader(@NonNull final ManufacturingJobLoaderSupportingServices supportingServices)
+	public ManufacturingJobLoaderAndSaver(@NonNull final ManufacturingJobLoaderAndSaverSupportingServices supportingServices)
 	{
 		this.supportingServices = supportingServices;
 	}
@@ -61,6 +62,7 @@ public class ManufacturingJobLoader
 	public ManufacturingJob load(final PPOrderId ppOrderId)
 	{
 		final I_PP_Order ppOrder = getPPOrderRecordById(ppOrderId);
+		final DocStatus ppOrderDocStatus = DocStatus.ofCode(ppOrder.getDocStatus());
 		final PPOrderRouting routing = getRouting(ppOrderId);
 
 		return ManufacturingJob.builder()
@@ -68,13 +70,20 @@ public class ManufacturingJobLoader
 				.documentNo(ppOrder.getDocumentNo())
 				.customerId(BPartnerId.ofRepoIdOrNull(ppOrder.getC_BPartner_ID()))
 				.datePromised(InstantAndOrgId.ofTimestamp(ppOrder.getDatePromised(), ppOrder.getAD_Org_ID()).toZonedDateTime(supportingServices::getTimeZone))
-				.responsibleId(UserId.ofRepoId(ppOrder.getAD_User_Responsible_ID()))
+				.responsibleId(extractResponsibleId(ppOrder))
+				.allowUserReporting(ppOrderDocStatus.isCompleted())
 				.activities(routing.getActivities()
 						.stream()
 						.sorted(Comparator.comparing(activity -> activity.getCode().getAsString()))
 						.map(this::toJobActivity)
 						.collect(ImmutableList.toImmutableList()))
 				.build();
+	}
+
+	@Nullable
+	public static UserId extractResponsibleId(final I_PP_Order ppOrder)
+	{
+		return UserId.ofRepoIdOrNullIfSystem(ppOrder.getAD_User_Responsible_ID());
 	}
 
 	public void addToCache(@NonNull final I_PP_Order ppOrder)
@@ -94,7 +103,7 @@ public class ManufacturingJobLoader
 		return ppOrders.computeIfAbsent(ppOrderId, supportingServices::getPPOrderRecordById);
 	}
 
-	private PPOrderRouting getRouting(final PPOrderId ppOrderId)
+	public PPOrderRouting getRouting(final PPOrderId ppOrderId)
 	{
 		return routings.computeIfAbsent(ppOrderId, supportingServices::getOrderRouting);
 	}
@@ -135,11 +144,11 @@ public class ManufacturingJobLoader
 		final PPOrderRoutingActivityId ppOrderRoutingActivityId = Objects.requireNonNull(from.getId());
 
 		return ManufacturingJobActivity.builder()
-				.id(ManufacturingJobActivityId.ofRepoId(ppOrderRoutingActivityId.getRepoId()))
+				.id(ManufacturingJobActivityId.of(ppOrderRoutingActivityId))
 				.name(from.getName())
 				.type(from.getType())
 				.orderRoutingActivityId(from.getId())
-				.status(from.getStatus());
+				.routingActivityStatus(from.getStatus());
 	}
 
 	private RawMaterialsIssue toRawMaterialsIssue(final @NonNull PPOrderRoutingActivity from)
@@ -171,7 +180,7 @@ public class ManufacturingJobLoader
 				.productId(productId)
 				.productName(supportingServices.getProductName(productId))
 				.qtyToIssue(bomLineQuantities.getQtyRequired())
-				.qtyIssued(bomLineQuantities.getQtyIssuedOrReceived())
+				//.qtyIssued(bomLineQuantities.getQtyIssuedOrReceived())
 				.steps(getIssueSchedules(ppOrderId)
 						.get(ppOrderBOMLineId)
 						.stream()
@@ -288,4 +297,26 @@ public class ManufacturingJobLoader
 		}
 	}
 
+	public void saveActivityStatuses(final ManufacturingJob job)
+	{
+		final PPOrderId ppOrderId = job.getPpOrderId();
+		final PPOrderRouting routing = getRouting(ppOrderId);
+		final PPOrderRouting routingBeforeChange = routing.copy();
+
+		for (ManufacturingJobActivity jobActivity : job.getActivities())
+		{
+			final PPOrderRoutingActivityId ppOrderRoutingActivityId = jobActivity.getId().toPPOrderRoutingActivityId(ppOrderId);
+			routing.getActivityById(ppOrderRoutingActivityId).changeStatusTo(jobActivity.getRoutingActivityStatus());
+		}
+
+		if (!routing.equals(routingBeforeChange))
+		{
+			saveRouting(routing);
+		}
+	}
+
+	public void saveRouting(final PPOrderRouting routing)
+	{
+		supportingServices.saveOrderRouting(routing);
+	}
 }
