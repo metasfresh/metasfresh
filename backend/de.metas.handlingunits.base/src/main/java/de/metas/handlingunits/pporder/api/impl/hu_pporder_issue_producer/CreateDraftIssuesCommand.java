@@ -13,16 +13,14 @@ import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.model.X_M_HU;
-import de.metas.handlingunits.picking.PickingCandidateId;
 import de.metas.handlingunits.pporder.api.CreateIssueCandidateRequest;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyBL;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
+import de.metas.handlingunits.pporder.api.IssueCandidateGeneratedBy;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.logging.LogManager;
 import de.metas.material.planning.pporder.DraftPPOrderQuantities;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
-import org.eevolution.api.PPOrderBOMLineId;
-import org.eevolution.api.PPOrderId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
@@ -32,6 +30,8 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.eevolution.api.BOMComponentIssueMethod;
+import org.eevolution.api.PPOrderBOMLineId;
+import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.slf4j.Logger;
 
@@ -92,7 +92,7 @@ public class CreateDraftIssuesCommand
 	private final boolean considerIssueMethodForQtyToIssueCalculation;
 	private final ImmutableList<I_M_HU> issueFromHUs;
 	private final boolean changeHUStatusToIssued;
-	private final PickingCandidateId pickingCandidateId;
+	private final IssueCandidateGeneratedBy generatedBy;
 
 	//
 	// Status
@@ -108,7 +108,7 @@ public class CreateDraftIssuesCommand
 			@NonNull final Collection<I_M_HU> issueFromHUs,
 			@Nullable final Boolean changeHUStatusToIssued,
 			//
-			@Nullable final PickingCandidateId pickingCandidateId)
+			@Nullable final IssueCandidateGeneratedBy generatedBy)
 	{
 		Check.assumeNotEmpty(targetOrderBOMLines, "Parameter targetOrderBOMLines is not empty");
 		if (fixedQtyToIssue != null && fixedQtyToIssue.signum() <= 0)
@@ -124,7 +124,7 @@ public class CreateDraftIssuesCommand
 
 		remainingQtyToIssue = fixedQtyToIssue;
 
-		this.pickingCandidateId = pickingCandidateId;
+		this.generatedBy = generatedBy;
 	}
 
 	public List<I_PP_Order_Qty> execute()
@@ -284,7 +284,7 @@ public class CreateDraftIssuesCommand
 					//
 					.qtyToIssue(qtyToIssue)
 					//
-					.pickingCandidateId(pickingCandidateId)
+					.generatedBy(generatedBy)
 					//
 					.build());
 

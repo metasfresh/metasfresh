@@ -1,8 +1,9 @@
 package org.eevolution.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for PP_Order
  *  @author metasfresh (generated) 
@@ -95,7 +96,7 @@ public interface I_PP_Order
 
 	/**
 	 * Set Workflow.
-	 * Workflow or combination of tasks
+	 * Workflow oder Kombination von Aufgaben
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -105,7 +106,7 @@ public interface I_PP_Order
 
 	/**
 	 * Get Workflow.
-	 * Workflow or combination of tasks
+	 * Workflow oder Kombination von Aufgaben
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -450,6 +451,48 @@ public interface I_PP_Order
 	int getCreatedBy();
 
 	String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
+	 * Set Current Receiving LU.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCurrent_Receiving_LU_HU_ID (int Current_Receiving_LU_HU_ID);
+
+	/**
+	 * Get Current Receiving LU.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getCurrent_Receiving_LU_HU_ID();
+
+	ModelColumn<I_PP_Order, Object> COLUMN_Current_Receiving_LU_HU_ID = new ModelColumn<>(I_PP_Order.class, "Current_Receiving_LU_HU_ID", null);
+	String COLUMNNAME_Current_Receiving_LU_HU_ID = "Current_Receiving_LU_HU_ID";
+
+	/**
+	 * Set Current Receiving TU instructions.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCurrent_Receiving_TU_PI_Item_Product_ID (int Current_Receiving_TU_PI_Item_Product_ID);
+
+	/**
+	 * Get Current Receiving TU instructions.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getCurrent_Receiving_TU_PI_Item_Product_ID();
+
+	ModelColumn<I_PP_Order, Object> COLUMN_Current_Receiving_TU_PI_Item_Product_ID = new ModelColumn<>(I_PP_Order.class, "Current_Receiving_TU_PI_Item_Product_ID", null);
+	String COLUMNNAME_Current_Receiving_TU_PI_Item_Product_ID = "Current_Receiving_TU_PI_Item_Product_ID";
 
 	/**
 	 * Set DateConfirm.
@@ -1295,7 +1338,7 @@ public interface I_PP_Order
 	String COLUMNNAME_PP_Order_ID = "PP_Order_ID";
 
 	/**
-	 * Set BOM & Formula.
+	 * Set BOM & Formula Version.
 	 * BOM & Formula
 	 *
 	 * <br>Type: Search
@@ -1305,7 +1348,7 @@ public interface I_PP_Order
 	void setPP_Product_BOM_ID (int PP_Product_BOM_ID);
 
 	/**
-	 * Get BOM & Formula.
+	 * Get BOM & Formula Version.
 	 * BOM & Formula
 	 *
 	 * <br>Type: Search
@@ -1693,7 +1736,7 @@ public interface I_PP_Order
 
 	/**
 	 * Set Ressource.
-	 * Resource
+	 * Produktionsressource
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
@@ -1703,7 +1746,7 @@ public interface I_PP_Order
 
 	/**
 	 * Get Ressource.
-	 * Resource
+	 * Produktionsressource
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true

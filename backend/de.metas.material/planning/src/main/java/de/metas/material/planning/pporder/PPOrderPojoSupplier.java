@@ -11,8 +11,8 @@ import de.metas.material.event.pporder.PPOrderLine;
 import de.metas.material.planning.IMaterialPlanningContext;
 import de.metas.material.planning.IMaterialRequest;
 import de.metas.material.planning.IProductPlanningDAO;
-import de.metas.material.planning.ProductPlanningService;
 import de.metas.material.planning.ProductPlanningId;
+import de.metas.material.planning.ProductPlanningService;
 import de.metas.material.planning.RoutingService;
 import de.metas.material.planning.RoutingServiceFactory;
 import de.metas.material.planning.exception.MrpException;
@@ -37,6 +37,7 @@ import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.IProductBOMBL;
 import org.eevolution.api.IProductBOMDAO;
 import org.eevolution.api.ProductBOMId;
+import org.eevolution.api.ProductBOMVersionsId;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
 import org.eevolution.model.I_PP_Product_Planning;
@@ -130,10 +131,15 @@ public class PPOrderPojoSupplier
 		final Quantity qtyToSupply = request.getQtyToSupply();
 
 		// BOM
-		if (productPlanningData.getPP_Product_BOM_ID() <= 0)
+		if (productPlanningData.getPP_Product_BOMVersions_ID() <= 0)
 		{
-			throw new MrpException("@FillMandatory@ @PP_Product_BOM_ID@ ( @M_Product_ID@=" + product.getValue() + ")");
+			throw new MrpException("@FillMandatory@ @PP_Product_BOMVersions_ID@ ( @M_Product_ID@=" + product.getValue() + ")");
 		}
+
+		final ProductBOMVersionsId bomVersionsId = ProductBOMVersionsId.ofRepoId(productPlanningData.getPP_Product_BOMVersions_ID());
+
+		productBOMDAO.getLatestBOMByVersion(bomVersionsId)
+				.orElseThrow(() -> new MrpException("@FillMandatory@ @PP_Product_BOM_ID@ ( @M_Product_ID@=" + product.getValue() + ")"));
 
 		//
 		// Routing (Workflow)
@@ -305,7 +311,16 @@ public class PPOrderPojoSupplier
 		final ProductPlanningId productPlanningId = ProductPlanningId.ofRepoId(ppOrder.getProductPlanningId());
 		final I_PP_Product_Planning productPlanning = productPlanningsRepo.getById(productPlanningId);
 
-		final ProductBOMId productBOMId = ProductBOMId.ofRepoId(productPlanning.getPP_Product_BOM_ID());
+		if (productPlanning.getPP_Product_BOMVersions_ID() <= 0)
+		{
+			throw new MrpException("@FillMandatory@ @PP_Product_BOMVersions_ID@ ( @M_Product_ID@=" + ppOrderProductId.getRepoId() + ")");
+		}
+
+		final ProductBOMVersionsId bomVersionsId = ProductBOMVersionsId.ofRepoId(productPlanning.getPP_Product_BOMVersions_ID());
+
+		final ProductBOMId productBOMId = productBOMDAO.getLatestBOMByVersion(bomVersionsId)
+				.orElseThrow(() -> new MrpException("@FillMandatory@ @PP_Product_BOM_ID@ ( @M_Product_ID@=" + ppOrderProductId.getRepoId() + ")"));
+
 		final I_PP_Product_BOM productBOM = productBOMDAO.getById(productBOMId);
 
 		return PPOrderUtil.verifyProductBOMAndReturnIt(ppOrderProductId, asDate(dateStartSchedule), productBOM);

@@ -22,11 +22,11 @@
 
 package de.metas.camel.externalsystems.alberta.institutions.processor;
 
-import de.metas.camel.externalsystems.alberta.ProcessorHelper;
 import de.metas.camel.externalsystems.alberta.common.AlbertaConnectionDetails;
 import de.metas.camel.externalsystems.alberta.common.DataMapper;
 import de.metas.camel.externalsystems.alberta.institutions.GetInstitutionsRouteConstants;
 import de.metas.camel.externalsystems.alberta.institutions.GetInstitutionsRouteContext;
+import de.metas.camel.externalsystems.common.ProcessorHelper;
 import de.metas.camel.externalsystems.common.v2.BPUpsertCamelRequest;
 import de.metas.common.bpartner.v2.request.JsonRequestBPartnerUpsert;
 import de.metas.common.bpartner.v2.request.JsonRequestBPartnerUpsertItem;

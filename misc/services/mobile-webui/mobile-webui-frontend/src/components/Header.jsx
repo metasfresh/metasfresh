@@ -11,9 +11,9 @@ const Header = ({ appName, hidden }) => {
   const state = store.getState();
   const location = useLocation();
   const history = useHistory();
-  const { activeApplication } = state.appHandler;
+  const { activeApplication } = state.applications;
   const showBackButton = state.appHandler.token && location.pathname !== '/' && location.pathname !== '/login';
-  const applicationName = activeApplication || appName;
+  const applicationName = activeApplication ? activeApplication.caption : appName;
 
   const handleClick = () => {
     if (showBackButton) {

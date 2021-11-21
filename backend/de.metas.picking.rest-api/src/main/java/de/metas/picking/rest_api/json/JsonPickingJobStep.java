@@ -22,10 +22,9 @@
 
 package de.metas.picking.rest_api.json;
 
-import com.google.common.collect.ImmutableSet;
-import de.metas.handlingunits.picking.job.model.PickingJobPickFromAlternativeId;
+import com.google.common.collect.ImmutableMap;
 import de.metas.handlingunits.picking.job.model.PickingJobStep;
-import de.metas.handlingunits.picking.job.model.PickingJobStepPickedInfo;
+import de.metas.handlingunits.picking.job.model.PickingJobStepPickFromKey;
 import de.metas.workflow.rest_api.controller.v2.json.JsonOpts;
 import lombok.Builder;
 import lombok.NonNull;
@@ -33,6 +32,7 @@ import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
 import java.math.BigDecimal;
+import java.util.Map;
 import java.util.Set;
 
 @Value
@@ -43,32 +43,54 @@ public class JsonPickingJobStep
 	@NonNull String pickingStepId;
 
 	@NonNull String productName;
-	@NonNull String locatorName;
-	@NonNull String huBarcode;
 	@NonNull String uom;
 	@NonNull BigDecimal qtyToPick;
+
+	//
+	// Main PickFrom
+	@NonNull JsonPickingJobStepPickFrom mainPickFrom;
+	@Deprecated
+	@NonNull String locatorName;
+	@Deprecated
+	@NonNull String huBarcode;
+	@Deprecated
 	@NonNull BigDecimal qtyPicked;
 
+	//
+	// PickFrom alternatives
+	@NonNull Map<String, JsonPickingJobStepPickFrom> pickFromAlternatives;
+	@Deprecated
 	@NonNull Set<String> pickFromAlternativeIds;
 
 	public static JsonPickingJobStep of(final PickingJobStep step, final JsonOpts jsonOpts)
 	{
 		final String adLanguage = jsonOpts.getAdLanguage();
 
-		final PickingJobStepPickedInfo picked = step.getPicked();
+		final JsonPickingJobStepPickFrom mainPickFrom = JsonPickingJobStepPickFrom.of(step.getPickFrom(PickingJobStepPickFromKey.MAIN));
+
+		ImmutableMap<String, JsonPickingJobStepPickFrom> pickFromAlternatives = step.getPickFromKeys()
+				.stream()
+				.filter(PickingJobStepPickFromKey::isAlternative)
+				.map(step::getPickFrom)
+				.map(JsonPickingJobStepPickFrom::of)
+				.collect(ImmutableMap.toImmutableMap(JsonPickingJobStepPickFrom::getAlternativeId, alt -> alt));
 
 		return builder()
 				.pickingStepId(step.getId().getAsString())
 				.productName(step.getProductName().translate(adLanguage))
-				.locatorName(step.getPickFromLocator().getCaption())
-				.huBarcode(step.getPickFromHU().getBarcode().getAsString())
 				.uom(step.getQtyToPick().getUOMSymbol())
 				.qtyToPick(step.getQtyToPick().toBigDecimal())
-				.qtyPicked(picked != null ? picked.getQtyPicked().toBigDecimal() : BigDecimal.ZERO)
-				.pickFromAlternativeIds(step.getPickFromAlternativeIds()
-						.stream()
-						.map(PickingJobPickFromAlternativeId::getAsString)
-						.collect(ImmutableSet.toImmutableSet()))
+				//
+				// Main PickFrom
+				.mainPickFrom(mainPickFrom)
+				.locatorName(mainPickFrom.getLocatorName())
+				.huBarcode(mainPickFrom.getHuBarcode())
+				.qtyPicked(mainPickFrom.getQtyPicked())
+				//
+				// PickFrom Alternatives
+				.pickFromAlternatives(pickFromAlternatives)
+				.pickFromAlternativeIds(pickFromAlternatives.keySet())
+				//
 				.build();
 	}
 }

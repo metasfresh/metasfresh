@@ -1,8 +1,8 @@
 import { clearActiveApplication } from '../actions/ApplicationsActions';
 
 /**
- * Navigation middleware that resets the view (or actually the viewHandler state)
- * whenever there's a `push` action to the browser history.
+ * Navigation middleware that resets the application name when
+ * user navigates to `/`
  */
 const navigationMiddleware =
   ({ dispatch }) =>

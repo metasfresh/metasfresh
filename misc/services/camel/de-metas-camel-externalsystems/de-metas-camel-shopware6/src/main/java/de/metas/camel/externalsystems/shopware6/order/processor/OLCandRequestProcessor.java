@@ -62,6 +62,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
+import static de.metas.camel.externalsystems.common.ProcessorHelper.getPropertyOrThrowError;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.DATA_SOURCE_INT_SHOPWARE;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.DEFAULT_DELIVERY_RULE;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.DEFAULT_DELIVERY_VIA_RULE;

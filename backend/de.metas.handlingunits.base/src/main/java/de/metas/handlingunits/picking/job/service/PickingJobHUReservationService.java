@@ -6,10 +6,12 @@ import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobLine;
 import de.metas.handlingunits.picking.job.model.PickingJobStep;
 import de.metas.handlingunits.picking.job.model.PickingJobStepId;
+import de.metas.handlingunits.picking.job.model.PickingJobStepPickFromKey;
 import de.metas.handlingunits.reservation.HUReservationDocRef;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.reservation.ReserveHUsRequest;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -17,7 +19,7 @@ public class PickingJobHUReservationService
 {
 	private final HUReservationService huReservationService;
 
-	PickingJobHUReservationService(final HUReservationService huReservationService) {this.huReservationService = huReservationService;}
+	public PickingJobHUReservationService(final HUReservationService huReservationService) {this.huReservationService = huReservationService;}
 
 	public void reservePickFromHUs(final PickingJob pickingJob)
 	{
@@ -34,13 +36,15 @@ public class PickingJobHUReservationService
 
 	private void reservePickFromHU(@NonNull final PickingJobStep step, @NonNull final BPartnerId customerId)
 	{
-		huReservationService.makeReservation(ReserveHUsRequest.builder()
-				.customerId(customerId)
-				.documentRef(HUReservationDocRef.ofPickingJobStepId(step.getId()))
-				.productId(step.getProductId())
-				.qtyToReserve(step.getQtyToPick())
-				.huId(step.getPickFromHU().getId())
-				.build());
+		huReservationService.makeReservation(
+						ReserveHUsRequest.builder()
+								.customerId(customerId)
+								.documentRef(HUReservationDocRef.ofPickingJobStepId(step.getId()))
+								.productId(step.getProductId())
+								.qtyToReserve(step.getQtyToPick())
+								.huId(step.getPickFrom(PickingJobStepPickFromKey.MAIN).getPickFromHU().getId())
+								.build())
+				.orElseThrow(() -> new AdempiereException("Cannot reserve HU for " + step)); // shall not happen
 	}
 
 	public void reservePickFromHU(final PickingJob pickingJob, final PickingJobStepId stepId)

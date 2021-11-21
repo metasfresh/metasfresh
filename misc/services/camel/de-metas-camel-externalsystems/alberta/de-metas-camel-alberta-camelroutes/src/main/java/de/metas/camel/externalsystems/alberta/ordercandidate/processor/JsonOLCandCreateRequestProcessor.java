@@ -23,12 +23,12 @@
 package de.metas.camel.externalsystems.alberta.ordercandidate.processor;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.camel.externalsystems.alberta.ProcessorHelper;
 import de.metas.camel.externalsystems.alberta.common.AlbertaUtil;
 import de.metas.camel.externalsystems.alberta.common.CommonAlbertaConstants;
 import de.metas.camel.externalsystems.alberta.common.ExternalIdentifierFormat;
 import de.metas.camel.externalsystems.alberta.ordercandidate.GetOrdersRouteConstants;
 import de.metas.camel.externalsystems.alberta.ordercandidate.NextImportSinceTimestamp;
+import de.metas.camel.externalsystems.common.ProcessorHelper;
 import de.metas.common.bpartner.v2.response.JsonResponseUpsert;
 import de.metas.common.bpartner.v2.response.JsonResponseUpsertItem;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateBulkRequest;

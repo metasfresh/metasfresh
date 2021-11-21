@@ -16,7 +16,7 @@ public class PickingJobLockService
 {
 	private final ShipmentScheduleLockRepository shipmentScheduleLockRepository;
 
-	PickingJobLockService(final ShipmentScheduleLockRepository shipmentScheduleLockRepository) {this.shipmentScheduleLockRepository = shipmentScheduleLockRepository;}
+	public PickingJobLockService(final ShipmentScheduleLockRepository shipmentScheduleLockRepository) {this.shipmentScheduleLockRepository = shipmentScheduleLockRepository;}
 
 	public void lockShipmentSchedules(
 			final @NonNull ImmutableSet<ShipmentScheduleId> shipmentScheduleIds,

@@ -22,8 +22,8 @@
 
 package de.metas.camel.externalsystems.alberta.ordercandidate.processor;
 
-import de.metas.camel.externalsystems.alberta.ProcessorHelper;
 import de.metas.camel.externalsystems.alberta.patient.GetPatientsRouteConstants;
+import de.metas.camel.externalsystems.common.ProcessorHelper;
 import de.metas.common.externalreference.JsonExternalReferenceLookupItem;
 import de.metas.common.externalreference.JsonExternalReferenceLookupRequest;
 import de.metas.common.externalsystem.JsonExternalSystemName;

@@ -68,6 +68,7 @@ import org.eevolution.model.I_PP_Product_BOMLine;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.UnaryOperator;
 
@@ -86,6 +87,12 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 	public I_PP_Order_BOMLine getOrderBOMLineById(@NonNull final PPOrderBOMLineId orderBOMLineId)
 	{
 		return orderBOMsRepo.getOrderBOMLineById(orderBOMLineId);
+	}
+
+	@Override
+	public <T extends I_PP_Order_BOMLine> List<T> retrieveOrderBOMLines(final PPOrderId orderId, final Class<T> orderBOMLineClass)
+	{
+		return orderBOMsRepo.retrieveOrderBOMLines(orderId, orderBOMLineClass);
 	}
 
 	@Override
@@ -577,5 +584,11 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 				.lines(lines)
 				.orderId(PPOrderId.ofRepoIdOrNull(order.getPP_Order_ID()))
 				.build();
+	}
+
+	@Override
+	public void save(final I_PP_Order_BOMLine orderBOMLine)
+	{
+		orderBOMsRepo.save(orderBOMLine);
 	}
 }

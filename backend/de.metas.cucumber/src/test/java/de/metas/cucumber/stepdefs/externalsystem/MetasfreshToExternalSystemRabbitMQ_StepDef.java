@@ -127,7 +127,10 @@ public class MetasfreshToExternalSystemRabbitMQ_StepDef
 		channel.basicConsume(QUEUE_NAME_MF_TO_ES, true, consumer);
 
 		final boolean messageReceivedWithinTimeout = countDownLatch.await(60, TimeUnit.SECONDS);
+
 		assertThat(messageReceivedWithinTimeout).isTrue();
+
+		channel.close();
 
 		return JsonObjectMapperHolder.sharedJsonObjectMapper().readValue(message[0], JsonExternalSystemRequest.class);
 	}

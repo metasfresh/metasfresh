@@ -606,7 +606,7 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 			if (productId.getRepoId() != orderBOMLine.getM_Product_ID())
 			{
 				throw new HUException("Invalid product to issue."
-						+ "\nExpected: " + orderBOMLine.getM_Product()
+						+ "\nExpected: " + orderBOMLine.getM_Product_ID()
 						+ "\nGot: " + productId
 						+ "\n@PP_Order_BOMLine_ID@: " + orderBOMLine);
 			}

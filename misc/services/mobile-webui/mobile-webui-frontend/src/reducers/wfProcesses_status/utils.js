@@ -1,6 +1,10 @@
 import { isDraft, original } from 'immer';
 import * as CompleteStatus from '../../constants/CompleteStatus';
-import { normalizeComponentProps, computeActivityDataStoredInitialValue } from './activityStateHandlers';
+import {
+  normalizeComponentProps,
+  computeActivityDataStoredInitialValue,
+  computeActivityStatus,
+} from './activityStateHandlers';
 
 /**
  * Updates isUserEditable flag for all activities.
@@ -101,5 +105,10 @@ const mergeActivityToState = ({ draftActivity, fromActivity }) => {
         componentProps: componentPropsNormalized,
       }),
     };
+  }
+
+  const completeStatus = computeActivityStatus({ draftActivity });
+  if (completeStatus != null) {
+    draftActivity.dataStored.completeStatus = completeStatus;
   }
 };

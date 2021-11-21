@@ -17,18 +17,26 @@ export function populateApplications({ applications }) {
 
 /**
  * @method setActiveApplication
- * @summary set the current active application name
+ * @summary set the current active application
  */
-export function setActiveApplication(applicationName) {
-  return {
-    type: SET_ACTIVE_APPLICATION,
-    payload: { applicationName },
+export function setActiveApplication({ id, caption }) {
+  return (dispatch, getState) => {
+    if (!caption) {
+      const state = getState();
+
+      caption = state.applications.availableApplications[id];
+    }
+
+    dispatch({
+      type: SET_ACTIVE_APPLICATION,
+      payload: { id, caption },
+    });
   };
 }
 
 /**
  * @method clearActiveApplication
- * @summary set the current active application name
+ * @summary clear the current active application
  */
 export function clearActiveApplication() {
   return {
