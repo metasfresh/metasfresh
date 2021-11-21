@@ -66,6 +66,7 @@ import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_JSON_
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_JSON_PATH_SALES_REP_ID;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_ORDER_ID;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_ORDER_NO;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_PRODUCT_LOOKUP;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_UPDATED_AFTER_OVERRIDE;
 
 public class InvokeShopware6Action extends InvokeExternalSystemProcess
@@ -80,7 +81,7 @@ public class InvokeShopware6Action extends InvokeExternalSystemProcess
 	private static final String PARAM_ORDERID = "OrderId";
 	@Param(parameterName = PARAM_ORDERID)
 	private String orderId;
-	
+
 	@Override
 	protected IExternalSystemChildConfigId getExternalChildConfigId()
 	{
@@ -112,6 +113,7 @@ public class InvokeShopware6Action extends InvokeExternalSystemProcess
 		parameters.put(PARAM_JSON_PATH_CONSTANT_BPARTNER_LOCATION_ID, shopware6Config.getBPartnerLocationIdJSONPath());
 		parameters.put(PARAM_JSON_PATH_SALES_REP_ID, shopware6Config.getSalesRepJSONPath());
 		parameters.put(PARAM_CONFIG_MAPPINGS, getConfigMappings(shopware6Config));
+		parameters.put(PARAM_PRODUCT_LOOKUP, shopware6Config.getProductLookup().getCode());
 
 		if (shopware6Config.getFreightCostNormalVatConfig() != null)
 		{
@@ -130,16 +132,16 @@ public class InvokeShopware6Action extends InvokeExternalSystemProcess
 			parameters.put(PARAM_UPDATED_AFTER_OVERRIDE, getSinceParameterValue().toInstant().toString());
 		}
 
-		if(EmptyUtil.isNotBlank(orderNo))
+		if (EmptyUtil.isNotBlank(orderNo))
 		{
 			parameters.put(PARAM_ORDER_NO, orderNo);
 		}
 
-		if(EmptyUtil.isNotBlank(orderId))
+		if (EmptyUtil.isNotBlank(orderId))
 		{
 			parameters.put(PARAM_ORDER_ID, orderId);
 		}
-		
+
 		return parameters;
 	}
 
