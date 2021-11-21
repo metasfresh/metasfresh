@@ -11,6 +11,8 @@ import { toastError } from '../../../utils/toast';
 
 import ButtonWithIndicator from '../../../components/ButtonWithIndicator';
 
+const HIDE_UNDO_BUTTONS = true; // hide them because they are not working
+
 class DistributionStepScreen extends Component {
   onScanPickFromHU = () => {
     const {
@@ -187,15 +189,17 @@ class DistributionStepScreen extends Component {
           </button>
         </div>
 
-        <div className="mt-5">
-          <button
-            className="button is-outlined complete-btn"
-            disabled={!(isPickedFrom && !isDroppedToLocator)}
-            onClick={this.onUndoPickFromHU}
-          >
-            <ButtonWithIndicator caption={counterpart.translate('activities.picking.unPickBtn')} />
-          </button>
-        </div>
+        {!HIDE_UNDO_BUTTONS && (
+          <div className="mt-5">
+            <button
+              className="button is-outlined complete-btn"
+              disabled={!(isPickedFrom && !isDroppedToLocator)}
+              onClick={this.onUndoPickFromHU}
+            >
+              <ButtonWithIndicator caption={counterpart.translate('activities.picking.unPickBtn')} />
+            </button>
+          </div>
+        )}
 
         <div className="mt-5">
           <button
@@ -206,16 +210,17 @@ class DistributionStepScreen extends Component {
             <ButtonWithIndicator caption={dropToLocatorCaption} completeStatus={dropToLocatorStatus} />
           </button>
         </div>
-        {/* Undo Drop To Locator button */}
-        <div className="mt-5">
-          <button
-            className="button is-outlined complete-btn"
-            disabled={!isDroppedToLocator}
-            onClick={this.onUndoDropToLocator}
-          >
-            <ButtonWithIndicator caption={counterpart.translate('activities.picking.unPickBtn')} />
-          </button>
-        </div>
+        {!HIDE_UNDO_BUTTONS && (
+          <div className="mt-5">
+            <button
+              className="button is-outlined complete-btn"
+              disabled={!isDroppedToLocator}
+              onClick={this.onUndoDropToLocator}
+            >
+              <ButtonWithIndicator caption={counterpart.translate('activities.picking.unPickBtn')} />
+            </button>
+          </div>
+        )}
       </>
     );
   }
