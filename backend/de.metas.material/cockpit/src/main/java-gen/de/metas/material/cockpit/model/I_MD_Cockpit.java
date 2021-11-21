@@ -1,9 +1,8 @@
 package de.metas.material.cockpit.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for MD_Cockpit
  *  @author metasfresh (generated) 
@@ -59,7 +58,7 @@ public interface I_MD_Cockpit
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setAttributesKey (@Nullable String AttributesKey);
+	void setAttributesKey (@Nullable java.lang.String AttributesKey);
 
 	/**
 	 * Get AttributesKey (technical).
@@ -68,7 +67,7 @@ public interface I_MD_Cockpit
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getAttributesKey();
+	@Nullable java.lang.String getAttributesKey();
 
 	ModelColumn<I_MD_Cockpit, Object> COLUMN_AttributesKey = new ModelColumn<>(I_MD_Cockpit.class, "AttributesKey", null);
 	String COLUMNNAME_AttributesKey = "AttributesKey";
@@ -143,6 +142,48 @@ public interface I_MD_Cockpit
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set MDCandidateQtyStock.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setMDCandidateQtyStock (@Nullable BigDecimal MDCandidateQtyStock);
+
+	/**
+	 * Get MDCandidateQtyStock.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getMDCandidateQtyStock();
+
+	ModelColumn<I_MD_Cockpit, Object> COLUMN_MDCandidateQtyStock = new ModelColumn<>(I_MD_Cockpit.class, "MDCandidateQtyStock", null);
+	String COLUMNNAME_MDCandidateQtyStock = "MDCandidateQtyStock";
+
+	/**
+	 * Set Material Cockpit.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setMD_Cockpit_ID (int MD_Cockpit_ID);
+
+	/**
+	 * Get Material Cockpit.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getMD_Cockpit_ID();
+
+	ModelColumn<I_MD_Cockpit, Object> COLUMN_MD_Cockpit_ID = new ModelColumn<>(I_MD_Cockpit.class, "MD_Cockpit_ID", null);
+	String COLUMNNAME_MD_Cockpit_ID = "MD_Cockpit_ID";
+
+	/**
 	 * Set Product.
 	 * Product, Service, Item
 	 *
@@ -187,48 +228,6 @@ public interface I_MD_Cockpit
 	String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
 
 	/**
-	 * Set Material Cockpit.
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setMD_Cockpit_ID (int MD_Cockpit_ID);
-
-	/**
-	 * Get Material Cockpit.
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getMD_Cockpit_ID();
-
-	ModelColumn<I_MD_Cockpit, Object> COLUMN_MD_Cockpit_ID = new ModelColumn<>(I_MD_Cockpit.class, "MD_Cockpit_ID", null);
-	String COLUMNNAME_MD_Cockpit_ID = "MD_Cockpit_ID";
-
-	/**
-	 * Set MDCandidateQtyStock.
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setMDCandidateQtyStock (@Nullable BigDecimal MDCandidateQtyStock);
-
-	/**
-	 * Get MDCandidateQtyStock.
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	BigDecimal getMDCandidateQtyStock();
-
-	ModelColumn<I_MD_Cockpit, Object> COLUMN_MDCandidateQtyStock = new ModelColumn<>(I_MD_Cockpit.class, "MDCandidateQtyStock", null);
-	String COLUMNNAME_MDCandidateQtyStock = "MDCandidateQtyStock";
-
-	/**
 	 * Set Vendor Promised.
 	 * Vom Lieferanten per Webapplikation zugesagte Menge
 	 *
@@ -259,7 +258,7 @@ public interface I_MD_Cockpit
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setProductName (@Nullable String ProductName);
+	void setProductName (@Nullable java.lang.String ProductName);
 
 	/**
 	 * Get Produktname.
@@ -269,7 +268,7 @@ public interface I_MD_Cockpit
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getProductName();
+	@Nullable java.lang.String getProductName();
 
 	ModelColumn<I_MD_Cockpit, Object> COLUMN_ProductName = new ModelColumn<>(I_MD_Cockpit.class, "ProductName", null);
 	String COLUMNNAME_ProductName = "ProductName";
@@ -283,7 +282,7 @@ public interface I_MD_Cockpit
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setProductValue (@Nullable String ProductValue);
+	void setProductValue (@Nullable java.lang.String ProductValue);
 
 	/**
 	 * Get Product Value.
@@ -294,7 +293,7 @@ public interface I_MD_Cockpit
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getProductValue();
+	@Nullable java.lang.String getProductValue();
 
 	ModelColumn<I_MD_Cockpit, Object> COLUMN_ProductValue = new ModelColumn<>(I_MD_Cockpit.class, "ProductValue", null);
 	String COLUMNNAME_ProductValue = "ProductValue";
@@ -416,6 +415,7 @@ public interface I_MD_Cockpit
 
 	/**
 	 * Set Inventory count.
+	 * Bestand laut der letzten Inventur
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -425,6 +425,7 @@ public interface I_MD_Cockpit
 
 	/**
 	 * Get Inventory count.
+	 * Bestand laut der letzten Inventur
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -437,6 +438,7 @@ public interface I_MD_Cockpit
 
 	/**
 	 * Set Inventory time.
+	 * Zeipunkt, an dem die Inventur fertig gestellt wurde.
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -446,6 +448,7 @@ public interface I_MD_Cockpit
 
 	/**
 	 * Get Inventory time.
+	 * Zeipunkt, an dem die Inventur fertig gestellt wurde.
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -546,6 +549,7 @@ public interface I_MD_Cockpit
 
 	/**
 	 * Set Stock count.
+	 * Menge laut "grober" Zählung.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -555,6 +559,7 @@ public interface I_MD_Cockpit
 
 	/**
 	 * Get Stock count.
+	 * Menge laut "grober" Zählung.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -564,6 +569,29 @@ public interface I_MD_Cockpit
 
 	ModelColumn<I_MD_Cockpit, Object> COLUMN_QtyStockEstimateCount = new ModelColumn<>(I_MD_Cockpit.class, "QtyStockEstimateCount", null);
 	String COLUMNNAME_QtyStockEstimateCount = "QtyStockEstimateCount";
+
+	/**
+	 * Set Zählbestand Reihenfolge.
+	 * "Reihenfolge"-Wert mit dem die entsprechende Position im Zählbestand erfasst wurde
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQtyStockEstimateSeqNo (int QtyStockEstimateSeqNo);
+
+	/**
+	 * Get Zählbestand Reihenfolge.
+	 * "Reihenfolge"-Wert mit dem die entsprechende Position im Zählbestand erfasst wurde
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getQtyStockEstimateSeqNo();
+
+	ModelColumn<I_MD_Cockpit, Object> COLUMN_QtyStockEstimateSeqNo = new ModelColumn<>(I_MD_Cockpit.class, "QtyStockEstimateSeqNo", null);
+	String COLUMNNAME_QtyStockEstimateSeqNo = "QtyStockEstimateSeqNo";
 
 	/**
 	 * Set Stock estimate time.
@@ -657,6 +685,7 @@ public interface I_MD_Cockpit
 
 	/**
 	 * Set Required supplies.
+	 * Sum of all required supplies, where the planned stock is below the planned shippings
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -666,6 +695,7 @@ public interface I_MD_Cockpit
 
 	/**
 	 * Get Required supplies.
+	 * Sum of all required supplies, where the planned stock is below the planned shippings
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -700,7 +730,8 @@ public interface I_MD_Cockpit
 	String COLUMNNAME_QtySupplySum = "QtySupplySum";
 
 	/**
-	 * Set To schedule supplies.
+	 * Set Open requriements.
+	 * Required supplies that are not yet covered by purchase, production or distribution.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -709,7 +740,8 @@ public interface I_MD_Cockpit
 	void setQtySupplyToSchedule (@Nullable BigDecimal QtySupplyToSchedule);
 
 	/**
-	 * Get To schedule supplies.
+	 * Get Open requriements.
+	 * Required supplies that are not yet covered by purchase, production or distribution.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false

@@ -52,7 +52,7 @@ import java.util.List;
 public class PPOrderChangedEventHandler implements MaterialEventHandler<PPOrderChangedEvent>
 {
 	private final MainDataRequestHandler dataUpdateRequestHandler;
-	private IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	
 	public PPOrderChangedEventHandler(@NonNull final MainDataRequestHandler dataUpdateRequestHandler)
 	{
@@ -157,5 +157,4 @@ public class PPOrderChangedEventHandler implements MaterialEventHandler<PPOrderC
 
 		dataUpdateRequestHandler.handleDataUpdateRequest(updateMainDataRequest);
 	}
-
 }

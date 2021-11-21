@@ -5,10 +5,10 @@ import com.google.common.base.Preconditions;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.dimension.Dimension;
-import de.metas.document.dimension.DimensionService;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateType;
+import de.metas.material.dispo.commons.candidate.IdConstants;
 import de.metas.material.dispo.commons.candidate.businesscase.DistributionDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.ProductionDetail;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
@@ -140,7 +140,7 @@ public class RequestMaterialOrderService
 		{
 			if (groupMember.getDemandDetail() != null && groupMember.getDemandDetail().getOrderLineId() > 0)
 			{
-				ppOrderBuilder.orderLineId(groupMember.getDemandDetail().getOrderLineId());
+				ppOrderBuilder.orderLineId(IdConstants.toRepoId(groupMember.getDemandDetail().getOrderLineId()));
 			}
 
 			final ProductionDetail prodDetail = ProductionDetail.cast(groupMember.getBusinessCaseDetail());

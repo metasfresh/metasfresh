@@ -4,6 +4,8 @@ import static java.math.BigDecimal.ZERO;
 
 import java.util.List;
 
+import de.metas.quantity.Quantitys;
+import de.metas.uom.UomId;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.WarehouseId;
@@ -108,7 +110,7 @@ public class MD_Stock_Update_From_M_HUs extends JavaProcess
 		final StockDataRecordIdentifier recordIdentifier = toStockDataRecordIdentifier(huBasedDataRecord);
 
 		final ProductId productId = ProductId.ofRepoId(huBasedDataRecord.getM_Product_ID());
-		final Quantity qtyInStorageUOM = Quantity.of(huBasedDataRecord.getQtyOnHandChange(), huBasedDataRecord.getC_UOM());
+		final Quantity qtyInStorageUOM = Quantitys.create(huBasedDataRecord.getQtyOnHandChange(), UomId.ofRepoId(huBasedDataRecord.getC_UOM_ID()));
 		final Quantity qtyInProductUOM = uomConversionBL.convertToProductUOM(qtyInStorageUOM, productId);
 
 		return StockDataUpdateRequest.builder()

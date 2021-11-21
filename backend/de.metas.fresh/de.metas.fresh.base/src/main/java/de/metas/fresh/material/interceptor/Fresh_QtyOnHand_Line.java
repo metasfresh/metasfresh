@@ -48,16 +48,16 @@ import java.util.List;
  * #L%
  */
 
-@Interceptor(I_Fresh_QtyOnHand.class)
+@Interceptor(I_Fresh_QtyOnHand_Line.class)
 @Component
-public class Fresh_QtyOnHand
+public class Fresh_QtyOnHand_Line
 {
 	private final IFreshQtyOnHandDAO freshQtyOnHandDAO = Services.get(IFreshQtyOnHandDAO.class);
 
 	private final ModelProductDescriptorExtractor productDescriptorFactory;
 	private final PostMaterialEventService materialEventService;
 
-	public Fresh_QtyOnHand(
+	public Fresh_QtyOnHand_Line(
 			@NonNull final ModelProductDescriptorExtractor productDescriptorFactory,
 			@NonNull final PostMaterialEventService materialEventService)
 	{
@@ -65,47 +65,74 @@ public class Fresh_QtyOnHand
 		this.materialEventService = materialEventService;
 	}
 
-	@ModelChange(timings = {
-			ModelValidator.TYPE_BEFORE_CHANGE,
-			ModelValidator.TYPE_BEFORE_DELETE
-	}, ifColumnsChanged = {
-			I_Fresh_QtyOnHand.COLUMNNAME_Processed,
-			I_Fresh_QtyOnHand.COLUMNNAME_IsActive
-	})
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE,
+			ifColumnsChanged = I_Fresh_QtyOnHand_Line.COLUMNNAME_SeqNo)
 	public void createAndFireStockCountEvents(
-			@NonNull final I_Fresh_QtyOnHand qtyOnHand,
+			@NonNull final I_Fresh_QtyOnHand_Line line,
 			@NonNull final ModelChangeType timing)
 	{
-		final boolean createDeletedEvent = timing.isDelete() || ModelChangeUtil.isJustDeactivatedOrUnProcessed(qtyOnHand);
+		final boolean createDeletedEvent = timing.isDelete() || ModelChangeUtil.isJustDeactivatedOrUnProcessed(timing);
 
 		final List<AbstractStockEstimateEvent> events = new ArrayList<>();
 
-		final List<I_Fresh_QtyOnHand_Line> lines = freshQtyOnHandDAO.retrieveLines(qtyOnHand);
-		for (final I_Fresh_QtyOnHand_Line line : lines)
+		final ProductDescriptor productDescriptor = productDescriptorFactory.createProductDescriptor(line);
+
+		final MaterialDescriptor materialDescriptor = MaterialDescriptor.builder()
+				.productDescriptor(productDescriptor)
+				.warehouseId(WarehouseId.ofRepoId(line.getM_Warehouse_ID()))
+				.quantity(line.getQtyCount())
+				.date(TimeUtil.asInstant(line.getDateDoc()))
+				.build();
+
+		final AbstractStockEstimateEvent event;
+
+		if (createDeletedEvent)
 		{
-			final ProductDescriptor productDescriptor = productDescriptorFactory.createProductDescriptor(line);
-
-			final MaterialDescriptor materialDescriptor = MaterialDescriptor.builder()
-					.productDescriptor(productDescriptor)
-					.warehouseId(WarehouseId.ofRepoId(line.getM_Warehouse_ID()))
-					.quantity(line.getQtyCount())
-					.date(TimeUtil.asInstant(line.getDateDoc()))
-					.build();
-
-			final AbstractStockEstimateEvent event;
-
-			if (createDeletedEvent)
-			{
-				event = Fresh_QtyOnHand_Line.buildDeletedEvent(line, materialDescriptor);
-			}
-			else
-			{
-				event = Fresh_QtyOnHand_Line.buildCreatedEvent(line, materialDescriptor);
-			}
-			events.add(event);
+			event = buildDeletedEvent(line, materialDescriptor);
 		}
+		else
+		{
+			event = buildCreatedEvent(line, materialDescriptor);
+		}
+		events.add(event);
 
 		events.forEach(materialEventService::postEventAfterNextCommit);
 	}
 
+	@NonNull
+	static AbstractStockEstimateEvent buildCreatedEvent(
+			@NonNull final I_Fresh_QtyOnHand_Line line,
+			@NonNull final MaterialDescriptor materialDescriptor)
+	{
+		final I_Fresh_QtyOnHand qtyOnHandRecord = line.getFresh_QtyOnHand();
+
+		return StockEstimateCreatedEvent.builder()
+				.date(TimeUtil.asInstantNonNull(qtyOnHandRecord.getDateDoc()))
+				.eventDate(Instant.now())
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(line.getAD_Client_ID(), line.getAD_Org_ID()))
+				.materialDescriptor(materialDescriptor)
+				.plantId(line.getPP_Plant_ID())
+				.freshQtyOnHandId(line.getFresh_QtyOnHand_ID())
+				.freshQtyOnHandLineId(line.getFresh_QtyOnHand_Line_ID())
+				.qtyStockEstimateSeqNo(line.getSeqNo())
+				.build();
+	}
+
+	@NonNull
+	static AbstractStockEstimateEvent buildDeletedEvent(
+			@NonNull final I_Fresh_QtyOnHand_Line line,
+			@NonNull final MaterialDescriptor materialDescriptor)
+	{
+		final I_Fresh_QtyOnHand qtyOnHandRecord = line.getFresh_QtyOnHand();
+
+		return StockEstimateDeletedEvent.builder()
+				.date(TimeUtil.asInstantNonNull(qtyOnHandRecord.getDateDoc()))
+				.eventDate(Instant.now())
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(line.getAD_Client_ID(), line.getAD_Org_ID()))
+				.materialDescriptor(materialDescriptor)
+				.plantId(line.getPP_Plant_ID())
+				.freshQtyOnHandId(line.getFresh_QtyOnHand_ID())
+				.freshQtyOnHandLineId(line.getFresh_QtyOnHand_Line_ID())
+				.build();
+	}
 }
