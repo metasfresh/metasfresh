@@ -26,6 +26,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
+import javax.annotation.Nullable;
 import javax.print.attribute.standard.MediaSize;
 
 import de.metas.printing.HardwarePrinterId;
@@ -184,7 +185,7 @@ public interface IPrintingDAO extends ISingletonService
 	 *
 	 * @return database's {@link IQuery}
 	 */
-	IQuery<I_C_Printing_Queue> createQuery(Properties ctx, IPrintingQueueQuery queueQuery, String trxName);
+	IQuery<I_C_Printing_Queue> createQuery(Properties ctx, IPrintingQueueQuery queueQuery, @Nullable String trxName);
 
 	/**
 	 * Returns all logical printers for the given org.
