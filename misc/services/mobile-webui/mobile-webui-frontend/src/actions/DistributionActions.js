@@ -5,10 +5,10 @@ export function updateDistributionStepQty({
   activityId,
   lineId,
   stepId,
-  locatorBarcode,
   actualHUPicked,
   qtyPicked,
   qtyRejectedReasonCode,
+  droppedToLocator,
 }) {
   return {
     type: UPDATE_DISTRIBUTION_STEP_QTY,
@@ -17,10 +17,10 @@ export function updateDistributionStepQty({
       activityId,
       lineId,
       stepId,
-      locatorBarcode,
       actualHUPicked,
       qtyPicked,
       qtyRejectedReasonCode,
+      droppedToLocator,
     },
   };
 }

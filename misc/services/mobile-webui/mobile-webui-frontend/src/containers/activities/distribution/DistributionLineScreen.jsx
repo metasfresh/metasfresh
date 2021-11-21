@@ -11,6 +11,7 @@ const DistributionLineScreen = (props) => {
       <div className="steps-container">
         {steps.length > 0 &&
           steps.map((stepItem, idx) => {
+            console.log('stepItem: ', stepItem);
             return (
               <StepButton
                 key={idx}
@@ -18,8 +19,13 @@ const DistributionLineScreen = (props) => {
                 activityId={activityId}
                 lineId={lineId}
                 stepId={stepItem.id}
-                locatorName={stepItem.productName}
-                {...stepItem}
+                productName={stepItem.productName}
+                pickFromLocator={stepItem.pickFromLocator}
+                pickFromHU={stepItem.pickFromHU}
+                uom={stepItem.uom}
+                qtyPicked={stepItem.qtyPicked}
+                qtyToMove={stepItem.qtyToMove}
+                completeStatus={stepItem.completeStatus}
               />
             );
           })}

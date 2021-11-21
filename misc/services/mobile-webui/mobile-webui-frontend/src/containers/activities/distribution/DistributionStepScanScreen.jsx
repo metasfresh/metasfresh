@@ -64,9 +64,9 @@ function DistributionStepScanScreen(WrappedComponent) {
               activityId,
               lineId,
               stepId,
-              locatorBarcode: scannedBarcode,
               qtyPicked: qty,
               qtyRejectedReasonCode: reason,
+              droppedToLocator: true,
             });
             go(-1);
           })
