@@ -20,7 +20,6 @@ public class DistributionJobStep
 	//
 	// Pick From
 	@NonNull HuId pickFromHUId;
-	@Nullable HuId actualHUPicked;
 	@NonNull Quantity qtyPicked;
 	@Nullable QtyRejectedReasonCode qtyNotPickedReasonCode;
 	boolean isPickedFromLocator;
@@ -37,7 +36,6 @@ public class DistributionJobStep
 			@NonNull final Quantity qtyToMoveTarget,
 			//
 			@NonNull final HuId pickFromHUId,
-			@Nullable final HuId actualHUPicked,
 			@NonNull final Quantity qtyPicked,
 			@Nullable final QtyRejectedReasonCode qtyNotPickedReasonCode,
 			final boolean isPickedFromLocator,
@@ -49,7 +47,6 @@ public class DistributionJobStep
 		this.id = id;
 		this.qtyToMoveTarget = qtyToMoveTarget;
 		this.pickFromHUId = pickFromHUId;
-		this.actualHUPicked = actualHUPicked;
 		this.qtyPicked = qtyPicked;
 		this.qtyNotPickedReasonCode = qtyNotPickedReasonCode;
 		this.isPickedFromLocator = isPickedFromLocator;

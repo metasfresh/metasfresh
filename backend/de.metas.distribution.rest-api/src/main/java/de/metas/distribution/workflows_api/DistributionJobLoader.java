@@ -91,13 +91,12 @@ class DistributionJobLoader
 				//
 				// Pick From
 				.pickFromHUId(schedule.getPickFromHUId())
-				.actualHUPicked(schedule.getActualHUIdPicked())
 				.qtyPicked(schedule.getQtyPicked())
 				.qtyNotPickedReasonCode(schedule.getQtyNotPickedReason())
 				.isPickedFromLocator(schedule.isPickedFrom())
 				//
 				// Drop To
-				.isDroppedToLocator(schedule.getDropToMovementLineId() != null)
+				.isDroppedToLocator(schedule.isDropTo())
 				//
 				.build();
 

@@ -6,23 +6,23 @@ import java.sql.ResultSet;
 import java.util.Properties;
 import javax.annotation.Nullable;
 
-/** Generated Model for DD_OrderLine_HU_Candidate
+/** Generated Model for DD_Order_MoveSchedule
  *  @author metasfresh (generated) 
  */
 @SuppressWarnings("unused")
-public class X_DD_OrderLine_HU_Candidate extends org.compiere.model.PO implements I_DD_OrderLine_HU_Candidate, org.compiere.model.I_Persistent 
+public class X_DD_Order_MoveSchedule extends org.compiere.model.PO implements I_DD_Order_MoveSchedule, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1826377088L;
+	private static final long serialVersionUID = 1701427561L;
 
     /** Standard Constructor */
-    public X_DD_OrderLine_HU_Candidate (final Properties ctx, final int DD_OrderLine_HU_Candidate_ID, @Nullable final String trxName)
+    public X_DD_Order_MoveSchedule (final Properties ctx, final int DD_Order_MoveSchedule_ID, @Nullable final String trxName)
     {
-      super (ctx, DD_OrderLine_HU_Candidate_ID, trxName);
+      super (ctx, DD_Order_MoveSchedule_ID, trxName);
     }
 
     /** Load Constructor */
-    public X_DD_OrderLine_HU_Candidate (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
+    public X_DD_Order_MoveSchedule (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
@@ -78,18 +78,6 @@ public class X_DD_OrderLine_HU_Candidate extends org.compiere.model.PO implement
 	}
 
 	@Override
-	public de.metas.handlingunits.model.I_DD_Order_MoveSchedule getDD_Order_MoveSchedule()
-	{
-		return get_ValueAsPO(COLUMNNAME_DD_Order_MoveSchedule_ID, de.metas.handlingunits.model.I_DD_Order_MoveSchedule.class);
-	}
-
-	@Override
-	public void setDD_Order_MoveSchedule(final de.metas.handlingunits.model.I_DD_Order_MoveSchedule DD_Order_MoveSchedule)
-	{
-		set_ValueFromPO(COLUMNNAME_DD_Order_MoveSchedule_ID, de.metas.handlingunits.model.I_DD_Order_MoveSchedule.class, DD_Order_MoveSchedule);
-	}
-
-	@Override
 	public void setDD_Order_MoveSchedule_ID (final int DD_Order_MoveSchedule_ID)
 	{
 		if (DD_Order_MoveSchedule_ID < 1) 
@@ -102,21 +90,6 @@ public class X_DD_OrderLine_HU_Candidate extends org.compiere.model.PO implement
 	public int getDD_Order_MoveSchedule_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_DD_Order_MoveSchedule_ID);
-	}
-
-	@Override
-	public void setDD_OrderLine_HU_Candidate_ID (final int DD_OrderLine_HU_Candidate_ID)
-	{
-		if (DD_OrderLine_HU_Candidate_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_DD_OrderLine_HU_Candidate_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_DD_OrderLine_HU_Candidate_ID, DD_OrderLine_HU_Candidate_ID);
-	}
-
-	@Override
-	public int getDD_OrderLine_HU_Candidate_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_DD_OrderLine_HU_Candidate_ID);
 	}
 
 	@Override
@@ -162,60 +135,6 @@ public class X_DD_OrderLine_HU_Candidate extends org.compiere.model.PO implement
 	}
 
 	@Override
-	public org.compiere.model.I_M_Movement getDropTo_Movement()
-	{
-		return get_ValueAsPO(COLUMNNAME_DropTo_Movement_ID, org.compiere.model.I_M_Movement.class);
-	}
-
-	@Override
-	public void setDropTo_Movement(final org.compiere.model.I_M_Movement DropTo_Movement)
-	{
-		set_ValueFromPO(COLUMNNAME_DropTo_Movement_ID, org.compiere.model.I_M_Movement.class, DropTo_Movement);
-	}
-
-	@Override
-	public void setDropTo_Movement_ID (final int DropTo_Movement_ID)
-	{
-		if (DropTo_Movement_ID < 1) 
-			set_Value (COLUMNNAME_DropTo_Movement_ID, null);
-		else 
-			set_Value (COLUMNNAME_DropTo_Movement_ID, DropTo_Movement_ID);
-	}
-
-	@Override
-	public int getDropTo_Movement_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_DropTo_Movement_ID);
-	}
-
-	@Override
-	public org.compiere.model.I_M_MovementLine getDropTo_MovementLine()
-	{
-		return get_ValueAsPO(COLUMNNAME_DropTo_MovementLine_ID, org.compiere.model.I_M_MovementLine.class);
-	}
-
-	@Override
-	public void setDropTo_MovementLine(final org.compiere.model.I_M_MovementLine DropTo_MovementLine)
-	{
-		set_ValueFromPO(COLUMNNAME_DropTo_MovementLine_ID, org.compiere.model.I_M_MovementLine.class, DropTo_MovementLine);
-	}
-
-	@Override
-	public void setDropTo_MovementLine_ID (final int DropTo_MovementLine_ID)
-	{
-		if (DropTo_MovementLine_ID < 1) 
-			set_Value (COLUMNNAME_DropTo_MovementLine_ID, null);
-		else 
-			set_Value (COLUMNNAME_DropTo_MovementLine_ID, DropTo_MovementLine_ID);
-	}
-
-	@Override
-	public int getDropTo_MovementLine_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_DropTo_MovementLine_ID);
-	}
-
-	@Override
 	public void setDropTo_Warehouse_ID (final int DropTo_Warehouse_ID)
 	{
 		if (DropTo_Warehouse_ID < 1) 
@@ -231,36 +150,6 @@ public class X_DD_OrderLine_HU_Candidate extends org.compiere.model.PO implement
 	}
 
 	@Override
-	public void setInTransit_Locator_ID (final int InTransit_Locator_ID)
-	{
-		if (InTransit_Locator_ID < 1) 
-			set_Value (COLUMNNAME_InTransit_Locator_ID, null);
-		else 
-			set_Value (COLUMNNAME_InTransit_Locator_ID, InTransit_Locator_ID);
-	}
-
-	@Override
-	public int getInTransit_Locator_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_InTransit_Locator_ID);
-	}
-
-	@Override
-	public void setInTransit_Warehouse_ID (final int InTransit_Warehouse_ID)
-	{
-		if (InTransit_Warehouse_ID < 1) 
-			set_Value (COLUMNNAME_InTransit_Warehouse_ID, null);
-		else 
-			set_Value (COLUMNNAME_InTransit_Warehouse_ID, InTransit_Warehouse_ID);
-	}
-
-	@Override
-	public int getInTransit_Warehouse_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_InTransit_Warehouse_ID);
-	}
-
-	@Override
 	public void setIsPickWholeHU (final boolean IsPickWholeHU)
 	{
 		set_Value (COLUMNNAME_IsPickWholeHU, IsPickWholeHU);
@@ -270,33 +159,6 @@ public class X_DD_OrderLine_HU_Candidate extends org.compiere.model.PO implement
 	public boolean isPickWholeHU() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsPickWholeHU);
-	}
-
-	@Override
-	public de.metas.handlingunits.model.I_M_HU getM_HU()
-	{
-		return get_ValueAsPO(COLUMNNAME_M_HU_ID, de.metas.handlingunits.model.I_M_HU.class);
-	}
-
-	@Override
-	public void setM_HU(final de.metas.handlingunits.model.I_M_HU M_HU)
-	{
-		set_ValueFromPO(COLUMNNAME_M_HU_ID, de.metas.handlingunits.model.I_M_HU.class, M_HU);
-	}
-
-	@Override
-	public void setM_HU_ID (final int M_HU_ID)
-	{
-		if (M_HU_ID < 1) 
-			set_Value (COLUMNNAME_M_HU_ID, null);
-		else 
-			set_Value (COLUMNNAME_M_HU_ID, M_HU_ID);
-	}
-
-	@Override
-	public int getM_HU_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_M_HU_ID);
 	}
 
 	@Override
@@ -354,60 +216,6 @@ public class X_DD_OrderLine_HU_Candidate extends org.compiere.model.PO implement
 	public int getPickFrom_Locator_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_PickFrom_Locator_ID);
-	}
-
-	@Override
-	public org.compiere.model.I_M_Movement getPickFrom_Movement()
-	{
-		return get_ValueAsPO(COLUMNNAME_PickFrom_Movement_ID, org.compiere.model.I_M_Movement.class);
-	}
-
-	@Override
-	public void setPickFrom_Movement(final org.compiere.model.I_M_Movement PickFrom_Movement)
-	{
-		set_ValueFromPO(COLUMNNAME_PickFrom_Movement_ID, org.compiere.model.I_M_Movement.class, PickFrom_Movement);
-	}
-
-	@Override
-	public void setPickFrom_Movement_ID (final int PickFrom_Movement_ID)
-	{
-		if (PickFrom_Movement_ID < 1) 
-			set_Value (COLUMNNAME_PickFrom_Movement_ID, null);
-		else 
-			set_Value (COLUMNNAME_PickFrom_Movement_ID, PickFrom_Movement_ID);
-	}
-
-	@Override
-	public int getPickFrom_Movement_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_PickFrom_Movement_ID);
-	}
-
-	@Override
-	public org.compiere.model.I_M_MovementLine getPickFrom_MovementLine()
-	{
-		return get_ValueAsPO(COLUMNNAME_PickFrom_MovementLine_ID, org.compiere.model.I_M_MovementLine.class);
-	}
-
-	@Override
-	public void setPickFrom_MovementLine(final org.compiere.model.I_M_MovementLine PickFrom_MovementLine)
-	{
-		set_ValueFromPO(COLUMNNAME_PickFrom_MovementLine_ID, org.compiere.model.I_M_MovementLine.class, PickFrom_MovementLine);
-	}
-
-	@Override
-	public void setPickFrom_MovementLine_ID (final int PickFrom_MovementLine_ID)
-	{
-		if (PickFrom_MovementLine_ID < 1) 
-			set_Value (COLUMNNAME_PickFrom_MovementLine_ID, null);
-		else 
-			set_Value (COLUMNNAME_PickFrom_MovementLine_ID, PickFrom_MovementLine_ID);
-	}
-
-	@Override
-	public int getPickFrom_MovementLine_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_PickFrom_MovementLine_ID);
 	}
 
 	@Override

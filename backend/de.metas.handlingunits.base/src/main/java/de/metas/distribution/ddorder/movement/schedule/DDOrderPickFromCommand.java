@@ -1,5 +1,7 @@
 package de.metas.distribution.ddorder.movement.schedule;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.time.SystemTime;
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelDAO;
 import de.metas.distribution.ddorder.movement.generate.DDOrderMovementHelper;
@@ -17,7 +19,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mmovement.MovementAndLineId;
+import org.adempiere.mmovement.MovementId;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
@@ -25,6 +27,8 @@ import org.eevolution.model.I_DD_Order;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
+import java.util.List;
+import java.util.Set;
 
 class DDOrderPickFromCommand
 {
@@ -79,29 +83,44 @@ class DDOrderPickFromCommand
 		inTransitLocatorId = warehouseBL.getDefaultLocatorId(warehouseInTransitId);
 
 		//
-		if (schedule.getPickFromMovementLineId() != null
-				|| schedule.getActualHUIdPicked() != null)
+		if (schedule.isPickedFrom())
 		{
 			throw new AdempiereException("Already picked");
 		}
 
 		//
 		// Extract the HU if needed
-		final HuId actualPickedHUId = splitOutOfPickFromHU(schedule);
+		final List<I_M_HU> actualPickedHURecords = splitOutOfPickFromHU(schedule);
 
 		//
 		// generate movement Pick From Locator -> InTransit
-		final MovementAndLineId pickFromMovementLineId = createPickFromMovement(actualPickedHUId);
+		final MovementId pickFromMovementId = createPickFromMovement(extractHUIds(actualPickedHURecords));
+
+		final DDOrderMoveSchedulePickedHUs pickedHUs = actualPickedHURecords.stream()
+				.map(actualPickedHU -> DDOrderMoveSchedulePickedHU.builder()
+						.actualHUIdPicked(HuId.ofRepoId(actualPickedHU.getM_HU_ID()))
+						.qtyPicked(handlingUnitsBL.getStorageFactory()
+								.getStorage(actualPickedHU)
+								.getQuantity(schedule.getProductId(), qtyPicked.getUOM()))
+						.pickFromMovementId(pickFromMovementId)
+						.inTransitLocatorId(inTransitLocatorId)
+						.build())
+				.collect(DDOrderMoveSchedulePickedHUs.collect());
 
 		//
 		// update the schedule
-		schedule.markAsPickedFrom(qtyPicked, qtyNotPickedReason, actualPickedHUId, pickFromMovementLineId, inTransitLocatorId);
+		schedule.markAsPickedFrom(qtyNotPickedReason, pickedHUs);
 		ddOrderMoveScheduleRepository.save(schedule);
 
 		return schedule;
 	}
 
-	private HuId splitOutOfPickFromHU(final DDOrderMoveSchedule schedule)
+	private static ImmutableSet<HuId> extractHUIds(final List<I_M_HU> hus)
+	{
+		return hus.stream().map(hu -> HuId.ofRepoId(hu.getM_HU_ID())).collect(ImmutableSet.toImmutableSet());
+	}
+
+	private List<I_M_HU> splitOutOfPickFromHU(final DDOrderMoveSchedule schedule)
 	{
 		final HuId pickFromHUId = schedule.getPickFromHUId();
 		final ProductId productId = schedule.getProductId();
@@ -113,34 +132,33 @@ class DDOrderPickFromCommand
 
 		if (pickFromHU_TotalQty.qtyAndUomCompareToEquals(qtyPicked))
 		{
-			return pickFromHUId;
+			return ImmutableList.of(pickFromHU);
 		}
 		else
 		{
-			final I_M_HU newCU = HUTransformService.newInstance()
-					.huToNewSingleCU(HUTransformService.HUsToNewCUsRequest.builder()
+			return HUTransformService.newInstance()
+					.husToNewCUs(HUTransformService.HUsToNewCUsRequest.builder()
 							.sourceHU(pickFromHU)
 							.productId(productId)
 							.qtyCU(qtyPicked)
 							.keepNewCUsUnderSameParent(false)
 							.onlyFromUnreservedHUs(true)
 							.build());
-
-			return HuId.ofRepoId(newCU.getM_HU_ID());
 		}
 	}
 
-	private MovementAndLineId createPickFromMovement(@NonNull final HuId huIdToMove)
+	private MovementId createPickFromMovement(@NonNull final Set<HuId> huIdsToMove)
 	{
 		final HUMovementGenerateRequest request = DDOrderMovementHelper.prepareMovementGenerateRequest(ddOrder, schedule.getDdOrderLineId())
 				.movementDate(movementDate)
 				.fromLocatorId(schedule.getPickFromLocatorId())
 				.toLocatorId(inTransitLocatorId)
-				.huIdToMove(huIdToMove)
+				.huIdsToMove(huIdsToMove)
 				.build();
 
 		return new HUMovementGenerator(request)
 				.createMovement()
-				.getSingleMovementLineId();
+				.getSingleMovementLineId()
+				.getMovementId();
 	}
 }
