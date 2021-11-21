@@ -19,16 +19,7 @@ export const distributionReducer = ({ draftState, action }) => {
 };
 
 const reduceOnUpdateQtyPicked = (draftState, payload) => {
-  const {
-    wfProcessId,
-    activityId,
-    lineId,
-    stepId,
-    actualHUPicked,
-    qtyPicked,
-    qtyRejectedReasonCode,
-    droppedToLocator,
-  } = payload;
+  const { wfProcessId, activityId, lineId, stepId, qtyPicked, qtyRejectedReasonCode, droppedToLocator } = payload;
 
   const draftWFProcess = draftState[wfProcessId];
   const draftStep = draftWFProcess.activities[activityId].dataStored.lines[lineId].steps[stepId];
@@ -37,9 +28,6 @@ const reduceOnUpdateQtyPicked = (draftState, payload) => {
   // Picked From
   draftStep.qtyPicked = qtyPicked;
   draftStep.qtyRejectedReasonCode = qtyRejectedReasonCode;
-  if (actualHUPicked !== undefined) {
-    draftStep.actualHUPicked = actualHUPicked;
-  }
 
   //
   // Dropped To

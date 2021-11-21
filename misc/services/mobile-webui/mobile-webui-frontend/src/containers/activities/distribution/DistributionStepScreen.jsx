@@ -53,7 +53,6 @@ class DistributionStepScreen extends Component {
             activityId,
             lineId,
             stepId,
-            actualHUPicked: null,
             qtyPicked: 0,
             qtyRejectedReasonCode: null,
           })
