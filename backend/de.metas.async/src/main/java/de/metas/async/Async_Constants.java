@@ -66,8 +66,9 @@ public final class Async_Constants
 	public static final String C_Async_Batch_InternalName_ShipmentSchedule = "ShipmentSchedule_Processing";
 	public static final String C_Async_Batch_InternalName_InvoiceCandidate_Processing = "InvoiceCandidate_Processing";
 	public static final String C_Async_Batch_InternalName_EnqueueScheduleForOrder = "EnqueueScheduleForOrder";
+	public static final String C_Async_Batch_InternalName_ProcessOLCands = "ProcessOLCands";
 
 	public static final String SYS_Config_SKIP_WP_PROCESSOR_FOR_AUTOMATION = "SKIP_WP_PROCESSOR_FOR_AUTOMATION";
-	public static final String SYS_Config_WaitTimeOutMS = "de.metas.async.AsyncBatchMilestoneObserver.WaitTimeOutMS";
+	public static final String SYS_Config_WaitTimeOutMS = "de.metas.async.AsyncBatchObserver.WaitTimeOutMS";
 	public static final int SYS_Config_WaitTimeOutMS_DEFAULT_VALUE = 1000 * 60 * 5;
 }

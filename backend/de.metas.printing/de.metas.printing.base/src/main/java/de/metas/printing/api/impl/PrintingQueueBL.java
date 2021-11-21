@@ -1,6 +1,3 @@
-/**
- *
- */
 package de.metas.printing.api.impl;
 
 /*
@@ -74,6 +71,7 @@ import org.compiere.util.Util;
 import org.slf4j.Logger;
 import org.slf4j.MDC;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -95,6 +93,7 @@ public class PrintingQueueBL implements IPrintingQueueBL
 	private final IPrintingDAO printingDAO = Services.get(IPrintingDAO.class);
 	private final IArchiveDAO archiveDAO = Services.get(IArchiveDAO.class);
 
+	@Nullable
 	@Override
 	public I_C_Printing_Queue enqueue(final org.compiere.model.I_AD_Archive archiveRecord)
 	{
@@ -162,7 +161,7 @@ public class PrintingQueueBL implements IPrintingQueueBL
 	}
 
 	@Override
-	public void printArchive(final PrintArchiveParameters printArchiveParameters)
+	public void printArchive(@NonNull final PrintArchiveParameters printArchiveParameters)
 	{
 		final PrintOutputFacade printOutputFacade = printArchiveParameters.getPrintOutputFacade();
 		final de.metas.printing.model.I_AD_Archive archive = printArchiveParameters.getArchive();
@@ -358,7 +357,7 @@ public class PrintingQueueBL implements IPrintingQueueBL
 	}
 
 	@Override
-	public PrintingQueueProcessingInfo createPrintingQueueProcessingInfo(final I_C_Printing_Queue printingQueueRecord)
+	public PrintingQueueProcessingInfo createPrintingQueueProcessingInfo(@NonNull final I_C_Printing_Queue printingQueueRecord)
 	{
 		final UserId printJobADUserId = getPrintToUser(printingQueueRecord);
 		return createPrintingQueueProcessingInfo(printingQueueRecord, printJobADUserId);
@@ -371,7 +370,7 @@ public class PrintingQueueBL implements IPrintingQueueBL
 
 		final I_C_Printing_Queue firstItem = printingDAO
 				.createQuery(ctx, query, ITrx.TRXNAME_ThreadInherited)
-				.first();
+				.firstNotNull(I_C_Printing_Queue.class);
 
 		final UserId printJobAD_User_ID = getPrintJobAD_User_ID(ctx, query);
 
