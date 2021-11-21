@@ -270,6 +270,9 @@ public class PatientToBPartnerMapper
 		albertaPatient.setCreatedByIdentifier(formatExternalId(patient.getCreatedBy()));
 		albertaPatient.setUpdateByIdentifier(formatExternalId(patient.getUpdatedBy()));
 
+		albertaPatient.setClassification(patient.getClassification());
+		albertaPatient.setCareDegree(patient.getCareDegree());
+
 		if (patient.getHospital() != null && patient.getHospital().getHospitalId() != null)
 		{
 			albertaPatient.setHospitalIdentifier(formatExternalId(patient.getHospital().getHospitalId()));

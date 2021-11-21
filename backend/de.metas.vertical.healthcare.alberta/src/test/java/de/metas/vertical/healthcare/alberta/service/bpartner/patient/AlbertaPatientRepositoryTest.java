@@ -34,6 +34,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 
@@ -81,6 +82,8 @@ public class AlbertaPatientRepositoryTest
 				.isIVTherapy(false)
 				.fieldNurseId(UserId.ofRepoId(4))
 				.deactivationReason(DeactivationReasonType.AllTherapiesEnded)
+				.classification("classification")
+				.careDegree(BigDecimal.valueOf(2.2))
 				.deactivationDate(LocalDate.parse("2019-11-25"))
 				.deactivationComment("deactivationComment")
 				.createdAt(Instant.parse("2019-11-26T00:00:00Z"))
