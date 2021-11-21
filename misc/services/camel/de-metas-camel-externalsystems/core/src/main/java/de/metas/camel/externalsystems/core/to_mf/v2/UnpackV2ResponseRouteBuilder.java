@@ -26,7 +26,7 @@ public class UnpackV2ResponseRouteBuilder extends EndpointRouteBuilder
 				  .process(UnpackV2ResponseRouteBuilder::extractResponseContent).id(UNPACK_V2_API_RESPONSE_PROCESSOR_ID)
 				  .marshal(CamelRouteHelper.setupJacksonDataFormatFor(getContext(), Object.class))
 				.doCatch(Throwable.class)
-				  .log(LoggingLevel.WARN, "Failed to unpack V2 response!")
+				  .log(LoggingLevel.DEBUG, "Failed to unpack V2 response! Assuming that is was not wrapped into "+JsonApiResponse.class.getName()+" to begin with.")
 				.endDoTry();
 		//@formatter:on
 	}
