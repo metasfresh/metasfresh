@@ -965,7 +965,7 @@ public final class Document
 	public Collection<IDocumentFieldView> getFieldViews()
 	{
 		final Collection<IDocumentField> documentFields = fieldsByName.values();
-		return ImmutableList.<IDocumentFieldView>copyOf(documentFields);
+		return ImmutableList.copyOf(documentFields);
 	}
 
 	public Set<String> getFieldNames()
@@ -1234,8 +1234,10 @@ public final class Document
 		}
 		else
 		{
-			final String expectedDocStatus = null; // N/A
-			documentBL.processEx(this, docAction, expectedDocStatus);
+			if (documentBL.getDocumentOrNull(this) != null)
+			{
+				documentBL.processEx(this, docAction, null);
+			}
 		}
 
 		//
@@ -1318,7 +1320,7 @@ public final class Document
 		{
 			for (final DependencyType triggeringDependencyType : DocumentFieldDependencyMap.DEPENDENCYTYPES_DocumentLevel)
 			{
-				updateOnDependencyChanged(documentFieldName, (IDocumentField)null, triggeringFieldName, triggeringDependencyType);
+				updateOnDependencyChanged(documentFieldName, null, triggeringFieldName, triggeringDependencyType);
 			}
 		}
 
@@ -1621,19 +1623,19 @@ public final class Document
 	/* package */ boolean isProcessed()
 	{
 		final IDocumentFieldView isActiveField = getFieldUpToRootOrNull(WindowConstants.FIELDNAME_Processed);
-		return isActiveField != null ? isActiveField.getValueAsBoolean() : false; // not processed if field missing
+		return isActiveField != null && isActiveField.getValueAsBoolean(); // not processed if field missing
 	}
 
 	/* package */ boolean isProcessing()
 	{
 		final IDocumentFieldView isActiveField = getFieldUpToRootOrNull(WindowConstants.FIELDNAME_Processing);
-		return isActiveField != null ? isActiveField.getValueAsBoolean() : false; // not processed if field missing
+		return isActiveField != null && isActiveField.getValueAsBoolean(); // not processed if field missing
 	}
 
 	/* package */ boolean isActive()
 	{
 		final IDocumentFieldView isActiveField = getFieldUpToRootOrNull(WindowConstants.FIELDNAME_IsActive);
-		return isActiveField != null ? isActiveField.getValueAsBoolean() : true; // active if field not found (shall not happen)
+		return isActiveField == null || isActiveField.getValueAsBoolean(); // active if field not found (shall not happen)
 	}
 
 	/* package */ void setParentReadonly(@NonNull final DocumentReadonly parentReadonly)
