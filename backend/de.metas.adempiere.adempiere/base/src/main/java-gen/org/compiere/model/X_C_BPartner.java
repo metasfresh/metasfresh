@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1005357324L;
+	private static final long serialVersionUID = 1539313489L;
 
     /** Standard Constructor */
     public X_C_BPartner (final Properties ctx, final int C_BPartner_ID, @Nullable final String trxName)
@@ -1608,6 +1608,10 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	public static final String PO_INCOTERM_DDU_FreiUnverzollt = "DDU";
 	/** DDP_Verzollt = DDP */
 	public static final String PO_INCOTERM_DDP_Verzollt = "DDP";
+	/** DAP - Delivered at Place = DAP */
+	public static final String PO_INCOTERM_DAP_DeliveredAtPlace = "DAP";
+	/** DPU_geliefertBenannterOrtEntladen = DPU */
+	public static final String PO_INCOTERM_DPU_geliefertBenannterOrtEntladen = "DPU";
 	@Override
 	public void setPO_Incoterm (final @Nullable java.lang.String PO_Incoterm)
 	{
@@ -1618,6 +1622,33 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	public java.lang.String getPO_Incoterm() 
 	{
 		return get_ValueAsString(COLUMNNAME_PO_Incoterm);
+	}
+
+	/** 
+	 * PO_InvoiceRule AD_Reference_ID=150
+	 * Reference name: C_Order InvoiceRule
+	 */
+	public static final int PO_INVOICERULE_AD_Reference_ID=150;
+	/** AfterOrderDelivered = O */
+	public static final String PO_INVOICERULE_AfterOrderDelivered = "O";
+	/** AfterDelivery = D */
+	public static final String PO_INVOICERULE_AfterDelivery = "D";
+	/** CustomerScheduleAfterDelivery = S */
+	public static final String PO_INVOICERULE_CustomerScheduleAfterDelivery = "S";
+	/** Immediate = I */
+	public static final String PO_INVOICERULE_Immediate = "I";
+	/** OrderCompletelyDelivered = C */
+	public static final String PO_INVOICERULE_OrderCompletelyDelivered = "C";
+	@Override
+	public void setPO_InvoiceRule (final @Nullable java.lang.String PO_InvoiceRule)
+	{
+		set_Value (COLUMNNAME_PO_InvoiceRule, PO_InvoiceRule);
+	}
+
+	@Override
+	public java.lang.String getPO_InvoiceRule() 
+	{
+		return get_ValueAsString(COLUMNNAME_PO_InvoiceRule);
 	}
 
 	@Override

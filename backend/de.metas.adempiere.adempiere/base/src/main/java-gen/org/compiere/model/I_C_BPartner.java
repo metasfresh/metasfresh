@@ -53,8 +53,8 @@ public interface I_C_BPartner
 	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Straße und Nr..
-	 * Adresszeile 1 für diesen Standort
+	 * Set Street & House No..
+	 * Address line 1 for this location
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -65,8 +65,8 @@ public interface I_C_BPartner
 	void setAddress1 (@Nullable java.lang.String Address1);
 
 	/**
-	 * Get Straße und Nr..
-	 * Adresszeile 1 für diesen Standort
+	 * Get Street & House No..
+	 * Address line 1 for this location
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -808,8 +808,8 @@ public interface I_C_BPartner
 	String COLUMNNAME_DeliveryRule = "DeliveryRule";
 
 	/**
-	 * Set Lieferung.
-	 * Wie der Auftrag geliefert wird
+	 * Set Delivery Via.
+	 * How the order will be delivered
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -818,8 +818,8 @@ public interface I_C_BPartner
 	void setDeliveryViaRule (@Nullable java.lang.String DeliveryViaRule);
 
 	/**
-	 * Get Lieferung.
-	 * Wie der Auftrag geliefert wird
+	 * Get Delivery Via.
+	 * How the order will be delivered
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -1700,7 +1700,7 @@ public interface I_C_BPartner
 	String COLUMNNAME_IsShippingNotificationEmail = "IsShippingNotificationEmail";
 
 	/**
-	 * Set Zusammenfassungseintrag.
+	 * Set Summary Level.
 	 * This is a summary entity
 	 *
 	 * <br>Type: YesNo
@@ -1710,7 +1710,7 @@ public interface I_C_BPartner
 	void setIsSummary (boolean IsSummary);
 
 	/**
-	 * Get Zusammenfassungseintrag.
+	 * Get Summary Level.
 	 * This is a summary entity
 	 *
 	 * <br>Type: YesNo
@@ -2381,6 +2381,27 @@ public interface I_C_BPartner
 
 	ModelColumn<I_C_BPartner, Object> COLUMN_PO_Incoterm = new ModelColumn<>(I_C_BPartner.class, "PO_Incoterm", null);
 	String COLUMNNAME_PO_Incoterm = "PO_Incoterm";
+
+	/**
+	 * Set Rechnungsstellung (Kreditoren).
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPO_InvoiceRule (@Nullable java.lang.String PO_InvoiceRule);
+
+	/**
+	 * Get Rechnungsstellung (Kreditoren).
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getPO_InvoiceRule();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_PO_InvoiceRule = new ModelColumn<>(I_C_BPartner.class, "PO_InvoiceRule", null);
+	String COLUMNNAME_PO_InvoiceRule = "PO_InvoiceRule";
 
 	/**
 	 * Set Zahlungskondition.

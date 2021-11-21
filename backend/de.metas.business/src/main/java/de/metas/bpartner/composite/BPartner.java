@@ -4,11 +4,11 @@ import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.OrgMappingId;
-import de.metas.marketing.base.model.CampaignId;
 import de.metas.greeting.GreetingId;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.marketing.base.model.CampaignId;
 import de.metas.order.InvoiceRule;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PricingSystemId;
@@ -127,7 +127,8 @@ public class BPartner
 	private PaymentRule paymentRule;
 	private String internalName;
 
-	private InvoiceRule invoiceRule;
+	private InvoiceRule customerInvoiceRule;
+	private InvoiceRule vendorInvoiceRule;
 
 	private String globalId;
 
@@ -182,7 +183,8 @@ public class BPartner
 			@Nullable final String url2,
 			@Nullable final String url3,
 			@Nullable final BPGroupId groupId,
-			@Nullable final InvoiceRule invoiceRule,
+			@Nullable final InvoiceRule customerInvoiceRule,
+			@Nullable final InvoiceRule vendorInvoiceRule,
 			@Nullable final Boolean vendor,
 			@Nullable final Boolean customer,
 			@Nullable final Boolean company,
@@ -221,7 +223,8 @@ public class BPartner
 		this.url2 = url2;
 		this.url3 = url3;
 		this.groupId = groupId;
-		this.invoiceRule = invoiceRule;
+		this.customerInvoiceRule = customerInvoiceRule;
+		this.vendorInvoiceRule = vendorInvoiceRule;
 		this.vendor = coalesce(vendor, false);
 		this.customer = coalesce(customer, false);
 		this.company = coalesce(company, false);
