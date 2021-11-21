@@ -6,6 +6,7 @@ import com.google.common.collect.Multimaps;
 import de.metas.distribution.ddorder.DDOrderId;
 import de.metas.distribution.ddorder.DDOrderLineId;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveSchedule;
+import de.metas.document.engine.DocStatus;
 import de.metas.organization.InstantAndOrgId;
 import de.metas.product.ProductId;
 import de.metas.user.UserId;
@@ -45,6 +46,7 @@ class DistributionJobLoader
 	private DistributionJob load0(final I_DD_Order ddOrder)
 	{
 		final DDOrderId ddOrderId = DDOrderId.ofRepoId(ddOrder.getDD_Order_ID());
+		final DocStatus docStatus = DocStatus.ofCode(ddOrder.getDocStatus());
 
 		final ZonedDateTime dateRequired = InstantAndOrgId.ofTimestamp(ddOrder.getDatePromised(), ddOrder.getAD_Org_ID())
 				.toZonedDateTime(loadingSupportServices::getTimeZone);
@@ -56,6 +58,7 @@ class DistributionJobLoader
 				.pickFromWarehouse(loadingSupportServices.getWarehouseInfoByRepoId(ddOrder.getM_Warehouse_From_ID()))
 				.dropToWarehouse(loadingSupportServices.getWarehouseInfoByRepoId(ddOrder.getM_Warehouse_To_ID()))
 				.responsibleId(UserId.ofRepoIdOrNullIfSystem(ddOrder.getAD_User_Responsible_ID()))
+				.isClosed(!docStatus.isCompleted()) // NOTE: we consider closed (for us) anything which is not completed
 				.lines(getDDOrderLines(ddOrderId)
 						.stream()
 						.map(this::toDistributionJobLine)
@@ -91,9 +94,10 @@ class DistributionJobLoader
 				.actualHUPicked(schedule.getActualHUIdPicked())
 				.qtyPicked(schedule.getQtyPicked())
 				.qtyNotPickedReasonCode(schedule.getQtyNotPickedReason())
+				.isPickedFromLocator(schedule.isPickedFrom())
 				//
 				// Drop To
-				.droppedToLocator(schedule.getDropToMovementLineId() != null)
+				.isDroppedToLocator(schedule.getDropToMovementLineId() != null)
 				//
 				.build();
 

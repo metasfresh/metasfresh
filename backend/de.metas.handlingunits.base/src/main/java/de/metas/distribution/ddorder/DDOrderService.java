@@ -5,10 +5,11 @@ import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.gui.search.IHUPackingAware;
 import de.metas.adempiere.gui.search.IHUPackingAwareBL;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelDAO;
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelService;
 import de.metas.distribution.ddorder.lowlevel.model.DDOrderLineHUPackingAware;
-import de.metas.bpartner.BPartnerLocationId;
+import de.metas.distribution.ddorder.lowlevel.model.I_DD_OrderLine_Or_Alternative;
 import de.metas.distribution.ddorder.movement.generate.DirectMovementsFromSchedulesGenerator;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveSchedule;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleService;
@@ -17,13 +18,17 @@ import de.metas.distribution.ddorder.movement.schedule.plan.DDOrderMovePlan;
 import de.metas.distribution.ddorder.movement.schedule.plan.DDOrderMovePlanCreateRequest;
 import de.metas.distribution.ddorder.producer.HUToDistribute;
 import de.metas.distribution.ddorder.producer.HUs2DDOrderProducer;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.inout.IHUInOutDAO;
+import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -37,10 +42,11 @@ import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
 import org.eevolution.model.I_DD_OrderLine_Alternative;
-import de.metas.distribution.ddorder.lowlevel.model.I_DD_OrderLine_Or_Alternative;
 import org.eevolution.model.X_DD_OrderLine;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
@@ -53,6 +59,7 @@ import java.util.stream.Stream;
 @Service
 public class DDOrderService
 {
+	private static final Logger logger = LogManager.getLogger(DDOrderService.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final IHUPackingAwareBL huPackingAwareBL = Services.get(IHUPackingAwareBL.class);
@@ -62,6 +69,7 @@ public class DDOrderService
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 	private final IHUAssignmentBL huAssignmentBL = Services.get(IHUAssignmentBL.class);
 	private final IHUInOutDAO huInOutDAO = Services.get(IHUInOutDAO.class);
+	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	private final DDOrderMoveScheduleService ddOrderMoveScheduleService;
 	private final SchedulesFromHUsGeneratorFactory schedulesFromHUsGeneratorFactory;
 
@@ -118,10 +126,16 @@ public class DDOrderService
 		return schedulesFromHUsGeneratorFactory;
 	}
 
+	public void close(@NonNull final DDOrderId ddOrderId)
+	{
+		final I_DD_Order ddOrder = getById(ddOrderId);
+		documentBL.processEx(ddOrder, IDocument.ACTION_Close, IDocument.STATUS_Closed);
+	}
+
 	public void closeLine(final I_DD_OrderLine ddOrderLine)
 	{
 		final DDOrderLineId ddOrderLineId = DDOrderLineId.ofRepoId(ddOrderLine.getDD_OrderLine_ID());
-		if(ddOrderMoveScheduleService.hasInProgressSchedules(ddOrderLineId))
+		if (ddOrderMoveScheduleService.hasInProgressSchedules(ddOrderLineId))
 		{
 			throw new AdempiereException("Cannot close a line when there are schedules in progress");
 		}
@@ -256,5 +270,38 @@ public class DDOrderService
 	public Quantity getQtyToShip(final I_DD_OrderLine_Or_Alternative ddOrderLineOrAlt)
 	{
 		return ddOrderLowLevelService.getQtyToShip(ddOrderLineOrAlt);
+	}
+
+	public void assignToResponsible(@NonNull final I_DD_Order ddOrder, @NonNull final UserId responsibleId)
+	{
+		final UserId currentResponsibleId = extractCurrentResponsibleId(ddOrder);
+		if (currentResponsibleId == null)
+		{
+			ddOrder.setAD_User_Responsible_ID(responsibleId.getRepoId());
+			save(ddOrder);
+		}
+		else if (!UserId.equals(currentResponsibleId, responsibleId))
+		{
+			throw new AdempiereException("DD Order already assigned to a different responsible");
+		}
+		else
+		{
+			// already assigned to that responsible,
+			// shall not happen but we can safely ignore the case
+			logger.warn("Order {} already assigned to {}", ddOrder.getDD_Order_ID(), responsibleId);
+		}
+	}
+
+	@Nullable
+	private static UserId extractCurrentResponsibleId(final I_DD_Order ddOrder)
+	{
+		return UserId.ofRepoIdOrNullIfSystem(ddOrder.getAD_User_Responsible_ID());
+	}
+
+	public void unassignFromResponsible(final DDOrderId ddOrderId)
+	{
+		final I_DD_Order ddOrder = getById(ddOrderId);
+		ddOrder.setAD_User_Responsible_ID(-1);
+		save(ddOrder);
 	}
 }

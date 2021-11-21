@@ -142,4 +142,16 @@ public class DistributionRestService
 			throw new AdempiereException("Cannot handle: " + event);
 		}
 	}
+
+	public DistributionJob complete(@NonNull final DistributionJob job)
+	{
+		final DDOrderId ddOrderId = job.getDdOrderId();
+		ddOrderService.close(ddOrderId);
+		return getJobById(ddOrderId);
+	}
+
+	public void abort(@NonNull final DistributionJob job)
+	{
+		ddOrderService.unassignFromResponsible(job.getDdOrderId());
+	}
 }

@@ -3,6 +3,7 @@ package de.metas.distribution.workflows_api;
 import com.google.common.collect.ImmutableList;
 import de.metas.distribution.ddorder.DDOrderId;
 import de.metas.distribution.rest_api.JsonDistributionEvent;
+import de.metas.distribution.workflows_api.activity_handlers.CompleteDistributionWFActivityHandler;
 import de.metas.distribution.workflows_api.activity_handlers.MoveWFActivityHandler;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.TranslatableStrings;
@@ -55,7 +56,7 @@ public class DistributionMobileApplication implements MobileApplication
 	@Override
 	public WorkflowLaunchersList provideLaunchers(final @NonNull UserId userId, final @NonNull QueryLimit suggestedLimit, final @NonNull Duration maxStaleAccepted)
 	{
-		return wfLaunchersProvider.provideLaunchers(userId, suggestedLimit, maxStaleAccepted);
+		return wfLaunchersProvider.provideLaunchers(userId, suggestedLimit);
 	}
 
 	@Override
@@ -81,14 +82,23 @@ public class DistributionMobileApplication implements MobileApplication
 								.id(WFActivityId.ofString("A1"))
 								.caption(TranslatableStrings.anyLanguage("Move"))
 								.wfActivityType(MoveWFActivityHandler.HANDLED_ACTIVITY_TYPE)
-								.build()))
+								.status(job.getStatus())
+								.build(),
+						WFActivity.builder()
+								.id(WFActivityId.ofString("A2"))
+								.caption(TranslatableStrings.anyLanguage("Complete"))
+								.wfActivityType(CompleteDistributionWFActivityHandler.HANDLED_ACTIVITY_TYPE)
+								.status(CompleteDistributionWFActivityHandler.computeActivityState(job))
+								.build()
+				))
 				.build();
 	}
 
 	@Override
 	public void abort(final WFProcessId wfProcessId, final UserId callerId)
 	{
-		throw new UnsupportedOperationException(); // TODO impl
+		final WFProcess wfProcess = getWFProcessById(wfProcessId);
+		distributionRestService.abort(wfProcess.getDocumentAs(DistributionJob.class));
 	}
 
 	@Override

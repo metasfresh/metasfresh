@@ -1,9 +1,10 @@
 package de.metas.distribution.workflows_api;
 
-import de.metas.handlingunits.HuId;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleId;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.picking.QtyRejectedReasonCode;
 import de.metas.quantity.Quantity;
+import de.metas.workflow.rest_api.model.WFActivityStatus;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -22,10 +23,13 @@ public class DistributionJobStep
 	@Nullable HuId actualHUPicked;
 	@NonNull Quantity qtyPicked;
 	@Nullable QtyRejectedReasonCode qtyNotPickedReasonCode;
+	boolean isPickedFromLocator;
 
 	//
 	// Drop To
-	boolean droppedToLocator;
+	boolean isDroppedToLocator;
+
+	@NonNull WFActivityStatus status;
 
 	@Builder
 	private DistributionJobStep(
@@ -36,8 +40,9 @@ public class DistributionJobStep
 			@Nullable final HuId actualHUPicked,
 			@NonNull final Quantity qtyPicked,
 			@Nullable final QtyRejectedReasonCode qtyNotPickedReasonCode,
+			final boolean isPickedFromLocator,
 			//
-			final boolean droppedToLocator)
+			final boolean isDroppedToLocator)
 	{
 		Quantity.assertSameUOM(qtyToMoveTarget, qtyPicked);
 
@@ -47,6 +52,21 @@ public class DistributionJobStep
 		this.actualHUPicked = actualHUPicked;
 		this.qtyPicked = qtyPicked;
 		this.qtyNotPickedReasonCode = qtyNotPickedReasonCode;
-		this.droppedToLocator = droppedToLocator;
+		this.isPickedFromLocator = isPickedFromLocator;
+		this.isDroppedToLocator = isDroppedToLocator;
+
+		this.status = computeStatus(this.isPickedFromLocator, this.isDroppedToLocator);
+	}
+
+	private static WFActivityStatus computeStatus(final boolean isPickedFromLocator, final boolean isDroppedToLocator)
+	{
+		if (isPickedFromLocator)
+		{
+			return isDroppedToLocator ? WFActivityStatus.COMPLETED : WFActivityStatus.IN_PROGRESS;
+		}
+		else
+		{
+			return WFActivityStatus.NOT_STARTED;
+		}
 	}
 }
