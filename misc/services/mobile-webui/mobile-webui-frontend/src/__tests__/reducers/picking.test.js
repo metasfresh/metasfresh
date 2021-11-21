@@ -15,7 +15,7 @@ const stepId = '1000001';
 
 describe('picking unit tests', () => {
   describe('generate alternative steps function', () => {
-    it.skip('should generate no steps when called with zero quantity to allocate', () => {
+    it('should generate no steps when called with zero quantity to allocate', () => {
       const initialState = produce(rawstateJson, (draftState) => {
         const draftStateWFProcesses = draftState['wfProcesses_status'];
         const dataStored = draftStateWFProcesses[wfProcessId].activities[activityId].dataStored;
@@ -38,7 +38,7 @@ describe('picking unit tests', () => {
       expect(genSteps).toMatchObject({});
     });
 
-    it.skip('should generate one step when called with quantity to allocate smaller than the qty available in the first available step from the pool', () => {
+    it('should generate one step when called with quantity to allocate smaller than the qty available in the first available step from the pool', () => {
       const initialState = produce(rawstateJson, (draftState) => {
         const draftStateWFProcesses = draftState['wfProcesses_status'];
         const dataStored = draftStateWFProcesses[wfProcessId].activities[activityId].dataStored;
@@ -68,7 +68,7 @@ describe('picking unit tests', () => {
       expect(genSteps['1000019'].qtyAvailable).toEqual(30);
     });
 
-    it.skip('should generate three steps when called with higher quantity to allocate (i.e. 500)', () => {
+    it('should generate three steps when called with higher quantity to allocate (i.e. 500)', () => {
       const initialState = produce(rawstateJson, (draftState) => {
         const draftStateWFProcesses = draftState['wfProcesses_status'];
         const dataStored = draftStateWFProcesses[wfProcessId].activities[activityId].dataStored;
@@ -100,6 +100,7 @@ describe('picking unit tests', () => {
       expect(genSteps['1000019'].qtyAvailable).toEqual(320);
       expect(genSteps['1000020'].qtyAvailable).toEqual(20);
       expect(genSteps['1000021'].qtyAvailable).toEqual(160);
+
     });
 
     it('should generate correct steps when receiving data fromActivity', () => {
@@ -110,20 +111,33 @@ describe('picking unit tests', () => {
       const { lines } = dataStored;
       const { steps } = lines[0];
 
-      const targetStep = steps['1000040'];
+      const targetStep = steps['1000000'];
 
-      expect(targetStep.qtyPicked).toEqual(2);
-      expect(targetStep.mainPickFrom.qtyRejected).toEqual(53);
+      expect(targetStep.qtyPicked).toEqual(8);
+      expect(targetStep.mainPickFrom.qtyRejected).toEqual(40);
 
       const { genSteps } = targetStep.altSteps;
-      console.log('targetStep:', targetStep.altSteps.genSteps);
+      // console.log('targetStep:', targetStep.altSteps.genSteps);
 
       // The generated steps for the ones flagged by the BE with already picked qtys should be present
-      expect(genSteps['1000488'].qtyAvailable).toEqual(14);
-      expect(genSteps['1000488'].qtyPicked).toEqual(4);
+      expect(genSteps['1000000'].qtyAvailable).toEqual(10);
+      expect(genSteps['1000000'].qtyPicked).toEqual(8);
 
-      expect(genSteps['1000489'].qtyAvailable).toEqual(5);
-      expect(genSteps['1000489'].qtyPicked).toEqual(1);
+      // remaining dyn generated altsteps
+      expect(genSteps['1000001'].qtyAvailable).toEqual(4);
+      expect(genSteps['1000001'].qtyPicked).toEqual(0);
+
+      expect(genSteps['1000002'].qtyAvailable).toEqual(12);
+      expect(genSteps['1000002'].qtyPicked).toEqual(0);
+
+      expect(genSteps['1000003'].qtyAvailable).toEqual(5);
+      expect(genSteps['1000003'].qtyPicked).toEqual(0);
+
+      expect(genSteps['1000004'].qtyAvailable).toEqual(5);
+      expect(genSteps['1000004'].qtyPicked).toEqual(0);
+
+      expect(genSteps['1000005'].qtyAvailable).toEqual(4);
+      expect(genSteps['1000005'].qtyPicked).toEqual(0);
 
       // expect to have the alternative steps for which we already picked present
 
