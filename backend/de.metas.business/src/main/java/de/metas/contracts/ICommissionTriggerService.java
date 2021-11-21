@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.elasticsearch
+ * de.metas.business
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,25 +20,14 @@
  * #L%
  */
 
-package de.metas.fulltextsearch.query;
+package de.metas.contracts;
 
-import de.metas.fulltextsearch.config.FTSFilterDescriptor;
-import de.metas.security.UserRolePermissionsKey;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
+import de.metas.invoice.InvoiceId;
 
-import javax.annotation.Nullable;
-
-@Value
-@Builder
-public class FTSSearchRequest
+/**
+ * Note: we have this interface, because the implementation is in de.metas.contract and we need to use it here.
+ */
+public interface ICommissionTriggerService
 {
-	@NonNull String searchId;
-	@NonNull String searchText;
-	@NonNull String esIndexName;
-
-	@Nullable UserRolePermissionsKey userRolePermissionsKey;
-
-	@NonNull FTSFilterDescriptor filterDescriptor;
+	boolean isContainsCommissionTriggers(InvoiceId invoiceId);
 }

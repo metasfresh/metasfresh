@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.elasticsearch
+ * de.metas.business
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,10 +20,11 @@
  * #L%
  */
 
-package de.metas.fulltextsearch.query;
+package de.metas.bpartner.composite.repository;
 
-import de.metas.fulltextsearch.config.FTSFilterDescriptor;
-import de.metas.security.UserRolePermissionsKey;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.composite.BPartnerContact;
+import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -32,13 +33,17 @@ import javax.annotation.Nullable;
 
 @Value
 @Builder
-public class FTSSearchRequest
+public class BPartnerContactSaveRequest
 {
-	@NonNull String searchId;
-	@NonNull String searchText;
-	@NonNull String esIndexName;
+	@NonNull
+	final BPartnerId bpartnerId;
+	@NonNull
+	final BPartnerContact contact;
+	@Nullable
+	final OrgId orgId;
 
-	@Nullable UserRolePermissionsKey userRolePermissionsKey;
-
-	@NonNull FTSFilterDescriptor filterDescriptor;
+	/**
+	 * Use-Case for {@code false}: when transferring a customer to another org, the user who does the transfer might not have access to the target-org.
+	 */
+	boolean validatePermissions;
 }
