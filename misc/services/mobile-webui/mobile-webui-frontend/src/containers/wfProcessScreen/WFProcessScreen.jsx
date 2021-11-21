@@ -9,7 +9,7 @@ import { activitiesNotStarted, selectWFProcessFromState } from '../../reducers/w
 import ScanActivity from '../activities/scan/ScanActivity';
 import PickProductsActivity from '../activities/picking/PickProductsActivity';
 import ConfirmActivity from '../activities/confirmButton/ConfirmActivity';
-import RawMaterialsIssueActivity from '../activities/manufacturing/RawMaterialsIssueActivity';
+import RawMaterialIssueActivity from '../activities/manufacturing/RawMaterialIssueActivity';
 import MaterialReceiptActivity from '../activities/manufacturing/MaterialReceiptActivity';
 import DistributionMoveActivity from '../activities/distribution/DistributionMoveActivity';
 import AbortButton from './AbortButton';
@@ -61,7 +61,7 @@ class WFProcessScreen extends PureComponent {
                     );
                   case 'manufacturing/rawMaterialsIssue':
                     return (
-                      <RawMaterialsIssueActivity
+                      <RawMaterialIssueActivity
                         key={activityItem.activityId}
                         id={activityItem.activityId}
                         wfProcessId={wfProcessId}

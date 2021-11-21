@@ -7,7 +7,7 @@ import StepButton from '../common/StepButton';
 import Indicator from '../../../components/Indicator';
 import * as CompleteStatus from '../../../constants/CompleteStatus';
 
-class DistributionStepButton extends PureComponent {
+class RawMaterialIssueStepButton extends PureComponent {
   handleClick = () => {
     const { locatorName, location, dispatch, onHandleClick } = this.props;
 
@@ -26,38 +26,25 @@ class DistributionStepButton extends PureComponent {
   };
 
   render() {
-    const {
-      lineId,
-      locatorName,
-      uom,
-      stepState: { qtyPicked, completeStatus },
-      qtyToMove,
-    } = this.props;
+    const { lineId, productName, uom, qtyIssued, qtyToIssue, completeStatus } = this.props;
 
     return (
       <div className="mt-3">
-        <button
-          key={lineId}
-          className="button is-outlined complete-btn pick-higher-btn"
-          onClick={() => this.handleClick()}
-        >
+        <button key={lineId} className="button is-outlined complete-btn pick-higher-btn" onClick={this.handleClick}>
           <div className="full-size-btn">
             <div className="left-btn-side" />
-
             <div className="caption-btn">
               <div className="rows">
-                <div className="row is-full pl-5">{locatorName}</div>
+                <div className="row is-full pl-5">{productName}</div>
                 <div className="row is-full is-size-7">
                   <div className="picking-row-info">
-                    <div className="picking-to-pick">{counterpart.translate('activities.distribution.target')}:</div>
+                    <div className="picking-to-pick">{counterpart.translate('activities.mfg.issues.toIssue')}:</div>
                     <div className="picking-row-qty">
-                      {qtyToMove} {uom}
+                      {qtyToIssue} {uom}
                     </div>
-                    <div className="picking-row-picking">
-                      {counterpart.translate('activities.distribution.picked')}:
-                    </div>
+                    <div className="picking-row-picking">{counterpart.translate('activities.mfg.issues.issued')}:</div>
                     <div className="picking-row-picked">
-                      {qtyPicked} {uom}
+                      {qtyIssued} {uom}
                     </div>
                   </div>
                 </div>
@@ -74,7 +61,7 @@ class DistributionStepButton extends PureComponent {
   }
 }
 
-DistributionStepButton.propTypes = {
+RawMaterialIssueStepButton.propTypes = {
   //
   // Props
   wfProcessId: PropTypes.string.isRequired,
@@ -83,16 +70,15 @@ DistributionStepButton.propTypes = {
   stepId: PropTypes.string.isRequired,
   productName: PropTypes.string.isRequired,
   locatorName: PropTypes.string.isRequired,
-  huBarcode: PropTypes.string,
   uom: PropTypes.string,
-  qtyPicked: PropTypes.number,
-  qtyToMove: PropTypes.number.isRequired,
-  stepState: PropTypes.object,
+  qtyIssued: PropTypes.number,
+  qtyToIssue: PropTypes.number.isRequired,
+  location: PropTypes.object,
   onHandleClick: PropTypes.func.isRequired,
-  location: PropTypes.object.isRequired,
+  completeStatus: PropTypes.string,
   //
   // Actions
   dispatch: PropTypes.func.isRequired,
 };
 
-export default StepButton(DistributionStepButton);
+export default StepButton(RawMaterialIssueStepButton);

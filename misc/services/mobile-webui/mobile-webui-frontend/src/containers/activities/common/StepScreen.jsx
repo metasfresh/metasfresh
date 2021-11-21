@@ -8,6 +8,7 @@ import { selectWFProcessFromState } from '../../../reducers/wfProcesses_status';
 import ScreenToaster from '../../../components/ScreenToaster';
 import PickStepScreen from '../picking/PickStepScreen';
 import DistributionStepScreen from '../distribution/DistributionStepScreen';
+import MaterialIssueStepScreen from '../manufacturing/RawMaterialIssueStepScreen';
 
 const getStepComponent = (appId) => {
   switch (appId) {
@@ -15,6 +16,8 @@ const getStepComponent = (appId) => {
       return PickStepScreen;
     case 'distribution':
       return DistributionStepScreen;
+    case 'mfg':
+      return MaterialIssueStepScreen;
     default:
       return null;
   }
@@ -34,12 +37,12 @@ class StepScreen extends PureComponent {
 
   render() {
     const { appId } = this.props;
-    const StepScreenComponent = getStepComponent(appId);
+    const StepComponent = getStepComponent(appId);
 
     return (
       <div className="pt-3 section picking-step-container">
         <div className="picking-step-details centered-text is-size-5">
-          <StepScreenComponent {...this.props} onScanButtonClick={this.onScanButtonClick} />
+          <StepComponent {...this.props} onScanButtonClick={this.onScanButtonClick} />
           <ScreenToaster />
         </div>
       </div>

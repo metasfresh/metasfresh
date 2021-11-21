@@ -75,6 +75,10 @@ export const setupCounterpart = () => {
         ProductName: 'Product Name',
         target: 'To issue',
         picked: 'Issued',
+        issues: {
+          toIssue: 'To issue',
+          issued: 'Issued',
+        },
         receipts: {
           pickPromptTitle: 'Quantity to receive',
           receiveTarget: 'Receive target',

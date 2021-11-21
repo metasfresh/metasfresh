@@ -2,13 +2,15 @@ import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { push } from 'connected-react-router';
+import { withRouter } from 'react-router';
 
 const mapStateToProps = (state, ownProps) => {
-  const { wfProcessId, activityId, lineId, stepId } = ownProps;
+  const { wfProcessId, activityId, lineId, stepId, location } = ownProps;
 
   return {
     stepState: state.wfProcesses_status[wfProcessId].activities[activityId].dataStored.lines[lineId].steps[stepId],
     appId: state.applications.activeApplication ? state.applications.activeApplication.id : null,
+    location,
   };
 };
 
@@ -34,13 +36,13 @@ function StepButton(WrappedComponent) {
     activityId: PropTypes.string.isRequired,
     lineId: PropTypes.string.isRequired,
     stepId: PropTypes.string.isRequired,
-
+    location: PropTypes.object.isRequired,
     //
     // Actions
     dispatch: PropTypes.func.isRequired,
   };
 
-  return connect(mapStateToProps)(Wrapped);
+  return withRouter(connect(mapStateToProps)(Wrapped));
 }
 
 export default StepButton;

@@ -1,4 +1,5 @@
 import * as types from '../../constants/ManufacturingActionTypes';
+import * as CompleteStatus from '../../constants/CompleteStatus';
 import { registerHandler } from './activityStateHandlers';
 import { computeLineStatus, updateActivityStatusFromLines } from './picking';
 
@@ -17,23 +18,49 @@ export const manufacturingReducer = ({ draftState, action }) => {
 };
 
 const reduceOnUpdateQtyPicked = (draftState, payload) => {
-  const { wfProcessId, activityId, lineId, qtyPicked } = payload;
+  const { wfProcessId, activityId, lineId, stepId, qtyPicked } = payload;
 
   const draftWFProcess = draftState[wfProcessId];
   const draftActivityLine = draftWFProcess.activities[activityId].dataStored.lines[lineId];
 
   draftActivityLine.qtyIssued = qtyPicked;
 
-  updateLineStatus({
+  updateStepStatus({
     draftWFProcess,
     activityId,
     lineId,
+    stepId,
   });
 
   return draftState;
 };
 
-const updateLineStatus = ({ draftWFProcess, activityId, lineId }) => {
+const updateStepStatus = ({ draftWFProcess, activityId, lineId, stepId }) => {
+  const draftStep = draftWFProcess.activities[activityId].dataStored.lines[lineId].steps[stepId];
+
+  draftStep.completeStatus = computeStepStatus({ draftStep });
+  console.log(`Update step [${activityId} ${lineId} ${stepId} ]: completeStatus=${draftStep.completeStatus}`);
+
+  //
+  // Rollup:
+  updateLineStatusFromSteps({ draftWFProcess, activityId, lineId });
+};
+
+const computeStepStatus = ({ draftStep }) => {
+  console.log('qtyPicked=', draftStep.qtyPicked);
+  console.log('qtyToMove=', draftStep.qtyToMove);
+  console.log('   => diff=', draftStep.qtyToMove - draftStep.qtyPicked === 0);
+
+  const isStepCompleted =
+    // Barcode is set
+    !!(draftStep.actualHUPicked && draftStep.locatorBarcode) &&
+    // and is completely picked or a reject code is set
+    (draftStep.qtyToMove - draftStep.qtyPicked === 0 || !!draftStep.qtyRejectedReasonCode);
+
+  return isStepCompleted ? CompleteStatus.COMPLETED : CompleteStatus.NOT_STARTED;
+};
+
+const updateLineStatusFromSteps = ({ draftWFProcess, activityId, lineId }) => {
   const draftLine = draftWFProcess.activities[activityId].dataStored.lines[lineId];
   draftLine.completeStatus = computeLineStatus({ draftLine });
   console.log(`Update line [${activityId} ${lineId} ]: completeStatus=${draftLine.completeStatus}`);
@@ -43,12 +70,25 @@ const updateLineStatus = ({ draftWFProcess, activityId, lineId }) => {
   updateActivityStatusFromLines({ draftWFProcess, activityId });
 };
 
+const normalizeLines = (lines) => {
+  return lines.map((line) => {
+    return {
+      ...line,
+      steps: line.steps.reduce((accum, step) => {
+        accum[step.id] = step;
+        return accum;
+      }, {}),
+    };
+  });
+};
+
 registerHandler({
   componentType: COMPONENT_TYPE,
   normalizeComponentProps: ({ componentProps }) => {
     console.log('normalizeComponentProps for ', componentProps);
     return {
       ...componentProps,
+      lines: normalizeLines(componentProps.lines),
     };
   },
   computeActivityDataStoredInitialValue: ({ componentProps }) => {

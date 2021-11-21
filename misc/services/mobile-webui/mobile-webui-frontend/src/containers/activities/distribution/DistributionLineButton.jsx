@@ -53,6 +53,7 @@ DistributionLineButton.propTypes = {
   qtyToMove: PropTypes.number.isRequired,
   appId: PropTypes.string.isRequired,
   onHandleClick: PropTypes.func.isRequired,
+  location: PropTypes.object.isRequired,
   //
   // Actions
   dispatch: PropTypes.func.isRequired,

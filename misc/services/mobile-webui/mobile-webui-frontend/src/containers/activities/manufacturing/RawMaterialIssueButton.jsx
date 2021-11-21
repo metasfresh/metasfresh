@@ -33,9 +33,7 @@ class RawMaterialIssueButton extends PureComponent {
   };
 
   validateQtyInput = (numberInput) => {
-    const {
-      line: { qtyToIssue },
-    } = this.props;
+    const { qtyToIssue } = this.props;
 
     return numberInput >= 0 && numberInput <= qtyToIssue;
   };
@@ -45,9 +43,7 @@ class RawMaterialIssueButton extends PureComponent {
   hideDialog = () => this.setState({ isDialogOpen: false });
 
   render() {
-    const {
-      line: { productName, qtyIssued, qtyToIssue, uom, completeStatus },
-    } = this.props;
+    const { productName, qtyIssued, qtyToIssue, uom, completeStatus } = this.props;
     const { isDialogOpen } = this.state;
 
     return (
@@ -96,7 +92,7 @@ RawMaterialIssueButton.propTypes = {
   //
   // Props
   onClick: PropTypes.func.isRequired,
-  line: PropTypes.object.isRequired,
+  // line: PropTypes.object.isRequired,
 };
 
 export default RawMaterialIssueButton;
