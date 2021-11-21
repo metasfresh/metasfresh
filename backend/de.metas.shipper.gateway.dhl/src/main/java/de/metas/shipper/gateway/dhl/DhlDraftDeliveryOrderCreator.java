@@ -262,7 +262,7 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 
 		if (packingMaterial == null)
 		{
-			throw new AdempiereException("There is no packing material for the package: " + packageId + ". Please create a packing material and set its correct dimensions.");
+			throw new AdempiereException("There is no packing material for M_Package_HU_ID=" + packageId.getRepoId() + ". Please create a packing material and set its correct dimensions.");
 		}
 
 		return packingMaterialDAO.retrievePackageDimensions(packingMaterial, toUomId);
