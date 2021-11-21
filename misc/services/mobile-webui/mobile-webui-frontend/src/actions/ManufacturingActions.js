@@ -8,15 +8,44 @@ import {
 import { selectWFProcessFromState } from '../reducers/wfProcesses_status';
 import { manufacturingReceiptReqest } from '../api/manufacturing';
 
-export function updateManufacturingIssueQty({ wfProcessId, activityId, lineId, qtyPicked }) {
+export function updateManufacturingIssueQty({ wfProcessId, activityId, lineId, stepId, qtyPicked }) {
   return {
     type: UPDATE_MANUFACTURING_ISSUE_QTY,
     payload: {
       wfProcessId,
       activityId,
       lineId,
+      stepId,
       qtyPicked,
     },
+  };
+}
+
+export function updateManufacturingIssue({ wfProcessId, activityId, lineId, stepId }) {
+  return (dispatch, getState) => {
+    const state = getState();
+
+    const wfProcess = selectWFProcessFromState(state, wfProcessId);
+    const activity = wfProcess && wfProcess.activities ? wfProcess.activities[activityId] : null;
+    const line = activity != null ? activity.dataStored.lines[lineId] : null;
+
+    if (line) {
+      const step = line.steps[stepId];
+      const { id, huBarcode, qtyIssued, qtyRejected, qtyRejectedReasonCode } = step;
+      const receiptObject = {
+        issueTo: {
+          issueStepId: id,
+          huBarcode,
+          qtyIssued,
+          qtyRejected,
+          qtyRejectedReasonCode,
+        },
+      };
+
+      return manufacturingReceiptReqest({ wfProcessId, activityId, receiptObject });
+    } else {
+      return Promise.reject('No line found');
+    }
   };
 }
 

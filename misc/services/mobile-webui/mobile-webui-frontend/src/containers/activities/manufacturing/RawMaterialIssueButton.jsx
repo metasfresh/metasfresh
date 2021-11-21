@@ -45,6 +45,7 @@ class RawMaterialIssueButton extends PureComponent {
   render() {
     const { productName, qtyIssued, qtyToIssue, uom, completeStatus } = this.props;
     const { isDialogOpen } = this.state;
+    const issuedAmount = qtyIssued || 0;
 
     return (
       <div>
@@ -70,7 +71,7 @@ class RawMaterialIssueButton extends PureComponent {
                       </div>
                       <div className="picking-row-picking">{counterpart.translate('activities.mfg.picked')}:</div>
                       <div className="picking-row-picked">
-                        {qtyIssued} {uom}
+                        {issuedAmount} {uom}
                       </div>
                     </div>
                   </div>
@@ -92,7 +93,11 @@ RawMaterialIssueButton.propTypes = {
   //
   // Props
   onClick: PropTypes.func.isRequired,
-  // line: PropTypes.object.isRequired,
+  productName: PropTypes.string.isRequired,
+  qtyIssued: PropTypes.number.isRequired,
+  qtyToIssue: PropTypes.number.isRequired,
+  uom: PropTypes.string.isRequired,
+  completeStatus: PropTypes.string,
 };
 
 export default RawMaterialIssueButton;

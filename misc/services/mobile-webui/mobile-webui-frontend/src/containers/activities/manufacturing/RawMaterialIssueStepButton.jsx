@@ -2,27 +2,28 @@ import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import counterpart from 'counterpart';
 
-import { pushHeaderEntry } from '../../../actions/HeaderActions';
+// import { pushHeaderEntry } from '../../../actions/HeaderActions';
 import StepButton from '../common/StepButton';
 import Indicator from '../../../components/Indicator';
 import * as CompleteStatus from '../../../constants/CompleteStatus';
 
 class RawMaterialIssueStepButton extends PureComponent {
   handleClick = () => {
-    const { locatorName, location, dispatch, onHandleClick } = this.props;
+    const { /*locatorName, location, dispatch,*/ onHandleClick } = this.props;
 
     onHandleClick();
-    dispatch(
-      pushHeaderEntry({
-        location,
-        values: [
-          {
-            caption: counterpart.translate('general.Locator'),
-            value: locatorName,
-          },
-        ],
-      })
-    );
+    // TODO: Figure out why it's not cleared
+    // dispatch(
+    //   pushHeaderEntry({
+    //     location,
+    //     values: [
+    //       {
+    //         caption: counterpart.translate('general.Locator'),
+    //         value: locatorName,
+    //       },
+    //     ],
+    //   })
+    // );
   };
 
   render() {

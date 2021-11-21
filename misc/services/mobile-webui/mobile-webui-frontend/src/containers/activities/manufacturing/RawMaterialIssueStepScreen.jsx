@@ -1,42 +1,44 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import counterpart from 'counterpart';
+// import counterpart from 'counterpart';
 import { go } from 'connected-react-router';
 
-import { updateManufacturingIssueQty } from '../../../actions/ManufacturingActions';
-import { pushHeaderEntry } from '../../../actions/HeaderActions';
+import { updateManufacturingIssueQty, updateManufacturingIssue } from '../../../actions/ManufacturingActions';
+// import { pushHeaderEntry } from '../../../actions/HeaderActions';
 import IssueQuantityButton from './RawMaterialIssueButton';
 
 class RawMaterialIssueStepScreen extends Component {
-  componentDidMount() {
-    const {
-      stepProps: { huBarcode, qtyToIssue },
-      location,
-      dispatch,
-    } = this.props;
+  // componentDidMount() {
+  //   const {
+  //     stepProps: { huBarcode, qtyToIssue },
+  //     location,
+  //     dispatch,
+  //   } = this.props;
 
-    dispatch(
-      pushHeaderEntry({
-        location,
-        values: [
-          {
-            caption: counterpart.translate('general.Barcode'),
-            value: huBarcode,
-          },
-          {
-            caption: counterpart.translate('activities.mfg.issues.toIssue'),
-            value: qtyToIssue,
-          },
-        ],
-      })
-    );
-  }
+  //   dispatch(
+  //     pushHeaderEntry({
+  //       location,
+  //       values: [
+  //         {
+  //           caption: counterpart.translate('general.Barcode'),
+  //           value: huBarcode,
+  //         },
+  //         {
+  //           caption: counterpart.translate('activities.mfg.issues.toIssue'),
+  //           value: qtyToIssue,
+  //         },
+  //       ],
+  //     })
+  //   );
+  // }
 
   handleClick = (qtyPicked) => {
     const { dispatch, wfProcessId, activityId, lineId, stepId } = this.props;
 
     dispatch(updateManufacturingIssueQty({ wfProcessId, activityId, lineId, stepId, qtyPicked }));
-    dispatch(go(-1));
+    dispatch(updateManufacturingIssue({ wfProcessId, activityId, lineId, stepId })).then(() => {
+      dispatch(go(-1));
+    });
   };
 
   render() {

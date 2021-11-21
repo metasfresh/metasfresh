@@ -21,9 +21,9 @@ const reduceOnUpdateQtyPicked = (draftState, payload) => {
   const { wfProcessId, activityId, lineId, stepId, qtyPicked } = payload;
 
   const draftWFProcess = draftState[wfProcessId];
-  const draftActivityLine = draftWFProcess.activities[activityId].dataStored.lines[lineId];
+  const draftActivityStep = draftWFProcess.activities[activityId].dataStored.lines[lineId].steps[stepId];
 
-  draftActivityLine.qtyIssued = qtyPicked;
+  draftActivityStep.qtyIssued = qtyPicked;
 
   updateStepStatus({
     draftWFProcess,
@@ -47,15 +47,13 @@ const updateStepStatus = ({ draftWFProcess, activityId, lineId, stepId }) => {
 };
 
 const computeStepStatus = ({ draftStep }) => {
-  console.log('qtyPicked=', draftStep.qtyPicked);
-  console.log('qtyToMove=', draftStep.qtyToMove);
-  console.log('   => diff=', draftStep.qtyToMove - draftStep.qtyPicked === 0);
+  console.log('qtyIssued=', draftStep.qtyIssued);
+  console.log('qtyToIssue=', draftStep.qtyToIssue);
+  console.log('   => diff=', draftStep.qtyToIssue - draftStep.qtyIssued === 0);
 
   const isStepCompleted =
-    // Barcode is set
-    !!(draftStep.actualHUPicked && draftStep.locatorBarcode) &&
-    // and is completely picked or a reject code is set
-    (draftStep.qtyToMove - draftStep.qtyPicked === 0 || !!draftStep.qtyRejectedReasonCode);
+    // is completely picked or a reject code is set
+    draftStep.qtyToIssue - draftStep.qtyIssued === 0 || !!draftStep.qtyRejectedReasonCode;
 
   return isStepCompleted ? CompleteStatus.COMPLETED : CompleteStatus.NOT_STARTED;
 };
