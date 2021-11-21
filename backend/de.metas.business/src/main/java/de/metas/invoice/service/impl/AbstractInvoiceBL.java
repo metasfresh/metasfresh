@@ -25,6 +25,7 @@ import de.metas.costing.impl.ChargeRepository;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.CurrencyRepository;
+import de.metas.document.DocBaseAndSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.ICopyHandlerBL;
@@ -1483,7 +1484,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		return isInvoice(docBaseType);
 	}
 
-	private final boolean isInvoice(final String docBaseType)
+	private boolean isInvoice(final String docBaseType)
 	{
 		final InvoiceDocBaseType invoiceDocBaseType = InvoiceDocBaseType.ofNullableCode(docBaseType);
 		return invoiceDocBaseType != null && (invoiceDocBaseType.equals(InvoiceDocBaseType.CustomerInvoice) || invoiceDocBaseType.equals(InvoiceDocBaseType.VendorInvoice));
@@ -1620,12 +1621,15 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	}
 
 	@Override
-	public final de.metas.adempiere.model.I_C_Invoice adjustmentCharge(final org.compiere.model.I_C_Invoice invoice, final String docSubType)
+	public final de.metas.adempiere.model.I_C_Invoice adjustmentCharge(@NonNull final AdjustmentChargeCreateRequest adjustmentChargeCreateRequest)
 	{
-		final String docbasetype = X_C_DocType.DOCBASETYPE_ARInvoice;
+		final org.compiere.model.I_C_Invoice invoice = getById(adjustmentChargeCreateRequest.getInvoiceID());
+		final DocBaseAndSubType docBaseAndSubType = adjustmentChargeCreateRequest.getDocBaseAndSubTYpe();
+		final Boolean isSOTrx = adjustmentChargeCreateRequest.getIsSOTrx();
+
 		final DocTypeId targetDocTypeID = Services.get(IDocTypeDAO.class).getDocTypeId(DocTypeQuery.builder()
-				.docBaseType(docbasetype)
-				.docSubType(docSubType)
+				.docBaseType(docBaseAndSubType.getDocBaseType())
+				.docSubType(docBaseAndSubType.getDocSubType())
 				.adClientId(invoice.getAD_Client_ID())
 				.adOrgId(invoice.getAD_Org_ID())
 				.build());
@@ -1634,7 +1638,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 						invoice,
 						SystemTime.asTimestamp(),
 						targetDocTypeID.getRepoId(),
-						invoice.isSOTrx(),
+						isSOTrx == null ? invoice.isSOTrx() : isSOTrx,
 						false, // counter == false
 						true, // setOrderRef == true
 						true, // setInvoiceRef == true
