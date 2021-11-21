@@ -47,6 +47,7 @@ import de.metas.externalsystem.shopware6.ExternalSystemShopware6Config;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6ConfigId;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6ConfigMapping;
 import de.metas.externalsystem.shopware6.UOMShopwareMapping;
+import de.metas.externalsystem.shopware6.ProductLookup;
 import de.metas.externalsystem.woocommerce.ExternalSystemWooCommerceConfig;
 import de.metas.externalsystem.woocommerce.ExternalSystemWooCommerceConfigId;
 import de.metas.organization.OrgId;
@@ -405,6 +406,7 @@ public class ExternalSystemConfigRepo
 				.salesRepJSONPath(config.getJSONPathSalesRepID())
 				.isActive(config.isActive())
 				.value(config.getExternalSystemValue())
+				.productLookup(ProductLookup.ofCode(config.getProductLookup()))
 				.build();
 	}
 
@@ -585,6 +587,8 @@ public class ExternalSystemConfigRepo
 		record.setM_PriceList_ID(NumberUtils.asInteger(config.getPriceListId(), -1));
 		record.setIsActive(config.getIsActive());
 		record.setExternalSystemValue(config.getValue());
+
+		record.setProductLookup(config.getProductLookup().getCode());
 
 		if (config.getFreightCostNormalVatConfig() != null)
 		{

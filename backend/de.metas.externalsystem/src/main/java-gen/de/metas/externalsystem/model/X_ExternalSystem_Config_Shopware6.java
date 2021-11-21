@@ -228,4 +228,25 @@ public class X_ExternalSystem_Config_Shopware6 extends org.compiere.model.PO imp
 	{
 		return get_ValueAsInt(COLUMNNAME_M_PriceList_ID);
 	}
+
+	/** 
+	 * ProductLookup AD_Reference_ID=541499
+	 * Reference name: _ProductLookup
+	 */
+	public static final int PRODUCTLOOKUP_AD_Reference_ID=541499;
+	/** Product Id = ProductId */
+	public static final String PRODUCTLOOKUP_ProductId = "ProductId";
+	/** Product Number = ProductNumber */
+	public static final String PRODUCTLOOKUP_ProductNumber = "ProductNumber";
+	@Override
+	public void setProductLookup (final java.lang.String ProductLookup)
+	{
+		set_Value (COLUMNNAME_ProductLookup, ProductLookup);
+	}
+
+	@Override
+	public java.lang.String getProductLookup() 
+	{
+		return get_ValueAsString(COLUMNNAME_ProductLookup);
+	}
 }

@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-camel-shopware6
+ * de.metas.swat.base
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,33 +20,28 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.shopware6.api.model.order;
+package de.metas.invoicecandidate.api.impl;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
+import de.metas.adempiere.model.I_C_InvoiceLine;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.quantity.StockQtyAndUOMQty;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
 
 @Value
 @Builder
-@JsonDeserialize(builder = JsonOrderLinePayload.JsonOrderLinePayloadBuilder.class)
-public class JsonOrderLinePayload
+public class InvoiceCandidateAllocCreateRequest
 {
+	@NonNull
+	final I_C_Invoice_Candidate invoiceCand;
+	@NonNull final I_C_InvoiceLine invoiceLine;
+	@NonNull final StockQtyAndUOMQty qtysInvoiced;
 	@Nullable
-	@JsonProperty("isBundle")
-	Boolean isBundle;
+	final String note;
 
-	@Nullable
-	@JsonProperty("productNumber")
-	String productNumber;
-	
-	@JsonIgnoreProperties(ignoreUnknown = true)
-	@JsonPOJOBuilder(withPrefix = "")
-	static class JsonOrderLinePayloadBuilder
-	{
-	}
+	@NonNull InvoiceLineAllocType invoiceLineAllocType;
+
 }

@@ -119,6 +119,8 @@ public class DocumentEntityDescriptor
 	private final ILogicExpression displayLogic;
 	@Getter
 	private final boolean allowQuickInput;
+	@Getter
+	private final boolean autodetectDefaultDateFilter;
 
 	private final ImmutableMap<String, DocumentFieldDescriptor> fields;
 	@Getter
@@ -172,6 +174,7 @@ public class DocumentEntityDescriptor
 		readonlyLogic = builder.getReadonlyLogic();
 		displayLogic = builder.getDisplayLogic();
 		allowQuickInput = builder.getQuickInputSupport() != null;
+		autodetectDefaultDateFilter = builder.isAutodetectDefaultDateFilter();
 
 		fields = ImmutableMap.copyOf(builder.getFields());
 		idFields = builder.getIdFields();
@@ -474,6 +477,9 @@ public class DocumentEntityDescriptor
 
 		@Getter
 		private boolean singleRowDetail = false;
+
+		@Getter
+		private boolean autodetectDefaultDateFilter = true;
 
 		// Legacy
 		private Optional<AdTabId> _adTabId = Optional.empty();
@@ -990,6 +996,12 @@ public class DocumentEntityDescriptor
 			return includedTabNewRecordInputMode;
 		}
 
+		public Builder setAutodetectDefaultDateFilter(final boolean autodetectDefaultDateFilter)
+		{
+			this.autodetectDefaultDateFilter = autodetectDefaultDateFilter;
+            return this;
+		}
+
 		/**
 		 * Advises the descriptor that Document instances which will be created based on this descriptor will not have ANY callouts.
 		 */
@@ -1078,7 +1090,13 @@ public class DocumentEntityDescriptor
 			final AdTabId adTabId = getAdTabId().orElse(null);
 			final Collection<DocumentFieldDescriptor> fields = getFields().values();
 
-			return filterDescriptorsProvidersService.createFiltersProvider(adTabId, tableName, fields);
+			final CreateFiltersProviderContext context = CreateFiltersProviderContext.builder()
+					.adTabId(adTabId)
+					.tableName(tableName)
+					.isAutodetectDefaultDateFilter(isAutodetectDefaultDateFilter())
+					.build();
+
+			return filterDescriptorsProvidersService.createFiltersProvider(context, fields);
 		}
 
 		public Builder setFilterDescriptorsProvidersService(final DocumentFilterDescriptorsProvidersService filterDescriptorsProvidersService)

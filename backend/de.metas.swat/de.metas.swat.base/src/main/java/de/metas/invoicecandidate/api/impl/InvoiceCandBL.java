@@ -1228,13 +1228,16 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	}
 
 	@Override
-	public I_C_Invoice_Line_Alloc createUpdateIla(
-			@NonNull final I_C_Invoice_Candidate invoiceCand,
-			@NonNull final I_C_InvoiceLine invoiceLine,
-			@NonNull final StockQtyAndUOMQty qtysInvoiced,
-			@Nullable final String note)
+	public I_C_Invoice_Line_Alloc createUpdateIla(InvoiceCandidateAllocCreateRequest request)
 	{
+		final I_C_Invoice_Candidate invoiceCand = request.getInvoiceCand();
+		final I_C_InvoiceLine invoiceLine = request.getInvoiceLine();
+		final String note = request.getNote();
+		final InvoiceLineAllocType invoiceLineAllocType = request.getInvoiceLineAllocType();
+
+		final StockQtyAndUOMQty qtysInvoiced = request.getQtysInvoiced();
 		final Properties ctx = InterfaceWrapperHelper.getCtx(invoiceCand);
+
 		Check.assume(Env.getAD_Client_ID(ctx) == invoiceCand.getAD_Client_ID(), "AD_Client_ID of " + invoiceCand + " and of its CTX are the same");
 
 		final I_C_Invoice_Line_Alloc existingIla = invoiceCandDAO.retrieveIlaForIcAndIl(invoiceCand, invoiceLine);
@@ -1242,6 +1245,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		if (existingIla != null)
 		{
 			translateAndPrependNote(existingIla, note);
+			existingIla.setC_Invoice_Line_Alloc_Type(invoiceLineAllocType.getCode());
 
 			//
 			// FIXME in follow-up task! (06162)
@@ -1273,6 +1277,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		newIla.setPriceEntered_Override(InterfaceWrapperHelper.getValueOrNull(invoiceCand, I_C_Invoice_Candidate.COLUMNNAME_PriceEntered_Override));
 
 		translateAndPrependNote(newIla, note);
+		newIla.setC_Invoice_Line_Alloc_Type(invoiceLineAllocType.getCode());
 
 		InterfaceWrapperHelper.save(newIla); // model validator C_Invoice_Line_Alloc will invalidate 'invoiceCand'
 
@@ -1476,6 +1481,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 							.negate();
 
 					note = "@C_InvoiceLine@  @QtyInvoiced@ = " + il.getQtyInvoiced() + " @IsCreditedInvoiceReinvoicable@='Y'; ignoring overlap, because credit memo";
+
 				}
 
 				else if (creditMemo && !creditedInvoiceReinvoicable && (creditedInvoiceIsReversed || creditMemoCreditsInvoice))
@@ -1483,6 +1489,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 					// the original credit memo's ila also has QtyInvoiced=0
 					qtyInvoicedForIla = StockQtyAndUOMQtys.createZero(productId, uomId);
 					note = "@C_InvoiceLine@  @QtyInvoiced@ = " + il.getQtyInvoiced() + " @IsCreditedInvoiceReinvoicable@='N'";
+
 				}
 				else
 				{
@@ -1512,15 +1519,30 @@ public class InvoiceCandBL implements IInvoiceCandBL
 					note = "@C_InvoiceLine@  @QtyInvoiced@ = " + reversalQtyInvoiced
 							+ ", @C_Invoice_Candidate@ @QtyInvoiced@ = " + qtyInvoicedForIc
 							+ ", (=>overlap=" + overlap + ")";
+
+				}
+
+				final InvoiceLineAllocType invoiceLineAllocType;
+				if (qtyInvoicedForIla.signum() == 0)
+				{
+					invoiceLineAllocType = InvoiceLineAllocType.CreditMemoNotReinvoiceable;
+				}
+				else
+				{
+					invoiceLineAllocType = InvoiceLineAllocType.CreditMemoReinvoiceable;
 				}
 
 				invoiceCandDAO.save(invoiceCandidate);
 
-				createUpdateIla(
-						invoiceCandidate,
-						reversalLine,
-						qtyInvoicedForIla,
-						note);
+				final InvoiceCandidateAllocCreateRequest request = InvoiceCandidateAllocCreateRequest.builder()
+						.invoiceCand(invoiceCandidate)
+						.invoiceLine(reversalLine)
+						.qtysInvoiced(qtyInvoicedForIla)
+						.note(note)
+						.invoiceLineAllocType(invoiceLineAllocType)
+						.build();
+
+				createUpdateIla(request);
 			}
 		}
 	}
@@ -1642,6 +1664,9 @@ public class InvoiceCandBL implements IInvoiceCandBL
 					final ProductId ilProductId = ProductId.ofRepoId(il.getM_Product_ID());
 
 					final String note;
+
+					final InvoiceLineAllocType invoiceLineAllocType;
+
 					if (isCreditMemo)
 					{
 						final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
@@ -1653,10 +1678,14 @@ public class InvoiceCandBL implements IInvoiceCandBL
 							qtysInvoiced = StockQtyAndUOMQtys
 									.create(il.getQtyInvoiced(), ilProductId, il.getQtyEntered(), ilUomId)
 									.negate(); // this will allow the user to re-invoice, just as if the credit memo was a reversal
+
+							invoiceLineAllocType = InvoiceLineAllocType.CreditMemoReinvoiceable;
 						}
 						else
 						{
 							qtysInvoiced = StockQtyAndUOMQtys.createZero(ilProductId, ilUomId);
+
+							invoiceLineAllocType = InvoiceLineAllocType.CreditMemoNotReinvoiceable;
 						}
 					}
 					else
@@ -1664,8 +1693,19 @@ public class InvoiceCandBL implements IInvoiceCandBL
 						note = "";
 						qtysInvoiced = StockQtyAndUOMQtys
 								.create(il.getQtyInvoiced(), ilProductId, il.getQtyEntered(), ilUomId); // the standard case
+
+						invoiceLineAllocType = InvoiceLineAllocType.CreatedFromIC;
 					}
-					createUpdateIla(icToLink, il, qtysInvoiced, note);
+
+					final InvoiceCandidateAllocCreateRequest request = InvoiceCandidateAllocCreateRequest.builder()
+							.invoiceCand(icToLink)
+							.invoiceLine(il)
+							.qtysInvoiced(qtysInvoiced)
+							.note(note)
+							.invoiceLineAllocType(invoiceLineAllocType)
+							.build();
+
+					createUpdateIla(request);
 					// note: if an ILA is created, the icToLink is automatically invalidated via C_Invoice_Line_Alloc model validator
 				}
 

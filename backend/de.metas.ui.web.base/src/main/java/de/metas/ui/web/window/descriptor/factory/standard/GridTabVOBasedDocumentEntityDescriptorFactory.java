@@ -237,6 +237,7 @@ import java.util.Set;
 				.setDisplayLogic(displayLogic)
 				.setQuickInputSupport(QuickInputSupportDescriptorLoader.extractFrom(gridTabVO))
 				.setIncludedTabNewRecordInputMode(IncludedTabNewRecordInputMode.ofNullableCodeOrAllAvailable(gridTabVO.getIncludedTabNewRecordInputMode()))
+				.setAutodetectDefaultDateFilter(gridTabVO.isAutodetectDefaultDateFilter())
 				//
 				.setDataBinding(dataBinding)
 				.setHighVolume(gridTabVO.IsHighVolume)

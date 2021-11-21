@@ -187,6 +187,7 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
       "salesRepJSONPath" : "/test/salesrep",
       "priceListId" : 1,
       "isActive" : true,
+      "productLookup" : "ProductNumber"
       "value" : "testShopware6Value"
     },
     "writeAudit" : true,
@@ -221,6 +222,7 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
       "salesRepJSONPath" : "/test/salesrep",
       "priceListId" : 1,
       "isActive" : false,
+      "productLookup" : "ProductNumber"
       "value" : "testShopware6Value"
     },
     "writeAudit" : true,
@@ -264,7 +266,8 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
     "salesRepJSONPath" : "/test/salesrep",
     "priceListId" : 1,
     "isActive" : true,
-    "value" : "testShopware6Value"
+    "value" : "testShopware6Value",
+    "productLookup" : "ProductNumber"
   }
 ]
 
@@ -295,7 +298,8 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
       "salesRepJSONPath" : "/test/salesrep",
       "priceListId" : 1,
       "isActive" : true,
-      "value" : "testShopware6Value"
+      "value" : "testShopware6Value",
+      "productLookup" : "ProductNumber"
     },
     "writeAudit" : true,
     "auditFileFolder" : "auditFileFolder"
@@ -323,7 +327,8 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
       "salesRepJSONPath" : "/test/salesrep",
       "priceListId" : 2,
       "isActive" : true,
-      "value" : "new-value"
+      "value" : "new-value",
+      "productLookup" : "ProductNumber"
     },
     "writeAudit" : true,
     "auditFileFolder" : "auditFileFolder"

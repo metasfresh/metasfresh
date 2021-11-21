@@ -53,6 +53,7 @@ import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_ORDER
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_ORDER_NO;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_REDUCED_VAT_RATES;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_UOM_MAPPINGS;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_PRODUCT_LOOKUP;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_UPDATED_AFTER_OVERRIDE;
 
 public class InvokeShopware6Action extends InvokeExternalSystemProcess
@@ -66,7 +67,7 @@ public class InvokeShopware6Action extends InvokeExternalSystemProcess
 	private static final String PARAM_ORDERID = "OrderId";
 	@Param(parameterName = PARAM_ORDERID)
 	private String orderId;
-	
+
 	@Override
 	protected IExternalSystemChildConfigId getExternalChildConfigId()
 	{
@@ -100,6 +101,7 @@ public class InvokeShopware6Action extends InvokeExternalSystemProcess
 		parameters.put(PARAM_CONFIG_MAPPINGS, invokeShopwareService.getConfigMappings(shopware6Config));
 		parameters.put(PARAM_UOM_MAPPINGS, invokeShopwareService.getUOMMappings(shopware6Config));
 		parameters.put(PARAM_CHILD_CONFIG_VALUE, shopware6Config.getValue());
+		parameters.put(PARAM_PRODUCT_LOOKUP, shopware6Config.getProductLookup().getCode());
 
 		if (shopware6Config.getFreightCostNormalVatConfig() != null)
 		{
@@ -123,11 +125,11 @@ public class InvokeShopware6Action extends InvokeExternalSystemProcess
 			parameters.put(PARAM_ORDER_NO, orderNo);
 		}
 
-		if(EmptyUtil.isNotBlank(orderId))
+		if (EmptyUtil.isNotBlank(orderId))
 		{
 			parameters.put(PARAM_ORDER_ID, orderId);
 		}
-		
+
 		parameters.putAll(invokeShopwareService.getPriceListParams(shopware6Config.getPriceListId()));
 
 		return parameters;

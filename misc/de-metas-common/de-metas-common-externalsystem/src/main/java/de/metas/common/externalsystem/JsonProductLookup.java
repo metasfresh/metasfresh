@@ -1,18 +1,8 @@
-package de.metas.ui.web.document.filter.provider;
-
-import de.metas.ui.web.window.descriptor.CreateFiltersProviderContext;
-import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
-import lombok.NonNull;
-import org.adempiere.ad.element.api.AdTabId;
-
-import javax.annotation.Nullable;
-import java.util.Collection;
-
 /*
  * #%L
- * metasfresh-webui-api
+ * de-metas-common-externalsystem
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -30,15 +20,16 @@ import java.util.Collection;
  * #L%
  */
 
-public interface DocumentFilterDescriptorsProviderFactory
-{
-	@Nullable
-	DocumentFilterDescriptorsProvider createFiltersProvider(
-			@NonNull CreateFiltersProviderContext context,
-			@NonNull Collection<DocumentFieldDescriptor> fields);
+package de.metas.common.externalsystem;
 
-	default boolean isActive()
-	{
-		return true;
-	}
+import lombok.AllArgsConstructor;
+
+/**
+ * Json representation of `de.metas.externalsystem.shopware6.ProductLookup`
+ */
+@AllArgsConstructor
+public enum JsonProductLookup
+{
+	ProductNumber,
+	ProductId
 }

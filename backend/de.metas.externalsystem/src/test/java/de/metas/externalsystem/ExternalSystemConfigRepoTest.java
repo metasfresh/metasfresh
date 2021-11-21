@@ -39,6 +39,7 @@ import de.metas.externalsystem.other.ExternalSystemOtherConfigRepository;
 import de.metas.externalsystem.rabbitmqhttp.ExternalSystemRabbitMQConfigId;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6Config;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6ConfigId;
+import de.metas.externalsystem.shopware6.ProductLookup;
 import de.metas.externalsystem.woocommerce.ExternalSystemWooCommerceConfigId;
 import de.metas.pricing.PriceListId;
 import lombok.Builder;
@@ -129,6 +130,7 @@ class ExternalSystemConfigRepoTest
 		childRecord.setJSONPathSalesRepID("/test/salesrep");
 		childRecord.setJSONPathConstantBPartnerLocationID("/test/bpl");
 		childRecord.setM_PriceList_ID(1);
+		childRecord.setProductLookup(ProductLookup.ProductNumber.getCode());
 		saveRecord(childRecord);
 
 		final I_C_UOM uom = newInstance(I_C_UOM.class);
@@ -196,6 +198,7 @@ class ExternalSystemConfigRepoTest
 		childRecord.setM_PriceList_ID(1);
 		childRecord.setExternalSystemValue(value);
 		childRecord.setExternalSystem_Config_ID(parentRecord.getExternalSystem_Config_ID());
+		childRecord.setProductLookup(ProductLookup.ProductNumber.getCode());
 		saveRecord(childRecord);
 
 		final I_C_UOM uom = newInstance(I_C_UOM.class);
@@ -345,6 +348,7 @@ class ExternalSystemConfigRepoTest
 		childRecord.setJSONPathConstantBPartnerLocationID("/test/bpl");
 		childRecord.setExternalSystem_Config_ID(parentRecord.getExternalSystem_Config_ID());
 		childRecord.setM_PriceList_ID(1);
+		childRecord.setProductLookup(ProductLookup.ProductNumber.getCode());
 		saveRecord(childRecord);
 
 		final I_ExternalSystem_Config_Shopware6Mapping childMappingRecord = newInstance(I_ExternalSystem_Config_Shopware6Mapping.class);
@@ -630,6 +634,7 @@ class ExternalSystemConfigRepoTest
 		childRecord.setExternalSystem_Config_ID(parentRecord.getExternalSystem_Config_ID());
 		childRecord.setM_PriceList_ID(1);
 		childRecord.setIsActive(false);
+		childRecord.setProductLookup(ProductLookup.ProductNumber.getCode());
 		saveRecord(childRecord);
 
 		final I_C_UOM uom = newInstance(I_C_UOM.class);
@@ -675,6 +680,7 @@ class ExternalSystemConfigRepoTest
 		initialChildRecord.setExternalSystemValue("testShopware6Value");
 		initialChildRecord.setExternalSystem_Config_ID(initialParentRecord.getExternalSystem_Config_ID());
 		initialChildRecord.setM_PriceList_ID(1);
+		initialChildRecord.setProductLookup(ProductLookup.ProductNumber.getCode());
 		initialChildRecord.setIsActive(false);
 		saveRecord(initialChildRecord);
 

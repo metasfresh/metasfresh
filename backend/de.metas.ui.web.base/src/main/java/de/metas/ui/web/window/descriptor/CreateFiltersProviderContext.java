@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-camel-shopware6
+ * de.metas.ui.web.base
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,33 +20,24 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.shopware6.api.model.order;
+package de.metas.ui.web.window.descriptor;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import lombok.Builder;
 import lombok.Value;
+import org.adempiere.ad.element.api.AdTabId;
 
 import javax.annotation.Nullable;
 
 @Value
 @Builder
-@JsonDeserialize(builder = JsonOrderLinePayload.JsonOrderLinePayloadBuilder.class)
-public class JsonOrderLinePayload
+public class CreateFiltersProviderContext
 {
 	@Nullable
-	@JsonProperty("isBundle")
-	Boolean isBundle;
+	final AdTabId adTabId;
 
 	@Nullable
-	@JsonProperty("productNumber")
-	String productNumber;
-	
-	@JsonIgnoreProperties(ignoreUnknown = true)
-	@JsonPOJOBuilder(withPrefix = "")
-	static class JsonOrderLinePayloadBuilder
-	{
-	}
+	final String tableName;
+
+	@Builder.Default
+	boolean isAutodetectDefaultDateFilter = true;
 }
