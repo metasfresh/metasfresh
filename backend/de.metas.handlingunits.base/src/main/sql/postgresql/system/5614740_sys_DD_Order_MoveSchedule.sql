@@ -463,11 +463,6 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 /* DDL */  select update_Column_Translation_From_AD_Element(608) 
 ;
 
--- 2021-11-21T16:26:00.027Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ SELECT public.db_alter_table('DD_Order_MoveSchedule','ALTER TABLE DD_Order_MoveSchedule DROP COLUMN IF EXISTS M_HU_ID')
-;
-
 -- 2021-11-21T16:26:00.180Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 DELETE FROM  AD_Column_Trl WHERE AD_Column_ID=578541
