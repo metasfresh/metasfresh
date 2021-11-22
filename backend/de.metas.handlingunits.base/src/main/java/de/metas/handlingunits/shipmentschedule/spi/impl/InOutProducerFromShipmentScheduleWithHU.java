@@ -369,7 +369,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 				shipment.setDateOrdered(order.getDateOrdered());
 				shipment.setC_Order_ID(order.getC_Order_ID()); // TODO change if partner allow consolidation too
 				shipment.setPOReference(order.getPOReference());
-
+				shipment.setC_Incoterms_ID(order.getC_Incoterms_ID());
 				shipment.setDeliveryViaRule(order.getDeliveryViaRule());
 				shipment.setM_Shipper_ID((order.getM_Shipper_ID()));
 				shipment.setM_Tour_ID(shipmentSchedule.getM_Tour_ID());
