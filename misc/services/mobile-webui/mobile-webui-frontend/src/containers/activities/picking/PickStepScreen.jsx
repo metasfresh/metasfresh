@@ -11,14 +11,23 @@ import { toastError } from '../../../utils/toast';
 import { pushHeaderEntry } from '../../../actions/HeaderActions';
 
 class PickStepScreen extends Component {
+  getPickFrom = () => {
+    const { stepProps, altStepId } = this.props;
+    return altStepId ? stepProps.pickFromAlternatives[altStepId] : stepProps.mainPickFrom;
+  };
+
+  getQtyToPick = () => {
+    const { stepProps, altStepId } = this.props;
+    return altStepId ? this.getPickFrom().qtyToPick : stepProps.qtyToPick;
+  };
+
   onScanHUButtonClick = () => {
-    const { stepProps, dispatch, onScanButtonClick, altStepId } = this.props;
-    const { huBarcode, qtyToPick } = stepProps;
+    const { dispatch, onScanButtonClick } = this.props;
 
     onScanButtonClick();
 
-    const headerHuCode = altStepId ? stepProps.altSteps.genSteps[altStepId].huBarcode : huBarcode;
-    const headerQtyToPick = altStepId ? stepProps.altSteps.genSteps[altStepId].qtyAvailable : qtyToPick;
+    const headerHuCode = this.getPickFrom().huBarcode;
+    const headerQtyToPick = this.getQtyToPick();
 
     dispatch(
       pushHeaderEntry({
@@ -38,20 +47,13 @@ class PickStepScreen extends Component {
   };
 
   onUnpickButtonClick = () => {
-    const {
-      wfProcessId,
-      activityId,
-      lineId,
-      stepId,
-      stepProps: { scannedHUBarcode },
-      dispatch,
-    } = this.props;
+    const { wfProcessId, activityId, lineId, stepId, dispatch } = this.props;
 
     postStepUnPicked({
       wfProcessId,
       activityId,
       stepId,
-      huBarcode: scannedHUBarcode,
+      huBarcode: this.getPickFrom().huBarcode,
     })
       .then(() => {
         dispatch(
@@ -60,8 +62,8 @@ class PickStepScreen extends Component {
             activityId,
             lineId,
             stepId,
-            scannedHUBarcode: null,
             qtyPicked: 0,
+            qtyRejected: 0,
             qtyRejectedReasonCode: null,
           })
         );
@@ -71,31 +73,31 @@ class PickStepScreen extends Component {
   };
 
   componentWillUnmount() {
-    const {
-      wfProcessId,
-      activityId,
-      lineId,
-      stepId,
-      stepProps: { qtyPicked },
-      dispatch,
-    } = this.props;
-    qtyPicked === '' && dispatch(updatePickingStepQty({ wfProcessId, activityId, lineId, stepId, qtyPicked: 0 }));
+    const { wfProcessId, activityId, lineId, stepId, dispatch } = this.props;
+
+    const qtyPicked = this.getPickFrom().qtyPicked;
+    qtyPicked === '' &&
+      dispatch(
+        updatePickingStepQty({
+          wfProcessId,
+          activityId,
+          lineId,
+          stepId,
+          qtyPicked: 0,
+        })
+      );
   }
 
   render() {
-    const { stepProps, altStepId } = this.props;
-    const { huBarcode, qtyToPick, scannedHUBarcode, qtyPicked } = stepProps;
+    const pickFrom = this.getPickFrom();
+    const isPickedFromHU = pickFrom.qtyPicked > 0;
 
-    const isValidCode = !!scannedHUBarcode;
-    const scanButtonCaption = isValidCode
-      ? `${scannedHUBarcode}`
+    const scanButtonCaption = isPickedFromHU
+      ? `${pickFrom.huBarcode}`
       : counterpart.translate('activities.picking.scanHUBarcode');
 
-    const scanButtonStatus = isValidCode ? CompleteStatus.COMPLETED : CompleteStatus.NOT_STARTED;
-    const nothingPicked = !isValidCode || !qtyPicked;
-
-    const customHuCode = altStepId ? stepProps.altSteps.genSteps[altStepId].huBarcode : huBarcode;
-    const customQtyToPick = altStepId ? stepProps.altSteps.genSteps[altStepId].qtyAvailable : qtyToPick;
+    const scanButtonStatus = isPickedFromHU ? CompleteStatus.COMPLETED : CompleteStatus.NOT_STARTED;
+    const nothingPicked = !isPickedFromHU && !pickFrom.qtyRejectedReasonCode;
 
     return (
       <>
@@ -103,13 +105,13 @@ class PickStepScreen extends Component {
           <div className="column is-half has-text-right has-text-weight-bold pb-0 pl-0 pr-0">
             {counterpart.translate('general.Barcode')}
           </div>
-          <div className="column is-half has-text-left pb-0">{customHuCode}</div>
+          <div className="column is-half has-text-left pb-0">{pickFrom.huBarcode}</div>
         </div>
         <div className="columns is-mobile">
           <div className="column is-half has-text-right has-text-weight-bold pb-0 pl-0 pr-0">
             {counterpart.translate('general.QtyToPick')}:
           </div>
-          <div className="column is-half has-text-left pb-0">{customQtyToPick}</div>
+          <div className="column is-half has-text-left pb-0">{this.getQtyToPick()}</div>
         </div>
         <div className="mt-0">
           <button className="button is-outlined complete-btn" onClick={this.onScanHUButtonClick}>
@@ -139,10 +141,11 @@ PickStepScreen.propTypes = {
   lineId: PropTypes.string.isRequired,
   stepId: PropTypes.string.isRequired,
   altStepId: PropTypes.string,
+  //
   stepProps: PropTypes.object.isRequired,
-  onScanButtonClick: PropTypes.func.isRequired,
   //
   // Actions
+  onScanButtonClick: PropTypes.func.isRequired,
   dispatch: PropTypes.func.isRequired,
 };
 

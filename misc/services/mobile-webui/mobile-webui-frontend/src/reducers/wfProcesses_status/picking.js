@@ -1,5 +1,5 @@
 import * as types from '../../constants/PickingActionTypes';
-import { original, isDraft } from 'immer';
+import { isDraft, current } from 'immer';
 import { updateUserEditable } from './utils';
 import * as CompleteStatus from '../../constants/CompleteStatus';
 import { registerHandler } from './activityStateHandlers';
@@ -19,40 +19,24 @@ export const pickingReducer = ({ draftState, action }) => {
 };
 
 const reduceOnUpdateQtyPicked = (draftState, payload) => {
-  const {
-    wfProcessId,
-    activityId,
-    lineId,
-    stepId,
-    altStepId,
-    scannedHUBarcode,
-    qtyPicked,
-    qtyRejectedReasonCode,
-    qtyRejected,
-  } = payload;
+  const { wfProcessId, activityId, lineId, stepId, altStepId, qtyPicked, qtyRejected, qtyRejectedReasonCode } = payload;
 
   const draftWFProcess = draftState[wfProcessId];
+  const draftActivityDataStored = draftWFProcess.activities[activityId].dataStored;
+  const draftStep = draftActivityDataStored.lines[lineId].steps[stepId];
 
-  const draftStep = altStepId
-    ? draftWFProcess.activities[activityId].dataStored.lines[lineId].steps[stepId].altSteps.genSteps[altStepId]
-    : draftWFProcess.activities[activityId].dataStored.lines[lineId].steps[stepId];
-  draftStep.scannedHUBarcode = scannedHUBarcode;
-  draftStep.qtyPicked = qtyPicked;
-  draftStep.qtyRejectedReasonCode = qtyRejectedReasonCode;
+  const draftPickFrom = altStepId ? draftStep.pickFromAlternatives[altStepId] : draftStep.mainPickFrom;
+  draftPickFrom.qtyPicked = qtyPicked;
+  draftPickFrom.qtyRejected = qtyRejected;
+  draftPickFrom.qtyRejectedReasonCode = qtyRejectedReasonCode;
 
-  console.log('ALT_STEP_ID =>', altStepId);
-  console.log('QtyRejected =====>', qtyRejected);
+  allocatePickingAlternatives({
+    draftActivityDataStored,
+    lineId,
+    stepId,
+  });
 
-  if (qtyRejected) {
-    draftState[wfProcessId].activities[activityId].dataStored = generateAlternativeSteps({
-      draftDataStored: draftState[wfProcessId].activities[activityId].dataStored,
-      lineId,
-      stepId,
-      qtyToAllocate: qtyRejected,
-    });
-  }
-
-  updateStepStatus({
+  updateStepStatusAndRollup({
     draftWFProcess,
     activityId,
     lineId,
@@ -62,70 +46,95 @@ const reduceOnUpdateQtyPicked = (draftState, payload) => {
   return draftState;
 };
 
-export const generateAlternativeSteps = ({ draftDataStored, lineId, stepId, qtyToAllocate }) => {
-  const draftDataStoredOrig = isDraft(draftDataStored) ? original(draftDataStored) : draftDataStored;
-  const draftStep = draftDataStored.lines[lineId].steps[stepId];
-  let { pickFromAlternatives: alternativesPool } = draftDataStoredOrig;
+const extractDraftMapKeys = (draftMap) => {
+  return isDraft(draftMap) ? Object.keys(current(draftMap)) : Object.keys(draftMap);
+};
 
-  let qtyToAllocateRemaining = qtyToAllocate;
-  console.log(`qtyRemaining LineId(${lineId}) - stepId(${stepId}) => `, qtyToAllocateRemaining);
-  let alternativesPoolCleared = [];
+export const allocatePickingAlternatives = ({ draftActivityDataStored, lineId, stepId }) => {
+  const draftStep = draftActivityDataStored.lines[lineId].steps[stepId];
 
-  for (let idx = 0; idx < alternativesPool.length; idx++) {
-    alternativesPoolCleared[idx] = deallocateQtyAvailable({ idx, stepId, draftDataStored });
-  }
+  //
+  // Deallocate everything related to this step
+  deallocateQtyAvailable({ draftActivityDataStored, stepId });
 
-  // using this intermediate array as immer is freezing the objects
-  alternativesPool = alternativesPoolCleared;
+  //
+  // Iterate and consider already picked alternatives
+  const alternativeIds = extractDraftMapKeys(draftStep.pickFromAlternatives);
+  let qtyToAllocateRemaining = draftStep.mainPickFrom.qtyRejected;
+  for (let alternativeId of alternativeIds) {
+    const pickFromAlternative = draftStep.pickFromAlternatives[alternativeId];
 
-  for (let idx = 0; idx < alternativesPool.length; idx++) {
-    if (qtyToAllocateRemaining === 0) {
-      break;
-    } else {
-      const alternativesPoolItem = alternativesPool[idx];
-      const qtyAvailableToAllocateInThisStep = computeQtyAvailableToAllocate({ alternativesPoolItem });
-      const qtyToAllocateThisStep = Math.min(qtyToAllocateRemaining, qtyAvailableToAllocateInThisStep);
-
-      console.log('qtyAvailable for this step => ', qtyAvailableToAllocateInThisStep);
-      console.log('qtyToAllocateThisStep =>', qtyToAllocateThisStep);
-      if (qtyToAllocateThisStep === 0) continue;
-
-      if (!draftStep.altSteps) {
-        draftStep.altSteps.genSteps = {};
-      }
-
-      let prevQtyPicked = draftStep.altSteps.genSteps[alternativesPoolItem.id]
-        ? draftStep.altSteps.genSteps[alternativesPoolItem.id].qtyPicked
-        : 0;
-
-      draftStep.altSteps.genSteps[alternativesPoolItem.id] = {
-        id: alternativesPoolItem.id,
-        locatorName: alternativesPoolItem.locatorName,
-        huBarcode: alternativesPoolItem.huBarcode,
-        uom: alternativesPoolItem.uom,
-        qtyAvailable: qtyToAllocateThisStep,
-        qtyPicked: prevQtyPicked > 0 ? prevQtyPicked : 0,
-      };
-
+    if (pickFromAlternative.qtyPicked || pickFromAlternative.qtyRejected) {
       allocateQtyAvailable({
-        idx,
-        draftDataStored,
+        draftActivityDataStored,
         stepId,
-        qtyToAllocate: qtyToAllocateThisStep,
+        alternativeId,
+        qtyToAllocate: pickFromAlternative.qtyPicked || 0,
       });
 
-      qtyToAllocateRemaining = qtyToAllocateRemaining - qtyToAllocateThisStep;
+      pickFromAlternative.qtyToPick = pickFromAlternative.qtyPicked + pickFromAlternative.qtyRejected;
+      pickFromAlternative.isAllocated = true;
+      pickFromAlternative.isDisplayed = true;
+
+      qtyToAllocateRemaining -= pickFromAlternative.qtyPicked;
+    } else {
+      pickFromAlternative.isAllocated = false;
+      pickFromAlternative.isDisplayed = false;
     }
   }
 
-  return draftDataStored;
+  //
+  // Iterate and allocate the remaining items (which were not already considered)
+  for (let alternativeId of alternativeIds) {
+    const pickFromAlternative = draftStep.pickFromAlternatives[alternativeId];
+    //console.log(`>>> qtyToAllocateRemaining=${qtyToAllocateRemaining}, alternativeId=${alternativeId}, isAllocated=${pickFromAlternative.isAllocated}`);
+
+    if (!pickFromAlternative.isAllocated) {
+      if (qtyToAllocateRemaining <= 0) {
+        pickFromAlternative.qtyToPick = 0;
+        pickFromAlternative.isAllocated = true;
+        pickFromAlternative.isDisplayed = false;
+        //console.log('   => qtyToPick=ZERO, isDisplayed=false');
+      } else {
+        const qtyAvailableInPool = computeQtyAvailableToAllocate({
+          draftActivityDataStored,
+          alternativeId,
+        });
+        //console.log('qtyAvailableInPool=', qtyAvailableInPool);
+
+        const qtyToAllocateThisStep = Math.min(qtyToAllocateRemaining, qtyAvailableInPool);
+        //console.log('qtyToAllocateThisStep=', qtyToAllocateThisStep);
+
+        allocateQtyAvailable({
+          draftActivityDataStored,
+          stepId,
+          alternativeId,
+          qtyToAllocate: qtyToAllocateThisStep,
+        });
+
+        pickFromAlternative.qtyToPick = qtyToAllocateThisStep;
+        pickFromAlternative.isAllocated = true;
+        pickFromAlternative.isDisplayed = true;
+
+        qtyToAllocateRemaining -= qtyToAllocateThisStep;
+
+        //console.log(`   => qtyToPick=${pickFromAlternative.qtyToPick}, isDisplayed=true`);
+      }
+    }
+  }
 };
 
-const computeQtyAvailableToAllocate = ({ alternativesPoolItem }) => {
-  return alternativesPoolItem.qtyAvailable - computeQtyAllocated({ alternativesPoolItem });
+const computeQtyAvailableToAllocate = ({ draftActivityDataStored, alternativeId }) => {
+  const pickFromAlternativesPool = draftActivityDataStored.pickFromAlternativesPool;
+  const poolItem = pickFromAlternativesPool[alternativeId];
+  if (!poolItem) {
+    return 0;
+  }
+
+  return poolItem.qtyAvailable - computeQtyAllocated(poolItem);
 };
 
-const computeQtyAllocated = ({ alternativesPoolItem }) => {
+const computeQtyAllocated = (alternativesPoolItem) => {
   if (!alternativesPoolItem.allocatedQtys) {
     return 0;
   }
@@ -133,143 +142,121 @@ const computeQtyAllocated = ({ alternativesPoolItem }) => {
   return Object.values(alternativesPoolItem.allocatedQtys).reduce((acc, qty) => acc + qty, 0);
 };
 
-const allocateQtyAvailable = ({ idx, draftDataStored, stepId, qtyToAllocate }) => {
-  const alternativesPoolItemOrig =
-    isDraft(draftDataStored) && isDraft(draftDataStored.pickFromAlternatives[idx])
-      ? original(draftDataStored.pickFromAlternatives[idx])
-      : draftDataStored.pickFromAlternatives[idx];
-  if (!alternativesPoolItemOrig.allocatedQtys) {
-    draftDataStored.pickFromAlternatives[idx].allocatedQtys = {};
+const allocateQtyAvailable = ({ draftActivityDataStored, stepId, alternativeId, qtyToAllocate }) => {
+  const pickFromAlternativesPool = draftActivityDataStored.pickFromAlternativesPool;
+
+  const poolItem = pickFromAlternativesPool[alternativeId];
+  if (!poolItem.allocatedQtys) {
+    poolItem.allocatedQtys = {};
   }
-  draftDataStored.pickFromAlternatives[idx].allocatedQtys[stepId] = qtyToAllocate;
+
+  poolItem.allocatedQtys[stepId] = qtyToAllocate;
 };
 
-const deallocateQtyAvailable = ({ idx, stepId, draftDataStored }) => {
-  const alternativesPoolItemOrig = isDraft(draftDataStored.pickFromAlternatives[idx])
-    ? original(draftDataStored.pickFromAlternatives[idx])
-    : draftDataStored.pickFromAlternatives[idx];
+const deallocateQtyAvailable = ({ draftActivityDataStored, stepId }) => {
+  const pickFromAlternativesPool = draftActivityDataStored.pickFromAlternativesPool;
+  const alternativeIds = extractDraftMapKeys(pickFromAlternativesPool);
 
-  const alternativesPoolItemClone = { ...alternativesPoolItemOrig };
-  alternativesPoolItemClone.allocatedQtys = { ...alternativesPoolItemOrig.allocatedQtys };
-  if (alternativesPoolItemClone.allocatedQtys) {
-    alternativesPoolItemClone.allocatedQtys[stepId] && delete alternativesPoolItemClone.allocatedQtys[stepId];
+  for (let alternativeId of alternativeIds) {
+    const poolItem = pickFromAlternativesPool[alternativeId];
+    if (poolItem.allocatedQtys && poolItem.allocatedQtys[stepId]) {
+      poolItem.allocatedQtys[stepId] = 0;
+    }
   }
-  return alternativesPoolItemClone;
 };
 
-const updateStepStatus = ({ draftWFProcess, activityId, lineId, stepId }) => {
+const updateStepStatusAndRollup = ({ draftWFProcess, activityId, lineId, stepId }) => {
   const draftStep = draftWFProcess.activities[activityId].dataStored.lines[lineId].steps[stepId];
-
-  draftStep.completeStatus = computeStepStatus({ draftStep });
-  console.log(`Update step [${activityId} ${lineId} ${stepId} ]: completeStatus=${draftStep.completeStatus}`);
+  updateStepStatus({ draftStep });
 
   //
   // Rollup:
-  updateLineStatusFromSteps({ draftWFProcess, activityId, lineId });
+  updateLineStatusFromStepsAndRollup({ draftWFProcess, activityId, lineId });
+};
+
+const updateStepStatus = ({ draftStep }) => {
+  draftStep.completeStatus = computeStepStatus({ draftStep });
 };
 
 const computeStepStatus = ({ draftStep }) => {
-  console.log('qtyPicked=', draftStep.qtyPicked);
-  console.log('qtyToPick=', draftStep.qtyToPick);
-  console.log('   => diff=', draftStep.qtyToPick - draftStep.qtyPicked === 0);
+  const statuses = [];
 
-  // NOTE: for now we consider a step completed if the user reported something on it
+  const mainPickFromStatus = computePickFromStatus(draftStep.mainPickFrom);
+  statuses.push(mainPickFromStatus);
 
-  const isStepCompleted =
-    // Barcode is set
-    !!(draftStep.scannedHUBarcode && draftStep.scannedHUBarcode.length > 0) &&
-    // and is completely picked or a reject code is set
-    (draftStep.qtyToPick - draftStep.qtyPicked === 0 || !!draftStep.qtyRejectedReasonCode);
+  if (draftStep.pickFromAlternatives) {
+    const alternativeIds = extractDraftMapKeys(draftStep.pickFromAlternatives);
+    alternativeIds.forEach((alternativeId) => {
+      const pickFromAlternative = draftStep.pickFromAlternatives[alternativeId];
+      if (pickFromAlternative.isDisplayed) {
+        const pickFromAlternativeStatus = computePickFromStatus(pickFromAlternative);
+        if (!statuses.includes(pickFromAlternativeStatus)) {
+          statuses.push(pickFromAlternativeStatus);
+        }
+      }
+    });
+  }
 
-  return isStepCompleted ? CompleteStatus.COMPLETED : CompleteStatus.NOT_STARTED;
+  return CompleteStatus.reduceFromCompleteStatuesUniqueArray(statuses);
 };
 
-const updateLineStatusFromSteps = ({ draftWFProcess, activityId, lineId }) => {
+export const computePickFromStatus = (pickFrom) => {
+  return pickFrom.qtyPicked || pickFrom.qtyRejected ? CompleteStatus.COMPLETED : CompleteStatus.NOT_STARTED;
+};
+
+const updateLineStatusFromStepsAndRollup = ({ draftWFProcess, activityId, lineId }) => {
   const draftLine = draftWFProcess.activities[activityId].dataStored.lines[lineId];
-  draftLine.completeStatus = computeLineStatus({ draftLine });
-  console.log(`Update line [${activityId} ${lineId} ]: completeStatus=${draftLine.completeStatus}`);
+  updateLineStatusFromSteps({ draftLine });
 
   //
   // Rollup:
-  updateActivityStatusFromLines({ draftWFProcess, activityId });
+  updateActivityStatusFromLinesAndRollup({ draftWFProcess, activityId });
 };
 
-export const computeLineStatus = ({ draftLine }) => {
-  const stepItems = isDraft(draftLine.steps) ? original(draftLine.steps) : draftLine.steps;
-  const stepIds = Object.keys(stepItems);
-
-  if (stepIds.length > 0) {
-    let countStepsCompleted = 0;
-    for (let stepId of stepIds) {
-      let sumAltStepsQtysPicked = 0;
-      let remainingQty = stepItems[stepId].mainPickFrom.qtyRejected;
-
-      const draftStep = draftLine.steps[stepId];
-      let stepCompleteStatus = draftStep.completeStatus || CompleteStatus.NOT_STARTED;
-
-      let { genSteps } = stepItems[stepId].altSteps;
-      for (let altItem in genSteps) {
-        sumAltStepsQtysPicked = sumAltStepsQtysPicked + genSteps[altItem].qtyPicked;
-      }
-
-      if (remainingQty > 0 && remainingQty - sumAltStepsQtysPicked === 0) {
-        stepCompleteStatus = CompleteStatus.COMPLETED;
-        draftLine.steps[stepId].completeStatus = stepCompleteStatus;
-      }
-
-      if (stepCompleteStatus === CompleteStatus.COMPLETED) {
-        countStepsCompleted++;
-      }
-    }
-
-    if (countStepsCompleted === 0) {
-      return CompleteStatus.NOT_STARTED;
-    } else if (countStepsCompleted === stepIds.length) {
-      return CompleteStatus.COMPLETED;
-    } else {
-      return CompleteStatus.IN_PROGRESS;
-    }
-  } else {
-    // corner case, shall not happen: there are no steps in current line => consider it completed
-    return CompleteStatus.COMPLETED;
-  }
+const updateLineStatusFromSteps = ({ draftLine }) => {
+  draftLine.completeStatus = computeLineStatusFromSteps({ draftLine });
 };
 
-export const updateActivityStatusFromLines = ({ draftWFProcess, activityId }) => {
+export const computeLineStatusFromSteps = ({ draftLine }) => {
+  const stepIds = extractDraftMapKeys(draftLine.steps);
+
+  const stepStatuses = [];
+  stepIds.forEach((stepId) => {
+    const draftStep = draftLine.steps[stepId];
+    if (!stepStatuses.includes(draftStep.completeStatus)) {
+      stepStatuses.push(draftStep.completeStatus);
+    }
+  });
+
+  return CompleteStatus.reduceFromCompleteStatuesUniqueArray(stepStatuses);
+};
+
+export const updateActivityStatusFromLinesAndRollup = ({ draftWFProcess, activityId }) => {
   const draftActivity = draftWFProcess.activities[activityId];
-  draftActivity.dataStored.completeStatus = computeActivityStatusFromLines({ draftActivity });
-  console.log(`Update activity [${activityId} ]: completeStatus=${draftActivity.dataStored.completeStatus}`);
+  updateActivityStatusFromLines({ draftActivityDataStored: draftActivity.dataStored });
 
   //
   // Rollup:
   updateUserEditable({ draftWFProcess });
 };
 
-export const computeActivityStatusFromLines = ({ draftActivity }) => {
-  const lineIds = Object.keys(original(draftActivity.dataStored.lines));
+export const updateActivityStatusFromLines = ({ draftActivityDataStored }) => {
+  draftActivityDataStored.completeStatus = computeActivityStatusFromLines({ draftActivityDataStored });
+};
 
-  if (lineIds.length > 0) {
-    let countLinesCompleted = 0;
-    for (let lineId of lineIds) {
-      const draftLine = draftActivity.dataStored.lines[lineId];
-      const lineCompleteStatus = draftLine.completeStatus || CompleteStatus.NOT_STARTED;
+export const computeActivityStatusFromLines = ({ draftActivityDataStored }) => {
+  const lineIds = extractDraftMapKeys(draftActivityDataStored.lines);
 
-      if (lineCompleteStatus === CompleteStatus.COMPLETED) {
-        countLinesCompleted++;
-      }
+  const lineStatuses = [];
+  lineIds.forEach((lineId) => {
+    const draftLine = draftActivityDataStored.lines[lineId];
+    const lineCompleteStatus = draftLine.completeStatus || CompleteStatus.NOT_STARTED;
+    if (!lineStatuses.includes(lineCompleteStatus)) {
+      lineStatuses.push(lineCompleteStatus);
     }
+  });
 
-    if (countLinesCompleted === 0) {
-      return CompleteStatus.NOT_STARTED;
-    } else if (countLinesCompleted === lineIds.length) {
-      return CompleteStatus.COMPLETED;
-    } else {
-      return CompleteStatus.IN_PROGRESS;
-    }
-  } else {
-    // corner case, shall not happen: there are no lines in current activity => consider it completed
-    return CompleteStatus.COMPLETED;
-  }
+  return CompleteStatus.reduceFromCompleteStatuesUniqueArray(lineStatuses);
 };
 
 //
@@ -284,85 +271,57 @@ const normalizePickingLines = (lines) => {
       ...line,
       steps: line.steps.reduce((accum, step) => {
         accum[step.pickingStepId] = step;
-        accum[step.pickingStepId].altSteps = { qtyToPick: 0, genSteps: {} };
-
-        // Mock generated steps - used for testing w/o real data
-        // accum[step.pickingStepId].altSteps.genSteps = {
-        //   1000819: {
-        //     id: '1000819',
-        //     locatorName: 'Hauptlager',
-        //     huBarcode: '1000437',
-        //     uom: 'Kg',
-        //     qtyAvailable: 45,
-        //     qtyPicked: 0,
-        //   },
-        //   1000820: {
-        //     id: '1000820',
-        //     locatorName: 'Hauptlager',
-        //     huBarcode: '1000463',
-        //     uom: 'Kg',
-        //     qtyAvailable: 25,
-        //     qtyPicked: 0,
-        //   },
-        // };
-
         return accum;
       }, {}),
     };
   });
 };
 
-export const mergeActivityDataStoredAndGenerateAltSteps = ({ draftActivityDataStored, fromActivity }) => {
-  const { lines } = fromActivity.componentProps;
-  let genSteps = {};
+export const mergeActivityDataStoredAndAllocateAlternatives = ({ draftActivityDataStored, fromActivity }) => {
+  //
+  // Copy lines
+  draftActivityDataStored.lines = normalizePickingLines(fromActivity.componentProps.lines);
 
-  // loop within steps
-  for (let lineIdx = 0; lineIdx < lines.length; lineIdx++) {
-    // console.log('ABOUT_TO_SEND:', draftActivityDataStored.dataStored.lines[lineIdx]);
-    computeLineStatus({ draftLine: draftActivityDataStored.dataStored.lines[lineIdx] });
+  //
+  // Copy Pick From Alternatives Pool
+  draftActivityDataStored.pickFromAlternatives = null;
+  delete draftActivityDataStored.pickFromAlternatives;
+  draftActivityDataStored.pickFromAlternativesPool = fromActivity.componentProps.pickFromAlternatives.reduce(
+    (accum, pickFromAlternative) => {
+      accum[pickFromAlternative.id] = pickFromAlternative;
+      return accum;
+    },
+    {}
+  );
 
-    for (let stepIdx = 0; stepIdx < lines[lineIdx].steps.length; stepIdx++) {
-      let step = lines[lineIdx].steps[stepIdx];
-      let { qtyRejected } = lines[lineIdx].steps[stepIdx].mainPickFrom;
-      let totalAltQtys = 0;
-
-      // allocateQtys in sync with the data received from the BE
-      let pickFromAlternatives = fromActivity.componentProps.pickFromAlternatives;
-      for (let altKey in pickFromAlternatives) {
-        if (
-          step.pickFromAlternatives[pickFromAlternatives[altKey].id] &&
-          step.pickFromAlternatives[pickFromAlternatives[altKey].id].qtyPicked > 0
-        ) {
-          totalAltQtys = totalAltQtys + step.pickFromAlternatives[pickFromAlternatives[altKey].id].qtyPicked;
-
-          genSteps[pickFromAlternatives[altKey].id] = pickFromAlternatives[altKey];
-          genSteps[pickFromAlternatives[altKey].id].qtyPicked =
-            step.pickFromAlternatives[pickFromAlternatives[altKey].id].qtyPicked;
-          pickFromAlternatives[altKey].allocatedQtys = {
-            [pickFromAlternatives[altKey].id]: pickFromAlternatives[altKey].qtyAvailable,
-          };
-        } else {
-          pickFromAlternatives[altKey].allocatedQtys = {};
-        }
-      }
-      draftActivityDataStored.dataStored.lines[lineIdx].steps[step.pickingStepId].pickFromAlternatives =
-        pickFromAlternatives;
-
-      draftActivityDataStored.dataStored.lines[lineIdx].steps[step.pickingStepId].altSteps.genSteps = genSteps;
-
-      // In case we have no generated steps and there is a qtyRejected to be filled - we need to generate those alternatives
-      const remainingQtyDiff = qtyRejected - totalAltQtys;
-
-      if ((Object.keys(genSteps).length === 0 && qtyRejected) || remainingQtyDiff > 0) {
-        draftActivityDataStored.dataStored = generateAlternativeSteps({
-          draftDataStored: draftActivityDataStored.dataStored,
-          lineId: lineIdx,
-          stepId: step.pickingStepId,
-          qtyToAllocate: qtyRejected,
-        });
-      }
+  //
+  // Allocate step alternatives against the pool
+  const draftLines = draftActivityDataStored.lines;
+  for (let lineIdx = 0; lineIdx < draftLines.length; lineIdx++) {
+    const draftLine = draftLines[lineIdx];
+    for (let stepId of Object.keys(draftLine.steps)) {
+      allocatePickingAlternatives({
+        draftActivityDataStored,
+        lineId: lineIdx,
+        stepId,
+      });
+      //
     }
   }
+
+  //
+  // Update all statuses
+  for (let lineIdx = 0; lineIdx < draftLines.length; lineIdx++) {
+    const draftLine = draftLines[lineIdx];
+
+    for (let stepId of Object.keys(draftLine.steps)) {
+      const draftStep = draftLine.steps[stepId];
+      updateStepStatus({ draftStep });
+    }
+
+    updateLineStatusFromSteps({ draftLine });
+  }
+  updateActivityStatusFromLines({ draftActivityDataStored });
 
   return draftActivityDataStored;
 };
@@ -370,19 +329,13 @@ export const mergeActivityDataStoredAndGenerateAltSteps = ({ draftActivityDataSt
 registerHandler({
   componentType: COMPONENT_TYPE,
   normalizeComponentProps: ({ componentProps }) => {
-    console.log('picking: normalizeComponentProps for ', componentProps);
     return {
       ...componentProps,
       lines: normalizePickingLines(componentProps.lines),
     };
   },
-  computeActivityDataStoredInitialValue: ({ componentProps }) => {
-    console.log('picking: computeActivityDataStoredInitialValue for ', componentProps);
-    return { lines: componentProps.lines, pickFromAlternatives: componentProps.pickFromAlternatives };
-  },
 
-  mergeActivityDataStored: ({ componentType, draftActivityDataStored, fromActivity }) => {
-    console.log('merge activity for ', componentType);
-    return mergeActivityDataStoredAndGenerateAltSteps({ draftActivityDataStored, fromActivity });
+  mergeActivityDataStored: ({ draftActivityDataStored, fromActivity }) => {
+    mergeActivityDataStoredAndAllocateAlternatives({ draftActivityDataStored, fromActivity });
   },
 });

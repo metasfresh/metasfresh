@@ -112,7 +112,7 @@ const mergeActivityToState = ({ draftActivity, fromActivity }) => {
 
   mergeActivityDataStored({
     componentType: draftActivity.componentType,
-    draftActivityDataStored: draftActivity,
+    draftActivityDataStored: draftActivity.dataStored,
     fromActivity,
   });
 

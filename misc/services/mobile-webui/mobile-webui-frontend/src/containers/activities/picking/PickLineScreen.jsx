@@ -2,17 +2,6 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import PickStepButton from './PickStepButton';
 
-const normalizePickFromAlternatives = (pickFromAlternatives) => {
-  let isArrayPFA = Array.isArray(pickFromAlternatives);
-  let normalizedAlts = {};
-  if (isArrayPFA) {
-    for (let item of pickFromAlternatives) {
-      normalizedAlts[item.id] = item;
-    }
-  }
-  return isArrayPFA ? normalizedAlts : pickFromAlternatives;
-};
-
 const PickLineScreen = (props) => {
   const { wfProcessId, activityId, lineId, steps } = props;
 
@@ -21,7 +10,6 @@ const PickLineScreen = (props) => {
       <div className="steps-container">
         {steps.length > 0 &&
           steps.map((stepItem, idx) => {
-            let pickFromAlternatives = normalizePickFromAlternatives(stepItem.pickFromAlternatives);
             return (
               <PickStepButton
                 key={idx}
@@ -29,8 +17,11 @@ const PickLineScreen = (props) => {
                 activityId={activityId}
                 lineId={lineId}
                 stepId={stepItem.pickingStepId}
-                pickFromAlternatives={pickFromAlternatives}
-                {...stepItem}
+                pickFromAlternatives={stepItem.pickFromAlternatives}
+                //
+                uom={stepItem.uom}
+                qtyToPick={stepItem.qtyToPick}
+                pickFrom={stepItem.mainPickFrom}
               />
             );
           })}

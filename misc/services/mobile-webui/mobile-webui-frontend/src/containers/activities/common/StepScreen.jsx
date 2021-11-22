@@ -50,18 +50,19 @@ class StepScreen extends PureComponent {
 
 const mapStateToProps = (state, ownProps) => {
   const { workflowId: wfProcessId, activityId, lineId, stepId, altStepId } = ownProps.match.params;
+
   const activity = selectWFProcessFromState(state, wfProcessId).activities[activityId];
   const stepProps = activity.dataStored.lines[lineId].steps[stepId];
   const appId = state.applications.activeApplication ? state.applications.activeApplication.id : null;
 
   return {
+    appId,
     wfProcessId,
     activityId,
     lineId,
     stepId,
     altStepId,
     stepProps,
-    appId,
   };
 };
 

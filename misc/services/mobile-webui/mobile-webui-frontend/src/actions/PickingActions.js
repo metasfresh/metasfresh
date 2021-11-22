@@ -6,10 +6,9 @@ export function updatePickingStepQty({
   lineId,
   stepId,
   altStepId,
-  scannedHUBarcode,
   qtyPicked,
-  qtyRejectedReasonCode,
   qtyRejected,
+  qtyRejectedReasonCode,
 }) {
   return {
     type: UPDATE_PICKING_STEP_QTY,
@@ -19,10 +18,9 @@ export function updatePickingStepQty({
       lineId,
       stepId,
       altStepId,
-      scannedHUBarcode,
       qtyPicked,
-      qtyRejectedReasonCode,
       qtyRejected,
+      qtyRejectedReasonCode,
     },
   };
 }

@@ -5,22 +5,23 @@ import counterpart from 'counterpart';
 import StepButton from '../common/StepButton';
 import { pushHeaderEntry } from '../../../actions/HeaderActions';
 import Indicator from '../../../components/Indicator';
-import * as CompleteStatus from '../../../constants/CompleteStatus';
 import PickAlternatives from './PickAlternatives';
+import { computePickFromStatus } from '../../../reducers/wfProcesses_status/picking';
 
 class PickStepButton extends PureComponent {
   handleClick = () => {
-    const { locatorName } = this.props;
+    const { pickFrom } = this.props;
     const { dispatch, onHandleClick } = this.props;
 
     onHandleClick();
+
     dispatch(
       pushHeaderEntry({
         location,
         values: [
           {
             caption: counterpart.translate('general.Locator'),
-            value: locatorName,
+            value: pickFrom.locatorName,
           },
         ],
       })
@@ -32,25 +33,17 @@ class PickStepButton extends PureComponent {
       appId,
       wfProcessId,
       activityId,
-      huBarcode,
-      pickFromAlternatives,
       lineId,
-      locatorName,
-      uom,
-      stepState: { qtyPicked, completeStatus },
-      qtyToPick,
       stepId,
-      altStepId,
-      stepState,
+      //
+      pickFromAlternatives,
+      uom,
+      qtyToPick,
+      pickFrom,
     } = this.props;
 
-    const stepCompleteStatus = completeStatus || CompleteStatus.NOT_STARTED;
-    console.log('StepSTATUS:', stepCompleteStatus);
-    const altStepCompleteStatus =
-      altStepId && stepState.altSteps.genSteps[altStepId].qtyPicked > 0
-        ? CompleteStatus.COMPLETED
-        : CompleteStatus.NOT_STARTED;
-    const indicatorCompleteStatus = altStepId ? altStepCompleteStatus : stepCompleteStatus;
+    const isAlternative = !pickFromAlternatives;
+    const completeStatus = computePickFromStatus(pickFrom);
 
     return (
       <div className="mt-3">
@@ -65,8 +58,8 @@ class PickStepButton extends PureComponent {
             <div className="caption-btn">
               <div className="rows">
                 <div className="row is-full pl-5">
-                  {altStepId ? 'ALT:' : ''}
-                  {locatorName}
+                  {isAlternative ? 'ALT:' : ''}
+                  {pickFrom.locatorName}
                 </div>
                 <div className="row is-full is-size-7">
                   <div className="picking-row-info">
@@ -76,7 +69,7 @@ class PickStepButton extends PureComponent {
                     </div>
                     <div className="picking-row-picking">{counterpart.translate('activities.picking.picked')}:</div>
                     <div className="picking-row-picked">
-                      {altStepId ? stepState.altSteps.genSteps[altStepId].qtyPicked : qtyPicked} {uom}
+                      {pickFrom.qtyPicked} {uom}
                     </div>
                   </div>
                 </div>
@@ -84,20 +77,19 @@ class PickStepButton extends PureComponent {
             </div>
 
             <div className="right-btn-side pt-4">
-              <Indicator completeStatus={indicatorCompleteStatus} />
+              <Indicator completeStatus={completeStatus} />
             </div>
           </div>
         </button>
-        {!altStepId && (
+        {pickFromAlternatives && (
           <PickAlternatives
             appId={appId}
             wfProcessId={wfProcessId}
             activityId={activityId}
             lineId={lineId}
-            huBarcode={huBarcode}
-            pickFromAlternatives={pickFromAlternatives}
-            stepState={stepState}
             stepId={stepId}
+            pickFromAlternatives={pickFromAlternatives}
+            uom={uom}
           />
         )}
       </div>
@@ -113,16 +105,11 @@ PickStepButton.propTypes = {
   activityId: PropTypes.string.isRequired,
   lineId: PropTypes.string.isRequired,
   stepId: PropTypes.string.isRequired,
-  altStepId: PropTypes.string,
-  productName: PropTypes.string.isRequired,
-  locatorName: PropTypes.string.isRequired,
-  huBarcode: PropTypes.string,
-  uom: PropTypes.string,
-  qtyPicked: PropTypes.number,
-  qtyToPick: PropTypes.number.isRequired,
-  stepState: PropTypes.object,
-  // object as we pass the normalized version
+  //
   pickFromAlternatives: PropTypes.object,
+  uom: PropTypes.string.isRequired,
+  qtyToPick: PropTypes.number.isRequired,
+  pickFrom: PropTypes.object.isRequired,
   //
   // Actions/Functions
   dispatch: PropTypes.func.isRequired,

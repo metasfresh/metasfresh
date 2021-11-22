@@ -20,15 +20,17 @@ function PickStepScanScreen(WrappedComponent) {
     const stepProps = wfProcess.activities[activityId].dataStored.lines[lineId].steps[stepId];
 
     return {
+      appId,
       wfProcessId,
       activityId,
       lineId,
       stepId,
       altStepId,
       stepProps,
-      appId,
-      qtyTarget: altStepId ? stepProps.altSteps.genSteps[altStepId].qtyAvailable : stepProps.qtyToPick,
-      eligibleBarcode: altStepId ? stepProps.altSteps.genSteps[altStepId].huBarcode : stepProps.huBarcode,
+      qtyTarget: altStepId ? stepProps.pickFromAlternatives[altStepId].qtyToPick : stepProps.qtyToPick,
+      eligibleBarcode: altStepId
+        ? stepProps.pickFromAlternatives[altStepId].huBarcode
+        : stepProps.mainPickFrom.huBarcode,
     };
   };
 
@@ -50,35 +52,6 @@ function PickStepScanScreen(WrappedComponent) {
       const { scannedBarcode } = this.state;
       const qtyRejected = qtyTarget - qty;
 
-      // if (altStepId) {
-      //   updatePickingStepQty({
-      //     wfProcessId,
-      //     activityId,
-      //     lineId,
-      //     stepId,
-      //     altStepId,
-      //     scannedHUBarcode: scannedBarcode,
-      //     qtyPicked: qty,
-      //     qtyRejectedReasonCode: reason,
-      //     qtyRejected,
-      //   });
-      //   return;
-      // }
-
-      // TODO: This should be added to the same, not next level
-      // pushHeaderEntry({
-      //   location,
-      //   values: [
-      //     {
-      //       caption: counterpart.translate('general.QtyPicked'),
-      //       value: qtyPicked,
-      //     },
-      //   ],
-      // });
-
-      // TODO: We should only set the scanned barcode if the quantity is correct and user submitted any
-      // potential reason to wrong quantity.
-
       postStepPicked({
         wfProcessId,
         activityId,
@@ -95,10 +68,9 @@ function PickStepScanScreen(WrappedComponent) {
             lineId,
             stepId,
             altStepId,
-            scannedHUBarcode: scannedBarcode,
             qtyPicked: qty,
-            qtyRejectedReasonCode: reason,
             qtyRejected,
+            qtyRejectedReasonCode: reason,
           });
           go(-2);
         })

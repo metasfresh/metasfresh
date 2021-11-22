@@ -1,31 +1,31 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
 import PickStepButton from './PickStepButton';
 class PickAlternatives extends Component {
   renderAlternatives = () => {
-    const { genSteps, wfProcessId, activityId, lineId, stepId } = this.props;
+    const { wfProcessId, activityId, lineId, stepId, pickFromAlternatives, uom } = this.props;
 
     return (
       <div>
-        {Object.keys(genSteps).length > 0 &&
-          Object.keys(genSteps).map((altStepKey) => {
-            return (
-              <PickStepButton
-                key={genSteps[altStepKey].id}
-                wfProcessId={wfProcessId}
-                activityId={activityId}
-                lineId={lineId}
-                stepId={stepId}
-                altStepId={genSteps[altStepKey].id}
-                productName=""
-                qtyToPick={genSteps[altStepKey].qtyAvailable}
-                locatorName={genSteps[altStepKey].locatorName}
-                uom={genSteps[altStepKey].uom}
-                qtyPicked={genSteps[altStepKey].qtyPicked}
-              />
-            );
-          })}
+        {pickFromAlternatives &&
+          Object.values(pickFromAlternatives)
+            .filter((pickFromAlternative) => pickFromAlternative.isDisplayed)
+            .map((pickFromAlternative) => {
+              return (
+                <PickStepButton
+                  key={pickFromAlternative.alternativeId}
+                  wfProcessId={wfProcessId}
+                  activityId={activityId}
+                  lineId={lineId}
+                  stepId={stepId}
+                  altStepId={pickFromAlternative.alternativeId}
+                  //
+                  uom={uom}
+                  qtyToPick={pickFromAlternative.qtyToPick}
+                  pickFrom={pickFromAlternative}
+                />
+              );
+            })}
       </div>
     );
   };
@@ -40,20 +40,8 @@ PickAlternatives.propTypes = {
   activityId: PropTypes.string.isRequired,
   lineId: PropTypes.string.isRequired,
   stepId: PropTypes.string.isRequired,
-  pickFromAlternativeIds: PropTypes.array,
-  pickFromAlternatives: PropTypes.array,
-  genSteps: PropTypes.object,
+  pickFromAlternatives: PropTypes.object.isRequired,
+  uom: PropTypes.string.isRequired,
 };
 
-const mapStateToProps = (state, ownProps) => {
-  const { wfProcessId, activityId, lineId, stepId } = ownProps;
-
-  return {
-    pickFromAlternatives: state.wfProcesses_status[wfProcessId].activities[activityId].dataStored.pickFromAlternatives,
-    genSteps:
-      state.wfProcesses_status[wfProcessId].activities[activityId].dataStored.lines[lineId].steps[stepId].altSteps
-        .genSteps,
-  };
-};
-
-export default connect(mapStateToProps, null)(PickAlternatives);
+export default PickAlternatives;
