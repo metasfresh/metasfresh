@@ -149,6 +149,8 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=501631
 /* DDL */ select AD_Element_Link_Create_Missing_Field(501631)
 ;
 
+UPDATE AD_Field SET AD_Column_ID=578581 where ad_column_id=501615;
+
 -- 2021-11-22T12:12:58.126Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 DELETE FROM  AD_Column_Trl WHERE AD_Column_ID=501615
@@ -163,6 +165,8 @@ DELETE FROM AD_Column WHERE AD_Column_ID=501615
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_Field SET AD_Column_ID=578584, Description=NULL, Help=NULL, Name='Incoterms',Updated=TO_TIMESTAMP('2021-11-22 14:13:33','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=501622
 ;
+
+UPDATE AD_Field SET AD_Column_ID=578584 where ad_column_id=501617;
 
 -- 2021-11-22T12:13:33.443Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
