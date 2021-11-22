@@ -17,8 +17,6 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
             "caption" : "P1",
             "qtyToPick" : 100.000,
             "steps" : [ {
-              "huBarcode" : "1000000",
-              "locatorName" : "wh_loc",
               "mainPickFrom" : {
                 "alternativeId" : "MAIN",
                 "huBarcode" : "1000000",
@@ -27,7 +25,6 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
                 "qtyRejected" : null,
                 "qtyRejectedReasonCode" : null
               },
-              "pickFromAlternativeIds" : [ "1000000" ],
               "pickFromAlternatives" : {
                 "1000000" : {
                   "alternativeId" : "1000000",
@@ -40,12 +37,9 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
               },
               "pickingStepId" : "1000000",
               "productName" : "P1",
-              "qtyPicked" : 0,
               "qtyToPick" : 75.000,
               "uom" : "Kg"
             }, {
-              "huBarcode" : "1000002",
-              "locatorName" : "wh_loc",
               "mainPickFrom" : {
                 "alternativeId" : "MAIN",
                 "huBarcode" : "1000002",
@@ -54,11 +48,9 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
                 "qtyRejected" : null,
                 "qtyRejectedReasonCode" : null
               },
-              "pickFromAlternativeIds" : [ ],
               "pickFromAlternatives" : { },
               "pickingStepId" : "1000001",
               "productName" : "P1",
-              "qtyPicked" : 0,
               "qtyToPick" : 25.000,
               "uom" : "Kg"
             } ],
@@ -263,8 +255,6 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
             "caption" : "P1",
             "qtyToPick" : 100.000,
             "steps" : [ {
-              "huBarcode" : "1000000",
-              "locatorName" : "wh_loc",
               "mainPickFrom" : {
                 "alternativeId" : "MAIN",
                 "huBarcode" : "1000000",
@@ -273,7 +263,6 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
                 "qtyRejected" : null,
                 "qtyRejectedReasonCode" : null
               },
-              "pickFromAlternativeIds" : [ "1000000" ],
               "pickFromAlternatives" : {
                 "1000000" : {
                   "alternativeId" : "1000000",
@@ -286,12 +275,9 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
               },
               "pickingStepId" : "1000000",
               "productName" : "P1",
-              "qtyPicked" : 0,
               "qtyToPick" : 75.000,
               "uom" : "Kg"
             }, {
-              "huBarcode" : "1000002",
-              "locatorName" : "wh_loc",
               "mainPickFrom" : {
                 "alternativeId" : "MAIN",
                 "huBarcode" : "1000002",
@@ -300,11 +286,9 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
                 "qtyRejected" : null,
                 "qtyRejectedReasonCode" : null
               },
-              "pickFromAlternativeIds" : [ ],
               "pickFromAlternatives" : { },
               "pickingStepId" : "1000001",
               "productName" : "P1",
-              "qtyPicked" : 0,
               "qtyToPick" : 25.000,
               "uom" : "Kg"
             } ],
@@ -515,8 +499,6 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.createJobAndGet=
             "caption" : "P1",
             "qtyToPick" : 100.000,
             "steps" : [ {
-              "huBarcode" : "1000000",
-              "locatorName" : "wh_loc",
               "mainPickFrom" : {
                 "alternativeId" : "MAIN",
                 "huBarcode" : "1000000",
@@ -525,7 +507,6 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.createJobAndGet=
                 "qtyRejected" : null,
                 "qtyRejectedReasonCode" : null
               },
-              "pickFromAlternativeIds" : [ "1000000" ],
               "pickFromAlternatives" : {
                 "1000000" : {
                   "alternativeId" : "1000000",
@@ -538,12 +519,9 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.createJobAndGet=
               },
               "pickingStepId" : "1000000",
               "productName" : "P1",
-              "qtyPicked" : 0,
               "qtyToPick" : 75.000,
               "uom" : "Kg"
             }, {
-              "huBarcode" : "1000002",
-              "locatorName" : "wh_loc",
               "mainPickFrom" : {
                 "alternativeId" : "MAIN",
                 "huBarcode" : "1000002",
@@ -552,11 +530,9 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.createJobAndGet=
                 "qtyRejected" : null,
                 "qtyRejectedReasonCode" : null
               },
-              "pickFromAlternativeIds" : [ ],
               "pickFromAlternatives" : { },
               "pickingStepId" : "1000001",
               "productName" : "P1",
-              "qtyPicked" : 0,
               "qtyToPick" : 25.000,
               "uom" : "Kg"
             } ],
@@ -767,8 +743,6 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             "caption" : "P1",
             "qtyToPick" : 100.000,
             "steps" : [ {
-              "huBarcode" : "1000000",
-              "locatorName" : "wh_loc",
               "mainPickFrom" : {
                 "alternativeId" : "MAIN",
                 "huBarcode" : "1000000",
@@ -777,7 +751,6 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                 "qtyRejected" : null,
                 "qtyRejectedReasonCode" : null
               },
-              "pickFromAlternativeIds" : [ "1000000" ],
               "pickFromAlternatives" : {
                 "1000000" : {
                   "alternativeId" : "1000000",
@@ -790,12 +763,9 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
               },
               "pickingStepId" : "1000000",
               "productName" : "P1",
-              "qtyPicked" : 0,
               "qtyToPick" : 75.000,
               "uom" : "Kg"
             }, {
-              "huBarcode" : "1000002",
-              "locatorName" : "wh_loc",
               "mainPickFrom" : {
                 "alternativeId" : "MAIN",
                 "huBarcode" : "1000002",
@@ -804,11 +774,9 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                 "qtyRejected" : null,
                 "qtyRejectedReasonCode" : null
               },
-              "pickFromAlternativeIds" : [ ],
               "pickFromAlternatives" : { },
               "pickingStepId" : "1000001",
               "productName" : "P1",
-              "qtyPicked" : 0,
               "qtyToPick" : 25.000,
               "uom" : "Kg"
             } ],
@@ -1013,8 +981,6 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             "caption" : "P1",
             "qtyToPick" : 100.000,
             "steps" : [ {
-              "huBarcode" : "1000000",
-              "locatorName" : "wh_loc",
               "mainPickFrom" : {
                 "alternativeId" : "MAIN",
                 "huBarcode" : "1000000",
@@ -1023,7 +989,6 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                 "qtyRejected" : 50,
                 "qtyRejectedReasonCode" : "damaged"
               },
-              "pickFromAlternativeIds" : [ "1000000" ],
               "pickFromAlternatives" : {
                 "1000000" : {
                   "alternativeId" : "1000000",
@@ -1036,12 +1001,9 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
               },
               "pickingStepId" : "1000000",
               "productName" : "P1",
-              "qtyPicked" : 25,
               "qtyToPick" : 75.000,
               "uom" : "Kg"
             }, {
-              "huBarcode" : "1000002",
-              "locatorName" : "wh_loc",
               "mainPickFrom" : {
                 "alternativeId" : "MAIN",
                 "huBarcode" : "1000002",
@@ -1050,11 +1012,9 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                 "qtyRejected" : null,
                 "qtyRejectedReasonCode" : null
               },
-              "pickFromAlternativeIds" : [ ],
               "pickFromAlternatives" : { },
               "pickingStepId" : "1000001",
               "productName" : "P1",
-              "qtyPicked" : 25,
               "qtyToPick" : 25.000,
               "uom" : "Kg"
             } ],
@@ -1294,8 +1254,6 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             "caption" : "P1",
             "qtyToPick" : 100.000,
             "steps" : [ {
-              "huBarcode" : "1000000",
-              "locatorName" : "wh_loc",
               "mainPickFrom" : {
                 "alternativeId" : "MAIN",
                 "huBarcode" : "1000000",
@@ -1304,7 +1262,6 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                 "qtyRejected" : 50,
                 "qtyRejectedReasonCode" : "damaged"
               },
-              "pickFromAlternativeIds" : [ "1000000" ],
               "pickFromAlternatives" : {
                 "1000000" : {
                   "alternativeId" : "1000000",
@@ -1317,12 +1274,9 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
               },
               "pickingStepId" : "1000000",
               "productName" : "P1",
-              "qtyPicked" : 25,
               "qtyToPick" : 75.000,
               "uom" : "Kg"
             }, {
-              "huBarcode" : "1000002",
-              "locatorName" : "wh_loc",
               "mainPickFrom" : {
                 "alternativeId" : "MAIN",
                 "huBarcode" : "1000002",
@@ -1331,11 +1285,9 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                 "qtyRejected" : null,
                 "qtyRejectedReasonCode" : null
               },
-              "pickFromAlternativeIds" : [ ],
               "pickFromAlternatives" : { },
               "pickingStepId" : "1000001",
               "productName" : "P1",
-              "qtyPicked" : 25,
               "qtyToPick" : 25.000,
               "uom" : "Kg"
             } ],
@@ -1581,8 +1533,6 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             "caption" : "P1",
             "qtyToPick" : 100.000,
             "steps" : [ {
-              "huBarcode" : "1000000",
-              "locatorName" : "wh_loc",
               "mainPickFrom" : {
                 "alternativeId" : "MAIN",
                 "huBarcode" : "1000000",
@@ -1591,7 +1541,6 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                 "qtyRejected" : null,
                 "qtyRejectedReasonCode" : null
               },
-              "pickFromAlternativeIds" : [ "1000000" ],
               "pickFromAlternatives" : {
                 "1000000" : {
                   "alternativeId" : "1000000",
@@ -1604,12 +1553,9 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
               },
               "pickingStepId" : "1000000",
               "productName" : "P1",
-              "qtyPicked" : 0,
               "qtyToPick" : 75.000,
               "uom" : "Kg"
             }, {
-              "huBarcode" : "1000002",
-              "locatorName" : "wh_loc",
               "mainPickFrom" : {
                 "alternativeId" : "MAIN",
                 "huBarcode" : "1000002",
@@ -1618,11 +1564,9 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                 "qtyRejected" : null,
                 "qtyRejectedReasonCode" : null
               },
-              "pickFromAlternativeIds" : [ ],
               "pickFromAlternatives" : { },
               "pickingStepId" : "1000001",
               "productName" : "P1",
-              "qtyPicked" : 0,
               "qtyToPick" : 25.000,
               "uom" : "Kg"
             } ],
@@ -1685,8 +1629,6 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             "caption" : "P1",
             "qtyToPick" : 100.000,
             "steps" : [ {
-              "huBarcode" : "1000000",
-              "locatorName" : "wh_loc",
               "mainPickFrom" : {
                 "alternativeId" : "MAIN",
                 "huBarcode" : "1000000",
@@ -1695,7 +1637,6 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                 "qtyRejected" : null,
                 "qtyRejectedReasonCode" : null
               },
-              "pickFromAlternativeIds" : [ "1000000" ],
               "pickFromAlternatives" : {
                 "1000000" : {
                   "alternativeId" : "1000000",
@@ -1708,12 +1649,9 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
               },
               "pickingStepId" : "1000000",
               "productName" : "P1",
-              "qtyPicked" : 75.000,
               "qtyToPick" : 75.000,
               "uom" : "Kg"
             }, {
-              "huBarcode" : "1000002",
-              "locatorName" : "wh_loc",
               "mainPickFrom" : {
                 "alternativeId" : "MAIN",
                 "huBarcode" : "1000002",
@@ -1722,11 +1660,9 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                 "qtyRejected" : null,
                 "qtyRejectedReasonCode" : null
               },
-              "pickFromAlternativeIds" : [ ],
               "pickFromAlternatives" : { },
               "pickingStepId" : "1000001",
               "productName" : "P1",
-              "qtyPicked" : 25,
               "qtyToPick" : 25.000,
               "uom" : "Kg"
             } ],
@@ -1959,8 +1895,6 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             "caption" : "P1",
             "qtyToPick" : 100.000,
             "steps" : [ {
-              "huBarcode" : "1000000",
-              "locatorName" : "wh_loc",
               "mainPickFrom" : {
                 "alternativeId" : "MAIN",
                 "huBarcode" : "1000000",
@@ -1969,7 +1903,6 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                 "qtyRejected" : null,
                 "qtyRejectedReasonCode" : null
               },
-              "pickFromAlternativeIds" : [ "1000000" ],
               "pickFromAlternatives" : {
                 "1000000" : {
                   "alternativeId" : "1000000",
@@ -1982,12 +1915,9 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
               },
               "pickingStepId" : "1000000",
               "productName" : "P1",
-              "qtyPicked" : 75.000,
               "qtyToPick" : 75.000,
               "uom" : "Kg"
             }, {
-              "huBarcode" : "1000002",
-              "locatorName" : "wh_loc",
               "mainPickFrom" : {
                 "alternativeId" : "MAIN",
                 "huBarcode" : "1000002",
@@ -1996,11 +1926,9 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                 "qtyRejected" : null,
                 "qtyRejectedReasonCode" : null
               },
-              "pickFromAlternativeIds" : [ ],
               "pickFromAlternatives" : { },
               "pickingStepId" : "1000001",
               "productName" : "P1",
-              "qtyPicked" : 25,
               "qtyToPick" : 25.000,
               "uom" : "Kg"
             } ],
@@ -2375,8 +2303,6 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             "caption" : "P1",
             "qtyToPick" : 100.000,
             "steps" : [ {
-              "huBarcode" : "1000000",
-              "locatorName" : "wh_loc",
               "mainPickFrom" : {
                 "alternativeId" : "MAIN",
                 "huBarcode" : "1000000",
@@ -2385,7 +2311,6 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                 "qtyRejected" : null,
                 "qtyRejectedReasonCode" : null
               },
-              "pickFromAlternativeIds" : [ "1000000" ],
               "pickFromAlternatives" : {
                 "1000000" : {
                   "alternativeId" : "1000000",
@@ -2398,12 +2323,9 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
               },
               "pickingStepId" : "1000000",
               "productName" : "P1",
-              "qtyPicked" : 0,
               "qtyToPick" : 75.000,
               "uom" : "Kg"
             }, {
-              "huBarcode" : "1000002",
-              "locatorName" : "wh_loc",
               "mainPickFrom" : {
                 "alternativeId" : "MAIN",
                 "huBarcode" : "1000002",
@@ -2412,11 +2334,9 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                 "qtyRejected" : null,
                 "qtyRejectedReasonCode" : null
               },
-              "pickFromAlternativeIds" : [ ],
               "pickFromAlternatives" : { },
               "pickingStepId" : "1000001",
               "productName" : "P1",
-              "qtyPicked" : 0,
               "qtyToPick" : 25.000,
               "uom" : "Kg"
             } ],
@@ -2624,8 +2544,6 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             "caption" : "P1",
             "qtyToPick" : 100.000,
             "steps" : [ {
-              "huBarcode" : "1000000",
-              "locatorName" : "wh_loc",
               "mainPickFrom" : {
                 "alternativeId" : "MAIN",
                 "huBarcode" : "1000000",
@@ -2634,7 +2552,6 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                 "qtyRejected" : null,
                 "qtyRejectedReasonCode" : null
               },
-              "pickFromAlternativeIds" : [ "1000000" ],
               "pickFromAlternatives" : {
                 "1000000" : {
                   "alternativeId" : "1000000",
@@ -2647,12 +2564,9 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
               },
               "pickingStepId" : "1000000",
               "productName" : "P1",
-              "qtyPicked" : 75.000,
               "qtyToPick" : 75.000,
               "uom" : "Kg"
             }, {
-              "huBarcode" : "1000002",
-              "locatorName" : "wh_loc",
               "mainPickFrom" : {
                 "alternativeId" : "MAIN",
                 "huBarcode" : "1000002",
@@ -2661,11 +2575,9 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                 "qtyRejected" : null,
                 "qtyRejectedReasonCode" : null
               },
-              "pickFromAlternativeIds" : [ ],
               "pickFromAlternatives" : { },
               "pickingStepId" : "1000001",
               "productName" : "P1",
-              "qtyPicked" : 0,
               "qtyToPick" : 25.000,
               "uom" : "Kg"
             } ],
@@ -2895,8 +2807,6 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             "caption" : "P1",
             "qtyToPick" : 100.000,
             "steps" : [ {
-              "huBarcode" : "1000000",
-              "locatorName" : "wh_loc",
               "mainPickFrom" : {
                 "alternativeId" : "MAIN",
                 "huBarcode" : "1000000",
@@ -2905,7 +2815,6 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                 "qtyRejected" : null,
                 "qtyRejectedReasonCode" : null
               },
-              "pickFromAlternativeIds" : [ "1000000" ],
               "pickFromAlternatives" : {
                 "1000000" : {
                   "alternativeId" : "1000000",
@@ -2918,12 +2827,9 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
               },
               "pickingStepId" : "1000000",
               "productName" : "P1",
-              "qtyPicked" : 0,
               "qtyToPick" : 75.000,
               "uom" : "Kg"
             }, {
-              "huBarcode" : "1000002",
-              "locatorName" : "wh_loc",
               "mainPickFrom" : {
                 "alternativeId" : "MAIN",
                 "huBarcode" : "1000002",
@@ -2932,11 +2838,9 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                 "qtyRejected" : null,
                 "qtyRejectedReasonCode" : null
               },
-              "pickFromAlternativeIds" : [ ],
               "pickFromAlternatives" : { },
               "pickingStepId" : "1000001",
               "productName" : "P1",
-              "qtyPicked" : 0,
               "qtyToPick" : 25.000,
               "uom" : "Kg"
             } ],
@@ -2999,8 +2903,6 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             "caption" : "P1",
             "qtyToPick" : 100.000,
             "steps" : [ {
-              "huBarcode" : "1000000",
-              "locatorName" : "wh_loc",
               "mainPickFrom" : {
                 "alternativeId" : "MAIN",
                 "huBarcode" : "1000000",
@@ -3009,7 +2911,6 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                 "qtyRejected" : null,
                 "qtyRejectedReasonCode" : null
               },
-              "pickFromAlternativeIds" : [ "1000000" ],
               "pickFromAlternatives" : {
                 "1000000" : {
                   "alternativeId" : "1000000",
@@ -3022,12 +2923,9 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
               },
               "pickingStepId" : "1000000",
               "productName" : "P1",
-              "qtyPicked" : 0,
               "qtyToPick" : 75.000,
               "uom" : "Kg"
             }, {
-              "huBarcode" : "1000002",
-              "locatorName" : "wh_loc",
               "mainPickFrom" : {
                 "alternativeId" : "MAIN",
                 "huBarcode" : "1000002",
@@ -3036,11 +2934,9 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                 "qtyRejected" : null,
                 "qtyRejectedReasonCode" : null
               },
-              "pickFromAlternativeIds" : [ ],
               "pickFromAlternatives" : { },
               "pickingStepId" : "1000001",
               "productName" : "P1",
-              "qtyPicked" : 0,
               "qtyToPick" : 25.000,
               "uom" : "Kg"
             } ],
@@ -3245,8 +3141,6 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             "caption" : "P1",
             "qtyToPick" : 100.000,
             "steps" : [ {
-              "huBarcode" : "1000000",
-              "locatorName" : "wh_loc",
               "mainPickFrom" : {
                 "alternativeId" : "MAIN",
                 "huBarcode" : "1000000",
@@ -3255,7 +3149,6 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                 "qtyRejected" : null,
                 "qtyRejectedReasonCode" : null
               },
-              "pickFromAlternativeIds" : [ "1000000" ],
               "pickFromAlternatives" : {
                 "1000000" : {
                   "alternativeId" : "1000000",
@@ -3268,12 +3161,9 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
               },
               "pickingStepId" : "1000000",
               "productName" : "P1",
-              "qtyPicked" : 0,
               "qtyToPick" : 75.000,
               "uom" : "Kg"
             }, {
-              "huBarcode" : "1000002",
-              "locatorName" : "wh_loc",
               "mainPickFrom" : {
                 "alternativeId" : "MAIN",
                 "huBarcode" : "1000002",
@@ -3282,11 +3172,9 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                 "qtyRejected" : null,
                 "qtyRejectedReasonCode" : null
               },
-              "pickFromAlternativeIds" : [ ],
               "pickFromAlternatives" : { },
               "pickingStepId" : "1000001",
               "productName" : "P1",
-              "qtyPicked" : 0,
               "qtyToPick" : 25.000,
               "uom" : "Kg"
             } ],
@@ -3630,8 +3518,6 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             "caption" : "P1",
             "qtyToPick" : 100.000,
             "steps" : [ {
-              "huBarcode" : "1000000",
-              "locatorName" : "wh_loc",
               "mainPickFrom" : {
                 "alternativeId" : "MAIN",
                 "huBarcode" : "1000000",
@@ -3640,7 +3526,6 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                 "qtyRejected" : null,
                 "qtyRejectedReasonCode" : null
               },
-              "pickFromAlternativeIds" : [ "1000000" ],
               "pickFromAlternatives" : {
                 "1000000" : {
                   "alternativeId" : "1000000",
@@ -3653,12 +3538,9 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
               },
               "pickingStepId" : "1000000",
               "productName" : "P1",
-              "qtyPicked" : 0,
               "qtyToPick" : 75.000,
               "uom" : "Kg"
             }, {
-              "huBarcode" : "1000002",
-              "locatorName" : "wh_loc",
               "mainPickFrom" : {
                 "alternativeId" : "MAIN",
                 "huBarcode" : "1000002",
@@ -3667,11 +3549,9 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                 "qtyRejected" : null,
                 "qtyRejectedReasonCode" : null
               },
-              "pickFromAlternativeIds" : [ ],
               "pickFromAlternatives" : { },
               "pickingStepId" : "1000001",
               "productName" : "P1",
-              "qtyPicked" : 0,
               "qtyToPick" : 25.000,
               "uom" : "Kg"
             } ],
@@ -3879,8 +3759,6 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             "caption" : "P1",
             "qtyToPick" : 100.000,
             "steps" : [ {
-              "huBarcode" : "1000000",
-              "locatorName" : "wh_loc",
               "mainPickFrom" : {
                 "alternativeId" : "MAIN",
                 "huBarcode" : "1000000",
@@ -3889,7 +3767,6 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                 "qtyRejected" : null,
                 "qtyRejectedReasonCode" : null
               },
-              "pickFromAlternativeIds" : [ "1000000" ],
               "pickFromAlternatives" : {
                 "1000000" : {
                   "alternativeId" : "1000000",
@@ -3902,12 +3779,9 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
               },
               "pickingStepId" : "1000000",
               "productName" : "P1",
-              "qtyPicked" : 75.000,
               "qtyToPick" : 75.000,
               "uom" : "Kg"
             }, {
-              "huBarcode" : "1000002",
-              "locatorName" : "wh_loc",
               "mainPickFrom" : {
                 "alternativeId" : "MAIN",
                 "huBarcode" : "1000002",
@@ -3916,11 +3790,9 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                 "qtyRejected" : null,
                 "qtyRejectedReasonCode" : null
               },
-              "pickFromAlternativeIds" : [ ],
               "pickFromAlternatives" : { },
               "pickingStepId" : "1000001",
               "productName" : "P1",
-              "qtyPicked" : 0,
               "qtyToPick" : 25.000,
               "uom" : "Kg"
             } ],
