@@ -60,7 +60,6 @@ PickLineButton.propTypes = {
   qtyPicked: PropTypes.number.isRequired,
   qtyToPick: PropTypes.number.isRequired,
   appId: PropTypes.string.isRequired,
-  onHandleClick: PropTypes.func.isRequired,
   //
   // Actions
   dispatch: PropTypes.func.isRequired,
