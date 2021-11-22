@@ -28,6 +28,7 @@ class RawMaterialIssueStepButton extends PureComponent {
 
   render() {
     const { lineId, productName, uom, qtyIssued, qtyToIssue, completeStatus } = this.props;
+    const qtyCurrent = qtyIssued || 0;
 
     return (
       <div className="mt-3">
@@ -45,7 +46,7 @@ class RawMaterialIssueStepButton extends PureComponent {
                     </div>
                     <div className="picking-row-picking">{counterpart.translate('activities.mfg.issues.picked')}:</div>
                     <div className="picking-row-picked">
-                      {qtyIssued} {uom}
+                      {qtyCurrent} {uom}
                     </div>
                   </div>
                 </div>
