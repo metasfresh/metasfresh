@@ -32,8 +32,8 @@ import de.metas.externalsystem.grssignum.ExternalSystemGRSSignumConfig;
 import de.metas.externalsystem.grssignum.ExternalSystemGRSSignumConfigId;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Alberta;
-import de.metas.externalsystem.model.I_ExternalSystem_Config_RabbitMQ_HTTP;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_GRSSignum;
+import de.metas.externalsystem.model.I_ExternalSystem_Config_RabbitMQ_HTTP;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6Mapping;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6_UOM;
@@ -627,7 +627,6 @@ public class ExternalSystemConfigRepo
 		return record;
 	}
 
-
 	@NonNull
 	private Optional<IExternalSystemChildConfig> getGRSSignumConfigByParentId(@NonNull final ExternalSystemParentConfigId id)
 	{
@@ -668,6 +667,9 @@ public class ExternalSystemConfigRepo
 				.value(config.getExternalSystemValue())
 				.camelHttpResourceAuthKey(config.getCamelHttpResourceAuthKey())
 				.baseUrl(config.getBaseURL())
+				.tenantId(config.getTenantId())
+				.authToken(config.getAuthToken())
+				.syncBPartnersToRestEndpoint(config.isSyncBPartnersToRestEndpoint())
 				.build();
 	}
 

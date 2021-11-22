@@ -19,7 +19,9 @@ public class PPOrderIssuePlanStep
 	@NonNull Quantity qtyToIssue;
 
 	@NonNull LocatorId pickFromLocatorId;
-	@NonNull I_M_HU pickFromHU;
+	@NonNull I_M_HU pickFromTopLevelHU;
 
-	public HuId getPickFromHUId() {return HuId.ofRepoId(pickFromHU.getM_HU_ID());}
+	boolean isAlternative;
+
+	public HuId getPickFromTopLevelHUId() {return HuId.ofRepoId(pickFromTopLevelHU.getM_HU_ID());}
 }

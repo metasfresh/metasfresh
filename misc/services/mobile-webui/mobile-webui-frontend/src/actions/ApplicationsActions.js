@@ -24,7 +24,7 @@ export function setActiveApplication({ id, caption }) {
     if (!caption) {
       const state = getState();
 
-      caption = state.applications.apps[id];
+      caption = state.applications.availableApplications[id];
     }
 
     dispatch({

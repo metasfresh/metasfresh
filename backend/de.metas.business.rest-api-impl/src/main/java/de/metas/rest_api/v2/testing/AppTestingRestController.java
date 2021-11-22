@@ -22,8 +22,8 @@
 
 package de.metas.rest_api.v2.testing;
 
+import de.metas.cache.CacheMgt;
 import de.metas.common.rest_api.common.JsonTestResponse;
-import de.metas.common.util.EmptyUtil;
 import de.metas.logging.LogManager;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.Recipient;
@@ -130,7 +130,7 @@ public class AppTestingRestController
 	{
 		Loggables.get().addLog("Endpoint invoked; returning httpCode: " + responseCode);
 
-		if (!EmptyUtil.isEmpty(delaymillis))
+		if (delaymillis != null && delaymillis > 0)
 		{
 			Thread.sleep(delaymillis);
 		}
@@ -146,5 +146,11 @@ public class AppTestingRestController
 				.build();
 
 		return ResponseEntity.status(responseCode).body(response);
+	}
+
+	@GetMapping("/cacheReset")
+	public void cacheReset()
+	{
+		CacheMgt.get().reset();
 	}
 }

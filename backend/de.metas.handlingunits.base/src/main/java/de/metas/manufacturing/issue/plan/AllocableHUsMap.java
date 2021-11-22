@@ -17,6 +17,7 @@ import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Optional;
 
@@ -40,6 +41,8 @@ class AllocableHUsMap
 		this.pickFromHUsSupplier = pickFromHUsSupplier;
 	}
 
+	public Collection<AllocableHU> getAllAllocableHUsInvolved() {return allocableHUs.values();}
+
 	public AllocableHUsList getAllocableHUs(@NonNull final AllocableHUsGroupingKey key)
 	{
 		return groups.computeIfAbsent(key, this::retrieveAvailableHUsToPick);
@@ -50,14 +53,14 @@ class AllocableHUsMap
 		final ProductId productId = key.getProductId();
 		final ImmutableList<PickFromHU> husEligibleToPick = pickFromHUsSupplier.getEligiblePickFromHUs(
 				PickFromHUsGetRequest.builder()
-						.pickFromLocatorIds(key.getPickFromLocatorIds())
+						.pickFromLocatorId(key.getPickFromLocatorId())
 						.productId(productId)
 						.asiId(AttributeSetInstanceId.NONE) // TODO match attributes
 						.bestBeforePolicy(ShipmentAllocationBestBeforePolicy.Expiring_First)
 						.reservationRef(Optional.empty()) // TODO introduce some PP Order reservation
 						.build());
 
-		final ImmutableList<AllocableHU> hus = CollectionUtils.map(husEligibleToPick, pickFromHU -> toAllocableHU(pickFromHU.getHuId(), productId));
+		final ImmutableList<AllocableHU> hus = CollectionUtils.map(husEligibleToPick, hu -> toAllocableHU(hu.getTopLevelHUId(), productId));
 		return new AllocableHUsList(hus);
 	}
 
@@ -70,14 +73,14 @@ class AllocableHUsMap
 	private AllocableHU createAllocableHU(@NonNull final AllocableHUKey key)
 	{
 		final HUsLoadingCache husCache = pickFromHUsSupplier.getHusCache();
-		final I_M_HU hu = husCache.getHUById(key.getHuId());
-		return new AllocableHU(storageFactory, uomConverter, hu, key.getProductId());
+		final I_M_HU topLevelHU = husCache.getHUById(key.getTopLevelHUId());
+		return new AllocableHU(storageFactory, uomConverter, topLevelHU, key.getProductId());
 	}
 
 	@Value(staticConstructor = "of")
 	private static class AllocableHUKey
 	{
-		@NonNull HuId huId;
+		@NonNull HuId topLevelHUId;
 		@NonNull ProductId productId;
 	}
 }

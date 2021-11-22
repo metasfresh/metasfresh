@@ -22,7 +22,7 @@ const getStepComponent = (appId) => {
 
 class StepScreen extends PureComponent {
   // if `locatorId` exists, scanner will be configured for distributions.locator case
-  onScanButtonClick = (locatorId) => {
+  onScanButtonClick = ({ locatorId = null } = {}) => {
     const { wfProcessId, activityId, lineId, stepId, dispatch, appId, altStepId } = this.props;
 
     const altStepPath = altStepId ? `/altStepId/${altStepId}` : ``;
@@ -49,7 +49,7 @@ class StepScreen extends PureComponent {
 }
 
 const mapStateToProps = (state, ownProps) => {
-  const { workflowId: wfProcessId, activityId, lineId, stepId, altStepId } = ownProps.match.params;
+  const { workflowId: wfProcessId, activityId, lineId, stepId } = ownProps.match.params;
   const activity = selectWFProcessFromState(state, wfProcessId).activities[activityId];
   const stepProps = activity.dataStored.lines[lineId].steps[stepId];
   const appId = state.applications.activeApplication ? state.applications.activeApplication.id : null;
@@ -59,7 +59,6 @@ const mapStateToProps = (state, ownProps) => {
     activityId,
     lineId,
     stepId,
-    altStepId,
     stepProps,
     appId,
   };
@@ -72,7 +71,6 @@ StepScreen.propTypes = {
   activityId: PropTypes.string.isRequired,
   lineId: PropTypes.string.isRequired,
   stepId: PropTypes.string.isRequired,
-  altStepId: PropTypes.string,
   stepProps: PropTypes.object.isRequired,
   appId: PropTypes.string.isRequired,
   //

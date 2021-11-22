@@ -1,5 +1,6 @@
 package de.metas.manufacturing.issue.plan;
 
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.storage.IHUStorageFactory;
@@ -13,43 +14,46 @@ import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.LocatorId;
 
-@ToString(exclude = "storageFactory")
+@ToString(exclude = { "storageFactory", "uomConverter" })
 class AllocableHU
 {
 	private final IHUStorageFactory storageFactory;
 	private final QuantityUOMConverter uomConverter;
 
 	@Getter
-	private final I_M_HU hu;
-
-	private final ProductId productId;
+	@NonNull private final I_M_HU topLevelHU;
 
 	@Getter
-	private final LocatorId locatorId;
+	@NonNull private final ProductId productId;
 
-	private Quantity _storageQtyInHuUom;
+	@Getter
+	@NonNull private final LocatorId locatorId;
+
+	private Quantity _storageQtyInHuUom; // lazy
 	private Quantity qtyAllocatedInHuUom;
 
 	public AllocableHU(
 			@NonNull final IHUStorageFactory storageFactory,
 			@NonNull final QuantityUOMConverter uomConverter,
-			@NonNull final I_M_HU hu,
+			@NonNull final I_M_HU topLevelHU,
 			@NonNull final ProductId productId)
 	{
 		this.storageFactory = storageFactory;
 		this.uomConverter = uomConverter;
-		this.hu = hu;
+		this.topLevelHU = topLevelHU;
 		this.productId = productId;
 
-		this.locatorId = IHandlingUnitsBL.extractLocatorId(hu);
+		this.locatorId = IHandlingUnitsBL.extractLocatorId(topLevelHU);
 	}
+
+	public HuId getHuId() {return HuId.ofRepoId(getTopLevelHU().getM_HU_ID());}
 
 	public Quantity getQtyAvailableToAllocate(final UomId uomId)
 	{
 		return uomConverter.convertQuantityTo(getQtyAvailableToAllocateInHuUom(), productId, uomId);
 	}
 
-	private Quantity getQtyAvailableToAllocateInHuUom()
+	public Quantity getQtyAvailableToAllocateInHuUom()
 	{
 		final Quantity qtyStorageInHuUom = getStorageQtyInHuUom();
 		return qtyAllocatedInHuUom != null
@@ -62,7 +66,7 @@ class AllocableHU
 		Quantity storageQtyInHuUom = this._storageQtyInHuUom;
 		if (storageQtyInHuUom == null)
 		{
-			storageQtyInHuUom = this._storageQtyInHuUom = storageFactory.getStorage(hu).getProductStorage(productId).getQty();
+			storageQtyInHuUom = this._storageQtyInHuUom = storageFactory.getStorage(topLevelHU).getProductStorage(productId).getQty();
 		}
 		return storageQtyInHuUom;
 	}
@@ -89,4 +93,8 @@ class AllocableHU
 		this.qtyAllocatedInHuUom = newQtyAllocatedInHuUom;
 	}
 
+	public boolean hasQtyAvailable()
+	{
+		return getQtyAvailableToAllocateInHuUom().signum() > 0;
+	}
 }

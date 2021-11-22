@@ -253,7 +253,7 @@ public class PickingJobCreateCommand
 
 		final PickingJobCreateRepoRequest.StepPickFrom mainPickFrom = PickingJobCreateRepoRequest.StepPickFrom.builder()
 				.pickFromLocatorId(pickFromHU.getLocatorId())
-				.pickFromHUId(extractTopLevelCUIfNeeded(pickFromHU.getHuId(), productId, qtyToPick))
+				.pickFromHUId(extractTopLevelCUIfNeeded(pickFromHU.getTopLevelHUId(), productId, qtyToPick))
 				.build();
 
 		final ImmutableSet<PickingJobCreateRepoRequest.StepPickFrom> pickFromAlternatives = pickFromHU.getAlternatives()

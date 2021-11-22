@@ -1,27 +1,30 @@
 package de.metas.manufacturing.workflows_api;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.common.util.time.SystemTime;
+import de.metas.handlingunits.picking.QtyRejectedReasonCode;
+import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleId;
+import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleProcessRequest;
 import de.metas.i18n.TranslatableStrings;
-import de.metas.manufacturing.job.ManufacturingJob;
-import de.metas.manufacturing.job.ManufacturingJobActivity;
-import de.metas.manufacturing.job.ManufacturingJobActivityId;
-import de.metas.manufacturing.job.ManufacturingJobReference;
-import de.metas.manufacturing.job.ManufacturingJobService;
+import de.metas.manufacturing.job.model.ManufacturingJob;
+import de.metas.manufacturing.job.model.ManufacturingJobActivity;
+import de.metas.manufacturing.job.model.ManufacturingJobActivityId;
+import de.metas.manufacturing.job.model.ManufacturingJobReference;
+import de.metas.manufacturing.job.service.ManufacturingJobService;
 import de.metas.manufacturing.workflows_api.activity_handlers.ConfirmationActivityHandler;
 import de.metas.manufacturing.workflows_api.activity_handlers.MaterialReceiptActivityHandler;
 import de.metas.manufacturing.workflows_api.activity_handlers.RawMaterialsIssueActivityHandler;
 import de.metas.manufacturing.workflows_api.activity_handlers.WorkReportActivityHandler;
+import de.metas.manufacturing.workflows_api.rest_api.json.JsonManufacturingOrderEvent;
 import de.metas.user.UserId;
 import de.metas.workflow.rest_api.model.WFActivity;
 import de.metas.workflow.rest_api.model.WFActivityId;
-import de.metas.workflow.rest_api.model.WFActivityStatus;
 import de.metas.workflow.rest_api.model.WFProcess;
 import de.metas.workflow.rest_api.model.WFProcessId;
 import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.exceptions.AdempiereException;
 import org.eevolution.api.PPOrderId;
-import org.eevolution.api.PPOrderRoutingActivityStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.Objects;
@@ -47,6 +50,11 @@ public class ManufacturingRestService
 		return manufacturingJobService.createJob(ppOrderId, responsibleId);
 	}
 
+	public void abortJob(@NonNull final PPOrderId ppOrderId, @NonNull final UserId responsibleId)
+	{
+		manufacturingJobService.abortJob(ppOrderId, responsibleId);
+	}
+
 	public ManufacturingJob getJobById(final PPOrderId ppOrderId)
 	{
 		return manufacturingJobService.getJobById(ppOrderId);
@@ -57,7 +65,7 @@ public class ManufacturingRestService
 		final WFActivity.WFActivityBuilder builder = WFActivity.builder()
 				.id(WFActivityId.ofId(jobActivity.getId()))
 				.caption(TranslatableStrings.anyLanguage(jobActivity.getName()))
-				.status(toWFActivityStatus(jobActivity.getStatus()));
+				.status(jobActivity.getStatus());
 
 		switch (jobActivity.getType())
 		{
@@ -88,24 +96,36 @@ public class ManufacturingRestService
 				.build();
 	}
 
-	private static WFActivityStatus toWFActivityStatus(final @NonNull PPOrderRoutingActivityStatus status)
+	public ManufacturingJob withActivityCompleted(ManufacturingJob job, ManufacturingJobActivityId jobActivityId) {return manufacturingJobService.withActivityCompleted(job, jobActivityId);}
+
+	public ManufacturingJob processEvent(final ManufacturingJob job, final JsonManufacturingOrderEvent event)
 	{
-		switch (status)
+		job.assertUserReporting();
+
+		if (event.getIssueTo() != null)
 		{
-			case NOT_STARTED:
-				return WFActivityStatus.NOT_STARTED;
-			case IN_PROGRESS:
-				return WFActivityStatus.IN_PROGRESS;
-			case COMPLETED:
-				return WFActivityStatus.COMPLETED;
-			case CLOSED:
-				return WFActivityStatus.COMPLETED;
-			case VOIDED:
-				return WFActivityStatus.COMPLETED;
-			default:
-				throw new AdempiereException("Unknown status: " + status);
+			final JsonManufacturingOrderEvent.IssueTo issueTo = event.getIssueTo();
+			return manufacturingJobService.issueRawMaterials(job, PPOrderIssueScheduleProcessRequest.builder()
+					.ppOrderId(job.getPpOrderId())
+					.issueScheduleId(PPOrderIssueScheduleId.ofString(issueTo.getIssueStepId()))
+					.qtyIssued(issueTo.getQtyIssued())
+					.qtyRejected(issueTo.getQtyRejected())
+					.qtyRejectedReasonCode(QtyRejectedReasonCode.ofNullableCode(issueTo.getQtyRejectedReasonCode()).orElse(null))
+					.build());
+		}
+		else if (event.getReceiveFrom() != null)
+		{
+			final JsonManufacturingOrderEvent.ReceiveFrom receiveFrom = event.getReceiveFrom();
+			return manufacturingJobService.receiveGoodsAndAggregateToLU(
+					job,
+					receiveFrom.getFinishedGoodsReceiveLineId(),
+					receiveFrom.getAggregateToLU(),
+					receiveFrom.getQtyReceived(),
+					SystemTime.asZonedDateTime());
+		}
+		else
+		{
+			throw new AdempiereException("Cannot handle: " + event);
 		}
 	}
-
-	public ManufacturingJob withActivityCompleted(ManufacturingJob job, ManufacturingJobActivityId jobActivityId) {return manufacturingJobService.withActivityCompleted(job, jobActivityId);}
 }

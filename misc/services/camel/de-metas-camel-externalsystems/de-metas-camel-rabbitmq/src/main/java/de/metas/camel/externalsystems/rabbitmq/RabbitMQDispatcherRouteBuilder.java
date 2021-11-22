@@ -23,11 +23,11 @@
 package de.metas.camel.externalsystems.rabbitmq;
 
 import com.google.common.annotations.VisibleForTesting;
+import de.metas.camel.externalsystems.common.CamelRouteUtil;
 import de.metas.camel.externalsystems.rabbitmq.api.DispatchMessageRequest;
 import de.metas.camel.externalsystems.rabbitmq.api.JsonRabbitMQHttpMessage;
 import de.metas.camel.externalsystems.rabbitmq.api.JsonRabbitMQHttpResponse;
 import de.metas.camel.externalsystems.rabbitmq.common.CamelConstants;
-import de.metas.camel.externalsystems.common.CamelRouteUtil;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.RuntimeCamelException;

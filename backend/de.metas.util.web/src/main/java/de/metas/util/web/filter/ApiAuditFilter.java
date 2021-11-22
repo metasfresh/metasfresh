@@ -105,7 +105,7 @@ public class ApiAuditFilter implements Filter
 		{
 			logger.error(t.getLocalizedMessage(), t);
 
-			httpServletResponse.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, t.getLocalizedMessage());
+			apiAuditService.handleErrorResponse(null, t, httpServletResponse);
 		}
 	}
 

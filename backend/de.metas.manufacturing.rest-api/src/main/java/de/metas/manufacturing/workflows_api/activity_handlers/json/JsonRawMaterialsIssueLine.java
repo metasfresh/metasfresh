@@ -1,7 +1,7 @@
 package de.metas.manufacturing.workflows_api.activity_handlers.json;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.manufacturing.job.RawMaterialsIssueLine;
+import de.metas.manufacturing.job.model.RawMaterialsIssueLine;
 import de.metas.workflow.rest_api.controller.v2.json.JsonOpts;
 import lombok.Builder;
 import lombok.NonNull;

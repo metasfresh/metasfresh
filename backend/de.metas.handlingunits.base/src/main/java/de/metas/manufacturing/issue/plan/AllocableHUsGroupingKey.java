@@ -10,5 +10,5 @@ import org.adempiere.warehouse.LocatorId;
 class AllocableHUsGroupingKey
 {
 	@NonNull ProductId productId;
-	@NonNull ImmutableSet<LocatorId> pickFromLocatorIds;
+	@NonNull LocatorId pickFromLocatorId;
 }
