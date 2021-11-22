@@ -68,6 +68,7 @@ export const generateAlternativeSteps = ({ draftDataStored, lineId, stepId, qtyT
   let { pickFromAlternatives: alternativesPool } = draftDataStoredOrig;
 
   let qtyToAllocateRemaining = qtyToAllocate;
+  console.log(`qtyRemaining LineId(${lineId}) - stepId(${stepId}) => `, qtyToAllocateRemaining);
   let alternativesPoolCleared = [];
 
   for (let idx = 0; idx < alternativesPool.length; idx++) {
@@ -85,7 +86,9 @@ export const generateAlternativeSteps = ({ draftDataStored, lineId, stepId, qtyT
       const qtyAvailableToAllocateInThisStep = computeQtyAvailableToAllocate({ alternativesPoolItem });
       const qtyToAllocateThisStep = Math.min(qtyToAllocateRemaining, qtyAvailableToAllocateInThisStep);
 
-      if (qtyToAllocateThisStep === 0) break;
+      console.log('qtyAvailable for this step => ', qtyAvailableToAllocateInThisStep);
+      console.log('qtyToAllocateThisStep =>', qtyToAllocateThisStep);
+      if (qtyToAllocateThisStep === 0) continue;
 
       if (!draftStep.altSteps) {
         draftStep.altSteps.genSteps = {};
