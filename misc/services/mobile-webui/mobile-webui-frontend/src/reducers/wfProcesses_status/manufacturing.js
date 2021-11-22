@@ -18,12 +18,15 @@ export const manufacturingReducer = ({ draftState, action }) => {
 };
 
 const reduceOnUpdateQtyPicked = (draftState, payload) => {
-  const { wfProcessId, activityId, lineId, stepId, qtyPicked } = payload;
+  const { wfProcessId, activityId, lineId, stepId, qtyPicked, qtyRejectedReasonCode, scannedHUBarcode } = payload;
 
   const draftWFProcess = draftState[wfProcessId];
-  const draftActivityStep = draftWFProcess.activities[activityId].dataStored.lines[lineId].steps[stepId];
+  const draftStep = draftWFProcess.activities[activityId].dataStored.lines[lineId].steps[stepId];
 
-  draftActivityStep.qtyIssued = qtyPicked;
+  draftStep.qtyIssued = qtyPicked;
+  draftStep.qtyRejectedReasonCode = qtyRejectedReasonCode;
+  draftStep.qtyRejected = draftStep.qtyToIssue - qtyPicked;
+  draftStep.scannedHUBarcode = scannedHUBarcode;
 
   updateStepStatus({
     draftWFProcess,

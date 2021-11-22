@@ -8,7 +8,15 @@ import {
 import { selectWFProcessFromState } from '../reducers/wfProcesses_status';
 import { manufacturingReceiptReqest } from '../api/manufacturing';
 
-export function updateManufacturingIssueQty({ wfProcessId, activityId, lineId, stepId, qtyPicked }) {
+export function updateManufacturingIssueQty({
+  wfProcessId,
+  activityId,
+  lineId,
+  stepId,
+  scannedHUBarcode,
+  qtyPicked,
+  qtyRejectedReasonCode,
+}) {
   return {
     type: UPDATE_MANUFACTURING_ISSUE_QTY,
     payload: {
@@ -16,7 +24,9 @@ export function updateManufacturingIssueQty({ wfProcessId, activityId, lineId, s
       activityId,
       lineId,
       stepId,
+      scannedHUBarcode,
       qtyPicked,
+      qtyRejectedReasonCode,
     },
   };
 }
@@ -31,11 +41,11 @@ export function updateManufacturingIssue({ wfProcessId, activityId, lineId, step
 
     if (line) {
       const step = line.steps[stepId];
-      const { id, huBarcode, qtyIssued, qtyRejected, qtyRejectedReasonCode } = step;
+      const { id, scannedHUBarcode, qtyIssued, qtyRejected, qtyRejectedReasonCode } = step;
       const receiptObject = {
         issueTo: {
           issueStepId: id,
-          huBarcode,
+          huBarcode: scannedHUBarcode,
           qtyIssued,
           qtyRejected,
           qtyRejectedReasonCode,
