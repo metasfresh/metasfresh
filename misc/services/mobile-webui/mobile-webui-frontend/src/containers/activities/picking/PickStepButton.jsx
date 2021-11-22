@@ -120,7 +120,8 @@ PickStepButton.propTypes = {
   qtyPicked: PropTypes.number,
   qtyToPick: PropTypes.number.isRequired,
   stepState: PropTypes.object,
-  pickFromAlternatives: PropTypes.array,
+  // object as we pass the normalized version
+  pickFromAlternatives: PropTypes.object,
   //
   // Actions/Functions
   dispatch: PropTypes.func.isRequired,
