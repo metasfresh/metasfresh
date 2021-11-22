@@ -18,7 +18,7 @@ class RawMaterialIssueButton extends PureComponent {
   onQtyPickedChanged = (qty) => {
     const { onClick } = this.props;
 
-    const inputQty = parseInt(qty);
+    const inputQty = parseFloat(qty);
     if (isNaN(inputQty)) {
       return;
     }
