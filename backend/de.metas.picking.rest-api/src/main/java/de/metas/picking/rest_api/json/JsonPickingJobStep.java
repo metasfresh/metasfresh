@@ -33,7 +33,6 @@ import lombok.extern.jackson.Jacksonized;
 
 import java.math.BigDecimal;
 import java.util.Map;
-import java.util.Set;
 
 @Value
 @Builder
@@ -49,18 +48,10 @@ public class JsonPickingJobStep
 	//
 	// Main PickFrom
 	@NonNull JsonPickingJobStepPickFrom mainPickFrom;
-	@Deprecated
-	@NonNull String locatorName;
-	@Deprecated
-	@NonNull String huBarcode;
-	@Deprecated
-	@NonNull BigDecimal qtyPicked;
 
 	//
 	// PickFrom alternatives
 	@NonNull Map<String, JsonPickingJobStepPickFrom> pickFromAlternatives;
-	@Deprecated
-	@NonNull Set<String> pickFromAlternativeIds;
 
 	public static JsonPickingJobStep of(final PickingJobStep step, final JsonOpts jsonOpts)
 	{
@@ -83,13 +74,9 @@ public class JsonPickingJobStep
 				//
 				// Main PickFrom
 				.mainPickFrom(mainPickFrom)
-				.locatorName(mainPickFrom.getLocatorName())
-				.huBarcode(mainPickFrom.getHuBarcode())
-				.qtyPicked(mainPickFrom.getQtyPicked())
 				//
 				// PickFrom Alternatives
 				.pickFromAlternatives(pickFromAlternatives)
-				.pickFromAlternativeIds(pickFromAlternatives.keySet())
 				//
 				.build();
 	}
