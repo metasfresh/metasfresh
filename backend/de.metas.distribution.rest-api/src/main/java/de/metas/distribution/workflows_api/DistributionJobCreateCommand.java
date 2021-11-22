@@ -1,21 +1,17 @@
 package de.metas.distribution.workflows_api;
 
+import de.metas.distribution.ddorder.DDOrderId;
 import de.metas.distribution.ddorder.DDOrderService;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleService;
 import de.metas.distribution.ddorder.movement.schedule.plan.DDOrderMovePlan;
 import de.metas.distribution.ddorder.movement.schedule.plan.DDOrderMovePlanCreateRequest;
-import de.metas.logging.LogManager;
 import de.metas.user.UserId;
 import lombok.Builder;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
-import de.metas.distribution.ddorder.DDOrderId;
 import org.eevolution.model.I_DD_Order;
-import org.slf4j.Logger;
 
 public class DistributionJobCreateCommand
 {
-	private static final Logger logger = LogManager.getLogger(DistributionJobCreateCommand.class);
 	private final DDOrderService ddOrderService;
 	private final DDOrderMoveScheduleService ddOrderMoveScheduleService;
 	private final DistributionJobLoaderSupportingServices loadingSupportServices;
@@ -43,7 +39,7 @@ public class DistributionJobCreateCommand
 	public DistributionJob execute()
 	{
 		final I_DD_Order ddOrder = ddOrderService.getById(ddOrderId);
-		setResponsible(ddOrder);
+		ddOrderService.assignToResponsible(ddOrder, responsibleId);
 
 		final DDOrderMovePlan plan = ddOrderMoveScheduleService.createPlan(DDOrderMovePlanCreateRequest.builder()
 				.ddOrder(ddOrder)
@@ -54,26 +50,6 @@ public class DistributionJobCreateCommand
 
 		return new DistributionJobLoader(loadingSupportServices)
 				.load(ddOrder);
-	}
-
-	private void setResponsible(final I_DD_Order ddOrder)
-	{
-		final UserId currentResponsibleId = UserId.ofRepoIdOrNullIfSystem(ddOrder.getAD_User_Responsible_ID());
-		if (currentResponsibleId == null)
-		{
-			ddOrder.setAD_User_Responsible_ID(responsibleId.getRepoId());
-			ddOrderService.save(ddOrder);
-		}
-		else if (!UserId.equals(currentResponsibleId, responsibleId))
-		{
-			throw new AdempiereException("DD Order already assigned to a different responsible");
-		}
-		else
-		{
-			// already assigned to that responsible,
-			// shall not happen but we can safely ignore the case
-			logger.warn("Order {} already assigned to {}", ddOrderId, responsibleId);
-		}
 	}
 
 }

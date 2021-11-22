@@ -126,7 +126,7 @@ public class ProductsToPickRowsDataFactory
 		final ProductsToPickRowId rowId = ProductsToPickRowId.builder()
 				.productId(productInfo.getProductId())
 				.shipmentScheduleId(sourceDocumentInfo.getShipmentScheduleId())
-				.pickFromHUId(pickFromHU.getHuId())
+				.pickFromHUId(pickFromHU.getTopLevelHUId())
 				.build();
 
 		return ProductsToPickRow.builder()

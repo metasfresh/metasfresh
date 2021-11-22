@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.handlingunits.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for PP_Order_IssueSchedule
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_PP_Order_IssueSchedule extends org.compiere.model.PO implements I_PP_Order_IssueSchedule, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 2132575204L;
+	private static final long serialVersionUID = 1428221814L;
 
     /** Standard Constructor */
     public X_PP_Order_IssueSchedule (final Properties ctx, final int PP_Order_IssueSchedule_ID, @Nullable final String trxName)
@@ -201,6 +201,18 @@ public class X_PP_Order_IssueSchedule extends org.compiere.model.PO implements I
 	public int getPP_Order_IssueSchedule_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_PP_Order_IssueSchedule_ID);
+	}
+
+	@Override
+	public void setProcessed (final boolean Processed)
+	{
+		set_Value (COLUMNNAME_Processed, Processed);
+	}
+
+	@Override
+	public boolean isProcessed() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_Processed);
 	}
 
 	@Override

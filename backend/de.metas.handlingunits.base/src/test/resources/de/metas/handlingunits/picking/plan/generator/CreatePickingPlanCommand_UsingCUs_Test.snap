@@ -24,12 +24,12 @@ de.metas.handlingunits.picking.plan.generator.CreatePickingPlanCommand_UsingCUs_
       },
       "expiringDate" : null,
       "huCode" : "100272",
-      "huId" : 100272,
       "huReservedForThisLine" : true,
       "locatorId" : "100161_100163",
       "lotNumber" : null,
       "repackNumber" : null,
-      "serialNo" : null
+      "serialNo" : null,
+      "topLevelHUId" : 100272
     },
     "pickFromPickingOrder" : null,
     "productId" : 100160,
@@ -60,12 +60,12 @@ de.metas.handlingunits.picking.plan.generator.CreatePickingPlanCommand_UsingCUs_
       },
       "expiringDate" : null,
       "huCode" : "100165",
-      "huId" : 100165,
       "huReservedForThisLine" : false,
       "locatorId" : "100161_100163",
       "lotNumber" : null,
       "repackNumber" : null,
-      "serialNo" : null
+      "serialNo" : null,
+      "topLevelHUId" : 100165
     },
     "pickFromPickingOrder" : null,
     "productId" : 100160,
@@ -96,12 +96,12 @@ de.metas.handlingunits.picking.plan.generator.CreatePickingPlanCommand_UsingCUs_
       },
       "expiringDate" : null,
       "huCode" : "100201",
-      "huId" : 100201,
       "huReservedForThisLine" : false,
       "locatorId" : "100161_100163",
       "lotNumber" : null,
       "repackNumber" : null,
-      "serialNo" : null
+      "serialNo" : null,
+      "topLevelHUId" : 100201
     },
     "pickFromPickingOrder" : null,
     "productId" : 100160,
@@ -128,12 +128,12 @@ de.metas.handlingunits.picking.plan.generator.CreatePickingPlanCommand_UsingCUs_
       },
       "expiringDate" : null,
       "huCode" : "100237",
-      "huId" : 100237,
       "huReservedForThisLine" : false,
       "locatorId" : "100161_100163",
       "lotNumber" : null,
       "repackNumber" : null,
-      "serialNo" : null
+      "serialNo" : null,
+      "topLevelHUId" : 100237
     },
     "pickFromPickingOrder" : null,
     "productId" : 100160,

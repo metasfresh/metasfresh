@@ -1,6 +1,9 @@
 package de.metas.manufacturing.workflows_api.rest_api.json;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.manufacturing.job.model.FinishedGoodsReceiveLineId;
+import de.metas.manufacturing.workflows_api.activity_handlers.json.JsonAggregateToLU;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -37,6 +40,12 @@ public class JsonManufacturingOrderEvent
 	@Jacksonized
 	public static class ReceiveFrom
 	{
+		@NonNull String lineId;
+		@NonNull BigDecimal qtyReceived;
+		@NonNull JsonAggregateToLU aggregateToLU;
+
+		@JsonIgnore
+		public FinishedGoodsReceiveLineId getFinishedGoodsReceiveLineId() {return FinishedGoodsReceiveLineId.ofString(lineId);}
 	}
 
 	@Nullable ReceiveFrom receiveFrom;

@@ -136,13 +136,32 @@ public class PPOrderIssueScheduleRepository
 		final I_PP_Order_IssueSchedule record = InterfaceWrapperHelper.load(issueSchedule.getId(), I_PP_Order_IssueSchedule.class);
 
 		final PPOrderIssueSchedule.Issued issued = issueSchedule.getIssued();
+		final boolean processed = issued != null;
 		final Quantity qtyIssued = issued != null ? issued.getQtyIssued() : null;
 		final QtyRejectedWithReason qtyRejected = issued != null ? issued.getQtyRejected() : null;
 
+		record.setProcessed(processed);
 		record.setQtyIssued(qtyIssued != null ? qtyIssued.toBigDecimal() : BigDecimal.ZERO);
 		record.setQtyReject(qtyRejected != null ? qtyRejected.toBigDecimal() : BigDecimal.ZERO);
 		record.setRejectReason(qtyRejected != null ? qtyRejected.getReasonCode().getCode() : null);
 
 		InterfaceWrapperHelper.save(record);
+	}
+
+	public void deleteNotProcessedByOrderId(@NonNull final PPOrderId ppOrderId)
+	{
+		queryBL.createQueryBuilder(I_PP_Order_IssueSchedule.class)
+				.addEqualsFilter(I_PP_Order_IssueSchedule.COLUMNNAME_PP_Order_ID, ppOrderId)
+				.addEqualsFilter(I_PP_Order_IssueSchedule.COLUMNNAME_Processed, false)
+				.create()
+				.delete();
+	}
+
+	public boolean matchesByOrderId(@NonNull final PPOrderId ppOrderId)
+	{
+		return queryBL.createQueryBuilder(I_PP_Order_IssueSchedule.class)
+				.addEqualsFilter(I_PP_Order_IssueSchedule.COLUMNNAME_PP_Order_ID, ppOrderId)
+				.create()
+				.anyMatch();
 	}
 }

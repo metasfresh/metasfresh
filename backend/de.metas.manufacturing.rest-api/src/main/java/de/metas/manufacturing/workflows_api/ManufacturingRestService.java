@@ -1,6 +1,7 @@
 package de.metas.manufacturing.workflows_api;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.picking.QtyRejectedReasonCode;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleId;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleProcessRequest;
@@ -18,14 +19,12 @@ import de.metas.manufacturing.workflows_api.rest_api.json.JsonManufacturingOrder
 import de.metas.user.UserId;
 import de.metas.workflow.rest_api.model.WFActivity;
 import de.metas.workflow.rest_api.model.WFActivityId;
-import de.metas.workflow.rest_api.model.WFActivityStatus;
 import de.metas.workflow.rest_api.model.WFProcess;
 import de.metas.workflow.rest_api.model.WFProcessId;
 import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.exceptions.AdempiereException;
 import org.eevolution.api.PPOrderId;
-import org.eevolution.api.PPOrderRoutingActivityStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.Objects;
@@ -51,6 +50,11 @@ public class ManufacturingRestService
 		return manufacturingJobService.createJob(ppOrderId, responsibleId);
 	}
 
+	public void abortJob(@NonNull final PPOrderId ppOrderId, @NonNull final UserId responsibleId)
+	{
+		manufacturingJobService.abortJob(ppOrderId, responsibleId);
+	}
+
 	public ManufacturingJob getJobById(final PPOrderId ppOrderId)
 	{
 		return manufacturingJobService.getJobById(ppOrderId);
@@ -61,7 +65,7 @@ public class ManufacturingRestService
 		final WFActivity.WFActivityBuilder builder = WFActivity.builder()
 				.id(WFActivityId.ofId(jobActivity.getId()))
 				.caption(TranslatableStrings.anyLanguage(jobActivity.getName()))
-				.status(toWFActivityStatus(jobActivity.getStatus()));
+				.status(jobActivity.getStatus());
 
 		switch (jobActivity.getType())
 		{
@@ -92,29 +96,12 @@ public class ManufacturingRestService
 				.build();
 	}
 
-	private static WFActivityStatus toWFActivityStatus(final @NonNull PPOrderRoutingActivityStatus status)
-	{
-		switch (status)
-		{
-			case NOT_STARTED:
-				return WFActivityStatus.NOT_STARTED;
-			case IN_PROGRESS:
-				return WFActivityStatus.IN_PROGRESS;
-			case COMPLETED:
-				return WFActivityStatus.COMPLETED;
-			case CLOSED:
-				return WFActivityStatus.COMPLETED;
-			case VOIDED:
-				return WFActivityStatus.COMPLETED;
-			default:
-				throw new AdempiereException("Unknown status: " + status);
-		}
-	}
-
 	public ManufacturingJob withActivityCompleted(ManufacturingJob job, ManufacturingJobActivityId jobActivityId) {return manufacturingJobService.withActivityCompleted(job, jobActivityId);}
 
 	public ManufacturingJob processEvent(final ManufacturingJob job, final JsonManufacturingOrderEvent event)
 	{
+		job.assertUserReporting();
+
 		if (event.getIssueTo() != null)
 		{
 			final JsonManufacturingOrderEvent.IssueTo issueTo = event.getIssueTo();
@@ -128,7 +115,13 @@ public class ManufacturingRestService
 		}
 		else if (event.getReceiveFrom() != null)
 		{
-			throw new UnsupportedOperationException(); // TODO implement Receipt endpoint
+			final JsonManufacturingOrderEvent.ReceiveFrom receiveFrom = event.getReceiveFrom();
+			return manufacturingJobService.receiveGoodsAndAggregateToLU(
+					job,
+					receiveFrom.getFinishedGoodsReceiveLineId(),
+					receiveFrom.getAggregateToLU(),
+					receiveFrom.getQtyReceived(),
+					SystemTime.asZonedDateTime());
 		}
 		else
 		{

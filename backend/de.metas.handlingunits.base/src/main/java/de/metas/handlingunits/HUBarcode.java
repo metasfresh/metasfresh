@@ -34,4 +34,9 @@ public final class HUBarcode
 
 	@JsonValue
 	public String getAsString() {return stringRepresentation;}
+
+	public HuId toHuId()
+	{
+		return HuId.ofRepoId(Integer.parseInt(stringRepresentation));
+	}
 }

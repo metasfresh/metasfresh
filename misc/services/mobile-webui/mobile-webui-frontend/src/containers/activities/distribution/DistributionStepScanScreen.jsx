@@ -46,7 +46,6 @@ function DistributionStepScanScreen(WrappedComponent) {
 
     pushUpdatedQuantity = ({ qty = 0, reason = null }) => {
       const { updateDistributionStepQty, wfProcessId, activityId, lineId, stepId, go, locatorId } = this.props;
-      const { scannedBarcode } = this.state;
 
       if (locatorId) {
         postStepDistributionMove({
@@ -64,9 +63,9 @@ function DistributionStepScanScreen(WrappedComponent) {
               activityId,
               lineId,
               stepId,
-              locatorBarcode: scannedBarcode,
               qtyPicked: qty,
               qtyRejectedReasonCode: reason,
+              droppedToLocator: true,
             });
             go(-1);
           })
@@ -87,10 +86,6 @@ function DistributionStepScanScreen(WrappedComponent) {
               activityId,
               lineId,
               stepId,
-              actualHUPicked: {
-                barcode: scannedBarcode,
-                caption: scannedBarcode,
-              },
               qtyPicked: qty,
               qtyRejectedReasonCode: reason,
             });

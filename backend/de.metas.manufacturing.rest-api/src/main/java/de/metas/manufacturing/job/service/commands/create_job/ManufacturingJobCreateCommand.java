@@ -1,5 +1,6 @@
 package de.metas.manufacturing.job.service.commands.create_job;
 
+import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueSchedule;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleCreateRequest;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleService;
@@ -8,14 +9,13 @@ import de.metas.manufacturing.issue.plan.PPOrderIssuePlan;
 import de.metas.manufacturing.issue.plan.PPOrderIssuePlanCreateCommand;
 import de.metas.manufacturing.issue.plan.PPOrderIssuePlanStep;
 import de.metas.manufacturing.job.model.ManufacturingJob;
-import de.metas.manufacturing.job.service.ManufacturingJobLoader;
-import de.metas.manufacturing.job.service.ManufacturingJobLoaderSupportingServices;
+import de.metas.manufacturing.job.service.ManufacturingJobLoaderAndSaver;
+import de.metas.manufacturing.job.service.ManufacturingJobLoaderAndSaverSupportingServices;
 import de.metas.user.UserId;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
-import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_PP_Order;
 
@@ -24,26 +24,26 @@ import java.util.ArrayList;
 public class ManufacturingJobCreateCommand
 {
 	private final ITrxManager trxManager;
-	private final IPPOrderBL ppOrderBL;
+	private final IHUPPOrderBL ppOrderBL;
 	private final HUReservationService huReservationService;
 	private final PPOrderIssueScheduleService ppOrderIssueScheduleService;
-	private final ManufacturingJobLoaderSupportingServices loadingSupportServices;
+	private final ManufacturingJobLoaderAndSaverSupportingServices loadingSupportServices;
 
 	// Params
 	private final PPOrderId ppOrderId;
 	private final UserId responsibleId;
 
 	// State
-	private ManufacturingJobLoader loader;
+	private ManufacturingJobLoaderAndSaver loader;
 	private I_PP_Order ppOrder;
 
 	@Builder
 	private ManufacturingJobCreateCommand(
 			@NonNull final ITrxManager trxManager,
-			@NonNull final IPPOrderBL ppOrderBL,
+			@NonNull final IHUPPOrderBL ppOrderBL,
 			@NonNull final HUReservationService huReservationService,
 			@NonNull final PPOrderIssueScheduleService ppOrderIssueScheduleService,
-			@NonNull final ManufacturingJobLoaderSupportingServices loadingSupportServices,
+			@NonNull final ManufacturingJobLoaderAndSaverSupportingServices loadingSupportServices,
 			//
 			@NonNull final PPOrderId ppOrderId,
 			@NonNull final UserId responsibleId)
@@ -65,7 +65,7 @@ public class ManufacturingJobCreateCommand
 
 	private ManufacturingJob executeInTrx()
 	{
-		loader = new ManufacturingJobLoader(loadingSupportServices);
+		loader = new ManufacturingJobLoaderAndSaver(loadingSupportServices);
 
 		ppOrder = ppOrderBL.getById(ppOrderId);
 		loader.addToCache(ppOrder);
@@ -80,7 +80,7 @@ public class ManufacturingJobCreateCommand
 
 	private void setResponsible()
 	{
-		final UserId previousResponsibleId = UserId.ofRepoIdOrNullIfSystem(ppOrder.getAD_User_Responsible_ID());
+		final UserId previousResponsibleId = ManufacturingJobLoaderAndSaver.extractResponsibleId(ppOrder);
 		if (UserId.equals(previousResponsibleId, responsibleId))
 		{
 			//noinspection UnnecessaryReturnStatement
@@ -123,7 +123,7 @@ public class ManufacturingJobCreateCommand
 							.seqNo(seqNo)
 							.productId(planStep.getProductId())
 							.qtyToIssue(planStep.getQtyToIssue())
-							.issueFromHUId(planStep.getPickFromHUId())
+							.issueFromHUId(planStep.getPickFromTopLevelHUId())
 							.issueFromLocatorId(planStep.getPickFromLocatorId())
 							.isAlternativeIssue(planStep.isAlternative())
 							.build());
