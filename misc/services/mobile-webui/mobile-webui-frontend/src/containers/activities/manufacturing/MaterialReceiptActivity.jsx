@@ -26,7 +26,7 @@ const MaterialReceiptActivity = (props) => {
                 activityId={id}
                 lineId={lineId}
                 caption={lineItem.productName}
-                isUserEditable={isUserEditable}
+                isUserEditable={isUserEditable || true}
                 completeStatus={lineItem.completeStatus || CompleteStatus.NOT_STARTED}
                 qtyCurrent={lineItem.qtyReceived}
                 qtyTarget={lineItem.qtyToReceive}
