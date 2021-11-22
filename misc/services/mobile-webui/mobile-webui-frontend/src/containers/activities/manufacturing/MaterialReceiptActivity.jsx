@@ -11,7 +11,7 @@ const MaterialReceiptActivity = (props) => {
     id,
   } = props;
   const data = dataStored ? dataStored : {};
-  const { /*isUserEditable,*/ lines } = data;
+  const { isUserEditable, lines } = data;
 
   return (
     <div className="mfg-materialReceipt-activity-container mt-5">
@@ -26,7 +26,7 @@ const MaterialReceiptActivity = (props) => {
                 activityId={id}
                 lineId={lineId}
                 caption={lineItem.productName}
-                isUserEditable={true}
+                isUserEditable={isUserEditable}
                 completeStatus={lineItem.completeStatus || CompleteStatus.NOT_STARTED}
                 qtyCurrent={lineItem.qtyReceived}
                 qtyTarget={lineItem.qtyToReceive}

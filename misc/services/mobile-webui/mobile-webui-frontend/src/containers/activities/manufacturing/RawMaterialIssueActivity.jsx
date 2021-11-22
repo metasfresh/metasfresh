@@ -11,7 +11,7 @@ const RawMaterialsIssueActivity = (props) => {
     id,
   } = props;
   const data = dataStored ? dataStored : {};
-  const { /*isUserEditable,*/ lines } = data;
+  const { isUserEditable, lines } = data;
 
   return (
     <div className="mfg-rawMaterialsIssue-activity-container mt-5">
@@ -26,7 +26,7 @@ const RawMaterialsIssueActivity = (props) => {
                 activityId={id}
                 lineId={lineId}
                 caption={lineItem.productName}
-                isUserEditable={true}
+                isUserEditable={isUserEditable}
                 completeStatus={lineItem.completeStatus || CompleteStatus.NOT_STARTED}
                 qtyIssued={lineItem.qtyIssued}
                 qtyToIssue={lineItem.qtyToIssue}
