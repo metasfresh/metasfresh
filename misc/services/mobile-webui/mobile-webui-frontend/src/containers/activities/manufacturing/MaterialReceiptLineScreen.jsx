@@ -9,19 +9,28 @@ import { toastError } from '../../../utils/toast';
 
 class MaterialReceiptLineScreen extends PureComponent {
   handleQuantityChange = (qtyPicked) => {
-    const { dispatch, wfProcessId, activityId, lineId, lineProps } = this.props;
+    const {
+      dispatch,
+      wfProcessId,
+      activityId,
+      lineId,
+      lineProps: { aggregateToLU, currentReceivingHU },
+    } = this.props;
+
+    // shall not happen
+    if (aggregateToLU || currentReceivingHU) {
+      console.log('skip receiving qty because there is no target');
+    }
 
     dispatch(updateManufacturingReceiptQty({ wfProcessId, activityId, lineId, qtyPicked }));
 
-    if (lineProps.aggregateToLU) {
-      dispatch(
-        updateManufacturingReceipt({
-          wfProcessId,
-          activityId,
-          lineId,
-        })
-      ).catch((axiosError) => toastError({ axiosError }));
-    }
+    dispatch(
+      updateManufacturingReceipt({
+        wfProcessId,
+        activityId,
+        lineId,
+      })
+    ).catch((axiosError) => toastError({ axiosError }));
 
     dispatch(go(-1));
   };

@@ -6,7 +6,7 @@ import {
 } from '../constants/ManufacturingActionTypes';
 
 import { selectWFProcessFromState } from '../reducers/wfProcesses_status';
-import { manufacturingReqest } from '../api/manufacturing';
+import { postManufacturingIssueEvent, postManufacturingReceiveEvent } from '../api/manufacturing';
 
 export function updateManufacturingIssueQty({
   wfProcessId,
@@ -40,7 +40,10 @@ export function updateManufacturingIssue({ wfProcessId, activityId, lineId, step
     if (line) {
       const step = line.steps[stepId];
       const { id, huBarcode, qtyIssued, qtyRejected, qtyRejectedReasonCode } = step;
-      const receiptObject = {
+
+      return postManufacturingIssueEvent({
+        wfProcessId,
+        activityId,
         issueTo: {
           issueStepId: id,
           huBarcode: huBarcode,
@@ -48,9 +51,7 @@ export function updateManufacturingIssue({ wfProcessId, activityId, lineId, step
           qtyRejected,
           qtyRejectedReasonCode,
         },
-      };
-
-      return manufacturingReqest({ wfProcessId, activityId, receiptObject });
+      });
     } else {
       return Promise.reject('No line found');
     }
@@ -82,18 +83,31 @@ export function updateManufacturingReceipt({ wfProcessId, activityId, lineId }) 
     if (line) {
       dispatch({ type: UPDATE_MANUFACTURING_RECEIPT, payload: { ...line } });
 
-      const { id, userQtyReceived, aggregateToLU } = line;
-      const receiptObject = {
+      let aggregateToLU = null;
+      if (line.aggregateToLU != null) {
+        aggregateToLU = line.aggregateToLU;
+      } else if (line.currentReceivingHU) {
+        aggregateToLU = {
+          existingLU: line.currentReceivingHU,
+        };
+      } else {
+        // shall not happen
+        console.log('No target found', line);
+        return;
+      }
+
+      return postManufacturingReceiveEvent({
+        wfProcessId,
+        activityId,
         receiveFrom: {
-          lineId: id,
-          qtyReceived: userQtyReceived,
+          lineId: line.id,
+          qtyReceived: line.userQtyReceived,
           aggregateToLU,
         },
-      };
-      return manufacturingReqest({ wfProcessId, activityId, receiptObject }).then((resp) => {
-        if (aggregateToLU.newLU) {
+      }).then((response) => {
+        if (response.existingLU) {
           dispatch(
-            updateManufacturingReceiptTarget({ wfProcessId, activityId, lineId, target: { ...resp.data.existingLU } })
+            updateManufacturingReceiptTarget({ wfProcessId, activityId, lineId, target: { ...response.existingLU } })
           );
         }
       });
