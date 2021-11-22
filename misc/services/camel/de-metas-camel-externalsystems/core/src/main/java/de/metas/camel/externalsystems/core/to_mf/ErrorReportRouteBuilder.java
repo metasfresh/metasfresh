@@ -26,6 +26,7 @@ import de.metas.camel.externalsystems.core.CamelRouteHelper;
 import de.metas.camel.externalsystems.core.CoreConstants;
 import de.metas.common.rest_api.v1.JsonError;
 import de.metas.common.rest_api.v1.JsonErrorItem;
+import de.metas.common.util.CoalesceUtil;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
@@ -49,8 +50,8 @@ public class ErrorReportRouteBuilder extends RouteBuilder
 {
 	private final DateTimeFormatter FILE_TIMESTAMP_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd_HHmmssSSS");
 
-	public final String ERROR_WRITE_TO_FILE = "Error-Route-writeToFile";
-	public final String ERROR_WRITE_TO_ADISSUE = "Error-Route-writeToAdIssue";
+	public final static String ERROR_WRITE_TO_FILE = "Error-Route-writeToFile";
+	public final static String ERROR_WRITE_TO_ADISSUE = "Error-Route-writeToAdIssue";
 
 	@Override
 	public void configure()
@@ -126,7 +127,8 @@ public class ErrorReportRouteBuilder extends RouteBuilder
 				.builder()
 				.orgCode(exchange.getIn().getHeader(HEADER_ORG_CODE, String.class));
 
-		final Exception exception = exchange.getProperty(Exchange.EXCEPTION_CAUGHT, Exception.class);
+		final Exception exception = CoalesceUtil.coalesce(exchange.getProperty(Exchange.EXCEPTION_CAUGHT, Exception.class),
+														  exchange.getIn().getHeader(Exchange.EXCEPTION_CAUGHT, Exception.class));
 		if (exception == null)
 		{
 			errorBuilder.message("No error message available!");

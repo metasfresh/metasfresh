@@ -1,6 +1,8 @@
 package org.adempiere.warehouse.api;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
+import de.metas.location.LocationId;
 import de.metas.organization.OrgId;
 import de.metas.util.ISingletonService;
 import de.metas.util.lang.ExternalId;
@@ -154,6 +156,8 @@ public interface IWarehouseDAO extends ISingletonService
 	org.adempiere.warehouse.model.I_M_Warehouse retrieveQuarantineWarehouseOrNull();
 
 	BPartnerLocationAndCaptureId getWarehouseLocationById(WarehouseId warehouseId);
+
+	ImmutableSet<WarehouseId> retrieveWarehouseWithLocation(@NonNull LocationId locationId);
 
 	@Value
 	class WarehouseQuery

@@ -7,14 +7,12 @@ import de.metas.adempiere.model.I_M_Product;
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.FlatrateTermId;
-import de.metas.contracts.commission.Beneficiary;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionConfig;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionContract;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionType;
-import de.metas.contracts.commission.commissioninstance.businesslogic.algorithms.HierarchyConfig;
-import de.metas.contracts.commission.commissioninstance.businesslogic.algorithms.HierarchyContract;
-import de.metas.contracts.commission.commissioninstance.services.CommissionConfigFactory.ConfigRequestForExistingInstance;
-import de.metas.contracts.commission.commissioninstance.services.CommissionConfigFactory.ConfigRequestForNewInstance;
+import de.metas.contracts.commission.commissioninstance.businesslogic.algorithms.hierarchy.HierarchyConfig;
+import de.metas.contracts.commission.commissioninstance.businesslogic.algorithms.hierarchy.HierarchyContract;
+import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTriggerType;
 import de.metas.contracts.commission.commissioninstance.testhelpers.TestCommissionConfig;
 import de.metas.contracts.commission.commissioninstance.testhelpers.TestCommissionConfig.ConfigData;
 import de.metas.contracts.commission.commissioninstance.testhelpers.TestCommissionConfigLine;
@@ -22,6 +20,7 @@ import de.metas.contracts.commission.commissioninstance.testhelpers.TestCommissi
 import de.metas.contracts.commission.model.I_C_CommissionSettingsLine;
 import de.metas.contracts.commission.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.commission.model.I_C_HierarchyCommissionSettings;
+import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductCategoryId;
@@ -91,6 +90,8 @@ public class CommissionConfigFactoryTest
 	private ProductId commissionProduct2Id;
 	private I_C_Flatrate_Conditions noContractFlatrateConditions;
 
+	private CommissionTriggerType commissionTriggerType;
+
 	@BeforeEach
 	void beforeEach()
 	{
@@ -139,7 +140,10 @@ public class CommissionConfigFactoryTest
 				.flatrateConditionsId(FLATRATE_CONDITION_0_COMMISSION_ID.getRepoId())
 				.docStatus("CO")
 				.isActive(false)
+				.typeConditions(TypeConditions.COMMISSION)
 				.build();
+
+		commissionTriggerType = CommissionTriggerType.InvoiceCandidate;
 	}
 
 	@BeforeAll
@@ -180,11 +184,12 @@ public class CommissionConfigFactoryTest
 		setSalesRepOfEndCustomerTo(salesRepLvl0Id);
 
 		// when
-		final ConfigRequestForNewInstance contractRequest = ConfigRequestForNewInstance.builder()
+		final CommissionConfigProvider.ConfigRequestForNewInstance contractRequest = CommissionConfigProvider.ConfigRequestForNewInstance.builder()
 				.orgId(configData.getOrgId())
 				.commissionHierarchy(commissionHierarchyFactory.createFor(endCustomerId))
 				.customerBPartnerId(endCustomerId)
 				.salesRepBPartnerId(salesRepLvl0Id)
+				.commissionTriggerType(commissionTriggerType)
 				.salesProductId(salesProductId)
 				.commissionDate(date).build();
 		final ImmutableList<CommissionConfig> configs = commissionConfigFactory.createForNewCommissionInstances(contractRequest);
@@ -197,17 +202,17 @@ public class CommissionConfigFactoryTest
 		final HierarchyConfig hierarchyConfig = HierarchyConfig.cast(config);
 		assertThat(hierarchyConfig.isSubtractLowerLevelCommissionFromBase()).isTrue();
 
-		final CommissionContract contractLvl0 = hierarchyConfig.getContractFor(Beneficiary.of(salesRepLvl0Id));
+		final CommissionContract contractLvl0 = hierarchyConfig.getContractFor(salesRepLvl0Id);
 		final HierarchyContract hierarchyContractLvl0 = HierarchyContract.cast(contractLvl0);
 		assertThat(hierarchyContractLvl0.getCommissionPercent().toBigDecimal()).isEqualTo("20");
 		assertThat(hierarchyContractLvl0.getPointsPrecision()).isEqualTo(3);
 
-		final CommissionContract contractLvl1 = hierarchyConfig.getContractFor(Beneficiary.of(salesRepLvl1Id));
+		final CommissionContract contractLvl1 = hierarchyConfig.getContractFor(salesRepLvl1Id);
 		final HierarchyContract hierarchyContractLvl1 = HierarchyContract.cast(contractLvl1);
 		assertThat(hierarchyContractLvl1.getCommissionPercent().toBigDecimal()).isEqualTo("20");
 		assertThat(hierarchyContractLvl1.getPointsPrecision()).isEqualTo(3);
 
-		final CommissionContract contractLvl2 = hierarchyConfig.getContractFor(Beneficiary.of(salesRepLvl2Id));
+		final CommissionContract contractLvl2 = hierarchyConfig.getContractFor(salesRepLvl2Id);
 		final HierarchyContract hierarchyContractLvl2 = HierarchyContract.cast(contractLvl2);
 		assertThat(hierarchyContractLvl2.getCommissionPercent().toBigDecimal()).isEqualTo("20");
 		assertThat(hierarchyContractLvl2.getPointsPrecision()).isEqualTo(3);
@@ -262,11 +267,12 @@ public class CommissionConfigFactoryTest
 		setSalesRepOfEndCustomerTo(salesRepLvl0Id);
 		
 		// when
-		final ConfigRequestForNewInstance contractRequest = ConfigRequestForNewInstance.builder()
+		final CommissionConfigProvider.ConfigRequestForNewInstance contractRequest = CommissionConfigProvider.ConfigRequestForNewInstance.builder()
 				.orgId(orgId)
 				.commissionHierarchy(commissionHierarchyFactory.createFor(endCustomerId))
 				.customerBPartnerId(endCustomerId)
 				.salesRepBPartnerId(salesRepLvl0Id)
+				.commissionTriggerType(commissionTriggerType)
 				.salesProductId(salesProductId)
 				.commissionDate(date).build();
 		final ImmutableList<CommissionConfig> configs = commissionConfigFactory.createForNewCommissionInstances(contractRequest);
@@ -316,11 +322,12 @@ public class CommissionConfigFactoryTest
 		assertThat(POJOLookupMap.get().getRecords(I_C_HierarchyCommissionSettings.class)).hasSize(2); // guard
 		assertThat(POJOLookupMap.get().getRecords(I_C_Flatrate_Term.class)).hasSize(2); // guard
 
-		final ConfigRequestForNewInstance contractRequest = ConfigRequestForNewInstance.builder()
+		final CommissionConfigProvider.ConfigRequestForNewInstance contractRequest = CommissionConfigProvider.ConfigRequestForNewInstance.builder()
 				.orgId(orgId)
 				.commissionHierarchy(commissionHierarchyFactory.createFor(endCustomerId))
 				.customerBPartnerId(endCustomerId)
 				.salesRepBPartnerId(salesRepLvl0Id)
+				.commissionTriggerType(commissionTriggerType)
 				.salesProductId(salesProductId)
 				.commissionDate(date)
 				.build();
@@ -346,7 +353,7 @@ public class CommissionConfigFactoryTest
 
 		assertThat(hierarchyConfig.getCommissionProductId().getRepoId()).isEqualTo(noContractFlatrateConditions.getM_Product_Flatrate_ID());
 
-		final HierarchyContract zeroPercentHierarchyContract = HierarchyContract.cast(hierarchyConfig.getContractFor(Beneficiary.of(salesRepLvl1Id)));
+		final HierarchyContract zeroPercentHierarchyContract = HierarchyContract.cast(hierarchyConfig.getContractFor(salesRepLvl1Id));
 
 		assertThat(zeroPercentHierarchyContract).isNotNull();
 		assertThat(zeroPercentHierarchyContract.getCommissionPercent()).isEqualTo(Percent.ZERO);
@@ -389,11 +396,12 @@ public class CommissionConfigFactoryTest
 		assertThat(POJOLookupMap.get().getRecords(I_C_HierarchyCommissionSettings.class)).hasSize(2); // guard
 		assertThat(POJOLookupMap.get().getRecords(I_C_Flatrate_Term.class)).hasSize(2); // guard
 
-		final ConfigRequestForNewInstance contractRequest = ConfigRequestForNewInstance.builder()
+		final CommissionConfigProvider.ConfigRequestForNewInstance contractRequest = CommissionConfigProvider.ConfigRequestForNewInstance.builder()
 				.orgId(orgId)
 				.commissionHierarchy(commissionHierarchyFactory.createFor(endCustomerId))
 				.customerBPartnerId(endCustomerId)
 				.salesRepBPartnerId(salesRepLvl0Id)
+				.commissionTriggerType(commissionTriggerType)
 				.salesProductId(salesProductId)
 				.commissionDate(date)
 				.build();
@@ -410,7 +418,7 @@ public class CommissionConfigFactoryTest
 
 		final HierarchyConfig hierarchyConfig = HierarchyConfig.cast(config);
 
-		final CommissionContract contractLvl1 = hierarchyConfig.getContractFor(Beneficiary.of(salesRepLvl1Id));
+		final CommissionContract contractLvl1 = hierarchyConfig.getContractFor(salesRepLvl1Id);
 		assertThat(contractLvl1).isNull();
 	}
 
@@ -455,11 +463,12 @@ public class CommissionConfigFactoryTest
 		assertThat(POJOLookupMap.get().getRecords(I_C_HierarchyCommissionSettings.class)).hasSize(2); // guard
 		assertThat(POJOLookupMap.get().getRecords(I_C_Flatrate_Term.class)).hasSize(2); // guard
 
-		final ConfigRequestForNewInstance contractRequest = ConfigRequestForNewInstance.builder()
+		final CommissionConfigProvider.ConfigRequestForNewInstance contractRequest = CommissionConfigProvider.ConfigRequestForNewInstance.builder()
 				.orgId(orgId)
 				.commissionHierarchy(commissionHierarchyFactory.createFor(endCustomerId))
 				.customerBPartnerId(endCustomerId)
 				.salesRepBPartnerId(salesRepLvl0Id)
+				.commissionTriggerType(commissionTriggerType)
 				.salesProductId(salesProductId)
 				.commissionDate(date)
 				.build();
@@ -477,7 +486,7 @@ public class CommissionConfigFactoryTest
 
 		final HierarchyConfig hierarchyConfig = HierarchyConfig.cast(config);
 
-		final CommissionContract contractLvl1 = hierarchyConfig.getContractFor(Beneficiary.of(salesRepLvl1Id));
+		final CommissionContract contractLvl1 = hierarchyConfig.getContractFor(salesRepLvl1Id);
 		assertThat(contractLvl1).isNull();
 	}
 
@@ -522,11 +531,12 @@ public class CommissionConfigFactoryTest
 
 
 		// when
-		final ConfigRequestForNewInstance contractRequest = ConfigRequestForNewInstance.builder()
+		final CommissionConfigProvider.ConfigRequestForNewInstance contractRequest = CommissionConfigProvider.ConfigRequestForNewInstance.builder()
 				.orgId(orgId)
 				.commissionHierarchy(commissionHierarchyFactory.createFor(salesRepLvl0Id))
 				.customerBPartnerId(salesRepLvl0Id)
 				.salesRepBPartnerId(salesRepLvl1Id)
+				.commissionTriggerType(commissionTriggerType)
 				.salesProductId(salesProductId)
 				.commissionDate(date).build();
 		final ImmutableList<CommissionConfig> configs = commissionConfigFactory.createForNewCommissionInstances(contractRequest);
@@ -579,11 +589,12 @@ public class CommissionConfigFactoryTest
 	{
 		final BPartnerId salesRepLvl0Id = configData.getName2BPartnerId().get("salesRep");
 
-		final ConfigRequestForNewInstance contractRequest = ConfigRequestForNewInstance.builder()
+		final CommissionConfigProvider.ConfigRequestForNewInstance contractRequest = CommissionConfigProvider.ConfigRequestForNewInstance.builder()
 				.orgId(orgId)
 				.commissionHierarchy(commissionHierarchyFactory.createFor(endCustomerId))
 				.customerBPartnerId(endCustomerId)
 				.salesRepBPartnerId(salesRepLvl0Id)
+				.commissionTriggerType(commissionTriggerType)
 				.salesProductId(salesProductId)
 				.commissionDate(date).build();
 
@@ -639,14 +650,14 @@ public class CommissionConfigFactoryTest
 				.map(record -> FlatrateTermId.ofRepoId(record.getC_Flatrate_Term_ID()))
 				.collect(ImmutableList.toImmutableList());
 
-		final ConfigRequestForExistingInstance commissionConfigRequest = ConfigRequestForExistingInstance.builder()
+		final CommissionConfigProvider.ConfigRequestForExistingInstance commissionConfigRequest = CommissionConfigProvider.ConfigRequestForExistingInstance.builder()
 				.contractIds(allSixContractIds)
 				.customerBPartnerId(endCustomerId)
 				.salesProductId(salesProductId)
 				.build();
 
 		// invoke method under test
-		final ImmutableMap<FlatrateTermId, CommissionConfig> result = commissionConfigFactory.createForExisingInstance(commissionConfigRequest);
+		final ImmutableMap<FlatrateTermId, CommissionConfig> result = commissionConfigFactory.createForExistingInstance(commissionConfigRequest);
 		assertThat(result).hasSize(6);
 		assertThat(configData1ContractIds)
 				.as("check that all contracts of configData1 are mapped to to the config created from configData1")
@@ -674,7 +685,8 @@ public class CommissionConfigFactoryTest
 			final boolean isActive,
 			final String name,
 			final BigDecimal percentageOfBasePoint,
-			final String docStatus
+			final String docStatus,
+			@NonNull final TypeConditions typeConditions
 	)
 	{
 		final I_M_Product noContractCommissionProduct = newInstance(I_M_Product.class);
@@ -701,7 +713,13 @@ public class CommissionConfigFactoryTest
 		flatrateConditions.setDocStatus(docStatus);
 		flatrateConditions.setIsActive(isActive);
 		flatrateConditions.setM_Product_Flatrate_ID(noContractCommissionProductId);
-		flatrateConditions.setC_HierarchyCommissionSettings_ID(noContractHierarchySettings.getC_HierarchyCommissionSettings_ID());
+
+		if (typeConditions.equals(TypeConditions.COMMISSION))
+		{
+			flatrateConditions.setC_HierarchyCommissionSettings_ID(noContractHierarchySettings.getC_HierarchyCommissionSettings_ID());
+			flatrateConditions.setType_Conditions(TypeConditions.COMMISSION.getCode());
+		}
+
 		saveRecord(flatrateConditions);
 
 		return flatrateConditions;

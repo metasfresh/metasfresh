@@ -22,13 +22,18 @@
 
 package de.metas.async.asyncbatchmilestone;
 
+import ch.qos.logback.classic.Level;
+import com.google.common.collect.ImmutableSet;
 import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.api.IAsyncBatchDAO;
 import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.model.I_C_Queue_WorkPackage;
+import de.metas.logging.LogManager;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -37,6 +42,8 @@ import java.util.List;
 @Service
 public class AsyncBathMilestoneService
 {
+	private static final Logger logger = LogManager.getLogger(AsyncBathMilestoneService.class);
+
 	private final IAsyncBatchDAO asyncBatchDAO = Services.get(IAsyncBatchDAO.class);
 	private final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
 
@@ -81,6 +88,12 @@ public class AsyncBathMilestoneService
 				.count();
 
 		final int workPackagesFinalized = workPackagesProcessedCount + workPackagesWithErrorCount;
+
+		Loggables.withLogger(logger, Level.INFO).addLog("*** processAsyncBatchMilestone for: asyncBatchID: " + asyncBatch.getC_Async_Batch_ID() +
+							" allWPSize: " + workPackages.size() +
+							" processedWPSize: " + workPackagesProcessedCount +
+							" erroredWPSize: " + workPackagesWithErrorCount +
+							" milestoneIdsToProcess:" + milestones.stream().map(AsyncBatchMilestone::getIdNotNull).collect(ImmutableSet.toImmutableSet()));
 
 		if (workPackagesFinalized >= workPackages.size())
 		{
