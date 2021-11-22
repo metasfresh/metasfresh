@@ -2,12 +2,12 @@ import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import counterpart from 'counterpart';
 
-import * as CompleteStatus from '../../../constants/CompleteStatus';
-import Indicator from '../../../components/Indicator';
+// import * as CompleteStatus from '../../../constants/CompleteStatus';
+// import Indicator from '../../../components/Indicator';
 import PickQuantityPrompt from '../PickQuantityPrompt';
 import { toastError } from '../../../utils/toast';
 
-class RawMaterialIssueButton extends PureComponent {
+class PickQuantityButton extends PureComponent {
   constructor(props) {
     super(props);
     this.state = {
@@ -33,11 +33,9 @@ class RawMaterialIssueButton extends PureComponent {
   };
 
   validateQtyInput = (numberInput) => {
-    const {
-      line: { qtyToIssue },
-    } = this.props;
+    const { qtyTarget } = this.props;
 
-    return numberInput >= 0 && numberInput <= qtyToIssue;
+    return numberInput >= 0 && numberInput <= qtyTarget;
   };
 
   showDialog = () => this.setState({ isDialogOpen: true });
@@ -45,45 +43,35 @@ class RawMaterialIssueButton extends PureComponent {
   hideDialog = () => this.setState({ isDialogOpen: false });
 
   render() {
-    const {
-      line: { productName, qtyIssued, qtyToIssue, uom, completeStatus },
-    } = this.props;
+    const { /*completeStatus,*/ qtyTarget, caption, isDisabled } = this.props;
     const { isDialogOpen } = this.state;
 
     return (
       <div>
         {isDialogOpen && (
           <PickQuantityPrompt
-            qtyTarget={qtyToIssue}
-            qtyCaption={counterpart.translate('activities.mfg.target')}
+            qtyTarget={qtyTarget}
+            qtyCaption={counterpart.translate('activities.mfg.receipts.pickPromptTitle')}
             onQtyChange={this.onQtyPickedChanged}
+            onCloseDialog={this.hideDialog}
           />
         )}
         <div className="mt-3">
-          <button className="button is-outlined complete-btn pick-higher-btn" onClick={this.showDialog}>
+          <button
+            className="button is-outlined complete-btn pick-higher-btn"
+            disabled={isDisabled}
+            onClick={this.showDialog}
+          >
             <div className="full-size-btn">
               <div className="left-btn-side" />
               <div className="caption-btn">
                 <div className="rows">
-                  <div className="row is-full pl-5">{productName}</div>
-                  <div className="row is-full is-size-7">
-                    <div className="picking-row-info">
-                      <div className="picking-to-pick">{counterpart.translate('activities.mfg.target')}:</div>
-                      <div className="picking-row-qty">
-                        {qtyToIssue} {uom}
-                      </div>
-                      <div className="picking-row-picking">{counterpart.translate('activities.mfg.picked')}:</div>
-                      <div className="picking-row-picked">
-                        {qtyIssued} {uom}
-                      </div>
-                    </div>
-                  </div>
+                  <div className="row is-full pl-5">{caption}</div>
                 </div>
               </div>
-
-              <div className="right-btn-side pt-4">
+              {/*              <div className="right-btn-side pt-4">
                 <Indicator completeStatus={completeStatus || CompleteStatus.NOT_STARTED} />
-              </div>
+              </div>*/}
             </div>
           </button>
         </div>
@@ -92,11 +80,15 @@ class RawMaterialIssueButton extends PureComponent {
   }
 }
 
-RawMaterialIssueButton.propTypes = {
+PickQuantityButton.propTypes = {
   //
   // Props
   onClick: PropTypes.func.isRequired,
-  line: PropTypes.object.isRequired,
+  qtyTarget: PropTypes.number.isRequired,
+  // completeStatus: PropTypes.number.isRequired,
+  uom: PropTypes.string.isRequired,
+  caption: PropTypes.string.isRequired,
+  isDisabled: PropTypes.bool,
 };
 
-export default RawMaterialIssueButton;
+export default PickQuantityButton;

@@ -2,6 +2,7 @@ import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { push } from 'connected-react-router';
+import { withRouter } from 'react-router';
 
 const mapStateToProps = (state, ownProps) => {
   const { wfProcessId, activityId, lineId, stepId } = ownProps;
@@ -25,7 +26,10 @@ function StepButton(WrappedComponent) {
     };
 
     render() {
-      return <WrappedComponent {...this.props} onHandleClick={this.handleClick} />;
+      const { wfProcessId, activityId, lineId, stepId } = this.props;
+      const location = `/workflow/${wfProcessId}/activityId/${activityId}/lineId/${lineId}/stepId/${stepId}`;
+
+      return <WrappedComponent {...this.props} onHandleClick={this.handleClick} location={location} />;
     }
   }
 
@@ -42,7 +46,7 @@ function StepButton(WrappedComponent) {
     dispatch: PropTypes.func.isRequired,
   };
 
-  return connect(mapStateToProps)(Wrapped);
+  return withRouter(connect(mapStateToProps)(Wrapped));
 }
 
 export default StepButton;

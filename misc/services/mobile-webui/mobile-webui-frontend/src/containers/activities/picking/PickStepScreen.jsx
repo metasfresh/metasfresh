@@ -114,7 +114,11 @@ class PickStepScreen extends Component {
           <div className="column is-half has-text-left pb-0">{this.getQtyToPick()}</div>
         </div>
         <div className="mt-0">
-          <button className="button is-outlined complete-btn" onClick={this.onScanHUButtonClick}>
+          <button
+            className="button is-outlined complete-btn"
+            disabled={isPickedFromHU}
+            onClick={this.onScanHUButtonClick}
+          >
             <ButtonWithIndicator caption={scanButtonCaption} completeStatus={scanButtonStatus} />
           </button>
         </div>

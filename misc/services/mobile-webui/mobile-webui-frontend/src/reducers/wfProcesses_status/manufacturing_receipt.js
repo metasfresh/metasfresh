@@ -1,89 +1,83 @@
 import * as types from '../../constants/ManufacturingActionTypes';
 import * as CompleteStatus from '../../constants/CompleteStatus';
 import { registerHandler } from './activityStateHandlers';
-import { current, isDraft } from 'immer';
 import { updateUserEditable } from './utils';
+import { current, isDraft } from 'immer';
 
-const COMPONENT_TYPE = 'manufacturing/rawMaterialsIssue';
+const COMPONENT_TYPE = 'manufacturing/materialReceipt';
 
 export const manufacturingReducer = ({ draftState, action }) => {
   switch (action.type) {
-    case types.UPDATE_MANUFACTURING_ISSUE_QTY: {
+    case types.UPDATE_MANUFACTURING_RECEIPT_QTY: {
       return reduceOnUpdateQtyPicked(draftState, action.payload);
     }
-
+    case types.UPDATE_MANUFACTURING_RECEIPT_TARGET: {
+      return updateTarget(draftState, action.payload);
+    }
     default: {
       return draftState;
     }
   }
 };
 
-const reduceOnUpdateQtyPicked = (draftState, payload) => {
-  const { wfProcessId, activityId, lineId, stepId, qtyPicked, qtyRejectedReasonCode } = payload;
+const updateTarget = (draftState, payload) => {
+  const { wfProcessId, activityId, lineId, target } = payload;
 
   const draftWFProcess = draftState[wfProcessId];
-  const draftStep = draftWFProcess.activities[activityId].dataStored.lines[lineId].steps[stepId];
+  const draftActivityLine = draftWFProcess.activities[activityId].dataStored.lines[lineId];
 
-  draftStep.qtyIssued = qtyPicked;
-  draftStep.qtyRejected = draftStep.qtyToIssue - qtyPicked;
-  draftStep.qtyRejectedReasonCode = qtyRejectedReasonCode;
+  if (target.huBarcode) {
+    const productId = draftActivityLine.availableReceivingTargets.values[0].tuPIItemProductId;
+    draftActivityLine.aggregateToLU = {
+      existingLU: {
+        huBarcode: target.huBarcode,
+        tuPIItemProductId: productId,
+      },
+    };
+  } else {
+    draftActivityLine.aggregateToLU = {
+      newLU: { ...target },
+    };
+  }
 
-  updateStepStatus({
+  updateLineStatus({
     draftWFProcess,
     activityId,
     lineId,
-    stepId,
   });
 
   return draftState;
 };
 
-const updateStepStatus = ({ draftWFProcess, activityId, lineId, stepId }) => {
-  const draftStep = draftWFProcess.activities[activityId].dataStored.lines[lineId].steps[stepId];
+const reduceOnUpdateQtyPicked = (draftState, payload) => {
+  const { wfProcessId, activityId, lineId, qtyPicked } = payload;
 
-  draftStep.completeStatus = computeStepStatus({ draftStep });
-  console.log(`Update step [${activityId} ${lineId} ${stepId} ]: completeStatus=${draftStep.completeStatus}`);
+  const draftWFProcess = draftState[wfProcessId];
+  const draftActivityLine = draftWFProcess.activities[activityId].dataStored.lines[lineId];
 
-  //
-  // Rollup:
-  updateLineStatusFromSteps({ draftWFProcess, activityId, lineId });
+  if (qtyPicked) {
+    draftActivityLine.userQtyReceived = qtyPicked;
+    draftActivityLine.qtyReceived += qtyPicked;
+  }
+
+  updateLineStatus({
+    draftWFProcess,
+    activityId,
+    lineId,
+  });
+
+  return draftState;
 };
 
-const computeStepStatus = ({ draftStep }) => {
-  const isStepCompleted =
-    draftStep.qtyIssued !== null &&
-    // is completely picked or a reject code is set
-    (draftStep.qtyToIssue - draftStep.qtyIssued === 0 || !!draftStep.qtyRejectedReasonCode);
-
-  return isStepCompleted ? CompleteStatus.COMPLETED : CompleteStatus.NOT_STARTED;
-};
-
-const updateLineStatusFromSteps = ({ draftWFProcess, activityId, lineId }) => {
+const updateLineStatus = ({ draftWFProcess, activityId, lineId }) => {
   const draftLine = draftWFProcess.activities[activityId].dataStored.lines[lineId];
-  draftLine.completeStatus = computeLineStatusFromSteps({ draftLine });
+
+  draftLine.completeStatus = computeLineStatus(draftLine);
   console.log(`Update line [${activityId} ${lineId} ]: completeStatus=${draftLine.completeStatus}`);
 
   //
   // Rollup:
   updateActivityStatusFromLinesAndRollup({ draftWFProcess, activityId });
-};
-
-const computeLineStatusFromSteps = ({ draftLine }) => {
-  const stepIds = extractDraftMapKeys(draftLine.steps);
-
-  const stepStatuses = [];
-  stepIds.forEach((stepId) => {
-    const draftStep = draftLine.steps[stepId];
-    if (!stepStatuses.includes(draftStep.completeStatus)) {
-      stepStatuses.push(draftStep.completeStatus);
-    }
-  });
-
-  return CompleteStatus.reduceFromCompleteStatuesUniqueArray(stepStatuses);
-};
-
-const extractDraftMapKeys = (draftMap) => {
-  return isDraft(draftMap) ? Object.keys(current(draftMap)) : Object.keys(draftMap);
 };
 
 const updateActivityStatusFromLinesAndRollup = ({ draftWFProcess, activityId }) => {
@@ -99,17 +93,21 @@ const updateActivityStatusFromLines = ({ draftActivityDataStored }) => {
   draftActivityDataStored.completeStatus = computeActivityStatusFromLines({ draftActivityDataStored });
 };
 
+const computeLineStatus = ({ qtyToReceive, qtyReceived, aggregateToLU, currentReceivingHU }) => {
+  if (qtyToReceive === qtyReceived && aggregateToLU) {
+    return CompleteStatus.COMPLETED;
+  } else if (qtyToReceive === qtyReceived || aggregateToLU || currentReceivingHU) {
+    return CompleteStatus.IN_PROGRESS;
+  } else {
+    return CompleteStatus.NOT_STARTED;
+  }
+};
+
 const computeActivityStatus = ({ draftActivity }) => {
   const draftActivityDataStored = draftActivity.dataStored;
   if (draftActivityDataStored.lines) {
     draftActivityDataStored.lines.forEach((line) => {
-      if (line.steps) {
-        Object.values(line.steps).forEach((step) => {
-          step.completeStatus = computeStepStatus({ draftStep: step });
-        });
-
-        line.completeStatus = computeLineStatusFromSteps({ draftLine: line });
-      }
+      line.completeStatus = computeLineStatus(line);
     });
   }
   return computeActivityStatusFromLines({ draftActivityDataStored });
@@ -130,14 +128,16 @@ const computeActivityStatusFromLines = ({ draftActivityDataStored }) => {
   return CompleteStatus.reduceFromCompleteStatuesUniqueArray(lineStatuses);
 };
 
+const extractDraftMapKeys = (draftMap) => {
+  return isDraft(draftMap) ? Object.keys(current(draftMap)) : Object.keys(draftMap);
+};
+
 const normalizeLines = (lines) => {
   return lines.map((line) => {
+    const aggregateToLU = line.aggregateToLU || null;
     return {
       ...line,
-      steps: line.steps.reduce((accum, step) => {
-        accum[step.id] = step;
-        return accum;
-      }, {}),
+      aggregateToLU,
     };
   });
 };

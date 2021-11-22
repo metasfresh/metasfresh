@@ -1,31 +1,47 @@
-import React, { PureComponent } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
-import MaterialReceiptLineButton from './MaterialReceiptLineButton';
 
-class MaterialReceiptActivity extends PureComponent {
-  render() {
-    const {
-      activityState: {
-        componentProps: { lines },
-        dataStored: { isUserEditable },
-      },
-    } = this.props;
+import LineButton from './MaterialReceiptLineButton';
+import * as CompleteStatus from '../../../constants/CompleteStatus';
 
-    return (
-      <div className="mfg-materialReceipt-activity-container mt-5">
-        {lines.map((line, lineIndex) => {
-          return (
-            <MaterialReceiptLineButton key={lineIndex} productName={line.productName} isUserEditable={isUserEditable} />
-          );
-        })}
-      </div>
-    );
-  }
-}
+const MaterialReceiptActivity = (props) => {
+  const {
+    activityState: { dataStored },
+    wfProcessId,
+    id,
+  } = props;
+  const data = dataStored ? dataStored : {};
+  const { isUserEditable, lines } = data;
+
+  return (
+    <div className="mfg-materialReceipt-activity-container mt-5">
+      {lines && lines.length > 0
+        ? lines.map((lineItem, lineIndex) => {
+            const lineId = '' + lineIndex;
+
+            return (
+              <LineButton
+                key={lineId}
+                wfProcessId={wfProcessId}
+                activityId={id}
+                lineId={lineId}
+                caption={lineItem.productName}
+                isUserEditable={isUserEditable || true}
+                completeStatus={lineItem.completeStatus || CompleteStatus.NOT_STARTED}
+                qtyCurrent={lineItem.qtyReceived}
+                qtyTarget={lineItem.qtyToReceive}
+                uom={lineItem.uom}
+              />
+            );
+          })
+        : null}
+    </div>
+  );
+};
 
 MaterialReceiptActivity.propTypes = {
   wfProcessId: PropTypes.string,
-  activityId: PropTypes.string,
+  id: PropTypes.string,
   componentProps: PropTypes.object,
   activityState: PropTypes.object,
 };

@@ -10,7 +10,7 @@ import { computePickFromStatus } from '../../../reducers/wfProcesses_status/pick
 
 class PickStepButton extends PureComponent {
   handleClick = () => {
-    const { pickFrom } = this.props;
+    const { pickFrom, location } = this.props;
     const { dispatch, onHandleClick } = this.props;
 
     onHandleClick();
@@ -98,6 +98,7 @@ class PickStepButton extends PureComponent {
 }
 
 PickStepButton.propTypes = {
+  location: PropTypes.string.isRequired,
   //
   // Props
   appId: PropTypes.string.isRequired,

@@ -21,6 +21,7 @@ export const setupCounterpart = () => {
       QtyToMove: 'Qty to move',
       DropToLocator: 'Drop to locator',
       PleaseTryAgain: 'Please try again',
+      cancelText: 'Cancel',
     },
     login: {
       submitButton: 'Login',
@@ -75,6 +76,23 @@ export const setupCounterpart = () => {
         ProductName: 'Product Name',
         target: 'To issue',
         picked: 'Issued',
+        issues: {
+          target: 'To issue',
+          picked: 'Issued',
+          qtyToIssue: 'Qty to issue',
+          qtyIssued: 'Qty Issued',
+          qtyRejected: 'Qty Rejected',
+        },
+        receipts: {
+          pickPromptTitle: 'Quantity to receive',
+          receiveTarget: 'Receive target',
+          receiveQty: 'Receive quantity',
+          qtyBtnCaption: 'Received quantity',
+          existingLU: 'Existing HU',
+          newHU: 'New HU',
+          target: 'To receive',
+          picked: 'Received',
+        },
       },
     },
   });

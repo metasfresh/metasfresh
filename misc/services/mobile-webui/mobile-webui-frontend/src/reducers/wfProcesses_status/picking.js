@@ -231,7 +231,7 @@ export const computeLineStatusFromSteps = ({ draftLine }) => {
   return CompleteStatus.reduceFromCompleteStatuesUniqueArray(stepStatuses);
 };
 
-export const updateActivityStatusFromLinesAndRollup = ({ draftWFProcess, activityId }) => {
+const updateActivityStatusFromLinesAndRollup = ({ draftWFProcess, activityId }) => {
   const draftActivity = draftWFProcess.activities[activityId];
   updateActivityStatusFromLines({ draftActivityDataStored: draftActivity.dataStored });
 
@@ -240,11 +240,11 @@ export const updateActivityStatusFromLinesAndRollup = ({ draftWFProcess, activit
   updateUserEditable({ draftWFProcess });
 };
 
-export const updateActivityStatusFromLines = ({ draftActivityDataStored }) => {
+const updateActivityStatusFromLines = ({ draftActivityDataStored }) => {
   draftActivityDataStored.completeStatus = computeActivityStatusFromLines({ draftActivityDataStored });
 };
 
-export const computeActivityStatusFromLines = ({ draftActivityDataStored }) => {
+const computeActivityStatusFromLines = ({ draftActivityDataStored }) => {
   const lineIds = extractDraftMapKeys(draftActivityDataStored.lines);
 
   const lineStatuses = [];

@@ -19,11 +19,22 @@ class StepScanScreenComponent extends Component {
     };
   }
 
+  hidePrompt = () => {
+    this.setState({ promptVisible: false });
+  };
+
   onBarcodeScanned = ({ scannedBarcode }, closeCameraCallback) => {
+    const { qtyTarget } = this.props;
+
     if (this.isEligibleBarcode(scannedBarcode)) {
-      this.setState({ promptVisible: true });
-      this.props.setScannedBarcode(scannedBarcode);
       this.closeCameraCallback = closeCameraCallback;
+
+      // in some cases we don't need store quantity (ie manufacturing receipts)
+      if (qtyTarget !== null) {
+        this.setState({ promptVisible: true });
+      }
+
+      this.props.setScannedBarcode(scannedBarcode);
     } else {
       // show an error to user but keep scanning...
       toastError({ messageKey: 'activities.picking.notEligibleHUBarcode' });
@@ -71,7 +82,8 @@ class StepScanScreenComponent extends Component {
     const { eligibleBarcode } = this.props;
 
     console.log(`checking ${eligibleBarcode} vs ${scannedBarcode}`);
-    return scannedBarcode === eligibleBarcode;
+    // in some cases we accept whatever code user scans and we're not constraining it
+    return eligibleBarcode === null ? true : scannedBarcode === eligibleBarcode;
   };
 
   render() {
@@ -89,7 +101,12 @@ class StepScanScreenComponent extends Component {
         ) : (
           <>
             {promptVisible ? (
-              <PickQuantityPrompt qtyTarget={qtyTarget} qtyCaption={qtyCaption} onQtyChange={this.onQtyPickedChanged} />
+              <PickQuantityPrompt
+                qtyTarget={qtyTarget}
+                qtyCaption={qtyCaption}
+                onQtyChange={this.onQtyPickedChanged}
+                onCloseDialog={this.hidePrompt}
+              />
             ) : null}
             <CodeScanner onBarcodeScanned={this.onBarcodeScanned} />
           </>
@@ -104,12 +121,12 @@ StepScanScreenComponent.propTypes = {
   wfProcessId: PropTypes.string.isRequired,
   activityId: PropTypes.string.isRequired,
   lineId: PropTypes.string.isRequired,
-  stepId: PropTypes.string.isRequired,
-  eligibleBarcode: PropTypes.string.isRequired,
-  qtyTarget: PropTypes.number.isRequired,
+  stepId: PropTypes.string,
+  eligibleBarcode: PropTypes.string,
+  qtyTarget: PropTypes.number,
   qtyCaption: PropTypes.string.isRequired,
   stepProps: PropTypes.object.isRequired,
-  pushUpdatedQuantity: PropTypes.func.isRequired,
+  pushUpdatedQuantity: PropTypes.func,
   setScannedBarcode: PropTypes.func.isRequired,
 };
 
