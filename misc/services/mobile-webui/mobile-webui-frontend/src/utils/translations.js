@@ -85,7 +85,7 @@ export const setupCounterpart = () => {
           receiveTarget: 'Receive target',
           receiveQty: 'Receive quantity',
           qtyBtnCaption: 'Received quantity',
-          existingHU: 'Existing HU',
+          existingLU: 'Existing HU',
           newHU: 'New HU',
           target: 'To receive',
           picked: 'Received',

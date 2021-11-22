@@ -42,7 +42,7 @@ class MaterialReceiptLineScreen extends PureComponent {
     let targetCaption = counterpart.translate('activities.mfg.receipts.receiveTarget');
 
     if (aggregateToLU) {
-      targetCaption = aggregateToLU.newLU ? aggregateToLU.newLU.caption : aggregateToLU.existingHU.huBarcode;
+      targetCaption = aggregateToLU.newLU ? aggregateToLU.newLU.caption : aggregateToLU.existingLU.huBarcode;
     }
 
     return (

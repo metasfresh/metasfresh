@@ -14,7 +14,7 @@ const getStepComponent = (appId, locator, stepId) => {
     case 'distribution':
       return { Component: DistributionStepScanScreen, modifier: locator };
     case 'mfg':
-      if (stepId === 'recepits') {
+      if (stepId === 'receipt') {
         return { Component: ManufacturingReceiptScanScreen };
       }
       return { Component: RawMaterialIssueScanScreen };

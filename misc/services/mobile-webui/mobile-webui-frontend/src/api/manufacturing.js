@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { apiBasePath } from '../constants';
 
-export function manufacturingReceiptReqest({ wfProcessId, activityId, receiptObject }) {
+export function manufacturingReqest({ wfProcessId, activityId, receiptObject }) {
   const data = {
     wfProcessId,
     wfActivityId: activityId,

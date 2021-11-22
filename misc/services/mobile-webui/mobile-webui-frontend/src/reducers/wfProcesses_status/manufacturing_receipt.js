@@ -28,7 +28,7 @@ const updateTarget = (draftState, payload) => {
   if (target.huBarcode) {
     const productId = draftActivityLine.availableReceivingTargets.values[0].tuPIItemProductId;
     draftActivityLine.aggregateToLU = {
-      existingHU: {
+      existingLU: {
         huBarcode: target.huBarcode,
         tuPIItemProductId: productId,
       },
@@ -54,7 +54,10 @@ const reduceOnUpdateQtyPicked = (draftState, payload) => {
   const draftWFProcess = draftState[wfProcessId];
   const draftActivityLine = draftWFProcess.activities[activityId].dataStored.lines[lineId];
 
-  draftActivityLine.qtyReceived = qtyPicked;
+  if (qtyPicked) {
+    draftActivityLine.userQtyReceived = qtyPicked;
+    draftActivityLine.qtyReceived += qtyPicked;
+  }
 
   updateLineStatus({
     draftWFProcess,

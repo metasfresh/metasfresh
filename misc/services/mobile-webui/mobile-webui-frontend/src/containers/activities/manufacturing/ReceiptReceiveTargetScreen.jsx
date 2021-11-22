@@ -45,7 +45,7 @@ class ReceiptReceiveTargetScreen extends PureComponent {
                 <div className="caption-btn">
                   <div className="rows">
                     <div className="row is-full pl-5">
-                      {counterpart.translate('activities.mfg.receipts.existingHU')}
+                      {counterpart.translate('activities.mfg.receipts.existingLU')}
                     </div>
                   </div>
                 </div>
