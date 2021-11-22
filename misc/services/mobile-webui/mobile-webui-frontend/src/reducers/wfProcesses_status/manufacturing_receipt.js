@@ -79,10 +79,10 @@ const updateLineStatus = ({ draftWFProcess, activityId, lineId }) => {
   updateActivityStatusFromLines({ draftWFProcess, activityId });
 };
 
-const computeLineStatus = ({ qtyToReceive, qtyReceived, aggregateToLU }) => {
+const computeLineStatus = ({ qtyToReceive, qtyReceived, aggregateToLU, currentReceivingHU }) => {
   if (qtyToReceive === qtyReceived && aggregateToLU) {
     return CompleteStatus.COMPLETED;
-  } else if (qtyToReceive === qtyReceived || aggregateToLU) {
+  } else if (qtyToReceive === qtyReceived || aggregateToLU || currentReceivingHU) {
     return CompleteStatus.IN_PROGRESS;
   } else {
     return CompleteStatus.NOT_STARTED;

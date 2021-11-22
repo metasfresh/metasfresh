@@ -36,13 +36,15 @@ class MaterialReceiptLineScreen extends PureComponent {
 
   render() {
     const {
-      lineProps: { uom, qtyReceived, qtyToReceive, productName, aggregateToLU },
+      lineProps: { uom, qtyReceived, qtyToReceive, productName, aggregateToLU, currentReceivingHU },
     } = this.props;
     const caption = counterpart.translate('activities.mfg.receipts.receiveQty');
     let targetCaption = counterpart.translate('activities.mfg.receipts.receiveTarget');
 
     if (aggregateToLU) {
       targetCaption = aggregateToLU.newLU ? aggregateToLU.newLU.caption : aggregateToLU.existingLU.huBarcode;
+    } else if (currentReceivingHU) {
+      targetCaption = currentReceivingHU.huBarcode;
     }
 
     return (
