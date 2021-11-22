@@ -106,3 +106,108 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 ALTER TABLE M_InOut ADD CONSTRAINT CIncoterms_MInOut FOREIGN KEY (C_Incoterms_ID) REFERENCES public.C_Incoterms DEFERRABLE INITIALLY DEFERRED
 ;
+
+
+
+-- 2021-11-22T12:11:31.422Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET AD_Column_ID=578581, Description=NULL, Help=NULL, Name='Incoterms',Updated=TO_TIMESTAMP('2021-11-22 14:11:31','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=501624
+;
+
+-- 2021-11-22T12:11:31.450Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(579927) 
+;
+
+-- 2021-11-22T12:11:31.461Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=501624
+;
+
+-- 2021-11-22T12:11:31.463Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */ select AD_Element_Link_Create_Missing_Field(501624)
+;
+
+-- 2021-11-22T12:12:52.141Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET AD_Column_ID=578581, Description=NULL, Help=NULL, Name='Incoterms',Updated=TO_TIMESTAMP('2021-11-22 14:12:52','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=501631
+;
+
+-- 2021-11-22T12:12:52.142Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(579927) 
+;
+
+-- 2021-11-22T12:12:52.145Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=501631
+;
+
+-- 2021-11-22T12:12:52.145Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */ select AD_Element_Link_Create_Missing_Field(501631)
+;
+
+-- 2021-11-22T12:12:58.126Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM  AD_Column_Trl WHERE AD_Column_ID=501615
+;
+
+-- 2021-11-22T12:12:58.133Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_Column WHERE AD_Column_ID=501615
+;
+
+-- 2021-11-22T12:13:33.441Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET AD_Column_ID=578584, Description=NULL, Help=NULL, Name='Incoterms',Updated=TO_TIMESTAMP('2021-11-22 14:13:33','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=501622
+;
+
+-- 2021-11-22T12:13:33.443Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(579927) 
+;
+
+-- 2021-11-22T12:13:33.445Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=501622
+;
+
+-- 2021-11-22T12:13:33.445Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */ select AD_Element_Link_Create_Missing_Field(501622)
+;
+
+-- 2021-11-22T12:14:19.645Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET AD_Column_ID=578584, Description=NULL, Help=NULL, Name='Incoterms',Updated=TO_TIMESTAMP('2021-11-22 14:14:19','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=501629
+;
+
+-- 2021-11-22T12:14:19.646Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(579927) 
+;
+
+-- 2021-11-22T12:14:19.649Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=501629
+;
+
+-- 2021-11-22T12:14:19.651Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */ select AD_Element_Link_Create_Missing_Field(501629)
+;
+
+-- 2021-11-22T12:14:59.678Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM  AD_Column_Trl WHERE AD_Column_ID=501617
+;
+
+-- 2021-11-22T12:14:59.682Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_Column WHERE AD_Column_ID=501617
+;
+
+
+
