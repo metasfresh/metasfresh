@@ -138,6 +138,7 @@ public class ManufacturingMobileApplication implements MobileApplication
 					.getLineById(receiveFrom.getFinishedGoodsReceiveLineId());
 
 			result.setExistingLU(JsonFinishedGoodsReceiveLine.extractJsonAggregateToExistingLU(receiveLine));
+			result.setQtyReceivedTotal(receiveLine.getQtyReceived().toBigDecimal());
 		}
 
 		return result;
