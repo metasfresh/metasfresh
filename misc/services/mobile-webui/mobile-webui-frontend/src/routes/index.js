@@ -27,7 +27,15 @@ const routesArray = [
   { path: '/workflow/:workflowId/activityId/:activityId/lineId/:lineId', Component: LineScreen },
   { path: '/workflow/:workflowId/activityId/:activityId/lineId/:lineId/stepId/:stepId', Component: StepScreen },
   {
+    path: '/workflow/:workflowId/activityId/:activityId/lineId/:lineId/stepId/:stepId/altStepId/:altStepId',
+    Component: StepScreen,
+  },
+  {
     path: '/workflow/:workflowId/activityId/:activityId/lineId/:lineId/stepId/:stepId/scanner/:appId/:locatorId?',
+    Component: StepScanScreen,
+  },
+  {
+    path: '/workflow/:workflowId/activityId/:activityId/lineId/:lineId/stepId/:stepId/altStepId/:altStepId/scanner/:appId/:locatorId?',
     Component: StepScanScreen,
   },
 ];

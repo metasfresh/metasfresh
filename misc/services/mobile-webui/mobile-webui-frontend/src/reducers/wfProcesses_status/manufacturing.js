@@ -1,6 +1,6 @@
 import * as types from '../../constants/ManufacturingActionTypes';
 import { registerHandler } from './activityStateHandlers';
-import { computeLineStatus, updateActivityStatusFromLines } from './picking';
+import { computeLineStatusFromSteps, updateActivityStatusFromLinesAndRollup } from './picking';
 
 const COMPONENT_TYPE = 'manufacturing/rawMaterialsIssue';
 
@@ -35,12 +35,12 @@ const reduceOnUpdateQtyPicked = (draftState, payload) => {
 
 const updateLineStatus = ({ draftWFProcess, activityId, lineId }) => {
   const draftLine = draftWFProcess.activities[activityId].dataStored.lines[lineId];
-  draftLine.completeStatus = computeLineStatus({ draftLine });
+  draftLine.completeStatus = computeLineStatusFromSteps({ draftLine });
   console.log(`Update line [${activityId} ${lineId} ]: completeStatus=${draftLine.completeStatus}`);
 
   //
   // Rollup:
-  updateActivityStatusFromLines({ draftWFProcess, activityId });
+  updateActivityStatusFromLinesAndRollup({ draftWFProcess, activityId });
 };
 
 registerHandler({

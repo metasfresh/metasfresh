@@ -3,6 +3,7 @@ import * as CompleteStatus from '../../constants/CompleteStatus';
 import {
   normalizeComponentProps,
   computeActivityDataStoredInitialValue,
+  mergeActivityDataStored,
   computeActivityStatus,
 } from './activityStateHandlers';
 
@@ -72,6 +73,8 @@ export const mergeWFProcessToState = ({ draftWFProcess, fromWFProcess }) => {
   });
 
   updateUserEditable({ draftWFProcess });
+
+  return draftWFProcess;
 };
 
 const mergeActivitiesToState = ({ draftActivities, fromActivities }) => {
@@ -106,6 +109,12 @@ const mergeActivityToState = ({ draftActivity, fromActivity }) => {
       }),
     };
   }
+
+  mergeActivityDataStored({
+    componentType: draftActivity.componentType,
+    draftActivityDataStored: draftActivity.dataStored,
+    fromActivity,
+  });
 
   const completeStatus = computeActivityStatus({ draftActivity });
   if (completeStatus != null) {

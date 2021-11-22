@@ -5,20 +5,39 @@ import { forEach } from 'lodash';
 import PickLineButton from './PickLineButton';
 import * as CompleteStatus from '../../../constants/CompleteStatus';
 
-const getLinePickingQuantities = (line) => {
+const computeLineQuantities = (line) => {
   let picked = 0;
   let toPick = 0;
   let uom = '';
 
   forEach(line.steps, (step) => {
-    const { qtyPicked, qtyToPick, uom: stepUom } = step;
+    const { qtyToPick, uom: stepUom } = step;
 
-    picked += qtyPicked;
+    picked += computeStepQtyPickedTotal(step);
     toPick += qtyToPick;
     uom = stepUom;
   });
 
   return { picked, toPick, uom };
+};
+
+const computeStepQtyPickedTotal = (step) => {
+  let qtyPickedTotal = 0;
+
+  if (step.mainPickFrom.qtyPicked) {
+    qtyPickedTotal += step.mainPickFrom.qtyPicked;
+  }
+
+  if (step.pickFromAlternatives) {
+    const qtyPickedInAltSteps = Object.values(step.pickFromAlternatives).reduce(
+      (accum, pickFromAlternative) => accum + pickFromAlternative.qtyPicked,
+      0
+    );
+
+    qtyPickedTotal += qtyPickedInAltSteps;
+  }
+
+  return qtyPickedTotal;
 };
 
 class PickProductsActivity extends Component {
@@ -37,7 +56,7 @@ class PickProductsActivity extends Component {
         {activityState && lines.length > 0
           ? lines.map((lineItem, lineIndex) => {
               const lineId = '' + lineIndex;
-              const { picked, toPick, uom } = getLinePickingQuantities(dataStored.lines[lineIndex]);
+              const { picked, toPick, uom } = computeLineQuantities(dataStored.lines[lineIndex]);
 
               return (
                 <PickLineButton
