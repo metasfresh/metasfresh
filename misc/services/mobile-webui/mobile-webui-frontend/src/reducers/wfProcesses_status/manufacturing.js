@@ -1,7 +1,11 @@
 import * as types from '../../constants/ManufacturingActionTypes';
 import * as CompleteStatus from '../../constants/CompleteStatus';
 import { registerHandler } from './activityStateHandlers';
-import { computeLineStatusFromSteps, updateActivityStatusFromLinesAndRollup, computeActivityStatusFromLines } from './picking';
+import {
+  computeLineStatusFromSteps,
+  updateActivityStatusFromLinesAndRollup,
+  computeActivityStatusFromLines,
+} from './picking';
 
 const COMPONENT_TYPE = 'manufacturing/rawMaterialsIssue';
 
