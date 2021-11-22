@@ -1,18 +1,8 @@
-package de.metas.ui.web.document.filter.provider;
-
-import de.metas.ui.web.window.descriptor.CreateFiltersProviderContext;
-import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
-import lombok.NonNull;
-import org.adempiere.ad.element.api.AdTabId;
-
-import javax.annotation.Nullable;
-import java.util.Collection;
-
 /*
  * #%L
- * metasfresh-webui-api
+ * de.metas.swat.base
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -30,15 +20,28 @@ import java.util.Collection;
  * #L%
  */
 
-public interface DocumentFilterDescriptorsProviderFactory
-{
-	@Nullable
-	DocumentFilterDescriptorsProvider createFiltersProvider(
-			@NonNull CreateFiltersProviderContext context,
-			@NonNull Collection<DocumentFieldDescriptor> fields);
+package de.metas.invoicecandidate.api.impl;
 
-	default boolean isActive()
-	{
-		return true;
-	}
+import de.metas.adempiere.model.I_C_InvoiceLine;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.quantity.StockQtyAndUOMQty;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+
+import javax.annotation.Nullable;
+
+@Value
+@Builder
+public class InvoiceCandidateAllocCreateRequest
+{
+	@NonNull
+	final I_C_Invoice_Candidate invoiceCand;
+	@NonNull final I_C_InvoiceLine invoiceLine;
+	@NonNull final StockQtyAndUOMQty qtysInvoiced;
+	@Nullable
+	final String note;
+
+	@NonNull InvoiceLineAllocType invoiceLineAllocType;
+
 }
