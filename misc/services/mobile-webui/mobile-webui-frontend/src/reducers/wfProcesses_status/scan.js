@@ -43,5 +43,5 @@ const computeActivityStatus = ({ draftActivity }) => {
 
 registerHandler({
   componentType: COMPONENT_TYPE,
-  computeActivityStatus: computeActivityStatus,
+  computeActivityStatus,
 });

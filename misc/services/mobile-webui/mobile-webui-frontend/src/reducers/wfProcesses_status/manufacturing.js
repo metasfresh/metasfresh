@@ -1,7 +1,7 @@
 import * as types from '../../constants/ManufacturingActionTypes';
 import * as CompleteStatus from '../../constants/CompleteStatus';
 import { registerHandler } from './activityStateHandlers';
-import { computeLineStatus, updateActivityStatusFromLines } from './picking';
+import { computeLineStatus, updateActivityStatusFromLines, computeActivityStatusFromLines } from './picking';
 
 const COMPONENT_TYPE = 'manufacturing/rawMaterialsIssue';
 
@@ -52,8 +52,9 @@ const computeStepStatus = ({ draftStep }) => {
   console.log('   => diff=', draftStep.qtyToIssue - draftStep.qtyIssued === 0);
 
   const isStepCompleted =
+    draftStep.qtyIssued !== null &&
     // is completely picked or a reject code is set
-    draftStep.qtyToIssue - draftStep.qtyIssued === 0 || !!draftStep.qtyRejectedReasonCode;
+    (draftStep.qtyToIssue - draftStep.qtyIssued === 0 || !!draftStep.qtyRejectedReasonCode);
 
   return isStepCompleted ? CompleteStatus.COMPLETED : CompleteStatus.NOT_STARTED;
 };
@@ -66,6 +67,21 @@ const updateLineStatusFromSteps = ({ draftWFProcess, activityId, lineId }) => {
   //
   // Rollup:
   updateActivityStatusFromLines({ draftWFProcess, activityId });
+};
+
+const computeActivityStatus = ({ draftActivity }) => {
+  if (draftActivity.dataStored.lines) {
+    draftActivity.dataStored.lines.forEach((line) => {
+      if (line.steps) {
+        Object.values(line.steps).forEach((step) => {
+          step.completeStatus = computeStepStatus({ draftStep: step });
+        });
+
+        line.completeStatus = computeLineStatus({ draftLine: line });
+      }
+    });
+  }
+  return computeActivityStatusFromLines({ draftActivity });
 };
 
 const normalizeLines = (lines) => {
@@ -93,4 +109,5 @@ registerHandler({
     console.log('computeActivityDataStoredInitialValue for ', componentProps);
     return { lines: componentProps.lines };
   },
+  computeActivityStatus,
 });

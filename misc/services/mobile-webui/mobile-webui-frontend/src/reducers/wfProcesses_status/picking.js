@@ -1,5 +1,5 @@
 import * as types from '../../constants/PickingActionTypes';
-import { original } from 'immer';
+import { original, isDraft } from 'immer';
 import { updateUserEditable } from './utils';
 import * as CompleteStatus from '../../constants/CompleteStatus';
 import { registerHandler } from './activityStateHandlers';
@@ -73,7 +73,8 @@ const updateLineStatusFromSteps = ({ draftWFProcess, activityId, lineId }) => {
 };
 
 export const computeLineStatus = ({ draftLine }) => {
-  const stepIds = Object.keys(original(draftLine.steps));
+  // when loading the app and setting initial status we have a plain object
+  const stepIds = isDraft(draftLine) ? Object.keys(original(draftLine.steps)) : Object.keys(draftLine.steps);
 
   if (stepIds.length > 0) {
     let countStepsCompleted = 0;
@@ -110,7 +111,9 @@ export const updateActivityStatusFromLines = ({ draftWFProcess, activityId }) =>
 };
 
 export const computeActivityStatusFromLines = ({ draftActivity }) => {
-  const lineIds = Object.keys(original(draftActivity.dataStored.lines));
+  const lineIds = isDraft(draftActivity)
+    ? Object.keys(original(draftActivity.dataStored.lines))
+    : Object.keys(draftActivity.dataStored.lines);
 
   if (lineIds.length > 0) {
     let countLinesCompleted = 0;
