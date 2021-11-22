@@ -192,27 +192,27 @@ const updateLineStatusFromSteps = ({ draftWFProcess, activityId, lineId }) => {
 };
 
 export const computeLineStatus = ({ draftLine }) => {
-  const stepItems = original(draftLine.steps);
+  const stepItems = isDraft(draftLine.steps) ? original(draftLine.steps) : draftLine.steps;
   const stepIds = Object.keys(stepItems);
 
   if (stepIds.length > 0) {
     let countStepsCompleted = 0;
     for (let stepId of stepIds) {
-      // let sumAltStepsQtysPicked = 0;
-      // let remainingQty = stepItems[stepId].mainPickFrom.qtyRejected;
+      let sumAltStepsQtysPicked = 0;
+      let remainingQty = stepItems[stepId].mainPickFrom.qtyRejected;
 
       const draftStep = draftLine.steps[stepId];
       let stepCompleteStatus = draftStep.completeStatus || CompleteStatus.NOT_STARTED;
 
-      // let { genSteps } = stepItems[stepId].altSteps;
-      // for (let altItem in genSteps) {
-      //   sumAltStepsQtysPicked = sumAltStepsQtysPicked + genSteps[altItem].qtyPicked;
-      // }
+      let { genSteps } = stepItems[stepId].altSteps;
+      for (let altItem in genSteps) {
+        sumAltStepsQtysPicked = sumAltStepsQtysPicked + genSteps[altItem].qtyPicked;
+      }
 
-      // if (remainingQty - sumAltStepsQtysPicked === 0) {
-      //   stepCompleteStatus = CompleteStatus.COMPLETED;
-      //   draftLine.steps[stepId].completeStatus = stepCompleteStatus;
-      // }
+      if (remainingQty - sumAltStepsQtysPicked === 0) {
+        stepCompleteStatus = CompleteStatus.COMPLETED;
+        draftLine.steps[stepId].completeStatus = stepCompleteStatus;
+      }
 
       if (stepCompleteStatus === CompleteStatus.COMPLETED) {
         countStepsCompleted++;
@@ -316,7 +316,7 @@ export const mergeActivityDataStoredAndGenerateAltSteps = ({ draftActivityDataSt
   // loop within steps
   for (let lineIdx = 0; lineIdx < lines.length; lineIdx++) {
     // console.log('ABOUT_TO_SEND:', draftActivityDataStored.dataStored.lines[lineIdx]);
-    // computeLineStatus({ draftLine: draftActivityDataStored.dataStored.lines[lineIdx] });
+    computeLineStatus({ draftLine: draftActivityDataStored.dataStored.lines[lineIdx] });
 
     for (let stepIdx = 0; stepIdx < lines[lineIdx].steps.length; stepIdx++) {
       let step = lines[lineIdx].steps[stepIdx];
