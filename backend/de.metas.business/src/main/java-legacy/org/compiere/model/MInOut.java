@@ -423,7 +423,7 @@ public class MInOut extends X_M_InOut implements IDocument
 
 		final IPOService poService = Services.get(IPOService.class);
 
-		poService.copyValue(order, this, I_M_InOut.COLUMNNAME_Incoterm);
+		poService.copyValue(order, this, I_M_InOut.COLUMNNAME_C_Incoterms_ID);
 		poService.copyValue(order, this, I_M_InOut.COLUMNNAME_IncotermLocation);
 		poService.copyValue(order, this, I_M_InOut.COLUMNNAME_DescriptionBottom);
 
@@ -1071,7 +1071,7 @@ public class MInOut extends X_M_InOut implements IDocument
 
 		// metas
 		final IPOService poService = Services.get(IPOService.class);
-		if ("".equals(poService.getValue(this, I_M_InOut.COLUMNNAME_Incoterm)))
+		if ("".equals(poService.getValue(this, I_M_InOut.COLUMNNAME_C_Incoterms_ID)))
 		{
 			poService.setValue(this, I_M_InOut.COLUMNNAME_IncotermLocation, "");
 		}
@@ -2182,7 +2182,7 @@ public class MInOut extends X_M_InOut implements IDocument
 
 		// metas
 		final IPOService poService = Services.get(IPOService.class);
-		poService.copyValue(this, counter, I_M_InOut.COLUMNNAME_Incoterm);
+		poService.copyValue(this, counter, I_M_InOut.COLUMNNAME_C_Incoterms_ID);
 		poService.copyValue(this, counter, I_M_InOut.COLUMNNAME_IncotermLocation);
 		poService.copyValue(this, counter, I_M_InOut.COLUMNNAME_DescriptionBottom);
 		// metas end

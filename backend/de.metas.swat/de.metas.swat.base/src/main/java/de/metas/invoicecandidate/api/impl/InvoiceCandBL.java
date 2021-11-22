@@ -1163,6 +1163,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		splitCand.setDateToInvoice(ic.getDateToInvoice());
 		splitCand.setDateToInvoice_Override(ic.getDateToInvoice_Override());
 
+		splitCand.setC_Incoterms_ID(ic.getC_Incoterms_ID());
+
 		// 07442
 		// also set  tax
 		// 07814: setting both tax and tax-override to get an exact copy

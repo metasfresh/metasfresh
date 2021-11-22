@@ -360,7 +360,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 
 		// metas
 		final IPOService poService = Services.get(IPOService.class);
-		poService.copyValue(ship, this, I_M_InOut.COLUMNNAME_Incoterm);
+		poService.copyValue(ship, this, I_M_InOut.COLUMNNAME_C_Incoterms_ID);
 		poService.copyValue(ship, this, I_M_InOut.COLUMNNAME_IncotermLocation);
 		poService.copyValue(ship, this, I_M_InOut.COLUMNNAME_DescriptionBottom);
 
