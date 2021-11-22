@@ -7,6 +7,7 @@ import lombok.NonNull;
 import lombok.extern.jackson.Jacksonized;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 @Data
 @Jacksonized
@@ -21,4 +22,6 @@ public class JsonManufacturingOrderEventResult
 	// Receive result
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	@Nullable JsonAggregateToExistingLU existingLU;
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	@Nullable BigDecimal qtyReceivedTotal;
 }
