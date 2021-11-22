@@ -38,8 +38,12 @@ class MaterialReceiptLineScreen extends PureComponent {
     const {
       lineProps: { uom, qtyReceived, qtyToReceive, productName, aggregateToLU },
     } = this.props;
-    let caption = counterpart.translate('activities.mfg.receipts.receiveQty');
-    let targetCaption = counterpart.translate('activities.mfg.receipts.receiveTarget'); // or packing material
+    const caption = counterpart.translate('activities.mfg.receipts.receiveQty');
+    let targetCaption = counterpart.translate('activities.mfg.receipts.receiveTarget');
+
+    if (aggregateToLU) {
+      targetCaption = aggregateToLU.newLU ? aggregateToLU.newLU.caption : aggregateToLU.existingHU.huBarcode;
+    }
 
     return (
       <div className="pt-2 section lines-screen-container">

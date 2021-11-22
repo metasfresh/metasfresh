@@ -51,6 +51,11 @@ class ReceiptNewHUScreen extends PureComponent {
                   <div className="caption-btn">
                     <div className="rows">
                       <div className="row is-full pl-5">{target.caption}</div>
+                      <div className="row is-full is-size-7">
+                        <div className="picking-row-info">
+                          <div className="picking-to-pick">{target.tuCaption}</div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
