@@ -96,7 +96,7 @@ public class GRSSignumDispatcherRouteBuilder extends RouteBuilder
 		final DispatchRequest dispatchMessageRequest = (DispatchRequest)dispatchMessageRequestCandidate;
 
 		exchange.getIn().removeHeaders("CamelHttp*");
-		exchange.getIn().removeHeader(AUTHORIZATION);
+		exchange.getIn().removeHeader(AUTHORIZATION); // remove the token from metasfresh's API
 		exchange.getIn().setHeader(HTTP_URI, dispatchMessageRequest.getUrl());
 		exchange.getIn().setHeader(Exchange.HTTP_METHOD, HttpEndpointBuilderFactory.HttpMethods.POST);
 
