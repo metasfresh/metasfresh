@@ -34,8 +34,10 @@ class RawMaterialIssueStepScreen extends Component {
 
   render() {
     const {
-      stepProps: { huBarcode, qtyToIssue, scannedHUBarcode },
+      stepProps: { huBarcode, qtyToIssue, qtyIssued, scannedHUBarcode },
     } = this.props;
+
+    console.log(this.props);
 
     const isValidCode = !!scannedHUBarcode;
     const scanButtonCaption = isValidCode
@@ -57,6 +59,12 @@ class RawMaterialIssueStepScreen extends Component {
             {counterpart.translate('activities.mfg.issues.qtyToIssue')}:
           </div>
           <div className="column is-half has-text-left pb-0">{qtyToIssue}</div>
+        </div>
+        <div className="columns is-mobile">
+          <div className="column is-half has-text-right has-text-weight-bold pb-0 pl-0 pr-0">
+            {counterpart.translate('activities.mfg.issues.qtyIssued')}:
+          </div>
+          <div className="column is-half has-text-left pb-0">{qtyIssued}</div>
         </div>
         <div className="mt-0">
           <button className="button is-outlined complete-btn" onClick={this.onScanHUButtonClick}>
