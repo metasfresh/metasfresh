@@ -65,19 +65,17 @@ const reduceOnUpdateQtyPicked = (draftState, payload) => {
 export const generateAlternativeSteps = ({ draftDataStored, lineId, stepId, qtyToAllocate }) => {
   const draftDataStoredOrig = isDraft(draftDataStored) ? original(draftDataStored) : draftDataStored;
   const draftStep = draftDataStored.lines[lineId].steps[stepId];
-  const { pickFromAlternatives: alternativesPool } = draftDataStoredOrig;
-
-  // console.log('qtyToAllocate ===>', qtyToAllocate);
-  // console.log('draftDataStored =>', draftDataStoredOrig);
-  // console.log('LineId:', lineId);
-  // console.log('StepId:', stepId);
-  // console.log('DRAFT_STEP:', draftStep);
+  let { pickFromAlternatives: alternativesPool } = draftDataStoredOrig;
 
   let qtyToAllocateRemaining = qtyToAllocate;
+  let alternativesPoolCleared = [];
 
   for (let idx = 0; idx < alternativesPool.length; idx++) {
-    draftDataStored.pickFromAlternatives[idx] = deallocateQtyAvailable({ idx, stepId, draftDataStored });
+    alternativesPoolCleared[idx] = deallocateQtyAvailable({ idx, stepId, draftDataStored });
   }
+
+  // using this intermediate array as immer is freezing the objects
+  alternativesPool = alternativesPoolCleared;
 
   for (let idx = 0; idx < alternativesPool.length; idx++) {
     if (qtyToAllocateRemaining === 0) {
@@ -85,10 +83,6 @@ export const generateAlternativeSteps = ({ draftDataStored, lineId, stepId, qtyT
     } else {
       const alternativesPoolItem = alternativesPool[idx];
       const qtyAvailableToAllocateInThisStep = computeQtyAvailableToAllocate({ alternativesPoolItem });
-
-      console.log('qtyToAllocateRemaining =>', qtyToAllocateRemaining);
-      console.log('qtyAvailableToAllocateInThisStep=>', qtyAvailableToAllocateInThisStep);
-
       const qtyToAllocateThisStep = Math.min(qtyToAllocateRemaining, qtyAvailableToAllocateInThisStep);
 
       if (qtyToAllocateThisStep === 0) break;
@@ -154,8 +148,8 @@ const deallocateQtyAvailable = ({ idx, stepId, draftDataStored }) => {
 
   const alternativesPoolItemClone = { ...alternativesPoolItemOrig };
   alternativesPoolItemClone.allocatedQtys = { ...alternativesPoolItemOrig.allocatedQtys };
-  if (alternativesPoolItemOrig.allocatedQtys) {
-    delete alternativesPoolItemClone.allocatedQtys[stepId];
+  if (alternativesPoolItemClone.allocatedQtys) {
+    alternativesPoolItemClone.allocatedQtys[stepId] && delete alternativesPoolItemClone.allocatedQtys[stepId];
   }
   return alternativesPoolItemClone;
 };
@@ -326,7 +320,6 @@ export const mergeActivityDataStoredAndGenerateAltSteps = ({ draftActivityDataSt
 
     for (let stepIdx = 0; stepIdx < lines[lineIdx].steps.length; stepIdx++) {
       let step = lines[lineIdx].steps[stepIdx];
-      console.log('STEP:', step);
       let { qtyRejected } = lines[lineIdx].steps[stepIdx].mainPickFrom;
       let totalAltQtys = 0;
 
@@ -355,14 +348,9 @@ export const mergeActivityDataStoredAndGenerateAltSteps = ({ draftActivityDataSt
       draftActivityDataStored.dataStored.lines[lineIdx].steps[step.pickingStepId].altSteps.genSteps = genSteps;
 
       // In case we have no generated steps and there is a qtyRejected to be filled - we need to generate those alternatives
-      // if ((Object.keys(genSteps).length === 0 && qtyRejected) || qtyRejected - totalAltQtys > 0) {
       const remainingQtyDiff = qtyRejected - totalAltQtys;
-      console.log('G_STEPS:', genSteps);
-      console.log('QTY_rejected:', qtyRejected);
-      console.log('remainingQtyDiff:', remainingQtyDiff);
 
       if ((Object.keys(genSteps).length === 0 && qtyRejected) || remainingQtyDiff > 0) {
-        console.log('EXECUTING gen');
         draftActivityDataStored.dataStored = generateAlternativeSteps({
           draftDataStored: draftActivityDataStored.dataStored,
           lineId: lineIdx,
