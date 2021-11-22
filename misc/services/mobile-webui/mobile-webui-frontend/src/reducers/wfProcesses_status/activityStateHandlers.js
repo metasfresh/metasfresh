@@ -5,11 +5,13 @@ export const registerHandler = ({
   normalizeComponentProps,
   computeActivityDataStoredInitialValue,
   computeActivityStatus,
+  mergeActivityDataStored,
 }) => {
   registeredHandlers[componentType] = {
     normalizeComponentProps,
     computeActivityDataStoredInitialValue,
     computeActivityStatus,
+    mergeActivityDataStored,
   };
 
   console.log(`Registered handlers for ${componentType}`);
@@ -31,6 +33,13 @@ export const computeActivityDataStoredInitialValue = ({ componentType, component
     return componentHandlers.computeActivityDataStoredInitialValue({ componentProps });
   } else {
     return {};
+  }
+};
+
+export const mergeActivityDataStored = ({ componentType, draftActivityDataStored, fromActivity }) => {
+  const componentHandlers = registeredHandlers[componentType];
+  if (componentHandlers && componentHandlers.mergeActivityDataStored) {
+    componentHandlers.mergeActivityDataStored({ componentType, draftActivityDataStored, fromActivity });
   }
 };
 

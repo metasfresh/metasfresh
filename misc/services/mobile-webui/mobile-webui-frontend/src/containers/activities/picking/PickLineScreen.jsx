@@ -1,6 +1,5 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-
 import PickStepButton from './PickStepButton';
 
 const PickLineScreen = (props) => {
@@ -18,7 +17,11 @@ const PickLineScreen = (props) => {
                 activityId={activityId}
                 lineId={lineId}
                 stepId={stepItem.pickingStepId}
-                {...stepItem}
+                pickFromAlternatives={stepItem.pickFromAlternatives}
+                //
+                uom={stepItem.uom}
+                qtyToPick={stepItem.qtyToPick}
+                pickFrom={stepItem.mainPickFrom}
               />
             );
           })}

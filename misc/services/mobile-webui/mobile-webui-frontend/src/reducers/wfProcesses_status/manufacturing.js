@@ -1,7 +1,7 @@
 import * as types from '../../constants/ManufacturingActionTypes';
 import * as CompleteStatus from '../../constants/CompleteStatus';
 import { registerHandler } from './activityStateHandlers';
-import { computeLineStatus, updateActivityStatusFromLines, computeActivityStatusFromLines } from './picking';
+import { computeLineStatusFromSteps, updateActivityStatusFromLinesAndRollup, computeActivityStatusFromLines } from './picking';
 
 const COMPONENT_TYPE = 'manufacturing/rawMaterialsIssue';
 
@@ -64,12 +64,12 @@ const computeStepStatus = ({ draftStep }) => {
 
 const updateLineStatusFromSteps = ({ draftWFProcess, activityId, lineId }) => {
   const draftLine = draftWFProcess.activities[activityId].dataStored.lines[lineId];
-  draftLine.completeStatus = computeLineStatus({ draftLine });
+  draftLine.completeStatus = computeLineStatusFromSteps({ draftLine });
   console.log(`Update line [${activityId} ${lineId} ]: completeStatus=${draftLine.completeStatus}`);
 
   //
   // Rollup:
-  updateActivityStatusFromLines({ draftWFProcess, activityId });
+  updateActivityStatusFromLinesAndRollup({ draftWFProcess, activityId });
 };
 
 const computeActivityStatus = ({ draftActivity }) => {
@@ -80,7 +80,7 @@ const computeActivityStatus = ({ draftActivity }) => {
           step.completeStatus = computeStepStatus({ draftStep: step });
         });
 
-        line.completeStatus = computeLineStatus({ draftLine: line });
+        line.completeStatus = computeLineStatusFromSteps({ draftLine: line });
       }
     });
   }

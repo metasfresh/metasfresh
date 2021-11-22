@@ -16,10 +16,12 @@ const mapStateToProps = (state, ownProps) => {
 function StepButton(WrappedComponent) {
   class Wrapped extends PureComponent {
     handleClick = () => {
-      const { wfProcessId, activityId, lineId, stepId } = this.props;
+      const { wfProcessId, activityId, lineId, stepId, altStepId } = this.props;
       const { dispatch } = this.props;
 
-      const location = `/workflow/${wfProcessId}/activityId/${activityId}/lineId/${lineId}/stepId/${stepId}`;
+      const mainStepPath = `/workflow/${wfProcessId}/activityId/${activityId}/lineId/${lineId}/stepId/${stepId}`;
+      const location = altStepId ? `${mainStepPath}/altStepId/${altStepId}` : mainStepPath;
+
       dispatch(push(location));
     };
 
@@ -38,6 +40,7 @@ function StepButton(WrappedComponent) {
     activityId: PropTypes.string.isRequired,
     lineId: PropTypes.string.isRequired,
     stepId: PropTypes.string.isRequired,
+    altStepId: PropTypes.string,
     //
     // Actions
     dispatch: PropTypes.func.isRequired,
