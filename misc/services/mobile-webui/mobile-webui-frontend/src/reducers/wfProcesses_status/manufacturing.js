@@ -1,11 +1,8 @@
 import * as types from '../../constants/ManufacturingActionTypes';
 import * as CompleteStatus from '../../constants/CompleteStatus';
 import { registerHandler } from './activityStateHandlers';
-import {
-  computeLineStatusFromSteps,
-  updateActivityStatusFromLinesAndRollup,
-  computeActivityStatusFromLines,
-} from './picking';
+import { current, isDraft } from 'immer';
+import { updateUserEditable } from './utils';
 
 const COMPONENT_TYPE = 'manufacturing/rawMaterialsIssue';
 
@@ -54,10 +51,6 @@ const updateStepStatus = ({ draftWFProcess, activityId, lineId, stepId }) => {
 };
 
 const computeStepStatus = ({ draftStep }) => {
-  console.log('qtyIssued=', draftStep.qtyIssued);
-  console.log('qtyToIssue=', draftStep.qtyToIssue);
-  console.log('   => diff=', draftStep.qtyToIssue - draftStep.qtyIssued === 0);
-
   const isStepCompleted =
     draftStep.qtyIssued !== null &&
     // is completely picked or a reject code is set
@@ -76,9 +69,41 @@ const updateLineStatusFromSteps = ({ draftWFProcess, activityId, lineId }) => {
   updateActivityStatusFromLinesAndRollup({ draftWFProcess, activityId });
 };
 
+const computeLineStatusFromSteps = ({ draftLine }) => {
+  const stepIds = extractDraftMapKeys(draftLine.steps);
+
+  const stepStatuses = [];
+  stepIds.forEach((stepId) => {
+    const draftStep = draftLine.steps[stepId];
+    if (!stepStatuses.includes(draftStep.completeStatus)) {
+      stepStatuses.push(draftStep.completeStatus);
+    }
+  });
+
+  return CompleteStatus.reduceFromCompleteStatuesUniqueArray(stepStatuses);
+};
+
+const extractDraftMapKeys = (draftMap) => {
+  return isDraft(draftMap) ? Object.keys(current(draftMap)) : Object.keys(draftMap);
+};
+
+const updateActivityStatusFromLinesAndRollup = ({ draftWFProcess, activityId }) => {
+  const draftActivity = draftWFProcess.activities[activityId];
+  updateActivityStatusFromLines({ draftActivityDataStored: draftActivity.dataStored });
+
+  //
+  // Rollup:
+  updateUserEditable({ draftWFProcess });
+};
+
+const updateActivityStatusFromLines = ({ draftActivityDataStored }) => {
+  draftActivityDataStored.completeStatus = computeActivityStatusFromLines({ draftActivityDataStored });
+};
+
 const computeActivityStatus = ({ draftActivity }) => {
-  if (draftActivity.dataStored.lines) {
-    draftActivity.dataStored.lines.forEach((line) => {
+  const draftActivityDataStored = draftActivity.dataStored;
+  if (draftActivityDataStored.lines) {
+    draftActivityDataStored.lines.forEach((line) => {
       if (line.steps) {
         Object.values(line.steps).forEach((step) => {
           step.completeStatus = computeStepStatus({ draftStep: step });
@@ -88,7 +113,22 @@ const computeActivityStatus = ({ draftActivity }) => {
       }
     });
   }
-  return computeActivityStatusFromLines({ draftActivity });
+  return computeActivityStatusFromLines({ draftActivityDataStored });
+};
+
+const computeActivityStatusFromLines = ({ draftActivityDataStored }) => {
+  const lineIds = extractDraftMapKeys(draftActivityDataStored.lines);
+
+  const lineStatuses = [];
+  lineIds.forEach((lineId) => {
+    const draftLine = draftActivityDataStored.lines[lineId];
+    const lineCompleteStatus = draftLine.completeStatus || CompleteStatus.NOT_STARTED;
+    if (!lineStatuses.includes(lineCompleteStatus)) {
+      lineStatuses.push(lineCompleteStatus);
+    }
+  });
+
+  return CompleteStatus.reduceFromCompleteStatuesUniqueArray(lineStatuses);
 };
 
 const normalizeLines = (lines) => {
