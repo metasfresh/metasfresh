@@ -212,7 +212,7 @@ export const computeLineStatus = ({ draftLine }) => {
         sumAltStepsQtysPicked = sumAltStepsQtysPicked + genSteps[altItem].qtyPicked;
       }
 
-      if (remainingQty - sumAltStepsQtysPicked === 0) {
+      if (remainingQty > 0 && remainingQty - sumAltStepsQtysPicked === 0) {
         stepCompleteStatus = CompleteStatus.COMPLETED;
         draftLine.steps[stepId].completeStatus = stepCompleteStatus;
       }

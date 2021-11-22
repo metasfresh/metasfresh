@@ -45,6 +45,7 @@ class PickStepButton extends PureComponent {
     } = this.props;
 
     const stepCompleteStatus = completeStatus || CompleteStatus.NOT_STARTED;
+    console.log('StepSTATUS:', stepCompleteStatus);
     const altStepCompleteStatus =
       altStepId && stepState.altSteps.genSteps[altStepId].qtyPicked > 0
         ? CompleteStatus.COMPLETED
