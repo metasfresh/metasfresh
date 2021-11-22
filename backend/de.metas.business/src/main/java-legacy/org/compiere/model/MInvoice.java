@@ -283,7 +283,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 
 		// metas: additional fields
 		final IPOService poService = Services.get(IPOService.class);
-		poService.copyValue(ship, this, I_C_Order.COLUMNNAME_Incoterm);
+		poService.copyValue(ship, this, I_C_Order.COLUMNNAME_C_Incoterms_ID);
 		poService.copyValue(ship, this, C_Invoice_INCOTERMLOCATION);
 		ship.setDescriptionBottom(getDescriptionBottom());
 		poService.copyValue(ship, this, C_Invoice_ISUSE_BPARTNER_ADDRESS);
