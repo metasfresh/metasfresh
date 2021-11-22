@@ -387,6 +387,7 @@ public class MInOut extends X_M_InOut implements IDocument
 		setC_Charge_ID(order.getC_Charge_ID());
 		setChargeAmt(order.getChargeAmt());
 		//
+		setC_Incoterms_ID(order.getC_Incoterms_ID());
 		setC_Project_ID(order.getC_Project_ID());
 		setDateOrdered(order.getDateOrdered());
 		setDescription(order.getDescription());
@@ -485,6 +486,7 @@ public class MInOut extends X_M_InOut implements IDocument
 		setC_Charge_ID(invoice.getC_Charge_ID());
 		setChargeAmt(invoice.getChargeAmt());
 		//
+		setC_Incoterms_ID(invoice.getC_Incoterms_ID());
 		setC_Project_ID(invoice.getC_Project_ID());
 		setDateOrdered(invoice.getDateOrdered());
 		setDescription(invoice.getDescription());
@@ -567,6 +569,7 @@ public class MInOut extends X_M_InOut implements IDocument
 		setAD_OrgTrx_ID(original.getAD_OrgTrx_ID());
 		setUser1_ID(original.getUser1_ID());
 		setUser2_ID(original.getUser2_ID());
+		setC_Incoterms_ID(original.getC_Incoterms_ID());
 
 		// DropShipment
 		setIsDropShip(original.isDropShip());
