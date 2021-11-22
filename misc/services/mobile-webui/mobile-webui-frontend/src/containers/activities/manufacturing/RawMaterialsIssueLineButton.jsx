@@ -1,4 +1,4 @@
-import React, { PureComponent } from 'react';
+import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import counterpart from 'counterpart';
 
@@ -7,11 +7,10 @@ import ButtonWithIndicator from '../../../components/ButtonWithIndicator';
 import ButtonQuantityProp from '../../../components/ButtonQuantityProp';
 import { pushHeaderEntry } from '../../../actions/HeaderActions';
 
-class RawMaterialsIssueLineButton extends PureComponent {
+class RawMaterialsIssueLineButton extends Component {
   handleClick = () => {
-    const { dispatch, caption, onHandleClick } = this.props;
+    const { dispatch, caption } = this.props;
 
-    onHandleClick();
     dispatch(
       pushHeaderEntry({
         location,
@@ -58,7 +57,6 @@ RawMaterialsIssueLineButton.propTypes = {
   qtyIssued: PropTypes.number.isRequired,
   qtyToIssue: PropTypes.number.isRequired,
   appId: PropTypes.string.isRequired,
-  onHandleClick: PropTypes.func.isRequired,
   //
   // Actions
   dispatch: PropTypes.func.isRequired,

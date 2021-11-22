@@ -2,32 +2,32 @@ import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import counterpart from 'counterpart';
 
-// import { pushHeaderEntry } from '../../../actions/HeaderActions';
+import { pushHeaderEntry } from '../../../actions/HeaderActions';
 import StepButton from '../common/StepButton';
 import Indicator from '../../../components/Indicator';
 import * as CompleteStatus from '../../../constants/CompleteStatus';
 
 class RawMaterialIssueStepButton extends PureComponent {
   handleClick = () => {
-    const { /*locatorName, location, dispatch,*/ onHandleClick } = this.props;
+    const { locatorName, location, dispatch, onHandleClick } = this.props;
 
     onHandleClick();
     // TODO: Figure out why it's not cleared
-    // dispatch(
-    //   pushHeaderEntry({
-    //     location,
-    //     values: [
-    //       {
-    //         caption: counterpart.translate('general.Locator'),
-    //         value: locatorName,
-    //       },
-    //     ],
-    //   })
-    // );
+    dispatch(
+      pushHeaderEntry({
+        location,
+        values: [
+          {
+            caption: counterpart.translate('general.Locator'),
+            value: locatorName,
+          },
+        ],
+      })
+    );
   };
 
   render() {
-    const { lineId, productName, uom, qtyIssued, qtyToIssue, completeStatus } = this.props;
+    const { lineId, locatorName, uom, qtyIssued, qtyToIssue, completeStatus } = this.props;
     const qtyCurrent = qtyIssued || 0;
 
     return (
@@ -37,7 +37,7 @@ class RawMaterialIssueStepButton extends PureComponent {
             <div className="left-btn-side" />
             <div className="caption-btn">
               <div className="rows">
-                <div className="row is-full pl-5">{productName}</div>
+                <div className="row is-full pl-5">{locatorName}</div>
                 <div className="row is-full is-size-7">
                   <div className="picking-row-info">
                     <div className="picking-to-pick">{counterpart.translate('activities.mfg.issues.target')}:</div>
@@ -70,7 +70,6 @@ RawMaterialIssueStepButton.propTypes = {
   activityId: PropTypes.string.isRequired,
   lineId: PropTypes.string.isRequired,
   stepId: PropTypes.string.isRequired,
-  productName: PropTypes.string.isRequired,
   locatorName: PropTypes.string.isRequired,
   uom: PropTypes.string,
   qtyIssued: PropTypes.number,

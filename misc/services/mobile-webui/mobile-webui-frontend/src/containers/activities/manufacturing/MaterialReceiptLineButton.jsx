@@ -9,9 +9,8 @@ import { pushHeaderEntry } from '../../../actions/HeaderActions';
 
 class MaterialReceiptLineButton extends PureComponent {
   handleClick = () => {
-    const { dispatch, caption, onHandleClick, location } = this.props;
+    const { dispatch, caption, location } = this.props;
 
-    onHandleClick();
     dispatch(
       pushHeaderEntry({
         location,
@@ -58,7 +57,6 @@ MaterialReceiptLineButton.propTypes = {
   qtyCurrent: PropTypes.number.isRequired,
   qtyTarget: PropTypes.number.isRequired,
   appId: PropTypes.string.isRequired,
-  onHandleClick: PropTypes.func.isRequired,
   location: PropTypes.object.isRequired,
   //
   // Actions
