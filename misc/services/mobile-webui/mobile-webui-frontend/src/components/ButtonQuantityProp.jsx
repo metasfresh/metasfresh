@@ -26,7 +26,7 @@ ButtonQuantityProp.propTypes = {
   qtyCurrent: PropTypes.number.isRequired,
   uom: PropTypes.string.isRequired,
   appId: PropTypes.string.isRequired,
-  subtypeId: PropTypes.string.isRequired,
+  subtypeId: PropTypes.string,
 };
 
 export default ButtonQuantityProp;
