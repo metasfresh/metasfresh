@@ -1,7 +1,7 @@
 import * as types from '../../constants/ManufacturingActionTypes';
 import * as CompleteStatus from '../../constants/CompleteStatus';
 import { registerHandler } from './activityStateHandlers';
-import { updateActivityStatusFromLines } from './picking';
+import { updateActivityStatusFromLines, computeActivityStatusFromLines } from './picking';
 
 const COMPONENT_TYPE = 'manufacturing/materialReceipt';
 
@@ -86,6 +86,15 @@ const computeLineStatus = ({ qtyToReceive, qtyReceived, aggregateToLU }) => {
   }
 };
 
+const computeActivityStatus = ({ draftActivity }) => {
+  if (draftActivity.dataStored.lines) {
+    draftActivity.dataStored.lines.forEach((line) => {
+      line.completeStatus = computeLineStatus(line);
+    });
+  }
+  return computeActivityStatusFromLines({ draftActivity });
+};
+
 const normalizeLines = (lines) => {
   return lines.map((line) => {
     const aggregateToLU = line.aggregateToLU || null;
@@ -109,4 +118,5 @@ registerHandler({
     console.log('computeActivityDataStoredInitialValue for ', componentProps);
     return { lines: componentProps.lines };
   },
+  computeActivityStatus,
 });
