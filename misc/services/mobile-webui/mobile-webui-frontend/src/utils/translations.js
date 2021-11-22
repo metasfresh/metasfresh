@@ -76,8 +76,8 @@ export const setupCounterpart = () => {
         target: 'To issue',
         picked: 'Issued',
         issues: {
-          toIssue: 'To issue',
-          issued: 'Issued',
+          target: 'To issue',
+          picked: 'Issued',
         },
         receipts: {
           pickPromptTitle: 'Quantity to receive',
@@ -86,6 +86,8 @@ export const setupCounterpart = () => {
           qtyBtnCaption: 'Received quantity',
           existingHU: 'Existing HU',
           newHU: 'New HU',
+          target: 'To receive',
+          picked: 'Received',
         },
       },
     },

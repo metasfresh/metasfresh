@@ -32,7 +32,13 @@ class RawMaterialsIssueLineButton extends PureComponent {
     return (
       <>
         <ButtonWithIndicator caption={caption} completeStatus={completeStatus}>
-          <ButtonQuantityProp qtyCurrent={qtyIssued} qtyTarget={qtyToIssue} uom={uom} appId={appId} />
+          <ButtonQuantityProp
+            qtyCurrent={qtyIssued}
+            qtyTarget={qtyToIssue}
+            uom={uom}
+            appId={appId}
+            subtypeId="issues"
+          />
         </ButtonWithIndicator>
       </>
     );

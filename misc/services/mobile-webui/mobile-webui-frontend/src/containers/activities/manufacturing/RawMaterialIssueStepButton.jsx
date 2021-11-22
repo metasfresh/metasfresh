@@ -39,11 +39,11 @@ class RawMaterialIssueStepButton extends PureComponent {
                 <div className="row is-full pl-5">{productName}</div>
                 <div className="row is-full is-size-7">
                   <div className="picking-row-info">
-                    <div className="picking-to-pick">{counterpart.translate('activities.mfg.issues.toIssue')}:</div>
+                    <div className="picking-to-pick">{counterpart.translate('activities.mfg.issues.target')}:</div>
                     <div className="picking-row-qty">
                       {qtyToIssue} {uom}
                     </div>
-                    <div className="picking-row-picking">{counterpart.translate('activities.mfg.issues.issued')}:</div>
+                    <div className="picking-row-picking">{counterpart.translate('activities.mfg.issues.picked')}:</div>
                     <div className="picking-row-picked">
                       {qtyIssued} {uom}
                     </div>

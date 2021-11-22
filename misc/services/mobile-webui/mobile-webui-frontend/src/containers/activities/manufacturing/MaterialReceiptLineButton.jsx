@@ -32,7 +32,13 @@ class MaterialReceiptLineButton extends PureComponent {
     return (
       <>
         <ButtonWithIndicator caption={caption} completeStatus={completeStatus}>
-          <ButtonQuantityProp qtyCurrent={qtyCurrent} qtyTarget={qtyTarget} uom={uom} appId={appId} />
+          <ButtonQuantityProp
+            qtyCurrent={qtyCurrent}
+            qtyTarget={qtyTarget}
+            uom={uom}
+            appId={appId}
+            subtypeId="receipts"
+          />
         </ButtonWithIndicator>
       </>
     );
