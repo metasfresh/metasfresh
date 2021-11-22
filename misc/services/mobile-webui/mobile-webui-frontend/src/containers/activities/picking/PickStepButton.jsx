@@ -9,8 +9,7 @@ import * as CompleteStatus from '../../../constants/CompleteStatus';
 
 class PickStepButton extends PureComponent {
   handleClick = () => {
-    const { locatorName } = this.props;
-    const { dispatch, onHandleClick } = this.props;
+    const { dispatch, locatorName, location, onHandleClick } = this.props;
 
     onHandleClick();
     dispatch(

@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import counterpart from 'counterpart';
+import { push } from 'connected-react-router';
 
 import LineButton from '../common/LineButton';
 import ButtonWithIndicator from '../../../components/ButtonWithIndicator';
@@ -9,7 +10,10 @@ import { pushHeaderEntry } from '../../../actions/HeaderActions';
 
 class RawMaterialsIssueLineButton extends Component {
   handleClick = () => {
-    const { dispatch, caption } = this.props;
+    const { wfProcessId, activityId, lineId, dispatch, caption } = this.props;
+
+    const location = `/workflow/${wfProcessId}/activityId/${activityId}/lineId/${lineId}`;
+    dispatch(push(location));
 
     dispatch(
       pushHeaderEntry({
@@ -26,10 +30,15 @@ class RawMaterialsIssueLineButton extends Component {
   };
 
   render() {
-    const { caption, uom, qtyIssued, qtyToIssue, completeStatus, appId } = this.props;
+    const { caption, uom, qtyIssued, qtyToIssue, completeStatus, appId, lineId, isUserEditable } = this.props;
 
     return (
-      <>
+      <button
+        key={lineId}
+        className="button is-outlined complete-btn"
+        disabled={!isUserEditable}
+        onClick={this.handleClick}
+      >
         <ButtonWithIndicator caption={caption} completeStatus={completeStatus}>
           <ButtonQuantityProp
             qtyCurrent={qtyIssued}
@@ -39,7 +48,7 @@ class RawMaterialsIssueLineButton extends Component {
             subtypeId="issues"
           />
         </ButtonWithIndicator>
-      </>
+      </button>
     );
   }
 }

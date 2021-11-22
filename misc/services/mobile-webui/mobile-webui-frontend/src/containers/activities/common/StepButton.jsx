@@ -5,12 +5,11 @@ import { push } from 'connected-react-router';
 import { withRouter } from 'react-router';
 
 const mapStateToProps = (state, ownProps) => {
-  const { wfProcessId, activityId, lineId, stepId, location } = ownProps;
+  const { wfProcessId, activityId, lineId, stepId } = ownProps;
 
   return {
     stepState: state.wfProcesses_status[wfProcessId].activities[activityId].dataStored.lines[lineId].steps[stepId],
     appId: state.applications.activeApplication ? state.applications.activeApplication.id : null,
-    location,
   };
 };
 
@@ -25,7 +24,10 @@ function StepButton(WrappedComponent) {
     };
 
     render() {
-      return <WrappedComponent {...this.props} onHandleClick={this.handleClick} />;
+      const { wfProcessId, activityId, lineId, stepId } = this.props;
+      const location = `/workflow/${wfProcessId}/activityId/${activityId}/lineId/${lineId}/stepId/${stepId}`;
+
+      return <WrappedComponent {...this.props} onHandleClick={this.handleClick} location={location} />;
     }
   }
 
@@ -36,7 +38,6 @@ function StepButton(WrappedComponent) {
     activityId: PropTypes.string.isRequired,
     lineId: PropTypes.string.isRequired,
     stepId: PropTypes.string.isRequired,
-    location: PropTypes.object.isRequired,
     //
     // Actions
     dispatch: PropTypes.func.isRequired,

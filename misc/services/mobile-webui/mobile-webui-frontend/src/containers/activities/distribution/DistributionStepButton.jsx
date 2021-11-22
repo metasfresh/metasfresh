@@ -82,7 +82,7 @@ DistributionStepButton.propTypes = {
   qtyPicked: PropTypes.number,
   qtyToMove: PropTypes.number.isRequired,
   stepState: PropTypes.object,
-  location: PropTypes.object.isRequired,
+  location: PropTypes.string.isRequired,
   completeStatus: PropTypes.string.isRequired,
   onHandleClick: PropTypes.func.isRequired,
   //

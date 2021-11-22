@@ -12,7 +12,7 @@ class RawMaterialIssueStepButton extends PureComponent {
     const { locatorName, location, dispatch, onHandleClick } = this.props;
 
     onHandleClick();
-    // TODO: Figure out why it's not cleared
+
     dispatch(
       pushHeaderEntry({
         location,
@@ -74,7 +74,7 @@ RawMaterialIssueStepButton.propTypes = {
   uom: PropTypes.string,
   qtyIssued: PropTypes.number,
   qtyToIssue: PropTypes.number.isRequired,
-  location: PropTypes.object,
+  location: PropTypes.string.isRequired,
   onHandleClick: PropTypes.func.isRequired,
   completeStatus: PropTypes.string,
   //

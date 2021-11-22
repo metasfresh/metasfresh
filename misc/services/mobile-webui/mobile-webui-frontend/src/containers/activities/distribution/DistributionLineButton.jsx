@@ -1,6 +1,7 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import counterpart from 'counterpart';
+import { push } from 'connected-react-router';
 
 import LineButton from '../common/LineButton';
 import ButtonWithIndicator from '../../../components/ButtonWithIndicator';
@@ -9,7 +10,10 @@ import { pushHeaderEntry } from '../../../actions/HeaderActions';
 
 class DistributionLineButton extends PureComponent {
   handleClick = () => {
-    const { dispatch, caption, location } = this.props;
+    const { dispatch, caption, wfProcessId, activityId, lineId } = this.props;
+
+    const location = `/workflow/${wfProcessId}/activityId/${activityId}/lineId/${lineId}`;
+    dispatch(push(location));
 
     dispatch(
       pushHeaderEntry({
@@ -26,14 +30,19 @@ class DistributionLineButton extends PureComponent {
   };
 
   render() {
-    const { caption, uom, qtyPicked, qtyToMove, completeStatus, appId } = this.props;
+    const { caption, uom, qtyPicked, qtyToMove, completeStatus, appId, lineId, isUserEditable } = this.props;
 
     return (
-      <>
+      <button
+        key={lineId}
+        className="button is-outlined complete-btn"
+        disabled={!isUserEditable}
+        onClick={this.handleClick}
+      >
         <ButtonWithIndicator caption={caption} completeStatus={completeStatus}>
           <ButtonQuantityProp qtyCurrent={qtyPicked} qtyTarget={qtyToMove} uom={uom} appId={appId} />
         </ButtonWithIndicator>
-      </>
+      </button>
     );
   }
 }
@@ -51,7 +60,6 @@ DistributionLineButton.propTypes = {
   qtyPicked: PropTypes.number.isRequired,
   qtyToMove: PropTypes.number.isRequired,
   appId: PropTypes.string.isRequired,
-  location: PropTypes.object.isRequired,
   //
   // Actions
   dispatch: PropTypes.func.isRequired,

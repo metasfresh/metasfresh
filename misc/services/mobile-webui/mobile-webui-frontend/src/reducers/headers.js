@@ -18,6 +18,7 @@ export default function reducer(state = initialState, action) {
   switch (action.type) {
     case types.HEADER_PUSH_ENTRY: {
       const { location, values } = payload;
+      // if there are no header values, there's no reason to block space
       const hidden = values.length ? false : true;
 
       let existingEntryUpdated = false;

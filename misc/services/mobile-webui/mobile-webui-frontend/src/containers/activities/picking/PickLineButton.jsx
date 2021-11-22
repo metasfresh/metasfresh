@@ -1,6 +1,7 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import counterpart from 'counterpart';
+import { push } from 'connected-react-router';
 
 import LineButton from '../common/LineButton';
 import ButtonWithIndicator from '../../../components/ButtonWithIndicator';
@@ -9,9 +10,11 @@ import { pushHeaderEntry } from '../../../actions/HeaderActions';
 
 class PickLineButton extends PureComponent {
   handleClick = () => {
-    const { dispatch, caption, onHandleClick } = this.props;
+    const { wfProcessId, activityId, lineId, dispatch, caption } = this.props;
 
-    onHandleClick();
+    const location = `/workflow/${wfProcessId}/activityId/${activityId}/lineId/${lineId}`;
+    dispatch(push(location));
+
     dispatch(
       pushHeaderEntry({
         location,
@@ -27,14 +30,19 @@ class PickLineButton extends PureComponent {
   };
 
   render() {
-    const { caption, uom, qtyPicked, qtyToPick, completeStatus, appId } = this.props;
+    const { caption, uom, qtyPicked, qtyToPick, completeStatus, appId, lineId, isUserEditable } = this.props;
 
     return (
-      <>
+      <button
+        key={lineId}
+        className="button is-outlined complete-btn"
+        disabled={!isUserEditable}
+        onClick={this.handleClick}
+      >
         <ButtonWithIndicator caption={caption} completeStatus={completeStatus}>
           <ButtonQuantityProp qtyCurrent={qtyPicked} qtyTarget={qtyToPick} uom={uom} appId={appId} />
         </ButtonWithIndicator>
-      </>
+      </button>
     );
   }
 }
