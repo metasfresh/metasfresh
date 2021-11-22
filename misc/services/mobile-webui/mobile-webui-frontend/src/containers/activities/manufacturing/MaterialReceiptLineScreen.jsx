@@ -38,13 +38,17 @@ class MaterialReceiptLineScreen extends PureComponent {
     const {
       lineProps: { uom, qtyReceived, qtyToReceive, productName, aggregateToLU, currentReceivingHU },
     } = this.props;
-    const caption = counterpart.translate('activities.mfg.receipts.receiveQty');
-    let targetCaption = counterpart.translate('activities.mfg.receipts.receiveTarget');
 
+    const caption = counterpart.translate('activities.mfg.receipts.receiveQty');
+
+    let allowReceivingQty = false;
+    let targetCaption = counterpart.translate('activities.mfg.receipts.receiveTarget');
     if (aggregateToLU) {
       targetCaption = aggregateToLU.newLU ? aggregateToLU.newLU.caption : aggregateToLU.existingLU.huBarcode;
+      allowReceivingQty = true;
     } else if (currentReceivingHU) {
       targetCaption = currentReceivingHU.huBarcode;
+      allowReceivingQty = true;
     }
 
     return (
@@ -53,7 +57,7 @@ class MaterialReceiptLineScreen extends PureComponent {
           <div className="buttons">
             <button className="button is-outlined complete-btn" disabled={false} onClick={this.handleClick}>
               <div className="full-size-btn">
-                <div className="left-btn-side"></div>
+                <div className="left-btn-side" />
                 <div className="caption-btn">
                   <div className="rows">
                     <div className="row is-full pl-5">{targetCaption}</div>
@@ -65,7 +69,7 @@ class MaterialReceiptLineScreen extends PureComponent {
           <PickQuantityButton
             qtyCurrent={qtyReceived}
             qtyTarget={qtyToReceive}
-            isDisabled={aggregateToLU === null}
+            isDisabled={!allowReceivingQty}
             onClick={this.handleQuantityChange}
             {...{ uom, productName, caption }}
           />
