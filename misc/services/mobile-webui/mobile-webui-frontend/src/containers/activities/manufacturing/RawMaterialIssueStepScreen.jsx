@@ -34,17 +34,15 @@ class RawMaterialIssueStepScreen extends Component {
 
   render() {
     const {
-      stepProps: { huBarcode, qtyToIssue, qtyIssued, scannedHUBarcode },
+      stepProps: { huBarcode, uom, qtyToIssue, qtyIssued, qtyRejected },
     } = this.props;
 
     console.log(this.props);
 
-    const isValidCode = !!scannedHUBarcode;
-    const scanButtonCaption = isValidCode
-      ? `${scannedHUBarcode}`
-      : counterpart.translate('activities.picking.scanHUBarcode');
+    const isIssued = qtyIssued || qtyRejected;
+    const scanButtonCaption = isIssued ? `${huBarcode}` : counterpart.translate('activities.picking.scanHUBarcode');
 
-    const scanButtonStatus = isValidCode ? CompleteStatus.COMPLETED : CompleteStatus.NOT_STARTED;
+    const scanButtonStatus = isIssued ? CompleteStatus.COMPLETED : CompleteStatus.NOT_STARTED;
 
     return (
       <>
@@ -58,16 +56,30 @@ class RawMaterialIssueStepScreen extends Component {
           <div className="column is-half has-text-right has-text-weight-bold pb-0 pl-0 pr-0">
             {counterpart.translate('activities.mfg.issues.qtyToIssue')}:
           </div>
-          <div className="column is-half has-text-left pb-0">{qtyToIssue}</div>
+          <div className="column is-half has-text-left pb-0">
+            {qtyToIssue} {uom}
+          </div>
         </div>
         <div className="columns is-mobile">
           <div className="column is-half has-text-right has-text-weight-bold pb-0 pl-0 pr-0">
             {counterpart.translate('activities.mfg.issues.qtyIssued')}:
           </div>
-          <div className="column is-half has-text-left pb-0">{qtyIssued}</div>
+          <div className="column is-half has-text-left pb-0">
+            {qtyIssued || 0} {uom}
+          </div>
         </div>
+        {qtyRejected && (
+          <div className="columns is-mobile">
+            <div className="column is-half has-text-right has-text-weight-bold pb-0 pl-0 pr-0">
+              {counterpart.translate('activities.mfg.issues.qtyRejected')}:
+            </div>
+            <div className="column is-half has-text-left pb-0">
+              {qtyRejected} {uom}
+            </div>
+          </div>
+        )}
         <div className="mt-0">
-          <button className="button is-outlined complete-btn" onClick={this.onScanHUButtonClick}>
+          <button className="button is-outlined complete-btn" disabled={isIssued} onClick={this.onScanHUButtonClick}>
             <ButtonWithIndicator caption={scanButtonCaption} completeStatus={scanButtonStatus} />
           </button>
         </div>

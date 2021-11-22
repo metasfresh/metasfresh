@@ -13,7 +13,6 @@ export function updateManufacturingIssueQty({
   activityId,
   lineId,
   stepId,
-  scannedHUBarcode,
   qtyPicked,
   qtyRejectedReasonCode,
 }) {
@@ -24,7 +23,6 @@ export function updateManufacturingIssueQty({
       activityId,
       lineId,
       stepId,
-      scannedHUBarcode,
       qtyPicked,
       qtyRejectedReasonCode,
     },
@@ -41,11 +39,11 @@ export function updateManufacturingIssue({ wfProcessId, activityId, lineId, step
 
     if (line) {
       const step = line.steps[stepId];
-      const { id, scannedHUBarcode, qtyIssued, qtyRejected, qtyRejectedReasonCode } = step;
+      const { id, huBarcode, qtyIssued, qtyRejected, qtyRejectedReasonCode } = step;
       const receiptObject = {
         issueTo: {
           issueStepId: id,
-          huBarcode: scannedHUBarcode,
+          huBarcode: huBarcode,
           qtyIssued,
           qtyRejected,
           qtyRejectedReasonCode,

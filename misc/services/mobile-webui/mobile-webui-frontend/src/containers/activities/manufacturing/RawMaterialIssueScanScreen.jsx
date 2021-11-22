@@ -44,7 +44,6 @@ function RawMaterialIssueScanScreen(WrappedComponent) {
     };
 
     pushUpdatedQuantity = ({ qty = 0, reason = null }) => {
-      const { scannedBarcode } = this.state;
       const { wfProcessId, activityId, lineId, stepId, updateManufacturingIssueQty, updateManufacturingIssue, go } =
         this.props;
 
@@ -55,7 +54,6 @@ function RawMaterialIssueScanScreen(WrappedComponent) {
         stepId,
         qtyPicked: qty,
         qtyRejectedReasonCode: reason,
-        scannedHUBarcode: scannedBarcode,
       });
       updateManufacturingIssue({ wfProcessId, activityId, lineId, stepId })
         .catch((axiosError) => toastError({ axiosError }))
