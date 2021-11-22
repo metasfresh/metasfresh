@@ -68,7 +68,7 @@ class RawMaterialIssueStepScreen extends Component {
             {qtyIssued || 0} {uom}
           </div>
         </div>
-        {qtyRejected && (
+        {!!qtyRejected && (
           <div className="columns is-mobile">
             <div className="column is-half has-text-right has-text-weight-bold pb-0 pl-0 pr-0">
               {counterpart.translate('activities.mfg.issues.qtyRejected')}:
