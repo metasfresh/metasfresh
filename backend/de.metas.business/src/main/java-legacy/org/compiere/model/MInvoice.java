@@ -381,6 +381,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 			setC_ConversionType_ID(order.getC_ConversionType_ID());
 			setPaymentRule(order.getPaymentRule());
 			setC_PaymentTerm_ID(order.getC_PaymentTerm_ID());
+			setC_Incoterms_ID(order.getC_Incoterms_ID());
 			//
 			final I_C_DocType dt = MDocType.get(getCtx(), order.getC_DocType_ID());
 			if (dt.getC_DocTypeInvoice_ID() != 0)

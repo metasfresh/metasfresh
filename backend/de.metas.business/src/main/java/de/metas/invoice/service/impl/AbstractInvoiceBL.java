@@ -379,6 +379,8 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			}
 		}
 
+		to.setC_Incoterms_ID(from.getC_Incoterms_ID());
+
 		InterfaceWrapperHelper.save(to);
 
 		final IDocLineCopyHandler<org.compiere.model.I_C_InvoiceLine> additionalDocLineCopyHandler;
