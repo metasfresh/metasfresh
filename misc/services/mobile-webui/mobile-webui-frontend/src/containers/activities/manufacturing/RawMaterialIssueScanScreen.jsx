@@ -58,8 +58,8 @@ function RawMaterialIssueScanScreen(WrappedComponent) {
         scannedHUBarcode: scannedBarcode,
       });
       updateManufacturingIssue({ wfProcessId, activityId, lineId, stepId })
-        .then(() => go(-1))
-        .catch((axiosError) => toastError({ axiosError }));
+        .catch((axiosError) => toastError({ axiosError }))
+        .finally(() => go(-1));
     };
 
     render() {

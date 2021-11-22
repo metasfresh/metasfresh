@@ -28,7 +28,7 @@ class PickQuantityPrompt extends PureComponent {
   };
 
   render() {
-    const { qtyTarget, qtyCaption } = this.props;
+    const { qtyTarget, qtyCaption, onCloseDialog } = this.props;
 
     return (
       <div>
@@ -52,6 +52,11 @@ class PickQuantityPrompt extends PureComponent {
                 <button className="button is-medium btn-green confirm-button" onClick={this.onDialogYes}>
                   {counterpart.translate('activities.picking.confirmDone')}
                 </button>
+                {onCloseDialog && (
+                  <button className="button is-medium btn-green confirm-button" onClick={onCloseDialog}>
+                    {counterpart.translate('general.cancelText')}
+                  </button>
+                )}
               </div>
             </div>
           </article>
@@ -65,6 +70,7 @@ PickQuantityPrompt.propTypes = {
   onQtyChange: PropTypes.func.isRequired,
   qtyTarget: PropTypes.number.isRequired,
   qtyCaption: PropTypes.string.isRequired,
+  onCloseDialog: PropTypes.func,
 };
 
 export default PickQuantityPrompt;

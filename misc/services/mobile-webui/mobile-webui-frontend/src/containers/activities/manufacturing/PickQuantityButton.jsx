@@ -53,6 +53,7 @@ class PickQuantityButton extends PureComponent {
             qtyTarget={qtyTarget}
             qtyCaption={counterpart.translate('activities.mfg.receipts.pickPromptTitle')}
             onQtyChange={this.onQtyPickedChanged}
+            onCloseDialog={this.hideDialog}
           />
         )}
         <div className="mt-3">

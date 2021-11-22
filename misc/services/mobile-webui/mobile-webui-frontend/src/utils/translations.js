@@ -21,6 +21,7 @@ export const setupCounterpart = () => {
       QtyToMove: 'Qty to move',
       DropToLocator: 'Drop to locator',
       PleaseTryAgain: 'Please try again',
+      cancelText: 'Cancel',
     },
     login: {
       submitButton: 'Login',

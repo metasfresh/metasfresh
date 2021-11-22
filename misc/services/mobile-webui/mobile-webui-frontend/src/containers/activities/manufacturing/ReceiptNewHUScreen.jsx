@@ -22,7 +22,7 @@ class ReceiptNewHUScreen extends PureComponent {
 
     updateManufacturingReceiptTarget({ wfProcessId, activityId, lineId, target });
 
-    if (lineProps.qtyReceived) {
+    if (lineProps.userQtyReceived) {
       updateManufacturingReceipt({
         wfProcessId,
         activityId,

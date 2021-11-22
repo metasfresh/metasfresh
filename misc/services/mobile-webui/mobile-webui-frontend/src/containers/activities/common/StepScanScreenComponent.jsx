@@ -19,6 +19,10 @@ class StepScanScreenComponent extends Component {
     };
   }
 
+  hidePrompt = () => {
+    this.setState({ promptVisible: false });
+  };
+
   onBarcodeScanned = ({ scannedBarcode }, closeCameraCallback) => {
     const { qtyTarget } = this.props;
 
@@ -97,7 +101,12 @@ class StepScanScreenComponent extends Component {
         ) : (
           <>
             {promptVisible ? (
-              <PickQuantityPrompt qtyTarget={qtyTarget} qtyCaption={qtyCaption} onQtyChange={this.onQtyPickedChanged} />
+              <PickQuantityPrompt
+                qtyTarget={qtyTarget}
+                qtyCaption={qtyCaption}
+                onQtyChange={this.onQtyPickedChanged}
+                onCloseDialog={this.hidePrompt}
+              />
             ) : null}
             <CodeScanner onBarcodeScanned={this.onBarcodeScanned} />
           </>
