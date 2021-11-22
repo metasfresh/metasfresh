@@ -99,7 +99,7 @@ const createInitialState = function(state = {}) {
   return res;
 };
 
-describe('DocList', () => {
+describe.skip('DocList', () => {
   const menuResponse = propsFixtures.menu1;
 
   let mockServer;

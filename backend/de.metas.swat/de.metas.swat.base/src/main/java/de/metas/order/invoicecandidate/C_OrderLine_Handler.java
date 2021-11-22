@@ -5,9 +5,6 @@ import de.metas.adempiere.model.I_C_Order;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeBL;
-import de.metas.acct.api.IProductAcctDAO;
-import de.metas.adempiere.model.I_C_Order;
-import de.metas.common.util.CoalesceUtil;
 import de.metas.document.dimension.Dimension;
 import de.metas.document.dimension.DimensionService;
 import de.metas.document.engine.DocStatus;
@@ -147,7 +144,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		final int productRecordId = orderLine.getM_Product_ID();
 		icRecord.setM_Product_ID(productRecordId);
 
-		boolean isFreightCostProduct = productBL
+		final boolean isFreightCostProduct = productBL
 				.getProductType(ProductId.ofRepoId(productRecordId))
 				.isFreightCost();
 
@@ -201,7 +198,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 
 		//
 		// Dimension
-		Dimension orderLineDimension = extractDimension(orderLine);
+		final Dimension orderLineDimension = extractDimension(orderLine);
 		dimensionService.updateRecord(icRecord, orderLineDimension);
 
 		DocumentLocation orderDeliveryLocation = OrderDocumentLocationAdapterFactory
@@ -229,7 +226,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		icRecord.setC_Tax_ID(TaxId.toRepoId(taxId)); // avoid NPE in tests
 
 		//DocType
-		final DocTypeId orderDocTypeId = CoalesceUtil.coalesceSuppliers(
+		final DocTypeId orderDocTypeId = CoalesceUtil.coalesceSuppliersNotNull(
 				() -> DocTypeId.ofRepoIdOrNull(order.getC_DocType_ID()),
 				() -> DocTypeId.ofRepoId(order.getC_DocTypeTarget_ID()));
 		final I_C_DocType orderDocType = docTypeBL.getById(orderDocTypeId);
