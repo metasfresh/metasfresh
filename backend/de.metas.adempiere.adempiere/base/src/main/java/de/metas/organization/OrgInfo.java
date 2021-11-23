@@ -70,6 +70,8 @@ public class OrgInfo
 	String reportsPathPrefix;
 	ZoneId timeZone;
 
+	boolean autoInvoiceFlatrateTerms;
+
 
 	@Nullable
 	UserGroupId supplierApprovalExpirationNotifyUserGroupID;

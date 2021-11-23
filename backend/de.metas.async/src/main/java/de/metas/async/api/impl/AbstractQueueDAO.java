@@ -62,6 +62,8 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
+
 public abstract class AbstractQueueDAO implements IQueueDAO
 {
 	protected final Logger logger = LogManager.getLogger(getClass());
@@ -87,10 +89,11 @@ public abstract class AbstractQueueDAO implements IQueueDAO
 
 	/**
 	 * Retrieve object from given <code>element</code>
-	 *
+	 * @param clazz note that {@link TableRecordReference} is supported as well
 	 * @throws PackageItemNotAvailableException if underlying object was not found at this moment. Never return <code>null</code>.
 	 */
-	protected abstract <T> T retrieveItem(I_C_Queue_Element element, Class<T> clazz, String trxName);
+	@NonNull
+	protected abstract <T> T retrieveItem(@NonNull I_C_Queue_Element element, @NonNull Class<T> clazz, @Nullable String trxName);
 
 	@Override
 	public List<I_C_Queue_PackageProcessor> retrieveWorkpackageProcessors(final I_C_Queue_Processor processor)
@@ -305,8 +308,12 @@ public abstract class AbstractQueueDAO implements IQueueDAO
 		return retrieveItems(workPackage, clazz, DEFAULT_skipAlreadyScheduledItems, false, trxName);
 	}
 
+	@NonNull
 	@Override
-	public final <T> List<T> retrieveItemsSkipMissing(final I_C_Queue_WorkPackage workPackage, final Class<T> clazz, final String trxName)
+	public final <T> List<T> retrieveItemsSkipMissing(
+			@NonNull final I_C_Queue_WorkPackage workPackage, 
+			@NonNull final Class<T> clazz, 
+			@Nullable final String trxName)
 	{
 		final boolean skipMissingItems = true;
 		return retrieveItems(workPackage, clazz, DEFAULT_skipAlreadyScheduledItems, skipMissingItems, trxName);
@@ -318,7 +325,12 @@ public abstract class AbstractQueueDAO implements IQueueDAO
 		return retrieveItems(workPackage, clazz, false, false, ITrx.TRXNAME_ThreadInherited);
 	}
 
-	private final <T> List<T> retrieveItems(final I_C_Queue_WorkPackage workPackage, final Class<T> clazz, final boolean skipAlreadyScheduledItems, final boolean skipMissingItems, final String trxName)
+	private <T> List<T> retrieveItems(
+			@NonNull final I_C_Queue_WorkPackage workPackage, 
+			@NonNull final Class<T> clazz, 
+			final boolean skipAlreadyScheduledItems, 
+			final boolean skipMissingItems, 
+			@Nullable final String trxName)
 	{
 		final List<I_C_Queue_Element> queueElements = retrieveQueueElements(workPackage, skipAlreadyScheduledItems);
 

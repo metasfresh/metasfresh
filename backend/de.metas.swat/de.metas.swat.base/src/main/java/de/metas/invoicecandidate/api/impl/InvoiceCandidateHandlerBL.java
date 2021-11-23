@@ -312,9 +312,9 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 			final LockOwner lockOwner,
 			final IInvoiceCandidateHandler invoiceCandiateHandler)
 	{
-			if (!invoiceCandiateHandler.isMissingInvoiceCandidate(model))
+			if (!invoiceCandiateHandler.getCandidatesAutoCreateMode(model).isDoSomething())
 			{
-			return ImmutableList.of();
+				return ImmutableList.of();
 			}
 
 		final ILockManager lockManager = Services.get(ILockManager.class);

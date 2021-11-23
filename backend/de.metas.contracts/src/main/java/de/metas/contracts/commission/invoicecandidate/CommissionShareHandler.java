@@ -110,11 +110,12 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 	}
 
 	@Override
-	public boolean isCreateMissingCandidatesAutomatically(final Object model)
+	public CandidatesAutoCreateMode getCandidatesAutoCreateMode(@NonNull final Object model)
 	{
 		final I_C_Commission_Share commissionShareRecord = create(model, I_C_Commission_Share.class);
 
-		return !recordHasAnInvoiceCandiate(commissionShareRecord);
+		final boolean invoiceCandidateIsMissed = !recordHasAnInvoiceCandiate(commissionShareRecord);
+		return invoiceCandidateIsMissed ? CandidatesAutoCreateMode.CREATE_CANDIDATES : CandidatesAutoCreateMode.DONT;
 	}
 
 	public boolean recordHasAnInvoiceCandiate(@NonNull final I_C_Commission_Share commissionShareRecord)
@@ -297,7 +298,7 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 	/**
 	 * <ul>
 	 * <li>QtyEntered := sum of all 3 C_Commission_Share.PointsSum_* columns
-	 * <li>C_UOM_ID := {@link #COMMISSION_PRODUCT_ID}'s stock UOM
+	 * <li>C_UOM_ID := the commission product's stock UOM
 	 * <li>QtyOrdered := QtyEntered
 	 * <li>DateOrdered := C_Commission_Share.Created
 	 * <li>C_Order_ID: -1

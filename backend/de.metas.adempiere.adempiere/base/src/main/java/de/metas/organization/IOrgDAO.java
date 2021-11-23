@@ -118,4 +118,6 @@ public interface IOrgDAO extends ISingletonService
 	UserGroupId getSupplierApprovalExpirationNotifyUserGroupID(OrgId ofRepoId);
 
 	UserGroupId getPartnerCreatedFromAnotherOrgNotifyUserGroupID(OrgId orgId);
+
+	boolean isAutoInvoiceFlatrateTerm(OrgId orgId);
 }

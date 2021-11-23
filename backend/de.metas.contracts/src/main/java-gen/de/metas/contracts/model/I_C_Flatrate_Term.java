@@ -182,6 +182,27 @@ public interface I_C_Flatrate_Term
 	String COLUMNNAME_Bill_User_ID = "Bill_User_ID";
 
 	/**
+	 * Set Async Batch.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Async_Batch_ID (int C_Async_Batch_ID);
+
+	/**
+	 * Get Async Batch.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Async_Batch_ID();
+
+	ModelColumn<I_C_Flatrate_Term, Object> COLUMN_C_Async_Batch_ID = new ModelColumn<>(I_C_Flatrate_Term.class, "C_Async_Batch_ID", null);
+	String COLUMNNAME_C_Async_Batch_ID = "C_Async_Batch_ID";
+
+	/**
 	 * Set Currency.
 	 * The Currency for this record
 	 *
@@ -1028,7 +1049,7 @@ public interface I_C_Flatrate_Term
 	String COLUMNNAME_MasterDocumentNo = "MasterDocumentNo";
 
 	/**
-	 * Set Master End Date.
+	 * Set Contract End Date.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -1037,7 +1058,7 @@ public interface I_C_Flatrate_Term
 	void setMasterEndDate (@Nullable java.sql.Timestamp MasterEndDate);
 
 	/**
-	 * Get Master End Date.
+	 * Get Contract End Date.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -1049,7 +1070,7 @@ public interface I_C_Flatrate_Term
 	String COLUMNNAME_MasterEndDate = "MasterEndDate";
 
 	/**
-	 * Set Master Start Date.
+	 * Set Contract Start Date.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -1058,7 +1079,7 @@ public interface I_C_Flatrate_Term
 	void setMasterStartDate (@Nullable java.sql.Timestamp MasterStartDate);
 
 	/**
-	 * Get Master Start Date.
+	 * Get Contract Start Date.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false

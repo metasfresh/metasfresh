@@ -160,7 +160,7 @@ public class OrgDAO implements IOrgDAO
 				.firstOnly(I_AD_OrgInfo.class);
 	}
 
-	public static OrgInfo toOrgInfo(final I_AD_OrgInfo record)
+	public static OrgInfo toOrgInfo(@NonNull final I_AD_OrgInfo record)
 	{
 		final OrgId parentOrgId = record.getParent_Org_ID() > 0
 				? OrgId.ofRepoId(record.getParent_Org_ID())
@@ -192,6 +192,9 @@ public class OrgDAO implements IOrgDAO
 				.orgBPartnerLocationId(BPartnerLocationId.ofRepoIdOrNull(record.getOrg_BPartner_ID(), record.getOrgBP_Location_ID()))
 				.reportsPathPrefix(record.getReportPrefix())
 				.timeZone(timeZone)
+
+				.autoInvoiceFlatrateTerms(record.isAutoInvoiceFlatrateTerm())
+
 				//
 				.partnerCreatedFromAnotherOrgNotifyUserGroupID(UserGroupId.ofRepoIdOrNull(record.getC_BPartner_CreatedFromAnotherOrg_Notify_UserGroup_ID()))
 				.supplierApprovalExpirationNotifyUserGroupID(UserGroupId.ofRepoIdOrNull(record.getC_BP_SupplierApproval_Expiration_Notify_UserGroup_ID()))
@@ -205,13 +208,13 @@ public class OrgDAO implements IOrgDAO
 		{
 			final HashMap<String, AdImageId> result = new HashMap<>();
 			final AdImageId logoId = AdImageId.ofRepoIdOrNull(orgInfo.getLogo_ID());
-			if(logoId != null)
+			if (logoId != null)
 			{
 				result.put(I_AD_OrgInfo.COLUMNNAME_Logo_ID, logoId);
 			}
 
 			final AdImageId reportBottomLogoId = AdImageId.ofRepoIdOrNull(orgInfo.getReportBottom_Logo_ID());
-			if(reportBottomLogoId != null)
+			if (reportBottomLogoId != null)
 			{
 				result.put(I_AD_OrgInfo.COLUMNNAME_ReportBottom_Logo_ID, reportBottomLogoId);
 			}
@@ -229,7 +232,7 @@ public class OrgDAO implements IOrgDAO
 					final AdImageId imageId = InterfaceWrapperHelper.getValue(orgInfo, columnName)
 							.map(AdImageId::ofNullableObject)
 							.orElse(null);
-					if(imageId != null)
+					if (imageId != null)
 					{
 						result.put(columnName, imageId);
 					}
@@ -336,6 +339,15 @@ public class OrgDAO implements IOrgDAO
 	public UserGroupId getPartnerCreatedFromAnotherOrgNotifyUserGroupID(final OrgId orgId)
 	{
 		return getOrgInfoById(orgId).getPartnerCreatedFromAnotherOrgNotifyUserGroupID();
+	}
+
+	@Override
+	public boolean isAutoInvoiceFlatrateTerm(@NonNull final OrgId orgId)
+	{
+		final OrgInfo orgInfo = getOrgInfoById(orgId);
+
+		return orgInfo.isAutoInvoiceFlatrateTerms();
+
 	}
 
 }
