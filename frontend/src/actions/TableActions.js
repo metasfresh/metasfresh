@@ -351,7 +351,7 @@ export function updateGridTableData(tableId, rows) {
 
     if (state.tables) {
       const table = state.tables[tableId];
-      const { indentSupported, keyProperty } = table;
+      const { uncollapseRowsOnChange, indentSupported, keyProperty } = table;
 
       if (rows.length && indentSupported) {
         rows = flattenRows(rows);
@@ -362,7 +362,7 @@ export function updateGridTableData(tableId, rows) {
 
       dispatch(updateTableData(tableId, rows, keyProperty));
 
-      if (indentSupported) {
+      if (indentSupported && uncollapseRowsOnChange) {
         dispatch(
           updateCollapsedRows({
             tableId,
