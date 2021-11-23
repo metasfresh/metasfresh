@@ -1907,10 +1907,9 @@ public class FlatrateBL implements IFlatrateBL
 
 			for (final I_C_Flatrate_Matching newFlatrateMatching : newFlatrateMatchings)
 			{
-				final org.compiere.model.I_M_Product newFMProduct = productDAO.getById(newFlatrateMatching.getM_Product_ID());
-
-				if (newFMProduct != null)
+				if (newFlatrateMatching.getM_Product_ID() > 0)
 				{
+					final org.compiere.model.I_M_Product newFMProduct = productDAO.getById(newFlatrateMatching.getM_Product_ID());
 					for (final I_C_Flatrate_Matching flatrateMatching : flatrateMatchings)
 					{
 						if (newFMProduct.getM_Product_ID() == flatrateMatching.getM_Product_ID())
