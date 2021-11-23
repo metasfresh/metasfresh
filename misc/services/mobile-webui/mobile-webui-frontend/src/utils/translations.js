@@ -1,6 +1,7 @@
 import counterpart from 'counterpart';
 import translations_en from './translations_en';
 import translations_de from './translations_de';
+<<<<<<< HEAD
 
 import { getApplicationMessages } from '../apps';
 
@@ -8,6 +9,8 @@ import { getApplicationMessages } from '../apps';
 export const trl = (key, ...args) => {
   return counterpart.translate(key, ...args);
 };
+=======
+>>>>>>> 3c402d269b2 (mobile UI: fix trls (#12043))
 
 export const setupCounterpart = () => {
   console.log('Setting up counterpart defaults...');
@@ -16,6 +19,7 @@ export const setupCounterpart = () => {
   counterpart.registerTranslations('en', translations_en);
   counterpart.registerTranslations('de', translations_de);
 
+<<<<<<< HEAD
   const applicationsMessages = getApplicationMessages();
   Object.keys(applicationsMessages).forEach((locale) => {
     counterpart.registerTranslations(locale, applicationsMessages[locale]);
@@ -23,6 +27,9 @@ export const setupCounterpart = () => {
   });
 
   //setLanguage('de_DE'); // used only for debugging
+=======
+  setLanguage('de_DE');
+>>>>>>> 3c402d269b2 (mobile UI: fix trls (#12043))
 };
 
 const generateMissingTranslation = (key) => {
