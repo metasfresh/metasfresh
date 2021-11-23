@@ -195,15 +195,13 @@ public class JsonShipmentService
 				continue;
 			}
 
+			loggable.addLog("processShipmentSchedules - start creating shipments with currentBatchId={}", AsyncBatchId.toRepoId(generateShipmentRequest.getAsyncBatchId()));
 			shipmentService.generateShipments(generateShipmentRequest);
+			final Set<InOutId> createdInoutIds = shipmentService.retrieveInOutIdsByScheduleIds(generateShipmentRequest.getScheduleIds());
 
-					loggable.addLog("processShipmentSchedules - start creating shipments with currentBatchId={}", AsyncBatchId.toRepoId(generateShipmentRequest.getAsyncBatchId()));		
-					shipmentService.generateShipments(generateShipmentRequest);
-					final Set<InOutId> createdInoutIds = shipmentService.retrieveInOutIdsByScheduleIds(generateShipmentRequest.getScheduleIds());
-
-					loggable.addLog("processShipmentSchedules - finished creating shipments with currentBatchId={}; M_InOut_IDs={}",
-									AsyncBatchId.toRepoId(generateShipmentRequest.getAsyncBatchId()), createdInoutIds);
-					createdShipmentIdsCollector.addAll(createdInoutIds);
+			loggable.addLog("processShipmentSchedules - finished creating shipments with currentBatchId={}; M_InOut_IDs={}",
+							AsyncBatchId.toRepoId(generateShipmentRequest.getAsyncBatchId()), createdInoutIds);
+			createdShipmentIdsCollector.addAll(createdInoutIds);
 
 			if (request.getInvoice())
 			{
