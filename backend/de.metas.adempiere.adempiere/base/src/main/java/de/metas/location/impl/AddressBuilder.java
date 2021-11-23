@@ -487,7 +487,10 @@ public class AddressBuilder
 			return "";
 		}
 
-		final String displaySequence = extractDisplaySequence(bpLocation, location);
+		final boolean isLocal = isLocalCountry(bpLocation);
+		final String displaySequence = getDisplaySequence(location.getC_Country(), isLocal);
+		// assertValidDisplaySequence(displaySequence); TODO check if we still need it
+
 		final String bPartnerBlock = buildBPartnerBlock(bpartner, bpContact, bpLocation, displaySequence);
 
 		// User Anschriftenblock
@@ -499,27 +502,6 @@ public class AddressBuilder
 				create(bpartner, I_C_BPartner.class),
 				bPartnerBlock,
 				userBlock);
-	}
-
-	@NonNull
-	private String extractDisplaySequence(
-			@NonNull final I_C_BPartner_Location bpLocation, 
-			@NonNull final I_C_Location location)
-	{
-		final boolean isLocal = isLocalCountry(bpLocation);
-		final I_C_Country c_countryRecord = location.getC_Country();
-		final String displaySequence = getDisplaySequence(c_countryRecord, isLocal);
-		try
-		{
-			assertValidDisplaySequence(displaySequence);
-		}
-		catch (final AdempiereException e)
-		{
-			throw e.setParameter("C_Country ", c_countryRecord)
-					.setParameter("IsLocalCountry", isLocal)
-					.setParameter("C_BPartner_Location", bpLocation);
-		}
-		return displaySequence;
 	}
 
 	private boolean isLocalCountry(final org.compiere.model.I_C_BPartner_Location location)
@@ -553,9 +535,7 @@ public class AddressBuilder
 		if ((existsBP && existsBPName) || (existsBP && existsBPGReeting)
 				|| (existsCON && existsBPName) || (existsCON && existsBPGReeting))
 		{
-			throw new AdempiereException(MSG_AddressBuilder_WrongDisplaySequence)
-					.appendParametersToMessage()
-					.setParameter("displaySequence", displaySequence);
+			throw new AdempiereException(MSG_AddressBuilder_WrongDisplaySequence);
 		}
 	}
 
@@ -609,7 +589,7 @@ public class AddressBuilder
 		final boolean existsBPName = isTokenFound(displaySequence, Addressvars.BPartnerName.getName());
 		final boolean existsBPGReeting = isTokenFound(displaySequence, Addressvars.BPartnerGreeting.getName());
 
-		if (existsBPName || existsBPGReeting)
+		if ( (existsBPName || existsBPGReeting) && !bPartner.isCompany())
 		{
 			if (existsBPName)
 			{
@@ -805,7 +785,7 @@ public class AddressBuilder
 		final boolean existsBPName = isTokenFound(displaySequence, Addressvars.BPartnerName.getName());
 		final boolean existsBPGreeting = isTokenFound(displaySequence, Addressvars.BPartnerGreeting.getName());
 
-		if (existsBPName || existsBPGreeting)
+		if ((existsBPName || existsBPGreeting) && !bPartner.isCompany())
 		{
 			return "";
 		}
