@@ -69,7 +69,7 @@ public class AsyncBatchObserver implements AsyncBatchNotifyRequestHandler
 
 	public void observeOn(@NonNull final AsyncBatchId id)
 	{
-		Loggables.withLogger(logger, Level.INFO).addLog("Observer registered for asyncBatchId: " + id);
+		Loggables.withLogger(logger, Level.INFO).addLog("Observer registered for asyncBatchId: " + id.getRepoId());
 		asyncBatch2Completion.put(id, new CompletableFuture<>());
 	}
 
@@ -81,7 +81,7 @@ public class AsyncBatchObserver implements AsyncBatchNotifyRequestHandler
 	{
 		if (asyncBatch2Completion.get(id) == null)
 		{
-			Loggables.withLogger(logger, Level.INFO).addLog("No observer registered to be processed for asyncBatchId: {}", id);
+			Loggables.withLogger(logger, Level.INFO).addLog("No observer registered to be processed for asyncBatchId: {}", id.getRepoId());
 			return;
 		}
 
@@ -103,7 +103,7 @@ public class AsyncBatchObserver implements AsyncBatchNotifyRequestHandler
 
 			if (workPackages.isEmpty())
 			{
-				Loggables.withLogger(logger, Level.INFO).addLog("No workpackages retrieved for asyncBatchId: {}", id);
+				Loggables.withLogger(logger, Level.INFO).addLog("No workpackages retrieved for asyncBatchId: {}", id.getRepoId());
 				return;
 			}
 
@@ -126,33 +126,33 @@ public class AsyncBatchObserver implements AsyncBatchNotifyRequestHandler
 	{
 		if (asyncBatch2Completion.get(id) == null)
 		{
-			Loggables.withLogger(logger, Level.WARN).addLog("No observer registered that can be removed for asyncBatchId: {}", id);
+			Loggables.withLogger(logger, Level.WARN).addLog("No observer registered that can be removed for asyncBatchId: {}", id.getRepoId());
 			return;
 		}
 
 		asyncBatch2Completion.remove(id);
 
-		Loggables.withLogger(logger, Level.INFO).addLog("Observer removed for asyncBatchId: {}", id);
+		Loggables.withLogger(logger, Level.INFO).addLog("Observer removed for asyncBatchId: {}", id.getRepoId());
 	}
 
 	private void notifyBatchProcessedFor(@NonNull final AsyncBatchId id, final boolean successful)
 	{
 		if (asyncBatch2Completion.get(id) == null)
 		{
-			Loggables.withLogger(logger, Level.INFO).addLog("No observer registered to notify for asyncBatchId: {}", id);
+			Loggables.withLogger(logger, Level.INFO).addLog("No observer registered to notify for asyncBatchId: {}" , id.getRepoId());
 			return;
 		}
 
 		if (successful)
 		{
-			Loggables.withLogger(logger, Level.INFO).addLog("AsyncBatchId={} completed successfully. ", id);
+			Loggables.withLogger(logger, Level.INFO).addLog("AsyncBatchId={} completed successfully. " , id.getRepoId());
 			asyncBatch2Completion.get(id).complete(null);
 		}
 		else
 		{
 			asyncBatch2Completion.get(id).completeExceptionally(new AdempiereException("Workpackage completed exceptionally")
 																		.appendParametersToMessage()
-																		.setParameter("AsyncBatchId", id));
+																		.setParameter("AsyncBatchId" , id.getRepoId()));
 		}
 	}
 }

@@ -444,16 +444,13 @@ public class AsyncBatchBL implements IAsyncBatchBL
 		{
 			return ImmutablePair.of(asyncBatchId.get(), model);
 		}
-		final Mutable<ImmutablePair<AsyncBatchId, T>> result = new Mutable<>();
-		trxManager.runInNewTrx(() -> {
 
 			final AsyncBatchId currentAsyncBatchId = newAsyncBatch(asyncBatchInternalName);
 			InterfaceWrapperHelper.setValue(model, I_C_Async_Batch.COLUMNNAME_C_Async_Batch_ID, currentAsyncBatchId.getRepoId());
 
-			InterfaceWrapperHelper.saveRecord(model);
-			result.setValue(ImmutablePair.of(currentAsyncBatchId, model));
-		});
-		return result.getValueNotNull();
+		InterfaceWrapperHelper.save(model);
+
+		return ImmutablePair.of(currentAsyncBatchId, model);
 	}
 		
 	public I_C_Async_Batch getAsyncBatchById(@NonNull final AsyncBatchId asyncBatchId)

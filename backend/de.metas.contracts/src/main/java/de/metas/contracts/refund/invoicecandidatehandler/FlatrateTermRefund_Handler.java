@@ -114,13 +114,13 @@ public class FlatrateTermRefund_Handler
 
 	@Override
 	public Consumer<I_C_Invoice_Candidate> getInvoiceScheduleSetterFunction(
-			Consumer<I_C_Invoice_Candidate> IGNORED_defaultImplementation)
+			final Consumer<I_C_Invoice_Candidate> IGNORED_defaultImplementation)
 	{
 		return ic -> {
 
 			final FlatrateTermId flatrateTermId = FlatrateTermId.ofRepoId(ic.getRecord_ID());
 
-			RefundContractRepository refundContractRepository = SpringContextHolder.instance.getBean(RefundContractRepository.class);
+			final RefundContractRepository refundContractRepository = SpringContextHolder.instance.getBean(RefundContractRepository.class);
 			final RefundContract refundContract = refundContractRepository.getById(flatrateTermId);
 			final NextInvoiceDate nextInvoiceDate = refundContract.computeNextInvoiceDate(asLocalDate(ic.getDeliveryDate()));
 

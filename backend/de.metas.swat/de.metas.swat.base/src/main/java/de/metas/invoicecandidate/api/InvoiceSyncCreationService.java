@@ -23,17 +23,15 @@
 package de.metas.invoicecandidate.api;
 
 import de.metas.async.AsyncBatchId;
-import de.metas.async.Async_Constants;
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.service.AsyncBatchService;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceService;
 import de.metas.invoicecandidate.InvoiceCandidateId;
-import de.metas.invoicecandidate.api.impl.InvoiceCandDAO;
 import de.metas.invoicecandidate.async.spi.impl.CreateMissingInvoiceCandidatesWorkpackageProcessor;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.util.lang.ImmutablePair;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.stereotype.Service;
 
@@ -44,9 +42,9 @@ import java.util.function.Supplier;
 public class InvoiceSyncCreationService
 {
 	private final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
+	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final AsyncBatchService asyncBatchService;
 	private final InvoiceService invoiceService;
-	private final InvoiceCandDAO invoiceCandDAO = Services.get(InvoiceCandDAO.class);
 
 	public InvoiceSyncCreationService(
 			@NonNull final AsyncBatchService asyncBatchService,
@@ -56,26 +54,35 @@ public class InvoiceSyncCreationService
 		this.invoiceService = invoiceService;
 	}
 
+	/**
+	 * @param modelReference the model for which the invoice cnadidates and subsequently invoices shall be created.
+	 *                       It is expected taht the model already references an AsyncBatch_ID.
+	 */
 	@NonNull
-	public Set<InvoiceId> generateIcsAndInvoices(@NonNull final Object model)
+	public Set<InvoiceId> generateIcsAndInvoices(@NonNull final TableRecordReference modelReference)
 	{
-		generateMissingInvoiceCandidatesFromContract(model);
+		generateMissingInvoiceCandidatesFromContract(modelReference);
 
-		final Set<InvoiceCandidateId> invoiceCandidateIds = invoiceCandDAO.retrieveReferencingIds(TableRecordReference.of(model));
+		final Set<InvoiceCandidateId> invoiceCandidateIds = invoiceCandDAO.retrieveReferencingIds(modelReference);
 
 		return invoiceService.generateInvoicesFromInvoiceCandidateIds(invoiceCandidateIds);
 	}
 
-	private void generateMissingInvoiceCandidatesFromContract(@NonNull final Object model)
+	private void generateMissingInvoiceCandidatesFromContract(@NonNull final TableRecordReference modelReference)
 	{
-		final ImmutablePair<AsyncBatchId, Object> immutablePair = asyncBatchBL.assignAsyncBatchToContractIfMissing(model, Async_Constants.C_Async_Batch_InternalName_EnqueueInvoiceCandidateForContract);
+		final Object model = modelReference.getModel(Object.class);
+		final AsyncBatchId asyncBatchId = asyncBatchBL
+				.getAsyncBatchId(model)
+				.orElseThrow(() -> new AdempiereException("The given model need to already have an async batch id at this point")
+						.appendParametersToMessage()
+						.setParameter("model", model));
 
 		final Supplier<Void> action = () -> {
-			CreateMissingInvoiceCandidatesWorkpackageProcessor.schedule(immutablePair.getRight());
+			CreateMissingInvoiceCandidatesWorkpackageProcessor.schedule(model);
 			return null;
 		};
 
-		asyncBatchService.executeBatch(action, immutablePair.getLeft());
+		asyncBatchService.executeBatch(action, asyncBatchId);
 	}
 
 }

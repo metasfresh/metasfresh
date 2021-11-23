@@ -1,6 +1,8 @@
 package de.metas.invoicecandidate.modelvalidator;
 
 import com.google.common.base.MoreObjects;
+import de.metas.async.Async_Constants;
+import de.metas.async.api.IAsyncBatchBL;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.invoicecandidate.api.InvoiceSyncCreationService;
 import de.metas.invoicecandidate.async.spi.impl.CreateMissingInvoiceCandidatesWorkpackageProcessor;
@@ -12,6 +14,8 @@ import org.adempiere.ad.modelvalidator.AbstractModelInterceptor;
 import org.adempiere.ad.modelvalidator.DocTimingType;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Client;
 
@@ -44,6 +48,10 @@ import org.compiere.model.I_AD_Client;
  */
 final class ILHandlerModelInterceptor extends AbstractModelInterceptor
 {
+
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
+
 	public static Builder builder()
 	{
 		return new Builder();
@@ -117,24 +125,31 @@ final class ILHandlerModelInterceptor extends AbstractModelInterceptor
 	/**
 	 * Creates missing invoice candidates for given model, if this is enabled.
 	 */
-	private void createMissingInvoiceCandidates(final Object model)
+	private void createMissingInvoiceCandidates(@NonNull final Object model)
 	{
-		// Skip creating the invoice candidates if this is disabled.
-		if (!candidatesAutoCreateMode.isDoSomething())
-		{
-			return;
-		}
 		switch (candidatesAutoCreateMode)
 		{
-			case DONT:
+			case DONT: // just for completeness. we actually aren't called in this case
 				break;
 			case CREATE_CANDIDATES:
 				CreateMissingInvoiceCandidatesWorkpackageProcessor.schedule(model);
 				break;
 			case CREATE_CANDIDATES_AND_INVOICES:
-				invoiceSyncCreationService.generateIcsAndInvoices(model);
+				generateIcsAndInvoices(model);
+				break;
 		}
+	}
 
+	private void generateIcsAndInvoices(@NonNull final Object model)
+	{
+		asyncBatchBL.assignAsyncBatchToContractIfMissing(model, Async_Constants.C_Async_Batch_InternalName_EnqueueInvoiceCandidateCreation);
+		final TableRecordReference modelReference = TableRecordReference.of(model);
+		
+		trxManager.runAfterCommit(() ->
+										  trxManager.runInNewTrx(() ->
+																		 invoiceSyncCreationService.generateIcsAndInvoices(modelReference)));
+
+		;
 	}
 
 	/**

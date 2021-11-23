@@ -73,9 +73,10 @@ public class FlatrateTerm_Handler extends AbstractInvoiceCandidateHandler
 
 		for (final ConditionTypeSpecificInvoiceCandidateHandler specificHandler : specificHandlers)
 		{
-			if (specificHandler.isMissingInvoiceCandidate(flatrateTerm) != CandidatesAutoCreateMode.DONT)
+			final CandidatesAutoCreateMode modeForTerm = specificHandler.isMissingInvoiceCandidate(flatrateTerm);
+			if (modeForTerm != CandidatesAutoCreateMode.DONT)
 			{
-				return specificHandler.isMissingInvoiceCandidate(flatrateTerm);
+				return modeForTerm;
 			}
 		}
 		return CandidatesAutoCreateMode.DONT;
