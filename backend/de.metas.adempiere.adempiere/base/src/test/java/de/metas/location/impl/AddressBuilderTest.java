@@ -943,7 +943,7 @@ public class AddressBuilderTest
 		{
 
 			final I_C_Location location = prepareLocation("addr1", "addr2", null, null, "City1", "Region1", "121212", false, "",
-														  prepareCountry("Germany", "@BP_GR@ @BP_Name@ @GR@ @TI@ @FN@ @LN@ @CON@ @A2@ @A1@ @A3@ (Postfach @PB@) @P@ @C@ @CO@"));
+														  prepareCountry("Germany", "@BP_GR@ @BP_Name@ @CON@ @A2@ @A1@ @A3@ (Postfach @PB@) @P@ @C@ @CO@"));
 
 			final I_C_BPartner_Location bpLocation = prepareBPLocation(location);
 			final GreetingId greetingId = prepareGreeting("Frau");
@@ -959,7 +959,7 @@ public class AddressBuilderTest
 			final String actual = bpartnerBL.mkFullAddress(bPartner, bpLocation, null, user);
 
 			assertEquals(
-					"LOCAL:  \nName1\nName2\nFrau\nsomeTitle UserFN UserLN\naddr2\naddr1\n121212 City1\nGermany",
+					"LOCAL:  \nName1\nName2\nFrau someTitle UserFN UserLN\naddr2\naddr1\n121212 City1\nGermany",
 					actual);
 		}
 

@@ -727,7 +727,7 @@ public class AddressBuilder
 			}
 			else if (token.equals("GR"))
 			{
-				if (!Check.isEmpty(userGreeting, true))
+				if (!Check.isEmpty(userGreeting, true) && !isPartnerCompany)
 				{
 					outStr.append(userGreeting);
 					outStr.append('\n');
