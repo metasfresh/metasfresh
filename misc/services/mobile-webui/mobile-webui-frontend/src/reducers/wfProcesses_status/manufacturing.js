@@ -61,6 +61,7 @@ const computeStepStatus = ({ draftStep }) => {
 const updateLineStatusFromSteps = ({ draftWFProcess, activityId, lineId }) => {
   const draftLine = draftWFProcess.activities[activityId].dataStored.lines[lineId];
   draftLine.completeStatus = computeLineStatusFromSteps({ draftLine });
+  draftLine.qtyIssued = computeLineQuantityFromSteps({ draftLine });
   console.log(`Update line [${activityId} ${lineId} ]: completeStatus=${draftLine.completeStatus}`);
 
   //
@@ -80,6 +81,12 @@ const computeLineStatusFromSteps = ({ draftLine }) => {
   });
 
   return CompleteStatus.reduceFromCompleteStatuesUniqueArray(stepStatuses);
+};
+
+const computeLineQuantityFromSteps = ({ draftLine }) => {
+  const steps = isDraft(draftLine) ? Object.values(current(draftLine.steps)) : Object.values(draftLine.steps);
+
+  return steps.reduce((acc, { qtyIssued }) => (acc += qtyIssued), 0);
 };
 
 const extractDraftMapKeys = (draftMap) => {
@@ -145,14 +152,12 @@ const normalizeLines = (lines) => {
 registerHandler({
   componentType: COMPONENT_TYPE,
   normalizeComponentProps: ({ componentProps }) => {
-    console.log('normalizeComponentProps for ', componentProps);
     return {
       ...componentProps,
       lines: normalizeLines(componentProps.lines),
     };
   },
   computeActivityDataStoredInitialValue: ({ componentProps }) => {
-    console.log('computeActivityDataStoredInitialValue for ', componentProps);
     return { lines: componentProps.lines };
   },
   computeActivityStatus,
