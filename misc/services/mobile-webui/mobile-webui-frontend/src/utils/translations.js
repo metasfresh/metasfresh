@@ -5,16 +5,27 @@ import translations_de from './translations_de';
 export const setupCounterpart = () => {
   console.log('Setting up counterpart defaults...');
 
-  counterpart.setMissingEntryGenerator(function (key) {
-    // eslint-disable-next-line no-console
-    console.error(`Missing translation: ${key}`);
-    return `${key}`;
-  });
-
+  counterpart.setMissingEntryGenerator(generateMissingTranslation);
   counterpart.registerTranslations('en', translations_en);
   counterpart.registerTranslations('de', translations_de);
 
-  // setLanguage('de_DE');
+  setLanguage('de_DE');
+};
+
+const generateMissingTranslation = (key) => {
+  // eslint-disable-next-line no-console
+  console.error(`Missing translation: ${key}`);
+
+  if (!key) {
+    return '';
+  }
+
+  const idx = key.lastIndexOf('.');
+  if (idx > 0) {
+    return key.substring(idx + 1);
+  } else {
+    return `${key}`;
+  }
 };
 
 export const setLanguage = (language) => {
