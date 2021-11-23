@@ -35,7 +35,7 @@ Feature: material-dispo updates on shipment-schedule events
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered   |
       | ol_1       | o_1                   | p_1                     | 1000         |
     And the order identified by o_1 is completed
-    Then metasfresh has this MD_Candidate data
+    Then and after not more than 60s, metasfresh has this MD_Candidate data
       | Identifier | Type   | BusinessCase | M_Product_ID.Identifier | Time                    | DisplayQty | ATP   |
       | c_1        | DEMAND | SHIPMENT     | p_1                     | 2021-11-01T23:59:00.00Z | 1000       | 1000  |
       | c_2        | SUPPLY |              | p_1                     | 2021-11-01T23:59:00.00Z | 1000       | 0     |
@@ -53,9 +53,9 @@ Feature: material-dispo updates on shipment-schedule events
       | M_Product_ID | M_ShipmentSchedule_ID | PreparationDate         | Qty |
       | 2005577      | 123                   | 2020-12-12T23:59:00.00Z | 10  |
     Then metasfresh has this MD_Candidate data
-      | Identifier | Type         | BusinessCase | M_Product_ID | Time                    | DisplayQty | ATP |
-      | c_1        | INVENTORY_UP |              | 2005577      | 2020-12-12T10:00:00.00Z | 100        | 100 |
-      | c_2        | DEMAND       | SHIPMENT     | 2005577      | 2020-12-12T23:59:00.00Z | -10        | 90  |
+      | Identifier | Type           | BusinessCase | M_Product_ID | Time                    | DisplayQty | ATP |
+      | c_1        | "INVENTORY_UP" |              | 2005577      | 2020-12-12T10:00:00.00Z | 100        | 100 |
+      | c_2        | "DEMAND"       | "SHIPMENT"   | 2005577      | 2020-12-12T23:59:00.00Z | -10        | 90  |
     And metasfresh has this MD_Candidate_Demand_Detail data
       | MD_Candidate_ID.Identifier | M_ShipmentSchedule_ID |
       | c_2                        | 123                   |

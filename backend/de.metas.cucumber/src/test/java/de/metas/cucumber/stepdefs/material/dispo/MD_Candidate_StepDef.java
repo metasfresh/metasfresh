@@ -25,18 +25,17 @@ package de.metas.cucumber.stepdefs.material.dispo;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.material.dispo.MD_Candidate_StepDefTable.MaterialDispoTableRow;
-import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.MaterialDispoDataItem;
 import de.metas.material.dispo.commons.candidate.MaterialDispoRecordRepository;
 import de.metas.material.dispo.commons.candidate.businesscase.BusinessCaseDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
-import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.model.I_MD_Candidate;
-import de.metas.material.dispo.model.I_MD_Candidate_ATP_QueryResult;
 import de.metas.material.dispo.model.I_MD_Candidate_Demand_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_StockChange_Detail;
 import de.metas.material.event.PostMaterialEventService;
@@ -57,17 +56,14 @@ import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.impl.TypedSqlQuery;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.I_C_BPartner;
+import org.compiere.model.IQuery;
 import org.compiere.model.I_C_Order;
-import org.compiere.model.I_M_Product;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -76,6 +72,8 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Supplier;
 
 import static org.assertj.core.api.Assertions.*;
 
@@ -193,87 +191,45 @@ public class MD_Candidate_StepDef
 		}
 	}
 
-	@Then("metasfresh has this MD_Candidate data")
-	public void metasfresh_has_this_md_candidate_data(@NonNull final MD_Candidate_StepDefTable table)
+	@Then("^and after not more than (.*)s, metasfresh has this MD_Candidate data$")
+	public void metasfresh_has_this_md_candidate_data(final int timeoutSec, @NonNull final MD_Candidate_StepDefTable table) throws InterruptedException
 	{
-
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		int  order_count = queryBL.createQueryBuilder(I_C_Order.class)
-				.addOnlyActiveRecordsFilter()
-				.create()
-				.count();
-
-		int  product_count = queryBL.createQueryBuilder(I_M_Product.class)
-				.addOnlyActiveRecordsFilter()
-				.create()
-				.count();
-
-		int  partner_count = queryBL.createQueryBuilder(I_C_BPartner.class)
-				.addOnlyActiveRecordsFilter()
-				.create()
-				.count();
-
-		int  md_candidate_count = queryBL.createQueryBuilderOutOfTrx(I_MD_Candidate.class)
-				.addOnlyActiveRecordsFilter()
-				.create()
-				.count();
-
-		int  md_candidate_demand_detail_count = queryBL.createQueryBuilderOutOfTrx(I_MD_Candidate_Demand_Detail.class)
-				.addOnlyActiveRecordsFilter()
-				.create()
-				.count();
-
-		//CandidatesQuery query = CandidatesQuery.builder()
-				//								.type(CandidateType.DEMAND)
-				//								.businessCase(CandidateBusinessCase.SHIPMENT)
-				//								.build();
-		//MaterialDispoDataItem item  = materialDispoRecordRepository.getBy(query);
-		//assertThat(item).isNotNull(); // add a message
-
-		//int md_candidate_count = DB.getSQLValue(null, "select count(*) from md_candidate",  (String)null);
-		assertThat(order_count).isGreaterThan(0);
-		assertThat(product_count).isGreaterThan(0);
-		assertThat(partner_count).isGreaterThan(0);
-		assertThat(md_candidate_count).isGreaterThan(0);
-		//assertThat(md_candidate_demand_detail_count).isGreaterThan(0);
-
-		/*
-		for (final MaterialDispoTableRow tableRow : table.getRows())
+		//make sure the given invoice candidate is ready for processing
+		final AtomicInteger md_candidate_count = new AtomicInteger(-1);
+		final Supplier<Boolean> shipmentSCheduleCandidateChecker = () ->
 		{
-			final I_MD_Candidate c1 = queryBL.createQueryBuilder(I_MD_Candidate.class)
-					.addOnlyActiveRecordsFilter()
-					.addEqualsFilter(I_MD_Candidate.COLUMNNAME_M_Product_ID, new Integer(tableRow.getProductId().getRepoId()))
-					.addEqualsFilter(I_MD_Candidate.COLUMNNAME_MD_Candidate_Type, tableRow.getType())
-					.create()
-					.firstOnly(I_MD_Candidate.class);
-		}
+			md_candidate_count.set(queryBL.createQueryBuilderOutOfTrx(I_MD_Candidate.class)
+										   .addOnlyActiveRecordsFilter()
+										   .create()
+										   .count());
+			//final IInvoiceCandDAO.InvoiceableInvoiceCandIdResult invoiceableInvoiceCandId = invoiceCandDAO.getFirstInvoiceableInvoiceCandId(targetOrderId);
+			return md_candidate_count.get() > 0;
+		};
+
+		//wait for the invoice to be created
+		StepDefUtil.tryAndWait(timeoutSec, 500, shipmentSCheduleCandidateChecker);
+		assertThat(md_candidate_count.get()).isGreaterThan(0);
 
 		for (final MaterialDispoTableRow tableRow : table.getRows())
 		{
 			//final MaterialDispoDataItem materialDispoRecord = materialDispoRecordRepository.getBy(tableRow.createQuery());
-			final IQueryBL queryBL = Services.get(IQueryBL.class);
-			int  count = queryBL.createQueryBuilder(I_MD_Candidate.class)
-					 .addOnlyActiveRecordsFilter()
-					 .create()
-					 .count();
-
 			final I_MD_Candidate materialDispoRecord = queryBL.createQueryBuilder(I_MD_Candidate.class)
 					.addOnlyActiveRecordsFilter()
-					//.addEqualsFilter(I_MD_Candidate.COLUMNNAME_M_Product_ID, new Integer(tableRow.getProductId().getRepoId()))
+					.addEqualsFilter(I_MD_Candidate.COLUMNNAME_M_Product_ID, new Integer(tableRow.getProductId().getRepoId()))
 					.addEqualsFilter(I_MD_Candidate.COLUMNNAME_MD_Candidate_Type, tableRow.getType())
+					.addEqualsFilter(I_MD_Candidate.COLUMNNAME_MD_Candidate_BusinessCase, tableRow.getBusinessCase())
 					.create()
 					.firstOnly(I_MD_Candidate.class);
 
-			assertThat(count).isGreaterThan(0);
-			//assertThat(materialDispoRecord).isNotNull(); // add message
-			assertThat(materialDispoRecord.getType()).isEqualTo(tableRow.getType());
-			assertThat(materialDispoRecord.getBusinessCase()).isEqualTo(tableRow.getBusinessCase());
-			assertThat(materialDispoRecord.getMaterialDescriptor().getProductId()).isEqualTo(tableRow.getProductId().getRepoId());
-			assertThat(materialDispoRecord.getMaterialDescriptor().getDate()).isEqualTo(tableRow.getTime());
-			assertThat(materialDispoRecord.getMaterialDescriptor().getQuantity()).isEqualByComparingTo(tableRow.getQty());
-			assertThat(materialDispoRecord.getAtp()).isEqualByComparingTo(tableRow.getAtp());
-			materialDispoDataItemStepDefData.putIfMissing(tableRow.getIdentifier(), materialDispoRecord);
-		}*/
+			assertThat(materialDispoRecord).isNotNull(); // add message
+			assertThat(materialDispoRecord.getMD_Candidate_Type()).isEqualTo(tableRow.getType());
+			assertThat(materialDispoRecord.getMD_Candidate_BusinessCase()).isEqualTo(tableRow.getBusinessCase());
+			// assertThat(materialDispoRecord.getMaterialDescriptor().getProductId()).isEqualTo(tableRow.getProductId().getRepoId());
+			// assertThat(materialDispoRecord.getMaterialDescriptor().getDate()).isEqualTo(tableRow.getTime());
+			// assertThat(materialDispoRecord.getMaterialDescriptor().getQuantity()).isEqualByComparingTo(tableRow.getQty());
+			// assertThat(materialDispoRecord.getAtp()).isEqualByComparingTo(tableRow.getAtp());
+			// materialDispoDataItemStepDefData.putIfMissing(tableRow.getIdentifier(), materialDispoRecord);
+		}
 	}
 
 	@Then("metasfresh has this MD_Candidate_Demand_Detail data")
