@@ -44,7 +44,7 @@ class StepScanScreenComponent extends Component {
   onQtyPickedChanged = (qty) => {
     const { qtyTarget } = this.props;
 
-    const inputQty = parseInt(qty);
+    const inputQty = parseFloat(qty);
     if (isNaN(inputQty)) {
       return;
     }
