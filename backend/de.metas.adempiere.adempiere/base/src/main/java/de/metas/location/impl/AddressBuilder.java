@@ -489,7 +489,7 @@ public class AddressBuilder
 
 		final boolean isLocal = isLocalCountry(bpLocation);
 		final String displaySequence = getDisplaySequence(location.getC_Country(), isLocal);
-		// assertValidDisplaySequence(displaySequence); TODO check if we still need it
+		assertValidDisplaySequence(displaySequence);
 
 		final String bPartnerBlock = buildBPartnerBlock(bpartner, bpContact, bpLocation, displaySequence);
 
@@ -532,8 +532,7 @@ public class AddressBuilder
 		final boolean existsCON = isTokenFound(displaySequence, Addressvars.Contact.getName());
 		final boolean existsBPGReeting = isTokenFound(displaySequence, Addressvars.BPartnerGreeting.getName());
 
-		if ((existsBP && existsBPName) || (existsBP && existsBPGReeting)
-				|| (existsCON && existsBPName) || (existsCON && existsBPGReeting))
+		if ((existsBP && existsBPName) || (existsBP && existsBPGReeting))
 		{
 			throw new AdempiereException(MSG_AddressBuilder_WrongDisplaySequence);
 		}
@@ -728,7 +727,7 @@ public class AddressBuilder
 			}
 			else if (token.equals("GR"))
 			{
-				if (!Check.isEmpty(userGreeting, true) && !isPartnerCompany)
+				if (!Check.isEmpty(userGreeting, true))
 				{
 					outStr.append(userGreeting);
 					outStr.append('\n');
