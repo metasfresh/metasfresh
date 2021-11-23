@@ -242,6 +242,7 @@ class TableCell extends PureComponent {
               updateHeight,
               updateRow,
             }}
+            suppressChange={isEdited}
             clearValue={this.clearWidgetValue}
             dateFormat={isDateField}
             dataId={mainTable ? null : docId}

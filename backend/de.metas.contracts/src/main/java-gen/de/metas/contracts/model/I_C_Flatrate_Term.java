@@ -296,6 +296,33 @@ public interface I_C_Flatrate_Term
 	String COLUMNNAME_C_Flatrate_Term_ID = "C_Flatrate_Term_ID";
 
 	/**
+	 * Set Flatrate Term Master.
+	 * Is the ID of the first C_Flatrate_Term from entire hierarchy chain
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Flatrate_Term_Master_ID (int C_Flatrate_Term_Master_ID);
+
+	/**
+	 * Get Flatrate Term Master.
+	 * Is the ID of the first C_Flatrate_Term from entire hierarchy chain
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Flatrate_Term_Master_ID();
+
+	@Nullable de.metas.contracts.model.I_C_Flatrate_Term getC_Flatrate_Term_Master();
+
+	void setC_Flatrate_Term_Master(@Nullable de.metas.contracts.model.I_C_Flatrate_Term C_Flatrate_Term_Master);
+
+	ModelColumn<I_C_Flatrate_Term, de.metas.contracts.model.I_C_Flatrate_Term> COLUMN_C_Flatrate_Term_Master_ID = new ModelColumn<>(I_C_Flatrate_Term.class, "C_Flatrate_Term_Master_ID", de.metas.contracts.model.I_C_Flatrate_Term.class);
+	String COLUMNNAME_C_Flatrate_Term_Master_ID = "C_Flatrate_Term_Master_ID";
+
+	/**
 	 * Set Nachfolgende Vertragsperiode.
 	 *
 	 * <br>Type: Table
@@ -1353,7 +1380,7 @@ public interface I_C_Flatrate_Term
 	String COLUMNNAME_TerminationMemo = "TerminationMemo";
 
 	/**
-	 * Set Termination Reason.
+	 * Set Reason ofTermination .
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -1362,7 +1389,7 @@ public interface I_C_Flatrate_Term
 	void setTerminationReason (@Nullable java.lang.String TerminationReason);
 
 	/**
-	 * Get Termination Reason.
+	 * Get Reason ofTermination .
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
