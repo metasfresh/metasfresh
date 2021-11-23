@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flatrate_Term, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1865492586L;
+	private static final long serialVersionUID = 1718911885L;
 
     /** Standard Constructor */
     public X_C_Flatrate_Term (final Properties ctx, final int C_Flatrate_Term_ID, @Nullable final String trxName)
@@ -147,6 +147,21 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	public int getBill_User_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_Bill_User_ID);
+	}
+
+	@Override
+	public void setC_Async_Batch_ID (final int C_Async_Batch_ID)
+	{
+		if (C_Async_Batch_ID < 1) 
+			set_Value (COLUMNNAME_C_Async_Batch_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Async_Batch_ID, C_Async_Batch_ID);
+	}
+
+	@Override
+	public int getC_Async_Batch_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Async_Batch_ID);
 	}
 
 	@Override

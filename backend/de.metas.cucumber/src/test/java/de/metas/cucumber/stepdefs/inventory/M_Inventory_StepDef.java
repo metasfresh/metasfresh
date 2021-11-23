@@ -33,9 +33,11 @@ import de.metas.uom.UomId;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_InventoryLine;
+import org.compiere.model.I_M_Product;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -52,13 +54,16 @@ public class M_Inventory_StepDef
 
 	private final StepDefData<I_M_Inventory> inventoryTable;
 	private final StepDefData<I_M_InventoryLine> inventoryLineTable;
+	private final StepDefData<I_M_Product> productTable;
 
 	public M_Inventory_StepDef(
 			final StepDefData<I_M_Inventory> inventoryTable,
-			final StepDefData<I_M_InventoryLine> inventoryLineTable)
+			final StepDefData<I_M_InventoryLine> inventoryLineTable,
+			final StepDefData<I_M_Product> productTable)
 	{
 		this.inventoryTable = inventoryTable;
 		this.inventoryLineTable = inventoryLineTable;
+		this.productTable = productTable;
 	}
 
 	@And("metasfresh initially has M_Inventory data")
@@ -112,9 +117,10 @@ public class M_Inventory_StepDef
 	{
 		final String inventoryIdentifier = DataTableUtil.extractStringForColumnName(row, "M_Inventory_ID.Identifier");
 		final String inventoryLineIdentifier = DataTableUtil.extractStringForColumnName(row, "M_InventoryLine_ID.Identifier");
-		final int productId = DataTableUtil.extractIntForColumnName(row, "M_Product_ID");
 		final BigDecimal qtyBook = DataTableUtil.extractBigDecimalForColumnName(row, "QtyBook");
 		final BigDecimal qtyCount = DataTableUtil.extractBigDecimalForColumnName(row, "QtyCount");
+		final Integer productId = DataTableUtil.extractIntegerOrNullForColumnName(row, "OPT.M_Product_ID");
+		final String productIdentifier = DataTableUtil.extractStringForColumnName(row, "M_Product_ID.Identifier");
 
 		final I_M_Inventory mInventory = inventoryTable.get(inventoryIdentifier);
 
@@ -127,9 +133,21 @@ public class M_Inventory_StepDef
 		inventoryLineRecord.setIsCounted(true);
 
 		inventoryLineRecord.setM_Inventory_ID(mInventory.getM_Inventory_ID());
-		inventoryLineRecord.setM_Product_ID(productId);
 		inventoryLineRecord.setQtyBook(qtyBook);
 		inventoryLineRecord.setQtyCount(qtyCount);
+
+		if (productId == null)
+		{
+			final I_M_Product product = productTable.get(productIdentifier);
+			inventoryLineRecord.setM_Product_ID(product.getM_Product_ID());
+		}
+		else
+		{
+			final I_M_Product productById = InterfaceWrapperHelper.load(productId, I_M_Product.class);
+			productTable.put(productIdentifier, productById);
+
+			inventoryLineRecord.setM_Product_ID(productById.getM_Product_ID());
+		}
 
 		save(inventoryLineRecord);
 

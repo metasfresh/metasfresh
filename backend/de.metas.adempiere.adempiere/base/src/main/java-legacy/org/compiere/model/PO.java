@@ -5042,9 +5042,9 @@ public abstract class PO
 	/**
 	 * Get Dynamic Attribute
 	 *
-	 * @param name
 	 * @return attribute value or null if not found
 	 */
+	@Nullable
 	public final Object getDynAttribute(final String name)
 	{
 		if (m_dynAttrs == null)

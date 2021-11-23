@@ -15,6 +15,8 @@ import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -240,8 +242,9 @@ public class CompositeInterfaceWrapperHelper implements IInterfaceWrapperHelper
 				.isNull(model, columnName);
 	}
 
+	@Nullable
 	@Override
-	public <T> T getDynAttribute(final Object model, final String attributeName)
+	public <T> T getDynAttribute(@NonNull final Object model, @NonNull final String attributeName)
 	{
 		return getHelperThatCanHandle(model)
 				.getDynAttribute(model, attributeName);

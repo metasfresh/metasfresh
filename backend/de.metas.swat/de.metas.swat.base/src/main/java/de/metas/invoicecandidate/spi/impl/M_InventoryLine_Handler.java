@@ -110,15 +110,15 @@ public class M_InventoryLine_Handler extends AbstractInvoiceCandidateHandler
 	private static final transient IInventoryLine_HandlerDAO inventoryLineHandlerDAO = Services.get(IInventoryLine_HandlerDAO.class);
 
 	@Override
-	public boolean isCreateMissingCandidatesAutomatically()
+	public CandidatesAutoCreateMode getCandidatesAutoCreateMode()
 	{
-		return false;
+		return CandidatesAutoCreateMode.DONT;
 	}
 
 	@Override
-	public boolean isCreateMissingCandidatesAutomatically(final Object model)
+	public CandidatesAutoCreateMode getCandidatesAutoCreateMode(final Object model)
 	{
-		return false;
+		return CandidatesAutoCreateMode.DONT;
 	}
 
 	@Override

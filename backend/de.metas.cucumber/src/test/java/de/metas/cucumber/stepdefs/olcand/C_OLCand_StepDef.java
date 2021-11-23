@@ -32,7 +32,6 @@ import de.metas.common.ordercandidates.v2.response.JsonOLCandProcessResponse;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.shipping.v2.shipment.JsonCreateShipmentResponse;
 import de.metas.cucumber.stepdefs.DataTableUtil;
-import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.inout.InOutId;
@@ -42,12 +41,9 @@ import de.metas.rest_api.v2.invoice.impl.JSONInvoiceInfoResponse;
 import de.metas.rest_api.v2.ordercandidates.impl.JsonProcessCompositeResponse;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
-import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.service.ClientId;
-import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
@@ -62,7 +58,6 @@ import static org.assertj.core.api.Assertions.*;
 public class C_OLCand_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	private final StepDefData<I_C_Order> orderTable;
 	private final StepDefData<I_M_InOut> shipmentTable;
@@ -85,12 +80,6 @@ public class C_OLCand_StepDef
 		this.shipmentTable = shipmentTable;
 		this.invoiceTable = invoiceTable;
 		this.testContext = testContext;
-	}
-
-	@And("enable sys config {string}")
-	public void enable_sys_config(@NonNull final String sysConfigName)
-	{
-		sysConfigBL.setValue(sysConfigName, true, ClientId.SYSTEM, StepDefConstants.ORG_ID_SYSTEM);
 	}
 
 	@Then("process metasfresh response")
@@ -173,14 +162,17 @@ public class C_OLCand_StepDef
 				.list();
 
 		assertThat(shipments).isNotNull();
-
+		
+		final List<String> identifiers = splitIdentifiers(shipmentIdentifier);
+		assertThat(identifiers).hasSameSizeAs(shipments);
+		
 		if (shipments.size() > 1)
 		{
-			final List<String> identifiers = splitIdentifiers(shipmentIdentifier);
-
 			for (int index = 0; index < shipments.size(); index++)
 			{
-				shipmentTable.putOrReplace(identifiers.get(index), shipments.get(index));
+				final String identifier = identifiers.get(index);
+				final I_M_InOut record = shipments.get(index);
+				shipmentTable.putOrReplace(identifier, record);
 			}
 		}
 		else

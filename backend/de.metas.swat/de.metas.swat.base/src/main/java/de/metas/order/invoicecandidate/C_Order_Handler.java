@@ -53,15 +53,15 @@ import de.metas.util.Services;
 public class C_Order_Handler extends AbstractInvoiceCandidateHandler
 {
 	@Override
-	public boolean isCreateMissingCandidatesAutomatically()
+	public CandidatesAutoCreateMode getCandidatesAutoCreateMode()
 	{
-		return true;
+		return CandidatesAutoCreateMode.CREATE_CANDIDATES;
 	}
 
 	@Override
-	public boolean isCreateMissingCandidatesAutomatically(final Object model)
+	public CandidatesAutoCreateMode getCandidatesAutoCreateMode(final Object model)
 	{
-		return true;
+		return CandidatesAutoCreateMode.CREATE_CANDIDATES;
 	}
 
 	/**
