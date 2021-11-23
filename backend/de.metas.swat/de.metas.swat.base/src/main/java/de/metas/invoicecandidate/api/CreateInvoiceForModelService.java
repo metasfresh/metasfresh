@@ -32,7 +32,6 @@ import de.metas.invoicecandidate.async.spi.impl.CreateMissingInvoiceCandidatesWo
 import de.metas.process.PInstanceId;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.DB;
@@ -46,21 +45,22 @@ import java.util.function.Supplier;
 import static org.compiere.util.Env.getCtx;
 
 @Service
-public class InvoiceSyncCreationService
+public class CreateInvoiceForModelService
 {
 	private final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
-	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final AsyncBatchService asyncBatchService;
 
-	public InvoiceSyncCreationService(
+	public CreateInvoiceForModelService(
 			@NonNull final AsyncBatchService asyncBatchService)
 	{
 		this.asyncBatchService = asyncBatchService;
 	}
 
 	/**
+	 * Uses the Async-framework to create invoice candidates for the given model. Waits until those candidates are created and then enqueues them for invoicing.
+	 *
 	 * @param modelReference the model for which the invoice cnadidates and subsequently invoices shall be created.
 	 *                       It is expected that the model already references an AsyncBatch_ID.
 	 */

@@ -2,7 +2,7 @@ package de.metas.invoicecandidate.modelvalidator;
 
 import com.google.common.base.MoreObjects;
 import de.metas.document.engine.IDocumentBL;
-import de.metas.invoicecandidate.api.InvoiceSyncCreationService;
+import de.metas.invoicecandidate.api.CreateInvoiceForModelService;
 import de.metas.invoicecandidate.async.spi.impl.CreateMissingInvoiceCandidatesWorkpackageProcessor;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.CandidatesAutoCreateMode;
 import de.metas.util.Check;
@@ -57,7 +57,7 @@ final class ILHandlerModelInterceptor extends AbstractModelInterceptor
 	private final boolean isDocument;
 	private final CandidatesAutoCreateMode candidatesAutoCreateMode;
 	private final DocTimingType createInvoiceCandidatesTiming;
-	private final InvoiceSyncCreationService invoiceSyncCreationService = SpringContextHolder.instance.getBean(InvoiceSyncCreationService.class);
+	private final CreateInvoiceForModelService invoiceSyncCreationService = SpringContextHolder.instance.getBean(CreateInvoiceForModelService.class);
 
 	private ILHandlerModelInterceptor(@NonNull final Builder builder)
 	{
