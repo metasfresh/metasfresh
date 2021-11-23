@@ -1363,7 +1363,8 @@ public class InterfaceWrapperHelper
 	/**
 	 * <b>IMPORTANT:</b> Please consider using {@link org.adempiere.ad.persistence.ModelDynAttributeAccessor} instead if this method. It's typesafe.
 	 */
-	public static <T> T getDynAttribute(final Object model, final String attributeName)
+	@Nullable
+	public static <T> T getDynAttribute(@NonNull final Object model, @NonNull final String attributeName)
 	{
 		return helpers.getDynAttribute(model, attributeName);
 	}

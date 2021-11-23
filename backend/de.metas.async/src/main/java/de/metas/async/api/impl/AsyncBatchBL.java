@@ -26,7 +26,6 @@ package de.metas.async.api.impl;
 
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.async.AsyncBatchId;
-import de.metas.async.Async_Constants;
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.api.IAsyncBatchBuilder;
 import de.metas.async.api.IAsyncBatchDAO;
@@ -49,9 +48,7 @@ import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
-import org.adempiere.util.lang.Mutable;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -67,6 +64,8 @@ import static org.compiere.util.Env.getCtx;
 
 public class AsyncBatchBL implements IAsyncBatchBL
 {
+	private static final String DYN_ATTR_TEMPORARY_BATCH_ID = "TemporaryBatchId";
+
 	// services
 	private final IAsyncBatchDAO asyncBatchDAO = Services.get(IAsyncBatchDAO.class);
 	private final IWorkPackageQueueFactory workPackageQueueFactory = Services.get(IWorkPackageQueueFactory.class);
@@ -327,7 +326,7 @@ public class AsyncBatchBL implements IAsyncBatchBL
 	}
 
 	/**
-	 * assumes that asyncBatch.isProcessed() was already set with the help of #checkProcessed 
+	 * assumes that asyncBatch.isProcessed() was already set with the help of #checkProcessed
 	 */
 	private boolean checkProcessing(@NonNull final I_C_Async_Batch asyncBatch)
 	{
@@ -417,25 +416,52 @@ public class AsyncBatchBL implements IAsyncBatchBL
 	}
 
 	@NonNull
-	public Optional<AsyncBatchId> getAsyncBatchId(@Nullable final Object model)
+	public Optional<AsyncBatchId> getAsyncBatchId(@Nullable final Object modelRecord)
 	{
-		if (model == null)
+		if (modelRecord == null)
 		{
 			return Optional.empty();
 		}
 
-		if (!InterfaceWrapperHelper.isModelInterface(model.getClass()))
+		if (!InterfaceWrapperHelper.isModelInterface(modelRecord.getClass()))
 		{
 			return Optional.empty();
 		}
 
-		final Optional<Integer> asyncBatchId = InterfaceWrapperHelper.getValueOptional(model, I_C_Async_Batch.COLUMNNAME_C_Async_Batch_ID);
+		final AsyncBatchId temporaryBatchId = InterfaceWrapperHelper.getDynAttribute(modelRecord, DYN_ATTR_TEMPORARY_BATCH_ID);
+		if (temporaryBatchId != null)
+		{
+			return Optional.of(temporaryBatchId);
+		}
 
+		final Optional<Integer> asyncBatchId = InterfaceWrapperHelper.getValueOptional(modelRecord, I_C_Async_Batch.COLUMNNAME_C_Async_Batch_ID);
 		return asyncBatchId.map(AsyncBatchId::ofRepoIdOrNull);
 	}
 
 	@Override
-	public @NonNull <T> ImmutablePair<AsyncBatchId, T> assignAsyncBatchToContractIfMissing(
+	public @NonNull <T> ImmutablePair<AsyncBatchId, T> assignPermAsyncBatchToModelIfMissing(
+			@NonNull final T modelRecord,
+			@NonNull final String asyncBatchInternalName)
+	{
+		final Optional<AsyncBatchId> asyncBatchId = getAsyncBatchId(modelRecord);
+		if (asyncBatchId.isPresent())
+		{
+			return ImmutablePair.of(asyncBatchId.get(), modelRecord);
+		}
+
+		return trxManager.callInNewTrx(() -> {
+
+			final AsyncBatchId newAsyncBatchId = newAsyncBatch(asyncBatchInternalName);
+			InterfaceWrapperHelper.setValue(modelRecord, I_C_Async_Batch.COLUMNNAME_C_Async_Batch_ID, newAsyncBatchId.getRepoId());
+
+			InterfaceWrapperHelper.save(modelRecord);
+
+			return ImmutablePair.of(newAsyncBatchId, modelRecord);
+		});
+	}
+
+	@Override
+	public @NonNull <T> ImmutablePair<AsyncBatchId, T> assignTempAsyncBatchToModelIfMissing(
 			@NonNull final T model,
 			@NonNull final String asyncBatchInternalName)
 	{
@@ -445,14 +471,12 @@ public class AsyncBatchBL implements IAsyncBatchBL
 			return ImmutablePair.of(asyncBatchId.get(), model);
 		}
 
-			final AsyncBatchId currentAsyncBatchId = newAsyncBatch(asyncBatchInternalName);
-			InterfaceWrapperHelper.setValue(model, I_C_Async_Batch.COLUMNNAME_C_Async_Batch_ID, currentAsyncBatchId.getRepoId());
+		final AsyncBatchId newAsyncBatchId = newAsyncBatch(asyncBatchInternalName);
+		InterfaceWrapperHelper.setDynAttribute(model, DYN_ATTR_TEMPORARY_BATCH_ID, newAsyncBatchId);
 
-		InterfaceWrapperHelper.save(model);
-
-		return ImmutablePair.of(currentAsyncBatchId, model);
+		return ImmutablePair.of(newAsyncBatchId, model);
 	}
-		
+
 	public I_C_Async_Batch getAsyncBatchById(@NonNull final AsyncBatchId asyncBatchId)
 	{
 		return asyncBatchDAO.retrieveAsyncBatchRecord(asyncBatchId);

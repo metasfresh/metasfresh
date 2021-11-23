@@ -84,12 +84,27 @@ public interface IAsyncBatchBL extends ISingletonService
 	 */
 	void markWorkpackageNotified(I_C_Queue_WorkPackage_Notified workpackageNotified);
 
-	Optional<AsyncBatchId> getAsyncBatchId(Object model);
+	/**
+	 * @return the async batch id that is associated with the given modelRecord, either via record-(DB-)column or via dynamic attrribute.
+	 */
+	Optional<AsyncBatchId> getAsyncBatchId(Object modelRecord);
 
 	/**
+	 * Creates a new C_Async_Batch and sets the given modelRecord's column to reference it.
+	 * 
 	 * @param asyncBatchInternalName see {@link Async_Constants}
 	 */
-	@NonNull <T> ImmutablePair<AsyncBatchId, T> assignAsyncBatchToContractIfMissing(
+	@NonNull <T> ImmutablePair<AsyncBatchId, T> assignPermAsyncBatchToModelIfMissing(
+			@NonNull T modelRecord,
+			@NonNull String asyncBatchInternalName);
+
+	/**
+	 * Creates a new C_Async_Batch and sets a temporary dynamic attribute for the given modelRecord to reference it.
+	 * 
+	 * @param asyncBatchInternalName see {@link Async_Constants}
+	 * @see org.adempiere.model.InterfaceWrapperHelper#setDynAttribute(Object, String, Object).
+	 */
+	@NonNull <T> ImmutablePair<AsyncBatchId, T> assignTempAsyncBatchToModelIfMissing(
 			@NonNull T model,
 			@NonNull String asyncBatchInternalName);
 

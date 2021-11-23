@@ -80,10 +80,9 @@ public class AsyncBatchService
 
 		final int workPackagesFinalized = workPackagesProcessedCount + workPackagesWithErrorCount;
 
-		Loggables.withLogger(logger, Level.INFO).addLog("*** processAsyncBatch for: asyncBatchID: " + asyncBatch.getC_Async_Batch_ID() +
-																" allWPSize: " + workPackages.size() +
-																" processedWPSize: " + workPackagesProcessedCount +
-																" erroredWPSize: " + workPackagesWithErrorCount);
+		Loggables.withLogger(logger, Level.INFO)
+				.addLog("AsyncBatchService.checkProcessed for C_Async_Batch_ID={}: allWPSize: {}, processedWPSize: {}, erroredWPSize: {}",
+						asyncBatch.getC_Async_Batch_ID(), workPackages.size(), workPackagesProcessedCount, workPackagesWithErrorCount);
 
 		if (workPackagesFinalized >= workPackages.size())
 		{

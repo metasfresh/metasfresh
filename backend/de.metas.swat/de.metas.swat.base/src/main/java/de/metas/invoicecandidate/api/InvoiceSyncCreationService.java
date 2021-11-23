@@ -23,66 +23,85 @@
 package de.metas.invoicecandidate.api;
 
 import de.metas.async.AsyncBatchId;
+import de.metas.async.Async_Constants;
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.service.AsyncBatchService;
-import de.metas.invoice.InvoiceId;
-import de.metas.invoice.InvoiceService;
 import de.metas.invoicecandidate.InvoiceCandidateId;
+import de.metas.invoicecandidate.api.impl.PlainInvoicingParams;
 import de.metas.invoicecandidate.async.spi.impl.CreateMissingInvoiceCandidatesWorkpackageProcessor;
+import de.metas.process.PInstanceId;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.util.DB;
+import org.compiere.util.Trx;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.Set;
 import java.util.function.Supplier;
+
+import static org.compiere.util.Env.getCtx;
 
 @Service
 public class InvoiceSyncCreationService
 {
 	private final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final AsyncBatchService asyncBatchService;
-	private final InvoiceService invoiceService;
 
 	public InvoiceSyncCreationService(
-			@NonNull final AsyncBatchService asyncBatchService,
-			@NonNull final InvoiceService invoiceService)
+			@NonNull final AsyncBatchService asyncBatchService)
 	{
 		this.asyncBatchService = asyncBatchService;
-		this.invoiceService = invoiceService;
 	}
 
 	/**
 	 * @param modelReference the model for which the invoice cnadidates and subsequently invoices shall be created.
-	 *                       It is expected taht the model already references an AsyncBatch_ID.
+	 *                       It is expected that the model already references an AsyncBatch_ID.
 	 */
-	@NonNull
-	public Set<InvoiceId> generateIcsAndInvoices(@NonNull final TableRecordReference modelReference)
+	public void generateIcsAndInvoices(@NonNull final TableRecordReference modelReference)
 	{
-		generateMissingInvoiceCandidatesFromContract(modelReference);
+		generateMissingInvoiceCandidatesForModel(modelReference);
 
 		final Set<InvoiceCandidateId> invoiceCandidateIds = invoiceCandDAO.retrieveReferencingIds(modelReference);
 
-		return invoiceService.generateInvoicesFromInvoiceCandidateIds(invoiceCandidateIds);
+		final PInstanceId invoiceCandidatesSelectionId = DB.createT_Selection(invoiceCandidateIds, Trx.TRXNAME_None);
+		invoiceCandBL.enqueueForInvoicing()
+				.setContext(getCtx())
+				.setInvoicingParams(createDefaultIInvoicingParams())
+				.setFailIfNothingEnqueued(true)
+				.enqueueSelection(invoiceCandidatesSelectionId);
 	}
 
-	private void generateMissingInvoiceCandidatesFromContract(@NonNull final TableRecordReference modelReference)
+	private void generateMissingInvoiceCandidatesForModel(@NonNull final TableRecordReference modelReference)
 	{
 		final Object model = modelReference.getModel(Object.class);
-		final AsyncBatchId asyncBatchId = asyncBatchBL
-				.getAsyncBatchId(model)
-				.orElseThrow(() -> new AdempiereException("The given model need to already have an async batch id at this point")
-						.appendParametersToMessage()
-						.setParameter("model", model));
+
+		final ImmutablePair<AsyncBatchId, Object> batchIdWithUpdatedModel = asyncBatchBL
+				.assignTempAsyncBatchToModelIfMissing(model, Async_Constants.C_Async_Batch_InternalName_EnqueueInvoiceCandidateCreation);
 
 		final Supplier<Void> action = () -> {
-			CreateMissingInvoiceCandidatesWorkpackageProcessor.schedule(model);
+			CreateMissingInvoiceCandidatesWorkpackageProcessor.schedule(batchIdWithUpdatedModel.getRight());
 			return null;
 		};
 
-		asyncBatchService.executeBatch(action, asyncBatchId);
+		asyncBatchService.executeBatch(action, batchIdWithUpdatedModel.getLeft());
+	}
+
+	@NonNull
+	private IInvoicingParams createDefaultIInvoicingParams()
+	{
+		final PlainInvoicingParams invoicingParams = new PlainInvoicingParams();
+		invoicingParams.setIgnoreInvoiceSchedule(false);
+		invoicingParams.setSupplementMissingPaymentTermIds(true);
+		invoicingParams.setDateInvoiced(LocalDate.now());
+
+		return invoicingParams;
 	}
 
 }

@@ -1,8 +1,6 @@
 package de.metas.invoicecandidate.modelvalidator;
 
 import com.google.common.base.MoreObjects;
-import de.metas.async.Async_Constants;
-import de.metas.async.api.IAsyncBatchBL;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.invoicecandidate.api.InvoiceSyncCreationService;
 import de.metas.invoicecandidate.async.spi.impl.CreateMissingInvoiceCandidatesWorkpackageProcessor;
@@ -48,10 +46,8 @@ import org.compiere.model.I_AD_Client;
  */
 final class ILHandlerModelInterceptor extends AbstractModelInterceptor
 {
-
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
-	private final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
-
+	
 	public static Builder builder()
 	{
 		return new Builder();
@@ -99,7 +95,7 @@ final class ILHandlerModelInterceptor extends AbstractModelInterceptor
 	}
 
 	@Override
-	public void onDocValidate(final Object model, final DocTimingType timing)
+	public void onDocValidate(@NonNull final Object model, @NonNull final DocTimingType timing)
 	{
 		Check.assume(isDocument, "isDocument flag is set"); // shall not happen
 
@@ -112,7 +108,7 @@ final class ILHandlerModelInterceptor extends AbstractModelInterceptor
 	}
 
 	@Override
-	public void onModelChange(final Object model, final ModelChangeType changeType)
+	public void onModelChange(@NonNull final Object model, @NonNull final ModelChangeType changeType)
 	{
 		//
 		// Create missing invoice candidates for given pseudo-document
@@ -142,14 +138,9 @@ final class ILHandlerModelInterceptor extends AbstractModelInterceptor
 
 	private void generateIcsAndInvoices(@NonNull final Object model)
 	{
-		asyncBatchBL.assignAsyncBatchToContractIfMissing(model, Async_Constants.C_Async_Batch_InternalName_EnqueueInvoiceCandidateCreation);
 		final TableRecordReference modelReference = TableRecordReference.of(model);
-		
-		trxManager.runAfterCommit(() ->
-										  trxManager.runInNewTrx(() ->
-																		 invoiceSyncCreationService.generateIcsAndInvoices(modelReference)));
 
-		;
+		trxManager.runAfterCommit(() -> trxManager.runInNewTrx(() -> invoiceSyncCreationService.generateIcsAndInvoices(modelReference)));
 	}
 
 	/**

@@ -65,7 +65,7 @@ public class CreateMissingInvoiceCandidatesWorkpackageProcessor extends Workpack
 	 * <p>
 	 * NOTE: the workpackages are not created right away, but the models are collected per database transaction and a workpackage is enqueued when the transaction is committed.
 	 */
-	public static void schedule(final Object model)
+	public static void schedule(@NonNull final Object model)
 	{
 		SCHEDULER.schedule(model);
 	}
@@ -120,8 +120,6 @@ public class CreateMissingInvoiceCandidatesWorkpackageProcessor extends Workpack
 			final Properties ctx = extractCtxFromItem(model);
 			return Env.getLoggedUserIdIfExists(ctx).orElse(null);
 		}
-
-		;
 
 		@Override
 		public Optional<AsyncBatchId> extractAsyncBatchFromItem(final WorkpackagesOnCommitSchedulerTemplate<Object>.Collector collector, final Object item)

@@ -154,7 +154,7 @@ public interface IWorkPackageBuilder
 	 * <p>
 	 * If the transaction is null, the workpackage will be marked as ready immediately, on build.
 	 */
-	IWorkPackageBuilder bindToTrxName(String trxName);
+	IWorkPackageBuilder bindToTrxName(@Nullable String trxName);
 
 	/**
 	 * Ask the builder to "bind" the new workpackage to current thread inerited transaction.

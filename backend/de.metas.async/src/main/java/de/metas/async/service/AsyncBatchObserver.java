@@ -33,6 +33,7 @@ import de.metas.logging.LogManager;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 import org.slf4j.Logger;
@@ -58,7 +59,7 @@ public class AsyncBatchObserver implements AsyncBatchNotifyRequestHandler
 	private final Map<AsyncBatchId, CompletableFuture<Void>> asyncBatch2Completion = new ConcurrentHashMap<>();
 
 	@Override
-	public void handleRequest(final AsyncBatchNotifyRequest request)
+	public void handleRequest(@NonNull final AsyncBatchNotifyRequest request)
 	{
 		Loggables.withLogger(logger, Level.INFO).addLog("Batch notified as finished; AsyncBatchId: {}", request.getAsyncBatchId());
 
@@ -99,7 +100,7 @@ public class AsyncBatchObserver implements AsyncBatchNotifyRequestHandler
 		{
 			final I_C_Async_Batch asyncBatch = asyncBatchDAO.retrieveAsyncBatchRecord(id);
 
-			final List<I_C_Queue_WorkPackage> workPackages = asyncBatchDAO.retrieveWorkPackages(asyncBatch, null);
+			final List<I_C_Queue_WorkPackage> workPackages = asyncBatchDAO.retrieveWorkPackages(asyncBatch, ITrx.TRXNAME_None);
 
 			if (workPackages.isEmpty())
 			{
@@ -150,7 +151,7 @@ public class AsyncBatchObserver implements AsyncBatchNotifyRequestHandler
 		}
 		else
 		{
-			asyncBatch2Completion.get(id).completeExceptionally(new AdempiereException("Workpackage completed exceptionally")
+			asyncBatch2Completion.get(id).completeExceptionally(new AdempiereException("A Workpackage completed with an exception")
 																		.appendParametersToMessage()
 																		.setParameter("AsyncBatchId" , id.getRepoId()));
 		}
