@@ -52,7 +52,7 @@ import java.util.List;
 public class PPOrderChangedEventHandler implements MaterialEventHandler<PPOrderChangedEvent>
 {
 	private final MainDataRequestHandler dataUpdateRequestHandler;
-	private IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	
 	public PPOrderChangedEventHandler(@NonNull final MainDataRequestHandler dataUpdateRequestHandler)
 	{
@@ -79,13 +79,13 @@ public class PPOrderChangedEventHandler implements MaterialEventHandler<PPOrderC
 		for (final PPOrderLine newPPOrderLine : newPPOrderLines)
 		{
 			final MainDataRecordIdentifier identifier = MainDataRecordIdentifier.builder()
-					.productDescriptor(newPPOrderLine.getProductDescriptor())
-					.date(TimeUtil.getDay(newPPOrderLine.getIssueOrReceiveDate(), timeZone))
+					.productDescriptor(newPPOrderLine.getPpOrderLineData().getProductDescriptor())
+					.date(TimeUtil.getDay(newPPOrderLine.getPpOrderLineData().getIssueOrReceiveDate(), timeZone))
 					.build();
 
 			final BigDecimal qtyRequiredForProduction = //
-					newPPOrderLine.getQtyRequired()
-							.subtract(newPPOrderLine.getQtyDelivered());
+					newPPOrderLine.getPpOrderLineData().getQtyRequired()
+							.subtract(newPPOrderLine.getPpOrderLineData().getQtyDelivered());
 
 			final UpdateMainDataRequest request = UpdateMainDataRequest.builder()
 					.identifier(identifier)
@@ -142,12 +142,12 @@ public class PPOrderChangedEventHandler implements MaterialEventHandler<PPOrderC
 		final ZoneId orgZoneId = orgDAO.getTimeZone(ppOrderChangedEvent.getEventDescriptor().getOrgId());
 
 		final MainDataRecordIdentifier mainDataRecordIdentifier = MainDataRecordIdentifier.builder()
-				.productDescriptor(ppOrderChangedEvent.getPpOrderAfterChanges().getProductDescriptor())
-				.date(TimeUtil.getDay(ppOrderChangedEvent.getPpOrderAfterChanges().getDatePromised(), orgZoneId))
-				.warehouseId(ppOrderChangedEvent.getPpOrderAfterChanges().getWarehouseId())
+				.productDescriptor(ppOrderChangedEvent.getPpOrderAfterChanges().getPpOrderData().getProductDescriptor())
+				.date(TimeUtil.getDay(ppOrderChangedEvent.getPpOrderAfterChanges().getPpOrderData().getDatePromised(), orgZoneId))
+				.warehouseId(ppOrderChangedEvent.getPpOrderAfterChanges().getPpOrderData().getWarehouseId())
 				.build();
 
-		final BigDecimal newQtyOpen = ppOrderChangedEvent.getPpOrderAfterChanges().getQtyOpen();
+		final BigDecimal newQtyOpen = ppOrderChangedEvent.getPpOrderAfterChanges().getPpOrderData().getQtyOpen();
 		final BigDecimal oldQtyOpen = ppOrderChangedEvent.getOldQtyRequired().subtract(ppOrderChangedEvent.getOldQtyDelivered());
 
 		final UpdateMainDataRequest updateMainDataRequest = UpdateMainDataRequest.builder()

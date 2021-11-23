@@ -46,6 +46,7 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.util.TimeUtil;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -104,6 +105,13 @@ public class C_Order_StepDef
 			order.setIsSOTrx(DataTableUtil.extractBooleanForColumnName(tableRow, I_C_Order.COLUMNNAME_IsSOTrx));
 			order.setDateOrdered(DataTableUtil.extractDateTimestampForColumnName(tableRow, I_C_Order.COLUMNNAME_DateOrdered));
 
+			final String prepartionDate = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_PreparationDate);
+			if (prepartionDate != null)
+			{
+				order.setPreparationDate(TimeUtil.parseTimestamp(prepartionDate));
+				order.setDatePromised(TimeUtil.parseTimestamp(prepartionDate));
+			}
+
 			if (EmptyUtil.isNotBlank(poReference))
 			{
 				order.setPOReference(poReference);
@@ -116,7 +124,7 @@ public class C_Order_StepDef
 
 			saveRecord(order);
 
-			orderTable.put(DataTableUtil.extractRecordIdentifier(tableRow, I_C_Order.COLUMNNAME_C_Order_ID), order);
+			orderTable.putOrReplace(DataTableUtil.extractRecordIdentifier(tableRow, I_C_Order.COLUMNNAME_C_Order_ID), order);
 		}
 	}
 

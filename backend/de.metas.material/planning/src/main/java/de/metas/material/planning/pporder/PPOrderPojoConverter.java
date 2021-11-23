@@ -1,27 +1,14 @@
 package de.metas.material.planning.pporder;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.compiere.util.TimeUtil.asInstant;
-
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
-import org.adempiere.warehouse.WarehouseId;
-import org.eevolution.api.BOMComponentType;
-import org.eevolution.model.I_PP_Order;
-import org.eevolution.model.I_PP_Order_BOMLine;
-import org.springframework.stereotype.Service;
-
 import com.google.common.annotations.VisibleForTesting;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.engine.DocStatus;
 import de.metas.material.event.ModelProductDescriptorExtractor;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.material.event.pporder.PPOrder;
+import de.metas.material.event.pporder.PPOrderData;
 import de.metas.material.event.pporder.PPOrderLine;
+import de.metas.material.event.pporder.PPOrderLineData;
 import de.metas.material.replenish.ReplenishInfo;
 import de.metas.material.replenish.ReplenishInfoRepository;
 import de.metas.organization.ClientAndOrgId;
@@ -32,8 +19,20 @@ import de.metas.uom.IUOMConversionBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
+import org.adempiere.warehouse.WarehouseId;
+import org.eevolution.api.BOMComponentType;
+import org.eevolution.model.I_PP_Order;
+import org.eevolution.model.I_PP_Order_BOMLine;
+import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.compiere.util.TimeUtil.asInstant;
 
 /*
  * #%L
@@ -92,23 +91,23 @@ public class PPOrderPojoConverter
 		final Quantity qtyDelivered = uomConversionBL.convertToProductUOM(qtys.getQtyReceived(), productId);
 
 		return PPOrder.builder()
-				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(ppOrderRecord.getAD_Client_ID(), ppOrderRecord.getAD_Org_ID()))
-				.datePromised(asInstant(ppOrderRecord.getDatePromised()))
-				.dateStartSchedule(asInstant(ppOrderRecord.getDateStartSchedule()))
-				.docStatus(DocStatus.ofCode(ppOrderRecord.getDocStatus()))
-				.plantId(ResourceId.ofRepoId(ppOrderRecord.getS_Resource_ID()))
-				.ppOrderId(ppOrderRecord.getPP_Order_ID())
-				.productDescriptor(productDescriptorFactory.createProductDescriptor(ppOrderRecord))
-				.productPlanningId(ppOrderRecord.getPP_Product_Planning_ID())
-				.qtyRequired(qtyRequired.toBigDecimal())
-				.qtyDelivered(qtyDelivered.toBigDecimal())
-				.warehouseId(WarehouseId.ofRepoId(ppOrderRecord.getM_Warehouse_ID()))
-				.bpartnerId(BPartnerId.ofRepoIdOrNull(ppOrderRecord.getC_BPartner_ID()))
-				.orderLineId(ppOrderRecord.getC_OrderLine_ID())
-				.materialDispoGroupId(getMaterialDispoGroupIdOrNull(ppOrderRecord))
-				//
+				.ppOrderData(PPOrderData.builder()
+									 .clientAndOrgId(ClientAndOrgId.ofClientAndOrg(ppOrderRecord.getAD_Client_ID(), ppOrderRecord.getAD_Org_ID()))
+									 .datePromised(asInstant(ppOrderRecord.getDatePromised()))
+									 .dateStartSchedule(asInstant(ppOrderRecord.getDateStartSchedule()))
+									 .plantId(ResourceId.ofRepoId(ppOrderRecord.getS_Resource_ID()))
+									 .productDescriptor(productDescriptorFactory.createProductDescriptor(ppOrderRecord))
+									 .productPlanningId(ppOrderRecord.getPP_Product_Planning_ID())
+									 .qtyRequired(qtyRequired.toBigDecimal())
+									 .qtyDelivered(qtyDelivered.toBigDecimal())
+									 .warehouseId(WarehouseId.ofRepoId(ppOrderRecord.getM_Warehouse_ID()))
+									 .bpartnerId(BPartnerId.ofRepoIdOrNull(ppOrderRecord.getC_BPartner_ID()))
+									 .orderLineId(ppOrderRecord.getC_OrderLine_ID())
+									 .materialDispoGroupId(getMaterialDispoGroupIdOrNull(ppOrderRecord))
+									 .build())
 				.lines(toPPOrderLinesList(ppOrderRecord))
-				//
+				.docStatus(DocStatus.ofCode(ppOrderRecord.getDocStatus()))
+				.ppOrderId(ppOrderRecord.getPP_Order_ID())
 				.build();
 	}
 
@@ -142,15 +141,17 @@ public class PPOrderPojoConverter
 				ProductId.ofRepoId(ppOrderLineRecord.getM_Product_ID()));
 
 		return PPOrderLine.builder()
-				.productDescriptor(productDescriptorFactory.createProductDescriptor(ppOrderLineRecord))
-				.description(ppOrderLineRecord.getDescription())
+				.ppOrderLineData(PPOrderLineData.builder()
+										 .productDescriptor(productDescriptorFactory.createProductDescriptor(ppOrderLineRecord))
+										 .description(ppOrderLineRecord.getDescription())
+										 .productBomLineId(ppOrderLineRecord.getPP_Product_BOMLine_ID())
+										 .qtyRequired(qtyRequiredInStockingUOM.toBigDecimal())
+										 .qtyDelivered(qtyDeliveredInStockingUOM.toBigDecimal())
+										 .issueOrReceiveDate(issueOrReceiveDate)
+										 .receipt(receipt)
+										 .minMaxDescriptor(replenishInfo.toMinMaxDescriptor())
+										 .build())
 				.ppOrderLineId(ppOrderLineRecord.getPP_Order_BOMLine_ID())
-				.productBomLineId(ppOrderLineRecord.getPP_Product_BOMLine_ID())
-				.qtyRequired(qtyRequiredInStockingUOM.toBigDecimal())
-				.qtyDelivered(qtyDeliveredInStockingUOM.toBigDecimal())
-				.issueOrReceiveDate(issueOrReceiveDate)
-				.receipt(receipt)
-				.minMaxDescriptor(replenishInfo.toMinMaxDescriptor())
 				.build();
 	}
 

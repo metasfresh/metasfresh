@@ -15,6 +15,7 @@ import de.metas.material.event.eventbus.MaterialEventConverter;
 import de.metas.material.event.eventbus.MetasfreshEventBusService;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.material.event.pporder.PPOrder;
+import de.metas.material.event.pporder.PPOrderData;
 import de.metas.material.event.pporder.PPOrderRequestedEvent;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.material.planning.pporder.PPOrderPojoConverter;
@@ -207,17 +208,19 @@ public class PPOrderRequestedEventHandlerTests
 				bomMainProduct.getM_AttributeSetInstance_ID());
 
 		ppOrderPojo = PPOrder.builder()
-				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(adClientId, orgId))
-				.materialDispoGroupId(PPORDER_POJO_GROUPID)
-				.datePromised(de.metas.common.util.time.SystemTime.asInstant())
-				.dateStartSchedule(de.metas.common.util.time.SystemTime.asInstant())
-				.plantId(ResourceId.ofRepoId(110))
-				.orderLineId(orderLine.getC_OrderLine_ID())
-				.productDescriptor(productDescriptor)
-				.productPlanningId(productPlanning.getPP_Product_Planning_ID())
-				.qtyRequired(TEN)
-				.qtyDelivered(ONE)
-				.warehouseId(WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID()))
+				.ppOrderData(PPOrderData.builder()
+									 .clientAndOrgId(ClientAndOrgId.ofClientAndOrg(adClientId, orgId))
+									 .materialDispoGroupId(PPORDER_POJO_GROUPID)
+									 .datePromised(SystemTime.asInstant())
+									 .dateStartSchedule(SystemTime.asInstant())
+									 .plantId(ResourceId.ofRepoId(110))
+									 .orderLineId(orderLine.getC_OrderLine_ID())
+									 .productDescriptor(productDescriptor)
+									 .productPlanningId(productPlanning.getPP_Product_Planning_ID())
+									 .qtyRequired(TEN)
+									 .qtyDelivered(ONE)
+									 .warehouseId(WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID()))
+									 .build())
 				.build();
 
 		ppOrderRequestedEventHandler = new PPOrderRequestedEventHandler();

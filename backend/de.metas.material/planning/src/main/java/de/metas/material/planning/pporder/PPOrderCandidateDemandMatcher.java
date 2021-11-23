@@ -1,19 +1,8 @@
-package de.metas.material.planning.pporder;
-
-import de.metas.material.planning.IMaterialDemandMatcher;
-import de.metas.material.planning.IMaterialPlanningContext;
-import de.metas.util.Loggables;
-import de.metas.util.StringUtils;
-import lombok.NonNull;
-import org.compiere.model.I_M_Product;
-import org.eevolution.model.I_PP_Product_Planning;
-import org.springframework.stereotype.Service;
-
 /*
  * #%L
- * metasfresh-mrp
+ * metasfresh-material-planning
  * %%
- * Copyright (C) 2017 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -30,13 +19,20 @@ import org.springframework.stereotype.Service;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-/**
- * This implementation figures out if a particular demand could be matched by a PPOrder.
- * The business logic of the {@link #matches(IMaterialPlanningContext)} method is coming from
- * <code>/de.metas.adempiere.libero.libero/src/main/java/org/eevolution/mrp/spi/impl/PPOrderMRPSupplyProducer.java</code>
- */
+
+package de.metas.material.planning.pporder;
+
+import de.metas.material.planning.IMaterialDemandMatcher;
+import de.metas.material.planning.IMaterialPlanningContext;
+import de.metas.util.Loggables;
+import de.metas.util.StringUtils;
+import lombok.NonNull;
+import org.compiere.model.I_M_Product;
+import org.eevolution.model.I_PP_Product_Planning;
+import org.springframework.stereotype.Service;
+
 @Service
-public class PPOrderDemandMatcher implements IMaterialDemandMatcher
+public class PPOrderCandidateDemandMatcher implements IMaterialDemandMatcher
 {
 	@Override
 	public boolean matches(@NonNull final IMaterialPlanningContext mrpContext)
@@ -52,7 +48,7 @@ public class PPOrderDemandMatcher implements IMaterialDemandMatcher
 
 		final I_M_Product product = mrpContext.getM_Product();
 		Loggables.addLog(
-				"Product {}_{} is not set to be manufactured; PPOrderDemandMatcher returns false; productPlanning={}; product={}",
+				"Product {}_{} is not set to be manufactured; PPOrderCandidateDemandMatcher returns false; productPlanning={}; product={}",
 				product.getValue(), product.getName(), productPlanning, product);
 		return false;
 	}

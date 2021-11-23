@@ -61,7 +61,7 @@ public class PPOrderUtil
 	{
 		final IProductBOMBL bomsService = Services.get(IProductBOMBL.class);
 
-		final ProductId finishedGoodProductId = ProductId.ofRepoId(ppOrderPojo.getProductDescriptor().getProductId());
+		final ProductId finishedGoodProductId = ProductId.ofRepoId(ppOrderPojo.getPpOrderData().getProductDescriptor().getProductId());
 		final I_PP_Product_BOMLine bomLine = getProductBomLine(ppOrderLinePojo);
 		return bomsService.computeQtyRequired(bomLine, finishedGoodProductId, qtyFinishedGood);
 	}
@@ -132,7 +132,7 @@ public class PPOrderUtil
 
 	public I_PP_Product_BOMLine getProductBomLine(@NonNull final PPOrderLine ppOrderLinePojo)
 	{
-		return InterfaceWrapperHelper.create(Env.getCtx(), ppOrderLinePojo.getProductBomLineId(), I_PP_Product_BOMLine.class, ITrx.TRXNAME_None);
+		return InterfaceWrapperHelper.create(Env.getCtx(), ppOrderLinePojo.getPpOrderLineData().getProductBomLineId(), I_PP_Product_BOMLine.class, ITrx.TRXNAME_None);
 	}
 
 	/**

@@ -21,7 +21,7 @@ import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.IProductPlanningDAO.ProductPlanningQuery;
 import de.metas.material.planning.ddorder.DDOrderAdvisedEventCreator;
 import de.metas.material.planning.ddorder.DDOrderPojoSupplier;
-import de.metas.material.planning.pporder.PPOrderAdvisedEventCreator;
+import de.metas.material.planning.ppordercandidate.PPOrderCandidateAdvisedEventCreator;
 import de.metas.organization.IOrgDAO;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
@@ -79,18 +79,18 @@ public class SupplyRequiredHandler implements MaterialEventHandler<SupplyRequire
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	private final DDOrderAdvisedEventCreator dDOrderAdvisedEventCreator;
-	private final PPOrderAdvisedEventCreator ppOrderAdvisedEventCreator;
+	private final PPOrderCandidateAdvisedEventCreator ppOrderCandidateAdvisedEventCreator;
 
 	private final PostMaterialEventService postMaterialEventService;
 	private final MainDataRequestHandler mainDataRequestHandler;
 
 	public SupplyRequiredHandler(
 			@NonNull final DDOrderAdvisedEventCreator dDOrderAdvisedEventCreator,
-			@NonNull final PPOrderAdvisedEventCreator ppOrderAdvisedEventCreator,
+			@NonNull final PPOrderCandidateAdvisedEventCreator ppOrderCandidateAdvisedEventCreator,
 			@NonNull final PostMaterialEventService fireMaterialEventService, final MainDataRequestHandler mainDataRequestHandler)
 	{
 		this.dDOrderAdvisedEventCreator = dDOrderAdvisedEventCreator;
-		this.ppOrderAdvisedEventCreator = ppOrderAdvisedEventCreator;
+		this.ppOrderCandidateAdvisedEventCreator = ppOrderCandidateAdvisedEventCreator;
 		this.postMaterialEventService = fireMaterialEventService;
 		this.mainDataRequestHandler = mainDataRequestHandler;
 	}
@@ -123,7 +123,7 @@ public class SupplyRequiredHandler implements MaterialEventHandler<SupplyRequire
 		final List<MaterialEvent> events = new ArrayList<>();
 
 		events.addAll(dDOrderAdvisedEventCreator.createDDOrderAdvisedEvents(descriptor, mrpContext));
-		events.addAll(ppOrderAdvisedEventCreator.createPPOrderAdvisedEvents(descriptor, mrpContext));
+		events.addAll(ppOrderCandidateAdvisedEventCreator.createPPOrderCandidateAdvisedEvents(descriptor, mrpContext));
 
 		events.forEach(postMaterialEventService::postEventNow);
 	}

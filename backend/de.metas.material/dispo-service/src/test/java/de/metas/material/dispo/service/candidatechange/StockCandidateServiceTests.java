@@ -471,7 +471,7 @@ public class StockCandidateServiceTests
 
 		// now "move" t2 => t5
 		final Candidate t2ToT5Candidate = t2SaveResult.getCandidate()
-				.withQuantity(new BigDecimal("6"))
+				.withQuantity(new BigDecimal("3"))
 				.withDate(t5);
 		final SaveResult t2ToT5SaveResult = stockCandidateService.updateQtyAndDate(t2ToT5Candidate);
 

@@ -80,7 +80,7 @@ import static org.assertj.core.api.Assertions.*;
  */
 
 @ExtendWith(AdempiereTestWatcher.class)
-public class PPOrderAdvisedOrCreatedHandlerTests
+public class PPOrderCreatedHandlerTests
 {
 	public static final int rawProduct1Id = 50;
 

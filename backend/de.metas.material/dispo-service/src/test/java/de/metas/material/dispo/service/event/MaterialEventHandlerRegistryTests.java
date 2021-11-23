@@ -24,7 +24,6 @@ import de.metas.material.dispo.service.candidatechange.handler.SupplyCandidateHa
 import de.metas.material.dispo.service.event.handler.ForecastCreatedHandler;
 import de.metas.material.dispo.service.event.handler.TransactionEventHandler;
 import de.metas.material.dispo.service.event.handler.ddorder.DDOrderAdvisedHandler;
-import de.metas.material.dispo.service.event.handler.pporder.PPOrderAdvisedHandler;
 import de.metas.material.dispo.service.event.handler.shipmentschedule.ShipmentScheduleCreatedHandler;
 import de.metas.material.dispo.service.event.handler.shipmentschedule.ShipmentScheduleCreatedHandlerTests;
 import de.metas.material.event.MaterialEvent;
@@ -150,12 +149,6 @@ public class MaterialEventHandlerRegistryTests
 				new DDOrderDetailRequestHandler(),
 				new MainDataRequestHandler());
 
-		final PPOrderAdvisedHandler ppOrderAdvisedHandler = new PPOrderAdvisedHandler(
-				candidateChangeHandler,
-				candidateRepositoryRetrieval,
-				postMaterialEventService,
-				new MainDataRequestHandler());
-
 		final ForecastCreatedHandler forecastCreatedEventHandler = new ForecastCreatedHandler(candidateChangeHandler);
 
 		final TransactionEventHandler transactionEventHandler = new TransactionEventHandler(
@@ -170,7 +163,6 @@ public class MaterialEventHandlerRegistryTests
 		@SuppressWarnings("rawtypes")
 		final Optional<Collection<MaterialEventHandler>> handlers = Optional.of(ImmutableList.of(
 				distributionAdvisedEventHandler,
-				ppOrderAdvisedHandler,
 				forecastCreatedEventHandler,
 				transactionEventHandler,
 				shipmentScheduleEventHandler));
@@ -227,19 +219,19 @@ public class MaterialEventHandlerRegistryTests
 				.toWarehouseId(toWarehouseId)
 				.supplyRequiredDescriptor(supplyRequiredDescriptor)
 				.ddOrder(DDOrder.builder()
-						.orgId(ORG_ID)
-						.plantId(800)
-						.productPlanningId(810)
-						.shipperId(820)
-						.datePromised(shipmentScheduleEventTime)
-						.line(DDOrderLine.builder()
-								.productDescriptor(orderedMaterial)
-								.bPartnerId(orderedMaterial.getCustomerId().getRepoId())
-								.qty(BigDecimal.TEN)
-								.durationDays(0)
-								.networkDistributionLineId(900)
-								.build())
-						.build())
+								 .orgId(ORG_ID)
+								 .plantId(800)
+								 .productPlanningId(810)
+								 .shipperId(820)
+								 .datePromised(shipmentScheduleEventTime)
+								 .line(DDOrderLine.builder()
+											   .productDescriptor(orderedMaterial)
+											   .bPartnerId(orderedMaterial.getCustomerId().getRepoId())
+											   .qty(BigDecimal.TEN)
+											   .durationDays(0)
+											   .networkDistributionLineId(900)
+											   .build())
+								 .build())
 				.build();
 		ddOrderAdvisedEvent.validate();
 

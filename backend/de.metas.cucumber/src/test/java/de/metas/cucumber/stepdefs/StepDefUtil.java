@@ -22,14 +22,16 @@
 
 package de.metas.cucumber.stepdefs;
 
+import lombok.NonNull;
 import lombok.experimental.UtilityClass;
+import org.adempiere.model.InterfaceWrapperHelper;
 
 import java.util.function.Supplier;
 
 @UtilityClass
 public class StepDefUtil
 {
-	public void tryAndWait(final long maxWaitSeconds, final long checkingIntervalMs, final Supplier<Boolean> worker ) throws InterruptedException
+	public boolean tryAndWait(final long maxWaitSeconds, final long checkingIntervalMs, final Supplier<Boolean> worker ) throws InterruptedException
 	{
 		final long nowMillis = System.currentTimeMillis(); // don't use SystemTime.millis(); because it's probably "rigged" for testing purposes,
 		final long deadLineMillis = nowMillis + (maxWaitSeconds * 1000L);
@@ -40,6 +42,22 @@ public class StepDefUtil
 		{
 			Thread.sleep(checkingIntervalMs);
 			conditionIsMet = worker.get();
+		}
+
+		return conditionIsMet;
+	}
+
+	public int extractId(@NonNull final String idOrIdentifier, @NonNull final StepDefData<?> stepDefDataTable)
+	{
+		try
+		{
+			return Integer.parseInt(idOrIdentifier);
+		}
+		catch (final NumberFormatException exception)
+		{
+			final Object model = stepDefDataTable.get(idOrIdentifier);
+
+			return InterfaceWrapperHelper.getId(model);
 		}
 	}
 }

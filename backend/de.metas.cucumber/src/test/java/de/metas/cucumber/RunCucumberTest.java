@@ -28,6 +28,7 @@ import org.junit.runner.RunWith;
 
 @RunWith(Cucumber.class)
 @CucumberOptions(
+		features = "src/test/resources/de/metas/cucumber/features/createProductionOrder.feature",
 		glue = "de.metas.cucumber.stepdefs",
 		tags = "not @ignore",
 		plugin = {

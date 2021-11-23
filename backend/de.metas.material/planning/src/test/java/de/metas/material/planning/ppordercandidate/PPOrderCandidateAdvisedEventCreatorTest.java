@@ -2,7 +2,7 @@
  * #%L
  * metasfresh-material-planning
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.material.planning.pporder;
+package de.metas.material.planning.ppordercandidate;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.business.BusinessTestHelper;
@@ -31,9 +31,9 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
-class PPOrderAdvisedEventCreatorTest
+class PPOrderCandidateAdvisedEventCreatorTest
 {
 	private UomId uomId;
 
@@ -47,7 +47,7 @@ class PPOrderAdvisedEventCreatorTest
 	@Test
 	void createMaterialRequests_1()
 	{
-		final ImmutableList<MaterialRequest> materialRequests = PPOrderAdvisedEventCreator.createMaterialRequests(
+		final ImmutableList<MaterialRequest> materialRequests = PPOrderCandidateAdvisedEventCreator.createMaterialRequests(
 				MaterialRequest.builder()
 						.qtyToSupply(Quantitys.create("31", uomId))
 						.build(),
@@ -62,7 +62,7 @@ class PPOrderAdvisedEventCreatorTest
 	@Test
 	void createMaterialRequests_2()
 	{
-		final ImmutableList<MaterialRequest> materialRequests = PPOrderAdvisedEventCreator.createMaterialRequests(
+		final ImmutableList<MaterialRequest> materialRequests = PPOrderCandidateAdvisedEventCreator.createMaterialRequests(
 				MaterialRequest.builder()
 						.qtyToSupply(Quantitys.create("31", uomId))
 						.build(),
@@ -77,7 +77,7 @@ class PPOrderAdvisedEventCreatorTest
 	@Test
 	void createMaterialRequests_3()
 	{
-		final ImmutableList<MaterialRequest> materialRequests = PPOrderAdvisedEventCreator.createMaterialRequests(
+		final ImmutableList<MaterialRequest> materialRequests = PPOrderCandidateAdvisedEventCreator.createMaterialRequests(
 				MaterialRequest.builder()
 						.qtyToSupply(Quantitys.create("31", uomId))
 						.build(),
@@ -92,7 +92,7 @@ class PPOrderAdvisedEventCreatorTest
 	@Test
 	void createMaterialRequests_4()
 	{
-		final ImmutableList<MaterialRequest> materialRequests = PPOrderAdvisedEventCreator.createMaterialRequests(
+		final ImmutableList<MaterialRequest> materialRequests = PPOrderCandidateAdvisedEventCreator.createMaterialRequests(
 				MaterialRequest.builder()
 						.qtyToSupply(Quantitys.create("31", uomId))
 						.build(),
@@ -107,7 +107,7 @@ class PPOrderAdvisedEventCreatorTest
 	@Test
 	void createMaterialRequests_5()
 	{
-		final ImmutableList<MaterialRequest> materialRequests = PPOrderAdvisedEventCreator.createMaterialRequests(
+		final ImmutableList<MaterialRequest> materialRequests = PPOrderCandidateAdvisedEventCreator.createMaterialRequests(
 				MaterialRequest.builder()
 						.qtyToSupply(Quantitys.create("31", uomId))
 						.build(),

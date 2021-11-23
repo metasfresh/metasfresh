@@ -1,31 +1,8 @@
-package de.metas.material.planning.pporder;
-
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
-import de.metas.material.event.commons.SupplyRequiredDescriptor;
-import de.metas.material.event.pporder.PPOrder;
-import de.metas.material.event.pporder.PPOrderAdvisedEvent;
-import de.metas.material.event.pporder.PPOrderAdvisedEvent.PPOrderAdvisedEventBuilder;
-import de.metas.material.planning.IMutableMRPContext;
-import de.metas.material.planning.event.MaterialRequest;
-import de.metas.material.planning.event.SupplyRequiredHandlerUtils;
-import de.metas.quantity.Quantity;
-import de.metas.quantity.Quantitys;
-import de.metas.uom.IUOMConversionBL;
-import de.metas.uom.UomId;
-import de.metas.util.Loggables;
-import de.metas.util.Services;
-import lombok.NonNull;
-import org.eevolution.model.I_PP_Product_Planning;
-import org.springframework.stereotype.Service;
-
-import javax.annotation.Nullable;
-
 /*
  * #%L
  * metasfresh-material-planning
  * %%
- * Copyright (C) 2017 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -43,28 +20,52 @@ import javax.annotation.Nullable;
  * #L%
  */
 
-@Service
-public class PPOrderAdvisedEventCreator
-{
-	private final PPOrderDemandMatcher ppOrderDemandMatcher;
+package de.metas.material.planning.ppordercandidate;
 
-	private final PPOrderPojoSupplier ppOrderPojoSupplier;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
+import de.metas.material.event.commons.SupplyRequiredDescriptor;
+import de.metas.material.event.pporder.PPOrderCandidate;
+import de.metas.material.event.pporder.PPOrderCandidateAdvisedEvent;
+import de.metas.material.event.pporder.PPOrderCandidateAdvisedEvent.PPOrderCandidateAdvisedEventBuilder;
+import de.metas.material.planning.IMutableMRPContext;
+import de.metas.material.planning.event.MaterialRequest;
+import de.metas.material.planning.event.SupplyRequiredHandlerUtils;
+import de.metas.material.planning.pporder.PPOrderCandidateDemandMatcher;
+import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.UomId;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.eevolution.model.I_PP_Product_Planning;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Nullable;
+
+@Service
+public class PPOrderCandidateAdvisedEventCreator
+{
+	private final PPOrderCandidateDemandMatcher ppOrderCandidateDemandMatcher;
+
+	private final PPOrderCandidatePojoSupplier ppOrderCandidatePojoSupplier;
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
-	public PPOrderAdvisedEventCreator(
-			@NonNull final PPOrderDemandMatcher ppOrderDemandMatcher,
-			@NonNull final PPOrderPojoSupplier ppOrderPojoSupplier)
+	public PPOrderCandidateAdvisedEventCreator(
+			@NonNull final PPOrderCandidateDemandMatcher ppOrderCandidateDemandMatcher,
+			@NonNull final PPOrderCandidatePojoSupplier ppOrderCandidatePojoSupplier)
 	{
-		this.ppOrderDemandMatcher = ppOrderDemandMatcher;
-		this.ppOrderPojoSupplier = ppOrderPojoSupplier;
+		this.ppOrderCandidateDemandMatcher = ppOrderCandidateDemandMatcher;
+		this.ppOrderCandidatePojoSupplier = ppOrderCandidatePojoSupplier;
 	}
 
 	@NonNull
-	public ImmutableList<PPOrderAdvisedEvent> createPPOrderAdvisedEvents(
+	public ImmutableList<PPOrderCandidateAdvisedEvent> createPPOrderCandidateAdvisedEvents(
 			@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor,
 			@NonNull final IMutableMRPContext mrpContext)
 	{
-		if (!ppOrderDemandMatcher.matches(mrpContext))
+		if (!ppOrderCandidateDemandMatcher.matches(mrpContext))
 		{
 			return ImmutableList.of();
 		}
@@ -77,18 +78,18 @@ public class PPOrderAdvisedEventCreator
 		final Quantity maxQtyPerOrderConv = convertQtyToRequestUOM(mrpContext, completeRequest, maxQtyPerOrder);
 		final ImmutableList<MaterialRequest> partialRequests = createMaterialRequests(completeRequest, maxQtyPerOrderConv);
 
-		final ImmutableList.Builder<PPOrderAdvisedEvent> result = ImmutableList.builder();
+		final ImmutableList.Builder<PPOrderCandidateAdvisedEvent> result = ImmutableList.builder();
 		boolean firstRequest = true;
 		for (final MaterialRequest request : partialRequests)
 		{
-			final PPOrder ppOrder = ppOrderPojoSupplier.supplyPPOrderPojoWithLines(request);
+			final PPOrderCandidate ppOrderCandidate = ppOrderCandidatePojoSupplier.supplyPPOrderCandidatePojoWithoutLines(request);
 
-			final PPOrderAdvisedEventBuilder eventBuilder = PPOrderAdvisedEvent.builder()
+			final PPOrderCandidateAdvisedEventBuilder eventBuilder = PPOrderCandidateAdvisedEvent.builder()
 					.supplyRequiredDescriptor(supplyRequiredDescriptor)
 					.eventDescriptor(supplyRequiredDescriptor.getEventDescriptor())
-					.ppOrder(ppOrder)
+					.ppOrderCandidate(ppOrderCandidate)
 					.directlyCreatePPOrder(productPlanning.isCreatePlan())
-					.directlyPickSupply(productPlanning.isPickDirectlyIfFeasible());
+					.directlyPickIfFeasible(productPlanning.isPickDirectlyIfFeasible());
 
 			if (firstRequest)
 			{
@@ -101,7 +102,7 @@ public class PPOrderAdvisedEventCreator
 			}
 
 			result.add(eventBuilder.build());
-			Loggables.addLog("Created PPOrderAdvisedEvent with quantity={}", request.getQtyToSupply());
+			Loggables.addLog("Created PPOrderCandidateAdvisedEvent with quantity={}", request.getQtyToSupply());
 		}
 
 		return result.build();

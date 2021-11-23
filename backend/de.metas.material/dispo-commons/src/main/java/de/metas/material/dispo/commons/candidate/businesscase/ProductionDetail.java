@@ -1,9 +1,5 @@
 package de.metas.material.dispo.commons.candidate.businesscase;
 
-import java.math.BigDecimal;
-
-import javax.annotation.Nullable;
-
 import de.metas.document.engine.DocStatus;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.product.ResourceId;
@@ -11,6 +7,9 @@ import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /*
  * #%L
@@ -57,6 +56,8 @@ public class ProductionDetail implements BusinessCaseDetail
 
 	int ppOrderId;
 
+	int ppOrderCandidateId;
+
 	DocStatus ppOrderDocStatus;
 
 	int ppOrderLineId;
@@ -74,6 +75,7 @@ public class ProductionDetail implements BusinessCaseDetail
 			final int productBomLineId,
 			final String description,
 			final int ppOrderId,
+			final int ppOrderCandidateId,
 			final DocStatus ppOrderDocStatus,
 			final int ppOrderLineId,
 			@NonNull final Flag advised,
@@ -96,6 +98,7 @@ public class ProductionDetail implements BusinessCaseDetail
 		this.productBomLineId = productBomLineId;
 		this.description = description;
 		this.ppOrderId = ppOrderId;
+		this.ppOrderCandidateId = ppOrderCandidateId;
 		this.ppOrderDocStatus = ppOrderDocStatus;
 		this.ppOrderLineId = ppOrderLineId;
 		this.qty = qty;
