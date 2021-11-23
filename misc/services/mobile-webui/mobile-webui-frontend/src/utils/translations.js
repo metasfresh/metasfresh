@@ -9,7 +9,7 @@ export const setupCounterpart = () => {
   counterpart.registerTranslations('en', translations_en);
   counterpart.registerTranslations('de', translations_de);
 
-  setLanguage('de_DE');
+  //setLanguage('de_DE');
 };
 
 const generateMissingTranslation = (key) => {
