@@ -14,10 +14,10 @@ import * as ws from '../../utils/websocket';
 
 class WFLaunchersScreen extends Component {
   componentDidMount() {
-    const { populateLaunchers, applicationId, activeApplication, setActiveApplication } = this.props;
+    const { populateLaunchers, applicationId, applications, setActiveApplication } = this.props;
 
-    if (!activeApplication) {
-      setActiveApplication({ id: applicationId });
+    if (!applications.activeApplication && Object.keys(applications).length) {
+      setActiveApplication({ id: applicationId, caption: applications[applicationId] });
     }
 
     getLaunchers(applicationId).then((launchers) => {
@@ -66,7 +66,7 @@ WFLaunchersScreen.propTypes = {
   launchers: PropTypes.object.isRequired,
   userToken: PropTypes.string.isRequired,
   applicationId: PropTypes.string.isRequired,
-  activeApplication: PropTypes.object,
+  applications: PropTypes.object,
   //
   // Actions
   populateLaunchers: PropTypes.func.isRequired,
@@ -78,7 +78,7 @@ const mapStateToProps = (state, { match }) => {
 
   return {
     applicationId,
-    activeApplication: state.appHandler.activeApplication,
+    applications: state.applications,
     launchers: selectLaunchersFromState(state, applicationId),
     userToken: state.appHandler.token,
   };

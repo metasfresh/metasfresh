@@ -10,6 +10,7 @@ export const workflowReducer = ({ draftState, action }) => {
       const { wfProcess: fromWFProcess } = action.payload;
 
       let draftWFProcess = draftState[fromWFProcess.id];
+
       if (!draftWFProcess) {
         draftWFProcess = {
           id: fromWFProcess.id,
@@ -17,12 +18,11 @@ export const workflowReducer = ({ draftState, action }) => {
         };
       }
 
-      mergeWFProcessToState({
+      draftState[fromWFProcess.id] = mergeWFProcessToState({
         draftWFProcess: draftWFProcess,
         fromWFProcess,
       });
 
-      draftState[fromWFProcess.id] = draftWFProcess;
       return draftState;
     }
 

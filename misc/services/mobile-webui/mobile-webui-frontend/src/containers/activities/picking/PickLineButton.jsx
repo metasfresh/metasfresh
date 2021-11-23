@@ -1,48 +1,48 @@
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
+import counterpart from 'counterpart';
 import { push } from 'connected-react-router';
-import { pushHeaderEntry } from '../../../actions/HeaderActions';
 
+import LineButton from '../common/LineButton';
 import ButtonWithIndicator from '../../../components/ButtonWithIndicator';
 import ButtonQuantityProp from '../../../components/ButtonQuantityProp';
-import counterpart from 'counterpart';
+import { pushHeaderEntry } from '../../../actions/HeaderActions';
 
-class PickLineButton extends Component {
+class PickLineButton extends PureComponent {
   handleClick = () => {
-    const { wfProcessId, activityId, lineId, caption } = this.props;
-    const { push, pushHeaderEntry } = this.props;
+    const { wfProcessId, activityId, lineId, dispatch, caption } = this.props;
 
     const location = `/workflow/${wfProcessId}/activityId/${activityId}/lineId/${lineId}`;
-    push(location);
-    pushHeaderEntry({
-      location,
-      values: [
-        {
-          caption: counterpart.translate('activities.picking.PickingLine'),
-          value: caption,
-          bold: true,
-        },
-      ],
-    });
+    dispatch(push(location));
+
+    dispatch(
+      pushHeaderEntry({
+        location,
+        values: [
+          {
+            caption: counterpart.translate('activities.picking.PickingLine'),
+            value: caption,
+            bold: true,
+          },
+        ],
+      })
+    );
   };
 
   render() {
-    const { lineId, caption, uom, qtyPicked, qtyToPick, isUserEditable, completeStatus } = this.props;
+    const { caption, uom, qtyPicked, qtyToPick, completeStatus, appId, lineId, isUserEditable } = this.props;
 
     return (
-      <div className="buttons">
-        <button
-          key={lineId}
-          className="button is-outlined complete-btn"
-          disabled={!isUserEditable}
-          onClick={this.handleClick}
-        >
-          <ButtonWithIndicator caption={caption} completeStatus={completeStatus}>
-            <ButtonQuantityProp qtyPicked={qtyPicked} qtyToPick={qtyToPick} uom={uom} />
-          </ButtonWithIndicator>
-        </button>
-      </div>
+      <button
+        key={lineId}
+        className="button is-outlined complete-btn"
+        disabled={!isUserEditable}
+        onClick={this.handleClick}
+      >
+        <ButtonWithIndicator caption={caption} completeStatus={completeStatus}>
+          <ButtonQuantityProp qtyCurrent={qtyPicked} qtyTarget={qtyToPick} uom={uom} appId={appId} />
+        </ButtonWithIndicator>
+      </button>
     );
   }
 }
@@ -59,10 +59,10 @@ PickLineButton.propTypes = {
   uom: PropTypes.string.isRequired,
   qtyPicked: PropTypes.number.isRequired,
   qtyToPick: PropTypes.number.isRequired,
+  appId: PropTypes.string.isRequired,
   //
   // Actions
-  push: PropTypes.func.isRequired,
-  pushHeaderEntry: PropTypes.func.isRequired,
+  dispatch: PropTypes.func.isRequired,
 };
 
-export default connect(null, { push, pushHeaderEntry })(PickLineButton);
+export default LineButton(PickLineButton);

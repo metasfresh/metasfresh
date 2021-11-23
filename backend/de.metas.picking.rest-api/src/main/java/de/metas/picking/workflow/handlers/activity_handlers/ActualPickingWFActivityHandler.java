@@ -46,7 +46,7 @@ import static de.metas.picking.workflow.handlers.activity_handlers.PickingWFActi
 public class ActualPickingWFActivityHandler implements WFActivityHandler
 {
 	public static final WFActivityType HANDLED_ACTIVITY_TYPE = WFActivityType.ofString("picking.actualPicking");
-	private static final UIComponentType COMPONENTTYPE_PICK_PRODUCTS = UIComponentType.ofString("picking/pickProducts");
+	public static final UIComponentType COMPONENTTYPE_PICK_PRODUCTS = UIComponentType.ofString("picking/pickProducts");
 
 	private final PickingJobRestService pickingJobRestService;
 
@@ -90,8 +90,7 @@ public class ActualPickingWFActivityHandler implements WFActivityHandler
 		return computeActivityState(pickingJob);
 	}
 
-	@NonNull
-	private WFActivityStatus computeActivityState(final PickingJob pickingJob)
+	public static WFActivityStatus computeActivityState(final PickingJob pickingJob)
 	{
 		final PickingJobProgress progress = pickingJob.getProgress();
 		switch (progress)

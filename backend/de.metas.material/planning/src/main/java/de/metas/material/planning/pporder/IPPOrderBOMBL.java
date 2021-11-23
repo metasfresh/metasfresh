@@ -141,4 +141,6 @@ public interface IPPOrderBOMBL extends ISingletonService
 	Optional<DocSequenceId> getSerialNoSequenceId(PPOrderId ppOrderId);
 
 	QtyCalculationsBOM getQtyCalculationsBOM(I_PP_Order order);
+
+	void save(I_PP_Order_BOMLine orderBOMLine);
 }

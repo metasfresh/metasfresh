@@ -379,6 +379,8 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			}
 		}
 
+		to.setC_Incoterms_ID(from.getC_Incoterms_ID());
+
 		InterfaceWrapperHelper.save(to);
 
 		final IDocLineCopyHandler<org.compiere.model.I_C_InvoiceLine> additionalDocLineCopyHandler;
@@ -624,7 +626,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		final I_C_Invoice invoice2 = InterfaceWrapperHelper.create(invoice, I_C_Invoice.class);
 		final I_C_Order order2 = InterfaceWrapperHelper.create(order, I_C_Order.class);
 
-		invoice2.setIncoterm(order2.getIncoterm());
+		invoice2.setC_Incoterms_ID(order2.getC_Incoterms_ID());
 		invoice2.setIncotermLocation(order2.getIncotermLocation());
 
 		invoice2.setBPartnerAddress(order2.getBillToAddress());

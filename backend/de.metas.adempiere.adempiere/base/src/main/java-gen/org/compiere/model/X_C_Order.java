@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1002047364L;
+	private static final long serialVersionUID = 1645079352L;
 
     /** Standard Constructor */
     public X_C_Order (final Properties ctx, final int C_Order_ID, @Nullable final String trxName)
@@ -508,6 +508,33 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_ChargeAmt);
 		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public org.compiere.model.I_C_Incoterms getC_Incoterms()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Incoterms_ID, org.compiere.model.I_C_Incoterms.class);
+	}
+
+	@Override
+	public void setC_Incoterms(final org.compiere.model.I_C_Incoterms C_Incoterms)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Incoterms_ID, org.compiere.model.I_C_Incoterms.class, C_Incoterms);
+	}
+
+	@Override
+	public void setC_Incoterms_ID (final int C_Incoterms_ID)
+	{
+		if (C_Incoterms_ID < 1) 
+			set_Value (COLUMNNAME_C_Incoterms_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Incoterms_ID, C_Incoterms_ID);
+	}
+
+	@Override
+	public int getC_Incoterms_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Incoterms_ID);
 	}
 
 	@Override
@@ -1153,53 +1180,6 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	public int getHandOver_User_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_HandOver_User_ID);
-	}
-
-	/**
-	 * Incoterm AD_Reference_ID=501599
-	 * Reference name: Incoterms
-	 */
-	public static final int INCOTERM_AD_Reference_ID=501599;
-	/** EXW_AbWerk = EXW */
-	public static final String INCOTERM_EXW_AbWerk = "EXW";
-	/** FCA_FreiSpediteur = FCA */
-	public static final String INCOTERM_FCA_FreiSpediteur = "FCA";
-	/** FAS_FreiLaengsseitsSchiff = FAS */
-	public static final String INCOTERM_FAS_FreiLaengsseitsSchiff = "FAS";
-	/** FOB_FreiAnBord = FOB */
-	public static final String INCOTERM_FOB_FreiAnBord = "FOB";
-	/** CFR_KostenUndFracht = CFR */
-	public static final String INCOTERM_CFR_KostenUndFracht = "CFR";
-	/** CIF_KostenVersicherungUndFracht = CIF */
-	public static final String INCOTERM_CIF_KostenVersicherungUndFracht = "CIF";
-	/** CPT_FrachtPortoBezahltBis = CPT */
-	public static final String INCOTERM_CPT_FrachtPortoBezahltBis = "CPT";
-	/** CIP_FrachtPortoUndVersicherungBezahltBis = CIP */
-	public static final String INCOTERM_CIP_FrachtPortoUndVersicherungBezahltBis = "CIP";
-	/** DAF_FreiGrenze = DAF */
-	public static final String INCOTERM_DAF_FreiGrenze = "DAF";
-	/** DES_FreiAbSchiff = DES */
-	public static final String INCOTERM_DES_FreiAbSchiff = "DES";
-	/** DEQ_FreiAbKai = DEQ */
-	public static final String INCOTERM_DEQ_FreiAbKai = "DEQ";
-	/** DDU_FreiUnverzollt = DDU */
-	public static final String INCOTERM_DDU_FreiUnverzollt = "DDU";
-	/** DDP_Verzollt = DDP */
-	public static final String INCOTERM_DDP_Verzollt = "DDP";
-	/** DAP - Delivered at Place = DAP */
-	public static final String INCOTERM_DAP_DeliveredAtPlace = "DAP";
-	/** DPU_geliefertBenannterOrtEntladen = DPU */
-	public static final String INCOTERM_DPU_geliefertBenannterOrtEntladen = "DPU";
-	@Override
-	public void setIncoterm (final @Nullable java.lang.String Incoterm)
-	{
-		set_Value (COLUMNNAME_Incoterm, Incoterm);
-	}
-
-	@Override
-	public java.lang.String getIncoterm()
-	{
-		return get_ValueAsString(COLUMNNAME_Incoterm);
 	}
 
 	@Override

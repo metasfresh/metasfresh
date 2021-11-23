@@ -1,41 +1,49 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
-import { push } from 'connected-react-router';
 import counterpart from 'counterpart';
 
+import StepButton from '../common/StepButton';
 import { pushHeaderEntry } from '../../../actions/HeaderActions';
 import Indicator from '../../../components/Indicator';
-import * as CompleteStatus from '../../../constants/CompleteStatus';
+import PickAlternatives from './PickAlternatives';
+import { computePickFromStatus } from '../../../reducers/wfProcesses_status/picking';
 
 class PickStepButton extends PureComponent {
   handleClick = () => {
-    const { wfProcessId, activityId, lineId, stepId, locatorName } = this.props;
-    const { push, pushHeaderEntry } = this.props;
+    const { pickFrom, location } = this.props;
+    const { dispatch, onHandleClick } = this.props;
 
-    const location = `/workflow/${wfProcessId}/activityId/${activityId}/lineId/${lineId}/stepId/${stepId}`;
-    push(location);
-    pushHeaderEntry({
-      location,
-      values: [
-        {
-          caption: counterpart.translate('general.Locator'),
-          value: locatorName,
-        },
-      ],
-    });
+    onHandleClick();
+
+    dispatch(
+      pushHeaderEntry({
+        location,
+        values: [
+          {
+            caption: counterpart.translate('general.Locator'),
+            value: pickFrom.locatorName,
+          },
+        ],
+      })
+    );
   };
-
-  goBackToPickingSteps = () => this.setState({ activePickingStep: false });
 
   render() {
     const {
+      appId,
+      wfProcessId,
+      activityId,
       lineId,
-      locatorName,
+      stepId,
+      //
+      pickFromAlternatives,
       uom,
-      pickStepState: { qtyPicked, completeStatus },
       qtyToPick,
+      pickFrom,
     } = this.props;
+
+    const isAlternative = !pickFromAlternatives;
+    const completeStatus = computePickFromStatus(pickFrom);
 
     return (
       <div className="mt-3">
@@ -49,16 +57,19 @@ class PickStepButton extends PureComponent {
 
             <div className="caption-btn">
               <div className="rows">
-                <div className="row is-full pl-5">{locatorName}</div>
+                <div className="row is-full pl-5">
+                  {isAlternative ? 'ALT:' : ''}
+                  {pickFrom.locatorName}
+                </div>
                 <div className="row is-full is-size-7">
                   <div className="picking-row-info">
-                    <div className="picking-to-pick">{counterpart.translate('activities.picking.toPick')}:</div>
+                    <div className="picking-to-pick">{counterpart.translate('activities.picking.target')}:</div>
                     <div className="picking-row-qty">
                       {qtyToPick} {uom}
                     </div>
                     <div className="picking-row-picking">{counterpart.translate('activities.picking.picked')}:</div>
                     <div className="picking-row-picked">
-                      {qtyPicked} {uom}
+                      {pickFrom.qtyPicked} {uom}
                     </div>
                   </div>
                 </div>
@@ -66,41 +77,44 @@ class PickStepButton extends PureComponent {
             </div>
 
             <div className="right-btn-side pt-4">
-              <Indicator completeStatus={completeStatus || CompleteStatus.NOT_STARTED} />
+              <Indicator completeStatus={completeStatus} />
             </div>
           </div>
         </button>
+        {pickFromAlternatives && (
+          <PickAlternatives
+            appId={appId}
+            wfProcessId={wfProcessId}
+            activityId={activityId}
+            lineId={lineId}
+            stepId={stepId}
+            pickFromAlternatives={pickFromAlternatives}
+            uom={uom}
+          />
+        )}
       </div>
     );
   }
 }
 
-const mapStateToProps = (state, ownProps) => {
-  const { wfProcessId, activityId, lineId, stepId } = ownProps;
-
-  return {
-    pickStepState: state.wfProcesses_status[wfProcessId].activities[activityId].dataStored.lines[lineId].steps[stepId],
-  };
-};
-
 PickStepButton.propTypes = {
+  location: PropTypes.string.isRequired,
   //
   // Props
+  appId: PropTypes.string.isRequired,
   wfProcessId: PropTypes.string.isRequired,
   activityId: PropTypes.string.isRequired,
   lineId: PropTypes.string.isRequired,
   stepId: PropTypes.string.isRequired,
-  productName: PropTypes.string.isRequired,
-  locatorName: PropTypes.string.isRequired,
-  huBarcode: PropTypes.string,
-  uom: PropTypes.string,
-  qtyPicked: PropTypes.number,
-  qtyToPick: PropTypes.number.isRequired,
-  pickStepState: PropTypes.object,
   //
-  // Actions
-  push: PropTypes.func.isRequired,
-  pushHeaderEntry: PropTypes.func.isRequired,
+  pickFromAlternatives: PropTypes.object,
+  uom: PropTypes.string.isRequired,
+  qtyToPick: PropTypes.number.isRequired,
+  pickFrom: PropTypes.object.isRequired,
+  //
+  // Actions/Functions
+  dispatch: PropTypes.func.isRequired,
+  onHandleClick: PropTypes.func.isRequired,
 };
 
-export default connect(mapStateToProps, { push, pushHeaderEntry })(PickStepButton);
+export default StepButton(PickStepButton);

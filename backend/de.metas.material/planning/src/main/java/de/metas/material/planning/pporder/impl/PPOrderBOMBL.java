@@ -585,4 +585,10 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 				.orderId(PPOrderId.ofRepoIdOrNull(order.getPP_Order_ID()))
 				.build();
 	}
+
+	@Override
+	public void save(final I_PP_Order_BOMLine orderBOMLine)
+	{
+		orderBOMsRepo.save(orderBOMLine);
+	}
 }

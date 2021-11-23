@@ -1,29 +1,8 @@
-/*
- * #%L
- * de.metas.externalsystem
- * %%
- * Copyright (C) 2021 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 package de.metas.externalsystem.model;
 
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
 
 /** Generated Interface for ExternalSystem_Config_GRSSignum
  *  @author metasfresh (generated) 
@@ -71,6 +50,27 @@ public interface I_ExternalSystem_Config_GRSSignum
 	int getAD_Org_ID();
 
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+
+	/**
+	 * Set Authentication Token.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setAuthToken (@Nullable java.lang.String AuthToken);
+
+	/**
+	 * Get Authentication Token.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getAuthToken();
+
+	ModelColumn<I_ExternalSystem_Config_GRSSignum, Object> COLUMN_AuthToken = new ModelColumn<>(I_ExternalSystem_Config_GRSSignum.class, "AuthToken", null);
+	String COLUMNNAME_AuthToken = "AuthToken";
 
 	/**
 	 * Set Base-URL.
@@ -228,6 +228,50 @@ public interface I_ExternalSystem_Config_GRSSignum
 
 	ModelColumn<I_ExternalSystem_Config_GRSSignum, Object> COLUMN_IsActive = new ModelColumn<>(I_ExternalSystem_Config_GRSSignum.class, "IsActive", null);
 	String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set Send business partners.
+	 * If checked, then business selected partners can be initially send to GRS via an action in the business partner window. Once initially send, they will from there onwards be automatically send whenever changed in metasfresh.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIsSyncBPartnersToRestEndpoint (boolean IsSyncBPartnersToRestEndpoint);
+
+	/**
+	 * Get Send business partners.
+	 * If checked, then business selected partners can be initially send to GRS via an action in the business partner window. Once initially send, they will from there onwards be automatically send whenever changed in metasfresh.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	boolean isSyncBPartnersToRestEndpoint();
+
+	ModelColumn<I_ExternalSystem_Config_GRSSignum, Object> COLUMN_IsSyncBPartnersToRestEndpoint = new ModelColumn<>(I_ExternalSystem_Config_GRSSignum.class, "IsSyncBPartnersToRestEndpoint", null);
+	String COLUMNNAME_IsSyncBPartnersToRestEndpoint = "IsSyncBPartnersToRestEndpoint";
+
+	/**
+	 * Set Tenant-ID (MID).
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setTenantId (java.lang.String TenantId);
+
+	/**
+	 * Get Tenant-ID (MID).
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getTenantId();
+
+	ModelColumn<I_ExternalSystem_Config_GRSSignum, Object> COLUMN_TenantId = new ModelColumn<>(I_ExternalSystem_Config_GRSSignum.class, "TenantId", null);
+	String COLUMNNAME_TenantId = "TenantId";
 
 	/**
 	 * Get Updated.

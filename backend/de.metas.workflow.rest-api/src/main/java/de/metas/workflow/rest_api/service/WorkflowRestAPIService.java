@@ -66,7 +66,7 @@ public class WorkflowRestAPIService
 	private final MobileApplicationsMap applications;
 	private final WFActivityHandlersRegistry wfActivityHandlersRegistry;
 
-	WorkflowRestAPIService(
+	public WorkflowRestAPIService(
 			@NonNull final Optional<List<MobileApplication>> applications,
 			@NonNull final WFActivityHandlersRegistry wfActivityHandlersRegistry)
 	{

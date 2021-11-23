@@ -5,6 +5,8 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.distribution.ddorder.DDOrderId;
 import de.metas.distribution.ddorder.DDOrderService;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveSchedule;
+import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveSchedulePickedHU;
+import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveSchedulePickedHUs;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleService;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.movement.generate.HUMovementGenerateRequest;
@@ -17,7 +19,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mmovement.MovementAndLineId;
+import org.adempiere.mmovement.MovementId;
 import org.adempiere.warehouse.LocatorId;
 import org.eevolution.model.I_DD_Order;
 
@@ -116,20 +118,27 @@ public class DirectMovementsFromSchedulesGenerator
 
 		schedule.assertNotPickedFrom();
 		schedule.assertNotDroppedTo();
-		
-		final Quantity qtyToMove = schedule.getQtyToPick();
 
-		Check.assume(schedule.isPickWholeHU(), "PickWholeHU is true for {}", schedule);
+		final Quantity qtyToMove = schedule.getQtyToPick();
 		final HuId huIdToMove = schedule.getPickFromHUId();
 
-		final MovementAndLineId directMovementLineId = createDirectMovement(schedule, huIdToMove);
+		final MovementId directMovementId = createDirectMovement(schedule, huIdToMove);
 
-		schedule.markAsPickedFrom(qtyToMove, null, huIdToMove, directMovementLineId, null);
-		schedule.markAsDroppedTo(directMovementLineId);
+		schedule.markAsPickedFrom(
+				null,
+				DDOrderMoveSchedulePickedHUs.of(
+						DDOrderMoveSchedulePickedHU.builder()
+								.actualHUIdPicked(huIdToMove)
+								.qtyPicked(qtyToMove)
+								.pickFromMovementId(directMovementId)
+								.inTransitLocatorId(null)
+								.build())
+		);
+		schedule.markAsDroppedTo(directMovementId);
 		ddOrderMoveScheduleService.save(schedule);
 	}
 
-	private MovementAndLineId createDirectMovement(
+	private MovementId createDirectMovement(
 			final @NonNull DDOrderMoveSchedule schedule,
 			final @NonNull HuId huIdToMove)
 	{
@@ -137,7 +146,7 @@ public class DirectMovementsFromSchedulesGenerator
 				.sharedHUIdsWithPackingMaterialsTransferred(huIdsWithPackingMaterialsTransferred)
 				.createMovement();
 
-		return result.getSingleMovementLineId();
+		return result.getSingleMovementLineId().getMovementId();
 	}
 
 	private HUMovementGenerateRequest toMovementGenerateRequest(

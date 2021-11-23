@@ -1,6 +1,5 @@
 package org.eevolution.api;
 
-import com.google.common.base.Objects;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.time.SystemTime;
 import de.metas.logging.LogManager;
@@ -24,6 +23,7 @@ import org.slf4j.Logger;
 import javax.annotation.Nullable;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Objects;
 
 /*
  * #%L
@@ -109,7 +109,7 @@ public final class PPOrderRoutingActivity
 
 	public PPOrderId getOrderId()
 	{
-		return getId().getOrderId();
+		return Objects.requireNonNull(getId()).getOrderId();
 	}
 
 	public Quantity getQtyToDeliver()
@@ -148,7 +148,7 @@ public final class PPOrderRoutingActivity
 		}
 	}
 
-	private void changeStatusTo(@NonNull final PPOrderRoutingActivityStatus newStatus)
+	public void changeStatusTo(@NonNull final PPOrderRoutingActivityStatus newStatus)
 	{
 		final PPOrderRoutingActivityStatus currentStatus = getStatus();
 		if (currentStatus.equals(newStatus))
@@ -209,7 +209,7 @@ public final class PPOrderRoutingActivity
 			setDateFinish(SystemTime.asInstant());
 		}
 
-		if (!Objects.equal(getDurationRequired(), getDurationReal()))
+		if (!Objects.equals(getDurationRequired(), getDurationReal()))
 		{
 			// addDescription(Services.get(IMsgBL.class).parseTranslation(getCtx(), "@closed@ ( @Duration@ :" + getDurationRequiered() + ") ( @QtyRequiered@ :" + getQtyRequiered() + ")"));
 			setDurationRequired(getDurationReal());

@@ -46,6 +46,7 @@ import static de.metas.picking.workflow.handlers.activity_handlers.PickingWFActi
 public class SetPickingSlotWFActivityHandler implements WFActivityHandler, SetScannedBarcodeSupport
 {
 	public static final WFActivityType HANDLED_ACTIVITY_TYPE = WFActivityType.ofString("picking.setPickingSlot");
+	public static final UIComponentType COMPONENTTYPE = UIComponentType.SCAN_BARCODE;
 
 	private final PickingJobRestService pickingJobRestService;
 
@@ -66,7 +67,7 @@ public class SetPickingSlotWFActivityHandler implements WFActivityHandler, SetSc
 		final PickingJob pickingJob = getPickingJob(wfProcess);
 
 		return UIComponent.builder()
-				.type(UIComponentType.SCAN_BARCODE)
+				.type(COMPONENTTYPE)
 				.properties(Params.builder()
 						.value("barcodeCaption", pickingJob.getPickingSlot().map(PickingSlotIdAndCaption::getCaption).orElse(null))
 						.build())
@@ -77,7 +78,12 @@ public class SetPickingSlotWFActivityHandler implements WFActivityHandler, SetSc
 	public WFActivityStatus computeActivityState(final WFProcess wfProcess, final WFActivity wfActivity)
 	{
 		final PickingJob pickingJob = getPickingJob(wfProcess);
-		return pickingJob.getPickingSlot().isPresent() ? WFActivityStatus.COMPLETED : WFActivityStatus.IN_PROGRESS;
+		return computeActivityState(pickingJob);
+	}
+
+	public static WFActivityStatus computeActivityState(final PickingJob pickingJob)
+	{
+		return pickingJob.getPickingSlot().isPresent() ? WFActivityStatus.COMPLETED : WFActivityStatus.NOT_STARTED;
 	}
 
 	@Override

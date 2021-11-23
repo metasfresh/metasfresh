@@ -30,6 +30,7 @@ import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Alberta;
+import de.metas.externalsystem.model.I_ExternalSystem_Config_GRSSignum;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_RabbitMQ_HTTP;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6;
 import de.metas.process.AdProcessId;
@@ -198,6 +199,17 @@ public class ExternalSystem_Config_StepDef
 				externalSystemConfigRabbitMQ.setIsSyncBPartnersToRabbitMQ(true);
 				externalSystemConfigRabbitMQ.setIsActive(true);
 				InterfaceWrapperHelper.save(externalSystemConfigRabbitMQ);
+				break;
+			case GRSSignum:
+				final I_ExternalSystem_Config_GRSSignum externalSystemConfigGrsSignum = InterfaceWrapperHelper.newInstance(I_ExternalSystem_Config_GRSSignum.class);
+				externalSystemConfigGrsSignum.setExternalSystem_Config_ID(externalSystemParentConfigEntity.getExternalSystem_Config_ID());
+				externalSystemConfigGrsSignum.setExternalSystemValue(externalSystemChildValue);
+				externalSystemConfigGrsSignum.setBaseURL("notImportant");
+				externalSystemConfigGrsSignum.setAuthToken("notImportant");
+				externalSystemConfigGrsSignum.setTenantId("tenantId");
+				externalSystemConfigGrsSignum.setIsSyncBPartnersToRestEndpoint(true);
+				externalSystemConfigGrsSignum.setIsActive(true);
+				InterfaceWrapperHelper.save(externalSystemConfigGrsSignum);
 				break;
 			default:
 				throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", externalSystemType);

@@ -6,13 +6,16 @@ import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobDocStatus;
 import de.metas.handlingunits.picking.job.model.PickingJobId;
 import de.metas.handlingunits.picking.job.model.PickingJobReference;
+import de.metas.picking.api.PickingSlotId;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.compiere.model.IQuery;
 import org.springframework.stereotype.Repository;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -83,6 +86,23 @@ public class PickingJobRepository
 				.customerName(pickingJob.getCustomerName())
 				.shipmentScheduleIds(pickingJob.getShipmentScheduleIds())
 				.build();
+	}
+
+	public boolean hasDraftJobsUsingPickingSlot(
+			@NonNull final PickingSlotId pickingSlotId,
+			@Nullable final PickingJobId excludePickingJobId)
+	{
+		final IQueryBuilder<I_M_Picking_Job> queryBuilder = queryBL
+				.createQueryBuilder(I_M_Picking_Job.class)
+				.addEqualsFilter(I_M_Picking_Job.COLUMNNAME_DocStatus, PickingJobDocStatus.Drafted.getCode())
+				.addEqualsFilter(I_M_Picking_Job.COLUMNNAME_M_PickingSlot_ID, pickingSlotId);
+
+		if (excludePickingJobId != null)
+		{
+			queryBuilder.addNotEqualsFilter(I_M_Picking_Job.COLUMNNAME_M_Picking_Job_ID, excludePickingJobId);
+		}
+
+		return queryBuilder.create().anyMatch();
 	}
 
 }

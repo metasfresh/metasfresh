@@ -9,8 +9,7 @@ import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mmovement.MovementAndLineId;
+import org.adempiere.mmovement.MovementId;
 import org.eevolution.model.I_DD_Order;
 
 import java.time.Instant;
@@ -49,41 +48,38 @@ class DDOrderDropToCommand
 		trxManager.assertThreadInheritedTrxExists();
 
 		final DDOrderMoveSchedule schedule = ddOrderMoveScheduleRepository.getById(scheduleId);
-		if (schedule.getDropToMovementLineId() != null)
-		{
-			throw new AdempiereException("Already dropped");
-		}
-		if (schedule.getActualHUIdPicked() == null)
-		{
-			throw new AdempiereException("Not picked");
-		}
+		schedule.assertNotDroppedTo();
+		schedule.assertPickedFrom();
 
 		//
 		// generate movement InTransit -> DropTo Locator
-		final MovementAndLineId dropToMovementLineId = createDropToMovement(schedule);
+		final MovementId dropToMovementId = createDropToMovement(schedule);
 
 		//
 		// update the schedule
-		schedule.markAsDroppedTo(dropToMovementLineId);
+		schedule.markAsDroppedTo(dropToMovementId);
 		ddOrderMoveScheduleRepository.save(schedule);
 
 		return schedule;
 	}
 
-	private MovementAndLineId createDropToMovement(@NonNull final DDOrderMoveSchedule schedule)
+	private MovementId createDropToMovement(@NonNull final DDOrderMoveSchedule schedule)
 	{
+		final DDOrderMoveSchedulePickedHUs pickedHUs = Objects.requireNonNull(schedule.getPickedHUs());
+
 		final I_DD_Order ddOrder = ddOrderLowLevelDAO.getById(schedule.getDdOrderId());
 
 		final HUMovementGenerateRequest request = DDOrderMovementHelper.prepareMovementGenerateRequest(ddOrder, schedule.getDdOrderLineId())
 				.movementDate(movementDate)
-				.fromLocatorId(Objects.requireNonNull(schedule.getInTransitLocatorId()))
+				.fromLocatorId(pickedHUs.getInTransitLocatorId())
 				.toLocatorId(schedule.getDropToLocatorId())
-				.huIdToMove(schedule.getActualHUIdPicked())
+				.huIdsToMove(pickedHUs.getActualHUIdsPicked())
 				.build();
 
 		return new HUMovementGenerator(request)
 				.createMovement()
-				.getSingleMovementLineId();
+				.getSingleMovementLineId()
+				.getMovementId();
 	}
 }
 
