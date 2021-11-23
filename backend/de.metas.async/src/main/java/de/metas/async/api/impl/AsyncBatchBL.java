@@ -25,6 +25,8 @@ package de.metas.async.api.impl;
  */
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.Multimap;
 import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.api.IAsyncBatchBuilder;
@@ -461,20 +463,27 @@ public class AsyncBatchBL implements IAsyncBatchBL
 	}
 
 	@Override
-	public @NonNull <T> ImmutablePair<AsyncBatchId, T> assignTempAsyncBatchToModelIfMissing(
-			@NonNull final T model,
+	public @NonNull <T> Multimap<AsyncBatchId, T> assignTempAsyncBatchToModelsIfMissing(
+			@NonNull final List<T> models,
 			@NonNull final String asyncBatchInternalName)
 	{
-		final Optional<AsyncBatchId> asyncBatchId = getAsyncBatchId(model);
-		if (asyncBatchId.isPresent())
+		final ImmutableListMultimap.Builder<AsyncBatchId, T> result = ImmutableListMultimap.builder();
+
+		for (final T model : models)
 		{
-			return ImmutablePair.of(asyncBatchId.get(), model);
+			final Optional<AsyncBatchId> asyncBatchId = getAsyncBatchId(model);
+			if (asyncBatchId.isPresent())
+			{
+				result.put(asyncBatchId.get(), model);
+			}
+			else
+			{
+				final AsyncBatchId newAsyncBatchId = newAsyncBatch(asyncBatchInternalName);
+				InterfaceWrapperHelper.setDynAttribute(model, DYN_ATTR_TEMPORARY_BATCH_ID, newAsyncBatchId);
+				result.put(newAsyncBatchId, model);
+			}
 		}
-
-		final AsyncBatchId newAsyncBatchId = newAsyncBatch(asyncBatchInternalName);
-		InterfaceWrapperHelper.setDynAttribute(model, DYN_ATTR_TEMPORARY_BATCH_ID, newAsyncBatchId);
-
-		return ImmutablePair.of(newAsyncBatchId, model);
+		return result.build();
 	}
 
 	public I_C_Async_Batch getAsyncBatchById(@NonNull final AsyncBatchId asyncBatchId)

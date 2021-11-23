@@ -694,7 +694,8 @@ public class InterfaceWrapperHelper
 	 *
 	 * @param ignoreIfNotHandled if <code>true</code> and the given model can not be handeled (no PO, GridTab etc), then just return {@link ITrx#TRXNAME_None} without throwing an exception.
 	 */
-	public static String getTrxName(final Object model, final boolean ignoreIfNotHandled)
+	@Nullable
+	public static String getTrxName(@Nullable final Object model, final boolean ignoreIfNotHandled)
 	{
 		if (model == null)
 		{

@@ -1,8 +1,29 @@
-package de.metas.invoicecandidate.modelvalidator;
+/*
+ * #%L
+ * de.metas.swat.base
+ * %%
+ * Copyright (C) 2021 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+package de.metas.invoicecandidate.modelvalidator.ilhandler;
 
 import com.google.common.base.MoreObjects;
 import de.metas.document.engine.IDocumentBL;
-import de.metas.invoicecandidate.api.CreateInvoiceForModelService;
 import de.metas.invoicecandidate.async.spi.impl.CreateMissingInvoiceCandidatesWorkpackageProcessor;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.CandidatesAutoCreateMode;
 import de.metas.util.Check;
@@ -12,42 +33,16 @@ import org.adempiere.ad.modelvalidator.AbstractModelInterceptor;
 import org.adempiere.ad.modelvalidator.DocTimingType;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
-import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Client;
-
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
 
 /**
  * Interceptor used to intercept invoice candidates relevant documents and manage their life cycle.
  *
  * @author metas-dev <dev@metasfresh.com>
  */
-final class ILHandlerModelInterceptor extends AbstractModelInterceptor
+public final class ILHandlerModelInterceptor extends AbstractModelInterceptor
 {
-	private final ITrxManager trxManager = Services.get(ITrxManager.class);
-	
 	public static Builder builder()
 	{
 		return new Builder();
@@ -57,7 +52,9 @@ final class ILHandlerModelInterceptor extends AbstractModelInterceptor
 	private final boolean isDocument;
 	private final CandidatesAutoCreateMode candidatesAutoCreateMode;
 	private final DocTimingType createInvoiceCandidatesTiming;
-	private final CreateInvoiceForModelService invoiceSyncCreationService = SpringContextHolder.instance.getBean(CreateInvoiceForModelService.class);
+	
+
+	private final CreateCandidatesOnCommitCollector collector = new CreateCandidatesOnCommitCollector();
 
 	private ILHandlerModelInterceptor(@NonNull final Builder builder)
 	{
@@ -139,8 +136,7 @@ final class ILHandlerModelInterceptor extends AbstractModelInterceptor
 	private void generateIcsAndInvoices(@NonNull final Object model)
 	{
 		final TableRecordReference modelReference = TableRecordReference.of(model);
-
-		trxManager.runAfterCommit(() -> trxManager.runInNewTrx(() -> invoiceSyncCreationService.generateIcsAndInvoices(modelReference)));
+		collector.collect(modelReference);
 	}
 
 	/**

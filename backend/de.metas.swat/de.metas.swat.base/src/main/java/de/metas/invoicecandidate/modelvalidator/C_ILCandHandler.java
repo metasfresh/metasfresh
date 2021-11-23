@@ -22,6 +22,7 @@ package de.metas.invoicecandidate.modelvalidator;
  * #L%
  */
 
+import de.metas.invoicecandidate.modelvalidator.ilhandler.ILHandlerModelInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;

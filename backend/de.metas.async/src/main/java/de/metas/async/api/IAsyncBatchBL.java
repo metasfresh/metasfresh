@@ -3,6 +3,7 @@
  */
 package de.metas.async.api;
 
+import com.google.common.collect.Multimap;
 import de.metas.async.AsyncBatchId;
 import de.metas.async.Async_Constants;
 import de.metas.async.model.I_C_Async_Batch;
@@ -12,9 +13,9 @@ import de.metas.async.model.I_C_Queue_WorkPackage_Notified;
 import de.metas.async.spi.IWorkpackagePrioStrategy;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
-import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -91,7 +92,7 @@ public interface IAsyncBatchBL extends ISingletonService
 
 	/**
 	 * Creates a new C_Async_Batch and sets the given modelRecord's column to reference it.
-	 * 
+	 *
 	 * @param asyncBatchInternalName see {@link Async_Constants}
 	 */
 	@NonNull <T> ImmutablePair<AsyncBatchId, T> assignPermAsyncBatchToModelIfMissing(
@@ -99,13 +100,14 @@ public interface IAsyncBatchBL extends ISingletonService
 			@NonNull String asyncBatchInternalName);
 
 	/**
-	 * Creates a new C_Async_Batch and sets a temporary dynamic attribute for the given modelRecord to reference it.
-	 * 
+	 * Creates new a C_Async_Batch if needed and sets the temporary dynamic attribute for the given modelRecords to reference it.
+	 * Those modelRecords that already reference an async batch retain it.
+	 *
 	 * @param asyncBatchInternalName see {@link Async_Constants}
 	 * @see org.adempiere.model.InterfaceWrapperHelper#setDynAttribute(Object, String, Object).
 	 */
-	@NonNull <T> ImmutablePair<AsyncBatchId, T> assignTempAsyncBatchToModelIfMissing(
-			@NonNull T model,
+	@NonNull <T> Multimap<AsyncBatchId, T> assignTempAsyncBatchToModelsIfMissing(
+			@NonNull List<T> model,
 			@NonNull String asyncBatchInternalName);
 
 	I_C_Async_Batch getAsyncBatchById(AsyncBatchId asyncBatchId);

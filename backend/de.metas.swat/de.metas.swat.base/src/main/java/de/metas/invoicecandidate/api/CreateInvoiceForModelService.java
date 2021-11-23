@@ -22,6 +22,7 @@
 
 package de.metas.invoicecandidate.api;
 
+import com.google.common.collect.Multimap;
 import de.metas.async.AsyncBatchId;
 import de.metas.async.Async_Constants;
 import de.metas.async.api.IAsyncBatchBL;
@@ -32,14 +33,15 @@ import de.metas.invoicecandidate.async.spi.impl.CreateMissingInvoiceCandidatesWo
 import de.metas.process.PInstanceId;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.DB;
 import org.compiere.util.Trx;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.util.Set;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
 import java.util.function.Supplier;
 
 import static org.compiere.util.Env.getCtx;
@@ -61,14 +63,17 @@ public class CreateInvoiceForModelService
 	/**
 	 * Uses the Async-framework to create invoice candidates for the given model. Waits until those candidates are created and then enqueues them for invoicing.
 	 *
-	 * @param modelReference the model for which the invoice cnadidates and subsequently invoices shall be created.
-	 *                       It is expected that the model already references an AsyncBatch_ID.
+	 * @param modelReferences the models for which the invoice candidates and subsequently invoice(s) shall be created.
 	 */
-	public void generateIcsAndInvoices(@NonNull final TableRecordReference modelReference)
+	public void generateIcsAndInvoices(@NonNull final List<TableRecordReference> modelReferences)
 	{
-		generateMissingInvoiceCandidatesForModel(modelReference);
+		generateMissingInvoiceCandidatesForModel(modelReferences);
 
-		final Set<InvoiceCandidateId> invoiceCandidateIds = invoiceCandDAO.retrieveReferencingIds(modelReference);
+		final HashSet<InvoiceCandidateId> invoiceCandidateIds = new HashSet<>();
+		for (final TableRecordReference modelReference : modelReferences)
+		{
+			invoiceCandidateIds.addAll(invoiceCandDAO.retrieveReferencingIds(modelReference));
+		}
 
 		final PInstanceId invoiceCandidatesSelectionId = DB.createT_Selection(invoiceCandidateIds, Trx.TRXNAME_None);
 		invoiceCandBL.enqueueForInvoicing()
@@ -78,19 +83,30 @@ public class CreateInvoiceForModelService
 				.enqueueSelection(invoiceCandidatesSelectionId);
 	}
 
-	private void generateMissingInvoiceCandidatesForModel(@NonNull final TableRecordReference modelReference)
+	private void generateMissingInvoiceCandidatesForModel(@NonNull final List<TableRecordReference> modelReferences)
 	{
-		final Object model = modelReference.getModel(Object.class);
+		final List<Object> models = TableRecordReference.getModels(modelReferences, Object.class);
 
-		final ImmutablePair<AsyncBatchId, Object> batchIdWithUpdatedModel = asyncBatchBL
-				.assignTempAsyncBatchToModelIfMissing(model, Async_Constants.C_Async_Batch_InternalName_EnqueueInvoiceCandidateCreation);
+		final Multimap<AsyncBatchId, Object> batchIdWithUpdatedModel =
+				asyncBatchBL.assignTempAsyncBatchToModelsIfMissing(
+						models,
+						Async_Constants.C_Async_Batch_InternalName_EnqueueInvoiceCandidateCreation);
 
-		final Supplier<Void> action = () -> {
-			CreateMissingInvoiceCandidatesWorkpackageProcessor.schedule(batchIdWithUpdatedModel.getRight());
-			return null;
-		};
+		for (final AsyncBatchId asyncBatchId : batchIdWithUpdatedModel.keySet())
+		{
+			final Collection<Object> modelsWithBatchId = batchIdWithUpdatedModel.get(asyncBatchId);
 
-		asyncBatchService.executeBatch(action, batchIdWithUpdatedModel.getLeft());
+			final Supplier<Void> action = () -> {
+				for (final Object modelWithBatchId : modelsWithBatchId)
+				{
+					CreateMissingInvoiceCandidatesWorkpackageProcessor.schedule(modelWithBatchId);
+				}
+				return null;
+			};
+
+			asyncBatchService.executeBatch(action, asyncBatchId);
+		}
+
 	}
 
 	@NonNull
