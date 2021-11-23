@@ -8,10 +8,12 @@ import de.metas.distribution.ddorder.movement.schedule.plan.DDOrderMovePlanCreat
 import de.metas.user.UserId;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.eevolution.model.I_DD_Order;
 
 public class DistributionJobCreateCommand
 {
+	private final ITrxManager trxManager;
 	private final DDOrderService ddOrderService;
 	private final DDOrderMoveScheduleService ddOrderMoveScheduleService;
 	private final DistributionJobLoaderSupportingServices loadingSupportServices;
@@ -21,6 +23,7 @@ public class DistributionJobCreateCommand
 
 	@Builder
 	private DistributionJobCreateCommand(
+			final @NonNull ITrxManager trxManager,
 			final @NonNull DDOrderService ddOrderService,
 			final @NonNull DDOrderMoveScheduleService ddOrderMoveScheduleService,
 			final @NonNull DistributionJobLoaderSupportingServices loadingSupportServices,
@@ -28,6 +31,7 @@ public class DistributionJobCreateCommand
 			final @NonNull DDOrderId ddOrderId,
 			final @NonNull UserId responsibleId)
 	{
+		this.trxManager = trxManager;
 		this.ddOrderService = ddOrderService;
 		this.ddOrderMoveScheduleService = ddOrderMoveScheduleService;
 		this.loadingSupportServices = loadingSupportServices;
@@ -37,6 +41,11 @@ public class DistributionJobCreateCommand
 	}
 
 	public DistributionJob execute()
+	{
+		return trxManager.callInThreadInheritedTrx(this::executeInTrx);
+	}
+
+	public DistributionJob executeInTrx()
 	{
 		final I_DD_Order ddOrder = ddOrderService.getById(ddOrderId);
 		ddOrderService.assignToResponsible(ddOrder, responsibleId);
