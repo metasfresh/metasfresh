@@ -317,7 +317,7 @@ public class MD_Candidate_StepDef
 				return candidate != null;
 			};
 
-			StepDefUtil.tryAndWait(timeoutSec, 500, candidateCreated);
+			StepDefUtil.tryAndWait(timeoutSec, 1000, candidateCreated);
 
 			final MaterialDispoDataItem materialDispoRecord = materialDispoRecordRepository.getBy(tableRow.createQuery());
 
@@ -379,9 +379,10 @@ public class MD_Candidate_StepDef
 		final String materialDispoDataIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_MD_Candidate.COLUMNNAME_MD_Candidate_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 		final MaterialDispoDataItem materialDispoDataItem = materialDispoDataItemStepDefData.get(materialDispoDataIdentifier);
 
-		final CandidateId candidateId = materialDispoDataItem.getCandidateId();
-
-		final CandidatesQuery candidatesQuery = CandidatesQuery.fromId(candidateId);
+		final CandidatesQuery candidatesQuery = CandidatesQuery.builder()
+				.id(materialDispoDataItem.getCandidateId())
+				.type(materialDispoDataItem.getType())
+				.build();
 
 		final MaterialDispoDataItem freshMaterialDispoItemInfo = materialDispoRecordRepository.getBy(candidatesQuery);
 

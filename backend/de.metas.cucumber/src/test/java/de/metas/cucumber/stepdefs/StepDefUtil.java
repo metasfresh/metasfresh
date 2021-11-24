@@ -36,7 +36,7 @@ public class StepDefUtil
 		final long nowMillis = System.currentTimeMillis(); // don't use SystemTime.millis(); because it's probably "rigged" for testing purposes,
 		final long deadLineMillis = nowMillis + (maxWaitSeconds * 1000L);
 
-		boolean conditionIsMet = worker.get();
+		boolean conditionIsMet = false;
 
 		while (System.currentTimeMillis() < deadLineMillis && !conditionIsMet)
 		{

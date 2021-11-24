@@ -65,8 +65,8 @@ Feature: create production order
       | Identifier | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyOrdered | C_UOM_ID.X12DE355 | C_BPartner_ID.Identifier | DatePromised         |
       | ppo_1      | p_1                     | bom_1                        | ppln_1                            | 540006        | 10         | 10         | PCE               | endcustomer_2            | 2021-04-16T21:00:00Z |
     And after not more than 10s, PP_Order_BomLines are found
-      | PP_Order_ID.Identifier | Identifier | M_Product_ID.Identifier | QtyEntered | IsQtyPercentage | C_UOM_ID.X12DE355 | ComponentType |
-      | ppo_1                  | ppol_1     | p_2                     | 100        | false           | PCE               | CO            |
+      | PP_Order_ID.Identifier | Identifier | M_Product_ID.Identifier | QtyRequiered | IsQtyPercentage | C_UOM_ID.X12DE355 | ComponentType |
+      | ppo_1                  | ppol_1     | p_2                     | 100          | false           | PCE               | CO            |
     And after not more than 10s, PP_OrderCandidate_PP_Order are found
       | PP_Order_Candidate_ID.Identifier | PP_Order_ID.Identifier | QtyEntered | C_UOM_ID.X12DE355 |
       | ocP_1                            | ppo_1                  | 10         | PCE               |
@@ -136,8 +136,8 @@ Feature: create production order
       | Identifier | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyOrdered | C_UOM_ID.X12DE355 | C_BPartner_ID.Identifier | DatePromised         |
       | ppo_3      | p_3                     | bom_2                        | ppln_2                            | 540006        | 10         | 10         | PCE               | endcustomer_3            | 2021-06-16T21:00:00Z |
     And after not more than 10s, PP_Order_BomLines are found
-      | PP_Order_ID.Identifier | Identifier | M_Product_ID.Identifier | QtyEntered | IsQtyPercentage | C_UOM_ID.X12DE355 | ComponentType |
-      | ppo_3                  | ppol_2     | p_4                     | 100        | false           | PCE               | CO            |
+      | PP_Order_ID.Identifier | Identifier | M_Product_ID.Identifier | QtyRequiered | IsQtyPercentage | C_UOM_ID.X12DE355 | ComponentType |
+      | ppo_3                  | ppol_2     | p_4                     | 100          | false           | PCE               | CO            |
     And after not more than 10s, PP_OrderCandidate_PP_Order are found
       | PP_Order_Candidate_ID.Identifier | PP_Order_ID.Identifier | QtyEntered | C_UOM_ID.X12DE355 |
       | ocP_2                            | ppo_3                  | 10         | PCE               |
@@ -166,8 +166,8 @@ Feature: create production order
       | Identifier | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyOrdered | C_UOM_ID.X12DE355 | C_BPartner_ID.Identifier | DatePromised         |
       | ppo_3      | p_3                     | bom_2                        | ppln_2                            | 540006        | 12         | 12         | PCE               | endcustomer_3            | 2021-06-16T21:00:00Z |
     And after not more than 10s, PP_Order_BomLines are found
-      | PP_Order_ID.Identifier | Identifier | M_Product_ID.Identifier | QtyEntered | IsQtyPercentage | C_UOM_ID.X12DE355 | ComponentType |
-      | ppo_3                  | ppol_2     | p_4                     | 120        | false           | PCE               | CO            |
+      | PP_Order_ID.Identifier | Identifier | M_Product_ID.Identifier | QtyRequiered | IsQtyPercentage | C_UOM_ID.X12DE355 | ComponentType |
+      | ppo_3                  | ppol_2     | p_4                     | 120          | false           | PCE               | CO            |
     And after not more than 10s, PP_OrderCandidate_PP_Order are found
       | PP_Order_Candidate_ID.Identifier | PP_Order_ID.Identifier | QtyEntered | C_UOM_ID.X12DE355 |
       | ocP_3                            | ppo_3                  | 12         | PCE               |
@@ -241,8 +241,8 @@ Feature: create production order
       | Identifier | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyOrdered | C_UOM_ID.X12DE355 | C_BPartner_ID.Identifier | DatePromised         |
       | ppo_11     | p_11                    | bom_11                       | ppln_11                           | 540006        | 10         | 10         | PCE               | endcustomer_22           | 2021-04-12T21:00:00Z |
     And after not more than 10s, PP_Order_BomLines are found
-      | PP_Order_ID.Identifier | Identifier | M_Product_ID.Identifier | QtyEntered | IsQtyPercentage | C_UOM_ID.X12DE355 | ComponentType |
-      | ppo_11                 | ppol_11    | p_22                    | 100        | false           | PCE               | CO            |
+      | PP_Order_ID.Identifier | Identifier | M_Product_ID.Identifier | QtyRequiered | IsQtyPercentage | C_UOM_ID.X12DE355 | ComponentType |
+      | ppo_11                 | ppol_11    | p_22                    | 100          | false           | PCE               | CO            |
     And after not more than 10s, PP_OrderCandidate_PP_Order are found
       | PP_Order_Candidate_ID.Identifier | PP_Order_ID.Identifier | QtyEntered | C_UOM_ID.X12DE355 |
       | ocP_11                           | ppo_11                 | 10         | PCE               |
@@ -324,8 +324,8 @@ Feature: create production order
       | Identifier | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyOrdered | C_UOM_ID.X12DE355 | C_BPartner_ID.Identifier | DatePromised         |
       | ppo_111    | p_111                   | bom_111                      | ppln_111                          | 540006        | 10         | 10         | PCE               | endcustomer_222          | 2021-04-11T21:00:00Z |
     And after not more than 10s, PP_Order_BomLines are found
-      | PP_Order_ID.Identifier | Identifier | M_Product_ID.Identifier | QtyEntered | IsQtyPercentage | C_UOM_ID.X12DE355 | ComponentType |
-      | ppo_111                | ppol_111   | p_222                   | 100        | false           | PCE               | CO            |
+      | PP_Order_ID.Identifier | Identifier | M_Product_ID.Identifier | QtyRequiered | IsQtyPercentage | C_UOM_ID.X12DE355 | ComponentType |
+      | ppo_111                | ppol_111   | p_222                   | 100          | false           | PCE               | CO            |
     And after not more than 10s, PP_OrderCandidate_PP_Order are found
       | PP_Order_Candidate_ID.Identifier | PP_Order_ID.Identifier | QtyEntered | C_UOM_ID.X12DE355 |
       | ocP_111                          | ppo_111                | 10         | PCE               |
@@ -410,8 +410,8 @@ Feature: create production order
       | Identifier | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyOrdered | C_UOM_ID.X12DE355 | C_BPartner_ID.Identifier | DatePromised         |
       | ppo_11     | p_11                    | bom_11                       | ppln_11                           | 540006        | 10         | 10         | PCE               | endcustomer_22           | 2021-04-15T21:00:00Z |
     And after not more than 10s, PP_Order_BomLines are found
-      | PP_Order_ID.Identifier | Identifier | M_Product_ID.Identifier | QtyEntered | IsQtyPercentage | C_UOM_ID.X12DE355 | ComponentType |
-      | ppo_11                 | ppol_11    | p_22                    | 100        | false           | PCE               | CO            |
+      | PP_Order_ID.Identifier | Identifier | M_Product_ID.Identifier | QtyRequiered | IsQtyPercentage | C_UOM_ID.X12DE355 | ComponentType |
+      | ppo_11                 | ppol_11    | p_22                    | 100          | false           | PCE               | CO            |
     And after not more than 10s, PP_OrderCandidate_PP_Order are found
       | PP_Order_Candidate_ID.Identifier | PP_Order_ID.Identifier | QtyEntered | C_UOM_ID.X12DE355 |
       | ocP_11                           | ppo_11                 | 10         | PCE               |
