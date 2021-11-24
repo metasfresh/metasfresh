@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs;
 
+import io.cucumber.java.en.And;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -59,5 +60,12 @@ public class StepDefUtil
 
 			return InterfaceWrapperHelper.getId(model);
 		}
+	}
+
+	@And("^wait for (.*)s$")
+	public void waitFor(final int waitingTimeSec) throws InterruptedException
+	{
+		final long waitingTimeMillis = waitingTimeSec * 1000L;
+		Thread.sleep(waitingTimeMillis);
 	}
 }

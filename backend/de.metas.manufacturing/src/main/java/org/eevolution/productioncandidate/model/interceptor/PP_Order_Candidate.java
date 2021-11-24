@@ -119,7 +119,7 @@ public class PP_Order_Candidate
 
 		if (ppOrderCandidateRecord.getQtyToProcess().compareTo(actualQtyLeftToBeProcessed) > 0)
 		{
-			throw new AdempiereException("QtyToProcess cannot be grater then the actual qty left to be processed!")
+			throw new AdempiereException("QtyToProcess cannot be greater then the actual qty left to be processed!")
 					.appendParametersToMessage()
 					.setParameter("PP_Order_Candidate_ID", ppOrderCandidateRecord.getPP_Order_Candidate_ID())
 					.setParameter("PP_Order_Candidate.QtyToProcess", ppOrderCandidateRecord.getQtyToProcess())

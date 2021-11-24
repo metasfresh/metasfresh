@@ -20,7 +20,7 @@
  * #L%
  */
 
-package org.compiere.aggregation;
+package de.metas.util.agg.key;
 
 import java.util.List;
 

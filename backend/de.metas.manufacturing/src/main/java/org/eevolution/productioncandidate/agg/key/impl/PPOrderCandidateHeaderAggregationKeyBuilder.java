@@ -23,7 +23,7 @@
 package org.eevolution.productioncandidate.agg.key.impl;
 
 import org.adempiere.util.lang.ObjectUtils;
-import org.compiere.aggregation.AbstractHeaderAggregationKeyBuilder;
+import de.metas.util.agg.key.AbstractHeaderAggregationKeyBuilder;
 import org.eevolution.model.I_PP_Order_Candidate;
 
 public class PPOrderCandidateHeaderAggregationKeyBuilder extends AbstractHeaderAggregationKeyBuilder<I_PP_Order_Candidate>

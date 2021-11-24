@@ -111,7 +111,7 @@ public class PP_Order_Candidate_StepDef
 		}
 	}
 
-	@And("the following PP_Order_Candidates are enqueued")
+	@And("the following PP_Order_Candidates are enqueued for generating PP_Orders")
 	public void enqueuePP_Order_Candidate(@NonNull final DataTable dataTable)
 	{
 		final List<I_PP_Order_Candidate> ppOrderCandidates = new ArrayList<>();

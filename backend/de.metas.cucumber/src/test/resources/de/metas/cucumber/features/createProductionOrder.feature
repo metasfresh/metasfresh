@@ -5,10 +5,11 @@ Feature: create production order
 
   Background:
     Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
 
   @from:cucumber
   Scenario:  The manufacturing order is created from a manufacturing order candidate
-    And metasfresh contains M_Products:
+    Given metasfresh contains M_Products:
       | Identifier | Name                             |
       | p_1        | trackedProduct_4198215           |
       | p_2        | trackedProduct_component_4198215 |
@@ -45,32 +46,34 @@ Feature: create production order
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | p_1                     | 10         |
     When the order identified by o_1 is completed
-    And after not more than 10s, MD_Candidates are found
+    And after not more than 30s, MD_Candidates are found
       | Identifier | Type   | BusinessCase | M_Product_ID.Identifier | Time                 | DisplayQty | ATP |
       | c_1        | DEMAND | SHIPMENT     | p_1                     | 2021-04-16T21:00:00Z | -10        | -10 |
       | c_2        | SUPPLY | PRODUCTION   | p_1                     | 2021-04-16T21:00:00Z | 10         | 0   |
-    And after not more than 10s, PP_Order_Candidates are found
-      | Identifier | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | Processed | IsClosed |
-      | oc_1       | p_1                     | bom_1                        | ppln_1                            | 540006        | 10         | 10           | 0            | PCE               | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | false     | false    |
-    And after not more than 10s, PP_OrderLine_Candidates are found
+    And after not more than 30s, PP_Order_Candidates are found
+      | Identifier | Processed | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed |
+      | oc_1       | false     | p_1                     | bom_1                        | ppln_1                            | 540006        | 10         | 10           | 0            | PCE               | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | false    |
+    And after not more than 30s, PP_OrderLine_Candidates are found
       | PP_Order_Candidate_ID.Identifier | Identifier | M_Product_ID.Identifier | QtyEntered | C_UOM_ID.X12DE355 | ComponentType | PP_Product_BOMLine_ID.Identifier |
       | oc_1                             | olc_1      | p_2                     | 100        | PCE               | CO            | boml_1                           |
-    And the following PP_Order_Candidates are enqueued
+    And the following PP_Order_Candidates are enqueued for generating PP_Orders
       | PP_Order_Candidate_ID.Identifier |
       | oc_1                             |
-    Then after not more than 10s, PP_Order_Candidates are found
-      | Identifier | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | Processed | IsClosed |
-      | ocP_1      | p_1                     | bom_1                        | ppln_1                            | 540006        | 10         | 0            | 10           | PCE               | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | true      | false    |
-    And after not more than 10s, PP_Orders are found
+    Then after not more than 30s, PP_Order_Candidates are found
+      | Identifier | Processed | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed |
+      | ocP_1      | true      | p_1                     | bom_1                        | ppln_1                            | 540006        | 10         | 0            | 10           | PCE               | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | false    |
+    And after not more than 30s, PP_Orders are found
       | Identifier | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyOrdered | C_UOM_ID.X12DE355 | C_BPartner_ID.Identifier | DatePromised         |
       | ppo_1      | p_1                     | bom_1                        | ppln_1                            | 540006        | 10         | 10         | PCE               | endcustomer_2            | 2021-04-16T21:00:00Z |
-    And after not more than 10s, PP_Order_BomLines are found
+    And after not more than 30s, PP_Order_BomLines are found
       | PP_Order_ID.Identifier | Identifier | M_Product_ID.Identifier | QtyRequiered | IsQtyPercentage | C_UOM_ID.X12DE355 | ComponentType |
       | ppo_1                  | ppol_1     | p_2                     | 100          | false           | PCE               | CO            |
-    And after not more than 10s, PP_OrderCandidate_PP_Order are found
+    And after not more than 30s, PP_OrderCandidate_PP_Order are found
       | PP_Order_Candidate_ID.Identifier | PP_Order_ID.Identifier | QtyEntered | C_UOM_ID.X12DE355 |
       | ocP_1                            | ppo_1                  | 10         | PCE               |
-    And after not more than 10s, MD_Candidates are found
+    # this is mostly about de.metas.material.dispo.service.candidatechange.StockCandidateService.applyDeltaToMatchingLaterStockCandidates finishing work before checking the candidates
+    And wait for 30s
+    And after not more than 30s, MD_Candidates are found
       | Identifier | Type   | BusinessCase | M_Product_ID.Identifier | Time                 | DisplayQty | ATP |
       | c_3        | SUPPLY | PRODUCTION   | p_1                     | 2021-04-16T21:00:00Z | 10         | 0   |
     And the following MD_Candidates are validated
@@ -79,7 +82,7 @@ Feature: create production order
 
   @from:cucumber
   Scenario:  The manufacturing order is created from a manufacturing order candidate, then the manufacturing order candidate is re-opened, and another manufacturing order is created from it
-    And metasfresh contains M_Products:
+    Given metasfresh contains M_Products:
       | Identifier | Name                             |
       | p_3        | trackedProduct_5946115           |
       | p_4        | trackedProduct_component_5946115 |
@@ -116,32 +119,34 @@ Feature: create production order
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_2       | o_2                   | p_3                     | 10         |
     When the order identified by o_2 is completed
-    And after not more than 10s, MD_Candidates are found
+    And after not more than 30s, MD_Candidates are found
       | Identifier | Type   | BusinessCase | M_Product_ID.Identifier | Time                 | DisplayQty | ATP |
       | c_2        | DEMAND | SHIPMENT     | p_3                     | 2021-06-16T21:00:00Z | -10        | -10 |
       | c_3        | SUPPLY | PRODUCTION   | p_3                     | 2021-06-16T21:00:00Z | 10         | 0   |
-    And after not more than 10s, PP_Order_Candidates are found
-      | Identifier | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | Processed | IsClosed |
-      | oc_2       | p_3                     | bom_2                        | ppln_2                            | 540006        | 10         | 10           | 0            | PCE               | 2021-06-16T21:00:00Z | 2021-06-16T21:00:00Z | false     | false    |
-    And after not more than 10s, PP_OrderLine_Candidates are found
+    And after not more than 30s, PP_Order_Candidates are found
+      | Identifier | Processed | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed |
+      | oc_2       | false     | p_3                     | bom_2                        | ppln_2                            | 540006        | 10         | 10           | 0            | PCE               | 2021-06-16T21:00:00Z | 2021-06-16T21:00:00Z | false    |
+    And after not more than 30s, PP_OrderLine_Candidates are found
       | PP_Order_Candidate_ID.Identifier | Identifier | M_Product_ID.Identifier | QtyEntered | C_UOM_ID.X12DE355 | ComponentType | PP_Product_BOMLine_ID.Identifier |
       | oc_2                             | olc_2      | p_4                     | 100        | PCE               | CO            | boml_2                           |
-    And the following PP_Order_Candidates are enqueued
+    And the following PP_Order_Candidates are enqueued for generating PP_Orders
       | PP_Order_Candidate_ID.Identifier |
       | oc_2                             |
-    And after not more than 10s, PP_Order_Candidates are found
-      | Identifier | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | Processed | IsClosed |
-      | ocP_2      | p_3                     | bom_2                        | ppln_2                            | 540006        | 10         | 0            | 10           | PCE               | 2021-06-16T21:00:00Z | 2021-06-16T21:00:00Z | true      | false    |
-    And after not more than 10s, PP_Orders are found
+    And after not more than 30s, PP_Order_Candidates are found
+      | Identifier | Processed | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed |
+      | ocP_2      | true      | p_3                     | bom_2                        | ppln_2                            | 540006        | 10         | 0            | 10           | PCE               | 2021-06-16T21:00:00Z | 2021-06-16T21:00:00Z | false    |
+    And after not more than 30s, PP_Orders are found
       | Identifier | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyOrdered | C_UOM_ID.X12DE355 | C_BPartner_ID.Identifier | DatePromised         |
       | ppo_3      | p_3                     | bom_2                        | ppln_2                            | 540006        | 10         | 10         | PCE               | endcustomer_3            | 2021-06-16T21:00:00Z |
-    And after not more than 10s, PP_Order_BomLines are found
+    And after not more than 30s, PP_Order_BomLines are found
       | PP_Order_ID.Identifier | Identifier | M_Product_ID.Identifier | QtyRequiered | IsQtyPercentage | C_UOM_ID.X12DE355 | ComponentType |
       | ppo_3                  | ppol_2     | p_4                     | 100          | false           | PCE               | CO            |
-    And after not more than 10s, PP_OrderCandidate_PP_Order are found
+    And after not more than 30s, PP_OrderCandidate_PP_Order are found
       | PP_Order_Candidate_ID.Identifier | PP_Order_ID.Identifier | QtyEntered | C_UOM_ID.X12DE355 |
       | ocP_2                            | ppo_3                  | 10         | PCE               |
-    And after not more than 10s, MD_Candidates are found
+    # this is mostly about de.metas.material.dispo.service.candidatechange.StockCandidateService.applyDeltaToMatchingLaterStockCandidates finishing work before checking the candidates
+    And wait for 30s
+    And after not more than 30s, MD_Candidates are found
       | Identifier | Type   | BusinessCase | M_Product_ID.Identifier | Time                 | DisplayQty | ATP |
       | c_4        | SUPPLY | PRODUCTION   | p_3                     | 2021-06-16T21:00:00Z | 10         | 0   |
     And the following PP_Order_Candidates are re-opened
@@ -150,28 +155,30 @@ Feature: create production order
     And update PP_Order_Candidates
       | PP_Order_Candidate_ID.Identifier | QtyEntered | DateStartSchedule |
       | ocP_2                            | 22         |                   |
-    And after not more than 10s, MD_Candidates are found
+    And after not more than 30s, MD_Candidates are found
       | Identifier | Type   | BusinessCase | M_Product_ID.Identifier | Time                 | DisplayQty | ATP |
       | c_4        | SUPPLY | PRODUCTION   | p_3                     | 2021-06-16T21:00:00Z | 10         | 12  |
     And the following MD_Candidates are validated
       | MD_Candidate_ID.Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise |
       | c_3                        | SUPPLY            | PRODUCTION                | p_3                     | 2021-06-16T21:00:00Z | 12  | 2                      |
-    And the following PP_Order_Candidates are enqueued
+    And the following PP_Order_Candidates are enqueued for generating PP_Orders
       | PP_Order_Candidate_ID.Identifier |
       | ocP_2                            |
-    Then after not more than 10s, PP_Order_Candidates are found
-      | Identifier | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | Processed | IsClosed |
-      | ocP_3      | p_3                     | bom_2                        | ppln_2                            | 540006        | 22         | 0            | 22           | PCE               | 2021-06-16T21:00:00Z | 2021-06-16T21:00:00Z | true      | false    |
-    And after not more than 10s, PP_Orders are found
+    Then after not more than 30s, PP_Order_Candidates are found
+      | Identifier | Processed | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed |
+      | ocP_3      | true      | p_3                     | bom_2                        | ppln_2                            | 540006        | 22         | 0            | 22           | PCE               | 2021-06-16T21:00:00Z | 2021-06-16T21:00:00Z | false    |
+    And after not more than 30s, PP_Orders are found
       | Identifier | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyOrdered | C_UOM_ID.X12DE355 | C_BPartner_ID.Identifier | DatePromised         |
       | ppo_3      | p_3                     | bom_2                        | ppln_2                            | 540006        | 12         | 12         | PCE               | endcustomer_3            | 2021-06-16T21:00:00Z |
-    And after not more than 10s, PP_Order_BomLines are found
+    And after not more than 30s, PP_Order_BomLines are found
       | PP_Order_ID.Identifier | Identifier | M_Product_ID.Identifier | QtyRequiered | IsQtyPercentage | C_UOM_ID.X12DE355 | ComponentType |
       | ppo_3                  | ppol_2     | p_4                     | 120          | false           | PCE               | CO            |
-    And after not more than 10s, PP_OrderCandidate_PP_Order are found
+    And after not more than 30s, PP_OrderCandidate_PP_Order are found
       | PP_Order_Candidate_ID.Identifier | PP_Order_ID.Identifier | QtyEntered | C_UOM_ID.X12DE355 |
       | ocP_3                            | ppo_3                  | 12         | PCE               |
-    And after not more than 10s, MD_Candidates are found
+    # this is mostly about de.metas.material.dispo.service.candidatechange.StockCandidateService.applyDeltaToMatchingLaterStockCandidates finishing work before checking the candidates
+    And wait for 30s
+    And after not more than 30s, MD_Candidates are found
       | Identifier | Type   | BusinessCase | M_Product_ID.Identifier | Time                 | DisplayQty | ATP |
       | c_5        | SUPPLY | PRODUCTION   | p_3                     | 2021-06-16T21:00:00Z | 12         | 12  |
     And the following MD_Candidates are validated
@@ -181,7 +188,7 @@ Feature: create production order
 
   @from:cucumber
   Scenario:  The manufacturing order is created from a manufacturing order candidate and other md_candidates already exist
-    And metasfresh contains M_Products:
+    Given metasfresh contains M_Products:
       | Identifier | Name                                |
       | p_11       | trackedProduct_6187122215           |
       | p_22       | trackedProduct_component_6187122215 |
@@ -221,32 +228,34 @@ Feature: create production order
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_11      | o_11                  | p_11                    | 20         |
     When the order identified by o_11 is completed
-    And after not more than 10s, MD_Candidates are found
+    And after not more than 30s, MD_Candidates are found
       | Identifier | Type   | BusinessCase | M_Product_ID.Identifier | Time                 | DisplayQty | ATP |
       | c_11       | DEMAND | SHIPMENT     | p_11                    | 2021-04-12T21:00:00Z | -20        | -10 |
       | c_22       | SUPPLY | PRODUCTION   | p_11                    | 2021-04-12T21:00:00Z | 10         | 0   |
-    And after not more than 10s, PP_Order_Candidates are found
-      | Identifier | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | Processed | IsClosed |
-      | oc_11      | p_11                    | bom_11                       | ppln_11                           | 540006        | 10         | 10           | 0            | PCE               | 2021-04-12T21:00:00Z | 2021-04-12T21:00:00Z | false     | false    |
-    And after not more than 10s, PP_OrderLine_Candidates are found
+    And after not more than 30s, PP_Order_Candidates are found
+      | Identifier | Processed | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed |
+      | oc_11      | false     | p_11                    | bom_11                       | ppln_11                           | 540006        | 10         | 10           | 0            | PCE               | 2021-04-12T21:00:00Z | 2021-04-12T21:00:00Z | false    |
+    And after not more than 30s, PP_OrderLine_Candidates are found
       | PP_Order_Candidate_ID.Identifier | Identifier | M_Product_ID.Identifier | QtyEntered | C_UOM_ID.X12DE355 | ComponentType | PP_Product_BOMLine_ID.Identifier |
       | oc_11                            | olc_11     | p_22                    | 100        | PCE               | CO            | boml_11                          |
-    And the following PP_Order_Candidates are enqueued
+    And the following PP_Order_Candidates are enqueued for generating PP_Orders
       | PP_Order_Candidate_ID.Identifier |
       | oc_11                            |
-    Then after not more than 10s, PP_Order_Candidates are found
-      | Identifier | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | Processed | IsClosed |
-      | ocP_11     | p_11                    | bom_11                       | ppln_11                           | 540006        | 10         | 0            | 10           | PCE               | 2021-04-12T21:00:00Z | 2021-04-12T21:00:00Z | true      | false    |
-    And after not more than 10s, PP_Orders are found
+    Then after not more than 30s, PP_Order_Candidates are found
+      | Identifier | Processed | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed |
+      | ocP_11     | true      | p_11                    | bom_11                       | ppln_11                           | 540006        | 10         | 0            | 10           | PCE               | 2021-04-12T21:00:00Z | 2021-04-12T21:00:00Z | false    |
+    And after not more than 30s, PP_Orders are found
       | Identifier | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyOrdered | C_UOM_ID.X12DE355 | C_BPartner_ID.Identifier | DatePromised         |
       | ppo_11     | p_11                    | bom_11                       | ppln_11                           | 540006        | 10         | 10         | PCE               | endcustomer_22           | 2021-04-12T21:00:00Z |
-    And after not more than 10s, PP_Order_BomLines are found
+    And after not more than 30s, PP_Order_BomLines are found
       | PP_Order_ID.Identifier | Identifier | M_Product_ID.Identifier | QtyRequiered | IsQtyPercentage | C_UOM_ID.X12DE355 | ComponentType |
       | ppo_11                 | ppol_11    | p_22                    | 100          | false           | PCE               | CO            |
-    And after not more than 10s, PP_OrderCandidate_PP_Order are found
+    And after not more than 30s, PP_OrderCandidate_PP_Order are found
       | PP_Order_Candidate_ID.Identifier | PP_Order_ID.Identifier | QtyEntered | C_UOM_ID.X12DE355 |
       | ocP_11                           | ppo_11                 | 10         | PCE               |
-    And after not more than 10s, MD_Candidates are found
+    # this is mostly about de.metas.material.dispo.service.candidatechange.StockCandidateService.applyDeltaToMatchingLaterStockCandidates finishing work before checking the candidates
+    And wait for 30s
+    And after not more than 30s, MD_Candidates are found
       | Identifier | Type   | BusinessCase | M_Product_ID.Identifier | Time                 | DisplayQty | ATP |
       | c_33       | SUPPLY | PRODUCTION   | p_11                    | 2021-04-12T21:00:00Z | 10         | 0   |
     And the following MD_Candidates are validated
@@ -259,7 +268,7 @@ Feature: create production order
 
   @from:cucumber
   Scenario:  The manufacturing order is created from a manufacturing order candidate and the date of the manufacturing order candidate is changed in the past
-    And metasfresh contains M_Products:
+    Given metasfresh contains M_Products:
       | Identifier | Name                               |
       | p_111      | trackedProduct_615954127           |
       | p_222      | trackedProduct_component_615954127 |
@@ -295,41 +304,45 @@ Feature: create production order
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_111     | o_111                 | p_111                   | 10         |
     When the order identified by o_111 is completed
-    And after not more than 10s, MD_Candidates are found
+    And after not more than 30s, MD_Candidates are found
       | Identifier | Type   | BusinessCase | M_Product_ID.Identifier | Time                 | DisplayQty | ATP |
       | c_111      | DEMAND | SHIPMENT     | p_111                   | 2021-04-12T21:00:00Z | -10        | -10 |
       | c_222      | SUPPLY | PRODUCTION   | p_111                   | 2021-04-12T21:00:00Z | 10         | 0   |
-    And after not more than 10s, PP_Order_Candidates are found
-      | Identifier | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | Processed | IsClosed |
-      | oc_111     | p_111                   | bom_111                      | ppln_111                          | 540006        | 10         | 10           | 0            | PCE               | 2021-04-12T21:00:00Z | 2021-04-12T21:00:00Z | false     | false    |
-    And after not more than 10s, PP_OrderLine_Candidates are found
+    And after not more than 30s, PP_Order_Candidates are found
+      | Identifier | Processed | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed |
+      | oc_111     | false     | p_111                   | bom_111                      | ppln_111                          | 540006        | 10         | 10           | 0            | PCE               | 2021-04-12T21:00:00Z | 2021-04-12T21:00:00Z | false    |
+    And after not more than 30s, PP_OrderLine_Candidates are found
       | PP_Order_Candidate_ID.Identifier | Identifier | M_Product_ID.Identifier | QtyEntered | C_UOM_ID.X12DE355 | ComponentType | PP_Product_BOMLine_ID.Identifier |
       | oc_111                           | olc_111    | p_222                   | 100        | PCE               | CO            | boml_111                         |
     And update PP_Order_Candidates
       | PP_Order_Candidate_ID.Identifier | QtyEntered | DateStartSchedule |
       | oc_111                           |            | 2021-04-12        |
-    And after not more than 10s, MD_Candidates are found
+    # this is mostly about de.metas.material.dispo.service.candidatechange.StockCandidateService.applyDeltaToMatchingLaterStockCandidates finishing work before checking the candidates
+    And wait for 30s
+    And after not more than 30s, MD_Candidates are found
       | Identifier | Type   | BusinessCase | M_Product_ID.Identifier | Time                 | DisplayQty | ATP |
       | c_222      | SUPPLY | PRODUCTION   | p_111                   | 2021-04-11T21:00:00Z | 10         | 10  |
     And the following MD_Candidates are validated
       | MD_Candidate_ID.Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise |
       | c_111                      | DEMAND            | SHIPMENT                  | p_111                   | 2021-04-12T21:00:00Z | 10  | 0                      |
-    And the following PP_Order_Candidates are enqueued
+    And the following PP_Order_Candidates are enqueued for generating PP_Orders
       | PP_Order_Candidate_ID.Identifier |
       | oc_111                           |
-    Then after not more than 10s, PP_Order_Candidates are found
-      | Identifier | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | Processed | IsClosed |
-      | ocP_111    | p_111                   | bom_111                      | ppln_111                          | 540006        | 10         | 0            | 10           | PCE               | 2021-04-11T21:00:00Z | 2021-04-11T21:00:00Z | true      | false    |
-    And after not more than 10s, PP_Orders are found
+    Then after not more than 30s, PP_Order_Candidates are found
+      | Identifier | Processed | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed |
+      | ocP_111    | true      | p_111                   | bom_111                      | ppln_111                          | 540006        | 10         | 0            | 10           | PCE               | 2021-04-11T21:00:00Z | 2021-04-11T21:00:00Z | false    |
+    And after not more than 30s, PP_Orders are found
       | Identifier | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyOrdered | C_UOM_ID.X12DE355 | C_BPartner_ID.Identifier | DatePromised         |
       | ppo_111    | p_111                   | bom_111                      | ppln_111                          | 540006        | 10         | 10         | PCE               | endcustomer_222          | 2021-04-11T21:00:00Z |
-    And after not more than 10s, PP_Order_BomLines are found
+    And after not more than 30s, PP_Order_BomLines are found
       | PP_Order_ID.Identifier | Identifier | M_Product_ID.Identifier | QtyRequiered | IsQtyPercentage | C_UOM_ID.X12DE355 | ComponentType |
       | ppo_111                | ppol_111   | p_222                   | 100          | false           | PCE               | CO            |
-    And after not more than 10s, PP_OrderCandidate_PP_Order are found
+    And after not more than 30s, PP_OrderCandidate_PP_Order are found
       | PP_Order_Candidate_ID.Identifier | PP_Order_ID.Identifier | QtyEntered | C_UOM_ID.X12DE355 |
       | ocP_111                          | ppo_111                | 10         | PCE               |
-    And after not more than 10s, MD_Candidates are found
+    # this is mostly about de.metas.material.dispo.service.candidatechange.StockCandidateService.applyDeltaToMatchingLaterStockCandidates finishing work before checking the candidates
+    And wait for 30s
+    And after not more than 30s, MD_Candidates are found
       | Identifier | Type   | BusinessCase | M_Product_ID.Identifier | Time                 | DisplayQty | ATP |
       | c_333      | SUPPLY | PRODUCTION   | p_111                   | 2021-04-11T21:00:00Z | 10         | 10  |
     And the following MD_Candidates are validated
@@ -338,7 +351,7 @@ Feature: create production order
 
   @from:cucumber
   Scenario:  The manufacturing order is created from a manufacturing order candidate, other md_candidates already exist and the date is changed in the future
-    And metasfresh contains M_Products:
+    Given metasfresh contains M_Products:
       | Identifier | Name                                |
       | p_11       | trackedProduct_6181212216           |
       | p_22       | trackedProduct_component_6181212216 |
@@ -378,20 +391,22 @@ Feature: create production order
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_11      | o_11                  | p_11                    | 20         |
     When the order identified by o_11 is completed
-    And after not more than 10s, MD_Candidates are found
+    And after not more than 30s, MD_Candidates are found
       | Identifier | Type   | BusinessCase | M_Product_ID.Identifier | Time                 | DisplayQty | ATP |
       | c_11       | DEMAND | SHIPMENT     | p_11                    | 2021-04-12T21:00:00Z | -20        | -10 |
       | c_22       | SUPPLY | PRODUCTION   | p_11                    | 2021-04-12T21:00:00Z | 10         | 0   |
-    And after not more than 10s, PP_Order_Candidates are found
-      | Identifier | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | Processed | IsClosed |
-      | oc_11      | p_11                    | bom_11                       | ppln_11                           | 540006        | 10         | 10           | 0            | PCE               | 2021-04-12T21:00:00Z | 2021-04-12T21:00:00Z | false     | false    |
-    And after not more than 10s, PP_OrderLine_Candidates are found
+    And after not more than 30s, PP_Order_Candidates are found
+      | Identifier | Processed | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed |
+      | oc_11      | false     | p_11                    | bom_11                       | ppln_11                           | 540006        | 10         | 10           | 0            | PCE               | 2021-04-12T21:00:00Z | 2021-04-12T21:00:00Z | false    |
+    And after not more than 30s, PP_OrderLine_Candidates are found
       | PP_Order_Candidate_ID.Identifier | Identifier | M_Product_ID.Identifier | QtyEntered | C_UOM_ID.X12DE355 | ComponentType | PP_Product_BOMLine_ID.Identifier |
       | oc_11                            | olc_11     | p_22                    | 100        | PCE               | CO            | boml_11                          |
     And update PP_Order_Candidates
       | PP_Order_Candidate_ID.Identifier | QtyEntered | DateStartSchedule |
       | oc_11                            |            | 2021-04-16        |
-    And after not more than 10s, MD_Candidates are found
+    # this is mostly about de.metas.material.dispo.service.candidatechange.StockCandidateService.applyDeltaToMatchingLaterStockCandidates finishing work before checking the candidates
+    And wait for 30s
+    And after not more than 30s, MD_Candidates are found
       | Identifier | Type   | BusinessCase | M_Product_ID.Identifier | Time                 | DisplayQty | ATP |
       | c_22       | SUPPLY | PRODUCTION   | p_11                    | 2021-04-15T21:00:00Z | 10         | 10  |
     And the following MD_Candidates are validated
@@ -400,22 +415,24 @@ Feature: create production order
     And the following stock MD_Candidates are validated
       | MD_Candidate_ID.Identifier | M_Product_ID.Identifier | DateProjected        | Qty |
       | s_2                        | p_11                    | 2021-04-14T21:00:00Z | 0   |
-    And the following PP_Order_Candidates are enqueued
+    And the following PP_Order_Candidates are enqueued for generating PP_Orders
       | PP_Order_Candidate_ID.Identifier |
       | oc_11                            |
-    Then after not more than 10s, PP_Order_Candidates are found
-      | Identifier | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | Processed | IsClosed |
-      | ocP_11     | p_11                    | bom_11                       | ppln_11                           | 540006        | 10         | 0            | 10           | PCE               | 2021-04-15T21:00:00Z | 2021-04-15T21:00:00Z | true      | false    |
-    And after not more than 10s, PP_Orders are found
+    Then after not more than 30s, PP_Order_Candidates are found
+      | Identifier | Processed | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed |
+      | ocP_11     | true      | p_11                    | bom_11                       | ppln_11                           | 540006        | 10         | 0            | 10           | PCE               | 2021-04-15T21:00:00Z | 2021-04-15T21:00:00Z | false    |
+    And after not more than 30s, PP_Orders are found
       | Identifier | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyOrdered | C_UOM_ID.X12DE355 | C_BPartner_ID.Identifier | DatePromised         |
       | ppo_11     | p_11                    | bom_11                       | ppln_11                           | 540006        | 10         | 10         | PCE               | endcustomer_22           | 2021-04-15T21:00:00Z |
-    And after not more than 10s, PP_Order_BomLines are found
+    And after not more than 30s, PP_Order_BomLines are found
       | PP_Order_ID.Identifier | Identifier | M_Product_ID.Identifier | QtyRequiered | IsQtyPercentage | C_UOM_ID.X12DE355 | ComponentType |
       | ppo_11                 | ppol_11    | p_22                    | 100          | false           | PCE               | CO            |
-    And after not more than 10s, PP_OrderCandidate_PP_Order are found
+    And after not more than 30s, PP_OrderCandidate_PP_Order are found
       | PP_Order_Candidate_ID.Identifier | PP_Order_ID.Identifier | QtyEntered | C_UOM_ID.X12DE355 |
       | ocP_11                           | ppo_11                 | 10         | PCE               |
-    And after not more than 10s, MD_Candidates are found
+    # this is mostly about de.metas.material.dispo.service.candidatechange.StockCandidateService.applyDeltaToMatchingLaterStockCandidates finishing work before checking the candidates
+    And wait for 30s
+    And after not more than 30s, MD_Candidates are found
       | Identifier | Type   | BusinessCase | M_Product_ID.Identifier | Time                 | DisplayQty | ATP |
       | c_33       | SUPPLY | PRODUCTION   | p_11                    | 2021-04-15T21:00:00Z | 10         | 10  |
     And the following MD_Candidates are validated
