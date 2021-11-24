@@ -22,14 +22,13 @@
 
 package de.metas.invoicecandidate.modelvalidator.ilhandler;
 
-import com.google.common.base.MoreObjects;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.invoicecandidate.async.spi.impl.CreateMissingInvoiceCandidatesWorkpackageProcessor;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.CandidatesAutoCreateMode;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.ad.modelvalidator.AbstractModelInterceptor;
@@ -45,7 +44,7 @@ import org.compiere.model.I_AD_Client;
  * @author metas-dev <dev@metasfresh.com>
  */
 @Value
-@Builder
+@EqualsAndHashCode(callSuper = true)
 public class ILHandlerModelInterceptor extends AbstractModelInterceptor
 {
 	IInvoiceCandidateHandler handler;
@@ -56,24 +55,14 @@ public class ILHandlerModelInterceptor extends AbstractModelInterceptor
 
 	CreateCandidatesOnCommitCollector collector = new CreateCandidatesOnCommitCollector();
 
-	public ILHandlerModelInterceptor(@NonNull final IInvoiceCandidateHandler handler	)
+	public ILHandlerModelInterceptor(@NonNull final IInvoiceCandidateHandler handler)
 	{
 		this.handler = handler;
-		
+
 		this.tableName = handler.getSourceTable();
 		this.initialCandidatesAutoCreateMode = handler.getGeneralCandidatesAutoCreateMode();
 		this.createInvoiceCandidatesTiming = handler.getAutomaticallyCreateMissingCandidatesDocTiming();
 		this.isDocument = Services.get(IDocumentBL.class).isDocumentTable(this.tableName);
-	}
-
-	@Override
-	public String toString()
-	{
-		return MoreObjects.toStringHelper(this)
-				.add("tableName", tableName)
-				.add("isCreateInvoiceCandidates", initialCandidatesAutoCreateMode)
-				.add("createInvoiceCandidatesTiming", createInvoiceCandidatesTiming)
-				.toString();
 	}
 
 	@Override
