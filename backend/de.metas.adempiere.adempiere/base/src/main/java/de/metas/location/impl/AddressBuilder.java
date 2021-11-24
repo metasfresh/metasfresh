@@ -6,7 +6,8 @@ import de.metas.greeting.GreetingRepository;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.Language;
-import de.metas.location.CountryCustomInfo;
+import de.metas.location.Addressvars;
+import de.metas.location.CountryDisplaySequenceHelper;
 import de.metas.location.CountryId;
 import de.metas.location.CountrySequences;
 import de.metas.location.ICountryDAO;
@@ -33,7 +34,6 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -110,47 +110,6 @@ public class AddressBuilder
 		private final String name;
 
 		Uservars(final String name)
-		{
-			this.name = name;
-		}
-
-		public String getName()
-		{
-			return name;
-		}
-	}
-
-	protected enum Addressvars
-	{
-		BPartner("BP"),
-
-		Contact("CON"),
-
-		BPartnerName("BP_Name"),
-
-		BPartnerGreeting("BP_GR"),
-
-		City("C"),
-
-		Region("R"),
-
-		Country("CO"),
-
-		Postal_Add("A"),
-
-		Postal("P"),
-
-		Address1("A1"),
-
-		Address2("A2"),
-
-		Address3("A3"),
-
-		Address4("A4");
-
-		private final String name;
-
-		Addressvars(@NonNull final String name)
 		{
 			this.name = name;
 		}

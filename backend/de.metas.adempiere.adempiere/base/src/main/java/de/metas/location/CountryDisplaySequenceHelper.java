@@ -20,9 +20,10 @@
  * #L%
  */
 
-package de.metas.location.impl;
+package de.metas.location;
 
 import de.metas.i18n.AdMessageKey;
+import de.metas.location.Addressvars;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.adempiere.exceptions.AdempiereException;
@@ -36,9 +37,9 @@ public class CountryDisplaySequenceHelper
 
 	public static void assertValidDisplaySequence(@NonNull final String displaySequence)
 	{
-		final boolean existsBPName = isTokenFound(displaySequence, AddressBuilder.Addressvars.BPartnerName.getName());
-		final boolean existsBP = isTokenFound(displaySequence, AddressBuilder.Addressvars.BPartner.getName());
-		final boolean existsBPGReeting = isTokenFound(displaySequence, AddressBuilder.Addressvars.BPartnerGreeting.getName());
+		final boolean existsBPName = isTokenFound(displaySequence, Addressvars.BPartnerName.getName());
+		final boolean existsBP = isTokenFound(displaySequence, Addressvars.BPartner.getName());
+		final boolean existsBPGReeting = isTokenFound(displaySequence, Addressvars.BPartnerGreeting.getName());
 
 		if ((existsBP && existsBPName) || (existsBP && existsBPGReeting))
 		{
