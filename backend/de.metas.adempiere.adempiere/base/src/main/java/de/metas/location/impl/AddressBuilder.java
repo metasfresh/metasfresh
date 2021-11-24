@@ -539,7 +539,9 @@ public class AddressBuilder
 
 		if ((existsBP && existsBPName) || (existsBP && existsBPGReeting))
 		{
-			throw new AdempiereException(MSG_AddressBuilder_WrongDisplaySequence);
+			throw new AdempiereException(MSG_AddressBuilder_WrongDisplaySequence)
+					.appendParametersToMessage()
+					.setParameter("displaySequence", displaySequence);
 		}
 	}
 
