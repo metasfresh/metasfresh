@@ -45,13 +45,13 @@ public class FlatrateDataEntryHandler extends AbstractInvoiceCandidateHandler
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 
 	@Override
-	public CandidatesAutoCreateMode getCandidatesAutoCreateMode()
+	public CandidatesAutoCreateMode getGeneralCandidatesAutoCreateMode()
 	{
 		return CandidatesAutoCreateMode.DONT;
 	}
 
 	@Override
-	public CandidatesAutoCreateMode getCandidatesAutoCreateMode(final Object model)
+	public CandidatesAutoCreateMode getSpecificCandidatesAutoCreateMode(final Object model)
 	{
 		return CandidatesAutoCreateMode.DONT;
 	}

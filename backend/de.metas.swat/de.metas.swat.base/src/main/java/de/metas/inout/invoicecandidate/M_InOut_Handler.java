@@ -58,13 +58,13 @@ public class M_InOut_Handler extends AbstractInvoiceCandidateHandler
 	private final transient IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 
 	@Override
-	public CandidatesAutoCreateMode getCandidatesAutoCreateMode()
+	public CandidatesAutoCreateMode getGeneralCandidatesAutoCreateMode()
 	{
 		return CandidatesAutoCreateMode.CREATE_CANDIDATES;
 	}
 
 	@Override
-	public CandidatesAutoCreateMode getCandidatesAutoCreateMode(final Object model)
+	public CandidatesAutoCreateMode getSpecificCandidatesAutoCreateMode(final Object model)
 	{
 		return CandidatesAutoCreateMode.CREATE_CANDIDATES;
 	}

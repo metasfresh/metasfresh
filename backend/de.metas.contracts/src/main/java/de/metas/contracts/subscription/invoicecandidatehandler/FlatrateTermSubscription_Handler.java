@@ -66,13 +66,13 @@ public class FlatrateTermSubscription_Handler implements ConditionTypeSpecificIn
 			return CandidatesAutoCreateMode.DONT;
 		}
 
-		return isEligibleForInvoiceCreation(flatrateTerm)
+		return isEligibleForInvoiceAutoCreation(flatrateTerm)
 				? CandidatesAutoCreateMode.CREATE_CANDIDATES_AND_INVOICES
 				: CandidatesAutoCreateMode.CREATE_CANDIDATES;
 
 	}
 
-	private boolean isEligibleForInvoiceCreation(@NonNull final I_C_Flatrate_Term flatrateTerm)
+	private boolean isEligibleForInvoiceAutoCreation(@NonNull final I_C_Flatrate_Term flatrateTerm)
 	{
 		final boolean autoInvoiceFlatrateTerm = orgDAO.isAutoInvoiceFlatrateTerm(OrgId.ofRepoId(flatrateTerm.getAD_Org_ID()));
 		if (!autoInvoiceFlatrateTerm)

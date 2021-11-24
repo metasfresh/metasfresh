@@ -49,13 +49,13 @@ public class M_Inventory_Handler extends AbstractInvoiceCandidateHandler
 	final IInventoryDAO inventoryDAO = Services.get(IInventoryDAO.class);
 
 	@Override
-	public CandidatesAutoCreateMode getCandidatesAutoCreateMode()
+	public CandidatesAutoCreateMode getGeneralCandidatesAutoCreateMode()
 	{
 		return CandidatesAutoCreateMode.CREATE_CANDIDATES;
 	}
 
 	@Override
-	public CandidatesAutoCreateMode getCandidatesAutoCreateMode(final Object model)
+	public CandidatesAutoCreateMode getSpecificCandidatesAutoCreateMode(final Object model)
 	{
 		return CandidatesAutoCreateMode.CREATE_CANDIDATES;
 	}

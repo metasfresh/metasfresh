@@ -78,7 +78,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 	 * @return <code>false</code>, the candidates will be created by {@link C_Order_Handler}.
 	 */
 	@Override
-	public CandidatesAutoCreateMode getCandidatesAutoCreateMode()
+	public CandidatesAutoCreateMode getGeneralCandidatesAutoCreateMode()
 	{
 		return CandidatesAutoCreateMode.DONT;
 	}
@@ -87,7 +87,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 	 * @return <code>false</code>, the candidates will be created by {@link C_Order_Handler}.
 	 */
 	@Override
-	public CandidatesAutoCreateMode getCandidatesAutoCreateMode(Object model)
+	public CandidatesAutoCreateMode getSpecificCandidatesAutoCreateMode(Object model)
 	{
 		return CandidatesAutoCreateMode.DONT;
 	}

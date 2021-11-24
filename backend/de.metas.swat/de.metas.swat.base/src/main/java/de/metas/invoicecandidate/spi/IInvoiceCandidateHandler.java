@@ -83,11 +83,11 @@ public interface IInvoiceCandidateHandler
 	 * Checks if this handler, <b>in general</b>, can create invoice candidates automatically. Returns {@link CandidatesAutoCreateMode#CREATE_CANDIDATES} by default.
 	 * <p>
 	 * <b>The handler gives a "general" response on startup-time!</b> 
-	 * When the business logic has to create individual invoice candidates, it will call {@link #getCandidatesAutoCreateMode(Object)}.
+	 * When the business logic has to create individual invoice candidates, it will call {@link #getSpecificCandidatesAutoCreateMode(Object)}.
 	 *
 	 * @return what shall be done for {@link #getSourceTable()}. This default impl returns {@link CandidatesAutoCreateMode#CREATE_CANDIDATES}.
 	 */
-	default CandidatesAutoCreateMode getCandidatesAutoCreateMode()
+	default CandidatesAutoCreateMode getGeneralCandidatesAutoCreateMode()
 	{
 		return CREATE_CANDIDATES;
 	}
@@ -98,11 +98,11 @@ public interface IInvoiceCandidateHandler
 	 * Invoice candidate handlers usually need to implement this method,
 	 * because they need to make sure that the given {@code model} does not have an invoice candidate yet, before they can return {@code true}.
 	 * <p>
-	 * Note that this method only matters if {@link #getCandidatesAutoCreateMode()} did not return {@link CandidatesAutoCreateMode#DONT} when the system started.
+	 * Note that this method only matters if {@link #getGeneralCandidatesAutoCreateMode()} did not return {@link CandidatesAutoCreateMode#DONT} when the system started.
 	 *
 	 * @return whether the invoice candidates shall be automatically generated for the given particular model.
 	 */
-	CandidatesAutoCreateMode getCandidatesAutoCreateMode(Object model);
+	CandidatesAutoCreateMode getSpecificCandidatesAutoCreateMode(Object model);
 	
 	/**
 	 * Returns {@code AFTER_COMPLETE} by default.

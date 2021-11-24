@@ -66,13 +66,13 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	@Override
-	public CandidatesAutoCreateMode getCandidatesAutoCreateMode()
+	public CandidatesAutoCreateMode getGeneralCandidatesAutoCreateMode()
 	{
 		return CandidatesAutoCreateMode.CREATE_CANDIDATES;
 	}
 
 	@Override
-	public CandidatesAutoCreateMode getCandidatesAutoCreateMode(final Object model)
+	public CandidatesAutoCreateMode getSpecificCandidatesAutoCreateMode(@NonNull final Object model)
 	{
 		final I_C_OLCand olCandRecord = create(model, I_C_OLCand.class);
 

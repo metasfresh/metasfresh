@@ -36,13 +36,13 @@ public class PlainInvoiceCandidateHandler extends AbstractInvoiceCandidateHandle
 	public final static String TABLENAME = "PlainInvoiceCandidateHandler";
 
 	@Override
-	public CandidatesAutoCreateMode getCandidatesAutoCreateMode()
+	public CandidatesAutoCreateMode getGeneralCandidatesAutoCreateMode()
 	{
 		return CandidatesAutoCreateMode.DONT;
 	}
 
 	@Override
-	public CandidatesAutoCreateMode getCandidatesAutoCreateMode(Object model)
+	public CandidatesAutoCreateMode getSpecificCandidatesAutoCreateMode(Object model)
 	{
 		return CandidatesAutoCreateMode.DONT;
 	}

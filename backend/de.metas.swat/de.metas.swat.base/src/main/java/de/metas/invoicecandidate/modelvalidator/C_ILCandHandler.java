@@ -67,11 +67,7 @@ public class C_ILCandHandler
 					continue;
 				}
 
-				final ILHandlerModelInterceptor modelInterceptor = ILHandlerModelInterceptor.builder()
-						.setTableName(tableName)
-						.setCandidatesAutoCreateMode(handler.getCandidatesAutoCreateMode())
-						.setCreateInvoiceCandidatesTiming(handler.getAutomaticallyCreateMissingCandidatesDocTiming())
-						.build();
+				final ILHandlerModelInterceptor modelInterceptor = new ILHandlerModelInterceptor(handler);
 				engine.addModelValidator(modelInterceptor);
 			}
 		}

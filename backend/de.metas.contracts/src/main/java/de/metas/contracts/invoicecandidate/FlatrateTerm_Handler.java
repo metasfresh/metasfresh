@@ -37,7 +37,7 @@ import javax.annotation.Nullable;
  */
 public class FlatrateTerm_Handler extends AbstractInvoiceCandidateHandler
 {
-	private final static String SYS_Config_AUTO_INVOICE = "de.metas.contracts.invoicecandidate.ALLOW_AUTO_INVOICE";
+	public final static String SYS_Config_AUTO_INVOICE = "de.metas.contracts.invoicecandidate.ALLOW_AUTO_INVOICE";
 	
 	private final Map<String, ConditionTypeSpecificInvoiceCandidateHandler> conditionTypeSpecificInvoiceCandidateHandlers;
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
@@ -59,14 +59,14 @@ public class FlatrateTerm_Handler extends AbstractInvoiceCandidateHandler
 	}
 
 	@Override
-	public CandidatesAutoCreateMode getCandidatesAutoCreateMode()
+	public CandidatesAutoCreateMode getGeneralCandidatesAutoCreateMode()
 	{
 		final boolean allowAutoInvoice = sysConfigBL.getBooleanValue(SYS_Config_AUTO_INVOICE, false);
 		return allowAutoInvoice ? CREATE_CANDIDATES_AND_INVOICES : CREATE_CANDIDATES;
 	}
 	
 	@Override
-	public CandidatesAutoCreateMode getCandidatesAutoCreateMode(@NonNull final Object flatrateTermObj)
+	public CandidatesAutoCreateMode getSpecificCandidatesAutoCreateMode(@NonNull final Object flatrateTermObj)
 	{
 		final I_C_Flatrate_Term flatrateTerm = create(flatrateTermObj, I_C_Flatrate_Term.class);
 		final Collection<ConditionTypeSpecificInvoiceCandidateHandler> specificHandlers = conditionTypeSpecificInvoiceCandidateHandlers.values();

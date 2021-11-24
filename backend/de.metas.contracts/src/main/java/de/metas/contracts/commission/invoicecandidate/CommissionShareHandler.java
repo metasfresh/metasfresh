@@ -110,7 +110,7 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 	}
 
 	@Override
-	public CandidatesAutoCreateMode getCandidatesAutoCreateMode(@NonNull final Object model)
+	public CandidatesAutoCreateMode getSpecificCandidatesAutoCreateMode(@NonNull final Object model)
 	{
 		final I_C_Commission_Share commissionShareRecord = create(model, I_C_Commission_Share.class);
 

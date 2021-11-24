@@ -58,7 +58,7 @@ public class PP_Order_MaterialTracking_Handler extends AbstractInvoiceCandidateH
 	}
 
 	@Override
-	public final CandidatesAutoCreateMode getCandidatesAutoCreateMode()
+	public final CandidatesAutoCreateMode getGeneralCandidatesAutoCreateMode()
 	{
 		return CandidatesAutoCreateMode.CREATE_CANDIDATES;
 	}
@@ -73,7 +73,7 @@ public class PP_Order_MaterialTracking_Handler extends AbstractInvoiceCandidateH
 	 * @return <code>true</code> always.
 	 */
 	@Override
-	public final CandidatesAutoCreateMode getCandidatesAutoCreateMode(final Object model)
+	public final CandidatesAutoCreateMode getSpecificCandidatesAutoCreateMode(final Object model)
 	{
 		return CandidatesAutoCreateMode.CREATE_CANDIDATES;
 	}

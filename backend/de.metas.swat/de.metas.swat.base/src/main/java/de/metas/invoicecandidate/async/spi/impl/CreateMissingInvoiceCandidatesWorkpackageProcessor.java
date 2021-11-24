@@ -86,7 +86,7 @@ public class CreateMissingInvoiceCandidatesWorkpackageProcessor extends Workpack
 			CandidatesAutoCreateMode mode = CandidatesAutoCreateMode.DONT;
 			for (final IInvoiceCandidateHandler handler : handlers)
 			{
-				mode = handler.getCandidatesAutoCreateMode(model);
+				mode = handler.getSpecificCandidatesAutoCreateMode(model);
 				if (mode.isDoSomething())
 				{
 					break;
