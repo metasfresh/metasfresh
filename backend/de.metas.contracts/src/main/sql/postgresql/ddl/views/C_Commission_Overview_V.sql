@@ -11,6 +11,7 @@ SELECT
         WHEN trigger.C_Commission_Instance_ID IS NOT NULL       THEN (trigger.C_Commission_Instance_ID * 10) + 4
         WHEN trigger.C_Invoice_Candidate_ID IS NOT NULL         THEN (trigger.C_Invoice_Candidate_ID * 10) + 5
         WHEN trigger.C_InvoiceLine_ID IS NOT NULL               THEN (trigger.C_InvoiceLine_ID * 10) + 6
+        WHEN trigger.CommissionTrigger_Type = 'MediatedOrder'   THEN (trigger.C_OrderLine_ID * 10) + 7
     END                                  AS C_Commission_Overview_V_ID,
     trigger.IsSOTrx,
     trigger.C_Commission_Instance_ID,
@@ -42,9 +43,11 @@ SELECT
     cs.C_BPartner_SalesRep_ID,
     cs.C_Flatrate_Term_ID,
     cs.C_CommissionSettingsLine_ID,
+    cs.C_MediatedCommissionSettingsLine_ID,
     cs.PointsSum_ToSettle,
     cs.PointsSum_Settled,
     cs.IsSimulation,
+    cs.C_BPartner_Payer_ID,
     CASE
         WHEN (ci.PointsBase_Forecasted + ci.PointsBase_Invoiceable + ci.PointsBase_Invoiced) != 0
             THEN ROUND((cs.PointsSum_ToSettle + cs.PointsSum_Settled) / (ci.PointsBase_Forecasted + ci.PointsBase_Invoiceable + ci.PointsBase_Invoiced) * 100, 0)
@@ -60,6 +63,5 @@ FROM C_Commission_Trigger_With_Instance_V trigger
          LEFT JOIN C_Invoice_Candidate ic_settlement ON ic_settlement.Record_ID = cs.C_Commission_Share_ID AND ic_settlement.AD_Table_ID = get_table_id('C_Commission_Share') AND ic_settlement.isactive = 'Y'
          LEFT JOIN C_Invoice_Line_Alloc ila_settlement ON ila_settlement.C_Invoice_Candidate_ID = ic_settlement.C_Invoice_Candidate_ID AND ila_settlement.isactive = 'Y'
          LEFT JOIN C_InvoiceLine il_settlement ON il_settlement.C_InvoiceLine_ID = ila_settlement.C_InvoiceLine_ID AND il_settlement.isactive = 'Y'
-WHERE trigger.IsSOTrx='Y' /* in future we will also have purchase records, but not yet now */
 --LIMIT 10
 ;

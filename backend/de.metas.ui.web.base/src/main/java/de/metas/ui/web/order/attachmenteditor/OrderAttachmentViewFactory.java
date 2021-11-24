@@ -43,7 +43,7 @@ import de.metas.vertical.healthcare.alberta.prescription.dao.AlbertaPrescription
 import lombok.NonNull;
 import org.compiere.model.I_C_Order;
 
-import static de.metas.ui.web.order.attachmenteditor.process.OrderAttachmentView_Launcher.PARAM_PURCHASE_ORDER_ID;
+import static de.metas.ui.web.order.attachmenteditor.process.C_Order_AttachmentView_Launcher.PARAM_PURCHASE_ORDER_ID;
 
 @ViewFactory(windowId = OrderAttachmentViewFactory.OrderAttachmentView_String)
 public class OrderAttachmentViewFactory implements IViewFactory

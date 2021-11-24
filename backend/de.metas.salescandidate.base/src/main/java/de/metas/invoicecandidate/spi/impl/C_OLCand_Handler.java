@@ -196,7 +196,7 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 				ic, // model
 				TaxCategoryId.ofRepoIdOrNull(olcRecord.getC_TaxCategory_ID()),
 				ProductId.toRepoId(productId),
-				CoalesceUtil.coalesce(olcRecord.getDatePromised_Override(), olcRecord.getDatePromised(), olcRecord.getPresetDateInvoiced()),
+				CoalesceUtil.coalesceNotNull(olcRecord.getDatePromised_Override(), olcRecord.getDatePromised(), olcRecord.getPresetDateInvoiced()),
 				orgId,
 				(WarehouseId)null,
 				shipToPartnerInfo.toBPartnerLocationAndCaptureId(),

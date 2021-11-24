@@ -1,12 +1,11 @@
 package de.metas.payment.esr.dataimporter.impl.camt54;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
-import java.io.InputStream;
-import java.math.BigDecimal;
-
+import de.metas.payment.camt054_001_06.BatchInformation2;
+import de.metas.payment.camt054_001_06.EntryDetails7;
+import de.metas.payment.camt054_001_06.ReportEntry8;
+import de.metas.payment.esr.dataimporter.ESRStatement;
+import de.metas.payment.esr.dataimporter.ESRTransaction;
+import de.metas.payment.esr.dataimporter.ESRType;
 import de.metas.payment.esr.model.I_ESR_ImportFile;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
@@ -14,14 +13,12 @@ import org.assertj.core.api.Condition;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import de.metas.payment.camt054_001_06.BatchInformation2;
-import de.metas.payment.camt054_001_06.EntryDetails7;
-import de.metas.payment.camt054_001_06.ReportEntry8;
-import de.metas.payment.esr.dataimporter.ESRStatement;
-import de.metas.payment.esr.dataimporter.ESRTransaction;
-import de.metas.payment.esr.dataimporter.ESRType;
-import de.metas.payment.esr.model.I_ESR_Import;
-import de.metas.payment.esr.model.X_ESR_ImportLine;
+import java.io.InputStream;
+import java.math.BigDecimal;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /*
  * #%L
@@ -104,7 +101,6 @@ public class ESRDataImporterCamt54V06Tests
 	@Test
 	public void testMissingCtrlQtyUnit()
 	{
-		final ESRDataImporterCamt54v06 importer = new ESRDataImporterCamt54v06();
 		final ESRStatement.ESRStatementBuilder stmtBuilder = ESRStatement.builder();
 
 		final EntryDetails7 emptyNtryDetails = new EntryDetails7();
@@ -127,6 +123,10 @@ public class ESRDataImporterCamt54V06Tests
 		//
 		// now do some testing
 		//
+
+		final ESRDataImporterCamt54v06 importer = ESRDataImporterCamt54v06.builder()
+				.adLanguage("de_DE")
+				.build();
 
 		// only the empty one..
 		{
@@ -215,9 +215,7 @@ public class ESRDataImporterCamt54V06Tests
 		// all have a reference set
 		assertThat(importData.getTransactions())
 				.as("All ten transactions have a  non-empty reference set")
-				.allSatisfy(t -> {
-					assertThat(t.getEsrReferenceNumber()).isNotEmpty();
-				});
+				.allSatisfy(t -> assertThat(t.getEsrReferenceNumber()).isNotEmpty());
 
 		assertThat(importData.getTransactions())
 				.filteredOn(t -> t.getEsrReferenceNumber().equals("000000000002016030001593614"))
@@ -239,9 +237,7 @@ public class ESRDataImporterCamt54V06Tests
 				.as("those nine transactions that have a reference set, also have a non-empty string")
 				.filteredOn(t -> t.getEsrReferenceNumber() != null)
 				.hasSize(9)
-				.allSatisfy(t -> {
-					assertThat(t.getEsrReferenceNumber()).isNotEmpty();
-				});
+				.allSatisfy(t -> assertThat(t.getEsrReferenceNumber()).isNotEmpty());
 
 		assertThat(importData.getTransactions())
 				.filteredOn(t -> t.getEsrReferenceNumber() == null)
@@ -295,12 +291,10 @@ public class ESRDataImporterCamt54V06Tests
 		final BigDecimal lineSum = importData
 				.getTransactions()
 				.stream()
-				.map(t -> t.getAmount()).reduce(
-						BigDecimal.ZERO,
-						(a, b) -> a.add(b));
+				.map(ESRTransaction::getAmount)
+				.reduce(BigDecimal.ZERO, BigDecimal::add);
 		assertThat(lineSum).isEqualByComparingTo(importData.getCtrlAmount());
 	}
-	
 
 	/**
 	 * Verifies that are 2 QRR  transaction lines
@@ -312,30 +306,24 @@ public class ESRDataImporterCamt54V06Tests
 		assertThat(inputStream).isNotNull();
 
 		final ESRStatement importData = new ESRDataImporterCamt54(newInstance(I_ESR_ImportFile.class), inputStream).importData();
-		
+
 		assertThat(importData.getTransactions())
-		.filteredOn(t -> t.getType().equals(ESRType.TYPE_QRR))
-		.hasSize(10)
-		.allSatisfy(t -> {
-			assertThat(t.getEsrParticipantNo()).isNotEmpty();
-		});
+				.filteredOn(t -> t.getType().equals(ESRType.TYPE_QRR))
+				.hasSize(10)
+				.allSatisfy(t -> assertThat(t.getEsrParticipantNo()).isNotEmpty());
 	}
-	
-	
+
 	/**
 	 * Verifies that we can't mix ESR and QRR in the same entry
 	 */
 	@Test
 	public void testQRR_IBAN()
 	{
-
 		final InputStream inputStream = getClass().getResourceAsStream("/camt054_QRR_MultipleTrxTypes.xml");
 		assertThat(inputStream).isNotNull();
 
-		
-		assertThatThrownBy(() -> {
-			new ESRDataImporterCamt54(newInstance(I_ESR_ImportFile.class), inputStream).importData();
-		}).isInstanceOf(AdempiereException.class)
-		  .hasMessage(ESRDataImporterCamt54.MSG_MULTIPLE_TRANSACTIONS_TYPES.toAD_Message());
+		assertThatThrownBy(() -> new ESRDataImporterCamt54(newInstance(I_ESR_ImportFile.class), inputStream).importData())
+				.isInstanceOf(AdempiereException.class)
+				.hasMessage(ESRDataImporterCamt54.MSG_MULTIPLE_TRANSACTIONS_TYPES.toAD_Message());
 	}
 }
