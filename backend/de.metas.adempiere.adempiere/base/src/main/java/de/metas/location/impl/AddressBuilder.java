@@ -487,9 +487,7 @@ public class AddressBuilder
 			return "";
 		}
 
-		final boolean isLocal = isLocalCountry(bpLocation);
-		final String displaySequence = getDisplaySequence(location.getC_Country(), isLocal);
-		assertValidDisplaySequence(displaySequence);
+		final String displaySequence = extractDisplaySequence(bpLocation, location);
 
 		final String bPartnerBlock = buildBPartnerBlock(bpartner, bpContact, bpLocation, displaySequence);
 
@@ -504,6 +502,27 @@ public class AddressBuilder
 				userBlock);
 	}
 
+	@NonNull
+	private String extractDisplaySequence(
+			@NonNull final I_C_BPartner_Location bpLocation,
+			@NonNull final I_C_Location location)
+	{
+		final boolean isLocal = isLocalCountry(bpLocation);
+		final I_C_Country c_countryRecord = location.getC_Country();
+		final String displaySequence = getDisplaySequence(c_countryRecord, isLocal);
+		try
+		{
+			assertValidDisplaySequence(displaySequence);
+		}
+		catch (final AdempiereException e)
+		{
+			throw e.setParameter("C_Country ", c_countryRecord)
+					.setParameter("IsLocalCountry", isLocal)
+					.setParameter("C_BPartner_Location", bpLocation);
+		}
+		return displaySequence;
+	}
+
 	private boolean isLocalCountry(final org.compiere.model.I_C_BPartner_Location location)
 	{
 		final Properties ctx = Env.getCtx();
@@ -512,24 +531,10 @@ public class AddressBuilder
 		return isLocal;
 	}
 
-	private String getDisplaySequence(final boolean isLocal, final String trxName)
-	{
-		final Properties ctx = Env.getCtx();
-		final CountryCustomInfo userInfo = countriesRepo.retriveCountryCustomInfo(ctx, trxName);
-		String displaySequence = userInfo == null ? "" : userInfo.getCaptureSequence();
-		if (displaySequence == null || displaySequence.isEmpty())
-		{
-			final I_C_Country country = countriesRepo.getDefault(ctx);
-			displaySequence = getDisplaySequence(country, isLocal);
-		}
-		return displaySequence;
-	}
-
 	private void assertValidDisplaySequence(@NonNull final String displaySequence)
 	{
 		final boolean existsBPName = isTokenFound(displaySequence, Addressvars.BPartnerName.getName());
 		final boolean existsBP = isTokenFound(displaySequence, Addressvars.BPartner.getName());
-		final boolean existsCON = isTokenFound(displaySequence, Addressvars.Contact.getName());
 		final boolean existsBPGReeting = isTokenFound(displaySequence, Addressvars.BPartnerGreeting.getName());
 
 		if ((existsBP && existsBPName) || (existsBP && existsBPGReeting))
