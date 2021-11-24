@@ -1,5 +1,6 @@
 package de.metas.location.interceptor;
 
+import de.metas.acct.api.IAccountBL;
 import de.metas.location.impl.CountryService;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -34,13 +35,16 @@ import org.springframework.stereotype.Component;
 @Component
 public class C_Country_Sequence
 {
-	private final CountryService countryService = SpringContextHolder.instance.getBean(CountryService.class);
+	private final CountryService countryService;
+
+	public C_Country_Sequence(@NonNull final CountryService countryService)
+	{
+		this.countryService = countryService;
+	}
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = {I_C_Country_Sequence.COLUMNNAME_DisplaySequence, I_C_Country_Sequence.COLUMNNAME_DisplaySequenceLocal})
 	public void onChangeCountryDisplaySequence(@NonNull final I_C_Country_Sequence countrySequenceRecord)
 	{
 		countryService.assertCountrSequencesValidDisplaySequence(countrySequenceRecord);
 	}
-
-
 }
