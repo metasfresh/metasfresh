@@ -47,9 +47,9 @@ Feature: create production order
       | ol_1       | o_1                   | p_1                     | 10         |
     When the order identified by o_1 is completed
     And after not more than 30s, MD_Candidates are found
-      | Identifier | Type   | BusinessCase | M_Product_ID.Identifier | Time                 | DisplayQty | ATP |
-      | c_1        | DEMAND | SHIPMENT     | p_1                     | 2021-04-16T21:00:00Z | -10        | -10 |
-      | c_2        | SUPPLY | PRODUCTION   | p_1                     | 2021-04-16T21:00:00Z | 10         | 0   |
+      | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise |
+      | c_1        | DEMAND            | SHIPMENT                  | p_1                     | 2021-04-16T21:00:00Z | -10 | -10                    |
+      | c_2        | SUPPLY            | PRODUCTION                | p_1                     | 2021-04-16T21:00:00Z | 10  | 0                      |
     And after not more than 30s, PP_Order_Candidates are found
       | Identifier | Processed | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed |
       | oc_1       | false     | p_1                     | bom_1                        | ppln_1                            | 540006        | 10         | 10           | 0            | PCE               | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | false    |
@@ -74,8 +74,8 @@ Feature: create production order
     # this is mostly about de.metas.material.dispo.service.candidatechange.StockCandidateService.applyDeltaToMatchingLaterStockCandidates finishing work before checking the candidates
     And wait for 30s
     And after not more than 30s, MD_Candidates are found
-      | Identifier | Type   | BusinessCase | M_Product_ID.Identifier | Time                 | DisplayQty | ATP |
-      | c_3        | SUPPLY | PRODUCTION   | p_1                     | 2021-04-16T21:00:00Z | 10         | 0   |
+      | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise |
+      | c_3        | SUPPLY            | PRODUCTION                | p_1                     | 2021-04-16T21:00:00Z | 10  | 0                      |
     And the following MD_Candidates are validated
       | MD_Candidate_ID.Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise |
       | c_2                        | SUPPLY            | PRODUCTION                | p_1                     | 2021-04-16T21:00:00Z | 0   | -10                    |
@@ -120,9 +120,9 @@ Feature: create production order
       | ol_2       | o_2                   | p_3                     | 10         |
     When the order identified by o_2 is completed
     And after not more than 30s, MD_Candidates are found
-      | Identifier | Type   | BusinessCase | M_Product_ID.Identifier | Time                 | DisplayQty | ATP |
-      | c_2        | DEMAND | SHIPMENT     | p_3                     | 2021-06-16T21:00:00Z | -10        | -10 |
-      | c_3        | SUPPLY | PRODUCTION   | p_3                     | 2021-06-16T21:00:00Z | 10         | 0   |
+      | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise |
+      | c_2        | DEMAND            | SHIPMENT                  | p_3                     | 2021-06-16T21:00:00Z | -10 | -10                    |
+      | c_3        | SUPPLY            | PRODUCTION                | p_3                     | 2021-06-16T21:00:00Z | 10  | 0                      |
     And after not more than 30s, PP_Order_Candidates are found
       | Identifier | Processed | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed |
       | oc_2       | false     | p_3                     | bom_2                        | ppln_2                            | 540006        | 10         | 10           | 0            | PCE               | 2021-06-16T21:00:00Z | 2021-06-16T21:00:00Z | false    |
@@ -147,8 +147,8 @@ Feature: create production order
     # this is mostly about de.metas.material.dispo.service.candidatechange.StockCandidateService.applyDeltaToMatchingLaterStockCandidates finishing work before checking the candidates
     And wait for 30s
     And after not more than 30s, MD_Candidates are found
-      | Identifier | Type   | BusinessCase | M_Product_ID.Identifier | Time                 | DisplayQty | ATP |
-      | c_4        | SUPPLY | PRODUCTION   | p_3                     | 2021-06-16T21:00:00Z | 10         | 0   |
+      | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise |
+      | c_4        | SUPPLY            | PRODUCTION                | p_3                     | 2021-06-16T21:00:00Z | 10  | 0                      |
     And the following PP_Order_Candidates are re-opened
       | PP_Order_Candidate_ID.Identifier |
       | ocP_2                            |
@@ -156,8 +156,8 @@ Feature: create production order
       | PP_Order_Candidate_ID.Identifier | QtyEntered | DateStartSchedule |
       | ocP_2                            | 22         |                   |
     And after not more than 30s, MD_Candidates are found
-      | Identifier | Type   | BusinessCase | M_Product_ID.Identifier | Time                 | DisplayQty | ATP |
-      | c_4        | SUPPLY | PRODUCTION   | p_3                     | 2021-06-16T21:00:00Z | 10         | 12  |
+      | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise |
+      | c_4        | SUPPLY            | PRODUCTION                | p_3                     | 2021-06-16T21:00:00Z | 10  | 12                     |
     And the following MD_Candidates are validated
       | MD_Candidate_ID.Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise |
       | c_3                        | SUPPLY            | PRODUCTION                | p_3                     | 2021-06-16T21:00:00Z | 12  | 2                      |
@@ -179,8 +179,8 @@ Feature: create production order
     # this is mostly about de.metas.material.dispo.service.candidatechange.StockCandidateService.applyDeltaToMatchingLaterStockCandidates finishing work before checking the candidates
     And wait for 30s
     And after not more than 30s, MD_Candidates are found
-      | Identifier | Type   | BusinessCase | M_Product_ID.Identifier | Time                 | DisplayQty | ATP |
-      | c_5        | SUPPLY | PRODUCTION   | p_3                     | 2021-06-16T21:00:00Z | 12         | 12  |
+      | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise |
+      | c_5        | SUPPLY            | PRODUCTION                | p_3                     | 2021-06-16T21:00:00Z | 12  | 12                     |
     And the following MD_Candidates are validated
       | MD_Candidate_ID.Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise |
       | c_4                        | SUPPLY            | PRODUCTION                | p_3                     | 2021-06-16T21:00:00Z | 10  | 0                      |
@@ -215,9 +215,9 @@ Feature: create production order
       | Identifier | M_Product_ID.Identifier | PP_Product_BOMVersions_ID.Identifier | IsCreatePlan |
       | ppln_11    | p_11                    | bomVersions_3                        | false        |
     And metasfresh initially has this MD_Candidate data
-      | Identifier | Type         | BusinessCase | M_Product_ID.Identifier | Time                 | DisplayQty | ATP |
-      | s_1        | INVENTORY_UP |              | p_11                    | 2021-04-10T21:00:00Z | 10         | 10  |
-      | s_2        | INVENTORY_UP |              | p_11                    | 2021-04-14T21:00:00Z | 10         | 20  |
+      | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise |
+      | s_1        | INVENTORY_UP      |                           | p_11                    | 2021-04-10T21:00:00Z | 10  | 10                     |
+      | s_2        | INVENTORY_UP      |                           | p_11                    | 2021-04-14T21:00:00Z | 10  | 20                     |
     And metasfresh contains C_BPartners:
       | Identifier     | Name             | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
       | endcustomer_22 | EndcustomerPP_60 | N            | Y              | ps_11                         |
@@ -229,9 +229,9 @@ Feature: create production order
       | ol_11      | o_11                  | p_11                    | 20         |
     When the order identified by o_11 is completed
     And after not more than 30s, MD_Candidates are found
-      | Identifier | Type   | BusinessCase | M_Product_ID.Identifier | Time                 | DisplayQty | ATP |
-      | c_11       | DEMAND | SHIPMENT     | p_11                    | 2021-04-12T21:00:00Z | -20        | -10 |
-      | c_22       | SUPPLY | PRODUCTION   | p_11                    | 2021-04-12T21:00:00Z | 10         | 0   |
+      | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise |
+      | c_11       | DEMAND            | SHIPMENT                  | p_11                    | 2021-04-12T21:00:00Z | -20 | -10                    |
+      | c_22       | SUPPLY            | PRODUCTION                | p_11                    | 2021-04-12T21:00:00Z | 10  | 0                      |
     And after not more than 30s, PP_Order_Candidates are found
       | Identifier | Processed | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed |
       | oc_11      | false     | p_11                    | bom_11                       | ppln_11                           | 540006        | 10         | 10           | 0            | PCE               | 2021-04-12T21:00:00Z | 2021-04-12T21:00:00Z | false    |
@@ -256,8 +256,8 @@ Feature: create production order
     # this is mostly about de.metas.material.dispo.service.candidatechange.StockCandidateService.applyDeltaToMatchingLaterStockCandidates finishing work before checking the candidates
     And wait for 30s
     And after not more than 30s, MD_Candidates are found
-      | Identifier | Type   | BusinessCase | M_Product_ID.Identifier | Time                 | DisplayQty | ATP |
-      | c_33       | SUPPLY | PRODUCTION   | p_11                    | 2021-04-12T21:00:00Z | 10         | 0   |
+      | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise |
+      | c_33       | SUPPLY            | PRODUCTION                | p_11                    | 2021-04-12T21:00:00Z | 10  | 0                      |
     And the following MD_Candidates are validated
       | MD_Candidate_ID.Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise |
       | c_22                       | SUPPLY            | PRODUCTION                | p_11                    | 2021-04-12T21:00:00Z | 0   | -10                    |
@@ -305,9 +305,9 @@ Feature: create production order
       | ol_111     | o_111                 | p_111                   | 10         |
     When the order identified by o_111 is completed
     And after not more than 30s, MD_Candidates are found
-      | Identifier | Type   | BusinessCase | M_Product_ID.Identifier | Time                 | DisplayQty | ATP |
-      | c_111      | DEMAND | SHIPMENT     | p_111                   | 2021-04-12T21:00:00Z | -10        | -10 |
-      | c_222      | SUPPLY | PRODUCTION   | p_111                   | 2021-04-12T21:00:00Z | 10         | 0   |
+      | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise |
+      | c_111      | DEMAND            | SHIPMENT                  | p_111                   | 2021-04-12T21:00:00Z | -10 | -10                    |
+      | c_222      | SUPPLY            | PRODUCTION                | p_111                   | 2021-04-12T21:00:00Z | 10  | 0                      |
     And after not more than 30s, PP_Order_Candidates are found
       | Identifier | Processed | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed |
       | oc_111     | false     | p_111                   | bom_111                      | ppln_111                          | 540006        | 10         | 10           | 0            | PCE               | 2021-04-12T21:00:00Z | 2021-04-12T21:00:00Z | false    |
@@ -320,8 +320,8 @@ Feature: create production order
     # this is mostly about de.metas.material.dispo.service.candidatechange.StockCandidateService.applyDeltaToMatchingLaterStockCandidates finishing work before checking the candidates
     And wait for 30s
     And after not more than 30s, MD_Candidates are found
-      | Identifier | Type   | BusinessCase | M_Product_ID.Identifier | Time                 | DisplayQty | ATP |
-      | c_222      | SUPPLY | PRODUCTION   | p_111                   | 2021-04-11T21:00:00Z | 10         | 10  |
+      | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise |
+      | c_222      | SUPPLY            | PRODUCTION                | p_111                   | 2021-04-11T21:00:00Z | 10  | 10                     |
     And the following MD_Candidates are validated
       | MD_Candidate_ID.Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise |
       | c_111                      | DEMAND            | SHIPMENT                  | p_111                   | 2021-04-12T21:00:00Z | 10  | 0                      |
@@ -343,8 +343,8 @@ Feature: create production order
     # this is mostly about de.metas.material.dispo.service.candidatechange.StockCandidateService.applyDeltaToMatchingLaterStockCandidates finishing work before checking the candidates
     And wait for 30s
     And after not more than 30s, MD_Candidates are found
-      | Identifier | Type   | BusinessCase | M_Product_ID.Identifier | Time                 | DisplayQty | ATP |
-      | c_333      | SUPPLY | PRODUCTION   | p_111                   | 2021-04-11T21:00:00Z | 10         | 10  |
+      | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise |
+      | c_333      | SUPPLY            | PRODUCTION                | p_111                   | 2021-04-11T21:00:00Z | 10  | 10                     |
     And the following MD_Candidates are validated
       | MD_Candidate_ID.Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise |
       | c_222                      | SUPPLY            | PRODUCTION                | p_111                   | 2021-04-11T21:00:00Z | 0   | 0                      |
@@ -378,9 +378,9 @@ Feature: create production order
       | Identifier | M_Product_ID.Identifier | PP_Product_BOMVersions_ID.Identifier | IsCreatePlan |
       | ppln_11    | p_11                    | bomVersions_5                        | false        |
     And metasfresh initially has this MD_Candidate data
-      | Identifier | Type         | BusinessCase | M_Product_ID.Identifier | Time                 | DisplayQty | ATP |
-      | s_1        | INVENTORY_UP |              | p_11                    | 2021-04-10T21:00:00Z | 10         | 10  |
-      | s_2        | INVENTORY_UP |              | p_11                    | 2021-04-14T21:00:00Z | 10         | 20  |
+      | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise |
+      | s_1        | INVENTORY_UP      |                           | p_11                    | 2021-04-10T21:00:00Z | 10  | 10                     |
+      | s_2        | INVENTORY_UP      |                           | p_11                    | 2021-04-14T21:00:00Z | 10  | 20                     |
     And metasfresh contains C_BPartners:
       | Identifier     | Name              | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
       | endcustomer_22 | EndcustomerPP_601 | N            | Y              | ps_11                         |
@@ -392,9 +392,9 @@ Feature: create production order
       | ol_11      | o_11                  | p_11                    | 20         |
     When the order identified by o_11 is completed
     And after not more than 30s, MD_Candidates are found
-      | Identifier | Type   | BusinessCase | M_Product_ID.Identifier | Time                 | DisplayQty | ATP |
-      | c_11       | DEMAND | SHIPMENT     | p_11                    | 2021-04-12T21:00:00Z | -20        | -10 |
-      | c_22       | SUPPLY | PRODUCTION   | p_11                    | 2021-04-12T21:00:00Z | 10         | 0   |
+      | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise |
+      | c_11       | DEMAND            | SHIPMENT                  | p_11                    | 2021-04-12T21:00:00Z | -20 | -10                    |
+      | c_22       | SUPPLY            | PRODUCTION                | p_11                    | 2021-04-12T21:00:00Z | 10  | 0                      |
     And after not more than 30s, PP_Order_Candidates are found
       | Identifier | Processed | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed |
       | oc_11      | false     | p_11                    | bom_11                       | ppln_11                           | 540006        | 10         | 10           | 0            | PCE               | 2021-04-12T21:00:00Z | 2021-04-12T21:00:00Z | false    |
@@ -407,8 +407,8 @@ Feature: create production order
     # this is mostly about de.metas.material.dispo.service.candidatechange.StockCandidateService.applyDeltaToMatchingLaterStockCandidates finishing work before checking the candidates
     And wait for 30s
     And after not more than 30s, MD_Candidates are found
-      | Identifier | Type   | BusinessCase | M_Product_ID.Identifier | Time                 | DisplayQty | ATP |
-      | c_22       | SUPPLY | PRODUCTION   | p_11                    | 2021-04-15T21:00:00Z | 10         | 10  |
+      | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise |
+      | c_22       | SUPPLY            | PRODUCTION                | p_11                    | 2021-04-15T21:00:00Z | 10  | 10                     |
     And the following MD_Candidates are validated
       | MD_Candidate_ID.Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise |
       | c_11                       | DEMAND            | SHIPMENT                  | p_11                    | 2021-04-12T21:00:00Z | 20  | -10                    |
@@ -433,8 +433,8 @@ Feature: create production order
     # this is mostly about de.metas.material.dispo.service.candidatechange.StockCandidateService.applyDeltaToMatchingLaterStockCandidates finishing work before checking the candidates
     And wait for 30s
     And after not more than 30s, MD_Candidates are found
-      | Identifier | Type   | BusinessCase | M_Product_ID.Identifier | Time                 | DisplayQty | ATP |
-      | c_33       | SUPPLY | PRODUCTION   | p_11                    | 2021-04-15T21:00:00Z | 10         | 10  |
+      | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise |
+      | c_33       | SUPPLY            | PRODUCTION                | p_11                    | 2021-04-15T21:00:00Z | 10  | 10                     |
     And the following MD_Candidates are validated
       | MD_Candidate_ID.Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise |
       | c_22                       | SUPPLY            | PRODUCTION                | p_11                    | 2021-04-15T21:00:00Z | 0   | 0                      |

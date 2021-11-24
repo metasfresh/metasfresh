@@ -27,6 +27,7 @@ import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateType;
+import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.product.ProductId;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.datatable.TableTransformer;
@@ -60,22 +61,22 @@ public class MD_Candidate_StepDefTableTransformer implements TableTransformer<MD
 		{
 			final String identifier = DataTableUtil.extractRecordIdentifier(dataTableRow, "MD_Candidate");
 
-			final CandidateType type = CandidateType.ofCode(dataTableRow.get("Type"));
-			final CandidateBusinessCase businessCase = CandidateBusinessCase.ofCodeOrNull(dataTableRow.get("BusinessCase"));
+			final CandidateType type = CandidateType.ofCode(dataTableRow.get(I_MD_Candidate.COLUMNNAME_MD_Candidate_Type));
+			final CandidateBusinessCase businessCase = CandidateBusinessCase.ofCodeOrNull(dataTableRow.get(I_MD_Candidate.COLUMNNAME_MD_Candidate_BusinessCase));
 
 			final String productIdentifier = DataTableUtil.extractStringForColumnName(dataTableRow, I_M_Product.COLUMNNAME_M_Product_ID + ".Identifier");
 
 			final int productId = StepDefUtil.extractId(productIdentifier, productTable);
 
-			final Instant time = DataTableUtil.extractInstantForColumnName(dataTableRow, "Time");
-			BigDecimal qty = DataTableUtil.extractBigDecimalForColumnName(dataTableRow, "DisplayQty");
+			final Instant time = DataTableUtil.extractInstantForColumnName(dataTableRow, I_MD_Candidate.COLUMNNAME_DateProjected);
+			BigDecimal qty = DataTableUtil.extractBigDecimalForColumnName(dataTableRow, I_MD_Candidate.COLUMNNAME_Qty);
 
 			if (type.equals(CandidateType.DEMAND) || type.equals(CandidateType.INVENTORY_DOWN))
 			{
 				qty = qty.negate();
 			}
 
-			final BigDecimal atp = DataTableUtil.extractBigDecimalForColumnName(dataTableRow, "ATP");
+			final BigDecimal atp = DataTableUtil.extractBigDecimalForColumnName(dataTableRow, I_MD_Candidate.COLUMNNAME_Qty_AvailableToPromise);
 
 			final MD_Candidate_StepDefTable.MaterialDispoTableRow tableRow = MD_Candidate_StepDefTable.MaterialDispoTableRow.builder()
 					.identifier(identifier)
