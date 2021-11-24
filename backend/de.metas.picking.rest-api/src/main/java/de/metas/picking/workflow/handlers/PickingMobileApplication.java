@@ -25,6 +25,7 @@ package de.metas.picking.workflow.handlers;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import de.metas.common.util.time.SystemTime;
+import de.metas.document.engine.IDocument;
 import de.metas.handlingunits.HUBarcode;
 import de.metas.handlingunits.picking.QtyRejectedReasonCode;
 import de.metas.handlingunits.picking.job.model.PickingJob;
@@ -206,7 +207,7 @@ public class PickingMobileApplication implements MobileApplication
 								.build(),
 						WFActivity.builder()
 								.id(WFActivityId.ofString("A3"))
-								.caption(TranslatableStrings.anyLanguage("Complete picking"))
+								.caption(TranslatableStrings.adRefList(IDocument.ACTION_AD_Reference_ID, IDocument.ACTION_Complete))
 								.wfActivityType(CompletePickingWFActivityHandler.HANDLED_ACTIVITY_TYPE)
 								.status(CompletePickingWFActivityHandler.computeActivityState(pickingJob))
 								.build()))

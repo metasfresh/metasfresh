@@ -1,5 +1,5 @@
 const translations = {
-  appName: 'Mobile UI',
+  appName: 'metasfresh mobile',
   general: {
     Product: 'Product',
     Locator: 'Locator',
@@ -48,7 +48,7 @@ const translations = {
       target: 'To Move',
       picked: 'Picked',
       scanHU: 'Scan pick from HU',
-      scanLocator: 'Scan drop from Locator',
+      scanLocator: 'Scan drop to Locator',
     },
     confirmButton: {
       default: {

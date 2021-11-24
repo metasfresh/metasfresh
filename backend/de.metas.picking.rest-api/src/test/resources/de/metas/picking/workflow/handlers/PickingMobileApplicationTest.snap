@@ -71,7 +71,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
         "status" : "NOT_STARTED"
       }, {
         "activityId" : "A3",
-        "caption" : "Complete picking",
+        "caption" : "CO",
         "componentProps" : {
           "confirmed" : false,
           "question" : "Are you sure?"
@@ -309,7 +309,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
         "status" : "NOT_STARTED"
       }, {
         "activityId" : "A3",
-        "caption" : "Complete picking",
+        "caption" : "CO",
         "componentProps" : {
           "confirmed" : false,
           "question" : "Are you sure?"
@@ -553,7 +553,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.createJobAndGet=
         "status" : "NOT_STARTED"
       }, {
         "activityId" : "A3",
-        "caption" : "Complete picking",
+        "caption" : "CO",
         "componentProps" : {
           "confirmed" : false,
           "question" : "Are you sure?"
@@ -797,7 +797,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "status" : "NOT_STARTED"
       }, {
         "activityId" : "A3",
-        "caption" : "Complete picking",
+        "caption" : "CO",
         "componentProps" : {
           "confirmed" : false,
           "question" : "Are you sure?"
@@ -1035,7 +1035,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "status" : "COMPLETED"
       }, {
         "activityId" : "A3",
-        "caption" : "Complete picking",
+        "caption" : "CO",
         "componentProps" : {
           "confirmed" : false,
           "question" : "Are you sure?"
@@ -1308,7 +1308,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "status" : "COMPLETED"
       }, {
         "activityId" : "A3",
-        "caption" : "Complete picking",
+        "caption" : "CO",
         "componentProps" : {
           "confirmed" : true,
           "question" : "Are you sure?"
@@ -1587,7 +1587,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "status" : "NOT_STARTED"
       }, {
         "activityId" : "A3",
-        "caption" : "Complete picking",
+        "caption" : "CO",
         "componentProps" : {
           "confirmed" : false,
           "question" : "Are you sure?"
@@ -1683,7 +1683,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "status" : "COMPLETED"
       }, {
         "activityId" : "A3",
-        "caption" : "Complete picking",
+        "caption" : "CO",
         "componentProps" : {
           "confirmed" : false,
           "question" : "Are you sure?"
@@ -1949,7 +1949,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "status" : "COMPLETED"
       }, {
         "activityId" : "A3",
-        "caption" : "Complete picking",
+        "caption" : "CO",
         "componentProps" : {
           "confirmed" : true,
           "question" : "Are you sure?"
@@ -2357,7 +2357,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "status" : "NOT_STARTED"
       }, {
         "activityId" : "A3",
-        "caption" : "Complete picking",
+        "caption" : "CO",
         "componentProps" : {
           "confirmed" : false,
           "question" : "Are you sure?"
@@ -2598,7 +2598,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "status" : "IN_PROGRESS"
       }, {
         "activityId" : "A3",
-        "caption" : "Complete picking",
+        "caption" : "CO",
         "componentProps" : {
           "confirmed" : false,
           "question" : "Are you sure?"
@@ -2861,7 +2861,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "status" : "NOT_STARTED"
       }, {
         "activityId" : "A3",
-        "caption" : "Complete picking",
+        "caption" : "CO",
         "componentProps" : {
           "confirmed" : false,
           "question" : "Are you sure?"
@@ -2957,7 +2957,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "status" : "NOT_STARTED"
       }, {
         "activityId" : "A3",
-        "caption" : "Complete picking",
+        "caption" : "CO",
         "componentProps" : {
           "confirmed" : false,
           "question" : "Are you sure?"
@@ -3195,7 +3195,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "status" : "NOT_STARTED"
       }, {
         "activityId" : "A3",
-        "caption" : "Complete picking",
+        "caption" : "CO",
         "componentProps" : {
           "confirmed" : false,
           "question" : "Are you sure?"
@@ -3572,7 +3572,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "status" : "NOT_STARTED"
       }, {
         "activityId" : "A3",
-        "caption" : "Complete picking",
+        "caption" : "CO",
         "componentProps" : {
           "confirmed" : false,
           "question" : "Are you sure?"
@@ -3813,7 +3813,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "status" : "IN_PROGRESS"
       }, {
         "activityId" : "A3",
-        "caption" : "Complete picking",
+        "caption" : "CO",
         "componentProps" : {
           "confirmed" : false,
           "question" : "Are you sure?"
