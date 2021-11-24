@@ -1,5 +1,5 @@
 const translations = {
-  appName: 'Kommissionierung',
+  appName: 'metasfresh mobile',
   general: {
     Product: 'Produkt',
     Locator: 'Lagerort',
