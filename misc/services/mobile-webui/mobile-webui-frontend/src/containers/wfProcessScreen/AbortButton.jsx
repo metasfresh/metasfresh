@@ -15,7 +15,7 @@ class AbortButton extends PureComponent {
   };
 
   render() {
-    const caption = counterpart.translate('activities.confirmButton.abort.caption');
+    const caption = counterpart.translate('activities.confirmButton.abort');
 
     return (
       <div className="mt-5">

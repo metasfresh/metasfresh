@@ -14,6 +14,8 @@ import MaterialReceiptActivity from '../activities/manufacturing/MaterialReceipt
 import DistributionMoveActivity from '../activities/distribution/DistributionMoveActivity';
 import AbortButton from './AbortButton';
 
+const EMPTY_ARRAY = [];
+
 class WFProcessScreen extends PureComponent {
   render() {
     const { wfProcessId, activities, isWorkflowNotStarted } = this.props;
@@ -100,7 +102,7 @@ class WFProcessScreen extends PureComponent {
 function mapStateToProps(state, { match }) {
   const { workflowId: wfProcessId } = match.params;
   const wfProcess = selectWFProcessFromState(state, wfProcessId);
-  const activities = wfProcess.activities ? Object.values(wfProcess.activities) : [];
+  const activities = wfProcess.activities ? Object.values(wfProcess.activities) : EMPTY_ARRAY;
   const isWorkflowNotStarted = activitiesNotStarted(state, wfProcessId);
 
   return {

@@ -59,9 +59,8 @@ const translations = {
         yes: 'Ja',
         no: 'Nein',
       },
-      abort: {
-        caption: 'Rückgängig',
-      },
+      abort: 'Rückgängig',
+      notFound: 'Nich gefunden',
     },
     mfg: {
       ProductName: 'Produkt',
