@@ -5,6 +5,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Properties;
 
+import de.metas.reflist.ReferenceId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.slf4j.Logger;
 
@@ -28,6 +29,7 @@ public interface IDocument
 		return (IDocument)documentObj;
 	}
 
+	ReferenceId ACTION_AD_Reference_ID = ReferenceId.ofRepoId(135);
 	String ACTION_Complete = "CO";
 	String ACTION_WaitComplete = "WC";
 	String ACTION_Approve = "AP";
