@@ -5,6 +5,7 @@ import de.metas.distribution.ddorder.DDOrderId;
 import de.metas.distribution.rest_api.JsonDistributionEvent;
 import de.metas.distribution.workflows_api.activity_handlers.CompleteDistributionWFActivityHandler;
 import de.metas.distribution.workflows_api.activity_handlers.MoveWFActivityHandler;
+import de.metas.document.engine.IDocument;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.user.UserId;
@@ -75,7 +76,7 @@ public class DistributionMobileApplication implements MobileApplication
 		return WFProcess.builder()
 				.id(WFProcessId.ofIdPart(HANDLER_ID, job.getDdOrderId()))
 				.invokerId(Objects.requireNonNull(job.getResponsibleId()))
-				.caption(TranslatableStrings.anyLanguage("" + job.getDdOrderId().getRepoId())) // TODO
+				.caption(TranslatableStrings.anyLanguage("" + job.getDdOrderId().getRepoId()))
 				.document(job)
 				.activities(ImmutableList.of(
 						WFActivity.builder()
@@ -86,7 +87,7 @@ public class DistributionMobileApplication implements MobileApplication
 								.build(),
 						WFActivity.builder()
 								.id(WFActivityId.ofString("A2"))
-								.caption(TranslatableStrings.anyLanguage("Complete"))
+								.caption(TranslatableStrings.adRefList(IDocument.ACTION_AD_Reference_ID, IDocument.ACTION_Complete))
 								.wfActivityType(CompleteDistributionWFActivityHandler.HANDLED_ACTIVITY_TYPE)
 								.status(CompleteDistributionWFActivityHandler.computeActivityState(job))
 								.build()

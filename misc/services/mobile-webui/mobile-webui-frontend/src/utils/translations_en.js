@@ -48,7 +48,7 @@ const translations = {
       target: 'To Move',
       picked: 'Picked',
       scanHU: 'Scan pick from HU',
-      scanLocator: 'Scan drop from Locator',
+      scanLocator: 'Scan drop to Locator',
     },
     confirmButton: {
       default: {
