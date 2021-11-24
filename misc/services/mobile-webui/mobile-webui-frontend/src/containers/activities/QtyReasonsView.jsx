@@ -29,6 +29,7 @@ class QtyReasonsView extends PureComponent {
   };
 
   render() {
+    const { rejectedReason } = this.state;
     const { rejectedReasons, uom, qtyRejected } = this.props;
 
     return (
@@ -42,7 +43,14 @@ class QtyReasonsView extends PureComponent {
               <div key={idx} className="columns is-mobile">
                 <div className="column is-full">
                   <label className="radio">
-                    <input className="mr-2" type="radio" name={reason.key} onChange={this.setRejectedReason} />
+                    <input
+                      className="mr-2"
+                      type="radio"
+                      name={reason.key}
+                      value={reason.name}
+                      onChange={this.setRejectedReason}
+                      checked={rejectedReason === reason.key}
+                    />
                     {reason.caption}
                   </label>
                 </div>
