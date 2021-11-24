@@ -315,8 +315,8 @@ Feature: create production order
       | PP_Order_Candidate_ID.Identifier | Identifier | M_Product_ID.Identifier | QtyEntered | C_UOM_ID.X12DE355 | ComponentType | PP_Product_BOMLine_ID.Identifier |
       | oc_111                           | olc_111    | p_222                   | 100        | PCE               | CO            | boml_111                         |
     And update PP_Order_Candidates
-      | PP_Order_Candidate_ID.Identifier | QtyEntered | DateStartSchedule |
-      | oc_111                           |            | 2021-04-12        |
+      | PP_Order_Candidate_ID.Identifier | QtyEntered | DateStartSchedule    |
+      | oc_111                           |            | 2021-04-11T21:00:00Z |
     # this is mostly about de.metas.material.dispo.service.candidatechange.StockCandidateService.applyDeltaToMatchingLaterStockCandidates finishing work before checking the candidates
     And wait for 30s
     And after not more than 30s, MD_Candidates are found
@@ -402,8 +402,8 @@ Feature: create production order
       | PP_Order_Candidate_ID.Identifier | Identifier | M_Product_ID.Identifier | QtyEntered | C_UOM_ID.X12DE355 | ComponentType | PP_Product_BOMLine_ID.Identifier |
       | oc_11                            | olc_11     | p_22                    | 100        | PCE               | CO            | boml_11                          |
     And update PP_Order_Candidates
-      | PP_Order_Candidate_ID.Identifier | QtyEntered | DateStartSchedule |
-      | oc_11                            |            | 2021-04-16        |
+      | PP_Order_Candidate_ID.Identifier | QtyEntered | DateStartSchedule    |
+      | oc_11                            |            | 2021-04-15T21:00:00Z |
     # this is mostly about de.metas.material.dispo.service.candidatechange.StockCandidateService.applyDeltaToMatchingLaterStockCandidates finishing work before checking the candidates
     And wait for 30s
     And after not more than 30s, MD_Candidates are found
