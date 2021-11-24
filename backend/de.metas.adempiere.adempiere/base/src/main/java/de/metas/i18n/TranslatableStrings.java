@@ -410,7 +410,7 @@ public class TranslatableStrings
 		return adReferenceDAO.getRefListById(adReferenceId)
 				.getItemByValue(value)
 				.map(IADReferenceDAO.ADRefListItem::getName)
-				.orElseGet(TranslatableStrings::empty);
+				.orElseGet(() -> anyLanguage(value));
 	}
 
 }
