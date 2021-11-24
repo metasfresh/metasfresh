@@ -51,6 +51,7 @@ import org.compiere.util.TimeUtil;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -105,11 +106,11 @@ public class C_Order_StepDef
 			order.setIsSOTrx(DataTableUtil.extractBooleanForColumnName(tableRow, I_C_Order.COLUMNNAME_IsSOTrx));
 			order.setDateOrdered(DataTableUtil.extractDateTimestampForColumnName(tableRow, I_C_Order.COLUMNNAME_DateOrdered));
 
-			final String prepartionDate = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_PreparationDate);
+			final ZonedDateTime prepartionDate = DataTableUtil.extractZonedDateTimeOrNullForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_PreparationDate);
 			if (prepartionDate != null)
 			{
-				order.setPreparationDate(TimeUtil.parseTimestamp(prepartionDate));
-				order.setDatePromised(TimeUtil.parseTimestamp(prepartionDate));
+				order.setPreparationDate(TimeUtil.asTimestamp(prepartionDate));
+				order.setDatePromised(TimeUtil.asTimestamp(prepartionDate));
 			}
 
 			if (EmptyUtil.isNotBlank(poReference))
