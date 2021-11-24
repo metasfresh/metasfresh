@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { post } from 'axios';
 import { getQueryString } from '../utils';
 
 // IMPORTANT GENERIC METHODS TO HANDLE LAYOUTS, DATA, COMMITS
@@ -103,30 +103,42 @@ export function actionsRequest({
   childViewId,
   childViewSelectedIds,
 }) {
-  const query = getQueryString({
-    disabled: true,
-    selectedIds,
-    selectedTabId,
-    selectedRowIds,
-    childViewId,
-    childViewSelectedIds,
-  });
-
   if (!entity) {
+    // FIXME: identify which is this case. we shall avoid it
     return Promise.resolve({ data: { actions: [] } });
-  }
+  } else if (entity === 'documentView') {
+    const windowId = type;
+    const viewId = id;
+    return post(
+      `${config.API_URL}/documentView/${windowId}/${viewId}/actions`,
+      {
+        selectedIds,
+        childViewId,
+        childViewSelectedIds,
+      }
+    );
+  } else {
+    const query = getQueryString({
+      disabled: true,
+      selectedIds,
+      selectedTabId,
+      selectedRowIds,
+      childViewId,
+      childViewSelectedIds,
+    });
 
-  return axios.get(
-    config.API_URL +
-      '/' +
-      entity +
-      '/' +
-      type +
-      '/' +
-      id +
-      '/actions' +
-      (query ? '?' + query : '')
-  );
+    return axios.get(
+      config.API_URL +
+        '/' +
+        entity +
+        '/' +
+        type +
+        '/' +
+        id +
+        '/actions' +
+        (query ? '?' + query : '')
+    );
+  }
 }
 
 export function rowActionsRequest({ windowId, documentId, tabId, rowId }) {
