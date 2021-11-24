@@ -69,7 +69,6 @@ public class AddressBuilder
 	private final ILocationBL locationBL = Services.get(ILocationBL.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
-	private static final AdMessageKey MSG_AddressBuilder_WrongDisplaySequence = AdMessageKey.of("MSG_AddressBuilder_WrongDisplaySequence");
 	public static final AdMessageKey MSG_POBox = AdMessageKey.of("MSG_POBox");
 
 	/**
@@ -121,7 +120,7 @@ public class AddressBuilder
 		}
 	}
 
-	private enum Addressvars
+	protected enum Addressvars
 	{
 		BPartner("BP"),
 
@@ -512,7 +511,7 @@ public class AddressBuilder
 		final String displaySequence = getDisplaySequence(c_countryRecord, isLocal);
 		try
 		{
-			assertValidDisplaySequence(displaySequence);
+			CountryDisplaySequenceHelper.assertValidDisplaySequence(displaySequence);
 		}
 		catch (final AdempiereException e)
 		{
@@ -529,20 +528,6 @@ public class AddressBuilder
 		final I_C_Country countryLocal = countriesRepo.getDefault(ctx);
 		final boolean isLocal = location.getC_Location() != null && location.getC_Location().getC_Country_ID() == countryLocal.getC_Country_ID();
 		return isLocal;
-	}
-
-	private void assertValidDisplaySequence(@NonNull final String displaySequence)
-	{
-		final boolean existsBPName = isTokenFound(displaySequence, Addressvars.BPartnerName.getName());
-		final boolean existsBP = isTokenFound(displaySequence, Addressvars.BPartner.getName());
-		final boolean existsBPGReeting = isTokenFound(displaySequence, Addressvars.BPartnerGreeting.getName());
-
-		if ((existsBP && existsBPName) || (existsBP && existsBPGReeting))
-		{
-			throw new AdempiereException(MSG_AddressBuilder_WrongDisplaySequence)
-					.appendParametersToMessage()
-					.setParameter("displaySequence", displaySequence);
-		}
 	}
 
 	private String buildBPartnerBlock(
@@ -592,8 +577,8 @@ public class AddressBuilder
 		String bpName2 = "";
 		String bpGreeting = "";
 
-		final boolean existsBPName = isTokenFound(displaySequence, Addressvars.BPartnerName.getName());
-		final boolean existsBPGReeting = isTokenFound(displaySequence, Addressvars.BPartnerGreeting.getName());
+		final boolean existsBPName = CountryDisplaySequenceHelper.isTokenFound(displaySequence, Addressvars.BPartnerName.getName());
+		final boolean existsBPGReeting = CountryDisplaySequenceHelper.isTokenFound(displaySequence, Addressvars.BPartnerGreeting.getName());
 
 		if ( (existsBPName || existsBPGReeting) && !bPartner.isCompany())
 		{
@@ -788,8 +773,8 @@ public class AddressBuilder
 			final I_AD_User user)
 	{
 
-		final boolean existsBPName = isTokenFound(displaySequence, Addressvars.BPartnerName.getName());
-		final boolean existsBPGreeting = isTokenFound(displaySequence, Addressvars.BPartnerGreeting.getName());
+		final boolean existsBPName = CountryDisplaySequenceHelper.isTokenFound(displaySequence, Addressvars.BPartnerName.getName());
+		final boolean existsBPGreeting = CountryDisplaySequenceHelper.isTokenFound(displaySequence, Addressvars.BPartnerGreeting.getName());
 
 		if ((existsBPName || existsBPGreeting) && !bPartner.isCompany())
 		{
@@ -936,20 +921,4 @@ public class AddressBuilder
 		}
 	}
 
-	private boolean isTokenFound(final @NonNull String sequenceToScan, final @NonNull String token)
-	{
-		final Scanner scan = new Scanner(sequenceToScan);
-		scan.useDelimiter("@");
-		while (scan.hasNext())
-		{
-			if (scan.next().equals(token))
-			{
-				scan.close();
-				return true;
-			}
-		}
-
-		scan.close();
-		return false;
-	}
 }
