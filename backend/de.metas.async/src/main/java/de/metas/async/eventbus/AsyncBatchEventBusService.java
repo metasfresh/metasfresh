@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.async.asyncbatchmilestone.eventbus;
+package de.metas.async.eventbus;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import de.metas.JsonObjectMapperHolder;
@@ -46,17 +46,17 @@ import java.util.Optional;
 import java.util.Properties;
 
 @Service
-public class AsyncMilestoneEventBusService
+public class AsyncBatchEventBusService
 {
-	private static final Topic TOPIC = RabbitMQEventBusConfiguration.AsyncMilestoneQueueConfiguration.EVENTBUS_TOPIC;
-	private static final String PROPERTY_AsyncMilestoneNotifyRequest = "AsyncMilestoneNotifyRequest";
+	private static final Topic TOPIC = RabbitMQEventBusConfiguration.AsyncBatchQueueConfiguration.EVENTBUS_TOPIC;
+	private static final String PROPERTY_AsyncBatchNotifyRequest = "AsyncBatchNotifyRequest";
 
 	// services
-	private static final Logger logger = LogManager.getLogger(AsyncMilestoneEventBusService.class);
+	private static final Logger logger = LogManager.getLogger(AsyncBatchEventBusService.class);
 	private final IEventBusFactory eventBusFactory;
 	private final EventLogUserService eventLogUserService;
 
-	public AsyncMilestoneEventBusService(
+	public AsyncBatchEventBusService(
 			@NonNull final IEventBusFactory eventBusFactory,
 			@NonNull final EventLogUserService eventLogUserService)
 	{
@@ -65,12 +65,12 @@ public class AsyncMilestoneEventBusService
 	}
 
 	@Autowired
-	public void registerHandlers(@NonNull final Optional<List<AsyncMilestoneNotifyRequestHandler>> handlers)
+	public void registerHandlers(@NonNull final Optional<List<AsyncBatchNotifyRequestHandler>> handlers)
 	{
-		handlers.ifPresent(manageAsyncMilestoneRequestHandlers -> manageAsyncMilestoneRequestHandlers.forEach(this::registerHandler));
+		handlers.ifPresent(manageAsyncBatchRequestHandlers -> manageAsyncBatchRequestHandlers.forEach(this::registerHandler));
 	}
 
-	public void postRequest(@NonNull final AsyncMilestoneNotifyRequest request)
+	public void postRequest(@NonNull final AsyncBatchNotifyRequest request)
 	{
 		final Event event = createEventFromRequest(request);
 
@@ -84,7 +84,7 @@ public class AsyncMilestoneEventBusService
 	}
 
 	@NonNull
-	private static Event createEventFromRequest(@NonNull final AsyncMilestoneNotifyRequest request)
+	private static Event createEventFromRequest(@NonNull final AsyncBatchNotifyRequest request)
 	{
 		final String requestStr;
 		try
@@ -93,40 +93,40 @@ public class AsyncMilestoneEventBusService
 		}
 		catch (final JsonProcessingException e)
 		{
-			throw new AdempiereException("Exception serializing AsyncMilestoneNotifyRequest", e)
+			throw new AdempiereException("Exception serializing AsyncBatchNotifyRequest", e)
 					.appendParametersToMessage()
-					.setParameter("AsyncMilestoneNotifyRequest", request);
+					.setParameter("AsyncBatchNotifyRequest", request);
 		}
 
 		return Event.builder()
-				.putProperty(PROPERTY_AsyncMilestoneNotifyRequest, requestStr)
+				.putProperty(PROPERTY_AsyncBatchNotifyRequest, requestStr)
 				.shallBeLogged()
 				.build();
 	}
 
 	@NonNull
-	private static AsyncMilestoneNotifyRequest extractAsyncMilestoneRequest(@NonNull final Event event)
+	private static AsyncBatchNotifyRequest extractAsyncBatchNotifyRequest(@NonNull final Event event)
 	{
-		final String requestStr = event.getProperty(PROPERTY_AsyncMilestoneNotifyRequest);
+		final String requestStr = event.getProperty(PROPERTY_AsyncBatchNotifyRequest);
 
-		final AsyncMilestoneNotifyRequest request;
+		final AsyncBatchNotifyRequest request;
 		try
 		{
-			request = JsonObjectMapperHolder.sharedJsonObjectMapper().readValue(requestStr, AsyncMilestoneNotifyRequest.class);
+			request = JsonObjectMapperHolder.sharedJsonObjectMapper().readValue(requestStr, AsyncBatchNotifyRequest.class);
 		}
 		catch (final JsonProcessingException e)
 		{
-			throw new AdempiereException("Exception deserializing AsyncMilestoneNotifyRequest", e)
+			throw new AdempiereException("Exception deserializing AsyncBatchNotifyRequest", e)
 					.appendParametersToMessage()
-					.setParameter("AsyncMilestoneNotifyRequest", requestStr);
+					.setParameter("AsyncBatchNotifyRequest", requestStr);
 		}
 
 		return request;
 	}
 
-	private void registerHandler(@NonNull final AsyncMilestoneNotifyRequestHandler handler)
+	private void registerHandler(@NonNull final AsyncBatchNotifyRequestHandler handler)
 	{
-		getEventBus().subscribe(ManageAsyncMilestoneRequestHandlerAsEventListener.builder()
+		getEventBus().subscribe(ManageAsyncBatchRequestHandlerAsEventListener.builder()
 										.handler(handler)
 										.eventLogUserService(eventLogUserService)
 										.build());
@@ -135,14 +135,14 @@ public class AsyncMilestoneEventBusService
 	}
 
 	@lombok.ToString
-	private static final class ManageAsyncMilestoneRequestHandlerAsEventListener implements IEventListener
+	private static final class ManageAsyncBatchRequestHandlerAsEventListener implements IEventListener
 	{
 		private final EventLogUserService eventLogUserService;
-		private final AsyncMilestoneNotifyRequestHandler handler;
+		private final AsyncBatchNotifyRequestHandler handler;
 
 		@lombok.Builder
-		private ManageAsyncMilestoneRequestHandlerAsEventListener(
-				@NonNull final AsyncMilestoneNotifyRequestHandler handler,
+		private ManageAsyncBatchRequestHandlerAsEventListener(
+				@NonNull final AsyncBatchNotifyRequestHandler handler,
 				@NonNull final EventLogUserService eventLogUserService)
 		{
 			this.handler = handler;
@@ -152,7 +152,7 @@ public class AsyncMilestoneEventBusService
 		@Override
 		public void onEvent(@NonNull final IEventBus eventBus, @NonNull final Event event)
 		{
-			final AsyncMilestoneNotifyRequest request = extractAsyncMilestoneRequest(event);
+			final AsyncBatchNotifyRequest request = extractAsyncBatchNotifyRequest(event);
 
 			try (final IAutoCloseable ctx = switchCtx(request);
 					final MDC.MDCCloseable eventHandlerMDC = MDC.putCloseable("eventHandler.className", handler.getClass().getName()))
@@ -164,18 +164,18 @@ public class AsyncMilestoneEventBusService
 			}
 		}
 
-		private void handleRequest(@NonNull final AsyncMilestoneNotifyRequest request)
+		private void handleRequest(@NonNull final AsyncBatchNotifyRequest request)
 		{
 			handler.handleRequest(request);
 		}
 
-		private IAutoCloseable switchCtx(@NonNull final AsyncMilestoneNotifyRequest request)
+		private IAutoCloseable switchCtx(@NonNull final AsyncBatchNotifyRequest request)
 		{
 			final Properties ctx = createCtx(request);
 			return Env.switchContext(ctx);
 		}
 
-		private Properties createCtx(@NonNull final AsyncMilestoneNotifyRequest request)
+		private Properties createCtx(@NonNull final AsyncBatchNotifyRequest request)
 		{
 			final Properties ctx = Env.newTemporaryCtx();
 			Env.setClientId(ctx, request.getClientId());

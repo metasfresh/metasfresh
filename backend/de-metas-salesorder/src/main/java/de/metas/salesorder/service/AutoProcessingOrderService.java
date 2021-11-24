@@ -216,6 +216,7 @@ public class AutoProcessingOrderService
 				.shipperBPartnerAndLocationId(shipFromBPWarehouseLocation.getBpartnerLocationId())
 				.orgId(OrgId.ofRepoId(shipment.getAD_Org_ID()))
 				.shipDate(shipDate)
+				.assignAnonymouslyPickedHUs(true)
 				.build();
 
 		final ShipperTransportationId shipperTransportationId = shipperTransportationRepository.create(createShipperTransportationRequest);

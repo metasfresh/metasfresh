@@ -20,13 +20,13 @@
  * #L%
  */
 
-package de.metas.async.asyncbatchmilestone;
+package de.metas.async.service;
 
 import ch.qos.logback.classic.Level;
 import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IAsyncBatchDAO;
-import de.metas.async.asyncbatchmilestone.eventbus.AsyncMilestoneNotifyRequest;
-import de.metas.async.asyncbatchmilestone.eventbus.AsyncMilestoneNotifyRequestHandler;
+import de.metas.async.eventbus.AsyncBatchNotifyRequest;
+import de.metas.async.eventbus.AsyncBatchNotifyRequestHandler;
 import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.logging.LogManager;
@@ -49,38 +49,39 @@ import static de.metas.async.Async_Constants.SYS_Config_WaitTimeOutMS;
 import static de.metas.async.Async_Constants.SYS_Config_WaitTimeOutMS_DEFAULT_VALUE;
 
 @Service
-public class AsyncBatchMilestoneObserver implements AsyncMilestoneNotifyRequestHandler
+public class AsyncBatchObserver implements AsyncBatchNotifyRequestHandler
 {
-	private static final Logger logger = LogManager.getLogger(AsyncBatchMilestoneObserver.class);
+	private static final Logger logger = LogManager.getLogger(AsyncBatchObserver.class);
 	private final IAsyncBatchDAO asyncBatchDAO = Services.get(IAsyncBatchDAO.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
-	private final Map<AsyncBatchMilestoneId, CompletableFuture<Void>> asyncBatch2Completion = new ConcurrentHashMap<>();
+	private final Map<AsyncBatchId, CompletableFuture<Void>> asyncBatch2Completion = new ConcurrentHashMap<>();
 
 	@Override
-	public void handleRequest(@NonNull final AsyncMilestoneNotifyRequest request)
+	public void handleRequest(@NonNull final AsyncBatchNotifyRequest request)
 	{
-		Loggables.withLogger(logger, Level.INFO).addLog("Milestone notified as finished; asyncBatchMilestoneId: {}", request.getMilestoneId());
+		Loggables.withLogger(logger, Level.INFO).addLog("Batch notified as finished; AsyncBatchId: {}", request.getAsyncBatchId());
 
-		final AsyncBatchMilestoneId asyncBatchMilestoneId = AsyncBatchMilestoneId.ofRepoId(AsyncBatchId.ofRepoId(request.getAsyncBatchId()), request.getMilestoneId());
+		final AsyncBatchId asyncBatchId = AsyncBatchId.ofRepoId(request.getAsyncBatchId());
 
-		this.notifyMilestoneProcessedFor(asyncBatchMilestoneId, request.getSuccess());
+		this.notifyBatchProcessedFor(asyncBatchId, request.getSuccess());
 	}
 
-	public void observeOn(@NonNull final AsyncBatchMilestoneId id)
+	public void observeOn(@NonNull final AsyncBatchId id)
 	{
+		Loggables.withLogger(logger, Level.INFO).addLog("Observer registered for asyncBatchId: " + id);
 		asyncBatch2Completion.put(id, new CompletableFuture<>());
 	}
 
 	/**
-	 * Waits max. the timeout specified in {@code ÀD_SysConfig de.metas.async.AsyncBatchMilestoneObserver.WaitTimeOutMS}
-	 * for the given AsyncBatchMilestoneId to be completed.
+	 * Waits max. the timeout specified in {@code AD_SysConfig de.metas.async.AsyncBatchObserver.WaitTimeOutMS}
+	 * for the given AsyncBatchId to be completed.
 	 */
-	public void waitToBeProcessed(@NonNull final AsyncBatchMilestoneId id)
+	public void waitToBeProcessed(@NonNull final AsyncBatchId id)
 	{
 		if (asyncBatch2Completion.get(id) == null)
 		{
-			Loggables.withLogger(logger, Level.WARN).addLog("No observer registered to be processed for asyncBatchId: " + id);
+			Loggables.withLogger(logger, Level.INFO).addLog("No observer registered to be processed for asyncBatchId: {}", id);
 			return;
 		}
 
@@ -96,15 +97,13 @@ public class AsyncBatchMilestoneObserver implements AsyncMilestoneNotifyRequestH
 		}
 		catch (final TimeoutException timeoutException)
 		{
-			final AsyncBatchId asyncBatchId = asyncBatchDAO.retrieveAsyncBatchIdByMilestone(id);
-
-			final I_C_Async_Batch asyncBatch = asyncBatchDAO.retrieveAsyncBatchRecord(asyncBatchId);
+			final I_C_Async_Batch asyncBatch = asyncBatchDAO.retrieveAsyncBatchRecord(id);
 
 			final List<I_C_Queue_WorkPackage> workPackages = asyncBatchDAO.retrieveWorkPackages(asyncBatch, null);
 
 			if (workPackages.isEmpty())
 			{
-				Loggables.withLogger(logger, Level.WARN).addLog("No workpackages retrieved for asyncBatchId" + asyncBatchId);
+				Loggables.withLogger(logger, Level.INFO).addLog("No workpackages retrieved for asyncBatchId: {}", id);
 				return;
 			}
 
@@ -114,39 +113,46 @@ public class AsyncBatchMilestoneObserver implements AsyncMilestoneNotifyRequestH
 		{
 			throw AdempiereException.wrapIfNeeded(e)
 					.appendParametersToMessage()
-					.setParameter("asyncBatchMilestoneId", id);
+					.setParameter("AsyncBatchId", id);
 		}
 	}
 
-	private void removeObserver(@NonNull final AsyncBatchMilestoneId id)
+	public boolean isAsyncBatchObserved(@NonNull final AsyncBatchId id)
+	{
+		return asyncBatch2Completion.get(id) != null;
+	}
+
+	private void removeObserver(@NonNull final AsyncBatchId id)
 	{
 		if (asyncBatch2Completion.get(id) == null)
 		{
-			Loggables.withLogger(logger, Level.WARN).addLog("No observer registered that can be removed for asyncBatchId: " + id);
+			Loggables.withLogger(logger, Level.WARN).addLog("No observer registered that can be removed for asyncBatchId: {}", id);
 			return;
 		}
 
 		asyncBatch2Completion.remove(id);
+
+		Loggables.withLogger(logger, Level.INFO).addLog("Observer removed for asyncBatchId: {}", id);
 	}
 
-	private void notifyMilestoneProcessedFor(@NonNull final AsyncBatchMilestoneId id, final boolean successful)
+	private void notifyBatchProcessedFor(@NonNull final AsyncBatchId id, final boolean successful)
 	{
 		if (asyncBatch2Completion.get(id) == null)
 		{
-			Loggables.withLogger(logger, Level.WARN).addLog("No observer registered to notify for asyncBatchId: " + id);
+			Loggables.withLogger(logger, Level.INFO).addLog("No observer registered to notify for asyncBatchId: {}", id);
 			return;
 		}
 
 		if (successful)
 		{
-			logger.debug("asyncBatchMilestoneId={} completed successfully", id);
+			Loggables.withLogger(logger, Level.INFO).addLog("AsyncBatchId={} completed successfully. ", id);
 			asyncBatch2Completion.get(id).complete(null);
 		}
 		else
 		{
 			asyncBatch2Completion.get(id).completeExceptionally(new AdempiereException("Workpackage completed exceptionally")
 																		.appendParametersToMessage()
-																		.setParameter("asyncBatchMilestoneId", id));
+																		.setParameter("AsyncBatchId", id));
 		}
 	}
 }
