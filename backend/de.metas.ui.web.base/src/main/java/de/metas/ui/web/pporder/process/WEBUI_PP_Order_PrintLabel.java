@@ -66,6 +66,9 @@ public class WEBUI_PP_Order_PrintLabel extends WEBUI_PP_Order_Template implement
 	@Param(parameterName = PARAM_AD_PrintFormat_ID)
 	private int printFormatId;
 
+	/**
+	 * This is only needed as a way to default the @M_Product_ID@ for the dynamic validation of the print format. If selecting a HU/HuStorage, then M_Product_ID cannot be resolved by the evaluation context without this parameter.
+	 */
 	@Param(parameterName = I_M_Product.COLUMNNAME_M_Product_ID)
 	private ProductId productId;
 
