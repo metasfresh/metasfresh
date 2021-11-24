@@ -212,7 +212,7 @@ public class MD_Candidate_StepDef
 
 		for (final MaterialDispoTableRow tableRow : table.getRows())
 		{
-			//final MaterialDispoDataItem materialDispoRecord = materialDispoRecordRepository.getBy(tableRow.createQuery());
+			final MaterialDispoDataItem materialDispoRecord = materialDispoRecordRepository.getBy(tableRow.createQuery());
 			final I_MD_Candidate materialDispoRecord = queryBL.createQueryBuilder(I_MD_Candidate.class)
 					.addOnlyActiveRecordsFilter()
 					.addEqualsFilter(I_MD_Candidate.COLUMNNAME_M_Product_ID, new Integer(tableRow.getProductId().getRepoId()))
@@ -221,14 +221,13 @@ public class MD_Candidate_StepDef
 					.create()
 					.firstOnly(I_MD_Candidate.class);
 
-			assertThat(materialDispoRecord).isNotNull(); // add message
-			assertThat(materialDispoRecord.getMD_Candidate_Type()).isEqualTo(tableRow.getType());
-			assertThat(materialDispoRecord.getMD_Candidate_BusinessCase()).isEqualTo(tableRow.getBusinessCase());
-			// assertThat(materialDispoRecord.getMaterialDescriptor().getProductId()).isEqualTo(tableRow.getProductId().getRepoId());
-			// assertThat(materialDispoRecord.getMaterialDescriptor().getDate()).isEqualTo(tableRow.getTime());
-			// assertThat(materialDispoRecord.getMaterialDescriptor().getQuantity()).isEqualByComparingTo(tableRow.getQty());
-			// assertThat(materialDispoRecord.getAtp()).isEqualByComparingTo(tableRow.getAtp());
-			// materialDispoDataItemStepDefData.putIfMissing(tableRow.getIdentifier(), materialDispoRecord);
+			 assertThat(materialDispoRecord).isNotNull(); // add message
+			 assertThat(materialDispoRecord.getMD_Candidate_Type()).isEqualTo(tableRow.getType().getCode());
+			 assertThat(materialDispoRecord.getMD_Candidate_BusinessCase()).isEqualTo(tableRow.getBusinessCase());
+			 assertThat(materialDispoRecord.getM_Product_ID()).isEqualTo(tableRow.getProductId().getRepoId());
+			 assertThat(materialDispoRecord.getQty_Display()).isEqualByComparingTo(tableRow.getQty());
+			 assertThat(materialDispoRecord.getQty_AvailableToPromise()).isEqualByComparingTo(tableRow.getAtp());
+			 //materialDispoDataItemStepDefData.putIfMissing(tableRow.getIdentifier(), materialDispoRecord);
 		}
 	}
 

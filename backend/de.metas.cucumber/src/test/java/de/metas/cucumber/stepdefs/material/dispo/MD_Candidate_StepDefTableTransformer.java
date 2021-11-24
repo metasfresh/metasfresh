@@ -66,7 +66,9 @@ public class MD_Candidate_StepDefTableTransformer implements TableTransformer<MD
 			final int productId = productStepDefData.get(productIdentifier).getM_Product_ID();
 			final Instant time = DataTableUtil.extractInstantForColumnName(dataTableRow, "Time");
 			BigDecimal qty = DataTableUtil.extractBigDecimalForColumnName(dataTableRow, "DisplayQty");
-			if (type.equals(CandidateType.DEMAND) || type.equals(CandidateType.INVENTORY_DOWN))
+			if (
+					//type.equals(CandidateType.DEMAND) ||
+					type.equals(CandidateType.INVENTORY_DOWN))
 			{
 				qty = qty.negate();
 			}
