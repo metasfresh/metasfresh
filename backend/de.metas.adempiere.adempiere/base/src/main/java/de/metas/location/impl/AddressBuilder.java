@@ -507,15 +507,16 @@ public class AddressBuilder
 			@NonNull final I_C_Location location)
 	{
 		final boolean isLocal = isLocalCountry(bpLocation);
-		final I_C_Country c_countryRecord = location.getC_Country();
-		final String displaySequence = getDisplaySequence(c_countryRecord, isLocal);
+		final CountryId countryId = CountryId.ofRepoId(location.getC_Country_ID());
+		final I_C_Country countryRecord = countriesRepo.getById(countryId);
+		final String displaySequence = getDisplaySequence(countryRecord, isLocal);
 		try
 		{
 			CountryDisplaySequenceHelper.assertValidDisplaySequence(displaySequence);
 		}
 		catch (final AdempiereException e)
 		{
-			throw e.setParameter("C_Country ", c_countryRecord)
+			throw e.setParameter("C_Country ", countryRecord)
 					.setParameter("IsLocalCountry", isLocal)
 					.setParameter("C_BPartner_Location", bpLocation);
 		}
