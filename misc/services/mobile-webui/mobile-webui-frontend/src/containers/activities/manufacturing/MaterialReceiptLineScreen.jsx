@@ -77,7 +77,7 @@ class MaterialReceiptLineScreen extends PureComponent {
           </div>
           <PickQuantityButton
             qtyCurrent={qtyReceived}
-            qtyTarget={qtyToReceive}
+            qtyTarget={qtyToReceive - qtyReceived}
             isDisabled={!allowReceivingQty}
             onClick={this.handleQuantityChange}
             {...{ uom, productName, caption }}
