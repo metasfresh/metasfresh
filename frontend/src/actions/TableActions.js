@@ -345,13 +345,14 @@ export function updateGridTable(tableId, tableResponse) {
  * @method updateGridTableData
  * @summary Update grid table's rows and rebuild collapsed rows if necessary
  */
-export function updateGridTableData(tableId, rows) {
+export function updateGridTableData({ tableId, rows, customLayoutFlags }) {
+  const { uncollapseRowsOnChange } = customLayoutFlags;
   return (dispatch, getState) => {
     const state = getState();
 
     if (state.tables) {
       const table = state.tables[tableId];
-      const { uncollapseRowsOnChange, indentSupported, keyProperty } = table;
+      const { indentSupported, keyProperty } = table;
 
       if (rows.length && indentSupported) {
         rows = flattenRows(rows);
