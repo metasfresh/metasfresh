@@ -24,10 +24,12 @@ package de.metas.location.impl;
 
 import de.metas.i18n.AdMessageKey;
 import lombok.NonNull;
+import lombok.experimental.UtilityClass;
 import org.adempiere.exceptions.AdempiereException;
 
 import java.util.Scanner;
 
+@UtilityClass
 public class CountryDisplaySequenceHelper
 {
 	private static final AdMessageKey MSG_AddressBuilder_WrongDisplaySequence = AdMessageKey.of("MSG_AddressBuilder_WrongDisplaySequence");

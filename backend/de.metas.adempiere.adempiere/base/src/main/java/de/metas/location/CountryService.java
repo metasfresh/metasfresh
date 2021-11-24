@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.location.impl;
+package de.metas.location;
 
 import lombok.NonNull;
 import org.compiere.model.I_C_Country;

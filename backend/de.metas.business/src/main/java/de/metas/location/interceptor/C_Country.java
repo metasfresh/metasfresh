@@ -1,6 +1,6 @@
 package de.metas.location.interceptor;
 
-import de.metas.location.impl.CountryService;
+import de.metas.location.CountryService;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;

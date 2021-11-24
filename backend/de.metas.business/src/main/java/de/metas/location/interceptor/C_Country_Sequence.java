@@ -1,11 +1,9 @@
 package de.metas.location.interceptor;
 
-import de.metas.acct.api.IAccountBL;
-import de.metas.location.impl.CountryService;
+import de.metas.location.CountryService;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Country_Sequence;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
