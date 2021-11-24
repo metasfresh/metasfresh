@@ -75,8 +75,10 @@ const computeLineStatusFromSteps = ({ draftLine }) => {
   const stepStatuses = [];
   stepIds.forEach((stepId) => {
     const draftStep = draftLine.steps[stepId];
-    if (!stepStatuses.includes(draftStep.completeStatus)) {
-      stepStatuses.push(draftStep.completeStatus);
+    const status = draftStep.qtyToIssue === 0 ? CompleteStatus.COMPLETED : draftStep.completeStatus;
+
+    if (!stepStatuses.includes(status)) {
+      stepStatuses.push(status);
     }
   });
 
