@@ -1,17 +1,15 @@
 package de.metas.document.engine;
 
+import de.metas.reflist.ReferenceId;
+import de.metas.util.Services;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
 import java.io.File;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Properties;
-
-import de.metas.reflist.ReferenceId;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.slf4j.Logger;
-
-import de.metas.util.Services;
-
-import javax.annotation.Nullable;
 
 /**
  * Document Interface.
