@@ -26,7 +26,7 @@ import java.math.BigDecimal;
  * PatientNote
  */
 
-@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.JavaClientCodegen", date = "2021-11-05T09:14:03.653Z[GMT]")
+@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.JavaClientCodegen", date = "2021-11-24T08:15:46.695Z[GMT]")
 public class PatientNote {
   @SerializedName("status")
   private BigDecimal status = null;
@@ -114,7 +114,7 @@ public class PatientNote {
 
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(java.lang.Object o) {
     if (this == o) {
       return true;
     }
@@ -151,7 +151,7 @@ public class PatientNote {
    * Convert the given object to string with each line indented by 4 spaces
    * (except the first line).
    */
-  private String toIndentedString(Object o) {
+  private String toIndentedString(java.lang.Object o) {
     if (o == null) {
       return "null";
     }
