@@ -149,6 +149,7 @@ public class PPOrderCandidateService
 	{
 		ppOrderCandidate.setIsClosed(true);
 		ppOrderCandidate.setProcessed(true);
+		ppOrderCandidate.setQtyEntered(ppOrderCandidate.getQtyProcessed());
 
 		ppOrderCandidateDAO.save(ppOrderCandidate);
 	}

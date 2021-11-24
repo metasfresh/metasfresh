@@ -129,15 +129,6 @@ public class PP_Order_Candidate
 		}
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_PP_Order_Candidate.COLUMNNAME_IsClosed)
-	public void updateQtyOnClose(@NonNull final I_PP_Order_Candidate ppOrderCandidateRecord)
-	{
-		if (ppOrderCandidateRecord.isClosed())
-		{
-			ppOrderCandidateRecord.setQtyEntered(ppOrderCandidateRecord.getQtyProcessed());
-		}
-	}
-
 	private void validateQuantities(@NonNull final I_PP_Order_Candidate ppOrderCandidateRecord)
 	{
 		final BigDecimal qtyEntered = ppOrderCandidateRecord.getQtyEntered();

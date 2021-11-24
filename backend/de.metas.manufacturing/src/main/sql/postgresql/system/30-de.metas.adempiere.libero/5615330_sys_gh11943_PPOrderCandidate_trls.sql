@@ -533,33 +533,147 @@ UPDATE AD_Process_Trl SET Description='Öffnet die ausgewählten und geschlossen
 UPDATE AD_Process_Trl SET Description='Öffnet die ausgewählten und geschlossenen Dispozeilen.',Updated=TO_TIMESTAMP('2021-11-24 13:35:52','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='nl_NL' AND AD_Process_ID=584948
 ;
 
--- 2021-11-24T11:36:10.019Z
+-- 2021-11-24T14:32:50.535Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Process SET Description='Closes the selected and not yet processed candidate lines.',Updated=TO_TIMESTAMP('2021-11-24 13:36:10','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=540687
+UPDATE AD_UI_Element SET AD_UI_ElementGroup_ID=547106, SeqNo=50,Updated=TO_TIMESTAMP('2021-11-24 16:32:50','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=594542
 ;
 
--- 2021-11-24T11:36:13.472Z
+-- 2021-11-24T14:53:10.623Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Process_Trl SET Description='Closes the selected and not yet processed candidate lines.',Updated=TO_TIMESTAMP('2021-11-24 13:36:13','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_ID=540687
+UPDATE AD_Table SET Description='Manufacturing candidate', Name='Manufacturing candidate',Updated=TO_TIMESTAMP('2021-11-24 16:53:10','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Table_ID=541913
 ;
 
--- 2021-11-24T11:36:18.608Z
+-- 2021-11-24T14:53:38.276Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Process_Trl SET Description='Schliesst die ausgewählten und noch nicht verarbeiteten Dispozeilen.',Updated=TO_TIMESTAMP('2021-11-24 13:36:18','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=540687
+UPDATE AD_Table_Trl SET Name='Produktionsdisposition',Updated=TO_TIMESTAMP('2021-11-24 16:53:38','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Table_ID=541913
 ;
 
--- 2021-11-24T11:36:20.202Z
+-- 2021-11-24T14:53:42.543Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Process SET Description='Schliesst die ausgewählten und noch nicht verarbeiteten Dispozeilen.', Help=NULL, Name='Auswahl Schließen',Updated=TO_TIMESTAMP('2021-11-24 13:36:20','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=540687
+UPDATE AD_Table_Trl SET Name='Produktionsdisposition',Updated=TO_TIMESTAMP('2021-11-24 16:53:42','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='nl_NL' AND AD_Table_ID=541913
 ;
 
--- 2021-11-24T11:36:20.199Z
+-- 2021-11-24T14:53:49.035Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Process_Trl SET Description='Schliesst die ausgewählten und noch nicht verarbeiteten Dispozeilen.',Updated=TO_TIMESTAMP('2021-11-24 13:36:20','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Process_ID=540687
+UPDATE AD_Table_Trl SET Name='Manufacturing candidate',Updated=TO_TIMESTAMP('2021-11-24 16:53:49','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Table_ID=541913
 ;
 
--- 2021-11-24T11:36:22.119Z
+-- 2021-11-24T14:53:53.328Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Process_Trl SET Description='Schliesst die ausgewählten und noch nicht verarbeiteten Dispozeilen.',Updated=TO_TIMESTAMP('2021-11-24 13:36:22','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='nl_NL' AND AD_Process_ID=540687
+UPDATE AD_Table_Trl SET Name='Produktionsdisposition',Updated=TO_TIMESTAMP('2021-11-24 16:53:53','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Table_ID=541913
 ;
 
+-- 2021-11-24T14:58:12.518Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Name='Produktionsdisposition', PrintName='Produktionsdisposition',Updated=TO_TIMESTAMP('2021-11-24 16:58:12','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=580109 AND AD_Language='de_CH'
+;
+
+-- 2021-11-24T14:58:12.560Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(580109,'de_CH')
+;
+
+-- 2021-11-24T14:58:14.955Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Name='Produktionsdisposition', PrintName='Produktionsdisposition',Updated=TO_TIMESTAMP('2021-11-24 16:58:14','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=580109 AND AD_Language='de_DE'
+;
+
+-- 2021-11-24T14:58:14.957Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(580109,'de_DE')
+;
+
+-- 2021-11-24T14:58:14.993Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_ad_element_on_ad_element_trl_update(580109,'de_DE')
+;
+
+-- 2021-11-24T14:58:14.996Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnName='PP_Order_Candidate_ID', Name='Produktionsdisposition', Description=NULL, Help=NULL WHERE AD_Element_ID=580109
+;
+
+-- 2021-11-24T14:58:14.999Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='PP_Order_Candidate_ID', Name='Produktionsdisposition', Description=NULL, Help=NULL, AD_Element_ID=580109 WHERE UPPER(ColumnName)='PP_ORDER_CANDIDATE_ID' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2021-11-24T14:58:15Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='PP_Order_Candidate_ID', Name='Produktionsdisposition', Description=NULL, Help=NULL WHERE AD_Element_ID=580109 AND IsCentrallyMaintained='Y'
+;
+
+-- 2021-11-24T14:58:15.001Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Produktionsdisposition', Description=NULL, Help=NULL WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=580109) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 580109)
+;
+
+-- 2021-11-24T14:58:15.022Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_PrintFormatItem pi SET PrintName='Produktionsdisposition', Name='Produktionsdisposition' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c  WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=580109)
+;
+
+-- 2021-11-24T14:58:15.024Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET Name='Produktionsdisposition', Description=NULL, Help=NULL, CommitWarning = NULL WHERE AD_Element_ID = 580109
+;
+
+-- 2021-11-24T14:58:15.025Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_WINDOW SET Name='Produktionsdisposition', Description=NULL, Help=NULL WHERE AD_Element_ID = 580109
+;
+
+-- 2021-11-24T14:58:15.026Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu SET   Name = 'Produktionsdisposition', Description = NULL, WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 580109
+;
+
+-- 2021-11-24T14:58:20.394Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Name='Manufacturing candidate', PrintName='Manufacturing candidate',Updated=TO_TIMESTAMP('2021-11-24 16:58:20','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=580109 AND AD_Language='en_US'
+;
+
+-- 2021-11-24T14:58:20.396Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(580109,'en_US')
+;
+
+-- 2021-11-24T14:58:25.121Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Name='Produktionsdisposition', PrintName='Produktionsdisposition',Updated=TO_TIMESTAMP('2021-11-24 16:58:25','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=580109 AND AD_Language='nl_NL'
+;
+
+-- 2021-11-24T14:58:25.123Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(580109,'nl_NL')
+;
+
+-- 2021-11-24T15:08:47.132Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process SET Description='Closes the selected and not yet processed candidate lines.',Updated=TO_TIMESTAMP('2021-11-24 17:08:47','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=584949
+;
+
+-- 2021-11-24T15:09:05.055Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET Description='Schliesst die ausgewählten und noch nicht verarbeiteten Dispozeilen.',Updated=TO_TIMESTAMP('2021-11-24 17:09:05','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=584949
+;
+
+-- 2021-11-24T15:09:06.781Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process SET Description='Schliesst die ausgewählten und noch nicht verarbeiteten Dispozeilen.', Help=NULL, Name='Auswahl schließen',Updated=TO_TIMESTAMP('2021-11-24 17:09:06','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=584949
+;
+
+-- 2021-11-24T15:09:06.775Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET Description='Schliesst die ausgewählten und noch nicht verarbeiteten Dispozeilen.',Updated=TO_TIMESTAMP('2021-11-24 17:09:06','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Process_ID=584949
+;
+
+-- 2021-11-24T15:09:13.528Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET Description='Closes the selected and not yet processed candidate lines.',Updated=TO_TIMESTAMP('2021-11-24 17:09:13','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_ID=584949
+;
+
+-- 2021-11-24T15:09:21.871Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET Description='Schliesst die ausgewählten und noch nicht verarbeiteten Dispozeilen.',Updated=TO_TIMESTAMP('2021-11-24 17:09:21','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='nl_NL' AND AD_Process_ID=584949
+;
