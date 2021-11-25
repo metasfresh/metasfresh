@@ -1,7 +1,5 @@
 package de.metas.material.dispo.service.event.handler.pporder;
 
-import javax.annotation.Nullable;
-
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
 import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery;
@@ -11,6 +9,8 @@ import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.pporder.PPOrderLine;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -35,11 +35,11 @@ import lombok.experimental.UtilityClass;
  */
 
 @UtilityClass
-final class PPOrderHandlerUtils
+public final class PPOrderHandlerUtils
 {
 	public static CandidateType extractCandidateType(final PPOrderLine ppOrderLine)
 	{
-		return ppOrderLine.isReceipt() ? CandidateType.SUPPLY : CandidateType.DEMAND;
+		return ppOrderLine.getPpOrderLineData().isReceipt() ? CandidateType.SUPPLY : CandidateType.DEMAND;
 	}
 
 	/**
@@ -48,6 +48,7 @@ final class PPOrderHandlerUtils
 	 * Supply candidates that are about *another* product that the required one (i.e. co- and by-products) may not have that demand detail.
 	 * (Otherwise, their stock candidate would be connected to the resp. demand record)
 	 */
+	@Nullable
 	public static DemandDetail computeDemandDetailOrNull(
 			@NonNull final CandidateType lineCandidateType,
 			@Nullable final SupplyRequiredDescriptor supplyRequiredDescriptor,
