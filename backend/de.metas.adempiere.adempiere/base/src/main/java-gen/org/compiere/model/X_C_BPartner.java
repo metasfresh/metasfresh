@@ -785,6 +785,18 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	}
 
 	@Override
+	public void setInternalName (final @Nullable java.lang.String InternalName)
+	{
+		set_Value (COLUMNNAME_InternalName, InternalName);
+	}
+
+	@Override
+	public java.lang.String getInternalName()
+	{
+		return get_ValueAsString(COLUMNNAME_InternalName);
+	}
+
+	@Override
 	public org.compiere.model.I_AD_PrintFormat getInvoice_PrintFormat()
 	{
 		return get_ValueAsPO(COLUMNNAME_Invoice_PrintFormat_ID, org.compiere.model.I_AD_PrintFormat.class);

@@ -17,7 +17,7 @@ import de.metas.bpartner.composite.BPartnerLocation;
 import de.metas.bpartner.composite.BPartnerLocationAddressPart;
 import de.metas.bpartner.composite.BPartnerLocationType;
 import de.metas.bpartner.service.IBPartnerBL;
-import de.metas.marketing.base.model.CampaignId;
+import de.metas.document.DocTypeId;
 import de.metas.greeting.GreetingId;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.Language;
@@ -30,6 +30,7 @@ import de.metas.location.LocationId;
 import de.metas.location.PostalId;
 import de.metas.location.impl.PostalQueryFilter;
 import de.metas.logging.TableRecordMDC;
+import de.metas.marketing.base.model.CampaignId;
 import de.metas.organization.OrgId;
 import de.metas.security.permissions2.PermissionServiceFactories;
 import de.metas.util.Check;
@@ -214,6 +215,34 @@ final class BPartnerCompositeSaver
 		bpartnerRecord.setReferrer(bpartner.getReferrer());
 		bpartnerRecord.setMKTG_Campaign_ID(CampaignId.toRepoId(bpartner.getCampaignId()));
 
+		if(bpartner.getTitle() != null)
+		{
+			bpartnerRecord.setTitle(bpartner.getTitle());
+		}
+
+		if(bpartner.getPaymentRule() != null)
+		{
+			bpartnerRecord.setPaymentRule(bpartner.getPaymentRule().getCode());
+		}
+
+		if(bpartner.getSoDocTypeTargetId() != null)
+		{
+			bpartnerRecord.setSO_DocTypeTarget_ID(DocTypeId.toRepoId(bpartner.getSoDocTypeTargetId()));
+		}
+
+		if(bpartner.getFirstName() != null)
+		{
+
+			bpartnerRecord.setFirstname(bpartner.getFirstName());
+		}
+
+		if(bpartner.getLastName() != null)
+		{
+
+			bpartnerRecord.setLastname(bpartner.getLastName());
+		}
+
+
 		assertCanCreateOrUpdate(bpartnerRecord);
 		saveRecord(bpartnerRecord);
 
@@ -272,6 +301,11 @@ final class BPartnerCompositeSaver
 			bpartnerLocationRecord.setName(bpartnerLocation.getName());
 			bpartnerLocationRecord.setBPartnerName(bpartnerLocation.getBpartnerName());
 
+			bpartnerLocationRecord.setPhone(bpartnerLocation.getPhone());
+			bpartnerLocationRecord.setPhone2(bpartnerLocation.getMobile());
+			bpartnerLocationRecord.setFax(bpartnerLocation.getFax());
+			bpartnerLocationRecord.setEMail(bpartnerLocation.getEmail());
+
 			final BPartnerLocationType locationType = bpartnerLocation.getLocationType();
 			if (locationType != null)
 			{
@@ -296,6 +330,8 @@ final class BPartnerCompositeSaver
 			bpartnerLocation.setId(BPartnerLocationId.ofRepoId(bpartnerLocationRecord.getC_BPartner_ID(), bpartnerLocationRecord.getC_BPartner_Location_ID()));
 			bpartnerLocation.setLocationType(BPartnerCompositesLoader.extractBPartnerLocationType(bpartnerLocationRecord));
 			bpartnerLocation.setFromAddress(address);
+
+
 		}
 	}
 

@@ -27,6 +27,8 @@ import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_Postal;
 import org.compiere.model.I_C_Region;
+import org.compiere.model.POInfo;
+import org.compiere.util.Env;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
@@ -63,6 +65,11 @@ public class AddressDescriptorFactory
 	private static final String SYSCONFIG_UsePostalLookup = "de.metas.ui.web.address.UsePostalLookup";
 	private static final String SYSCONFIG_AllowPOBoxAddress = "de.metas.ui.web.address.AllowPOBoxAddress";
 
+	private static final String SYSCONFIG_PREFIX = "de.metas.ui.web.address.AddressDescriptorFactory.";
+	private static final String SYSCONFIG_SUFIX = ".IsDisplay";
+
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+
 	public AddressDescriptor getAddressDescriptor()
 	{
 		final int key = 0; // some dummy key
@@ -97,41 +104,61 @@ public class AddressDescriptorFactory
 				.setDataBinding(new AddressDataBindingDescriptorBuilder())
 				.disableDefaultTableCallouts();
 
+		addressDescriptor.addField(buildFieldDescriptor((IAddressModel.COLUMNNAME_Street))
+										   .setValueClass(String.class)
+										   .setWidgetType(DocumentFieldWidgetType.Text)
+										   .setDisplayLogic(getSysConfigDisplayValue(I_C_Location.COLUMNNAME_Street))
+										   .setMandatoryLogic(getMandatoryLogic(I_C_Location.COLUMNNAME_Street))
+										   .setDataBinding(new AddressFieldBinding(IAddressModel.COLUMNNAME_Street, false, I_C_Location::getStreet, AddressFieldBinding::writeValue_Street)));
+
+		addressDescriptor.addField(buildFieldDescriptor((IAddressModel.COLUMNNAME_HouseNumber))
+										   .setValueClass(String.class)
+										   .setWidgetType(DocumentFieldWidgetType.Text)
+										   .setDisplayLogic(getSysConfigDisplayValue(I_C_Location.COLUMNNAME_HouseNumber))
+										   .setMandatoryLogic(getMandatoryLogic(I_C_Location.COLUMNNAME_HouseNumber))
+										   .setDataBinding(new AddressFieldBinding(IAddressModel.COLUMNNAME_HouseNumber, false, I_C_Location::getHouseNumber, AddressFieldBinding::writeValue_HouseNumber)));
+
+		addressDescriptor.addField(buildFieldDescriptor((IAddressModel.COLUMNNAME_DHL_PostId))
+										   .setValueClass(String.class)
+										   .setWidgetType(DocumentFieldWidgetType.Text)
+										   .setDisplayLogic(getSysConfigDisplayValue(IAddressModel.COLUMNNAME_DHL_PostId))
+										   .setDataBinding(new AddressFieldBinding(IAddressModel.COLUMNNAME_DHL_PostId, false, I_C_Location::getStreet, AddressFieldBinding::writeValue_DHL_PostId)));
+
 		//
 		// Address1 ... Address4 fields
 		addressDescriptor.addField(buildFieldDescriptor(IAddressModel.COLUMNNAME_Address1)
-				.setValueClass(String.class)
-				.setWidgetType(DocumentFieldWidgetType.Text)
-				.setDataBinding(new AddressFieldBinding(IAddressModel.COLUMNNAME_Address1, false, I_C_Location::getAddress1, AddressFieldBinding::writeValue_Address1)));
+										   .setValueClass(String.class)
+										   .setWidgetType(DocumentFieldWidgetType.Text)
+										   .setDataBinding(new AddressFieldBinding(IAddressModel.COLUMNNAME_Address1, false, I_C_Location::getAddress1, AddressFieldBinding::writeValue_Address1)));
 		//
 		addressDescriptor.addField(buildFieldDescriptor(IAddressModel.COLUMNNAME_Address2)
-				.setValueClass(String.class)
-				.setWidgetType(DocumentFieldWidgetType.Text)
-				.setDataBinding(new AddressFieldBinding(IAddressModel.COLUMNNAME_Address2, false, I_C_Location::getAddress2, AddressFieldBinding::writeValue_Address2)));
+										   .setValueClass(String.class)
+										   .setWidgetType(DocumentFieldWidgetType.Text)
+										   .setDataBinding(new AddressFieldBinding(IAddressModel.COLUMNNAME_Address2, false, I_C_Location::getAddress2, AddressFieldBinding::writeValue_Address2)));
 		//
 		addressDescriptor.addField(buildFieldDescriptor(IAddressModel.COLUMNNAME_Address3)
-				.setValueClass(String.class)
-				.setWidgetType(DocumentFieldWidgetType.Text)
-				.setDataBinding(new AddressFieldBinding(IAddressModel.COLUMNNAME_Address3, false, I_C_Location::getAddress3, AddressFieldBinding::writeValue_Address3)));
+										   .setValueClass(String.class)
+										   .setWidgetType(DocumentFieldWidgetType.Text)
+										   .setDataBinding(new AddressFieldBinding(IAddressModel.COLUMNNAME_Address3, false, I_C_Location::getAddress3, AddressFieldBinding::writeValue_Address3)));
 		//
 		addressDescriptor.addField(buildFieldDescriptor(IAddressModel.COLUMNNAME_Address4)
-				.setValueClass(String.class)
-				.setWidgetType(DocumentFieldWidgetType.Text)
-				.setDataBinding(new AddressFieldBinding(IAddressModel.COLUMNNAME_Address4, false, I_C_Location::getAddress4, AddressFieldBinding::writeValue_Address4)));
+										   .setValueClass(String.class)
+										   .setWidgetType(DocumentFieldWidgetType.Text)
+										   .setDataBinding(new AddressFieldBinding(IAddressModel.COLUMNNAME_Address4, false, I_C_Location::getAddress4, AddressFieldBinding::writeValue_Address4)));
 		//
 		final boolean allowPOBoxAddress = isAllowPOBoxAddress();
 		if (allowPOBoxAddress)
 		{
 			addressDescriptor.addField(buildFieldDescriptor(IAddressModel.COLUMNNAME_IsPOBoxNum)
-					.setValueClass(Boolean.class)
-					.setWidgetType(DocumentFieldWidgetType.YesNo)
-					.setDataBinding(new AddressFieldBinding(IAddressModel.COLUMNNAME_IsPOBoxNum, false, I_C_Location::isPOBoxNum, AddressFieldBinding::writeValue_IsPOBoxNum)));
+											   .setValueClass(Boolean.class)
+											   .setWidgetType(DocumentFieldWidgetType.YesNo)
+											   .setDataBinding(new AddressFieldBinding(IAddressModel.COLUMNNAME_IsPOBoxNum, false, I_C_Location::isPOBoxNum, AddressFieldBinding::writeValue_IsPOBoxNum)));
 
 			addressDescriptor.addField(buildFieldDescriptor(IAddressModel.COLUMNNAME_POBox)
-					.setValueClass(String.class)
-					.setDisplayLogic("@" + IAddressModel.COLUMNNAME_IsPOBoxNum + "/N@=Y")
-					.setWidgetType(DocumentFieldWidgetType.Text)
-					.setDataBinding(new AddressFieldBinding(IAddressModel.COLUMNNAME_POBox, false, I_C_Location::getPOBox, AddressFieldBinding::writeValue_POBox)));
+											   .setValueClass(String.class)
+											   .setDisplayLogic("@" + IAddressModel.COLUMNNAME_IsPOBoxNum + "/N@=Y")
+											   .setWidgetType(DocumentFieldWidgetType.Text)
+											   .setDataBinding(new AddressFieldBinding(IAddressModel.COLUMNNAME_POBox, false, I_C_Location::getPOBox, AddressFieldBinding::writeValue_POBox)));
 		}
 
 		// Postal, City, Region and Country fields
@@ -142,51 +169,70 @@ public class AddressDescriptorFactory
 					.countryLookup(AddressCountryLookupDescriptor.newInstance())
 					.build();
 			addressDescriptor.addField(buildFieldDescriptor(IAddressModel.COLUMNNAME_C_Postal_ID)
-					.setValueClass(IntegerLookupValue.class)
-					.setWidgetType(DocumentFieldWidgetType.Lookup)
-					.setLookupDescriptorProvider(postalLookup)
-					.setDataBinding(new AddressFieldBinding(IAddressModel.COLUMNNAME_C_Postal_ID, false, postalLookup::getLookupValueFromLocation, AddressFieldBinding::writeValue_C_Postal_ID)));
+											   .setValueClass(IntegerLookupValue.class)
+											   .setWidgetType(DocumentFieldWidgetType.Lookup)
+											   .setLookupDescriptorProvider(postalLookup)
+											   .setDataBinding(new AddressFieldBinding(IAddressModel.COLUMNNAME_C_Postal_ID, false, postalLookup::getLookupValueFromLocation, AddressFieldBinding::writeValue_C_Postal_ID)));
 
 		}
 		else
 		{
 			//
 			addressDescriptor.addField(buildFieldDescriptor(IAddressModel.COLUMNNAME_Postal)
-					.setValueClass(String.class)
-					.setWidgetType(DocumentFieldWidgetType.Text)
-					.setDataBinding(new AddressFieldBinding(IAddressModel.COLUMNNAME_Postal, false, I_C_Location::getPostal, AddressFieldBinding::writeValue_Postal)));
+											   .setValueClass(String.class)
+											   .setWidgetType(DocumentFieldWidgetType.Text)
+											   .setMandatoryLogic(getMandatoryLogic(I_C_Location.COLUMNNAME_Postal))
+											   .setDataBinding(new AddressFieldBinding(IAddressModel.COLUMNNAME_Postal, false, I_C_Location::getPostal, AddressFieldBinding::writeValue_Postal)));
 			//
 			addressDescriptor.addField(buildFieldDescriptor(IAddressModel.COLUMNNAME_City)
-					.setValueClass(String.class)
-					.setWidgetType(DocumentFieldWidgetType.Text)
-					.setDataBinding(new AddressFieldBinding(IAddressModel.COLUMNNAME_City, false, I_C_Location::getCity, AddressFieldBinding::writeValue_City)));
+											   .setValueClass(String.class)
+											   .setWidgetType(DocumentFieldWidgetType.Text)
+											   .setMandatoryLogic(getMandatoryLogic(I_C_Location.COLUMNNAME_City))
+											   .setDataBinding(new AddressFieldBinding(IAddressModel.COLUMNNAME_City, false, I_C_Location::getCity, AddressFieldBinding::writeValue_City)));
 
 			//
 			// Region and Country fields
 			addressDescriptor.addField(buildFieldDescriptor(IAddressModel.COLUMNNAME_C_Region_ID)
-					.setValueClass(IntegerLookupValue.class)
-					.setWidgetType(DocumentFieldWidgetType.Lookup)
-					.setDisplayLogic("@" + IAddressModel.COLUMNNAME_HasRegion + "/N@=Y")
-					.setLookupDescriptorProvider(AddressRegionLookupDescriptor.newInstance())
-					.setDataBinding(new AddressFieldBinding(IAddressModel.COLUMNNAME_C_Region_ID, false, AddressFieldBinding::readValue_C_Region_ID, AddressFieldBinding::writeValue_C_Region_ID)));
+											   .setValueClass(IntegerLookupValue.class)
+											   .setWidgetType(DocumentFieldWidgetType.Lookup)
+											   .setDisplayLogic("@" + IAddressModel.COLUMNNAME_HasRegion + "/N@=Y")
+											   .setLookupDescriptorProvider(AddressRegionLookupDescriptor.newInstance())
+											   .setDataBinding(new AddressFieldBinding(IAddressModel.COLUMNNAME_C_Region_ID, false, AddressFieldBinding::readValue_C_Region_ID, AddressFieldBinding::writeValue_C_Region_ID)));
 			//
 			addressDescriptor.addField(buildFieldDescriptor(IAddressModel.COLUMNNAME_HasRegion)
-					.setWidgetType(DocumentFieldWidgetType.YesNo)
-					.removeCharacteristic(Characteristic.PublicField) // internal field (not displayed!)
-					.setDataBinding(AddressFieldBinding.internalField(IAddressModel.COLUMNNAME_HasRegion)));
+											   .setWidgetType(DocumentFieldWidgetType.YesNo)
+											   .removeCharacteristic(Characteristic.PublicField) // internal field (not displayed!)
+											   .setDataBinding(AddressFieldBinding.internalField(IAddressModel.COLUMNNAME_HasRegion)));
 			//
 			addressDescriptor.addField(buildFieldDescriptor(IAddressModel.COLUMNNAME_C_Country_ID)
-					.setValueClass(IntegerLookupValue.class)
-					.setWidgetType(DocumentFieldWidgetType.Lookup)
-					.setMandatoryLogic(true)
-					.setLookupDescriptorProvider(AddressCountryLookupDescriptor.newInstance())
-					.setDataBinding(new AddressFieldBinding(IAddressModel.COLUMNNAME_C_Country_ID, false, AddressFieldBinding::readValue_C_Country_ID, AddressFieldBinding::writeValue_C_Country_ID))
-					.addCallout(AddressCallout::onC_Country_ID));
+											   .setValueClass(IntegerLookupValue.class)
+											   .setWidgetType(DocumentFieldWidgetType.Lookup)
+											   .setMandatoryLogic(true)
+											   .setLookupDescriptorProvider(AddressCountryLookupDescriptor.newInstance())
+											   .setDataBinding(new AddressFieldBinding(IAddressModel.COLUMNNAME_C_Country_ID, false, AddressFieldBinding::readValue_C_Country_ID, AddressFieldBinding::writeValue_C_Country_ID))
+											   .addCallout(AddressCallout::onC_Country_ID));
 		}
 
 		//
 		// Build it and return
 		return addressDescriptor.build();
+	}
+
+	private boolean getSysConfigDisplayValue(final String columnname)
+	{
+		final String sysConfigName = new StringBuilder()
+				.append(SYSCONFIG_PREFIX)
+				.append(columnname)
+				.append(SYSCONFIG_SUFIX)
+				.toString();
+
+		return sysConfigBL.getBooleanValue(sysConfigName, false, Env.getAD_Client_ID());
+	}
+
+	private  boolean getMandatoryLogic(final String columnName)
+	{
+		final POInfo poInfo = POInfo.getPOInfo(I_C_Location.Table_Name);
+		return poInfo.isColumnMandatory(columnName);
 	}
 
 	private DocumentFieldDescriptor.Builder buildFieldDescriptor(final String columnName)
@@ -229,9 +275,9 @@ public class AddressDescriptorFactory
 				.setCaption(fieldDescriptor.getCaption())
 				.setWidgetType(fieldDescriptor.getWidgetType())
 				.addField(DocumentLayoutElementFieldDescriptor.builder(fieldDescriptor.getFieldName())
-						.setLookupInfos(fieldDescriptor.getLookupDescriptor().orElse(null))
-						.setPublicField(true)
-						.setSupportZoomInto(fieldDescriptor.isSupportZoomInto()));
+								  .setLookupInfos(fieldDescriptor.getLookupDescriptor().orElse(null))
+								  .setPublicField(true)
+								  .setSupportZoomInto(fieldDescriptor.isSupportZoomInto()));
 	}
 
 	private static class AddressDataBindingDescriptorBuilder implements DocumentEntityDataBindingDescriptorBuilder
@@ -383,6 +429,21 @@ public class AddressDescriptorFactory
 		public static void writeValue_City(final I_C_Location toLocationRecord, final IDocumentFieldView fromField)
 		{
 			toLocationRecord.setCity(fromField.getValueAs(String.class));
+		}
+
+		public static void writeValue_Street(final I_C_Location toLocationRecord, final IDocumentFieldView fromField)
+		{
+			toLocationRecord.setStreet(fromField.getValueAs(String.class));
+		}
+
+		public static void writeValue_HouseNumber(final I_C_Location toLocationRecord, final IDocumentFieldView fromField)
+		{
+			toLocationRecord.setHouseNumber(fromField.getValueAs(String.class));
+		}
+
+		public static void writeValue_DHL_PostId(final I_C_Location toLocationRecord, final IDocumentFieldView fromField)
+		{
+			toLocationRecord.setDHL_PostId(fromField.getValueAs(String.class));
 		}
 
 		public static void writeValue_IsPOBoxNum(final I_C_Location toLocationRecord, final IDocumentFieldView fromField)
