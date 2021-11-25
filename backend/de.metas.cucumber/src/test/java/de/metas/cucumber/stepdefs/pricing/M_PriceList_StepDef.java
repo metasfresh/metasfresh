@@ -124,7 +124,7 @@ public class M_PriceList_StepDef
 		saveRecord(m_pricingSystem);
 
 		final String recordIdentifier = DataTableUtil.extractRecordIdentifier(row, I_M_PricingSystem.Table_Name);
-		pricingSystemTable.put(recordIdentifier, m_pricingSystem);
+		pricingSystemTable.putOrReplace(recordIdentifier, m_pricingSystem);
 	}
 
 	private void createM_PriceList(@NonNull final Map<String, String> row)
@@ -167,7 +167,7 @@ public class M_PriceList_StepDef
 		saveRecord(m_priceList);
 
 		final String recordIdentifier = DataTableUtil.extractRecordIdentifier(row, I_M_PriceList.Table_Name);
-		priceListTable.put(recordIdentifier, m_priceList);
+		priceListTable.putOrReplace(recordIdentifier, m_priceList);
 	}
 
 	@NonNull
@@ -205,7 +205,7 @@ public class M_PriceList_StepDef
 		saveRecord(m_priceList_Version);
 
 		final String recordIdentifier = DataTableUtil.extractRecordIdentifier(row, I_M_PriceList_Version.Table_Name);
-		priceListVersionTable.put(recordIdentifier, m_priceList_Version);
+		priceListVersionTable.putOrReplace(recordIdentifier, m_priceList_Version);
 	}
 
 	@And("metasfresh contains M_ProductPrices")
@@ -244,6 +244,6 @@ public class M_PriceList_StepDef
 		saveRecord(productPrice);
 
 		final String recordIdentifier = DataTableUtil.extractRecordIdentifier(tableRow, I_M_ProductPrice.Table_Name);
-		productPriceTable.put(recordIdentifier, productPrice);
+		productPriceTable.putOrReplace(recordIdentifier, productPrice);
 	}
 }

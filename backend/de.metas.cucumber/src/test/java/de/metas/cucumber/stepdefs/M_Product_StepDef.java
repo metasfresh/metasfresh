@@ -138,6 +138,6 @@ public class M_Product_StepDef
 		InterfaceWrapperHelper.saveRecord(productRecord);
 
 		final String recordIdentifier = DataTableUtil.extractRecordIdentifier(tableRow, "M_Product");
-		productTable.put(recordIdentifier, productRecord);
+		productTable.putOrReplace(recordIdentifier, productRecord);
 	}
 }

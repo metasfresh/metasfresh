@@ -1,17 +1,15 @@
 package de.metas.material.event.pporder;
 
-import javax.annotation.Nullable;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
+import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.commons.EventDescriptor;
-import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 
@@ -44,15 +42,14 @@ import lombok.ToString;
  * <li>as a response to an {@link PPOrderRequestedEvent}
  * </ul>
  */
-@EqualsAndHashCode(callSuper = true)
-@ToString(callSuper = true)
+@EqualsAndHashCode(callSuper = false)
+@ToString
+@Getter
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
-public class PPOrderCreatedEvent extends AbstractPPOrderEvent
+public class PPOrderCreatedEvent implements MaterialEvent
 {
-	public static PPOrderCreatedEvent cast(@Nullable final AbstractPPOrderEvent ppOrderEvent)
-	{
-		return (PPOrderCreatedEvent)ppOrderEvent;
-	}
+	private final EventDescriptor eventDescriptor;
+	private final PPOrder ppOrder;
 
 	public static final String TYPE = "PPOrderCreatedEvent";
 
@@ -60,10 +57,10 @@ public class PPOrderCreatedEvent extends AbstractPPOrderEvent
 	@Builder
 	public PPOrderCreatedEvent(
 			@JsonProperty("eventDescriptor") @NonNull final EventDescriptor eventDescriptor,
-			@JsonProperty("ppOrder") final @NonNull PPOrder ppOrder,
-			@JsonProperty("supplyRequiredDescriptor") @Nullable final SupplyRequiredDescriptor supplyRequiredDescriptor)
+			@JsonProperty("ppOrder") final @NonNull PPOrder ppOrder)
 	{
-		super(eventDescriptor, ppOrder, supplyRequiredDescriptor);
+		this.eventDescriptor = eventDescriptor;
+		this.ppOrder = ppOrder;
 	}
 
 	public void validate()
