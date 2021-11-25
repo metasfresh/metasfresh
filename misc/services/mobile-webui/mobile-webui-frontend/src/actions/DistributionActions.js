@@ -1,16 +1,15 @@
-import { UPDATE_DISTRIBUTION_STEP_QTY } from '../constants/DistributionActionTypes';
+import { UPDATE_DISTRIBUTION_PICK_FROM, UPDATE_DISTRIBUTION_DROP_TO } from '../constants/DistributionActionTypes';
 
-export function updateDistributionStepQty({
+export function updateDistributionPickFrom({
   wfProcessId,
   activityId,
   lineId,
   stepId,
   qtyPicked,
   qtyRejectedReasonCode,
-  droppedToLocator,
 }) {
   return {
-    type: UPDATE_DISTRIBUTION_STEP_QTY,
+    type: UPDATE_DISTRIBUTION_PICK_FROM,
     payload: {
       wfProcessId,
       activityId,
@@ -18,7 +17,18 @@ export function updateDistributionStepQty({
       stepId,
       qtyPicked,
       qtyRejectedReasonCode,
-      droppedToLocator,
+    },
+  };
+}
+
+export function updateDistributionDropTo({ wfProcessId, activityId, lineId, stepId }) {
+  return {
+    type: UPDATE_DISTRIBUTION_DROP_TO,
+    payload: {
+      wfProcessId,
+      activityId,
+      lineId,
+      stepId,
     },
   };
 }

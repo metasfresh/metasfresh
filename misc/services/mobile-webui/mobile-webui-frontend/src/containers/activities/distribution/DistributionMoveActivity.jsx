@@ -48,8 +48,8 @@ class DistributionMoveActivity extends Component {
                   caption={lineItem.caption}
                   isUserEditable={isUserEditable}
                   completeStatus={completeStatus || CompleteStatus.NOT_STARTED}
-                  qtyPicked={picked}
                   qtyToMove={toMove}
+                  qtyPicked={picked}
                   uom={uom}
                 />
               );

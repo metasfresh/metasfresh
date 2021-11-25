@@ -49,6 +49,8 @@ const translations = {
       picked: 'Ist',
       scanHU: 'Scan HU',
       scanLocator: 'Scan Ziel Lagerort',
+      invalidLocatorBarcode: 'Invalid locator barcode',
+      invalidQtyToMove: 'Invalid qty to move',
     },
     confirmButton: {
       default: {

@@ -6,7 +6,7 @@ class PickQuantityPrompt extends PureComponent {
   constructor(props) {
     super(props);
     this.state = {
-      value: 0,
+      value: props.qtyInitial ? props.qtyInitial : 0,
     };
 
     this.qtyInput = createRef();
@@ -68,6 +68,7 @@ class PickQuantityPrompt extends PureComponent {
 
 PickQuantityPrompt.propTypes = {
   onQtyChange: PropTypes.func.isRequired,
+  qtyInitial: PropTypes.number,
   qtyTarget: PropTypes.number.isRequired,
   qtyCaption: PropTypes.string.isRequired,
   onCloseDialog: PropTypes.func,
