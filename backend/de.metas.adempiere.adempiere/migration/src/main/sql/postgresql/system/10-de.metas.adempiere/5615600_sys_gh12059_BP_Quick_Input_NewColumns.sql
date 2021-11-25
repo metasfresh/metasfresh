@@ -315,3 +315,13 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 
 
+-- 2021-11-25T21:28:19.380Z
+-- URL zum Konzept
+UPDATE AD_Column SET AD_Val_Rule_ID=133,Updated=TO_TIMESTAMP('2021-11-25 23:28:19','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=578697
+;
+
+-- 2021-11-25T21:28:33.741Z
+-- URL zum Konzept
+INSERT INTO t_alter_column values('c_bpartner_quickinput','C_DocTypeTarget_ID','NUMERIC(10)',null,null)
+;
+
