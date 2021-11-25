@@ -477,9 +477,7 @@ public class BPartnerQuickInputService
 				.referrer(template.getReferrer())
 				.campaignId(CampaignId.ofRepoIdOrNull(template.getMKTG_Campaign_ID()))
 
-				.paymentRule(Optional.of(template.getPaymentRule())
-						.map(PaymentRule::ofCode)
-						.orElse(null))
+				.paymentRule(PaymentRule.ofNullableCode(template.getPaymentRule()))
 
 				.soDocTypeTargetId(DocTypeId.ofRepoIdOrNull(template.getC_DocTypeTarget_ID()))
 
