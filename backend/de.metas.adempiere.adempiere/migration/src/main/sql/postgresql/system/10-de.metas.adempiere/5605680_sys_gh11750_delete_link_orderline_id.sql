@@ -43,6 +43,22 @@ DELETE FROM AD_Field WHERE AD_Field_ID=546411
 /* DDL */ SELECT public.db_alter_table('C_OrderLine','ALTER TABLE C_OrderLine DROP COLUMN IF EXISTS Link_OrderLine_ID')
 ;
 
+
+
+
+
+
+-- manually added on 22.11.2021
+
+delete from ad_field where ad_column_id=55323;
+
+
+
+
+
+
+
+
 -- 2021-09-19T13:30:56.648Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 DELETE FROM  AD_Column_Trl WHERE AD_Column_ID=55323
