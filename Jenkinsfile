@@ -29,6 +29,10 @@ properties([
                         description: 'If true, then don\'t build backend, even if there were changes or <code>MF_FORCE_FULL_BUILD</code> is set to <code>true<code>',
                         name: 'MF_FORCE_SKIP_BACKEND_BUILD'),
 
+                booleanParam(defaultValue: true,
+                        description: 'If true, then don\'t build cypress (e2e), even if there were changes or <code>MF_FORCE_FULL_BUILD</code> is set to <code>true<code>',
+                        name: 'MF_FORCE_SKIP_CYPRESS_BUILD'),
+
                 string(defaultValue: MF_SQL_SEED_DUMP_URL_DEFAULT,
                         description: 'metasfresh database seed against which the build shall apply its migrate scripts for QA; leave empty to avoid this QA.',
                         name: 'MF_SQL_SEED_DUMP_URL'),
@@ -135,7 +139,7 @@ private void buildAll(String mfVersion, MvnConf mvnConf, scmVars) {
                 withMaven(jdk: 'java-8-AdoptOpenJDK', maven: 'maven-3.6.3', mavenLocalRepo: '.repository', mavenOpts: '-Xmx1536M', options: [artifactsPublisher(disabled: true)]) {
                             dir('e2e') {
                                         def e2eBuildFile = load('buildfile.groovy')
-                                        e2eBuildFile.build(scmVars, params.MF_FORCE_FULL_BUILD)
+                                        e2eBuildFile.build(scmVars, params.MF_FORCE_FULL_BUILD, params.MF_FORCE_SKIP_CYPRESS_BUILD)
                                     }
                             dir('distribution') {
                                         def distributionBuildFile = load('buildfile.groovy')
