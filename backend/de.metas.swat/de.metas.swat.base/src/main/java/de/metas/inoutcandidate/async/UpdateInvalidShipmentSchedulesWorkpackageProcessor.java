@@ -73,8 +73,8 @@ public class UpdateInvalidShipmentSchedulesWorkpackageProcessor extends Workpack
 		SCHEDULER.schedule(request);
 	}
 
-	private static final IShipmentSchedulesUpdateScheduler //
-			SCHEDULER = new UpdateInvalidShipmentSchedulesWorkpackageProcessorScheduler(true /*createOneWorkpackagePerAsyncBatch*/);
+	private static final UpdateInvalidShipmentSchedulesScheduler //
+			SCHEDULER = new UpdateInvalidShipmentSchedulesScheduler(true /*createOneWorkpackagePerAsyncBatch*/);
 
 	// services
 	private final transient IShipmentScheduleUpdater shipmentScheduleUpdater = Services.get(IShipmentScheduleUpdater.class);

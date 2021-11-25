@@ -34,10 +34,14 @@ import java.util.List;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+/**
+ * About the source and dest warehouse: those are taken from the orderlines' network lines
+ * One DDOrder might end up being the source of multiple DD_Order records.
+ */
 @Value
 public class DDOrder
 {
-
 	/**
 	 * {@code AD_Org_ID} of the <b>receiving</b> organization.
 	 */
@@ -53,7 +57,7 @@ public class DDOrder
 	Instant datePromised;
 
 	int shipperId;
-
+	
 	@Singular
 	List<DDOrderLine> lines;
 

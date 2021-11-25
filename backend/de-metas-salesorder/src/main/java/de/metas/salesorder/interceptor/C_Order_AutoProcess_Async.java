@@ -24,14 +24,12 @@ package de.metas.salesorder.interceptor;
 
 import ch.qos.logback.classic.Level;
 import de.metas.async.AsyncBatchId;
-import de.metas.async.asyncbatchmilestone.AsyncBatchMilestone;
-import de.metas.async.asyncbatchmilestone.AsyncBatchMilestoneQuery;
-import de.metas.async.asyncbatchmilestone.AsyncBatchMilestoneService;
+import de.metas.async.service.AsyncBatchObserver;
 import de.metas.inoutcandidate.async.CreateMissingShipmentSchedulesWorkpackageProcessor;
 import de.metas.logging.LogManager;
 import de.metas.order.DeliveryRule;
 import de.metas.order.OrderId;
-import de.metas.salesorder.service.AutoProcessingOrderService;
+import de.metas.salesorder.async.CompleteShipAndInvoiceEnqueuer;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -45,28 +43,26 @@ import org.compiere.model.ModelValidator;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
-
 @Interceptor(I_C_Order.class)
 @Component
-public class C_Order_Schedule
+public class C_Order_AutoProcess_Async
 {
-	private static final Logger logger = LogManager.getLogger(C_Order_Schedule.class);
+	private static final Logger logger = LogManager.getLogger(C_Order_AutoProcess_Async.class);
 
 	private final static String SYS_Config_AUTO_SHIP_AND_INVOICE = "AUTO_SHIP_AND_INVOICE";
 
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
-	private final AutoProcessingOrderService autoProcessingOrderService;
-	private final AsyncBatchMilestoneService asyncBatchMilestoneService;
+	private final CompleteShipAndInvoiceEnqueuer completeShipAndInvoiceEnqueuer;
+	private final AsyncBatchObserver asyncBatchObserver;
 
-	public C_Order_Schedule(
-			@NonNull final AutoProcessingOrderService autoProcessingOrderService,
-			@NonNull final AsyncBatchMilestoneService asyncBatchMilestoneService)
+	public C_Order_AutoProcess_Async(
+			@NonNull final CompleteShipAndInvoiceEnqueuer completeShipAndInvoiceEnqueuer,
+			@NonNull final AsyncBatchObserver asyncBatchObserver)
 	{
-		this.autoProcessingOrderService = autoProcessingOrderService;
-		this.asyncBatchMilestoneService = asyncBatchMilestoneService;
+		this.completeShipAndInvoiceEnqueuer = completeShipAndInvoiceEnqueuer;
+		this.asyncBatchObserver = asyncBatchObserver;
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
@@ -83,8 +79,9 @@ public class C_Order_Schedule
 
 		if (isEligibleForAutoProcessing(orderRecord))
 		{
-			Loggables.withLogger(logger, Level.INFO).addLog("OrderId: {} qualified for auto ship and invoice!", orderId);
-			autoProcessingOrderService.completeShipAndInvoice(orderId);
+			Loggables.withLogger(logger, Level.INFO).addLog("OrderId: {} qualified for auto ship and invoice! Enqueueing order.", orderId);
+			final String trxName = InterfaceWrapperHelper.getTrxName(orderRecord);
+			completeShipAndInvoiceEnqueuer.enqueue(orderId, trxName);
 		}
 		else
 		{
@@ -95,10 +92,12 @@ public class C_Order_Schedule
 
 	private boolean isEligibleForAutoProcessing(@NonNull final I_C_Order orderRecord)
 	{
-		final boolean isAutoShipAndInvoice = sysConfigBL.getBooleanValue(SYS_Config_AUTO_SHIP_AND_INVOICE, false, orderRecord.getAD_Client_ID(), orderRecord.getAD_Org_ID());
-		final boolean isDeliveryRuleAvailability = orderRecord.getDeliveryRule().equals(DeliveryRule.AVAILABILITY.getCode());
+		final boolean featureEnabled = sysConfigBL.getBooleanValue(SYS_Config_AUTO_SHIP_AND_INVOICE, false, orderRecord.getAD_Client_ID(), orderRecord.getAD_Org_ID());
 
-		if (!isAutoShipAndInvoice || !isDeliveryRuleAvailability)
+		final DeliveryRule deliveryRule = DeliveryRule.ofCode(orderRecord.getDeliveryRule());
+
+		final boolean canDoAutoShipAndInvoice = featureEnabled && deliveryRule.isBasedOnDelivery();
+		if (!canDoAutoShipAndInvoice)
 		{
 			return false;
 		}
@@ -111,14 +110,6 @@ public class C_Order_Schedule
 			return true;
 		}
 
-		final AsyncBatchMilestoneQuery milestoneQuery = AsyncBatchMilestoneQuery.builder()
-				.asyncBatchId(asyncBatchId)
-				.processed(false)
-				.build();
-
-		final List<AsyncBatchMilestone> asyncBatchMilestoneList = asyncBatchMilestoneService.getByQuery(milestoneQuery);
-
-		//dev-note: if there is already an async process in progress working with this order, let it follow it's normal course
-		return asyncBatchMilestoneList.isEmpty();
+		return !asyncBatchObserver.isAsyncBatchObserved(asyncBatchId);
 	}
 }

@@ -29,10 +29,9 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import java.util.Optional;
 import java.util.Properties;
 
-public class UpdateInvalidShipmentSchedulesWorkpackageProcessorScheduler extends WorkpackagesOnCommitSchedulerTemplate<ShipmentSchedulesUpdateSchedulerRequest>
-		implements IShipmentSchedulesUpdateScheduler
+public class UpdateInvalidShipmentSchedulesScheduler extends WorkpackagesOnCommitSchedulerTemplate<ShipmentSchedulesUpdateSchedulerRequest>
 {
-	public UpdateInvalidShipmentSchedulesWorkpackageProcessorScheduler(final boolean createOneWorkpackagePerAsyncBatch)
+	public UpdateInvalidShipmentSchedulesScheduler(final boolean createOneWorkpackagePerAsyncBatch)
 	{
 		super(UpdateInvalidShipmentSchedulesWorkpackageProcessor.class);
 		super.setCreateOneWorkpackagePerAsyncBatch(createOneWorkpackagePerAsyncBatch);

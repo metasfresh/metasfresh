@@ -71,7 +71,7 @@ Feature: sales order
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_2       | o_2                   | p_2                     | 10         |
     And the order identified by o_2 is completed
-    And after not more than 10s, M_ShipmentSchedules are found:
+    And after not more than 30s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_ol_2     | ol_2                      | N             |
     When generate PO from SO is invoked with parameters:
