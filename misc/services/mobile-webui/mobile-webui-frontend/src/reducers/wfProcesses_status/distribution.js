@@ -8,8 +8,12 @@ const COMPONENT_TYPE = 'distribution/move';
 
 export const distributionReducer = ({ draftState, action }) => {
   switch (action.type) {
-    case types.UPDATE_DISTRIBUTION_STEP_QTY: {
-      return reduceOnUpdateQtyPicked(draftState, action.payload);
+    case types.UPDATE_DISTRIBUTION_PICK_FROM: {
+      return reduceOnUpdatePickFrom(draftState, action.payload);
+    }
+
+    case types.UPDATE_DISTRIBUTION_DROP_TO: {
+      return reduceOnDropTo(draftState, action.payload);
     }
 
     default: {
@@ -18,20 +22,31 @@ export const distributionReducer = ({ draftState, action }) => {
   }
 };
 
-const reduceOnUpdateQtyPicked = (draftState, payload) => {
-  const { wfProcessId, activityId, lineId, stepId, qtyPicked, qtyRejectedReasonCode, droppedToLocator } = payload;
+const reduceOnUpdatePickFrom = (draftState, payload) => {
+  const { wfProcessId, activityId, lineId, stepId, qtyPicked, qtyRejectedReasonCode } = payload;
+  const draftWFProcess = draftState[wfProcessId];
+  const draftStep = draftWFProcess.activities[activityId].dataStored.lines[lineId].steps[stepId];
+
+  draftStep.qtyPicked = qtyPicked;
+  draftStep.qtyRejectedReasonCode = qtyRejectedReasonCode;
+
+  updateStepStatusAndRollup({
+    draftWFProcess,
+    activityId,
+    lineId,
+    stepId,
+  });
+
+  return draftState;
+};
+
+const reduceOnDropTo = (draftState, payload) => {
+  const { wfProcessId, activityId, lineId, stepId } = payload;
 
   const draftWFProcess = draftState[wfProcessId];
   const draftStep = draftWFProcess.activities[activityId].dataStored.lines[lineId].steps[stepId];
 
-  //
-  // Picked From
-  draftStep.qtyPicked = qtyPicked;
-  draftStep.qtyRejectedReasonCode = qtyRejectedReasonCode;
-
-  //
-  // Dropped To
-  draftStep.droppedToLocator = droppedToLocator;
+  draftStep.droppedToLocator = true;
 
   updateStepStatusAndRollup({
     draftWFProcess,

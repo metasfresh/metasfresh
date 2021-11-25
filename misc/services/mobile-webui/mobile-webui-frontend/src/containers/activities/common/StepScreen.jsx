@@ -7,15 +7,12 @@ import { withRouter } from 'react-router';
 import { selectWFProcessFromState } from '../../../reducers/wfProcesses_status';
 import ScreenToaster from '../../../components/ScreenToaster';
 import PickStepScreen from '../picking/PickStepScreen';
-import DistributionStepScreen from '../distribution/DistributionStepScreen';
 import MaterialIssueStepScreen from '../manufacturing/RawMaterialIssueStepScreen';
 
 const getStepComponent = (appId) => {
   switch (appId) {
     case 'picking':
       return PickStepScreen;
-    case 'distribution':
-      return DistributionStepScreen;
     case 'mfg':
       return MaterialIssueStepScreen;
     default:
@@ -24,14 +21,11 @@ const getStepComponent = (appId) => {
 };
 
 class StepScreen extends PureComponent {
-  // if `locatorId` exists, scanner will be configured for distributions.locator case
-  onScanButtonClick = ({ locatorId = null } = {}) => {
+  onScanButtonClick = () => {
     const { wfProcessId, activityId, lineId, stepId, dispatch, appId, altStepId } = this.props;
 
     const altStepPath = altStepId ? `/altStepId/${altStepId}` : ``;
-    const location = `/workflow/${wfProcessId}/activityId/${activityId}/lineId/${lineId}/stepId/${stepId}${altStepPath}/scanner/${appId}${
-      locatorId ? `/${locatorId}` : ''
-    }`;
+    const location = `/workflow/${wfProcessId}/activityId/${activityId}/lineId/${lineId}/stepId/${stepId}${altStepPath}/scanner/${appId}`;
 
     dispatch(push(location));
   };

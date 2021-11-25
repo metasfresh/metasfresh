@@ -4,7 +4,6 @@ import { withRouter } from 'react-router';
 import PropTypes from 'prop-types';
 
 import PickLineScreen from '../picking/PickLineScreen';
-import DistributionLineScreen from '../distribution/DistributionLineScreen';
 import RawMaterialIssueLineScreen from '../manufacturing/RawMaterialIssueLineScreen';
 import MaterialReceiptLineScreen from '../manufacturing/MaterialReceiptLineScreen';
 
@@ -14,8 +13,6 @@ const getLineComponent = (appId, componentType) => {
   switch (appId) {
     case 'picking':
       return PickLineScreen;
-    case 'distribution':
-      return DistributionLineScreen;
     case 'mfg':
       if (componentType === 'manufacturing/rawMaterialsIssue') {
         return RawMaterialIssueLineScreen;

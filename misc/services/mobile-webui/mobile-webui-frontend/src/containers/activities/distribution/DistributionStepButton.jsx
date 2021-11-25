@@ -3,15 +3,20 @@ import PropTypes from 'prop-types';
 import counterpart from 'counterpart';
 
 import { pushHeaderEntry } from '../../../actions/HeaderActions';
-import StepButton from '../common/StepButton';
 import Indicator from '../../../components/Indicator';
 import * as CompleteStatus from '../../../constants/CompleteStatus';
+import { push } from 'connected-react-router';
+import { withRouter } from 'react-router';
+import { connect } from 'react-redux';
+import { distributionStepScreenLocation } from '../../../routes/distribution';
 
 class DistributionStepButton extends PureComponent {
   handleClick = () => {
-    const { pickFromLocator, location, dispatch, onHandleClick } = this.props;
+    const { wfProcessId, activityId, lineId, stepId, pickFromLocator } = this.props;
+    const { dispatch } = this.props;
 
-    onHandleClick();
+    const location = distributionStepScreenLocation({ wfProcessId, activityId, lineId, stepId });
+    dispatch(push(location));
     dispatch(
       pushHeaderEntry({
         location,
@@ -82,12 +87,10 @@ DistributionStepButton.propTypes = {
   qtyPicked: PropTypes.number,
   qtyToMove: PropTypes.number.isRequired,
   stepState: PropTypes.object,
-  location: PropTypes.string.isRequired,
   completeStatus: PropTypes.string.isRequired,
-  onHandleClick: PropTypes.func.isRequired,
   //
   // Actions
   dispatch: PropTypes.func.isRequired,
 };
 
-export default StepButton(DistributionStepButton);
+export default withRouter(connect()(DistributionStepButton));

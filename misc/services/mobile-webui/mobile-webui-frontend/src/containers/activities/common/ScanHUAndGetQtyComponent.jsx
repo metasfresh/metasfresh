@@ -6,13 +6,12 @@ import CodeScanner from '../scan/CodeScanner';
 import PickQuantityPrompt from '../PickQuantityPrompt';
 import QtyReasonsView from '../QtyReasonsView';
 
-// FIXME deprecated. To be replaced by ScanHUAndGetQtyComponent
-class StepScanScreenComponent extends Component {
+class ScanHUAndGetQtyComponent extends Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      promptVisible: false,
+      qtyInputPromptVisible: false,
       reasonsPanelVisible: false,
       newQuantity: 0,
       scannedBarcode: null,
@@ -25,25 +24,23 @@ class StepScanScreenComponent extends Component {
   };
 
   onBarcodeScanned = ({ scannedBarcode }) => {
-    const { qtyTarget, pushUpdatedQuantity } = this.props;
+    const { qtyTarget, onResult, invalidBarcodeMessageKey } = this.props;
 
     if (this.isEligibleBarcode(scannedBarcode)) {
-      this.props.setScannedBarcode(scannedBarcode);
-
       // in some cases we don't need store quantity (ie manufacturing receipts)
       if (qtyTarget) {
         this.setState({ promptVisible: true });
       } else {
-        pushUpdatedQuantity({ qty: 0, reason: null });
+        onResult({ qty: 0, reason: null });
       }
     } else {
       // show an error to user but keep scanning...
-      toastError({ messageKey: 'activities.picking.notEligibleHUBarcode' });
+      toastError({ messageKey: invalidBarcodeMessageKey || 'activities.picking.notEligibleHUBarcode' });
     }
   };
 
-  onQtyPickedChanged = (qty) => {
-    const { qtyTarget, pushUpdatedQuantity } = this.props;
+  onQtyEntered = (qty) => {
+    const { qtyTarget, onResult, invalidQtyMessageKey } = this.props;
 
     const inputQty = parseFloat(qty);
     if (isNaN(inputQty)) {
@@ -58,19 +55,20 @@ class StepScanScreenComponent extends Component {
         const qtyRejected = qtyTarget - inputQty;
         this.setState({ reasonsPanelVisible: true, qtyRejected });
       } else {
-        pushUpdatedQuantity({ qty: inputQty });
+        onResult({ qty: inputQty });
       }
 
       this.setState({ promptVisible: false });
     } else {
-      toastError({ messageKey: 'activities.picking.invalidQtyPicked' });
+      toastError({ messageKey: invalidQtyMessageKey || 'activities.picking.invalidQtyPicked' });
     }
   };
 
   hideReasonsPanel = (reason) => {
-    const { pushUpdatedQuantity } = this.props;
+    const { onResult } = this.props;
     this.setState({ reasonsPanelVisible: false });
-    pushUpdatedQuantity({ qty: this.state.newQuantity, reason });
+
+    onResult({ qty: this.state.newQuantity, reason });
   };
 
   validateQtyInput = (numberInput) => {
@@ -82,17 +80,13 @@ class StepScanScreenComponent extends Component {
   isEligibleBarcode = (scannedBarcode) => {
     const { eligibleBarcode } = this.props;
 
-    console.log(`checking ${eligibleBarcode} vs ${scannedBarcode}`);
+    console.log(`checking eligibleBarcode=${eligibleBarcode} vs scannedBarcode=${scannedBarcode}`);
     // in some cases we accept whatever code user scans and we're not constraining it
     return eligibleBarcode ? scannedBarcode === eligibleBarcode : true;
   };
 
   render() {
-    const {
-      stepProps: { uom },
-      qtyTarget,
-      qtyCaption,
-    } = this.props;
+    const { uom, qtyCaption, qtyInitial, qtyTarget } = this.props;
     const { promptVisible, reasonsPanelVisible, qtyRejected } = this.state;
 
     return (
@@ -103,9 +97,10 @@ class StepScanScreenComponent extends Component {
           <>
             {promptVisible ? (
               <PickQuantityPrompt
+                qtyInitial={qtyInitial}
                 qtyTarget={qtyTarget}
                 qtyCaption={qtyCaption}
-                onQtyChange={this.onQtyPickedChanged}
+                onQtyChange={this.onQtyEntered}
                 onCloseDialog={this.hidePrompt}
               />
             ) : (
@@ -118,18 +113,20 @@ class StepScanScreenComponent extends Component {
   }
 }
 
-StepScanScreenComponent.propTypes = {
-  componentProps: PropTypes.object,
-  wfProcessId: PropTypes.string.isRequired,
-  activityId: PropTypes.string.isRequired,
-  lineId: PropTypes.string.isRequired,
-  stepId: PropTypes.string,
+ScanHUAndGetQtyComponent.propTypes = {
+  //
+  // Props
   eligibleBarcode: PropTypes.string,
+  qtyCaption: PropTypes.string,
   qtyTarget: PropTypes.number,
-  qtyCaption: PropTypes.string.isRequired,
-  stepProps: PropTypes.object.isRequired,
-  pushUpdatedQuantity: PropTypes.func,
-  setScannedBarcode: PropTypes.func.isRequired,
+  qtyInitial: PropTypes.number,
+  uom: PropTypes.string,
+  // Error messages:
+  invalidBarcodeMessageKey: PropTypes.string,
+  invalidQtyMessageKey: PropTypes.string,
+  //
+  // Functions
+  onResult: PropTypes.func,
 };
 
-export default StepScanScreenComponent;
+export default ScanHUAndGetQtyComponent;
