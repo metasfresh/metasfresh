@@ -75,8 +75,12 @@ const computeLineStatusFromSteps = ({ draftLine }) => {
   const stepStatuses = [];
   stepIds.forEach((stepId) => {
     const draftStep = draftLine.steps[stepId];
-    if (!stepStatuses.includes(draftStep.completeStatus)) {
-      stepStatuses.push(draftStep.completeStatus);
+    // TEMP: We want to step over issues with target quantity 0, as otherwise they influence line's
+    // complete status
+    const status = draftStep.qtyToIssue === 0 ? CompleteStatus.COMPLETED : draftStep.completeStatus;
+
+    if (!stepStatuses.includes(status)) {
+      stepStatuses.push(status);
     }
   });
 
