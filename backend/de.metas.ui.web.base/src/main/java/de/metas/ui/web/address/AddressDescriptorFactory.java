@@ -121,8 +121,8 @@ public class AddressDescriptorFactory
 		addressDescriptor.addField(buildFieldDescriptor((IAddressModel.COLUMNNAME_DHL_PostId))
 										   .setValueClass(String.class)
 										   .setWidgetType(DocumentFieldWidgetType.Text)
-										   .setDisplayLogic(getSysConfigDisplayValue(IAddressModel.COLUMNNAME_DHL_PostId))
-										   .setDataBinding(new AddressFieldBinding(IAddressModel.COLUMNNAME_DHL_PostId, false, I_C_Location::getStreet, AddressFieldBinding::writeValue_DHL_PostId)));
+										   .setDisplayLogic(getSysConfigDisplayValue(I_C_Location.COLUMNNAME_DHL_PostId))
+										   .setDataBinding(new AddressFieldBinding(IAddressModel.COLUMNNAME_DHL_PostId, false, I_C_Location::getDHL_PostId, AddressFieldBinding::writeValue_DHL_PostId)));
 
 		//
 		// Address1 ... Address4 fields
