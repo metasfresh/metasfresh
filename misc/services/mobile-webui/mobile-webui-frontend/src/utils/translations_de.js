@@ -60,7 +60,7 @@ const translations = {
         no: 'Nein',
       },
       abort: 'Rückgängig',
-      notFound: 'Nich gefunden',
+      notFound: 'Nicht gefunden',
     },
     mfg: {
       ProductName: 'Produkt',

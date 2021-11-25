@@ -76,14 +76,17 @@ class PickStepScreen extends Component {
 
   handleNotFound = () => {
     const { wfProcessId, stepId, lineId, activityId, dispatch } = this.props;
+    const huBarcode = this.getPickFrom().huBarcode;
+    const qtyRejected = this.getQtyToPick();
 
     postStepPicked({
       wfProcessId,
       activityId,
       stepId,
       qtyPicked: 0,
+      qtyRejected,
       qtyRejectedReasonCode: 'N',
-      huBarcode: this.getPickFrom().huBarcode,
+      huBarcode,
     }).then(() => {
       dispatch(
         updatePickingStepQty({
@@ -92,6 +95,7 @@ class PickStepScreen extends Component {
           lineId,
           stepId,
           qtyPicked: 0,
+          qtyRejected,
           qtyRejectedReasonCode: 'N',
         })
       );
@@ -161,7 +165,7 @@ class PickStepScreen extends Component {
         </div>
         <NotFoundButton
           onNotFound={this.handleNotFound}
-          disabled={nothingPicked}
+          disabled={!nothingPicked}
           {...{ wfProcessId, activityId, stepId, lineId }}
         />
       </>
