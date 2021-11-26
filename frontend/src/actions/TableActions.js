@@ -345,7 +345,11 @@ export function updateGridTable(tableId, tableResponse) {
  * @method updateGridTableData
  * @summary Update grid table's rows and rebuild collapsed rows if necessary
  */
-export function updateGridTableData({ tableId, rows, changedIds }) {
+export function updateGridTableData({
+  tableId,
+  rows,
+  preserveCollapsedStateToRowIds,
+}) {
   return (dispatch, getState) => {
     const state = getState();
 
@@ -367,7 +371,7 @@ export function updateGridTableData({ tableId, rows, changedIds }) {
           updateCollapsedRows({
             tableId,
             rows,
-            changedIds,
+            preserveCollapsedStateToRowIds,
           })
         );
       }
@@ -526,17 +530,19 @@ function updateCollapsedRows({
       collapsedParentRows,
     } = table;
 
-    const hasChangedIds =
+    const hasPreservedStateToRowIds =
       preserveCollapsedStateToRowIds &&
       preserveCollapsedStateToRowIds.length > 0;
 
     if (collapsible) {
       let newCollapsedParentRows =
-        hasChangedIds || !uncollapseRowsOnChange
+        hasPreservedStateToRowIds || !uncollapseRowsOnChange
           ? [...collapsedParentRows]
           : [];
       let newCollapsedRows =
-        hasChangedIds || !uncollapseRowsOnChange ? [...collapsedRows] : [];
+        hasPreservedStateToRowIds || !uncollapseRowsOnChange
+          ? [...collapsedRows]
+          : [];
 
       if (rows.length) {
         rows.forEach((row) => {
