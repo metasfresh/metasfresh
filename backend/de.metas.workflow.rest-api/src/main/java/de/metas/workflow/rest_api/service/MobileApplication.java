@@ -54,8 +54,5 @@ public interface MobileApplication
 
 	WFProcess changeWFProcessById(WFProcessId wfProcessId, UnaryOperator<WFProcess> remappingFunction);
 
-	default WFProcessHeaderProperties getHeaderProperties(@NonNull final WFProcess wfProcess)
-	{
-		return WFProcessHeaderProperties.EMPTY;
-	}
+	WFProcessHeaderProperties getHeaderProperties(@NonNull final WFProcess wfProcess);
 }
