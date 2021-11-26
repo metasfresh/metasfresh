@@ -23,8 +23,8 @@ DELETE FROM AD_Column WHERE AD_Column_ID=578713
 
 -- 2021-11-26T10:53:13.252Z
 -- URL zum Konzept
-/* DDL */ SELECT public.db_alter_table('C_BPartner_QuickInput','ALTER TABLE public.C_BPartner_QuickInput DROP COLUMN Title')
-;
+-- /* DDL */ SELECT public.db_alter_table('C_BPartner_QuickInput','ALTER TABLE public.C_BPartner_QuickInput DROP COLUMN Title')
+-- ;
 
 
 
