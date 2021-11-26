@@ -7,14 +7,23 @@ import Header from '../components/Header';
 import ViewHeader from '../containers/ViewHeader';
 import LoginView from '../components/LoginView';
 
-import { commonRoutes } from './common';
-import { manufacturingRoutes } from './manufacturing';
-import { distributionRoutes } from './distribution';
 import PrivateRoute from './PrivateRoute';
 import { history } from '../store/store';
 import ScreenToaster from '../components/ScreenToaster';
 
-const routesArray = [...commonRoutes, ...distributionRoutes, ...manufacturingRoutes];
+import { commonRoutes } from './common';
+import { launchersRoutes } from './launchers';
+import { workflowRoutes } from './workflow';
+import { manufacturingRoutes } from './manufacturing';
+import { distributionRoutes } from './distribution';
+
+const routesArray = [
+  ...commonRoutes,
+  ...launchersRoutes,
+  ...workflowRoutes,
+  ...distributionRoutes,
+  ...manufacturingRoutes,
+];
 
 const Routes = () => {
   return (

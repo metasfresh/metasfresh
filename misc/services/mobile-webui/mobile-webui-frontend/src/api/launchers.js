@@ -8,7 +8,7 @@ import { apiBasePath } from '../constants';
 export function getLaunchers(applicationId) {
   return axios
     .get(`${apiBasePath}/userWorkflows/launchers`, { params: { applicationId } })
-    .then((response) => unboxAxiosResponse(response).launchers);
+    .then((response) => unboxAxiosResponse(response));
 }
 
 /**
