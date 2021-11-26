@@ -483,9 +483,9 @@ public class OrderBL implements IOrderBL
 		final BPartnerId billBPartnerId = BPartnerId.ofRepoIdOrNull(coalesce(
 				orderRecord.getBill_BPartner_ID(),
 				orderRecord.getC_BPartner_ID()));
-		if(shipBPartnerId==null || billBPartnerId==null)
+		if(shipBPartnerId == null || billBPartnerId == null)
 		{
-			return Optional.empty(); // orderOrecord is not yet ready
+			return Optional.empty(); // orderRecord is not yet ready
 		}
 		
 		final SOTrx soTrx = SOTrx.ofBoolean(orderRecord.isSOTrx());
