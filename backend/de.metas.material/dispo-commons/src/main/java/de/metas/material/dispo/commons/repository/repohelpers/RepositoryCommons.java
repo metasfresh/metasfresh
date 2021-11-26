@@ -35,8 +35,8 @@ import javax.annotation.Nullable;
 import java.sql.Timestamp;
 import java.util.List;
 
-import static de.metas.material.dispo.commons.candidate.IdConstants.UNSPECIFIED_REPO_ID;
-import static de.metas.material.dispo.commons.candidate.IdConstants.toRepoId;
+import static de.metas.common.util.IdConstants.UNSPECIFIED_REPO_ID;
+import static de.metas.common.util.IdConstants.toRepoId;
 
 /*
  * #%L
