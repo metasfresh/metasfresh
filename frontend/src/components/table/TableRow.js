@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import ReactDOM from 'react-dom';
 import classnames from 'classnames';
 import { F2_KEY } from '../../constants/Constants';
@@ -24,7 +24,7 @@ import WithMobileDoubleTap from '../WithMobileDoubleTap';
  * @module TableRow
  * @extends PureComponent
  */
-class TableRow extends Component {
+class TableRow extends PureComponent {
   constructor(props) {
     super(props);
 
