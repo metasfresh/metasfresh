@@ -209,10 +209,8 @@ class DocumentListContainer extends Component {
       fetchQuickActions,
       isModal,
       viewProfileId,
-      viewData: layout,
     } = this.props;
     const viewId = customViewId ? customViewId : this.props.viewId;
-    const { uncollapseRowsOnChange } = layout;
 
     connectWS.call(this, `/view/${viewId}`, (msg) => {
       const { fullyChanged, changedIds, headerPropertiesChanged } = msg;
