@@ -38,6 +38,7 @@ import lombok.Value;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.warehouse.WarehouseId;
 import org.eevolution.api.PPOrderCreateRequest;
+import org.eevolution.api.ShipmentScheduleId;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
@@ -57,6 +58,7 @@ public class PPOrderCandidateCreateRequest
 	Instant datePromised;
 	Instant dateStartSchedule;
 	OrderLineId salesOrderLineId;
+	ShipmentScheduleId shipmentScheduleId;
 
 	@Builder
 	public PPOrderCandidateCreateRequest(
@@ -70,7 +72,8 @@ public class PPOrderCandidateCreateRequest
 			@NonNull final Quantity qtyRequired,
 			@NonNull final Instant datePromised,
 			@NonNull final Instant dateStartSchedule,
-			@Nullable final OrderLineId salesOrderLineId)
+			@Nullable final OrderLineId salesOrderLineId,
+			@Nullable final ShipmentScheduleId shipmentScheduleId)
 	{
 		Check.assume(!qtyRequired.isZero(), "qtyRequired shall not be zero");
 
@@ -85,6 +88,7 @@ public class PPOrderCandidateCreateRequest
 		this.datePromised = datePromised;
 		this.dateStartSchedule = dateStartSchedule;
 		this.salesOrderLineId = salesOrderLineId;
+		this.shipmentScheduleId = shipmentScheduleId;
 	}
 
 	@JsonPOJOBuilder(withPrefix = "")

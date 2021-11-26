@@ -48,6 +48,7 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.util.Env;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.PPOrderCreateRequest;
+import org.eevolution.api.ShipmentScheduleId;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_Candidate;
 import org.eevolution.productioncandidate.agg.key.impl.PPOrderCandidateHeaderAggregationKeyBuilder;
@@ -187,7 +188,8 @@ public class PPOrderProducerFromCandidate implements ITrxItemChunkProcessor<I_PP
 				.datePromised(ppOrderCandidatePojo.getPpOrderData().getDatePromised())
 				.dateStartSchedule(ppOrderCandidatePojo.getPpOrderData().getDateStartSchedule())
 				//
-				.salesOrderLineId(OrderLineId.ofRepoIdOrNull(ppOrderCandidatePojo.getPpOrderData().getOrderLineId()))
+				.salesOrderLineId(OrderLineId.ofRepoIdOrNull(ppOrderCandidatePojo.getPpOrderData().getOrderLineIdAsRepoId()))
+				.shipmentScheduleId(ShipmentScheduleId.ofRepoIdOrNull(ppOrderCandidatePojo.getPpOrderData().getShipmentScheduleIdAsRepoId()))
 				//
 				.build();
 	}

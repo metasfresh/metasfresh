@@ -346,7 +346,7 @@ public class RepositoryCommons
 					.addEqualsFilter(I_MD_Candidate_Demand_Detail.COLUMN_M_ForecastLine_ID, toRepoId(demandDetailsQuery.getForecastLineId()));
 		}
 
-		if (hasOrderLine || hasForecastLine || hasShipmentschedule)
+		if (hasOrderLine || hasForecastLine || hasShipmentschedule || hasSubscriptionLine)
 		{
 			builder.addInSubQueryFilter(I_MD_Candidate.COLUMN_MD_Candidate_ID,
 					I_MD_Candidate_Demand_Detail.COLUMN_MD_Candidate_ID,

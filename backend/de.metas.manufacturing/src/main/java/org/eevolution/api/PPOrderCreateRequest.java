@@ -69,6 +69,7 @@ public class PPOrderCreateRequest
 	@NonNull Instant dateStartSchedule;
 
 	@Nullable OrderLineId salesOrderLineId;
+	@Nullable ShipmentScheduleId shipmentScheduleId;
 	@Nullable BPartnerId customerId;
 	@Nullable ProjectId projectId;
 
@@ -96,6 +97,7 @@ public class PPOrderCreateRequest
 			@NonNull final Instant dateStartSchedule,
 			//
 			@Nullable final OrderLineId salesOrderLineId,
+			@Nullable final ShipmentScheduleId shipmentScheduleId,
 			@Nullable final BPartnerId customerId,
 			@Nullable final ProjectId projectId,
 			//
@@ -123,6 +125,7 @@ public class PPOrderCreateRequest
 		this.dateStartSchedule = dateStartSchedule;
 
 		this.salesOrderLineId = salesOrderLineId;
+		this.shipmentScheduleId = shipmentScheduleId;
 		this.customerId = customerId;
 		this.projectId = projectId;
 

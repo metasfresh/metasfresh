@@ -28,6 +28,7 @@ import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Loggables;
+import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
@@ -87,6 +88,7 @@ public class CreateOrderCandidateCommand
 		ppOrderCandidateRecord.setC_UOM_ID(qtyRounded.getUomId().getRepoId());
 
 		ppOrderCandidateRecord.setC_OrderLine_ID(OrderLineId.toRepoId(request.getSalesOrderLineId()));
+		ppOrderCandidateRecord.setM_ShipmentSchedule_ID(NumberUtils.asInt(request.getShipmentScheduleId(), -1));
 
 		ppOrderCandidateDAO.save(ppOrderCandidateRecord);
 

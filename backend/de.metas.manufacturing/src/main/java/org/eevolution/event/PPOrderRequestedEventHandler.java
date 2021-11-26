@@ -18,6 +18,7 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.compiere.model.I_C_UOM;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.PPOrderCreateRequest;
+import org.eevolution.api.ShipmentScheduleId;
 import org.eevolution.model.I_PP_Order;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
@@ -83,7 +84,7 @@ public class PPOrderRequestedEventHandler implements MaterialEventHandler<PPOrde
 
 		return ppOrderService.createOrder(PPOrderCreateRequest.builder()
 												  .clientAndOrgId(ppOrderData.getClientAndOrgId())
-												  .productPlanningId(ProductPlanningId.ofRepoId(ppOrderData.getProductPlanningId()))
+												  .productPlanningId(ProductPlanningId.ofRepoIdOrNull(ppOrderData.getProductPlanningId()))
 												  .materialDispoGroupId(ppOrderData.getMaterialDispoGroupId())
 												  .plantId(ppOrderData.getPlantId())
 												  .warehouseId(ppOrderData.getWarehouseId())
@@ -96,7 +97,8 @@ public class PPOrderRequestedEventHandler implements MaterialEventHandler<PPOrde
 												  .datePromised(ppOrderData.getDatePromised())
 												  .dateStartSchedule(ppOrderData.getDateStartSchedule())
 												  //
-												  .salesOrderLineId(OrderLineId.ofRepoIdOrNull(ppOrderData.getOrderLineId()))
+				                                  .shipmentScheduleId(ShipmentScheduleId.ofRepoIdOrNull(ppOrderData.getShipmentScheduleIdAsRepoId()))
+												  .salesOrderLineId(OrderLineId.ofRepoIdOrNull(ppOrderData.getOrderLineIdAsRepoId()))
 												  //
 												  .build());
 	}

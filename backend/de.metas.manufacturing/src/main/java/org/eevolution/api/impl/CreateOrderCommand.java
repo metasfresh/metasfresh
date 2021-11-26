@@ -22,6 +22,7 @@ import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
 import de.metas.user.UserId;
 import de.metas.util.Loggables;
+import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
@@ -152,6 +153,7 @@ final class CreateOrderCommand
 		//
 		// Dimensions / References
 		ppOrderRecord.setC_OrderLine_ID(OrderLineId.toRepoId(request.getSalesOrderLineId()));
+		ppOrderRecord.setM_ShipmentSchedule_ID(NumberUtils.asInt(request.getShipmentScheduleId(), -1));
 		ppOrderRecord.setC_BPartner_ID(BPartnerId.toRepoId(getCustomerIdOrNull(request)));
 		ppOrderRecord.setC_Project_ID(ProjectId.toRepoId(request.getProjectId()));
 

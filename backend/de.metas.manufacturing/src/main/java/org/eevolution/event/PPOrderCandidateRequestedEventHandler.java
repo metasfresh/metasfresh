@@ -37,6 +37,7 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.eevolution.api.ShipmentScheduleId;
 import org.eevolution.model.I_PP_Order_Candidate;
 import org.eevolution.productioncandidate.async.PPOrderCandidateEnqueuer;
 import org.eevolution.productioncandidate.model.PPOrderCandidateId;
@@ -106,7 +107,8 @@ public class PPOrderCandidateRequestedEventHandler implements MaterialEventHandl
 																		.qtyRequired(qtyRequired)
 																		.datePromised(ppOrderData.getDatePromised())
 																		.dateStartSchedule(ppOrderData.getDateStartSchedule())
-																		.salesOrderLineId(OrderLineId.ofRepoIdOrNull(ppOrderData.getOrderLineId()))
+																		.salesOrderLineId(OrderLineId.ofRepoIdOrNull(ppOrderData.getOrderLineIdAsRepoId()))
+																		.shipmentScheduleId(ShipmentScheduleId.ofRepoIdOrNull(ppOrderData.getShipmentScheduleIdAsRepoId()))
 																		.build());
 	}
 }
