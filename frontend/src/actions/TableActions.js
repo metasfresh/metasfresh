@@ -349,6 +349,7 @@ export function updateGridTableData({
   tableId,
   rows,
   preserveCollapsedStateToRowIds,
+  customLayoutFlags,
 }) {
   return (dispatch, getState) => {
     const state = getState();
@@ -372,6 +373,7 @@ export function updateGridTableData({
             tableId,
             rows,
             preserveCollapsedStateToRowIds,
+            customLayoutFlags,
           })
         );
       }
