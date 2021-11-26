@@ -500,14 +500,19 @@ function createCollapsedRows({
  *
  * @param {string} tableId
  * @param {array} rows
- * @param {array} changedIds - array with ids of the rows to be changed that are sent with a websocket message
- *                             (if it's not empty it will preserve the previous state of the tree)
- *                             (if it's empty it will not preserve the state causing the tree to be uncollapsed )
+ * @param {array} preserveCollapsedStateToRowIds - array with ids of the rows to be changed that are sent with a websocket message
+ *                                                (if it's not empty it will preserve the previous state of the tree)
+ *                                                (if it's empty it will not preserve the state causing the tree to be uncollapsed )
  * @param {object} custom flags that come from the layout. i.e `uncollapseRowsOnChange`
  *        Note: this `uncollapseRowsOnChange` does not come yet from the backend response but if it was to be set to `true`
  *              it will force the rows to be uncollapsed. (`Create Purchase Order action` for a `Sales order line`)
  */
-function updateCollapsedRows({ tableId, rows, changedIds, customLayoutFlags }) {
+function updateCollapsedRows({
+  tableId,
+  rows,
+  preserveCollapsedStateToRowIds,
+  customLayoutFlags,
+}) {
   const { uncollapseRowsOnChange } = customLayoutFlags;
 
   return (dispatch, getState) => {
@@ -521,13 +526,18 @@ function updateCollapsedRows({ tableId, rows, changedIds, customLayoutFlags }) {
       collapsedParentRows,
     } = table;
 
-    const hasChangedIds = changedIds && changedIds.length > 0;
-    let newCollapsedParentRows =
-      hasChangedIds || !uncollapseRowsOnChange ? [...collapsedParentRows] : [];
-    let newCollapsedRows =
-      hasChangedIds || !uncollapseRowsOnChange ? [...collapsedRows] : [];
+    const hasChangedIds =
+      preserveCollapsedStateToRowIds &&
+      preserveCollapsedStateToRowIds.length > 0;
 
     if (collapsible) {
+      let newCollapsedParentRows =
+        hasChangedIds || !uncollapseRowsOnChange
+          ? [...collapsedParentRows]
+          : [];
+      let newCollapsedRows =
+        hasChangedIds || !uncollapseRowsOnChange ? [...collapsedRows] : [];
+
       if (rows.length) {
         rows.forEach((row) => {
           if (
@@ -556,7 +566,7 @@ function updateCollapsedRows({ tableId, rows, changedIds, customLayoutFlags }) {
           tableId,
           collapsedParentRows: newCollapsedParentRows,
           collapsedRows: newCollapsedRows,
-          changedIds,
+          preserveCollapsedStateToRowIds,
         })
       );
     }

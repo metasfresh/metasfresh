@@ -255,7 +255,7 @@ class DocumentListContainer extends Component {
             updateGridTableData({
               tableId,
               rows,
-              changedIds,
+              preserveCollapsedStateToRowIds: changedIds,
               customLayoutFlags: { uncollapseRowsOnChange },
             });
           }
