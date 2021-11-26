@@ -1,11 +1,21 @@
--- 2021-11-26T08:47:52.508Z
+-- -- 2021-11-26T08:47:52.508Z
+-- -- URL zum Konzept
+-- DELETE FROM  AD_Column_Trl WHERE AD_Column_ID=577712
+-- ;
+
+-- -- 2021-11-26T08:47:52.693Z
+-- -- URL zum Konzept
+-- DELETE FROM AD_Column WHERE AD_Column_ID=577712
+-- ;
+
+-- 2021-11-26T09:16:14.036Z
 -- URL zum Konzept
-DELETE FROM  AD_Column_Trl WHERE AD_Column_ID=577712
+DELETE FROM  AD_Column_Trl WHERE AD_Column_ID=578713
 ;
 
--- 2021-11-26T08:47:52.693Z
+-- 2021-11-26T09:16:14.210Z
 -- URL zum Konzept
-DELETE FROM AD_Column WHERE AD_Column_ID=577712
+DELETE FROM AD_Column WHERE AD_Column_ID=578713
 ;
 
 
