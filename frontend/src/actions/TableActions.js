@@ -345,8 +345,7 @@ export function updateGridTable(tableId, tableResponse) {
  * @method updateGridTableData
  * @summary Update grid table's rows and rebuild collapsed rows if necessary
  */
-export function updateGridTableData({ tableId, rows, customLayoutFlags }) {
-  const { uncollapseRowsOnChange } = customLayoutFlags;
+export function updateGridTableData({ tableId, rows, changedIds }) {
   return (dispatch, getState) => {
     const state = getState();
 
@@ -363,11 +362,12 @@ export function updateGridTableData({ tableId, rows, customLayoutFlags }) {
 
       dispatch(updateTableData(tableId, rows, keyProperty));
 
-      if (indentSupported && uncollapseRowsOnChange) {
+      if (indentSupported) {
         dispatch(
           updateCollapsedRows({
             tableId,
             rows,
+            changedIds,
           })
         );
       }
@@ -501,7 +501,7 @@ function createCollapsedRows({
  * @param {string} tableId
  * @param {array} rows
  */
-function updateCollapsedRows({ tableId, rows }) {
+function updateCollapsedRows({ tableId, rows, changedIds }) {
   return (dispatch, getState) => {
     const state = getState();
     const table = state.tables[tableId];
@@ -512,8 +512,10 @@ function updateCollapsedRows({ tableId, rows }) {
       collapsedRows,
       collapsedParentRows,
     } = table;
-    let newCollapsedParentRows = [];
-    let newCollapsedRows = [];
+
+    const hasChangedIds = changedIds && changedIds.length > 0;
+    let newCollapsedParentRows = hasChangedIds ? [...collapsedParentRows] : [];
+    let newCollapsedRows = hasChangedIds ? [...collapsedRows] : [];
 
     if (collapsible) {
       if (rows.length) {
@@ -523,14 +525,18 @@ function updateCollapsedRows({ tableId, rows }) {
             row.includedDocuments &&
             !collapsedParentRows.indexOf(row.id)
           ) {
-            newCollapsedParentRows = newCollapsedParentRows.concat(
+            newCollapsedParentRows = !newCollapsedParentRows.includes(
               row[keyProperty]
-            );
+            )
+              ? newCollapsedParentRows.concat(row[keyProperty])
+              : newCollapsedParentRows;
           } else if (
             row.indent.length > expandedDepth &&
             !collapsedRows.indexOf(row.id)
           ) {
-            newCollapsedRows = newCollapsedRows.concat(row[keyProperty]);
+            newCollapsedRows = !newCollapsedRows.includes(row[keyProperty])
+              ? newCollapsedRows.concat(row[keyProperty])
+              : newCollapsedRows;
           }
         });
       }
@@ -540,6 +546,7 @@ function updateCollapsedRows({ tableId, rows }) {
           tableId,
           collapsedParentRows: newCollapsedParentRows,
           collapsedRows: newCollapsedRows,
+          changedIds,
         })
       );
     }
