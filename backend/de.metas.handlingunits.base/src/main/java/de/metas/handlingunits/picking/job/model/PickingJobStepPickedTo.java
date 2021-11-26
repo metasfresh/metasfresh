@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 import de.metas.handlingunits.picking.QtyRejectedWithReason;
 import de.metas.quantity.Quantity;
-import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -27,17 +26,31 @@ public class PickingJobStepPickedTo
 			@NonNull final ImmutableList<PickingJobStepPickedToHU> actualPickedHUs,
 			@Nullable final QtyRejectedWithReason qtyRejected)
 	{
-		Check.assumeNotEmpty(actualPickedHUs, "actualPickedHUs not empty");
+		// NOTE: empty actualPickedHUs is also OK for the case when the whole HU was rejected
+		//Check.assumeNotEmpty(actualPickedHUs, "actualPickedHUs not empty");
+
 		Maps.uniqueIndex(actualPickedHUs, PickingJobStepPickedToHU::getActualPickedHUId); // make sure there are no duplicates
 
 		this.qtyRejected = qtyRejected;
 		this.actualPickedHUs = actualPickedHUs;
 
-		qtyPicked = actualPickedHUs.stream()
+		final Quantity qtyPicked = actualPickedHUs.stream()
 				.map(PickingJobStepPickedToHU::getQtyPicked)
 				.reduce(Quantity::add)
-				.orElseThrow(() -> new AdempiereException("We shall have at least one PickedTo HU"));
+				.orElse(null);
+		if (qtyPicked == null)
+		{
+			if (qtyRejected == null)
+			{
+				throw new AdempiereException("qtyPicked and qtyRejected cannot be both null");
+			}
+			this.qtyPicked = qtyRejected.toQuantity().toZero();
+		}
+		else
+		{
+			this.qtyPicked = qtyPicked;
+		}
 
-		Quantity.assertSameUOM(qtyPicked, qtyRejected != null ? qtyRejected.toQuantity() : null);
+		Quantity.assertSameUOM(this.qtyPicked, this.qtyRejected != null ? this.qtyRejected.toQuantity() : null);
 	}
 }
