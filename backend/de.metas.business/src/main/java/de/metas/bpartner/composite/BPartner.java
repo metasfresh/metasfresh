@@ -95,8 +95,6 @@ public class BPartner
 	private String name3;
 	private final GreetingId greetingId;
 
-
-	private final String title;
 	private final DocTypeId soDocTypeTargetId;
 	private final String firstName;
 	private final String lastName;
@@ -210,7 +208,6 @@ public class BPartner
 			final boolean excludeFromPromotions,
 			@Nullable final String referrer,
 			@Nullable final CampaignId campaignId,
-			@Nullable  final String title,
 			@Nullable final DocTypeId soDocTypeTargetId,
 			@Nullable final String firstName,
 			@Nullable final String lastName)
@@ -257,7 +254,6 @@ public class BPartner
 		this.referrer = referrer;
 		this.campaignId = campaignId;
 
-		this.title = title;
 		this.soDocTypeTargetId = soDocTypeTargetId;
 		this.firstName = firstName;
 		this.lastName = lastName;

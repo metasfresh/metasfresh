@@ -823,29 +823,6 @@ public interface I_C_BPartner_QuickInput
 	String COLUMNNAME_Referrer = "Referrer";
 
 	/**
-	 * Set Title.
-	 * Name this entity is referred to as
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setTitle (@Nullable java.lang.String Title);
-
-	/**
-	 * Get Title.
-	 * Name this entity is referred to as
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getTitle();
-
-	ModelColumn<I_C_BPartner_QuickInput, Object> COLUMN_Title = new ModelColumn<>(I_C_BPartner_QuickInput.class, "Title", null);
-	String COLUMNNAME_Title = "Title";
-
-	/**
 	 * Get Updated.
 	 * Date this record was updated
 	 *

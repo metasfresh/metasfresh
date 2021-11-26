@@ -520,18 +520,6 @@ public class X_C_BPartner_QuickInput extends org.compiere.model.PO implements I_
 	}
 
 	@Override
-	public void setTitle (final @Nullable java.lang.String Title)
-	{
-		set_Value (COLUMNNAME_Title, Title);
-	}
-
-	@Override
-	public java.lang.String getTitle() 
-	{
-		return get_ValueAsString(COLUMNNAME_Title);
-	}
-
-	@Override
 	public void setVATaxID (final @Nullable java.lang.String VATaxID)
 	{
 		set_Value (COLUMNNAME_VATaxID, VATaxID);

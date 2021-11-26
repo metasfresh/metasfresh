@@ -481,7 +481,6 @@ public class BPartnerQuickInputService
 
 				.soDocTypeTargetId(DocTypeId.ofRepoIdOrNull(template.getC_DocTypeTarget_ID()))
 
-				.title(template.getTitle())
 				.firstName(template.getFirstname())
 				.lastName(template.getLastname())
 				.vatId(template.getVATaxID())

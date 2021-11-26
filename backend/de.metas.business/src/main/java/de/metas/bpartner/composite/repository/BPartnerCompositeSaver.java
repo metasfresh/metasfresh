@@ -215,11 +215,6 @@ final class BPartnerCompositeSaver
 		bpartnerRecord.setReferrer(bpartner.getReferrer());
 		bpartnerRecord.setMKTG_Campaign_ID(CampaignId.toRepoId(bpartner.getCampaignId()));
 
-		if(bpartner.getTitle() != null)
-		{
-			bpartnerRecord.setTitle(bpartner.getTitle());
-		}
-
 		if(bpartner.getPaymentRule() != null)
 		{
 			bpartnerRecord.setPaymentRule(bpartner.getPaymentRule().getCode());

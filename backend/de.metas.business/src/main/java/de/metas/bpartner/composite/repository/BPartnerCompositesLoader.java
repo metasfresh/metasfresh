@@ -330,7 +330,6 @@ final class BPartnerCompositesLoader
 				.referrer(bpartnerRecord.getReferrer())
 				.campaignId(CampaignId.ofRepoIdOrNull(bpartnerRecord.getMKTG_Campaign_ID()))
 
-				.title(bpartnerRecord.getTitle())
 				.firstName(bpartnerRecord.getFirstname())
 				.lastName(bpartnerRecord.getLastname())
 				.soDocTypeTargetId(DocTypeId.ofRepoIdOrNull(bpartnerRecord.getSO_DocTypeTarget_ID()))

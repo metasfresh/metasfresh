@@ -5,16 +5,16 @@ import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_BPartner
- *  @author metasfresh (generated) 
+ *  @author metasfresh (generated)
  */
 @SuppressWarnings("unused")
-public interface I_C_BPartner 
+public interface I_C_BPartner
 {
 
 	String Table_Name = "C_BPartner";
 
-//	/** AD_Table_ID=291 */
-//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+	//	/** AD_Table_ID=291 */
+	//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 
 	/**
@@ -53,8 +53,8 @@ public interface I_C_BPartner
 	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Street & House No..
-	 * Address line 1 for this location
+	 * Set Straße und Nr..
+	 * Adresszeile 1 für diesen Standort
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -65,8 +65,8 @@ public interface I_C_BPartner
 	void setAddress1 (@Nullable java.lang.String Address1);
 
 	/**
-	 * Get Street & House No..
-	 * Address line 1 for this location
+	 * Get Straße und Nr..
+	 * Adresszeile 1 für diesen Standort
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -808,8 +808,8 @@ public interface I_C_BPartner
 	String COLUMNNAME_DeliveryRule = "DeliveryRule";
 
 	/**
-	 * Set Delivery Via.
-	 * How the order will be delivered
+	 * Set Lieferung.
+	 * Wie der Auftrag geliefert wird
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -818,8 +818,8 @@ public interface I_C_BPartner
 	void setDeliveryViaRule (@Nullable java.lang.String DeliveryViaRule);
 
 	/**
-	 * Get Delivery Via.
-	 * How the order will be delivered
+	 * Get Lieferung.
+	 * Wie der Auftrag geliefert wird
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -1700,7 +1700,7 @@ public interface I_C_BPartner
 	String COLUMNNAME_IsShippingNotificationEmail = "IsShippingNotificationEmail";
 
 	/**
-	 * Set Summary Level.
+	 * Set Zusammenfassungseintrag.
 	 * This is a summary entity
 	 *
 	 * <br>Type: YesNo
@@ -1710,7 +1710,7 @@ public interface I_C_BPartner
 	void setIsSummary (boolean IsSummary);
 
 	/**
-	 * Get Summary Level.
+	 * Get Zusammenfassungseintrag.
 	 * This is a summary entity
 	 *
 	 * <br>Type: YesNo
@@ -2383,27 +2383,6 @@ public interface I_C_BPartner
 	String COLUMNNAME_PO_Incoterm = "PO_Incoterm";
 
 	/**
-	 * Set Rechnungsstellung (Kreditoren).
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setPO_InvoiceRule (@Nullable java.lang.String PO_InvoiceRule);
-
-	/**
-	 * Get Rechnungsstellung (Kreditoren).
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getPO_InvoiceRule();
-
-	ModelColumn<I_C_BPartner, Object> COLUMN_PO_InvoiceRule = new ModelColumn<>(I_C_BPartner.class, "PO_InvoiceRule", null);
-	String COLUMNNAME_PO_InvoiceRule = "PO_InvoiceRule";
-
-	/**
 	 * Set Zahlungskondition.
 	 * Payment rules for a purchase order
 	 *
@@ -3019,8 +2998,8 @@ public interface I_C_BPartner
 	String COLUMNNAME_SO_Description = "SO_Description";
 
 	/**
-	 * Set Document Type.
-	 * Target document type for conversing documents
+	 * Set Zielbelegart.
+	 * Zielbelegart für die Umwandlung von Dokumenten
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -3029,8 +3008,8 @@ public interface I_C_BPartner
 	void setSO_DocTypeTarget_ID (int SO_DocTypeTarget_ID);
 
 	/**
-	 * Get Document Type.
-	 * Target document type for conversing documents
+	 * Get Zielbelegart.
+	 * Zielbelegart für die Umwandlung von Dokumenten
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -3083,29 +3062,6 @@ public interface I_C_BPartner
 
 	ModelColumn<I_C_BPartner, Object> COLUMN_TaxID = new ModelColumn<>(I_C_BPartner.class, "TaxID", null);
 	String COLUMNNAME_TaxID = "TaxID";
-
-	/**
-	 * Set Title.
-	 * Name this entity is referred to as
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setTitle (@Nullable java.lang.String Title);
-
-	/**
-	 * Get Title.
-	 * Name this entity is referred to as
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getTitle();
-
-	ModelColumn<I_C_BPartner, Object> COLUMN_Title = new ModelColumn<>(I_C_BPartner.class, "Title", null);
-	String COLUMNNAME_Title = "Title";
 
 	/**
 	 * Set Short title.
