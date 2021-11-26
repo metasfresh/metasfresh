@@ -1,13 +1,12 @@
 package de.metas.contracts.subscription.impl;
 
-import java.sql.Timestamp;
-import java.util.List;
-
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
-
 import com.google.common.base.Preconditions;
-
+import de.metas.cache.model.CacheInvalidateMultiRequest;
+import de.metas.cache.model.CacheInvalidateRequest;
+import de.metas.cache.model.IModelCacheInvalidationService;
+import de.metas.cache.model.ModelCacheInvalidationTiming;
+import de.metas.contracts.FlatrateTermId;
+import de.metas.contracts.model.I_C_Flatrate_Data;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_SubscriptionProgress;
 import de.metas.contracts.subscription.ISubscriptionDAO;
@@ -18,9 +17,13 @@ import de.metas.contracts.subscription.impl.subscriptioncommands.RemovePauses;
 import de.metas.i18n.IMsgBL;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
-
 import lombok.Builder;
 import lombok.NonNull;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+
+import java.sql.Timestamp;
+import java.util.List;
 
 /*
  * #%L
@@ -63,11 +66,15 @@ public class SubscriptionService
 			@NonNull final Timestamp dateTo)
 	{
 		new InsertPause(this).insertPause(term, dateFrom, dateTo);
+		resetCache(FlatrateTermId.ofRepoId(term.getC_Flatrate_Term_ID()));
 	}
 
 	public static int changeRecipient(@NonNull final ChangeRecipientsRequest changeRecipientsRequest)
 	{
-		return ChangeRecipient.changeRecipient(changeRecipientsRequest);
+		final int result = ChangeRecipient.changeRecipient(changeRecipientsRequest);
+		resetCache(FlatrateTermId.ofRepoId(changeRecipientsRequest.getTerm().getC_Flatrate_Term_ID()));
+		return result;
+
 	}
 
 	@lombok.Value
@@ -92,7 +99,7 @@ public class SubscriptionService
 				final int DropShip_BPartner_ID,
 				final int DropShip_Location_ID,
 				final int DropShip_User_ID,
-				boolean IsPermanentRecipient)
+				final boolean IsPermanentRecipient)
 		{
 			this.term = term;
 
@@ -123,6 +130,7 @@ public class SubscriptionService
 			@NonNull final Timestamp pauseUntil)
 	{
 		new RemovePauses(this).removePausesAroundTimeframe(term, pauseFrom, pauseUntil);
+		resetCache(FlatrateTermId.ofRepoId(term.getC_Flatrate_Term_ID()));
 	}
 
 	public void removePausesAroundDate(
@@ -130,8 +138,8 @@ public class SubscriptionService
 			@NonNull final Timestamp date)
 	{
 		new RemovePauses(this).removePausesAroundTimeframe(term, date, date);
+		resetCache(FlatrateTermId.ofRepoId(term.getC_Flatrate_Term_ID()));
 	}
-
 
 	public void removeAllPauses(final I_C_Flatrate_Term term)
 	{
@@ -139,6 +147,7 @@ public class SubscriptionService
 		final Timestamp distantFuture = TimeUtil.getDay(9999, 12, 31);
 
 		new RemovePauses(this).removePausesAroundTimeframe(term, distantPast, distantFuture);
+		resetCache(FlatrateTermId.ofRepoId(term.getC_Flatrate_Term_ID()));
 
 	}
 
@@ -159,6 +168,18 @@ public class SubscriptionService
 			Loggables.addLog(msgBL.getMsg(Env.getCtx(), MSG_NO_SPS_AFTER_DATE_1P, new Object[] { pauseFrom }));
 		}
 		return sps;
+	}
+
+	private static void resetCache(@NonNull final FlatrateTermId flatrateTermId)
+	{
+		final IModelCacheInvalidationService modelCacheInvalidationService = Services.get(IModelCacheInvalidationService.class);
+
+		modelCacheInvalidationService.invalidate(
+				CacheInvalidateMultiRequest.of(
+						CacheInvalidateRequest.rootRecord(I_C_Flatrate_Term.Table_Name, flatrateTermId),
+						CacheInvalidateRequest.allChildRecords(I_C_Flatrate_Data.Table_Name, flatrateTermId, I_C_SubscriptionProgress.Table_Name)),
+				ModelCacheInvalidationTiming.CHANGE
+		);
 	}
 
 }
