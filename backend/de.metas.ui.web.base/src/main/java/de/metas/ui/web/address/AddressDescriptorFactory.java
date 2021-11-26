@@ -1,11 +1,11 @@
 package de.metas.ui.web.address;
 
 import de.metas.cache.CCache;
+import de.metas.common.util.Check;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.location.CountryId;
 import de.metas.location.ICountryDAO;
-import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.window.datatypes.DocumentType;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.descriptor.DocumentEntityDataBindingDescriptor;
@@ -17,10 +17,13 @@ import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
+import de.metas.ui.web.window.descriptor.factory.standard.DefaultValueExpressionsFactory;
 import de.metas.ui.web.window.model.DocumentsRepository;
 import de.metas.ui.web.window.model.IDocumentFieldView;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.callout.api.ICalloutField;
+import org.adempiere.ad.expression.api.IExpression;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_C_Country;
@@ -32,6 +35,7 @@ import org.compiere.util.Env;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
+import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
@@ -204,12 +208,30 @@ public class AddressDescriptorFactory
 											   .removeCharacteristic(Characteristic.PublicField) // internal field (not displayed!)
 											   .setDataBinding(AddressFieldBinding.internalField(IAddressModel.COLUMNNAME_HasRegion)));
 			//
+			final String defaultValueString = sysConfigBL.getValue(SYSCONFIG_PREFIX + "C_Country.DefaultLogic", "", Env.getAD_Client_ID());
+			final Optional<IExpression<?>> countryDefaultExpression;
+			if (Check.isNotBlank(defaultValueString))
+			{
+				countryDefaultExpression = DefaultValueExpressionsFactory.newInstance()
+						.extractDefaultValueExpression(defaultValueString,
+													   IAddressModel.COLUMNNAME_C_Country_ID,
+													   DocumentFieldWidgetType.Lookup,
+													   IntegerLookupValue.class,
+													   true /*mandatory*/,
+													   false /*allowUsingAutoSequence*/);
+			}
+			else
+			{
+				countryDefaultExpression = Optional.empty();
+			}
+
 			addressDescriptor.addField(buildFieldDescriptor(IAddressModel.COLUMNNAME_C_Country_ID)
 											   .setValueClass(IntegerLookupValue.class)
 											   .setWidgetType(DocumentFieldWidgetType.Lookup)
 											   .setMandatoryLogic(true)
 											   .setLookupDescriptorProvider(AddressCountryLookupDescriptor.newInstance())
 											   .setDataBinding(new AddressFieldBinding(IAddressModel.COLUMNNAME_C_Country_ID, false, AddressFieldBinding::readValue_C_Country_ID, AddressFieldBinding::writeValue_C_Country_ID))
+											   .setDefaultValueExpression(countryDefaultExpression)
 											   .addCallout(AddressCallout::onC_Country_ID));
 		}
 
@@ -220,22 +242,20 @@ public class AddressDescriptorFactory
 
 	private boolean getSysConfigDisplayValue(final String columnname)
 	{
-		final String sysConfigName = new StringBuilder()
-				.append(SYSCONFIG_PREFIX)
-				.append(columnname)
-				.append(SYSCONFIG_SUFIX)
-				.toString();
+		final String sysConfigName = SYSCONFIG_PREFIX
+				+ columnname
+				+ SYSCONFIG_SUFIX;
 
 		return sysConfigBL.getBooleanValue(sysConfigName, false, Env.getAD_Client_ID());
 	}
 
-	private  boolean getMandatoryLogic(final String columnName)
+	private boolean getMandatoryLogic(final String columnName)
 	{
 		final POInfo poInfo = POInfo.getPOInfo(I_C_Location.Table_Name);
 		return poInfo.isColumnMandatory(columnName);
 	}
 
-	private DocumentFieldDescriptor.Builder buildFieldDescriptor(final String columnName)
+	private DocumentFieldDescriptor.Builder buildFieldDescriptor(@NonNull final String columnName)
 	{
 		return DocumentFieldDescriptor.builder(columnName)
 				.setCaption(Services.get(IMsgBL.class).translatable(columnName))
@@ -372,7 +392,7 @@ public class AddressDescriptorFactory
 			}
 
 			final String regionName = locationRecord.getRegionName();
-			if (!Check.isEmpty(regionName, true))
+			if (!Check.isBlank(regionName))
 			{
 				return IntegerLookupValue.of(-1, regionName);
 			}
