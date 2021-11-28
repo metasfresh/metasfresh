@@ -113,11 +113,12 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 	}
 
 	@Override
-	public boolean isCreateMissingCandidatesAutomatically(final Object model)
+	public CandidatesAutoCreateMode getSpecificCandidatesAutoCreateMode(@NonNull final Object model)
 	{
 		final I_C_Commission_Share commissionShareRecord = create(model, I_C_Commission_Share.class);
 
-		return !recordHasAnInvoiceCandiate(commissionShareRecord);
+		final boolean invoiceCandidateIsMissed = !recordHasAnInvoiceCandiate(commissionShareRecord);
+		return invoiceCandidateIsMissed ? CandidatesAutoCreateMode.CREATE_CANDIDATES : CandidatesAutoCreateMode.DONT;
 	}
 
 	public boolean recordHasAnInvoiceCandiate(@NonNull final I_C_Commission_Share commissionShareRecord)

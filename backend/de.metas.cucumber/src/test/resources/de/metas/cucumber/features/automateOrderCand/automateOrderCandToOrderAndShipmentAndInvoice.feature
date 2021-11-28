@@ -173,7 +173,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
   @from:cucumber
   @topic:orderCandidate
   Scenario: Order candidate to complete order, then shipment endpoint to complete shipment, invoice and close shipment
-    And a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates' and fulfills with '201' status code
+    When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates' and fulfills with '201' status code
   """
 {
     "orgCode": "001",

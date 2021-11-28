@@ -321,10 +321,10 @@ final class BPartnerCompositeSaver
 			bpartnerLocationRecord.setName(partnerLocation.getName());
 			bpartnerLocationRecord.setBPartnerName(partnerLocation.getBpartnerName());
 
-			bpartnerLocationRecord.setPhone(bpartnerLocation.getPhone());
-			bpartnerLocationRecord.setPhone2(bpartnerLocation.getMobile());
-			bpartnerLocationRecord.setFax(bpartnerLocation.getFax());
-			bpartnerLocationRecord.setEMail(bpartnerLocation.getEmail());
+			bpartnerLocationRecord.setPhone(partnerLocation.getPhone());
+			bpartnerLocationRecord.setPhone2(partnerLocation.getMobile());
+			bpartnerLocationRecord.setFax(partnerLocation.getFax());
+			bpartnerLocationRecord.setEMail(partnerLocation.getEmail());
 
 			final BPartnerLocationType locationType = partnerLocation.getLocationType();
 			if (locationType != null)

@@ -43,6 +43,7 @@ import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.model.I_C_Order;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
@@ -163,29 +164,13 @@ public class OrderService
 
 	private void generateMissingShipmentSchedulesFromOrder(@NonNull final I_C_Order order)
 	{
-		final I_C_Order orderWithAsyncBatch = assignAsyncBatchToOrderIfMissing(order);
-
-		final AsyncBatchId asyncBatchId = AsyncBatchId.ofRepoId(orderWithAsyncBatch.getC_Async_Batch_ID());
+		final ImmutablePair<AsyncBatchId, I_C_Order> batchIdWithOrder = asyncBatchBL.assignPermAsyncBatchToModelIfMissing(order, C_Async_Batch_InternalName_EnqueueScheduleForOrder);
 
 		final Supplier<Void> action = () -> {
-			CreateMissingShipmentSchedulesWorkpackageProcessor.scheduleIfNotPostponed(orderWithAsyncBatch);
+			CreateMissingShipmentSchedulesWorkpackageProcessor.scheduleIfNotPostponed(batchIdWithOrder.getRight());
 			return null;
 		};
 
-		asyncBatchService.executeBatch(action, asyncBatchId);
-	}
-
-	@NonNull
-	private I_C_Order assignAsyncBatchToOrderIfMissing(@NonNull final I_C_Order order)
-	{
-		if (order.getC_Async_Batch_ID() > 0)
-		{
-			return order; // nothing more to be done
-		}
-
-		return trxManager.callInNewTrx(() -> {
-			final AsyncBatchId currentAsyncBatchId = asyncBatchBL.newAsyncBatch(C_Async_Batch_InternalName_EnqueueScheduleForOrder);
-			return orderDAO.assignAsyncBatchId(OrderId.ofRepoId(order.getC_Order_ID()), currentAsyncBatchId);
-		});
+		asyncBatchService.executeBatch(action, batchIdWithOrder.getLeft());
 	}
 }

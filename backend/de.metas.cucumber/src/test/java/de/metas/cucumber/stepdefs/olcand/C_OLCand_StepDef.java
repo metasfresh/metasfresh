@@ -162,14 +162,17 @@ public class C_OLCand_StepDef
 				.list();
 
 		assertThat(shipments).isNotNull();
-
+		
+		final List<String> identifiers = splitIdentifiers(shipmentIdentifier);
+		assertThat(identifiers).hasSameSizeAs(shipments);
+		
 		if (shipments.size() > 1)
 		{
-			final List<String> identifiers = splitIdentifiers(shipmentIdentifier);
-
 			for (int index = 0; index < shipments.size(); index++)
 			{
-				shipmentTable.putOrReplace(identifiers.get(index), shipments.get(index));
+				final String identifier = identifiers.get(index);
+				final I_M_InOut record = shipments.get(index);
+				shipmentTable.putOrReplace(identifier, record);
 			}
 		}
 		else

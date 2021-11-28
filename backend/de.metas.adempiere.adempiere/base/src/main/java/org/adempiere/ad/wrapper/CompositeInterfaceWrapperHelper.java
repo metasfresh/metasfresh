@@ -246,8 +246,9 @@ public class CompositeInterfaceWrapperHelper implements IInterfaceWrapperHelper
 				.isNull(model, columnName);
 	}
 
+	@Nullable
 	@Override
-	public <T> T getDynAttribute(final Object model, final String attributeName)
+	public <T> T getDynAttribute(@NonNull final Object model, @NonNull final String attributeName)
 	{
 		return getHelperThatCanHandle(model)
 				.getDynAttribute(model, attributeName);

@@ -151,7 +151,7 @@ public class AutoProcessingOrderService
 				.map(InvoiceCandidateId::ofRepoId)
 				.collect(ImmutableSet.toImmutableSet());
 
-		invoiceService.processInvoiceCandidates(invoiceCandidateIds);
+		invoiceService.generateInvoicesFromInvoiceCandidateIds(invoiceCandidateIds);
 	}
 
 	private boolean sameShippingAndBillingAddress(

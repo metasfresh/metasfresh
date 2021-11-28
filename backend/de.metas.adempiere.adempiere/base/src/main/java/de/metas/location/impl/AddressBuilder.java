@@ -6,7 +6,8 @@ import de.metas.greeting.GreetingRepository;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.Language;
-import de.metas.location.CountryCustomInfo;
+import de.metas.location.Addressvars;
+import de.metas.location.CountryDisplaySequenceHelper;
 import de.metas.location.CountryId;
 import de.metas.location.CountrySequences;
 import de.metas.location.ICountryDAO;
@@ -33,7 +34,6 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -69,7 +69,6 @@ public class AddressBuilder
 	private final ILocationBL locationBL = Services.get(ILocationBL.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
-	private static final AdMessageKey MSG_AddressBuilder_WrongDisplaySequence = AdMessageKey.of("MSG_AddressBuilder_WrongDisplaySequence");
 	public static final AdMessageKey MSG_POBox = AdMessageKey.of("MSG_POBox");
 
 	/**
@@ -111,47 +110,6 @@ public class AddressBuilder
 		private final String name;
 
 		Uservars(final String name)
-		{
-			this.name = name;
-		}
-
-		public String getName()
-		{
-			return name;
-		}
-	}
-
-	private enum Addressvars
-	{
-		BPartner("BP"),
-
-		Contact("CON"),
-
-		BPartnerName("BP_Name"),
-
-		BPartnerGreeting("BP_GR"),
-
-		City("C"),
-
-		Region("R"),
-
-		Country("CO"),
-
-		Postal_Add("A"),
-
-		Postal("P"),
-
-		Address1("A1"),
-
-		Address2("A2"),
-
-		Address3("A3"),
-
-		Address4("A4");
-
-		private final String name;
-
-		Addressvars(@NonNull final String name)
 		{
 			this.name = name;
 		}
@@ -488,6 +446,7 @@ public class AddressBuilder
 		}
 
 		final String displaySequence = extractDisplaySequence(bpLocation, location);
+
 		final String bPartnerBlock = buildBPartnerBlock(bpartner, bpContact, bpLocation, displaySequence);
 
 		// User Anschriftenblock
@@ -503,19 +462,20 @@ public class AddressBuilder
 
 	@NonNull
 	private String extractDisplaySequence(
-			@NonNull final I_C_BPartner_Location bpLocation, 
+			@NonNull final I_C_BPartner_Location bpLocation,
 			@NonNull final I_C_Location location)
 	{
 		final boolean isLocal = isLocalCountry(bpLocation);
-		final I_C_Country c_countryRecord = location.getC_Country();
-		final String displaySequence = getDisplaySequence(c_countryRecord, isLocal);
+		final CountryId countryId = CountryId.ofRepoId(location.getC_Country_ID());
+		final I_C_Country countryRecord = countriesRepo.getById(countryId);
+		final String displaySequence = getDisplaySequence(countryRecord, isLocal);
 		try
 		{
-			assertValidDisplaySequence(displaySequence);
+			CountryDisplaySequenceHelper.assertValidDisplaySequence(displaySequence);
 		}
 		catch (final AdempiereException e)
 		{
-			throw e.setParameter("C_Country ", c_countryRecord)
+			throw e.setParameter("C_Country ", countryRecord)
 					.setParameter("IsLocalCountry", isLocal)
 					.setParameter("C_BPartner_Location", bpLocation);
 		}
@@ -528,35 +488,6 @@ public class AddressBuilder
 		final I_C_Country countryLocal = countriesRepo.getDefault(ctx);
 		final boolean isLocal = location.getC_Location() != null && location.getC_Location().getC_Country_ID() == countryLocal.getC_Country_ID();
 		return isLocal;
-	}
-
-	private String getDisplaySequence(final boolean isLocal, final String trxName)
-	{
-		final Properties ctx = Env.getCtx();
-		final CountryCustomInfo userInfo = countriesRepo.retriveCountryCustomInfo(ctx, trxName);
-		String displaySequence = userInfo == null ? "" : userInfo.getCaptureSequence();
-		if (displaySequence == null || displaySequence.isEmpty())
-		{
-			final I_C_Country country = countriesRepo.getDefault(ctx);
-			displaySequence = getDisplaySequence(country, isLocal);
-		}
-		return displaySequence;
-	}
-
-	private void assertValidDisplaySequence(@NonNull final String displaySequence)
-	{
-		final boolean existsBPName = isTokenFound(displaySequence, Addressvars.BPartnerName.getName());
-		final boolean existsBP = isTokenFound(displaySequence, Addressvars.BPartner.getName());
-		final boolean existsCON = isTokenFound(displaySequence, Addressvars.Contact.getName());
-		final boolean existsBPGReeting = isTokenFound(displaySequence, Addressvars.BPartnerGreeting.getName());
-
-		if ((existsBP && existsBPName) || (existsBP && existsBPGReeting)
-				|| (existsCON && existsBPName) || (existsCON && existsBPGReeting))
-		{
-			throw new AdempiereException(MSG_AddressBuilder_WrongDisplaySequence)
-					.appendParametersToMessage()
-					.setParameter("displaySequence", displaySequence);
-		}
 	}
 
 	private String buildBPartnerBlock(
@@ -606,10 +537,10 @@ public class AddressBuilder
 		String bpName2 = "";
 		String bpGreeting = "";
 
-		final boolean existsBPName = isTokenFound(displaySequence, Addressvars.BPartnerName.getName());
-		final boolean existsBPGReeting = isTokenFound(displaySequence, Addressvars.BPartnerGreeting.getName());
+		final boolean existsBPName = CountryDisplaySequenceHelper.isTokenFound(displaySequence, Addressvars.BPartnerName.getName());
+		final boolean existsBPGReeting = CountryDisplaySequenceHelper.isTokenFound(displaySequence, Addressvars.BPartnerGreeting.getName());
 
-		if (existsBPName || existsBPGReeting)
+		if ( (existsBPName || existsBPGReeting) && !bPartner.isCompany())
 		{
 			if (existsBPName)
 			{
@@ -802,10 +733,10 @@ public class AddressBuilder
 			final I_AD_User user)
 	{
 
-		final boolean existsBPName = isTokenFound(displaySequence, Addressvars.BPartnerName.getName());
-		final boolean existsBPGreeting = isTokenFound(displaySequence, Addressvars.BPartnerGreeting.getName());
+		final boolean existsBPName = CountryDisplaySequenceHelper.isTokenFound(displaySequence, Addressvars.BPartnerName.getName());
+		final boolean existsBPGreeting = CountryDisplaySequenceHelper.isTokenFound(displaySequence, Addressvars.BPartnerGreeting.getName());
 
-		if (existsBPName || existsBPGreeting)
+		if ((existsBPName || existsBPGreeting) && !bPartner.isCompany())
 		{
 			return "";
 		}
@@ -950,20 +881,4 @@ public class AddressBuilder
 		}
 	}
 
-	private boolean isTokenFound(final @NonNull String sequenceToScan, final @NonNull String token)
-	{
-		final Scanner scan = new Scanner(sequenceToScan);
-		scan.useDelimiter("@");
-		while (scan.hasNext())
-		{
-			if (scan.next().equals(token))
-			{
-				scan.close();
-				return true;
-			}
-		}
-
-		scan.close();
-		return false;
-	}
 }

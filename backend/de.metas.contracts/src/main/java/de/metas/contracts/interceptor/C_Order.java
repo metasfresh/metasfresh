@@ -2,6 +2,7 @@ package de.metas.contracts.interceptor;
 
 import java.util.List;
 
+import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -66,13 +67,18 @@ public class C_Order
 	private static final Logger logger = LogManager.getLogger(C_Order.class);
 
 	private static final AdMessageKey MSG_ORDER_DATE_ORDERED_CHANGE_FORBIDDEN_1P = AdMessageKey.of("Order_DateOrdered_Change_Forbidden");
+	
+	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
+	private final ISubscriptionDAO subscriptionDAO = Services.get(ISubscriptionDAO.class);
+	private final ISubscriptionBL subscriptionBL = Services.get(ISubscriptionBL.class);
 
 	@ModelChange( //
 			timings = ModelValidator.TYPE_BEFORE_CHANGE, //
 			ifColumnsChanged = I_C_Order.COLUMNNAME_DateOrdered)
-	public void updateDataEntry(final I_C_Order order)
+	public void updateDataEntry(@NonNull final I_C_Order order)
 	{
-		final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+		final IOrderDAO orderDAO = this.orderDAO;
 		final IInvoiceCandDAO invoiceCandDB = Services.get(IInvoiceCandDAO.class);
 
 		for (final I_C_OrderLine ol : orderDAO.retrieveOrderLines(order, I_C_OrderLine.class))
@@ -81,22 +87,22 @@ public class C_Order
 			{
 				if (icOfOl.isToClear())
 				{
-					throw new AdempiereException(MSG_ORDER_DATE_ORDERED_CHANGE_FORBIDDEN_1P, new Object[] { ol.getLine() });
+					throw new AdempiereException(MSG_ORDER_DATE_ORDERED_CHANGE_FORBIDDEN_1P, ol.getLine());
 				}
 			}
 		}
 	}
 
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
-	public void handleComplete(final I_C_Order order)
+	public void handleComplete(@NonNull final I_C_Order order)
 	{
 		final DocTypeId docTypeId = DocTypeId.ofRepoId(order.getC_DocType_ID());
-		if (Services.get(IDocTypeBL.class).isSalesProposalOrQuotation(docTypeId))
+		if (docTypeBL.isSalesProposalOrQuotation(docTypeId))
 		{
 			return;
 		}
 
-		final List<I_C_OrderLine> orderLines = Services.get(IOrderDAO.class).retrieveOrderLines(order, I_C_OrderLine.class);
+		final List<I_C_OrderLine> orderLines = orderDAO.retrieveOrderLines(order, I_C_OrderLine.class);
 		for (final I_C_OrderLine ol : orderLines)
 		{
 			if (ol.getC_Flatrate_Conditions_ID() <= 0)
@@ -110,32 +116,32 @@ public class C_Order
 
 	private void handleOrderLineComplete(final I_C_OrderLine ol)
 	{
-		final ISubscriptionDAO subscriptionDAO = Services.get(ISubscriptionDAO.class);
 		if (subscriptionDAO.existsTermForOl(ol))
 		{
-			logger.debug("{} is already already referenced by a C_Flatrate_Term record ", ol);
+			logger.debug("{} is already already referenced by a C_Flatrate_Term record; -> nothing to do", ol);
 			return;
 		}
 
 		logger.info("Creating new {} entry", I_C_Flatrate_Term.Table_Name);
 
 		final boolean completeIt = true;
-		final I_C_Flatrate_Term newSc = Services.get(ISubscriptionBL.class).createSubscriptionTerm(ol, completeIt);
+		final I_C_Flatrate_Term newSc = subscriptionBL.createSubscriptionTerm(ol, completeIt);
 
 		Check.assume(
 				X_C_Flatrate_Term.DOCSTATUS_Completed.equals(newSc.getDocStatus()),
 				"{} has DocStatus={}", newSc, newSc.getDocStatus());
 		logger.info("Created and completed {}", newSc);
 
-		extendFlatratetermIfAutoExtension(newSc);
+		extendFlatrateTermIfAutoExtension(newSc);
 	}
 
-	private void extendFlatratetermIfAutoExtension(final I_C_Flatrate_Term term)
+	private void extendFlatrateTermIfAutoExtension(final I_C_Flatrate_Term term)
 	{
 		final I_C_Flatrate_Conditions conditions = term.getC_Flatrate_Conditions();
 		final I_C_Flatrate_Transition transition = conditions.getC_Flatrate_Transition();
 
-		if (X_C_Flatrate_Transition.EXTENSIONTYPE_ExtendAll.equals(transition.getExtensionType())
+		if (transition != null 
+				&& X_C_Flatrate_Transition.EXTENSIONTYPE_ExtendAll.equals(transition.getExtensionType())
 				&& transition.getC_Flatrate_Conditions_Next_ID() > 0)
 		{
 			final ContractExtendingRequest request = ContractExtendingRequest.builder()
@@ -152,7 +158,7 @@ public class C_Order
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
 	public void handleReactivate(final I_C_Order order)
 	{
-		final List<I_C_OrderLine> orderLines = Services.get(IOrderDAO.class).retrieveOrderLines(order, I_C_OrderLine.class);
+		final List<I_C_OrderLine> orderLines = orderDAO.retrieveOrderLines(order, I_C_OrderLine.class);
 		for (final I_C_OrderLine ol : orderLines)
 		{
 			if (ol.getC_Flatrate_Conditions_ID() <= 0)
@@ -168,9 +174,6 @@ public class C_Order
 	 * Make sure the orderLine still has processed='Y', even if the order is reactivated. <br>
 	 * This was apparently added in task 03152.<br>
 	 * I can guess that if an order line already has a C_Flatrate_Term, then we don't want that order line to be editable, because it could create inconsistencies with the term.
-	 *
-	 * @param ol
-	 * @param trxName
 	 */
 	private void handleOrderLineReactivate(final I_C_OrderLine ol)
 	{

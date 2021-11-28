@@ -41,6 +41,7 @@ import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.DB;
+import org.compiere.util.Trx;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -77,6 +78,11 @@ public class InvoiceService
 				.map(InvoiceCandidateId::ofRepoId)
 				.collect(ImmutableSet.toImmutableSet());
 
+		return generateInvoicesFromInvoiceCandidateIds(invoiceCandidateIds);
+	}
+
+	public ImmutableSet<InvoiceId> generateInvoicesFromInvoiceCandidateIds(@NonNull final Set<InvoiceCandidateId> invoiceCandidateIds)
+	{
 		processInvoiceCandidates(invoiceCandidateIds);
 
 		return invoiceCandidateIds.stream()
@@ -87,7 +93,7 @@ public class InvoiceService
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
-	public void processInvoiceCandidates(@NonNull final Set<InvoiceCandidateId> invoiceCandidateIds)
+	private void processInvoiceCandidates(@NonNull final Set<InvoiceCandidateId> invoiceCandidateIds)
 	{
 		final ImmutableMap<AsyncBatchId, List<InvoiceCandidateId>> asyncBatchId2InvoiceCandIds = getAsyncBatchId2InvoiceCandidateIds(invoiceCandidateIds);
 
@@ -143,12 +149,12 @@ public class InvoiceService
 		final I_C_Async_Batch asyncBatch = asyncBatchBL.getAsyncBatchById(asyncBatchId);
 
 		final Supplier<Void> enqueueInvoiceCandidates = () -> {
-			final PInstanceId invoiceCandidatesSelectionId = DB.createT_Selection(invoiceCandIds, null);
+			final PInstanceId invoiceCandidatesSelectionId = DB.createT_Selection(invoiceCandIds, Trx.TRXNAME_None);
 
 			invoiceCandBL.enqueueForInvoicing()
 					.setContext(getCtx())
 					.setC_Async_Batch(asyncBatch)
-					.setInvoicingParams(getDefaultIInvoicingParams())
+					.setInvoicingParams(createDefaultIInvoicingParams())
 					.setFailIfNothingEnqueued(true)
 					.enqueueSelection(invoiceCandidatesSelectionId);
 
@@ -159,7 +165,7 @@ public class InvoiceService
 	}
 
 	@NonNull
-	private IInvoicingParams getDefaultIInvoicingParams()
+	private IInvoicingParams createDefaultIInvoicingParams()
 	{
 		final PlainInvoicingParams invoicingParams = new PlainInvoicingParams();
 		invoicingParams.setIgnoreInvoiceSchedule(false);
