@@ -107,13 +107,13 @@ public class SupplyCandidateHandler implements CandidateHandler
 				.addOrUpdateOverwriteStoredSeqNo(stockCandidate.getCandidate())
 				.getCandidate();
 
-		final SaveResult deltaToApplyToLaterStockCandiates = SaveResult.builder()
+		final SaveResult deltaToApplyToLaterStockCandidates = SaveResult.builder()
 				.candidate(savedCandidate)
 				.previousQty(candidateSaveResult.getPreviousQty())
 				.previousTime(candidateSaveResult.getPreviousTime())
 				.build();
 
-		stockCandidateService.applyDeltaToMatchingLaterStockCandidates(deltaToApplyToLaterStockCandiates);
+		stockCandidateService.applyDeltaToMatchingLaterStockCandidates(deltaToApplyToLaterStockCandidates);
 
 		// set the stock candidate as parent for the supply candidate
 		candidateRepositoryWriteService.updateCandidateById(

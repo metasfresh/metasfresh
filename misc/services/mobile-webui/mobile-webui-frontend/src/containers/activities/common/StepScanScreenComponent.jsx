@@ -6,6 +6,7 @@ import CodeScanner from '../scan/CodeScanner';
 import PickQuantityPrompt from '../PickQuantityPrompt';
 import QtyReasonsView from '../QtyReasonsView';
 
+// FIXME deprecated. To be replaced by ScanHUAndGetQtyComponent
 class StepScanScreenComponent extends Component {
   constructor(props) {
     super(props);
@@ -19,11 +20,22 @@ class StepScanScreenComponent extends Component {
     };
   }
 
-  onBarcodeScanned = ({ scannedBarcode }, closeCameraCallback) => {
+  hidePrompt = () => {
+    this.setState({ promptVisible: false });
+  };
+
+  onBarcodeScanned = ({ scannedBarcode }) => {
+    const { qtyTarget, pushUpdatedQuantity } = this.props;
+
     if (this.isEligibleBarcode(scannedBarcode)) {
-      this.setState({ promptVisible: true });
       this.props.setScannedBarcode(scannedBarcode);
-      this.closeCameraCallback = closeCameraCallback;
+
+      // in some cases we don't need store quantity (ie manufacturing receipts)
+      if (qtyTarget) {
+        this.setState({ promptVisible: true });
+      } else {
+        pushUpdatedQuantity({ qty: 0, reason: null });
+      }
     } else {
       // show an error to user but keep scanning...
       toastError({ messageKey: 'activities.picking.notEligibleHUBarcode' });
@@ -31,9 +43,9 @@ class StepScanScreenComponent extends Component {
   };
 
   onQtyPickedChanged = (qty) => {
-    const { qtyTarget } = this.props;
+    const { qtyTarget, pushUpdatedQuantity } = this.props;
 
-    const inputQty = parseInt(qty);
+    const inputQty = parseFloat(qty);
     if (isNaN(inputQty)) {
       return;
     }
@@ -46,7 +58,7 @@ class StepScanScreenComponent extends Component {
         const qtyRejected = qtyTarget - inputQty;
         this.setState({ reasonsPanelVisible: true, qtyRejected });
       } else {
-        this.props.pushUpdatedQuantity({ qty: inputQty });
+        pushUpdatedQuantity({ qty: inputQty });
       }
 
       this.setState({ promptVisible: false });
@@ -56,9 +68,9 @@ class StepScanScreenComponent extends Component {
   };
 
   hideReasonsPanel = (reason) => {
+    const { pushUpdatedQuantity } = this.props;
     this.setState({ reasonsPanelVisible: false });
-
-    this.props.pushUpdatedQuantity({ qty: this.state.newQuantity, reason });
+    pushUpdatedQuantity({ qty: this.state.newQuantity, reason });
   };
 
   validateQtyInput = (numberInput) => {
@@ -71,7 +83,8 @@ class StepScanScreenComponent extends Component {
     const { eligibleBarcode } = this.props;
 
     console.log(`checking ${eligibleBarcode} vs ${scannedBarcode}`);
-    return scannedBarcode === eligibleBarcode;
+    // in some cases we accept whatever code user scans and we're not constraining it
+    return eligibleBarcode ? scannedBarcode === eligibleBarcode : true;
   };
 
   render() {
@@ -89,9 +102,15 @@ class StepScanScreenComponent extends Component {
         ) : (
           <>
             {promptVisible ? (
-              <PickQuantityPrompt qtyTarget={qtyTarget} qtyCaption={qtyCaption} onQtyChange={this.onQtyPickedChanged} />
-            ) : null}
-            <CodeScanner onBarcodeScanned={this.onBarcodeScanned} />
+              <PickQuantityPrompt
+                qtyTarget={qtyTarget}
+                qtyCaption={qtyCaption}
+                onQtyChange={this.onQtyPickedChanged}
+                onCloseDialog={this.hidePrompt}
+              />
+            ) : (
+              <CodeScanner onBarcodeScanned={this.onBarcodeScanned} />
+            )}
           </>
         )}
       </div>
@@ -104,12 +123,12 @@ StepScanScreenComponent.propTypes = {
   wfProcessId: PropTypes.string.isRequired,
   activityId: PropTypes.string.isRequired,
   lineId: PropTypes.string.isRequired,
-  stepId: PropTypes.string.isRequired,
-  eligibleBarcode: PropTypes.string.isRequired,
-  qtyTarget: PropTypes.number.isRequired,
+  stepId: PropTypes.string,
+  eligibleBarcode: PropTypes.string,
+  qtyTarget: PropTypes.number,
   qtyCaption: PropTypes.string.isRequired,
   stepProps: PropTypes.object.isRequired,
-  pushUpdatedQuantity: PropTypes.func.isRequired,
+  pushUpdatedQuantity: PropTypes.func,
   setScannedBarcode: PropTypes.func.isRequired,
 };
 

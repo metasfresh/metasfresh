@@ -323,6 +323,15 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		ic.setC_Order_ID(orderLine.getC_Order_ID());
 
 		setC_PaymentTerm(ic, orderLine);
+
+		setIncoterms(ic, orderLine);
+	}
+
+	private void setIncoterms(@NonNull final I_C_Invoice_Candidate ic,
+			@NonNull final org.compiere.model.I_C_OrderLine orderLine)
+	{
+		final org.compiere.model.I_C_Order order = orderLine.getC_Order();
+		ic.setC_Incoterms_ID(order.getC_Incoterms_ID());
 	}
 
 	private void setC_PaymentTerm(

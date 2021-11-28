@@ -4,14 +4,14 @@ import { connect } from 'react-redux';
 import counterpart from 'counterpart';
 
 import { abortWorkflowRequest } from '../../api/launchers';
-import { redirectToAppLaunchers } from '../../actions/RoutingActions';
 import ConfirmButton from '../activities/confirmButton/ConfirmButton';
+import { gotoAppLaunchers } from '../../routes/launchers';
 
 class AbortButton extends PureComponent {
   onUserConfirmed = () => {
-    const { wfProcessId, appId, redirectToAppLaunchers } = this.props;
+    const { wfProcessId, appId, gotoAppLaunchers } = this.props;
 
-    abortWorkflowRequest(wfProcessId).then(redirectToAppLaunchers(appId));
+    abortWorkflowRequest(wfProcessId).then(gotoAppLaunchers(appId));
   };
 
   render() {
@@ -41,7 +41,7 @@ const mapStateToProps = (state) => {
 AbortButton.propTypes = {
   wfProcessId: PropTypes.string.isRequired,
   appId: PropTypes.string.isRequired,
-  redirectToAppLaunchers: PropTypes.func.isRequired,
+  gotoAppLaunchers: PropTypes.func.isRequired,
 };
 
-export default connect(mapStateToProps, { redirectToAppLaunchers })(AbortButton);
+export default connect(mapStateToProps, { gotoAppLaunchers })(AbortButton);

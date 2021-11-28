@@ -85,6 +85,8 @@ import java.util.List;
 
 	private int C_Async_Batch_ID;
 
+	private int C_Incoterms_ID;
+
 	/* package */ InvoiceHeaderImpl()
 	{
 	}
@@ -325,4 +327,16 @@ import java.util.List;
 	{
 		return this.externalId = externalId;
 	}
+
+	@Override
+	public int getC_Incoterms_ID()
+	{
+		return C_Incoterms_ID;
+	}
+
+	public void setC_Incoterms_ID(final int C_Incoterms_ID)
+	{
+		this.C_Incoterms_ID = C_Incoterms_ID;
+	}
+
 }

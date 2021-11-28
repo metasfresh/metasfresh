@@ -1,43 +1,50 @@
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import counterpart from 'counterpart';
 import PropTypes from 'prop-types';
 import { push } from 'connected-react-router';
 
 import * as CompleteStatus from '../../../constants/CompleteStatus';
-import { postStepDistributionMove } from '../../../api/distribution';
-import { updateDistributionStepQty } from '../../../actions/DistributionActions';
 import { pushHeaderEntry } from '../../../actions/HeaderActions';
-import { toastError } from '../../../utils/toast';
 
 import ButtonWithIndicator from '../../../components/ButtonWithIndicator';
+import { selectWFProcessFromState } from '../../../reducers/wfProcesses_status';
+import { withRouter } from 'react-router';
+import { connect } from 'react-redux';
+import {
+  distributionStepDropToScreenLocation,
+  distributionStepPickFromScreenLocation,
+} from '../../../routes/distribution';
 
-class DistributionStepScreen extends Component {
-  /**
-   * @method handleScanButtonClick
-   * @summary Redirects the user to the scanner screen and sets the header parameters
-   * @param {bool} locator - depending on this param we either use the flow for scanning HU or drop to locator.
-   *                         This way we can reuse all of the components.
-   */
-  handleScanButtonClick = (e, locator) => {
+const HIDE_UNDO_BUTTONS = true; // hide them because they are not working
+
+class DistributionStepScreen extends PureComponent {
+  onScanPickFromHU = () => {
     const {
-      stepProps: { dropToLocator, qtyToMove },
+      wfProcessId,
+      activityId,
+      lineId,
+      stepId,
+      stepProps: { qtyToMove, pickFromHU },
       dispatch,
-      onScanButtonClick,
     } = this.props;
-    const locatorId = locator ? dropToLocator.caption : null;
 
-    onScanButtonClick(locatorId);
-
+    const location = distributionStepPickFromScreenLocation({
+      wfProcessId,
+      activityId,
+      lineId,
+      stepId,
+    });
+    dispatch(push(location));
     dispatch(
       pushHeaderEntry({
         location,
         values: [
           {
-            caption: counterpart.translate('general.DropToLocator'),
-            value: dropToLocator.barcode,
+            caption: counterpart.translate('activities.distribution.scanHU'),
+            value: pickFromHU.barcode,
           },
           {
-            caption: counterpart.translate('general.QtyMoved'),
+            caption: counterpart.translate('general.QtyToMove'),
             value: qtyToMove,
           },
         ],
@@ -45,136 +52,136 @@ class DistributionStepScreen extends Component {
     );
   };
 
-  onUnpickLocatorButtonClick = () => {
-    const { wfProcessId, activityId, lineId, stepId, dispatch } = this.props;
-
-    postStepDistributionMove({
-      wfProcessId,
-      activityId,
-      stepId,
-    })
-      .then(() => {
-        dispatch(
-          updateDistributionStepQty({
-            wfProcessId,
-            activityId,
-            lineId,
-            stepId,
-            scannedLocator: null,
-            qtyPicked: 0,
-            qtyRejectedReasonCode: null,
-          })
-        );
-        dispatch(push(`/workflow/${wfProcessId}/activityId/${activityId}/lineId/${lineId}`));
-      })
-      .catch((axiosError) => toastError({ axiosError }));
-  };
-
-  onUnpickHUButtonClick = () => {
-    const { wfProcessId, activityId, lineId, stepId, dispatch } = this.props;
-
-    postStepDistributionMove({
-      wfProcessId,
-      activityId,
-      stepId,
-    })
-      .then(() => {
-        dispatch(
-          updateDistributionStepQty({
-            wfProcessId,
-            activityId,
-            lineId,
-            stepId,
-            actualHUPicked: null,
-            qtyPicked: 0,
-            qtyRejectedReasonCode: null,
-          })
-        );
-        dispatch(push(`/workflow/${wfProcessId}/activityId/${activityId}/lineId/${lineId}`));
-      })
-      .catch((axiosError) => toastError({ axiosError }));
-  };
-
-  componentWillUnmount() {
+  onScanDropToLocator = () => {
     const {
       wfProcessId,
       activityId,
       lineId,
       stepId,
-      stepProps: { qtyPicked },
+      stepProps: { qtyToMove, dropToLocator },
       dispatch,
     } = this.props;
 
-    qtyPicked === '' && dispatch(updateDistributionStepQty({ wfProcessId, activityId, lineId, stepId, qtyPicked: 0 }));
-  }
+    const location = distributionStepDropToScreenLocation({
+      wfProcessId,
+      activityId,
+      lineId,
+      stepId,
+    });
+    dispatch(push(location));
+    dispatch(
+      pushHeaderEntry({
+        location,
+        values: [
+          {
+            caption: counterpart.translate('general.DropToLocator'),
+            value: dropToLocator.caption + ' (' + dropToLocator.barcode + ')',
+          },
+          {
+            caption: counterpart.translate('general.QtyToMove'),
+            value: qtyToMove,
+          },
+        ],
+      })
+    );
+  };
 
   render() {
     const {
-      stepProps: { dropToLocator, qtyToMove, actualHUPicked, qtyPicked, scannedLocator },
+      stepProps: {
+        qtyToMove,
+        //
+        // Pick From:
+        isPickedFrom,
+        pickFromHU,
+        qtyPicked,
+        //
+        // Drop To
+        droppedToLocator: isDroppedToLocator,
+        dropToLocator,
+      },
     } = this.props;
 
-    const isValidHUCode = !!actualHUPicked;
-    const isValidLocatorCode = !!scannedLocator;
+    console.log(this.props);
 
-    const scanHUCaption = isValidHUCode
-      ? `${actualHUPicked.caption}`
+    const pickFromHUCaption = isPickedFrom
+      ? pickFromHU.caption
       : counterpart.translate('activities.distribution.scanHU');
-    const scanLocatorCaption = isValidLocatorCode
-      ? `${scannedLocator}`
-      : counterpart.translate('activities.distribution.scanLocator');
+    const pickFromHUStatus = isPickedFrom ? CompleteStatus.COMPLETED : CompleteStatus.NOT_STARTED;
 
-    const scanHUButtonStatus = isValidHUCode ? CompleteStatus.COMPLETED : CompleteStatus.NOT_STARTED;
-    const scanLocatorButtonStatus = isValidLocatorCode ? CompleteStatus.COMPLETED : CompleteStatus.NOT_STARTED;
-    const noHUPicked = !isValidHUCode || !qtyPicked;
-    const noLocatorPicked = !isValidLocatorCode;
+    const dropToLocatorCaption = isDroppedToLocator
+      ? dropToLocator.caption
+      : counterpart.translate('activities.distribution.scanLocator');
+    const dropToLocatorStatus = isDroppedToLocator ? CompleteStatus.COMPLETED : CompleteStatus.NOT_STARTED;
 
     return (
-      <>
-        <div className="columns is-mobile">
-          <div className="column is-half has-text-right has-text-weight-bold pb-0 pl-0 pr-0">
-            {counterpart.translate('general.DropToLocator')}
+      <div className="pt-3 section picking-step-container">
+        <div className="picking-step-details centered-text is-size-5">
+          <div className="columns is-mobile">
+            <div className="column is-half has-text-right has-text-weight-bold pb-0 pl-0 pr-0">
+              {counterpart.translate('activities.distribution.scanHU')}
+            </div>
+            <div className="column is-half has-text-left pb-0">{pickFromHU.barcode}</div>
           </div>
-          <div className="column is-half has-text-left pb-0">{dropToLocator.barcode}</div>
-        </div>
-        <div className="columns is-mobile">
-          <div className="column is-half has-text-right has-text-weight-bold pb-0 pl-0 pr-0">
-            {counterpart.translate('general.QtyMoved')}:
+          <div className="columns is-mobile">
+            <div className="column is-half has-text-right has-text-weight-bold pb-0 pl-0 pr-0">
+              {counterpart.translate('general.QtyToMove')}:
+            </div>
+            <div className="column is-half has-text-left pb-0">{qtyToMove}</div>
           </div>
-          <div className="column is-half has-text-left pb-0">{qtyToMove}</div>
-        </div>
+          <div className="columns is-mobile">
+            <div className="column is-half has-text-right has-text-weight-bold pb-0 pl-0 pr-0">
+              {counterpart.translate('general.QtyPicked')}:
+            </div>
+            <div className="column is-half has-text-left pb-0">{qtyPicked}</div>
+          </div>
+          <div className="columns is-mobile">
+            <div className="column is-half has-text-right has-text-weight-bold pb-0 pl-0 pr-0">
+              {counterpart.translate('general.DropToLocator')}
+            </div>
+            <div className="column is-half has-text-left pb-0">{dropToLocator.caption}</div>
+          </div>
 
-        <div className="mt-0">
-          <button className="button is-outlined complete-btn" onClick={this.handleScanButtonClick}>
-            <ButtonWithIndicator caption={scanHUCaption} completeStatus={scanHUButtonStatus} />
-          </button>
-        </div>
+          <div className="mt-0">
+            <button className="button is-outlined complete-btn" disabled={isPickedFrom} onClick={this.onScanPickFromHU}>
+              <ButtonWithIndicator caption={pickFromHUCaption} completeStatus={pickFromHUStatus} />
+            </button>
+          </div>
 
-        <div className="mt-5">
-          <button
-            className="button is-outlined complete-btn"
-            disabled={noHUPicked}
-            onClick={this.onUnpickHUButtonClick}
-          >
-            <ButtonWithIndicator caption={counterpart.translate('activities.picking.unPickBtn')} />
-          </button>
-        </div>
+          {!HIDE_UNDO_BUTTONS && (
+            <div className="mt-5">
+              <button
+                className="button is-outlined complete-btn"
+                disabled={!(isPickedFrom && !isDroppedToLocator)}
+                onClick={this.onUndoPickFromHU}
+              >
+                <ButtonWithIndicator caption={counterpart.translate('activities.picking.unPickBtn')} />
+              </button>
+            </div>
+          )}
 
-        <div className="mt-5">
-          <button className="button is-outlined complete-btn" onClick={(e) => this.handleScanButtonClick(e, true)}>
-            <ButtonWithIndicator caption={scanLocatorCaption} completeStatus={scanLocatorButtonStatus} />
-          </button>
+          <div className="mt-5">
+            <button
+              className="button is-outlined complete-btn"
+              disabled={!(isPickedFrom && !isDroppedToLocator)}
+              onClick={this.onScanDropToLocator}
+            >
+              <ButtonWithIndicator caption={dropToLocatorCaption} completeStatus={dropToLocatorStatus} />
+            </button>
+          </div>
+          {!HIDE_UNDO_BUTTONS && (
+            <div className="mt-5">
+              <button
+                className="button is-outlined complete-btn"
+                disabled={!isDroppedToLocator}
+                onClick={this.onUndoDropToLocator}
+              >
+                <ButtonWithIndicator caption={counterpart.translate('activities.picking.unPickBtn')} />
+              </button>
+            </div>
+          )}
         </div>
-        {/* Unpick button */}
-        <div className="mt-5">
-          <button
-            className="button is-outlined complete-btn"
-            disabled={noLocatorPicked}
-            onClick={this.onUnpickLocatorButtonClick}
-          >
-            <ButtonWithIndicator caption={counterpart.translate('activities.picking.unPickBtn')} />
-          </button>
-        </div>
-      </>
+      </div>
     );
   }
 }
@@ -187,10 +194,24 @@ DistributionStepScreen.propTypes = {
   lineId: PropTypes.string.isRequired,
   stepId: PropTypes.string.isRequired,
   stepProps: PropTypes.object.isRequired,
-  onScanButtonClick: PropTypes.func.isRequired,
   //
   // Actions
   dispatch: PropTypes.func.isRequired,
 };
 
-export default DistributionStepScreen;
+const mapStateToProps = (state, ownProps) => {
+  const { workflowId: wfProcessId, activityId, lineId, stepId } = ownProps.match.params;
+
+  const activity = selectWFProcessFromState(state, wfProcessId).activities[activityId];
+  const stepProps = activity.dataStored.lines[lineId].steps[stepId];
+
+  return {
+    wfProcessId,
+    activityId,
+    lineId,
+    stepId,
+    stepProps,
+  };
+};
+
+export default withRouter(connect(mapStateToProps)(DistributionStepScreen));

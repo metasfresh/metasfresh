@@ -13,6 +13,7 @@ import de.metas.workflow.rest_api.model.MobileApplicationInfo;
 import de.metas.workflow.rest_api.model.WFActivityId;
 import de.metas.workflow.rest_api.model.WFProcess;
 import de.metas.workflow.rest_api.model.WFProcessHeaderProperties;
+import de.metas.workflow.rest_api.model.WFProcessHeaderProperty;
 import de.metas.workflow.rest_api.model.WFProcessId;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersList;
 import de.metas.workflow.rest_api.service.MobileApplication;
@@ -105,7 +106,17 @@ public class ManufacturingMobileApplication implements MobileApplication
 	@Override
 	public WFProcessHeaderProperties getHeaderProperties(final @NonNull WFProcess wfProcess)
 	{
-		return WFProcessHeaderProperties.EMPTY; // TODO
+		final ManufacturingJob job = wfProcess.getDocumentAs(ManufacturingJob.class);
+		return WFProcessHeaderProperties.builder()
+				.entry(WFProcessHeaderProperty.builder()
+						.caption(TranslatableStrings.adElementOrMessage("DocumentNo"))
+						.value(job.getDocumentNo())
+						.build())
+				.entry(WFProcessHeaderProperty.builder()
+						.caption(TranslatableStrings.adElementOrMessage("DatePromised"))
+						.value(job.getDatePromised())
+						.build())
+				.build();
 	}
 
 	public JsonManufacturingOrderEventResult processEvent(final JsonManufacturingOrderEvent event, final UserId callerId)
@@ -138,6 +149,7 @@ public class ManufacturingMobileApplication implements MobileApplication
 					.getLineById(receiveFrom.getFinishedGoodsReceiveLineId());
 
 			result.setExistingLU(JsonFinishedGoodsReceiveLine.extractJsonAggregateToExistingLU(receiveLine));
+			result.setQtyReceivedTotal(receiveLine.getQtyReceived().toBigDecimal());
 		}
 
 		return result;

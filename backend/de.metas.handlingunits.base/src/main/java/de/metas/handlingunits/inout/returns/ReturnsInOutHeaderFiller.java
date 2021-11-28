@@ -144,6 +144,7 @@ public class ReturnsInOutHeaderFiller
 
 				returnsInOut.setPOReference(poReference);
 				returnsInOut.setC_Order(order);
+				returnsInOut.setC_Incoterms_ID(order.getC_Incoterms_ID());
 			}
 		}
 

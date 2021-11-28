@@ -41,6 +41,7 @@ public class JsonWorkflowLaunchersList
 {
 	@Singular
 	@NonNull ImmutableList<JsonWorkflowLauncher> launchers;
+	boolean scanBarcodeToStartJobSupport;
 	@NonNull Instant computedTime;
 
 	public static JsonWorkflowLaunchersList of(
@@ -48,6 +49,7 @@ public class JsonWorkflowLaunchersList
 			@NonNull final JsonOpts jsonOpts)
 	{
 		return builder()
+				.scanBarcodeToStartJobSupport(list.isScanBarcodeToStartJobSupport())
 				.launchers(list.stream()
 						.map(launcher -> JsonWorkflowLauncher.of(launcher, jsonOpts))
 						.sorted(Comparator.comparing(JsonWorkflowLauncher::getCaption))

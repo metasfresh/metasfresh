@@ -4,8 +4,8 @@ import { withRouter } from 'react-router';
 import PropTypes from 'prop-types';
 
 import PickLineScreen from '../picking/PickLineScreen';
-import DistributionLineScreen from '../distribution/DistributionLineScreen';
 import RawMaterialIssueLineScreen from '../manufacturing/RawMaterialIssueLineScreen';
+import MaterialReceiptLineScreen from '../manufacturing/MaterialReceiptLineScreen';
 
 import { selectWFProcessFromState } from '../../../reducers/wfProcesses_status';
 
@@ -13,11 +13,11 @@ const getLineComponent = (appId, componentType) => {
   switch (appId) {
     case 'picking':
       return PickLineScreen;
-    case 'distribution':
-      return DistributionLineScreen;
     case 'mfg':
       if (componentType === 'manufacturing/rawMaterialsIssue') {
         return RawMaterialIssueLineScreen;
+      } else if (componentType === 'manufacturing/materialReceipt') {
+        return MaterialReceiptLineScreen;
       }
       return null;
     default:
@@ -44,7 +44,7 @@ const mapStateToProps = (state, ownProps) => {
   const activity = wfProcess && wfProcess.activities ? wfProcess.activities[activityId] : null;
 
   const lineProps = activity != null ? activity.dataStored.lines[lineId] : null;
-  const stepsById = lineProps != null ? lineProps.steps : {};
+  const stepsById = lineProps != null && lineProps.steps ? lineProps.steps : {};
 
   const appId = state.applications.activeApplication ? state.applications.activeApplication.id : null;
 
@@ -66,6 +66,7 @@ const mapStateToProps = (state, ownProps) => {
     componentType: activity.componentType,
     lineProps,
     appId,
+    location: ownProps.location,
   };
 };
 

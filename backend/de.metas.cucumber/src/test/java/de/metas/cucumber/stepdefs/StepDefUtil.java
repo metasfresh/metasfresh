@@ -22,24 +22,50 @@
 
 package de.metas.cucumber.stepdefs;
 
+import io.cucumber.java.en.And;
+import lombok.NonNull;
 import lombok.experimental.UtilityClass;
+import org.adempiere.model.InterfaceWrapperHelper;
 
 import java.util.function.Supplier;
 
 @UtilityClass
 public class StepDefUtil
 {
-	public void tryAndWait(final long maxWaitSeconds, final long checkingIntervalMs, final Supplier<Boolean> worker ) throws InterruptedException
+	public boolean tryAndWait(final long maxWaitSeconds, final long checkingIntervalMs, final Supplier<Boolean> worker ) throws InterruptedException
 	{
 		final long nowMillis = System.currentTimeMillis(); // don't use SystemTime.millis(); because it's probably "rigged" for testing purposes,
 		final long deadLineMillis = nowMillis + (maxWaitSeconds * 1000L);
 
-		boolean conditionIsMet = worker.get();
+		boolean conditionIsMet = false;
 
 		while (System.currentTimeMillis() < deadLineMillis && !conditionIsMet)
 		{
 			Thread.sleep(checkingIntervalMs);
 			conditionIsMet = worker.get();
 		}
+
+		return conditionIsMet;
+	}
+
+	public int extractId(@NonNull final String idOrIdentifier, @NonNull final StepDefData<?> stepDefDataTable)
+	{
+		try
+		{
+			return Integer.parseInt(idOrIdentifier);
+		}
+		catch (final NumberFormatException exception)
+		{
+			final Object model = stepDefDataTable.get(idOrIdentifier);
+
+			return InterfaceWrapperHelper.getId(model);
+		}
+	}
+
+	@And("^wait for (.*)s$")
+	public void waitFor(final int waitingTimeSec) throws InterruptedException
+	{
+		final long waitingTimeMillis = waitingTimeSec * 1000L;
+		Thread.sleep(waitingTimeMillis);
 	}
 }

@@ -3,23 +3,27 @@ import PropTypes from 'prop-types';
 import counterpart from 'counterpart';
 
 import { pushHeaderEntry } from '../../../actions/HeaderActions';
-import StepButton from '../common/StepButton';
 import Indicator from '../../../components/Indicator';
 import * as CompleteStatus from '../../../constants/CompleteStatus';
+import { push } from 'connected-react-router';
+import { withRouter } from 'react-router';
+import { connect } from 'react-redux';
+import { distributionStepScreenLocation } from '../../../routes/distribution';
 
 class DistributionStepButton extends PureComponent {
   handleClick = () => {
-    const { locatorName } = this.props;
-    const { dispatch, onHandleClick } = this.props;
+    const { wfProcessId, activityId, lineId, stepId, pickFromLocator } = this.props;
+    const { dispatch } = this.props;
 
-    onHandleClick();
+    const location = distributionStepScreenLocation({ wfProcessId, activityId, lineId, stepId });
+    dispatch(push(location));
     dispatch(
       pushHeaderEntry({
         location,
         values: [
           {
             caption: counterpart.translate('general.Locator'),
-            value: locatorName,
+            value: pickFromLocator.caption,
           },
         ],
       })
@@ -27,13 +31,7 @@ class DistributionStepButton extends PureComponent {
   };
 
   render() {
-    const {
-      lineId,
-      locatorName,
-      uom,
-      stepState: { qtyPicked, completeStatus },
-      qtyToMove,
-    } = this.props;
+    const { lineId, pickFromLocator, uom, qtyPicked, completeStatus, qtyToMove } = this.props;
 
     return (
       <div className="mt-3">
@@ -47,7 +45,7 @@ class DistributionStepButton extends PureComponent {
 
             <div className="caption-btn">
               <div className="rows">
-                <div className="row is-full pl-5">{locatorName}</div>
+                <div className="row is-full pl-5">{pickFromLocator.caption}</div>
                 <div className="row is-full is-size-7">
                   <div className="picking-row-info">
                     <div className="picking-to-pick">{counterpart.translate('activities.distribution.target')}:</div>
@@ -83,16 +81,16 @@ DistributionStepButton.propTypes = {
   lineId: PropTypes.string.isRequired,
   stepId: PropTypes.string.isRequired,
   productName: PropTypes.string.isRequired,
-  locatorName: PropTypes.string.isRequired,
-  huBarcode: PropTypes.string,
+  pickFromLocator: PropTypes.object.isRequired,
+  pickFromHU: PropTypes.object,
   uom: PropTypes.string,
   qtyPicked: PropTypes.number,
   qtyToMove: PropTypes.number.isRequired,
   stepState: PropTypes.object,
-  onHandleClick: PropTypes.func.isRequired,
+  completeStatus: PropTypes.string.isRequired,
   //
   // Actions
   dispatch: PropTypes.func.isRequired,
 };
 
-export default StepButton(DistributionStepButton);
+export default withRouter(connect()(DistributionStepButton));

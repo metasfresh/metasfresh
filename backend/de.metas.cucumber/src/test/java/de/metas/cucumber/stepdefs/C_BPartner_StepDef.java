@@ -152,7 +152,7 @@ public class C_BPartner_StepDef
 		}
 
 		final String recordIdentifier = DataTableUtil.extractRecordIdentifier(tableRow, "C_BPartner");
-		bPartnerTable.put(recordIdentifier, bPartnerRecord);
+		bPartnerTable.putOrReplace(recordIdentifier, bPartnerRecord);
 	}
 
 	private void changeBPartner(@NonNull final Map<String, String> row)

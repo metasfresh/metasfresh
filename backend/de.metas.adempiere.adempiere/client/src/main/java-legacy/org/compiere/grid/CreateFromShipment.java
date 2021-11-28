@@ -739,6 +739,7 @@ public class CreateFromShipment extends CreateFrom
 			inout.setC_Activity_ID(p_order.getC_Activity_ID());
 			inout.setUser1_ID(p_order.getUser1_ID());
 			inout.setUser2_ID(p_order.getUser2_ID());
+			inout.setC_Incoterms_ID(p_order.getC_Incoterms_ID());
 
 			if (p_order.isDropShip())
 			{

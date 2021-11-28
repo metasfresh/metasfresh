@@ -14,20 +14,23 @@ import StepScanScreenComponent from '../common/StepScanScreenComponent';
 
 function PickStepScanScreen(WrappedComponent) {
   const mapStateToProps = (state, { match }) => {
-    const { workflowId: wfProcessId, activityId, lineId, stepId, appId } = match.params;
+    const { workflowId: wfProcessId, activityId, lineId, stepId, appId, altStepId } = match.params;
 
     const wfProcess = selectWFProcessFromState(state, wfProcessId);
     const stepProps = wfProcess.activities[activityId].dataStored.lines[lineId].steps[stepId];
 
     return {
+      appId,
       wfProcessId,
       activityId,
       lineId,
       stepId,
+      altStepId,
       stepProps,
-      appId,
-      qtyTarget: stepProps.qtyToPick,
-      eligibleBarcode: stepProps.huBarcode,
+      qtyTarget: altStepId ? stepProps.pickFromAlternatives[altStepId].qtyToPick : stepProps.qtyToPick,
+      eligibleBarcode: altStepId
+        ? stepProps.pickFromAlternatives[altStepId].huBarcode
+        : stepProps.mainPickFrom.huBarcode,
     };
   };
 
@@ -45,22 +48,9 @@ function PickStepScanScreen(WrappedComponent) {
     };
 
     pushUpdatedQuantity = ({ qty = 0, reason = null }) => {
-      const { updatePickingStepQty, wfProcessId, activityId, lineId, stepId, go } = this.props;
+      const { updatePickingStepQty, wfProcessId, activityId, lineId, stepId, go, altStepId, qtyTarget } = this.props;
       const { scannedBarcode } = this.state;
-
-      // TODO: This should be added to the same, not next level
-      // pushHeaderEntry({
-      //   location,
-      //   values: [
-      //     {
-      //       caption: counterpart.translate('general.QtyPicked'),
-      //       value: qtyPicked,
-      //     },
-      //   ],
-      // });
-
-      // TODO: We should only set the scanned barcode if the quantity is correct and user submitted any
-      // potential reason to wrong quantity.
+      const qtyRejected = qtyTarget - qty;
 
       postStepPicked({
         wfProcessId,
@@ -69,6 +59,7 @@ function PickStepScanScreen(WrappedComponent) {
         huBarcode: scannedBarcode,
         qtyPicked: qty,
         qtyRejectedReasonCode: reason,
+        qtyRejected,
       })
         .then(() => {
           updatePickingStepQty({
@@ -76,8 +67,9 @@ function PickStepScanScreen(WrappedComponent) {
             activityId,
             lineId,
             stepId,
-            scannedHUBarcode: scannedBarcode,
+            altStepId,
             qtyPicked: qty,
+            qtyRejected,
             qtyRejectedReasonCode: reason,
           });
           go(-2);
@@ -103,8 +95,10 @@ function PickStepScanScreen(WrappedComponent) {
     activityId: PropTypes.string.isRequired,
     lineId: PropTypes.string.isRequired,
     stepId: PropTypes.string.isRequired,
+    altStepId: PropTypes.string,
     eligibleBarcode: PropTypes.string.isRequired,
     stepProps: PropTypes.object.isRequired,
+    qtyTarget: PropTypes.number,
     // Actions:
     go: PropTypes.func.isRequired,
     updatePickingStepQty: PropTypes.func.isRequired,

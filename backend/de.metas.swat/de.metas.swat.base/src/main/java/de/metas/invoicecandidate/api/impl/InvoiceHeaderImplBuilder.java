@@ -67,6 +67,8 @@ public class InvoiceHeaderImplBuilder
 
 	private int C_Async_Batch_ID;
 
+	private int C_Incoterms_ID;
+
 	/* package */ InvoiceHeaderImplBuilder()
 	{
 		super();
@@ -115,6 +117,9 @@ public class InvoiceHeaderImplBuilder
 		invoiceHeader.setPOReference(getPOReference());
 		invoiceHeader.setExternalId(getExternalId());
 
+		//incoterms
+		invoiceHeader.setC_Incoterms_ID(getC_Incoterms_ID());
+
 		return invoiceHeader;
 	}
 
@@ -131,6 +136,16 @@ public class InvoiceHeaderImplBuilder
 	public void setC_Async_Batch_ID(final int asyncBatchId)
 	{
 		C_Async_Batch_ID = checkOverrideID("C_Async_Batch_ID", C_Async_Batch_ID, asyncBatchId);
+	}
+
+	private int getC_Incoterms_ID()
+	{
+		return C_Incoterms_ID;
+	}
+
+	public void setC_Incoterms_ID(final int incoterms_id)
+	{
+		C_Incoterms_ID = checkOverrideID("C_Incoterms_ID", C_Incoterms_ID, incoterms_id);
 	}
 
 	public I_C_DocType getC_DocTypeInvoice()

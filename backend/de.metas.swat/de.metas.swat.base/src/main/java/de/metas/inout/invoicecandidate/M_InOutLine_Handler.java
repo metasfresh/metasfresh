@@ -426,6 +426,8 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 			icRecord.setC_DocTypeInvoice_ID(invoiceDocTypeId.getRepoId());
 		}
 
+		icRecord.setC_Incoterms_ID(inOut.getC_Incoterms_ID());
+
 		icRecord.setC_Async_Batch_ID(inOut.getC_Async_Batch_ID());
 		//
 		// Save the Invoice Candidate, so that we can use it's ID further down

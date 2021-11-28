@@ -1,14 +1,19 @@
 import * as types from '../../constants/DistributionActionTypes';
 import * as CompleteStatus from '../../constants/CompleteStatus';
 import { registerHandler } from './activityStateHandlers';
-import { computeLineStatus, updateActivityStatusFromLines } from './picking';
+import { current, isDraft } from 'immer';
+import { updateUserEditable } from './utils';
 
 const COMPONENT_TYPE = 'distribution/move';
 
 export const distributionReducer = ({ draftState, action }) => {
   switch (action.type) {
-    case types.UPDATE_DISTRIBUTION_STEP_QTY: {
-      return reduceOnUpdateQtyPicked(draftState, action.payload);
+    case types.UPDATE_DISTRIBUTION_PICK_FROM: {
+      return reduceOnUpdatePickFrom(draftState, action.payload);
+    }
+
+    case types.UPDATE_DISTRIBUTION_DROP_TO: {
+      return reduceOnDropTo(draftState, action.payload);
     }
 
     default: {
@@ -17,22 +22,15 @@ export const distributionReducer = ({ draftState, action }) => {
   }
 };
 
-const reduceOnUpdateQtyPicked = (draftState, payload) => {
-  const { wfProcessId, activityId, lineId, stepId, actualHUPicked, locatorBarcode, qtyPicked, qtyRejectedReasonCode } =
-    payload;
-
+const reduceOnUpdatePickFrom = (draftState, payload) => {
+  const { wfProcessId, activityId, lineId, stepId, qtyPicked, qtyRejectedReasonCode } = payload;
   const draftWFProcess = draftState[wfProcessId];
   const draftStep = draftWFProcess.activities[activityId].dataStored.lines[lineId].steps[stepId];
-  if (actualHUPicked !== undefined) {
-    draftStep.actualHUPicked = actualHUPicked;
-  }
-  if (locatorBarcode !== undefined) {
-    draftStep.locatorBarcode = locatorBarcode;
-  }
+
   draftStep.qtyPicked = qtyPicked;
   draftStep.qtyRejectedReasonCode = qtyRejectedReasonCode;
 
-  updateStepStatus({
+  updateStepStatusAndRollup({
     draftWFProcess,
     activityId,
     lineId,
@@ -42,39 +40,109 @@ const reduceOnUpdateQtyPicked = (draftState, payload) => {
   return draftState;
 };
 
-const updateStepStatus = ({ draftWFProcess, activityId, lineId, stepId }) => {
+const reduceOnDropTo = (draftState, payload) => {
+  const { wfProcessId, activityId, lineId, stepId } = payload;
+
+  const draftWFProcess = draftState[wfProcessId];
   const draftStep = draftWFProcess.activities[activityId].dataStored.lines[lineId].steps[stepId];
 
+  draftStep.droppedToLocator = true;
+
+  updateStepStatusAndRollup({
+    draftWFProcess,
+    activityId,
+    lineId,
+    stepId,
+  });
+
+  return draftState;
+};
+
+const updateStepStatus = ({ draftStep }) => {
+  draftStep.isPickedFrom = computeIsPickedFrom({ draftStep });
   draftStep.completeStatus = computeStepStatus({ draftStep });
-  console.log(`Update step [${activityId} ${lineId} ${stepId} ]: completeStatus=${draftStep.completeStatus}`);
+};
+
+const updateStepStatusAndRollup = ({ draftWFProcess, activityId, lineId, stepId }) => {
+  const draftStep = draftWFProcess.activities[activityId].dataStored.lines[lineId].steps[stepId];
+  updateStepStatus({ draftStep });
 
   //
   // Rollup:
-  updateLineStatusFromSteps({ draftWFProcess, activityId, lineId });
+  updateLineStatusFromStepsAndRollup({ draftWFProcess, activityId, lineId });
 };
 
 const computeStepStatus = ({ draftStep }) => {
-  console.log('qtyPicked=', draftStep.qtyPicked);
-  console.log('qtyToMove=', draftStep.qtyToMove);
-  console.log('   => diff=', draftStep.qtyToMove - draftStep.qtyPicked === 0);
-
-  const isStepCompleted =
-    // Barcode is set
-    !!(draftStep.actualHUPicked && draftStep.locatorBarcode) &&
-    // and is completely picked or a reject code is set
-    (draftStep.qtyToMove - draftStep.qtyPicked === 0 || !!draftStep.qtyRejectedReasonCode);
-
-  return isStepCompleted ? CompleteStatus.COMPLETED : CompleteStatus.NOT_STARTED;
+  const isPickedFrom = computeIsPickedFrom({ draftStep });
+  if (isPickedFrom) {
+    return draftStep.droppedToLocator ? CompleteStatus.COMPLETED : CompleteStatus.IN_PROGRESS;
+  } else {
+    return CompleteStatus.NOT_STARTED;
+  }
 };
 
-const updateLineStatusFromSteps = ({ draftWFProcess, activityId, lineId }) => {
+const computeIsPickedFrom = ({ draftStep }) => {
+  return draftStep.qtyPicked !== 0 || !!draftStep.qtyRejectedReasonCode;
+};
+
+const updateLineStatusFromSteps = ({ draftLine }) => {
+  draftLine.completeStatus = computeLineStatusFromSteps({ draftLine });
+};
+
+const updateLineStatusFromStepsAndRollup = ({ draftWFProcess, activityId, lineId }) => {
   const draftLine = draftWFProcess.activities[activityId].dataStored.lines[lineId];
-  draftLine.completeStatus = computeLineStatus({ draftLine });
-  console.log(`Update line [${activityId} ${lineId} ]: completeStatus=${draftLine.completeStatus}`);
+  updateLineStatusFromSteps({ draftLine });
 
   //
   // Rollup:
-  updateActivityStatusFromLines({ draftWFProcess, activityId });
+  updateActivityStatusFromLinesAndRollup({ draftWFProcess, activityId });
+};
+
+export const computeLineStatusFromSteps = ({ draftLine }) => {
+  const stepIds = extractDraftMapKeys(draftLine.steps);
+
+  const stepsStatuses = stepIds.reduce((accum, stepId) => {
+    const draftStep = draftLine.steps[stepId];
+    const stepCompleteStatus = draftStep.completeStatus || CompleteStatus.NOT_STARTED;
+    if (!accum.includes(stepCompleteStatus)) {
+      accum.push(stepCompleteStatus);
+    }
+    return accum;
+  }, []);
+
+  return CompleteStatus.reduceFromCompleteStatuesUniqueArray(stepsStatuses);
+};
+
+const updateActivityStatusFromLines = ({ draftActivityDataStored }) => {
+  draftActivityDataStored.completeStatus = computeActivityStatusFromLines({ draftActivityDataStored });
+};
+
+const updateActivityStatusFromLinesAndRollup = ({ draftWFProcess, activityId }) => {
+  const draftActivityDataStored = draftWFProcess.activities[activityId].dataStored;
+  updateActivityStatusFromLines({ draftActivityDataStored });
+
+  //
+  // Rollup:
+  updateUserEditable({ draftWFProcess });
+};
+
+const extractDraftMapKeys = (draftMap) => {
+  return isDraft(draftMap) ? Object.keys(current(draftMap)) : Object.keys(draftMap);
+};
+
+const computeActivityStatusFromLines = ({ draftActivityDataStored }) => {
+  const lineIds = extractDraftMapKeys(draftActivityDataStored.lines);
+
+  const linesStatuses = lineIds.reduce((accum, lineId) => {
+    const draftLine = draftActivityDataStored.lines[lineId];
+    const stepCompleteStatus = draftLine.completeStatus || CompleteStatus.NOT_STARTED;
+    if (!accum.includes(stepCompleteStatus)) {
+      accum.push(stepCompleteStatus);
+    }
+    return accum;
+  }, []);
+
+  return CompleteStatus.reduceFromCompleteStatuesUniqueArray(linesStatuses);
 };
 
 const normalizeLines = (lines) => {
@@ -89,17 +157,37 @@ const normalizeLines = (lines) => {
   });
 };
 
+const mergeActivityDataStored = ({ draftActivityDataStored, fromActivity }) => {
+  //
+  // Copy lines
+  draftActivityDataStored.lines = normalizeLines(fromActivity.componentProps.lines);
+
+  //
+  // Update all statuses
+  const draftLines = draftActivityDataStored.lines;
+  for (let lineIdx = 0; lineIdx < draftLines.length; lineIdx++) {
+    const draftLine = draftLines[lineIdx];
+
+    for (let stepId of Object.keys(draftLine.steps)) {
+      const draftStep = draftLine.steps[stepId];
+      updateStepStatus({ draftStep });
+    }
+
+    updateLineStatusFromSteps({ draftLine });
+  }
+  updateActivityStatusFromLines({ draftActivityDataStored });
+
+  return draftActivityDataStored;
+};
+
 registerHandler({
   componentType: COMPONENT_TYPE,
   normalizeComponentProps: ({ componentProps }) => {
-    console.log('normalizeComponentProps for ', componentProps);
     return {
       ...componentProps,
       lines: normalizeLines(componentProps.lines),
     };
   },
-  computeActivityDataStoredInitialValue: ({ componentProps }) => {
-    console.log('computeActivityDataStoredInitialValue for ', componentProps);
-    return { lines: componentProps.lines };
-  },
+
+  mergeActivityDataStored: mergeActivityDataStored,
 });

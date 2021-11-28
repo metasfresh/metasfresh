@@ -2,6 +2,7 @@ import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { push } from 'connected-react-router';
+import { withRouter } from 'react-router';
 
 const mapStateToProps = (state, ownProps) => {
   const { wfProcessId, activityId, lineId, stepId } = ownProps;
@@ -15,15 +16,20 @@ const mapStateToProps = (state, ownProps) => {
 function StepButton(WrappedComponent) {
   class Wrapped extends PureComponent {
     handleClick = () => {
-      const { wfProcessId, activityId, lineId, stepId } = this.props;
+      const { wfProcessId, activityId, lineId, stepId, altStepId } = this.props;
       const { dispatch } = this.props;
 
-      const location = `/workflow/${wfProcessId}/activityId/${activityId}/lineId/${lineId}/stepId/${stepId}`;
+      const mainStepPath = `/workflow/${wfProcessId}/activityId/${activityId}/lineId/${lineId}/stepId/${stepId}`;
+      const location = altStepId ? `${mainStepPath}/altStepId/${altStepId}` : mainStepPath;
+
       dispatch(push(location));
     };
 
     render() {
-      return <WrappedComponent {...this.props} onHandleClick={this.handleClick} />;
+      const { wfProcessId, activityId, lineId, stepId } = this.props;
+      const location = `/workflow/${wfProcessId}/activityId/${activityId}/lineId/${lineId}/stepId/${stepId}`;
+
+      return <WrappedComponent {...this.props} onHandleClick={this.handleClick} location={location} />;
     }
   }
 
@@ -34,13 +40,13 @@ function StepButton(WrappedComponent) {
     activityId: PropTypes.string.isRequired,
     lineId: PropTypes.string.isRequired,
     stepId: PropTypes.string.isRequired,
-
+    altStepId: PropTypes.string,
     //
     // Actions
     dispatch: PropTypes.func.isRequired,
   };
 
-  return connect(mapStateToProps)(Wrapped);
+  return withRouter(connect(mapStateToProps)(Wrapped));
 }
 
 export default StepButton;

@@ -1,17 +1,20 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import counterpart from 'counterpart';
+import { push } from 'connected-react-router';
 
-import LineButton from '../common/LineButton';
 import ButtonWithIndicator from '../../../components/ButtonWithIndicator';
 import ButtonQuantityProp from '../../../components/ButtonQuantityProp';
 import { pushHeaderEntry } from '../../../actions/HeaderActions';
+import { distributionLineScreenLocation } from '../../../routes/distribution';
+import { connect } from 'react-redux';
 
 class DistributionLineButton extends PureComponent {
   handleClick = () => {
-    const { dispatch, caption, onHandleClick } = this.props;
+    const { dispatch, caption, wfProcessId, activityId, lineId } = this.props;
 
-    onHandleClick();
+    const location = distributionLineScreenLocation({ wfProcessId, activityId, lineId });
+    dispatch(push(location));
     dispatch(
       pushHeaderEntry({
         location,
@@ -27,14 +30,19 @@ class DistributionLineButton extends PureComponent {
   };
 
   render() {
-    const { caption, uom, qtyPicked, qtyToMove, completeStatus, appId } = this.props;
+    const { caption, uom, qtyPicked, qtyToMove, completeStatus, lineId, isUserEditable } = this.props;
 
     return (
-      <>
+      <button
+        key={lineId}
+        className="button is-outlined complete-btn"
+        disabled={!isUserEditable}
+        onClick={this.handleClick}
+      >
         <ButtonWithIndicator caption={caption} completeStatus={completeStatus}>
-          <ButtonQuantityProp qtyCurrent={qtyPicked} qtyTarget={qtyToMove} uom={uom} appId={appId} />
+          <ButtonQuantityProp qtyCurrent={qtyPicked} qtyTarget={qtyToMove} uom={uom} appId="distribution" />
         </ButtonWithIndicator>
-      </>
+      </button>
     );
   }
 }
@@ -49,13 +57,11 @@ DistributionLineButton.propTypes = {
   isUserEditable: PropTypes.bool.isRequired,
   completeStatus: PropTypes.string.isRequired,
   uom: PropTypes.string.isRequired,
-  qtyPicked: PropTypes.number.isRequired,
   qtyToMove: PropTypes.number.isRequired,
-  appId: PropTypes.string.isRequired,
-  onHandleClick: PropTypes.func.isRequired,
+  qtyPicked: PropTypes.number.isRequired,
   //
   // Actions
   dispatch: PropTypes.func.isRequired,
 };
 
-export default LineButton(DistributionLineButton);
+export default connect()(DistributionLineButton);

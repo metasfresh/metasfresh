@@ -26,16 +26,21 @@ class CodeScanner extends Component {
   }
 
   closeCamera() {
-    if (this.videoInput.current) {
-      const mediaStream = this.videoInput.current.srcObject;
-      if (mediaStream) {
-        const tracks = mediaStream.getTracks();
-        tracks.forEach((track) => track.stop());
+    console.log('closing camera....');
+    try {
+      if (this.videoInput.current) {
+        const mediaStream = this.videoInput.current.srcObject;
+        if (mediaStream) {
+          const tracks = mediaStream.getTracks();
+          tracks.forEach((track) => track.stop());
+        }
       }
-    }
 
-    this.codeReader.stopContinuousDecode();
-    this.codeReader.reset();
+      this.codeReader.stopContinuousDecode();
+      this.codeReader.reset();
+    } catch (e) {
+      console.log(e);
+    }
   }
 
   componentDidMount() {

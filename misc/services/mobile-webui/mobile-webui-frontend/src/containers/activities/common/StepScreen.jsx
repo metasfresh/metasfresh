@@ -7,39 +7,37 @@ import { withRouter } from 'react-router';
 import { selectWFProcessFromState } from '../../../reducers/wfProcesses_status';
 import ScreenToaster from '../../../components/ScreenToaster';
 import PickStepScreen from '../picking/PickStepScreen';
-import DistributionStepScreen from '../distribution/DistributionStepScreen';
+import MaterialIssueStepScreen from '../manufacturing/RawMaterialIssueStepScreen';
 
 const getStepComponent = (appId) => {
   switch (appId) {
     case 'picking':
       return PickStepScreen;
-    case 'distribution':
-      return DistributionStepScreen;
+    case 'mfg':
+      return MaterialIssueStepScreen;
     default:
       return null;
   }
 };
 
 class StepScreen extends PureComponent {
-  // if `locatorId` exists, scanner will be configured for distributions.locator case
-  onScanButtonClick = (locatorId) => {
-    const { wfProcessId, activityId, lineId, stepId, dispatch, appId } = this.props;
+  onScanButtonClick = () => {
+    const { wfProcessId, activityId, lineId, stepId, dispatch, appId, altStepId } = this.props;
 
-    const location = `/workflow/${wfProcessId}/activityId/${activityId}/lineId/${lineId}/stepId/${stepId}/scanner/${appId}${
-      locatorId ? `/${locatorId}` : ''
-    }`;
+    const altStepPath = altStepId ? `/altStepId/${altStepId}` : ``;
+    const location = `/workflow/${wfProcessId}/activityId/${activityId}/lineId/${lineId}/stepId/${stepId}${altStepPath}/scanner/${appId}`;
 
     dispatch(push(location));
   };
 
   render() {
     const { appId } = this.props;
-    const StepScreenComponent = getStepComponent(appId);
+    const StepComponent = getStepComponent(appId);
 
     return (
       <div className="pt-3 section picking-step-container">
         <div className="picking-step-details centered-text is-size-5">
-          <StepScreenComponent {...this.props} onScanButtonClick={this.onScanButtonClick} />
+          <StepComponent {...this.props} onScanButtonClick={this.onScanButtonClick} />
           <ScreenToaster />
         </div>
       </div>
@@ -48,18 +46,21 @@ class StepScreen extends PureComponent {
 }
 
 const mapStateToProps = (state, ownProps) => {
-  const { workflowId: wfProcessId, activityId, lineId, stepId } = ownProps.match.params;
+  const { workflowId: wfProcessId, activityId, lineId, stepId, altStepId } = ownProps.match.params;
+
   const activity = selectWFProcessFromState(state, wfProcessId).activities[activityId];
   const stepProps = activity.dataStored.lines[lineId].steps[stepId];
   const appId = state.applications.activeApplication ? state.applications.activeApplication.id : null;
 
   return {
+    appId,
     wfProcessId,
     activityId,
     lineId,
     stepId,
+    altStepId,
     stepProps,
-    appId,
+    location: ownProps.location,
   };
 };
 
@@ -70,6 +71,7 @@ StepScreen.propTypes = {
   activityId: PropTypes.string.isRequired,
   lineId: PropTypes.string.isRequired,
   stepId: PropTypes.string.isRequired,
+  altStepId: PropTypes.string,
   stepProps: PropTypes.object.isRequired,
   appId: PropTypes.string.isRequired,
   //

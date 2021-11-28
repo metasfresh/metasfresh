@@ -231,6 +231,20 @@ public class DataTableUtil
 		}
 	}
 
+	@Nullable
+	public static Timestamp extractDateTimestampForColumnNameOrNull(final Map<String, String> dataTableRow, final String columnName)
+	{
+		try
+		{
+			return extractDateTimestampForColumnName(dataTableRow, columnName);
+		}
+		catch (final Exception e)
+		{
+			return null;
+		}
+	}
+
+
 	public BigDecimal extractBigDecimalForIndex(final List<String> dataTableRow, final int index)
 	{
 		final String string = extractStringForIndex(dataTableRow, index);

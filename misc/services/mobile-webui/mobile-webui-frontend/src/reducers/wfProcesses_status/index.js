@@ -9,6 +9,7 @@ import { activityUserConfirmationReducer } from './confirmation';
 import { pickingReducer } from './picking';
 import { distributionReducer } from './distribution';
 import { manufacturingReducer } from './manufacturing';
+import { manufacturingReducer as manufacturingReceiptReducer } from './manufacturing_receipt';
 
 const getWfProcess = (state, wfProcessId) => state.wfProcesses_status[wfProcessId] || null;
 
@@ -68,6 +69,7 @@ const reducer = produce((draftState, action) => {
   draftState = pickingReducer({ draftState, action });
   draftState = distributionReducer({ draftState, action });
   draftState = manufacturingReducer({ draftState, action });
+  draftState = manufacturingReceiptReducer({ draftState, action });
 
   return draftState;
 }, {});

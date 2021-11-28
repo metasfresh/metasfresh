@@ -23,7 +23,7 @@ package de.metas.inoutcandidate.api.impl;
  */
 
 
-import org.adempiere.util.agg.key.AbstractHeaderAggregationKeyBuilder;
+import de.metas.util.agg.key.AbstractHeaderAggregationKeyBuilder;
 import org.adempiere.util.lang.ObjectUtils;
 
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;

@@ -1,8 +1,7 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { push } from 'connected-react-router';
-import { pushHeaderEntry } from '../../actions/HeaderActions';
+import { gotoWFProcessScreen } from '../../routes/workflow';
 
 import { getWorkflowRequest, startWorkflowRequest } from '../../api/launchers';
 import { updateWFProcess } from '../../actions/WorkflowActions';
@@ -14,7 +13,7 @@ import { toastError } from '../../utils/toast';
 class WFLauncherButton extends PureComponent {
   handleClick = () => {
     const { startedWFProcessId, wfParameters } = this.props;
-    const { updateWFProcess } = this.props;
+    const { updateWFProcess, gotoWFProcessScreen } = this.props;
 
     const wfProcessPromise = startedWFProcessId
       ? getWorkflowRequest(startedWFProcessId)
@@ -23,19 +22,9 @@ class WFLauncherButton extends PureComponent {
     wfProcessPromise
       .then((wfProcess) => {
         updateWFProcess({ wfProcess });
-        this.gotoWFProcessScreen({ wfProcess });
+        gotoWFProcessScreen({ wfProcess });
       })
       .catch((axiosError) => toastError({ axiosError }));
-  };
-
-  gotoWFProcessScreen = ({ wfProcess }) => {
-    const { push, pushHeaderEntry } = this.props;
-    const location = `/workflow/${wfProcess.id}`;
-    push(location);
-    pushHeaderEntry({
-      location,
-      values: wfProcess.headerProperties.entries,
-    });
   };
 
   render() {
@@ -63,12 +52,10 @@ WFLauncherButton.propTypes = {
   //
   // Actions
   updateWFProcess: PropTypes.func.isRequired,
-  push: PropTypes.func.isRequired,
-  pushHeaderEntry: PropTypes.func.isRequired,
+  gotoWFProcessScreen: PropTypes.func.isRequired,
 };
 
 export default connect(null, {
   updateWFProcess,
-  push,
-  pushHeaderEntry,
+  gotoWFProcessScreen,
 })(WFLauncherButton);

@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { forEach } from 'lodash';
 
-import LineButton from './DistributionLineButton';
+import DistributionLineButton from './DistributionLineButton';
 import * as CompleteStatus from '../../../constants/CompleteStatus';
 
 const getLinePickingQuantities = (line) => {
@@ -40,7 +40,7 @@ class DistributionMoveActivity extends Component {
               const { picked, toMove, uom } = getLinePickingQuantities(dataStored.lines[lineIndex]);
 
               return (
-                <LineButton
+                <DistributionLineButton
                   key={lineId}
                   wfProcessId={wfProcessId}
                   activityId={activityId}
@@ -48,8 +48,8 @@ class DistributionMoveActivity extends Component {
                   caption={lineItem.caption}
                   isUserEditable={isUserEditable}
                   completeStatus={completeStatus || CompleteStatus.NOT_STARTED}
-                  qtyPicked={picked}
                   qtyToMove={toMove}
+                  qtyPicked={picked}
                   uom={uom}
                 />
               );

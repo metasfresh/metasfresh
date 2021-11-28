@@ -23,8 +23,8 @@
 package de.metas.camel.externalsystems.grssignum.to_grs.client;
 
 import de.metas.camel.externalsystems.common.CamelRouteUtil;
-import de.metas.camel.externalsystems.grssignum.to_grs.client.model.DispatchRequest;
 import de.metas.camel.externalsystems.grssignum.GRSSignumConstants;
+import de.metas.camel.externalsystems.grssignum.to_grs.client.model.DispatchRequest;
 import de.metas.common.util.Check;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
@@ -74,7 +74,10 @@ public class GRSSignumDispatcherRouteBuilder extends RouteBuilder
 				//dev-note: we need the whole route to be replayed in case of redelivery
 				.errorHandler(noErrorHandler())
 				.log("invoked")
-				.marshal(CamelRouteUtil.setupJacksonDataFormatFor(getContext(), String.class))
+				
+				//uncomment this to get an "escaped" JSON string with e.g. "\{ blabla \}"
+				//.marshal(CamelRouteUtil.setupJacksonDataFormatFor(getContext(), String.class))
+				
 				//dev-note: the actual path is computed in this.extractAndAttachGRSSignumHttpRequest()
 				.to("https://placeholder").id(GRS_ENDPOINT_ID);
 	}
@@ -93,6 +96,7 @@ public class GRSSignumDispatcherRouteBuilder extends RouteBuilder
 		final DispatchRequest dispatchMessageRequest = (DispatchRequest)dispatchMessageRequestCandidate;
 
 		exchange.getIn().removeHeaders("CamelHttp*");
+		exchange.getIn().removeHeader(AUTHORIZATION); // remove the token from metasfresh's API
 		exchange.getIn().setHeader(HTTP_URI, dispatchMessageRequest.getUrl());
 		exchange.getIn().setHeader(Exchange.HTTP_METHOD, HttpEndpointBuilderFactory.HttpMethods.POST);
 

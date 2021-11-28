@@ -115,7 +115,7 @@ public class AuditFileTrailUtil
 
 		final String fileContent = message
 				+ ";\n ========================= body ======================== \n"
-				+ bodyContent;
+				+ bodyContent + "\n";
 
 		return Optional.of(fileContent);
 	}
@@ -128,10 +128,10 @@ public class AuditFileTrailUtil
 		ex.printStackTrace(pw);
 
 		return message
-				+ "\n Got exception while parsing exchange.body of type " + body.getClass()
+				+ "\n Got exception while parsing exchange.body of type " + body.getClass() + " for the audit-trail"
 				+ ";\n ========================= blindly converting body toString(); body: ======================== \n"
 				+ body.toString()
 				+ ";\n ========================= error stack trace ======================== \n"
-				+ ex.getLocalizedMessage();
+				+ ex.getLocalizedMessage() + "\n";
 	}
 }
