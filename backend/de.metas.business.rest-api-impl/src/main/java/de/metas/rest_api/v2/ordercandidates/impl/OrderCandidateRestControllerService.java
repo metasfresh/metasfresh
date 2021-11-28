@@ -434,4 +434,31 @@ public class OrderCandidateRestControllerService
 				.updated(jsonAlbertaOrderLineInfo.getUpdated())
 				.build();
 	}
+
+	private void processValidOlCands(@NonNull final JsonOLCandProcessRequest request, @NonNull final Set<OLCandId> validOlCandIds)
+	{
+		if (validOlCandIds.isEmpty())
+		{
+			return;
+		}
+
+		final AsyncBatchId processOLCandsAsyncBatchId = asyncBatchBL.newAsyncBatch(C_Async_Batch_InternalName_ProcessOLCands);
+
+		final Supplier<Void> action = () -> {
+			final PInstanceId validOLCandIdsSelectionId = DB.createT_Selection(validOlCandIds, ITrx.TRXNAME_None);
+
+			final ProcessOLCandsRequest enqueueRequest = ProcessOLCandsRequest.builder()
+					.pInstanceId(validOLCandIdsSelectionId)
+					.ship(request.getShip())
+					.invoice(request.getInvoice())
+					.closeOrder(request.getCloseOrder())
+					.build();
+
+			processOLCandsWorkpackageEnqueuer.enqueue(enqueueRequest, processOLCandsAsyncBatchId);
+
+			return null;
+		};
+
+		asyncBatchService.executeBatch(action, processOLCandsAsyncBatchId);
+	}
 }

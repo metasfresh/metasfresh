@@ -197,12 +197,25 @@ public class AdempiereException extends RuntimeException
 
 	/**
 	 * If enabled, the language used to translate the error message is captured when the exception is constructed.
-	 *
+	 * <p>
 	 * If is NOT enabled, the language used to translate the error message is acquired when the message is translated.
 	 */
 	public static void enableCaptureLanguageOnConstructionTime()
 	{
 		AdempiereException.captureLanguageOnConstructionTime = true;
+	}
+
+	/** 
+	 * Tells if a throwable passsing thourgh trx-manager shall be logged there or not.
+	 * We currently have one exception where whe know that it needs not to be logged and can clutter the whole output when it is logged.
+	 */
+	public static boolean isThrowableLoggedInTrxManager(@NonNull final Throwable t)
+	{
+		if (t instanceof AdempiereException)
+		{
+			return ((AdempiereException)t).isLoggedInTrxManager();
+		}
+		return true;
 	}
 
 	@VisibleForTesting
@@ -337,7 +350,7 @@ public class AdempiereException extends RuntimeException
 
 	/**
 	 * Reset the build message. Next time when the message is needed, it will be re-builded first ({@link #buildMessage()}).
-	 *
+	 * <p>
 	 * Call this method from each setter which would change your message.
 	 */
 	protected final void resetMessageBuilt()
@@ -357,9 +370,9 @@ public class AdempiereException extends RuntimeException
 
 	/**
 	 * Build error message (if needed) and return it.
-	 *
+	 * <p>
 	 * By default this method is returning initial message, but extending classes could override it.
-	 *
+	 * <p>
 	 * WARNING: to avoid recursion, please never ever call {@link #getMessage()} or {@link #getLocalizedMessage()} but
 	 * <ul>
 	 * <li>call {@link #getOriginalMessage()}
@@ -446,7 +459,7 @@ public class AdempiereException extends RuntimeException
 
 	/**
 	 * If developer mode is active, it logs a warning with given exception.
-	 *
+	 * <p>
 	 * If the developer mode is not active, this method does nothing
 	 *
 	 * @param exceptionSupplier {@link AdempiereException} supplier
@@ -524,7 +537,7 @@ public class AdempiereException extends RuntimeException
 	/**
 	 * Sets parameter.
 	 *
-	 * @param name parameter name
+	 * @param name  parameter name
 	 * @param value parameter value; {@code null} is added as {@link Null}
 	 */
 	@OverridingMethodsMustInvokeSuper
@@ -599,13 +612,13 @@ public class AdempiereException extends RuntimeException
 	 * Utility method that can be used by both external callers and subclasses'
 	 * {@link AdempiereException#buildMessage()} or
 	 * {@link #getMessage()} methods to create a string from this instance's parameters.
-	 *
+	 * <p>
 	 * Note: as of now, this method is final by intention; if you need the returned string to be customized, I suggest to not override this method somewhere,
 	 * but instead add another method that can take a format string as parameter.
 	 *
 	 * @return an empty string if this instance has no parameters or otherwise something like
 	 *
-	 *         <pre>
+	 * <pre>
 	 * Additional parameters:
 	 * name1: value1
 	 * name2: value2
@@ -683,5 +696,16 @@ public class AdempiereException extends RuntimeException
 	{
 		addSuppressed(exception);
 		return this;
+	}
+
+	/**
+	 * Override with a method returning false if your exception is more of a signal than an error 
+	 * and shall not clutter the log when it is caught and rethrown by the transaction manager.
+	 * 
+	 * To be invoked by {@link AdempiereException#isThrowableLoggedInTrxManager(Throwable)}.
+	 */
+	protected boolean isLoggedInTrxManager()
+	{
+		return true;
 	}
 }

@@ -17,6 +17,7 @@ import de.metas.bpartner.composite.BPartnerLocation;
 import de.metas.bpartner.composite.BPartnerLocationAddressPart;
 import de.metas.bpartner.composite.BPartnerLocationType;
 import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.document.DocTypeId;
 import de.metas.greeting.GreetingId;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.Language;
@@ -232,6 +233,22 @@ final class BPartnerCompositeSaver
 		bpartnerRecord.setReferrer(bpartner.getReferrer());
 		bpartnerRecord.setMKTG_Campaign_ID(CampaignId.toRepoId(bpartner.getCampaignId()));
 
+		if(bpartner.getPaymentRule() != null)
+		{
+			bpartnerRecord.setPaymentRule(bpartner.getPaymentRule().getCode());
+		}
+		if(bpartner.getSoDocTypeTargetId() != null)
+		{
+			bpartnerRecord.setSO_DocTypeTarget_ID(DocTypeId.toRepoId(bpartner.getSoDocTypeTargetId()));
+		}
+		if(bpartner.getFirstName() != null)
+		{
+			bpartnerRecord.setFirstname(bpartner.getFirstName());
+		}
+	if(bpartner.getLastName() != null)
+		{
+			bpartnerRecord.setLastname(bpartner.getLastName());
+		}
 		if (validatePermissions)
 		{
 			assertCanCreateOrUpdate(bpartnerRecord);
@@ -304,6 +321,11 @@ final class BPartnerCompositeSaver
 			bpartnerLocationRecord.setName(partnerLocation.getName());
 			bpartnerLocationRecord.setBPartnerName(partnerLocation.getBpartnerName());
 
+			bpartnerLocationRecord.setPhone(bpartnerLocation.getPhone());
+			bpartnerLocationRecord.setPhone2(bpartnerLocation.getMobile());
+			bpartnerLocationRecord.setFax(bpartnerLocation.getFax());
+			bpartnerLocationRecord.setEMail(bpartnerLocation.getEmail());
+
 			final BPartnerLocationType locationType = partnerLocation.getLocationType();
 			if (locationType != null)
 			{
@@ -331,6 +353,7 @@ final class BPartnerCompositeSaver
 			partnerLocation.setId(BPartnerLocationId.ofRepoId(bpartnerLocationRecord.getC_BPartner_ID(), bpartnerLocationRecord.getC_BPartner_Location_ID()));
 			partnerLocation.setLocationType(BPartnerCompositesLoader.extractBPartnerLocationType(bpartnerLocationRecord));
 			partnerLocation.setFromAddress(address);
+
 		}
 	}
 

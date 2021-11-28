@@ -203,7 +203,7 @@ public class JsonShipmentService
 			final Set<InOutId> createdInoutIds = shipmentService.retrieveInOutIdsByScheduleIds(generateShipmentRequest.getScheduleIds());
 			
 			loggable.addLog("processShipmentSchedules - finished creating shipments with currentBatchId={}; M_InOut_IDs={}",
-							AsyncBatchId.toRepoId(generateShipmentRequest.getAsyncBatchId()), createdInoutIds);
+							currentBatchId, createdInoutIds);
 			createdShipmentIdsCollector.addAll(createdInoutIds);
 
 			if (request.getInvoice())
@@ -212,7 +212,7 @@ public class JsonShipmentService
 				final List<JSONInvoiceInfoResponse> createInvoiceInfos = generateInvoicesForShipmentScheduleIds(generateShipmentRequest.getScheduleIds());
 
 				loggable.addLog("processShipmentSchedules - finished creating invoices with currentBatchId={}; invoiceIds={}",
-								AsyncBatchId.toRepoId(generateShipmentRequest.getAsyncBatchId()), createdInoutIds);
+								currentBatchId, createdInoutIds);
 				invoiceInfoResponseCollector.addAll(createInvoiceInfos);
 			}
 

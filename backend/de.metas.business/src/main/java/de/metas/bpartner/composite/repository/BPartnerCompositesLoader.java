@@ -27,6 +27,7 @@ import de.metas.bpartner.user.role.UserRole;
 import de.metas.bpartner.user.role.repository.UserRoleRepository;
 import de.metas.common.util.StringUtils;
 import de.metas.common.util.time.SystemTime;
+import de.metas.document.DocTypeId;
 import de.metas.greeting.GreetingId;
 import de.metas.i18n.Language;
 import de.metas.interfaces.I_C_BPartner;
@@ -329,6 +330,10 @@ final class BPartnerCompositesLoader
 				.excludeFromPromotions(bpartnerRecord.isExcludeFromPromotions())
 				.referrer(bpartnerRecord.getReferrer())
 				.campaignId(CampaignId.ofRepoIdOrNull(bpartnerRecord.getMKTG_Campaign_ID()))
+
+				.firstName(bpartnerRecord.getFirstname())
+				.lastName(bpartnerRecord.getLastname())
+				.soDocTypeTargetId(DocTypeId.ofRepoIdOrNull(bpartnerRecord.getSO_DocTypeTarget_ID()))
 				//
 				.changeLog(recordChangeLog)
 				//
