@@ -2,7 +2,7 @@
 
 Patient - Warenwirtschaft (Basis)
 - API version: 1.0.7
-  - Build date: 2021-11-05T09:14:03.653Z[GMT]
+  - Build date: 2021-11-24T08:15:46.695Z[GMT]
 
 Synchronisation der Patienten mit der Warenwirtschaft
 
