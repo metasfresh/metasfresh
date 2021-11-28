@@ -1049,7 +1049,7 @@ public interface I_C_Flatrate_Term
 	String COLUMNNAME_MasterDocumentNo = "MasterDocumentNo";
 
 	/**
-	 * Set Contract End Date.
+	 * Set Master End Date.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -1058,7 +1058,7 @@ public interface I_C_Flatrate_Term
 	void setMasterEndDate (@Nullable java.sql.Timestamp MasterEndDate);
 
 	/**
-	 * Get Contract End Date.
+	 * Get Master End Date.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -1070,7 +1070,7 @@ public interface I_C_Flatrate_Term
 	String COLUMNNAME_MasterEndDate = "MasterEndDate";
 
 	/**
-	 * Set Contract Start Date.
+	 * Set Master Start Date.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -1079,7 +1079,7 @@ public interface I_C_Flatrate_Term
 	void setMasterStartDate (@Nullable java.sql.Timestamp MasterStartDate);
 
 	/**
-	 * Get Contract Start Date.
+	 * Get Master Start Date.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
