@@ -196,7 +196,7 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
       "salesRepJSONPath" : "/test/salesrep",
       "priceListId" : 1,
       "isActive" : true,
-      "productLookup" : "ProductNumber"
+      "productLookup" : "ProductNumber",
       "value" : "testShopware6Value"
     },
     "writeAudit" : true,
@@ -231,7 +231,7 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
       "salesRepJSONPath" : "/test/salesrep",
       "priceListId" : 1,
       "isActive" : false,
-      "productLookup" : "ProductNumber"
+      "productLookup" : "ProductNumber",
       "value" : "testShopware6Value"
     },
     "writeAudit" : true,
