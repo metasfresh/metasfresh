@@ -206,6 +206,10 @@ export function userSessionUpdate(me) {
   };
 }
 
+/**
+ * @summary updates the lastBackPage in the store to have it for comparison when back button is used
+ * @param {string} lastBackPage
+ */
 export function updateLastBackPage(lastBackPage) {
   return {
     type: types.UPDATE_LAST_BACK_PAGE,
