@@ -7,7 +7,6 @@ import configureStore from './store/configureStore';
 import { ProvideAuth } from './hooks/useAuth';
 
 const store = configureStore();
-let lastBackPage = '';
 
 if (window.Cypress) {
   window.store = store;
