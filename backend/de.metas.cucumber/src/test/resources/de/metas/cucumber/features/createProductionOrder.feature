@@ -71,8 +71,6 @@ Feature: create production order
     And after not more than 30s, PP_OrderCandidate_PP_Order are found
       | PP_Order_Candidate_ID.Identifier | PP_Order_ID.Identifier | QtyEntered | C_UOM_ID.X12DE355 |
       | ocP_1                            | ppo_1                  | 10         | PCE               |
-    # this is mostly about de.metas.material.dispo.service.candidatechange.StockCandidateService.applyDeltaToMatchingLaterStockCandidates finishing work before checking the candidates
-    And wait for 30s
     And after not more than 30s, MD_Candidates are found
       | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise |
       | c_3        | SUPPLY            | PRODUCTION                | p_1                     | 2021-04-16T21:00:00Z | 10  | 0                      |
@@ -144,8 +142,6 @@ Feature: create production order
     And after not more than 30s, PP_OrderCandidate_PP_Order are found
       | PP_Order_Candidate_ID.Identifier | PP_Order_ID.Identifier | QtyEntered | C_UOM_ID.X12DE355 |
       | ocP_2                            | ppo_3                  | 10         | PCE               |
-    # this is mostly about de.metas.material.dispo.service.candidatechange.StockCandidateService.applyDeltaToMatchingLaterStockCandidates finishing work before checking the candidates
-    And wait for 30s
     And after not more than 30s, MD_Candidates are found
       | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise |
       | c_4        | SUPPLY            | PRODUCTION                | p_3                     | 2021-06-16T21:00:00Z | 10  | 0                      |
@@ -176,8 +172,6 @@ Feature: create production order
     And after not more than 30s, PP_OrderCandidate_PP_Order are found
       | PP_Order_Candidate_ID.Identifier | PP_Order_ID.Identifier | QtyEntered | C_UOM_ID.X12DE355 |
       | ocP_3                            | ppo_3                  | 12         | PCE               |
-    # this is mostly about de.metas.material.dispo.service.candidatechange.StockCandidateService.applyDeltaToMatchingLaterStockCandidates finishing work before checking the candidates
-    And wait for 30s
     And after not more than 30s, MD_Candidates are found
       | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise |
       | c_5        | SUPPLY            | PRODUCTION                | p_3                     | 2021-06-16T21:00:00Z | 12  | 12                     |
@@ -253,8 +247,6 @@ Feature: create production order
     And after not more than 30s, PP_OrderCandidate_PP_Order are found
       | PP_Order_Candidate_ID.Identifier | PP_Order_ID.Identifier | QtyEntered | C_UOM_ID.X12DE355 |
       | ocP_11                           | ppo_11                 | 10         | PCE               |
-    # this is mostly about de.metas.material.dispo.service.candidatechange.StockCandidateService.applyDeltaToMatchingLaterStockCandidates finishing work before checking the candidates
-    And wait for 30s
     And after not more than 30s, MD_Candidates are found
       | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise |
       | c_33       | SUPPLY            | PRODUCTION                | p_11                    | 2021-04-12T21:00:00Z | 10  | 0                      |
@@ -317,8 +309,6 @@ Feature: create production order
     And update PP_Order_Candidates
       | PP_Order_Candidate_ID.Identifier | QtyEntered | DateStartSchedule    |
       | oc_111                           |            | 2021-04-11T21:00:00Z |
-    # this is mostly about de.metas.material.dispo.service.candidatechange.StockCandidateService.applyDeltaToMatchingLaterStockCandidates finishing work before checking the candidates
-    And wait for 30s
     And after not more than 30s, MD_Candidates are found
       | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise |
       | c_222      | SUPPLY            | PRODUCTION                | p_111                   | 2021-04-11T21:00:00Z | 10  | 10                     |
@@ -340,8 +330,6 @@ Feature: create production order
     And after not more than 30s, PP_OrderCandidate_PP_Order are found
       | PP_Order_Candidate_ID.Identifier | PP_Order_ID.Identifier | QtyEntered | C_UOM_ID.X12DE355 |
       | ocP_111                          | ppo_111                | 10         | PCE               |
-    # this is mostly about de.metas.material.dispo.service.candidatechange.StockCandidateService.applyDeltaToMatchingLaterStockCandidates finishing work before checking the candidates
-    And wait for 30s
     And after not more than 30s, MD_Candidates are found
       | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise |
       | c_333      | SUPPLY            | PRODUCTION                | p_111                   | 2021-04-11T21:00:00Z | 10  | 10                     |
@@ -404,8 +392,6 @@ Feature: create production order
     And update PP_Order_Candidates
       | PP_Order_Candidate_ID.Identifier | QtyEntered | DateStartSchedule    |
       | oc_11                            |            | 2021-04-15T21:00:00Z |
-    # this is mostly about de.metas.material.dispo.service.candidatechange.StockCandidateService.applyDeltaToMatchingLaterStockCandidates finishing work before checking the candidates
-    And wait for 30s
     And after not more than 30s, MD_Candidates are found
       | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise |
       | c_22       | SUPPLY            | PRODUCTION                | p_11                    | 2021-04-15T21:00:00Z | 10  | 10                     |
@@ -430,8 +416,6 @@ Feature: create production order
     And after not more than 30s, PP_OrderCandidate_PP_Order are found
       | PP_Order_Candidate_ID.Identifier | PP_Order_ID.Identifier | QtyEntered | C_UOM_ID.X12DE355 |
       | ocP_11                           | ppo_11                 | 10         | PCE               |
-    # this is mostly about de.metas.material.dispo.service.candidatechange.StockCandidateService.applyDeltaToMatchingLaterStockCandidates finishing work before checking the candidates
-    And wait for 30s
     And after not more than 30s, MD_Candidates are found
       | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise |
       | c_33       | SUPPLY            | PRODUCTION                | p_11                    | 2021-04-15T21:00:00Z | 10  | 10                     |

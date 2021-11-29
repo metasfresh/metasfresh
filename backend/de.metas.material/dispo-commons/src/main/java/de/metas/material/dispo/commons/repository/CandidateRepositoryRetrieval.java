@@ -344,6 +344,12 @@ public class CandidateRepositoryRetrieval
 		return fromCandidateRecord(candidateRecordOrNull).orElse(null);
 	}
 
+	@NonNull
+	public Optional<Candidate> retrieveLatestMatch(@NonNull final CandidatesQuery query)
+	{
+		return Optional.ofNullable(retrieveLatestMatchOrNull(query));
+	}
+
 	private static IQueryBuilder<I_MD_Candidate> addOrderingLatestFirst(
 			@NonNull final IQueryBuilder<I_MD_Candidate> queryBuilderWithoutOrdering)
 	{

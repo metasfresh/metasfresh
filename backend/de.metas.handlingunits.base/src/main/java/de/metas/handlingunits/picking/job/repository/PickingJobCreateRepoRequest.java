@@ -5,7 +5,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.picking.PackToSpec;
-import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.organization.InstantAndOrgId;

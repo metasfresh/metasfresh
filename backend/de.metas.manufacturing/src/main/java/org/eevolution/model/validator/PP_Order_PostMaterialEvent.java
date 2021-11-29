@@ -6,8 +6,12 @@ import de.metas.material.event.eventbus.MetasfreshEventBusService;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderChangedEvent;
 import de.metas.material.event.pporder.PPOrderCreatedEvent;
+import de.metas.material.event.pporder.PPOrderData;
 import de.metas.material.event.pporder.PPOrderDeletedEvent;
+import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.pporder.PPOrderPojoConverter;
+import de.metas.product.ProductId;
+import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.DocTimingType;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
@@ -15,19 +19,23 @@ import org.adempiere.ad.modelvalidator.ModelChangeUtil;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.compiere.model.ModelValidator;
 import org.eevolution.model.I_PP_Order;
+import org.eevolution.model.I_PP_Product_Planning;
 
 /**
  * A dedicated model interceptor whose job it is to fire events on the {@link MetasfreshEventBusService}.<br>
  * I add this into a dedicated interceptor (as opposed to adding the method to {@link PP_Order}) because there is at least one test case where I want {@link PP_Order} to be invoked without events being fired.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 @Interceptor(I_PP_Order.class)
 public class PP_Order_PostMaterialEvent
 {
+	private final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
+
+
 	private final PPOrderPojoConverter ppOrderConverter;
 	private final PostMaterialEventService materialEventService;
 
@@ -56,6 +64,7 @@ public class PP_Order_PostMaterialEvent
 		final PPOrderCreatedEvent ppOrderCreatedEvent = PPOrderCreatedEvent.builder()
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(ppOrderRecord.getAD_Client_ID(), ppOrderRecord.getAD_Org_ID()))
 				.ppOrder(ppOrderPojo)
+				.directlyPickIfFeasible(pickIfFeasible(ppOrderPojo.getPpOrderData()))
 				.build();
 
 		materialEventService.postEventAfterNextCommit(ppOrderCreatedEvent);
@@ -100,7 +109,7 @@ public class PP_Order_PostMaterialEvent
 		materialEventService.postEventAfterNextCommit(changeEvent);
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE}, ifColumnsChanged = I_PP_Order.COLUMNNAME_QtyDelivered )
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = I_PP_Order.COLUMNNAME_QtyDelivered)
 	public void postMaterialEvent_qtyDelivered(@NonNull final I_PP_Order ppOrderRecord)
 	{
 		final PPOrderChangedEvent changeEvent = PPOrderChangedEventFactory
@@ -110,4 +119,21 @@ public class PP_Order_PostMaterialEvent
 		materialEventService.postEventAfterNextCommit(changeEvent);
 	}
 
+	private boolean pickIfFeasible(@NonNull final PPOrderData ppOrderData)
+	{
+		final ProductId productId = ProductId.ofRepoId(ppOrderData.getProductDescriptor().getProductId());
+		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(ppOrderData.getProductDescriptor().getAttributeSetInstanceId());
+
+		final IProductPlanningDAO.ProductPlanningQuery productPlanningQuery = IProductPlanningDAO.ProductPlanningQuery.builder()
+				.orgId(ppOrderData.getClientAndOrgId().getOrgId())
+				.warehouseId(ppOrderData.getWarehouseId())
+				.plantId(ppOrderData.getPlantId())
+				.productId(productId)
+				.attributeSetInstanceId(asiId)
+				.build();
+
+		return productPlanningDAO.find(productPlanningQuery)
+				.map(I_PP_Product_Planning::isPickDirectlyIfFeasible)
+				.orElse(false);
+	}
 }

@@ -74,6 +74,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 import static org.assertj.core.api.Assertions.*;
@@ -311,11 +312,11 @@ public class MD_Candidate_StepDef
 		{
 			// make sure the given md_candidate has been created
 			final Supplier<Boolean> candidateCreated = () ->
-			{
-				final Candidate candidate = candidateRepositoryRetrieval.retrieveLatestMatchOrNull(tableRow.createQuery());
-
-				return candidate != null;
-			};
+					candidateRepositoryRetrieval.retrieveLatestMatch(tableRow.createQuery())
+							.map(Candidate::getMaterialDescriptor)
+							.filter(materialDescriptor -> materialDescriptor.getQuantity().equals(tableRow.getQty()))
+							.filter(materialDescriptor -> materialDescriptor.getDate().equals(tableRow.getTime()))
+							.isPresent();
 
 			StepDefUtil.tryAndWait(timeoutSec, 1000, candidateCreated);
 

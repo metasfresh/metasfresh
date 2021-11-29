@@ -32,7 +32,7 @@ import de.metas.handlingunits.picking.PickingCandidateId;
 import de.metas.handlingunits.picking.PickingCandidatePickStatus;
 import de.metas.handlingunits.picking.PickingCandidateSnapshot;
 import de.metas.i18n.ITranslatableString;
-import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.shipping.ShipperId;
