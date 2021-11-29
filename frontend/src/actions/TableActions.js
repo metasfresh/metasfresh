@@ -345,7 +345,12 @@ export function updateGridTable(tableId, tableResponse) {
  * @method updateGridTableData
  * @summary Update grid table's rows and rebuild collapsed rows if necessary
  */
-export function updateGridTableData(tableId, rows) {
+export function updateGridTableData({
+  tableId,
+  rows,
+  preserveCollapsedStateToRowIds,
+  customLayoutFlags,
+}) {
   return (dispatch, getState) => {
     const state = getState();
 
@@ -367,6 +372,8 @@ export function updateGridTableData(tableId, rows) {
           updateCollapsedRows({
             tableId,
             rows,
+            preserveCollapsedStateToRowIds,
+            customLayoutFlags,
           })
         );
       }
@@ -499,8 +506,21 @@ function createCollapsedRows({
  *
  * @param {string} tableId
  * @param {array} rows
+ * @param {array} preserveCollapsedStateToRowIds - array with ids of the rows to be changed that are sent with a websocket message
+ *                                                (if it's not empty it will preserve the previous state of the tree)
+ *                                                (if it's empty it will not preserve the state causing the tree to be uncollapsed )
+ * @param {object} custom flags that come from the layout. i.e `uncollapseRowsOnChange`
+ *        Note: this `uncollapseRowsOnChange` does not come yet from the backend response but if it was to be set to `true`
+ *              it will force the rows to be uncollapsed. (`Create Purchase Order action` for a `Sales order line`)
  */
-function updateCollapsedRows({ tableId, rows }) {
+function updateCollapsedRows({
+  tableId,
+  rows,
+  preserveCollapsedStateToRowIds,
+  customLayoutFlags,
+}) {
+  const { uncollapseRowsOnChange } = customLayoutFlags;
+
   return (dispatch, getState) => {
     const state = getState();
     const table = state.tables[tableId];
@@ -511,10 +531,21 @@ function updateCollapsedRows({ tableId, rows }) {
       collapsedRows,
       collapsedParentRows,
     } = table;
-    let newCollapsedParentRows = [];
-    let newCollapsedRows = [];
+
+    const hasPreservedStateToRowIds =
+      preserveCollapsedStateToRowIds &&
+      preserveCollapsedStateToRowIds.length > 0;
 
     if (collapsible) {
+      let newCollapsedParentRows =
+        hasPreservedStateToRowIds || !uncollapseRowsOnChange
+          ? [...collapsedParentRows]
+          : [];
+      let newCollapsedRows =
+        hasPreservedStateToRowIds || !uncollapseRowsOnChange
+          ? [...collapsedRows]
+          : [];
+
       if (rows.length) {
         rows.forEach((row) => {
           if (
@@ -522,14 +553,18 @@ function updateCollapsedRows({ tableId, rows }) {
             row.includedDocuments &&
             !collapsedParentRows.indexOf(row.id)
           ) {
-            newCollapsedParentRows = newCollapsedParentRows.concat(
+            newCollapsedParentRows = !newCollapsedParentRows.includes(
               row[keyProperty]
-            );
+            )
+              ? newCollapsedParentRows.concat(row[keyProperty])
+              : newCollapsedParentRows;
           } else if (
             row.indent.length > expandedDepth &&
             !collapsedRows.indexOf(row.id)
           ) {
-            newCollapsedRows = newCollapsedRows.concat(row[keyProperty]);
+            newCollapsedRows = !newCollapsedRows.includes(row[keyProperty])
+              ? newCollapsedRows.concat(row[keyProperty])
+              : newCollapsedRows;
           }
         });
       }
@@ -539,6 +574,7 @@ function updateCollapsedRows({ tableId, rows }) {
           tableId,
           collapsedParentRows: newCollapsedParentRows,
           collapsedRows: newCollapsedRows,
+          preserveCollapsedStateToRowIds,
         })
       );
     }
