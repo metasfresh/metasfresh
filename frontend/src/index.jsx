@@ -7,6 +7,7 @@ import configureStore from './store/configureStore';
 import { ProvideAuth } from './hooks/useAuth';
 
 const store = configureStore();
+let lastBackPage = '';
 
 if (window.Cypress) {
   window.store = store;
@@ -37,3 +38,19 @@ ReactDOM.render(
   </Provider>,
   document.getElementById('root')
 );
+
+// If there is a view generated in case one doesn't exist that view and th params are added to the URI and recorded to the history
+// as a consequence when the user hits the Back button has the impression that it is on the same page as the browser is visiting the same view
+// to deal with this case we added a `popstate` listener that will go to the correct page in history skipping
+// the case when the URL and the view are the same when the back button is pressed
+window.addEventListener('popstate', () => {
+  if (
+    lastBackPage.includes('viewId') &&
+    lastBackPage === document.location.href
+  ) {
+    window.history.back(-2);
+    return;
+  }
+
+  lastBackPage = document.location.href;
+});
