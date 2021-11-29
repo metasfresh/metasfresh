@@ -44,11 +44,6 @@ ReactDOM.render(
 // to deal with this case we added a `popstate` listener that will go to the correct page in history skipping
 // the case when the URL and the view are the same when the back button is pressed
 window.addEventListener('popstate', () => {
-  console.log('lastBackPage:', window.lastBackPage);
-  console.log('docLocation:', document.location.href);
-  // console.log(
-  //   'location: ' + document.location + ', state: ' + JSON.stringify(event.state)
-  // );
   if (
     window.lastBackPage &&
     window.lastBackPage.includes('viewId') &&
@@ -58,5 +53,4 @@ window.addEventListener('popstate', () => {
   }
 
   window.lastBackPage = document.location.href;
-  console.log('lastBackPage now :', window.lastBackPage);
 });
