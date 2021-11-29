@@ -37,7 +37,6 @@ import de.metas.common.bpartner.v2.request.alberta.JsonAlbertaPatient;
 import de.metas.common.bpartner.v2.request.alberta.JsonBPartnerRole;
 import de.metas.common.bpartner.v2.request.alberta.JsonCompositeAlbertaBPartner;
 import de.metas.common.util.EmptyUtil;
-import de.metas.common.util.StringUtils;
 import io.swagger.client.model.CareGiver;
 import io.swagger.client.model.Patient;
 import io.swagger.client.model.PatientBillingAddress;
@@ -45,6 +44,7 @@ import io.swagger.client.model.PatientDeliveryAddress;
 import lombok.NonNull;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.StringJoiner;
@@ -260,7 +260,26 @@ public class PatientToBPartnerMapper
 		albertaPatient.setIsTransferPatient(patient.isChangeInSupplier());
 		albertaPatient.setIVTherapy(patient.isIvTherapy());
 
-		albertaPatient.setDeactivationReason(patient.getDeactivationReason() != null ? patient.getDeactivationReason().toString() : null);
+		// deactivation
+		final String deactivationReason;
+		final BigDecimal reasonNumber = patient.getDeactivationReason();
+		if (reasonNumber != null)
+		{
+			final boolean reasonNumberAboveFour = new BigDecimal("4").compareTo(reasonNumber) < 0;
+			if (reasonNumberAboveFour)
+			{
+				deactivationReason = "4"; // FIXME this is a quick workaround
+			}
+			else
+			{
+				deactivationReason = reasonNumber.toString();
+			}
+		}
+		else
+		{
+			deactivationReason = null;
+		}
+		albertaPatient.setDeactivationReason(deactivationReason);
 		albertaPatient.setDeactivationComment(patient.getDeactivationComment());
 		albertaPatient.setDeactivationDate(asJavaLocalDate(patient.getDeactivationDate()));
 
