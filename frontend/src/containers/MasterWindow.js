@@ -32,6 +32,10 @@ import MasterWindow from '../components/app/MasterWindow';
 class MasterWindowContainer extends PureComponent {
   componentDidUpdate(prevProps) {
     const { master } = this.props;
+    const fullPath = window.location.href;
+    if (!fullPath.includes('viewId')) {
+      window.lastBackPage = '';
+    }
 
     if (prevProps.master.websocket !== master.websocket && master.websocket) {
       // websockets are responsible for pushing info about any updates to the data
