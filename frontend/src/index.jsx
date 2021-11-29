@@ -5,6 +5,7 @@ import { Provider } from 'react-redux';
 import App from './containers/App';
 import configureStore from './store/configureStore';
 import { ProvideAuth } from './hooks/useAuth';
+import { updateLastBackPage } from './actions/AppActions';
 
 const store = configureStore();
 
@@ -43,13 +44,16 @@ ReactDOM.render(
 // to deal with this case we added a `popstate` listener that will go to the correct page in history skipping
 // the case when the URL and the view are the same when the back button is pressed
 window.addEventListener('popstate', () => {
+  const appState = store.getState().appHandler;
+  const { lastBackPage } = appState;
+
   if (
-    window.lastBackPage &&
-    window.lastBackPage.includes('viewId') &&
-    window.lastBackPage === document.location.href
+    lastBackPage &&
+    lastBackPage.includes('viewId') &&
+    lastBackPage === document.location.href
   ) {
     window.history.back(-2);
   }
 
-  window.lastBackPage = document.location.href;
+  store.dispatch(updateLastBackPage(document.location.href));
 });

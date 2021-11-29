@@ -206,6 +206,13 @@ export function userSessionUpdate(me) {
   };
 }
 
+export function updateLastBackPage(lastBackPage) {
+  return {
+    type: types.UPDATE_LAST_BACK_PAGE,
+    lastBackPage,
+  };
+}
+
 export function setLanguages(data) {
   return {
     type: types.SET_LANGUAGES,
