@@ -4,6 +4,7 @@ Feature: Allow order discount via API (compensation group)
   Background:
     Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2021-04-16T13:30:13+01:00[Europe/Berlin]
+    And enable sys config 'SKIP_WP_PROCESSOR_FOR_AUTOMATION'
 
   @from:cucumber
   Scenario: we can allow order discount via api (compensation group)
@@ -108,14 +109,15 @@ Feature: Allow order discount via API (compensation group)
   ]
 }
 """
-    And a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/clearToProcess' and fulfills with '200' status code
+    And a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/process' and fulfills with '200' status code
         """
 {
   "externalHeaderId": "externalHeaderId60",
-  "inputDataSourceName": "int-Shopware"
+  "inputDataSourceName": "int-Shopware",
+  "ship": false,
+  "invoice": false
 }
 """
-    And ProcessOLCands is called
     Then the following group compensation order lines were created for externalHeaderId: 'externalHeaderId60'
       | Line | IsGroupCompensationLine | GroupCompensationPercentage | GroupCompensationType | GroupCompensationAmtType |
       | 1    | true                    | 2                           | D                     | P                        |

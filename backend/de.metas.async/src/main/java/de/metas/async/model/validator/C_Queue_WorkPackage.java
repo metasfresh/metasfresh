@@ -9,7 +9,7 @@ import de.metas.async.api.IWorkpackageLogsRepository;
 import de.metas.async.api.IWorkpackageParamDAO;
 import de.metas.async.asyncbatchmilestone.AsyncBatchMilestone;
 import de.metas.async.asyncbatchmilestone.AsyncBatchMilestoneQuery;
-import de.metas.async.asyncbatchmilestone.AsyncBathMilestoneService;
+import de.metas.async.asyncbatchmilestone.AsyncBatchMilestoneService;
 import de.metas.async.model.I_C_Queue_Element;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.logging.LogManager;
@@ -73,7 +73,7 @@ public class C_Queue_WorkPackage
 	})
 	public void processMilestoneFromWP(@NonNull final I_C_Queue_WorkPackage wp)
 	{
-		final AsyncBathMilestoneService asyncBathMilestoneService = SpringContextHolder.instance.getBean(AsyncBathMilestoneService.class);
+		final AsyncBatchMilestoneService asyncBathMilestoneService = SpringContextHolder.instance.getBean(AsyncBatchMilestoneService.class);
 
 		if (wp.getC_Async_Batch_ID() <= 0)
 		{
