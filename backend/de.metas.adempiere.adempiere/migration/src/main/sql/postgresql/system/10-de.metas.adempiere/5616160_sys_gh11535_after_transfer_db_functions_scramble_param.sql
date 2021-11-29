@@ -64,7 +64,7 @@ BEGIN
     END IF;
 
     EXECUTE ops.after_transfer_db_custom_end(p_sourceinstance := p_source_instance, p_targetinstance := p_target_instance);
-END  ;
+END;
 $BODY$
     LANGUAGE plpgsql
     VOLATILE
