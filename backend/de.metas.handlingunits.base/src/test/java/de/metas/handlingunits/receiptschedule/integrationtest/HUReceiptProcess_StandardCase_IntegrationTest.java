@@ -22,14 +22,12 @@ package de.metas.handlingunits.receiptschedule.integrationtest;
  * #L%
  */
 
-
-import java.math.BigDecimal;
-import java.util.Arrays;
-
-import org.adempiere.model.InterfaceWrapperHelper;
-
 import de.metas.handlingunits.model.I_C_Order;
 import de.metas.handlingunits.model.I_C_OrderLine;
+import org.adempiere.model.InterfaceWrapperHelper;
+
+import java.math.BigDecimal;
+import java.util.Collections;
 
 public class HUReceiptProcess_StandardCase_IntegrationTest extends AbstractHUReceiptProcessIntegrationTest
 {
@@ -68,8 +66,8 @@ public class HUReceiptProcess_StandardCase_IntegrationTest extends AbstractHURec
 		orderLine.setQtyEnteredTU(qtyTUExpected);
 		InterfaceWrapperHelper.save(orderLine);
 
-		orders = Arrays.asList(order);
-		orderLines = Arrays.asList(orderLine);
+		orders = Collections.singletonList(order);
+		orderLines = Collections.singletonList(orderLine);
 	}
 
 	@Override

@@ -1,23 +1,10 @@
 package de.metas.invoicecandidate.api.impl.aggregationEngine;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.refresh;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.time.LocalDate;
-import java.time.Month;
-import java.util.List;
-
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_AD_User;
-import org.compiere.model.I_C_BPartner_Location;
-import org.junit.Before;
-import org.junit.Test;
-
+import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.business.BusinessTestHelper;
 import de.metas.currency.CurrencyRepository;
 import de.metas.invoicecandidate.C_Invoice_Candidate_Builder;
 import de.metas.invoicecandidate.api.IInvoiceHeader;
@@ -27,6 +14,21 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.money.MoneyService;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
+import org.junit.Before;
+import org.junit.Test;
+
+import java.time.LocalDate;
+import java.time.Month;
+import java.util.List;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.refresh;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -62,7 +64,9 @@ public class TestUpdatedLocationAndUser extends AbstractAggregationEngineTestBas
 
 	private C_Invoice_Candidate_Builder prepareInvoiceCandidate()
 	{
-		final BPartnerLocationId billBPartnerAndLocationId = BPartnerLocationId.ofRepoId(1, 2);
+		final I_C_BPartner bPartner = BusinessTestHelper.createBPartner("test-bp");
+		final I_C_BPartner_Location bPartnerLocation = BusinessTestHelper.createBPartnerLocation(bPartner);
+		final BPartnerLocationId billBPartnerAndLocationId = BPartnerLocationId.ofRepoId(bPartnerLocation.getC_BPartner_ID(), bPartnerLocation.getC_BPartner_Location_ID());
 
 		return createInvoiceCandidate()
 				.setBillBPartnerAndLocationId(billBPartnerAndLocationId)
@@ -95,8 +99,8 @@ public class TestUpdatedLocationAndUser extends AbstractAggregationEngineTestBas
 		assertThat(invoices).hasSize(1);
 
 		final IInvoiceHeader invoice = invoices.get(0);
-		assertThat(invoice.getBill_Location_ID()).isEqualTo(newLocationId);
-		assertThat(invoice.getBill_User_ID()).isEqualTo(newUserId);
+		assertThat(invoice.getBillTo().getBpartnerLocationId().getRepoId()).isEqualTo(newLocationId);
+		assertThat(invoice.getBillTo().getContactId().getRepoId()).isEqualTo(newUserId);
 	}
 
 	@Test
@@ -125,8 +129,8 @@ public class TestUpdatedLocationAndUser extends AbstractAggregationEngineTestBas
 		assertThat(invoices).hasSize(1);
 
 		final IInvoiceHeader invoice = invoices.get(0);
-		assertThat(invoice.getBill_Location_ID()).isEqualTo(oldLocationId);
-		assertThat(invoice.getBill_User_ID()).isEqualTo(newUserId);
+		assertThat(invoice.getBillTo().getBpartnerLocationId().getRepoId()).isEqualTo(oldLocationId);
+		assertThat(invoice.getBillTo().getContactId().getRepoId()).isEqualTo(newUserId);
 	}
 
 	@Test
@@ -156,8 +160,8 @@ public class TestUpdatedLocationAndUser extends AbstractAggregationEngineTestBas
 		assertThat(invoices).hasSize(1);
 
 		final IInvoiceHeader invoice = invoices.get(0);
-		assertThat(invoice.getBill_Location_ID()).isEqualTo(oldLocationId);
-		assertThat(invoice.getBill_User_ID()).isEqualTo(oldUserId);
+		assertThat(invoice.getBillTo().getBpartnerLocationId().getRepoId()).isEqualTo(oldLocationId);
+		assertThat(BPartnerContactId.toRepoId(invoice.getBillTo().getContactId())).isEqualTo(oldUserId);
 	}
 
 	@Test
@@ -188,8 +192,8 @@ public class TestUpdatedLocationAndUser extends AbstractAggregationEngineTestBas
 		assertThat(invoices).hasSize(1);
 
 		final IInvoiceHeader invoice = invoices.get(0);
-		assertThat(invoice.getBill_Location_ID()).isEqualTo(oldLocationId);
-		assertThat(invoice.getBill_User_ID()).isEqualTo(oldUserId);
+		assertThat(invoice.getBillTo().getBpartnerLocationId().getRepoId()).isEqualTo(oldLocationId);
+		assertThat(BPartnerContactId.toRepoId(invoice.getBillTo().getContactId())).isEqualTo(oldUserId);
 	}
 
 	@Test
@@ -216,8 +220,8 @@ public class TestUpdatedLocationAndUser extends AbstractAggregationEngineTestBas
 		assertThat(invoices).hasSize(1);
 
 		final IInvoiceHeader invoice = invoices.get(0);
-		assertThat(invoice.getBill_Location_ID()).isEqualTo(newLocationId);
-		assertThat(invoice.getBill_User_ID()).isEqualTo(newUserId);
+		assertThat(invoice.getBillTo().getBpartnerLocationId().getRepoId()).isEqualTo(newLocationId);
+		assertThat(invoice.getBillTo().getContactId().getRepoId()).isEqualTo(newUserId);
 	}
 
 	@Test
@@ -247,8 +251,8 @@ public class TestUpdatedLocationAndUser extends AbstractAggregationEngineTestBas
 		assertThat(invoices).hasSize(1);
 
 		final IInvoiceHeader invoice = invoices.get(0);
-		assertThat(invoice.getBill_Location_ID()).isEqualTo(oldLocationId);
-		assertThat(invoice.getBill_User_ID()).isEqualTo(oldUserId);
+		assertThat(invoice.getBillTo().getBpartnerLocationId().getRepoId()).isEqualTo(oldLocationId);
+		assertThat(BPartnerContactId.toRepoId(invoice.getBillTo().getContactId())).isEqualTo(oldUserId);
 	}
 
 	@Test
@@ -283,8 +287,8 @@ public class TestUpdatedLocationAndUser extends AbstractAggregationEngineTestBas
 		assertThat(invoices).hasSize(1);
 
 		final IInvoiceHeader invoice = invoices.get(0);
-		assertThat(invoice.getBill_Location_ID()).isEqualTo(overrideLocationId);
-		assertThat(invoice.getBill_User_ID()).isEqualTo(overrideUserId);
+		assertThat(invoice.getBillTo().getBpartnerLocationId().getRepoId()).isEqualTo(overrideLocationId);
+		assertThat(invoice.getBillTo().getContactId().getRepoId()).isEqualTo(overrideUserId);
 	}
 
 	private int createNewDefaultLocation(int partnerId, boolean isActive)

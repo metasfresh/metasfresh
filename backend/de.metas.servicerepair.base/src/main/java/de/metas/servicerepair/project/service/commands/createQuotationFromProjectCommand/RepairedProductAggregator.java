@@ -202,6 +202,8 @@ class RepairedProductAggregator implements QuotationLinesGroupAggregator
 					.percentage(Percent.ONE_HUNDRED)
 					.build());
 		}
+		
+		builder.regularLinesToAdd(ImmutableList.of());
 
 		return builder.build();
 	}

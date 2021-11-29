@@ -157,72 +157,73 @@ export class BPartnerContact {
 }
 
 function applyBPartner(bPartner) {
-  describe(`Create new bPartner ${bPartner.name}`, function() {
-    cy.visitWindow('123', 'NEW');
-    cy.writeIntoStringField('CompanyName', bPartner.name);
-    cy.writeIntoStringField('Name2', bPartner.name);
+  describe(`Create new bPartner ${bPartner.name}`, function () {
+    cy.get('.avatar').then(() => {
+      cy.visitWindow('123', 'NEW');
+      cy.writeIntoStringField('CompanyName', bPartner.name);
+      cy.writeIntoStringField('Name2', bPartner.name);
+      if (bPartner.isVendor || bPartner.vendorDiscountSchema || bPartner.vendorPricingSystem) {
+        cy.selectTab('Vendor');
+        cy.selectSingleTabRow();
 
-    if (bPartner.isVendor || bPartner.vendorDiscountSchema || bPartner.vendorPricingSystem) {
-      cy.selectTab('Vendor');
-      cy.selectSingleTabRow();
-
-      cy.openAdvancedEdit();
-      cy.getCheckboxValue('IsVendor').then(isVendorValue => {
-        if (bPartner.isVendor && !isVendorValue) {
-          cy.clickOnCheckBox('IsVendor', true, true /*modal*/);
+        cy.openAdvancedEdit();
+        cy.getCheckboxValue('IsVendor').then((isVendorValue) => {
+          if (bPartner.isVendor && !isVendorValue) {
+            cy.clickOnCheckBox('IsVendor', true, true /*modal*/);
+          }
+        });
+        if (bPartner.vendorPricingSystem) {
+          cy.writeIntoLookupListField('PO_PricingSystem_ID', bPartner.vendorPricingSystem, bPartner.vendorPricingSystem, false, true);
         }
-      });
-      if (bPartner.vendorPricingSystem) {
-        cy.writeIntoLookupListField('PO_PricingSystem_ID', bPartner.vendorPricingSystem, bPartner.vendorPricingSystem, false, true);
-      }
-      if (bPartner.vendorDiscountSchema) {
-        cy.selectInListField('PO_DiscountSchema_ID', bPartner.vendorDiscountSchema, true /*modal*/);
-      }
-      cy.pressDoneButton();
-    }
-
-    if (bPartner.isCustomer || bPartner.customerPricingSystem) {
-      cy.selectTab('Customer');
-      cy.selectSingleTabRow();
-
-      cy.openAdvancedEdit();
-      cy.getCheckboxValue('IsCustomer').then(isCustomerValue => {
-        if (bPartner.isCustomer && !isCustomerValue) {
-          cy.clickOnCheckBox('IsCustomer', true, true /*modal*/);
+        if (bPartner.vendorDiscountSchema) {
+          cy.selectInListField('PO_DiscountSchema_ID', bPartner.vendorDiscountSchema, true /*modal*/);
         }
-      });
-      if (bPartner.customerDiscountSchema) {
-        cy.selectInListField('M_DiscountSchema_ID', bPartner.customerDiscountSchema, true /*modal*/);
+        cy.pressDoneButton();
       }
-      if (bPartner.customerPricingSystem) {
-        cy.writeIntoLookupListField('M_PricingSystem_ID', bPartner.customerPricingSystem, bPartner.customerPricingSystem, false, true);
-      }
-      if (bPartner.customerDunning) {
-        cy.selectInListField('C_Dunning_ID', bPartner.customerDunning, true /*modal*/);
-      }
-      if (bPartner.paymentTerm) {
-        // cy.selectInListField('C_PaymentTerm_ID', getLanguageSpecific(bPartner, 'paymentTerm'), true); // todo this doesn't work. it breaks the login. WHYYYYYYYYYYYYY????
-        cy.selectInListField('C_PaymentTerm_ID', bPartner.paymentTerm, true);
-      }
-      cy.pressDoneButton();
-    }
 
-    // Thx to https://stackoverflow.com/questions/16626735/how-to-loop-through-an-array-containing-objects-and-access-their-properties
-    if (bPartner.bPartnerLocations.length > 0) {
-      bPartner.bPartnerLocations.forEach(function (bPartnerLocation) {
-        applyLocation(bPartnerLocation);
-      });
-      cy.get('table tbody tr').should('have.length', bPartner.bPartnerLocations.length);
-    }
-    if (bPartner.contacts.length > 0) {
-      bPartner.contacts.forEach(function (bPartnerContact) {
-        applyContact(bPartnerContact);
-      });
-      cy.get('table tbody tr').should('have.length', bPartner.contacts.length);
-    }
-    if (bPartner.bank) {
-      BPartner.applyBank(bPartner.bank);
-    }
+      if (bPartner.isCustomer || bPartner.customerPricingSystem) {
+        cy.selectTab('Customer');
+        cy.selectSingleTabRow();
+
+        cy.openAdvancedEdit();
+        cy.getCheckboxValue('IsCustomer').then((isCustomerValue) => {
+          if (bPartner.isCustomer && !isCustomerValue) {
+            cy.clickOnCheckBox('IsCustomer', true, true /*modal*/);
+          }
+        });
+        if (bPartner.customerDiscountSchema) {
+          cy.selectInListField('M_DiscountSchema_ID', bPartner.customerDiscountSchema, true /*modal*/);
+        }
+        if (bPartner.customerPricingSystem) {
+          cy.writeIntoLookupListField('M_PricingSystem_ID', bPartner.customerPricingSystem, bPartner.customerPricingSystem, false, true);
+        }
+        if (bPartner.customerDunning) {
+          cy.selectInListField('C_Dunning_ID', bPartner.customerDunning, true /*modal*/);
+        }
+        if (bPartner.paymentTerm) {
+          // cy.selectInListField('C_PaymentTerm_ID', getLanguageSpecific(bPartner, 'paymentTerm'), true); // todo this doesn't work. it breaks the login. WHYYYYYYYYYYYYY????
+          cy.selectInListField('C_PaymentTerm_ID', bPartner.paymentTerm, true);
+        }
+        cy.pressDoneButton();
+      }
+
+      // Thx to https://stackoverflow.com/questions/16626735/how-to-loop-through-an-array-containing-objects-and-access-their-properties
+      if (bPartner.bPartnerLocations.length > 0) {
+        bPartner.bPartnerLocations.forEach(function (bPartnerLocation) {
+          applyLocation(bPartnerLocation);
+        });
+        cy.get('table tbody tr').should('have.length', bPartner.bPartnerLocations.length);
+      }
+      if (bPartner.contacts.length > 0) {
+        bPartner.contacts.forEach(function (bPartnerContact) {
+          applyContact(bPartnerContact);
+        });
+        cy.get('table tbody tr').should('have.length', bPartner.contacts.length);
+      }
+      if (bPartner.bank) {
+        BPartner.applyBank(bPartner.bank);
+      }
+    });
   });
 }
 
@@ -233,17 +234,10 @@ function applyLocation(bPartnerLocation) {
   cy.writeIntoStringField('Name', `${bPartnerLocation.name}`, true /*modal*/, false, true);
   cy.get('.panel-modal-header-title').click();
 
-  cy.editAddress('C_Location_ID', function(url) {
+  cy.editAddress('C_Location_ID', function (url) {
     cy.writeIntoStringField('Address1', ' ', null, url);
     cy.writeIntoStringField('City', bPartnerLocation.city, null, url);
-    cy.writeIntoLookupListField(
-      'C_Country_ID',
-      bPartnerLocation.country,
-      bPartnerLocation.country,
-      false /*typeList */,
-      false /*modal THIS MUST BE FALSE EVEN IF IT'S A MODAL!*/,
-      url
-    );
+    cy.writeIntoLookupListField('C_Country_ID', bPartnerLocation.country, bPartnerLocation.country, false /*typeList */, false /*modal THIS MUST BE FALSE EVEN IF IT'S A MODAL!*/, url);
   });
   cy.get('.form-field-Address').should('contain', bPartnerLocation.city);
   cy.pressDoneButton();

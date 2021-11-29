@@ -8,6 +8,7 @@ import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.element.api.AdTabId;
 import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
@@ -55,7 +56,7 @@ final public class UserQueryDocumentFilterDescriptorsProviderFactory implements 
 	public DocumentFilterDescriptorsProvider createFiltersProvider(
 			@Nullable final AdTabId adTabId,
 			@Nullable final String tableName,
-			final Collection<DocumentFieldDescriptor> fields)
+			final @NonNull Collection<DocumentFieldDescriptor> fields)
 	{
 		if (tableName == null || adTabId == null)
 		{

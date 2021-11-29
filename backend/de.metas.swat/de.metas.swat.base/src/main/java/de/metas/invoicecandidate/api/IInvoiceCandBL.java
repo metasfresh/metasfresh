@@ -24,6 +24,7 @@ package de.metas.invoicecandidate.api;
 
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
+import de.metas.async.AsyncBatchId;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.inout.model.I_M_InOutLine;
@@ -404,4 +405,6 @@ public interface IInvoiceCandBL extends ISingletonService
 
 	@NonNull
 	InvoiceCandidatesAmtSelectionSummary calculateAmtSelectionSummary(@Nullable String extraWhereClause);
+
+	void setAsyncBatch(InvoiceCandidateId invoiceCandidateId, AsyncBatchId asyncBatchId);
 }

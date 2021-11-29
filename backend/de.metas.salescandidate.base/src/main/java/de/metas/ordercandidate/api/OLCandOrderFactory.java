@@ -1,12 +1,12 @@
 package de.metas.ordercandidate.api;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ListMultimap;
 import de.metas.adempiere.model.I_C_Order;
-import de.metas.bpartner.BPartnerContactId;
+import de.metas.adempiere.modelvalidator.Order;
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.CoalesceUtil;
@@ -35,6 +35,7 @@ import de.metas.order.compensationGroup.GroupCompensationType;
 import de.metas.order.compensationGroup.GroupRepository;
 import de.metas.order.compensationGroup.GroupTemplate;
 import de.metas.order.compensationGroup.OrderGroupRepository;
+import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.model.I_C_Order_Line_Alloc;
 import de.metas.ordercandidate.spi.IOLCandListener;
@@ -199,18 +200,17 @@ class OLCandOrderFactory
 		// use the values from 'olCand'
 		order.setAD_Org_ID(candidateOfGroup.getAD_Org_ID());
 
-		final BPartnerInfo bpartner = candidateOfGroup.getBPartnerInfo();
-		order.setC_BPartner_ID(BPartnerId.toRepoId(bpartner.getBpartnerId()));
-		order.setC_BPartner_Location_ID(BPartnerLocationId.toRepoId(bpartner.getBpartnerLocationId()));
-		order.setAD_User_ID(BPartnerContactId.toRepoId(bpartner.getContactId()));
+		OrderDocumentLocationAdapterFactory
+				.locationAdapter(order)
+				.setFrom(candidateOfGroup.getBPartnerInfo());
 
 		// if the olc has no value set, we are not falling back here!
 		final BPartnerInfo billBPartner = candidateOfGroup.getBillBPartnerInfo();
 		if (billBPartner != null)
 		{
-			order.setBill_BPartner_ID(BPartnerId.toRepoId(billBPartner.getBpartnerId()));
-			order.setBill_Location_ID(BPartnerLocationId.toRepoId(billBPartner.getBpartnerLocationId()));
-			order.setBill_User_ID(BPartnerContactId.toRepoId(billBPartner.getContactId()));
+			OrderDocumentLocationAdapterFactory
+					.billLocationAdapter(order)
+					.setFrom(billBPartner);
 		}
 
 		final Timestamp dateDoc = TimeUtil.asTimestamp(candidateOfGroup.getDateDoc());
@@ -227,11 +227,9 @@ class OLCandOrderFactory
 		final BPartnerInfo dropShipBPartner = candidateOfGroup.getDropShipBPartnerInfo().orElse(null);
 		if (dropShipBPartner != null)
 		{
-			order.setDropShip_BPartner_ID(BPartnerId.toRepoId(dropShipBPartner.getBpartnerId()));
-			order.setDropShip_Location_ID(BPartnerLocationId.toRepoId(dropShipBPartner.getBpartnerLocationId()));
-			order.setDropShip_User_ID(BPartnerContactId.toRepoId(dropShipBPartner.getContactId()));
-			final boolean isDropShip = dropShipBPartner.getBpartnerId() != null || dropShipBPartner.getBpartnerLocationId() != null;
-			order.setIsDropShip(isDropShip);
+			OrderDocumentLocationAdapterFactory
+					.deliveryLocationAdapter(order)
+					.setFrom(dropShipBPartner);
 		}
 		else
 		{
@@ -241,11 +239,14 @@ class OLCandOrderFactory
 		final BPartnerInfo handOverBPartner = candidateOfGroup.getHandOverBPartnerInfo().orElse(null);
 		if (handOverBPartner != null)
 		{
-			order.setHandOver_Partner_ID(BPartnerId.toRepoId(handOverBPartner.getBpartnerId()));
-			order.setHandOver_Location_ID(BPartnerLocationId.toRepoId(handOverBPartner.getBpartnerLocationId()));
-			order.setHandOver_User_ID(BPartnerContactId.toRepoId(handOverBPartner.getContactId()));
+			OrderDocumentLocationAdapterFactory
+					.handOverLocationAdapter(order)
+					.setFrom(handOverBPartner);
 		}
-		order.setIsUseHandOver_Location(handOverBPartner != null && handOverBPartner.getBpartnerLocationId() != null);
+		else
+		{
+			order.setIsUseHandOver_Location(false);
+		}
 
 		if (candidateOfGroup.getC_Currency_ID() > 0)
 		{
@@ -278,6 +279,11 @@ class OLCandOrderFactory
 			final I_C_BPartner salesPartner = bpartnerDAO.getById(salesRepId);
 
 			order.setSalesPartnerCode(salesPartner.getSalesPartnerCode());
+		}
+
+		if (candidateOfGroup.getAsyncBatchId() != null)
+		{
+			order.setC_Async_Batch_ID(candidateOfGroup.getAsyncBatchId().getRepoId());
 		}
 
 		// Save to SO the external header id, so that on completion it can be linked with its payment
@@ -607,4 +613,10 @@ class OLCandOrderFactory
 		return note;
 	}
 
+	@Nullable
+	@VisibleForTesting
+	I_C_Order getOrder()
+	{
+		return order;
+	}
 }

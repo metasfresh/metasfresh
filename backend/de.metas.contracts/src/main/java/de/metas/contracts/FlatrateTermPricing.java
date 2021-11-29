@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_BPartner_Location;
@@ -93,10 +94,10 @@ public class FlatrateTermPricing
 		final BPartnerId dropShipBPartnerId = BPartnerId.ofRepoIdOrNull(term.getDropShip_BPartner_ID());
 		final BPartnerId billBPartnerId = BPartnerId.ofRepoIdOrNull(term.getBill_BPartner_ID());
 
-		final BPartnerLocationId dropShipLocationId = BPartnerLocationId.ofRepoIdOrNull(dropShipBPartnerId, term.getDropShip_Location_ID());
-		final BPartnerLocationId billLocationId = BPartnerLocationId.ofRepoIdOrNull(billBPartnerId, term.getBill_Location_ID());
+		final BPartnerLocationAndCaptureId dropShipLocationId = BPartnerLocationAndCaptureId.ofRepoIdOrNull(dropShipBPartnerId, term.getDropShip_Location_ID());
+		final BPartnerLocationAndCaptureId billLocationId = BPartnerLocationAndCaptureId.ofRepoIdOrNull(billBPartnerId, term.getBill_Location_ID());
 
-		final BPartnerLocationId bpLocationIdToUse = dropShipLocationId != null ? dropShipLocationId : billLocationId;
+		final BPartnerLocationAndCaptureId bpLocationIdToUse = dropShipLocationId != null ? dropShipLocationId : billLocationId;
 
 		final PriceListId priceListId = priceListDAO.retrievePriceListIdByPricingSyst(
 				pricingSystemIdToUse,
@@ -104,7 +105,7 @@ public class FlatrateTermPricing
 				SOTrx.SALES);
 		if (priceListId == null)
 		{
-			final I_C_BPartner_Location billLocationRecord = bpartnerDAO.getBPartnerLocationById(billLocationId);
+			final I_C_BPartner_Location billLocationRecord = bpartnerDAO.getBPartnerLocationByIdEvenInactive(billLocationId.getBpartnerLocationId());
 
 			throw new AdempiereException(MSG_FLATRATEBL_PRICE_LIST_MISSING_2P,
 										 new Object[] {

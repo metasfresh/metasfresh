@@ -2,14 +2,12 @@ package de.metas.contracts.commission.commissioninstance.services;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionConfig;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CreateCommissionSharesRequest;
 import de.metas.contracts.commission.commissioninstance.businesslogic.hierarchy.Hierarchy;
 import de.metas.contracts.commission.commissioninstance.businesslogic.hierarchy.HierarchyLevel;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTrigger;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTriggerDocument;
-import de.metas.contracts.commission.commissioninstance.services.CommissionConfigFactory.ConfigRequestForNewInstance;
 import de.metas.logging.LogManager;
 import lombok.NonNull;
 import org.slf4j.Logger;
@@ -44,16 +42,16 @@ public class CommissionInstanceRequestFactory
 {
 	private static final Logger logger = LogManager.getLogger(CommissionInstanceRequestFactory.class);
 
-	private final CommissionConfigFactory commissionConfigFactory;
+	private final CommissionConfigProvider configProvider;
 	private final CommissionHierarchyFactory commissionHierarchyFactory;
 	private final CommissionTriggerFactory commissionTriggerFactory;
 
 	public CommissionInstanceRequestFactory(
-			@NonNull final CommissionConfigFactory commissionConfigFactory,
+			@NonNull final CommissionConfigProvider configProvider,
 			@NonNull final CommissionHierarchyFactory commissionHierarchyFactory,
 			@NonNull final CommissionTriggerFactory commissionTriggerFactory)
 	{
-		this.commissionConfigFactory = commissionConfigFactory;
+		this.configProvider = configProvider;
 		this.commissionHierarchyFactory = commissionHierarchyFactory;
 		this.commissionTriggerFactory = commissionTriggerFactory;
 	}
@@ -71,15 +69,17 @@ public class CommissionInstanceRequestFactory
 		// and their contract might indicate that metasfresh shall create a 0% commission share for them
 		final Hierarchy hierarchy = commissionHierarchyFactory.createFor(customerBPartnerId);
 
-		final ConfigRequestForNewInstance contractRequest = ConfigRequestForNewInstance.builder()
+		final CommissionConfigProvider.ConfigRequestForNewInstance contractRequest = CommissionConfigProvider.ConfigRequestForNewInstance.builder()
 				.orgId(commissionTriggerDocument.getOrgId())
 				.commissionHierarchy(hierarchy)
 				.customerBPartnerId(customerBPartnerId)
 				.salesRepBPartnerId(salesRepBPartnerId)
 				.commissionDate(commissionTriggerDocument.getCommissionDate())
 				.salesProductId(commissionTriggerDocument.getProductId())
+				.commissionTriggerType(commissionTriggerDocument.getTriggerType())
 				.build();
-		final ImmutableList<CommissionConfig> configs = commissionConfigFactory.createForNewCommissionInstances(contractRequest);
+
+		final ImmutableList<CommissionConfig> configs = configProvider.createForNewCommissionInstances(contractRequest);
 		if (configs.isEmpty())
 		{
 			logger.debug("Found no CommissionConfigs for contractRequest; -> return empty; contractRequest={}", contractRequest);

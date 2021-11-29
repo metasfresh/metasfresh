@@ -6,7 +6,10 @@ import java.time.LocalDate;
 import java.time.Month;
 import java.util.List;
 
+import de.metas.business.BusinessTestHelper;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -60,7 +63,9 @@ public class TestFixedDateInvoicedAndDateAcct extends AbstractAggregationEngineT
 {
 	private C_Invoice_Candidate_Builder prepareInvoiceCandidate()
 	{
-		final BPartnerLocationId billBPartnerAndLocationId = BPartnerLocationId.ofRepoId(1, 2);
+		final I_C_BPartner bPartner = BusinessTestHelper.createBPartner("test-bp");
+		final I_C_BPartner_Location bPartnerLocation = BusinessTestHelper.createBPartnerLocation(bPartner);
+		final BPartnerLocationId billBPartnerAndLocationId = BPartnerLocationId.ofRepoId(bPartnerLocation.getC_BPartner_ID(), bPartnerLocation.getC_BPartner_Location_ID());
 
 		return createInvoiceCandidate()
 				.setBillBPartnerAndLocationId(billBPartnerAndLocationId)

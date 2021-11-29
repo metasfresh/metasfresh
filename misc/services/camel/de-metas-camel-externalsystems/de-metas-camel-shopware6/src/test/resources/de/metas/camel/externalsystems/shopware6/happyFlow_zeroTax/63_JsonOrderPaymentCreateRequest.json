@@ -1,0 +1,14 @@
+{
+  "amount": 100,
+  "bpartnerIdentifier": "ext-Shopware6-customerId",
+  "currencyCode": "EUR",
+  "discountAmt": null,
+  "writeOffAmt": null,
+  "docBaseType": null,
+  "docSubType": null,
+  "externalPaymentId": "orderTransactionId",
+  "orderIdentifier": "ext-externalHeaderId",
+  "orgCode": "orgCode",
+  "targetIBAN": null,
+  "transactionDate": "2021-01-11"
+}

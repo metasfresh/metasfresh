@@ -30,12 +30,14 @@ public interface Shopware6Constants
 
 	String FIELD_UPDATED_AT = "updatedAt";
 	String FIELD_CREATED_AT = "createdAt";
-
+	String FIELD_ORDER_NUMBER = "orderNumber";
+	
 	String PARAMETERS_DATE_GTE = "gte";
 
 	//camel route properties
 	String ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT = "GetOrdersRouteContext";
-
+	String ROUTE_PROPERTY_IMPORT_PRODUCTS_CONTEXT = "GetProductsRouteContext";
+	
 	//nodes
 	String JSON_NODE_DATA = "data";
 	String JSON_NODE_DELIVERY_ADDRESS = "shippingOrderAddress";
@@ -58,4 +60,5 @@ public interface Shopware6Constants
 	BigDecimal DEFAULT_ORDER_LINE_DISCOUNT = BigDecimal.ZERO;
 	String MULTIPLE_SHIPPING_ADDRESSES_WARN_MESSAGE = "The order had multiple shipping addresses, the process picked the last one!";
 	String FREIGHT_COST_EXTERNAL_LINE_ID_PREFIX = "TaxRate_";
+	String DEFAULT_PRODUCT_UOM = "PCE";
 }

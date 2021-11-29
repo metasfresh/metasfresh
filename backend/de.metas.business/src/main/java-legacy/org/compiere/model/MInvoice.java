@@ -36,6 +36,7 @@ import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.i18n.Msg;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapterFactory;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IMatchInvBL;
 import de.metas.logging.LogManager;
@@ -139,8 +140,8 @@ public class MInvoice extends X_C_Invoice implements IDocument
 		// ts: 04054: moving copyFrom business logic to the implementors of IInvoiceBL
 		// NOTE: the old crap is deleted from here.... search it in SCM history
 		final I_C_Invoice to = Services.get(IInvoiceBL.class).copyFrom(from, dateDoc, C_DocTypeTarget_ID, isSOTrx, counter, setOrder,
-				false,  // setInvoiceRef == false
-				true); // copyLines == true
+																	   false,  // setInvoiceRef == false
+																	   true); // copyLines == true
 
 		// Make sure DateAcct is set (08356)
 		to.setDateAcct(dateAcct);
@@ -253,9 +254,9 @@ public class MInvoice extends X_C_Invoice implements IDocument
 		//
 		setSalesRep_ID(order.getSalesRep_ID());
 		//
-		setC_BPartner_ID(order.getBill_BPartner_ID());
-		setC_BPartner_Location_ID(order.getBill_Location_ID());
-		setAD_User_ID(order.getBill_User_ID());
+		InvoiceDocumentLocationAdapterFactory
+				.locationAdapter(this)
+				.setFromBillLocation(order);
 	}    // MInvoice
 
 	/**
@@ -369,7 +370,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 		// metas end
 
 		//
-		if (ship.getC_Order_ID() != 0)
+		if (ship.getC_Order_ID() > 0)
 		{
 			setC_Order_ID(ship.getC_Order_ID());
 			final MOrder order = new MOrder(getCtx(), ship.getC_Order_ID(), get_TrxName());
@@ -386,16 +387,14 @@ public class MInvoice extends X_C_Invoice implements IDocument
 			{
 				Services.get(IInvoiceBL.class).setDocTypeTargetIdAndUpdateDescription(this, dt.getC_DocTypeInvoice_ID());
 			}
-			// Overwrite Invoice BPartner
-			setC_BPartner_ID(order.getBill_BPartner_ID());
-			// Overwrite Invoice Address
-			setC_BPartner_Location_ID(order.getBill_Location_ID());
-			// Overwrite Contact
-			setAD_User_ID(order.getBill_User_ID());
+			// Overwrite Invoice BPartner/Address/Contact
+			InvoiceDocumentLocationAdapterFactory
+					.locationAdapter(this)
+					.setFromBillLocation(order);
 			//
 		}
 		// Check if Shipment/Receipt is based on RMA
-		if (ship.getM_RMA_ID() != 0)
+		if (ship.getM_RMA_ID() > 0)
 		{
 
 			final MRMA rma = new MRMA(getCtx(), ship.getM_RMA_ID(), get_TrxName());
@@ -411,7 +410,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 
 			// Retrieves the invoice DocType
 			final I_C_DocType dt = MDocType.get(getCtx(), rma.getC_DocType_ID());
-			if (dt.getC_DocTypeInvoice_ID() != 0)
+			if (dt.getC_DocTypeInvoice_ID() > 0)
 			{
 				Services.get(IInvoiceBL.class).setDocTypeTargetIdAndUpdateDescription(this, dt.getC_DocTypeInvoice_ID());
 			}
@@ -525,7 +524,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 	{
 		// ts: 04054: moving copyLinesFrom business logic to the implementors of IInvoiceBL
 		return Services.get(IInvoiceBL.class).copyLinesFrom(otherInvoice, this, counter, setOrder,
-				false); // setInvoiceRef == false
+															false); // setInvoiceRef == false
 	}    // copyLinesFrom
 
 	private void setReversal(final boolean reversal)
@@ -878,8 +877,8 @@ public class MInvoice extends X_C_Invoice implements IDocument
 				if (Services.get(IBPartnerStatsBL.class).isCreditStopSales(stats, getGrandTotal(true), getDateInvoiced()))
 				{
 					throw new AdempiereException("@BPartnerCreditStop@ - @SO_CreditUsed@="
-							+ stats.getSOCreditUsed()
-							+ ", @SO_CreditLimit@=" + creditLimit);
+														 + stats.getSOCreditUsed()
+														 + ", @SO_CreditLimit@=" + creditLimit);
 				}
 			}
 		}
@@ -1079,7 +1078,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 			else
 			{
 				cash = MCash.get(getCtx(), getAD_Org_ID(),
-						getDateInvoiced(), getC_Currency_ID(), get_TrxName());
+								 getDateInvoiced(), getC_Currency_ID(), get_TrxName());
 			}
 
 			// End Posterita Modifications
@@ -1193,8 +1192,8 @@ public class MInvoice extends X_C_Invoice implements IDocument
 				newAmt = newAmt.add(amt);
 			}
 			log.debug("GrandTotal=" + getGrandTotal(true) + "(" + amt
-					+ ") Project " + project.getName()
-					+ " - Invoiced=" + project.getInvoicedAmt() + "->" + newAmt);
+							  + ") Project " + project.getName()
+							  + " - Invoiced=" + project.getInvoicedAmt() + "->" + newAmt);
 			project.setInvoicedAmt(newAmt);
 			project.saveEx(get_TrxName());
 		}    // project
@@ -1298,7 +1297,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 
 		// Deep Copy
 		final MInvoice counter = copyFrom(this, getDateInvoiced(), getDateAcct(),
-				C_DocTypeTarget_ID, !isSOTrx(), true, get_TrxName(), true);
+										  C_DocTypeTarget_ID, !isSOTrx(), true, get_TrxName(), true);
 		//
 		counter.setAD_Org_ID(counterAD_Org_ID);
 		// counter.setM_Warehouse_ID(counterOrgInfo.getM_Warehouse_ID());
@@ -1548,9 +1547,9 @@ public class MInvoice extends X_C_Invoice implements IDocument
 		//
 		// Create Allocation: allocate the reversal invoice against the original invoice
 		final MAllocationHdr alloc = new MAllocationHdr(getCtx(), false, getDateAcct(),
-				getC_Currency_ID(),
-				Msg.translate(getCtx(), "C_Invoice_ID") + ": " + getDocumentNo() + "/" + reversal.getDocumentNo(),
-				get_TrxName());
+														getC_Currency_ID(),
+														Msg.translate(getCtx(), "C_Invoice_ID") + ": " + getDocumentNo() + "/" + reversal.getDocumentNo(),
+														get_TrxName());
 		alloc.setAD_Org_ID(getAD_Org_ID());
 		alloc.saveEx();  // metas: tsa: always use saveEx
 		// if (alloc.save()) // metas: tsa: always use saveEx
@@ -1641,25 +1640,26 @@ public class MInvoice extends X_C_Invoice implements IDocument
 
 	public void setRMA(final MRMA rma)
 	{
+		final MInvoice originalInvoice = rma.getOriginalInvoice();
+		if (originalInvoice == null)
+		{
+			throw new AdempiereException("Not invoiced - RMA: " + rma.getDocumentNo());
+		}
+
 		setM_RMA_ID(rma.getM_RMA_ID());
 		setAD_Org_ID(rma.getAD_Org_ID());
 		setDescription(rma.getDescription());
-		setC_BPartner_ID(rma.getC_BPartner_ID());
+
+		InvoiceDocumentLocationAdapterFactory
+				.locationAdapter(this)
+				.setFrom(originalInvoice);
+
 		setSalesRep_ID(rma.getSalesRep_ID());
 
 		setGrandTotal(rma.getAmt());
 		setIsSOTrx(rma.isSOTrx());
 		setTotalLines(rma.getAmt());
 
-		final MInvoice originalInvoice = rma.getOriginalInvoice();
-
-		if (originalInvoice == null)
-		{
-			throw new AdempiereException("Not invoiced - RMA: " + rma.getDocumentNo());
-		}
-
-		setC_BPartner_Location_ID(originalInvoice.getC_BPartner_Location_ID());
-		setAD_User_ID(originalInvoice.getAD_User_ID());
 		setC_Currency_ID(originalInvoice.getC_Currency_ID());
 		setIsTaxIncluded(originalInvoice.isTaxIncluded());
 		setM_PriceList_ID(originalInvoice.getM_PriceList_ID());

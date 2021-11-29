@@ -28,6 +28,10 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.Value;
 
+/**
+ * @deprecated please consider using {@link JsonOLCandProcessRequest} instead.
+ */
+@Deprecated
 @Value
 @Builder
 @JsonDeserialize(builder = JsonOLCandClearRequest.JsonOLCandClearRequestBuilder.class)

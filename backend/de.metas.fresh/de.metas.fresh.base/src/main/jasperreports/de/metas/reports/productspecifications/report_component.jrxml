@@ -28,10 +28,9 @@
   v.componentName           as BOMProduct,
   v.componentIngredients    as Ingredients,
   v.qtybatch                as QtyBatch,
-  ispackagingmaterial,
 m_product_ID
-FROM "de.metas.fresh".product_specifications_v v
-WHERE m_product_ID = $P{RECORD_ID} AND componenttype='CO'
+FROM "de.metas.fresh".product_ingredients_v v
+WHERE m_product_ID = $P{RECORD_ID}
 ORDER BY QtyBatch DESC;]]>
 	</queryString>
 	<field name="bomproduct" class="java.lang.String">
@@ -40,11 +39,8 @@ ORDER BY QtyBatch DESC;]]>
 	<field name="ingredients" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="ingredients"/>
 	</field>
-	<field name="qtybatch" class="java.math.BigDecimal">
+	<field name="qtybatch" class="java.lang.Double">
 		<property name="com.jaspersoft.studio.field.label" value="qtybatch"/>
-	</field>
-	<field name="ispackagingmaterial" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="ispackagingmaterial"/>
 	</field>
 	<field name="m_product_id" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.label" value="m_product_id"/>
@@ -89,7 +85,6 @@ ORDER BY QtyBatch DESC;]]>
 	</title>
 	<detail>
 		<band height="14">
-			<printWhenExpression><![CDATA[$F{ispackagingmaterial}.equals("N")]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement x="0" y="1" width="136" height="12" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true" uuid="81066c2f-dfac-4ca0-8b4e-29585ecb945f"/>
 				<textElement textAlignment="Left" verticalAlignment="Top">

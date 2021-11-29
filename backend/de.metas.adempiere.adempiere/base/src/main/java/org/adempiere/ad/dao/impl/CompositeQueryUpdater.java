@@ -22,20 +22,19 @@ package org.adempiere.ad.dao.impl;
  * #L%
  */
 
-
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-
+import de.metas.util.Check;
+import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.IQueryUpdater;
 import org.adempiere.ad.dao.ISqlQueryUpdater;
 import org.adempiere.exceptions.AdempiereException;
 
-import de.metas.util.Check;
-import lombok.NonNull;
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
 
 /* package */class CompositeQueryUpdater<T> implements ICompositeQueryUpdater<T>
 {
@@ -60,16 +59,16 @@ import lombok.NonNull;
 	}
 
 	@Override
-	public ICompositeQueryUpdater<T> addSetColumnValue(final String columnName, final Object value)
+	public ICompositeQueryUpdater<T> addSetColumnValue(final String columnName, @Nullable final Object value)
 	{
-		final IQueryUpdater<T> updater = new SetColumnNameQueryUpdater<T>(columnName, value);
+		final IQueryUpdater<T> updater = new SetColumnNameQueryUpdater<>(columnName, value);
 		return addQueryUpdater(updater);
 	}
 
 	@Override
 	public ICompositeQueryUpdater<T> addSetColumnFromColumn(final String columnName, final ModelColumnNameValue<T> fromColumnName)
 	{
-		final IQueryUpdater<T> updater = new SetColumnNameQueryUpdater<T>(columnName, fromColumnName);
+		final IQueryUpdater<T> updater = new SetColumnNameQueryUpdater<>(columnName, fromColumnName);
 		return addQueryUpdater(updater);
 	}
 
@@ -77,14 +76,14 @@ import lombok.NonNull;
 	public ICompositeQueryUpdater<T> addAddValueToColumn(final String columnName, final BigDecimal valueToAdd)
 	{
 		final IQueryFilter<T> onlyWhenFilter = null;
-		final IQueryUpdater<T> updater = new AddToColumnQueryUpdater<T>(columnName, valueToAdd, onlyWhenFilter);
+		final IQueryUpdater<T> updater = new AddToColumnQueryUpdater<>(columnName, valueToAdd, onlyWhenFilter);
 		return addQueryUpdater(updater);
 	}
 
 	@Override
 	public ICompositeQueryUpdater<T> addAddValueToColumn(final String columnName, final BigDecimal valueToAdd, final IQueryFilter<T> onlyWhenFilter)
 	{
-		final IQueryUpdater<T> updater = new AddToColumnQueryUpdater<T>(columnName, valueToAdd, onlyWhenFilter);
+		final IQueryUpdater<T> updater = new AddToColumnQueryUpdater<>(columnName, valueToAdd, onlyWhenFilter);
 		return addQueryUpdater(updater);
 	}
 
@@ -111,7 +110,7 @@ import lombok.NonNull;
 		return sql;
 	}
 
-	private final void buildSql(final Properties ctx)
+	private void buildSql(final Properties ctx)
 	{
 		if (sqlBuilt)
 		{
@@ -124,7 +123,7 @@ import lombok.NonNull;
 		}
 
 		final StringBuilder sql = new StringBuilder();
-		final List<Object> params = new ArrayList<Object>();
+		final List<Object> params = new ArrayList<>();
 
 		for (final IQueryUpdater<T> updater : queryUpdaters)
 		{

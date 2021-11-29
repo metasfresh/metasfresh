@@ -8,10 +8,10 @@ import com.google.common.collect.Sets;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
+import de.metas.ui.web.document.filter.sql.FilterSql;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverters;
-import de.metas.ui.web.document.filter.sql.SqlParamsCollector;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.view.ViewRow.DefaultRowType;
 import de.metas.ui.web.view.descriptor.SqlAndParams;
@@ -31,7 +31,6 @@ import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.model.DocumentQueryOrderByList;
 import de.metas.ui.web.window.model.sql.SqlOptions;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -147,12 +146,15 @@ class SqlViewDataRepository implements IViewDataRepository
 
 		// Set rowsMatchingFilter
 		{
-			final SqlDocumentFilterConverterContext context = SqlDocumentFilterConverterContext.EMPTY;
-			final SqlParamsCollector rowsMatchingFilterParams = SqlParamsCollector.newInstance();
-			final String rowsMatchingFilterString = filterConverters.getSql(rowsMatchingFilterParams, filters, sqlOpts, context);
-			final SqlAndParams rowsMatchingFilter = !Check.isBlank(rowsMatchingFilterString)
-					? SqlAndParams.of(rowsMatchingFilterString, rowsMatchingFilterParams)
-					: null;
+			final SqlDocumentFilterConverterContext context = SqlDocumentFilterConverterContext.builder()
+					.viewId(viewId)
+					.build();
+
+			final FilterSql filterSql = filterConverters.getSql(filters, sqlOpts, context);
+			final SqlAndParams rowsMatchingFilter = SqlAndParams.andNullables(
+					filterSql.getWhereClause(),
+					filterSql.getFilterByFTS() != null ? filterSql.getFilterByFTS().buildExistsWhereClause(sqlOpts.getTableNameOrAlias()) : null)
+					.orElse(null);
 
 			sqlWhereClause = sqlWhereClause.withRowsMatchingFilter(rowsMatchingFilter);
 		}
@@ -378,9 +380,9 @@ class SqlViewDataRepository implements IViewDataRepository
 	}
 
 	@Nullable
-	private static DocumentId convertToRowId(final Object rowIdObj)
+	private static DocumentId convertToRowId(@Nullable final Object rowIdObj)
 	{
-		if (JSONNullValue.isNull(rowIdObj))
+		if (rowIdObj == null || JSONNullValue.isNull(rowIdObj))
 		{
 			return null;
 		}
@@ -477,9 +479,9 @@ class SqlViewDataRepository implements IViewDataRepository
 
 	@Override
 	public List<IViewRow> retrievePage(final ViewEvaluationCtx viewEvalCtx,
-			final ViewRowIdsOrderedSelection orderedSelection,
-			final int firstRow,
-			final int pageLength) throws DBException
+									   final ViewRowIdsOrderedSelection orderedSelection,
+									   final int firstRow,
+									   final int pageLength) throws DBException
 	{
 		logger.debug("Getting page: firstRow={}, pageLength={} - {}", firstRow, pageLength, this);
 		logger.debug("Using: {}", orderedSelection);
@@ -516,9 +518,9 @@ class SqlViewDataRepository implements IViewDataRepository
 
 	@Override
 	public List<DocumentId> retrieveRowIdsByPage(final ViewEvaluationCtx viewEvalCtx,
-			final ViewRowIdsOrderedSelection orderedSelection,
-			final int firstRow,
-			final int pageLength)
+												 final ViewRowIdsOrderedSelection orderedSelection,
+												 final int firstRow,
+												 final int pageLength)
 	{
 		logger.debug("Getting page: firstRow={}, pageLength={} - {}", firstRow, pageLength, this);
 		logger.debug("Using: {}", orderedSelection);

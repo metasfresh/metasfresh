@@ -29,7 +29,10 @@ import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
 
+import de.metas.business.BusinessTestHelper;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.util.TimeUtil;
 
 import de.metas.bpartner.BPartnerLocationId;
@@ -72,7 +75,10 @@ public abstract class AbstractTwoOrdersTwoInOutsOneInvoiceTests extends Abstract
 	{
 		final int qtyOrdered = 50;
 
-		final BPartnerLocationId billBPartnerAndLocationId = BPartnerLocationId.ofRepoId(1, 2);
+		final I_C_BPartner bPartner = BusinessTestHelper.createBPartner("test-bp");
+		final I_C_BPartner_Location bPartnerLocation = BusinessTestHelper.createBPartnerLocation(bPartner);
+		final BPartnerLocationId billBPartnerAndLocationId = BPartnerLocationId.ofRepoId(bPartnerLocation.getC_BPartner_ID(), bPartnerLocation.getC_BPartner_Location_ID());
+
 
 		ic1 = createInvoiceCandidate()
 				.setInstanceName("ic1")

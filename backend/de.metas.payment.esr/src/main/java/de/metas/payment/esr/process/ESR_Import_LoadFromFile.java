@@ -1,17 +1,9 @@
 package de.metas.payment.esr.process;
 
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.FillMandatoryException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.util.Env;
-
 import de.metas.adempiere.form.IClientUI;
 import de.metas.async.model.I_C_Async_Batch;
-import de.metas.payment.esr.ESRConstants;
 import de.metas.payment.esr.dataimporter.ESRImportEnqueuer;
 import de.metas.payment.esr.dataimporter.ESRImportEnqueuerDataSource;
-import de.metas.payment.esr.dataimporter.ESRImportEnqueuerDuplicateFilePolicy;
 import de.metas.payment.esr.model.I_ESR_Import;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
@@ -20,11 +12,13 @@ import de.metas.process.Param;
 import de.metas.process.RunOutOfTrx;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.FillMandatoryException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
 
 /**
- * 
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public class ESR_Import_LoadFromFile
 		extends JavaProcess
@@ -74,24 +68,6 @@ public class ESR_Import_LoadFromFile
 				.pinstanceId(getPinstanceId())
 				//
 				.loggable(this)
-				//
-				.duplicateFilePolicy(new ESRImportEnqueuerDuplicateFilePolicy()
-				{
-
-					@Override
-					public boolean isImportDuplicateFile()
-					{
-						// then show the user a warning with yes and no
-						return clientUI.ask(Env.WINDOW_MAIN, ESRConstants.ASK_PreventDuplicateImportFiles);
-					}
-
-					@Override
-					public void onNotImportingDuplicateFile()
-					{
-						// show the user a warning with OK button
-						clientUI.warn(Env.WINDOW_MAIN, ESRConstants.WARN_PreventDuplicateImportFilesEntirely);
-					}
-				})
 				//
 				.execute();
 

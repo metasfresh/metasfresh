@@ -7,6 +7,7 @@ import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -36,15 +37,13 @@ public final class HUPackingInfos
 	{
 	}
 
-	public static final IHUPackingInfo of(final I_M_HU_LUTU_Configuration lutuConfig)
+	public static IHUPackingInfo of(@NonNull final I_M_HU_LUTU_Configuration lutuConfig)
 	{
 		return new LUTUConfigAsPackingInfo(lutuConfig);
 	}
 
-	public static final IHUPackingInfo of(final I_M_HU hu)
+	public static IHUPackingInfo of(@NonNull final I_M_HU hu)
 	{
-		Check.assumeNotNull(hu, "Parameter hu is not null");
-
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 		
 		if (handlingUnitsBL.isAggregateHU(hu))

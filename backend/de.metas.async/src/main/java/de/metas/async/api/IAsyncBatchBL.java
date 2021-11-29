@@ -8,6 +8,7 @@ import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.model.I_C_Queue_WorkPackage_Notified;
 import de.metas.util.ISingletonService;
+
 import java.util.Optional;
 
 /**
@@ -79,4 +80,8 @@ public interface IAsyncBatchBL extends ISingletonService
 	Optional<AsyncBatchId> getAsyncBatchId(Object model);
 
 	I_C_Async_Batch getAsyncBatchById(AsyncBatchId asyncBatchId);
+
+	void updateProcessedFromMilestones(AsyncBatchId asyncBatchId);
+
+	AsyncBatchId newAsyncBatch(String asyncBatchType);
 }

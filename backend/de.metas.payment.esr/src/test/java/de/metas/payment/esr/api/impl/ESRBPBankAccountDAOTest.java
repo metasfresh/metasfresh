@@ -178,7 +178,7 @@ class ESRBPBankAccountDAOTest
 		private I_ESR_PostFinanceUserNumber createESRPostFinanceUserNumber(final I_C_BP_BankAccount account, final String esrAccountNo)
 		{
 			final I_ESR_PostFinanceUserNumber postFinanceUserNumber = newInstance(I_ESR_PostFinanceUserNumber.class);
-			postFinanceUserNumber.setC_BP_BankAccount(account);
+			postFinanceUserNumber.setC_BP_BankAccount_ID(account.getC_BP_BankAccount_ID());
 			postFinanceUserNumber.setESR_RenderedAccountNo(esrAccountNo);
 			save(postFinanceUserNumber);
 

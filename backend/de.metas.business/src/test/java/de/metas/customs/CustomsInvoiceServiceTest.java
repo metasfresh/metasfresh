@@ -9,6 +9,9 @@ import java.time.LocalDate;
 import java.time.Month;
 import java.util.function.Consumer;
 
+import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.document.location.impl.DocumentLocationBL;
+import de.metas.user.UserRepository;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner_Location;
@@ -110,7 +113,8 @@ public class CustomsInvoiceServiceTest
 		customsInvoiceRepo = new CustomsInvoiceRepository();
 		final OrderLineRepository orderLineRepo = new OrderLineRepository();
 		final ShipmentLinesForCustomsInvoiceRepo shipmentLinesForCustomsInvoiceRepo = new ShipmentLinesForCustomsInvoiceRepo();
-		service = new CustomsInvoiceService(customsInvoiceRepo, orderLineRepo, shipmentLinesForCustomsInvoiceRepo);
+		final DocumentLocationBL documentLocationBL = new DocumentLocationBL(new BPartnerBL(new UserRepository()));
+		service = new CustomsInvoiceService(customsInvoiceRepo, orderLineRepo, shipmentLinesForCustomsInvoiceRepo, documentLocationBL);
 
 		logisticCompany = createBPartnerAndLocation("LogisticCompany", "Logistic Company Address");
 		logisticUserId = createUser(logisticCompany.getBpartnerId(), "Logistic company user");
@@ -673,6 +677,7 @@ public class CustomsInvoiceServiceTest
 		return OrderId.ofRepoId(order.getC_Order_ID());
 	}
 
+	@SuppressWarnings("SameParameterValue")
 	private ProductId createProduct(final String productName, final UomId uomId)
 	{
 		final I_M_Product product = newInstance(I_M_Product.class);
@@ -696,6 +701,7 @@ public class CustomsInvoiceServiceTest
 		return UomId.ofRepoId(uom.getC_UOM_ID());
 	}
 
+	@SuppressWarnings("SameParameterValue")
 	private UserId createUser(final BPartnerId bpartnerId, final String userName)
 	{
 		final org.compiere.model.I_AD_User userRecord = newInstance(I_AD_User.class);
@@ -706,6 +712,7 @@ public class CustomsInvoiceServiceTest
 		return UserId.ofRepoId(userRecord.getAD_User_ID());
 	}
 
+	@SuppressWarnings("SameParameterValue")
 	private DocTypeId createDocType(final String docTypeName)
 	{
 		final I_C_DocType docTypeRecord = newInstance(I_C_DocType.class);

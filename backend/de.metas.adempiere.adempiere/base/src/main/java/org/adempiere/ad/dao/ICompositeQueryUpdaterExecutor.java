@@ -1,5 +1,6 @@
 package org.adempiere.ad.dao;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 
 /*
@@ -43,9 +44,6 @@ public interface ICompositeQueryUpdaterExecutor<T> extends ICompositeQueryUpdate
 
 	/**
 	 * Sets if the update shall be directly on underlying database or the records shall be updated one by one using the persistence engine API.
-	 * 
-	 * @param executeDirectly
-	 * @return this
 	 */
 	ICompositeQueryUpdaterExecutor<T> setExecuteDirectly(final boolean executeDirectly);
 
@@ -53,7 +51,7 @@ public interface ICompositeQueryUpdaterExecutor<T> extends ICompositeQueryUpdate
 	ICompositeQueryUpdaterExecutor<T> addQueryUpdater(IQueryUpdater<T> updater);
 
 	@Override
-	ICompositeQueryUpdaterExecutor<T> addSetColumnValue(String columnName, Object value);
+	ICompositeQueryUpdaterExecutor<T> addSetColumnValue(String columnName, @Nullable Object value);
 
 	@Override
 	ICompositeQueryUpdaterExecutor<T> addAddValueToColumn(String columnName, BigDecimal valueToAdd);

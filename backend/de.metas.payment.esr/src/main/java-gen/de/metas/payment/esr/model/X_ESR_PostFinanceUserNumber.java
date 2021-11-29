@@ -1,120 +1,78 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package de.metas.payment.esr.model;
 
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for ESR_PostFinanceUserNumber
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public class X_ESR_PostFinanceUserNumber extends org.compiere.model.PO implements I_ESR_PostFinanceUserNumber, org.compiere.model.I_Persistent 
 {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = 124623897L;
+	private static final long serialVersionUID = 806167320L;
 
     /** Standard Constructor */
-    public X_ESR_PostFinanceUserNumber (Properties ctx, int ESR_PostFinanceUserNumber_ID, String trxName)
+    public X_ESR_PostFinanceUserNumber (final Properties ctx, final int ESR_PostFinanceUserNumber_ID, @Nullable final String trxName)
     {
       super (ctx, ESR_PostFinanceUserNumber_ID, trxName);
-      /** if (ESR_PostFinanceUserNumber_ID == 0)
-        {
-			setC_BP_BankAccount_ID (0);
-			setESR_PostFinanceUserNumber_ID (0);
-			setESR_RenderedAccountNo (null);
-        } */
     }
 
     /** Load Constructor */
-    public X_ESR_PostFinanceUserNumber (Properties ctx, ResultSet rs, String trxName)
+    public X_ESR_PostFinanceUserNumber (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
 
 
-    /** Load Meta Data */
-    @Override
-    protected org.compiere.model.POInfo initPO (Properties ctx)
-    {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
-      return poi;
-    }
-
+	/** Load Meta Data */
 	@Override
-	public org.compiere.model.I_C_BP_BankAccount getC_BP_BankAccount()
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
-		return get_ValueAsPO(COLUMNNAME_C_BP_BankAccount_ID, org.compiere.model.I_C_BP_BankAccount.class);
+		return org.compiere.model.POInfo.getPOInfo(Table_Name);
 	}
 
 	@Override
-	public void setC_BP_BankAccount(org.compiere.model.I_C_BP_BankAccount C_BP_BankAccount)
-	{
-		set_ValueFromPO(COLUMNNAME_C_BP_BankAccount_ID, org.compiere.model.I_C_BP_BankAccount.class, C_BP_BankAccount);
-	}
-
-	/** Set Bankverbindung.
-		@param C_BP_BankAccount_ID 
-		Bankverbindung des Geschäftspartners
-	  */
-	@Override
-	public void setC_BP_BankAccount_ID (int C_BP_BankAccount_ID)
+	public void setC_BP_BankAccount_ID (final int C_BP_BankAccount_ID)
 	{
 		if (C_BP_BankAccount_ID < 1) 
 			set_Value (COLUMNNAME_C_BP_BankAccount_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_BP_BankAccount_ID, Integer.valueOf(C_BP_BankAccount_ID));
+			set_Value (COLUMNNAME_C_BP_BankAccount_ID, C_BP_BankAccount_ID);
 	}
 
-	/** Get Bankverbindung.
-		@return Bankverbindung des Geschäftspartners
-	  */
 	@Override
-	public int getC_BP_BankAccount_ID () 
+	public int getC_BP_BankAccount_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_BP_BankAccount_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_BP_BankAccount_ID);
 	}
 
-	/** Set ESR_PostFinanceUserNumber.
-		@param ESR_PostFinanceUserNumber_ID ESR_PostFinanceUserNumber	  */
 	@Override
-	public void setESR_PostFinanceUserNumber_ID (int ESR_PostFinanceUserNumber_ID)
+	public void setESR_PostFinanceUserNumber_ID (final int ESR_PostFinanceUserNumber_ID)
 	{
 		if (ESR_PostFinanceUserNumber_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_ESR_PostFinanceUserNumber_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_ESR_PostFinanceUserNumber_ID, Integer.valueOf(ESR_PostFinanceUserNumber_ID));
+			set_ValueNoCheck (COLUMNNAME_ESR_PostFinanceUserNumber_ID, ESR_PostFinanceUserNumber_ID);
 	}
 
-	/** Get ESR_PostFinanceUserNumber.
-		@return ESR_PostFinanceUserNumber	  */
 	@Override
-	public int getESR_PostFinanceUserNumber_ID () 
+	public int getESR_PostFinanceUserNumber_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_ESR_PostFinanceUserNumber_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_ESR_PostFinanceUserNumber_ID);
 	}
 
-	/** Set ESR Teilnehmernummer.
-		@param ESR_RenderedAccountNo ESR Teilnehmernummer	  */
 	@Override
-	public void setESR_RenderedAccountNo (java.lang.String ESR_RenderedAccountNo)
+	public void setESR_RenderedAccountNo (final java.lang.String ESR_RenderedAccountNo)
 	{
 		set_Value (COLUMNNAME_ESR_RenderedAccountNo, ESR_RenderedAccountNo);
 	}
 
-	/** Get ESR Teilnehmernummer.
-		@return ESR Teilnehmernummer	  */
 	@Override
-	public java.lang.String getESR_RenderedAccountNo () 
+	public java.lang.String getESR_RenderedAccountNo() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_ESR_RenderedAccountNo);
+		return get_ValueAsString(COLUMNNAME_ESR_RenderedAccountNo);
 	}
 }

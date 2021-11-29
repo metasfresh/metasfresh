@@ -22,19 +22,51 @@ package de.metas.async.processor.impl;
  * #L%
  */
 
-import java.sql.Timestamp;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.UUID;
-
-import javax.annotation.Nullable;
-
+import ch.qos.logback.classic.Level;
+import de.metas.async.AsyncBatchId;
+import de.metas.async.Async_Constants;
+import de.metas.async.QueueWorkPackageId;
+import de.metas.async.api.IAsyncBatchBL;
+import de.metas.async.api.IQueueDAO;
+import de.metas.async.api.IWorkpackageLogsRepository;
+import de.metas.async.api.IWorkpackageParamDAO;
+import de.metas.async.api.IWorkpackageProcessorContextFactory;
 import de.metas.async.event.WorkpackageProcessedEvent;
 import de.metas.async.event.WorkpackageProcessedEvent.Status;
+import de.metas.async.exceptions.WorkpackageSkipRequestException;
+import de.metas.async.model.I_C_Queue_Block;
+import de.metas.async.model.I_C_Queue_PackageProcessor;
+import de.metas.async.model.I_C_Queue_WorkPackage;
+import de.metas.async.processor.IQueueProcessor;
+import de.metas.async.processor.IWorkpackageSkipRequest;
+import de.metas.async.spi.IWorkpackageProcessor;
+import de.metas.async.spi.IWorkpackageProcessor.Result;
+import de.metas.async.spi.IWorkpackageProcessor2;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.EmptyUtil;
 import de.metas.common.util.time.SystemTime;
+import de.metas.error.AdIssueId;
+import de.metas.error.IErrorManager;
 import de.metas.event.IEventBusFactory;
 import de.metas.i18n.AdMessageKey;
+import de.metas.lock.api.ILock;
+import de.metas.lock.api.ILockManager;
+import de.metas.lock.exceptions.LockFailedException;
+import de.metas.logging.LogManager;
+import de.metas.logging.TableRecordMDC;
+import de.metas.monitoring.adapter.NoopPerformanceMonitoringService;
+import de.metas.monitoring.adapter.PerformanceMonitoringService;
+import de.metas.monitoring.adapter.PerformanceMonitoringService.TransactionMetadata;
+import de.metas.monitoring.adapter.PerformanceMonitoringService.Type;
+import de.metas.notification.INotificationBL;
+import de.metas.notification.UserNotificationRequest;
+import de.metas.notification.UserNotificationRequest.TargetRecordAction;
+import de.metas.user.UserId;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
+import de.metas.util.exceptions.ServiceConnectionException;
+import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.service.IDeveloperModeBL;
@@ -60,45 +92,11 @@ import org.slf4j.Logger;
 import org.slf4j.MDC;
 import org.slf4j.MDC.MDCCloseable;
 
-import ch.qos.logback.classic.Level;
-import de.metas.async.AsyncBatchId;
-import de.metas.async.Async_Constants;
-import de.metas.async.QueueWorkPackageId;
-import de.metas.async.api.IAsyncBatchBL;
-import de.metas.async.api.IQueueDAO;
-import de.metas.async.api.IWorkpackageLogsRepository;
-import de.metas.async.api.IWorkpackageParamDAO;
-import de.metas.async.api.IWorkpackageProcessorContextFactory;
-import de.metas.async.exceptions.WorkpackageSkipRequestException;
-import de.metas.async.model.I_C_Queue_Block;
-import de.metas.async.model.I_C_Queue_PackageProcessor;
-import de.metas.async.model.I_C_Queue_WorkPackage;
-import de.metas.async.processor.IQueueProcessor;
-import de.metas.async.processor.IWorkpackageSkipRequest;
-import de.metas.async.spi.IWorkpackageProcessor;
-import de.metas.async.spi.IWorkpackageProcessor.Result;
-import de.metas.async.spi.IWorkpackageProcessor2;
-import de.metas.error.AdIssueId;
-import de.metas.error.IErrorManager;
-import de.metas.lock.api.ILock;
-import de.metas.lock.api.ILockManager;
-import de.metas.lock.exceptions.LockFailedException;
-import de.metas.logging.LogManager;
-import de.metas.logging.TableRecordMDC;
-import de.metas.monitoring.adapter.NoopPerformanceMonitoringService;
-import de.metas.monitoring.adapter.PerformanceMonitoringService;
-import de.metas.monitoring.adapter.PerformanceMonitoringService.TransactionMetadata;
-import de.metas.monitoring.adapter.PerformanceMonitoringService.Type;
-import de.metas.notification.INotificationBL;
-import de.metas.notification.UserNotificationRequest;
-import de.metas.notification.UserNotificationRequest.TargetRecordAction;
-import de.metas.user.UserId;
-import de.metas.util.Loggables;
-import de.metas.util.Services;
-import de.metas.util.StringUtils;
-import de.metas.util.exceptions.ServiceConnectionException;
-import de.metas.common.util.CoalesceUtil;
-import lombok.NonNull;
+import javax.annotation.Nullable;
+import java.sql.Timestamp;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.UUID;
 
 import static de.metas.async.event.WorkpackageProcessedEvent.Status.DONE;
 import static de.metas.async.event.WorkpackageProcessedEvent.Status.ERROR;
@@ -239,6 +237,7 @@ class WorkpackageProcessorTask implements Runnable
 			}
 			else
 			{
+				markError(workPackage, new AdempiereException("Result " + resultRef.getValue() + " not supported for workPackage=" + workPackage));
 				throw new IllegalStateException("Result " + resultRef.getValue() + " not supported for workPackage=" + workPackage);
 			}
 		}
@@ -608,7 +607,7 @@ class WorkpackageProcessorTask implements Runnable
 		{
 			return; // nothing to do
 		}
-		
+
 		final WorkpackageProcessedEvent processingDoneEvent = WorkpackageProcessedEvent.builder()
 				.correlationId(correlationId)
 				.workPackageId(QueueWorkPackageId.ofRepoId(workPackage.getC_Queue_WorkPackage_ID()))

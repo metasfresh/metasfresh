@@ -1,26 +1,28 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package de.metas.inoutcandidate.model;
 
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for M_ShipmentSchedule_ExportAudit_Item
  *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public class X_M_ShipmentSchedule_ExportAudit_Item extends org.compiere.model.PO implements I_M_ShipmentSchedule_ExportAudit_Item, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1606467633L;
+	private static final long serialVersionUID = -1952174665L;
 
     /** Standard Constructor */
-    public X_M_ShipmentSchedule_ExportAudit_Item (Properties ctx, int M_ShipmentSchedule_ExportAudit_Item_ID, String trxName)
+    public X_M_ShipmentSchedule_ExportAudit_Item (final Properties ctx, final int M_ShipmentSchedule_ExportAudit_Item_ID, @Nullable final String trxName)
     {
       super (ctx, M_ShipmentSchedule_ExportAudit_Item_ID, trxName);
     }
 
     /** Load Constructor */
-    public X_M_ShipmentSchedule_ExportAudit_Item (Properties ctx, ResultSet rs, String trxName)
+    public X_M_ShipmentSchedule_ExportAudit_Item (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
@@ -28,36 +30,36 @@ public class X_M_ShipmentSchedule_ExportAudit_Item extends org.compiere.model.PO
 
 	/** Load Meta Data */
 	@Override
-	protected org.compiere.model.POInfo initPO(Properties ctx)
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
 	}
 
 	@Override
-	public org.compiere.model.I_AD_Issue getAD_Issue()
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_Issue_ID, org.compiere.model.I_AD_Issue.class);
-	}
-
-	@Override
-	public void setAD_Issue(org.compiere.model.I_AD_Issue AD_Issue)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_Issue_ID, org.compiere.model.I_AD_Issue.class, AD_Issue);
-	}
-
-	@Override
-	public void setAD_Issue_ID (int AD_Issue_ID)
+	public void setAD_Issue_ID (final int AD_Issue_ID)
 	{
 		if (AD_Issue_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_AD_Issue_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_AD_Issue_ID, Integer.valueOf(AD_Issue_ID));
+			set_ValueNoCheck (COLUMNNAME_AD_Issue_ID, AD_Issue_ID);
 	}
 
 	@Override
 	public int getAD_Issue_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_Issue_ID);
+	}
+
+	@Override
+	public void setExportSequenceNumber (final @Nullable BigDecimal ExportSequenceNumber)
+	{
+		throw new IllegalArgumentException ("ExportSequenceNumber is virtual column");	}
+
+	@Override
+	public BigDecimal getExportSequenceNumber() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_ExportSequenceNumber);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	/** 
@@ -78,16 +80,15 @@ public class X_M_ShipmentSchedule_ExportAudit_Item extends org.compiere.model.PO
 	/** DONT_EXPORT = DONT_EXPORT */
 	public static final String EXPORTSTATUS_DONT_EXPORT = "DONT_EXPORT";
 	@Override
-	public void setExportStatus (java.lang.String ExportStatus)
+	public void setExportStatus (final @Nullable java.lang.String ExportStatus)
 	{
-
 		set_Value (COLUMNNAME_ExportStatus, ExportStatus);
 	}
 
 	@Override
 	public java.lang.String getExportStatus() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_ExportStatus);
+		return get_ValueAsString(COLUMNNAME_ExportStatus);
 	}
 
 	@Override
@@ -97,18 +98,18 @@ public class X_M_ShipmentSchedule_ExportAudit_Item extends org.compiere.model.PO
 	}
 
 	@Override
-	public void setM_ShipmentSchedule_ExportAudit(de.metas.inoutcandidate.model.I_M_ShipmentSchedule_ExportAudit M_ShipmentSchedule_ExportAudit)
+	public void setM_ShipmentSchedule_ExportAudit(final de.metas.inoutcandidate.model.I_M_ShipmentSchedule_ExportAudit M_ShipmentSchedule_ExportAudit)
 	{
 		set_ValueFromPO(COLUMNNAME_M_ShipmentSchedule_ExportAudit_ID, de.metas.inoutcandidate.model.I_M_ShipmentSchedule_ExportAudit.class, M_ShipmentSchedule_ExportAudit);
 	}
 
 	@Override
-	public void setM_ShipmentSchedule_ExportAudit_ID (int M_ShipmentSchedule_ExportAudit_ID)
+	public void setM_ShipmentSchedule_ExportAudit_ID (final int M_ShipmentSchedule_ExportAudit_ID)
 	{
 		if (M_ShipmentSchedule_ExportAudit_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_M_ShipmentSchedule_ExportAudit_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_M_ShipmentSchedule_ExportAudit_ID, Integer.valueOf(M_ShipmentSchedule_ExportAudit_ID));
+			set_ValueNoCheck (COLUMNNAME_M_ShipmentSchedule_ExportAudit_ID, M_ShipmentSchedule_ExportAudit_ID);
 	}
 
 	@Override
@@ -118,12 +119,12 @@ public class X_M_ShipmentSchedule_ExportAudit_Item extends org.compiere.model.PO
 	}
 
 	@Override
-	public void setM_ShipmentSchedule_ExportAudit_Item_ID (int M_ShipmentSchedule_ExportAudit_Item_ID)
+	public void setM_ShipmentSchedule_ExportAudit_Item_ID (final int M_ShipmentSchedule_ExportAudit_Item_ID)
 	{
 		if (M_ShipmentSchedule_ExportAudit_Item_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_M_ShipmentSchedule_ExportAudit_Item_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_M_ShipmentSchedule_ExportAudit_Item_ID, Integer.valueOf(M_ShipmentSchedule_ExportAudit_Item_ID));
+			set_ValueNoCheck (COLUMNNAME_M_ShipmentSchedule_ExportAudit_Item_ID, M_ShipmentSchedule_ExportAudit_Item_ID);
 	}
 
 	@Override
@@ -139,23 +140,34 @@ public class X_M_ShipmentSchedule_ExportAudit_Item extends org.compiere.model.PO
 	}
 
 	@Override
-	public void setM_ShipmentSchedule(de.metas.inoutcandidate.model.I_M_ShipmentSchedule M_ShipmentSchedule)
+	public void setM_ShipmentSchedule(final de.metas.inoutcandidate.model.I_M_ShipmentSchedule M_ShipmentSchedule)
 	{
 		set_ValueFromPO(COLUMNNAME_M_ShipmentSchedule_ID, de.metas.inoutcandidate.model.I_M_ShipmentSchedule.class, M_ShipmentSchedule);
 	}
 
 	@Override
-	public void setM_ShipmentSchedule_ID (int M_ShipmentSchedule_ID)
+	public void setM_ShipmentSchedule_ID (final int M_ShipmentSchedule_ID)
 	{
 		if (M_ShipmentSchedule_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_M_ShipmentSchedule_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_M_ShipmentSchedule_ID, Integer.valueOf(M_ShipmentSchedule_ID));
+			set_ValueNoCheck (COLUMNNAME_M_ShipmentSchedule_ID, M_ShipmentSchedule_ID);
 	}
 
 	@Override
 	public int getM_ShipmentSchedule_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_ShipmentSchedule_ID);
+	}
+
+	@Override
+	public void setTransactionIdAPI (final @Nullable java.lang.String TransactionIdAPI)
+	{
+		throw new IllegalArgumentException ("TransactionIdAPI is virtual column");	}
+
+	@Override
+	public java.lang.String getTransactionIdAPI() 
+	{
+		return get_ValueAsString(COLUMNNAME_TransactionIdAPI);
 	}
 }

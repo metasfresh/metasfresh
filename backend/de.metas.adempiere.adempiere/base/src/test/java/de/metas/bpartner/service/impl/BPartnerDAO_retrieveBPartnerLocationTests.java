@@ -212,7 +212,7 @@ public class BPartnerDAO_retrieveBPartnerLocationTests
 
 		final BPartnerLocationId bpartnerLocationId = BPartnerLocationId.ofRepoId(bpartnerId, locationRecord.getC_BPartner_Location_ID());
 
-		assertAll(() ->bpartnerDAO.getBPartnerLocationCountryId(bpartnerLocationId));
+		assertAll(() ->bpartnerDAO.getCountryId(bpartnerLocationId));
 	}
 
 

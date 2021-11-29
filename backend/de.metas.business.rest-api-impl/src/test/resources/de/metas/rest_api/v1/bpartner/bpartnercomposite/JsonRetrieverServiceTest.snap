@@ -138,6 +138,7 @@ de.metas.rest_api.v1.bpartner.bpartnercomposite.JsonRetrieverServiceTest.retriev
         "newsletter" : false,
         "phone" : "contactRecord.phone",
         "subjectMatterContact" : false,
+        "roles" : [ ],
         "value" : "contactRecord.value"
       }
     ],

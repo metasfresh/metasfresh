@@ -1643,6 +1643,12 @@ body{
     }
 }
 
+.modal-spinner {
+    height: 100%;
+    width: 100%;
+    background-color: transparent !important;
+}
+
 .paypal-reservation-container {
     position: absolute;
     display: flex;

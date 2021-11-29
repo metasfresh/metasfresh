@@ -25,6 +25,10 @@ package de.metas.camel.externalsystems.shopware6;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 
+/**
+ * @deprecated please use (and extend if needed) {@link de.metas.camel.externalsystems.common.ProcessorHelper}.
+ */
+@Deprecated
 public class ProcessorHelper
 {
 	public static <T> T getPropertyOrThrowError(@NonNull final Exchange exchange, @NonNull final String propertyName, @NonNull final Class<T> propertyClass)

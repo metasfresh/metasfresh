@@ -1,6 +1,7 @@
 package de.metas.contracts.commission.commissioninstance.interceptor;
 
 import ch.qos.logback.classic.Level;
+import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.business.BusinessTestHelper;
 import de.metas.business.TestInvoice;
@@ -11,6 +12,7 @@ import de.metas.contracts.commission.commissioninstance.businesslogic.sales.comm
 import de.metas.contracts.commission.commissioninstance.services.CommissionAlgorithmInvoker;
 import de.metas.contracts.commission.commissioninstance.services.CommissionConfigFactory;
 import de.metas.contracts.commission.commissioninstance.services.CommissionConfigFactoryTest;
+import de.metas.contracts.commission.commissioninstance.services.CommissionConfigProvider;
 import de.metas.contracts.commission.commissioninstance.services.CommissionConfigStagingDataService;
 import de.metas.contracts.commission.commissioninstance.services.CommissionHierarchyFactory;
 import de.metas.contracts.commission.commissioninstance.services.CommissionInstanceRequestFactory;
@@ -26,6 +28,7 @@ import de.metas.contracts.commission.commissioninstance.testhelpers.TestCommissi
 import de.metas.contracts.commission.model.I_C_Commission_Instance;
 import de.metas.contracts.commission.model.I_C_Commission_Share;
 import de.metas.contracts.commission.model.X_C_Commission_Instance;
+import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.currency.CurrencyRepository;
 import de.metas.document.DocTypeId;
@@ -90,6 +93,7 @@ class C_InvoiceFacadeServiceTest
 	private OrgId orgId;
 	private BPartnerId customerId;
 	private BPartnerId salesRepPartnerId;
+	private BPartnerId orgBPartnerId;
 	private CurrencyId currencyId;
 	private ProductId salesProductId;
 	private DocTypeId creditMemoDocTypeId;
@@ -108,12 +112,13 @@ class C_InvoiceFacadeServiceTest
 
 		final CommissionConfigStagingDataService commissionConfigStagingDataService = new CommissionConfigStagingDataService();
 		final CommissionConfigFactory commissionConfigFactory = new CommissionConfigFactory(commissionConfigStagingDataService, new CommissionProductService());
+		final CommissionConfigProvider commissionConfigProvider = new CommissionConfigProvider(ImmutableList.of(commissionConfigFactory));
 		final CommissionRecordStagingService commissionInstanceRecordStagingService = new CommissionRecordStagingService();
-		final CommissionInstanceRepository commissionInstanceRepository = new CommissionInstanceRepository(commissionConfigFactory, commissionInstanceRecordStagingService);
+		final CommissionInstanceRepository commissionInstanceRepository = new CommissionInstanceRepository(commissionInstanceRecordStagingService, commissionConfigProvider);
 		final CommissionHierarchyFactory commissionHierarchyFactory = new CommissionHierarchyFactory();
 		final CommissionTriggerFactory commissionTriggerFactory = new CommissionTriggerFactory();
 		final CommissionInstanceRequestFactory commissionInstanceRequestFactory = new CommissionInstanceRequestFactory(
-				commissionConfigFactory,
+				commissionConfigProvider,
 				commissionHierarchyFactory,
 				commissionTriggerFactory);
 		final CommissionAlgorithmInvoker commissionAlgorithmInvoker = new CommissionAlgorithmInvoker();
@@ -176,7 +181,14 @@ class C_InvoiceFacadeServiceTest
 				.flatrateConditionsId(FLATRATE_CONDITION_0_COMMISSION_ID.getRepoId())
 				.docStatus("CO")
 				.isActive(false)
+				.typeConditions(TypeConditions.COMMISSION)
 				.build();
+
+		final I_C_BPartner orgBPartner = BusinessTestHelper.createBPartner("orgBPartnerId");
+		orgBPartner.setAD_OrgBP_ID(orgId.getRepoId());
+		saveRecord(orgBPartner);
+
+		orgBPartnerId = BPartnerId.ofRepoId(orgBPartner.getC_BPartner_ID());
 	}
 
 	@Test

@@ -22,11 +22,12 @@
 
 package de.metas.servicerepair.project.service.commands;
 
-import de.metas.bpartner.BPartnerContactId;
-import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.document.location.DocumentLocation;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.InOutId;
+import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
 import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
 import de.metas.organization.IOrgDAO;
@@ -96,16 +97,16 @@ public class CreateServiceRepairProjectCommand
 
 		final InOutId customerReturnId = InOutId.ofRepoId(request.getM_InOut_ID());
 		final I_M_InOut customerReturn = inoutBL.getById(customerReturnId);
-		final BPartnerLocationId bpartnerAndLocationId = BPartnerLocationId.ofRepoId(customerReturn.getC_BPartner_ID(), customerReturn.getC_BPartner_Location_ID());
-		final BPartnerContactId contactId = BPartnerContactId.ofRepoIdOrNull(customerReturn.getC_BPartner_ID(), customerReturn.getAD_User_ID());
+
+		final DocumentLocation bpartnerInfo = InOutDocumentLocationAdapterFactory.locationAdapter(customerReturn).toDocumentLocation();
 		final ZonedDateTime customerReturnDate = TimeUtil.asZonedDateTime(customerReturn.getMovementDate(), orgDAO.getTimeZone(orgId));
-		final PricingInfo pricingInfo = getPricingInfo(bpartnerAndLocationId, customerReturnDate);
+		final PricingInfo pricingInfo = getPricingInfo(bpartnerInfo.toBPartnerLocationAndCaptureId(), customerReturnDate);
 
 		final ProjectId projectId = projectService.createProjectHeader(CreateProjectRequest.builder()
 				.orgId(orgId)
 				.projectCategory(ProjectCategory.ServiceOrRepair)
-				.bpartnerAndLocationId(bpartnerAndLocationId)
-				.contactId(contactId)
+				.bpartnerAndLocationId(bpartnerInfo.getBpartnerLocationId())
+				.contactId(bpartnerInfo.getContactId())
 				.priceListVersionId(pricingInfo.getPriceListVersionId())
 				.currencyId(pricingInfo.getCurrencyId())
 				.warehouseId(WarehouseId.ofRepoId(customerReturn.getM_Warehouse_ID()))
@@ -198,7 +199,7 @@ public class CreateServiceRepairProjectCommand
 	}
 
 	private PricingInfo getPricingInfo(
-			@NonNull final BPartnerLocationId bpartnerAndLocationId,
+			@NonNull final BPartnerLocationAndCaptureId bpartnerAndLocationId,
 			@NonNull final ZonedDateTime customerReturnDate)
 	{
 		final PricingSystemId pricingSystemId = bpartnerDAO.retrievePricingSystemIdOrNull(bpartnerAndLocationId.getBpartnerId(), SOTrx.SALES);

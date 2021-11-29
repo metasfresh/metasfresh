@@ -2,11 +2,13 @@ package de.metas.contracts.invoicecandidate;
 
 import de.metas.acct.api.IProductAcctDAO;
 import de.metas.cache.CCache;
+import de.metas.contracts.location.ContractLocationHelper;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.document.dimension.Dimension;
 import de.metas.document.dimension.DimensionService;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
+import de.metas.invoicecandidate.location.adapter.InvoiceCandidateLocationAdapterFactory;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
@@ -89,9 +91,9 @@ public class HandlerTools
 
 		ic.setQtyToInvoice(BigDecimal.ZERO); // to be computed
 
-		ic.setBill_BPartner_ID(term.getBill_BPartner_ID());
-		ic.setBill_Location_ID(term.getBill_Location_ID());
-		ic.setBill_User_ID(term.getBill_User_ID());
+		InvoiceCandidateLocationAdapterFactory
+				.billLocationAdapter(ic)
+				.setFrom(ContractLocationHelper.extractBillLocation(term));
 
 		ic.setM_PricingSystem_ID(term.getM_PricingSystem_ID());
 
@@ -167,9 +169,9 @@ public class HandlerTools
 	{
 		final I_C_Flatrate_Term term = retrieveTerm(ic);
 
-		ic.setBill_BPartner_ID(term.getBill_BPartner_ID());
-		ic.setBill_Location_ID(term.getBill_Location_ID());
-		ic.setBill_User_ID(term.getBill_User_ID());
+		InvoiceCandidateLocationAdapterFactory
+				.billLocationAdapter(ic)
+				.setFrom(ContractLocationHelper.extractBillLocation(term));
 	}
 
 	public static UomId retrieveUomId(@NonNull final I_C_Invoice_Candidate icRecord)

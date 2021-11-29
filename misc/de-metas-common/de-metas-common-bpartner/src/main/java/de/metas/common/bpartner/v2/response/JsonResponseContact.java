@@ -33,6 +33,7 @@ import lombok.Builder;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.util.List;
 
 @Value
 public class JsonResponseContact
@@ -61,6 +62,7 @@ public class JsonResponseContact
 	public static final String PURCHASE_DEFAULT = "purchaseDefault";
 	public static final String PURCHASE = "purchase";
 	public static final String SUBJECT_MATTER = "subjectMatter";
+	public static final String ROLES = "roles";
 
 	@ApiModelProperty(allowEmptyValue = false, dataType = "java.lang.Long")
 	JsonMetasfreshId metasfreshId;
@@ -132,6 +134,10 @@ public class JsonResponseContact
 	@ApiModelProperty(allowEmptyValue = false)
 	boolean subjectMatter;
 
+	@ApiModelProperty(allowEmptyValue = false)
+	@JsonInclude(Include.NON_EMPTY)
+	List<JsonResponseContactRole> roles;
+
 	@JsonInclude(Include.NON_NULL)
 	@ApiModelProperty(position = 20) // shall be last
 	JsonChangeInfo changeInfo;
@@ -165,7 +171,7 @@ public class JsonResponseContact
 			@JsonProperty(PURCHASE_DEFAULT) final boolean purchaseDefault,
 			@JsonProperty(SUBJECT_MATTER) final boolean subjectMatter,
 			@JsonProperty(INVOICE_EMAIL_ENABLED) final Boolean invoiceEmailEnabled,
-
+			@JsonProperty(ROLES) final List<JsonResponseContactRole> roles,
 
 			@JsonProperty("changeInfo") @Nullable JsonChangeInfo changeInfo)
 	{
@@ -195,6 +201,7 @@ public class JsonResponseContact
 		this.email = email;
 		this.phone = phone;
 		this.invoiceEmailEnabled = invoiceEmailEnabled;
+		this.roles = roles;
 
 		this.changeInfo = changeInfo;
 	}

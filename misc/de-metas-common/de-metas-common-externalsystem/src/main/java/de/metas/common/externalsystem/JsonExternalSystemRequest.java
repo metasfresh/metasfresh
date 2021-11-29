@@ -57,6 +57,12 @@ public class JsonExternalSystemRequest
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	Map<String, String> parameters;
 
+	@NonNull
+	String traceId;
+
+	@Nullable
+	String writeAuditEndpoint;
+
 	@Builder
 	@JsonCreator
 	public JsonExternalSystemRequest(
@@ -65,7 +71,9 @@ public class JsonExternalSystemRequest
 			@JsonProperty("command") @NonNull final String command,
 			@JsonProperty("adPInstanceId") @Nullable final JsonMetasfreshId adPInstanceId,
 			@JsonProperty("externalSystemConfigId") @NonNull final JsonMetasfreshId externalSystemConfigId,
-			@JsonProperty("parameters") @Singular final Map<String, String> parameters)
+			@JsonProperty("parameters") @Singular final Map<String, String> parameters,
+			@JsonProperty("traceId") @NonNull final String traceId,
+			@JsonProperty("writeAuditEndpoint") @Nullable final String writeAuditEndpoint)
 	{
 		this.externalSystemConfigId = externalSystemConfigId;
 		this.orgCode = orgCode;
@@ -73,5 +81,7 @@ public class JsonExternalSystemRequest
 		this.command = command;
 		this.adPInstanceId = adPInstanceId;
 		this.parameters = parameters;
+		this.traceId = traceId;
+		this.writeAuditEndpoint = writeAuditEndpoint;
 	}
 }

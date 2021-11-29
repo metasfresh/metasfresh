@@ -5,6 +5,7 @@ import lombok.Value;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 
+import javax.annotation.Nullable;
 import java.util.Objects;
 
 /*
@@ -80,7 +81,7 @@ public class SqlViewRowsWhereClause
 
 	}
 
-	public SqlViewRowsWhereClause withRowsMatchingFilter(final SqlAndParams rowsMatchingFilter)
+	public SqlViewRowsWhereClause withRowsMatchingFilter(@Nullable final SqlAndParams rowsMatchingFilter)
 	{
 		if (Objects.equals(this.rowsMatchingFilter, rowsMatchingFilter))
 		{

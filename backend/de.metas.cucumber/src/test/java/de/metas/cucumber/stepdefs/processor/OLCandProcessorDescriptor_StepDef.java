@@ -38,7 +38,7 @@ public class OLCandProcessorDescriptor_StepDef
 	public void call_ol_cands_process()
 	{
 		final OLCandProcessorDescriptor olCandProcessor = olCandProcessorRepo.getById(1000003);
-		olCandBL.process(olCandProcessor);
+		olCandBL.process(olCandProcessor, null);
 	}
 
 }

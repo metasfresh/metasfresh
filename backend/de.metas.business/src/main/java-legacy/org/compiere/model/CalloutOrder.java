@@ -18,6 +18,8 @@ package org.compiere.model;
 
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.exceptions.BPartnerNoBillToAddressException;
 import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.bpartner.service.BPartnerStats;
@@ -29,9 +31,12 @@ import de.metas.currency.CurrencyPrecision;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
+import de.metas.document.location.DocumentLocation;
+import de.metas.document.location.IDocumentLocationBL;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequence.impl.IDocumentNoInfo;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.location.LocationId;
 import de.metas.logging.MetasfreshLastError;
 import de.metas.order.DeliveryRule;
 import de.metas.order.IOrderBL;
@@ -39,6 +44,8 @@ import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderLinePriceAndDiscount;
 import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
+import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
+import de.metas.order.location.adapter.OrderLineDocumentLocationAdapterFactory;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
@@ -71,6 +78,7 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -101,6 +109,8 @@ public class CalloutOrder extends CalloutEngine
 	private static final String DEFAULT_INVOICE_RULE = "DEFAULT_INVOICE_RULE";
 
 	private static final String SYSCONFIG_CopyOrgFromBPartner = "de.metas.order.CopyOrgFromBPartner";
+
+	private final IDocumentLocationBL documentLocationBL = SpringContextHolder.instance.getBean(IDocumentLocationBL.class);
 
 	/**
 	 * C_Order.C_DocTypeTarget_ID changed: - InvoiceRuld/DeliveryRule/PaymentRule - temporary Document Context: - DocSubType - HasCharges - (re-sets Business Partner info of required)
@@ -1052,16 +1062,16 @@ public class CalloutOrder extends CalloutEngine
 
 		// Check Partner Location
 		final I_C_Order order = ol.getC_Order();
-		int shipC_BPartner_Location_ID = ol.getC_BPartner_Location_ID();
-		if (shipC_BPartner_Location_ID <= 0)
+		BPartnerLocationAndCaptureId shipBPLocationId = OrderLineDocumentLocationAdapterFactory.locationAdapter(ol).getBPartnerLocationAndCaptureIdIfExists().orElse(null);
+		if (shipBPLocationId == null)
 		{
-			shipC_BPartner_Location_ID = order.getC_BPartner_Location_ID();
+			shipBPLocationId = OrderDocumentLocationAdapterFactory.locationAdapter(order).getBPartnerLocationAndCaptureIdIfExists().orElse(null);
 		}
-		if (shipC_BPartner_Location_ID <= 0)
+		if (shipBPLocationId == null)
 		{
 			return amt(calloutField); //
 		}
-		log.debug("Ship BP_Location={}", shipC_BPartner_Location_ID);
+		log.debug("Ship BP_Location={}", shipBPLocationId);
 
 		//
 		Timestamp billDate = ol.getDateOrdered();
@@ -1088,17 +1098,19 @@ public class CalloutOrder extends CalloutEngine
 		}
 		log.debug("Warehouse={}", M_Warehouse_ID);
 
-		int billC_BPartner_Location_ID = order.getBill_Location_ID();
-		if (billC_BPartner_Location_ID <= 0)
+		BPartnerLocationAndCaptureId billBPLocationId = OrderDocumentLocationAdapterFactory.billLocationAdapter(order).getBPartnerLocationAndCaptureIdIfExists().orElse(null);
+		if (billBPLocationId == null)
 		{
-			billC_BPartner_Location_ID = shipC_BPartner_Location_ID;
+			billBPLocationId = shipBPLocationId;
 		}
-		log.debug("Bill BP_Location={}", billC_BPartner_Location_ID);
+		log.debug("Bill BP_Location={}", billBPLocationId);
 
 		//
 		final int C_Tax_ID = Tax.get(ctx, M_Product_ID, C_Charge_ID, billDate,
 									 shipDate, AD_Org_ID, M_Warehouse_ID,
-									 billC_BPartner_Location_ID, shipC_BPartner_Location_ID, order.isSOTrx());
+									 billBPLocationId,
+									 shipBPLocationId,
+									 order.isSOTrx());
 		log.trace("Tax ID={}", C_Tax_ID);
 		//
 		if (C_Tax_ID <= 0)
@@ -1583,15 +1595,17 @@ public class CalloutOrder extends CalloutEngine
 		{
 			if (order.isDropShip())
 			{
-				order.setDropShip_BPartner_ID(order.getC_BPartner_ID());
-				order.setDropShip_Location_ID(order.getC_BPartner_Location_ID());
-				order.setDropShip_User_ID(order.getAD_User_ID());
+				OrderDocumentLocationAdapterFactory
+						.deliveryLocationAdapter(order)
+						.setFrom(OrderDocumentLocationAdapterFactory
+										 .locationAdapter(order)
+										 .toDocumentLocation());
 			}
 			else
 			{
-				order.setDropShip_BPartner_ID(-1);
-				order.setDropShip_Location_ID(-1);
-				order.setDropShip_User_ID(-1);
+				OrderDocumentLocationAdapterFactory
+						.deliveryLocationAdapter(order)
+						.setFrom(DocumentLocation.EMPTY);
 			}
 		}
 		else
@@ -1609,7 +1623,13 @@ public class CalloutOrder extends CalloutEngine
 				if (warehouseId != null)
 				{
 					final I_M_Warehouse warehouse = Services.get(IWarehouseDAO.class).getById(warehouseId);
-					order.setDropShip_Location_ID(warehouse.getC_BPartner_Location_ID());
+
+					OrderDocumentLocationAdapterFactory
+							.deliveryLocationAdapter(order)
+							.setFrom(DocumentLocation.builder()
+											 .bpartnerLocationId(BPartnerLocationId.ofRepoId(warehouse.getC_BPartner_ID(), warehouse.getC_BPartner_Location_ID()))
+											 .locationId(LocationId.ofRepoIdOrNull(warehouse.getC_Location_ID()))
+											 .build());
 				}
 				order.setDropShip_User_ID(-1);
 

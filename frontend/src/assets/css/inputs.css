@@ -1017,6 +1017,11 @@ table {
     box-sizing: border-box;
 }
 
+.lookup-widget-wrapper > div > .input-mandatory {
+    border: 2px solid $brand-mandatory-color;
+    border-radius: 3px;
+}
+
 .btn-borderless:focus {
     outline: none;
     box-shadow: none;

@@ -23,6 +23,7 @@
 package de.metas.tax.api;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
@@ -54,7 +55,7 @@ public class TaxQuery
 	Timestamp dateOfInterest;
 
 	@NonNull
-	BPartnerLocationId bPartnerLocationId;
+	BPartnerLocationAndCaptureId bPartnerLocationId;
 
 	@NonNull
 	SOTrx soTrx;
@@ -67,7 +68,7 @@ public class TaxQuery
 			@Nullable final WarehouseId warehouseId,
 			@Nullable final CountryId fromCountryId,
 			@Nullable final Timestamp dateOfInterest,
-			@NonNull final BPartnerLocationId bPartnerLocationId,
+			@NonNull final BPartnerLocationAndCaptureId bPartnerLocationId,
 			@NonNull final SOTrx soTrx,
 			@Nullable final TaxCategoryId taxCategoryId)
 	{

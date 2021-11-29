@@ -22,18 +22,15 @@ package org.compiere.grid.ed.menu;
  * #L%
  */
 
-
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-
+import de.metas.util.Services;
 import org.adempiere.ad.validationRule.IValidationContext;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.ui.AbstractContextMenuAction;
 import org.compiere.grid.ed.VBPartner;
 import org.compiere.grid.ed.VEditor;
 import org.compiere.model.GridField;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.Lookup;
-import org.compiere.model.MSysConfig;
 import org.compiere.util.Env;
 
 abstract class BPartnerNewUpdateContextEditorAction extends AbstractContextMenuAction
@@ -56,7 +53,7 @@ abstract class BPartnerNewUpdateContextEditorAction extends AbstractContextMenuA
 	public boolean isAvailable()
 	{
 		final int adClientId = Env.getAD_Client_ID(Env.getCtx());
-		if (!MSysConfig.getBooleanValue("UI_EnableBPartnerContextMenu", true, adClientId))
+		if (!Services.get(ISysConfigBL.class).getBooleanValue("UI_EnableBPartnerContextMenu", true, adClientId))
 		{
 			return false;
 		}

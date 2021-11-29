@@ -22,7 +22,9 @@
 
 package org.adempiere.warehouse.api;
 
+import de.metas.document.location.DocumentLocation;
 import de.metas.location.CountryId;
+import de.metas.location.LocationId;
 import de.metas.organization.OrgId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
@@ -61,4 +63,8 @@ public interface IWarehouseBL extends ISingletonService
 
 	@NonNull
 	OrgId getWarehouseOrgId(WarehouseId warehouseId);
+
+	DocumentLocation getPlainDocumentLocation(WarehouseId warehouseId);
+
+	void updateWarehouseLocation(@NonNull LocationId oldLocationId, @NonNull LocationId newLocationId);
 }

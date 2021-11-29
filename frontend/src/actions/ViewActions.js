@@ -39,6 +39,7 @@ import { getView } from '../reducers/viewHandler';
 import { createGridTable, updateGridTable, deleteTable } from './TableActions';
 import { createFilter, deleteFilter } from './FiltersActions';
 import { fetchQuickActions, deleteQuickActions } from './Actions';
+import { setRawModalTitle } from './WindowActions';
 
 /**
  * @method resetView
@@ -497,6 +498,9 @@ export function fetchLayout(
 
     return getViewLayout(windowId, viewType, viewProfileId)
       .then((response) => {
+        const { caption, type } = response.data;
+
+        isModal && dispatch(setRawModalTitle(caption, type));
         dispatch(fetchLayoutSuccess(windowId, response.data, isModal));
 
         return Promise.resolve(response.data);

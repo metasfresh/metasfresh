@@ -1,84 +1,49 @@
 package de.metas.security.impl;
 
+import de.metas.security.TableAccessLevel;
+import org.adempiere.ad.table.api.AdTableId;
 import org.compiere.model.POInfo;
 
-import de.metas.security.TableAccessLevel;
+import javax.annotation.Nullable;
+import java.util.Optional;
 
 /**
  * Supporting service for role permissions which basically provide table informations.
- *
+ * <p>
  * NOTE: we are keeping it isolated because we intent to make it pluggable in future.
  *
  * @author tsa
- *
  */
 public class TablesAccessInfo
 {
 	public static final transient TablesAccessInfo instance = new TablesAccessInfo();
 
-	// private final transient Logger logger = CLogMgt.getLogger(getClass());
-
 	private TablesAccessInfo()
 	{
-		super();
 	}
 
 	/**
-	 * Gets table's access level.
-	 *
-	 * @param adTableId
 	 * @return table's access level or null if no table was found.
 	 */
+	@Nullable
 	public final TableAccessLevel getTableAccessLevel(final int adTableId)
 	{
-		final POInfo poInfo = POInfo.getPOInfo(adTableId);
-		if (poInfo == null)
-		{
-			return null;
-		}
-		return poInfo.getAccessLevel();
+		return POInfo.getPOInfoIfPresent(AdTableId.ofRepoId(adTableId)).map(POInfo::getAccessLevel).orElse(null);
 	}
 
-	/**
-	 * Check if tableName is a view
-	 *
-	 * @param tableName
-	 * @return boolean
-	 */
 	public boolean isView(final String tableName)
 	{
-		final POInfo poInfo = POInfo.getPOInfo(tableName);
-		return poInfo == null ? false : poInfo.isView();
+		return POInfo.getPOInfoIfPresent(tableName).map(POInfo::isView).orElse(Boolean.FALSE);
 	}
 
+	@Nullable
 	public String getSingleKeyColumnNameOrNull(final String tableName)
 	{
-		final POInfo poInfo = POInfo.getPOInfo(tableName);
-		return poInfo == null ? null : poInfo.getKeyColumnName();
+		return POInfo.getPOInfoIfPresent(tableName).map(POInfo::getKeyColumnName).orElse(null);
 	}
 
-	public int getAdTableId(final String tableName)
+	public Optional<AdTableId> getAdTableId(final String tableName)
 	{
-		final POInfo poInfo = POInfo.getPOInfo(tableName);
-		return poInfo == null ? 0 : poInfo.getAD_Table_ID();
-	}
-
-	public boolean isPhysicalColumn(final String tableName, final String columnName)
-	{
-		final POInfo poInfo = POInfo.getPOInfo(tableName);
-		if (poInfo == null)
-		{
-			return false;
-		}
-		if (!poInfo.hasColumnName(columnName))
-		{
-			return false;
-		}
-		if (poInfo.isVirtualColumn(columnName))
-		{
-			return false;
-		}
-
-		return true;
+		return POInfo.getPOInfoIfPresent(tableName).map(POInfo::getAdTableId);
 	}
 }
