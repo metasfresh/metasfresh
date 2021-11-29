@@ -110,8 +110,6 @@ public class SubscriptionBL implements ISubscriptionBL
 
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 
-	private final IOrderBL orderBL = Services.get(IOrderBL.class);
-
 	@Override
 	public I_C_Flatrate_Term createSubscriptionTerm(
 			@NonNull final I_C_OrderLine ol,
