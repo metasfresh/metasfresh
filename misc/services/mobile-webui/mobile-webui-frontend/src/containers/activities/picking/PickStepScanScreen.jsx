@@ -7,8 +7,10 @@ import counterpart from 'counterpart';
 
 import { selectWFProcessFromState } from '../../../reducers/wfProcesses_status';
 import { toastError } from '../../../utils/toast';
+import { getLocation, getPickFrom, getQtyToPick } from '../../../utils';
 import { postStepPicked } from '../../../api/picking';
 import { updatePickingStepQty } from '../../../actions/PickingActions';
+import { pushHeaderEntry } from '../../../actions/HeaderActions';
 
 import StepScanScreenComponent from '../common/StepScanScreenComponent';
 
@@ -41,6 +43,27 @@ function PickStepScanScreen(WrappedComponent) {
       this.state = {
         scannedBarcode: null,
       };
+    }
+
+    onComponentDidMount() {
+      const { pushHeaderEntry } = this.props;
+      const location = getLocation(this.props, true);
+      const headerHuCode = getPickFrom(this.props).huBarcode;
+      const headerQtyToPick = getQtyToPick(this.props).qtyPicked;
+
+      pushHeaderEntry({
+        location,
+        values: [
+          {
+            caption: counterpart.translate('general.Barcode'),
+            value: headerHuCode,
+          },
+          {
+            caption: counterpart.translate('general.QtyToPick'),
+            value: headerQtyToPick,
+          },
+        ],
+      });
     }
 
     setScannedBarcode = (scannedBarcode) => {
@@ -102,12 +125,14 @@ function PickStepScanScreen(WrappedComponent) {
     // Actions:
     go: PropTypes.func.isRequired,
     updatePickingStepQty: PropTypes.func.isRequired,
+    pushHeaderEntry: PropTypes.func.isRequired,
   };
 
   return withRouter(
     connect(mapStateToProps, {
       updatePickingStepQty,
       go,
+      pushHeaderEntry,
     })(Wrapped)
   );
 }

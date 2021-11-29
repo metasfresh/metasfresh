@@ -1,9 +1,38 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
 import PickStepButton from './PickStepButton';
 
+import counterpart from 'counterpart';
+
+import { pushHeaderEntry } from '../../../actions/HeaderActions';
+import { getLocation } from '../../../utils';
+
 const PickLineScreen = (props) => {
-  const { wfProcessId, activityId, lineId, steps } = props;
+  const {
+    wfProcessId,
+    activityId,
+    lineId,
+    steps,
+    dispatch,
+    lineProps: { caption },
+  } = props;
+
+  useEffect(() => {
+    const location = getLocation(props);
+
+    dispatch(
+      pushHeaderEntry({
+        location,
+        values: [
+          {
+            caption: counterpart.translate('activities.picking.PickingLine'),
+            value: caption,
+            bold: true,
+          },
+        ],
+      })
+    );
+  }, []);
 
   return (
     <div className="pt-2 section lines-screen-container">
@@ -37,6 +66,8 @@ PickLineScreen.propTypes = {
   activityId: PropTypes.string.isRequired,
   lineId: PropTypes.string.isRequired,
   steps: PropTypes.array.isRequired,
+  lineProps: PropTypes.object.isRequired,
+  dispatch: PropTypes.func.isRequired,
 };
 
 export default PickLineScreen;

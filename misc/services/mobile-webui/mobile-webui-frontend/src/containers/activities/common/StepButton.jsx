@@ -4,6 +4,8 @@ import { connect } from 'react-redux';
 import { push } from 'connected-react-router';
 import { withRouter } from 'react-router';
 
+import { getLocation } from '../../../utils';
+
 const mapStateToProps = (state, ownProps) => {
   const { wfProcessId, activityId, lineId, stepId } = ownProps;
 
@@ -16,20 +18,14 @@ const mapStateToProps = (state, ownProps) => {
 function StepButton(WrappedComponent) {
   class Wrapped extends PureComponent {
     handleClick = () => {
-      const { wfProcessId, activityId, lineId, stepId, altStepId } = this.props;
       const { dispatch } = this.props;
-
-      const mainStepPath = `/workflow/${wfProcessId}/activityId/${activityId}/lineId/${lineId}/stepId/${stepId}`;
-      const location = altStepId ? `${mainStepPath}/altStepId/${altStepId}` : mainStepPath;
+      const location = getLocation(this.props);
 
       dispatch(push(location));
     };
 
     render() {
-      const { wfProcessId, activityId, lineId, stepId } = this.props;
-      const location = `/workflow/${wfProcessId}/activityId/${activityId}/lineId/${lineId}/stepId/${stepId}`;
-
-      return <WrappedComponent {...this.props} onHandleClick={this.handleClick} location={location} />;
+      return <WrappedComponent {...this.props} onHandleClick={this.handleClick} />;
     }
   }
 

@@ -15,3 +15,23 @@ export const unboxAxiosResponse = (axiosResponse) => {
     return axiosResponse.data;
   }
 };
+
+export const getLocation = (params, scanner) => {
+  const { wfProcessId, activityId, lineId, stepId, appId, altStepId } = params;
+
+  const location = `/workflow/${wfProcessId}/activityId/${activityId}${lineId ? `/lineId/${lineId}` : ``}${
+    stepId ? `/stepId/${stepId}` : ``
+  }${altStepId ? `/altStepId/${altStepId}` : ``}${scanner ? `/scanner/${appId}` : ``}`;
+
+  return location;
+};
+
+export const getPickFrom = (props) => {
+  const { stepProps, altStepId } = props;
+  return altStepId ? stepProps.pickFromAlternatives[altStepId] : stepProps.mainPickFrom;
+};
+
+export const getQtyToPick = (props) => {
+  const { stepProps, altStepId } = props;
+  return altStepId ? getPickFrom(props).qtyToPick : stepProps.qtyToPick;
+};

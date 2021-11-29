@@ -4,6 +4,7 @@ import { push } from 'connected-react-router';
 import PropTypes from 'prop-types';
 import { withRouter } from 'react-router';
 
+import { getLocation } from '../../../utils';
 import { selectWFProcessFromState } from '../../../reducers/wfProcesses_status';
 import ScreenToaster from '../../../components/ScreenToaster';
 import PickStepScreen from '../picking/PickStepScreen';
@@ -22,10 +23,8 @@ const getStepComponent = (appId) => {
 
 class StepScreen extends PureComponent {
   onScanButtonClick = () => {
-    const { wfProcessId, activityId, lineId, stepId, dispatch, appId, altStepId } = this.props;
-
-    const altStepPath = altStepId ? `/altStepId/${altStepId}` : ``;
-    const location = `/workflow/${wfProcessId}/activityId/${activityId}/lineId/${lineId}/stepId/${stepId}${altStepPath}/scanner/${appId}`;
+    const { dispatch } = this.props;
+    const location = getLocation(this.props, true);
 
     dispatch(push(location));
   };
@@ -60,7 +59,6 @@ const mapStateToProps = (state, ownProps) => {
     stepId,
     altStepId,
     stepProps,
-    location: ownProps.location,
   };
 };
 

@@ -3,31 +3,11 @@ import PropTypes from 'prop-types';
 import counterpart from 'counterpart';
 
 import StepButton from '../common/StepButton';
-import { pushHeaderEntry } from '../../../actions/HeaderActions';
 import Indicator from '../../../components/Indicator';
 import PickAlternatives from './PickAlternatives';
 import { computePickFromStatus } from '../../../reducers/wfProcesses_status/picking';
 
 class PickStepButton extends PureComponent {
-  handleClick = () => {
-    const { pickFrom, location } = this.props;
-    const { dispatch, onHandleClick } = this.props;
-
-    onHandleClick();
-
-    dispatch(
-      pushHeaderEntry({
-        location,
-        values: [
-          {
-            caption: counterpart.translate('general.Locator'),
-            value: pickFrom.locatorName,
-          },
-        ],
-      })
-    );
-  };
-
   render() {
     const {
       appId,
@@ -40,6 +20,7 @@ class PickStepButton extends PureComponent {
       uom,
       qtyToPick,
       pickFrom,
+      onHandleClick,
     } = this.props;
 
     const isAlternative = !pickFromAlternatives;
@@ -47,14 +28,9 @@ class PickStepButton extends PureComponent {
 
     return (
       <div className="mt-3">
-        <button
-          key={lineId}
-          className="button is-outlined complete-btn pick-higher-btn"
-          onClick={() => this.handleClick()}
-        >
+        <button key={lineId} className="button is-outlined complete-btn pick-higher-btn" onClick={onHandleClick}>
           <div className="full-size-btn">
             <div className="left-btn-side" />
-
             <div className="caption-btn">
               <div className="rows">
                 <div className="row is-full pl-5">
