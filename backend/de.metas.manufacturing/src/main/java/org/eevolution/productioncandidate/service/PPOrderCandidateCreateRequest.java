@@ -38,7 +38,7 @@ import lombok.Value;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.warehouse.WarehouseId;
 import org.eevolution.api.PPOrderCreateRequest;
-import org.eevolution.api.ShipmentScheduleId;
+import de.metas.inout.ShipmentScheduleId;
 
 import javax.annotation.Nullable;
 import java.time.Instant;

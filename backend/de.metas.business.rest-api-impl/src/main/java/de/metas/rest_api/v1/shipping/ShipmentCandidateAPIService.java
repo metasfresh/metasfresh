@@ -60,7 +60,7 @@ import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
 import de.metas.error.IssueCreateRequest;
 import de.metas.inoutcandidate.ShipmentSchedule;
-import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.ShipmentScheduleRepository;
 import de.metas.inoutcandidate.ShipmentScheduleRepository.ShipmentScheduleQuery;
 import de.metas.inoutcandidate.exportaudit.APIExportAudit;

@@ -23,6 +23,7 @@
 package org.eevolution.productioncandidate.service;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.common.util.time.SystemTime;
 import de.metas.material.event.pporder.PPOrderCandidate;
 import de.metas.material.planning.ProductPlanningId;
@@ -48,7 +49,6 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.util.Env;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.PPOrderCreateRequest;
-import org.eevolution.api.ShipmentScheduleId;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_Candidate;
 import org.eevolution.productioncandidate.agg.key.impl.PPOrderCandidateHeaderAggregationKeyBuilder;
