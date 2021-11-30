@@ -49,7 +49,7 @@ public class C_User_Assigned_Role
 		this.rabbitMQExternalSystemService = rabbitMQExternalSystemService;
 	}
 
-	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE)
+	@ModelChange(timings = ModelValidator.TYPE_AFTER_NEW)
 	public void triggerSyncBPartnerWithExternalSystem(@NonNull final I_C_User_Assigned_Role userRole)
 	{
 		final BPartnerId bpartnerId = userDAO.getBPartnerIdByUserId(UserId.ofRepoId(userRole.getAD_User_ID()));
