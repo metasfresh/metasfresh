@@ -163,7 +163,7 @@ public class ProductPrices
 		}
 	}
 
-	public static final I_M_ProductPrice retrieveMainProductPriceOrNull(final I_M_PriceList_Version plv, final ProductId productId)
+	public static I_M_ProductPrice retrieveMainProductPriceOrNull(final I_M_PriceList_Version plv, final ProductId productId)
 	{
 		final List<I_M_ProductPrice> allMainPrices = retrieveAllMainPrices(plv, productId);
 		return getFirstOrThrowExceptionIfMoreThanOne(allMainPrices);
@@ -177,7 +177,8 @@ public class ProductPrices
 				.list();
 	}
 
-	private static final ProductPriceQuery newMainProductPriceQuery(final I_M_PriceList_Version plv, final ProductId productId)
+	@NonNull
+	private static ProductPriceQuery newMainProductPriceQuery(final I_M_PriceList_Version plv, final ProductId productId)
 	{
 		return newQuery(plv)
 				.setProductId(productId)
@@ -187,7 +188,8 @@ public class ProductPrices
 				.addMatchersIfAbsent(MATCHERS_MainProductPrice); // IMORTANT: keep it last
 	}
 
-	private static I_M_ProductPrice getFirstOrThrowExceptionIfMoreThanOne(final List<I_M_ProductPrice> allMainPrices)
+	@Nullable
+	private static I_M_ProductPrice getFirstOrThrowExceptionIfMoreThanOne(@NonNull final List<I_M_ProductPrice> allMainPrices)
 	{
 		if (allMainPrices.isEmpty())
 		{
@@ -266,10 +268,11 @@ public class ProductPrices
 		}
 	}
 
+	@Nullable 
 	public static <T extends I_M_ProductPrice> T iterateAllPriceListVersionsAndFindProductPrice(
 			@Nullable final I_M_PriceList_Version startPriceListVersion,
 			@NonNull final Function<I_M_PriceList_Version, T> productPriceMapper,
-			@NonNull ZonedDateTime priceDate)
+			@NonNull final ZonedDateTime priceDate)
 	{
 		if (startPriceListVersion == null)
 		{

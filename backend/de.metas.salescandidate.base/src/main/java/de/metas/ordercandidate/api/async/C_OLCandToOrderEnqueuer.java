@@ -23,9 +23,11 @@
 package de.metas.ordercandidate.api.async;
 
 import de.metas.async.AsyncBatchId;
+import de.metas.async.QueueWorkPackageId;
 import de.metas.async.api.IAsyncBatchDAO;
 import de.metas.async.api.IWorkPackageBuilder;
 import de.metas.async.model.I_C_Async_Batch;
+import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -42,7 +44,8 @@ public class C_OLCandToOrderEnqueuer
 	private final IWorkPackageQueueFactory workPackageQueueFactory = Services.get(IWorkPackageQueueFactory.class);
 	private final IAsyncBatchDAO asyncBatchDAO = Services.get(IAsyncBatchDAO.class);
 
-	public void enqueue(@NonNull final Integer olCandProcessorId, @Nullable final AsyncBatchId asyncBatchId)
+	@NonNull
+	public QueueWorkPackageId enqueue(@NonNull final Integer olCandProcessorId, @Nullable final AsyncBatchId asyncBatchId)
 	{
 		final IWorkPackageBuilder workPackageBuilder = workPackageQueueFactory.getQueueForEnqueuing(getCtx(), C_OLCandToOrderWorkpackageProcessor.class)
 				.newBlock()
@@ -56,6 +59,7 @@ public class C_OLCandToOrderEnqueuer
 			workPackageBuilder.setC_Async_Batch(asyncBatch);
 		}
 
-		workPackageBuilder.build();
+		final I_C_Queue_WorkPackage result = workPackageBuilder.build();
+		return QueueWorkPackageId.ofRepoId(result.getC_Queue_WorkPackage_ID());
 	}
 }
