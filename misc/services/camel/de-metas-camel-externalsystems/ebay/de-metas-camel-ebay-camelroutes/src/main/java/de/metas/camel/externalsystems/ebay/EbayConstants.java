@@ -44,7 +44,7 @@ public interface EbayConstants
 	String PARAM_API_MODE = "apiMode";
 
 	// external identifier
-	String EXTERNAL_ID_PREFIX = "ext-ebay-";
+	String EXTERNAL_ID_PREFIX = "ext-Ebay-";
 
 	// default values
 	String DATA_SOURCE_INT_EBAY = "int-Ebay";
@@ -55,7 +55,7 @@ public interface EbayConstants
 	
 	// For price upserts
 	TaxCategory DEFAULT_TAX_CATEGORY = TaxCategory.NORMAL;
-	String DEFAULT_PRICELIST_ID = "-1"; //TBD
+	String DEFAULT_PRICELIST_ID = "2008396"; //TBD
 	
 
 	public enum OrderFulfillmentStatus
