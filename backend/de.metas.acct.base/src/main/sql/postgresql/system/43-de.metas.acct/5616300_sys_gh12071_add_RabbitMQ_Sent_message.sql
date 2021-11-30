@@ -1,6 +1,6 @@
 -- 2021-11-30T09:19:07.936Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,545086,0,TO_TIMESTAMP('2021-11-30 11:19:07','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Wurde schon an alle externen System gesendet','E',TO_TIMESTAMP('2021-11-30 11:19:07','YYYY-MM-DD HH24:MI:SS'),100,'RabbitMQ_Sent')
+INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,545086,0,TO_TIMESTAMP('2021-11-30 11:19:07','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Wurde schon an alle externen Systeme gesendet','E',TO_TIMESTAMP('2021-11-30 11:19:07','YYYY-MM-DD HH24:MI:SS'),100,'RabbitMQ_Sent')
 ;
 
 -- 2021-11-30T09:19:07.938Z
