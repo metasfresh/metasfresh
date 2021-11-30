@@ -55,7 +55,7 @@ public class C_User_Role
 		this.userRoleRepository = userRoleRepository;
 	}
 
-	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE)
+	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = I_C_User_Role.COLUMNNAME_Name)
 	public void triggerSyncBPartnerWithExternalSystem(@NonNull final I_C_User_Role userRole)
 	{
 		final Set<BPartnerId> bpartnerIds = userRoleRepository.getAssignedUsers(UserRoleId.ofRepoId(userRole.getC_User_Role_ID()))
