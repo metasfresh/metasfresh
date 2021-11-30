@@ -125,8 +125,8 @@ public class UserRoleRepository
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_User_Assigned_Role.COLUMNNAME_C_User_Role_ID, userRoleId)
 				.create()
+				.listDistinct(I_C_User_Assigned_Role.COLUMNNAME_C_User_Role_ID, Integer.class)
 				.stream()
-				.map(I_C_User_Assigned_Role::getAD_User_ID)
 				.map(UserId::ofRepoId)
 				.collect(ImmutableList.toImmutableList());
 	}
