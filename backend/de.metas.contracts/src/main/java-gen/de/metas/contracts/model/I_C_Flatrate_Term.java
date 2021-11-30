@@ -182,6 +182,27 @@ public interface I_C_Flatrate_Term
 	String COLUMNNAME_Bill_User_ID = "Bill_User_ID";
 
 	/**
+	 * Set Async Batch.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Async_Batch_ID (int C_Async_Batch_ID);
+
+	/**
+	 * Get Async Batch.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Async_Batch_ID();
+
+	ModelColumn<I_C_Flatrate_Term, Object> COLUMN_C_Async_Batch_ID = new ModelColumn<>(I_C_Flatrate_Term.class, "C_Async_Batch_ID", null);
+	String COLUMNNAME_C_Async_Batch_ID = "C_Async_Batch_ID";
+
+	/**
 	 * Set Currency.
 	 * The Currency for this record
 	 *
@@ -273,6 +294,33 @@ public interface I_C_Flatrate_Term
 
 	ModelColumn<I_C_Flatrate_Term, Object> COLUMN_C_Flatrate_Term_ID = new ModelColumn<>(I_C_Flatrate_Term.class, "C_Flatrate_Term_ID", null);
 	String COLUMNNAME_C_Flatrate_Term_ID = "C_Flatrate_Term_ID";
+
+	/**
+	 * Set Flatrate Term Master.
+	 * Is the ID of the first C_Flatrate_Term from entire hierarchy chain
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Flatrate_Term_Master_ID (int C_Flatrate_Term_Master_ID);
+
+	/**
+	 * Get Flatrate Term Master.
+	 * Is the ID of the first C_Flatrate_Term from entire hierarchy chain
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Flatrate_Term_Master_ID();
+
+	@Nullable de.metas.contracts.model.I_C_Flatrate_Term getC_Flatrate_Term_Master();
+
+	void setC_Flatrate_Term_Master(@Nullable de.metas.contracts.model.I_C_Flatrate_Term C_Flatrate_Term_Master);
+
+	ModelColumn<I_C_Flatrate_Term, de.metas.contracts.model.I_C_Flatrate_Term> COLUMN_C_Flatrate_Term_Master_ID = new ModelColumn<>(I_C_Flatrate_Term.class, "C_Flatrate_Term_Master_ID", de.metas.contracts.model.I_C_Flatrate_Term.class);
+	String COLUMNNAME_C_Flatrate_Term_Master_ID = "C_Flatrate_Term_Master_ID";
 
 	/**
 	 * Set Nachfolgende Vertragsperiode.
@@ -596,8 +644,8 @@ public interface I_C_Flatrate_Term
 	String COLUMNNAME_DeliveryRule = "DeliveryRule";
 
 	/**
-	 * Set Lieferung.
-	 * Wie der Auftrag geliefert wird
+	 * Set Delivery Via.
+	 * How the order will be delivered
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -606,8 +654,8 @@ public interface I_C_Flatrate_Term
 	void setDeliveryViaRule (@Nullable java.lang.String DeliveryViaRule);
 
 	/**
-	 * Get Lieferung.
-	 * Wie der Auftrag geliefert wird
+	 * Get Delivery Via.
+	 * How the order will be delivered
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -1093,7 +1141,7 @@ public interface I_C_Flatrate_Term
 	 * Set Product.
 	 * Product, Service, Item
 	 *
-	 * <br>Type: Search
+	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1103,7 +1151,7 @@ public interface I_C_Flatrate_Term
 	 * Get Product.
 	 * Product, Service, Item
 	 *
-	 * <br>Type: Search
+	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1267,7 +1315,7 @@ public interface I_C_Flatrate_Term
 	String COLUMNNAME_Processing = "Processing";
 
 	/**
-	 * Set Anfangsdatum.
+	 * Set Start Date.
 	 * First effective day (inclusive)
 	 *
 	 * <br>Type: Date
@@ -1332,7 +1380,7 @@ public interface I_C_Flatrate_Term
 	String COLUMNNAME_TerminationMemo = "TerminationMemo";
 
 	/**
-	 * Set Termination Reason.
+	 * Set Reason ofTermination .
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -1341,7 +1389,7 @@ public interface I_C_Flatrate_Term
 	void setTerminationReason (@Nullable java.lang.String TerminationReason);
 
 	/**
-	 * Get Termination Reason.
+	 * Get Reason ofTermination .
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false

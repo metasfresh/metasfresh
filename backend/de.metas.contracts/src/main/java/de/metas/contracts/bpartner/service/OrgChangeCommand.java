@@ -185,7 +185,7 @@ public class OrgChangeCommand
 					.contacts(newContacts)
 					.bankAccounts(newBPBankAccounts)
 					.build();
-			bpCompositeRepo.save(destinationBPartnerComposite);
+			bpCompositeRepo.save(destinationBPartnerComposite, false);
 		}
 
 		bpartnerBL.updateNameAndGreetingFromContacts(newBPartnerId);
@@ -760,7 +760,7 @@ public class OrgChangeCommand
 	{
 		final BPartnerComposite bPartnerComposite = bpartnerAndSubscriptions.getBPartnerComposite();
 		bPartnerComposite.getBpartner().setOrgMappingId(bpartnerAndSubscriptions.getBPartnerOrgMappingId());
-		bpCompositeRepo.save(bPartnerComposite);
+		bpCompositeRepo.save(bPartnerComposite, false);
 	}
 
 	private void createOrgSwitchRequest(@NonNull final OrgChangeHistoryId orgChangeHistoryId)

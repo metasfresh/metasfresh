@@ -32,8 +32,8 @@ import de.metas.externalsystem.grssignum.ExternalSystemGRSSignumConfig;
 import de.metas.externalsystem.grssignum.ExternalSystemGRSSignumConfigId;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Alberta;
-import de.metas.externalsystem.model.I_ExternalSystem_Config_RabbitMQ_HTTP;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_GRSSignum;
+import de.metas.externalsystem.model.I_ExternalSystem_Config_RabbitMQ_HTTP;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6Mapping;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6_UOM;
@@ -47,6 +47,7 @@ import de.metas.externalsystem.shopware6.ExternalSystemShopware6Config;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6ConfigId;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6ConfigMapping;
 import de.metas.externalsystem.shopware6.UOMShopwareMapping;
+import de.metas.externalsystem.shopware6.ProductLookup;
 import de.metas.externalsystem.woocommerce.ExternalSystemWooCommerceConfig;
 import de.metas.externalsystem.woocommerce.ExternalSystemWooCommerceConfigId;
 import de.metas.organization.OrgId;
@@ -205,6 +206,8 @@ public class ExternalSystemConfigRepo
 	{
 		switch (externalSystemType)
 		{
+			case Alberta:
+					return getAlbertaConfigByQuery(query);
 			case Shopware6:
 				return getShopware6ConfigByQuery(query);
 			default:
@@ -405,6 +408,7 @@ public class ExternalSystemConfigRepo
 				.salesRepJSONPath(config.getJSONPathSalesRepID())
 				.isActive(config.isActive())
 				.value(config.getExternalSystemValue())
+				.productLookup(ProductLookup.ofCode(config.getProductLookup()))
 				.build();
 	}
 
@@ -538,6 +542,27 @@ public class ExternalSystemConfigRepo
 				.collect(ImmutableList.toImmutableList());
 	}
 
+
+	@NonNull
+	private Optional<ExternalSystemParentConfig> getAlbertaConfigByQuery(@NonNull final ExternalSystemConfigQuery query)
+	{
+		final IQueryBuilder<I_ExternalSystem_Config_Alberta> queryBuilder = queryBL.createQueryBuilder(I_ExternalSystem_Config_Alberta.class);
+
+		queryBuilder.addEqualsFilter(I_ExternalSystem_Config_Shopware6.COLUMNNAME_ExternalSystem_Config_ID, query.getParentConfigId().getRepoId());
+
+		if (query.getIsActive() != null)
+		{
+			queryBuilder.addEqualsFilter(I_ExternalSystem_Config_Shopware6.COLUMNNAME_IsActive, query.getIsActive());
+		}
+
+		return queryBuilder
+				.create()
+				.firstOnlyOptional(I_ExternalSystem_Config_Alberta.class)
+				.map(ex -> buildExternalSystemAlbertaConfig(ex, query.getParentConfigId()))
+				.map(shopwareConfig -> getById(query.getParentConfigId())
+						.childConfig(shopwareConfig).build());
+	}
+	
 	@NonNull
 	private Optional<ExternalSystemParentConfig> getShopware6ConfigByQuery(@NonNull final ExternalSystemConfigQuery query)
 	{
@@ -557,7 +582,7 @@ public class ExternalSystemConfigRepo
 				.map(shopwareConfig -> getById(query.getParentConfigId())
 						.childConfig(shopwareConfig).build());
 	}
-
+	
 	private void storeShopware6Config(@NonNull final ExternalSystemParentConfig config)
 	{
 		final ExternalSystemShopware6Config configToSave = ExternalSystemShopware6Config.cast(config.getChildConfig());
@@ -585,6 +610,8 @@ public class ExternalSystemConfigRepo
 		record.setM_PriceList_ID(NumberUtils.asInteger(config.getPriceListId(), -1));
 		record.setIsActive(config.getIsActive());
 		record.setExternalSystemValue(config.getValue());
+
+		record.setProductLookup(config.getProductLookup().getCode());
 
 		if (config.getFreightCostNormalVatConfig() != null)
 		{
@@ -627,7 +654,6 @@ public class ExternalSystemConfigRepo
 		return record;
 	}
 
-
 	@NonNull
 	private Optional<IExternalSystemChildConfig> getGRSSignumConfigByParentId(@NonNull final ExternalSystemParentConfigId id)
 	{
@@ -668,6 +694,9 @@ public class ExternalSystemConfigRepo
 				.value(config.getExternalSystemValue())
 				.camelHttpResourceAuthKey(config.getCamelHttpResourceAuthKey())
 				.baseUrl(config.getBaseURL())
+				.tenantId(config.getTenantId())
+				.authToken(config.getAuthToken())
+				.syncBPartnersToRestEndpoint(config.isSyncBPartnersToRestEndpoint())
 				.build();
 	}
 

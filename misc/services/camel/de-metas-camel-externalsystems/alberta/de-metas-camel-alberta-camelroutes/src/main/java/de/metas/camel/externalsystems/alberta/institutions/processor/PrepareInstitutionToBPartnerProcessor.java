@@ -22,11 +22,11 @@
 
 package de.metas.camel.externalsystems.alberta.institutions.processor;
 
-import de.metas.camel.externalsystems.alberta.ProcessorHelper;
 import de.metas.camel.externalsystems.alberta.common.AlbertaConnectionDetails;
 import de.metas.camel.externalsystems.alberta.common.DataMapper;
 import de.metas.camel.externalsystems.alberta.institutions.GetInstitutionsRouteConstants;
 import de.metas.camel.externalsystems.alberta.institutions.GetInstitutionsRouteContext;
+import de.metas.camel.externalsystems.common.ProcessorHelper;
 import de.metas.camel.externalsystems.common.v2.BPUpsertCamelRequest;
 import de.metas.common.bpartner.v2.request.JsonRequestBPartnerUpsert;
 import de.metas.common.bpartner.v2.request.JsonRequestBPartnerUpsertItem;
@@ -55,7 +55,6 @@ public class PrepareInstitutionToBPartnerProcessor implements Processor
 		final AlbertaConnectionDetails connectionDetails = routeContext.getAlbertaConnectionDetails();
 
 		final String apiKey = connectionDetails.getApiKey();
-		final String tenant = connectionDetails.getTenant();
 		final String orgCode = routeContext.getOrgCode();
 		
 		final JsonBPartnerRole role = routeContext.getRole();
@@ -66,32 +65,32 @@ public class PrepareInstitutionToBPartnerProcessor implements Processor
 		switch (role)
 		{
 			case PhysicianDoctor -> {
-				final Doctor doctor = routeContext.getDoctorApi().getDoctor(apiKey, tenant, albertaResourceId);
+				final Doctor doctor = routeContext.getDoctorApi().getDoctor(apiKey, albertaResourceId);
 				validateResourceExists(doctor, albertaResourceId, Doctor.class);
 				upsertItem = DataMapper.mapDoctorToUpsertRequest(doctor, orgCode);
 			}
 			case Hospital -> {
-				final Hospital hospital = routeContext.getHospitalApi().getHospital(apiKey, tenant, albertaResourceId);
+				final Hospital hospital = routeContext.getHospitalApi().getHospital(apiKey, albertaResourceId);
 				validateResourceExists(hospital, albertaResourceId, Hospital.class);
 				upsertItem = DataMapper.mapHospitalToUpsertRequest(hospital, orgCode);
 			}
 			case NursingHome -> {
-				final NursingHome nursingHome = routeContext.getNursingHomeApi().geNursingHome(apiKey, tenant, albertaResourceId);
+				final NursingHome nursingHome = routeContext.getNursingHomeApi().geNursingHome(apiKey, albertaResourceId);
 				validateResourceExists(nursingHome, albertaResourceId, NursingHome.class);
 				upsertItem = DataMapper.mapNursingHomeToUpsertRequest(nursingHome, orgCode);
 			}
 			case NursingService -> {
-				final NursingService nursingService = routeContext.getNursingServiceApi().getNursingService(apiKey, tenant, albertaResourceId);
+				final NursingService nursingService = routeContext.getNursingServiceApi().getNursingService(apiKey, albertaResourceId);
 				validateResourceExists(nursingService, albertaResourceId, NursingService.class);
 				upsertItem = DataMapper.mapNursingServiceToUpsertRequest(nursingService, orgCode);
 			}
 			case Payer -> {
-				final Payer payer = routeContext.getPayerApi().getPayer(apiKey, tenant, albertaResourceId);
+				final Payer payer = routeContext.getPayerApi().getPayer(apiKey, albertaResourceId);
 				validateResourceExists(payer, albertaResourceId, Payer.class);
 				upsertItem = DataMapper.mapPayerToUpsertRequest(payer, orgCode);
 			}
 			case Pharmacy -> {
-				final Pharmacy pharmacy = routeContext.getPharmacyApi().getPharmacy(apiKey, tenant, albertaResourceId);
+				final Pharmacy pharmacy = routeContext.getPharmacyApi().getPharmacy(apiKey, albertaResourceId);
 				validateResourceExists(pharmacy, albertaResourceId, Pharmacy.class);
 				upsertItem = DataMapper.mapPharmacyToUpsertRequest(pharmacy, orgCode);
 			}

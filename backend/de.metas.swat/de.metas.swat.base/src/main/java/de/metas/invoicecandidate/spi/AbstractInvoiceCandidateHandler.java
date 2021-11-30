@@ -74,7 +74,7 @@ public abstract class AbstractInvoiceCandidateHandler implements IInvoiceCandida
 	{
 		// task 08507: ic.getQtyToInvoice() is already the "effective" qty.
 		// Even if QtyToInvoice_Override is set, the system will decide what to invoice (e.g. based on InvoiceRule and QtyDelivered)
-		// and update QtyToInvoice accordingly, possibly to a value that is different from QtyToInvoice_Override. Therefore we don't use invoiceCandBL.getQtyToInvoice(ic), but the getter directly
+		// and update QtyToInvoice accordingly, possibly to a value that is different from QtyToInvoice_Override. Therefore, we don't use invoiceCandBL.getQtyToInvoice(ic), but the getter directly
 
 		final Quantity qtyToInvoiceInUOM = Quantitys.create(ic.getQtyToInvoiceInUOM(), UomId.ofRepoId(ic.getC_UOM_ID()));
 		final Money netAmtToInvoice = computeNetAmtUsingQty(ic, qtyToInvoiceInUOM);
@@ -171,11 +171,5 @@ public abstract class AbstractInvoiceCandidateHandler implements IInvoiceCandida
 			ic.setDeliveryDate(firstInOut.getMovementDate());
 			ic.setFirst_Ship_BPLocation_ID(firstInOut.getC_BPartner_Location_ID());
 		}
-	}
-
-	@Override
-	public boolean isMissingInvoiceCandidate(final Object model)
-	{
-		return true;
 	}
 }

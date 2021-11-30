@@ -83,6 +83,8 @@ public interface IQueueDAO extends ISingletonService
 	 * Retrieves the POs that are referenced by the given workPackage's {@link I_C_Queue_Element}s.
 	 *
 	 * NOTE: this method is returning all those items which were not already scheduled in a previous not processed work-package.
+	 * 
+	 * @param clazz note that {@link TableRecordReference} is supported as well
 	 *
 	 * @throws de.metas.async.exceptions.PackageItemNotAvailableException if one of the work package's elements references a record which no longer exists.
 	 */
@@ -90,11 +92,15 @@ public interface IQueueDAO extends ISingletonService
 
 	/**
 	 * Similar to {@link #retrieveItems(I_C_Queue_WorkPackage, Class, String)}, but does not make a fuzz about elements whose referenced records do no longer exist.
+	 * 
+	 * @param clazz note that {@link TableRecordReference} is supported as well
 	 */
 	<T> List<T> retrieveItemsSkipMissing(I_C_Queue_WorkPackage workPackage, Class<T> clazz, String trxName);
 
 	/**
-	 * return all active POs, even the ones that are caught in other packages
+	 * Return all active POs, even the ones that are caught in other packages
+	 * 
+	 * @param clazz note that {@link TableRecordReference} is supported as well
 	 */
 	<T> List<T> retrieveAllItems(I_C_Queue_WorkPackage workPackage, Class<T> clazz);
 

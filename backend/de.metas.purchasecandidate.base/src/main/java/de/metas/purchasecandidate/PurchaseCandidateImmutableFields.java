@@ -48,6 +48,9 @@ class PurchaseCandidateImmutableFields
 	ExternalId externalLineId;
 
 	@Nullable
+	String poReference;
+	
+	@Nullable
 	OrderAndLineId salesOrderAndLineIdOrNull;
 
 	@NonNull

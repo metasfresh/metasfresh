@@ -339,7 +339,7 @@ public class JsonPersisterService
 		
 		syncJsonToContact(jsonContact, contact);
 		
-		bpartnerCompositeRepository.save(bpartnerComposite);
+		bpartnerCompositeRepository.save(bpartnerComposite, true);
 
 		final Optional<BPartnerContact> persistedContact = bpartnerComposite.extractContactByHandle(contactIdentifier.getRawValue());
 
@@ -457,7 +457,7 @@ public class JsonPersisterService
 			identifierToBuilder.put(requestItem.getLocationIdentifier(), responseItemBuilder);
 		}
 
-		bpartnerCompositeRepository.save(bpartnerComposite);
+		bpartnerCompositeRepository.save(bpartnerComposite, true);
 
 		// now collect the metasfreshIds that we got after having invoked save
 		final JsonResponseUpsertBuilder response = JsonResponseUpsert.builder();
@@ -525,7 +525,7 @@ public class JsonPersisterService
 			identifierToBuilder.put(requestItem.getContactIdentifier(), responseItemBuilder);
 		}
 
-		bpartnerCompositeRepository.save(bpartnerComposite);
+		bpartnerCompositeRepository.save(bpartnerComposite, true);
 
 		final JsonResponseUpsertBuilder response = JsonResponseUpsert.builder();
 		for (final JsonRequestContactUpsertItem requestItem : jsonContactUpsert.getRequestItems())
@@ -588,7 +588,7 @@ public class JsonPersisterService
 			identifierToBuilder.put(requestItem.getIban(), responseItemBuilder);
 		}
 
-		bpartnerCompositeRepository.save(bpartnerComposite);
+		bpartnerCompositeRepository.save(bpartnerComposite, true);
 
 		// now collect what we got
 		final JsonResponseUpsertBuilder response = JsonResponseUpsert.builder();
@@ -635,7 +635,7 @@ public class JsonPersisterService
 
 		resultBuilder.setJsonResponseBankAccountUpsertItems(syncJsonToBankAccounts(jsonRequestComposite, bpartnerComposite, parentSyncAdvise));
 
-		bpartnerCompositeRepository.save(bpartnerComposite);
+		bpartnerCompositeRepository.save(bpartnerComposite, true);
 
 		//
 		// supplement the metasfreshiId which we now have after the "save()"
@@ -894,11 +894,24 @@ public class JsonPersisterService
 		{
 			if (jsonBPartner.getInvoiceRule() == null)
 			{
-				bpartner.setInvoiceRule(null);
+				bpartner.setCustomerInvoiceRule(null);
 			}
 			else
 			{
-				bpartner.setInvoiceRule(BPartnerCompositeRestUtils.getInvoiceRule(jsonBPartner.getInvoiceRule()));
+				bpartner.setCustomerInvoiceRule(BPartnerCompositeRestUtils.getInvoiceRule(jsonBPartner.getInvoiceRule()));
+			}
+		}
+
+		// poInvoiceRule
+		if (jsonBPartner.isPoInvoiceRuleSet())
+		{
+			if (jsonBPartner.getPoInvoiceRule() == null)
+			{
+				bpartner.setVendorInvoiceRule(null);
+			}
+			else
+			{
+				bpartner.setVendorInvoiceRule(BPartnerCompositeRestUtils.getInvoiceRule(jsonBPartner.getPoInvoiceRule()));
 			}
 		}
 

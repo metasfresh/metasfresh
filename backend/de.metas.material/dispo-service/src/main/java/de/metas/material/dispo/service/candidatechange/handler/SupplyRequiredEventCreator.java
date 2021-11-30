@@ -4,6 +4,7 @@ import com.google.common.base.Preconditions;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateId;
 import de.metas.material.dispo.commons.candidate.CandidateType;
+import de.metas.material.dispo.commons.candidate.IdConstants;
 import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
@@ -80,12 +81,12 @@ public class SupplyRequiredEventCreator
 		{
 			final DemandDetail demandDetail = demandCandidate.getDemandDetail();
 			descriptorBuilder
-					.shipmentScheduleId(demandDetail.getShipmentScheduleId())
-					.forecastId(demandDetail.getForecastId())
-					.forecastLineId(demandDetail.getForecastLineId())
-					.orderId(demandDetail.getOrderId())
-					.orderLineId(demandDetail.getOrderLineId())
-					.subscriptionProgressId(demandDetail.getSubscriptionProgressId());
+					.shipmentScheduleId(IdConstants.toRepoId(demandDetail.getShipmentScheduleId()))
+					.forecastId(IdConstants.toRepoId(demandDetail.getForecastId()))
+					.forecastLineId(IdConstants.toRepoId(demandDetail.getForecastLineId()))
+					.orderId(IdConstants.toRepoId(demandDetail.getOrderId()))
+					.orderLineId(IdConstants.toRepoId(demandDetail.getOrderLineId()))
+					.subscriptionProgressId(IdConstants.toRepoId(demandDetail.getSubscriptionProgressId()));
 		}
 		return descriptorBuilder.build();
 	}

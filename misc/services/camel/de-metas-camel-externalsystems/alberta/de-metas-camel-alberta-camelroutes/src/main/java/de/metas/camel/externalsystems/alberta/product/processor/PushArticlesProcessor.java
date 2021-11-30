@@ -33,10 +33,10 @@ import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 
-import static de.metas.camel.externalsystems.alberta.ProcessorHelper.getPropertyOrThrowError;
 import static de.metas.camel.externalsystems.alberta.product.PushProductsRouteConstants.ALBERTA_EXTERNAL_REFERENCE_SYSTEM;
 import static de.metas.camel.externalsystems.alberta.product.PushProductsRouteConstants.PRODUCT_EXTERNAL_REFERENCE_TYPE;
 import static de.metas.camel.externalsystems.alberta.product.PushProductsRouteConstants.ROUTE_PROPERTY_ALBERTA_PRODUCT_API;
+import static de.metas.camel.externalsystems.common.ProcessorHelper.getPropertyOrThrowError;
 
 public class PushArticlesProcessor implements Processor
 {

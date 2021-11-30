@@ -165,7 +165,7 @@ public interface I_ExternalSystem_Config_Shopware6
 	String COLUMNNAME_ExternalSystem_Config_ID = "ExternalSystem_Config_ID";
 
 	/**
-	 * Set ExternalSystem_Config_Shopware6.
+	 * Set External system config Shopware6.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -174,7 +174,7 @@ public interface I_ExternalSystem_Config_Shopware6
 	void setExternalSystem_Config_Shopware6_ID (int ExternalSystem_Config_Shopware6_ID);
 
 	/**
-	 * Get ExternalSystem_Config_Shopware6.
+	 * Get External system config Shopware6.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -409,6 +409,27 @@ public interface I_ExternalSystem_Config_Shopware6
 	int getM_PriceList_ID();
 
 	String COLUMNNAME_M_PriceList_ID = "M_PriceList_ID";
+
+	/**
+	 * Set Product Lookup.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setProductLookup (java.lang.String ProductLookup);
+
+	/**
+	 * Get Product Lookup.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getProductLookup();
+
+	ModelColumn<I_ExternalSystem_Config_Shopware6, Object> COLUMN_ProductLookup = new ModelColumn<>(I_ExternalSystem_Config_Shopware6.class, "ProductLookup", null);
+	String COLUMNNAME_ProductLookup = "ProductLookup";
 
 	/**
 	 * Get Updated.

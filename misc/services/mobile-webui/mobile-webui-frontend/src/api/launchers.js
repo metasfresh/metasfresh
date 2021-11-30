@@ -8,7 +8,7 @@ import { apiBasePath } from '../constants';
 export function getLaunchers(applicationId) {
   return axios
     .get(`${apiBasePath}/userWorkflows/launchers`, { params: { applicationId } })
-    .then((response) => unboxAxiosResponse(response).launchers);
+    .then((response) => unboxAxiosResponse(response));
 }
 
 /**
@@ -30,5 +30,16 @@ export function startWorkflowRequest({ wfParameters }) {
 export function getWorkflowRequest(wfProcessId) {
   return axios
     .get(`${apiBasePath}/userWorkflows/wfProcess/${wfProcessId}`)
+    .then((response) => unboxAxiosResponse(response));
+}
+
+/**
+ * @method abortWorkflow
+ * @summary Abort a workflow
+ * @returns wfProcess
+ */
+export function abortWorkflowRequest(wfProcessId) {
+  return axios
+    .post(`${apiBasePath}/userWorkflows/wfProcess/${wfProcessId}/abort`)
     .then((response) => unboxAxiosResponse(response));
 }

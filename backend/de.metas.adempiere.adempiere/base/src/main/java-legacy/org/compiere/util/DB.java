@@ -42,7 +42,6 @@ import org.adempiere.ad.dao.impl.InArrayQueryFilter;
 import org.adempiere.ad.migration.logger.IMigrationLogger;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBDeadLockDetectedException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.exceptions.DBForeignKeyConstraintException;
@@ -1793,6 +1792,10 @@ public class DB
 		{
 			return String.valueOf(((RepoIdAware)param).getRepoId());
 		}
+		else if(param instanceof ReferenceListAwareEnum)
+		{
+			return TO_STRING(((ReferenceListAwareEnum)param).getCode());
+		}
 		else if (param instanceof BigDecimal)
 		{
 			return TO_NUMBER((BigDecimal)param, DisplayType.Number);
@@ -2134,7 +2137,7 @@ public class DB
 	/**
 	 * Create persistent selection in T_Selection table
 	 */
-	public void createT_Selection(@NonNull final PInstanceId pinstanceId, final Iterable<Integer> selection, @Nullable final String trxName)
+	public void createT_Selection(@NonNull final PInstanceId pinstanceId, @NonNull final Iterable<Integer> selection, @Nullable final String trxName)
 	{
 		final int pinstanceRepoId = pinstanceId.getRepoId();
 
@@ -2173,14 +2176,14 @@ public class DB
 	 *
 	 * @return generated AD_PInstance_ID that can be used to identify the selection
 	 */
-	public PInstanceId createT_Selection(final Iterable<Integer> selection, final String trxName)
+	public PInstanceId createT_Selection(@NonNull final Iterable<Integer> selection, @Nullable final String trxName)
 	{
 		final PInstanceId pinstanceId = Services.get(IADPInstanceDAO.class).createSelectionId();
 		createT_Selection(pinstanceId, selection, trxName);
 		return pinstanceId;
 	}
 
-	public PInstanceId createT_Selection(final Set<? extends RepoIdAware> selection, final String trxName)
+	public PInstanceId createT_Selection(@NonNull final Set<? extends RepoIdAware> selection, @Nullable final String trxName)
 	{
 		final ImmutableList<Integer> ids = RepoIdAwares.asRepoIds(selection);
 		return createT_Selection(ids, trxName);

@@ -74,7 +74,6 @@ import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.function.Supplier;
 
@@ -275,7 +274,7 @@ public class OrderCandidateRestControllerService
 
 		return responseBuilder.build();
 	}
-
+	
 	@Nullable
 	private BPartnerId resolveExternalBPartnerIdentifier(
 			@Nullable final String orgCode,
@@ -353,6 +352,33 @@ public class OrderCandidateRestControllerService
 				.collect(ImmutableList.toImmutableList());
 	}
 
+	private void processValidOlCands(@NonNull final JsonOLCandProcessRequest request, @NonNull final Set<OLCandId> validOlCandIds)
+	{
+		if (validOlCandIds.isEmpty())
+		{
+			return;
+		}
+
+		final AsyncBatchId processOLCandsAsyncBatchId = asyncBatchBL.newAsyncBatch(C_Async_Batch_InternalName_ProcessOLCands);
+
+		final Supplier<Void> action = () -> {
+			final PInstanceId validOLCandIdsSelectionId = DB.createT_Selection(validOlCandIds, ITrx.TRXNAME_None);
+
+			final ProcessOLCandsRequest enqueueRequest = ProcessOLCandsRequest.builder()
+					.pInstanceId(validOLCandIdsSelectionId)
+					.ship(request.getShip())
+					.invoice(request.getInvoice())
+					.closeOrder(request.getCloseOrder())
+					.build();
+
+			processOLCandsWorkpackageEnqueuer.enqueue(enqueueRequest, processOLCandsAsyncBatchId);
+
+			return null;
+		};
+
+		asyncBatchService.executeBatch(action, processOLCandsAsyncBatchId);
+	}
+
 	private void createAlbertaOrderRecords(
 			@Nullable final String orgCode,
 			@NonNull final OLCand olCand,
@@ -406,32 +432,5 @@ public class OrderCandidateRestControllerService
 				.timePeriod(jsonAlbertaOrderLineInfo.getTimePeriod())
 				.updated(jsonAlbertaOrderLineInfo.getUpdated())
 				.build();
-	}
-
-	private void processValidOlCands(@NonNull final JsonOLCandProcessRequest request, @NonNull final Set<OLCandId> validOlCandIds)
-	{
-		if (validOlCandIds.isEmpty())
-		{
-			return;
-		}
-
-		final AsyncBatchId processOLCandsAsyncBatchId = asyncBatchBL.newAsyncBatch(C_Async_Batch_InternalName_ProcessOLCands);
-
-		final Supplier<Void> action = () -> {
-			final PInstanceId validOLCandIdsSelectionId = DB.createT_Selection(validOlCandIds, ITrx.TRXNAME_None);
-
-			final ProcessOLCandsRequest enqueueRequest = ProcessOLCandsRequest.builder()
-					.pInstanceId(validOLCandIdsSelectionId)
-					.ship(request.getShip())
-					.invoice(request.getInvoice())
-					.closeOrder(request.getCloseOrder())
-					.build();
-
-			processOLCandsWorkpackageEnqueuer.enqueue(enqueueRequest, processOLCandsAsyncBatchId);
-
-			return null;
-		};
-
-		asyncBatchService.executeBatch(action, processOLCandsAsyncBatchId);
 	}
 }

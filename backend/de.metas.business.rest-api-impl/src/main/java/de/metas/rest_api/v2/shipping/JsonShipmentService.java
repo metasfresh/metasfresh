@@ -84,7 +84,6 @@ import de.metas.shipping.ShipperId;
 import de.metas.util.Check;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
-import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
@@ -197,18 +196,18 @@ public class JsonShipmentService
 			}
 
 			final AsyncBatchId currentBatchId = generateShipmentRequest.getAsyncBatchId();
-
-			loggable.addLog("processShipmentSchedules - start creating shipments with currentBatchId={}", AsyncBatchId.toRepoId(generateShipmentRequest.getAsyncBatchId()));
+			
+			loggable.addLog("processShipmentSchedules - start creating shipments with currentBatchId={}", AsyncBatchId.toRepoId(currentBatchId));
 			shipmentService.generateShipments(generateShipmentRequest);
 			final Set<InOutId> createdInoutIds = shipmentService.retrieveInOutIdsByScheduleIds(generateShipmentRequest.getScheduleIds());
-			
+
 			loggable.addLog("processShipmentSchedules - finished creating shipments with currentBatchId={}; M_InOut_IDs={}",
 							currentBatchId, createdInoutIds);
 			createdShipmentIdsCollector.addAll(createdInoutIds);
 
 			if (request.getInvoice())
 			{
-				loggable.addLog("processShipmentSchedules - start creating invoices with currentBatchId={}", AsyncBatchId.toRepoId(generateShipmentRequest.getAsyncBatchId()));
+				loggable.addLog("processShipmentSchedules - start creating invoices with currentBatchId={}", AsyncBatchId.toRepoId(currentBatchId));
 				final List<JSONInvoiceInfoResponse> createInvoiceInfos = generateInvoicesForShipmentScheduleIds(generateShipmentRequest.getScheduleIds());
 
 				loggable.addLog("processShipmentSchedules - finished creating invoices with currentBatchId={}; invoiceIds={}",

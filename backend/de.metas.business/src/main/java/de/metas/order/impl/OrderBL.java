@@ -55,6 +55,7 @@ import de.metas.order.DeliveryViaRule;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
+import de.metas.order.InvoiceRule;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
@@ -471,19 +472,23 @@ public class OrderBL implements IOrderBL
 	}
 
 	@Override
-	public Optional<DeliveryViaRule> findDeliveryViaRule(final I_C_Order orderRecord)
+	public Optional<DeliveryViaRule> findDeliveryViaRule(@NonNull final I_C_Order orderRecord)
 	{
-		final BPartnerOrderParams params = retrieveBPartnerParams(orderRecord);
-		return params.getDeliveryViaRule();
+		final Optional<BPartnerOrderParams> params = retrieveBPartnerParams(orderRecord);
+		return params.flatMap(BPartnerOrderParams::getDeliveryViaRule);
 	}
 
-	private BPartnerOrderParams retrieveBPartnerParams(@NonNull final I_C_Order orderRecord)
+	private Optional<BPartnerOrderParams> retrieveBPartnerParams(@NonNull final I_C_Order orderRecord)
 	{
 		final BPartnerId shipBPartnerId = BPartnerId.ofRepoIdOrNull(orderRecord.getC_BPartner_ID());
 		final BPartnerId billBPartnerId = BPartnerId.ofRepoIdOrNull(coalesce(
 				orderRecord.getBill_BPartner_ID(),
 				orderRecord.getC_BPartner_ID()));
-
+		if(shipBPartnerId == null || billBPartnerId == null)
+		{
+			return Optional.empty(); // orderRecord is not yet ready
+		}
+		
 		final SOTrx soTrx = SOTrx.ofBoolean(orderRecord.isSOTrx());
 
 		final BPartnerOrderParamsRepository bpartnerOrderParamsRepository = SpringContextHolder.instance.getBean(BPartnerOrderParamsRepository.class);
@@ -494,7 +499,7 @@ public class OrderBL implements IOrderBL
 				.soTrx(soTrx)
 				.build();
 
-		return bpartnerOrderParamsRepository.getBy(query);
+		return Optional.of(bpartnerOrderParamsRepository.getBy(query));
 	}
 
 	@Override
@@ -612,11 +617,15 @@ public class OrderBL implements IOrderBL
 
 		//
 		// Default Invoice/Payment Rule
-		final String invoiceRule = bp.getInvoiceRule();
+		final InvoiceRule invoiceRule = isSOTrx ?
+				InvoiceRule.ofNullableCode(bp.getInvoiceRule()) :
+				InvoiceRule.ofNullableCode(bp.getPO_InvoiceRule());
+
 		if (invoiceRule != null)
 		{
-			order.setInvoiceRule(invoiceRule);
+			order.setInvoiceRule(invoiceRule.getCode());
 		}
+
 		final String paymentRule = bp.getPaymentRule();
 		if (paymentRule != null)
 		{

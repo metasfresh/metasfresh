@@ -43,6 +43,7 @@ import de.metas.bpartner.quick_input.BPartnerContactQuickInputId;
 import de.metas.bpartner.quick_input.BPartnerQuickInputId;
 import de.metas.bpartner.service.IBPGroupDAO;
 import de.metas.common.util.time.SystemTime;
+import de.metas.document.DocTypeId;
 import de.metas.document.NewRecordContext;
 import de.metas.document.references.zoom_into.RecordWindowFinder;
 import de.metas.greeting.GreetingId;
@@ -61,6 +62,7 @@ import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
+import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
@@ -290,7 +292,7 @@ public class BPartnerQuickInputService
 		trxManager.assertThreadInheritedTrxExists();
 
 		final BPartnerComposite bpartnerComposite = toBPartnerComposite(template);
-		bpartnerCompositeRepository.save(bpartnerComposite);
+		bpartnerCompositeRepository.save(bpartnerComposite, true);
 
 		//
 		// Update the location of all contacts
@@ -298,7 +300,7 @@ public class BPartnerQuickInputService
 		bpartnerComposite
 				.getContacts()
 				.forEach(contact -> contact.setBPartnerLocationId(bpartnerLocationId));
-		bpartnerCompositeRepository.save(bpartnerComposite);
+		bpartnerCompositeRepository.save(bpartnerComposite, true);
 		final BPartnerId bpartnerId = bpartnerComposite.getBpartner().getId();
 
 		createRequestAndNotifyUserGroupIfNeeded(bpartnerComposite,
@@ -474,6 +476,15 @@ public class BPartnerQuickInputService
 				.excludeFromPromotions(template.isExcludeFromPromotions())
 				.referrer(template.getReferrer())
 				.campaignId(CampaignId.ofRepoIdOrNull(template.getMKTG_Campaign_ID()))
+
+				.paymentRule(PaymentRule.ofNullableCode(template.getPaymentRule()))
+
+				.soDocTypeTargetId(DocTypeId.ofRepoIdOrNull(template.getC_DocTypeTarget_ID()))
+
+				.firstName(template.getFirstname())
+				.lastName(template.getLastname())
+				.vatId(template.getVATaxID())
+
 				//
 				.build();
 
@@ -488,6 +499,10 @@ public class BPartnerQuickInputService
 									  .build())
 				.name(".")
 				.existingLocationId(existingLocationId)
+				.phone(template.getC_BPartner_Location_Phone())
+				.mobile(template.getC_BPartner_Location_Mobile())
+				.fax(template.getC_BPartner_Location_Fax())
+				.email(template.getC_BPartner_Location_Email())
 				.build();
 
 		//

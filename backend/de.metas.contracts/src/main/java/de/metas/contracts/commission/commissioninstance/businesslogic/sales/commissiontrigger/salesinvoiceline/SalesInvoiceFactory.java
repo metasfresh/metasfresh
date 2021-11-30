@@ -14,7 +14,9 @@ import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.invoice.service.IInvoiceLineBL;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
+import de.metas.invoicecandidate.api.impl.InvoiceLineAllocType;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
 import de.metas.money.CurrencyId;
@@ -71,6 +73,7 @@ public class SalesInvoiceFactory
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final IInvoiceLineBL invoiceLineBL = Services.get(IInvoiceLineBL.class);
+	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 
 	public SalesInvoiceFactory(@NonNull final CommissionProductService commissionProductService)
 	{
@@ -143,10 +146,35 @@ public class SalesInvoiceFactory
 					continue;
 				}
 				final List<I_C_Invoice_Candidate> invoiceCandidates = invoiceCandDAO.retrieveIcForIl(invoiceLineRecord);
+
+				boolean isCreditMemoReinvoiceable = true;
 				if (!invoiceCandidates.isEmpty())
 				{
-					logger.debug("C_InvoiceLine is not manual as it has {} C_Invoice_Candidates; -> return empty", invoiceLineRecord.getM_Product_ID());
-					continue;
+					if(invoiceIsCreditMemo)
+					{
+
+						for (final I_C_Invoice_Candidate invoiceCandidate : invoiceCandidates)
+						{
+							final I_C_Invoice_Line_Alloc alloc = invoiceCandDAO.retrieveIlaForIcAndIl(invoiceCandidate, invoiceLineRecord);
+
+							final InvoiceLineAllocType invoiceLineAllocType = InvoiceLineAllocType.ofCodeNullable(alloc.getC_Invoice_Line_Alloc_Type());
+
+							if (invoiceLineAllocType == null || invoiceLineAllocType.isCreditMemoReinvoiceable())
+							{
+								logger.debug("C_InvoiceLine_ID={} is a reinvoiceable credit memo line as it has  C_Invoice_Line_Allocation_ID={} with the type {}", 
+								invoiceLineRecord.getC_InvoiceLine_ID(), alloc.getC_Invoice_Line_Alloc_ID(), invoiceLineAllocType);
+								isCreditMemoReinvoiceable = true;
+								break;
+							}
+							isCreditMemoReinvoiceable = false;
+						}
+					}
+
+					if(isCreditMemoReinvoiceable)
+					{
+						logger.debug("C_InvoiceLine_ID={} is a reinvoiceable credit memo line; -> skip it", invoiceLineRecord.getC_InvoiceLine_ID() );
+						continue;
+					}
 				}
 
 				final CommissionPoints invoicedCommissionPoints = extractInvoicedCommissionPoints(invoiceRecord, invoiceLineRecord)

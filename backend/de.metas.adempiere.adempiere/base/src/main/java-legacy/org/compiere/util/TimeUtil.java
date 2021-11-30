@@ -2063,16 +2063,18 @@ public class TimeUtil
 		return Duration.ofNanos(stopwatch.elapsed(TimeUnit.NANOSECONDS));
 	}
 
-	public static Range<LocalDate> toLocalDateRange(
+	public static Range<Instant> toInstantsRange(
 			@Nullable final java.sql.Timestamp from,
 			@Nullable final java.sql.Timestamp to)
 	{
-		return toLocalDateRange(asLocalDate(from), asLocalDate(to));
+		return toInstantsRange(
+				from != null ? from.toInstant() : null,
+				to != null ? to.toInstant() : null);
 	}
 
-	public static Range<LocalDate> toLocalDateRange(
-			@Nullable final LocalDate from,
-			@Nullable final LocalDate to)
+	public static Range<Instant> toInstantsRange(
+			@Nullable final Instant from,
+			@Nullable final Instant to)
 	{
 		if (from == null)
 		{

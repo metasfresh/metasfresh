@@ -58,7 +58,7 @@ public class TokenService
 			return Optional.empty();
 		}
 
-		return Optional.of(restApiAuthToken.get(String.valueOf(token)));
+		return Optional.ofNullable(restApiAuthToken.get(String.valueOf(token)));
 	}
 
 	public void expiryToken(@NonNull final Object token)

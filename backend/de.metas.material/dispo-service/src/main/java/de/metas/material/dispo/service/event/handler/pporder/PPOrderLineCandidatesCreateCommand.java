@@ -1,7 +1,5 @@
 package de.metas.material.dispo.service.event.handler.pporder;
 
-import javax.annotation.Nullable;
-
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.Candidate.CandidateBuilder;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
@@ -18,6 +16,8 @@ import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderLine;
 import lombok.Builder;
 import lombok.NonNull;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -105,7 +105,7 @@ final class PPOrderLineCandidatesCreateCommand
 
 		final CandidateBuilder candidateBuilder = existingLineCandidate != null
 				? existingLineCandidate.toBuilder()
-				: Candidate.builderForClientAndOrgId(ppOrder.getClientAndOrgId());
+				: Candidate.builderForClientAndOrgId(ppOrder.getPpOrderData().getClientAndOrgId());
 
 		final CandidateType candidateType = PPOrderHandlerUtils.extractCandidateType(ppOrderLine);
 		final MaterialDescriptor materialDescriptor = createMaterialDescriptor(ppOrderLine);
@@ -131,7 +131,7 @@ final class PPOrderLineCandidatesCreateCommand
 			@NonNull final PPOrder ppOrder,
 			@NonNull final PPOrderLine ppOrderLine)
 	{
-		final MaterialDispoGroupId groupId = ppOrder.getMaterialDispoGroupId();
+		final MaterialDispoGroupId groupId = ppOrder.getPpOrderData().getMaterialDispoGroupId();
 		if (groupId == null)
 		{
 			// return false, but don't write another log message; we already logged in the other createQuery() method
@@ -142,17 +142,17 @@ final class PPOrderLineCandidatesCreateCommand
 				.type(PPOrderHandlerUtils.extractCandidateType(ppOrderLine))
 				.businessCase(CandidateBusinessCase.PRODUCTION)
 				.groupId(groupId)
-				.materialDescriptorQuery(PPOrderHandlerUtils.createMaterialDescriptorQuery(ppOrderLine.getProductDescriptor()))
+				.materialDescriptorQuery(PPOrderHandlerUtils.createMaterialDescriptorQuery(ppOrderLine.getPpOrderLineData().getProductDescriptor()))
 				.build();
 	}
 
 	private MaterialDescriptor createMaterialDescriptor(@NonNull final PPOrderLine ppOrderLine)
 	{
 		return MaterialDescriptor.builder()
-				.date(ppOrderLine.getIssueOrReceiveDate())
-				.productDescriptor(ppOrderLine.getProductDescriptor())
-				.quantity(ppOrderLine.getQtyOpenNegateIfReceipt())
-				.warehouseId(ppOrder.getWarehouseId())
+				.date(ppOrderLine.getPpOrderLineData().getIssueOrReceiveDate())
+				.productDescriptor(ppOrderLine.getPpOrderLineData().getProductDescriptor())
+				.quantity(ppOrderLine.getPpOrderLineData().getQtyOpenNegateIfReceipt())
+				.warehouseId(ppOrder.getPpOrderData().getWarehouseId())
 				// .customerId(ppOrder.getBPartnerId()) not 100% sure if the ppOrder's bPartner is the customer this is made for
 				.build();
 	}
@@ -162,11 +162,11 @@ final class PPOrderLineCandidatesCreateCommand
 		return ProductionDetail.builder()
 				.advised(advised)
 				.pickDirectlyIfFeasible(pickDirectlyIfFeasible)
-				.plantId(ppOrder.getPlantId())
-				.qty(ppOrderLine.getQtyRequired())
-				.productPlanningId(ppOrder.getProductPlanningId())
-				.productBomLineId(ppOrderLine.getProductBomLineId())
-				.description(ppOrderLine.getDescription())
+				.plantId(ppOrder.getPpOrderData().getPlantId())
+				.qty(ppOrderLine.getPpOrderLineData().getQtyRequired())
+				.productPlanningId(ppOrder.getPpOrderData().getProductPlanningId())
+				.productBomLineId(ppOrderLine.getPpOrderLineData().getProductBomLineId())
+				.description(ppOrderLine.getPpOrderLineData().getDescription())
 				.ppOrderId(ppOrder.getPpOrderId())
 				.ppOrderDocStatus(ppOrder.getDocStatus())
 				.ppOrderLineId(ppOrderLine.getPpOrderLineId())

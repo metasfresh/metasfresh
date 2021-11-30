@@ -1,21 +1,28 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { v4 as uuidv4 } from 'uuid';
 import PropTypes from 'prop-types';
 import { withRouter } from 'react-router';
 import { map } from 'lodash';
 
 import { populateLaunchers } from '../../actions/LauncherActions';
+import { setActiveApplication } from '../../actions/ApplicationsActions';
 import { getLaunchers } from '../../api/launchers';
+import { selectApplicationLaunchersFromState } from '../../reducers/launchers';
 import WFLauncherButton from './WFLauncherButton';
 import * as ws from '../../utils/websocket';
+import ButtonWithIndicator from '../../components/ButtonWithIndicator';
+import { gotoAppLaunchersBarcodeScanner } from '../../routes/launchers';
 
 class WFLaunchersScreen extends Component {
   componentDidMount() {
-    const { populateLaunchers, applicationId } = this.props;
+    const { applicationId, applications, setActiveApplication, populateLaunchers } = this.props;
 
-    getLaunchers(applicationId).then((launchers) => {
-      populateLaunchers({ applicationId, launchers });
+    if (!applications.activeApplication && Object.keys(applications).length) {
+      setActiveApplication({ id: applicationId, caption: applications[applicationId] });
+    }
+
+    getLaunchers(applicationId).then((applicationLaunchers) => {
+      populateLaunchers({ applicationId, applicationLaunchers });
     });
   }
 
@@ -36,17 +43,33 @@ class WFLaunchersScreen extends Component {
 
   onWebsocketMessage = (message) => {
     const { populateLaunchers, applicationId } = this.props;
-    const { launchers } = JSON.parse(message.body);
-    populateLaunchers({ applicationId, launchers });
+    const applicationLaunchers = JSON.parse(message.body);
+    populateLaunchers({ applicationId, applicationLaunchers });
+  };
+
+  onScanBarcodeButtonClicked = () => {
+    const { applicationId, gotoAppLaunchersBarcodeScanner } = this.props;
+    gotoAppLaunchersBarcodeScanner(applicationId);
   };
 
   render() {
-    const { launchers } = this.props;
+    const { applicationLaunchers } = this.props;
 
     return (
       <div className="container launchers-container">
-        {map(launchers, (launcher) => {
-          let key = launcher.startedWFProcessId ? 'started-' + launcher.startedWFProcessId : 'new-' + uuidv4();
+        {applicationLaunchers.scanBarcodeToStartJobSupport && (
+          <>
+            <div className="mt-0">
+              <button className="button is-outlined complete-btn" onClick={this.onScanBarcodeButtonClicked}>
+                <ButtonWithIndicator caption="Scan barcode" />
+              </button>
+            </div>
+            <br />
+          </>
+        )}
+
+        {map(applicationLaunchers.list, (launcher, index) => {
+          const key = launcher.startedWFProcessId ? 'started-' + launcher.startedWFProcessId : 'new-' + index;
           return <WFLauncherButton key={key} id={key} {...launcher} />;
         })}
       </div>
@@ -57,21 +80,30 @@ class WFLaunchersScreen extends Component {
 WFLaunchersScreen.propTypes = {
   //
   // Props
-  launchers: PropTypes.object.isRequired,
   userToken: PropTypes.string.isRequired,
   applicationId: PropTypes.string.isRequired,
+  applications: PropTypes.object,
+  applicationLaunchers: PropTypes.object.isRequired,
   //
   // Actions
   populateLaunchers: PropTypes.func.isRequired,
+  setActiveApplication: PropTypes.func.isRequired,
+  gotoAppLaunchersBarcodeScanner: PropTypes.func.isRequired,
 };
 
 const mapStateToProps = (state, { match }) => {
   const { applicationId } = match.params;
+
   return {
-    applicationId,
-    launchers: state.launchers[applicationId],
     userToken: state.appHandler.token,
+    applicationId,
+    applications: state.applications,
+    applicationLaunchers: selectApplicationLaunchersFromState(state, applicationId),
   };
 };
 
-export default withRouter(connect(mapStateToProps, { populateLaunchers })(WFLaunchersScreen));
+export default withRouter(
+  connect(mapStateToProps, { populateLaunchers, setActiveApplication, gotoAppLaunchersBarcodeScanner })(
+    WFLaunchersScreen
+  )
+);

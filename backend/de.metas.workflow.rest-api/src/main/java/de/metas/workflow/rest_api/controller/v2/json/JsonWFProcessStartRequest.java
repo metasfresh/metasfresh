@@ -44,7 +44,7 @@ public class JsonWFProcessStartRequest
 	@JsonPOJOBuilder(withPrefix = "")
 	public static class JsonWFProcessStartRequestBuilder {}
 
-	static final String PARAM_ApplicationId = "applicationId";
+	public static final String PARAM_ApplicationId = "applicationId";
 
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	@NonNull Map<String, Object> wfParameters;

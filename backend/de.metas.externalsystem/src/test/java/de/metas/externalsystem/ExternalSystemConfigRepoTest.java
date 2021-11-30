@@ -39,6 +39,7 @@ import de.metas.externalsystem.other.ExternalSystemOtherConfigRepository;
 import de.metas.externalsystem.rabbitmqhttp.ExternalSystemRabbitMQConfigId;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6Config;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6ConfigId;
+import de.metas.externalsystem.shopware6.ProductLookup;
 import de.metas.externalsystem.woocommerce.ExternalSystemWooCommerceConfigId;
 import de.metas.pricing.PriceListId;
 import lombok.Builder;
@@ -129,6 +130,7 @@ class ExternalSystemConfigRepoTest
 		childRecord.setJSONPathSalesRepID("/test/salesrep");
 		childRecord.setJSONPathConstantBPartnerLocationID("/test/bpl");
 		childRecord.setM_PriceList_ID(1);
+		childRecord.setProductLookup(ProductLookup.ProductNumber.getCode());
 		saveRecord(childRecord);
 
 		final I_C_UOM uom = newInstance(I_C_UOM.class);
@@ -196,6 +198,7 @@ class ExternalSystemConfigRepoTest
 		childRecord.setM_PriceList_ID(1);
 		childRecord.setExternalSystemValue(value);
 		childRecord.setExternalSystem_Config_ID(parentRecord.getExternalSystem_Config_ID());
+		childRecord.setProductLookup(ProductLookup.ProductNumber.getCode());
 		saveRecord(childRecord);
 
 		final I_C_UOM uom = newInstance(I_C_UOM.class);
@@ -345,6 +348,7 @@ class ExternalSystemConfigRepoTest
 		childRecord.setJSONPathConstantBPartnerLocationID("/test/bpl");
 		childRecord.setExternalSystem_Config_ID(parentRecord.getExternalSystem_Config_ID());
 		childRecord.setM_PriceList_ID(1);
+		childRecord.setProductLookup(ProductLookup.ProductNumber.getCode());
 		saveRecord(childRecord);
 
 		final I_ExternalSystem_Config_Shopware6Mapping childMappingRecord = newInstance(I_ExternalSystem_Config_Shopware6Mapping.class);
@@ -411,7 +415,7 @@ class ExternalSystemConfigRepoTest
 		assertThat(result.getId().getRepoId()).isEqualTo(childRecord.getExternalSystem_Config_RabbitMQ_HTTP_ID());
 		expect(result).toMatchSnapshot();
 	}
-	
+
 	@Test
 	void externalSystem_Other_Config_getById()
 	{
@@ -514,12 +518,10 @@ class ExternalSystemConfigRepoTest
 		parentRecord.setType(X_ExternalSystem_Config.TYPE_GRSSignum);
 		saveRecord(parentRecord);
 
-		final I_ExternalSystem_Config_GRSSignum childRecord = newInstance(I_ExternalSystem_Config_GRSSignum.class);
-		childRecord.setBaseURL("baseUrl");
-		childRecord.setExternalSystem_Config_ID(parentRecord.getExternalSystem_Config_ID());
-		childRecord.setExternalSystemValue("testGRSSignumValue");
-		childRecord.setCamelHttpResourceAuthKey("authKey");
-		saveRecord(childRecord);
+		final I_ExternalSystem_Config_GRSSignum childRecord = createGrsConfigBuilder()
+				.externalSystemConfigId(parentRecord.getExternalSystem_Config_ID())
+				.value("testGRSSignumValue")
+				.build();
 
 		// when
 		final ExternalSystemGRSSignumConfigId id = ExternalSystemGRSSignumConfigId.ofRepoId(childRecord.getExternalSystem_Config_GRSSignum_ID());
@@ -539,12 +541,11 @@ class ExternalSystemConfigRepoTest
 		parentRecord.setType(X_ExternalSystem_Config.TYPE_GRSSignum);
 		saveRecord(parentRecord);
 
-		final I_ExternalSystem_Config_GRSSignum childRecord = newInstance(I_ExternalSystem_Config_GRSSignum.class);
-		childRecord.setBaseURL("baseUrl");
-		childRecord.setExternalSystem_Config_ID(parentRecord.getExternalSystem_Config_ID());
-		childRecord.setExternalSystemValue("testGRSSignumValue");
-		childRecord.setCamelHttpResourceAuthKey("authKey");
-		saveRecord(childRecord);
+		createGrsConfigBuilder()
+				.externalSystemConfigId(parentRecord.getExternalSystem_Config_ID())
+				.value("testGRSSignumValue")
+				.syncBPartners(false)
+				.build();
 
 		final ExternalSystemParentConfigId externalSystemParentConfigId = ExternalSystemParentConfigId.ofRepoId(parentRecord.getExternalSystem_Config_ID());
 
@@ -564,17 +565,15 @@ class ExternalSystemConfigRepoTest
 		final I_ExternalSystem_Config parentRecord = newInstance(I_ExternalSystem_Config.class);
 		parentRecord.setName("name");
 		parentRecord.setType(X_ExternalSystem_Config.TYPE_GRSSignum);
-		
+
 		saveRecord(parentRecord);
 
 		final String value = "testGRSSignumValue";
 
-		final I_ExternalSystem_Config_GRSSignum childRecord = newInstance(I_ExternalSystem_Config_GRSSignum.class);
-		childRecord.setBaseURL("baseUrl");
-		childRecord.setExternalSystem_Config_ID(parentRecord.getExternalSystem_Config_ID());
-		childRecord.setExternalSystemValue(value);
-		childRecord.setCamelHttpResourceAuthKey("authKey");
-		saveRecord(childRecord);
+		createGrsConfigBuilder()
+				.externalSystemConfigId(parentRecord.getExternalSystem_Config_ID())
+				.value(value)
+				.build();
 
 		// when
 		final ExternalSystemParentConfig result = externalSystemConfigRepo.getByTypeAndValue(ExternalSystemType.GRSSignum, value)
@@ -596,12 +595,10 @@ class ExternalSystemConfigRepoTest
 
 		final String value = "testGRSSignumValue";
 
-		final I_ExternalSystem_Config_GRSSignum childRecord = newInstance(I_ExternalSystem_Config_GRSSignum.class);
-		childRecord.setBaseURL("baseUrl");
-		childRecord.setExternalSystem_Config_ID(parentRecord.getExternalSystem_Config_ID());
-		childRecord.setExternalSystemValue(value);
-		childRecord.setCamelHttpResourceAuthKey("authKey");
-		saveRecord(childRecord);
+		createGrsConfigBuilder()
+				.externalSystemConfigId(parentRecord.getExternalSystem_Config_ID())
+				.value(value)
+				.build();
 
 		// when
 		final Optional<ExternalSystemParentConfig> externalSystemParentConfig = externalSystemConfigRepo.getByTypeAndValue(ExternalSystemType.Shopware6, value);
@@ -630,6 +627,7 @@ class ExternalSystemConfigRepoTest
 		childRecord.setExternalSystem_Config_ID(parentRecord.getExternalSystem_Config_ID());
 		childRecord.setM_PriceList_ID(1);
 		childRecord.setIsActive(false);
+		childRecord.setProductLookup(ProductLookup.ProductNumber.getCode());
 		saveRecord(childRecord);
 
 		final I_C_UOM uom = newInstance(I_C_UOM.class);
@@ -675,6 +673,7 @@ class ExternalSystemConfigRepoTest
 		initialChildRecord.setExternalSystemValue("testShopware6Value");
 		initialChildRecord.setExternalSystem_Config_ID(initialParentRecord.getExternalSystem_Config_ID());
 		initialChildRecord.setM_PriceList_ID(1);
+		initialChildRecord.setProductLookup(ProductLookup.ProductNumber.getCode());
 		initialChildRecord.setIsActive(false);
 		saveRecord(initialChildRecord);
 
@@ -736,5 +735,25 @@ class ExternalSystemConfigRepoTest
 		saveRecord(record);
 
 		return record;
+	}
+
+	@NonNull
+	@Builder(builderMethodName = "createGrsConfigBuilder", builderClassName = "grsConfigBuilder")
+	private I_ExternalSystem_Config_GRSSignum createGrsConfig(
+			final int externalSystemConfigId,
+			@NonNull final String value,
+			@Nullable final Boolean syncBPartners)
+	{
+		final I_ExternalSystem_Config_GRSSignum childRecord = newInstance(I_ExternalSystem_Config_GRSSignum.class);
+		childRecord.setBaseURL("baseUrl");
+		childRecord.setExternalSystem_Config_ID(externalSystemConfigId);
+		childRecord.setExternalSystemValue(value);
+		childRecord.setCamelHttpResourceAuthKey("authKey");
+		childRecord.setTenantId("tenantId");
+		childRecord.setAuthToken("authToken");
+		childRecord.setIsSyncBPartnersToRestEndpoint(CoalesceUtil.coalesceNotNull(syncBPartners, true));
+		saveRecord(childRecord);
+
+		return childRecord;
 	}
 }

@@ -82,18 +82,18 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 	 * @return <code>false</code>, the candidates will be created by {@link C_Order_Handler}.
 	 */
 	@Override
-	public boolean isCreateMissingCandidatesAutomatically()
+	public CandidatesAutoCreateMode getGeneralCandidatesAutoCreateMode()
 	{
-		return false;
+		return CandidatesAutoCreateMode.DONT;
 	}
 
 	/**
 	 * @return <code>false</code>, the candidates will be created by {@link C_Order_Handler}.
 	 */
 	@Override
-	public boolean isCreateMissingCandidatesAutomatically(final Object model)
+	public CandidatesAutoCreateMode getSpecificCandidatesAutoCreateMode(final Object model)
 	{
-		return false;
+		return CandidatesAutoCreateMode.DONT;
 	}
 
 	/**
@@ -323,6 +323,15 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		ic.setC_Order_ID(orderLine.getC_Order_ID());
 
 		setC_PaymentTerm(ic, orderLine);
+
+		setIncoterms(ic, orderLine);
+	}
+
+	private void setIncoterms(@NonNull final I_C_Invoice_Candidate ic,
+			@NonNull final org.compiere.model.I_C_OrderLine orderLine)
+	{
+		final org.compiere.model.I_C_Order order = orderLine.getC_Order();
+		ic.setC_Incoterms_ID(order.getC_Incoterms_ID());
 	}
 
 	private void setC_PaymentTerm(

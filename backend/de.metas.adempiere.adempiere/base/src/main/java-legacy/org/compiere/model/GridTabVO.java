@@ -265,6 +265,11 @@ public class GridTabVO implements Evaluatee, Serializable
 				vo.IsHighVolume = true;
 			}
 
+			if ("Y".equals(rs.getString("IsAutodetectDefaultDateFilter")))
+			{
+				vo.IsAutodetectDefaultDateFilter = true;
+			}
+
 			//
 			// Where clause
 			{
@@ -514,6 +519,9 @@ public class GridTabVO implements Evaluatee, Serializable
 	 */
 	private AdProcessId printProcessId;
 
+	/** Detect default date filter	*/
+	private boolean IsAutodetectDefaultDateFilter;
+	
 	/**
 	 * Where
 	 */
@@ -767,6 +775,7 @@ public class GridTabVO implements Evaluatee, Serializable
 		clone.IsSingleRow = IsSingleRow;
 		clone.IsReadOnly = IsReadOnly;
 		clone.IsInsertRecord = IsInsertRecord;
+		clone.IsAutodetectDefaultDateFilter = IsAutodetectDefaultDateFilter;
 		clone.HasTree = HasTree;
 		clone.AD_Table_ID = AD_Table_ID;
 		clone.AD_Column_ID = AD_Column_ID;
@@ -1091,6 +1100,10 @@ public class GridTabVO implements Evaluatee, Serializable
 		return IsInsertRecord;
 	}
 
+	public boolean isAutodetectDefaultDateFilter()
+	{
+		return IsAutodetectDefaultDateFilter;
+	}
 	public boolean isDeleteable()
 	{
 		return IsDeleteable;

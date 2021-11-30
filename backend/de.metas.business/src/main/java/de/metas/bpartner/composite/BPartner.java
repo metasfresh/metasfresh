@@ -4,15 +4,16 @@ import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.OrgMappingId;
-import de.metas.marketing.base.model.CampaignId;
+import de.metas.document.DocTypeId;
 import de.metas.greeting.GreetingId;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.marketing.base.model.CampaignId;
 import de.metas.order.InvoiceRule;
+import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PricingSystemId;
-import de.metas.payment.PaymentRule;
 import de.metas.util.lang.ExternalId;
 import lombok.Builder;
 import lombok.Data;
@@ -94,6 +95,10 @@ public class BPartner
 	private String name3;
 	private final GreetingId greetingId;
 
+	private final DocTypeId soDocTypeTargetId;
+	private final String firstName;
+	private final String lastName;
+
 	/**
 	 * non-empty value implies that the bpartner is also a company
 	 */
@@ -127,7 +132,8 @@ public class BPartner
 	private PaymentRule paymentRule;
 	private String internalName;
 
-	private InvoiceRule invoiceRule;
+	private InvoiceRule customerInvoiceRule;
+	private InvoiceRule vendorInvoiceRule;
 
 	private String globalId;
 
@@ -182,7 +188,8 @@ public class BPartner
 			@Nullable final String url2,
 			@Nullable final String url3,
 			@Nullable final BPGroupId groupId,
-			@Nullable final InvoiceRule invoiceRule,
+			@Nullable final InvoiceRule customerInvoiceRule,
+			@Nullable final InvoiceRule vendorInvoiceRule,
 			@Nullable final Boolean vendor,
 			@Nullable final Boolean customer,
 			@Nullable final Boolean company,
@@ -202,7 +209,10 @@ public class BPartner
 			@Nullable final PricingSystemId vendorPricingSystemId,
 			final boolean excludeFromPromotions,
 			@Nullable final String referrer,
-			@Nullable final CampaignId campaignId)
+			@Nullable final CampaignId campaignId,
+			@Nullable final DocTypeId soDocTypeTargetId,
+			@Nullable final String firstName,
+			@Nullable final String lastName)
 	{
 		this.id = id;
 		this.externalId = externalId;
@@ -221,7 +231,8 @@ public class BPartner
 		this.url2 = url2;
 		this.url3 = url3;
 		this.groupId = groupId;
-		this.invoiceRule = invoiceRule;
+		this.customerInvoiceRule = customerInvoiceRule;
+		this.vendorInvoiceRule = vendorInvoiceRule;
 		this.vendor = coalesce(vendor, false);
 		this.customer = coalesce(customer, false);
 		this.company = coalesce(company, false);
@@ -245,6 +256,10 @@ public class BPartner
 		this.excludeFromPromotions = excludeFromPromotions;
 		this.referrer = referrer;
 		this.campaignId = campaignId;
+
+		this.soDocTypeTargetId = soDocTypeTargetId;
+		this.firstName = firstName;
+		this.lastName = lastName;
 	}
 
 	/**

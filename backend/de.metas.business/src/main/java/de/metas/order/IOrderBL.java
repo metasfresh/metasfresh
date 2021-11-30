@@ -255,7 +255,7 @@ public interface IOrderBL extends ISingletonService
 
 	void closeOrder(OrderId orderId);
 
-	Optional<DeliveryViaRule> findDeliveryViaRule(I_C_Order orderRecord);
+	Optional<DeliveryViaRule> findDeliveryViaRule(@NonNull I_C_Order orderRecord);
 
 	String getDocumentNoById(OrderId orderId);
 }

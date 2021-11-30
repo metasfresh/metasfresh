@@ -46,10 +46,12 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.util.TimeUtil;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -104,6 +106,13 @@ public class C_Order_StepDef
 			order.setIsSOTrx(DataTableUtil.extractBooleanForColumnName(tableRow, I_C_Order.COLUMNNAME_IsSOTrx));
 			order.setDateOrdered(DataTableUtil.extractDateTimestampForColumnName(tableRow, I_C_Order.COLUMNNAME_DateOrdered));
 
+			final ZonedDateTime prepartionDate = DataTableUtil.extractZonedDateTimeOrNullForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_PreparationDate);
+			if (prepartionDate != null)
+			{
+				order.setPreparationDate(TimeUtil.asTimestamp(prepartionDate));
+				order.setDatePromised(TimeUtil.asTimestamp(prepartionDate));
+			}
+
 			if (EmptyUtil.isNotBlank(poReference))
 			{
 				order.setPOReference(poReference);
@@ -116,7 +125,7 @@ public class C_Order_StepDef
 
 			saveRecord(order);
 
-			orderTable.put(DataTableUtil.extractRecordIdentifier(tableRow, I_C_Order.COLUMNNAME_C_Order_ID), order);
+			orderTable.putOrReplace(DataTableUtil.extractRecordIdentifier(tableRow, I_C_Order.COLUMNNAME_C_Order_ID), order);
 		}
 	}
 
@@ -196,7 +205,7 @@ public class C_Order_StepDef
 		assertThat(salesOrder.getDocStatus()).isEqualTo(IDocument.STATUS_Closed);
 	}
 
-	@Then("a PurchaseOrder with externalId: {string} is created after not more than {int} seconds and has values")
+	@Then("a PurchaseOrder with externalId {string} is created after not more than {int} seconds and has values")
 	public void verifyOrder(final String externalId, final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
 	{
 		final Map<String, String> dataTableRow = dataTable.asMaps().get(0);
@@ -219,8 +228,10 @@ public class C_Order_StepDef
 				.firstOnlyNotNull(I_C_Order.class);
 
 		final String externalPurchaseOrderUrl = DataTableUtil.extractStringForColumnName(dataTableRow, I_C_Order.COLUMNNAME_ExternalPurchaseOrderURL);
-
 		assertThat(purchaseOrderRecord.getExternalPurchaseOrderURL()).isEqualTo(externalPurchaseOrderUrl);
+		
+		final String poReference = DataTableUtil.extractStringForColumnName(dataTableRow, I_C_Order.COLUMNNAME_POReference);
+		assertThat(purchaseOrderRecord.getPOReference()).isEqualTo(poReference);
 	}
 
 	@And("validate the created orders")

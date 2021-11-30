@@ -87,8 +87,6 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 		return new ModelsScheduler<>(workpackageProcessorClass, modelType, collectModels);
 	}
 
-	private final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
-
 	private final Class<? extends IWorkpackageProcessor> workpackageProcessorClass;
 	private final String trxPropertyName;
 	private final AtomicBoolean createOneWorkpackagePerModel = new AtomicBoolean(false);
@@ -208,6 +206,7 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 		return false;
 	}
 
+	@Nullable
 	protected UserId extractUserInChargeOrNull(final ItemType item)
 	{
 		return null;
@@ -407,9 +406,7 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 
 		private void createAndSubmitWorkpackagesByAsyncBatch(@NonNull final IWorkPackageBlockBuilder blockBuilder)
 		{
-			batchId2Models.forEach((key, models) -> {
-				createAndSubmitWorkpackage(blockBuilder, models, AsyncBatchId.toAsyncBatchIdOrNull(key));
-			});
+			batchId2Models.forEach((key, models) -> createAndSubmitWorkpackage(blockBuilder, models, AsyncBatchId.toAsyncBatchIdOrNull(key)));
 		}
 
 		private boolean hasNoModels()

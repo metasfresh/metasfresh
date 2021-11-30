@@ -1,22 +1,28 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
-import { userConfirmation } from '../../../api/confirmation';
+import { postUserConfirmation } from '../../../api/confirmation';
+import { setActivityUserConfirmed } from '../../../actions/UserConfirmationActions';
 import ConfirmButton from './ConfirmButton';
 import { history } from '../../../store/store';
+import { toastError } from '../../../utils/toast';
+import { connect } from 'react-redux';
 
 class ConfirmActivity extends PureComponent {
   onUserConfirmed = () => {
     const { wfProcessId, activityId, isLastActivity } = this.props;
-    userConfirmation({ wfProcessId, activityId }).then(() => {
-      if (isLastActivity) {
-        history.push('/');
-      }
-    });
+    const { setActivityUserConfirmed } = this.props;
+
+    postUserConfirmation({ wfProcessId, activityId })
+      .then(() => setActivityUserConfirmed({ wfProcessId, activityId }))
+      .then(() => {
+        if (isLastActivity) {
+          history.push('/');
+        }
+      })
+      .catch((axiosError) => toastError({ axiosError }));
   };
 
   render() {
-    console.log('CONFIRM PROPS: ', this.props);
-
     const {
       caption,
       componentProps: { promptQuestion },
@@ -43,6 +49,9 @@ ConfirmActivity.propTypes = {
   componentProps: PropTypes.object.isRequired,
   isUserEditable: PropTypes.bool.isRequired,
   isLastActivity: PropTypes.bool.isRequired,
+  //
+  // Actions:
+  setActivityUserConfirmed: PropTypes.func.isRequired,
 };
 
-export default ConfirmActivity;
+export default connect(null, { setActivityUserConfirmed })(ConfirmActivity);

@@ -31,7 +31,6 @@ import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.IFlatrateTermEventService;
 import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.flatrate.interfaces.I_C_DocType;
-import de.metas.contracts.flatrate.interfaces.I_C_OLCand;
 import de.metas.contracts.impl.FlatrateBL;
 import de.metas.contracts.location.adapter.ContractDocumentLocationAdapterFactory;
 import de.metas.contracts.model.I_C_Contract_Term_Alloc;
@@ -52,6 +51,8 @@ import de.metas.i18n.IMsgBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
+import de.metas.ordercandidate.api.IOLCandDAO;
+import de.metas.ordercandidate.api.OLCandId;
 import de.metas.ordercandidate.modelvalidator.C_OLCand;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
@@ -95,13 +96,16 @@ public class C_Flatrate_Term
 	private static final String MSG_TERM_ERROR_YEAR_WITHOUT_PERIODS_2P = "Term_Error_Range_Without_Periods";
 	private static final String MSG_TERM_ERROR_PERIOD_END_DATE_BEFORE_TERM_END_DATE_2P = "Term_Error_PeriodEndDate_Before_TermEndDate";
 	private static final String MSG_TERM_ERROR_PERIOD_START_DATE_AFTER_TERM_START_DATE_2P = "Term_Error_PeriodStartDate_After_TermStartDate";
+	private static final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
 
 	private final IBPartnerDAO bparnterDAO = Services.get(IBPartnerDAO.class);
 	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
+
 	private final IDocumentLocationBL documentLocationBL;
 
-
 	private final ContractOrderService contractOrderService;
+	private final IOLCandDAO candDAO = Services.get(IOLCandDAO.class);
+	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 
 	public C_Flatrate_Term(@NonNull final ContractOrderService contractOrderService,
 			@NonNull final IDocumentLocationBL documentLocationBL)
@@ -270,10 +274,8 @@ public class C_Flatrate_Term
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
 	public void updateFlatrateData(final I_C_Flatrate_Term term)
 	{
-		final IFlatrateDAO flatrateDB = Services.get(IFlatrateDAO.class);
-
 		final I_C_Flatrate_Data flatrateData = term.getC_Flatrate_Data();
-		final List<I_C_Flatrate_Term> terms = flatrateDB.retrieveTerms(flatrateData);
+		final List<I_C_Flatrate_Term> terms = flatrateDAO.retrieveTerms(flatrateData);
 		if (terms.size() == 1)
 		{
 			Check.assume(
@@ -308,8 +310,6 @@ public class C_Flatrate_Term
 
 	/**
 	 * If the term that is deleted is referenced from a {@link C_OLCand}, delete the reference and set the cand to <code>processed='N'</code>.
-	 *
-	 * @param term
 	 */
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
 	public void updateOLCandReference(final I_C_Flatrate_Term term)
@@ -325,7 +325,7 @@ public class C_Flatrate_Term
 
 		for (final I_C_Contract_Term_Alloc cta : ctas)
 		{
-			final I_C_OLCand olCand = InterfaceWrapperHelper.create(cta.getC_OLCand(), I_C_OLCand.class);
+			final de.metas.ordercandidate.model.I_C_OLCand olCand = candDAO.retrieveByIds(OLCandId.ofRepoId(cta.getC_OLCand_ID()));
 			olCand.setProcessed(false);
 			InterfaceWrapperHelper.save(olCand);
 			InterfaceWrapperHelper.delete(cta);
@@ -338,7 +338,7 @@ public class C_Flatrate_Term
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
 	public void deleteC_Invoice_Candidates(final I_C_Flatrate_Term term)
 	{
-		Services.get(IInvoiceCandDAO.class).deleteAllReferencingInvoiceCandidates(term);
+		invoiceCandDAO.deleteAllReferencingInvoiceCandidates(term);
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Conditions_ID)
@@ -537,7 +537,7 @@ public class C_Flatrate_Term
 		{
 			final I_C_BPartner billBPartnerRecord = bparnterDAO.getById(term.getBill_BPartner_ID());
 
-			throw new AdempiereException(FlatrateBL.MSG_HasOverlapping_Term, term.getC_Flatrate_Term_ID(), billBPartnerRecord.getValue())
+			throw new AdempiereException(de.metas.contracts.impl.FlatrateBL.MSG_HasOverlapping_Term, term.getC_Flatrate_Term_ID(), billBPartnerRecord.getValue())
 					.markAsUserValidationError();
 		}
 	}
@@ -583,7 +583,7 @@ public class C_Flatrate_Term
 	{
 		if (!Check.isEmpty(term.getDocumentNo(), true) && Check.isEmpty(term.getMasterDocumentNo(), true))
 		{
-			final I_C_Flatrate_Term ancestor = Services.get(IFlatrateDAO.class).retrieveAncestorFlatrateTerm(term);
+			final I_C_Flatrate_Term ancestor = flatrateDAO.retrieveAncestorFlatrateTerm(term);
 			if (ancestor == null)
 			{
 				term.setMasterDocumentNo(term.getDocumentNo());
@@ -698,5 +698,18 @@ public class C_Flatrate_Term
 	public void ensureOneMarginContractBeforeComplete(@NonNull final I_C_Flatrate_Term term)
 	{
 		flatrateBL.ensureOneContractOfGivenType(term, TypeConditions.MARGIN_COMMISSION);
+	}
+
+	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_COMPLETE })
+	public void setC_Flatrate_Term_Master(@NonNull final I_C_Flatrate_Term term)
+	{
+		if (term.getC_Flatrate_Term_Master_ID() <= 0)
+		{
+			final I_C_Flatrate_Term ancestor = flatrateDAO.retrieveAncestorFlatrateTerm(term);
+			if (ancestor == null)
+			{
+				term.setC_Flatrate_Term_Master_ID(term.getC_Flatrate_Term_ID());
+			}
+		}
 	}
 }

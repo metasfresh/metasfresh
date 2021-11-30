@@ -11,12 +11,14 @@ import de.metas.material.planning.ResourceType;
 import de.metas.material.planning.pporder.LiberoException;
 import de.metas.material.planning.pporder.PPRoutingActivityId;
 import de.metas.material.planning.pporder.PPRoutingActivityTemplateId;
+import de.metas.material.planning.pporder.PPRoutingActivityType;
 import de.metas.material.planning.pporder.PPRoutingId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
-import de.metas.uom.IUOMDAO;
+import de.metas.quantity.Quantitys;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
@@ -29,7 +31,6 @@ import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.ImmutablePair;
-import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_S_Resource;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.IPPOrderRoutingRepository;
@@ -50,19 +51,22 @@ import org.eevolution.model.I_PP_Order_Workflow;
 
 import javax.annotation.Nullable;
 import java.time.Duration;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 {
-	public final IProductBL productBL = Services.get(IProductBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final IResourceDAO resourceDAO = Services.get(IResourceDAO.class);
 
 	@Override
 	public PPOrderRouting getByOrderId(@NonNull final PPOrderId orderId)
@@ -151,7 +155,6 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 	@Override
 	public void deleteByOrderId(@NonNull final PPOrderId orderId)
 	{
-		final ITrxManager trxManager = Services.get(ITrxManager.class);
 		trxManager.runInThreadInheritedTrx(() -> deleteByOrderIdInTrx(orderId));
 	}
 
@@ -174,7 +177,7 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 			InterfaceWrapperHelper.delete(orderNodeNext);
 		}
 
-		for (final I_PP_Order_Node_Product products: retrieveOrderNodeProducts(orderId))
+		for (final I_PP_Order_Node_Product products : retrieveOrderNodeProducts(orderId))
 		{
 			InterfaceWrapperHelper.delete(products);
 		}
@@ -205,7 +208,7 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 
 	private List<I_PP_Order_Node> retrieveOrderNodes(final PPOrderId orderId)
 	{
-		return Services.get(IQueryBL.class)
+		return queryBL
 				.createQueryBuilder(I_PP_Order_Node.class)
 				.addEqualsFilter(I_PP_Order_Node.COLUMNNAME_PP_Order_ID, orderId)
 				.create()
@@ -214,7 +217,7 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 
 	private List<I_PP_Order_Node_Product> retrieveOrderNodeProducts(final PPOrderId orderId)
 	{
-		return Services.get(IQueryBL.class)
+		return queryBL
 				.createQueryBuilder(I_PP_Order_Node_Product.class)
 				.addEqualsFilter(I_PP_Order_Node_Product.COLUMNNAME_PP_Order_ID, orderId)
 				.create()
@@ -223,7 +226,7 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 
 	private List<I_PP_Order_NodeNext> retrieveOrderNodeNexts(@NonNull final PPOrderId orderId)
 	{
-		return Services.get(IQueryBL.class)
+		return queryBL
 				.createQueryBuilder(I_PP_Order_NodeNext.class)
 				.addEqualsFilter(I_PP_Order_NodeNext.COLUMNNAME_PP_Order_ID, orderId)
 				.create()
@@ -238,7 +241,7 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 		Check.assumeNotNull(startNode, LiberoException.class, "Start node shall exist for {}", orderId);
 
 		final ResourceId resourceId = ResourceId.ofRepoId(startNode.getS_Resource_ID());
-		final I_S_Resource resource = Services.get(IResourceDAO.class).getById(resourceId);
+		final I_S_Resource resource = resourceDAO.getById(resourceId);
 		return resource.getName();
 	}
 
@@ -260,11 +263,13 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 		final PPRoutingId routingId = PPRoutingId.ofRepoId(record.getAD_Workflow_ID());
 
 		final ResourceId resourceId = ResourceId.ofRepoId(record.getS_Resource_ID());
-		final I_C_UOM uom = Services.get(IUOMDAO.class).getById(record.getC_UOM_ID());
+		final UomId uomId = UomId.ofRepoId(record.getC_UOM_ID());
 
 		return PPOrderRoutingActivity.builder()
 				.id(PPOrderRoutingActivityId.ofRepoId(orderId, record.getPP_Order_Node_ID()))
+				.type(PPRoutingActivityType.ofCode(record.getPP_Activity_Type()))
 				.code(PPOrderRoutingActivityCode.ofString(record.getValue()))
+				.name(record.getName())
 				.routingActivityId(PPRoutingActivityId.ofAD_WF_Node_ID(routingId, record.getAD_WF_Node_ID()))
 				//
 				.subcontracting(record.isSubcontracting())
@@ -288,16 +293,16 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 				// Planned values
 				.setupTimeRequired(Duration.of(record.getSetupTimeRequiered(), durationUnit.getTemporalUnit()))
 				.durationRequired(Duration.of(record.getDurationRequiered(), durationUnit.getTemporalUnit()))
-				.qtyRequired(Quantity.of(record.getQtyRequiered(), uom))
+				.qtyRequired(Quantitys.create(record.getQtyRequiered(), uomId))
 				//
 				// Reported values
 				.setupTimeReal(Duration.of(record.getSetupTimeReal(), durationUnit.getTemporalUnit()))
 				.durationReal(Duration.of(record.getDurationReal(), durationUnit.getTemporalUnit()))
-				.qtyDelivered(Quantity.of(record.getQtyDelivered(), uom))
-				.qtyScrapped(Quantity.of(record.getQtyScrap(), uom))
-				.qtyRejected(Quantity.of(record.getQtyReject(), uom))
-				.dateStart(TimeUtil.asLocalDateTime(record.getDateStart()))
-				.dateFinish(TimeUtil.asLocalDateTime(record.getDateFinish()))
+				.qtyDelivered(Quantitys.create(record.getQtyDelivered(), uomId))
+				.qtyScrapped(Quantitys.create(record.getQtyScrap(), uomId))
+				.qtyRejected(Quantitys.create(record.getQtyReject(), uomId))
+				.dateStart(TimeUtil.asInstant(record.getDateStart()))
+				.dateFinish(TimeUtil.asInstant(record.getDateFinish()))
 				//
 				.build();
 	}
@@ -305,7 +310,6 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 	@Override
 	public void changeActivitiesScheduling(@NonNull final PPOrderId orderId, @NonNull final List<PPOrderActivityScheduleChangeRequest> changeRequests)
 	{
-		final ITrxManager trxManager = Services.get(ITrxManager.class);
 		trxManager.runInThreadInheritedTrx(() -> changeActivitiesSchedulingInTrx(orderId, changeRequests));
 	}
 
@@ -333,9 +337,9 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 	}
 
 	@Override
-	public List<PPOrderRoutingActivitySchedule> getActivitySchedulesByDateAndResource(final LocalDateTime date, final ResourceId resourceId)
+	public List<PPOrderRoutingActivitySchedule> getActivitySchedulesByDateAndResource(final Instant date, final ResourceId resourceId)
 	{
-		return Services.get(IQueryBL.class)
+		return queryBL
 				.createQueryBuilder(I_PP_Order_Node.class)
 				.addOnlyActiveRecordsFilter()
 				.filter(createActivityScheduleIntersectsWithDayTimeSlotFilter(date, resourceId))
@@ -346,13 +350,13 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private IQueryFilter<I_PP_Order_Node> createActivityScheduleIntersectsWithDayTimeSlotFilter(final LocalDateTime dateTime, final ResourceId resourceId)
+	private IQueryFilter<I_PP_Order_Node> createActivityScheduleIntersectsWithDayTimeSlotFilter(final Instant dateTime, final ResourceId resourceId)
 	{
-		final ResourceType resourceType = Services.get(IResourceDAO.class).getResourceTypeByResourceId(resourceId);
-		final LocalDateTime dayStart = resourceType.getDayStart(dateTime);
-		final LocalDateTime dayEnd = resourceType.getDayEnd(dateTime);
+		final ResourceType resourceType = resourceDAO.getResourceTypeByResourceId(resourceId);
+		final Instant dayStart = resourceType.getDayStart(dateTime);
+		final Instant dayEnd = resourceType.getDayEnd(dateTime);
 
-		final ICompositeQueryFilter<I_PP_Order_Node> filters = Services.get(IQueryBL.class).createCompositeQueryFilter(I_PP_Order_Node.class)
+		final ICompositeQueryFilter<I_PP_Order_Node> filters = queryBL.createCompositeQueryFilter(I_PP_Order_Node.class)
 				.setJoinOr();
 
 		//
@@ -390,20 +394,19 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 		return filters;
 	}
 
-	private PPOrderRoutingActivitySchedule toPPOrderRoutingActivitySchedule(final I_PP_Order_Node activity)
+	private PPOrderRoutingActivitySchedule toPPOrderRoutingActivitySchedule(final I_PP_Order_Node record)
 	{
-		final PPOrderId orderId = PPOrderId.ofRepoId(activity.getPP_Order_ID());
+		final PPOrderId orderId = PPOrderId.ofRepoId(record.getPP_Order_ID());
 		return PPOrderRoutingActivitySchedule.builder()
-				.orderRoutingActivityId(PPOrderRoutingActivityId.ofRepoId(orderId, activity.getPP_Order_Node_ID()))
-				.scheduledStartDate(TimeUtil.asLocalDateTime(activity.getDateStartSchedule()))
-				.scheduledEndDate(TimeUtil.asLocalDateTime(activity.getDateFinishSchedule()))
+				.orderRoutingActivityId(PPOrderRoutingActivityId.ofRepoId(orderId, record.getPP_Order_Node_ID()))
+				.scheduledStartDate(Objects.requireNonNull(record.getDateStartSchedule()).toInstant())
+				.scheduledEndDate(Objects.requireNonNull(record.getDateFinishSchedule()).toInstant())
 				.build();
 	}
 
 	@Override
 	public void save(@NonNull final PPOrderRouting orderRouting)
 	{
-		final ITrxManager trxManager = Services.get(ITrxManager.class);
 		trxManager.runInThreadInheritedTrx(() -> saveInTrx(orderRouting));
 	}
 
@@ -615,8 +618,11 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 	{
 		final WFDurationUnit durationUnit = from.getDurationUnit();
 
+		record.setPP_Activity_Type(from.getType().getCode());
+
 		record.setIsActive(true);
 		record.setValue(from.getCode().getAsString());
+		record.setName(from.getName());
 
 		record.setAD_Workflow_ID(from.getRoutingActivityId().getRoutingId().getRepoId());
 		record.setAD_WF_Node_ID(from.getRoutingActivityId().getRepoId());

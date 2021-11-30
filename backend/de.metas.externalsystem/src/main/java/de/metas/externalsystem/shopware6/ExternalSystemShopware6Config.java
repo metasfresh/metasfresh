@@ -66,6 +66,8 @@ public class ExternalSystemShopware6Config implements IExternalSystemChildConfig
 	Boolean isActive;
 	@NonNull
 	String value;
+	@NonNull
+	ProductLookup productLookup;
 
 	@Builder(toBuilder = true)
 	public ExternalSystemShopware6Config(final @NonNull ExternalSystemShopware6ConfigId id,
@@ -82,7 +84,8 @@ public class ExternalSystemShopware6Config implements IExternalSystemChildConfig
 			final @Nullable FreightCostConfig freightCostReducedVatConfig,
 			final @Nullable PriceListId priceListId,
 			final @NonNull Boolean isActive,
-			final @NonNull String value)
+			final @NonNull String value,
+			final @NonNull ProductLookup productLookup)
 	{
 		this.id = id;
 		this.parentId = parentId;
@@ -99,6 +102,7 @@ public class ExternalSystemShopware6Config implements IExternalSystemChildConfig
 		this.priceListId = priceListId;
 		this.isActive = isActive;
 		this.value = value;
+		this.productLookup = productLookup;
 	}
 
 	public static ExternalSystemShopware6Config cast(@NonNull final IExternalSystemChildConfig childConfig)

@@ -665,6 +665,7 @@
         <xsd:sequence>
             <xsd:element minOccurs="0" name="EdiRecipientGLN" type="xsd:string"/>
             <xsd:element name="Name" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="Name2" type="xsd:string"/>
             <xsd:element name="Value" type="xsd:string"/>
         </xsd:sequence>
         <xsd:attribute ref="AD_Client_Value"/>
@@ -770,7 +771,7 @@
             <xsd:element minOccurs="0" name="GLN" type="xsd:string"/>
             <xsd:element name="Name" type="xsd:string"/>
             <xsd:element minOccurs="0" name="Setup_Place_No" type="xsd:string"/>
-            <xsd:element name="C_Location_ID" type="EDI_Exp_C_LocationType"/>
+            <xsd:element minOccurs="0" name="C_Location_ID" type="EDI_Exp_C_LocationType"/>
         </xsd:sequence>
         <xsd:attribute ref="AD_Client_Value"/>
         <xsd:attribute ref="ReplicationEvent"/>
@@ -841,7 +842,9 @@
             <xsd:element minOccurs="0" name="Bill_Location_ID" type="EDI_Exp_C_BPartner_LocationType"/>
             <xsd:element minOccurs="0" name="C_Currency_ID" type="EDI_Exp_C_CurrencyType"/>
             <xsd:element minOccurs="0" name="HandOver_Location_ID" type="EDI_Exp_C_BPartner_LocationType"/>
+            <xsd:element minOccurs="0" name="DropShip_BPartner_ID" type="EDI_Exp_C_BPartnerType"/>
             <xsd:element minOccurs="0" name="DropShip_Location_ID" type="EDI_Exp_C_BPartner_LocationType"/>
+            <xsd:element minOccurs="0" name="HandOver_Partner_ID" type="EDI_Exp_C_BPartnerType"/>
             <xsd:element minOccurs="0" name="InvoicableQtyBasedOn" type="InvoicableQtyBasedOnEnum"/>
             <xsd:element minOccurs="0" name="DeliveryViaRule" type="C_Order_DeliveryViaRuleEnum"/>
         </xsd:sequence>

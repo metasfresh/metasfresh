@@ -27,6 +27,7 @@ import de.metas.bpartner.user.role.UserRole;
 import de.metas.bpartner.user.role.repository.UserRoleRepository;
 import de.metas.common.util.StringUtils;
 import de.metas.common.util.time.SystemTime;
+import de.metas.document.DocTypeId;
 import de.metas.greeting.GreetingId;
 import de.metas.i18n.Language;
 import de.metas.interfaces.I_C_BPartner;
@@ -309,7 +310,8 @@ final class BPartnerCompositesLoader
 				.url(trimBlankToNull(bpartnerRecord.getURL()))
 				.url2(trimBlankToNull(bpartnerRecord.getURL2()))
 				.url3(trimBlankToNull(bpartnerRecord.getURL3()))
-				.invoiceRule(InvoiceRule.ofNullableCode(bpartnerRecord.getInvoiceRule()))
+				.customerInvoiceRule(InvoiceRule.ofNullableCode(bpartnerRecord.getInvoiceRule()))
+				.vendorInvoiceRule(InvoiceRule.ofNullableCode(bpartnerRecord.getPO_InvoiceRule()))
 				.vendor(bpartnerRecord.isVendor())
 				.customer(bpartnerRecord.isCustomer())
 				.salesPartnerCode(trimBlankToNull(bpartnerRecord.getSalesPartnerCode()))
@@ -328,6 +330,10 @@ final class BPartnerCompositesLoader
 				.excludeFromPromotions(bpartnerRecord.isExcludeFromPromotions())
 				.referrer(bpartnerRecord.getReferrer())
 				.campaignId(CampaignId.ofRepoIdOrNull(bpartnerRecord.getMKTG_Campaign_ID()))
+
+				.firstName(bpartnerRecord.getFirstname())
+				.lastName(bpartnerRecord.getLastname())
+				.soDocTypeTargetId(DocTypeId.ofRepoIdOrNull(bpartnerRecord.getSO_DocTypeTarget_ID()))
 				//
 				.changeLog(recordChangeLog)
 				//

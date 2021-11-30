@@ -12,7 +12,7 @@ from (
          select
              (case
                   when il.c_uom_id = 540017 -- harcoded kg
-                      then COALESCE(p.weight, 0) * iol.movementqty
+                      then (il.invoicedqty + iol.movementqty * (COALESCE(p.weight, 0) - COALESCE(p.netweight, 0)  ) ) -- GROSS FOR WEIGHT ARTICLE = CATCH WEIGHT + (DELIVERED_QUANTITY * (GROSS WEIGHT - NET WEIGHT))
                       else COALESCE(p.weight, 0) * il.invoicedqty end)
                                                                as productWeight,
              COALESCE(packingProd.weight,0) * iol.qtyenteredtu as packageWeight

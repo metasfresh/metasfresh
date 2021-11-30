@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.contracts.model;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for C_Flatrate_Conditions
  *  @author metasfresh (generated)
@@ -33,6 +33,21 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public void setC_Customer_Trade_Margin_ID (final int C_Customer_Trade_Margin_ID)
+	{
+		if (C_Customer_Trade_Margin_ID < 1) 
+			set_Value (COLUMNNAME_C_Customer_Trade_Margin_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Customer_Trade_Margin_ID, C_Customer_Trade_Margin_ID);
+	}
+
+	@Override
+	public int getC_Customer_Trade_Margin_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Customer_Trade_Margin_ID);
 	}
 
 	@Override
@@ -107,6 +122,21 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 	public java.lang.String getClearingAmtBaseOn()
 	{
 		return get_ValueAsString(COLUMNNAME_ClearingAmtBaseOn);
+	}
+
+	@Override
+	public void setC_MediatedCommissionSettings_ID (final int C_MediatedCommissionSettings_ID)
+	{
+		if (C_MediatedCommissionSettings_ID < 1) 
+			set_Value (COLUMNNAME_C_MediatedCommissionSettings_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_MediatedCommissionSettings_ID, C_MediatedCommissionSettings_ID);
+	}
+
+	@Override
+	public int getC_MediatedCommissionSettings_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_MediatedCommissionSettings_ID);
 	}
 
 	@Override
@@ -254,6 +284,8 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 	public static final String INVOICERULE_Immediate = "I";
 	/** OrderCompletelyDelivered = C */
 	public static final String INVOICERULE_OrderCompletelyDelivered = "C";
+	/** After Pick = P */
+	public static final String INVOICERULE_AfterPick = "P";
 	@Override
 	public void setInvoiceRule (final java.lang.String InvoiceRule)
 	{
@@ -547,11 +579,11 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 	public static final String TYPE_CONDITIONS_Refund = "Refund";
 	/** Commission = Commission */
 	public static final String TYPE_CONDITIONS_Commission = "Commission";
-	/** Mediated commission = MediatedCommission */
-	public static final String TYPE_CONDITIONS_MediatedCommission = "MediatedCommission";
 	/** MarginCommission = MarginCommission */
 	public static final String TYPE_CONDITIONS_MarginCommission = "MarginCommission";
-
+	/** Mediated commission = MediatedCommission */
+	public static final String TYPE_CONDITIONS_MediatedCommission = "MediatedCommission";
+	
 	@Override
 	public void setType_Conditions (final java.lang.String Type_Conditions)
 	{
