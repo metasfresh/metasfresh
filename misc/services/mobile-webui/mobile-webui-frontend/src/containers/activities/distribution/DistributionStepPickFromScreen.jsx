@@ -2,15 +2,42 @@ import React, { PureComponent } from 'react';
 import { withRouter } from 'react-router';
 import { connect } from 'react-redux';
 import { go } from 'connected-react-router';
-import { selectWFProcessFromState } from '../../../reducers/wfProcesses_status';
-import PropTypes from 'prop-types';
-import ScanHUAndGetQtyComponent from '../common/ScanHUAndGetQtyComponent';
-import { postDistributionPickFrom } from '../../../api/distribution';
-import { toastError } from '../../../utils/toast';
 import counterpart from 'counterpart';
+import PropTypes from 'prop-types';
+
+import { postDistributionPickFrom } from '../../../api/distribution';
+import { distributionStepPickFromScreenLocation } from '../../../routes/distribution';
+import { toastError } from '../../../utils/toast';
+import { selectWFProcessFromState } from '../../../reducers/wfProcesses_status';
 import { updateDistributionPickFrom } from '../../../actions/DistributionActions';
+import { pushHeaderEntry } from '../../../actions/HeaderActions';
+import ScanHUAndGetQtyComponent from '../common/ScanHUAndGetQtyComponent';
 
 class DistributionStepPickFromScreen extends PureComponent {
+  componentDidMount() {
+    const { wfProcessId, activityId, lineId, stepId, qtyToMove, huBarcode } = this.props;
+    const location = distributionStepPickFromScreenLocation({
+      wfProcessId,
+      activityId,
+      lineId,
+      stepId,
+    });
+
+    pushHeaderEntry({
+      location,
+      values: [
+        {
+          caption: counterpart.translate('activities.distribution.scanHU'),
+          value: huBarcode,
+        },
+        {
+          caption: counterpart.translate('general.QtyToMove'),
+          value: qtyToMove,
+        },
+      ],
+    });
+  }
+
   onResult = ({ qty = 0, reason = null }) => {
     console.log(`!!!!! qty=${qty}`);
     const { wfProcessId, activityId, lineId, stepId } = this.props;
@@ -80,8 +107,6 @@ const mapStateToProps = (state, ownProps) => {
   const lineProps = activity != null ? activity.dataStored.lines[lineId] : null;
   const stepProps = lineProps != null && lineProps.steps ? lineProps.steps[stepId] : {};
 
-  console.log('stepProps', stepProps);
-
   return {
     wfProcessId,
     activityId,
@@ -93,4 +118,6 @@ const mapStateToProps = (state, ownProps) => {
   };
 };
 
-export default withRouter(connect(mapStateToProps, { go, updateDistributionPickFrom })(DistributionStepPickFromScreen));
+export default withRouter(
+  connect(mapStateToProps, { go, updateDistributionPickFrom, pushHeaderEntry })(DistributionStepPickFromScreen)
+);
