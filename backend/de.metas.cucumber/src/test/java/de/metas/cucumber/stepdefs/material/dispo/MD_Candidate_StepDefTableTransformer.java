@@ -26,12 +26,12 @@ import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateType;
+import de.metas.material.event.commons.AttributesKey;
 import de.metas.product.ProductId;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.datatable.TableTransformer;
 import io.cucumber.java.DataTableType;
 import lombok.NonNull;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Product;
 
 import java.math.BigDecimal;
@@ -62,24 +62,28 @@ public class MD_Candidate_StepDefTableTransformer implements TableTransformer<MD
 			final String identifier = DataTableUtil.extractRecordIdentifier(dataTableRow,"MD_Candidate");
 			final CandidateType type = CandidateType.ofCode(dataTableRow.get("Type"));
 			final CandidateBusinessCase businessCase = CandidateBusinessCase.ofCodeOrNull(dataTableRow.get("BusinessCase"));
+
+			int storageAttributesKeyValueId = DataTableUtil.extractIntForColumnName(dataTableRow,"StorageAttributesKey");
+			final AttributesKey storageAttributesKey = AttributesKey.ofAttributeValueIds(storageAttributesKeyValueId);
+
 			final String productIdentifier = DataTableUtil.extractStringForColumnName(dataTableRow,"M_Product_ID.Identifier");
-			final int productId = productStepDefData.get(productIdentifier).getM_Product_ID();
 			final Instant time = DataTableUtil.extractInstantForColumnName(dataTableRow, "Time");
+
 			BigDecimal qty = DataTableUtil.extractBigDecimalForColumnName(dataTableRow, "DisplayQty");
-			if (
-					//type.equals(CandidateType.DEMAND) ||
-					type.equals(CandidateType.INVENTORY_DOWN))
+
+			if (type.equals(CandidateType.DEMAND) || type.equals(CandidateType.INVENTORY_DOWN))
 			{
 				qty = qty.negate();
 			}
 
 			final BigDecimal atp = DataTableUtil.extractBigDecimalForColumnName(dataTableRow, "ATP");
-
 			final MD_Candidate_StepDefTable.MaterialDispoTableRow tableRow = MD_Candidate_StepDefTable.MaterialDispoTableRow.builder()
 					.identifier(identifier)
 					.type(type)
 					.businessCase(businessCase)
-					.productId(ProductId.ofRepoId(productId))
+					.productIdentifier(productIdentifier)
+					.productId(ProductId.ofRepoId(getProductIdFromProductIdentifier(productIdentifier)))
+					.storageAttributesKey(storageAttributesKey)
 					.time(time)
 					.qty(qty)
 					.atp(atp)
@@ -88,5 +92,10 @@ public class MD_Candidate_StepDefTableTransformer implements TableTransformer<MD
 		}
 
 		return materialDispoTableBuilder.build();
+	}
+
+	private final int getProductIdFromProductIdentifier(String productIdentifier)
+	{
+		return productStepDefData.get(productIdentifier).getM_Product_ID();
 	}
 }

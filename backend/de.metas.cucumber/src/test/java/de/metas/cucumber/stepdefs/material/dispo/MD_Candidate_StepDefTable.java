@@ -24,16 +24,20 @@ package de.metas.cucumber.stepdefs.material.dispo;
 
 import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableMap;
+import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.DateAndSeqNo;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery;
+import de.metas.material.event.commons.AttributesKey;
 import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.I_M_Product;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -70,7 +74,13 @@ public class MD_Candidate_StepDefTable
 		CandidateBusinessCase businessCase;
 
 		@NonNull
+		AttributesKey storageAttributesKey;
+
+		@Nullable
 		ProductId productId;
+
+		@NonNull
+		String productIdentifier;
 
 		@NonNull
 		BigDecimal qty;
@@ -85,10 +95,11 @@ public class MD_Candidate_StepDefTable
 		{
 			final MaterialDescriptorQuery materialDescriptorQuery = MaterialDescriptorQuery.builder()
 					.productId(productId.getRepoId())
+					.storageAttributesKey(storageAttributesKey)
 					.timeRangeEnd(DateAndSeqNo.builder()
-										  .date(time)
-										  .operator(DateAndSeqNo.Operator.INCLUSIVE)
-										  .build())
+										   .date(Instant.now())
+										   .operator(DateAndSeqNo.Operator.INCLUSIVE)
+										   .build())
 					.build();
 
 			return CandidatesQuery.builder()

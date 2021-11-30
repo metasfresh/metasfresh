@@ -21,7 +21,7 @@ Feature: material-dispo updates on shipment-schedule events
       | pl_1       | ps_1                          | DE                        | EUR                 | price_list_name | null            | true  | false         | 2              | true         |
     And metasfresh contains M_PriceList_Versions
       | Identifier | M_PriceList_ID.Identifier | Name           | ValidFrom  |
-      | plv_1      | pl_1                      | salesOrder-PLV | 2021-04-01 |
+      | plv_1      | pl_1                      | salesOrder-PLV | 2020-04-01 |
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | pp_1       | plv_1                             | p_1                     | 10.0     | PCE               | Normal                        |
@@ -35,10 +35,10 @@ Feature: material-dispo updates on shipment-schedule events
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered   |
       | ol_1       | o_1                   | p_1                     | 1000         |
     And the order identified by o_1 is completed
-    Then and after not more than 60s, metasfresh has this MD_Candidate data
-      | Identifier | Type   | BusinessCase | M_Product_ID.Identifier | Time                    | DisplayQty | ATP   |
-      | c_1        | DEMAND | SHIPMENT     | p_1                     | 2021-11-01T23:59:00.00Z | -1000      | -1000 |
-      | c_2        | SUPPLY |              | p_1                     | 2021-11-01T23:59:00.00Z | 1000       | 0     |
+    Then and after not more than 30s, metasfresh has this MD_Candidate data
+      | Identifier | Type   | BusinessCase | M_Product_ID.Identifier |StorageAttributesKey | Time                    | DisplayQty | ATP   |
+      | c_1        | DEMAND | SHIPMENT     | p_1                     |-1002                | 2021-12-12T10:00:00.00Z | -1000      | -1000 |
+      | c_2        | SUPPLY |              | p_1                     |-1002                | 2021-12-12T10:00:00.00Z | 1000       | 0     |
 #    And metasfresh has this MD_Candidate_Demand_Detail data
 #      | MD_Candidate_ID.Identifier | M_ShipmentSchedule_ID |
 #      | c_1                        | 123                   |

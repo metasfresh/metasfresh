@@ -85,6 +85,8 @@ public class MD_Candidate_StepDef
 
 	private final StepDefData<I_C_Order> orderTable;
 
+
+
 	private PostMaterialEventService postMaterialEventService;
 	private MaterialDispoRecordRepository materialDispoRecordRepository;
 
@@ -194,40 +196,31 @@ public class MD_Candidate_StepDef
 	@Then("^and after not more than (.*)s, metasfresh has this MD_Candidate data$")
 	public void metasfresh_has_this_md_candidate_data(final int timeoutSec, @NonNull final MD_Candidate_StepDefTable table) throws InterruptedException
 	{
-		//make sure the given invoice candidate is ready for processing
-		final AtomicInteger md_candidate_count = new AtomicInteger(-1);
-		final Supplier<Boolean> shipmentSCheduleCandidateChecker = () ->
+		final AtomicInteger mdCandidateRecordCounter = new AtomicInteger(-1);
+		final Supplier<Boolean> mdCandidateRecordCounterVerifier = () ->
 		{
-			md_candidate_count.set(queryBL.createQueryBuilderOutOfTrx(I_MD_Candidate.class)
+			mdCandidateRecordCounter.set(queryBL.createQueryBuilderOutOfTrx(I_MD_Candidate.class)
 										   .addOnlyActiveRecordsFilter()
 										   .create()
 										   .count());
-			//final IInvoiceCandDAO.InvoiceableInvoiceCandIdResult invoiceableInvoiceCandId = invoiceCandDAO.getFirstInvoiceableInvoiceCandId(targetOrderId);
-			return md_candidate_count.get() > 0;
+			return mdCandidateRecordCounter.get() > 0;
 		};
 
-		//wait for the invoice to be created
-		StepDefUtil.tryAndWait(timeoutSec, 500, shipmentSCheduleCandidateChecker);
-		assertThat(md_candidate_count.get()).isGreaterThan(0);
+
+		StepDefUtil.tryAndWait(timeoutSec, 500, mdCandidateRecordCounterVerifier);
+
+		assertThat(mdCandidateRecordCounter.get()).isGreaterThan(0);
 
 		for (final MaterialDispoTableRow tableRow : table.getRows())
 		{
-			final MaterialDispoDataItem materialDispoRecord = materialDispoRecordRepository.getBy(tableRow.createQuery());
-			final I_MD_Candidate materialDispoRecord = queryBL.createQueryBuilder(I_MD_Candidate.class)
-					.addOnlyActiveRecordsFilter()
-					.addEqualsFilter(I_MD_Candidate.COLUMNNAME_M_Product_ID, new Integer(tableRow.getProductId().getRepoId()))
-					.addEqualsFilter(I_MD_Candidate.COLUMNNAME_MD_Candidate_Type, tableRow.getType())
-					.addEqualsFilter(I_MD_Candidate.COLUMNNAME_MD_Candidate_BusinessCase, tableRow.getBusinessCase())
-					.create()
-					.firstOnly(I_MD_Candidate.class);
-
-			 assertThat(materialDispoRecord).isNotNull(); // add message
-			 assertThat(materialDispoRecord.getMD_Candidate_Type()).isEqualTo(tableRow.getType().getCode());
-			 assertThat(materialDispoRecord.getMD_Candidate_BusinessCase()).isEqualTo(tableRow.getBusinessCase());
-			 assertThat(materialDispoRecord.getM_Product_ID()).isEqualTo(tableRow.getProductId().getRepoId());
-			 assertThat(materialDispoRecord.getQty_Display()).isEqualByComparingTo(tableRow.getQty());
-			 assertThat(materialDispoRecord.getQty_AvailableToPromise()).isEqualByComparingTo(tableRow.getAtp());
-			 //materialDispoDataItemStepDefData.putIfMissing(tableRow.getIdentifier(), materialDispoRecord);
+			final MaterialDispoDataItem materialDispoDataItem = materialDispoRecordRepository.getBy(tableRow.createQuery());
+			 assertThat(materialDispoDataItem).isNotNull(); // add message
+			 assertThat(materialDispoDataItem.getType()).isEqualTo(tableRow.getType());
+			 assertThat(materialDispoDataItem.getBusinessCase()).isEqualTo(tableRow.getBusinessCase());
+			 assertThat(materialDispoDataItem.getMaterialDescriptor().getProductId()).isEqualTo(tableRow.getProductId().getRepoId());
+			 assertThat(materialDispoDataItem.getMaterialDescriptor().getQuantity()).isEqualByComparingTo(tableRow.getQty());
+			 assertThat(materialDispoDataItem.getAtp()).isEqualByComparingTo(tableRow.getAtp());
+			 materialDispoDataItemStepDefData.putIfMissing(tableRow.getIdentifier(), materialDispoDataItem);
 		}
 	}
 
