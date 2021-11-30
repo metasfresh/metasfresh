@@ -1,32 +1,18 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
-import counterpart from 'counterpart';
 import { push } from 'connected-react-router';
 
+import { getLocation } from '../../../utils';
 import LineButton from '../common/LineButton';
 import ButtonWithIndicator from '../../../components/ButtonWithIndicator';
 import ButtonQuantityProp from '../../../components/ButtonQuantityProp';
-import { pushHeaderEntry } from '../../../actions/HeaderActions';
 
 class MaterialReceiptLineButton extends PureComponent {
   handleClick = () => {
-    const { wfProcessId, activityId, lineId, dispatch, caption } = this.props;
+    const { dispatch } = this.props;
 
-    const location = `/workflow/${wfProcessId}/activityId/${activityId}/lineId/${lineId}`;
+    const location = getLocation(this.props);
     dispatch(push(location));
-
-    dispatch(
-      pushHeaderEntry({
-        location,
-        values: [
-          {
-            caption: counterpart.translate('activities.mfg.ProductName'),
-            value: caption,
-            bold: true,
-          },
-        ],
-      })
-    );
   };
 
   render() {

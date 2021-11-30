@@ -4,7 +4,9 @@ import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 
 import { updateWFProcess } from '../../actions/WorkflowActions';
+import { pushHeaderEntry } from '../../actions/HeaderActions';
 import { activitiesNotStarted, selectWFProcessFromState } from '../../reducers/wfProcesses_status';
+import { getLocation } from '../../utils';
 
 import ScanActivity from '../activities/scan/ScanActivity';
 import PickProductsActivity from '../activities/picking/PickProductsActivity';
@@ -15,6 +17,16 @@ import DistributionMoveActivity from '../activities/distribution/DistributionMov
 import AbortButton from './AbortButton';
 
 class WFProcessScreen extends PureComponent {
+  componentDidMount() {
+    const { pushHeaderEntry, headerProperties, wfProcessId } = this.props;
+    const location = getLocation({ wfProcessId });
+
+    pushHeaderEntry({
+      location,
+      values: headerProperties,
+    });
+  }
+
   render() {
     const { wfProcessId, activities, isWorkflowNotStarted } = this.props;
 
@@ -107,6 +119,7 @@ function mapStateToProps(state, { match }) {
     wfProcessId,
     activities,
     isWorkflowNotStarted,
+    headerProperties: wfProcess.headerProperties.entries,
   };
 }
 
@@ -116,9 +129,11 @@ WFProcessScreen.propTypes = {
   isWorkflowNotStarted: PropTypes.bool,
   activities: PropTypes.array.isRequired,
   wfProcessId: PropTypes.string.isRequired,
+  headerProperties: PropTypes.array,
   //
   // Actions
   updateWFProcess: PropTypes.func.isRequired,
+  pushHeaderEntry: PropTypes.func.isRequired,
 };
 
-export default withRouter(connect(mapStateToProps, { updateWFProcess })(WFProcessScreen));
+export default withRouter(connect(mapStateToProps, { updateWFProcess, pushHeaderEntry })(WFProcessScreen));

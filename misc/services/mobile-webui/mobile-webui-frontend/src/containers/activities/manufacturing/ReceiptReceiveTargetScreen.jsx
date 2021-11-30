@@ -6,6 +6,7 @@ import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
 
 import { selectWFProcessFromState } from '../../../reducers/wfProcesses_status';
+import { getLocation } from '../../../utils';
 
 class ReceiptReceiveTargetScreen extends PureComponent {
   handleNewHUClick = () => {
@@ -17,9 +18,9 @@ class ReceiptReceiveTargetScreen extends PureComponent {
   };
 
   handleScanClick = () => {
-    const { wfProcessId, activityId, lineId, dispatch, appId } = this.props;
+    const { dispatch } = this.props;
     const stepId = 'receipt';
-    const location = `/workflow/${wfProcessId}/activityId/${activityId}/lineId/${lineId}/stepId/${stepId}/scanner/${appId}`;
+    const location = getLocation({ ...this.props, stepId }, true);
 
     dispatch(push(location));
   };

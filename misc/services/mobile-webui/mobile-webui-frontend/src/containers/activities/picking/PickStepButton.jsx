@@ -74,7 +74,6 @@ class PickStepButton extends PureComponent {
 }
 
 PickStepButton.propTypes = {
-  location: PropTypes.string.isRequired,
   //
   // Props
   appId: PropTypes.string.isRequired,

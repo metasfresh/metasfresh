@@ -2,37 +2,18 @@ import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import counterpart from 'counterpart';
 
-import { pushHeaderEntry } from '../../../actions/HeaderActions';
 import StepButton from '../common/StepButton';
 import Indicator from '../../../components/Indicator';
 import * as CompleteStatus from '../../../constants/CompleteStatus';
 
 class RawMaterialIssueStepButton extends PureComponent {
-  handleClick = () => {
-    const { locatorName, location, dispatch, onHandleClick } = this.props;
-
-    onHandleClick();
-
-    dispatch(
-      pushHeaderEntry({
-        location,
-        values: [
-          {
-            caption: counterpart.translate('general.Locator'),
-            value: locatorName,
-          },
-        ],
-      })
-    );
-  };
-
   render() {
-    const { lineId, locatorName, uom, qtyIssued, qtyToIssue, completeStatus } = this.props;
+    const { lineId, locatorName, uom, qtyIssued, qtyToIssue, completeStatus, onHandleClick } = this.props;
     const qtyCurrent = qtyIssued || 0;
 
     return (
       <div className="mt-3">
-        <button key={lineId} className="button is-outlined complete-btn pick-higher-btn" onClick={this.handleClick}>
+        <button key={lineId} className="button is-outlined complete-btn pick-higher-btn" onClick={onHandleClick}>
           <div className="full-size-btn">
             <div className="left-btn-side" />
             <div className="caption-btn">
@@ -74,7 +55,6 @@ RawMaterialIssueStepButton.propTypes = {
   uom: PropTypes.string,
   qtyIssued: PropTypes.number,
   qtyToIssue: PropTypes.number.isRequired,
-  location: PropTypes.string.isRequired,
   onHandleClick: PropTypes.func.isRequired,
   completeStatus: PropTypes.string,
   //

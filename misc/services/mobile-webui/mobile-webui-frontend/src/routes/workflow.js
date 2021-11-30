@@ -1,20 +1,14 @@
 import WFProcessScreen from '../containers/wfProcessScreen/WFProcessScreen';
 import { push } from 'connected-react-router';
-import { pushHeaderEntry } from '../actions/HeaderActions';
+
+import { getLocation } from '../utils';
 
 export const gotoWFProcessScreen = ({ wfProcess }) => {
   return (dispatch) => {
-    const location = workflowLocation({ workflowId: wfProcess.id });
+    const location = getLocation({ wfProcessId: wfProcess.id });
+
     dispatch(push(location));
-    dispatch(
-      pushHeaderEntry({
-        location,
-        values: wfProcess.headerProperties.entries,
-      })
-    );
   };
 };
 
-const workflowLocation = ({ workflowId }) => `/workflow/${workflowId}`;
-
-export const workflowRoutes = [{ path: workflowLocation({ workflowId: ':workflowId' }), Component: WFProcessScreen }];
+export const workflowRoutes = [{ path: getLocation({ wfProcessId: ':workflowId' }), Component: WFProcessScreen }];

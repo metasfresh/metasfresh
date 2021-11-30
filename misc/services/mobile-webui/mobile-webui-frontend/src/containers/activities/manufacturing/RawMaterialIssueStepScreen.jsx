@@ -1,43 +1,38 @@
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import counterpart from 'counterpart';
 
+import { getLocation } from '../../../utils';
 import ButtonWithIndicator from '../../../components/ButtonWithIndicator';
 import * as CompleteStatus from '../../../constants/CompleteStatus';
 import { pushHeaderEntry } from '../../../actions/HeaderActions';
 
-class RawMaterialIssueStepScreen extends Component {
-  onScanHUButtonClick = () => {
+class RawMaterialIssueStepScreen extends PureComponent {
+  componentDidMount() {
     const {
-      stepProps: { huBarcode, qtyToIssue },
       dispatch,
-      onScanButtonClick,
+      stepProps: { locatorName },
     } = this.props;
-    onScanButtonClick();
+    const location = getLocation(this.props);
 
     dispatch(
       pushHeaderEntry({
         location,
         values: [
           {
-            caption: counterpart.translate('general.Barcode'),
-            value: huBarcode,
-          },
-          {
-            caption: counterpart.translate('activities.mfg.issues.qtyToIssue'),
-            value: qtyToIssue,
+            caption: counterpart.translate('general.Locator'),
+            value: locatorName,
           },
         ],
       })
     );
-  };
+  }
 
   render() {
     const {
       stepProps: { huBarcode, uom, qtyToIssue, qtyIssued, qtyRejected },
+      onScanButtonClick,
     } = this.props;
-
-    console.log(this.props);
 
     const isIssued = qtyIssued || qtyRejected;
     const scanButtonCaption = isIssued ? `${huBarcode}` : counterpart.translate('activities.picking.scanHUBarcode');
@@ -79,7 +74,7 @@ class RawMaterialIssueStepScreen extends Component {
           </div>
         )}
         <div className="mt-0">
-          <button className="button is-outlined complete-btn" disabled={isIssued} onClick={this.onScanHUButtonClick}>
+          <button className="button is-outlined complete-btn" disabled={isIssued} onClick={onScanButtonClick}>
             <ButtonWithIndicator caption={scanButtonCaption} completeStatus={scanButtonStatus} />
           </button>
         </div>

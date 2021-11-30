@@ -66,7 +66,6 @@ const mapStateToProps = (state, ownProps) => {
     componentType: activity.componentType,
     lineProps,
     appId,
-    location: ownProps.location,
   };
 };
 

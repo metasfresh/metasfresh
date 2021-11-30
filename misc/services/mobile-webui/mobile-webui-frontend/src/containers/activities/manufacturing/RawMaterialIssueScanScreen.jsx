@@ -7,7 +7,9 @@ import counterpart from 'counterpart';
 
 import { selectWFProcessFromState } from '../../../reducers/wfProcesses_status';
 import { updateManufacturingIssueQty, updateManufacturingIssue } from '../../../actions/ManufacturingActions';
+import { pushHeaderEntry } from '../../../actions/HeaderActions';
 import { toastError } from '../../../utils/toast';
+import { getLocation } from '../../../utils';
 
 import StepScanScreenComponent from '../common/StepScanScreenComponent';
 
@@ -37,6 +39,27 @@ function RawMaterialIssueScanScreen(WrappedComponent) {
       this.state = {
         scannedBarcode: null,
       };
+    }
+
+    componentDidMount() {
+      const {
+        stepProps: { huBarcode, qtyToIssue },
+      } = this.props;
+      const location = getLocation(this.props, true);
+
+      pushHeaderEntry({
+        location,
+        values: [
+          {
+            caption: counterpart.translate('general.Barcode'),
+            value: huBarcode,
+          },
+          {
+            caption: counterpart.translate('activities.mfg.issues.qtyToIssue'),
+            value: qtyToIssue,
+          },
+        ],
+      });
     }
 
     setScannedBarcode = (scannedBarcode) => {
@@ -84,6 +107,7 @@ function RawMaterialIssueScanScreen(WrappedComponent) {
     go: PropTypes.func.isRequired,
     updateManufacturingIssueQty: PropTypes.func.isRequired,
     updateManufacturingIssue: PropTypes.func.isRequired,
+    pushHeaderEntry: PropTypes.func.isRequired,
   };
 
   return withRouter(
@@ -91,6 +115,7 @@ function RawMaterialIssueScanScreen(WrappedComponent) {
       go,
       updateManufacturingIssueQty,
       updateManufacturingIssue,
+      pushHeaderEntry,
     })(Wrapped)
   );
 }
