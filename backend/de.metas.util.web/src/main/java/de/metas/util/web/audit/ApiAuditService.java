@@ -193,7 +193,7 @@ public class ApiAuditService
 		}
 
 		final OrgId orgId = Env.getOrgId();
-		final ImmutableList<ApiAuditConfig> apiAuditConfigs = apiAuditConfigRepository.getAllConfigsByOrgId(orgId);
+		final ImmutableList<ApiAuditConfig> apiAuditConfigs = apiAuditConfigRepository.getActiveConfigsByOrgId(orgId);
 
 		return apiAuditConfigs.stream()
 				.filter(config -> config.matchesRequest(requestWrapper.getFullPath(), requestWrapper.getHttpMethodString()))
@@ -433,6 +433,30 @@ public class ApiAuditService
 		return !contentType.contains(APPLICATION_JSON_VALUE);
 	}
 
+	public void handleErrorResponse(
+			@Nullable final ApiRequestAudit apiRequestAudit,
+			@NonNull final Throwable throwable,
+			@NonNull final HttpServletResponse httpServletResponse) throws IOException
+	{
+		final String language = Env.getADLanguageOrBaseLanguage();
+		final JsonErrorItem error = JsonErrors.ofThrowable(throwable, language);
+
+		final Object responseBody;
+		if (apiRequestAudit != null)
+		{
+			responseBody = JsonApiResponse.builder()
+					.requestId(JsonMetasfreshId.of(apiRequestAudit.getIdNotNull().getRepoId()))
+					.endpointResponse(error)
+					.build();
+		}
+		else
+		{
+			responseBody = error;
+		}
+
+		buildHttpResponse(httpServletResponse, responseBody, HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+	}
+
 	private ApiRequestAudit logRequest(
 			@NonNull final CustomHttpRequestWrapper customHttpRequest,
 			@NonNull final ApiAuditConfigId apiAuditConfigId,
@@ -534,7 +558,7 @@ public class ApiAuditService
 
 	private void buildHttpResponse(
 			@NonNull final HttpServletResponse httpServletResponse,
-			@NonNull final JsonApiResponse apiResponse,
+			@NonNull final Object apiResponse,
 			final int statusCode) throws IOException
 	{
 		final String stringToForward = objectMapper.writeValueAsString(apiResponse);
@@ -613,22 +637,6 @@ public class ApiAuditService
 		final GenericDataExportAuditRequest auditRequest = genericRequestBuilder.build();
 
 		compositeDataAuditService.performDataAuditForRequest(auditRequest);
-	}
-
-	private void handleErrorResponse(
-			@NonNull final ApiRequestAudit apiRequestAudit,
-			@NonNull final Exception e,
-			@NonNull final HttpServletResponse httpServletResponse) throws IOException
-	{
-		final String language = Env.getADLanguageOrBaseLanguage();
-		final JsonErrorItem error = JsonErrors.ofThrowable(e, language);
-
-		final JsonApiResponse apiResponse = JsonApiResponse.builder()
-				.requestId(JsonMetasfreshId.of(apiRequestAudit.getIdNotNull().getRepoId()))
-				.endpointResponse(error)
-				.build();
-
-		buildHttpResponse(httpServletResponse, apiResponse, HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 	}
 
 	@Value

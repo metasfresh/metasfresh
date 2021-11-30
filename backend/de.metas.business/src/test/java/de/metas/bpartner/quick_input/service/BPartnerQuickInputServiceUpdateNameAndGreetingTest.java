@@ -34,8 +34,10 @@ import de.metas.bpartner.name.strategy.MembershipContactBPartnerNameAndGreetingS
 import de.metas.bpartner.quick_input.BPartnerQuickInputId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.bpartner.user.role.repository.UserRoleRepository;
 import de.metas.greeting.GreetingRepository;
 import de.metas.greeting.GreetingStandardType;
+import de.metas.user.UserGroupRepository;
 import de.metas.user.UserRepository;
 import lombok.NonNull;
 import org.adempiere.ad.table.MockLogEntriesRepository;
@@ -85,11 +87,11 @@ public class BPartnerQuickInputServiceUpdateNameAndGreetingTest
 				new BPartnerQuickInputRelatedRecordsRepository(),
 				new BPartnerContactQuickInputAttributesRepository(),
 				new BPartnerNameAndGreetingStrategies(Optional.of(strategies)),
-				new BPartnerCompositeRepository(new BPartnerBL(new UserRepository()), new MockLogEntriesRepository()),
+				new BPartnerCompositeRepository(new BPartnerBL(new UserRepository()), new MockLogEntriesRepository(), new UserRoleRepository()),
 				new BPartnerAttributesRepository(),
 				new BpartnerRelatedRecordsRepository(),
-				new BPartnerContactAttributesRepository()
-		);
+				new BPartnerContactAttributesRepository(),
+				new UserGroupRepository());
 
 		greeting_MR = createGreeting(GreetingStandardType.MR);
 		greeting_MRS = createGreeting(GreetingStandardType.MRS);
@@ -173,7 +175,7 @@ public class BPartnerQuickInputServiceUpdateNameAndGreetingTest
 		bPartnerQuickInputService.updateNameAndGreeting(BPartnerQuickInputId.ofRepoId(partner.getC_BPartner_QuickInput_ID()));
 
 		refresh(partner);
-		assertThat(partner.getBPartnerName()).isEqualTo(firstName+" And " + firstName2 + " "+ lastname);
+		assertThat(partner.getBPartnerName()).isEqualTo(firstName + " And " + firstName2 + " " + lastname);
 		assertThat(partner.getC_Greeting_ID()).isEqualTo(greeting_MR_AND_MRS.getC_Greeting_ID());
 	}
 

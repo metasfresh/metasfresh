@@ -9,6 +9,7 @@ import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.commission.CommissionConstants;
 import de.metas.contracts.commission.model.I_C_Commission_Share;
+import de.metas.contracts.location.ContractLocationHelper;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
@@ -25,6 +26,7 @@ import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
 import de.metas.lang.SOTrx;
 import de.metas.location.LocationId;
 import de.metas.logging.LogManager;
+import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingResult;
@@ -54,6 +56,7 @@ import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import java.math.BigDecimal;
+import java.time.ZoneId;
 import java.util.Iterator;
 
 import static java.math.BigDecimal.ONE;
@@ -98,6 +101,7 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 	private final transient IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 	private final transient IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final transient IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+	private final transient IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final transient ITaxDAO taxDAO = Services.get(ITaxDAO.class);
 
@@ -109,11 +113,12 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 	}
 
 	@Override
-	public boolean isCreateMissingCandidatesAutomatically(final Object model)
+	public CandidatesAutoCreateMode getSpecificCandidatesAutoCreateMode(@NonNull final Object model)
 	{
 		final I_C_Commission_Share commissionShareRecord = create(model, I_C_Commission_Share.class);
 
-		return !recordHasAnInvoiceCandiate(commissionShareRecord);
+		final boolean invoiceCandidateIsMissed = !recordHasAnInvoiceCandiate(commissionShareRecord);
+		return invoiceCandidateIsMissed ? CandidatesAutoCreateMode.CREATE_CANDIDATES : CandidatesAutoCreateMode.DONT;
 	}
 
 	public boolean recordHasAnInvoiceCandiate(@NonNull final I_C_Commission_Share commissionShareRecord)
@@ -191,12 +196,13 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 					 "IC.BPartnerID must be the contract owner! IC.BPartnerID: {}, flatRateTerm.Bill_BPartnerId: {}, commissionShareId: {}",
 					 bPartnerId, flatrateTerm.getBill_BPartner_ID(), commissionShareRecord.getC_Commission_Share_ID());
 
-		final BPartnerLocationAndCaptureId commissionToLocationId = BPartnerLocationAndCaptureId.ofRepoId(flatrateTerm.getBill_BPartner_ID(), flatrateTerm.getBill_Location_ID());
+		final BPartnerLocationAndCaptureId commissionToLocationId = ContractLocationHelper.extractBillToLocationId(flatrateTerm);
 
 		final PricingSystemId pricingSystemId = bPartnerDAO.retrievePricingSystemIdOrNull(bPartnerId, soTrx);
 
 		final PriceListId priceListId = priceListDAO.retrievePriceListIdByPricingSyst(pricingSystemId, commissionToLocationId, soTrx);
-
+		final ZoneId timeZone = orgDAO.getTimeZone(orgId);
+		
 		final IEditablePricingContext pricingContext = pricingBL
 				.createInitialContext(
 						orgId,
@@ -205,7 +211,7 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 						Quantitys.create(ONE, commissionProductId),
 						soTrx)
 				.setPriceListId(priceListId)
-				.setPriceDate(TimeUtil.asLocalDate(icRecord.getDateOrdered()))
+				.setPriceDate(TimeUtil.asLocalDate(icRecord.getDateOrdered(), timeZone))
 				.setFailIfNotCalculated();
 		final IPricingResult pricingResult = pricingBL.calculatePrice(pricingContext);
 
@@ -296,7 +302,7 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 	/**
 	 * <ul>
 	 * <li>QtyEntered := sum of all 3 C_Commission_Share.PointsSum_* columns
-	 * <li>C_UOM_ID := {@link #COMMISSION_PRODUCT_ID}'s stock UOM
+	 * <li>C_UOM_ID := the commission product's stock UOM
 	 * <li>QtyOrdered := QtyEntered
 	 * <li>DateOrdered := C_Commission_Share.Created
 	 * <li>C_Order_ID: -1

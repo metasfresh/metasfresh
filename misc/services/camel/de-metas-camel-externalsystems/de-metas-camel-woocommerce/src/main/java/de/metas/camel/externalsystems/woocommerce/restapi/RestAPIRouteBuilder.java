@@ -22,6 +22,9 @@
 
 package de.metas.camel.externalsystems.woocommerce.restapi;
 
+import de.metas.camel.externalsystems.common.ProcessLogger;
+import de.metas.camel.externalsystems.common.RestServiceAuthority;
+import de.metas.camel.externalsystems.common.RestServiceRoutes;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 import de.metas.camel.externalsystems.common.LogMessageRequest;
 import de.metas.camel.externalsystems.common.auth.JsonAuthenticateRequest;
@@ -41,7 +44,6 @@ import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_LOG_MESSAGE_ROUTE_ID;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.REST_API_AUTHENTICATE_TOKEN;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.REST_API_EXPIRE_TOKEN;
-import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.REST_WOOCOMMERCE_PATH;
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 
 @Component
@@ -82,7 +84,7 @@ public class RestAPIRouteBuilder extends RouteBuilder
 				.process(this::disableRestAPIProcessor).id(DISABLE_RESOURCE_ROUTE_PROCESSOR_ID)
 				.end();
 
-		rest().path(REST_WOOCOMMERCE_PATH)
+		rest().path(RestServiceRoutes.WOO.getPath())
 				.post()
 				.route()
 				.routeId(REST_API_ROUTE_ID)
@@ -161,11 +163,12 @@ public class RestAPIRouteBuilder extends RouteBuilder
 		final String auditTrailEndpoint = request.getWriteAuditEndpoint();
 
 		return JsonAuthenticateRequest.builder()
-				.grantedAuthority(ExternalSystemCamelConstants.WOOCOMMERCE_AUTHORITY)
+				.grantedAuthority(RestServiceAuthority.WOO.getValue())
 				.authKey(authKey)
 				.pInstance(request.getAdPInstanceId())
 				.externalSystemValue(externalSystemValue)
 				.auditTrailEndpoint(auditTrailEndpoint)
+				.orgCode(request.getOrgCode())
 				.build();
 	}
 }

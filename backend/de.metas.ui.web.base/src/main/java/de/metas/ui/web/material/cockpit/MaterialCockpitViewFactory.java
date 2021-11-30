@@ -1,41 +1,8 @@
-package de.metas.ui.web.material.cockpit;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.service.ISysConfigBL;
-
-import de.metas.i18n.TranslatableStrings;
-import de.metas.process.AdProcessId;
-import de.metas.process.IADProcessDAO;
-import de.metas.process.RelatedProcessDescriptor;
-import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
-import de.metas.ui.web.document.filter.DocumentFilterList;
-import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
-import de.metas.ui.web.material.cockpit.filters.MaterialCockpitFilters;
-import de.metas.ui.web.material.cockpit.process.MD_Cockpit_DocumentDetail_Display;
-import de.metas.ui.web.material.cockpit.process.MD_Cockpit_PricingConditions;
-import de.metas.ui.web.material.cockpit.process.MD_Cockpit_ShowStockDetails;
-import de.metas.ui.web.view.CreateViewRequest;
-import de.metas.ui.web.view.IView;
-import de.metas.ui.web.view.IViewFactory;
-import de.metas.ui.web.view.ViewFactory;
-import de.metas.ui.web.view.ViewId;
-import de.metas.ui.web.view.ViewProfileId;
-import de.metas.ui.web.view.descriptor.ViewLayout;
-import de.metas.ui.web.view.descriptor.ViewLayout.Builder;
-import de.metas.ui.web.view.json.JSONViewDataType;
-import de.metas.ui.web.window.datatypes.WindowId;
-import de.metas.ui.web.window.descriptor.factory.standard.DefaultDocumentDescriptorFactory;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
-
 /*
  * #%L
- * metasfresh-webui-api
+ * de.metas.ui.web.base
  * %%
- * Copyright (C) 2017 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -52,26 +19,67 @@ import lombok.NonNull;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.ui.web.material.cockpit;
+
+import com.google.common.collect.ImmutableList;
+import de.metas.i18n.TranslatableStrings;
+import de.metas.process.AdProcessId;
+import de.metas.process.IADProcessDAO;
+import de.metas.process.RelatedProcessDescriptor;
+import de.metas.ui.web.document.filter.DocumentFilterList;
+import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
+import de.metas.ui.web.material.cockpit.filters.MaterialCockpitFilters;
+import de.metas.ui.web.material.cockpit.process.MD_Cockpit_DocumentDetail_Display;
+import de.metas.ui.web.material.cockpit.process.MD_Cockpit_PricingConditions;
+import de.metas.ui.web.material.cockpit.process.MD_Cockpit_ShowStockDetails;
+import de.metas.ui.web.material.cockpit.rowfactory.MaterialCockpitRowFactory;
+import de.metas.ui.web.view.CreateViewRequest;
+import de.metas.ui.web.view.IView;
+import de.metas.ui.web.view.IViewFactory;
+import de.metas.ui.web.view.ViewFactory;
+import de.metas.ui.web.view.ViewId;
+import de.metas.ui.web.view.ViewProfileId;
+import de.metas.ui.web.view.descriptor.ViewLayout;
+import de.metas.ui.web.view.json.JSONViewDataType;
+import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.ui.web.window.descriptor.factory.standard.DefaultDocumentDescriptorFactory;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ISysConfigBL;
+import org.compiere.util.Env;
+
+import javax.annotation.Nullable;
+import java.time.LocalDate;
+import java.util.List;
+
 @ViewFactory(windowId = MaterialCockpitUtil.WINDOWID_MaterialCockpitView_String, //
 		viewTypes = { JSONViewDataType.grid, JSONViewDataType.includedView })
-public class MaterialCockpitViewFactory
-		implements IViewFactory
+public class MaterialCockpitViewFactory implements IViewFactory
 {
-
-	/** Please keep its prefix in sync with {@link MaterialCockpitRow#SYSCFG_PREFIX} */
+	/**
+	 * Please keep its prefix in sync with {@link MaterialCockpitRow#SYSCFG_PREFIX}
+	 */
 	public static final String SYSCFG_DisplayIncludedRows = "de.metas.ui.web.material.cockpit.MaterialCockpitViewFactory.DisplayIncludedRows";
 
-	private final MaterialCockpitRowRepository materialCockpitRowRepository;
-
+	private final MaterialCockpitRowsLoader materialCockpitRowsLoader;
 	private final MaterialCockpitFilters materialCockpitFilters;
+	private final MaterialCockpitRowFactory materialCockpitRowFactory;
+	
+	private final IADProcessDAO processDAO = Services.get(IADProcessDAO.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	public MaterialCockpitViewFactory(
-			@NonNull final MaterialCockpitRowRepository materialCockpitRowRepository,
+			@NonNull final MaterialCockpitRowsLoader materialCockpitRowsLoader,
 			@NonNull final MaterialCockpitFilters materialCockpitFilters,
-			@NonNull final DefaultDocumentDescriptorFactory defaultDocumentDescriptorFactory)
+			@NonNull final DefaultDocumentDescriptorFactory defaultDocumentDescriptorFactory,
+			@NonNull final MaterialCockpitRowFactory materialCockpitRowFactory)
 	{
-		this.materialCockpitRowRepository = materialCockpitRowRepository;
+		this.materialCockpitRowsLoader = materialCockpitRowsLoader;
 		this.materialCockpitFilters = materialCockpitFilters;
+		this.materialCockpitRowFactory = materialCockpitRowFactory;
 
 		defaultDocumentDescriptorFactory.addUnsupportedWindowId(MaterialCockpitUtil.WINDOWID_MaterialCockpitView);
 	}
@@ -85,18 +93,18 @@ public class MaterialCockpitViewFactory
 		final DocumentFilterList requestFilters = materialCockpitFilters.extractDocumentFilters(request);
 		final DocumentFilterList filtersToUse = request.isUseAutoFilters() ? materialCockpitFilters.createAutoFilters() : requestFilters;
 
-		final MaterialCockpitView view = MaterialCockpitView.builder()
+		final MaterialCockpitRowsData rowsData = createRowsData(filtersToUse, materialCockpitRowsLoader);
+
+		return MaterialCockpitView.builder()
 				.viewId(request.getViewId())
 				.description(TranslatableStrings.empty())
 				.filters(filtersToUse)
 				.filterDescriptors(filterDescriptors)
-				.rowsData(materialCockpitRowRepository.createRowsData(filtersToUse))
+				.rowsData(rowsData)
 				.relatedProcessDescriptor(createProcessDescriptor(MD_Cockpit_DocumentDetail_Display.class))
 				.relatedProcessDescriptor(createProcessDescriptor(MD_Cockpit_PricingConditions.class))
 				.relatedProcessDescriptor(createProcessDescriptor(MD_Cockpit_ShowStockDetails.class))
 				.build();
-
-		return view;
 	}
 
 	private void assertWindowIdOfRequestIsCorrect(@NonNull final CreateViewRequest request)
@@ -105,8 +113,24 @@ public class MaterialCockpitViewFactory
 		final WindowId windowId = viewId.getWindowId();
 
 		Check.errorUnless(MaterialCockpitUtil.WINDOWID_MaterialCockpitView.equals(windowId),
-				"The parameter request needs to have WindowId={}, but has {} instead; request={};",
-				MaterialCockpitUtil.WINDOWID_MaterialCockpitView, windowId, request);
+						  "The parameter request needs to have WindowId={}, but has {} instead; request={};",
+						  MaterialCockpitUtil.WINDOWID_MaterialCockpitView, windowId, request);
+	}
+
+	private MaterialCockpitRowsData createRowsData(
+			@NonNull final DocumentFilterList filters,
+			@NonNull final MaterialCockpitRowsLoader materialCockpitRowsLoader)
+	{
+		final LocalDate date = materialCockpitFilters.getFilterByDate(filters);
+		final boolean includePerPlantDetailRows = retrieveIsIncludePerPlantDetailRows();
+		if (date == null)
+		{
+			return new MaterialCockpitRowsData(includePerPlantDetailRows, materialCockpitRowFactory, ImmutableList.of());
+		}
+
+		final List<MaterialCockpitRow> rows = materialCockpitRowsLoader.getMaterialCockpitRows(filters, date, includePerPlantDetailRows);
+
+		return new MaterialCockpitRowsData(includePerPlantDetailRows, materialCockpitRowFactory, rows);
 	}
 
 	@Override
@@ -116,12 +140,12 @@ public class MaterialCockpitViewFactory
 			@Nullable final ViewProfileId profileId)
 	{
 		Check.errorUnless(MaterialCockpitUtil.WINDOWID_MaterialCockpitView.equals(windowId),
-				"The parameter windowId needs to be {}, but is {} instead; viewDataType={}; ",
-				MaterialCockpitUtil.WINDOWID_MaterialCockpitView, windowId, viewDataType);
+						  "The parameter windowId needs to be {}, but is {} instead; viewDataType={}; ",
+						  MaterialCockpitUtil.WINDOWID_MaterialCockpitView, windowId, viewDataType);
 
-		final boolean displayIncludedRows = Services.get(ISysConfigBL.class).getBooleanValue(SYSCFG_DisplayIncludedRows, true);
+		final boolean displayIncludedRows = sysConfigBL.getBooleanValue(SYSCFG_DisplayIncludedRows, true);
 
-		final Builder viewlayOutBuilder = ViewLayout.builder()
+		final ViewLayout.Builder viewlayOutBuilder = ViewLayout.builder()
 				.setWindowId(windowId)
 				.setHasTreeSupport(displayIncludedRows)
 				.setTreeCollapsible(true)
@@ -133,10 +157,9 @@ public class MaterialCockpitViewFactory
 		return viewlayOutBuilder.build();
 	}
 
-	private final RelatedProcessDescriptor createProcessDescriptor(@NonNull final Class<?> processClass)
+	private RelatedProcessDescriptor createProcessDescriptor(@NonNull final Class<?> processClass)
 	{
-		final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
-		final AdProcessId processId = adProcessDAO.retrieveProcessIdByClass(processClass);
+		final AdProcessId processId = processDAO.retrieveProcessIdByClass(processClass);
 		if (processId == null)
 		{
 			throw new AdempiereException("No processId found for " + processClass);
@@ -145,8 +168,16 @@ public class MaterialCockpitViewFactory
 		return RelatedProcessDescriptor.builder()
 				.processId(processId)
 				.anyTable().anyWindow()
-				.displayPlace(DisplayPlace.ViewQuickActions)
+				.displayPlace(RelatedProcessDescriptor.DisplayPlace.ViewQuickActions)
 				.build();
 	}
 
+	private boolean retrieveIsIncludePerPlantDetailRows()
+	{
+		return Services.get(ISysConfigBL.class).getBooleanValue(
+				MaterialCockpitUtil.SYSCONFIG_INCLUDE_PER_PLANT_DETAIL_ROWS,
+				false,
+				Env.getAD_Client_ID(),
+				Env.getAD_Org_ID(Env.getCtx()));
+	}
 }

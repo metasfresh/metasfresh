@@ -86,7 +86,7 @@ public class C_OrderLine_StepDef
 
 			saveRecord(orderLine);
 
-			orderLineTable.put(DataTableUtil.extractRecordIdentifier(tableRow, I_C_OrderLine.COLUMNNAME_C_OrderLine_ID), orderLine);
+			orderLineTable.putOrReplace(DataTableUtil.extractRecordIdentifier(tableRow, I_C_OrderLine.COLUMNNAME_C_OrderLine_ID), orderLine);
 		}
 	}
 
@@ -148,11 +148,11 @@ public class C_OrderLine_StepDef
 		final List<Map<String, String>> dataTable = table.asMaps();
 		for (final Map<String, String> row : dataTable)
 		{
-			final String orderIdentifier = DataTableUtil.extractStringForColumnName(row, "Order.Identifier");
+			final String orderIdentifier = DataTableUtil.extractStringForColumnName(row, "C_Order_ID.Identifier");
 
 			final I_C_Order orderRecord = orderTable.get(orderIdentifier);
 
-			final int productId = DataTableUtil.extractIntForColumnName(row, "productIdentifier.m_product_id");
+			final int productId = DataTableUtil.extractIntForColumnName(row, "M_Product_ID.Identifier");
 
 			//dev-note: we assume the tests are not using the same product on different lines
 			final I_C_OrderLine orderLineRecord = queryBL.createQueryBuilder(I_C_OrderLine.class)
@@ -167,7 +167,7 @@ public class C_OrderLine_StepDef
 
 	private void validateOrderLine(@NonNull final I_C_OrderLine orderLine, @NonNull final Map<String, String> row)
 	{
-		final String orderIdentifier = DataTableUtil.extractStringForColumnName(row, "Order.Identifier");
+		final String orderIdentifier = DataTableUtil.extractStringForColumnName(row, "C_Order_ID.Identifier");
 		final Timestamp dateOrdered = DataTableUtil.extractDateTimestampForColumnName(row, "dateordered");
 		final BigDecimal qtyDelivered = DataTableUtil.extractBigDecimalForColumnName(row, "qtydelivered");
 		final BigDecimal qtyordered = DataTableUtil.extractBigDecimalForColumnName(row, "qtyordered");
@@ -176,11 +176,11 @@ public class C_OrderLine_StepDef
 		final BigDecimal discount = DataTableUtil.extractBigDecimalForColumnName(row, "discount");
 		final String currencyCode = DataTableUtil.extractStringForColumnName(row, "currencyCode");
 		final boolean processed = DataTableUtil.extractBooleanForColumnName(row, "processed");
-		final int productId = DataTableUtil.extractIntForColumnName(row, "productIdentifier.m_product_id");
+		final int productId = DataTableUtil.extractIntForColumnName(row, "M_Product_ID.Identifier");
 
 		assertThat(orderLine.getC_Order_ID()).isEqualTo(orderTable.get(orderIdentifier).getC_Order_ID());
 		assertThat(orderLine.getDateOrdered()).isEqualTo(dateOrdered);
-		assertThat(orderLine.getQtyDelivered()).isEqualTo(qtyDelivered);
+		assertThat(orderLine.getQtyDelivered()).as("QtyDelivered").isEqualTo(qtyDelivered);
 		assertThat(orderLine.getPriceEntered()).isEqualTo(price);
 		assertThat(orderLine.getDiscount()).isEqualTo(discount);
 		assertThat(orderLine.isProcessed()).isEqualTo(processed);

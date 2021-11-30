@@ -31,6 +31,8 @@ import de.metas.camel.externalsystems.shopware6.currency.CurrencyInfoProvider;
 import de.metas.camel.externalsystems.shopware6.order.processor.TaxProductIdProvider;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.common.externalsystem.JsonExternalSystemShopware6ConfigMappings;
+import de.metas.common.externalsystem.JsonProductLookup;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Data;
@@ -93,6 +95,12 @@ public class ImportOrdersRouteContext
 	private String bpLocationCustomJsonPath;
 
 	@Nullable
+	private final JsonMetasfreshId pInstanceId;
+
+	@Getter(AccessLevel.NONE)
+	private final boolean skipNextImportStartingTimestamp;
+
+	@Nullable
 	@Getter(AccessLevel.NONE)
 	private String shippingBPLocationExternalId;
 
@@ -114,6 +122,9 @@ public class ImportOrdersRouteContext
 
 	@Nullable
 	private JsonCustomerGroup bPartnerCustomerGroup;
+
+	@NonNull
+	private JsonProductLookup jsonProductLookup;
 
 	@NonNull
 	public OrderCandidate getOrderNotNull()
@@ -156,6 +167,11 @@ public class ImportOrdersRouteContext
 
 	public void setNextImportStartingTimestamp(@NonNull final DateAndImportStatus dateAndImportStatus)
 	{
+		if (this.skipNextImportStartingTimestamp)
+		{
+			return;
+		}
+
 		if (this.nextImportStartingTimestamp == null)
 		{
 			this.nextImportStartingTimestamp = dateAndImportStatus;
@@ -200,7 +216,7 @@ public class ImportOrdersRouteContext
 	@NonNull
 	public Optional<Instant> getNextImportStartingTimestamp()
 	{
-		if (nextImportStartingTimestamp == null)
+		if (this.skipNextImportStartingTimestamp || nextImportStartingTimestamp == null)
 		{
 			return Optional.empty();
 		}

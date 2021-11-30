@@ -1,8 +1,12 @@
 package de.metas.ui.web.material.cockpit.filters;
 
-import java.time.LocalDate;
-import java.util.function.Predicate;
-
+import de.metas.material.cockpit.model.I_MD_Cockpit;
+import de.metas.ui.web.document.filter.DocumentFilterList;
+import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
+import de.metas.ui.web.document.filter.provider.ImmutableDocumentFilterDescriptorsProvider;
+import de.metas.ui.web.view.CreateViewRequest;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -11,13 +15,8 @@ import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Product;
 import org.springframework.stereotype.Service;
 
-import de.metas.material.cockpit.model.I_MD_Cockpit;
-import de.metas.ui.web.document.filter.DocumentFilterList;
-import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
-import de.metas.ui.web.document.filter.provider.ImmutableDocumentFilterDescriptorsProvider;
-import de.metas.ui.web.view.CreateViewRequest;
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.time.LocalDate;
+import java.util.function.Predicate;
 
 /*
  * #%L
@@ -136,7 +135,7 @@ public class MaterialCockpitFilters
 			return false;
 		}
 
-		queryBuilder.addInSubQueryFilter(I_MD_Cockpit.COLUMN_M_Product_ID, I_M_Product.COLUMN_M_Product_ID, productQuery);
+		queryBuilder.addInSubQueryFilter(I_MD_Cockpit.COLUMNNAME_M_Product_ID, I_M_Product.COLUMNNAME_M_Product_ID, productQuery);
 		return true;
 	}
 
@@ -145,7 +144,7 @@ public class MaterialCockpitFilters
 		return queryBuilder
 				.orderBy()
 				.addColumn(I_MD_Cockpit.COLUMN_DateGeneral)
-				.addColumn(I_MD_Cockpit.COLUMN_M_Product_ID)
+				.addColumn(I_MD_Cockpit.COLUMNNAME_M_Product_ID)
 				.addColumn(I_MD_Cockpit.COLUMN_AttributesKey)
 				.endOrderBy();
 	}

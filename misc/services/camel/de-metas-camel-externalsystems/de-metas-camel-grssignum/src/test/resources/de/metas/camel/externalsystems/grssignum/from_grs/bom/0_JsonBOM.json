@@ -1,0 +1,19 @@
+{
+  "FLAG": 300,
+  "ARTNR": "ProductValue",
+  "ARTNRID": "ProductId",
+  "TEXT": "Name1",
+  "TEXT2": "Name2",
+  "INAKTIV": 0,
+  "VERLUST": 10.5,
+  "GTIN": 12345678,
+  "DETAIL": [
+    {
+      "ARTNR": "ProductValue1",
+      "ARTNRID": "ProductId1",
+      "POS": 1,
+      "ANTEIL": 50,
+      "UOM": "KGM"
+    }
+  ]
+}

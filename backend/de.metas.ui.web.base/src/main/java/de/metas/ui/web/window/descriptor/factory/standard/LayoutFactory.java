@@ -30,6 +30,7 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutSingleRow;
 import de.metas.ui.web.window.descriptor.DocumentLayoutSingleRow.Builder;
 import de.metas.ui.web.window.descriptor.LayoutElementType;
 import de.metas.ui.web.window.descriptor.LayoutType;
+import de.metas.ui.web.window.descriptor.QuickInputSupportDescriptor;
 import de.metas.ui.web.window.descriptor.ViewEditorRenderMode;
 import de.metas.ui.web.window.descriptor.WidgetSize;
 import de.metas.util.Check;
@@ -695,23 +696,31 @@ public class LayoutFactory
 				.gridLayout(layoutGridView())
 				.singleRowLayout(layoutSingleRow)
 				.queryOnActivate(entityDescriptor.isQueryIncludedTabOnActivate())
-				.supportQuickInput(isSupportQuickInput(entityDescriptor));
+				.quickInputSupport(extractQuickInputSupport(entityDescriptor))
+				.newRecordInputMode(entityDescriptor.getIncludedTabNewRecordInputMode());
 		return Optional.of(builder);
 	}
 
-	private boolean isSupportQuickInput(final DocumentEntityDescriptor.Builder entityDescriptor)
+	@Nullable
+	private QuickInputSupportDescriptor extractQuickInputSupport(final DocumentEntityDescriptor.Builder entityDescriptor)
 	{
-		if (!entityDescriptor.isAllowQuickInput())
+		final QuickInputSupportDescriptor quickInputSupport = entityDescriptor.getQuickInputSupport();
+		if (quickInputSupport == null)
 		{
-			return false;
+			return null;
 		}
 
-		return quickInputDescriptors.hasQuickInputEntityDescriptor(
+		if(!quickInputDescriptors.hasQuickInputEntityDescriptor(
 				entityDescriptor.getDocumentType(),
 				entityDescriptor.getDocumentTypeId(),
 				entityDescriptor.getTableName(),
 				entityDescriptor.getDetailId(),
-				entityDescriptor.getSOTrx());
+				entityDescriptor.getSOTrx()))
+		{
+			return null;
+		}
+
+		return quickInputSupport;
 	}
 
 	private DocumentLayoutElementFieldDescriptor.Builder layoutElementField(final DocumentFieldDescriptor.Builder field)

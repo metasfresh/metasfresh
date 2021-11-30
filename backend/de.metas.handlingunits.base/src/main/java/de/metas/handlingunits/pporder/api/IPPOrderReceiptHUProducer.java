@@ -1,10 +1,12 @@
 package de.metas.handlingunits.pporder.api;
 
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.picking.PickingCandidateId;
 import de.metas.quantity.Quantity;
+import lombok.NonNull;
 import org.adempiere.warehouse.LocatorId;
 import org.eevolution.api.PPCostCollectorId;
 
@@ -31,6 +33,10 @@ public interface IPPOrderReceiptHUProducer
 	void createDraftReceiptCandidatesAndPlanningHUs();
 
 	I_M_HU receiveVHU(Quantity qtyToReceive);
+
+	List<I_M_HU> receiveTUs(@NonNull Quantity qtyToReceive, @NonNull HUPIItemProductId tuPIItemProductId);
+
+	List<I_M_HU> receiveHUs(@NonNull Quantity qtyToReceive);
 
 	/**
 	 * NOTE: by default current system time is considered.

@@ -4,12 +4,14 @@ import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.OrgMappingId;
-import de.metas.marketing.base.model.CampaignId;
+import de.metas.document.DocTypeId;
 import de.metas.greeting.GreetingId;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.marketing.base.model.CampaignId;
 import de.metas.order.InvoiceRule;
+import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.util.lang.ExternalId;
@@ -66,6 +68,10 @@ public class BPartner
 	public static final String VENDOR = "vendor";
 	public static final String CUSTOMER = "customer";
 	public static final String COMPANY = "company";
+	public static final String SALES_PARTNER_CODE = "salesPartnerCode";
+	public static final String C_BPARTNER_SALES_REP_ID = "bPartnerSalesRepId";
+	public static final String PAYMENT_RULE = "paymentRule";
+	public static final String INTERNAL_NAME = "internalName";
 	public static final String VAT_ID = "vatId";
 	public static final String GREETING_ID = "greetingId";
 	public static final String CUSTOMER_PAYMENTTERM_ID = "customerPaymentTermId";
@@ -88,6 +94,10 @@ public class BPartner
 	private String name2;
 	private String name3;
 	private final GreetingId greetingId;
+
+	private final DocTypeId soDocTypeTargetId;
+	private final String firstName;
+	private final String lastName;
 
 	/**
 	 * non-empty value implies that the bpartner is also a company
@@ -117,8 +127,13 @@ public class BPartner
 	private boolean vendor;
 	private boolean customer;
 	private boolean company;
+	private String salesPartnerCode;
+	private SalesRep salesRep;
+	private PaymentRule paymentRule;
+	private String internalName;
 
-	private InvoiceRule invoiceRule;
+	private InvoiceRule customerInvoiceRule;
+	private InvoiceRule vendorInvoiceRule;
 
 	private String globalId;
 
@@ -173,10 +188,15 @@ public class BPartner
 			@Nullable final String url2,
 			@Nullable final String url3,
 			@Nullable final BPGroupId groupId,
-			@Nullable final InvoiceRule invoiceRule,
+			@Nullable final InvoiceRule customerInvoiceRule,
+			@Nullable final InvoiceRule vendorInvoiceRule,
 			@Nullable final Boolean vendor,
 			@Nullable final Boolean customer,
 			@Nullable final Boolean company,
+			@Nullable final String salesPartnerCode,
+			@Nullable final SalesRep salesRep,
+			@Nullable final PaymentRule paymentRule,
+			@Nullable final String internalName,
 			@Nullable final String vatId,
 			@Nullable final RecordChangeLog changeLog,
 			@Nullable final String shipmentAllocationBestBeforePolicy,
@@ -189,7 +209,10 @@ public class BPartner
 			@Nullable final PricingSystemId vendorPricingSystemId,
 			final boolean excludeFromPromotions,
 			@Nullable final String referrer,
-			@Nullable final CampaignId campaignId)
+			@Nullable final CampaignId campaignId,
+			@Nullable final DocTypeId soDocTypeTargetId,
+			@Nullable final String firstName,
+			@Nullable final String lastName)
 	{
 		this.id = id;
 		this.externalId = externalId;
@@ -208,10 +231,15 @@ public class BPartner
 		this.url2 = url2;
 		this.url3 = url3;
 		this.groupId = groupId;
-		this.invoiceRule = invoiceRule;
+		this.customerInvoiceRule = customerInvoiceRule;
+		this.vendorInvoiceRule = vendorInvoiceRule;
 		this.vendor = coalesce(vendor, false);
 		this.customer = coalesce(customer, false);
 		this.company = coalesce(company, false);
+		this.salesPartnerCode = salesPartnerCode;
+		this.salesRep = salesRep;
+		this.paymentRule = paymentRule;
+		this.internalName = internalName;
 		this.vatId = vatId;
 
 		this.changeLog = changeLog;
@@ -228,6 +256,10 @@ public class BPartner
 		this.excludeFromPromotions = excludeFromPromotions;
 		this.referrer = referrer;
 		this.campaignId = campaignId;
+
+		this.soDocTypeTargetId = soDocTypeTargetId;
+		this.firstName = firstName;
+		this.lastName = lastName;
 	}
 
 	/**

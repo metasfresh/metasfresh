@@ -4,6 +4,7 @@ import java.time.ZonedDateTime;
 
 import javax.annotation.Nullable;
 
+import de.metas.CreatedUpdatedInfo;
 import de.metas.dataentry.DataEntryFieldId;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -41,7 +42,7 @@ public class DataEntryRecordFieldDateTime extends DataEntryRecordField<ZonedDate
 
 	public static DataEntryRecordFieldDateTime of(
 			@NonNull final DataEntryFieldId dataEntryFieldId,
-			@NonNull final DataEntryCreatedUpdatedInfo createdUpdatedInfo,
+			@NonNull final CreatedUpdatedInfo createdUpdatedInfo,
 			@Nullable final ZonedDateTime value)
 	{
 		return new DataEntryRecordFieldDateTime(
@@ -52,7 +53,7 @@ public class DataEntryRecordFieldDateTime extends DataEntryRecordField<ZonedDate
 
 	private DataEntryRecordFieldDateTime(
 			@NonNull final DataEntryFieldId dataEntryFieldId,
-			@NonNull final DataEntryCreatedUpdatedInfo createdUpdatedInfo,
+			@NonNull final CreatedUpdatedInfo createdUpdatedInfo,
 			@Nullable final ZonedDateTime value)
 	{
 		super(dataEntryFieldId, createdUpdatedInfo);

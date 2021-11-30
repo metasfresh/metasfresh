@@ -23,9 +23,12 @@
 package de.metas.fulltextsearch.query;
 
 import de.metas.fulltextsearch.config.FTSFilterDescriptor;
+import de.metas.security.UserRolePermissionsKey;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
 
 @Value
 @Builder
@@ -34,6 +37,8 @@ public class FTSSearchRequest
 	@NonNull String searchId;
 	@NonNull String searchText;
 	@NonNull String esIndexName;
+
+	@Nullable UserRolePermissionsKey userRolePermissionsKey;
 
 	@NonNull FTSFilterDescriptor filterDescriptor;
 }

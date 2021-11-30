@@ -459,6 +459,14 @@
         </dependency>
 
         <dependency>
+            <groupId>de.metas.salesorder</groupId>
+            <artifactId>de-metas-salesorder</artifactId>
+            <version>${metasfresh.version}</version>
+            <classifier>migration-postgres-sql</classifier>
+            <type>zip</type>
+        </dependency>
+                
+        <dependency>
             <groupId>de.metas.serviceprovider</groupId>
             <artifactId>de.metas.serviceprovider.base</artifactId>
             <version>${metasfresh.version}</version>

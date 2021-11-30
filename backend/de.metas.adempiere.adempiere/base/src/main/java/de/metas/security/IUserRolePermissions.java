@@ -1,17 +1,7 @@
 package de.metas.security;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-
-import de.metas.i18n.BooleanWithReason;
-import org.adempiere.ad.element.api.AdWindowId;
-import org.adempiere.ad.table.api.AdTableId;
-import org.adempiere.service.ClientId;
-import org.compiere.util.Env;
-import org.compiere.util.KeyNamePair;
-
 import de.metas.document.engine.DocActionOptionsContext;
+import de.metas.i18n.BooleanWithReason;
 import de.metas.organization.OrgId;
 import de.metas.security.permissions.Access;
 import de.metas.security.permissions.Constraint;
@@ -23,8 +13,16 @@ import de.metas.security.permissions.ResourceAsPermission;
 import de.metas.security.permissions.UserMenuInfo;
 import de.metas.security.permissions.UserPreferenceLevelConstraint;
 import de.metas.user.UserId;
+import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.ad.table.api.AdTableId;
+import org.adempiere.service.ClientId;
+import org.compiere.util.Env;
+import org.compiere.util.KeyNamePair;
 
 import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 public interface IUserRolePermissions
 {
@@ -202,18 +200,20 @@ public interface IUserRolePermissions
 
 	boolean isCanReport(int AD_Table_ID);
 
-	boolean isOrgAccess(OrgId OrgId, Access access);
+	boolean isOrgAccess(OrgId OrgId, String tableName, Access access);
 
 	String getClientWhere(@Nullable String tableName, @Nullable String tableAlias, Access access);
 
-	String getOrgWhere(@Nullable String tableName, Access access);
+	Optional<String> getOrgWhere(@Nullable String tableName, Access access);
 
 	String getAD_Org_IDs_AsString();
 
 	// FRESH-560: Retrieve the org IDs also as a list
 	Set<OrgId> getAD_Org_IDs_AsSet();
 
-	Set<KeyNamePair> getLoginClients();
+	Set<ClientId> getLoginClientIds();
+
+	OrgIdAccessList getOrgAccess(@Nullable String tableName, Access access);
 
 	Set<OrgResource> getLoginOrgs();
 

@@ -206,6 +206,12 @@ public class OLCandDAO implements IOLCandDAO
 				);
 	}
 
+	@Override
+	public I_C_OLCand retrieveByIds(@NonNull final OLCandId olCandId)
+	{
+		return InterfaceWrapperHelper.load(olCandId, I_C_OLCand.class);
+	}
+
 	@NonNull
 	public Map<OLCandId, OrderLineId> retrieveOLCandIdToOrderLineId(@NonNull final Set<OLCandId> olCandIds)
 	{

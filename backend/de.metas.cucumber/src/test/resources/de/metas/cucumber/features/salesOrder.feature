@@ -9,7 +9,7 @@ Feature: sales order
   Scenario: we can create and complete a sales order
     Given metasfresh has date and time 2021-04-16T13:30:13+01:00[Europe/Berlin]
     And metasfresh contains M_Products:
-      | Identifier | Name           |
+      | Identifier | Name            |
       | p_1        | salesProduct_12 |
     And metasfresh contains M_PricingSystems
       | Identifier | Name                | Value                | OPT.Description            | OPT.IsActive |
@@ -40,17 +40,17 @@ Feature: sales order
   @from:cucumber
   Scenario: we can generate a purchase order from a sales order
     And metasfresh contains M_Products:
-      | Identifier | Name           |
+      | Identifier | Name            |
       | p_2        | salesProduct_72 |
     And metasfresh contains M_PricingSystems
-      | Identifier | Name                  | Value                  | OPT.Description            | OPT.IsActive |
+      | Identifier | Name                   | Value                   | OPT.Description            | OPT.IsActive |
       | ps_2       | pricing_system_name_72 | pricing_system_value_72 | pricing_system_description | true         |
     And metasfresh contains M_PriceLists
-      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name              | OPT.Description | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
+      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name               | OPT.Description | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
       | pl_2       | ps_2                          | DE                        | EUR                 | price_list_name_72 | null            | true  | false         | 2              | true         |
       | pl_3       | ps_2                          | DE                        | EUR                 | price_list_name_73 | null            | false | false         | 2              | true         |
     And metasfresh contains M_PriceList_Versions
-      | Identifier | M_PriceList_ID.Identifier | Name                | ValidFrom  |
+      | Identifier | M_PriceList_ID.Identifier | Name                 | ValidFrom  |
       | plv_2      | pl_2                      | salesOrder-PLV_72    | 2021-04-01 |
       | plv_3      | pl_3                      | purchaseOrder-PLV_72 | 2021-04-01 |
     And metasfresh contains M_ProductPrices
@@ -58,20 +58,20 @@ Feature: sales order
       | pp_2       | plv_2                             | p_2                     | 10.0     | PCE               | Normal                        |
       | pp_3       | plv_3                             | p_2                     | 10.0     | PCE               | Normal                        |
     And metasfresh contains C_BPartners:
-      | Identifier    | Name          | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
+      | Identifier    | Name           | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
       | endcustomer_2 | Endcustomer_72 | N            | Y              | ps_2                          |
       | vendor_2      | vendor_72      | Y            | Y              | ps_2                          |
     And metasfresh contains C_BPartner_Products:
       | C_BPartner_ID.Identifier | M_Product_ID.Identifier |
       | vendor_2                 | p_2                     |
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
-      | o_2        | true    | endcustomer_2            | 2021-04-17  |
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | POReference | C_Payment_ID |
+      | o_2        | true    | endcustomer_2            | 2021-04-17  | po_ref_mock | 1000002      |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_2       | o_2                   | p_2                     | 10         |
     And the order identified by o_2 is completed
-    And after not more than 10s, M_ShipmentSchedules are found:
+    And after not more than 30s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_ol_2     | ol_2                      | N             |
     When generate PO from SO is invoked with parameters:

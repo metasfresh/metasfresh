@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_ExternalSystem_Config_Shopware6 extends org.compiere.model.PO implements I_ExternalSystem_Config_Shopware6, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 895309803L;
+	private static final long serialVersionUID = 388225374L;
 
     /** Standard Constructor */
     public X_ExternalSystem_Config_Shopware6 (final Properties ctx, final int ExternalSystem_Config_Shopware6_ID, @Nullable final String trxName)
@@ -212,5 +212,41 @@ public class X_ExternalSystem_Config_Shopware6 extends org.compiere.model.PO imp
 	public int getM_FreightCost_ReducedVAT_Product_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_FreightCost_ReducedVAT_Product_ID);
+	}
+
+	@Override
+	public void setM_PriceList_ID (final int M_PriceList_ID)
+	{
+		if (M_PriceList_ID < 1) 
+			set_Value (COLUMNNAME_M_PriceList_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_PriceList_ID, M_PriceList_ID);
+	}
+
+	@Override
+	public int getM_PriceList_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_PriceList_ID);
+	}
+
+	/** 
+	 * ProductLookup AD_Reference_ID=541499
+	 * Reference name: _ProductLookup
+	 */
+	public static final int PRODUCTLOOKUP_AD_Reference_ID=541499;
+	/** Product Id = ProductId */
+	public static final String PRODUCTLOOKUP_ProductId = "ProductId";
+	/** Product Number = ProductNumber */
+	public static final String PRODUCTLOOKUP_ProductNumber = "ProductNumber";
+	@Override
+	public void setProductLookup (final java.lang.String ProductLookup)
+	{
+		set_Value (COLUMNNAME_ProductLookup, ProductLookup);
+	}
+
+	@Override
+	public java.lang.String getProductLookup() 
+	{
+		return get_ValueAsString(COLUMNNAME_ProductLookup);
 	}
 }

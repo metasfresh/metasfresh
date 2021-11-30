@@ -99,6 +99,7 @@ public class RestAPIAuthenticateRoute extends RouteBuilder
 				.pInstance(request.getPInstance())
 				.auditTrailEndpoint(request.getAuditTrailEndpoint())
 				.externalSystemValue(request.getExternalSystemValue())
+				.orgCode(request.getOrgCode())
 				.build();
 	}
 }

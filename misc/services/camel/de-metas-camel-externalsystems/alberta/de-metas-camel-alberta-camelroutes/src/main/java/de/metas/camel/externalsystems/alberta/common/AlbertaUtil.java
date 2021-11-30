@@ -22,8 +22,8 @@
 
 package de.metas.camel.externalsystems.alberta.common;
 
+import lombok.NonNull;
 import org.threeten.bp.OffsetDateTime;
-import org.threeten.bp.temporal.TemporalField;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
@@ -34,6 +34,12 @@ import static org.threeten.bp.temporal.ChronoField.MILLI_OF_SECOND;
 
 public class AlbertaUtil
 {
+	@NonNull
+	public static Instant asInstantNotNull(@NonNull final String offsetDateTime)
+	{
+		return Instant.parse(offsetDateTime);
+	}
+	
 	@Nullable
 	public static Instant asInstant(@Nullable final OffsetDateTime offsetDateTime)
 	{

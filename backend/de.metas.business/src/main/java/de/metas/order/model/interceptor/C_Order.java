@@ -213,7 +213,7 @@ public class C_Order
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = { I_C_Order.COLUMNNAME_C_BPartner_ID })
 	public void setDeliveryViaRule(final I_C_Order order)
 	{
-		final DeliveryViaRule deliveryViaRule = orderBL.evaluateOrderDeliveryViaRule(order);
+		final DeliveryViaRule deliveryViaRule = orderBL.findDeliveryViaRule(order).orElse(null);
 
 		if (deliveryViaRule != null)
 		{
@@ -476,6 +476,17 @@ public class C_Order
 	public void validateSupplierApprovalsOnChange(final I_C_Order order)
 	{
 		validateSupplierApprovals(order);
+	}
+
+	@ModelChange(timings = {
+			ModelValidator.TYPE_BEFORE_CHANGE
+	}, ifColumnsChanged = I_C_Order.COLUMNNAME_DatePromised )
+	public void updateOrderLineFromContract(final I_C_Order order)
+	{
+		orderDAO.retrieveOrderLines(order)
+				.stream()
+				.filter(line -> line.getC_Flatrate_Conditions_ID() > 0)
+				.forEach(orderLineBL::updatePrices);
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_VOID )

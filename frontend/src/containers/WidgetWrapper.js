@@ -52,7 +52,7 @@ class WidgetWrapper extends PureComponent {
     const { renderMaster, widgetType } = this.props;
 
     if (widgetType === 'InlineTab') {
-      return <InlineTabWrapper ref={this.childRef} {...this.props} />;
+      return <InlineTabWrapper {...this.props} />;
     }
 
     if (renderMaster) {

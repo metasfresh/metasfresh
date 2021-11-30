@@ -6,6 +6,8 @@ import de.metas.JsonObjectMapperHolder;
 import de.metas.audit.data.model.DataExportAuditLogId;
 import de.metas.contracts.commission.mediated.model.MediatedCommissionSettingsLineId;
 import de.metas.externalsystem.other.ExternalSystemOtherConfigId;
+import de.metas.audit.data.model.DataExportAuditLogId;
+import de.metas.contracts.commission.mediated.model.MediatedCommissionSettingsLineId;
 import de.metas.invoice.InvoiceVerificationRunId;
 import de.metas.servicerepair.project.model.ServiceRepairProjectCostCollectorId;
 import de.metas.servicerepair.project.model.ServiceRepairProjectTaskId;
@@ -58,6 +60,9 @@ public class All_RepoIdAware_Classes_Test
 			.skip(de.metas.bpartner.BPartnerLocationId.class)
 			.skip(de.metas.bpartner.BPartnerContactId.class)
 			.skip(de.metas.bpartner.BPartnerBankAccountId.class)
+			.skip(de.metas.bpartner.user.role.UserAssignedRoleId.class)
+			//
+			.skip(de.metas.contracts.pricing.trade_margin.CustomerTradeMarginLineId.class)
 			//
 			.skip(de.metas.externalsystem.IExternalSystemChildConfigId.class)
 			//
@@ -85,8 +90,6 @@ public class All_RepoIdAware_Classes_Test
 			.skip(DataExportAuditLogId.class)
 			//
 			.skip(ExternalSystemOtherConfigId.class)
-			//
-			.skip(de.metas.async.asyncbatchmilestone.AsyncBatchMilestoneId.class)
 			//
 			.skip(MediatedCommissionSettingsLineId.class)
 			;

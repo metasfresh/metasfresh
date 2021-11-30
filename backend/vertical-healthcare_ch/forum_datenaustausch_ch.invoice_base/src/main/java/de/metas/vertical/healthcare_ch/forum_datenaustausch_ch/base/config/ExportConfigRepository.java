@@ -47,12 +47,14 @@ public class ExportConfigRepository
 			X_HC_Forum_Datenaustausch_Config.EXPORTEDXMLMODE_Production, XmlMode.PRODUCTION,
 			X_HC_Forum_Datenaustausch_Config.EXPORTEDXMLMODE_Test, XmlMode.TEST);
 
+	@Nullable
 	public ExportConfig getForQueryOrNull(@NonNull final BPartnerQuery query)
 	{
 		final I_HC_Forum_Datenaustausch_Config configRecord = ConfigRepositoryUtil.retrieveRecordForQueryOrNull(query);
 		return ofRecordOrNull(configRecord);
 	}
 
+	@Nullable
 	private ExportConfig ofRecordOrNull(@Nullable final I_HC_Forum_Datenaustausch_Config queryRecord)
 	{
 		if (queryRecord == null)

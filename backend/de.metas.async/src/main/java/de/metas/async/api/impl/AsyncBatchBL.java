@@ -1,6 +1,3 @@
-/**
- *
- */
 package de.metas.async.api.impl;
 
 
@@ -28,6 +25,8 @@ package de.metas.async.api.impl;
  */
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.Multimap;
 import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.api.IAsyncBatchBuilder;
@@ -35,7 +34,6 @@ import de.metas.async.api.IAsyncBatchDAO;
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.model.I_C_Async_Batch;
-import de.metas.async.model.I_C_Async_Batch_Milestone;
 import de.metas.async.model.I_C_Async_Batch_Type;
 import de.metas.async.model.I_C_Queue_Block;
 import de.metas.async.model.I_C_Queue_WorkPackage;
@@ -49,8 +47,10 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -66,10 +66,13 @@ import static org.compiere.util.Env.getCtx;
 
 public class AsyncBatchBL implements IAsyncBatchBL
 {
+	private static final String DYN_ATTR_TEMPORARY_BATCH_ID = "TemporaryBatchId";
+
 	// services
 	private final IAsyncBatchDAO asyncBatchDAO = Services.get(IAsyncBatchDAO.class);
 	private final IWorkPackageQueueFactory workPackageQueueFactory = Services.get(IWorkPackageQueueFactory.class);
 	private final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	private final ReentrantLock lock = new ReentrantLock();
 
@@ -171,7 +174,7 @@ public class AsyncBatchBL implements IAsyncBatchBL
 
 			asyncBatch.setProcessed(checkProcessed(asyncBatch));
 			asyncBatch.setIsProcessing(checkProcessing(asyncBatch));
-			
+
 			save(asyncBatch);
 		}
 		finally
@@ -191,9 +194,9 @@ public class AsyncBatchBL implements IAsyncBatchBL
 		final Properties ctx = Env.getCtx();
 		final IWorkPackageQueue queue = workPackageQueueFactory.getQueueForEnqueuing(ctx, CheckProcessedAsynBatchWorkpackageProcessor.class);
 		queue.setAsyncBatchIdForNewWorkpackages(asyncBatchId);
-		
+
 		final I_C_Queue_Block queueBlock = queue.enqueueBlock(ctx);
-		
+
 		final IWorkpackagePrioStrategy prio = NullWorkpackagePrio.INSTANCE; // don't specify a particular prio. this is OK because we assume that there is a dedicated queue/thread for CheckProcessedAsynBatchWorkpackageProcessor
 
 		final I_C_Queue_WorkPackage queueWorkpackage = queue.newBlock()
@@ -221,11 +224,6 @@ public class AsyncBatchBL implements IAsyncBatchBL
 			return true;
 		}
 
-		if (isAsyncBatchEligibleToProcess(asyncBatchId))
-		{
-			return false;
-		}
-
 		final boolean processed = checkProcessed(asyncBatchRecord);
 		if (!processed)
 		{
@@ -238,15 +236,8 @@ public class AsyncBatchBL implements IAsyncBatchBL
 		return true;
 	}
 
-	private boolean isAsyncBatchEligibleToProcess(@NonNull final AsyncBatchId asyncBatchId)
-	{
-		final List<I_C_Async_Batch_Milestone> milestones = asyncBatchDAO.retrieveMilestonesForAsyncBatchId(asyncBatchId);
-
-		return milestones.isEmpty();
-	}
-
 	@VisibleForTesting
-	/* package */boolean checkProcessed(@NonNull final I_C_Async_Batch asyncBatch)
+		/* package */boolean checkProcessed(@NonNull final I_C_Async_Batch asyncBatch)
 	{
 		// if (asyncBatch.isProcessed())
 		// {
@@ -337,7 +328,7 @@ public class AsyncBatchBL implements IAsyncBatchBL
 	}
 
 	/**
-	 * assumes that asyncBatch.isProcessed() was already set with the help of #checkProcessed 
+	 * assumes that asyncBatch.isProcessed() was already set with the help of #checkProcessed
 	 */
 	private boolean checkProcessing(@NonNull final I_C_Async_Batch asyncBatch)
 	{
@@ -348,7 +339,7 @@ public class AsyncBatchBL implements IAsyncBatchBL
 		final int countEnqueued = asyncBatch.getCountEnqueued();
 		return countEnqueued > 0;
 	}
-	
+
 	private int getProcessedTimeOffsetMillis()
 	{
 		return Services.get(ISysConfigBL.class).getIntValue("de.metas.async.api.impl.AsyncBatchBL_ProcessedOffsetMillis", 1);
@@ -367,12 +358,12 @@ public class AsyncBatchBL implements IAsyncBatchBL
 		final String keepAliveTimeHours = asyncBatchType.getKeepAliveTimeHours();
 
 		// if null or empty, keep alive for ever
-		if (Check.isEmpty(keepAliveTimeHours, true))
+		if (Check.isBlank(keepAliveTimeHours))
 		{
 			return false;
 		}
 
-		final int keepAlive = Integer.valueOf(keepAliveTimeHours);
+		final int keepAlive = Integer.parseInt(keepAliveTimeHours);
 
 		// if 0, keep alive for ever
 		if (keepAlive == 0)
@@ -385,15 +376,11 @@ public class AsyncBatchBL implements IAsyncBatchBL
 
 		final long diffHours = TimeUtil.getHoursBetween(lastUpdated, today);
 
-		if (diffHours > keepAlive)
-		{
-			return true;
-		}
-
-		return false;
+		return diffHours > keepAlive;
 	}
 
 	@Override
+	@Nullable
 	public I_C_Queue_WorkPackage notify(final I_C_Async_Batch asyncBatch, final I_C_Queue_WorkPackage workpackage)
 	{
 		//
@@ -421,7 +408,6 @@ public class AsyncBatchBL implements IAsyncBatchBL
 		}
 
 		return null;
-
 	}
 
 	@Override
@@ -432,21 +418,72 @@ public class AsyncBatchBL implements IAsyncBatchBL
 	}
 
 	@NonNull
-	public Optional<AsyncBatchId> getAsyncBatchId(@Nullable final Object model)
+	public Optional<AsyncBatchId> getAsyncBatchId(@Nullable final Object modelRecord)
 	{
-		if (model == null)
+		if (modelRecord == null)
 		{
 			return Optional.empty();
 		}
 
-		if (!InterfaceWrapperHelper.isModelInterface(model.getClass()))
+		if (!InterfaceWrapperHelper.isModelInterface(modelRecord.getClass()))
 		{
 			return Optional.empty();
 		}
 
-		final Optional<Integer> asyncBatchId = InterfaceWrapperHelper.getValueOptional(model, I_C_Async_Batch.COLUMNNAME_C_Async_Batch_ID);
+		final AsyncBatchId temporaryBatchId = InterfaceWrapperHelper.getDynAttribute(modelRecord, DYN_ATTR_TEMPORARY_BATCH_ID);
+		if (temporaryBatchId != null)
+		{
+			return Optional.of(temporaryBatchId);
+		}
 
+		final Optional<Integer> asyncBatchId = InterfaceWrapperHelper.getValueOptional(modelRecord, I_C_Async_Batch.COLUMNNAME_C_Async_Batch_ID);
 		return asyncBatchId.map(AsyncBatchId::ofRepoIdOrNull);
+	}
+
+	@Override
+	public @NonNull <T> ImmutablePair<AsyncBatchId, T> assignPermAsyncBatchToModelIfMissing(
+			@NonNull final T modelRecord,
+			@NonNull final String asyncBatchInternalName)
+	{
+		final Optional<AsyncBatchId> asyncBatchId = getAsyncBatchId(modelRecord);
+		if (asyncBatchId.isPresent())
+		{
+			return ImmutablePair.of(asyncBatchId.get(), modelRecord);
+		}
+
+		return trxManager.callInNewTrx(() -> {
+
+			final AsyncBatchId newAsyncBatchId = newAsyncBatch(asyncBatchInternalName);
+			InterfaceWrapperHelper.setValue(modelRecord, I_C_Async_Batch.COLUMNNAME_C_Async_Batch_ID, newAsyncBatchId.getRepoId());
+
+			InterfaceWrapperHelper.save(modelRecord);
+
+			return ImmutablePair.of(newAsyncBatchId, modelRecord);
+		});
+	}
+
+	@Override
+	public @NonNull <T> Multimap<AsyncBatchId, T> assignTempAsyncBatchToModelsIfMissing(
+			@NonNull final List<T> models,
+			@NonNull final String asyncBatchInternalName)
+	{
+		final ImmutableListMultimap.Builder<AsyncBatchId, T> result = ImmutableListMultimap.builder();
+
+		for (final T model : models)
+		{
+			final Optional<AsyncBatchId> asyncBatchId = getAsyncBatchId(model);
+			if (asyncBatchId.isPresent())
+			{
+				result.put(asyncBatchId.get(), model);
+			}
+			else
+			{
+				final AsyncBatchId newAsyncBatchId = newAsyncBatch(asyncBatchInternalName);
+				InterfaceWrapperHelper.setDynAttribute(model, DYN_ATTR_TEMPORARY_BATCH_ID, newAsyncBatchId);
+				result.put(newAsyncBatchId, model);
+			}
+		}
+		return result.build();
 	}
 
 	public I_C_Async_Batch getAsyncBatchById(@NonNull final AsyncBatchId asyncBatchId)
@@ -454,31 +491,14 @@ public class AsyncBatchBL implements IAsyncBatchBL
 		return asyncBatchDAO.retrieveAsyncBatchRecord(asyncBatchId);
 	}
 
-	public void updateProcessedFromMilestones(@NonNull final AsyncBatchId asyncBatchId)
-	{
-		final boolean allMilestonesAreProcessed = asyncBatchDAO.retrieveMilestonesForAsyncBatchId(asyncBatchId)
-				.stream()
-				.allMatch(I_C_Async_Batch_Milestone::isProcessed);
-
-		if (allMilestonesAreProcessed)
-		{
-			final I_C_Async_Batch asyncBatch = asyncBatchDAO.retrieveAsyncBatchRecord(asyncBatchId);
-
-			asyncBatch.setProcessed(true);
-			asyncBatch.setIsProcessing(false);
-
-			queueDAO.save(asyncBatch);
-		}
-	}
-
 	@NonNull
 	public AsyncBatchId newAsyncBatch(@NonNull final String asyncBatchType)
 	{
-		final I_C_Async_Batch asyncBatch = newAsyncBatch()
+		final I_C_Async_Batch asyncBatch = trxManager.callInNewTrx(() -> newAsyncBatch()
 				.setContext(getCtx())
 				.setC_Async_Batch_Type(asyncBatchType)
 				.setName(asyncBatchType)
-				.build();
+				.build());
 
 		return AsyncBatchId.ofRepoId(asyncBatch.getC_Async_Batch_ID());
 	}

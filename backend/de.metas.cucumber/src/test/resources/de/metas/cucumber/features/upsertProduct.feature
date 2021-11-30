@@ -24,7 +24,7 @@ Feature:product create/update using metasfresh api
       | code345      | ext-ALBERTA-456    | true         | 10        | test          | test            | ean_test | gtin_test | test                  | test            |
 
     And the user adds JsonRequestProductUpsertItems
-      | productIdentifier | Code    | Name         | Type | uomCode | OPT.EAN  | OPT.GTIN  | OPT.Description  | OPT.isActive | OPT.ExternalReferenceURL     |
+      | productIdentifier | Code    | Name         | Type | UomCode | OPT.EAN  | OPT.GTIN  | OPT.Description  | OPT.isActive | OPT.ExternalReferenceURL     |
       | ext-ALBERTA-345   | code345 | Product_Test | ITEM | PCE     | ean_test | gtin_test | test_description | true         | www.ExternalReferenceURL.com |
 
     And we create a JsonRequestProductUpsert, set syncAdvise to 'CREATE_OR_MERGE', add the JsonRequestProductUpsertItems and store it in the test context

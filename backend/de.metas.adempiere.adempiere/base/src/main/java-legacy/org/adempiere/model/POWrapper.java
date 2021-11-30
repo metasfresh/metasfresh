@@ -47,6 +47,8 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
+
 /**
  * Wrap a PO object to a given bean interface. Example
  *
@@ -658,6 +660,7 @@ public class POWrapper implements InvocationHandler, IInterfaceWrapper
 			.add("AD_Role_ID".toLowerCase())
 			.add("M_AttributeSet_ID".toLowerCase())
 			.add("M_AttributeSetInstance_ID".toLowerCase())
+			.add("AD_System_ID".toLowerCase())
 			.build();
 
 	protected Object invokeParent(final Method method, final Object[] args) throws Exception
@@ -699,10 +702,8 @@ public class POWrapper implements InvocationHandler, IInterfaceWrapper
 	 * Load object that is referenced by given property. Example: getReferencedObject("M_Product_ID", method) should load the M_Product record with ID given by M_Product_ID property name;
 	 *
 	 * @param columnName value column name (e.g. M_Product_ID, AD_Client_ID etc)
-	 * @param method
-	 * @return model
 	 */
-	private final Object getReferencedObject(final String columnName, final Method interfaceMethod) throws Exception
+	private Object getReferencedObject(final String columnName, final Method interfaceMethod) throws Exception
 	{
 		final Class<?> columnModelType = interfaceMethod.getReturnType();
 
@@ -798,10 +799,6 @@ public class POWrapper implements InvocationHandler, IInterfaceWrapper
 		}
 	}
 
-	/**
-	 * @param model
-	 * @param force if true then the Processed flag will be ignored
-	 */
 	public static void delete(@NonNull final Object model, final boolean failIfProcessed)
 	{
 		final PO po = getPO(model);
@@ -914,12 +911,14 @@ public class POWrapper implements InvocationHandler, IInterfaceWrapper
 		return value == null;
 	}
 
-	public static Object setDynAttribute(final Object model, final String attributeName, final Object value)
+	@Nullable
+	public static Object setDynAttribute(@NonNull final Object model, @NonNull final String attributeName, final Object value)
 	{
 		final Object valueOld = getStrictPO(model).setDynAttribute(attributeName, value);
 		return valueOld;
 	}
 
+	@Nullable
 	public static <T> T getDynAttribute(final Object model, final String attributeName)
 	{
 		@SuppressWarnings("unchecked")

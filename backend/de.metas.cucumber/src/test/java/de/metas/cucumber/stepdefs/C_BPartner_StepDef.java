@@ -29,6 +29,7 @@ import de.metas.common.util.EmptyUtil;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import io.cucumber.datatable.DataTable;
+import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -44,18 +45,19 @@ import java.util.Map;
 import static org.assertj.core.api.Assertions.*;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_AD_Language;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_C_BPartner_SalesRep_ID;
+import static org.compiere.model.I_C_BPartner.COLUMNNAME_InvoiceRule;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_IsCustomer;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_IsSalesRep;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_IsVendor;
+import static org.compiere.model.X_C_BPartner.DELIVERYRULE_Force;
 
 public class C_BPartner_StepDef
 {
 	public static final int BP_GROUP_ID = BPGroupId.ofRepoId(1000000).getRepoId();
 
 	private final StepDefData<I_C_BPartner> bPartnerTable;
-	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final StepDefData<I_M_PricingSystem> pricingSystemTable;
-
+	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 
 	public C_BPartner_StepDef(
 			@NonNull final StepDefData<I_C_BPartner> bPartnerTable,
@@ -72,6 +74,17 @@ public class C_BPartner_StepDef
 		for (final Map<String, String> tableRow : tableRows)
 		{
 			createC_BPartner(tableRow);
+		}
+	}
+
+	@And("the following c_bpartner is changed")
+	public void change_bpartner(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> dataRows = dataTable.asMaps();
+
+		for (final Map<String, String> row : dataRows)
+		{
+			changeBPartner(row);
 		}
 	}
 
@@ -92,6 +105,15 @@ public class C_BPartner_StepDef
 		bPartnerRecord.setIsVendor(StringUtils.toBoolean(tableRow.get("OPT." + COLUMNNAME_IsVendor), false));
 		bPartnerRecord.setIsCustomer(StringUtils.toBoolean(tableRow.get("OPT." + COLUMNNAME_IsCustomer), false));
 		bPartnerRecord.setIsSalesRep(StringUtils.toBoolean(tableRow.get("OPT." + COLUMNNAME_IsSalesRep), false));
+
+		final String invoiceRule = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_InvoiceRule);
+
+		if (EmptyUtil.isNotBlank(invoiceRule))
+		{
+			bPartnerRecord.setInvoiceRule(invoiceRule);
+		}
+
+		bPartnerRecord.setDeliveryRule(DELIVERYRULE_Force);
 
 		final String pricingSystemIdentifier = tableRow.get(I_M_PricingSystem.COLUMNNAME_M_PricingSystem_ID + ".Identifier");
 		if (EmptyUtil.isNotBlank(pricingSystemIdentifier))
@@ -130,6 +152,18 @@ public class C_BPartner_StepDef
 		}
 
 		final String recordIdentifier = DataTableUtil.extractRecordIdentifier(tableRow, "C_BPartner");
-		bPartnerTable.put(recordIdentifier, bPartnerRecord);
+		bPartnerTable.putOrReplace(recordIdentifier, bPartnerRecord);
+	}
+
+	private void changeBPartner(@NonNull final Map<String, String> row)
+	{
+		final String bpartner = DataTableUtil.extractStringForColumnName(row, I_C_BPartner.COLUMNNAME_C_BPartner_ID + ".Identifier");
+		final String name2 = DataTableUtil.extractStringOrNullForColumnName(row, "Name2");
+
+		final I_C_BPartner bPartner = bPartnerTable.get(bpartner);
+
+		bPartner.setName2(name2);
+
+		InterfaceWrapperHelper.save(bPartner);
 	}
 }

@@ -55,8 +55,12 @@ public interface IUserBL extends ISingletonService
 
 	void assertCanSendEMail(@NonNull final UserId adUserId);
 
+	Language getUserLanguage(@NonNull UserId userId);
+
 	/** @return the user's language or fallbacks; never returns {@code null}. */
 	Language getUserLanguage(I_AD_User userRecord);
 
 	UserEMailConfig getEmailConfigById(UserId userId);
+
+	void deleteUserDependency(I_AD_User userRecord);
 }

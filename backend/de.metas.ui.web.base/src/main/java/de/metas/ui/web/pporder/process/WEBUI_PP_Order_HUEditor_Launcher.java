@@ -39,7 +39,7 @@ import de.metas.process.RelatedProcessDescriptor;
 import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
-import de.metas.ui.web.handlingunits.HUIdsFilterHelper;
+import de.metas.ui.web.handlingunits.filter.HUIdsFilterHelper;
 import de.metas.ui.web.handlingunits.WEBUI_HU_Constants;
 import de.metas.ui.web.pporder.PPOrderLineRow;
 import de.metas.ui.web.pporder.PPOrderLinesView;

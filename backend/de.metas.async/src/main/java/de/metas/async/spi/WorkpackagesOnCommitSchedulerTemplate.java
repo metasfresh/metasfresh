@@ -6,7 +6,6 @@ import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.api.IWorkPackageBlockBuilder;
 import de.metas.async.api.IWorkPackageBuilder;
-import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.user.UserId;
 import de.metas.util.Check;
@@ -88,8 +87,6 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 		return new ModelsScheduler<>(workpackageProcessorClass, modelType, collectModels);
 	}
 
-	private final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
-
 	private final Class<? extends IWorkpackageProcessor> workpackageProcessorClass;
 	private final String trxPropertyName;
 	private final AtomicBoolean createOneWorkpackagePerModel = new AtomicBoolean(false);
@@ -123,6 +120,12 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 		}
 		scheduleFactory.collect(item);
 	}
+
+	public final void scheduleAll(@NonNull final List<ItemType> items)
+	{
+		items.forEach(this::schedule);
+	}
+
 
 	public WorkpackagesOnCommitSchedulerTemplate<ItemType> setCreateOneWorkpackagePerModel(
 			final boolean createOneWorkpackagePerModel)
@@ -203,6 +206,7 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 		return false;
 	}
 
+	@Nullable
 	protected UserId extractUserInChargeOrNull(final ItemType item)
 	{
 		return null;
@@ -215,7 +219,7 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 		protected String getTrxProperyName()
 		{
 			return WorkpackagesOnCommitSchedulerTemplate.this.trxPropertyName;
-		};
+		}
 
 		@Override
 		protected String extractTrxNameFromItem(final ItemType item)
@@ -392,25 +396,17 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 				@NonNull final Collection<Object> modelsToEnqueue,
 				@Nullable final AsyncBatchId asyncBatchId)
 		{
-			final IWorkPackageBuilder builder = blockBuilder.newWorkpackage()
+			blockBuilder.newWorkpackage()
 					.setUserInChargeId(userIdInCharge)
 					.parameters(parameters)
-					.addElements(modelsToEnqueue);
-
-			if (asyncBatchId != null)
-			{
-				final I_C_Async_Batch asyncBatch = asyncBatchBL.getAsyncBatchById(asyncBatchId);
-				builder.setC_Async_Batch(asyncBatch);
-			}
-
-			builder.build();
+					.addElements(modelsToEnqueue)
+					.setC_Async_Batch_ID(asyncBatchId)
+					.build();
 		}
 
 		private void createAndSubmitWorkpackagesByAsyncBatch(@NonNull final IWorkPackageBlockBuilder blockBuilder)
 		{
-			batchId2Models.forEach((key, models) -> {
-				createAndSubmitWorkpackage(blockBuilder, models, AsyncBatchId.toAsyncBatchIdOrNull(key));
-			});
+			batchId2Models.forEach((key, models) -> createAndSubmitWorkpackage(blockBuilder, models, AsyncBatchId.toAsyncBatchIdOrNull(key)));
 		}
 
 		private boolean hasNoModels()

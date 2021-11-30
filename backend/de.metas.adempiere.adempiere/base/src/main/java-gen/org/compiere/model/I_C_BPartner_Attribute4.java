@@ -71,7 +71,8 @@ public interface I_C_BPartner_Attribute4
 	String COLUMNNAME_Attributes4 = "Attributes4";
 
 	/**
-	 * Set C_BPartner_Attribute4.
+	 * Set Contact Source.
+	 * Contact Source
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -80,7 +81,8 @@ public interface I_C_BPartner_Attribute4
 	void setC_BPartner_Attribute4_ID (int C_BPartner_Attribute4_ID);
 
 	/**
-	 * Get C_BPartner_Attribute4.
+	 * Get Contact Source.
+	 * Contact Source
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true

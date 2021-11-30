@@ -58,7 +58,6 @@ public class ComboBoxAutoCompletion<E> extends PlainDocument
 	/**
 	 * Enable auto completion for a combo box (strict mode enabled, see {@link #setStrictMode(boolean)} for more info).
 	 *
-	 * @param comboBox
 	 * @return ComboBoxAutoCompletion instance, for future configuration (strict mode, string converter etc)
 	 */
 	public static <E> ComboBoxAutoCompletion<E> enable(final CComboBox<E> comboBox)
@@ -240,9 +239,6 @@ public class ComboBoxAutoCompletion<E> extends PlainDocument
 
 	/**
 	 * Constructor for AutoCompletion disabling
-	 * 
-	 * @param comboBox
-	 * @param disable
 	 */
 	private ComboBoxAutoCompletion(final CComboBox<E> comboBox)
 	{

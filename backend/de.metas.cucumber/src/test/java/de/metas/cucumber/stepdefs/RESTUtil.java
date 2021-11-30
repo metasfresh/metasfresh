@@ -48,6 +48,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.apache.http.Header;
+import org.apache.http.HttpHeaders;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
@@ -64,6 +65,7 @@ import org.compiere.model.I_API_Request_Audit;
 import org.compiere.model.I_API_Request_Audit_Log;
 import org.compiere.model.I_API_Response_Audit;
 import org.compiere.util.Env;
+import org.springframework.http.MediaType;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -181,7 +183,8 @@ public class RESTUtil
 			@NonNull final String userAuthToken,
 			@Nullable final Map<String, String> additionalHeaders)
 	{
-		request.addHeader("content-type", "application/json");
+		request.addHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
+		request.addHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
 		request.addHeader(UserAuthTokenFilter.HEADER_Authorization, userAuthToken);
 
 		if (additionalHeaders != null)

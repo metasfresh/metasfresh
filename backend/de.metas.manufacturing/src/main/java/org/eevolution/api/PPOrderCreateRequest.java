@@ -74,7 +74,7 @@ public class PPOrderCreateRequest
 
 	@Nullable Boolean completeDocument;
 
-	@Builder
+	@Builder(toBuilder = true)
 	PPOrderCreateRequest(
 			@Nullable final PPOrderDocBaseType docBaseType,
 			@NonNull final ClientAndOrgId clientAndOrgId,
@@ -98,8 +98,6 @@ public class PPOrderCreateRequest
 			@Nullable final OrderLineId salesOrderLineId,
 			@Nullable final BPartnerId customerId,
 			@Nullable final ProjectId projectId,
-			//
-			final boolean pickingOrder,
 			//
 			@Nullable final Boolean completeDocument)
 	{

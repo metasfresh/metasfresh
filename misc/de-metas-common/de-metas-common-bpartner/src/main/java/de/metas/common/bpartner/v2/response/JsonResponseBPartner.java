@@ -28,6 +28,7 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.changelog.JsonChangeInfo;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.common.rest_api.v2.JSONPaymentRule;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
@@ -58,6 +59,10 @@ public class JsonResponseBPartner
 	public static final String ACTIVE = "active";
 	public static final String VENDOR = "vendor";
 	public static final String CUSTOMER = "customer";
+	public static final String SALES_PARTNER_CODE = "salesPartnerCode";
+	public static final String SALES_PARTNER = "salesPartner";
+	public static final String PAYMENT_RULE = "paymentRule";
+	public static final String INTERNAL_NAME = "internalName";
 	public static final String COMPANY = "company";
 	public static final String VAT_ID = "vatId";
 
@@ -154,6 +159,24 @@ public class JsonResponseBPartner
 	@JsonProperty(CUSTOMER)
 	boolean customer;
 
+	@ApiModelProperty(value = "This translates to `C_BPartner.SalesPartnerCode`")
+	@JsonProperty(SALES_PARTNER_CODE)
+	@JsonInclude(Include.NON_NULL)
+	String salesPartnerCode;
+
+	@ApiModelProperty(value = "This contains information about the superior sales rep of the respective `C_BPartner` record")
+	@JsonProperty(SALES_PARTNER)
+	@JsonInclude(Include.NON_NULL)
+	JsonResponseSalesRep responseSalesRep;
+
+	@JsonProperty(PAYMENT_RULE)
+	@JsonInclude(Include.NON_NULL)
+	JSONPaymentRule paymentRule;
+
+	@JsonProperty(INTERNAL_NAME)
+	@JsonInclude(Include.NON_NULL)
+	String internalName;
+
 	@ApiModelProperty(required = false, value = "This translates to `C_BPartner.IsCompany`.")
 	@JsonProperty(COMPANY)
 	boolean company;
@@ -187,6 +210,10 @@ public class JsonResponseBPartner
 			@JsonProperty(GROUP_NAME) @Nullable final String group,
 			@JsonProperty(VENDOR) @NonNull final Boolean vendor,
 			@JsonProperty(CUSTOMER) @NonNull final Boolean customer,
+			@JsonProperty(SALES_PARTNER_CODE) @Nullable final String salesPartnerCode,
+			@JsonProperty(SALES_PARTNER) @Nullable final JsonResponseSalesRep responseSalesRep,
+			@JsonProperty(PAYMENT_RULE) @Nullable final JSONPaymentRule paymentRule,
+			@JsonProperty(INTERNAL_NAME) @Nullable final String internalName,
 			@JsonProperty(COMPANY) @NonNull final Boolean company,
 			@JsonProperty(VAT_ID) @Nullable final String vatId,
 			//
@@ -216,6 +243,10 @@ public class JsonResponseBPartner
 
 		this.vendor = vendor;
 		this.customer = customer;
+		this.salesPartnerCode = salesPartnerCode;
+		this.responseSalesRep = responseSalesRep;
+		this.paymentRule = paymentRule;
+		this.internalName = internalName;
 		this.company = company;
 
 		this.vatId = vatId;

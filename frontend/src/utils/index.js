@@ -16,9 +16,7 @@ export function updateUri(pathname, query, updatedQuery) {
   const queryUrl = queryString.stringify(queryObject);
   const url = `${pathname}?${queryUrl}`;
 
-  if (!fullPath.includes('viewId')) {
-    history.replace(url);
-  }
+  !fullPath.includes('viewId') ? history.replace(url) : history.push(url);
 }
 
 // TODO: Move to api ?

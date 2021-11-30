@@ -69,6 +69,10 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.List;
 
+/**
+ * @deprecated please consider migrating to version 2 of this API.
+ */
+@Deprecated
 @RestController
 @RequestMapping(value = {
 		MetasfreshRestAPIConstants.ENDPOINT_API_DEPRECATED + "/sales/order",

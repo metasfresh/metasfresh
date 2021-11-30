@@ -283,7 +283,6 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 	public static final String CTX_TabLevel = CTX_Prefix + "TabLevel";
 	public static final String CTX_AccessLevel = CTX_Prefix + "AccessLevel";
 	public static final String CTX_AD_Tab_ID = CTX_Prefix + "AD_Tab_ID";
-	public static final String CTX_Name = CTX_Prefix + "Name";
 	public static final String CTX_AD_Table_ID = CTX_Prefix + "AD_Table_ID";
 	public static final String CTX_FindSQL = CTX_Prefix + "FindSQL";
 	public static final String CTX_SQL = CTX_Prefix + "SQL";

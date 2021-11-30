@@ -1,18 +1,10 @@
 package de.metas.material.dispo.service.event.handler;
 
-import java.math.BigDecimal;
-import java.time.Instant;
-import java.util.Collection;
-
 import ch.qos.logback.classic.Level;
-import de.metas.common.util.time.SystemTime;
-import org.slf4j.Logger;
-import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Component;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.Profiles;
+import de.metas.common.util.CoalesceUtil;
+import de.metas.common.util.time.SystemTime;
 import de.metas.logging.LogManager;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.Candidate.CandidateBuilder;
@@ -32,8 +24,14 @@ import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.material.event.stock.StockChangedEvent;
 import de.metas.material.event.stock.StockChangedEvent.StockChangeDetails;
 import de.metas.util.Loggables;
-import de.metas.common.util.CoalesceUtil;
 import lombok.NonNull;
+import org.slf4j.Logger;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Component;
+
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.util.Collection;
 
 /*
  * #%L
@@ -75,7 +73,7 @@ public class StockChangedEventHandler implements MaterialEventHandler<StockChang
 	}
 
 	@Override
-	public Collection<Class<? extends StockChangedEvent>> getHandeledEventType()
+	public Collection<Class<? extends StockChangedEvent>> getHandledEventType()
 	{
 		return ImmutableList.of(StockChangedEvent.class);
 	}

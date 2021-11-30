@@ -46,6 +46,7 @@ public class PricingSystemId implements RepoIdAware
 		return new PricingSystemId(repoId);
 	}
 
+	@Nullable
 	public static PricingSystemId ofRepoIdOrNull(final int repoId)
 	{
 		return repoId > 0 ? ofRepoId(repoId) : null;

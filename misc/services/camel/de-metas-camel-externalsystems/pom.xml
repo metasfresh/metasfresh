@@ -27,6 +27,7 @@
         <module>ebay</module>
         <module>de-metas-camel-rabbitmq</module>
         <module>de-metas-camel-woocommerce</module>
+        <module>de-metas-camel-grssignum</module>
     </modules>
 
     <dependencies>
