@@ -39,7 +39,7 @@ import org.springframework.stereotype.Component;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-@Interceptor(C_User_Role.class)
+@Interceptor(I_C_User_Role.class)
 @Component
 public class C_User_Role
 {

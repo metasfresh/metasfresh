@@ -35,7 +35,7 @@ import org.compiere.model.I_C_User_Assigned_Role;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
-@Interceptor(C_User_Assigned_Role.class)
+@Interceptor(I_C_User_Assigned_Role.class)
 @Component
 public class C_User_Assigned_Role
 {
