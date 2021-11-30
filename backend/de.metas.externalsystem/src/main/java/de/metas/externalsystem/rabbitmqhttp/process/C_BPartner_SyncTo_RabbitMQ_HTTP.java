@@ -23,12 +23,14 @@
 package de.metas.externalsystem.rabbitmqhttp.process;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.audit.data.repository.DataExportAuditRepository;
 import de.metas.bpartner.BPartnerId;
 import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.rabbitmqhttp.ExternalSystemRabbitMQConfigId;
 import de.metas.externalsystem.rabbitmqhttp.RabbitMQExternalSystemService;
+import de.metas.i18n.AdMessageKey;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessPrecondition;
@@ -38,6 +40,7 @@ import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 
@@ -48,8 +51,10 @@ public class C_BPartner_SyncTo_RabbitMQ_HTTP extends JavaProcess implements IPro
 {
 	private final RabbitMQExternalSystemService rabbitMQExternalSystemService = SpringContextHolder.instance.getBean(RabbitMQExternalSystemService.class);
 	private final ExternalSystemConfigRepo externalSystemConfigRepo = SpringContextHolder.instance.getBean(ExternalSystemConfigRepo.class);
+	private final DataExportAuditRepository dataExportAuditRepository = SpringContextHolder.instance.getBean(DataExportAuditRepository.class);
 
 	private static final String PARAM_EXTERNAL_SYSTEM_CONFIG_RABBITMQ_HTTP_ID = "ExternalSystem_Config_RabbitMQ_HTTP_ID";
+	private static final AdMessageKey MSG_RABBIT_MQ_SENT = AdMessageKey.of("RabbitMQ_Sent");
 	@Param(parameterName = PARAM_EXTERNAL_SYSTEM_CONFIG_RABBITMQ_HTTP_ID)
 	private int externalSystemConfigRabbitMQId;
 
@@ -79,7 +84,14 @@ public class C_BPartner_SyncTo_RabbitMQ_HTTP extends JavaProcess implements IPro
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
-
+		if (context.isSingleSelection())
+		{
+			final BPartnerId bPartnerId = BPartnerId.ofRepoId(context.getSingleSelectedRecordId());
+			if (dataExportAuditRepository.getByTableRecordReference(TableRecordReference.of(I_C_BPartner.Table_Name, bPartnerId)).isPresent())
+			{
+				return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_RABBIT_MQ_SENT));
+			}
+		}
 		if (externalSystemConfigRepo.isAnyConfigActive(ExternalSystemType.RabbitMQ))
 		{
 			return ProcessPreconditionsResolution.accept();
