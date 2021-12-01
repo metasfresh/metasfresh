@@ -414,7 +414,10 @@ public final class AggregationEngine
 					final String pricingSystemName = priceListDAO.getPricingSystemName(PricingSystemId.ofRepoIdOrNull(icRecord.getM_PricingSystem_ID()));
 					throw new AdempiereException(ERR_INVOICE_CAND_PRICE_LIST_MISSING_2P,
 												 pricingSystemName,
-												 invoiceHeader.getBillTo());
+												 invoiceHeader.getBillTo())
+							.appendParametersToMessage()
+							.setParameter("M_PricingSystem_ID", icRecord.getM_PricingSystem_ID())
+							.setParameter("C_Invoice_Candidate", icRecord);
 				}
 				M_PriceList_ID = plId.getRepoId();
 			}

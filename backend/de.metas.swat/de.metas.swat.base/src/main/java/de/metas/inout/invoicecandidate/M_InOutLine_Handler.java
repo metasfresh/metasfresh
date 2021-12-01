@@ -10,7 +10,6 @@ import de.metas.async.AsyncBatchId;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerDocumentLocationHelper;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
-import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest;
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -22,11 +21,10 @@ import de.metas.document.dimension.Dimension;
 import de.metas.document.dimension.DimensionService;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.location.DocumentLocation;
-import de.metas.document.location.RenderedAddressAndCapturedLocation;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
-import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
 import de.metas.inout.InOutId;
+import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
@@ -55,7 +53,6 @@ import de.metas.product.ProductPrice;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.tax.api.ITaxBL;
-import de.metas.tax.api.TaxCategoryId;
 import de.metas.tax.api.TaxId;
 import de.metas.user.User;
 import de.metas.util.Check;
@@ -75,7 +72,6 @@ import org.adempiere.warehouse.WarehouseId;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Note;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
@@ -129,7 +125,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 	private final transient IInOutBL inOutBL = Services.get(IInOutBL.class);
 	private final transient DimensionService dimensionService = SpringContextHolder.instance.getBean(DimensionService.class);
 	private final transient IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
-
+	
 	/**
 	 * @return {@code false}, but note that this handler will be invoked to create missing invoice candidates via {@link M_InOut_Handler#expandRequest(InvoiceCandidateGenerateRequest)}.
 	 */
@@ -355,8 +351,8 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		//
 		// Pricing Informations
 		org.compiere.model.I_M_InOutLine inOutLineRecordToUse = inOutLineRecord.getReturn_Origin_InOutLine_ID() > 0 ? inOutLineRecord.getReturn_Origin_InOutLine() : inOutLineRecord;
-		final PriceAndTax priceAndQty = calculatePriceAndQuantityAndUpdate(icRecord, inOutLineRecordToUse);
-
+		calculatePriceAndQuantityAndUpdate(icRecord, inOutLineRecordToUse);
+		
 		//
 		// Description
 		icRecord.setDescription(inOut.getDescription());
@@ -394,29 +390,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		}
 
 		dimensionService.updateRecord(icRecord, inOutLineDimension);
-
-		//
-		// Set C_Tax from Product (07442)
-		final Properties ctx = getCtx(inOutLineRecord);
-		final TaxCategoryId taxCategoryId = priceAndQty != null ? priceAndQty.getTaxCategoryId() : null;
-		final Timestamp shipDate = inOut.getMovementDate();
-		final int locationId = inOut.getC_BPartner_Location_ID();
-		final BPartnerLocationAndCaptureId deliveryLocation = InOutDocumentLocationAdapterFactory
-				.locationAdapter(inOut)
-				.getBPartnerLocationAndCaptureId();
-
-		final TaxId taxId = Services.get(ITaxBL.class).getTaxNotNull(
-				ctx,
-				icRecord,
-				taxCategoryId,
-				productId.getRepoId(),
-				shipDate,
-				orgId,
-				WarehouseId.ofRepoId(inOut.getM_Warehouse_ID()),
-				deliveryLocation, // shipC_BPartner_Location_ID
-				SOTrx.ofBoolean(isSOTrx));
-		icRecord.setC_Tax_ID(taxId.getRepoId());
-
+		
 		//DocType
 		final DocTypeId invoiceDocTypeId = extractDocTypeId(inOutLineRecord);
 		if (invoiceDocTypeId != null)
@@ -430,7 +404,6 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		saveRecord(icRecord);
 
 		// set Quality Issue Percentage Override
-
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(inOutLineRecord.getM_AttributeSetInstance_ID());
 		final ImmutableAttributeSet attributes = Services.get(IAttributeDAO.class).getImmutableAttributeSetById(asiId);
 
@@ -794,6 +767,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 	 * @param inOutLine an inout line that is somehow related to the lines which this handler handles.
 	 */
 	@VisibleForTesting
+	@Nullable
 	static PaymentTermId extractPaymentTermIdViaOrderLineOrNull(@NonNull final org.compiere.model.I_M_InOutLine inOutLine)
 	{
 		if (inOutLine.getC_OrderLine_ID() <= 0)
@@ -801,8 +775,9 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 			return null;
 		}
 
+		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 		final I_C_OrderLine ol = inOutLine.getC_OrderLine(); //
-		return Services.get(IOrderLineBL.class).getPaymentTermId(ol);
+		return orderLineBL.getPaymentTermId(ol);
 	}
 
 	/**
@@ -915,45 +890,71 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 	}
 
 	@Override
-	public PriceAndTax calculatePriceAndTax(final I_C_Invoice_Candidate ic)
+	public PriceAndTax calculatePriceAndTax(@NonNull final I_C_Invoice_Candidate icRecord)
 	{
-		final I_M_InOutLine inoutLine = getM_InOutLine(ic);
+		final I_M_InOutLine inoutLine = getM_InOutLine(icRecord);
 		org.compiere.model.I_M_InOutLine inOutLineRecordToUse = inoutLine.getReturn_Origin_InOutLine_ID() > 0 ? inoutLine.getReturn_Origin_InOutLine() : inoutLine;
 
-		return calculatePriceAndTax(ic, inOutLineRecordToUse);
+		return calculatePriceAndTax(icRecord, inOutLineRecordToUse);
 	}
 
 	public static PriceAndTax calculatePriceAndTax(
-			final I_C_Invoice_Candidate ic,
-			final org.compiere.model.I_M_InOutLine inoutLine)
+			final I_C_Invoice_Candidate icRecord,
+			final org.compiere.model.I_M_InOutLine inoutLineRecord)
 	{
-		final IPricingResult pricingResult = calculatePricingResult(inoutLine);
+		final IPricingResult pricingResult = calculatePricingResult(inoutLineRecord);
 
 		final boolean taxIncluded;
-		if (ic.getC_Order_ID() > 0)
+		if (icRecord.getC_Order_ID() > 0)
 		{
 			// task 08451: if the ic has an order, we use the order's IsTaxIncuded value, to make sure that we will be able to invoice them together
-			taxIncluded = ic.getC_Order().isTaxIncluded();
+			taxIncluded = icRecord.getC_Order().isTaxIncluded();
 		}
 		else
 		{
 			taxIncluded = pricingResult.isTaxIncluded();
 		}
-		final ProductPrice pp = inoutLine.getC_OrderLine_ID() != 0 ? Services.get(IOrderLineBL.class).getPriceActual(inoutLine.getC_OrderLine()) : null;
+
+		//
+		// Set C_Tax from Product (07442)
+		final OrgId orgId = OrgId.ofRepoId(inoutLineRecord.getAD_Org_ID());
+		final org.compiere.model.I_M_InOut inOutRecord = inoutLineRecord.getM_InOut();
+		final Properties ctx = getCtx(inoutLineRecord);
+		final Timestamp shipDate = inOutRecord.getMovementDate();
+		
+		final BPartnerLocationAndCaptureId deliveryLocation = InOutDocumentLocationAdapterFactory
+				.locationAdapter(inOutRecord)
+				.getBPartnerLocationAndCaptureId();
+
+		final TaxId taxId = Services.get(ITaxBL.class).getTaxNotNull(
+				ctx,
+				icRecord,
+				pricingResult.getTaxCategoryId(),
+				ProductId.toRepoId(pricingResult.getProductId()),
+				shipDate,
+				orgId,
+				WarehouseId.ofRepoId(inOutRecord.getM_Warehouse_ID()),
+				deliveryLocation, // shipC_BPartner_Location_ID
+				SOTrx.ofBoolean(inOutRecord.isSOTrx()));
+
+		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+		final ProductPrice pp = inoutLineRecord.getC_OrderLine_ID() != 0 ? orderLineBL.getPriceActual(inoutLineRecord.getC_OrderLine()) : null;
 
 		return PriceAndTax.builder()
 				.pricingSystemId(pricingResult.getPricingSystemId())
 				// #367: there is a corner case where we need to know the PLV is order to later know the correct M_PriceList_ID.
 				// also see the javadoc of inOutBL.createPricingCtx(fromInOutLine)
 				.priceListVersionId(pricingResult.getPriceListVersionId())
+				.pricingSystemId(pricingResult.getPricingSystemId())
 				.currencyId(pricingResult.getCurrencyId())
 				.taxCategoryId(pricingResult.getTaxCategoryId())
+				.taxIncluded(taxIncluded)
+				.taxId(taxId)
 				//
 				.priceEntered(pricingResult.getPriceStd())
 				.priceActual(pp != null ? pp.toMoney().toBigDecimal() : pricingResult.getPriceStd())
 				.priceUOMId(pp != null ? pp.getUomId() : pricingResult.getPriceUomId()) // 07090 when we set PriceActual, we shall also set PriceUOM.
 				.invoicableQtyBasedOn(pricingResult.getInvoicableQtyBasedOn())
-				.taxIncluded(taxIncluded)
 				//
 				.discount(pricingResult.getDiscount())
 				.build();
@@ -965,6 +966,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		return inOutBL.getProductPrice(fromInOutLine);
 	}
 
+	@Nullable
 	public static PriceAndTax calculatePriceAndQuantityAndUpdate(
 			@NonNull final I_C_Invoice_Candidate icRecord,
 			final org.compiere.model.I_M_InOutLine fromInOutLine)
@@ -989,7 +991,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		}
 	}
 
-	private static final void setError(
+	private static void setError(
 			@NonNull final I_C_Invoice_Candidate ic,
 			@NonNull final Exception ex,
 			final boolean askForDeleteRegeneration)
