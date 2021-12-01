@@ -224,7 +224,7 @@ public class MD_Candidate_StepDef
 		}
 	}
 
-	@Then("metasfresh has this MD_Candidate_Demand_Detail data")
+	@And("metasfresh has this MD_Candidate_Demand_Detail data")
 	public void metasfresh_has_this_md_candidate_demand_detail_data(@NonNull final DataTable dataTable)
 	{
 		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
@@ -232,6 +232,10 @@ public class MD_Candidate_StepDef
 		{
 			final String materialDispoItemIdentifier = tableRow.get(I_MD_Candidate_Demand_Detail.COLUMNNAME_MD_Candidate_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 			final MaterialDispoDataItem materialDispoDataItem = materialDispoDataItemStepDefData.get(materialDispoItemIdentifier);
+
+
+			assertThat(materialDispoDataItem).isNotNull();
+
 			final BusinessCaseDetail businessCaseDetail = materialDispoDataItem.getBusinessCaseDetail();
 
 			assertThat(businessCaseDetail)

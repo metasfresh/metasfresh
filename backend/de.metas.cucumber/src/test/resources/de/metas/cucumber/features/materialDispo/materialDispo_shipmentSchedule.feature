@@ -39,9 +39,9 @@ Feature: material-dispo updates on shipment-schedule events
       | Identifier | Type   | BusinessCase | M_Product_ID.Identifier |StorageAttributesKey | Time                    | DisplayQty | ATP   |
       | c_1        | DEMAND | SHIPMENT     | p_1                     |-1002                | 2021-12-12T10:00:00.00Z | -1000      | -1000 |
       | c_2        | SUPPLY |              | p_1                     |-1002                | 2021-12-12T10:00:00.00Z | 1000       | 0     |
-#    And metasfresh has this MD_Candidate_Demand_Detail data
-#      | MD_Candidate_ID.Identifier | M_ShipmentSchedule_ID |
-#      | c_1                        | 123                   |
+    And metasfresh has this MD_Candidate_Demand_Detail data
+      | MD_Candidate_ID.Identifier | M_ShipmentSchedule_ID |
+      | c_1                        | 123                   |
 
   @from:cucumber
   @topic:materialdispo
