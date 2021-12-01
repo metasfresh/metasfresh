@@ -22,7 +22,7 @@
 
 package de.metas.externalsystem.externalservice.process;
 
-import de.metas.externalsystem.ExternalSystemParentConfigId;
+import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.externalservice.ExternalServices;
 import de.metas.externalsystem.process.InvokeExternalSystemProcess;
 import org.compiere.SpringContextHolder;
@@ -34,9 +34,9 @@ public abstract class AlterExternalSystemServiceStatusAction extends InvokeExter
 	@Override
 	protected String doIt() throws Exception
 	{
-		final ExternalSystemParentConfigId configId = ExternalSystemParentConfigId.ofRepoId(getRecord_ID());
+		final ExternalSystemParentConfig parentConfig = externalSystemConfigDAO.getById(getExternalChildConfigId());
 
-		this.externalServices.handleStatusUpdateIfRequired(configId, this.externalRequest);
+		this.externalServices.handleStatusUpdateIfRequired(parentConfig.getId(), this.externalRequest);
 
 		super.doIt();
 
