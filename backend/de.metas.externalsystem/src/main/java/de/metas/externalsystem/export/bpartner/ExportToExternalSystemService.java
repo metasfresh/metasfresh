@@ -154,6 +154,7 @@ public abstract class ExportToExternalSystemService
 								   .command(getExternalCommand())
 								   .parameters(buildParameters(config.getChildConfig(), bpartnerId))
 								   .traceId(externalSystemConfigService.getTraceId())
+								   .externalSystemChildConfigValue(config.getChildConfig().getValue())
 								   .writeAuditEndpoint(config.getAuditEndpointIfEnabled())
 								   .build());
 	}
