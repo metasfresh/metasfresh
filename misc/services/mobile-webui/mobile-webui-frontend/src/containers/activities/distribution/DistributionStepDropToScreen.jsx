@@ -15,14 +15,7 @@ import { pushHeaderEntry } from '../../../actions/HeaderActions';
 
 class DistributionStepDropToScreen extends PureComponent {
   componentDidMount() {
-    const {
-      wfProcessId,
-      activityId,
-      lineId,
-      stepId,
-      stepProps: { qtyToMove, caption, locatorBarcode },
-      pushHeaderEntry,
-    } = this.props;
+    const { wfProcessId, activityId, lineId, stepId, qtyToMove, caption, locatorBarcode, pushHeaderEntry } = this.props;
     const location = distributionStepDropToScreenLocation({
       wfProcessId,
       activityId,
