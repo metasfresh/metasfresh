@@ -103,7 +103,7 @@ public class FlatrateTermSubscription_Handler implements ConditionTypeSpecificIn
 				.taxCategoryId(TaxCategoryId.ofRepoId(term.getC_TaxCategory_ID()))
 				.taxId(taxId)
 				.taxIncluded(term.isTaxIncluded())
-				.currencyId(CurrencyId.ofRepoId(term.getC_Currency_ID()))
+				.currencyId(CurrencyId.ofRepoIdOrNull(term.getC_Currency_ID()))
 				.build();
 	}
 
