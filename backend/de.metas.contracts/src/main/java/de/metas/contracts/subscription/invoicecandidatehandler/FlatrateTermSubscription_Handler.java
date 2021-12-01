@@ -90,7 +90,7 @@ public class FlatrateTermSubscription_Handler implements ConditionTypeSpecificIn
 				ic.getDateOrdered(), // shipDate
 				OrgId.ofRepoId(term.getAD_Org_ID()),
 				(WarehouseId)null,
-				CoalesceUtil.coalesceSuppliers(
+				CoalesceUtil.coalesceSuppliersNotNull(
 						() -> ContractLocationHelper.extractDropshipLocationId(term),
 						() -> ContractLocationHelper.extractBillToLocationId(term)),
 				SOTrx.ofBoolean(ic.isSOTrx()));

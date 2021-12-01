@@ -222,6 +222,7 @@ public class QtyDeliveredFromOrderToInvoiceTest
 		order.setC_DocTypeTarget_ID(1000016);
 		order.setDatePromised(Timestamp.valueOf("2021-11-30 00:00:00"));
 		order.setC_Currency_ID(10);
+		order.setM_PricingSystem_ID(20);
 		InterfaceWrapperHelper.save(order);
 	}
 
