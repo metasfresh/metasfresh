@@ -30,7 +30,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 2021-11-30T10:39:08.618Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_Column_Translation_From_AD_Element(102) 
+/* DDL */  select update_Column_Translation_From_AD_Element(102)
 ;
 
 -- 2021-11-30T10:39:09.276Z
@@ -45,7 +45,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 2021-11-30T10:39:09.282Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_Column_Translation_From_AD_Element(113) 
+/* DDL */  select update_Column_Translation_From_AD_Element(113)
 ;
 
 -- 2021-11-30T10:39:09.883Z
@@ -60,7 +60,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 2021-11-30T10:39:09.889Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_Column_Translation_From_AD_Element(245) 
+/* DDL */  select update_Column_Translation_From_AD_Element(245)
 ;
 
 -- 2021-11-30T10:39:10.516Z
@@ -75,7 +75,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 2021-11-30T10:39:10.523Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_Column_Translation_From_AD_Element(246) 
+/* DDL */  select update_Column_Translation_From_AD_Element(246)
 ;
 
 -- 2021-11-30T10:39:11.122Z
@@ -90,7 +90,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 2021-11-30T10:39:11.131Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_Column_Translation_From_AD_Element(348) 
+/* DDL */  select update_Column_Translation_From_AD_Element(348)
 ;
 
 -- 2021-11-30T10:39:11.757Z
@@ -105,7 +105,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 2021-11-30T10:39:11.764Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_Column_Translation_From_AD_Element(607) 
+/* DDL */  select update_Column_Translation_From_AD_Element(607)
 ;
 
 -- 2021-11-30T10:39:12.325Z
@@ -120,7 +120,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 2021-11-30T10:39:12.330Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_Column_Translation_From_AD_Element(608) 
+/* DDL */  select update_Column_Translation_From_AD_Element(608)
 ;
 
 -- 2021-11-30T10:39:12.909Z
@@ -145,7 +145,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 2021-11-30T10:39:13.420Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_Column_Translation_From_AD_Element(580340) 
+/* DDL */  select update_Column_Translation_From_AD_Element(580340)
 ;
 
 -- 2021-11-30T10:40:24.454Z
@@ -155,7 +155,7 @@ UPDATE AD_Element_Trl SET Name='Zusatzstoffe', PrintName='Zusatzstoffe',Updated=
 
 -- 2021-11-30T10:40:24.460Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(580340,'de_CH') 
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(580340,'de_CH')
 ;
 
 -- 2021-11-30T10:40:40.153Z
@@ -165,12 +165,12 @@ UPDATE AD_Element_Trl SET Name='Zusatzstoffe', PrintName='Zusatzstoffe',Updated=
 
 -- 2021-11-30T10:40:40.154Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(580340,'de_DE') 
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(580340,'de_DE')
 ;
 
 -- 2021-11-30T10:40:40.167Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_ad_element_on_ad_element_trl_update(580340,'de_DE') 
+/* DDL */  select update_ad_element_on_ad_element_trl_update(580340,'de_DE')
 ;
 
 -- 2021-11-30T10:40:40.169Z
@@ -220,7 +220,7 @@ UPDATE AD_Element_Trl SET PrintName='Zusatzstoffe',Updated=TO_TIMESTAMP('2021-11
 
 -- 2021-11-30T10:40:49.583Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(580340,'nl_NL') 
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(580340,'nl_NL')
 ;
 
 -- 2021-11-30T10:40:54.272Z
@@ -230,7 +230,7 @@ UPDATE AD_Element_Trl SET PrintName='Additive',Updated=TO_TIMESTAMP('2021-11-30 
 
 -- 2021-11-30T10:40:54.274Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(580340,'en_US') 
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(580340,'en_US')
 ;
 
 -- 2021-11-30T10:42:10.706Z
@@ -245,7 +245,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 2021-11-30T10:42:10.713Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_Column_Translation_From_AD_Element(469) 
+/* DDL */  select update_Column_Translation_From_AD_Element(469)
 ;
 
 -- 2021-11-30T10:42:48.904Z
@@ -260,7 +260,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 2021-11-30T10:42:48.914Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_Column_Translation_From_AD_Element(275) 
+/* DDL */  select update_Column_Translation_From_AD_Element(275)
 ;
 
 -- 2021-11-30T10:43:31.096Z
@@ -290,12 +290,12 @@ UPDATE AD_Element_Trl SET Name='Additives', PrintName='Additives',Updated=TO_TIM
 
 -- 2021-11-30T10:54:33.509Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(580341,'en_US') 
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(580341,'en_US')
 ;
 
 -- 2021-11-30T10:55:03.847Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Window (AD_Client_ID,AD_Org_ID,AD_Window_ID,Created,CreatedBy,EntityType,IsActive,IsBetaFunctionality,IsDefault,IsEnableRemoteCacheInvalidation,IsExcludeFromZoomTargets,IsOneInstanceOnly,IsOverrideInMenu,IsSOTrx,Name,Processing,Updated,UpdatedBy,WindowType,WinHeight,WinWidth,ZoomIntoPriority) VALUES (0,0,541357,TO_TIMESTAMP('2021-11-30 11:55:03','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','N','N','N','N','N','N','Y','Zusatzstoffe','N',TO_TIMESTAMP('2021-11-30 11:55:03','YYYY-MM-DD HH24:MI:SS'),100,'M',0,0,100)
+INSERT INTO AD_Window (AD_Client_ID,AD_Org_ID,AD_Window_ID,AD_Element_ID,Created,CreatedBy,EntityType,IsActive,IsBetaFunctionality,IsDefault,IsEnableRemoteCacheInvalidation,IsExcludeFromZoomTargets,IsOneInstanceOnly,IsOverrideInMenu,IsSOTrx,Name,Processing,Updated,UpdatedBy,WindowType,WinHeight,WinWidth,ZoomIntoPriority) VALUES (0,0,541357,580341,TO_TIMESTAMP('2021-11-30 11:55:03','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','N','N','N','N','N','N','Y','Zusatzstoffe','N',TO_TIMESTAMP('2021-11-30 11:55:03','YYYY-MM-DD HH24:MI:SS'),100,'M',0,0,100)
 ;
 
 -- 2021-11-30T10:55:03.851Z
@@ -325,7 +325,7 @@ INSERT INTO AD_Tab_Trl (AD_Language,AD_Tab_ID, CommitWarning,Description,Help,Na
 
 -- 2021-11-30T10:55:37.874Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_tab_translation_from_ad_element(580340) 
+/* DDL */  select update_tab_translation_from_ad_element(580340)
 ;
 
 -- 2021-11-30T10:55:37.877Z
@@ -345,7 +345,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2021-11-30T10:56:02.872Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_FieldTranslation_From_AD_Name_Element(102) 
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(102)
 ;
 
 -- 2021-11-30T10:56:02.964Z
@@ -370,7 +370,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2021-11-30T10:56:03.175Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_FieldTranslation_From_AD_Name_Element(113) 
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(113)
 ;
 
 -- 2021-11-30T10:56:03.252Z
@@ -395,7 +395,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2021-11-30T10:56:03.420Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_FieldTranslation_From_AD_Name_Element(348) 
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(348)
 ;
 
 -- 2021-11-30T10:56:03.515Z
@@ -420,7 +420,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2021-11-30T10:56:03.709Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_FieldTranslation_From_AD_Name_Element(580340) 
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(580340)
 ;
 
 -- 2021-11-30T10:56:03.711Z
@@ -445,7 +445,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2021-11-30T10:56:03.864Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_FieldTranslation_From_AD_Name_Element(469) 
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(469)
 ;
 
 -- 2021-11-30T10:56:03.894Z
@@ -470,7 +470,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2021-11-30T10:56:04.056Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_FieldTranslation_From_AD_Name_Element(275) 
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(275)
 ;
 
 -- 2021-11-30T10:56:04.092Z
@@ -615,7 +615,7 @@ INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_El
 
 -- 2021-11-30T11:05:01.082Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Menu (Action,AD_Client_ID,AD_Menu_ID,AD_Org_ID,AD_Window_ID,Created,CreatedBy,EntityType,InternalName,IsActive,IsCreateNew,IsReadOnly,IsSOTrx,IsSummary,Name,Updated,UpdatedBy) VALUES ('W',0,541867,0,541357,TO_TIMESTAMP('2021-11-30 12:05:00','YYYY-MM-DD HH24:MI:SS'),100,'D','Zusatzstoffe','Y','N','N','N','N','Zusatzstoffe',TO_TIMESTAMP('2021-11-30 12:05:00','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Menu (Action,AD_Client_ID,AD_Menu_ID,AD_Org_ID,AD_Window_ID,AD_Element_ID,Created,CreatedBy,EntityType,InternalName,IsActive,IsCreateNew,IsReadOnly,IsSOTrx,IsSummary,Name,Updated,UpdatedBy) VALUES ('W',0,541867,0,541357,580341,TO_TIMESTAMP('2021-11-30 12:05:00','YYYY-MM-DD HH24:MI:SS'),100,'D','Zusatzstoffe','Y','N','N','N','N','Zusatzstoffe',TO_TIMESTAMP('2021-11-30 12:05:00','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2021-11-30T11:05:01.083Z
@@ -735,7 +735,7 @@ UPDATE AD_Menu SET AD_Element_ID=580341, Description=NULL, Name='Zusatzstoffe', 
 
 -- 2021-11-30T11:05:39.373Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_menu_translation_from_ad_element(580341) 
+/* DDL */  select update_menu_translation_from_ad_element(580341)
 ;
 
 -- 2021-11-30T12:02:09.124Z
@@ -770,7 +770,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 2021-11-30T12:03:13.867Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_Column_Translation_From_AD_Element(102) 
+/* DDL */  select update_Column_Translation_From_AD_Element(102)
 ;
 
 -- 2021-11-30T12:03:14.531Z
@@ -785,7 +785,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 2021-11-30T12:03:14.537Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_Column_Translation_From_AD_Element(109) 
+/* DDL */  select update_Column_Translation_From_AD_Element(109)
 ;
 
 -- 2021-11-30T12:03:15.088Z
@@ -800,7 +800,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 2021-11-30T12:03:15.094Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_Column_Translation_From_AD_Element(113) 
+/* DDL */  select update_Column_Translation_From_AD_Element(113)
 ;
 
 -- 2021-11-30T12:03:15.745Z
@@ -815,7 +815,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 2021-11-30T12:03:15.755Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_Column_Translation_From_AD_Element(245) 
+/* DDL */  select update_Column_Translation_From_AD_Element(245)
 ;
 
 -- 2021-11-30T12:03:16.387Z
@@ -830,7 +830,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 2021-11-30T12:03:16.399Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_Column_Translation_From_AD_Element(246) 
+/* DDL */  select update_Column_Translation_From_AD_Element(246)
 ;
 
 -- 2021-11-30T12:03:16.986Z
@@ -845,7 +845,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 2021-11-30T12:03:16.995Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_Column_Translation_From_AD_Element(275) 
+/* DDL */  select update_Column_Translation_From_AD_Element(275)
 ;
 
 -- 2021-11-30T12:03:17.556Z
@@ -860,7 +860,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 2021-11-30T12:03:17.568Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_Column_Translation_From_AD_Element(348) 
+/* DDL */  select update_Column_Translation_From_AD_Element(348)
 ;
 
 -- 2021-11-30T12:03:18.192Z
@@ -875,7 +875,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 2021-11-30T12:03:18.198Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_Column_Translation_From_AD_Element(420) 
+/* DDL */  select update_Column_Translation_From_AD_Element(420)
 ;
 
 -- 2021-11-30T12:03:18.732Z
@@ -890,7 +890,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 2021-11-30T12:03:18.746Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_Column_Translation_From_AD_Element(544183) 
+/* DDL */  select update_Column_Translation_From_AD_Element(544183)
 ;
 
 -- 2021-11-30T12:03:19.283Z
@@ -905,7 +905,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 2021-11-30T12:03:19.295Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_Column_Translation_From_AD_Element(469) 
+/* DDL */  select update_Column_Translation_From_AD_Element(469)
 ;
 
 -- 2021-11-30T12:03:19.852Z
@@ -920,7 +920,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 2021-11-30T12:03:19.859Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_Column_Translation_From_AD_Element(607) 
+/* DDL */  select update_Column_Translation_From_AD_Element(607)
 ;
 
 -- 2021-11-30T12:03:20.457Z
@@ -935,7 +935,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 2021-11-30T12:03:20.469Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_Column_Translation_From_AD_Element(608) 
+/* DDL */  select update_Column_Translation_From_AD_Element(608)
 ;
 
 -- 2021-11-30T12:03:59.829Z
@@ -950,7 +950,7 @@ UPDATE AD_Field SET Name='Zusatzstoffe', Description=NULL, Help=NULL WHERE AD_Co
 
 -- 2021-11-30T12:03:59.834Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_Column_Translation_From_AD_Element(580340) 
+/* DDL */  select update_Column_Translation_From_AD_Element(580340)
 ;
 
 -- 2021-11-30T12:05:39.242Z
@@ -975,7 +975,7 @@ UPDATE AD_Element_Trl SET Name='Additives translation', PrintName='Additives tra
 
 -- 2021-11-30T12:08:09.044Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(580342,'en_US') 
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(580342,'en_US')
 ;
 
 -- 2021-11-30T12:10:08.057Z
@@ -990,7 +990,7 @@ INSERT INTO AD_Window_Trl (AD_Language,AD_Window_ID, Description,Help,Name, IsTr
 
 -- 2021-11-30T12:10:08.066Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_window_translation_from_ad_element(580342) 
+/* DDL */  select update_window_translation_from_ad_element(580342)
 ;
 
 -- 2021-11-30T12:10:08.068Z
@@ -1015,7 +1015,7 @@ INSERT INTO AD_Tab_Trl (AD_Language,AD_Tab_ID, CommitWarning,Description,Help,Na
 
 -- 2021-11-30T12:11:26.818Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_tab_translation_from_ad_element(580340) 
+/* DDL */  select update_tab_translation_from_ad_element(580340)
 ;
 
 -- 2021-11-30T12:11:26.823Z
@@ -1030,7 +1030,7 @@ UPDATE AD_Tab SET AD_Element_ID=580342, CommitWarning=NULL, Description=NULL, He
 
 -- 2021-11-30T12:11:44.133Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_tab_translation_from_ad_element(580342) 
+/* DDL */  select update_tab_translation_from_ad_element(580342)
 ;
 
 -- 2021-11-30T12:11:44.136Z
@@ -1050,7 +1050,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2021-11-30T12:12:23.435Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_FieldTranslation_From_AD_Name_Element(102) 
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(102)
 ;
 
 -- 2021-11-30T12:12:23.573Z
@@ -1075,7 +1075,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2021-11-30T12:12:23.762Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_FieldTranslation_From_AD_Name_Element(109) 
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(109)
 ;
 
 -- 2021-11-30T12:12:23.773Z
@@ -1100,7 +1100,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2021-11-30T12:12:23.953Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_FieldTranslation_From_AD_Name_Element(113) 
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(113)
 ;
 
 -- 2021-11-30T12:12:24.078Z
@@ -1125,7 +1125,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2021-11-30T12:12:24.240Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_FieldTranslation_From_AD_Name_Element(275) 
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(275)
 ;
 
 -- 2021-11-30T12:12:24.287Z
@@ -1150,7 +1150,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2021-11-30T12:12:24.454Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_FieldTranslation_From_AD_Name_Element(348) 
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(348)
 ;
 
 -- 2021-11-30T12:12:24.594Z
@@ -1175,7 +1175,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2021-11-30T12:12:24.749Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_FieldTranslation_From_AD_Name_Element(420) 
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(420)
 ;
 
 -- 2021-11-30T12:12:24.757Z
@@ -1200,7 +1200,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2021-11-30T12:12:24.905Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_FieldTranslation_From_AD_Name_Element(580340) 
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(580340)
 ;
 
 -- 2021-11-30T12:12:24.907Z
@@ -1225,7 +1225,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2021-11-30T12:12:25.137Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_FieldTranslation_From_AD_Name_Element(469) 
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(469)
 ;
 
 -- 2021-11-30T12:12:25.190Z
@@ -1335,7 +1335,7 @@ INSERT  INTO AD_TreeNodeMM (AD_Client_ID,AD_Org_ID, IsActive,Created,CreatedBy,U
 
 -- 2021-11-30T12:15:15.321Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_menu_translation_from_ad_element(580342) 
+/* DDL */  select update_menu_translation_from_ad_element(580342)
 ;
 
 -- 2021-11-30T12:15:15.397Z
@@ -1475,7 +1475,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 2021-11-30T12:24:26.722Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_Column_Translation_From_AD_Element(580343) 
+/* DDL */  select update_Column_Translation_From_AD_Element(580343)
 ;
 
 -- 2021-11-30T12:24:27.138Z
@@ -1530,7 +1530,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2021-11-30T12:24:27.352Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_FieldTranslation_From_AD_Name_Element(580343) 
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(580343)
 ;
 
 -- 2021-11-30T12:24:27.357Z
@@ -1630,7 +1630,7 @@ UPDATE AD_Element_Trl SET Name='Additive',Updated=TO_TIMESTAMP('2021-11-30 13:48
 
 -- 2021-11-30T12:48:30.453Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(580340,'en_US') 
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(580340,'en_US')
 ;
 
 -- 2021-11-30T12:48:43.047Z
@@ -1640,6 +1640,6 @@ UPDATE AD_Element_Trl SET Name='Zusatzstoffe',Updated=TO_TIMESTAMP('2021-11-30 1
 
 -- 2021-11-30T12:48:43.048Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(580340,'nl_NL') 
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(580340,'nl_NL')
 ;
 
