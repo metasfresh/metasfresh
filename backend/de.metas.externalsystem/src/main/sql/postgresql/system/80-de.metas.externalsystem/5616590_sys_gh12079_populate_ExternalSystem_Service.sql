@@ -93,3 +93,94 @@ UPDATE AD_Element_Trl SET Name='External System Service Instance', PrintName='Ex
 /* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(580257,'nl_NL')
 ;
 
+-- 2021-12-01T15:15:15.158Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element SET EntityType='de.metas.externalsystem',Updated=TO_TIMESTAMP('2021-12-01 17:15:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=580253
+;
+
+-- 2021-12-01T15:15:21.887Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Name='External System Status', PrintName='External System Status',Updated=TO_TIMESTAMP('2021-12-01 17:15:21','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=580253 AND AD_Language='de_CH'
+;
+
+-- 2021-12-01T15:15:21.889Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(580253,'de_CH')
+;
+
+-- 2021-12-01T15:15:24.075Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Name='External System Status', PrintName='External System Status',Updated=TO_TIMESTAMP('2021-12-01 17:15:24','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=580253 AND AD_Language='de_DE'
+;
+
+-- 2021-12-01T15:15:24.077Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(580253,'de_DE')
+;
+
+-- 2021-12-01T15:15:24.123Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_ad_element_on_ad_element_trl_update(580253,'de_DE')
+;
+
+-- 2021-12-01T15:15:24.125Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnName='ExternalSystem_Status_ID', Name='External System Status', Description=NULL, Help=NULL WHERE AD_Element_ID=580253
+;
+
+-- 2021-12-01T15:15:24.132Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='ExternalSystem_Status_ID', Name='External System Status', Description=NULL, Help=NULL, AD_Element_ID=580253 WHERE UPPER(ColumnName)='EXTERNALSYSTEM_STATUS_ID' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2021-12-01T15:15:24.134Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='ExternalSystem_Status_ID', Name='External System Status', Description=NULL, Help=NULL WHERE AD_Element_ID=580253 AND IsCentrallyMaintained='Y'
+;
+
+-- 2021-12-01T15:15:24.134Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='External System Status', Description=NULL, Help=NULL WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=580253) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 580253)
+;
+
+-- 2021-12-01T15:15:24.157Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_PrintFormatItem pi SET PrintName='External System Status', Name='External System Status' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c  WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=580253)
+;
+
+-- 2021-12-01T15:15:24.159Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET Name='External System Status', Description=NULL, Help=NULL, CommitWarning = NULL WHERE AD_Element_ID = 580253
+;
+
+-- 2021-12-01T15:15:24.161Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_WINDOW SET Name='External System Status', Description=NULL, Help=NULL WHERE AD_Element_ID = 580253
+;
+
+-- 2021-12-01T15:15:24.162Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu SET   Name = 'External System Status', Description = NULL, WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 580253
+;
+
+-- 2021-12-01T15:15:26.696Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Name='External System Status', PrintName='External System Status',Updated=TO_TIMESTAMP('2021-12-01 17:15:26','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=580253 AND AD_Language='en_US'
+;
+
+-- 2021-12-01T15:15:26.697Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(580253,'en_US')
+;
+
+-- 2021-12-01T15:15:29.100Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Name='External System Status', PrintName='External System Status',Updated=TO_TIMESTAMP('2021-12-01 17:15:29','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=580253 AND AD_Language='nl_NL'
+;
+
+-- 2021-12-01T15:15:29.101Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(580253,'nl_NL')
+;
+
+
