@@ -162,9 +162,9 @@ public class ExternalSystemRestController
 	})
 	@PostMapping(path = "/service/{externalSystemConfigType}/{externalSystemChildConfigValue}/{serviceValue}/status")
 	public ResponseEntity<?> storeExternalSystemStatus(@RequestBody @NonNull final JsonStatusRequest request,
-			@PathVariable @NonNull final String externalSystemConfigType,
-			@PathVariable @NonNull final String externalSystemChildConfigValue,
-			@PathVariable @NonNull final String serviceValue)
+			@ApiParam("Used to identify the type of the external system. Translates to 'ExternalSystem_Config.Type'.") @PathVariable @NonNull final String externalSystemConfigType,
+			@ApiParam("Used to identify an IExternalSystemChildConfig together with 'externalSystemConfigType'.") @PathVariable @NonNull final String externalSystemChildConfigValue,
+			@ApiParam("Used to identify an ExternalSystemService. Translates to 'ExternalSystem_Service.Value'.") @PathVariable @NonNull final String serviceValue)
 	{
 		final ExternalSystemType externalSystemType = ExternalSystemType.ofCodeOrNameOrNull(externalSystemConfigType);
 

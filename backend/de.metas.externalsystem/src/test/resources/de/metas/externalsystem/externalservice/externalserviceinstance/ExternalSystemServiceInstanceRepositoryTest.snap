@@ -1,13 +1,9 @@
 de.metas.externalsystem.externalservice.externalserviceinstance.ExternalSystemServiceInstanceRepositoryTest.givenConfigIds_whenStreamByConfigIds_thenReturnMatchingInstances=[
   [
     {
-      "id" : {
-        "repoId" : 100004
-      },
+      "id" : 100004,
       "service" : {
-        "id" : {
-          "repoId" : 100003
-        },
+        "id" : 100003,
         "externalSystemType" : "GRSSignum",
         "serviceValue" : "grs_service_value",
         "name" : "Name",
@@ -24,13 +20,9 @@ de.metas.externalsystem.externalservice.externalserviceinstance.ExternalSystemSe
 
 de.metas.externalsystem.externalservice.externalserviceinstance.ExternalSystemServiceInstanceRepositoryTest.givenInstanceRequest_whenCreate_thenCreateAndReturnInstance=[
   {
-    "id" : {
-      "repoId" : 100003
-    },
+    "id" : 100003,
     "service" : {
-      "id" : {
-        "repoId" : 100002
-      },
+      "id" : 100002,
       "externalSystemType" : "GRSSignum",
       "serviceValue" : "grs_service_value",
       "name" : "Name",
@@ -46,13 +38,9 @@ de.metas.externalsystem.externalservice.externalserviceinstance.ExternalSystemSe
 
 de.metas.externalsystem.externalservice.externalserviceinstance.ExternalSystemServiceInstanceRepositoryTest.givenInstance_whenUpdate_thenUpdateAndReturnInstance=[
   {
-    "id" : {
-      "repoId" : 100003
-    },
+    "id" : 100003,
     "service" : {
-      "id" : {
-        "repoId" : 100002
-      },
+      "id" : 100002,
       "externalSystemType" : "GRSSignum",
       "serviceValue" : "grs_service_value",
       "name" : "Name",
@@ -68,13 +56,9 @@ de.metas.externalsystem.externalservice.externalserviceinstance.ExternalSystemSe
 
 de.metas.externalsystem.externalservice.externalserviceinstance.ExternalSystemServiceInstanceRepositoryTest.givenValidIds_whenGetByConfigAndServiceId_thenReturnInstance=[
   {
-    "id" : {
-      "repoId" : 100003
-    },
+    "id" : 100003,
     "service" : {
-      "id" : {
-        "repoId" : 100002
-      },
+      "id" : 100002,
       "externalSystemType" : "GRSSignum",
       "serviceValue" : "grs_service_value",
       "name" : "Name",

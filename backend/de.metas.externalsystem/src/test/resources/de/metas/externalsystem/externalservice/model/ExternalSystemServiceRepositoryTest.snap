@@ -1,8 +1,6 @@
 de.metas.externalsystem.externalservice.model.ExternalSystemServiceRepositoryTest.givenKnownValue_whenGetByValue_thenReturnMatchingService=[
   {
-    "id" : {
-      "repoId" : 100001
-    },
+    "id" : 100001,
     "externalSystemType" : "GRSSignum",
     "serviceValue" : "grs_service_value",
     "name" : "grs_name",
@@ -16,9 +14,7 @@ de.metas.externalsystem.externalservice.model.ExternalSystemServiceRepositoryTes
 de.metas.externalsystem.externalservice.model.ExternalSystemServiceRepositoryTest.givenType_whenGetAllByType_thenReturnMatchingServices=[
   [
     {
-      "id" : {
-        "repoId" : 100001
-      },
+      "id" : 100001,
       "externalSystemType" : "GRSSignum",
       "serviceValue" : "grs_service_value",
       "name" : "grs_name",

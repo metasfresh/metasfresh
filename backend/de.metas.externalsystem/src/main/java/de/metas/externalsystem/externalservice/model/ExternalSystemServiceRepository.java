@@ -64,12 +64,12 @@ public class ExternalSystemServiceRepository implements ISingletonService
 	}
 
 	@NonNull
-	@Cached(cacheName = I_ExternalSystem_Service.Table_Name + "#by#" + I_ExternalSystem_Service.COLUMNNAME_ExternalSystemValue)
+	@Cached(cacheName = I_ExternalSystem_Service.Table_Name + "#by#" + I_ExternalSystem_Service.COLUMNNAME_Value)
 	public Optional<ExternalSystemServiceModel> getByValue(@NonNull final String value)
 	{
 		return queryBL.createQueryBuilder(I_ExternalSystem_Service.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_ExternalSystem_Service.COLUMNNAME_ExternalSystemValue, value)
+				.addEqualsFilter(I_ExternalSystem_Service.COLUMNNAME_Value, value)
 				.create()
 				.firstOnlyOptional(I_ExternalSystem_Service.class)
 				.map(ExternalSystemServiceRepository::ofServiceRecord);
@@ -82,7 +82,7 @@ public class ExternalSystemServiceRepository implements ISingletonService
 				.id(ExternalSystemServiceId.ofRepoId(record.getExternalSystem_Service_ID()))
 				.name(record.getName())
 				.description(record.getDescription())
-				.serviceValue(record.getExternalSystemValue())
+				.serviceValue(record.getValue())
 				.externalSystemType(ExternalSystemType.ofCode(record.getType()))
 				.disableCommand(record.getDisableCommand())
 				.enableCommand(record.getEnableCommand())

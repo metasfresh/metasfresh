@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_ExternalSystem_Service extends org.compiere.model.PO implements I_ExternalSystem_Service, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -360643052L;
+	private static final long serialVersionUID = -1308494502L;
 
     /** Standard Constructor */
     public X_ExternalSystem_Service (final Properties ctx, final int ExternalSystem_Service_ID, @Nullable final String trxName)
@@ -86,18 +86,6 @@ public class X_ExternalSystem_Service extends org.compiere.model.PO implements I
 	}
 
 	@Override
-	public void setExternalSystemValue (final String ExternalSystemValue)
-	{
-		set_Value (COLUMNNAME_ExternalSystemValue, ExternalSystemValue);
-	}
-
-	@Override
-	public String getExternalSystemValue()
-	{
-		return get_ValueAsString(COLUMNNAME_ExternalSystemValue);
-	}
-
-	@Override
 	public void setName (final String Name)
 	{
 		set_Value (COLUMNNAME_Name, Name);
@@ -136,5 +124,17 @@ public class X_ExternalSystem_Service extends org.compiere.model.PO implements I
 	public String getType()
 	{
 		return get_ValueAsString(COLUMNNAME_Type);
+	}
+
+	@Override
+	public void setValue (final String Value)
+	{
+		set_Value (COLUMNNAME_Value, Value);
+	}
+
+	@Override
+	public String getValue()
+	{
+		return get_ValueAsString(COLUMNNAME_Value);
 	}
 }

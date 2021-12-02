@@ -161,27 +161,6 @@ public interface I_ExternalSystem_Service
 	String COLUMNNAME_ExternalSystem_Service_ID = "ExternalSystem_Service_ID";
 
 	/**
-	 * Set Value.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setExternalSystemValue (String ExternalSystemValue);
-
-	/**
-	 * Get Value.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	String getExternalSystemValue();
-
-	ModelColumn<I_ExternalSystem_Service, Object> COLUMN_ExternalSystemValue = new ModelColumn<>(I_ExternalSystem_Service.class, "ExternalSystemValue", null);
-	String COLUMNNAME_ExternalSystemValue = "ExternalSystemValue";
-
-	/**
 	 * Set Active.
 	 * The record is active in the system
 	 *
@@ -272,4 +251,27 @@ public interface I_ExternalSystem_Service
 	int getUpdatedBy();
 
 	String COLUMNNAME_UpdatedBy = "UpdatedBy";
+
+	/**
+	 * Set Search Key.
+	 * Search key for the record in the format required - must be unique
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setValue (String Value);
+
+	/**
+	 * Get Search Key.
+	 * Search key for the record in the format required - must be unique
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	String getValue();
+
+	ModelColumn<I_ExternalSystem_Service, Object> COLUMN_Value = new ModelColumn<>(I_ExternalSystem_Service.class, "Value", null);
+	String COLUMNNAME_Value = "Value";
 }

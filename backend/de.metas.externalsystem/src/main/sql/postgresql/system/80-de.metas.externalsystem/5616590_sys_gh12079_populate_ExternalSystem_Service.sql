@@ -183,4 +183,23 @@ UPDATE AD_Element_Trl SET Name='External System Status', PrintName='External Sys
 /* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(580253,'nl_NL')
 ;
 
+-- 2021-12-02T07:41:17.532Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET AD_Element_ID=620, ColumnName='Value', Description='Suchschlüssel für den Eintrag im erforderlichen Format - muss eindeutig sein', Help='A search key allows you a fast method of finding a particular record.
+If you leave the search key empty, the system automatically creates a numeric number.  The document sequence used for this fallback number is defined in the "Maintain Sequence" window with the name "DocumentNo_<TableName>", where TableName is the actual name of the table (e.g. C_Order).', IsCalculated='Y', IsUseDocSequence='Y', Name='Suchschlüssel',Updated=TO_TIMESTAMP('2021-12-02 09:41:17','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=578487
+;
+
+-- 2021-12-02T07:41:17.535Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Suchschlüssel', Description='Suchschlüssel für den Eintrag im erforderlichen Format - muss eindeutig sein', Help='A search key allows you a fast method of finding a particular record.
+If you leave the search key empty, the system automatically creates a numeric number.  The document sequence used for this fallback number is defined in the "Maintain Sequence" window with the name "DocumentNo_<TableName>", where TableName is the actual name of the table (e.g. C_Order).' WHERE AD_Column_ID=578487
+;
+
+-- 2021-12-02T07:41:17.566Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_Column_Translation_From_AD_Element(620)
+;
+
+alter table externalsystem_service rename externalsystemvalue to value
+;
 

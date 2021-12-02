@@ -60,7 +60,7 @@ public class ExternalSystemServiceTestHelper
 		final I_ExternalSystem_Service record = newInstance(I_ExternalSystem_Service.class);
 		record.setName(name);
 		record.setType(type);
-		record.setExternalSystemValue(value);
+		record.setValue(value);
 		record.setDescription("Description");
 		record.setDisableCommand("DisableCommand");
 		record.setEnableCommand("EnableCommand");
