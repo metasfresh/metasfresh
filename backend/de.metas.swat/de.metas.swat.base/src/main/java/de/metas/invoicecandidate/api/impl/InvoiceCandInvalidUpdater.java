@@ -340,7 +340,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 		invoiceCandidateRecordService.updateRecord(invoiceCandidate, icRecord);
 
 		// Update Price and Quantity only if...
-		final TaxId taxId = TaxId.ofRepoIdOrNull(icRecord.getC_Tax_Effective_ID());
+		final TaxId taxId = TaxId.ofRepoIdOrNull(icRecord.getC_Tax_ID());
 		final boolean noTax = taxId == null || taxId.isNoTaxId();
 		final boolean updatePriceAndTax = !icRecord.isApprovalForInvoicing() // ... this invoice candidate was NOT yet approved for invoicing (08610)
 				|| noTax; // ... or if the IC has no tax and therefore can't be invoiced either way
