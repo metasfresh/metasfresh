@@ -19,6 +19,8 @@ import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
@@ -173,13 +175,16 @@ public class SubscriptionService
 	private static void resetCache(@NonNull final FlatrateTermId flatrateTermId)
 	{
 		final IModelCacheInvalidationService modelCacheInvalidationService = Services.get(IModelCacheInvalidationService.class);
-
+		final I_C_Flatrate_Term term = InterfaceWrapperHelper.load(flatrateTermId, I_C_Flatrate_Term.class);
+		final int bPartnerId = term.getBill_BPartner_ID();
+		final int flatrateDataEntryId = term.getC_Flatrate_Data_ID();
 		modelCacheInvalidationService.invalidate(
 				CacheInvalidateMultiRequest.of(
-						CacheInvalidateRequest.rootRecord(I_C_Flatrate_Term.Table_Name, flatrateTermId),
-						CacheInvalidateRequest.allChildRecords(I_C_Flatrate_Data.Table_Name, flatrateTermId, I_C_SubscriptionProgress.Table_Name)),
+						CacheInvalidateRequest.allChildRecords(I_C_Flatrate_Data.Table_Name, flatrateDataEntryId, I_C_SubscriptionProgress.Table_Name),
+						CacheInvalidateRequest.allChildRecords(I_C_BPartner.Table_Name, bPartnerId, I_C_SubscriptionProgress.Table_Name)),
 				ModelCacheInvalidationTiming.CHANGE
 		);
+
 	}
 
 }
