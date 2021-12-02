@@ -2240,7 +2240,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		{
 			try (final MDCCloseable icRecordMDC = TableRecordMDC.putTableRecordReference(icRecord))
 			{
-				logger.debug("Set IsInDispute=true because ic bleongs to M_InOutLine_ID={}", receiptLine.getM_InOutLine_ID());
+				logger.debug("Set IsInDispute=true because ic belongs to M_InOutLine_ID={}", receiptLine.getM_InOutLine_ID());
 				icRecord.setIsInDispute(true);
 				save(icRecord);
 			}
