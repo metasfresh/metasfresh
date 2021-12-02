@@ -598,7 +598,7 @@ public class WarehouseDAO implements IWarehouseDAO
 				.addEqualsFilter(I_M_Locator.COLUMNNAME_Value, locatorValue)
 				.create()
 				.firstIdOnly();
-		return LocatorId.ofRepoId(warehouseId, locatorRepoId);
+		return LocatorId.ofRepoIdOrNull(warehouseId, locatorRepoId);
 	}
 
 	@Override
