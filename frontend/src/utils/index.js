@@ -21,8 +21,8 @@ export function updateUri(pathname, query, updatedQuery) {
 
 /**
  * @method historyDoubleBackOnPopstate
- * @summary Handles double back button on popstate - this acts as a `patch` for the cases introduced by the above `updateUri` function
- *          when there is no viewIs and we end up with one one added to the URL.
+ * @summary Does move back twice in history - on popstate (back btn) - this acts as a `patch` for the cases introduced by the above `updateUri` function
+ *          when there are no viewIs and we end up with one one added to the URL.
  *          i.e when we go to http://localhost:3000/window/143 we are taken to an URL like http://localhost:3000/window/143?page=1&sort&viewId=143-CQ
  *          If we do not use this function when the user hits the back button he will remain on http://localhost:3000/window/143?page=1&sort&viewId=143-CQ
  *          as if nothing happen. Instead if we use this funcion on popstate we will be taken back to the appropriate page before we landed on
