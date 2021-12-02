@@ -14,6 +14,7 @@ import de.metas.contracts.subscription.ISubscriptionDAO.SubscriptionProgressQuer
 import de.metas.contracts.subscription.impl.subscriptioncommands.ChangeRecipient;
 import de.metas.contracts.subscription.impl.subscriptioncommands.InsertPause;
 import de.metas.contracts.subscription.impl.subscriptioncommands.RemovePauses;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
@@ -51,7 +52,7 @@ import java.util.List;
 
 public class SubscriptionService
 {
-	public static final String MSG_NO_SPS_AFTER_DATE_1P = "Subscription.NoSpsAfterDate_1P";
+	public static final AdMessageKey MSG_NO_SPS_AFTER_DATE_1P = AdMessageKey.of("Subscription.NoSpsAfterDate_1P");
 
 	public static SubscriptionService get()
 	{
@@ -150,7 +151,6 @@ public class SubscriptionService
 
 		new RemovePauses(this).removePausesAroundTimeframe(term, distantPast, distantFuture);
 		resetCache(FlatrateTermId.ofRepoId(term.getC_Flatrate_Term_ID()));
-
 	}
 
 	public final List<I_C_SubscriptionProgress> retrieveNextSPsAndLogIfEmpty(
