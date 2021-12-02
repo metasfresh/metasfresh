@@ -1,11 +1,12 @@
 package de.metas.contracts.subscription.impl;
 
 import com.google.common.base.Preconditions;
+import de.metas.bpartner.BPartnerId;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.cache.model.CacheInvalidateRequest;
 import de.metas.cache.model.IModelCacheInvalidationService;
 import de.metas.cache.model.ModelCacheInvalidationTiming;
-import de.metas.contracts.FlatrateTermId;
+import de.metas.contracts.FlatrateDataId;
 import de.metas.contracts.model.I_C_Flatrate_Data;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_SubscriptionProgress;
@@ -20,7 +21,6 @@ import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -69,13 +69,14 @@ public class SubscriptionService
 			@NonNull final Timestamp dateTo)
 	{
 		new InsertPause(this).insertPause(term, dateFrom, dateTo);
-		resetCache(FlatrateTermId.ofRepoId(term.getC_Flatrate_Term_ID()));
+		resetCache(BPartnerId.ofRepoId(term.getBill_BPartner_ID()), FlatrateDataId.ofRepoId(term.getC_Flatrate_Data_ID()));
 	}
 
 	public static int changeRecipient(@NonNull final ChangeRecipientsRequest changeRecipientsRequest)
 	{
 		final int result = ChangeRecipient.changeRecipient(changeRecipientsRequest);
-		resetCache(FlatrateTermId.ofRepoId(changeRecipientsRequest.getTerm().getC_Flatrate_Term_ID()));
+		final I_C_Flatrate_Term term = changeRecipientsRequest.getTerm();
+		resetCache(BPartnerId.ofRepoId(term.getBill_BPartner_ID()), FlatrateDataId.ofRepoId(term.getC_Flatrate_Data_ID()));
 		return result;
 
 	}
@@ -133,7 +134,7 @@ public class SubscriptionService
 			@NonNull final Timestamp pauseUntil)
 	{
 		new RemovePauses(this).removePausesAroundTimeframe(term, pauseFrom, pauseUntil);
-		resetCache(FlatrateTermId.ofRepoId(term.getC_Flatrate_Term_ID()));
+		resetCache(BPartnerId.ofRepoId(term.getBill_BPartner_ID()), FlatrateDataId.ofRepoId(term.getC_Flatrate_Data_ID()));
 	}
 
 	public void removePausesAroundDate(
@@ -141,7 +142,7 @@ public class SubscriptionService
 			@NonNull final Timestamp date)
 	{
 		new RemovePauses(this).removePausesAroundTimeframe(term, date, date);
-		resetCache(FlatrateTermId.ofRepoId(term.getC_Flatrate_Term_ID()));
+		resetCache(BPartnerId.ofRepoId(term.getBill_BPartner_ID()), FlatrateDataId.ofRepoId(term.getC_Flatrate_Data_ID()));
 	}
 
 	public void removeAllPauses(final I_C_Flatrate_Term term)
@@ -150,7 +151,7 @@ public class SubscriptionService
 		final Timestamp distantFuture = TimeUtil.getDay(9999, 12, 31);
 
 		new RemovePauses(this).removePausesAroundTimeframe(term, distantPast, distantFuture);
-		resetCache(FlatrateTermId.ofRepoId(term.getC_Flatrate_Term_ID()));
+		resetCache(BPartnerId.ofRepoId(term.getBill_BPartner_ID()), FlatrateDataId.ofRepoId(term.getC_Flatrate_Data_ID()));
 	}
 
 	public final List<I_C_SubscriptionProgress> retrieveNextSPsAndLogIfEmpty(
@@ -172,19 +173,19 @@ public class SubscriptionService
 		return sps;
 	}
 
-	private static void resetCache(@NonNull final FlatrateTermId flatrateTermId)
+	/**
+	 * This is needed because no direct parent-child relationship can be established between these tables, as the {@code I_C_SubscriptionProgress} tabs would want to show
+	 * records for which the C_BPartner_ID in context is either the recipient or the contract holder.
+	 */
+	private static void resetCache(@NonNull final BPartnerId bpartnerId, @NonNull final FlatrateDataId flatrateDataId)
 	{
 		final IModelCacheInvalidationService modelCacheInvalidationService = Services.get(IModelCacheInvalidationService.class);
-		final I_C_Flatrate_Term term = InterfaceWrapperHelper.load(flatrateTermId, I_C_Flatrate_Term.class);
-		final int bPartnerId = term.getBill_BPartner_ID();
-		final int flatrateDataEntryId = term.getC_Flatrate_Data_ID();
 		modelCacheInvalidationService.invalidate(
 				CacheInvalidateMultiRequest.of(
-						CacheInvalidateRequest.allChildRecords(I_C_Flatrate_Data.Table_Name, flatrateDataEntryId, I_C_SubscriptionProgress.Table_Name),
-						CacheInvalidateRequest.allChildRecords(I_C_BPartner.Table_Name, bPartnerId, I_C_SubscriptionProgress.Table_Name)),
+						CacheInvalidateRequest.allChildRecords(I_C_Flatrate_Data.Table_Name, flatrateDataId, I_C_SubscriptionProgress.Table_Name),
+						CacheInvalidateRequest.allChildRecords(I_C_BPartner.Table_Name, bpartnerId, I_C_SubscriptionProgress.Table_Name)),
 				ModelCacheInvalidationTiming.CHANGE
 		);
-
 	}
 
 }
