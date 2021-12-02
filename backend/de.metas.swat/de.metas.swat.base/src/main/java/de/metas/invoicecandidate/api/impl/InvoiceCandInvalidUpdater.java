@@ -40,6 +40,7 @@ import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.PriceAndTax;
 import de.metas.lock.api.ILock;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
+import de.metas.tax.api.TaxId;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
@@ -338,9 +339,12 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 		final InvoiceCandidate invoiceCandidate = invoiceCandidateRecordService.ofRecord(icRecord);
 		invoiceCandidateRecordService.updateRecord(invoiceCandidate, icRecord);
 
-		//
-		// Update Price and Quantity only if this invoice candidate was NOT approved for invoicing (08610)
-		if (!icRecord.isApprovalForInvoicing())
+		// Update Price and Quantity only if...
+		final TaxId taxId = TaxId.ofRepoIdOrNull(icRecord.getC_Tax_Effective_ID());
+		final boolean noTax = taxId == null || taxId.isNoTaxId();
+		final boolean updatePriceAndTax = !icRecord.isApprovalForInvoicing() // ... this invoice candidate was NOT yet approved for invoicing (08610)
+				|| noTax; // ... or if the IC has no tax and therefore can't be invoiced either way
+		if (updatePriceAndTax)
 		{
 			try
 			{
