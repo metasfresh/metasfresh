@@ -1,6 +1,6 @@
 import queryString from 'query-string';
 import counterpart from 'counterpart';
-
+import { updateLastBackPage } from '../actions/AppActions';
 import history from '../services/History';
 
 /**
