@@ -641,7 +641,12 @@ public class OrderGroupRepository implements GroupRepository
 			@NonNull final List<I_C_OrderLine> regularOrderLines,
 			@Nullable final GroupId groupId)
 	{
-		for (final I_C_OrderLine regularLinePO : regularOrderLines)
+		//dev-note: needed to make sure `de.metas.activity.model.validator.C_OrderLine.updateActivity` doesn't fail
+		final List<I_C_OrderLine> regularLinesFirst = regularOrderLines.stream()
+				.sorted((ol, ol1) -> Boolean.compare(ol.isGroupCompensationLine(), ol1.isGroupCompensationLine()))
+				.collect(ImmutableList.toImmutableList());
+
+		for (final I_C_OrderLine regularLinePO : regularLinesFirst)
 		{
 			if (groupId != null)
 			{
