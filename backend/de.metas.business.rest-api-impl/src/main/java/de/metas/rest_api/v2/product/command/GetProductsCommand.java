@@ -41,7 +41,7 @@ import de.metas.externalsystem.audit.ExternalSystemExportAudit;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.pricing.PriceListId;
 import de.metas.product.ProductId;
-import de.metas.rest_api.v2.externlasystem.dto.ExternalSystemService;
+import de.metas.rest_api.v2.externlasystem.ExternalSystemService;
 import de.metas.rest_api.v2.product.ProductsServicesFacade;
 import de.metas.uom.UomId;
 import de.metas.util.Check;

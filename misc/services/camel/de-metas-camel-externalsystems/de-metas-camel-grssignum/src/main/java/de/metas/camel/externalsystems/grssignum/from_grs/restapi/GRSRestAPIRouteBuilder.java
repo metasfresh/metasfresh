@@ -27,13 +27,20 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import de.metas.camel.externalsystems.common.ErrorBuilderHelper;
+import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
+import de.metas.camel.externalsystems.common.ProcessorHelper;
 import de.metas.camel.externalsystems.common.RestServiceAuthority;
 import de.metas.camel.externalsystems.common.RestServiceRoutes;
 import de.metas.camel.externalsystems.common.auth.JsonAuthenticateRequest;
 import de.metas.camel.externalsystems.common.auth.JsonExpireTokenResponse;
 import de.metas.camel.externalsystems.common.auth.TokenCredentials;
+import de.metas.camel.externalsystems.common.v2.ExternalStatusCreateCamelRequest;
+import de.metas.camel.externalsystems.grssignum.GRSSignumConstants;
 import de.metas.common.externalsystem.ExternalSystemConstants;
+import de.metas.common.externalsystem.IExternalSystemService;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
+import de.metas.common.externalsystem.status.JsonExternalStatus;
+import de.metas.common.externalsystem.status.JsonStatusRequest;
 import de.metas.common.rest_api.v2.JsonError;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
@@ -51,23 +58,32 @@ import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.REST_API_AUTHENTICATE_TOKEN;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.REST_API_EXPIRE_TOKEN;
 import static de.metas.camel.externalsystems.common.RouteBuilderHelper.setupJacksonDataFormatFor;
+import static de.metas.camel.externalsystems.grssignum.GRSSignumConstants.GRSSIGNUM_SYSTEM_NAME;
 import static de.metas.camel.externalsystems.grssignum.GRSSignumConstants.JSON_PROPERTY_FLAG;
 import static org.apache.camel.Exchange.HTTP_RESPONSE_CODE;
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 
 @Component
-public class GRSRestAPIRouteBuilder extends RouteBuilder
+public class GRSRestAPIRouteBuilder extends RouteBuilder implements IExternalSystemService
 {
+	//routes
 	public static final String REST_API_ROUTE_ID = "GRSSignum_RestAPI";
 
-	public static final String ENABLE_RESOURCE_ROUTE_ID = "GRSSignum-enableRestAPI";
-	public static final String DISABLE_RESOURCE_ROUTE_ID = "GRSSignum-disableRestAPI";
+	private static final String ENABLE_RESOURCE_ROUTE = "enableRestAPI";
+	private static final String DISABLE_RESOURCE_ROUTE = "disableRestAPI";
 
+	public static final String ENABLE_RESOURCE_ROUTE_ID = GRSSIGNUM_SYSTEM_NAME + "-" + ENABLE_RESOURCE_ROUTE;
+	public static final String DISABLE_RESOURCE_ROUTE_ID = GRSSIGNUM_SYSTEM_NAME + "-" + DISABLE_RESOURCE_ROUTE;
+
+	//processors
 	public static final String ENABLE_RESOURCE_ROUTE_PROCESSOR_ID = "GRS-enableRestAPIProcessor";
 	public static final String DISABLE_RESOURCE_ROUTE_PROCESSOR_ID = "GRS-disableRestAPIProcessor";
 
 	public static final String ENABLE_RESOURCE_ATTACH_AUTHENTICATE_REQ_PROCESSOR_ID = "GRS-ER-AttachAuthenticateReqProcessorId";
 	public static final String DISABLE_RESOURCE_ATTACH_AUTHENTICATE_REQ_PROCESSOR_ID = "GRS-DR-AttachAuthenticateReqProcessorId";
+
+	public static final String ENABLE_PREPARE_EXTERNAL_STATUS_CREATE_REQ_PROCESSOR_ID = "GRS-ER-PrepareStatusReqProcessorId";
+	public static final String DISABLE_PREPARE_EXTERNAL_STATUS_CREATE_REQ_PROCESSOR_ID = "GRS-DR-PrepareStatusReqProcessorId";
 
 	private static final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
 
@@ -90,17 +106,23 @@ public class GRSRestAPIRouteBuilder extends RouteBuilder
 		from(direct(ENABLE_RESOURCE_ROUTE_ID))
 				.routeId(ENABLE_RESOURCE_ROUTE_ID)
 				.log("Route invoked!")
+				.process(this::prepareRestAPIContext)
 				.process(this::attachAuthenticateRequest).id(ENABLE_RESOURCE_ATTACH_AUTHENTICATE_REQ_PROCESSOR_ID)
 				.to(direct(REST_API_AUTHENTICATE_TOKEN))
 				.process(this::enableRestAPIProcessor).id(ENABLE_RESOURCE_ROUTE_PROCESSOR_ID)
+				.process(exchange -> this.prepareExternalStatusCreateRequest(exchange, JsonExternalStatus.Active)).id(ENABLE_PREPARE_EXTERNAL_STATUS_CREATE_REQ_PROCESSOR_ID)
+				.to("{{" + ExternalSystemCamelConstants.MF_CREATE_EXTERNAL_SYSTEM_STATUS_V2_CAMEL_URI + "}}")
 				.end();
 
 		from(direct(DISABLE_RESOURCE_ROUTE_ID))
 				.routeId(DISABLE_RESOURCE_ROUTE_ID)
 				.log("Route invoked!")
+				.process(this::prepareRestAPIContext)
 				.process(this::attachAuthenticateRequest).id(DISABLE_RESOURCE_ATTACH_AUTHENTICATE_REQ_PROCESSOR_ID)
 				.to(direct(REST_API_EXPIRE_TOKEN))
 				.process(this::disableRestAPIProcessor).id(DISABLE_RESOURCE_ROUTE_PROCESSOR_ID)
+				.process(exchange -> this.prepareExternalStatusCreateRequest(exchange, JsonExternalStatus.Inactive)).id(DISABLE_PREPARE_EXTERNAL_STATUS_CREATE_REQ_PROCESSOR_ID)
+				.to("{{" + ExternalSystemCamelConstants.MF_CREATE_EXTERNAL_SYSTEM_STATUS_V2_CAMEL_URI + "}}")
 				.end();
 
 		rest().path(RestServiceRoutes.GRS.getPath())
@@ -109,16 +131,16 @@ public class GRSRestAPIRouteBuilder extends RouteBuilder
 				.routeId(REST_API_ROUTE_ID)
 				.autoStartup(false)
 				.doTry()
-					.process(this::restAPIProcessor)
-				    .process(this::prepareSuccessResponse)
+				.process(this::restAPIProcessor)
+				.process(this::prepareSuccessResponse)
 				.doCatch(JsonProcessingException.class)
-			   		.to(direct(ERROR_WRITE_TO_ADISSUE))
-					.process(this::prepareErrorResponse)
-					.marshal(setupJacksonDataFormatFor(getContext(), JsonError.class))
+				.to(direct(ERROR_WRITE_TO_ADISSUE))
+				.process(this::prepareErrorResponse)
+				.marshal(setupJacksonDataFormatFor(getContext(), JsonError.class))
 				.doCatch(Exception.class)
-				    .to(direct(MF_ERROR_ROUTE_ID))
-				    .process(this::prepareErrorResponse)
-				    .marshal(setupJacksonDataFormatFor(getContext(), JsonError.class))
+				.to(direct(MF_ERROR_ROUTE_ID))
+				.process(this::prepareErrorResponse)
+				.marshal(setupJacksonDataFormatFor(getContext(), JsonError.class))
 				.endDoTry()
 				.end();
 	}
@@ -222,5 +244,61 @@ public class GRSRestAPIRouteBuilder extends RouteBuilder
 		exchange.getIn().setBody(null);
 		exchange.getIn().setHeader(HTTP_RESPONSE_CODE, HttpStatus.OK.value()
 		);
+	}
+
+	private void prepareRestAPIContext(@NonNull final Exchange exchange)
+	{
+		final JsonExternalSystemRequest request = exchange.getIn().getBody(JsonExternalSystemRequest.class);
+
+		final GRSRestAPIContext context = GRSRestAPIContext.builder()
+				.request(request)
+				.build();
+
+		exchange.setProperty(GRSSignumConstants.ROUTE_PROPERTY_GRS_REST_API_CONTEXT, context);
+	}
+
+	private void prepareExternalStatusCreateRequest(@NonNull final Exchange exchange, @NonNull final JsonExternalStatus externalStatus)
+	{
+		final GRSRestAPIContext context = ProcessorHelper.getPropertyOrThrowError(exchange, GRSSignumConstants.ROUTE_PROPERTY_GRS_REST_API_CONTEXT, GRSRestAPIContext.class);
+
+		final JsonExternalSystemRequest request = context.getRequest();
+
+		final JsonStatusRequest jsonStatusRequest = JsonStatusRequest.builder()
+				.status(externalStatus)
+				.pInstanceId(request.getAdPInstanceId())
+				.build();
+
+		final ExternalStatusCreateCamelRequest camelRequest = ExternalStatusCreateCamelRequest.builder()
+				.jsonStatusRequest(jsonStatusRequest)
+				.externalSystemConfigType(getExternalSystemTypeCode())
+				.externalSystemChildConfigValue(request.getExternalSystemChildConfigValue())
+				.serviceValue(getServiceValue())
+				.build();
+
+		exchange.getIn().setBody(camelRequest, JsonExternalSystemRequest.class);
+	}
+
+	@Override
+	public String getServiceValue()
+	{
+		return "defaultRestAPIGRS";
+	}
+
+	@Override
+	public String getExternalSystemTypeCode()
+	{
+		return GRSSIGNUM_SYSTEM_NAME;
+	}
+
+	@Override
+	public String getEnableCommand()
+	{
+		return ENABLE_RESOURCE_ROUTE;
+	}
+
+	@Override
+	public String getDisableCommand()
+	{
+		return DISABLE_RESOURCE_ROUTE;
 	}
 }

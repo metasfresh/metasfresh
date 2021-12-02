@@ -31,7 +31,7 @@ import de.metas.externalsystem.audit.CreateExportAuditRequest;
 import de.metas.logging.LogManager;
 import de.metas.process.PInstanceId;
 import de.metas.rest_api.utils.JsonErrors;
-import de.metas.rest_api.v2.externlasystem.dto.ExternalSystemService;
+import de.metas.rest_api.v2.externlasystem.ExternalSystemService;
 import de.metas.rest_api.v2.product.command.GetProductsCommand;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import de.metas.vertical.healthcare.alberta.service.AlbertaProductService;

@@ -2,6 +2,7 @@
   "traceId": "traceId",
   "orgCode": "orgCode",
   "externalSystemName": "GRSSignum",
+  "externalSystemChildConfigValue": "grsValue",
   "command": "exportBPartner",
   "externalSystemConfigId": 1,
   "adPInstanceId": 2,
