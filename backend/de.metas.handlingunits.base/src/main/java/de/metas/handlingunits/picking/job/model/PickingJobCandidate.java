@@ -42,4 +42,5 @@ public class PickingJobCandidate
 	@NonNull String customerName;
 	@NonNull BPartnerLocationId deliveryBPLocationId;
 	@Nullable WarehouseTypeId warehouseTypeId;
+	boolean partiallyPickedBefore;
 }

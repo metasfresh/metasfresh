@@ -20,6 +20,7 @@ import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.service.IADReferenceDAO;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
@@ -32,6 +33,7 @@ import java.util.stream.Stream;
 @Service
 public class DistributionRestService
 {
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final DDOrderService ddOrderService;
 	private final DDOrderMoveScheduleService ddOrderMoveScheduleService;
 	private final DistributionJobLoaderSupportingServices loadingSupportServices;
@@ -95,6 +97,7 @@ public class DistributionRestService
 			final @NonNull UserId responsibleId)
 	{
 		return DistributionJobCreateCommand.builder()
+				.trxManager(trxManager)
 				.ddOrderService(ddOrderService)
 				.ddOrderMoveScheduleService(ddOrderMoveScheduleService)
 				.loadingSupportServices(loadingSupportServices)
@@ -141,5 +144,17 @@ public class DistributionRestService
 		{
 			throw new AdempiereException("Cannot handle: " + event);
 		}
+	}
+
+	public DistributionJob complete(@NonNull final DistributionJob job)
+	{
+		final DDOrderId ddOrderId = job.getDdOrderId();
+		ddOrderService.close(ddOrderId);
+		return getJobById(ddOrderId);
+	}
+
+	public void abort(@NonNull final DistributionJob job)
+	{
+		ddOrderService.unassignFromResponsible(job.getDdOrderId());
 	}
 }

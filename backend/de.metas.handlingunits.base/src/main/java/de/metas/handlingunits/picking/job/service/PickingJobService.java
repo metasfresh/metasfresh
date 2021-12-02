@@ -1,17 +1,15 @@
 package de.metas.handlingunits.picking.job.service;
 
-import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableSet;
-import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobCandidate;
 import de.metas.handlingunits.picking.job.model.PickingJobId;
 import de.metas.handlingunits.picking.job.model.PickingJobReference;
 import de.metas.handlingunits.picking.job.model.PickingJobStepEvent;
-import de.metas.handlingunits.picking.job.model.PickingJobStepId;
-import de.metas.handlingunits.picking.job.repository.DefaultPickingJobLoaderSupportingServices;
 import de.metas.handlingunits.picking.job.repository.PickingJobLoaderSupportingServices;
+import de.metas.handlingunits.picking.job.repository.PickingJobLoaderSupportingServicesFactory;
 import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobAbortCommand;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobAllocatePickingSlotCommand;
@@ -20,7 +18,7 @@ import de.metas.handlingunits.picking.job.service.commands.PickingJobCreateComma
 import de.metas.handlingunits.picking.job.service.commands.PickingJobCreateRequest;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobPickCommand;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobUnPickCommand;
-import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.picking.api.IPackagingDAO;
 import de.metas.picking.api.Packageable;
 import de.metas.picking.api.PackageableQuery;
@@ -46,7 +44,7 @@ public class PickingJobService
 	private final PickingJobSlotService pickingSlotService;
 	private final PickingCandidateService pickingCandidateService;
 	private final PickingJobHUReservationService pickingJobHUReservationService;
-	private final IBPartnerBL bpartnerBL;
+	private final PickingJobLoaderSupportingServicesFactory pickingJobLoaderSupportingServicesFactory;
 
 	public PickingJobService(
 			final PickingJobRepository pickingJobRepository,
@@ -54,29 +52,26 @@ public class PickingJobService
 			final PickingJobSlotService pickingSlotService,
 			final PickingCandidateService pickingCandidateService,
 			final PickingJobHUReservationService pickingJobHUReservationService,
-			final IBPartnerBL bpartnerBL)
+			final PickingJobLoaderSupportingServicesFactory pickingJobLoaderSupportingServicesFactory)
 	{
 		this.pickingSlotService = pickingSlotService;
 		this.pickingJobRepository = pickingJobRepository;
 		this.pickingJobLockService = pickingJobLockService;
 		this.pickingCandidateService = pickingCandidateService;
 		this.pickingJobHUReservationService = pickingJobHUReservationService;
-		this.bpartnerBL = bpartnerBL;
+		this.pickingJobLoaderSupportingServicesFactory = pickingJobLoaderSupportingServicesFactory;
 	}
 
 	public PickingJob getById(final PickingJobId pickingJobId)
 	{
-		return pickingJobRepository.getById(pickingJobId, newLoadingSupportServices());
-	}
-
-	private PickingJobLoaderSupportingServices newLoadingSupportServices()
-	{
-		return new DefaultPickingJobLoaderSupportingServices(bpartnerBL, pickingSlotService);
+		final PickingJobLoaderSupportingServices loadingSupportingServices = pickingJobLoaderSupportingServicesFactory.createLoaderSupportingServices();
+		return pickingJobRepository.getById(pickingJobId, loadingSupportingServices);
 	}
 
 	public List<PickingJob> getDraftJobsByPickerId(@NonNull final UserId pickerId)
 	{
-		return pickingJobRepository.getDraftJobsByPickerId(pickerId, newLoadingSupportServices());
+		final PickingJobLoaderSupportingServices loadingSupportingServices = pickingJobLoaderSupportingServicesFactory.createLoaderSupportingServices();
+		return pickingJobRepository.getDraftJobsByPickerId(pickerId, loadingSupportingServices);
 	}
 
 	public PickingJob createPickingJob(@NonNull final PickingJobCreateRequest request)
@@ -87,7 +82,7 @@ public class PickingJobService
 				.pickingCandidateService(pickingCandidateService)
 				.pickingJobSlotService(pickingSlotService)
 				.pickingJobHUReservationService(pickingJobHUReservationService)
-				.bpartnerBL(bpartnerBL)
+				.loadingSupportServices(pickingJobLoaderSupportingServicesFactory.createLoaderSupportingServices())
 				//
 				.request(request)
 				//
@@ -123,7 +118,8 @@ public class PickingJobService
 
 	public Stream<PickingJobReference> streamDraftPickingJobReferences(@NonNull final UserId pickerId)
 	{
-		return pickingJobRepository.streamDraftPickingJobReferences(pickerId, newLoadingSupportServices());
+		final PickingJobLoaderSupportingServices loadingSupportingServices = pickingJobLoaderSupportingServicesFactory.createLoaderSupportingServices();
+		return pickingJobRepository.streamDraftPickingJobReferences(pickerId, loadingSupportingServices);
 	}
 
 	public Stream<PickingJobCandidate> streamPickingJobCandidates(
@@ -156,7 +152,15 @@ public class PickingJobService
 				.customerName(item.getCustomerName())
 				.deliveryBPLocationId(item.getCustomerLocationId())
 				.warehouseTypeId(item.getWarehouseTypeId())
+				.partiallyPickedBefore(computePartiallyPickedBefore(item))
 				.build();
+	}
+
+	private static boolean computePartiallyPickedBefore(final Packageable item)
+	{
+		return item.getQtyPickedPlanned().signum() != 0
+				|| item.getQtyPickedNotDelivered().signum() != 0
+				|| item.getQtyPickedAndDelivered().signum() != 0;
 	}
 
 	public IADReferenceDAO.ADRefList getQtyRejectedReasons()
@@ -182,10 +186,10 @@ public class PickingJobService
 			@NonNull final PickingJob pickingJob0,
 			@NonNull final List<PickingJobStepEvent> events)
 	{
-		final ImmutableMap<PickingJobStepId, PickingJobStepEvent> eventsByStepId = PickingJobStepEvent.aggregateByStepId(events);
+		final ImmutableCollection<PickingJobStepEvent> aggregatedEvents = PickingJobStepEvent.aggregateByStepIdAndPickFromKey(events).values();
 
 		PickingJob changedPickingJob = pickingJob0;
-		for (final PickingJobStepEvent event : eventsByStepId.values())
+		for (final PickingJobStepEvent event : aggregatedEvents)
 		{
 			try
 			{
@@ -212,12 +216,13 @@ public class PickingJobService
 				assert event.getQtyPicked() != null;
 				return PickingJobPickCommand.builder()
 						.pickingJobRepository(pickingJobRepository)
-						.pickingJobHUReservationService(pickingJobHUReservationService)
 						.pickingCandidateService(pickingCandidateService)
 						//
 						.pickingJob(pickingJob)
 						.pickingJobStepId(event.getPickingStepId())
+						.pickFromKey(event.getPickFromKey())
 						.qtyToPickBD(Objects.requireNonNull(event.getQtyPicked()))
+						.qtyRejectedBD(event.getQtyRejected())
 						.qtyRejectedReasonCode(event.getQtyRejectedReasonCode())
 						//
 						.build().execute();
@@ -231,6 +236,7 @@ public class PickingJobService
 						//
 						.pickingJob(pickingJob)
 						.onlyPickingJobStepId(event.getPickingStepId())
+						.onlyPickFromKey(event.getPickFromKey())
 						//
 						.build().execute();
 			}

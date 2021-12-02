@@ -1,7 +1,6 @@
 package de.metas.handlingunits.picking.candidate.commands;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContextFactory;
@@ -21,7 +20,7 @@ import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.picking.PickingSlotAllocateRequest;
 import de.metas.handlingunits.picking.requests.AddQtyToHURequest;
-import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.logging.LogManager;

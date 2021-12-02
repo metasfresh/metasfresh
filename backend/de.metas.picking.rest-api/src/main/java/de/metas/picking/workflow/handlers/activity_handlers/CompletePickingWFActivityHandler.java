@@ -75,7 +75,12 @@ public class CompletePickingWFActivityHandler implements WFActivityHandler, User
 	public WFActivityStatus computeActivityState(final WFProcess wfProcess, final WFActivity completePickingWFActivity)
 	{
 		final PickingJob pickingJob = getPickingJob(wfProcess);
-		return pickingJob.getDocStatus().isProcessed() ? WFActivityStatus.COMPLETED : WFActivityStatus.NOT_STARTED;
+		return computeActivityState(pickingJob);
+	}
+
+	public static WFActivityStatus computeActivityState(final PickingJob pickingJob)
+	{
+		return pickingJob.getDocStatus().isCompleted() ? WFActivityStatus.COMPLETED : WFActivityStatus.NOT_STARTED;
 	}
 
 	@Override

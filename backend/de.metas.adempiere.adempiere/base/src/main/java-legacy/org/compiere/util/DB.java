@@ -42,7 +42,6 @@ import org.adempiere.ad.dao.impl.InArrayQueryFilter;
 import org.adempiere.ad.migration.logger.IMigrationLogger;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBDeadLockDetectedException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.exceptions.DBForeignKeyConstraintException;
@@ -1796,6 +1795,10 @@ public class DB
 		else if (param instanceof RepoIdAware)
 		{
 			return String.valueOf(((RepoIdAware)param).getRepoId());
+		}
+		else if(param instanceof ReferenceListAwareEnum)
+		{
+			return TO_STRING(((ReferenceListAwareEnum)param).getCode());
 		}
 		else if (param instanceof BigDecimal)
 		{

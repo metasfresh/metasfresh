@@ -699,6 +699,31 @@ public interface I_C_Order
 	String COLUMNNAME_ChargeAmt = "ChargeAmt";
 
 	/**
+	 * Set Incoterms.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Incoterms_ID (int C_Incoterms_ID);
+
+	/**
+	 * Get Incoterms.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Incoterms_ID();
+
+	@Nullable org.compiere.model.I_C_Incoterms getC_Incoterms();
+
+	void setC_Incoterms(@Nullable org.compiere.model.I_C_Incoterms C_Incoterms);
+
+	ModelColumn<I_C_Order, org.compiere.model.I_C_Incoterms> COLUMN_C_Incoterms_ID = new ModelColumn<>(I_C_Order.class, "C_Incoterms_ID", org.compiere.model.I_C_Incoterms.class);
+	String COLUMNNAME_C_Incoterms_ID = "C_Incoterms_ID";
+
+	/**
 	 * Set Rabatt %.
 	 * Abschlag in Prozent
 	 *
@@ -1066,7 +1091,7 @@ public interface I_C_Order
 	String COLUMNNAME_DeliveryRule = "DeliveryRule";
 
 	/**
-	 * Set Lieferadresse.
+	 * Set Diff. Shipment Address.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -1075,7 +1100,7 @@ public interface I_C_Order
 	void setDeliveryToAddress (@Nullable java.lang.String DeliveryToAddress);
 
 	/**
-	 * Get Lieferadresse.
+	 * Get Diff. Shipment Address.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -1573,29 +1598,6 @@ public interface I_C_Order
 	int getHandOver_User_ID();
 
 	String COLUMNNAME_HandOver_User_ID = "HandOver_User_ID";
-
-	/**
-	 * Set Incoterm.
-	 * Internationale Handelsklauseln (engl. International Commercial Terms)
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setIncoterm (@Nullable java.lang.String Incoterm);
-
-	/**
-	 * Get Incoterm.
-	 * Internationale Handelsklauseln (engl. International Commercial Terms)
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getIncoterm();
-
-	ModelColumn<I_C_Order, Object> COLUMN_Incoterm = new ModelColumn<>(I_C_Order.class, "Incoterm", null);
-	String COLUMNNAME_Incoterm = "Incoterm";
 
 	/**
 	 * Set IncotermLocation.
@@ -2125,7 +2127,7 @@ public interface I_C_Order
 	String COLUMNNAME_M_FreightCategory_ID = "M_FreightCategory_ID";
 
 	/**
-	 * Set Preisliste.
+	 * Set Price List.
 	 * Unique identifier of a Price List
 	 *
 	 * <br>Type: TableDir
@@ -2135,7 +2137,7 @@ public interface I_C_Order
 	void setM_PriceList_ID (int M_PriceList_ID);
 
 	/**
-	 * Get Preisliste.
+	 * Get Price List.
 	 * Unique identifier of a Price List
 	 *
 	 * <br>Type: TableDir
@@ -2436,7 +2438,7 @@ public interface I_C_Order
 	String COLUMNNAME_PostingError_Issue_ID = "PostingError_Issue_ID";
 
 	/**
-	 * Set Bereitstellungsdatum.
+	 * Set Date ready.
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -2445,7 +2447,7 @@ public interface I_C_Order
 	void setPreparationDate (@Nullable java.sql.Timestamp PreparationDate);
 
 	/**
-	 * Get Bereitstellungsdatum.
+	 * Get Date ready.
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false

@@ -13,7 +13,7 @@ export const toastError = ({ axiosError, messageKey, fallbackMessageKey }) => {
     return;
   }
 
-  console.log('toast error: ', message);
+  console.trace('toast error: ', message, axiosError);
   toast(message, { type: 'error', style: { color: 'white' } });
 };
 

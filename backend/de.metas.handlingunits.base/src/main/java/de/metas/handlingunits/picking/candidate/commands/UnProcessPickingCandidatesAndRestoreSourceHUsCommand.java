@@ -19,7 +19,7 @@ import de.metas.handlingunits.shipmentschedule.api.impl.HUShipmentScheduleBL;
 import de.metas.handlingunits.sourcehu.HuId2SourceHUsService;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.i18n.AdMessageKey;
-import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;

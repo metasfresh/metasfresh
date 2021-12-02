@@ -28,4 +28,14 @@ public interface GRSSignumConstants
 
 	String JSON_PROPERTY_FLAG = "FLAG";
 	String DEFAULT_UOM_CODE = "KGM";
+
+	String ROUTE_PROPERTY_PUSH_BOMs_CONTEXT = "PushBOMsRouteContext";
+
+	String ROUTE_PROPERTY_EXPORT_BPARTNER_CONTEXT = "ExportBPartnerRouteContext";
+
+	String ROUTE_PROPERTY_GRS_REST_API_CONTEXT = "GRSRestAPIRouteContext";
+
+	String EXPORT_BPARTNER_RETRY_COUNT = "export.bpartner.retry.count";
+
+	String EXPORT_BPARTNER_RETRY_DELAY = "export.bpartner.retry.delay.ms";
 }

@@ -62,6 +62,7 @@ public class SupplyRequiredHandlerUtils
 				.mrpContext(mrpContext)
 				.mrpDemandBPartnerId(BPartnerId.toRepoIdOr(descriptorBPartnerId, -1))
 				.mrpDemandOrderLineSOId(supplyRequiredDescriptor.getOrderLineId())
+				.mrpDemandShipmentScheduleId(supplyRequiredDescriptor.getShipmentScheduleId())
 				.demandDate(supplyRequiredDescriptor.getMaterialDescriptor().getDate())
 				.build();
 	}

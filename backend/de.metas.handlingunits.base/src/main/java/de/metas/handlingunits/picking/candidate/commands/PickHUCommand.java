@@ -1,14 +1,13 @@
 package de.metas.handlingunits.picking.candidate.commands;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.picking.IHUPickingSlotBL;
+import de.metas.handlingunits.picking.PackToSpec;
 import de.metas.handlingunits.picking.PickFrom;
 import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateId;
@@ -21,7 +20,7 @@ import de.metas.handlingunits.picking.requests.PickRequest;
 import de.metas.handlingunits.picking.requests.PickRequest.IssueToPickingOrderRequest;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.i18n.BooleanWithReason;
-import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
@@ -76,7 +75,7 @@ public class PickHUCommand
 	private final PickingSlotId pickingSlotId;
 	private final Quantity qtyToPick;
 	private final QtyRejectedWithReason qtyRejected;
-	private final HuPackingInstructionsId packToId;
+	private final PackToSpec packToSpec;
 	private final boolean autoReview;
 	private final ImmutableList<IssueToPickingOrderRequest> issuesToPickingOrderRequests;
 
@@ -95,7 +94,7 @@ public class PickHUCommand
 		this.pickFrom = request.getPickFrom();
 
 		this.pickingSlotId = request.getPickingSlotId();
-		this.packToId = request.getPackToId();
+		this.packToSpec = request.getPackToSpec();
 		this.qtyToPick = request.getQtyToPick();
 		this.qtyRejected = request.getQtyRejected();
 		this.autoReview = request.isAutoReview();
@@ -124,7 +123,7 @@ public class PickHUCommand
 		}
 
 		pickingCandidate.pick(qtyToPick);
-		pickingCandidate.packTo(packToId);
+		pickingCandidate.packTo(packToSpec);
 
 		if (qtyRejected != null)
 		{

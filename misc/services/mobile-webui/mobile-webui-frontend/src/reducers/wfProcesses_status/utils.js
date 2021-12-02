@@ -1,6 +1,11 @@
 import { isDraft, original } from 'immer';
 import * as CompleteStatus from '../../constants/CompleteStatus';
-import { normalizeComponentProps, computeActivityDataStoredInitialValue } from './activityStateHandlers';
+import {
+  normalizeComponentProps,
+  computeActivityDataStoredInitialValue,
+  mergeActivityDataStored,
+  computeActivityStatus,
+} from './activityStateHandlers';
 
 /**
  * Updates isUserEditable flag for all activities.
@@ -68,6 +73,8 @@ export const mergeWFProcessToState = ({ draftWFProcess, fromWFProcess }) => {
   });
 
   updateUserEditable({ draftWFProcess });
+
+  return draftWFProcess;
 };
 
 const mergeActivitiesToState = ({ draftActivities, fromActivities }) => {
@@ -101,5 +108,16 @@ const mergeActivityToState = ({ draftActivity, fromActivity }) => {
         componentProps: componentPropsNormalized,
       }),
     };
+  }
+
+  mergeActivityDataStored({
+    componentType: draftActivity.componentType,
+    draftActivityDataStored: draftActivity.dataStored,
+    fromActivity,
+  });
+
+  const completeStatus = computeActivityStatus({ draftActivity });
+  if (completeStatus != null) {
+    draftActivity.dataStored.completeStatus = completeStatus;
   }
 };

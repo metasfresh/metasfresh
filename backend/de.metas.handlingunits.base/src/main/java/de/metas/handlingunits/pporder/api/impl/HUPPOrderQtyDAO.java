@@ -31,9 +31,9 @@ import de.metas.handlingunits.picking.PickingCandidateId;
 import de.metas.handlingunits.pporder.api.CreateIssueCandidateRequest;
 import de.metas.handlingunits.pporder.api.CreateReceiptCandidateRequest;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
+import de.metas.handlingunits.pporder.api.IssueCandidateGeneratedBy;
 import de.metas.handlingunits.pporder.api.PPOrderQtyId;
-import org.eevolution.api.PPOrderBOMLineId;
-import org.eevolution.api.PPOrderId;
+import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -45,6 +45,8 @@ import org.adempiere.warehouse.LocatorId;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.PPCostCollectorId;
+import org.eevolution.api.PPOrderBOMLineId;
+import org.eevolution.api.PPOrderId;
 
 import java.util.Collection;
 import java.util.List;
@@ -107,7 +109,12 @@ public class HUPPOrderQtyDAO implements IHUPPOrderQtyDAO
 		record.setMovementDate(TimeUtil.asTimestamp(request.getDate()));
 		record.setProcessed(false);
 
-		record.setM_Picking_Candidate_ID(PickingCandidateId.toRepoId(request.getPickingCandidateId()));
+		final IssueCandidateGeneratedBy generatedBy = request.getGeneratedBy();
+		if (generatedBy != null)
+		{
+			record.setM_Picking_Candidate_ID(PickingCandidateId.toRepoId(generatedBy.getPickingCandidateId()));
+			record.setPP_Order_IssueSchedule_ID(PPOrderIssueScheduleId.toRepoId(generatedBy.getIssueScheduleId()));
+		}
 
 		save(record);
 

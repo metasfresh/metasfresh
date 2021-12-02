@@ -13,14 +13,6 @@ import { setupCounterpart } from './utils/translations';
 import './index.css';
 import './assets/index.scss';
 
-console.info(
-  `
-  %c
-    REACT_APP_COMMIT_VERSION ${process.env.REACT_APP_COMMIT_VERSION}
-    https://github.com/metasfresh/metasfresh/commit/${process.env.REACT_APP_COMMIT_VERSION}`,
-  'color: blue;'
-);
-
 setupCounterpart();
 
 export const globalStore = store(load());

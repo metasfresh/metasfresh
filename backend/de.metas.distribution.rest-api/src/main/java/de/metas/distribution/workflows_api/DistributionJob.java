@@ -5,6 +5,7 @@ import de.metas.distribution.ddorder.DDOrderId;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleId;
 import de.metas.user.UserId;
 import de.metas.util.collections.CollectionUtils;
+import de.metas.workflow.rest_api.model.WFActivityStatus;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -25,7 +26,10 @@ public class DistributionJob
 	@NonNull private final WarehouseInfo pickFromWarehouse;
 	@NonNull private final WarehouseInfo dropToWarehouse;
 	@Nullable private final UserId responsibleId;
+	private final boolean isClosed;
 	@NonNull private final ImmutableList<DistributionJobLine> lines;
+
+	@NonNull WFActivityStatus status;
 
 	@Builder(toBuilder = true)
 	private DistributionJob(
@@ -35,6 +39,7 @@ public class DistributionJob
 			final @NonNull WarehouseInfo pickFromWarehouse,
 			final @NonNull WarehouseInfo dropToWarehouse,
 			final @Nullable UserId responsibleId,
+			final boolean isClosed,
 			final @NonNull List<DistributionJobLine> lines)
 	{
 		this.ddOrderId = ddOrderId;
@@ -43,7 +48,10 @@ public class DistributionJob
 		this.pickFromWarehouse = pickFromWarehouse;
 		this.dropToWarehouse = dropToWarehouse;
 		this.responsibleId = responsibleId;
+		this.isClosed = isClosed;
 		this.lines = ImmutableList.copyOf(lines);
+
+		this.status = WFActivityStatus.computeStatusFromLines(lines, DistributionJobLine::getStatus);
 	}
 
 	public DistributionJob withChangedStep(@NonNull final DDOrderMoveScheduleId id, @NonNull final UnaryOperator<DistributionJobStep> stepMapper)

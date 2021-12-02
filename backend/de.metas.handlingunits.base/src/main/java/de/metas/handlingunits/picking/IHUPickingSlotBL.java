@@ -2,7 +2,6 @@ package de.metas.handlingunits.picking;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
@@ -134,8 +133,6 @@ public interface IHUPickingSlotBL extends IPickingSlotBL, ISingletonService
 	void releasePickingSlotIfPossible(I_M_PickingSlot pickingSlot);
 
 	void releasePickingSlotIfPossible(PickingSlotId pickingSlotId);
-
-	void releasePickingSlotIfPossible(PickingSlotId pickingSlotId, PickingJobId pickingJobId);
 
 	void releasePickingSlotsIfPossible(Collection<PickingSlotId> pickingSlotIds);
 

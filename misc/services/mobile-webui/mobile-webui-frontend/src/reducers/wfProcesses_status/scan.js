@@ -2,6 +2,9 @@ import * as types from '../../constants/ScanActionTypes';
 import * as CompleteStatus from '../../constants/CompleteStatus';
 
 import { updateUserEditable } from './utils';
+import { registerHandler } from './activityStateHandlers';
+
+const COMPONENT_TYPE = 'common/scanBarcode';
 
 export const scanReducer = ({ draftState, action }) => {
   switch (action.type) {
@@ -33,5 +36,12 @@ function reduceOnSetScannedBarcode(draftState, payload) {
 
 const computeActivityStatus = ({ draftActivity }) => {
   const scannedBarcode = draftActivity.dataStored.scannedBarcode;
-  return scannedBarcode && scannedBarcode.length > 0 ? CompleteStatus.COMPLETED : CompleteStatus.NOT_STARTED;
+  const barcodeCaption = draftActivity.componentProps.barcodeCaption;
+  const completed = (scannedBarcode && scannedBarcode.length > 0) || (barcodeCaption && barcodeCaption.length > 0);
+  return completed ? CompleteStatus.COMPLETED : CompleteStatus.NOT_STARTED;
 };
+
+registerHandler({
+  componentType: COMPONENT_TYPE,
+  computeActivityStatus,
+});

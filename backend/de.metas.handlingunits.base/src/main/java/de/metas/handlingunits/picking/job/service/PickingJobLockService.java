@@ -2,7 +2,7 @@ package de.metas.handlingunits.picking.job.service;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.picking.job.model.PickingJob;
-import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.lock.ShipmentScheduleLockRepository;
 import de.metas.inoutcandidate.lock.ShipmentScheduleLockRequest;
 import de.metas.inoutcandidate.lock.ShipmentScheduleLockType;
@@ -16,7 +16,7 @@ public class PickingJobLockService
 {
 	private final ShipmentScheduleLockRepository shipmentScheduleLockRepository;
 
-	PickingJobLockService(final ShipmentScheduleLockRepository shipmentScheduleLockRepository) {this.shipmentScheduleLockRepository = shipmentScheduleLockRepository;}
+	public PickingJobLockService(final ShipmentScheduleLockRepository shipmentScheduleLockRepository) {this.shipmentScheduleLockRepository = shipmentScheduleLockRepository;}
 
 	public void lockShipmentSchedules(
 			final @NonNull ImmutableSet<ShipmentScheduleId> shipmentScheduleIds,

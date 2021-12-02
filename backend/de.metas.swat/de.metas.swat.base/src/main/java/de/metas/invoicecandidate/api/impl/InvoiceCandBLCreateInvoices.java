@@ -395,6 +395,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 
 			invoice.setPOReference(invoiceHeader.getPOReference()); // task 07978
 			invoice.setC_Order_ID(invoiceHeader.getC_Order_ID()); // set order reference, if any
+			invoice.setC_Incoterms_ID(invoiceHeader.getC_Incoterms_ID());
 			invoice.setC_Async_Batch_ID(invoiceHeader.getC_Async_Batch_ID());
 
 			if (invoiceHeader.getM_InOut_ID() > 0)

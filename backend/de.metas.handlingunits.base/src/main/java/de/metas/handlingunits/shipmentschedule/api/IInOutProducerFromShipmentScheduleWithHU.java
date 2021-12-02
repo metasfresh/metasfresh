@@ -5,7 +5,7 @@ import de.metas.handlingunits.inout.IHUInOutBL;
 import de.metas.handlingunits.shipmentschedule.spi.impl.CalculateShippingDateRule;
 import de.metas.handlingunits.shipmentschedule.spi.impl.ShipmentScheduleExternalInfo;
 import de.metas.inout.model.I_M_InOut;
-import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
 import org.adempiere.ad.trx.processor.api.ITrxItemExceptionHandler;
 

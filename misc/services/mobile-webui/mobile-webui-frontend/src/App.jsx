@@ -6,11 +6,10 @@ import { push } from 'connected-react-router';
 import { useAuth } from './hooks/useAuth';
 import useConstructor from './hooks/useConstructor';
 import Routes from './routes';
-// import { history } from './store/store';
 
 import './App.css';
 import UpdateCheck from './components/UpdateCheck';
-import { UPDATE_CHECK_INTERVAL } from './constants/index';
+import { REGISTER_SERVICE_WORKER, UPDATE_CHECK_INTERVAL } from './constants/index';
 import { getApplications } from './api/applications';
 import { populateApplications } from './actions/ApplicationsActions';
 
@@ -45,7 +44,7 @@ function App() {
   return (
     <div className="application">
       <Routes />
-      <UpdateCheck updateInterval={UPDATE_CHECK_INTERVAL} />
+      {REGISTER_SERVICE_WORKER && <UpdateCheck updateInterval={UPDATE_CHECK_INTERVAL} />}
     </div>
   );
 }

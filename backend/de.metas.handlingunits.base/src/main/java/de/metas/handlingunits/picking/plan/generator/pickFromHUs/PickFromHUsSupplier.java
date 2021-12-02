@@ -23,8 +23,8 @@ import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.warehouse.LocatorId;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 
 public class PickFromHUsSupplier
 {
@@ -63,25 +63,25 @@ public class PickFromHUsSupplier
 
 	public ImmutableList<PickFromHU> getEligiblePickFromHUs(@NonNull final PickFromHUsGetRequest request)
 	{
-		final ArrayList<PickFromHU> pickFromHUs = new ArrayList<>();
+		final LinkedHashMap<HuId, PickFromHU> pickFromHUs = new LinkedHashMap<>();
 
 		getVHUIdsAlreadyReserved(request)
 				.stream()
 				.map(this::createPickFromHUByVHUId)
 				.map(PickFromHU::withHuReservedForThisLine)
-				.forEach(pickFromHUs::add);
+				.forEach(pickFromHU -> pickFromHUs.computeIfAbsent(pickFromHU.getTopLevelHUId(), k -> pickFromHU));
 
 		getVHUIdsEligibleToAllocateAndNotReservedAtAll(request)
 				.stream()
 				.map(this::createPickFromHUByVHUId)
-				.forEach(pickFromHUs::add);
+				.forEach(pickFromHU -> pickFromHUs.computeIfAbsent(pickFromHU.getTopLevelHUId(), k -> pickFromHU));
 
 		final ProductId productId = request.getProductId();
-		final AlternativePickFromKeys alternatives = pickFromHUs.stream()
+		final AlternativePickFromKeys alternatives = pickFromHUs.values().stream()
 				.map(pickFromHU -> toAlternativePickFromKey(pickFromHU, productId))
 				.collect(AlternativePickFromKeys.collect());
 
-		return pickFromHUs.stream()
+		return pickFromHUs.values().stream()
 				.map(pickFromHU -> withAlternatives(pickFromHU, productId, alternatives))
 				.sorted(getAllocationOrder(request.getBestBeforePolicy()))
 				.collect(ImmutableList.toImmutableList());
@@ -99,7 +99,7 @@ public class PickFromHUsSupplier
 		final ImmutableAttributeSet attributes = husCache.getHUAttributes(topLevelHUId);
 
 		return PickFromHU.builder()
-				.huId(topLevelHUId)
+				.topLevelHUId(topLevelHUId)
 				.huReservedForThisLine(false)
 				.locatorId(locatorId)
 				//
@@ -162,7 +162,7 @@ public class PickFromHUsSupplier
 
 	private static AlternativePickFromKey toAlternativePickFromKey(@NonNull final PickFromHU pickFromHU, @NonNull final ProductId productId)
 	{
-		return AlternativePickFromKey.of(pickFromHU.getLocatorId(), pickFromHU.getHuId(), productId);
+		return AlternativePickFromKey.of(pickFromHU.getLocatorId(), pickFromHU.getTopLevelHUId(), productId);
 	}
 
 	private Comparator<PickFromHU> getAllocationOrder(@NonNull final ShipmentAllocationBestBeforePolicy bestBeforePolicy)
@@ -170,6 +170,6 @@ public class PickFromHUsSupplier
 		return Comparator.
 				<PickFromHU>comparingInt(pickFromHU -> pickFromHU.isHuReservedForThisLine() ? 0 : 1) // consider reserved HU first
 				.thenComparing(bestBeforePolicy.comparator(PickFromHU::getExpiringDate)) // then first/last expiring HU
-				.thenComparing(PickFromHU::getHuId); // then by HUId
+				.thenComparing(PickFromHU::getTopLevelHUId); // then by HUId
 	}
 }

@@ -100,7 +100,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 	}
 
 	@Nullable
-	public static POJOLookupMap getOrNull()
+	private static POJOLookupMap getOrNull()
 	{
 		final POJOLookupMap threadInstance = threadInstanceRef.get();
 		if (threadInstance != null)
@@ -152,7 +152,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 		return database;
 	}
 
-	public static void destroyThreadLocalStorage()
+	private static void destroyThreadLocalStorage()
 	{
 		final POJOLookupMap threadInstance = threadInstanceRef.get();
 		if (threadInstance == null)
@@ -184,9 +184,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 		instance.unregisterAllInterceptors();
 	}
 
-	// NOTE: because in some tests we are using hardcoded IDs which are like ~50000, we decided to start the IDs sequence from 100k.
-	private static final int DEFAULT_FirstId = 100000;
-	private int nextId = DEFAULT_FirstId;
+	private POJONextIdSupplier nextIdSupplier = newNextIdSupplier();
 
 	/**
 	 * Database name
@@ -199,7 +197,9 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 	Map<String, Map<Integer, Object>> cachedObjects = new HashMap<>();
 	Map<PInstanceId, ImmutableSet<Integer>> selectionId2selection = new HashMap<>();
 
-	/** true if we want that values to be copied on save and not only referenced. Setting to true is like an actual database is working. */
+	/**
+	 * true if we want that values to be copied on save and not only referenced. Setting to true is like an actual database is working.
+	 */
 	@Getter
 	@Setter
 	private boolean copyOnSave = true;
@@ -221,11 +221,28 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 		registerJMX();
 	}
 
+	private static POJONextIdSupplier newNextIdSupplier()
+	{
+		return POJONextIdSuppliers.newSingleSharedSequence();
+	}
+
+	public static void resetToDefaultNextIdSupplier()
+	{
+		setNextIdSupplier(newNextIdSupplier());
+	}
+
+	public static void setNextIdSupplier(@NonNull final POJONextIdSupplier nextIdSupplier)
+	{
+		final POJONextIdSupplier nextIdSupplierOld = instance.nextIdSupplier;
+		instance.nextIdSupplier = nextIdSupplier;
+
+		System.out.println("Changed nextIdSupplier from " + nextIdSupplierOld + " to " + instance.nextIdSupplier);
+	}
+
 	@Override
 	public int nextId(String tableName)
 	{
-		nextId++;
-		return nextId;
+		return nextIdSupplier.nextId(tableName);
 	}
 
 	private <T> T copy(final T model)
@@ -269,8 +286,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 
 		if (clazz.isAssignableFrom(result.getClass()))
 		{
-			@SuppressWarnings("unchecked")
-			final T resultConv = (T)result;
+			@SuppressWarnings("unchecked") final T resultConv = (T)result;
 			return resultConv;
 		}
 
@@ -293,8 +309,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 			return null;
 		}
 
-		@SuppressWarnings("unchecked")
-		final T value = (T)getCopy(tableRecords, recordId);
+		@SuppressWarnings("unchecked") final T value = (T)getCopy(tableRecords, recordId);
 		return value;
 	}
 
@@ -560,11 +575,11 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 	}
 
 	public <T> T getFirstOnly(final String tableName,
-			final Class<T> clazz,
-			final IQueryFilter<T> filter,
-			final Comparator<T> orderByComparator,
-			final boolean throwExIfMoreThenOneFound,
-			final String trxName)
+							  final Class<T> clazz,
+							  final IQueryFilter<T> filter,
+							  final Comparator<T> orderByComparator,
+							  final boolean throwExIfMoreThenOneFound,
+							  final String trxName)
 	{
 		final List<T> result = getRecords(tableName, clazz, filter, orderByComparator, trxName);
 		if (result.isEmpty())
@@ -689,7 +704,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 
 	public void clear()
 	{
-		nextId = DEFAULT_FirstId;
+		POJOLookupMap.resetToDefaultNextIdSupplier();
 		cachedObjects.clear();
 	}
 
@@ -1053,7 +1068,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 		}
 		else
 		{
-			final ImmutableSet<Integer> combinedSelectionSet = ImmutableSet.<Integer> builder()
+			final ImmutableSet<Integer> combinedSelectionSet = ImmutableSet.<Integer>builder()
 					.addAll(existingSelectionSet)
 					.addAll(selectionSet).build();
 			this.selectionId2selection.put(selectionId, combinedSelectionSet);

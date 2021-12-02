@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.picking.candidate.commands.AddQtyToHUCommand;
 import de.metas.handlingunits.picking.candidate.commands.ClosePickingCandidateCommand;
 import de.metas.handlingunits.picking.candidate.commands.CreatePickingCandidatesCommand;
@@ -12,6 +11,7 @@ import de.metas.handlingunits.picking.candidate.commands.PickHUCommand;
 import de.metas.handlingunits.picking.candidate.commands.PickHUResult;
 import de.metas.handlingunits.picking.candidate.commands.ProcessHUsAndPickingCandidateCommand;
 import de.metas.handlingunits.picking.candidate.commands.ProcessPickingCandidatesCommand;
+import de.metas.handlingunits.picking.candidate.commands.ProcessPickingCandidatesRequest;
 import de.metas.handlingunits.picking.candidate.commands.ProcessPickingCandidatesResult;
 import de.metas.handlingunits.picking.candidate.commands.RejectPickingCommand;
 import de.metas.handlingunits.picking.candidate.commands.RejectPickingResult;
@@ -32,7 +32,7 @@ import de.metas.handlingunits.picking.requests.RejectPickingRequest;
 import de.metas.handlingunits.picking.requests.RemoveQtyFromHURequest;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.sourcehu.HuId2SourceHUsService;
-import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.picking.api.PickingConfigRepository;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
@@ -201,11 +201,23 @@ public class PickingCandidateService
 
 	public ProcessPickingCandidatesResult process(@NonNull final Set<PickingCandidateId> pickingCandidateIds)
 	{
+		return process(ProcessPickingCandidatesRequest.builder()
+				.pickingCandidateIds(pickingCandidateIds)
+				.build());
+	}
+
+	public ProcessPickingCandidatesResult process(@NonNull ProcessPickingCandidatesRequest request)
+	{
 		return ProcessPickingCandidatesCommand.builder()
 				.pickingCandidateRepository(pickingCandidateRepository)
-				.pickingCandidateIds(pickingCandidateIds)
+				.request(request)
 				.build()
-				.perform();
+				.execute();
+	}
+
+	public UnProcessPickingCandidatesResult unprocess(@NonNull final PickingCandidateId pickingCandidateId)
+	{
+		return unprocess(ImmutableSet.of(pickingCandidateId));
 	}
 
 	public UnProcessPickingCandidatesResult unprocess(@NonNull final Set<PickingCandidateId> pickingCandidateIds)
@@ -273,12 +285,12 @@ public class PickingCandidateService
 				.perform();
 	}
 
-	public List<PickingCandidate> setHuPackingInstructionId(final Set<PickingCandidateId> pickingCandidateIds, final HuPackingInstructionsId huPackingInstructionsId)
+	public List<PickingCandidate> setHuPackingInstructionId(final Set<PickingCandidateId> pickingCandidateIds, final PackToSpec packToSpec)
 	{
 		return SetHuPackingInstructionIdCommand.builder()
 				.pickingCandidateRepository(pickingCandidateRepository)
 				.pickingCandidateIds(pickingCandidateIds)
-				.huPackingInstructionsId(huPackingInstructionsId)
+				.packToSpec(packToSpec)
 				.build()
 				.perform();
 

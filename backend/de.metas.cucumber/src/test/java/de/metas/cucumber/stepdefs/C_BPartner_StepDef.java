@@ -29,6 +29,7 @@ import de.metas.common.util.EmptyUtil;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import io.cucumber.datatable.DataTable;
+import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -73,6 +74,17 @@ public class C_BPartner_StepDef
 		for (final Map<String, String> tableRow : tableRows)
 		{
 			createC_BPartner(tableRow);
+		}
+	}
+
+	@And("the following c_bpartner is changed")
+	public void change_bpartner(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> dataRows = dataTable.asMaps();
+
+		for (final Map<String, String> row : dataRows)
+		{
+			changeBPartner(row);
 		}
 	}
 
@@ -140,6 +152,18 @@ public class C_BPartner_StepDef
 		}
 
 		final String recordIdentifier = DataTableUtil.extractRecordIdentifier(tableRow, "C_BPartner");
-		bPartnerTable.put(recordIdentifier, bPartnerRecord);
+		bPartnerTable.putOrReplace(recordIdentifier, bPartnerRecord);
+	}
+
+	private void changeBPartner(@NonNull final Map<String, String> row)
+	{
+		final String bpartner = DataTableUtil.extractStringForColumnName(row, I_C_BPartner.COLUMNNAME_C_BPartner_ID + ".Identifier");
+		final String name2 = DataTableUtil.extractStringOrNullForColumnName(row, "Name2");
+
+		final I_C_BPartner bPartner = bPartnerTable.get(bpartner);
+
+		bPartner.setName2(name2);
+
+		InterfaceWrapperHelper.save(bPartner);
 	}
 }

@@ -1,7 +1,7 @@
 package de.metas.manufacturing.workflows_api.activity_handlers;
 
-import de.metas.manufacturing.job.ManufacturingJob;
-import de.metas.manufacturing.job.ManufacturingJobActivityId;
+import de.metas.manufacturing.job.model.ManufacturingJob;
+import de.metas.manufacturing.job.model.ManufacturingJobActivityId;
 import de.metas.manufacturing.workflows_api.ManufacturingRestService;
 import de.metas.workflow.rest_api.activity_features.user_confirmation.UserConfirmationRequest;
 import de.metas.workflow.rest_api.activity_features.user_confirmation.UserConfirmationSupport;
@@ -40,7 +40,7 @@ public class ConfirmationActivityHandler implements WFActivityHandler, UserConfi
 	@Override
 	public WFActivityStatus computeActivityState(final WFProcess wfProcess, final WFActivity wfActivity)
 	{
-		return WFActivityStatus.NOT_STARTED;
+		return wfActivity.getStatus();
 	}
 
 	@Override
@@ -51,7 +51,10 @@ public class ConfirmationActivityHandler implements WFActivityHandler, UserConfi
 
 		final ManufacturingJobActivityId jobActivityId = request.getWfActivity().getId().getAsId(ManufacturingJobActivityId.class);
 
-		final ManufacturingJob changedJob = manufacturingRestService.withActivityCompleted(wfProcess.getDocumentAs(ManufacturingJob.class), jobActivityId);
+		final ManufacturingJob job = wfProcess.getDocumentAs(ManufacturingJob.class);
+		job.assertUserReporting();
+
+		final ManufacturingJob changedJob = manufacturingRestService.withActivityCompleted(job, jobActivityId);
 		return ManufacturingRestService.toWFProcess(changedJob);
 	}
 }

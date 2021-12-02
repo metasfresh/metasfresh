@@ -58,10 +58,7 @@ public class PickingJobAllocatePickingSlotCommand
 			pickingSlotService.release(oldPickingSlotId, initialPickingJob.getId());
 		}
 
-		pickingSlotService.allocate(
-				newPickingSlot,
-				initialPickingJob.getDeliveryBPLocationId(),
-				initialPickingJob.getId());
+		pickingSlotService.allocate(newPickingSlot, initialPickingJob.getDeliveryBPLocationId());
 
 		final PickingJob pickingJob = initialPickingJob.withPickingSlot(newPickingSlot);
 		pickingJobRepository.save(pickingJob);
