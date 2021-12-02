@@ -205,7 +205,8 @@ DELETE FROM AD_Element_Link WHERE AD_Window_ID=541360
 
 -- 2021-12-02T11:51:37.844Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Tab (AD_Client_ID,AD_Element_ID,AD_Org_ID,AD_Tab_ID,AD_Table_ID,AD_Window_ID,AllowQuickInput,Created,CreatedBy,EntityType,HasTree,ImportFields,IncludedTabNewRecordInputMode,InternalName,IsActive,IsAdvancedTab,IsCheckParentsChanged,IsGenericZoomTarget,IsGridModeOnly,IsInfoTab,IsInsertRecord,IsQueryOnLoad,IsReadOnly,IsRefreshAllOnActivate,IsRefreshViewOnChangeEvents,IsSearchActive,IsSearchCollapsed,IsSingleRow,IsSortTab,IsTranslationTab,MaxQueryRecords,Name,Processing,SeqNo,TabLevel,Updated,UpdatedBy) VALUES (0,580351,0,545142,541963,541360,'Y',TO_TIMESTAMP('2021-12-02 13:51:37','YYYY-MM-DD HH24:MI:SS'),100,'D','N','N','A','M_Warehouse_Group','Y','N','Y','N','N','N','Y','Y','N','N','N','Y','Y','N','N','N',0,'Warehouse Group','N',10,0,TO_TIMESTAMP('2021-12-02 13:51:37','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Tab (AD_Client_ID,AD_Element_ID,AD_Org_ID,AD_Tab_ID,AD_Table_ID,AD_Window_ID,AllowQuickInput,Created,CreatedBy,EntityType,HasTree,ImportFields,InternalName,IsActive,IsAdvancedTab,IsCheckParentsChanged,IsGenericZoomTarget,IsGridModeOnly,IsInfoTab,IsInsertRecord,IsQueryOnLoad,IsReadOnly,IsRefreshAllOnActivate,IsRefreshViewOnChangeEvents,IsSearchActive,IsSearchCollapsed,IsSingleRow,IsSortTab,IsTranslationTab,MaxQueryRecords,Name,Processing,SeqNo,TabLevel,Updated,UpdatedBy)
+VALUES (0,580351,0,545142,541963,541360,'Y',TO_TIMESTAMP('2021-12-02 13:51:37','YYYY-MM-DD HH24:MI:SS'),100,'D','N','N','M_Warehouse_Group','Y','N','Y','N','N','N','Y','Y','N','N','N','Y','Y','N','N','N',0,'Warehouse Group','N',10,0,TO_TIMESTAMP('2021-12-02 13:51:37','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2021-12-02T11:51:37.850Z
