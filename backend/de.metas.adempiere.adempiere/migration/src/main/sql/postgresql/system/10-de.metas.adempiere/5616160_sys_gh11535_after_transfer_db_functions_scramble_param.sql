@@ -19,6 +19,9 @@
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+ 
+-- clean up the function's old version with 5 params
+DROP FUNCTION IF EXISTS ops.after_transfer_db(text, text, text, text, boolean);
 
 CREATE OR REPLACE FUNCTION ops.after_transfer_db(
     p_source_instance            text,
