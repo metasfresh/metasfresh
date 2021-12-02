@@ -69,16 +69,10 @@ public class WebuiHUTransformCommand
 	 * <li>For the {@link #CU_To_NewCU} and {@link #TU_To_NewTUs} actions, if the user goes with the suggested maximum value, then nothing is done. But there is a (return) message which gives a brief explanation to the user.
 	 * </ul>
 	 */
-	public static enum ActionType
+	public enum ActionType
 	{
-		/**
-		 * Invokes {@link HUTransformService#cuToNewCU(I_M_HU, BigDecimal)}.
-		 */
 		CU_To_NewCU,
 
-		/**
-		 * Invokes {@link HUTransformService#cuToNewTUs(I_M_HU, BigDecimal, I_M_HU_PI_Item_Product, boolean)}.
-		 */
 		CU_To_NewTUs,
 
 		/**
@@ -87,19 +81,13 @@ public class WebuiHUTransformCommand
 		 * Parameters:
 		 * <ul>
 		 * <li>the currently selected TU line</li>
-		 * <li>{@link WEBUI_M_HU_Transform_Template#PARAM_HUPlanningReceiptOwnerPM_TU}</li>
+		 * <li>HUPlanningReceiptOwnerPM_TU</li>
 		 * </ul>
 		 */
 		TU_Set_Ownership,
 
-		/**
-		 * Invokes {@link HUTransformService#cuToExistingTU(I_M_HU, BigDecimal, I_M_HU)}.
-		 */
 		CU_To_ExistingTU,
 
-		/**
-		 * Invokes {@link HUTransformService#tuToNewTUs(I_M_HU, BigDecimal, boolean)}.
-		 */
 		TU_To_NewTUs,
 
 		/**
@@ -118,7 +106,7 @@ public class WebuiHUTransformCommand
 		 * Parameters:
 		 * <ul>
 		 * <li>the currently selected LU line</li>
-		 * <li>{@link WEBUI_M_HU_Transform_Template#PARAM_HUPlanningReceiptOwnerPM_LU}</li>
+		 * <li>HUPlanningReceiptOwnerPM_LU</li>
 		 * </ul>
 		 */
 		LU_Set_Ownership
@@ -142,12 +130,12 @@ public class WebuiHUTransformCommand
 		this._parameters = parameters;
 	}
 
-	private final WebuiHUTransformParameters getParameters()
+	private WebuiHUTransformParameters getParameters()
 	{
 		return _parameters;
 	}
 
-	private final ActionType getActionType()
+	private ActionType getActionType()
 	{
 		return getParameters().getActionType();
 	}
@@ -162,7 +150,7 @@ public class WebuiHUTransformCommand
 		return _contextDocumentLines;
 	}
 
-	private final HUTransformService newHUTransformation()
+	private HUTransformService newHUTransformation()
 	{
 		return HUTransformService.builder()
 				.referencedObjects(getContextDocumentLines())
@@ -226,10 +214,7 @@ public class WebuiHUTransformCommand
 	}
 
 	/**
-	 * @param row
-	 * @param huPlanningReceiptOwnerPM
-	 * @return
-	 * @task https://github.com/metasfresh/metasfresh/issues/1130
+	 * @implSpec https://github.com/metasfresh/metasfresh/issues/1130
 	 */
 	private WebuiHUTransformCommandResult action_updatePlanningReceiptOwnerPM(final HUEditorRow row, final boolean huPlanningReceiptOwnerPM)
 	{
@@ -245,10 +230,7 @@ public class WebuiHUTransformCommand
 	/**
 	 * Split selected CU to an existing TU.
 	 *
-	 * @param cuRow
-	 * @param tuHU
 	 * @param qtyCU quantity to split
-	 * @return
 	 */
 	private WebuiHUTransformCommandResult action_SplitCU_To_ExistingTU(final HUEditorRow cuRow, final I_M_HU tuHU, final Quantity qtyCU)
 	{
@@ -274,10 +256,6 @@ public class WebuiHUTransformCommand
 
 	/**
 	 * Split selected CU to a new CU.
-	 *
-	 * @param cuRow
-	 * @param qtyCU
-	 * @return
 	 */
 	private WebuiHUTransformCommandResult action_SplitCU_To_NewCU(final HUEditorRow cuRow, final Quantity qtyCU)
 	{
@@ -306,9 +284,7 @@ public class WebuiHUTransformCommand
 	 *
 	 * @param cuRow                 cu row to split
 	 * @param qtyCU                 quantity CU to split
-	 * @param isOwnPackingMaterials
-	 * @param tuPIItemProductId     to TU
-	 * @return
+	 * @param tuPIItemProduct     to TU
 	 */
 	private WebuiHUTransformCommandResult action_SplitCU_To_NewTUs(
 			final HUEditorRow cuRow, final I_M_HU_PI_Item_Product tuPIItemProduct, final Quantity qtyCU, final boolean isOwnPackingMaterials)
@@ -345,10 +321,6 @@ public class WebuiHUTransformCommand
 	 *
 	 * @param tuRow                 represents the TU (or TUs in the aggregate-HU-case) that is our split source
 	 * @param qtyTU                 the number of TUs we want to split from the given {@code tuRow}
-	 * @param isOwnPackingMaterials
-	 * @param tuPIItemProductId
-	 * @param luPI
-	 * @return
 	 */
 	private WebuiHUTransformCommandResult action_SplitTU_To_NewLU(
 			final HUEditorRow tuRow, final I_M_HU_PI_Item huPIItem, final BigDecimal qtyTU, final boolean isOwnPackingMaterials)
@@ -370,11 +342,6 @@ public class WebuiHUTransformCommand
 
 	/**
 	 * Split a given number of TUs from current selected TU line to new TUs.
-	 *
-	 * @param tuRow
-	 * @param qtyTU
-	 * @param tuPI
-	 * @return
 	 */
 	private WebuiHUTransformCommandResult action_SplitTU_To_NewTUs(final HUEditorRow tuRow, final BigDecimal qtyTU)
 	{

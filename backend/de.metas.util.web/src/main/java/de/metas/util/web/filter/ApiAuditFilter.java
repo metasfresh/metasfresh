@@ -22,12 +22,14 @@
 
 package de.metas.util.web.filter;
 
-import de.metas.audit.ApiAuditLoggable;
-import de.metas.audit.config.ApiAuditConfig;
-import de.metas.audit.request.ApiRequestAuditId;
+import de.metas.audit.apirequest.ApiAuditLoggable;
+import de.metas.audit.apirequest.config.ApiAuditConfig;
+import de.metas.audit.apirequest.request.ApiRequestAuditId;
 import de.metas.logging.LogManager;
 import de.metas.util.Loggables;
+import de.metas.util.Services;
 import de.metas.util.web.audit.ApiAuditService;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
@@ -46,8 +48,10 @@ import java.util.Optional;
 public class ApiAuditFilter implements Filter
 {
 	private final static Logger logger = LogManager.getLogger(ApiAuditFilter.class);
-
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final ApiAuditService apiAuditService;
+
+	private static final String SYSCONFIG_BypassAll = "ApiAuditFilter.bypassAll";
 
 	public ApiAuditFilter(final ApiAuditService apiAuditService)
 	{
@@ -62,12 +66,12 @@ public class ApiAuditFilter implements Filter
 	@Override
 	public void doFilter(final ServletRequest request, final ServletResponse response, final FilterChain chain) throws IOException
 	{
-		final HttpServletRequest httpServletRequest = (HttpServletRequest) request;
-		final HttpServletResponse httpServletResponse = (HttpServletResponse) response;
+		final HttpServletRequest httpServletRequest = (HttpServletRequest)request;
+		final HttpServletResponse httpServletResponse = (HttpServletResponse)response;
 
 		try
 		{
-			if (apiAuditService.bypassFilter(httpServletRequest))
+			if (isBypassAll() || apiAuditService.bypassFilter(httpServletRequest))
 			{
 				chain.doFilter(request, response);
 				return;
@@ -80,7 +84,7 @@ public class ApiAuditFilter implements Filter
 			{
 				final ApiAuditLoggable apiAuditLoggable = apiAuditService.createLogger(requestAuditIdOpt.get(), Env.getLoggedUserId());
 
-				try (final IAutoCloseable loggableRestorer = Loggables.temporarySetLoggable(apiAuditLoggable))
+				try (final IAutoCloseable ignored = Loggables.temporarySetLoggable(apiAuditLoggable))
 				{
 					chain.doFilter(request, response);
 					return;
@@ -101,7 +105,7 @@ public class ApiAuditFilter implements Filter
 		{
 			logger.error(t.getLocalizedMessage(), t);
 
-			httpServletResponse.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, t.getLocalizedMessage());
+			apiAuditService.handleErrorResponse(null, t, httpServletResponse);
 		}
 	}
 
@@ -109,5 +113,10 @@ public class ApiAuditFilter implements Filter
 	public void destroy()
 	{
 
+	}
+
+	private boolean isBypassAll()
+	{
+		return sysConfigBL.getBooleanValue(SYSCONFIG_BypassAll, false);
 	}
 }

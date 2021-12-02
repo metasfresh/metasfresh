@@ -134,6 +134,7 @@ public class PurchaseCandidate
 
 			@Nullable final ExternalId externalHeaderId,
 			@Nullable final ExternalId externalLineId,
+			@Nullable final String poReference,
 			@Nullable final String externalPurchaseOrderUrl,
 			@NonNull final DemandGroupReference groupReference,
 			@Nullable final OrderAndLineId salesOrderAndLineIdOrNull,
@@ -195,6 +196,7 @@ public class PurchaseCandidate
 				.dimension(dimension)
 				.externalHeaderId(externalHeaderId)
 				.externalLineId(externalLineId)
+				.poReference(poReference)
 				.source(source)
 				.externalPurchaseOrderUrl(externalPurchaseOrderUrl)
 				.build();
@@ -395,7 +397,15 @@ public class PurchaseCandidate
 	}
 
 	public @Nullable
-	String getExternalPurchaseOrderUrl()	{
+	String getPOReference()
+	{
+		return getImmutableFields().getPoReference();
+	}
+
+
+	public @Nullable
+	String getExternalPurchaseOrderUrl()	
+	{
 		return getImmutableFields().getExternalPurchaseOrderUrl();
 	}
 

@@ -31,6 +31,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import de.metas.i18n.ITranslatableString;
+import de.metas.uom.IUOMDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Period;
 import org.compiere.model.I_C_UOM;
@@ -58,6 +60,8 @@ public class C_Flatrate_Term_Prepare_Closing extends JavaProcess
 
 	private I_C_Period p_periodTo;
 
+	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	
 	@Override
 	protected String doIt() throws Exception
 	{
@@ -150,10 +154,10 @@ public class C_Flatrate_Term_Prepare_Closing extends JavaProcess
 			for (final I_C_Flatrate_DataEntry newCorrectionEntry : uomId2NewCorrectionEntries.values())
 			{
 				InterfaceWrapperHelper.save(newCorrectionEntry);
-
+				final ITranslatableString uomName = uomDAO.getName(UomId.ofRepoId(newCorrectionEntry.getC_UOM_ID()));
 				final String msg = Msg.getMsg(getCtx(), MSG_PREPARE_CLOSING_CORRECTION_ENTRY_CREATED_2P,
 						new Object[] {
-								newCorrectionEntry.getC_UOM().getName(),
+								uomName,
 								p_periodTo.getName() });
 				addLog(msg);
 			}

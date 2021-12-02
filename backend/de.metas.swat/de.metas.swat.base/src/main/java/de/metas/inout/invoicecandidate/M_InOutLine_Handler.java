@@ -10,7 +10,6 @@ import de.metas.async.AsyncBatchId;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerDocumentLocationHelper;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
-import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest;
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -22,11 +21,10 @@ import de.metas.document.dimension.Dimension;
 import de.metas.document.dimension.DimensionService;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.location.DocumentLocation;
-import de.metas.document.location.RenderedAddressAndCapturedLocation;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
-import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
 import de.metas.inout.InOutId;
+import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
@@ -45,6 +43,7 @@ import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderLineBL;
+import de.metas.order.InvoiceRule;
 import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.PaymentTermId;
@@ -75,7 +74,6 @@ import org.adempiere.warehouse.WarehouseId;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Note;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
@@ -134,18 +132,18 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 	 * @return {@code false}, but note that this handler will be invoked to create missing invoice candidates via {@link M_InOut_Handler#expandRequest(InvoiceCandidateGenerateRequest)}.
 	 */
 	@Override
-	public boolean isCreateMissingCandidatesAutomatically()
+	public CandidatesAutoCreateMode getGeneralCandidatesAutoCreateMode()
 	{
-		return false;
+		return CandidatesAutoCreateMode.DONT;
 	}
 
 	/**
 	 * @return {@code false}, but note that this handler will be invoked to create missing invoice candidates via {@link M_InOut_Handler#expandRequest(InvoiceCandidateGenerateRequest)}.
 	 */
 	@Override
-	public boolean isCreateMissingCandidatesAutomatically(final Object model)
+	public CandidatesAutoCreateMode getSpecificCandidatesAutoCreateMode(final Object model)
 	{
-		return false;
+		return CandidatesAutoCreateMode.DONT;
 	}
 
 	/**
@@ -291,6 +289,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		CREATE, UPDATE
 	}
 
+	@Nullable
 	private I_C_Invoice_Candidate createInvoiceCandidateForInOutLineOrNull(
 			@NonNull final I_M_InOutLine inOutLineRecord,
 			@Nullable final PaymentTermId paymentTermId,
@@ -371,10 +370,14 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		else
 		{
 			final I_C_BPartner billBPartner = bpartnerDAO.getById(icRecord.getBill_BPartner_ID());
-			final String invoiceRule = billBPartner.getInvoiceRule();
-			if (!Check.isEmpty(invoiceRule))
+
+			final InvoiceRule invoiceRule = inOut.isSOTrx() ?
+					InvoiceRule.ofNullableCode(billBPartner.getInvoiceRule()):
+					InvoiceRule.ofNullableCode(billBPartner.getPO_InvoiceRule());
+
+			if (invoiceRule!= null)
 			{
-				icRecord.setInvoiceRule(invoiceRule);
+				icRecord.setInvoiceRule(invoiceRule.getCode());
 			}
 			else
 			{
@@ -422,6 +425,8 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		{
 			icRecord.setC_DocTypeInvoice_ID(invoiceDocTypeId.getRepoId());
 		}
+
+		icRecord.setC_Incoterms_ID(inOut.getC_Incoterms_ID());
 
 		icRecord.setC_Async_Batch_ID(inOut.getC_Async_Batch_ID());
 		//

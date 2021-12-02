@@ -28,6 +28,8 @@ import MasterWidget from '../components/widget/MasterWidget';
 import RawWidget from '../components/widget/RawWidget';
 import InlineTabWrapper from '../components/widget/InlineTabWrapper';
 
+const EMPTY_WIDGET_DATA = [{}];
+
 /**
  * @file Class based component.
  * @module WidgetWrapper
@@ -50,7 +52,7 @@ class WidgetWrapper extends PureComponent {
     const { renderMaster, widgetType } = this.props;
 
     if (widgetType === 'InlineTab') {
-      return <InlineTabWrapper ref={this.childRef} {...this.props} />;
+      return <InlineTabWrapper {...this.props} />;
     }
 
     if (renderMaster) {
@@ -138,7 +140,7 @@ const mapStateToProps = (state, props) => {
     }
 
     default:
-      widgetData = [{}];
+      widgetData = EMPTY_WIDGET_DATA;
 
       break;
   }

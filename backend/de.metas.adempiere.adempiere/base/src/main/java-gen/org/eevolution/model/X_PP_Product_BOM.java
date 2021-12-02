@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package org.eevolution.model;
 
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for PP_Product_BOM
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_PP_Product_BOM extends org.compiere.model.PO implements I_PP_Product_BOM, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 985149621L;
+	private static final long serialVersionUID = 1080386767L;
 
     /** Standard Constructor */
     public X_PP_Product_BOM (final Properties ctx, final int PP_Product_BOM_ID, @Nullable final String trxName)
@@ -255,6 +255,33 @@ public class X_PP_Product_BOM extends org.compiere.model.PO implements I_PP_Prod
 	public int getPP_Product_BOM_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_PP_Product_BOM_ID);
+	}
+
+	@Override
+	public org.eevolution.model.I_PP_Product_BOMVersions getPP_Product_BOMVersions()
+	{
+		return get_ValueAsPO(COLUMNNAME_PP_Product_BOMVersions_ID, org.eevolution.model.I_PP_Product_BOMVersions.class);
+	}
+
+	@Override
+	public void setPP_Product_BOMVersions(final org.eevolution.model.I_PP_Product_BOMVersions PP_Product_BOMVersions)
+	{
+		set_ValueFromPO(COLUMNNAME_PP_Product_BOMVersions_ID, org.eevolution.model.I_PP_Product_BOMVersions.class, PP_Product_BOMVersions);
+	}
+
+	@Override
+	public void setPP_Product_BOMVersions_ID (final int PP_Product_BOMVersions_ID)
+	{
+		if (PP_Product_BOMVersions_ID < 1) 
+			set_Value (COLUMNNAME_PP_Product_BOMVersions_ID, null);
+		else 
+			set_Value (COLUMNNAME_PP_Product_BOMVersions_ID, PP_Product_BOMVersions_ID);
+	}
+
+	@Override
+	public int getPP_Product_BOMVersions_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_PP_Product_BOMVersions_ID);
 	}
 
 	@Override

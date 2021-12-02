@@ -107,10 +107,7 @@ public abstract class WorkpackageProcessorAdapter implements IWorkpackageProcess
 	}
 
 	/**
-	 * retrieves all active POs, even the ones that are caught in other packages
-	 *
-	 * @param modelType
-	 * @return
+	 * Retrieves all active POs, even the ones that are caught in other packages
 	 */
 	public final <T> List<T> retrieveAllItems(final Class<T> modelType)
 	{

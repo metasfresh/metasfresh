@@ -1,0 +1,83 @@
+de.metas.handlingunits.picking.job.repository.PickingJobRepositoryTest.createNewAndGet_then_getById=[ {
+  "docStatus" : "Drafted",
+  "header" : {
+    "customerName" : "bpname-3",
+    "deliveryBPLocationId" : {
+      "bpartnerId" : 3,
+      "repoId" : 4
+    },
+    "deliveryRenderedAddress" : "deliveryRenderedAddress",
+    "lockedBy" : 5,
+    "preparationDate" : "2021-11-02T07:39:16Z",
+    "salesOrderDocumentNo" : "docno-2"
+  },
+  "id" : 1000000,
+  "lines" : [ {
+    "id" : 1000000,
+    "productId" : 6,
+    "productName" : "productName-6",
+    "progress" : "NOT_STARTED",
+    "qtyToPick" : "100 Ea",
+    "steps" : [ {
+      "id" : 1000000,
+      "packToSpec" : {
+        "genericPackingInstructionsId" : null,
+        "tuPackingInstructionsId" : 6789
+      },
+      "pickFroms" : {
+        "map" : {
+          "1000000" : {
+            "pickFromHU" : {
+              "barcode" : "1001",
+              "id" : 1001
+            },
+            "pickFromKey" : "1000000",
+            "pickFromLocator" : {
+              "caption" : "locatorName-22",
+              "id" : "21_22"
+            },
+            "pickedTo" : null
+          },
+          "MAIN" : {
+            "pickFromHU" : {
+              "barcode" : "11",
+              "id" : 11
+            },
+            "pickFromKey" : "MAIN",
+            "pickFromLocator" : {
+              "caption" : "locatorName-10",
+              "id" : "9_10"
+            },
+            "pickedTo" : null
+          }
+        },
+        "progress" : "NOT_STARTED",
+        "qtyPickedSum" : null
+      },
+      "productId" : 6,
+      "productName" : "productName-6",
+      "progress" : "NOT_STARTED",
+      "qtyToPick" : "100 Ea",
+      "salesOrderAndLineId" : {
+        "orderId" : 2,
+        "orderLineId" : 8
+      },
+      "shipmentScheduleId" : 7
+    } ]
+  } ],
+  "pickFromAlternatives" : [ {
+    "id" : 1000000,
+    "locatorInfo" : {
+      "caption" : "locatorName-22",
+      "id" : "21_22"
+    },
+    "pickFromHU" : {
+      "barcode" : "1001",
+      "id" : 1001
+    },
+    "productId" : 6,
+    "qtyAvailable" : "999 Ea"
+  } ],
+  "pickingSlot" : null,
+  "progress" : "NOT_STARTED"
+} ]

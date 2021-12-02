@@ -8,7 +8,7 @@ Method | HTTP request | Description
 
 <a name="getCustomerMapping"></a>
 # **getCustomerMapping**
-> CustomerMapping getCustomerMapping(albertaApiKey, tenant, customerId)
+> CustomerMapping getCustomerMapping(albertaApiKey, customerId)
 
 Zuordnung Kunde (WaWi) zu Patient (Alberta) abrufen
 
@@ -23,10 +23,9 @@ Szenario - das WaWi fragt bei Alberta nach, welche Alberta-Id dem jeweiligen Kun
 
 CustomerMappingApi apiInstance = new CustomerMappingApi();
 String albertaApiKey = "albertaApiKey_example"; // String | 
-String tenant = "tenant_example"; // String | 
 String customerId = "customerId_example"; // String | die Id des Kunden aus dem WaWi
 try {
-    CustomerMapping result = apiInstance.getCustomerMapping(albertaApiKey, tenant, customerId);
+    CustomerMapping result = apiInstance.getCustomerMapping(albertaApiKey, customerId);
     System.out.println(result);
 } catch (ApiException e) {
     System.err.println("Exception when calling CustomerMappingApi#getCustomerMapping");
@@ -39,7 +38,6 @@ try {
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **albertaApiKey** | **String**|  |
- **tenant** | **String**|  |
  **customerId** | **String**| die Id des Kunden aus dem WaWi |
 
 ### Return type

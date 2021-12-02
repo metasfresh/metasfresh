@@ -22,9 +22,9 @@
 
 package de.metas.camel.externalsystems.shopware6.order;
 
+import de.metas.camel.externalsystems.common.CamelRouteUtil;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 import de.metas.camel.externalsystems.common.ProcessLogger;
-import de.metas.camel.externalsystems.shopware6.CamelRouteUtil;
 import de.metas.camel.externalsystems.shopware6.order.processor.ClearOrdersProcessor;
 import de.metas.camel.externalsystems.shopware6.order.processor.CreateBPartnerUpsertReqProcessor;
 import de.metas.camel.externalsystems.shopware6.order.processor.GetOrdersProcessor;
@@ -33,7 +33,9 @@ import de.metas.camel.externalsystems.shopware6.order.processor.OrderFilter;
 import de.metas.camel.externalsystems.shopware6.order.processor.PaymentRequestProcessor;
 import de.metas.camel.externalsystems.shopware6.order.processor.RuntimeParametersProcessor;
 import de.metas.common.bpartner.v2.response.JsonResponseBPartnerCompositeUpsert;
+import lombok.NonNull;
 import org.apache.camel.LoggingLevel;
+import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.RouteBuilder;
 import org.springframework.stereotype.Component;
 
@@ -41,7 +43,6 @@ import java.time.Instant;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_PINSTANCE_ID;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
-import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.STORE_RAW_DATA_ROUTE;
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 
 @Component
@@ -61,10 +62,12 @@ public class GetOrdersRouteBuilder extends RouteBuilder
 	public static final String RUNTIME_PARAMS_PROCESSOR_ID = "SW6Orders-RuntimeParamsProcessorId";
 
 	private final ProcessLogger processLogger;
+	private final ProducerTemplate producerTemplate;
 
-	public GetOrdersRouteBuilder(final ProcessLogger processLogger)
+	public GetOrdersRouteBuilder(@NonNull final ProcessLogger processLogger, @NonNull final ProducerTemplate producerTemplate)
 	{
 		this.processLogger = processLogger;
+		this.producerTemplate = producerTemplate;
 	}
 
 	@Override
@@ -79,8 +82,7 @@ public class GetOrdersRouteBuilder extends RouteBuilder
 				.routeId(GET_ORDERS_ROUTE_ID)
 				.log("Route invoked")
 				.streamCaching()
-				.process(new GetOrdersProcessor(processLogger)).id(GET_ORDERS_PROCESSOR_ID)
-				.to(direct(STORE_RAW_DATA_ROUTE))
+				.process(new GetOrdersProcessor(processLogger, producerTemplate)).id(GET_ORDERS_PROCESSOR_ID)
 				.split(body())
 					.to(direct(PROCESS_ORDER_ROUTE_ID))
 				.end()
@@ -93,7 +95,7 @@ public class GetOrdersRouteBuilder extends RouteBuilder
 				.routeId(PROCESS_ORDER_ROUTE_ID)
 				.log("Route invoked")
 				.doTry()
-					.process(new OrderFilter()).id(FILTER_ORDER_PROCESSOR_ID)
+					.process(new OrderFilter(processLogger)).id(FILTER_ORDER_PROCESSOR_ID)
 					.choice()
 						.when(body().isNull())
 							.log(LoggingLevel.INFO, "Nothing to do! The order was filtered out!")
@@ -106,7 +108,7 @@ public class GetOrdersRouteBuilder extends RouteBuilder
 							.process(new OLCandRequestProcessor()).id(OLCAND_REQ_PROCESSOR_ID)
 							.to(direct(ExternalSystemCamelConstants.MF_PUSH_OL_CANDIDATES_ROUTE_ID))
 
-							.process(new PaymentRequestProcessor()).id(PAYMENT_REQUEST_PROCESSOR_ID)
+							.process(new PaymentRequestProcessor(processLogger)).id(PAYMENT_REQUEST_PROCESSOR_ID)
 							.choice()
 								.when(body().isNull())
 									.log(LoggingLevel.INFO, "Nothing to do! No payment was found!")

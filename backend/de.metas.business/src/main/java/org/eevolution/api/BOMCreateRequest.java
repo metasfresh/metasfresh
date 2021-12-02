@@ -1,12 +1,6 @@
 package org.eevolution.api;
 
-import java.time.LocalDate;
-import java.time.Month;
-
-import javax.annotation.Nullable;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -17,6 +11,10 @@ import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.Instant;
 
 /*
  * #%L
@@ -50,7 +48,9 @@ public class BOMCreateRequest
 	UomId uomId;
 	BOMType bomType;
 	BOMUse bomUse;
-	LocalDate validFrom;
+	@NonNull
+	Instant validFrom;
+	Boolean isActive;
 	ImmutableList<BOMLine> lines;
 
 	@Builder
@@ -60,9 +60,10 @@ public class BOMCreateRequest
 			@NonNull final String productValue,
 			@NonNull final String productName,
 			@NonNull final UomId uomId,
-			@NonNull final BOMType bomType,
-			@NonNull final BOMUse bomUse,
-			@Nullable final LocalDate validFrom,
+			@Nullable final BOMType bomType,
+			@Nullable final BOMUse bomUse,
+			@Nullable final Instant validFrom,
+			@Nullable final Boolean isActive,
 			@NonNull @Singular final ImmutableList<BOMLine> lines)
 	{
 		Check.assumeNotEmpty(lines, "lines is not empty");
@@ -74,8 +75,9 @@ public class BOMCreateRequest
 		this.uomId = uomId;
 		this.bomType = bomType;
 		this.bomUse = bomUse;
-		this.validFrom = validFrom != null ? validFrom : LocalDate.of(1970, Month.JANUARY, 1);
+		this.isActive = isActive;
 		this.lines = lines;
+		this.validFrom = validFrom != null ? validFrom : Instant.now();
 	}
 
 	@Value
@@ -91,5 +93,17 @@ public class BOMCreateRequest
 
 		@NonNull
 		Quantity qty;
+
+		@Nullable
+		BOMIssueMethod issueMethod;
+
+		@Nullable
+		Boolean isQtyPercentage;
+
+		@Nullable
+		Integer line;
+
+		@Nullable
+		BigDecimal scrap;
 	}
 }

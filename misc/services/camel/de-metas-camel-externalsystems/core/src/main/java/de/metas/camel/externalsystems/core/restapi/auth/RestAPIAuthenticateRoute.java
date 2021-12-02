@@ -97,6 +97,9 @@ public class RestAPIAuthenticateRoute extends RouteBuilder
 	{
 		return TokenCredentials.builder()
 				.pInstance(request.getPInstance())
+				.auditTrailEndpoint(request.getAuditTrailEndpoint())
+				.externalSystemValue(request.getExternalSystemValue())
+				.orgCode(request.getOrgCode())
 				.build();
 	}
 }

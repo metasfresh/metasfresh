@@ -140,7 +140,7 @@ class MenuOverlay extends Component {
   };
 
   /**
-   * @method mapStateToProps
+   * @method handleRedirect
    * @summary ToDo: Describe the method.
    * @param {*} elementId
    * @param {*} isNew

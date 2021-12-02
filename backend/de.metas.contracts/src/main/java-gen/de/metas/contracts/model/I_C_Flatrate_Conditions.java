@@ -1,14 +1,13 @@
 package de.metas.contracts.model;
 
+import java.math.BigDecimal;
 import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
-
-import java.math.BigDecimal;
 
 /** Generated Interface for C_Flatrate_Conditions
  *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public interface I_C_Flatrate_Conditions 
 {
 
@@ -51,6 +50,27 @@ public interface I_C_Flatrate_Conditions
 	int getAD_Org_ID();
 
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+
+	/**
+	 * Set Customer Margin Settings.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Customer_Trade_Margin_ID (int C_Customer_Trade_Margin_ID);
+
+	/**
+	 * Get Customer Margin Settings.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Customer_Trade_Margin_ID();
+
+	ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_C_Customer_Trade_Margin_ID = new ModelColumn<>(I_C_Flatrate_Conditions.class, "C_Customer_Trade_Margin_ID", null);
+	String COLUMNNAME_C_Customer_Trade_Margin_ID = "C_Customer_Trade_Margin_ID";
 
 	/**
 	 * Set Contract Terms.
@@ -147,6 +167,27 @@ public interface I_C_Flatrate_Conditions
 	String COLUMNNAME_ClearingAmtBaseOn = "ClearingAmtBaseOn";
 
 	/**
+	 * Set Brokerage commission settings.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_MediatedCommissionSettings_ID (int C_MediatedCommissionSettings_ID);
+
+	/**
+	 * Get Brokerage commission settings.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_MediatedCommissionSettings_ID();
+
+	ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_C_MediatedCommissionSettings_ID = new ModelColumn<>(I_C_Flatrate_Conditions.class, "C_MediatedCommissionSettings_ID", null);
+	String COLUMNNAME_C_MediatedCommissionSettings_ID = "C_MediatedCommissionSettings_ID";
+
+	/**
 	 * Get Created.
 	 * Date this record was created
 	 *
@@ -170,6 +211,31 @@ public interface I_C_Flatrate_Conditions
 	int getCreatedBy();
 
 	String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
+	 * Set Abo-Rabatt.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_SubscrDiscount_ID (int C_SubscrDiscount_ID);
+
+	/**
+	 * Get Abo-Rabatt.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_SubscrDiscount_ID();
+
+	@Nullable de.metas.contracts.model.I_C_SubscrDiscount getC_SubscrDiscount();
+
+	void setC_SubscrDiscount(@Nullable de.metas.contracts.model.I_C_SubscrDiscount C_SubscrDiscount);
+
+	ModelColumn<I_C_Flatrate_Conditions, de.metas.contracts.model.I_C_SubscrDiscount> COLUMN_C_SubscrDiscount_ID = new ModelColumn<>(I_C_Flatrate_Conditions.class, "C_SubscrDiscount_ID", de.metas.contracts.model.I_C_SubscrDiscount.class);
+	String COLUMNNAME_C_SubscrDiscount_ID = "C_SubscrDiscount_ID";
 
 	/**
 	 * Set UOM.
@@ -397,7 +463,7 @@ public interface I_C_Flatrate_Conditions
 	String COLUMNNAME_IsFreeOfCharge = "IsFreeOfCharge";
 
 	/**
-	 * Set Manueller Preis.
+	 * Set Manual Price.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -406,7 +472,7 @@ public interface I_C_Flatrate_Conditions
 	void setIsManualPrice (boolean IsManualPrice);
 
 	/**
-	 * Get Manueller Preis.
+	 * Get Manual Price.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true

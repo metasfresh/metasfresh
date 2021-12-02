@@ -1,30 +1,33 @@
 package de.metas.contracts.commission.commissioninstance.services.repos;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.tuple;
-
-import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.util.TimeUtil;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.bpartner.BPartnerId;
+import de.metas.business.BusinessTestHelper;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionInstanceId;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTriggerType;
 import de.metas.contracts.commission.commissioninstance.services.repos.CommissionRecordStagingService.CommissionStagingRecords;
 import de.metas.contracts.commission.commissioninstance.testhelpers.TestCommissionInstance;
-import de.metas.contracts.commission.commissioninstance.testhelpers.TestCommissionShare;
 import de.metas.contracts.commission.commissioninstance.testhelpers.TestCommissionInstance.CreateCommissionInstanceResult;
+import de.metas.contracts.commission.commissioninstance.testhelpers.TestCommissionShare;
 import de.metas.contracts.commission.model.I_C_Commission_Share;
 import de.metas.invoicecandidate.InvoiceCandidateId;
+import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_C_UOM;
+import org.compiere.util.TimeUtil;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.math.BigDecimal;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -53,6 +56,7 @@ class CommissionRecordStagingServiceTest
 	private CommissionRecordStagingService commissionRecordStagingService;
 	private ProductId commissionProduct1Id;
 	private ProductId commissionProduct2Id;
+	private BPartnerId payerId;
 
 	@BeforeEach
 	void beforeEach()
@@ -68,11 +72,14 @@ class CommissionRecordStagingServiceTest
 		saveRecord(commissionProduct2Record);
 		commissionProduct2Id = ProductId.ofRepoId(commissionProduct2Record.getM_Product_ID());
 
+		payerId = BPartnerId.ofRepoId(1001);
 	}
 
 	@Test
 	void retrieveRecordsForInstanceId_commission_share_ordering()
 	{
+		final I_C_UOM uom = BusinessTestHelper.createUOM("uom");
+
 		final CreateCommissionInstanceResult commissionData1 = TestCommissionInstance.builder()
 				.orgId(OrgId.ofRepoId(10))
 				.triggerType(CommissionTriggerType.InvoiceCandidate)
@@ -82,8 +89,10 @@ class CommissionRecordStagingServiceTest
 				.pointsBase_Forecasted("10")
 				.pointsBase_Invoiceable("5")
 				.pointsBase_Invoiced("1")
-				.commissionShareTestRecord(TestCommissionShare.builder().levelHierarchy(1).flatrateTermId(FlatrateTermId.ofRepoId(20)).salesRepBPartnerId(BPartnerId.ofRepoId(20)).commissionProductId(commissionProduct2Id).build())
-				.commissionShareTestRecord(TestCommissionShare.builder().levelHierarchy(0).flatrateTermId(FlatrateTermId.ofRepoId(10)).salesRepBPartnerId(BPartnerId.ofRepoId(10)).commissionProductId(commissionProduct1Id).build())
+				.currencyId(CurrencyId.ofRepoId(1))
+				.invoicedQty(Quantity.of(BigDecimal.TEN, uom))
+				.commissionShareTestRecord(TestCommissionShare.builder().isSOTrx(true).levelHierarchy(1).flatrateTermId(FlatrateTermId.ofRepoId(20)).payerBPartnerId(payerId).salesRepBPartnerId(BPartnerId.ofRepoId(20)).commissionProductId(commissionProduct2Id).build())
+				.commissionShareTestRecord(TestCommissionShare.builder().isSOTrx(true).levelHierarchy(0).flatrateTermId(FlatrateTermId.ofRepoId(10)).payerBPartnerId(payerId).salesRepBPartnerId(BPartnerId.ofRepoId(10)).commissionProductId(commissionProduct1Id).build())
 				.build().createCommissionData();
 		final CommissionInstanceId commissionInstance1Id = commissionData1.getCommissionInstanceId();
 
@@ -96,8 +105,10 @@ class CommissionRecordStagingServiceTest
 				.pointsBase_Forecasted("10")
 				.pointsBase_Invoiceable("5")
 				.pointsBase_Invoiced("1")
-				.commissionShareTestRecord(TestCommissionShare.builder().levelHierarchy(1).flatrateTermId(FlatrateTermId.ofRepoId(20)).salesRepBPartnerId(BPartnerId.ofRepoId(40)).commissionProductId(commissionProduct2Id).build())
-				.commissionShareTestRecord(TestCommissionShare.builder().levelHierarchy(0).flatrateTermId(FlatrateTermId.ofRepoId(10)).salesRepBPartnerId(BPartnerId.ofRepoId(30)).commissionProductId(commissionProduct1Id).build())
+				.currencyId(CurrencyId.ofRepoId(1))
+				.invoicedQty(Quantity.of(BigDecimal.TEN, uom))
+				.commissionShareTestRecord(TestCommissionShare.builder().isSOTrx(true).levelHierarchy(1).flatrateTermId(FlatrateTermId.ofRepoId(20)).payerBPartnerId(payerId).salesRepBPartnerId(BPartnerId.ofRepoId(40)).commissionProductId(commissionProduct2Id).build())
+				.commissionShareTestRecord(TestCommissionShare.builder().isSOTrx(true).levelHierarchy(0).flatrateTermId(FlatrateTermId.ofRepoId(10)).payerBPartnerId(payerId).salesRepBPartnerId(BPartnerId.ofRepoId(30)).commissionProductId(commissionProduct1Id).build())
 				.build().createCommissionData();
 		final CommissionInstanceId commissionInstance2Id = commissionData2.getCommissionInstanceId();
 

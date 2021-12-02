@@ -165,8 +165,6 @@ public abstract class TrxOnCommitCollectorFactory<CollectorType, ItemType>
 	 *
 	 * This method is called on transaction commit, if there was a transaction. If the processing was executed out of transaction, the method will be called right after the collector was created and
 	 * the item was added to it.
-	 *
-	 * @param collector
 	 */
 	protected abstract void processCollector(final CollectorType collector);
 
@@ -174,8 +172,6 @@ public abstract class TrxOnCommitCollectorFactory<CollectorType, ItemType>
 	 * Discard the collector.
 	 *
 	 * This method is called on transaction rollback.
-	 *
-	 * @param collector
 	 */
 	protected void discardCollector(final CollectorType collector)
 	{

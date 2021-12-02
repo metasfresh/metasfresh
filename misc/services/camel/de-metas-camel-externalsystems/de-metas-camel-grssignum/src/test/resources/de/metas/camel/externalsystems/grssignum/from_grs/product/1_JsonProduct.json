@@ -1,0 +1,14 @@
+{
+  "FLAG": 200,
+  "ARTNR": "ProductValue",
+  "ARTNRID": "productId",
+  "TEXT": "Name1",
+  "TEXT2": "Name2",
+  "INAKTIV": 0,
+  "KRED": [
+    {
+      "MKREDID": "vendorId",
+      "STDKRED": 1
+    }
+  ]
+}

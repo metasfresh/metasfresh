@@ -22,10 +22,10 @@
 
 package de.metas.camel.externalsystems.alberta.ordercandidate.processor;
 
-import de.metas.camel.externalsystems.alberta.ProcessorHelper;
 import de.metas.camel.externalsystems.alberta.common.AlbertaConnectionDetails;
 import de.metas.camel.externalsystems.alberta.common.DataMapper;
 import de.metas.camel.externalsystems.alberta.patient.GetPatientsRouteConstants;
+import de.metas.camel.externalsystems.common.ProcessorHelper;
 import de.metas.camel.externalsystems.common.v2.BPUpsertCamelRequest;
 import de.metas.common.bpartner.v2.request.JsonRequestBPartnerUpsert;
 import de.metas.common.bpartner.v2.request.JsonRequestBPartnerUpsertItem;
@@ -133,7 +133,7 @@ public class CreateMissingBPartnerProcessor implements Processor
 	{
 		try
 		{
-			final Doctor doctor = doctorApi.getDoctor(connectionDetails.getApiKey(), connectionDetails.getTenant(), doctorId);
+			final Doctor doctor = doctorApi.getDoctor(connectionDetails.getApiKey(), doctorId);
 
 			return DataMapper.mapDoctorToUpsertRequest(doctor, orgCode);
 		}
@@ -152,7 +152,7 @@ public class CreateMissingBPartnerProcessor implements Processor
 	{
 		try
 		{
-			final Pharmacy pharmacy = pharmacyApi.getPharmacy(connectionDetails.getApiKey(), connectionDetails.getTenant(), pharmacyId);
+			final Pharmacy pharmacy = pharmacyApi.getPharmacy(connectionDetails.getApiKey(), pharmacyId);
 
 			return DataMapper.mapPharmacyToUpsertRequest(pharmacy, orgCode);
 		}

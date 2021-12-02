@@ -1,19 +1,17 @@
 package de.metas.contracts.commission.commissioninstance.interceptor;
 
-import java.util.Optional;
-
-import org.compiere.model.I_C_Invoice;
-import org.slf4j.Logger;
-import org.springframework.stereotype.Service;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTriggerDocument;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTriggerDocumentService;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.salesinvoiceline.SalesInvoice;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.salesinvoiceline.SalesInvoiceFactory;
 import de.metas.logging.LogManager;
 import lombok.NonNull;
+import org.compiere.model.I_C_Invoice;
+import org.slf4j.Logger;
+import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 /*
  * #%L
@@ -65,7 +63,7 @@ public class C_InvoiceFacadeService
 		final ImmutableList<CommissionTriggerDocument> commissionTriggerDocuments = salesInvoice.get().asCommissionTriggerDocuments();
 		for (final CommissionTriggerDocument commissionTriggerDocument : commissionTriggerDocuments)
 		{
-			commissionTriggerDocumentService.syncSalesICToCommissionInstance(commissionTriggerDocument, false);
+			commissionTriggerDocumentService.syncTriggerDocumentToCommissionInstance(commissionTriggerDocument, false);
 		}
 	}
 }

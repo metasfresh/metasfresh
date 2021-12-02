@@ -18,8 +18,6 @@ import de.metas.handlingunits.pporder.api.IPPOrderReceiptHUProducer;
 import de.metas.handlingunits.pporder.api.PPOrderIssueServiceProductRequest;
 import de.metas.manufacturing.generatedcomponents.ManufacturingComponentGeneratorService;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
-import org.eevolution.api.PPOrderBOMLineId;
-import org.eevolution.api.PPOrderId;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -29,6 +27,9 @@ import org.adempiere.warehouse.WarehouseId;
 import org.compiere.SpringContextHolder;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.IPPOrderDAO;
+import org.eevolution.api.ManufacturingOrderQuery;
+import org.eevolution.api.PPOrderBOMLineId;
+import org.eevolution.api.PPOrderId;
 import org.eevolution.api.PPOrderPlanningStatus;
 import org.eevolution.model.I_PP_Order_BOMLine;
 
@@ -36,6 +37,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Stream;
 
 public class HUPPOrderBL implements IHUPPOrderBL
 {
@@ -200,4 +202,16 @@ public class HUPPOrderBL implements IHUPPOrderBL
 		ppOrderBL.closeOrder(ppOrderId);
 	}
 
+	@Override
+	public Stream<I_PP_Order> streamManufacturingOrders(final ManufacturingOrderQuery query)
+	{
+		return ppOrderBL.streamManufacturingOrders(query)
+				.map(ppOrder -> InterfaceWrapperHelper.create(ppOrder, I_PP_Order.class));
+	}
+
+	@Override
+	public void save(final org.eevolution.model.I_PP_Order ppOrder)
+	{
+		ppOrderBL.save(ppOrder);
+	}
 }

@@ -150,7 +150,7 @@ public class Order implements ModelValidator
 			{
 				//
 				// Reset IncotermLocation if Incoterm is empty
-				if (Check.isEmpty(order.getIncoterm()))
+				if (order.getC_Incoterms_ID() <= 0)
 				{
 					order.setIncotermLocation("");
 				}
@@ -175,8 +175,8 @@ public class Order implements ModelValidator
 		// bpartner address
 		if (orderLine.getC_BPartner_Location_ID() > 0)
 		{
-			final String BPartnerAddress = orderLine.getBPartnerAddress();
-			if (Check.isEmpty(BPartnerAddress, true))
+			final String bpartnerAddress = orderLine.getBPartnerAddress();
+			if (Check.isBlank(bpartnerAddress))
 			{
 				documentLocationBL.updateRenderedAddressAndCapturedLocation(OrderLineDocumentLocationAdapterFactory.locationAdapter(orderLine));
 			}
@@ -188,11 +188,7 @@ public class Order implements ModelValidator
 		{
 			if (orderLine.getC_BPartner_ID() < 0)
 			{
-				final IDocumentDeliveryLocationAdapter location = OrderDocumentLocationAdapterFactory.deliveryLocationAdapter(order);
-				orderLine.setC_BPartner_ID(location.getDropShip_BPartner_ID());
-				orderLine.setC_BPartner_Location_ID(location.getDropShip_Location_ID());
-				orderLine.setAD_User_ID(location.getDropShip_User_ID());
-				orderLine.setBPartnerAddress(location.getDeliveryToAddress());
+				OrderLineDocumentLocationAdapterFactory.locationAdapter(orderLine).setFromOrderHeader(order);
 			}
 		}
 	}

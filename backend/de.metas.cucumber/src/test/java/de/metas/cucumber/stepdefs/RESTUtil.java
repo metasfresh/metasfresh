@@ -26,7 +26,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.JsonObjectMapperHolder;
-import de.metas.audit.request.ApiRequestAuditId;
+
+import de.metas.audit.apirequest.request.ApiRequestAuditId;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.JsonApiResponse;
 import de.metas.common.rest_api.v2.SyncAdvise;
@@ -47,6 +48,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.apache.http.Header;
+import org.apache.http.HttpHeaders;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
@@ -63,6 +65,7 @@ import org.compiere.model.I_API_Request_Audit;
 import org.compiere.model.I_API_Request_Audit_Log;
 import org.compiere.model.I_API_Response_Audit;
 import org.compiere.util.Env;
+import org.springframework.http.MediaType;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -70,6 +73,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
 import java.util.Objects;
 
 import static de.metas.util.web.MetasfreshRestAPIConstants.ENDPOINT_API_V2;
@@ -109,31 +113,32 @@ public class RESTUtil
 		return userAuthTokenRecord.getAuthToken();
 	}
 
-	public APIResponse performHTTPRequest(final String endpointPath,
-			final String verb,
-			final String payload,
-			final String authToken,
-			@Nullable final Integer statusCode) throws IOException
+	public APIResponse performHTTPRequest(@NonNull final APIRequest apiRequest) throws IOException
 	{
 		final CloseableHttpClient httpClient = HttpClients.createDefault();
 
 		final String appServerPort = System.getProperty("server.port");
-		final String url = "http://localhost:" + appServerPort + "/" + endpointPath;
+		final String url = "http://localhost:" + appServerPort + "/" + apiRequest.getEndpointPath();
+		final String verb = apiRequest.getVerb();
+		final String authToken = apiRequest.getAuthToken();
+		final Integer statusCode = apiRequest.getStatusCode();
+
 		final HttpRequestBase request;
 		switch (verb)
 		{
 			case "POST":
 			case "PUT":
-				request = handleRequestWithEntity(verb, payload, authToken, url);
+				request = handleRequestWithEntity(url, verb, apiRequest.getPayload());
 				break;
 			case "GET":
 			case "DELETE":
-				request = handleRequestWithoutEntity(verb, authToken, url);
+				request = handleRequestWithoutEntity(url, verb);
 				break;
 			default:
 				throw new RuntimeException("Unsupported REST verb " + verb + " Supported are 'POST', 'PUT', 'GET', 'DELETE'");
 		}
 
+		setHeaders(request, authToken, apiRequest.getAdditionalHeaders());
 		final HttpResponse response = httpClient.execute(request);
 
 		final Header contentType = response.getEntity().getContentType();
@@ -147,7 +152,9 @@ public class RESTUtil
 		response.getEntity().writeTo(stream);
 		final String content;
 
-		if (endpointPath != null && endpointPath.contains(ENDPOINT_API_V2.substring(1)))
+		final String endpointPath = apiRequest.getEndpointPath();
+
+		if (endpointPath.contains(ENDPOINT_API_V2.substring(1)))
 		{
 			final ObjectMapper objectMapper = JsonObjectMapperHolder.newJsonObjectMapper();
 
@@ -171,10 +178,19 @@ public class RESTUtil
 				.build();
 	}
 
-	private void setHeaders(@NonNull final HttpRequestBase request, @NonNull final String userAuthToken)
+	private void setHeaders(
+			@NonNull final HttpRequestBase request,
+			@NonNull final String userAuthToken,
+			@Nullable final Map<String, String> additionalHeaders)
 	{
-		request.addHeader("content-type", "application/json");
+		request.addHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
+		request.addHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
 		request.addHeader(UserAuthTokenFilter.HEADER_Authorization, userAuthToken);
+
+		if (additionalHeaders != null)
+		{
+			additionalHeaders.forEach(request::addHeader);
+		}
 	}
 
 	@Nullable
@@ -220,10 +236,9 @@ public class RESTUtil
 	}
 
 	private HttpRequestBase handleRequestWithEntity(
-			final String verb,
-			final String payload,
-			final String authToken,
-			final String url) throws UnsupportedEncodingException
+			@NonNull final String url,
+			@NonNull final String verb,
+			@Nullable final String payload) throws UnsupportedEncodingException
 	{
 		final HttpEntityEnclosingRequestBase request;
 		switch (verb)
@@ -238,7 +253,6 @@ public class RESTUtil
 				throw new RuntimeException("Unsupported REST verb " + verb + " Supported are 'POST' and 'PUT'");
 		}
 
-		setHeaders(request, authToken);
 		if (payload != null)
 		{
 			final StringEntity entity = new StringEntity(payload);
@@ -249,9 +263,8 @@ public class RESTUtil
 	}
 
 	private HttpRequestBase handleRequestWithoutEntity(
-			final String verb,
-			final String authToken,
-			final String url)
+			@NonNull final String url,
+			@NonNull final String verb)
 	{
 		final HttpRequestBase request;
 		switch (verb)
@@ -265,8 +278,6 @@ public class RESTUtil
 			default:
 				throw new RuntimeException("Unsupported REST verb " + verb + " Supported are 'GET' and 'DELETE'");
 		}
-
-		setHeaders(request, authToken);
 
 		return request;
 	}

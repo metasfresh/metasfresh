@@ -9,6 +9,7 @@ import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.commission.CommissionConstants;
 import de.metas.contracts.commission.model.I_C_Commission_Share;
+import de.metas.contracts.location.ContractLocationHelper;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
@@ -25,6 +26,7 @@ import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
 import de.metas.lang.SOTrx;
 import de.metas.location.LocationId;
 import de.metas.logging.LogManager;
+import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingResult;
@@ -41,6 +43,7 @@ import de.metas.tax.api.Tax;
 import de.metas.tax.api.TaxNotFoundException;
 import de.metas.tax.api.TaxQuery;
 import de.metas.uom.UomId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -49,11 +52,11 @@ import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.X_C_DocType;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import java.math.BigDecimal;
+import java.time.ZoneId;
 import java.util.Iterator;
 
 import static java.math.BigDecimal.ONE;
@@ -98,6 +101,7 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 	private final transient IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 	private final transient IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final transient IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+	private final transient IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final transient ITaxDAO taxDAO = Services.get(ITaxDAO.class);
 
@@ -109,11 +113,12 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 	}
 
 	@Override
-	public boolean isCreateMissingCandidatesAutomatically(final Object model)
+	public CandidatesAutoCreateMode getSpecificCandidatesAutoCreateMode(@NonNull final Object model)
 	{
 		final I_C_Commission_Share commissionShareRecord = create(model, I_C_Commission_Share.class);
 
-		return !recordHasAnInvoiceCandiate(commissionShareRecord);
+		final boolean invoiceCandidateIsMissed = !recordHasAnInvoiceCandiate(commissionShareRecord);
+		return invoiceCandidateIsMissed ? CandidatesAutoCreateMode.CREATE_CANDIDATES : CandidatesAutoCreateMode.DONT;
 	}
 
 	public boolean recordHasAnInvoiceCandiate(@NonNull final I_C_Commission_Share commissionShareRecord)
@@ -181,22 +186,32 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 
 		icRecord.setQtyToInvoice(ZERO); // to be computed
 
-		final BPartnerId bPartnerId = BPartnerId.ofRepoId(commissionShareRecord.getC_BPartner_SalesRep_ID());
-		final BPartnerLocationAndCaptureId commissionToLocationId = BPartnerLocationAndCaptureId.ofRepoId(flatrateTerm.getBill_BPartner_ID(), flatrateTerm.getBill_Location_ID());
+		final SOTrx soTrx = SOTrx.ofBoolean(commissionShareRecord.isSOTrx());
 
-		final PricingSystemId pricingSystemId = bPartnerDAO.retrievePricingSystemIdOrNull(bPartnerId, SOTrx.PURCHASE);
+		final BPartnerId bPartnerId = soTrx.isSales()
+				? BPartnerId.ofRepoId(commissionShareRecord.getC_BPartner_Payer_ID())
+				: BPartnerId.ofRepoId(commissionShareRecord.getC_BPartner_SalesRep_ID());
 
-		final PriceListId priceListId = priceListDAO.retrievePriceListIdByPricingSyst(pricingSystemId, commissionToLocationId, SOTrx.PURCHASE);
+		Check.assume(bPartnerId.getRepoId() == flatrateTerm.getBill_BPartner_ID(),
+					 "IC.BPartnerID must be the contract owner! IC.BPartnerID: {}, flatRateTerm.Bill_BPartnerId: {}, commissionShareId: {}",
+					 bPartnerId, flatrateTerm.getBill_BPartner_ID(), commissionShareRecord.getC_Commission_Share_ID());
 
+		final BPartnerLocationAndCaptureId commissionToLocationId = ContractLocationHelper.extractBillToLocationId(flatrateTerm);
+
+		final PricingSystemId pricingSystemId = bPartnerDAO.retrievePricingSystemIdOrNull(bPartnerId, soTrx);
+
+		final PriceListId priceListId = priceListDAO.retrievePriceListIdByPricingSyst(pricingSystemId, commissionToLocationId, soTrx);
+		final ZoneId timeZone = orgDAO.getTimeZone(orgId);
+		
 		final IEditablePricingContext pricingContext = pricingBL
 				.createInitialContext(
 						orgId,
 						commissionProductId,
 						bPartnerId,
 						Quantitys.create(ONE, commissionProductId),
-						SOTrx.PURCHASE)
+						soTrx)
 				.setPriceListId(priceListId)
-				.setPriceDate(TimeUtil.asLocalDate(icRecord.getDateOrdered()))
+				.setPriceDate(TimeUtil.asLocalDate(icRecord.getDateOrdered(), timeZone))
 				.setFailIfNotCalculated();
 		final IPricingResult pricingResult = pricingBL.calculatePrice(pricingContext);
 
@@ -222,15 +237,9 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 
 		icRecord.setInvoiceRule(flatrateTerm.getC_Flatrate_Conditions().getInvoiceRule());
 
-		icRecord.setIsSOTrx(false);
+		icRecord.setIsSOTrx(soTrx.toBoolean());
 
-		final DocTypeId docTypeId = docTypeDAO.getDocTypeId(
-				DocTypeQuery.builder()
-						.docBaseType(X_C_DocType.DOCBASETYPE_APInvoice)
-						.docSubType(CommissionConstants.COMMISSION_DOC_SUBTYPE_VALUE)
-						.adClientId(commissionShareRecord.getAD_Client_ID())
-						.adOrgId(commissionShareRecord.getAD_Org_ID())
-						.build());
+		final DocTypeId docTypeId = getDoctypeId(commissionShareRecord);
 		icRecord.setC_DocTypeInvoice_ID(docTypeId.getRepoId());
 
 		// 07442 activity and tax
@@ -241,18 +250,18 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 		icRecord.setC_Activity_ID(ActivityId.toRepoId(activityId));
 
 		final Tax tax = taxDAO.getBy(TaxQuery.builder()
-				.orgId(orgId)
-				.bPartnerLocationId(commissionToLocationId)
-				.dateOfInterest(icRecord.getDeliveryDate())
-				.soTrx(SOTrx.PURCHASE)
-				.taxCategoryId(pricingResult.getTaxCategoryId())
-				.build());
+											 .orgId(orgId)
+											 .bPartnerLocationId(commissionToLocationId)
+											 .dateOfInterest(icRecord.getDeliveryDate())
+											 .soTrx(soTrx)
+											 .taxCategoryId(pricingResult.getTaxCategoryId())
+											 .build());
 		if (tax == null)
 		{
 			final I_C_BPartner_Location bpLocation = Services.get(IBPartnerDAO.class).getBPartnerLocationByIdEvenInactive(commissionToLocationId.getBpartnerLocationId());
 			throw TaxNotFoundException.builder()
 					.taxCategoryId(pricingResult.getTaxCategoryId())
-					.isSOTrx(false)
+					.isSOTrx(soTrx.toBoolean())
 					.billDate(icRecord.getDeliveryDate())
 					.orgId(orgId)
 					.billToC_Location_ID(LocationId.ofRepoId(bpLocation.getC_Location_ID()))
@@ -293,7 +302,7 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 	/**
 	 * <ul>
 	 * <li>QtyEntered := sum of all 3 C_Commission_Share.PointsSum_* columns
-	 * <li>C_UOM_ID := {@link #COMMISSION_PRODUCT_ID}'s stock UOM
+	 * <li>C_UOM_ID := the commission product's stock UOM
 	 * <li>QtyOrdered := QtyEntered
 	 * <li>DateOrdered := C_Commission_Share.Created
 	 * <li>C_Order_ID: -1
@@ -366,12 +375,31 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 	public void setBPartnerData(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		final I_C_Commission_Share commissionShareRecord = getCommissionShareRecord(ic);
-		ic.setBill_BPartner_ID(commissionShareRecord.getC_BPartner_SalesRep_ID());
+		final SOTrx soTrx = SOTrx.ofBoolean(commissionShareRecord.isSOTrx());
+		ic.setBill_BPartner_ID(soTrx.isSales()
+									   ? commissionShareRecord.getC_BPartner_Payer_ID()
+									   : commissionShareRecord.getC_BPartner_SalesRep_ID());
 	}
 
 	@Override
 	public String toString()
 	{
 		return "CommissionShareHandler";
+	}
+
+	@NonNull
+	private DocTypeId getDoctypeId(@NonNull final I_C_Commission_Share shareRecord)
+	{
+		final CommissionConstants.CommissionDocType commissionDocType = shareRecord.isSOTrx()
+				? CommissionConstants.CommissionDocType.SALES_COMMISSION
+				: CommissionConstants.CommissionDocType.PURCHASE_COMMISSION;
+
+		return docTypeDAO.getDocTypeId(
+				DocTypeQuery.builder()
+						.docBaseType(commissionDocType.getDocBaseType())
+						.docSubType(commissionDocType.getDocSubType())
+						.adClientId(shareRecord.getAD_Client_ID())
+						.adOrgId(shareRecord.getAD_Org_ID())
+						.build());
 	}
 }

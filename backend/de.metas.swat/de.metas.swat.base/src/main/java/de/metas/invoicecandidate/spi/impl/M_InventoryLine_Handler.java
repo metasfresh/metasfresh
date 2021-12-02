@@ -82,6 +82,8 @@ import java.util.Properties;
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.ZERO;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -104,21 +106,24 @@ import static java.math.BigDecimal.ZERO;
  * #L%
  */
 
+/**
+ * Creates/handles invoice candidates for completed material disposals
+ */
 public class M_InventoryLine_Handler extends AbstractInvoiceCandidateHandler
 {
 	// Services
 	private static final transient IInventoryLine_HandlerDAO inventoryLineHandlerDAO = Services.get(IInventoryLine_HandlerDAO.class);
 
 	@Override
-	public boolean isCreateMissingCandidatesAutomatically()
+	public CandidatesAutoCreateMode getGeneralCandidatesAutoCreateMode()
 	{
-		return false;
+		return CandidatesAutoCreateMode.DONT;
 	}
 
 	@Override
-	public boolean isCreateMissingCandidatesAutomatically(final Object model)
+	public CandidatesAutoCreateMode getSpecificCandidatesAutoCreateMode(final Object model)
 	{
-		return false;
+		return CandidatesAutoCreateMode.DONT;
 	}
 
 	@Override
@@ -127,12 +132,11 @@ public class M_InventoryLine_Handler extends AbstractInvoiceCandidateHandler
 		//
 		// Retrieve inventory
 		final I_M_InventoryLine inventoryLine = InterfaceWrapperHelper.create(model, I_M_InventoryLine.class);
-		final I_M_Inventory inventory = inventoryLine.getM_Inventory();
-		return inventory;
+		return inventoryLine.getM_Inventory();
 	}
 
 	@Override
-	public Iterator<? extends Object> retrieveAllModelsWithMissingCandidates(final int limit)
+	public Iterator<?> retrieveAllModelsWithMissingCandidates(final int limit)
 	{
 		return inventoryLineHandlerDAO.retrieveAllLinesWithoutIC(Env.getCtx(), limit, ITrx.TRXNAME_ThreadInherited);
 	}
@@ -146,6 +150,7 @@ public class M_InventoryLine_Handler extends AbstractInvoiceCandidateHandler
 		return InvoiceCandidateGenerateResult.of(this, invoiceCandidate);
 	}
 
+	@Nullable
 	private I_C_Invoice_Candidate createCandidateForInventoryLine(final I_M_InventoryLine inventoryLine)
 	{
 		// Don't create any invoice candidate if already created

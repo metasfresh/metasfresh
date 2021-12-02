@@ -25,13 +25,18 @@ package de.metas.cucumber.stepdefs.material.dispo;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.material.dispo.MD_Candidate_StepDefTable.MaterialDispoTableRow;
+import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
+import de.metas.material.dispo.commons.candidate.CandidateId;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.MaterialDispoDataItem;
 import de.metas.material.dispo.commons.candidate.MaterialDispoRecordRepository;
 import de.metas.material.dispo.commons.candidate.businesscase.BusinessCaseDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
+import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate_Demand_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_StockChange_Detail;
@@ -59,14 +64,17 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_M_Product;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
+import org.eevolution.model.I_PP_Order_BOMLine;
 
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
 import static org.assertj.core.api.Assertions.*;
 
@@ -76,14 +84,25 @@ public class MD_Candidate_StepDef
 
 	private PostMaterialEventService postMaterialEventService;
 	private MaterialDispoRecordRepository materialDispoRecordRepository;
-
+	private CandidateRepositoryRetrieval candidateRepositoryRetrieval;
+	private final StepDefData<I_M_Product> productTable;
+	private final StepDefData<I_MD_Candidate> stockCandidateTable;
 	private final StepDefData<MaterialDispoDataItem> materialDispoDataItemStepDefData = new StepDefData<>();
+
+	public MD_Candidate_StepDef(
+			@NonNull final StepDefData<I_M_Product> productTable,
+			@NonNull final StepDefData<I_MD_Candidate> stockCandidateTable)
+	{
+		this.productTable = productTable;
+		this.stockCandidateTable = stockCandidateTable;
+	}
 
 	@Before
 	public void beforeEach()
 	{
 		postMaterialEventService = SpringContextHolder.instance.getBean(PostMaterialEventService.class);
 		materialDispoRecordRepository = SpringContextHolder.instance.getBean(MaterialDispoRecordRepository.class);
+		candidateRepositoryRetrieval = SpringContextHolder.instance.getBean(CandidateRepositoryRetrieval.class);
 		Env.setClientId(Env.getCtx(), ClientId.METASFRESH);
 	}
 
@@ -143,6 +162,7 @@ public class MD_Candidate_StepDef
 			mdCandidateRecord.setMD_Candidate_BusinessCase(CandidateBusinessCase.toCode(tableRow.getBusinessCase()));
 			mdCandidateRecord.setQty(tableRow.getQty());
 			mdCandidateRecord.setDateProjected(TimeUtil.asTimestamp(tableRow.getTime()));
+			mdCandidateRecord.setSeqNo(mdCandidateRecord.getMD_Candidate_ID());
 			InterfaceWrapperHelper.saveRecord(mdCandidateRecord);
 
 			final I_MD_Candidate mdStockCandidateRecord = InterfaceWrapperHelper.newInstance(I_MD_Candidate.class);
@@ -152,6 +172,7 @@ public class MD_Candidate_StepDef
 			mdStockCandidateRecord.setStorageAttributesKey(AttributesKey.NONE.getAsString());
 			mdStockCandidateRecord.setM_Warehouse_ID(StepDefConstants.WAREHOUSE_ID.getRepoId());
 			mdStockCandidateRecord.setMD_Candidate_Type(CandidateType.STOCK.getCode());
+			mdStockCandidateRecord.setSeqNo(mdCandidateRecord.getMD_Candidate_ID());
 			final boolean isDemand = CandidateType.DEMAND.equals(tableRow.getType()) || CandidateType.INVENTORY_DOWN.equals(tableRow.getType());
 			if (isDemand)
 			{
@@ -172,6 +193,8 @@ public class MD_Candidate_StepDef
 			{
 				fail("Unsupported type " + tableRow.getType());
 			}
+
+			stockCandidateTable.putOrReplace(tableRow.getIdentifier(), mdStockCandidateRecord);
 		}
 	}
 
@@ -277,5 +300,107 @@ public class MD_Candidate_StepDef
 		final I_MD_Candidate candidateRecord = MaterialDispoUtils.getCandidateRecordById(materialDispoDataItem.getCandidateId());
 
 		assertThat(candidateRecord).isNull();
+	}
+
+	@And("^after not more than (.*)s, MD_Candidates are found$")
+	public void validate_md_candidates(
+			final int timeoutSec,
+			@NonNull final MD_Candidate_StepDefTable table) throws InterruptedException
+	{
+		for (final MaterialDispoTableRow tableRow : table.getRows())
+		{
+			// make sure the given md_candidate has been created
+			final Supplier<Boolean> candidateCreated = () ->
+			{
+				final Candidate candidate = candidateRepositoryRetrieval.retrieveLatestMatchOrNull(tableRow.createQuery());
+
+				return candidate != null;
+			};
+
+			StepDefUtil.tryAndWait(timeoutSec, 1000, candidateCreated);
+
+			final MaterialDispoDataItem materialDispoRecord = materialDispoRecordRepository.getBy(tableRow.createQuery());
+
+			assertThat(materialDispoRecord).isNotNull();
+
+			assertThat(materialDispoRecord.getType()).isEqualTo(tableRow.getType());
+			assertThat(materialDispoRecord.getBusinessCase()).isEqualTo(tableRow.getBusinessCase());
+			assertThat(materialDispoRecord.getMaterialDescriptor().getProductId()).isEqualTo(tableRow.getProductId().getRepoId());
+			assertThat(materialDispoRecord.getMaterialDescriptor().getDate()).isEqualTo(tableRow.getTime());
+			assertThat(materialDispoRecord.getMaterialDescriptor().getQuantity()).isEqualByComparingTo(tableRow.getQty());
+			assertThat(materialDispoRecord.getAtp()).isEqualByComparingTo(tableRow.getAtp());
+
+			materialDispoDataItemStepDefData.putOrReplace(tableRow.getIdentifier(), materialDispoRecord);
+		}
+	}
+
+	@And("the following MD_Candidates are validated")
+	public void validate_md_candidate_by_id(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+		for (final Map<String, String> tableRow : tableRows)
+		{
+			validate_md_candidate_with_stock(tableRow);
+		}
+	}
+
+	@And("the following stock MD_Candidates are validated")
+	public void validate_md_candidate_stock(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+		for (final Map<String, String> tableRow : tableRows)
+		{
+			validate_md_candidate_stock(tableRow);
+		}
+	}
+
+	private void validate_md_candidate_stock(@NonNull final Map<String, String> tableRow)
+	{
+		final String stockCandidateIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_MD_Candidate.COLUMNNAME_MD_Candidate_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		final I_MD_Candidate stockCandidateRecord = stockCandidateTable.get(stockCandidateIdentifier);
+
+		final Candidate stockCandidate = candidateRepositoryRetrieval.retrieveLatestMatchOrNull(CandidatesQuery.fromId(CandidateId.ofRepoId(stockCandidateRecord.getMD_Candidate_ID())));
+		assertThat(stockCandidate).isNotNull();
+
+		final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_PP_Order_BOMLine.COLUMNNAME_M_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		final I_M_Product productRecord = productTable.get(productIdentifier);
+
+		final String dateProjected = DataTableUtil.extractStringForColumnName(tableRow, I_MD_Candidate.COLUMNNAME_DateProjected);
+		final BigDecimal qty = DataTableUtil.extractBigDecimalForColumnName(tableRow, I_MD_Candidate.COLUMNNAME_Qty);
+
+		assertThat(stockCandidate.getType()).isEqualTo(CandidateType.STOCK);
+		assertThat(stockCandidate.getMaterialDescriptor().getProductId()).isEqualTo(productRecord.getM_Product_ID());
+		assertThat(stockCandidate.getMaterialDescriptor().getDate()).isEqualTo(dateProjected);
+		assertThat(stockCandidate.getMaterialDescriptor().getQuantity()).isEqualByComparingTo(qty);
+	}
+
+	private void validate_md_candidate_with_stock(@NonNull final Map<String, String> tableRow)
+	{
+		final String materialDispoDataIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_MD_Candidate.COLUMNNAME_MD_Candidate_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		final MaterialDispoDataItem materialDispoDataItem = materialDispoDataItemStepDefData.get(materialDispoDataIdentifier);
+
+		final CandidatesQuery candidatesQuery = CandidatesQuery.builder()
+				.id(materialDispoDataItem.getCandidateId())
+				.type(materialDispoDataItem.getType())
+				.build();
+
+		final MaterialDispoDataItem freshMaterialDispoItemInfo = materialDispoRecordRepository.getBy(candidatesQuery);
+
+		final String businessCase = DataTableUtil.extractStringForColumnName(tableRow, I_MD_Candidate.COLUMNNAME_MD_Candidate_BusinessCase);
+
+		final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_PP_Order_BOMLine.COLUMNNAME_M_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		final I_M_Product productRecord = productTable.get(productIdentifier);
+
+		final String dateProjected = DataTableUtil.extractStringForColumnName(tableRow, I_MD_Candidate.COLUMNNAME_DateProjected);
+		final BigDecimal qty = DataTableUtil.extractBigDecimalForColumnName(tableRow, I_MD_Candidate.COLUMNNAME_Qty);
+		final BigDecimal atp = DataTableUtil.extractBigDecimalForColumnName(tableRow, I_MD_Candidate.COLUMNNAME_Qty_AvailableToPromise);
+		final String type = DataTableUtil.extractStringForColumnName(tableRow, I_MD_Candidate.COLUMNNAME_MD_Candidate_Type);
+
+		assertThat(freshMaterialDispoItemInfo.getType().getCode()).isEqualTo(type);
+		assertThat(freshMaterialDispoItemInfo.getBusinessCase().getCode()).isEqualTo(businessCase);
+		assertThat(freshMaterialDispoItemInfo.getMaterialDescriptor().getProductId()).isEqualTo(productRecord.getM_Product_ID());
+		assertThat(freshMaterialDispoItemInfo.getMaterialDescriptor().getDate()).isEqualTo(dateProjected);
+		assertThat(freshMaterialDispoItemInfo.getMaterialDescriptor().getQuantity()).isEqualByComparingTo(qty);
+		assertThat(freshMaterialDispoItemInfo.getAtp()).isEqualByComparingTo(atp);
 	}
 }

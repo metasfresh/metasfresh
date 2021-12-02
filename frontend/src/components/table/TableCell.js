@@ -237,11 +237,13 @@ class TableCell extends PureComponent {
               rowIndex,
               colIndex,
               isEditable,
+              isEdited,
               supportFieldEdit,
               entity,
               updateHeight,
               updateRow,
             }}
+            suppressChange={isEdited}
             clearValue={this.clearWidgetValue}
             dateFormat={isDateField}
             dataId={mainTable ? null : docId}

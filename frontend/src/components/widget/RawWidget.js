@@ -108,7 +108,7 @@ export class RawWidget extends PureComponent {
    *
    * @param {string} type - toggles between text/password
    */
-  setWidgetType = (type) => (this.rawWidget.type = type);
+  setWidgetType = (type) => (this.rawWidget.current.type = type);
 
   /**
    * @method showErrorPopup
@@ -404,6 +404,7 @@ export class RawWidget extends PureComponent {
       fieldName,
       maxLength,
       isFilterActive,
+      suppressChange,
     } = this.props;
     let tabIndex = this.props.tabIndex;
     const { isFocused, charsTyped } = this.state;
@@ -462,6 +463,7 @@ export class RawWidget extends PureComponent {
           showErrorBorder,
           isFocused,
           isFilterActive,
+          suppressChange,
         }}
         ref={this.rawWidget}
         charsTyped={charsTypedCount}

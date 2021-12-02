@@ -141,8 +141,13 @@ public class QueueDAO extends AbstractQueueDAO
 		}
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(element);
-		final IContextAware context = new PlainContextAware(ctx, trxName);
+		final IContextAware context = PlainContextAware.newWithTrxName(ctx, trxName);
+		
 		final TableRecordReference itemRef = TableRecordReference.of(adTableId, recordId);
+		if (TableRecordReference.class.isAssignableFrom(clazz))
+		{
+			return (T)itemRef;
+		}
 		final T item = itemRef.getModel(context, clazz);
 		if (item == null)
 		{

@@ -164,7 +164,7 @@ public class JasperEngine extends AbstractReportEngine
 				{
 					final IUserRolePermissions userRolePermissions = reportContext.getUserRolePermissions();
 					final String tableName = reportContext.getTableNameOrNull();
-					securityWhereClause = userRolePermissions.getOrgWhere(tableName, Access.READ);
+					securityWhereClause = userRolePermissions.getOrgWhere(tableName, Access.READ).orElse(null);
 				}
 				else
 				{
@@ -294,8 +294,6 @@ public class JasperEngine extends AbstractReportEngine
 	/**
 	 * Extracts {@link Language} parameter
 	 *
-	 * @param ctx
-	 * @param jrParameters
 	 * @return {@link Language}; never returns null
 	 */
 	private final Language getParam_Language(final Map<String, Object> jrParameters)

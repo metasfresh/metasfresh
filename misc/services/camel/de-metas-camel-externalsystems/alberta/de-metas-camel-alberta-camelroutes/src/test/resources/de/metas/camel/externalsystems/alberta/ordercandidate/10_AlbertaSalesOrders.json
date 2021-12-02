@@ -50,6 +50,8 @@
     "rootId": "rootId",
     "dayOfDelivery": 2,
     "nextDelivery": "2021-04-01",
-    "annotation":"annotation"
+    "annotation":"annotation",
+    "deliveryInformation": "deliveryInformation",
+    "deliveryNote": "deliveryNote"
   }
 ]

@@ -1,7 +1,8 @@
 package org.eevolution.model;
 
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
 
 /** Generated Interface for PP_Product_BOM
  *  @author metasfresh (generated) 
@@ -377,6 +378,31 @@ public interface I_PP_Product_BOM
 	String COLUMNNAME_PP_Product_BOM_ID = "PP_Product_BOM_ID";
 
 	/**
+	 * Set BOMVersions & Formula.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setPP_Product_BOMVersions_ID (int PP_Product_BOMVersions_ID);
+
+	/**
+	 * Get BOMVersions & Formula.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getPP_Product_BOMVersions_ID();
+
+	org.eevolution.model.I_PP_Product_BOMVersions getPP_Product_BOMVersions();
+
+	void setPP_Product_BOMVersions(org.eevolution.model.I_PP_Product_BOMVersions PP_Product_BOMVersions);
+
+	ModelColumn<I_PP_Product_BOM, org.eevolution.model.I_PP_Product_BOMVersions> COLUMN_PP_Product_BOMVersions_ID = new ModelColumn<>(I_PP_Product_BOM.class, "PP_Product_BOMVersions_ID", org.eevolution.model.I_PP_Product_BOMVersions.class);
+	String COLUMNNAME_PP_Product_BOMVersions_ID = "PP_Product_BOMVersions_ID";
+
+	/**
 	 * Set Process Now.
 	 *
 	 * <br>Type: Button
@@ -471,7 +497,7 @@ public interface I_PP_Product_BOM
 	/**
 	 * Set Valid From.
 	 *
-	 * <br>Type: Date
+	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -480,7 +506,7 @@ public interface I_PP_Product_BOM
 	/**
 	 * Get Valid From.
 	 *
-	 * <br>Type: Date
+	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */

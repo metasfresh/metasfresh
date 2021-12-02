@@ -101,6 +101,7 @@ class AttributesDropdown extends PureComponent {
             dataId={attrId}
             widgetData={widgetData}
             gridAlign={item.gridAlign}
+            suppressChange={item.widgetType === 'YesNo'}
             key={idx}
             type={item.type}
             caption={item.caption}

@@ -4,6 +4,7 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Alber
     "type" : "Alberta",
     "name" : "name",
     "isActive" : true,
+    "orgId" : 0,
     "childConfig" : {
       "id" : 100002,
       "parentId" : 100001,
@@ -11,7 +12,9 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Alber
       "apiKey" : "apiKey",
       "baseUrl" : "baseUrl",
       "tenant" : "tenant"
-    }
+    },
+    "writeAudit" : true,
+    "auditFileFolder" : "auditFileFolder"
   }
 ]
 
@@ -34,6 +37,7 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Alber
     "type" : "Alberta",
     "name" : "name",
     "isActive" : true,
+    "orgId" : 0,
     "childConfig" : {
       "id" : 100002,
       "parentId" : 100001,
@@ -41,7 +45,127 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Alber
       "apiKey" : "apiKey",
       "baseUrl" : "baseUrl",
       "tenant" : "tenant"
-    }
+    },
+    "writeAudit" : true,
+    "auditFileFolder" : "auditFileFolder"
+  }
+]
+
+
+de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_GRSSignum_getById=[
+  {
+    "id" : 100001,
+    "type" : "GRSSignum",
+    "name" : "name",
+    "isActive" : true,
+    "orgId" : 0,
+    "childConfig" : {
+      "id" : 100002,
+      "parentId" : 100001,
+      "value" : "testGRSSignumValue",
+      "baseUrl" : "baseUrl",
+      "tenantId" : "tenantId",
+      "camelHttpResourceAuthKey" : "authKey",
+      "authToken" : "authToken",
+      "syncBPartnersToRestEndpoint" : true
+    },
+    "writeAudit" : false
+  }
+]
+
+
+de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_GRSSignum_getByTypeAndParent=[
+  {
+    "id" : 100002,
+    "parentId" : 100001,
+    "value" : "testGRSSignumValue",
+    "baseUrl" : "baseUrl",
+    "tenantId" : "tenantId",
+    "camelHttpResourceAuthKey" : "authKey",
+    "authToken" : "authToken",
+    "syncBPartnersToRestEndpoint" : false
+  }
+]
+
+
+de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_GRSSignum_getByTypeAndValue=[
+  {
+    "id" : 100001,
+    "type" : "GRSSignum",
+    "name" : "name",
+    "isActive" : true,
+    "orgId" : 0,
+    "childConfig" : {
+      "id" : 100002,
+      "parentId" : 100001,
+      "value" : "testGRSSignumValue",
+      "tenantId" : "tenantId",
+      "baseUrl" : "baseUrl",
+      "camelHttpResourceAuthKey" : "authKey",
+      "authToken" : "authToken",
+      "syncBPartnersToRestEndpoint" : true
+    },
+    "writeAudit" : false
+  }
+]
+
+
+de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_RabbitMQ_getById=[
+  {
+    "id" : 100001,
+    "type" : "RabbitMQ",
+    "name" : "name",
+    "isActive" : true,
+    "orgId" : 0,
+    "childConfig" : {
+      "id" : 100002,
+      "parentId" : 100001,
+      "value" : "testRabbitMQValue",
+      "routingKey" : "routingKey",
+      "remoteUrl" : "remoteURL",
+      "authToken" : "authToken",
+      "isSyncBPartnerToRabbitMQ" : true,
+      "syncBPartnerToRabbitMQ" : true
+    },
+    "writeAudit" : true,
+    "auditFileFolder" : "auditFileFolder"
+  }
+]
+
+
+de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_RabbitMQ_getByTypeAndParent=[
+  {
+    "id" : 100002,
+    "parentId" : 100001,
+    "value" : "testRabbitMQValue",
+    "routingKey" : "routingKey",
+    "remoteUrl" : "remoteURL",
+    "authToken" : "authToken",
+    "isSyncBPartnerToRabbitMQ" : true,
+    "syncBPartnerToRabbitMQ" : true
+  }
+]
+
+
+de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_RabbitMQ_getByTypeAndValue=[
+  {
+    "id" : 100001,
+    "type" : "RabbitMQ",
+    "name" : "name",
+    "isActive" : true,
+    "orgId" : 0,
+    "childConfig" : {
+      "id" : 100002,
+      "parentId" : 100001,
+      "value" : "testRabbitMQValue",
+      "routingKey" : "routingKey",
+      "remoteUrl" : "remoteURL",
+      "authToken" : "authToken",
+      "isSyncBPartnerToRabbitMQ" : true,
+      "syncBPartnerToRabbitMQ" : true
+    },
+    "writeAudit" : true,
+    "auditFileFolder" : "auditFileFolder"
   }
 ]
 
@@ -52,6 +176,7 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
     "type" : "Shopware6",
     "name" : "name",
     "isActive" : true,
+    "orgId" : 0,
     "childConfig" : {
       "id" : 100002,
       "parentId" : 100001,
@@ -59,11 +184,23 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
       "clientId" : "id",
       "clientSecret" : "secret",
       "externalSystemShopware6ConfigMappingList" : [ ],
+      "uomShopwareMappingList" : [
+        {
+          "externalSystemShopware6ConfigId" : 100002,
+          "uomId" : 100003,
+          "shopwareCode" : "shopwareCode"
+        }
+      ],
       "bPartnerIdJSONPath" : "/test/bp",
       "bPartnerLocationIdJSONPath" : "/test/bpl",
       "salesRepJSONPath" : "/test/salesrep",
-      "isActive" : true
-    }
+      "priceListId" : 1,
+      "isActive" : true,
+      "productLookup" : "ProductNumber",
+      "value" : "testShopware6Value"
+    },
+    "writeAudit" : true,
+    "auditFileFolder" : "auditFileFolder"
   }
 ]
 
@@ -74,6 +211,7 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
     "type" : "Shopware6",
     "name" : "name",
     "isActive" : false,
+    "orgId" : 0,
     "childConfig" : {
       "id" : 100002,
       "parentId" : 100001,
@@ -81,11 +219,23 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
       "clientId" : "id",
       "clientSecret" : "secret",
       "externalSystemShopware6ConfigMappingList" : [ ],
+      "uomShopwareMappingList" : [
+        {
+          "externalSystemShopware6ConfigId" : 100002,
+          "uomId" : 100003,
+          "shopwareCode" : "shopwareCode"
+        }
+      ],
       "bPartnerIdJSONPath" : "/test/bp",
       "bPartnerLocationIdJSONPath" : "/test/bpl",
       "salesRepJSONPath" : "/test/salesrep",
-      "isActive" : false
-    }
+      "priceListId" : 1,
+      "isActive" : false,
+      "productLookup" : "ProductNumber",
+      "value" : "testShopware6Value"
+    },
+    "writeAudit" : true,
+    "auditFileFolder" : "auditFileFolder"
   }
 ]
 
@@ -113,10 +263,20 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
         "description" : "test"
       }
     ],
+    "uomShopwareMappingList" : [
+      {
+        "externalSystemShopware6ConfigId" : 100002,
+        "uomId" : 100004,
+        "shopwareCode" : "shopwareCode"
+      }
+    ],
     "bPartnerIdJSONPath" : "/test/bp",
     "bPartnerLocationIdJSONPath" : "/test/bpl",
     "salesRepJSONPath" : "/test/salesrep",
-    "isActive" : true
+    "priceListId" : 1,
+    "isActive" : true,
+    "value" : "testShopware6Value",
+    "productLookup" : "ProductNumber"
   }
 ]
 
@@ -127,6 +287,7 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
     "type" : "Shopware6",
     "name" : "name",
     "isActive" : true,
+    "orgId" : 0,
     "childConfig" : {
       "id" : 100002,
       "parentId" : 100001,
@@ -134,11 +295,23 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
       "clientId" : "id",
       "clientSecret" : "secret",
       "externalSystemShopware6ConfigMappingList" : [ ],
+      "uomShopwareMappingList" : [
+        {
+          "externalSystemShopware6ConfigId" : 100002,
+          "uomId" : 100003,
+          "shopwareCode" : "shopwareCode"
+        }
+      ],
       "bPartnerIdJSONPath" : "/test/bp",
       "bPartnerLocationIdJSONPath" : "/test/bpl",
       "salesRepJSONPath" : "/test/salesrep",
-      "isActive" : true
-    }
+      "priceListId" : 1,
+      "isActive" : true,
+      "value" : "testShopware6Value",
+      "productLookup" : "ProductNumber"
+    },
+    "writeAudit" : true,
+    "auditFileFolder" : "auditFileFolder"
   }
 ]
 
@@ -149,6 +322,7 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
     "type" : "Shopware6",
     "name" : "name",
     "isActive" : true,
+    "orgId" : 0,
     "childConfig" : {
       "id" : 100002,
       "parentId" : 100001,
@@ -156,11 +330,17 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
       "clientId" : "new-clientId",
       "clientSecret" : "new-clientSecret",
       "externalSystemShopware6ConfigMappingList" : [ ],
+      "uomShopwareMappingList" : [ ],
       "bPartnerIdJSONPath" : "/test/bp",
       "bPartnerLocationIdJSONPath" : "/test/bpl",
       "salesRepJSONPath" : "/test/salesrep",
-      "isActive" : true
-    }
+      "priceListId" : 2,
+      "isActive" : true,
+      "value" : "new-value",
+      "productLookup" : "ProductNumber"
+    },
+    "writeAudit" : true,
+    "auditFileFolder" : "auditFileFolder"
   }
 ]
 
@@ -171,12 +351,15 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Wooco
     "type" : "WOO",
     "name" : "name",
     "isActive" : true,
+    "orgId" : 0,
     "childConfig" : {
       "id" : 100002,
       "parentId" : 100001,
       "value" : "testWoocommerceValue",
       "camelHttpResourceAuthKey" : "authKey"
-    }
+    },
+    "writeAudit" : true,
+    "auditFileFolder" : "auditFileFolder"
   }
 ]
 
@@ -187,11 +370,14 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Wooco
     "type" : "WOO",
     "name" : "name",
     "isActive" : true,
+    "orgId" : 0,
     "childConfig" : {
       "id" : 100002,
       "parentId" : 100001,
       "value" : "testWoocommerceValue"
-    }
+    },
+    "writeAudit" : true,
+    "auditFileFolder" : "auditFileFolder"
   }
 ]
 
@@ -202,6 +388,7 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Other_Config
     "type" : "Other",
     "name" : "name",
     "isActive" : true,
+    "orgId" : 0,
     "childConfig" : {
       "id" : {
         "externalSystemParentConfigId" : 100001
@@ -218,6 +405,8 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Other_Config
           "value" : "value2"
         }
       ]
-    }
+    },
+    "writeAudit" : true,
+    "auditFileFolder" : "auditFileFolder"
   }
 ]

@@ -1,6 +1,23 @@
 package de.metas.async.api;
 
+import de.metas.async.AsyncBatchId;
+import de.metas.async.Async_Constants;
+import de.metas.async.QueueWorkPackageId;
+import de.metas.async.model.I_C_Async_Batch;
+import de.metas.async.model.I_C_Queue_WorkPackage;
+import de.metas.async.spi.IWorkpackagePrioStrategy;
+import de.metas.lock.api.ILock;
+import de.metas.lock.api.ILockCommand;
+import de.metas.user.UserId;
+import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.util.api.IParams;
+import org.adempiere.util.lang.ITableRecordReference;
+
+import javax.annotation.Nullable;
 import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.Future;
 
 /*
  * #%L
@@ -23,25 +40,6 @@ import java.util.Map;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
-import java.util.UUID;
-import java.util.concurrent.Future;
-
-import de.metas.async.Async_Constants;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.util.api.IParams;
-import org.adempiere.util.lang.ITableRecordReference;
-
-import de.metas.async.QueueWorkPackageId;
-import de.metas.async.model.I_C_Async_Batch;
-import de.metas.async.model.I_C_Queue_WorkPackage;
-import de.metas.async.spi.IWorkpackagePrioStrategy;
-import de.metas.lock.api.ILock;
-import de.metas.lock.api.ILockCommand;
-import de.metas.user.UserId;
-import lombok.NonNull;
-
-import javax.annotation.Nullable;
 
 public interface IWorkPackageBuilder
 {
@@ -156,7 +154,7 @@ public interface IWorkPackageBuilder
 	 * <p>
 	 * If the transaction is null, the workpackage will be marked as ready immediately, on build.
 	 */
-	IWorkPackageBuilder bindToTrxName(String trxName);
+	IWorkPackageBuilder bindToTrxName(@Nullable String trxName);
 
 	/**
 	 * Ask the builder to "bind" the new workpackage to current thread inerited transaction.
@@ -179,4 +177,10 @@ public interface IWorkPackageBuilder
 	 * Could be null if no lock was aquired.
 	 */
 	Future<ILock> getElementsLock();
+
+	/**
+	 * Overloading set async batch, to enable setting async batch also by id (optional).
+	 * If the asyncBatchId is not set, it will be inherited.
+	 */
+	IWorkPackageBuilder setC_Async_Batch_ID(@Nullable AsyncBatchId asyncBatchId);
 }

@@ -1,7 +1,7 @@
 import axios from 'axios';
 import counterpart from 'counterpart';
 import React from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useStore } from 'react-redux';
 
 import '../assets/css/styles.css';
 import {
@@ -49,6 +49,7 @@ const App = () => {
   // const [pluginsLoading, setPluginsLoading] = useState(!!APP_PLUGINS.length);
   const auth = useAuth();
   const dispatch = useDispatch();
+  const store = useStore();
 
   useConstructor(() => {
     // this.pluginsRegistry = new PluginsRegistry(this);
@@ -92,22 +93,47 @@ const App = () => {
             dispatch(setProcessSaved());
 
             auth.setRedirectRoute(location.pathname);
-            auth.logout().finally(() => {
+
+            // we got not authenticated error, but locally still have the authenticated flag truthy
+            // (ie user logged out in another window, or session timed out)
+            if (auth.isLoggedIn || store.getState().appHandler.isLogged) {
+              auth.logout().finally(() => {
+                history.push('/login');
+              });
+            } else {
               history.push('/login');
-            });
+            }
           }
         } else if (
           error.response.status === 500 &&
           error.response.data.path.includes('/authenticate')
         ) {
           /*
-           * User already logged in
+           * User already logged in on the backend side or wrong
+           * login token
            */
-          auth.checkAuthentication().then((authenticated) => {
-            if (authenticated) {
-              history.push(location.pathname);
-            }
-          });
+
+          // if user types in incorrect token, there's no way for us to tell if he's
+          // already authenticated or not. So it's safest to reset the login process
+          if (error.response.data.message.includes('Invalid token')) {
+            return auth
+              .logout()
+              .then(() => {
+                history.push('/login');
+              })
+              .catch((err) => {
+                console.error('App.checkAuthentication error: ', err);
+              });
+          }
+
+          //if not logged in
+          if (!auth.isLoggedIn && !store.getState().appHandler.loggedIn) {
+            return auth.checkAuthentication().then((authenticated) => {
+              if (authenticated) {
+                history.push(location.pathname);
+              }
+            });
+          }
         } else if (error.response.status == 503) {
           dispatch(noConnection(true));
         } else if (error.response.status != 404) {

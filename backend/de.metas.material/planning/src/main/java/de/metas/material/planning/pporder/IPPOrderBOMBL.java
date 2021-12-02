@@ -23,7 +23,6 @@ package de.metas.material.planning.pporder;
  */
 
 import de.metas.document.sequence.DocSequenceId;
-import de.metas.material.event.pporder.PPOrderLine;
 import de.metas.material.planning.exception.MrpException;
 import de.metas.quantity.Quantity;
 import de.metas.uom.UomId;
@@ -36,13 +35,17 @@ import org.eevolution.api.PPOrderId;
 import org.eevolution.api.QtyCalculationsBOM;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
+import org.eevolution.model.I_PP_Product_BOMLine;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.function.UnaryOperator;
 
 public interface IPPOrderBOMBL extends ISingletonService
 {
 	I_PP_Order_BOMLine getOrderBOMLineById(PPOrderBOMLineId orderBOMLineId);
+
+	<T extends I_PP_Order_BOMLine> List<T> retrieveOrderBOMLines(PPOrderId orderId, Class<T> orderBOMLineClass);
 
 	PPOrderQuantities getQuantities(
 			@NonNull I_PP_Order ppOrder,
@@ -110,11 +113,10 @@ public interface IPPOrderBOMBL extends ISingletonService
 
 	void addQty(OrderBOMLineQtyChangeRequest request);
 
-	/**
-	 * Computes the quantity for the given {@code ppOrderLinePojo} based on infos from all three parameters.
-	 */
+	Quantity getQtyRequired(ComputeQtyRequiredRequest computeQtyRequiredRequest);
+
 	Quantity computeQtyRequiredByQtyOfFinishedGoods(
-			PPOrderLine ppOrderLinePojo,
+			I_PP_Product_BOMLine productBOMLine,
 			Quantity qtyFinishedGood);
 
 	/**
@@ -138,4 +140,6 @@ public interface IPPOrderBOMBL extends ISingletonService
 	Optional<DocSequenceId> getSerialNoSequenceId(PPOrderId ppOrderId);
 
 	QtyCalculationsBOM getQtyCalculationsBOM(I_PP_Order order);
+
+	void save(I_PP_Order_BOMLine orderBOMLine);
 }

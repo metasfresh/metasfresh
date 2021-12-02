@@ -38,6 +38,8 @@ import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
 import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
+import de.metas.order.IOrderDAO;
+import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.IOrgDAO;
@@ -135,6 +137,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	private final transient Logger logger = InvoiceCandidate_Constants.getLogger(InvoiceCandDAO.class);
 
 	private final transient IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final transient IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 
 	private static final ModelDynAttributeAccessor<I_C_Invoice_Candidate, Boolean> DYNATTR_IC_Avoid_Recreate //
 			= new ModelDynAttributeAccessor<>(IInvoiceCandDAO.class.getName() + "Avoid_Recreate", Boolean.class);
@@ -225,6 +228,15 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		return fetchInvoiceCandidates(reference.getTableName(), reference.getRecord_ID());
 	}
 
+	@Override
+	@NonNull
+	public ImmutableSet<InvoiceCandidateId> retrieveReferencingIds(@NonNull final TableRecordReference reference)
+	{
+		return retrieveInvoiceCandidatesForRecordQuery(reference)
+				.create()
+				.listIds(InvoiceCandidateId::ofRepoId);
+	}
+	
 	@Override
 	public int deleteAllReferencingInvoiceCandidates(@NonNull final Object model)
 	{
@@ -371,6 +383,15 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				//
 				.create()
 				.list(I_C_Invoice_Candidate.class);
+	}
+
+	@Override
+	public List<I_C_Invoice_Candidate> retrieveInvoiceCandidatesForOrderId(final OrderId orderId)
+	{
+		return queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_C_Order_ID, orderId)
+				.create()
+				.list();
 	}
 
 	@Nullable

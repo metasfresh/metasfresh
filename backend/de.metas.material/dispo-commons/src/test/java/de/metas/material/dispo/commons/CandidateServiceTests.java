@@ -75,43 +75,43 @@ public class CandidateServiceTests
 				.businessCase(CandidateBusinessCase.PRODUCTION)
 				.materialDescriptor(createMaterialDescriptor())
 				.businessCaseDetail(ProductionDetail.builder()
-						.plantId(ResourceId.ofRepoId(210))
-						.productPlanningId(220)
-						.advised(Flag.FALSE)
-						.pickDirectlyIfFeasible(Flag.FALSE)
-						.qty(TEN)
-						.build())
+											.plantId(ResourceId.ofRepoId(210))
+											.productPlanningId(220)
+											.advised(Flag.FALSE)
+											.pickDirectlyIfFeasible(Flag.FALSE)
+											.qty(TEN)
+											.build())
 				.build();
 
 		final Candidate candidate2 = candidate
 				.withType(CandidateType.DEMAND)
 				.withMaterialDescriptor(candidate.getMaterialDescriptor()
-						.withProductDescriptor(ProductDescriptor.completeForProductIdAndEmptyAttribute(310))
-						.withQuantity(BigDecimal.valueOf(20)))
+												.withProductDescriptor(ProductDescriptor.completeForProductIdAndEmptyAttribute(310))
+												.withQuantity(BigDecimal.valueOf(20)))
 				.withDimension(candidate.getDimension())
 				.withBusinessCaseDetail(ProductionDetail.builder()
-						.plantId(ResourceId.ofRepoId(210))
-						.productPlanningId(220)
-						.productBomLineId(500)
-						.advised(Flag.TRUE)
-						.pickDirectlyIfFeasible(Flag.FALSE)
-						.qty(TEN)
-						.build());
+												.plantId(ResourceId.ofRepoId(210))
+												.productPlanningId(220)
+												.productBomLineId(500)
+												.advised(Flag.TRUE)
+												.pickDirectlyIfFeasible(Flag.FALSE)
+												.qty(TEN)
+												.build());
 
 		final Candidate candidate3 = candidate
 				.withType(CandidateType.DEMAND)
 				.withMaterialDescriptor(candidate.getMaterialDescriptor()
-						.withProductDescriptor(ProductDescriptor.completeForProductIdAndEmptyAttribute(320))
-						.withQuantity(BigDecimal.valueOf(10)))
+												.withProductDescriptor(ProductDescriptor.completeForProductIdAndEmptyAttribute(320))
+												.withQuantity(BigDecimal.valueOf(10)))
 				.withDimension(candidate.getDimension())
 				.withBusinessCaseDetail(ProductionDetail.builder()
-						.plantId(ResourceId.ofRepoId(210))
-						.productPlanningId(220)
-						.productBomLineId(600)
-						.advised(Flag.FALSE)
-						.pickDirectlyIfFeasible(Flag.TRUE)
-						.qty(TEN)
-						.build());
+												.plantId(ResourceId.ofRepoId(210))
+												.productPlanningId(220)
+												.productBomLineId(600)
+												.advised(Flag.FALSE)
+												.pickDirectlyIfFeasible(Flag.TRUE)
+												.qty(TEN)
+												.build());
 
 		final PPOrderRequestedEvent ppOrderRequestedEvent = requestMaterialOrderService
 				.createPPOrderRequestedEvent(
@@ -125,8 +125,8 @@ public class CandidateServiceTests
 
 		final PPOrder ppOrder = ppOrderRequestedEvent.getPpOrder();
 		assertThat(ppOrder).isNotNull();
-		assertThat(ppOrder.getClientAndOrgId().getOrgId().getRepoId()).isEqualTo(30);
-		assertThat(ppOrder.getProductDescriptor().getProductId()).isEqualTo(PRODUCT_ID);
+		assertThat(ppOrder.getPpOrderData().getClientAndOrgId().getOrgId().getRepoId()).isEqualTo(30);
+		assertThat(ppOrder.getPpOrderData().getProductDescriptor().getProductId()).isEqualTo(PRODUCT_ID);
 
 		assertThat(ppOrder.getLines()).hasSize(2);
 	}
@@ -140,40 +140,40 @@ public class CandidateServiceTests
 				.businessCase(CandidateBusinessCase.DISTRIBUTION)
 				.materialDescriptor(createMaterialDescriptor())
 				.businessCaseDetail(DistributionDetail.builder()
-						.productPlanningId(220)
-						.plantId(230)
-						.shipperId(240)
-						.qty(TEN)
-						.build())
+											.productPlanningId(220)
+											.plantId(230)
+											.shipperId(240)
+											.qty(TEN)
+											.build())
 				.build();
 
 		final Candidate candidate2 = candidate
 				.withType(CandidateType.DEMAND)
 				.withMaterialDescriptor(candidate.getMaterialDescriptor()
-						.withProductDescriptor(ProductDescriptor.completeForProductIdAndEmptyAttribute(310))
-						.withQuantity(BigDecimal.valueOf(20)))
+												.withProductDescriptor(ProductDescriptor.completeForProductIdAndEmptyAttribute(310))
+												.withQuantity(BigDecimal.valueOf(20)))
 				.withDimension(candidate.getDimension())
 				.withBusinessCaseDetail(DistributionDetail.builder()
-						.productPlanningId(220)
-						.plantId(230)
-						.shipperId(240)
-						.networkDistributionLineId(500)
-						.qty(TEN)
-						.build());
+												.productPlanningId(220)
+												.plantId(230)
+												.shipperId(240)
+												.networkDistributionLineId(500)
+												.qty(TEN)
+												.build());
 
 		final Candidate candidate3 = candidate
 				.withType(CandidateType.DEMAND)
 				.withMaterialDescriptor(candidate.getMaterialDescriptor()
-						.withProductDescriptor(ProductDescriptor.completeForProductIdAndEmptyAttribute(320))
-						.withQuantity(BigDecimal.valueOf(10)))
+												.withProductDescriptor(ProductDescriptor.completeForProductIdAndEmptyAttribute(320))
+												.withQuantity(BigDecimal.valueOf(10)))
 				.withDimension(candidate.getDimension())
 				.withBusinessCaseDetail(DistributionDetail.builder()
-						.productPlanningId(220)
-						.plantId(230)
-						.shipperId(240)
-						.networkDistributionLineId(501)
-						.qty(TEN)
-						.build());
+												.productPlanningId(220)
+												.plantId(230)
+												.shipperId(240)
+												.networkDistributionLineId(501)
+												.qty(TEN)
+												.build());
 
 		final DDOrderRequestedEvent distributionOrderEvent = requestMaterialOrderService.createDDOrderRequestEvent(ImmutableList.of(candidate, candidate2, candidate3));
 		assertThat(distributionOrderEvent).isNotNull();

@@ -16,7 +16,7 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import de.metas.audit.request.log.StateType;
+import de.metas.audit.apirequest.request.log.StateType;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.cache.model.IModelCacheInvalidationService;
 import de.metas.cache.model.ModelCacheInvalidationTiming;
@@ -3003,7 +3003,7 @@ public abstract class PO
 	 * @param success success
 	 * @return true if saved
 	 */
-	private final boolean saveFinish(final boolean newRecord, boolean success) throws Exception
+	private boolean saveFinish(final boolean newRecord, boolean success) throws Exception
 	{
 		// Translations
 		if (success)
@@ -5042,9 +5042,9 @@ public abstract class PO
 	/**
 	 * Get Dynamic Attribute
 	 *
-	 * @param name
 	 * @return attribute value or null if not found
 	 */
+	@Nullable
 	public final Object getDynAttribute(final String name)
 	{
 		if (m_dynAttrs == null)

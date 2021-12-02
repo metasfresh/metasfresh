@@ -35,10 +35,12 @@ public class OLCandProcessorDescriptor_StepDef
 	private final IOLCandBL olCandBL = Services.get(IOLCandBL.class);
 
 	@When("ProcessOLCands is called")
-	public void call_ol_cands_process()
+	public void call_ol_cands_process() throws InterruptedException
 	{
 		final OLCandProcessorDescriptor olCandProcessor = olCandProcessorRepo.getById(1000003);
 		olCandBL.process(olCandProcessor, null);
+
+		Thread.sleep(10000); // TODO this is jus a workaround. instead we need to wait for the processing to be done; issue for that is underway
 	}
 
 }

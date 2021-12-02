@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs;
 
+import de.metas.common.util.EmptyUtil;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
@@ -45,10 +46,12 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.util.TimeUtil;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -93,6 +96,8 @@ public class C_Order_StepDef
 			final String bpartnerIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_C_BPartner_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 			final I_C_BPartner bpartner = bpartnerTable.get(bpartnerIdentifier);
 			final int warehouseId = DataTableUtil.extractIntOrMinusOneForColumnName(tableRow, "OPT.Warehouse_ID");
+			final String poReference = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_POReference);
+			final int paymentTermId = DataTableUtil.extractIntOrMinusOneForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_C_PaymentTerm_ID);
 
 			final I_C_Order order = newInstance(I_C_Order.class);
 			order.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
@@ -101,9 +106,26 @@ public class C_Order_StepDef
 			order.setIsSOTrx(DataTableUtil.extractBooleanForColumnName(tableRow, I_C_Order.COLUMNNAME_IsSOTrx));
 			order.setDateOrdered(DataTableUtil.extractDateTimestampForColumnName(tableRow, I_C_Order.COLUMNNAME_DateOrdered));
 
+			final ZonedDateTime prepartionDate = DataTableUtil.extractZonedDateTimeOrNullForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_PreparationDate);
+			if (prepartionDate != null)
+			{
+				order.setPreparationDate(TimeUtil.asTimestamp(prepartionDate));
+				order.setDatePromised(TimeUtil.asTimestamp(prepartionDate));
+			}
+
+			if (EmptyUtil.isNotBlank(poReference))
+			{
+				order.setPOReference(poReference);
+			}
+
+			if (paymentTermId > 0)
+			{
+				order.setC_PaymentTerm_ID(paymentTermId);
+			}
+
 			saveRecord(order);
 
-			orderTable.put(DataTableUtil.extractRecordIdentifier(tableRow, I_C_Order.COLUMNNAME_C_Order_ID), order);
+			orderTable.putOrReplace(DataTableUtil.extractRecordIdentifier(tableRow, I_C_Order.COLUMNNAME_C_Order_ID), order);
 		}
 	}
 
@@ -158,7 +180,8 @@ public class C_Order_StepDef
 					.createQueryBuilder(I_C_Order.class)
 					.addOnlyActiveRecordsFilter()
 					.addEqualsFilter(I_C_Order.COLUMNNAME_Link_Order_ID, orderTable.get(linkedOrderIdentifier).getC_Order_ID())
-					.create().firstOnly(I_C_Order.class);
+					.create()
+					.firstOnly(I_C_Order.class);
 
 			final boolean isSOTrx = DataTableUtil.extractBooleanForColumnName(tableRow, I_C_Order.COLUMNNAME_IsSOTrx);
 			assertThat(purchaseOrder.isSOTrx()).isEqualTo(isSOTrx);
@@ -182,7 +205,7 @@ public class C_Order_StepDef
 		assertThat(salesOrder.getDocStatus()).isEqualTo(IDocument.STATUS_Closed);
 	}
 
-	@Then("a PurchaseOrder with externalId: {string} is created after not more than {int} seconds and has values")
+	@Then("a PurchaseOrder with externalId {string} is created after not more than {int} seconds and has values")
 	public void verifyOrder(final String externalId, final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
 	{
 		final Map<String, String> dataTableRow = dataTable.asMaps().get(0);
@@ -205,11 +228,13 @@ public class C_Order_StepDef
 				.firstOnlyNotNull(I_C_Order.class);
 
 		final String externalPurchaseOrderUrl = DataTableUtil.extractStringForColumnName(dataTableRow, I_C_Order.COLUMNNAME_ExternalPurchaseOrderURL);
-
 		assertThat(purchaseOrderRecord.getExternalPurchaseOrderURL()).isEqualTo(externalPurchaseOrderUrl);
+		
+		final String poReference = DataTableUtil.extractStringForColumnName(dataTableRow, I_C_Order.COLUMNNAME_POReference);
+		assertThat(purchaseOrderRecord.getPOReference()).isEqualTo(poReference);
 	}
 
-	@And("validate created order")
+	@And("validate the created orders")
 	public void validate_created_order(@NonNull final DataTable table)
 	{
 		final Map<String, String> row = table.asMaps().get(0);
@@ -218,7 +243,7 @@ public class C_Order_StepDef
 
 	private void validateOrder(@NonNull final Map<String, String> row)
 	{
-		final String identifier = DataTableUtil.extractStringForColumnName(row, "Order.Identifier");
+		final String identifier = DataTableUtil.extractStringForColumnName(row, "C_Order_ID.Identifier");
 		final int bpartnerId = DataTableUtil.extractIntForColumnName(row, "c_bpartner_id");
 		final int bpartnerLocationId = DataTableUtil.extractIntForColumnName(row, "c_bpartner_location_id");
 		final Timestamp dateOrdered = DataTableUtil.extractDateTimestampForColumnName(row, "dateordered");
@@ -261,7 +286,7 @@ public class C_Order_StepDef
 			final String groupCompensationType = DataTableUtil.extractStringForColumnName(tableRow, I_C_OrderLine.COLUMNNAME_GroupCompensationType);
 			final String groupCompensationAmtType = DataTableUtil.extractStringForColumnName(tableRow, I_C_OrderLine.COLUMNNAME_GroupCompensationAmtType);
 
-			final I_C_Order	orderRecord = queryBL.createQueryBuilder(I_C_Order.class)
+			final I_C_Order orderRecord = queryBL.createQueryBuilder(I_C_Order.class)
 					.addEqualsFilter(I_C_Order.COLUMNNAME_ExternalId, externalHeaderId)
 					.create()
 					.firstOnlyNotNull(I_C_Order.class);

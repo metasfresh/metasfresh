@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Optional;
 
 import de.metas.common.util.time.SystemTime;
+import de.metas.user.UserId;
 import org.adempiere.ad.dao.IQueryBL;
 import org.springframework.stereotype.Repository;
 
@@ -42,6 +43,9 @@ import lombok.NonNull;
 @Repository
 public class CampaignRepository
 {
+
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
 	public Campaign getById(@NonNull final CampaignId campaignId)
 	{
 		final I_MKTG_Campaign campaignRecord = load(campaignId.getRepoId(), I_MKTG_Campaign.class);
@@ -50,7 +54,7 @@ public class CampaignRepository
 
 	public List<Campaign> getByPlatformId(@NonNull final PlatformId platform)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_MKTG_Campaign.class)
+		return queryBL.createQueryBuilder(I_MKTG_Campaign.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_MKTG_Campaign.COLUMN_MKTG_Platform_ID, platform.getRepoId())
 				.orderBy(I_MKTG_Campaign.COLUMN_MKTG_Campaign_ID)
@@ -76,7 +80,7 @@ public class CampaignRepository
 		final int contactPersonRepoId = contactPersonId.getRepoId();
 		final int campaignRepoId = campaignId.getRepoId();
 
-		final boolean associationAlreadyExists = Services.get(IQueryBL.class).createQueryBuilder(I_MKTG_Campaign_ContactPerson.class)
+		final boolean associationAlreadyExists = queryBL.createQueryBuilder(I_MKTG_Campaign_ContactPerson.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_MKTG_Campaign_ContactPerson.COLUMN_MKTG_Campaign_ID, campaignRepoId)
 				.addEqualsFilter(I_MKTG_Campaign_ContactPerson.COLUMN_MKTG_ContactPerson_ID, contactPersonRepoId)
@@ -152,7 +156,7 @@ public class CampaignRepository
 
 	public Optional<CampaignId> getDefaultNewsletterCampaignId(final int orgId)
 	{
-		final int defaultCampaignId = Services.get(IQueryBL.class).createQueryBuilder(I_MKTG_Campaign.class)
+		final int defaultCampaignId = queryBL.createQueryBuilder(I_MKTG_Campaign.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_MKTG_Campaign.COLUMN_IsDefaultNewsletter, true)
 				.addInArrayFilter(I_MKTG_Campaign.COLUMNNAME_AD_Org_ID, orgId, 0)
@@ -167,7 +171,7 @@ public class CampaignRepository
 			@NonNull final ContactPerson contactPerson,
 			@NonNull final Campaign campaign)
 	{
-		Services.get(IQueryBL.class)
+			queryBL
 				.createQueryBuilder(I_MKTG_Campaign_ContactPerson.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_MKTG_Campaign_ContactPerson.COLUMN_MKTG_Campaign_ID, campaign.getCampaignId().getRepoId())
@@ -178,11 +182,10 @@ public class CampaignRepository
 
 	public void removeAllContactPersonsFromCampaign(final CampaignId campaignId)
 	{
-		Services.get(IQueryBL.class)
+		queryBL
 				.createQueryBuilder(I_MKTG_Campaign_ContactPerson.class)
 				.addEqualsFilter(I_MKTG_Campaign_ContactPerson.COLUMN_MKTG_Campaign_ID, campaignId)
 				.create()
 				.delete();
 	}
-
 }
