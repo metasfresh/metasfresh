@@ -1,6 +1,6 @@
 import queryString from 'query-string';
 import counterpart from 'counterpart';
-
+import { updateLastBackPage } from '../actions/AppActions';
 import history from '../services/History';
 
 /**
@@ -17,6 +17,31 @@ export function updateUri(pathname, query, updatedQuery) {
   const url = `${pathname}?${queryUrl}`;
 
   !fullPath.includes('viewId') ? history.replace(url) : history.push(url);
+}
+
+/**
+ * @method historyDoubleBackOnPopstate
+ * @summary Handles double back button on popstate - this acts as a `patch` for the cases introduced by the above `updateUri` function
+ *          when there is no viewIs and we end up with one one added to the URL.
+ *          i.e when we go to http://localhost:3000/window/143 we are taken to an URL like http://localhost:3000/window/143?page=1&sort&viewId=143-CQ
+ *          If we do not use this function when the user hits the back button he will remain on http://localhost:3000/window/143?page=1&sort&viewId=143-CQ
+ *          as if nothing happen. Instead if we use this funcion on popstate we will be taken back to the appropriate page before we landed on
+ *          http://localhost:3000/window/143
+ * @param {object} store - redux store
+ */
+export function historyDoubleBackOnPopstate(store) {
+  const appState = store.getState().appHandler;
+  const { lastBackPage } = appState;
+
+  if (
+    lastBackPage &&
+    lastBackPage.includes('viewId') &&
+    lastBackPage === document.location.href
+  ) {
+    window.history.back(-2);
+  }
+
+  store.dispatch(updateLastBackPage(document.location.href));
 }
 
 // TODO: Move to api ?
