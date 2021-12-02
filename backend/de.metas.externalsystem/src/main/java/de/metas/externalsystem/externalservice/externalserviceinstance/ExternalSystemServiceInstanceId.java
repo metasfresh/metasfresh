@@ -23,6 +23,7 @@
 package de.metas.externalsystem.externalservice.externalserviceinstance;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.externalsystem.model.I_ExternalSystem_Service_Instance;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
@@ -52,5 +53,11 @@ public class ExternalSystemServiceInstanceId implements RepoIdAware
 	private ExternalSystemServiceInstanceId(final int repoId)
 	{
 		this.repoId = Check.assumeGreaterThanZero(repoId, I_ExternalSystem_Service_Instance.COLUMNNAME_ExternalSystem_Service_Instance_ID);
+	}
+
+	@JsonValue
+	public int getRepoId()
+	{
+		return repoId;
 	}
 }

@@ -25,6 +25,7 @@ package de.metas.externalsystem.externalservice.model;
 import com.google.common.collect.ImmutableList;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.model.I_ExternalSystem_Service;
+import de.metas.util.ISingletonService;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -36,7 +37,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public class ExternalSystemServiceRepository
+public class ExternalSystemServiceRepository implements ISingletonService
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
