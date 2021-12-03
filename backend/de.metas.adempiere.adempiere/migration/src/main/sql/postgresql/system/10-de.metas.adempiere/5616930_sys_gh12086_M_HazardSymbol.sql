@@ -2041,10 +2041,6 @@ UPDATE AD_Column SET IsMandatory='Y', IsUpdateable='N',Updated=TO_TIMESTAMP('202
 INSERT INTO t_alter_column values('m_hazardsymbol_trl','M_HazardSymbol_ID','NUMERIC(10)',null,null)
 ;
 
--- 2021-12-02T21:05:17.032Z
--- URL zum Konzept
-INSERT INTO t_alter_column values('m_hazardsymbol_trl','M_HazardSymbol_ID',null,'NOT NULL',null)
-;
 
 
 
