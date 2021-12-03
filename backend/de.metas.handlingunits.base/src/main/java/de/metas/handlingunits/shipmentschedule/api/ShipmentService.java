@@ -150,7 +150,13 @@ public class ShipmentService implements IShipmentService
 				.map(asyncBatchId -> {
 					final ImmutableSet<ShipmentScheduleId> shipmentScheduleIds = ImmutableSet.copyOf(asyncBatchId2ScheduleId.get(asyncBatchId));
 
-					final GenerateShipmentsRequest generateShipmentsRequest = toGenerateShipmentsRequest(asyncBatchId, shipmentScheduleIds, request.getQuantityTypeToUse(), request.getIsCompleteShipment(), request.getIsShipDateToday());
+					final GenerateShipmentsRequest generateShipmentsRequest = toGenerateShipmentsRequest(
+							asyncBatchId,
+							shipmentScheduleIds,
+							request.getQuantityTypeToUse(), 
+							request.isOnTheFlyPickToPackingInstructions(), 
+							request.getIsCompleteShipment(), 
+							request.getIsShipDateToday());
 
 					generateShipments(generateShipmentsRequest);
 
@@ -274,6 +280,7 @@ public class ShipmentService implements IShipmentService
 				.adPInstanceId(adPInstanceDAO.createSelectionId())
 				.queryFilters(queryFilters)
 				.quantityType(request.getQuantityTypeToUse())
+				.onTheFlyPickToPackingInstructions(request.isOnTheFlyPickToPackingInstructions())
 				.completeShipments(request.getIsCompleteShipment())
 				.isShipmentDateToday(Boolean.TRUE.equals(request.getIsShipDateToday()))
 				.advisedShipmentDocumentNos(request.extractShipmentDocumentNos())
@@ -290,6 +297,7 @@ public class ShipmentService implements IShipmentService
 			@NonNull final AsyncBatchId asyncBatchId,
 			@NonNull final ImmutableSet<ShipmentScheduleId> scheduleIds,
 			@NonNull final M_ShipmentSchedule_QuantityTypeToUse quantityTypeToUse,
+			final boolean onTheFlyPickToPackingInstructions,
 			@NonNull final Boolean isCompleteShipment,
 			@Nullable final Boolean isShipDateToday)
 	{
@@ -299,6 +307,7 @@ public class ShipmentService implements IShipmentService
 				.scheduleToExternalInfo(ImmutableMap.of())
 				.scheduleToQuantityToDeliverOverride(ImmutableMap.of())
 				.quantityTypeToUse(quantityTypeToUse)
+				.onTheFlyPickToPackingInstructions(onTheFlyPickToPackingInstructions)
 				.isShipDateToday(isShipDateToday)
 				.isCompleteShipment(isCompleteShipment)
 				.build();

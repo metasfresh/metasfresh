@@ -72,12 +72,12 @@ public class WebuiHUTransformCommand
 	public static enum ActionType
 	{
 		/**
-		 * Invokes {@link HUTransformService#cuToNewCU(I_M_HU, BigDecimal)}.
+		 * Invokes {@link HUTransformService#cuToNewCU(I_M_HU, Quantity)}.
 		 */
 		CU_To_NewCU,
 
 		/**
-		 * Invokes {@link HUTransformService#cuToNewTUs(I_M_HU, BigDecimal, I_M_HU_PI_Item_Product, boolean)}.
+		 * Invokes {@link HUTransformService#cuToNewTUs(I_M_HU, Quantity, I_M_HU_PI_Item_Product, boolean)}.
 		 */
 		CU_To_NewTUs,
 
@@ -87,18 +87,18 @@ public class WebuiHUTransformCommand
 		 * Parameters:
 		 * <ul>
 		 * <li>the currently selected TU line</li>
-		 * <li>{@link WEBUI_M_HU_Transform_Template#PARAM_HUPlanningReceiptOwnerPM_TU}</li>
+		 * <li>{@link WEBUI_M_HU_Transform#PARAM_HUPlanningReceiptOwnerPM_TU}</li>
 		 * </ul>
 		 */
 		TU_Set_Ownership,
 
 		/**
-		 * Invokes {@link HUTransformService#cuToExistingTU(I_M_HU, BigDecimal, I_M_HU)}.
+		 * Invokes {@link HUTransformService#cuToExistingTU(I_M_HU, Quantity, I_M_HU)}.
 		 */
 		CU_To_ExistingTU,
 
 		/**
-		 * Invokes {@link HUTransformService#tuToNewTUs(I_M_HU, BigDecimal, boolean)}.
+		 * Invokes {@link HUTransformService#tuToNewTUs(I_M_HU, BigDecimal)}.
 		 */
 		TU_To_NewTUs,
 
@@ -118,7 +118,7 @@ public class WebuiHUTransformCommand
 		 * Parameters:
 		 * <ul>
 		 * <li>the currently selected LU line</li>
-		 * <li>{@link WEBUI_M_HU_Transform_Template#PARAM_HUPlanningReceiptOwnerPM_LU}</li>
+		 * <li>{@link WEBUI_M_HU_Transform#PARAM_HUPlanningReceiptOwnerPM_LU}</li>
 		 * </ul>
 		 */
 		LU_Set_Ownership
@@ -134,20 +134,19 @@ public class WebuiHUTransformCommand
 	private WebuiHUTransformCommand(
 			@NonNull final HUEditorRow selectedRow,
 			@Nullable final List<TableRecordReference> contextDocumentLines,
-			@NonNull final WebuiHUTransformParameters parameters,
-			final HUEditorRow.HUEditorRowHierarchy huEditorRowHierarchy)
+			@NonNull final WebuiHUTransformParameters parameters)
 	{
 		this._selectedRow = selectedRow;
 		this._contextDocumentLines = contextDocumentLines != null ? ImmutableList.copyOf(contextDocumentLines) : ImmutableList.of();
 		this._parameters = parameters;
 	}
 
-	private final WebuiHUTransformParameters getParameters()
+	private WebuiHUTransformParameters getParameters()
 	{
 		return _parameters;
 	}
 
-	private final ActionType getActionType()
+	private ActionType getActionType()
 	{
 		return getParameters().getActionType();
 	}
@@ -162,7 +161,7 @@ public class WebuiHUTransformCommand
 		return _contextDocumentLines;
 	}
 
-	private final HUTransformService newHUTransformation()
+	private HUTransformService newHUTransformation()
 	{
 		return HUTransformService.builder()
 				.referencedObjects(getContextDocumentLines())
@@ -306,9 +305,6 @@ public class WebuiHUTransformCommand
 	 *
 	 * @param cuRow                 cu row to split
 	 * @param qtyCU                 quantity CU to split
-	 * @param isOwnPackingMaterials
-	 * @param tuPIItemProductId     to TU
-	 * @return
 	 */
 	private WebuiHUTransformCommandResult action_SplitCU_To_NewTUs(
 			final HUEditorRow cuRow, final I_M_HU_PI_Item_Product tuPIItemProduct, final Quantity qtyCU, final boolean isOwnPackingMaterials)
@@ -345,10 +341,6 @@ public class WebuiHUTransformCommand
 	 *
 	 * @param tuRow                 represents the TU (or TUs in the aggregate-HU-case) that is our split source
 	 * @param qtyTU                 the number of TUs we want to split from the given {@code tuRow}
-	 * @param isOwnPackingMaterials
-	 * @param tuPIItemProductId
-	 * @param luPI
-	 * @return
 	 */
 	private WebuiHUTransformCommandResult action_SplitTU_To_NewLU(
 			final HUEditorRow tuRow, final I_M_HU_PI_Item huPIItem, final BigDecimal qtyTU, final boolean isOwnPackingMaterials)
@@ -370,11 +362,6 @@ public class WebuiHUTransformCommand
 
 	/**
 	 * Split a given number of TUs from current selected TU line to new TUs.
-	 *
-	 * @param tuRow
-	 * @param qtyTU
-	 * @param tuPI
-	 * @return
 	 */
 	private WebuiHUTransformCommandResult action_SplitTU_To_NewTUs(final HUEditorRow tuRow, final BigDecimal qtyTU)
 	{

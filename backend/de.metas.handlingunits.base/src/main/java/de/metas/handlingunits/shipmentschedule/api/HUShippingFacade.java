@@ -199,6 +199,7 @@ public class HUShippingFacade
 				.quantityTypeToUse(M_ShipmentSchedule_QuantityTypeToUse.TYPE_PICKED_QTY)
 				.isShipDateToday(true)
 				.isCompleteShipment(completeShipments)
+				.onTheFlyPickToPackingInstructions(false) /* backwards compatibility: on-the-fly-pick to (anonymous) CUs */
 				.build();
 
 		final Set<InOutId> generatedInOutIds = shipmentService.generateShipmentsForScheduleIds(request);
