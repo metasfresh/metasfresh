@@ -119,7 +119,7 @@ public class AutoProcessingOrderService
 				.scheduleIds(scheduleIds)
 				.quantityTypeToUse(M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER)
 				
-				// Usually we want only *CUs* to be picked on-the-fly, because we don't know or care which HUs are shipped and don't want to make assumptions regarding their TU-Packaging.
+				// Usually we want only *CUs* to be picked on-the-fly, because we don't know and care which HUs are shipped and don't want to make assumptions regarding their TU-Packaging.
 				// But here it is different: we want that whatever HUs are picked, exactly those HUs shall be boxed and send to the customer.
 				.onTheFlyPickToPackingInstructions(true)
 				.isCompleteShipment(true)
