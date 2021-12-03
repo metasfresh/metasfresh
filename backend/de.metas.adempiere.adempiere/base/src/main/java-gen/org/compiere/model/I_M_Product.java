@@ -1408,6 +1408,26 @@ public interface I_M_Product
 	String COLUMNNAME_Package_UOM_ID = "Package_UOM_ID";
 
 	/**
+	 * Set Per 100g.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPer100g (@Nullable BigDecimal Per100g);
+
+	/**
+	 * Get Per 100g.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getPer100g();
+
+	ModelColumn<I_M_Product, Object> COLUMN_Per100g = new ModelColumn<>(I_M_Product.class, "Per100g", null);
+	String COLUMNNAME_Per100g = "Per100g";
+	/**
 	 * Set Process Now.
 	 *
 	 * <br>Type: Button
