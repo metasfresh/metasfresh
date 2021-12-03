@@ -150,10 +150,12 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 		final CreateShipmentOrderResponse response = (CreateShipmentOrderResponse)doActualRequest(dhlRequest, deliveryOrder.getId());
 		if (!BigInteger.ZERO.equals(response.getStatus().getStatusCode()))
 		{
-			final String exceptionMessage = response.getCreationState().stream()
-					.map(it -> Joiner.on("; ")
-							.skipNulls()
-							.join(it.getLabelData().getStatus().getStatusMessage())
+			final String exceptionMessage = response.getCreationState()
+					.stream()
+					.map(it -> it.getLabelData().getStatus().getStatusText() + " " +
+							Joiner.on("; ")
+									.skipNulls()
+									.join(it.getLabelData().getStatus().getStatusMessage())
 					)
 					.collect(Collectors.joining("; "));
 			throw new ShipperGatewayException(exceptionMessage);
@@ -200,11 +202,11 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 				.orderId(OrderId.of(DhlConstants.SHIPPER_GATEWAY_ID, deliveryOrderIdAsString))
 				.defaultLabelType(DhlPackageLabelType.GUI)
 				.label(PackageLabel.builder()
-						.type(DhlPackageLabelType.GUI)
-						.labelData(labelData)
-						.contentType(PackageLabel.CONTENTTYPE_PDF)
-						.fileName(awb)
-						.build())
+							   .type(DhlPackageLabelType.GUI)
+							   .labelData(labelData)
+							   .contentType(PackageLabel.CONTENTTYPE_PDF)
+							   .fileName(awb)
+							   .build())
 				.build();
 	}
 
@@ -255,18 +257,18 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 		{
 			final Object response = webServiceTemplate.marshalSendAndReceive(request, soapHeaderWithAuth);
 			databaseLogger.log(logEventBuilder
-					.responseElement(response)
-					.durationMillis(stopwatch.elapsed(TimeUnit.MILLISECONDS))
-					.build());
+									   .responseElement(response)
+									   .durationMillis(stopwatch.elapsed(TimeUnit.MILLISECONDS))
+									   .build());
 			return response;
 		}
 		catch (final Throwable throwable)
 		{
 			final AdempiereException exception = AdempiereException.wrapIfNeeded(throwable);
 			databaseLogger.log(logEventBuilder
-					.responseException(exception)
-					.durationMillis(stopwatch.elapsed(TimeUnit.MILLISECONDS))
-					.build());
+									   .responseException(exception)
+									   .durationMillis(stopwatch.elapsed(TimeUnit.MILLISECONDS))
+									   .build());
 
 			throw exception;
 		}
@@ -460,8 +462,8 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 	private static class SoapHeaderWithAuth implements WebServiceMessageCallback
 	{
 
-		private ObjectFactory objectFactoryCis;
-		private DhlClientConfig config;
+		private final ObjectFactory objectFactoryCis;
+		private final DhlClientConfig config;
 
 		private SoapHeaderWithAuth(final ObjectFactory objectFactoryCis, final DhlClientConfig config)
 		{
