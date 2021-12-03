@@ -117,9 +117,7 @@ public class Main extends AbstractModuleInterceptor
 	private int getInitDelayMillis()
 	{
 		// I will leave the default value of 3 minutes, which was the common time until #2894
-		final int delayTimeInMillis = Services.get(ISysConfigBL.class).getIntValue(SYSCONFIG_ASYNC_INIT_DELAY_MILLIS, THREE_MINUTES);
-
-		return delayTimeInMillis;
+		return Services.get(ISysConfigBL.class).getIntValue(SYSCONFIG_ASYNC_INIT_DELAY_MILLIS, THREE_MINUTES);
 
 	}
 
@@ -130,7 +128,6 @@ public class Main extends AbstractModuleInterceptor
 		engine.addModelValidator(new C_Queue_Processor());
 		engine.addModelValidator(new de.metas.lock.model.validator.Main());
 		engine.addModelValidator(new C_Async_Batch());
-		engine.addModelValidator(C_Queue_WorkPackage.INSTANCE);
 	}
 
 	/**

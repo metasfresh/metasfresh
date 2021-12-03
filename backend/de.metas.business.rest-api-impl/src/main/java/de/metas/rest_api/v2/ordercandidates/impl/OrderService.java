@@ -29,7 +29,7 @@ import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.asyncbatchmilestone.AsyncBatchMilestone;
 import de.metas.async.asyncbatchmilestone.AsyncBatchMilestoneId;
 import de.metas.async.asyncbatchmilestone.AsyncBatchMilestoneObserver;
-import de.metas.async.asyncbatchmilestone.AsyncBathMilestoneService;
+import de.metas.async.asyncbatchmilestone.AsyncBatchMilestoneService;
 import de.metas.async.asyncbatchmilestone.MilestoneName;
 import de.metas.order.OrderId;
 import de.metas.ordercandidate.api.IOLCandDAO;
@@ -60,16 +60,16 @@ public class OrderService
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
 
-	private final AsyncBathMilestoneService asyncBathMilestoneService;
+	private final AsyncBatchMilestoneService asyncBatchMilestoneService;
 	private final AsyncBatchMilestoneObserver asyncBatchMilestoneObserver;
 	private final C_OLCandToOrderEnqueuer olCandToOrderEnqueuer;
 
 	public OrderService(
-			@NonNull final AsyncBathMilestoneService asyncBathMilestoneService,
+			@NonNull final AsyncBatchMilestoneService asyncBatchMilestoneService,
 			@NonNull final AsyncBatchMilestoneObserver asyncBatchMilestoneObserver,
 			@NonNull final C_OLCandToOrderEnqueuer olCandToOrderEnqueuer)
 	{
-		this.asyncBathMilestoneService = asyncBathMilestoneService;
+		this.asyncBatchMilestoneService = asyncBatchMilestoneService;
 		this.asyncBatchMilestoneObserver = asyncBatchMilestoneObserver;
 		this.olCandToOrderEnqueuer = olCandToOrderEnqueuer;
 	}
@@ -100,7 +100,7 @@ public class OrderService
 				.milestoneName(MilestoneName.SALES_ORDER_CREATION)
 				.build();
 
-		final AsyncBatchMilestoneId milestoneId = asyncBathMilestoneService.save(asyncBatchMilestone).getIdNotNull();
+		final AsyncBatchMilestoneId milestoneId = asyncBatchMilestoneService.save(asyncBatchMilestone).getIdNotNull();
 
 		asyncBatchMilestoneObserver.observeOn(milestoneId);
 

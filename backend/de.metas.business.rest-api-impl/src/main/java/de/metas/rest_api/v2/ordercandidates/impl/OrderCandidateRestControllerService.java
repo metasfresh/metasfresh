@@ -309,7 +309,7 @@ public class OrderCandidateRestControllerService
 
 		asyncBatchBL.updateProcessedFromMilestones(asyncBatchId);
 
-		if (request.getCloseOrder())
+		if (Boolean.TRUE.equals(request.getCloseOrder()))
 		{
 			orderIds.forEach(orderBL::closeOrder);
 		}
