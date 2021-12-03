@@ -75,7 +75,7 @@ class PickStepScreen extends Component {
   };
 
   handleNotFound = () => {
-    const { wfProcessId, stepId, lineId, activityId, dispatch } = this.props;
+    const { wfProcessId, stepId, altStepId, lineId, activityId, dispatch } = this.props;
     const huBarcode = this.getPickFrom().huBarcode;
     const qtyRejected = this.getQtyToPick();
 
@@ -94,6 +94,7 @@ class PickStepScreen extends Component {
           activityId,
           lineId,
           stepId,
+          altStepId,
           qtyPicked: 0,
           qtyRejected,
           qtyRejectedReasonCode: 'N',
