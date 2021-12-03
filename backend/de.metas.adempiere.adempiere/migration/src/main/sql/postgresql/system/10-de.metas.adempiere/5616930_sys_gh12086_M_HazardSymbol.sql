@@ -2066,3 +2066,128 @@ UPDATE AD_Column SET AD_Reference_ID=18, IsExcludeFromZoomTargets='Y', IsUpdatea
 /* DDL */ CREATE TABLE public.M_HazardSymbol_Trl (AD_Client_ID NUMERIC NOT NULL, AD_Language VARCHAR(10) NOT NULL, AD_Org_ID NUMERIC(10) NOT NULL, Created TIMESTAMP WITH TIME ZONE NOT NULL, CreatedBy NUMERIC(10) NOT NULL, IsActive CHAR(1) DEFAULT 'Y' CHECK (IsActive IN ('Y','N')) NOT NULL, IsTranslated CHAR(1) DEFAULT 'N' CHECK (IsTranslated IN ('Y','N')) NOT NULL, M_HazardSymbol_ID NUMERIC(10) NOT NULL, Name VARCHAR(60), Updated TIMESTAMP WITH TIME ZONE NOT NULL, UpdatedBy NUMERIC(10) NOT NULL, CONSTRAINT M_HazardSymbol_Trl_Key PRIMARY KEY (AD_Language, M_HazardSymbol_ID), CONSTRAINT ADLangu_MHazardSymbolTrl FOREIGN KEY (AD_Language) REFERENCES public.AD_Language DEFERRABLE INITIALLY DEFERRED, CONSTRAINT MHazardSymbol_MHazardSymbolTrl FOREIGN KEY (M_HazardSymbol_ID) REFERENCES public.M_HazardSymbol DEFERRABLE INITIALLY DEFERRED)
 ;
 
+
+
+
+
+-- 2021-12-03T11:03:18.784Z
+-- URL zum Konzept
+UPDATE AD_Column SET DefaultValue='@#AD_Client_ID@',Updated=TO_TIMESTAMP('2021-12-03 13:03:18','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=578818
+;
+
+-- 2021-12-03T11:03:30.839Z
+-- URL zum Konzept
+INSERT INTO t_alter_column values('m_hazardsymbol_trl','AD_Client_ID','NUMERIC',null,null)
+;
+
+-- 2021-12-03T11:10:06.077Z
+-- URL zum Konzept
+UPDATE AD_Column SET AD_Val_Rule_ID=104, DefaultValue='@#AD_Org_ID@',Updated=TO_TIMESTAMP('2021-12-03 13:10:05','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=578820
+;
+
+-- 2021-12-03T11:10:14.504Z
+-- URL zum Konzept
+INSERT INTO t_alter_column values('m_hazardsymbol_trl','AD_Org_ID','NUMERIC(10)',null,null)
+;
+
+-- 2021-12-03T11:10:49.680Z
+-- URL zum Konzept
+UPDATE AD_Column SET IsExcludeFromZoomTargets='N',Updated=TO_TIMESTAMP('2021-12-03 13:10:49','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=578820
+;
+
+-- 2021-12-03T11:11:24.742Z
+-- URL zum Konzept
+UPDATE AD_Column SET IsAutoApplyValidationRule='N',Updated=TO_TIMESTAMP('2021-12-03 13:11:24','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=578822
+;
+
+-- 2021-12-03T11:12:04.074Z
+-- URL zum Konzept
+UPDATE AD_Column SET IsExcludeFromZoomTargets='N',Updated=TO_TIMESTAMP('2021-12-03 13:12:03','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=578825
+;
+
+-- 2021-12-03T11:12:50.420Z
+-- URL zum Konzept
+UPDATE AD_Column SET IsExcludeFromZoomTargets='N', IsIdentifier='N', IsMandatory='Y',Updated=TO_TIMESTAMP('2021-12-03 13:12:50','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=578827
+;
+
+-- 2021-12-03T11:12:59.994Z
+-- URL zum Konzept
+INSERT INTO t_alter_column values('m_hazardsymbol_trl','Name','VARCHAR(60)',null,null)
+;
+
+-- 2021-12-03T11:13:00.071Z
+-- URL zum Konzept
+INSERT INTO t_alter_column values('m_hazardsymbol_trl','Name',null,'NOT NULL',null)
+;
+
+-- 2021-12-03T11:13:19.682Z
+-- URL zum Konzept
+UPDATE AD_Column SET IsExcludeFromZoomTargets='N',Updated=TO_TIMESTAMP('2021-12-03 13:13:19','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=578828
+;
+
+-- 2021-12-03T11:13:37.489Z
+-- URL zum Konzept
+UPDATE AD_Column SET IsExcludeFromZoomTargets='N',Updated=TO_TIMESTAMP('2021-12-03 13:13:37','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=578829
+;
+
+-- 2021-12-03T11:14:28.045Z
+-- URL zum Konzept
+UPDATE AD_Column SET IsExcludeFromZoomTargets='N',Updated=TO_TIMESTAMP('2021-12-03 13:14:27','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=578824
+;
+
+-- 2021-12-03T11:14:40.968Z
+-- URL zum Konzept
+UPDATE AD_Column SET IsExcludeFromZoomTargets='N',Updated=TO_TIMESTAMP('2021-12-03 13:14:40','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=578822
+;
+
+-- 2021-12-03T11:14:47.925Z
+-- URL zum Konzept
+UPDATE AD_Column SET IsExcludeFromZoomTargets='N',Updated=TO_TIMESTAMP('2021-12-03 13:14:47','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=578821
+;
+
+-- 2021-12-03T11:15:04.333Z
+-- URL zum Konzept
+UPDATE AD_Column SET IsExcludeFromZoomTargets='N',Updated=TO_TIMESTAMP('2021-12-03 13:15:04','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=578818
+;
+
+-- 2021-12-03T11:15:26.043Z
+-- URL zum Konzept
+UPDATE AD_Column SET AD_Reference_ID=19,Updated=TO_TIMESTAMP('2021-12-03 13:15:25','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=578818
+;
+
+-- 2021-12-03T11:15:34.627Z
+-- URL zum Konzept
+INSERT INTO t_alter_column values('m_hazardsymbol_trl','AD_Client_ID','NUMERIC(10)',null,null)
+;
+
+-- 2021-12-03T11:34:06.052Z
+-- URL zum Konzept
+INSERT INTO t_alter_column values('m_hazardsymbol_trl','AD_Language','VARCHAR(10)',null,null)
+;
+
+
+-- 2021-12-03T11:42:18.662Z
+-- URL zum Konzept
+INSERT INTO t_alter_column values('m_hazardsymbol_trl','AD_Client_ID','NUMERIC(10)',null,null)
+;
+
+-- 2021-12-03T11:42:31.400Z
+-- URL zum Konzept
+INSERT INTO t_alter_column values('m_hazardsymbol_trl','AD_Language','VARCHAR(10)',null,null)
+;
+
+-- 2021-12-03T11:42:44.751Z
+-- URL zum Konzept
+INSERT INTO t_alter_column values('m_hazardsymbol_trl','AD_Org_ID','NUMERIC(10)',null,null)
+;
+
+-- 2021-12-03T11:43:54.066Z
+-- URL zum Konzept
+INSERT INTO t_alter_column values('m_hazardsymbol_trl','M_HazardSymbol_ID','NUMERIC(10)',null,null)
+;
+
+-- 2021-12-03T11:44:11.476Z
+-- URL zum Konzept
+INSERT INTO t_alter_column values('m_hazardsymbol_trl','Name','VARCHAR(60)',null,null)
+;
+

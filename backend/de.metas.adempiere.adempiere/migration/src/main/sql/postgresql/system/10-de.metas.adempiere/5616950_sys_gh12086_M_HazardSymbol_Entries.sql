@@ -639,6 +639,102 @@ UPDATE M_HazardSymbol SET AD_Image_ID=540135,Updated=TO_TIMESTAMP('2021-12-03 01
 
 
 
+-- 2021-12-03T11:53:53.678Z
+-- URL zum Konzept
+UPDATE M_HazardSymbol_Trl SET Name='Use respiratory protection',Updated=TO_TIMESTAMP('2021-12-03 12:53:53','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND M_HazardSymbol_ID=540011
+;
+
+
+
+
+-- 2021-12-03T11:54:50.574Z
+-- URL zum Konzept
+UPDATE M_HazardSymbol_Trl SET Name='Use eye and ear protection',Updated=TO_TIMESTAMP('2021-12-03 12:54:50','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND M_HazardSymbol_ID=540024
+;
+
+
+
+
+
+
+
+
+
+
+-- 2021-12-03T11:55:59.862Z
+-- URL zum Konzept
+UPDATE M_HazardSymbol_Trl SET Name='Use protective handwear',Updated=TO_TIMESTAMP('2021-12-03 12:55:59','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND M_HazardSymbol_ID=540026
+;
+
+-- 2021-12-03T11:56:47.447Z
+-- URL zum Konzept
+UPDATE M_HazardSymbol_Trl SET Name='Use protective apron',Updated=TO_TIMESTAMP('2021-12-03 12:56:47','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND M_HazardSymbol_ID=540027
+;
+
+-- 2021-12-03T11:57:14.497Z
+-- URL zum Konzept
+UPDATE M_HazardSymbol_Trl SET Name='Use protective footwear',Updated=TO_TIMESTAMP('2021-12-03 12:57:14','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND M_HazardSymbol_ID=540028
+;
+
+-- 2021-12-03T11:58:28.522Z
+-- URL zum Konzept
+UPDATE M_HazardSymbol_Trl SET Name='Wear a mask',Updated=TO_TIMESTAMP('2021-12-03 12:58:28','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND M_HazardSymbol_ID=540029
+;
+
+-- 2021-12-03T11:59:03.796Z
+-- URL zum Konzept
+UPDATE M_HazardSymbol_Trl SET Name='Use protective eyewear',Updated=TO_TIMESTAMP('2021-12-03 12:59:03','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND M_HazardSymbol_ID=540031
+;
+
+-- 2021-12-03T11:59:43.171Z
+-- URL zum Konzept
+UPDATE M_HazardSymbol_Trl SET Name='Extremely flammable',Updated=TO_TIMESTAMP('2021-12-03 12:59:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND M_HazardSymbol_ID=540033
+;
+
+-- 2021-12-03T12:00:51.790Z
+-- URL zum Konzept
+UPDATE M_HazardSymbol_Trl SET Name='Flammable',Updated=TO_TIMESTAMP('2021-12-03 13:00:51','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND M_HazardSymbol_ID=540033
+;
+
+-- 2021-12-03T12:01:08.227Z
+-- URL zum Konzept
+UPDATE M_HazardSymbol_Trl SET Name='Oxidizing',Updated=TO_TIMESTAMP('2021-12-03 13:01:08','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND M_HazardSymbol_ID=540036
+;
+
+-- 2021-12-03T12:01:25.809Z
+-- URL zum Konzept
+UPDATE M_HazardSymbol_Trl SET Name='Corrosive',Updated=TO_TIMESTAMP('2021-12-03 13:01:25','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND M_HazardSymbol_ID=540037
+;
+
+-- 2021-12-03T12:01:42.861Z
+-- URL zum Konzept
+UPDATE M_HazardSymbol_Trl SET Name='Toxic',Updated=TO_TIMESTAMP('2021-12-03 13:01:42','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND M_HazardSymbol_ID=540038
+;
+
+-- 2021-12-03T12:01:57.649Z
+-- URL zum Konzept
+UPDATE M_HazardSymbol_Trl SET IsTranslated='Y', Name='Harmful',Updated=TO_TIMESTAMP('2021-12-03 13:01:57','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND M_HazardSymbol_ID=540039
+;
+
+-- 2021-12-03T12:02:18.514Z
+-- URL zum Konzept
+UPDATE M_HazardSymbol_Trl SET Name='Health hazard',Updated=TO_TIMESTAMP('2021-12-03 13:02:18','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND M_HazardSymbol_ID=540040
+;
+
+-- 2021-12-03T12:02:36.481Z
+-- URL zum Konzept
+UPDATE M_HazardSymbol_Trl SET Name='Environmental hazard',Updated=TO_TIMESTAMP('2021-12-03 13:02:36','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND M_HazardSymbol_ID=540041
+;
+
+
+
+
+
+
+
+
+
+
 
 
 
