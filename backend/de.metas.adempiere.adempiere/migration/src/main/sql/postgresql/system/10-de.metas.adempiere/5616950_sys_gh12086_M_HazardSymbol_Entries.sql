@@ -737,6 +737,122 @@ UPDATE M_HazardSymbol_Trl SET Name='Environmental hazard',Updated=TO_TIMESTAMP('
 
 
 
+-- 2021-12-03T13:40:28.837Z
+-- URL zum Konzept
+UPDATE M_HazardSymbol SET Value='Schutzhaube',Updated=TO_TIMESTAMP('2021-12-03 14:40:28','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE M_HazardSymbol_ID=540032
+;
+
+-- 2021-12-03T13:40:30.181Z
+-- URL zum Konzept
+UPDATE M_HazardSymbol SET Name='Schutzhaube',Updated=TO_TIMESTAMP('2021-12-03 14:40:30','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE M_HazardSymbol_ID=540032
+;
+
+-- 2021-12-03T13:40:30.184Z
+-- URL zum Konzept
+UPDATE M_HazardSymbol_Trl trl SET Name='Schutzhaube'  WHERE M_HazardSymbol_ID=540032 AND ( trl.isTranslated = 'N'  OR  exists(select 1 from ad_language lang where lang.ad_language = trl.ad_language and lang.isBaseLanguage = 'Y') )
+;
+
+-- 2021-12-03T13:43:21.375Z
+-- URL zum Konzept
+UPDATE M_HazardSymbol_Trl SET Name='Use protective hood1',Updated=TO_TIMESTAMP('2021-12-03 14:43:21','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND M_HazardSymbol_ID=540032
+;
+
+-- 2021-12-03T13:43:24.145Z
+-- URL zum Konzept
+UPDATE M_HazardSymbol_Trl SET Name='Use protective hood',Updated=TO_TIMESTAMP('2021-12-03 14:43:24','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND M_HazardSymbol_ID=540032
+;
+
+-- 2021-12-03T13:43:53.149Z
+-- URL zum Konzept
+UPDATE M_HazardSymbol SET Name='Augen u. Gehörschutz',Updated=TO_TIMESTAMP('2021-12-03 14:43:53','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE M_HazardSymbol_ID=540024
+;
+
+-- 2021-12-03T13:43:53.151Z
+-- URL zum Konzept
+UPDATE M_HazardSymbol_Trl trl SET Name='Augen u. Gehörschutz'  WHERE M_HazardSymbol_ID=540024 AND ( trl.isTranslated = 'N'  OR  exists(select 1 from ad_language lang where lang.ad_language = trl.ad_language and lang.isBaseLanguage = 'Y') )
+;
+
+-- 2021-12-03T13:44:09.589Z
+-- URL zum Konzept
+UPDATE M_HazardSymbol_Trl SET Name='Use eye and ear protection',Updated=TO_TIMESTAMP('2021-12-03 14:44:09','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND M_HazardSymbol_ID=540024
+;
+
+-- 2021-12-03T13:44:10.427Z
+-- URL zum Konzept
+UPDATE M_HazardSymbol_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2021-12-03 14:44:10','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND M_HazardSymbol_ID=540024
+;
+
+-- 2021-12-03T13:44:28.157Z
+-- URL zum Konzept
+UPDATE M_HazardSymbol_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2021-12-03 14:44:28','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND M_HazardSymbol_ID=540011
+;
+
+-- 2021-12-03T13:44:32.178Z
+-- URL zum Konzept
+UPDATE M_HazardSymbol_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2021-12-03 14:44:32','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND M_HazardSymbol_ID=540026
+;
+
+-- 2021-12-03T13:45:39.604Z
+-- URL zum Konzept
+UPDATE M_HazardSymbol_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2021-12-03 14:45:39','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND M_HazardSymbol_ID=540027
+;
+
+-- 2021-12-03T13:45:42.990Z
+-- URL zum Konzept
+UPDATE M_HazardSymbol_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2021-12-03 14:45:42','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND M_HazardSymbol_ID=540028
+;
+
+-- 2021-12-03T13:45:53.087Z
+-- URL zum Konzept
+UPDATE M_HazardSymbol_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2021-12-03 14:45:53','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND M_HazardSymbol_ID=540029
+;
+
+-- 2021-12-03T13:45:57.541Z
+-- URL zum Konzept
+UPDATE M_HazardSymbol_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2021-12-03 14:45:57','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND M_HazardSymbol_ID=540031
+;
+
+-- 2021-12-03T13:46:01.959Z
+-- URL zum Konzept
+UPDATE M_HazardSymbol_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2021-12-03 14:46:01','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND M_HazardSymbol_ID=540032
+;
+
+-- 2021-12-03T13:46:09.095Z
+-- URL zum Konzept
+UPDATE M_HazardSymbol_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2021-12-03 14:46:09','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND M_HazardSymbol_ID=540033
+;
+
+-- 2021-12-03T13:46:13.029Z
+-- URL zum Konzept
+UPDATE M_HazardSymbol_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2021-12-03 14:46:13','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND M_HazardSymbol_ID=540036
+;
+
+-- 2021-12-03T13:46:20.342Z
+-- URL zum Konzept
+UPDATE M_HazardSymbol_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2021-12-03 14:46:20','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND M_HazardSymbol_ID=540037
+;
+
+-- 2021-12-03T13:46:24.479Z
+-- URL zum Konzept
+UPDATE M_HazardSymbol_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2021-12-03 14:46:24','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND M_HazardSymbol_ID=540038
+;
+
+-- 2021-12-03T13:46:54.442Z
+-- URL zum Konzept
+UPDATE M_HazardSymbol SET Value='GHS07',Updated=TO_TIMESTAMP('2021-12-03 14:46:54','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE M_HazardSymbol_ID=540039
+;
+
+-- 2021-12-03T13:46:55.493Z
+-- URL zum Konzept
+UPDATE M_HazardSymbol SET Name='Gesundheitsschädlich',Updated=TO_TIMESTAMP('2021-12-03 14:46:55','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE M_HazardSymbol_ID=540039
+;
+
+-- 2021-12-03T13:46:55.494Z
+-- URL zum Konzept
+UPDATE M_HazardSymbol_Trl trl SET Name='Gesundheitsschädlich'  WHERE M_HazardSymbol_ID=540039 AND ( trl.isTranslated = 'N'  OR  exists(select 1 from ad_language lang where lang.ad_language = trl.ad_language and lang.isBaseLanguage = 'Y') )
+;
+
+
 
 
 
