@@ -220,6 +220,7 @@ public class ShipmentScheduleEnqueuer
 					workpackageBuilder
 							.parameters()
 							.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_QuantityType, workPackageParameters.getQuantityType())
+							.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_IsOnTheFlyPickToPackingInstructions, workPackageParameters.isOnTheFlyPickToPackingInstructions())
 							.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_IsCompleteShipments, workPackageParameters.isCompleteShipments())
 							.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_IsShipmentDateToday, workPackageParameters.isShipmentDateToday());
 
@@ -368,6 +369,7 @@ public class ShipmentScheduleEnqueuer
 	public static class ShipmentScheduleWorkPackageParameters
 	{
 		public static final String PARAM_QuantityType = "QuantityType";
+		public static final String PARAM_IsOnTheFlyPickToPackingInstructions = "IsOnTheFlyPickToPackingInstructions";
 		public static final String PARAM_IsCompleteShipments = "IsCompleteShipments";
 		public static final String PARAM_IsShipmentDateToday = "IsShipToday";
 		public static final String PARAM_PREFIX_AdvisedShipmentDocumentNo = "Advised_ShipmentDocumentNo_For_M_ShipmentSchedule_ID_"; // (param name can have 255 chars)
@@ -384,6 +386,13 @@ public class ShipmentScheduleEnqueuer
 		@NonNull
 		M_ShipmentSchedule_QuantityTypeToUse quantityType;
 
+		/**
+		 * If {@code false} and HUs are picked on-the-fly, then those HUs are created as CUs that are taken from bigger LUs, TUs or CUs (the default).
+		 * If {@code true}, then the on-the-fly picked HUs are created as TUs, using the respective shipment schedules' packing instructions.
+		 */
+		@Builder.Default
+		boolean onTheFlyPickToPackingInstructions = false;
+		
 		boolean completeShipments;
 		boolean isShipmentDateToday;
 

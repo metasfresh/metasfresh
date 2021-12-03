@@ -162,8 +162,8 @@ public class InOutProducerFromShipmentScheduleWithHU
 	{
 		this.result = result;
 
-		shipmentScheduleKeyBuilder = shipmentScheduleBL.mkShipmentHeaderAggregationKeyBuilder();
-		huShipmentScheduleKeyBuilder = huShipmentScheduleBL.mkHUShipmentScheduleHeaderAggregationKeyBuilder();
+		this.shipmentScheduleKeyBuilder = shipmentScheduleBL.mkShipmentHeaderAggregationKeyBuilder();
+		this.huShipmentScheduleKeyBuilder = huShipmentScheduleBL.mkHUShipmentScheduleHeaderAggregationKeyBuilder();
 	}
 
 	@Override
