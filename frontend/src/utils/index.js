@@ -270,3 +270,12 @@ export function deepUnfreeze(obj) {
   }
   return obj;
 }
+
+/**
+ * @method leftTrim
+ * @summary - removes spaces from the left side of a string
+ * @param {string} str
+ */
+export function leftTrim(str) {
+  return str.replace(/^\s+/, '');
+}

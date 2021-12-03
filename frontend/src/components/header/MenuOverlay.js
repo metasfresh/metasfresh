@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import onClickOutside from 'react-onclickoutside';
 import { connect } from 'react-redux';
-
+import { leftTrim } from '../../utils';
 import { debounce } from 'lodash';
 
 import history from '../../services/History';
@@ -91,10 +91,13 @@ class MenuOverlay extends Component {
   handleQuery = (e) => {
     e.preventDefault();
 
-    if (e.target.value) {
+    const targetValue = leftTrim(e.target.value);
+
+    if (targetValue) {
       this.setState({
         query: e.target.value,
       });
+
       queryPathsRequest(e.target.value, 9)
         .then((response) => {
           this.setState({

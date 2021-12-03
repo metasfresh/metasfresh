@@ -155,7 +155,8 @@ const App = () => {
 
             // Chart disabled notifications
             if (
-              error.response.request.responseURL.includes('silentError=true')
+              error.response.request.responseURL.includes('silentError=true') ||
+              data.path.includes('/queryPaths') // supress errors also for queryPaths endpoint (when performing a search from the menu)
             ) {
               return;
             }
