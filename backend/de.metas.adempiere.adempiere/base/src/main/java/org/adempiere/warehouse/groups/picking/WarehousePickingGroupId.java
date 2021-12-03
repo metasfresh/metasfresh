@@ -1,22 +1,8 @@
-package org.adempiere.warehouse;
-
-import java.util.Optional;
-
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
-
-import de.metas.util.Check;
-import de.metas.util.lang.RepoIdAware;
-
-import lombok.Value;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -34,6 +20,22 @@ import lombok.Value;
  * #L%
  */
 
+package org.adempiere.warehouse.groups.picking;
+
+import java.util.Optional;
+
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
+import de.metas.util.Check;
+import de.metas.util.lang.RepoIdAware;
+
+import lombok.Value;
+
+import javax.annotation.Nullable;
+
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
 public class WarehousePickingGroupId implements RepoIdAware
@@ -46,6 +48,7 @@ public class WarehousePickingGroupId implements RepoIdAware
 		return new WarehousePickingGroupId(repoId);
 	}
 
+	@Nullable
 	public static WarehousePickingGroupId ofRepoIdOrNull(final int repoId)
 	{
 		return repoId > 0 ? new WarehousePickingGroupId(repoId) : null;
@@ -53,7 +56,7 @@ public class WarehousePickingGroupId implements RepoIdAware
 
 	public static Optional<WarehousePickingGroupId> optionalOfRepoId(final int repoId)
 	{
-		return Optional.ofNullable(ofRepoId(repoId));
+		return Optional.ofNullable(ofRepoIdOrNull(repoId));
 	}
 
 	public static int toRepoId(final WarehousePickingGroupId id)
