@@ -17,7 +17,7 @@ import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
-import lombok.experimental.Wither;
+import lombok.With;
 
 /*
  * #%L
@@ -55,7 +55,7 @@ import lombok.experimental.Wither;
  */
 @Value
 @Builder
-@Wither
+@With
 public class HUTraceEventQuery
 {
 	public enum RecursionMode

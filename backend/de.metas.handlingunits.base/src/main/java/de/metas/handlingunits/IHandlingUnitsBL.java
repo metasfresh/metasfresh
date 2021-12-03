@@ -530,7 +530,7 @@ public interface IHandlingUnitsBL extends ISingletonService
 	}
 
 	@Nullable
-	static I_M_HU_PI_Item_Product extractPIItemProductOrNull(final I_M_HU hu)
+	static I_M_HU_PI_Item_Product extractPIItemProductOrNull(@NonNull final I_M_HU hu)
 	{
 		final HUPIItemProductId piItemProductId = HUPIItemProductId.ofRepoIdOrNull(hu.getM_HU_PI_Item_Product_ID());
 		return piItemProductId != null

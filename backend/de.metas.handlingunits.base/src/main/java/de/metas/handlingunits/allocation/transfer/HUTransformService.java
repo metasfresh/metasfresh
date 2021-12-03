@@ -110,6 +110,9 @@ import static java.math.BigDecimal.ZERO;
  */
 public class HUTransformService
 {
+
+	private final IHUCapacityBL huCapacityBL = Services.get(IHUCapacityBL.class);
+
 	public static HUTransformService newInstance()
 	{
 		return builder().build();
@@ -559,20 +562,16 @@ public class HUTransformService
 	 * If the user goes with the full quantity of the source CU and if the source CU fits into one TU, then it remains unchanged.
 	 *
 	 * @param cuHU                  the currently selected source CU line
-	 * @param qtyCU                 the CU-quantity to join or split
+	 * @param qtyCU                 optional; the CU-quantity to join or split. If {@code null}, then the whole CU is consumed.
 	 * @param tuPIItemProduct       the PI item product to specify both the PI and capacity of the target TU
-	 * @param isOwnPackingMaterials
+	 * @param isOwnPackingMaterials indicates if the packaging material (e.g. palox boxes) are owned by to us (true) or by respective bPartner (false).   
 	 */
 	public List<I_M_HU> cuToNewTUs(
-			final I_M_HU cuHU,
-			final Quantity qtyCU,
-			final I_M_HU_PI_Item_Product tuPIItemProduct,
+			@NonNull final I_M_HU cuHU,
+			@Nullable final Quantity qtyCU,
+			@NonNull final I_M_HU_PI_Item_Product tuPIItemProduct,
 			final boolean isOwnPackingMaterials)
 	{
-		Preconditions.checkNotNull(cuHU, "Param 'cuHU' may not be null");
-		Preconditions.checkNotNull(qtyCU, "Param 'qtyCU' may not be null");
-		Preconditions.checkNotNull(tuPIItemProduct, "Param 'tuPIItemProduct' may not be null");
-
 		final LUTUProducerDestination destination = new LUTUProducerDestination();
 		destination.setTUPI(tuPIItemProduct.getM_HU_PI_Item().getM_HU_PI_Version().getM_HU_PI());
 		destination.setIsHUPlanningReceiptOwnerPM(isOwnPackingMaterials);
@@ -580,18 +579,22 @@ public class HUTransformService
 		// gh #1759: explicitly take the capacity from the tuPIItemProduct which the user selected
 		final ProductId productId = ProductId.ofRepoId(tuPIItemProduct.getM_Product_ID());
 		final I_C_UOM uom = IHUPIItemProductBL.extractUOMOrNull(tuPIItemProduct);
-		final Capacity capacity = Services.get(IHUCapacityBL.class).getCapacity(tuPIItemProduct, productId, uom);
+		final Capacity capacity = huCapacityBL.getCapacity(tuPIItemProduct, productId, uom);
 		destination.addCUPerTU(capacity);
 
 		destination.setNoLU();
 
 		final List<IHUProductStorage> storages = huContext.getHUStorageFactory().getStorage(cuHU).getProductStorages();
 		Check.errorUnless(storages.size() == 1, "Param' cuHU' needs to have *one* storage; storages={}; cuHU={};", storages, cuHU);
+		final IHUProductStorage singleCUStorage = storages.get(0);
+		
+		final Quantity qtyCUToUse = CoalesceUtil.coalesceSuppliersNotNull(() -> qtyCU, singleCUStorage::getQty);
+		
 		HUSplitBuilderCoreEngine.builder()
 				.huContextInitital(huContext)
 				.huToSplit(cuHU)
-				// forceAllocation = false; we want to create as many new TUs as are implied by the cuQty and the TUs' capacity
-				.requestProvider(huContext -> createCUAllocationRequest(huContext, storages.get(0).getProductId(), qtyCU, false))
+				// forceAllocation = false; we want to create as many new TUs as are implied by the qtyCU and the TUs' capacity
+				.requestProvider(huContext -> createCUAllocationRequest(huContext, singleCUStorage.getProductId(), qtyCUToUse, false))
 				.destination(destination)
 				.build()
 				.withPropagateHUValues()
@@ -615,7 +618,7 @@ public class HUTransformService
 	{
 		if (qtyTU.compareTo(getMaximumQtyTU(sourceTuHU)) >= 0) // the caller wants to process the entire sourceTuHU
 		{
-			if (handlingUnitsDAO.retrieveParentItem(sourceTuHU) == null) // ..but there sourceTuHU is not attached to a parent, so there isn't anything to do at all.)
+			if (handlingUnitsDAO.retrieveParentItem(sourceTuHU) == null) // ..but the sourceTuHU is not attached to a parent, so there isn't anything to do at all.)
 			{
 				return ImmutableList.of(sourceTuHU);
 			}
@@ -642,6 +645,9 @@ public class HUTransformService
 		);
 	}
 
+	/**
+	 * Extract a given number of TUs from an LU or TU/AggregatedTU.
+	 */
 	@lombok.Value
 	public static class HUsToNewTUsRequest
 	{
@@ -649,7 +655,7 @@ public class HUTransformService
 
 		int qtyTU;
 
-		public static HUsToNewTUsRequest forSourceHuAndQty(@NonNull I_M_HU sourceHU, int qtyTU)
+		public static HUsToNewTUsRequest forSourceHuAndQty(@NonNull final I_M_HU sourceHU, final int qtyTU)
 		{
 			return HUsToNewTUsRequest.builder().sourceHU(sourceHU).qtyTU(qtyTU).build();
 		}
@@ -800,10 +806,7 @@ public class HUTransformService
 	}
 
 	/**
-	 * @param childHU
 	 * @param parentItem         may be {@code null} if the childHU in question is removed from it's parent HU.
-	 * @param beforeParentChange
-	 * @param afterParentChange
 	 */
 	private void setParent(
 			@NonNull final I_M_HU childHU,
@@ -1021,7 +1024,10 @@ public class HUTransformService
 			final IHUProductStorage currentHuProductStorage = productStorages.get(i);
 
 			final Quantity qtyCU = currentHuProductStorage.getQty();
-			createdTUs.forEach(createdTU -> cuToExistingTU(currentHuProductStorage.getM_HU(), qtyCU, createdTU));
+			for (final I_M_HU createdTU : createdTUs)
+			{
+				cuToExistingTU(currentHuProductStorage.getM_HU(), qtyCU, createdTU);
+			}
 		}
 
 		return createdTUs;
@@ -1074,7 +1080,7 @@ public class HUTransformService
 		@lombok.Builder(toBuilder = true)
 		private HUsToNewCUsRequest(
 				@Singular("sourceHU") @NonNull final List<I_M_HU> sourceHUs,
-				@NonNull ProductId productId,
+				@NonNull final ProductId productId,
 				@NonNull final Quantity qtyCU,
 				@Nullable final Boolean keepNewCUsUnderSameParent,
 				@Nullable final Boolean onlyFromUnreservedHUs)
@@ -1084,8 +1090,8 @@ public class HUTransformService
 			this.sourceHUs = sourceHUs;
 			this.qtyCU = qtyCU;
 			this.productId = productId;
-			this.keepNewCUsUnderSameParent = CoalesceUtil.coalesce(keepNewCUsUnderSameParent, false);
-			this.onlyFromUnreservedHUs = CoalesceUtil.coalesce(onlyFromUnreservedHUs, false);
+			this.keepNewCUsUnderSameParent = CoalesceUtil.coalesceNotNull(keepNewCUsUnderSameParent, false);
+			this.onlyFromUnreservedHUs = CoalesceUtil.coalesceNotNull(onlyFromUnreservedHUs, false);
 
 			Check.assume(qtyCU.signum() > 0, "Paramater qtyCU={} needs to be >0; this={}", qtyCU, this);
 		}

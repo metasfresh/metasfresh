@@ -46,7 +46,7 @@ public interface IHUShipmentScheduleBL extends ISingletonService
 	ShipmentScheduleWithHU addQtyPickedAndUpdateHU(ShipmentScheduleId shipmentScheduleId, StockQtyAndUOMQty qtyPicked, HuId tuOrVHUId, IHUContext huContext);
 
 	/**
-	 * Creates a producer which will create shipments ({@link I_M_InOut}) from {@link IShipmentScheduleWithHU}s.
+	 * Creates a producer which will create shipments ({@link I_M_InOut}) from {@link ShipmentScheduleWithHU}s.
 	 */
 	IInOutProducerFromShipmentScheduleWithHU createInOutProducerFromShipmentSchedule();
 
@@ -74,7 +74,7 @@ public interface IHUShipmentScheduleBL extends ISingletonService
 	 * Gets {@link I_M_HU_PI_Item_Product} by checking:
 	 * <ul>
 	 * <li>{@link de.metas.handlingunits.model.I_M_ShipmentSchedule#getM_HU_PI_Item_Product_Override()}
-	 * <li>{@link de.metas.handlingunits.model.I_M_ShipmentSchedule#getM_HU_PI_Item_Product()}
+	 * <li>{@link de.metas.handlingunits.model.I_M_ShipmentSchedule#getM_HU_PI_Item_Product_ID()}
 	 * <li>{@link de.metas.handlingunits.model.I_C_OrderLine#getM_HU_PI_Item_Product()}
 	 * </ul>
 	 * <p>
