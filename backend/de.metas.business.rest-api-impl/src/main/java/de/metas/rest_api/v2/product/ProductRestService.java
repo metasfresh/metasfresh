@@ -679,18 +679,21 @@ public class ProductRestService
 		// discontinued
 		if (jsonRequestProductUpsertItem.isDiscontinuedSet())
 		{
-			if (jsonRequestProductUpsertItem.getDiscontinued() == null)
-			{
-				logger.debug("Ignoring boolean property \"discontinued\" : null ");
-			}
-			else
-			{
-				builder.discontinued(jsonRequestProductUpsertItem.getDiscontinued());
-			}
+			builder.discontinued(jsonRequestProductUpsertItem.getDiscontinued());
 		}
 		else
 		{
 			builder.discontinued(existingProduct.getDiscontinued());
+		}
+
+		// discontinuedFrom
+		if (jsonRequestProductUpsertItem.isDiscontinuedFromSet())
+		{
+			builder.discontinuedFrom(jsonRequestProductUpsertItem.getDiscontinuedFrom());
+		}
+		else
+		{
+			builder.discontinuedFrom(existingProduct.getDiscontinuedFrom());
 		}
 
 		// active
@@ -758,6 +761,7 @@ public class ProductRestService
 				.stocked(jsonRequestProductUpsertItem.getStocked())
 				.active(jsonRequestProductUpsertItem.getActive())
 				.discontinued(jsonRequestProductUpsertItem.getDiscontinued())
+				.discontinuedFrom(jsonRequestProductUpsertItem.getDiscontinuedFrom())
 				.description(jsonRequestProductUpsertItem.getDescription())
 				.gtin(jsonRequestProductUpsertItem.getGtin())
 				.ean(jsonRequestProductUpsertItem.getEan())
