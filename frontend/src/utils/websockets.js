@@ -52,13 +52,13 @@ export function connectWS(topic, onMessageCallback) {
           getUserSession()
             .then((userSessionResp) => {
               const { data } = userSessionResp;
-              console.log('US:', userSessionResp);
               reconnectCounter =
                 data && !data.loggedIn ? reconnectCounter + 1 : 0;
+            })
+            .catch((error) => {
+              console.log('Error:', error);
               console.log('Store:', store);
               // store.dispatch(badGateway(BAD_GATEWAY_ERROR));
-            })
-            .catch(() => {
               reconnectCounter += 1;
             });
         }

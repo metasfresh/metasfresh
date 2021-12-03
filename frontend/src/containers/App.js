@@ -32,7 +32,7 @@ import configureStore from '../store/configureStore';
 
 const hotkeys = generateHotkeys({ keymap, blacklist });
 
-const store = configureStore();
+export const store = configureStore();
 // const APP_PLUGINS = PLUGINS ? PLUGINS : [];
 
 if (window.Cypress) {
