@@ -50,9 +50,13 @@ export function connectWS(topic, onMessageCallback) {
         // -- detect reconnect and increment the reconnect counter
         if (strMessage.includes('reconnect')) {
           getUserSession()
-            .then(({ data }) => {
+            .then((userSessionResp) => {
+              const { data } = userSessionResp;
+              console.log('US:', userSessionResp);
               reconnectCounter =
                 data && !data.loggedIn ? reconnectCounter + 1 : 0;
+              console.log('Store:', store);
+              // store.dispatch(badGateway(BAD_GATEWAY_ERROR));
             })
             .catch(() => {
               reconnectCounter += 1;
