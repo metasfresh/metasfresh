@@ -916,19 +916,6 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	}
 
 	@Override
-	public void setPer100g (final @Nullable BigDecimal Per100g)
-	{
-		set_Value (COLUMNNAME_Per100g, Per100g);
-	}
-
-	@Override
-	public BigDecimal getPer100g() 
-	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Per100g);
-		return bd != null ? bd : BigDecimal.ZERO;
-	}
-
-	@Override
 	public void setProcessing (final boolean Processing)
 	{
 		set_Value (COLUMNNAME_Processing, Processing);
