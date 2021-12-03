@@ -1,5 +1,17 @@
 /**
  * @constant
+ * @type {string} Type of `connectionErrorType` to be used in the redux store
+ */
+export const BAD_GATEWAY_ERROR = 'badGateway';
+
+/**
+ * @constant
+ * @type {string} Type of connectionErrorType when no error is present
+ */
+export const BAD_GATEWAY_EMPTY = '';
+
+/**
+ * @constant
  * @type {string} ToDo: Description for the constant.
  */
 export const VIEW_EDITOR_RENDER_MODES_NEVER = 'never';

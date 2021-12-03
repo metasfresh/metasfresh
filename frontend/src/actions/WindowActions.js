@@ -45,6 +45,7 @@ import {
   RESET_PRINTING_OPTIONS,
   TOGGLE_PRINTING_OPTION,
   SET_SPINNER,
+  BAD_GATEWAY,
 } from '../constants/ActionTypes';
 import { createView } from './ViewActions';
 import { PROCESS_NAME } from '../constants/Constants';
@@ -315,6 +316,13 @@ export function updateDataFieldProperty(property, item, scope) {
 export function noConnection(status) {
   return {
     type: NO_CONNECTION,
+    status: status,
+  };
+}
+
+export function badGateway(status) {
+  return {
+    type: BAD_GATEWAY,
     status: status,
   };
 }

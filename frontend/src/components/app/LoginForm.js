@@ -18,6 +18,11 @@ import logo from '../../assets/images/metasfresh_logo_green_thumb.png';
 
 import RawList from '../widget/List/RawList';
 import PasswordRecovery from './PasswordRecovery';
+import { badGateway } from '../../actions/WindowActions';
+import {
+  BAD_GATEWAY_EMPTY,
+  BAD_GATEWAY_ERROR,
+} from '../../constants/Constants';
 
 /**
  * @file Class based component.
@@ -152,6 +157,9 @@ class LoginForm extends Component {
 
     request
       .then((response) => {
+        response.data.status === 502
+          ? this.props.dispatch(badGateway(BAD_GATEWAY_ERROR))
+          : this.props.dispatch(badGateway(BAD_GATEWAY_EMPTY));
         if (response.data.loginComplete) {
           return this.handleSuccess();
         }

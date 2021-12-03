@@ -15,6 +15,12 @@ export const NO_CONNECTION = 'NO_CONNECTION';
 
 /**
  * @constant
+ * @type {string} Action type triggered to update the connectionErrorType for the case when we have 502 status for the the response.
+ */
+export const BAD_GATEWAY = 'BAD_GATEWAY';
+
+/**
+ * @constant
  * @type {string} ToDo: Description for the constant.
  */
 export const OPEN_MODAL = 'OPEN_MODAL';

@@ -24,6 +24,7 @@ import {
   INIT_DATA_SUCCESS,
   INIT_LAYOUT_SUCCESS,
   NO_CONNECTION,
+  BAD_GATEWAY,
   OPEN_MODAL,
   OPEN_PLUGIN_MODAL,
   OPEN_RAW_MODAL,
@@ -109,6 +110,7 @@ const initialModalState = {
  */
 export const initialState = {
   connectionError: false,
+  connectionErrorType: '',
   showSpinner: false,
   printingOptions: {},
   // TODO: this should be moved to a separate `modalHandler`
@@ -318,6 +320,11 @@ export default function windowHandler(state = initialState, action) {
       return {
         ...state,
         connectionError: action.status,
+      };
+    case BAD_GATEWAY:
+      return {
+        ...state,
+        connectionErrorType: action.status,
       };
     case OPEN_MODAL:
       return {

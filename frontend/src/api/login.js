@@ -1,10 +1,19 @@
 import axios from 'axios';
 
 export function loginRequest(username, password) {
-  return axios.post(`${config.API_URL}/login/authenticate`, {
-    username,
-    password,
-  });
+  return axios.post(
+    `${config.API_URL}/login/authenticate`,
+    {
+      username,
+      password,
+    },
+    {
+      validateStatus: () => {
+        // returning true so that we can get the error message
+        return true;
+      },
+    }
+  );
 }
 
 export function checkLoginRequest() {
