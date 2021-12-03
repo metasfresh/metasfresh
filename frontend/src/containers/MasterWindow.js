@@ -8,7 +8,7 @@ import { getTabRequest, getRowsData } from '../api';
 import { getTab } from '../utils';
 
 import { getTableId } from '../reducers/tables';
-import { addNotification } from '../actions/AppActions';
+import { addNotification, updateLastBackPage } from '../actions/AppActions';
 import {
   attachFileAction,
   clearMasterData,
@@ -45,6 +45,14 @@ class MasterWindowContainer extends PureComponent {
       connectWS.call(this, master.websocket, async (msg) => {
         this.onWebsocketEvent(msg);
       });
+    }
+  }
+
+  componentDidMount() {
+    const fullPath = window.location.href;
+    const { updateLastBackPage } = this.props;
+    if (!fullPath.includes('viewId')) {
+      updateLastBackPage('');
     }
   }
 
@@ -306,6 +314,7 @@ MasterWindowContainer.propTypes = {
   deleteTable: PropTypes.func.isRequired,
   updateTabTableData: PropTypes.func.isRequired,
   updateTabLayout: PropTypes.func.isRequired,
+  updateLastBackPage: PropTypes.func.isRequired,
 };
 
 const mapStateToProps = (state) => ({
@@ -333,4 +342,5 @@ export default connect(mapStateToProps, {
   updateTabTableData,
   deleteTable,
   updateTabLayout,
+  updateLastBackPage,
 })(MasterWindowContainer);
