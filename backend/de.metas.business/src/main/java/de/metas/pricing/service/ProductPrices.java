@@ -163,7 +163,7 @@ public class ProductPrices
 		}
 	}
 
-	public static final I_M_ProductPrice retrieveMainProductPriceOrNull(final I_M_PriceList_Version plv, final ProductId productId)
+	public static I_M_ProductPrice retrieveMainProductPriceOrNull(final I_M_PriceList_Version plv, final ProductId productId)
 	{
 		final List<I_M_ProductPrice> allMainPrices = retrieveAllMainPrices(plv, productId);
 		return getFirstOrThrowExceptionIfMoreThanOne(allMainPrices);
