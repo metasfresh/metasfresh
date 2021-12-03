@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.swat.base
+ * de.metas.business
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,26 +20,26 @@
  * #L%
  */
 
-package de.metas.inoutcandidate;
-
-import java.util.Collection;
-
-import org.adempiere.util.lang.impl.TableRecordReference;
+package de.metas.inout;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-import java.util.Objects;
 import com.google.common.collect.ImmutableSet;
-
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.util.lang.impl.TableRecordReference;
+
+import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.Objects;
 
 @Value
 public class ShipmentScheduleId implements RepoIdAware
 {
+	private static final String M_SHIPMENT_SCHEDULE_TABLE_NAME = "M_ShipmentSchedule";
+
 	@JsonCreator
 	public static ShipmentScheduleId ofRepoId(final int repoId)
 	{
@@ -85,13 +85,13 @@ public class ShipmentScheduleId implements RepoIdAware
 		return repoId;
 	}
 
-	public static int toRepoId(final ShipmentScheduleId id)
+	public static int toRepoId(@Nullable final ShipmentScheduleId id)
 	{
 		return id != null ? id.getRepoId() : -1;
 	}
 
 	public TableRecordReference toTableRecordReference()
 	{
-		return TableRecordReference.of(I_M_ShipmentSchedule.Table_Name, getRepoId());
+		return TableRecordReference.of(M_SHIPMENT_SCHEDULE_TABLE_NAME, getRepoId());
 	}
 }

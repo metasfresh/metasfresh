@@ -35,4 +35,9 @@ public interface IMaterialRequest
 	 * @return sales C_OrderLine_ID or -1
 	 */
 	int getMrpDemandOrderLineSOId();
+
+	/**
+	 * @return sales M_ShipmentSchedule_ID or -1
+	 */
+	int getMrpDemandShipmentScheduleId();
 }

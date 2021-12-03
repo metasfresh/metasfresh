@@ -25,8 +25,8 @@ package org.eevolution.event;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.material.event.MaterialEventHandler;
-import de.metas.material.event.pporder.PPOrderCandidate;
 import de.metas.material.event.pporder.PPOrderCandidateRequestedEvent;
 import de.metas.material.event.pporder.PPOrderData;
 import de.metas.material.planning.ProductPlanningId;
@@ -47,7 +47,6 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
-import java.util.stream.Stream;
 
 @Service
 @Profile(Profiles.PROFILE_MaterialDispo)
@@ -79,7 +78,7 @@ public class PPOrderCandidateRequestedEventHandler implements MaterialEventHandl
 
 		if (event.isDirectlyCreatePPOrder())
 		{
-			final ImmutableList<PPOrderCandidateId> ppOrderCandidateIds = ImmutableList.of(PPOrderCandidateId.ofRepoId(event.getPpOrderCandidate().getPpOrderCandidateId()));
+			final ImmutableList<PPOrderCandidateId> ppOrderCandidateIds = ImmutableList.of(PPOrderCandidateId.ofRepoId(createdCandidate.getPP_Order_Candidate_ID()));
 
 			final PPOrderCandidateEnqueuer.Result result = ppOrderCandidateEnqueuer.enqueueCandidateIds(ppOrderCandidateIds);
 
@@ -108,7 +107,8 @@ public class PPOrderCandidateRequestedEventHandler implements MaterialEventHandl
 																		.qtyRequired(qtyRequired)
 																		.datePromised(ppOrderData.getDatePromised())
 																		.dateStartSchedule(ppOrderData.getDateStartSchedule())
-																		.salesOrderLineId(OrderLineId.ofRepoIdOrNull(ppOrderData.getOrderLineId()))
+																		.salesOrderLineId(OrderLineId.ofRepoIdOrNull(ppOrderData.getOrderLineIdAsRepoId()))
+																		.shipmentScheduleId(ShipmentScheduleId.ofRepoIdOrNull(ppOrderData.getShipmentScheduleIdAsRepoId()))
 																		.build());
 	}
 }

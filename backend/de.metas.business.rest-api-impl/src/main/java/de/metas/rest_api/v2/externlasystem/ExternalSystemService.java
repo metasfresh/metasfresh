@@ -20,12 +20,13 @@
  * #L%
  */
 
-package de.metas.rest_api.v2.externlasystem.dto;
+package de.metas.rest_api.v2.externlasystem;
 
 import de.metas.RestUtils;
 import de.metas.common.externalsystem.JsonESRuntimeParameterUpsertRequest;
 import de.metas.common.externalsystem.JsonInvokeExternalSystemParams;
 import de.metas.common.externalsystem.JsonRuntimeParameterUpsertItem;
+import de.metas.common.externalsystem.status.JsonExternalStatusResponse;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.CreatePInstanceLogRequest;
 import de.metas.common.rest_api.v2.JsonError;
@@ -43,6 +44,8 @@ import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.audit.CreateExportAuditRequest;
 import de.metas.externalsystem.audit.ExternalSystemExportAudit;
 import de.metas.externalsystem.audit.ExternalSystemExportAuditRepo;
+import de.metas.externalsystem.externalservice.ExternalServices;
+import de.metas.externalsystem.externalservice.status.StoreExternalSystemStatusRequest;
 import de.metas.externalsystem.process.runtimeparameters.RuntimeParamUniqueKey;
 import de.metas.externalsystem.process.runtimeparameters.RuntimeParameterUpsertRequest;
 import de.metas.externalsystem.process.runtimeparameters.RuntimeParametersRepository;
@@ -54,6 +57,7 @@ import de.metas.process.PInstanceId;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessInfoLog;
+import de.metas.rest_api.v2.externlasystem.dto.InvokeExternalSystemProcessRequest;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -83,15 +87,19 @@ public class ExternalSystemService
 	private final ExternalSystemConfigRepo externalSystemConfigRepo;
 	private final ExternalSystemExportAuditRepo externalSystemExportAuditRepo;
 	private final RuntimeParametersRepository runtimeParametersRepository;
+	private final ExternalServices externalServices;
+
 
 	public ExternalSystemService(
 			final ExternalSystemConfigRepo externalSystemConfigRepo,
 			final ExternalSystemExportAuditRepo externalSystemExportAuditRepo,
-			final RuntimeParametersRepository runtimeParametersRepository)
+			final RuntimeParametersRepository runtimeParametersRepository,
+			final ExternalServices externalServices)
 	{
 		this.externalSystemConfigRepo = externalSystemConfigRepo;
 		this.externalSystemExportAuditRepo = externalSystemExportAuditRepo;
 		this.runtimeParametersRepository = runtimeParametersRepository;
+		this.externalServices = externalServices;
 	}
 
 	@NonNull
@@ -220,6 +228,25 @@ public class ExternalSystemService
 	public ExternalSystemExportAudit createESExportAudit(@NonNull final CreateExportAuditRequest request)
 	{
 		return externalSystemExportAuditRepo.createESExportAudit(request);
+	}
+
+	public void storeExternalSystemStatus(@NonNull final StoreExternalSystemStatusRequest request)
+	{
+		final ExternalSystemParentConfig externalSystemParentConfig = externalSystemConfigRepo
+				.getByTypeAndValue(request.getSystemType(), request.getChildSystemConfigValue())
+				.orElseThrow(() -> new AdempiereException("No external system found by given type and value!")
+						.appendParametersToMessage()
+						.setParameter("externalSystemType", request.getSystemType())
+						.setParameter("externalSystemChildValue", request.getChildSystemConfigValue()));
+
+		externalServices.storeExternalSystemStatus(externalSystemParentConfig.getId(), request);
+	}
+
+	@NonNull
+	public JsonExternalStatusResponse getStatusInfo(@NonNull final ExternalSystemType externalSystemType){
+		return JsonExternalStatusResponse.builder()
+				.externalStatusResponses(externalServices.getStatusInfo(externalSystemType))
+				.build();
 	}
 
 	@NonNull

@@ -1,13 +1,8 @@
-package de.metas.material.dispo.commons.candidate;
-
-import de.metas.util.Check;
-import lombok.NonNull;
-
 /*
  * #%L
- * metasfresh-material-dispo-commons
+ * de-metas-common-util
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -24,6 +19,10 @@ import lombok.NonNull;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.common.util;
+
+import lombok.NonNull;
 
 /**
  * Class to help getting a grip on when an repoId <= 0 means "null" and when it means "not specified".
@@ -63,7 +62,9 @@ public final class IdConstants
 
 	public static void assertValidId(final int id, @NonNull final String name)
 	{
-		Check.errorUnless(id > 0 || id == UNSPECIFIED_REPO_ID || id == NULL_REPO_ID,
-				"{}={} needs to be >0 or ==IdConstants.UNSPECIFIED_REPO_ID or ==IdConstants.NULL_REPO_ID", name, id);
+		if (!(id > 0 || id == UNSPECIFIED_REPO_ID || id == NULL_REPO_ID))
+		{
+			throw new RuntimeException(name + "=" + id + " needs to be >0 or ==IdConstants.UNSPECIFIED_REPO_ID or ==IdConstants.NULL_REPO_ID");
+		}
 	}
 }

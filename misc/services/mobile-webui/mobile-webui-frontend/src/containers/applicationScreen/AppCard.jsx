@@ -3,14 +3,14 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
 import { setActiveApplication } from '../../actions/ApplicationsActions';
-import { redirectToAppLaunchers } from '../../actions/RoutingActions';
+import { gotoAppLaunchers } from '../../routes/launchers';
 
 class AppCard extends PureComponent {
   handleAppClick = () => {
-    const { appId, captionKey, setActiveApplication, redirectToAppLaunchers } = this.props;
+    const { appId, captionKey, setActiveApplication, gotoAppLaunchers } = this.props;
 
     setActiveApplication({ id: appId, caption: captionKey });
-    redirectToAppLaunchers(appId);
+    gotoAppLaunchers(appId);
   };
 
   render() {
@@ -31,8 +31,8 @@ class AppCard extends PureComponent {
 AppCard.propTypes = {
   captionKey: PropTypes.string.isRequired,
   appId: PropTypes.string.isRequired,
-  redirectToAppLaunchers: PropTypes.func.isRequired,
   setActiveApplication: PropTypes.func.isRequired,
+  gotoAppLaunchers: PropTypes.func.isRequired,
 };
 
-export default connect(null, { redirectToAppLaunchers, setActiveApplication })(AppCard);
+export default connect(null, { setActiveApplication, gotoAppLaunchers })(AppCard);

@@ -90,6 +90,7 @@ public class PPOrderCandidatePojoConverter
 									 .productPlanningId(ppOrderCandidateRecord.getPP_Product_Planning_ID())
 									 .productDescriptor(extractProductDescriptor(productId, asiId))
 									 .orderLineId(ppOrderCandidateRecord.getC_OrderLine_ID())
+									 .shipmentScheduleId(ppOrderCandidateRecord.getM_ShipmentSchedule_ID())
 									 .datePromised(TimeUtil.asInstantNonNull(ppOrderCandidateRecord.getDatePromised()))
 									 .dateStartSchedule(TimeUtil.asInstantNonNull(ppOrderCandidateRecord.getDateStartSchedule()))
 									 .qtyRequired(qtyEnteredInStockUOM.toBigDecimal())

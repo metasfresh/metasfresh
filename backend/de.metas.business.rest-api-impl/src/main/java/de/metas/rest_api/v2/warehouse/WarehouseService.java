@@ -42,7 +42,7 @@ import de.metas.handlingunits.inventory.draftlinescreator.HuForInventoryLineFact
 import de.metas.handlingunits.inventory.draftlinescreator.LocatorAndProductStrategy;
 import de.metas.handlingunits.inventory.draftlinescreator.ProductHUInventory;
 import de.metas.inoutcandidate.ShipmentSchedule;
-import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.ShipmentScheduleRepository;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.invalidation.segments.ImmutableShipmentScheduleSegment;

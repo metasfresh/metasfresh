@@ -8,8 +8,12 @@ import de.metas.material.cockpit.view.mainrecord.UpdateMainDataRequest;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateType;
+import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.Flag;
 import de.metas.material.dispo.commons.candidate.businesscase.ProductionDetail;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
+import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
+import de.metas.material.dispo.commons.repository.query.DemandDetailsQuery;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.candidatechange.handler.CandidateHandler;
 import de.metas.material.event.MaterialEventHandler;
@@ -17,6 +21,7 @@ import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderCreatedEvent;
+import de.metas.material.event.pporder.PPOrderData;
 import de.metas.organization.IOrgDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -26,6 +31,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.ZoneId;
 import java.util.Collection;
+import java.util.Optional;
 
 /*
  * #%L
@@ -56,16 +62,18 @@ public final class PPOrderCreatedHandler
 {
 	private final CandidateChangeService candidateChangeService;
 	private final MainDataRequestHandler mainDataRequestHandler;
+	private final CandidateRepositoryRetrieval candidateRepositoryRetrieval;
 
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	public PPOrderCreatedHandler(
 			@NonNull final CandidateChangeService candidateChangeService,
-			@NonNull final MainDataRequestHandler mainDataRequestHandler)
+			@NonNull final MainDataRequestHandler mainDataRequestHandler,
+			@NonNull final CandidateRepositoryRetrieval candidateRepositoryRetrieval)
 	{
 		this.candidateChangeService = candidateChangeService;
 		this.mainDataRequestHandler = mainDataRequestHandler;
-
+		this.candidateRepositoryRetrieval = candidateRepositoryRetrieval;
 	}
 
 	@Override
@@ -120,6 +128,9 @@ public final class PPOrderCreatedHandler
 
 		final Candidate.CandidateBuilder builder = Candidate.builderForClientAndOrgId(ppOrder.getPpOrderData().getClientAndOrgId());
 
+		retrieveDemandDetail(ppOrder.getPpOrderData())
+				.ifPresent(builder::additionalDemandDetail);
+
 		final Candidate headerCandidate = builder
 				.type(CandidateType.SUPPLY)
 				.businessCase(CandidateBusinessCase.PRODUCTION)
@@ -151,8 +162,8 @@ public final class PPOrderCreatedHandler
 		final PPOrder ppOrder = ppOrderEvent.getPpOrder();
 
 		return ProductionDetail.builder()
-				.advised(extractIsAdviseEvent())
-				.pickDirectlyIfFeasible(extractPickDirectlyFlag())
+				.advised(Flag.FALSE_DONT_UPDATE)
+				.pickDirectlyIfFeasible(Flag.of(ppOrderEvent.isDirectlyPickIfFeasible()))
 				.qty(ppOrder.getPpOrderData().getQtyRequired())
 				.plantId(ppOrder.getPpOrderData().getPlantId())
 				.productPlanningId(ppOrder.getPpOrderData().getProductPlanningId())
@@ -161,13 +172,23 @@ public final class PPOrderCreatedHandler
 				.build();
 	}
 
-	private Flag extractIsAdviseEvent()
+	@NonNull
+	private Optional<DemandDetail> retrieveDemandDetail(@NonNull final PPOrderData ppOrderData)
 	{
-		return Flag.FALSE_DONT_UPDATE;
-	}
+		if (ppOrderData.getShipmentScheduleId() <= 0)
+		{
+			return Optional.empty();
+		}
 
-	private Flag extractPickDirectlyFlag()
-	{
-		return Flag.FALSE_DONT_UPDATE;
+		final DemandDetailsQuery demandDetailsQuery = DemandDetailsQuery.
+				ofShipmentScheduleId(ppOrderData.getShipmentScheduleId());
+
+		final CandidatesQuery candidatesQuery = CandidatesQuery.builder()
+				.type(CandidateType.DEMAND)
+				.demandDetailsQuery(demandDetailsQuery)
+				.build();
+
+		return candidateRepositoryRetrieval.retrieveLatestMatch(candidatesQuery)
+				.map(Candidate::getDemandDetail);
 	}
 }

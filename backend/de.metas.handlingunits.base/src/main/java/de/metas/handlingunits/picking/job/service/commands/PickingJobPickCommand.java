@@ -30,6 +30,7 @@ import de.metas.handlingunits.picking.requests.PickRequest;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.Data;
@@ -70,6 +71,8 @@ public class PickingJobPickCommand
 			final @Nullable BigDecimal qtyRejectedBD,
 			final @Nullable QtyRejectedReasonCode qtyRejectedReasonCode)
 	{
+		Check.assumeGreaterOrEqualToZero(qtyToPickBD, "qtyToPickBD");
+
 		this.pickingJobRepository = pickingJobRepository;
 		this.pickingCandidateService = pickingCandidateService;
 
@@ -136,31 +139,42 @@ public class PickingJobPickCommand
 	private ImmutableList<PickedToHU> createAndProcessPickingCandidate()
 	{
 		final ImmutableList<PickedToHU> pickedToHUs = splitOutPickToHUs();
-
-		for (final PickedToHU pickedToHU : pickedToHUs)
+		if (!pickedToHUs.isEmpty())
 		{
-			final PickHUResult pickResult = pickingCandidateService.pickHU(PickRequest.builder()
-					.shipmentScheduleId(initialStep.getShipmentScheduleId())
-					.pickFrom(PickFrom.ofHuId(pickedToHU.getActuallyPickedToHUId()))
-					.packToSpec(pickedToHU.getPickToSpecUsed())
-					.qtyToPick(pickedToHU.getQtyPicked())
-					.pickingSlotId(initialPickingJob.getPickingSlotId().orElse(null))
-					.autoReview(true)
+			for (final PickedToHU pickedToHU : pickedToHUs)
+			{
+				final PickHUResult pickResult = pickingCandidateService.pickHU(PickRequest.builder()
+						.shipmentScheduleId(initialStep.getShipmentScheduleId())
+						.pickFrom(PickFrom.ofHuId(pickedToHU.getActuallyPickedToHUId()))
+						.packToSpec(pickedToHU.getPickToSpecUsed())
+						.qtyToPick(pickedToHU.getQtyPicked())
+						.pickingSlotId(initialPickingJob.getPickingSlotId().orElse(null))
+						.autoReview(true)
+						.build());
+
+				pickedToHU.setPickingCandidateId(pickResult.getPickingCandidateId());
+			}
+
+			pickingCandidateService.process(ProcessPickingCandidatesRequest.builder()
+					.pickingCandidateIds(extractPickingCandidateIds(pickedToHUs))
+					.alwaysPackEachCandidateInItsOwnHU(true)
 					.build());
 
-			pickedToHU.setPickingCandidateId(pickResult.getPickingCandidateId());
+			return pickedToHUs;
 		}
-
-		pickingCandidateService.process(ProcessPickingCandidatesRequest.builder()
-				.pickingCandidateIds(extractPickingCandidateIds(pickedToHUs))
-				.alwaysPackEachCandidateInItsOwnHU(true)
-				.build());
-
-		return pickedToHUs;
+		else
+		{
+			return ImmutableList.of();
+		}
 	}
 
 	private ImmutableList<PickedToHU> splitOutPickToHUs()
 	{
+		if (qtyToPick.isZero())
+		{
+			return ImmutableList.of();
+		}
+
 		final PackToHUsProducer packToHUsProducer = PackToHUsProducer.builder()
 				.handlingUnitsBL(handlingUnitsBL)
 				.huPIItemProductBL(huPIItemProductBL)

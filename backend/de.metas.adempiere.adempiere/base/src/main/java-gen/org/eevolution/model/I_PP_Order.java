@@ -1,9 +1,8 @@
 package org.eevolution.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for PP_Order
  *  @author metasfresh (generated) 
@@ -96,7 +95,7 @@ public interface I_PP_Order
 
 	/**
 	 * Set Workflow.
-	 * Workflow oder Kombination von Aufgaben
+	 * Workflow or combination of tasks
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -106,7 +105,7 @@ public interface I_PP_Order
 
 	/**
 	 * Get Workflow.
-	 * Workflow oder Kombination von Aufgaben
+	 * Workflow or combination of tasks
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -606,7 +605,7 @@ public interface I_PP_Order
 	String COLUMNNAME_DateOrdered = "DateOrdered";
 
 	/**
-	 * Set Zugesagter Termin.
+	 * Set Date Promised.
 	 * Date Order was promised
 	 *
 	 * <br>Type: DateTime
@@ -616,7 +615,7 @@ public interface I_PP_Order
 	void setDatePromised (java.sql.Timestamp DatePromised);
 
 	/**
-	 * Get Zugesagter Termin.
+	 * Get Date Promised.
 	 * Date Order was promised
 	 *
 	 * <br>Type: DateTime
@@ -652,7 +651,8 @@ public interface I_PP_Order
 	String COLUMNNAME_DateStart = "DateStart";
 
 	/**
-	 * Set DateStartSchedule.
+	 * Set Date Start Schedule.
+	 * Scheduled start date for this Order
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
@@ -661,7 +661,8 @@ public interface I_PP_Order
 	void setDateStartSchedule (java.sql.Timestamp DateStartSchedule);
 
 	/**
-	 * Get DateStartSchedule.
+	 * Get Date Start Schedule.
+	 * Scheduled start date for this Order
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
@@ -1119,6 +1120,27 @@ public interface I_PP_Order
 	String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
+	 * Set Shipment Candidate.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_ShipmentSchedule_ID (int M_ShipmentSchedule_ID);
+
+	/**
+	 * Get Shipment Candidate.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_ShipmentSchedule_ID();
+
+	ModelColumn<I_PP_Order, Object> COLUMN_M_ShipmentSchedule_ID = new ModelColumn<>(I_PP_Order.class, "M_ShipmentSchedule_ID", null);
+	String COLUMNNAME_M_ShipmentSchedule_ID = "M_ShipmentSchedule_ID";
+
+	/**
 	 * Set Warehouse.
 	 * Storage Warehouse and Service Point
 	 *
@@ -1366,6 +1388,7 @@ public interface I_PP_Order
 
 	/**
 	 * Set Product Planning.
+	 * Product Planning
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -1375,6 +1398,7 @@ public interface I_PP_Order
 
 	/**
 	 * Get Product Planning.
+	 * Product Planning
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -1560,8 +1584,7 @@ public interface I_PP_Order
 	String COLUMNNAME_QtyBeforeClose = "QtyBeforeClose";
 
 	/**
-	 * Set Gelieferte Menge.
-	 * Delivered Quantity
+	 * Set Shipped Qty.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -1570,8 +1593,7 @@ public interface I_PP_Order
 	void setQtyDelivered (BigDecimal QtyDelivered);
 
 	/**
-	 * Get Gelieferte Menge.
-	 * Delivered Quantity
+	 * Get Shipped Qty.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -1735,8 +1757,8 @@ public interface I_PP_Order
 	String COLUMNNAME_RepairServicePerformed_Product_ID = "RepairServicePerformed_Product_ID";
 
 	/**
-	 * Set Ressource.
-	 * Produktionsressource
+	 * Set Resource.
+	 * Resource
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
@@ -1745,8 +1767,8 @@ public interface I_PP_Order
 	void setS_Resource_ID (int S_Resource_ID);
 
 	/**
-	 * Get Ressource.
-	 * Produktionsressource
+	 * Get Resource.
+	 * Resource
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
