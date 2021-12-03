@@ -2,7 +2,7 @@
 
 Artikel - Warenwirtschaft (Basis)
 - API version: 1.0.2
-  - Build date: 2021-03-11T10:09:42.333Z[GMT]
+  - Build date: 2021-12-02T17:09:48.943Z[GMT]
 
 Synchronisation der Artikel mit Kumavision
 
