@@ -29,6 +29,7 @@ import NotificationHandler from '../components/notifications/NotificationHandler
 import blacklist from '../shortcuts/blacklist';
 import keymap from '../shortcuts/keymap';
 import configureStore from '../store/configureStore';
+import { MENU_QUERY_PATHS } from '../constants/Constants';
 
 const hotkeys = generateHotkeys({ keymap, blacklist });
 
@@ -156,7 +157,7 @@ const App = () => {
             // Chart disabled notifications
             if (
               error.response.request.responseURL.includes('silentError=true') ||
-              data.path.includes('/queryPaths') // supress errors also for queryPaths endpoint (when performing a search from the menu)
+              data.path.includes(MENU_QUERY_PATHS) // supress errors also for queryPaths endpoint (when performing a search from the menu)
             ) {
               return;
             }

@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { MENU_QUERY_PATHS } from '../constants/Constants';
 
 export function getNotificationsRequest() {
   return axios.get(`${config.API_URL}/notifications/all?limit=20`);
@@ -36,7 +37,9 @@ export function elementPathRequest(pathType, elementId) {
 export function queryPathsRequest(query, limit, child) {
   return axios.get(
     config.API_URL +
-      '/menu/queryPaths?nameQuery=' +
+      '/' +
+      MENU_QUERY_PATHS +
+      '?nameQuery=' +
       query +
       (limit ? '&childrenLimit=' + limit : '') +
       (child ? '&childrenInclusive=true' : '')
