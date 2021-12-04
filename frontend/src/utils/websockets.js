@@ -51,6 +51,7 @@ export function connectWS(topic, onMessageCallback) {
         if (strMessage.includes('reconnect')) {
           getUserSession()
             .then((userSessionResp) => {
+              console.log('UserSession response:', userSessionResp);
               const { data } = userSessionResp;
               reconnectCounter =
                 data && !data.loggedIn ? reconnectCounter + 1 : 0;
