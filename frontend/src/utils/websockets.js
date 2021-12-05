@@ -1,6 +1,7 @@
 import SockJS from 'sockjs-client';
 import { Client } from '@stomp/stompjs';
-import { noConnection } from '../actions/WindowActions';
+import { noConnection, badGateway } from '../actions/WindowActions';
+import { BAD_GATEWAY_ERROR } from '../constants/Constants';
 import { store } from '../containers/App';
 import { getUserSession } from '../api';
 import _ from 'lodash';
@@ -43,6 +44,7 @@ export function connectWS(topic, onMessageCallback) {
 
   const connect = () => {
     let reconnectCounter = 0;
+    let badGatewayStatus = false;
     this.sockClient = new Client({
       brokerURL: config.WS_URL,
       debug(strMessage) {
@@ -51,22 +53,23 @@ export function connectWS(topic, onMessageCallback) {
         if (strMessage.includes('reconnect')) {
           getUserSession()
             .then((userSessionResp) => {
-              console.log('UserSession response:', userSessionResp);
-              const { data } = userSessionResp;
+              const { data, status } = userSessionResp;
               reconnectCounter =
                 data && !data.loggedIn ? reconnectCounter + 1 : 0;
+
+              if (status === 502) badGatewayStatus = true;
             })
-            .catch((error) => {
-              console.log('Error:', error);
-              console.log('Store:', store);
-              // store.dispatch(badGateway(BAD_GATEWAY_ERROR));
+            .catch(() => {
               reconnectCounter += 1;
             });
         }
+        // update the store flag
+        badGatewayStatus && store.dispatch(badGateway(BAD_GATEWAY_ERROR));
+
         // -- if more than max allowed reconnect times  ->  deactivate
         if (reconnectCounter > maxReconnectTimesNo) {
           this.reconnectDelay = 0; // 0 - deactivates the sockClient
-          store.dispatch(noConnection(true));
+          !badGatewayStatus && store.dispatch(noConnection(true));
         }
       },
       reconnectDelay: 5000,
