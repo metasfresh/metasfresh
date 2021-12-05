@@ -110,9 +110,6 @@ import static java.math.BigDecimal.ZERO;
  */
 public class HUTransformService
 {
-
-	private final IHUCapacityBL huCapacityBL = Services.get(IHUCapacityBL.class);
-
 	public static HUTransformService newInstance()
 	{
 		return builder().build();
