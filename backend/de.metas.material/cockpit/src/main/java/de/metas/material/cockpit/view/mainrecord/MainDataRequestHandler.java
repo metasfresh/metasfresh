@@ -39,7 +39,7 @@ import java.util.stream.Stream;
 
 import static de.metas.util.NumberUtils.stripTrailingDecimalZeros;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 @Service
 @Profile(Profiles.PROFILE_App) // the event handler is also just on this profile
@@ -51,7 +51,7 @@ public class MainDataRequestHandler
 		{
 			final I_MD_Cockpit dataRecord = retrieveOrCreateDataRecord(dataUpdateRequest.getIdentifier());
 			updateDataRecordWithRequestQtys(dataRecord, dataUpdateRequest);
-			save(dataRecord);
+			saveRecord(dataRecord);
 		}
 	}
 
@@ -62,7 +62,7 @@ public class MainDataRequestHandler
 			final I_MD_Cockpit dataRecord = retrieveOrCreateDataRecord(updateMainStockDataRequest.getIdentifier());
 
 			dataRecord.setMDCandidateQtyStock(updateMainStockDataRequest.getQtyStockCurrent());
-			save(dataRecord);
+			saveRecord(dataRecord);
 		}
 	}
 

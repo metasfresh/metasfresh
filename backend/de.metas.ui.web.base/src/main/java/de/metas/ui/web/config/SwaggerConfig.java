@@ -59,7 +59,7 @@ public class SwaggerConfig
 	}
 
 	@SuppressWarnings("unused")
-	private static final Predicate<RequestHandler> basePackages(final Class<?>... classes)
+	private static Predicate<RequestHandler> basePackages(final Class<?>... classes)
 	{
 		final Set<Predicate<RequestHandler>> predicates = new HashSet<>(classes.length);
 		for (final Class<?> clazz : classes)

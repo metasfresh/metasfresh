@@ -111,6 +111,9 @@ public class MaterialCockpitRowsData implements IRowsData<MaterialCockpitRow>
 		invalidate(DocumentIdsSelection.ALL);
 	}
 
+	/**
+	 * Recomputes the given rows.
+	 */
 	@Override
 	public void invalidate(@NonNull final DocumentIdsSelection rowIds)
 	{
