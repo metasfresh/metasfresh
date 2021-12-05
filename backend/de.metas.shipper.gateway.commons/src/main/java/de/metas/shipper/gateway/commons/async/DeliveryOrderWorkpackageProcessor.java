@@ -138,18 +138,20 @@ public class DeliveryOrderWorkpackageProcessor extends WorkpackageProcessorAdapt
 	public void printLabels(
 			@NonNull final DeliveryOrder deliveryOrder,
 			@NonNull final List<PackageLabels> packageLabels,
-			final DeliveryOrderRepository deliveryOrderRepo,
+			@NonNull final DeliveryOrderRepository deliveryOrderRepo,
 			@Nullable final AsyncBatchId asyncBatchId)
 	{
-		packageLabels.stream()
-				.map(PackageLabels::getDefaultPackageLabel)
-				.forEach(packageLabel -> printLabel(deliveryOrder, packageLabel, deliveryOrderRepo, asyncBatchId));
+		for (final PackageLabels packageLabel : packageLabels)
+		{
+			final PackageLabel defaultPackageLabel = packageLabel.getDefaultPackageLabel();
+			printLabel(deliveryOrder, defaultPackageLabel, deliveryOrderRepo, asyncBatchId);
+		}
 	}
 
 	private void printLabel(
 			final DeliveryOrder deliveryOrder,
 			final PackageLabel packageLabel,
-			final DeliveryOrderRepository deliveryOrderRepo,
+			@NonNull final DeliveryOrderRepository deliveryOrderRepo,
 			@Nullable final AsyncBatchId asyncBatchId)
 	{
 		final IArchiveStorageFactory archiveStorageFactory = Services.get(IArchiveStorageFactory.class);

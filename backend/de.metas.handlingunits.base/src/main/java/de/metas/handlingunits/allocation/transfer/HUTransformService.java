@@ -110,6 +110,9 @@ import static java.math.BigDecimal.ZERO;
  */
 public class HUTransformService
 {
+
+	private final IHUCapacityBL huCapacityBL = Services.get(IHUCapacityBL.class);
+
 	public static HUTransformService newInstance()
 	{
 		return builder().build();
@@ -565,12 +568,13 @@ public class HUTransformService
 	 * If the user goes with the full quantity of the source CU and if the source CU fits into one TU, then it remains unchanged.
 	 *
 	 * @param cuHU            the currently selected source CU line
-	 * @param qtyCU           the CU-quantity to join or split
+	 * @param qtyCU                 optional; the CU-quantity to join or split. If {@code null}, then the whole CU is consumed.
 	 * @param tuPIItemProduct the PI item product to specify both the PI and capacity of the target TU
+	 * @param isOwnPackingMaterials indicates if the packaging material (e.g. palox boxes) are owned by to us (true) or by respective bPartner (false).   
 	 */
 	public List<I_M_HU> cuToNewTUs(
 			@NonNull final I_M_HU cuHU,
-			@NonNull final Quantity qtyCU,
+			@Nullable final Quantity qtyCU,
 			@NonNull final I_M_HU_PI_Item_Product tuPIItemProduct,
 			final boolean isOwnPackingMaterials)
 	{
@@ -588,11 +592,15 @@ public class HUTransformService
 
 		final List<IHUProductStorage> storages = huContext.getHUStorageFactory().getStorage(cuHU).getProductStorages();
 		Check.errorUnless(storages.size() == 1, "Param' cuHU' needs to have *one* storage; storages={}; cuHU={};", storages, cuHU);
+		final IHUProductStorage singleCUStorage = storages.get(0);
+		
+		final Quantity qtyCUToUse = CoalesceUtil.coalesceSuppliersNotNull(() -> qtyCU, singleCUStorage::getQty);
+		
 		HUSplitBuilderCoreEngine.builder()
 				.huContextInitital(huContext)
 				.huToSplit(cuHU)
-				// forceAllocation = false; we want to create as many new TUs as are implied by the cuQty and the TUs' capacity
-				.requestProvider(huContext -> createCUAllocationRequest(huContext, storages.get(0).getProductId(), qtyCU, false))
+				// forceAllocation = false; we want to create as many new TUs as are implied by the qtyCU and the TUs' capacity
+				.requestProvider(huContext -> createCUAllocationRequest(huContext, singleCUStorage.getProductId(), qtyCUToUse, false))
 				.destination(destination)
 				.build()
 				.withPropagateHUValues()
@@ -616,7 +624,7 @@ public class HUTransformService
 	{
 		if (qtyTU.compareTo(getMaximumQtyTU(sourceTuHU)) >= 0) // the caller wants to process the entire sourceTuHU
 		{
-			if (handlingUnitsDAO.retrieveParentItem(sourceTuHU) == null) // ..but there sourceTuHU is not attached to a parent, so there isn't anything to do at all.)
+			if (handlingUnitsDAO.retrieveParentItem(sourceTuHU) == null) // ..but the sourceTuHU is not attached to a parent, so there isn't anything to do at all.)
 			{
 				return ImmutableList.of(sourceTuHU);
 			}
@@ -643,6 +651,9 @@ public class HUTransformService
 		);
 	}
 
+	/**
+	 * Extract a given number of TUs from an LU or TU/AggregatedTU.
+	 */
 	@lombok.Value
 	public static class HUsToNewTUsRequest
 	{
@@ -650,7 +661,7 @@ public class HUTransformService
 
 		int qtyTU;
 
-		public static HUsToNewTUsRequest forSourceHuAndQty(@NonNull I_M_HU sourceHU, int qtyTU)
+		public static HUsToNewTUsRequest forSourceHuAndQty(@NonNull final I_M_HU sourceHU, final int qtyTU)
 		{
 			return HUsToNewTUsRequest.builder().sourceHU(sourceHU).qtyTU(qtyTU).build();
 		}
@@ -1028,7 +1039,10 @@ public class HUTransformService
 			final IHUProductStorage currentHuProductStorage = productStorages.get(i);
 
 			final Quantity qtyCU = currentHuProductStorage.getQty();
-			createdTUs.forEach(createdTU -> cuToExistingTU(currentHuProductStorage.getM_HU(), qtyCU, createdTU));
+			for (final I_M_HU createdTU : createdTUs)
+			{
+				cuToExistingTU(currentHuProductStorage.getM_HU(), qtyCU, createdTU);
+			}
 		}
 
 		return createdTUs;
