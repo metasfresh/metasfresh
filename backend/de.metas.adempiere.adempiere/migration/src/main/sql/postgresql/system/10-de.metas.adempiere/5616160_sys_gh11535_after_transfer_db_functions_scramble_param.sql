@@ -19,6 +19,9 @@
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+ 
+-- clean up the function's old version with 5 params
+DROP FUNCTION IF EXISTS ops.after_transfer_db(text, text, text, text, boolean);
 
 CREATE OR REPLACE FUNCTION ops.after_transfer_db(
     p_source_instance            text,
@@ -34,7 +37,7 @@ BEGIN
 
     UPDATE AD_SysConfig SET Value=p_target_webui_url WHERE Name = 'webui.frontend.url';
 
-    UPDATE ad_user SET password =public.hash_column_value_if_needed(valueplain := p_target_metasfresh_pw) WHERE name = 'metasfresh';
+    UPDATE ad_user SET password =public.hash_column_value_if_needed(p_target_metasfresh_pw) WHERE name = 'metasfresh';
 
     IF p_target_has_reports_service
     THEN
@@ -42,7 +45,7 @@ BEGIN
         UPDATE ad_sysconfig SET value='http://reports:8080/adempiereJasper/BarcodeServlet' WHERE name ILIKE 'de.metas.adempiere.report.barcode.BarcodeServlet';
     END IF;
 
-    UPDATE externalsystem_config SET isactive = 'N' WHERE TRUE;
+    UPDATE externalsystem_config SET isactive = 'N' WHERE 1 = 1;
     RAISE NOTICE '% !! Deactivated ExternalSystem records !!', CLOCK_TIMESTAMP();
 
     UPDATE ad_scheduler
@@ -58,18 +61,13 @@ BEGIN
     );
     RAISE NOTICE '% !! Deactivated Ad_Schedulers for ExternalSystems !!', CLOCK_TIMESTAMP();
 
-    /* if the data is coming from production, then scramble it */
     IF p_scramble_db AND p_source_instance ILIKE '%prod' AND p_target_instance NOT ILIKE '%prod'
     THEN
         EXECUTE ops.scramble_metasfresh(p_dryrun := FALSE);
     END IF;
 
-    RAISE NOTICE '% !! Enqueued % C_BPartners to be send to elastic search for FTS !!', 
-        CLOCK_TIMESTAMP(),
-        (SELECT ops.es_fts_reindex_bpartners());
-
     EXECUTE ops.after_transfer_db_custom_end(p_sourceinstance := p_source_instance, p_targetinstance := p_target_instance);
-END  ;
+END;
 $BODY$
     LANGUAGE plpgsql
     VOLATILE
@@ -77,7 +75,7 @@ $BODY$
 
 COMMENT ON FUNCTION ops.after_transfer_db(p_source_instance text, p_target_instance text, p_target_webui_url text,
     p_target_metasfresh_pw text, p_target_has_reports_service boolean, p_scramble_db boolean) IS
-    'Example - WILL SCRAMBLE YOU DB: select ops.after_transfer_db(p_source_instance := ''instancesprod'', p_target_instance := ''instancesdev'', p_target_webui_url := ''https://instancesdev.metasfresh.com'', p_target_metasfresh_pw := ''secret'', p_target_has_reports_service := TRUE, p_scramble_db := TRUE)
+    'Example: select ops.after_transfer_db(p_source_instance := ''instancesprod'', p_target_instance := ''instancesdev'', p_target_webui_url := ''https://instancesdev.metasfresh.com'', p_target_metasfresh_pw := ''secret'', p_target_has_reports_service := TRUE, p_scramble_db := TRUE)
     
 Note about scrambling: this function invokes ops.scramble_metasfresh if all three conditions are met:
 - the parameter p_scramble_db is TRUE    
