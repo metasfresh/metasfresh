@@ -30,6 +30,7 @@ import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.IExternalSystemChildConfig;
 import de.metas.externalsystem.IExternalSystemChildConfigId;
+import de.metas.externalsystem.externalservice.process.AlterExternalSystemServiceStatusAction;
 import de.metas.externalsystem.grssignum.ExternalSystemGRSSignumConfig;
 import de.metas.externalsystem.grssignum.ExternalSystemGRSSignumConfigId;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_GRSSignum;
@@ -41,7 +42,7 @@ import org.compiere.SpringContextHolder;
 import java.util.HashMap;
 import java.util.Map;
 
-public class InvokeGRSSignumAction extends InvokeExternalSystemProcess
+public class InvokeGRSSignumAction extends AlterExternalSystemServiceStatusAction
 {
 	public final ExternalSystemConfigRepo externalSystemConfigDAO = SpringContextHolder.instance.getBean(ExternalSystemConfigRepo.class);
 

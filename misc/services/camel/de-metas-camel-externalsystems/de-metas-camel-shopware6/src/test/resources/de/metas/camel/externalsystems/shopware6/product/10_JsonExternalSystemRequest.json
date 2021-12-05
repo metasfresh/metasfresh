@@ -1,6 +1,7 @@
 {
   "orgCode": "001",
   "externalSystemName": "Shopware6",
+  "externalSystemChildConfigValue": "childValue",
   "command": "getProducts",
   "adPInstanceId": 2,
   "externalSystemConfigId": 1,

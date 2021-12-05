@@ -25,6 +25,7 @@ package org.eevolution.event;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.pporder.PPOrderCandidateRequestedEvent;
 import de.metas.material.event.pporder.PPOrderData;
@@ -106,7 +107,8 @@ public class PPOrderCandidateRequestedEventHandler implements MaterialEventHandl
 																		.qtyRequired(qtyRequired)
 																		.datePromised(ppOrderData.getDatePromised())
 																		.dateStartSchedule(ppOrderData.getDateStartSchedule())
-																		.salesOrderLineId(OrderLineId.ofRepoIdOrNull(ppOrderData.getOrderLineId()))
+																		.salesOrderLineId(OrderLineId.ofRepoIdOrNull(ppOrderData.getOrderLineIdAsRepoId()))
+																		.shipmentScheduleId(ShipmentScheduleId.ofRepoIdOrNull(ppOrderData.getShipmentScheduleIdAsRepoId()))
 																		.build());
 	}
 }

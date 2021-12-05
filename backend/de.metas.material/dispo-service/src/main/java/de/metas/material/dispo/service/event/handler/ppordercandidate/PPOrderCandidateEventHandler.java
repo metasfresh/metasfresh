@@ -38,7 +38,6 @@ import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.pporder.AbstractPPOrderCandidateEvent;
 import de.metas.material.event.pporder.PPOrderCandidate;
 import de.metas.material.event.pporder.PPOrderCandidateAdvisedEvent;
-import de.metas.material.event.pporder.PPOrderCandidateUpdatedEvent;
 import lombok.NonNull;
 
 import javax.annotation.Nullable;
@@ -101,27 +100,13 @@ public abstract class PPOrderCandidateEventHandler
 	{
 		final ProductionDetail.ProductionDetailBuilder productionDetailBuilder = prepareProductionDetail(existingCandidateOrNull);
 
-		if (event instanceof PPOrderCandidateAdvisedEvent)
-		{
-			productionDetailBuilder.pickDirectlyIfFeasible(Flag.of(PPOrderCandidateAdvisedEvent.cast(event).isDirectlyPickIfFeasible()));
-			productionDetailBuilder.advised(Flag.of(true));
-		}
-		else if (event instanceof PPOrderCandidateUpdatedEvent)
-		{
-			productionDetailBuilder.pickDirectlyIfFeasible(Flag.FALSE_DONT_UPDATE);
-			productionDetailBuilder.advised(Flag.of(false));
-		}
-		else
-		{
-			productionDetailBuilder.pickDirectlyIfFeasible(Flag.FALSE_DONT_UPDATE);
-			productionDetailBuilder.advised(Flag.of(false));
-		}
-
 		final PPOrderCandidate ppOrderCandidate = event.getPpOrderCandidate();
 
 		return productionDetailBuilder
+				.advised(Flag.of(event instanceof PPOrderCandidateAdvisedEvent))
 				.qty(ppOrderCandidate.getPpOrderData().getQtyOpen())
 				.plantId(ppOrderCandidate.getPpOrderData().getPlantId())
+				.pickDirectlyIfFeasible(Flag.FALSE)
 				.productPlanningId(ppOrderCandidate.getPpOrderData().getProductPlanningId())
 				.ppOrderCandidateId(ppOrderCandidate.getPpOrderCandidateId())
 				.build();

@@ -20,7 +20,7 @@ import de.metas.handlingunits.picking.requests.PickRequest;
 import de.metas.handlingunits.picking.requests.PickRequest.IssueToPickingOrderRequest;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.i18n.BooleanWithReason;
-import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;

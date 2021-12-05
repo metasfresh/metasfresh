@@ -1,31 +1,8 @@
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2021 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 package org.eevolution.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for PP_Order_Candidate
  *  @author metasfresh (generated) 
@@ -286,6 +263,27 @@ public interface I_PP_Order_Candidate
 	String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
+	 * Set Shipment Candidate.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_ShipmentSchedule_ID (int M_ShipmentSchedule_ID);
+
+	/**
+	 * Get Shipment Candidate.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_ShipmentSchedule_ID();
+
+	ModelColumn<I_PP_Order_Candidate, Object> COLUMN_M_ShipmentSchedule_ID = new ModelColumn<>(I_PP_Order_Candidate.class, "M_ShipmentSchedule_ID", null);
+	String COLUMNNAME_M_ShipmentSchedule_ID = "M_ShipmentSchedule_ID";
+
+	/**
 	 * Set Warehouse.
 	 * Storage Warehouse and Service Point
 	 *
@@ -308,7 +306,7 @@ public interface I_PP_Order_Candidate
 	String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
 
 	/**
-	 * Set Manufacturing Order Candidate.
+	 * Set Manufacturing candidate.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -317,7 +315,7 @@ public interface I_PP_Order_Candidate
 	void setPP_Order_Candidate_ID (int PP_Order_Candidate_ID);
 
 	/**
-	 * Get Manufacturing Order Candidate.
+	 * Get Manufacturing candidate.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -329,7 +327,7 @@ public interface I_PP_Order_Candidate
 	String COLUMNNAME_PP_Order_Candidate_ID = "PP_Order_Candidate_ID";
 
 	/**
-	 * Set BOM & Formula.
+	 * Set BOM & Formula Version.
 	 * BOM & Formula
 	 *
 	 * <br>Type: Search
@@ -339,7 +337,7 @@ public interface I_PP_Order_Candidate
 	void setPP_Product_BOM_ID (int PP_Product_BOM_ID);
 
 	/**
-	 * Get BOM & Formula.
+	 * Get BOM & Formula Version.
 	 * BOM & Formula
 	 *
 	 * <br>Type: Search

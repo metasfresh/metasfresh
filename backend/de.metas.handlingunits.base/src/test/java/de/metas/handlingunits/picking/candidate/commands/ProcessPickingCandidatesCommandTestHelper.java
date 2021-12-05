@@ -27,7 +27,7 @@ import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.picking.PackToSpec;
 import de.metas.handlingunits.picking.PickingCandidateId;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
-import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;

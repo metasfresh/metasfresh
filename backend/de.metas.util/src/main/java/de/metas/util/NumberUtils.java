@@ -204,7 +204,7 @@ public final class NumberUtils
 	 * <li><code>defaultValue</code> if value is <code>null</code> or it's string representation cannot be converted to integer.
 	 * </ul>
 	 */
-	public static int asInt(final Object value, final int defaultValue)
+	public static int asInt(@Nullable final Object value, final int defaultValue)
 	{
 		return asInteger(value, defaultValue);
 	}

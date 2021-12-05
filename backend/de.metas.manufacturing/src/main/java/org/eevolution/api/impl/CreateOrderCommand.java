@@ -2,6 +2,7 @@
 package org.eevolution.api.impl;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -152,6 +153,7 @@ final class CreateOrderCommand
 		//
 		// Dimensions / References
 		ppOrderRecord.setC_OrderLine_ID(OrderLineId.toRepoId(request.getSalesOrderLineId()));
+		ppOrderRecord.setM_ShipmentSchedule_ID(ShipmentScheduleId.toRepoId(request.getShipmentScheduleId()));
 		ppOrderRecord.setC_BPartner_ID(BPartnerId.toRepoId(getCustomerIdOrNull(request)));
 		ppOrderRecord.setC_Project_ID(ProjectId.toRepoId(request.getProjectId()));
 

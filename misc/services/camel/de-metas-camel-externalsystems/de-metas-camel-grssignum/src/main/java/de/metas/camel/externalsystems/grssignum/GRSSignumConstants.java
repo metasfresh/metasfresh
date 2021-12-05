@@ -33,6 +33,8 @@ public interface GRSSignumConstants
 
 	String ROUTE_PROPERTY_EXPORT_BPARTNER_CONTEXT = "ExportBPartnerRouteContext";
 
+	String ROUTE_PROPERTY_GRS_REST_API_CONTEXT = "GRSRestAPIRouteContext";
+
 	String EXPORT_BPARTNER_RETRY_COUNT = "export.bpartner.retry.count";
 
 	String EXPORT_BPARTNER_RETRY_DELAY = "export.bpartner.retry.delay.ms";

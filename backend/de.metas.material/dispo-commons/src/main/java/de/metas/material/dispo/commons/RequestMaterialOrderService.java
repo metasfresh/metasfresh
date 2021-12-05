@@ -139,9 +139,17 @@ public class RequestMaterialOrderService
 
 		for (final Candidate groupMember : group)
 		{
-			if (groupMember.getDemandDetail() != null && groupMember.getDemandDetail().getOrderLineId() > 0)
+			if (groupMember.getDemandDetail() != null)
 			{
+				if ( groupMember.getDemandDetail().getOrderLineId() > 0 )
+				{
 				ppOrderDataBuilder.orderLineId(IdConstants.toRepoId(groupMember.getDemandDetail().getOrderLineId()));
+				}
+
+				if ( groupMember.getDemandDetail().getShipmentScheduleId() > 0)
+				{
+					ppOrderDataBuilder.shipmentScheduleId(groupMember.getDemandDetail().getShipmentScheduleId());
+				}
 			}
 
 			final ProductionDetail prodDetail = ProductionDetail.cast(groupMember.getBusinessCaseDetail());

@@ -4,7 +4,7 @@ import java.util.Set;
 
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inout.ShipmentScheduleId;
 import lombok.Builder;
 import lombok.Singular;
 import lombok.Value;

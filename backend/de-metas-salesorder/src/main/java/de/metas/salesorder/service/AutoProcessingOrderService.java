@@ -37,7 +37,7 @@ import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
-import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.shippertransportation.ShipperDeliveryService;
 import de.metas.invoice.InvoiceService;
 import de.metas.invoicecandidate.InvoiceCandidateId;

@@ -6,7 +6,7 @@ import de.metas.handlingunits.picking.PackToSpec;
 import de.metas.handlingunits.picking.PickFrom;
 import de.metas.handlingunits.picking.PickingCandidateId;
 import de.metas.handlingunits.picking.QtyRejectedWithReason;
-import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;

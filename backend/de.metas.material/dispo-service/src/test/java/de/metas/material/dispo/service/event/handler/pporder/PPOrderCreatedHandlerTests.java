@@ -141,7 +141,8 @@ public class PPOrderCreatedHandlerTests
 
 		ppOrderCreatedHandler = new PPOrderCreatedHandler(
 				candidateChangeHandler,
-				new MainDataRequestHandler());
+				new MainDataRequestHandler(),
+				candidateRepositoryRetrieval);
 	}
 
 	@Test

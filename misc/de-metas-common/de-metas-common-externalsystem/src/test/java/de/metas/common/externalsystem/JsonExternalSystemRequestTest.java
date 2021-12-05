@@ -44,7 +44,9 @@ class JsonExternalSystemRequestTest
 		final String sw6ConfigMappings = getExternalSystemShopware6ConfigMappings();
 		final String sw6UOMMappings = getExternalSystemShopware6UOMMappings();
 
-		final JsonExternalSystemRequest requestDeserialized = JsonExternalSystemRequest.builder().externalSystemName(JsonExternalSystemName.of("externalSystem"))
+		final JsonExternalSystemRequest requestDeserialized = JsonExternalSystemRequest.builder()
+				.externalSystemChildConfigValue("childValue")
+				.externalSystemName(JsonExternalSystemName.of("externalSystem"))
 				.externalSystemConfigId(JsonMetasfreshId.of(1))
 				.orgCode("orgCode")
 				.command("command")

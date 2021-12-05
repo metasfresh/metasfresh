@@ -10,7 +10,7 @@ import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateId;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
-import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.product.ProductId;
 import de.metas.util.Check;

@@ -684,6 +684,10 @@ public class DB
 		{
 			pstmt.setString(index, ((ReferenceListAwareEnum)param).getCode());
 		}
+		else if(param instanceof byte[])
+		{
+			pstmt.setBytes(index, (byte[])param);
+		}
 		else
 		{
 			throw new DBException("Unknown parameter type " + index + " - " + param + " (" + param.getClass() + ")");

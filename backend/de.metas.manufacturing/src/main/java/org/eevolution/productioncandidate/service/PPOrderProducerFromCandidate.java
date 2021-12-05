@@ -23,6 +23,7 @@
 package org.eevolution.productioncandidate.service;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.common.util.time.SystemTime;
 import de.metas.material.event.pporder.PPOrderCandidate;
 import de.metas.material.planning.ProductPlanningId;
@@ -187,7 +188,8 @@ public class PPOrderProducerFromCandidate implements ITrxItemChunkProcessor<I_PP
 				.datePromised(ppOrderCandidatePojo.getPpOrderData().getDatePromised())
 				.dateStartSchedule(ppOrderCandidatePojo.getPpOrderData().getDateStartSchedule())
 				//
-				.salesOrderLineId(OrderLineId.ofRepoIdOrNull(ppOrderCandidatePojo.getPpOrderData().getOrderLineId()))
+				.salesOrderLineId(OrderLineId.ofRepoIdOrNull(ppOrderCandidatePojo.getPpOrderData().getOrderLineIdAsRepoId()))
+				.shipmentScheduleId(ShipmentScheduleId.ofRepoIdOrNull(ppOrderCandidatePojo.getPpOrderData().getShipmentScheduleIdAsRepoId()))
 				//
 				.build();
 	}

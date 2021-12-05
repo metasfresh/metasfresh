@@ -111,6 +111,7 @@ public abstract class InvokeExternalSystemProcess extends JavaProcess implements
 				.adPInstanceId(JsonMetasfreshId.of(PInstanceId.toRepoId(getPinstanceId())))
 				.traceId(externalSystemConfigService.getTraceId())
 				.writeAuditEndpoint(config.getAuditEndpointIfEnabled())
+				.externalSystemChildConfigValue(config.getChildConfig().getValue())
 				.build();
 	}
 

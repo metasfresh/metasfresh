@@ -107,12 +107,12 @@ import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuild
 import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.UPSERT_RUNTIME_PARAMS_ROUTE_ID;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_CONFIG_MAPPINGS;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_FREIGHT_COST_NORMAL_PRODUCT_ID;
-import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_NORMAL_VAT_RATES;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_FREIGHT_COST_REDUCED_PRODUCT_ID;
-import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_REDUCED_VAT_RATES;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_NORMAL_VAT_RATES;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_ORDER_ID;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_ORDER_NO;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_PRODUCT_LOOKUP;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_REDUCED_VAT_RATES;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -356,6 +356,7 @@ public class GetOrdersRouteBuilder_HappyFlow_Tests extends CamelTestSupport
 					.builder()
 					.traceId(MOCK_TRACE_ID)
 					.externalSystemName(JsonExternalSystemName.of(SHOPWARE6_SYSTEM_NAME))
+					.externalSystemChildConfigValue("childValue")
 					.externalSystemConfigId(JsonMetasfreshId.of(1))
 					.orgCode(MOCK_ORG_CODE)
 					.command("command")
@@ -520,6 +521,7 @@ public class GetOrdersRouteBuilder_HappyFlow_Tests extends CamelTestSupport
 				.builder()
 				.traceId(MOCK_TRACE_ID)
 				.externalSystemName(JsonExternalSystemName.of(SHOPWARE6_SYSTEM_NAME))
+				.externalSystemChildConfigValue("ChildValue")
 				.externalSystemConfigId(JsonMetasfreshId.of(1))
 				.orgCode(MOCK_ORG_CODE)
 				.command("command")
