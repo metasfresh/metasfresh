@@ -72,14 +72,14 @@ public class OrderService
 	private final IOLCandDAO olCandDAO = Services.get(IOLCandDAO.class);
 	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 
-	private final AsyncBatchService asyncBatchService;
 	private final C_OLCandToOrderEnqueuer olCandToOrderEnqueuer;
 
 	public OrderService(
 			@NonNull final AsyncBatchService asyncBatchService,
 			@NonNull final C_OLCandToOrderEnqueuer olCandToOrderEnqueuer)
 	{
-		this.asyncBatchService = asyncBatchService;
+		this.asyncBathMilestoneService = asyncBathMilestoneService;
+		this.asyncBatchMilestoneObserver = asyncBatchMilestoneObserver;
 		this.olCandToOrderEnqueuer = olCandToOrderEnqueuer;
 	}
 
