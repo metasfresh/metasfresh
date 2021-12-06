@@ -2,7 +2,7 @@ import SockJS from 'sockjs-client';
 import { Client } from '@stomp/stompjs';
 import { noConnection, badGateway } from '../actions/WindowActions';
 import { BAD_GATEWAY_ERROR } from '../constants/Constants';
-import { store } from '../containers/App';
+import { store } from '../index.jsx';
 import { getUserSession } from '../api';
 import _ from 'lodash';
 function socketFactory() {

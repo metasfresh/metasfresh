@@ -28,16 +28,10 @@ import Translation from '../components/Translation';
 import NotificationHandler from '../components/notifications/NotificationHandler';
 import blacklist from '../shortcuts/blacklist';
 import keymap from '../shortcuts/keymap';
-import configureStore from '../store/configureStore';
 
 const hotkeys = generateHotkeys({ keymap, blacklist });
 
-export const store = configureStore();
 // const APP_PLUGINS = PLUGINS ? PLUGINS : [];
-
-if (window.Cypress) {
-  window.store = store;
-}
 
 /**
  * @file Functional component.
@@ -50,6 +44,10 @@ const App = () => {
   const auth = useAuth();
   const dispatch = useDispatch();
   const store = useStore();
+
+  if (window.Cypress) {
+    window.store = store;
+  }
 
   useConstructor(() => {
     // this.pluginsRegistry = new PluginsRegistry(this);
