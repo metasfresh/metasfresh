@@ -6,14 +6,16 @@ import de.metas.product.ProductId;
 import de.metas.product.ProductPlanningSchemaSelector;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.modelvalidator.IModelValidationEngine;
+import org.adempiere.ad.callout.annotations.Callout;
+import org.adempiere.ad.callout.annotations.CalloutMethod;
+import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.model.CopyRecordFactory;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.ModelValidator;
+import org.compiere.util.Env;
 import org.springframework.stereotype.Component;
 
 /*
@@ -38,10 +40,17 @@ import org.springframework.stereotype.Component;
  * #L%
  */
 @Interceptor(I_M_Product.class)
+@Callout(I_M_Product.class)
 @Component()
 public class M_Product
 {
 	private final IProductPlanningSchemaBL productPlanningSchemaBL = Services.get(IProductPlanningSchemaBL.class);
+
+	@Init
+	public void registerCallouts()
+	{
+		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(this);
+	}
 
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_NEW)
 	public void afterNew(final @NonNull I_M_Product product, @NonNull final ModelChangeType changeType)
@@ -49,6 +58,19 @@ public class M_Product
 		if (changeType.isNew())
 		{
 			createOrUpdateProductPlanningsForSelector(product);
+		}
+	}
+
+	@CalloutMethod(columnNames = I_M_Product.COLUMNNAME_Discontinued)
+	public void updateDiscontinuedFrom(@NonNull final I_M_Product product)
+	{
+		if (product.isDiscontinued())
+		{
+			product.setDiscontinuedFrom(Env.getDate());
+		}
+		else
+		{
+			product.setDiscontinuedFrom(null);
 		}
 	}
 
