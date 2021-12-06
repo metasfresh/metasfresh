@@ -43,9 +43,9 @@ public class C_Invoice_StepDef
 {
 	private final IPaymentTermRepository paymentTermRepo = Services.get(IPaymentTermRepository.class);
 
-	private final StepDefData<I_C_Invoice> invoiceTable;
+	private final C_Invoice_StepDefData invoiceTable;
 
-	public C_Invoice_StepDef(@NonNull final StepDefData<I_C_Invoice> invoiceTable)
+	public C_Invoice_StepDef(@NonNull final C_Invoice_StepDefData invoiceTable)
 	{
 		this.invoiceTable = invoiceTable;
 	}

@@ -55,12 +55,12 @@ public class M_ShipmentSchedule_StepDef
 {
 	final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	private final StepDefData<I_C_OrderLine> orderLineTable;
-	private final StepDefData<I_M_ShipmentSchedule> shipmentScheduleTable;
+	private final C_OrderLine_StepDefData orderLineTable;
+	private final M_ShipmentSchedule_StepDefData shipmentScheduleTable;
 
 	public M_ShipmentSchedule_StepDef(
-			@NonNull final StepDefData<I_C_OrderLine> orderLineTable,
-			@NonNull final StepDefData<I_M_ShipmentSchedule> shipmentScheduleTable)
+			@NonNull final C_OrderLine_StepDefData orderLineTable,
+			@NonNull final M_ShipmentSchedule_StepDefData shipmentScheduleTable)
 	{
 		this.orderLineTable = orderLineTable;
 		this.shipmentScheduleTable = shipmentScheduleTable;
