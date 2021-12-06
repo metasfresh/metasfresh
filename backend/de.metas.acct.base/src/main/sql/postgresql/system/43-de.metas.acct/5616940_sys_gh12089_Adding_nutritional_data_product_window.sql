@@ -425,7 +425,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 2021-12-02T20:29:14.601Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ SELECT public.db_alter_table('M_Product_Allergen','ALTER TABLE public.M_Product_Allergen ADD COLUMN SeqNo NUMERIC(10) NOT NULL')
+/* DDL */ SELECT public.db_alter_table('M_Product_Allergen','ALTER TABLE public.M_Product_Allergen ADD COLUMN SeqNo NUMERIC(10)')
 ;
 
 -- 2021-12-02T20:29:47.178Z
