@@ -113,12 +113,7 @@ class Container extends PureComponent {
         {/* generic error */}
         {connectionError && <ErrorScreen />}
         {/* when we have specific error message we render the error screen with the appropriate type of error */}
-        {connectionErrorType && (
-          <ErrorScreen
-            errorType={connectionErrorType}
-            onPingSuccess={this.onPingSuccess}
-          />
-        )}
+        {connectionErrorType && <ErrorScreen errorType={connectionErrorType} />}
 
         {showSpinner && <SpinnerOverlay iconSize={100} spinnerType="modal" />}
 
