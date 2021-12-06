@@ -115,7 +115,6 @@ public class JsonProduct
 	String manufacturerNumber;
 
 	@ApiModelProperty( //
-			allowEmptyValue = true, //
 			dataType = "java.time.LocalDate", //
 			value = "This translates to `M_Product.DiscontinuedFrom`.")
 	@Nullable
