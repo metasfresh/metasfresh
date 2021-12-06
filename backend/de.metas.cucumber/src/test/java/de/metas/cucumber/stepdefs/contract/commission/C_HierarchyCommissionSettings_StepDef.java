@@ -24,6 +24,7 @@ package de.metas.cucumber.stepdefs.contract.commission;
 
 import de.metas.contracts.commission.model.I_C_HierarchyCommissionSettings;
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefData;
 import io.cucumber.datatable.DataTable;
@@ -43,11 +44,11 @@ import static org.assertj.core.api.Assertions.*;
 
 public class C_HierarchyCommissionSettings_StepDef
 {
-	private final StepDefData<I_M_Product> productTable;
+	private final M_Product_StepDefData productTable;
 	private final StepDefData<I_C_HierarchyCommissionSettings> hierarchyCommissionSettingsTable;
 
 	public C_HierarchyCommissionSettings_StepDef(
-			@NonNull final StepDefData<I_M_Product> productTable, 
+			@NonNull final M_Product_StepDefData productTable, 
 			@NonNull final StepDefData<I_C_HierarchyCommissionSettings> hierarchyCommissionSettingsTable)
 	{
 		this.productTable = productTable;

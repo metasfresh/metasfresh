@@ -32,6 +32,7 @@ import de.metas.CommandLineParser;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.ServerBoot;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
+import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
@@ -56,11 +57,11 @@ import static org.assertj.core.api.Assertions.*;
 public class MetasfreshToExternalSystemRabbitMQ_StepDef
 {
 	private final ConnectionFactory metasfreshToRabbitMQFactory;
-	private final StepDefData<I_C_BPartner> bpartnerTable;
+	private final C_BPartner_StepDefData bpartnerTable;
 	private final StepDefData<I_ExternalSystem_Config> externalSystemConfigTable;
 
 	public MetasfreshToExternalSystemRabbitMQ_StepDef(
-			@NonNull final StepDefData<I_C_BPartner> bpartnerTable,
+			@NonNull final C_BPartner_StepDefData bpartnerTable,
 			@NonNull final StepDefData<I_ExternalSystem_Config> externalSystemConfigTable)
 	{
 		this.bpartnerTable = bpartnerTable;
