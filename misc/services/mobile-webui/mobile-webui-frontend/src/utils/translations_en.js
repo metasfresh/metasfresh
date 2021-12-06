@@ -31,7 +31,6 @@ const translations = {
       defaultCaption: 'Scan',
       invalidScannedBarcode: 'Scanned code is invalid',
     },
-    abortText: 'Abort',
     picking: {
       PickingLine: 'Picking Line',
       scanHUBarcode: 'Scan HU',
@@ -59,9 +58,8 @@ const translations = {
         yes: 'Yes',
         no: 'No',
       },
-      abort: {
-        caption: 'Abort',
-      },
+      abort: 'Abort',
+      notFound: 'Not found',
     },
     mfg: {
       ProductName: 'Product Name',

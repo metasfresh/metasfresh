@@ -3,12 +3,14 @@ import PropTypes from 'prop-types';
 import counterpart from 'counterpart';
 import { push } from 'connected-react-router';
 
-import { postStepUnPicked } from '../../../api/picking';
+import { postStepUnPicked, postStepPicked } from '../../../api/picking';
 import { updatePickingStepQty } from '../../../actions/PickingActions';
-import ButtonWithIndicator from '../../../components/ButtonWithIndicator';
+import { pushHeaderEntry } from '../../../actions/HeaderActions';
 import * as CompleteStatus from '../../../constants/CompleteStatus';
 import { toastError } from '../../../utils/toast';
-import { pushHeaderEntry } from '../../../actions/HeaderActions';
+
+import ButtonWithIndicator from '../../../components/ButtonWithIndicator';
+import NotFoundButton from '../NotFoundButton';
 
 class PickStepScreen extends Component {
   getPickFrom = () => {
@@ -72,6 +74,35 @@ class PickStepScreen extends Component {
       .catch((axiosError) => toastError({ axiosError }));
   };
 
+  handleNotFound = () => {
+    const { wfProcessId, stepId, altStepId, lineId, activityId, dispatch } = this.props;
+    const huBarcode = this.getPickFrom().huBarcode;
+    const qtyRejected = this.getQtyToPick();
+
+    postStepPicked({
+      wfProcessId,
+      activityId,
+      stepId,
+      qtyPicked: 0,
+      qtyRejected,
+      qtyRejectedReasonCode: 'N',
+      huBarcode,
+    }).then(() => {
+      dispatch(
+        updatePickingStepQty({
+          wfProcessId,
+          activityId,
+          lineId,
+          stepId,
+          altStepId,
+          qtyPicked: 0,
+          qtyRejected,
+          qtyRejectedReasonCode: 'N',
+        })
+      );
+    });
+  };
+
   componentWillUnmount() {
     const { wfProcessId, activityId, lineId, stepId, dispatch } = this.props;
 
@@ -89,6 +120,7 @@ class PickStepScreen extends Component {
   }
 
   render() {
+    const { wfProcessId, activityId, lineId, stepId } = this.props;
     const pickFrom = this.getPickFrom();
     const isPickedFromHU = pickFrom.qtyPicked > 0;
 
@@ -132,6 +164,11 @@ class PickStepScreen extends Component {
             <ButtonWithIndicator caption={counterpart.translate('activities.picking.unPickBtn')} />
           </button>
         </div>
+        <NotFoundButton
+          onNotFound={this.handleNotFound}
+          disabled={!nothingPicked}
+          {...{ wfProcessId, activityId, stepId, lineId }}
+        />
       </>
     );
   }
