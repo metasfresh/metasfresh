@@ -2,7 +2,7 @@ import SockJS from 'sockjs-client';
 import { Client } from '@stomp/stompjs';
 import { noConnection, badGateway } from '../actions/WindowActions';
 import { BAD_GATEWAY_ERROR } from '../constants/Constants';
-import { store } from '../index.jsx';
+// import { store } from '../index.jsx';
 import { getUserSession } from '../api';
 import _ from 'lodash';
 function socketFactory() {
@@ -64,12 +64,13 @@ export function connectWS(topic, onMessageCallback) {
             });
         }
         // update the store flag
-        badGatewayStatus && store.dispatch(badGateway(BAD_GATEWAY_ERROR));
+        badGatewayStatus &&
+          window.store.dispatch(badGateway(BAD_GATEWAY_ERROR));
 
         // -- if more than max allowed reconnect times  ->  deactivate
         if (reconnectCounter > maxReconnectTimesNo) {
           this.reconnectDelay = 0; // 0 - deactivates the sockClient
-          !badGatewayStatus && store.dispatch(noConnection(true));
+          !badGatewayStatus && window.store.dispatch(noConnection(true));
         }
       },
       reconnectDelay: 5000,
