@@ -34,6 +34,10 @@ import org.adempiere.service.ClientId;
 
 import javax.annotation.Nullable;
 
+/**
+ * Note: if you leave any of the nullable fields unspecified, 
+ * it means that the respective printer routing record needs to have {@code NULL} in the respective DB column.
+ */
 @Value
 @Builder
 public class PrinterRoutingsQuery
@@ -55,10 +59,7 @@ public class PrinterRoutingsQuery
 
 	@Nullable
 	AdProcessId processId;
-
+	
 	@Nullable
 	AdTableId tableId;
-
-	@Nullable
-	String printerType;
 }

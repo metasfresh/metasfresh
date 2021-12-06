@@ -24,6 +24,7 @@ package de.metas.adempiere.service.impl;
 
 import java.util.List;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.service.PrinterRoutingsQuery;
 import de.metas.cache.CCache;
 import de.metas.organization.OrgId;
@@ -56,7 +57,7 @@ public class PrinterRoutingDAO implements IPrinterRoutingDAO
 	@Override
 	public List<I_AD_PrinterRouting> fetchPrinterRoutings(@NonNull final PrinterRoutingsQuery query)
 	{
-		return query2routingsCache.getOrLoad(query, q -> fetchPrinterRoutings0(q));
+		return query2routingsCache.getOrLoad(query, this::fetchPrinterRoutings0);
 	}
 
 	private List<I_AD_PrinterRouting> fetchPrinterRoutings0(@NonNull final PrinterRoutingsQuery query)
@@ -66,52 +67,48 @@ public class PrinterRoutingDAO implements IPrinterRoutingDAO
 		final IQueryBuilder<I_AD_Printer> printerQueryBuilder = queryBL
 				.createQueryBuilder(I_AD_Printer.class)// only routings that reference active printers
 				.addOnlyActiveRecordsFilter();
-		if (Check.isNotBlank(query.getPrinterType()))
-		{
-			printerQueryBuilder.addEqualsFilter(I_AD_Printer.COLUMNNAME_PrinterType, query.getPrinterType());
-		}
 
 		final IQueryBuilder<I_AD_PrinterRouting> routingQueryBuilder = printerQueryBuilder
 				.andCollectChildren(I_AD_PrinterRouting.COLUMN_AD_Printer_ID)
 				.addOnlyActiveRecordsFilter()
+
 				.addInArrayFilter(I_AD_PrinterRouting.COLUMNNAME_AD_Client_ID, query.getClientId(), ClientId.SYSTEM)
-				.addInArrayFilter(I_AD_PrinterRouting.COLUMNNAME_AD_Org_ID, query.getOrgId(), OrgId.ANY);
-		if (query.getDocTypeId() != null)
-		{
-			routingQueryBuilder.addInArrayFilter(I_AD_PrinterRouting.COLUMNNAME_C_DocType_ID, query.getDocTypeId(), null);
-		}
-		if (query.getProcessId() != null)
-		{
-			routingQueryBuilder.addInArrayFilter(I_AD_PrinterRouting.COLUMNNAME_AD_Process_ID, query.getProcessId(), null);
-		}
-		if (query.getTableId() != null)
-		{
-			routingQueryBuilder.addInArrayFilter(I_AD_PrinterRouting.COLUMNNAME_AD_Table_ID, query.getTableId(), null);
-		}
-		if (query.getRoleId() != null)
-		{
-			routingQueryBuilder.addInArrayFilter(I_AD_PrinterRouting.COLUMNNAME_AD_Role_ID, query.getRoleId(), null);
-		}
-		if (query.getUserId() != null)
-		{
-			routingQueryBuilder.addInArrayFilter(I_AD_PrinterRouting.COLUMNNAME_AD_User_ID, query.getUserId(), null);
-		}
+				.addInArrayFilter(I_AD_PrinterRouting.COLUMNNAME_AD_Org_ID, query.getOrgId(), OrgId.ANY)
+				.addInArrayFilter(I_AD_PrinterRouting.COLUMNNAME_C_DocType_ID, query.getDocTypeId(), null)
+				.addInArrayFilter(I_AD_PrinterRouting.COLUMNNAME_AD_Process_ID, query.getProcessId(), null)
+				.addInArrayFilter(I_AD_PrinterRouting.COLUMNNAME_AD_Table_ID, query.getTableId(), null)
+				.addInArrayFilter(I_AD_PrinterRouting.COLUMNNAME_AD_Role_ID, query.getRoleId(), null)
+				.addInArrayFilter(I_AD_PrinterRouting.COLUMNNAME_AD_User_ID, query.getUserId(), null)
 
-		routingQueryBuilder
-				.orderBy(I_AD_PrinterRouting.COLUMNNAME_SeqNo)
-				.orderByDescending(I_AD_PrinterRouting.COLUMNNAME_AD_Client_ID)
-				.orderByDescending(I_AD_PrinterRouting.COLUMNNAME_AD_Org_ID)
-				.orderByDescending(I_AD_PrinterRouting.COLUMNNAME_C_DocType_ID)
-				.orderByDescending(I_AD_PrinterRouting.COLUMNNAME_AD_Role_ID)
-				.orderByDescending(I_AD_PrinterRouting.COLUMNNAME_AD_User_ID)
-				.orderByDescending(I_AD_PrinterRouting.COLUMNNAME_AD_Table_ID)
-				.orderBy(I_AD_PrinterRouting.COLUMNNAME_AD_PrinterRouting_ID);
+				.orderBy(I_AD_PrinterRouting.COLUMNNAME_SeqNo);
 
-		return routingQueryBuilder
+		final List<I_AD_PrinterRouting> matchingRecords = routingQueryBuilder
 				.create()
 				.list();
+		if (matchingRecords.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+		
+		// get the first match plus any additional results with the same SeqNo
+		final ImmutableList.Builder<I_AD_PrinterRouting> result = ImmutableList.builder();
+		final int matchingSeqNo = matchingRecords.get(0).getSeqNo();
+
+		for (final I_AD_PrinterRouting matchingRecord : matchingRecords)
+		{
+			if (matchingRecord.getSeqNo() == matchingSeqNo)
+			{
+				result.add(matchingRecord);
+			}
+			else
+			{
+				break;
+			}
+		}
+		return matchingRecords;
 	}
 
+	@Nullable
 	@Override
 	public I_AD_Printer findPrinterByName(@Nullable final String printerName)
 	{

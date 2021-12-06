@@ -420,20 +420,6 @@ public class ReportEngine implements PrintServiceAttributeListener
 	}    // pageSetupDialog
 
 	/**
-	 * Set Printer (name)
-	 *
-	 * @param printerName valid printer name
-	 */
-	public void setPrinterName(String printerName)
-	{
-		if (printerName == null)
-			m_printerName = Services.get(IPrinterRoutingBL.class).getDefaultPrinterName(); // metas: us316
-			// m_printerName = Ini.getProperty(Ini.P_PRINTER); // metas: us316: commented
-		else
-			m_printerName = printerName;
-	}    // setPrinterName
-
-	/**
 	 * Get Printer (name)
 	 *
 	 * @return printer name

@@ -27,12 +27,16 @@ import java.util.List;
 import de.metas.adempiere.model.I_AD_Printer;
 import de.metas.util.ISingletonService;
 import de.metas.adempiere.model.I_AD_PrinterRouting;
+import lombok.NonNull;
 
 import javax.annotation.Nullable;
 
 public interface IPrinterRoutingDAO extends ISingletonService
 {
-	List<I_AD_PrinterRouting> fetchPrinterRoutings(PrinterRoutingsQuery query);
+	/**
+	 * @return the matching records that have the smallest (common) SeqNo.
+	 */
+	List<I_AD_PrinterRouting> fetchPrinterRoutings(@NonNull PrinterRoutingsQuery query);
 
 	@Nullable
 	I_AD_Printer findPrinterByName(@Nullable String printerName);

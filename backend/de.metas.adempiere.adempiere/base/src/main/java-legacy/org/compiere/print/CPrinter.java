@@ -61,16 +61,6 @@ public class CPrinter extends CComboBox implements ActionListener
 
 
 	/**
-	 *  Return default PrinterJob
-	 *  @return PrinterJob
-	 */
-	public static PrinterJob getPrinterJob()
-	{
-		return getPrinterJob(Services.get(IPrinterRoutingBL.class).getDefaultPrinterName()); // metas: us316
-		//return getPrinterJob(Ini.getProperty(Ini.P_PRINTER)); // metas: us316: commented
-	}   //  getPrinterJob
-
-	/**
 	 *  Return PrinterJob with selected printer name.
 	 *  @param printerName if null, get default printer (Ini)
 	 *  @return PrinterJob

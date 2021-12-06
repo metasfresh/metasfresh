@@ -40,6 +40,7 @@ public class AdProcessId implements RepoIdAware
 		return new AdProcessId(repoId);
 	}
 
+	@Nullable
 	public static AdProcessId ofRepoIdOrNull(final int repoId)
 	{
 		return repoId > 0 ? new AdProcessId(repoId) : null;

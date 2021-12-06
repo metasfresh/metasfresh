@@ -23,90 +23,25 @@ package de.metas.adempiere.service.impl;
  */
 
 
+import lombok.EqualsAndHashCode;
+import lombok.NonNull;
+import lombok.ToString;
+import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 
 import de.metas.adempiere.service.IPrintingService;
 
+@EqualsAndHashCode
+@ToString
+@Value
 public class PrintingServiceImpl implements IPrintingService
 {
-	private final String printerName;
-	private final String printerType;
-	private final boolean isDirectPrint;
+	String printerName;
+	boolean isDirectPrint;
 
-	PrintingServiceImpl(String printerName, String printerType, boolean isDirectPrint)
+	PrintingServiceImpl(final @NonNull String printerName, final boolean isDirectPrint)
 	{
-		if (printerName == null)
-			throw new AdempiereException("printerName is null");
-		if (printerType == null)
-			throw new AdempiereException("printerType is null");
 		this.printerName = printerName;
-		this.printerType = printerType;
 		this.isDirectPrint = isDirectPrint;
 	}
-
-	@Override
-	public String getPrinterName()
-	{
-		return printerName;
-	}
-
-	@Override
-	public String getPrinterType()
-	{
-		return printerType;
-	}
-
-	@Override
-	public boolean isDirectPrint()
-	{
-		return isDirectPrint;
-	}
-
-	@Override
-	public int hashCode()
-	{
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + (isDirectPrint ? 1231 : 1237);
-		result = prime * result + ((printerName == null) ? 0 : printerName.hashCode());
-		result = prime * result + ((printerType == null) ? 0 : printerType.hashCode());
-		return result;
-	}
-
-	@Override
-	public boolean equals(Object obj)
-	{
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		PrintingServiceImpl other = (PrintingServiceImpl)obj;
-		if (isDirectPrint != other.isDirectPrint)
-			return false;
-		if (printerName == null)
-		{
-			if (other.printerName != null)
-				return false;
-		}
-		else if (!printerName.equals(other.printerName))
-			return false;
-		if (printerType == null)
-		{
-			if (other.printerType != null)
-				return false;
-		}
-		else if (!printerType.equals(other.printerType))
-			return false;
-		return true;
-	}
-
-	@Override
-	public String toString()
-	{
-		return "PrintingServiceImpl [printerName=" + printerName + ", printerType=" + printerType + ", isDirectPrint=" + isDirectPrint + "]";
-	}
-
-	
 }
