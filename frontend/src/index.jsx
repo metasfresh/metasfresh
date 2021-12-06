@@ -10,9 +10,9 @@ import { historyDoubleBackOnPopstate } from './utils';
 // this export is needed as we are using it at websockets level
 export const store = configureStore();
 
-if (window.Cypress) {
-  window.store = store;
-}
+// if (window.Cypress) {
+window.store = store;
+// }
 
 // if (process.env.NODE_ENV !== 'production') {
 //   const whyDidYouRender = require('@welldone-software/why-did-you-render');
