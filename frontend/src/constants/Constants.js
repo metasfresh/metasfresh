@@ -1,11 +1,5 @@
 /**
  * @constant
- * @type {string} endpoint path for the menu search `menu/queryParth`
- */
-export const MENU_QUERY_PATHS = 'menu/queryPaths';
-
-/**
- * @constant
  * @type {string} ToDo: Description for the constant.
  */
 export const VIEW_EDITOR_RENDER_MODES_NEVER = 'never';
