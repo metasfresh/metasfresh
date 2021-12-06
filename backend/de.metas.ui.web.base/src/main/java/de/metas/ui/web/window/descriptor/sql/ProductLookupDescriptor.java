@@ -405,6 +405,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 					.append(" p.").append(I_M_Product_Lookup_V.COLUMNNAME_Discontinued).append(" = ").append(sqlWhereClauseParams.placeholder(false))
 				.append(" OR ")
 					.append(" p.").append(I_M_Product_Lookup_V.COLUMNNAME_Discontinued).append(" = ").append(sqlWhereClauseParams.placeholder(true))
+					// note: if DiscontinuedFrom='Y' and DiscontinuedFrom is null, then the SQL does not match, which is what we want
 				.append(" AND ")
 					.append(" p.").append(I_M_Product_Lookup_V.COLUMNNAME_DiscontinuedFrom).append(" > ").append(sqlWhereClauseParams.placeholder(priceDate))
 				.append(" ) ");
