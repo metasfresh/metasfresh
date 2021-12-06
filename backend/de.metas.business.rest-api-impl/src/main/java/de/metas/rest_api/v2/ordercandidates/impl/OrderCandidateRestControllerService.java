@@ -367,9 +367,9 @@ public class OrderCandidateRestControllerService
 
 			final ProcessOLCandsRequest enqueueRequest = ProcessOLCandsRequest.builder()
 					.pInstanceId(validOLCandIdsSelectionId)
-					.ship(CoalesceUtil.coalesce(request.getShip(), false))
-					.invoice(CoalesceUtil.coalesce(request.getInvoice(), false))
-					.closeOrder(CoalesceUtil.coalesce(request.getCloseOrder(), false))
+					.ship(CoalesceUtil.coalesceNotNull(request.getShip(), false))
+					.invoice(CoalesceUtil.coalesceNotNull(request.getInvoice(), false))
+					.closeOrder(CoalesceUtil.coalesceNotNull(request.getCloseOrder(), false))
 					.build();
 
 			processOLCandsWorkpackageEnqueuer.enqueue(enqueueRequest, processOLCandsAsyncBatchId);
