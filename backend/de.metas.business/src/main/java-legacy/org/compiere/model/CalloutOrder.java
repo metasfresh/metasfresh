@@ -296,6 +296,17 @@ public class CalloutOrder extends CalloutEngine
 		return NO_ERROR;
 	}
 
+	public String shipper(final ICalloutField calloutField)
+	{
+		final I_C_Order order = calloutField.getModel(I_C_Order.class);
+
+		if (order.getM_Shipper_ID() > 0)
+			order.setDeliveryViaRule("S");
+		else
+			order.setDeliveryViaRule("P");
+
+		return NO_ERROR;
+	}
 	/**
 	 * Order Header - BPartner. - M_PriceList_ID (+ Context) - C_BPartner_Location_ID - Bill_BPartner_ID/Bill_Location_ID - AD_User_ID - POReference - SO_Description - IsDiscountPrinted -
 	 * InvoiceRule/DeliveryRule/PaymentRule/FreightCost/DeliveryViaRule - C_PaymentTerm_ID
