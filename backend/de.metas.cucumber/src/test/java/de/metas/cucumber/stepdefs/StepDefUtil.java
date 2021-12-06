@@ -26,6 +26,8 @@ import lombok.experimental.UtilityClass;
 
 import java.util.function.Supplier;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+
 @UtilityClass
 public class StepDefUtil
 {
@@ -41,5 +43,7 @@ public class StepDefUtil
 			Thread.sleep(checkingIntervalMs);
 			conditionIsMet = worker.get();
 		}
+
+		assertThat(conditionIsMet).isTrue();
 	}
 }

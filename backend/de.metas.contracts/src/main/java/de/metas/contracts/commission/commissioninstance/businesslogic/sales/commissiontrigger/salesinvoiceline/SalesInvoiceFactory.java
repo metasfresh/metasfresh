@@ -3,6 +3,7 @@ package de.metas.contracts.commission.commissioninstance.businesslogic.sales.com
 import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionPoints;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTriggerType;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.salesinvoiceline.SalesInvoiceLine.SalesInvoiceLineBuilder;
@@ -26,6 +27,7 @@ import de.metas.product.ProductId;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
@@ -73,7 +75,7 @@ public class SalesInvoiceFactory
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final IInvoiceLineBL invoiceLineBL = Services.get(IInvoiceLineBL.class);
-	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 
 	public SalesInvoiceFactory(@NonNull final CommissionProductService commissionProductService)
 	{
@@ -87,8 +89,8 @@ public class SalesInvoiceFactory
 			logger.debug("The C_Invoice is now manual but created from an invoice candidate; -> nothing to do");
 			return Optional.empty();
 		}
-		final BPartnerId salesRepBPartnerId = BPartnerId.ofRepoIdOrNull(invoiceRecord.getC_BPartner_SalesRep_ID());
-		if (salesRepBPartnerId == null)
+		final Optional<BPartnerId> salesRepBPartnerId = getSalesRepId(invoiceRecord);
+		if (!salesRepBPartnerId.isPresent())
 		{
 			logger.debug("C_Invoice has C_BPartner_SalesRep_ID={}; -> return empty", invoiceRecord.getC_BPartner_SalesRep_ID());
 			return Optional.empty();
@@ -150,7 +152,7 @@ public class SalesInvoiceFactory
 				boolean isCreditMemoReinvoiceable = true;
 				if (!invoiceCandidates.isEmpty())
 				{
-					if(invoiceIsCreditMemo)
+					if (invoiceIsCreditMemo)
 					{
 
 						for (final I_C_Invoice_Candidate invoiceCandidate : invoiceCandidates)
@@ -161,7 +163,7 @@ public class SalesInvoiceFactory
 
 							if (invoiceLineAllocType == null || invoiceLineAllocType.isCreditMemoReinvoiceable())
 							{
-								logger.debug("C_InvoiceLine_ID={} is a reinvoiceable credit memo line as it has  C_Invoice_Line_Allocation_ID={} with the type {}", 
+								logger.debug("C_InvoiceLine_ID={} is a reinvoiceable credit memo line as it has  C_Invoice_Line_Allocation_ID={} with the type {}",
 								invoiceLineRecord.getC_InvoiceLine_ID(), alloc.getC_Invoice_Line_Alloc_ID(), invoiceLineAllocType);
 								isCreditMemoReinvoiceable = true;
 								break;
@@ -170,9 +172,9 @@ public class SalesInvoiceFactory
 						}
 					}
 
-					if(isCreditMemoReinvoiceable)
+					if (isCreditMemoReinvoiceable)
 					{
-						logger.debug("C_InvoiceLine_ID={} is a reinvoiceable credit memo line; -> skip it", invoiceLineRecord.getC_InvoiceLine_ID() );
+						logger.debug("C_InvoiceLine_ID={} is a reinvoiceable credit memo line; -> skip it", invoiceLineRecord.getC_InvoiceLine_ID());
 						continue;
 					}
 				}
@@ -203,7 +205,7 @@ public class SalesInvoiceFactory
 								   .orgId(OrgId.ofRepoId(invoiceRecord.getAD_Org_ID()))
 								   .id(InvoiceId.ofRepoId(invoiceRecord.getC_Invoice_ID()))
 								   .customerBPartnerId(customerBPartnerId)
-								   .salesRepBPartnerId(salesRepBPartnerId)
+								   .salesRepBPartnerId(salesRepBPartnerId.get())
 								   .commissionDate(dateInvoiced)
 								   .updated(TimeUtil.asInstantNonNull(invoiceRecord.getUpdated()))
 								   .triggerType(triggerType)
@@ -243,5 +245,25 @@ public class SalesInvoiceFactory
 		}
 
 		return CommissionPoints.of(taxAdjustedAmount);
+	}
+
+	@NonNull
+	private Optional<BPartnerId> getSalesRepId(@NonNull final I_C_Invoice invoiceRecord)
+	{
+		final BPartnerId invoiceSalesRepId = BPartnerId.ofRepoIdOrNull(invoiceRecord.getC_BPartner_SalesRep_ID());
+
+		if (invoiceSalesRepId != null)
+		{
+			return Optional.of(invoiceSalesRepId);
+		}
+
+		final I_C_BPartner customerBPartner = bPartnerDAO.getById(invoiceRecord.getC_BPartner_ID());
+
+		if (customerBPartner.isSalesRep())
+		{
+			return Optional.of(BPartnerId.ofRepoId(customerBPartner.getC_BPartner_ID()));
+		}
+
+		return Optional.empty();
 	}
 }

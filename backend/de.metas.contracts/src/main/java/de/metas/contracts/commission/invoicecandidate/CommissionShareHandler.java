@@ -46,6 +46,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.IQuery;
@@ -384,9 +385,7 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 	@NonNull
 	private DocTypeId getDoctypeId(@NonNull final I_C_Commission_Share shareRecord)
 	{
-		final CommissionConstants.CommissionDocType commissionDocType = shareRecord.isSOTrx()
-				? CommissionConstants.CommissionDocType.SALES_COMMISSION
-				: CommissionConstants.CommissionDocType.PURCHASE_COMMISSION;
+		final CommissionConstants.CommissionDocType commissionDocType = getCommissionDocType(shareRecord);
 
 		return docTypeDAO.getDocTypeId(
 				DocTypeQuery.builder()
@@ -395,5 +394,26 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 						.adClientId(shareRecord.getAD_Client_ID())
 						.adOrgId(shareRecord.getAD_Org_ID())
 						.build());
+	}
+
+	@NonNull
+	private CommissionConstants.CommissionDocType getCommissionDocType(@NonNull final I_C_Commission_Share shareRecord)
+	{
+		if (!shareRecord.isSOTrx())
+		{
+			return CommissionConstants.CommissionDocType.COMMISSION;
+		}
+		else if (shareRecord.getC_LicenseFeeSettingsLine_ID() > 0)
+		{
+			return CommissionConstants.CommissionDocType.LICENSE_COMMISSION;
+		}
+		else if (shareRecord.getC_MediatedCommissionSettingsLine_ID() > 0)
+		{
+			return CommissionConstants.CommissionDocType.MEDIATED_COMMISSION;
+		}
+
+		throw new AdempiereException("Unhandled commission type! ")
+				.appendParametersToMessage()
+				.setParameter("C_CommissionShare_ID", shareRecord.getC_Commission_Share_ID());
 	}
 }
