@@ -1,11 +1,11 @@
 package de.metas.material.dispo.commons.repository.query;
 
-import static de.metas.material.dispo.commons.candidate.IdConstants.UNSPECIFIED_REPO_ID;
-import static de.metas.material.dispo.commons.candidate.IdConstants.toUnspecifiedIfZero;
+import static de.metas.common.util.IdConstants.UNSPECIFIED_REPO_ID;
+import static de.metas.common.util.IdConstants.toUnspecifiedIfZero;
 
 import javax.annotation.Nullable;
 
-import de.metas.material.dispo.commons.candidate.IdConstants;
+import de.metas.common.util.IdConstants;
 import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
 import de.metas.material.event.commons.DocumentLineDescriptor;
 import de.metas.material.event.commons.OrderLineDescriptor;

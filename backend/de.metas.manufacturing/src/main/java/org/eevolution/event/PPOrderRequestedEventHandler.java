@@ -3,6 +3,7 @@ package org.eevolution.event;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderData;
@@ -83,7 +84,7 @@ public class PPOrderRequestedEventHandler implements MaterialEventHandler<PPOrde
 
 		return ppOrderService.createOrder(PPOrderCreateRequest.builder()
 												  .clientAndOrgId(ppOrderData.getClientAndOrgId())
-												  .productPlanningId(ProductPlanningId.ofRepoId(ppOrderData.getProductPlanningId()))
+												  .productPlanningId(ProductPlanningId.ofRepoIdOrNull(ppOrderData.getProductPlanningId()))
 												  .materialDispoGroupId(ppOrderData.getMaterialDispoGroupId())
 												  .plantId(ppOrderData.getPlantId())
 												  .warehouseId(ppOrderData.getWarehouseId())
@@ -96,7 +97,8 @@ public class PPOrderRequestedEventHandler implements MaterialEventHandler<PPOrde
 												  .datePromised(ppOrderData.getDatePromised())
 												  .dateStartSchedule(ppOrderData.getDateStartSchedule())
 												  //
-												  .salesOrderLineId(OrderLineId.ofRepoIdOrNull(ppOrderData.getOrderLineId()))
+				                                  .shipmentScheduleId(ShipmentScheduleId.ofRepoIdOrNull(ppOrderData.getShipmentScheduleIdAsRepoId()))
+												  .salesOrderLineId(OrderLineId.ofRepoIdOrNull(ppOrderData.getOrderLineIdAsRepoId()))
 												  //
 												  .build());
 	}

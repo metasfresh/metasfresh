@@ -103,6 +103,7 @@ public class PPOrderPojoConverter
 									 .warehouseId(WarehouseId.ofRepoId(ppOrderRecord.getM_Warehouse_ID()))
 									 .bpartnerId(BPartnerId.ofRepoIdOrNull(ppOrderRecord.getC_BPartner_ID()))
 									 .orderLineId(ppOrderRecord.getC_OrderLine_ID())
+									 .shipmentScheduleId(ppOrderRecord.getM_ShipmentSchedule_ID())
 									 .materialDispoGroupId(getMaterialDispoGroupIdOrNull(ppOrderRecord))
 									 .build())
 				.lines(toPPOrderLinesList(ppOrderRecord))

@@ -1,11 +1,13 @@
 {
   "orgCode": "orgCode",
   "externalSystemName": "WOO",
+  "externalSystemChildConfigValue": "childValue",
   "command": "enableRestAPI",
   "adPInstanceId": 123,
   "externalSystemConfigId": 100,
   "traceId": "traceId",
   "parameters": {
-    "CamelHttpResourceAuthKey": "authKey"
+    "CamelHttpResourceAuthKey": "authKey",
+    "ChildConfigValue": "childValue"
   }
 }

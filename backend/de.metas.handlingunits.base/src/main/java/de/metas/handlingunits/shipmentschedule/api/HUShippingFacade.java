@@ -10,7 +10,7 @@ import de.metas.handlingunits.shipmentschedule.async.GenerateInOutFromHU.BillAss
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.inout.model.I_M_InOut;
-import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IInOutCandidateBL;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
 import de.metas.invoicecandidate.InvoiceCandidateId;
@@ -199,6 +199,7 @@ public class HUShippingFacade
 				.quantityTypeToUse(M_ShipmentSchedule_QuantityTypeToUse.TYPE_PICKED_QTY)
 				.isShipDateToday(true)
 				.isCompleteShipment(completeShipments)
+				.onTheFlyPickToPackingInstructions(false) /* backwards compatibility: on-the-fly-pick to (anonymous) CUs */
 				.build();
 
 		final Set<InOutId> generatedInOutIds = shipmentService.generateShipmentsForScheduleIds(request);

@@ -115,6 +115,7 @@ public class OLCandBL implements IOLCandBL
 	}
 
 	@Override
+	@Nullable
 	public PricingSystemId getPricingSystemId(
 			@NonNull final I_C_OLCand olCand,
 			@Nullable final BPartnerOrderParams bPartnerOrderParams,

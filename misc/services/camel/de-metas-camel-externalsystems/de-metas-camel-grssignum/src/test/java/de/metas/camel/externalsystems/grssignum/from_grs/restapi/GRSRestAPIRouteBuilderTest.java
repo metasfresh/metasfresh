@@ -27,6 +27,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 import de.metas.camel.externalsystems.common.auth.JsonAuthenticateRequest;
 import de.metas.camel.externalsystems.common.auth.JsonExpireTokenResponse;
+import de.metas.camel.externalsystems.common.v2.ExternalStatusCreateCamelRequest;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
@@ -42,6 +43,7 @@ import org.mockito.Mockito;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Properties;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
@@ -49,10 +51,13 @@ public class GRSRestAPIRouteBuilderTest extends CamelTestSupport
 {
 	private static final String MOCK_REST_API_AUTHENTICATE_TOKEN_ROUTE_ID = "mock:Core-registerTokenRoute";
 	private static final String MOCK_REST_API_EXPIRE_TOKEN_ROUTE_ID = "mock:Core-expireTokenRoute";
+	private static final String MOCK_STORE_EXTERNAL_STATUS_ROUTE_ID = "mock:Core-storeExternalStatus";
 
 	private static final String EXTERNAL_SYSTEM_REQUEST = "1_ExternalSystemRequest.json";
 	private static final String JSON_AUTHENTICATE_REQUEST = "10_JsonAuthenticateRequest.json";
 	private static final String JSON_EXPIRE_TOKEN_RESPONSE = "20_JsonExpireTokenResponse.json";
+	private static final String EXTERNAL_STATUS_ACTIVE_CAMEL_REQUEST = "30_ExternalStatusCreateCamelRequestActive.json";
+	private static final String EXTERNAL_STATUS_INACTIVE_CAMEL_REQUEST = "30_ExternalStatusCreateCamelRequestInactive.json";
 
 	private static final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
 
@@ -69,13 +74,29 @@ public class GRSRestAPIRouteBuilderTest extends CamelTestSupport
 		return true;
 	}
 
+	@Override
+	protected Properties useOverridePropertiesWithPropertiesComponent()
+	{
+		final Properties properties = new Properties();
+		try
+		{
+			properties.load(GRSRestAPIRouteBuilderTest.class.getClassLoader().getResourceAsStream("application.properties"));
+			return properties;
+		}
+		catch (final IOException e)
+		{
+			throw new RuntimeException(e);
+		}
+	}
+
 	@Test
 	void enableRestAPI() throws Exception
 	{
 
 		final MockAuthenticateTokenEP mockAuthenticateTokenEP = new MockAuthenticateTokenEP();
+		final MockStoreExternalStatusEP mockStoreExternalStatusEP = new MockStoreExternalStatusEP();
 
-		prepareEnableRouteForTesting(mockAuthenticateTokenEP);
+		prepareEnableRouteForTesting(mockAuthenticateTokenEP, mockStoreExternalStatusEP);
 
 		context.start();
 
@@ -83,6 +104,11 @@ public class GRSRestAPIRouteBuilderTest extends CamelTestSupport
 		final InputStream jsonAuthenticateReqIS = this.getClass().getResourceAsStream(JSON_AUTHENTICATE_REQUEST);
 		final JsonAuthenticateRequest jsonAuthenticateReq = objectMapper.readValue(jsonAuthenticateReqIS, JsonAuthenticateRequest.class);
 		registerRouteMockEP.expectedBodiesReceived(jsonAuthenticateReq);
+
+		final MockEndpoint storeStatusMockEP = getMockEndpoint(MOCK_STORE_EXTERNAL_STATUS_ROUTE_ID);
+		final InputStream jsonExternalStatusReqIS = this.getClass().getResourceAsStream(EXTERNAL_STATUS_ACTIVE_CAMEL_REQUEST);
+		final ExternalStatusCreateCamelRequest jsonExternalStatusReq = objectMapper.readValue(jsonExternalStatusReqIS, ExternalStatusCreateCamelRequest.class);
+		storeStatusMockEP.expectedBodiesReceived(jsonExternalStatusReq);
 
 		final InputStream invokeExternalSystemRequestIS = this.getClass().getResourceAsStream(EXTERNAL_SYSTEM_REQUEST);
 		final JsonExternalSystemRequest invokeExternalSystemRequest = objectMapper
@@ -94,6 +120,7 @@ public class GRSRestAPIRouteBuilderTest extends CamelTestSupport
 		// then
 		assertMockEndpointsSatisfied();
 		assertThat(mockAuthenticateTokenEP.called).isEqualTo(1);
+		assertThat(mockStoreExternalStatusEP.called).isEqualTo(1);
 
 		Assertions.assertThat(context.getRouteController().getRouteStatus(GRSRestAPIRouteBuilder.REST_API_ROUTE_ID).isStarted()).isTrue();
 
@@ -104,8 +131,9 @@ public class GRSRestAPIRouteBuilderTest extends CamelTestSupport
 	{
 
 		final MockExpireTokenEP mockExpireTokenEP = new MockExpireTokenEP();
+		final MockStoreExternalStatusEP mockStoreExternalStatusEP = new MockStoreExternalStatusEP();
 
-		prepareDisableRouteForTesting(mockExpireTokenEP);
+		prepareDisableRouteForTesting(mockExpireTokenEP,mockStoreExternalStatusEP);
 
 		context.start();
 
@@ -114,6 +142,11 @@ public class GRSRestAPIRouteBuilderTest extends CamelTestSupport
 		final InputStream jsonAuthenticateReqIS = this.getClass().getResourceAsStream(JSON_AUTHENTICATE_REQUEST);
 		final JsonAuthenticateRequest jsonAuthenticateReq = objectMapper.readValue(jsonAuthenticateReqIS, JsonAuthenticateRequest.class);
 		expireRouteMockEP.expectedBodiesReceived(jsonAuthenticateReq);
+
+		final MockEndpoint storeStatusMockEP = getMockEndpoint(MOCK_STORE_EXTERNAL_STATUS_ROUTE_ID);
+		final InputStream jsonExternalStatusReqIS = this.getClass().getResourceAsStream(EXTERNAL_STATUS_INACTIVE_CAMEL_REQUEST);
+		final ExternalStatusCreateCamelRequest jsonExternalStatusReq = objectMapper.readValue(jsonExternalStatusReqIS, ExternalStatusCreateCamelRequest.class);
+		storeStatusMockEP.expectedBodiesReceived(jsonExternalStatusReq);
 
 		final InputStream invokeExternalSystemRequestIS = this.getClass().getResourceAsStream(EXTERNAL_SYSTEM_REQUEST);
 		final JsonExternalSystemRequest invokeExternalSystemRequest = objectMapper
@@ -125,12 +158,14 @@ public class GRSRestAPIRouteBuilderTest extends CamelTestSupport
 		// then
 		assertMockEndpointsSatisfied();
 		assertThat(mockExpireTokenEP.called).isEqualTo(1);
+		assertThat(mockStoreExternalStatusEP.called).isEqualTo(1);
 
 		assertThat(context.getRouteController().getRouteStatus(GRSRestAPIRouteBuilder.REST_API_ROUTE_ID).isSuspended()).isTrue();
 
 	}
 
-	private void prepareEnableRouteForTesting(@NonNull final GRSRestAPIRouteBuilderTest.MockAuthenticateTokenEP mockAuthenticateTokenEP) throws Exception
+	private void prepareEnableRouteForTesting(@NonNull final GRSRestAPIRouteBuilderTest.MockAuthenticateTokenEP mockAuthenticateTokenEP,
+			@NonNull final GRSRestAPIRouteBuilderTest.MockStoreExternalStatusEP mockStoreExternalStatusEP) throws Exception
 	{
 		AdviceWith.adviceWith(context, GRSRestAPIRouteBuilder.ENABLE_RESOURCE_ROUTE_ID,
 							  advice -> {
@@ -141,10 +176,19 @@ public class GRSRestAPIRouteBuilderTest extends CamelTestSupport
 								  advice.interceptSendToEndpoint("direct:" + ExternalSystemCamelConstants.REST_API_AUTHENTICATE_TOKEN)
 										  .skipSendToOriginalEndpoint()
 										  .process(mockAuthenticateTokenEP);
+
+								  advice.weaveById(GRSRestAPIRouteBuilder.ENABLE_PREPARE_EXTERNAL_STATUS_CREATE_REQ_PROCESSOR_ID)
+										  .after()
+										  .to(MOCK_STORE_EXTERNAL_STATUS_ROUTE_ID);
+
+								  advice.interceptSendToEndpoint("{{" + ExternalSystemCamelConstants.MF_CREATE_EXTERNAL_SYSTEM_STATUS_V2_CAMEL_URI + "}}")
+										  .skipSendToOriginalEndpoint()
+										  .process(mockStoreExternalStatusEP);
 							  });
 	}
 
-	private void prepareDisableRouteForTesting(@NonNull final GRSRestAPIRouteBuilderTest.MockExpireTokenEP mockExpireTokenEP) throws Exception
+	private void prepareDisableRouteForTesting(@NonNull final GRSRestAPIRouteBuilderTest.MockExpireTokenEP mockExpireTokenEP,
+			@NonNull final GRSRestAPIRouteBuilderTest.MockStoreExternalStatusEP mockStoreExternalStatusEP) throws Exception
 	{
 		AdviceWith.adviceWith(context, GRSRestAPIRouteBuilder.DISABLE_RESOURCE_ROUTE_ID,
 							  advice -> {
@@ -155,6 +199,14 @@ public class GRSRestAPIRouteBuilderTest extends CamelTestSupport
 								  advice.interceptSendToEndpoint("direct:" + ExternalSystemCamelConstants.REST_API_EXPIRE_TOKEN)
 										  .skipSendToOriginalEndpoint()
 										  .process(mockExpireTokenEP);
+
+								  advice.weaveById(GRSRestAPIRouteBuilder.DISABLE_PREPARE_EXTERNAL_STATUS_CREATE_REQ_PROCESSOR_ID)
+										  .after()
+										  .to(MOCK_STORE_EXTERNAL_STATUS_ROUTE_ID);
+
+								  advice.interceptSendToEndpoint("{{" + ExternalSystemCamelConstants.MF_CREATE_EXTERNAL_SYSTEM_STATUS_V2_CAMEL_URI + "}}")
+										  .skipSendToOriginalEndpoint()
+										  .process(mockStoreExternalStatusEP);
 							  });
 	}
 
@@ -182,6 +234,17 @@ public class GRSRestAPIRouteBuilderTest extends CamelTestSupport
 
 			exchange.getIn().setBody(jsonExpireTokenResponse);
 
+			called++;
+		}
+	}
+
+	private static class MockStoreExternalStatusEP implements Processor
+	{
+		private int called = 0;
+
+		@Override
+		public void process(final Exchange exchange)
+		{
 			called++;
 		}
 	}

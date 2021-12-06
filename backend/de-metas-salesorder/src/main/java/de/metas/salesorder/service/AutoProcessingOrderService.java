@@ -37,7 +37,7 @@ import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
-import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.shippertransportation.ShipperDeliveryService;
 import de.metas.invoice.InvoiceService;
 import de.metas.invoicecandidate.InvoiceCandidateId;
@@ -118,6 +118,10 @@ public class AutoProcessingOrderService
 		final GenerateShipmentsForSchedulesRequest request = GenerateShipmentsForSchedulesRequest.builder()
 				.scheduleIds(scheduleIds)
 				.quantityTypeToUse(M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER)
+				
+				// Usually we want only *CUs* to be picked on-the-fly, because we don't know and care which HUs are shipped and don't want to make assumptions regarding their TU-Packaging.
+				// But here it is different: we want that whatever HUs are picked, exactly those HUs shall be boxed and send to the customer.
+				.onTheFlyPickToPackingInstructions(true)
 				.isCompleteShipment(true)
 				.build();
 
@@ -216,7 +220,7 @@ public class AutoProcessingOrderService
 				.shipperBPartnerAndLocationId(shipFromBPWarehouseLocation.getBpartnerLocationId())
 				.orgId(OrgId.ofRepoId(shipment.getAD_Org_ID()))
 				.shipDate(shipDate)
-				.assignAnonymouslyPickedHUs(true)
+				.assignAnonymouslyPickedHUs(true) // a metasfresh user is supposed to find and ship exactly those HUs
 				.build();
 
 		final ShipperTransportationId shipperTransportationId = shipperTransportationRepository.create(createShipperTransportationRequest);

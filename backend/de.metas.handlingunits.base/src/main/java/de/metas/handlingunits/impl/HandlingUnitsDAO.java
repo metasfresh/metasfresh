@@ -438,7 +438,9 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	}
 
 	@Override
-	public List<I_M_HU_PI_Item> retrievePIItems(final I_M_HU_PI handlingUnit, final BPartnerId bpartnerId)
+	public List<I_M_HU_PI_Item> retrievePIItems(
+			@NonNull final I_M_HU_PI handlingUnit, 
+			@Nullable final BPartnerId bpartnerId)
 	{
 		final I_M_HU_PI_Version version = retrievePICurrentVersion(handlingUnit);
 		return retrievePIItems(version, bpartnerId);

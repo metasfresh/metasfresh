@@ -6,6 +6,7 @@
   "adPInstanceId": 3,
   "externalSystemConfigId": 1,
   "writeAuditEndpoint": "fileFolder",
+  "externalSystemChildConfigValue": "grsValue",
   "parameters": {
     "RemoteURL": "baseUrl",
     "BPartnerId": "1000000",
