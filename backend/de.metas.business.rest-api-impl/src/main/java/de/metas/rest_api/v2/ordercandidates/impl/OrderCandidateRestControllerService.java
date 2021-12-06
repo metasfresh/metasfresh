@@ -40,6 +40,7 @@ import de.metas.common.ordercandidates.v2.response.JsonOLCandClearingResponse;
 import de.metas.common.ordercandidates.v2.response.JsonOLCandCreateBulkResponse;
 import de.metas.common.ordercandidates.v2.response.JsonOLCandProcessResponse;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.impex.InputDataSourceId;
 import de.metas.monitoring.adapter.PerformanceMonitoringService;
 import de.metas.order.OrderId;
@@ -366,9 +367,9 @@ public class OrderCandidateRestControllerService
 
 			final ProcessOLCandsRequest enqueueRequest = ProcessOLCandsRequest.builder()
 					.pInstanceId(validOLCandIdsSelectionId)
-					.ship(request.getShip())
-					.invoice(request.getInvoice())
-					.closeOrder(request.getCloseOrder())
+					.ship(CoalesceUtil.coalesce(request.getShip(), false))
+					.invoice(CoalesceUtil.coalesce(request.getInvoice(), false))
+					.closeOrder(CoalesceUtil.coalesce(request.getCloseOrder(), false))
 					.build();
 
 			processOLCandsWorkpackageEnqueuer.enqueue(enqueueRequest, processOLCandsAsyncBatchId);
