@@ -48,13 +48,13 @@ public class M_Inventory_StepDef
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
-	private final StepDefData<I_M_Inventory> inventoryTable;
-	private final StepDefData<I_M_Product> productTable;
+	private final M_Inventory_StepDefData inventoryTable;
+	private final M_Product_StepDefData productTable;
 	private final StepDefData<I_M_InventoryLine> inventoryLineTable;
 
 	public M_Inventory_StepDef(
-			@NonNull final StepDefData<I_M_Inventory> inventoryTable,
-			@NonNull final StepDefData<I_M_Product> productTable,
+			@NonNull final M_Inventory_StepDefData inventoryTable,
+			@NonNull final M_Product_StepDefData productTable,
 			@NonNull final StepDefData<I_M_InventoryLine> inventoryLineTable)
 	{
 		this.inventoryTable = inventoryTable;

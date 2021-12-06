@@ -50,13 +50,13 @@ public class M_Product_StepDef
 {
 	public static final ProductCategoryId PRODUCT_CATEGORY_ID = ProductCategoryId.ofRepoId(1000000);
 
-	private final StepDefData<I_M_Product> productTable;
-	private final StepDefData<I_C_BPartner> bpartnerTable;
+	private final M_Product_StepDefData productTable;
+	private final C_BPartner_StepDefData bpartnerTable;
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 
 	public M_Product_StepDef(
-			@NonNull final StepDefData<I_M_Product> productTable,
-			@NonNull final StepDefData<I_C_BPartner> bpartnerTable)
+			@NonNull final M_Product_StepDefData productTable,
+			@NonNull final C_BPartner_StepDefData bpartnerTable)
 	{
 		this.productTable = productTable;
 		this.bpartnerTable = bpartnerTable;

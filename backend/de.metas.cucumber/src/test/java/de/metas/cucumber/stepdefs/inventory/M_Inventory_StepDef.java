@@ -23,6 +23,8 @@
 package de.metas.cucumber.stepdefs.inventory;
 
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.M_Inventory_StepDefData;
+import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.document.engine.DocStatus;
@@ -52,14 +54,14 @@ public class M_Inventory_StepDef
 {
 	private final InventoryService inventoryService = SpringContextHolder.instance.getBean(InventoryService.class);
 
-	private final StepDefData<I_M_Inventory> inventoryTable;
+	private final M_Inventory_StepDefData inventoryTable;
 	private final StepDefData<I_M_InventoryLine> inventoryLineTable;
-	private final StepDefData<I_M_Product> productTable;
+	private final M_Product_StepDefData productTable;
 
 	public M_Inventory_StepDef(
-			final StepDefData<I_M_Inventory> inventoryTable,
+			final M_Inventory_StepDefData inventoryTable,
 			final StepDefData<I_M_InventoryLine> inventoryLineTable,
-			final StepDefData<I_M_Product> productTable)
+			final M_Product_StepDefData productTable)
 	{
 		this.inventoryTable = inventoryTable;
 		this.inventoryLineTable = inventoryLineTable;
