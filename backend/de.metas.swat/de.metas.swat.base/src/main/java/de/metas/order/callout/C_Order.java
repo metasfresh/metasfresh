@@ -36,6 +36,7 @@ import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.X_C_Order;
 
 @Callout(I_C_Order.class)
 public class C_Order
@@ -153,4 +154,18 @@ public class C_Order
 		documentLocationBL.updateCapturedLocation(OrderDocumentLocationAdapterFactory.handOverLocationAdapter(order));
 	}
 
+	@CalloutMethod(columnNames = {
+			I_C_Order.COLUMNNAME_M_Shipper_ID },
+			skipIfCopying = true)
+	public void updateDeliveryViaRule(final I_C_Order order)
+	{
+		if(order.getM_Shipper() != null)
+		{
+			order.setDeliveryViaRule(X_C_Order.DELIVERYVIARULE_Shipper);
+		}
+		else
+		{
+			order.setDeliveryViaRule(X_C_Order.DELIVERYVIARULE_Pickup);
+		}
+	}
 }

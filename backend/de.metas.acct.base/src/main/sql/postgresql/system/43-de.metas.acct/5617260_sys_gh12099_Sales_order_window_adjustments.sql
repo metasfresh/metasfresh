@@ -1,8 +1,3 @@
--- 2021-12-06T15:10:06.746Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_ColumnCallout (AD_Client_ID,AD_ColumnCallout_ID,AD_Column_ID,AD_Org_ID,AD_Table_ID,Classname,Created,CreatedBy,EntityType,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,541246,2197,0,259,'org.compiere.model.CalloutOrder.shipper',TO_TIMESTAMP('2021-12-06 16:10:06','YYYY-MM-DD HH24:MI:SS'),100,'D','Y',10,TO_TIMESTAMP('2021-12-06 16:10:06','YYYY-MM-DD HH24:MI:SS'),100)
-;
-
 -- 2021-12-06T15:47:43.624Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 INSERT INTO AD_UI_ElementGroup (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_ElementGroup_ID,Created,CreatedBy,IsActive,Name,SeqNo,Updated,UpdatedBy) VALUES (0,0,540010,547652,TO_TIMESTAMP('2021-12-06 16:47:43','YYYY-MM-DD HH24:MI:SS'),100,'Y','Versandart',30,TO_TIMESTAMP('2021-12-06 16:47:43','YYYY-MM-DD HH24:MI:SS'),100)
