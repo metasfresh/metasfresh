@@ -53,6 +53,7 @@ import de.metas.product.ProductPrice;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.tax.api.ITaxBL;
+import de.metas.tax.api.Tax;
 import de.metas.tax.api.TaxId;
 import de.metas.user.User;
 import de.metas.util.Check;
@@ -67,6 +68,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.SpringContextHolder;
@@ -400,7 +402,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 
 		icRecord.setC_Async_Batch_ID(inOut.getC_Async_Batch_ID());
 		//
-		// Save the Invoice Candidate, so that we can use it's ID further down
+		// Save the Invoice Candidate, so that we can use its ID further down
 		saveRecord(icRecord);
 
 		// set Quality Issue Percentage Override
@@ -977,29 +979,28 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 			IInvoiceCandInvalidUpdater.updatePriceAndTax(icRecord, priceAndTax);
 			return priceAndTax;
 		}
-		catch (final ProductNotOnPriceListException e)
-		{
-			final boolean askForDeleteRegeneration = true; // ask user for re-generation in the error-message
-			setError(icRecord, e, askForDeleteRegeneration);
-			return null;
-		}
 		catch (final Exception e)
 		{
-			final boolean askForDeleteRegeneration = false; // default; don't ask for re-generation
-			setError(icRecord, e, askForDeleteRegeneration);
+			if (icRecord.getC_Tax_ID() < 0)
+			{
+				icRecord.setC_Tax_ID(Tax.C_TAX_ID_NO_TAX_FOUND); // make sure that we will be able to save the icRecord
+			}
+
+			setError(icRecord, e);
 			return null;
 		}
 	}
 
 	private static void setError(
 			@NonNull final I_C_Invoice_Candidate ic,
-			@NonNull final Exception ex,
-			final boolean askForDeleteRegeneration)
+			@NonNull final Exception ex)
 	{
 
 		logger.debug("Set IsInDispute=true, because an error occured");
 		ic.setIsInDispute(true); // 07193 - Mark's request
 
+		final boolean askForDeleteRegeneration = false; // default; don't ask for re-generation
+		
 		final I_AD_Note note = null; // we don't have a note
 		Services.get(IInvoiceCandBL.class).setError(ic, ex.getLocalizedMessage(), note, askForDeleteRegeneration);
 	}
