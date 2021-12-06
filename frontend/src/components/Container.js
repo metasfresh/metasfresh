@@ -6,6 +6,7 @@ import { viewState, getView } from '../reducers/viewHandler';
 import {
   setRawModalTitle,
   setRawModalDescription,
+  badGateway,
 } from '../actions/WindowActions';
 
 import DocumentList from '../containers/DocumentList';
@@ -112,7 +113,12 @@ class Container extends PureComponent {
         {/* generic error */}
         {connectionError && <ErrorScreen />}
         {/* when we have specific error message we render the error screen with the appropriate type of error */}
-        {connectionErrorType && <ErrorScreen errorType={connectionErrorType} />}
+        {connectionErrorType && (
+          <ErrorScreen
+            errorType={connectionErrorType}
+            onPingSuccess={this.onPingSuccess}
+          />
+        )}
 
         {showSpinner && <SpinnerOverlay iconSize={100} spinnerType="modal" />}
 
@@ -301,6 +307,8 @@ Container.propTypes = {
   windowId: PropTypes.string,
   hasComments: PropTypes.bool,
   showSpinner: PropTypes.bool,
+  //functions
+  badGateway: PropTypes.func,
 };
 
 /**
@@ -329,4 +337,5 @@ const mapStateToProps = (state, { windowId }) => {
 export default connect(mapStateToProps, {
   setRawModalTitle,
   setRawModalDescription,
+  badGateway,
 })(Container);

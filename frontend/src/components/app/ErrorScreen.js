@@ -2,11 +2,36 @@ import counterpart from 'counterpart';
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import offlineMessages from '../../utils/offlineMessages';
+import { checkLoginRequest } from '../../api/login';
 
 class ErrorScreen extends Component {
   constructor(props) {
     super(props);
     counterpart.registerTranslations('lang', offlineMessages);
+    this.state = { intervalId: null };
+  }
+
+  pingServer = async () => {
+    checkLoginRequest()
+      .then((response) => {
+        if (response && response.status === 200) {
+          window.location.reload();
+        }
+      })
+      .catch((e) => console.log(e));
+  };
+
+  componentDidMount() {
+    const { errorType } = this.props;
+    if (errorType === 'badGateway') {
+      let intervalId = setInterval(this.pingServer, 3000);
+      this.setState({ intervalId: intervalId });
+    }
+  }
+
+  componentWillUnmount() {
+    const { intervalId } = this.state;
+    intervalId && clearInterval(intervalId);
   }
 
   getLineFromCounterpart = (targetLine) => {
