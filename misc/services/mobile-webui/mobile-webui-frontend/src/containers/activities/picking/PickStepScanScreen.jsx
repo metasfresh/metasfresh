@@ -7,7 +7,8 @@ import counterpart from 'counterpart';
 
 import { selectWFProcessFromState } from '../../../reducers/wfProcesses_status';
 import { toastError } from '../../../utils/toast';
-import { getLocation, getPickFrom, getQtyToPick } from '../../../utils';
+import { pickingStepScanScreenLocation } from '../../../routes/picking';
+import { getPickFrom, getQtyToPick } from '../../../utils/picking';
 import { postStepPicked } from '../../../api/picking';
 import { updatePickingStepQty } from '../../../actions/PickingActions';
 import { pushHeaderEntry } from '../../../actions/HeaderActions';
@@ -47,7 +48,7 @@ function PickStepScanScreen(WrappedComponent) {
 
     onComponentDidMount() {
       const { pushHeaderEntry } = this.props;
-      const location = getLocation(this.props, true);
+      const location = pickingStepScanScreenLocation(this.props);
       const headerHuCode = getPickFrom(this.props).huBarcode;
       const headerQtyToPick = getQtyToPick(this.props).qtyPicked;
 

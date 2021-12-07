@@ -2,31 +2,30 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import counterpart from 'counterpart';
 import { push } from 'connected-react-router';
+import { connect } from 'react-redux';
 
-import LineButton from '../common/LineButton';
+import { manufacturingLineScreenLocation } from '../../../routes/manufacturing';
 import ButtonWithIndicator from '../../../components/ButtonWithIndicator';
 import ButtonQuantityProp from '../../../components/ButtonQuantityProp';
 import { pushHeaderEntry } from '../../../actions/HeaderActions';
 
 class RawMaterialsIssueLineButton extends Component {
   handleClick = () => {
-    const { wfProcessId, activityId, lineId, dispatch, caption } = this.props;
+    const { caption } = this.props;
 
-    const location = `/workflow/${wfProcessId}/activityId/${activityId}/lineId/${lineId}`;
-    dispatch(push(location));
+    const location = manufacturingLineScreenLocation(this.props);
+    push(location);
 
-    dispatch(
-      pushHeaderEntry({
-        location,
-        values: [
-          {
-            caption: counterpart.translate('activities.mfg.ProductName'),
-            value: caption,
-            bold: true,
-          },
-        ],
-      })
-    );
+    pushHeaderEntry({
+      location,
+      values: [
+        {
+          caption: counterpart.translate('activities.mfg.ProductName'),
+          value: caption,
+          bold: true,
+        },
+      ],
+    });
   };
 
   render() {
@@ -68,7 +67,8 @@ RawMaterialsIssueLineButton.propTypes = {
   appId: PropTypes.string.isRequired,
   //
   // Actions
-  dispatch: PropTypes.func.isRequired,
+  push: PropTypes.func.isRequired,
+  pushHeaderEntry: PropTypes.func.isRequired,
 };
 
-export default LineButton(RawMaterialsIssueLineButton);
+export default connect(null, { push, pushHeaderEntry })(RawMaterialsIssueLineButton);

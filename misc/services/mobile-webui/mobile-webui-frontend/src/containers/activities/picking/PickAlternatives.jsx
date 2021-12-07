@@ -1,7 +1,9 @@
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
+
 import PickStepButton from './PickStepButton';
-class PickAlternatives extends Component {
+
+class PickAlternatives extends PureComponent {
   renderAlternatives = () => {
     const { wfProcessId, activityId, lineId, stepId, pickFromAlternatives, uom } = this.props;
 

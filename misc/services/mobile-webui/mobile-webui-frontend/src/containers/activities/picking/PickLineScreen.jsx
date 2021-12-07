@@ -5,7 +5,7 @@ import PickStepButton from './PickStepButton';
 import counterpart from 'counterpart';
 
 import { pushHeaderEntry } from '../../../actions/HeaderActions';
-import { getLocation } from '../../../utils';
+import { pickingLineScreenLocation } from '../../../routes/picking';
 
 const PickLineScreen = (props) => {
   const {
@@ -18,7 +18,7 @@ const PickLineScreen = (props) => {
   } = props;
 
   useEffect(() => {
-    const location = getLocation(props);
+    const location = pickingLineScreenLocation(props);
 
     dispatch(
       pushHeaderEntry({

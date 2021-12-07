@@ -28,7 +28,7 @@ class DistributionStepDropToScreen extends PureComponent {
       values: [
         {
           caption: counterpart.translate('general.DropToLocator'),
-          value: caption + ' (' + locatorBarcode + ')',
+          value: `${caption}(${locatorBarcode})`,
         },
         {
           caption: counterpart.translate('general.QtyToMove'),

@@ -16,6 +16,7 @@ import { launchersRoutes } from './launchers';
 import { workflowRoutes } from './workflow';
 import { manufacturingRoutes } from './manufacturing';
 import { distributionRoutes } from './distribution';
+import { pickingRoutes } from './picking';
 
 const routesArray = [
   ...commonRoutes,
@@ -23,6 +24,7 @@ const routesArray = [
   ...workflowRoutes,
   ...distributionRoutes,
   ...manufacturingRoutes,
+  ...pickingRoutes,
 ];
 
 const Routes = () => {

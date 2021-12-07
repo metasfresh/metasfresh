@@ -5,8 +5,7 @@ import PickStepScanScreen from '../picking/PickStepScanScreen';
 import ManufacturingReceiptScanScreen from '../manufacturing/ManufacturingReceiptScanScreen';
 import RawMaterialIssueScanScreen from '../manufacturing/RawMaterialIssueScanScreen';
 
-// if locator param is defined, Scanner component will be initiated to scan locator instead of HU
-const getStepComponent = (appId, locator, stepId) => {
+const getStepComponent = (appId, stepId) => {
   switch (appId) {
     case 'picking':
       return { Component: PickStepScanScreen };
@@ -21,8 +20,8 @@ const getStepComponent = (appId, locator, stepId) => {
 };
 
 const StepScanScreen = (props) => {
-  const { appId, locatorId, stepId } = useParams();
-  const { Component, modifier } = getStepComponent(appId, locatorId, stepId);
+  const { appId, stepId } = useParams();
+  const { Component, modifier } = getStepComponent(appId, stepId);
 
   return (
     <>

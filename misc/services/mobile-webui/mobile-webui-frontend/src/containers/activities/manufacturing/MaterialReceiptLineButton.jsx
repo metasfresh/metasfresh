@@ -1,18 +1,18 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import { push } from 'connected-react-router';
+import { connect } from 'react-redux';
 
-import { getLocation } from '../../../utils';
-import LineButton from '../common/LineButton';
+import { manufacturingLineScreenLocation } from '../../../routes/manufacturing';
 import ButtonWithIndicator from '../../../components/ButtonWithIndicator';
 import ButtonQuantityProp from '../../../components/ButtonQuantityProp';
 
 class MaterialReceiptLineButton extends PureComponent {
   handleClick = () => {
-    const { dispatch } = this.props;
+    const { push } = this.props;
+    const location = manufacturingLineScreenLocation(this.props);
 
-    const location = getLocation(this.props);
-    dispatch(push(location));
+    push(location);
   };
 
   render() {
@@ -54,7 +54,7 @@ MaterialReceiptLineButton.propTypes = {
   appId: PropTypes.string.isRequired,
   //
   // Actions
-  dispatch: PropTypes.func.isRequired,
+  push: PropTypes.func.isRequired,
 };
 
-export default LineButton(MaterialReceiptLineButton);
+export default connect(null, { push })(MaterialReceiptLineButton);

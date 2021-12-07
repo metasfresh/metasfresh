@@ -39,7 +39,6 @@ class DistributionStepPickFromScreen extends PureComponent {
   }
 
   onResult = ({ qty = 0, reason = null }) => {
-    console.log(`!!!!! qty=${qty}`);
     const { wfProcessId, activityId, lineId, stepId } = this.props;
     const { updateDistributionPickFrom, go } = this.props;
 
@@ -62,8 +61,7 @@ class DistributionStepPickFromScreen extends PureComponent {
           qtyRejectedReasonCode: reason,
         });
 
-        const result = go(-2);
-        console.log('!!!!!!!!!!!!!!!!! goto result', result);
+        go(-2);
       })
       .catch((axiosError) => toastError({ axiosError }));
   };

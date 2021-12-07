@@ -1,13 +1,23 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import counterpart from 'counterpart';
+import { connect } from 'react-redux';
+import { push } from 'connected-react-router';
+import { withRouter } from 'react-router';
 
-import StepButton from '../common/StepButton';
+import { pickingStepScreenLocation } from '../../../routes/picking';
 import Indicator from '../../../components/Indicator';
 import PickAlternatives from './PickAlternatives';
 import { computePickFromStatus } from '../../../reducers/wfProcesses_status/picking';
 
 class PickStepButton extends PureComponent {
+  handleClick = () => {
+    const { push } = this.props;
+    const location = pickingStepScreenLocation(this.props);
+
+    push(location);
+  };
+
   render() {
     const {
       appId,
@@ -16,11 +26,7 @@ class PickStepButton extends PureComponent {
       lineId,
       stepId,
       //
-      pickFromAlternatives,
-      uom,
-      qtyToPick,
-      pickFrom,
-      onHandleClick,
+      stepState: { pickFromAlternatives, uom, qtyToPick, pickFrom },
     } = this.props;
 
     const isAlternative = !pickFromAlternatives;
@@ -28,7 +34,7 @@ class PickStepButton extends PureComponent {
 
     return (
       <div className="mt-3">
-        <button key={lineId} className="button is-outlined complete-btn pick-higher-btn" onClick={onHandleClick}>
+        <button key={lineId} className="button is-outlined complete-btn pick-higher-btn" onClick={this.handleClick}>
           <div className="full-size-btn">
             <div className="left-btn-side" />
             <div className="caption-btn">
@@ -73,6 +79,15 @@ class PickStepButton extends PureComponent {
   }
 }
 
+const mapStateToProps = (state, ownProps) => {
+  const { wfProcessId, activityId, lineId, stepId } = ownProps;
+
+  return {
+    stepState: state.wfProcesses_status[wfProcessId].activities[activityId].dataStored.lines[lineId].steps[stepId],
+    appId: state.applications.activeApplication ? state.applications.activeApplication.id : null,
+  };
+};
+
 PickStepButton.propTypes = {
   //
   // Props
@@ -82,14 +97,10 @@ PickStepButton.propTypes = {
   lineId: PropTypes.string.isRequired,
   stepId: PropTypes.string.isRequired,
   //
-  pickFromAlternatives: PropTypes.object,
-  uom: PropTypes.string.isRequired,
-  qtyToPick: PropTypes.number.isRequired,
-  pickFrom: PropTypes.object.isRequired,
+  stepState: PropTypes.object.isRequired,
   //
   // Actions/Functions
-  dispatch: PropTypes.func.isRequired,
-  onHandleClick: PropTypes.func.isRequired,
+  push: PropTypes.func.isRequired,
 };
 
-export default StepButton(PickStepButton);
+export default withRouter(connect(mapStateToProps, { push })(PickStepButton));

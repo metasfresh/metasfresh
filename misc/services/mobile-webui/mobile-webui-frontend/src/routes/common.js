@@ -19,7 +19,7 @@ export const commonRoutes = [
     Component: StepScanScreen,
   },
   {
-    path: '/workflow/:workflowId/activityId/:activityId/lineId/:lineId/stepId/:stepId/altStepId/:altStepId/scanner/:appId/:locatorId?',
+    path: '/workflow/:workflowId/activityId/:activityId/lineId/:lineId/stepId/:stepId/altStepId/:altStepId/scanner/:appId',
     Component: StepScanScreen,
   },
 ];

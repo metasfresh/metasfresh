@@ -8,7 +8,8 @@ import { updatePickingStepQty } from '../../../actions/PickingActions';
 import ButtonWithIndicator from '../../../components/ButtonWithIndicator';
 import * as CompleteStatus from '../../../constants/CompleteStatus';
 import { toastError } from '../../../utils/toast';
-import { getLocation, getPickFrom, getQtyToPick } from '../../../utils';
+import { pickingStepScreenLocation } from '../../../routes/picking';
+import { getPickFrom, getQtyToPick } from '../../../utils/picking';
 import { pushHeaderEntry } from '../../../actions/HeaderActions';
 
 class PickStepScreen extends Component {
@@ -43,7 +44,7 @@ class PickStepScreen extends Component {
       dispatch,
       stepProps: { mainPickFrom },
     } = this.props;
-    const location = getLocation(this.props);
+    const location = pickingStepScreenLocation(this.props);
 
     dispatch(
       pushHeaderEntry({
