@@ -479,7 +479,7 @@ public class WarehouseDAO implements IWarehouseDAO
 	}
 
 	@Override
-	public Set<WarehouseId> getWarehouseIdsOfSameGroup(@NonNull final WarehouseId warehouseId, @NonNull final WarehouseGroupAssignmentType assignmentType)
+	public ImmutableSet<WarehouseId> getWarehouseIdsOfSameGroup(@NonNull final WarehouseId warehouseId, @NonNull final WarehouseGroupAssignmentType assignmentType)
 	{
 		return getWarehouseGroupsIndex().getWarehouseIdsOfSameGroup(warehouseId, assignmentType);
 	}
