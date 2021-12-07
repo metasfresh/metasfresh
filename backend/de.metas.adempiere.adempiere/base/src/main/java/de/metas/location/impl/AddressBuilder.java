@@ -539,8 +539,10 @@ public class AddressBuilder
 
 		final boolean existsBPName = CountryDisplaySequenceHelper.isTokenFound(displaySequence, Addressvars.BPartnerName.getName());
 		final boolean existsBPGReeting = CountryDisplaySequenceHelper.isTokenFound(displaySequence, Addressvars.BPartnerGreeting.getName());
+		final boolean bpartnerHasGreeting = bPartner.getC_Greeting_ID() > 0;
 
-		if ( (existsBPName || existsBPGReeting) && !bPartner.isCompany())
+		//Use Partner name and greeting when rendering address only if there is greeting set
+		if ( (existsBPName || existsBPGReeting) && !bPartner.isCompany() && bpartnerHasGreeting)
 		{
 			if (existsBPName)
 			{
@@ -735,8 +737,9 @@ public class AddressBuilder
 
 		final boolean existsBPName = CountryDisplaySequenceHelper.isTokenFound(displaySequence, Addressvars.BPartnerName.getName());
 		final boolean existsBPGreeting = CountryDisplaySequenceHelper.isTokenFound(displaySequence, Addressvars.BPartnerGreeting.getName());
+		final boolean bpartnerHasGreeting = bPartner.getC_Greeting_ID() > 0;
 
-		if ((existsBPName || existsBPGreeting) && !bPartner.isCompany())
+		if ((existsBPName || existsBPGreeting) && !bPartner.isCompany() && bpartnerHasGreeting)
 		{
 			return "";
 		}
