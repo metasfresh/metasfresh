@@ -303,7 +303,8 @@ public class ProcessHUsAndPickingCandidateCommand
 	private HuId getPickedHUId(@NonNull final PickingCandidate pc)
 	{
 		final PickedHuAndQty item = getPickedHuAndQty(pc);
-		return item != null ? item.getPickedHUId() : null;
+		final HuId initialHuId = pc.getPickFrom().getHuId();
+		return item != null ? item.getPickedHUId() : initialHuId;
 	}
 
 }
