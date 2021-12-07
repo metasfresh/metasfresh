@@ -132,6 +132,8 @@ const App = () => {
               }
             });
           }
+        } else if (error.response.status == 502) {
+          return; // silent erorr for 502 bad gateway (otherwise we will get a bunch of notif from the retries)
         } else if (error.response.status == 503) {
           dispatch(noConnection(true));
         } else if (error.response.status != 404) {
