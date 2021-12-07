@@ -16,6 +16,7 @@ import { launchersRoutes } from './launchers';
 import { workflowRoutes } from './workflow';
 import { manufacturingRoutes } from './manufacturing';
 import { distributionRoutes } from './distribution';
+import { getApplicationRoutes } from '../apps';
 
 const routesArray = [
   ...commonRoutes,
@@ -23,7 +24,10 @@ const routesArray = [
   ...workflowRoutes,
   ...distributionRoutes,
   ...manufacturingRoutes,
+  ...getApplicationRoutes(),
 ];
+
+// console.log('routes: ', routesArray);
 
 const Routes = () => {
   return (

@@ -6,21 +6,18 @@ import counterpart from 'counterpart';
 import { get } from 'lodash';
 
 import { selectWFProcessFromState } from '../../reducers/wfProcesses_status';
+import QtyReasonsRadioGroup from '../../components/QtyReasonsRadioGroup';
 
 class QtyReasonsView extends PureComponent {
   constructor(props) {
     super(props);
 
-    this.state = {
-      rejectedReason: '',
-    };
-
-    this.setRejectedReason = this.setRejectedReason.bind(this);
+    this.state = { rejectedReason: '' };
   }
 
-  setRejectedReason(e) {
-    this.setState({ rejectedReason: e.target.name });
-  }
+  onRejectedReasonSelected = (rejectedReason) => {
+    this.setState({ rejectedReason });
+  };
 
   onSubmit = () => {
     const { onHide } = this.props;
@@ -38,29 +35,11 @@ class QtyReasonsView extends PureComponent {
           <h5>{`${counterpart.translate('activities.picking.rejectedPrompt', { qtyRejected, uom })}`}</h5>
         </div>
         <div className="picking-step-details centered-text is-size-5">
-          <div className="control">
-            {rejectedReasons.map((reason, idx) => (
-              <div key={idx} className="columns is-mobile">
-                <div className="column is-full">
-                  <label className="radio">
-                    <input
-                      className="mr-2"
-                      type="radio"
-                      name={reason.key}
-                      value={reason.name}
-                      onChange={this.setRejectedReason}
-                      checked={rejectedReason === reason.key}
-                    />
-                    {reason.caption}
-                  </label>
-                </div>
-              </div>
-            ))}
-          </div>
+          <QtyReasonsRadioGroup reasons={rejectedReasons} onReasonSelected={this.onRejectedReasonSelected} />
           <div className="buttons is-centered mt-4">
             <button
               className="button is-medium btn-green confirm-button"
-              disabled={!this.state.rejectedReason}
+              disabled={!rejectedReason}
               onClick={this.onSubmit}
             >
               {counterpart.translate('activities.picking.confirmDone')}
@@ -84,10 +63,11 @@ const mapStateToProps = (state, ownProps) => {
 };
 
 QtyReasonsView.propTypes = {
-  onHide: PropTypes.func.isRequired,
   rejectedReasons: PropTypes.array.isRequired,
   uom: PropTypes.string.isRequired,
   qtyRejected: PropTypes.number.isRequired,
+  //
+  onHide: PropTypes.func.isRequired,
 };
 
 export default withRouter(connect(mapStateToProps)(QtyReasonsView));

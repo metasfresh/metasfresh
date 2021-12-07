@@ -1,16 +1,23 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
 
 import { setActiveApplication } from '../../actions/ApplicationsActions';
 import { gotoAppLaunchers } from '../../routes/launchers';
+import { getApplicationStartFunction } from '../../apps';
+import { connect } from 'react-redux';
 
 class AppCard extends PureComponent {
   handleAppClick = () => {
-    const { appId, captionKey, setActiveApplication, gotoAppLaunchers } = this.props;
+    const { applicationId, captionKey, dispatch } = this.props;
 
-    setActiveApplication({ id: appId, caption: captionKey });
-    gotoAppLaunchers(appId);
+    dispatch(setActiveApplication({ id: applicationId, caption: captionKey }));
+
+    const startApplicationFunc = getApplicationStartFunction(applicationId);
+    if (startApplicationFunc) {
+      dispatch(startApplicationFunc());
+    } else {
+      dispatch(gotoAppLaunchers(applicationId));
+    }
   };
 
   render() {
@@ -30,9 +37,8 @@ class AppCard extends PureComponent {
 
 AppCard.propTypes = {
   captionKey: PropTypes.string.isRequired,
-  appId: PropTypes.string.isRequired,
-  setActiveApplication: PropTypes.func.isRequired,
-  gotoAppLaunchers: PropTypes.func.isRequired,
+  applicationId: PropTypes.string.isRequired,
+  dispatch: PropTypes.func.isRequired,
 };
 
-export default connect(null, { setActiveApplication, gotoAppLaunchers })(AppCard);
+export default connect(null, null)(AppCard);

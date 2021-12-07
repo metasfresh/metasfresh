@@ -2,12 +2,20 @@ import counterpart from 'counterpart';
 import translations_en from './translations_en';
 import translations_de from './translations_de';
 
+import { getApplicationMessages } from '../apps';
+
 export const setupCounterpart = () => {
   console.log('Setting up counterpart defaults...');
 
   counterpart.setMissingEntryGenerator(generateMissingTranslation);
   counterpart.registerTranslations('en', translations_en);
   counterpart.registerTranslations('de', translations_de);
+
+  const applicationsMessages = getApplicationMessages();
+  Object.keys(applicationsMessages).forEach((locale) => {
+    counterpart.registerTranslations(locale, applicationsMessages[locale]);
+    console.log(`Registered apps messages ${locale}`, applicationsMessages[locale]);
+  });
 
   //setLanguage('de_DE');
 };
