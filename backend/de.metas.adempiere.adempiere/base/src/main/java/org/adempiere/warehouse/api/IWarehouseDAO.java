@@ -1,5 +1,6 @@
 package org.adempiere.warehouse.api;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.organization.OrgId;
 import de.metas.util.ISingletonService;
@@ -125,7 +126,7 @@ public interface IWarehouseDAO extends ISingletonService
 
 	WarehousePickingGroup getWarehousePickingGroupById(WarehousePickingGroupId warehousePickingGroupId);
 
-	Set<WarehouseId> getWarehouseIdsOfSameGroup(@NonNull WarehouseId warehouseId, @NonNull WarehouseGroupAssignmentType assignmentType);
+	ImmutableSet<WarehouseId> getWarehouseIdsOfSameGroup(@NonNull WarehouseId warehouseId, @NonNull WarehouseGroupAssignmentType assignmentType);
 
 	int retrieveLocatorIdByBarcode(String barcode);
 
