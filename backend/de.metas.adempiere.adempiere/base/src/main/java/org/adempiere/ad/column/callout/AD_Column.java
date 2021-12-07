@@ -335,6 +335,13 @@ public class AD_Column
 		column.setFieldLength(40);
 	}
 
+	@CalloutMethod(columnNames = { I_AD_Column.COLUMNNAME_ColumnSQL })
+	public static void upadteIsLazyLoading(final I_AD_Column column)
+	{
+		IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
+		column.setIsLazyLoading(adTableDAO.isVirtualColumn(column));
+	}
+
 	@CalloutMethod(columnNames = { I_AD_Column.COLUMNNAME_AD_Reference_ID })
 	public void onAD_Reference(final I_AD_Column column)
 	{
