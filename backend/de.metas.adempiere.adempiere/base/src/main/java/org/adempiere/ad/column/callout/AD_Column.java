@@ -336,7 +336,7 @@ public class AD_Column
 	}
 
 	@CalloutMethod(columnNames = { I_AD_Column.COLUMNNAME_ColumnSQL })
-	public static void updateIsLazyLoading(final I_AD_Column column)
+	public void upadteIsLazyLoading(final I_AD_Column column)
 	{
 		final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 		column.setIsLazyLoading(adTableDAO.isVirtualColumn(column));
