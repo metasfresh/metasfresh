@@ -91,7 +91,7 @@ public class C_BPartner_StepDef
 		}
 	}
 
-	@And("store test data in tableData")
+	@And("preexisting test data is put into tableData")
 	public void store_test_data_in_table_data(@NonNull final DataTable dataTable)
 	{
 		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);

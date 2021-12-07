@@ -85,7 +85,7 @@ public class SalesInvoiceCandidateFactory
 		final Optional<BPartnerId> salesRepId = getSalesRepId(icRecord);
 		if (!salesRepId.isPresent())
 		{
-			logger.debug("No C_BPartner_SalesRep_ID={} found for I_C_Invoice_Candidate {}; -> return empty", icRecord.getC_BPartner_SalesRep_ID(), icRecord.getC_Invoice_Candidate_ID());
+			logger.debug("No C_BPartner_SalesRep_ID={} found for C_Invoice_Candidate_ID={}; -> return empty", icRecord.getC_BPartner_SalesRep_ID(), icRecord.getC_Invoice_Candidate_ID());
 			return Optional.empty();
 		}
 

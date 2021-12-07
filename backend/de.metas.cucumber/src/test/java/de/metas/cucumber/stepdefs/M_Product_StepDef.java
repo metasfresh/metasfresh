@@ -126,7 +126,7 @@ public class M_Product_StepDef
 		}
 	}
 
-	@And("update taxCategory {string} for all productTypes")
+	@And("taxCategory {string} is updated to work with all productTypes")
 	public void update_tax_category(@NonNull final String taxCategoryInternalName)
 	{
 		final Optional<TaxCategoryId> taxCategoryId = taxBL.getTaxCategoryIdByInternalName(taxCategoryInternalName);

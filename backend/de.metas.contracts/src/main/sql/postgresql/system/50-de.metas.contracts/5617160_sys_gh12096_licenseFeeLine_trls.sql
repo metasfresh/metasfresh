@@ -198,27 +198,6 @@ UPDATE AD_Element_Trl SET Name='Vertreibspartnergruppe', PrintName='Vertreibspar
 UPDATE AD_Element_Trl SET Name='Sales rep group', PrintName='Sales rep group',Updated=TO_TIMESTAMP('2021-12-03 19:36:59','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=580269 AND AD_Language='en_US'
 ;
 
-/*
- * #%L
- * de.metas.contracts
- * %%
- * Copyright (C) 2021 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
 
 -- 2021-12-03T17:36:59.644Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator

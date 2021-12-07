@@ -401,6 +401,8 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 	{
 		if (!shareRecord.isSOTrx())
 		{
+			// note that SOTrx is about the share record's settlement.
+			// I.e. if the sales-rep receives money from the commission, then it's a purchase order trx
 			return CommissionConstants.CommissionDocType.COMMISSION;
 		}
 		else if (shareRecord.getC_LicenseFeeSettingsLine_ID() > 0)

@@ -11,7 +11,7 @@ Feature: Trade margin commission contract
   @from:cucumber
   @topic:commissionContracts
   Scenario: Margin commission combined having one sales rep and one customer
-    Given update taxCategory 'Normal' for all productTypes
+    Given taxCategory 'Normal' is updated to work with all productTypes
     And metasfresh contains M_Products:
       | Identifier          | Name                | ProductType | OPT.UOMSymbol |
       | commission_product  | commission_product  | S           | Pkt           |
@@ -114,8 +114,8 @@ Feature: Trade margin commission contract
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | invoiceSettled_1        | settlement_1                      |
     And validate created invoices
-      | Invoice.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus |
-      | invoiceSettled_1   | margin_salesRep          | margin_salesRep_location          | 10 Tage 1 % | true      | CO        |
+      | Invoice.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.DocSubType |
+      | invoiceSettled_1   | margin_salesRep          | margin_salesRep_location          | 10 Tage 1 % | true      | CO        | CA             |
     And validate created invoice lines
       | Invoice.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
       | invoiceSettled_1   | commission_product      | 5.00        | true      |

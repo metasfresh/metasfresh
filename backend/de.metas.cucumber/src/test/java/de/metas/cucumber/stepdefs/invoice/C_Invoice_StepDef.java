@@ -40,9 +40,11 @@ import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
 
@@ -62,6 +64,7 @@ public class C_Invoice_StepDef
 	private final IPaymentTermRepository paymentTermRepo = Services.get(IPaymentTermRepository.class);
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final StepDefData<I_C_Invoice> invoiceTable;
 	private final StepDefData<I_C_Invoice_Candidate> invoiceCandTable;
@@ -136,6 +139,18 @@ public class C_Invoice_StepDef
 				.build();
 		final PaymentTermId paymentTermId = paymentTermRepo.retrievePaymentTermId(query)
 				.orElse(null);
+
+		final String docSubType = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_DocType.COLUMNNAME_DocSubType);
+		if (Check.isNotBlank(docSubType))
+		{
+			final int docTargetTypeId = invoice.getC_DocTypeTarget_ID();
+			final I_C_DocType docType = queryBL.createQueryBuilder(I_C_DocType.class)
+					.addEqualsFilter(I_C_DocType.COLUMN_C_DocType_ID, docTargetTypeId)
+					.create()
+					.firstOnlyNotNull(I_C_DocType.class);
+
+			assertThat(docType.getDocSubType()).isEqualTo(docSubType);
+		}
 
 		assertThat(paymentTermId).isNotNull();
 		assertThat(invoice.getC_PaymentTerm_ID()).isEqualTo(paymentTermId.getRepoId());

@@ -198,27 +198,6 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,580269,0,'C_BP_Group_Match_ID',TO_TIMESTAMP('2021-11-22 12:23:06','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.contracts.commission','Y','C_BP_Group_Match_ID','C_BP_Group_Match_ID',TO_TIMESTAMP('2021-11-22 12:23:06','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
-/*
- * #%L
- * de.metas.contracts
- * %%
- * Copyright (C) 2021 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
 
 -- 2021-11-22T10:23:06.766Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator

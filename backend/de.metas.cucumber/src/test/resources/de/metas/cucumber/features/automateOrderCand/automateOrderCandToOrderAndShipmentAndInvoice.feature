@@ -7,7 +7,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
   Background:
     Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And enable sys config 'SKIP_WP_PROCESSOR_FOR_AUTOMATION'
-    And store test data in tableData
+    And preexisting test data is put into tableData
       | C_BPartner_ID.Identifier | C_BPartner_ID | C_BPartner_Location_ID.Identifier | C_BPartner_Location_ID | M_Product_ID.Identifier | M_Product_ID |
       | bpartner_1               | 2156425       | bpartnerLocation_1                | 2205175                | product_1               | 2005577      |
 
@@ -126,10 +126,6 @@ Feature: Process order candidate and automatically generate shipment and invoice
     Then process metasfresh response
       | Order.Identifier | Shipment.Identifier | Invoice.Identifier |
       | order_1          | shipment_1          | null               |
-
-#    And store test data in tableData
-#      | C_BPartner_ID.Identifier | C_BPartner_ID | C_BPartner_Location_ID.Identifier | C_BPartner_Location_ID | M_Product_ID.Identifier | M_Product_ID |
-#      | bpartner_1               | 2156425       | bpartnerLocation_1                | 2205175                | product_1               | 2005577      |
 
     And validate created order
       | Order.Identifier | externalId | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference | processed | docStatus |

@@ -9,7 +9,7 @@ Feature: Mediated commission
   @from:cucumber
   @topic:commissionContracts
   Scenario: Happy flow for mediated commission contract
-    Given update taxCategory 'Normal' for all productTypes
+    Given taxCategory 'Normal' is updated to work with all productTypes
     And metasfresh contains M_Products:
       | Identifier          | Name                | ProductType | OPT.UOMSymbol |
       | commission_product  | commission_product  | S           | Pkt           |
@@ -123,8 +123,8 @@ Feature: Mediated commission
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | invoiceSettled_1        | settlement_1                      |
     And validate created invoices
-      | Invoice.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus |
-      | invoiceSettled_1   | mediated_vendor          | mediated_vendor_location          | 10 Tage 1 % | true      | CO        |
+      | Invoice.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.DocSubType |
+      | invoiceSettled_1   | mediated_vendor          | mediated_vendor_location          | 10 Tage 1 % | true      | CO        | RD             |
     And validate created invoice lines
       | Invoice.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
       | invoiceSettled_1   | commission_product      | 10.00       | true      |
