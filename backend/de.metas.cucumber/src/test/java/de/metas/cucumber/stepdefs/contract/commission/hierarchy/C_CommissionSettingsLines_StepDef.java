@@ -20,24 +20,23 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs.contract.commission;
+package de.metas.cucumber.stepdefs.contract.commission.hierarchy;
 
 import de.metas.contracts.commission.model.I_C_CommissionSettingsLine;
 import de.metas.contracts.commission.model.I_C_HierarchyCommissionSettings;
 import de.metas.cucumber.stepdefs.DataTableUtil;
-import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefData;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.assertj.core.api.Assertions;
 
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
-import static de.metas.contracts.commission.model.I_C_CommissionSettingsLine.*;
+import static de.metas.contracts.commission.model.I_C_CommissionSettingsLine.COLUMNNAME_C_CommissionSettingsLine_ID;
+import static de.metas.contracts.commission.model.I_C_CommissionSettingsLine.COLUMNNAME_PercentOfBasePoints;
+import static de.metas.contracts.commission.model.I_C_CommissionSettingsLine.COLUMNNAME_SeqNo;
 import static de.metas.contracts.commission.model.I_C_Flatrate_Conditions.COLUMNNAME_C_HierarchyCommissionSettings_ID;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -47,11 +46,14 @@ import static org.assertj.core.api.Assertions.*;
 public class C_CommissionSettingsLines_StepDef
 {
 	private final StepDefData<I_C_HierarchyCommissionSettings> commissionSettingsTable;
+	private final StepDefData<I_C_CommissionSettingsLine> commissionSettingsLineTable;
 
 	public C_CommissionSettingsLines_StepDef(
-			@NonNull final StepDefData<I_C_HierarchyCommissionSettings> commissionSettingsTable)
+			@NonNull final StepDefData<I_C_HierarchyCommissionSettings> commissionSettingsTable,
+			@NonNull final StepDefData<I_C_CommissionSettingsLine> commissionSettingsLineTable)
 	{
 		this.commissionSettingsTable = commissionSettingsTable;
+		this.commissionSettingsLineTable = commissionSettingsLineTable;
 	}
 
 	@Given("metasfresh contains C_CommissionSettingsLines:")
@@ -75,7 +77,12 @@ public class C_CommissionSettingsLines_StepDef
 			final BigDecimal percent = DataTableUtil.extractBigDecimalForColumnName(tableRow, COLUMNNAME_PercentOfBasePoints);
 			commissionSettingsLine.setPercentOfBasePoints(percent);
 
+			commissionSettingsLine.setIsActive(true);
+
 			saveRecord(commissionSettingsLine);
+
+			final String hierarchySettingsLineIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_C_CommissionSettingsLine_ID + "." + TABLECOLUMN_IDENTIFIER);
+			commissionSettingsLineTable.put(hierarchySettingsLineIdentifier, commissionSettingsLine);
 		}
 	}
 }

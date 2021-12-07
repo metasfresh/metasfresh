@@ -131,6 +131,7 @@ public class C_Flatrate_Term_Create_For_BPartners extends C_Flatrate_Term_Create
 			case COMMISSION:
 			case MEDIATED_COMMISSION:
 			case MARGIN_COMMISSION:
+			case LICENSE_FEE:
 				final I_M_Product commissionProductRecord = loadOutOfTrx(commissionProductService.getCommissionProduct(conditionsId), I_M_Product.class);
 				addProduct(commissionProductRecord);
 				break;

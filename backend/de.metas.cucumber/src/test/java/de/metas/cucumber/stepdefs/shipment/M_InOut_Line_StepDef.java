@@ -31,22 +31,29 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
+import org.compiere.model.I_M_Product;
 
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
+import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.assertj.core.api.Assertions.*;
+import static org.compiere.model.I_M_Product.COLUMNNAME_M_Product_ID;
 
 public class M_InOut_Line_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final StepDefData<I_M_InOut> shipmentTable;
+	private final StepDefData<I_M_Product> productTable;
 
-	public M_InOut_Line_StepDef(@NonNull final StepDefData<I_M_InOut> shipmentTable)
+	public M_InOut_Line_StepDef(
+			@NonNull final StepDefData<I_M_InOut> shipmentTable,
+			@NonNull final StepDefData<I_M_Product> productTable)
 	{
 		this.shipmentTable = shipmentTable;
+		this.productTable = productTable;
 	}
 
 	@And("validate the created shipment lines")
@@ -59,12 +66,13 @@ public class M_InOut_Line_StepDef
 
 			final I_M_InOut shipmentRecord = shipmentTable.get(shipmentIdentifier);
 
-			final int productId = DataTableUtil.extractIntForColumnName(row, "productIdentifier.m_product_id");
+			final String productIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final I_M_Product product = productTable.get(productIdentifier);
 
 			//dev-note: we assume the tests are not using the same product on different lines
 			final I_M_InOutLine shipmentLineRecord = queryBL.createQueryBuilder(I_M_InOutLine.class)
 					.addEqualsFilter(I_M_InOutLine.COLUMNNAME_M_InOut_ID, shipmentRecord.getM_InOut_ID())
-					.addEqualsFilter(I_M_InOutLine.COLUMNNAME_M_Product_ID, productId)
+					.addEqualsFilter(I_M_InOutLine.COLUMNNAME_M_Product_ID, product.getM_Product_ID())
 					.create()
 					.firstOnlyNotNull(I_M_InOutLine.class);
 
@@ -74,11 +82,9 @@ public class M_InOut_Line_StepDef
 
 	private void validateShipmentLine(@NonNull final I_M_InOutLine shipmentLine, @NonNull final Map<String, String> row)
 	{
-		final int productId = DataTableUtil.extractIntForColumnName(row, "productIdentifier.m_product_id");
 		final BigDecimal movementqty = DataTableUtil.extractBigDecimalForColumnName(row, "movementqty");
 		final boolean processed = DataTableUtil.extractBooleanForColumnName(row, "processed");
 
-		assertThat(shipmentLine.getM_Product_ID()).isEqualTo(productId);
 		assertThat(shipmentLine.getMovementQty()).isEqualTo(movementqty);
 		assertThat(shipmentLine.isProcessed()).isEqualTo(processed);
 	}

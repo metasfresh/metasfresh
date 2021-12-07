@@ -48,6 +48,7 @@ import de.metas.document.IDocTypeDAO;
 import de.metas.document.IDocTypeDAO.DocTypeCreateRequest;
 import de.metas.i18n.IMsgBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
+import de.metas.logging.LogManager;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.ordercandidate.modelvalidator.C_OLCand;
@@ -75,6 +76,7 @@ import org.compiere.model.POInfo;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -86,6 +88,8 @@ import java.util.Set;
 @Interceptor(I_C_Flatrate_Term.class)
 public class C_Flatrate_Term
 {
+	private final static Logger logger = LogManager.getLogger(C_Flatrate_Term.class);
+
 	private static final String CONFIG_FLATRATE_TERM_ALLOW_REACTIVATE = "de.metas.contracts.C_Flatrate_Term.allow_reactivate_%s";
 
 	private static final String MSG_TERM_ERROR_PLANNED_QTY_PER_UNIT = "Term_Error_PlannedQtyPerUnit";
@@ -637,37 +641,30 @@ public class C_Flatrate_Term
 					I_C_Flatrate_Term.COLUMNNAME_AD_Org_ID,
 					I_C_Flatrate_Term.COLUMNNAME_Bill_BPartner_ID
 			})
-	public void ensureOneMediatedContract(@NonNull final I_C_Flatrate_Term term)
+	public void ensureOneContract(@NonNull final I_C_Flatrate_Term term)
 	{
-		flatrateBL.ensureOneContractOfGivenType(term, TypeConditions.MEDIATED_COMMISSION);
-	}
-
-
-	@DocValidate(timings = ModelValidator.TIMING_BEFORE_COMPLETE)
-	public void ensureOneMediatedContractBeforeComplete(@NonNull final I_C_Flatrate_Term term)
-	{
-		flatrateBL.ensureOneContractOfGivenType(term, TypeConditions.MEDIATED_COMMISSION);
-	}
-
-	@ModelChange(timings = {
-			ModelValidator.TYPE_BEFORE_NEW,
-			ModelValidator.TYPE_BEFORE_CHANGE
-	},
-			ifColumnsChanged = {
-					I_C_Flatrate_Term.COLUMNNAME_Type_Conditions,
-					I_C_Flatrate_Term.COLUMNNAME_StartDate,
-					I_C_Flatrate_Term.COLUMNNAME_EndDate,
-					I_C_Flatrate_Term.COLUMNNAME_AD_Org_ID,
-					I_C_Flatrate_Term.COLUMNNAME_Bill_BPartner_ID
-			})
-	public void ensureOneMarginContract(@NonNull final I_C_Flatrate_Term term)
-	{
-		flatrateBL.ensureOneContractOfGivenType(term, TypeConditions.MARGIN_COMMISSION);
+		ensureOneContractOfGivenType(term);
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_COMPLETE)
-	public void ensureOneMarginContractBeforeComplete(@NonNull final I_C_Flatrate_Term term)
+	public void ensureOneContractBeforeComplete(@NonNull final I_C_Flatrate_Term term)
+	{
+		ensureOneContractOfGivenType(term);
+	}
+
+	private void ensureOneContractOfGivenType(@NonNull final I_C_Flatrate_Term term)
 	{
 		flatrateBL.ensureOneContractOfGivenType(term, TypeConditions.MARGIN_COMMISSION);
+		final TypeConditions contractType = TypeConditions.ofCode(term.getType_Conditions());
+
+		switch (contractType)
+		{
+			case MEDIATED_COMMISSION:
+			case MARGIN_COMMISSION:
+			case LICENSE_FEE:
+				flatrateBL.ensureOneContractOfGivenType(term, contractType);
+			default:
+				logger.debug("Skipping ensureOneContractOfGivenType check for 'Type_Conditions' =" + contractType);
+		}
 	}
 }
