@@ -17,7 +17,6 @@ class ErrorScreen extends Component {
         if (response && response.status === 200) {
           window.location.reload();
         } else {
-          console.log('Got response:', response);
           console.log('Status:', response.status);
         }
       })

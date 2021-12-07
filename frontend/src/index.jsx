@@ -3,14 +3,10 @@ import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
 
 import App from './containers/App';
-// import configureStore from './store/configureStore';
 import { ProvideAuth } from './hooks/useAuth';
 import { historyDoubleBackOnPopstate } from './utils';
 
 import store from './store/store';
-
-// this export is needed as we are using it at websockets level
-// export const store = configureStore();
 
 if (window.Cypress) {
   window.store = store;
