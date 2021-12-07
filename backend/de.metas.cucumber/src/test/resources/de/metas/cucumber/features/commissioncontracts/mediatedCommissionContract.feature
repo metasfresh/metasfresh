@@ -113,7 +113,7 @@ Feature: Mediated commission
       | OPT.C_Invoice_Candidate_Commission_ID.Identifier | CommissionPoints | Commission_Fact_State |
       | settlement_1                                     | 10.00            | TO_SETTLE             |
       |                                                  | 10.00            | INVOICED              |
-    And validate candidate commission settlement
+    And validate invoice candidate
       | C_Invoice_Candidate_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_ID.Identifier | NetAmtToInvoice | IsSOTrx |
       | settlement_1                      | mediated_vendor             | commission_product      | 10              | true    |
     And process invoice candidates

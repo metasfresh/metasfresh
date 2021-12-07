@@ -103,6 +103,15 @@ Feature: Hierarchy commission and license fee commission combined
     And validate created invoice lines
       | Invoice.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
       | invoice_1          | transaction_product     | 1           | true      |
+    And locate invoice candidates for invoice: invoice_1
+      | C_Invoice_Candidate_ID.Identifier | M_Product_ID.Identifier |
+      | so_invoice_candidate              | transaction_product     |
+    And recompute invoice candidates if required
+      | C_Invoice_Candidate_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.NetAmtInvoiced |
+      | so_invoice_candidate              | customer_1                  | transaction_product     | 10                 |
+    And validate invoice candidate
+      | C_Invoice_Candidate_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_ID.Identifier | NetAmtToInvoice | IsSOTrx | OPT.NetAmtInvoiced |
+      | so_invoice_candidate              | customer_1                  | transaction_product     | 0               | true    | 10                 |
     And validate created commission instance
       | C_Commission_Instance_ID.Identifier | C_Order_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_Order_ID.Identifier | PointsBase_Forecasted | PointsBase_Invoiceable | PointsBase_Invoiced |
       | commissionInstance_1                | order_1               | customer_1                  | transaction_product           | 0                     | 0                      | 10                  |
@@ -135,7 +144,7 @@ Feature: Hierarchy commission and license fee commission combined
       |                                                  | 0.50             | INVOICEABLE           |
       |                                                  | -0.50            | FORECASTED            |
       |                                                  | 0.50             | FORECASTED            |
-    And validate candidate commission settlement
+    And validate invoice candidate
       | C_Invoice_Candidate_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_ID.Identifier | NetAmtToInvoice | IsSOTrx |
       | settlement_1                      | salesRep_1                  | commission_product      | 1               | false   |
       | settlement_2                      | super_salesRep              | commission_product      | 0.9             | false   |
@@ -257,7 +266,15 @@ Feature: Hierarchy commission and license fee commission combined
     Then process metasfresh response
       | Order.Identifier | Shipment.Identifier | Invoice.Identifier |
       | order_1          | shipment_1          | invoice_1          |
-
+    And locate invoice candidates for invoice: invoice_1
+      | C_Invoice_Candidate_ID.Identifier | M_Product_ID.Identifier |
+      | so_invoice_candidate              | transaction_product     |
+    And recompute invoice candidates if required
+      | C_Invoice_Candidate_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.NetAmtInvoiced |
+      | so_invoice_candidate              | customer_salesRep_1         | transaction_product     | 10                 |
+    And validate invoice candidate
+      | C_Invoice_Candidate_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_ID.Identifier | NetAmtToInvoice | IsSOTrx | OPT.NetAmtInvoiced |
+      | so_invoice_candidate              | customer_salesRep_1         | transaction_product     | 0               | true    | 10                 |
     And validate created commission instance
       | C_Commission_Instance_ID.Identifier | C_Order_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_Order_ID.Identifier | PointsBase_Forecasted | PointsBase_Invoiceable | PointsBase_Invoiced |
       | commissionInstance_1                | order_1               | customer_salesRep_1         | transaction_product           | 0                     | 0                      | 10                  |
@@ -276,7 +293,7 @@ Feature: Hierarchy commission and license fee commission combined
       |                                                  | -0.50            | FORECASTED            |
       |                                                  | 0.50             | FORECASTED            |
 
-    And validate candidate commission settlement
+    And validate invoice candidate
       | C_Invoice_Candidate_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_ID.Identifier | NetAmtToInvoice | IsSOTrx |
       | settlement_so                     | customer_salesRep_1         | commission_product      | 0.5             | true    |
     And process invoice candidates

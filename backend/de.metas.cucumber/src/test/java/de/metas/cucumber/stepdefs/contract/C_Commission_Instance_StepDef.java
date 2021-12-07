@@ -80,7 +80,7 @@ public class C_Commission_Instance_StepDef
 		final List<Map<String, String>> dataTableRows = dataTable.asMaps(String.class, String.class);
 		for (final Map<String, String> row : dataTableRows)
 		{
-			StepDefUtil.tryAndWait(160, 500, () -> retrieveCommissionInstance(row), () -> logCurrentContext(row));
+			StepDefUtil.tryAndWait(90, 500, () -> retrieveCommissionInstance(row), () -> logCurrentContext(row));
 
 			validateCommissionInstance(row);
 		}

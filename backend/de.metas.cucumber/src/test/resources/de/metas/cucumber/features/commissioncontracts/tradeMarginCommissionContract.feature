@@ -104,7 +104,7 @@ Feature: Trade margin commission contract
       |                                                  | 5.00             | INVOICEABLE           |
       |                                                  | -5.00            | FORECASTED            |
       |                                                  | 5.00             | FORECASTED            |
-    And validate candidate commission settlement
+    And validate invoice candidate
       | C_Invoice_Candidate_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_ID.Identifier | NetAmtToInvoice | IsSOTrx |
       | settlement_1                      | margin_salesRep             | commission_product      | 5               | false   |
     And process invoice candidates
