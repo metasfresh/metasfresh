@@ -5,6 +5,11 @@
 export const BAD_GATEWAY_ERROR = 'badGateway';
 
 /**
+ * @type {integer} The number of milliseconds to wait before retrying to ping the server
+ */
+export const PING_INTERVAL_BAD_GATEWAY = 5000;
+
+/**
  * @constant
  * @type {string} Type of connectionErrorType when no error is present
  */

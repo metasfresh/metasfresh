@@ -45,10 +45,6 @@ const App = () => {
   const dispatch = useDispatch();
   const store = useStore();
 
-  if (window.Cypress) {
-    window.store = store;
-  }
-
   useConstructor(() => {
     // this.pluginsRegistry = new PluginsRegistry(this);
     // const pluginsRegistry = new PluginsRegistry(this);

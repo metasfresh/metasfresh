@@ -3,7 +3,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import offlineMessages from '../../utils/offlineMessages';
 import { checkLoginRequest } from '../../api/login';
-
+import { PING_INTERVAL_BAD_GATEWAY } from '../../constants/app';
 class ErrorScreen extends Component {
   constructor(props) {
     super(props);
@@ -16,17 +16,15 @@ class ErrorScreen extends Component {
       .then((response) => {
         if (response && response.status === 200) {
           window.location.reload();
-        } else {
-          console.log('Status:', response.status);
         }
       })
-      .catch((e) => console.log('checkLoginRequest error:', e));
+      .catch((e) => console.error('checkLoginRequest error:', e));
   };
 
   componentDidMount() {
     const { errorType } = this.props;
     if (errorType === 'badGateway') {
-      let intervalId = setInterval(this.pingServer, 3000);
+      let intervalId = setInterval(this.pingServer, PING_INTERVAL_BAD_GATEWAY);
       this.setState({ intervalId: intervalId });
     }
   }
