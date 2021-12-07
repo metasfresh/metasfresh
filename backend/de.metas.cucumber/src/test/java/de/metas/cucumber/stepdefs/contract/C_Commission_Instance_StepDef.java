@@ -26,6 +26,7 @@ import de.metas.contracts.commission.model.I_C_Commission_Instance;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.cucumber.stepdefs.StepDefUtil;
+import de.metas.logging.LogManager;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -34,6 +35,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_Product;
+import org.slf4j.Logger;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -51,6 +53,8 @@ import static org.compiere.model.I_C_Order.COLUMNNAME_C_Order_ID;
 
 public class C_Commission_Instance_StepDef
 {
+	private final static Logger logger = LogManager.getLogger(C_Commission_Instance_StepDef.class);
+
 	private final StepDefData<I_C_Commission_Instance> commissionInstanceTable;
 	private final StepDefData<I_C_BPartner> bPartnerTable;
 	private final StepDefData<I_M_Product> productTable;
@@ -76,7 +80,7 @@ public class C_Commission_Instance_StepDef
 		final List<Map<String, String>> dataTableRows = dataTable.asMaps(String.class, String.class);
 		for (final Map<String, String> row : dataTableRows)
 		{
-			StepDefUtil.tryAndWait(120, 500, () -> retrieveCommissionInstance(row));
+			StepDefUtil.tryAndWait(120, 500, () -> retrieveCommissionInstance(row), () -> logCurrentContext(row));
 
 			validateCommissionInstance(row);
 		}
@@ -145,4 +149,40 @@ public class C_Commission_Instance_StepDef
 
 		return true;
 	}
+
+	private void logCurrentContext(@NonNull final Map<String, String> row)
+	{
+		final String orderIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final I_C_Order orderRecord = orderTable.get(orderIdentifier);
+
+		final BigDecimal forecasted = DataTableUtil.extractBigDecimalForColumnName(row, COLUMNNAME_PointsBase_Forecasted);
+		final BigDecimal invoiceable = DataTableUtil.extractBigDecimalForColumnName(row, COLUMNNAME_PointsBase_Invoiceable);
+		final BigDecimal invoiced = DataTableUtil.extractBigDecimalForColumnName(row, COLUMNNAME_PointsBase_Invoiced);
+
+		final StringBuilder message = new StringBuilder();
+
+		message.append("Looking for instance with:").append("\n")
+				.append(COLUMNNAME_C_Order_ID).append(" : ").append(orderRecord.getC_Order_ID()).append("\n")
+				.append(COLUMNNAME_PointsBase_Forecasted).append(" : ").append(forecasted).append("\n")
+				.append(COLUMNNAME_PointsBase_Invoiceable).append(" : ").append(invoiceable).append("\n")
+				.append(COLUMNNAME_PointsBase_Invoiced).append(" : ").append(invoiced).append("\n");
+
+		message.append("C_Commission_Instance records:").append("\n");
+
+		queryBL.createQueryBuilder(I_C_Commission_Instance.class)
+				.create()
+				.stream(I_C_Commission_Instance.class)
+				.forEach(commissionInstanceRecord -> {
+
+					message.append(COLUMNNAME_C_Commission_Instance_ID).append(" : ").append(commissionInstanceRecord.getC_Commission_Instance_ID()).append(" ; ")
+							.append(COLUMNNAME_C_Order_ID).append(" : ").append(commissionInstanceRecord.getC_Order_ID()).append(" ; ")
+							.append(COLUMNNAME_PointsBase_Forecasted).append(" : ").append(commissionInstanceRecord.getPointsBase_Forecasted()).append(" ; ")
+							.append(COLUMNNAME_PointsBase_Invoiceable).append(" : ").append(commissionInstanceRecord.getPointsBase_Invoiceable()).append(" ; ")
+							.append(COLUMNNAME_PointsBase_Invoiced).append(" : ").append(commissionInstanceRecord.getPointsBase_Invoiced()).append(" ; ")
+							.append("\n");
+				});
+
+		logger.error("*** Error while looking for commission instance records, see current context: \n" + message.toString());
+	}
+
 }

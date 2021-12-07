@@ -24,6 +24,7 @@ package de.metas.cucumber.stepdefs;
 
 import lombok.experimental.UtilityClass;
 
+import javax.annotation.Nullable;
 import java.util.function.Supplier;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -31,7 +32,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 @UtilityClass
 public class StepDefUtil
 {
-	public void tryAndWait(final long maxWaitSeconds, final long checkingIntervalMs, final Supplier<Boolean> worker ) throws InterruptedException
+	public void tryAndWait(final long maxWaitSeconds, final long checkingIntervalMs, final Supplier<Boolean> worker, @Nullable final Runnable logContext) throws InterruptedException
 	{
 		final long nowMillis = System.currentTimeMillis(); // don't use SystemTime.millis(); because it's probably "rigged" for testing purposes,
 		final long deadLineMillis = nowMillis + (maxWaitSeconds * 1000L);
@@ -44,6 +45,16 @@ public class StepDefUtil
 			conditionIsMet = worker.get();
 		}
 
+		if (!conditionIsMet && logContext != null)
+		{
+			logContext.run();
+		}
+
 		assertThat(conditionIsMet).isTrue();
+	}
+
+	public void tryAndWait(final long maxWaitSeconds, final long checkingIntervalMs, final Supplier<Boolean> worker) throws InterruptedException
+	{
+		tryAndWait(maxWaitSeconds, checkingIntervalMs, worker, null);
 	}
 }
