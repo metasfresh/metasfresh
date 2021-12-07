@@ -3,7 +3,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import offlineMessages from '../../utils/offlineMessages';
 import { checkLoginRequest } from '../../api/login';
-import { PING_INTERVAL_BAD_GATEWAY } from '../../constants/app';
+import { PING_INTERVAL_BAD_GATEWAY } from '../../constants/constants';
 class ErrorScreen extends Component {
   constructor(props) {
     super(props);
