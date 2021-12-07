@@ -221,7 +221,7 @@ public class AsyncBatchBL implements IAsyncBatchBL
 			return true;
 		}
 
-		if (isAsyncBatchEligibleToProcess(asyncBatchId))
+		if (!isAsyncBatchEligibleToProcess(asyncBatchId))
 		{
 			return false;
 		}

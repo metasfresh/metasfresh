@@ -97,11 +97,15 @@ Feature: Hierarchy commission and license fee commission combined
     Then process metasfresh response
       | Order.Identifier | Shipment.Identifier | Invoice.Identifier |
       | order_1          | shipment_1          | invoice_1          |
-
+    And validate created invoices
+      | Invoice.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | docStatus |
+      | invoice_1          | customer_1               | customer_location_1               | po_ref_mock     | 1000002     | true      | CO        |
+    And validate created invoice lines
+      | Invoice.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
+      | invoice_1          | transaction_product     | 1           | true      |
     And validate created commission instance
       | C_Commission_Instance_ID.Identifier | C_Order_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_Order_ID.Identifier | PointsBase_Forecasted | PointsBase_Invoiceable | PointsBase_Invoiced |
       | commissionInstance_1                | order_1               | customer_1                  | transaction_product           | 0                     | 0                      | 10                  |
-
     And validate commission deed for commission instance commissionInstance_1
       | C_Commission_Share_ID.Identifier | C_BPartner_SalesRep_ID.Identifier | C_BPartner_Payer_ID.Identifier | C_Flatrate_Term_ID.Identifier | Commission_Product_ID.Identifier | LevelHierarchy | OPT.C_CommissionSettingsLine_ID.Identifier | OPT.C_LicenseFeeSettingsLine_ID.Identifier | IsSOTrx | IsSimulation | PointsSum_Forecasted | PointsSum_Invoiceable | PointsSum_Invoiced | PointsSum_ToSettle | PointsSum_Settled |
       | commissionShare_1                | salesRep_1                        | metasfresh                     | hierarchyContract_1           | commission_product               | 0              | hierarchySettingsLine_1                    |                                            | false   | false        | 0                    | 0                     | 1.00               | 1.00               | 0                 |

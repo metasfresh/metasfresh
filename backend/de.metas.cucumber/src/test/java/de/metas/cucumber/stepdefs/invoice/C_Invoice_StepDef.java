@@ -40,6 +40,7 @@ import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Invoice;
@@ -104,6 +105,8 @@ public class C_Invoice_StepDef
 
 	private void validateInvoice(@NonNull final I_C_Invoice invoice, @NonNull final Map<String, String> row)
 	{
+		InterfaceWrapperHelper.refresh(invoice);
+
 		final String bpartnerIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_BPartner.COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
 		final I_C_BPartner bPartner = bpartnerTable.get(bpartnerIdentifier);
 		assertThat(bPartner).isNotNull();
