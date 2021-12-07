@@ -18,7 +18,7 @@ import de.metas.workflow.rest_api.model.WFProcessHeaderProperties;
 import de.metas.workflow.rest_api.model.WFProcessHeaderProperty;
 import de.metas.workflow.rest_api.model.WFProcessId;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersList;
-import de.metas.workflow.rest_api.service.MobileApplication;
+import de.metas.workflow.rest_api.service.WorkflowBasedMobileApplication;
 import de.metas.workflow.rest_api.service.WorkflowStartRequest;
 import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
@@ -29,7 +29,7 @@ import java.util.Objects;
 import java.util.function.UnaryOperator;
 
 @Component
-public class DistributionMobileApplication implements MobileApplication
+public class DistributionMobileApplication implements WorkflowBasedMobileApplication
 {
 	static final MobileApplicationId HANDLER_ID = MobileApplicationId.ofString("distribution");
 
