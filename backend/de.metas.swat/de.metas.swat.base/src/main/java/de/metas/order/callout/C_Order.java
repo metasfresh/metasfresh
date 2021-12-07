@@ -159,7 +159,7 @@ public class C_Order
 			skipIfCopying = true)
 	public void updateDeliveryViaRule(final I_C_Order order)
 	{
-		if(order.getM_Shipper() != null)
+		if(order.getM_Shipper_ID() > 0)
 		{
 			order.setDeliveryViaRule(X_C_Order.DELIVERYVIARULE_Shipper);
 		}
