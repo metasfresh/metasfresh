@@ -14,8 +14,8 @@ export const registerHandler = ({
     mergeActivityDataStored,
   };
 
-  console.log(`Registered handlers for ${componentType}`);
-  console.log('=>registeredHandlers', registeredHandlers);
+  console.log(`Registered activity state handlers for ${componentType}`);
+  //console.log('=>registeredHandlers', registeredHandlers);
 };
 
 export const normalizeComponentProps = ({ componentType, componentProps }) => {
