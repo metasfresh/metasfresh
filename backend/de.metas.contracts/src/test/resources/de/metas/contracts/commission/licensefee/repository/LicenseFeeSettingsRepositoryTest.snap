@@ -1,10 +1,9 @@
 de.metas.contracts.commission.licensefee.repository.LicenseFeeSettingsRepositoryTest.givenValidId_whenGetById_thenReturnSettings=[
   {
+    "orgId" : 1,
     "licenseFeeSettingsId" : 100001,
     "commissionProductId" : 1001,
     "pointsPrecision" : 2,
-    "orgId" : 1,
-    "name" : "name",
     "lines" : [
       {
         "licenseFeeSettingsLineId" : 100002,

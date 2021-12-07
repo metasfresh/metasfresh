@@ -22,7 +22,6 @@
 
 package de.metas.cucumber.stepdefs.contract;
 
-import de.metas.common.util.EmptyUtil;
 import de.metas.contracts.commission.model.I_C_Commission_Instance;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefData;
@@ -32,7 +31,6 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_Product;
@@ -90,22 +88,31 @@ public class C_Commission_Instance_StepDef
 		final I_C_Commission_Instance commissionInstance = commissionInstanceTable.get(commissionInstanceIdentifier);
 		assertThat(commissionInstance).isNotNull();
 
-		final String billBPartnerIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_Bill_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
-		final I_C_BPartner billBPartner = bPartnerTable.get(billBPartnerIdentifier);
-		assertThat(commissionInstance.getBill_BPartner_ID()).isEqualTo(billBPartner.getC_BPartner_ID());
+		//Bill_BPartner_ID
+		{
+			final String billBPartnerIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_Bill_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final I_C_BPartner billBPartner = bPartnerTable.get(billBPartnerIdentifier);
+			assertThat(commissionInstance.getBill_BPartner_ID()).isEqualTo(billBPartner.getC_BPartner_ID());
+		}
 
-		final String productIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_Product_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
-		final I_M_Product product = productTable.get(productIdentifier);
-		assertThat(commissionInstance.getM_Product_Order_ID()).isEqualTo(product.getM_Product_ID());
+		//M_Product_Order_ID
+		{
+			final String productIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_Product_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final I_M_Product product = productTable.get(productIdentifier);
+			assertThat(commissionInstance.getM_Product_Order_ID()).isEqualTo(product.getM_Product_ID());
+		}
 
-		final BigDecimal forecasted = DataTableUtil.extractBigDecimalForColumnName(row, COLUMNNAME_PointsBase_Forecasted);
-		assertThat(commissionInstance.getPointsBase_Forecasted()).isEqualTo(forecasted);
+		//PointsBase_Forecasted && PointsBase_Invoiceable && PointsBase_Invoiced
+		{
+			final BigDecimal forecasted = DataTableUtil.extractBigDecimalForColumnName(row, COLUMNNAME_PointsBase_Forecasted);
+			assertThat(commissionInstance.getPointsBase_Forecasted().stripTrailingZeros()).isEqualTo(forecasted.stripTrailingZeros());
 
-		final BigDecimal invoiceable = DataTableUtil.extractBigDecimalForColumnName(row, COLUMNNAME_PointsBase_Invoiceable);
-		assertThat(commissionInstance.getPointsBase_Invoiceable()).isEqualTo(invoiceable);
+			final BigDecimal invoiceable = DataTableUtil.extractBigDecimalForColumnName(row, COLUMNNAME_PointsBase_Invoiceable);
+			assertThat(commissionInstance.getPointsBase_Invoiceable().stripTrailingZeros()).isEqualTo(invoiceable.stripTrailingZeros());
 
-		final BigDecimal invoiced = DataTableUtil.extractBigDecimalForColumnName(row, COLUMNNAME_PointsBase_Invoiced);
-		assertThat(commissionInstance.getPointsBase_Invoiced()).isEqualTo(invoiced);
+			final BigDecimal invoiced = DataTableUtil.extractBigDecimalForColumnName(row, COLUMNNAME_PointsBase_Invoiced);
+			assertThat(commissionInstance.getPointsBase_Invoiced().stripTrailingZeros()).isEqualTo(invoiced.stripTrailingZeros());
+		}
 
 		commissionInstanceTable.putOrReplace(commissionInstanceIdentifier, commissionInstance);
 	}
@@ -113,23 +120,19 @@ public class C_Commission_Instance_StepDef
 	@NonNull
 	private Boolean retrieveCommissionInstance(@NonNull final Map<String, String> row)
 	{
+		final String orderIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final I_C_Order orderRecord = orderTable.get(orderIdentifier);
+
 		final BigDecimal forecasted = DataTableUtil.extractBigDecimalForColumnName(row, COLUMNNAME_PointsBase_Forecasted);
 		final BigDecimal invoiceable = DataTableUtil.extractBigDecimalForColumnName(row, COLUMNNAME_PointsBase_Invoiceable);
 		final BigDecimal invoiced = DataTableUtil.extractBigDecimalForColumnName(row, COLUMNNAME_PointsBase_Invoiced);
 
-		final IQueryBuilder<I_C_Commission_Instance> queryBuilder = queryBL.createQueryBuilder(I_C_Commission_Instance.class)
+		final I_C_Commission_Instance commissionInstance = queryBL.createQueryBuilder(I_C_Commission_Instance.class)
+				.addEqualsFilter(I_C_Commission_Instance.COLUMNNAME_C_Order_ID, orderRecord.getC_Order_ID())
 				.addEqualsFilter(COLUMNNAME_PointsBase_Forecasted, forecasted)
 				.addEqualsFilter(COLUMNNAME_PointsBase_Invoiceable, invoiceable)
-				.addEqualsFilter(COLUMNNAME_PointsBase_Invoiced, invoiced);
-
-		final String orderIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_C_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
-		if (EmptyUtil.isNotBlank(orderIdentifier))
-		{
-			final I_C_Order orderRecord = orderTable.get(orderIdentifier);
-			queryBuilder.addEqualsFilter(I_C_Commission_Instance.COLUMNNAME_C_Order_ID, orderRecord.getC_Order_ID());
-		}
-
-		final I_C_Commission_Instance commissionInstance = queryBuilder.create()
+				.addEqualsFilter(COLUMNNAME_PointsBase_Invoiced, invoiced)
+				.create()
 				.firstOnlyOrNull(I_C_Commission_Instance.class);
 
 		if (commissionInstance == null)

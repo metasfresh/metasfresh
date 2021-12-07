@@ -64,7 +64,7 @@ public class C_Commission_Fact_StepDef
 		this.commissionShareTable = commissionShareTable;
 	}
 
-	@And("^validate commission fact (.*)$")
+	@And("^validate commission fact for (.*)$")
 	public void validate_commission_fact(@NonNull final String commissionShareIdentifier, @NonNull final DataTable dataTable)
 	{
 		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
@@ -81,10 +81,10 @@ public class C_Commission_Fact_StepDef
 		assertThat(commissionFacts).isNotNull();
 		assertThat(tableRows.size()).isEqualTo(commissionFacts.size());
 
-		for (int i = 0; i < commissionFacts.size(); i++)
+		for (int factIndex = 0; factIndex < commissionFacts.size(); factIndex++)
 		{
-			final I_C_Commission_Fact actualCommissionFact = commissionFacts.get(i);
-			final Map<String, String> expectedCommissionFact = tableRows.get(i);
+			final I_C_Commission_Fact actualCommissionFact = commissionFacts.get(factIndex);
+			final Map<String, String> expectedCommissionFact = tableRows.get(factIndex);
 
 			final String commissionFactState = DataTableUtil.extractStringForColumnName(expectedCommissionFact, COLUMNNAME_Commission_Fact_State);
 			assertThat(actualCommissionFact.getCommission_Fact_State()).isEqualTo(commissionFactState);

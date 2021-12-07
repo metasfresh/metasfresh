@@ -91,12 +91,12 @@ Feature: Trade margin commission contract
       | order_1          | shipment_1          | invoice_1          |
 
     And validate created commission instance
-      | C_Commission_Instance_ID.Identifier | OPT.C_Order_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_Order_ID.Identifier | PointsBase_Forecasted | PointsBase_Invoiceable | PointsBase_Invoiced |
-      | commissionInstance_1                | order_1                   | margin_customer             | transaction_product           | 0                     | 0                      | 20                  |
+      | C_Commission_Instance_ID.Identifier | C_Order_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_Order_ID.Identifier | PointsBase_Forecasted | PointsBase_Invoiceable | PointsBase_Invoiced |
+      | commissionInstance_1                | order_1               | margin_customer             | transaction_product           | 0                     | 0                      | 20                  |
     And validate commission deed for commission instance commissionInstance_1
       | C_Commission_Share_ID.Identifier | C_BPartner_SalesRep_ID.Identifier | C_BPartner_Payer_ID.Identifier | C_Flatrate_Term_ID.Identifier | Commission_Product_ID.Identifier | LevelHierarchy | OPT.C_Customer_Trade_Margin_Line_ID.Identifier | IsSOTrx | IsSimulation | PointsSum_Forecasted | PointsSum_Invoiceable | PointsSum_Invoiced | PointsSum_ToSettle | PointsSum_Settled |
       | commissionShare_1                | margin_salesRep                   | metasfresh                     | marginContract_1              | commission_product               | 0              | marginSettingsLine_1                           | false   | false        | 0                    | 0                     | 5.00               | 5.00               | 0                 |
-    And validate commission fact commissionShare_1
+    And validate commission fact for commissionShare_1
       | OPT.C_Invoice_Candidate_Commission_ID.Identifier | CommissionPoints | Commission_Fact_State |
       | settlement_1                                     | 5.00             | TO_SETTLE             |
       |                                                  | 5.00             | INVOICED              |
@@ -122,7 +122,7 @@ Feature: Trade margin commission contract
     And validate commission deed for commission instance commissionInstance_1
       | C_Commission_Share_ID.Identifier | C_BPartner_SalesRep_ID.Identifier | C_BPartner_Payer_ID.Identifier | C_Flatrate_Term_ID.Identifier | Commission_Product_ID.Identifier | LevelHierarchy | OPT.C_Customer_Trade_Margin_Line_ID.Identifier | IsSOTrx | IsSimulation | PointsSum_Forecasted | PointsSum_Invoiceable | PointsSum_Invoiced | PointsSum_ToSettle | PointsSum_Settled |
       | commissionShare_1                | margin_salesRep                   | metasfresh                     | marginContract_1              | commission_product               | 0              | marginSettingsLine_1                           | false   | false        | 0                    | 0                     | 5.00               | 0                  | 5.00              |
-    And validate commission fact commissionShare_1
+    And validate commission fact for commissionShare_1
       | OPT.C_Invoice_Candidate_Commission_ID.Identifier | CommissionPoints | Commission_Fact_State |
       | settlement_1                                     | 5.00             | SETTLED               |
       | settlement_1                                     | -5.00            | TO_SETTLE             |

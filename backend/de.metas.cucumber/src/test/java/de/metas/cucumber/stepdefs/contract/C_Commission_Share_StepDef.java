@@ -115,13 +115,7 @@ public class C_Commission_Share_StepDef
 
 		for (final Map<String, String> row : dataTableRows)
 		{
-			final boolean emptyCommissionDeeds = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT.EmptyCommissionDeeds", false);
-			if (emptyCommissionDeeds)
-			{
-				continue;
-			}
-
-			StepDefUtil.tryAndWait(60, 500, () -> retrieveShare(row, commissionInstanceIdentifier));
+			StepDefUtil.tryAndWait(90, 500, () -> retrieveShare(row, commissionInstanceIdentifier));
 
 			final String commissionShareIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Commission_Share_ID + "." + TABLECOLUMN_IDENTIFIER);
 
@@ -135,98 +129,123 @@ public class C_Commission_Share_StepDef
 			@NonNull final Map<String, String> row,
 			@NonNull final I_C_Commission_Share commissionShare)
 	{
-		final String payerIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_BPartner_Payer_ID + "." + TABLECOLUMN_IDENTIFIER);
-
-		final I_C_BPartner payer = payerIdentifier.equals(METASFRESH_VALUE)
-				? bpartnerDAO.retrieveBPartnerByValue(Env.getCtx(), payerIdentifier)
-				: bPartnerTable.get(payerIdentifier);
-
-		assertThat(payer).isNotNull();
-		assertThat(payer.getC_BPartner_ID()).isEqualTo(commissionShare.getC_BPartner_Payer_ID());
-
-		final String salesRepIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_BPartner_SalesRep_ID + "." + TABLECOLUMN_IDENTIFIER);
-		final I_C_BPartner salesRep = salesRepIdentifier.equals(METASFRESH_VALUE)
-				? bpartnerDAO.retrieveBPartnerByValue(Env.getCtx(), salesRepIdentifier)
-				: bPartnerTable.get(salesRepIdentifier);
-
-		assertThat(salesRep).isNotNull();
-
-		final boolean createdMissingContract = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT.createdMissingContract", false);
-		final String contractIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Flatrate_Term_ID + "." + TABLECOLUMN_IDENTIFIER);
-
-		final I_C_Flatrate_Term contract = createdMissingContract
-				? queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
-				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Term_ID, commissionShare.getC_Flatrate_Term_ID())
-				.create()
-				.firstOnlyNotNull(I_C_Flatrate_Term.class)
-				: contractTable.get(contractIdentifier);
-
-		assertThat(commissionShare.getC_Flatrate_Term_ID()).isEqualTo(contract.getC_Flatrate_Term_ID());
-		contractTable.putOrReplace(contractIdentifier, contract);
-
-		final String productIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_Commission_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
-		final I_M_Product product = productTable.get(productIdentifier);
-		assertThat(commissionShare.getCommission_Product_ID()).isEqualTo(product.getM_Product_ID());
-
-		final Integer levelHierarchy = DataTableUtil.extractIntForColumnName(row, COLUMNNAME_LevelHierarchy);
-		assertThat(commissionShare.getLevelHierarchy()).isEqualTo(levelHierarchy);
-
-		final String hierarchySettingsIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Commission_Share.COLUMNNAME_C_CommissionSettingsLine_ID + "." + TABLECOLUMN_IDENTIFIER);
-		if (Check.isNotBlank(hierarchySettingsIdentifier))
+		//C_Commission_Share.C_BPartner_Payer_ID
 		{
-			final I_C_CommissionSettingsLine commissionSettingsLine = createdMissingContract
-					? queryBL.createQueryBuilder(I_C_CommissionSettingsLine.class)
-					.addEqualsFilter(I_C_CommissionSettingsLine.COLUMNNAME_C_CommissionSettingsLine_ID, commissionShare.getC_CommissionSettingsLine_ID())
-					.create()
-					.firstOnlyOrNull(I_C_CommissionSettingsLine.class)
-					: hierarchySettingsLineTable.get(hierarchySettingsIdentifier);
+			final String payerIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_BPartner_Payer_ID + "." + TABLECOLUMN_IDENTIFIER);
 
-			assertThat(commissionSettingsLine).isNotNull();
-			assertThat(commissionShare.getC_CommissionSettingsLine_ID()).isEqualTo(commissionSettingsLine.getC_CommissionSettingsLine_ID());
-			hierarchySettingsLineTable.putOrReplace(hierarchySettingsIdentifier, commissionSettingsLine);
+			final I_C_BPartner payer = payerIdentifier.equals(METASFRESH_VALUE)
+					? bpartnerDAO.retrieveBPartnerByValue(Env.getCtx(), payerIdentifier)
+					: bPartnerTable.get(payerIdentifier);
+
+			assertThat(payer).isNotNull();
+			assertThat(commissionShare.getC_BPartner_Payer_ID()).isEqualTo(payer.getC_BPartner_ID());
 		}
 
-		final String licenseFeeSettingsIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_C_LicenseFeeSettingsLine_ID + "." + TABLECOLUMN_IDENTIFIER);
-		if (Check.isNotBlank(licenseFeeSettingsIdentifier))
+		//C_Commission_Share.C_BPartner_SalesRep_ID
 		{
-			final I_C_LicenseFeeSettingsLine licenseFeeSettingsLine = licenseFeeSettingsLineTable.get(licenseFeeSettingsIdentifier);
-			assertThat(commissionShare.getC_LicenseFeeSettingsLine_ID()).isEqualTo(licenseFeeSettingsLine.getC_LicenseFeeSettings_ID());
+			final String salesRepIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_BPartner_SalesRep_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final I_C_BPartner salesRep = salesRepIdentifier.equals(METASFRESH_VALUE)
+					? bpartnerDAO.retrieveBPartnerByValue(Env.getCtx(), salesRepIdentifier)
+					: bPartnerTable.get(salesRepIdentifier);
+
+			assertThat(salesRep).isNotNull();
+			assertThat(commissionShare.getC_BPartner_SalesRep_ID()).isEqualTo(salesRep.getC_BPartner_ID());
 		}
 
-		final String marginSettingsIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_C_Customer_Trade_Margin_Line_ID + "." + TABLECOLUMN_IDENTIFIER);
-		if (Check.isNotBlank(marginSettingsIdentifier))
+		//C_Commission_Share.C_Flatrate_Term_ID
 		{
-			final I_C_Customer_Trade_Margin_Line customerTradeMarginLine = customerTradeMarginLineTable.get(marginSettingsIdentifier);
-			assertThat(commissionShare.getC_Customer_Trade_Margin_Line_ID()).isEqualTo(customerTradeMarginLine.getC_Customer_Trade_Margin_Line_ID());
+			final String contractIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Flatrate_Term_ID + "." + TABLECOLUMN_IDENTIFIER);
+
+			final I_C_Flatrate_Term contract = contractTable.get(contractIdentifier);
+
+			assertThat(commissionShare.getC_Flatrate_Term_ID()).isEqualTo(contract.getC_Flatrate_Term_ID());
+			contractTable.putOrReplace(contractIdentifier, contract);
 		}
 
-		final String mediatedSettingsIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_C_MediatedCommissionSettingsLine_ID + "." + TABLECOLUMN_IDENTIFIER);
-		if (Check.isNotBlank(mediatedSettingsIdentifier))
+		//C_Commission_Share.Commission_Product_ID
 		{
-			final I_C_MediatedCommissionSettingsLine mediatedCommissionSettingsLine = mediatedCommissionSettingsLineTable.get(mediatedSettingsIdentifier);
-			assertThat(commissionShare.getC_MediatedCommissionSettingsLine_ID()).isEqualTo(mediatedCommissionSettingsLine.getC_MediatedCommissionSettingsLine_ID());
+			final String commissionProductIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_Commission_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final I_M_Product product = productTable.get(commissionProductIdentifier);
+			assertThat(commissionShare.getCommission_Product_ID()).isEqualTo(product.getM_Product_ID());
 		}
 
-		final Boolean isSoTrx = DataTableUtil.extractBooleanForColumnName(row, COLUMNNAME_IsSOTrx);
-		assertThat(commissionShare.isSOTrx()).isEqualTo(isSoTrx);
+		//C_Commission_Share.LevelHierarchy
+		{
+			final Integer levelHierarchy = DataTableUtil.extractIntForColumnName(row, COLUMNNAME_LevelHierarchy);
+			assertThat(commissionShare.getLevelHierarchy()).isEqualTo(levelHierarchy);
+		}
 
-		final Boolean isSimulation = DataTableUtil.extractBooleanForColumnName(row, I_C_Commission_Share.COLUMNNAME_IsSimulation);
-		assertThat(commissionShare.isSimulation()).isEqualTo(isSimulation);
+		//C_Commission_Share.C_CommissionSettingsLine_ID
+		{
+			final String hierarchySettingsLineIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Commission_Share.COLUMNNAME_C_CommissionSettingsLine_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(hierarchySettingsLineIdentifier))
+			{
+				final I_C_CommissionSettingsLine commissionSettingsLine = hierarchySettingsLineTable.get(hierarchySettingsLineIdentifier);
 
-		final BigDecimal forecasted = DataTableUtil.extractBigDecimalForColumnName(row, COLUMNNAME_PointsSum_Forecasted);
-		assertThat(commissionShare.getPointsSum_Forecasted()).isEqualTo(forecasted);
+				assertThat(commissionSettingsLine).isNotNull();
+				assertThat(commissionShare.getC_CommissionSettingsLine_ID()).isEqualTo(commissionSettingsLine.getC_CommissionSettingsLine_ID());
+			}
+		}
 
-		final BigDecimal invoiceable = DataTableUtil.extractBigDecimalForColumnName(row, COLUMNNAME_PointsSum_Invoiceable);
-		assertThat(commissionShare.getPointsSum_Invoiceable()).isEqualTo(invoiceable);
+		//C_Commission_Share.C_LicenseFeeSettingsLine_ID
+		{
+			final String licenseFeeSettingsLineIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_C_LicenseFeeSettingsLine_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(licenseFeeSettingsLineIdentifier))
+			{
+				final I_C_LicenseFeeSettingsLine licenseFeeSettingsLine = licenseFeeSettingsLineTable.get(licenseFeeSettingsLineIdentifier);
+				assertThat(commissionShare.getC_LicenseFeeSettingsLine_ID()).isEqualTo(licenseFeeSettingsLine.getC_LicenseFeeSettings_ID());
+			}
+		}
 
-		final BigDecimal invoiced = DataTableUtil.extractBigDecimalForColumnName(row, COLUMNNAME_PointsSum_Invoiced);
-		assertThat(commissionShare.getPointsSum_Invoiced()).isEqualTo(invoiced);
+		//C_Commission_Share.C_Customer_Trade_Margin_Line_ID
+		{
+			final String marginSettingsIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_C_Customer_Trade_Margin_Line_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(marginSettingsIdentifier))
+			{
+				final I_C_Customer_Trade_Margin_Line customerTradeMarginLine = customerTradeMarginLineTable.get(marginSettingsIdentifier);
+				assertThat(commissionShare.getC_Customer_Trade_Margin_Line_ID()).isEqualTo(customerTradeMarginLine.getC_Customer_Trade_Margin_Line_ID());
+			}
+		}
 
-		final BigDecimal toSettle = DataTableUtil.extractBigDecimalForColumnName(row, COLUMNNAME_PointsSum_ToSettle);
-		assertThat(commissionShare.getPointsSum_ToSettle()).isEqualTo(toSettle);
+		//C_Commission_Share.C_MediatedCommissionSettingsLine_ID
+		{
+			final String mediatedSettingsLineIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_C_MediatedCommissionSettingsLine_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(mediatedSettingsLineIdentifier))
+			{
+				final I_C_MediatedCommissionSettingsLine mediatedCommissionSettingsLine = mediatedCommissionSettingsLineTable.get(mediatedSettingsLineIdentifier);
+				assertThat(commissionShare.getC_MediatedCommissionSettingsLine_ID()).isEqualTo(mediatedCommissionSettingsLine.getC_MediatedCommissionSettingsLine_ID());
+			}
+		}
 
-		final BigDecimal settled = DataTableUtil.extractBigDecimalForColumnName(row, COLUMNNAME_PointsSum_Settled);
-		assertThat(commissionShare.getPointsSum_Settled()).isEqualTo(settled);
+		//C_Commission_Share.IsSOTrx && C_Commission_Share.IsSimulation
+		{
+			final Boolean isSoTrx = DataTableUtil.extractBooleanForColumnName(row, COLUMNNAME_IsSOTrx);
+			assertThat(commissionShare.isSOTrx()).isEqualTo(isSoTrx);
+
+			final Boolean isSimulation = DataTableUtil.extractBooleanForColumnName(row, I_C_Commission_Share.COLUMNNAME_IsSimulation);
+			assertThat(commissionShare.isSimulation()).isEqualTo(isSimulation);
+		}
+
+		//C_Commission_Share.PointsSum_Forecasted && C_Commission_Share.PointsSum_Invoiceable && C_Commission_Share.PointsSum_Invoiced
+		{
+			final BigDecimal forecasted = DataTableUtil.extractBigDecimalForColumnName(row, COLUMNNAME_PointsSum_Forecasted);
+			assertThat(commissionShare.getPointsSum_Forecasted().stripTrailingZeros()).isEqualTo(forecasted.stripTrailingZeros());
+
+			final BigDecimal invoiceable = DataTableUtil.extractBigDecimalForColumnName(row, COLUMNNAME_PointsSum_Invoiceable);
+			assertThat(commissionShare.getPointsSum_Invoiceable().stripTrailingZeros()).isEqualTo(invoiceable.stripTrailingZeros());
+
+			final BigDecimal invoiced = DataTableUtil.extractBigDecimalForColumnName(row, COLUMNNAME_PointsSum_Invoiced);
+			assertThat(commissionShare.getPointsSum_Invoiced().stripTrailingZeros()).isEqualTo(invoiced.stripTrailingZeros());
+		}
+
+		//C_Commission_Share.PointsSum_ToSettle && C_Commission_Share.PointsSum_Settled
+		{
+			final BigDecimal toSettle = DataTableUtil.extractBigDecimalForColumnName(row, COLUMNNAME_PointsSum_ToSettle);
+			assertThat(commissionShare.getPointsSum_ToSettle()).isEqualTo(toSettle);
+
+			final BigDecimal settled = DataTableUtil.extractBigDecimalForColumnName(row, COLUMNNAME_PointsSum_Settled);
+			assertThat(commissionShare.getPointsSum_Settled()).isEqualTo(settled);
+		}
 
 		final String commissionShareIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Commission_Share_ID + "." + TABLECOLUMN_IDENTIFIER);
 

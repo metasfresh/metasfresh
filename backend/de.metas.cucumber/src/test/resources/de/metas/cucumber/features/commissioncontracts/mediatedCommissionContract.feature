@@ -85,28 +85,31 @@ Feature: Mediated commission
     Then a PurchaseOrder with externalId: '99898' is created after not more than 90 seconds and has values
       | ExternalPurchaseOrderURL     | OPT.C_Order_ID.Identifier |
       | www.ExternalReferenceURL.com | purchaseOrder_1           |
-    And after not more than 30s the order is updated
+    And after not more than 30s the order is found
       | C_Order_ID.Identifier | DocStatus |
       | purchaseOrder_1       | CO        |
     And perform document action
       | DocAction | C_Order_ID.Identifier |
       | RE        | purchaseOrder_1       |
-    And after not more than 30s the order is updated
-      | C_Order_ID.Identifier | OPT.DocBaseType | OPT.DocSubType | DocStatus |
-      | purchaseOrder_1       | POO             | MED            | IP        |
+    And after not more than 30s the order is found
+      | C_Order_ID.Identifier | DocStatus |
+      | purchaseOrder_1       | IP        |
+    And update order
+      | C_Order_ID.Identifier | DocBaseType | DocSubType |
+      | purchaseOrder_1       | POO         | MED        |
     And perform document action
-      | DocAction | OPT.C_Order_ID.Identifier |
-      | CO        | purchaseOrder_1           |
-    And after not more than 30s the order is updated
+      | DocAction | C_Order_ID.Identifier |
+      | CO        | purchaseOrder_1       |
+    And after not more than 30s the order is found
       | C_Order_ID.Identifier | DocStatus |
       | purchaseOrder_1       | CO        |
     And validate created commission instance
-      | C_Commission_Instance_ID.Identifier | OPT.C_Order_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_Order_ID.Identifier | PointsBase_Forecasted | PointsBase_Invoiceable | PointsBase_Invoiced |
-      | commissionInstance_1                | purchaseOrder_1           | mediated_vendor             | transaction_product           | 0                     | 0                      | 20                  |
+      | C_Commission_Instance_ID.Identifier | C_Order_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_Order_ID.Identifier | PointsBase_Forecasted | PointsBase_Invoiceable | PointsBase_Invoiced |
+      | commissionInstance_1                | purchaseOrder_1       | mediated_vendor             | transaction_product           | 0                     | 0                      | 20                  |
     And validate commission deed for commission instance commissionInstance_1
       | C_Commission_Share_ID.Identifier | C_BPartner_SalesRep_ID.Identifier | C_BPartner_Payer_ID.Identifier | C_Flatrate_Term_ID.Identifier | Commission_Product_ID.Identifier | LevelHierarchy | OPT.C_MediatedCommissionSettingsLine.Identifier | IsSOTrx | IsSimulation | PointsSum_Forecasted | PointsSum_Invoiceable | PointsSum_Invoiced | PointsSum_ToSettle | PointsSum_Settled |
-      | commissionShare_1                | mediated_vendor                   | metasfresh                     | mediatedContract_1            | commission_product               | 0              | mediatedSettingsLine_1                          | true    | false        | 0                    | 0                     | 10.00              | 10.00              | 0                 |
-    And validate commission fact commissionShare_1
+      | commissionShare_1                | metasfresh                        | mediated_vendor                | mediatedContract_1            | commission_product               | 0              | mediatedSettingsLine_1                          | true    | false        | 0                    | 0                     | 10.00              | 10.00              | 0                 |
+    And validate commission fact for commissionShare_1
       | OPT.C_Invoice_Candidate_Commission_ID.Identifier | CommissionPoints | Commission_Fact_State |
       | settlement_1                                     | 10.00            | TO_SETTLE             |
       |                                                  | 10.00            | INVOICED              |
@@ -126,9 +129,9 @@ Feature: Mediated commission
       | Invoice.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
       | invoiceSettled_1   | commission_product      | 10.00       | true      |
     And validate commission deed for commission instance commissionInstance_1
-      | C_Commission_Share_ID.Identifier | C_BPartner_SalesRep_ID.Identifier | C_BPartner_Payer_ID.Identifier | C_Flatrate_Term_ID.Identifier | Commission_Product_ID.Identifier | LevelHierarchy | OPT.C_Customer_Trade_Margin_Line_ID.Identifier | IsSOTrx | IsSimulation | PointsSum_Forecasted | PointsSum_Invoiceable | PointsSum_Invoiced | PointsSum_ToSettle | PointsSum_Settled |
-      | commissionShare_1                | mediated_vendor                   | metasfresh                     | mediatedContract_1            | commission_product               | 0              | mediatedSettingsLine_1                         | true    | false        | 0                    | 0                     | 10.00              | 0                  | 10.00             |
-    And validate commission fact commissionShare_1
+      | C_Commission_Share_ID.Identifier | C_BPartner_SalesRep_ID.Identifier | C_BPartner_Payer_ID.Identifier | C_Flatrate_Term_ID.Identifier | Commission_Product_ID.Identifier | LevelHierarchy | OPT.C_MediatedCommissionSettingsLine_ID.Identifier | IsSOTrx | IsSimulation | PointsSum_Forecasted | PointsSum_Invoiceable | PointsSum_Invoiced | PointsSum_ToSettle | PointsSum_Settled |
+      | commissionShare_1                | metasfresh                        | mediated_vendor                | mediatedContract_1            | commission_product               | 0              | mediatedSettingsLine_1                             | true    | false        | 0                    | 0                     | 10.00              | 0                  | 10.00             |
+    And validate commission fact for commissionShare_1
       | OPT.C_Invoice_Candidate_Commission_ID.Identifier | CommissionPoints | Commission_Fact_State |
       | settlement_1                                     | 10.00            | SETTLED               |
       | settlement_1                                     | -10.00           | TO_SETTLE             |

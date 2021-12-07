@@ -99,15 +99,15 @@ Feature: Hierarchy commission and license fee commission combined
       | order_1          | shipment_1          | invoice_1          |
 
     And validate created commission instance
-      | C_Commission_Instance_ID.Identifier | OPT.C_Order_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_Order_ID.Identifier | PointsBase_Forecasted | PointsBase_Invoiceable | PointsBase_Invoiced |
-      | commissionInstance_1                | order_1                   | customer_1                  | transaction_product           | 0                     | 0                      | 10                  |
+      | C_Commission_Instance_ID.Identifier | C_Order_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_Order_ID.Identifier | PointsBase_Forecasted | PointsBase_Invoiceable | PointsBase_Invoiced |
+      | commissionInstance_1                | order_1               | customer_1                  | transaction_product           | 0                     | 0                      | 10                  |
 
     And validate commission deed for commission instance commissionInstance_1
       | C_Commission_Share_ID.Identifier | C_BPartner_SalesRep_ID.Identifier | C_BPartner_Payer_ID.Identifier | C_Flatrate_Term_ID.Identifier | Commission_Product_ID.Identifier | LevelHierarchy | OPT.C_CommissionSettingsLine_ID.Identifier | OPT.C_LicenseFeeSettingsLine_ID.Identifier | IsSOTrx | IsSimulation | PointsSum_Forecasted | PointsSum_Invoiceable | PointsSum_Invoiced | PointsSum_ToSettle | PointsSum_Settled |
       | commissionShare_1                | salesRep_1                        | metasfresh                     | hierarchyContract_1           | commission_product               | 0              | hierarchySettingsLine_1                    |                                            | false   | false        | 0                    | 0                     | 1.00               | 1.00               | 0                 |
       | commissionShare_2                | super_salesRep                    | metasfresh                     | hierarchyContract_2           | commission_product               | 1              | hierarchySettingsLine_1                    |                                            | false   | false        | 0                    | 0                     | 0.90               | 0.90               | 0                 |
       | commissionShare_3                | metasfresh                        | salesRep_1                     | licenseFeeContract_1          | commission_product               | 0              |                                            | licenseFeeSettingsLine_1                   | true    | false        | 0                    | 0                     | 0.50               | 0.50               | 0                 |
-    And validate commission fact commissionShare_1
+    And validate commission fact for commissionShare_1
       | OPT.C_Invoice_Candidate_Commission_ID.Identifier | CommissionPoints | Commission_Fact_State |
       | settlement_1                                     | 1.00             | TO_SETTLE             |
       |                                                  | 1.00             | INVOICED              |
@@ -115,7 +115,7 @@ Feature: Hierarchy commission and license fee commission combined
       |                                                  | 1.00             | INVOICEABLE           |
       |                                                  | -1.00            | FORECASTED            |
       |                                                  | 1.00             | FORECASTED            |
-    And validate commission fact commissionShare_2
+    And validate commission fact for commissionShare_2
       | OPT.C_Invoice_Candidate_Commission_ID.Identifier | CommissionPoints | Commission_Fact_State |
       | settlement_2                                     | 0.90             | TO_SETTLE             |
       |                                                  | 0.90             | INVOICED              |
@@ -123,7 +123,7 @@ Feature: Hierarchy commission and license fee commission combined
       |                                                  | 0.90             | INVOICEABLE           |
       |                                                  | -0.90            | FORECASTED            |
       |                                                  | 0.90             | FORECASTED            |
-    And validate commission fact commissionShare_3
+    And validate commission fact for commissionShare_3
       | OPT.C_Invoice_Candidate_Commission_ID.Identifier | CommissionPoints | Commission_Fact_State |
       | settlement_3                                     | 0.50             | TO_SETTLE             |
       |                                                  | 0.50             | INVOICED              |
@@ -162,7 +162,7 @@ Feature: Hierarchy commission and license fee commission combined
       | commissionShare_1                | salesRep_1                        | metasfresh                     | hierarchyContract_1           | commission_product               | 0              | hierarchySettingsLine_1                    |                                            | false   | false        | 0                    | 0                     | 1.00               | 0                  | 1.00              |
       | commissionShare_2                | super_salesRep                    | metasfresh                     | hierarchyContract_2           | commission_product               | 1              | hierarchySettingsLine_1                    |                                            | false   | false        | 0                    | 0                     | 0.90               | 0                  | 0.90              |
       | commissionShare_3                | metasfresh                        | salesRep_1                     | licenseFeeContract_1          | commission_product               | 0              |                                            | licenseFeeSettingsLine_1                   | true    | false        | 0                    | 0                     | 0.50               | 0                  | 0.50              |
-    And validate commission fact commissionShare_1
+    And validate commission fact for commissionShare_1
       | OPT.C_Invoice_Candidate_Commission_ID.Identifier | CommissionPoints | Commission_Fact_State |
       | settlement_1                                     | 1.00             | SETTLED               |
       | settlement_1                                     | -1.00            | TO_SETTLE             |
@@ -172,7 +172,7 @@ Feature: Hierarchy commission and license fee commission combined
       |                                                  | 1.00             | INVOICEABLE           |
       |                                                  | -1.00            | FORECASTED            |
       |                                                  | 1.00             | FORECASTED            |
-    And validate commission fact commissionShare_2
+    And validate commission fact for commissionShare_2
       | OPT.C_Invoice_Candidate_Commission_ID.Identifier | CommissionPoints | Commission_Fact_State |
       | settlement_2                                     | 0.90             | SETTLED               |
       | settlement_2                                     | -0.90            | TO_SETTLE             |
@@ -182,7 +182,7 @@ Feature: Hierarchy commission and license fee commission combined
       |                                                  | 0.90             | INVOICEABLE           |
       |                                                  | -0.90            | FORECASTED            |
       |                                                  | 0.90             | FORECASTED            |
-    And validate commission fact commissionShare_3
+    And validate commission fact for commissionShare_3
       | OPT.C_Invoice_Candidate_Commission_ID.Identifier | CommissionPoints | Commission_Fact_State |
       | settlement_3                                     | 0.50             | SETTLED               |
       | settlement_3                                     | -0.50            | TO_SETTLE             |
@@ -255,15 +255,15 @@ Feature: Hierarchy commission and license fee commission combined
       | order_1          | shipment_1          | invoice_1          |
 
     And validate created commission instance
-      | C_Commission_Instance_ID.Identifier | OPT.C_Order_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_Order_ID.Identifier | PointsBase_Forecasted | PointsBase_Invoiceable | PointsBase_Invoiced |
-      | commissionInstance_1                | order_1                   | customer_salesRep_1         | transaction_product           | 0                     | 0                      | 10                  |
+      | C_Commission_Instance_ID.Identifier | C_Order_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_Order_ID.Identifier | PointsBase_Forecasted | PointsBase_Invoiceable | PointsBase_Invoiced |
+      | commissionInstance_1                | order_1               | customer_salesRep_1         | transaction_product           | 0                     | 0                      | 10                  |
     And validate commission deed for commission instance commissionInstance_1
       | C_Commission_Share_ID.Identifier | C_BPartner_SalesRep_ID.Identifier | C_BPartner_Payer_ID.Identifier | C_Flatrate_Term_ID.Identifier | Commission_Product_ID.Identifier | LevelHierarchy | OPT.C_CommissionSettingsLine_ID.Identifier | OPT.C_LicenseFeeSettingsLine_ID.Identifier | IsSOTrx | IsSimulation | PointsSum_Forecasted | PointsSum_Invoiceable | PointsSum_Invoiced | PointsSum_ToSettle | PointsSum_Settled |
       | commissionShare_so               | metasfresh                        | customer_salesRep_1            | licenseFeeContract_1          | commission_product               | 0              |                                            | licenseFeeSettingsLine_1                   | true    | false        | 0                    | 0                     | 0.50               | 0.50               | 0                 |
       | commissionShare_po               | customer_salesRep_1               | metasfresh                     | hierarchyContract_own_rev_1   | commission_product               | 0              | hierarchySettingsLine_own_rev_1            |                                            | false   | false        | 0                    | 0                     | 0                  | 0                  | 0                 |
-    And validate commission fact commissionShare_po
+    And validate commission fact for commissionShare_po
       | OPT.C_Invoice_Candidate_Commission_ID.Identifier | CommissionPoints | Commission_Fact_State |
-    And validate commission fact commissionShare_so
+    And validate commission fact for commissionShare_so
       | OPT.C_Invoice_Candidate_Commission_ID.Identifier | CommissionPoints | Commission_Fact_State |
       | settlement_so                                    | 0.50             | TO_SETTLE             |
       |                                                  | 0.50             | INVOICED              |
@@ -292,9 +292,9 @@ Feature: Hierarchy commission and license fee commission combined
       | C_Commission_Share_ID.Identifier | C_BPartner_SalesRep_ID.Identifier | C_BPartner_Payer_ID.Identifier | C_Flatrate_Term_ID.Identifier | Commission_Product_ID.Identifier | LevelHierarchy | OPT.C_CommissionSettingsLine_ID.Identifier | OPT.C_LicenseFeeSettingsLine_ID.Identifier | IsSOTrx | IsSimulation | PointsSum_Forecasted | PointsSum_Invoiceable | PointsSum_Invoiced | PointsSum_ToSettle | PointsSum_Settled |
       | commissionShare_so               | metasfresh                        | customer_salesRep_1            | licenseFeeContract_1          | commission_product               | 0              |                                            | licenseFeeSettingsLine_1                   | true    | false        | 0                    | 0                     | 0.50               | 0                  | 0.50              |
       | commissionShare_po               | customer_salesRep_1               | metasfresh                     | hierarchyContract_own_rev_1   | commission_product               | 0              | hierarchySettingsLine_own_rev_1            |                                            | false   | false        | 0                    | 0                     | 0                  | 0                  | 0                 |
-    And validate commission fact commissionShare_po
+    And validate commission fact for commissionShare_po
       | C_Commission_Fact_ID.Identifier | OPT.C_Invoice_Candidate_Commission_ID.Identifier | CommissionPoints | Commission_Fact_State |
-    And validate commission fact commissionShare_so
+    And validate commission fact for commissionShare_so
       | OPT.C_Invoice_Candidate_Commission_ID.Identifier | CommissionPoints | Commission_Fact_State |
       | settlement_so                                    | 0.50             | SETTLED               |
       | settlement_so                                    | -0.50            | TO_SETTLE             |

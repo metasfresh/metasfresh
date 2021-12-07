@@ -3,14 +3,14 @@ de.metas.contracts.commission.licensefee.LicenseFeeSettingsConfigFactoryTest.giv
     {
       "licenseFeeContract" : {
         "@type" : "LicenseFeeContract",
-        "id" : 100005,
-        "contractOwnerBPartnerId" : 100001,
+        "id" : 100004,
+        "contractOwnerBPartnerId" : 2,
         "simulation" : false
       },
       "commissionProductId" : 103,
       "commissionPercent" : 10,
       "pointsPrecision" : 2,
-      "licenseFeeSettingsLineId" : 100003
+      "licenseFeeSettingsLineId" : 100002
     }
   ]
 ]

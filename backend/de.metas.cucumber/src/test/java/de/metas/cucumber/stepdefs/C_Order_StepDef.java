@@ -234,37 +234,43 @@ public class C_Order_StepDef
 		validateOrder(row);
 	}
 
-	@And("^after not more than (.*)s the order is updated$")
-	public void update_order(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
+	@And("update order")
+	public void update_order(@NonNull final DataTable dataTable) throws InterruptedException
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+		for (final Map<String, String> tableRow : tableRows)
+		{
+			final String orderIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_C_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final I_C_Order order = orderTable.get(orderIdentifier);
+
+			final String docBaseType = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_DocBaseType);
+			final String docSubType = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_DocSubType);
+
+			final DocTypeQuery docTypeQuery = DocTypeQuery.builder()
+					.docBaseType(docBaseType)
+					.docSubType(docSubType)
+					.adClientId(order.getAD_Client_ID())
+					.adOrgId(order.getAD_Org_ID())
+					.build();
+
+			final DocTypeId docTypeId = docTypeDAO.getDocTypeId(docTypeQuery);
+
+			order.setC_DocType_ID(docTypeId.getRepoId());
+			order.setC_DocTypeTarget_ID(docTypeId.getRepoId());
+
+			InterfaceWrapperHelper.saveRecord(order);
+
+			orderTable.putOrReplace(orderIdentifier, order);
+		}
+	}
+
+	@And("^after not more than (.*)s the order is found$")
+	public void lookup_order(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
 	{
 		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
 		for (final Map<String, String> tableRow : tableRows)
 		{
 			StepDefUtil.tryAndWait(timeoutSec, 500, () -> retrieveOrder(tableRow));
-
-			final String orderIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_C_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_C_Order order = orderTable.get(orderIdentifier);
-
-			final String docBaseType = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_DocBaseType);
-			final String docSubType = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_DocSubType);
-
-			if (Check.isNotBlank(docBaseType) && Check.isNotBlank(docSubType))
-			{
-				final DocTypeQuery docTypeQuery = DocTypeQuery.builder()
-						.docBaseType(docBaseType)
-						.docSubType(docSubType)
-						.adClientId(order.getAD_Client_ID())
-						.adOrgId(order.getAD_Org_ID())
-						.build();
-
-				final DocTypeId docTypeId = docTypeDAO.getDocTypeId(docTypeQuery);
-
-				order.setC_DocType_ID(DocTypeId.toRepoId(docTypeId));
-
-				InterfaceWrapperHelper.saveRecord(order);
-
-				orderTable.putOrReplace(orderIdentifier, order);
-			}
 		}
 	}
 
