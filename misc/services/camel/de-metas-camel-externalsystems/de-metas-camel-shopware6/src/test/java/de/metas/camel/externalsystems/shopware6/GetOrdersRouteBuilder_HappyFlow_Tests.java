@@ -22,6 +22,7 @@
 
 package de.metas.camel.externalsystems.shopware6;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.google.common.collect.ImmutableMap;
@@ -30,18 +31,18 @@ import de.metas.camel.externalsystems.common.PInstanceLogger;
 import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.camel.externalsystems.common.v2.BPUpsertCamelRequest;
 import de.metas.camel.externalsystems.shopware6.api.ShopwareClient;
-import de.metas.camel.externalsystems.shopware6.api.model.Shopware6QueryRequest;
 import de.metas.camel.externalsystems.shopware6.api.model.country.JsonCountry;
 import de.metas.camel.externalsystems.shopware6.api.model.customer.JsonCustomerGroups;
+import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrder;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderAddress;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderAddressAndCustomId;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderLines;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderTransactions;
-import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrders;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonPaymentMethod;
 import de.metas.camel.externalsystems.shopware6.api.model.order.OrderCandidate;
 import de.metas.camel.externalsystems.shopware6.currency.CurrencyInfoProvider;
 import de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder;
+import de.metas.camel.externalsystems.shopware6.order.ImportOrdersRequest;
 import de.metas.camel.externalsystems.shopware6.order.ImportOrdersRouteContext;
 import de.metas.camel.externalsystems.shopware6.order.OrderQueryHelper;
 import de.metas.camel.externalsystems.shopware6.order.processor.GetOrdersProcessor;
@@ -76,6 +77,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -83,6 +85,7 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
+import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.JSON_NODE_DATA;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.SHOPWARE6_SYSTEM_NAME;
 import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_BPARTNER_UPSERT;
@@ -176,7 +179,7 @@ public class GetOrdersRouteBuilder_HappyFlow_Tests extends CamelTestSupport
 	@Test
 	void happyFlow() throws Exception
 	{
-		final MockUpsertBPartnerProcessor createdBPartnerProcessor = new MockUpsertBPartnerProcessor();
+		final MockUpsertBPartnerProcessor createdBPartnerProcessor = new MockUpsertBPartnerProcessor(JSON_UPSERT_BPARTNER_RESPONSE);
 		final MockSuccessfullyCreatedOLCandProcessor successfullyCreatedOLCandProcessor = new MockSuccessfullyCreatedOLCandProcessor();
 		final MockSuccessfullyClearOrdersProcessor successfullyClearOrdersProcessor = new MockSuccessfullyClearOrdersProcessor();
 		final MockSuccessfullyCreatePaymentProcessor createPaymentProcessor = new MockSuccessfullyCreatePaymentProcessor();
@@ -331,14 +334,24 @@ public class GetOrdersRouteBuilder_HappyFlow_Tests extends CamelTestSupport
 			final ObjectMapper mapper = new ObjectMapper();
 			mapper.registerModule(new JavaTimeModule());
 
-			final InputStream ordersIS = GetOrdersRouteBuilder_HappyFlow_Tests.class.getResourceAsStream(JSON_ORDERS_RESOURCE_PATH);
-			final JsonOrders jsonOrders = mapper.readValue(ordersIS, JsonOrders.class);
+			final InputStream root = GetOrdersRouteBuilder_HappyFlow_zeroTax_Tests.class.getResourceAsStream(JSON_ORDERS_RESOURCE_PATH);
+			final JsonNode rootNode = mapper.readValue(root, JsonNode.class);
+			final JsonNode arrayJsonNode = rootNode.get(JSON_NODE_DATA);
 
-			final List<OrderCandidate> orderCandidates = jsonOrders
-					.getData()
-					.stream()
-					.map(order -> OrderCandidate.builder().jsonOrder(order).salesRepId(SALES_REP_IDENTIFIER).build())
-					.collect(Collectors.toList());
+			final List<OrderCandidate> orderCandidates = new ArrayList<>();
+
+			for (final JsonNode orderNode : arrayJsonNode)
+			{
+				final JsonOrder order = mapper.treeToValue(orderNode, JsonOrder.class);
+
+				final OrderCandidate orderCandidate = OrderCandidate.builder()
+						.jsonOrder(order)
+						.orderNode(orderNode)
+						.salesRepId(SALES_REP_IDENTIFIER)
+						.build();
+
+				orderCandidates.add(orderCandidate);
+			}
 
 			// mock shopware client
 			final ShopwareClient shopwareClient = prepareShopwareClientMock(mapper);
@@ -348,10 +361,9 @@ public class GetOrdersRouteBuilder_HappyFlow_Tests extends CamelTestSupport
 					.currencyId2IsoCode(ImmutableMap.of(MOCK_CURRENCY_ID, MOCK_EUR_CODE))
 					.build();
 
-			final Shopware6QueryRequest queryRequest = OrderQueryHelper.buildShopware6QueryRequest(externalSystemRequest);
+			final ImportOrdersRequest importOrdersRequest = OrderQueryHelper.buildShopware6QueryRequest(externalSystemRequest);
 
-			final ImportOrdersRouteContext ordersContext = new GetOrdersProcessor(Mockito.mock(ProcessLogger.class), Mockito.mock(ProducerTemplate.class))
-					.buildContext(externalSystemRequest, shopwareClient, currencyInfoProvider, queryRequest);
+			final ImportOrdersRouteContext ordersContext = GetOrdersProcessor.buildContext(externalSystemRequest, shopwareClient, currencyInfoProvider, importOrdersRequest.isIgnoreNextImportTimestamp());
 
 			exchange.getIn().setBody(orderCandidates);
 			exchange.setProperty(ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT, ordersContext);
@@ -431,13 +443,20 @@ public class GetOrdersRouteBuilder_HappyFlow_Tests extends CamelTestSupport
 
 	protected static class MockUpsertBPartnerProcessor implements Processor
 	{
+		private final String upsertBPartnerMockResponse;
+
 		protected int called = 0;
+
+		public MockUpsertBPartnerProcessor(@NonNull final String upsertBPartnerMockResponse)
+		{
+			this.upsertBPartnerMockResponse = upsertBPartnerMockResponse;
+		}
 
 		@Override
 		public void process(final Exchange exchange)
 		{
 			called++;
-			final InputStream upsertBPartnerResponse = GetOrdersRouteBuilder_HappyFlow_Tests.class.getResourceAsStream(JSON_UPSERT_BPARTNER_RESPONSE);
+			final InputStream upsertBPartnerResponse = GetOrdersRouteBuilder_HappyFlow_Tests.class.getResourceAsStream(upsertBPartnerMockResponse);
 			exchange.getIn().setBody(upsertBPartnerResponse);
 		}
 	}

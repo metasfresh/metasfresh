@@ -20,36 +20,19 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.shopware6.api.model;
+package de.metas.camel.externalsystems.shopware6.common;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.Builder;
 import lombok.NonNull;
-import lombok.Singular;
 import lombok.Value;
 
-import javax.annotation.Nullable;
-import java.util.List;
-
 @Value
-@JsonDeserialize(builder = MultiQueryRequest.MultiQueryRequestBuilder.class)
-public class MultiQueryRequest implements Shopware6QueryRequest
+@Builder
+public class ExternalIdentifier
 {
 	@NonNull
-	@JsonProperty("filter")
-	List<MultiJsonFilter> filterList;
+	String identifier;
 
-	@JsonIgnore
-	Boolean isQueryByDate;
-
-	@Builder
-	public MultiQueryRequest(
-			@NonNull @Singular @JsonProperty("filter") final List<MultiJsonFilter> filters,
-			@Nullable final Boolean isQueryByDate)
-	{
-		this.filterList = filters;
-		this.isQueryByDate = isQueryByDate;
-	}
+	@NonNull
+	String rawValue;
 }
