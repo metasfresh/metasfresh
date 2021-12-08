@@ -6,7 +6,9 @@ export const BAD_GATEWAY_ERROR = 'badGateway';
 
 /**
  * @constant
- * @type {string} Type of errorType when no error is present (internet down)
+ * @type {string} Type of errorType when no error is present (internet down).
+ * Note: do not change this to another value because this matches the key in the translation messages (as it comes from the BE).
+ *       (see ErrorScreen component for more details)
  */
 export const NO_CONNECTION_ERROR = 'noStatus';
 
