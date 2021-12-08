@@ -312,7 +312,7 @@ export function updateDataFieldProperty(property, item, scope) {
   };
 }
 
-export function noConnection({ errorType }) {
+export function connectionError({ errorType }) {
   return {
     type: CONNECTION_ERROR,
     errorType,

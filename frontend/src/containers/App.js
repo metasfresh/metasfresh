@@ -16,7 +16,7 @@ import {
   setLanguages,
 } from '../actions/AppActions';
 import { getAvailableLang } from '../api';
-import { noConnection } from '../actions/WindowActions';
+import { connectionError } from '../actions/WindowActions';
 // import PluginsRegistry from '../services/PluginsRegistry';
 import { useAuth } from '../hooks/useAuth';
 import useConstructor from '../hooks/useConstructor';
@@ -73,7 +73,7 @@ const App = () => {
         }
 
         if (!error || !error.response || !error.response.status) {
-          dispatch(noConnection({ errorType: NO_CONNECTION_ERROR }));
+          dispatch(connectionError({ errorType: NO_CONNECTION_ERROR }));
         }
 
         /*
@@ -131,7 +131,7 @@ const App = () => {
         } else if (error.response.status == 502) {
           return; // silent erorr for 502 bad gateway (otherwise we will get a bunch of notif from the retries)
         } else if (error.response.status == 503) {
-          dispatch(noConnection({ errorType: NO_CONNECTION_ERROR }));
+          dispatch(connectionError({ errorType: NO_CONNECTION_ERROR }));
         } else if (error.response.status != 404) {
           if (auth.isLoggedIn) {
             const errorMessenger = (code) => {
