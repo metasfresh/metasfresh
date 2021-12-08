@@ -2,7 +2,7 @@ import counterpart from 'counterpart';
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { checkLoginRequest } from '../../api/login';
-import { PING_INTERVAL_BAD_GATEWAY } from '../../constants/Constants';
+import { CONNECTION_ERROR_RETRY_INTERVAL_MILLIS } from '../../constants/Constants';
 class ErrorScreen extends Component {
   constructor(props) {
     super(props);
@@ -22,7 +22,10 @@ class ErrorScreen extends Component {
   componentDidMount() {
     const { errorType } = this.props;
     if (errorType === 'badGateway') {
-      this.intervalId = setInterval(this.pingServer, PING_INTERVAL_BAD_GATEWAY);
+      this.intervalId = setInterval(
+        this.pingServer,
+        CONNECTION_ERROR_RETRY_INTERVAL_MILLIS
+      );
     }
   }
 
