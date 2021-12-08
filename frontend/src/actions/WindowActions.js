@@ -45,7 +45,6 @@ import {
   RESET_PRINTING_OPTIONS,
   TOGGLE_PRINTING_OPTION,
   SET_SPINNER,
-  BAD_GATEWAY,
 } from '../constants/ActionTypes';
 import { createView } from './ViewActions';
 import { PROCESS_NAME } from '../constants/Constants';

@@ -108,7 +108,7 @@ const initialModalState = {
  * - inlineTab keys ${windowId}_{$tabId}_${rowId}
  */
 export const initialState = {
-  connectionError: '',
+  errorType: '',
   showSpinner: false,
   printingOptions: {},
   // TODO: this should be moved to a separate `modalHandler`
@@ -317,7 +317,7 @@ export default function windowHandler(state = initialState, action) {
     case CONNECTION_ERROR:
       return {
         ...state,
-        connectionError: action.errorType,
+        errorType: action.errorType,
       };
     case OPEN_MODAL:
       return {

@@ -1,12 +1,12 @@
 /**
  * @constant
- * @type {string} Type of `connectionError` to be used in the redux store when we receive 502 error from the server.
+ * @type {string} Type of `errorType` to be used in the redux store when we receive 502 error from the server.
  */
 export const BAD_GATEWAY_ERROR = 'badGateway';
 
 /**
  * @constant
- * @type {string} Type of connectionError when no error is present (internet down)
+ * @type {string} Type of errorType when no error is present (internet down)
  */
 export const NO_CONNECTION_ERROR = 'noStatus';
 
