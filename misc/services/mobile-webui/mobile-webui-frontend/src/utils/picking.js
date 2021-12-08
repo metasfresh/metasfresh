@@ -1,9 +1,7 @@
-export const getPickFrom = (props) => {
-  const { stepProps, altStepId } = props;
+export const getPickFrom = ({ stepProps, altStepId }) => {
   return altStepId ? stepProps.pickFromAlternatives[altStepId] : stepProps.mainPickFrom;
 };
 
-export const getQtyToPick = (props) => {
-  const { stepProps, altStepId } = props;
-  return altStepId ? getPickFrom(props).qtyToPick : stepProps.qtyToPick;
+export const getQtyToPick = ({ stepProps, altStepId }) => {
+  return altStepId ? getPickFrom({ stepProps, altStepId }).qtyToPick : stepProps.qtyToPick;
 };
