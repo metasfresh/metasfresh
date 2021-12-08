@@ -21,7 +21,7 @@ class ErrorScreen extends Component {
 
   componentDidMount() {
     const { errorType } = this.props;
-    if (errorType === 'badGateway') {
+    if (errorType) {
       this.intervalId = setInterval(
         this.pingServer,
         CONNECTION_ERROR_RETRY_INTERVAL_MILLIS
