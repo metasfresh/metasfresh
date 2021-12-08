@@ -981,7 +981,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		}
 		catch (final Exception e)
 		{
-			if (icRecord.getC_Tax_ID() < 0)
+			if (icRecord.getC_Tax_ID() <= 0)
 			{
 				icRecord.setC_Tax_ID(Tax.C_TAX_ID_NO_TAX_FOUND); // make sure that we will be able to save the icRecord
 			}
