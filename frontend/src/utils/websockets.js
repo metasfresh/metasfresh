@@ -62,15 +62,17 @@ export function connectWS(topic, onMessageCallback) {
               reconnectCounter += 1;
             });
         }
-        // update the store flag
-        badGatewayStatus &&
-          store.dispatch(noConnection({ errorType: BAD_GATEWAY_ERROR }));
 
         // -- if more than max allowed reconnect times  ->  deactivate
         if (reconnectCounter > maxReconnectTimesNo) {
           this.reconnectDelay = 0; // 0 - deactivates the sockClient
-          !badGatewayStatus &&
-            store.dispatch(noConnection({ errorType: NO_CONNECTION_ERROR }));
+          store.dispatch(
+            noConnection({
+              errorType: badGatewayStatus
+                ? BAD_GATEWAY_ERROR
+                : NO_CONNECTION_ERROR,
+            })
+          );
         }
       },
       reconnectDelay: 5000,
