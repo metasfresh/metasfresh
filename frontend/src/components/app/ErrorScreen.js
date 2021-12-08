@@ -3,15 +3,12 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { checkLoginRequest } from '../../api/login';
 import { CONNECTION_ERROR_RETRY_INTERVAL_MILLIS } from '../../constants/Constants';
-import {
-  getCurrentActiveLocale,
-  extractLanguageFromLocale,
-} from '../../utils/locale';
+import { getCurrentActiveLanguage } from '../../utils/locale';
 class ErrorScreen extends Component {
   constructor(props) {
     super(props);
     this.intervalId = null;
-    this.activeLang = extractLanguageFromLocale(getCurrentActiveLocale());
+    this.activeLang = getCurrentActiveLanguage();
   }
 
   pingServer = async () => {

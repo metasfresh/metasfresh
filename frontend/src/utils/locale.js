@@ -33,6 +33,10 @@ export function extractLanguageFromLocale(locale) {
   }
 }
 
+export function getCurrentActiveLanguage() {
+  return extractLanguageFromLocale(getCurrentActiveLocale());
+}
+
 export function setCurrentActiveLocale(lang) {
   localStorage.setItem(LOCAL_LANG, lang);
 
