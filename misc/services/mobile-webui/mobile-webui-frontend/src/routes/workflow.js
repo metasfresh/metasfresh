@@ -1,7 +1,7 @@
 import WFProcessScreen from '../containers/wfProcessScreen/WFProcessScreen';
 import { push } from 'connected-react-router';
 
-export const getWFProcessScreenLocation = ({ wfProcessId }) => `/workflow${wfProcessId}`;
+export const getWFProcessScreenLocation = ({ wfProcessId }) => `/workflow/${wfProcessId}`;
 
 export const gotoWFProcessScreen = ({ wfProcess }) => {
   return (dispatch) => {

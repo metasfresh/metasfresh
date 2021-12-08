@@ -39,14 +39,15 @@ class LineScreen extends PureComponent {
 }
 
 const mapStateToProps = (state, ownProps) => {
-  const { workflowId: wfProcessId, activityId, lineId } = ownProps.match.params;
+  const { workflowId: wfProcessId, activityId, lineId, appId } = ownProps.match.params;
   const wfProcess = selectWFProcessFromState(state, wfProcessId);
   const activity = wfProcess && wfProcess.activities ? wfProcess.activities[activityId] : null;
 
   const lineProps = activity != null ? activity.dataStored.lines[lineId] : null;
   const stepsById = lineProps != null && lineProps.steps ? lineProps.steps : {};
 
-  const appId = state.applications.activeApplication ? state.applications.activeApplication.id : null;
+  // for case when we load the app and routes, `appId` is not given yet
+  const stateAppId = state.applications.activeApplication ? state.applications.activeApplication.id : null;
 
   // TODO: handle the case when we didn't find the wfProcess or activity or line
   // usually that happens when the workflow process is no longer in the state because:
@@ -65,7 +66,7 @@ const mapStateToProps = (state, ownProps) => {
     steps: Object.values(stepsById),
     componentType: activity.componentType,
     lineProps,
-    appId,
+    appId: appId || stateAppId,
   };
 };
 
