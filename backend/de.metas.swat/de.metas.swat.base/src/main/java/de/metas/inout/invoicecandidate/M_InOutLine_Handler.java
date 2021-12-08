@@ -47,7 +47,6 @@ import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.IPricingResult;
-import de.metas.pricing.exceptions.ProductNotOnPriceListException;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
 import de.metas.product.acct.api.ActivityId;
@@ -68,7 +67,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.SpringContextHolder;
@@ -283,12 +281,6 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		return ZERO;
 	}
 
-	@VisibleForTesting
-	enum Mode
-	{
-		CREATE, UPDATE
-	}
-
 	@Nullable
 	private I_C_Invoice_Candidate createInvoiceCandidateForInOutLineOrNull(
 			@NonNull final I_M_InOutLine inOutLineRecord,
@@ -352,7 +344,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 
 		//
 		// Pricing Informations
-		org.compiere.model.I_M_InOutLine inOutLineRecordToUse = inOutLineRecord.getReturn_Origin_InOutLine_ID() > 0 ? inOutLineRecord.getReturn_Origin_InOutLine() : inOutLineRecord;
+		final org.compiere.model.I_M_InOutLine inOutLineRecordToUse = inOutLineRecord.getReturn_Origin_InOutLine_ID() > 0 ? inOutLineRecord.getReturn_Origin_InOutLine() : inOutLineRecord;
 		calculatePriceAndQuantityAndUpdate(icRecord, inOutLineRecordToUse);
 		
 		//
@@ -444,6 +436,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		return icRecord;
 	}
 
+	@Nullable
 	private DocTypeId extractDocTypeId(final I_M_InOutLine inOutLineRecord)
 	{
 		final ILoggable loggable = Loggables.withLogger(logger, Level.DEBUG);
@@ -494,8 +487,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		final DocTypeId orderDocTypeId = CoalesceUtil.coalesceSuppliers(
 				() -> DocTypeId.ofRepoIdOrNull(order.getC_DocType_ID()),
 				() -> DocTypeId.ofRepoId(order.getC_DocTypeTarget_ID()));
-		final I_C_DocType orderDocType = docTypeBL.getById(orderDocTypeId);
-		return orderDocType;
+		return docTypeBL.getById(orderDocTypeId);
 	}
 
 	@Override
@@ -548,7 +540,6 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 	/**
 	 * Qty Sign Multiplier
 	 *
-	 * @param ic
 	 * @return <ul>
 	 * <li>+1 on regular shipment/receipt
 	 * <li>-1 on material returns
@@ -586,7 +577,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 
 	private void setOrderedData(
 			@NonNull final I_C_Invoice_Candidate icRecord,
-			@Nullable BigDecimal forcedQtyOrdered,
+			@Nullable final BigDecimal forcedQtyOrdered,
 			final boolean callerCanCreateAdditionalICs)
 	{
 		final I_M_InOutLine inOutLine = getM_InOutLine(icRecord);
@@ -692,7 +683,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		final List<I_C_Invoice_Candidate> icsForPackagingInOutLine = Services.get(IInvoiceCandDAO.class).retrieveInvoiceCandidatesForInOutLine(packagingInOutLine);
 		for (final I_C_Invoice_Candidate currentIcForPackagingInOutLine : icsForPackagingInOutLine)
 		{
-			boolean currentIcIsTheGivenIc = currentIcForPackagingInOutLine.getC_Invoice_Candidate_ID() == ic.getC_Invoice_Candidate_ID();
+			final boolean currentIcIsTheGivenIc = currentIcForPackagingInOutLine.getC_Invoice_Candidate_ID() == ic.getC_Invoice_Candidate_ID();
 			if (currentIcIsTheGivenIc)
 			{
 				continue;
@@ -717,6 +708,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 				|| PaymentTermId.equals(paymentTermIdOfInOutLine, paymentTermId);
 	}
 
+	@Nullable
 	@VisibleForTesting
 	static PaymentTermId extractPaymentTermIdOrNull(@NonNull final I_M_InOutLine inOutLine)
 	{
