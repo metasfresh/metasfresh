@@ -3,7 +3,8 @@ import PropTypes from 'prop-types';
 import counterpart from 'counterpart';
 import deepForceUpdate from 'react-deep-force-update';
 import { connect } from 'react-redux';
-import offlineMessages from '../utils/offlineMessages';
+import offline_de from '../utils/offlineTranslations/offline_de.js';
+import offline_en from '../utils/offlineTranslations/offline_en.js';
 import { getMessages } from '../actions/AppActions';
 
 // Fake singleton
@@ -11,6 +12,12 @@ let INSTANCE = null;
 
 class Translation extends Component {
   static getMessages = () => {
+    const offlineMessages = {
+      offline: {
+        de: offline_de,
+        en: offline_en,
+      },
+    };
     counterpart.registerTranslations('lang', offlineMessages);
 
     return getMessages().then((response) => {
