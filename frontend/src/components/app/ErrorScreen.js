@@ -47,21 +47,24 @@ class ErrorScreen extends Component {
 
   render() {
     const { errorType } = this.props;
-    let line1 = counterpart.translate(`window.error.${errorType}.title`, {
+    const title = counterpart.translate(`window.error.${errorType}.title`, {
       fallback: counterpart.translate(
         `offline.${this.activeLang}.${errorType}.title`
       ),
     });
-    let line2 = counterpart.translate(`window.error.${errorType}.description`, {
-      fallback: counterpart.translate(
-        `offline.${this.activeLang}.${errorType}.description`
-      ),
-    });
+    const description = counterpart.translate(
+      `window.error.${errorType}.description`,
+      {
+        fallback: counterpart.translate(
+          `offline.${this.activeLang}.${errorType}.description`
+        ),
+      }
+    );
 
     return (
       <div className="screen-freeze">
-        <h3>{line1}</h3>
-        <p>{line2}</p>
+        <h3>{title}</h3>
+        <p>{description}</p>
       </div>
     );
   }
