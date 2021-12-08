@@ -35,16 +35,6 @@ class ErrorScreen extends Component {
     this.intervalId && clearInterval(this.intervalId);
   }
 
-  getLineFromCounterpart = (targetLine) => {
-    const { errorType } = this.props;
-    switch (errorType) {
-      case 'badGateway':
-        return counterpart.translate(`window.error.badGateway.${targetLine}`);
-      default:
-        return counterpart.translate(`window.error.noStatus.${targetLine}`);
-    }
-  };
-
   render() {
     const { errorType } = this.props;
     const title = counterpart.translate(`window.error.${errorType}.title`, {
