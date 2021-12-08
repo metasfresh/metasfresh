@@ -8,7 +8,11 @@ import { withRouter } from 'react-router';
 import { postStepUnPicked } from '../../../api/picking';
 import { toastError } from '../../../utils/toast';
 import { getPickFrom, getQtyToPick } from '../../../utils/picking';
-import { pickingStepScreenLocation, pickingLineScreenLocation } from '../../../routes/picking';
+import {
+  pickingStepScreenLocation,
+  pickingLineScreenLocation,
+  pickingStepScanScreenLocation,
+} from '../../../routes/picking';
 import { selectWFProcessFromState } from '../../../reducers/wfProcesses_status';
 import { updatePickingStepQty } from '../../../actions/PickingActions';
 import { pushHeaderEntry } from '../../../actions/HeaderActions';
@@ -76,7 +80,7 @@ class PickStepScreen extends Component {
 
   onScanButtonClick = () => {
     const { push } = this.props;
-    const location = pickingStepScreenLocation(this.props);
+    const location = pickingStepScanScreenLocation(this.props);
 
     push(location);
   };

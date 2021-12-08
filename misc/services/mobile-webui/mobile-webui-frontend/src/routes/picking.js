@@ -1,6 +1,6 @@
 import PickStepScreen from '../containers/activities/picking/PickStepScreen';
 import PickStepScanScreen from '../containers/activities/picking/PickStepScanScreen';
-import LineScreen from '../containers/activities/common/LineScreen';
+import PickLineScreen from '../containers/activities/picking/PickLineScreen';
 
 export const pickingLineScreenLocation = ({ wfProcessId, activityId, lineId }) =>
   `/app/picking/${wfProcessId}/activityId/${activityId}/lineId/${lineId}`;
@@ -12,12 +12,19 @@ export const pickingAltStepScreenLocation = ({ wfProcessId, activityId, lineId, 
   `/app/picking/${wfProcessId}/activityId/${activityId}/lineId/${lineId}/stepId/${stepId}/altStepId/${altStepId}`;
 
 export const pickingStepScanScreenLocation = ({ wfProcessId, activityId, lineId, stepId }) =>
-  `/app/picking/${wfProcessId}/activityId/${activityId}/lineId/${lineId}/stepId/${stepId}/scanner/picking`;
+  `/app/picking/${wfProcessId}/activityId/${activityId}/lineId/${lineId}/stepId/${stepId}/scanner`;
+
+export const pickingAltStepScanScreenLocation = ({ wfProcessId, activityId, lineId, stepId, altStepId }) =>
+  `/app/picking/${wfProcessId}/activityId/${activityId}/lineId/${lineId}/stepId/${stepId}/altStepId/${altStepId}/scanner`;
 
 export const pickingRoutes = [
   {
-    path: pickingLineScreenLocation({ wfProcessId: ':workflowId', activityId: ':activityId', lineId: ':lineId' }),
-    Component: LineScreen,
+    path: pickingLineScreenLocation({
+      wfProcessId: ':workflowId',
+      activityId: ':activityId',
+      lineId: ':lineId',
+    }),
+    Component: PickLineScreen,
   },
   {
     path: pickingStepScreenLocation({
@@ -39,11 +46,22 @@ export const pickingRoutes = [
     Component: PickStepScreen,
   },
   {
-    path: '/app/picking/:workflowId/activityId/:activityId/lineId/:lineId/stepId/:stepId/scanner',
+    path: pickingStepScanScreenLocation({
+      wfProcessId: ':workflowId',
+      activityId: ':activityId',
+      lineId: ':lineId',
+      stepId: ':stepId',
+    }),
     Component: PickStepScanScreen,
   },
   {
-    path: '/workflow/:workflowId/activityId/:activityId/lineId/:lineId/stepId/:stepId/altStepId/:altStepId/scanner/',
+    path: pickingAltStepScanScreenLocation({
+      wfProcessId: ':workflowId',
+      activityId: ':activityId',
+      lineId: ':lineId',
+      stepId: ':stepId',
+      altStepId: ':altStepId',
+    }),
     Component: PickStepScanScreen,
   },
 ];

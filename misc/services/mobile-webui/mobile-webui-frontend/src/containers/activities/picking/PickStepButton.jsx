@@ -26,11 +26,11 @@ class PickStepButton extends PureComponent {
       lineId,
       stepId,
       //
-      stepState: { pickFromAlternatives, uom, qtyToPick, pickFrom },
+      stepState: { pickFromAlternatives, uom, qtyToPick, mainPickFrom },
     } = this.props;
 
     const isAlternative = !pickFromAlternatives;
-    const completeStatus = computePickFromStatus(pickFrom);
+    const completeStatus = computePickFromStatus(mainPickFrom);
 
     return (
       <div className="mt-3">
@@ -41,7 +41,7 @@ class PickStepButton extends PureComponent {
               <div className="rows">
                 <div className="row is-full pl-5">
                   {isAlternative ? 'ALT:' : ''}
-                  {pickFrom.locatorName}
+                  {mainPickFrom.locatorName}
                 </div>
                 <div className="row is-full is-size-7">
                   <div className="picking-row-info">
@@ -51,7 +51,7 @@ class PickStepButton extends PureComponent {
                     </div>
                     <div className="picking-row-picking">{counterpart.translate('activities.picking.picked')}:</div>
                     <div className="picking-row-picked">
-                      {pickFrom.qtyPicked} {uom}
+                      {mainPickFrom.qtyPicked} {uom}
                     </div>
                   </div>
                 </div>

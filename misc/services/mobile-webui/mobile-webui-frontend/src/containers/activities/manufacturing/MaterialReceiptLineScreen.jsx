@@ -7,7 +7,10 @@ import { updateManufacturingReceiptQty, updateManufacturingReceipt } from '../..
 import { pushHeaderEntry } from '../../../actions/HeaderActions';
 import PickQuantityButton from './PickQuantityButton';
 import { toastError } from '../../../utils/toast';
-import { manufacturingLineScreenLocation } from '../../../routes/manufacturing';
+import {
+  manufacturingLineScreenLocation,
+  manufacturingReceiptReceiveTargetScreen,
+} from '../../../routes/manufacturing';
 
 class MaterialReceiptLineScreen extends PureComponent {
   componentDidMount() {
@@ -59,10 +62,9 @@ class MaterialReceiptLineScreen extends PureComponent {
   };
 
   handleClick = () => {
-    const { wfProcessId, activityId, lineId } = this.props;
     const { dispatch } = this.props;
+    const location = manufacturingReceiptReceiveTargetScreen(this.props);
 
-    const location = `/workflow/${wfProcessId}/activityId/${activityId}/lineId/${lineId}/receipt/target`;
     dispatch(push(location));
   };
 

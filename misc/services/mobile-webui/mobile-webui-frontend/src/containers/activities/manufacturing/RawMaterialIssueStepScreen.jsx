@@ -5,7 +5,7 @@ import { push } from 'connected-react-router';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
 
-import { manufacturingStepScreenLocation } from '../../../routes/manufacturing';
+import { manufacturingStepScreenLocation, manufacturingScanScreenLocation } from '../../../routes/manufacturing';
 import * as CompleteStatus from '../../../constants/CompleteStatus';
 import { selectWFProcessFromState } from '../../../reducers/wfProcesses_status';
 import { pushHeaderEntry } from '../../../actions/HeaderActions';
@@ -34,7 +34,7 @@ class RawMaterialIssueStepScreen extends PureComponent {
 
   onScanButtonClick = () => {
     const { push } = this.props;
-    const location = manufacturingStepScreenLocation(this.props);
+    const location = manufacturingScanScreenLocation(this.props);
 
     push(location);
   };

@@ -6,10 +6,7 @@ import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
 
 import { selectWFProcessFromState } from '../../../reducers/wfProcesses_status';
-import {
-  manufacturingReceiptReceiveTargetScreen,
-  manufacturingReceiptNewHUScreen,
-} from '../../../routes/manufacturing';
+import { manufacturingReceiptScanScreenLocation, manufacturingReceiptNewHUScreen } from '../../../routes/manufacturing';
 
 class ReceiptReceiveTargetScreen extends PureComponent {
   handleNewHUClick = () => {
@@ -21,7 +18,7 @@ class ReceiptReceiveTargetScreen extends PureComponent {
 
   handleScanClick = () => {
     const { push } = this.props;
-    const location = manufacturingReceiptReceiveTargetScreen(this.props);
+    const location = manufacturingReceiptScanScreenLocation(this.props);
 
     push(location);
   };

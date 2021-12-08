@@ -3,7 +3,7 @@ import ReceiptNewHUScreen from '../containers/activities/manufacturing/ReceiptNe
 import RawMaterialIssueStepScreen from '../containers/activities/manufacturing/RawMaterialIssueStepScreen';
 import ManufacturingReceiptScanScreen from '../containers/activities/manufacturing/ManufacturingReceiptScanScreen';
 import RawMaterialIssueScanScreen from '../containers/activities/manufacturing/RawMaterialIssueScanScreen';
-import LineScreen from '../containers/activities/common/LineScreen';
+import LineScreen from '../containers/activities/manufacturing/LineScreen';
 
 export const manufacturingLineScreenLocation = ({ wfProcessId, activityId, lineId }) =>
   `/app/mfg/${wfProcessId}/activityId/${activityId}/lineId/${lineId}`;
@@ -14,6 +14,9 @@ export const manufacturingStepScreenLocation = ({ wfProcessId, activityId, lineI
 export const manufacturingScanScreenLocation = ({ wfProcessId, activityId, lineId, stepId }) =>
   `/app/mfg/${wfProcessId}/activityId/${activityId}/lineId/${lineId}/stepId/${stepId}/scanner`;
 
+export const manufacturingReceiptScanScreenLocation = ({ wfProcessId, activityId, lineId }) =>
+  `/app/mfg/${wfProcessId}/activityId/${activityId}/lineId/${lineId}/receipt/scanner`;
+
 export const manufacturingReceiptReceiveTargetScreen = ({ wfProcessId, activityId, lineId }) =>
   `/app/mfg/${wfProcessId}/activityId/${activityId}/lineId/${lineId}/receipt/target`;
 
@@ -22,7 +25,11 @@ export const manufacturingReceiptNewHUScreen = ({ wfProcessId, activityId, lineI
 
 export const manufacturingRoutes = [
   {
-    path: manufacturingLineScreenLocation({ wfProcessId: ':workflowId', activityId: ':activityId', lineId: ':lineId' }),
+    path: manufacturingLineScreenLocation({
+      wfProcessId: ':workflowId',
+      activityId: ':activityId',
+      lineId: ':lineId',
+    }),
     Component: LineScreen,
   },
   {
@@ -43,11 +50,20 @@ export const manufacturingRoutes = [
     Component: ReceiptNewHUScreen,
   },
   {
-    path: '/app/mfg/:workflowId/activityId/:activityId/lineId/:lineId/stepId/receipt/scanner',
+    path: manufacturingReceiptScanScreenLocation({
+      wfProcessId: ':workflowId',
+      activityId: ':activityId',
+      lineId: ':lineId',
+    }),
     Component: ManufacturingReceiptScanScreen,
   },
   {
-    path: '/app/mfg/:workflowId/activityId/:activityId/lineId/:lineId/stepId/:stepId/scanner',
+    path: manufacturingScanScreenLocation({
+      wfProcessId: ':workflowId',
+      activityId: ':activityId',
+      lineId: ':lineId',
+      stepId: ':stepId',
+    }),
     Component: RawMaterialIssueScanScreen,
   },
 ];
