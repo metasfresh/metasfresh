@@ -320,13 +320,6 @@ export function noConnection({ errorType }) {
   };
 }
 
-export function badGateway(status) {
-  return {
-    type: BAD_GATEWAY,
-    status: status,
-  };
-}
-
 export function openModal({
   title = '',
   windowId,
