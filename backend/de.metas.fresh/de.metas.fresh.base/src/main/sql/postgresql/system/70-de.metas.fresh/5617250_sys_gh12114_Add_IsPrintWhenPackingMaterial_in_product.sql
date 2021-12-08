@@ -128,3 +128,20 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=673864
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,673864,0,180,542064,597832,'F',TO_TIMESTAMP('2021-12-06 16:16:38','YYYY-MM-DD HH24:MI:SS'),100,'Bei Aktivierung werden Packmittelprodukte nur dann auf Dokumente gedruckt, wenn sie auch als Packmittel im Auftrag verwendet werden. Anderenfalls werden sie nicht gedruckt.','Bei Aktivierung werden Packmittelprodukte nur dann auf Dokumente gedruckt, wenn sie auch als Packmittel im Auftrag verwendet werden. Anderenfalls werden sie nicht gedruckt.','Y','Y','N','Y','N','N','N',0,'Als Packmittel drucken',30,0,0,TO_TIMESTAMP('2021-12-06 16:16:38','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
+
+
+-- 2021-12-08T11:46:50.021372900Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET DefaultValue='Y',Updated=TO_TIMESTAMP('2021-12-08 13:46:50','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=578884
+;
+
+-- 2021-12-08T11:46:51.999541600Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO t_alter_column values('m_product','IsPrintWhenPackingMaterial','CHAR(1)',null,'Y')
+;
+
+-- 2021-12-08T11:46:52.980693800Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE M_Product SET IsPrintWhenPackingMaterial='Y' WHERE IsPrintWhenPackingMaterial IS NULL
+;
+
