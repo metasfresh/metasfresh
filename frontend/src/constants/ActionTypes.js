@@ -11,7 +11,7 @@ export * from './actions/WindowActions';
  * @constant
  * @type {string} Used to set the connection error type into the store
  */
-export const CONNECTION_ERROR = 'CONNECTION_ERROR ';
+export const CONNECTION_ERROR = 'CONNECTION_ERROR';
 
 /**
  * @constant
