@@ -18,9 +18,9 @@ import logo from '../../assets/images/metasfresh_logo_green_thumb.png';
 
 import RawList from '../widget/List/RawList';
 import PasswordRecovery from './PasswordRecovery';
-import { badGateway } from '../../actions/WindowActions';
+import { noConnection } from '../../actions/WindowActions';
 import {
-  BAD_GATEWAY_EMPTY,
+  NO_CONNECTION_ERROR,
   BAD_GATEWAY_ERROR,
 } from '../../constants/Constants';
 
@@ -157,9 +157,11 @@ class LoginForm extends Component {
 
     request
       .then((response) => {
-        response.data.status === 502
-          ? this.props.dispatch(badGateway(BAD_GATEWAY_ERROR))
-          : this.props.dispatch(badGateway(BAD_GATEWAY_EMPTY));
+        const errorType =
+          response.data.status === 502
+            ? BAD_GATEWAY_ERROR
+            : NO_CONNECTION_ERROR;
+        this.props.dispatch(noConnection({ errorType }));
         if (response.data.loginComplete) {
           return this.handleSuccess();
         }

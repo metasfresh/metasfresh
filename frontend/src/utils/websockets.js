@@ -1,7 +1,7 @@
 import SockJS from 'sockjs-client';
 import { Client } from '@stomp/stompjs';
-import { noConnection, badGateway } from '../actions/WindowActions';
-import { BAD_GATEWAY_ERROR } from '../constants/Constants';
+import { noConnection } from '../actions/WindowActions';
+import { BAD_GATEWAY_ERROR, NO_CONNECTION_ERROR } from '../constants/Constants';
 import store from '../store/store';
 import { getUserSession } from '../api';
 import _ from 'lodash';
@@ -64,12 +64,14 @@ export function connectWS(topic, onMessageCallback) {
             });
         }
         // update the store flag
-        badGatewayStatus && store.dispatch(badGateway(BAD_GATEWAY_ERROR));
+        badGatewayStatus &&
+          store.dispatch(noConnection({ errorType: BAD_GATEWAY_ERROR }));
 
         // -- if more than max allowed reconnect times  ->  deactivate
         if (reconnectCounter > maxReconnectTimesNo) {
           this.reconnectDelay = 0; // 0 - deactivates the sockClient
-          !badGatewayStatus && store.dispatch(noConnection(true));
+          !badGatewayStatus &&
+            store.dispatch(noConnection({ errorType: NO_CONNECTION_ERROR }));
         }
       },
       reconnectDelay: 5000,

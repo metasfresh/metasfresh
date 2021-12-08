@@ -30,7 +30,7 @@ class Login extends PureComponent {
   };
 
   render() {
-    const { auth, splat, token, connectionErrorType } = this.props;
+    const { auth, splat, token, connectionError } = this.props;
     const isYourBrowserSupported = this.browserSupport('chrome');
     const component = <LoginForm {...{ auth, token }} path={splat} />;
 
@@ -45,14 +45,14 @@ class Login extends PureComponent {
             </div>
           )}
         </div>
-        {connectionErrorType && <ErrorScreen errorType={connectionErrorType} />}
+        {connectionError && <ErrorScreen errorType={connectionError} />}
       </div>
     );
   }
 }
 
 const mapStateToProps = (state) => ({
-  connectionErrorType: state.windowHandler.connectionErrorType || '',
+  connectionError: state.windowHandler.connectionError || '',
 });
 
 /**
@@ -64,7 +64,7 @@ Login.propTypes = {
   splat: PropTypes.string,
   token: PropTypes.string,
   auth: PropTypes.object,
-  connectionErrorType: PropTypes.string,
+  connectionError: PropTypes.string,
 };
 
 export default connect(mapStateToProps, null)(Login);

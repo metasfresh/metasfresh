@@ -20,7 +20,7 @@ import {
   INIT_WINDOW,
   INIT_DATA_SUCCESS,
   INIT_LAYOUT_SUCCESS,
-  NO_CONNECTION,
+  CONNECTION_ERROR,
   OPEN_FILTER_BOX,
   OPEN_MODAL,
   OPEN_RAW_MODAL,
@@ -313,10 +313,10 @@ export function updateDataFieldProperty(property, item, scope) {
   };
 }
 
-export function noConnection(status) {
+export function noConnection({ errorType }) {
   return {
-    type: NO_CONNECTION,
-    status: status,
+    type: CONNECTION_ERROR,
+    errorType,
   };
 }
 

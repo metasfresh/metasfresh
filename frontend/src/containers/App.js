@@ -22,7 +22,7 @@ import { useAuth } from '../hooks/useAuth';
 import useConstructor from '../hooks/useConstructor';
 import history from '../services/History';
 import Routes from '../routes';
-
+import { NO_CONNECTION_ERROR } from '../constants/Constants';
 import { generateHotkeys, ShortcutProvider } from '../components/keyshortcuts';
 import Translation from '../components/Translation';
 import NotificationHandler from '../components/notifications/NotificationHandler';
@@ -73,7 +73,7 @@ const App = () => {
         }
 
         if (!error || !error.response || !error.response.status) {
-          dispatch(noConnection(true));
+          dispatch(noConnection({ errorType: NO_CONNECTION_ERROR }));
         }
 
         /*
@@ -131,7 +131,7 @@ const App = () => {
         } else if (error.response.status == 502) {
           return; // silent erorr for 502 bad gateway (otherwise we will get a bunch of notif from the retries)
         } else if (error.response.status == 503) {
-          dispatch(noConnection(true));
+          dispatch(noConnection({ errorType: NO_CONNECTION_ERROR }));
         } else if (error.response.status != 404) {
           if (auth.isLoggedIn) {
             const errorMessenger = (code) => {
