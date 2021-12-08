@@ -16,7 +16,7 @@ class MaterialReceiptLineButton extends PureComponent {
   };
 
   render() {
-    const { caption, uom, qtyCurrent, qtyTarget, completeStatus, appId, lineId, isUserEditable } = this.props;
+    const { caption, uom, qtyCurrent, qtyTarget, completeStatus, lineId, isUserEditable } = this.props;
 
     return (
       <button
@@ -30,7 +30,7 @@ class MaterialReceiptLineButton extends PureComponent {
             qtyCurrent={qtyCurrent}
             qtyTarget={qtyTarget}
             uom={uom}
-            appId={appId}
+            appId="mfg"
             subtypeId="receipts"
           />
         </ButtonWithIndicator>
@@ -51,7 +51,6 @@ MaterialReceiptLineButton.propTypes = {
   uom: PropTypes.string.isRequired,
   qtyCurrent: PropTypes.number.isRequired,
   qtyTarget: PropTypes.number.isRequired,
-  appId: PropTypes.string.isRequired,
   //
   // Actions
   push: PropTypes.func.isRequired,

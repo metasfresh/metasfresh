@@ -2,19 +2,56 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import counterpart from 'counterpart';
 import { push } from 'connected-react-router';
+import { connect } from 'react-redux';
+import { withRouter } from 'react-router';
 
 import { postStepUnPicked } from '../../../api/picking';
-import { updatePickingStepQty } from '../../../actions/PickingActions';
-import ButtonWithIndicator from '../../../components/ButtonWithIndicator';
-import * as CompleteStatus from '../../../constants/CompleteStatus';
 import { toastError } from '../../../utils/toast';
-import { pickingStepScreenLocation } from '../../../routes/picking';
 import { getPickFrom, getQtyToPick } from '../../../utils/picking';
+import { pickingStepScreenLocation, pickingLineScreenLocation } from '../../../routes/picking';
+import { selectWFProcessFromState } from '../../../reducers/wfProcesses_status';
+import { updatePickingStepQty } from '../../../actions/PickingActions';
 import { pushHeaderEntry } from '../../../actions/HeaderActions';
+import * as CompleteStatus from '../../../constants/CompleteStatus';
+
+import ButtonWithIndicator from '../../../components/ButtonWithIndicator';
+import ScreenToaster from '../../../components/ScreenToaster';
 
 class PickStepScreen extends Component {
+  componentDidMount() {
+    const {
+      pushHeaderEntry,
+      stepProps: { mainPickFrom },
+    } = this.props;
+    const location = pickingStepScreenLocation(this.props);
+
+    pushHeaderEntry({
+      location,
+      values: [
+        {
+          caption: counterpart.translate('general.Locator'),
+          value: mainPickFrom.locatorName,
+        },
+      ],
+    });
+  }
+
+  componentWillUnmount() {
+    const { wfProcessId, activityId, lineId, stepId, updatePickingStepQty } = this.props;
+
+    const qtyPicked = getPickFrom(this.props).qtyPicked;
+    qtyPicked === '' &&
+      updatePickingStepQty({
+        wfProcessId,
+        activityId,
+        lineId,
+        stepId,
+        qtyPicked: 0,
+      });
+  }
+
   onUnpickButtonClick = () => {
-    const { wfProcessId, activityId, lineId, stepId, dispatch } = this.props;
+    const { wfProcessId, activityId, lineId, stepId, postStepUnPicked, push, updatePickingStepQty } = this.props;
 
     postStepUnPicked({
       wfProcessId,
@@ -23,60 +60,28 @@ class PickStepScreen extends Component {
       huBarcode: getPickFrom(this.props).huBarcode,
     })
       .then(() => {
-        dispatch(
-          updatePickingStepQty({
-            wfProcessId,
-            activityId,
-            lineId,
-            stepId,
-            qtyPicked: 0,
-            qtyRejected: 0,
-            qtyRejectedReasonCode: null,
-          })
-        );
-        dispatch(push(`/workflow/${wfProcessId}/activityId/${activityId}/lineId/${lineId}`));
-      })
-      .catch((axiosError) => toastError({ axiosError }));
-  };
-
-  componentDidMount() {
-    const {
-      dispatch,
-      stepProps: { mainPickFrom },
-    } = this.props;
-    const location = pickingStepScreenLocation(this.props);
-
-    dispatch(
-      pushHeaderEntry({
-        location,
-        values: [
-          {
-            caption: counterpart.translate('general.Locator'),
-            value: mainPickFrom.locatorName,
-          },
-        ],
-      })
-    );
-  }
-
-  componentWillUnmount() {
-    const { wfProcessId, activityId, lineId, stepId, dispatch } = this.props;
-
-    const qtyPicked = getPickFrom(this.props).qtyPicked;
-    qtyPicked === '' &&
-      dispatch(
         updatePickingStepQty({
           wfProcessId,
           activityId,
           lineId,
           stepId,
           qtyPicked: 0,
-        })
-      );
-  }
+          qtyRejected: 0,
+          qtyRejectedReasonCode: null,
+        });
+        push(pickingLineScreenLocation(this.props));
+      })
+      .catch((axiosError) => toastError({ axiosError }));
+  };
+
+  onScanButtonClick = () => {
+    const { push } = this.props;
+    const location = pickingStepScreenLocation(this.props);
+
+    push(location);
+  };
 
   render() {
-    const { onScanButtonClick } = this.props;
     const qtyToPick = getQtyToPick(this.props);
     const pickFrom = getPickFrom(this.props);
     const isPickedFromHU = pickFrom.qtyPicked > 0;
@@ -89,38 +94,65 @@ class PickStepScreen extends Component {
     const nothingPicked = !isPickedFromHU && !pickFrom.qtyRejectedReasonCode;
 
     return (
-      <>
-        <div className="columns is-mobile">
-          <div className="column is-half has-text-right has-text-weight-bold pb-0 pl-0 pr-0">
-            {counterpart.translate('general.Barcode')}
+      <div className="pt-3 section picking-step-container">
+        <div className="picking-step-details centered-text is-size-5">
+          <div>
+            <div className="columns is-mobile">
+              <div className="column is-half has-text-right has-text-weight-bold pb-0 pl-0 pr-0">
+                {counterpart.translate('general.Barcode')}
+              </div>
+              <div className="column is-half has-text-left pb-0">{pickFrom.huBarcode}</div>
+            </div>
+            <div className="columns is-mobile">
+              <div className="column is-half has-text-right has-text-weight-bold pb-0 pl-0 pr-0">
+                {counterpart.translate('general.QtyToPick')}:
+              </div>
+              <div className="column is-half has-text-left pb-0">{qtyToPick}</div>
+            </div>
+            <div className="mt-0">
+              <button
+                className="button is-outlined complete-btn"
+                disabled={isPickedFromHU}
+                onClick={this.onScanButtonClick}
+              >
+                <ButtonWithIndicator caption={scanButtonCaption} completeStatus={scanButtonStatus} />
+              </button>
+            </div>
+            {/* Unpick button */}
+            <div className="mt-5">
+              <button
+                className="button is-outlined complete-btn"
+                disabled={nothingPicked}
+                onClick={this.onUnpickButtonClick}
+              >
+                <ButtonWithIndicator caption={counterpart.translate('activities.picking.unPickBtn')} />
+              </button>
+            </div>
           </div>
-          <div className="column is-half has-text-left pb-0">{pickFrom.huBarcode}</div>
+          <ScreenToaster />
         </div>
-        <div className="columns is-mobile">
-          <div className="column is-half has-text-right has-text-weight-bold pb-0 pl-0 pr-0">
-            {counterpart.translate('general.QtyToPick')}:
-          </div>
-          <div className="column is-half has-text-left pb-0">{qtyToPick}</div>
-        </div>
-        <div className="mt-0">
-          <button className="button is-outlined complete-btn" disabled={isPickedFromHU} onClick={onScanButtonClick}>
-            <ButtonWithIndicator caption={scanButtonCaption} completeStatus={scanButtonStatus} />
-          </button>
-        </div>
-        {/* Unpick button */}
-        <div className="mt-5">
-          <button
-            className="button is-outlined complete-btn"
-            disabled={nothingPicked}
-            onClick={this.onUnpickButtonClick}
-          >
-            <ButtonWithIndicator caption={counterpart.translate('activities.picking.unPickBtn')} />
-          </button>
-        </div>
-      </>
+      </div>
     );
   }
 }
+
+const mapStateToProps = (state, ownProps) => {
+  const { workflowId: wfProcessId, activityId, lineId, stepId, altStepId } = ownProps.match.params;
+
+  const activity = selectWFProcessFromState(state, wfProcessId).activities[activityId];
+  const stepProps = activity.dataStored.lines[lineId].steps[stepId];
+  const appId = state.applications.activeApplication ? state.applications.activeApplication.id : null;
+
+  return {
+    appId,
+    wfProcessId,
+    activityId,
+    lineId,
+    stepId,
+    altStepId,
+    stepProps,
+  };
+};
 
 PickStepScreen.propTypes = {
   //
@@ -134,8 +166,12 @@ PickStepScreen.propTypes = {
   stepProps: PropTypes.object.isRequired,
   //
   // Actions
-  onScanButtonClick: PropTypes.func.isRequired,
-  dispatch: PropTypes.func.isRequired,
+  pushHeaderEntry: PropTypes.func.isRequired,
+  postStepUnPicked: PropTypes.func.isRequired,
+  push: PropTypes.func.isRequired,
+  updatePickingStepQty: PropTypes.func.isRequired,
 };
 
-export default PickStepScreen;
+export default withRouter(
+  connect(mapStateToProps, { pushHeaderEntry, postStepUnPicked, push, updatePickingStepQty })(PickStepScreen)
+);

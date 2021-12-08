@@ -79,5 +79,4 @@ RawMaterialIssueStepButton.propTypes = {
   push: PropTypes.func.isRequired,
 };
 
-// export default StepButton(RawMaterialIssueStepButton);
 export default withRouter(connect(mapStateToProps, { push })(RawMaterialIssueStepButton));

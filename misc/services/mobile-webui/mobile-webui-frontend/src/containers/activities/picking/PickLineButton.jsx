@@ -16,7 +16,7 @@ class PickLineButton extends PureComponent {
   };
 
   render() {
-    const { caption, uom, qtyPicked, qtyToPick, completeStatus, appId, lineId, isUserEditable } = this.props;
+    const { caption, uom, qtyPicked, qtyToPick, completeStatus, lineId, isUserEditable } = this.props;
 
     return (
       <div className="buttons">
@@ -27,7 +27,7 @@ class PickLineButton extends PureComponent {
           onClick={this.handleClick}
         >
           <ButtonWithIndicator caption={caption} completeStatus={completeStatus}>
-            <ButtonQuantityProp qtyCurrent={qtyPicked} qtyTarget={qtyToPick} uom={uom} appId={appId} />
+            <ButtonQuantityProp qtyCurrent={qtyPicked} qtyTarget={qtyToPick} uom={uom} appId="picking" />
           </ButtonWithIndicator>
         </button>
       </div>
@@ -47,7 +47,6 @@ PickLineButton.propTypes = {
   uom: PropTypes.string.isRequired,
   qtyPicked: PropTypes.number.isRequired,
   qtyToPick: PropTypes.number.isRequired,
-  appId: PropTypes.string.isRequired,
   //
   // Actions
   push: PropTypes.func.isRequired,

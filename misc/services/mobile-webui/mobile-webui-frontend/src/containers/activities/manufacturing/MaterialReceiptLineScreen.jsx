@@ -7,7 +7,7 @@ import { updateManufacturingReceiptQty, updateManufacturingReceipt } from '../..
 import { pushHeaderEntry } from '../../../actions/HeaderActions';
 import PickQuantityButton from './PickQuantityButton';
 import { toastError } from '../../../utils/toast';
-import { getLocation } from '../../../utils';
+import { manufacturingLineScreenLocation } from '../../../routes/manufacturing';
 
 class MaterialReceiptLineScreen extends PureComponent {
   componentDidMount() {
@@ -15,7 +15,7 @@ class MaterialReceiptLineScreen extends PureComponent {
       dispatch,
       lineProps: { productName },
     } = this.props;
-    const location = getLocation(this.props);
+    const location = manufacturingLineScreenLocation(this.props);
 
     dispatch(
       pushHeaderEntry({
