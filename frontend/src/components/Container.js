@@ -264,7 +264,7 @@ Container.propTypes = {
   breadcrumb: PropTypes.any,
   children: PropTypes.any,
   closeModalCallback: PropTypes.any,
-  connectionError: PropTypes.bool,
+  connectionError: PropTypes.string,
   dataId: PropTypes.any,
   docId: PropTypes.any,
   docNoData: PropTypes.any,
