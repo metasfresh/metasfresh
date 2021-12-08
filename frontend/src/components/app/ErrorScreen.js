@@ -1,13 +1,11 @@
 import counterpart from 'counterpart';
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import offlineMessages from '../../utils/offlineMessages';
 import { checkLoginRequest } from '../../api/login';
 import { PING_INTERVAL_BAD_GATEWAY } from '../../constants/Constants';
 class ErrorScreen extends Component {
   constructor(props) {
     super(props);
-    counterpart.registerTranslations('lang', offlineMessages);
     this.state = { intervalId: null };
   }
 

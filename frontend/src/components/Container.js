@@ -6,7 +6,6 @@ import { viewState, getView } from '../reducers/viewHandler';
 import {
   setRawModalTitle,
   setRawModalDescription,
-  badGateway,
 } from '../actions/WindowActions';
 
 import DocumentList from '../containers/DocumentList';
@@ -302,8 +301,6 @@ Container.propTypes = {
   windowId: PropTypes.string,
   hasComments: PropTypes.bool,
   showSpinner: PropTypes.bool,
-  //functions
-  badGateway: PropTypes.func,
 };
 
 /**
@@ -332,5 +329,4 @@ const mapStateToProps = (state, { windowId }) => {
 export default connect(mapStateToProps, {
   setRawModalTitle,
   setRawModalDescription,
-  badGateway,
 })(Container);

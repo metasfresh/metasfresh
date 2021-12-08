@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import counterpart from 'counterpart';
 import deepForceUpdate from 'react-deep-force-update';
 import { connect } from 'react-redux';
-
+import offlineMessages from '../utils/offlineMessages';
 import { getMessages } from '../actions/AppActions';
 
 // Fake singleton
@@ -11,6 +11,8 @@ let INSTANCE = null;
 
 class Translation extends Component {
   static getMessages = () => {
+    counterpart.registerTranslations('lang', offlineMessages);
+
     return getMessages().then((response) => {
       if (window.Cypress) {
         window.Cypress.emit('emit:counterpartTranslations', response.data);
