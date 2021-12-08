@@ -165,7 +165,7 @@ public interface I_ExternalSystem_Config_Shopware6
 	String COLUMNNAME_ExternalSystem_Config_ID = "ExternalSystem_Config_ID";
 
 	/**
-	 * Set External system config Shopware6.
+	 * Set ExternalSystem_Config_Shopware6.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -174,7 +174,7 @@ public interface I_ExternalSystem_Config_Shopware6
 	void setExternalSystem_Config_Shopware6_ID (int ExternalSystem_Config_Shopware6_ID);
 
 	/**
-	 * Get External system config Shopware6.
+	 * Get ExternalSystem_Config_Shopware6.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -276,29 +276,6 @@ public interface I_ExternalSystem_Config_Shopware6
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Customer JSON-path.
-	 * JSON-Path expression that specifies where within a customized Shopware order the permanent customer-ID can be found. IMPORTANT: if set, then orders without a respective value are ignored!
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setJSONPathConstantBPartnerID (@Nullable java.lang.String JSONPathConstantBPartnerID);
-
-	/**
-	 * Get Customer JSON-path.
-	 * JSON-Path expression that specifies where within a customized Shopware order the permanent customer-ID can be found. IMPORTANT: if set, then orders without a respective value are ignored!
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getJSONPathConstantBPartnerID();
-
-	ModelColumn<I_ExternalSystem_Config_Shopware6, Object> COLUMN_JSONPathConstantBPartnerID = new ModelColumn<>(I_ExternalSystem_Config_Shopware6.class, "JSONPathConstantBPartnerID", null);
-	String COLUMNNAME_JSONPathConstantBPartnerID = "JSONPathConstantBPartnerID";
-
-	/**
 	 * Set Address JSON-path.
 	 * JSON-Path expression that specifies where within a customized Shopware address the permanent address-ID can be found. IMPORTANT: if set, then addresses without a respective value are ignored!
 	 *
@@ -390,6 +367,7 @@ public interface I_ExternalSystem_Config_Shopware6
 
 	/**
 	 * Set Product Lookup.
+	 * Determines how the product for a Shopware line-item is determined in metasfresh.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -399,6 +377,7 @@ public interface I_ExternalSystem_Config_Shopware6
 
 	/**
 	 * Get Product Lookup.
+	 * Determines how the product for a Shopware line-item is determined in metasfresh.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true

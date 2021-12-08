@@ -25,6 +25,7 @@ package de.metas.externalsystem.process;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
+import de.metas.common.externalsystem.JsonBPartnerLookup;
 import de.metas.common.externalsystem.JsonExternalSystemShopware6ConfigMapping;
 import de.metas.common.externalsystem.JsonExternalSystemShopware6ConfigMappings;
 import de.metas.common.ordercandidates.v2.request.JsonOrderDocType;
@@ -35,6 +36,7 @@ import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.IExternalSystemChildConfigId;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6;
+import de.metas.externalsystem.shopware6.BPartnerLookup;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6Config;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6ConfigId;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6ConfigMapping;
@@ -61,7 +63,6 @@ import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_FREIG
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_FREIGHT_COST_NORMAL_VAT_RATES;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_FREIGHT_COST_REDUCED_PRODUCT_ID;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_FREIGHT_COST_REDUCED_VAT_RATES;
-import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_JSON_PATH_CONSTANT_BPARTNER_ID;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_JSON_PATH_CONSTANT_BPARTNER_LOCATION_ID;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_JSON_PATH_SALES_REP_ID;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_ORDER_ID;
@@ -109,7 +110,6 @@ public class InvokeShopware6Action extends InvokeExternalSystemProcess
 		parameters.put(PARAM_BASE_PATH, shopware6Config.getBaseUrl());
 		parameters.put(PARAM_CLIENT_SECRET, shopware6Config.getClientSecret());
 		parameters.put(PARAM_CLIENT_ID, shopware6Config.getClientId());
-		parameters.put(PARAM_JSON_PATH_CONSTANT_BPARTNER_ID, shopware6Config.getBPartnerIdJSONPath());
 		parameters.put(PARAM_JSON_PATH_CONSTANT_BPARTNER_LOCATION_ID, shopware6Config.getBPartnerLocationIdJSONPath());
 		parameters.put(PARAM_JSON_PATH_SALES_REP_ID, shopware6Config.getSalesRepJSONPath());
 		parameters.put(PARAM_CONFIG_MAPPINGS, getConfigMappings(shopware6Config));
@@ -202,6 +202,8 @@ public class InvokeShopware6Action extends InvokeExternalSystemProcess
 				.ifNotExists(SyncAdvise.IfNotExists.valueOf(externalSystemShopware6ConfigMapping.getBpartnerLocationIfNotExists()))
 				.build();
 
+		final String bPartnerLookupCode = BPartnerLookup.toCode(externalSystemShopware6ConfigMapping.getBPartnerlookup());
+
 		final JsonExternalSystemShopware6ConfigMapping.JsonExternalSystemShopware6ConfigMappingBuilder builder =
 				JsonExternalSystemShopware6ConfigMapping.builder()
 						.paymentRule(externalSystemShopware6ConfigMapping.getPaymentRule())
@@ -211,12 +213,13 @@ public class InvokeShopware6Action extends InvokeExternalSystemProcess
 						.seqNo(externalSystemShopware6ConfigMapping.getSeqNo())
 						.invoiceEmailEnabled(externalSystemShopware6ConfigMapping.getIsInvoiceEmailEnabled())
 						.bPartnerSyncAdvice(bPartnerSyncAdvice)
-						.bPartnerLocationSyncAdvice(bpartnerLocationSyncAdvice);
+						.bPartnerLocationSyncAdvice(bpartnerLocationSyncAdvice)
+						.bpartnerIdJSONPath(externalSystemShopware6ConfigMapping.getBPartnerIdJSONPath())
+						.bpartnerLookup(JsonBPartnerLookup.valueOfNullable(bPartnerLookupCode));
 
 		final JsonOrderDocType orderDocType = docTypeService
 				.getOrderDocType(externalSystemShopware6ConfigMapping.getDocTypeOrderId())
-				.orElseThrow(() -> new AdempiereException("OrderDocType was not found for Id: "
-																  + externalSystemShopware6ConfigMapping.getDocTypeOrderId()));
+				.orElseThrow(() -> new AdempiereException("OrderDocType was not found for Id: " + externalSystemShopware6ConfigMapping.getDocTypeOrderId()));
 
 		builder.docTypeOrder(orderDocType.getCode());
 

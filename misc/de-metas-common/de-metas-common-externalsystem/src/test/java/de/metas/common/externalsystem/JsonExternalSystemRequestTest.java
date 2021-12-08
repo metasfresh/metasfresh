@@ -71,6 +71,9 @@ class JsonExternalSystemRequestTest
 		assertThat(externalSystemShopware6ConfigMapping.getPaymentTermValue()).isEqualTo("testPaymentTerm");
 		assertThat(externalSystemShopware6ConfigMapping.getDocTypeOrder()).isEqualTo("testDocTypeOrder");
 		assertThat(externalSystemShopware6ConfigMapping.getSeqNo()).isEqualTo(10);
+		assertThat(externalSystemShopware6ConfigMapping.getBpartnerIdJSONPath()).isEqualTo("/some/path");
+		assertThat(externalSystemShopware6ConfigMapping.getBpartnerLookup()).isEqualTo(JsonBPartnerLookup.MetasfreshId);
+		assertThat(externalSystemShopware6ConfigMapping.getSeqNo()).isEqualTo(10);
 
 
 	}
@@ -88,6 +91,8 @@ class JsonExternalSystemRequestTest
 						.description("testDescription")
 						.bPartnerLocationSyncAdvice(SyncAdvise.CREATE_OR_MERGE)
 						.bPartnerSyncAdvice(SyncAdvise.READ_ONLY)
+						.bpartnerLookup(JsonBPartnerLookup.MetasfreshId)
+						.bpartnerIdJSONPath("/some/path")
 						.seqNo(10)
 						.build();
 
