@@ -6,7 +6,7 @@ import { PING_INTERVAL_BAD_GATEWAY } from '../../constants/Constants';
 class ErrorScreen extends Component {
   constructor(props) {
     super(props);
-    this.state = { intervalId: null };
+    this.intervalId = null;
   }
 
   pingServer = async () => {
@@ -22,14 +22,12 @@ class ErrorScreen extends Component {
   componentDidMount() {
     const { errorType } = this.props;
     if (errorType === 'badGateway') {
-      let intervalId = setInterval(this.pingServer, PING_INTERVAL_BAD_GATEWAY);
-      this.setState({ intervalId: intervalId });
+      this.intervalId = setInterval(this.pingServer, PING_INTERVAL_BAD_GATEWAY);
     }
   }
 
   componentWillUnmount() {
-    const { intervalId } = this.state;
-    intervalId && clearInterval(intervalId);
+    this.intervalId && clearInterval(this.intervalId);
   }
 
   getLineFromCounterpart = (targetLine) => {
