@@ -8,7 +8,7 @@ export const BAD_GATEWAY_ERROR = 'badGateway';
  * @constant
  * @type {string} Type of connectionError when no error is present (internet down)
  */
-export const NO_CONNECTION_ERROR = 'noConnection';
+export const NO_CONNECTION_ERROR = 'noStatus';
 
 /**
  * @type {integer} The number of milliseconds to wait before retrying to ping the server
