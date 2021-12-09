@@ -1020,7 +1020,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		final InvoiceCandidateIdsSelection onlyInvoiceCandidateIds = tagRequest.getOnlyInvoiceCandidateIds();
 		if (onlyInvoiceCandidateIds != null)
 		{
-			onlyInvoiceCandidateIds.map(new InvoiceCandidateIdsSelection.CaseMapper()
+			onlyInvoiceCandidateIds.apply(new InvoiceCandidateIdsSelection.CaseMapper()
 			{
 				@Override
 				public void empty()

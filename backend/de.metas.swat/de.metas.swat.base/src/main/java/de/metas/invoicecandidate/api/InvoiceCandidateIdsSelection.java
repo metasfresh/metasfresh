@@ -79,7 +79,7 @@ public final class InvoiceCandidateIdsSelection
 		void selectionId(PInstanceId selectionId);
 	}
 
-	public void map(@NonNull final CaseMapper mapper)
+	public void apply(@NonNull final CaseMapper mapper)
 	{
 		if (selectionId != null)
 		{
