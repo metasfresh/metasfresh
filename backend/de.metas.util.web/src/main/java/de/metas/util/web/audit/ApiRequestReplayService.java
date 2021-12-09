@@ -27,6 +27,7 @@ import de.metas.audit.apirequest.ApiAuditLoggable;
 import de.metas.audit.apirequest.request.ApiRequestAudit;
 import de.metas.audit.apirequest.request.Status;
 import de.metas.util.Loggables;
+import de.metas.util.web.audit.dto.ApiResponse;
 import lombok.NonNull;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.springframework.http.HttpStatus;

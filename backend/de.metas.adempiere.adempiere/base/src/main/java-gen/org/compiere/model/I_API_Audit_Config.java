@@ -1,7 +1,8 @@
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
 
 /** Generated Interface for API_Audit_Config
  *  @author metasfresh (generated) 
@@ -97,6 +98,27 @@ public interface I_API_Audit_Config
 
 	ModelColumn<I_API_Audit_Config, Object> COLUMN_API_Audit_Config_ID = new ModelColumn<>(I_API_Audit_Config.class, "API_Audit_Config_ID", null);
 	String COLUMNNAME_API_Audit_Config_ID = "API_Audit_Config_ID";
+
+	/**
+	 * Set Bypass audit.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setBypassAudit (boolean BypassAudit);
+
+	/**
+	 * Get Bypass audit.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isBypassAudit();
+
+	ModelColumn<I_API_Audit_Config, Object> COLUMN_BypassAudit = new ModelColumn<>(I_API_Audit_Config.class, "BypassAudit", null);
+	String COLUMNNAME_BypassAudit = "BypassAudit";
 
 	/**
 	 * Get Created.
@@ -371,4 +393,25 @@ public interface I_API_Audit_Config
 	int getUpdatedBy();
 
 	String COLUMNNAME_UpdatedBy = "UpdatedBy";
+
+	/**
+	 * Set Wrap response.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setWrapApiResponse (boolean WrapApiResponse);
+
+	/**
+	 * Get Wrap response.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isWrapApiResponse();
+
+	ModelColumn<I_API_Audit_Config, Object> COLUMN_WrapApiResponse = new ModelColumn<>(I_API_Audit_Config.class, "WrapApiResponse", null);
+	String COLUMNNAME_WrapApiResponse = "WrapApiResponse";
 }

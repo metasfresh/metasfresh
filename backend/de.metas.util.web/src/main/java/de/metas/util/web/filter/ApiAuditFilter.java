@@ -29,10 +29,13 @@ import de.metas.logging.LogManager;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.web.audit.ApiAuditService;
+import lombok.NonNull;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
+import org.springframework.web.util.ContentCachingRequestWrapper;
+import org.springframework.web.util.ContentCachingResponseWrapper;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -59,7 +62,7 @@ public class ApiAuditFilter implements Filter
 	}
 
 	@Override
-	public void init(final FilterConfig filterConfig) throws ServletException
+	public void init(final FilterConfig filterConfig)
 	{
 	}
 
@@ -99,14 +102,36 @@ public class ApiAuditFilter implements Filter
 				return;
 			}
 
+			if (matchingAuditConfig.get().isBypassAudit())
+			{
+				auditHttpCallAsync(httpServletRequest, httpServletResponse, chain, matchingAuditConfig.get());
+				return;
+			}
+
 			apiAuditService.processHttpCall(httpServletRequest, httpServletResponse, matchingAuditConfig.get());
 		}
 		catch (final Throwable t)
 		{
 			logger.error(t.getLocalizedMessage(), t);
 
-			apiAuditService.handleErrorResponse(null, t, httpServletResponse);
+			apiAuditService.handleErrorResponse(t, httpServletResponse, null, null);
 		}
+	}
+
+	private void auditHttpCallAsync(
+			@NonNull final HttpServletRequest httpServletRequest,
+			@NonNull final HttpServletResponse httpServletResponse,
+			@NonNull final FilterChain chain,
+			@NonNull final ApiAuditConfig apiAuditConfig) throws IOException, ServletException
+	{
+		final ContentCachingResponseWrapper contentCachedResponse = new ContentCachingResponseWrapper(httpServletResponse);
+		final ContentCachingRequestWrapper contentCachedRequest = new ContentCachingRequestWrapper(httpServletRequest);
+
+		chain.doFilter(contentCachedRequest, contentCachedResponse);
+
+		apiAuditService.auditHttpCallAsync(apiAuditConfig, contentCachedRequest, contentCachedResponse);
+
+		contentCachedResponse.copyBodyToResponse();
 	}
 
 	@Override

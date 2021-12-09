@@ -38,6 +38,7 @@ import org.springframework.stereotype.Repository;
 public class ApiAuditConfigRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
 	private final CCache<Integer, ApiAuditConfigsMap> cache = CCache.<Integer, ApiAuditConfigsMap>builder()
 			.tableName(I_API_Audit_Config.Table_Name)
 			.build();
@@ -85,6 +86,8 @@ public class ApiAuditConfigRepository
 				.pathPrefix(record.getPathPrefix())
 				.notifyUserInCharge(NotificationTriggerType.ofNullableCode(record.getNotifyUserInCharge()))
 				.userGroupInChargeId(UserGroupId.ofRepoIdOrNull(record.getAD_UserGroup_InCharge_ID()))
+				.bypassAudit(record.isBypassAudit())
+				.wrapApiResponse(record.isWrapApiResponse())
 				.build();
 	}
 }

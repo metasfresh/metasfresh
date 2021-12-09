@@ -36,7 +36,7 @@ import org.junit.jupiter.api.Test;
 import static io.github.jsonSnapshot.SnapshotMatcher.expect;
 import static io.github.jsonSnapshot.SnapshotMatcher.start;
 import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 public class ApiAuditConfigRepositoryTest
 {
@@ -96,6 +96,8 @@ public class ApiAuditConfigRepositoryTest
 		config.setNotifyUserInCharge(NotificationTriggerType.ALWAYS.getCode());
 		config.setPathPrefix("pathPrefix");
 		config.setSeqNo(10);
+		config.setBypassAudit(true);
+		config.setWrapApiResponse(true);
 
 		InterfaceWrapperHelper.saveRecord(config);
 

@@ -20,21 +20,37 @@
  * #L%
  */
 
-package de.metas.util.web.audit;
+package de.metas.util.web.audit.dto;
 
-import de.metas.util.web.audit.dto.ApiResponse;
+import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.springframework.util.LinkedMultiValueMap;
 
-import java.util.concurrent.CompletableFuture;
-import java.util.function.Supplier;
+import javax.annotation.Nullable;
 
 @Value
-public class ScheduledRequest
+@Builder
+public class ApiRequest
 {
 	@NonNull
-	CompletableFuture<ApiResponse> completableFuture;
+	LinkedMultiValueMap<String, String> headers;
 
 	@NonNull
-	Supplier<ApiResponse> httpResponseSupplier;
+	String fullPath;
+
+	@NonNull
+	String httpMethod;
+
+	@Nullable
+	String body;
+
+	@Nullable
+	String requestURI;
+
+	@Nullable
+	String remoteAddr;
+
+	@Nullable
+	String remoteHost;
 }

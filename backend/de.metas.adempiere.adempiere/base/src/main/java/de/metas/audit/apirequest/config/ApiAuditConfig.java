@@ -66,6 +66,10 @@ public class ApiAuditConfig
 	@Nullable
 	UserGroupId userGroupInChargeId;
 
+	boolean bypassAudit;
+
+	boolean wrapApiResponse;
+
 	@NonNull
 	@Builder.Default
 	@JsonIgnore // not needed in snapshot-testing

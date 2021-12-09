@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for API_Audit_Config
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_API_Audit_Config extends org.compiere.model.PO implements I_API_Audit_Config, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 190943298L;
+	private static final long serialVersionUID = -844072694L;
 
     /** Standard Constructor */
     public X_API_Audit_Config (final Properties ctx, final int API_Audit_Config_ID, @Nullable final String trxName)
@@ -74,6 +74,18 @@ public class X_API_Audit_Config extends org.compiere.model.PO implements I_API_A
 	public int getAPI_Audit_Config_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_API_Audit_Config_ID);
+	}
+
+	@Override
+	public void setBypassAudit (final boolean BypassAudit)
+	{
+		set_Value (COLUMNNAME_BypassAudit, BypassAudit);
+	}
+
+	@Override
+	public boolean isBypassAudit() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_BypassAudit);
 	}
 
 	@Override
@@ -216,5 +228,17 @@ public class X_API_Audit_Config extends org.compiere.model.PO implements I_API_A
 	public int getSeqNo() 
 	{
 		return get_ValueAsInt(COLUMNNAME_SeqNo);
+	}
+
+	@Override
+	public void setWrapApiResponse (final boolean WrapApiResponse)
+	{
+		set_Value (COLUMNNAME_WrapApiResponse, WrapApiResponse);
+	}
+
+	@Override
+	public boolean isWrapApiResponse() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_WrapApiResponse);
 	}
 }
