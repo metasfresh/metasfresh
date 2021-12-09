@@ -22,32 +22,20 @@ package org.adempiere.ad.wrapper;
  * #L%
  */
 
-import java.lang.management.ManagementFactory;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.concurrent.CopyOnWriteArrayList;
-
-import javax.annotation.Nullable;
-import javax.management.InstanceAlreadyExistsException;
-import javax.management.InstanceNotFoundException;
-import javax.management.MBeanRegistrationException;
-import javax.management.MBeanServer;
-import javax.management.MalformedObjectNameException;
-import javax.management.NotCompliantMBeanException;
-import javax.management.ObjectName;
-
+import com.google.common.collect.ImmutableSet;
+import de.metas.cache.CacheMgt;
 import de.metas.common.util.time.SystemTime;
+import de.metas.impexp.processing.IImportInterceptor;
+import de.metas.logging.LogManager;
+import de.metas.monitoring.exception.MonitoringException;
+import de.metas.process.IADPInstanceDAO;
+import de.metas.process.PInstanceId;
+import de.metas.user.UserId;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.Setter;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.modelvalidator.AnnotatedModelInterceptorFactory;
 import org.adempiere.ad.modelvalidator.CompositeModelInterceptor;
@@ -72,20 +60,29 @@ import org.compiere.util.TrxRunnable;
 import org.compiere.util.TrxRunnable2;
 import org.slf4j.Logger;
 
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.cache.CacheMgt;
-import de.metas.impexp.processing.IImportInterceptor;
-import de.metas.logging.LogManager;
-import de.metas.monitoring.exception.MonitoringException;
-import de.metas.process.IADPInstanceDAO;
-import de.metas.process.PInstanceId;
-import de.metas.user.UserId;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.Setter;
+import javax.annotation.Nullable;
+import javax.management.InstanceAlreadyExistsException;
+import javax.management.InstanceNotFoundException;
+import javax.management.MBeanRegistrationException;
+import javax.management.MBeanServer;
+import javax.management.MalformedObjectNameException;
+import javax.management.NotCompliantMBeanException;
+import javax.management.ObjectName;
+import java.lang.management.ManagementFactory;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngine
 {
@@ -215,7 +212,9 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 	Map<String, Map<Integer, Object>> cachedObjects = new HashMap<>();
 	Map<PInstanceId, ImmutableSet<Integer>> selectionId2selection = new HashMap<>();
 
-	/** true if we want that values to be copied on save and not only referenced. Setting to true is like an actual database is working. */
+	/**
+	 * true if we want that values to be copied on save and not only referenced. Setting to true is like an actual database is working.
+	 */
 	@Getter
 	@Setter
 	private boolean copyOnSave = true;
@@ -285,8 +284,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 
 		if (clazz.isAssignableFrom(result.getClass()))
 		{
-			@SuppressWarnings("unchecked")
-			final T resultConv = (T)result;
+			@SuppressWarnings("unchecked") final T resultConv = (T)result;
 			return resultConv;
 		}
 
@@ -310,8 +308,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 			return null;
 		}
 
-		@SuppressWarnings("unchecked")
-		final T value = (T)getCopy(tableRecords, recordId);
+		@SuppressWarnings("unchecked") final T value = (T)getCopy(tableRecords, recordId);
 		return value;
 	}
 
@@ -587,11 +584,11 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 	}
 
 	public <T> T getFirstOnly(final String tableName,
-			final Class<T> clazz,
-			final IQueryFilter<T> filter,
-			final Comparator<T> orderByComparator,
-			final boolean throwExIfMoreThenOneFound,
-			final String trxName)
+							  final Class<T> clazz,
+							  final IQueryFilter<T> filter,
+							  final Comparator<T> orderByComparator,
+							  final boolean throwExIfMoreThenOneFound,
+							  final String trxName)
 	{
 		final List<T> result = getRecords(tableName, clazz, filter, orderByComparator, trxName);
 		if (result == null || result.isEmpty())
@@ -1108,7 +1105,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 		}
 		else
 		{
-			final ImmutableSet<Integer> combinedSelectionSet = ImmutableSet.<Integer> builder()
+			final ImmutableSet<Integer> combinedSelectionSet = ImmutableSet.<Integer>builder()
 					.addAll(existingSelectionSet)
 					.addAll(selectionSet).build();
 			this.selectionId2selection.put(selectionId, combinedSelectionSet);
@@ -1172,6 +1169,19 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 	{
 		final Set<Integer> selection = selectionId2selection.get(selectionId);
 		return selection != null ? selection : ImmutableSet.of();
+	}
+
+	public void dumpSelections()
+	{
+		StringBuilder sb = new StringBuilder();
+		sb.append("=====================[ SELECTIONS ]============================================================");
+		for (final PInstanceId selectionId : selectionId2selection.keySet())
+		{
+			sb.append("\n\t").append(selectionId).append(": ").append(selectionId2selection.get(selectionId));
+		}
+		sb.append("\n");
+
+		System.out.println(sb.toString());
 	}
 
 	/**
