@@ -28,7 +28,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HUBarcode;
 import de.metas.handlingunits.picking.PackToSpec;
 import de.metas.i18n.ITranslatableString;
-import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.order.OrderAndLineId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;

@@ -29,6 +29,8 @@ import lombok.Value;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.function.Function;
 
 @Value
 public class JsonMetasfreshId
@@ -102,5 +104,16 @@ public class JsonMetasfreshId
 			return "-1";
 		}
 		return String.valueOf(externalId.getValue());
+	}
+
+	@NonNull
+	public static Optional<Integer> toValueOptional(@Nullable final JsonMetasfreshId externalId)
+	{
+		return Optional.ofNullable(toValue(externalId));
+	}
+
+	@Nullable
+	public static <T> T mapToOrNull(@Nullable final JsonMetasfreshId externalId, @NonNull final Function<Integer, T> mapper) {
+		return toValueOptional(externalId).map(mapper).orElse(null);
 	}
 }

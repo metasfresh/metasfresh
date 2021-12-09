@@ -5,14 +5,10 @@ import { push } from 'connected-react-router';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
 
-import { postStepUnPicked } from '../../../api/picking';
+import { postStepUnPicked, postStepPicked } from '../../../api/picking';
 import { toastError } from '../../../utils/toast';
 import { getPickFrom, getQtyToPick } from '../../../utils/picking';
-import {
-  pickingStepScreenLocation,
-  pickingLineScreenLocation,
-  pickingStepScanScreenLocation,
-} from '../../../routes/picking';
+import { pickingStepScreenLocation, pickingStepScanScreenLocation } from '../../../routes/picking';
 import { selectWFProcessFromState } from '../../../reducers/wfProcesses_status';
 import { updatePickingStepQty } from '../../../actions/PickingActions';
 import { pushHeaderEntry } from '../../../actions/HeaderActions';
@@ -20,6 +16,7 @@ import * as CompleteStatus from '../../../constants/CompleteStatus';
 
 import ButtonWithIndicator from '../../../components/ButtonWithIndicator';
 import ScreenToaster from '../../../components/ScreenToaster';
+import NotFoundButton from '../NotFoundButton';
 
 class PickStepScreen extends Component {
   componentDidMount() {
@@ -42,8 +39,8 @@ class PickStepScreen extends Component {
 
   componentWillUnmount() {
     const { wfProcessId, activityId, lineId, stepId, updatePickingStepQty } = this.props;
-
     const qtyPicked = getPickFrom(this.props).qtyPicked;
+
     qtyPicked === '' &&
       updatePickingStepQty({
         wfProcessId,
@@ -73,9 +70,36 @@ class PickStepScreen extends Component {
           qtyRejected: 0,
           qtyRejectedReasonCode: null,
         });
-        push(pickingLineScreenLocation(this.props));
+        push(`/workflow/${wfProcessId}/activityId/${activityId}/lineId/${lineId}`);
       })
       .catch((axiosError) => toastError({ axiosError }));
+  };
+
+  handleNotFound = () => {
+    const { wfProcessId, stepId, altStepId, lineId, activityId, updatePickingStepQty } = this.props;
+    const huBarcode = this.getPickFrom().huBarcode;
+    const qtyRejected = this.getQtyToPick();
+
+    postStepPicked({
+      wfProcessId,
+      activityId,
+      stepId,
+      qtyPicked: 0,
+      qtyRejected,
+      qtyRejectedReasonCode: 'N',
+      huBarcode,
+    }).then(() => {
+      updatePickingStepQty({
+        wfProcessId,
+        activityId,
+        lineId,
+        stepId,
+        altStepId,
+        qtyPicked: 0,
+        qtyRejected,
+        qtyRejectedReasonCode: 'N',
+      });
+    });
   };
 
   onScanButtonClick = () => {
@@ -86,6 +110,7 @@ class PickStepScreen extends Component {
   };
 
   render() {
+    const { wfProcessId, activityId, lineId, stepId } = this.props;
     const qtyToPick = getQtyToPick(this.props);
     const pickFrom = getPickFrom(this.props);
     const isPickedFromHU = pickFrom.qtyPicked > 0;
@@ -132,6 +157,11 @@ class PickStepScreen extends Component {
                 <ButtonWithIndicator caption={counterpart.translate('activities.picking.unPickBtn')} />
               </button>
             </div>
+            <NotFoundButton
+              onNotFound={this.handleNotFound}
+              disabled={!nothingPicked}
+              {...{ wfProcessId, activityId, stepId, lineId }}
+            />
           </div>
           <ScreenToaster />
         </div>

@@ -56,9 +56,6 @@ public class PPOrderCandidateAdvisedEvent extends AbstractPPOrderCandidateEvent
 	@Getter
 	private final boolean directlyCreatePPOrder;
 
-	@Getter
-	private final boolean directlyPickIfFeasible;
-
 	/**
 	 * If {@code false}, then this event advises the recipient to not attempt to identify and update an existing supply candidate, but create a new one.
 	 */
@@ -72,13 +69,11 @@ public class PPOrderCandidateAdvisedEvent extends AbstractPPOrderCandidateEvent
 			@JsonProperty("ppOrderCandidate") @NonNull final PPOrderCandidate ppOrderCandidate,
 			@JsonProperty("supplyRequiredDescriptor") @Nullable final SupplyRequiredDescriptor supplyRequiredDescriptor,
 			@JsonProperty("directlyCreatePPOrder") final boolean directlyCreatePPOrder,
-			@JsonProperty("directlyPickIfFeasible") final boolean directlyPickIfFeasible,
 			@JsonProperty("tryUpdateExistingCandidate") final boolean tryUpdateExistingCandidate)
 	{
 		super(eventDescriptor, ppOrderCandidate, supplyRequiredDescriptor);
 
 		this.directlyCreatePPOrder = directlyCreatePPOrder;
-		this.directlyPickIfFeasible = directlyPickIfFeasible;
 		this.tryUpdateExistingCandidate = tryUpdateExistingCandidate;
 	}
 

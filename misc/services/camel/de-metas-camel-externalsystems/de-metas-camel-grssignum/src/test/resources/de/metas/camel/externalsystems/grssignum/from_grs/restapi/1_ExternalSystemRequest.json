@@ -1,12 +1,14 @@
 {
   "orgCode": "orgCode",
   "externalSystemName": "GRSSignum",
-  "command": "required_but_notImportantInOurTest",
+  "externalSystemChildConfigValue": "childValue",
+  "command": "GRSSignum-enableRestAPI",
   "adPInstanceId": 123,
   "externalSystemConfigId": 100,
   "traceId": "123",
   "parameters": {
     "CamelHttpResourceAuthKey": "authKey",
-    "baseURL": "baseURL"
+    "baseURL": "baseURL",
+    "ChildConfigValue": "childValue"
   }
 }

@@ -51,16 +51,20 @@ public class PPOrderCreatedEvent implements MaterialEvent
 	private final EventDescriptor eventDescriptor;
 	private final PPOrder ppOrder;
 
+	private final boolean directlyPickIfFeasible;
+
 	public static final String TYPE = "PPOrderCreatedEvent";
 
 	@JsonCreator
 	@Builder
 	public PPOrderCreatedEvent(
 			@JsonProperty("eventDescriptor") @NonNull final EventDescriptor eventDescriptor,
-			@JsonProperty("ppOrder") final @NonNull PPOrder ppOrder)
+			@JsonProperty("ppOrder") final @NonNull PPOrder ppOrder,
+			@JsonProperty("directlyPickIfFeasible") final boolean directlyPickIfFeasible)
 	{
 		this.eventDescriptor = eventDescriptor;
 		this.ppOrder = ppOrder;
+		this.directlyPickIfFeasible = directlyPickIfFeasible;
 	}
 
 	public void validate()

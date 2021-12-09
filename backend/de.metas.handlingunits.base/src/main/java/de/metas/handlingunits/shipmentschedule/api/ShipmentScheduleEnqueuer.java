@@ -39,7 +39,7 @@ import de.metas.common.util.EmptyUtil;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.shipmentschedule.async.GenerateInOutFromShipmentSchedules;
 import de.metas.i18n.IMsgBL;
-import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
 import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockAutoCloseable;

@@ -134,6 +134,7 @@ public class PPOrderCandidatePojoSupplier
 									 .dateStartSchedule(dateStartSchedule)
 									 .qtyRequired(ppOrderCandidateQuantity.toBigDecimal())
 									 .orderLineId(request.getMrpDemandOrderLineSOId())
+									 .shipmentScheduleId(request.getMrpDemandShipmentScheduleId())
 									 .bpartnerId(BPartnerId.ofRepoIdOrNull(request.getMrpDemandBPartnerId()))
 									 .build())
 				.build();

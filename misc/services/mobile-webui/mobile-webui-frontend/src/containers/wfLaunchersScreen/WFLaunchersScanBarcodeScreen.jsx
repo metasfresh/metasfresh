@@ -26,7 +26,6 @@ class WFLaunchersScanBarcodeScreen extends PureComponent {
   };
 
   render() {
-    console.log(this.props);
     return <CodeScanner onBarcodeScanned={this.onBarcodeScanned} />;
   }
 }

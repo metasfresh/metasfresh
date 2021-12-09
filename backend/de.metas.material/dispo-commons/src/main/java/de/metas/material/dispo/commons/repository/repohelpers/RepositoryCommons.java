@@ -35,8 +35,8 @@ import javax.annotation.Nullable;
 import java.sql.Timestamp;
 import java.util.List;
 
-import static de.metas.material.dispo.commons.candidate.IdConstants.UNSPECIFIED_REPO_ID;
-import static de.metas.material.dispo.commons.candidate.IdConstants.toRepoId;
+import static de.metas.common.util.IdConstants.UNSPECIFIED_REPO_ID;
+import static de.metas.common.util.IdConstants.toRepoId;
 
 /*
  * #%L
@@ -346,7 +346,7 @@ public class RepositoryCommons
 					.addEqualsFilter(I_MD_Candidate_Demand_Detail.COLUMN_M_ForecastLine_ID, toRepoId(demandDetailsQuery.getForecastLineId()));
 		}
 
-		if (hasOrderLine || hasForecastLine || hasShipmentschedule)
+		if (hasOrderLine || hasForecastLine || hasShipmentschedule || hasSubscriptionLine)
 		{
 			builder.addInSubQueryFilter(I_MD_Candidate.COLUMN_MD_Candidate_ID,
 					I_MD_Candidate_Demand_Detail.COLUMN_MD_Candidate_ID,

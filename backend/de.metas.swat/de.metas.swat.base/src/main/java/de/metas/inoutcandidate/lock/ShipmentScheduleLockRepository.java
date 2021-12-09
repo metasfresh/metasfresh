@@ -1,6 +1,6 @@
 package de.metas.inoutcandidate.lock;
 
-import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inout.ShipmentScheduleId;
 import lombok.NonNull;
 
 import java.util.Set;
