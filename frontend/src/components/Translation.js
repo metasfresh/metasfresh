@@ -27,7 +27,6 @@ class Translation extends Component {
     counterpart.registerTranslations('lang', offlineMessages);
 
     return getMessages().then((response) => {
-      console.log('response', response.data);
       if (window.Cypress) {
         window.Cypress.emit('emit:counterpartTranslations', response.data);
       }
