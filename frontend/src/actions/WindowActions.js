@@ -20,7 +20,6 @@ import {
   INIT_WINDOW,
   INIT_DATA_SUCCESS,
   INIT_LAYOUT_SUCCESS,
-  CONNECTION_ERROR,
   OPEN_FILTER_BOX,
   OPEN_MODAL,
   OPEN_RAW_MODAL,
@@ -309,13 +308,6 @@ export function updateDataFieldProperty(property, item, scope) {
     property: property,
     item: item,
     scope: scope,
-  };
-}
-
-export function connectionError({ errorType }) {
-  return {
-    type: CONNECTION_ERROR,
-    errorType,
   };
 }
 

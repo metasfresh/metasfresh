@@ -1,6 +1,6 @@
 import SockJS from 'sockjs-client';
 import { Client } from '@stomp/stompjs';
-import { connectionError } from '../actions/WindowActions';
+import { connectionError } from '../actions/AppActions';
 import { BAD_GATEWAY_ERROR, NO_CONNECTION_ERROR } from '../constants/Constants';
 import store from '../store/store';
 import { getUserSession } from '../api';

@@ -312,7 +312,7 @@ const mapStateToProps = (state, { windowId }) => {
 
   return {
     notFound: master.notFound,
-    connectionErrorType: state.windowHandler.connectionErrorType || '',
+    connectionErrorType: state.appHandler.connectionErrorType || '',
     showSpinner: state.windowHandler.showSpinner || false,
     pluginComponents: state.pluginsHandler.components,
     pluginModal: state.windowHandler.pluginModal,

@@ -52,7 +52,7 @@ class Login extends PureComponent {
 }
 
 const mapStateToProps = (state) => ({
-  connectionErrorType: state.windowHandler.connectionErrorType || '',
+  connectionErrorType: state.appHandler.connectionErrorType || '',
 });
 
 /**

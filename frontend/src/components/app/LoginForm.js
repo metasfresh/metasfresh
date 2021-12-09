@@ -18,7 +18,7 @@ import logo from '../../assets/images/metasfresh_logo_green_thumb.png';
 
 import RawList from '../widget/List/RawList';
 import PasswordRecovery from './PasswordRecovery';
-import { connectionError } from '../../actions/WindowActions';
+import { connectionError } from '../../actions/AppActions';
 import { BAD_GATEWAY_ERROR } from '../../constants/Constants';
 
 /**
