@@ -44,7 +44,7 @@ export function connectWS(topic, onMessageCallback) {
 
   const connect = () => {
     let reconnectCounter = 0;
-    let badGatewayStatus = false;
+    let connectionErrorType = NO_CONNECTION_ERROR;
     this.sockClient = new Client({
       brokerURL: config.WS_URL,
       debug(strMessage) {
@@ -56,7 +56,7 @@ export function connectWS(topic, onMessageCallback) {
               reconnectCounter =
                 data && !data.loggedIn ? reconnectCounter + 1 : 0;
 
-              if (status === 502) badGatewayStatus = true;
+              if (status === 502) connectionErrorType = BAD_GATEWAY_ERROR;
             })
             .catch(() => {
               reconnectCounter += 1;
@@ -68,9 +68,7 @@ export function connectWS(topic, onMessageCallback) {
           this.reconnectDelay = 0; // 0 - deactivates the sockClient
           store.dispatch(
             connectionError({
-              errorType: badGatewayStatus
-                ? BAD_GATEWAY_ERROR
-                : NO_CONNECTION_ERROR,
+              errorType: connectionErrorType,
             })
           );
         }
