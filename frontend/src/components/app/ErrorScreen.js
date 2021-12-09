@@ -37,18 +37,9 @@ class ErrorScreen extends Component {
 
   render() {
     const { errorType } = this.props;
-    const title = counterpart.translate(`window.error.${errorType}.title`, {
-      fallback: counterpart.translate(
-        `offline.${this.activeLang}.${errorType}.title`
-      ),
-    });
+    const title = counterpart.translate(`window.error.${errorType}.title`);
     const description = counterpart.translate(
-      `window.error.${errorType}.description`,
-      {
-        fallback: counterpart.translate(
-          `offline.${this.activeLang}.${errorType}.description`
-        ),
-      }
+      `window.error.${errorType}.description`
     );
 
     return (
