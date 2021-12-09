@@ -364,6 +364,8 @@ final class BPartnerCompositesLoader
 				.locationType(extractBPartnerLocationType(bPartnerLocationRecord))
 				.orgMappingId(OrgMappingId.ofRepoIdOrNull(bPartnerLocationRecord.getAD_Org_Mapping_ID()))
 				.changeLog(changeLog)
+				.phone(trimBlankToNull(bPartnerLocationRecord.getPhone()))
+				.email(trimBlankToNull(bPartnerLocationRecord.getEMail()))
 				.build();
 
 		bpartnerLocation.setFromAddress(address);

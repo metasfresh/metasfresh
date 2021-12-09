@@ -147,6 +147,9 @@ final class RelationTypeOLCandSource implements OLCandSource
 				.salesRepInternalId(salesRepInternalId)
 				.assignSalesRepRule(assignSalesRepRule)
 				.asyncBatchId(AsyncBatchId.ofRepoIdOrNull(olCandRecord.getC_Async_Batch_ID()))
+				.bpartnerName(olCandRecord.getBPartnerName())
+				.email(olCandRecord.getEMail())
+				.phone(olCandRecord.getPhone())
 				.build();
 	}
 }

@@ -38,13 +38,12 @@ import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.bpartner.composite.BPartnerContact;
 import de.metas.bpartner.composite.BPartnerLocation;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.JsonAttributeSetInstance;
 import de.metas.common.rest_api.v2.JsonError;
 import de.metas.common.rest_api.v2.JsonErrorItem;
-import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.JsonQuantity;
 import de.metas.common.shipping.v2.JsonProduct;
-import de.metas.common.shipping.v2.JsonProduct.JsonProductBuilder;
 import de.metas.common.shipping.v2.JsonRequestCandidateResult;
 import de.metas.common.shipping.v2.JsonRequestCandidateResults;
 import de.metas.common.shipping.v2.shipmentcandidate.JsonCustomer;
@@ -214,6 +213,7 @@ class ShipmentCandidateAPIService
 							shipmentSchedule.getShipBPartnerId(),
 							shipmentSchedule.getShipLocationId(),
 							shipmentSchedule.getShipContactId(),
+							shipmentSchedule.getOrderAndLineId(),
 							bpartnerIdToBPartner);
 
 					final JsonProduct product = createJsonProduct(shipmentSchedule, shipBPartner.getLanguage(), productId2Product);
@@ -238,7 +238,8 @@ class ShipmentCandidateAPIService
 						final JsonCustomer billBPartner = createJsonCustomer(
 								shipmentSchedule.getBillBPartnerId(),
 								shipmentSchedule.getBillLocationId(),
-								shipmentSchedule.getBillContactId(),
+								shipmentSchedule.getShipContactId(),
+								shipmentSchedule.getOrderAndLineId(),
 								bpartnerIdToBPartner);
 						itemBuilder.billBPartner(billBPartner);
 					}
@@ -278,15 +279,16 @@ class ShipmentCandidateAPIService
 	private ImmutableList<JsonQuantity> createJsonQuantities(@NonNull final Quantity quantity)
 	{
 		return ImmutableList.of(JsonQuantity.builder()
-				.qty(quantity.toBigDecimal())
-				.uomCode(quantity.getX12DE355().getCode())
-				.build());
+										.qty(quantity.toBigDecimal())
+										.uomCode(quantity.getX12DE355().getCode())
+										.build());
 	}
 
 	private JsonCustomer createJsonCustomer(
 			@NonNull final BPartnerId bpartnerId,
 			@NonNull final BPartnerLocationId bPartnerLocationId,
 			@Nullable final BPartnerContactId bPartnerContactId,
+			@Nullable final OrderAndLineId orderAndLineId,
 			@NonNull final ImmutableMap<BPartnerId, BPartnerComposite> bpartnerIdToBPartner)
 	{
 		final BPartnerComposite composite = bpartnerIdToBPartner.get(bpartnerId);
@@ -326,7 +328,7 @@ class ShipmentCandidateAPIService
 					.setParameter("C_BPartner_ID", composite.getBpartner().getId().getRepoId())
 					.setParameter("C_BPartner_Location_ID", location.getId().getRepoId());
 		}
-		final JsonCustomerBuilder shipBPartnerBuilder = JsonCustomer.builder()
+		final JsonCustomerBuilder customerBuilder = JsonCustomer.builder()
 				.company(bpartner.isCompany())
 				.companyName(CoalesceUtil.firstNotEmptyTrimmed(location.getBpartnerName(), bpartner.getCompanyName(), bpartner.getName()))
 				.shipmentAllocationBestBeforePolicy(bpartner.getShipmentAllocationBestBeforePolicy())
@@ -339,24 +341,17 @@ class ShipmentCandidateAPIService
 				.city(city)
 				.countryCode(location.getCountryCode())
 				.language(adLanguage);
-		if (bPartnerContactId != null)
-		{
-			final BPartnerContact contact = composite.extractContact(bPartnerContactId)
-					.orElseThrow(() -> new ShipmentCandidateExportException("Unable to get the shipment schedule's contact from the shipment schedule's bPartner")
-							.appendParametersToMessage()
-							.setParameter("C_BPartner_ID", bpartnerId.getRepoId())
-							.setParameter("AD_User_ID", bPartnerContactId.getRepoId()));
 
-			shipBPartnerBuilder
-					.contactEmail(contact.getEmail())
-					.contactName(contact.getName())
-					//.contactPhone(CoalesceUtil.firstNotEmptyTrimmed(contact.getMobilePhone(), contact.getPhone()))
-					.contactPhone(contact.getPhone()) // in the legacy-DPD-export, we also export the phone-number; not the mobile-number
-			;
-			logger.debug("Exporting effective AD_User_ID={} from the shipment-schedule", bPartnerContactId.getRepoId());
+		if (orderAndLineId != null)
+		{
+			setAdditionalContactFields(customerBuilder, orderAndLineId);
+		}
+		else if (bPartnerContactId != null)
+		{
+			setAdditionalContactFields(customerBuilder, bPartnerContactId, composite);
 		}
 
-		return shipBPartnerBuilder.build();
+		return customerBuilder.build();
 	}
 
 	private JsonProduct createJsonProduct(
@@ -412,11 +407,11 @@ class ShipmentCandidateAPIService
 		final OrgId orgId = shipmentSchedule.getOrgId();
 
 		final AdIssueId adIssueId = Services.get(IErrorManager.class).createIssue(IssueCreateRequest.builder()
-				.throwable(e)
-				.loggerName(logger.getName())
-				.sourceClassname(ShipmentCandidateAPIService.class.getName())
-				.summary(e.getMessage())
-				.build());
+																						  .throwable(e)
+																						  .loggerName(logger.getName())
+																						  .sourceClassname(ShipmentCandidateAPIService.class.getName())
+																						  .summary(e.getMessage())
+																						  .build());
 
 		auditBuilder
 				.exportStatus(APIExportStatus.ExportError)
@@ -553,10 +548,10 @@ class ShipmentCandidateAPIService
 
 		final JsonErrorItem errorItem = error.getErrors().get(0);
 		return errorManager.createIssue(IssueCreateRequest.builder()
-				.summary(errorItem.getMessage() + "; " + errorItem.getDetail())
-				.stackTrace(errorItem.getStackTrace())
-				.loggerName(logger.getName())
-				.build());
+												.summary(errorItem.getMessage() + "; " + errorItem.getDetail())
+												.stackTrace(errorItem.getStackTrace())
+												.loggerName(logger.getName())
+												.build());
 	}
 
 	private void setNetPrices(
@@ -792,5 +787,44 @@ class ShipmentCandidateAPIService
 		{
 			super(message);
 		}
+	}
+
+	private void setAdditionalContactFields(
+			@NonNull final JsonCustomerBuilder customerBuilder,
+			@NonNull final OrderAndLineId orderAndLineId)
+	{
+
+		final I_C_Order orderRecord = orderDAO.getById(orderAndLineId.getOrderId());
+
+		customerBuilder
+				.contactEmail(orderRecord.getEMail())
+				.contactName(orderRecord.getBPartnerName())
+				.contactPhone(orderRecord.getPhone());
+
+		logger.debug("Exporting effective contactEmail={}, contactName={}, contactPhone={} from the orderId={}",
+					 orderRecord.getEMail(),
+					 orderRecord.getBPartnerName(),
+					 orderRecord.getPhone(),
+					 orderAndLineId.getOrderId());
+
+	}
+
+	private void setAdditionalContactFields(
+			@NonNull final JsonCustomerBuilder customerBuilder,
+			@NonNull final BPartnerContactId contactId,
+			@NonNull final BPartnerComposite partnerComposite)
+	{
+		final BPartnerContact contact = partnerComposite.extractContact(contactId)
+				.orElseThrow(() -> new ShipmentCandidateExportException("Unable to get the shipment schedule's contact from the shipment schedule's bPartner")
+						.appendParametersToMessage()
+						.setParameter("C_BPartner_ID", partnerComposite.getBpartner().getId())
+						.setParameter("AD_User_ID", contactId.getRepoId()));
+
+		customerBuilder
+				.contactEmail(contact.getEmail())
+				.contactName(contact.getName())
+				.contactPhone(contact.getPhone());
+
+		logger.debug("Exporting effective AD_User_ID={} from the shipment-schedule", contactId.getRepoId());
 	}
 }

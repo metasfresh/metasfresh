@@ -54,6 +54,8 @@ public class ExternalSystemShopware6Config implements IExternalSystemChildConfig
 	@Nullable
 	String salesRepJSONPath;
 	@Nullable
+	String emailJSONPath;
+	@Nullable
 	FreightCostConfig freightCostNormalVatConfig;
 	@Nullable
 	FreightCostConfig freightCostReducedVatConfig;
@@ -72,6 +74,7 @@ public class ExternalSystemShopware6Config implements IExternalSystemChildConfig
 			final @Nullable String bPartnerIdJSONPath,
 			final @Nullable String bPartnerLocationIdJSONPath,
 			final @Nullable String salesRepJSONPath,
+			final @Nullable String emailJSONPath,
 			final @Nullable FreightCostConfig freightCostNormalVatConfig,
 			final @Nullable FreightCostConfig freightCostReducedVatConfig,
 			final @NonNull Boolean isActive,
@@ -86,6 +89,7 @@ public class ExternalSystemShopware6Config implements IExternalSystemChildConfig
 		this.bPartnerIdJSONPath = bPartnerIdJSONPath;
 		this.bPartnerLocationIdJSONPath = bPartnerLocationIdJSONPath;
 		this.salesRepJSONPath = salesRepJSONPath;
+		this.emailJSONPath = emailJSONPath;
 		this.freightCostNormalVatConfig = freightCostNormalVatConfig;
 		this.freightCostReducedVatConfig = freightCostReducedVatConfig;
 		this.isActive = isActive;

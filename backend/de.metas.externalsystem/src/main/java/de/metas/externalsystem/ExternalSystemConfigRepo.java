@@ -395,6 +395,7 @@ public class ExternalSystemConfigRepo
 				.bPartnerIdJSONPath(config.getJSONPathConstantBPartnerID())
 				.bPartnerLocationIdJSONPath(config.getJSONPathConstantBPartnerLocationID())
 				.salesRepJSONPath(config.getJSONPathSalesRepID())
+				.emailJSONPath(config.getJSONPathEmail())
 				.isActive(config.isActive())
 				.productLookup(ProductLookup.ofCode(config.getProductLookup()))
 				.build();

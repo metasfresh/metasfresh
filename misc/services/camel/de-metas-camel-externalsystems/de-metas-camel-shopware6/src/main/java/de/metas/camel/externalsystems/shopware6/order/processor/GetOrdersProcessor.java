@@ -35,6 +35,8 @@ import de.metas.camel.externalsystems.shopware6.currency.CurrencyInfoProvider;
 import de.metas.camel.externalsystems.shopware6.currency.GetCurrenciesRequest;
 import de.metas.camel.externalsystems.shopware6.order.ImportOrdersRouteContext;
 import de.metas.camel.externalsystems.shopware6.order.OrderQueryHelper;
+import de.metas.camel.externalsystems.shopware6.salutation.GetSalutationsRequest;
+import de.metas.camel.externalsystems.shopware6.salutation.SalutationInfoProvider;
 import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.common.externalsystem.JsonExternalSystemShopware6ConfigMappings;
@@ -61,6 +63,7 @@ import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.ROUTE_PROPERTY_RAW_DATA;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT;
 import static de.metas.camel.externalsystems.shopware6.currency.GetCurrenciesRoute.GET_CURRENCY_ROUTE_ID;
+import static de.metas.camel.externalsystems.shopware6.salutation.GetSalutationsRoute.GET_SALUTATION_ROUTE_ID;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_FREIGHT_COST_NORMAL_PRODUCT_ID;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_FREIGHT_COST_NORMAL_VAT_RATES;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_FREIGHT_COST_REDUCED_PRODUCT_ID;
@@ -112,16 +115,11 @@ public class GetOrdersProcessor implements Processor
 		exchange.getIn().setBody(ordersToProcess.getOrderCandidates());
 		exchange.setProperty(ROUTE_PROPERTY_RAW_DATA, ordersToProcess.getRawData());
 
-		final GetCurrenciesRequest getCurrenciesRequest = GetCurrenciesRequest.builder()
-				.baseUrl(basePath)
-				.clientId(clientId)
-				.clientSecret(clientSecret)
-				.build();
+		final CurrencyInfoProvider currencyInfoProvider = getCurrencyInfoProvider(basePath, clientId, clientSecret);
 
-		final CurrencyInfoProvider currencyInfoProvider = (CurrencyInfoProvider)producerTemplate
-				.sendBody("direct:" + GET_CURRENCY_ROUTE_ID, ExchangePattern.InOut, getCurrenciesRequest);
+		final SalutationInfoProvider salutationInfoProvider = getSalutationInfoProvider(basePath, clientId, clientSecret);
 
-		final ImportOrdersRouteContext ordersContext = buildContext(request, shopwareClient, currencyInfoProvider, queryRequest);
+		final ImportOrdersRouteContext ordersContext = buildContext(request, shopwareClient, currencyInfoProvider, salutationInfoProvider, queryRequest);
 
 		exchange.setProperty(ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT, ordersContext);
 	}
@@ -131,9 +129,11 @@ public class GetOrdersProcessor implements Processor
 			@NonNull final JsonExternalSystemRequest request,
 			@NonNull final ShopwareClient shopwareClient,
 			@NonNull final CurrencyInfoProvider currencyInfoProvider,
+			@NonNull final SalutationInfoProvider salutationInfoProvider,
 			@NonNull final Shopware6QueryRequest shopware6QueryRequest)
 	{
 		final String bpLocationCustomJsonPath = request.getParameters().get(ExternalSystemConstants.PARAM_JSON_PATH_CONSTANT_BPARTNER_LOCATION_ID);
+		final String emailJsonPath = request.getParameters().get(ExternalSystemConstants.PARAM_JSON_PATH_EMAIL);
 
 		final String productLookup = request.getParameters().get(ExternalSystemConstants.PARAM_PRODUCT_LOOKUP);
 
@@ -148,7 +148,9 @@ public class GetOrdersProcessor implements Processor
 				.shopwareClient(shopwareClient)
 				.pInstanceId(request.getAdPInstanceId())
 				.bpLocationCustomJsonPath(bpLocationCustomJsonPath)
+				.emailJsonPath(emailJsonPath)
 				.currencyInfoProvider(currencyInfoProvider)
+				.salutationInfoProvider(salutationInfoProvider)
 				.taxProductIdProvider(getTaxProductIdProvider(request))
 				.skipNextImportStartingTimestamp(skipNextImportStartingTimestamp)
 				.jsonProductLookup(JsonProductLookup.valueOf(productLookup))
@@ -210,5 +212,31 @@ public class GetOrdersProcessor implements Processor
 		}
 
 		return TaxProductIdProvider.of(productId2VatRates);
+	}
+
+	@NonNull
+	private CurrencyInfoProvider getCurrencyInfoProvider(@NonNull final String basePath, @NonNull final String clientId, @NonNull final String clientSecret)
+	{
+		final GetCurrenciesRequest getCurrenciesRequest = GetCurrenciesRequest.builder()
+				.baseUrl(basePath)
+				.clientId(clientId)
+				.clientSecret(clientSecret)
+				.build();
+
+		return (CurrencyInfoProvider)producerTemplate
+				.sendBody("direct:" + GET_CURRENCY_ROUTE_ID, ExchangePattern.InOut, getCurrenciesRequest);
+	}
+
+	@NonNull
+	private SalutationInfoProvider getSalutationInfoProvider(@NonNull final String basePath, @NonNull final String clientId, @NonNull final String clientSecret)
+	{
+		final GetSalutationsRequest getSalutationsRequest = GetSalutationsRequest.builder()
+				.baseUrl(basePath)
+				.clientId(clientId)
+				.clientSecret(clientSecret)
+				.build();
+
+		return (SalutationInfoProvider)producerTemplate
+				.sendBody("direct:" + GET_SALUTATION_ROUTE_ID, ExchangePattern.InOut, getSalutationsRequest);
 	}
 }

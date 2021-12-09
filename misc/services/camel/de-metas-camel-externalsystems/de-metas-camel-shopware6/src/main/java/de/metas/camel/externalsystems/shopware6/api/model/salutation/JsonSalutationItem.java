@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.shopware6.api.model.order;
+package de.metas.camel.externalsystems.shopware6.api.model.salutation;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -30,58 +30,24 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
 @Value
 @Builder
-@JsonDeserialize(builder = JsonOrderAddress.JsonOrderAddressBuilder.class)
-public class JsonOrderAddress
+@JsonDeserialize(builder = JsonSalutationItem.JsonSalutationBuilder.class)
+public class JsonSalutationItem
 {
 	@NonNull
 	@JsonProperty("id")
 	String id;
 
 	@NonNull
-	@JsonProperty("countryId")
-	String countryId;
-
-	@JsonProperty("street")
-	String street;
-
-	@JsonProperty("zipcode")
-	String zipcode;
-
-	@JsonProperty("city")
-	String city;
-
-	@JsonProperty("phoneNumber")
-	String phoneNumber;
-
-	@JsonProperty("additionalAddressLine1")
-	String additionalAddressLine1;
-
-	@JsonProperty("additionalAddressLine2")
-	String additionalAddressLine2;
-
-	@JsonProperty("company")
-	String company;
-
-	@JsonProperty("department")
-	String department;
-
-	@JsonProperty("salutationId")
-	String salutationId;
-
-	@JsonProperty("title")
-	String title;
-
-	@JsonProperty("firstName")
-	String firstName;
-
-	@JsonProperty("lastName")
-	String lastName;
+	@JsonProperty("displayName")
+	String displayName;
 
 	@JsonIgnoreProperties(ignoreUnknown = true)
 	@JsonPOJOBuilder(withPrefix = "")
-	static class JsonOrderAddressBuilder
+	static class JsonSalutationBuilder
 	{
 	}
 }
