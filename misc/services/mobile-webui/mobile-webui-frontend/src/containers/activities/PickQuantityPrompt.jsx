@@ -29,7 +29,7 @@ class PickQuantityPrompt extends PureComponent {
 
   render() {
     const { qtyTarget, qtyCaption, onCloseDialog } = this.props;
-    const target = qtyTarget > 0 ? qtyTarget : 0;
+    const qtyTargetNorm = qtyTarget > 0 ? qtyTarget : 0;
 
     return (
       <div>
@@ -37,7 +37,7 @@ class PickQuantityPrompt extends PureComponent {
           <article className="message confirm-box is-dark">
             <div className="message-body">
               <strong>
-                {qtyCaption}: {target}
+                {qtyCaption}: {qtyTargetNorm}
               </strong>
               <div>&nbsp;</div>
               <div className="control">
