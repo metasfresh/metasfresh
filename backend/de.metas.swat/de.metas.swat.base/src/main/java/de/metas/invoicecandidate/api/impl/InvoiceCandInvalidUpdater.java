@@ -31,6 +31,7 @@ import de.metas.invoicecandidate.api.IInvoiceCandInvalidUpdater;
 import de.metas.invoicecandidate.api.IInvoiceCandRecomputeTagger;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.invoicecandidate.api.InvoiceCandRecomputeTag;
+import de.metas.invoicecandidate.api.InvoiceCandidateIdsSelection;
 import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidate;
 import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
@@ -64,6 +65,7 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
@@ -150,7 +152,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 		//
 		// Determine if we shall process our invoice candidates in batches and commit after each batch.
 		// i.e. we shall do this only if we were not asked to update a particular set of invoice candidates.
-		final boolean processInBatches = !icTagger.isOnlyC_Invoice_Candidate_IDs();
+		final InvoiceCandidateIdsSelection onlyInvoiceCandidateIds = icTagger.getOnlyInvoiceCandidateIds();
+		final boolean processInBatches = onlyInvoiceCandidateIds == null || onlyInvoiceCandidateIds.isDatabaseSelection();
 		final int itemsPerBatch = processInBatches ? getItemsPerBatch() : Integer.MAX_VALUE;
 
 		//
@@ -166,7 +169,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 		//
 		// Update invoice candidates in chunks
 		final ICUpdateResult result = new ICUpdateResult();
-		try (final IAutoCloseable updateInProgressCloseable = invoiceCandBL.setUpdateProcessInProgress())
+		try (final IAutoCloseable ignored = invoiceCandBL.setUpdateProcessInProgress())
 		{
 			trxItemProcessorExecutorService.<I_C_Invoice_Candidate, ICUpdateResult> createExecutor()
 					.setContext(getCtx(), getTrxName()) // if called from process or wp-processor then getTrxName() is null because *we* want to manage the trx => commit after each chunk
@@ -501,20 +504,13 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 	}
 
 	@Override
-	public IInvoiceCandInvalidUpdater setOnlyC_Invoice_Candidates(final Iterator<? extends I_C_Invoice_Candidate> invoiceCandidates)
+	public IInvoiceCandInvalidUpdater setOnlyInvoiceCandidateIds(final InvoiceCandidateIdsSelection onlyInvoiceCandidateIds)
 	{
 		assertNotExecuted();
-		icTagger.setOnlyC_Invoice_Candidates(invoiceCandidates);
+		icTagger.setOnlyInvoiceCandidateIds(onlyInvoiceCandidateIds);
 		return this;
 	}
 
-	@Override
-	public IInvoiceCandInvalidUpdater setOnlyC_Invoice_Candidates(final Iterable<? extends I_C_Invoice_Candidate> invoiceCandidates)
-	{
-		assertNotExecuted();
-		icTagger.setOnlyC_Invoice_Candidates(invoiceCandidates);
-		return this;
-	}
 
 	private int getItemsPerBatch()
 	{
@@ -531,7 +527,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 		private int countOk = 0;
 		private int countErrors = 0;
 
-		public void addInvoiceCandidate(final I_C_Invoice_Candidate ic)
+		public void addInvoiceCandidate(@SuppressWarnings("unused") final I_C_Invoice_Candidate ic)
 		{
 			countOk++;
 		}

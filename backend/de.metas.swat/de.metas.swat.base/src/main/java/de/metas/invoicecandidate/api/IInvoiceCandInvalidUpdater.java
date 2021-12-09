@@ -85,21 +85,15 @@ public interface IInvoiceCandInvalidUpdater
 
 	/**
 	 * Sets maximum number of invoice candidates to update.
-	 *
-	 * @param limit
 	 */
 	IInvoiceCandInvalidUpdater setLimit(int limit);
 
 	/**
 	 * Sets the tag to be used when tagging the invoice candidates.
-	 *
-	 * @param tag
 	 */
 	IInvoiceCandInvalidUpdater setRecomputeTagToUse(InvoiceCandRecomputeTag tag);
 
-	IInvoiceCandInvalidUpdater setOnlyC_Invoice_Candidates(Iterator<? extends I_C_Invoice_Candidate> invoiceCandidates);
-
-	IInvoiceCandInvalidUpdater setOnlyC_Invoice_Candidates(Iterable<? extends I_C_Invoice_Candidate> invoiceCandidates);
+	IInvoiceCandInvalidUpdater setOnlyInvoiceCandidateIds(InvoiceCandidateIdsSelection onlyInvoiceCandidateIds);
 
 	// TODO: find a better place for this method
 	static void updatePriceAndTax(@NonNull final I_C_Invoice_Candidate ic, @NonNull final PriceAndTax priceAndTax)
@@ -155,5 +149,4 @@ public interface IInvoiceCandInvalidUpdater
 			ic.setGroupCompensationBaseAmt(priceAndTax.getCompensationGroupBaseAmt());
 		}
 	}
-
 }
