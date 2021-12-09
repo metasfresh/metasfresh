@@ -1,25 +1,8 @@
-package org.adempiere.warehouse.api.impl;
-
-import java.util.List;
-import java.util.Set;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.WarehousePickingGroup;
-import org.adempiere.warehouse.WarehousePickingGroupId;
-
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Maps;
-
-import de.metas.util.GuavaCollectors;
-import lombok.NonNull;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -37,7 +20,22 @@ import lombok.NonNull;
  * #L%
  */
 
-final class WarehousePickingGroupsIndex
+package org.adempiere.warehouse.groups.picking;
+
+import java.util.List;
+import java.util.Set;
+
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.warehouse.WarehouseId;
+
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
+
+import de.metas.util.GuavaCollectors;
+import lombok.NonNull;
+
+public final class WarehousePickingGroupsIndex
 {
 	public static WarehousePickingGroupsIndex of(@NonNull final List<WarehousePickingGroup> groups)
 	{
@@ -61,7 +59,7 @@ final class WarehousePickingGroupsIndex
 
 	public WarehousePickingGroup getById(@NonNull final WarehousePickingGroupId id)
 	{
-		WarehousePickingGroup group = groupsById.get(id);
+		final WarehousePickingGroup group = groupsById.get(id);
 		if (group == null)
 		{
 			throw new AdempiereException("No Warehouse Picking Group found for " + id);

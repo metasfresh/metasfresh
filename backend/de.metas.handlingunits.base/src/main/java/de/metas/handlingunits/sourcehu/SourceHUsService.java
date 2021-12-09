@@ -257,7 +257,8 @@ public class SourceHUsService
 		@Singular
 		ImmutableSet<ProductId> productIds;
 
-		WarehouseId warehouseId;
+		@Singular
+		ImmutableSet<WarehouseId> warehouseIds;
 
 		public static MatchingSourceHusQuery fromHuId(final HuId huId)
 		{
@@ -271,7 +272,7 @@ public class SourceHUsService
 					.collect(ImmutableSet.toImmutableSet());
 
 			final WarehouseId warehouseId = IHandlingUnitsBL.extractWarehouseId(hu);
-			return new MatchingSourceHusQuery(productIds, warehouseId);
+			return new MatchingSourceHusQuery(productIds, ImmutableSet.of(warehouseId));
 		}
 	}
 }

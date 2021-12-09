@@ -455,6 +455,31 @@ public interface I_M_Warehouse
 	String COLUMNNAME_M_WarehouseSource_ID = "M_WarehouseSource_ID";
 
 	/**
+	 * Set Manufacturing Warehouse Group.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setManufacturing_Warehouse_Group_ID (int Manufacturing_Warehouse_Group_ID);
+
+	/**
+	 * Get Manufacturing Warehouse Group.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getManufacturing_Warehouse_Group_ID();
+
+	@Nullable org.compiere.model.I_M_Warehouse_Group getManufacturing_Warehouse_Group();
+
+	void setManufacturing_Warehouse_Group(@Nullable org.compiere.model.I_M_Warehouse_Group Manufacturing_Warehouse_Group);
+
+	ModelColumn<I_M_Warehouse, org.compiere.model.I_M_Warehouse_Group> COLUMN_Manufacturing_Warehouse_Group_ID = new ModelColumn<>(I_M_Warehouse.class, "Manufacturing_Warehouse_Group_ID", org.compiere.model.I_M_Warehouse_Group.class);
+	String COLUMNNAME_Manufacturing_Warehouse_Group_ID = "Manufacturing_Warehouse_Group_ID";
+
+	/**
 	 * Set Exclude from MRP.
 	 *
 	 * <br>Type: List

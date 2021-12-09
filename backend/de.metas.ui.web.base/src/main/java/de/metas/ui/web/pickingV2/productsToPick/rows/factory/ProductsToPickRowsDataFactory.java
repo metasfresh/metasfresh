@@ -23,6 +23,19 @@
 package de.metas.ui.web.pickingV2.productsToPick.rows.factory;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.IHUQueryBuilder;
+import de.metas.handlingunits.attribute.storage.IAttributeStorage;
+import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
+import de.metas.handlingunits.attribute.storage.IAttributeStorageFactoryService;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.picking.PickFrom;
+import de.metas.handlingunits.picking.PickingCandidate;
+import de.metas.handlingunits.picking.PickingCandidateIssueToBOMLine;
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.plan.generator.CreatePickingPlanRequest;
 import de.metas.handlingunits.picking.plan.model.IssueToBOMLine;
@@ -46,11 +59,26 @@ import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeCode;
+import org.adempiere.mm.attributes.api.AttributeConstants;
+import org.adempiere.mm.attributes.api.IAttributesBL;
+import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
+import org.compiere.model.I_M_Attribute;
+import org.eevolution.api.IPPOrderBL;
+import org.eevolution.api.PPOrderBOMLineId;
+import org.eevolution.api.PPOrderId;
+import org.eevolution.api.QtyCalculationsBOM;
+import org.eevolution.api.QtyCalculationsBOMLine;
 
 import java.util.Objects;
 
 public class ProductsToPickRowsDataFactory
 {
+	private final IDeveloperModeBL developerModeBL = Services.get(IDeveloperModeBL.class);
+	private final IPPOrderBL ppOrdersBL = Services.get(IPPOrderBL.class);
+	private final IAttributesBL attributesBL = Services.get(IAttributesBL.class);
+	private final IBPartnerBL bpartnersService;
+	private final HUReservationService huReservationService;
 	private final PickingCandidateService pickingCandidateService;
 	private final ProductInfoSupplier productInfos;
 	private final LookupValueByIdSupplier locatorLookup;

@@ -1,13 +1,16 @@
 package de.metas.handlingunits.pporder.api.impl;
 
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.model.X_M_HU;
+import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyBL;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
+import de.metas.handlingunits.pporder.api.UpdateDraftReceiptCandidateRequest;
 import de.metas.handlingunits.pporder.api.impl.hu_pporder_issue_producer.ReverseDraftIssues;
 import de.metas.material.planning.pporder.DraftPPOrderBOMLineQuantities;
 import de.metas.material.planning.pporder.DraftPPOrderQuantities;
@@ -54,6 +57,7 @@ public class HUPPOrderQtyBL implements IHUPPOrderQtyBL
 	private final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	private final IHUPPOrderQtyDAO huPPOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
+	private final IHUPPOrderBL ppOrderBL = Services.get(IHUPPOrderBL.class);
 
 	@Override
 	public void reverseDraftCandidate(final I_PP_Order_Qty candidate)
@@ -151,5 +155,26 @@ public class HUPPOrderQtyBL implements IHUPPOrderQtyBL
 			@NonNull final DraftPPOrderBOMLineQuantities lineToAdd)
 	{
 		return line != null ? line.add(lineToAdd, uomConversionBL) : lineToAdd;
+	}
+
+	public boolean isReceipt(@NonNull final I_PP_Order_Qty ppOrderQty)
+	{
+		return ppOrderQty.getPP_Order_BOMLine_ID() <= 0;
+	}
+
+	@Override
+	public void updateDraftReceiptCandidate(@NonNull UpdateDraftReceiptCandidateRequest request)
+	{
+		final PPOrderId pickingOrderId = request.getPickingOrderId();
+		final HuId huId = request.getHuID();
+		final Quantity qtyToUpdate = request.getQtyReceived();
+
+		huPPOrderQtyDAO.retrieveOrderQtyForHu(pickingOrderId, huId)
+				.filter(candidate -> !candidate.isProcessed() && isReceipt(candidate))
+				.ifPresent(candidate -> {
+					I_M_HU hu = candidate.getM_HU();
+					candidate.setQty(qtyToUpdate.toBigDecimal());
+					huPPOrderQtyDAO.save(candidate);
+				});
 	}
 }

@@ -2,7 +2,10 @@ package de.metas.ui.web.pporder.util;
 
 import java.util.List;
 
+import com.google.common.collect.ImmutableSet;
 import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.adempiere.warehouse.groups.WarehouseGroupAssignmentType;
 import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.model.I_PP_Order;
 
@@ -23,7 +26,7 @@ import lombok.experimental.UtilityClass;
 public class WEBUI_PP_Order_ProcessHelper
 {
 
-	public final ProcessPreconditionsResolution checkIssueSourceDefaultPreconditionsApplicable(final PPOrderLineRow ppOrderLineRow)
+	public ProcessPreconditionsResolution checkIssueSourceDefaultPreconditionsApplicable(final PPOrderLineRow ppOrderLineRow)
 	{
 		if (!ppOrderLineRow.isIssue())
 		{
@@ -46,11 +49,20 @@ public class WEBUI_PP_Order_ProcessHelper
 
 		final MatchingSourceHusQuery query = MatchingSourceHusQuery.builder()
 				.productId(row.getProductId())
-				.warehouseId(WarehouseId.ofRepoId(ppOrder.getM_Warehouse_ID()))
+				.warehouseIds(getIssueFromWarehouseIds(ppOrder))
 				.build();
 		return SourceHUsService.get().retrieveMatchingSourceHuMarkers(query)
 				.stream()
 				.filter(huSource -> X_M_HU.HUSTATUS_Active.equals(huSource.getM_HU().getHUStatus()))
 				.collect(ImmutableList.toImmutableList());
 	}
+
+	private ImmutableSet<WarehouseId> getIssueFromWarehouseIds(final I_PP_Order ppOrder)
+	{
+		final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
+
+		final WarehouseId warehouseId = WarehouseId.ofRepoId(ppOrder.getM_Warehouse_ID());
+		return warehouseDAO.getWarehouseIdsOfSameGroup(warehouseId, WarehouseGroupAssignmentType.MANUFACTURING);
+	}
+
 }
