@@ -58,6 +58,7 @@ import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.api.AttributeConstants;
@@ -74,11 +75,6 @@ import java.util.Objects;
 
 public class ProductsToPickRowsDataFactory
 {
-	private final IDeveloperModeBL developerModeBL = Services.get(IDeveloperModeBL.class);
-	private final IPPOrderBL ppOrdersBL = Services.get(IPPOrderBL.class);
-	private final IAttributesBL attributesBL = Services.get(IAttributesBL.class);
-	private final IBPartnerBL bpartnersService;
-	private final HUReservationService huReservationService;
 	private final PickingCandidateService pickingCandidateService;
 	private final ProductInfoSupplier productInfos;
 	private final LookupValueByIdSupplier locatorLookup;

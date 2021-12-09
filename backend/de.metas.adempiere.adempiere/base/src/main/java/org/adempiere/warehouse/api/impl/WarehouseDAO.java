@@ -708,7 +708,7 @@ public class WarehouseDAO implements IWarehouseDAO
 	@Override
 	public WarehouseId retrieveQuarantineWarehouseId()
 	{
-		return queryBL.createQueryBuilder(org.adempiere.warehouse.model.I_M_Warehouse.class)
+		final WarehouseId warehouseId = queryBL.createQueryBuilder(I_M_Warehouse.class)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
 				.addEqualsFilter(I_M_Warehouse.COLUMNNAME_IsQuarantineWarehouse, true)

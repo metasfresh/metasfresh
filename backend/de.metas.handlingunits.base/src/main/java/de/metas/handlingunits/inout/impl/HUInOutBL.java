@@ -97,6 +97,7 @@ public class HUInOutBL implements IHUInOutBL
 
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	private final IHUAssignmentBL huAssignmentBL = Services.get(IHUAssignmentBL.class);
+	private final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
 	private final IHUWarehouseDAO huWarehouseDAO = Services.get(IHUWarehouseDAO.class);
 	private final IHUMovementBL huMovementBL = Services.get(IHUMovementBL.class);
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
@@ -452,11 +453,11 @@ public class HUInOutBL implements IHUInOutBL
 	}
 
 	@Override
-	public void validateMandatoryOnShipmentAttributes(final I_M_InOut shipment)
+	public void validateMandatoryOnShipmentAttributes(@NonNull final I_M_InOut shipment)
 	{
 		final List<I_M_InOutLine> inOutLines = retrieveLines(shipment, I_M_InOutLine.class);
 
-		for (I_M_InOutLine line : inOutLines)
+		for (final I_M_InOutLine line : inOutLines)
 		{
 			final AttributeSetInstanceId asiID = AttributeSetInstanceId.ofRepoIdOrNull(line.getM_AttributeSetInstance_ID());
 

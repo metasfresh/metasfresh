@@ -25,7 +25,6 @@ import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.handlingunits.shipmentschedule.api.impl.ShipmentScheduleQtyPickedProductStorage;
 import de.metas.handlingunits.storage.IProductStorage;
 import de.metas.handlingunits.util.CatchWeightHelper;
-import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -289,8 +288,6 @@ public class HU2PackingItemsAllocator
 	 * QtyToDeliver).
 	 * <p>
 	 * The quantity that was allocated on HUs will be subtracted from {@link #getItemToPack()}.
-	 *
-	 * @return
 	 */
 	private HU2PackingItemsAllocator allocate()
 	{

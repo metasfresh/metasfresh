@@ -200,7 +200,7 @@ public class PickingCandidateService
 				.filter(pc -> shipmentScheduleId == null || shipmentScheduleId.equals(pc.getShipmentScheduleId()))
 				.collect(ImmutableList.toImmutableList());
 
-		for(PickingCandidate pickingCandidate : pickingCandidatesToProcess)
+		for(final PickingCandidate pickingCandidate : pickingCandidatesToProcess)
 		{
 			validateAttributes(pickingCandidate);
 		}
@@ -250,7 +250,7 @@ public class PickingCandidateService
 				.build());
 	}
 
-	public ProcessPickingCandidatesResult process(@NonNull ProcessPickingCandidatesRequest request)
+	public ProcessPickingCandidatesResult process(@NonNull final ProcessPickingCandidatesRequest request)
 	{
 		return ProcessPickingCandidatesCommand.builder()
 				.pickingCandidateRepository(pickingCandidateRepository)
