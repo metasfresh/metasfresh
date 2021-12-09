@@ -79,6 +79,11 @@ public class MProductPriceValidator implements ModelValidator
 			return null;
 		}
 
+		if(!po.is_ManualUserAction())
+		{
+			return null;
+		}
+
 		final I_M_ProductPrice productPrice = InterfaceWrapperHelper.create(po, I_M_ProductPrice.class);
 		final String useScalePrice = productPrice.getUseScalePrice();
 		if (Objects.equals(useScalePrice, X_M_ProductPrice.USESCALEPRICE_DonTUseScalePrice))
