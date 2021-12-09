@@ -42,7 +42,6 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -116,13 +115,8 @@ public class AuditEventNotifier extends EventNotifierSupport
 			return;
 		}
 
-		final Optional<String> auditLogFileContent = AuditFileTrailUtil.computeAuditLogFileContent(exchange, message);
-		if (auditLogFileContent.isEmpty())
-		{
-			return;
-		}
-
-		producerTemplate.sendBody(getAuditEndpoint(exchange), auditLogFileContent.get());
+		AuditFileTrailUtil.computeAuditLogFileContent(exchange, message)
+				.ifPresent(logFileContent -> producerTemplate.sendBody(getAuditEndpoint(exchange), logFileContent));
 	}
 
 	@NonNull
