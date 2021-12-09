@@ -1037,7 +1037,12 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				@Override
 				public void selectionId(final PInstanceId selectionId)
 				{
-					queryBuilder.setOnlySelection(selectionId);
+					queryBuilder.addInSubQueryFilter(
+							I_C_Invoice_Candidate_Recompute.COLUMNNAME_C_Invoice_Candidate_ID,
+							I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID,
+							queryBL.createQueryBuilder(I_C_Invoice_Candidate.class, ctx, trxName)
+									.setOnlySelection(selectionId)
+									.create());
 				}
 			});
 		}
