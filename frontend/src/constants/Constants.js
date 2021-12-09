@@ -1,5 +1,24 @@
 /**
  * @constant
+ * @type {string} Type of `connectionErrorType` to be used in the redux store when we receive 502 error from the server.
+ */
+export const BAD_GATEWAY_ERROR = 'badGateway';
+
+/**
+ * @constant
+ * @type {string} Type of connectionErrorType when no error is present (internet down).
+ * Note: do not change this to another value because this matches the key in the translation messages (as it comes from the BE).
+ *       (see ErrorScreen component for more details)
+ */
+export const NO_CONNECTION_ERROR = 'noStatus';
+
+/**
+ * @type {integer} The number of milliseconds to wait before retrying to ping the server
+ */
+export const CONNECTION_ERROR_RETRY_INTERVAL_MILLIS = 5000;
+
+/**
+ * @constant
  * @type {string} ToDo: Description for the constant.
  */
 export const VIEW_EDITOR_RENDER_MODES_NEVER = 'never';
