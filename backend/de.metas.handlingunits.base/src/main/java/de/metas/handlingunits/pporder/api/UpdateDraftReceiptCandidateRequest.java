@@ -11,7 +11,7 @@ import org.eevolution.api.PPOrderId;
 @Builder
 public class UpdateDraftReceiptCandidateRequest
 {
-	@NonNull private final PPOrderId pickingOrderId;
-	@NonNull private final HuId huID;
-	@NonNull private final Quantity qtyReceived;
+	@NonNull PPOrderId pickingOrderId;
+	@NonNull HuId huID;
+	@NonNull Quantity qtyReceived;
 }

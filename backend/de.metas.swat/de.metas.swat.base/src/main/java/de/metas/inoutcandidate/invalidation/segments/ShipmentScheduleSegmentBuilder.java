@@ -35,6 +35,8 @@ import org.compiere.model.I_M_Locator;
 import de.metas.util.Services;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
+
 public final class ShipmentScheduleSegmentBuilder
 {
 	private final Set<Integer> productIds = new HashSet<>();
@@ -97,7 +99,7 @@ public final class ShipmentScheduleSegmentBuilder
 		return this;
 	}
 
-	public ShipmentScheduleSegmentBuilder warehouseIdIfNotNull(WarehouseId warehouseId)
+	public ShipmentScheduleSegmentBuilder warehouseIdIfNotNull(final @Nullable WarehouseId warehouseId)
 	{
 		if (warehouseId == null)
 		{
