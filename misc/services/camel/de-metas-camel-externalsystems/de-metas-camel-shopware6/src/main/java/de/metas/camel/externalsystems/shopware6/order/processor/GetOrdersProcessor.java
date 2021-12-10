@@ -30,9 +30,9 @@ import de.metas.camel.externalsystems.common.PInstanceLogger;
 import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.camel.externalsystems.shopware6.api.ShopwareClient;
 import de.metas.camel.externalsystems.shopware6.api.ShopwareClient.GetOrdersResponse;
-import de.metas.camel.externalsystems.shopware6.api.model.Shopware6QueryRequest;
 import de.metas.camel.externalsystems.shopware6.currency.CurrencyInfoProvider;
 import de.metas.camel.externalsystems.shopware6.currency.GetCurrenciesRequest;
+import de.metas.camel.externalsystems.shopware6.order.ImportOrdersRequest;
 import de.metas.camel.externalsystems.shopware6.order.ImportOrdersRouteContext;
 import de.metas.camel.externalsystems.shopware6.order.OrderQueryHelper;
 import de.metas.camel.externalsystems.shopware6.salutation.GetSalutationsRequest;
@@ -49,7 +49,6 @@ import org.apache.camel.Exchange;
 import org.apache.camel.ExchangePattern;
 import org.apache.camel.Processor;
 import org.apache.camel.ProducerTemplate;
-import org.apache.commons.lang3.BooleanUtils;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -98,7 +97,6 @@ public class GetOrdersProcessor implements Processor
 
 		final String basePath = request.getParameters().get(ExternalSystemConstants.PARAM_BASE_PATH);
 
-		final String bPartnerIdJSONPath = request.getParameters().get(ExternalSystemConstants.PARAM_JSON_PATH_CONSTANT_BPARTNER_ID);
 		final String salesRepJSONPath = request.getParameters().get(ExternalSystemConstants.PARAM_JSON_PATH_SALES_REP_ID);
 
 		final PInstanceLogger pInstanceLogger = PInstanceLogger.builder()
@@ -108,9 +106,9 @@ public class GetOrdersProcessor implements Processor
 
 		final ShopwareClient shopwareClient = ShopwareClient.of(clientId, clientSecret, basePath, pInstanceLogger);
 
-		final Shopware6QueryRequest queryRequest = OrderQueryHelper.buildShopware6QueryRequest(request);
+		final ImportOrdersRequest importOrdersRequest = OrderQueryHelper.buildShopware6QueryRequest(request);
 
-		final GetOrdersResponse ordersToProcess = shopwareClient.getOrders(queryRequest, bPartnerIdJSONPath, salesRepJSONPath);
+		final GetOrdersResponse ordersToProcess = shopwareClient.getOrders(importOrdersRequest.getShopware6QueryRequest(), salesRepJSONPath);
 
 		exchange.getIn().setBody(ordersToProcess.getOrderCandidates());
 		exchange.setProperty(ROUTE_PROPERTY_RAW_DATA, ordersToProcess.getRawData());
@@ -119,18 +117,18 @@ public class GetOrdersProcessor implements Processor
 
 		final SalutationInfoProvider salutationInfoProvider = getSalutationInfoProvider(basePath, clientId, clientSecret);
 
-		final ImportOrdersRouteContext ordersContext = buildContext(request, shopwareClient, currencyInfoProvider, salutationInfoProvider, queryRequest);
+		final ImportOrdersRouteContext ordersContext = buildContext(request, shopwareClient, currencyInfoProvider, salutationInfoProvider, importOrdersRequest.isIgnoreNextImportTimestamp());
 
 		exchange.setProperty(ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT, ordersContext);
 	}
 
 	@VisibleForTesting
-	public ImportOrdersRouteContext buildContext(
+	public static ImportOrdersRouteContext buildContext(
 			@NonNull final JsonExternalSystemRequest request,
 			@NonNull final ShopwareClient shopwareClient,
 			@NonNull final CurrencyInfoProvider currencyInfoProvider,
 			@NonNull final SalutationInfoProvider salutationInfoProvider,
-			@NonNull final Shopware6QueryRequest shopware6QueryRequest)
+			final boolean skipNextImportStartingTimestamp)
 	{
 		final String bpLocationCustomJsonPath = request.getParameters().get(ExternalSystemConstants.PARAM_JSON_PATH_CONSTANT_BPARTNER_LOCATION_ID);
 		final String emailJsonPath = request.getParameters().get(ExternalSystemConstants.PARAM_JSON_PATH_EMAIL);
@@ -138,8 +136,6 @@ public class GetOrdersProcessor implements Processor
 		final String productLookup = request.getParameters().get(ExternalSystemConstants.PARAM_PRODUCT_LOOKUP);
 
 		Check.assumeNotNull(productLookup, "JsonExternalSystemRequest.parameters[ProductLookup] can't be missing");
-
-		final boolean skipNextImportStartingTimestamp = BooleanUtils.isNotTrue(shopware6QueryRequest.getIsQueryByDate());
 
 		return ImportOrdersRouteContext.builder()
 				.orgCode(request.getOrgCode())
@@ -158,7 +154,7 @@ public class GetOrdersProcessor implements Processor
 	}
 
 	@NonNull
-	private Optional<JsonExternalSystemShopware6ConfigMappings> getSalesOrderMappingRules(@NonNull final JsonExternalSystemRequest request)
+	private static Optional<JsonExternalSystemShopware6ConfigMappings> getSalesOrderMappingRules(@NonNull final JsonExternalSystemRequest request)
 	{
 		final String shopware6Mappings = request.getParameters().get(ExternalSystemConstants.PARAM_CONFIG_MAPPINGS);
 
@@ -179,7 +175,7 @@ public class GetOrdersProcessor implements Processor
 	}
 
 	@Nullable
-	private TaxProductIdProvider getTaxProductIdProvider(@NonNull final JsonExternalSystemRequest externalSystemRequest)
+	private static TaxProductIdProvider getTaxProductIdProvider(@NonNull final JsonExternalSystemRequest externalSystemRequest)
 	{
 		final ImmutableMap.Builder<JsonMetasfreshId, List<BigDecimal>> productId2VatRatesBuilder = ImmutableMap.builder();
 		final Map<String, String> parameters = externalSystemRequest.getParameters();

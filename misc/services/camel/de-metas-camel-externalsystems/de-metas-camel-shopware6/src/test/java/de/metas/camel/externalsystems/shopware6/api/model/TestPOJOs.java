@@ -47,7 +47,7 @@ class TestPOJOs
 		final String json = objectMapper.writeValueAsString(queryRequest);
 
 		Assertions.assertThat(json).isEqualToIgnoringWhitespace("{\n"
-																		+ "  \"filters\": [\n"
+																		+ "  \"filter\": [\n"
 																		+ "    {\n"
 																		+ "      \"type\": \"multi\",\n"
 																		+ "      \"operator\": \"or\",\n"

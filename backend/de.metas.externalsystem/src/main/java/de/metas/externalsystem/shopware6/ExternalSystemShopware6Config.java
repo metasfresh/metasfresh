@@ -48,8 +48,6 @@ public class ExternalSystemShopware6Config implements IExternalSystemChildConfig
 	@NonNull
 	List<ExternalSystemShopware6ConfigMapping> externalSystemShopware6ConfigMappingList;
 	@Nullable
-	String bPartnerIdJSONPath;
-	@Nullable
 	String bPartnerLocationIdJSONPath;
 	@Nullable
 	String salesRepJSONPath;
@@ -71,7 +69,6 @@ public class ExternalSystemShopware6Config implements IExternalSystemChildConfig
 			final @NonNull String clientId,
 			final @NonNull String clientSecret,
 			final @NonNull List<ExternalSystemShopware6ConfigMapping> externalSystemShopware6ConfigMappingList,
-			final @Nullable String bPartnerIdJSONPath,
 			final @Nullable String bPartnerLocationIdJSONPath,
 			final @Nullable String salesRepJSONPath,
 			final @Nullable String emailJSONPath,
@@ -86,7 +83,6 @@ public class ExternalSystemShopware6Config implements IExternalSystemChildConfig
 		this.clientSecret = clientSecret;
 		this.externalSystemShopware6ConfigMappingList = externalSystemShopware6ConfigMappingList;
 		this.baseUrl = baseUrl;
-		this.bPartnerIdJSONPath = bPartnerIdJSONPath;
 		this.bPartnerLocationIdJSONPath = bPartnerLocationIdJSONPath;
 		this.salesRepJSONPath = salesRepJSONPath;
 		this.emailJSONPath = emailJSONPath;

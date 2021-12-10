@@ -84,10 +84,10 @@ public class CreateBPartnerUpsertReqProcessor implements Processor
 				.salutationInfoProvider(importOrdersRouteContext.getSalutationInfoProvider())
 				.shippingAddress(lastOrderDeliveryItem.getOrderAddressDetails())
 				.orgCode(orgCode)
-				.externalBPartnerId(orderCandidate.getEffectiveCustomerId())
+				.externalBPartnerId(importOrdersRouteContext.getEffectiveCustomerId())
 				.bPartnerLocationIdentifierCustomPath(bPartnerLocationIdJSONPath)
 				.emailCustomPath(importOrdersRouteContext.getEmailJsonPath())
-				.matchingShopware6Mapping(getMatchingShopware6Mapping(importOrdersRouteContext.getShopware6ConfigMappings(), jsonCustomerGroup))
+				.matchingShopware6Mapping(importOrdersRouteContext.getMatchingShopware6Mapping())
 				.build();
 
 		final BPartnerRequestProducerResult bPartnerRequestProducerResult = bPartnerUpsertRequestProducer.run();

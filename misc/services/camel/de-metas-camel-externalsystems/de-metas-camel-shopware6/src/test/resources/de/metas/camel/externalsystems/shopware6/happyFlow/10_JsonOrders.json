@@ -11,8 +11,11 @@
         "firstName": "firstName",
         "lastName": "lastName",
         "customerNumber": "customerNumber",
-        "email": "someEamil@web.de"
-      },
+        "email": "someEamil@web.de",
+        "customFields": {
+          "externalReference": "customerId"
+          }
+        },
       "currencyId": "currencyId",
       "orderNumber": "poReference",
       "orderDate": "2021-01-12T00:00:00.000+00:00",
@@ -32,7 +35,11 @@
         "firstName": "willNotBeImportedDueToStateMachineState",
         "lastName": "willNotBeImportedDueToStateMachineState",
         "customerNumber": "willNotBeImportedDueToStateMachineState",
-        "email": "someEamil@web.de"
+        "email": "someEamil@web.de",
+        "customFields": {
+          "externalReference": "customerId"
+        }
+
       },
       "currencyId": "willNotBeImportedDueToStateMachineState",
       "orderNumber": "butWeDoCareAboutTheCreatedDateForEstablishingTheNextStartingDate",
@@ -53,7 +60,10 @@
         "firstName": "willNotBeImportedDueToStateMachineState",
         "lastName": "willNotBeImportedDueToStateMachineState",
         "customerNumber": "willNotBeImportedDueToStateMachineState",
-        "email": "someEamil@web.de"
+        "email": "someEamil@web.de",
+        "customFields": {
+          "externalReference": "customerId"
+        }
       },
       "currencyId": "willNotBeImportedDueToStateMachineState",
       "orderNumber": "butWeDoCareAboutTheCreatedDateForEstablishingTheNextStartingDate",
@@ -74,7 +84,10 @@
         "firstName": "willNotBeImportedDueToStateMachineState",
         "lastName": "willNotBeImportedDueToStateMachineState",
         "customerNumber": "willNotBeImportedDueToStateMachineState",
-        "email": "someEamil@web.de"
+        "email": "someEamil@web.de",
+        "customFields": {
+          "externalReference": "customerId"
+        }
       },
       "currencyId": "willNotBeImportedDueToStateMachineState",
       "orderNumber": "butWeDoCareAboutTheCreatedDateForEstablishingTheNextStartingDate",

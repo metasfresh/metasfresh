@@ -276,29 +276,6 @@ public interface I_ExternalSystem_Config_Shopware6
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Customer JSON-path.
-	 * JSON-Path expression that specifies where within a customized Shopware order the permanent customer-ID can be found. IMPORTANT: if set, then orders without a respective value are ignored!
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setJSONPathConstantBPartnerID (@Nullable String JSONPathConstantBPartnerID);
-
-	/**
-	 * Get Customer JSON-path.
-	 * JSON-Path expression that specifies where within a customized Shopware order the permanent customer-ID can be found. IMPORTANT: if set, then orders without a respective value are ignored!
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable String getJSONPathConstantBPartnerID();
-
-	ModelColumn<I_ExternalSystem_Config_Shopware6, Object> COLUMN_JSONPathConstantBPartnerID = new ModelColumn<>(I_ExternalSystem_Config_Shopware6.class, "JSONPathConstantBPartnerID", null);
-	String COLUMNNAME_JSONPathConstantBPartnerID = "JSONPathConstantBPartnerID";
-
-	/**
 	 * Set Address JSON-path.
 	 * JSON-Path expression that specifies where within a customized Shopware address the permanent address-ID can be found. IMPORTANT: if set, then addresses without a respective value are ignored!
 	 *

@@ -31,22 +31,29 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
+import org.compiere.model.I_M_Product;
 
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
+import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.assertj.core.api.Assertions.*;
+import static org.compiere.model.I_M_Product.COLUMNNAME_M_Product_ID;
 
 public class C_InvoiceLine_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	final StepDefData<I_C_Invoice> invoiceTable;
+	final StepDefData<I_M_Product> productTable;
 
-	public C_InvoiceLine_StepDef(@NonNull final StepDefData<I_C_Invoice> invoiceTable)
+	public C_InvoiceLine_StepDef(
+			@NonNull final StepDefData<I_C_Invoice> invoiceTable,
+			@NonNull final StepDefData<I_M_Product> productTable)
 	{
 		this.invoiceTable = invoiceTable;
+		this.productTable = productTable;
 	}
 
 	@And("validate created invoice lines")
@@ -59,13 +66,15 @@ public class C_InvoiceLine_StepDef
 
 			final I_C_Invoice invoiceRecord = invoiceTable.get(invoiceIdentifier);
 
-			final int productId = DataTableUtil.extractIntForColumnName(row, "productIdentifier.m_product_id");
+			final String productIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final I_M_Product product = productTable.get(productIdentifier);
+
 			final BigDecimal qtyinvoiced = DataTableUtil.extractBigDecimalForColumnName(row, "qtyinvoiced");
 
 			//dev-note: we assume the tests are not using the same product and qty on different lines
 			final I_C_InvoiceLine invoiceLineRecord = queryBL.createQueryBuilder(I_C_InvoiceLine.class)
 					.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_C_Invoice_ID, invoiceRecord.getC_Invoice_ID())
-					.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_M_Product_ID, productId)
+					.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_M_Product_ID, product.getM_Product_ID())
 					.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_QtyInvoiced, qtyinvoiced)
 					.create()
 					.firstOnlyNotNull(I_C_InvoiceLine.class);
@@ -76,11 +85,9 @@ public class C_InvoiceLine_StepDef
 
 	private void validateInvoiceLine(@NonNull final I_C_InvoiceLine invoiceLine, @NonNull final Map<String, String> row)
 	{
-		final int productId = DataTableUtil.extractIntForColumnName(row, "productIdentifier.m_product_id");
 		final BigDecimal qtyinvoiced = DataTableUtil.extractBigDecimalForColumnName(row, "qtyinvoiced");
 		final boolean processed = DataTableUtil.extractBooleanForColumnName(row, "processed");
 
-		assertThat(invoiceLine.getM_Product_ID()).isEqualTo(productId);
 		assertThat(invoiceLine.getQtyInvoiced()).isEqualTo(qtyinvoiced);
 		assertThat(invoiceLine.isProcessed()).isEqualTo(processed);
 	}

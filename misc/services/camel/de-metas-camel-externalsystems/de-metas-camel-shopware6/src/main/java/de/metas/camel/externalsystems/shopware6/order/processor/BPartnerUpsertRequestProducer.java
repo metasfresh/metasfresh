@@ -28,6 +28,7 @@ import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderAddress
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderCustomer;
 import de.metas.camel.externalsystems.shopware6.api.model.order.OrderAddressDetails;
 import de.metas.camel.externalsystems.shopware6.salutation.SalutationInfoProvider;
+import de.metas.camel.externalsystems.shopware6.common.ExternalIdentifier;
 import de.metas.common.bpartner.v2.request.JsonRequestBPartner;
 import de.metas.common.bpartner.v2.request.JsonRequestBPartnerUpsert;
 import de.metas.common.bpartner.v2.request.JsonRequestBPartnerUpsertItem;
@@ -67,7 +68,7 @@ import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.SHOPWA
 public class BPartnerUpsertRequestProducer
 {
 	@NonNull
-	String externalBPartnerId;
+	ExternalIdentifier externalBPartnerId;
 
 	@NonNull
 	String orgCode;
@@ -112,7 +113,7 @@ public class BPartnerUpsertRequestProducer
 			@NonNull final SalutationInfoProvider salutationInfoProvider,
 			@Nullable final String bPartnerLocationIdentifierCustomPath,
 			@Nullable final String emailCustomPath,
-			@NonNull final String externalBPartnerId,
+			@NonNull final ExternalIdentifier externalBPartnerId,
 			@Nullable final JsonExternalSystemShopware6ConfigMapping matchingShopware6Mapping)
 	{
 		this.orgCode = orgCode;
@@ -131,8 +132,6 @@ public class BPartnerUpsertRequestProducer
 
 	public BPartnerRequestProducerResult run()
 	{
-		final String customerBPartnerIdentifier = asExternalIdentifier(externalBPartnerId);
-
 		final JsonRequestComposite.JsonRequestCompositeBuilder jsonRequestCompositeBuilder = JsonRequestComposite.builder()
 				.orgCode(orgCode)
 				.bpartner(getCustomerBPartnerRequest())
@@ -140,7 +139,7 @@ public class BPartnerUpsertRequestProducer
 				.locations(getUpsertLocationsRequest());
 
 		final JsonRequestBPartnerUpsertItem bPartnerUpsertItem = JsonRequestBPartnerUpsertItem.builder()
-				.bpartnerIdentifier(customerBPartnerIdentifier)
+				.bpartnerIdentifier(externalBPartnerId.getIdentifier())
 				.bpartnerComposite(jsonRequestCompositeBuilder.build())
 				.build();
 
@@ -257,7 +256,7 @@ public class BPartnerUpsertRequestProducer
 		contactRequest.setInvoiceEmailEnabled(isInvoiceEmailEnabled);
 
 		return JsonRequestContactUpsertItem.builder()
-				.contactIdentifier(asExternalIdentifier(externalBPartnerId))
+				.contactIdentifier(externalBPartnerId.getIdentifier())
 				.contact(contactRequest)
 				.build();
 	}
@@ -281,7 +280,7 @@ public class BPartnerUpsertRequestProducer
 		return Optional.ofNullable(orderAddressWithCustomId.getCustomId())
 				.orElseGet(() -> {
 					final String suffix = isBillingAddress ? BILL_TO_SUFFIX : SHIP_TO_SUFFIX;
-					return externalBPartnerId + suffix;
+					return externalBPartnerId.getRawValue() + suffix;
 				});
 	}
 
