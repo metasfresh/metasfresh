@@ -8,7 +8,11 @@ import { withRouter } from 'react-router';
 import { postStepUnPicked, postStepPicked } from '../../../api/picking';
 import { toastError } from '../../../utils/toast';
 import { getPickFrom, getQtyToPick } from '../../../utils/picking';
-import { pickingStepScreenLocation, pickingStepScanScreenLocation } from '../../../routes/picking';
+import {
+  pickingStepScreenLocation,
+  pickingStepScanScreenLocation,
+  pickingLineScreenLocation,
+} from '../../../routes/picking';
 import { selectWFProcessFromState } from '../../../reducers/wfProcesses_status';
 import { updatePickingStepQty } from '../../../actions/PickingActions';
 import { pushHeaderEntry } from '../../../actions/HeaderActions';
@@ -23,8 +27,13 @@ class PickStepScreen extends Component {
     const {
       pushHeaderEntry,
       stepProps: { mainPickFrom },
+      wfProcessId,
+      activityId,
+      lineId,
+      stepId,
+      altStepId,
     } = this.props;
-    const location = pickingStepScreenLocation(this.props);
+    const location = pickingStepScreenLocation({ wfProcessId, activityId, lineId, stepId, altStepId });
 
     pushHeaderEntry({
       location,
@@ -38,8 +47,8 @@ class PickStepScreen extends Component {
   }
 
   componentWillUnmount() {
-    const { wfProcessId, activityId, lineId, stepId, updatePickingStepQty } = this.props;
-    const qtyPicked = getPickFrom(this.props).qtyPicked;
+    const { wfProcessId, activityId, lineId, stepId, updatePickingStepQty, altStepId, stepProps } = this.props;
+    const qtyPicked = getPickFrom({ stepProps, altStepId }).qtyPicked;
 
     qtyPicked === '' &&
       updatePickingStepQty({
@@ -52,13 +61,24 @@ class PickStepScreen extends Component {
   }
 
   onUnpickButtonClick = () => {
-    const { wfProcessId, activityId, lineId, stepId, postStepUnPicked, push, updatePickingStepQty } = this.props;
+    const {
+      wfProcessId,
+      activityId,
+      lineId,
+      stepId,
+      postStepUnPicked,
+      push,
+      updatePickingStepQty,
+      altStepId,
+      stepProps,
+    } = this.props;
+    const location = pickingLineScreenLocation({ wfProcessId, activityId, lineId });
 
     postStepUnPicked({
       wfProcessId,
       activityId,
       stepId,
-      huBarcode: getPickFrom(this.props).huBarcode,
+      huBarcode: getPickFrom({ stepProps, altStepId }).huBarcode,
     })
       .then(() => {
         updatePickingStepQty({
@@ -70,15 +90,15 @@ class PickStepScreen extends Component {
           qtyRejected: 0,
           qtyRejectedReasonCode: null,
         });
-        push(`/workflow/${wfProcessId}/activityId/${activityId}/lineId/${lineId}`);
+        push(location);
       })
       .catch((axiosError) => toastError({ axiosError }));
   };
 
   handleNotFound = () => {
-    const { wfProcessId, stepId, altStepId, lineId, activityId, updatePickingStepQty } = this.props;
-    const huBarcode = this.getPickFrom().huBarcode;
-    const qtyRejected = this.getQtyToPick();
+    const { wfProcessId, stepId, altStepId, lineId, activityId, updatePickingStepQty, stepProps } = this.props;
+    const huBarcode = getPickFrom({ stepProps, altStepId }).huBarcode;
+    const qtyRejected = getQtyToPick({ stepProps, altStepId });
 
     postStepPicked({
       wfProcessId,
@@ -110,9 +130,9 @@ class PickStepScreen extends Component {
   };
 
   render() {
-    const { wfProcessId, activityId, lineId, stepId } = this.props;
-    const qtyToPick = getQtyToPick(this.props);
-    const pickFrom = getPickFrom(this.props);
+    const { wfProcessId, activityId, lineId, stepId, altStepId, stepProps } = this.props;
+    const qtyToPick = getQtyToPick({ stepProps, altStepId });
+    const pickFrom = getPickFrom({ stepProps, altStepId });
     const isPickedFromHU = pickFrom.qtyPicked > 0;
 
     const scanButtonCaption = isPickedFromHU

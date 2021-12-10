@@ -25,10 +25,10 @@ class PickStepScanScreen extends PureComponent {
   }
 
   onComponentDidMount() {
-    const { pushHeaderEntry } = this.props;
-    const location = pickingStepScanScreenLocation(this.props);
-    const headerHuCode = getPickFrom(this.props).huBarcode;
-    const headerQtyToPick = getQtyToPick(this.props).qtyPicked;
+    const { pushHeaderEntry, wfProcessId, activityId, lineId, stepId, altStepId, stepProps } = this.props;
+    const location = pickingStepScanScreenLocation({ wfProcessId, activityId, lineId, stepId, altStepId });
+    const headerHuCode = getPickFrom({ stepProps, altStepId }).huBarcode;
+    const headerQtyToPick = getQtyToPick({ stepProps, altStepId }).qtyPicked;
 
     pushHeaderEntry({
       location,

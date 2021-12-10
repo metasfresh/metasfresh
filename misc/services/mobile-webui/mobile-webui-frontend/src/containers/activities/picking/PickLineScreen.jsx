@@ -15,8 +15,11 @@ class PickLineScreen extends PureComponent {
     const {
       pushHeaderEntry,
       lineProps: { caption },
+      wfProcessId,
+      activityId,
+      lineId,
     } = this.props;
-    const location = pickingLineScreenLocation(this.props);
+    const location = pickingLineScreenLocation({ wfProcessId, activityId, lineId });
 
     pushHeaderEntry({
       location,

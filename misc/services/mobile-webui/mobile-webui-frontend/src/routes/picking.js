@@ -5,17 +5,16 @@ import PickLineScreen from '../containers/activities/picking/PickLineScreen';
 export const pickingLineScreenLocation = ({ wfProcessId, activityId, lineId }) =>
   `/app/picking/${wfProcessId}/activityId/${activityId}/lineId/${lineId}`;
 
-export const pickingStepScreenLocation = ({ wfProcessId, activityId, lineId, stepId }) =>
-  `/app/picking/${wfProcessId}/activityId/${activityId}/lineId/${lineId}/stepId/${stepId}`;
+export const pickingStepScreenLocation = ({ wfProcessId, activityId, lineId, stepId, altStepId }) =>
+  `/app/picking/${wfProcessId}/activityId/${activityId}/lineId/${lineId}/stepId/${stepId}${
+    altStepId ? `/altStepId/${altStepId}` : ''
+  }`;
 
-export const pickingAltStepScreenLocation = ({ wfProcessId, activityId, lineId, stepId, altStepId }) =>
-  `/app/picking/${wfProcessId}/activityId/${activityId}/lineId/${lineId}/stepId/${stepId}/altStepId/${altStepId}`;
-
-export const pickingStepScanScreenLocation = ({ wfProcessId, activityId, lineId, stepId }) =>
-  `/app/picking/${wfProcessId}/activityId/${activityId}/lineId/${lineId}/stepId/${stepId}/scanner`;
-
-export const pickingAltStepScanScreenLocation = ({ wfProcessId, activityId, lineId, stepId, altStepId }) =>
-  `/app/picking/${wfProcessId}/activityId/${activityId}/lineId/${lineId}/stepId/${stepId}/altStepId/${altStepId}/scanner`;
+export const pickingStepScanScreenLocation = ({ wfProcessId, activityId, lineId, stepId, altStepId }) => {
+  return `/app/picking/${wfProcessId}/activityId/${activityId}/lineId/${lineId}/stepId/${stepId}${
+    altStepId ? `/altStepId/${altStepId}` : ''
+  }/scanner`;
+};
 
 export const pickingRoutes = [
   {
@@ -36,7 +35,7 @@ export const pickingRoutes = [
     Component: PickStepScreen,
   },
   {
-    path: pickingAltStepScreenLocation({
+    path: pickingStepScreenLocation({
       wfProcessId: ':workflowId',
       activityId: ':activityId',
       lineId: ':lineId',
@@ -55,7 +54,7 @@ export const pickingRoutes = [
     Component: PickStepScanScreen,
   },
   {
-    path: pickingAltStepScanScreenLocation({
+    path: pickingStepScanScreenLocation({
       wfProcessId: ':workflowId',
       activityId: ':activityId',
       lineId: ':lineId',

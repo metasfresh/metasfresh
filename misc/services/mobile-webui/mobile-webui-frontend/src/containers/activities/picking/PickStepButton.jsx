@@ -12,8 +12,15 @@ import { computePickFromStatus } from '../../../reducers/wfProcesses_status/pick
 
 class PickStepButton extends PureComponent {
   handleClick = () => {
-    const { push } = this.props;
-    const location = pickingStepScreenLocation(this.props);
+    const {
+      push,
+      wfProcessId,
+      activityId,
+      lineId,
+      stepId,
+      stepState: { altStepId },
+    } = this.props;
+    const location = pickingStepScreenLocation({ wfProcessId, activityId, lineId, stepId, altStepId });
 
     push(location);
   };

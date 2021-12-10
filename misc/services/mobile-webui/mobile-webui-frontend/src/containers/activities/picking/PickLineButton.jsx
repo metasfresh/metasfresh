@@ -9,8 +9,8 @@ import ButtonQuantityProp from '../../../components/ButtonQuantityProp';
 
 class PickLineButton extends PureComponent {
   handleClick = () => {
-    const { push } = this.props;
-    const location = pickingLineScreenLocation(this.props);
+    const { push, wfProcessId, activityId, lineId } = this.props;
+    const location = pickingLineScreenLocation({ wfProcessId, activityId, lineId });
 
     push(location);
   };
