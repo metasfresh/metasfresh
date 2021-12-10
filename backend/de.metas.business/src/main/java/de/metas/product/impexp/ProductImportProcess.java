@@ -261,6 +261,8 @@ public class ProductImportProcess extends SimpleImportProcessTemplate<I_I_Produc
 		pp.setC_TaxCategory_ID(taxCategoryId);
 		pp.setC_UOM_ID(uomId);
 
+		save(pp);
+
 		if (imp.isScalePrice())
 		{
 			pp.setUseScalePrice(X_M_ProductPrice.USESCALEPRICE_UseScalePriceStrict);
