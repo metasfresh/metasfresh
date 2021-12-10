@@ -29,6 +29,14 @@ properties([
                         description: 'If true, then don\'t build backend, even if there were changes or <code>MF_FORCE_FULL_BUILD</code> is set to <code>true<code>',
                         name: 'MF_FORCE_SKIP_BACKEND_BUILD'),
 
+                booleanParam(defaultValue: false,
+                        description: 'If true, then don\'t build the mobile webui, even if there were changes or <code>MF_FORCE_FULL_BUILD</code> is set to <code>true<code>',
+                        name: 'MF_FORCE_SKIP_MOBILE_WEBUI_BUILD'),
+
+                booleanParam(defaultValue: true,
+                        description: 'If true, then don\'t build the procurement webui, even if there were changes or <code>MF_FORCE_FULL_BUILD</code> is set to <code>true<code>',
+                        name: 'MF_FORCE_SKIP_PROCUREMENT_WEBUI_BUILD'),
+
                 booleanParam(defaultValue: true,
                         description: 'If true, then don\'t build cypress (e2e), even if there were changes or <code>MF_FORCE_FULL_BUILD</code> is set to <code>true<code>',
                         name: 'MF_FORCE_SKIP_CYPRESS_BUILD'),
@@ -133,7 +141,7 @@ private void buildAll(String mfVersion, MvnConf mvnConf, scmVars) {
                 }
                 dir('misc/services') { // misc/services has modules with different maven/jdk settings
                             def miscServices = load('buildfile.groovy')
-                            miscServices.build(mvnConf, scmVars, params.MF_FORCE_FULL_BUILD)
+                            miscServices.build(mvnConf, scmVars, params.MF_FORCE_FULL_BUILD, params.MF_FORCE_SKIP_MOBILE_WEBUI_BUILD, params.MF_FORCE_SKIP_PROCUREMENT_WEBUI_BUILD)
                         }
 
                 withMaven(jdk: 'java-8-AdoptOpenJDK', maven: 'maven-3.6.3', mavenLocalRepo: '.repository', mavenOpts: '-Xmx1536M', options: [artifactsPublisher(disabled: true)]) {
