@@ -5,7 +5,7 @@ import history from '../services/History';
 
 /**
  * @method updateUri
- * @summary Prepends viewId/page/sorting to the url
+ * @summary Replaces the history url with updated query URL that contain viewId/page/sorting
  */
 export function updateUri(pathname, query, updatedQuery) {
   const queryObject = {
