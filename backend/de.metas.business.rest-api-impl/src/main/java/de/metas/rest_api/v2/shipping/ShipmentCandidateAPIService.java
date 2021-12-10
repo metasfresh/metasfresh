@@ -212,7 +212,6 @@ class ShipmentCandidateAPIService
 					final JsonCustomer shipBPartner = createJsonCustomer(
 							shipmentSchedule.getShipBPartnerId(),
 							shipmentSchedule.getShipLocationId(),
-							shipmentSchedule.getShipContactId(),
 							shipmentSchedule.getOrderAndLineId(),
 							bpartnerIdToBPartner);
 
@@ -238,8 +237,8 @@ class ShipmentCandidateAPIService
 						final JsonCustomer billBPartner = createJsonCustomer(
 								shipmentSchedule.getBillBPartnerId(),
 								shipmentSchedule.getBillLocationId(),
-								shipmentSchedule.getBillContactId(),
-								shipmentSchedule.getOrderAndLineId(),
+								/*contact info from C_Order are about the shipping partner*/
+								null,
 								bpartnerIdToBPartner);
 						itemBuilder.billBPartner(billBPartner);
 					}
@@ -287,7 +286,6 @@ class ShipmentCandidateAPIService
 	private JsonCustomer createJsonCustomer(
 			@NonNull final BPartnerId bpartnerId,
 			@NonNull final BPartnerLocationId bPartnerLocationId,
-			@Nullable final BPartnerContactId bPartnerContactId,
 			@Nullable final OrderAndLineId orderAndLineId,
 			@NonNull final ImmutableMap<BPartnerId, BPartnerComposite> bpartnerIdToBPartner)
 	{
@@ -346,9 +344,9 @@ class ShipmentCandidateAPIService
 		{
 			setAdditionalContactFields(customerBuilder, orderAndLineId);
 		}
-		else if (bPartnerContactId != null)
+		else
 		{
-			setAdditionalContactFields(customerBuilder, bPartnerContactId, composite);
+			setAdditionalContactFields(customerBuilder, location);
 		}
 
 		return customerBuilder.build();
@@ -811,20 +809,17 @@ class ShipmentCandidateAPIService
 
 	private void setAdditionalContactFields(
 			@NonNull final JsonCustomerBuilder customerBuilder,
-			@NonNull final BPartnerContactId contactId,
-			@NonNull final BPartnerComposite partnerComposite)
+			@NonNull final BPartnerLocation bPartnerLocation)
 	{
-		final BPartnerContact contact = partnerComposite.extractContact(contactId)
-				.orElseThrow(() -> new ShipmentCandidateExportException("Unable to get the shipment schedule's contact from the shipment schedule's bPartner")
-						.appendParametersToMessage()
-						.setParameter("C_BPartner_ID", partnerComposite.getBpartner().getId())
-						.setParameter("AD_User_ID", contactId.getRepoId()));
-
 		customerBuilder
-				.contactEmail(contact.getEmail())
-				.contactName(contact.getName())
-				.contactPhone(contact.getPhone());
+				.contactEmail(bPartnerLocation.getEmail())
+				.contactName(bPartnerLocation.getBpartnerName())
+				.contactPhone(bPartnerLocation.getPhone());
 
-		logger.debug("Exporting effective AD_User_ID={} from the shipment-schedule", contactId.getRepoId());
+		logger.debug("Exporting effective contactEmail={}, contactName={}, contactPhone={} from the bPartnerLocationId={}",
+					 bPartnerLocation.getEmail(),
+					 bPartnerLocation.getBpartnerName(),
+					 bPartnerLocation.getPhone(),
+					 bPartnerLocation.getId());
 	}
 }
