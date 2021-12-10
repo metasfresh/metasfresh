@@ -10,43 +10,39 @@ package de.metas.lock.exceptions;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
-import java.util.Arrays;
-
-import javax.annotation.OverridingMethodsMustInvokeSuper;
-
 import com.google.common.collect.ImmutableList;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStringBuilder;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.lock.spi.impl.SqlLockDatabase;
 import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
-import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.TranslatableStringBuilder;
-import de.metas.i18n.TranslatableStrings;
+import javax.annotation.OverridingMethodsMustInvokeSuper;
+import java.util.Arrays;
 
 /**
  * General exception thrown on any locking/unlocking error.
- * 
+ * <p>
  * This is the root of all locking exceptions.
- * 
+ * <p>
  * Please avoid throwing this one directly but prefer using a specific exception
- * 
- * @author tsa
  *
+ * @author tsa
  */
 public abstract class LockException extends AdempiereException
 {
@@ -54,10 +50,10 @@ public abstract class LockException extends AdempiereException
 
 	private String sql;
 	private Object[] sqlParams;
-	
+
 	@Getter
 	private ImmutableList<SqlLockDatabase.ExistingLockInfo> existingLocks;
-	
+
 	public LockException(final String message)
 	{
 		super(message);
@@ -91,9 +87,19 @@ public abstract class LockException extends AdempiereException
 		}
 		if (existingLocks != null)
 		{
-			message.append("\n Existing Locks: ").append(existingLocks.toString());
+			final int existingLocksCount = existingLocks.size();
+			final int printFirstN = 20;
+			if (existingLocksCount > printFirstN)
+			{
+				final ImmutableList<SqlLockDatabase.ExistingLockInfo> existingLocksTrunc = existingLocks.subList(0, printFirstN);
+				message.append("\n Existing Locks: (first " + printFirstN + " of " + existingLocksCount + ") ").append(existingLocksTrunc.toString());
+			}
+			else
+			{
+				message.append("\n Existing Locks: ").append(existingLocks.toString());
+			}
 		}
-		
+
 		appendParameters(message);
 
 		return message.build();
@@ -108,7 +114,7 @@ public abstract class LockException extends AdempiereException
 		return this;
 	}
 
- 	@Override
+	@Override
 	@OverridingMethodsMustInvokeSuper
 	public LockException setRecord(final @NonNull TableRecordReference record)
 	{
