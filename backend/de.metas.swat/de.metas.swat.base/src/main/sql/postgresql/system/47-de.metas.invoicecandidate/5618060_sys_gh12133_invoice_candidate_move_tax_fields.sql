@@ -10,4 +10,3 @@ UPDATE AD_UI_Element SET AD_UI_ElementGroup_ID=541087, SeqNo=40,Updated=TO_TIMES
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_UI_Element SET AD_UI_ElementGroup_ID=541087, SeqNo=50,Updated=TO_TIMESTAMP('2021-12-10 07:37:01','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=541012
 ;
-
