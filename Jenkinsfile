@@ -29,6 +29,18 @@ properties([
                         description: 'If true, then don\'t build backend, even if there were changes or <code>MF_FORCE_FULL_BUILD</code> is set to <code>true<code>',
                         name: 'MF_FORCE_SKIP_BACKEND_BUILD'),
 
+                booleanParam(defaultValue: false,
+                        description: 'If true, then don\'t build the mobile webui, even if there were changes or <code>MF_FORCE_FULL_BUILD</code> is set to <code>true<code>',
+                        name: 'MF_FORCE_SKIP_MOBILE_WEBUI_BUILD'),
+
+                booleanParam(defaultValue: false,
+                        description: 'If true, then don\'t build the procurement webui, even if there were changes or <code>MF_FORCE_FULL_BUILD</code> is set to <code>true<code>',
+                        name: 'MF_FORCE_SKIP_PROCUREMENT_WEBUI_BUILD'),
+
+                booleanParam(defaultValue: true,
+                        description: 'If true, then don\'t build cypress (e2e), even if there were changes or <code>MF_FORCE_FULL_BUILD</code> is set to <code>true<code>',
+                        name: 'MF_FORCE_SKIP_CYPRESS_BUILD'),
+
                 string(defaultValue: MF_SQL_SEED_DUMP_URL_DEFAULT,
                         description: 'metasfresh database seed against which the build shall apply its migrate scripts for QA; leave empty to avoid this QA.',
                         name: 'MF_SQL_SEED_DUMP_URL'),
