@@ -19,19 +19,8 @@ class PickStepButton extends PureComponent {
   };
 
   render() {
-    const {
-      appId,
-      wfProcessId,
-      activityId,
-      lineId,
-      stepId,
-      altStepId,
-      //
-      stepState: { pickFromAlternatives, uom },
-      qtyToPick,
-      pickFrom,
-    } = this.props;
-
+    const { wfProcessId, activityId, lineId, stepId, altStepId, pickFromAlternatives, uom, qtyToPick, pickFrom } =
+      this.props;
     const isAlternative = altStepId;
     const completeStatus = computePickFromStatus(pickFrom);
 
@@ -68,7 +57,6 @@ class PickStepButton extends PureComponent {
         </button>
         {pickFromAlternatives && !altStepId && (
           <PickAlternatives
-            appId={appId}
             wfProcessId={wfProcessId}
             activityId={activityId}
             lineId={lineId}
@@ -82,15 +70,6 @@ class PickStepButton extends PureComponent {
   }
 }
 
-const mapStateToProps = (state, ownProps) => {
-  const { wfProcessId, activityId, lineId, stepId } = ownProps;
-
-  return {
-    stepState: state.wfProcesses_status[wfProcessId].activities[activityId].dataStored.lines[lineId].steps[stepId],
-    appId: state.applications.activeApplication ? state.applications.activeApplication.id : null,
-  };
-};
-
 PickStepButton.propTypes = {
   //
   // Props
@@ -102,11 +81,11 @@ PickStepButton.propTypes = {
   pickFrom: PropTypes.object.isRequired,
   qtyToPick: PropTypes.number.isRequired,
   altStepId: PropTypes.string,
-  //
-  stepState: PropTypes.object.isRequired,
+  pickFromAlternatives: PropTypes.object,
+  uom: PropTypes.string.isRequired,
   //
   // Actions/Functions
   push: PropTypes.func.isRequired,
 };
 
-export default withRouter(connect(mapStateToProps, { push })(PickStepButton));
+export default withRouter(connect(null, { push })(PickStepButton));

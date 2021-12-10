@@ -48,6 +48,9 @@ class PickLineScreen extends PureComponent {
                   activityId={activityId}
                   lineId={lineId}
                   stepId={stepItem.pickingStepId}
+                  pickFromAlternatives={stepItem.pickFromAlternatives}
+                  //
+                  uom={stepItem.uom}
                   qtyToPick={stepItem.qtyToPick}
                   pickFrom={stepItem.mainPickFrom}
                 />
