@@ -10,15 +10,15 @@ import { manufacturingReceiptScanScreenLocation, manufacturingReceiptNewHUScreen
 
 class ReceiptReceiveTargetScreen extends PureComponent {
   handleNewHUClick = () => {
-    const { push } = this.props;
-    const location = manufacturingReceiptNewHUScreen(this.props);
+    const { push, wfProcessId, activityId, lineId } = this.props;
+    const location = manufacturingReceiptNewHUScreen({ wfProcessId, activityId, lineId });
 
     push(location);
   };
 
   handleScanClick = () => {
-    const { push } = this.props;
-    const location = manufacturingReceiptScanScreenLocation(this.props);
+    const { push, wfProcessId, activityId, lineId } = this.props;
+    const location = manufacturingReceiptScanScreenLocation({ wfProcessId, activityId, lineId });
 
     push(location);
   };

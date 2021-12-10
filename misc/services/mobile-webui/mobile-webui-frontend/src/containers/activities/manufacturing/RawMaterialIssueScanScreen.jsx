@@ -9,7 +9,7 @@ import { selectWFProcessFromState } from '../../../reducers/wfProcesses_status';
 import { updateManufacturingIssueQty, updateManufacturingIssue } from '../../../actions/ManufacturingActions';
 import { pushHeaderEntry } from '../../../actions/HeaderActions';
 import { toastError } from '../../../utils/toast';
-import { getLocation } from '../../../utils';
+import { manufacturingScanScreenLocation } from '../../../routes/manufacturing';
 
 import StepScanScreenComponent from '../common/StepScanScreenComponent';
 
@@ -25,8 +25,12 @@ class RawMaterialIssueScanScreen extends PureComponent {
   componentDidMount() {
     const {
       stepProps: { huBarcode, qtyToIssue },
+      wfProcessId,
+      activityId,
+      lineId,
+      stepId,
     } = this.props;
-    const location = getLocation(this.props, true);
+    const location = manufacturingScanScreenLocation({ wfProcessId, activityId, lineId, stepId });
 
     pushHeaderEntry({
       location,

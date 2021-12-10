@@ -9,8 +9,8 @@ import ButtonQuantityProp from '../../../components/ButtonQuantityProp';
 
 class MaterialReceiptLineButton extends PureComponent {
   handleClick = () => {
-    const { push } = this.props;
-    const location = manufacturingLineScreenLocation(this.props);
+    const { push, wfProcessId, activityId, lineId } = this.props;
+    const location = manufacturingLineScreenLocation({ wfProcessId, activityId, lineId });
 
     push(location);
   };

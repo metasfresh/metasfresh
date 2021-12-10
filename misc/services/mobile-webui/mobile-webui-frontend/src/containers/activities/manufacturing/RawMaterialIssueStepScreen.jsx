@@ -18,8 +18,12 @@ class RawMaterialIssueStepScreen extends PureComponent {
     const {
       pushHeaderEntry,
       stepProps: { locatorName },
+      wfProcessId,
+      activityId,
+      lineId,
+      stepId,
     } = this.props;
-    const location = manufacturingStepScreenLocation(this.props);
+    const location = manufacturingStepScreenLocation({ wfProcessId, activityId, lineId, stepId });
 
     pushHeaderEntry({
       location,
@@ -33,8 +37,8 @@ class RawMaterialIssueStepScreen extends PureComponent {
   }
 
   onScanButtonClick = () => {
-    const { push } = this.props;
-    const location = manufacturingScanScreenLocation(this.props);
+    const { push, wfProcessId, activityId, lineId, stepId } = this.props;
+    const location = manufacturingScanScreenLocation({ wfProcessId, activityId, lineId, stepId });
 
     push(location);
   };

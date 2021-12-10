@@ -11,8 +11,8 @@ import { pushHeaderEntry } from '../../../actions/HeaderActions';
 
 class RawMaterialsIssueLineButton extends Component {
   handleClick = () => {
-    const { caption, push, pushHeaderEntry } = this.props;
-    const location = manufacturingLineScreenLocation(this.props);
+    const { caption, push, pushHeaderEntry, wfProcessId, activityId, lineId } = this.props;
+    const location = manufacturingLineScreenLocation({ wfProcessId, activityId, lineId });
 
     push(location);
 

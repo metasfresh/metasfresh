@@ -11,8 +11,8 @@ import * as CompleteStatus from '../../../constants/CompleteStatus';
 
 class RawMaterialIssueStepButton extends PureComponent {
   handleClick = () => {
-    const { push } = this.props;
-    const location = manufacturingStepScreenLocation(this.props);
+    const { push, wfProcessId, activityId, lineId, stepId } = this.props;
+    const location = manufacturingStepScreenLocation({ wfProcessId, activityId, lineId, stepId });
 
     push(location);
   };

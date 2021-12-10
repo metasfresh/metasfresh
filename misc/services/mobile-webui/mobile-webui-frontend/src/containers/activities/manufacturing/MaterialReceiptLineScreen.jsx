@@ -17,8 +17,11 @@ class MaterialReceiptLineScreen extends PureComponent {
     const {
       dispatch,
       lineProps: { productName },
+      wfProcessId,
+      activityId,
+      lineId,
     } = this.props;
-    const location = manufacturingLineScreenLocation(this.props);
+    const location = manufacturingLineScreenLocation({ wfProcessId, activityId, lineId });
 
     dispatch(
       pushHeaderEntry({
@@ -62,8 +65,8 @@ class MaterialReceiptLineScreen extends PureComponent {
   };
 
   handleClick = () => {
-    const { dispatch } = this.props;
-    const location = manufacturingReceiptReceiveTargetScreen(this.props);
+    const { dispatch, wfProcessId, activityId, lineId } = this.props;
+    const location = manufacturingReceiptReceiveTargetScreen({ wfProcessId, activityId, lineId });
 
     dispatch(push(location));
   };
