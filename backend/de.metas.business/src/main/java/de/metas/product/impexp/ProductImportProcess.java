@@ -111,6 +111,8 @@ public class ProductImportProcess extends SimpleImportProcessTemplate<I_I_Produc
 		MProductImportTableSqlUpdater.builder()
 				.selection(selection)
 				.ctx(getCtx())
+				.tableName(getImportTableName())
+				.valueName(I_I_Product.COLUMNNAME_Value)
 				.updateIProduct();
 	}
 
