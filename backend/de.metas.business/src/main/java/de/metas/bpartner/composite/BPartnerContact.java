@@ -66,6 +66,7 @@ public class BPartnerContact
 	public static final String DESCRIPTION = "description";
 	public static final String GREETING_ID = "greetingId";
 	public static final String ROLES = "roles";
+	public static final String BPARTNER_LOCATION_ID = "bPartnerLocationId";
 
 	public static final String SUBJECT_MATTER = "subjectMatter";
 	public static final String NEWSLETTER = "newsletter";

@@ -65,6 +65,7 @@ public class JsonResponseContact
 	public static final String PURCHASE = "purchase";
 	public static final String SUBJECT_MATTER = "subjectMatter";
 	public static final String ROLES = "roles";
+	public static final String METASFRESH_LOCATION_ID = "metasfreshLocationId";
 
 	@ApiModelProperty(allowEmptyValue = false, dataType = "java.lang.Long")
 	JsonMetasfreshId metasfreshId;
@@ -147,6 +148,9 @@ public class JsonResponseContact
 	@ApiModelProperty(position = 20) // shall be last
 	JsonChangeInfo changeInfo;
 
+	@ApiModelProperty(dataType = "java.lang.Integer")
+	JsonMetasfreshId metasfreshLocationId;
+
 	@Builder(toBuilder = true)
 	@JsonCreator
 	private JsonResponseContact(
@@ -178,6 +182,7 @@ public class JsonResponseContact
 			@JsonProperty(SUBJECT_MATTER) final boolean subjectMatter,
 			@JsonProperty(INVOICE_EMAIL_ENABLED) final Boolean invoiceEmailEnabled,
 			@JsonProperty(ROLES) final List<JsonResponseContactRole> roles,
+			@JsonProperty(METASFRESH_LOCATION_ID) @Nullable final JsonMetasfreshId metasfreshLocationId,
 
 			@JsonProperty("changeInfo") @Nullable JsonChangeInfo changeInfo)
 	{
@@ -211,5 +216,6 @@ public class JsonResponseContact
 		this.roles = roles;
 
 		this.changeInfo = changeInfo;
+		this.metasfreshLocationId = metasfreshLocationId;
 	}
 }
