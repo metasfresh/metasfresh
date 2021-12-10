@@ -94,17 +94,19 @@ public class ApiAuditFilter implements Filter
 				}
 			}
 
+			final boolean performAuditAsync = apiAuditService.shouldPerformAuditAsync(httpServletRequest);
+
+			if (performAuditAsync)
+			{
+				auditHttpCallAsync(httpServletRequest, httpServletResponse, chain);
+				return;
+			}
+
 			final Optional<ApiAuditConfig> matchingAuditConfig = apiAuditService.getMatchingAuditConfig(httpServletRequest);
 
 			if (!matchingAuditConfig.isPresent())
 			{
 				chain.doFilter(request, response);
-				return;
-			}
-
-			if (matchingAuditConfig.get().isBypassAudit())
-			{
-				auditHttpCallAsync(httpServletRequest, httpServletResponse, chain, matchingAuditConfig.get());
 				return;
 			}
 
@@ -121,15 +123,15 @@ public class ApiAuditFilter implements Filter
 	private void auditHttpCallAsync(
 			@NonNull final HttpServletRequest httpServletRequest,
 			@NonNull final HttpServletResponse httpServletResponse,
-			@NonNull final FilterChain chain,
-			@NonNull final ApiAuditConfig apiAuditConfig) throws IOException, ServletException
+			@NonNull final FilterChain chain) throws IOException, ServletException
 	{
 		final ContentCachingResponseWrapper contentCachedResponse = new ContentCachingResponseWrapper(httpServletResponse);
 		final ContentCachingRequestWrapper contentCachedRequest = new ContentCachingRequestWrapper(httpServletRequest);
 
 		chain.doFilter(contentCachedRequest, contentCachedResponse);
 
-		apiAuditService.auditHttpCallAsync(apiAuditConfig, contentCachedRequest, contentCachedResponse);
+		apiAuditService.getMatchingAuditConfig(httpServletRequest)
+				.ifPresent(apiAuditConfig -> apiAuditService.auditHttpCallAsync(apiAuditConfig, contentCachedRequest, contentCachedResponse));
 
 		contentCachedResponse.copyBodyToResponse();
 	}

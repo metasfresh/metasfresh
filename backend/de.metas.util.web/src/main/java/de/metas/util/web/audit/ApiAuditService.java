@@ -110,6 +110,7 @@ public class ApiAuditService
 {
 	public static final String API_FILTER_REQUEST_ID_HEADER = "X-ApiFilter-Request-ID";
 	public static final String API_REQUEST_AUDIT_ID_RESPONSE_HEADER = "X-Api-Request-Audit-ID";
+	public static final String API_REQUEST_AUDIT_ASYNC_HEADER = "X-Api-Request-Audit-Async";
 
 	private static final AdMessageKey MSG_SUCCESSFUL_API_INVOCATION =
 			AdMessageKey.of("de.metas.util.web.audit.successful_invocation");
@@ -477,6 +478,22 @@ public class ApiAuditService
 		final Object responseBody = wrapBodyIfNeeded(apiAuditConfig, apiRequestAudit, error);
 
 		buildHttpResponse(httpServletResponse, responseBody, HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+	}
+
+	public boolean shouldPerformAuditAsync(@NonNull final HttpServletRequest request)
+	{
+		final boolean bypassAuditAtClientWill = Optional.ofNullable(request.getHeader(API_REQUEST_AUDIT_ASYNC_HEADER))
+				.map(Boolean::parseBoolean)
+				.orElse(false);
+
+		if (bypassAuditAtClientWill)
+		{
+			return true;
+		}
+
+		return getMatchingAuditConfig(request)
+				.map(ApiAuditConfig::isBypassAudit)
+				.orElse(false);
 	}
 
 	private ApiRequestAudit logRequest(
