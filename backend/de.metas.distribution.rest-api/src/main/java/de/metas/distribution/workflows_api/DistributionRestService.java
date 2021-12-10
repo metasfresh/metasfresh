@@ -36,14 +36,17 @@ public class DistributionRestService
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final DDOrderService ddOrderService;
 	private final DDOrderMoveScheduleService ddOrderMoveScheduleService;
+	private final DistributionJobHUReservationService distributionJobHUReservationService;
 	private final DistributionJobLoaderSupportingServices loadingSupportServices;
 
 	public DistributionRestService(
 			@NonNull final DDOrderService ddOrderService,
-			@NonNull final DDOrderMoveScheduleService ddOrderMoveScheduleService)
+			@NonNull final DDOrderMoveScheduleService ddOrderMoveScheduleService,
+			@NonNull final DistributionJobHUReservationService distributionJobHUReservationService)
 	{
 		this.ddOrderService = ddOrderService;
 		this.ddOrderMoveScheduleService = ddOrderMoveScheduleService;
+		this.distributionJobHUReservationService = distributionJobHUReservationService;
 
 		this.loadingSupportServices = DistributionJobLoaderSupportingServices.builder()
 				.ddOrderService(ddOrderService)
@@ -100,6 +103,7 @@ public class DistributionRestService
 				.trxManager(trxManager)
 				.ddOrderService(ddOrderService)
 				.ddOrderMoveScheduleService(ddOrderMoveScheduleService)
+				.distributionJobHUReservationService(distributionJobHUReservationService)
 				.loadingSupportServices(loadingSupportServices)
 				//
 				.ddOrderId(ddOrderId)
