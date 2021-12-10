@@ -457,6 +457,27 @@ public interface I_I_Product
 	String COLUMNNAME_Discontinued = "Discontinued";
 
 	/**
+	 * Set Is commissioned.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsCommissioned (boolean IsCommissioned);
+
+	/**
+	 * Get Is commissioned.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isCommissioned();
+
+	ModelColumn<I_I_Product, Object> COLUMN_IsCommissioned = new ModelColumn<>(I_I_Product.class, "IsCommissioned", null);
+	String COLUMNNAME_IsCommissioned = "IsCommissioned";
+
+	/**
 	 * Set Eingestellt durch.
 	 * Discontinued By
 	 *

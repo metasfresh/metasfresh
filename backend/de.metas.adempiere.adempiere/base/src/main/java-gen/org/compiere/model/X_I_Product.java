@@ -295,6 +295,18 @@ public class X_I_Product extends org.compiere.model.PO implements I_I_Product, o
 	}
 
 	@Override
+	public void setIsCommissioned (final boolean IsCommissioned)
+	{
+		set_Value (COLUMNNAME_IsCommissioned, IsCommissioned);
+	}
+
+	@Override
+	public boolean isCommissioned()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsCommissioned);
+	}
+
+	@Override
 	public void setDiscontinuedBy (final @Nullable java.sql.Timestamp DiscontinuedBy)
 	{
 		set_Value (COLUMNNAME_DiscontinuedBy, DiscontinuedBy);

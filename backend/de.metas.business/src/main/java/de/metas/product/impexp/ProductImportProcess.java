@@ -290,6 +290,10 @@ public class ProductImportProcess extends SimpleImportProcessTemplate<I_I_Produc
 		product.setRawMaterialOrigin_ID(importRecord.getRawMaterialOrigin_ID());
 		product.setWeight(importRecord.getWeight());
 		product.setM_ProductPlanningSchema_Selector(importRecord.getM_ProductPlanningSchema_Selector()); // #3406
+		product.setTrademark(importRecord.getTrademark());
+		product.setPZN(importRecord.getPZN());
+		product.setIsCommissioned(importRecord.isCommissioned());
+		product.setIsPurchased(importRecord.isPurchased());
 
 		return product;
 	}	// MProduct
