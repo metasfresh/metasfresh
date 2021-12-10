@@ -8,7 +8,6 @@ import history from '../services/History';
  * @summary Prepends viewId/page/sorting to the url
  */
 export function updateUri(pathname, query, updatedQuery) {
-  const fullPath = window.location.href;
   const queryObject = {
     ...query,
     ...updatedQuery,
@@ -16,7 +15,7 @@ export function updateUri(pathname, query, updatedQuery) {
   const queryUrl = queryString.stringify(queryObject);
   const url = `${pathname}?${queryUrl}`;
 
-  !fullPath.includes('viewId') ? history.replace(url) : history.push(url);
+  history.replace(url);
 }
 
 /**
