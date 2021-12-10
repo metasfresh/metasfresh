@@ -15,3 +15,15 @@ export const unboxAxiosResponse = (axiosResponse) => {
     return axiosResponse.data;
   }
 };
+
+export const getLocation = (params, scanner) => {
+  const { wfProcessId, activityId, lineId, stepId, appId, altStepId } = params;
+
+  const location = `/workflow/${wfProcessId}${activityId ? `/activityId/${activityId}` : ``}${
+    lineId ? `/lineId/${lineId}` : ``
+  }${stepId ? `/stepId/${stepId}` : ``}${altStepId ? `/altStepId/${altStepId}` : ``}${
+    scanner ? `/scanner/${appId}` : ``
+  }`;
+
+  return location;
+};

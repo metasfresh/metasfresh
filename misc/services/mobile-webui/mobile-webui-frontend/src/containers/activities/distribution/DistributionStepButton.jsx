@@ -2,7 +2,6 @@ import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import counterpart from 'counterpart';
 
-import { pushHeaderEntry } from '../../../actions/HeaderActions';
 import Indicator from '../../../components/Indicator';
 import * as CompleteStatus from '../../../constants/CompleteStatus';
 import { push } from 'connected-react-router';
@@ -12,22 +11,10 @@ import { distributionStepScreenLocation } from '../../../routes/distribution';
 
 class DistributionStepButton extends PureComponent {
   handleClick = () => {
-    const { wfProcessId, activityId, lineId, stepId, pickFromLocator } = this.props;
-    const { dispatch } = this.props;
-
+    const { wfProcessId, activityId, lineId, stepId, dispatch } = this.props;
     const location = distributionStepScreenLocation({ wfProcessId, activityId, lineId, stepId });
+
     dispatch(push(location));
-    dispatch(
-      pushHeaderEntry({
-        location,
-        values: [
-          {
-            caption: counterpart.translate('general.Locator'),
-            value: pickFromLocator.caption,
-          },
-        ],
-      })
-    );
   };
 
   render() {

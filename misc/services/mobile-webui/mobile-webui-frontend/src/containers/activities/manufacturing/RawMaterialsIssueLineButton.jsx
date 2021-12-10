@@ -2,35 +2,34 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import counterpart from 'counterpart';
 import { push } from 'connected-react-router';
+import { connect } from 'react-redux';
 
-import LineButton from '../common/LineButton';
+import { manufacturingLineScreenLocation } from '../../../routes/manufacturing';
 import ButtonWithIndicator from '../../../components/ButtonWithIndicator';
 import ButtonQuantityProp from '../../../components/ButtonQuantityProp';
 import { pushHeaderEntry } from '../../../actions/HeaderActions';
 
 class RawMaterialsIssueLineButton extends Component {
   handleClick = () => {
-    const { wfProcessId, activityId, lineId, dispatch, caption } = this.props;
+    const { caption, push, pushHeaderEntry, wfProcessId, activityId, lineId } = this.props;
+    const location = manufacturingLineScreenLocation({ wfProcessId, activityId, lineId });
 
-    const location = `/workflow/${wfProcessId}/activityId/${activityId}/lineId/${lineId}`;
-    dispatch(push(location));
+    push(location);
 
-    dispatch(
-      pushHeaderEntry({
-        location,
-        values: [
-          {
-            caption: counterpart.translate('activities.mfg.ProductName'),
-            value: caption,
-            bold: true,
-          },
-        ],
-      })
-    );
+    pushHeaderEntry({
+      location,
+      values: [
+        {
+          caption: counterpart.translate('activities.mfg.ProductName'),
+          value: caption,
+          bold: true,
+        },
+      ],
+    });
   };
 
   render() {
-    const { caption, uom, qtyIssued, qtyToIssue, completeStatus, appId, lineId, isUserEditable } = this.props;
+    const { caption, uom, qtyIssued, qtyToIssue, completeStatus, lineId, isUserEditable } = this.props;
 
     return (
       <button
@@ -40,13 +39,7 @@ class RawMaterialsIssueLineButton extends Component {
         onClick={this.handleClick}
       >
         <ButtonWithIndicator caption={caption} completeStatus={completeStatus}>
-          <ButtonQuantityProp
-            qtyCurrent={qtyIssued}
-            qtyTarget={qtyToIssue}
-            uom={uom}
-            appId={appId}
-            subtypeId="issues"
-          />
+          <ButtonQuantityProp qtyCurrent={qtyIssued} qtyTarget={qtyToIssue} uom={uom} appId="mfg" subtypeId="issues" />
         </ButtonWithIndicator>
       </button>
     );
@@ -65,10 +58,10 @@ RawMaterialsIssueLineButton.propTypes = {
   uom: PropTypes.string.isRequired,
   qtyIssued: PropTypes.number.isRequired,
   qtyToIssue: PropTypes.number.isRequired,
-  appId: PropTypes.string.isRequired,
   //
   // Actions
-  dispatch: PropTypes.func.isRequired,
+  push: PropTypes.func.isRequired,
+  pushHeaderEntry: PropTypes.func.isRequired,
 };
 
-export default LineButton(RawMaterialsIssueLineButton);
+export default connect(null, { push, pushHeaderEntry })(RawMaterialsIssueLineButton);
