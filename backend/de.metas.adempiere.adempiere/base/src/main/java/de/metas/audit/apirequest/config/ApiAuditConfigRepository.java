@@ -86,7 +86,7 @@ public class ApiAuditConfigRepository
 				.pathPrefix(record.getPathPrefix())
 				.notifyUserInCharge(NotificationTriggerType.ofNullableCode(record.getNotifyUserInCharge()))
 				.userGroupInChargeId(UserGroupId.ofRepoIdOrNull(record.getAD_UserGroup_InCharge_ID()))
-				.bypassAudit(record.isBypassAudit())
+				.createAuditRecordsAsynchronously(record.isBypassAudit())
 				.wrapApiResponse(record.isWrapApiResponse())
 				.build();
 	}

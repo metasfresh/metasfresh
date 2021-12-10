@@ -108,10 +108,21 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 @Service
 public class ApiAuditService
 {
-	private static final String API_FILTER_REQUEST_ID_HEADER = "X-ApiFilter-Request-ID";
-	private static final String API_REQUEST_AUDIT_ID_RESPONSE_HEADER = "X-Api-Request-Audit-ID";
-	private static final String API_REQUEST_AUDIT_ASYNC_HEADER = "X-Api-Request-Audit-Async";
+	/**
+	 * This header is used in a http-request to indicate that this request is a repeat and there is already an {@code API_Request_Audit} record in metasfresh.
+	 */
+	private static final String API_REQUEST_HEADER_EXISTING_AUDIT_ID = "X-ApiFilter-Request-ID";
 
+	/**
+	 * This header is used in a http-request to indicate that metasfresh shall just create an {@code API_Request_Audit} and {@code API_Response_Audit} record in an asynchronous fashion. The invoker will wait for the result.
+	 */
+	private static final String API_REQUEST_HEADER_AUDIT_ASYNC = "X-Api-Request-Audit-Async";
+
+	/**
+	 * If the Response is not wrapped in a {@link JsonApiResponse} with a dedicated property for the request audit, then this response header contains the respective {@code API_Request_Audit_ID}. 
+	 */
+	public static final String API_RESPONSE_HEADER_REQUEST_AUDIT_ID = "X-Api-Request-Audit-ID";
+	
 	private static final AdMessageKey MSG_SUCCESSFUL_API_INVOCATION =
 			AdMessageKey.of("de.metas.util.web.audit.successful_invocation");
 
@@ -171,13 +182,13 @@ public class ApiAuditService
 
 	public boolean wasAlreadyFiltered(@NonNull final HttpServletRequest httpServletRequest)
 	{
-		return httpServletRequest.getHeader(API_FILTER_REQUEST_ID_HEADER) != null;
+		return httpServletRequest.getHeader(API_REQUEST_HEADER_EXISTING_AUDIT_ID) != null;
 	}
 
 	@NonNull
 	public Optional<ApiRequestAuditId> extractApiRequestAuditId(@NonNull final HttpServletRequest httpServletRequest)
 	{
-		return Optional.ofNullable(httpServletRequest.getHeader(API_FILTER_REQUEST_ID_HEADER))
+		return Optional.ofNullable(httpServletRequest.getHeader(API_REQUEST_HEADER_EXISTING_AUDIT_ID))
 				.map(requestId -> ApiRequestAuditId.ofRepoId(NumberUtils.asInt(requestId, -1)));
 	}
 
@@ -290,7 +301,7 @@ public class ApiAuditService
 				.map(HttpHeadersWrapper::getKeyValueHeaders)
 				.ifPresent(httpHeaders::addAll);
 
-		httpHeaders.add(API_FILTER_REQUEST_ID_HEADER, String.valueOf(apiRequestAudit.getIdNotNull().getRepoId()));
+		httpHeaders.add(API_REQUEST_HEADER_EXISTING_AUDIT_ID, String.valueOf(apiRequestAudit.getIdNotNull().getRepoId()));
 
 		httpHeaders.forEach((key, value) -> uriSpec.header(key, value.toArray(new String[0])));
 
@@ -482,7 +493,7 @@ public class ApiAuditService
 
 	public boolean shouldPerformAuditAsync(@NonNull final HttpServletRequest request)
 	{
-		final boolean bypassAuditAtClientWill = Optional.ofNullable(request.getHeader(API_REQUEST_AUDIT_ASYNC_HEADER))
+		final boolean bypassAuditAtClientWill = Optional.ofNullable(request.getHeader(API_REQUEST_HEADER_AUDIT_ASYNC))
 				.map(Boolean::parseBoolean)
 				.orElse(false);
 
@@ -492,7 +503,7 @@ public class ApiAuditService
 		}
 
 		return getMatchingAuditConfig(request)
-				.map(ApiAuditConfig::isBypassAudit)
+				.map(ApiAuditConfig::isCreateAuditRecordsAsynchronously)
 				.orElse(false);
 	}
 
@@ -702,7 +713,7 @@ public class ApiAuditService
 
 		if (!apiAuditConfig.isWrapApiResponse())
 		{
-			httpServletResponse.addHeader(API_REQUEST_AUDIT_ID_RESPONSE_HEADER, String.valueOf(apiRequestAudit.getIdNotNull().getRepoId()));
+			httpServletResponse.addHeader(API_RESPONSE_HEADER_REQUEST_AUDIT_ID, String.valueOf(apiRequestAudit.getIdNotNull().getRepoId()));
 		}
 	}
 

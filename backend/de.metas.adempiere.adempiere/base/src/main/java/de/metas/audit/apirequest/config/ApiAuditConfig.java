@@ -24,6 +24,7 @@ package de.metas.audit.apirequest.config;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.metas.audit.apirequest.HttpMethod;
+import de.metas.common.rest_api.v2.JsonApiResponse;
 import de.metas.organization.OrgId;
 import de.metas.user.UserGroupId;
 import lombok.Builder;
@@ -66,8 +67,18 @@ public class ApiAuditConfig
 	@Nullable
 	UserGroupId userGroupInChargeId;
 
-	boolean bypassAudit;
+	/**
+	 * If true, then still both {@link org.compiere.model.I_API_Request_Audit} and {@link org.compiere.model.I_API_Response_Audit} records are written for the request, but in an asynchrounous way, while the actual requests might already have been performed.
+	 * This implies better performance for the caller, but:
+	 * <li>no {@link org.compiere.model.I_API_Request_Audit_Log} records will be created</li>
+	 * <li>Creating those audit reocrds might fail without the API caller noticing it</li>
+	 */
+	boolean createAuditRecordsAsynchronously;
 
+	/**
+	 * If true, the API response shall be wrapped into a {@link JsonApiResponse}
+	 * If false, it shall be communicated via a http response header.
+	 */
 	boolean wrapApiResponse;
 
 	@NonNull
