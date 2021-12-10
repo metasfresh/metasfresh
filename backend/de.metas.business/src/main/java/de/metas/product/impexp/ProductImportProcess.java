@@ -75,7 +75,6 @@ public class ProductImportProcess extends SimpleImportProcessTemplate<I_I_Produc
 	private static final String PARAM_M_PriceList_Version_ID = "M_PriceList_Version_ID";
 
 	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
-	private final IProductPA productPA = Services.get(IProductPA.class);
 	private final IProductPlanningSchemaBL productPlanningSchemaBL = Services.get(IProductPlanningSchemaBL.class);
 
 	@Override
