@@ -271,8 +271,7 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 
 	private I_C_OLCand getOLCand(@NonNull final I_C_Invoice_Candidate ic)
 	{
-		final I_C_OLCand olc = TableRecordCacheLocal.getReferencedValue(ic, I_C_OLCand.class);
-		return olc;
+		return TableRecordCacheLocal.getReferencedValue(ic, I_C_OLCand.class);
 	}
 
 	/**

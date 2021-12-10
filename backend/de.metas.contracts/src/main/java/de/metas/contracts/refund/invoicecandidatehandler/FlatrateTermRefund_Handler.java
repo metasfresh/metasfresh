@@ -104,7 +104,7 @@ public class FlatrateTermRefund_Handler
 	}
 
 	/**
-	 * return {@link PriceAndTax#NONE} because the tax remains unchanged and the price is updated in {@link CandidateAssignmentService}.
+	 * @return {@link PriceAndTax#NONE} because the tax remains unchanged and the price is updated in {@link de.metas.contracts.CandidateAssignmentServive}.
 	 */
 	@Override
 	public PriceAndTax calculatePriceAndTax(@NonNull final I_C_Invoice_Candidate invoiceCandidateRecord)

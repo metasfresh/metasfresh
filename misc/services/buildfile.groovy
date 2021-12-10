@@ -19,7 +19,7 @@ def build(final MvnConf mvnConf,
 
         dir('mobile-webui/mobile-webui-frontend') {
             def buildFile = load('buildfile.groovy')
-            buildFile.build(mvnConf, scmVars, forceBuild)
+            buildFile.build(mvnConf, scmVars, forceBuild, forceSkipMobileWebui)
         }
         dir('procurement-webui') {
             def buildFile = load('buildfile.groovy')
