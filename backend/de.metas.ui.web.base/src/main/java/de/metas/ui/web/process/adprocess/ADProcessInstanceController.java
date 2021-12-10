@@ -1,31 +1,11 @@
 package de.metas.ui.web.process.adprocess;
 
-import static de.metas.report.server.ReportConstants.REPORT_PARAM_REPORT_FORMAT;
-
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
-
-import javax.annotation.Nullable;
-
-import de.metas.ui.web.window.datatypes.LookupValuesPage;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.api.IRangeAwareParams;
-import org.adempiere.util.lang.IAutoCloseable;
-import org.slf4j.Logger;
-
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
-
 import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.process.JavaProcess;
 import de.metas.process.PInstanceId;
-import de.metas.process.ProcessExecutor;
 import de.metas.process.ProcessInfo;
 import de.metas.report.server.OutputType;
 import de.metas.ui.web.process.IProcessInstanceController;
@@ -38,6 +18,7 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.Document.CopyMode;
@@ -50,6 +31,23 @@ import de.metas.ui.web.window.model.NullDocumentChangesCollector;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.api.IRangeAwareParams;
+import org.adempiere.util.lang.IAutoCloseable;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
+
+import static de.metas.report.server.ReportConstants.REPORT_PARAM_REPORT_FORMAT;
 
 /*
  * #%L
@@ -77,7 +75,6 @@ import lombok.NonNull;
  * WEBUI AD_Process based process instance controller
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 /* package */final class ADProcessInstanceController implements IProcessInstanceController
 {
@@ -98,12 +95,13 @@ import lombok.NonNull;
 
 	private final DocumentPath contextSingleDocumentPath;
 
-	private boolean executed = false;
-	private ProcessInstanceResult executionResult;
+	private CompletableFuture<ProcessInstanceResult> executionResult;
 
 	private final ReentrantReadWriteLock readwriteLock;
 
-	/** New instance constructor */
+	/**
+	 * New instance constructor
+	 */
 	@Builder
 	private ADProcessInstanceController(
 			@NonNull final ITranslatableString caption,
@@ -125,13 +123,12 @@ import lombok.NonNull;
 
 		this.contextSingleDocumentPath = contextSingleDocumentPath;
 
-		executed = false;
-		executionResult = null;
-
 		readwriteLock = new ReentrantReadWriteLock();
 	}
 
-	/** Copy constructor */
+	/**
+	 * Copy constructor
+	 */
 	private ADProcessInstanceController(final ADProcessInstanceController from, final CopyMode copyMode, final IDocumentChangesCollector changesCollector)
 	{
 		instanceId = from.instanceId;
@@ -145,7 +142,6 @@ import lombok.NonNull;
 
 		contextSingleDocumentPath = from.contextSingleDocumentPath;
 
-		executed = from.executed;
 		executionResult = from.executionResult;
 
 		readwriteLock = from.readwriteLock; // always share
@@ -158,7 +154,6 @@ import lombok.NonNull;
 				.omitNullValues()
 				.add("AD_PInstance_ID", instanceId)
 				.add("executed", "executed")
-				.add("executionResult", executionResult)
 				.add("caption", caption)
 				.toString();
 	}
@@ -265,8 +260,7 @@ import lombok.NonNull;
 		}
 		else if (InterfaceWrapperHelper.isModelInterface(value.getClass()))
 		{
-			int id = InterfaceWrapperHelper.getId(value);
-			valueNorm = id;
+			valueNorm = InterfaceWrapperHelper.getId(value);
 		}
 		else
 		{
@@ -284,17 +278,26 @@ import lombok.NonNull;
 	@Override
 	public ProcessInstanceResult getExecutionResult()
 	{
-		final ProcessInstanceResult executionResult = this.executionResult;
+		final CompletableFuture<ProcessInstanceResult> executionResult = this.executionResult;
 		if (executionResult == null)
 		{
 			throw new AdempiereException("Process instance does not have an execution result yet: " + this);
 		}
-		return executionResult;
+
+		try
+		{
+			return executionResult.get();
+		}
+		catch (InterruptedException | ExecutionException e)
+		{
+			throw AdempiereException.wrapIfNeeded(e);
+		}
 	}
 
 	private boolean isExecuted()
 	{
-		return executed;
+		final CompletableFuture<ProcessInstanceResult> executionResult = this.executionResult;
+		return executionResult != null && executionResult.isDone();
 	}
 
 	/* package */ void assertNotExecuted()
@@ -306,7 +309,7 @@ import lombok.NonNull;
 	}
 
 	@Override
-	public ProcessInstanceResult startProcess(@NonNull final ProcessExecutionContext context)
+	public CompletableFuture<ProcessInstanceResult> startProcess(@NonNull final ProcessExecutionContext context)
 	{
 		assertNotExecuted();
 
@@ -320,19 +323,20 @@ import lombok.NonNull;
 
 		//
 		executionResult = executeADProcess(context);
-		if (executionResult.isSuccess())
-		{
-			executed = false;
-		}
-		logger.debug("executionResult.success={} executionResult.summary={}", executionResult.isSuccess(), executionResult.getSummary());
+		// if (executionResult.isSuccess())
+		// {
+		// 	executed = false;
+		// }
+		// logger.debug("executionResult.success={} executionResult.summary={}", executionResult.isSuccess(), executionResult.getSummary());
+		// return executionResult;
 		return executionResult;
 	}
 
-	private ProcessInstanceResult executeADProcess(@NonNull final ProcessExecutionContext context)
+	private CompletableFuture<ProcessInstanceResult> executeADProcess(@NonNull final ProcessExecutionContext context)
 	{
 		//
 		// Create the process info and execute the process synchronously
-		final ProcessExecutor processExecutor = ProcessInfo.builder()
+		final CompletableFuture<ProcessInfo> futureResult = ProcessInfo.builder()
 				.setCtx(context.getCtx())
 				.setCreateTemporaryCtx()
 				.setPInstanceId(PInstanceId.ofRepoId(getInstanceId().toInt()))
@@ -343,17 +347,18 @@ import lombok.NonNull;
 				// Execute the process/report
 				.buildAndPrepareExecution()
 				.onErrorThrowException() // throw exception directly... this will allow the original exception (including exception params) to be sent back to frontend
-				.executeSync();
+				.executeASync();
 
 		final ADProcessPostProcessService postProcessService = ADProcessPostProcessService.builder()
 				.viewsRepo(context.getViewsRepo())
 				.documentsCollection(context.getDocumentsCollection())
 				.build();
-		return postProcessService.postProcess(ADProcessPostProcessRequest.builder()
+
+		return futureResult.thenApply(processInfo -> postProcessService.postProcess(ADProcessPostProcessRequest.builder()
 				.viewId(getViewId())
-				.processInfo(processExecutor.getProcessInfo())
-				.processExecutionResult(processExecutor.getResult())
-				.build());
+				.processInfo(processInfo)
+				.processExecutionResult(processInfo.getResult())
+				.build()));
 	}
 
 	/* package */boolean saveIfValidAndHasChanges(final boolean throwEx)

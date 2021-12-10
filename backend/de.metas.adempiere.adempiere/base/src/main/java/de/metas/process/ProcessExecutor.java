@@ -50,6 +50,7 @@ import java.sql.ResultSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
@@ -96,8 +97,6 @@ public final class ProcessExecutor
 	private final boolean switchContextWhenRunning;
 	private final boolean onErrorThrowException;
 
-	private Thread m_thread; // metas
-
 	private ProcessExecutor(@NonNull final Builder builder)
 	{
 		pi = builder.getProcessInfo();
@@ -117,17 +116,23 @@ public final class ProcessExecutor
 
 	/**
 	 * Run this process asynchronously
+	 *
+	 * @return
 	 */
-	private void executeAsync()
+	private CompletableFuture<ProcessInfo> executeAsync()
 	{
-		Check.assumeNull(m_thread, "not already started");
-
-		final Thread thread = new Thread(() -> executeSync());
+		final CompletableFuture<ProcessInfo> result = new CompletableFuture<>();
+		final Thread thread = new Thread(() -> {
+			try (final IAutoCloseable ignored = Env.switchContext(pi.getCtx()))
+			{
+				executeNow();
+				result.complete(getProcessInfo());
+			}
+		});
 		thread.setName(buildThreadName());
-
 		thread.start();
 
-		m_thread = thread;
+		return result;
 	}
 
 	/**
@@ -142,7 +147,7 @@ public final class ProcessExecutor
 		if (pi.getProcessClassInfo().isRunOutOfTransaction()
 				&& trxManager.hasThreadInheritedTrx())
 		{
-			final Thread thread = new Thread(() -> executeNow());
+			final Thread thread = new Thread(this::executeNow);
 			thread.setName(buildThreadName());
 			logger.debug("Starting thread with name={}", thread.getName());
 			thread.start();
@@ -234,7 +239,7 @@ public final class ProcessExecutor
 		final AdProcessId previousProcessId = s_currentProcess_ID.get();
 		final OrgId previousOrgId = s_currentOrg_ID.get();
 		Stopwatch duration = null;
-		try (final IAutoCloseable contextRestorer = switchContextIfNeeded();
+		try (final IAutoCloseable ignored = switchContextIfNeeded();
 				final IAutoCloseable mdcCloseable = ProcessMDC.putProcessAndInstanceId(pi.getAdProcessId(), pi.getPinstanceId()))
 		{
 			s_currentProcess_ID.set(pi.getAdProcessId());
@@ -245,7 +250,7 @@ public final class ProcessExecutor
 			assertPermissions();
 
 			// Lock
-			lock(true);
+			lock();
 
 			duration = Stopwatch.createStarted();
 
@@ -272,7 +277,7 @@ public final class ProcessExecutor
 			}
 
 			// Unlock
-			unlock(true); // never throws exception
+			unlock(); // never throws exception
 
 			// Clear thread local AD_Org_ID/AD_Process_ID/etc
 			s_currentOrg_ID.set(previousOrgId);
@@ -328,7 +333,7 @@ public final class ProcessExecutor
 		{
 			final AdProcessId adProcessId = pi.getAdProcessId();
 			final Boolean access = permissions.getProcessAccess(adProcessId.getRepoId());
-			if (access == null || !access.booleanValue())
+			if (access == null || !access)
 			{
 				// get the process value, such that an admin can directly insert the right process
 				final I_AD_Process processRecord = adProcessDAO.getById(adProcessId);
@@ -345,14 +350,9 @@ public final class ProcessExecutor
 	 * <p>
 	 * NOTE: it's OK to throw exceptions
 	 */
-	private void lock(final boolean runningLocally)
+	private void lock()
 	{
-		//
-		// Database: lock the AD_PInstance
-		if (runningLocally)
-		{
-			adPInstanceDAO.lock(pi.getPinstanceId());
-		}
+		adPInstanceDAO.lock(pi.getPinstanceId());
 
 		//
 		// Notify parent
@@ -367,20 +367,17 @@ public final class ProcessExecutor
 	 * <p>
 	 * NOTE: it's very important this method to never throw exception.
 	 */
-	private void unlock(final boolean runningLocally)
+	private void unlock()
 	{
 		final Properties ctx = pi.getCtx();
 		final ProcessExecutionResult result = pi.getResult();
 
 		//
 		// Translate process summary if needed
-		if (runningLocally)
+		final String summary = result.getSummary();
+		if (summary != null && summary.indexOf('@') >= 0)
 		{
-			final String summary = result.getSummary();
-			if (summary != null && summary.indexOf('@') >= 0)
-			{
-				result.setSummary(msgBL.parseTranslation(ctx, summary));
-			}
+			result.setSummary(msgBL.parseTranslation(ctx, summary));
 		}
 
 		//
@@ -399,7 +396,7 @@ public final class ProcessExecutor
 
 		//
 		// Database: unlock and save the result
-		if (runningLocally)
+		if (true)
 		{
 			try
 			{
@@ -497,7 +494,7 @@ public final class ProcessExecutor
 		final List<ProcessInfoParameter> parameters = pi.getParameter();
 		if (parameters != null)
 		{
-			scriptExecutor.putArgument("Parameter", parameters.toArray(new ProcessInfoParameter[parameters.size()])); // put as array for backward compatibility
+			scriptExecutor.putArgument("Parameter", parameters.toArray(new ProcessInfoParameter[0])); // put as array for backward compatibility
 			for (final ProcessInfoParameter para : parameters)
 			{
 				final String name = para.getParameterName();
@@ -551,7 +548,7 @@ public final class ProcessExecutor
 		result.setSummary(msgBL.parseTranslation(ctx, msg)); // Parse Variables
 	}
 
-	private void startJavaProcess() throws Exception
+	private void startJavaProcess()
 	{
 		final ProcessInfo pi = this.pi;
 
@@ -563,7 +560,7 @@ public final class ProcessExecutor
 
 		final ITrx trx = trxManager.getThreadInheritedTrx(OnTrxMissingPolicy.ReturnTrxNone);
 
-		try (final IAutoCloseable currentInstanceRestorer = JavaProcess.temporaryChangeCurrentInstanceOverriding(process))
+		try (final IAutoCloseable ignored = JavaProcess.temporaryChangeCurrentInstanceOverriding(process))
 		{
 			process.startProcess(pi, trx);
 
@@ -586,12 +583,11 @@ public final class ProcessExecutor
 
 	/**
 	 * Start Database Process
-	 *
-	 * @return true if success
 	 */
 	private void startDBProcess()
 	{
-		final String dbProcedureName = pi.getDBProcedureName().get();
+		final String dbProcedureName = pi.getDBProcedureName()
+				.orElseThrow(() -> new AdempiereException("DBProcedureName is not set"));
 		logger.debug("startDBProcess: {} ({})", dbProcedureName, pi);
 
 		final String sql = "{call " + dbProcedureName + "(?)}";
@@ -608,26 +604,6 @@ public final class ProcessExecutor
 		catch (final Exception e)
 		{
 			throw new DBException(e, sql, sqlParams);
-		}
-	}
-
-	/**
-	 * In case the process is running asynchronously, wait until thread completes
-	 */
-	public void waitToComplete()
-	{
-		final Thread thread = m_thread;
-		if (thread != null && thread.isAlive())
-		{
-			try
-			{
-				thread.join();
-			}
-			catch (final InterruptedException e)
-			{
-				// somebody stopped the thread by sending an INTERRUPT signal
-				logger.info("Process thread interrupted", e);
-			}
 		}
 	}
 
@@ -656,11 +632,11 @@ public final class ProcessExecutor
 			this.processInfo = processInfo;
 		}
 
-		public void executeASync()
+		public CompletableFuture<ProcessInfo> executeASync()
 		{
 			processInfo.setAsync(true); // #1160 advise the product info, that we want an asynchronous execution
 			final ProcessExecutor worker = build();
-			worker.executeAsync();
+			return worker.executeAsync();
 		}
 
 		public ProcessExecutor executeSync()

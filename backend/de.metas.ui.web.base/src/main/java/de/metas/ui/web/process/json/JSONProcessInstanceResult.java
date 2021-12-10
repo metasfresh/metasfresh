@@ -22,8 +22,10 @@ import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.util.Check;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.Value;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -51,8 +53,9 @@ import java.util.Set;
  * #L%
  */
 
+@Value
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
-public final class JSONProcessInstanceResult
+public class JSONProcessInstanceResult
 {
 	public static JSONProcessInstanceResult of(final ProcessInstanceResult result)
 	{
@@ -61,18 +64,15 @@ public final class JSONProcessInstanceResult
 
 	private static final Logger logger = LogManager.getLogger(JSONProcessInstanceResult.class);
 
-	@JsonProperty("pinstanceId")
-	private final String pinstanceId;
+	String pinstanceId;
 
-	@JsonProperty("summary")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	private final String summary;
-	@JsonProperty("error")
-	private final boolean error;
+	String summary;
 
-	@JsonProperty("action")
+	boolean error;
+
 	@JsonInclude(JsonInclude.Include.NON_NULL)
-	private final JSONResultAction action;
+	JSONResultAction action;
 
 	private JSONProcessInstanceResult(@NonNull final ProcessInstanceResult result)
 	{
@@ -82,6 +82,17 @@ public final class JSONProcessInstanceResult
 		error = result.isError();
 
 		action = toJSONResultAction(result.getAction());
+	}
+
+	@Builder
+	private JSONProcessInstanceResult(
+			@NonNull final String pinstanceId,
+			@NonNull final String summary)
+	{
+		this.pinstanceId = pinstanceId;
+		this.summary = summary;
+		this.error = false;
+		this.action = null;
 	}
 
 	/**

@@ -5,6 +5,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 import javax.annotation.Nullable;
 
@@ -168,7 +169,7 @@ import lombok.ToString;
 	}
 
 	@Override
-	public ProcessInstanceResult startProcess(@NonNull final ProcessExecutionContext context)
+	public CompletableFuture<ProcessInstanceResult> startProcess(@NonNull final ProcessExecutionContext context)
 	{
 		assertNotExecuted();
 
@@ -200,7 +201,7 @@ import lombok.ToString;
 					.build();
 
 			this.result = result;
-			return result;
+			return CompletableFuture.completedFuture(result);
 		}
 		catch (final Throwable ex)
 		{

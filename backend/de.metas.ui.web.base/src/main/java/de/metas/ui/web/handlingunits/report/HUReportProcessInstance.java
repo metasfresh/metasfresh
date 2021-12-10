@@ -1,20 +1,7 @@
 package de.metas.ui.web.handlingunits.report;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
-
-import de.metas.ui.web.window.datatypes.LookupValuesPage;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.IAutoCloseable;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.handlingunits.report.HUReportExecutor;
 import de.metas.handlingunits.report.HUReportExecutorResult;
 import de.metas.handlingunits.report.HUReportService;
@@ -34,6 +21,7 @@ import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewRowIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.Document.CopyMode;
@@ -44,6 +32,17 @@ import de.metas.ui.web.window.model.NullDocumentChangesCollector;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.IAutoCloseable;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 
 /*
  * #%L
@@ -147,7 +146,7 @@ final class HUReportProcessInstance implements IProcessInstanceController
 	}
 
 	@Override
-	public synchronized ProcessInstanceResult startProcess(@NonNull final ProcessExecutionContext context)
+	public synchronized CompletableFuture<ProcessInstanceResult> startProcess(@NonNull final ProcessExecutionContext context)
 	{
 		final int numberOfCopies = getCopies();
 		if (numberOfCopies <= 0)
@@ -176,7 +175,8 @@ final class HUReportProcessInstance implements IProcessInstanceController
 				.instanceIdOverride(instanceId)
 				.build());
 
-		return lastExecutionResult = result;
+		lastExecutionResult = result;
+		return CompletableFuture.completedFuture(result);
 	}
 
 	private List<HUToReport> extractHUsToReport(final HUEditorView view)

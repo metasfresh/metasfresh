@@ -3,7 +3,13 @@ package de.metas.ui.web.process;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.event.IEventBusFactory;
+import de.metas.event.Topic;
+import de.metas.event.Type;
 import de.metas.logging.LogManager;
+import de.metas.notification.INotificationBL;
+import de.metas.notification.Recipient;
+import de.metas.notification.UserNotificationRequest;
 import de.metas.process.PInstanceId;
 import de.metas.process.ProcessClassInfo;
 import de.metas.process.ProcessMDC;
@@ -38,10 +44,14 @@ import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 import de.metas.ui.web.window.model.NullDocumentChangesCollector;
+import de.metas.user.UserId;
 import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
@@ -61,8 +71,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.WebRequest;
 
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.stream.Stream;
 
 /*
@@ -97,7 +112,10 @@ public class ProcessRestController
 {
 	public static final String ENDPOINT = WebConfig.ENDPOINT_ROOT + "/process";
 
+	private static final Topic TOPIC_PROCESS_COMPLETED = Topic.of("process.completed", Type.REMOTE);
+
 	private static final Logger logger = LogManager.getLogger(ProcessRestController.class);
+	private final INotificationBL notificationBL = Services.get(INotificationBL.class);
 	private final ImmutableMap<String, IProcessInstancesRepository> pinstancesRepositoriesByHandlerType;
 	private final UserSession userSession;
 	private final IViewsRepository viewsRepo;
@@ -106,6 +124,7 @@ public class ProcessRestController
 	private static final ReasonSupplier REASON_Value_DirectSetFromCommitAPI = () -> "direct set from commit API";
 
 	public ProcessRestController(
+			@NonNull final IEventBusFactory eventBusFactory,
 			@NonNull final List<IProcessInstancesRepository> pinstancesRepositories,
 			@NonNull final UserSession userSession,
 			@NonNull final IViewsRepository viewsRepo,
@@ -117,6 +136,8 @@ public class ProcessRestController
 		this.userSession = userSession;
 		this.viewsRepo = viewsRepo;
 		this.documentsCollection = documentsCollection;
+
+		eventBusFactory.addAvailableUserNotificationsTopic(TOPIC_PROCESS_COMPLETED);
 	}
 
 	private IAutoCloseable putMDC(
@@ -309,18 +330,78 @@ public class ProcessRestController
 
 			final IProcessInstancesRepository instancesRepository = getRepository(processId);
 
-			return Execution.prepareNewExecution()
+			final ProcessExecutionContext processExecutionContext = createProcessExecutionContext();
+			final CompletableFuture<JSONProcessInstanceResult> futureResult = Execution.prepareNewExecution()
 					.outOfTransaction()
-					.execute(() -> instancesRepository.forProcessInstanceWritable(pinstanceId, NullDocumentChangesCollector.instance, processInstance -> {
-						final ProcessInstanceResult result = processInstance.startProcess(ProcessExecutionContext.builder()
-								.ctx(Env.getCtx())
-								.adLanguage(userSession.getAD_Language())
-								.viewsRepo(viewsRepo)
-								.documentsCollection(documentsCollection)
-								.build());
-						return JSONProcessInstanceResult.of(result);
-					}));
+					.execute(() -> instancesRepository.forProcessInstanceWritable(
+							pinstanceId,
+							NullDocumentChangesCollector.instance,
+							processInstance -> processInstance.startProcess(processExecutionContext).thenApply(JSONProcessInstanceResult::of)));
+
+			//
+			// Wait for the process to complete,
+			// or if it takes too long, decide to continue it asynchronously
+			try
+			{
+				// FIXME: make the timeout configurable by:
+				// * a sysconfig
+				// * AD_Process.AllowAsyncRun
+				return futureResult.get(10, TimeUnit.SECONDS);
+			}
+			catch (final TimeoutException e)
+			{
+				final UserId userId = userSession.getLoggedUserId();
+				futureResult.whenComplete((result, error) -> notifyProcessCompleted(userId, result, error));
+
+				return JSONProcessInstanceResult.builder()
+						.pinstanceId(pinstanceIdStr)
+						.summary("Started")
+						.build();
+			}
+			catch (InterruptedException | ExecutionException e)
+			{
+				throw AdempiereException.wrapIfNeeded(e);
+			}
 		}
+	}
+
+	private ProcessExecutionContext createProcessExecutionContext()
+	{
+		return ProcessExecutionContext.builder()
+				.ctx(Env.getCtx())
+				.adLanguage(userSession.getAD_Language())
+				.viewsRepo(viewsRepo)
+				.documentsCollection(documentsCollection)
+				.build();
+	}
+
+	private void notifyProcessCompleted(
+			@NonNull final UserId userId,
+			@Nullable final JSONProcessInstanceResult result,
+			@Nullable final Throwable error)
+	{
+		final String summary;
+		if (error != null)
+		{
+			summary = AdempiereException.extractMessage(error);
+		}
+		else if (result != null)
+		{
+			// FIXME: handle actions
+			summary = StringUtils.trimBlankToOptional(result.getSummary())
+					.orElse("Done");
+		}
+		else
+		{
+			// shall not happen
+			summary = "Done";
+		}
+
+		notificationBL.send(UserNotificationRequest.builder()
+				.topic(TOPIC_PROCESS_COMPLETED)
+				.recipient(Recipient.user(userId))
+				.contentPlain(summary)
+				.build());
 	}
 
 	@ApiOperation("Retrieves and serves a report that was previously created by a reporting process.")
@@ -351,7 +432,7 @@ public class ProcessRestController
 			headers.setContentType(MediaType.parseMediaType(reportContentType));
 			headers.set(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + reportFilenameEffective + "\"");
 			headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
-			
+
 			return new ResponseEntity<>(reportData, headers, HttpStatus.OK);
 		}
 	}

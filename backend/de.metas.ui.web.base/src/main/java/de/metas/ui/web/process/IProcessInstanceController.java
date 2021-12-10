@@ -2,6 +2,7 @@ package de.metas.ui.web.process;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
@@ -49,7 +50,7 @@ public interface IProcessInstanceController
 
 	boolean isStartProcessDirectly();
 
-	ProcessInstanceResult startProcess(ProcessExecutionContext context);
+	CompletableFuture<ProcessInstanceResult> startProcess(ProcessExecutionContext context);
 
 	/**
 	 * @return execution result or throws exception if the process was not already executed

@@ -11,7 +11,6 @@ import de.metas.ui.web.base.model.I_T_WEBUI_ViewSelectionLine;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.menu.MenuNode;
 import de.metas.ui.web.menu.MenuTreeRepository;
-import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.event.ViewChangesCollector;
 import de.metas.ui.web.view.json.JSONFilterViewRequest;
@@ -29,6 +28,7 @@ import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.MutableInt;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.util.DB;
+import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
@@ -253,7 +253,7 @@ public class ViewsRepository implements IViewsRepository
 	public ViewLayout getViewLayout(final WindowId windowId, final JSONViewDataType viewDataType, final ViewProfileId profileId)
 	{
 		final String viewId = null; // N/A
-		DocumentPermissionsHelper.assertViewAccess(windowId, viewId, UserSession.getCurrentPermissions());
+		DocumentPermissionsHelper.assertViewAccess(windowId, viewId, Env.getUserRolePermissions());
 
 		final IViewFactory factory = getFactory(windowId, viewDataType);
 		return factory.getViewLayout(windowId, viewDataType, profileId)
@@ -386,7 +386,7 @@ public class ViewsRepository implements IViewsRepository
 			throw new EntityNotFoundException("View not found: " + viewId.toJson());
 		}
 
-		DocumentPermissionsHelper.assertViewAccess(viewId.getWindowId(), viewId.getViewId(), UserSession.getCurrentPermissions());
+		DocumentPermissionsHelper.assertViewAccess(viewId.getWindowId(), viewId.getViewId(), Env.getUserRolePermissions());
 
 		return view;
 	}
