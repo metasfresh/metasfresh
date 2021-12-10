@@ -12,14 +12,7 @@ import { computePickFromStatus } from '../../../reducers/wfProcesses_status/pick
 
 class PickStepButton extends PureComponent {
   handleClick = () => {
-    const {
-      push,
-      wfProcessId,
-      activityId,
-      lineId,
-      stepId,
-      stepState: { altStepId },
-    } = this.props;
+    const { push, wfProcessId, activityId, lineId, stepId, altStepId } = this.props;
     const location = pickingStepScreenLocation({ wfProcessId, activityId, lineId, stepId, altStepId });
 
     push(location);
@@ -32,12 +25,15 @@ class PickStepButton extends PureComponent {
       activityId,
       lineId,
       stepId,
+      altStepId,
       //
-      stepState: { pickFromAlternatives, uom, qtyToPick, mainPickFrom },
+      stepState: { pickFromAlternatives, uom },
+      qtyToPick,
+      pickFrom,
     } = this.props;
 
-    const isAlternative = !pickFromAlternatives;
-    const completeStatus = computePickFromStatus(mainPickFrom);
+    const isAlternative = altStepId;
+    const completeStatus = computePickFromStatus(pickFrom);
 
     return (
       <div className="mt-3">
@@ -48,7 +44,7 @@ class PickStepButton extends PureComponent {
               <div className="rows">
                 <div className="row is-full pl-5">
                   {isAlternative ? 'ALT:' : ''}
-                  {mainPickFrom.locatorName}
+                  {pickFrom.locatorName}
                 </div>
                 <div className="row is-full is-size-7">
                   <div className="picking-row-info">
@@ -58,7 +54,7 @@ class PickStepButton extends PureComponent {
                     </div>
                     <div className="picking-row-picking">{counterpart.translate('activities.picking.picked')}:</div>
                     <div className="picking-row-picked">
-                      {mainPickFrom.qtyPicked} {uom}
+                      {pickFrom.qtyPicked} {uom}
                     </div>
                   </div>
                 </div>
@@ -70,7 +66,7 @@ class PickStepButton extends PureComponent {
             </div>
           </div>
         </button>
-        {pickFromAlternatives && (
+        {pickFromAlternatives && !altStepId && (
           <PickAlternatives
             appId={appId}
             wfProcessId={wfProcessId}
@@ -103,6 +99,9 @@ PickStepButton.propTypes = {
   activityId: PropTypes.string.isRequired,
   lineId: PropTypes.string.isRequired,
   stepId: PropTypes.string.isRequired,
+  pickFrom: PropTypes.object.isRequired,
+  qtyToPick: PropTypes.number.isRequired,
+  altStepId: PropTypes.string,
   //
   stepState: PropTypes.object.isRequired,
   //

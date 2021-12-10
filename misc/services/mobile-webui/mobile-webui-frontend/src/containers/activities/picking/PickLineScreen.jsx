@@ -48,6 +48,8 @@ class PickLineScreen extends PureComponent {
                   activityId={activityId}
                   lineId={lineId}
                   stepId={stepItem.pickingStepId}
+                  qtyToPick={stepItem.qtyToPick}
+                  pickFrom={stepItem.mainPickFrom}
                 />
               );
             })}
