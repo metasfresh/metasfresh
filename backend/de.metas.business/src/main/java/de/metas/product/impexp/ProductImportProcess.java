@@ -274,7 +274,7 @@ public class ProductImportProcess extends SimpleImportProcessTemplate<I_I_Produc
 
 			final BigDecimal scalePriceBreak = imp.getQty();
 
-			final I_M_ProductScalePrice productScalePrice = productPA.retrieveOrCreateScalePrices(productId.getRepoId(),
+			final I_M_ProductScalePrice productScalePrice = productPA.retrieveOrCreateScalePrices(pp.getM_ProductPrice_ID(),
 																								  scalePriceBreak,
 																								  true,
 																								  ITrx.TRXNAME_ThreadInherited);
