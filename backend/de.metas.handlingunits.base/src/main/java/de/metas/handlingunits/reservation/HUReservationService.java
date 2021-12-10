@@ -13,6 +13,7 @@ import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.allocation.transfer.HUTransformService.HUsToNewCUsRequest;
+import de.metas.handlingunits.allocation.transfer.ReservedHUsPolicy;
 import de.metas.handlingunits.impl.HUIterator;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
@@ -123,7 +124,7 @@ public class HUReservationService
 				HUsToNewCUsRequest.builder()
 						.sourceHUs(hus)
 						.qtyCU(reservationRequest.getQtyToReserve())
-						.onlyFromUnreservedHUs(true)
+						.reservedVHUsPolicy(ReservedHUsPolicy.CONSIDER_ONLY_NOT_RESERVED)
 						.keepNewCUsUnderSameParent(true)
 						.productId(reservationRequest.getProductId())
 						.build());

@@ -8,6 +8,7 @@ import de.metas.distribution.ddorder.movement.generate.DDOrderMovementHelper;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
+import de.metas.handlingunits.allocation.transfer.ReservedHUsPolicy;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.movement.generate.HUMovementGenerateRequest;
 import de.metas.handlingunits.movement.generate.HUMovementGenerator;
@@ -142,7 +143,7 @@ class DDOrderPickFromCommand
 							.productId(productId)
 							.qtyCU(qtyPicked)
 							.keepNewCUsUnderSameParent(false)
-							.onlyFromUnreservedHUs(true)
+							.reservedVHUsPolicy(ReservedHUsPolicy.CONSIDER_ONLY_NOT_RESERVED)
 							.build());
 		}
 	}
