@@ -153,3 +153,91 @@ UPDATE AD_ImpFormat SET SkipFirstNRows=1,Updated=TO_TIMESTAMP('2021-12-10 14:18:
 
 
 
+
+-- 2021-12-10T15:41:29.478Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_ImpFormat_Row WHERE AD_ImpFormat_Row_ID=541600
+;
+
+-- 2021-12-10T15:41:29.498Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_ImpFormat_Row WHERE AD_ImpFormat_Row_ID=541601
+;
+
+-- 2021-12-10T15:41:29.510Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_ImpFormat_Row WHERE AD_ImpFormat_Row_ID=541602
+;
+
+-- 2021-12-10T15:41:36.131Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_ImpFormat_Row SET StartNo=2,Updated=TO_TIMESTAMP('2021-12-10 17:41:36','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=541603
+;
+
+-- 2021-12-10T15:41:40.255Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_ImpFormat_Row SET StartNo=3,Updated=TO_TIMESTAMP('2021-12-10 17:41:40','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=541604
+;
+
+-- 2021-12-10T15:41:42.279Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_ImpFormat_Row SET StartNo=4,Updated=TO_TIMESTAMP('2021-12-10 17:41:42','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=541605
+;
+
+-- 2021-12-10T15:41:44.033Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_ImpFormat_Row SET StartNo=5,Updated=TO_TIMESTAMP('2021-12-10 17:41:44','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=541606
+;
+
+-- 2021-12-10T15:41:45.780Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_ImpFormat_Row SET StartNo=6,Updated=TO_TIMESTAMP('2021-12-10 17:41:45','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=541607
+;
+
+-- 2021-12-10T15:41:49.367Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_ImpFormat_Row SET StartNo=7,Updated=TO_TIMESTAMP('2021-12-10 17:41:49','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=541608
+;
+
+-- 2021-12-10T15:41:51.266Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_ImpFormat_Row SET StartNo=8,Updated=TO_TIMESTAMP('2021-12-10 17:41:51','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=541609
+;
+
+-- 2021-12-10T15:42:02.983Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_ImpFormat_Row SET SeqNo=20,Updated=TO_TIMESTAMP('2021-12-10 17:42:02','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=541603
+;
+
+-- 2021-12-10T15:42:06.629Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_ImpFormat_Row SET SeqNo=30,Updated=TO_TIMESTAMP('2021-12-10 17:42:06','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=541604
+;
+
+-- 2021-12-10T15:42:10.141Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_ImpFormat_Row SET SeqNo=40,Updated=TO_TIMESTAMP('2021-12-10 17:42:10','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=541605
+;
+
+-- 2021-12-10T15:42:14.255Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_ImpFormat_Row SET SeqNo=50,Updated=TO_TIMESTAMP('2021-12-10 17:42:14','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=541606
+;
+
+-- 2021-12-10T15:42:17.750Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_ImpFormat_Row SET SeqNo=60,Updated=TO_TIMESTAMP('2021-12-10 17:42:17','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=541607
+;
+
+-- 2021-12-10T15:42:21.127Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_ImpFormat_Row SET SeqNo=70,Updated=TO_TIMESTAMP('2021-12-10 17:42:21','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=541608
+;
+
+-- 2021-12-10T15:42:24.414Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_ImpFormat_Row SET SeqNo=80,Updated=TO_TIMESTAMP('2021-12-10 17:42:24','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=541609
+;
+
+
+
