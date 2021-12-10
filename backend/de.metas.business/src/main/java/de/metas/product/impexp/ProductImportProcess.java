@@ -29,6 +29,7 @@ import de.metas.impexp.processing.ImportRecordsSelection;
 import de.metas.impexp.processing.SimpleImportProcessTemplate;
 import de.metas.logging.LogManager;
 import de.metas.pricing.PriceListVersionId;
+import de.metas.pricing.ProductPriceId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.ProductPrices;
 import de.metas.product.IProductPA;
@@ -274,10 +275,13 @@ public class ProductImportProcess extends SimpleImportProcessTemplate<I_I_Produc
 
 			final BigDecimal scalePriceBreak = imp.getQty();
 
-			final I_M_ProductScalePrice productScalePrice = productPA.retrieveOrCreateScalePrices(pp.getM_ProductPrice_ID(),
-																								  scalePriceBreak,
-																								  true,
-																								  ITrx.TRXNAME_ThreadInherited);
+			final I_M_ProductScalePrice productScalePrice = Optional
+					.ofNullable(priceListDAO.retrieveScalePriceForBreak(ProductPriceId.ofRepoId(pp.getM_ProductPrice_ID()),
+																		scalePriceBreak))
+					.orElseGet(() -> newInstance(I_M_ProductScalePrice.class));
+
+			productScalePrice.setM_ProductPrice_ID(pp.getM_ProductPrice_ID());
+			productScalePrice.setQty(scalePriceBreak);
 			productScalePrice.setPriceLimit(priceLimit);
 			productScalePrice.setPriceList(priceList);
 			productScalePrice.setPriceStd(priceStd);
