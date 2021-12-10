@@ -101,8 +101,10 @@ public class JsonResponseLocation
 
 	String countryCode;
 
+	@JsonInclude(Include.NON_EMPTY)
 	String phone;
 
+	@JsonInclude(Include.NON_EMPTY)
 	String email;
 
 	@ApiModelProperty(allowEmptyValue = true, value = "This translates to `C_BPartner_Location.GLN`.")

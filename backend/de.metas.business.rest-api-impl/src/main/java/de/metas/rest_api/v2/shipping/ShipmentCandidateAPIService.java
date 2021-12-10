@@ -238,7 +238,7 @@ class ShipmentCandidateAPIService
 						final JsonCustomer billBPartner = createJsonCustomer(
 								shipmentSchedule.getBillBPartnerId(),
 								shipmentSchedule.getBillLocationId(),
-								shipmentSchedule.getShipContactId(),
+								shipmentSchedule.getBillContactId(),
 								shipmentSchedule.getOrderAndLineId(),
 								bpartnerIdToBPartner);
 						itemBuilder.billBPartner(billBPartner);

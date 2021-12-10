@@ -34,7 +34,7 @@ import java.util.List;
 
 @Value
 @Builder
-@JsonDeserialize(builder = JsonSalutation.JsonSalutationsBuilder.class)
+@JsonDeserialize(builder = JsonSalutation.JsonSalutationBuilder.class)
 public class JsonSalutation
 {
 	@NonNull
@@ -43,7 +43,7 @@ public class JsonSalutation
 
 	@JsonIgnoreProperties(ignoreUnknown = true)
 	@JsonPOJOBuilder(withPrefix = "")
-	static class JsonSalutationsBuilder
+	static class JsonSalutationBuilder
 	{
 	}
 }

@@ -30,11 +30,9 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import javax.annotation.Nullable;
-
 @Value
 @Builder
-@JsonDeserialize(builder = JsonSalutationItem.JsonSalutationBuilder.class)
+@JsonDeserialize(builder = JsonSalutationItem.JsonSalutationItemBuilder.class)
 public class JsonSalutationItem
 {
 	@NonNull
@@ -47,7 +45,7 @@ public class JsonSalutationItem
 
 	@JsonIgnoreProperties(ignoreUnknown = true)
 	@JsonPOJOBuilder(withPrefix = "")
-	static class JsonSalutationBuilder
+	static class JsonSalutationItemBuilder
 	{
 	}
 }
