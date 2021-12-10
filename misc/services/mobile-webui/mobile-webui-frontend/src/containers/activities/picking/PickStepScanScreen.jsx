@@ -74,7 +74,7 @@ class PickStepScanScreen extends PureComponent {
           qtyRejected,
           qtyRejectedReasonCode: reason,
         });
-        go(-2);
+        go(-2); // go to picking line screen
       })
       .catch((axiosError) => toastError({ axiosError }));
   };
