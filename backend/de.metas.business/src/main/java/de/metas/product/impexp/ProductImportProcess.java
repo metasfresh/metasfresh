@@ -31,6 +31,7 @@ import de.metas.logging.LogManager;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.ProductPrices;
+import de.metas.product.IProductPA;
 import de.metas.product.IProductPlanningSchemaBL;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
@@ -72,7 +73,9 @@ public class ProductImportProcess extends SimpleImportProcessTemplate<I_I_Produc
 
 	private static final String PARAM_M_PriceList_Version_ID = "M_PriceList_Version_ID";
 
-	private final IPriceListDAO pricelistDAO = Services.get(IPriceListDAO.class);
+	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
+	private final IProductPA productPA = Services.get(IProductPA.class);
+	private final IProductPlanningSchemaBL productPlanningSchemaBL = Services.get(IProductPlanningSchemaBL.class);
 
 	@Override
 	public Class<I_I_Product> getImportModelClass()
@@ -200,7 +203,7 @@ public class ProductImportProcess extends SimpleImportProcessTemplate<I_I_Produc
 		ModelValidationEngine.get().fireImportValidate(this, importRecord, productRecord, IImportInterceptor.TIMING_AFTER_IMPORT);
 
 		// #3404 Create default product planning
-		Services.get(IProductPlanningSchemaBL.class).createDefaultProductPlanningsForAllProducts();
+		productPlanningSchemaBL.createDefaultProductPlanningsForAllProducts();
 		return newProduct ? ImportRecordResult.Inserted : ImportRecordResult.Updated;
 	}
 
@@ -251,7 +254,7 @@ public class ProductImportProcess extends SimpleImportProcessTemplate<I_I_Produc
 
 		//
 		// Get/Create Product Price record
-		final I_M_PriceList_Version plv = pricelistDAO.getPriceListVersionByIdInTrx(PriceListVersionId.ofRepoId(priceListVersionId));
+		final I_M_PriceList_Version plv = priceListDAO.getPriceListVersionByIdInTrx(PriceListVersionId.ofRepoId(priceListVersionId));
 		final I_M_ProductPrice pp = Optional
 				.ofNullable(ProductPrices.retrieveMainProductPriceOrNull(plv, productId))
 				.orElseGet(() -> newInstance(I_M_ProductPrice.class));
@@ -266,10 +269,13 @@ public class ProductImportProcess extends SimpleImportProcessTemplate<I_I_Produc
 		if (imp.isScalePrice())
 		{
 			pp.setUseScalePrice(X_M_ProductPrice.USESCALEPRICE_UseScalePriceStrict);
-			final I_M_ProductScalePrice productScalePrice = newInstance(I_M_ProductScalePrice.class);
 
-			productScalePrice.setM_ProductPrice_ID(pp.getM_ProductPrice_ID());
-			productScalePrice.setQty(imp.getQty());
+			final BigDecimal scalePriceBreak = imp.getQty();
+
+			final I_M_ProductScalePrice productScalePrice = productPA.retrieveOrCreateScalePrices(productId.getRepoId(),
+																								  scalePriceBreak,
+																								  true,
+																								  ITrx.TRXNAME_ThreadInherited);
 			productScalePrice.setPriceLimit(priceLimit);
 			productScalePrice.setPriceList(priceList);
 			productScalePrice.setPriceStd(priceStd);
