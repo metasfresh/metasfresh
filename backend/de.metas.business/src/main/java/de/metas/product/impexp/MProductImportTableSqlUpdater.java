@@ -567,6 +567,15 @@ public class MProductImportTableSqlUpdater
 				.append(" AND Value IN (SELECT Value FROM I_Product ii WHERE i.AD_Client_ID=ii.AD_Client_ID GROUP BY Value HAVING COUNT(*) > 1)")
 				.append(selection.toSqlWhereClause("i"));
 		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+
+		sql = new StringBuilder("UPDATE ")
+				.append(targetTableName + " i ")
+				.append(" SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Scale Price not unique,' ")
+				.append("WHERE " + COLUMNNAME_I_IsImported + "<>'Y'")
+				.append(" AND ").append(I_I_Product.COLUMNNAME_IsScalePrice).append(" ='Y'")
+				.append(" AND ").append(I_I_Product.COLUMNNAME_Qty).append(" IN (SELECT Qty FROM I_Product ii WHERE ii.Value = i.Value AND i.AD_Client_ID=ii.AD_Client_ID AND ii.IsScalePrice = 'Y')")
+				.append(selection.toSqlWhereClause("i"));
+		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		//
 		sql = new StringBuilder("UPDATE ")
 				.append(targetTableName + " i ")

@@ -210,5 +210,5 @@ public interface IPriceListDAO extends ISingletonService
 
 	CurrencyId getCurrencyId(final PriceListId priceListId);
 
-	I_M_ProductScalePrice retrieveScalePriceForBreak(ProductPriceId productPriceId, BigDecimal scalePriceBreak);
+	I_M_ProductScalePrice retrieveScalePriceForExactBreak(ProductPriceId productPriceId, BigDecimal scalePriceBreak);
 }

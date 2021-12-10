@@ -32,7 +32,6 @@ import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.ProductPriceId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.ProductPrices;
-import de.metas.product.IProductPA;
 import de.metas.product.IProductPlanningSchemaBL;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
@@ -275,8 +274,8 @@ public class ProductImportProcess extends SimpleImportProcessTemplate<I_I_Produc
 			final BigDecimal scalePriceBreak = imp.getQty();
 
 			final I_M_ProductScalePrice productScalePrice = Optional
-					.ofNullable(priceListDAO.retrieveScalePriceForBreak(ProductPriceId.ofRepoId(pp.getM_ProductPrice_ID()),
-																		scalePriceBreak))
+					.ofNullable(priceListDAO.retrieveScalePriceForExactBreak(ProductPriceId.ofRepoId(pp.getM_ProductPrice_ID()),
+																			 scalePriceBreak))
 					.orElseGet(() -> newInstance(I_M_ProductScalePrice.class));
 
 			productScalePrice.setM_ProductPrice_ID(pp.getM_ProductPrice_ID());

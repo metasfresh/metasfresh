@@ -984,7 +984,7 @@ public class PriceListDAO implements IPriceListDAO
 	}
 
 	@Override
-	public I_M_ProductScalePrice retrieveScalePriceForBreak(@NonNull final ProductPriceId productPriceId, @NonNull final BigDecimal scalePriceBreak)
+	public I_M_ProductScalePrice retrieveScalePriceForExactBreak(@NonNull final ProductPriceId productPriceId, @NonNull final BigDecimal scalePriceBreak)
 	{
 		return queryBL.createQueryBuilder(I_M_ProductScalePrice.class)
 				.addOnlyActiveRecordsFilter()
