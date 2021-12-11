@@ -61,8 +61,9 @@ import de.metas.process.PInstanceId;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.springframework.stereotype.Service;
 
-@Component
+@Service
 public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidateBL
 {
 	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
