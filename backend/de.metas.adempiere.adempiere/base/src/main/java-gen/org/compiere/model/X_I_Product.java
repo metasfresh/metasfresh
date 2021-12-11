@@ -35,6 +35,28 @@ public class X_I_Product extends org.compiere.model.PO implements I_I_Product, o
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
 	}
 
+
+	/**
+	 * DietType AD_Reference_ID=541270
+	 * Reference name: Ernährungsart
+	 */
+	public static final int DIETTYPE_AD_Reference_ID=541270;
+	/** Vegan = Vegan */
+	public static final String DIETTYPE_Vegan = "Vegan";
+	/** Vegetarian = Vegetarian */
+	public static final String DIETTYPE_Vegetarian = "Vegetarian";
+	@Override
+	public void setDietType (final @Nullable java.lang.String DietType)
+	{
+		set_Value (COLUMNNAME_DietType, DietType);
+	}
+
+	@Override
+	public java.lang.String getDietType()
+	{
+		return get_ValueAsString(COLUMNNAME_DietType);
+	}
+
 	@Override
 	public void setAD_Issue_ID (final int AD_Issue_ID)
 	{
@@ -280,6 +302,18 @@ public class X_I_Product extends org.compiere.model.PO implements I_I_Product, o
 	}
 
 	@Override
+	public void setIsCommissioned (final boolean IsCommissioned)
+	{
+		set_Value (COLUMNNAME_IsCommissioned, IsCommissioned);
+	}
+
+	@Override
+	public boolean isCommissioned()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsCommissioned);
+	}
+
+	@Override
 	public java.sql.Timestamp getDiscontinuedBy() 
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_DiscontinuedBy);
@@ -408,6 +442,17 @@ public class X_I_Product extends org.compiere.model.PO implements I_I_Product, o
 		return get_ValueAsString(COLUMNNAME_ISO_Code);
 	}
 
+	public void setIsPurchased (final boolean IsPurchased)
+	{
+		set_Value (COLUMNNAME_IsPurchased, IsPurchased);
+	}
+
+	@Override
+	public boolean isPurchased()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsPurchased);
+	}
+
 	@Override
 	public void setIsScalePrice (final boolean IsScalePrice)
 	{
@@ -457,6 +502,25 @@ public class X_I_Product extends org.compiere.model.PO implements I_I_Product, o
 	public int getManufacturer_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_Manufacturer_ID);
+	}
+
+	/**
+	 * ManufacturingMethod AD_Reference_ID=541515
+	 * Reference name: ManufacturingMethod_Reference
+	 */
+	public static final int MANUFACTURINGMETHOD_AD_Reference_ID=541515;
+	/** Presslingherstellung = PR */
+	public static final String MANUFACTURINGMETHOD_Presslingherstellung = "PR";
+	@Override
+	public void setManufacturingMethod (final @Nullable java.lang.String ManufacturingMethod)
+	{
+		set_Value (COLUMNNAME_ManufacturingMethod, ManufacturingMethod);
+	}
+
+	@Override
+	public java.lang.String getManufacturingMethod()
+	{
+		return get_ValueAsString(COLUMNNAME_ManufacturingMethod);
 	}
 
 	@Override
@@ -784,6 +848,18 @@ public class X_I_Product extends org.compiere.model.PO implements I_I_Product, o
 	}
 
 	@Override
+	public java.lang.String getPZN()
+	{
+		return get_ValueAsString(COLUMNNAME_PZN);
+	}
+
+	@Override
+	public void setPZN (final @Nullable java.lang.String PZN)
+	{
+		set_Value (COLUMNNAME_PZN, PZN);
+	}
+
+	@Override
 	public void setQty (final @Nullable BigDecimal Qty)
 	{
 		set_Value (COLUMNNAME_Qty, Qty);
@@ -894,6 +970,18 @@ public class X_I_Product extends org.compiere.model.PO implements I_I_Product, o
 	public java.lang.String getSKU() 
 	{
 		return get_ValueAsString(COLUMNNAME_SKU);
+	}
+
+	@Override
+	public void setTrademark (final @Nullable java.lang.String Trademark)
+	{
+		set_Value (COLUMNNAME_Trademark, Trademark);
+	}
+
+	@Override
+	public java.lang.String getTrademark()
+	{
+		return get_ValueAsString(COLUMNNAME_Trademark);
 	}
 
 	@Override
