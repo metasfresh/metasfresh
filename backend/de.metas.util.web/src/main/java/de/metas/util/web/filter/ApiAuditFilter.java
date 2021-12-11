@@ -29,7 +29,9 @@ import de.metas.logging.LogManager;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.web.audit.ApiAuditService;
+import de.metas.util.web.audit.dto.ApiRequestMapper;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.util.Env;
@@ -130,8 +132,13 @@ public class ApiAuditFilter implements Filter
 
 		chain.doFilter(contentCachedRequest, contentCachedResponse);
 
-		apiAuditService.getMatchingAuditConfig(httpServletRequest)
-				.ifPresent(apiAuditConfig -> apiAuditService.auditHttpCallAsync(apiAuditConfig, contentCachedRequest, contentCachedResponse));
+		final ApiAuditConfig apiAuditConfig = apiAuditService.getMatchingAuditConfig(httpServletRequest)
+				.orElseThrow(() -> new AdempiereException("No ApiAuditConfig found!")
+				.appendParametersToMessage()
+				.setParameter("HttpServletRequest.uri", ApiRequestMapper.getFullPath(contentCachedRequest))
+				.setParameter("HttpServletRequest.method", contentCachedRequest.getMethod()));
+
+		apiAuditService.auditHttpCallAsync(apiAuditConfig, contentCachedRequest, contentCachedResponse);
 
 		contentCachedResponse.copyBodyToResponse();
 	}

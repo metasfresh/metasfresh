@@ -119,10 +119,10 @@ public class ApiAuditService
 	private static final String API_REQUEST_HEADER_AUDIT_ASYNC = "X-Api-Request-Audit-Async";
 
 	/**
-	 * If the Response is not wrapped in a {@link JsonApiResponse} with a dedicated property for the request audit, then this response header contains the respective {@code API_Request_Audit_ID}. 
+	 * If the Response is not wrapped in a {@link JsonApiResponse} with a dedicated property for the request audit, then this response header contains the respective {@code API_Request_Audit_ID}.
 	 */
 	public static final String API_RESPONSE_HEADER_REQUEST_AUDIT_ID = "X-Api-Request-Audit-ID";
-	
+
 	private static final AdMessageKey MSG_SUCCESSFUL_API_INVOCATION =
 			AdMessageKey.of("de.metas.util.web.audit.successful_invocation");
 
@@ -361,6 +361,9 @@ public class ApiAuditService
 
 					logResponse(apiResponse, apiRequestAudit.getIdNotNull(), apiRequestAudit.getOrgId());
 
+					final ApiAuditLoggable apiAuditLogger = createLogger(apiRequestAudit.getIdNotNull(), apiRequestAudit.getUserId());
+					apiAuditLogger.addLog("Async audit performed successfully!");
+					apiAuditLogger.flush();
 				}
 				catch (final Throwable throwable)
 				{
@@ -503,7 +506,7 @@ public class ApiAuditService
 		}
 
 		return getMatchingAuditConfig(request)
-				.map(ApiAuditConfig::isCreateAuditRecordsAsynchronously)
+				.map(ApiAuditConfig::isPerformAuditAsync)
 				.orElse(false);
 	}
 

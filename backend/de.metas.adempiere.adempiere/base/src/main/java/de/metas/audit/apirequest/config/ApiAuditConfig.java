@@ -73,12 +73,12 @@ public class ApiAuditConfig
 	 * <li>no {@link org.compiere.model.I_API_Request_Audit_Log} records will be created</li>
 	 * <li>Creating those audit reocrds might fail without the API caller noticing it</li>
 	 */
-	boolean createAuditRecordsAsynchronously;
+	boolean performAuditAsync;
 
 	/**
 	 * If true, the API response shall be wrapped into a {@link JsonApiResponse}
 	 * If false, it shall be communicated via a http response header.
-	 * Note that if {@link #createAuditRecordsAsynchronously} is {@code true}, then the API response is never wrapped.
+	 * Note that if {@link #performAuditAsync} is {@code true}, then the API response is never wrapped.
 	 */
 	boolean wrapApiResponse;
 

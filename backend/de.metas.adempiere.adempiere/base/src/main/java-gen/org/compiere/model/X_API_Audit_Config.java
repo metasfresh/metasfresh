@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_API_Audit_Config extends org.compiere.model.PO implements I_API_Audit_Config, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -844072694L;
+	private static final long serialVersionUID = -1473930208L;
 
     /** Standard Constructor */
     public X_API_Audit_Config (final Properties ctx, final int API_Audit_Config_ID, @Nullable final String trxName)
@@ -77,18 +77,6 @@ public class X_API_Audit_Config extends org.compiere.model.PO implements I_API_A
 	}
 
 	@Override
-	public void setBypassAudit (final boolean BypassAudit)
-	{
-		set_Value (COLUMNNAME_BypassAudit, BypassAudit);
-	}
-
-	@Override
-	public boolean isBypassAudit() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_BypassAudit);
-	}
-
-	@Override
 	public void setIsInvokerWaitsForResult (final boolean IsInvokerWaitsForResult)
 	{
 		set_Value (COLUMNNAME_IsInvokerWaitsForResult, IsInvokerWaitsForResult);
@@ -98,6 +86,30 @@ public class X_API_Audit_Config extends org.compiere.model.PO implements I_API_A
 	public boolean isInvokerWaitsForResult() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsInvokerWaitsForResult);
+	}
+
+	@Override
+	public void setIsSynchronousAuditLoggingEnabled (final boolean IsSynchronousAuditLoggingEnabled)
+	{
+		set_Value (COLUMNNAME_IsSynchronousAuditLoggingEnabled, IsSynchronousAuditLoggingEnabled);
+	}
+
+	@Override
+	public boolean isSynchronousAuditLoggingEnabled() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsSynchronousAuditLoggingEnabled);
+	}
+
+	@Override
+	public void setIsWrapApiResponse (final boolean IsWrapApiResponse)
+	{
+		set_Value (COLUMNNAME_IsWrapApiResponse, IsWrapApiResponse);
+	}
+
+	@Override
+	public boolean isWrapApiResponse() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsWrapApiResponse);
 	}
 
 	@Override
@@ -228,17 +240,5 @@ public class X_API_Audit_Config extends org.compiere.model.PO implements I_API_A
 	public int getSeqNo() 
 	{
 		return get_ValueAsInt(COLUMNNAME_SeqNo);
-	}
-
-	@Override
-	public void setWrapApiResponse (final boolean WrapApiResponse)
-	{
-		set_Value (COLUMNNAME_WrapApiResponse, WrapApiResponse);
-	}
-
-	@Override
-	public boolean isWrapApiResponse() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_WrapApiResponse);
 	}
 }

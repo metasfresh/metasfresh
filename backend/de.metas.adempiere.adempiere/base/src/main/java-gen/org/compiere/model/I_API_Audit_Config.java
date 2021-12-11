@@ -100,27 +100,6 @@ public interface I_API_Audit_Config
 	String COLUMNNAME_API_Audit_Config_ID = "API_Audit_Config_ID";
 
 	/**
-	 * Set Bypass audit.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setBypassAudit (boolean BypassAudit);
-
-	/**
-	 * Get Bypass audit.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isBypassAudit();
-
-	ModelColumn<I_API_Audit_Config, Object> COLUMN_BypassAudit = new ModelColumn<>(I_API_Audit_Config.class, "BypassAudit", null);
-	String COLUMNNAME_BypassAudit = "BypassAudit";
-
-	/**
 	 * Get Created.
 	 * Date this record was created
 	 *
@@ -190,6 +169,48 @@ public interface I_API_Audit_Config
 
 	ModelColumn<I_API_Audit_Config, Object> COLUMN_IsInvokerWaitsForResult = new ModelColumn<>(I_API_Audit_Config.class, "IsInvokerWaitsForResult", null);
 	String COLUMNNAME_IsInvokerWaitsForResult = "IsInvokerWaitsForResult";
+
+	/**
+	 * Set Synchronous audit enabled.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsSynchronousAuditLoggingEnabled (boolean IsSynchronousAuditLoggingEnabled);
+
+	/**
+	 * Get Synchronous audit enabled.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isSynchronousAuditLoggingEnabled();
+
+	ModelColumn<I_API_Audit_Config, Object> COLUMN_IsSynchronousAuditLoggingEnabled = new ModelColumn<>(I_API_Audit_Config.class, "IsSynchronousAuditLoggingEnabled", null);
+	String COLUMNNAME_IsSynchronousAuditLoggingEnabled = "IsSynchronousAuditLoggingEnabled";
+
+	/**
+	 * Set Wrap response.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsWrapApiResponse (boolean IsWrapApiResponse);
+
+	/**
+	 * Get Wrap response.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isWrapApiResponse();
+
+	ModelColumn<I_API_Audit_Config, Object> COLUMN_IsWrapApiResponse = new ModelColumn<>(I_API_Audit_Config.class, "IsWrapApiResponse", null);
+	String COLUMNNAME_IsWrapApiResponse = "IsWrapApiResponse";
 
 	/**
 	 * Set Days keep request body.
@@ -393,25 +414,4 @@ public interface I_API_Audit_Config
 	int getUpdatedBy();
 
 	String COLUMNNAME_UpdatedBy = "UpdatedBy";
-
-	/**
-	 * Set Wrap response.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setWrapApiResponse (boolean WrapApiResponse);
-
-	/**
-	 * Get Wrap response.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isWrapApiResponse();
-
-	ModelColumn<I_API_Audit_Config, Object> COLUMN_WrapApiResponse = new ModelColumn<>(I_API_Audit_Config.class, "WrapApiResponse", null);
-	String COLUMNNAME_WrapApiResponse = "WrapApiResponse";
 }

@@ -96,8 +96,8 @@ public class ApiAuditConfigRepositoryTest
 		config.setNotifyUserInCharge(NotificationTriggerType.ALWAYS.getCode());
 		config.setPathPrefix("pathPrefix");
 		config.setSeqNo(10);
-		config.setBypassAudit(true);
-		config.setWrapApiResponse(true);
+		config.setIsSynchronousAuditLoggingEnabled(true);
+		config.setIsWrapApiResponse(true);
 
 		InterfaceWrapperHelper.saveRecord(config);
 

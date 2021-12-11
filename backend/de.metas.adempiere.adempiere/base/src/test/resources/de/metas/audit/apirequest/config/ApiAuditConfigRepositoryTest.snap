@@ -14,7 +14,7 @@ de.metas.audit.apirequest.config.ApiAuditConfigRepositoryTest.getActiveConfigsBy
       "pathPrefix" : "pathPrefix",
       "notifyUserInCharge" : "ALWAYS",
       "userGroupInChargeId" : 1,
-      "bypassAudit" : true,
+      "performAuditAsync" : false,
       "wrapApiResponse" : true,
       "invokerWaitsForResponse" : true
     }
