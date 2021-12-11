@@ -973,7 +973,7 @@ public class DB
 	 * @param trxName transaction
 	 * @return number of rows updated
 	 */
-	public int executeUpdateEx(final String sql, final Object[] params, final String trxName) throws DBException
+	public int executeUpdateEx(final String sql, final Object[] params, @Nullable final String trxName) throws DBException
 	{
 		final int timeOut = 0;
 		return executeUpdateEx(sql, params, trxName, timeOut);

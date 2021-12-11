@@ -70,7 +70,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 	/**
 	 * Order by clause used to fetch {@link I_M_ShipmentSchedule}s.
 	 * <p>
-	 * NOTE: this ordering is VERY important because that's the order in which QtyOnHand will be allocated too.
+	 * NOTE: this ordering is VERY important because that's the order in which the available QtyOnHand will be allocated.
 	 */
 	private static final String ORDER_CLAUSE = "\n ORDER BY " //
 			//
@@ -78,9 +78,17 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 			+ "\n   COALESCE(" + I_M_ShipmentSchedule.COLUMNNAME_PriorityRule_Override + ", " + I_M_ShipmentSchedule.COLUMNNAME_PriorityRule + ")," //
 			//
 			// QtyToDeliver_Override:
-			// NOTE: (Mark) If we want to force deliverying something, that shall get higher priority,
+			// NOTE: (Mark) If we want to force delivering something, that shall get higher priority,
 			// so that's why QtyToDeliver_Override is much more important than PreparationDate, DeliveryDate etc
 			+ "\n   COALESCE(" + I_M_ShipmentSchedule.COLUMNNAME_QtyToDeliver_Override + ", 0) DESC,"
+			//
+			// Reservation - look at scheds for whose bpartners there are *dedicated* HUs.
+			+ "\n CASE WHEN EXISTS(SELECT 1\n"
+			+ "                    FROM M_HU hu\n"
+			+ "                    WHERE hu.C_BPartner_ID = COALESCE(M_ShipmentSchedule.C_BPartner_Override_ID, M_ShipmentSchedule.C_BPartner_ID)\n"
+			+ "                          AND hu.IsActive = 'Y'\n"
+			+ "                          AND hu.HUStatus NOT IN ('D'/*Destroyed*/, 'P'/*Planning*/, 'E'/*Shipped*/)) "
+			+ "   THEN FALSE ELSE TRUE END," // false comes before true, so we evaluate to false if there is such an HU
 			//
 			// Preparation Date
 			+ "\n   " + I_M_ShipmentSchedule.COLUMNNAME_PreparationDate + ","
