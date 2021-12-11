@@ -32,6 +32,7 @@ import de.metas.invoicecandidate.agg.key.impl.ICHeaderAggregationKeyBuilder_OLD;
 import de.metas.invoicecandidate.agg.key.impl.ICLineAggregationKeyBuilder_OLD;
 import de.metas.invoicecandidate.api.IAggregationDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
+import de.metas.invoicecandidate.api.InvoiceCandidateIdsSelection;
 import de.metas.invoicecandidate.api.impl.AggregationKeyEvaluationContext;
 import de.metas.invoicecandidate.api.impl.HeaderAggregationKeyBuilder;
 import de.metas.invoicecandidate.api.impl.PlainAggregationDAO;
@@ -688,7 +689,7 @@ public class AbstractICTestSupport extends AbstractTestSupport
 				invoiceCandBL.updateInvalid()
 						.setContext(ctx, localTrxName)
 						.setTaggedWithAnyTag()
-						.setOnlyC_Invoice_Candidates(invoiceCandidates)
+						.setOnlyInvoiceCandidateIds(InvoiceCandidateIdsSelection.extractFixedIdsSet(invoiceCandidates))
 						.update();
 			}
 		});

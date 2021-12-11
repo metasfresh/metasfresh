@@ -118,7 +118,7 @@ public class BPartnerQuickInputServiceUpdateNameAndGreetingTest
 
 		refresh(partner);
 		assertThat(partner.getBPartnerName()).isEqualTo(lastname + ", " + firstName);
-		assertThat(partner.getC_Greeting_ID()).isEqualTo(greeting_MRS.getC_Greeting_ID());
+		assertThat(partner.getC_Greeting_ID()).isEqualTo(-1);
 	}
 
 	@Test

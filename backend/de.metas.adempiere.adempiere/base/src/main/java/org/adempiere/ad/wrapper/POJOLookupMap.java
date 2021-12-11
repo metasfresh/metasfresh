@@ -1135,6 +1135,19 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 		return selection != null ? selection : ImmutableSet.of();
 	}
 
+	public void dumpSelections()
+	{
+		StringBuilder sb = new StringBuilder();
+		sb.append("=====================[ SELECTIONS ]============================================================");
+		for (final PInstanceId selectionId : selectionId2selection.keySet())
+		{
+			sb.append("\n\t").append(selectionId).append(": ").append(selectionId2selection.get(selectionId));
+		}
+		sb.append("\n");
+
+		System.out.println(sb.toString());
+	}
+
 	/**
 	 * @return new database restore point.
 	 */
