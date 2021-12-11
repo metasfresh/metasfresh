@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs.invoicecandidate;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
@@ -32,6 +33,7 @@ import de.metas.invoice.InvoiceService;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
+import de.metas.invoicecandidate.api.InvoiceCandidateIdsSelection;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.rest_api.v2.invoice.impl.JsonInvoiceService;
 import de.metas.util.Services;
@@ -45,7 +47,7 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
-import org.testcontainers.shaded.com.google.common.collect.ImmutableSet;
+
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -138,11 +140,14 @@ public class C_Invoice_Candidate_StepDef
 
 			if (recompute)
 			{
+				final InvoiceCandidateIdsSelection onlyInvoiceCandidateIds = InvoiceCandidateIdsSelection.ofIdsSet(
+						ImmutableSet.of(InvoiceCandidateId.ofRepoId(invoiceCandidate.getC_Invoice_Candidate_ID())));
+
 				Services.get(IInvoiceCandBL.class)
 						.updateInvalid()
 						.setContext(Env.getCtx(), null)
 						.setTaggedWithAnyTag()
-						.setOnlyC_Invoice_Candidates(ImmutableSet.of(invoiceCandidate))
+						.setOnlyInvoiceCandidateIds(onlyInvoiceCandidateIds)
 						.update();
 			}
 		}
