@@ -76,12 +76,12 @@ public class C_Order_StepDef
 	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 
-	private final StepDefData<I_C_BPartner> bpartnerTable;
-	private final StepDefData<I_C_Order> orderTable;
+	private final C_BPartner_StepDefData bpartnerTable;
+	private final C_Order_StepDefData orderTable;
 
 	public C_Order_StepDef(
-			@NonNull final StepDefData<I_C_BPartner> bpartnerTable,
-			@NonNull final StepDefData<I_C_Order> orderTable)
+			@NonNull final C_BPartner_StepDefData bpartnerTable,
+			@NonNull final C_Order_StepDefData orderTable)
 	{
 		this.bpartnerTable = bpartnerTable;
 		this.orderTable = orderTable;

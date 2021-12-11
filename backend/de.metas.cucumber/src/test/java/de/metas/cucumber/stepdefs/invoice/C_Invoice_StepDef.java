@@ -66,13 +66,13 @@ public class C_Invoice_StepDef
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 
-	private final StepDefData<I_C_Invoice> invoiceTable;
+	private final C_Invoice_StepDefData invoiceTable;
 	private final StepDefData<I_C_Order> orderTable;
 	private final StepDefData<I_C_BPartner> bPartnerTable;
 	private final StepDefData<I_C_BPartner_Location> bPartnerLocationTable;
 
 	public C_Invoice_StepDef(
-			@NonNull final StepDefData<I_C_Invoice> invoiceTable,
+			@NonNull final C_Invoice_StepDefData invoiceTable,
 			@NonNull final StepDefData<I_C_Order> orderTable,
 			@NonNull final StepDefData<I_C_BPartner> bPartnerTable,
 			@NonNull final StepDefData<I_C_BPartner_Location> bPartnerLocationTable)

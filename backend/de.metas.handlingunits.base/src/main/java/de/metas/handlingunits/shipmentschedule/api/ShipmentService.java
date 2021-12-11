@@ -387,6 +387,7 @@ public class ShipmentService implements IShipmentService
 				.scheduleToExternalInfo(ImmutableMap.of())
 				.scheduleToQuantityToDeliverOverride(shipmentScheduleIdToQtyToDeliver)
 				.quantityTypeToUse(M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER)
+				.onTheFlyPickToPackingInstructions(true) // we might need to create a shipper transportation, so we need TUs
 				.isCompleteShipment(true)
 				.build();
 

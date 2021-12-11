@@ -42,9 +42,9 @@ public class M_InOut_Line_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	private final StepDefData<I_M_InOut> shipmentTable;
+	private final M_InOut_StepDefData shipmentTable;
 
-	public M_InOut_Line_StepDef(@NonNull final StepDefData<I_M_InOut> shipmentTable)
+	public M_InOut_Line_StepDef(@NonNull final M_InOut_StepDefData shipmentTable)
 	{
 		this.shipmentTable = shipmentTable;
 	}
@@ -79,7 +79,7 @@ public class M_InOut_Line_StepDef
 		final boolean processed = DataTableUtil.extractBooleanForColumnName(row, "processed");
 
 		assertThat(shipmentLine.getM_Product_ID()).isEqualTo(productId);
-		assertThat(shipmentLine.getMovementQty()).isEqualTo(movementqty);
+		assertThat(shipmentLine.getMovementQty()).isEqualByComparingTo(movementqty);
 		assertThat(shipmentLine.isProcessed()).isEqualTo(processed);
 	}
 }

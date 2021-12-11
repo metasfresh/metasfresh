@@ -30,6 +30,7 @@ import de.metas.common.bpartner.v2.response.JsonResponseComposite;
 import de.metas.common.bpartner.v2.response.JsonResponseLocation;
 import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.cucumber.stepdefs.StepDefUtil;
@@ -61,7 +62,7 @@ import static org.assertj.core.api.Assertions.*;
 
 public class DataExportAudit_StepDef
 {
-	private final StepDefData<I_C_BPartner> bpartnerTable;
+	private final C_BPartner_StepDefData bpartnerTable;
 	private final StepDefData<I_C_BPartner_Location> bpartnerLocationTable;
 	private final StepDefData<I_C_Location> locationTable;
 	private final StepDefData<I_Data_Export_Audit> dataExportAuditTable;
@@ -73,7 +74,7 @@ public class DataExportAudit_StepDef
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	public DataExportAudit_StepDef(
-			@NonNull final StepDefData<I_C_BPartner> bpartnerTable,
+			@NonNull final C_BPartner_StepDefData bpartnerTable,
 			@NonNull final StepDefData<I_C_BPartner_Location> bpartnerLocationTable,
 			@NonNull final StepDefData<I_C_Location> locationTable,
 			@NonNull final StepDefData<I_Data_Export_Audit> dataExportAuditTable,

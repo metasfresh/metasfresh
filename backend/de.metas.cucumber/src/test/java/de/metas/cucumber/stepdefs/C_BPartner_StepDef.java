@@ -55,12 +55,12 @@ public class C_BPartner_StepDef
 {
 	public static final int BP_GROUP_ID = BPGroupId.ofRepoId(1000000).getRepoId();
 
-	private final StepDefData<I_C_BPartner> bPartnerTable;
+	private final C_BPartner_StepDefData bPartnerTable;
 	private final StepDefData<I_M_PricingSystem> pricingSystemTable;
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 
 	public C_BPartner_StepDef(
-			@NonNull final StepDefData<I_C_BPartner> bPartnerTable,
+			@NonNull final C_BPartner_StepDefData bPartnerTable,
 			@NonNull final StepDefData<I_M_PricingSystem> pricingSystemTable)
 	{
 		this.bPartnerTable = bPartnerTable;

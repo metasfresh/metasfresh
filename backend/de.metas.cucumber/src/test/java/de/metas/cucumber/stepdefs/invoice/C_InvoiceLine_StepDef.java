@@ -45,11 +45,11 @@ public class C_InvoiceLine_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	final StepDefData<I_C_Invoice> invoiceTable;
+	final C_Invoice_StepDefData invoiceTable;
 	final StepDefData<I_M_Product> productTable;
 
 	public C_InvoiceLine_StepDef(
-			@NonNull final StepDefData<I_C_Invoice> invoiceTable,
+			@NonNull final C_Invoice_StepDefData invoiceTable,
 			@NonNull final StepDefData<I_M_Product> productTable)
 	{
 		this.invoiceTable = invoiceTable;

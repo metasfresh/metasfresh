@@ -23,6 +23,7 @@
 package de.metas.cucumber.stepdefs.pricing;
 
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.currency.CurrencyCode;
@@ -64,7 +65,7 @@ public class M_PriceList_StepDef
 {
 	private final OrgId defaultOrgId = StepDefConstants.ORG_ID;
 	private final CurrencyRepository currencyRepository;
-	private final StepDefData<I_M_Product> productTable;
+	private final M_Product_StepDefData productTable;
 	private final StepDefData<I_M_PricingSystem> pricingSystemTable;
 	private final StepDefData<I_M_PriceList> priceListTable;
 	private final StepDefData<I_M_PriceList_Version> priceListVersionTable;
@@ -75,7 +76,7 @@ public class M_PriceList_StepDef
 
 	public M_PriceList_StepDef(
 			@NonNull final CurrencyRepository currencyRepository,
-			@NonNull final StepDefData<I_M_Product> productTable,
+			@NonNull final M_Product_StepDefData productTable,
 			@NonNull final StepDefData<I_M_PricingSystem> pricingSystemTable,
 			@NonNull final StepDefData<I_M_PriceList> priceListTable,
 			@NonNull final StepDefData<I_M_PriceList_Version> priceListVersionTable,

@@ -51,13 +51,13 @@ import static org.assertj.core.api.Assertions.*;
 
 public class M_InOut_StepDef
 {
-	private final StepDefData<I_M_InOut> shipmentTable;
+	private final M_InOut_StepDefData shipmentTable;
 	private final StepDefData<I_M_ShipmentSchedule> shipmentScheduleTable;
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IADPInstanceDAO pinstanceDAO = Services.get(IADPInstanceDAO.class);
 
 	public M_InOut_StepDef(
-			@NonNull final StepDefData<I_M_InOut> shipmentTable,
+			@NonNull final M_InOut_StepDefData shipmentTable,
 			@NonNull final StepDefData<I_M_ShipmentSchedule> shipmentScheduleTable)
 	{
 		this.shipmentTable = shipmentTable;
