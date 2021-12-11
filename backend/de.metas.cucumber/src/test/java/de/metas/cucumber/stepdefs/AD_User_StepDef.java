@@ -49,14 +49,10 @@ public class AD_User_StepDef
 {
 	private final IUserDAO userDAO = Services.get(IUserDAO.class);
 	private final C_BPartner_StepDefData bpartnerTable;
-	private final StepDefData<I_AD_User> userTable;
 
-	public AD_User_StepDef(
-			final C_BPartner_StepDefData bpartnerTable,
-			final StepDefData<I_AD_User> userTable)
+	public AD_User_StepDef(final C_BPartner_StepDefData bpartnerTable)
 	{
 		this.bpartnerTable = bpartnerTable;
-		this.userTable = userTable;
 	}
 
 	@Given("metasfresh contains AD_Users:")
