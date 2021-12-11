@@ -4,10 +4,39 @@ import { push, go } from 'connected-react-router';
 import counterpart from 'counterpart';
 
 import { updateManufacturingReceiptQty, updateManufacturingReceipt } from '../../../actions/ManufacturingActions';
+import { pushHeaderEntry } from '../../../actions/HeaderActions';
 import PickQuantityButton from './PickQuantityButton';
 import { toastError } from '../../../utils/toast';
+import {
+  manufacturingLineScreenLocation,
+  manufacturingReceiptReceiveTargetScreen,
+} from '../../../routes/manufacturing';
 
 class MaterialReceiptLineScreen extends PureComponent {
+  componentDidMount() {
+    const {
+      dispatch,
+      lineProps: { productName },
+      wfProcessId,
+      activityId,
+      lineId,
+    } = this.props;
+    const location = manufacturingLineScreenLocation({ wfProcessId, activityId, lineId });
+
+    dispatch(
+      pushHeaderEntry({
+        location,
+        values: [
+          {
+            caption: counterpart.translate('activities.mfg.ProductName'),
+            value: productName,
+            bold: true,
+          },
+        ],
+      })
+    );
+  }
+
   handleQuantityChange = (qtyPicked) => {
     const {
       dispatch,
@@ -36,10 +65,9 @@ class MaterialReceiptLineScreen extends PureComponent {
   };
 
   handleClick = () => {
-    const { wfProcessId, activityId, lineId } = this.props;
-    const { dispatch } = this.props;
+    const { dispatch, wfProcessId, activityId, lineId } = this.props;
+    const location = manufacturingReceiptReceiveTargetScreen({ wfProcessId, activityId, lineId });
 
-    const location = `/workflow/${wfProcessId}/activityId/${activityId}/lineId/${lineId}/receipt/target`;
     dispatch(push(location));
   };
 

@@ -4,7 +4,9 @@ import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 
 import { updateWFProcess } from '../../actions/WorkflowActions';
+import { pushHeaderEntry } from '../../actions/HeaderActions';
 import { activitiesNotStarted, selectWFProcessFromState } from '../../reducers/wfProcesses_status';
+import { getLocation } from '../../utils';
 
 import ScanActivity from '../activities/scan/ScanActivity';
 import PickProductsActivity from '../activities/picking/PickProductsActivity';
@@ -14,7 +16,19 @@ import MaterialReceiptActivity from '../activities/manufacturing/MaterialReceipt
 import DistributionMoveActivity from '../activities/distribution/DistributionMoveActivity';
 import AbortButton from './AbortButton';
 
+const EMPTY_ARRAY = [];
+
 class WFProcessScreen extends PureComponent {
+  componentDidMount() {
+    const { pushHeaderEntry, headerProperties, wfProcessId } = this.props;
+    const location = getLocation({ wfProcessId });
+
+    pushHeaderEntry({
+      location,
+      values: headerProperties,
+    });
+  }
+
   render() {
     const { wfProcessId, activities, isWorkflowNotStarted } = this.props;
 
@@ -100,13 +114,14 @@ class WFProcessScreen extends PureComponent {
 function mapStateToProps(state, { match }) {
   const { workflowId: wfProcessId } = match.params;
   const wfProcess = selectWFProcessFromState(state, wfProcessId);
-  const activities = wfProcess.activities ? Object.values(wfProcess.activities) : [];
+  const activities = wfProcess.activities ? Object.values(wfProcess.activities) : EMPTY_ARRAY;
   const isWorkflowNotStarted = activitiesNotStarted(state, wfProcessId);
 
   return {
     wfProcessId,
     activities,
     isWorkflowNotStarted,
+    headerProperties: wfProcess.headerProperties.entries,
   };
 }
 
@@ -116,9 +131,11 @@ WFProcessScreen.propTypes = {
   isWorkflowNotStarted: PropTypes.bool,
   activities: PropTypes.array.isRequired,
   wfProcessId: PropTypes.string.isRequired,
+  headerProperties: PropTypes.array,
   //
   // Actions
   updateWFProcess: PropTypes.func.isRequired,
+  pushHeaderEntry: PropTypes.func.isRequired,
 };
 
-export default withRouter(connect(mapStateToProps, { updateWFProcess })(WFProcessScreen));
+export default withRouter(connect(mapStateToProps, { updateWFProcess, pushHeaderEntry })(WFProcessScreen));
