@@ -303,7 +303,8 @@ public class ProcessHUsAndPickingCandidateCommand
 	private HuId getPickedHUId(@NonNull final PickingCandidate pc)
 	{
 		final PickedHuAndQty item = getPickedHuAndQty(pc);
-		return item != null ? item.getPickedHUId() : null;
+		final HuId initialHuId = pc.getPickFrom().getHuId(); // allow fallback on picking candidate HU as picked HU
+		return item != null ? item.getPickedHUId() : initialHuId;
 	}
 
 }
