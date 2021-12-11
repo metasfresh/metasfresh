@@ -69,6 +69,12 @@ public interface IShipmentScheduleInvalidateBL extends ISingletonService
 	void notifySegmentChangedForShipmentSchedule(I_M_ShipmentSchedule schedule);
 
 	/**
+	 * Like {@link #notifySegmentChangedForShipmentSchedule(I_M_ShipmentSchedule)}, but always also include the given sched, even if it has delivery-rule "force"
+	 * 
+	 */
+	void notifySegmentChangedForShipmentScheduleInclSched(I_M_ShipmentSchedule schedule);
+	
+	/**
 	 * For the given <code>orderLine</code>, invalidate all shipment schedules that have the same product and warehouse and a matching ASI.
 	 * and <b>that that do not have "force" as delivery rule</b>.<br>
 	 */

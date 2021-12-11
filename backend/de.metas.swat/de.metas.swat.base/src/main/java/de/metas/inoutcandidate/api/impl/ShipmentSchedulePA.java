@@ -238,7 +238,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 		return createOlAndScheds(shipmentSchedules);
 	}
 
-	private static final OrderAndLineId extractOrderAndLineId(final I_M_ShipmentSchedule shipmentSchedule)
+	private static OrderAndLineId extractOrderAndLineId(final I_M_ShipmentSchedule shipmentSchedule)
 	{
 		return OrderAndLineId.ofRepoIdsOrNull(shipmentSchedule.getC_Order_ID(), shipmentSchedule.getC_OrderLine_ID());
 	}
@@ -327,7 +327,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 	 * @param updateOnlyIfNull         if true then it will update only if column value is null (not set)
 	 * @param selectionId              ShipmentSchedule selection (AD_PInstance_ID)
 	 */
-	private final <ValueType> void updateColumnForSelection(
+	private <ValueType> void updateColumnForSelection(
 			final String inoutCandidateColumnName,
 			final ValueType value,
 			final boolean updateOnlyIfNull,
