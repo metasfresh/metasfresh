@@ -58,10 +58,18 @@ BEGIN
     );
     RAISE NOTICE '% !! Deactivated Ad_Schedulers for ExternalSystems !!', CLOCK_TIMESTAMP();
 
-    /* if the data is coming from production, then scramble it */
+    /* can be changed in after_transfer_db_custom_end, but with this we are already kinda safe */
+    UPDATE ad_sysconfig SET Value = 'mftest@metasfresh.com', IsActive='Y' WHERE name = 'org.adempiere.user.api.IUserBL.DebugMailTo';
+    RAISE NOTICE '% !! Set DebugMailTo=mftest@metasfresh.com !!', CLOCK_TIMESTAMP();
+
     IF p_scramble_db AND p_source_instance ILIKE '%prod' AND p_target_instance NOT ILIKE '%prod'
     THEN
+        RAISE NOTICE '% !! p_scramble_db=%, p_source_instance=%, p_target_instance=% => Scrambling the DB !!',
+            CLOCK_TIMESTAMP(), p_scramble_db, p_source_instance, p_target_instance;
         EXECUTE ops.scramble_metasfresh(p_dryrun := FALSE);
+    ELSE
+        RAISE NOTICE '% !! p_scramble_db=%, p_source_instance=%, p_target_instance=% => NOT scrambling the DB !!',
+            CLOCK_TIMESTAMP(), p_scramble_db, p_source_instance, p_target_instance;
     END IF;
 
     RAISE NOTICE '% !! Enqueued % C_BPartners to be send to elastic search for FTS !!', 
@@ -69,7 +77,7 @@ BEGIN
         (SELECT ops.es_fts_reindex_bpartners());
 
     EXECUTE ops.after_transfer_db_custom_end(p_sourceinstance := p_source_instance, p_targetinstance := p_target_instance);
-END  ;
+END ;
 $BODY$
     LANGUAGE plpgsql
     VOLATILE

@@ -111,7 +111,6 @@ public class ShopwareClient
 	@NonNull
 	public GetOrdersResponse getOrders(
 			@NonNull final Shopware6QueryRequest queryRequest,
-			@Nullable final String customIdentifierJSONPath,
 			@Nullable final String salesRepJSONPath)
 	{
 		final URI resourceURI;
@@ -152,10 +151,9 @@ public class ShopwareClient
 			{
 				for (final JsonNode orderCustomerNode : arrayJsonNode)
 				{
-					final Optional<OrderCandidate> orderAddressCustomId =
-							getJsonOrderCandidate(orderCustomerNode, customIdentifierJSONPath, salesRepJSONPath);
+					final Optional<OrderCandidate> orderCandidate = getOrderCandidate(orderCustomerNode, salesRepJSONPath);
 
-					orderAddressCustomId.ifPresent(orderCandidates::add);
+					orderCandidate.ifPresent(orderCandidates::add);
 				}
 			}
 		}
@@ -477,9 +475,8 @@ public class ShopwareClient
 	}
 
 	@NonNull
-	protected Optional<OrderCandidate> getJsonOrderCandidate(
+	private Optional<OrderCandidate> getOrderCandidate(
 			@Nullable final JsonNode orderJson,
-			@Nullable final String customIdJSONPath,
 			@Nullable final String salesRepJSONPath)
 	{
 		if (orderJson == null)
@@ -492,29 +489,16 @@ public class ShopwareClient
 		{
 			final JsonOrder jsonOrder = objectMapper.treeToValue(orderJson, JsonOrder.class);
 
-			final OrderCandidate.OrderCandidateBuilder orderCandidateBuilder =
-					OrderCandidate.builder()
-							.jsonOrder(jsonOrder);
-
-			if (Check.isNotBlank(customIdJSONPath))
-			{
-				final String customId = orderJson.at(customIdJSONPath).asText();
-
-				if (!Strings.isBlank(customId))
-				{
-					orderCandidateBuilder.customBPartnerId(customId);
-				}
-				else
-				{
-					pInstanceLogger.logMessage("Skipping current order: " + jsonOrder.getId() + "; no value found for customIdJSONPath: " + customIdJSONPath);
-					return Optional.empty();
-				}
-			}
-			else if (Check.isBlank(jsonOrder.getOrderCustomer().getCustomerId()))
+			if (Check.isBlank(jsonOrder.getOrderCustomer().getCustomerId()))
 			{
 				pInstanceLogger.logMessage("Skipping current order: " + jsonOrder.getId() + "; jsonOrder.getOrderCustomer().getCustomerId() is null!");
 				return Optional.empty();
 			}
+
+			final OrderCandidate.OrderCandidateBuilder orderCandidateBuilder =
+					OrderCandidate.builder()
+							.jsonOrder(jsonOrder)
+							.orderNode(orderJson);
 
 			if (Check.isNotBlank(salesRepJSONPath))
 			{

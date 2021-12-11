@@ -113,7 +113,7 @@ public class X_ExternalSystem_Config_Shopware6 extends org.compiere.model.PO imp
 	}
 
 	@Override
-	public void setExternalSystemValue (final java.lang.String ExternalSystemValue)
+	public void setExternalSystemValue (final @Nullable java.lang.String ExternalSystemValue)
 	{
 		set_Value (COLUMNNAME_ExternalSystemValue, ExternalSystemValue);
 	}
@@ -146,18 +146,6 @@ public class X_ExternalSystem_Config_Shopware6 extends org.compiere.model.PO imp
 	public java.lang.String getFreightCost_Reduced_VAT_Rates() 
 	{
 		return get_ValueAsString(COLUMNNAME_FreightCost_Reduced_VAT_Rates);
-	}
-
-	@Override
-	public void setJSONPathConstantBPartnerID (final @Nullable java.lang.String JSONPathConstantBPartnerID)
-	{
-		set_Value (COLUMNNAME_JSONPathConstantBPartnerID, JSONPathConstantBPartnerID);
-	}
-
-	@Override
-	public java.lang.String getJSONPathConstantBPartnerID() 
-	{
-		return get_ValueAsString(COLUMNNAME_JSONPathConstantBPartnerID);
 	}
 
 	@Override

@@ -43,9 +43,11 @@ import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
 
+import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
+import static org.compiere.model.I_M_Product.COLUMNNAME_M_Product_ID;
 
 public class C_OrderLine_StepDef
 {
@@ -152,12 +154,13 @@ public class C_OrderLine_StepDef
 
 			final I_C_Order orderRecord = orderTable.get(orderIdentifier);
 
-			final int productId = DataTableUtil.extractIntForColumnName(row, "M_Product_ID.Identifier");
+			final String productIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final I_M_Product product = productTable.get(productIdentifier);
 
 			//dev-note: we assume the tests are not using the same product on different lines
 			final I_C_OrderLine orderLineRecord = queryBL.createQueryBuilder(I_C_OrderLine.class)
 					.addEqualsFilter(I_C_OrderLine.COLUMNNAME_C_Order_ID, orderRecord.getC_Order_ID())
-					.addEqualsFilter(I_C_OrderLine.COLUMNNAME_M_Product_ID, productId)
+					.addEqualsFilter(I_C_OrderLine.COLUMNNAME_M_Product_ID, product.getM_Product_ID())
 					.create()
 					.firstOnlyNotNull(I_C_OrderLine.class);
 
@@ -184,7 +187,6 @@ public class C_OrderLine_StepDef
 		assertThat(orderLine.getPriceEntered()).isEqualTo(price);
 		assertThat(orderLine.getDiscount()).isEqualTo(discount);
 		assertThat(orderLine.isProcessed()).isEqualTo(processed);
-		assertThat(orderLine.getM_Product_ID()).isEqualTo(productId);
 		assertThat(orderLine.getQtyOrdered()).isEqualTo(qtyordered);
 		assertThat(orderLine.getQtyInvoiced()).isEqualTo(qtyinvoiced);
 

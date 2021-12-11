@@ -237,7 +237,7 @@ public class AsyncBatchBL implements IAsyncBatchBL
 	}
 
 	@VisibleForTesting
-		/* package */boolean checkProcessed(@NonNull final I_C_Async_Batch asyncBatch)
+	/* package */boolean checkProcessed(@NonNull final I_C_Async_Batch asyncBatch)
 	{
 		// if (asyncBatch.isProcessed())
 		// {

@@ -36,6 +36,7 @@ import org.adempiere.warehouse.WarehouseId;
 public class StepDefConstants
 {
 	public static final String TABLECOLUMN_IDENTIFIER = "Identifier";
+	public static final String METASFRESH_VALUE = "metasfresh";
 
 	public static final WarehouseId WAREHOUSE_ID = WarehouseId.ofRepoId(540008);
 	public static final ResourceId PLANT_ID = ResourceId.ofRepoId(540011);

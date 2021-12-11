@@ -24,6 +24,7 @@ package de.metas.cucumber.stepdefs.productionorder;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.cucumber.stepdefs.StepDefUtil;
@@ -60,7 +61,7 @@ import static org.assertj.core.api.Assertions.*;
 
 public class PP_Order_Candidate_StepDef
 {
-	private final StepDefData<I_M_Product> productTable;
+	private final M_Product_StepDefData productTable;
 	private final StepDefData<I_PP_Product_BOM> productBOMTable;
 	private final StepDefData<I_PP_Product_Planning> productPlanningTable;
 	private final StepDefData<I_PP_Order_Candidate> ppOrderCandidateTable;
@@ -72,7 +73,7 @@ public class PP_Order_Candidate_StepDef
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	public PP_Order_Candidate_StepDef(
-			@NonNull final StepDefData<I_M_Product> productTable,
+			@NonNull final M_Product_StepDefData productTable,
 			@NonNull final StepDefData<I_PP_Product_BOM> productBOMTable,
 			@NonNull final StepDefData<I_PP_Product_Planning> productPlanningTable,
 			@NonNull final StepDefData<I_PP_Order_Candidate> ppOrderCandidateTable)
@@ -224,8 +225,6 @@ public class PP_Order_Candidate_StepDef
 			}
 		};
 
-		final boolean candidateFound = StepDefUtil.tryAndWait(timeoutSec, 500, ppOrderCandidateQueryExecutor);
-
-		assertThat(candidateFound).isTrue();
+		StepDefUtil.tryAndWait(timeoutSec, 500, ppOrderCandidateQueryExecutor);
 	}
 }

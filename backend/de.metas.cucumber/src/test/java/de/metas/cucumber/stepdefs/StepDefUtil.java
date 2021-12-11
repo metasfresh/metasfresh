@@ -22,17 +22,19 @@
 
 package de.metas.cucumber.stepdefs;
 
-import io.cucumber.java.en.And;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.adempiere.model.InterfaceWrapperHelper;
 
+import javax.annotation.Nullable;
 import java.util.function.Supplier;
+
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 @UtilityClass
 public class StepDefUtil
 {
-	public boolean tryAndWait(final long maxWaitSeconds, final long checkingIntervalMs, final Supplier<Boolean> worker ) throws InterruptedException
+	public void tryAndWait(final long maxWaitSeconds, final long checkingIntervalMs, final Supplier<Boolean> worker, @Nullable final Runnable logContext) throws InterruptedException
 	{
 		final long nowMillis = System.currentTimeMillis(); // don't use SystemTime.millis(); because it's probably "rigged" for testing purposes,
 		final long deadLineMillis = nowMillis + (maxWaitSeconds * 1000L);
@@ -45,7 +47,12 @@ public class StepDefUtil
 			conditionIsMet = worker.get();
 		}
 
-		return conditionIsMet;
+		if (!conditionIsMet && logContext != null)
+		{
+			logContext.run();
+		}
+
+		assertThat(conditionIsMet).isTrue();
 	}
 
 	public int extractId(@NonNull final String idOrIdentifier, @NonNull final StepDefData<?> stepDefDataTable)
@@ -61,11 +68,9 @@ public class StepDefUtil
 			return InterfaceWrapperHelper.getId(model);
 		}
 	}
-
-	@And("^wait for (.*)s$")
-	public void waitFor(final int waitingTimeSec) throws InterruptedException
+	
+	public void tryAndWait(final long maxWaitSeconds, final long checkingIntervalMs, final Supplier<Boolean> worker) throws InterruptedException
 	{
-		final long waitingTimeMillis = waitingTimeSec * 1000L;
-		Thread.sleep(waitingTimeMillis);
+		tryAndWait(maxWaitSeconds, checkingIntervalMs, worker, null);
 	}
 }

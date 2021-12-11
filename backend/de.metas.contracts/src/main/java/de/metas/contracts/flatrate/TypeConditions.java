@@ -30,6 +30,7 @@ import lombok.NonNull;
 import static de.metas.contracts.model.X_C_Flatrate_Conditions.TYPE_CONDITIONS_Commission;
 import static de.metas.contracts.model.X_C_Flatrate_Conditions.TYPE_CONDITIONS_FlatFee;
 import static de.metas.contracts.model.X_C_Flatrate_Conditions.TYPE_CONDITIONS_HoldingFee;
+import static de.metas.contracts.model.X_C_Flatrate_Conditions.TYPE_CONDITIONS_LicenseFee;
 import static de.metas.contracts.model.X_C_Flatrate_Conditions.TYPE_CONDITIONS_MarginCommission;
 import static de.metas.contracts.model.X_C_Flatrate_Conditions.TYPE_CONDITIONS_MediatedCommission;
 import static de.metas.contracts.model.X_C_Flatrate_Conditions.TYPE_CONDITIONS_Procurement;
@@ -50,7 +51,9 @@ public enum TypeConditions implements ReferenceListAwareEnum
 	REFUND(TYPE_CONDITIONS_Refund),
 	COMMISSION(TYPE_CONDITIONS_Commission),
 	MEDIATED_COMMISSION(TYPE_CONDITIONS_MediatedCommission),
-	MARGIN_COMMISSION(TYPE_CONDITIONS_MarginCommission);
+	MARGIN_COMMISSION(TYPE_CONDITIONS_MarginCommission),
+	LICENSE_FEE(TYPE_CONDITIONS_LicenseFee)
+	;
 
 	@Getter
 	private final String code;
