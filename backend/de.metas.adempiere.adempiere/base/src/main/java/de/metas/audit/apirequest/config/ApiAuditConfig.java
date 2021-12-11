@@ -78,6 +78,7 @@ public class ApiAuditConfig
 	/**
 	 * If true, the API response shall be wrapped into a {@link JsonApiResponse}
 	 * If false, it shall be communicated via a http response header.
+	 * Note that if {@link #createAuditRecordsAsynchronously} is {@code true}, then the API response is never wrapped.
 	 */
 	boolean wrapApiResponse;
 
