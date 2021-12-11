@@ -88,7 +88,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 			+ "                    WHERE hu.C_BPartner_ID = COALESCE(M_ShipmentSchedule.C_BPartner_Override_ID, M_ShipmentSchedule.C_BPartner_ID)\n"
 			+ "                          AND hu.IsActive = 'Y'\n"
 			+ "                          AND hu.HUStatus NOT IN ('D'/*Destroyed*/, 'P'/*Planning*/, 'E'/*Shipped*/)) "
-			+ "   THEN FALSE ELSE TRUE END" // false comes before true, so we evaluate to false if there is such an HU
+			+ "   THEN FALSE ELSE TRUE END," // false comes before true, so we evaluate to false if there is such an HU
 			//
 			// Preparation Date
 			+ "\n   " + I_M_ShipmentSchedule.COLUMNNAME_PreparationDate + ","
