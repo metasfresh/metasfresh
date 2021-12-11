@@ -282,7 +282,7 @@ public interface IInvoiceCandBL extends ISingletonService
 	 *
 	 * @param askForDeleteRegeneration error message will append request to the user asking him/her to delete invoice candidate after problem was fixed and wait for its regeneration
 	 */
-	void setError(I_C_Invoice_Candidate ic, String errorMsg, I_AD_Note note, boolean askForDeleteRegeneration);
+	void setError(I_C_Invoice_Candidate ic, String errorMsg, @Nullable I_AD_Note note, boolean askForDeleteRegeneration);
 
 	void setError(I_C_Invoice_Candidate ic, Throwable e);
 

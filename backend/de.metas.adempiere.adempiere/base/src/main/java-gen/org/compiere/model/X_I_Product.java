@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_I_Product extends org.compiere.model.PO implements I_I_Product, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 2051569421L;
+	private static final long serialVersionUID = 848588753L;
 
     /** Standard Constructor */
     public X_I_Product (final Properties ctx, final int I_Product_ID, @Nullable final String trxName)
@@ -261,27 +261,6 @@ public class X_I_Product extends org.compiere.model.PO implements I_I_Product, o
 		return get_ValueAsString(COLUMNNAME_DescriptionURL);
 	}
 
-	/** 
-	 * DietType AD_Reference_ID=541270
-	 * Reference name: Ernährungsart
-	 */
-	public static final int DIETTYPE_AD_Reference_ID=541270;
-	/** Vegan = Vegan */
-	public static final String DIETTYPE_Vegan = "Vegan";
-	/** Vegetarian = Vegetarian */
-	public static final String DIETTYPE_Vegetarian = "Vegetarian";
-	@Override
-	public void setDietType (final @Nullable java.lang.String DietType)
-	{
-		set_Value (COLUMNNAME_DietType, DietType);
-	}
-
-	@Override
-	public java.lang.String getDietType() 
-	{
-		return get_ValueAsString(COLUMNNAME_DietType);
-	}
-
 	@Override
 	public void setDiscontinued (final boolean Discontinued)
 	{
@@ -292,18 +271,6 @@ public class X_I_Product extends org.compiere.model.PO implements I_I_Product, o
 	public boolean isDiscontinued() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_Discontinued);
-	}
-
-	@Override
-	public void setIsCommissioned (final boolean IsCommissioned)
-	{
-		set_Value (COLUMNNAME_IsCommissioned, IsCommissioned);
-	}
-
-	@Override
-	public boolean isCommissioned()
-	{
-		return get_ValueAsBoolean(COLUMNNAME_IsCommissioned);
 	}
 
 	@Override
@@ -442,15 +409,15 @@ public class X_I_Product extends org.compiere.model.PO implements I_I_Product, o
 	}
 
 	@Override
-	public void setIsPurchased (final boolean IsPurchased)
+	public void setIsScalePrice (final boolean IsScalePrice)
 	{
-		set_Value (COLUMNNAME_IsPurchased, IsPurchased);
+		set_Value (COLUMNNAME_IsScalePrice, IsScalePrice);
 	}
 
 	@Override
-	public boolean isPurchased() 
+	public boolean isScalePrice() 
 	{
-		return get_ValueAsBoolean(COLUMNNAME_IsPurchased);
+		return get_ValueAsBoolean(COLUMNNAME_IsScalePrice);
 	}
 
 	@Override
@@ -490,25 +457,6 @@ public class X_I_Product extends org.compiere.model.PO implements I_I_Product, o
 	public int getManufacturer_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_Manufacturer_ID);
-	}
-
-	/** 
-	 * ManufacturingMethod AD_Reference_ID=541515
-	 * Reference name: ManufacturingMethod_Reference
-	 */
-	public static final int MANUFACTURINGMETHOD_AD_Reference_ID=541515;
-	/** Presslingherstellung = PR */
-	public static final String MANUFACTURINGMETHOD_Presslingherstellung = "PR";
-	@Override
-	public void setManufacturingMethod (final @Nullable java.lang.String ManufacturingMethod)
-	{
-		set_Value (COLUMNNAME_ManufacturingMethod, ManufacturingMethod);
-	}
-
-	@Override
-	public java.lang.String getManufacturingMethod() 
-	{
-		return get_ValueAsString(COLUMNNAME_ManufacturingMethod);
 	}
 
 	@Override
@@ -821,6 +769,8 @@ public class X_I_Product extends org.compiere.model.PO implements I_I_Product, o
 	public static final String PRODUCTTYPE_Online = "O";
 	/** FreightCost = F */
 	public static final String PRODUCTTYPE_FreightCost = "F";
+	/** Nahrung = N */
+	public static final String PRODUCTTYPE_Nahrung = "N";
 	@Override
 	public void setProductType (final @Nullable java.lang.String ProductType)
 	{
@@ -834,15 +784,16 @@ public class X_I_Product extends org.compiere.model.PO implements I_I_Product, o
 	}
 
 	@Override
-	public void setPZN (final @Nullable java.lang.String PZN)
+	public void setQty (final @Nullable BigDecimal Qty)
 	{
-		set_Value (COLUMNNAME_PZN, PZN);
+		set_Value (COLUMNNAME_Qty, Qty);
 	}
 
 	@Override
-	public java.lang.String getPZN() 
+	public BigDecimal getQty() 
 	{
-		return get_ValueAsString(COLUMNNAME_PZN);
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Qty);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
@@ -943,18 +894,6 @@ public class X_I_Product extends org.compiere.model.PO implements I_I_Product, o
 	public java.lang.String getSKU() 
 	{
 		return get_ValueAsString(COLUMNNAME_SKU);
-	}
-
-	@Override
-	public void setTrademark (final @Nullable java.lang.String Trademark)
-	{
-		set_Value (COLUMNNAME_Trademark, Trademark);
-	}
-
-	@Override
-	public java.lang.String getTrademark() 
-	{
-		return get_ValueAsString(COLUMNNAME_Trademark);
 	}
 
 	@Override

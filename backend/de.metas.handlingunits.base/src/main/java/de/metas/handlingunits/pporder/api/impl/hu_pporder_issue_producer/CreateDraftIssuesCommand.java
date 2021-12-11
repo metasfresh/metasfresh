@@ -174,14 +174,13 @@ public class CreateDraftIssuesCommand
 					.setParameter("hu", hu);
 		}
 
-		removeHuFromParentIfAny(huContext, hu);
-
 		final IHUProductStorage productStorage = retrieveProductStorage(huContext, hu);
 		if (productStorage == null)
 		{
 			return null;
 		}
 
+		removeHuFromParentIfAny(huContext, hu);
 		// Actually create and save the candidate
 		final I_PP_Order_Qty candidate = createIssueCandidateOrNull(hu, productStorage);
 		if (candidate == null)
@@ -273,20 +272,20 @@ public class CreateDraftIssuesCommand
 			}
 
 			final I_PP_Order_Qty candidate = huPPOrderQtyDAO.save(CreateIssueCandidateRequest.builder()
-					.orderId(PPOrderId.ofRepoId(targetBOMLine.getPP_Order_ID()))
-					.orderBOMLineId(PPOrderBOMLineId.ofRepoId(targetBOMLine.getPP_Order_BOMLine_ID()))
-					//
-					.date(movementDate)
-					//
-					.locatorId(warehousesRepo.getLocatorIdByRepoIdOrNull(hu.getM_Locator_ID()))
-					.issueFromHUId(HuId.ofRepoId(hu.getM_HU_ID()))
-					.productId(productId)
-					//
-					.qtyToIssue(qtyToIssue)
-					//
+																		  .orderId(PPOrderId.ofRepoId(targetBOMLine.getPP_Order_ID()))
+																		  .orderBOMLineId(PPOrderBOMLineId.ofRepoId(targetBOMLine.getPP_Order_BOMLine_ID()))
+																		  //
+																		  .date(movementDate)
+																		  //
+																		  .locatorId(warehousesRepo.getLocatorIdByRepoIdOrNull(hu.getM_Locator_ID()))
+																		  .issueFromHUId(HuId.ofRepoId(hu.getM_HU_ID()))
+																		  .productId(productId)
+																		  //
+																		  .qtyToIssue(qtyToIssue)
+																		  //
 					.generatedBy(generatedBy)
-					//
-					.build());
+																		  //
+																		  .build());
 
 			ppOrderProductAttributeBL.addPPOrderProductAttributesFromIssueCandidate(candidate);
 
