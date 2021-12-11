@@ -7,6 +7,7 @@ import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.time.LocalDate;
 
 /*
  * #%L
@@ -71,6 +72,9 @@ public class CreateProductRequest
 
 	@Nullable
 	Boolean discontinued;
+
+	@Nullable
+	LocalDate discontinuedFrom;
 
 	@Nullable
 	Boolean active;

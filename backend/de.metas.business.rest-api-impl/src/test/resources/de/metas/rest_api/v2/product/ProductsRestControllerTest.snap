@@ -10,6 +10,7 @@ de.metas.rest_api.v2.product.ProductsRestControllerTest.getProducts_standardCase
     "manufacturerId" : null,
     "manufacturerName" : null,
     "manufacturerNumber" : null,
+    "discontinuedFrom" : null,
     "bpartners" : [ {
       "bPartnerId" : 1,
       "productNo" : "productNo1-vendor1",
@@ -44,6 +45,7 @@ de.metas.rest_api.v2.product.ProductsRestControllerTest.getProducts_standardCase
     "manufacturerId" : null,
     "manufacturerName" : null,
     "manufacturerNumber" : null,
+    "discontinuedFrom" : null,
     "bpartners" : [ ]
   } ]
 } ]
