@@ -61,8 +61,9 @@ import de.metas.process.PInstanceId;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.springframework.stereotype.Service;
 
-@Component
+@Service
 public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidateBL
 {
 	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
@@ -205,6 +206,15 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 		notifySegmentChanged(segment);
 	}
 
+	@Override
+	public void notifySegmentChangedForShipmentScheduleInclSched(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
+	{
+		final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID());
+		
+		flagForRecompute(shipmentScheduleId); // 08746: make sure that at any rate, the schedule itself is invalidated, even if it has delivery rule "force"
+		notifySegmentChangedForShipmentSchedule(shipmentSchedule);
+	}
+
 	/**
 	 * Note that this method is overridden in the de.metas.handlingunits.base module!
 	 * TODO: don't override this whole method, there are plenty of better ways
@@ -289,7 +299,7 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 		final ShipmentScheduleSegmentChangedProcessor collector = ShipmentScheduleSegmentChangedProcessor.getOrCreateIfThreadInheritedElseNull(this);
 		if (collector != null)
 		{
-			collector.addSegments(segmentsEffective);
+			collector.addSegments(segmentsEffective); // they will be flagged for recompute after commit
 		}
 		else
 		{
