@@ -12,8 +12,8 @@ Feature: Mediated commission
     Given taxCategory 'Normal' is updated to work with all productTypes
     And metasfresh contains M_Products:
       | Identifier          | Name                | ProductType | OPT.X12DE355 |
-      | commission_product  | commission_product  | S           | PTS           |
-      | transaction_product | transaction_product |             | PCE           |
+      | commission_product  | commission_product  | S           | PTS          |
+      | transaction_product | transaction_product |             | PCE          |
     And metasfresh contains M_PricingSystems
       | Identifier | Name                    | Value            | OPT.IsActive |
       | psv_1      | pricing_system_vendor_1 | pricing_system_1 | true         |
@@ -59,7 +59,7 @@ Feature: Mediated commission
          "externalPurchaseOrderUrl": "www.ExternalReferenceURL.com",
          "externalHeaderId":"99898",
          "externalLineId":"898978",
-         "poReference":"abcde",
+         "poReference":"poRef1",
          "purchaseDatePromised":"2021-12-05T23:17:35.644Z",
          "purchaseDateOrdered":"2021-12-05T23:17:35.644Z",
          "qty":{
@@ -84,8 +84,8 @@ Feature: Mediated commission
 }
 """
     Then a PurchaseOrder with externalId '99898' is created after not more than 90 seconds and has values
-      | ExternalPurchaseOrderURL     | OPT.C_Order_ID.Identifier |
-      | www.ExternalReferenceURL.com | purchaseOrder_1           |
+      | ExternalPurchaseOrderURL     | POReference | OPT.C_Order_ID.Identifier |
+      | www.ExternalReferenceURL.com | poRef1       | purchaseOrder_1           |
     And after not more than 30s the order is found
       | C_Order_ID.Identifier | DocStatus |
       | purchaseOrder_1       | CO        |
@@ -125,10 +125,10 @@ Feature: Mediated commission
       | invoiceSettled_1        | settlement_1                      |
     And validate created invoices
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.DocSubType |
-      | invoiceSettled_1   | mediated_vendor          | mediated_vendor_location          | 10 Tage 1 % | true      | CO        | RD             |
+      | invoiceSettled_1        | mediated_vendor          | mediated_vendor_location          | 10 Tage 1 % | true      | CO        | RD             |
     And validate created invoice lines
       | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
-      | invoiceSettled_1   | commission_product      | 10.00       | true      |
+      | invoiceSettled_1        | commission_product      | 10.00       | true      |
     And validate commission deed for commission instance commissionInstance_1
       | C_Commission_Share_ID.Identifier | C_BPartner_SalesRep_ID.Identifier | C_BPartner_Payer_ID.Identifier | C_Flatrate_Term_ID.Identifier | Commission_Product_ID.Identifier | LevelHierarchy | OPT.C_MediatedCommissionSettingsLine_ID.Identifier | IsSOTrx | IsSimulation | PointsSum_Forecasted | PointsSum_Invoiceable | PointsSum_Invoiced | PointsSum_ToSettle | PointsSum_Settled |
       | commissionShare_1                | metasfresh                        | mediated_vendor                | mediatedContract_1            | commission_product               | 0              | mediatedSettingsLine_1                             | true    | false        | 0                    | 0                     | 10.00              | 0                  | 10.00             |
