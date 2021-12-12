@@ -411,6 +411,50 @@ public interface I_I_Product
 	String COLUMNNAME_DescriptionURL = "DescriptionURL";
 
 	/**
+	 * Set Diet Type.
+	 * Diet Type
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDietType (@Nullable java.lang.String DietType);
+
+	/**
+	 * Get Diet Type.
+	 * Diet Type
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getDietType();
+
+	ModelColumn<I_I_Product, Object> COLUMN_DietType = new ModelColumn<>(I_I_Product.class, "DietType", null);
+	String COLUMNNAME_DietType = "DietType";
+
+	/**
+	 * Set Is commissioned.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsCommissioned (boolean IsCommissioned);
+
+	/**
+	 * Get Is commissioned.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isCommissioned();
+
+	ModelColumn<I_I_Product, Object> COLUMN_IsCommissioned = new ModelColumn<>(I_I_Product.class, "IsCommissioned", null);
+	String COLUMNNAME_IsCommissioned = "IsCommissioned";
+
+	/**
 	 * Set Eingestellt.
 	 * This product is no longer available
 	 *
@@ -704,6 +748,29 @@ public interface I_I_Product
 	String COLUMNNAME_ISO_Code = "ISO_Code";
 
 	/**
+	 * Set Purchased.
+	 * Organization purchases this product
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsPurchased (boolean IsPurchased);
+
+	/**
+	 * Get Purchased.
+	 * Organization purchases this product
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isPurchased();
+
+	ModelColumn<I_I_Product, Object> COLUMN_IsPurchased = new ModelColumn<>(I_I_Product.class, "IsPurchased", null);
+	String COLUMNNAME_IsPurchased = "IsPurchased";
+
+	/**
 	 * Set Scale Price.
 	 *
 	 * <br>Type: YesNo
@@ -791,6 +858,28 @@ public interface I_I_Product
 	int getManufacturer_ID();
 
 	String COLUMNNAME_Manufacturer_ID = "Manufacturer_ID";
+
+
+	/**
+	 * Set Manufacturing Method.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setManufacturingMethod (@Nullable java.lang.String ManufacturingMethod);
+
+	/**
+	 * Get Manufacturing Method.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getManufacturingMethod();
+
+	ModelColumn<I_I_Product, Object> COLUMN_ManufacturingMethod = new ModelColumn<>(I_I_Product.class, "ManufacturingMethod", null);
+	String COLUMNNAME_ManufacturingMethod = "ManufacturingMethod";
 
 	/**
 	 * Set Customs Tariff.
@@ -1303,6 +1392,28 @@ public interface I_I_Product
 	ModelColumn<I_I_Product, Object> COLUMN_Qty = new ModelColumn<>(I_I_Product.class, "Qty", null);
 	String COLUMNNAME_Qty = "Qty";
 
+
+	/**
+	 * Set PZN.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPZN (@Nullable java.lang.String PZN);
+
+	/**
+	 * Get PZN.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getPZN();
+
+	ModelColumn<I_I_Product, Object> COLUMN_PZN = new ModelColumn<>(I_I_Product.class, "PZN", null);
+	String COLUMNNAME_PZN = "PZN";
+
 	/**
 	 * Set Raw Material Origin Country Code.
 	 *
@@ -1463,6 +1574,27 @@ public interface I_I_Product
 
 	ModelColumn<I_I_Product, Object> COLUMN_SKU = new ModelColumn<>(I_I_Product.class, "SKU", null);
 	String COLUMNNAME_SKU = "SKU";
+
+	/**
+	 * Set Trademark.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setTrademark (@Nullable java.lang.String Trademark);
+
+	/**
+	 * Get Trademark.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getTrademark();
+
+	ModelColumn<I_I_Product, Object> COLUMN_Trademark = new ModelColumn<>(I_I_Product.class, "Trademark", null);
+	String COLUMNNAME_Trademark = "Trademark";
 
 	/**
 	 * Set Einheiten pro Palette.

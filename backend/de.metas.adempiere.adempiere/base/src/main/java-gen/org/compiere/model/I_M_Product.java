@@ -1502,6 +1502,27 @@ public interface I_M_Product
 	String COLUMNNAME_R_MailText_ID = "R_MailText_ID";
 
 	/**
+	 * Set PZN.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPZN (@Nullable java.lang.String PZN);
+
+	/**
+	 * Get PZN.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getPZN();
+
+	ModelColumn<I_M_Product, Object> COLUMN_PZN = new ModelColumn<>(I_M_Product.class, "PZN", null);
+	String COLUMNNAME_PZN = "PZN";
+
+	/**
 	 * Set Ursprungsland.
 	 *
 	 * <br>Type: Search

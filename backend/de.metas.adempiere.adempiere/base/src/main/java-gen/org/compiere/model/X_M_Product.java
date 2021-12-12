@@ -998,6 +998,18 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	}
 
 	@Override
+	public void setPZN (final @Nullable java.lang.String PZN)
+	{
+		set_Value (COLUMNNAME_PZN, PZN);
+	}
+
+	@Override
+	public java.lang.String getPZN()
+	{
+		return get_ValueAsString(COLUMNNAME_PZN);
+	}
+
+	@Override
 	public org.compiere.model.I_C_Country getRawMaterialOrigin()
 	{
 		return get_ValueAsPO(COLUMNNAME_RawMaterialOrigin_ID, org.compiere.model.I_C_Country.class);
