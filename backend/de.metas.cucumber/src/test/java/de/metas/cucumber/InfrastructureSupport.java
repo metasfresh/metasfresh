@@ -75,9 +75,10 @@ public class InfrastructureSupport
 
 		if (runAgainstDockerizedDatabase)
 		{
-			// this image is from release-branch 2021-09-15. it is failrly old, 
+			// the image 5.172.2_380_release is from release-branch 2021-09-15. it is fairly old, 
 			// such that our local miration-scripts will be applied and no later scripts from other branches are already in this image 
 			final String fullImageName = "metasfresh/metasfresh-db:5.172.2_380_release";
+			//final String fullImageName = "metasfresh/metasfresh-db:5.175.1_22763_master";
 			logger.info("Start dockerized metasfresh-db {}", fullImageName);
 
 			// the DB needs to be populated
