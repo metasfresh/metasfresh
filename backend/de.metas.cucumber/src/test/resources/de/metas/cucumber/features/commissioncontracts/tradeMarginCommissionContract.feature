@@ -32,10 +32,10 @@ Feature: Trade margin commission contract
       | plv_2      | pl_2                      | PLV_2 | 2021-11-01 |
       | plv_3      | pl_3                      | PLV_3 | 2021-11-01 |
     And metasfresh contains M_ProductPrices
-      | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_TaxCategory_ID.InternalName |
-      | pp_3       | plv_3                             | commission_product      | 1.0      | Normal                        |
-      | pp_4       | plv_1                             | transaction_product     | 25.0     | Normal                        |
-      | pp_5       | plv_2                             | transaction_product     | 15.0     | Normal                        |
+      | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | pp_3       | plv_3                             | commission_product      | 1.0      | PCE               | Normal                        |
+      | pp_4       | plv_1                             | transaction_product     | 25.0     | PCE               | Normal                        |
+      | pp_5       | plv_2                             | transaction_product     | 15.0     | PCE               | Normal                        |
     And metasfresh contains C_BPartners:
       | Identifier      | OPT.C_BPartner_Location_ID.Identifier | Name            | M_PricingSystem_ID.Identifier | OPT.PO_PricingSystem_ID.Identifier | OPT.IsVendor | OPT.IsCustomer | OPT.IsSalesRep | OPT.C_PaymentTerm_ID | OPT.C_BPartner_SalesRep_ID.Identifier | OPT.CompanyName     | OPT.GLN       |
       | margin_salesRep | margin_salesRep_location              | margin_salesRep | ps_2                          | ps_3                               | Y            | Y              | Y              | 1000009              |                                       | margin_salesRep cmp |               |

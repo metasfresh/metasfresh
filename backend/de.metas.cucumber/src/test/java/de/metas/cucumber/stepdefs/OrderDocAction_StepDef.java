@@ -41,9 +41,9 @@ public class OrderDocAction_StepDef
 {
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 
-	private final StepDefData<I_C_Order> orderTable;
+	private final C_Order_StepDefData orderTable;
 
-	public OrderDocAction_StepDef(@NonNull final StepDefData<I_C_Order> orderTable)
+	public OrderDocAction_StepDef(@NonNull final C_Order_StepDefData orderTable)
 	{
 		this.orderTable = orderTable;
 	}

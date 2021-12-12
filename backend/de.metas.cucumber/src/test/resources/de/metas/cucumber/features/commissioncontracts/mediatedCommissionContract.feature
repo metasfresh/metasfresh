@@ -26,9 +26,9 @@ Feature: Mediated commission
       | plv_pl_po  | pl_vendor_po              | pl_vendor_po | 2021-11-01 |
       | plv_pl_so  | pl_vendor_so              | pl_vendor_so | 2021-11-01 |
     And metasfresh contains M_ProductPrices
-      | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_TaxCategory_ID.InternalName |
-      | pp_1       | plv_pl_so                         | commission_product      | 1.0      | Normal                        |
-      | pp_4       | plv_pl_po                         | transaction_product     | 20.0     | Normal                        |
+      | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | pp_1       | plv_pl_so                         | commission_product      | 1.0      | PCE               | Normal                        |
+      | pp_4       | plv_pl_po                         | transaction_product     | 20.0     | PCE               | Normal                        |
     And metasfresh contains C_BPartners:
       | Identifier      | OPT.C_BPartner_Location_ID.Identifier | Name            | M_PricingSystem_ID.Identifier | OPT.IsVendor | OPT.IsCustomer | OPT.IsSalesRep | OPT.C_PaymentTerm_ID | OPT.CompanyName     | OPT.GLN       |
       | mediated_vendor | mediated_vendor_location              | mediated_vendor | psv_1                         | Y            | Y              | Y              | 1000009              | mediated_vendor cmp | 1234567891236 |
@@ -82,7 +82,7 @@ Feature: Mediated commission
   ]
 }
 """
-    Then a PurchaseOrder with externalId: '99898' is created after not more than 90 seconds and has values
+    Then a PurchaseOrder with externalId '99898' is created after not more than 90 seconds and has values
       | ExternalPurchaseOrderURL     | OPT.C_Order_ID.Identifier |
       | www.ExternalReferenceURL.com | purchaseOrder_1           |
     And after not more than 30s the order is found

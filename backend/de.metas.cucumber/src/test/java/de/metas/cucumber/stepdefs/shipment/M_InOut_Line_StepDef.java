@@ -83,7 +83,6 @@ public class M_InOut_Line_StepDef
 
 	private void validateShipmentLine(@NonNull final I_M_InOutLine shipmentLine, @NonNull final Map<String, String> row)
 	{
-		final int productId = DataTableUtil.extractIntForColumnName(row, "M_Product_ID.Identifier");
 		final BigDecimal movementqty = DataTableUtil.extractBigDecimalForColumnName(row, "movementqty");
 		final boolean processed = DataTableUtil.extractBooleanForColumnName(row, "processed");
 

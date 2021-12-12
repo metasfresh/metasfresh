@@ -471,23 +471,23 @@ Feature: Process order candidate and automatically generate shipment and invoice
 
     And validate the created order lines
       | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | qtyordered | qtyinvoiced | price | discount | currencyCode | processed |
-      | order_1               | 2021-10-13  | 2005577                 | 10           | 10         | 10          | 5     | 0        | EUR          | true      |
+      | order_1               | 2021-10-13  | product_1               | 10           | 10         | 10          | 5     | 0        | EUR          | true      |
 
     And validate the created shipments
-      | M_InOut_ID.Identifier | c_bpartner_id | c_bpartner_location_id | dateordered | poreference | processed | docStatus |
-      | shipment_1            | 2156425       | 2205175                | 2021-10-13  | po_ref_mock | true      | CO        |
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | poreference | processed | docStatus |
+      | shipment_1            | bpartner_1               | bpartnerLocation_1                | 2021-10-13  | po_ref_mock | true      | CO        |
 
     And validate the created shipment lines
       | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
-      | shipment_1            | 2005577                 | 10          | true      |
+      | shipment_1            | product_1               | 10          | true      |
 
     And validate created invoices
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | poReference | paymentTerm | processed | docStatus |
-      | invoice_1               | 2156425                  | 2205175                           | po_ref_mock | 1000002     | true      | CO        |
+      | invoice_1               | bpartner_1               | bpartnerLocation_1                | po_ref_mock | 1000002     | true      | CO        |
 
     And validate created invoice lines
       | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
-      | invoice_1               | 2005577                 | 10          | true      |
+      | invoice_1               | product_1               | 10          | true      |
 
   @from:cucumber
   @topic:orderCandidate
@@ -549,15 +549,15 @@ Feature: Process order candidate and automatically generate shipment and invoice
 
     And validate the created order lines
       | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | qtyordered | qtyinvoiced | price | discount | currencyCode | processed |
-      | order_1               | 2021-10-13  | 2005577                 | 8            | 10         | 0           | 5     | 0        | EUR          | true      |
+      | order_1               | 2021-10-13  | product_1               | 8            | 10         | 0           | 5     | 0        | EUR          | true      |
 
     And validate the created shipments
-      | M_InOut_ID.Identifier | c_bpartner_id | c_bpartner_location_id | dateordered | poreference | processed | docStatus |
-      | shipment_1            | 2156425       | 2205175                | 2021-10-13  | po_ref_mock | true      | CO        |
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | poreference | processed | docStatus |
+      | shipment_1            | bpartner_1               | bpartnerLocation_1                | 2021-10-13  | po_ref_mock | true      | CO        |
 
     And validate the created shipment lines
       | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
-      | shipment_1            | 2005577                 | 8           | true      |
+      | shipment_1            | product_1               | 8           | true      |
 
     And a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/process' and fulfills with '200' status code
 """
@@ -579,13 +579,13 @@ Feature: Process order candidate and automatically generate shipment and invoice
 
     And validate the created order lines
       | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | qtyordered | qtyinvoiced | price | discount | currencyCode | processed |
-      | order_1               | 2021-10-13  | 2005577                 | 8            | 8          | 8           | 5     | 0        | EUR          | true      |
+      | order_1               | 2021-10-13  | product_1               | 8            | 8          | 8           | 5     | 0        | EUR          | true      |
 
     And validate created invoices
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | poReference | paymentTerm | processed | docStatus |
-      | invoice_1               | 2156425                  | 2205175                           | po_ref_mock | 1000002     | true      | CO        |
+      | invoice_1               | bpartner_1               | bpartnerLocation_1                | po_ref_mock | 1000002     | true      | CO        |
 
     And validate created invoice lines
       | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
-      | invoice_1               | 2005577                 | 8           | true      |
+      | invoice_1               | product_1               | 8           | true      |
     And set sys config boolean value false for sys config AUTO_SHIP_AND_INVOICE

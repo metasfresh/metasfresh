@@ -24,6 +24,7 @@ package de.metas.cucumber.stepdefs.shipment;
 
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.M_ShipmentSchedule_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.cucumber.stepdefs.StepDefUtil;
@@ -57,7 +58,7 @@ import static org.compiere.model.I_C_BPartner_Location.COLUMNNAME_C_BPartner_Loc
 public class M_InOut_StepDef
 {
 	private final M_InOut_StepDefData shipmentTable;
-	private final StepDefData<I_M_ShipmentSchedule> shipmentScheduleTable;
+	private final M_ShipmentSchedule_StepDefData shipmentScheduleTable;
 	private final C_BPartner_StepDefData bpartnerTable;
 	private final StepDefData<I_C_BPartner_Location> bpartnerLocationTable;
 	
@@ -66,7 +67,7 @@ public class M_InOut_StepDef
 
 	public M_InOut_StepDef(
 			@NonNull final M_InOut_StepDefData shipmentTable,
-			@NonNull final StepDefData<I_M_ShipmentSchedule> shipmentScheduleTable,
+			@NonNull final M_ShipmentSchedule_StepDefData shipmentScheduleTable,
 			@NonNull final C_BPartner_StepDefData bpartnerTable,
 			@NonNull final StepDefData<I_C_BPartner_Location> bpartnerLocationTable)
 	{
