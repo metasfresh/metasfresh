@@ -14,8 +14,8 @@ Feature: Trade margin commission contract
     Given taxCategory 'Normal' is updated to work with all productTypes
     And metasfresh contains M_Products:
       | Identifier          | Name                | ProductType | OPT.X12DE355 |
-      | commission_product  | commission_product  | S           | PTS           |
-      | transaction_product | transaction_product |             | PCE           |
+      | commission_product  | commission_product  | S           | PTS          |
+      | transaction_product | transaction_product |             | PCE          |
     And metasfresh contains M_PricingSystems
       | Identifier | Name             | Value            | OPT.IsActive |
       | ps_1       | pricing_system_1 | pricing_system_1 | true         |
@@ -87,8 +87,8 @@ Feature: Trade margin commission contract
 }
 """
     Then process metasfresh response
-      | Order.Identifier | Shipment.Identifier | Invoice.Identifier |
-      | order_1          | shipment_1          | invoice_1          |
+      | C_Order_ID.Identifier | M_InOut_ID.Identifier | C_Invoice_ID.Identifier |
+      | order_1               | shipment_1            | invoice_1               |
 
     And validate created commission instance
       | C_Commission_Instance_ID.Identifier | C_Order_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_Order_ID.Identifier | PointsBase_Forecasted | PointsBase_Invoiceable | PointsBase_Invoiced |
@@ -114,10 +114,10 @@ Feature: Trade margin commission contract
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | invoiceSettled_1        | settlement_1                      |
     And validate created invoices
-      | Invoice.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.DocSubType |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.DocSubType |
       | invoiceSettled_1   | margin_salesRep          | margin_salesRep_location          | 10 Tage 1 % | true      | CO        | CA             |
     And validate created invoice lines
-      | Invoice.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
+      | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
       | invoiceSettled_1   | commission_product      | 5.00        | true      |
     And validate commission deed for commission instance commissionInstance_1
       | C_Commission_Share_ID.Identifier | C_BPartner_SalesRep_ID.Identifier | C_BPartner_Payer_ID.Identifier | C_Flatrate_Term_ID.Identifier | Commission_Product_ID.Identifier | LevelHierarchy | OPT.C_Customer_Trade_Margin_Line_ID.Identifier | IsSOTrx | IsSimulation | PointsSum_Forecasted | PointsSum_Invoiceable | PointsSum_Invoiced | PointsSum_ToSettle | PointsSum_Settled |

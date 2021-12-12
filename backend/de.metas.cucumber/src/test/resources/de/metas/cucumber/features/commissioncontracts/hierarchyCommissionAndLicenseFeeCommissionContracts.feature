@@ -8,8 +8,8 @@ Feature: Hierarchy commission and license fee commission combined
     And taxCategory 'Normal' is updated to work with all productTypes
     And metasfresh contains M_Products:
       | Identifier          | Name                | ProductType | OPT.X12DE355 | Value |
-      | commission_product  | commission_product  | S           | PTS           |       |
-      | transaction_product | transaction_product |             | PCE           |       |
+      | commission_product  | commission_product  | S           | PTS          |       |
+      | transaction_product | transaction_product |             | PCE          |       |
     And metasfresh contains M_PricingSystems
       | Identifier | Name                    | Value                   | OPT.IsActive |
       | ps_1       | salesRep_pricing_system | salesRep_pricing_system | true         |
@@ -95,13 +95,13 @@ Feature: Hierarchy commission and license fee commission combined
 }
 """
     Then process metasfresh response
-      | Order.Identifier | Shipment.Identifier | Invoice.Identifier |
-      | order_1          | shipment_1          | invoice_1          |
+      | C_Order_ID.Identifier | M_InOut_ID.Identifier | C_Invoice_ID.Identifier |
+      | order_1               | shipment_1            | invoice_1               |
     And validate created invoices
-      | Invoice.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | docStatus |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | docStatus |
       | invoice_1          | customer_1               | customer_location_1               | po_ref_mock     | 1000002     | true      | CO        |
     And validate created invoice lines
-      | Invoice.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
+      | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
       | invoice_1          | transaction_product     | 1           | true      |
     And locate invoice candidates for invoice: invoice_1
       | C_Invoice_Candidate_ID.Identifier | M_Product_ID.Identifier |
@@ -161,12 +161,12 @@ Feature: Hierarchy commission and license fee commission combined
       | invoiceSettled_3        | settlement_3                      |
 
     And validate created invoices
-      | Invoice.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.DocSubType |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.DocSubType |
       | invoiceSettled_1   | salesRep_1               | salesRep_location_1               | 10 Tage 1 % | true      | CO        | CA             |
       | invoiceSettled_2   | super_salesRep           | super_salesRep_location           | 10 Tage 1 % | true      | CO        | CA             |
       | invoiceSettled_3   | salesRep_1               | salesRep_location_1               | 10 Tage 1 % | true      | CO        | LS             |
     And validate created invoice lines
-      | Invoice.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
+      | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
       | invoiceSettled_1   | commission_product      | 1.00        | true      |
       | invoiceSettled_2   | commission_product      | 0.90        | true      |
       | invoiceSettled_3   | commission_product      | 0.50        | true      |
@@ -264,8 +264,8 @@ Feature: Hierarchy commission and license fee commission combined
 }
 """
     Then process metasfresh response
-      | Order.Identifier | Shipment.Identifier | Invoice.Identifier |
-      | order_1          | shipment_1          | invoice_1          |
+      | C_Order_ID.Identifier | M_InOut_ID.Identifier | C_Invoice_ID.Identifier |
+      | order_1               | shipment_1            | invoice_1               |
     And locate invoice candidates for invoice: invoice_1
       | C_Invoice_Candidate_ID.Identifier | M_Product_ID.Identifier |
       | so_invoice_candidate              | transaction_product     |
@@ -303,10 +303,10 @@ Feature: Hierarchy commission and license fee commission combined
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | invoiceSettled_so       | settlement_so                     |
     And validate created invoices
-      | Invoice.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.DocSubType |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.DocSubType |
       | invoiceSettled_so  | customer_salesRep_1      | customer_salesRep_location_1      | 10 Tage 1 % | true      | CO        | LS             |
     And validate created invoice lines
-      | Invoice.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
+      | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
       | invoiceSettled_so  | commission_product      | 0.50        | true      |
 
     And validate commission deed for commission instance commissionInstance_1
