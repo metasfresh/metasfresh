@@ -59,6 +59,7 @@ Feature: Mediated commission
          "externalPurchaseOrderUrl": "www.ExternalReferenceURL.com",
          "externalHeaderId":"99898",
          "externalLineId":"898978",
+         "poReference":"abcde",
          "purchaseDatePromised":"2021-12-05T23:17:35.644Z",
          "purchaseDateOrdered":"2021-12-05T23:17:35.644Z",
          "qty":{
