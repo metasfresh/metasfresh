@@ -48,12 +48,12 @@ import de.metas.camel.externalsystems.shopware6.api.model.order.OrderDeliveryIte
 import de.metas.camel.externalsystems.shopware6.api.model.product.JsonProducts;
 import de.metas.camel.externalsystems.shopware6.api.model.unit.JsonUnits;
 import de.metas.common.util.Check;
+import de.metas.common.util.EmptyUtil;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
-import org.apache.logging.log4j.util.Strings;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -534,7 +534,7 @@ public class ShopwareClient
 			{
 				final String customId = orderAddressJson.at(customIdJSONPath).asText();
 
-				if (!Strings.isBlank(customId))
+				if (EmptyUtil.isNotBlank(customId))
 				{
 					jsonOrderAddressWithCustomId.customId(customId);
 				}
