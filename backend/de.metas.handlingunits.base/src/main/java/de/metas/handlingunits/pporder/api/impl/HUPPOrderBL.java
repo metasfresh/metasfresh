@@ -18,6 +18,10 @@ import de.metas.handlingunits.pporder.api.IPPOrderReceiptHUProducer;
 import de.metas.handlingunits.pporder.api.PPOrderIssueServiceProductRequest;
 import de.metas.manufacturing.generatedcomponents.ManufacturingComponentGeneratorService;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
+import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.adempiere.warehouse.groups.WarehouseGroupAssignmentType;
+import org.eevolution.api.PPOrderBOMLineId;
+import org.eevolution.api.PPOrderId;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -47,6 +51,7 @@ public class HUPPOrderBL implements IHUPPOrderBL
 	private final IPPOrderBOMDAO ppOrderBOMsRepo = Services.get(IPPOrderBOMDAO.class);
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 
 	@Override
 	public I_PP_Order getById(@NonNull final PPOrderId ppOrderId)
@@ -119,10 +124,13 @@ public class HUPPOrderBL implements IHUPPOrderBL
 	@Override
 	public IHUQueryBuilder createHUsAvailableToIssueQuery(@NonNull final I_PP_Order_BOMLine ppOrderBomLine)
 	{
+		final WarehouseId warehouseId = WarehouseId.ofRepoId(ppOrderBomLine.getM_Warehouse_ID());
+		final Set<WarehouseId> issueFromWarehouseIds = warehouseDAO.getWarehouseIdsOfSameGroup(warehouseId, WarehouseGroupAssignmentType.MANUFACTURING);
+
 		return handlingUnitsDAO
 				.createHUQueryBuilder()
 				.addOnlyWithProductId(ProductId.ofRepoId(ppOrderBomLine.getM_Product_ID()))
-				.addOnlyInWarehouseId(WarehouseId.ofRepoId(ppOrderBomLine.getM_Warehouse_ID()))
+				.addOnlyInWarehouseIds(issueFromWarehouseIds)
 				.addHUStatusToInclude(X_M_HU.HUSTATUS_Active)
 				.setExcludeReserved()
 				.setOnlyTopLevelHUs()

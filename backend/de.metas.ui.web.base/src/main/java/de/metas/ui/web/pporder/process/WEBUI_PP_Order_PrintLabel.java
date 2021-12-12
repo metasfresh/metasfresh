@@ -22,21 +22,12 @@
 
 package de.metas.ui.web.pporder.process;
 
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.trx.api.ITrx;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_M_Product_PrintFormat;
-import org.compiere.util.DB;
-
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
-
 import de.metas.handlingunits.HuId;
 import de.metas.process.IADPInstanceDAO;
+import de.metas.process.IProcessDefaultParameter;
+import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.PInstanceId;
 import de.metas.process.PInstanceRequest;
@@ -56,14 +47,30 @@ import de.metas.ui.web.pporder.PPOrderLineRow;
 import de.metas.ui.web.pporder.PPOrderLineType;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.util.Services;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.trx.api.ITrx;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Product_PrintFormat;
+import org.compiere.util.DB;
 import org.springframework.core.io.ByteArrayResource;
 
-public class WEBUI_PP_Order_PrintLabel extends WEBUI_PP_Order_Template implements IProcessPrecondition
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
+
+public class WEBUI_PP_Order_PrintLabel extends WEBUI_PP_Order_Template implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
 	private static final String PARAM_AD_PrintFormat_ID = "AD_PrintFormat_ID";
 
 	@Param(parameterName = PARAM_AD_PrintFormat_ID)
 	private int printFormatId;
+
+	/**
+	 * This is only needed as a way to default the @M_Product_ID@ for the dynamic validation of the print format. If selecting a HU/HuStorage, then M_Product_ID cannot be resolved by the evaluation context without this parameter.
+	 */
+	@Param(parameterName = I_M_Product.COLUMNNAME_M_Product_ID)
+	private ProductId productId;
 
 	final private IADPInstanceDAO adPInstanceDAO = Services.get(IADPInstanceDAO.class);
 	final private PrintFormatRepository pfRepo = SpringContextHolder.instance.getBean(PrintFormatRepository.class);
@@ -77,7 +84,7 @@ public class WEBUI_PP_Order_PrintLabel extends WEBUI_PP_Order_Template implement
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
-		
+
 		return ProcessPreconditionsResolution.accept();
 	}
 
@@ -107,38 +114,56 @@ public class WEBUI_PP_Order_PrintLabel extends WEBUI_PP_Order_Template implement
 				.streamByIds(selectedRowIds)
 				.collect(ImmutableList.toImmutableList());
 
-		final Set<HuId> huIds = new HashSet<HuId>();
+		final Set<HuId> huIds = new HashSet<>();
 
 		for (final PPOrderLineRow row : selectedRows)
 		{
 			final PPOrderLineType type = row.getType();
-				
-				if (type.isMainProduct() && row.isReceipt())
+
+			if (type.isMainProduct() && row.isReceipt())
+			{
+				final ImmutableList<PPOrderLineRow> includedRows = row.getIncludedRows();
+				includedRows.stream()
+						.filter(ppOrderLineRow -> ppOrderLineRow.getType().isHUOrHUStorage())
+						.map(PPOrderLineRow::getHuId)
+						.filter(Objects::nonNull)
+						.forEach(huIds::add);
+			}
+			else if (type.isHUOrHUStorage())
+			{
+				final HuId huId = row.getHuId();
+
+				if (huId != null && isMainProductHu(huId))
 				{
-					final ImmutableList<PPOrderLineRow> includedRows = row.getIncludedRows();
-					includedRows.stream()
-							.filter(ppOrderLineRow -> ppOrderLineRow.getType().isHUOrHUStorage())
-							.map(PPOrderLineRow::getHuId)
-							.filter(Objects::nonNull)
-							.forEach(huIds::add);
+					huIds.add(huId);
 				}
+			}
 		}
 
 		return huIds;
 	}
-	
-	private boolean hasPrintFormatAssigned()
+
+	private boolean isMainProductHu(final HuId huId)
 	{
-		 final int cnt = Services.get(IQueryBL.class)
-			.createQueryBuilder(I_M_Product_PrintFormat.class)
-			.addInArrayFilter(I_M_Product_PrintFormat.COLUMNNAME_M_Product_ID, retrieveSelectedProductIDs())
-			.create()
-			.count();
-		
-		return cnt > 0 ;
+		return getView().streamByIds(DocumentIdsSelection.ALL)
+				.filter(row -> row.getType().isMainProduct() || row.isReceipt())
+				.flatMap(row -> row.getIncludedRows().stream())
+				.filter(row -> row.getType().isHUOrHUStorage())
+				.map(PPOrderLineRow::getHuId)
+				.anyMatch(huId::equals);
 	}
 
-	
+	private boolean hasPrintFormatAssigned()
+	{
+		final int cnt = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_Product_PrintFormat.class)
+				.addInArrayFilter(I_M_Product_PrintFormat.COLUMNNAME_M_Product_ID, retrieveSelectedProductIDs())
+				.create()
+				.count();
+
+		return cnt > 0;
+	}
+
 	private Set<ProductId> retrieveSelectedProductIDs()
 	{
 		final DocumentIdsSelection selectedRowIds = getSelectedRowIds();
@@ -147,7 +172,7 @@ public class WEBUI_PP_Order_PrintLabel extends WEBUI_PP_Order_Template implement
 				.streamByIds(selectedRowIds)
 				.collect(ImmutableList.toImmutableList());
 
-		final Set<ProductId> productIds = new HashSet<ProductId>();
+		final Set<ProductId> productIds = new HashSet<>();
 
 		for (final PPOrderLineRow row : selectedRows)
 		{
@@ -156,8 +181,7 @@ public class WEBUI_PP_Order_PrintLabel extends WEBUI_PP_Order_Template implement
 
 		return productIds;
 	}
-	
-	
+
 	private ReportResult printLabel()
 	{
 		final PInstanceRequest pinstanceRequest = createPInstanceRequest();
@@ -170,9 +194,9 @@ public class WEBUI_PP_Order_PrintLabel extends WEBUI_PP_Order_Template implement
 				.setReportLanguage(getProcessInfo().getReportLanguage())
 				.setJRDesiredOutputType(OutputType.PDF)
 				.build();
-		
+
 		final ReportsClient reportsClient = ReportsClient.get();
-		
+
 		return reportsClient.report(jasperProcessInfo);
 	}
 
@@ -194,10 +218,19 @@ public class WEBUI_PP_Order_PrintLabel extends WEBUI_PP_Order_Template implement
 
 		return Joiner.on("_").skipNulls().join(instance, title) + ".pdf";
 	}
-	
+
 	private PrintFormat getPrintFormat()
 	{
 		return pfRepo.getById(PrintFormatId.ofRepoId(printFormatId));
 	}
-	
+
+	public Object getParameterDefaultValue(final IProcessDefaultParameter parameter)
+	{
+		if (Objects.equals(I_M_Product.COLUMNNAME_M_Product_ID, parameter.getColumnName()))
+		{
+			return retrieveSelectedProductIDs().stream().findFirst().orElse(null);
+		}
+		return DEFAULT_VALUE_NOTAVAILABLE;
+	}
+
 }
