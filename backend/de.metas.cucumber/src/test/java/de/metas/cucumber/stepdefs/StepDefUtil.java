@@ -40,13 +40,13 @@ public class StepDefUtil
 	 * @param maxWaitSeconds set to a value <=0 to wait forever (use only when developing locally)
 	 */
 	public void tryAndWait(
-			final Long maxWaitSeconds, 
+			final long maxWaitSeconds, 
 			final long checkingIntervalMs, 
 			@NonNull final Supplier<Boolean> worker, 
 			@Nullable final Runnable logContext) throws InterruptedException
 	{
 		final long nowMillis = System.currentTimeMillis(); // don't use SystemTime.millis(); because it's probably "rigged" for testing purposes,
-		final long deadLineMillis = maxWaitSeconds > 0 ? nowMillis + (maxWaitSeconds * 1000L): 0L;
+		final long deadLineMillis = maxWaitSeconds > 0 ? nowMillis + (maxWaitSeconds * 1000L): Long.MAX_VALUE;
 
 		boolean conditionIsMet = false;
 
