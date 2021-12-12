@@ -149,7 +149,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		icRecord.setRecord_ID(orderLine.getC_OrderLine_ID());
 
 		icRecord.setC_OrderLine(orderLine);
-		
+
 		final int productRecordId = orderLine.getM_Product_ID();
 		icRecord.setM_Product_ID(productRecordId);
 
@@ -191,7 +191,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		// prices and tax
 		final PriceAndTax priceAndTax = calculatePriceAndTax(icRecord);
 		IInvoiceCandInvalidUpdater.updatePriceAndTax(icRecord, priceAndTax);
-		
+
 		//
 		// Dimension
 		final Dimension orderLineDimension = extractDimension(orderLine);
@@ -427,7 +427,9 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 
 		//
 		// Percent Group Compensation Line
-		if (icRecord.isGroupCompensationLine() && GroupCompensationAmtType.Percent.getAdRefListValue().equals(icRecord.getGroupCompensationAmtType()))
+		if (icRecord.isGroupCompensationLine()
+				&& GroupCompensationAmtType.Percent.getAdRefListValue().equals(icRecord.getGroupCompensationAmtType())
+				&& icRecord.getC_Invoice_Candidate_ID() > 0 /*when the IC is first created, then this IC can't have a group yet */)
 		{
 			final InvoiceCandidateGroupRepository groupsRepo = SpringContextHolder.instance.getBean(InvoiceCandidateGroupRepository.class);
 
