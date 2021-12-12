@@ -15,7 +15,7 @@ Feature: Trade margin commission contract
     And metasfresh contains M_Products:
       | Identifier          | Name                | ProductType | OPT.UOMSymbol |
       | commission_product  | commission_product  | S           | Pkt           |
-      | transaction_product | transaction_product |             |               |
+      | transaction_product | transaction_product |             | PCE           |
     And metasfresh contains M_PricingSystems
       | Identifier | Name             | Value            | OPT.IsActive |
       | ps_1       | pricing_system_1 | pricing_system_1 | true         |
@@ -33,7 +33,7 @@ Feature: Trade margin commission contract
       | plv_3      | pl_3                      | PLV_3 | 2021-11-01 |
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
-      | pp_3       | plv_3                             | commission_product      | 1.0      | PCE               | Normal                        |
+      | pp_3       | plv_3                             | commission_product      | 1.0      | Pkt               | Normal                        |
       | pp_4       | plv_1                             | transaction_product     | 25.0     | PCE               | Normal                        |
       | pp_5       | plv_2                             | transaction_product     | 15.0     | PCE               | Normal                        |
     And metasfresh contains C_BPartners:

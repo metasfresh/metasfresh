@@ -13,7 +13,7 @@ Feature: Mediated commission
     And metasfresh contains M_Products:
       | Identifier          | Name                | ProductType | OPT.UOMSymbol |
       | commission_product  | commission_product  | S           | Pkt           |
-      | transaction_product | transaction_product |             |               |
+      | transaction_product | transaction_product |             | PCE           |
     And metasfresh contains M_PricingSystems
       | Identifier | Name                    | Value            | OPT.IsActive |
       | psv_1      | pricing_system_vendor_1 | pricing_system_1 | true         |
@@ -27,7 +27,7 @@ Feature: Mediated commission
       | plv_pl_so  | pl_vendor_so              | pl_vendor_so | 2021-11-01 |
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
-      | pp_1       | plv_pl_so                         | commission_product      | 1.0      | PCE               | Normal                        |
+      | pp_1       | plv_pl_so                         | commission_product      | 1.0      | Pkt               | Normal                        |
       | pp_4       | plv_pl_po                         | transaction_product     | 20.0     | PCE               | Normal                        |
     And metasfresh contains C_BPartners:
       | Identifier      | OPT.C_BPartner_Location_ID.Identifier | Name            | M_PricingSystem_ID.Identifier | OPT.IsVendor | OPT.IsCustomer | OPT.IsSalesRep | OPT.C_PaymentTerm_ID | OPT.CompanyName     | OPT.GLN       |
