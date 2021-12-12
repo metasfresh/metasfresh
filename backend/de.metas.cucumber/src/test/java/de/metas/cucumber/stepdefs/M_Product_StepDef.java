@@ -158,6 +158,7 @@ public class M_Product_StepDef
 		{
 			final UomId uomId = queryBL.createQueryBuilder(I_C_UOM.class)
 					.addEqualsFilter(I_C_UOM.COLUMNNAME_X12DE355, uomX12DE355)
+					.addOnlyActiveRecordsFilter()
 					.create()
 					.firstIdOnly(UomId::ofRepoIdOrNull);
 			assertThat(uomId).as("Found no C_UOM with X12DE355=%s", uomX12DE355).isNotNull();
