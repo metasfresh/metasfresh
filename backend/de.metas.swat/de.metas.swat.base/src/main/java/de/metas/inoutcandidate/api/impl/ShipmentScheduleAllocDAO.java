@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
-import static de.metas.common.util.CoalesceUtil.coalesce;
+import static de.metas.common.util.CoalesceUtil.coalesceNotNull;
 import static java.math.BigDecimal.ZERO;
 
 /*
@@ -65,7 +65,7 @@ public class ShipmentScheduleAllocDAO implements IShipmentScheduleAllocDAO
 	 * Creates a filter which keeps {@link I_M_ShipmentSchedule_QtyPicked} all records (active or not),
 	 * for given shipment schedule, which are <b>not</b> referenced by a shipment line.
 	 */
-	private final IQueryFilter<I_M_ShipmentSchedule_QtyPicked> createNotOnShipmentLineFilter(
+	private IQueryFilter<I_M_ShipmentSchedule_QtyPicked> createNotOnShipmentLineFilter(
 			@NonNull final I_M_ShipmentSchedule shipmentSchedule)
 	{
 		final boolean onShipmentLine = false; // NOT delivered ONLY
@@ -74,10 +74,8 @@ public class ShipmentScheduleAllocDAO implements IShipmentScheduleAllocDAO
 
 	/**
 	 * Creates a filter which keeps {@link I_M_ShipmentSchedule_QtyPicked} all records (active or not), for given shipment schedule <b>AND</b> which were already delivered.
-	 *
-	 * @param shipmentSchedule
 	 */
-	private final IQueryFilter<I_M_ShipmentSchedule_QtyPicked> createOnShipmentLineFilter(
+	private IQueryFilter<I_M_ShipmentSchedule_QtyPicked> createOnShipmentLineFilter(
 			@NonNull final I_M_ShipmentSchedule shipmentSchedule)
 	{
 		final boolean onShipmentLine = true; // ONLY delivered
@@ -155,7 +153,8 @@ public class ShipmentScheduleAllocDAO implements IShipmentScheduleAllocDAO
 		return queryBuilder.create()
 				.list(clazz);
 	}
-
+	
+	@NonNull
 	@Override
 	public BigDecimal retrieveNotOnShipmentLineQty(final I_M_ShipmentSchedule shipmentSchedule)
 	{
@@ -166,9 +165,10 @@ public class ShipmentScheduleAllocDAO implements IShipmentScheduleAllocDAO
 				.create()
 				.aggregate(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_QtyPicked, Aggregate.SUM, BigDecimal.class);
 
-		return qty != null ? qty : BigDecimal.ZERO;
+		return coalesceNotNull(qty, ZERO);
 	}
 
+	@NonNull
 	@Override
 	public BigDecimal retrieveQtyDelivered(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
 	{
@@ -182,9 +182,10 @@ public class ShipmentScheduleAllocDAO implements IShipmentScheduleAllocDAO
 				.create()
 				.aggregate(I_M_InOutLine.COLUMNNAME_MovementQty, Aggregate.SUM, BigDecimal.class);
 
-		return coalesce(qty, ZERO);
+		return coalesceNotNull(qty, ZERO);
 	}
 
+	@NonNull
 	@Override
 	public BigDecimal retrieveQtyPickedAndUnconfirmed(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
 	{
@@ -196,7 +197,7 @@ public class ShipmentScheduleAllocDAO implements IShipmentScheduleAllocDAO
 				.create()
 				.aggregate(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_QtyPicked, Aggregate.SUM, BigDecimal.class);
 
-		return coalesce(qty, ZERO);
+		return coalesceNotNull(qty, ZERO);
 	}
 
 	@Override
@@ -338,7 +339,7 @@ public class ShipmentScheduleAllocDAO implements IShipmentScheduleAllocDAO
 	 * <li>or NOT referenced by a shipment line, if <code>onShipmentLine</code> is false
 	 * </ul>
 	 */
-	private final IQueryFilter<I_M_ShipmentSchedule_QtyPicked> createOnShipmentLineFilter(
+	private IQueryFilter<I_M_ShipmentSchedule_QtyPicked> createOnShipmentLineFilter(
 			@NonNull final Set<ShipmentScheduleId> scheduleIds,
 			final boolean onShipmentLine)
 	{
