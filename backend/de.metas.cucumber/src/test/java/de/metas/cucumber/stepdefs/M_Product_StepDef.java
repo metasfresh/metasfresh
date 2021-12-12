@@ -153,14 +153,14 @@ public class M_Product_StepDef
 		productRecord.setValue(productValue);
 		productRecord.setName(productName);
 
-		final String uomSymbol = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_UOM.COLUMNNAME_UOMSymbol);
-		if (Check.isNotBlank(uomSymbol))
+		final String uomX12DE355 = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_UOM.COLUMNNAME_X12DE355);
+		if (Check.isNotBlank(uomX12DE355))
 		{
 			final UomId uomId = queryBL.createQueryBuilder(I_C_UOM.class)
-					.addEqualsFilter(I_C_UOM.COLUMNNAME_UOMSymbol, uomSymbol)
+					.addEqualsFilter(I_C_UOM.COLUMNNAME_X12DE355, uomX12DE355)
 					.create()
-					.firstIdOnly(UomId::ofRepoId);
-
+					.firstIdOnly(UomId::ofRepoIdOrNull);
+			assertThat(uomId).as("Found no C_UOM with X12DE355=%s", uomX12DE355).isNotNull();
 			productRecord.setC_UOM_ID(UomId.toRepoId(uomId));
 		}
 		else

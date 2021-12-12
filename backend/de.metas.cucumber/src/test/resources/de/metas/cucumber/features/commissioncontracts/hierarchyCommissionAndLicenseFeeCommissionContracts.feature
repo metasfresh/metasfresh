@@ -7,7 +7,7 @@ Feature: Hierarchy commission and license fee commission combined
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
     And taxCategory 'Normal' is updated to work with all productTypes
     And metasfresh contains M_Products:
-      | Identifier          | Name                | ProductType | OPT.UOMSymbol | Value |
+      | Identifier          | Name                | ProductType | OPT.X12DE355 | Value |
       | commission_product  | commission_product  | S           | PTS           |       |
       | transaction_product | transaction_product |             | PCE           |       |
     And metasfresh contains M_PricingSystems

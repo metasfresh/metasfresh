@@ -13,7 +13,7 @@ Feature: Trade margin commission contract
   Scenario: Margin commission combined having one sales rep and one customer
     Given taxCategory 'Normal' is updated to work with all productTypes
     And metasfresh contains M_Products:
-      | Identifier          | Name                | ProductType | OPT.UOMSymbol |
+      | Identifier          | Name                | ProductType | OPT.X12DE355 |
       | commission_product  | commission_product  | S           | PTS           |
       | transaction_product | transaction_product |             | PCE           |
     And metasfresh contains M_PricingSystems

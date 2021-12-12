@@ -11,7 +11,7 @@ Feature: Mediated commission
   Scenario: Happy flow for mediated commission contract
     Given taxCategory 'Normal' is updated to work with all productTypes
     And metasfresh contains M_Products:
-      | Identifier          | Name                | ProductType | OPT.UOMSymbol |
+      | Identifier          | Name                | ProductType | OPT.X12DE355 |
       | commission_product  | commission_product  | S           | PTS           |
       | transaction_product | transaction_product |             | PCE           |
     And metasfresh contains M_PricingSystems
