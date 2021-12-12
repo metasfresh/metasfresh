@@ -152,8 +152,13 @@ public class C_Invoice_StepDef
 				.enqueueSelection(invoiceCandidatesSelectionId);
 
 		//wait for the invoice to be created
-		StepDefUtil.tryAndWait(timeoutSec, 500, invoiceCandidateRecord::isProcessed);
-
+		final Supplier<Boolean> invoiceCandidateProcessed = () ->
+		{
+			InterfaceWrapperHelper.refresh(invoiceCandidateRecord);
+			return invoiceCandidateRecord.isProcessed();
+		};
+		StepDefUtil.tryAndWait(timeoutSec, 500, invoiceCandidateProcessed);
+		
 		final List<de.metas.adempiere.model.I_C_Invoice> invoices = invoiceDAO.getInvoicesForOrderIds(ImmutableList.of(targetOrderId));
 		assertThat(invoices.size()).isEqualTo(1);
 

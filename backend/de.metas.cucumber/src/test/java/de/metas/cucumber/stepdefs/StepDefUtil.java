@@ -34,14 +34,23 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 @UtilityClass
 public class StepDefUtil
 {
-	public void tryAndWait(final long maxWaitSeconds, final long checkingIntervalMs, final Supplier<Boolean> worker, @Nullable final Runnable logContext) throws InterruptedException
+	/**
+	 * Waits for the given {@code worker} to supply {@code true}.
+	 * Fails if this doesn't happen within the given {@code maxWaitSeconds} timeout.
+	 * @param maxWaitSeconds set to a value <=0 to wait forever (use only when developing locally)
+	 */
+	public void tryAndWait(
+			final Long maxWaitSeconds, 
+			final long checkingIntervalMs, 
+			@NonNull final Supplier<Boolean> worker, 
+			@Nullable final Runnable logContext) throws InterruptedException
 	{
 		final long nowMillis = System.currentTimeMillis(); // don't use SystemTime.millis(); because it's probably "rigged" for testing purposes,
-		final long deadLineMillis = nowMillis + (maxWaitSeconds * 1000L);
+		final long deadLineMillis = maxWaitSeconds > 0 ? nowMillis + (maxWaitSeconds * 1000L): 0L;
 
 		boolean conditionIsMet = false;
 
-		while (System.currentTimeMillis() < deadLineMillis && !conditionIsMet)
+		while (deadLineMillis > System.currentTimeMillis() && !conditionIsMet)
 		{
 			Thread.sleep(checkingIntervalMs);
 			conditionIsMet = worker.get();
@@ -52,7 +61,7 @@ public class StepDefUtil
 			logContext.run();
 		}
 
-		assertThat(conditionIsMet).isTrue();
+		assertThat(conditionIsMet).as("Condition was not met within the %s second timeout", maxWaitSeconds).isTrue();
 	}
 
 	public int extractId(@NonNull final String idOrIdentifier, @NonNull final StepDefData<?> stepDefDataTable)
@@ -68,8 +77,11 @@ public class StepDefUtil
 			return InterfaceWrapperHelper.getId(model);
 		}
 	}
-	
-	public void tryAndWait(final long maxWaitSeconds, final long checkingIntervalMs, final Supplier<Boolean> worker) throws InterruptedException
+
+	public void tryAndWait(
+			final long maxWaitSeconds, 
+			final long checkingIntervalMs, 
+			@NonNull final Supplier<Boolean> worker) throws InterruptedException
 	{
 		tryAndWait(maxWaitSeconds, checkingIntervalMs, worker, null);
 	}
