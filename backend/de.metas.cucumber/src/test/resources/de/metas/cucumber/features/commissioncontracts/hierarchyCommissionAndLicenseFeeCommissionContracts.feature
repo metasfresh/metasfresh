@@ -8,7 +8,7 @@ Feature: Hierarchy commission and license fee commission combined
     And taxCategory 'Normal' is updated to work with all productTypes
     And metasfresh contains M_Products:
       | Identifier          | Name                | ProductType | OPT.UOMSymbol | Value |
-      | commission_product  | commission_product  | S           | Pkt           |       |
+      | commission_product  | commission_product  | S           | PTS           |       |
       | transaction_product | transaction_product |             | PCE           |       |
     And metasfresh contains M_PricingSystems
       | Identifier | Name                    | Value                   | OPT.IsActive |
@@ -23,8 +23,8 @@ Feature: Hierarchy commission and license fee commission combined
       | plv_po     | pl_po                     | purchaseOrder-PLV_72 | 2021-04-01 |
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
-      | pp_2       | plv_so                            | commission_product      | 1.0      | Pkt               | Normal                        |
-      | pp_3       | plv_po                            | commission_product      | 1.0      | Pkt               | Normal                        |
+      | pp_2       | plv_so                            | commission_product      | 1.0      | PTS               | Normal                        |
+      | pp_3       | plv_po                            | commission_product      | 1.0      | PTS               | Normal                        |
       | pp_4       | plv_so                            | transaction_product     | 10.0     | PCE               | Normal                        |
     And metasfresh contains I_C_LicenseFeeSettings:
       | C_LicenseFeeSettings_ID.Identifier | Name         | Commission_Product_ID.Identifier | PointsPrecision |
