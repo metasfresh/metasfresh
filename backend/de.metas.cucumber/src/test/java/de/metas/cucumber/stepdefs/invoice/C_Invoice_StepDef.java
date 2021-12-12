@@ -152,18 +152,21 @@ public class C_Invoice_StepDef
 				.enqueueSelection(invoiceCandidatesSelectionId);
 
 		//wait for the invoice to be created
-		final Supplier<Boolean> invoiceCandidateProcessed = () ->
+		final Supplier<Boolean> invoiceCreated = () ->
 		{
-			InterfaceWrapperHelper.refresh(invoiceCandidateRecord);
-			return invoiceCandidateRecord.isProcessed();
+			final List<de.metas.adempiere.model.I_C_Invoice> invoices = invoiceDAO.getInvoicesForOrderIds(ImmutableList.of(targetOrderId));
+			if (invoices.isEmpty())
+			{
+				return false;
+			}
+			assertThat(invoices.size())
+					.as("There may be just 1 invoice for C_Order_ID.Identifier %s", orderIdentifier)
+					.isEqualTo(1);
+			final String invoiceIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_Invoice.COLUMNNAME_C_Invoice_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+			invoiceTable.put(invoiceIdentifier, invoices.get(0));
+			return true;
 		};
-		StepDefUtil.tryAndWait(timeoutSec, 500, invoiceCandidateProcessed);
-		
-		final List<de.metas.adempiere.model.I_C_Invoice> invoices = invoiceDAO.getInvoicesForOrderIds(ImmutableList.of(targetOrderId));
-		assertThat(invoices.size()).isEqualTo(1);
-
-		final String invoiceIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_Invoice.COLUMNNAME_C_Invoice_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-		invoiceTable.put(invoiceIdentifier, invoices.get(0));
+		StepDefUtil.tryAndWait(timeoutSec, 500, invoiceCreated);
 	}
 	
 	@And("^after not more than (.*)s, C_Invoice are found:$")

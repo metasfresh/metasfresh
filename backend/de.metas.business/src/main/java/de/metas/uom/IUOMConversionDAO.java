@@ -2,6 +2,7 @@ package de.metas.uom;
 
 import de.metas.product.ProductId;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
 
 public interface IUOMConversionDAO extends ISingletonService
 {
@@ -9,5 +10,7 @@ public interface IUOMConversionDAO extends ISingletonService
 
 	UOMConversionsMap getGenericConversions();
 	
-	void createUOMConversion(CreateUOMConversionRequest request);
+	void createUOMConversion(@NonNull CreateUOMConversionRequest request);
+
+	void updateUOMConversion(@NonNull UpdateUOMConversionRequest request);
 }

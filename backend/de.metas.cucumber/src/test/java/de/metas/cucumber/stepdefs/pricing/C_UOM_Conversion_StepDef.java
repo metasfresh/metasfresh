@@ -25,12 +25,13 @@ package de.metas.cucumber.stepdefs.pricing;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
-import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.product.ProductId;
 import de.metas.uom.CreateUOMConversionRequest;
 import de.metas.uom.IUOMConversionDAO;
 import de.metas.uom.IUOMDAO;
+import de.metas.uom.UOMConversionRate;
 import de.metas.uom.UomId;
+import de.metas.uom.UpdateUOMConversionRequest;
 import de.metas.uom.X12DE355;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -44,6 +45,7 @@ import org.compiere.model.I_M_ProductPrice;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public class C_UOM_Conversion_StepDef
 {
@@ -70,6 +72,7 @@ public class C_UOM_Conversion_StepDef
 	{
 		final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_ProductPrice.COLUMNNAME_M_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 		final I_M_Product product = productTable.get(productIdentifier);
+		final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
 
 		final String fromX12de355Code = DataTableUtil.extractStringForColumnName(tableRow, "FROM_" + I_C_UOM.COLUMNNAME_C_UOM_ID + "." + X12DE355.class.getSimpleName());
 		final X12DE355 fromX12DE355 = X12DE355.ofCode(fromX12de355Code);
@@ -81,8 +84,23 @@ public class C_UOM_Conversion_StepDef
 
 		final BigDecimal fromToMultiplier = DataTableUtil.extractBigDecimalForColumnName(tableRow, I_C_UOM_Conversion.COLUMNNAME_MultiplyRate);
 
+		
+		final Optional<UOMConversionRate> rateIfExists = uomConversionDAO.getProductConversions(productId).getRateIfExists(fromUomId, toUomId);
+		if (rateIfExists.isPresent())
+		{
+			final UpdateUOMConversionRequest updateUOMConversionRequest = UpdateUOMConversionRequest.builder()
+					.productId(productId)
+					.fromUomId(fromUomId)
+					.toUomId(toUomId)
+					.fromToMultiplier(fromToMultiplier)
+					.build();
+			uomConversionDAO.updateUOMConversion(updateUOMConversionRequest);
+			return;
+		}
+
+		// didn't exist yet -> create it
 		final CreateUOMConversionRequest uomConversionRequest = CreateUOMConversionRequest.builder()
-				.productId(ProductId.ofRepoId(product.getM_Product_ID()))
+				.productId(productId)
 				.fromUomId(fromUomId)
 				.toUomId(toUomId)
 				.fromToMultiplier(fromToMultiplier)
