@@ -89,7 +89,10 @@ class DocumentListContainer extends Component {
     const urlParams = new URLSearchParams(window.location.search);
     const page = urlParams.get('page');
 
-    if (this.lastPage && this.lastPage !== page) {
+    if (
+      (typeof this.lastPage === 'undefined' || this.lastPage) &&
+      this.lastPage !== page
+    ) {
       this.lastPage = page;
       this.handleChangePage(page);
     }
