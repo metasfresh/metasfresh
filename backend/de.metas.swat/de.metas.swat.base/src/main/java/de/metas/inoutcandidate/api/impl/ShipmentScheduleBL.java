@@ -354,7 +354,8 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	@Override
 	public IStorageQuery createStorageQuery(
 			@NonNull final I_M_ShipmentSchedule sched,
-			final boolean considerAttributes)
+			final boolean considerAttributes,
+			final boolean excludeAllReserved)
 	{
 		final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 

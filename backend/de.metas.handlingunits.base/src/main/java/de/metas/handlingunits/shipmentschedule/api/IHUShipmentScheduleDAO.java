@@ -44,9 +44,6 @@ public interface IHUShipmentScheduleDAO extends ISingletonService
 	/**
 	 * Retrieve all active {@link I_M_ShipmentSchedule_QtyPicked} records, which were not already delivered, for given loading unit (i.e. {@link I_M_ShipmentSchedule_QtyPicked#COLUMNNAME_M_LU_HU_ID}
 	 * is checked).
-	 *
-	 * @param hu
-	 * @return
 	 */
 	List<I_M_ShipmentSchedule_QtyPicked> retriveQtyPickedNotDeliveredForTopLevelHU(I_M_HU hu);
 

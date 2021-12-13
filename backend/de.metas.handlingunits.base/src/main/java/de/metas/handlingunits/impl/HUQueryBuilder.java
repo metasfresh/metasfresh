@@ -1035,10 +1035,8 @@ import java.util.Set;
 
 	/**
 	 * Throws "No Items Found" exception if it's configured
-	 *
-	 * @param query
 	 */
-	private final void throwErrorNoHUsFoundIfNeeded(final IQuery<I_M_HU> query) throws HUException
+	private void throwErrorNoHUsFoundIfNeeded(final IQuery<I_M_HU> query) throws HUException
 	{
 		if (!_errorIfNoHUs)
 		{
@@ -1125,7 +1123,7 @@ import java.util.Set;
 		return this;
 	}
 
-	private final Set<HuPackingInstructionsVersionId> getPIVersionIdsToInclude()
+	private Set<HuPackingInstructionsVersionId> getPIVersionIdsToInclude()
 	{
 		return _huPIVersionIdsToInclude;
 	}
