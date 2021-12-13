@@ -385,13 +385,13 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			}
 		}
 
-		if (sched.getC_OrderLine_ID() > 0)
+		if (sched.getC_OrderLine_ID() <= 0 || excludeAllReserved)
 		{
-			storageQuery.setExcludeReservedToOtherThan(OrderLineId.ofRepoId(sched.getC_OrderLine_ID()));
+			storageQuery.setExcludeReserved();
 		}
 		else
 		{
-			storageQuery.setExcludeReserved();
+			storageQuery.setExcludeReservedToOtherThan(OrderLineId.ofRepoId(sched.getC_OrderLine_ID()));			
 		}
 		return storageQuery;
 	}
