@@ -9,7 +9,7 @@ import history from '../services/History';
  */
 export function updateUri(pathname, query, updatedQuery) {
   const isDifferentPage =
-    query.page && Number(query.page) !== updatedQuery.page;
+    query.page && Number(query.page) !== Number(updatedQuery.page);
 
   const queryObject = {
     ...query,
