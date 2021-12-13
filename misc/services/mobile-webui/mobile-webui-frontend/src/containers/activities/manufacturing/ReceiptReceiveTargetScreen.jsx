@@ -6,22 +6,21 @@ import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
 
 import { selectWFProcessFromState } from '../../../reducers/wfProcesses_status';
+import { manufacturingReceiptScanScreenLocation, manufacturingReceiptNewHUScreen } from '../../../routes/manufacturing';
 
 class ReceiptReceiveTargetScreen extends PureComponent {
   handleNewHUClick = () => {
-    const { wfProcessId, activityId, lineId } = this.props;
-    const { dispatch } = this.props;
+    const { push, wfProcessId, activityId, lineId } = this.props;
+    const location = manufacturingReceiptNewHUScreen({ wfProcessId, activityId, lineId });
 
-    const location = `/workflow/${wfProcessId}/activityId/${activityId}/lineId/${lineId}/receipt/receive/hu`;
-    dispatch(push(location));
+    push(location);
   };
 
   handleScanClick = () => {
-    const { wfProcessId, activityId, lineId, dispatch, appId } = this.props;
-    const stepId = 'receipt';
-    const location = `/workflow/${wfProcessId}/activityId/${activityId}/lineId/${lineId}/stepId/${stepId}/scanner/${appId}`;
+    const { push, wfProcessId, activityId, lineId } = this.props;
+    const location = manufacturingReceiptScanScreenLocation({ wfProcessId, activityId, lineId });
 
-    dispatch(push(location));
+    push(location);
   };
 
   render() {
@@ -81,8 +80,10 @@ ReceiptReceiveTargetScreen.propTypes = {
   activityId: PropTypes.string.isRequired,
   lineProps: PropTypes.object.isRequired,
   lineId: PropTypes.string.isRequired,
-  dispatch: PropTypes.func.isRequired,
   appId: PropTypes.string.isRequired,
+
+  // actions
+  push: PropTypes.func.isRequired,
 };
 
-export default withRouter(connect(mapStateToProps)(ReceiptReceiveTargetScreen));
+export default withRouter(connect(mapStateToProps, { push })(ReceiptReceiveTargetScreen));

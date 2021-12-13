@@ -9,9 +9,9 @@ export * from './actions/WindowActions';
 
 /**
  * @constant
- * @type {string} ToDo: Description for the constant.
+ * @type {string} Used to set the connection error type into the store
  */
-export const NO_CONNECTION = 'NO_CONNECTION';
+export const CONNECTION_ERROR = 'CONNECTION_ERROR';
 
 /**
  * @constant

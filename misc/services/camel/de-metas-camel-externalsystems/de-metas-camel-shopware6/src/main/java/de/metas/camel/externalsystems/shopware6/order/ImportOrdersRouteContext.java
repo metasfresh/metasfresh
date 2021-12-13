@@ -27,12 +27,16 @@ import de.metas.camel.externalsystems.shopware6.api.ShopwareClient;
 import de.metas.camel.externalsystems.shopware6.api.model.customer.JsonCustomerGroup;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonShippingCost;
 import de.metas.camel.externalsystems.shopware6.api.model.order.OrderCandidate;
+import de.metas.camel.externalsystems.shopware6.common.ExternalIdentifier;
+import de.metas.camel.externalsystems.shopware6.common.ExternalIdentifierFormat;
 import de.metas.camel.externalsystems.shopware6.currency.CurrencyInfoProvider;
 import de.metas.camel.externalsystems.shopware6.order.processor.TaxProductIdProvider;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
+import de.metas.common.externalsystem.JsonExternalSystemShopware6ConfigMapping;
 import de.metas.common.externalsystem.JsonExternalSystemShopware6ConfigMappings;
 import de.metas.common.externalsystem.JsonProductLookup;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.common.util.Check;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Data;
@@ -43,6 +47,7 @@ import lombok.Setter;
 import javax.annotation.Nullable;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
@@ -233,5 +238,56 @@ public class ImportOrdersRouteContext
 		}
 
 		return shippingCost;
+	}
+
+	@Nullable
+	public JsonExternalSystemShopware6ConfigMapping getMatchingShopware6Mapping()
+	{
+		if (shopware6ConfigMappings == null
+				|| Check.isEmpty(shopware6ConfigMappings.getJsonExternalSystemShopware6ConfigMappingList())
+				|| bPartnerCustomerGroup == null)
+		{
+			return null;
+		}
+
+		return shopware6ConfigMappings.getJsonExternalSystemShopware6ConfigMappingList()
+				.stream()
+				.filter(mapping -> mapping.isGroupMatching(bPartnerCustomerGroup.getName()))
+				.min(Comparator.comparingInt(JsonExternalSystemShopware6ConfigMapping::getSeqNo))
+				.orElse(null);
+	}
+
+	@NonNull
+	public ExternalIdentifier getEffectiveCustomerId()
+	{
+		final JsonExternalSystemShopware6ConfigMapping configMapping = getMatchingShopware6Mapping();
+
+		if (configMapping == null
+				|| Check.isBlank(configMapping.getBpartnerIdJSONPath())
+				|| configMapping.getBpartnerLookup() == null)
+		{
+			final String customerId = getOrderNotNull().getJsonOrder().getOrderCustomer().getCustomerId();
+
+			return ExternalIdentifier.builder()
+					.identifier(ExternalIdentifierFormat.formatExternalId(customerId))
+					.rawValue(customerId)
+					.build();
+		}
+
+		final String customBPartnerId = getOrderNotNull().getCustomField(configMapping.getBpartnerIdJSONPath());
+
+		return switch (configMapping.getBpartnerLookup())
+				{
+					case MetasfreshId -> ExternalIdentifier.builder()
+							.identifier(customBPartnerId)
+							.rawValue(customBPartnerId)
+							.build();
+					case ExternalReference -> ExternalIdentifier.builder()
+							.identifier(ExternalIdentifierFormat.formatExternalId(customBPartnerId))
+							.rawValue(customBPartnerId)
+							.build();
+
+					default -> throw new RuntimeException("Unsupported JsonBPartnerLookup=" + configMapping.getBpartnerLookup());
+				};
 	}
 }

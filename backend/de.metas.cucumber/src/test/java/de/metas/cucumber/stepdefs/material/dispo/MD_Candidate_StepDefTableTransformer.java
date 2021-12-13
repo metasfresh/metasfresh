@@ -23,6 +23,7 @@
 package de.metas.cucumber.stepdefs.material.dispo;
 
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
@@ -42,9 +43,9 @@ import java.util.Map;
 
 public class MD_Candidate_StepDefTableTransformer implements TableTransformer<MD_Candidate_StepDefTable>
 {
-	private final StepDefData<I_M_Product> productTable;
+	private final M_Product_StepDefData productTable;
 
-	public MD_Candidate_StepDefTableTransformer(@NonNull final StepDefData<I_M_Product> productTable)
+	public MD_Candidate_StepDefTableTransformer(@NonNull final M_Product_StepDefData productTable)
 	{
 		this.productTable = productTable;
 	}

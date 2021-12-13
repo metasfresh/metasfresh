@@ -1,36 +1,22 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
-import counterpart from 'counterpart';
 import { push } from 'connected-react-router';
+import { connect } from 'react-redux';
 
-import LineButton from '../common/LineButton';
+import { manufacturingLineScreenLocation } from '../../../routes/manufacturing';
 import ButtonWithIndicator from '../../../components/ButtonWithIndicator';
 import ButtonQuantityProp from '../../../components/ButtonQuantityProp';
-import { pushHeaderEntry } from '../../../actions/HeaderActions';
 
 class MaterialReceiptLineButton extends PureComponent {
   handleClick = () => {
-    const { wfProcessId, activityId, lineId, dispatch, caption } = this.props;
+    const { push, wfProcessId, activityId, lineId } = this.props;
+    const location = manufacturingLineScreenLocation({ wfProcessId, activityId, lineId });
 
-    const location = `/workflow/${wfProcessId}/activityId/${activityId}/lineId/${lineId}`;
-    dispatch(push(location));
-
-    dispatch(
-      pushHeaderEntry({
-        location,
-        values: [
-          {
-            caption: counterpart.translate('activities.mfg.ProductName'),
-            value: caption,
-            bold: true,
-          },
-        ],
-      })
-    );
+    push(location);
   };
 
   render() {
-    const { caption, uom, qtyCurrent, qtyTarget, completeStatus, appId, lineId, isUserEditable } = this.props;
+    const { caption, uom, qtyCurrent, qtyTarget, completeStatus, lineId, isUserEditable } = this.props;
 
     return (
       <button
@@ -44,7 +30,7 @@ class MaterialReceiptLineButton extends PureComponent {
             qtyCurrent={qtyCurrent}
             qtyTarget={qtyTarget}
             uom={uom}
-            appId={appId}
+            appId="mfg"
             subtypeId="receipts"
           />
         </ButtonWithIndicator>
@@ -65,10 +51,9 @@ MaterialReceiptLineButton.propTypes = {
   uom: PropTypes.string.isRequired,
   qtyCurrent: PropTypes.number.isRequired,
   qtyTarget: PropTypes.number.isRequired,
-  appId: PropTypes.string.isRequired,
   //
   // Actions
-  dispatch: PropTypes.func.isRequired,
+  push: PropTypes.func.isRequired,
 };
 
-export default LineButton(MaterialReceiptLineButton);
+export default connect(null, { push })(MaterialReceiptLineButton);

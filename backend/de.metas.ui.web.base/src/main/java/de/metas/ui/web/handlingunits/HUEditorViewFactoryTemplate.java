@@ -317,6 +317,8 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 		return viewLayoutBuilder.build();
 	}
 
+	protected boolean isMaterialReceipt() { return false; }
+
 	@Override
 	public final HUEditorView createView(final @NonNull CreateViewRequest request)
 	{
@@ -340,6 +342,7 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 					.rowProcessedPredicate(getRowProcessedPredicate(referencingTableName))
 					.attributesProvider(HUEditorRowAttributesProvider.builder()
 							.readonly(attributesAlwaysReadonly)
+							.isMaterialReceipt(isMaterialReceipt())
 							.build())
 					.sqlViewBinding(sqlViewBinding)
 					.huReservationService(huReservationService);

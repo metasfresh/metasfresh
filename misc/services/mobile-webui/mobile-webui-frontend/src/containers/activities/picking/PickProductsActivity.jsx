@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import { forEach } from 'lodash';
 
@@ -40,7 +40,7 @@ const computeStepQtyPickedTotal = (step) => {
   return qtyPickedTotal;
 };
 
-class PickProductsActivity extends Component {
+class PickProductsActivity extends PureComponent {
   render() {
     const {
       componentProps: { lines },

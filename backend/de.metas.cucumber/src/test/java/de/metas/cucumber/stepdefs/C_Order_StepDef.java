@@ -26,6 +26,8 @@ import de.metas.common.util.EmptyUtil;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
+import de.metas.document.DocTypeId;
+import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
@@ -42,7 +44,9 @@ import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
@@ -57,15 +61,19 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
 
+import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
+import static org.compiere.model.I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID;
 import static org.compiere.model.I_C_DocType.COLUMNNAME_DocBaseType;
 import static org.compiere.model.I_C_DocType.COLUMNNAME_DocSubType;
 import static org.compiere.model.I_C_Order.COLUMNNAME_C_BPartner_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_C_Order_ID;
+import static org.compiere.model.I_C_Order.COLUMNNAME_DocStatus;
 import static org.compiere.model.I_C_Order.COLUMNNAME_Link_Order_ID;
+import static org.compiere.model.I_C_Order.COLUMNNAME_Processing;
 
 public class C_Order_StepDef
 {
@@ -76,15 +84,18 @@ public class C_Order_StepDef
 	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 
-	private final StepDefData<I_C_BPartner> bpartnerTable;
-	private final StepDefData<I_C_Order> orderTable;
+	private final C_BPartner_StepDefData bpartnerTable;
+	private final C_Order_StepDefData orderTable;
+	private final StepDefData<I_C_BPartner_Location> bpartnerLocationTable;
 
 	public C_Order_StepDef(
-			@NonNull final StepDefData<I_C_BPartner> bpartnerTable,
-			@NonNull final StepDefData<I_C_Order> orderTable)
+			@NonNull final C_BPartner_StepDefData bpartnerTable,
+			@NonNull final C_Order_StepDefData orderTable,
+			@NonNull final StepDefData<I_C_BPartner_Location> bpartnerLocationTable)
 	{
 		this.bpartnerTable = bpartnerTable;
 		this.orderTable = orderTable;
+		this.bpartnerLocationTable = bpartnerLocationTable;
 	}
 
 	@Given("metasfresh contains C_Orders:")
@@ -232,6 +243,12 @@ public class C_Order_StepDef
 		
 		final String poReference = DataTableUtil.extractStringForColumnName(dataTableRow, I_C_Order.COLUMNNAME_POReference);
 		assertThat(purchaseOrderRecord.getPOReference()).isEqualTo(poReference);
+
+		final String orderIdentifier = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT." + COLUMNNAME_C_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (EmptyUtil.isNotBlank(orderIdentifier))
+		{
+			orderTable.putOrReplace(orderIdentifier, purchaseOrderRecord);
+		}
 	}
 
 	@And("validate the created orders")
@@ -241,11 +258,56 @@ public class C_Order_StepDef
 		validateOrder(row);
 	}
 
+	@And("update order")
+	public void update_order(@NonNull final DataTable dataTable) throws InterruptedException
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+		for (final Map<String, String> tableRow : tableRows)
+		{
+			final String orderIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_C_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final I_C_Order order = orderTable.get(orderIdentifier);
+
+			final String docBaseType = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_DocBaseType);
+			final String docSubType = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_DocSubType);
+
+			final DocTypeQuery docTypeQuery = DocTypeQuery.builder()
+					.docBaseType(docBaseType)
+					.docSubType(docSubType)
+					.adClientId(order.getAD_Client_ID())
+					.adOrgId(order.getAD_Org_ID())
+					.build();
+
+			final DocTypeId docTypeId = docTypeDAO.getDocTypeId(docTypeQuery);
+
+			order.setC_DocType_ID(docTypeId.getRepoId());
+			order.setC_DocTypeTarget_ID(docTypeId.getRepoId());
+
+			InterfaceWrapperHelper.saveRecord(order);
+
+			orderTable.putOrReplace(orderIdentifier, order);
+		}
+	}
+
+	@And("^after not more than (.*)s the order is found$")
+	public void lookup_order(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+		for (final Map<String, String> tableRow : tableRows)
+		{
+			StepDefUtil.tryAndWait(timeoutSec, 500, () -> retrieveOrder(tableRow));
+		}
+	}
+
 	private void validateOrder(@NonNull final Map<String, String> row)
 	{
 		final String identifier = DataTableUtil.extractStringForColumnName(row, "C_Order_ID.Identifier");
-		final int bpartnerId = DataTableUtil.extractIntForColumnName(row, "c_bpartner_id");
-		final int bpartnerLocationId = DataTableUtil.extractIntForColumnName(row, "c_bpartner_location_id");
+
+		final String bpartnerIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_BPartner.COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final I_C_BPartner bPartner = bpartnerTable.get(bpartnerIdentifier);
+		assertThat(bPartner).isNotNull();
+
+		final String bpartnerLocationIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_BPartner_Location_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final I_C_BPartner_Location bPartnerLocation = bpartnerLocationTable.get(bpartnerLocationIdentifier);
 		final Timestamp dateOrdered = DataTableUtil.extractDateTimestampForColumnName(row, "dateordered");
 		final String docbasetype = DataTableUtil.extractStringForColumnName(row, "docbasetype");
 		final String currencyCode = DataTableUtil.extractStringForColumnName(row, "currencyCode");
@@ -258,8 +320,8 @@ public class C_Order_StepDef
 		final I_C_Order order = orderTable.get(identifier);
 
 		assertThat(order.getExternalId()).isEqualTo(externalId);
-		assertThat(order.getC_BPartner_ID()).isEqualTo(bpartnerId);
-		assertThat(order.getC_BPartner_Location_ID()).isEqualTo(bpartnerLocationId);
+		assertThat(order.getC_BPartner_ID()).isEqualTo(bPartner.getC_BPartner_ID());
+		assertThat(order.getC_BPartner_Location_ID()).isEqualTo(bPartnerLocation.getC_BPartner_Location_ID());
 		assertThat(order.getDateOrdered()).isEqualTo(dateOrdered);
 		assertThat(order.getDeliveryRule()).isEqualTo(deliveryRule);
 		assertThat(order.getDeliveryViaRule()).isEqualTo(deliveryViaRule);
@@ -303,5 +365,29 @@ public class C_Order_StepDef
 
 			assertThat(orderLine).isPresent();
 		}
+	}
+
+	@NonNull
+	private Boolean retrieveOrder(@NonNull final Map<String, String> row)
+	{
+		final String docStatus = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_DocStatus);
+
+		final String orderIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final I_C_Order order = orderTable.get(orderIdentifier);
+
+		final I_C_Order orderRecord = queryBL.createQueryBuilder(I_C_Order.class)
+				.addEqualsFilter(COLUMNNAME_C_Order_ID, order.getC_Order_ID())
+				.addEqualsFilter(COLUMNNAME_DocStatus, docStatus)
+				.addEqualsFilter(COLUMNNAME_Processing, false)
+				.create()
+				.firstOnlyOrNull(I_C_Order.class);
+
+		if (orderRecord == null)
+		{
+			return false;
+		}
+
+		orderTable.putOrReplace(orderIdentifier, orderRecord);
+		return true;
 	}
 }

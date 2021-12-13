@@ -40,6 +40,8 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
+import static de.metas.camel.externalsystems.alberta.common.AlbertaUtil.fromJavaLocalDate;
+
 public class PrepareAlbertaArticlesProcessor implements Processor
 {
 	private static final String ARTICLE_PCN_PREFIX = "PZN-";
@@ -68,15 +70,16 @@ public class PrepareAlbertaArticlesProcessor implements Processor
 		}
 
 		final Article article = new Article();
-		
+
 		final String productNo = product.getProductNo();
 		final String pcn = productNo.startsWith(ARTICLE_PCN_PREFIX) ? productNo.substring(ARTICLE_PCN_PREFIX.length()) : null;
-		
+
 		article.customerNumber(productNo)
 				.name(product.getName())
 				.description(product.getDescription())
 				.manufacturer(product.getManufacturerName())
-				.manufacturerNumber(product.getManufacturerNumber());
+				.manufacturerNumber(product.getManufacturerNumber())
+				.unavailableFrom(fromJavaLocalDate(product.getDiscontinuedFrom()));
 
 		final JsonAlbertaProductInfo albertaProductInfo = product.getAlbertaProductInfo();
 	

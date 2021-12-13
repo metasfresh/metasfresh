@@ -24,6 +24,7 @@ import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandRecomputeTagger;
 import de.metas.invoicecandidate.api.IInvoiceCandUpdateSchedulerService;
 import de.metas.invoicecandidate.api.InvoiceCandRecomputeTag;
+import de.metas.invoicecandidate.api.InvoiceCandidateIdsSelection;
 import de.metas.invoicecandidate.api.InvoiceCandidateMultiQuery;
 import de.metas.invoicecandidate.api.InvoiceCandidateQuery;
 import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
@@ -39,7 +40,6 @@ import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.order.IOrderDAO;
-import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.IOrgDAO;
@@ -236,7 +236,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				.create()
 				.listIds(InvoiceCandidateId::ofRepoId);
 	}
-	
+
 	@Override
 	public int deleteAllReferencingInvoiceCandidates(@NonNull final Object model)
 	{
@@ -1017,18 +1017,34 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 
 		//
 		// Only a given set of invoice candidates
-		if (tagRequest.isOnlyC_Invoice_Candidate_IDs())
+		final InvoiceCandidateIdsSelection onlyInvoiceCandidateIds = tagRequest.getOnlyInvoiceCandidateIds();
+		if (onlyInvoiceCandidateIds != null)
 		{
-			final Set<Integer> invoiceCandidateIds = tagRequest.getOnlyC_Invoice_Candidate_IDs();
-			if (invoiceCandidateIds == null || invoiceCandidateIds.isEmpty())
+			onlyInvoiceCandidateIds.apply(new InvoiceCandidateIdsSelection.CaseMapper()
 			{
-				// i.e. tag none
-				queryBuilder.filter(ConstantQueryFilter.of(false));
-			}
-			else
-			{
-				queryBuilder.addInArrayOrAllFilter(I_C_Invoice_Candidate_Recompute.COLUMN_C_Invoice_Candidate_ID, invoiceCandidateIds);
-			}
+				@Override
+				public void empty()
+				{
+					queryBuilder.filter(ConstantQueryFilter.of(false));
+				}
+
+				@Override
+				public void fixedSet(final ImmutableSet<InvoiceCandidateId> ids)
+				{
+					queryBuilder.addInArrayOrAllFilter(I_C_Invoice_Candidate_Recompute.COLUMN_C_Invoice_Candidate_ID, ids);
+				}
+
+				@Override
+				public void selectionId(final PInstanceId selectionId)
+				{
+					queryBuilder.addInSubQueryFilter(
+							I_C_Invoice_Candidate_Recompute.COLUMNNAME_C_Invoice_Candidate_ID,
+							I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID,
+							queryBL.createQueryBuilder(I_C_Invoice_Candidate.class, ctx, trxName)
+									.setOnlySelection(selectionId)
+									.create());
+				}
+			});
 		}
 
 		//
@@ -1345,7 +1361,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	 * @param updateOnlyIfNull if true then it will update only if column value is null (not set)
 	 * @param selectionId      invoice candidates selection (AD_PInstance_ID)
 	 */
-	private final <T> void updateColumnForSelection(
+	private <T> void updateColumnForSelection(
 			@NonNull final String columnName,
 			@Nullable final T value,
 			final boolean updateOnlyIfNull,

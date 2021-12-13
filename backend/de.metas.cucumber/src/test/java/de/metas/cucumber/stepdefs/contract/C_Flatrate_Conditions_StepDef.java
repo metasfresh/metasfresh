@@ -23,41 +23,52 @@
 package de.metas.cucumber.stepdefs.contract;
 
 import de.metas.common.util.EmptyUtil;
-import de.metas.contracts.IFlatrateDAO;
+import de.metas.contracts.commission.model.I_C_Customer_Trade_Margin;
 import de.metas.contracts.commission.model.I_C_HierarchyCommissionSettings;
+import de.metas.contracts.commission.model.I_C_LicenseFeeSettings;
+import de.metas.contracts.commission.model.I_C_MediatedCommissionSettings;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.order.InvoiceRule;
-import de.metas.util.Services;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.assertj.core.api.Assertions;
-import org.compiere.util.Env;
 
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import static de.metas.contracts.commission.model.I_C_Flatrate_Conditions.COLUMNNAME_C_HierarchyCommissionSettings_ID;
+import static de.metas.contracts.model.I_C_Flatrate_Conditions.COLUMNNAME_C_Customer_Trade_Margin_ID;
+import static de.metas.contracts.model.I_C_Flatrate_Conditions.COLUMNNAME_C_Flatrate_Conditions_ID;
+import static de.metas.contracts.model.I_C_Flatrate_Conditions.COLUMNNAME_C_LicenseFeeSettings_ID;
+import static de.metas.contracts.model.I_C_Flatrate_Conditions.COLUMNNAME_C_MediatedCommissionSettings_ID;
 import static de.metas.contracts.model.I_C_Flatrate_Conditions.COLUMNNAME_Name;
 import static de.metas.contracts.model.I_C_Flatrate_Conditions.COLUMNNAME_Type_Conditions;
-import static de.metas.contracts.model.I_C_Flatrate_Conditions.COLUMN_Name;
-import static de.metas.contracts.model.I_C_Flatrate_Conditions.COLUMN_Type_Conditions;
 import static org.assertj.core.api.Assertions.*;
 
 public class C_Flatrate_Conditions_StepDef
 {
 	private final StepDefData<I_C_HierarchyCommissionSettings> hierarchyCommissionSettingsTable;
+	private final StepDefData<I_C_LicenseFeeSettings> licenseFeeSettingsTable;
+	private final StepDefData<I_C_Customer_Trade_Margin> customerTradeMarginTable;
+	private final StepDefData<I_C_MediatedCommissionSettings> mediatedCommissionSettingsTable;
 	private final StepDefData<I_C_Flatrate_Conditions> conditionsTable;
 
 	public C_Flatrate_Conditions_StepDef(
 			@NonNull final StepDefData<I_C_HierarchyCommissionSettings> hierarchyCommissionSettingsTable,
+			@NonNull final StepDefData<I_C_LicenseFeeSettings> licenseFeeSettingsTable,
+			@NonNull final StepDefData<I_C_Customer_Trade_Margin> customerTradeMarginTable,
+			@NonNull final StepDefData<I_C_MediatedCommissionSettings> mediatedCommissionSettingsTable,
 			@NonNull final StepDefData<I_C_Flatrate_Conditions> conditionsTable)
 	{
 		this.hierarchyCommissionSettingsTable = hierarchyCommissionSettingsTable;
+		this.licenseFeeSettingsTable = licenseFeeSettingsTable;
+		this.customerTradeMarginTable = customerTradeMarginTable;
+		this.mediatedCommissionSettingsTable = mediatedCommissionSettingsTable;
 		this.conditionsTable = conditionsTable;
 	}
 
@@ -72,29 +83,62 @@ public class C_Flatrate_Conditions_StepDef
 
 			final String type = tableRow.get(COLUMNNAME_Type_Conditions);
 			assertThat(type).as(COLUMNNAME_Type_Conditions + " is mandatory").isNotBlank();
-			
+
 			final I_C_Flatrate_Conditions flatrateConditions = InterfaceWrapperHelper.newInstance(I_C_Flatrate_Conditions.class);
 
-			final String commissionSettingsIdentifier = tableRow.get("OPT." + COLUMNNAME_C_HierarchyCommissionSettings_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-			if (EmptyUtil.isNotBlank(commissionSettingsIdentifier))
+			final String commissionHierarchySettingsIdentifier = tableRow.get("OPT." + COLUMNNAME_C_HierarchyCommissionSettings_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+			if (EmptyUtil.isNotBlank(commissionHierarchySettingsIdentifier))
 			{
-				final I_C_HierarchyCommissionSettings commissionSettings = hierarchyCommissionSettingsTable.get(commissionSettingsIdentifier);
-				assertThat(commissionSettings).as("Missing C_HierarchyCommissionSettings record for identifier " + commissionSettingsIdentifier).isNotNull();
+				final I_C_HierarchyCommissionSettings hierarchyCommissionSettings = hierarchyCommissionSettingsTable.get(commissionHierarchySettingsIdentifier);
+				assertThat(hierarchyCommissionSettings).as("Missing C_HierarchyCommissionSettings record for identifier " + commissionHierarchySettingsIdentifier).isNotNull();
 				InterfaceWrapperHelper
 						.create(flatrateConditions, de.metas.contracts.commission.model.I_C_Flatrate_Conditions.class)
-						.setC_HierarchyCommissionSettings_ID(commissionSettings.getC_HierarchyCommissionSettings_ID());
+						.setC_HierarchyCommissionSettings_ID(hierarchyCommissionSettings.getC_HierarchyCommissionSettings_ID());
 			}
 
-			flatrateConditions.setName(name);
-			flatrateConditions.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
+			final String commissionLicenseFeeSettingsIdentifier = tableRow.get("OPT." + COLUMNNAME_C_LicenseFeeSettings_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+			if (EmptyUtil.isNotBlank(commissionLicenseFeeSettingsIdentifier))
+			{
+				final I_C_LicenseFeeSettings licenseFeeSettings = licenseFeeSettingsTable.get(commissionLicenseFeeSettingsIdentifier);
+				assertThat(licenseFeeSettings).as("Missing C_LicenseFeeSettings record for identifier " + commissionLicenseFeeSettingsIdentifier).isNotNull();
+				InterfaceWrapperHelper
+						.create(flatrateConditions, de.metas.contracts.commission.model.I_C_Flatrate_Conditions.class)
+						.setC_LicenseFeeSettings_ID(licenseFeeSettings.getC_LicenseFeeSettings_ID());
+			}
+
+			final String customerTradeMarginSettingsIdentifier = tableRow.get("OPT." + COLUMNNAME_C_Customer_Trade_Margin_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+			if (EmptyUtil.isNotBlank(customerTradeMarginSettingsIdentifier))
+			{
+				final I_C_Customer_Trade_Margin customerTradeMargin = customerTradeMarginTable.get(customerTradeMarginSettingsIdentifier);
+				assertThat(customerTradeMargin).as("Missing I_C_Customer_Trade_Margin record for identifier " + customerTradeMarginSettingsIdentifier).isNotNull();
+				InterfaceWrapperHelper
+						.create(flatrateConditions, de.metas.contracts.commission.model.I_C_Flatrate_Conditions.class)
+						.setC_Customer_Trade_Margin_ID(customerTradeMargin.getC_Customer_Trade_Margin_ID());
+			}
+
+			final String mediatedCommissionSettingsIdentifier = tableRow.get("OPT." + COLUMNNAME_C_MediatedCommissionSettings_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+			if (EmptyUtil.isNotBlank(mediatedCommissionSettingsIdentifier))
+			{
+				final I_C_MediatedCommissionSettings mediatedCommissionSettings = mediatedCommissionSettingsTable.get(mediatedCommissionSettingsIdentifier);
+				assertThat(mediatedCommissionSettings).as("Missing I_C_MediatedCommissionSettings record for identifier " + mediatedCommissionSettingsIdentifier).isNotNull();
+				InterfaceWrapperHelper
+						.create(flatrateConditions, de.metas.contracts.commission.model.I_C_Flatrate_Conditions.class)
+						.setC_MediatedCommissionSettings_ID(mediatedCommissionSettings.getC_MediatedCommissionSettings_ID());
+			}
+
+			flatrateConditions.setName(name + UUID.randomUUID().toString()); //dev-note: random UUID for constraint "name_unique"
 			flatrateConditions.setType_Conditions(type);
+			flatrateConditions.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
 			flatrateConditions.setC_Flatrate_Transition_ID(StepDefConstants.FLATRATE_TRANSITION_ID.getRepoId());
 			flatrateConditions.setInvoiceRule(InvoiceRule.AfterDelivery.getCode());
 			flatrateConditions.setDocStatus(X_C_Flatrate_Conditions.DOCSTATUS_Completed);
 			flatrateConditions.setProcessed(true);
+			flatrateConditions.setIsActive(true);
 			InterfaceWrapperHelper.saveRecord(flatrateConditions);
 
-			conditionsTable.put(DataTableUtil.extractRecordIdentifier(tableRow, "C_Flatrate_Conditions"), flatrateConditions);
+			final String conditionsIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_C_Flatrate_Conditions_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+
+			conditionsTable.put(conditionsIdentifier, flatrateConditions);
 		}
 	}
 }

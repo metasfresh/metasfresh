@@ -64,4 +64,15 @@ public class AlbertaUtil
 
 		return LocalDate.ofEpochDay(localDate.getLong(EPOCH_DAY));
 	}
+
+	@Nullable
+	public static org.threeten.bp.LocalDate fromJavaLocalDate(@Nullable final LocalDate localDate)
+	{
+		if (localDate == null)
+		{
+			return null;
+		}
+
+		return org.threeten.bp.LocalDate.ofEpochDay(localDate.toEpochDay());
+	}
 }
