@@ -2,54 +2,56 @@ import React, { PureComponent } from 'react';
 import counterpart from 'counterpart';
 import PropTypes from 'prop-types';
 import { push } from 'connected-react-router';
+import { withRouter } from 'react-router';
+import { connect } from 'react-redux';
 
 import * as CompleteStatus from '../../../constants/CompleteStatus';
 import { pushHeaderEntry } from '../../../actions/HeaderActions';
-
 import ButtonWithIndicator from '../../../components/ButtonWithIndicator';
 import { selectWFProcessFromState } from '../../../reducers/wfProcesses_status';
-import { withRouter } from 'react-router';
-import { connect } from 'react-redux';
 import {
   distributionStepDropToScreenLocation,
   distributionStepPickFromScreenLocation,
+  distributionStepScreenLocation,
 } from '../../../routes/distribution';
 
 const HIDE_UNDO_BUTTONS = true; // hide them because they are not working
 
 class DistributionStepScreen extends PureComponent {
-  onScanPickFromHU = () => {
+  componentDidMount() {
     const {
       wfProcessId,
       activityId,
       lineId,
       stepId,
-      stepProps: { qtyToMove, pickFromHU },
+      stepProps: { pickFromLocator },
       dispatch,
     } = this.props;
+    const location = distributionStepScreenLocation({ wfProcessId, activityId, lineId, stepId });
 
+    dispatch(
+      pushHeaderEntry({
+        location,
+        values: [
+          {
+            caption: counterpart.translate('general.Locator'),
+            value: pickFromLocator.caption,
+          },
+        ],
+      })
+    );
+  }
+
+  onScanPickFromHU = () => {
+    const { wfProcessId, activityId, lineId, stepId, dispatch } = this.props;
     const location = distributionStepPickFromScreenLocation({
       wfProcessId,
       activityId,
       lineId,
       stepId,
     });
+
     dispatch(push(location));
-    dispatch(
-      pushHeaderEntry({
-        location,
-        values: [
-          {
-            caption: counterpart.translate('activities.distribution.scanHU'),
-            value: pickFromHU.barcode,
-          },
-          {
-            caption: counterpart.translate('general.QtyToMove'),
-            value: qtyToMove,
-          },
-        ],
-      })
-    );
   };
 
   onScanDropToLocator = () => {
