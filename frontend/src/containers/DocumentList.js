@@ -90,10 +90,10 @@ class DocumentListContainer extends Component {
     const page = urlParams.get('page');
 
     if (
-      (typeof this.lastPage === 'undefined' || this.lastPage) &&
-      this.lastPage !== page
+      (typeof this.lastViewedPage === 'undefined' || this.lastViewedPage) &&
+      this.lastViewedPage !== page
     ) {
-      this.lastPage = page;
+      this.lastViewedPage = page;
       this.handleChangePage(page);
     }
   };
@@ -634,7 +634,7 @@ class DocumentListContainer extends Component {
         currentPage = index;
     }
 
-    this.lastPage = currentPage;
+    this.lastViewedPage = currentPage;
     this.getData(viewData.viewId, currentPage, sort);
   };
 
