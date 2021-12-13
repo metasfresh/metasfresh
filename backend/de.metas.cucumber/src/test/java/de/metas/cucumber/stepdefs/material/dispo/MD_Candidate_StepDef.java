@@ -88,7 +88,7 @@ public class MD_Candidate_StepDef
 	private PostMaterialEventService postMaterialEventService;
 	private MaterialDispoRecordRepository materialDispoRecordRepository;
 	private CandidateRepositoryRetrieval candidateRepositoryRetrieval;
-	private final M_Product_StepDefData productTable;
+	private final StepDefData<I_M_Product> productTable;
 	private final StepDefData<I_MD_Candidate> stockCandidateTable;
 	private final StepDefData<MaterialDispoDataItem> materialDispoDataItemStepDefData = new StepDefData<>();
 	private final C_OrderLine_StepDefData orderLineTable;
@@ -96,7 +96,7 @@ public class MD_Candidate_StepDef
 	public MD_Candidate_StepDef(
 			@NonNull final M_Product_StepDefData productTable,
 			@NonNull final StepDefData<I_MD_Candidate> stockCandidateTable,
-			@NonNull final C_OrderLine_StepDefData orderLineTable)
+			final C_OrderLine_StepDefData orderLineTable)
 	{
 		this.productTable = productTable;
 		this.stockCandidateTable = stockCandidateTable;
