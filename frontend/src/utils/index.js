@@ -8,6 +8,9 @@ import history from '../services/History';
  * @summary Replaces the history url with updated query URL that contain viewId/page/sorting
  */
 export function updateUri(pathname, query, updatedQuery) {
+  const isDifferentPage =
+    query.page && Number(query.page) !== updatedQuery.page;
+
   const queryObject = {
     ...query,
     ...updatedQuery,
@@ -15,7 +18,7 @@ export function updateUri(pathname, query, updatedQuery) {
   const queryUrl = queryString.stringify(queryObject);
   const url = `${pathname}?${queryUrl}`;
 
-  history.replace(url);
+  isDifferentPage ? history.push(url) : history.replace(url);
 }
 
 /**
