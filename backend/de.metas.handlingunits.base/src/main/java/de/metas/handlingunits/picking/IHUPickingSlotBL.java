@@ -166,11 +166,9 @@ public interface IHUPickingSlotBL extends IPickingSlotBL, ISingletonService
 	 * Search for available (top level) HUs to be picked. Picking in this case means that the whole HU is assigned to a picking slot.<br>
 	 * Available HUs are not yet picked and are not yet selected to be source HUs
 	 *
-	 * @param request
-	 *
 	 * @return matching HUs
 	 */
-	List<I_M_HU> retrieveAvailableHUsToPick(PickingHUsQuery query);
+	List<I_M_HU> retrieveAvailableHUsToPick(@NonNull PickingHUsQuery query);
 
 	ImmutableList<HuId> retrieveAvailableHUIdsToPick(PickingHUsQuery query);
 
@@ -180,9 +178,6 @@ public interface IHUPickingSlotBL extends IPickingSlotBL, ISingletonService
 	 * Search for available fine picking source HUs.<br>
 	 * Those HUs are referenced by {@link I_M_Source_HU} records and are available<br>
 	 * to serve as source HU from which stuff is loaded into the picking-HUs. That means that they may not yet be empty.
-	 *
-	 * @param query
-	 * @return
 	 */
 	List<I_M_HU> retrieveAvailableSourceHUs(PickingHUsQuery query);
 
@@ -208,5 +203,11 @@ public interface IHUPickingSlotBL extends IPickingSlotBL, ISingletonService
 		 */
 		@Default
 		boolean onlyTopLevelHUs = true;
+
+		/**
+		 * If {@code true}, then even exclude HUs that are reserved to the given {@code shipmentSchedule}'s order line itself.
+		 */
+		@Default
+		boolean excludeAllReserved = false;
 	}
 }

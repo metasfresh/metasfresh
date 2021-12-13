@@ -22,7 +22,7 @@ import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.lang.IContextAware;
-import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Locator;
 
 import java.util.ArrayList;
@@ -78,7 +78,8 @@ public class RetrieveAvailableHUsToPick
 
 		final List<I_M_HU> vhus = retrieveVHUsFromStorage(
 				query.getShipmentSchedules(),
-				query.isOnlyIfAttributesMatchWithShipmentSchedules());
+				query.isOnlyIfAttributesMatchWithShipmentSchedules(),
+				query.isExcludeAllReserved());
 
 		final List<I_M_HU> result = vhuToEndResultFunction.apply(vhus);
 
@@ -94,7 +95,8 @@ public class RetrieveAvailableHUsToPick
 
 	private List<I_M_HU> retrieveVHUsFromStorage(
 			@NonNull final List<I_M_ShipmentSchedule> shipmentSchedules,
-			final boolean considerAttributes)
+			final boolean considerAttributes,
+			final boolean isExcludeAllReserved)
 	{
 		//
 		// Create storage queries from shipment schedules
@@ -102,7 +104,7 @@ public class RetrieveAvailableHUsToPick
 		final Set<IStorageQuery> storageQueries = new HashSet<>();
 		for (final I_M_ShipmentSchedule shipmentSchedule : shipmentSchedules)
 		{
-			final IStorageQuery storageQuery = shipmentScheduleBL.createStorageQuery(shipmentSchedule, considerAttributes);
+			final IStorageQuery storageQuery = shipmentScheduleBL.createStorageQuery(shipmentSchedule, considerAttributes, isExcludeAllReserved);
 			storageQueries.add(storageQuery);
 		}
 
@@ -145,7 +147,7 @@ public class RetrieveAvailableHUsToPick
 			return;
 		}
 
-		final PickingCandidateRepository pickingCandidatesRepo = Adempiere.getBean(PickingCandidateRepository.class);
+		final PickingCandidateRepository pickingCandidatesRepo = SpringContextHolder.instance.getBean(PickingCandidateRepository.class);
 
 		final HuId huId = HuId.ofRepoId(vhu.getM_HU_ID());
 		if (pickingCandidatesRepo.isHuIdPicked(huId))
