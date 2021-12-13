@@ -1,21 +1,5 @@
 package de.metas.ui.web.pattribute;
 
-import java.util.List;
-import java.util.function.Function;
-
-import de.metas.ui.web.window.datatypes.json.JSONLookupValuesPage;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.util.ASIEditingInfo;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
 import de.metas.lang.SOTrx;
 import de.metas.product.ProductId;
 import de.metas.ui.web.config.WebConfig;
@@ -37,13 +21,30 @@ import de.metas.ui.web.window.datatypes.json.JSONDocumentOptions;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentPath;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
+import de.metas.ui.web.window.datatypes.json.JSONLookupValuesPage;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 import de.metas.ui.web.window.model.NullDocumentChangesCollector;
+import de.metas.util.Services;
 import io.swagger.annotations.Api;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.util.ASIEditingInfo;
+import org.adempiere.service.ISysConfigBL;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
+import java.util.function.Function;
 
 /*
  * #%L
@@ -76,6 +77,9 @@ public class ASIRestController
 
 	private static final ReasonSupplier REASON_ProcessASIDocumentChanges = () -> "process ASI document changes";
 
+	private static final String SYSCONFIG_LookupAppendDescriptionToName = "webui.attributeValues.appendDescriptionToName";
+
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final UserSession userSession;
 	private final ASIRepository asiRepo;
 	private final DocumentCollection documentsCollection;
@@ -240,14 +244,19 @@ public class ASIRestController
 				.transform(page -> JSONLookupValuesPage.of(page, userSession.getAD_Language()));
 	}
 
+	private boolean isLookupsAppendDescriptionToName()
+	{
+		return sysConfigBL.getBooleanValue(SYSCONFIG_LookupAppendDescriptionToName, true);
+	}
+
 	private JSONLookupValuesList toJSONLookupValuesList(final LookupValuesList lookupValuesList)
 	{
-		return JSONLookupValuesList.ofLookupValuesList(lookupValuesList, userSession.getAD_Language());
+		return JSONLookupValuesList.ofLookupValuesList(lookupValuesList, userSession.getAD_Language(), isLookupsAppendDescriptionToName());
 	}
 
 	private JSONLookupValue toJSONLookupValue(final LookupValue lookupValue)
 	{
-		return JSONLookupValue.ofLookupValue(lookupValue, userSession.getAD_Language());
+		return JSONLookupValue.ofLookupValue(lookupValue, userSession.getAD_Language(), isLookupsAppendDescriptionToName());
 	}
 
 	@GetMapping("/{asiDocId}/field/{attributeName}/dropdown")
