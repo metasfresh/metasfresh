@@ -6,6 +6,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import java.math.BigDecimal;
 import java.util.Objects;
 
+import de.metas.uom.UpdateUOMConversionRequest;
 import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.model.I_C_UOM_Conversion;
 import org.slf4j.Logger;
@@ -24,6 +25,8 @@ import de.metas.uom.UOMConversionsMap;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
+
+import javax.annotation.Nullable;
 
 public class UOMConversionDAO implements IUOMConversionDAO
 {
@@ -49,7 +52,7 @@ public class UOMConversionDAO implements IUOMConversionDAO
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.stream()
-				.map(record -> toUOMConversionOrNull(record))
+				.map(UOMConversionDAO::toUOMConversionOrNull)
 				.filter(Objects::nonNull)
 				.collect(ImmutableList.toImmutableList());
 
@@ -71,7 +74,7 @@ public class UOMConversionDAO implements IUOMConversionDAO
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.stream(I_C_UOM_Conversion.class)
-				.map(record -> toUOMConversionOrNull(record))
+				.map(UOMConversionDAO::toUOMConversionOrNull)
 				.filter(Objects::nonNull)
 				.collect(ImmutableList.toImmutableList());
 
@@ -81,6 +84,7 @@ public class UOMConversionDAO implements IUOMConversionDAO
 				.build();
 	}
 
+	@Nullable
 	@VisibleForTesting
 	static UOMConversionRate toUOMConversionOrNull(@NonNull final I_C_UOM_Conversion record)
 	{
@@ -113,6 +117,27 @@ public class UOMConversionDAO implements IUOMConversionDAO
 		record.setM_Product_ID(ProductId.toRepoId(request.getProductId()));
 		record.setC_UOM_ID(request.getFromUomId().getRepoId());
 		record.setC_UOM_To_ID(request.getToUomId().getRepoId());
+		record.setMultiplyRate(fromToMultiplier);
+		record.setDivideRate(toFromMultiplier);
+		record.setIsCatchUOMForProduct(request.isCatchUOMForProduct());
+
+		saveRecord(record);
+	}
+
+	@Override
+	public void updateUOMConversion(@NonNull final UpdateUOMConversionRequest request)
+	{
+		final I_C_UOM_Conversion record = Services.get(IQueryBL.class).createQueryBuilder(I_C_UOM_Conversion.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_UOM_Conversion.COLUMNNAME_M_Product_ID, request.getProductId())
+				.addEqualsFilter(I_C_UOM_Conversion.COLUMNNAME_C_UOM_ID, request.getFromUomId())
+				.addEqualsFilter(I_C_UOM_Conversion.COLUMNNAME_C_UOM_To_ID, request.getToUomId())
+				.create()
+				.firstOnlyNotNull(I_C_UOM_Conversion.class);// we have a unique-constraint
+
+		final BigDecimal fromToMultiplier = request.getFromToMultiplier();
+		final BigDecimal toFromMultiplier = UOMConversionRate.computeInvertedMultiplier(fromToMultiplier);
+		
 		record.setMultiplyRate(fromToMultiplier);
 		record.setDivideRate(toFromMultiplier);
 		record.setIsCatchUOMForProduct(request.isCatchUOMForProduct());

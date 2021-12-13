@@ -23,7 +23,6 @@ import {
   FETCH_TOP_ACTIONS_SUCCESS,
   INIT_DATA_SUCCESS,
   INIT_LAYOUT_SUCCESS,
-  NO_CONNECTION,
   OPEN_MODAL,
   OPEN_PLUGIN_MODAL,
   OPEN_RAW_MODAL,
@@ -108,7 +107,6 @@ const initialModalState = {
  * - inlineTab keys ${windowId}_{$tabId}_${rowId}
  */
 export const initialState = {
-  connectionError: false,
   showSpinner: false,
   printingOptions: {},
   // TODO: this should be moved to a separate `modalHandler`
@@ -314,11 +312,6 @@ export const getMasterDocStatus = createSelector(getData, (data) => {
 
 export default function windowHandler(state = initialState, action) {
   switch (action.type) {
-    case NO_CONNECTION:
-      return {
-        ...state,
-        connectionError: action.status,
-      };
     case OPEN_MODAL:
       return {
         ...state,

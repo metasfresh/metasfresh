@@ -16,28 +16,22 @@ import {
   setLanguages,
 } from '../actions/AppActions';
 import { getAvailableLang } from '../api';
-import { noConnection } from '../actions/WindowActions';
+import { connectionError } from '../actions/AppActions';
 // import PluginsRegistry from '../services/PluginsRegistry';
 import { useAuth } from '../hooks/useAuth';
 import useConstructor from '../hooks/useConstructor';
 import history from '../services/History';
 import Routes from '../routes';
-
+import { NO_CONNECTION_ERROR } from '../constants/Constants';
 import { generateHotkeys, ShortcutProvider } from '../components/keyshortcuts';
 import Translation from '../components/Translation';
 import NotificationHandler from '../components/notifications/NotificationHandler';
 import blacklist from '../shortcuts/blacklist';
 import keymap from '../shortcuts/keymap';
-import configureStore from '../store/configureStore';
 
 const hotkeys = generateHotkeys({ keymap, blacklist });
 
-const store = configureStore();
 // const APP_PLUGINS = PLUGINS ? PLUGINS : [];
-
-if (window.Cypress) {
-  window.store = store;
-}
 
 /**
  * @file Functional component.
@@ -79,7 +73,7 @@ const App = () => {
         }
 
         if (!error || !error.response || !error.response.status) {
-          dispatch(noConnection(true));
+          dispatch(connectionError({ errorType: NO_CONNECTION_ERROR }));
         }
 
         /*
@@ -134,8 +128,10 @@ const App = () => {
               }
             });
           }
+        } else if (error.response.status == 502) {
+          return; // silent erorr for 502 bad gateway (otherwise we will get a bunch of notif from the retries)
         } else if (error.response.status == 503) {
-          dispatch(noConnection(true));
+          dispatch(connectionError({ errorType: NO_CONNECTION_ERROR }));
         } else if (error.response.status != 404) {
           if (auth.isLoggedIn) {
             const errorMessenger = (code) => {

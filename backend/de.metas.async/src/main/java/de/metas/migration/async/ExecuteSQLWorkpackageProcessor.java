@@ -141,7 +141,7 @@ public class ExecuteSQLWorkpackageProcessor extends WorkpackageProcessorAdapter
 		return DB.executeUpdateEx(sql, ITrx.TRXNAME_ThreadInherited);
 	}
 
-	private static final String parseSql(final String sqlRaw, final I_C_Queue_WorkPackage workpackage)
+	private static String parseSql(final String sqlRaw, final I_C_Queue_WorkPackage workpackage)
 	{
 		//
 		// Normalize

@@ -191,7 +191,6 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
           "shopwareCode" : "shopwareCode"
         }
       ],
-      "bPartnerIdJSONPath" : "/test/bp",
       "bPartnerLocationIdJSONPath" : "/test/bpl",
       "salesRepJSONPath" : "/test/salesrep",
       "priceListId" : 1,
@@ -226,7 +225,6 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
           "shopwareCode" : "shopwareCode"
         }
       ],
-      "bPartnerIdJSONPath" : "/test/bp",
       "bPartnerLocationIdJSONPath" : "/test/bpl",
       "salesRepJSONPath" : "/test/salesrep",
       "priceListId" : 1,
@@ -260,7 +258,9 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
         "paymentTermId" : 10000,
         "sw6CustomerGroup" : "testWithAnä",
         "sw6PaymentMethod" : "test",
-        "description" : "test"
+        "description" : "test",
+        "bPartnerIdJSONPath" : "/test/bp",
+        "bPartnerlookup" : "ExternalReference"
       }
     ],
     "uomShopwareMappingList" : [
@@ -270,7 +270,6 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
         "shopwareCode" : "shopwareCode"
       }
     ],
-    "bPartnerIdJSONPath" : "/test/bp",
     "bPartnerLocationIdJSONPath" : "/test/bpl",
     "salesRepJSONPath" : "/test/salesrep",
     "priceListId" : 1,
@@ -302,7 +301,6 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
           "shopwareCode" : "shopwareCode"
         }
       ],
-      "bPartnerIdJSONPath" : "/test/bp",
       "bPartnerLocationIdJSONPath" : "/test/bpl",
       "salesRepJSONPath" : "/test/salesrep",
       "priceListId" : 1,
@@ -331,7 +329,6 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
       "clientSecret" : "new-clientSecret",
       "externalSystemShopware6ConfigMappingList" : [ ],
       "uomShopwareMappingList" : [ ],
-      "bPartnerIdJSONPath" : "/test/bp",
       "bPartnerLocationIdJSONPath" : "/test/bpl",
       "salesRepJSONPath" : "/test/salesrep",
       "priceListId" : 2,

@@ -182,6 +182,9 @@ public class ApiAuditService
 				.build();
 	}
 
+	/**
+	 * Get the matching config with the smallest SeqNo.
+	 */
 	@NonNull
 	public Optional<ApiAuditConfig> getMatchingAuditConfig(@NonNull final ServletRequest request)
 	{

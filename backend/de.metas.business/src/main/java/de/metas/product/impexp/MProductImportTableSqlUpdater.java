@@ -47,7 +47,6 @@ import lombok.experimental.UtilityClass;
  * Those updates complements the data from existing metasfresh records and flag those import records that can't yet be imported.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 @UtilityClass
 public class MProductImportTableSqlUpdater
@@ -101,9 +100,9 @@ public class MProductImportTableSqlUpdater
 		dbUpdateDosageForm(selection);
 
 		dbUpdateIndication(selection);
-		
+
 		dbUpdateCustomsTarrif(selection);
-		
+
 		dbUpdateRawMaterialOrignCountry(selection);
 
 		dbUpdateErrorMessages(selection);
@@ -233,7 +232,7 @@ public class MProductImportTableSqlUpdater
 				.append(" SET ProductCategory_Value=(SELECT MAX(Value) FROM M_Product_Category")
 				.append(" WHERE IsDefault='Y' AND AD_Client_ID=").append(adClientId).append(") ")
 				.append("WHERE ProductCategory_Value IS NULL AND M_Product_Category_ID IS NULL")
-				.append(" AND M_Product_ID IS NULL")	// set category only if product not found
+				.append(" AND M_Product_ID IS NULL")    // set category only if product not found
 				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y'")
 				.append(selection.toSqlWhereClause("i"));
 		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
@@ -264,11 +263,11 @@ public class MProductImportTableSqlUpdater
 			sql = new StringBuilder("UPDATE ")
 					.append(targetTableName + " i SET ")
 					.append(strField).append(" = (SELECT ").append(strField).append(" FROM M_Product p"
-							+ " WHERE i.M_Product_ID=p.M_Product_ID AND i.AD_Client_ID=p.AD_Client_ID) "
-							+ "WHERE M_Product_ID IS NOT NULL"
-							+ " AND ")
+																							+ " WHERE i.M_Product_ID=p.M_Product_ID AND i.AD_Client_ID=p.AD_Client_ID) "
+																							+ "WHERE M_Product_ID IS NOT NULL"
+																							+ " AND ")
 					.append(strField).append(" IS NULL"
-							+ " AND " + COLUMNNAME_I_IsImported + "='N'")
+													 + " AND " + COLUMNNAME_I_IsImported + "='N'")
 					.append(selection.toSqlWhereClause("i"));
 			no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 			if (no != 0)
@@ -283,11 +282,11 @@ public class MProductImportTableSqlUpdater
 			sql = new StringBuilder("UPDATE ")
 					.append(targetTableName + " i SET ")
 					.append(numField).append(" = (SELECT ").append(numField).append(" FROM M_Product p"
-							+ " WHERE i.M_Product_ID=p.M_Product_ID AND i.AD_Client_ID=p.AD_Client_ID) "
-							+ "WHERE M_Product_ID IS NOT NULL"
-							+ " AND (")
+																							+ " WHERE i.M_Product_ID=p.M_Product_ID AND i.AD_Client_ID=p.AD_Client_ID) "
+																							+ "WHERE M_Product_ID IS NOT NULL"
+																							+ " AND (")
 					.append(numField).append(" IS NULL OR ").append(numField).append("=0)"
-							+ " AND " + COLUMNNAME_I_IsImported + "='N'")
+																							 + " AND " + COLUMNNAME_I_IsImported + "='N'")
 					.append(selection.toSqlWhereClause("i"));
 			no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 			if (no != 0)
@@ -513,7 +512,7 @@ public class MProductImportTableSqlUpdater
 		final Object[] params = new Object[] { nameToMatch, adClientId };
 		DB.executeUpdateEx(sql.toString(), params, ITrx.TRXNAME_ThreadInherited);
 	}
-	
+
 	private void dbUpdateCustomsTarrif(@NonNull final ImportRecordsSelection selection)
 	{
 		final StringBuilder sql = new StringBuilder("UPDATE ")
@@ -526,7 +525,6 @@ public class MProductImportTableSqlUpdater
 		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 	}
 
-	
 	private void dbUpdateRawMaterialOrignCountry(@NonNull final ImportRecordsSelection selection)
 	{
 		final StringBuilder sql = new StringBuilder("UPDATE ")
@@ -538,7 +536,7 @@ public class MProductImportTableSqlUpdater
 				.append(selection.toSqlWhereClause("i"));
 		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 	}
-	
+
 	private void dbUpdateErrorMessages(@NonNull final ImportRecordsSelection selection)
 	{
 		StringBuilder sql;
@@ -563,7 +561,39 @@ public class MProductImportTableSqlUpdater
 				.append(targetTableName + " i ")
 				.append(" SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Value not unique,' ")
 				.append("WHERE " + COLUMNNAME_I_IsImported + "<>'Y'")
+				.append(" AND ").append(I_I_Product.COLUMNNAME_IsScalePrice).append(" <>'Y'")
 				.append(" AND Value IN (SELECT Value FROM I_Product ii WHERE i.AD_Client_ID=ii.AD_Client_ID GROUP BY Value HAVING COUNT(*) > 1)")
+				.append(selection.toSqlWhereClause("i"));
+		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+
+		sql = new StringBuilder("UPDATE ")
+				.append(targetTableName + " i ")
+				.append(" SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Scale Price not unique,' ")
+				.append("WHERE " + COLUMNNAME_I_IsImported + "<>'Y'")
+				.append(" AND ").append(I_I_Product.COLUMNNAME_IsScalePrice).append(" ='Y'")
+				.append(" AND ").append(I_I_Product.COLUMNNAME_Qty).append(" IN (SELECT "
+																				   + I_I_Product.COLUMNNAME_Qty
+																				   + " FROM "
+																				   + I_I_Product.Table_Name
+																				   + " ii WHERE ii."
+																				   + I_I_Product.COLUMNNAME_Value
+																				   + " = i."
+																				   + I_I_Product.COLUMNNAME_Value
+																				   + " AND i."
+																				   + I_I_Product.COLUMNNAME_AD_Client_ID
+																				   + "=ii."
+																				   + I_I_Product.COLUMNNAME_AD_Client_ID
+																				   + " AND ii."
+																				   + I_I_Product.COLUMNNAME_IsScalePrice
+																				   + " = 'Y' AND ii."
+																				   + I_I_Product.COLUMNNAME_I_IsImported
+																				   + " <>'Y'"
+																				   + " AND ii."
+																				   + I_I_Product.COLUMNNAME_I_Product_ID
+																				   + " <> i."
+																				   + I_I_Product.COLUMNNAME_I_Product_ID
+																				   + ")"
+				)
 				.append(selection.toSqlWhereClause("i"));
 		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		//
@@ -649,6 +679,5 @@ public class MProductImportTableSqlUpdater
 				.append(whereClause);
 		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 	}
-	
 
 }

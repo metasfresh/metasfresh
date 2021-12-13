@@ -19,16 +19,20 @@ import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.IAttributesBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.warehouse.LocatorId;
+import org.compiere.model.I_M_Attribute;
 
 import javax.annotation.Nullable;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 
 public class PickFromHUsSupplier
 {
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+	private final IAttributesBL attributesBL = Services.get(IAttributesBL.class);
 	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 	private final HUReservationService huReservationService;
 	@Getter
@@ -128,7 +132,8 @@ public class PickFromHUsSupplier
 				.orElseGet(ImmutableSet::of);
 	}
 
-	private ImmutableSet<HuId> getVHUIdsEligibleToAllocateAndNotReservedAtAll(@NonNull final PickFromHUsGetRequest request)
+	private ImmutableSet<HuId> getVHUIdsEligibleToAllocateAndNotReservedAtAll(
+			@NonNull final PickFromHUsGetRequest request)
 	{
 		final IHUQueryBuilder vhuQuery = handlingUnitsDAO
 				.createHUQueryBuilder()
@@ -139,6 +144,15 @@ public class PickFromHUsSupplier
 				.addHUStatusToInclude(X_M_HU.HUSTATUS_Active)
 				.setExcludeReserved();
 
+		if(request.isEnforceMandatoryAttributesOnPicking())
+		{
+			final ImmutableList<I_M_Attribute> attributesMandatoryOnPicking = attributesBL.getAttributesMandatoryOnPicking(request.getProductId());
+			for (final I_M_Attribute attribute : attributesMandatoryOnPicking)
+			{
+				vhuQuery.addOnlyWithAttributeNotNull(AttributeCode.ofString(attribute.getValue()));
+			}
+		}
+
 		// ASI
 		if (considerAttributes)
 		{
@@ -148,9 +162,17 @@ public class PickFromHUsSupplier
 			vhuQuery.allowSqlWhenFilteringAttributes(huReservationService.isAllowSqlWhenFilteringHUAttributes());
 		}
 
-		return vhuQuery.listIds();
+		final ImmutableSet<HuId> result = vhuQuery.listIds();
+		warmUpCacheForHuIds(result);
+		return result;
 	}
 
+	private void warmUpCacheForHuIds(@NonNull final Collection<HuId> huIds)
+	{
+		husCache.warmUpCacheForHuIds(huIds);
+		huReservationService.warmup(huIds);
+	}
+	
 	private PickFromHU withAlternatives(
 			@NonNull final PickFromHU pickFromHU,
 			@NonNull final ProductId productId,

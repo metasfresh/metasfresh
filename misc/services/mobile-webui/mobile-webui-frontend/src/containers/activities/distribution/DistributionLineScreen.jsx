@@ -1,12 +1,37 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
+import { withRouter } from 'react-router';
+import { connect } from 'react-redux';
+import counterpart from 'counterpart';
 
 import DistributionStepButton from './DistributionStepButton';
 import { selectWFProcessFromState } from '../../../reducers/wfProcesses_status';
-import { withRouter } from 'react-router';
-import { connect } from 'react-redux';
+import { distributionLineScreenLocation } from '../../../routes/distribution';
+import { pushHeaderEntry } from '../../../actions/HeaderActions';
 
 class DistributionLineScreen extends PureComponent {
+  componentDidMount() {
+    const {
+      pushHeaderEntry,
+      lineProps: { caption },
+      wfProcessId,
+      activityId,
+      lineId,
+    } = this.props;
+    const location = distributionLineScreenLocation({ wfProcessId, activityId, lineId });
+
+    pushHeaderEntry({
+      location,
+      values: [
+        {
+          caption: counterpart.translate('activities.distribution.DistributionLine'),
+          value: caption,
+          bold: true,
+        },
+      ],
+    });
+  }
+
   render() {
     const { wfProcessId, activityId, lineId, steps } = this.props;
 
@@ -53,7 +78,6 @@ const mapStateToProps = (state, ownProps) => {
     steps: Object.values(stepsById),
     componentType: activity.componentType,
     lineProps,
-    location: ownProps.location,
   };
 };
 
@@ -64,6 +88,10 @@ DistributionLineScreen.propTypes = {
   activityId: PropTypes.string.isRequired,
   lineId: PropTypes.string.isRequired,
   steps: PropTypes.array.isRequired,
+  lineProps: PropTypes.object.isRequired,
+
+  // Actions
+  pushHeaderEntry: PropTypes.func.isRequired,
 };
 
-export default withRouter(connect(mapStateToProps)(DistributionLineScreen));
+export default withRouter(connect(mapStateToProps, { pushHeaderEntry })(DistributionLineScreen));

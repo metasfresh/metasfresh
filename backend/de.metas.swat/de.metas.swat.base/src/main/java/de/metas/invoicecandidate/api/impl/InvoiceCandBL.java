@@ -78,6 +78,7 @@ import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueuer;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.invoicecandidate.api.IInvoiceCandidateListeners;
 import de.metas.invoicecandidate.api.IInvoiceGenerator;
+import de.metas.invoicecandidate.api.InvoiceCandidateIdsSelection;
 import de.metas.invoicecandidate.api.InvoiceCandidateMultiQuery;
 import de.metas.invoicecandidate.api.InvoiceCandidateMultiQuery.InvoiceCandidateMultiQueryBuilder;
 import de.metas.invoicecandidate.api.InvoiceCandidateQuery;
@@ -856,9 +857,6 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	 * Adds the given <code>amendment</code> to the given <code>ic</code>'s <code>SchedulerResult</code> value, <b>unless</b> the given string is already part of the <code>SchedulerResult</code>.
 	 * <p>
 	 * Note: the given <code>ic</code> might already contain the string because one method might be called multiple times and always try to add the same error-message.
-	 *
-	 * @param ic
-	 * @param amendment
 	 */
 	private void amendSchedulerResult(final I_C_Invoice_Candidate ic, final String amendment)
 	{
@@ -1635,7 +1633,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 						updateInvalid()
 								.setContext(ctx, trxName)
 								.setTaggedWithAnyTag()
-								.setOnlyC_Invoice_Candidates(invoiceCandsNew)
+								.setOnlyInvoiceCandidateIds(InvoiceCandidateIdsSelection.extractFixedIdsSet(invoiceCandsNew))
 								.update();
 					}
 					else
@@ -1975,8 +1973,6 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	 * <p>
 	 * Normally the returning value is <code>qtyOrdered</code>, but in case we have a over delivery, then we shall consider <code>qtyDelivered</code> as invoiceable quantity.
 	 *
-	 * @param qtyOrdered
-	 * @param qtyDelivered
 	 * @return maximum invoiceable quantity
 	 * @task 07847
 	 */
@@ -2282,7 +2278,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		{
 			try (final MDCCloseable icRecordMDC = TableRecordMDC.putTableRecordReference(icRecord))
 			{
-				logger.debug("Set IsInDispute=true because ic bleongs to M_InOutLine_ID={}", receiptLine.getM_InOutLine_ID());
+				logger.debug("Set IsInDispute=true because ic belongs to M_InOutLine_ID={}", receiptLine.getM_InOutLine_ID());
 				icRecord.setIsInDispute(true);
 				save(icRecord);
 			}
@@ -2444,7 +2440,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		// update invalids
 		invoiceCandBL.updateInvalid()
 				.setContext(ctx, trxName)
-				.setOnlyC_Invoice_Candidates(invoiceCands.iterator())
+				.setOnlyInvoiceCandidateIds(InvoiceCandidateIdsSelection.extractFixedIdsSet(invoiceCands))
 				.update();
 
 		for (final I_C_Invoice_Candidate ic : invoiceCands)

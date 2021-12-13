@@ -229,6 +229,7 @@ class OLCandOrderFactory
 			OrderDocumentLocationAdapterFactory
 					.deliveryLocationAdapter(order)
 					.setFrom(dropShipBPartner);
+			order.setIsDropShip(true);
 		}
 		else
 		{
@@ -241,6 +242,7 @@ class OLCandOrderFactory
 			OrderDocumentLocationAdapterFactory
 					.handOverLocationAdapter(order)
 					.setFrom(handOverBPartner);
+			order.setIsUseHandOver_Location(true);
 		}
 		else
 		{

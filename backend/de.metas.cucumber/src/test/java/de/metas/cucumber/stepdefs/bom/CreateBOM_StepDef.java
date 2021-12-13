@@ -29,6 +29,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import de.metas.common.rest_api.v2.bom.JsonBOMCreateResponse;
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.uom.IUOMDAO;
@@ -62,7 +63,7 @@ public class CreateBOM_StepDef
 
 	private final StepDefData<I_PP_Product_BOM> bomTable;
 	private final StepDefData<I_PP_Product_BOMVersions> productBOMVersionsTable;
-	private final StepDefData<I_M_Product> productTable;
+	private final M_Product_StepDefData productTable;
 	private final TestContext testContext;
 
 	final ObjectMapper mapper = new ObjectMapper()
@@ -74,7 +75,7 @@ public class CreateBOM_StepDef
 	public CreateBOM_StepDef(
 			@NonNull final StepDefData<I_PP_Product_BOM> bomTable,
 			@NonNull final StepDefData<I_PP_Product_BOMVersions> productBOMVersionsTable,
-			@NonNull final StepDefData<I_M_Product> productTable,
+			@NonNull final M_Product_StepDefData productTable,
 			@NonNull final TestContext testContext)
 	{
 		this.bomTable = bomTable;

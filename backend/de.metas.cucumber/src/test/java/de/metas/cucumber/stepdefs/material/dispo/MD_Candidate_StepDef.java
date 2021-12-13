@@ -23,6 +23,7 @@
 package de.metas.cucumber.stepdefs.material.dispo;
 
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.cucumber.stepdefs.StepDefUtil;
@@ -87,7 +88,7 @@ public class MD_Candidate_StepDef
 	private PostMaterialEventService postMaterialEventService;
 	private MaterialDispoRecordRepository materialDispoRecordRepository;
 	private CandidateRepositoryRetrieval candidateRepositoryRetrieval;
-	private final StepDefData<I_M_Product> productTable;
+	private final M_Product_StepDefData productTable;
 	private final StepDefData<I_MD_Candidate> stockCandidateTable;
 	private final StepDefData<MaterialDispoDataItem> materialDispoDataItemStepDefData = new StepDefData<>();
 	private final StepDefData<I_C_OrderLine> orderLineTable;
