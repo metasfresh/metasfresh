@@ -67,6 +67,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_AttributeSetInstance;
+import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -95,14 +96,17 @@ public class MD_Candidate_StepDef
 	private final StepDefData<I_MD_Candidate> stockCandidateTable;
 	private final StepDefData<I_M_AttributeSetInstance> attributeSetInstanceTable;
 	private final StepDefData<MaterialDispoDataItem> materialDispoDataItemStepDefData = new StepDefData<>();
+	private final StepDefData<I_C_OrderLine> orderLineTable;
 
 	public MD_Candidate_StepDef(
 			@NonNull final StepDefData<I_M_Product> productTable,
 			@NonNull final StepDefData<I_MD_Candidate> stockCandidateTable,
+			@NonNull final StepDefData<I_C_OrderLine> orderLineTable,
 			@NonNull final StepDefData<I_M_AttributeSetInstance> attributeSetInstanceTable)
 	{
 		this.productTable = productTable;
 		this.stockCandidateTable = stockCandidateTable;
+		this.orderLineTable = orderLineTable;
 		this.attributeSetInstanceTable = attributeSetInstanceTable;
 	}
 
@@ -223,6 +227,61 @@ public class MD_Candidate_StepDef
 			assertThat(materialDispoRecord.getAtp()).isEqualByComparingTo(tableRow.getAtp());
 
 			materialDispoDataItemStepDefData.putIfMissing(tableRow.getIdentifier(), materialDispoRecord);
+		}
+	}
+
+
+	@Then("^after not more than (.*)s, metasfresh has this MD_Candidate data$")
+	public void metasfresh_has_this_md_candidate_data(final int timeoutSec, @NonNull final MD_Candidate_StepDefTable table) throws InterruptedException
+	{
+		final Supplier<Boolean> mdCandidateDemandDetailRecordsCounterChecker = () ->
+		{
+			return queryBL.createQueryBuilderOutOfTrx(I_MD_Candidate_Demand_Detail.class)
+					.addOnlyActiveRecordsFilter()
+					.create()
+					.count() > 0 ;
+		};
+
+		StepDefUtil.tryAndWait(timeoutSec, 500, mdCandidateDemandDetailRecordsCounterChecker);
+
+		for (final MaterialDispoTableRow tableRow : table.getRows())
+		{
+			final MaterialDispoDataItem materialDispoDataItem = materialDispoRecordRepository.getBy(tableRow.createQuery());
+
+			assertThat(materialDispoDataItem).isNotNull(); // add message
+			assertThat(materialDispoDataItem.getType()).isEqualTo(tableRow.getType());
+			assertThat(materialDispoDataItem.getBusinessCase()).isEqualTo(tableRow.getBusinessCase());
+			assertThat(materialDispoDataItem.getMaterialDescriptor().getProductId()).isEqualTo(tableRow.getProductId().getRepoId());
+			assertThat(materialDispoDataItem.getMaterialDescriptor().getQuantity()).isEqualByComparingTo(tableRow.getQty());
+			assertThat(materialDispoDataItem.getAtp()).isEqualByComparingTo(tableRow.getAtp());
+
+			materialDispoDataItemStepDefData.putIfMissing(tableRow.getIdentifier(), materialDispoDataItem);
+		}
+	}
+
+	@And("metasfresh generates this MD_Candidate_Demand_Detail data")
+	public void metasfresh_generates_this_MD_Candidate_Demand_Detail_data(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+		for (final Map<String, String> tableRow : tableRows)
+		{
+			final String materialDispoItemIdentifier = tableRow.get(I_MD_Candidate_Demand_Detail.COLUMNNAME_MD_Candidate_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+			final MaterialDispoDataItem materialDispoDataItem = materialDispoDataItemStepDefData.get(materialDispoItemIdentifier);
+
+			assertThat(materialDispoDataItem).isNotNull();    // add message
+
+			final BusinessCaseDetail businessCaseDetail = materialDispoDataItem.getBusinessCaseDetail();
+			assertThat(businessCaseDetail)
+					.as("Missing BusinessCaseDetail of MaterialDispoDataItem %s", materialDispoDataItem.toString())
+					.isNotNull();
+
+			final String orderLineIdentifier = tableRow.get(I_C_OrderLine.COLUMNNAME_C_OrderLine_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+			final BigDecimal plannedQty = DataTableUtil.extractBigDecimalForColumnName(tableRow, I_MD_Candidate_Demand_Detail.COLUMNNAME_PlannedQty);
+			final int orderLineId = StepDefUtil.extractId(orderLineIdentifier, orderLineTable);
+
+			assertThat(DemandDetail.cast(businessCaseDetail).getOrderLineId()).isEqualTo(orderLineId);
+			assertThat(DemandDetail.cast(businessCaseDetail).getQty()).isEqualByComparingTo(plannedQty);
+			assertThat(DemandDetail.cast(businessCaseDetail).getShipmentScheduleId()).isNotNull();
 		}
 	}
 

@@ -63,12 +63,10 @@ public class MD_Candidate_StepDefTableTransformer implements TableTransformer<MD
 		for (final Map<String, String> dataTableRow : dataTableRows)
 		{
 			final String identifier = DataTableUtil.extractRecordIdentifier(dataTableRow, "MD_Candidate");
-
 			final CandidateType type = CandidateType.ofCode(dataTableRow.get(I_MD_Candidate.COLUMNNAME_MD_Candidate_Type));
 			final CandidateBusinessCase businessCase = CandidateBusinessCase.ofCodeOrNull(dataTableRow.get("OPT." + I_MD_Candidate.COLUMNNAME_MD_Candidate_BusinessCase));
 
 			final String productIdentifier = DataTableUtil.extractStringForColumnName(dataTableRow, I_M_Product.COLUMNNAME_M_Product_ID + ".Identifier");
-
 			final int productId = StepDefUtil.extractId(productIdentifier, productTable);
 
 			final Instant time = DataTableUtil.extractInstantForColumnName(dataTableRow, I_MD_Candidate.COLUMNNAME_DateProjected);
@@ -87,6 +85,7 @@ public class MD_Candidate_StepDefTableTransformer implements TableTransformer<MD
 					.identifier(identifier)
 					.type(type)
 					.businessCase(businessCase)
+					.productIdentifier(productIdentifier)
 					.productId(ProductId.ofRepoId(productId))
 					.time(time)
 					.qty(qty)
