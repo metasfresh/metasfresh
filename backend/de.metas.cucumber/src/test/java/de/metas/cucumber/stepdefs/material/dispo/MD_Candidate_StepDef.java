@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs.material.dispo;
 
+import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
@@ -76,7 +77,6 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.Supplier;
 
 import static org.assertj.core.api.Assertions.*;
@@ -91,12 +91,12 @@ public class MD_Candidate_StepDef
 	private final M_Product_StepDefData productTable;
 	private final StepDefData<I_MD_Candidate> stockCandidateTable;
 	private final StepDefData<MaterialDispoDataItem> materialDispoDataItemStepDefData = new StepDefData<>();
-	private final StepDefData<I_C_OrderLine> orderLineTable;
+	private final C_OrderLine_StepDefData orderLineTable;
 
 	public MD_Candidate_StepDef(
-			@NonNull final StepDefData<I_M_Product> productTable,
+			@NonNull final M_Product_StepDefData productTable,
 			@NonNull final StepDefData<I_MD_Candidate> stockCandidateTable,
-			@NonNull final StepDefData<I_C_OrderLine> orderLineTable)
+			@NonNull final C_OrderLine_StepDefData orderLineTable)
 	{
 		this.productTable = productTable;
 		this.stockCandidateTable = stockCandidateTable;
@@ -228,12 +228,10 @@ public class MD_Candidate_StepDef
 	public void metasfresh_has_this_md_candidate_data(final int timeoutSec, @NonNull final MD_Candidate_StepDefTable table) throws InterruptedException
 	{
 		final Supplier<Boolean> mdCandidateDemandDetailRecordsCounterChecker = () ->
-		{
-			return queryBL.createQueryBuilderOutOfTrx(I_MD_Candidate_Demand_Detail.class)
-					.addOnlyActiveRecordsFilter()
-					.create()
-					.count() > 0 ;
-		};
+				queryBL.createQueryBuilderOutOfTrx(I_MD_Candidate_Demand_Detail.class)
+						.addOnlyActiveRecordsFilter()
+						.create()
+						.count() > 0;
 
 		StepDefUtil.tryAndWait(timeoutSec, 500, mdCandidateDemandDetailRecordsCounterChecker);
 
