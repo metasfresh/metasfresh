@@ -35,6 +35,7 @@ Feature: Hierarchy commission and license fee commission combined
 
   @from:cucumber
   @topic:commissionContracts
+  @ignore
   Scenario: Hierarchy commission and license fee commission combined having two sales rep in hierarchy
     And metasfresh contains C_HierarchyCommissionSettings:
       | C_HierarchyCommissionSettings_ID.Identifier | Name        | Commission_Product_ID.Identifier | IsSubtractLowerLevelCommissionFromBase |
@@ -99,10 +100,10 @@ Feature: Hierarchy commission and license fee commission combined
       | order_1               | shipment_1            | invoice_1               |
     And validate created invoices
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | docStatus |
-      | invoice_1          | customer_1               | customer_location_1               | po_ref_mock     | 1000002     | true      | CO        |
+      | invoice_1               | customer_1               | customer_location_1               | po_ref_mock     | 1000002     | true      | CO        |
     And validate created invoice lines
       | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
-      | invoice_1          | transaction_product     | 1           | true      |
+      | invoice_1               | transaction_product     | 1           | true      |
     And locate invoice candidates for invoice: invoice_1
       | C_Invoice_Candidate_ID.Identifier | M_Product_ID.Identifier |
       | so_invoice_candidate              | transaction_product     |
@@ -162,14 +163,14 @@ Feature: Hierarchy commission and license fee commission combined
 
     And validate created invoices
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.DocSubType |
-      | invoiceSettled_1   | salesRep_1               | salesRep_location_1               | 10 Tage 1 % | true      | CO        | CA             |
-      | invoiceSettled_2   | super_salesRep           | super_salesRep_location           | 10 Tage 1 % | true      | CO        | CA             |
-      | invoiceSettled_3   | salesRep_1               | salesRep_location_1               | 10 Tage 1 % | true      | CO        | LS             |
+      | invoiceSettled_1        | salesRep_1               | salesRep_location_1               | 10 Tage 1 % | true      | CO        | CA             |
+      | invoiceSettled_2        | super_salesRep           | super_salesRep_location           | 10 Tage 1 % | true      | CO        | CA             |
+      | invoiceSettled_3        | salesRep_1               | salesRep_location_1               | 10 Tage 1 % | true      | CO        | LS             |
     And validate created invoice lines
       | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
-      | invoiceSettled_1   | commission_product      | 1.00        | true      |
-      | invoiceSettled_2   | commission_product      | 0.90        | true      |
-      | invoiceSettled_3   | commission_product      | 0.50        | true      |
+      | invoiceSettled_1        | commission_product      | 1.00        | true      |
+      | invoiceSettled_2        | commission_product      | 0.90        | true      |
+      | invoiceSettled_3        | commission_product      | 0.50        | true      |
     And validate commission deed for commission instance commissionInstance_1
       | C_Commission_Share_ID.Identifier | C_BPartner_SalesRep_ID.Identifier | C_BPartner_Payer_ID.Identifier | C_Flatrate_Term_ID.Identifier | Commission_Product_ID.Identifier | LevelHierarchy | OPT.C_CommissionSettingsLine_ID.Identifier | OPT.C_LicenseFeeSettingsLine_ID.Identifier | IsSOTrx | IsSimulation | PointsSum_Forecasted | PointsSum_Invoiceable | PointsSum_Invoiced | PointsSum_ToSettle | PointsSum_Settled |
       | commissionShare_1                | salesRep_1                        | metasfresh                     | hierarchyContract_1           | commission_product               | 0              | hierarchySettingsLine_1                    |                                            | false   | false        | 0                    | 0                     | 1.00               | 0                  | 1.00              |
@@ -304,10 +305,10 @@ Feature: Hierarchy commission and license fee commission combined
       | invoiceSettled_so       | settlement_so                     |
     And validate created invoices
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.DocSubType |
-      | invoiceSettled_so  | customer_salesRep_1      | customer_salesRep_location_1      | 10 Tage 1 % | true      | CO        | LS             |
+      | invoiceSettled_so       | customer_salesRep_1      | customer_salesRep_location_1      | 10 Tage 1 % | true      | CO        | LS             |
     And validate created invoice lines
       | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
-      | invoiceSettled_so  | commission_product      | 0.50        | true      |
+      | invoiceSettled_so       | commission_product      | 0.50        | true      |
 
     And validate commission deed for commission instance commissionInstance_1
       | C_Commission_Share_ID.Identifier | C_BPartner_SalesRep_ID.Identifier | C_BPartner_Payer_ID.Identifier | C_Flatrate_Term_ID.Identifier | Commission_Product_ID.Identifier | LevelHierarchy | OPT.C_CommissionSettingsLine_ID.Identifier | OPT.C_LicenseFeeSettingsLine_ID.Identifier | IsSOTrx | IsSimulation | PointsSum_Forecasted | PointsSum_Invoiceable | PointsSum_Invoiced | PointsSum_ToSettle | PointsSum_Settled |
