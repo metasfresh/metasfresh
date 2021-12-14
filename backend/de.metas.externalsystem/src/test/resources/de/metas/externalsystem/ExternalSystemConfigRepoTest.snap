@@ -51,6 +51,28 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Alber
   }
 ]
 
+de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_RabbitMQ_getById=[
+  {
+    "id" : 100001,
+    "type" : "RabbitMQ",
+    "name" : "name",
+    "isActive" : true,
+    "orgId" : 0,
+    "childConfig" : {
+      "id" : 100002,
+      "parentId" : 100001,
+      "value" : "testRabbitMQValue",
+      "routingKey" : "routingKey",
+      "remoteUrl" : "remoteURL",
+      "authToken" : "authToken",
+      "isSyncBPartnerToRabbitMQ" : true,
+      "syncBPartnerToRabbitMQ" : true
+    },
+    "writeAudit" : true,
+    "auditFileFolder" : "auditFileFolder"
+  }
+]
+
 
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_GRSSignum_getById=[
   {
@@ -67,7 +89,9 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_GRSSi
       "tenantId" : "tenantId",
       "camelHttpResourceAuthKey" : "authKey",
       "authToken" : "authToken",
-      "syncBPartnersToRestEndpoint" : true
+      "syncBPartnersToRestEndpoint" : true,
+      "autoSendVendors" : false,
+      "autoSendCustomers" : false
     },
     "writeAudit" : false
   }
@@ -83,7 +107,9 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_GRSSi
     "tenantId" : "tenantId",
     "camelHttpResourceAuthKey" : "authKey",
     "authToken" : "authToken",
-    "syncBPartnersToRestEndpoint" : false
+    "syncBPartnersToRestEndpoint" : false,
+    "autoSendVendors" : false,
+    "autoSendCustomers" : false
   }
 ]
 
@@ -99,11 +125,13 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_GRSSi
       "id" : 100002,
       "parentId" : 100001,
       "value" : "testGRSSignumValue",
-      "tenantId" : "tenantId",
       "baseUrl" : "baseUrl",
+      "tenantId" : "tenantId",
       "camelHttpResourceAuthKey" : "authKey",
       "authToken" : "authToken",
-      "syncBPartnersToRestEndpoint" : true
+      "syncBPartnersToRestEndpoint" : true,
+      "autoSendVendors" : false,
+      "autoSendCustomers" : false
     },
     "writeAudit" : false
   }

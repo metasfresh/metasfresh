@@ -22,17 +22,22 @@
 
 package de.metas.externalsystem.grssignum;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.audit.data.repository.DataExportAuditLogRepository;
 import de.metas.audit.data.repository.DataExportAuditRepository;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemConfigService;
+import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.IExternalSystemChildConfig;
+import de.metas.externalsystem.IExternalSystemChildConfigId;
 import de.metas.externalsystem.export.bpartner.ExportToExternalSystemService;
 import de.metas.externalsystem.rabbitmq.ExternalSystemMessageSender;
 import lombok.NonNull;
+import org.compiere.model.I_C_BPartner;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -90,5 +95,29 @@ public class ExportToGRSService extends ExportToExternalSystemService
 	protected String getExternalCommand()
 	{
 		return EXTERNAL_SYSTEM_COMMAND_EXPORT_BPARTNER;
+	}
+
+	@Override
+	protected ImmutableSet<IExternalSystemChildConfigId> getAdditionalExternalSystemConfigIds(@NonNull final BPartnerId bPartnerId)
+	{
+		final I_C_BPartner bPartner = bPartnerDAO.getById(bPartnerId);
+
+		final boolean isVendor = bPartner.isVendor();
+		final boolean isCustomer = bPartner.isCustomer();
+
+		if (!isCustomer && !isVendor)
+		{
+			return ImmutableSet.of();
+		}
+
+		final ImmutableList<ExternalSystemParentConfig> grsParentConfigs = externalSystemConfigRepo.getAllByType(ExternalSystemType.GRSSignum);
+
+		return grsParentConfigs.stream()
+				.filter(ExternalSystemParentConfig::getIsActive)
+				.map(ExternalSystemParentConfig::getChildConfig)
+				.map(ExternalSystemGRSSignumConfig::cast)
+				.filter(grsConfig -> (grsConfig.isAutoSendVendors() && isVendor) || (grsConfig.isAutoSendCustomers() && isCustomer))
+				.map(IExternalSystemChildConfig::getId)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 }
