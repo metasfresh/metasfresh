@@ -449,7 +449,7 @@ public class ShipmentScheduleWithHUService
 		if (pickAccordingToPackingInstruction)
 		{
 			final HUPIItemProductId piItemProductId = huShipmentScheduleBL.getEffectivePackingMaterialId(scheduleRecord);
-			if (piItemProductId == null) // there is no packing instruction for TUs to put the CUs into
+			if (piItemProductId == null || piItemProductId.isVirtualHU()) // there is no packing instruction for TUs to put the CUs into
 			{
 				newHURecords = newCURecords;
 			}
