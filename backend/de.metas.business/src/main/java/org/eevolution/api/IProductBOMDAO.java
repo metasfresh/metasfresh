@@ -58,4 +58,6 @@ public interface IProductBOMDAO extends ISingletonService
 	ProductId getBOMProductId(ProductBOMId bomId);
 
 	Optional<ProductBOMId> getLatestBOMByVersion(@NonNull final ProductBOMVersionsId bomVersionsId);
+
+	boolean isComponent(ProductId productId);
 }
