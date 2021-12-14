@@ -162,6 +162,8 @@ public class C_Invoice_Candidate_StepDef
 			final String invoiceCandIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Invoice_Candidate_ID + "." + TABLECOLUMN_IDENTIFIER);
 			final I_C_Invoice_Candidate invoiceCandidate = invoiceCandTable.get(invoiceCandIdentifier);
 			assertThat(invoiceCandidate).isNotNull();
+			
+			InterfaceWrapperHelper.refresh(invoiceCandidate);
 
 			final String billBPIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_Bill_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
 			final I_C_BPartner billBPartner = bPartnerTable.get(billBPIdentifier);
