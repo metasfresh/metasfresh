@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_C_BPartner_Location_QuickInput extends org.compiere.model.PO implements I_C_BPartner_Location_QuickInput, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1431095529L;
+	private static final long serialVersionUID = -2057545653L;
 
     /** Standard Constructor */
     public X_C_BPartner_Location_QuickInput (final Properties ctx, final int C_BPartner_Location_QuickInput_ID, @Nullable final String trxName)
@@ -32,6 +32,18 @@ public class X_C_BPartner_Location_QuickInput extends org.compiere.model.PO impl
 	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public void setBPartnerName (final @Nullable java.lang.String BPartnerName)
+	{
+		set_Value (COLUMNNAME_BPartnerName, BPartnerName);
+	}
+
+	@Override
+	public java.lang.String getBPartnerName() 
+	{
+		return get_ValueAsString(COLUMNNAME_BPartnerName);
 	}
 
 	@Override
@@ -128,6 +140,18 @@ public class X_C_BPartner_Location_QuickInput extends org.compiere.model.PO impl
 	}
 
 	@Override
+	public void setGLN (final @Nullable java.lang.String GLN)
+	{
+		set_Value (COLUMNNAME_GLN, GLN);
+	}
+
+	@Override
+	public java.lang.String getGLN() 
+	{
+		return get_ValueAsString(COLUMNNAME_GLN);
+	}
+
+	@Override
 	public void setIsBillTo (final boolean IsBillTo)
 	{
 		set_Value (COLUMNNAME_IsBillTo, IsBillTo);
@@ -152,6 +176,18 @@ public class X_C_BPartner_Location_QuickInput extends org.compiere.model.PO impl
 	}
 
 	@Override
+	public void setIsHandOverLocation (final boolean IsHandOverLocation)
+	{
+		set_Value (COLUMNNAME_IsHandOverLocation, IsHandOverLocation);
+	}
+
+	@Override
+	public boolean isHandOverLocation() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsHandOverLocation);
+	}
+
+	@Override
 	public void setIsRemitTo (final boolean IsRemitTo)
 	{
 		set_Value (COLUMNNAME_IsRemitTo, IsRemitTo);
@@ -161,6 +197,18 @@ public class X_C_BPartner_Location_QuickInput extends org.compiere.model.PO impl
 	public boolean isRemitTo() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsRemitTo);
+	}
+
+	@Override
+	public void setIsReplicationLookupDefault (final boolean IsReplicationLookupDefault)
+	{
+		set_Value (COLUMNNAME_IsReplicationLookupDefault, IsReplicationLookupDefault);
+	}
+
+	@Override
+	public boolean isReplicationLookupDefault() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsReplicationLookupDefault);
 	}
 
 	@Override

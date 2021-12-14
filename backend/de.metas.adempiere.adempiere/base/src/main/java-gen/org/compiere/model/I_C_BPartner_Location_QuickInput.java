@@ -51,6 +51,27 @@ public interface I_C_BPartner_Location_QuickInput
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set Partner Name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setBPartnerName (@Nullable java.lang.String BPartnerName);
+
+	/**
+	 * Get Partner Name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getBPartnerName();
+
+	ModelColumn<I_C_BPartner_Location_QuickInput, Object> COLUMN_BPartnerName = new ModelColumn<>(I_C_BPartner_Location_QuickInput.class, "BPartnerName", null);
+	String COLUMNNAME_BPartnerName = "BPartnerName";
+
+	/**
 	 * Set Partner Location Quick Input.
 	 *
 	 * <br>Type: ID
@@ -193,6 +214,27 @@ public interface I_C_BPartner_Location_QuickInput
 	String COLUMNNAME_Fax = "Fax";
 
 	/**
+	 * Set GLN.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setGLN (@Nullable java.lang.String GLN);
+
+	/**
+	 * Get GLN.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getGLN();
+
+	ModelColumn<I_C_BPartner_Location_QuickInput, Object> COLUMN_GLN = new ModelColumn<>(I_C_BPartner_Location_QuickInput.class, "GLN", null);
+	String COLUMNNAME_GLN = "GLN";
+
+	/**
 	 * Set Active.
 	 * The record is active in the system
 	 *
@@ -260,6 +302,27 @@ public interface I_C_BPartner_Location_QuickInput
 	String COLUMNNAME_IsBillToDefault = "IsBillToDefault";
 
 	/**
+	 * Set Handover Location.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsHandOverLocation (boolean IsHandOverLocation);
+
+	/**
+	 * Get Handover Location.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isHandOverLocation();
+
+	ModelColumn<I_C_BPartner_Location_QuickInput, Object> COLUMN_IsHandOverLocation = new ModelColumn<>(I_C_BPartner_Location_QuickInput.class, "IsHandOverLocation", null);
+	String COLUMNNAME_IsHandOverLocation = "IsHandOverLocation";
+
+	/**
 	 * Set Remit-To Address.
 	 * Business Partner payment address
 	 *
@@ -281,6 +344,27 @@ public interface I_C_BPartner_Location_QuickInput
 
 	ModelColumn<I_C_BPartner_Location_QuickInput, Object> COLUMN_IsRemitTo = new ModelColumn<>(I_C_BPartner_Location_QuickInput.class, "IsRemitTo", null);
 	String COLUMNNAME_IsRemitTo = "IsRemitTo";
+
+	/**
+	 * Set Replication Lookup Default.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsReplicationLookupDefault (boolean IsReplicationLookupDefault);
+
+	/**
+	 * Get Replication Lookup Default.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isReplicationLookupDefault();
+
+	ModelColumn<I_C_BPartner_Location_QuickInput, Object> COLUMN_IsReplicationLookupDefault = new ModelColumn<>(I_C_BPartner_Location_QuickInput.class, "IsReplicationLookupDefault", null);
+	String COLUMNNAME_IsReplicationLookupDefault = "IsReplicationLookupDefault";
 
 	/**
 	 * Set Ship Address.

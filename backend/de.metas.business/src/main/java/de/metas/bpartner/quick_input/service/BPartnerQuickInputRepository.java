@@ -29,6 +29,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner_Contact_QuickInput;
+import org.compiere.model.I_C_BPartner_Location_QuickInput;
 import org.compiere.model.I_C_BPartner_QuickInput;
 import org.springframework.stereotype.Repository;
 
@@ -62,5 +63,16 @@ class BPartnerQuickInputRepository
 				.orderBy(I_C_BPartner_Contact_QuickInput.COLUMNNAME_C_BPartner_Contact_QuickInput_ID)
 				.create()
 				.list();
+	}
+
+	public List<I_C_BPartner_Location_QuickInput> retrieveLocationsByQuickInputId(final BPartnerQuickInputId bpartnerQuickInputId)
+	{
+		return queryBL
+				.createQueryBuilder(I_C_BPartner_Location_QuickInput.class)
+				.addEqualsFilter(I_C_BPartner_Location_QuickInput.COLUMNNAME_C_BPartner_QuickInput_ID, bpartnerQuickInputId)
+				.orderBy(I_C_BPartner_Location_QuickInput.COLUMNNAME_C_BPartner_Location_QuickInput_ID)
+				.create()
+				.list();
+
 	}
 }

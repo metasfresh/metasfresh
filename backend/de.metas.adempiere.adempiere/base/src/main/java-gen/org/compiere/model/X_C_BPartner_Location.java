@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for C_BPartner_Location
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_BPartner_Location, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -523280635L;
+	private static final long serialVersionUID = 1341313327L;
 
     /** Standard Constructor */
     public X_C_BPartner_Location (final Properties ctx, final int C_BPartner_Location_ID, @Nullable final String trxName)
@@ -335,6 +335,18 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 	public boolean isRemitTo() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsRemitTo);
+	}
+
+	@Override
+	public void setIsReplicationLookupDefault (final boolean IsReplicationLookupDefault)
+	{
+		set_Value (COLUMNNAME_IsReplicationLookupDefault, IsReplicationLookupDefault);
+	}
+
+	@Override
+	public boolean isReplicationLookupDefault() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsReplicationLookupDefault);
 	}
 
 	@Override
