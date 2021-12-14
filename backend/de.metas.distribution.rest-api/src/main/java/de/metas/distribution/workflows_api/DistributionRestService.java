@@ -152,13 +152,18 @@ public class DistributionRestService
 
 	public DistributionJob complete(@NonNull final DistributionJob job)
 	{
+		// just to make sure there is nothing reserved to this job
+		distributionJobHUReservationService.releaseAllReservations(job);
+
 		final DDOrderId ddOrderId = job.getDdOrderId();
 		ddOrderService.close(ddOrderId);
+
 		return getJobById(ddOrderId);
 	}
 
 	public void abort(@NonNull final DistributionJob job)
 	{
+		distributionJobHUReservationService.releaseAllReservations(job);
 		ddOrderService.unassignFromResponsible(job.getDdOrderId());
 	}
 }

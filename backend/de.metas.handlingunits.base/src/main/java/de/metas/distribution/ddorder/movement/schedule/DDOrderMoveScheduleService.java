@@ -168,6 +168,7 @@ public class DDOrderMoveScheduleService
 				.ddOrderLowLevelDAO(ddOrderLowLevelDAO)
 				.ddOrderMoveScheduleRepository(ddOrderMoveScheduleRepository)
 				.handlingUnitsBL(handlingUnitsBL)
+				.huReservationService(huReservationService)
 				.request(request)
 				.build()
 				.execute();

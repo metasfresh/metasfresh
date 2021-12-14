@@ -1,5 +1,6 @@
 package de.metas.distribution.workflows_api;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.reservation.HUReservationDocRef;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.reservation.ReserveHUsRequest;
@@ -26,7 +27,7 @@ public class DistributionJobHUReservationService
 								.qtyToReserve(step.getQtyToMoveTarget())
 								.documentRef(HUReservationDocRef.ofDDOrderLineId(line.getDdOrderLineId()))
 								.productId(line.getProduct().getProductId())
-								//.customerId(null)
+								.customerId(job.getCustomerId())
 								.huId(step.getPickFromHUId())
 								.build())
 						.orElseThrow(() -> new AdempiereException("Failed reserving HUs for " + step));
@@ -34,4 +35,13 @@ public class DistributionJobHUReservationService
 		}
 	}
 
+	public void releaseAllReservations(final DistributionJob job)
+	{
+		final ImmutableSet<HUReservationDocRef> huReservationDocRefs = job.getLines().stream()
+				.map(DistributionJobLine::getDdOrderLineId)
+				.map(HUReservationDocRef::ofDDOrderLineId)
+				.collect(ImmutableSet.toImmutableSet());
+
+		huReservationService.deleteReservationsByDocumentRefs(huReservationDocRefs);
+	}
 }
