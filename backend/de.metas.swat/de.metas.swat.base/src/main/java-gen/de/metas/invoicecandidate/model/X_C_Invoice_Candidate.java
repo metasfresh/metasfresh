@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.invoicecandidate.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for C_Invoice_Candidate
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_Invoice_Candidate, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 426451758L;
+	private static final long serialVersionUID = -56752949L;
 
     /** Standard Constructor */
     public X_C_Invoice_Candidate (final Properties ctx, final int C_Invoice_Candidate_ID, @Nullable final String trxName)
@@ -711,6 +711,21 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	public int getC_Project_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Project_ID);
+	}
+
+	@Override
+	public void setC_Shipping_Location_ID (final int C_Shipping_Location_ID)
+	{
+		if (C_Shipping_Location_ID < 1) 
+			set_Value (COLUMNNAME_C_Shipping_Location_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Shipping_Location_ID, C_Shipping_Location_ID);
+	}
+
+	@Override
+	public int getC_Shipping_Location_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Shipping_Location_ID);
 	}
 
 	@Override
