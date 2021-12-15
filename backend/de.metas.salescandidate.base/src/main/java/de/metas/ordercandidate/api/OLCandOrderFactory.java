@@ -294,6 +294,10 @@ class OLCandOrderFactory
 
 		setBPSalesRepIdToOrder(order, candidateOfGroup);
 
+		order.setBPartnerName(candidateOfGroup.getBpartnerName());
+		order.setEMail(candidateOfGroup.getEmail());
+		order.setPhone(candidateOfGroup.getPhone());
+
 		save(order);
 		return order;
 	}

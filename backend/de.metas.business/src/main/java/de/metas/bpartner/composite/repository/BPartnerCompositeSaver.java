@@ -271,6 +271,8 @@ final class BPartnerCompositeSaver
 			bpartnerLocationRecord.setC_BPartner_ID(bpartnerId.getRepoId());
 			bpartnerLocationRecord.setName(bpartnerLocation.getName());
 			bpartnerLocationRecord.setBPartnerName(bpartnerLocation.getBpartnerName());
+			bpartnerLocationRecord.setEMail(bpartnerLocation.getEmail());
+			bpartnerLocationRecord.setPhone(bpartnerLocation.getPhone());
 
 			final BPartnerLocationType locationType = bpartnerLocation.getLocationType();
 			if (locationType != null)

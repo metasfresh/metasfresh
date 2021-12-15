@@ -38,14 +38,15 @@ import de.metas.camel.externalsystems.shopware6.api.model.currency.JsonCurrencie
 import de.metas.camel.externalsystems.shopware6.api.model.customer.JsonCustomerGroups;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrder;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderAddress;
-import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderAddressAndCustomId;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderDelivery;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderLines;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderTransactions;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonPaymentMethod;
+import de.metas.camel.externalsystems.shopware6.api.model.order.OrderAddressDetails;
 import de.metas.camel.externalsystems.shopware6.api.model.order.OrderCandidate;
 import de.metas.camel.externalsystems.shopware6.api.model.order.OrderDeliveryItem;
 import de.metas.camel.externalsystems.shopware6.api.model.product.JsonProducts;
+import de.metas.camel.externalsystems.shopware6.api.model.salutation.JsonSalutation;
 import de.metas.common.util.Check;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -167,7 +168,10 @@ public class ShopwareClient
 	}
 
 	@NonNull
-	public Optional<JsonOrderAddressAndCustomId> getOrderAddressDetails(@NonNull final String orderAddressId, @Nullable final String customIdentifierJSONPath)
+	public Optional<OrderAddressDetails> getOrderAddressDetails(
+			@NonNull final String orderAddressId,
+			@Nullable final String customIdentifierJSONPath,
+			@Nullable final String emailJSONPath)
 	{
 		final UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(baseUrl);
 
@@ -191,7 +195,7 @@ public class ShopwareClient
 		{
 			final JsonNode jsonNode = objectMapper.readValue(response.getBody(), JsonNode.class);
 
-			return getJsonOrderAddressCustomId(jsonNode.get(JSON_NODE_DATA), customIdentifierJSONPath);
+			return getOrderAddressDetails(jsonNode.get(JSON_NODE_DATA), customIdentifierJSONPath, emailJSONPath);
 		}
 		catch (final JsonProcessingException e)
 		{
@@ -200,7 +204,10 @@ public class ShopwareClient
 	}
 
 	@NonNull
-	public List<OrderDeliveryItem> getDeliveryAddresses(@NonNull final String orderId, @Nullable final String customIdentifierJSONPath)
+	public List<OrderDeliveryItem> getDeliveryAddresses(
+			@NonNull final String orderId,
+			@Nullable final String customIdentifierJSONPath,
+			@Nullable final String emailJSONPath)
 	{
 		final UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(baseUrl);
 		final List<OrderDeliveryItem> deliveryItemList = new ArrayList<>();
@@ -236,14 +243,14 @@ public class ShopwareClient
 
 			for (final JsonNode deliveryNode : arrayJsonNode)
 			{
-				final Optional<JsonOrderAddressAndCustomId> orderAddressCustomId =
-						getJsonOrderAddressCustomId(deliveryNode.get(JSON_NODE_DELIVERY_ADDRESS), customIdentifierJSONPath);
+				final Optional<OrderAddressDetails> orderAddressDetails =
+						getOrderAddressDetails(deliveryNode.get(JSON_NODE_DELIVERY_ADDRESS), customIdentifierJSONPath, emailJSONPath);
 
 				final JsonOrderDelivery orderDelivery = objectMapper.treeToValue(deliveryNode, JsonOrderDelivery.class);
 
-				orderAddressCustomId
-						.map(orderAddressAndCustomId -> OrderDeliveryItem.builder()
-								.jsonOrderAddressAndCustomId(orderAddressAndCustomId)
+				orderAddressDetails
+						.map(address -> OrderDeliveryItem.builder()
+								.orderAddressDetails(address)
 								.jsonOrderDelivery(orderDelivery)
 								.build())
 						.ifPresent(deliveryItemList::add);
@@ -401,6 +408,29 @@ public class ShopwareClient
 	}
 
 	@NonNull
+	public Optional<JsonSalutation> getSalutations()
+	{
+		final UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(baseUrl);
+
+		uriBuilder.pathSegment(PathSegmentsEnum.API.getValue())
+				.pathSegment(PathSegmentsEnum.V3.getValue())
+				.pathSegment(PathSegmentsEnum.SALUTATION.getValue());
+
+		refreshTokenIfExpired();
+
+		final URI resourceURI = uriBuilder.build().toUri();
+
+		final ResponseEntity<JsonSalutation> response = performWithRetry(resourceURI, HttpMethod.GET, JsonSalutation.class, null /*requestBody*/);
+
+		if (response == null || response.getBody() == null)
+		{
+			return Optional.empty();
+		}
+
+		return Optional.of(response.getBody());
+	}
+
+	@NonNull
 	public Optional<JsonCustomerGroups> getCustomerGroup(@NonNull final String customerId)
 	{
 		final UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(baseUrl);
@@ -492,7 +522,10 @@ public class ShopwareClient
 	}
 
 	@NonNull
-	private Optional<JsonOrderAddressAndCustomId> getJsonOrderAddressCustomId(@Nullable final JsonNode orderAddressJson, @Nullable final String customIdJSONPath)
+	private Optional<OrderAddressDetails> getOrderAddressDetails(
+			@Nullable final JsonNode orderAddressJson,
+			@Nullable final String customIdJSONPath,
+			@Nullable final String emailJSONPath)
 	{
 		if (orderAddressJson == null)
 		{
@@ -503,7 +536,7 @@ public class ShopwareClient
 		{
 			final JsonOrderAddress jsonOrderAddress = objectMapper.treeToValue(orderAddressJson, JsonOrderAddress.class);
 
-			final JsonOrderAddressAndCustomId.JsonOrderAddressAndCustomIdBuilder jsonOrderAddressWithCustomId = JsonOrderAddressAndCustomId.builder()
+			final OrderAddressDetails.OrderAddressDetailsBuilder jsonOrderAddressWithCustomId = OrderAddressDetails.builder()
 					.jsonOrderAddress(jsonOrderAddress);
 
 			if (Check.isNotBlank(customIdJSONPath))
@@ -518,6 +551,12 @@ public class ShopwareClient
 				{
 					throw new RuntimeException("Custom Identifier path provided for Location, but no custom identifier found. Location default identifier:" + jsonOrderAddress.getId());
 				}
+			}
+
+			if (Check.isNotBlank(emailJSONPath))
+			{
+				final String email = orderAddressJson.at(emailJSONPath).asText();
+				jsonOrderAddressWithCustomId.customEmail(email.isEmpty() ? null : email);
 			}
 
 			return Optional.ofNullable(jsonOrderAddressWithCustomId.build());

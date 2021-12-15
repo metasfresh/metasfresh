@@ -52,6 +52,8 @@ public class JsonResponseLocation
 	public static final String REGION = "region";
 	public static final String CITY = "city";
 	public static final String COUNTRY_CODE = "countryCode";
+	public static final String PHONE = "phone";
+	public static final String EMAIL = "email";
 	public static final String GLN = "gln";
 	public static final String ACTIVE = "active";
 
@@ -99,6 +101,12 @@ public class JsonResponseLocation
 
 	String countryCode;
 
+	@JsonInclude(Include.NON_EMPTY)
+	String phone;
+
+	@JsonInclude(Include.NON_EMPTY)
+	String email;
+
 	@ApiModelProperty(allowEmptyValue = true, value = "This translates to `C_BPartner_Location.GLN`.")
 	String gln;
 
@@ -136,6 +144,8 @@ public class JsonResponseLocation
 			@JsonProperty(CITY) final String city,
 			@JsonProperty(GLN) final String gln,
 			@JsonProperty(COUNTRY_CODE) @Nullable final String countryCode,
+			@JsonProperty(PHONE) @Nullable final String phone,
+			@JsonProperty(EMAIL) @Nullable final String email,
 			@JsonProperty(SHIP_TO) final boolean shipTo,
 			@JsonProperty(SHIP_TO_DEFAULT) final boolean shipToDefault,
 			@JsonProperty(BILL_TO) final boolean billTo,
@@ -163,6 +173,8 @@ public class JsonResponseLocation
 		this.region = region;
 		this.city = city;
 		this.countryCode = countryCode; // mandatory only if we want to insert/update a new location
+		this.phone = phone;
+		this.email = email;
 
 		this.billToDefault = billToDefault;
 		this.billTo = billTo;
