@@ -638,20 +638,16 @@ public class BPartnerQuickInputService
 			@NonNull final Set<CountryId> countryIds,
 			@NonNull final SOTrx soTrx)
 	{
-		for (CountryId countryId : countryIds)
+		for (final CountryId countryId : countryIds)
 		{
 			final PriceListId priceListId = priceListDAO.retrievePriceListIdByPricingSyst(pricingSystemId, countryId, soTrx);
 
-			if (priceListId != null)
+			if (priceListId == null)
 			{
-				// a price list was found for at least one country
-				return;
+				final String pricingSystemName = priceListDAO.getPricingSystemName(pricingSystemId);
+				throw new PriceListNotFoundException(pricingSystemName, soTrx);
 			}
 		}
-
-		final String pricingSystemName = priceListDAO.getPricingSystemName(pricingSystemId);
-		throw new PriceListNotFoundException(pricingSystemName, soTrx);
-
 	}
 
 	private static class TransientIdConverter
