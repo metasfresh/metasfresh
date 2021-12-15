@@ -26,6 +26,7 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.time.SystemTime;
+import de.metas.distribution.ddorder.DDOrderLineId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -358,6 +359,9 @@ public class HUTracerInstance
 
 			@Override
 			public String pickingJobStepId(@NonNull final PickingJobStepId pickingJobStepId) {return pickingJobStepId.toString();}
+
+			@Override
+			public String ddOrderLineId(@NonNull final DDOrderLineId ddOrderLineId) {return ddOrderLineId.toString();}
 		});
 	}
 
@@ -588,7 +592,7 @@ public class HUTracerInstance
 		final StringBuilder name = new StringBuilder("HU[" + hui.getM_HU_ID() + "]: ");
 
 		final I_M_HU_PI pi = handlingUnitsBL.getPI(hui);
-		if(pi != null)
+		if (pi != null)
 		{
 			name.append(pi.getName());
 		}

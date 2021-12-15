@@ -17,6 +17,7 @@ public class DistributionJobCreateCommand
 	private final DDOrderService ddOrderService;
 	private final DDOrderMoveScheduleService ddOrderMoveScheduleService;
 	private final DistributionJobLoaderSupportingServices loadingSupportServices;
+	private final DistributionJobHUReservationService distributionJobHUReservationService;
 
 	private final @NonNull DDOrderId ddOrderId;
 	private final @NonNull UserId responsibleId;
@@ -27,6 +28,7 @@ public class DistributionJobCreateCommand
 			final @NonNull DDOrderService ddOrderService,
 			final @NonNull DDOrderMoveScheduleService ddOrderMoveScheduleService,
 			final @NonNull DistributionJobLoaderSupportingServices loadingSupportServices,
+			final @NonNull DistributionJobHUReservationService distributionJobHUReservationService,
 			//
 			final @NonNull DDOrderId ddOrderId,
 			final @NonNull UserId responsibleId)
@@ -35,6 +37,7 @@ public class DistributionJobCreateCommand
 		this.ddOrderService = ddOrderService;
 		this.ddOrderMoveScheduleService = ddOrderMoveScheduleService;
 		this.loadingSupportServices = loadingSupportServices;
+		this.distributionJobHUReservationService = distributionJobHUReservationService;
 		//
 		this.ddOrderId = ddOrderId;
 		this.responsibleId = responsibleId;
@@ -57,8 +60,12 @@ public class DistributionJobCreateCommand
 
 		ddOrderMoveScheduleService.savePlan(plan);
 
-		return new DistributionJobLoader(loadingSupportServices)
+		final DistributionJob job = new DistributionJobLoader(loadingSupportServices)
 				.load(ddOrder);
+
+		distributionJobHUReservationService.reservePickFromHUs(job);
+
+		return job;
 	}
 
 }
