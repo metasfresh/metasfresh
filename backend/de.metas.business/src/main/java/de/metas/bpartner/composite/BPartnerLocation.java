@@ -221,13 +221,13 @@ public class BPartnerLocation
 
 		this.setupPlaceNo = setupPlaceNo;
 
-		this.handOverLocation = handOverLocation;
+		this.handOverLocation = handOverLocation != null ? handOverLocation : false;
 
-		this.replicationLookupDefault = replicationLookupDefault;
+		this.replicationLookupDefault = replicationLookupDefault != null ? replicationLookupDefault : false;
 
-		this.remitTo = remitTo;
+		this.remitTo = remitTo != null ? remitTo : false;
 
-		this.visitorsAddress = visitorsAddress;
+		this.visitorsAddress = visitorsAddress != null ? visitorsAddress : false;
 	}
 
 	public BPartnerLocation deepCopy()

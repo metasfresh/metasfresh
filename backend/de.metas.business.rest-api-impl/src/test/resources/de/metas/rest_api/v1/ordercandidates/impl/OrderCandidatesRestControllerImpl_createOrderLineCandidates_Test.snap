@@ -35,6 +35,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
         "shipToDefault" : false,
         "billTo" : false,
         "billToDefault" : false,
+        "handoverLocation" : false,
+        "remitTo" : false,
+        "visitorsAddress" : false,
+        "replicationLookupDefault" : false,
         "changeInfo" : {
           "createdMillis" : 1584396436193,
           "lastUpdatedMillis" : 1584396436193
@@ -65,6 +69,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
         "shipToDefault" : false,
         "billTo" : false,
         "billToDefault" : false,
+        "handoverLocation" : false,
+        "remitTo" : false,
+        "visitorsAddress" : false,
+        "replicationLookupDefault" : false,
         "changeInfo" : {
           "createdMillis" : 1584396436193,
           "lastUpdatedMillis" : 1584396436193
@@ -134,6 +142,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
         "shipToDefault" : false,
         "billTo" : false,
         "billToDefault" : false,
+        "handoverLocation" : false,
+        "remitTo" : false,
+        "visitorsAddress" : false,
+        "replicationLookupDefault" : false,
         "changeInfo" : {
           "createdMillis" : 1584396436193,
           "lastUpdatedMillis" : 1584396436193
@@ -164,6 +176,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
         "shipToDefault" : false,
         "billTo" : false,
         "billToDefault" : false,
+        "handoverLocation" : false,
+        "remitTo" : false,
+        "visitorsAddress" : false,
+        "replicationLookupDefault" : false,
         "changeInfo" : {
           "createdMillis" : 1584396436193,
           "lastUpdatedMillis" : 1584396436193
@@ -238,6 +254,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
         "shipToDefault" : false,
         "billTo" : true,
         "billToDefault" : true,
+        "handoverLocation" : false,
+        "remitTo" : false,
+        "visitorsAddress" : false,
+        "replicationLookupDefault" : false,
         "changeInfo" : {
           "createdMillis" : 1584396436193,
           "lastUpdatedMillis" : 1584400046193
@@ -296,6 +316,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
         "shipToDefault" : false,
         "billTo" : true,
         "billToDefault" : true,
+        "handoverLocation" : false,
+        "remitTo" : false,
+        "visitorsAddress" : false,
+        "replicationLookupDefault" : false,
         "changeInfo" : {
           "createdMillis" : 1584396436193,
           "lastUpdatedMillis" : 1584400046193
@@ -350,6 +374,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
         "shipToDefault" : false,
         "billTo" : false,
         "billToDefault" : false,
+        "handoverLocation" : false,
+        "remitTo" : false,
+        "visitorsAddress" : false,
+        "replicationLookupDefault" : false,
         "changeInfo" : {
           "createdMillis" : 1584396436193,
           "lastUpdatedMillis" : 1584400046193
@@ -446,6 +474,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
         "shipToDefault" : false,
         "billTo" : true,
         "billToDefault" : true,
+        "handoverLocation" : false,
+        "remitTo" : false,
+        "visitorsAddress" : false,
+        "replicationLookupDefault" : false,
         "changeInfo" : {
           "createdMillis" : 1584396436193,
           "lastUpdatedMillis" : 1584396436193
@@ -503,6 +535,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
         "shipToDefault" : false,
         "billTo" : true,
         "billToDefault" : true,
+        "handoverLocation" : false,
+        "remitTo" : false,
+        "visitorsAddress" : false,
+        "replicationLookupDefault" : false,
         "changeInfo" : {
           "createdMillis" : 1584396436193,
           "lastUpdatedMillis" : 1584396436193
@@ -561,6 +597,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
         "shipToDefault" : false,
         "billTo" : false,
         "billToDefault" : false,
+        "handoverLocation" : false,
+        "remitTo" : false,
+        "visitorsAddress" : false,
+        "replicationLookupDefault" : false,
         "changeInfo" : {
           "createdMillis" : 1584396436193,
           "lastUpdatedMillis" : 1584396436193
@@ -652,6 +692,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
         "shipToDefault" : false,
         "billTo" : false,
         "billToDefault" : false,
+        "handoverLocation" : false,
+        "remitTo" : false,
+        "visitorsAddress" : false,
+        "replicationLookupDefault" : false,
         "changeInfo" : {
           "createdMillis" : 1584396436193,
           "lastUpdatedMillis" : 1584396436193
@@ -681,6 +725,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
         "shipToDefault" : false,
         "billTo" : false,
         "billToDefault" : false,
+        "handoverLocation" : false,
+        "remitTo" : false,
+        "visitorsAddress" : false,
+        "replicationLookupDefault" : false,
         "changeInfo" : {
           "createdMillis" : 1584396436193,
           "lastUpdatedMillis" : 1584396436193
@@ -711,6 +759,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
         "shipToDefault" : false,
         "billTo" : false,
         "billToDefault" : false,
+        "handoverLocation" : false,
+        "remitTo" : false,
+        "visitorsAddress" : false,
+        "replicationLookupDefault" : false,
         "changeInfo" : {
           "createdMillis" : 1584396436193,
           "lastUpdatedMillis" : 1584396436193
@@ -779,6 +831,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
         "shipToDefault" : false,
         "billTo" : false,
         "billToDefault" : false,
+        "handoverLocation" : false,
+        "remitTo" : false,
+        "visitorsAddress" : false,
+        "replicationLookupDefault" : false,
         "changeInfo" : {
           "createdMillis" : 1584396436193,
           "lastUpdatedMillis" : 1584396436193
@@ -808,6 +864,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
         "shipToDefault" : false,
         "billTo" : false,
         "billToDefault" : false,
+        "handoverLocation" : false,
+        "remitTo" : false,
+        "visitorsAddress" : false,
+        "replicationLookupDefault" : false,
         "changeInfo" : {
           "createdMillis" : 1584396436193,
           "lastUpdatedMillis" : 1584396436193
@@ -838,6 +898,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
         "shipToDefault" : false,
         "billTo" : false,
         "billToDefault" : false,
+        "handoverLocation" : false,
+        "remitTo" : false,
+        "visitorsAddress" : false,
+        "replicationLookupDefault" : false,
         "changeInfo" : {
           "createdMillis" : 1584396436193,
           "lastUpdatedMillis" : 1584396436193
@@ -908,6 +972,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
         "shipToDefault" : false,
         "billTo" : false,
         "billToDefault" : false,
+        "handoverLocation" : false,
+        "remitTo" : false,
+        "visitorsAddress" : false,
+        "replicationLookupDefault" : false,
         "changeInfo" : {
           "createdMillis" : 1584396436193,
           "lastUpdatedMillis" : 1584396436193
@@ -939,6 +1007,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
         "shipToDefault" : false,
         "billTo" : false,
         "billToDefault" : false,
+        "handoverLocation" : false,
+        "remitTo" : false,
+        "visitorsAddress" : false,
+        "replicationLookupDefault" : false,
         "changeInfo" : {
           "createdMillis" : 1584396436193,
           "lastUpdatedMillis" : 1584396436193
@@ -970,6 +1042,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
         "shipToDefault" : false,
         "billTo" : false,
         "billToDefault" : false,
+        "handoverLocation" : false,
+        "remitTo" : false,
+        "visitorsAddress" : false,
+        "replicationLookupDefault" : false,
         "changeInfo" : {
           "createdMillis" : 1584396436193,
           "lastUpdatedMillis" : 1584396436193
@@ -1001,6 +1077,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
         "shipToDefault" : false,
         "billTo" : false,
         "billToDefault" : false,
+        "handoverLocation" : false,
+        "remitTo" : false,
+        "visitorsAddress" : false,
+        "replicationLookupDefault" : false,
         "changeInfo" : {
           "createdMillis" : 1584396436193,
           "lastUpdatedMillis" : 1584396436193
@@ -1076,6 +1156,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
           "shipToDefault" : false,
           "billTo" : false,
           "billToDefault" : false,
+          "handoverLocation" : false,
+          "remitTo" : false,
+          "visitorsAddress" : false,
+          "replicationLookupDefault" : false,
           "changeInfo" : {
             "createdMillis" : 1584396436193,
             "lastUpdatedMillis" : 1584396436193
@@ -1110,6 +1194,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
           "shipToDefault" : false,
           "billTo" : false,
           "billToDefault" : false,
+          "handoverLocation" : false,
+          "remitTo" : false,
+          "visitorsAddress" : false,
+          "replicationLookupDefault" : false,
           "changeInfo" : {
             "createdMillis" : 1584396436193,
             "lastUpdatedMillis" : 1584396436193
@@ -1174,6 +1262,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
           "shipToDefault" : false,
           "billTo" : false,
           "billToDefault" : false,
+          "handoverLocation" : false,
+          "remitTo" : false,
+          "visitorsAddress" : false,
+          "replicationLookupDefault" : false,
           "changeInfo" : {
             "createdMillis" : 1584396436193,
             "lastUpdatedMillis" : 1584396436193
@@ -1208,6 +1300,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
           "shipToDefault" : false,
           "billTo" : false,
           "billToDefault" : false,
+          "handoverLocation" : false,
+          "remitTo" : false,
+          "visitorsAddress" : false,
+          "replicationLookupDefault" : false,
           "changeInfo" : {
             "createdMillis" : 1584396436193,
             "lastUpdatedMillis" : 1584396436193
@@ -1272,6 +1368,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
           "shipToDefault" : false,
           "billTo" : false,
           "billToDefault" : false,
+          "handoverLocation" : false,
+          "remitTo" : false,
+          "visitorsAddress" : false,
+          "replicationLookupDefault" : false,
           "changeInfo" : {
             "createdMillis" : 1584396436193,
             "lastUpdatedMillis" : 1584396436193
@@ -1306,6 +1406,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
           "shipToDefault" : false,
           "billTo" : false,
           "billToDefault" : false,
+          "handoverLocation" : false,
+          "remitTo" : false,
+          "visitorsAddress" : false,
+          "replicationLookupDefault" : false,
           "changeInfo" : {
             "createdMillis" : 1584396436193,
             "lastUpdatedMillis" : 1584396436193
@@ -1370,6 +1474,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
           "shipToDefault" : false,
           "billTo" : false,
           "billToDefault" : false,
+          "handoverLocation" : false,
+          "remitTo" : false,
+          "visitorsAddress" : false,
+          "replicationLookupDefault" : false,
           "changeInfo" : {
             "createdMillis" : 1584396436193,
             "lastUpdatedMillis" : 1584396436193
@@ -1404,6 +1512,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
           "shipToDefault" : false,
           "billTo" : false,
           "billToDefault" : false,
+          "handoverLocation" : false,
+          "remitTo" : false,
+          "visitorsAddress" : false,
+          "replicationLookupDefault" : false,
           "changeInfo" : {
             "createdMillis" : 1584396436193,
             "lastUpdatedMillis" : 1584396436193
@@ -1468,6 +1580,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
           "shipToDefault" : false,
           "billTo" : false,
           "billToDefault" : false,
+          "handoverLocation" : false,
+          "remitTo" : false,
+          "visitorsAddress" : false,
+          "replicationLookupDefault" : false,
           "changeInfo" : {
             "createdMillis" : 1584396436193,
             "lastUpdatedMillis" : 1584396436193
@@ -1502,6 +1618,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
           "shipToDefault" : false,
           "billTo" : false,
           "billToDefault" : false,
+          "handoverLocation" : false,
+          "remitTo" : false,
+          "visitorsAddress" : false,
+          "replicationLookupDefault" : false,
           "changeInfo" : {
             "createdMillis" : 1584396436193,
             "lastUpdatedMillis" : 1584396436193
@@ -1566,6 +1686,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
           "shipToDefault" : false,
           "billTo" : false,
           "billToDefault" : false,
+          "handoverLocation" : false,
+          "remitTo" : false,
+          "visitorsAddress" : false,
+          "replicationLookupDefault" : false,
           "changeInfo" : {
             "createdMillis" : 1584396436193,
             "lastUpdatedMillis" : 1584396436193
@@ -1600,6 +1724,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
           "shipToDefault" : false,
           "billTo" : false,
           "billToDefault" : false,
+          "handoverLocation" : false,
+          "remitTo" : false,
+          "visitorsAddress" : false,
+          "replicationLookupDefault" : false,
           "changeInfo" : {
             "createdMillis" : 1584396436193,
             "lastUpdatedMillis" : 1584396436193
@@ -1664,6 +1792,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
           "shipToDefault" : false,
           "billTo" : false,
           "billToDefault" : false,
+          "handoverLocation" : false,
+          "remitTo" : false,
+          "visitorsAddress" : false,
+          "replicationLookupDefault" : false,
           "changeInfo" : {
             "createdMillis" : 1584396436193,
             "lastUpdatedMillis" : 1584396436193
@@ -1698,6 +1830,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
           "shipToDefault" : false,
           "billTo" : false,
           "billToDefault" : false,
+          "handoverLocation" : false,
+          "remitTo" : false,
+          "visitorsAddress" : false,
+          "replicationLookupDefault" : false,
           "changeInfo" : {
             "createdMillis" : 1584396436193,
             "lastUpdatedMillis" : 1584396436193
@@ -1762,6 +1898,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
           "shipToDefault" : false,
           "billTo" : false,
           "billToDefault" : false,
+          "handoverLocation" : false,
+          "remitTo" : false,
+          "visitorsAddress" : false,
+          "replicationLookupDefault" : false,
           "changeInfo" : {
             "createdMillis" : 1584396436193,
             "lastUpdatedMillis" : 1584396436193
@@ -1796,6 +1936,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
           "shipToDefault" : false,
           "billTo" : false,
           "billToDefault" : false,
+          "handoverLocation" : false,
+          "remitTo" : false,
+          "visitorsAddress" : false,
+          "replicationLookupDefault" : false,
           "changeInfo" : {
             "createdMillis" : 1584396436193,
             "lastUpdatedMillis" : 1584396436193
@@ -1860,6 +2004,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
           "shipToDefault" : false,
           "billTo" : false,
           "billToDefault" : false,
+          "handoverLocation" : false,
+          "remitTo" : false,
+          "visitorsAddress" : false,
+          "replicationLookupDefault" : false,
           "changeInfo" : {
             "createdMillis" : 1584396436193,
             "lastUpdatedMillis" : 1584396436193
@@ -1894,6 +2042,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
           "shipToDefault" : false,
           "billTo" : false,
           "billToDefault" : false,
+          "handoverLocation" : false,
+          "remitTo" : false,
+          "visitorsAddress" : false,
+          "replicationLookupDefault" : false,
           "changeInfo" : {
             "createdMillis" : 1584396436193,
             "lastUpdatedMillis" : 1584396436193
@@ -1958,6 +2110,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
           "shipToDefault" : false,
           "billTo" : false,
           "billToDefault" : false,
+          "handoverLocation" : false,
+          "remitTo" : false,
+          "visitorsAddress" : false,
+          "replicationLookupDefault" : false,
           "changeInfo" : {
             "createdMillis" : 1584396436193,
             "lastUpdatedMillis" : 1584396436193
@@ -1992,6 +2148,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
           "shipToDefault" : false,
           "billTo" : false,
           "billToDefault" : false,
+          "handoverLocation" : false,
+          "remitTo" : false,
+          "visitorsAddress" : false,
+          "replicationLookupDefault" : false,
           "changeInfo" : {
             "createdMillis" : 1584396436193,
             "lastUpdatedMillis" : 1584396436193
@@ -2056,6 +2216,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
           "shipToDefault" : false,
           "billTo" : false,
           "billToDefault" : false,
+          "handoverLocation" : false,
+          "remitTo" : false,
+          "visitorsAddress" : false,
+          "replicationLookupDefault" : false,
           "changeInfo" : {
             "createdMillis" : 1584396436193,
             "lastUpdatedMillis" : 1584396436193
@@ -2090,6 +2254,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
           "shipToDefault" : false,
           "billTo" : false,
           "billToDefault" : false,
+          "handoverLocation" : false,
+          "remitTo" : false,
+          "visitorsAddress" : false,
+          "replicationLookupDefault" : false,
           "changeInfo" : {
             "createdMillis" : 1584396436193,
             "lastUpdatedMillis" : 1584396436193
@@ -2154,6 +2322,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
           "shipToDefault" : false,
           "billTo" : false,
           "billToDefault" : false,
+          "handoverLocation" : false,
+          "remitTo" : false,
+          "visitorsAddress" : false,
+          "replicationLookupDefault" : false,
           "changeInfo" : {
             "createdMillis" : 1584396436193,
             "lastUpdatedMillis" : 1584396436193
@@ -2188,6 +2360,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
           "shipToDefault" : false,
           "billTo" : false,
           "billToDefault" : false,
+          "handoverLocation" : false,
+          "remitTo" : false,
+          "visitorsAddress" : false,
+          "replicationLookupDefault" : false,
           "changeInfo" : {
             "createdMillis" : 1584396436193,
             "lastUpdatedMillis" : 1584396436193
@@ -2252,6 +2428,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
           "shipToDefault" : false,
           "billTo" : false,
           "billToDefault" : false,
+          "handoverLocation" : false,
+          "remitTo" : false,
+          "visitorsAddress" : false,
+          "replicationLookupDefault" : false,
           "changeInfo" : {
             "createdMillis" : 1584396436193,
             "lastUpdatedMillis" : 1584396436193
@@ -2286,6 +2466,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
           "shipToDefault" : false,
           "billTo" : false,
           "billToDefault" : false,
+          "handoverLocation" : false,
+          "remitTo" : false,
+          "visitorsAddress" : false,
+          "replicationLookupDefault" : false,
           "changeInfo" : {
             "createdMillis" : 1584396436193,
             "lastUpdatedMillis" : 1584396436193
@@ -2350,6 +2534,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
           "shipToDefault" : false,
           "billTo" : false,
           "billToDefault" : false,
+          "handoverLocation" : false,
+          "remitTo" : false,
+          "visitorsAddress" : false,
+          "replicationLookupDefault" : false,
           "changeInfo" : {
             "createdMillis" : 1584396436193,
             "lastUpdatedMillis" : 1584396436193
@@ -2384,6 +2572,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
           "shipToDefault" : false,
           "billTo" : false,
           "billToDefault" : false,
+          "handoverLocation" : false,
+          "remitTo" : false,
+          "visitorsAddress" : false,
+          "replicationLookupDefault" : false,
           "changeInfo" : {
             "createdMillis" : 1584396436193,
             "lastUpdatedMillis" : 1584396436193
@@ -2448,6 +2640,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
           "shipToDefault" : false,
           "billTo" : false,
           "billToDefault" : false,
+          "handoverLocation" : false,
+          "remitTo" : false,
+          "visitorsAddress" : false,
+          "replicationLookupDefault" : false,
           "changeInfo" : {
             "createdMillis" : 1584396436193,
             "lastUpdatedMillis" : 1584396436193
@@ -2482,6 +2678,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
           "shipToDefault" : false,
           "billTo" : false,
           "billToDefault" : false,
+          "handoverLocation" : false,
+          "remitTo" : false,
+          "visitorsAddress" : false,
+          "replicationLookupDefault" : false,
           "changeInfo" : {
             "createdMillis" : 1584396436193,
             "lastUpdatedMillis" : 1584396436193
@@ -2546,6 +2746,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
           "shipToDefault" : false,
           "billTo" : false,
           "billToDefault" : false,
+          "handoverLocation" : false,
+          "remitTo" : false,
+          "visitorsAddress" : false,
+          "replicationLookupDefault" : false,
           "changeInfo" : {
             "createdMillis" : 1584396436193,
             "lastUpdatedMillis" : 1584396436193
@@ -2580,6 +2784,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
           "shipToDefault" : false,
           "billTo" : false,
           "billToDefault" : false,
+          "handoverLocation" : false,
+          "remitTo" : false,
+          "visitorsAddress" : false,
+          "replicationLookupDefault" : false,
           "changeInfo" : {
             "createdMillis" : 1584396436193,
             "lastUpdatedMillis" : 1584396436193
@@ -2644,6 +2852,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
           "shipToDefault" : false,
           "billTo" : false,
           "billToDefault" : false,
+          "handoverLocation" : false,
+          "remitTo" : false,
+          "visitorsAddress" : false,
+          "replicationLookupDefault" : false,
           "changeInfo" : {
             "createdMillis" : 1584396436193,
             "lastUpdatedMillis" : 1584396436193
@@ -2678,6 +2890,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
           "shipToDefault" : false,
           "billTo" : false,
           "billToDefault" : false,
+          "handoverLocation" : false,
+          "remitTo" : false,
+          "visitorsAddress" : false,
+          "replicationLookupDefault" : false,
           "changeInfo" : {
             "createdMillis" : 1584396436193,
             "lastUpdatedMillis" : 1584396436193
@@ -2742,6 +2958,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
           "shipToDefault" : false,
           "billTo" : false,
           "billToDefault" : false,
+          "handoverLocation" : false,
+          "remitTo" : false,
+          "visitorsAddress" : false,
+          "replicationLookupDefault" : false,
           "changeInfo" : {
             "createdMillis" : 1584396436193,
             "lastUpdatedMillis" : 1584396436193
@@ -2776,6 +2996,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
           "shipToDefault" : false,
           "billTo" : false,
           "billToDefault" : false,
+          "handoverLocation" : false,
+          "remitTo" : false,
+          "visitorsAddress" : false,
+          "replicationLookupDefault" : false,
           "changeInfo" : {
             "createdMillis" : 1584396436193,
             "lastUpdatedMillis" : 1584396436193
@@ -2840,6 +3064,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
           "shipToDefault" : false,
           "billTo" : false,
           "billToDefault" : false,
+          "handoverLocation" : false,
+          "remitTo" : false,
+          "visitorsAddress" : false,
+          "replicationLookupDefault" : false,
           "changeInfo" : {
             "createdMillis" : 1584396436193,
             "lastUpdatedMillis" : 1584396436193
@@ -2874,6 +3102,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
           "shipToDefault" : false,
           "billTo" : false,
           "billToDefault" : false,
+          "handoverLocation" : false,
+          "remitTo" : false,
+          "visitorsAddress" : false,
+          "replicationLookupDefault" : false,
           "changeInfo" : {
             "createdMillis" : 1584396436193,
             "lastUpdatedMillis" : 1584396436193
@@ -2938,6 +3170,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
           "shipToDefault" : false,
           "billTo" : false,
           "billToDefault" : false,
+          "handoverLocation" : false,
+          "remitTo" : false,
+          "visitorsAddress" : false,
+          "replicationLookupDefault" : false,
           "changeInfo" : {
             "createdMillis" : 1584396436193,
             "lastUpdatedMillis" : 1584396436193
@@ -2972,6 +3208,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
           "shipToDefault" : false,
           "billTo" : false,
           "billToDefault" : false,
+          "handoverLocation" : false,
+          "remitTo" : false,
+          "visitorsAddress" : false,
+          "replicationLookupDefault" : false,
           "changeInfo" : {
             "createdMillis" : 1584396436193,
             "lastUpdatedMillis" : 1584396436193
@@ -3036,6 +3276,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
           "shipToDefault" : false,
           "billTo" : false,
           "billToDefault" : false,
+          "handoverLocation" : false,
+          "remitTo" : false,
+          "visitorsAddress" : false,
+          "replicationLookupDefault" : false,
           "changeInfo" : {
             "createdMillis" : 1584396436193,
             "lastUpdatedMillis" : 1584396436193
@@ -3070,6 +3314,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
           "shipToDefault" : false,
           "billTo" : false,
           "billToDefault" : false,
+          "handoverLocation" : false,
+          "remitTo" : false,
+          "visitorsAddress" : false,
+          "replicationLookupDefault" : false,
           "changeInfo" : {
             "createdMillis" : 1584396436193,
             "lastUpdatedMillis" : 1584396436193

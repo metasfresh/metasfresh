@@ -434,7 +434,11 @@ public class BPartnerQuickInputService
 		}
 
 		final ArrayList<BPartnerLocation> locations = getBPartnerLocations(template);
-		locations.add(getUniqueLocationOfBPartnerTemplate(template));
+		final BPartnerLocation uniqueLocationOfBPartnerTemplate = getUniqueLocationOfBPartnerTemplate(template);
+		if (uniqueLocationOfBPartnerTemplate != null)
+		{
+			locations.add(uniqueLocationOfBPartnerTemplate);
+		}
 
 		if (locations.isEmpty())
 		{
@@ -484,7 +488,8 @@ public class BPartnerQuickInputService
 		}
 	}
 
-	private @Nullable BPartnerLocation getUniqueLocationOfBPartnerTemplate(final I_C_BPartner_QuickInput template)
+	private @Nullable
+	BPartnerLocation getUniqueLocationOfBPartnerTemplate(final I_C_BPartner_QuickInput template)
 	{
 		final LocationId uniqueLocationIdOfBPartnerTemplate = LocationId.ofRepoIdOrNull(template.getC_Location_ID());
 

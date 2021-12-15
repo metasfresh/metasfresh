@@ -428,3 +428,214 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 /* DDL */ CREATE TABLE public.C_BPartner_Location_QuickInput (AD_Client_ID NUMERIC(10) NOT NULL, AD_Org_ID NUMERIC(10) NOT NULL, BPartnerName VARCHAR(500), C_BPartner_Location_QuickInput_ID NUMERIC(10) NOT NULL, C_BPartner_QuickInput_ID NUMERIC(10) NOT NULL, C_Location_ID NUMERIC(10), Created TIMESTAMP WITH TIME ZONE NOT NULL, CreatedBy NUMERIC(10) NOT NULL, EMail VARCHAR(200), Fax VARCHAR(40), GLN VARCHAR(20), IsActive CHAR(1) CHECK (IsActive IN ('Y','N')) NOT NULL, IsBillTo CHAR(1) DEFAULT 'N' CHECK (IsBillTo IN ('Y','N')) NOT NULL, IsBillToDefault CHAR(1) DEFAULT 'N' CHECK (IsBillToDefault IN ('Y','N')) NOT NULL, IsHandOverLocation CHAR(1) DEFAULT 'N' CHECK (IsHandOverLocation IN ('Y','N')) NOT NULL, IsRemitTo CHAR(1) DEFAULT 'N' CHECK (IsRemitTo IN ('Y','N')) NOT NULL, IsReplicationLookupDefault CHAR(1) DEFAULT 'N' CHECK (IsReplicationLookupDefault IN ('Y','N')) NOT NULL, IsShipTo CHAR(1) DEFAULT 'N' CHECK (IsShipTo IN ('Y','N')) NOT NULL, IsShipToDefault CHAR(1) DEFAULT 'N' CHECK (IsShipToDefault IN ('Y','N')) NOT NULL, Name VARCHAR(250), Phone VARCHAR(40), Phone2 VARCHAR(40), Setup_Place_No VARCHAR(250), Updated TIMESTAMP WITH TIME ZONE NOT NULL, UpdatedBy NUMERIC(10) NOT NULL, VisitorsAddress CHAR(1) DEFAULT 'N' CHECK (VisitorsAddress IN ('Y','N')) NOT NULL, CONSTRAINT C_BPartner_Location_QuickInput_Key PRIMARY KEY (C_BPartner_Location_QuickInput_ID), CONSTRAINT CBPartnerQuickInput_CBPartnerLocationQuickInput FOREIGN KEY (C_BPartner_QuickInput_ID) REFERENCES public.C_BPartner_QuickInput DEFERRABLE INITIALLY DEFERRED, CONSTRAINT CLocation_CBPartnerLocationQuickInput FOREIGN KEY (C_Location_ID) REFERENCES public.C_Location DEFERRABLE INITIALLY DEFERRED)
 ;
 
+
+
+
+
+-- 2021-12-13T15:15:08.180Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET EntityType='D',Updated=TO_TIMESTAMP('2021-12-13 17:15:08','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=578944
+;
+
+-- 2021-12-13T15:15:08.702Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO t_alter_column values('c_bpartner_location_quickinput','GLN','VARCHAR(20)',null,null)
+;
+
+-- 2021-12-13T15:15:23.374Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET EntityType='D',Updated=TO_TIMESTAMP('2021-12-13 17:15:23','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=578937
+;
+
+-- 2021-12-13T15:15:27.099Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET EntityType='D',Updated=TO_TIMESTAMP('2021-12-13 17:15:27','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=578938
+;
+
+-- 2021-12-13T15:15:30.198Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET EntityType='D',Updated=TO_TIMESTAMP('2021-12-13 17:15:30','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=578945
+;
+
+-- 2021-12-13T15:15:33.124Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET EntityType='D',Updated=TO_TIMESTAMP('2021-12-13 17:15:33','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=578947
+;
+
+-- 2021-12-13T15:15:40.218Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET EntityType='D',Updated=TO_TIMESTAMP('2021-12-13 17:15:40','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=578935
+;
+
+-- 2021-12-13T16:13:26.042Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET EntityType='D',Updated=TO_TIMESTAMP('2021-12-13 18:13:26','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=550430
+;
+
+-- 2021-12-13T16:13:26.998Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO t_alter_column values('c_bpartner_location','IsReplicationLookupDefault','CHAR(1)',null,'N')
+;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-- 2021-12-14T13:49:44.504Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET DefaultValue='.',Updated=TO_TIMESTAMP('2021-12-14 15:49:44','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=578943
+;
+
+-- 2021-12-14T13:49:57.605Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET IsMandatory='Y',Updated=TO_TIMESTAMP('2021-12-14 15:49:57','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=578943
+;
+
+-- 2021-12-14T13:49:58.833Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO t_alter_column values('c_bpartner_location_quickinput','Name','VARCHAR(250)',null,'.')
+;
+
+-- 2021-12-14T13:49:58.837Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_BPartner_Location_QuickInput SET Name='.' WHERE Name IS NULL
+;
+
+-- 2021-12-14T13:49:58.838Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO t_alter_column values('c_bpartner_location_quickinput','Name',null,'NOT NULL',null)
+;
+
+-- 2021-12-14T14:20:52.435Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Index_Table (AD_Client_ID,AD_Index_Table_ID,AD_Org_ID,AD_Table_ID,BeforeChangeCode,BeforeChangeCodeType,BeforeChangeWarning,Created,CreatedBy,EntityType,ErrorMsg,IsActive,IsUnique,Name,Processing,Updated,UpdatedBy,WhereClause) VALUES (0,540688,0,541968,'IsBillToDefault=''N''','SQLS','Möchten sie wirklich die standard Rechnungsanschrift ändern?',TO_TIMESTAMP('2021-12-14 16:20:52','YYYY-MM-DD HH24:MI:SS'),100,'D','Es darf nur eine Standardrechnungsadresse aktiviert sein. Bei Änderung wird bei der vorherigen Standardrechnungsadresse automatisch der Haken entfernt.','Y','Y','C_BPartner_Location_QuickInput_IsBillToDefault','N',TO_TIMESTAMP('2021-12-14 16:20:52','YYYY-MM-DD HH24:MI:SS'),100,'IsBillToDefault=''Y'' and isActive=''Y''')
+;
+
+-- 2021-12-14T14:20:52.437Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Index_Table_Trl (AD_Language,AD_Index_Table_ID, ErrorMsg, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Index_Table_ID, t.ErrorMsg, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Index_Table t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Index_Table_ID=540688 AND NOT EXISTS (SELECT 1 FROM AD_Index_Table_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Index_Table_ID=t.AD_Index_Table_ID)
+;
+
+-- 2021-12-14T14:21:10.427Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Index_Column (AD_Client_ID,AD_Column_ID,AD_Index_Column_ID,AD_Index_Table_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,578932,541228,540688,0,TO_TIMESTAMP('2021-12-14 16:21:10','YYYY-MM-DD HH24:MI:SS'),100,'D','Y',10,TO_TIMESTAMP('2021-12-14 16:21:10','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-12-14T14:21:23.114Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Index_Column (AD_Client_ID,AD_Column_ID,AD_Index_Column_ID,AD_Index_Table_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,578937,541229,540688,0,TO_TIMESTAMP('2021-12-14 16:21:22','YYYY-MM-DD HH24:MI:SS'),100,'D','Y',20,TO_TIMESTAMP('2021-12-14 16:21:22','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-12-14T14:21:30.121Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+CREATE UNIQUE INDEX C_BPartner_Location_QuickInput_IsBillToDefault ON C_BPartner_Location_QuickInput (C_BPartner_QuickInput_ID,IsBillToDefault) WHERE IsBillToDefault='Y' and isActive='Y'
+;
+
+-- 2021-12-14T14:21:30.126Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+CREATE OR REPLACE FUNCTION C_BPartner_Location_QuickInput_IsBillToDefault_tgfn()
+ RETURNS TRIGGER AS $C_BPartner_Location_QuickInput_IsBillToDefault_tg$
+ BEGIN
+ IF TG_OP='INSERT' THEN
+UPDATE C_BPartner_Location_QuickInput SET IsBillToDefault='N', Updated=NEW.Updated, UpdatedBy=NEW.UpdatedBy WHERE 1=1  AND C_BPartner_QuickInput_ID=NEW.C_BPartner_QuickInput_ID AND IsBillToDefault=NEW.IsBillToDefault AND C_BPartner_Location_QuickInput_ID<>NEW.C_BPartner_Location_QuickInput_ID AND IsBillToDefault='Y' and isActive='Y';
+ ELSE
+IF OLD.C_BPartner_QuickInput_ID<>NEW.C_BPartner_QuickInput_ID OR OLD.IsBillToDefault<>NEW.IsBillToDefault THEN
+UPDATE C_BPartner_Location_QuickInput SET IsBillToDefault='N', Updated=NEW.Updated, UpdatedBy=NEW.UpdatedBy WHERE 1=1  AND C_BPartner_QuickInput_ID=NEW.C_BPartner_QuickInput_ID AND IsBillToDefault=NEW.IsBillToDefault AND C_BPartner_Location_QuickInput_ID<>NEW.C_BPartner_Location_QuickInput_ID AND IsBillToDefault='Y' and isActive='Y';
+ END IF;
+ END IF;
+ RETURN NEW;
+ END;
+ $C_BPartner_Location_QuickInput_IsBillToDefault_tg$ LANGUAGE plpgsql;
+;
+
+-- 2021-12-14T14:21:30.129Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DROP TRIGGER IF EXISTS C_BPartner_Location_QuickInput_IsBillToDefault_tg ON C_BPartner_Location_QuickInput
+;
+
+-- 2021-12-14T14:21:30.130Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+CREATE TRIGGER C_BPartner_Location_QuickInput_IsBillToDefault_tg BEFORE INSERT OR UPDATE  ON C_BPartner_Location_QuickInput FOR EACH ROW EXECUTE PROCEDURE C_BPartner_Location_QuickInput_IsBillToDefault_tgfn()
+;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-- 2021-12-14T14:28:37.292Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Index_Table (AD_Client_ID,AD_Index_Table_ID,AD_Org_ID,AD_Table_ID,BeforeChangeCode,BeforeChangeCodeType,BeforeChangeWarning,Created,CreatedBy,EntityType,ErrorMsg,IsActive,IsUnique,Name,Processing,Updated,UpdatedBy,WhereClause) VALUES (0,540689,0,541968,'isshiptodefault=''N''','SQLS','Möchten sie wirklich die standard Lieferanschrift ändern?',TO_TIMESTAMP('2021-12-14 16:28:37','YYYY-MM-DD HH24:MI:SS'),100,'D','Es darf nur eine Standardlieferadresse aktiviert sein. Bei Änderung wird bei der vorherigen Standardlieferadresse automatisch der Haken entfernt.','Y','Y','C_BPartner_Location_QuickInput_IsShiptoDefault','N',TO_TIMESTAMP('2021-12-14 16:28:37','YYYY-MM-DD HH24:MI:SS'),100,'isshiptodefault=''Y'' and isActive=''Y''')
+;
+
+-- 2021-12-14T14:28:37.294Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Index_Table_Trl (AD_Language,AD_Index_Table_ID, ErrorMsg, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Index_Table_ID, t.ErrorMsg, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Index_Table t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Index_Table_ID=540689 AND NOT EXISTS (SELECT 1 FROM AD_Index_Table_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Index_Table_ID=t.AD_Index_Table_ID)
+;
+
+-- 2021-12-14T14:28:51.808Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Index_Column (AD_Client_ID,AD_Column_ID,AD_Index_Column_ID,AD_Index_Table_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,578932,541230,540689,0,TO_TIMESTAMP('2021-12-14 16:28:51','YYYY-MM-DD HH24:MI:SS'),100,'D','Y',10,TO_TIMESTAMP('2021-12-14 16:28:51','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-12-14T14:28:59.910Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Index_Column (AD_Client_ID,AD_Column_ID,AD_Index_Column_ID,AD_Index_Table_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,578935,541231,540689,0,TO_TIMESTAMP('2021-12-14 16:28:59','YYYY-MM-DD HH24:MI:SS'),100,'D','Y',20,TO_TIMESTAMP('2021-12-14 16:28:59','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-12-14T14:29:00.527Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+CREATE UNIQUE INDEX C_BPartner_Location_QuickInput_IsShiptoDefault ON C_BPartner_Location_QuickInput (C_BPartner_QuickInput_ID,IsShipToDefault) WHERE isshiptodefault='Y' and isActive='Y'
+;
+
+-- 2021-12-14T14:29:00.532Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+CREATE OR REPLACE FUNCTION C_BPartner_Location_QuickInput_IsShiptoDefault_tgfn()
+ RETURNS TRIGGER AS $C_BPartner_Location_QuickInput_IsShiptoDefault_tg$
+ BEGIN
+ IF TG_OP='INSERT' THEN
+UPDATE C_BPartner_Location_QuickInput SET isshiptodefault='N', Updated=NEW.Updated, UpdatedBy=NEW.UpdatedBy WHERE 1=1  AND C_BPartner_QuickInput_ID=NEW.C_BPartner_QuickInput_ID AND IsShipToDefault=NEW.IsShipToDefault AND C_BPartner_Location_QuickInput_ID<>NEW.C_BPartner_Location_QuickInput_ID AND isshiptodefault='Y' and isActive='Y';
+ ELSE
+IF OLD.C_BPartner_QuickInput_ID<>NEW.C_BPartner_QuickInput_ID OR OLD.IsShipToDefault<>NEW.IsShipToDefault THEN
+UPDATE C_BPartner_Location_QuickInput SET isshiptodefault='N', Updated=NEW.Updated, UpdatedBy=NEW.UpdatedBy WHERE 1=1  AND C_BPartner_QuickInput_ID=NEW.C_BPartner_QuickInput_ID AND IsShipToDefault=NEW.IsShipToDefault AND C_BPartner_Location_QuickInput_ID<>NEW.C_BPartner_Location_QuickInput_ID AND isshiptodefault='Y' and isActive='Y';
+ END IF;
+ END IF;
+ RETURN NEW;
+ END;
+ $C_BPartner_Location_QuickInput_IsShiptoDefault_tg$ LANGUAGE plpgsql;
+;
+
+-- 2021-12-14T14:29:00.534Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DROP TRIGGER IF EXISTS C_BPartner_Location_QuickInput_IsShiptoDefault_tg ON C_BPartner_Location_QuickInput
+;
+
+-- 2021-12-14T14:29:00.535Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+CREATE TRIGGER C_BPartner_Location_QuickInput_IsShiptoDefault_tg BEFORE INSERT OR UPDATE  ON C_BPartner_Location_QuickInput FOR EACH ROW EXECUTE PROCEDURE C_BPartner_Location_QuickInput_IsShiptoDefault_tgfn()
+;
+
