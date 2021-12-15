@@ -49,7 +49,11 @@ import org.adempiere.mm.attributes.spi.IAttributeValueGenerator;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.X_M_Attribute;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtensionContext;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.ArgumentsProvider;
+import org.junit.jupiter.params.provider.ArgumentsSource;
 import org.reflections.Reflections;
 import org.reflections.scanners.SubTypesScanner;
 import org.reflections.util.ClasspathHelper;
@@ -59,12 +63,12 @@ import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Stream;
 
 /**
  * This test is making sure current {@link IAttributeValueGenerator} implementations are not failing when {@link HUAttributeStorage#generateInitialAttributes(Map)} is invoked.
  *
  * @author tsa
- *
  */
 public class HUAttributeStorage_generateInitialAttributes_Integration_Test extends AbstractHUTest
 {
@@ -76,7 +80,7 @@ public class HUAttributeStorage_generateInitialAttributes_Integration_Test exten
 	private I_M_HU_PI_Version huPIVersion;
 
 	private final HashMap<Class<? extends IAttributeValueGenerator>, Class<? extends ReferenceListAwareEnum>> //
-	registeredEnums = new HashMap<>();
+			registeredEnums = new HashMap<>();
 
 	protected final void registerEnum(
 			@NonNull final Class<? extends IAttributeValueGenerator> generatorClass,
@@ -170,63 +174,13 @@ public class HUAttributeStorage_generateInitialAttributes_Integration_Test exten
 		}
 	}
 
-	@Test
-	public void test()
-	{
-		for (final Class<? extends IAttributeValueGenerator> attributeValueGeneratorClass : retrieveAttributeValueGeneratorClassnames())
-		{
-			if (isSkipTesting(attributeValueGeneratorClass))
-			{
-				continue;
-			}
-			test(attributeValueGeneratorClass);
-		}
-	}
-
-	private static Set<Class<? extends IAttributeValueGenerator>> retrieveAttributeValueGeneratorClassnames()
-	{
-		final Stopwatch stopwatch = Stopwatch.createStarted();
-		final Reflections reflections = new Reflections(new ConfigurationBuilder()
-				.addUrls(ClasspathHelper.forClassLoader())
-				.setScanners(new SubTypesScanner()));
-
-		final Set<Class<? extends IAttributeValueGenerator>> attributeValueGeneratorClassnames = reflections.getSubTypesOf(IAttributeValueGenerator.class);
-		if (attributeValueGeneratorClassnames.isEmpty())
-		{
-			throw new RuntimeException("No classes found. Might be because for some reason Reflections does not work correctly with maven surefire plugin."
-					+ "\n See https://github.com/metasfresh/metasfresh/issues/4773.");
-		}
-
-		System.out.println("Found " + attributeValueGeneratorClassnames.size() + " classes in " + stopwatch.toString());
-
-		return attributeValueGeneratorClassnames;
-	}
-
-	private boolean isSkipTesting(final Class<? extends IAttributeValueGenerator> attributeValueGeneratorClass)
-	{
-		// Skip Mocked implementations, used for testing
-		final String attributeValueGeneratorClassname = attributeValueGeneratorClass.getName();
-		if (attributeValueGeneratorClassname.startsWith("Mocked")
-				|| attributeValueGeneratorClassname.indexOf("$Mocked") > 0)
-		{
-			return true;
-		}
-
-		// Skip interfaces
-		if (attributeValueGeneratorClass.isInterface())
-		{
-			return true;
-		}
-
-		// Skip abstract classes
-		return Modifier.isAbstract(attributeValueGeneratorClass.getModifiers());
-	}
-
 	/**
 	 * Create a new {@link I_M_HU_PI_Attribute} configuration for given <code>attributeValueGeneratorClass</code>.
-	 *
+	 * <p>
 	 * The create a new {@link HUAttributeStorage} instance and invoke {@link HUAttributeStorage#generateInitialAttributes(Map)}.
 	 */
+	@ParameterizedTest
+	@ArgumentsSource(AttributeValueGeneratorClassArgumentsProvider.class)
 	public void test(final Class<? extends IAttributeValueGenerator> attributeValueGeneratorClass)
 	{
 		// testWatcher.putContext(attributeValueGeneratorClass);
@@ -251,5 +205,65 @@ public class HUAttributeStorage_generateInitialAttributes_Integration_Test exten
 		// Ask it to generate it's initial attributes and hope to not fail ;)
 		final Map<AttributeId, Object> defaultAttributesValue = ImmutableMap.of();
 		attributesStorage.generateInitialAttributes(defaultAttributesValue);
+	}
+
+	//
+	//
+	//
+	//
+	//
+
+	public static class AttributeValueGeneratorClassArgumentsProvider implements ArgumentsProvider
+	{
+		@Override
+		public Stream<? extends Arguments> provideArguments(ExtensionContext context)
+		{
+			return retrieveAttributeValueGeneratorClassnames()
+					.stream()
+					.filter(attributeValueGeneratorClass -> !isSkipTesting(attributeValueGeneratorClass))
+					.map(Arguments::of);
+		}
+
+		private static Set<Class<? extends IAttributeValueGenerator>> retrieveAttributeValueGeneratorClassnames()
+		{
+			final Stopwatch stopwatch = Stopwatch.createStarted();
+			final Reflections reflections = new Reflections(new ConfigurationBuilder()
+					.addUrls(ClasspathHelper.forClassLoader())
+					.setScanners(new SubTypesScanner()));
+
+			final Set<Class<? extends IAttributeValueGenerator>> attributeValueGeneratorClassnames = reflections.getSubTypesOf(IAttributeValueGenerator.class);
+
+			stopwatch.stop();
+			System.out.println("Found " + attributeValueGeneratorClassnames.size() + " classes in " + stopwatch);
+
+			if (attributeValueGeneratorClassnames.isEmpty())
+			{
+				throw new RuntimeException("No classes found. Might be because for some reason Reflections does not work correctly with maven surefire plugin."
+						+ "\n See https://github.com/metasfresh/metasfresh/issues/4773.");
+			}
+
+			return attributeValueGeneratorClassnames;
+		}
+
+		private static boolean isSkipTesting(final Class<? extends IAttributeValueGenerator> attributeValueGeneratorClass)
+		{
+			// Skip Mocked implementations, used for testing
+			final String attributeValueGeneratorClassname = attributeValueGeneratorClass.getName();
+			if (attributeValueGeneratorClassname.startsWith("Mocked")
+					|| attributeValueGeneratorClassname.indexOf("$Mocked") > 0)
+			{
+				return true;
+			}
+
+			// Skip interfaces
+			if (attributeValueGeneratorClass.isInterface())
+			{
+				return true;
+			}
+
+			// Skip abstract classes
+			return Modifier.isAbstract(attributeValueGeneratorClass.getModifiers());
+		}
+
 	}
 }
