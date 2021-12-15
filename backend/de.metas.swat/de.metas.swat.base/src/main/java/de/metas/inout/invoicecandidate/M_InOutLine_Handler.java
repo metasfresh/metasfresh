@@ -10,7 +10,6 @@ import de.metas.async.AsyncBatchId;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerDocumentLocationHelper;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
-import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest;
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -22,11 +21,10 @@ import de.metas.document.dimension.Dimension;
 import de.metas.document.dimension.DimensionService;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.location.DocumentLocation;
-import de.metas.document.location.RenderedAddressAndCapturedLocation;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
-import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
 import de.metas.inout.InOutId;
+import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
@@ -75,7 +73,6 @@ import org.adempiere.warehouse.WarehouseId;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Note;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
@@ -424,6 +421,9 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		}
 
 		icRecord.setC_Async_Batch_ID(inOut.getC_Async_Batch_ID());
+
+		icRecord.setC_Shipping_Location_ID(inOut.getC_BPartner_Location_Value_ID());
+
 		//
 		// Save the Invoice Candidate, so that we can use it's ID further down
 		saveRecord(icRecord);

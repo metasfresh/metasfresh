@@ -18,8 +18,8 @@ import de.metas.i18n.IADMessageDAO;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.Language;
 import de.metas.interfaces.I_C_OrderLine;
-import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapterFactory;
 import de.metas.invoice.InvoiceDocBaseType;
+import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapterFactory;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.invoice.service.IMatchInvBL;
@@ -629,6 +629,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 
 				invoiceLine.setC_UOM_ID(cand.getC_UOM_ID()); // 06718
 				invoiceLine.setPrice_UOM_ID(cand.getPrice_UOM_ID()); // 06942
+				invoiceLine.setC_Shipping_Location_ID(cand.getC_Shipping_Location_ID());
 
 				//
 				// Product / Charge
