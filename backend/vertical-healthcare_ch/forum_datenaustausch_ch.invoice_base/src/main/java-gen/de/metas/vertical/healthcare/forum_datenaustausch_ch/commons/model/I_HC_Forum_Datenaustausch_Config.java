@@ -7,7 +7,7 @@ import javax.annotation.Nullable;
 /** Generated Interface for HC_Forum_Datenaustausch_Config
  *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public interface I_HC_Forum_Datenaustausch_Config 
 {
 
@@ -279,6 +279,27 @@ public interface I_HC_Forum_Datenaustausch_Config
 
 	ModelColumn<I_HC_Forum_Datenaustausch_Config, org.compiere.model.I_C_BP_Group> COLUMN_ImportedPartientBP_Group_ID = new ModelColumn<>(I_HC_Forum_Datenaustausch_Config.class, "ImportedPartientBP_Group_ID", org.compiere.model.I_C_BP_Group.class);
 	String COLUMNNAME_ImportedPartientBP_Group_ID = "ImportedPartientBP_Group_ID";
+
+	/**
+	 * Set Import XML Version.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setImportedXmlVersion (java.lang.String ImportedXmlVersion);
+
+	/**
+	 * Get Import XML Version.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getImportedXmlVersion();
+
+	ModelColumn<I_HC_Forum_Datenaustausch_Config, Object> COLUMN_ImportedXmlVersion = new ModelColumn<>(I_HC_Forum_Datenaustausch_Config.class, "ImportedXmlVersion", null);
+	String COLUMNNAME_ImportedXmlVersion = "ImportedXmlVersion";
 
 	/**
 	 * Set Active.

@@ -44,8 +44,8 @@ import de.metas.common.ordercandidates.v1.request.JsonRequestBPartnerLocationAnd
 import de.metas.common.ordercandidates.v1.response.JsonAttachment;
 import de.metas.common.ordercandidates.v1.response.JsonOLCand;
 import de.metas.common.ordercandidates.v1.response.JsonOLCandCreateBulkResponse;
-import de.metas.common.rest_api.v1.JsonDocTypeInfo;
 import de.metas.common.rest_api.common.JsonExternalId;
+import de.metas.common.rest_api.v1.JsonDocTypeInfo;
 import de.metas.common.rest_api.v1.SyncAdvise;
 import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
 import de.metas.organization.OrgId;
@@ -68,7 +68,6 @@ import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.HealthcareCH
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.config.ImportConfig;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.config.ImportConfigRepository;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.commons.ForumDatenaustauschChConstants;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.Invoice440RequestConversionService;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.BillerAddressType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.BodyType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.CompanyType;
@@ -82,6 +81,7 @@ import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.reque
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.RequestType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.ServicesType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.ZipType;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_450.Invoice450RequestConversionService;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.JaxbUtil;
 import lombok.Builder;
 import lombok.NonNull;
@@ -148,7 +148,7 @@ public class XmlToOLCandsService
 		final ResponseEntity<JsonAttachment> result = attachXmlToOLCandidates(
 				xmlInvoiceFile,
 				externalHeaderId,
-				Invoice440RequestConversionService.INVOICE_440_REQUEST_XSD); // store the XSD name so we don't need to extract it from the binary attachment data
+				Invoice450RequestConversionService.INVOICE_450_REQUEST_XSD); // store the XSD name so we don't need to extract it from the binary attachment data
 		return result.getBody();
 	}
 

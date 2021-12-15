@@ -31,7 +31,7 @@ import de.metas.invoice.detail.InvoiceWithDetailsRepository;
 import de.metas.lang.SOTrx;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.Invoice440RequestConversionService;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_450.Invoice450RequestConversionService;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.XmlRequest;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.test.AdempiereTestHelper;
@@ -70,7 +70,7 @@ public class HealthcareXMLToInvoiceDetailPersisterTest
 
 		final InputStream inputStream = getClass().getResourceAsStream("/de/metas/invoice/export/md_440_tp_kvg_de.xml");
 
-		final Invoice440RequestConversionService requestConverter = new Invoice440RequestConversionService();
+		final Invoice450RequestConversionService requestConverter = new Invoice450RequestConversionService();
 		xmlRequest = requestConverter.toCrossVersionRequest(inputStream);
 	}
 
@@ -95,7 +95,7 @@ public class HealthcareXMLToInvoiceDetailPersisterTest
 
 		final InputStream inputStream = getClass().getResourceAsStream("/de/metas/invoice/export/md_440_tp_kvg_de.xml");
 
-		final Invoice440RequestConversionService requestConverter = new Invoice440RequestConversionService();
+		final Invoice450RequestConversionService requestConverter = new Invoice450RequestConversionService();
 		xmlRequest = requestConverter.toCrossVersionRequest(inputStream);
 
 		// when

@@ -40,10 +40,10 @@ import javax.annotation.Nullable;
 public class ExportConfigRepository
 {
 	private static final ImmutableMap<String, XmlVersion> //
-	INTERNALNAME_TO_VERSION = ImmutableMap.of(X_HC_Forum_Datenaustausch_Config.EXPORTEDXMLVERSION_V440, XmlVersion.v440);
+			INTERNALNAME_TO_VERSION = ImmutableMap.of(X_HC_Forum_Datenaustausch_Config.EXPORTEDXMLVERSION_V440, XmlVersion.v440, X_HC_Forum_Datenaustausch_Config.EXPORTEDXMLVERSION_V450, XmlVersion.v450);
 
 	private static final ImmutableMap<String, XmlMode> //
-	INTERNALNAME_TO_MODE = ImmutableMap.of(
+			INTERNALNAME_TO_MODE = ImmutableMap.of(
 			X_HC_Forum_Datenaustausch_Config.EXPORTEDXMLMODE_Production, XmlMode.PRODUCTION,
 			X_HC_Forum_Datenaustausch_Config.EXPORTEDXMLMODE_Test, XmlMode.TEST);
 
@@ -61,7 +61,8 @@ public class ExportConfigRepository
 		}
 		return ExportConfig
 				.builder()
-				.xmlVersion(INTERNALNAME_TO_VERSION.get(queryRecord.getExportedXmlVersion()))
+				.exportXmlVersion(INTERNALNAME_TO_VERSION.get(queryRecord.getExportedXmlVersion()))
+				.importXmlVersion(INTERNALNAME_TO_VERSION.get(queryRecord.getImportedXmlVersion()))
 				.mode(INTERNALNAME_TO_MODE.get(queryRecord.getExportedXmlMode()))
 				.fromEAN(queryRecord.getFrom_EAN())
 				.viaEAN(queryRecord.getVia_EAN())
