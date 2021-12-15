@@ -1,11 +1,6 @@
 package de.metas.ui.web.handlingunits.process;
 
-import java.util.List;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.FillMandatoryException;
-import org.springframework.beans.factory.annotation.Autowired;
-
+import de.metas.handlingunits.QtyTU;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.allocation.transfer.HUTransformService.HUsToNewTUsRequest;
 import de.metas.handlingunits.model.I_M_HU;
@@ -18,6 +13,11 @@ import de.metas.ui.web.handlingunits.WEBUI_HU_Constants;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.model.DocumentCollection;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.FillMandatoryException;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.List;
 
 /*
  * #%L
@@ -105,7 +105,7 @@ public class WEBUI_M_HU_MoveTUsToDirectWarehouse extends HUEditorProcessTemplate
 
 		final I_M_HU topLevelHU = getRecord(I_M_HU.class);
 
-		final HUsToNewTUsRequest request = HUsToNewTUsRequest.forSourceHuAndQty(topLevelHU, p_QtyTU);
+		final HUsToNewTUsRequest request = HUsToNewTUsRequest.forSourceHuAndQty(topLevelHU, QtyTU.ofInt(p_QtyTU));
 		final List<I_M_HU> tus = HUTransformService.newInstance().husToNewTUs(request);
 		if (tus.size() != p_QtyTU)
 		{

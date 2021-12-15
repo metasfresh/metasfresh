@@ -1,14 +1,7 @@
 package de.metas.ui.web.pporder.process;
 
-import java.math.BigDecimal;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.adempiere.exceptions.AdempiereException;
-
 import com.google.common.collect.ImmutableList;
-
+import de.metas.handlingunits.QtyTU;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.allocation.transfer.HUTransformService.HUsToNewTUsRequest;
 import de.metas.handlingunits.model.I_M_HU;
@@ -16,7 +9,6 @@ import de.metas.handlingunits.model.I_M_Source_HU;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.handlingunits.storage.EmptyHUListener;
-import org.eevolution.api.PPOrderId;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
@@ -25,6 +17,13 @@ import de.metas.ui.web.pporder.PPOrderLinesView;
 import de.metas.ui.web.pporder.util.WEBUI_PP_Order_ProcessHelper;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
+import org.adempiere.exceptions.AdempiereException;
+import org.eevolution.api.PPOrderId;
+
+import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /*
  * #%L
@@ -94,7 +93,7 @@ public class WEBUI_PP_Order_M_Source_HU_IssueTuQty
 
 		final HUsToNewTUsRequest request = HUsToNewTUsRequest.builder()
 				.sourceHUs(husThatAreFlaggedAsSource)
-				.qtyTU(qtyTU.intValue())
+				.qtyTU(QtyTU.ofBigDecimal(qtyTU))
 				.build();
 
 		EmptyHUListener emptyHUListener = EmptyHUListener

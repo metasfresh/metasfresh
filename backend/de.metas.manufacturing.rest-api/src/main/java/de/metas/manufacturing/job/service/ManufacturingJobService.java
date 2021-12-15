@@ -362,14 +362,14 @@ public class ManufacturingJobService
 				final List<I_M_HU> createdLUs = HUTransformService.newInstance()
 						.tuToNewLUs(
 								tu,
-								QtyTU.ONE.toBigDecimal(),
+								QtyTU.ONE,
 								Objects.requireNonNull(luPIItem),
 								true);
 				lu = CollectionUtils.singleElement(createdLUs);
 			}
 			else
 			{
-				HUTransformService.newInstance().tuToExistingLU(tu, QtyTU.ONE.toBigDecimal(), lu);
+				HUTransformService.newInstance().tuToExistingLU(tu, QtyTU.ONE, lu);
 			}
 		}
 

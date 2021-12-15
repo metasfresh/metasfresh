@@ -1,28 +1,12 @@
 package de.metas.ui.web.handlingunits.process;
 
-import static org.adempiere.model.InterfaceWrapperHelper.create;
-import static org.adempiere.model.InterfaceWrapperHelper.getContextAware;
-
-import java.math.BigDecimal;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.function.Predicate;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.mm.attributes.api.AttributeConstants;
-import org.adempiere.util.lang.IContextAware;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.util.Env;
-import org.compiere.util.Util;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.QtyTU;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
@@ -38,6 +22,21 @@ import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.mm.attributes.api.AttributeConstants;
+import org.adempiere.util.lang.IContextAware;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.util.Env;
+import org.compiere.util.Util;
+
+import java.math.BigDecimal;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.function.Predicate;
+
+import static org.adempiere.model.InterfaceWrapperHelper.create;
+import static org.adempiere.model.InterfaceWrapperHelper.getContextAware;
 
 /*
  * #%L
@@ -215,7 +214,7 @@ public class WEBUIHUCreationWithSerialNumberService
 
 	private I_M_HU createNonAggregatedTU(final HUEditorRow tuRow, final HUEditorRow luRow)
 	{
-		final I_M_HU newTU = newHUTransformation().tuToNewTUs(tuRow.getM_HU(), BigDecimal.ONE).get(0);
+		final I_M_HU newTU = newHUTransformation().tuToNewTUs(tuRow.getM_HU(), QtyTU.ONE).get(0);
 
 		if (luRow != null)
 		{
@@ -225,7 +224,7 @@ public class WEBUIHUCreationWithSerialNumberService
 			{
 				final I_M_HU_PI_Item luPIItem = oldLU.getM_HU_LUTU_Configuration().getM_LU_HU_PI_Item();
 
-				final List<I_M_HU> tuToNewLUs = newHUTransformation().tuToNewLUs(newTU, BigDecimal.ONE, luPIItem, false);
+				final List<I_M_HU> tuToNewLUs = newHUTransformation().tuToNewLUs(newTU, QtyTU.ONE, luPIItem, false);
 
 				huIDsToRemove.add(HuId.ofRepoId(oldLU.getM_HU_ID()));
 				huIDsAdded.add(HuId.ofRepoId(tuToNewLUs.get(0).getM_HU_ID()));
@@ -244,7 +243,7 @@ public class WEBUIHUCreationWithSerialNumberService
 	private void moveTUToLU(final int tuId, final HUEditorRow luRow, final HUEditorRow tuRow)
 	{
 		final I_M_HU newTU = create(Env.getCtx(), tuId, I_M_HU.class, ITrx.TRXNAME_ThreadInherited);
-		newHUTransformation().tuToExistingLU(newTU, BigDecimal.ONE, luRow.getM_HU());
+		newHUTransformation().tuToExistingLU(newTU, QtyTU.ONE, luRow.getM_HU());
 	}
 
 	private void assignSerialNumbersToCUs(final Set<HuId> cuIDs, final List<String> availableSerialNumbers)

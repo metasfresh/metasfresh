@@ -6,6 +6,7 @@ import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.IMutableHUContext;
+import de.metas.handlingunits.QtyTU;
 import de.metas.handlingunits.allocation.impl.HUProducerDestination;
 import de.metas.handlingunits.allocation.transfer.HUTransformService.HUsToNewCUsRequest;
 import de.metas.handlingunits.allocation.transfer.HUTransformService.HUsToNewTUsRequest;
@@ -224,8 +225,6 @@ public class HUTransformServiceTests
 	/**
 	 * Run {@link HUTransformService#cuToNewTUs(I_M_HU, Quantity, I_M_HU_PI_Item_Product, boolean)}
 	 * by splitting a CU-quantity of 40 onto new TUs with a CU-capacity of 8 each.
-	 *
-	 * @param isOwnPackingMaterials
 	 */
 	@Theory
 	public void testRealCU_To_NewTUs_40Tomatoes_TU_Capacity_8(
@@ -396,7 +395,7 @@ public class HUTransformServiceTests
 	}
 
 	/**
-	 * Verifies that if {@link HUTransformService#tuToNewTUs(I_M_HU, BigDecimal)}  is run with the source TU's full qty or more and since .
+	 * Verifies that if {@link HUTransformService#tuToNewTUs(I_M_HU, QtyTU)}  is run with the source TU's full qty or more and since .
 	 */
 	@Test
 	public void testAggregateTU_To_NewTUs_MaxValueParent()
@@ -406,8 +405,7 @@ public class HUTransformServiceTests
 
 		// invoke the method under test
 		final List<I_M_HU> newTUs = HUTransformService.newInstance(testsBase.getData().helper.getHUContext())
-				.tuToNewTUs(tuToSplit,
-							new BigDecimal("4")); // tuQty=4; we only have 2 TUs in the source
+				.tuToNewTUs(tuToSplit, QtyTU.ofInt(4)); // tuQty=4; we only have 2 TUs in the source
 		Assert.assertThat(newTUs.size(), is(2));
 
 		Assert.assertThat(testsBase.retrieveParentItem(newTUs.get(0)), nullValue());
@@ -422,7 +420,7 @@ public class HUTransformServiceTests
 		// invoke the method under test
 		final List<I_M_HU> newTUs = HUTransformService.newInstance(testsBase.getData().helper.getHUContext())
 				.tuToNewTUs(tuToSplit,
-							new BigDecimal("1")); // tuQty=1; we have 2 TUs in the source, so we will will only expect 1x40 to be actually loaded
+						QtyTU.ofInt(1)); // tuQty=1; we have 2 TUs in the source, so we will will only expect 1x40 to be actually loaded
 		Assert.assertThat(newTUs.size(), is(1));
 
 		final Node newTUXML = HUXmlConverter.toXml(newTUs.get(0));
@@ -431,7 +429,7 @@ public class HUTransformServiceTests
 	}
 
 	/**
-	 * @task https://github.com/metasfresh/metasfresh/issues/1516
+	 * Task https://github.com/metasfresh/metasfresh/issues/1516
 	 */
 	@Test
 	public void test_TakeOutTUsFromCustomLU()
@@ -446,7 +444,7 @@ public class HUTransformServiceTests
 
 		// Actually take out 2 TUs
 		final List<I_M_HU> newTUs = huTransformService
-				.tuToNewTUs(tu, BigDecimal.valueOf(2));
+				.tuToNewTUs(tu, QtyTU.ofInt(2));
 		Assert.assertThat(newTUs.size(), is(2));
 
 		// Make sure each TU is valid
@@ -463,7 +461,7 @@ public class HUTransformServiceTests
 	}
 
 	/**
-	 * Verifies the nothing is changed if {@link HUTransformService#tuToNewTUs(I_M_HU, BigDecimal)}  is run with the source TU's full qty or more.
+	 * Verifies the nothing is changed if {@link HUTransformService#tuToNewTUs(I_M_HU, QtyTU)}  is run with the source TU's full qty or more.
 	 */
 	@Test
 	public void testRealTU_To_NewTUs_MaxValue()
@@ -489,14 +487,10 @@ public class HUTransformServiceTests
 		// invoke the method under test
 		final List<I_M_HU> newTUs = huTransformService
 				.tuToNewTUs(tuToSplit,
-							new BigDecimal("4")); // tuQty=4; we only have 1 TU in the source which only holds 20kg
+						QtyTU.ofInt(4)); // tuQty=4; we only have 1 TU in the source which only holds 20kg
 		assertThat(newTUs).containsExactly(tuToSplit);
 	}
 
-	/**
-	 * Similar to {@link #testSplitAggregateTU_To_NewTUs_MaxValue()}, but here the source TU is on a pallet.<br>
-	 * So this time, it shall be taken off the pallet.
-	 */
 	@Theory
 	public void testRealTU_To_NewTUs(@FromDataPoints("isOwnPackingMaterials") final boolean isOwnPackingMaterials)
 	{
@@ -522,7 +516,7 @@ public class HUTransformServiceTests
 			data.disableHUPackingMaterialsCollector("when the new LU is created, the system would want to generate a packing material movement");
 
 			final List<I_M_HU> lus = huTransformService
-					.tuToNewLUs(tuToSplit, ONE, data.piLU_Item_IFCO, isOwnPackingMaterials);
+					.tuToNewLUs(tuToSplit, QtyTU.ONE, data.piLU_Item_IFCO, isOwnPackingMaterials);
 			// get the LU and verify that it's properly linked with toToSplit
 			{
 				Assert.assertThat(lus.size(), is(1));
@@ -544,7 +538,7 @@ public class HUTransformServiceTests
 		final List<I_M_HU> newTUs = HUTransformService
 				.newInstance(data.helper.getHUContext())
 				.tuToNewTUs(tuToSplit,
-							new BigDecimal("1")); // tuQty=1;
+						QtyTU.ONE); // tuQty=1;
 
 		Assert.assertThat(newTUs.size(), is(1)); // we transfer 20kg, one IFCO holds 40kg, so we expect 1 IFCO
 		Assert.assertThat(newTUs.get(0).getM_HU_ID(), is(tuToSplit.getM_HU_ID()));
@@ -573,9 +567,9 @@ public class HUTransformServiceTests
 		final List<I_M_HU> newLUs = HUTransformService
 				.newInstance(data.helper.getHUContext())
 				.tuToNewLUs(tuToSplit,
-							new BigDecimal("4"), // tuQty=4; we only have 2 TUs in the source which hold 40kg each, so we will will expect 2x40 to be actually loaded
-							data.piLU_Item_IFCO,
-							isOwnPackingMaterials);
+						QtyTU.ofInt(4), // tuQty=4; we only have 2 TUs in the source which hold 40kg each, so we will will expect 2x40 to be actually loaded
+						data.piLU_Item_IFCO,
+						isOwnPackingMaterials);
 
 		Assert.assertThat(newLUs.size(), is(1)); // we transfered 80kg, the target TUs are still IFCOs one IFCO still holds 40kg, one LU holds 5 IFCOS, so we expect one LU to suffice
 
@@ -607,9 +601,9 @@ public class HUTransformServiceTests
 		// invoke the method under test
 		final List<I_M_HU> newLUs = huTransformService
 				.tuToNewLUs(tuToSplit,
-							new BigDecimal("6"), // tuQty=6;
-							data.piLU_Item_IFCO,
-							isOwnPackingMaterials);
+						QtyTU.ofInt(6), // tuQty=6;
+						data.piLU_Item_IFCO,
+						isOwnPackingMaterials);
 
 		Assert.assertThat(newLUs.size(), is(2)); // we have 6 TUs in the source; one pallet can old 5 IFCOS, to we expect two pallets.
 		{
@@ -656,9 +650,9 @@ public class HUTransformServiceTests
 		// invoke the method under test
 		final List<I_M_HU> newLUs = huTransformService
 				.tuToNewLUs(tuToSplit,
-							new BigDecimal("4"), // tuQty=4; we only have 1 TU in the source which only holds 20kg, so we will expect the TU to be moved
-							data.piLU_Item_IFCO,
-							isOwnPackingMaterials);
+						QtyTU.ofInt(4), // tuQty=4; we only have 1 TU in the source which only holds 20kg, so we will expect the TU to be moved
+						data.piLU_Item_IFCO,
+						isOwnPackingMaterials);
 
 		Assert.assertThat(newLUs.size(), is(1)); // we transfered 20kg, the target TUs are still IFCOs one IFCO still holds 40kg, one LU holds 5 IFCOS, so we expect one LU with one IFCO to suffice
 		// data.helper.commitAndDumpHU(newLUs.get(0));
@@ -696,7 +690,7 @@ public class HUTransformServiceTests
 		// prepare tuToSplit onto a LU. This assumes that #testRealStandaloneTU_To_NewLU was green
 		final List<I_M_HU> oldLUs = HUTransformService
 				.newInstance(data.helper.getHUContext())
-				.tuToNewLUs(tuToSplit, ONE, data.piLU_Item_IFCO, isOwnPackingMaterials);
+				.tuToNewLUs(tuToSplit, QtyTU.ONE, data.piLU_Item_IFCO, isOwnPackingMaterials);
 		Assert.assertThat(oldLUs.size(), is(1)); // guard
 		Assert.assertThat(tuToSplit.getM_HU_Item_Parent().getM_HU_ID(), is(oldLUs.get(0).getM_HU_ID()));
 		Assert.assertThat(oldLUs.get(0).getHUStatus(), is(X_M_HU.HUSTATUS_Active));
@@ -710,9 +704,9 @@ public class HUTransformServiceTests
 		final List<I_M_HU> newLUs = HUTransformService
 				.newInstance(data.helper.getHUContext())
 				.tuToNewLUs(tuToSplit,
-							new BigDecimal("4"), // tuQty=4; we only have 1 TU in the source which only holds 20kg, so we will expect the TU to be moved
-							data.piLU_Item_IFCO,
-							isOwnPackingMaterials);
+						QtyTU.ofInt(4), // tuQty=4; we only have 1 TU in the source which only holds 20kg, so we will expect the TU to be moved
+						data.piLU_Item_IFCO,
+						isOwnPackingMaterials);
 
 		// the old LU shall now be destroyed
 		Assert.assertThat(oldLUs.get(0).getHUStatus(), is(X_M_HU.HUSTATUS_Destroyed));
@@ -748,18 +742,18 @@ public class HUTransformServiceTests
 
 			final List<I_M_HU> existingTUs = HUTransformService.newInstance(localHuContextCopy)
 					.cuToNewTUs(cuHU,
-								Quantity.of(new BigDecimal("20"), data.helper.uomKg),
-								data.piTU_Item_Product_IFCO_40KgTomatoes,
-								false);
+							Quantity.of(new BigDecimal("20"), data.helper.uomKg),
+							data.piTU_Item_Product_IFCO_40KgTomatoes,
+							false);
 			Assert.assertThat(existingTUs.size(), is(1));
 			final I_M_HU exitingTu = existingTUs.get(0);
 			Assert.assertThat(handlingUnitsBL.isAggregateHU(exitingTu), is(false)); // guard; make sure it's "real"
 
 			final List<I_M_HU> existingLUs = HUTransformService.newInstance(localHuContextCopy)
 					.tuToNewLUs(exitingTu,
-								new BigDecimal("4"), // tuQty=4; we only have 1 TU in the source which only holds 20kg, so we will will expect 1x20 to be actually loaded
-								data.piLU_Item_IFCO,
-								false);
+							QtyTU.ofInt(4), // tuQty=4; we only have 1 TU in the source which only holds 20kg, so we will will expect 1x20 to be actually loaded
+							data.piLU_Item_IFCO,
+							false);
 			Assert.assertThat(existingLUs.size(), is(1));
 			// data.helper.commitAndDumpHU(existingLUs.get(0));
 			existingLU = existingLUs.get(0); //
@@ -775,8 +769,8 @@ public class HUTransformServiceTests
 		// invoke the method under test
 		huTransformService
 				.tuToExistingLU(tuToSplit,
-								new BigDecimal("4"), // tuQty=4; we only have 2 TU in the source which hold 40kg each, so we will will expect 2x40 to be actually loaded
-								existingLU);
+						QtyTU.ofInt(4), // tuQty=4; we only have 2 TU in the source which hold 40kg each, so we will will expect 2x40 to be actually loaded
+						existingLU);
 
 		// we had 20 and loaded 80, so we now expect 100
 		final Node existingLUXML = HUXmlConverter.toXml(existingLU);
@@ -803,9 +797,9 @@ public class HUTransformServiceTests
 
 			final List<I_M_HU> existingLUs = HUTransformService.newInstance(localCopy)
 					.tuToNewLUs(exitingTu,
-								new BigDecimal("4"), // tuQty=4; we only have 2 TUs in the source which only holds 80kg, so we will will expect 2x40 to be actually loaded onto one LU
-								data.piLU_Item_IFCO,
-								false);
+							QtyTU.ofInt(4), // tuQty=4; we only have 2 TUs in the source which only holds 80kg, so we will will expect 2x40 to be actually loaded onto one LU
+							data.piLU_Item_IFCO,
+							false);
 			Assert.assertThat(existingLUs.size(), is(1));
 			// data.helper.commitAndDumpHU(existingLUs.get(0));
 			existingLU = existingLUs.get(0); //
@@ -826,8 +820,8 @@ public class HUTransformServiceTests
 		// invoke the method under test
 		HUTransformService.newInstance(huContext)
 				.tuToExistingLU(tuToSplit,
-								new BigDecimal("4"), // tuQty=4; we only have 2 TU in the source which hold 40kg each, so we will will expect 2x40 to be actually loaded
-								existingLU);
+						QtyTU.ofInt(4), // tuQty=4; we only have 2 TU in the source which hold 40kg each, so we will will expect 2x40 to be actually loaded
+						existingLU);
 
 		// we had 80 and loaded 80, so we now expect 160
 		final Node existingLUXML = HUXmlConverter.toXml(existingLU);
@@ -994,7 +988,7 @@ public class HUTransformServiceTests
 		Assert.assertThat(handlingUnitsBL.isAggregateHU(aggregateTU), is(true));
 
 		final List<I_M_HU> newTUs = huTransformService
-				.tuToNewTUs(aggregateTU, ONE);
+				.tuToNewTUs(aggregateTU, QtyTU.ONE);
 		Assert.assertThat(newTUs.size(), is(1));
 		final I_M_HU newTU = newTUs.get(0);
 		// data.helper.commitAndDumpHU(newTU);
@@ -1026,7 +1020,7 @@ public class HUTransformServiceTests
 		final HUsToNewTUsRequest request = HUsToNewTUsRequest.builder()
 				.sourceHU(aggregateHU1)
 				.sourceHU(aggregateHU2)
-				.qtyTU(3).build();
+				.qtyTU(QtyTU.ofInt(3)).build();
 
 		final List<I_M_HU> extractedTUs = huTransformService.husToNewTUs(request);
 
@@ -1057,7 +1051,7 @@ public class HUTransformServiceTests
 				.sourceHU(aggregateHU1)
 				.sourceHU(realTU2)
 				.sourceHU(aggregateHU3)
-				.qtyTU(4).build();
+				.qtyTU(QtyTU.ofInt(4)).build();
 
 		final List<I_M_HU> extractedTUs = huTransformService.husToNewTUs(request);
 		assertThat(extractedTUs).hasSize(4);
@@ -1085,7 +1079,7 @@ public class HUTransformServiceTests
 	{
 		final I_M_HU aggregateHU = testsBase.getData().mkAggregateHUWithTotalQtyCUandCustomQtyCUsPerTU("24", 8);
 
-		final HUsToNewTUsRequest request = HUsToNewTUsRequest.builder().sourceHU(aggregateHU).qtyTU(2).build();
+		final HUsToNewTUsRequest request = HUsToNewTUsRequest.builder().sourceHU(aggregateHU).qtyTU(QtyTU.ofInt(2)).build();
 		final List<I_M_HU> extractedTUs = huTransformService.husToNewTUs(request);
 
 		assertThat(extractedTUs).hasSize(2);
@@ -1112,21 +1106,21 @@ public class HUTransformServiceTests
 
 		final List<I_M_HU> newLUs = huTransformService
 				.tuToNewLUs(realTu1,
-							new BigDecimal("4"), // tuQty=4; we only have 1 TU in the source which only holds 20kg, so we will expect the TU to be moved
-							data.piLU_Item_IFCO,
-							isOwnPackingMaterials);
+						QtyTU.ofInt(4), // tuQty=4; we only have 1 TU in the source which only holds 20kg, so we will expect the TU to be moved
+						data.piLU_Item_IFCO,
+						isOwnPackingMaterials);
 
 		assertThat(newLUs).hasSize(1);
 		final I_M_HU luHU = newLUs.get(0);
 		assertThat(luHU.isHUPlanningReceiptOwnerPM()).isEqualTo(isOwnPackingMaterials); // guard
 
-		huTransformService.tuToExistingLU(realTu2, ONE, luHU);
+		huTransformService.tuToExistingLU(realTu2, QtyTU.ONE, luHU);
 		refresh(luHU);
-		huTransformService.tuToExistingLU(realTu3, ONE, luHU);
+		huTransformService.tuToExistingLU(realTu3, QtyTU.ONE, luHU);
 		refresh(luHU);
 
 		// invoke method under test
-		final HUsToNewTUsRequest request = HUsToNewTUsRequest.builder().sourceHU(luHU).qtyTU(2).build();
+		final HUsToNewTUsRequest request = HUsToNewTUsRequest.builder().sourceHU(luHU).qtyTU(QtyTU.ofInt(2)).build();
 		final List<I_M_HU> extractedTUs = huTransformService.husToNewTUs(request);
 
 		assertThat(extractedTUs).hasSize(2);
@@ -1159,7 +1153,7 @@ public class HUTransformServiceTests
 
 		// invoke the method under test
 		HUTransformService.newInstance(mutableHUContext)
-				.husToNewTUs(HUsToNewTUsRequest.forSourceHuAndQty(aggregateHU1, 2));
+				.husToNewTUs(HUsToNewTUsRequest.forSourceHuAndQty(aggregateHU1, QtyTU.ofInt(2)));
 
 		refresh(aggregateHU1);
 		assertThat(aggregateHU1.getHUStatus()).isEqualTo(X_M_HU.HUSTATUS_Destroyed);

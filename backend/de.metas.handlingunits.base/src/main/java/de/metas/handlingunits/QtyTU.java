@@ -92,8 +92,49 @@ public final class QtyTU implements Comparable<QtyTU>
 		return this.intValue - other.intValue;
 	}
 
+	public int compareToBigDecimal(@NonNull final BigDecimal other)
+	{
+		return this.intValue - other.intValueExact();
+	}
+
 	public boolean isGreaterThan(@NonNull final QtyTU other)
 	{
 		return compareTo(other) > 0;
+	}
+
+	public boolean isPositive() {return intValue > 0;}
+
+	public boolean isZero() {return intValue == 0;}
+
+	public int signum()
+	{
+		return Integer.compare(intValue, 0);
+	}
+
+	public QtyTU add(@NonNull final QtyTU other)
+	{
+		if (other.intValue == 0)
+		{
+			return this;
+		}
+		else if (intValue == 0)
+		{
+			return other;
+		}
+		else
+		{
+			return ofInt(this.intValue + other.intValue);
+		}
+	}
+
+	public QtyTU subtractOrZero(@NonNull final QtyTU other)
+	{
+		final int newIntValue = this.intValue - other.intValue;
+		return newIntValue > 0 ? ofInt(newIntValue) : QtyTU.ZERO;
+	}
+
+	public QtyTU min(@NonNull final QtyTU other)
+	{
+		return this.intValue <= other.intValue ? this : other;
 	}
 }

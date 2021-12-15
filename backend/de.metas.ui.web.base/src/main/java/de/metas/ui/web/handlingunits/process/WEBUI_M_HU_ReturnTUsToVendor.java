@@ -1,24 +1,14 @@
 package de.metas.ui.web.handlingunits.process;
 
-import java.sql.Timestamp;
-import java.util.List;
-
-import de.metas.handlingunits.inout.returns.ReturnsServiceFacade;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.FillMandatoryException;
-import org.compiere.SpringContextHolder;
-import org.compiere.util.Env;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.edi.model.I_M_InOutLine;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUAssignmentDAO;
+import de.metas.handlingunits.QtyTU;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.allocation.transfer.HUTransformService.HUsToNewTUsRequest;
-import de.metas.handlingunits.inout.IHUInOutBL;
+import de.metas.handlingunits.inout.returns.ReturnsServiceFacade;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.Param;
@@ -30,6 +20,14 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.FillMandatoryException;
+import org.compiere.SpringContextHolder;
+import org.compiere.util.Env;
+
+import java.sql.Timestamp;
+import java.util.List;
 
 /*
  * #%L
@@ -57,7 +55,7 @@ import de.metas.util.collections.CollectionUtils;
  * Partial vendor return.
  *
  * @author metas-dev <dev@metasfresh.com>
- * @task https://github.com/metasfresh/metasfresh/issues/2391
+ * @implNote task https://github.com/metasfresh/metasfresh/issues/2391
  */
 public class WEBUI_M_HU_ReturnTUsToVendor extends HUEditorProcessTemplate implements IProcessPrecondition
 {
@@ -126,11 +124,11 @@ public class WEBUI_M_HU_ReturnTUsToVendor extends HUEditorProcessTemplate implem
 
 		//
 		// Split out the TUs we need to return
-		final HUsToNewTUsRequest request = HUsToNewTUsRequest.forSourceHuAndQty(topLevelHU, p_QtyTU);
+		final HUsToNewTUsRequest request = HUsToNewTUsRequest.forSourceHuAndQty(topLevelHU, QtyTU.ofInt(p_QtyTU));
 		tusToReturn = HUTransformService.newInstance().husToNewTUs(request);
 		if (tusToReturn.size() != p_QtyTU)
 		{
-			throw new AdempiereException(WEBUI_HU_Constants.MSG_NotEnoughTUsFound, new Object[] { p_QtyTU, tusToReturn.size() });
+			throw new AdempiereException(WEBUI_HU_Constants.MSG_NotEnoughTUsFound, p_QtyTU, tusToReturn.size());
 		}
 
 		//

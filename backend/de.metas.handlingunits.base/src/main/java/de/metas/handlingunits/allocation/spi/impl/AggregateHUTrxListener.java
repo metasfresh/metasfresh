@@ -22,19 +22,10 @@ package de.metas.handlingunits.allocation.spi.impl;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.adempiere.mm.attributes.AttributeCode;
-import org.adempiere.mm.attributes.spi.impl.WeightTareAttributeValueCallout;
-import org.adempiere.model.InterfaceWrapperHelper;
-
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.QtyTU;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationResult;
 import de.metas.handlingunits.allocation.impl.AllocationUtils;
@@ -57,6 +48,15 @@ import de.metas.uom.UOMPrecision;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.mm.attributes.AttributeCode;
+import org.adempiere.mm.attributes.spi.impl.WeightTareAttributeValueCallout;
+import org.adempiere.model.InterfaceWrapperHelper;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * This listener plays an important role for aggregate HUs.
@@ -160,11 +160,11 @@ public class AggregateHUTrxListener implements IHUTrxListener
 
 		// If we split exactly N TUs (integer), there's no need for all the dance to figure out the new correct # of TUs for the qty, and splitting the extra qty.
 		// We shall just update the new qty of TUs in this aggregate TU.
-		final BigDecimal qtyTUsToSplit = huContext.getProperty(AggregateHUTrxListener.mkQtyTUsToSplitPropertyKey(item));
+		final QtyTU qtyTUsToSplit = huContext.getProperty(AggregateHUTrxListener.mkQtyTUsToSplitPropertyKey(item));
 		if (qtyTUsToSplit != null && qtyTUsToSplit.signum() != 0)
 		{
-			final BigDecimal newTuQty = item.getQty().subtract(qtyTUsToSplit);
-			item.setQty(newTuQty);
+			final QtyTU newTuQty = QtyTU.ofBigDecimal(item.getQty()).subtractOrZero(qtyTUsToSplit);
+			item.setQty(newTuQty.toBigDecimal());
 			InterfaceWrapperHelper.save(item);
 		}
 		else

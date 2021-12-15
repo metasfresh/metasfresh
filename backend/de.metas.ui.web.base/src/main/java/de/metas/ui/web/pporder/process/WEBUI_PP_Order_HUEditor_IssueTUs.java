@@ -1,24 +1,24 @@
 package de.metas.ui.web.pporder.process;
 
-import static de.metas.ui.web.handlingunits.WEBUI_HU_Constants.MSG_WEBUI_SELECT_ACTIVE_UNSELECTED_HU;
-
-import java.util.List;
-
-import org.adempiere.exceptions.AdempiereException;
-
+import de.metas.handlingunits.QtyTU;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.allocation.transfer.HUTransformService.HUsToNewTUsRequest;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
-import org.eevolution.api.PPOrderId;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.pporder.PPOrderLinesView;
 import de.metas.util.Services;
+import org.adempiere.exceptions.AdempiereException;
+import org.eevolution.api.PPOrderId;
+
+import java.util.List;
+
+import static de.metas.ui.web.handlingunits.WEBUI_HU_Constants.MSG_WEBUI_SELECT_ACTIVE_UNSELECTED_HU;
 
 /*
  * #%L
@@ -75,7 +75,7 @@ public class WEBUI_PP_Order_HUEditor_IssueTUs
 
 		final I_M_HU sourceLUorTU = row.getM_HU();
 
-		final HUsToNewTUsRequest request = HUsToNewTUsRequest.forSourceHuAndQty(sourceLUorTU, qtyTUs);
+		final HUsToNewTUsRequest request = HUsToNewTUsRequest.forSourceHuAndQty(sourceLUorTU, QtyTU.ofInt(qtyTUs));
 		final List<I_M_HU> extractedTUs = HUTransformService.newInstance().husToNewTUs(request);
 		if (extractedTUs.isEmpty())
 		{

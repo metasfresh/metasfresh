@@ -133,7 +133,7 @@ public class WEBUI_M_HU_MoveToGarbage_Partial extends HUEditorProcessTemplate im
 		final I_M_HU topLevelHU = handlingUnitsBL.getById(HuId.ofRepoId(getRecord_ID()));
 
 		final List<I_M_HU> tus = HUTransformService.newInstance()
-				.husToNewTUs(HUTransformService.HUsToNewTUsRequest.forSourceHuAndQty(topLevelHU, qtyTU.toInt()));
+				.husToNewTUs(HUTransformService.HUsToNewTUsRequest.forSourceHuAndQty(topLevelHU, qtyTU));
 		if (tus.size() != qtyTU.toInt())
 		{
 			throw new AdempiereException(WEBUI_HU_Constants.MSG_NotEnoughTUsFound, qtyTU.toInt(), tus.size());
