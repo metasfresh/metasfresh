@@ -122,12 +122,15 @@ class Filters extends PureComponent {
    */
   checkClearedFilters = ({ activeFilterId, filtersActive, filterType }) => {
     if (!filtersActive || filtersActive.length === 0) return false;
+
     let mainFilter = filtersActive.filter(
       (item) => item.filterId === activeFilterId
     );
+
     if (mainFilter.length) {
       const { parameters } = mainFilter[0];
-      if (parameters) {
+
+      if (parameters && parameters.length) {
         return parameters.every((filterItem) => {
           return filterType === FILTERS_TYPE_NOT_INCLUDED &&
             filterItem.value &&
@@ -137,6 +140,7 @@ class Filters extends PureComponent {
             : filterItem.value === null;
         });
       }
+      return false;
     }
     return false;
   };
