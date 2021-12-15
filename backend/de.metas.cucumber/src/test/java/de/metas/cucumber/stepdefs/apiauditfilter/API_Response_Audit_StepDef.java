@@ -60,7 +60,7 @@ public class API_Response_Audit_StepDef
 			assertThat(requestId).isNotNull();
 
 			final String httpCode = DataTableUtil.extractStringForColumnName(row, "HttpCode");
-			final String body = DataTableUtil.extractStringForColumnName(row, "Body");
+			final String body = DataTableUtil.extractStringOrNullForColumnName(row, "Body");
 
 			if (timeoutSec > 0)
 			{
@@ -115,7 +115,6 @@ public class API_Response_Audit_StepDef
 	{
 		return getApiResponseRecordsByRequestAuditId(apiRequestAuditId)
 				.stream()
-				.filter(responseAudit -> responseAudit.getBody() != null)
 				.filter(responseAudit -> httpCode.equals(responseAudit.getHttpCode())
 						&& (body == null && responseAudit.getBody() == null
 						   || responseAudit.getBody() != null && body != null && responseAudit.getBody().contains(body)))

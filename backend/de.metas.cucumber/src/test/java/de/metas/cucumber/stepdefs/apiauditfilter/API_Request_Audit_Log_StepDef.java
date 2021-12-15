@@ -36,6 +36,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Issue;
 import org.compiere.model.I_API_Request_Audit_Log;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -75,7 +76,7 @@ public class API_Request_Audit_Log_StepDef
 			final JsonMetasfreshId requestId = testContext.getApiResponse().getRequestId();
 			assertThat(requestId).isNotNull();
 
-			final String logMessage = DataTableUtil.extractStringForColumnName(row, "Logmessage");
+			final String logMessage = DataTableUtil.extractStringOrNullForColumnName(row, "Logmessage");
 			final String adIssueSummary = DataTableUtil.extractStringOrNullForColumnName(row, "AD_Issue.Summary");
 
 			StepDefUtil.tryAndWait(timeoutSec, 500, () -> this.isApiRequestAuditLogFound(requestId, logMessage));
@@ -110,7 +111,7 @@ public class API_Request_Audit_Log_StepDef
 				.list();
 	}
 
-	private boolean isApiRequestAuditLogFound(@NonNull final JsonMetasfreshId apiRequestAuditId, @NonNull final String logMessage)
+	private boolean isApiRequestAuditLogFound(@NonNull final JsonMetasfreshId apiRequestAuditId, @Nullable final String logMessage)
 	{
 		return getApiRequestAuditLogOptional(apiRequestAuditId, logMessage).isPresent();
 	}
@@ -126,7 +127,7 @@ public class API_Request_Audit_Log_StepDef
 	}
 
 	@NonNull
-	private Optional<I_API_Request_Audit_Log> getApiRequestAuditLogOptional(@NonNull final JsonMetasfreshId apiRequestAuditId, @NonNull final String logMessage)
+	private Optional<I_API_Request_Audit_Log> getApiRequestAuditLogOptional(@NonNull final JsonMetasfreshId apiRequestAuditId, @Nullable final String logMessage)
 	{
 		return queryBL.createQueryBuilder(I_API_Request_Audit_Log.class)
 				.addEqualsFilter(I_API_Request_Audit_Log.COLUMN_API_Request_Audit_ID, apiRequestAuditId.getValue())

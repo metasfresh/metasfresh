@@ -24,7 +24,7 @@ package de.metas.cucumber.stepdefs;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
+import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.JsonObjectMapperHolder;
@@ -171,7 +171,7 @@ public class RESTUtil
 
 				logDetails(jsonApiResponse.getRequestId());
 			}
-			catch (final UnrecognizedPropertyException unrecognizedPropertyException)
+			catch (final MismatchedInputException mismatchedInputException)
 			{
 				extractRequestAuditIdFromHeader(response, stream, apiResponseBuilder);
 			}
