@@ -122,6 +122,12 @@ Feature: Mediated commission
     And after not more than 30s, C_Invoice are found:
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | invoiceSettled_1        | settlement_1                      |
+    And recompute invoice candidates if required
+      | C_Invoice_Candidate_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.NetAmtInvoiced |
+      | settlement_1                      | mediated_vendor             | commission_product      | 10                 |
+    And validate invoice candidate
+      | C_Invoice_Candidate_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_ID.Identifier | NetAmtToInvoice | IsSOTrx | OPT.NetAmtInvoiced |
+      | settlement_1                      | mediated_vendor             | commission_product      | 0               | true    | 10                 |
     And validate created invoices
       | Invoice.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.DocSubType |
       | invoiceSettled_1   | mediated_vendor          | mediated_vendor_location          | 10 Tage 1 % | true      | CO        | RD             |
