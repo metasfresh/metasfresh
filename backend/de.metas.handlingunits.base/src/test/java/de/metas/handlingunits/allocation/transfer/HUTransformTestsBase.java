@@ -1,27 +1,5 @@
 package de.metas.handlingunits.allocation.transfer;
 
-import static de.metas.business.BusinessTestHelper.createBPartner;
-import static de.metas.business.BusinessTestHelper.createBPartnerLocation;
-import static de.metas.business.BusinessTestHelper.createLocator;
-import static de.metas.business.BusinessTestHelper.createWarehouse;
-import static de.metas.handlingunits.HUAssert.assertThat;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.hasXPath;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
-import static org.hamcrest.Matchers.nullValue;
-
-import java.math.BigDecimal;
-import java.util.List;
-
-import org.adempiere.warehouse.LocatorId;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_M_Warehouse;
-import org.junit.Assert;
-import org.w3c.dom.Node;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HUXmlConverter;
 import de.metas.handlingunits.IHUStatusBL;
@@ -36,6 +14,27 @@ import de.metas.handlingunits.model.validator.M_HU;
 import de.metas.handlingunits.trace.HUTransformTracingTests;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
+import org.adempiere.warehouse.LocatorId;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_M_Warehouse;
+import org.junit.Assert;
+import org.w3c.dom.Node;
+
+import java.math.BigDecimal;
+import java.util.List;
+
+import static de.metas.business.BusinessTestHelper.createBPartner;
+import static de.metas.business.BusinessTestHelper.createBPartnerLocation;
+import static de.metas.business.BusinessTestHelper.createLocator;
+import static de.metas.business.BusinessTestHelper.createWarehouse;
+import static de.metas.handlingunits.HUAssert.assertThat;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.hasXPath;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.nullValue;
 
 /*
  * #%L
@@ -64,14 +63,13 @@ import de.metas.util.Services;
  * Please move additional common code from {@link HUTransformServiceTests} to this class when it is needed by {@link HUTransformTracingTests}.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public class HUTransformTestsBase
 {
-	private LUTUProducerDestinationTestSupport data;
+	private final LUTUProducerDestinationTestSupport data;
 
-	private IHandlingUnitsDAO handlingUnitsDAO;
-	private IHUStatusBL huStatusBL;
+	private final IHandlingUnitsDAO handlingUnitsDAO;
+	private final IHUStatusBL huStatusBL;
 
 	public HUTransformTestsBase()
 	{
@@ -130,9 +128,7 @@ public class HUTransformTestsBase
 		}
 
 		// invoke the method under test
-		final List<I_M_HU> newCUs = HUTransformService
-				.newInstance(data.helper.getHUContext())
-				.cuToNewCU(cuToSplit, Quantity.of(BigDecimal.ONE, data.helper.uomKg));
+		final List<I_M_HU> newCUs = HUTransformService.newInstance(data.helper.getHUContext()).cuToNewCU(cuToSplit, Quantity.of(BigDecimal.ONE, data.helper.uomKg));
 
 		Assert.assertThat(newCUs.size(), is(1));
 
@@ -161,15 +157,12 @@ public class HUTransformTestsBase
 		assertThat(cuToSplit).isTopLevelHU(); // this test makes no sense if the given CU has a parent
 
 		// invoke the method under test
-		final List<I_M_HU> newCUs = HUTransformService.newInstance(data.helper.getHUContext())
-				.cuToNewCU(cuToSplit, Quantity.of(new BigDecimal("3"), data.helper.uomKg));
+		final List<I_M_HU> newCUs = HUTransformService.newInstance(data.helper.getHUContext()).cuToNewCU(cuToSplit, Quantity.of(new BigDecimal("3"), data.helper.uomKg));
 		assertThat(newCUs).hasSize(1);
 		assertThat(newCUs.get(0)).isSameAs(cuToSplit);
 
 		return TestHUs.builder().input(cuToSplit).output(newCUs).build();
 	}
-
-
 
 	public final TestHUs testCU_To_NewCU_ExceedMaxValueNoParent_DoIt()
 	{
@@ -177,8 +170,7 @@ public class HUTransformTestsBase
 		assertThat(cuToSplit).isTopLevelHU(); // this test makes no sense if the given CU has a parent
 
 		// invoke the method under test
-		final List<I_M_HU> newCUs = HUTransformService.newInstance(data.helper.getHUContext())
-				.cuToNewCU(cuToSplit, Quantity.of(new BigDecimal("5"), data.helper.uomKg));
+		final List<I_M_HU> newCUs = HUTransformService.newInstance(data.helper.getHUContext()).cuToNewCU(cuToSplit, Quantity.of(new BigDecimal("5"), data.helper.uomKg));
 		assertThat(newCUs).hasSize(1);
 		assertThat(newCUs.get(0)).isSameAs(cuToSplit);
 
@@ -191,17 +183,10 @@ public class HUTransformTestsBase
 		final I_M_HU parentTU = cuToSplit.getM_HU_Item_Parent().getM_HU();
 
 		// when cuToSplit is added, then parentTU is destroyed, but that's not part of this test's scope
-		data.helper.getHUContext()
-				.getHUPackingMaterialsCollector()
-				.disable();
+		data.helper.getHUContext().getHUPackingMaterialsCollector().disable();
 
 		// invoke the method under test
-		final List<I_M_HU> newCUs = HUTransformService
-				.newInstance(data.helper.getHUContext())
-				.cuToNewCU(
-						cuToSplit,
-						Quantity.of(new BigDecimal("3"),
-								data.helper.uomKg));
+		final List<I_M_HU> newCUs = HUTransformService.newInstance(data.helper.getHUContext()).cuToNewCU(cuToSplit, Quantity.of(new BigDecimal("3"), data.helper.uomKg));
 
 		Assert.assertThat(newCUs.size(), is(1));
 		Assert.assertThat(newCUs.get(0).getM_HU_ID(), is(cuToSplit.getM_HU_ID()));
@@ -220,13 +205,7 @@ public class HUTransformTestsBase
 		data.disableHUPackingMaterialsCollector("when the new TU is created, the system would want to generate a packing material movement");
 
 		// invoke the method under test
-		final List<I_M_HU> newTUs = HUTransformService
-				.newInstance(data.helper.getHUContext())
-				.cuToNewTUs(
-						cuToSplit,
-						Quantity.of(BigDecimal.ONE, data.helper.uomKg),
-						data.piTU_Item_Product_Bag_8KgTomatoes,
-						isOwnPackingMaterials);
+		final List<I_M_HU> newTUs = HUTransformService.newInstance(data.helper.getHUContext()).cuToNewTUs(cuToSplit, Quantity.of(BigDecimal.ONE, data.helper.uomKg), data.piTU_Item_Product_Bag_8KgTomatoes, isOwnPackingMaterials);
 
 		Assert.assertThat(newTUs.size(), is(1));
 
@@ -260,7 +239,6 @@ public class HUTransformTestsBase
 	 * Simple POJO that contains instances the test code worked with. Needed for assertions.
 	 *
 	 * @author metas-dev <dev@metasfresh.com>
-	 *
 	 */
 	// need to fully qualify the lombok classes, not sure why; if I don't then it works with eclipse, but not with javac (lombok 1.16.16)
 	@lombok.Data
