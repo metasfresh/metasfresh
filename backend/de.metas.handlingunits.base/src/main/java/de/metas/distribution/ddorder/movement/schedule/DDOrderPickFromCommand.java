@@ -3,15 +3,19 @@ package de.metas.distribution.ddorder.movement.schedule;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.time.SystemTime;
+ 	import de.metas.distribution.ddorder.DDOrderLineId;
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelDAO;
 import de.metas.distribution.ddorder.movement.generate.DDOrderMovementHelper;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
+import de.metas.handlingunits.allocation.transfer.ReservedHUsPolicy;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.movement.generate.HUMovementGenerateRequest;
 import de.metas.handlingunits.movement.generate.HUMovementGenerator;
 import de.metas.handlingunits.picking.QtyRejectedReasonCode;
+import de.metas.handlingunits.reservation.HUReservationDocRef;
+import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
@@ -37,6 +41,7 @@ class DDOrderPickFromCommand
 	@NonNull private final IHandlingUnitsBL handlingUnitsBL;
 	@NonNull private final DDOrderLowLevelDAO ddOrderLowLevelDAO;
 	@NonNull private final DDOrderMoveScheduleRepository ddOrderMoveScheduleRepository;
+	@NonNull private final HUReservationService huReservationService;
 
 	// Params
 	@NonNull private final Instant movementDate = SystemTime.asInstant();
@@ -54,12 +59,13 @@ class DDOrderPickFromCommand
 			final @NonNull DDOrderLowLevelDAO ddOrderLowLevelDAO,
 			final @NonNull DDOrderMoveScheduleRepository ddOrderMoveScheduleRepository,
 			final @NonNull IHandlingUnitsBL handlingUnitsBL,
-			//
+			final @NonNull HUReservationService huReservationService,
 			final @NonNull DDOrderPickFromRequest request)
 	{
 		this.ddOrderLowLevelDAO = ddOrderLowLevelDAO;
 		this.ddOrderMoveScheduleRepository = ddOrderMoveScheduleRepository;
 		this.handlingUnitsBL = handlingUnitsBL;
+		this.huReservationService = huReservationService;
 
 		this.scheduleId = request.getScheduleId();
 		this.qtyPicked = request.getQtyPicked();
@@ -122,9 +128,8 @@ class DDOrderPickFromCommand
 
 	private List<I_M_HU> splitOutOfPickFromHU(final DDOrderMoveSchedule schedule)
 	{
-		final HuId pickFromHUId = schedule.getPickFromHUId();
+		final I_M_HU pickFromHU = handlingUnitsBL.getById(schedule.getPickFromHUId());
 		final ProductId productId = schedule.getProductId();
-		final I_M_HU pickFromHU = handlingUnitsBL.getById(pickFromHUId);
 
 		final Quantity pickFromHU_TotalQty = handlingUnitsBL.getStorageFactory()
 				.getStorage(pickFromHU)
@@ -142,9 +147,21 @@ class DDOrderPickFromCommand
 							.productId(productId)
 							.qtyCU(qtyPicked)
 							.keepNewCUsUnderSameParent(false)
-							.onlyFromUnreservedHUs(true)
+							.reservedVHUsPolicy(onlyVHUsReservedTo(schedule.getDdOrderLineId()))
 							.build());
 		}
+	}
+
+	private ReservedHUsPolicy onlyVHUsReservedTo(final DDOrderLineId ddOrderLineId)
+	{
+		final ImmutableSet<HuId> vhuIds = huReservationService.getVHUIdsByDocumentRef(HUReservationDocRef.ofDDOrderLineId(schedule.getDdOrderLineId()));
+		if (vhuIds.isEmpty())
+		{
+			// shall not happen
+			throw new AdempiereException("No reserved VHUs found for " + ddOrderLineId);
+		}
+
+		return ReservedHUsPolicy.onlyVHUIds(vhuIds);
 	}
 
 	private MovementId createPickFromMovement(@NonNull final Set<HuId> huIdsToMove)
