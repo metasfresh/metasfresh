@@ -168,8 +168,8 @@ public abstract class AbstractInvoiceCandidateHandler implements IInvoiceCandida
 		else
 		{
 			ic.setDeliveryDate(firstInOut.getMovementDate());
-			ic.setFirst_Ship_BPLocation_ID(firstInOut.getC_BPartner_Location_ID());
-			ic.setC_Shipping_Location_ID(firstInOut.getC_BPartner_Location_Value_ID());
+			ic.setFirst_Ship_BPLocation_ID(firstInOut.getC_BPartner_Location_ID()); // C_BPartner_Location
+			ic.setC_Shipping_Location_ID(firstInOut.getC_BPartner_Location_Value_ID()); // C_Location
 		}
 	}
 
