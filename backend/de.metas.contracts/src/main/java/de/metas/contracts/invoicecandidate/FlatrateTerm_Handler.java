@@ -27,6 +27,8 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
+
 /**
  * Creates {@link I_C_Invoice_Candidate} from {@link I_C_Flatrate_Term}.
  *
@@ -134,7 +136,7 @@ public class FlatrateTerm_Handler extends AbstractInvoiceCandidateHandler
 		return false;
 	}
 
-	@NonNull
+	@Nullable
 	private I_C_Invoice_Candidate createCandidateForTerm(@NonNull final I_C_Flatrate_Term term)
 	{
 		if (HandlerTools.isCancelledContract(term))
