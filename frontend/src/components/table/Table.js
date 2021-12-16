@@ -76,14 +76,14 @@ export default class Table extends PureComponent {
   getCurrentRowId = (arrowOrientation = ARROW_DOWN_KEY) => {
     const { keyProperty, selected, rows } = this.props;
 
-    const array = rows.map((item) => item[keyProperty]);
+    const rowsPool = rows.map((item) => item[keyProperty]);
 
     let lookupPostion =
       arrowOrientation === ARROW_UP_KEY ? 0 : selected.length - 1;
 
-    const currentId = array.findIndex((x) => x === selected[lookupPostion]);
+    const currentId = rowsPool.findIndex((x) => x === selected[lookupPostion]);
 
-    return { currentId, array };
+    return { currentId, rowsPool };
   };
 
   getProductRange = (id) => {
@@ -190,23 +190,23 @@ export default class Table extends PureComponent {
       case ARROW_DOWN_KEY: {
         e.preventDefault();
 
-        const { currentId, array } = this.getCurrentRowId(ARROW_DOWN_KEY);
+        const { currentId, rowsPool } = this.getCurrentRowId(ARROW_DOWN_KEY);
 
-        if (currentId >= array.length - 1) return;
+        if (currentId >= rowsPool.length - 1) return;
 
         if (!selectRange) {
           handleSelect(
-            array[currentId + 1],
+            rowsPool[currentId + 1],
             false,
             idFocused,
             showSelectedIncludedView &&
-              showSelectedIncludedView([array[currentId + 1]])
+              showSelectedIncludedView([rowsPool[currentId + 1]])
           );
           this.multiSelectionStartIdx = null;
         } else {
           this.updateMultiSelectionStartIdx(currentId);
 
-          const downShiftSel = array.slice(
+          const downShiftSel = rowsPool.slice(
             this.multiSelectionStartIdx > 0 ? this.multiSelectionStartIdx : 0,
             currentId + 2 // +2 because we want to slice up to the next row and include it
           );
@@ -222,23 +222,23 @@ export default class Table extends PureComponent {
       case ARROW_UP_KEY: {
         e.preventDefault();
 
-        const { currentId, array } = this.getCurrentRowId(ARROW_UP_KEY);
+        const { currentId, rowsPool } = this.getCurrentRowId(ARROW_UP_KEY);
 
         if (currentId <= 0) return;
 
         if (!selectRange) {
           handleSelect(
-            array[currentId - 1],
+            rowsPool[currentId - 1],
             idFocused,
             false,
             showSelectedIncludedView &&
-              showSelectedIncludedView([array[currentId - 1]])
+              showSelectedIncludedView([rowsPool[currentId - 1]])
           );
           this.multiSelectionStartIdx = null;
         } else {
           this.updateMultiSelectionStartIdx(currentId);
 
-          const upShiftSel = array.slice(
+          const upShiftSel = rowsPool.slice(
             currentId - 1,
             this.multiSelectionStartIdx + 1
           );
@@ -269,12 +269,12 @@ export default class Table extends PureComponent {
             e.preventDefault();
             document.activeElement.nextSibling.focus();
           } else {
-            const { currentId, array } = this.getCurrentRowId();
+            const { currentId, rowsPool } = this.getCurrentRowId();
 
-            if (currentId < array.length - 1) {
+            if (currentId < rowsPool.length - 1) {
               e.preventDefault();
 
-              handleSelect(array[currentId + 1], false, 0);
+              handleSelect(rowsPool[currentId + 1], false, 0);
 
               const focusedElem =
                 document.getElementsByClassName('js-attributes')[0];
