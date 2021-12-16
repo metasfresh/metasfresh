@@ -102,6 +102,10 @@ export default class Table extends PureComponent {
     return arrayIndex.slice(selectedArr[0], selectedArr[1] + 1);
   };
 
+  /**
+   * @summary Updates the start reference used for the multi selection when SHIFT + arrow up/down keys are pressed
+   * @param {*} currentId - the current index in the array of rows
+   */
   updateMultiSelStart = (currentId) => {
     this.multiSelStart =
       !this.multiSelStart && this.multiSelStart !== 0
@@ -169,9 +173,7 @@ export default class Table extends PureComponent {
     } = this.props;
     const { listenOnKeys } = this.state;
 
-    if (!listenOnKeys) {
-      return;
-    }
+    if (!listenOnKeys) return;
 
     const selectRange = e.shiftKey;
     const nodeList = Array.prototype.slice.call(
@@ -204,13 +206,15 @@ export default class Table extends PureComponent {
         } else {
           this.updateMultiSelStart(currentId);
 
+          const downShiftSel = array.slice(
+            this.multiSelStart > 0 ? this.multiSelStart : 0,
+            currentId + 2
+          );
           handleSelect(
-            array.slice(
-              this.multiSelStart > 0 ? this.multiSelStart : 0,
-              currentId + 2
-            ),
+            downShiftSel,
             false,
-            idFocused
+            idFocused,
+            showSelectedIncludedView && showSelectedIncludedView(downShiftSel)
           );
         }
         break;
@@ -234,10 +238,12 @@ export default class Table extends PureComponent {
         } else {
           this.updateMultiSelStart(currentId);
 
+          const upShiftSel = array.slice(currentId - 1, this.multiSelStart + 1);
           handleSelect(
-            array.slice(currentId - 1, this.multiSelStart + 1),
+            upShiftSel,
             false,
-            idFocused
+            idFocused,
+            showSelectedIncludedView && showSelectedIncludedView(upShiftSel)
           );
         }
         break;
