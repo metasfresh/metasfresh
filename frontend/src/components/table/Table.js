@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import currentDevice from 'current-device';
 import { ARROW_DOWN_KEY, ARROW_UP_KEY } from '../../constants/Constants';
-import { handleCopy, componentPropTypes } from '../../utils/tableHelpers';
+import { componentPropTypes, handleCopy } from '../../utils/tableHelpers';
 
 import TableHeader from './TableHeader';
 import TableRow from './TableRow';
@@ -73,17 +73,29 @@ export default class Table extends PureComponent {
     this.tfoot = ref;
   };
 
-  getCurrentRowId = (arrowOrientation) => {
-    const { keyProperty, selected, rows } = this.props;
+  getCurrentRowIndex = (arrowOrientation) => {
+    const { selected: selectedRowIds } = this.props;
 
-    const rowsPool = rows.map((item) => item[keyProperty]);
+    const allRowIds = this.getAllRowIds();
 
-    let lookupPostion =
-      arrowOrientation === ARROW_UP_KEY ? 0 : selected.length - 1;
+    // If there is no selection, return right away
+    if (!selectedRowIds || selectedRowIds.length === 0) {
+      return { currentIdx: null, allRowIds };
+    }
 
-    const currentId = rowsPool.findIndex((x) => x === selected[lookupPostion]);
+    let currentRowId =
+      arrowOrientation === ARROW_UP_KEY
+        ? selectedRowIds[0]
+        : selectedRowIds[selectedRowIds.length - 1];
 
-    return { currentId, rowsPool };
+    const currentIdx = allRowIds.findIndex((rowId) => rowId === currentRowId);
+
+    return { currentIdx, allRowIds };
+  };
+
+  getAllRowIds = () => {
+    const { keyProperty, rows } = this.props;
+    return rows.map((item) => item[keyProperty]);
   };
 
   getProductRange = (id) => {
@@ -104,18 +116,30 @@ export default class Table extends PureComponent {
 
   /**
    * @summary Updates the start reference used for the multi selection when SHIFT + arrow up/down keys are pressed
-   *          Note: the check that you see below `!this.multiSelectionStartIdx && this.multiSelectionStartIdx !== 0`
-   *                is needed because we will set the start reference only when we do not have yet a reference
-   *                (ex. when user clicked on a row and then uses SHIFT + arrow up/down) and for the case when reference is different than zero
-   *                (There is an edge case when user clicks the first row and when pressing down we will loose the first row selection - this.multiSelectionStartIdx === 0 case)
    * @param {*} currentIdx - the current index in the array of rows
    */
   updateMultiSelectionStartIdx = (currentIdx) => {
-    console.log('this.multiSelectionStartIdx', this.multiSelectionStartIdx);
-    this.multiSelectionStartIdx =
-      !this.multiSelectionStartIdx && this.multiSelectionStartIdx !== 0
-        ? currentIdx
-        : this.multiSelectionStartIdx;
+    // Note: the check that you see below `!this.multiSelectionStartIdx && this.multiSelectionStartIdx !== 0
+    // is needed because we will set the start reference only when we do not have yet a reference
+    // (ex. when user clicked on a row and then uses SHIFT + arrow up/down) and for the case when reference is different than zero
+    // (There is an edge case when user clicks the first row and when pressing down we will lose the first row selection - this.multiSelectionStartIdx === 0 case)
+
+    //if (currentIdx === null) return;
+
+    if (this.multiSelectionStartIdx != null) {
+      // Update only if the current index is different than ZERO because ....
+      if (this.multiSelectionStartIdx > 0) {
+        this.multiSelectionStartIdx = currentIdx;
+      }
+    } else {
+      // setting the start index for the first time
+      this.multiSelectionStartIdx = currentIdx;
+    }
+
+    // this.multiSelectionStartIdx =
+    //   !this.multiSelectionStartIdx && this.multiSelectionStartIdx !== 0
+    //     ? currentIdx
+    //     : this.multiSelectionStartIdx;
   };
 
   clearMultiSelectionStartIdx = () => (this.multiSelectionStartIdx = null);
@@ -197,25 +221,26 @@ export default class Table extends PureComponent {
       case ARROW_DOWN_KEY: {
         e.preventDefault();
 
-        const { currentId, rowsPool } = this.getCurrentRowId(ARROW_DOWN_KEY);
+        const { currentIdx, rowIdsPool } =
+          this.getCurrentRowIndex(ARROW_DOWN_KEY);
 
-        if (currentId >= rowsPool.length - 1) return;
+        if (currentIdx >= rowIdsPool.length - 1) return;
 
         if (!selectRange) {
           handleSelect(
-            rowsPool[currentId + 1],
+            rowIdsPool[currentIdx + 1],
             false,
             idFocused,
             showSelectedIncludedView &&
-              showSelectedIncludedView([rowsPool[currentId + 1]])
+              showSelectedIncludedView([rowIdsPool[currentIdx + 1]])
           );
           this.clearMultiSelectionStartIdx();
         } else {
-          this.updateMultiSelectionStartIdx(currentId);
+          this.updateMultiSelectionStartIdx(currentIdx);
 
-          const downShiftSel = rowsPool.slice(
+          const downShiftSel = rowIdsPool.slice(
             this.multiSelectionStartIdx > 0 ? this.multiSelectionStartIdx : 0,
-            currentId + 2 // +2 because we want to slice up to the next row and include it
+            currentIdx + 2 // +2 because we want to slice up to the next row and include it
           );
           handleSelect(
             downShiftSel,
@@ -229,23 +254,23 @@ export default class Table extends PureComponent {
       case ARROW_UP_KEY: {
         e.preventDefault();
 
-        const { currentId, rowsPool } = this.getCurrentRowId(ARROW_UP_KEY);
+        const { currentId, allRowIds } = this.getCurrentRowIndex(ARROW_UP_KEY);
 
         if (currentId <= 0) return;
 
         if (!selectRange) {
           handleSelect(
-            rowsPool[currentId - 1],
+            allRowIds[currentId - 1],
             idFocused,
             false,
             showSelectedIncludedView &&
-              showSelectedIncludedView([rowsPool[currentId - 1]])
+              showSelectedIncludedView([allRowIds[currentId - 1]])
           );
           this.clearMultiSelectionStartIdx();
         } else {
           this.updateMultiSelectionStartIdx(currentId);
 
-          const upShiftSel = rowsPool.slice(
+          const upShiftSel = allRowIds.slice(
             currentId - 1,
             this.multiSelectionStartIdx + 1
           );
@@ -276,12 +301,12 @@ export default class Table extends PureComponent {
             e.preventDefault();
             document.activeElement.nextSibling.focus();
           } else {
-            const { currentId, rowsPool } = this.getCurrentRowId();
+            const { currentIdx, allRowIds } = this.getCurrentRowIndex();
 
-            if (currentId < rowsPool.length - 1) {
+            if (currentIdx < allRowIds.length - 1) {
               e.preventDefault();
 
-              handleSelect(rowsPool[currentId + 1], false, 0);
+              handleSelect(allRowIds[currentIdx + 1], false, 0);
 
               const focusedElem =
                 document.getElementsByClassName('js-attributes')[0];
