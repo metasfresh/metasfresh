@@ -46,6 +46,7 @@ public class ExportConfigRepository
 			INTERNALNAME_TO_MODE = ImmutableMap.of(
 			X_HC_Forum_Datenaustausch_Config.EXPORTEDXMLMODE_Production, XmlMode.PRODUCTION,
 			X_HC_Forum_Datenaustausch_Config.EXPORTEDXMLMODE_Test, XmlMode.TEST);
+
 	@Nullable
 	public ExportConfig getForQueryOrNull(@NonNull final BPartnerQuery query)
 	{

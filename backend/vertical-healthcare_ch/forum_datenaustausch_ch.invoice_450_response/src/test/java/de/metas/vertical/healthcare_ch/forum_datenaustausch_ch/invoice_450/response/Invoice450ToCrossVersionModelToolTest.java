@@ -46,7 +46,8 @@ class Invoice450ToCrossVersionModelToolTest
 {
 	private Invoice450ResponseConversionService invoice450ResponseConversionService;
 
-	@BeforeEach void init()
+	@BeforeEach
+	void init()
 	{
 		invoice450ResponseConversionService = new Invoice450ResponseConversionService();
 	}
@@ -66,12 +67,13 @@ class Invoice450ToCrossVersionModelToolTest
 	@Test
 	void toCrossVersionResponse()
 	{
-		final XmlResponse result = toCrossVersionResponseWithXmlFile("/streha_invoice_03.xml");
+		final XmlResponse result = toCrossVersionResponseWithXmlFile("/Cancelation_KV_12345.xml");
 		assertThat(result.getPayload().getInvoice().getRequestId()).isEqualTo("KV_12345"); // sortof smoke-test
 		expect(result).toMatchSnapshot();
 	}
 
-	@SuppressWarnings({ "SameParameterValue", "UnnecessaryLocalVariable" }) private XmlResponse toCrossVersionResponseWithXmlFile(@NonNull final String inputXmlFileName)
+	@SuppressWarnings({ "SameParameterValue", "UnnecessaryLocalVariable" })
+	private XmlResponse toCrossVersionResponseWithXmlFile(@NonNull final String inputXmlFileName)
 	{
 		final InputStream inputStream = createInputStream(inputXmlFileName);
 		assertXmlIsValid(inputStream); // guard

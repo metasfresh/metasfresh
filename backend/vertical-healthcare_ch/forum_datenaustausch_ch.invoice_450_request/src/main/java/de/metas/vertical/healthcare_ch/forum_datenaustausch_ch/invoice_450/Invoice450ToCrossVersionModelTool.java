@@ -613,7 +613,11 @@ public class Invoice450ToCrossVersionModelTool
 
 		xtiers.paymentPeriod(garantType.getPaymentPeriod());
 		xtiers.biller(createXmlBiller(garantType.getBiller()));
-		xtiers.debitor(createXmlDebitor(garantType.getDebitor()));
+		final DebitorAddressType debitor = garantType.getDebitor();
+		if (debitor != null)
+		{
+			xtiers.debitor(createXmlDebitor(debitor));
+		}
 		xtiers.provider(createXmlProvider(garantType.getProvider()));
 		xtiers.insurance(createXmlInsurance(garantType.getInsurance()));
 		xtiers.patient(createXmlPatient(garantType.getPatient()));
@@ -621,7 +625,11 @@ public class Invoice450ToCrossVersionModelTool
 		xtiers.guarantor(createXmlGuarantor(garantType.getGuarantor()));
 		xtiers.referrer(createXmlReferrer(garantType.getReferrer()));
 		xtiers.employer(createXmlEmployer(garantType.getEmployer()));
-		xtiers.balance(createXmlBalance(garantType.getBalance()));
+		final BalanceTGType balance = garantType.getBalance();
+		if (balance != null)
+		{
+			xtiers.balance(createXmlBalance(balance));
+		}
 
 		return xtiers.build();
 	}
@@ -633,7 +641,11 @@ public class Invoice450ToCrossVersionModelTool
 
 		xtiers.paymentPeriod(payantType.getPaymentPeriod());
 		xtiers.biller(createXmlBiller(payantType.getBiller()));
-		xtiers.debitor(createXmlDebitor(payantType.getDebitor()));
+		final DebitorAddressType debitor = payantType.getDebitor();
+		if (debitor != null)
+		{
+			xtiers.debitor(createXmlDebitor(debitor));
+		}
 		xtiers.provider(createXmlProvider(payantType.getProvider()));
 		xtiers.insurance(createXmlInsurance(payantType.getInsurance()));
 		xtiers.patient(createXmlPatient(payantType.getPatient()));
@@ -641,7 +653,11 @@ public class Invoice450ToCrossVersionModelTool
 		xtiers.guarantor(createXmlGuarantor(payantType.getGuarantor()));
 		xtiers.referrer(createXmlReferrer(payantType.getReferrer()));
 		xtiers.employer(createXmlEmployer(payantType.getEmployer()));
-		xtiers.balance(createXmlBalance(payantType.getBalance()));
+		final BalanceTPType balance = payantType.getBalance();
+		if (balance != null)
+		{
+			xtiers.balance(createXmlBalance(balance));
+		}
 
 		return xtiers.build();
 	}

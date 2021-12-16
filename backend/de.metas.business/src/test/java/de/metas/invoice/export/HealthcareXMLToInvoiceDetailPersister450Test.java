@@ -48,7 +48,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 
-public class HealthcareXMLToInvoiceDetailPersisterTest
+public class HealthcareXMLToInvoiceDetailPersister450Test
 {
 	private final ZoneId timeZone = ZoneId.of("Europe/Berlin");
 	private OrgId orgId;
@@ -68,7 +68,7 @@ public class HealthcareXMLToInvoiceDetailPersisterTest
 				.testInvoiceLine(TestInvoiceLine.builder().productId(ProductId.ofRepoId(20)).externalIds("doesnt_really_matter_1").build())
 				.build().createInvoiceRecord();
 
-		final InputStream inputStream = getClass().getResourceAsStream("/de/metas/invoice/export/md_440_tp_kvg_de.xml");
+		final InputStream inputStream = getClass().getResourceAsStream("/de/metas/invoice/export/streha_invoice_03.xml");
 
 		final Invoice450RequestConversionService requestConverter = new Invoice450RequestConversionService();
 		xmlRequest = requestConverter.toCrossVersionRequest(inputStream);
@@ -93,7 +93,7 @@ public class HealthcareXMLToInvoiceDetailPersisterTest
 				.testInvoiceLine(TestInvoiceLine.builder().productId(ProductId.ofRepoId(20)).externalIds("doesnt_really_matter_1").build())
 				.build().createInvoiceRecord();
 
-		final InputStream inputStream = getClass().getResourceAsStream("/de/metas/invoice/export/md_440_tp_kvg_de.xml");
+		final InputStream inputStream = getClass().getResourceAsStream("/de/metas/invoice/export/streha_invoice_03.xml");
 
 		final Invoice450RequestConversionService requestConverter = new Invoice450RequestConversionService();
 		xmlRequest = requestConverter.toCrossVersionRequest(inputStream);
