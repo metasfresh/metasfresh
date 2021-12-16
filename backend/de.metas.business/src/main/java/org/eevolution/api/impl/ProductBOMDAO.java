@@ -31,6 +31,7 @@ import org.eevolution.api.ProductBOMVersionsId;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
 import org.eevolution.model.I_PP_Product_BOMVersions;
+import org.eevolution.model.X_PP_Product_BOMLine;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
@@ -364,6 +365,20 @@ public class ProductBOMDAO implements IProductBOMDAO
 		return getLatestBOMRecordByVersion(bomVersionsId, null)
 				.map(I_PP_Product_BOM::getPP_Product_BOM_ID)
 				.map(ProductBOMId::ofRepoId);
+	}
+
+	@Override
+	public boolean isComponent(final ProductId productId)
+	{
+		return queryBL
+				.createQueryBuilder(I_PP_Product_BOMLine.class)
+				.addEqualsFilter(I_PP_Product_BOMLine.COLUMNNAME_M_Product_ID, productId.getRepoId())
+				.addInArrayFilter(I_PP_Product_BOMLine.COLUMNNAME_ComponentType
+						, X_PP_Product_BOMLine.COMPONENTTYPE_Component
+						, X_PP_Product_BOMLine.COMPONENTTYPE_Variant)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.anyMatch();
 	}
 
 	@NonNull
