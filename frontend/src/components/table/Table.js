@@ -20,7 +20,7 @@ export default class Table extends PureComponent {
       listenOnKeys: true,
       tableRefreshToggle: false,
     };
-    this.multiSelStart = null;
+    this.multiSelectionStartIdx = null;
   }
 
   componentDidMount() {
@@ -106,11 +106,11 @@ export default class Table extends PureComponent {
    * @summary Updates the start reference used for the multi selection when SHIFT + arrow up/down keys are pressed
    * @param {*} currentId - the current index in the array of rows
    */
-  updateMultiSelStart = (currentId) => {
-    this.multiSelStart =
-      !this.multiSelStart && this.multiSelStart !== 0
+  updateMultiSelectionStartIdx = (currentId) => {
+    this.multiSelectionStartIdx =
+      !this.multiSelectionStartIdx && this.multiSelectionStartIdx !== 0
         ? currentId
-        : this.multiSelStart;
+        : this.multiSelectionStartIdx;
   };
 
   handleClick = (e, item) => {
@@ -119,7 +119,7 @@ export default class Table extends PureComponent {
     const disableMultiSel = featureType === 'SEARCH' ? true : false;
     const id = item[keyProperty];
 
-    this.multiSelStart = null;
+    this.multiSelectionStartIdx = null;
     if (e && e.button === 0) {
       const selectMore = e.metaKey || e.ctrlKey;
       const selectRange = e.shiftKey;
@@ -202,13 +202,13 @@ export default class Table extends PureComponent {
             showSelectedIncludedView &&
               showSelectedIncludedView([array[currentId + 1]])
           );
-          this.multiSelStart = null;
+          this.multiSelectionStartIdx = null;
         } else {
-          this.updateMultiSelStart(currentId);
+          this.updateMultiSelectionStartIdx(currentId);
 
           const downShiftSel = array.slice(
-            this.multiSelStart > 0 ? this.multiSelStart : 0,
-            currentId + 2
+            this.multiSelectionStartIdx > 0 ? this.multiSelectionStartIdx : 0,
+            currentId + 2 // +2 because we want to slice up to the next row and include it
           );
           handleSelect(
             downShiftSel,
@@ -234,11 +234,14 @@ export default class Table extends PureComponent {
             showSelectedIncludedView &&
               showSelectedIncludedView([array[currentId - 1]])
           );
-          this.multiSelStart = null;
+          this.multiSelectionStartIdx = null;
         } else {
-          this.updateMultiSelStart(currentId);
+          this.updateMultiSelectionStartIdx(currentId);
 
-          const upShiftSel = array.slice(currentId - 1, this.multiSelStart + 1);
+          const upShiftSel = array.slice(
+            currentId - 1,
+            this.multiSelectionStartIdx + 1
+          );
           handleSelect(
             upShiftSel,
             false,
