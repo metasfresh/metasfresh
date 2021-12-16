@@ -73,7 +73,7 @@ export default class Table extends PureComponent {
     this.tfoot = ref;
   };
 
-  getCurrentRowId = (arrowOrientation = ARROW_DOWN_KEY) => {
+  getCurrentRowId = (arrowOrientation) => {
     const { keyProperty, selected, rows } = this.props;
 
     const rowsPool = rows.map((item) => item[keyProperty]);
