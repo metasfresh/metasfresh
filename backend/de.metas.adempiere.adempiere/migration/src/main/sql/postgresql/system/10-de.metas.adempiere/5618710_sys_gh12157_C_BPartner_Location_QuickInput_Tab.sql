@@ -867,3 +867,68 @@ UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Location', PrintName='Location
 
 
 
+-- 2021-12-16T23:26:27.394Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Name='Anschrift', PrintName='Anschrift',Updated=TO_TIMESTAMP('2021-12-17 01:26:27','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=580379 AND AD_Language='de_CH'
+;
+
+-- 2021-12-16T23:26:27.424Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(580379,'de_CH') 
+;
+
+-- 2021-12-16T23:26:31.987Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Name='Anschrift', PrintName='Anschrift',Updated=TO_TIMESTAMP('2021-12-17 01:26:31','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=580379 AND AD_Language='de_DE'
+;
+
+-- 2021-12-16T23:26:31.989Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(580379,'de_DE') 
+;
+
+-- 2021-12-16T23:26:31.998Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_ad_element_on_ad_element_trl_update(580379,'de_DE') 
+;
+
+-- 2021-12-16T23:26:32Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnName='C_BPartner_Location_QuickInput_ID', Name='Anschrift', Description=NULL, Help=NULL WHERE AD_Element_ID=580379
+;
+
+-- 2021-12-16T23:26:32.001Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='C_BPartner_Location_QuickInput_ID', Name='Anschrift', Description=NULL, Help=NULL, AD_Element_ID=580379 WHERE UPPER(ColumnName)='C_BPARTNER_LOCATION_QUICKINPUT_ID' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2021-12-16T23:26:32.003Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='C_BPartner_Location_QuickInput_ID', Name='Anschrift', Description=NULL, Help=NULL WHERE AD_Element_ID=580379 AND IsCentrallyMaintained='Y'
+;
+
+-- 2021-12-16T23:26:32.003Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Anschrift', Description=NULL, Help=NULL WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=580379) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 580379)
+;
+
+-- 2021-12-16T23:26:32.015Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_PrintFormatItem pi SET PrintName='Anschrift', Name='Anschrift' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c  WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=580379)
+;
+
+-- 2021-12-16T23:26:32.017Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET Name='Anschrift', Description=NULL, Help=NULL, CommitWarning = NULL WHERE AD_Element_ID = 580379
+;
+
+-- 2021-12-16T23:26:32.018Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_WINDOW SET Name='Anschrift', Description=NULL, Help=NULL WHERE AD_Element_ID = 580379
+;
+
+-- 2021-12-16T23:26:32.019Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu SET   Name = 'Anschrift', Description = NULL, WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 580379
+;
+
