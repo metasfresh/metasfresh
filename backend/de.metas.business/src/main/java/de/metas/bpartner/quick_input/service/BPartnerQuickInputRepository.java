@@ -36,7 +36,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-class BPartnerQuickInputRepository
+public class BPartnerQuickInputRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
