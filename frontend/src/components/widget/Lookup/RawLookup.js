@@ -9,8 +9,8 @@ import counterpart from 'counterpart';
 import { LOOKUP_SHOW_MORE_PIXEL_NO } from '../../../constants/Constants';
 
 import {
-  autocompleteRequest,
   autocompleteModalRequest,
+  autocompleteRequest,
 } from '../../../actions/GenericActions';
 import { getViewAttributeTypeahead } from '../../../api';
 import { openModal } from '../../../actions/WindowActions';
@@ -317,17 +317,9 @@ export class RawLookup extends Component {
       subentityId,
       viewId,
       mainProperty,
-      isModal,
-      newRecordCaption,
-      mandatory,
-      advSearchCaption,
-      advSearchWindowId,
     } = this.props;
 
     // -- shape placeholder with the clearValueText in case this exists
-    const placeholder = mainProperty.clearValueText
-      ? mainProperty.clearValueText
-      : this.props.placeholder;
     const inputValue = this.inputSearch.value;
     let typeaheadRequest;
     const typeaheadParams = {
@@ -337,6 +329,8 @@ export class RawLookup extends Component {
       rowId,
       tabId,
     };
+
+    this.typeaheadQuery = typeaheadParams.query;
 
     if (entity === 'documentView' && !filterWidget) {
       typeaheadRequest = getViewAttributeTypeahead(
@@ -364,46 +358,64 @@ export class RawLookup extends Component {
     }
 
     typeaheadRequest.then((response) => {
-      let values = response.data.values || [];
-      const isAlwaysDisplayNewBPartner = response.data
-        .isAlwaysDisplayNewBPartner
-        ? true
-        : false;
-      const hasMoreResults = response.data.hasMoreResults ? true : false;
-      let list = null;
-      const newState = {
-        loading: false,
-      };
-
-      const optionNew = { key: 'NEW', caption: newRecordCaption };
-      if (values.length === 0 && !isModal) {
-        list = [optionNew];
-
-        newState.forceEmpty = true;
-        newState.selected = optionNew;
-      } else {
-        list = values;
-        isAlwaysDisplayNewBPartner && list.unshift(optionNew);
-
-        newState.forceEmpty = false;
-        newState.selected = advSearchWindowId ? values[1] : values[0];
+      if (
+        this.typeaheadQuery &&
+        this.typeaheadQuery === typeaheadParams.query
+      ) {
+        this.populateTypeaheadData(response.data);
       }
-
-      // we inject the advanced search entry if we have a advSearchWindowId
-      advSearchWindowId &&
-        list.unshift({ key: 'SEARCH', caption: advSearchCaption });
-
-      if (!mandatory && placeholder) {
-        list.push({
-          caption: placeholder,
-          key: null,
-        });
-      }
-      newState.list = [...list];
-      newState.hasMoreResults = hasMoreResults;
-
-      this.setState({ ...newState });
     });
+  };
+
+  populateTypeaheadData = (responseData) => {
+    const {
+      mainProperty,
+      newRecordCaption,
+      advSearchCaption,
+      advSearchWindowId,
+      isModal,
+      mandatory,
+    } = this.props;
+
+    const placeholder = mainProperty.clearValueText
+      ? mainProperty.clearValueText
+      : this.props.placeholder;
+
+    let values = responseData.values || [];
+    const isAlwaysDisplayNewBPartner =
+      !!responseData.isAlwaysDisplayNewBPartner;
+    const hasMoreResults = !!responseData.hasMoreResults;
+    let list;
+    const newState = { loading: false };
+
+    const optionNew = { key: 'NEW', caption: newRecordCaption };
+    if (values.length === 0 && !isModal) {
+      list = [optionNew];
+
+      newState.forceEmpty = true;
+      newState.selected = optionNew;
+    } else {
+      list = values;
+      isAlwaysDisplayNewBPartner && list.unshift(optionNew);
+
+      newState.forceEmpty = false;
+      newState.selected = advSearchWindowId ? values[1] : values[0];
+    }
+
+    // we inject the advanced search entry if we have a advSearchWindowId
+    advSearchWindowId &&
+      list.unshift({ key: 'SEARCH', caption: advSearchCaption });
+
+    if (!mandatory && placeholder) {
+      list.push({
+        caption: placeholder,
+        key: null,
+      });
+    }
+    newState.list = [...list];
+    newState.hasMoreResults = hasMoreResults;
+
+    this.setState({ ...newState });
   };
 
   handleChange = (handleChangeOnFocus, allowEmpty) => {
