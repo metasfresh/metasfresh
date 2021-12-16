@@ -443,7 +443,6 @@ public class BPartnerQuickInputService
 		if (locations.isEmpty())
 		{
 			throw new FillMandatoryException(I_C_BPartner_QuickInput.COLUMNNAME_C_Location_ID, I_C_BPartner_Location_QuickInput.COLUMNNAME_C_BPartner_Location_QuickInput_ID);
-			// TODO maybe add a FillMandatoryException with OR
 		}
 
 		validatePricingSystemsForCountries(template, locations);
