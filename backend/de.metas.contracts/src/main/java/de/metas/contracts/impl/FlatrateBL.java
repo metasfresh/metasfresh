@@ -463,7 +463,6 @@ public class FlatrateBL implements IFlatrateBL
 				() -> BPartnerLocationAndCaptureId.ofRepoIdOrNull(term.getBill_BPartner_ID(), term.getBill_Location_ID()));
 
 		final TaxId taxId = Services.get(ITaxBL.class).getTaxNotNull(
-				ctx,
 				term,
 				taxCategoryId,
 				productId,
@@ -597,7 +596,6 @@ public class FlatrateBL implements IFlatrateBL
 				() -> BPartnerLocationAndCaptureId.ofRepoIdOrNull(term.getBill_BPartner_ID(), term.getBill_Location_ID()));
 
 		final TaxId taxId = Services.get(ITaxBL.class).getTaxNotNull(
-				ctx,
 				term,
 				taxCategoryId,
 				productIdForIc,

@@ -99,7 +99,6 @@ public class FlatrateTermSubscription_Handler implements ConditionTypeSpecificIn
 		ic.setQtyOrdered(qty);
 
 		final TaxId taxId = Services.get(ITaxBL.class).getTaxNotNull(
-				Env.getCtx(),
 				term,
 				taxCategoryId,
 				term.getM_Product_ID(),
