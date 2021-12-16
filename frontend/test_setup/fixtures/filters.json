@@ -69,6 +69,18 @@
                 "displayed": true,
                 "readonly": false,
                 "type": "primary"
+              },
+              {
+                "caption": "Visitors Address",
+                "parameterName": "VisitorsAddress",
+                "widgetType": "YesNo",
+                "range": false,
+                "defaultValue": null,
+                "defaultValueTo": null,
+                "mandatory": false,
+                "displayed": true,
+                "readonly": false,
+                "type": "primaryLongLabels"
               }
             ],
             "debugProperties": {}
@@ -289,6 +301,18 @@
                 "displayed": true,
                 "readonly": false,
                 "type": "primary"
+              },
+              {
+                "caption": "Error",
+                "parameterName": "IsError",
+                "widgetType": "YesNo",
+                "range": false,
+                "defaultValue": null,
+                "defaultValueTo": null,
+                "mandatory": false,
+                "displayed": true,
+                "readonly": false,
+                "type": "primaryLongLabels"
               }
             ],
             "debugProperties": {}
