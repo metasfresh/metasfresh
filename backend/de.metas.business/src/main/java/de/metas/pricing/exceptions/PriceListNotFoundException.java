@@ -1,9 +1,12 @@
 package de.metas.pricing.exceptions;
 
+import de.metas.location.CountryId;
 import org.adempiere.exceptions.AdempiereException;
 
 import de.metas.i18n.AdMessageKey;
 import de.metas.lang.SOTrx;
+
+import java.util.ArrayList;
 
 /*
  * #%L
@@ -43,6 +46,11 @@ public class PriceListNotFoundException extends AdempiereException
 	public PriceListNotFoundException(final String pricingSystemName, final SOTrx soTrx)
 	{
 		super(getADMessage(soTrx), new Object[] { pricingSystemName });
+	}
+
+	public PriceListNotFoundException(final String pricingSystemName, final SOTrx soTrx, final ArrayList<CountryId> countriesWithoutPrices)
+	{
+		super(getADMessage(soTrx), new Object[] { pricingSystemName, countriesWithoutPrices });
 	}
 
 	private static final AdMessageKey getADMessage(final SOTrx soTrx)

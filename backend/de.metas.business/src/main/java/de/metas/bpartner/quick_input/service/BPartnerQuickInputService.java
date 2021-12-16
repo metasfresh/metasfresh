@@ -22,7 +22,7 @@
 
 package de.metas.bpartner.quick_input.service;
 
-import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -56,6 +56,7 @@ import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
+import de.metas.location.ICountryDAO;
 import de.metas.location.ILocationDAO;
 import de.metas.location.LocationId;
 import de.metas.logging.LogManager;
@@ -66,10 +67,10 @@ import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
-import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.exceptions.PriceListNotFoundException;
 import de.metas.pricing.service.IPriceListDAO;
+import de.metas.pricing.service.PriceListsCollection;
 import de.metas.request.RequestTypeId;
 import de.metas.request.api.IRequestDAO;
 import de.metas.request.api.IRequestTypeDAO;
@@ -98,6 +99,7 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Contact_QuickInput;
 import org.compiere.model.I_C_BPartner_Location_QuickInput;
 import org.compiere.model.I_C_BPartner_QuickInput;
+import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_R_Request;
 import org.compiere.model.X_R_Request;
 import org.compiere.util.Env;
@@ -110,7 +112,6 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 @Service
 public class BPartnerQuickInputService
@@ -136,6 +137,7 @@ public class BPartnerQuickInputService
 	private final IRequestTypeDAO requestTypeDAO = Services.get(IRequestTypeDAO.class);
 	private final IRequestDAO requestDAO = Services.get(IRequestDAO.class);
 	private final INotificationBL notificationBL = Services.get(INotificationBL.class);
+	private final ICountryDAO countryDAO = Services.get(ICountryDAO.class);
 	private final UserGroupRepository userGroupRepository;
 
 	private static final ModelDynAttributeAccessor<I_C_BPartner_QuickInput, Boolean>
@@ -428,9 +430,10 @@ public class BPartnerQuickInputService
 
 	private BPartnerComposite toBPartnerComposite(@NonNull final I_C_BPartner_QuickInput template)
 	{
-		if (template.getC_BP_Group_ID() <= 0)
+		final BPGroupId groupId = BPGroupId.ofRepoIdOrNull(template.getC_BP_Group_ID());
+		if (groupId == null)
 		{
-			throw new FillMandatoryException(I_C_BPartner_QuickInput.COLUMNNAME_C_BP_Group_ID);
+			throw new FillMandatoryException("C_BP_Group_ID");
 		}
 
 		final ArrayList<BPartnerLocation> locations = getBPartnerLocations(template);
@@ -445,7 +448,7 @@ public class BPartnerQuickInputService
 			throw new FillMandatoryException(I_C_BPartner_QuickInput.COLUMNNAME_C_Location_ID, I_C_BPartner_Location_QuickInput.COLUMNNAME_C_BPartner_Location_QuickInput_ID);
 		}
 
-		validatePricingSystemsForCountries(template, locations);
+		validateMandatoryPricingSystems(template, locations);
 
 		//
 		// BPartner (header)
@@ -461,30 +464,105 @@ public class BPartnerQuickInputService
 				.build();
 	}
 
-	private void validatePricingSystemsForCountries(final @NonNull I_C_BPartner_QuickInput template,
-
-			final ArrayList<BPartnerLocation> locations)
+	private void validateMandatoryPricingSystems(final @NonNull I_C_BPartner_QuickInput template, final ArrayList<BPartnerLocation> locations)
 	{
+		final Optional<CountryId> shipToDefaultCountry = locations
+				.stream()
+				.filter(BPartnerLocation::isActive)
+				.filter(location -> location.getLocationType().getIsShipToDefaultOr(false))
+				.map(BPartnerLocation::getExistingLocationId)
+				.map(locationDAO::getCountryIdByLocationId)
+				.findFirst();
+
+		final Optional<CountryId> billToDefaultCountry = locations
+				.stream()
+				.filter(BPartnerLocation::isActive)
+				.filter(location -> location.getLocationType().getIsBillToDefaultOr(false))
+				.map(BPartnerLocation::getExistingLocationId)
+				.map(locationDAO::getCountryIdByLocationId)
+				.findFirst();
+
+		final ImmutableList<CountryId> shipToLocationCountryIds = locations
+				.stream()
+				.filter(BPartnerLocation::isActive)
+				.filter(location -> location.getLocationType().getIsShipToOr(false))
+				.map(BPartnerLocation::getExistingLocationId)
+				.map(locationDAO::getCountryIdByLocationId)
+				.collect(ImmutableList.toImmutableList());
+
+		final ImmutableList<CountryId> billToLocationCountryIds = locations
+				.stream()
+				.filter(BPartnerLocation::isActive)
+				.filter(location -> location.getLocationType().getIsBillToOr(false))
+				.map(BPartnerLocation::getExistingLocationId)
+				.map(locationDAO::getCountryIdByLocationId)
+				.collect(ImmutableList.toImmutableList());
 
 		final PricingSystemId customerPricingSystemId = PricingSystemId.ofRepoIdOrNull(template.getM_PricingSystem_ID());
 		final PricingSystemId vendorPricingSystemId = PricingSystemId.ofRepoIdOrNull(template.getPO_PricingSystem_ID());
 
-		final ImmutableSet<CountryId> countryIds = locations.stream()
-				.map(BPartnerLocation::getExistingLocationId)
-				.map(locationDAO::getCountryIdByLocationId)
-				.collect(ImmutableSet.toImmutableSet());
-
-		//
-		// Validate pricing setup
 		if (customerPricingSystemId != null && template.isCustomer())
 		{
-			assertPriceListExists(customerPricingSystemId, countryIds, SOTrx.SALES);
+
+			validatePricesForCountries(shipToDefaultCountry, shipToLocationCountryIds, customerPricingSystemId, SOTrx.SALES);
+
 		}
 
 		if (vendorPricingSystemId != null && template.isVendor())
 		{
-			assertPriceListExists(vendorPricingSystemId, countryIds, SOTrx.PURCHASE);
+			validatePricesForCountries(billToDefaultCountry, billToLocationCountryIds, vendorPricingSystemId, SOTrx.PURCHASE);
 		}
+	}
+
+	private void validatePricesForCountries(final Optional<CountryId> possibleDefaultCountryId,
+			final ImmutableList<CountryId> shipToLocationCountryIds,
+			final PricingSystemId pricingSystemId,
+			final SOTrx soTrx)
+	{
+		final PriceListsCollection salesPriceLists = priceListDAO.retrievePriceListsCollectionByPricingSystemId(pricingSystemId);
+
+		final ArrayList<CountryId> countriesWithNoPrices = new ArrayList<>();
+
+		if (possibleDefaultCountryId.isPresent())
+		{
+			final CountryId defaultCountryId = possibleDefaultCountryId.get();
+			final ImmutableList<I_M_PriceList> shipToDefaultPricelists = salesPriceLists.filterAndList(defaultCountryId, soTrx);
+
+			if (Check.isEmpty(shipToDefaultPricelists))
+			{
+				countriesWithNoPrices.add(defaultCountryId);
+			}
+		}
+		else
+		{
+			final ArrayList<CountryId> nonDefaultCountriesWithoutPrices = new ArrayList<>();
+			boolean onePriceWasFound = false;
+			for (final CountryId countryId : shipToLocationCountryIds)
+			{
+				final ImmutableList<I_M_PriceList> shipToPricelists = salesPriceLists.filterAndList(countryId, SOTrx.SALES);
+				if (Check.isEmpty(shipToPricelists))
+				{
+					nonDefaultCountriesWithoutPrices.add(countryId);
+				}
+				else
+				{
+					onePriceWasFound = true;
+					break;
+				}
+			}
+
+			if (!onePriceWasFound)
+			{
+				countriesWithNoPrices.addAll(nonDefaultCountriesWithoutPrices);
+			}
+		}
+
+		if (!Check.isEmpty(countriesWithNoPrices))
+		{
+			final String pricingSystemName = priceListDAO.getPricingSystemName(pricingSystemId);
+			throw new PriceListNotFoundException(pricingSystemName, soTrx, countriesWithNoPrices); // TODO correct message
+		}
+
 	}
 
 	private @Nullable
@@ -617,6 +695,7 @@ public class BPartnerQuickInputService
 																.shipTo(bpartnerLocationTemplate.isShipTo())
 																.shipToDefault(bpartnerLocationTemplate.isShipToDefault())
 																.build())
+										  .active(bpartnerLocationTemplate.isActive())
 										  .email(bpartnerLocationTemplate.getEMail())
 										  .fax(bpartnerLocationTemplate.getFax())
 										  .mobile(bpartnerLocationTemplate.getPhone2())
@@ -634,23 +713,6 @@ public class BPartnerQuickInputService
 		}
 
 		return bpartnerLocations;
-	}
-
-	private void assertPriceListExists(
-			@NonNull final PricingSystemId pricingSystemId,
-			@NonNull final Set<CountryId> countryIds,
-			@NonNull final SOTrx soTrx)
-	{
-		for (final CountryId countryId : countryIds)
-		{
-			final PriceListId priceListId = priceListDAO.retrievePriceListIdByPricingSyst(pricingSystemId, countryId, soTrx);
-
-			if (priceListId == null)
-			{
-				final String pricingSystemName = priceListDAO.getPricingSystemName(pricingSystemId);
-				throw new PriceListNotFoundException(pricingSystemName, soTrx);
-			}
-		}
 	}
 
 	private static class TransientIdConverter

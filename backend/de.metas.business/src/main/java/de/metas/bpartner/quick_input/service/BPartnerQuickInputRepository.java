@@ -75,4 +75,27 @@ public class BPartnerQuickInputRepository
 				.list();
 
 	}
+
+	public List<I_C_BPartner_Location_QuickInput> retrieveBillToLocationsByQuickInputId(final BPartnerQuickInputId bpartnerQuickInputId)
+	{
+		return queryBL
+				.createQueryBuilder(I_C_BPartner_Location_QuickInput.class)
+				.addEqualsFilter(I_C_BPartner_Location_QuickInput.COLUMNNAME_C_BPartner_QuickInput_ID, bpartnerQuickInputId)
+				.orderBy(I_C_BPartner_Location_QuickInput.COLUMNNAME_C_BPartner_Location_QuickInput_ID)
+				.create()
+				.list();
+
+	}
+
+	public List<String> getOtherLocationNames(
+			final int bpartnerQuickInputRecordId,
+			final int bpartnerLocationQuickInputIdToExclude)
+	{
+		return queryBL
+				.createQueryBuilder(I_C_BPartner_Location_QuickInput.class)
+				.addEqualsFilter(I_C_BPartner_Location_QuickInput.COLUMNNAME_C_BPartner_QuickInput_ID, bpartnerQuickInputRecordId)
+				.addNotEqualsFilter(I_C_BPartner_Location_QuickInput.COLUMNNAME_C_BPartner_Location_QuickInput_ID, bpartnerLocationQuickInputIdToExclude)
+				.create()
+				.listDistinct(I_C_BPartner_Location_QuickInput.COLUMNNAME_Name, String.class);
+	}
 }

@@ -32,7 +32,6 @@ import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.dao.IQueryBL;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner_Location_QuickInput;
 import org.compiere.model.I_C_BPartner_QuickInput;
 import org.compiere.model.I_C_Location;
@@ -47,9 +46,13 @@ import java.util.List;
 @Callout(I_C_BPartner_Location_QuickInput.class)
 public class C_BPartner_Location_QuickInput
 {
-	private final BPartnerQuickInputRepository repo = SpringContextHolder.instance.getBean(BPartnerQuickInputRepository.class);
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final ILocationDAO locationDAO = Services.get(ILocationDAO.class);
+
+	private final BPartnerQuickInputRepository repo;
+	public C_BPartner_Location_QuickInput(final BPartnerQuickInputRepository repo)
+	{
+		this.repo = repo;
+	}
 
 	@PostConstruct
 	void postConstruct()
@@ -77,23 +80,11 @@ public class C_BPartner_Location_QuickInput
 				.name(record.getName())
 				.address(locationRecord)
 				.companyName(bpartnerQuickInputRecord.getCompanyname())
-				.existingNames(getOtherLocationNames(record.getC_BPartner_QuickInput_ID(), record.getC_BPartner_Location_QuickInput_ID()))
+				.existingNames(repo.getOtherLocationNames(record.getC_BPartner_QuickInput_ID(), record.getC_BPartner_Location_QuickInput_ID()))
 				.maxLength(poInfo.getFieldLength(I_C_BPartner_Location_QuickInput.COLUMNNAME_Name))
 				.build()
 				.execute();
 
 		record.setName(name);
-	}
-
-	private List<String> getOtherLocationNames(
-			final int bpartnerQuickInputRecordId,
-			final int bpartnerLocationQuickInputIdToExclude)
-	{
-		return queryBL
-				.createQueryBuilder(I_C_BPartner_Location_QuickInput.class)
-				.addEqualsFilter(I_C_BPartner_Location_QuickInput.COLUMNNAME_C_BPartner_QuickInput_ID, bpartnerQuickInputRecordId)
-				.addNotEqualsFilter(I_C_BPartner_Location_QuickInput.COLUMNNAME_C_BPartner_Location_QuickInput_ID, bpartnerLocationQuickInputIdToExclude)
-				.create()
-				.listDistinct(I_C_BPartner_Location_QuickInput.COLUMNNAME_Name, String.class);
 	}
 }
