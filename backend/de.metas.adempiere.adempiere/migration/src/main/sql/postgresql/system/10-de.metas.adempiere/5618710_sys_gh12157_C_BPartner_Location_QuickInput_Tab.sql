@@ -777,3 +777,10 @@ UPDATE AD_UI_Element SET IsDisplayed='N',Updated=TO_TIMESTAMP('2021-12-16 14:06:
 
 
 
+-- 2021-12-16T12:18:25.423Z
+-- URL zum Konzept
+UPDATE AD_UI_Element SET Name='Anschrift',Updated=TO_TIMESTAMP('2021-12-16 14:18:25','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=598943
+;
+
+
+
