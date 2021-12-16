@@ -18,6 +18,7 @@ import filtersActive from '../../../../test_setup/fixtures/filters/filtersActive
 import filtersStoreOne from '../../../../test_setup/fixtures/filters/filtersStoreOne.json';
 import filtersStoreTwo from '../../../../test_setup/fixtures/filters/filtersStoreTwo.json';
 import filtersStoreThree from '../../../../test_setup/fixtures/filters/filtersStoreThree.json';
+import filtersStoreFour from '../../../../test_setup/fixtures/filters/filtersStoreFour.json';
 const mockStore = configureStore([]);
 
 const createStore = function (state = {}) {
@@ -96,6 +97,33 @@ describe('Filters tests', () => {
 
     wrapper.find(
       '.filter-wrapper button[title="Akontozahlung, Completed, Error"]'
+    );
+  });
+
+  it('renders active filters caption for filters without parameters', () => {
+    const updateDocListListener = jest.fn();
+    const dummyProps = createInitialProps(undefined, {
+      updateDocList: updateDocListListener,
+    });
+    const initialState = createStore({
+      windowHandler: {
+        allowShortcut: true,
+        modal: {
+          visible: false,
+        },
+      },
+      filters: filtersStoreFour,
+    });
+
+    const store = mockStore(initialState);
+    const wrapper = shallow(
+      <Provider store={store}>
+        <Filters {...dummyProps} />
+      </Provider>
+    );
+
+    wrapper.find(
+      '.filter-wrapper button[title="Abrechnung_offen_normal"]'
     );
   });
 
@@ -258,7 +286,7 @@ describe('Filters tests', () => {
       expect(updateDocListListener).toBeCalledWith(filterResult);
     });
 
-    it('supports filters without parameters', () => {
+    it('supports selecting filters without parameters', () => {
       const updateDocListListener = jest.fn();
       const dummyProps = createInitialProps(undefined, {
         updateDocList: updateDocListListener,
@@ -298,26 +326,12 @@ describe('Filters tests', () => {
 
       const filterResult = [
         {
-          filterId: 'default',
-          parameters: [
-            {
-              parameterName: 'C_BPartner_ID',
-              value: {
-                key: '2156429',
-                caption: '1000003_TestVendor',
-                description: '1000003_TestVendor',
-              },
-              valueTo: null,
-            },
-          ],
-        },
-        {
           filterId: 'userquery-540024',
           caption: 'Abrechnung_offen_normal',
           frequent: false,
           inlineRenderMode: 'button',
           parametersLayoutType: 'panel',
-          debugProperties: {},
+          debugProperties: { sortNo: 20002 },
           isActive: false,
         },
       ];
