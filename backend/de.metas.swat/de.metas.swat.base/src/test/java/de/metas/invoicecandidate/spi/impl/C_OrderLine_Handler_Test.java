@@ -230,7 +230,6 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 		final Properties ctx = Env.getCtx();
 		Mockito
 				.when(taxBL.getTaxNotNull(
-						ctx,
 						order1,
 						(TaxCategoryId)null,
 						oL1.getM_Product_ID(),

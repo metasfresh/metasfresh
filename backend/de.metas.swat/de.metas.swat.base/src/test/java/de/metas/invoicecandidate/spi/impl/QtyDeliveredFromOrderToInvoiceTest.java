@@ -157,7 +157,6 @@ public class QtyDeliveredFromOrderToInvoiceTest
 		final Properties ctx = Env.getCtx();
 		Mockito
 				.when(taxBL.getTaxNotNull(
-						ctx,
 						order,
 						null, // taxCategoryId
 						orderLine.getM_Product_ID(),

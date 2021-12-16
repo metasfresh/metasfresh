@@ -208,7 +208,6 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		//
 		// Tax
 		final TaxId taxId = Services.get(ITaxBL.class).getTaxNotNull(
-				ctx,
 				icRecord,
 				TaxCategoryId.ofRepoIdOrNull(orderLine.getC_TaxCategory_ID()),
 				orderLine.getM_Product_ID(),

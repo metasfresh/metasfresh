@@ -309,7 +309,6 @@ public class CustomerTradeMarginPricingRule implements IPricingRule
 
 		final TaxId taxId = taxBL.getTaxNotNull(
 				null,
-				null,
 				customerPricingContext.getResultTaxCategory(),
 				customerPricingContext.getProductId().getRepoId(),
 				Objects.requireNonNull(TimeUtil.asTimestamp(customerPricingContext.getResultPriceDate())),

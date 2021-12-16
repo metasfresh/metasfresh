@@ -118,7 +118,6 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 		final Properties ctx = Env.getCtx();
 		final TaxCategoryId taxCategoryId = null;
 		Mockito.when(taxBL.getTaxNotNull(
-				ctx,
 				term1,
 				taxCategoryId,
 				term1.getM_Product_ID(),
