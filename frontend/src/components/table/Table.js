@@ -104,6 +104,10 @@ export default class Table extends PureComponent {
 
   /**
    * @summary Updates the start reference used for the multi selection when SHIFT + arrow up/down keys are pressed
+   *          Note: the check that you see below `!this.multiSelectionStartIdx && this.multiSelectionStartIdx !== 0`
+   *                is needed because we will set the start reference only when we do not have yet a reference
+   *                (ex. when user clicked on a row and then uses SHIFT + arrow up/down) and for the case when reference is different than zero
+   *                (There is an edge case when user clicks the first row and when pressing down we will loose the first row selection)
    * @param {*} currentId - the current index in the array of rows
    */
   updateMultiSelectionStartIdx = (currentId) => {
@@ -113,13 +117,15 @@ export default class Table extends PureComponent {
         : this.multiSelectionStartIdx;
   };
 
+  clearMultiSelectionStartIdx = () => (this.multiSelectionStartIdx = null);
+
   handleClick = (e, item) => {
     const { keyProperty, selected, onSelect, onDeselect, featureType } =
       this.props;
     const disableMultiSel = featureType === 'SEARCH' ? true : false;
     const id = item[keyProperty];
 
-    this.multiSelectionStartIdx = null;
+    this.clearMultiSelectionStartIdx();
     if (e && e.button === 0) {
       const selectMore = e.metaKey || e.ctrlKey;
       const selectRange = e.shiftKey;
@@ -202,7 +208,7 @@ export default class Table extends PureComponent {
             showSelectedIncludedView &&
               showSelectedIncludedView([rowsPool[currentId + 1]])
           );
-          this.multiSelectionStartIdx = null;
+          this.clearMultiSelectionStartIdx();
         } else {
           this.updateMultiSelectionStartIdx(currentId);
 
@@ -234,7 +240,7 @@ export default class Table extends PureComponent {
             showSelectedIncludedView &&
               showSelectedIncludedView([rowsPool[currentId - 1]])
           );
-          this.multiSelectionStartIdx = null;
+          this.clearMultiSelectionStartIdx();
         } else {
           this.updateMultiSelectionStartIdx(currentId);
 
