@@ -354,6 +354,7 @@ export class RawLookup extends Component {
         viewId,
       });
     } else {
+      this.typeaheadQuery = typeaheadParams.query;
       typeaheadRequest = autocompleteRequest({
         ...typeaheadParams,
         docType: windowType,
@@ -364,45 +365,50 @@ export class RawLookup extends Component {
     }
 
     typeaheadRequest.then((response) => {
-      let values = response.data.values || [];
-      const isAlwaysDisplayNewBPartner = response.data
-        .isAlwaysDisplayNewBPartner
-        ? true
-        : false;
-      const hasMoreResults = response.data.hasMoreResults ? true : false;
-      let list = null;
-      const newState = {
-        loading: false,
-      };
+      if (
+        this.typeaheadQuery &&
+        this.typeaheadQuery === typeaheadParams.query
+      ) {
+        let values = response.data.values || [];
+        const isAlwaysDisplayNewBPartner = response.data
+          .isAlwaysDisplayNewBPartner
+          ? true
+          : false;
+        const hasMoreResults = response.data.hasMoreResults ? true : false;
+        let list = null;
+        const newState = {
+          loading: false,
+        };
 
-      const optionNew = { key: 'NEW', caption: newRecordCaption };
-      if (values.length === 0 && !isModal) {
-        list = [optionNew];
+        const optionNew = { key: 'NEW', caption: newRecordCaption };
+        if (values.length === 0 && !isModal) {
+          list = [optionNew];
 
-        newState.forceEmpty = true;
-        newState.selected = optionNew;
-      } else {
-        list = values;
-        isAlwaysDisplayNewBPartner && list.unshift(optionNew);
+          newState.forceEmpty = true;
+          newState.selected = optionNew;
+        } else {
+          list = values;
+          isAlwaysDisplayNewBPartner && list.unshift(optionNew);
 
-        newState.forceEmpty = false;
-        newState.selected = advSearchWindowId ? values[1] : values[0];
+          newState.forceEmpty = false;
+          newState.selected = advSearchWindowId ? values[1] : values[0];
+        }
+
+        // we inject the advanced search entry if we have a advSearchWindowId
+        advSearchWindowId &&
+          list.unshift({ key: 'SEARCH', caption: advSearchCaption });
+
+        if (!mandatory && placeholder) {
+          list.push({
+            caption: placeholder,
+            key: null,
+          });
+        }
+        newState.list = [...list];
+        newState.hasMoreResults = hasMoreResults;
+
+        this.setState({ ...newState });
       }
-
-      // we inject the advanced search entry if we have a advSearchWindowId
-      advSearchWindowId &&
-        list.unshift({ key: 'SEARCH', caption: advSearchCaption });
-
-      if (!mandatory && placeholder) {
-        list.push({
-          caption: placeholder,
-          key: null,
-        });
-      }
-      newState.list = [...list];
-      newState.hasMoreResults = hasMoreResults;
-
-      this.setState({ ...newState });
     });
   };
 
