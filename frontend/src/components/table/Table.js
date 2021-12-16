@@ -190,7 +190,7 @@ export default class Table extends PureComponent {
       case ARROW_DOWN_KEY: {
         e.preventDefault();
 
-        const { currentId, array } = this.getCurrentRowId();
+        const { currentId, array } = this.getCurrentRowId(ARROW_DOWN_KEY);
 
         if (currentId >= array.length - 1) return;
 
