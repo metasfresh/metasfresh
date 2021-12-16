@@ -140,7 +140,6 @@ class Filters extends PureComponent {
             : filterItem.value === null;
         });
       }
-      return false;
     }
     return false;
   };
