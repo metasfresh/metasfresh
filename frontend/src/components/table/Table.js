@@ -2,7 +2,7 @@ import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import currentDevice from 'current-device';
-
+import { ARROW_DOWN_KEY, ARROW_UP_KEY } from '../../constants/Constants';
 import { handleCopy, componentPropTypes } from '../../utils/tableHelpers';
 
 import TableHeader from './TableHeader';
@@ -73,13 +73,13 @@ export default class Table extends PureComponent {
     this.tfoot = ref;
   };
 
-  getCurrentRowId = (arrowOrientation = 'ArrowDown') => {
+  getCurrentRowId = (arrowOrientation = ARROW_DOWN_KEY) => {
     const { keyProperty, selected, rows } = this.props;
 
     const array = rows.map((item) => item[keyProperty]);
 
     let lookupPostion =
-      arrowOrientation === 'ArrowUp' ? 0 : selected.length - 1;
+      arrowOrientation === ARROW_UP_KEY ? 0 : selected.length - 1;
 
     const currentId = array.findIndex((x) => x === selected[lookupPostion]);
 
@@ -187,7 +187,7 @@ export default class Table extends PureComponent {
     }
 
     switch (e.key) {
-      case 'ArrowDown': {
+      case ARROW_DOWN_KEY: {
         e.preventDefault();
 
         const { currentId, array } = this.getCurrentRowId();
@@ -219,10 +219,10 @@ export default class Table extends PureComponent {
         }
         break;
       }
-      case 'ArrowUp': {
+      case ARROW_UP_KEY: {
         e.preventDefault();
 
-        const { currentId, array } = this.getCurrentRowId('ArrowUp');
+        const { currentId, array } = this.getCurrentRowId(ARROW_UP_KEY);
 
         if (currentId <= 0) return;
 

@@ -49,6 +49,18 @@ export const INITIALLY_OPEN = 'INITIALLY_OPEN';
 
 /**
  * @constant
+ * @type {string} - the event string fired when down arrow is pressed
+ */
+export const ARROW_DOWN_KEY = 'ArrowDown';
+
+/**
+ * @constant
+ * @type {string} - the event string fired when up arrow is pressed
+ */
+export const ARROW_UP_KEY = 'ArrowUp';
+
+/**
+ * @constant
  * @type {string} ToDo: Description for the constant.
  */
 export const AMOUNT_FIELD_TYPES = ['Amount', 'CostPrice', 'Quantity'];
