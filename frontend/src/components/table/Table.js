@@ -20,6 +20,7 @@ export default class Table extends PureComponent {
       listenOnKeys: true,
       tableRefreshToggle: false,
     };
+    this.multiSelStart = null;
   }
 
   componentDidMount() {
@@ -72,13 +73,15 @@ export default class Table extends PureComponent {
     this.tfoot = ref;
   };
 
-  getCurrentRowId = () => {
+  getCurrentRowId = (arrowOrientation = 'ArrowDown') => {
     const { keyProperty, selected, rows } = this.props;
 
     const array = rows.map((item) => item[keyProperty]);
-    const currentId = array.findIndex(
-      (x) => x === selected[selected.length - 1]
-    );
+
+    let lookupPostion =
+      arrowOrientation === 'ArrowUp' ? 0 : selected.length - 1;
+
+    const currentId = array.findIndex((x) => x === selected[lookupPostion]);
 
     return { currentId, array };
   };
@@ -99,12 +102,20 @@ export default class Table extends PureComponent {
     return arrayIndex.slice(selectedArr[0], selectedArr[1] + 1);
   };
 
+  updateMultiSelStart = (currentId) => {
+    this.multiSelStart =
+      !this.multiSelStart && this.multiSelStart !== 0
+        ? currentId
+        : this.multiSelStart;
+  };
+
   handleClick = (e, item) => {
     const { keyProperty, selected, onSelect, onDeselect, featureType } =
       this.props;
     const disableMultiSel = featureType === 'SEARCH' ? true : false;
     const id = item[keyProperty];
 
+    this.multiSelStart = null;
     if (e && e.button === 0) {
       const selectMore = e.metaKey || e.ctrlKey;
       const selectRange = e.shiftKey;
@@ -179,9 +190,7 @@ export default class Table extends PureComponent {
 
         const { currentId, array } = this.getCurrentRowId();
 
-        if (currentId >= array.length - 1) {
-          return;
-        }
+        if (currentId >= array.length - 1) return;
 
         if (!selectRange) {
           handleSelect(
@@ -191,19 +200,27 @@ export default class Table extends PureComponent {
             showSelectedIncludedView &&
               showSelectedIncludedView([array[currentId + 1]])
           );
+          this.multiSelStart = null;
         } else {
-          handleSelect(array[currentId + 1], false, idFocused);
+          this.updateMultiSelStart(currentId);
+
+          handleSelect(
+            array.slice(
+              this.multiSelStart > 0 ? this.multiSelStart : 0,
+              currentId + 2
+            ),
+            false,
+            idFocused
+          );
         }
         break;
       }
       case 'ArrowUp': {
         e.preventDefault();
 
-        const { currentId, array } = this.getCurrentRowId();
+        const { currentId, array } = this.getCurrentRowId('ArrowUp');
 
-        if (currentId <= 0) {
-          return;
-        }
+        if (currentId <= 0) return;
 
         if (!selectRange) {
           handleSelect(
@@ -213,8 +230,15 @@ export default class Table extends PureComponent {
             showSelectedIncludedView &&
               showSelectedIncludedView([array[currentId - 1]])
           );
+          this.multiSelStart = null;
         } else {
-          handleSelect(array[currentId - 1], idFocused, false);
+          this.updateMultiSelStart(currentId);
+
+          handleSelect(
+            array.slice(currentId - 1, this.multiSelStart + 1),
+            false,
+            idFocused
+          );
         }
         break;
       }
