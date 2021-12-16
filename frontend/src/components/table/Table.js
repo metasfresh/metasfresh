@@ -107,13 +107,14 @@ export default class Table extends PureComponent {
    *          Note: the check that you see below `!this.multiSelectionStartIdx && this.multiSelectionStartIdx !== 0`
    *                is needed because we will set the start reference only when we do not have yet a reference
    *                (ex. when user clicked on a row and then uses SHIFT + arrow up/down) and for the case when reference is different than zero
-   *                (There is an edge case when user clicks the first row and when pressing down we will loose the first row selection)
-   * @param {*} currentId - the current index in the array of rows
+   *                (There is an edge case when user clicks the first row and when pressing down we will loose the first row selection - this.multiSelectionStartIdx === 0 case)
+   * @param {*} currentIdx - the current index in the array of rows
    */
-  updateMultiSelectionStartIdx = (currentId) => {
+  updateMultiSelectionStartIdx = (currentIdx) => {
+    console.log('this.multiSelectionStartIdx', this.multiSelectionStartIdx);
     this.multiSelectionStartIdx =
       !this.multiSelectionStartIdx && this.multiSelectionStartIdx !== 0
-        ? currentId
+        ? currentIdx
         : this.multiSelectionStartIdx;
   };
 
