@@ -445,7 +445,7 @@ public class BPartnerQuickInputService
 
 		if (locations.isEmpty())
 		{
-			throw new FillMandatoryException(I_C_BPartner_QuickInput.COLUMNNAME_C_Location_ID, I_C_BPartner_Location_QuickInput.COLUMNNAME_C_BPartner_Location_QuickInput_ID);
+			throw new FillMandatoryException(I_C_BPartner_QuickInput.COLUMNNAME_C_Location_ID);
 		}
 
 		validateMandatoryPricingSystems(template, locations);
