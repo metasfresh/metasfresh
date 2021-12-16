@@ -784,3 +784,86 @@ UPDATE AD_UI_Element SET Name='Anschrift',Updated=TO_TIMESTAMP('2021-12-16 14:18
 
 
 
+
+
+
+-- 2021-12-16T12:23:20.811Z
+-- URL zum Konzept
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Adresse', PrintName='Adresse',Updated=TO_TIMESTAMP('2021-12-16 14:23:20','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=580379 AND AD_Language='de_CH'
+;
+
+-- 2021-12-16T12:23:20.909Z
+-- URL zum Konzept
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(580379,'de_CH') 
+;
+
+-- 2021-12-16T12:23:39.367Z
+-- URL zum Konzept
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Adresse', PrintName='Adresse',Updated=TO_TIMESTAMP('2021-12-16 14:23:39','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=580379 AND AD_Language='de_DE'
+;
+
+-- 2021-12-16T12:23:39.460Z
+-- URL zum Konzept
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(580379,'de_DE') 
+;
+
+-- 2021-12-16T12:23:39.661Z
+-- URL zum Konzept
+/* DDL */  select update_ad_element_on_ad_element_trl_update(580379,'de_DE') 
+;
+
+-- 2021-12-16T12:23:39.739Z
+-- URL zum Konzept
+UPDATE AD_Column SET ColumnName='C_BPartner_Location_QuickInput_ID', Name='Adresse', Description=NULL, Help=NULL WHERE AD_Element_ID=580379
+;
+
+-- 2021-12-16T12:23:39.818Z
+-- URL zum Konzept
+UPDATE AD_Process_Para SET ColumnName='C_BPartner_Location_QuickInput_ID', Name='Adresse', Description=NULL, Help=NULL, AD_Element_ID=580379 WHERE UPPER(ColumnName)='C_BPARTNER_LOCATION_QUICKINPUT_ID' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2021-12-16T12:23:39.910Z
+-- URL zum Konzept
+UPDATE AD_Process_Para SET ColumnName='C_BPartner_Location_QuickInput_ID', Name='Adresse', Description=NULL, Help=NULL WHERE AD_Element_ID=580379 AND IsCentrallyMaintained='Y'
+;
+
+-- 2021-12-16T12:23:40.002Z
+-- URL zum Konzept
+UPDATE AD_Field SET Name='Adresse', Description=NULL, Help=NULL WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=580379) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 580379)
+;
+
+-- 2021-12-16T12:23:40.125Z
+-- URL zum Konzept
+UPDATE AD_PrintFormatItem pi SET PrintName='Adresse', Name='Adresse' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c  WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=580379)
+;
+
+-- 2021-12-16T12:23:40.202Z
+-- URL zum Konzept
+UPDATE AD_Tab SET Name='Adresse', Description=NULL, Help=NULL, CommitWarning = NULL WHERE AD_Element_ID = 580379
+;
+
+-- 2021-12-16T12:23:40.279Z
+-- URL zum Konzept
+UPDATE AD_WINDOW SET Name='Adresse', Description=NULL, Help=NULL WHERE AD_Element_ID = 580379
+;
+
+-- 2021-12-16T12:23:40.357Z
+-- URL zum Konzept
+UPDATE AD_Menu SET   Name = 'Adresse', Description = NULL, WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 580379
+;
+
+-- 2021-12-16T12:23:51.060Z
+-- URL zum Konzept
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Location', PrintName='Location',Updated=TO_TIMESTAMP('2021-12-16 14:23:50','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=580379 AND AD_Language='en_US'
+;
+
+-- 2021-12-16T12:23:51.139Z
+-- URL zum Konzept
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(580379,'en_US') 
+;
+
+
+
+
+
+
