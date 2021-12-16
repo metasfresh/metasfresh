@@ -639,3 +639,66 @@ DROP TRIGGER IF EXISTS C_BPartner_Location_QuickInput_IsShiptoDefault_tg ON C_BP
 CREATE TRIGGER C_BPartner_Location_QuickInput_IsShiptoDefault_tg BEFORE INSERT OR UPDATE  ON C_BPartner_Location_QuickInput FOR EACH ROW EXECUTE PROCEDURE C_BPartner_Location_QuickInput_IsShiptoDefault_tgfn()
 ;
 
+
+
+
+
+
+
+
+-- 2021-12-16T13:45:38.854Z
+-- URL zum Konzept
+UPDATE AD_Column SET DefaultValue='Y',Updated=TO_TIMESTAMP('2021-12-16 15:45:38','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=578936
+;
+
+-- 2021-12-16T13:45:49.938Z
+-- URL zum Konzept
+INSERT INTO t_alter_column values('c_bpartner_location_quickinput','IsBillTo','CHAR(1)',null,'Y')
+;
+
+-- 2021-12-16T13:45:50.052Z
+-- URL zum Konzept
+UPDATE C_BPartner_Location_QuickInput SET IsBillTo='Y' WHERE IsBillTo IS NULL
+;
+
+-- 2021-12-16T13:46:03.080Z
+-- URL zum Konzept
+UPDATE AD_Column SET DefaultValue='Y',Updated=TO_TIMESTAMP('2021-12-16 15:46:02','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=578934
+;
+
+-- 2021-12-16T13:46:12.206Z
+-- URL zum Konzept
+INSERT INTO t_alter_column values('c_bpartner_location_quickinput','IsShipTo','CHAR(1)',null,'Y')
+;
+
+-- 2021-12-16T13:46:12.313Z
+-- URL zum Konzept
+UPDATE C_BPartner_Location_QuickInput SET IsShipTo='Y' WHERE IsShipTo IS NULL
+;
+
+-- 2021-12-16T13:46:25.264Z
+-- URL zum Konzept
+UPDATE AD_Column SET DefaultValue='Y',Updated=TO_TIMESTAMP('2021-12-16 15:46:25','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=578945
+;
+
+-- 2021-12-16T13:46:34.611Z
+-- URL zum Konzept
+INSERT INTO t_alter_column values('c_bpartner_location_quickinput','IsHandOverLocation','CHAR(1)',null,'Y')
+;
+
+-- 2021-12-16T13:46:34.717Z
+-- URL zum Konzept
+UPDATE C_BPartner_Location_QuickInput SET IsHandOverLocation='Y' WHERE IsHandOverLocation IS NULL
+;
+
+
+
+
+
+
+
+
+
+
+
+
