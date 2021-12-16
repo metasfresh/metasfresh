@@ -386,9 +386,7 @@ export class RawLookup extends Component {
       !!responseData.isAlwaysDisplayNewBPartner;
     const hasMoreResults = !!responseData.hasMoreResults;
     let list;
-    const newState = {
-      loading: false,
-    };
+    const newState = { loading: false };
 
     const optionNew = { key: 'NEW', caption: newRecordCaption };
     if (values.length === 0 && !isModal) {
