@@ -422,6 +422,10 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		{
 			icRecord.setC_DocTypeInvoice_ID(invoiceDocTypeId.getRepoId());
 		}
+		else
+		{
+			setDefaultInvoiceDocType(icRecord);
+		}
 
 		icRecord.setC_Async_Batch_ID(inOut.getC_Async_Batch_ID());
 		//
