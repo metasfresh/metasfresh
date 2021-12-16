@@ -28,6 +28,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
@@ -63,9 +64,15 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter
 		http.addFilterBefore(new AuthenticationFilter(authenticationManager()), BasicAuthenticationFilter.class);
 	}
 
+	@Override
+	public void configure(@NotNull final WebSecurity web)
+	{
+		web.ignoring().antMatchers("/actuator/**");
+	}
+
 	@Bean
 	@Override
-	public AuthenticationManager authenticationManager() throws Exception
+	public AuthenticationManager authenticationManagerBean() throws Exception
 	{
 		return super.authenticationManagerBean();
 	}
