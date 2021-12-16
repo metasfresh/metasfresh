@@ -19,15 +19,15 @@ Feature: API Audit POST http method
 	"messageBody": "\"test-endpoint was called\""
   }
 """
-    And after not more than 30s, there are added records in API_Request_Audit
+    And there are added records in API_Request_Audit
       | Method | Path                                                                          | AD_User.Name | Status      |
       | POST   | /api/v2/test?responseBody=%22test-endpoint%20was%20called%22&responseCode=200 | metasfresh   | Verarbeitet |
 
-    And after not more than 30s, there are added records in API_Request_Audit_Log
+    And there are added records in API_Request_Audit_Log
       | Logmessage                                | AD_Issue.Summary |
       | Endpoint invoked; returning httpCode: 200 | null             |
 
-    And after not more than 30s, there are added records in API_Response_Audit
+    And there are added records in API_Response_Audit
       | HttpCode | Body                                           |
       | 200      | {"messageBody":"\"test-endpoint was called\""} |
 
@@ -39,7 +39,9 @@ Feature: API Audit POST http method
 
     When invoke 'POST' '/api/v2/test?delaymillis=1000&responseBody=%22test-endpoint%20was%20called%22&responseCode=200' with response code '202'
 
-    And after not more than 0s, there are added records in API_Request_Audit
+    # We call the test endpoint and instruct it to wait for 1 seconds before returning, and we have SynchronousAuditLoggingEnabled=Y, IsInvokerWaitsForResult=N
+    # So when we check right after the call, we can expect an audit record to be created and the request to be "received", but not yet "processed"
+    And there are added records in API_Request_Audit
       | Method | Path                                                                                           | AD_User.Name | Status    |
       | POST   | /api/v2/test?delaymillis=1000&responseBody=%22test-endpoint%20was%20called%22&responseCode=200 | metasfresh   | Empfangen |
 
@@ -72,16 +74,16 @@ Feature: API Audit POST http method
 	"messageBody": "\"test-endpoint was called\""
   }
 """
-    And after not more than 30s, there are added records in API_Request_Audit
+    And there are added records in API_Request_Audit
       | Method | Path                                                                         | AD_User.Name | Status |
       | POST   | api/v2/test?responseBody=%22test-endpoint%20was%20called%22&responseCode=404 | metasfresh   | Fehler |
 
-    And after not more than 30s, there are added records in API_Request_Audit_Log
+    And there are added records in API_Request_Audit_Log
       | Logmessage                                | AD_Issue.Summary               |
       | Endpoint invoked; returning httpCode: 404 | null                           |
       | Endpoint invoked; log ad_issue            | Endpoint invoked; log ad_issue |
 
-    And after not more than 30s, there are added records in API_Response_Audit
+    And there are added records in API_Response_Audit
       | HttpCode | Body                                           |
       | 404      | {"messageBody":"\"test-endpoint was called\""} |
 
@@ -93,7 +95,9 @@ Feature: API Audit POST http method
 
     When invoke 'POST' '/api/v2/test?delaymillis=1000&responseBody=%22test-endpoint%20was%20called%22&responseCode=404' with response code '202'
 
-    And after not more than 0s, there are added records in API_Request_Audit
+    # We call the test endpoint and instruct it to wait for 1 seconds before returning, and we have SynchronousAuditLoggingEnabled=Y, IsInvokerWaitsForResult=N
+    # So when we check right after the call, we can expect an audit record to be created and the request to be "received", but not yet "processed"
+    And there are added records in API_Request_Audit
       | Method | Path                                                                                           | AD_User.Name | Status    |
       | POST   | /api/v2/test?delaymillis=1000&responseBody=%22test-endpoint%20was%20called%22&responseCode=404 | metasfresh   | Empfangen |
 
@@ -122,11 +126,11 @@ Feature: API Audit POST http method
 
     And invoke 'POST' 'api/v2/test?responseBody=%22test-endpoint%20was%20called%22&responseCode=404' with response code '404'
 
-    And after not more than 30s, there are added records in API_Request_Audit
+    And there are added records in API_Request_Audit
       | Method | Path                                                                         | AD_User.Name | Status |
       | POST   | api/v2/test?responseBody=%22test-endpoint%20was%20called%22&responseCode=404 | metasfresh   | Fehler |
 
-    And after not more than 30s, there are added records in API_Response_Audit
+    And there are added records in API_Response_Audit
       | HttpCode | Body                                           |
       | 404      | {"messageBody":"\"test-endpoint was called\""} |
 
@@ -136,16 +140,16 @@ Feature: API Audit POST http method
 
     When invoke replay audit
 
-    And after not more than 30s, there are added records in API_Request_Audit
+    And there are added records in API_Request_Audit
       | Method | Path                                                                         | AD_User.Name | Status      |
       | POST   | api/v2/test?responseBody=%22test-endpoint%20was%20called%22&responseCode=200 | metasfresh   | Verarbeitet |
 
-    And after not more than 30s, there are added records in API_Request_Audit_Log
+    And there are added records in API_Request_Audit_Log
       | Logmessage                                | AD_Issue.Summary |
       | Endpoint invoked; returning httpCode: 404 | null             |
       | Endpoint invoked; returning httpCode: 200 | null             |
 
-    And after not more than 30s, there are added records in API_Response_Audit
+    And there are added records in API_Response_Audit
       | HttpCode | Body                                           |
       | 404      | {"messageBody":"\"test-endpoint was called\""} |
       | 200      | {"messageBody":"\"test-endpoint was called\""} |
@@ -166,15 +170,15 @@ Feature: API Audit POST http method
 """
     And after not more than 30s, find and add last API_Request_Audit_ID to context
 
-    And after not more than 0s, there are added records in API_Request_Audit
+    And there are added records in API_Request_Audit
       | Method | Path                                                                          | AD_User.Name | Status      |
       | POST   | /api/v2/test?responseBody=%22test-endpoint%20was%20called%22&responseCode=200 | metasfresh   | Verarbeitet |
 
-    And after not more than 0s, there are added records in API_Request_Audit_Log
+    And there are added records in API_Request_Audit_Log
       | Logmessage                          | AD_Issue.Summary |
       | Async audit performed successfully! | null             |
 
-    And after not more than 0s, there are added records in API_Response_Audit
+    And there are added records in API_Response_Audit
       | HttpCode | Body                                           |
       | 200      | {"messageBody":"\"test-endpoint was called\""} |
 
@@ -193,15 +197,15 @@ Feature: API Audit POST http method
 	"messageBody": "\"test-endpoint was called\""
   }
 """
-    And after not more than 30s, there are added records in API_Request_Audit
+    And there are added records in API_Request_Audit
       | Method | Path                                                                          | AD_User.Name | Status      |
       | POST   | /api/v2/test?responseBody=%22test-endpoint%20was%20called%22&responseCode=200 | metasfresh   | Verarbeitet |
 
-    And after not more than 30s, there are added records in API_Request_Audit_Log
+    And there are added records in API_Request_Audit_Log
       | Logmessage                                | AD_Issue.Summary |
       | Endpoint invoked; returning httpCode: 200 | null             |
 
-    And after not more than 30s, there are added records in API_Response_Audit
+    And there are added records in API_Response_Audit
       | HttpCode | Body                                           |
       | 200      | {"messageBody":"\"test-endpoint was called\""} |
 
@@ -225,20 +229,20 @@ Feature: API Audit POST http method
 """
     And after not more than 30s, find and add last API_Request_Audit_ID to context
 
-    And after not more than 0s, there are added records in API_Request_Audit
+    And there are added records in API_Request_Audit
       | Method | Path                                                                          | AD_User.Name | Status      |
       | POST   | /api/v2/test?responseBody=%22test-endpoint%20was%20called%22&responseCode=200 | metasfresh   | Verarbeitet |
 
-    And after not more than 0s, there are added records in API_Request_Audit_Log
+    And there are added records in API_Request_Audit_Log
       | Logmessage                          | AD_Issue.Summary |
       | Async audit performed successfully! | null             |
 
-    And after not more than 0s, there are added records in API_Response_Audit
+    And there are added records in API_Response_Audit
       | HttpCode | Body                                           |
       | 200      | {"messageBody":"\"test-endpoint was called\""} |
 
   @from:cucumber
-  Scenario: Testcase 175, normal POST with IsSynchronousAuditLoggingEnabled is false, IsWrapApiResponse is false and request body is missing
+  Scenario: Testcase 175, normal POST with IsSynchronousAuditLoggingEnabled is false, IsWrapApiResponse is false and response body is missing
     And the following API_Audit_Config record is set
       | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsInvokerWaitsForResult | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
       | c_1        | 10    | POST       | api/v2/test    | N                       | N                                | N                 |
@@ -247,35 +251,35 @@ Feature: API Audit POST http method
 
     And after not more than 30s, find and add last API_Request_Audit_ID to context
 
-    And after not more than 0s, there are added records in API_Request_Audit
+    And there are added records in API_Request_Audit
       | Method | Path                          | AD_User.Name | Status      |
       | POST   | /api/v2/test?responseCode=200 | metasfresh   | Verarbeitet |
 
-    And after not more than 0s, there are added records in API_Request_Audit_Log
+    And there are added records in API_Request_Audit_Log
       | Logmessage                          | AD_Issue.Summary |
       | Async audit performed successfully! | null             |
 
-    And after not more than 0s, there are added records in API_Response_Audit
+    And there are added records in API_Response_Audit
       | HttpCode | Body |
       | 200      |      |
 
   @from:cucumber
-  Scenario: Testcase 180, normal POST, caller waits for result, IsSynchronousAuditLoggingEnabled is true, IsWrapApiResponse is false and request body is missing
+  Scenario: Testcase 180, normal POST, caller waits for result, IsSynchronousAuditLoggingEnabled is true, IsWrapApiResponse is false and response body is missing
     And the following API_Audit_Config record is set
       | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsInvokerWaitsForResult | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
-      | c_1        | 10    | POST       | api/v2/test    | Y                       | Y                                | Y                 |
+      | c_1        | 10    | POST       | api/v2/test    | Y                       | Y                                | N                 |
 
     When invoke 'POST' 'api/v2/test?responseCode=200' with response code '200'
 
-    And after not more than 30s, there are added records in API_Request_Audit
+    And there are added records in API_Request_Audit
       | Method | Path                          | AD_User.Name | Status      |
       | POST   | /api/v2/test?responseCode=200 | metasfresh   | Verarbeitet |
 
-    And after not more than 30s, there are added records in API_Request_Audit_Log
+    And there are added records in API_Request_Audit_Log
       | Logmessage                                | AD_Issue.Summary |
       | Endpoint invoked; returning httpCode: 200 | null             |
 
-    And after not more than 30s, there are added records in API_Response_Audit
+    And there are added records in API_Response_Audit
       | HttpCode | Body |
       | 200      |      |
 
@@ -287,15 +291,15 @@ Feature: API Audit POST http method
 
     When invoke 'POST' 'api/v2/test?responseBody=%22test-endpoint%20was%20called%22&responseCode=422&throwException=true' with response code '422'
 
-    And after not more than 30s, there are added records in API_Request_Audit
+    And there are added records in API_Request_Audit
       | Method | Path                                                                                              | AD_User.Name | Status |
       | POST   | /api/v2/test?responseBody=%22test-endpoint%20was%20called%22&responseCode=422&throwException=true | metasfresh   | Fehler |
 
-    And after not more than 30s, there are added records in API_Request_Audit_Log
+    And there are added records in API_Request_Audit_Log
       | Logmessage       | AD_Issue.Summary |
       | Exception thrown | null             |
 
-    And after not more than 30s, there are added records in API_Response_Audit
+    And there are added records in API_Response_Audit
       | HttpCode | Body             |
       | 422      | Exception thrown |
 
@@ -309,15 +313,15 @@ Feature: API Audit POST http method
 
     And after not more than 30s, find and add last API_Request_Audit_ID to context
 
-    And after not more than 30s, there are added records in API_Request_Audit
+    And there are added records in API_Request_Audit
       | Method | Path                                                                                              | AD_User.Name | Status |
       | POST   | /api/v2/test?responseBody=%22test-endpoint%20was%20called%22&responseCode=422&throwException=true | metasfresh   | Fehler |
 
-    And after not more than 30s, there are added records in API_Request_Audit_Log
+    And there are added records in API_Request_Audit_Log
       | Logmessage                          | AD_Issue.Summary |
       | Async audit performed successfully! | null             |
 
-    And after not more than 30s, there are added records in API_Response_Audit
+    And there are added records in API_Response_Audit
       | HttpCode | Body             |
       | 422      | Exception thrown |
 
@@ -329,18 +333,18 @@ Feature: API Audit POST http method
 
     When invoke 'POST' 'api/v2/test?responseBody=%22test-endpoint%20was%20called%22&responseCode=500&nonJsonBody=true' with response code '500'
 
-    And after not more than 30s, there are added records in API_Request_Audit
+    And there are added records in API_Request_Audit
       | Method | Path                                                                                           | AD_User.Name | Status |
       | POST   | /api/v2/test?responseBody=%22test-endpoint%20was%20called%22&responseCode=500&nonJsonBody=true | metasfresh   | Fehler |
 
-    And after not more than 30s, there are added records in API_Request_Audit_Log
+    And there are added records in API_Request_Audit_Log
       | Logmessage                                   | AD_Issue.Summary |
       | Error encountered while routing the request! | null             |
 
     And there are no records in API_Response_Audit for the API_Request_Audit from context
 
   @from:cucumber
-  Scenario: Testcase 196, normal POST with IsSynchronousAuditLoggingEnabled is false and IsWrapApiResponse is false and response cannot be deserialized
+  Scenario: Testcase 200, normal POST with IsSynchronousAuditLoggingEnabled is false and IsWrapApiResponse is false and response cannot be deserialized
     And the following API_Audit_Config record is set
       | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsInvokerWaitsForResult | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
       | c_1        | 10    | POST       | api/v2/test    | N                       | N                                | N                 |
@@ -352,7 +356,7 @@ Feature: API Audit POST http method
     And there are no records in API_Response_Audit
 
   @from:cucumber
-  Scenario: Testcase 200, reset to initial default data
+  Scenario: Testcase 210, reset to initial default data
     And all the API audit data is reset
     And the following API_Audit_Config record is set
       | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsInvokerWaitsForResult | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |

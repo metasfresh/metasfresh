@@ -19,15 +19,15 @@ Feature: API Audit DELETE http method
 	"messageBody": "\"test-endpoint was called\""
   }
 """
-    And after not more than 30s, there are added records in API_Request_Audit
+    And there are added records in API_Request_Audit
       | Method | Path                                                                          | AD_User.Name | Status      |
       | DELETE | /api/v2/test?responseBody=%22test-endpoint%20was%20called%22&responseCode=200 | metasfresh   | Verarbeitet |
 
-    And after not more than 30s, there are added records in API_Request_Audit_Log
+    And there are added records in API_Request_Audit_Log
       | Logmessage                                | AD_Issue.Summary |
       | Endpoint invoked; returning httpCode: 200 | null             |
 
-    And after not more than 30s, there are added records in API_Response_Audit
+    And there are added records in API_Response_Audit
       | HttpCode | Body                                           |
       | 200      | {"messageBody":"\"test-endpoint was called\""} |
 
@@ -39,7 +39,9 @@ Feature: API Audit DELETE http method
 
     When invoke 'DELETE' '/api/v2/test?delaymillis=1000&responseBody=%22test-endpoint%20was%20called%22&responseCode=200' with response code '202'
 
-    Then after not more than 0s, there are added records in API_Request_Audit
+    # We call the test endpoint and instruct it to wait for 1 seconds before returning, and we have SynchronousAuditLoggingEnabled=Y, IsInvokerWaitsForResult=N
+    # So when we check right after the call, we can expect an audit record to be created and the request to be "received", but not yet "processed"
+    Then there are added records in API_Request_Audit
       | Method | Path                                                                                           | AD_User.Name | Status    |
       | DELETE | /api/v2/test?delaymillis=1000&responseBody=%22test-endpoint%20was%20called%22&responseCode=200 | metasfresh   | Empfangen |
 
@@ -72,16 +74,16 @@ Feature: API Audit DELETE http method
 	"messageBody": "\"test-endpoint was called\""
   }
 """
-    And after not more than 30s, there are added records in API_Request_Audit
+    And there are added records in API_Request_Audit
       | Method | Path                                                                         | AD_User.Name | Status |
       | DELETE | api/v2/test?responseBody=%22test-endpoint%20was%20called%22&responseCode=404 | metasfresh   | Fehler |
 
-    And after not more than 30s, there are added records in API_Request_Audit_Log
+    And there are added records in API_Request_Audit_Log
       | Logmessage                                | AD_Issue.Summary               |
       | Endpoint invoked; returning httpCode: 404 | null                           |
       | Endpoint invoked; log ad_issue            | Endpoint invoked; log ad_issue |
 
-    And after not more than 30s, there are added records in API_Response_Audit
+    And there are added records in API_Response_Audit
       | HttpCode | Body                                           |
       | 404      | {"messageBody":"\"test-endpoint was called\""} |
 
@@ -93,7 +95,9 @@ Feature: API Audit DELETE http method
 
     When invoke 'DELETE' '/api/v2/test?delaymillis=1000&responseBody=%22test-endpoint%20was%20called%22&responseCode=404' with response code '202'
 
-    Then after not more than 0s, there are added records in API_Request_Audit
+    # We call the test endpoint and instruct it to wait for 1 seconds before returning, and we have SynchronousAuditLoggingEnabled=Y, IsInvokerWaitsForResult=N
+    # So when we check right after the call, we can expect an audit record to be created and the request to be "received", but not yet "processed"
+    Then there are added records in API_Request_Audit
       | Method | Path                                                                                           | AD_User.Name | Status    |
       | DELETE | /api/v2/test?delaymillis=1000&responseBody=%22test-endpoint%20was%20called%22&responseCode=404 | metasfresh   | Empfangen |
 
@@ -122,11 +126,11 @@ Feature: API Audit DELETE http method
 
     And invoke 'DELETE' 'api/v2/test?responseBody=%22test-endpoint%20was%20called%22&responseCode=404' with response code '404'
 
-    And after not more than 30s, there are added records in API_Request_Audit
+    And there are added records in API_Request_Audit
       | Method | Path                                                                         | AD_User.Name | Status |
       | DELETE | api/v2/test?responseBody=%22test-endpoint%20was%20called%22&responseCode=404 | metasfresh   | Fehler |
 
-    And after not more than 30s, there are added records in API_Response_Audit
+    And there are added records in API_Response_Audit
       | HttpCode | Body                                           |
       | 404      | {"messageBody":"\"test-endpoint was called\""} |
 
@@ -136,16 +140,16 @@ Feature: API Audit DELETE http method
 
     When invoke replay audit
 
-    Then after not more than 30s, there are added records in API_Request_Audit
+    Then there are added records in API_Request_Audit
       | Method | Path                                                                         | AD_User.Name | Status      |
       | DELETE | api/v2/test?responseBody=%22test-endpoint%20was%20called%22&responseCode=200 | metasfresh   | Verarbeitet |
 
-    And after not more than 30s, there are added records in API_Request_Audit_Log
+    And there are added records in API_Request_Audit_Log
       | Logmessage                                | AD_Issue.Summary |
       | Endpoint invoked; returning httpCode: 404 | null             |
       | Endpoint invoked; returning httpCode: 200 | null             |
 
-    And after not more than 30s, there are added records in API_Response_Audit
+    And there are added records in API_Response_Audit
       | HttpCode | Body                                           |
       | 404      | {"messageBody":"\"test-endpoint was called\""} |
       | 200      | {"messageBody":"\"test-endpoint was called\""} |

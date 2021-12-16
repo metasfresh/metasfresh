@@ -39,6 +39,7 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_API_Request_Audit;
 
+import javax.annotation.Nullable;
 import java.util.Map;
 import java.util.Optional;
 
@@ -57,34 +58,15 @@ public class API_Request_Audit_StepDef
 	}
 
 	@And("^after not more than (.*)s, there are added records in API_Request_Audit$")
-	public void validate_API_Request_Audit(final int timeoutSec, @NonNull final DataTable table) throws InterruptedException
+	public void validate_API_Request_Audit_with_timeout(final int timeoutSec, @NonNull final DataTable table) throws InterruptedException
 	{
-		final JsonMetasfreshId requestId = testContext.getApiResponse().getRequestId();
-		assertThat(requestId).isNotNull();
+		validateApiRequestAudit(table, timeoutSec);
+	}
 
-		final Map<String, String> row = table.asMaps().get(0);
-
-		final String method = DataTableUtil.extractStringForColumnName(row, "Method");
-		final String path = DataTableUtil.extractStringForColumnName(row, "Path");
-		final String name = DataTableUtil.extractStringForColumnName(row, "AD_User.Name");
-		final String status = DataTableUtil.extractStringForColumnName(row, "Status");
-
-		if (timeoutSec != 0)
-		{
-			StepDefUtil.tryAndWait(timeoutSec, 500, () -> isApiAuditRequestFound(requestId, status));
-		}
-
-		final I_API_Request_Audit requestAuditRecord = InterfaceWrapperHelper.load(requestId.getValue(), I_API_Request_Audit.class);
-
-		assertThat(requestAuditRecord).isNotNull();
-		assertThat(requestAuditRecord.getPath()).contains(path);
-		assertThat(requestAuditRecord.getMethod()).contains(method);
-		assertThat(requestAuditRecord.getStatus()).contains(status);
-
-		final I_AD_User adUserRecord = InterfaceWrapperHelper.load(requestAuditRecord.getAD_User_ID(), I_AD_User.class);
-
-		assertThat(adUserRecord).isNotNull();
-		assertThat(name).isEqualTo(adUserRecord.getLogin());
+	@And("there are added records in API_Request_Audit")
+	public void directly_validate_API_Request_Audit(@NonNull final DataTable table) throws InterruptedException
+	{
+		validateApiRequestAudit(table, null);
 	}
 
 	@And("on API_Request_Audit record we update the statusCode value from path")
@@ -150,5 +132,35 @@ public class API_Request_Audit_StepDef
 				.orderByDescending(I_API_Request_Audit.COLUMNNAME_API_Request_Audit_ID)
 				.create()
 				.firstOptional(I_API_Request_Audit.class);
+	}
+
+	private void validateApiRequestAudit(@NonNull final DataTable table, @Nullable final Integer timeoutSec) throws InterruptedException
+	{
+		final JsonMetasfreshId requestId = testContext.getApiResponse().getRequestId();
+		assertThat(requestId).isNotNull();
+
+		final Map<String, String> row = table.asMaps().get(0);
+
+		final String method = DataTableUtil.extractStringForColumnName(row, "Method");
+		final String path = DataTableUtil.extractStringForColumnName(row, "Path");
+		final String name = DataTableUtil.extractStringForColumnName(row, "AD_User.Name");
+		final String status = DataTableUtil.extractStringForColumnName(row, "Status");
+
+		if (timeoutSec != null)
+		{
+			StepDefUtil.tryAndWait(timeoutSec, 500, () -> isApiAuditRequestFound(requestId, status));
+		}
+
+		final I_API_Request_Audit requestAuditRecord = InterfaceWrapperHelper.load(requestId.getValue(), I_API_Request_Audit.class);
+
+		assertThat(requestAuditRecord).isNotNull();
+		assertThat(requestAuditRecord.getPath()).contains(path);
+		assertThat(requestAuditRecord.getMethod()).contains(method);
+		assertThat(requestAuditRecord.getStatus()).contains(status);
+
+		final I_AD_User adUserRecord = InterfaceWrapperHelper.load(requestAuditRecord.getAD_User_ID(), I_AD_User.class);
+
+		assertThat(adUserRecord).isNotNull();
+		assertThat(name).isEqualTo(adUserRecord.getLogin());
 	}
 }

@@ -177,9 +177,7 @@ public class RESTUtil
 			}
 			catch (final JsonParseException jsonParseException)
 			{
-				return apiResponseBuilder
-						.content(stream.toString(StandardCharsets.UTF_8.name()))
-						.build();
+				apiResponseBuilder.content(stream.toString(StandardCharsets.UTF_8.name()));
 			}
 		}
 		else

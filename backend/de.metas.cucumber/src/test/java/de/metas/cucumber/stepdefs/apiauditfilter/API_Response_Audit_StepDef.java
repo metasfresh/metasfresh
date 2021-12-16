@@ -52,25 +52,15 @@ public class API_Response_Audit_StepDef
 	}
 
 	@And("^after not more than (.*)s, there are added records in API_Response_Audit$")
-	public void validate_API_Response_Audit(final int timeoutSec, @NonNull final DataTable table) throws InterruptedException
+	public void validate_API_Response_Audit_with_timeout(final int timeoutSec, @NonNull final DataTable table) throws InterruptedException
 	{
-		for (final Map<String, String> row : table.asMaps())
-		{
-			final JsonMetasfreshId requestId = testContext.getApiResponse().getRequestId();
-			assertThat(requestId).isNotNull();
+		validateApiResponse(table, timeoutSec);
+	}
 
-			final String httpCode = DataTableUtil.extractStringForColumnName(row, "HttpCode");
-			final String body = DataTableUtil.extractStringOrNullForColumnName(row, "Body");
-
-			if (timeoutSec > 0)
-			{
-				StepDefUtil.tryAndWait(timeoutSec, 500, () -> isApiResponseAuditFound(requestId, httpCode, StringUtils.trimBlankToNull(body)));
-			}
-
-			final Optional<I_API_Response_Audit> record = getApiResponseAuditRecord(requestId, httpCode, body);
-
-			assertThat(record).isPresent();
-		}
+	@And("there are added records in API_Response_Audit")
+	public void directly_validate_API_Response_Audit(@NonNull final DataTable table) throws InterruptedException
+	{
+		validateApiResponse(table, null);
 	}
 
 	@And("there are no records in API_Response_Audit for the API_Request_Audit from context")
@@ -128,5 +118,26 @@ public class API_Response_Audit_StepDef
 				.addEqualsFilter(I_API_Response_Audit.COLUMN_API_Request_Audit_ID, apiRequestAuditId.getValue())
 				.create()
 				.list();
+	}
+
+	private void validateApiResponse(@NonNull final DataTable table, @Nullable final Integer timeoutSec) throws InterruptedException
+	{
+		for (final Map<String, String> row : table.asMaps())
+		{
+			final JsonMetasfreshId requestId = testContext.getApiResponse().getRequestId();
+			assertThat(requestId).isNotNull();
+
+			final String httpCode = DataTableUtil.extractStringForColumnName(row, "HttpCode");
+			final String body = DataTableUtil.extractStringOrNullForColumnName(row, "Body");
+
+			if (timeoutSec != null)
+			{
+				StepDefUtil.tryAndWait(timeoutSec, 500, () -> isApiResponseAuditFound(requestId, httpCode, StringUtils.trimBlankToNull(body)));
+			}
+
+			final Optional<I_API_Response_Audit> record = getApiResponseAuditRecord(requestId, httpCode, body);
+
+			assertThat(record).isPresent();
+		}
 	}
 }

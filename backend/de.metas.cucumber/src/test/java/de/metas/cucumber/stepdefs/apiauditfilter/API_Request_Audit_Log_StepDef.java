@@ -69,28 +69,15 @@ public class API_Request_Audit_Log_StepDef
 	}
 
 	@And("^after not more than (.*)s, there are added records in API_Request_Audit_Log$")
-	public void API_Request_Audit_Log_validation(final int timeoutSec, @NonNull final DataTable table) throws InterruptedException
+	public void validate_API_Request_Audit_Log_with_timeout(final int timeoutSec, @NonNull final DataTable table) throws InterruptedException
 	{
-		for (final Map<String, String> row : table.asMaps())
-		{
-			final JsonMetasfreshId requestId = testContext.getApiResponse().getRequestId();
-			assertThat(requestId).isNotNull();
+		validateApiRequestAuditLog(table, timeoutSec);
+	}
 
-			final String logMessage = DataTableUtil.extractStringOrNullForColumnName(row, "Logmessage");
-			final String adIssueSummary = DataTableUtil.extractStringOrNullForColumnName(row, "AD_Issue.Summary");
-
-			StepDefUtil.tryAndWait(timeoutSec, 500, () -> this.isApiRequestAuditLogFound(requestId, logMessage));
-
-			final I_API_Request_Audit_Log apiRequestAuditLogRecord = getApiRequestAuditLog(requestId, logMessage);
-
-			if (!EmptyUtil.isEmpty(adIssueSummary))
-			{
-				final I_AD_Issue adIssueRecord = InterfaceWrapperHelper.load(apiRequestAuditLogRecord.getAD_Issue_ID(), I_AD_Issue.class);
-
-				assertThat(adIssueRecord).isNotNull();
-				assertThat(adIssueRecord.getIssueSummary()).contains(adIssueSummary);
-			}
-		}
+	@And("there are added records in API_Request_Audit_Log")
+	public void directly_validate_API_Request_Audit_Log(@NonNull final DataTable table) throws InterruptedException
+	{
+		validateApiRequestAuditLog(table, null);
 	}
 
 	@NonNull
@@ -111,7 +98,7 @@ public class API_Request_Audit_Log_StepDef
 				.list();
 	}
 
-	private boolean isApiRequestAuditLogFound(@NonNull final JsonMetasfreshId apiRequestAuditId, @Nullable final String logMessage)
+	private boolean isApiRequestAuditLogFound(@NonNull final JsonMetasfreshId apiRequestAuditId, @NonNull final String logMessage)
 	{
 		return getApiRequestAuditLogOptional(apiRequestAuditId, logMessage).isPresent();
 	}
@@ -127,12 +114,39 @@ public class API_Request_Audit_Log_StepDef
 	}
 
 	@NonNull
-	private Optional<I_API_Request_Audit_Log> getApiRequestAuditLogOptional(@NonNull final JsonMetasfreshId apiRequestAuditId, @Nullable final String logMessage)
+	private Optional<I_API_Request_Audit_Log> getApiRequestAuditLogOptional(@NonNull final JsonMetasfreshId apiRequestAuditId, @NonNull final String logMessage)
 	{
 		return queryBL.createQueryBuilder(I_API_Request_Audit_Log.class)
 				.addEqualsFilter(I_API_Request_Audit_Log.COLUMN_API_Request_Audit_ID, apiRequestAuditId.getValue())
 				.addEqualsFilter(I_API_Request_Audit_Log.COLUMNNAME_Logmessage, logMessage)
 				.create()
 				.firstOnlyOptional(I_API_Request_Audit_Log.class);
+	}
+
+	public void validateApiRequestAuditLog(@NonNull final DataTable table, @Nullable final Integer timeoutSec) throws InterruptedException
+	{
+		for (final Map<String, String> row : table.asMaps())
+		{
+			final JsonMetasfreshId requestId = testContext.getApiResponse().getRequestId();
+			assertThat(requestId).isNotNull();
+
+			final String logMessage = DataTableUtil.extractStringForColumnName(row, "Logmessage");
+			final String adIssueSummary = DataTableUtil.extractStringOrNullForColumnName(row, "AD_Issue.Summary");
+
+			if (timeoutSec != null)
+			{
+				StepDefUtil.tryAndWait(timeoutSec, 500, () -> this.isApiRequestAuditLogFound(requestId, logMessage));
+			}
+
+			final I_API_Request_Audit_Log apiRequestAuditLogRecord = getApiRequestAuditLog(requestId, logMessage);
+
+			if (!EmptyUtil.isEmpty(adIssueSummary))
+			{
+				final I_AD_Issue adIssueRecord = InterfaceWrapperHelper.load(apiRequestAuditLogRecord.getAD_Issue_ID(), I_AD_Issue.class);
+
+				assertThat(adIssueRecord).isNotNull();
+				assertThat(adIssueRecord.getIssueSummary()).contains(adIssueSummary);
+			}
+		}
 	}
 }
