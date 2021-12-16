@@ -715,3 +715,65 @@ UPDATE AD_Tab SET AD_Column_ID=578932, TabLevel=1,Updated=TO_TIMESTAMP('2021-12-
 
 
 
+-- 2021-12-16T11:29:45.338Z
+-- URL zum Konzept
+UPDATE AD_Field SET AD_Name_ID=580310, Description=NULL, Help=NULL, Name='Mobil',Updated=TO_TIMESTAMP('2021-12-16 13:29:45','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=675235
+;
+
+-- 2021-12-16T11:29:45.649Z
+-- URL zum Konzept
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(580310) 
+;
+
+-- 2021-12-16T11:29:45.726Z
+-- URL zum Konzept
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=675235
+;
+
+-- 2021-12-16T11:29:45.805Z
+-- URL zum Konzept
+/* DDL */ select AD_Element_Link_Create_Missing_Field(675235)
+;
+
+
+
+
+
+
+
+-- 2021-12-16T12:03:37.957Z
+-- URL zum Konzept
+UPDATE AD_UI_ElementGroup SET IsActive='N',Updated=TO_TIMESTAMP('2021-12-16 14:03:37','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_ElementGroup_ID=540163
+;
+
+
+
+
+
+
+-- 2021-12-16T12:04:16.582Z
+-- URL zum Konzept
+UPDATE AD_UI_ElementGroup SET IsActive='Y',Updated=TO_TIMESTAMP('2021-12-16 14:04:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_ElementGroup_ID=540163
+;
+
+-- 2021-12-16T12:05:08.513Z
+-- URL zum Konzept
+UPDATE AD_UI_Element SET AD_UI_ElementGroup_ID=540163, SeqNo=20,Updated=TO_TIMESTAMP('2021-12-16 14:05:08','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=598943
+;
+
+-- 2021-12-16T12:05:45.864Z
+-- URL zum Konzept
+DELETE FROM AD_UI_ElementGroup WHERE AD_UI_ElementGroup_ID=547800
+;
+
+-- 2021-12-16T12:06:05.418Z
+-- URL zum Konzept
+UPDATE AD_UI_Element SET IsDisplayed='N',Updated=TO_TIMESTAMP('2021-12-16 14:06:05','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=542052
+;
+
+
+
+
+
+
+

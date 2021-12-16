@@ -506,6 +506,10 @@ public class BPartnerQuickInputService
 									  .shipToDefault(true)
 									  .build())
 				.name(".")
+				.phone(template.getC_BPartner_Location_Phone())
+				.mobile(template.getC_BPartner_Location_Mobile())
+				.fax(template.getC_BPartner_Location_Fax())
+				.email(template.getC_BPartner_Location_Email())
 				.existingLocationId(uniqueLocationIdOfBPartnerTemplate)
 				.build();
 	}
