@@ -35,9 +35,6 @@ import javax.annotation.Nullable;
 public class ExportConfig
 {
 	@NonNull
-	XmlVersion importXmlVersion;
-
-	@NonNull
 	XmlVersion exportXmlVersion;
 
 	@NonNull

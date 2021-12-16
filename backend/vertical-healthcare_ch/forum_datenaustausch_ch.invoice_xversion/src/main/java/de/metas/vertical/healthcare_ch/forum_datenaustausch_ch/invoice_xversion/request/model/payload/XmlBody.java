@@ -96,7 +96,7 @@ public class XmlBody
 			builder.esr(bodyMod.getEsr());
 		}
 
-		builder.prolog(prolog.withMod(bodyMod.getPrologMod()))
+		builder.prolog(prolog.withMod(bodyMod.getPrologMod()));
 		if (balance != null)
 		{
 			builder.balance(balance.withMod(bodyMod.getBalanceMod()));

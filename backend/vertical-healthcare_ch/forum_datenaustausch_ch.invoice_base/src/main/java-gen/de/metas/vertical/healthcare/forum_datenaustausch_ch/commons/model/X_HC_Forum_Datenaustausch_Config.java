@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_HC_Forum_Datenaustausch_Config extends org.compiere.model.PO implements I_HC_Forum_Datenaustausch_Config, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1433254442L;
+	private static final long serialVersionUID = 1335365195L;
 
     /** Standard Constructor */
     public X_HC_Forum_Datenaustausch_Config (final Properties ctx, final int HC_Forum_Datenaustausch_Config_ID, @Nullable final String trxName)
@@ -199,27 +199,6 @@ public class X_HC_Forum_Datenaustausch_Config extends org.compiere.model.PO impl
 	public int getImportedPartientBP_Group_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_ImportedPartientBP_Group_ID);
-	}
-
-	/** 
-	 * ImportedXmlVersion AD_Reference_ID=540921
-	 * Reference name: ExportXmlVersion
-	 */
-	public static final int IMPORTEDXMLVERSION_AD_Reference_ID=540921;
-	/** v440 = 4.4 */
-	public static final String IMPORTEDXMLVERSION_V440 = "4.4";
-	/** v450 = 4.5 */
-	public static final String IMPORTEDXMLVERSION_V450 = "4.5";
-	@Override
-	public void setImportedXmlVersion (final java.lang.String ImportedXmlVersion)
-	{
-		set_Value (COLUMNNAME_ImportedXmlVersion, ImportedXmlVersion);
-	}
-
-	@Override
-	public java.lang.String getImportedXmlVersion() 
-	{
-		return get_ValueAsString(COLUMNNAME_ImportedXmlVersion);
 	}
 
 	@Override
