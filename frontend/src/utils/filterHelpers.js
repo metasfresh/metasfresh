@@ -5,6 +5,28 @@ import { deepUnfreeze } from '../utils';
 import { fieldValueToString } from '../utils/tableHelpers';
 import { getFormatForDateField, getFormattedDate } from './widgetHelpers';
 
+function formatFilterParameter(filterParameter, filterData) {
+  const { parameterName, value, valueTo } = filterParameter;
+  const dataFilterParameter = filterData.parameters.find(
+    (param) => param.parameterName === parameterName
+  );
+  const { widgetType } = dataFilterParameter;
+
+  if (DATE_FIELD_TYPES.includes(widgetType)) {
+    const dateFormat = getFormatForDateField(widgetType);
+    const date = getFormattedDate(value, dateFormat);
+    const dateTo = getFormattedDate(valueTo, dateFormat);
+
+    filterParameter = {
+      parameterName,
+      value: date,
+      valueTo: dateTo,
+    };
+  }
+
+  return filterParameter;
+}
+
 /**
  * @method formatFilters
  * @summary This function exists due to the fact, that initial date filters have
@@ -23,27 +45,9 @@ export function formatFilters({ filtersData, filtersActive = [] }) {
     });
 
     if (filter.parameters && filter.parameters.length) {
-      filter.parameters = filter.parameters.map((filterParameter) => {
-        const { parameterName, value, valueTo } = filterParameter;
-        const dataFilterParameter = filterData.parameters.find(
-          (param) => param.parameterName === parameterName
-        );
-        const { widgetType } = dataFilterParameter;
-
-        if (DATE_FIELD_TYPES.includes(widgetType)) {
-          const dateFormat = getFormatForDateField(widgetType);
-          const date = getFormattedDate(value, dateFormat);
-          const dateTo = getFormattedDate(valueTo, dateFormat);
-
-          filterParameter = {
-            parameterName,
-            value: date,
-            valueTo: dateTo,
-          };
-        }
-
-        return filterParameter;
-      });
+      filter.parameters = filter.parameters.map((parameter) =>
+        formatFilterParameter(parameter, filterData)
+      );
     }
 
     return filter;
