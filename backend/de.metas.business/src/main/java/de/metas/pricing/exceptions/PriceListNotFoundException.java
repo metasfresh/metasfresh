@@ -1,10 +1,11 @@
 package de.metas.pricing.exceptions;
 
 import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.ITranslatableString;
 import de.metas.lang.SOTrx;
-import de.metas.location.ICountryDAO;
-import de.metas.util.Services;
 import org.adempiere.exceptions.AdempiereException;
+
+import java.util.List;
 
 /*
  * #%L
@@ -48,7 +49,7 @@ public class PriceListNotFoundException extends AdempiereException
 		super(getADMessage(soTrx), new Object[] { pricingSystemName });
 	}
 
-	public PriceListNotFoundException(final String pricingSystemName, final SOTrx soTrx, final String countriesWithoutPrices)
+	public PriceListNotFoundException(final String pricingSystemName, final SOTrx soTrx, List<ITranslatableString> countriesWithoutPrices)
 	{
 		super(getNoPriceListForCountriesADMessage(soTrx), new Object[] { pricingSystemName, countriesWithoutPrices });
 	}

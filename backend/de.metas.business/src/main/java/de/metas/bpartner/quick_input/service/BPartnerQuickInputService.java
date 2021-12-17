@@ -113,7 +113,6 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class BPartnerQuickInputService
@@ -563,10 +562,9 @@ public class BPartnerQuickInputService
 		{
 			final String pricingSystemName = priceListDAO.getPricingSystemName(pricingSystemId);
 
-			final String countriesWithNoPrices = countryIdsWithNoPrices.stream()
+			final ImmutableList<ITranslatableString> countriesWithNoPrices = countryIdsWithNoPrices.stream()
 					.map(countryDAO::getCountryNameById)
-					.map(ITranslatableString::getDefaultValue)
-					.collect(Collectors.joining(", "));
+					.collect(ImmutableList.toImmutableList());
 
 			throw new PriceListNotFoundException(pricingSystemName, soTrx, countriesWithNoPrices);
 		}
