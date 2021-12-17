@@ -119,28 +119,10 @@ export default class Table extends PureComponent {
    * @param {*} currentIdx - the current index in the array of rows
    */
   updateMultiSelectionStartIdx = (currentIdx) => {
-    console.log();
-    // Note: the check that you see below `!this.multiSelectionStartIdx && this.multiSelectionStartIdx !== 0
-    // is needed because we will set the start reference only when we do not have yet a reference
-    // (ex. when user clicked on a row and then uses SHIFT + arrow up/down) and for the case when reference is different than zero
-    // (There is an edge case when user clicks the first row and when pressing down we will lose the first row selection - this.multiSelectionStartIdx === 0 case)
-
-    //if (currentIdx === null) return;
-
-    if (this.multiSelectionStartIdx != null) {
-      // Update only if the current index is different than ZERO because ....
-      if (this.multiSelectionStartIdx > 0) {
-        this.multiSelectionStartIdx = currentIdx;
-      }
-    } else {
-      // setting the start index for the first time
+    if (this.multiSelectionStartIdx === null) {
+      // setting the start index for the first time (when we get a null value - as result of a previous reset, ie. click on a row)
       this.multiSelectionStartIdx = currentIdx;
     }
-
-    // this.multiSelectionStartIdx =
-    //   !this.multiSelectionStartIdx && this.multiSelectionStartIdx !== 0
-    //     ? currentIdx
-    //     : this.multiSelectionStartIdx;
   };
 
   clearMultiSelectionStartIdx = () => (this.multiSelectionStartIdx = null);
@@ -255,24 +237,24 @@ export default class Table extends PureComponent {
       case ARROW_UP_KEY: {
         e.preventDefault();
 
-        const { currentId, allRowIds } = this.getCurrentRowIndex(ARROW_UP_KEY);
+        const { currentIdx, allRowIds } = this.getCurrentRowIndex(ARROW_UP_KEY);
 
-        if (currentId <= 0) return;
+        if (currentIdx <= 0) return;
 
         if (!selectRange) {
           handleSelect(
-            allRowIds[currentId - 1],
+            allRowIds[currentIdx - 1],
             idFocused,
             false,
             showSelectedIncludedView &&
-              showSelectedIncludedView([allRowIds[currentId - 1]])
+              showSelectedIncludedView([allRowIds[currentIdx - 1]])
           );
           this.clearMultiSelectionStartIdx();
         } else {
-          this.updateMultiSelectionStartIdx(currentId);
+          this.updateMultiSelectionStartIdx(currentIdx);
 
           const upShiftSel = allRowIds.slice(
-            currentId - 1,
+            currentIdx - 1,
             this.multiSelectionStartIdx + 1
           );
           handleSelect(
