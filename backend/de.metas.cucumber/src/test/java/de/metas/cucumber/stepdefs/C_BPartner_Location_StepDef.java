@@ -71,7 +71,7 @@ public class C_BPartner_Location_StepDef
 		bPartnerLocationRecord.setC_Location_ID(locationRecord.getC_Location_ID());
 		bPartnerLocationRecord.setGLN(gln);
 		bPartnerLocationRecord.setIsBillToDefault(true);
-		bPartnerLocationRecord.setIsShipTo(true);
+		bPartnerLocationRecord.setIsShipToDefault(true);
 		InterfaceWrapperHelper.saveRecord(bPartnerLocationRecord);
 
 		bPartnerLocationTable.put(DataTableUtil.extractRecordIdentifier(tableRow, "C_BPartner_Location"), bPartnerLocationRecord);
