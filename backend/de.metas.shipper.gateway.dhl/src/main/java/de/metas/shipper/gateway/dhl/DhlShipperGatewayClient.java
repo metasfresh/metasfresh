@@ -452,7 +452,7 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 		);
 
 		final WebServiceTemplate webServiceTemplate = new WebServiceTemplate();
-		webServiceTemplate.setDefaultUri("https://cig.dhl.de/services/sandbox/soap");
+		webServiceTemplate.setDefaultUri(config.getBaseUrl());
 		webServiceTemplate.setMessageSender(messageSender);
 		webServiceTemplate.setMarshaller(marshaller);
 		webServiceTemplate.setUnmarshaller(marshaller);
