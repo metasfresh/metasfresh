@@ -25,6 +25,7 @@ export function getCurrentActiveLocale() {
  * @returns {string} extracted language (e.g. 'en', 'de')
  */
 export function extractLanguageFromLocale(locale) {
+  if (!locale) return 'en';
   const idx = locale.indexOf('_');
   if (idx > 0) {
     return locale.substr(0, idx);
@@ -34,8 +35,7 @@ export function extractLanguageFromLocale(locale) {
 }
 
 export function getCurrentActiveLanguage() {
-  const currentActiveLocale = getCurrentActiveLocale();
-  return extractLanguageFromLocale(currentActiveLocale);
+  return extractLanguageFromLocale(getCurrentActiveLocale());
 }
 
 export function setCurrentActiveLocale(lang) {
