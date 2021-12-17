@@ -162,6 +162,8 @@ public class JsonRetrieverService
 			.put(BPartnerContact.NEWSLETTER, JsonResponseContact.NEWSLETTER)
 			.put(BPartnerContact.SUBJECT_MATTER, JsonResponseContact.SUBJECT_MATTER)
 			.put(BPartnerContact.BPARTNER_LOCATION_ID, JsonResponseContact.METASFRESH_LOCATION_ID)
+			.put(BPartnerContact.EMAIL2, JsonResponseContact.EMAIL2)
+			.put(BPartnerContact.EMAIL3, JsonResponseContact.EMAIL3)
 
 			.put(BPartnerContactType.SHIP_TO_DEFAULT, JsonResponseContact.SHIP_TO_DEFAULT)
 			.put(BPartnerContactType.BILL_TO_DEFAULT, JsonResponseContact.BILL_TO_DEFAULT)
@@ -431,6 +433,8 @@ public class JsonRetrieverService
 					.roles(roles)
 					.changeInfo(jsonChangeInfo)
 					.metasfreshLocationId(metasfreshLocationId)
+					.email2(contact.getEmail2())
+					.email3(contact.getEmail3())
 					.build();
 		}
 		catch (final RuntimeException rte)
