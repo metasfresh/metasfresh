@@ -42,6 +42,6 @@ public class API_Audit_Config
 		}
 
 		record.setIsWrapApiResponse(false);
-		record.setIsInvokerWaitsForResult(false);
+		record.setIsInvokerWaitsForResult(true); // this flag is not taken into account now, but effectively, the user *will* wait
 	}
 }

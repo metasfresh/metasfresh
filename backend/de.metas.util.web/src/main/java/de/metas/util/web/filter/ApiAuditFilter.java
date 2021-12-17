@@ -100,7 +100,7 @@ public class ApiAuditFilter implements Filter
 
 			if (performAuditAsync)
 			{
-				auditHttpCallAsync(httpServletRequest, httpServletResponse, chain);
+				chainDoFilterAuditHttpCallAsync(httpServletRequest, httpServletResponse, chain);
 				return;
 			}
 
@@ -122,7 +122,7 @@ public class ApiAuditFilter implements Filter
 		}
 	}
 
-	private void auditHttpCallAsync(
+	private void chainDoFilterAuditHttpCallAsync(
 			@NonNull final HttpServletRequest httpServletRequest,
 			@NonNull final HttpServletResponse httpServletResponse,
 			@NonNull final FilterChain chain) throws IOException, ServletException
