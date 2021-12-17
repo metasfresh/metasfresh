@@ -200,7 +200,8 @@ public class OLCandRequestProcessor implements Processor
 		// extract the AD_User_ID (contact-ID)
 		final JsonMetasfreshId contactId = getMetasfreshIdForExternalIdentifier(
 				bPartnerUpsertResponse.getResponseContactItems(),
-				shippingBPLocationExternalIdentifier);
+				bPartnerExternalIdentifier);
+
 		// extract the C_BPartner_Location_ID
 		final JsonMetasfreshId shippingBPartnerLocationId = getMetasfreshIdForExternalIdentifier(
 				bPartnerUpsertResponse.getResponseLocationItems(),
@@ -230,7 +231,7 @@ public class OLCandRequestProcessor implements Processor
 		// extract the AD_User_ID (contact-ID)
 		final JsonMetasfreshId contactId = getMetasfreshIdForExternalIdentifier(
 				bPartnerUpsertResponse.getResponseContactItems(),
-				billingBPLocationExternalIdentifier);
+				bPartnerExternalIdentifier);
 		// extract the C_BPartner_Location_ID
 		final JsonMetasfreshId billingBPartnerLocationId = getMetasfreshIdForExternalIdentifier(
 				bPartnerUpsertResponse.getResponseLocationItems(),

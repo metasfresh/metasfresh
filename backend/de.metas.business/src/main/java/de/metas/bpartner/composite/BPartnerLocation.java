@@ -65,6 +65,8 @@ public class BPartnerLocation
 	public static final String DISTRICT = "district";
 	public static final String REGION = "region";
 	public static final String COUNTRYCODE = "countryCode";
+	public static final String PHONE = "phone";
+	public static final String EMAIL = "email";
 
 	@Nullable
 	private BPartnerLocationId id;
@@ -112,6 +114,10 @@ public class BPartnerLocation
 	private String district;
 	@Nullable
 	private String countryCode;
+	@Nullable
+	private String phone;
+	@Nullable
+	private String email;
 
 	@Nullable
 	private BPartnerLocationType locationType;
@@ -123,16 +129,10 @@ public class BPartnerLocation
 	private OrgMappingId orgMappingId;
 
 	@Nullable
-	private String phone;
-
-	@Nullable
 	private String mobile;
 
 	@Nullable
 	private String fax;
-
-	@Nullable
-	private String email;
 
 	@Nullable
 	final String setupPlaceNo;
@@ -171,13 +171,13 @@ public class BPartnerLocation
 			@Nullable final String region,
 			@Nullable final String city,
 			@Nullable final String countryCode,
+			@Nullable final String phone,
+			@Nullable final String email,
 			@Nullable final BPartnerLocationType locationType,
 			@Nullable final RecordChangeLog changeLog,
 			@Nullable final OrgMappingId orgMappingId,
-			@Nullable final String phone,
 			@Nullable final String mobile,
 			@Nullable final String fax,
-			@Nullable final String email,
 			@Nullable final String setupPlaceNo,
 			@Nullable final Boolean remitTo,
 			@Nullable final Boolean handOverLocation,

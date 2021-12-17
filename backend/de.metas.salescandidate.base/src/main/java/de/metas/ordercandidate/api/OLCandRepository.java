@@ -5,6 +5,7 @@ import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.BPartnerInfo;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.DocTypeId;
@@ -27,6 +28,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
@@ -65,6 +67,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 public class OLCandRepository
 {
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 
 	public OLCandSource getForProcessor(@NonNull final OLCandProcessorDescriptor processor)
 	{
@@ -125,6 +128,15 @@ public class OLCandRepository
 			olCandPO.setC_BPartner_Location_ID(BPartnerLocationId.toRepoId(bpartnerLocationId));
 			olCandPO.setC_BPartner_Location_Value_ID(LocationId.toRepoId(bpartner.getLocationId()));
 			olCandPO.setAD_User_ID(BPartnerContactId.toRepoId(bpartner.getContactId()));
+
+			final I_C_BPartner_Location bPartnerLocation = bpartnerDAO.getBPartnerLocationByIdInTrx(bpartnerLocationId);
+
+			if (bPartnerLocation != null)
+			{
+				olCandPO.setBPartnerName(bPartnerLocation.getBPartnerName());
+				olCandPO.setPhone(bPartnerLocation.getPhone());
+				olCandPO.setEMail(bPartnerLocation.getEMail());
+			}
 		}
 
 		if (request.getBillBPartner() != null)

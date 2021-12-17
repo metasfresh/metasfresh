@@ -17,29 +17,29 @@ Feature: Trade margin commission contract
       | commission_product  | commission_product  | S           | PTS          |
       | transaction_product | transaction_product |             | PCE          |
     And metasfresh contains M_PricingSystems
-      | Identifier | Name             | Value            | OPT.IsActive |
-      | ps_1       | pricing_system_1 | pricing_system_1 | true         |
-      | ps_2       | pricing_system_2 | pricing_system_2 | true         |
-      | ps_3       | pricing_system_3 | pricing_system_3 | true         |
+      | Identifier     | Name           | Value          | OPT.IsActive |
+      | customer_so_ps | customer_so_ps | customer_so_ps | true         |
+      | salesRep_so_ps | salesRep_so_ps | salesRep_so_ps | true         |
+      | salesRep_po_ps | salesRep_po_ps | salesRep_po_ps | true         |
     And metasfresh contains M_PriceLists
-      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name         | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
-      | pl_1       | ps_1                          | DE                        | EUR                 | price_list_1 | true  | false         | 2              | true         |
-      | pl_2       | ps_2                          | DE                        | EUR                 | price_list_2 | true  | false         | 2              | true         |
-      | pl_3       | ps_3                          | DE                        | EUR                 | price_list_3 | false | false         | 2              | true         |
+      | Identifier     | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name         | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
+      | customer_so_pl | customer_so_ps                | DE                        | EUR                 | price_list_1 | true  | false         | 2              | true         |
+      | salesRep_so_pl | salesRep_so_ps                | DE                        | EUR                 | price_list_2 | true  | false         | 2              | true         |
+      | salesRep_po_pl | salesRep_po_ps                | DE                        | EUR                 | price_list_3 | false | false         | 2              | true         |
     And metasfresh contains M_PriceList_Versions
-      | Identifier | M_PriceList_ID.Identifier | Name  | ValidFrom  |
-      | plv_1      | pl_1                      | PLV_1 | 2021-11-01 |
-      | plv_2      | pl_2                      | PLV_2 | 2021-11-01 |
-      | plv_3      | pl_3                      | PLV_3 | 2021-11-01 |
+      | Identifier      | M_PriceList_ID.Identifier | Name            | ValidFrom  |
+      | customer_so_plv | customer_so_pl            | customer_so_plv | 2021-11-01 |
+      | salesRep_so_plv | salesRep_so_pl            | salesRep_so_plv | 2021-11-01 |
+      | salesRep_po_plv | salesRep_po_pl            | salesRep_po_plv | 2021-11-01 |
     And metasfresh contains M_ProductPrices
-      | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
-      | pp_3       | plv_3                             | commission_product      | 1.0      | PTS               | Normal                        |
-      | pp_4       | plv_1                             | transaction_product     | 25.0     | PCE               | Normal                        |
-      | pp_5       | plv_2                             | transaction_product     | 15.0     | PCE               | Normal                        |
+      | Identifier                | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | salesRep_cp_po_price      | salesRep_po_plv                   | commission_product      | 1.0      | PTS               | Normal                        |
+      | customer_product_so_price | customer_so_plv                   | transaction_product     | 25.0     | PCE               | Normal                        |
+      | salesRep_product_so_price | salesRep_so_plv                   | transaction_product     | 15.0     | PCE               | Normal                        |
     And metasfresh contains C_BPartners:
       | Identifier      | OPT.C_BPartner_Location_ID.Identifier | Name            | M_PricingSystem_ID.Identifier | OPT.PO_PricingSystem_ID.Identifier | OPT.IsVendor | OPT.IsCustomer | OPT.IsSalesRep | OPT.C_PaymentTerm_ID | OPT.C_BPartner_SalesRep_ID.Identifier | OPT.CompanyName     | OPT.GLN       |
-      | margin_salesRep | margin_salesRep_location              | margin_salesRep | ps_2                          | ps_3                               | Y            | Y              | Y              | 1000009              |                                       | margin_salesRep cmp |               |
-      | margin_customer | margin_customer_location              | margin_customer | ps_1                          |                                    | N            | Y              | N              | 1000009              | margin_salesRep                       | margin_customer cmp | 1234567891237 |
+      | margin_salesRep | margin_salesRep_location              | margin_salesRep | salesRep_so_ps                | salesRep_po_ps                     | Y            | Y              | Y              | 1000009              |                                       | margin_salesRep cmp |               |
+      | margin_customer | margin_customer_location              | margin_customer | customer_so_ps                |                                    | N            | Y              | N              | 1000009              | margin_salesRep                       | margin_customer cmp | 1234567891237 |
     And metasfresh contains C_Customer_Trade_Margin:
       | C_Customer_Trade_Margin_ID.Identifier | Name     | Commission_Product_ID.Identifier | PointsPrecision |
       | marginSettings_1                      | margin_1 | commission_product               | 2               |
@@ -89,6 +89,15 @@ Feature: Trade margin commission contract
     Then process metasfresh response
       | C_Order_ID.Identifier | M_InOut_ID.Identifier | C_Invoice_ID.Identifier |
       | order_1               | shipment_1            | invoice_1               |
+    And locate invoice candidates for invoice: invoice_1
+      | C_Invoice_Candidate_ID.Identifier | M_Product_ID.Identifier |
+      | so_invoice_candidate              | transaction_product     |
+    And recompute invoice candidates if required
+      | C_Invoice_Candidate_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.NetAmtInvoiced |
+      | so_invoice_candidate              | margin_customer             | transaction_product     | 20                 |
+    And validate invoice candidate
+      | C_Invoice_Candidate_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_ID.Identifier | NetAmtToInvoice | IsSOTrx | OPT.NetAmtInvoiced |
+      | so_invoice_candidate              | margin_customer             | transaction_product     | 0               | true    | 20                 |
 
     And validate created commission instance
       | C_Commission_Instance_ID.Identifier | C_Order_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_Order_ID.Identifier | PointsBase_Forecasted | PointsBase_Invoiceable | PointsBase_Invoiced |
@@ -113,6 +122,12 @@ Feature: Trade margin commission contract
     And after not more than 30s, C_Invoice are found:
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | invoiceSettled_1        | settlement_1                      |
+    And recompute invoice candidates if required
+      | C_Invoice_Candidate_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.NetAmtInvoiced |
+      | settlement_1                      | margin_salesRep             | commission_product      | 5                  |
+    And validate invoice candidate
+      | C_Invoice_Candidate_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_ID.Identifier | NetAmtToInvoice | IsSOTrx | OPT.NetAmtInvoiced |
+      | settlement_1                      | margin_salesRep             | commission_product      | 0               | false   | 5                  |
     And validate created invoices
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.DocSubType |
       | invoiceSettled_1   | margin_salesRep          | margin_salesRep_location          | 10 Tage 1 % | true      | CO        | CA             |

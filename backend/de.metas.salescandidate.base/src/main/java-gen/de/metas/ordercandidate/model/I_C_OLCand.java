@@ -2459,4 +2459,69 @@ public interface I_C_OLCand
 	int getUpdatedBy();
 
 	String COLUMNNAME_UpdatedBy = "UpdatedBy";
+
+	/**
+	 * Set Partner Name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setBPartnerName (@Nullable String BPartnerName);
+
+	/**
+	 * Get Partner Name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable String getBPartnerName();
+
+	ModelColumn<I_C_OLCand, Object> COLUMN_BPartnerName = new ModelColumn<>(I_C_OLCand.class, "BPartnerName", null);
+	String COLUMNNAME_BPartnerName = "BPartnerName";
+
+	/**
+	 * Set eMail.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setEMail (@Nullable String EMail);
+
+	/**
+	 * Get eMail.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable String getEMail();
+
+	ModelColumn<I_C_OLCand, Object> COLUMN_EMail = new ModelColumn<>(I_C_OLCand.class, "EMail", null);
+	String COLUMNNAME_EMail = "EMail";
+
+	/**
+	 * Set Phone.
+	 * Identifies a telephone number
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPhone (@Nullable String Phone);
+
+	/**
+	 * Get Phone.
+	 * Identifies a telephone number
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable String getPhone();
+
+	ModelColumn<I_C_OLCand, Object> COLUMN_Phone = new ModelColumn<>(I_C_OLCand.class, "Phone", null);
+	String COLUMNNAME_Phone = "Phone";
 }

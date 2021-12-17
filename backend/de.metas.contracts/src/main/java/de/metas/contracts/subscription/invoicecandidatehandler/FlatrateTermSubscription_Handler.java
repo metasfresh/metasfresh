@@ -115,7 +115,6 @@ public class FlatrateTermSubscription_Handler implements ConditionTypeSpecificIn
 		final TaxCategoryId taxCategoryId = TaxCategoryId.ofRepoIdOrNull(term.getC_TaxCategory_ID());
 		
 		final TaxId taxId = Services.get(ITaxBL.class).getTaxNotNull(
-				Env.getCtx(),
 				term,
 				taxCategoryId,
 				term.getM_Product_ID(),

@@ -64,6 +64,7 @@ import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_FREIG
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_FREIGHT_COST_REDUCED_PRODUCT_ID;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_JSON_PATH_CONSTANT_BPARTNER_ID;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_JSON_PATH_CONSTANT_BPARTNER_LOCATION_ID;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_JSON_PATH_EMAIL;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_JSON_PATH_SALES_REP_ID;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_NORMAL_VAT_RATES;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_ORDER_ID;
@@ -116,6 +117,7 @@ public class InvokeShopware6Action extends InvokeExternalSystemProcess
 		parameters.put(PARAM_CLIENT_SECRET, shopware6Config.getClientSecret());
 		parameters.put(PARAM_CLIENT_ID, shopware6Config.getClientId());
 		parameters.put(PARAM_JSON_PATH_CONSTANT_BPARTNER_LOCATION_ID, shopware6Config.getBPartnerLocationIdJSONPath());
+		parameters.put(PARAM_JSON_PATH_EMAIL, shopware6Config.getEmailJSONPath());
 		parameters.put(PARAM_JSON_PATH_SALES_REP_ID, shopware6Config.getSalesRepJSONPath());
 		parameters.put(PARAM_CONFIG_MAPPINGS, invokeShopwareService.getConfigMappings(shopware6Config));
 		parameters.put(PARAM_UOM_MAPPINGS, invokeShopwareService.getUOMMappings(shopware6Config));

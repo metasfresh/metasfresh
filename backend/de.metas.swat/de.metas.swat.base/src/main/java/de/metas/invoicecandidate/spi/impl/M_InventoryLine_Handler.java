@@ -233,7 +233,6 @@ public class M_InventoryLine_Handler extends AbstractInvoiceCandidateHandler
 				.getBPartnerLocationAndCaptureId();
 
 		final TaxId taxId = Services.get(ITaxBL.class).getTaxNotNull(
-				ctx,
 				ic,
 				taxCategoryId,
 				productId.getRepoId(),
