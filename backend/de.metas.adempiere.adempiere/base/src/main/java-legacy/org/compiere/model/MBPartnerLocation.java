@@ -112,7 +112,7 @@ public class MBPartnerLocation extends X_C_BPartner_Location
 		return true;
 	}
 
-	private static List<String> getOtherLocationNames(
+	public static List<String> getOtherLocationNames(
 			final int bpartnerId,
 			final int bpartnerLocationIdToExclude)
 	{
@@ -125,7 +125,7 @@ public class MBPartnerLocation extends X_C_BPartner_Location
 	}
 
 	@VisibleForTesting
-	final static class MakeUniqueNameCommand
+	public final static class MakeUniqueNameCommand
 	{
 		private final ICountryDAO countriesRepo = Services.get(ICountryDAO.class);
 

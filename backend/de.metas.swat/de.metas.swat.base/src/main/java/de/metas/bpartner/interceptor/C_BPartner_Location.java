@@ -22,7 +22,9 @@ package de.metas.bpartner.interceptor;
  * #L%
  */
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.location.LocationId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -35,7 +37,9 @@ import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.GridTab;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_Warehouse;
+import org.compiere.model.MBPartnerLocation;
 import org.compiere.model.ModelValidator;
+import org.compiere.model.MBPartnerLocation.MakeUniqueNameCommand;
 
 @Validator(I_C_BPartner_Location.class)
 public class C_BPartner_Location
@@ -87,5 +91,43 @@ public class C_BPartner_Location
 		final LocationId oldLocationId = LocationId.ofRepoIdOrNull(bpLocationOld.getC_Location_ID());
 
 		warehouseBL.updateWarehouseLocation(oldLocationId, newLocationId);
+	}
+
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE)
+	public void updateName(@NonNull final I_C_BPartner_Location bpLocation)
+	{
+		if (!bpLocation.isNameReadWrite())
+		{
+			final int cBPartnerId = bpLocation.getC_BPartner_ID();
+
+			final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+
+			bpLocation.setName(MBPartnerLocation.MakeUniqueNameCommand.builder()
+									   .name(bpLocation.getName())
+									   .address(bpLocation.getC_Location())
+									   .companyName(bpartnerDAO.getBPartnerNameById(BPartnerId.ofRepoId(cBPartnerId)))
+									   .existingNames(MBPartnerLocation.getOtherLocationNames(cBPartnerId, bpLocation.getC_BPartner_Location_ID()))
+									   .build()
+									   .execute());
+		}
+	}
+
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_NEW)
+	public void newName(@NonNull final I_C_BPartner_Location bpLocation)
+	{
+		if (bpLocation.isNameReadWrite())
+		{
+			final int cBPartnerId = bpLocation.getC_BPartner_ID();
+
+			final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+
+			bpLocation.setName(MBPartnerLocation.MakeUniqueNameCommand.builder()
+									   .name(bpLocation.getName())
+									   .address(bpLocation.getC_Location())
+									   .companyName(bpartnerDAO.getBPartnerNameById(BPartnerId.ofRepoId(cBPartnerId)))
+									   .existingNames(MBPartnerLocation.getOtherLocationNames(cBPartnerId, bpLocation.getC_BPartner_Location_ID()))
+									   .build()
+									   .execute());
+		}
 	}
 }

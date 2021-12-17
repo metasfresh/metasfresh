@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_BPartner_Location, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -860447504L;
+	private static final long serialVersionUID = 1838532835L;
 
     /** Standard Constructor */
     public X_C_BPartner_Location (final Properties ctx, final int C_BPartner_Location_ID, @Nullable final String trxName)
@@ -311,6 +311,18 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 	public boolean isHandOverLocation() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsHandOverLocation);
+	}
+
+	@Override
+	public void setIsNameReadWrite (final boolean IsNameReadWrite)
+	{
+		set_Value (COLUMNNAME_IsNameReadWrite, IsNameReadWrite);
+	}
+
+	@Override
+	public boolean isNameReadWrite() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsNameReadWrite);
 	}
 
 	@Override
