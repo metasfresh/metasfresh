@@ -928,7 +928,6 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 				.getBPartnerLocationAndCaptureId();
 
 		final TaxId taxId = Services.get(ITaxBL.class).getTaxNotNull(
-				ctx,
 				icRecord,
 				pricingResult.getTaxCategoryId(),
 				ProductId.toRepoId(pricingResult.getProductId()),
