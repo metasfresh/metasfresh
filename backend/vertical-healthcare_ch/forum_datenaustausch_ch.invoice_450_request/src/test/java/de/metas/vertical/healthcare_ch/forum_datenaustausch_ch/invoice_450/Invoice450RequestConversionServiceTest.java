@@ -38,6 +38,7 @@ import org.xmlunit.validation.Languages;
 import org.xmlunit.validation.ValidationResult;
 import org.xmlunit.validation.Validator;
 
+import javax.annotation.Nullable;
 import javax.xml.transform.stream.StreamSource;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -86,10 +87,11 @@ public class Invoice450RequestConversionServiceTest
 	@Test
 	public void exampleFile_streha_invoice_03_mod_test_additionalVia()
 	{
-		final InputStream inputStream = createInputStream("/public_examples/streha_invoice_03.xml");
+		final String inputXmlFileName = "/public_examples/streha_invoice_03.xml";
+		final InputStream inputStream = createInputStream(inputXmlFileName);
 		assertXmlIsValid(inputStream); // guard
 
-		final XmlRequest xRequest = invoice450RequestConversionService.toCrossVersionRequest(createInputStream("/public_examples/streha_invoice_03.xml"));
+		final XmlRequest xRequest = invoice450RequestConversionService.toCrossVersionRequest(createInputStream(inputXmlFileName));
 		assertThat(xRequest.getModus()).isEqualTo(XmlMode.PRODUCTION); // guard
 		assertThat(xRequest.getProcessing().getTransport().getVias().size()).isEqualTo(1); // guard
 
@@ -116,10 +118,11 @@ public class Invoice450RequestConversionServiceTest
 	@Test
 	public void exampleFile_streha_invoice_03_mod_test_replaceVia()
 	{
-		final InputStream inputStream = createInputStream("/public_examples/streha_invoice_03.xml");
+		final String inputXmlFileName = "/public_examples/streha_invoice_03.xml";
+		final InputStream inputStream = createInputStream(inputXmlFileName);
 		assertXmlIsValid(inputStream); // guard
 
-		final XmlRequest xRequest = invoice450RequestConversionService.toCrossVersionRequest(createInputStream("/public_examples/streha_invoice_03.xml"));
+		final XmlRequest xRequest = invoice450RequestConversionService.toCrossVersionRequest(createInputStream(inputXmlFileName));
 		assertThat(xRequest.getModus()).isEqualTo(XmlMode.PRODUCTION); // guard
 		assertThat(xRequest.getProcessing().getTransport().getVias().size()).isEqualTo(1); // guard
 
@@ -162,6 +165,7 @@ public class Invoice450RequestConversionServiceTest
 		assertXmlIsValid(new ByteArrayInputStream(outputStream.toByteArray()));
 	}
 
+	@Nullable
 	private InputStream createInputStream(@NonNull final String resourceName)
 	{
 		return getClass().getResourceAsStream(resourceName);

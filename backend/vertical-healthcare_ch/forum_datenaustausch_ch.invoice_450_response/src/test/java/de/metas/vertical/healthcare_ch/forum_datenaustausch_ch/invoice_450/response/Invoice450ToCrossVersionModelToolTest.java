@@ -25,8 +25,8 @@ package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_450.resp
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.response.model.XmlResponse;
 import lombok.NonNull;
 import org.adempiere.test.AdempiereTestHelper;
-import org.junit.Assert;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -101,6 +101,6 @@ class Invoice450ToCrossVersionModelToolTest
 
 		final ValidationResult r = v.validateInstance(new StreamSource(inputStream));
 
-		Assert.assertTrue(r.isValid());
+		Assertions.assertTrue(r.isValid());
 	}
 }
