@@ -515,7 +515,7 @@ public class BPartnerQuickInputService
 	}
 
 	private void validatePricesForCountries(final Optional<CountryId> possibleDefaultCountryId,
-			final ImmutableList<CountryId> shipToLocationCountryIds,
+			final ImmutableList<CountryId> nonDefaultCountryIds,
 			final PricingSystemId pricingSystemId,
 			final SOTrx soTrx)
 	{
@@ -526,9 +526,9 @@ public class BPartnerQuickInputService
 		if (possibleDefaultCountryId.isPresent())
 		{
 			final CountryId defaultCountryId = possibleDefaultCountryId.get();
-			final ImmutableList<I_M_PriceList> shipToDefaultPricelists = salesPriceLists.filterAndList(defaultCountryId, soTrx);
+			final ImmutableList<I_M_PriceList> defaultPriceLists = salesPriceLists.filterAndList(defaultCountryId, soTrx);
 
-			if (Check.isEmpty(shipToDefaultPricelists))
+			if (Check.isEmpty(defaultPriceLists))
 			{
 				countriesWithNoPrices.add(defaultCountryId);
 			}
@@ -537,10 +537,10 @@ public class BPartnerQuickInputService
 		{
 			final ArrayList<CountryId> nonDefaultCountriesWithoutPrices = new ArrayList<>();
 			boolean onePriceWasFound = false;
-			for (final CountryId countryId : shipToLocationCountryIds)
+			for (final CountryId countryId : nonDefaultCountryIds)
 			{
-				final ImmutableList<I_M_PriceList> shipToPricelists = salesPriceLists.filterAndList(countryId, SOTrx.SALES);
-				if (Check.isEmpty(shipToPricelists))
+				final ImmutableList<I_M_PriceList> nonDefaultPriceLists = salesPriceLists.filterAndList(countryId, soTrx);
+				if (Check.isEmpty(nonDefaultPriceLists))
 				{
 					nonDefaultCountriesWithoutPrices.add(countryId);
 				}
