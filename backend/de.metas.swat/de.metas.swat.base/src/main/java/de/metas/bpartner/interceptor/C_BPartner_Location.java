@@ -22,7 +22,9 @@ package de.metas.bpartner.interceptor;
  * #L%
  */
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.location.LocationId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -34,7 +36,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.GridTab;
 import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_M_Warehouse;
+import org.compiere.model.MBPartnerLocation;
 import org.compiere.model.ModelValidator;
 
 @Validator(I_C_BPartner_Location.class)
@@ -87,5 +89,35 @@ public class C_BPartner_Location
 		final LocationId oldLocationId = LocationId.ofRepoIdOrNull(bpLocationOld.getC_Location_ID());
 
 		warehouseBL.updateWarehouseLocation(oldLocationId, newLocationId);
+	}
+
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE)
+	public void updateName(@NonNull final I_C_BPartner_Location bpLocation)
+	{
+		if (!bpLocation.isNameReadWrite())
+		{
+			updateBPLocationName(bpLocation);
+		}
+	}
+
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_NEW)
+	public void newName(@NonNull final I_C_BPartner_Location bpLocation)
+	{
+		updateBPLocationName(bpLocation);
+	}
+
+	private void updateBPLocationName(final @NonNull I_C_BPartner_Location bpLocation)
+	{
+		final int cBPartnerId = bpLocation.getC_BPartner_ID();
+
+		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+
+		bpLocation.setName(MakeUniqueNameCommand.builder()
+								   .name(bpLocation.getName())
+								   .address(bpLocation.getC_Location())
+								   .companyName(bpartnerDAO.getBPartnerNameById(BPartnerId.ofRepoId(cBPartnerId)))
+								   .existingNames(MakeUniqueNameCommand.getOtherLocationNames(cBPartnerId, bpLocation.getC_BPartner_Location_ID()))
+								   .build()
+								   .execute());
 	}
 }
