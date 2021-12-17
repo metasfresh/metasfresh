@@ -20,19 +20,37 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.shopware6.api.model.order;
+package de.metas.camel.externalsystems.shopware6.salutation;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.google.common.collect.ImmutableMap;
+import lombok.AccessLevel;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
 
+import java.io.Serializable;
+
 @Value
 @Builder
-public class OrderDeliveryItem
+@Getter(AccessLevel.NONE)
+@JsonDeserialize(builder = SalutationInfoProvider.SalutationInfoProviderBuilder.class)
+public class SalutationInfoProvider implements Serializable
 {
 	@NonNull
-	OrderAddressDetails orderAddressDetails;
+	ImmutableMap<String, String> salutationId2DisplayName;
 
 	@NonNull
-	JsonOrderDelivery jsonOrderDelivery;
+	public String getDisplayNameBySalutationIdNotNull(@NonNull final String salutationId)
+	{
+		final String displayName = salutationId2DisplayName.get(salutationId);
+
+		if (displayName == null || displayName.isBlank())
+		{
+			throw new RuntimeException("Missing salutation display name for salutationId=" + salutationId);
+		}
+
+		return displayName;
+	}
 }

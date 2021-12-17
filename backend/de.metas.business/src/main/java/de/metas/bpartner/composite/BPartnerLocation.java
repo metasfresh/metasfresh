@@ -65,6 +65,8 @@ public class BPartnerLocation
 	public static final String DISTRICT = "district";
 	public static final String REGION = "region";
 	public static final String COUNTRYCODE = "countryCode";
+	public static final String PHONE = "phone";
+	public static final String EMAIL = "email";
 
 	@Nullable
 	private BPartnerLocationId id;
@@ -112,6 +114,10 @@ public class BPartnerLocation
 	private String district;
 	@Nullable
 	private String countryCode;
+	@Nullable
+	private String phone;
+	@Nullable
+	private String email;
 
 	@Nullable
 	private BPartnerLocationType locationType;
@@ -171,6 +177,8 @@ public class BPartnerLocation
 			@Nullable final String region,
 			@Nullable final String city,
 			@Nullable final String countryCode,
+			@Nullable final String phone,
+			@Nullable final String email,
 			@Nullable final BPartnerLocationType locationType,
 			@Nullable final RecordChangeLog changeLog,
 			@Nullable final OrgMappingId orgMappingId,
@@ -204,6 +212,8 @@ public class BPartnerLocation
 		this.region = region;
 		this.city = city;
 		this.countryCode = countryCode; // mandatory only if we want to insert/update a new location
+		this.phone = phone;
+		this.email = email;
 
 		this.locationType = locationType;
 

@@ -406,6 +406,7 @@ public class ExternalSystemConfigRepo
 				.clientId(config.getClient_Id())
 				.bPartnerLocationIdJSONPath(config.getJSONPathConstantBPartnerLocationID())
 				.salesRepJSONPath(config.getJSONPathSalesRepID())
+				.emailJSONPath(config.getJSONPathEmail())
 				.isActive(config.isActive())
 				.value(config.getExternalSystemValue())
 				.productLookup(ProductLookup.ofCode(config.getProductLookup()))

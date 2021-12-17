@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1680974602L;
+	private static final long serialVersionUID = 1656813470L;
 
     /** Standard Constructor */
     public X_C_OLCand (final Properties ctx, final int C_OLCand_ID, @Nullable final String trxName)
@@ -1682,5 +1682,41 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	public int getRecord_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_Record_ID);
+	}
+
+	@Override
+	public void setPhone (final @Nullable String Phone)
+	{
+		set_Value (COLUMNNAME_Phone, Phone);
+	}
+
+	@Override
+	public String getPhone()
+	{
+		return get_ValueAsString(COLUMNNAME_Phone);
+	}
+
+	@Override
+	public void setEMail (final @Nullable String EMail)
+	{
+		set_Value (COLUMNNAME_EMail, EMail);
+	}
+
+	@Override
+	public String getEMail()
+	{
+		return get_ValueAsString(COLUMNNAME_EMail);
+	}
+
+	@Override
+	public void setBPartnerName (final @Nullable String BPartnerName)
+	{
+		set_Value (COLUMNNAME_BPartnerName, BPartnerName);
+	}
+
+	@Override
+	public String getBPartnerName()
+	{
+		return get_ValueAsString(COLUMNNAME_BPartnerName);
 	}
 }

@@ -194,6 +194,8 @@ public class JsonRetrieverService
 			.put(BPartnerLocation.REGION, JsonResponseLocation.REGION)
 			.put(BPartnerLocation.DISTRICT, JsonResponseLocation.DISTRICT)
 			.put(BPartnerLocation.COUNTRYCODE, JsonResponseLocation.COUNTRY_CODE)
+			.put(BPartnerLocation.PHONE, JsonResponseLocation.PHONE)
+			.put(BPartnerLocation.EMAIL, JsonResponseLocation.EMAIL)
 			.put(BPartnerLocationType.BILL_TO, JsonResponseLocation.BILL_TO)
 			.put(BPartnerLocationType.BILL_TO_DEFAULT, JsonResponseLocation.BILL_TO_DEFAULT)
 			.put(BPartnerLocationType.SHIP_TO, JsonResponseLocation.SHIP_TO)
@@ -472,6 +474,8 @@ public class JsonRetrieverService
 					.handoverLocation(location.isHandOverLocation())
 					.visitorsAddress(location.isVisitorsAddress())
 					.changeInfo(jsonChangeInfo)
+					.phone(location.getPhone())
+					.email(location.getEmail())
 					.build();
 		}
 		catch (final RuntimeException rte)

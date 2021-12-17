@@ -22,14 +22,13 @@
 
 package de.metas.common.bpartner.v2.request;
 
-import de.metas.common.rest_api.v2.SyncAdvise;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
 
-import static de.metas.common.rest_api.v2.SwaggerDocConstants.PARENT_SYNC_ADVISE_DOC;
+import javax.annotation.Nullable;
 
 @Getter
 @ToString
@@ -164,6 +163,19 @@ public class JsonRequestLocation
 	@ApiModelProperty(hidden = true)
 	private boolean billToDefaultSet;
 
+	@ApiModelProperty(position = 200)
+	@Nullable
+	private String email;
+
+	@ApiModelProperty(hidden = true)
+	private boolean emailSet;
+
+	@ApiModelProperty(position = 210)
+	private String phone;
+
+	@ApiModelProperty(hidden = true)
+	private boolean phoneSet;
+
 	public void setActive(final Boolean active)
 	{
 		this.active = active;
@@ -270,5 +282,17 @@ public class JsonRequestLocation
 	{
 		this.billToDefault = billToDefault;
 		this.billToDefaultSet = true;
+	}
+
+	public void setEmail(@Nullable final String email)
+	{
+		this.email = email;
+		this.emailSet = true;
+	}
+
+	public void setPhone(final String phone)
+	{
+		this.phone = phone;
+		this.phoneSet = true;
 	}
 }

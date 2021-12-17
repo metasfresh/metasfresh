@@ -290,6 +290,27 @@ public interface I_C_Order
 	String COLUMNNAME_BPartnerAddress = "BPartnerAddress";
 
 	/**
+	 * Set Partner Name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setBPartnerName (@Nullable java.lang.String BPartnerName);
+
+	/**
+	 * Get Partner Name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getBPartnerName();
+
+	ModelColumn<I_C_Order, Object> COLUMN_BPartnerName = new ModelColumn<>(I_C_Order.class, "BPartnerName", null);
+	String COLUMNNAME_BPartnerName = "BPartnerName";
+
+	/**
 	 * Set Activity.
 	 * Business Activity
 	 *
@@ -1356,6 +1377,27 @@ public interface I_C_Order
 	String COLUMNNAME_DropShip_User_ID = "DropShip_User_ID";
 
 	/**
+	 * Set eMail.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setEMail (@Nullable java.lang.String EMail);
+
+	/**
+	 * Get eMail.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getEMail();
+
+	ModelColumn<I_C_Order, Object> COLUMN_EMail = new ModelColumn<>(I_C_Order.class, "EMail", null);
+	String COLUMNNAME_EMail = "EMail";
+
+	/**
 	 * Set External ID.
 	 *
 	 * <br>Type: String
@@ -2370,6 +2412,29 @@ public interface I_C_Order
 
 	ModelColumn<I_C_Order, Object> COLUMN_PaymentRule = new ModelColumn<>(I_C_Order.class, "PaymentRule", null);
 	String COLUMNNAME_PaymentRule = "PaymentRule";
+
+	/**
+	 * Set Phone.
+	 * Identifies a telephone number
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPhone (@Nullable java.lang.String Phone);
+
+	/**
+	 * Get Phone.
+	 * Identifies a telephone number
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getPhone();
+
+	ModelColumn<I_C_Order, Object> COLUMN_Phone = new ModelColumn<>(I_C_Order.class, "Phone", null);
+	String COLUMNNAME_Phone = "Phone";
 
 	/**
 	 * Set Order Reference.

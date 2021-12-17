@@ -28,7 +28,10 @@
                   "city": "Billing City",
                   "countryCode": "DE",
                   "shipTo": false,
-                  "billTo": true
+                  "billTo": true,
+                  "bpartnerName": "billingCompany\nbillingDepartment\nbillingSalutationDisplayName billingTitle firstName lastName",
+                  "phone": "phoneNumber",
+                  "email": "billingEmailAddress"
                 }
               },
               {
@@ -41,7 +44,10 @@
                   "city": "Test City",
                   "countryCode": "DE",
                   "shipTo": true,
-                  "billTo": false
+                  "billTo": false,
+                  "bpartnerName": "company\ndepartment\nsalutationDisplayName title firstName lastName",
+                  "phone": "phoneNumber",
+                  "email": "emailAddress"
                 }
               }
             ],
@@ -53,27 +59,14 @@
           "contacts": {
             "requestItems": [
               {
-                "contactIdentifier": "ext-Shopware6-customerId1-billTo",
+                "contactIdentifier": "ext-Shopware6-customerId1",
                 "contact": {
                   "firstName": "firstName",
                   "lastName": "lastName",
                   "email": "someEamil@web.de",
                   "invoiceEmailEnabled": true,
-                  "phone": "phoneNumber",
-                  "shipToDefault": false,
-                  "billToDefault": true
-                }
-              },
-              {
-                "contactIdentifier": "ext-Shopware6-customerId1-shipTo",
-                "contact": {
-                  "firstName": "firstName",
-                  "lastName": "lastName",
-                  "email": "someEamil@web.de",
-                  "invoiceEmailEnabled": true,
-                  "phone": "phoneNumber",
                   "shipToDefault": true,
-                  "billToDefault": false
+                  "billToDefault": true
                 }
               }
             ],

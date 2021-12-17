@@ -183,7 +183,6 @@ public class CustomerTradeMarginService
 
 		final TaxId taxId = taxBL.getTaxNotNull(
 				null,
-				null,
 				salesRepPricingResult.getTaxCategoryId(),
 				salesRepPricingResult.getProductId().getRepoId(),
 				Objects.requireNonNull(TimeUtil.asTimestamp(request.getCommissionDate())),
