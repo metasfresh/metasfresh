@@ -134,6 +134,14 @@ public class BPartnerLocation
 	@Nullable
 	private String email;
 
+	@Nullable
+	final String setupPlaceNo;
+
+	final boolean remitTo;
+	final boolean handOverLocation;
+	final boolean replicationLookupDefault;
+	final boolean visitorsAddress;
+
 	/**
 	 * Can be set in order to identify this label independently of its "real" properties. Won't be saved by the repo.
 	 */
@@ -169,7 +177,12 @@ public class BPartnerLocation
 			@Nullable final String phone,
 			@Nullable final String mobile,
 			@Nullable final String fax,
-			@Nullable final String email)
+			@Nullable final String email,
+			@Nullable final String setupPlaceNo,
+			@Nullable final Boolean remitTo,
+			@Nullable final Boolean handOverLocation,
+			@Nullable final Boolean replicationLookupDefault,
+			@Nullable final Boolean visitorsAddress)
 	{
 		this.id = id;
 		this.gln = gln;
@@ -201,10 +214,20 @@ public class BPartnerLocation
 		this.phone = phone;
 
 		this.mobile = mobile;
-		
+
 		this.fax = fax;
 
 		this.email = email;
+
+		this.setupPlaceNo = setupPlaceNo;
+
+		this.handOverLocation = handOverLocation != null ? handOverLocation : false;
+
+		this.replicationLookupDefault = replicationLookupDefault != null ? replicationLookupDefault : false;
+
+		this.remitTo = remitTo != null ? remitTo : false;
+
+		this.visitorsAddress = visitorsAddress != null ? visitorsAddress : false;
 	}
 
 	public BPartnerLocation deepCopy()

@@ -466,6 +466,11 @@ public class JsonRetrieverService
 					.shipToDefault(locationType.getIsShipToDefaultOr(false))
 					.billTo(locationType.getIsBillToOr(false))
 					.billToDefault(locationType.getIsBillToDefaultOr(false))
+					.setupPlaceNo(location.getSetupPlaceNo())
+					.remitTo(location.isRemitTo())
+					.replicationLookupDefault(location.isReplicationLookupDefault())
+					.handoverLocation(location.isHandOverLocation())
+					.visitorsAddress(location.isVisitorsAddress())
 					.changeInfo(jsonChangeInfo)
 					.build();
 		}
