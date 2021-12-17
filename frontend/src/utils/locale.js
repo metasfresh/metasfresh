@@ -34,7 +34,8 @@ export function extractLanguageFromLocale(locale) {
 }
 
 export function getCurrentActiveLanguage() {
-  return extractLanguageFromLocale(getCurrentActiveLocale());
+  const currentActiveLocale = getCurrentActiveLocale();
+  return extractLanguageFromLocale(currentActiveLocale);
 }
 
 export function setCurrentActiveLocale(lang) {
