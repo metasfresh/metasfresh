@@ -32,7 +32,6 @@ import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import io.swagger.annotations.ApiParam;
-import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.Logger;
 import org.springframework.http.ResponseEntity;
@@ -103,11 +102,27 @@ public class AppTestingRestController
 			@ApiParam("Response code the endpoint should return")
 			@RequestParam(name = "responseCode") final int responseCode,
 			@ApiParam("Response body the endpoint should return")
-			@RequestParam(name = "responseBody") final String responseBody,
+			@RequestParam(name = "responseBody", required = false) final String responseBody,
 			@ApiParam("Milliseconds to delay the response")
-			@RequestParam(name = "delaymillis", required = false) final Integer delaymillis) throws InterruptedException
+			@RequestParam(name = "delaymillis", required = false) final Integer delaymillis,
+			@ApiParam("Exception thrown in metas API")
+			@RequestParam(name = "throwException", required = false) final boolean throwException,
+			@ApiParam("Return non-json body")
+			@RequestParam(name = "nonJsonBody", required = false) final boolean nonJsonBody) throws InterruptedException
 	{
-		return executeMethod(responseCode, responseBody, delaymillis);
+		if (throwException)
+		{
+			final String errorString = "Exception thrown";
+			throw new AdempiereException(errorString);
+		}
+		else if (nonJsonBody)
+		{
+			return ResponseEntity.status(responseCode).body("notDeserializable");
+		}
+		else
+		{
+			return executeMethod(responseCode, responseBody, delaymillis);
+		}
 	}
 
 	@DeleteMapping(produces = "application/json")
@@ -124,7 +139,7 @@ public class AppTestingRestController
 
 	private ResponseEntity<?> executeMethod(
 			final int responseCode,
-			@NonNull final String responseBody,
+			@Nullable final String responseBody,
 			@Nullable final Integer delaymillis) throws InterruptedException
 
 	{
@@ -141,7 +156,9 @@ public class AppTestingRestController
 			Loggables.get().addLog(errorString, new AdempiereException(errorString));
 		}
 
-		final JsonTestResponse response = JsonTestResponse.builder()
+		final JsonTestResponse response = responseBody == null
+				? null
+				: JsonTestResponse.builder()
 				.messageBody(responseBody)
 				.build();
 
