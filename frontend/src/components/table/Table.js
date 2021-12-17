@@ -119,6 +119,7 @@ export default class Table extends PureComponent {
    * @param {*} currentIdx - the current index in the array of rows
    */
   updateMultiSelectionStartIdx = (currentIdx) => {
+    console.log();
     // Note: the check that you see below `!this.multiSelectionStartIdx && this.multiSelectionStartIdx !== 0
     // is needed because we will set the start reference only when we do not have yet a reference
     // (ex. when user clicked on a row and then uses SHIFT + arrow up/down) and for the case when reference is different than zero
@@ -221,24 +222,24 @@ export default class Table extends PureComponent {
       case ARROW_DOWN_KEY: {
         e.preventDefault();
 
-        const { currentIdx, rowIdsPool } =
+        const { currentIdx, allRowIds } =
           this.getCurrentRowIndex(ARROW_DOWN_KEY);
 
-        if (currentIdx >= rowIdsPool.length - 1) return;
+        if (currentIdx >= allRowIds.length - 1) return;
 
         if (!selectRange) {
           handleSelect(
-            rowIdsPool[currentIdx + 1],
+            allRowIds[currentIdx + 1],
             false,
             idFocused,
             showSelectedIncludedView &&
-              showSelectedIncludedView([rowIdsPool[currentIdx + 1]])
+              showSelectedIncludedView([allRowIds[currentIdx + 1]])
           );
           this.clearMultiSelectionStartIdx();
         } else {
           this.updateMultiSelectionStartIdx(currentIdx);
 
-          const downShiftSel = rowIdsPool.slice(
+          const downShiftSel = allRowIds.slice(
             this.multiSelectionStartIdx > 0 ? this.multiSelectionStartIdx : 0,
             currentIdx + 2 // +2 because we want to slice up to the next row and include it
           );
