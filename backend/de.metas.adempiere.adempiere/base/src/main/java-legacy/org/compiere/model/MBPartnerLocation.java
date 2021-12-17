@@ -95,20 +95,6 @@ public class MBPartnerLocation extends X_C_BPartner_Location
 			throw new FillMandatoryException(COLUMNNAME_C_Location_ID);
 		}
 
-		// Set New Name only if new record
-		if (newRecord)
-		{
-			final int cBPartnerId = getC_BPartner_ID();
-			setName(MakeUniqueNameCommand.builder()
-					.name(getName())
-					.address(getC_Location())
-					.companyName(bpartnerDAO.getBPartnerNameById(BPartnerId.ofRepoId(cBPartnerId)))
-					.existingNames(getOtherLocationNames(cBPartnerId, getC_BPartner_Location_ID()))
-					.maxLength(getPOInfo().getFieldLength(I_C_BPartner_Location.COLUMNNAME_Name))
-					.build()
-					.execute());
-		}
-
 		return true;
 	}
 
