@@ -52,6 +52,7 @@ import de.metas.greeting.GreetingId;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.ExplainedOptional;
+import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.lang.SOTrx;
@@ -112,6 +113,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class BPartnerQuickInputService
@@ -521,7 +523,7 @@ public class BPartnerQuickInputService
 	{
 		final PriceListsCollection salesPriceLists = priceListDAO.retrievePriceListsCollectionByPricingSystemId(pricingSystemId);
 
-		final ArrayList<CountryId> countriesWithNoPrices = new ArrayList<>();
+		final List<CountryId> countryIdsWithNoPrices = new ArrayList<>();
 
 		if (possibleDefaultCountryId.isPresent())
 		{
@@ -530,7 +532,7 @@ public class BPartnerQuickInputService
 
 			if (Check.isEmpty(defaultPriceLists))
 			{
-				countriesWithNoPrices.add(defaultCountryId);
+				countryIdsWithNoPrices.add(defaultCountryId);
 			}
 		}
 		else
@@ -553,14 +555,20 @@ public class BPartnerQuickInputService
 
 			if (!onePriceWasFound)
 			{
-				countriesWithNoPrices.addAll(nonDefaultCountriesWithoutPrices);
+				countryIdsWithNoPrices.addAll(nonDefaultCountriesWithoutPrices);
 			}
 		}
 
-		if (!Check.isEmpty(countriesWithNoPrices))
+		if (!Check.isEmpty(countryIdsWithNoPrices))
 		{
 			final String pricingSystemName = priceListDAO.getPricingSystemName(pricingSystemId);
-			throw new PriceListNotFoundException(pricingSystemName, soTrx, countriesWithNoPrices); // TODO correct message
+
+			final String countriesWithNoPrices = countryIdsWithNoPrices.stream()
+					.map(countryDAO::getCountryNameById)
+					.map(ITranslatableString::getDefaultValue)
+					.collect(Collectors.joining(", "));
+
+			throw new PriceListNotFoundException(pricingSystemName, soTrx, countriesWithNoPrices);
 		}
 
 	}
