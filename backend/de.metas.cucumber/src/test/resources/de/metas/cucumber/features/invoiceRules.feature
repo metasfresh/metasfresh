@@ -162,7 +162,7 @@ Feature: invoice rules
       | invoice_3               | p_3                     | 12          | true      |
     And shipment is generated for the following shipment schedule
       | Identifier | M_ShipmentSchedule_ID.Identifier | quantityTypeToUse | isCompleteShipment |
-      | s_3        | s_s_3                            | P                 | Y                  |
+      | shipment   | s_s_3                            | P                 | Y                  |
     And validate the created shipments
       | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | poreference | processed | docStatus |
       | shipment              | endcustomer_3            | l_3                               | 2021-04-15  | po_ref_mock | true      | CO        |
