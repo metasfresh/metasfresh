@@ -122,9 +122,7 @@ describe('Filters tests', () => {
       </Provider>
     );
 
-    wrapper.find(
-      '.filter-wrapper button[title="Abrechnung_offen_normal"]'
-    );
+    expect(wrapper.html()).toContain('Abrechnung_offen_normal');
   });
 
   it('opens dropdown and filter details', () => {
