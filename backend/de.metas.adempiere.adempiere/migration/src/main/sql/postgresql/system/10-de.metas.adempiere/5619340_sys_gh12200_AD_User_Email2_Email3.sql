@@ -10,9 +10,29 @@ INSERT INTO ad_column (ad_column_id, ad_client_id, ad_org_id, isactive, created,
 select 567912, 0, 0, 'Y', '2019-05-08 17:34:09.000000 +02:00', '2021-12-10 13:25:55.000000 +01:00', 100, 100, 'EMail3', NULL, NULL, 0, 'D', 'EMail3', 114, 10, NULL, NULL, 100, NULL, 'N', 'N', 'N', 'Y', '', 'N', 0, 'N', 'N', NULL, NULL, NULL, NULL, 'N', 576712, NULL, 'N', 'N', NULL, NULL, NULL, 'N', 'Y', NULL, 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'Y', 0, 'N', 'N', NULL, 'N', NULL, NULL, NULL, 'N', 'N', 0, NULL, 'N', NULL, 'N'
 where not exists (select 1 from ad_column where ad_column_id=567912);-- 2021-12-17T11:02:08.680Z
 
-SELECT public.db_alter_table('AD_User','ALTER TABLE public.ad_user ADD COLUMN IF NOT EXISTS EMail3 varchar(100)')
-;
+DO $$
+    BEGIN
+        BEGIN
+            -- 2021-12-20T10:40:14.774
+            -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+            /* DDL */ ALTER TABLE public.AD_User ADD COLUMN EMail3 VARCHAR(100);
 
-SELECT public.db_alter_table('AD_User','ALTER TABLE public.ad_user ADD COLUMN IF NOT EXISTS EMail2 varchar(100)')
-;
+        EXCEPTION
+            WHEN duplicate_column THEN RAISE NOTICE 'column EMail3 already exists in AD_User.';
+        END;
+    END;
+$$;
+
+DO $$
+    BEGIN
+        BEGIN
+            -- 2021-12-20T10:40:14.774
+            -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+            /* DDL */ ALTER TABLE public.AD_User ADD COLUMN EMail2 VARCHAR(100);
+
+        EXCEPTION
+            WHEN duplicate_column THEN RAISE NOTICE 'column EMail2 already exists in AD_User.';
+        END;
+    END;
+$$;
 
