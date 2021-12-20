@@ -28,9 +28,9 @@ import de.metas.JsonObjectMapperHolder;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.web.util.ContentCachingRequestWrapper;
 
 import javax.annotation.Nullable;
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -39,21 +39,21 @@ import java.util.Enumeration;
 public class ApiRequestMapper
 {
 	@NonNull
-	public ApiRequest map(@NonNull final ContentCachingRequestWrapper contentCachingRequestWrapper)
+	public ApiRequest map(@NonNull final CachedBodyHttpServletRequest cachedBodyHttpServletRequest)
 	{
 		return ApiRequest.builder()
-				.body(getRequestBody(contentCachingRequestWrapper))
-				.fullPath(getFullPath(contentCachingRequestWrapper))
-				.headers(getHeaders(contentCachingRequestWrapper))
-				.httpMethod(contentCachingRequestWrapper.getMethod())
-				.remoteAddr(contentCachingRequestWrapper.getRemoteAddr())
-				.remoteHost(contentCachingRequestWrapper.getRemoteHost())
-				.requestURI(contentCachingRequestWrapper.getRequestURI())
+				.body(getRequestBody(cachedBodyHttpServletRequest))
+				.fullPath(getFullPath(cachedBodyHttpServletRequest))
+				.headers(getHeaders(cachedBodyHttpServletRequest))
+				.httpMethod(cachedBodyHttpServletRequest.getMethod())
+				.remoteAddr(cachedBodyHttpServletRequest.getRemoteAddr())
+				.remoteHost(cachedBodyHttpServletRequest.getRemoteHost())
+				.requestURI(cachedBodyHttpServletRequest.getRequestURI())
 				.build();
 	}
 
 	@NonNull
-	public String getFullPath(@NonNull final ContentCachingRequestWrapper requestWrapper)
+	public String getFullPath(@NonNull final HttpServletRequest requestWrapper)
 	{
 		String fullPath = requestWrapper.getRequestURL().toString();
 
@@ -66,23 +66,23 @@ public class ApiRequestMapper
 	}
 
 	@NonNull
-	private LinkedMultiValueMap<String, String> getHeaders(@NonNull final ContentCachingRequestWrapper requestWrapper)
+	private LinkedMultiValueMap<String, String> getHeaders(@NonNull final HttpServletRequest request)
 	{
 		final LinkedMultiValueMap<String, String> requestHeadersMultiValueMap = new LinkedMultiValueMap<>();
 
-		final Enumeration<String> allHeaderNames = requestWrapper.getHeaderNames();
+		final Enumeration<String> allHeaderNames = request.getHeaderNames();
 
 		while (allHeaderNames != null && allHeaderNames.hasMoreElements())
 		{
 			final String currentHeaderName = allHeaderNames.nextElement();
-			requestHeadersMultiValueMap.addAll(currentHeaderName, Collections.list(requestWrapper.getHeaders(currentHeaderName)));
+			requestHeadersMultiValueMap.addAll(currentHeaderName, Collections.list(request.getHeaders(currentHeaderName)));
 		}
 
 		return requestHeadersMultiValueMap;
 	}
 
 	@Nullable
-	private String getRequestBody(@NonNull final ContentCachingRequestWrapper requestWrapper)
+	private String getRequestBody(@NonNull final CachedBodyHttpServletRequest requestWrapper)
 	{
 		try
 		{
@@ -93,9 +93,7 @@ public class ApiRequestMapper
 				return null;
 			}
 
-			final Object body = requestWrapper.getContentAsByteArray().length > 0
-					? objectMapper.readValue(requestWrapper.getContentAsByteArray(), Object.class)
-					: objectMapper.readValue(requestWrapper.getReader(), Object.class);
+			final Object body = objectMapper.readValue(requestWrapper.getInputStream(), Object.class);
 
 			return mapToString(body);
 		}

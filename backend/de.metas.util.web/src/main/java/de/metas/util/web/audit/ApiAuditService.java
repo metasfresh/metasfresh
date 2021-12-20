@@ -62,6 +62,7 @@ import de.metas.util.web.audit.dto.ApiRequest;
 import de.metas.util.web.audit.dto.ApiRequestMapper;
 import de.metas.util.web.audit.dto.ApiResponse;
 import de.metas.util.web.audit.dto.ApiResponseMapper;
+import de.metas.util.web.audit.dto.CachedBodyHttpServletRequest;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -76,14 +77,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.reactive.function.client.ExchangeStrategies;
 import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.util.ContentCachingRequestWrapper;
 import org.springframework.web.util.ContentCachingResponseWrapper;
 import reactor.core.publisher.Mono;
 
 import javax.annotation.Nullable;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -198,12 +197,10 @@ public class ApiAuditService
 	}
 
 	@NonNull
-	public Optional<ApiAuditConfig> getMatchingAuditConfig(@NonNull final ServletRequest request)
+	public Optional<ApiAuditConfig> getMatchingAuditConfig(@NonNull final HttpServletRequest request)
 	{
-		final ContentCachingRequestWrapper contentCachingRequestWrapper = new ContentCachingRequestWrapper((HttpServletRequest)request);
-
-		final String fullPath = ApiRequestMapper.getFullPath(contentCachingRequestWrapper);
-		final String httpMethod = contentCachingRequestWrapper.getMethod();
+		final String fullPath = ApiRequestMapper.getFullPath(request);
+		final String httpMethod = request.getMethod();
 
 		if (Check.isBlank(fullPath) || Check.isBlank(httpMethod))
 		{
@@ -437,7 +434,7 @@ public class ApiAuditService
 	{
 		final OrgId orgId = apiAuditConfig.getOrgId();
 
-		final ApiRequest apiRequest = ApiRequestMapper.map(new ContentCachingRequestWrapper(request));
+		final ApiRequest apiRequest = ApiRequestMapper.map(new CachedBodyHttpServletRequest(request));
 
 		final ApiRequestAudit requestAudit = logRequest(apiRequest, apiAuditConfig, Status.RECEIVED);
 
@@ -487,7 +484,7 @@ public class ApiAuditService
 			@NonNull final ApiAuditConfig apiAuditConfig) throws IOException, ServletException
 	{
 		final ContentCachingResponseWrapper contentCachedResponse = new ContentCachingResponseWrapper(response);
-		final ContentCachingRequestWrapper contentCachedRequest = new ContentCachingRequestWrapper(request);
+		final CachedBodyHttpServletRequest contentCachedRequest = new CachedBodyHttpServletRequest(request);
 
 		if (apiAuditConfig.isPerformAuditAsync())
 		{
@@ -665,7 +662,7 @@ public class ApiAuditService
 
 	private void auditHttpCallAsync(
 			@NonNull final ApiAuditConfig apiAuditConfig,
-			@NonNull final ContentCachingRequestWrapper executedRequest,
+			@NonNull final CachedBodyHttpServletRequest executedRequest,
 			@NonNull final ContentCachingResponseWrapper response)
 	{
 		try
