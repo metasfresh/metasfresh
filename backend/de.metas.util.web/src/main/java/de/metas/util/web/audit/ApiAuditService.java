@@ -281,15 +281,11 @@ public class ApiAuditService
 
 		try
 		{
-			final ApiResponse apiResponse = bodySpec.exchangeToMono(cr -> cr
+			return bodySpec.exchangeToMono(cr -> cr
 					.bodyToMono(String.class)
 					.map(body -> ApiResponseMapper.map(cr.rawStatusCode(), cr.headers().asHttpHeaders(), body))
 					.defaultIfEmpty(ApiResponseMapper.map(cr.rawStatusCode(), cr.headers().asHttpHeaders(), null)))
 					.block();
-
-			performDataExportAudit(apiRequestAudit, apiResponse);
-
-			return apiResponse;
 		}
 		catch (final RuntimeException rte)
 		{
@@ -303,7 +299,7 @@ public class ApiAuditService
 
 	public void logResponse(
 			@NonNull final ApiResponse apiResponse,
-			@NonNull final ApiRequestAuditId apiRequestAuditId,
+			@NonNull final ApiRequestAudit apiRequestAudit,
 			@NonNull final OrgId orgId)
 	{
 		try
@@ -325,7 +321,7 @@ public class ApiAuditService
 
 			final ApiResponseAudit apiResponseAudit = ApiResponseAudit.builder()
 					.orgId(orgId)
-					.apiRequestAuditId(apiRequestAuditId)
+					.apiRequestAuditId(apiRequestAudit.getIdNotNull())
 					.body(bodyAsString)
 					.httpCode(String.valueOf(apiResponse.getStatusCode()))
 					.time(Instant.now())
@@ -333,6 +329,8 @@ public class ApiAuditService
 					.build();
 
 			apiResponseAuditRepository.save(apiResponseAudit);
+
+			performDataExportAudit(apiRequestAudit, apiResponse);
 		}
 		catch (final JsonProcessingException e)
 		{
@@ -508,7 +506,7 @@ public class ApiAuditService
 
 			final ApiResponse apiResponse = ApiResponseMapper.map(contentCachedResponse);
 
-			logResponse(apiResponse, apiRequestAudit.getIdNotNull(), apiRequestAudit.getOrgId());
+			logResponse(apiResponse, apiRequestAudit, apiRequestAudit.getOrgId());
 
 			final Status requestStatus = apiResponse.hasStatus2xx() ? Status.PROCESSED : Status.ERROR;
 
@@ -574,7 +572,7 @@ public class ApiAuditService
 		{
 			if (apiResponse != null)
 			{
-				logResponse(apiResponse, completionContext.getApiRequestAudit().getIdNotNull(), completionContext.getOrgId());
+				logResponse(apiResponse, completionContext.getApiRequestAudit(), completionContext.getOrgId());
 
 				final Status requestStatus = apiResponse.hasStatus2xx()
 						? Status.PROCESSED
@@ -677,7 +675,7 @@ public class ApiAuditService
 
 					final ApiRequestAudit apiRequestAudit = logRequest(apiRequest, apiAuditConfig, status);
 
-					logResponse(apiResponse, apiRequestAudit.getIdNotNull(), apiRequestAudit.getOrgId());
+					logResponse(apiResponse, apiRequestAudit, apiRequestAudit.getOrgId());
 
 					final ApiAuditLoggable apiAuditLogger = createLogger(apiRequestAudit.getIdNotNull(), apiRequestAudit.getUserId());
 					apiAuditLogger.addLog("Async audit performed successfully!");

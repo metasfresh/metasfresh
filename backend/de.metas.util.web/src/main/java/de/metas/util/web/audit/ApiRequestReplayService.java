@@ -80,7 +80,7 @@ public class ApiRequestReplayService
 
 			apiAuditService.updateRequestStatus(requestStatus, apiRequestAudit);
 
-			apiAuditService.logResponse(apiResponse, apiRequestAudit.getIdNotNull(), apiRequestAudit.getOrgId());
+			apiAuditService.logResponse(apiResponse, apiRequestAudit, apiRequestAudit.getOrgId());
 		}
 		catch (final Exception e)
 		{

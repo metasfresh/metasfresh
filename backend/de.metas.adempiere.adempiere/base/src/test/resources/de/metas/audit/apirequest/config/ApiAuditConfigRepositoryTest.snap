@@ -5,7 +5,7 @@ de.metas.audit.apirequest.config.ApiAuditConfigRepositoryTest.getActiveConfigsBy
       "active" : true,
       "orgId" : 1,
       "seqNo" : 10,
-      "isForceProcessedAsync" : true,
+      "forceProcessedAsync" : true,
       "keepRequestDays" : 101,
       "keepRequestBodyDays" : 100,
       "keepResponseDays" : 103,
@@ -15,8 +15,7 @@ de.metas.audit.apirequest.config.ApiAuditConfigRepositoryTest.getActiveConfigsBy
       "notifyUserInCharge" : "ALWAYS",
       "userGroupInChargeId" : 1,
       "performAuditAsync" : false,
-      "wrapApiResponse" : true,
-      "invokerWaitsForResponse" : true
+      "wrapApiResponse" : true
     }
   ]
 ]
