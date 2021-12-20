@@ -56,8 +56,8 @@ Feature: reversed shipment
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | s_s_1                            | D            | true                | false       |
     And after not more than 30s, M_InOut is found:
-      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | DocStatus |
-      | s_s_1                            | s_1                   | CO        |
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.DocStatus |
+      | s_s_1                            | s_1                   | CO            |
     And M_HU are validated:
       | M_HU_ID.Identifier | HUStatus | IsActive |
       | hu_1               | E        | N        |
