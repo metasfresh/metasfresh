@@ -19,6 +19,9 @@ import filtersStoreOne from '../../../../test_setup/fixtures/filters/filtersStor
 import filtersStoreTwo from '../../../../test_setup/fixtures/filters/filtersStoreTwo.json';
 import filtersStoreThree from '../../../../test_setup/fixtures/filters/filtersStoreThree.json';
 import filtersStoreFour from '../../../../test_setup/fixtures/filters/filtersStoreFour.json';
+import filtersStoreFacet from '../../../../test_setup/fixtures/filters/filtersStoreFacet.json';
+import filtersStoreInline from '../../../../test_setup/fixtures/filters/filtersStoreInline.json';
+
 const mockStore = configureStore([]);
 
 const createStore = function (state = {}) {
@@ -101,10 +104,7 @@ describe('Filters tests', () => {
   });
 
   it('renders active filters caption for filters without parameters', () => {
-    const updateDocListListener = jest.fn();
-    const dummyProps = createInitialProps(undefined, {
-      updateDocList: updateDocListListener,
-    });
+    const dummyProps = createInitialProps(undefined);
     const initialState = createStore({
       windowHandler: {
         allowShortcut: true,
@@ -123,6 +123,54 @@ describe('Filters tests', () => {
     );
 
     expect(wrapper.html()).toContain('Abrechnung_offen_normal');
+  });
+
+  it('renders active filters caption for inline filters', () => {
+    const updateDocListListener = jest.fn();
+    const dummyProps = createInitialProps(undefined);
+    const initialState = createStore({
+      windowHandler: {
+        allowShortcut: true,
+        modal: {
+          visible: false,
+        },
+      },
+      filters: filtersStoreInline,
+    });
+
+    const store = mockStore(initialState);
+    const wrapper = mount(
+      <Provider store={store}>
+        <div className="document-lists-wrapper">
+          <Filters {...dummyProps} />
+        </div>
+      </Provider>
+    );
+
+    expect(wrapper.html()).toContain('Active');
+    expect(wrapper.html()).toContain('123');
+  });
+
+  it('renders active filters caption for facet filters', () => {
+    const dummyProps = createInitialProps(undefined);
+    const initialState = createStore({
+      windowHandler: {
+        allowShortcut: true,
+        modal: {
+          visible: false,
+        },
+      },
+      filters: filtersStoreFacet,
+    });
+
+    const store = mockStore(initialState);
+    const wrapper = shallow(
+      <Provider store={store}>
+        <Filters {...dummyProps} />
+      </Provider>
+    );
+
+    expect(wrapper.html()).toContain('Shipmentdate');
   });
 
   it('opens dropdown and filter details', () => {
