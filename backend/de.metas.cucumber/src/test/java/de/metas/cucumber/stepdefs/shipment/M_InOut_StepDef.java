@@ -28,6 +28,7 @@ import de.metas.cucumber.stepdefs.M_ShipmentSchedule_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.cucumber.stepdefs.StepDefUtil;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer;
@@ -38,10 +39,10 @@ import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Location;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_InOut;
 import org.compiere.util.Env;
 import org.compiere.util.Trx;
@@ -61,9 +62,10 @@ public class M_InOut_StepDef
 	private final M_ShipmentSchedule_StepDefData shipmentScheduleTable;
 	private final C_BPartner_StepDefData bpartnerTable;
 	private final StepDefData<I_C_BPartner_Location> bpartnerLocationTable;
-	
+
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IADPInstanceDAO pinstanceDAO = Services.get(IADPInstanceDAO.class);
+	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 
 	public M_InOut_StepDef(
 			@NonNull final M_InOut_StepDefData shipmentTable,
@@ -107,7 +109,7 @@ public class M_InOut_StepDef
 		}
 	}
 
-	@And("generate shipments process is invoked")
+	@And("'generate shipments' process is invoked")
 	public void invokeGenerateShipmentsProcess(@NonNull final DataTable table)
 	{
 		final Map<String, String> tableRow = table.asMaps().get(0);
@@ -197,5 +199,21 @@ public class M_InOut_StepDef
 		};
 
 		StepDefUtil.tryAndWait(timeoutSec, 500, isShipmentCreated);
+	}
+
+	@And("perform shipment document action")
+	public void reverseShipment(@NonNull final DataTable table)
+	{
+		final List<Map<String, String>> dataTable = table.asMaps();
+		for (final Map<String, String> row : dataTable)
+		{
+			final String shipmentIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_InOut.COLUMNNAME_M_InOut_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+
+			final String docAction = DataTableUtil.extractStringForColumnName(row, I_M_InOut.COLUMNNAME_DocAction);
+
+			final I_M_InOut shipment = shipmentTable.get(shipmentIdentifier);
+
+			documentBL.processEx(shipment, docAction);
+		}
 	}
 }

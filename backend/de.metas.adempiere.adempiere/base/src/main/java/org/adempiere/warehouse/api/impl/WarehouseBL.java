@@ -259,4 +259,12 @@ public class WarehouseBL implements IWarehouseBL
 
 		save(warehouse);
 	}
+
+	@NonNull
+	public WarehouseId getIdByLocatorRepoId(final int locatorId)
+	{
+		final I_M_Locator locator = getLocatorByRepoId(locatorId);
+
+		return WarehouseId.ofRepoId(locator.getM_Warehouse_ID());
+	}
 }
