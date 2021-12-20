@@ -297,49 +297,20 @@ public class ApiAuditService
 		}
 	}
 
-	public void logResponse(
+	public void auditResponse(
+			@NonNull final ApiAuditConfig apiAuditConfig,
 			@NonNull final ApiResponse apiResponse,
-			@NonNull final ApiRequestAudit apiRequestAudit,
-			@NonNull final OrgId orgId)
+			@NonNull final ApiRequestAudit apiRequestAudit)
 	{
-		try
-		{
-			final String bodyAsString = apiResponse.getBody() != null
-					? objectMapper.writeValueAsString(apiResponse.getBody())
-					: null;
+		logResponse(apiResponse, apiRequestAudit);
 
-			final LinkedMultiValueMap<String, String> responseHeadersMultiValueMap = new LinkedMultiValueMap<>();
+		final Status requestStatus = apiResponse.hasStatus2xx() ? Status.PROCESSED : Status.ERROR;
 
-			if (apiResponse.getHttpHeaders() != null)
-			{
-				apiResponse.getHttpHeaders().forEach(responseHeadersMultiValueMap::addAll);
-			}
+		updateRequestStatus(requestStatus, apiRequestAudit);
 
-			final String responseHeaders = responseHeadersMultiValueMap.isEmpty()
-					? null
-					: objectMapper.writeValueAsString(HttpHeadersWrapper.of(responseHeadersMultiValueMap));
+		notifyUserInCharge(apiAuditConfig, apiRequestAudit, !apiResponse.hasStatus2xx());
 
-			final ApiResponseAudit apiResponseAudit = ApiResponseAudit.builder()
-					.orgId(orgId)
-					.apiRequestAuditId(apiRequestAudit.getIdNotNull())
-					.body(bodyAsString)
-					.httpCode(String.valueOf(apiResponse.getStatusCode()))
-					.time(Instant.now())
-					.httpHeaders(responseHeaders)
-					.build();
-
-			apiResponseAuditRepository.save(apiResponseAudit);
-
-			performDataExportAudit(apiRequestAudit, apiResponse);
-		}
-		catch (final JsonProcessingException e)
-		{
-			final AdempiereException exception = AdempiereException.wrapIfNeeded(e)
-					.appendParametersToMessage()
-					.setParameter("ApiResponse", apiResponse);
-
-			Loggables.addLog("Error when trying to parse the api response body!", exception);
-		}
+		performDataExportAudit(apiRequestAudit, apiResponse);
 	}
 
 	@NonNull
@@ -506,11 +477,7 @@ public class ApiAuditService
 
 			final ApiResponse apiResponse = ApiResponseMapper.map(contentCachedResponse);
 
-			logResponse(apiResponse, apiRequestAudit, apiRequestAudit.getOrgId());
-
-			final Status requestStatus = apiResponse.hasStatus2xx() ? Status.PROCESSED : Status.ERROR;
-
-			updateRequestStatus(requestStatus, apiRequestAudit);
+			auditResponse(apiAuditConfig, apiResponse, apiRequestAudit);
 
 			ResponseHandler.writeHttpResponse(apiResponse, apiAuditConfig, apiRequestAudit, response);
 		}
@@ -572,16 +539,7 @@ public class ApiAuditService
 		{
 			if (apiResponse != null)
 			{
-				logResponse(apiResponse, completionContext.getApiRequestAudit(), completionContext.getOrgId());
-
-				final Status requestStatus = apiResponse.hasStatus2xx()
-						? Status.PROCESSED
-						: Status.ERROR;
-
-				updateRequestStatus(requestStatus, completionContext.getApiRequestAudit());
-
-				final boolean isError = Status.ERROR.equals(requestStatus);
-				notifyUserInCharge(completionContext.getApiAuditConfig(), completionContext.getApiRequestAudit(), isError);
+				auditResponse(completionContext.getApiAuditConfig(), apiResponse, completionContext.getApiRequestAudit());
 
 				Loggables.addLog("Request routed successfully!");
 			}
@@ -675,7 +633,7 @@ public class ApiAuditService
 
 					final ApiRequestAudit apiRequestAudit = logRequest(apiRequest, apiAuditConfig, status);
 
-					logResponse(apiResponse, apiRequestAudit, apiRequestAudit.getOrgId());
+					auditResponse(apiAuditConfig, apiResponse, apiRequestAudit);
 
 					final ApiAuditLoggable apiAuditLogger = createLogger(apiRequestAudit.getIdNotNull(), apiRequestAudit.getUserId());
 					apiAuditLogger.addLog("Async audit performed successfully!");
@@ -701,6 +659,48 @@ public class ApiAuditService
 				.build();
 
 		errorManager.createIssue(issueCreateRequest);
+	}
+
+	private void logResponse(
+			@NonNull final ApiResponse apiResponse,
+			@NonNull final ApiRequestAudit apiRequestAudit)
+	{
+		try
+		{
+			final String bodyAsString = apiResponse.getBody() != null
+					? objectMapper.writeValueAsString(apiResponse.getBody())
+					: null;
+
+			final LinkedMultiValueMap<String, String> responseHeadersMultiValueMap = new LinkedMultiValueMap<>();
+
+			if (apiResponse.getHttpHeaders() != null)
+			{
+				apiResponse.getHttpHeaders().forEach(responseHeadersMultiValueMap::addAll);
+			}
+
+			final String responseHeaders = responseHeadersMultiValueMap.isEmpty()
+					? null
+					: objectMapper.writeValueAsString(HttpHeadersWrapper.of(responseHeadersMultiValueMap));
+
+			final ApiResponseAudit apiResponseAudit = ApiResponseAudit.builder()
+					.orgId(apiRequestAudit.getOrgId())
+					.apiRequestAuditId(apiRequestAudit.getIdNotNull())
+					.body(bodyAsString)
+					.httpCode(String.valueOf(apiResponse.getStatusCode()))
+					.time(Instant.now())
+					.httpHeaders(responseHeaders)
+					.build();
+
+			apiResponseAuditRepository.save(apiResponseAudit);
+		}
+		catch (final JsonProcessingException e)
+		{
+			final AdempiereException exception = AdempiereException.wrapIfNeeded(e)
+					.appendParametersToMessage()
+					.setParameter("ApiResponse", apiResponse);
+
+			Loggables.addLog("Error when trying to parse the api response body!", exception);
+		}
 	}
 
 	@Value
