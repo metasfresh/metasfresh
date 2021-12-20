@@ -148,27 +148,25 @@ public interface I_API_Audit_Config
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Invoker waits.
-	 * If checked the client gets the actual endpoint response as soon as the endpoint is ready. Otherwise, the client directly gets a response with HTTP code 202 and the api audit record's ID.
+	 * Set Force async processing.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsInvokerWaitsForResult (boolean IsInvokerWaitsForResult);
+	void setIsForceProcessedAsync (boolean IsForceProcessedAsync);
 
 	/**
-	 * Get Invoker waits.
-	 * If checked the client gets the actual endpoint response as soon as the endpoint is ready. Otherwise, the client directly gets a response with HTTP code 202 and the api audit record's ID.
+	 * Get Force async processing.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isInvokerWaitsForResult();
+	boolean isForceProcessedAsync();
 
-	ModelColumn<I_API_Audit_Config, Object> COLUMN_IsInvokerWaitsForResult = new ModelColumn<>(I_API_Audit_Config.class, "IsInvokerWaitsForResult", null);
-	String COLUMNNAME_IsInvokerWaitsForResult = "IsInvokerWaitsForResult";
+	ModelColumn<I_API_Audit_Config, Object> COLUMN_IsForceProcessedAsync = new ModelColumn<>(I_API_Audit_Config.class, "IsForceProcessedAsync", null);
+	String COLUMNNAME_IsForceProcessedAsync = "IsForceProcessedAsync";
 
 	/**
 	 * Set Synchronous audit enabled.

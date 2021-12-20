@@ -53,7 +53,7 @@ public class API_Audit_Config_StepDef
 			final int seqNo = DataTableUtil.extractIntForColumnName(tableRow, "SeqNo");
 			final String method = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT.Method");
 			final String pathPrefix = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT.PathPrefix");
-			final boolean isInvokerWaitsForResult = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "IsInvokerWaitsForResult", false);
+			final boolean isForceProcessedAsync = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "IsForceProcessedAsync", false);
 			final boolean isSynchronousAuditLoggingEnabled = DataTableUtil.extractBooleanForColumnName(tableRow, I_API_Audit_Config.COLUMNNAME_IsSynchronousAuditLoggingEnabled);
 			final boolean isWrapApiResponse = DataTableUtil.extractBooleanForColumnName(tableRow, I_API_Audit_Config.COLUMNNAME_IsWrapApiResponse);
 
@@ -62,7 +62,7 @@ public class API_Audit_Config_StepDef
 			auditConfig.setSeqNo(seqNo);
 			auditConfig.setMethod(method);
 			auditConfig.setPathPrefix(pathPrefix);
-			auditConfig.setIsInvokerWaitsForResult(isInvokerWaitsForResult);
+			auditConfig.setIsForceProcessedAsync(isForceProcessedAsync);
 			auditConfig.setIsSynchronousAuditLoggingEnabled(isSynchronousAuditLoggingEnabled);
 			auditConfig.setIsWrapApiResponse(isWrapApiResponse);
 

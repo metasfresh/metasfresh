@@ -29,20 +29,15 @@ import de.metas.logging.LogManager;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.web.audit.ApiAuditService;
-import de.metas.util.web.audit.dto.ApiRequestMapper;
-import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
+import de.metas.util.web.audit.ResponseHandler;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
-import org.springframework.web.util.ContentCachingRequestWrapper;
-import org.springframework.web.util.ContentCachingResponseWrapper;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
@@ -96,14 +91,6 @@ public class ApiAuditFilter implements Filter
 				}
 			}
 
-			final boolean performAuditAsync = apiAuditService.shouldPerformAuditAsync(httpServletRequest);
-
-			if (performAuditAsync)
-			{
-				chainDoFilterAuditHttpCallAsync(httpServletRequest, httpServletResponse, chain);
-				return;
-			}
-
 			final Optional<ApiAuditConfig> matchingAuditConfig = apiAuditService.getMatchingAuditConfig(httpServletRequest);
 
 			if (!matchingAuditConfig.isPresent())
@@ -112,35 +99,14 @@ public class ApiAuditFilter implements Filter
 				return;
 			}
 
-			apiAuditService.processHttpCall(httpServletRequest, httpServletResponse, matchingAuditConfig.get());
+			apiAuditService.processRequest(chain, httpServletRequest, httpServletResponse, matchingAuditConfig.get());
 		}
 		catch (final Throwable t)
 		{
 			logger.error(t.getLocalizedMessage(), t);
 
-			apiAuditService.handleErrorResponse(t, httpServletResponse, null, null);
+			ResponseHandler.writeErrorResponse(t, httpServletResponse, null, null);
 		}
-	}
-
-	private void chainDoFilterAuditHttpCallAsync(
-			@NonNull final HttpServletRequest httpServletRequest,
-			@NonNull final HttpServletResponse httpServletResponse,
-			@NonNull final FilterChain chain) throws IOException, ServletException
-	{
-		final ContentCachingResponseWrapper contentCachedResponse = new ContentCachingResponseWrapper(httpServletResponse);
-		final ContentCachingRequestWrapper contentCachedRequest = new ContentCachingRequestWrapper(httpServletRequest);
-
-		chain.doFilter(contentCachedRequest, contentCachedResponse);
-
-		final ApiAuditConfig apiAuditConfig = apiAuditService.getMatchingAuditConfig(httpServletRequest)
-				.orElseThrow(() -> new AdempiereException("No ApiAuditConfig found!")
-				.appendParametersToMessage()
-				.setParameter("HttpServletRequest.uri", ApiRequestMapper.getFullPath(contentCachedRequest))
-				.setParameter("HttpServletRequest.method", contentCachedRequest.getMethod()));
-
-		apiAuditService.auditHttpCallAsync(apiAuditConfig, contentCachedRequest, contentCachedResponse);
-
-		contentCachedResponse.copyBodyToResponse();
 	}
 
 	@Override

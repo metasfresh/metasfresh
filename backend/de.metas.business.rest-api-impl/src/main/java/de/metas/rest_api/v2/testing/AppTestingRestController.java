@@ -28,6 +28,7 @@ import de.metas.logging.LogManager;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.Recipient;
 import de.metas.notification.UserNotificationRequest;
+import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.web.MetasfreshRestAPIConstants;
@@ -117,7 +118,9 @@ public class AppTestingRestController
 		}
 		else if (nonJsonBody)
 		{
-			return ResponseEntity.status(responseCode).body("notDeserializable");
+			final String nonJsonBodyString = Check.isNotBlank(responseBody) ? responseBody : "notDeserializable";
+
+			return ResponseEntity.status(responseCode).body(nonJsonBodyString);
 		}
 		else
 		{

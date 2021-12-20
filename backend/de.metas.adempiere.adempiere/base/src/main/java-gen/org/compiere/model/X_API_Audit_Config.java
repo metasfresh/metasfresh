@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_API_Audit_Config extends org.compiere.model.PO implements I_API_Audit_Config, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1473930208L;
+	private static final long serialVersionUID = -1417591936L;
 
     /** Standard Constructor */
     public X_API_Audit_Config (final Properties ctx, final int API_Audit_Config_ID, @Nullable final String trxName)
@@ -77,15 +77,15 @@ public class X_API_Audit_Config extends org.compiere.model.PO implements I_API_A
 	}
 
 	@Override
-	public void setIsInvokerWaitsForResult (final boolean IsInvokerWaitsForResult)
+	public void setIsForceProcessedAsync (final boolean IsForceProcessedAsync)
 	{
-		set_Value (COLUMNNAME_IsInvokerWaitsForResult, IsInvokerWaitsForResult);
+		set_Value (COLUMNNAME_IsForceProcessedAsync, IsForceProcessedAsync);
 	}
 
 	@Override
-	public boolean isInvokerWaitsForResult() 
+	public boolean isForceProcessedAsync() 
 	{
-		return get_ValueAsBoolean(COLUMNNAME_IsInvokerWaitsForResult);
+		return get_ValueAsBoolean(COLUMNNAME_IsForceProcessedAsync);
 	}
 
 	@Override

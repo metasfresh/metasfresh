@@ -8,8 +8,8 @@ Feature: API Audit POST http method
   @from:cucumber
   Scenario: Testcase 100, normal POST and caller waits for result
     And the following API_Audit_Config record is set
-      | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsInvokerWaitsForResult | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
-      | c_1        | 10    | POST       | api/v2/test    | Y                       | Y                                | Y                 |
+      | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
+      | c_1        | 10    | POST       | api/v2/test    | N                     | Y                                | Y                 |
 
     When invoke 'POST' 'api/v2/test?responseBody=%22test-endpoint%20was%20called%22&responseCode=200' with response code '200'
 
@@ -34,8 +34,8 @@ Feature: API Audit POST http method
   @from:cucumber
   Scenario: Testcase 110, normal POST and caller does not wait for result
     And the following API_Audit_Config record is set
-      | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsInvokerWaitsForResult | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
-      | c_1        | 10    | POST       | api/v2/test    | N                       | Y                                | Y                 |
+      | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
+      | c_1        | 10    | POST       | api/v2/test    | Y                     | Y                                | Y                 |
 
     When invoke 'POST' '/api/v2/test?delaymillis=1000&responseBody=%22test-endpoint%20was%20called%22&responseCode=200' with response code '202'
 
@@ -64,8 +64,8 @@ Feature: API Audit POST http method
   @from:cucumber
   Scenario: Testcase 120, failing POST and caller waits for result
     And the following API_Audit_Config record is set
-      | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsInvokerWaitsForResult | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
-      | c_1        | 10    | POST       | api/v2/test    | Y                       | Y                                | Y                 |
+      | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
+      | c_1        | 10    | POST       | api/v2/test    | N                     | Y                                | Y                 |
 
     When invoke 'POST' 'api/v2/test?responseBody=%22test-endpoint%20was%20called%22&responseCode=404' with response code '404'
     And the actual response body is
@@ -90,8 +90,8 @@ Feature: API Audit POST http method
   @from:cucumber
   Scenario: Testcase 130, failing POST and caller does not wait for result
     And the following API_Audit_Config record is set
-      | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsInvokerWaitsForResult | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
-      | c_1        | 10    | POST       | api/v2/test    | N                       | Y                                | Y                 |
+      | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
+      | c_1        | 10    | POST       | api/v2/test    | Y                     | Y                                | Y                 |
 
     When invoke 'POST' '/api/v2/test?delaymillis=1000&responseBody=%22test-endpoint%20was%20called%22&responseCode=404' with response code '202'
 
@@ -121,8 +121,8 @@ Feature: API Audit POST http method
   @from:cucumber
   Scenario: Testcase 140, failing POST and replay
     And the following API_Audit_Config record is set
-      | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsInvokerWaitsForResult | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
-      | c_1        | 10    | POST       | api/v2/test    | Y                       | Y                                | Y                 |
+      | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
+      | c_1        | 10    | POST       | api/v2/test    | N                     | Y                                | Y                 |
 
     And invoke 'POST' 'api/v2/test?responseBody=%22test-endpoint%20was%20called%22&responseCode=404' with response code '404'
 
@@ -155,28 +155,22 @@ Feature: API Audit POST http method
       | 200      | {"messageBody":"\"test-endpoint was called\""} |
 
   @from:cucumber
-  Scenario: Testcase 150, normal POST with IsSynchronousAuditLoggingEnabled is false
+  Scenario: Testcase 150, normal POST with IsForceProcessedAsync = Y, IsSynchronousAuditLoggingEnabled = Y and IsWrapApiResponse = N
     And the following API_Audit_Config record is set
-      | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsInvokerWaitsForResult | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
-      | c_1        | 10    | POST       | api/v2/test    | N                       | N                                | N                 |
+      | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
+      | c_1        | 10    | POST       | api/v2/test    | Y                     | Y                                | N                 |
 
-    When invoke 'POST' 'api/v2/test?responseBody=%22test-endpoint%20was%20called%22&responseCode=200' with response code '200'
+    When invoke 'POST' 'api/v2/test?responseBody=%22test-endpoint%20was%20called%22&responseCode=200' with response code '202'
 
-    And the actual response body is
-    """
-   {
-	"messageBody": "\"test-endpoint was called\""
-  }
-"""
-    And after not more than 30s, find and add last API_Request_Audit_ID to context
+    And the actual response body is empty
 
-    And there are added records in API_Request_Audit
+    And after not more than 30s, there are added records in API_Request_Audit
       | Method | Path                                                                          | AD_User.Name | Status      |
       | POST   | /api/v2/test?responseBody=%22test-endpoint%20was%20called%22&responseCode=200 | metasfresh   | Verarbeitet |
 
     And there are added records in API_Request_Audit_Log
-      | Logmessage                          | AD_Issue.Summary |
-      | Async audit performed successfully! | null             |
+      | Logmessage                                | AD_Issue.Summary |
+      | Endpoint invoked; returning httpCode: 200 | null             |
 
     And there are added records in API_Response_Audit
       | HttpCode | Body                                           |
@@ -186,8 +180,8 @@ Feature: API Audit POST http method
   @from:cucumber
   Scenario: Testcase 160, normal POST, caller waits for result, IsSynchronousAuditLoggingEnabled is true and IsWrapApiResponse is false
     And the following API_Audit_Config record is set
-      | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsInvokerWaitsForResult | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
-      | c_1        | 10    | POST       | api/v2/test    | Y                       | Y                                | N                 |
+      | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
+      | c_1        | 10    | POST       | api/v2/test    | N                     | Y                                | N                 |
 
     When invoke 'POST' 'api/v2/test?responseBody=%22test-endpoint%20was%20called%22&responseCode=200' with response code '200'
 
@@ -210,32 +204,26 @@ Feature: API Audit POST http method
       | 200      | {"messageBody":"\"test-endpoint was called\""} |
 
   @from:cucumber
-  Scenario: Testcase 170, normal POST, caller waits for result, IsSynchronousAuditLoggingEnabled is true, IsWrapApiResponse is false and X-Api-Request-Audit-Async header is true
+  Scenario: Testcase 170, normal POST, caller waits for result, IsSynchronousAuditLoggingEnabled is true, IsWrapApiResponse is false and X-Api-Async header is true
     And the following API_Audit_Config record is set
-      | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsInvokerWaitsForResult | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
-      | c_1        | 10    | POST       | api/v2/test    | Y                       | Y                                | N                 |
+      | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
+      | c_1        | 10    | POST       | api/v2/test    | N                     | Y                                | N                 |
 
     When add HTTP header
-      | Key                       | Value |
-      | X-Api-Request-Audit-Async | true  |
+      | Key         | Value |
+      | X-Api-Async | true  |
 
-    And the metasfresh REST-API endpoint path 'api/v2/test?responseBody=%22test-endpoint%20was%20called%22&responseCode=200' receives a 'POST' request with the headers from context
+    And the metasfresh REST-API endpoint path 'api/v2/test?responseBody=%22test-endpoint%20was%20called%22&responseCode=200' receives a 'POST' request with the headers from context, expecting status='202'
 
-    And the actual response body is
-    """
-   {
-	"messageBody": "\"test-endpoint was called\""
-  }
-"""
-    And after not more than 30s, find and add last API_Request_Audit_ID to context
+    And the actual response body is empty
 
-    And there are added records in API_Request_Audit
+    And after not more than 30s, there are added records in API_Request_Audit
       | Method | Path                                                                          | AD_User.Name | Status      |
       | POST   | /api/v2/test?responseBody=%22test-endpoint%20was%20called%22&responseCode=200 | metasfresh   | Verarbeitet |
 
     And there are added records in API_Request_Audit_Log
-      | Logmessage                          | AD_Issue.Summary |
-      | Async audit performed successfully! | null             |
+      | Logmessage                                | AD_Issue.Summary |
+      | Endpoint invoked; returning httpCode: 200 | null             |
 
     And there are added records in API_Response_Audit
       | HttpCode | Body                                           |
@@ -244,10 +232,12 @@ Feature: API Audit POST http method
   @from:cucumber
   Scenario: Testcase 175, normal POST with IsSynchronousAuditLoggingEnabled is false, IsWrapApiResponse is false and response body is missing
     And the following API_Audit_Config record is set
-      | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsInvokerWaitsForResult | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
-      | c_1        | 10    | POST       | api/v2/test    | N                       | N                                | N                 |
+      | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
+      | c_1        | 10    | POST       | api/v2/test    | N                     | N                                | N                 |
 
     When invoke 'POST' 'api/v2/test?responseCode=200' with response code '200'
+
+    And the actual response body is empty
 
     And after not more than 30s, find and add last API_Request_Audit_ID to context
 
@@ -266,10 +256,12 @@ Feature: API Audit POST http method
   @from:cucumber
   Scenario: Testcase 180, normal POST, caller waits for result, IsSynchronousAuditLoggingEnabled is true, IsWrapApiResponse is false and response body is missing
     And the following API_Audit_Config record is set
-      | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsInvokerWaitsForResult | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
-      | c_1        | 10    | POST       | api/v2/test    | Y                       | Y                                | N                 |
+      | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
+      | c_1        | 10    | POST       | api/v2/test    | N                     | Y                                | N                 |
 
     When invoke 'POST' 'api/v2/test?responseCode=200' with response code '200'
+
+    And the actual response body is empty
 
     And there are added records in API_Request_Audit
       | Method | Path                          | AD_User.Name | Status      |
@@ -286,8 +278,8 @@ Feature: API Audit POST http method
   @from:cucumber
   Scenario: Testcase 185, failing POST, caller waits for result, IsSynchronousAuditLoggingEnabled is true, IsWrapApiResponse is false and exception thrown in metasfresh api
     And the following API_Audit_Config record is set
-      | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsInvokerWaitsForResult | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
-      | c_1        | 10    | POST       | api/v2/test    | Y                       | Y                                | N                 |
+      | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
+      | c_1        | 10    | POST       | api/v2/test    | N                     | Y                                | N                 |
 
     When invoke 'POST' 'api/v2/test?responseBody=%22test-endpoint%20was%20called%22&responseCode=422&throwException=true' with response code '422'
 
@@ -306,8 +298,8 @@ Feature: API Audit POST http method
   @from:cucumber
   Scenario: Testcase 190, failing POST with IsSynchronousAuditLoggingEnabled is false, IsWrapApiResponse is false and exception thrown in metasfresh api
     And the following API_Audit_Config record is set
-      | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsInvokerWaitsForResult | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
-      | c_1        | 10    | POST       | api/v2/test    | N                       | N                                | N                 |
+      | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
+      | c_1        | 10    | POST       | api/v2/test    | N                     | N                                | N                 |
 
     When invoke 'POST' 'api/v2/test?responseBody=%22test-endpoint%20was%20called%22&responseCode=422&throwException=true' with response code '422'
 
@@ -328,28 +320,33 @@ Feature: API Audit POST http method
   @from:cucumber
   Scenario: Testcase 195, normal POST, caller waits for result, IsSynchronousAuditLoggingEnabled is true and IsWrapApiResponse is false and response cannot be deserialized
     And the following API_Audit_Config record is set
-      | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsInvokerWaitsForResult | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
-      | c_1        | 10    | POST       | api/v2/test    | Y                       | Y                                | N                 |
+      | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
+      | c_1        | 10    | POST       | api/v2/test    | N                     | Y                                | N                 |
 
-    When invoke 'POST' 'api/v2/test?responseBody=%22test-endpoint%20was%20called%22&responseCode=500&nonJsonBody=true' with response code '500'
+    When invoke 'POST' 'api/v2/test?responseBody=test-endpoint%20was%20called&responseCode=500&nonJsonBody=true' with response code '500'
 
     And there are added records in API_Request_Audit
-      | Method | Path                                                                                           | AD_User.Name | Status |
-      | POST   | /api/v2/test?responseBody=%22test-endpoint%20was%20called%22&responseCode=500&nonJsonBody=true | metasfresh   | Fehler |
+      | Method | Path                                                                                     | AD_User.Name | Status    |
+      | POST   | /api/v2/test?responseBody=test-endpoint%20was%20called&responseCode=500&nonJsonBody=true | metasfresh   | Empfangen |
 
     And there are added records in API_Request_Audit_Log
-      | Logmessage                                   | AD_Issue.Summary |
-      | Error encountered while routing the request! | null             |
+      | Logmessage         | AD_Issue.Summary |
+      | Unrecognized token | null             |
 
     And there are no records in API_Response_Audit for the API_Request_Audit from context
 
   @from:cucumber
   Scenario: Testcase 200, normal POST with IsSynchronousAuditLoggingEnabled is false and IsWrapApiResponse is false and response cannot be deserialized
     And the following API_Audit_Config record is set
-      | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsInvokerWaitsForResult | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
-      | c_1        | 10    | POST       | api/v2/test    | N                       | N                                | N                 |
+      | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
+      | c_1        | 10    | POST       | api/v2/test    | N                     | N                                | N                 |
 
-    When invoke 'POST' 'api/v2/test?responseBody=%22test-endpoint%20was%20called%22&responseCode=200&nonJsonBody=true' with response code '200'
+    When invoke 'POST' 'api/v2/test?responseBody=test-endpoint%20was%20called&responseCode=200&nonJsonBody=true' with response code '200'
+
+    And the actual non JSON response body is
+    """
+test-endpoint was called
+    """
 
     And there are no records in API_Request_Audit_Log
 
@@ -359,5 +356,5 @@ Feature: API Audit POST http method
   Scenario: Testcase 210, reset to initial default data
     And all the API audit data is reset
     And the following API_Audit_Config record is set
-      | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsInvokerWaitsForResult | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
-      | c_100      | 9980  | null       | null           | Y                       | Y                                | Y                 |
+      | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
+      | c_100      | 9980  | null       | null           | N                     | Y                                | Y                 |

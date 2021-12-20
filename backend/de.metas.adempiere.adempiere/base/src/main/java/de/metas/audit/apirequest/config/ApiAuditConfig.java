@@ -48,7 +48,7 @@ public class ApiAuditConfig
 
 	int seqNo;
 
-	boolean isInvokerWaitsForResponse;
+	boolean forceProcessedAsync;
 
 	int keepRequestDays;
 	int keepRequestBodyDays;

@@ -87,7 +87,7 @@ public class ApiAuditConfigRepositoryTest
 		config.setAD_Org_ID(orgId.getRepoId());
 		config.setAD_UserGroup_InCharge_ID(1);
 		config.setIsActive(isActive);
-		config.setIsInvokerWaitsForResult(true);
+		config.setIsForceProcessedAsync(true);
 		config.setKeepRequestBodyDays(100);
 		config.setKeepRequestDays(101);
 		config.setKeepResponseBodyDays(102);

@@ -118,7 +118,7 @@ public class API_Request_Audit_Log_StepDef
 	{
 		return queryBL.createQueryBuilder(I_API_Request_Audit_Log.class)
 				.addEqualsFilter(I_API_Request_Audit_Log.COLUMN_API_Request_Audit_ID, apiRequestAuditId.getValue())
-				.addEqualsFilter(I_API_Request_Audit_Log.COLUMNNAME_Logmessage, logMessage)
+				.addStringLikeFilter(I_API_Request_Audit_Log.COLUMNNAME_Logmessage, "%" + logMessage + "%", true)
 				.create()
 				.firstOnlyOptional(I_API_Request_Audit_Log.class);
 	}

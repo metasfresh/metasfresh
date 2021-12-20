@@ -33,15 +33,19 @@ import org.springframework.stereotype.Component;
 @Interceptor(I_API_Audit_Config.class)
 public class API_Audit_Config
 {
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_API_Audit_Config.COLUMNNAME_IsSynchronousAuditLoggingEnabled)
+	@ModelChange(
+			timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
+			ifColumnsChanged = { I_API_Audit_Config.COLUMNNAME_IsSynchronousAuditLoggingEnabled,  I_API_Audit_Config.COLUMNNAME_IsForceProcessedAsync})
 	public void updateSyncAuditFlags(@NonNull final I_API_Audit_Config record)
 	{
-		if (record.isSynchronousAuditLoggingEnabled())
+		if (record.isForceProcessedAsync())
 		{
-			return;
+			record.setIsSynchronousAuditLoggingEnabled(true);
 		}
 
-		record.setIsWrapApiResponse(false);
-		record.setIsInvokerWaitsForResult(true); // this flag is not taken into account now, but effectively, the user *will* wait
+		if (!record.isSynchronousAuditLoggingEnabled())
+		{
+			record.setIsWrapApiResponse(false);
+		}
 	}
 }

@@ -135,16 +135,18 @@ public class REST_API_StepDef
 		testContext.setApiResponse(apiResponse);
 	}
 
-	@When("the metasfresh REST-API endpoint path {string} receives a {string} request with the headers from context")
+	@When("the metasfresh REST-API endpoint path {string} receives a {string} request with the headers from context, expecting status={string}")
 	public void metasfresh_rest_api_endpoint_api_external_ref_receives_request_with_additional_headers(
 			@NonNull final String endpointPath,
-			@NonNull final String verb) throws IOException
+			@NonNull final String verb,
+			@NonNull final String status) throws IOException
 	{
 		final APIRequest request = APIRequest.builder()
 				.endpointPath(endpointPath)
 				.verb(verb)
 				.authToken(userAuthToken)
 				.additionalHeaders(testContext.getHttpHeaders())
+				.statusCode(Integer.parseInt(status))
 				.build();
 
 		apiResponse = RESTUtil.performHTTPRequest(request);
@@ -185,6 +187,23 @@ public class REST_API_StepDef
 		final JsonTestResponse mappedResponseBody = mapper.readValue(responseBody, JsonTestResponse.class);
 
 		assertThat(apiResponse.getMessageBody()).isEqualTo(mappedResponseBody.getMessageBody());
+	}
+
+	@And("the actual response body is empty")
+	public void validate_empty_response_body()
+	{
+		final String responseJson = testContext.getApiResponse().getContent();
+
+		assertThat(responseJson).isBlank();
+	}
+
+
+	@And("the actual non JSON response body is")
+	public void validate_non_JSON_response_body(@NonNull final String responseBody)
+	{
+		final String content = testContext.getApiResponse().getContent();
+
+		assertThat(content).isEqualTo(responseBody);
 	}
 
 	@When("add HTTP header")
