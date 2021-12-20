@@ -236,56 +236,6 @@ public class ApiAuditService
 		}
 	}
 
-	private void processRequestAsync(
-			@NonNull final HttpServletRequest request,
-			@NonNull final HttpServletResponse response,
-			@NonNull final ApiAuditConfig apiAuditConfig) throws IOException
-	{
-		final OrgId orgId = apiAuditConfig.getOrgId();
-
-		final ApiRequest apiRequest = ApiRequestMapper.map(new ContentCachingRequestWrapper(request));
-
-		final ApiRequestAudit requestAudit = logRequest(apiRequest, apiAuditConfig, Status.RECEIVED);
-
-		final ApiAuditLoggable apiAuditLoggable = createLogger(requestAudit.getIdNotNull(), requestAudit.getUserId());
-
-		try (final IAutoCloseable ignored = Loggables.temporarySetLoggable(apiAuditLoggable))
-		{
-			final CompletableFuture<ApiResponse> actualRestApiResponseCF = new CompletableFuture<>();
-
-			final FutureCompletionContext futureCompletionContext = FutureCompletionContext.builder()
-					.apiAuditConfig(apiAuditConfig)
-					.apiAuditLoggable(apiAuditLoggable)
-					.apiRequestAudit(requestAudit)
-					.orgId(orgId)
-					.build();
-
-			actualRestApiResponseCF
-					.whenComplete((apiResponse, throwable) -> handleFutureCompletion(apiResponse, throwable, futureCompletionContext));
-
-			final Supplier<ApiResponse> callEndpointSupplier = () -> executeHttpCall(requestAudit);
-
-			final ScheduledRequest scheduledRequest = new ScheduledRequest(actualRestApiResponseCF, callEndpointSupplier);
-
-			final UserId callerUserId = Env.getLoggedUserId();
-
-			final HttpCallScheduler httpCallScheduler = callerId2Scheduler.computeIfAbsent(callerUserId, (userId) -> new HttpCallScheduler());
-
-			httpCallScheduler.schedule(scheduledRequest);
-
-			ResponseHandler.writeHttpResponse(getGenericNoWaitResponse(), apiAuditConfig, requestAudit, response);
-		}
-		catch (final Exception e)
-		{
-			apiAuditLoggable.addLog("Caught {} with message={}", e.getClass().getName(), e.getMessage(), e);
-			ResponseHandler.writeErrorResponse(e, response, requestAudit, apiAuditConfig);
-		}
-		finally
-		{
-			apiAuditLoggable.flush();
-		}
-	}
-
 	/**
 	 * Executes the request that is wrapped in the given {@code apiRequestAudit} using the spring {@link WebClient}.
 	 * <p>
@@ -351,41 +301,6 @@ public class ApiAuditService
 					.setParameter("URI", uri)
 					.setParameter("AD_SysConfig de.metas.util.web.audit.AppServerInternalHostName", sysConfigBL.getValue(CFG_INTERNAL_HOST_NAME, CFG_INTERNAL_HOST_NAME_DEFAULT))
 					.setParameter("AD_SysConfig de.metas.util.web.audit.AppServerInternalPort", sysConfigBL.getIntValue(CFG_INTERNAL_PORT, CFG_INTERNAL_PORT_DEFAULT));
-		}
-	}
-
-	private void auditHttpCallAsync(
-			@NonNull final ApiAuditConfig apiAuditConfig,
-			@NonNull final ContentCachingRequestWrapper executedRequest,
-			@NonNull final ContentCachingResponseWrapper response)
-	{
-		try
-		{
-			final ApiResponse apiResponse = ApiResponseMapper.map(response);
-			final ApiRequest apiRequest = ApiRequestMapper.map(executedRequest);
-
-			CompletableFuture.runAsync(() -> {
-				try
-				{
-					final Status status = apiResponse.hasStatus2xx() ? Status.PROCESSED : Status.ERROR;
-
-					final ApiRequestAudit apiRequestAudit = logRequest(apiRequest, apiAuditConfig, status);
-
-					logResponse(apiResponse, apiRequestAudit.getIdNotNull(), apiRequestAudit.getOrgId());
-
-					final ApiAuditLoggable apiAuditLogger = createLogger(apiRequestAudit.getIdNotNull(), apiRequestAudit.getUserId());
-					apiAuditLogger.addLog("Async audit performed successfully!");
-					apiAuditLogger.flush();
-				}
-				catch (final Throwable throwable)
-				{
-					createIssue(throwable, "Exception on storing http call audit info: path: " + ApiRequestMapper.getFullPath(executedRequest) + "; method: " + executedRequest.getMethod());
-				}
-			});
-		}
-		catch (final Throwable throwable)
-		{
-			createIssue(throwable, "Exception caught while trying to audit http call! path: " + ApiRequestMapper.getFullPath(executedRequest) + "; method: " + executedRequest.getMethod());
 		}
 	}
 
@@ -513,6 +428,56 @@ public class ApiAuditService
 		}
 
 		return false;
+	}
+
+	private void processRequestAsync(
+			@NonNull final HttpServletRequest request,
+			@NonNull final HttpServletResponse response,
+			@NonNull final ApiAuditConfig apiAuditConfig) throws IOException
+	{
+		final OrgId orgId = apiAuditConfig.getOrgId();
+
+		final ApiRequest apiRequest = ApiRequestMapper.map(new ContentCachingRequestWrapper(request));
+
+		final ApiRequestAudit requestAudit = logRequest(apiRequest, apiAuditConfig, Status.RECEIVED);
+
+		final ApiAuditLoggable apiAuditLoggable = createLogger(requestAudit.getIdNotNull(), requestAudit.getUserId());
+
+		try (final IAutoCloseable ignored = Loggables.temporarySetLoggable(apiAuditLoggable))
+		{
+			final CompletableFuture<ApiResponse> actualRestApiResponseCF = new CompletableFuture<>();
+
+			final FutureCompletionContext futureCompletionContext = FutureCompletionContext.builder()
+					.apiAuditConfig(apiAuditConfig)
+					.apiAuditLoggable(apiAuditLoggable)
+					.apiRequestAudit(requestAudit)
+					.orgId(orgId)
+					.build();
+
+			actualRestApiResponseCF
+					.whenComplete((apiResponse, throwable) -> handleFutureCompletion(apiResponse, throwable, futureCompletionContext));
+
+			final Supplier<ApiResponse> callEndpointSupplier = () -> executeHttpCall(requestAudit);
+
+			final ScheduledRequest scheduledRequest = new ScheduledRequest(actualRestApiResponseCF, callEndpointSupplier);
+
+			final UserId callerUserId = Env.getLoggedUserId();
+
+			final HttpCallScheduler httpCallScheduler = callerId2Scheduler.computeIfAbsent(callerUserId, (userId) -> new HttpCallScheduler());
+
+			httpCallScheduler.schedule(scheduledRequest);
+
+			ResponseHandler.writeHttpResponse(getGenericNoWaitResponse(), apiAuditConfig, requestAudit, response);
+		}
+		catch (final Exception e)
+		{
+			apiAuditLoggable.addLog("Caught {} with message={}", e.getClass().getName(), e.getMessage(), e);
+			ResponseHandler.writeErrorResponse(e, response, requestAudit, apiAuditConfig);
+		}
+		finally
+		{
+			apiAuditLoggable.flush();
+		}
 	}
 
 	private void processRequestSync(
@@ -696,6 +661,41 @@ public class ApiAuditService
 			hostName = sysConfigBL.getValue(CFG_INTERNAL_HOST_NAME, CFG_INTERNAL_HOST_NAME_DEFAULT);
 		}
 		return hostName;
+	}
+
+	private void auditHttpCallAsync(
+			@NonNull final ApiAuditConfig apiAuditConfig,
+			@NonNull final ContentCachingRequestWrapper executedRequest,
+			@NonNull final ContentCachingResponseWrapper response)
+	{
+		try
+		{
+			final ApiResponse apiResponse = ApiResponseMapper.map(response);
+			final ApiRequest apiRequest = ApiRequestMapper.map(executedRequest);
+
+			CompletableFuture.runAsync(() -> {
+				try
+				{
+					final Status status = apiResponse.hasStatus2xx() ? Status.PROCESSED : Status.ERROR;
+
+					final ApiRequestAudit apiRequestAudit = logRequest(apiRequest, apiAuditConfig, status);
+
+					logResponse(apiResponse, apiRequestAudit.getIdNotNull(), apiRequestAudit.getOrgId());
+
+					final ApiAuditLoggable apiAuditLogger = createLogger(apiRequestAudit.getIdNotNull(), apiRequestAudit.getUserId());
+					apiAuditLogger.addLog("Async audit performed successfully!");
+					apiAuditLogger.flush();
+				}
+				catch (final Throwable throwable)
+				{
+					createIssue(throwable, "Exception on storing http call audit info: path: " + ApiRequestMapper.getFullPath(executedRequest) + "; method: " + executedRequest.getMethod());
+				}
+			});
+		}
+		catch (final Throwable throwable)
+		{
+			createIssue(throwable, "Exception caught while trying to audit http call! path: " + ApiRequestMapper.getFullPath(executedRequest) + "; method: " + executedRequest.getMethod());
+		}
 	}
 
 	private void createIssue(@NonNull final Throwable throwable, @Nullable final String msg)
