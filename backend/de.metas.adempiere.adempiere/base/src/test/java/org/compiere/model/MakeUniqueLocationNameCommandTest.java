@@ -3,13 +3,12 @@ package org.compiere.model;
 import com.google.common.collect.ImmutableList;
 import de.metas.location.CountryId;
 import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.model.MBPartnerLocation.MakeUniqueNameCommand;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -33,7 +32,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * #L%
  */
 
-public class MakeUniqueNameCommandTest
+public class MakeUniqueLocationNameCommandTest
 {
 	private static final String companyName= "Company1";
 	private CountryId countryId_DE;
@@ -59,7 +58,7 @@ public class MakeUniqueNameCommandTest
 	@Test
 	public void presetName_no_duplicates()
 	{
-		final String nameUnique = MakeUniqueNameCommand.builder()
+		final String nameUnique = MakeUniqueLocationNameCommand.builder()
 				.name("test")
 				.address(newInstance(I_C_Location.class)) // not important
 				.build()
@@ -70,7 +69,7 @@ public class MakeUniqueNameCommandTest
 	@Test
 	public void presetName_with_one_duplicates()
 	{
-		final String nameUnique = MakeUniqueNameCommand.builder()
+		final String nameUnique = MakeUniqueLocationNameCommand.builder()
 				.name("test")
 				.address(newInstance(I_C_Location.class)) // not important
 				.existingNames(ImmutableList.of("test"))
@@ -82,7 +81,7 @@ public class MakeUniqueNameCommandTest
 	@Test
 	public void presetName_with_couple_of_duplicates()
 	{
-		final String nameUnique = MakeUniqueNameCommand.builder()
+		final String nameUnique = MakeUniqueLocationNameCommand.builder()
 				.name("test")
 				.address(newInstance(I_C_Location.class)) // not important
 				.existingNames(ImmutableList.of("test", "test (2)", "test (3)"))
@@ -100,7 +99,7 @@ public class MakeUniqueNameCommandTest
 		address.setCity("city");
 		address.setC_Country_ID(countryId_DE.getRepoId());
 
-		final String nameUnique = MakeUniqueNameCommand.builder()
+		final String nameUnique = MakeUniqueLocationNameCommand.builder()
 				.name(".")
 				.address(address)
 				.build()
@@ -118,7 +117,7 @@ public class MakeUniqueNameCommandTest
 		address.setCity("city");
 		address.setC_Country_ID(countryId_DE.getRepoId());
 
-		final String nameUnique = MakeUniqueNameCommand.builder()
+		final String nameUnique = MakeUniqueLocationNameCommand.builder()
 				.name(".")
 				.companyName(companyName)
 				.address(address)
@@ -137,7 +136,7 @@ public class MakeUniqueNameCommandTest
 		address.setCity("city");
 		address.setC_Country_ID(countryId_DE.getRepoId());
 
-		final String nameUnique = MakeUniqueNameCommand.builder()
+		final String nameUnique = MakeUniqueLocationNameCommand.builder()
 				.name(".")
 				.address(address)
 				.existingNames(ImmutableList.of("city"))
@@ -153,7 +152,7 @@ public class MakeUniqueNameCommandTest
 		final I_C_Location address = newInstance(I_C_Location.class);
 		address.setC_Country_ID(countryId_DE.getRepoId());
 
-		final String nameUnique = MakeUniqueNameCommand.builder()
+		final String nameUnique = MakeUniqueLocationNameCommand.builder()
 				.name(".")
 				.address(address)
 				.existingNames(ImmutableList.of("Germany"))
@@ -169,7 +168,7 @@ public class MakeUniqueNameCommandTest
 		final I_C_Location address = newInstance(I_C_Location.class);
 		address.setC_Country_ID(countryId_DE.getRepoId());
 
-		final String nameUnique = MakeUniqueNameCommand.builder()
+		final String nameUnique = MakeUniqueLocationNameCommand.builder()
 				.name(".")
 				.address(address)
 				.companyName(companyName)
@@ -185,7 +184,7 @@ public class MakeUniqueNameCommandTest
 	{
 		final I_C_Location address = newInstance(I_C_Location.class);
 
-		final String nameUnique = MakeUniqueNameCommand.builder()
+		final String nameUnique = MakeUniqueLocationNameCommand.builder()
 				.name(".")
 				.address(address)
 				.companyName(companyName)

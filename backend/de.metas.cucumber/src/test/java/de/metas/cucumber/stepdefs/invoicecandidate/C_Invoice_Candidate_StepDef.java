@@ -154,7 +154,7 @@ public class C_Invoice_Candidate_StepDef
 	}
 
 	@And("validate invoice candidate")
-	public void validate_commission_settlement_invoice_cand(@NonNull final DataTable dataTable)
+	public void validate_invoice_candidate(@NonNull final DataTable dataTable)
 	{
 		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
 		for (final Map<String, String> row : tableRows)
@@ -163,6 +163,8 @@ public class C_Invoice_Candidate_StepDef
 			final I_C_Invoice_Candidate invoiceCandidate = invoiceCandTable.get(invoiceCandIdentifier);
 			assertThat(invoiceCandidate).isNotNull();
 			
+			InterfaceWrapperHelper.refresh(invoiceCandidate);
+
 			InterfaceWrapperHelper.refresh(invoiceCandidate);
 
 			final String billBPIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_Bill_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);

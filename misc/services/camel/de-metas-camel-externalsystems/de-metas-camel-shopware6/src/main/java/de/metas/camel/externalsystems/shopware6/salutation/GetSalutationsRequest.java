@@ -20,21 +20,24 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.shopware6.api.model.order;
+package de.metas.camel.externalsystems.shopware6.salutation;
 
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import javax.annotation.Nullable;
+import java.io.Serializable;
 
 @Value
 @Builder
-public class JsonOrderAddressAndCustomId
+public class GetSalutationsRequest implements Serializable
 {
 	@NonNull
-	JsonOrderAddress jsonOrderAddress;
+	String baseUrl;
 
-	@Nullable
-	String customId;
+	@NonNull
+	String clientSecret;
+
+	@NonNull
+	String clientId;
 }

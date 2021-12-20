@@ -42,6 +42,7 @@ public enum PathSegmentsEnum
 	COUNTRY("country"),
 	LINE_ITEMS("line-items"),
 	CURRENCY("currency"),
+	SALUTATION("salutation"),
 	CUSTOMER("customer"),
 	GROUP("group"),
 	TRANSACTIONS("transactions"),

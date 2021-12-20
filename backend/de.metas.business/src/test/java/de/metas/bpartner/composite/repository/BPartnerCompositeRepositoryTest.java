@@ -127,6 +127,8 @@ class BPartnerCompositeRepositoryTest
 						//.district("district")
 						.countryCode("DE")
 						.poBox("poBox")
+						.phone("phone")
+						.email("email")
 						.build())
 				.contact(BPartnerContact.builder()
 						// @Nullable final BPartnerContactId id,

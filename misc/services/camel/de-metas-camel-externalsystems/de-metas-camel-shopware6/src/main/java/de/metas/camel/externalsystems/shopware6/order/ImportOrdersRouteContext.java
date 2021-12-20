@@ -31,6 +31,7 @@ import de.metas.camel.externalsystems.shopware6.common.ExternalIdentifier;
 import de.metas.camel.externalsystems.shopware6.common.ExternalIdentifierFormat;
 import de.metas.camel.externalsystems.shopware6.currency.CurrencyInfoProvider;
 import de.metas.camel.externalsystems.shopware6.order.processor.TaxProductIdProvider;
+import de.metas.camel.externalsystems.shopware6.salutation.SalutationInfoProvider;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.common.externalsystem.JsonExternalSystemShopware6ConfigMapping;
 import de.metas.common.externalsystem.JsonExternalSystemShopware6ConfigMappings;
@@ -69,6 +70,9 @@ public class ImportOrdersRouteContext
 	private CurrencyInfoProvider currencyInfoProvider;
 
 	@NonNull
+	private final SalutationInfoProvider salutationInfoProvider;
+
+	@NonNull
 	@Setter(AccessLevel.NONE)
 	private JsonExternalSystemRequest externalSystemRequest;
 
@@ -76,6 +80,9 @@ public class ImportOrdersRouteContext
 	@Builder.Default
 	@Setter(AccessLevel.NONE)
 	private Set<String> importedExternalHeaderIds = new HashSet<>();
+
+	@Nullable
+	private final String emailJsonPath;
 
 	@Nullable
 	@Setter(AccessLevel.NONE)

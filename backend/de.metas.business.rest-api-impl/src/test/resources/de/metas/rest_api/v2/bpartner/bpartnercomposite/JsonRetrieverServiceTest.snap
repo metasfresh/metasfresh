@@ -173,6 +173,7 @@ de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverServiceTest.retriev
         "district" : "postalRecord.district",
         "existingLocationId" : 100011,
         "gln" : "bpartnerLocationRecord.gln",
+        "handOverLocation" : false,
         "handles" : [ ],
         "id" : {
           "repoId" : 40,
@@ -198,7 +199,10 @@ de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverServiceTest.retriev
         },
         "poBox" : "locationRecord.poBox",
         "postal" : "locationRecord.postal",
-        "region" : "locationRecord.regionName"
+        "region" : "locationRecord.regionName",
+        "remitTo" : false,
+        "replicationLookupDefault" : false,
+        "visitorsAddress" : false
       }
     ],
     "orgId" : 10
