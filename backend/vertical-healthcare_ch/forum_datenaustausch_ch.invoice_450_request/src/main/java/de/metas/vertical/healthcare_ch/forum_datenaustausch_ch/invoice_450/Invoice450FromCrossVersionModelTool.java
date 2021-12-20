@@ -25,6 +25,7 @@ package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_450;
 import com.google.common.collect.ImmutableList;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.util.Check;
+import de.metas.util.StringUtils;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.commons.XmlMode;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_450.request.BalanceTGType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_450.request.BalanceTPType;
@@ -85,6 +86,7 @@ import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_450.reque
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_450.request.XtraDRGType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_450.request.XtraDrugType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_450.request.XtraHospitalType;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_450.request.XtraServiceExType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_450.request.XtraStationaryType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_450.request.ZipType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.commontypes.XmlCompany;
@@ -118,10 +120,18 @@ import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.law.XmlUvg;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.law.XmlVvg;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.prolog.XmlSoftware;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.service.XmlRecordDrg;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.service.XmlRecordDrug;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.service.XmlRecordLab;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.service.XmlRecordMigel;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.service.XmlRecordOther;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.service.XmlRecordParamed;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.service.XmlRecordService;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.service.XmlRecordServiceType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.service.XmlServiceEx;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.service.XmlXtraDrg;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.service.XmlXtraDrug;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.service.XmlXtraServiceExType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.tiers.XmlBiller;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.tiers.XmlDebitor;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.tiers.XmlEmployer;
@@ -150,9 +160,12 @@ import javax.xml.bind.JAXBElement;
 import java.math.BigInteger;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static de.metas.util.Check.fail;
+import static de.metas.util.Check.isBlank;
 
 @SuppressWarnings("null")
 public class Invoice450FromCrossVersionModelTool
@@ -160,6 +173,8 @@ public class Invoice450FromCrossVersionModelTool
 	public static final Invoice450FromCrossVersionModelTool INSTANCE = new Invoice450FromCrossVersionModelTool();
 
 	private final ObjectFactory jaxbRequestObjectFactory = new ObjectFactory();
+
+	private final Map<String, String> zsrToEanPartyMap = new HashMap<>();
 
 	private static final long VALIDATION_STATUS_OK = 0L;
 
@@ -660,10 +675,17 @@ public class Invoice450FromCrossVersionModelTool
 	{
 		final BillerAddressType billerAddressType = jaxbRequestObjectFactory.createBillerAddressType();
 
-		billerAddressType.setEanParty(biller.getEanParty());
 		billerAddressType.setSpecialty(biller.getSpecialty());
 		billerAddressType.setUidNumber(biller.getUidNumber());
-		billerAddressType.setZsr(biller.getZsr());
+		final String eanParty = biller.getEanParty();
+		billerAddressType.setEanParty(eanParty);
+		final String zsr = biller.getZsr();
+		billerAddressType.setZsr(zsr);
+
+		if (!isBlank(zsr) && !isBlank(eanParty))
+		{
+			zsrToEanPartyMap.put(zsr, eanParty);
+		}
 
 		billerAddressType.setCompany(createCompanyType(biller.getCompany()));
 		billerAddressType.setPerson(createPersonType(biller.getPerson()));
@@ -705,8 +727,14 @@ public class Invoice450FromCrossVersionModelTool
 	{
 		final ProviderAddressType providerAddressType = jaxbRequestObjectFactory.createProviderAddressType();
 
-		providerAddressType.setEanParty(tiersProvider.getEanParty());
-		providerAddressType.setZsr(tiersProvider.getZsr());
+		final String eanParty = tiersProvider.getEanParty();
+		final String zsr = tiersProvider.getZsr();
+		providerAddressType.setEanParty(eanParty);
+		providerAddressType.setZsr(zsr);
+		if (!isBlank(zsr) && !isBlank(eanParty))
+		{
+			zsrToEanPartyMap.put(zsr, eanParty);
+		}
 		providerAddressType.setSpecialty(tiersProvider.getSpecialty());
 
 		providerAddressType.setCompany(createCompanyType(tiersProvider.getCompany()));
@@ -789,8 +817,14 @@ public class Invoice450FromCrossVersionModelTool
 
 		final ReferrerAddressType referrerAddressType = jaxbRequestObjectFactory.createReferrerAddressType();
 
-		referrerAddressType.setEanParty(tiersReferrer.getEanParty());
-		referrerAddressType.setZsr(tiersReferrer.getZsr());
+		final String eanParty = tiersReferrer.getEanParty();
+		final String zsr = tiersReferrer.getZsr();
+		referrerAddressType.setEanParty(eanParty);
+		referrerAddressType.setZsr(zsr);
+		if (!isBlank(zsr) && !isBlank(eanParty))
+		{
+			zsrToEanPartyMap.put(zsr, eanParty);
+		}
 		referrerAddressType.setSpecialty(tiersReferrer.getSpecialty());
 
 		referrerAddressType.setCompany(createCompanyType(tiersReferrer.getCompany()));
@@ -1163,69 +1197,230 @@ public class Invoice450FromCrossVersionModelTool
 			final Object serviceType;
 			if (service instanceof XmlRecordServiceType)
 			{
-				serviceType = createRecordServiceType((XmlRecordServiceType)service);
+				serviceType = createRecordServiceType_XmlRecordDrug((XmlRecordServiceType)service);
 			}
 			else if (service instanceof XmlServiceEx)
 			{
-				serviceType = createRecordTarmedType((XmlServiceEx)service);
+				serviceType = createRecordServiceExType((XmlServiceEx)service);
+			}
+			else if (service instanceof XmlRecordDrg)
+			{
+				serviceType = createRecordServiceType_XmlRecordDrg((XmlRecordDrg)service);
+			}
+			else if (service instanceof XmlRecordDrug)
+			{
+				serviceType = createRecordServiceType_XmlRecordDrug((XmlRecordDrug)service);
+			}
+			else if (service instanceof XmlRecordMigel)
+			{
+				serviceType = createRecordServiceType_XmlRecordMigel((XmlRecordMigel)service);
+			}
+			else if (service instanceof XmlRecordParamed)
+			{
+				serviceType = createRecordServiceType_XmlRecordParamed((XmlRecordParamed)service);
+			}
+			else if (service instanceof XmlRecordLab)
+			{
+				serviceType = createRecordServiceType_XmlRecordLab((XmlRecordLab)service);
+			}
+			else if (service instanceof XmlRecordOther)
+			{
+				serviceType = createRecordServiceType_XmlRecordOther((XmlRecordOther)service);
 			}
 			else
 			{
 				serviceType = null;
-				//Check.fail("Unexpected service type={}; service={}", service.getClass(), service);
+				Check.fail("Unexpected service type={}; service={}", service.getClass(), service);
 			}
 			servicesType.getServiceExOrService().add(serviceType);
 		}
+
 		return servicesType;
 	}
 
-	private ServiceType createRecordServiceType(@NonNull final XmlRecordServiceType xRecordTarmed)
+	private Object createRecordServiceType_XmlRecordOther(final XmlRecordOther xRecord)
 	{
 		final ServiceType serviceType = jaxbRequestObjectFactory.createServiceType();
 
-		serviceType.setXtraDrg(createXtraDRGType(xRecordTarmed.getXtraDrg()));
-		serviceType.setXtraDrug(createXtraDrug(xRecordTarmed.getXtraDrug()));
-		serviceType.setRecordId(xRecordTarmed.getRecordId());
-		serviceType.setTariffType(xRecordTarmed.getTariffType());
-		serviceType.setCode(xRecordTarmed.getCode());
-		serviceType.setRefCode(xRecordTarmed.getRefCode());
-		serviceType.setName(xRecordTarmed.getName());
-		serviceType.setSession(xRecordTarmed.getSession());
-		serviceType.setQuantity(xRecordTarmed.getQuantity());
-		serviceType.setDateBegin(xRecordTarmed.getDateBegin());
-		serviceType.setDateEnd(xRecordTarmed.getDateEnd());
-		serviceType.setProviderId(xRecordTarmed.getProviderId());
-		serviceType.setResponsibleId(xRecordTarmed.getResponsibleId());
-		serviceType.setUnit(xRecordTarmed.getUnit());
-		serviceType.setUnitFactor(xRecordTarmed.getUnitFactor());
-		serviceType.setUnitFactor(xRecordTarmed.getUnitFactor());
-		serviceType.setExternalFactor(xRecordTarmed.getExternalFactor());
-		serviceType.setAmount(xRecordTarmed.getAmount());
-		serviceType.setVatRate(xRecordTarmed.getVatRate());
-		serviceType.setObligation(xRecordTarmed.getObligation());
-		serviceType.setSectionCode(xRecordTarmed.getSectionCode());
-		serviceType.setRemark(xRecordTarmed.getRemark());
-		serviceType.setServiceAttributes(xRecordTarmed.getServiceAttributes());
+		setServiceTypeFields(serviceType, xRecord.getRecordService());
+		serviceType.setTariffType(xRecord.getTariffType());
+		return serviceType;
+	}
+
+	private Object createRecordServiceType_XmlRecordLab(final XmlRecordLab xRecord)
+	{
+		final ServiceType serviceType = jaxbRequestObjectFactory.createServiceType();
+
+		setServiceTypeFields(serviceType, xRecord.getRecordService());
+		serviceType.setTariffType(xRecord.getTariffType());
+		return serviceType;
+	}
+
+	private Object createRecordServiceType_XmlRecordParamed(final XmlRecordParamed xRecord)
+	{
+		final ServiceType serviceType = jaxbRequestObjectFactory.createServiceType();
+
+		setServiceTypeFields(serviceType, xRecord.getRecordService());
+		serviceType.setTariffType(xRecord.getTariffType());
+		return serviceType;
+	}
+
+	private ServiceType createRecordServiceType_XmlRecordMigel(final XmlRecordMigel xRecord)
+	{
+		final ServiceType serviceType = jaxbRequestObjectFactory.createServiceType();
+
+		setServiceTypeFields(serviceType, xRecord.getRecordService());
+		serviceType.setTariffType(xRecord.getTariffType());
+		return serviceType;
+	}
+
+	private ServiceType createRecordServiceType_XmlRecordDrug(final XmlRecordDrug xRecord)
+	{
+		final ServiceType serviceType = jaxbRequestObjectFactory.createServiceType();
+
+		setServiceTypeFields(serviceType, xRecord.getRecordService());
+		serviceType.setTariffType(xRecord.getTariffType());
+		final XmlXtraDrug xtraDrug = xRecord.getXtraDrug();
+		if (xtraDrug != null)
+		{
+			serviceType.setXtraDrug(createXtraDrugType(xtraDrug));
+		}
+		return serviceType;
+	}
+
+	private XtraDrugType createXtraDrugType(final XmlXtraDrug xtraDrug)
+	{
+		final XtraDrugType xtraDrugType = jaxbRequestObjectFactory.createXtraDrugType();
+		xtraDrugType.setDelivery(xtraDrug.getDelivery());
+		xtraDrugType.setIndicated(xtraDrug.getIndicated());
+		xtraDrugType.setLimitation(xtraDrug.getLimitation());
+		xtraDrugType.setIocmCategory(xtraDrug.getIocmCategory());
+		xtraDrugType.setRegulationAttributes(xtraDrug.getRegulationAttributes());
+		return xtraDrugType;
+	}
+
+	private ServiceType createRecordServiceType_XmlRecordDrg(final XmlRecordDrg xRecord)
+	{
+		final ServiceType serviceType = jaxbRequestObjectFactory.createServiceType();
+
+		setServiceTypeFields(serviceType, xRecord.getRecordService());
+		serviceType.setTariffType(xRecord.getTariffType());
+		serviceType.setXtraDrg(createXtraDrgType(xRecord));
+		return serviceType;
+	}
+
+	private XtraDRGType createXtraDrgType(final XmlRecordDrg xRecord)
+	{
+		final XtraDRGType xtraDRGType = jaxbRequestObjectFactory.createXtraDRGType();
+		xtraDRGType.setCostFraction(xRecord.getCostFraction());
+		return xtraDRGType;
+	}
+
+	private void setServiceTypeFields(
+			@NonNull final ServiceType recordServiceType,
+			@NonNull final XmlRecordService recordService)
+	{
+		recordServiceType.setRecordId(recordService.getRecordId());
+		recordServiceType.setCode(recordService.getCode());
+		recordServiceType.setRefCode(recordService.getRefCode());
+		recordServiceType.setName(recordService.getName());
+		recordServiceType.setSession(recordService.getSession());
+		recordServiceType.setQuantity(recordService.getQuantity());
+		recordServiceType.setDateBegin(recordService.getDateBegin());
+		recordServiceType.setDateEnd(recordService.getDateEnd());
+		recordServiceType.setProviderId(getEanPartyId(recordService.getProviderId()));
+		recordServiceType.setResponsibleId(getEanPartyId(recordService.getResponsibleId()));
+		recordServiceType.setUnit(recordService.getUnit());
+		recordServiceType.setUnitFactor(recordService.getUnitFactor());
+		recordServiceType.setExternalFactor(recordService.getExternalFactor());
+		recordServiceType.setAmount(recordService.getAmount());
+		recordServiceType.setVatRate(recordService.getVatRate());
+		recordServiceType.setObligation(recordService.getObligation());
+		recordServiceType.setSectionCode(recordService.getSectionCode());
+		recordServiceType.setRemark(recordService.getRemark());
+		recordServiceType.setServiceAttributes(recordService.getServiceAttributes());
+	}
+
+	/**
+	 * In version 4.4 both the {@code providerId} and the {@code responsibleId} of a service could be specified via either {@code eanPartyType} or {@code zsrPartyType}.
+	 * In version 4.5 only {@code eanPartyType} is supported. Attempting to figure this value out from other places where both zsrPartyType and eanPartyType are defined, namely:
+	 * <ul>
+	 *     	<li>{@code billerAddressType}</li>
+	 *     	<li>{@code providerAddressType}</li>
+	 *     	<li>{@code referrerAddressType}</li>
+	 * </ul>
+	 *
+	 * @param zsrOrEanPartyId
+	 * @return
+	 */
+	private String getEanPartyId(@NonNull final String zsrOrEanPartyId)
+	{
+		if (zsrToEanPartyMap.containsKey(zsrOrEanPartyId))
+		{
+			return zsrToEanPartyMap.get(zsrOrEanPartyId);
+		}
+		else if (!StringUtils.isNumber(zsrOrEanPartyId))
+		{
+			Check.fail("Invalid ean: {}", zsrOrEanPartyId);
+		}
+		return zsrOrEanPartyId;
+	}
+
+	private ServiceType createRecordServiceType_XmlRecordDrug(@NonNull final XmlRecordServiceType xRecord)
+	{
+		final ServiceType serviceType = jaxbRequestObjectFactory.createServiceType();
+
+		final XmlXtraDrg xtraDrg = xRecord.getXtraDrg();
+		if (xtraDrg != null)
+		{
+			serviceType.setXtraDrg(createXtraDRGType(xtraDrg));
+		}
+		final XmlXtraDrug xtraDrug = xRecord.getXtraDrug();
+		if (xtraDrug != null)
+		{
+			serviceType.setXtraDrug(createXtraDrug(xtraDrug));
+		}
+		serviceType.setRecordId(xRecord.getRecordId());
+		serviceType.setTariffType(xRecord.getTariffType());
+		serviceType.setCode(xRecord.getCode());
+		serviceType.setRefCode(xRecord.getRefCode());
+		serviceType.setName(xRecord.getName());
+		serviceType.setSession(xRecord.getSession());
+		serviceType.setQuantity(xRecord.getQuantity());
+		serviceType.setDateBegin(xRecord.getDateBegin());
+		serviceType.setDateEnd(xRecord.getDateEnd());
+		serviceType.setProviderId(xRecord.getProviderId());
+		serviceType.setResponsibleId(xRecord.getResponsibleId());
+		serviceType.setUnit(xRecord.getUnit());
+		serviceType.setUnitFactor(xRecord.getUnitFactor());
+		serviceType.setUnitFactor(xRecord.getUnitFactor());
+		serviceType.setExternalFactor(xRecord.getExternalFactor());
+		serviceType.setAmount(xRecord.getAmount());
+		serviceType.setVatRate(xRecord.getVatRate());
+		serviceType.setObligation(xRecord.getObligation());
+		serviceType.setSectionCode(xRecord.getSectionCode());
+		serviceType.setRemark(xRecord.getRemark());
+		serviceType.setServiceAttributes(xRecord.getServiceAttributes());
 
 		return serviceType;
 	}
 
 	private XtraDRGType createXtraDRGType(final XmlXtraDrg xmlXtraDrg)
 	{
-		if (xmlXtraDrg == null)
-		{
-			return null;
-		}
 		final XtraDRGType xtraDRGType = jaxbRequestObjectFactory.createXtraDRGType();
 		xtraDRGType.setCostFraction(xmlXtraDrg.getCostFraction());
 
 		return xtraDRGType;
 	}
 
-	private ServiceExType createRecordTarmedType(@NonNull final XmlServiceEx xServiceEx)
+	private ServiceExType createRecordServiceExType(@NonNull final XmlServiceEx xServiceEx)
 	{
 		final ServiceExType serviceExType = jaxbRequestObjectFactory.createServiceExType();
-
+		final XmlXtraServiceExType xtraServiceExType = xServiceEx.getXtraServiceExType();
+		if (xtraServiceExType != null)
+		{
+			serviceExType.setXtraServiceEx(createXtraServiceEx(xtraServiceExType));
+		}
 		serviceExType.setRecordId(xServiceEx.getRecordId());
 		serviceExType.setTariffType(xServiceEx.getTariffType());
 		serviceExType.setCode(xServiceEx.getCode());
@@ -1261,13 +1456,15 @@ public class Invoice450FromCrossVersionModelTool
 		return serviceExType;
 	}
 
+	private XtraServiceExType createXtraServiceEx(final XmlXtraServiceExType xmlXtraServiceExType)
+	{
+		final XtraServiceExType xtraServiceExType = jaxbRequestObjectFactory.createXtraServiceExType();
+		xtraServiceExType.setGroupSize(xmlXtraServiceExType.getGroupSize());
+		return xtraServiceExType;
+	}
+
 	private XtraDrugType createXtraDrug(@Nullable final XmlXtraDrug xtraDrug)
 	{
-		if (xtraDrug == null)
-		{
-			return null;
-		}
-
 		final XtraDrugType xtraDrugType = jaxbRequestObjectFactory.createXtraDrugType();
 		xtraDrugType.setIndicated(xtraDrug.getIndicated());
 		xtraDrugType.setIocmCategory(xtraDrug.getIocmCategory());

@@ -39,6 +39,9 @@ import java.math.BigDecimal;
 @Builder(toBuilder = true)
 public class XmlServiceEx implements XmlService
 {
+	@Nullable
+	XmlXtraServiceExType xtraServiceExType;
+
 	@NonNull
 	Integer recordId;
 
@@ -90,15 +93,21 @@ public class XmlServiceEx implements XmlService
 	@NonNull
 	BigDecimal unitFactorMt;
 
-	/** expecting default = 1 */
+	/**
+	 * expecting default = 1
+	 */
 	@NonNull
 	BigDecimal scaleFactorMt;
 
-	/** expecting default = 1 */
+	/**
+	 * expecting default = 1
+	 */
 	@NonNull
 	BigDecimal externalFactorMt;
 
-	/** expecting default = 0 */
+	/**
+	 * expecting default = 0
+	 */
 	@NonNull
 	BigDecimal amountMt;
 
@@ -108,30 +117,42 @@ public class XmlServiceEx implements XmlService
 	@NonNull
 	BigDecimal unitFactorTt;
 
-	/** expecting default = 1 */
+	/**
+	 * expecting default = 1
+	 */
 	@NonNull
 	BigDecimal scaleFactorTt;
 
-	/** expecting default = 1 */
+	/**
+	 * expecting default = 1
+	 */
 	@NonNull
 	BigDecimal externalFactorTt;
 
-	/** expecting default = 0 */
+	/**
+	 * expecting default = 0
+	 */
 	@NonNull
 	BigDecimal amountTt;
 
 	@NonNull
 	BigDecimal amount;
 
-	/** expecting default = 0 */
+	/**
+	 * expecting default = 0
+	 */
 	@NonNull
 	BigDecimal vatRate;
 
-	/** expecting default = false */
+	/**
+	 * expecting default = false
+	 */
 	@Nullable
 	Boolean validate;
 
-	/** expecting default = true */
+	/**
+	 * expecting default = true
+	 */
 	@NonNull
 	Boolean obligation;
 
@@ -141,7 +162,9 @@ public class XmlServiceEx implements XmlService
 	@Nullable
 	String remark;
 
-	/** expecting default = 0 */
+	/**
+	 * expecting default = 0
+	 */
 	@NonNull
 	Long serviceAttributes;
 

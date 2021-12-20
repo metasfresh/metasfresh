@@ -210,9 +210,9 @@ public class Invoice440To450RequestConversionServiceTest
 		final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 		invoice450RequestConversionService.fromCrossVersionRequest(xRequest, outputStream);
 
-		assertXmlIsValid450(new ByteArrayInputStream(outputStream.toByteArray()));
 		final String exportXmlString = outputStream.toString();
 		System.out.println(exportXmlString);
+		assertXmlIsValid450(new ByteArrayInputStream(outputStream.toByteArray()));
 
 		expect(exportXmlString).toMatchSnapshot();
 	}
