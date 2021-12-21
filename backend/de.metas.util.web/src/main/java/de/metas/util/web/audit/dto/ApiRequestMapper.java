@@ -24,10 +24,11 @@ package de.metas.util.web.audit.dto;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableMultimap;
 import de.metas.JsonObjectMapperHolder;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
-import org.springframework.util.LinkedMultiValueMap;
+import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 import javax.servlet.http.HttpServletRequest;
@@ -66,19 +67,19 @@ public class ApiRequestMapper
 	}
 
 	@NonNull
-	private LinkedMultiValueMap<String, String> getHeaders(@NonNull final HttpServletRequest request)
+	private ImmutableMultimap<String, String> getHeaders(@NonNull final HttpServletRequest request)
 	{
-		final LinkedMultiValueMap<String, String> requestHeadersMultiValueMap = new LinkedMultiValueMap<>();
+		final ImmutableMultimap.Builder<String, String> requestHeaders = ImmutableMultimap.builder();
 
 		final Enumeration<String> allHeaderNames = request.getHeaderNames();
 
 		while (allHeaderNames != null && allHeaderNames.hasMoreElements())
 		{
 			final String currentHeaderName = allHeaderNames.nextElement();
-			requestHeadersMultiValueMap.addAll(currentHeaderName, Collections.list(request.getHeaders(currentHeaderName)));
+			requestHeaders.putAll(currentHeaderName, Collections.list(request.getHeaders(currentHeaderName)));
 		}
 
-		return requestHeadersMultiValueMap;
+		return requestHeaders.build();
 	}
 
 	@Nullable
@@ -95,16 +96,16 @@ public class ApiRequestMapper
 
 			final Object body = objectMapper.readValue(requestWrapper.getInputStream(), Object.class);
 
-			return mapToString(body);
+			return toJson(body);
 		}
 		catch (final IOException e)
 		{
-			throw new RuntimeException("Failed to parse request body!", e);
+			throw new AdempiereException("Failed to parse request body!", e);
 		}
 	}
 
 	@Nullable
-	private String mapToString(@Nullable final Object obj)
+	private String toJson(@Nullable final Object obj)
 	{
 		if (obj == null)
 		{
@@ -117,7 +118,7 @@ public class ApiRequestMapper
 		}
 		catch (final JsonProcessingException e)
 		{
-			throw new RuntimeException("Failed to parse object!", e);
+			throw new AdempiereException("Failed to parse object!", e);
 		}
 	}
 }

@@ -22,12 +22,18 @@
 
 package de.metas.audit.apirequest.common;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.google.common.collect.ImmutableMultimap;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import org.springframework.util.LinkedMultiValueMap;
+
+import java.util.Map;
+import java.util.stream.Stream;
 
 @Value
 @Builder
@@ -35,11 +41,25 @@ import org.springframework.util.LinkedMultiValueMap;
 public class HttpHeadersWrapper
 {
 	@NonNull
-	public static HttpHeadersWrapper of(final @NonNull LinkedMultiValueMap<String, String> keyValueHeaders)
+	public static HttpHeadersWrapper of(final @NonNull ImmutableMultimap<String, String> keyValueHeaders)
 	{
 		return new HttpHeadersWrapper(keyValueHeaders);
 	}
 
 	@JsonProperty("keyValueHeaders")
-	LinkedMultiValueMap<String, String> keyValueHeaders;
+	ImmutableMultimap<String, String> keyValueHeaders;
+
+	@JsonIgnore
+	@NonNull
+	public Stream<Map.Entry<String, String>> streamHeaders()
+	{
+		return keyValueHeaders.entries().stream();
+	}
+
+	@JsonIgnore
+	@NonNull
+	public String toJson(@NonNull final ObjectMapper objectMapper) throws JsonProcessingException
+	{
+		return objectMapper.writeValueAsString(keyValueHeaders);
+	}
 }

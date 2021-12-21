@@ -22,10 +22,10 @@
 
 package de.metas.util.web.audit.dto;
 
+import com.google.common.collect.ImmutableMultimap;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import org.springframework.util.LinkedMultiValueMap;
 
 import javax.annotation.Nullable;
 
@@ -34,7 +34,7 @@ import javax.annotation.Nullable;
 public class ApiRequest
 {
 	@NonNull
-	LinkedMultiValueMap<String, String> headers;
+	ImmutableMultimap<String, String> headers;
 
 	@NonNull
 	String fullPath;

@@ -25,6 +25,7 @@ package de.metas.util.web.audit;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMultimap;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.audit.apirequest.ApiAuditLoggable;
 import de.metas.audit.apirequest.HttpMethod;
@@ -74,7 +75,6 @@ import org.compiere.util.Env;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.reactive.function.client.ExchangeStrategies;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.ContentCachingResponseWrapper;
@@ -257,8 +257,9 @@ public class ApiAuditService
 
 		final HttpHeaders httpHeaders = new HttpHeaders();
 		apiRequestAudit.getRequestHeaders(objectMapper)
-				.map(HttpHeadersWrapper::getKeyValueHeaders)
-				.ifPresent(httpHeaders::addAll);
+				.map(HttpHeadersWrapper::streamHeaders)
+				.ifPresent(headers -> headers.forEach(headerEntry -> httpHeaders.add(headerEntry.getKey(), headerEntry.getValue())));
+
 
 		httpHeaders.add(API_REQUEST_HEADER_EXISTING_AUDIT_ID, String.valueOf(apiRequestAudit.getIdNotNull().getRepoId()));
 
@@ -499,9 +500,7 @@ public class ApiAuditService
 	{
 		try
 		{
-			final String requestHeaders = apiRequest.getHeaders().isEmpty()
-					? null
-					: objectMapper.writeValueAsString(HttpHeadersWrapper.of(apiRequest.getHeaders()));
+			final HttpHeadersWrapper requestHeaders = HttpHeadersWrapper.of(apiRequest.getHeaders());
 
 			final ApiRequestAudit apiRequestAudit = ApiRequestAudit.builder()
 					.apiAuditConfigId(apiAuditConfig.getApiAuditConfigId())
@@ -515,7 +514,7 @@ public class ApiAuditService
 					.remoteAddress(apiRequest.getRemoteAddr())
 					.remoteHost(apiRequest.getRemoteHost())
 					.time(Instant.now())
-					.httpHeaders(requestHeaders)
+					.httpHeaders(requestHeaders.toJson(objectMapper))
 					.requestURI(apiRequest.getRequestURI())
 					.build();
 
@@ -671,16 +670,14 @@ public class ApiAuditService
 					? objectMapper.writeValueAsString(apiResponse.getBody())
 					: null;
 
-			final LinkedMultiValueMap<String, String> responseHeadersMultiValueMap = new LinkedMultiValueMap<>();
+			final ImmutableMultimap.Builder<String, String> responseHeadersBuilder = new ImmutableMultimap.Builder<>();
 
 			if (apiResponse.getHttpHeaders() != null)
 			{
-				apiResponse.getHttpHeaders().forEach(responseHeadersMultiValueMap::addAll);
+				apiResponse.getHttpHeaders().forEach(responseHeadersBuilder::putAll);
 			}
 
-			final String responseHeaders = responseHeadersMultiValueMap.isEmpty()
-					? null
-					: objectMapper.writeValueAsString(HttpHeadersWrapper.of(responseHeadersMultiValueMap));
+			final HttpHeadersWrapper responseHeaders = HttpHeadersWrapper.of(responseHeadersBuilder.build());
 
 			final ApiResponseAudit apiResponseAudit = ApiResponseAudit.builder()
 					.orgId(apiRequestAudit.getOrgId())
@@ -688,7 +685,7 @@ public class ApiAuditService
 					.body(bodyAsString)
 					.httpCode(String.valueOf(apiResponse.getStatusCode()))
 					.time(Instant.now())
-					.httpHeaders(responseHeaders)
+					.httpHeaders(responseHeaders.toJson(objectMapper))
 					.build();
 
 			apiResponseAuditRepository.save(apiResponseAudit);

@@ -44,16 +44,16 @@ public class API_Audit_Config_StepDef
 		this.apiAuditConfigTable = apiAuditConfigTable;
 	}
 
-	@And("the following API_Audit_Config record is set")
+	@And("the following API_Audit_Config records are created:")
 	public void API_Audit_Config_insert(@NonNull final DataTable table)
 	{
 		final List<Map<String, String>> tableRows = table.asMaps();
 		for (final Map<String, String> tableRow : tableRows)
 		{
-			final int seqNo = DataTableUtil.extractIntForColumnName(tableRow, "SeqNo");
-			final String method = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT.Method");
-			final String pathPrefix = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT.PathPrefix");
-			final boolean isForceProcessedAsync = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "IsForceProcessedAsync", false);
+			final int seqNo = DataTableUtil.extractIntForColumnName(tableRow, I_API_Audit_Config.COLUMNNAME_SeqNo);
+			final String method = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_API_Audit_Config.COLUMNNAME_Method);
+			final String pathPrefix = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_API_Audit_Config.COLUMNNAME_PathPrefix);
+			final boolean isForceProcessedAsync = DataTableUtil.extractBooleanForColumnNameOr(tableRow, I_API_Audit_Config.COLUMNNAME_IsForceProcessedAsync, false);
 			final boolean isSynchronousAuditLoggingEnabled = DataTableUtil.extractBooleanForColumnName(tableRow, I_API_Audit_Config.COLUMNNAME_IsSynchronousAuditLoggingEnabled);
 			final boolean isWrapApiResponse = DataTableUtil.extractBooleanForColumnName(tableRow, I_API_Audit_Config.COLUMNNAME_IsWrapApiResponse);
 
@@ -68,7 +68,7 @@ public class API_Audit_Config_StepDef
 
 			saveRecord(auditConfig);
 
-			final String recordIdentifier = DataTableUtil.extractRecordIdentifier(tableRow, "API_Audit_Config");
+			final String recordIdentifier = DataTableUtil.extractRecordIdentifier(tableRow, I_API_Audit_Config.Table_Name);
 			apiAuditConfigTable.put(recordIdentifier, auditConfig);
 		}
 	}

@@ -22,6 +22,7 @@
 
 package de.metas.util.web.audit.dto;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.springframework.util.StreamUtils;
 
 import javax.servlet.ReadListener;
@@ -96,7 +97,7 @@ public class CachedBodyHttpServletRequest extends HttpServletRequestWrapper
 		@Override
 		public void setReadListener(final ReadListener readListener)
 		{
-			throw new RuntimeException("Not implemented");
+			throw new AdempiereException("Not implemented");
 		}
 	}
 }

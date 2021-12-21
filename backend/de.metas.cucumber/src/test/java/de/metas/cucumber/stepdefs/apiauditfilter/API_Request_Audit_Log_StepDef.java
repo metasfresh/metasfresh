@@ -130,7 +130,7 @@ public class API_Request_Audit_Log_StepDef
 			final JsonMetasfreshId requestId = testContext.getApiResponse().getRequestId();
 			assertThat(requestId).isNotNull();
 
-			final String logMessage = DataTableUtil.extractStringForColumnName(row, "Logmessage");
+			final String logMessage = DataTableUtil.extractStringForColumnName(row, I_API_Request_Audit_Log.COLUMNNAME_Logmessage);
 			final String adIssueSummary = DataTableUtil.extractStringOrNullForColumnName(row, "AD_Issue.Summary");
 
 			if (timeoutSec != null)
