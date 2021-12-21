@@ -22,7 +22,6 @@
 
 package de.metas.impexp.spreadsheet.process;
 
-import de.metas.impexp.format.ImpFormatId;
 import de.metas.impexp.spreadsheet.csv.JdbcCSVExporter;
 import de.metas.impexp.spreadsheet.excel.JdbcExcelExporter;
 import de.metas.impexp.spreadsheet.service.SpreadsheetExporterService;
@@ -44,9 +43,7 @@ import java.util.ArrayList;
 public class ExportToSpreadsheetProcess extends JavaProcess
 {
 	final SpreadsheetExporterService spreadsheetExporterService = SpringContextHolder.instance.getBean(SpreadsheetExporterService.class);
-	final SpreadsheetExportOptions spreadsheetExportOptions = getProcessInfo().getSpreadsheetExportOptions();
-
-	private SpreadsheetFormat spreadsheetFormat;
+	private	SpreadsheetFormat spreadsheetFormat;
 
 	@Override
 	protected void prepare()
@@ -56,7 +53,7 @@ public class ExportToSpreadsheetProcess extends JavaProcess
 			final String name = para.getParameterName();
 			if (para.getParameter() == null)
 			{
-				spreadsheetFormat = spreadsheetExportOptions.getFormat();
+				spreadsheetFormat = getProcessInfo().getSpreadsheetExportOptions().getFormat();
 			}
 			else if ("SpreadsheetFormat".equals(name))
 			{
@@ -73,6 +70,8 @@ public class ExportToSpreadsheetProcess extends JavaProcess
 
 		final File resultFile;
 
+		final SpreadsheetExportOptions spreadsheetExportOptions = getProcessInfo().getSpreadsheetExportOptions();
+		//final SpreadsheetFormat spreadsheetFormat = spreadsheetExportOptions.getFormat();
 		if (spreadsheetFormat == SpreadsheetFormat.Excel)
 		{
 			final JdbcExcelExporter jdbcExcelExporter = JdbcExcelExporter.builder()
