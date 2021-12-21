@@ -592,6 +592,7 @@ public class ApiAuditService
 		requestHeaders
 				.map(HttpHeadersWrapper::getKeyValueHeaders)
 				.map(headersMap -> headersMap.get(HEADER_PINSTANCE_ID))
+				.filter(headerValues -> !Check.isEmpty(headerValues))
 				.map(CollectionUtils::singleElement)
 				.map(Integer::parseInt)
 				.map(PInstanceId::ofRepoId)
