@@ -48,12 +48,14 @@ public class ExportToSpreadsheetProcess extends JavaProcess
 	@Override
 	protected void prepare()
 	{
+		spreadsheetFormat = getProcessInfo().getSpreadsheetExportOptions().getFormat();
+
 		for (final ProcessInfoParameter para : getParameters())
 		{
 			final String name = para.getParameterName();
 			if (para.getParameter() == null)
 			{
-				spreadsheetFormat = getProcessInfo().getSpreadsheetExportOptions().getFormat();
+				;
 			}
 			else if ("SpreadsheetFormat".equals(name))
 			{
