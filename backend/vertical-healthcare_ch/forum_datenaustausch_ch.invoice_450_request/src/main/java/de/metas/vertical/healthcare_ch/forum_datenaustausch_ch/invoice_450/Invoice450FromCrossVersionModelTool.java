@@ -1350,8 +1350,9 @@ public class Invoice450FromCrossVersionModelTool
 	 *     	<li>{@code referrerAddressType}</li>
 	 * </ul>
 	 *
-	 * @param zsrOrEanPartyId
-	 * @return
+	 * @param zsrOrEanPartyId either {@code zsrPartyType} or {@code eanPartyType}
+	 * @return {@code eanPartyId} or {@code null}
+	 * @throws RuntimeException if {@code zsrOrEanPartyId} is a {@code zsrPartyType}, but we have no {@code eanPartyType} equivalent
 	 */
 	private String getEanPartyId(@NonNull final String zsrOrEanPartyId)
 	{
