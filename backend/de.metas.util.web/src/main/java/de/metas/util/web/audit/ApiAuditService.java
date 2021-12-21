@@ -58,7 +58,6 @@ import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
-import de.metas.util.collections.CollectionUtils;
 import de.metas.util.web.audit.dto.ApiRequest;
 import de.metas.util.web.audit.dto.ApiRequestMapper;
 import de.metas.util.web.audit.dto.ApiResponse;
@@ -581,19 +580,13 @@ public class ApiAuditService
 
 		// get the AD_PInstance_ID and external-config-id if they are specified in the headers
 		requestHeaders
-				.map(HttpHeadersWrapper::getKeyValueHeaders)
-				.map(headersMap -> headersMap.get(HEADER_EXTERNALSYSTEM_CONFIG_ID))
-				.filter(headerValues -> !Check.isEmpty(headerValues))
-				.map(CollectionUtils::singleElement)
+				.map(headers -> headers.getHeaderSingleValue(HEADER_EXTERNALSYSTEM_CONFIG_ID))
 				.map(Integer::parseInt)
 				.map(ExternalSystemParentConfigId::ofRepoId)
 				.ifPresent(genericRequestBuilder::externalSystemParentConfigId);
 
 		requestHeaders
-				.map(HttpHeadersWrapper::getKeyValueHeaders)
-				.map(headersMap -> headersMap.get(HEADER_PINSTANCE_ID))
-				.filter(headerValues -> !Check.isEmpty(headerValues))
-				.map(CollectionUtils::singleElement)
+				.map(headers -> headers.getHeaderSingleValue(HEADER_PINSTANCE_ID))
 				.map(Integer::parseInt)
 				.map(PInstanceId::ofRepoId)
 				.ifPresent(genericRequestBuilder::pInstanceId);

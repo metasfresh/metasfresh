@@ -27,11 +27,15 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableMultimap;
+import de.metas.util.Check;
+import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
 import java.util.Map;
 import java.util.stream.Stream;
 
@@ -47,6 +51,7 @@ public class HttpHeadersWrapper
 	}
 
 	@JsonProperty("keyValueHeaders")
+	@NonNull
 	ImmutableMultimap<String, String> keyValueHeaders;
 
 	@JsonIgnore
@@ -61,5 +66,19 @@ public class HttpHeadersWrapper
 	public String toJson(@NonNull final ObjectMapper objectMapper) throws JsonProcessingException
 	{
 		return objectMapper.writeValueAsString(this);
+	}
+
+	@Nullable
+	@JsonIgnore
+	public String getHeaderSingleValue(@NonNull final String headerName)
+	{
+		final ImmutableCollection<String> values = keyValueHeaders.get(headerName);
+
+		if (Check.isEmpty(values))
+		{
+			return null;
+		}
+
+		return CollectionUtils.singleElement(values);
 	}
 }
