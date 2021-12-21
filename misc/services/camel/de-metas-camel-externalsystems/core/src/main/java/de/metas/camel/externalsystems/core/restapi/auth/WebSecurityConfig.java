@@ -28,13 +28,13 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.REST_WOOCOMMERCE_PATH;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.WOOCOMMERCE_AUTHORITY;
+import static de.metas.camel.externalsystems.core.restapi.auth.preauthenticated.ActuatorIdentity.ACTUATOR_AUTHORITY;
 
 @Configuration
 @EnableWebSecurity
@@ -57,17 +57,12 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter
 				  .disable()
 				.authorizeRequests()
 				  .antMatchers("/**" + REST_WOOCOMMERCE_PATH).hasAuthority(WOOCOMMERCE_AUTHORITY)
+				  .antMatchers("/actuator/**/*").hasAuthority(ACTUATOR_AUTHORITY)
 				  .anyRequest()
 				  .authenticated();
 		//@formatter:on
 
 		http.addFilterBefore(new AuthenticationFilter(authenticationManager()), BasicAuthenticationFilter.class);
-	}
-
-	@Override
-	public void configure(@NotNull final WebSecurity web)
-	{
-		web.ignoring().antMatchers("/actuator/**");
 	}
 
 	@Bean
