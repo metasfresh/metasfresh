@@ -279,7 +279,7 @@ export function leftTrim(str) {
  * @summary format's the ordering parameters prefixing them with asc/desc sign
  */
 export function formatSortingQuery(orderBy) {
-  if (orderBy && orderBy.reduce) {
+  if (orderBy && orderBy.map) {
     return orderBy.map((sortParam) => {
       return `${sortParam.ascending ? '+' : '-'}${sortParam.fieldName}`;
     });

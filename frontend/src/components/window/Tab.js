@@ -21,13 +21,13 @@ class Tab extends PureComponent {
 
     if (docId && queryOnActivate) {
       if (singleRowView) {
-        fetchTab({ tabId, windowId, docId, query: orderBy }).then((res) => {
+        fetchTab({ tabId, windowId, docId, orderBy }).then((res) => {
           if (res.length) {
             onChange && onChange();
           }
         });
       } else {
-        fetchTab({ tabId, windowId, docId, query: orderBy }).then(() => {
+        fetchTab({ tabId, windowId, docId, orderBy }).then(() => {
           onChange && onChange();
         });
       }
