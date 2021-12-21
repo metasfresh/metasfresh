@@ -583,6 +583,7 @@ public class ApiAuditService
 		requestHeaders
 				.map(HttpHeadersWrapper::getKeyValueHeaders)
 				.map(headersMap -> headersMap.get(HEADER_EXTERNALSYSTEM_CONFIG_ID))
+				.filter(headerValues -> !Check.isEmpty(headerValues))
 				.map(CollectionUtils::singleElement)
 				.map(Integer::parseInt)
 				.map(ExternalSystemParentConfigId::ofRepoId)

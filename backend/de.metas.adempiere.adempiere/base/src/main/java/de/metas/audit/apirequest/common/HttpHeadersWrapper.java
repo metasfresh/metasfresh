@@ -60,6 +60,6 @@ public class HttpHeadersWrapper
 	@NonNull
 	public String toJson(@NonNull final ObjectMapper objectMapper) throws JsonProcessingException
 	{
-		return objectMapper.writeValueAsString(keyValueHeaders);
+		return objectMapper.writeValueAsString(this);
 	}
 }
