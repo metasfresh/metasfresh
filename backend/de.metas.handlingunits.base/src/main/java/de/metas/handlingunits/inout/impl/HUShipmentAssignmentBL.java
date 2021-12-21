@@ -32,6 +32,7 @@ import de.metas.handlingunits.inout.IHUShipmentAssignmentBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
 import de.metas.handlingunits.model.I_M_InOutLine;
+import de.metas.handlingunits.model.I_M_Locator;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.util.HUTopLevel;
@@ -218,12 +219,17 @@ public class HUShipmentAssignmentBL implements IHUShipmentAssignmentBL
 		else
 		{
 			huStatusBL.setHUStatus(huContext, hu, X_M_HU.HUSTATUS_Active);
-
-			final WarehouseId warehouseId = warehouseBL.getIdByLocatorRepoId(hu.getM_Locator_ID());
-
-			// Restore default locator
-			hu.setM_Locator_ID(warehouseBL.getDefaultLocatorId(warehouseId).getRepoId());
 			hu.setIsActive(true);
+
+			final I_M_Locator locator = InterfaceWrapperHelper.create(warehouseBL.getLocatorByRepoId(hu.getM_Locator_ID()), I_M_Locator.class);
+
+			if (locator.isAfterPickingLocator())
+			{
+				final WarehouseId warehouseId = WarehouseId.ofRepoId(locator.getM_Warehouse_ID());
+
+				// Restore default locator
+				hu.setM_Locator_ID(warehouseBL.getDefaultLocatorId(warehouseId).getRepoId());
+			}
 		}
 
 		handlingUnitsDAO.saveHU(hu);
