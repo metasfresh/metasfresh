@@ -34,6 +34,7 @@ import org.springframework.security.web.authentication.www.BasicAuthenticationFi
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.REST_WOOCOMMERCE_PATH;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.WOOCOMMERCE_AUTHORITY;
+import static de.metas.camel.externalsystems.core.restapi.auth.preauthenticated.ActuatorIdentity.ACTUATOR_AUTHORITY;
 
 @Configuration
 @EnableWebSecurity
@@ -56,6 +57,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter
 				  .disable()
 				.authorizeRequests()
 				  .antMatchers("/**" + REST_WOOCOMMERCE_PATH).hasAuthority(WOOCOMMERCE_AUTHORITY)
+				  .antMatchers("/actuator/**/*").hasAuthority(ACTUATOR_AUTHORITY)
 				  .anyRequest()
 				  .authenticated();
 		//@formatter:on
@@ -65,7 +67,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter
 
 	@Bean
 	@Override
-	public AuthenticationManager authenticationManager() throws Exception
+	public AuthenticationManager authenticationManagerBean() throws Exception
 	{
 		return super.authenticationManagerBean();
 	}
