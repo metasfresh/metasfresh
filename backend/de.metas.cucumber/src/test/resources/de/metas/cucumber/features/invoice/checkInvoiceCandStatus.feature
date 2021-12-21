@@ -4,6 +4,7 @@ Feature: check invoice candidates status
   Background:
     Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
+    And metasfresh has date and time 2021-12-21T13:30:13+01:00[Europe/Berlin]
 
   @from:cucumber
   Scenario: Generate invoice from order and validate check invoice candidate status EP
