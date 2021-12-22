@@ -1,15 +1,5 @@
 package de.metas.marketing.base.process;
 
-import java.util.stream.Stream;
-
-import de.metas.process.PInstanceId;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryFilter;
-import org.compiere.model.IQuery;
-import org.compiere.model.I_AD_User;
-import org.compiere.model.I_C_BPartner;
-import org.springframework.stereotype.Service;
-
 import de.metas.marketing.base.CampaignService;
 import de.metas.marketing.base.bpartner.DefaultAddressType;
 import de.metas.marketing.base.model.CampaignId;
@@ -18,6 +8,14 @@ import de.metas.user.User;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.compiere.model.IQuery;
+import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BPartner;
+import org.springframework.stereotype.Service;
+
+import java.util.stream.Stream;
 
 /*
  * #%L
