@@ -44,7 +44,7 @@ public class HttpHeadersWrapperTest
 		final ObjectMapper objectMapper = JsonObjectMapperHolder.newJsonObjectMapper();
 
 		final String json = objectMapper.writeValueAsString(httpHeadersWrapper);
-		System.out.println("Object->JSON: " + json);
+		// System.out.println("Object->JSON: " + json);
 
 		final HttpHeadersWrapper objDeserialized = objectMapper.readValue(json, HttpHeadersWrapper.class);
 		System.out.println("Object deserialized: " + objDeserialized);
