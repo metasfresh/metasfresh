@@ -20,6 +20,7 @@ import de.metas.process.PInstanceId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -28,7 +29,6 @@ import org.adempiere.ad.session.ISessionBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
-import org.compiere.SpringContextHolder;
 import org.compiere.apps.search.UserQueryRepository;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_UserQuery;
@@ -74,7 +74,6 @@ public class C_Async_Batch
 	private final IPrintingQueueBL printingQueueBL = Services.get(IPrintingQueueBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final ISessionBL sessionBL = Services.get(ISessionBL.class);
-	private UserQueryRepository userQueriesRepository = SpringContextHolder.instance.getBean(UserQueryRepository.class);
 
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = I_C_Async_Batch.COLUMNNAME_Processed)
 	public void print(@NonNull final I_C_Async_Batch asyncBatch)
@@ -124,7 +123,7 @@ public class C_Async_Batch
 		final List<I_AD_UserQuery> queries = new ArrayList<>();
 		for (final String name : names)
 		{
-			queries.add(userQueriesRepository.getAD_UserQueryByName(name));
+			queries.add(retrieveAD_UserQueryByName(name));
 		}
 
 		return  queries;
@@ -163,4 +162,14 @@ public class C_Async_Batch
 
 		return printingQueueBL.createPrintingQueueSources(ctx, printingQuery);
 	}
+
+	private final I_AD_UserQuery retrieveAD_UserQueryByName(@NonNull final String name)
+	{
+		return Services.get(IQueryBL.class).createQueryBuilder(I_AD_UserQuery.class)
+				.addEqualsFilter(I_AD_UserQuery.COLUMNNAME_Name, name)
+				.create()
+				.first();
+
+	}
+
 }
