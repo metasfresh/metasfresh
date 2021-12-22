@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-common-rest_api
+ * de.metas.util.web
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,29 +20,37 @@
  * #L%
  */
 
-package de.metas.common.rest_api.common;
+package de.metas.util.web.audit.dto;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.google.common.collect.ImmutableMultimap;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
 
 @Value
-@JsonIgnoreProperties(ignoreUnknown = true)
-@JsonDeserialize(builder = JsonTestResponse.JsonTestResponseBuilder.class)
-public class JsonTestResponse
+@Builder
+public class ApiRequest
 {
-	@Nullable
-	String messageBody;
+	@NonNull
+	ImmutableMultimap<String, String> headers;
 
-	@Builder
-	@JsonCreator
-	private JsonTestResponse(@JsonProperty("messageBody") @Nullable final String messageBody)
-	{
-		this.messageBody = messageBody;
-	}
+	@NonNull
+	String fullPath;
+
+	@NonNull
+	String httpMethod;
+
+	@Nullable
+	String body;
+
+	@Nullable
+	String requestURI;
+
+	@Nullable
+	String remoteAddr;
+
+	@Nullable
+	String remoteHost;
 }
