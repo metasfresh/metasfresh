@@ -112,6 +112,7 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicingAndPDFPrinting exte
 
 		final AsyncBatchId asyncBatchId = createAsyncBatch();
 		final I_C_Async_Batch asyncBatch = asyncBatchBL.getAsyncBatchById(asyncBatchId);
+		asyncBatchBL.setPInstance_IDAndSave(asyncBatch, getPinstanceId());
 
 		final IInvoiceCandidateEnqueueResult enqueueResult = invoiceCandBL.enqueueForInvoicing()
 				.setContext(getCtx())

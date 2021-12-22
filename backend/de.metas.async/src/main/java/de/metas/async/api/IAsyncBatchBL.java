@@ -11,6 +11,7 @@ import de.metas.async.model.I_C_Queue_Block;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.model.I_C_Queue_WorkPackage_Notified;
 import de.metas.async.spi.IWorkpackagePrioStrategy;
+import de.metas.process.PInstanceId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.adempiere.util.lang.ImmutablePair;
@@ -113,4 +114,6 @@ public interface IAsyncBatchBL extends ISingletonService
 	I_C_Async_Batch getAsyncBatchById(AsyncBatchId asyncBatchId);
 
 	AsyncBatchId newAsyncBatch(String asyncBatchType);
+
+	public void setPInstance_IDAndSave(@NonNull final I_C_Async_Batch asyncBatch, @NonNull final PInstanceId pInstanceId)
 }

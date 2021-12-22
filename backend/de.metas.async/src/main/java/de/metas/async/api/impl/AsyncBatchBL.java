@@ -44,6 +44,7 @@ import de.metas.async.processor.impl.CheckProcessedAsynBatchWorkpackageProcessor
 import de.metas.async.spi.IWorkpackagePrioStrategy;
 import de.metas.async.spi.NullWorkpackagePrio;
 import de.metas.common.util.time.SystemTime;
+import de.metas.process.PInstanceId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -501,5 +502,11 @@ public class AsyncBatchBL implements IAsyncBatchBL
 				.build());
 
 		return AsyncBatchId.ofRepoId(asyncBatch.getC_Async_Batch_ID());
+	}
+
+	public void setPInstance_IDAndSave(@NonNull final I_C_Async_Batch asyncBatch, @NonNull final PInstanceId pInstanceId)
+	{
+		asyncBatch.setAD_PInstance_ID(pInstanceId.getRepoId());
+		InterfaceWrapperHelper.save(asyncBatch);
 	}
 }
