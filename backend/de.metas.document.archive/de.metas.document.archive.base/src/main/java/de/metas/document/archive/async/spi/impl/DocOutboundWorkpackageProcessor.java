@@ -22,6 +22,7 @@ package de.metas.document.archive.async.spi.impl;
  * #L%
  */
 
+import de.metas.async.AsyncBatchId;
 import de.metas.async.Async_Constants;
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Async_Batch;
@@ -115,7 +116,8 @@ public class DocOutboundWorkpackageProcessor implements IWorkpackageProcessor
 
 	private void setC_AsyncBatch_ID(@NonNull final I_AD_Archive archiveRecord, @NonNull final Object record)
 	{
-		archiveRecord.setC_Async_Batch_ID(InterfaceWrapperHelper.getDynAttribute(record, Async_Constants.C_Async_Batch));
+		final I_C_Async_Batch asyncBatch = InterfaceWrapperHelper.getDynAttribute(record, Async_Constants.C_Async_Batch);
+		archiveRecord.setC_Async_Batch_ID(asyncBatch.getC_Async_Batch_ID());
 		InterfaceWrapperHelper.save(archiveRecord);
 	}
 
