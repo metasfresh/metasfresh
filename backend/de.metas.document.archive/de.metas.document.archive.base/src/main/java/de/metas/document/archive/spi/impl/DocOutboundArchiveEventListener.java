@@ -3,6 +3,7 @@ package de.metas.document.archive.spi.impl;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.model.I_C_Invoice;
+import de.metas.async.model.I_C_Async_Batch;
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.attachments.AttachmentEntryService.AttachmentEntryQuery;
@@ -201,7 +202,21 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 		// if the AD_Org_ID of the AD_Archive and the parent C_Doc_Outbound_Log differ, go with the AD_Archive's org id.
 		docOutboundLogLineRecord.setAD_Org_ID(archive.getAD_Org_ID());
 
+		// make sure the async batch is set in printing queue
+		setC_AsuncBatchIfNeeded(docOutboundLogRecord, archive);
+
 		return docOutboundLogLineRecord;
+	}
+
+	private void setC_AsuncBatchIfNeeded(@NonNull final I_C_Doc_Outbound_Log docOutboundLogRecord, @NonNull final I_AD_Archive archive)
+	{
+		final int asyncBatchId = docOutboundLogRecord.getC_Async_Batch_ID();
+		if (asyncBatchId > 0 && archive.getC_Async_Batch_ID() <= 0)
+		{
+			archive.setC_Async_Batch_ID(asyncBatchId);
+			save(archive);
+		}
+
 	}
 
 	/**
