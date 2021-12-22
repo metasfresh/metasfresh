@@ -67,6 +67,8 @@ public class BPartnerContact
 	public static final String GREETING_ID = "greetingId";
 	public static final String ROLES = "roles";
 	public static final String BPARTNER_LOCATION_ID = "bPartnerLocationId";
+	public static final String EMAIL2 = "email2";
+	public static final String EMAIL3 = "email3";
 
 	public static final String SUBJECT_MATTER = "subjectMatter";
 	public static final String NEWSLETTER = "newsletter";
@@ -151,6 +153,12 @@ public class BPartnerContact
 	@Nullable
 	private BPartnerLocationId bPartnerLocationId;
 
+	@Nullable
+	private String email2;
+
+	@Nullable
+	private String email3;
+
 	/**
 	 * Can be set in order to identify this label independently of its "real" properties. Won't be saved by the repo.
 	 */
@@ -190,7 +198,9 @@ public class BPartnerContact
 			@Nullable final RecordChangeLog changeLog,
 			@Nullable final OrgMappingId orgMappingId,
 			@Nullable final BPartnerLocationId bPartnerLocationId,
-			@Nullable final List<UserRole> roles)
+			@Nullable final List<UserRole> roles,
+			@Nullable final String email2,
+			@Nullable final String email3)
 	{
 		setId(id);
 
@@ -214,6 +224,8 @@ public class BPartnerContact
 		this.lastName = lastName;
 		this.email = email;
 		this.phone = phone;
+		this.email2 = email2;
+		this.email3 = email3;
 
 		this.changeLog = changeLog;
 
