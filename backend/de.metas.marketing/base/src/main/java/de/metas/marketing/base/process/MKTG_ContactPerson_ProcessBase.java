@@ -2,7 +2,6 @@ package de.metas.marketing.base.process;
 
 import java.util.stream.Stream;
 
-import de.metas.process.PInstanceId;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.compiere.model.IQuery;
@@ -94,19 +93,14 @@ public class MKTG_ContactPerson_ProcessBase
 				.addEqualsFilter(I_MKTG_Campaign_ContactPerson.COLUMN_MKTG_Campaign_ID, campaignId)
 				.create();
 
-		final PInstanceId selectionId = queryBL
+		final Stream<User> usersToAdd = queryBL
 				.createQueryBuilder(I_C_BPartner.class)
 				.addOnlyActiveRecordsFilter()
 				.filter(params.getSelectionFilter())
 				.andCollectChildren(I_AD_User.COLUMNNAME_C_BPartner_ID, I_AD_User.class)
 				.addNotInSubQueryFilter(I_AD_User.COLUMNNAME_AD_User_ID, I_MKTG_Campaign_ContactPerson.COLUMNNAME_AD_User_ID, linkTableQuery)
 				.create()
-				.createSelection();
-
-		final Stream<User> usersToAdd = queryBL.createQueryBuilder(I_AD_User.class)
-				.setOnlySelection(selectionId)
-				.create()
-				.setOption(IQuery.OPTION_GuaranteedIteratorRequired, false)
+				.setOption(IQuery.OPTION_GuaranteedIteratorRequired, true)
 				.setOption(IQuery.OPTION_IteratorBufferSize, 1000)
 				.iterateAndStream()
 				.map(userRepository::ofRecord);
