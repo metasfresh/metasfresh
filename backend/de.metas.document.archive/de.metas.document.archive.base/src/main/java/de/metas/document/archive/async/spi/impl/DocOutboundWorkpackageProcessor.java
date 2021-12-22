@@ -85,6 +85,7 @@ public class DocOutboundWorkpackageProcessor implements IWorkpackageProcessor
 		for (final Object record : records)
 		{
 			InterfaceWrapperHelper.setDynAttribute(record, Async_Constants.C_Async_Batch, asyncBatch);
+			InterfaceWrapperHelper.save(record);
 			generateOutboundDocument(record, userId);
 		}
 		return Result.SUCCESS;
