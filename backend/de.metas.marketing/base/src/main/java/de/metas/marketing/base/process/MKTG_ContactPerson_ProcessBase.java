@@ -106,7 +106,7 @@ public class MKTG_ContactPerson_ProcessBase
 		final Stream<User> usersToAdd = queryBL.createQueryBuilder(I_AD_User.class)
 				.setOnlySelection(selectionId)
 				.create()
-				.setOption(IQuery.OPTION_GuaranteedIteratorRequired, false)
+				.setOption(IQuery.OPTION_GuaranteedIteratorRequired, true)
 				.setOption(IQuery.OPTION_IteratorBufferSize, 1000)
 				.iterateAndStream()
 				.map(userRepository::ofRecord);
