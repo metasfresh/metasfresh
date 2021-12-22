@@ -10,6 +10,7 @@ import Moment from 'moment-timezone';
 import { openFilterBox, closeFilterBox } from '../../actions/WindowActions';
 
 import { convertDateToReadable } from '../../utils/dateHelpers';
+import { isFocusableWidgetType } from '../../utils/widgetHelpers';
 import keymap from '../../shortcuts/keymap';
 import ModalContextShortcuts from '../keyshortcuts/ModalContextShortcuts';
 import { DATE_FIELD_FORMATS } from '../../constants/Constants';
@@ -515,7 +516,7 @@ class FiltersItem extends PureComponent {
                     // don't focus date/time related fields
                     if (
                       !autoFocusedField &&
-                      !Object.keys(DATE_FIELD_FORMATS).includes(widgetType)
+                      !isFocusableWidgetType(widgetType)
                     ) {
                       autoFocusedField = true;
                       autoFocus = true;
