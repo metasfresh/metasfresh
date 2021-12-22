@@ -146,18 +146,6 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicingAndPDFPrinting exte
 
 	private IQueryBuilder<I_C_Invoice_Candidate> createICQueryBuilder()
 	{
-		// Get the user selection filter (i.e. what user filtered in his window)
-		final IQueryFilter<I_C_Invoice_Candidate> userSelectionFilter = getProcessInfo().getQueryFilterOrElse(null);
-		if (userSelectionFilter == null)
-		{
-			throw new AdempiereException("@NoSelection@");
-		}
-
-		return createICQueryBuilder(userSelectionFilter);
-	}
-
-	private IQueryBuilder<I_C_Invoice_Candidate> createICQueryBuilder(final IQueryFilter<I_C_Invoice_Candidate> userSelectionFilter)
-	{
 		final IQueryBuilder<I_C_Invoice_Candidate> queryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_Invoice_Candidate.class, getCtx(), ITrx.TRXNAME_None)
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_AD_Org_ID, invoicingParams.getAD_Org_ID())
