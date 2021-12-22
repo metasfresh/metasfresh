@@ -513,10 +513,9 @@ class FiltersItem extends PureComponent {
                     let autoFocus = false;
                     item.field = item.parameterName;
 
-                    // don't focus date/time related fields
                     if (
                       !autoFocusedField &&
-                      !isFocusableWidgetType(widgetType)
+                      isFocusableWidgetType(widgetType)
                     ) {
                       autoFocusedField = true;
                       autoFocus = true;
