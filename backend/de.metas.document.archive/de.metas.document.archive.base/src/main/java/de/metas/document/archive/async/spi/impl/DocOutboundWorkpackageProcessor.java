@@ -44,6 +44,8 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_AD_Archive;
+import org.compiere.model.PO;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -103,9 +105,17 @@ public class DocOutboundWorkpackageProcessor implements IWorkpackageProcessor
 		}
 		else
 		{
-			Loggables.addLog("Created AD_Archive_ID={} for record={}", archiveResult.getArchiveRecord().getAD_Archive_ID(), record);
-			archiveEventManager.firePdfUpdate(archiveResult.getArchiveRecord(), userId);
+			final I_AD_Archive archiveRecord = archiveResult.getArchiveRecord();
+			setC_AsyncBatch_ID(archiveRecord, record);
+			Loggables.addLog("Created AD_Archive_ID={} for record={}", archiveRecord.getAD_Archive_ID(), record);
+			archiveEventManager.firePdfUpdate(archiveRecord, userId);
 		}
+	}
+
+	private void setC_AsyncBatch_ID(@NonNull final I_AD_Archive archiveRecord, @NonNull final Object record)
+	{
+		archiveRecord.setC_Async_Batch_ID(InterfaceWrapperHelper.getDynAttribute(record, Async_Constants.C_Async_Batch));
+		InterfaceWrapperHelper.save(archiveRecord);
 	}
 
 	private boolean computeInvoiceEmailEnabledFromRecord(@NonNull final Object record)
