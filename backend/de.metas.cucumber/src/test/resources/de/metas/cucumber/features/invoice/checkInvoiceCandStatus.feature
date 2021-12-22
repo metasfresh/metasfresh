@@ -58,7 +58,6 @@ Feature: check invoice candidates status
   ]
 }
    """
-
     Then validate invoice candidate status response
       | ExternalHeaderId | ExternalLineId | QtyEntered | QtyToInvoice | QtyInvoiced | Processed |
       | ExtHeader_1      | ExtLine_1      | 5          | 0            | 5           | true      |
