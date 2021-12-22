@@ -47,7 +47,7 @@ public class HttpHeadersWrapperTest
 		// System.out.println("Object->JSON: " + json);
 
 		final HttpHeadersWrapper objDeserialized = objectMapper.readValue(json, HttpHeadersWrapper.class);
-		System.out.println("Object deserialized: " + objDeserialized);
+		// System.out.println("Object deserialized: " + objDeserialized);
 		Assertions.assertThat(objDeserialized).isEqualTo(httpHeadersWrapper);
 	}
 }
