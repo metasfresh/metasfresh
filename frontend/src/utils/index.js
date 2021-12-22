@@ -19,21 +19,13 @@ export function updateUri(pathname, query, updatedQuery) {
   !fullPath.includes('viewId') ? history.replace(url) : history.push(url);
 }
 
-// TODO: Move to api ?
-export const getQueryString = (query) =>
-  queryString.stringify(
-    Object.keys(query).reduce((parameters, key) => {
-      const value = query[key];
-
-      if (Array.isArray(value) && value.length > 0) {
-        parameters[key] = value.join(',');
-      } else if (value) {
-        parameters[key] = value;
-      }
-
-      return parameters;
-    }, {})
-  );
+/**
+ * @method getQueryString
+ * @summary Stringifies URL with 'query-string', formatting query and escaping unwanted characters
+ */
+export const getQueryString = (query) => {
+  return queryString.stringify(query, { arrayFormat: 'comma', skipNull: true });
+};
 
 // TODO: Move to api ?
 export function createPatchRequestPayload(property, value) {
@@ -244,4 +236,27 @@ export function deepUnfreeze(obj) {
     }
   }
   return obj;
+}
+
+/**
+ * @method leftTrim
+ * @summary - removes spaces from the left side of a string
+ * @param {string} str
+ */
+export function leftTrim(str) {
+  return str.replace(/^\s+/, '');
+}
+
+/**
+ * @method formatSortingQuery
+ * @summary format's the ordering parameters prefixing them with asc/desc sign
+ */
+export function formatSortingQuery(orderBy) {
+  if (orderBy && orderBy.map) {
+    return orderBy.map((sortParam) => {
+      return `${sortParam.ascending ? '+' : '-'}${sortParam.fieldName}`;
+    });
+  }
+
+  return orderBy;
 }
