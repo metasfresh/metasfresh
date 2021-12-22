@@ -46,21 +46,13 @@ export function historyDoubleBackOnPopstate(store) {
   store.dispatch(updateLastBackPage(document.location.href));
 }
 
-// TODO: Move to api ?
-export const getQueryString = (query) =>
-  queryString.stringify(
-    Object.keys(query).reduce((parameters, key) => {
-      const value = query[key];
-
-      if (Array.isArray(value) && value.length > 0) {
-        parameters[key] = value.join(',');
-      } else if (value) {
-        parameters[key] = value;
-      }
-
-      return parameters;
-    }, {})
-  );
+/**
+ * @method getQueryString
+ * @summary Stringifies URL with 'query-string', formatting query and escaping unwanted characters
+ */
+export const getQueryString = (query) => {
+  return queryString.stringify(query, { arrayFormat: 'comma', skipNull: true });
+};
 
 // TODO: Move to api ?
 export function createPatchRequestPayload(property, value) {
@@ -280,4 +272,18 @@ export function deepUnfreeze(obj) {
  */
 export function leftTrim(str) {
   return str.replace(/^\s+/, '');
+}
+
+/**
+ * @method formatSortingQuery
+ * @summary format's the ordering parameters prefixing them with asc/desc sign
+ */
+export function formatSortingQuery(orderBy) {
+  if (orderBy && orderBy.map) {
+    return orderBy.map((sortParam) => {
+      return `${sortParam.ascending ? '+' : '-'}${sortParam.fieldName}`;
+    });
+  }
+
+  return orderBy;
 }

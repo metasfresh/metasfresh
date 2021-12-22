@@ -188,16 +188,10 @@ class MasterWindowContainer extends PureComponent {
 
     const tabLayout = getTab(master.layout, activeTabId);
     const orderBy = tabLayout ? tabLayout.orderBy : null;
-    let sortingOrder = null;
-
-    if (orderBy && orderBy.length) {
-      const ordering = orderBy[0];
-      sortingOrder = (ordering.ascending ? '+' : '-') + ordering.fieldName;
-    }
 
     updateTabLayout(windowId, activeTabId)
       .then(() => {
-        getTabRequest(activeTabId, windowId, docId, sortingOrder).then((rows) =>
+        getTabRequest(activeTabId, windowId, docId, orderBy).then((rows) =>
           updateTabTableData(tableId, rows)
         );
       })

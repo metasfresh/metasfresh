@@ -61,6 +61,7 @@ import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
 
+import static de.metas.cucumber.stepdefs.StepDefConstants.WAREHOUSE_ID;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -169,7 +170,7 @@ public class M_Inventory_StepDef
 		inventoryRecord.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
 		inventoryRecord.setC_DocType_ID(StepDefConstants.DOC_TYPE_ID_MMI.getRepoId());
 		inventoryRecord.setDocStatus(DocStatus.Drafted.getCode());
-
+		inventoryRecord.setM_Warehouse_ID(WAREHOUSE_ID.getRepoId());
 		inventoryRecord.setMovementDate(movementDate);
 		inventoryRecord.setDocumentNo(documentNo);
 
