@@ -97,7 +97,11 @@ public class InvoicingParams implements IInvoicingParams
 		return params.getParameterAsBigDecimal(PARA_Check_NetAmtToInvoice);
 	}
 
-
+	@Override
+	public int getAD_Org_ID()
+	{
+		return params.getParameterAsInt(PARA_AD_org_ID, -1);
+	}
 	/**
 	 * Always returns {@code false}.
 	 */

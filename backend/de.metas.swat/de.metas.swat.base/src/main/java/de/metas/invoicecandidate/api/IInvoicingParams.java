@@ -49,6 +49,7 @@ public interface IInvoicingParams
 	String PARA_POReference = I_C_Invoice_Candidate.COLUMNNAME_POReference;
 	String PARA_Check_NetAmtToInvoice = "Check_NetAmtToInvoice";
 	String PARA_IsUpdateLocationAndContactForInvoice = "IsUpdateLocationAndContactForInvoice";
+	String PARA_AD_org_ID = I_C_Invoice_Candidate.COLUMNNAME_AD_Org_ID;
 
 	/** @return {@code true} if only those invoice candidates which were approved for invoicing shall be enqueued. */
 	boolean isOnlyApprovedForInvoicing();
@@ -100,6 +101,8 @@ public interface IInvoicingParams
 	 */
 	boolean isUpdateLocationAndContactForInvoice();
 
+	int getAD_Org_ID();
+
 	default Map<String, ? extends Object> asMap()
 	{
 		final Builder<String, Object> result = ImmutableMap.<String, Object> builder();
@@ -126,6 +129,7 @@ public interface IInvoicingParams
 		result.put(InvoicingParams.PARA_IsUpdateLocationAndContactForInvoice, isUpdateLocationAndContactForInvoice());
 		result.put(InvoicingParams.PARA_OnlyApprovedForInvoicing, isOnlyApprovedForInvoicing());
 		result.put(InvoicingParams.PARA_SupplementMissingPaymentTermIds, isSupplementMissingPaymentTermIds());
+		result.put(InvoicingParams.PARA_AD_org_ID, getAD_Org_ID());
 
 		return result.build();
 	}

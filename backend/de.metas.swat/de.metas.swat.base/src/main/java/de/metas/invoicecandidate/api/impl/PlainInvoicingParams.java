@@ -56,6 +56,8 @@ public class PlainInvoicingParams implements IInvoicingParams
 
 	private final IInvoicingParams defaults;
 
+	private int adOrgId = -1;
+
 	public PlainInvoicingParams()
 	{
 		this(null);
@@ -288,6 +290,12 @@ public class PlainInvoicingParams implements IInvoicingParams
 		{
 			return false;
 		}
+	}
+
+	@Override
+	public int getAD_Org_ID()
+	{
+		return adOrgId;
 	}
 
 	public boolean isUpdateLocationAndContactForInvoice()

@@ -196,7 +196,7 @@ public class UserQueryRepository
 				.collect(GuavaCollectors.toImmutableList());
 	}
 
-	private I_AD_UserQuery getAD_UserQueryByName(final String userQueryName)
+	public I_AD_UserQuery getAD_UserQueryByName(final String userQueryName)
 	{
 		if (Check.isEmpty(userQueryName, true))
 		{
