@@ -28,6 +28,7 @@ import org.adempiere.ad.session.ISessionBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
+import org.compiere.SpringContextHolder;
 import org.compiere.apps.search.UserQueryRepository;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_UserQuery;
@@ -73,7 +74,7 @@ public class C_Async_Batch
 	private final IPrintingQueueBL printingQueueBL = Services.get(IPrintingQueueBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final ISessionBL sessionBL = Services.get(ISessionBL.class);
-	private UserQueryRepository userQueriesRepository;
+	private UserQueryRepository userQueriesRepository = SpringContextHolder.instance.getBean(UserQueryRepository.class);
 
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = I_C_Async_Batch.COLUMNNAME_Processed)
 	public void print(@NonNull final I_C_Async_Batch asyncBatch)
