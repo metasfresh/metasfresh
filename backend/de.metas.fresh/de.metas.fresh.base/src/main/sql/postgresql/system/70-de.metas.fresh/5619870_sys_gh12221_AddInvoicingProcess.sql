@@ -15,6 +15,17 @@ UPDATE AD_Process SET EntityType='D',Updated=TO_TIMESTAMP('2021-12-21 18:28:48',
 ;
 
 
+-- 2021-12-22T09:01:28.382Z
+-- URL zum Konzept
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,580425,0,TO_TIMESTAMP('2021-12-22 10:01:28','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Enqueue selection for invoicing and pdf printing','Enqueue selection for invoicing and pdf printing',TO_TIMESTAMP('2021-12-22 10:01:28','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-12-22T09:01:28.385Z
+-- URL zum Konzept
+INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description,Help,Name,PO_Description,PO_Help,PO_Name,PO_PrintName,PrintName,WEBUI_NameBrowse,WEBUI_NameNew,WEBUI_NameNewBreadcrumb, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Element_ID, t.CommitWarning,t.Description,t.Help,t.Name,t.PO_Description,t.PO_Help,t.PO_Name,t.PO_PrintName,t.PrintName,t.WEBUI_NameBrowse,t.WEBUI_NameNew,t.WEBUI_NameNewBreadcrumb, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Element t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Element_ID=580425 AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
+;
+
+
 
 
 -- 2021-12-21T16:57:45.524645900Z
@@ -44,7 +55,7 @@ INSERT INTO AD_Process_Para_Trl (AD_Language,AD_Process_Para_ID, Description,Hel
 
 -- 2021-12-21T16:59:12.995689600Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Menu (Action,AD_Client_ID,AD_Menu_ID,AD_Org_ID,AD_Process_ID,Created,CreatedBy,EntityType,InternalName,IsActive,IsCreateNew,IsReadOnly,IsSOTrx,IsSummary,Name,Updated,UpdatedBy) VALUES ('P',0,541886,0,584953,TO_TIMESTAMP('2021-12-21 18:59:12','YYYY-MM-DD HH24:MI:SS'),100,'U','C_Invoice_Candidate_EnqueueSelectionForInvoicingAndPDFPrinting','Y','N','N','N','N','Enqueue Selection For Invoicing And PDFPrinting',TO_TIMESTAMP('2021-12-21 18:59:12','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Menu (AD_Element_id, Action,AD_Client_ID,AD_Menu_ID,AD_Org_ID,AD_Process_ID,Created,CreatedBy,EntityType,InternalName,IsActive,IsCreateNew,IsReadOnly,IsSOTrx,IsSummary,Name,Updated,UpdatedBy) VALUES (580425, 'P',0,541886,0,584953,TO_TIMESTAMP('2021-12-21 18:59:12','YYYY-MM-DD HH24:MI:SS'),100,'U','C_Invoice_Candidate_EnqueueSelectionForInvoicingAndPDFPrinting','Y','N','N','N','N','Enqueue Selection For Invoicing And PDFPrinting',TO_TIMESTAMP('2021-12-21 18:59:12','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2021-12-21T16:59:12.997241300Z
