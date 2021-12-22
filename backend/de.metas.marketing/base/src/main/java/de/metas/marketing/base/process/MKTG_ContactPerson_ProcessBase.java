@@ -2,6 +2,7 @@ package de.metas.marketing.base.process;
 
 import java.util.stream.Stream;
 
+import de.metas.process.PInstanceId;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.compiere.model.IQuery;
