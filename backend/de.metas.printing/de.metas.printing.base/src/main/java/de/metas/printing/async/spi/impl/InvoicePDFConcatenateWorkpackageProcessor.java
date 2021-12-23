@@ -11,7 +11,6 @@ import de.metas.async.spi.IWorkpackageProcessor;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.logging.TableRecordMDC;
 import de.metas.printing.api.IPrintingDAO;
-import de.metas.printing.api.IPrintingQueueSource;
 import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -25,7 +24,6 @@ import org.slf4j.MDC;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -39,15 +37,12 @@ import java.util.List;
  */
 public class InvoicePDFConcatenateWorkpackageProcessor implements IWorkpackageProcessor
 {
+	private static final String SYSCONFIG_PdfDownloadPath = "de.metas.printing.process.ConcatenatePdfs.OutputDir";
+	final String outputDir = Services.get(ISysConfigBL.class).getValue(SYSCONFIG_PdfDownloadPath);
+	final AttachmentEntryService attachmentEntryService = SpringContextHolder.instance.getBean(AttachmentEntryService.class);
 	// services
 	private final IPrintingDAO dao = Services.get(IPrintingDAO.class);
 	private final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
-
-	private static final String SYSCONFIG_PdfDownloadPath = "de.metas.printing.process.ConcatenatePdfs.OutputDir";
-	final String outputDir = Services.get(ISysConfigBL.class).getValue(SYSCONFIG_PdfDownloadPath);
-
-	final AttachmentEntryService attachmentEntryService = SpringContextHolder.instance.getBean(AttachmentEntryService.class);
-
 	private I_C_Async_Batch asyncBatch;
 
 	@Override
@@ -76,50 +71,36 @@ public class InvoicePDFConcatenateWorkpackageProcessor implements IWorkpackagePr
 		this.asyncBatch = workpackage.getC_Async_Batch();
 		Check.assumeNotNull(asyncBatch, "Async batch is not null");
 
-		final String outputDir = Services.get(ISysConfigBL.class).getValue(SYSCONFIG_PdfDownloadPath);
-		final String fileName = "printjobs_" + asyncBatch.getC_Async_Batch_ID();
+		final String fileName = "PDF_" + asyncBatch.getC_Async_Batch_ID();
 
-		final File file;
-		if (Check.isEmpty(outputDir, true))
-		{
-			file = File.createTempFile(fileName, ".pdf");
-		}
-		else
-		{
-			file = new File(outputDir, fileName + ".pdf");
-		}
-
+		final File file = File.createTempFile(fileName, ".pdf");
 		final Document document = new Document();
 
 		final FileOutputStream fos = new FileOutputStream(file, false);
 		final PdfCopy copy = new PdfCopy(document, fos);
 
-		final List<IPrintingQueueSource> sources = queueDAO.retrieveItems(workpackage, IPrintingQueueSource.class, ITrx.TRXNAME_ThreadInherited);
-		for (final IPrintingQueueSource source : sources)
+		final List<I_C_Printing_Queue> pqs = queueDAO.retrieveItems(workpackage, I_C_Printing_Queue.class, ITrx.TRXNAME_ThreadInherited);
+
+		for (final I_C_Printing_Queue pq : pqs)
 		{
-			final Iterator<I_C_Printing_Queue> it = source.createItemsIterator();
-			while (it.hasNext())
+			try (final MDC.MDCCloseable ignored = TableRecordMDC.putTableRecordReference(pq))
 			{
-				final I_C_Printing_Queue item = it.next();
-				try (final MDC.MDCCloseable ignored = TableRecordMDC.putTableRecordReference(item))
+				if (pq.isProcessed())
 				{
-					if (source.isPrinted(item))
-					{
-						continue;
-					}
-					final I_AD_Archive archive = item.getAD_Archive();
-					Check.assume(archive != null, item + " references an AD_Archive record");
-
-					final byte[] data = Services.get(IArchiveBL.class).getBinaryData(archive);
-					final PdfReader reader = new PdfReader(data);
-
-					for (int page = 0; page < reader.getNumberOfPages();)
-					{
-						copy.addPage(copy.getImportedPage(reader, ++page));
-					}
-					copy.freeReader(reader);
-					reader.close();
+					continue;
 				}
+				final I_AD_Archive archive = pq.getAD_Archive();
+				Check.assume(archive != null, pq + " references an AD_Archive record");
+
+				final byte[] data = Services.get(IArchiveBL.class).getBinaryData(archive);
+				final PdfReader reader = new PdfReader(data);
+
+				for (int page = 0; page < reader.getNumberOfPages(); )
+				{
+					copy.addPage(copy.getImportedPage(reader, ++page));
+				}
+				copy.freeReader(reader);
+				reader.close();
 			}
 		}
 
