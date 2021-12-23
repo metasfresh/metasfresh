@@ -487,6 +487,12 @@ public class AsyncBatchBL implements IAsyncBatchBL
 		return result.build();
 	}
 
+	@Override
+	public void setTempAsyncBatchId(@NonNull final Object model, @NonNull final AsyncBatchId ssyncBatchId)
+	{
+		InterfaceWrapperHelper.setDynAttribute(model, DYN_ATTR_TEMPORARY_BATCH_ID, ssyncBatchId);
+	}
+
 	public I_C_Async_Batch getAsyncBatchById(@NonNull final AsyncBatchId asyncBatchId)
 	{
 		return asyncBatchDAO.retrieveAsyncBatchRecord(asyncBatchId);

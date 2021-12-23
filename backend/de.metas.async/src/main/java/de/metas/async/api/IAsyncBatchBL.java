@@ -111,6 +111,8 @@ public interface IAsyncBatchBL extends ISingletonService
 			@NonNull List<T> model,
 			@NonNull String asyncBatchInternalName);
 
+	void setTempAsyncBatchId(@NonNull Object model, @NonNull AsyncBatchId ssyncBatchId);
+
 	I_C_Async_Batch getAsyncBatchById(AsyncBatchId asyncBatchId);
 
 	AsyncBatchId newAsyncBatch(String asyncBatchType);

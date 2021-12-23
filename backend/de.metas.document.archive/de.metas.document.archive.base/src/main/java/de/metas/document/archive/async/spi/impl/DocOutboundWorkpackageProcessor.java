@@ -24,6 +24,7 @@ package de.metas.document.archive.async.spi.impl;
 
 import de.metas.async.AsyncBatchId;
 import de.metas.async.Async_Constants;
+import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.model.I_C_Queue_WorkPackage;
@@ -69,6 +70,7 @@ public class DocOutboundWorkpackageProcessor implements IWorkpackageProcessor
 	private final DocOutboundLogMailRecipientRegistry docOutboundLogMailRecipientRegistry = SpringContextHolder.instance.getBean(DocOutboundLogMailRecipientRegistry.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
 
 	@Override
 	public Result processWorkPackage(final I_C_Queue_WorkPackage workpackage, final String localTrxName)
@@ -86,7 +88,7 @@ public class DocOutboundWorkpackageProcessor implements IWorkpackageProcessor
 		for (final Object record : records)
 		{
 			InterfaceWrapperHelper.setDynAttribute(record, Async_Constants.C_Async_Batch, asyncBatch);
-			InterfaceWrapperHelper.save(record);
+			asyncBatchBL.setTempAsyncBatchId(record, AsyncBatchId.ofRepoIdOrNull(asyncBatch != null ? asyncBatch.getC_Async_Batch_ID(): null) );
 			generateOutboundDocument(record, userId);
 		}
 		return Result.SUCCESS;
@@ -107,18 +109,9 @@ public class DocOutboundWorkpackageProcessor implements IWorkpackageProcessor
 		}
 		else
 		{
-			final I_AD_Archive archiveRecord = archiveResult.getArchiveRecord();
-			setC_AsyncBatch_ID(archiveRecord, record);
-			Loggables.addLog("Created AD_Archive_ID={} for record={}", archiveRecord.getAD_Archive_ID(), record);
-			archiveEventManager.firePdfUpdate(archiveRecord, userId);
+			Loggables.addLog("Created AD_Archive_ID={} for record={}", archiveResult.getArchiveRecord().getAD_Archive_ID(), record);
+			archiveEventManager.firePdfUpdate(archiveResult.getArchiveRecord(), userId);
 		}
-	}
-
-	private void setC_AsyncBatch_ID(@NonNull final I_AD_Archive archiveRecord, @NonNull final Object record)
-	{
-		final I_C_Async_Batch asyncBatch = InterfaceWrapperHelper.getDynAttribute(record, Async_Constants.C_Async_Batch);
-		archiveRecord.setC_Async_Batch_ID(asyncBatch.getC_Async_Batch_ID());
-		InterfaceWrapperHelper.save(archiveRecord);
 	}
 
 	private boolean computeInvoiceEmailEnabledFromRecord(@NonNull final Object record)
