@@ -308,7 +308,7 @@ public class DataExportAudit_StepDef
 
 		final I_C_BPartner_Location bPartnerLocation = bpartnerLocationTable.get(bpartnerLocationIdentifier);
 
-		bPartnerLocation.setGLN("not-relevant");
+		bPartnerLocation.setAddress("not-relevant");
 
 		InterfaceWrapperHelper.save(bPartnerLocation);
 	}
