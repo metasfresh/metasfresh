@@ -79,6 +79,8 @@ public class InvoicePDFConcatenateWorkpackageProcessor implements IWorkpackagePr
 		final FileOutputStream fos = new FileOutputStream(file, false);
 		final PdfCopy copy = new PdfCopy(document, fos);
 
+		document.open();
+		
 		final List<I_C_Printing_Queue> pqs = queueDAO.retrieveItems(workpackage, I_C_Printing_Queue.class, ITrx.TRXNAME_ThreadInherited);
 
 		for (final I_C_Printing_Queue pq : pqs)
