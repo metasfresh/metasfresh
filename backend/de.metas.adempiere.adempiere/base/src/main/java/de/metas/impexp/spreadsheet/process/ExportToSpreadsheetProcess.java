@@ -58,12 +58,9 @@ public class ExportToSpreadsheetProcess extends JavaProcess
 		final File resultFile;
 
 		final SpreadsheetExportOptions spreadsheetExportOptions = getProcessInfo().getSpreadsheetExportOptions();
-		SpreadsheetFormat spreadsheetFormat = getProcessInfo().getSpreadsheetExportOptions().getFormat();
-
-		if(p_SpreadsheetFormat != null)
-		{
-			spreadsheetFormat = SpreadsheetFormat.ofCode(p_SpreadsheetFormat);
-		}
+		final SpreadsheetFormat spreadsheetFormat = CoalesceUtil.coalesceNotNull(
+				SpreadsheetFormat.ofNullableCode(p_SpreadsheetFormat),
+				spreadsheetExportOptions.getFormat());
 
 		if (spreadsheetFormat == SpreadsheetFormat.Excel)
 		{
