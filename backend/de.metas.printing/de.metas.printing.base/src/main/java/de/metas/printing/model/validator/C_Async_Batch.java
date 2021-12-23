@@ -9,6 +9,7 @@ import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.processor.IWorkPackageQueueFactory;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.printing.api.IPrintingQueueBL;
 import de.metas.printing.api.IPrintingQueueQuery;
@@ -89,15 +90,14 @@ public class C_Async_Batch
 
 	private void runPrintingProcess(@NonNull final I_C_Async_Batch asyncBatch)
 	{
-		final List<I_AD_UserQuery> userQueries = fetchUserQueries();
-		for (final I_AD_UserQuery query : userQueries)
+		List<IQueryBuilder<I_C_Printing_Queue>>  queries = fetchPrintingQueues(asyncBatch);
+		for (final IQueryBuilder<I_C_Printing_Queue> pqs : queries)
 		{
-			final List<IPrintingQueueSource> sources = createPrintingQueueSource(asyncBatch, query.getCode());
-			enqueuePrintQueues(sources, asyncBatch);
+			enqueuePrintQueues(pqs, asyncBatch);
 		}
 	}
 
-	public void enqueuePrintQueues(@NonNull final List<IPrintingQueueSource> sources, @NonNull final I_C_Async_Batch parentAsyncBatch)
+	private void enqueuePrintQueues(@NonNull final IQueryBuilder<I_C_Printing_Queue> pqs, @NonNull final I_C_Async_Batch parentAsyncBatch)
 	{
 		final AsyncBatchId asyncBatchId = createAsyncBatch();
 		final Properties ctx = InterfaceWrapperHelper.getCtx(parentAsyncBatch);
@@ -107,7 +107,7 @@ public class C_Async_Batch
 				.setContext(ctx)
 				.newWorkpackage()
 				.setC_Async_Batch(asyncBatchBL.getAsyncBatchById(asyncBatchId))
-				.addElements(sources)
+				.addElements(pqs.create().list())
 			.build();
 	}
 
@@ -116,60 +116,31 @@ public class C_Async_Batch
 		return  asyncBatchBL.newAsyncBatch(C_Async_Batch_InternalName_AutomaticallyInvoicePdfPrinting);
 	}
 
-	private List<I_AD_UserQuery> fetchUserQueries()
+	private List<IQueryBuilder<I_C_Printing_Queue>> fetchPrintingQueues(@NonNull final I_C_Async_Batch asyncBatch)
 	{
 		final Map<String, String> valuesForPrefix = Services.get(ISysConfigBL.class).getValuesForPrefix("UserQuery_", ClientAndOrgId.SYSTEM);
-		final Collection<String> names = valuesForPrefix.values();
-		final List<I_AD_UserQuery> queries = new ArrayList<>();
-		for (final String name : names)
+		final Collection<String> clauses = valuesForPrefix.values();
+		final List<IQueryBuilder<I_C_Printing_Queue>> queries = new ArrayList<>();
+		for (final String whereClause : clauses)
 		{
-			queries.add(retrieveAD_UserQueryByName(name));
+			IQueryBuilder<I_C_Printing_Queue> queryBuilder = createPQQueryBuilder(asyncBatch, whereClause);
+			queries.add(queryBuilder);
 		}
 
 		return  queries;
 	}
 
-
-	private List<IPrintingQueueSource> createPrintingQueueSource(@NonNull final I_C_Async_Batch asyncBatch, @NonNull final String whereClause)
+	private IQueryBuilder<I_C_Printing_Queue> createPQQueryBuilder(@NonNull final I_C_Async_Batch asyncBatch, @NonNull final String whereClause)
 	{
 		final IQueryFilter<I_C_Printing_Queue> userQueryFilter = TypedSqlQueryFilter.of(whereClause);
 
-		final IQuery<I_C_Printing_Queue> query = queryBL.createQueryBuilder(I_C_Printing_Queue.class, Env.getCtx(), ITrx.TRXNAME_None)
-				.addOnlyActiveRecordsFilter()
+		final IQueryBuilder<I_C_Printing_Queue> queryBuilder = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_Printing_Queue.class)
 				.addOnlyContextClient()
 				.addEqualsFilter(I_C_Printing_Queue.COLUMN_C_Async_Batch_ID, asyncBatch.getC_Async_Batch_ID())
 				.addEqualsFilter(I_C_Printing_Queue.COLUMNNAME_Processed, false)
-				.addEqualsFilter(I_C_Printing_Queue.COLUMNNAME_ItemName, X_C_Printing_Queue.ITEMNAME_Rechnung)
-				.filter(userQueryFilter)
-				.create();
+				.filter(userQueryFilter);
 
-		final PInstanceId pinstanceId = PInstanceId.ofRepoId(asyncBatch.getAD_PInstance_ID());
-		final int selectionLength = query.createSelection(pinstanceId);
-
-		if (selectionLength <= 0)
-		{
-			return Collections.emptyList();
-		}
-
-		final IPrintingQueueQuery printingQuery = printingQueueBL.createPrintingQueueQuery();
-		printingQuery.setFilterByProcessedQueueItems(false);
-		printingQuery.setOnlyAD_PInstance_ID(pinstanceId);
-
-		final Properties ctx = Env.getCtx();
-
-		// we need to make sure exists AD_Session_ID in context; if not, a new session will be created
-		sessionBL.getCurrentOrCreateNewSession(ctx);
-
-		return printingQueueBL.createPrintingQueueSources(ctx, printingQuery);
+		return queryBuilder;
 	}
-
-	private final I_AD_UserQuery retrieveAD_UserQueryByName(@NonNull final String name)
-	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_AD_UserQuery.class)
-				.addEqualsFilter(I_AD_UserQuery.COLUMNNAME_Name, name)
-				.create()
-				.first();
-
-	}
-
 }
