@@ -113,7 +113,7 @@ public class C_Async_Batch
 				.setContext(ctx)
 				.newWorkpackage()
 				.setC_Async_Batch(asyncBatchBL.getAsyncBatchById(asyncBatchId))
-				.addElements()
+				.addElements(printing_queues)
 			.build();
 	}
 
