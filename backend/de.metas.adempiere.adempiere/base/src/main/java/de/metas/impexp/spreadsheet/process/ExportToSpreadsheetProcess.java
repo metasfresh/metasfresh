@@ -22,6 +22,7 @@
 
 package de.metas.impexp.spreadsheet.process;
 
+import de.metas.common.util.CoalesceUtil;
 import de.metas.impexp.spreadsheet.csv.JdbcCSVExporter;
 import de.metas.impexp.spreadsheet.excel.JdbcExcelExporter;
 import de.metas.impexp.spreadsheet.service.SpreadsheetExporterService;
