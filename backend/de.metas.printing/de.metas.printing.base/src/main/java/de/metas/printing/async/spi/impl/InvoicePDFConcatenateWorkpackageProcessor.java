@@ -37,8 +37,6 @@ import java.util.List;
  */
 public class InvoicePDFConcatenateWorkpackageProcessor implements IWorkpackageProcessor
 {
-	private static final String SYSCONFIG_PdfDownloadPath = "de.metas.printing.process.ConcatenatePdfs.OutputDir";
-	final String outputDir = Services.get(ISysConfigBL.class).getValue(SYSCONFIG_PdfDownloadPath);
 	final AttachmentEntryService attachmentEntryService = SpringContextHolder.instance.getBean(AttachmentEntryService.class);
 	// services
 	private final IPrintingDAO dao = Services.get(IPrintingDAO.class);
@@ -80,7 +78,7 @@ public class InvoicePDFConcatenateWorkpackageProcessor implements IWorkpackagePr
 		final PdfCopy copy = new PdfCopy(document, fos);
 
 		document.open();
-		
+
 		final List<I_C_Printing_Queue> pqs = queueDAO.retrieveItems(workpackage, I_C_Printing_Queue.class, ITrx.TRXNAME_ThreadInherited);
 
 		for (final I_C_Printing_Queue pq : pqs)
@@ -108,6 +106,6 @@ public class InvoicePDFConcatenateWorkpackageProcessor implements IWorkpackagePr
 
 		document.close();
 		fos.close();
-		return new File(outputDir);
+		return file;
 	}
 }
