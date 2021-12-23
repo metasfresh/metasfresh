@@ -99,6 +99,12 @@ public class C_Async_Batch
 
 	private void enqueuePrintQueues(@NonNull final IQueryBuilder<I_C_Printing_Queue> pqs, @NonNull final I_C_Async_Batch parentAsyncBatch)
 	{
+		final List<I_C_Printing_Queue> printing_queues = pqs.create().list();
+		if (printing_queues.isEmpty())
+		{
+			return;
+		}
+
 		final AsyncBatchId asyncBatchId = createAsyncBatch();
 		final Properties ctx = InterfaceWrapperHelper.getCtx(parentAsyncBatch);
 
@@ -107,7 +113,7 @@ public class C_Async_Batch
 				.setContext(ctx)
 				.newWorkpackage()
 				.setC_Async_Batch(asyncBatchBL.getAsyncBatchById(asyncBatchId))
-				.addElements(pqs.create().list())
+				.addElements()
 			.build();
 	}
 
