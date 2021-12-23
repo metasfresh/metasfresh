@@ -43,15 +43,10 @@ public class DatevAcctExport
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-		final List<I_DatevAcctExportLine> lines = queryBL.createQueryBuilder(I_DatevAcctExportLine.class)
+		queryBL.createQueryBuilder(I_DatevAcctExportLine.class)
 				.addInArrayFilter(I_DatevAcctExportLine.COLUMNNAME_DatevAcctExport_ID, datevAcctExport.getDatevAcctExport_ID())
 				.create()
-				.list();
-
-		for (final I_DatevAcctExportLine line : lines)
-		{
-			InterfaceWrapperHelper.delete(line);
-		}
+				.delete();
 	}
 
 }

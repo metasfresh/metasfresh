@@ -26,6 +26,7 @@ import de.metas.impexp.spreadsheet.csv.JdbcCSVExporter;
 import de.metas.impexp.spreadsheet.excel.JdbcExcelExporter;
 import de.metas.impexp.spreadsheet.service.SpreadsheetExporterService;
 import de.metas.process.JavaProcess;
+import de.metas.process.Param;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.process.SpreadsheetExportOptions;
 import de.metas.process.SpreadsheetFormat;
@@ -33,6 +34,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_DatevAcctExport;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
@@ -43,26 +45,9 @@ import java.util.ArrayList;
 public class ExportToSpreadsheetProcess extends JavaProcess
 {
 	final SpreadsheetExporterService spreadsheetExporterService = SpringContextHolder.instance.getBean(SpreadsheetExporterService.class);
-	private	SpreadsheetFormat spreadsheetFormat;
 
-	@Override
-	protected void prepare()
-	{
-		spreadsheetFormat = getProcessInfo().getSpreadsheetExportOptions().getFormat();
-
-		for (final ProcessInfoParameter para : getParameters())
-		{
-			final String name = para.getParameterName();
-			if (para.getParameter() == null)
-			{
-				;
-			}
-			else if ("SpreadsheetFormat".equals(name))
-			{
-				spreadsheetFormat = SpreadsheetFormat.ofCode(para.getParameterAsString());
-			}
-		}
-	}
+	@Param(parameterName = "SpreadsheetFormat")
+	private	String  p_SpreadsheetFormat;
 
 	@Override
 	protected String doIt()
@@ -73,7 +58,13 @@ public class ExportToSpreadsheetProcess extends JavaProcess
 		final File resultFile;
 
 		final SpreadsheetExportOptions spreadsheetExportOptions = getProcessInfo().getSpreadsheetExportOptions();
-		//final SpreadsheetFormat spreadsheetFormat = spreadsheetExportOptions.getFormat();
+		SpreadsheetFormat spreadsheetFormat = getProcessInfo().getSpreadsheetExportOptions().getFormat();
+
+		if(p_SpreadsheetFormat != null)
+		{
+			spreadsheetFormat = SpreadsheetFormat.ofCode(p_SpreadsheetFormat);
+		}
+
 		if (spreadsheetFormat == SpreadsheetFormat.Excel)
 		{
 			final JdbcExcelExporter jdbcExcelExporter = JdbcExcelExporter.builder()
