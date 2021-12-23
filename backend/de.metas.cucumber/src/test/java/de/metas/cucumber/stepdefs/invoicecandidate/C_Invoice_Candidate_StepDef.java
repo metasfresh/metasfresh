@@ -24,9 +24,11 @@ package de.metas.cucumber.stepdefs.invoicecandidate;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
+import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceService;
@@ -35,7 +37,7 @@ import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.InvoiceCandidateIdsSelection;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.rest_api.v2.invoice.impl.JsonInvoiceService;
+import de.metas.order.OrderLineId;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -45,9 +47,9 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
-
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -65,19 +67,23 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 public class C_Invoice_Candidate_StepDef
 {
 	private final InvoiceService invoiceService = SpringContextHolder.instance.getBean(InvoiceService.class);
+	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 
 	private final StepDefData<I_C_Invoice_Candidate> invoiceCandTable;
+	private final C_OrderLine_StepDefData orderLineTable;
 	private final C_Invoice_StepDefData invoiceTable;
 	private final C_BPartner_StepDefData bPartnerTable;
 	private final M_Product_StepDefData productTable;
 
 	public C_Invoice_Candidate_StepDef(
 			@NonNull final StepDefData<I_C_Invoice_Candidate> invoiceCandTable,
+			@NonNull final C_OrderLine_StepDefData orderLineTable,
 			@NonNull final C_Invoice_StepDefData invoiceTable,
 			@NonNull final C_BPartner_StepDefData bPartnerTable,
 			@NonNull final M_Product_StepDefData productTable)
 	{
 		this.invoiceCandTable = invoiceCandTable;
+		this.orderLineTable = orderLineTable;
 		this.invoiceTable = invoiceTable;
 		this.bPartnerTable = bPartnerTable;
 		this.productTable = productTable;
@@ -138,6 +144,12 @@ public class C_Invoice_Candidate_StepDef
 				recompute = invoiceCandidate.getNetAmtInvoiced().compareTo(netAmountInvoiced) != 0;
 			}
 
+			final BigDecimal netAmtToInvoice = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + COLUMNNAME_NetAmtToInvoice);
+			if (netAmtToInvoice != null)
+			{
+				recompute = invoiceCandidate.getNetAmtToInvoice().compareTo(netAmtToInvoice) != 0;
+			}
+
 			if (recompute)
 			{
 				final InvoiceCandidateIdsSelection onlyInvoiceCandidateIds = InvoiceCandidateIdsSelection.ofIdsSet(
@@ -162,7 +174,7 @@ public class C_Invoice_Candidate_StepDef
 			final String invoiceCandIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Invoice_Candidate_ID + "." + TABLECOLUMN_IDENTIFIER);
 			final I_C_Invoice_Candidate invoiceCandidate = invoiceCandTable.get(invoiceCandIdentifier);
 			assertThat(invoiceCandidate).isNotNull();
-			
+
 			InterfaceWrapperHelper.refresh(invoiceCandidate);
 
 			InterfaceWrapperHelper.refresh(invoiceCandidate);
@@ -205,5 +217,34 @@ public class C_Invoice_Candidate_StepDef
 			final InvoiceCandidateId invoiceCandidateId = InvoiceCandidateId.ofRepoId(invoiceCandidate.getC_Invoice_Candidate_ID());
 			invoiceService.generateInvoicesFromInvoiceCandidateIds(ImmutableSet.of(invoiceCandidateId));
 		}
+	}
+
+	@And("^after not more than (.*)s locate invoice candidates by order line:$")
+	public void locate_invoice_candidate(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+		for (final Map<String, String> row : tableRows)
+		{
+			findInvoiceCandidateByOrderLine(timeoutSec, row);
+		}
+	}
+
+	private void findInvoiceCandidateByOrderLine(final int timeoutSec, @NonNull final Map<String, String> row) throws InterruptedException
+	{
+		final String orderLineIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_OrderLine.COLUMNNAME_C_OrderLine_ID + "." + TABLECOLUMN_IDENTIFIER);
+
+		final I_C_OrderLine orderLine = orderLineTable.get(orderLineIdentifier);
+
+		StepDefUtil.tryAndWait(timeoutSec, 500, () -> invoiceCandDAO
+				.retrieveInvoiceCandidatesForOrderLineId(OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID())).size() > 0);
+
+		final List<I_C_Invoice_Candidate> invoiceCandidates = invoiceCandDAO
+				.retrieveInvoiceCandidatesForOrderLineId(OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID()));
+
+		assertThat(invoiceCandidates.size()).isEqualTo(1);
+
+		final String invoiceCandidateIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Invoice_Candidate_ID + "." + TABLECOLUMN_IDENTIFIER);
+
+		invoiceCandTable.put(invoiceCandidateIdentifier, invoiceCandidates.get(0));
 	}
 }

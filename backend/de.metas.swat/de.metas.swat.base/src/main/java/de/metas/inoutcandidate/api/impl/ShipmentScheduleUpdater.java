@@ -24,6 +24,7 @@ import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateRepositor
 import de.metas.inoutcandidate.invalidation.segments.IShipmentScheduleSegment;
 import de.metas.inoutcandidate.invalidation.segments.ImmutableShipmentScheduleSegment;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.inoutcandidate.picking_bom.PickingBOMService;
 import de.metas.inoutcandidate.picking_bom.PickingBOMsReversedIndex;
 import de.metas.inoutcandidate.spi.IShipmentSchedulesAfterFirstPassUpdater;
@@ -782,8 +783,9 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 		}
 		final boolean noQtyOverride = sched.getQtyToDeliver_Override().signum() <= 0;
 		final boolean noQtyReserved = sched.getQtyReserved().signum() <= 0;
+		final boolean noQtyPickedAndNotDelivered = getPendingQtyPicked(sched).signum() <= 0;
 
-		sched.setProcessed(noQtyOverride && noQtyReserved);
+		sched.setProcessed(noQtyOverride && noQtyReserved && noQtyPickedAndNotDelivered);
 	}
 
 	private void updatePreparationAndDeliveryDate(@NonNull final I_M_ShipmentSchedule sched)
@@ -937,5 +939,22 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			}
 			return segments.stream();
 		}
+	}
+
+	@NonNull
+	private BigDecimal getPendingQtyPicked(@NonNull final I_M_ShipmentSchedule schedule)
+	{
+		final List<I_M_ShipmentSchedule_QtyPicked> scheduleAllocations = shipmentScheduleAllocDAO.retrieveAllQtyPickedRecords(schedule, I_M_ShipmentSchedule_QtyPicked.class);
+
+		if (Check.isEmpty(scheduleAllocations))
+		{
+			return BigDecimal.ZERO;
+		}
+
+		return scheduleAllocations.stream()
+				.filter(allocation -> allocation.getQtyPicked().signum() > 0)
+				.filter(allocation -> !allocation.isProcessed())
+				.map(I_M_ShipmentSchedule_QtyPicked::getQtyPicked)
+				.reduce(BigDecimal.ZERO, BigDecimal::add);
 	}
 }
