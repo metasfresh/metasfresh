@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_DatevAcctExport extends org.compiere.model.PO implements I_DatevAcctExport, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -176836392L;
+	private static final long serialVersionUID = -878844184L;
 
     /** Standard Constructor */
     public X_DatevAcctExport (final Properties ctx, final int DatevAcctExport_ID, @Nullable final String trxName)
@@ -74,6 +74,33 @@ public class X_DatevAcctExport extends org.compiere.model.PO implements I_DatevA
 	public int getDatevAcctExport_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_DatevAcctExport_ID);
+	}
+
+	@Override
+	public void setExportBy_ID (final int ExportBy_ID)
+	{
+		if (ExportBy_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_ExportBy_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_ExportBy_ID, ExportBy_ID);
+	}
+
+	@Override
+	public int getExportBy_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_ExportBy_ID);
+	}
+
+	@Override
+	public void setExportDate (final @Nullable java.sql.Timestamp ExportDate)
+	{
+		set_ValueNoCheck (COLUMNNAME_ExportDate, ExportDate);
+	}
+
+	@Override
+	public java.sql.Timestamp getExportDate() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_ExportDate);
 	}
 
 	/** 
