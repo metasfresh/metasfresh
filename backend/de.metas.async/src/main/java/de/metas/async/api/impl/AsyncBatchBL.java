@@ -27,7 +27,6 @@ package de.metas.async.api.impl;
  * #L%
  */
 
-import com.google.common.annotations.VisibleForTesting;
 import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.api.IAsyncBatchBuilder;
@@ -117,39 +116,6 @@ public class AsyncBatchBL implements IAsyncBatchBL
 
 	}
 
-	private int setAsyncBatchCountEnqueued(final I_C_Queue_WorkPackage workPackage, final int offset)
-	{
-		final AsyncBatchId asyncBatchId = AsyncBatchId.ofRepoIdOrNull(workPackage.getC_Async_Batch_ID());
-		if (asyncBatchId == null)
-		{
-			return 0;
-		}
-
-		lock.lock();
-		try
-		{
-			final I_C_Async_Batch asyncBatch = asyncBatchDAO.retrieveAsyncBatchRecord(asyncBatchId);
-			final Timestamp enqueued = de.metas.common.util.time.SystemTime.asTimestamp();
-			if (asyncBatch.getFirstEnqueued() == null)
-			{
-				asyncBatch.setFirstEnqueued(enqueued);
-			}
-
-			asyncBatch.setLastEnqueued(enqueued);
-			final int countEnqueued = asyncBatch.getCountEnqueued() + offset;
-			asyncBatch.setCountEnqueued(countEnqueued);
-			// we just enqueued something, so we are clearly not done yet
-			asyncBatch.setIsProcessing(true);
-			asyncBatch.setProcessed(false);
-			save(asyncBatch);
-			return countEnqueued;
-		}
-		finally
-		{
-			lock.unlock();
-		}
-	}
-
 	@Override
 	public void increaseProcessed(final I_C_Queue_WorkPackage workPackage)
 	{
@@ -169,20 +135,12 @@ public class AsyncBatchBL implements IAsyncBatchBL
 			asyncBatch.setLastProcessed_WorkPackage_ID(workPackage.getC_Queue_WorkPackage_ID());
 			asyncBatch.setCountProcessed(asyncBatch.getCountProcessed() + 1);
 
-			asyncBatch.setProcessed(checkProcessed(asyncBatch));
-			asyncBatch.setIsProcessing(checkProcessing(asyncBatch));
-			
 			save(asyncBatch);
 		}
 		finally
 		{
 			lock.unlock();
 		}
-	}
-
-	private void save(final I_C_Async_Batch asyncBatch)
-	{
-		Services.get(IQueueDAO.class).save(asyncBatch);
 	}
 
 	@Override
@@ -213,7 +171,7 @@ public class AsyncBatchBL implements IAsyncBatchBL
 	}
 
 	@Override
-	public boolean updateProcessed(@NonNull final AsyncBatchId asyncBatchId)
+	public boolean updateProcessed(@NonNull final AsyncBatchId asyncBatchId, @Nullable final String trxName)
 	{
 		final I_C_Async_Batch asyncBatchRecord = asyncBatchDAO.retrieveAsyncBatchRecord(asyncBatchId);
 		if (asyncBatchRecord.isProcessed())
@@ -221,76 +179,42 @@ public class AsyncBatchBL implements IAsyncBatchBL
 			return true;
 		}
 
-		if (isAsyncBatchEligibleToProcess(asyncBatchId))
+		if (shouldBeProcessedManually(asyncBatchId))
 		{
 			return false;
 		}
 
-		final boolean processed = checkProcessed(asyncBatchRecord);
-		if (!processed)
+		final Optional<Integer> millisUntilReadyForChecking = getDelayUntilCheckingProcessedState(asyncBatchRecord);
+
+		if (millisUntilReadyForChecking.isPresent())
 		{
 			return false;
 		}
 
-		asyncBatchRecord.setProcessed(true);
-		asyncBatchRecord.setIsProcessing(false);
+		updateProcessedFlag(asyncBatchRecord, trxName);
+
 		queueDAO.save(asyncBatchRecord);
-		return true;
+
+		return asyncBatchRecord.isProcessed();
 	}
 
-	private boolean isAsyncBatchEligibleToProcess(@NonNull final AsyncBatchId asyncBatchId)
+	public boolean shouldBeProcessedManually(@NonNull final AsyncBatchId asyncBatchId)
 	{
 		final List<I_C_Async_Batch_Milestone> milestones = asyncBatchDAO.retrieveMilestonesForAsyncBatchId(asyncBatchId);
 
-		return milestones.isEmpty();
+		return !milestones.isEmpty();
 	}
 
-	@VisibleForTesting
-	/* package */boolean checkProcessed(@NonNull final I_C_Async_Batch asyncBatch)
+	public Optional<Integer> getDelayUntilCheckingProcessedState(@NonNull final I_C_Async_Batch asyncBatch)
 	{
-		// if (asyncBatch.isProcessed())
-		// {
-		// 	return true;
-		// }
-
-		final int countEnqueued = asyncBatch.getCountEnqueued();
-		final int countProcessed = asyncBatch.getCountProcessed();
-		final int countExpected = asyncBatch.getCountExpected();
-
-		//
-		// if countExpected has a value, check counters directly; makes no sense to wait more
-		if (countExpected > 0)
-		{
-			// if enqueued or processed differs from expected, skip
-			if (countExpected > countEnqueued || countExpected > countProcessed)
-			{
-				return false;
-			}
-
-			// if all are equals, means is processed
-			if (countExpected <= countProcessed)
-			{
-				return true;
-			}
-		}
-
-		// Case: in case enqueued counter or processed counter is zero, we cannot consider this as processed
-		if (countEnqueued <= 0 || countProcessed <= 0)
-		{
-			return false;
-		}
-		// Case: we have more enqueued work packages than processed
-		if (countEnqueued > countProcessed)
-		{
-			return false;
-		}
+		final int processedTimeOffsetMillis = getProcessedTimeOffsetMillis();
 
 		//
 		final Timestamp firstEnqueued = asyncBatch.getFirstEnqueued();
 		if (firstEnqueued == null)
 		{
 			// shall not happen
-			return false;
+			return Optional.of(processedTimeOffsetMillis);
 		}
 
 		//
@@ -298,60 +222,41 @@ public class AsyncBatchBL implements IAsyncBatchBL
 		if (lastEnqueued == null)
 		{
 			// shall not happen
-			return false;
+			return Optional.of(processedTimeOffsetMillis);
 		}
 
 		final Timestamp lastProcessed = asyncBatch.getLastProcessed();
 		if (lastProcessed == null)
 		{
 			// shall not happen
-			return false;
+			return Optional.of(processedTimeOffsetMillis);
 		}
 
 		// Case: when did not pass enough time between fist enqueue time and now
-		final int processedTimeOffsetMillis = getProcessedTimeOffsetMillis();
 		final Timestamp now = de.metas.common.util.time.SystemTime.asTimestamp();
-		final Timestamp minTimeAfterFirstEnqueued = TimeUtil.addMillis(now, processedTimeOffsetMillis);
-		if (firstEnqueued.compareTo(minTimeAfterFirstEnqueued) > 0)
-		{
-			return false;
-		}
 
-		// Case: when last processed time is before last enqueued time; this means that we still have packages to process
-		if (lastProcessed.compareTo(lastEnqueued) < 0)
+		final Timestamp minTimeAfterFirstEnqueued = TimeUtil.addMillis(firstEnqueued, processedTimeOffsetMillis);
+
+		if (minTimeAfterFirstEnqueued.compareTo(now) > 0)
 		{
-			return false;
+			final int millisToWait = TimeUtil.getMillisBetween(now, minTimeAfterFirstEnqueued);
+
+			return Optional.of(millisToWait);
 		}
 
 		// Case: when did not pass enough time between last processed time and now - offset
 		// take a bigger time for checking processed because thread could be locked by other thread and we could have some bigger delay
-		final Timestamp minTimeAfterLastProcessed = TimeUtil.addMillis(now, processedTimeOffsetMillis);
-		if (lastProcessed.compareTo(minTimeAfterLastProcessed) > 0)
+		final Timestamp minTimeAfterLastProcessed = TimeUtil.addMillis(lastProcessed, processedTimeOffsetMillis);
+		if (minTimeAfterLastProcessed.compareTo(now) > 0)
 		{
-			return false;
+			final int millisToWait = TimeUtil.getMillisBetween(now, minTimeAfterLastProcessed);
+
+			return Optional.of(millisToWait);
 		}
 
 		//
-		// If we reach this point, our batch can be considered processed
-		return true;
-	}
-
-	/**
-	 * assumes that asyncBatch.isProcessed() was already set with the help of #checkProcessed 
-	 */
-	private boolean checkProcessing(@NonNull final I_C_Async_Batch asyncBatch)
-	{
-		if (asyncBatch.isProcessed())
-		{
-			return false;
-		}
-		final int countEnqueued = asyncBatch.getCountEnqueued();
-		return countEnqueued > 0;
-	}
-	
-	private int getProcessedTimeOffsetMillis()
-	{
-		return Services.get(ISysConfigBL.class).getIntValue("de.metas.async.api.impl.AsyncBatchBL_ProcessedOffsetMillis", 1);
+		// If we reach this point, we can move on and check if the async batch is processed
+		return Optional.empty();
 	}
 
 	@Override
@@ -481,5 +386,77 @@ public class AsyncBatchBL implements IAsyncBatchBL
 				.build();
 
 		return AsyncBatchId.ofRepoId(asyncBatch.getC_Async_Batch_ID());
+	}
+
+	private void updateProcessedFlag(@NonNull final I_C_Async_Batch asyncBatch, @Nullable final String trxName)
+	{
+		final List<I_C_Queue_WorkPackage> workPackages = asyncBatchDAO.retrieveWorkPackages(asyncBatch, trxName);
+
+		if (Check.isEmpty(workPackages))
+		{
+			return;
+		}
+
+		final int workPackagesProcessedCount = (int)workPackages.stream()
+				.filter(I_C_Queue_WorkPackage::isProcessed)
+				.count();
+
+		final int workPackagesWithErrorCount = (int)workPackages.stream()
+				.filter(I_C_Queue_WorkPackage::isError)
+				.count();
+
+		final int workPackagesFinalized = workPackagesProcessedCount + workPackagesWithErrorCount;
+
+		final boolean allWorkPackagesAreDone = workPackagesFinalized >= workPackages.size();
+
+		final boolean isProcessed = asyncBatch.getCountExpected() > 0
+				? allWorkPackagesAreDone && workPackagesFinalized >= asyncBatch.getCountExpected()
+				: allWorkPackagesAreDone;
+
+		asyncBatch.setProcessed(isProcessed);
+		asyncBatch.setIsProcessing(!allWorkPackagesAreDone);
+	}
+
+	private int getProcessedTimeOffsetMillis()
+	{
+		return Services.get(ISysConfigBL.class).getIntValue("de.metas.async.api.impl.AsyncBatchBL_ProcessedOffsetMillis", 1);
+	}
+
+	private void save(final I_C_Async_Batch asyncBatch)
+	{
+		Services.get(IQueueDAO.class).save(asyncBatch);
+	}
+
+	private int setAsyncBatchCountEnqueued(final I_C_Queue_WorkPackage workPackage, final int offset)
+	{
+		final AsyncBatchId asyncBatchId = AsyncBatchId.ofRepoIdOrNull(workPackage.getC_Async_Batch_ID());
+		if (asyncBatchId == null)
+		{
+			return 0;
+		}
+
+		lock.lock();
+		try
+		{
+			final I_C_Async_Batch asyncBatch = asyncBatchDAO.retrieveAsyncBatchRecord(asyncBatchId);
+			final Timestamp enqueued = de.metas.common.util.time.SystemTime.asTimestamp();
+			if (asyncBatch.getFirstEnqueued() == null)
+			{
+				asyncBatch.setFirstEnqueued(enqueued);
+			}
+
+			asyncBatch.setLastEnqueued(enqueued);
+			final int countEnqueued = asyncBatch.getCountEnqueued() + offset;
+			asyncBatch.setCountEnqueued(countEnqueued);
+			// we just enqueued something, so we are clearly not done yet
+			asyncBatch.setIsProcessing(true);
+			asyncBatch.setProcessed(false);
+			save(asyncBatch);
+			return countEnqueued;
+		}
+		finally
+		{
+			lock.unlock();
+		}
 	}
 }

@@ -45,7 +45,7 @@ public interface IAsyncBatchBL extends ISingletonService
 	 *
 	 * @return {@code true} iff the respective record was updated to {@code processed='Y'};
 	 */
-	boolean updateProcessed(AsyncBatchId asyncBatchId);
+	boolean updateProcessed(AsyncBatchId asyncBatchId, String trxName);
 
 	/**
 	 * Enqueue batch for the de.metas.async.processor.impl.CheckProcessedAsynBatchWorkpackageProcessor processor. Call
@@ -84,4 +84,8 @@ public interface IAsyncBatchBL extends ISingletonService
 	void updateProcessedFromMilestones(AsyncBatchId asyncBatchId);
 
 	AsyncBatchId newAsyncBatch(String asyncBatchType);
+
+	Optional<Integer> getDelayUntilCheckingProcessedState(I_C_Async_Batch asyncBatch);
+
+	boolean shouldBeProcessedManually(AsyncBatchId asyncBatchId);
 }

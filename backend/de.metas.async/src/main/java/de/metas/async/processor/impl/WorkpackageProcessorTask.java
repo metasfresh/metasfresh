@@ -555,7 +555,7 @@ class WorkpackageProcessorTask implements Runnable
 		final String msg = StringUtils.formatMessage("Skipped while processing workpackage by processor {}; workpackage={}", processorName, workPackage);
 
 		// log error (for later audit), but note that this exception can actually be quite frequent. so in order to not clutter the log, just log it on debug level
-		logger.debug(msg, skipException);
+		logger.error(msg, skipException);
 		Loggables.addLog(msg, skipException);
 
 		createAndFireEventWithStatus(workPackage, SKIPPED);

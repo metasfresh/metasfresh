@@ -1,7 +1,9 @@
 package de.metas.async.api.impl;
 
+import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.model.I_C_Async_Batch;
+import de.metas.async.model.I_C_Async_Batch_Milestone;
 import de.metas.common.util.time.SystemTime;
 import de.metas.util.Services;
 import org.adempiere.ad.trx.api.ITrx;
@@ -14,11 +16,14 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.sql.Timestamp;
+import java.util.Optional;
 import java.util.Properties;
 
 public class AsyncBatchBLTest
 {
-	/** service under test */
+	/**
+	 * service under test
+	 */
 	private AsyncBatchBL asyncBatchBL;
 
 	private Properties ctx;
@@ -38,30 +43,47 @@ public class AsyncBatchBLTest
 	}
 
 	@Test
-	public void test_Processed()
+	public void givenAsyncBatchWithLinkedMilestones_whenShouldBeProcessedManually_thenReturnTrue()
 	{
-		
+		//given
+		final I_C_Async_Batch asyncBatch = newAsyncBatch();
+		InterfaceWrapperHelper.saveRecord(asyncBatch);
+
+		final I_C_Async_Batch_Milestone milestone = InterfaceWrapperHelper.newInstance(I_C_Async_Batch_Milestone.class);
+		milestone.setC_Async_Batch_ID(asyncBatch.getC_Async_Batch_ID());
+		InterfaceWrapperHelper.saveRecord(milestone);
+
+		//when
+		final boolean shouldBeProcessedManually = asyncBatchBL.shouldBeProcessedManually(AsyncBatchId.ofRepoId(asyncBatch.getC_Async_Batch_ID()));
+
+		//then
+		Assert.assertTrue(shouldBeProcessedManually);
+	}
+
+	@Test
+	public void givenNotEnoughTimePassedSinceLastEnqueued_whenGetDelayUntilCheckingProcessedState_thenReturnTimeToWait()
+	{
+		//given
 		final Timestamp FirstEnqueued = TimeUtil.addMinutes(now, -5);
 		final Timestamp LastEnqueued = TimeUtil.addMinutes(now, -4);
-		final Timestamp LastProcessed = TimeUtil.addMinutes(now, -3);
-		final int CountEnqueued = 2;
-		final int CountProcessed = 2;
+		final Timestamp LastProcessed = TimeUtil.addMinutes(now, +1);
 
 		final I_C_Async_Batch asyncBatch = newAsyncBatch();
 		asyncBatch.setFirstEnqueued(FirstEnqueued);
 		asyncBatch.setLastEnqueued(LastEnqueued);
 		asyncBatch.setLastProcessed(LastProcessed);
-		
-		asyncBatch.setCountEnqueued(CountEnqueued);
-		asyncBatch.setCountProcessed(CountProcessed);
-		final boolean processedExpected = true;
+		InterfaceWrapperHelper.save(asyncBatch);
 
-		Assert.assertEquals("Invalid Processed", processedExpected, asyncBatchBL.checkProcessed(asyncBatch));
+		//when
+		final Optional<Integer> timeToWait = asyncBatchBL.getDelayUntilCheckingProcessedState(asyncBatch);
+
+		//then
+		Assert.assertTrue(timeToWait.isPresent());
+		Assert.assertEquals(TimeUtil.getMillisBetween(now, TimeUtil.addMillis(LastProcessed, 1)), timeToWait.get().intValue());
 	}
 
 	private I_C_Async_Batch newAsyncBatch()
 	{
 		return InterfaceWrapperHelper.create(ctx, I_C_Async_Batch.class, ITrx.TRXNAME_None);
 	}
-
 }
