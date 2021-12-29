@@ -729,7 +729,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 
 		final IModelTranslationMap trlMap = InterfaceWrapperHelper.getModelTranslationMap(labelsUIElement);
 
-		final ITranslatableString caption = coalesce(getLabelCaptionByName(labelsUIElement),
+		final ITranslatableString caption = coalesce(getLabelFieldCaptionByName(labelsUIElement),
 				trlMap.getColumnTrl(I_AD_UI_Element.COLUMNNAME_Name, labelsUIElement.getName())
 		);
 
@@ -756,7 +756,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 	}
 
 	@Nullable
-	private ITranslatableString getLabelCaptionByName(final I_AD_UI_Element labelsUIElement)
+	private ITranslatableString getLabelFieldCaptionByName(final I_AD_UI_Element labelsUIElement)
 	{
 		if (labelsUIElement.getAD_Name_ID() <= 0)
 		{
