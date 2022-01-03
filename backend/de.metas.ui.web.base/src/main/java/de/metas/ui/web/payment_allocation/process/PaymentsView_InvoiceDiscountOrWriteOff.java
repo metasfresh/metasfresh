@@ -148,10 +148,11 @@ public abstract class PaymentsView_InvoiceDiscountOrWriteOff extends PaymentsVie
 	@AllArgsConstructor
 	enum PlanAction
 	{
-		Discount("WriteOffAmt"),
-		WriteOff("DiscountAmt"),
+		Discount("DiscountAmt"),
+		WriteOff("WriteOffAmt"),
 		;
 
+		// used mainly to build the action caption
 		@Getter
 		private final String columnName;
 	}
