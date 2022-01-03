@@ -23,17 +23,16 @@
 package de.metas.impexp.spreadsheet.process;
 
 import de.metas.common.util.CoalesceUtil;
-import de.metas.common.util.time.SystemTime;
 import de.metas.impexp.spreadsheet.csv.JdbcCSVExporter;
 import de.metas.impexp.spreadsheet.excel.JdbcExcelExporter;
 import de.metas.impexp.spreadsheet.service.SpreadsheetExporterService;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
+import de.metas.process.ProcessInfoParameter;
 import de.metas.process.SpreadsheetExportOptions;
 import de.metas.process.SpreadsheetFormat;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_DatevAcctExport;
@@ -49,7 +48,7 @@ public class ExportToSpreadsheetProcess extends JavaProcess
 	final SpreadsheetExporterService spreadsheetExporterService = SpringContextHolder.instance.getBean(SpreadsheetExporterService.class);
 
 	@Param(parameterName = "SpreadsheetFormat")
-	private String p_SpreadsheetFormat;
+	private	String  p_SpreadsheetFormat;
 
 	@Override
 	protected String doIt()
@@ -93,24 +92,9 @@ public class ExportToSpreadsheetProcess extends JavaProcess
 			throw new AdempiereException("Unknown spreadsheet format: " + spreadsheetFormat);
 		}
 
-		updateDatevAcctExport();
-
 		getResult().setReportData(resultFile);
 
 		return MSG_OK;
-	}
-
-	private void updateDatevAcctExport()
-	{
-		final String tableName = getTableName();
-		if (I_DatevAcctExport.Table_Name.equals(tableName))
-		{
-			final int recordId = getRecord_ID();
-			final I_DatevAcctExport datevAcctExport = InterfaceWrapperHelper.create(getCtx(), recordId, I_DatevAcctExport.class, getTrxName());
-			datevAcctExport.setExportDate(SystemTime.asTimestamp());
-			datevAcctExport.setExportBy_ID(getAD_User_ID());
-			InterfaceWrapperHelper.saveRecord(datevAcctExport);
-		}
 	}
 
 	private String getSql()
