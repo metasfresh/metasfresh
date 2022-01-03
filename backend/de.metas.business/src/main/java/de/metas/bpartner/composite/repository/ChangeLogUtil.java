@@ -127,6 +127,8 @@ final class ChangeLogUtil
 			.put(I_AD_User.COLUMNNAME_Description, BPartnerContact.DESCRIPTION)
 			.put(I_AD_User.COLUMNNAME_C_Greeting_ID, BPartnerContact.GREETING_ID)
 			.put(I_AD_User.COLUMNNAME_C_BPartner_Location_ID, BPartnerContact.BPARTNER_LOCATION_ID)
+			.put(I_AD_User.COLUMNNAME_EMail2, BPartnerContact.EMAIL2)
+			.put(I_AD_User.COLUMNNAME_EMail3, BPartnerContact.EMAIL3)
 			.build();
 
 	@VisibleForTesting

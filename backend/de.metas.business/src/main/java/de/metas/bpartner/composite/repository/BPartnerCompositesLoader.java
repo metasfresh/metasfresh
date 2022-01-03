@@ -491,6 +491,8 @@ final class BPartnerCompositesLoader
 				.changeLog(changeLog)
 				.birthday(TimeUtil.asLocalDate(contactRecord.getBirthday(), SystemTime.zoneId()))
 				.bPartnerLocationId(BPartnerLocationId.ofRepoIdOrNull(contactRecord.getC_BPartner_ID(), contactRecord.getC_BPartner_Location_ID()))
+				.email2(trimBlankToNull(contactRecord.getEMail2()))
+				.email3(trimBlankToNull(contactRecord.getEMail3()))
 				.build();
 	}
 

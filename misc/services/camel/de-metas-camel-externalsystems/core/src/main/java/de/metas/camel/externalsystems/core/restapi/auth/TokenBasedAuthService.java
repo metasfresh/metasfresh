@@ -23,6 +23,7 @@
 package de.metas.camel.externalsystems.core.restapi.auth;
 
 import de.metas.camel.externalsystems.common.auth.TokenCredentials;
+import de.metas.camel.externalsystems.core.restapi.auth.preauthenticated.PreAuthenticatedIdentity;
 import lombok.NonNull;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -31,14 +32,26 @@ import org.springframework.security.web.authentication.preauth.PreAuthenticatedA
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
+import javax.annotation.PostConstruct;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Logger;
 
 @Service
-public class TokenService
+public class TokenBasedAuthService
 {
+	private final Logger logger = Logger.getLogger(TokenBasedAuthService.class.getName());
+
 	private final ConcurrentHashMap<String, Authentication> restApiAuthToken = new ConcurrentHashMap<>();
+
+	@NonNull
+	private final List<PreAuthenticatedIdentity> preAuthenticatedIdentities;
+
+	public TokenBasedAuthService(@NonNull final List<PreAuthenticatedIdentity> preAuthenticatedIdentities)
+	{
+		this.preAuthenticatedIdentities = preAuthenticatedIdentities;
+	}
 
 	public void store(
 			@NonNull final String token,
@@ -75,5 +88,22 @@ public class TokenService
 				.map(Authentication::getAuthorities)
 				.filter(item -> item.contains(grantedAuthority))
 				.count();
+	}
+
+	@PostConstruct
+	private void registerPreAuthenticatedIdentities()
+	{
+		for (final PreAuthenticatedIdentity preAuthenticatedIdentity : preAuthenticatedIdentities)
+		{
+			final Optional<PreAuthenticatedAuthenticationToken> preAuthenticatedAuthenticationToken = preAuthenticatedIdentity.getPreAuthenticatedToken();
+
+			if (preAuthenticatedAuthenticationToken.isEmpty())
+			{
+				logger.warning(preAuthenticatedIdentity.getClass().getName() + ": not configured!");
+				continue;
+			}
+
+			restApiAuthToken.put((String)preAuthenticatedAuthenticationToken.get().getPrincipal(), preAuthenticatedAuthenticationToken.get());
+		}
 	}
 }

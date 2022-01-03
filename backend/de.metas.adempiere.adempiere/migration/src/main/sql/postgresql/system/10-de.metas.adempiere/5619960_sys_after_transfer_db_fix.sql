@@ -1,24 +1,3 @@
-/*
- * #%L
- * de.metas.adempiere.adempiere.migration-sql
- * %%
- * Copyright (C) 2021 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
 
 CREATE OR REPLACE FUNCTION ops.after_transfer_db(
     p_source_instance            text,
@@ -34,7 +13,7 @@ BEGIN
 
     UPDATE AD_SysConfig SET Value=p_target_webui_url WHERE Name = 'webui.frontend.url';
 
-    UPDATE ad_user SET password =public.hash_column_value_if_needed(valueplain := p_target_metasfresh_pw) WHERE name = 'metasfresh';
+    UPDATE ad_user SET password =public.hash_column_value_if_needed(p_target_metasfresh_pw) WHERE name = 'metasfresh';
 
     IF p_target_has_reports_service
     THEN
@@ -42,7 +21,7 @@ BEGIN
         UPDATE ad_sysconfig SET value='http://reports:8080/adempiereJasper/BarcodeServlet' WHERE name ILIKE 'de.metas.adempiere.report.barcode.BarcodeServlet';
     END IF;
 
-    UPDATE externalsystem_config SET isactive = 'N' WHERE TRUE;
+    UPDATE externalsystem_config SET isactive = 'N' WHERE true;
     RAISE NOTICE '% !! Deactivated ExternalSystem records !!', CLOCK_TIMESTAMP();
 
     UPDATE ad_scheduler
@@ -72,10 +51,6 @@ BEGIN
             CLOCK_TIMESTAMP(), p_scramble_db, p_source_instance, p_target_instance;
     END IF;
 
-    RAISE NOTICE '% !! Enqueued % C_BPartners to be send to elastic search for FTS !!',
-        CLOCK_TIMESTAMP(),
-        (SELECT ops.es_fts_reindex_bpartners());
-
     EXECUTE ops.after_transfer_db_custom_end(p_source_instance := p_source_instance, p_target_instance := p_target_instance);
 END ;
 $BODY$
@@ -85,7 +60,7 @@ $BODY$
 
 COMMENT ON FUNCTION ops.after_transfer_db(p_source_instance text, p_target_instance text, p_target_webui_url text,
     p_target_metasfresh_pw text, p_target_has_reports_service boolean, p_scramble_db boolean) IS
-    'Example - WILL SCRAMBLE YOU DB: select ops.after_transfer_db(p_source_instance := ''instancesprod'', p_target_instance := ''instancesdev'', p_target_webui_url := ''https://instancesdev.metasfresh.com'', p_target_metasfresh_pw := ''secret'', p_target_has_reports_service := TRUE, p_scramble_db := TRUE)
+    'Example: select ops.after_transfer_db(p_source_instance := ''instancesprod'', p_target_instance := ''instancesdev'', p_target_webui_url := ''https://instancesdev.metasfresh.com'', p_target_metasfresh_pw := ''secret'', p_target_has_reports_service := TRUE, p_scramble_db := TRUE)
     
 Note about scrambling: this function invokes ops.scramble_metasfresh if all three conditions are met:
 - the parameter p_scramble_db is TRUE    
