@@ -15,10 +15,13 @@ INSERT INTO AD_Message_Trl (AD_Language,AD_Message_ID, MsgText,MsgTip, IsTransla
 
 -- 2022-01-03T14:29:33.789Z
 -- URL zum Konzept
-UPDATE AD_Message SET MsgText='PDF-Datei wurde erstellt und enthÃ¤lt {0} Rechnungen.',Updated=TO_TIMESTAMP('2022-01-03 15:29:33','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Message_ID=545089
+UPDATE AD_Message SET MsgText='PDF-Datei wurde erstellt.',Updated=TO_TIMESTAMP('2022-01-03 15:29:33','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Message_ID=545089
 ;
 
 -- 2022-01-03T14:30:02.368Z
 -- URL zum Konzept
-UPDATE AD_Message SET EntityType='de.metas.printing',Updated=TO_TIMESTAMP('2022-01-03 15:30:02','YYYY-MM-DD HH24:MI:SS'),MsgText='PDF file was created and contains {0} invoices.',UpdatedBy=100 WHERE AD_Message_ID=545089
+UPDATE AD_Message SET EntityType='de.metas.printing',Updated=TO_TIMESTAMP('2022-01-03 15:30:02','YYYY-MM-DD HH24:MI:SS'),MsgText='PDF file was created.',UpdatedBy=100 WHERE AD_Message_ID=545089
+;
+
+UPDATE AD_Message_trl SET MsgText='PDF file was created.',UpdatedBy=100 WHERE AD_Message_ID=545089
 ;
