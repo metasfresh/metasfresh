@@ -122,7 +122,7 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicingAndPDFPrinting exte
 				.setC_Async_Batch(asyncBatch)
 				.enqueueSelection(pinstanceId);
 
-		return enqueueResult.getSummaryTranslated(getCtx());
+		return "@Success@";
 	}
 
 	private int createSelection()
