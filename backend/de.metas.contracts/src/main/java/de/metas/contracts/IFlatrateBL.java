@@ -166,7 +166,7 @@ public interface IFlatrateBL extends ISingletonService
 	boolean isAllowedToOverlapWithOtherTerms(@NonNull final I_C_Flatrate_Term term);
 
 	/**
-	 * Check if there are terms for the same bPartner that have a time period overlapping with the given term and match with the same product or product category.
+	 * Check if there are terms for the same bPartner and org that have a time period overlapping with the given term and match with the same product or product category.
 	 * <p>
 	 * Note that overlapping need to be prevented for those types of terms (like refund contracts or refundable contracts) to which newly created invoice candidates need to be mapped.
 	 * Overlapping is no problem for subscription contracts.

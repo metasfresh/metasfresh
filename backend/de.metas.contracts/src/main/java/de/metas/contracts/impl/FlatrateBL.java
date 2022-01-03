@@ -1780,6 +1780,14 @@ public class FlatrateBL implements IFlatrateBL
 				continue;
 			}
 
+			// Only consider terms with the same org.
+			// C_Flatrate_Term has access-level=Org, so there is no term with Org=*
+			// Also note that when finding a term for an invoice-candidate, that ICs org is used as a matching criterion
+			if(term.getAD_Org_ID() != newTerm.getAD_Org_ID())
+			{
+				continue;
+			}
+
 			if (periodsOverlap(newTerm, term) && productsOverlap(newTerm, term))
 			{
 				return true;
