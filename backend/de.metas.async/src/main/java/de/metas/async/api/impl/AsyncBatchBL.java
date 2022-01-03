@@ -198,6 +198,7 @@ public class AsyncBatchBL implements IAsyncBatchBL
 		return asyncBatchRecord.isProcessed();
 	}
 
+	@Override
 	public boolean shouldBeProcessedManually(@NonNull final AsyncBatchId asyncBatchId)
 	{
 		final List<I_C_Async_Batch_Milestone> milestones = asyncBatchDAO.retrieveMilestonesForAsyncBatchId(asyncBatchId);
@@ -205,6 +206,7 @@ public class AsyncBatchBL implements IAsyncBatchBL
 		return !milestones.isEmpty();
 	}
 
+	@Override
 	public Optional<Integer> getDelayUntilCheckingProcessedState(@NonNull final I_C_Async_Batch asyncBatch)
 	{
 		final int processedTimeOffsetMillis = getProcessedTimeOffsetMillis();
