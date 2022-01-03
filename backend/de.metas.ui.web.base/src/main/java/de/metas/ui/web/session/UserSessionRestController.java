@@ -60,7 +60,7 @@ public class UserSessionRestController
 	{
 		final String adLanguage = value.getKey();
 		userSessionRepo.setAD_Language(userSession.getLoggedUserId(), adLanguage);
-		documentCollection.cacheReset(false);
+		documentCollection.cacheReset(false); // don't evict unsaved documents from the cache, because they would be lost entirely
 
 		return getLanguage();
 	}
