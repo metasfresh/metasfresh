@@ -187,6 +187,7 @@ public class Discount implements IPricingRule
 		{
 			return;
 		}
+		pricingResult.setDiscount(pricingConditionsResult.getDiscount());
 
 		final BigDecimal priceStdOverride = pricingConditionsResult.getPriceStdOverride();
 		final BigDecimal priceListOverride = pricingConditionsResult.getPriceListOverride();
