@@ -1067,8 +1067,12 @@ body{
     width: 200px;
     max-width: 480px;
     max-height: 80vh;
-    overflow-y: auto;
-    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+
+    .form-group {
+        overflow-x: scroll;
+    }
 }
 
 .filter-menu li {
@@ -1086,6 +1090,7 @@ body{
     display: flex;
     align-items: center;
     justify-content: space-between;
+    padding-bottom: 5px;
 }
 
 .filter-clear {
@@ -1148,6 +1153,7 @@ body{
 .filter-btn-wrapper {
     text-align: right;
     padding-top: 10px;
+    border-top: 1px solid $brand-light-color;
 }
 
 .dashboard-wrapper {

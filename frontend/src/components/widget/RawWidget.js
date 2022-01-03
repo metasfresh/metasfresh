@@ -40,6 +40,7 @@ export class RawWidget extends PureComponent {
     if (rawWidget.current && autoFocus) {
       try {
         rawWidget.current.focus();
+        this.setState({ isFocused: true });
       } catch (e) {
         console.error(`Custom widget doesn't have 'focus' function defined`);
       }

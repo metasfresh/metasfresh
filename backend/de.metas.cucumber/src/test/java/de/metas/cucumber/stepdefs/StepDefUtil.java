@@ -22,11 +22,14 @@
 
 package de.metas.cucumber.stepdefs;
 
+import com.google.common.collect.ImmutableList;
+import de.metas.common.util.StringUtils;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.adempiere.model.InterfaceWrapperHelper;
 
 import javax.annotation.Nullable;
+import java.util.Arrays;
 import java.util.function.Supplier;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -84,5 +87,13 @@ public class StepDefUtil
 			@NonNull final Supplier<Boolean> worker) throws InterruptedException
 	{
 		tryAndWait(maxWaitSeconds, checkingIntervalMs, worker, null);
+	}
+
+	@NonNull
+	public ImmutableList<String> extractIdentifiers(@NonNull final String identifier)
+	{
+		return Arrays.stream(identifier.split(","))
+				.map(StringUtils::trim)
+				.collect(ImmutableList.toImmutableList());
 	}
 }

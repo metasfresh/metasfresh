@@ -63,7 +63,7 @@ public class StepDefData<T>
 	{
 		for (final Map.Entry<String, T> entry : map.entrySet())
 		{
-			put(entry.getKey(), entry.getValue());
+			putOrReplace(entry.getKey(), entry.getValue());
 		}
 	}
 
