@@ -29,7 +29,6 @@ import de.metas.impexp.spreadsheet.excel.JdbcExcelExporter;
 import de.metas.impexp.spreadsheet.service.SpreadsheetExporterService;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
-import de.metas.process.ProcessInfoParameter;
 import de.metas.process.SpreadsheetExportOptions;
 import de.metas.process.SpreadsheetFormat;
 import org.adempiere.exceptions.AdempiereException;
@@ -50,16 +49,13 @@ public class ExportToSpreadsheetProcess extends JavaProcess
 	final SpreadsheetExporterService spreadsheetExporterService = SpringContextHolder.instance.getBean(SpreadsheetExporterService.class);
 
 	@Param(parameterName = "SpreadsheetFormat")
-	private	String  p_SpreadsheetFormat;
+	private String p_SpreadsheetFormat;
 
 	@Override
 	protected String doIt()
 	{
 		final String sql = getSql();
 		final Evaluatee evalCtx = getEvalContext();
-
-		final int recordId = getRecord_ID();
-		final I_DatevAcctExport datevAcctExport = InterfaceWrapperHelper.create(getCtx(), recordId,I_DatevAcctExport.class,getTrxName());
 
 		final File resultFile;
 
@@ -97,13 +93,24 @@ public class ExportToSpreadsheetProcess extends JavaProcess
 			throw new AdempiereException("Unknown spreadsheet format: " + spreadsheetFormat);
 		}
 
-		datevAcctExport.setExportDate(SystemTime.asTimestamp());
-		datevAcctExport.setExportBy_ID(getAD_User_ID());
-		InterfaceWrapperHelper.saveRecord(datevAcctExport);
+		updateDatevAcctExport();
 
 		getResult().setReportData(resultFile);
 
 		return MSG_OK;
+	}
+
+	private void updateDatevAcctExport()
+	{
+		final String tableName = getTableName();
+		if (I_DatevAcctExport.Table_Name.equals(tableName))
+		{
+			final int recordId = getRecord_ID();
+			final I_DatevAcctExport datevAcctExport = InterfaceWrapperHelper.create(getCtx(), recordId, I_DatevAcctExport.class, getTrxName());
+			datevAcctExport.setExportDate(SystemTime.asTimestamp());
+			datevAcctExport.setExportBy_ID(getAD_User_ID());
+			InterfaceWrapperHelper.saveRecord(datevAcctExport);
+		}
 	}
 
 	private String getSql()
