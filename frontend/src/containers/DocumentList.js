@@ -632,7 +632,7 @@ class DocumentListContainer extends Component {
     }
 
     this.lastViewedPage = currentPage;
-    this.getData(viewData.viewId, currentPage, sort);
+    viewData.viewId && this.getData(viewData.viewId, currentPage, sort);
   };
 
   /**
