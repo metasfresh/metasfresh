@@ -119,7 +119,6 @@ public class SubscriptionPricingRule implements IPricingRule
 	{
 		if (subscriptionDiscountLine != null
 				&& !subscriptionPricingResult.isDisallowDiscount()
-				&& !subscriptionDiscountLine.getDiscount().isZero()
 				&& (subscriptionDiscountLine.isPrioritiseOwnDiscount() || !subscriptionPricingResult.isDiscountCalculated()) )
 		{
 			subscriptionPricingResult.setDiscount(subscriptionDiscountLine.getDiscount());

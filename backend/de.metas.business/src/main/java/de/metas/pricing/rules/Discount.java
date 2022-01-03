@@ -80,6 +80,12 @@ public class Discount implements IPricingRule
 			return false;
 		}
 
+		if (result.isDiscountCalculated())
+		{
+			log.debug("Discount was already calculated - {}", result);
+			return false;
+		}
+
 		if (pricingCtx.getBPartnerId() == null)
 		{
 			return false;
@@ -180,10 +186,6 @@ public class Discount implements IPricingRule
 		if (pricingConditionsResult == null)
 		{
 			return;
-		}
-		if (!pricingResult.isDiscountCalculated())
-		{
-			pricingResult.setDiscount(pricingConditionsResult.getDiscount());
 		}
 
 		final BigDecimal priceStdOverride = pricingConditionsResult.getPriceStdOverride();
