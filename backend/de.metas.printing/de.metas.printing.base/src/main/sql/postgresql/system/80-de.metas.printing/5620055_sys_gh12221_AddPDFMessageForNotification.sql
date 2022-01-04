@@ -1,8 +1,3 @@
--- 2022-01-03T14:28:51.621Z
--- URL zum Konzept
-INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,545089,0,TO_TIMESTAMP('2022-01-03 15:28:51','YYYY-MM-DD HH24:MI:SS'),100,'U','Y','PDF-Datei wurde erstellt und enthÃ¤lt 3 Rechnungen.','I',TO_TIMESTAMP('2022-01-03 15:28:51','YYYY-MM-DD HH24:MI:SS'),100,'PDFPrintingAsyncBatchListener_PrintJob_Done')
-;
-
 -- 2022-01-03T14:29:05.233Z
 -- URL zum Konzept
 INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,545089,0,TO_TIMESTAMP('2022-01-03 15:29:05','YYYY-MM-DD HH24:MI:SS'),100,'U','Y','PDF-Datei wurde erstellt und enthÃ¤lt 3 Rechnungen.','I',TO_TIMESTAMP('2022-01-03 15:29:05','YYYY-MM-DD HH24:MI:SS'),100,'AutomaticallyInvoicePdfPrintinAsyncBatchListener_Pdf_Done')
