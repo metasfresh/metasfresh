@@ -862,8 +862,9 @@ public class HUTransformService
 			@NonNull final I_M_HU_PI_Item luPIItem,
 			final boolean isOwnPackingMaterials)
 	{
-		if (qtyTU.compareTo(getMaximumQtyTU(sourceTuHU)) >= 0 // the complete sourceTuHU shall be processed
-				&& getMaximumQtyTU(sourceTuHU).compareTo(luPIItem.getQty()) <= 0 // the complete sourceTuHU fits onto one pallet
+		final BigDecimal qtyTU_of_sourceTuHU = getMaximumQtyTU(sourceTuHU);
+		if (qtyTU.compareTo(qtyTU_of_sourceTuHU) >= 0 // the complete sourceTuHU shall be processed
+				&& qtyTU_of_sourceTuHU.compareTo(luPIItem.getQty()) <= 0 // the complete sourceTuHU fits onto one pallet
 		)
 		{
 			// don't split; just create a new LU and "move" the TU
@@ -948,10 +949,10 @@ public class HUTransformService
 	private List<I_M_HU> tuToTopLevelHUs(
 			@NonNull final I_M_HU sourceTuHU,
 			@NonNull final BigDecimal qtyTU,
-			final I_M_HU_PI_Item luPIItem,
+			@Nullable final I_M_HU_PI_Item luPIItem,
 			final boolean newPackingMaterialsAreOurOwn)
 	{
-		final List<IHUProductStorage> productStorages = retrieveAllProductStorages(sourceTuHU);
+		final List<IHUProductStorage> productStorages = retrieveAllProductStoragesOfTU(sourceTuHU);
 
 		final List<I_M_HU> createdTUs;
 
@@ -1045,7 +1046,7 @@ public class HUTransformService
 		return createdTUs;
 	}
 
-	private List<IHUProductStorage> retrieveAllProductStorages(final I_M_HU tuHU)
+	private List<IHUProductStorage> retrieveAllProductStoragesOfTU(final I_M_HU tuHU)
 	{
 		final IHUStorageFactory storageFactory = handlingUnitsBL.getStorageFactory();
 
@@ -1078,9 +1079,9 @@ public class HUTransformService
 		boolean keepNewCUsUnderSameParent;
 
 		/**
-		 * if true, then only unreserved VHUs are split on order to get our new CUs
+		 * only the VHUs allowed by this policy are split in order to get our new CUs
 		 */
-		boolean onlyFromUnreservedHUs;
+		@NonNull ReservedHUsPolicy reservedVHUsPolicy;
 
 		@lombok.Builder(toBuilder = true)
 		private HUsToNewCUsRequest(
@@ -1088,7 +1089,7 @@ public class HUTransformService
 				@NonNull final ProductId productId,
 				@NonNull final Quantity qtyCU,
 				@Nullable final Boolean keepNewCUsUnderSameParent,
-				@Nullable final Boolean onlyFromUnreservedHUs)
+				@Nullable final ReservedHUsPolicy reservedVHUsPolicy)
 		{
 			Check.assumeNotEmpty(sourceHUs, "sourceHUs is not empty");
 
@@ -1096,7 +1097,7 @@ public class HUTransformService
 			this.qtyCU = qtyCU;
 			this.productId = productId;
 			this.keepNewCUsUnderSameParent = CoalesceUtil.coalesceNotNull(keepNewCUsUnderSameParent, false);
-			this.onlyFromUnreservedHUs = CoalesceUtil.coalesceNotNull(onlyFromUnreservedHUs, false);
+			this.reservedVHUsPolicy = CoalesceUtil.coalesceNotNull(reservedVHUsPolicy, ReservedHUsPolicy.CONSIDER_ALL);
 
 			Check.assume(qtyCU.signum() > 0, "Paramater qtyCU={} needs to be >0; this={}", qtyCU, this);
 		}
@@ -1262,10 +1263,11 @@ public class HUTransformService
 
 		for (final I_M_HU cu : handlingUnitsDAO.retrieveIncludedHUs(sourceTU))
 		{
-			if (singleSourceTuRequest.isOnlyFromUnreservedHUs() && cu.isReserved())
+			if (!singleSourceTuRequest.getReservedVHUsPolicy().isConsiderVHU(cu))
 			{
 				continue; // the request only wants us to use unreserved source HUs
 			}
+
 			final IHUProductStorage productStorageOrNull = handlingUnitsBL
 					.getStorageFactory()
 					.getStorage(cu)

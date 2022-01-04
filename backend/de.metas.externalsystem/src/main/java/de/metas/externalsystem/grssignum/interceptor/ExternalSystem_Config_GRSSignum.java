@@ -81,4 +81,14 @@ public class ExternalSystem_Config_GRSSignum
 		externalServices.initializeServiceInstancesIfRequired(parentConfigId);
 	}
 
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_ExternalSystem_Config_GRSSignum.COLUMNNAME_IsSyncBPartnersToRestEndpoint)
+	public void updateIsAutoFlag(final I_ExternalSystem_Config_GRSSignum grsConfig)
+	{
+		if (!grsConfig.isSyncBPartnersToRestEndpoint())
+		{
+			grsConfig.setIsAutoSendVendors(false);
+			grsConfig.setIsAutoSendCustomers(false);
+		}
+	}
+
 }
