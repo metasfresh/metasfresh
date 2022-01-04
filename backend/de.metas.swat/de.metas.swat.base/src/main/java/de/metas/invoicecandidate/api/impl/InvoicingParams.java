@@ -26,6 +26,9 @@ package de.metas.invoicecandidate.api.impl;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+import de.metas.order.OrderId;
+import de.metas.organization.OrgId;
+import de.metas.util.Check;
 import org.adempiere.util.api.IParams;
 
 import de.metas.invoicecandidate.api.IInvoicingParams;
@@ -98,9 +101,11 @@ public class InvoicingParams implements IInvoicingParams
 	}
 
 	@Override
-	public int getAD_Org_ID()
+	public OrgId getAD_Org_ID()
 	{
-		return params.getParameterAsInt(PARA_AD_org_ID, -1);
+		final OrgId orgId = params.getParameterAsId(PARA_AD_org_ID, OrgId.class);
+		Check.assumeNotNull(orgId, "OrgID not null");
+		return orgId;
 	}
 	/**
 	 * Always returns {@code false}.

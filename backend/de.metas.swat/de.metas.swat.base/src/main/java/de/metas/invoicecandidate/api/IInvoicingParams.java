@@ -31,6 +31,7 @@ import com.google.common.collect.ImmutableMap.Builder;
 
 import de.metas.invoicecandidate.api.impl.InvoicingParams;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.organization.OrgId;
 
 /**
  * Invoicing Enqueueing & generating parameters.
@@ -101,7 +102,7 @@ public interface IInvoicingParams
 	 */
 	boolean isUpdateLocationAndContactForInvoice();
 
-	int getAD_Org_ID();
+	OrgId getAD_Org_ID();
 
 	default Map<String, ? extends Object> asMap()
 	{

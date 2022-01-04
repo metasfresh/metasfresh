@@ -1,5 +1,6 @@
 package de.metas.printing.async.spi.impl;
 
+import ch.qos.logback.classic.Level;
 import com.lowagie.text.Document;
 import com.lowagie.text.DocumentException;
 import com.lowagie.text.pdf.PdfCopy;
@@ -9,16 +10,19 @@ import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.IWorkpackageProcessor;
 import de.metas.attachments.AttachmentEntryService;
+import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
 import de.metas.printing.api.IPrintingDAO;
+import de.metas.printing.api.IPrintingQueueBL;
 import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.util.Check;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.archive.api.IArchiveBL;
-import org.adempiere.service.ISysConfigBL;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Archive;
+import org.slf4j.Logger;
 import org.slf4j.MDC;
 
 import java.io.File;
@@ -37,10 +41,14 @@ import java.util.List;
  */
 public class PrintingQueuePDFConcatenateWorkpackageProcessor implements IWorkpackageProcessor
 {
-	final AttachmentEntryService attachmentEntryService = SpringContextHolder.instance.getBean(AttachmentEntryService.class);
-	// services
+	private final Logger logger = LogManager.getLogger(PrintingQueuePDFConcatenateWorkpackageProcessor.class);
+
+	private final AttachmentEntryService attachmentEntryService = SpringContextHolder.instance.getBean(AttachmentEntryService.class);
 	private final IPrintingDAO dao = Services.get(IPrintingDAO.class);
 	private final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
+	private final IPrintingQueueBL printingQueueBL = Services.get(IPrintingQueueBL.class);
+	private final IArchiveBL archiveBl = Services.get(IArchiveBL.class);
+	
 	private I_C_Async_Batch asyncBatch;
 
 	@Override
@@ -49,7 +57,7 @@ public class PrintingQueuePDFConcatenateWorkpackageProcessor implements IWorkpac
 		File outputFile = null;
 		try
 		{
-			outputFile = concatanateFiles(workpackage);
+			outputFile = concatenateFiles(workpackage);
 		}
 		catch (DocumentException e)
 		{
@@ -64,7 +72,7 @@ public class PrintingQueuePDFConcatenateWorkpackageProcessor implements IWorkpac
 		return Result.SUCCESS;
 	}
 
-	private File concatanateFiles(final I_C_Queue_WorkPackage workpackage) throws IOException, DocumentException
+	private File concatenateFiles(final I_C_Queue_WorkPackage workpackage) throws IOException, DocumentException
 	{
 		this.asyncBatch = workpackage.getC_Async_Batch();
 		Check.assumeNotNull(asyncBatch, "Async batch is not null");
@@ -87,12 +95,13 @@ public class PrintingQueuePDFConcatenateWorkpackageProcessor implements IWorkpac
 			{
 				if (pq.isProcessed())
 				{
+					Loggables.withLogger(logger, Level.DEBUG).addLog("*** Printing queue is already processed. Skipping it: {}", pq);
 					continue;
 				}
 				final I_AD_Archive archive = pq.getAD_Archive();
 				Check.assume(archive != null, pq + " references an AD_Archive record");
 
-				final byte[] data = Services.get(IArchiveBL.class).getBinaryData(archive);
+				final byte[] data = archiveBl.getBinaryData(archive);
 				final PdfReader reader = new PdfReader(data);
 
 				for (int page = 0; page < reader.getNumberOfPages(); )
@@ -101,6 +110,8 @@ public class PrintingQueuePDFConcatenateWorkpackageProcessor implements IWorkpac
 				}
 				copy.freeReader(reader);
 				reader.close();
+
+				printingQueueBL.setProcessedAndSave(pq);
 			}
 		}
 

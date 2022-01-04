@@ -28,6 +28,7 @@ import java.time.LocalDate;
 import javax.annotation.Nullable;
 
 import de.metas.invoicecandidate.api.IInvoicingParams;
+import de.metas.organization.OrgId;
 import lombok.ToString;
 
 @ToString
@@ -56,7 +57,7 @@ public class PlainInvoicingParams implements IInvoicingParams
 
 	private final IInvoicingParams defaults;
 
-	private int adOrgId = -1;
+	private OrgId adOrgId ;
 
 	public PlainInvoicingParams()
 	{
@@ -293,7 +294,7 @@ public class PlainInvoicingParams implements IInvoicingParams
 	}
 
 	@Override
-	public int getAD_Org_ID()
+	public OrgId getAD_Org_ID()
 	{
 		return adOrgId;
 	}

@@ -22,15 +22,18 @@
 
 package de.metas.printing.model.validator;
 
+import ch.qos.logback.classic.Level;
 import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.api.IAsyncBatchListeners;
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.processor.IWorkPackageQueueFactory;
+import de.metas.logging.LogManager;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.printing.async.spi.impl.PrintingQueuePDFConcatenateWorkpackageProcessor;
 import de.metas.printing.model.I_C_Printing_Queue;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
@@ -40,6 +43,7 @@ import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
+import org.slf4j.Logger;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -52,18 +56,22 @@ import static de.metas.async.Async_Constants.C_Async_Batch_InternalName_Automati
 @UtilityClass
 public class AsyncBatchNotificationHelper
 {
+	private final Logger logger = LogManager.getLogger(AsyncBatchNotificationHelper.class);
+
 	private final IQueryBL iQueryBL = Services.get(IQueryBL.class);
 	private final IWorkPackageQueueFactory workPackageQueueFactory = Services.get(IWorkPackageQueueFactory.class);
 	private final IAsyncBatchListeners asyncBatchListeners = Services.get(IAsyncBatchListeners.class);
 	private final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
+	private static final String QUERY_PREFIX = "de.metas.printing.UserQuery_";
+
 	protected void notify(final I_C_Async_Batch asyncBatch)
 	{
 		asyncBatchListeners.notify(asyncBatch);
 	}
 
-	protected void runPrintingProcess(@NonNull final I_C_Async_Batch asyncBatch)
+	protected void runPDFConcatenatingProcess(@NonNull final I_C_Async_Batch asyncBatch)
 	{
 		List<IQueryBuilder<I_C_Printing_Queue>> queries = fetchPrintingQueues(asyncBatch);
 		for (final IQueryBuilder<I_C_Printing_Queue> pqs : queries)
@@ -77,6 +85,7 @@ public class AsyncBatchNotificationHelper
 		final List<I_C_Printing_Queue> printing_queues = pqs.create().list();
 		if (printing_queues.isEmpty())
 		{
+			Loggables.withLogger(logger, Level.DEBUG).addLog("*** There is nothing to enqueue. Skipping it: {}", pqs);
 			return;
 		}
 
@@ -99,28 +108,30 @@ public class AsyncBatchNotificationHelper
 
 	private List<IQueryBuilder<I_C_Printing_Queue>> fetchPrintingQueues(@NonNull final I_C_Async_Batch asyncBatch)
 	{
-		final Map<String, String> valuesForPrefix = sysConfigBL.getValuesForPrefix("UserQuery_", ClientAndOrgId.SYSTEM);
+		final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(asyncBatch.getAD_Client_ID(), asyncBatch.getAD_Org_ID());
+		final Map<String, String> valuesForPrefix = sysConfigBL.getValuesForPrefix(QUERY_PREFIX, clientAndOrgId);
+
 		final Collection<String> clauses = valuesForPrefix.values();
 		final List<IQueryBuilder<I_C_Printing_Queue>> queries = new ArrayList<>();
 		for (final String whereClause : clauses)
 		{
-			IQueryBuilder<I_C_Printing_Queue> queryBuilder = createPrinitngQueueQueryBuilder(asyncBatch, whereClause);
+			IQueryBuilder<I_C_Printing_Queue> queryBuilder = createPrintingQueueQueryBuilder(asyncBatch, whereClause);
 			queries.add(queryBuilder);
 		}
 
 		return queries;
 	}
 
-	private IQueryBuilder<I_C_Printing_Queue> createPrinitngQueueQueryBuilder(@NonNull final I_C_Async_Batch asyncBatch, @NonNull final String whereClause)
+	private IQueryBuilder<I_C_Printing_Queue> createPrintingQueueQueryBuilder(@NonNull final I_C_Async_Batch asyncBatch, @NonNull final String whereClause)
 	{
-		final IQueryFilter<I_C_Printing_Queue> userQueryFilter = TypedSqlQueryFilter.of(whereClause);
+		final IQueryFilter<I_C_Printing_Queue> queryFilter = TypedSqlQueryFilter.of(whereClause);
 
 		final IQueryBuilder<I_C_Printing_Queue> queryBuilder = iQueryBL
 				.createQueryBuilder(I_C_Printing_Queue.class)
 				.addOnlyContextClient()
 				.addEqualsFilter(I_C_Printing_Queue.COLUMN_C_Async_Batch_ID, asyncBatch.getC_Async_Batch_ID())
 				.addEqualsFilter(I_C_Printing_Queue.COLUMNNAME_Processed, false)
-				.filter(userQueryFilter);
+				.filter(queryFilter);
 
 		return queryBuilder;
 	}

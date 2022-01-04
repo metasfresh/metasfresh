@@ -43,7 +43,7 @@ public class C_Async_Batch
 				&& asyncBatch.getC_Async_Batch_Type_ID() > 0
 				&& Async_Constants.C_Async_Batch_InternalName_InvoiceCandidate_Processing.equals(asyncBatch.getC_Async_Batch_Type().getInternalName()))
 		{
-			AsyncBatchNotificationHelper.runPrintingProcess(asyncBatch);
+			AsyncBatchNotificationHelper.runPDFConcatenatingProcess(asyncBatch);
 		}
 		else if (asyncBatch.isProcessed()
 				&& asyncBatch.getC_Async_Batch_Type_ID() > 0
