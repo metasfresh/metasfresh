@@ -63,6 +63,14 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+
+            <dependency>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok</artifactId>
+                <!-- some projects fail when building with java-17 and lombok-1.18.18 -->
+                <!-- <version>1.18.18</version> -->
+                <version>1.18.22</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
