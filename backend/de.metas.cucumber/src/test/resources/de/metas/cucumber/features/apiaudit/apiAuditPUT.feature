@@ -32,7 +32,6 @@ Feature: API Audit PUT http method
       | 200      | {"messageBody":"\"test-endpoint was called\""} |
 
   @from:cucumber
-  @ignore
   Scenario: Testcase 110, normal PUT and caller does not wait for result
     And the following API_Audit_Config record is set
       | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsInvokerWaitsForResult |
@@ -91,7 +90,6 @@ Feature: API Audit PUT http method
       | 404      | {"messageBody":"\"test-endpoint was called\""} |
 
   @from:cucumber
-  @ignore("notworking")
   Scenario: Testcase 130, failing PUT and caller does not wait for result
     And the following API_Audit_Config record is set
       | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsInvokerWaitsForResult |
