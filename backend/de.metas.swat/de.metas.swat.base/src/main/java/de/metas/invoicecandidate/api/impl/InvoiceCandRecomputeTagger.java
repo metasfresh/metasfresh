@@ -30,6 +30,7 @@ import de.metas.lock.api.ILock;
 import de.metas.util.Check;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.ad.dao.QueryLimit;
 
 import javax.annotation.Nullable;
 import java.util.Collection;

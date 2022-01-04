@@ -1047,6 +1047,9 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 			});
 		}
 
+		// make sure the order of invoice candidate updating is somewhat predictable
+		queryBuilder.orderBy(I_C_Invoice_Candidate_Recompute.COLUMNNAME_C_Invoice_Candidate_ID);
+
 		//
 		// Limit maximum number of invalid invoice candidates to tag for updating
 		if (tagRequest.getLimit() > 0)

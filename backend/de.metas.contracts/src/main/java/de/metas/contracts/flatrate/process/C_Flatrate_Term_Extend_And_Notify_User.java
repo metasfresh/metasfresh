@@ -113,6 +113,8 @@ public class C_Flatrate_Term_Extend_And_Notify_User
 				.addNotInArrayFilter(I_C_Flatrate_Term.COLUMN_ContractStatus, Arrays.asList(X_C_Flatrate_Term.CONTRACTSTATUS_Quit, X_C_Flatrate_Term.CONTRACTSTATUS_Voided))
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMN_ContractStatus, null);
 
+		final int chunkSize = sysConfigBL.getIntValue("de.metas.contracts.flatrate.process.C_Flatrate_Term_Extend_And_Notify_User.chunkSize", 500);
+
 		final Iterator<I_C_Flatrate_Term> termsToExtend = queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
 				.addOnlyActiveRecordsFilter()
 				.addInArrayFilter(I_C_Flatrate_Term.COLUMNNAME_AD_PInstance_EndOfTerm_ID, 0, null)
@@ -123,9 +125,9 @@ public class C_Flatrate_Term_Extend_And_Notify_User
 				.create()
 				.setClient_ID()
 				.setOption(IQuery.OPTION_GuaranteedIteratorRequired, true) // guaranteed = true, because the term extension changes AD_PInstance_EndOfTerm_ID
+				.setOption(IQuery.OPTION_IteratorBufferSize, chunkSize) // the default is just 50
 				.iterate(I_C_Flatrate_Term.class);
 
-		final int chunkSize = sysConfigBL.getIntValue("de.metas.contracts.flatrate.process.C_Flatrate_Term_Extend_And_Notify_User.chunkSize", 500);
 		final ExtendTermsResult result = new ExtendTermsResult();
 		while (termsToExtend.hasNext())
 		{
@@ -133,7 +135,6 @@ public class C_Flatrate_Term_Extend_And_Notify_User
 			// CreateMissingInvoiceCandidatesWorkpackageProcessor will be scheduled on commit and we need to avoid the overhead of 1000s of workpackages each one with jsut one term.
 			trxManager.runInNewTrx(() -> result.addToThis(extendTermsChunk(termsToExtend, forceComplete, chunkSize)));
 		}
-
 		addLog("Processed {} terms; Processing failed for {} terms, see the log for AD_PInstance_ID={} for details", result.extendedCounter, result.errorCounter, getPinstanceId());
 		if (result.errorCounter > 0)
 		{
