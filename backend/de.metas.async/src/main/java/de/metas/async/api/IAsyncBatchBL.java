@@ -102,7 +102,7 @@ public interface IAsyncBatchBL extends ISingletonService
 
 	/**
 	 * Creates new a C_Async_Batch if needed and sets the temporary dynamic attribute for the given modelRecords to reference it.
-	 * Those modelRecords that already reference an async batch retain it.
+	 * Those modelRecords that already reference any async batch - also a different one - retain it.
 	 *
 	 * @param asyncBatchInternalName see {@link Async_Constants}
 	 * @see org.adempiere.model.InterfaceWrapperHelper#setDynAttribute(Object, String, Object).
