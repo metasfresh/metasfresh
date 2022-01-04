@@ -35,7 +35,7 @@ import java.util.List;
  *
  * @author cg
  */
-public class InvoicePDFConcatenateWorkpackageProcessor implements IWorkpackageProcessor
+public class PrintingQueuePDFConcatenateWorkpackageProcessor implements IWorkpackageProcessor
 {
 	final AttachmentEntryService attachmentEntryService = SpringContextHolder.instance.getBean(AttachmentEntryService.class);
 	// services

@@ -29,7 +29,7 @@ import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.organization.ClientAndOrgId;
-import de.metas.printing.async.spi.impl.InvoicePDFConcatenateWorkpackageProcessor;
+import de.metas.printing.async.spi.impl.PrintingQueuePDFConcatenateWorkpackageProcessor;
 import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -83,7 +83,7 @@ public class AsyncBatchNotificationHelper
 		final AsyncBatchId asyncBatchId = createAsyncBatch();
 		final Properties ctx = InterfaceWrapperHelper.getCtx(parentAsyncBatch);
 
-		final IWorkPackageQueue queue = workPackageQueueFactory.getQueueForEnqueuing(ctx, InvoicePDFConcatenateWorkpackageProcessor.class);
+		final IWorkPackageQueue queue = workPackageQueueFactory.getQueueForEnqueuing(ctx, PrintingQueuePDFConcatenateWorkpackageProcessor.class);
 		queue.newBlock()
 				.setContext(ctx)
 				.newWorkpackage()

@@ -1,6 +1,6 @@
 -- 2022-01-04T14:47:43.409555600Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE C_Queue_PackageProcessor SET InternalName='InvoicePDFConcatenateWorkpackageProcessor',Updated=TO_TIMESTAMP('2022-01-04 16:47:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Queue_PackageProcessor_ID=540092
+UPDATE C_Queue_PackageProcessor SET InternalName='PrintingQueuePDFConcatenateWorkpackageProcessor', Classname = 'de.metas.printing.async.spi.impl.PrintingQueuePDFConcatenateWorkpackageProcessor',Updated=TO_TIMESTAMP('2022-01-04 16:47:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Queue_PackageProcessor_ID=540092
 ;
 
 -- 2022-01-04T14:48:27.010524100Z
