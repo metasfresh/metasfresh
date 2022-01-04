@@ -445,7 +445,7 @@ public class ShipmentScheduleWithHUService
 				.reservedVHUsPolicy(ReservedHUsPolicy.CONSIDER_ALL)
 
 				// OLD
-				// onlyFromUnreservedHUs(false) // note: the HUs returned by the query do not contain HUs which are reserved to someone else
+				// .onlyFromUnreservedHUs(false) // note: the HUs returned by the query do not contain HUs which are reserved to someone else
 
 				.productId(ProductId.ofRepoId(scheduleRecord.getM_Product_ID()))
 				.qtyCU(quantityToSplit)

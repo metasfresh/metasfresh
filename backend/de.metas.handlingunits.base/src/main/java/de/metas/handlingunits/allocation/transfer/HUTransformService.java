@@ -78,6 +78,7 @@ import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
+import lombok.Value;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
@@ -1065,7 +1066,7 @@ public class HUTransformService
 		return productStorages;
 	}
 
-	@lombok.Value
+	@Value
 	public static class HUsToNewCUsRequest
 	{
 		@NonNull ImmutableList<I_M_HU> sourceHUs;

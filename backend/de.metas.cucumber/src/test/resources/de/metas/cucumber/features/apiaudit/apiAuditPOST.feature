@@ -32,7 +32,6 @@ Feature: API Audit POST http method
       | 200      | {"messageBody":"\"test-endpoint was called\""} |
 
   @from:cucumber
-  @ignore
   Scenario: Testcase 110, normal POST and caller does not wait for result
     And the following API_Audit_Config records are created:
       | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
