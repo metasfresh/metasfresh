@@ -44,10 +44,9 @@ import org.adempiere.archive.api.IArchiveEventManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.I_AD_Archive;
-import org.compiere.model.PO;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -88,8 +87,10 @@ public class DocOutboundWorkpackageProcessor implements IWorkpackageProcessor
 		for (final Object record : records)
 		{
 			InterfaceWrapperHelper.setDynAttribute(record, Async_Constants.C_Async_Batch, asyncBatch);
-			asyncBatchBL.setTempAsyncBatchId(record, AsyncBatchId.ofRepoIdOrNull(asyncBatch != null ? asyncBatch.getC_Async_Batch_ID(): null) );
-			generateOutboundDocument(record, userId);
+			try (final IAutoCloseable ignored = asyncBatchBL.assignTempAsyncBatchIdToModel(record, AsyncBatchId.ofRepoIdOrNull(asyncBatch != null ? asyncBatch.getC_Async_Batch_ID() : null)))
+			{
+				generateOutboundDocument(record, userId);
+			}
 		}
 		return Result.SUCCESS;
 	}

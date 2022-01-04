@@ -45,13 +45,16 @@ import de.metas.async.spi.IWorkpackagePrioStrategy;
 import de.metas.async.spi.NullWorkpackagePrio;
 import de.metas.common.util.time.SystemTime;
 import de.metas.process.PInstanceId;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.ImmutablePair;
+import org.adempiere.util.lang.NullAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -488,9 +491,10 @@ public class AsyncBatchBL implements IAsyncBatchBL
 	}
 
 	@Override
-	public void setTempAsyncBatchId(@NonNull final Object model, @NonNull final AsyncBatchId asyncBatchId)
+	public IAutoCloseable assignTempAsyncBatchIdToModel(@NonNull final Object model, @NonNull final AsyncBatchId asyncBatchId)
 	{
-		InterfaceWrapperHelper.setDynAttribute(model, DYN_ATTR_TEMPORARY_BATCH_ID, asyncBatchId);
+		Check.assumeNotNull(asyncBatchId, "asyncBatchId not null");
+		return () -> InterfaceWrapperHelper.setDynAttribute(model, DYN_ATTR_TEMPORARY_BATCH_ID, asyncBatchId);
 	}
 
 	public I_C_Async_Batch getAsyncBatchById(@NonNull final AsyncBatchId asyncBatchId)

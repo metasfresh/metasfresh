@@ -14,6 +14,7 @@ import de.metas.async.spi.IWorkpackagePrioStrategy;
 import de.metas.process.PInstanceId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.ImmutablePair;
 
 import java.util.List;
@@ -111,7 +112,7 @@ public interface IAsyncBatchBL extends ISingletonService
 			@NonNull List<T> model,
 			@NonNull String asyncBatchInternalName);
 
-	void setTempAsyncBatchId(@NonNull Object model, @NonNull AsyncBatchId asyncBatchId);
+	IAutoCloseable assignTempAsyncBatchIdToModel(@NonNull Object model, @NonNull AsyncBatchId asyncBatchId);
 
 	I_C_Async_Batch getAsyncBatchById(AsyncBatchId asyncBatchId);
 
