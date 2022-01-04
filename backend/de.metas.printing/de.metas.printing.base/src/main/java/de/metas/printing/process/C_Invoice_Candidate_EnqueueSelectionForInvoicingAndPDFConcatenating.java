@@ -1,7 +1,7 @@
 /**
  *
  */
-package de.metas.invoicecandidate.process;
+package de.metas.printing.process;
 
 /*
  * #%L
@@ -25,60 +25,50 @@ package de.metas.invoicecandidate.process;
  * #L%
  */
 
-import de.metas.adempiere.form.IClientUI;
+import com.google.common.collect.ImmutableMap;
 import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IAsyncBatchBL;
-import de.metas.async.api.impl.AsyncBatchDAO;
+import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.model.I_C_Async_Batch;
-import de.metas.i18n.IMsgBL;
+import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueueResult;
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueuer;
 import de.metas.invoicecandidate.api.IInvoicingParams;
 import de.metas.invoicecandidate.api.impl.InvoicingParams;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.process.IProcessPrecondition;
-import de.metas.process.IProcessPreconditionsContext;
+import de.metas.printing.async.spi.impl.InvoiceEnqueueingWorkpackageProcessor;
 import de.metas.process.JavaProcess;
 import de.metas.process.PInstanceId;
 import de.metas.process.ProcessExecutionResult.ShowProcessLogs;
-import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.process.ProcessPreconditionsResolution.ProcessCaptionMapper;
 import de.metas.process.RunOutOfTrx;
 import de.metas.security.permissions.Access;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.api.IParams;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.IQuery;
+import org.adempiere.util.api.Params;
 import org.compiere.util.DB;
-import org.compiere.util.Ini;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.util.Map;
 import java.util.Properties;
 
 import static de.metas.async.Async_Constants.C_Async_Batch_InternalName_InvoiceCandidate_Processing;
 
-public class C_Invoice_Candidate_EnqueueSelectionForInvoicingAndPDFPrinting extends JavaProcess
+public class C_Invoice_Candidate_EnqueueSelectionForInvoicingAndPDFConcatenating extends JavaProcess
 {
-	private static final String MSG_InvoiceCandidate_PerformEnqueuing = "C_InvoiceCandidate_PerformEnqueuing";
 	//
 	// Services
+	private final IWorkPackageQueueFactory workPackageQueueFactory = Services.get(IWorkPackageQueueFactory.class);
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
-	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
-	private final C_Invoice_Candidate_ProcessCaptionMapperHelper processCaptionMapperHelper = SpringContextHolder.instance.getBean(C_Invoice_Candidate_ProcessCaptionMapperHelper.class);
 
 	// Parameters
 	private IInvoicingParams invoicingParams;
-	private BigDecimal totalNetAmtToInvoiceChecksum;
 
 	private int selectionCount = 0;
 
@@ -101,26 +91,24 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicingAndPDFPrinting exte
 	}
 
 	private AsyncBatchId createAsyncBatch()
-    {
-		return  asyncBatchBL.newAsyncBatch(C_Async_Batch_InternalName_InvoiceCandidate_Processing);
+	{
+		return asyncBatchBL.newAsyncBatch(C_Async_Batch_InternalName_InvoiceCandidate_Processing);
 	}
 
 	@Override
 	protected String doIt() throws Exception
 	{
-		final PInstanceId pinstanceId = getPinstanceId();
-
 		final AsyncBatchId asyncBatchId = createAsyncBatch();
 		final I_C_Async_Batch asyncBatch = asyncBatchBL.getAsyncBatchById(asyncBatchId);
 		asyncBatchBL.setPInstance_IDAndSave(asyncBatch, getPinstanceId());
 
-		final IInvoiceCandidateEnqueueResult enqueueResult = invoiceCandBL.enqueueForInvoicing()
+		final IWorkPackageQueue queue = workPackageQueueFactory.getQueueForEnqueuing(getCtx(), InvoiceEnqueueingWorkpackageProcessor.class);
+		queue.newBlock()
 				.setContext(getCtx())
-				.setInvoicingParams(invoicingParams)
-				.setFailIfNothingEnqueued(true)
-				.setTotalNetAmtToInvoiceChecksum(totalNetAmtToInvoiceChecksum)
-				.setC_Async_Batch(asyncBatch)
-				.enqueueSelection(pinstanceId);
+				.newWorkpackage()
+				.setC_Async_Batch(asyncBatchBL.getAsyncBatchById(asyncBatchId))
+				.parameters(invoicingParams.asMap())
+				.build();
 
 		return MSG_OK;
 	}
@@ -150,7 +138,7 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicingAndPDFPrinting exte
 				.createQueryBuilder(I_C_Invoice_Candidate.class, getCtx(), ITrx.TRXNAME_None)
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_AD_Org_ID, invoicingParams.getAD_Org_ID())
 				.addOnlyActiveRecordsFilter()
-				.addOnlyContextClient()	;
+				.addOnlyContextClient();
 
 		return queryBuilder;
 	}
