@@ -102,11 +102,8 @@ class VHUAllocableStorage
 			@NonNull final Quantity requestedQtyToAllocate,
 			@NonNull final Quantity qtyFreeToAllocate)
 	{
-		if (requestedQtyToAllocate.signum() <= 0)
-		{
-			return requestedQtyToAllocate.toZero();
-		}
-		else if (qtyFreeToAllocate.signum() <= 0)
+		if (requestedQtyToAllocate.signum() <= 0
+				|| qtyFreeToAllocate.signum() <= 0)
 		{
 			return requestedQtyToAllocate.toZero();
 		}
