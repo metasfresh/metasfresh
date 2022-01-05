@@ -1069,10 +1069,8 @@ body{
     max-height: 80vh;
     display: flex;
     flex-direction: column;
-
-    .form-group {
-        overflow-x: scroll;
-    }
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
 .filter-menu li {
