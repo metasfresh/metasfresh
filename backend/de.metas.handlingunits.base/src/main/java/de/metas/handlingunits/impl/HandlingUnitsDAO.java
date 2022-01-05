@@ -228,7 +228,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	}
 
 	@Override
-	public int retrieveParentId(final I_M_HU hu)
+	public HuId retrieveParentId(@NonNull final I_M_HU hu)
 	{
 		return getHUAndItemsDAO().retrieveParentId(hu);
 	}

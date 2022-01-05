@@ -1,11 +1,5 @@
 package de.metas.handlingunits;
 
-import java.math.BigDecimal;
-import java.util.List;
-
-import org.assertj.core.api.AbstractAssert;
-import org.compiere.model.I_C_UOM;
-
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
@@ -14,6 +8,11 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.assertj.core.api.AbstractAssert;
+import org.compiere.model.I_C_UOM;
+
+import java.math.BigDecimal;
+import java.util.List;
 
 /*
  * #%L
@@ -97,12 +96,12 @@ public class HUAssert extends AbstractAssert<HUAssert, I_M_HU>
 
 	public HUAssert isIncludedIn(@NonNull final I_M_HU hu)
 	{
-		final int actualParentId = handlingUnitsDAO.retrieveParentId(actual);
-		if (actualParentId <= 0)
+		final HuId actualParentId = handlingUnitsDAO.retrieveParentId(actual);
+		if (actualParentId == null)
 		{
 			failWithMessage("Actual HU has is not included in any parent HU");
 		}
-		if (actualParentId != hu.getM_HU_ID())
+		else if (actualParentId.getRepoId() != hu.getM_HU_ID())
 		{
 			failWithMessage("Actual HU has an invalid parent M_HU_ID=<%s>; expected parent: <%s>", actualParentId, hu);
 		}

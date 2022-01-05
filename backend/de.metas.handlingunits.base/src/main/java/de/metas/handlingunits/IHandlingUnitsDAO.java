@@ -125,11 +125,8 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	 */
 	I_M_HU retrieveParent(final I_M_HU hu);
 
-	/**
-	 * @param hu may not be {@code null}
-	 * @return parent M_HU_ID or -1
-	 */
-	int retrieveParentId(I_M_HU hu);
+	@Nullable
+	HuId retrieveParentId(@NonNull I_M_HU hu);
 
 	/**
 	 * Actually returns {@link I_M_HU#getM_HU_Item_Parent()}, but in a potentially DB decoupled fashion.

@@ -22,14 +22,7 @@ package de.metas.handlingunits.impl;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.Map;
-
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUAndItemsDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -40,6 +33,14 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.Map;
 
 /**
  * This service wraps a {@link HUAndItemsDAO} and caches its results.
@@ -197,7 +198,7 @@ public class CachedHUAndItemsDAO extends AbstractHUAndItemsDAO
 	}
 
 	@Override
-	public int retrieveParentId(final I_M_HU hu)
+	public HuId retrieveParentId(final I_M_HU hu)
 	{
 		return db.retrieveParentId(hu);
 	}

@@ -22,12 +22,7 @@ package de.metas.handlingunits.impl;
  * #L%
  */
 
-import java.util.List;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.model.InterfaceWrapperHelper;
-
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUAndItemsDAO;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
@@ -36,6 +31,11 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.model.InterfaceWrapperHelper;
+
+import java.util.List;
 
 /**
  * This implementation delegated to either {@link CachedHUAndItemsDAO} or directly to {@link HUAndItemsDAO}.
@@ -122,7 +122,7 @@ public class CachedIfInTransactionHUAndItemsDAO implements IHUAndItemsDAO
 	}
 
 	@Override
-	public int retrieveParentId(final I_M_HU hu)
+	public HuId retrieveParentId(final I_M_HU hu)
 	{
 		return getDelegate(hu).retrieveParentId(hu);
 	}
