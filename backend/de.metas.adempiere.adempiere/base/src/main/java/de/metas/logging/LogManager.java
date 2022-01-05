@@ -1,12 +1,10 @@
 package de.metas.logging;
 
-import java.io.File;
-import java.io.PrintWriter;
-import java.sql.DriverManager;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Consumer;
-
+import ch.qos.logback.classic.Level;
+import com.google.common.collect.ImmutableList;
+import de.metas.util.Check;
+import de.metas.util.StringUtils;
+import lombok.NonNull;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.NullAutoCloseable;
 import org.compiere.util.Ini;
@@ -14,10 +12,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
-import com.google.common.collect.ImmutableList;
-
-import ch.qos.logback.classic.Level;
-import de.metas.util.Check;
+import javax.annotation.Nullable;
+import java.io.File;
+import java.io.PrintWriter;
+import java.sql.DriverManager;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 
 /**
  * Log Management.
@@ -49,8 +50,7 @@ public final class LogManager
 	/**
 	 * See {@link ILoggerCustomizer#dumpConfig()}.
 	 *
-	 * @return
-	 * @task https://github.com/metasfresh/metasfresh/issues/288
+	 * @implNote Task https://github.com/metasfresh/metasfresh/issues/288
 	 */
 	public static String dumpCustomizerConfig()
 	{
@@ -89,7 +89,7 @@ public final class LogManager
 	private static Level s_currentLevel = null;
 
 	/** Logger */
-	private static Logger log = LoggerFactory.getLogger(LogManager.class);
+	private static final Logger log = LoggerFactory.getLogger(LogManager.class);
 
 	public static boolean isFileLoggingEnabled()
 	{
@@ -170,13 +170,8 @@ public final class LogManager
 		s_currentLevel = level;
 	}
 
-	public static boolean setLoggerLevel(final Logger logger, final Level level)
+	public static boolean setLoggerLevel(@NonNull final Logger logger, @Nullable final Level level)
 	{
-		if (logger == null)
-		{
-			return false;
-		}
-
 		// NOTE: level is OK to be null (i.e. we want to parent's level), as long as it's not the root logger
 		// if (level == null)
 		// {
@@ -198,18 +193,23 @@ public final class LogManager
 		return false;
 	}
 
-	public static boolean setLoggerLevel(final Logger logger, final String levelStr)
+	public static boolean setLoggerLevel(@NonNull final Logger logger, @Nullable final String levelStr)
 	{
-		final Level level = asLogbackLevel(levelStr);
+		final Level level = StringUtils.trimBlankToOptional(levelStr).map(LogManager::asLogbackLevel).orElse(null);
 		return setLoggerLevel(logger, level);
 	}
 
-	public static boolean setLoggerLevel(final Class<?> clazz, final Level level)
+	public static boolean setLoggerLevel(@NonNull final Class<?> clazz, @Nullable final Level level)
 	{
 		return setLoggerLevel(getLogger(clazz), level);
 	}
 
-	public static boolean setLoggerLevel(final String loggerName, final Level level)
+	public static boolean setLoggerLevel(@NonNull final Package javaPackage, @Nullable final Level level)
+	{
+		return setLoggerLevel(getLogger(javaPackage.getName()), level);
+	}
+
+	public static boolean setLoggerLevel(@NonNull final String loggerName, @Nullable final Level level)
 	{
 		return setLoggerLevel(getLogger(loggerName), level);
 	}
@@ -234,7 +234,6 @@ public final class LogManager
 	/**
 	 * Set JDBC Debug
 	 *
-	 * @param enable
 	 */
 	private static void setJDBCDebug(final boolean enable)
 	{
@@ -469,7 +468,6 @@ public final class LogManager
 	}
 
 	/**
-	 * @param loggerName
 	 * @see #dumpAllLevelsUpToRoot(Logger)
 	 */
 	public static void dumpAllLevelsUpToRoot(final String loggerName)
@@ -500,7 +498,6 @@ public final class LogManager
 	 *
 	 * This method is useful in case you are debugging why a given logger does not have the correct effective level.
 	 *
-	 * @param logger
 	 */
 	public static void dumpAllLevelsUpToRoot(final Logger logger)
 	{
