@@ -54,7 +54,7 @@ public class C_Async_Batch_DownloadFileFromAttachment extends JavaProcess implem
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
 
-		if (context.isSingleSelection())
+		if (!context.isSingleSelection())
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
 		}
