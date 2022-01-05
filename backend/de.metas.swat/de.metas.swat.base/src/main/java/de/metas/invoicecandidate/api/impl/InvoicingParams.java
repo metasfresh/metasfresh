@@ -22,17 +22,12 @@ package de.metas.invoicecandidate.api.impl;
  * #L%
  */
 
+import de.metas.invoicecandidate.api.IInvoicingParams;
+import lombok.NonNull;
+import org.adempiere.util.api.IParams;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-
-import de.metas.order.OrderId;
-import de.metas.organization.OrgId;
-import de.metas.util.Check;
-import org.adempiere.util.api.IParams;
-
-import de.metas.invoicecandidate.api.IInvoicingParams;
-import lombok.NonNull;
 
 /**
  * Invoicing Enqueueing & generating parameters (wrapped from {@link IParams}).
@@ -100,13 +95,6 @@ public class InvoicingParams implements IInvoicingParams
 		return params.getParameterAsBigDecimal(PARA_Check_NetAmtToInvoice);
 	}
 
-	@Override
-	public OrgId getAD_Org_ID()
-	{
-		final OrgId orgId = params.getParameterAsId(PARA_AD_org_ID, OrgId.class);
-		Check.assumeNotNull(orgId, "OrgID not null");
-		return orgId;
-	}
 	/**
 	 * Always returns {@code false}.
 	 */

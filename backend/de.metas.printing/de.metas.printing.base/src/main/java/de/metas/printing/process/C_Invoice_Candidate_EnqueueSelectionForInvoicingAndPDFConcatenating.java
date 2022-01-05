@@ -25,14 +25,11 @@ package de.metas.printing.process;
  * #L%
  */
 
-import com.google.common.collect.ImmutableMap;
 import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.processor.IWorkPackageQueueFactory;
-import de.metas.invoicecandidate.api.IInvoiceCandBL;
-import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueueResult;
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueuer;
 import de.metas.invoicecandidate.api.IInvoicingParams;
 import de.metas.invoicecandidate.api.impl.InvoicingParams;
@@ -40,6 +37,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.printing.async.spi.impl.InvoiceEnqueueingWorkpackageProcessor;
 import de.metas.process.JavaProcess;
 import de.metas.process.PInstanceId;
+import de.metas.process.Param;
 import de.metas.process.ProcessExecutionResult.ShowProcessLogs;
 import de.metas.process.RunOutOfTrx;
 import de.metas.security.permissions.Access;
@@ -50,27 +48,32 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.api.IParams;
-import org.adempiere.util.api.Params;
+import org.compiere.model.IQuery;
+import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Product_Category;
 import org.compiere.util.DB;
 
-import java.math.BigDecimal;
-import java.util.Map;
 import java.util.Properties;
 
 import static de.metas.async.Async_Constants.C_Async_Batch_InternalName_InvoiceCandidate_Processing;
 
 public class C_Invoice_Candidate_EnqueueSelectionForInvoicingAndPDFConcatenating extends JavaProcess
 {
+	final IQueryBL queryBL = Services.get(IQueryBL.class);
 	//
 	// Services
 	private final IWorkPackageQueueFactory workPackageQueueFactory = Services.get(IWorkPackageQueueFactory.class);
-	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
-
 	// Parameters
 	private IInvoicingParams invoicingParams;
 
 	private int selectionCount = 0;
+
+	@Param(parameterName = I_C_Invoice_Candidate.COLUMNNAME_AD_Org_ID, mandatory = true)
+	private int p_AD_Org_ID;
+
+	@Param(parameterName = I_M_Product.COLUMNNAME_M_Product_Category_ID, mandatory = true)
+	private int p_M_Product_Category_ID;
 
 	@Override
 	@RunOutOfTrx
@@ -134,10 +137,28 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicingAndPDFConcatenating
 
 	private IQueryBuilder<I_C_Invoice_Candidate> createICQueryBuilder()
 	{
-		final IQueryBuilder<I_C_Invoice_Candidate> queryBuilder = Services.get(IQueryBL.class)
+		final IQuery<I_M_Product_Category> subQuery_ProductcategFilter = queryBL
+				.createQueryBuilder(I_M_Product_Category.class)
+				.addEqualsFilter(I_M_Product_Category.COLUMNNAME_M_Product_Category_ID, p_M_Product_Category_ID)
+				.setJoinOr()
+				.addEqualsFilter(I_M_Product_Category.COLUMNNAME_M_Product_Category_Parent_ID, p_M_Product_Category_ID)
+				.create();
+
+		final IQuery<I_M_Product> subQuery_Product = queryBL
+				.createQueryBuilder(I_M_Product.class)
+				.addInSubQueryFilter()
+				.matchingColumnNames(I_M_Product.COLUMNNAME_M_Product_Category_ID, I_M_Product_Category.COLUMNNAME_M_Product_Category_ID)
+				.subQuery(subQuery_ProductcategFilter)
+				.end()
+				.create();
+
+		final IQueryBuilder<I_C_Invoice_Candidate> queryBuilder = queryBL
 				.createQueryBuilder(I_C_Invoice_Candidate.class, getCtx(), ITrx.TRXNAME_None)
-				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_AD_Org_ID, invoicingParams.getAD_Org_ID())
-				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_AD_Org_ID, p_AD_Org_ID)
+				.addInSubQueryFilter()
+				.matchingColumnNames(I_C_Invoice_Candidate.COLUMNNAME_M_Product_ID, I_M_Product.COLUMNNAME_M_Product_ID)
+				.subQuery(subQuery_Product)
+				.end()
 				.addOnlyContextClient();
 
 		return queryBuilder;
