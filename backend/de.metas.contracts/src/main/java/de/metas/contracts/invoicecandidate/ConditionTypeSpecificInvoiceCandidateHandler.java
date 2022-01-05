@@ -11,6 +11,7 @@ import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.CandidatesAutoCrea
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.PriceAndTax;
 import de.metas.quantity.Quantity;
 import lombok.NonNull;
+import org.adempiere.ad.dao.QueryLimit;
 
 /*
  * #%L
@@ -38,7 +39,7 @@ public interface ConditionTypeSpecificInvoiceCandidateHandler
 {
 	String getConditionsType();
 
-	Iterator<I_C_Flatrate_Term> retrieveTermsWithMissingCandidates(int limit);
+	Iterator<I_C_Flatrate_Term> retrieveTermsWithMissingCandidates(QueryLimit limit);
 
 	void setSpecificInvoiceCandidateValues(I_C_Invoice_Candidate ic, I_C_Flatrate_Term term);
 

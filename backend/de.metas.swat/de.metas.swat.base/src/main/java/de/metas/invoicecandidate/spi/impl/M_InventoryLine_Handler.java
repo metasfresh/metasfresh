@@ -10,6 +10,7 @@ import java.util.Properties;
 
 import de.metas.lang.SOTrx;
 import de.metas.tax.api.TaxId;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
@@ -132,9 +133,9 @@ public class M_InventoryLine_Handler extends AbstractInvoiceCandidateHandler
 	}
 
 	@Override
-	public Iterator<? extends Object> retrieveAllModelsWithMissingCandidates(final int limit)
+	public Iterator<? extends Object> retrieveAllModelsWithMissingCandidates(@NonNull final QueryLimit limit)
 	{
-		return inventoryLineHandlerDAO.retrieveAllLinesWithoutIC(Env.getCtx(), limit, ITrx.TRXNAME_ThreadInherited);
+		return inventoryLineHandlerDAO.retrieveAllLinesWithoutIC(Env.getCtx(), limit.toInt(), ITrx.TRXNAME_ThreadInherited);
 	}
 
 	@Override

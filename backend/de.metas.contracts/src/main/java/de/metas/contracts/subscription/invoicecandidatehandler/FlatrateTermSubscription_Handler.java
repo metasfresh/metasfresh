@@ -26,6 +26,7 @@ import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.Env;
@@ -45,7 +46,7 @@ public class FlatrateTermSubscription_Handler implements ConditionTypeSpecificIn
 	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
 
 	@Override
-	public Iterator<I_C_Flatrate_Term> retrieveTermsWithMissingCandidates(final int limit)
+	public Iterator<I_C_Flatrate_Term> retrieveTermsWithMissingCandidates(final QueryLimit limit)
 	{
 		return Services.get(IContractsDAO.class)
 				.retrieveSubscriptionTermsWithMissingCandidates(X_C_Flatrate_Term.TYPE_CONDITIONS_Subscription, limit)
