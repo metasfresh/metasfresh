@@ -132,7 +132,7 @@ public class C_Flatrate_Term_Extend_And_Notify_User
 		while (termsToExtend.hasNext())
 		{
 			// create up to 'chunkSize' terms at a time.
-			// CreateMissingInvoiceCandidatesWorkpackageProcessor will be scheduled on commit and we need to avoid the overhead of 1000s of workpackages each one with jsut one term.
+			// CreateMissingInvoiceCandidatesWorkpackageProcessor will be scheduled on commit and we need to avoid the overhead of 1000s of workpackages of which each one has just one term.
 			trxManager.runInNewTrx(() -> result.addToThis(extendTermsChunk(termsToExtend, forceComplete, chunkSize)));
 		}
 		addLog("Processed {} terms; Processing failed for {} terms, see the log for AD_PInstance_ID={} for details", result.extendedCounter, result.errorCounter, getPinstanceId());

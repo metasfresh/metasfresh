@@ -1047,7 +1047,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 			});
 		}
 
-		// make sure the order of invoice candidate updating is somewhat predictable
+		// make sure the order of invoice candidate recomputing is somewhat predictable
 		queryBuilder.orderBy(I_C_Invoice_Candidate_Recompute.COLUMNNAME_C_Invoice_Candidate_ID);
 
 		//
