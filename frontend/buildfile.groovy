@@ -60,6 +60,7 @@ Map build(final MvnConf mvnConf,
 		def nodeHome = tool name: "$NODEJS_TOOL_NAME"
 		env.PATH = "${nodeHome}/bin:${env.PATH}"
 
+
 		sh 'yarn install'
 		sh 'yarn lint --quiet'
 							
