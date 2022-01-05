@@ -1,13 +1,11 @@
 import thunk from 'redux-thunk';
 import configureStore from 'redux-mock-store';
-import produce from 'immer';
 import { merge } from 'merge-anything';
 import { combineReducers } from 'redux';
 import nock from 'nock';
 
 import tablesHandler, { initialTableState, getTableId } from '../../reducers/tables';
 import viewHandler, { initialState as initialViewsState } from '../../reducers/viewHandler';
-import { getQuickActionsId } from '../../reducers/actionsHandler';
 
 
 import {
