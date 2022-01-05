@@ -49,12 +49,12 @@ public class C_Async_Batch_DownloadFileFromAttachment extends JavaProcess implem
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
 	{
-		if (!context.isNoSelection())
+		if (context.isNoSelection())
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
 
-		if (!context.isSingleSelection())
+		if (context.isSingleSelection())
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
 		}
