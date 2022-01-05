@@ -22,6 +22,8 @@
 
 package de.metas.async.process;
 
+import de.metas.async.AsyncBatchId;
+import de.metas.async.api.IAsyncBatchDAO;
 import de.metas.async.model.I_C_Async_Batch;
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryService;
@@ -30,20 +32,19 @@ import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.util.Services;
-import org.adempiere.ad.dao.IQueryBL;
+import lombok.NonNull;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
 import org.compiere.util.MimeType;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 
-import javax.annotation.Nullable;
 import java.util.List;
 
 public class C_Async_Batch_DownloadFileFromAttachment extends JavaProcess implements IProcessPrecondition
 {
 	private final transient AttachmentEntryService attachmentEntryService = SpringContextHolder.instance.getBean(AttachmentEntryService.class);
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IAsyncBatchDAO asyncBatchDAO = Services.get(IAsyncBatchDAO.class);
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
@@ -58,6 +59,12 @@ public class C_Async_Batch_DownloadFileFromAttachment extends JavaProcess implem
 			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
 		}
 
+		final I_C_Async_Batch record = asyncBatchDAO.retrieveAsyncBatchRecord(AsyncBatchId.ofRepoId(context.getSingleSelectedRecordId()));
+		if (!hasAttachments(record))
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("No attachments found");
+		}
+
 		return ProcessPreconditionsResolution.accept();
 	}
 
@@ -65,11 +72,7 @@ public class C_Async_Batch_DownloadFileFromAttachment extends JavaProcess implem
 	protected String doIt()
 	{
 
-		final I_C_Async_Batch record = getRecord();
-		if (record == null)
-		{
-			return MSG_Error;
-		}
+		final I_C_Async_Batch record = asyncBatchDAO.retrieveAsyncBatchRecord(AsyncBatchId.ofRepoId(getRecord_ID()));
 
 		final AttachmentEntryService.AttachmentEntryQuery attachmentQuery = AttachmentEntryService.AttachmentEntryQuery.builder()
 				.referencedRecord(TableRecordReference.of(record))
@@ -88,14 +91,15 @@ public class C_Async_Batch_DownloadFileFromAttachment extends JavaProcess implem
 		return MSG_OK;
 	}
 
-	@Nullable
-	private I_C_Async_Batch getRecord()
+	private boolean hasAttachments(@NonNull final I_C_Async_Batch record)
 	{
-		return queryBL.createQueryBuilder(I_C_Async_Batch.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_Async_Batch.COLUMN_C_Async_Batch_ID, getRecord_ID())
-				.create()
-				.first();
-	}
+		final AttachmentEntryService.AttachmentEntryQuery attachmentQuery = AttachmentEntryService.AttachmentEntryQuery.builder()
+				.referencedRecord(TableRecordReference.of(record))
+				.mimeType(MimeType.TYPE_PDF)
+				.build();
 
+		final List<AttachmentEntry> attachments = attachmentEntryService.getByQuery(attachmentQuery);
+
+		return !attachments.isEmpty();
+	}
 }
