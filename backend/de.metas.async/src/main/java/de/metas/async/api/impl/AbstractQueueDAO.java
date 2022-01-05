@@ -81,7 +81,7 @@ public abstract class AbstractQueueDAO implements IQueueDAO
 	// Order by (very important): Priority (0 to 9), and ID
 	protected final IQueryOrderBy queueOrderByComparator = Services.get(IQueryBL.class)
 			.createQueryOrderByBuilder(I_C_Queue_WorkPackage.class)
-			.addColumn(I_C_Queue_WorkPackage.COLUMNNAME_Priority)
+			.addColumn(I_C_Queue_WorkPackage.COLUMNNAME_Priority) /* 1 is the most urgent */
 			.addColumn(I_C_Queue_WorkPackage.COLUMNNAME_C_Queue_WorkPackage_ID)
 			.createQueryOrderBy();
 

@@ -28,7 +28,8 @@ import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.spi.IWorkpackagePrioStrategy;
-import lombok.NonNull;
+
+import javax.annotation.Nullable;
 
 /**
  * Returns the workpackage priority based on the number of WPs that were already enqueued so far.<br>
@@ -62,7 +63,7 @@ public class SizeBasedWorkpackagePrio implements IWorkpackagePrioStrategy
 	 * Note that by default this implementation uses {@link SysconfigBackedSizeBasedWorkpackagePrioConfig}.
 	 */
 	@VisibleForTesting
-	public void setAlternativeSize2constantPrio(@NonNull final Function<Integer, ConstantWorkpackagePrio> size2constantPrio)
+	public void setAlternativeSize2constantPrio(@Nullable final Function<Integer, ConstantWorkpackagePrio> size2constantPrio)
 	{
 		this.alternativeSize2constantPrio = size2constantPrio;
 	}
