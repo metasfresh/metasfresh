@@ -9,6 +9,7 @@ import tablesHandler, { initialTableState, getTableId } from '../../reducers/tab
 import viewHandler, { initialState as initialViewsState } from '../../reducers/viewHandler';
 import { getQuickActionsId } from '../../reducers/actionsHandler';
 
+
 import {
   createTableData,
   createGridTable,
@@ -168,7 +169,7 @@ describe('TableActions grid', () => {
       expect(store.getActions()).toEqual(
         expect.arrayContaining(expectedActions)
       );
-    });
+    }).catch(err => { console.log(err) });
   });
 
   it(`dispatches 'UPDATE_TABLE' action after loading data to the view`, () => {
