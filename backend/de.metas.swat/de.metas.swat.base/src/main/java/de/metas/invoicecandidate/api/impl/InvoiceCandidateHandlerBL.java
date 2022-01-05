@@ -254,8 +254,7 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 	 * Create candidates. If model is {@link #NO_MODEL} then all missing candidates will be created.
 	 *
 	 * @param modelOrNoModel if set to a value != {@link #NO_MODEL}, then only candidates for the given model are created,
-	 * @param bufferSize used only when creating missing candidates.
-	 *
+	 * @param bufferSize     used only when creating missing candidates.
 	 * @return created candidates
 	 */
 	private List<I_C_Invoice_Candidate> createCandidates(
@@ -314,51 +313,51 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 			final IInvoiceCandidateHandler invoiceCandiateHandler)
 	{
 			if (!invoiceCandiateHandler.getSpecificCandidatesAutoCreateMode(model).isDoSomething())
-			{
-				return ImmutableList.of();
-			}
+		{
+			return ImmutableList.of();
+		}
 
 		final ILockManager lockManager = Services.get(ILockManager.class);
 
 		//
 		// Create the initial request and then ask the handler to expand it to proper models to be used.
-			final InvoiceCandidateGenerateRequest requestInitial = InvoiceCandidateGenerateRequest.of(invoiceCandiateHandler, model);
-			final List<InvoiceCandidateGenerateRequest> requests = invoiceCandiateHandler.expandRequest(requestInitial);
+		final InvoiceCandidateGenerateRequest requestInitial = InvoiceCandidateGenerateRequest.of(invoiceCandiateHandler, model);
+		final List<InvoiceCandidateGenerateRequest> requests = invoiceCandiateHandler.expandRequest(requestInitial);
 
 		final ImmutableList.Builder<I_C_Invoice_Candidate> invoiceCandidatesAll = ImmutableList.builder();
 
-			//
-			// Iterate each request and generate the invoice candidates
-			for (final InvoiceCandidateGenerateRequest request : requests)
+		//
+		// Iterate each request and generate the invoice candidates
+		for (final InvoiceCandidateGenerateRequest request : requests)
+		{
+			// Lock the "model" to make sure nobody else would generate invoice candidates for it.
+			final ILock lock = lockManager.lock()
+					.setOwner(lockOwner)
+					.setRecordByModel(model)
+					.setAutoCleanup(true)
+					.setFailIfAlreadyLocked(true)
+					.acquire();
+
+			try (final ILockAutoCloseable ignored = lock.asAutoCloseable())
 			{
-				// Lock the "model" to make sure nobody else would generate invoice candidates for it.
-				final ILock lock = lockManager.lock()
-						.setOwner(lockOwner)
-						.setRecordByModel(model)
-						.setAutoCleanup(true)
-						.setFailIfAlreadyLocked(true)
-						.acquire();
+				final IInvoiceCandidateHandler handler = request.getHandler();
+				final InvoiceCandidateGenerateResult result = handler.createCandidatesFor(request);
 
-				try (final ILockAutoCloseable ignored = lock.asAutoCloseable())
-				{
-					final IInvoiceCandidateHandler handler = request.getHandler();
-					final InvoiceCandidateGenerateResult result = handler.createCandidatesFor(request);
+				// Update generated invoice candidates
+				updateDefaultsAndSave(result);
 
-					// Update generated invoice candidates
-					updateDefaultsAndSave(result);
-
-					// Collect candidates (we will invalidate them all together)
-					invoiceCandidatesAll.addAll(result.getC_Invoice_Candidates());
-				}
-				catch (final Exception ex)
-				{
-					Loggables.withWarnLoggerToo(logger)
-							.addLog("Caught {} while trying to create candidate for request={} with requestInitial={}",
-									ex.getClass(), request, requestInitial, ex);
-
-					throw AdempiereException.wrapIfNeeded(ex);
-				}
+				// Collect candidates (we will invalidate them all together)
+				invoiceCandidatesAll.addAll(result.getC_Invoice_Candidates());
 			}
+			catch (final Exception ex)
+			{
+				Loggables.withWarnLoggerToo(logger)
+						.addLog("Caught {} while trying to create candidate for request={} with requestInitial={}",
+								ex.getClass(), request, requestInitial, ex);
+
+				throw AdempiereException.wrapIfNeeded(ex);
+			}
+		}
 
 		return invoiceCandidatesAll.build();
 	}
@@ -412,8 +411,8 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 		if (fromModel != null)
 		{
 			Services.get(IWFExecutionFactory.class).notifyActivityPerformed( // 03745
-					fromModel,
-					ic);
+																			 fromModel,
+																			 ic);
 		}
 	}
 

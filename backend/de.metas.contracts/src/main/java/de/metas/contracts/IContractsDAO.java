@@ -41,11 +41,10 @@ public interface IContractsDAO extends ISingletonService
 	/**
 	 * @return the flatrate terms with missing candidates, gathered in a list.
 	 */
-	List<I_C_Flatrate_Term> retrieveSubscriptionTermsWithMissingCandidates(String typconditions, QueryLimit limit);
+	List<I_C_Flatrate_Term> retrieveSubscriptionTermsWithMissingCandidates(String typconditions, @NonNull QueryLimit limit);
 
 
 	/**
-	 *
 	 * Check if the term given as parameter was extended (has a predecessor).
 	 */
 	boolean termHasAPredecessor (I_C_Flatrate_Term term);

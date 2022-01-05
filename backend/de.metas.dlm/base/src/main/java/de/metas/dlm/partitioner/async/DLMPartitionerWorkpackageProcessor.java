@@ -126,7 +126,7 @@ public class DLMPartitionerWorkpackageProcessor extends WorkpackageProcessorAdap
 		final ILoggable loggable = Loggables.get();
 
 		final ITableRecordReference tableRefToAttach;
-		final List<Object> recordsToAttach = queueDAO.retrieveItems(workPackage, Object.class, localTrxName); // note that according to the 'schedule' method, there can be max one item
+		final List<Object> recordsToAttach = queueDAO.retrieveAllItems(workPackage, Object.class); // note that according to the 'schedule' method, there can be max one item
 		if (recordsToAttach.isEmpty())
 		{
 			tableRefToAttach = null;

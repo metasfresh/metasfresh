@@ -60,7 +60,7 @@ public class CheckProcessedAsynBatchWorkpackageProcessor implements IWorkpackage
 	{
 		boolean hasError = false;
 
-		final List<I_C_Async_Batch> batches = queueDAO.retrieveItems(workpackage, I_C_Async_Batch.class, localTrxName);
+		final List<I_C_Async_Batch> batches = queueDAO.retrieveAllItems(workpackage, I_C_Async_Batch.class);
 		for (final I_C_Async_Batch asyncBatch : batches)
 		{
 			if (asyncBatch.isProcessed() || !asyncBatch.isActive())

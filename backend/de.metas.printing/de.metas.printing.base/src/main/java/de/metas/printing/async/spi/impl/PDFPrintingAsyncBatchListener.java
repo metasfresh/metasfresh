@@ -77,7 +77,7 @@ public class PDFPrintingAsyncBatchListener implements IAsyncBatchListener
 
 				if (notifiableWP != null)
 				{
-					final List<I_C_Print_Job_Instructions> printJobInstructions = queueDAO.retrieveItems(notifiableWP, I_C_Print_Job_Instructions.class, trxName);
+					final List<I_C_Print_Job_Instructions> printJobInstructions = queueDAO.retrieveAllItems(notifiableWP, I_C_Print_Job_Instructions.class);
 					for (final I_C_Print_Job_Instructions pji : printJobInstructions)
 					{
 						final Iterator<I_C_Print_Job_Line> jobLines = dao.retrievePrintJobLines(pji);

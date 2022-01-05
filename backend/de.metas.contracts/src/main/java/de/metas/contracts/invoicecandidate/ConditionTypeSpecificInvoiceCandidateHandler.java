@@ -39,7 +39,7 @@ public interface ConditionTypeSpecificInvoiceCandidateHandler
 {
 	String getConditionsType();
 
-	Iterator<I_C_Flatrate_Term> retrieveTermsWithMissingCandidates(QueryLimit limit);
+	Iterator<I_C_Flatrate_Term> retrieveTermsWithMissingCandidates(@NonNull QueryLimit limit);
 
 	void setSpecificInvoiceCandidateValues(I_C_Invoice_Candidate ic, I_C_Flatrate_Term term);
 
