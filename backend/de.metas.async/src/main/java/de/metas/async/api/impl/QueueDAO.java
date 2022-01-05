@@ -57,8 +57,6 @@ public class QueueDAO extends AbstractQueueDAO
 {
 	public QueueDAO()
 	{
-		super();
-
 		//
 		// Create C_Queue_Element filter: Skip already enqueued, but not processed items
 		{

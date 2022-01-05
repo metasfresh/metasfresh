@@ -911,11 +911,11 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		invalidateCandsFor(icQueryBuilder);
 	}
 
-	protected final void invalidateCandsForSelection(final PInstanceId pinstanceId, final String trxName)
+	protected final void invalidateCandsForSelection(@NonNull final PInstanceId pinstanceId)
 	{
 		final Properties ctx = Env.getCtx();
 		final IQueryBuilder<I_C_Invoice_Candidate> icQueryBuilder = queryBL
-				.createQueryBuilder(I_C_Invoice_Candidate.class, ctx, trxName)
+				.createQueryBuilder(I_C_Invoice_Candidate.class, ctx, ITrx.TRXNAME_ThreadInherited)
 				.setOnlySelection(pinstanceId)
 				// Invalidate no matter if Processed or not
 				// .addEqualsFilter(I_C_Invoice_Candidate.COLUMN_Processed, false)
@@ -1303,7 +1303,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 						updateCount, selectionId, paymentTermId);
 
 		// Invalidate the candidates which we updated
-		invalidateCandsForSelection(selectionToUpdateId, ITrx.TRXNAME_ThreadInherited);
+		invalidateCandsForSelection(selectionToUpdateId);
 
 	}
 
@@ -1407,7 +1407,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 						updateCount, selectionId, columnName, updateOnlyIfNull, value);
 
 		// Invalidate the candidates which we updated
-		invalidateCandsForSelection(selectionToUpdateId, ITrx.TRXNAME_ThreadInherited);
+		invalidateCandsForSelection(selectionToUpdateId);
 	}
 
 	@Override

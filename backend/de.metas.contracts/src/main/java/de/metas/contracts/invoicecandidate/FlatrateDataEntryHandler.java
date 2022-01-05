@@ -38,6 +38,7 @@ import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import org.adempiere.ad.dao.QueryLimit;
 
 public class FlatrateDataEntryHandler extends AbstractInvoiceCandidateHandler
 {
@@ -60,7 +61,7 @@ public class FlatrateDataEntryHandler extends AbstractInvoiceCandidateHandler
 	 * @return empty iterator
 	 */
 	@Override
-	public Iterator<I_C_Flatrate_DataEntry> retrieveAllModelsWithMissingCandidates(final int limit)
+	public Iterator<I_C_Flatrate_DataEntry> retrieveAllModelsWithMissingCandidates(final QueryLimit limit_IGNORED)
 	{
 		return Collections.emptyIterator();
 	}
