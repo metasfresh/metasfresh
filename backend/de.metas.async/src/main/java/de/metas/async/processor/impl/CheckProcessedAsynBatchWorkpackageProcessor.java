@@ -97,7 +97,7 @@ public class CheckProcessedAsynBatchWorkpackageProcessor implements IWorkpackage
 
 		//
 		// try to set the processed status
-		final boolean batchIsProcessed = asyncBatchBL.updateProcessed(asyncBatchId, null);
+		final boolean batchIsProcessed = asyncBatchBL.updateProcessedOutOfTrx(asyncBatchId);
 		if (batchIsProcessed)
 		{
 			return Result.SUCCESS;

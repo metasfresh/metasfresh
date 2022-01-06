@@ -46,7 +46,7 @@ public interface IAsyncBatchBL extends ISingletonService
 	 *
 	 * @return {@code true} iff the respective record was updated to {@code processed='Y'};
 	 */
-	boolean updateProcessed(AsyncBatchId asyncBatchId, String trxName);
+	boolean updateProcessedOutOfTrx(AsyncBatchId asyncBatchId);
 
 	/**
 	 * Enqueue batch for the de.metas.async.processor.impl.CheckProcessedAsynBatchWorkpackageProcessor processor. Call

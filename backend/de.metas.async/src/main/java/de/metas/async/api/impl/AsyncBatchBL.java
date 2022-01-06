@@ -172,7 +172,7 @@ public class AsyncBatchBL implements IAsyncBatchBL
 	}
 
 	@Override
-	public boolean updateProcessed(@NonNull final AsyncBatchId asyncBatchId, @Nullable final String trxName)
+	public boolean updateProcessedOutOfTrx(@NonNull final AsyncBatchId asyncBatchId)
 	{
 		final I_C_Async_Batch asyncBatchRecord = asyncBatchDAO.retrieveAsyncBatchRecord(asyncBatchId);
 		if (asyncBatchRecord.isProcessed())
@@ -192,7 +192,7 @@ public class AsyncBatchBL implements IAsyncBatchBL
 			return false;
 		}
 
-		updateProcessedFlag(asyncBatchRecord, trxName);
+		updateProcessedFlag(asyncBatchRecord);
 
 		queueDAO.save(asyncBatchRecord);
 
@@ -392,9 +392,9 @@ public class AsyncBatchBL implements IAsyncBatchBL
 		return AsyncBatchId.ofRepoId(asyncBatch.getC_Async_Batch_ID());
 	}
 
-	private void updateProcessedFlag(@NonNull final I_C_Async_Batch asyncBatch, @Nullable final String trxName)
+	private void updateProcessedFlag(@NonNull final I_C_Async_Batch asyncBatch)
 	{
-		final List<I_C_Queue_WorkPackage> workPackages = asyncBatchDAO.retrieveWorkPackages(asyncBatch, trxName);
+		final List<I_C_Queue_WorkPackage> workPackages = asyncBatchDAO.retrieveWorkPackages(asyncBatch, null);
 
 		if (Check.isEmpty(workPackages))
 		{
