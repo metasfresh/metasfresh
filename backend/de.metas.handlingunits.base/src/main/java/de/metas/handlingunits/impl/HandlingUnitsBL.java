@@ -295,7 +295,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	@Override
 	public boolean isDestroyed(final I_M_HU hu)
 	{
-		return !hu.isActive();
+		return hu.getHUStatus().equals(X_M_HU.HUSTATUS_Destroyed);
 	}
 
 	@Override
