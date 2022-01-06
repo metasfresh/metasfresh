@@ -37,7 +37,6 @@ import de.metas.util.lang.Percent;
 import lombok.NonNull;
 
 import javax.annotation.Nullable;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Collection;
@@ -192,4 +191,14 @@ public interface IPricingResult
 	void setTradedCommissionPercent(Percent tradedCommissionPercent);
 
 	Percent getTradedCommissionPercent();
+
+	/**
+	 * @return {@code true} if the current discount should not be overridden by any other pricing rule, {@code false} otherwise.
+	 */
+	boolean isDontOverrideDiscountAdvice();
+
+	/**
+	 * Can specify if the discount in the pricing rule can be overridden by any other pricing rule.
+	 */
+	void setDontOverrideDiscountAdvice(boolean dontOverrideDiscountAdvice);
 }
