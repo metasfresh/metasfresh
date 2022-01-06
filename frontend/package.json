@@ -67,7 +67,7 @@
     "common-tags": "1.8.2",
     "copy-webpack-plugin": "10.2.0",
     "core-js": "3.20.2",
-    "css-loader": "6.2.0",
+    "css-loader": "6.5.1",
     "enzyme": "3.11.0",
     "enzyme-adapter-react-16": "1.15.6",
     "enzyme-redux": "0.2.1",
