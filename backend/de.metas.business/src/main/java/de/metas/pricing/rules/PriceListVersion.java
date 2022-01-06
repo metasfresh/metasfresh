@@ -1,15 +1,6 @@
 package de.metas.pricing.rules;
 
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-
 import de.metas.common.util.time.SystemTime;
-import org.compiere.model.I_M_PriceList;
-import org.compiere.model.I_M_PriceList_Version;
-import org.compiere.model.I_M_ProductPrice;
-import org.compiere.util.TimeUtil;
-import org.slf4j.Logger;
-
 import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
@@ -30,6 +21,14 @@ import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.compiere.model.I_M_PriceList;
+import org.compiere.model.I_M_PriceList_Version;
+import org.compiere.model.I_M_ProductPrice;
+import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
+
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 
 /**
  * Calculate Price using Price List Version
@@ -85,7 +84,7 @@ public class PriceListVersion extends AbstractPriceListBasedRule
 		result.setProductId(productId);
 		result.setProductCategoryId(productCategoryId);
 		result.setPriceEditable(productPrice.isPriceEditable());
-		result.setDiscountEditable(productPrice.isDiscountEditable());
+		result.setDiscountEditable(result.isDiscountEditable() && productPrice.isDiscountEditable());
 		result.setEnforcePriceLimit(extractEnforcePriceLimit(priceList));
 		result.setTaxIncluded(priceList.isTaxIncluded());
 		result.setTaxCategoryId(TaxCategoryId.ofRepoId(productPrice.getC_TaxCategory_ID()));
@@ -151,7 +150,7 @@ public class PriceListVersion extends AbstractPriceListBasedRule
 		final I_M_PriceList_Version plv = priceListsRepo.retrievePriceListVersionOrNull(
 				pricingCtx.getPriceListId(),
 				TimeUtil.asZonedDateTime(pricingCtx.getPriceDate(), SystemTime.zoneId()),
-				(Boolean)null // processed
+				null // processed
 		);
 
 		return plv != null && plv.isActive() ? plv : null;

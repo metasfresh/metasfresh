@@ -80,9 +80,9 @@ public class Discount implements IPricingRule
 			return false;
 		}
 
-		if (result.isDiscountCalculated())
+		if (result.isDontOverrideDiscountAdvice())
 		{
-			log.debug("Discount was already calculated - {}", result);
+			log.debug("Discount should not be modified - {}", result);
 			return false;
 		}
 
