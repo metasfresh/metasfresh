@@ -37,12 +37,17 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
 import org.compiere.util.Env;
 
+import javax.annotation.Nullable;
+
 public class AD_Scheduler_Controller extends JavaProcess implements IProcessPrecondition
 {
 	final SchedulerEventBusService schedulerEventBusService = SpringContextHolder.instance.getBean(SchedulerEventBusService.class);
 
 	@Param(parameterName = "Action", mandatory = true)
 	private String p_Action;
+
+	@Param(parameterName = "DeactivateSupervisor")
+	private boolean deactivateSupervisor;
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
@@ -63,13 +68,14 @@ public class AD_Scheduler_Controller extends JavaProcess implements IProcessPrec
 		switch (SchedulerAction.ofCode(p_Action))
 		{
 			case ENABLE:
-				sendManageSchedulerRequest(adSchedulerId, ManageSchedulerRequest.Advice.ENABLE);
+				sendManageSchedulerRequest(adSchedulerId, ManageSchedulerRequest.Advice.ENABLE, ManageSchedulerRequest.Advice.ENABLE);
 				break;
 			case DISABLE:
-				sendManageSchedulerRequest(adSchedulerId, ManageSchedulerRequest.Advice.DISABLE);
+				final ManageSchedulerRequest.Advice supervisorAdvice = deactivateSupervisor ? ManageSchedulerRequest.Advice.DISABLE : null;
+				sendManageSchedulerRequest(adSchedulerId, ManageSchedulerRequest.Advice.DISABLE, supervisorAdvice);
 				break;
 			case RESTART:
-				sendManageSchedulerRequest(adSchedulerId, ManageSchedulerRequest.Advice.RESTART);
+				sendManageSchedulerRequest(adSchedulerId, ManageSchedulerRequest.Advice.RESTART, ManageSchedulerRequest.Advice.ENABLE);
 				break;
 			default:
 				throw new AdempiereException("Unsupported action!")
@@ -80,13 +86,16 @@ public class AD_Scheduler_Controller extends JavaProcess implements IProcessPrec
 		return MSG_OK;
 	}
 
-	private void sendManageSchedulerRequest(@NonNull final AdSchedulerId adSchedulerId, @NonNull final ManageSchedulerRequest.Advice advice)
+	private void sendManageSchedulerRequest(
+			@NonNull final AdSchedulerId adSchedulerId,
+			@NonNull final ManageSchedulerRequest.Advice schedulerAdvice,
+			@Nullable final ManageSchedulerRequest.Advice supervisorAdvice)
 	{
 		schedulerEventBusService.postRequest(ManageSchedulerRequest.builder()
 													 .schedulerSearchKey(SchedulerSearchKey.of(adSchedulerId))
 													 .clientId(Env.getClientId())
-													 .schedulerAdvice(advice)
-													 .supervisorAdvice(advice)
+													 .schedulerAdvice(schedulerAdvice)
+													 .supervisorAdvice(supervisorAdvice)
 													 .build());
 	}
 }

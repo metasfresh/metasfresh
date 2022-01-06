@@ -28,6 +28,8 @@ import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
 @Value
 public class AdSchedulerId implements RepoIdAware
 {
@@ -35,6 +37,12 @@ public class AdSchedulerId implements RepoIdAware
 	public static AdSchedulerId ofRepoId(final int repoId)
 	{
 		return new AdSchedulerId(repoId);
+	}
+
+	@Nullable
+	public static AdSchedulerId ofRepoIdOrNull(final int repoId)
+	{
+		return repoId > 0 ? new AdSchedulerId(repoId) : null;
 	}
 
 	int repoId;
