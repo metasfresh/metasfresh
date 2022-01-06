@@ -21,6 +21,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.proxy.Cached;
@@ -38,7 +39,7 @@ public class ContractsDAO implements IContractsDAO
 	@Override
 	public List<I_C_Flatrate_Term> retrieveSubscriptionTermsWithMissingCandidates(
 			@NonNull String typeConditions,
-			final int limit)
+			@NonNull final QueryLimit limit)
 	{
 		return createTermWithMissingCandidateQueryBuilder(typeConditions, false /* ignoreDateFilters */ )
 				.orderBy().addColumn(I_C_Flatrate_Term.COLUMN_C_Flatrate_Term_ID).endOrderBy()

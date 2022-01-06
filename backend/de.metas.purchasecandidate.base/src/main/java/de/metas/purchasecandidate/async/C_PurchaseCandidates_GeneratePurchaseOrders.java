@@ -135,7 +135,7 @@ public class C_PurchaseCandidates_GeneratePurchaseOrders extends WorkpackageProc
 
 	private List<PurchaseCandidate> getPurchaseCandidates()
 	{
-		final boolean skipAlreadyScheduledItems = true;
+		final boolean skipAlreadyScheduledItems = false; // there is just one processor-thread, so there won't be any elements in not yet-processed preceding WPs
 		final List<I_C_Queue_Element> queueElements = retrieveQueueElements(skipAlreadyScheduledItems);
 
 		final Set<PurchaseCandidateId> purchaseCandidateIds = queueElements

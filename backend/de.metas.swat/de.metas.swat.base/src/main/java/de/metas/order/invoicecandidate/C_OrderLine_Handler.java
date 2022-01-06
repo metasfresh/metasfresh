@@ -47,6 +47,7 @@ import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
@@ -105,7 +106,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 	}
 
 	@Override
-	public Iterator<?> retrieveAllModelsWithMissingCandidates(final int limit)
+	public Iterator<?> retrieveAllModelsWithMissingCandidates(final QueryLimit limit_IGNORED)
 	{
 		return Services.get(IC_OrderLine_HandlerDAO.class).retrieveMissingOrderLinesQuery(Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
 				.create()

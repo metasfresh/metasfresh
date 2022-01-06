@@ -3,7 +3,6 @@ package de.metas.async.spi;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import de.metas.async.AsyncBatchId;
-import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.api.IWorkPackageBlockBuilder;
 import de.metas.async.api.IWorkPackageBuilder;
 import de.metas.async.processor.IWorkPackageQueueFactory;
@@ -213,7 +212,7 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 		protected String getTrxProperyName()
 		{
 			return WorkpackagesOnCommitSchedulerTemplate.this.trxPropertyName;
-		};
+		}
 
 		@Override
 		protected String extractTrxNameFromItem(final ItemType item)

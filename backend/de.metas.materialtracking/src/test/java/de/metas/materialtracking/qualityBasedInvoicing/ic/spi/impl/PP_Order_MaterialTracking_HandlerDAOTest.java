@@ -27,6 +27,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
@@ -88,7 +89,7 @@ public class PP_Order_MaterialTracking_HandlerDAOTest
 
 	private void test_retrievePPOrdersWithMissingICs(final List<I_PP_Order> resultExpected)
 	{
-		final Iterator<I_PP_Order> resultActualIt = dao.retrievePPOrdersWithMissingICs(context.getCtx(), IQuery.NO_LIMIT, context.getTrxName());
+		final Iterator<I_PP_Order> resultActualIt = dao.retrievePPOrdersWithMissingICs(QueryLimit.NO_LIMIT);
 		final List<I_PP_Order> resultActual = IteratorUtils.toList(resultActualIt);
 
 		Assert.assertEquals("Invalid result", resultExpected, resultActual);

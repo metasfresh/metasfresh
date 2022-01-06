@@ -7,6 +7,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Order;
 
@@ -104,7 +105,7 @@ public class C_Order_Handler extends AbstractInvoiceCandidateHandler
 	 * @return empty iterator
 	 */
 	@Override
-	public Iterator<I_C_Order> retrieveAllModelsWithMissingCandidates(final int limit)
+	public Iterator<I_C_Order> retrieveAllModelsWithMissingCandidates(final QueryLimit limit_IGNORED)
 	{
 		return Collections.emptyIterator();
 	}
