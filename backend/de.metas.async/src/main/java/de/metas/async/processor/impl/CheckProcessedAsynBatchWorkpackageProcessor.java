@@ -37,8 +37,8 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 
+import java.time.Duration;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * <ul>
@@ -88,10 +88,11 @@ public class CheckProcessedAsynBatchWorkpackageProcessor implements IWorkpackage
 
 		//
 		// check if we need to wait for a bit before trying to set the processed status
-		final Optional<Integer> delayUntilCheckingProcessedState = asyncBatchBL.getDelayUntilCheckingProcessedState(asyncBatch);
-		if (delayUntilCheckingProcessedState.isPresent())
+		final Duration delayUntilCheckingProcessedState = asyncBatchBL.getTimeUntilProcessedRecheck(asyncBatch);
+
+		if (delayUntilCheckingProcessedState.toMillis() > 0)
 		{
-			throw WorkpackageSkipRequestException.createWithTimeout("AsyncBatch not ready for processed status check. Postponed!", delayUntilCheckingProcessedState.get());
+			throw WorkpackageSkipRequestException.createWithTimeout("AsyncBatch not ready for processed status check. Postponed!", Math.toIntExact(delayUntilCheckingProcessedState.toMillis()));
 		}
 
 		//

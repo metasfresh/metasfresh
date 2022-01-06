@@ -16,7 +16,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.sql.Timestamp;
-import java.util.Optional;
+import java.time.Duration;
 import java.util.Properties;
 
 public class AsyncBatchBLTest
@@ -61,7 +61,7 @@ public class AsyncBatchBLTest
 	}
 
 	@Test
-	public void givenNotEnoughTimePassedSinceLastEnqueued_whenGetDelayUntilCheckingProcessedState_thenReturnTimeToWait()
+	public void givenNotEnoughTimePassedSinceLastEnqueued_whenGetTimeUntilProcessedRecheck_thenReturnTimeToWait()
 	{
 		//given
 		final Timestamp FirstEnqueued = TimeUtil.addMinutes(now, -5);
@@ -75,11 +75,10 @@ public class AsyncBatchBLTest
 		InterfaceWrapperHelper.save(asyncBatch);
 
 		//when
-		final Optional<Integer> timeToWait = asyncBatchBL.getDelayUntilCheckingProcessedState(asyncBatch);
+		final Duration timeToWait = asyncBatchBL.getTimeUntilProcessedRecheck(asyncBatch);
 
 		//then
-		Assert.assertTrue(timeToWait.isPresent());
-		Assert.assertEquals(TimeUtil.getMillisBetween(now, TimeUtil.addMillis(LastProcessed, 1)), timeToWait.get().intValue());
+		Assert.assertEquals(TimeUtil.getMillisBetween(now, TimeUtil.addMillis(LastProcessed, 1)), timeToWait.toMillis());
 	}
 
 	private I_C_Async_Batch newAsyncBatch()

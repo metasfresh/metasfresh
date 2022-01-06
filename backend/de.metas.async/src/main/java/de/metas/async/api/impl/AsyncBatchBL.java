@@ -56,6 +56,7 @@ import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
 import java.sql.Timestamp;
+import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
@@ -184,9 +185,9 @@ public class AsyncBatchBL implements IAsyncBatchBL
 			return false;
 		}
 
-		final Optional<Integer> millisUntilReadyForChecking = getDelayUntilCheckingProcessedState(asyncBatchRecord);
+		final Duration millisUntilReadyForChecking = getTimeUntilProcessedRecheck(asyncBatchRecord);
 
-		if (millisUntilReadyForChecking.isPresent())
+		if (millisUntilReadyForChecking.toMillis() > 0)
 		{
 			return false;
 		}
@@ -207,7 +208,8 @@ public class AsyncBatchBL implements IAsyncBatchBL
 	}
 
 	@Override
-	public Optional<Integer> getDelayUntilCheckingProcessedState(@NonNull final I_C_Async_Batch asyncBatch)
+	@NonNull
+	public Duration getTimeUntilProcessedRecheck(@NonNull final I_C_Async_Batch asyncBatch)
 	{
 		final int processedTimeOffsetMillis = getProcessedTimeOffsetMillis();
 
@@ -216,7 +218,7 @@ public class AsyncBatchBL implements IAsyncBatchBL
 		if (firstEnqueued == null)
 		{
 			// shall not happen
-			return Optional.of(processedTimeOffsetMillis);
+			return Duration.ofMillis(processedTimeOffsetMillis);
 		}
 
 		//
@@ -224,14 +226,14 @@ public class AsyncBatchBL implements IAsyncBatchBL
 		if (lastEnqueued == null)
 		{
 			// shall not happen
-			return Optional.of(processedTimeOffsetMillis);
+			return Duration.ofMillis(processedTimeOffsetMillis);
 		}
 
 		final Timestamp lastProcessed = asyncBatch.getLastProcessed();
 		if (lastProcessed == null)
 		{
 			// shall not happen
-			return Optional.of(processedTimeOffsetMillis);
+			return Duration.ofMillis(processedTimeOffsetMillis);
 		}
 
 		// Case: when did not pass enough time between fist enqueue time and now
@@ -243,7 +245,7 @@ public class AsyncBatchBL implements IAsyncBatchBL
 		{
 			final int millisToWait = TimeUtil.getMillisBetween(now, minTimeAfterFirstEnqueued);
 
-			return Optional.of(millisToWait);
+			return Duration.ofMillis(millisToWait);
 		}
 
 		// Case: when did not pass enough time between last processed time and now - offset
@@ -253,12 +255,12 @@ public class AsyncBatchBL implements IAsyncBatchBL
 		{
 			final int millisToWait = TimeUtil.getMillisBetween(now, minTimeAfterLastProcessed);
 
-			return Optional.of(millisToWait);
+			return Duration.ofMillis(millisToWait);
 		}
 
 		//
 		// If we reach this point, we can move on and check if the async batch is processed
-		return Optional.empty();
+		return Duration.ZERO;
 	}
 
 	@Override

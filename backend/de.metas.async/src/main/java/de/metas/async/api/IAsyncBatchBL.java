@@ -9,6 +9,7 @@ import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.model.I_C_Queue_WorkPackage_Notified;
 import de.metas.util.ISingletonService;
 
+import java.time.Duration;
 import java.util.Optional;
 
 /**
@@ -85,7 +86,7 @@ public interface IAsyncBatchBL extends ISingletonService
 
 	AsyncBatchId newAsyncBatch(String asyncBatchType);
 
-	Optional<Integer> getDelayUntilCheckingProcessedState(I_C_Async_Batch asyncBatch);
+	Duration getTimeUntilProcessedRecheck(I_C_Async_Batch asyncBatch);
 
 	boolean shouldBeManuallyMarkedAsProcessed(AsyncBatchId asyncBatchId);
 }
