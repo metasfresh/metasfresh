@@ -23,6 +23,7 @@ import de.metas.document.dimension.InvoiceLineDimensionFactory;
 import de.metas.document.dimension.OrderLineDimensionFactory;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
+import de.metas.document.location.impl.DocumentLocationBL;
 import de.metas.document.references.zoom_into.NullCustomizedWindowInfoMapRepository;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_InOutLine;
@@ -32,6 +33,7 @@ import de.metas.invoicecandidate.agg.key.impl.ICHeaderAggregationKeyBuilder_OLD;
 import de.metas.invoicecandidate.agg.key.impl.ICLineAggregationKeyBuilder_OLD;
 import de.metas.invoicecandidate.api.IAggregationDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
+import de.metas.invoicecandidate.api.InvoiceCandidateIdsSelection;
 import de.metas.invoicecandidate.api.impl.AggregationKeyEvaluationContext;
 import de.metas.invoicecandidate.api.impl.HeaderAggregationKeyBuilder;
 import de.metas.invoicecandidate.api.impl.PlainAggregationDAO;
@@ -102,7 +104,6 @@ import org.junit.BeforeClass;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
@@ -114,49 +115,39 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 public class AbstractICTestSupport extends AbstractTestSupport
 {
+	/**
+	 * Currently used for both {@link #priceListVersion_SO} and {@link #priceListVersion_PO}.
+	 */
+	public final Timestamp plvDate = TimeUtil.getDay(2015, 1, 15);
 	// services
 	protected PlainCurrencyBL currencyConversionBL;
 	protected IInvoiceCandBL invoiceCandBL;
-
 	protected I_C_ILCandHandler plainHandler;
-
 	protected I_C_Aggregation defaultHeaderAggregation;
 	protected I_C_Aggregation defaultHeaderAggregation_NotConsolidated;
-
-	/**
-	 * Default Invoice Candidate Line Aggregator Definition
-	 */
-	private I_C_Invoice_Candidate_Agg defaultLineAgg;
 	protected IAggregationKeyBuilder<I_C_Invoice_Candidate> headerAggKeyBuilder;
 
 	//
 	// Taxes
 	protected I_C_Tax tax_Default;
 	protected I_C_Tax tax_NotFound;
-
-	/**
-	 * Currently used for both {@link #priceListVersion_SO} and {@link #priceListVersion_PO}.
-	 */
-	public final Timestamp plvDate = TimeUtil.getDay(2015, 1, 15);
-
 	protected I_M_PricingSystem pricingSystem_SO;
 	protected I_M_PriceList_Version priceListVersion_SO;
-
 	protected I_M_PricingSystem pricingSystem_PO;
 	protected I_M_PriceList_Version priceListVersion_PO;
-
 	// task 07442
 	protected ClientId clientId;
 	protected OrgId orgId;
-
 	@Getter
 	protected ProductId productId;
-
 	@Getter
 	protected UomId uomId;
 	protected ActivityId activityId;
 	protected WarehouseId warehouseId;
-
+	/**
+	 * Default Invoice Candidate Line Aggregator Definition
+	 */
+	private I_C_Invoice_Candidate_Agg defaultLineAgg;
 	private CountryId countryId_DE;
 
 	/**
@@ -183,7 +174,6 @@ public class AbstractICTestSupport extends AbstractTestSupport
 		dimensionFactories.add(new InvoiceLineDimensionFactory());
 
 		SpringContextHolder.registerJUnitBean(new DimensionService(dimensionFactories));
-
 
 		final I_AD_Client client = InterfaceWrapperHelper.newInstance(I_AD_Client.class);
 		saveRecord(client);
@@ -686,7 +676,7 @@ public class AbstractICTestSupport extends AbstractTestSupport
 				invoiceCandBL.updateInvalid()
 						.setContext(ctx, localTrxName)
 						.setTaggedWithAnyTag()
-						.setOnlyC_Invoice_Candidates(invoiceCandidates)
+						.setOnlyInvoiceCandidateIds(InvoiceCandidateIdsSelection.extractFixedIdsSet(invoiceCandidates))
 						.update();
 			}
 		});
@@ -713,7 +703,8 @@ public class AbstractICTestSupport extends AbstractTestSupport
 			invoiceCandidateValidator = new C_Invoice_Candidate(
 					new InvoiceCandidateRecordService(),
 					groupsRepo,
-					attachmentEntryService);
+					attachmentEntryService,
+					new DocumentLocationBL(new BPartnerBL(new UserRepository())));
 		}
 		return invoiceCandidateValidator;
 	}
