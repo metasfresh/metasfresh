@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_DatevAcctExport extends org.compiere.model.PO implements I_DatevAcctExport, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -786084112L;
+	private static final long serialVersionUID = -878844184L;
 
     /** Standard Constructor */
     public X_DatevAcctExport (final Properties ctx, final int DatevAcctExport_ID, @Nullable final String trxName)
@@ -108,8 +108,8 @@ public class X_DatevAcctExport extends org.compiere.model.PO implements I_DatevA
 	 * Reference name: DatevExportType
 	 */
 	public static final int EXPORTTYPE_AD_Reference_ID=541172;
-	/** tbp test = tbp */
-	public static final String EXPORTTYPE_TbpTest = "tbp";
+	/** Payment = Payment */
+	public static final String EXPORTTYPE_Payment = "Payment";
 	/** Commission Invoice = CommissionInvoice */
 	public static final String EXPORTTYPE_CommissionInvoice = "CommissionInvoice";
 	/** Sales Invoice = SalesInvoice */
