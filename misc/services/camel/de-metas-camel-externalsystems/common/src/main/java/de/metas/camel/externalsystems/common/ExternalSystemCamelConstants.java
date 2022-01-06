@@ -36,6 +36,10 @@ public class ExternalSystemCamelConstants
 	public static String HEADER_EXTERNAL_SYSTEM_VALUE = "externalSystemValue";
 	public static String HEADER_AUDIT_TRAIL = "auditTrailEndpoint";
 	public static String HEADER_TRACE_ID = "traceId";
+	public static String HEADER_EXTERNAL_SYSTEM_CONFIG_TYPE = "externalSystemConfigType";
+	public static String HEADER_EXTERNAL_SYSTEM_CHILD_CONFIG_VALUE = "externalSystemChildConfigValue";
+	public static String HEADER_EXTERNAL_SERVICE_VALUE = "serviceValue";
+	public static String HEADER_EXTERNAL_SYSTEM_REQUEST = "externalSystemRequest";
 
 	public static String MF_UPSERT_BPARTNER_CAMEL_URI = "metasfresh.upsert-bpartner.camel.uri";
 
@@ -95,4 +99,8 @@ public class ExternalSystemCamelConstants
 	public static String REST_API_EXPIRE_TOKEN = "Core-expireToken";
 
 	public static String WOOCOMMERCE_AUTHORITY = "WOO";
+
+	public static String MF_CREATE_EXTERNAL_SYSTEM_STATUS_V2_CAMEL_URI= "metasfresh.create-service-status-v2.camel.uri";
+	public static String MF_GET_SERVICE_STATUS_V2_CAMEL_URI = "metasfresh.service-status-v2.camel.uri";
+	public static String MF_INVOKE_EXTERNAL_SYSTEM_ACTION_V2_CAMEL_URI= "metasfresh.invoke-external-system-action-v2.camel.uri";
 }

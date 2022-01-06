@@ -120,8 +120,11 @@ class Notification extends Component {
           />
         </div>
         <div className="notification-content">
-          {shortMsg && msg.length > SHOW_READ_MORE_FROM ? shortMsg + ' ' : msg}
-          {msg.length > SHOW_READ_MORE_FROM &&
+          {shortMsg && msg && msg.length > SHOW_READ_MORE_FROM
+            ? `${shortMsg} `
+            : msg}
+          {msg &&
+            msg.length > SHOW_READ_MORE_FROM &&
             shortMsg &&
             msg &&
             !isDisplayedMore && (

@@ -6,7 +6,7 @@ import java.util.Set;
 import java.util.function.Supplier;
 
 import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.WarehousePickingGroup;
+import org.adempiere.warehouse.groups.picking.WarehousePickingGroup;
 
 import com.google.common.collect.ImmutableSet;
 
@@ -40,6 +40,7 @@ import lombok.Value;
  */
 
 @Value
+@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public class MSV3ServerConfig
 {
 	OptionalInt fixedQtyAvailableToPromise;

@@ -7,6 +7,7 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
+import de.metas.handlingunits.allocation.transfer.ReservedHUsPolicy;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.job.model.PickingJob;
@@ -21,7 +22,7 @@ import de.metas.handlingunits.picking.plan.generator.pickFromHUs.PickFromHU;
 import de.metas.handlingunits.picking.plan.model.PickingPlan;
 import de.metas.handlingunits.picking.plan.model.PickingPlanLine;
 import de.metas.handlingunits.picking.plan.model.PickingPlanLineType;
-import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.order.OrderId;
 import de.metas.organization.InstantAndOrgId;
 import de.metas.organization.OrgId;
@@ -316,7 +317,7 @@ public class PickingJobCreateCommand
 						.productId(productId)
 						.qtyCU(qtyToPick)
 						//.keepNewCUsUnderSameParent(true) // not needed, our HU is top level anyways
-						.onlyFromUnreservedHUs(true)
+						.reservedVHUsPolicy(ReservedHUsPolicy.CONSIDER_ONLY_NOT_RESERVED)
 						.build());
 
 		return HuId.ofRepoId(extractedCU.getM_HU_ID());

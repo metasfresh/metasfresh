@@ -104,6 +104,7 @@ public class OLCandsProcessorExecutor
 		this.candidatesSource = candidatesSource;
 	}
 
+	@Nullable
 	public void process()
 	{
 		// Note: We could make life easier by constructing a ORDER and GROUP BY SQL statement,

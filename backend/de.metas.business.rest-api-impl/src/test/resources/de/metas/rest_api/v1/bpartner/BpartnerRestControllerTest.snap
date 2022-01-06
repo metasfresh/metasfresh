@@ -30,6 +30,10 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
         "shipToDefault" : false,
         "billTo" : true,
         "billToDefault" : true,
+        "handoverLocation" : false,
+        "remitTo" : false,
+        "visitorsAddress" : false,
+        "replicationLookupDefault" : false,
         "changeInfo" : {
           "createdMillis" : 1563553074,
           "createdBy" : 30,
@@ -65,9 +69,9 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
             "value" : 4
           }
         },
-        "baseLanguage" : true,
+        "leftToRight" : true,
         "decimalPoint" : false,
-        "leftToRight" : true
+        "baseLanguage" : true
       },
       "url" : "bPartner.url",
       "groupId" : 15,
@@ -166,8 +170,8 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
         "name" : "c1_name",
         "newsletter" : false,
         "phone" : "c1_phone",
-        "subjectMatterContact" : false,
-        "roles" : [ ]
+        "roles" : [ ],
+        "subjectMatterContact" : false
       },
       {
         "active" : true,
@@ -234,8 +238,8 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
         "name" : "c2_name",
         "newsletter" : false,
         "phone" : "c2_phone",
-        "subjectMatterContact" : false,
-        "roles" : [ ]
+        "roles" : [ ],
+        "subjectMatterContact" : false
       }
     ],
     "locations" : [
@@ -270,6 +274,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
         "existingLocationId" : 100014,
         "externalId" : "l1_externalId",
         "gln" : "l1_gln",
+        "handOverLocation" : false,
         "handles" : [ ],
         "id" : {
           "repoId" : 100015,
@@ -295,7 +300,10 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
         },
         "poBox" : "l1_poBox",
         "postal" : "l1_postal",
-        "region" : "l1_region"
+        "region" : "l1_region",
+        "remitTo" : false,
+        "replicationLookupDefault" : false,
+        "visitorsAddress" : false
       },
       {
         "active" : true,
@@ -328,6 +336,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
         "existingLocationId" : 100016,
         "externalId" : "l2_externalId",
         "gln" : "l2_gln",
+        "handOverLocation" : false,
         "handles" : [ ],
         "id" : {
           "repoId" : 100017,
@@ -353,7 +362,10 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
         },
         "poBox" : "l2_poBox",
         "postal" : "l2_postal",
-        "region" : "l2_region"
+        "region" : "l2_region",
+        "remitTo" : false,
+        "replicationLookupDefault" : false,
+        "visitorsAddress" : false
       }
     ],
     "orgId" : 10
@@ -500,8 +512,8 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateContact_c
         "name" : "contactRecord.name",
         "newsletter" : false,
         "phone" : "contactRecord.phone",
-        "subjectMatterContact" : false,
         "roles" : [ ],
+        "subjectMatterContact" : false,
         "value" : "contactRecord.value"
       },
       {
@@ -569,8 +581,8 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateContact_c
         "name" : "newContact-_name",
         "newsletter" : false,
         "phone" : "newContact-_phone",
-        "subjectMatterContact" : false,
-        "roles" : [ ]        
+        "roles" : [ ],
+        "subjectMatterContact" : false
       }
     ],
     "locations" : [
@@ -606,6 +618,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateContact_c
         "existingLocationId" : 100009,
         "externalId" : "bpartnerLocation.externalId",
         "gln" : "bpartnerLocationRecord.gln",
+        "handOverLocation" : false,
         "handles" : [ ],
         "id" : {
           "repoId" : 40,
@@ -631,7 +644,10 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateContact_c
         },
         "poBox" : "locationRecord.poBox",
         "postal" : "locationRecord.postal",
-        "region" : "locationRecord.regionName"
+        "region" : "locationRecord.regionName",
+        "remitTo" : false,
+        "replicationLookupDefault" : false,
+        "visitorsAddress" : false
       }
     ],
     "orgId" : 10
@@ -778,8 +794,8 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
         "name" : "jsonContact.name-UPDATED",
         "newsletter" : false,
         "phone" : "contactRecord.phone",
+        "roles" : [ ],
         "subjectMatterContact" : false,
-		"roles" : [ ],        
         "value" : "contactRecord.value"
       }
     ],
@@ -816,6 +832,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
         "existingLocationId" : 100009,
         "externalId" : "bpartnerLocation.externalId",
         "gln" : "bpartnerLocationRecord.gln",
+        "handOverLocation" : false,
         "handles" : [ ],
         "id" : {
           "repoId" : 40,
@@ -841,7 +858,10 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
         },
         "poBox" : "locationRecord.poBox",
         "postal" : "locationRecord.postal",
-        "region" : "locationRecord.regionName"
+        "region" : "locationRecord.regionName",
+        "remitTo" : false,
+        "replicationLookupDefault" : false,
+        "visitorsAddress" : false
       }
     ],
     "orgId" : 10
@@ -988,8 +1008,8 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
         "name" : "jsonContact.name-UPDATED",
         "newsletter" : false,
         "phone" : "contactRecord.phone",
+        "roles" : [ ],
         "subjectMatterContact" : false,
-        "roles" : [ ],        
         "value" : "contactRecord.value"
       }
     ],
@@ -1026,6 +1046,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
         "existingLocationId" : 100009,
         "externalId" : "bpartnerLocation.externalId",
         "gln" : "bpartnerLocationRecord.gln",
+        "handOverLocation" : false,
         "handles" : [ ],
         "id" : {
           "repoId" : 40,
@@ -1051,7 +1072,10 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
         },
         "poBox" : "locationRecord.poBox",
         "postal" : "locationRecord.postal",
-        "region" : "locationRecord.regionName"
+        "region" : "locationRecord.regionName",
+        "remitTo" : false,
+        "replicationLookupDefault" : false,
+        "visitorsAddress" : false
       }
     ],
     "orgId" : 10
@@ -1198,8 +1222,8 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
         "name" : "contactRecord.name",
         "newsletter" : false,
         "phone" : "contactRecord.phone",
+        "roles" : [ ],
         "subjectMatterContact" : false,
-        "roles" : [ ],        
         "value" : "contactRecord.value"
       }
     ],
@@ -1236,6 +1260,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
         "existingLocationId" : 100009,
         "externalId" : "bpartnerLocation.externalId",
         "gln" : "bpartnerLocationRecord.gln",
+        "handOverLocation" : false,
         "handles" : [ ],
         "id" : {
           "repoId" : 40,
@@ -1261,7 +1286,10 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
         },
         "poBox" : "locationRecord.poBox",
         "postal" : "locationRecord.postal",
-        "region" : "locationRecord.regionName"
+        "region" : "locationRecord.regionName",
+        "remitTo" : false,
+        "replicationLookupDefault" : false,
+        "visitorsAddress" : false
       },
       {
         "active" : true,
@@ -1294,6 +1322,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
         "existingLocationId" : 100012,
         "externalId" : "newLocation-_externalId",
         "gln" : "newLocation-_gln",
+        "handOverLocation" : false,
         "handles" : [ ],
         "id" : {
           "repoId" : 100013,
@@ -1319,7 +1348,10 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
         },
         "poBox" : "newLocation-_poBox",
         "postal" : "newLocation-_postal",
-        "region" : "newLocation-_region"
+        "region" : "newLocation-_region",
+        "remitTo" : false,
+        "replicationLookupDefault" : false,
+        "visitorsAddress" : false
       }
     ],
     "orgId" : 10
@@ -1375,6 +1407,10 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.retrieveBPartnerLocatio
     "shipToDefault" : false,
     "billTo" : false,
     "billToDefault" : false,
+    "handoverLocation" : false,
+    "remitTo" : false,
+    "visitorsAddress" : false,
+    "replicationLookupDefault" : false,
     "changeInfo" : {
       "createdMillis" : 1561133544,
       "createdBy" : 30,
@@ -1424,6 +1460,10 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.retrieveBPartner_ext=[
         "shipToDefault" : false,
         "billTo" : false,
         "billToDefault" : false,
+        "handoverLocation" : false,
+        "remitTo" : false,
+        "visitorsAddress" : false,
+        "replicationLookupDefault" : false,
         "changeInfo" : {
           "createdMillis" : 1561133544,
           "createdBy" : 30,
@@ -1503,6 +1543,10 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.retrieveBPartner_gln=[
         "shipToDefault" : false,
         "billTo" : false,
         "billToDefault" : false,
+        "handoverLocation" : false,
+        "remitTo" : false,
+        "visitorsAddress" : false,
+        "replicationLookupDefault" : false,
         "changeInfo" : {
           "createdMillis" : 1561133544,
           "createdBy" : 30,
@@ -1582,6 +1626,10 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.retrieveBPartner_id=[
         "shipToDefault" : false,
         "billTo" : false,
         "billToDefault" : false,
+        "handoverLocation" : false,
+        "remitTo" : false,
+        "visitorsAddress" : false,
+        "replicationLookupDefault" : false,
         "changeInfo" : {
           "createdMillis" : 1561133544,
           "createdBy" : 30,
@@ -1667,6 +1715,10 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince=
             "shipToDefault" : false,
             "billTo" : false,
             "billToDefault" : false,
+            "handoverLocation" : false,
+            "remitTo" : false,
+            "visitorsAddress" : false,
+            "replicationLookupDefault" : false,
             "changeInfo" : {
               "createdMillis" : 1561133544,
               "createdBy" : 30,
@@ -1742,6 +1794,10 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince=
             "shipToDefault" : false,
             "billTo" : false,
             "billToDefault" : false,
+            "handoverLocation" : false,
+            "remitTo" : false,
+            "visitorsAddress" : false,
+            "replicationLookupDefault" : false,
             "changeInfo" : {
               "createdMillis" : 1561133544,
               "createdBy" : 31,
@@ -1825,6 +1881,10 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince=
             "shipToDefault" : false,
             "billTo" : false,
             "billToDefault" : false,
+            "handoverLocation" : false,
+            "remitTo" : false,
+            "visitorsAddress" : false,
+            "replicationLookupDefault" : false,
             "changeInfo" : {
               "createdMillis" : 1561133544,
               "createdBy" : 32,
@@ -1900,6 +1960,10 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince=
             "shipToDefault" : false,
             "billTo" : false,
             "billToDefault" : false,
+            "handoverLocation" : false,
+            "remitTo" : false,
+            "visitorsAddress" : false,
+            "replicationLookupDefault" : false,
             "changeInfo" : {
               "createdMillis" : 1561133544,
               "createdBy" : 33,
@@ -1982,6 +2046,10 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince=
             "shipToDefault" : false,
             "billTo" : false,
             "billToDefault" : false,
+            "handoverLocation" : false,
+            "remitTo" : false,
+            "visitorsAddress" : false,
+            "replicationLookupDefault" : false,
             "changeInfo" : {
               "createdMillis" : 1561133544,
               "createdBy" : 34,

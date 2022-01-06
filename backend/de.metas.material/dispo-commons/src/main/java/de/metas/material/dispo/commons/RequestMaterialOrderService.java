@@ -3,12 +3,12 @@ package de.metas.material.dispo.commons;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import de.metas.bpartner.BPartnerId;
+import de.metas.common.util.IdConstants;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.dimension.Dimension;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateType;
-import de.metas.material.dispo.commons.candidate.IdConstants;
 import de.metas.material.dispo.commons.candidate.businesscase.DistributionDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.ProductionDetail;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
@@ -139,9 +139,17 @@ public class RequestMaterialOrderService
 
 		for (final Candidate groupMember : group)
 		{
-			if (groupMember.getDemandDetail() != null && groupMember.getDemandDetail().getOrderLineId() > 0)
+			if (groupMember.getDemandDetail() != null)
 			{
+				if ( groupMember.getDemandDetail().getOrderLineId() > 0 )
+				{
 				ppOrderDataBuilder.orderLineId(IdConstants.toRepoId(groupMember.getDemandDetail().getOrderLineId()));
+				}
+
+				if ( groupMember.getDemandDetail().getShipmentScheduleId() > 0)
+				{
+					ppOrderDataBuilder.shipmentScheduleId(groupMember.getDemandDetail().getShipmentScheduleId());
+				}
 			}
 
 			final ProductionDetail prodDetail = ProductionDetail.cast(groupMember.getBusinessCaseDetail());

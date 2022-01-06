@@ -46,7 +46,7 @@ public class C_BPartner
 		this.exportToGRSService = exportToGRSService;
 	}
 
-	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE)
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_NEW })
 	public void triggerSyncBPartnerWithExternalSystem(@NonNull final I_C_BPartner bPartner)
 	{
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(bPartner.getC_BPartner_ID());

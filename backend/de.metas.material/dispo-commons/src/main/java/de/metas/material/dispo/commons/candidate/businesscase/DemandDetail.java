@@ -1,7 +1,7 @@
 package de.metas.material.dispo.commons.candidate.businesscase;
 
-import static de.metas.material.dispo.commons.candidate.IdConstants.UNSPECIFIED_REPO_ID;
-import static de.metas.material.dispo.commons.candidate.IdConstants.toUnspecifiedIfZero;
+import static de.metas.common.util.IdConstants.UNSPECIFIED_REPO_ID;
+import static de.metas.common.util.IdConstants.toUnspecifiedIfZero;
 
 import java.math.BigDecimal;
 

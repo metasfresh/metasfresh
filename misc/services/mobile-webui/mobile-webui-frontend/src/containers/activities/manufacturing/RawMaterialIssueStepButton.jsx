@@ -1,33 +1,27 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import counterpart from 'counterpart';
+import { connect } from 'react-redux';
+import { push } from 'connected-react-router';
+import { withRouter } from 'react-router';
 
-import { pushHeaderEntry } from '../../../actions/HeaderActions';
-import StepButton from '../common/StepButton';
+import { manufacturingStepScreenLocation } from '../../../routes/manufacturing';
 import Indicator from '../../../components/Indicator';
 import * as CompleteStatus from '../../../constants/CompleteStatus';
 
 class RawMaterialIssueStepButton extends PureComponent {
   handleClick = () => {
-    const { locatorName, location, dispatch, onHandleClick } = this.props;
+    const { push, wfProcessId, activityId, lineId, stepId } = this.props;
+    const location = manufacturingStepScreenLocation({ wfProcessId, activityId, lineId, stepId });
 
-    onHandleClick();
-
-    dispatch(
-      pushHeaderEntry({
-        location,
-        values: [
-          {
-            caption: counterpart.translate('general.Locator'),
-            value: locatorName,
-          },
-        ],
-      })
-    );
+    push(location);
   };
 
   render() {
-    const { lineId, locatorName, uom, qtyIssued, qtyToIssue, completeStatus } = this.props;
+    const {
+      lineId,
+      stepState: { locatorName, uom, qtyIssued, qtyToIssue, completeStatus },
+    } = this.props;
     const qtyCurrent = qtyIssued || 0;
 
     return (
@@ -63,6 +57,15 @@ class RawMaterialIssueStepButton extends PureComponent {
   }
 }
 
+const mapStateToProps = (state, ownProps) => {
+  const { wfProcessId, activityId, lineId, stepId } = ownProps;
+
+  return {
+    stepState: state.wfProcesses_status[wfProcessId].activities[activityId].dataStored.lines[lineId].steps[stepId],
+    appId: state.applications.activeApplication ? state.applications.activeApplication.id : null,
+  };
+};
+
 RawMaterialIssueStepButton.propTypes = {
   //
   // Props
@@ -70,16 +73,10 @@ RawMaterialIssueStepButton.propTypes = {
   activityId: PropTypes.string.isRequired,
   lineId: PropTypes.string.isRequired,
   stepId: PropTypes.string.isRequired,
-  locatorName: PropTypes.string.isRequired,
-  uom: PropTypes.string,
-  qtyIssued: PropTypes.number,
-  qtyToIssue: PropTypes.number.isRequired,
-  location: PropTypes.string.isRequired,
-  onHandleClick: PropTypes.func.isRequired,
-  completeStatus: PropTypes.string,
+  stepState: PropTypes.object.isRequired,
   //
   // Actions
-  dispatch: PropTypes.func.isRequired,
+  push: PropTypes.func.isRequired,
 };
 
-export default StepButton(RawMaterialIssueStepButton);
+export default withRouter(connect(mapStateToProps, { push })(RawMaterialIssueStepButton));

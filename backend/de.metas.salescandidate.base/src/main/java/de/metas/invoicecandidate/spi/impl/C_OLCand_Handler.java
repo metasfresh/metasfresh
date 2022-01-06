@@ -198,7 +198,6 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 
 		final ITaxBL taxBL = Services.get(ITaxBL.class);
 		final TaxId taxId = taxBL.getTaxNotNull(
-				ctx,
 				ic, // model
 				TaxCategoryId.ofRepoIdOrNull(olcRecord.getC_TaxCategory_ID()),
 				ProductId.toRepoId(productId),
@@ -271,8 +270,7 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 
 	private I_C_OLCand getOLCand(@NonNull final I_C_Invoice_Candidate ic)
 	{
-		final I_C_OLCand olc = TableRecordCacheLocal.getReferencedValue(ic, I_C_OLCand.class);
-		return olc;
+		return TableRecordCacheLocal.getReferencedValue(ic, I_C_OLCand.class);
 	}
 
 	/**

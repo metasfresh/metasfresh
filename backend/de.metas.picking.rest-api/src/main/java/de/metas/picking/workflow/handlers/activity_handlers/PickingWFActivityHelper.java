@@ -23,7 +23,7 @@
 package de.metas.picking.workflow.handlers.activity_handlers;
 
 import com.google.common.collect.ImmutableSet;
-import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.workflow.rest_api.model.WFProcess;
 import lombok.NonNull;

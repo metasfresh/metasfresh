@@ -6,7 +6,7 @@ import de.metas.async.AsyncBatchId;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.cache.model.IModelCacheInvalidationService;
 import de.metas.cache.model.ModelCacheInvalidationTiming;
-import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.async.ShipmentSchedulesUpdateSchedulerRequest;
 import de.metas.inoutcandidate.async.UpdateInvalidShipmentSchedulesWorkpackageProcessor;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateRepository;

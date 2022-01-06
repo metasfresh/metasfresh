@@ -370,6 +370,8 @@ final class BPartnerCompositesLoader
 				.locationType(extractBPartnerLocationType(bPartnerLocationRecord))
 				.orgMappingId(OrgMappingId.ofRepoIdOrNull(bPartnerLocationRecord.getAD_Org_Mapping_ID()))
 				.changeLog(changeLog)
+				.phone(trimBlankToNull(bPartnerLocationRecord.getPhone()))
+				.email(trimBlankToNull(bPartnerLocationRecord.getEMail()))
 				.build();
 
 		bpartnerLocation.setFromAddress(address);
@@ -489,6 +491,8 @@ final class BPartnerCompositesLoader
 				.changeLog(changeLog)
 				.birthday(TimeUtil.asLocalDate(contactRecord.getBirthday(), SystemTime.zoneId()))
 				.bPartnerLocationId(BPartnerLocationId.ofRepoIdOrNull(contactRecord.getC_BPartner_ID(), contactRecord.getC_BPartner_Location_ID()))
+				.email2(trimBlankToNull(contactRecord.getEMail2()))
+				.email3(trimBlankToNull(contactRecord.getEMail3()))
 				.build();
 	}
 

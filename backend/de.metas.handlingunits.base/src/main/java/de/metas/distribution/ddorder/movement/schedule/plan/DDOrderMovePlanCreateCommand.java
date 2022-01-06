@@ -165,12 +165,12 @@ public class DDOrderMovePlanCreateCommand
 		return Quantity.of(ddOrderLine.getQtyEntered(), uom);
 	}
 
-	private AllocableHUsList getAvailableHUsToPick(AllocationGroupingKey key)
+	private AllocableHUsList getAvailableHUsToPick(final @NonNull AllocationGroupingKey key)
 	{
 		return allocableHUsLists.computeIfAbsent(key, this::retrieveAvailableHUsToPick);
 	}
 
-	private AllocableHUsList retrieveAvailableHUsToPick(AllocationGroupingKey key)
+	private AllocableHUsList retrieveAvailableHUsToPick(final @NonNull AllocationGroupingKey key)
 	{
 		final ProductId productId = key.getProductId();
 		final ImmutableList<PickFromHU> husEligibleToPick = pickFromHUsSupplier.getEligiblePickFromHUs(
@@ -180,6 +180,7 @@ public class DDOrderMovePlanCreateCommand
 						.asiId(AttributeSetInstanceId.NONE)
 						.bestBeforePolicy(ShipmentAllocationBestBeforePolicy.Expiring_First)
 						.reservationRef(Optional.empty()) // TODO introduce some DD Order Step reservation
+						.enforceMandatoryAttributesOnPicking(false)
 						.build());
 
 		final ImmutableList<AllocableHU> hus = CollectionUtils.map(husEligibleToPick, pickFromHU -> toAllocableHU(pickFromHU, productId));

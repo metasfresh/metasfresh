@@ -20,7 +20,6 @@ import {
   INIT_WINDOW,
   INIT_DATA_SUCCESS,
   INIT_LAYOUT_SUCCESS,
-  NO_CONNECTION,
   OPEN_FILTER_BOX,
   OPEN_MODAL,
   OPEN_RAW_MODAL,
@@ -312,13 +311,6 @@ export function updateDataFieldProperty(property, item, scope) {
   };
 }
 
-export function noConnection(status) {
-  return {
-    type: NO_CONNECTION,
-    status: status,
-  };
-}
-
 export function openModal({
   title = '',
   windowId,
@@ -404,9 +396,9 @@ export function indicatorState(state) {
  * @method fetchTab
  * @summary Action creator for fetching single tab's rows
  */
-export function fetchTab({ tabId, windowId, docId, query }) {
+export function fetchTab({ tabId, windowId, docId, orderBy }) {
   return (dispatch) => {
-    return getTabRequest(tabId, windowId, docId, query)
+    return getTabRequest(tabId, windowId, docId, orderBy)
       .then((response) => {
         const tableId = getTableId({ windowId, docId, tabId });
         const tableData = { result: response };

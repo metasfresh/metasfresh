@@ -129,7 +129,6 @@ class ExternalSystemConfigRepoTest
 		childRecord.setClient_Id("id");
 		childRecord.setExternalSystem_Config_ID(parentRecord.getExternalSystem_Config_ID());
 		childRecord.setExternalSystemValue("testShopware6Value");
-		childRecord.setJSONPathConstantBPartnerID("/test/bp");
 		childRecord.setJSONPathSalesRepID("/test/salesrep");
 		childRecord.setJSONPathConstantBPartnerLocationID("/test/bpl");
 		childRecord.setM_PriceList_ID(1);
@@ -195,7 +194,6 @@ class ExternalSystemConfigRepoTest
 		childRecord.setBaseURL("baseUrl");
 		childRecord.setClient_Secret("secret");
 		childRecord.setClient_Id("id");
-		childRecord.setJSONPathConstantBPartnerID("/test/bp");
 		childRecord.setJSONPathSalesRepID("/test/salesrep");
 		childRecord.setJSONPathConstantBPartnerLocationID("/test/bpl");
 		childRecord.setM_PriceList_ID(1);
@@ -346,7 +344,6 @@ class ExternalSystemConfigRepoTest
 		childRecord.setClient_Secret("secret");
 		childRecord.setClient_Id("id");
 		childRecord.setExternalSystemValue(value);
-		childRecord.setJSONPathConstantBPartnerID("/test/bp");
 		childRecord.setJSONPathSalesRepID("/test/salesrep");
 		childRecord.setJSONPathConstantBPartnerLocationID("/test/bpl");
 		childRecord.setExternalSystem_Config_ID(parentRecord.getExternalSystem_Config_ID());
@@ -368,6 +365,8 @@ class ExternalSystemConfigRepoTest
 		childMappingRecord.setBPartner_IfNotExists("FAIL");
 		childMappingRecord.setBPartnerLocation_IfExists("DONT_UPDATE");
 		childMappingRecord.setBPartnerLocation_IfNotExists("CREATE");
+		childMappingRecord.setJSONPathConstantBPartnerID("/test/bp");
+		childMappingRecord.setBPartnerLookupVia("ExternalReference");
 		saveRecord(childMappingRecord);
 
 		final I_C_UOM uom = newInstance(I_C_UOM.class);
@@ -740,7 +739,6 @@ class ExternalSystemConfigRepoTest
 		childRecord.setBaseURL("baseUrl");
 		childRecord.setClient_Secret("secret");
 		childRecord.setClient_Id("id");
-		childRecord.setJSONPathConstantBPartnerID("/test/bp");
 		childRecord.setJSONPathSalesRepID("/test/salesrep");
 		childRecord.setJSONPathConstantBPartnerLocationID("/test/bpl");
 		childRecord.setExternalSystemValue("testShopware6Value");
@@ -787,7 +785,6 @@ class ExternalSystemConfigRepoTest
 		initialChildRecord.setBaseURL("baseUrl");
 		initialChildRecord.setClient_Secret("secret");
 		initialChildRecord.setClient_Id("id");
-		initialChildRecord.setJSONPathConstantBPartnerID("/test/bp");
 		initialChildRecord.setJSONPathSalesRepID("/test/salesrep");
 		initialChildRecord.setJSONPathConstantBPartnerLocationID("/test/bpl");
 		initialChildRecord.setExternalSystemValue("testShopware6Value");

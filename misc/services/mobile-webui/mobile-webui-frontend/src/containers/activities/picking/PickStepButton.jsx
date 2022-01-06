@@ -1,60 +1,34 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import counterpart from 'counterpart';
+import { connect } from 'react-redux';
+import { push } from 'connected-react-router';
+import { withRouter } from 'react-router';
 
-import StepButton from '../common/StepButton';
-import { pushHeaderEntry } from '../../../actions/HeaderActions';
+import { pickingStepScreenLocation } from '../../../routes/picking';
 import Indicator from '../../../components/Indicator';
 import PickAlternatives from './PickAlternatives';
 import { computePickFromStatus } from '../../../reducers/wfProcesses_status/picking';
 
 class PickStepButton extends PureComponent {
   handleClick = () => {
-    const { pickFrom, location } = this.props;
-    const { dispatch, onHandleClick } = this.props;
+    const { push, wfProcessId, activityId, lineId, stepId, altStepId } = this.props;
+    const location = pickingStepScreenLocation({ wfProcessId, activityId, lineId, stepId, altStepId });
 
-    onHandleClick();
-
-    dispatch(
-      pushHeaderEntry({
-        location,
-        values: [
-          {
-            caption: counterpart.translate('general.Locator'),
-            value: pickFrom.locatorName,
-          },
-        ],
-      })
-    );
+    push(location);
   };
 
   render() {
-    const {
-      appId,
-      wfProcessId,
-      activityId,
-      lineId,
-      stepId,
-      //
-      pickFromAlternatives,
-      uom,
-      qtyToPick,
-      pickFrom,
-    } = this.props;
-
-    const isAlternative = !pickFromAlternatives;
+    const { wfProcessId, activityId, lineId, stepId, altStepId, pickFromAlternatives, uom, qtyToPick, pickFrom } =
+      this.props;
+    const isAlternative = altStepId;
     const completeStatus = computePickFromStatus(pickFrom);
 
     return (
       <div className="mt-3">
-        <button
-          key={lineId}
-          className="button is-outlined complete-btn pick-higher-btn"
-          onClick={() => this.handleClick()}
-        >
+        <button key={lineId} className="button is-outlined complete-btn pick-higher-btn" onClick={this.handleClick}>
           <div className="full-size-btn">
             <div className="left-btn-side" />
-
             <div className="caption-btn">
               <div className="rows">
                 <div className="row is-full pl-5">
@@ -81,9 +55,8 @@ class PickStepButton extends PureComponent {
             </div>
           </div>
         </button>
-        {pickFromAlternatives && (
+        {pickFromAlternatives && !altStepId && (
           <PickAlternatives
-            appId={appId}
             wfProcessId={wfProcessId}
             activityId={activityId}
             lineId={lineId}
@@ -98,7 +71,6 @@ class PickStepButton extends PureComponent {
 }
 
 PickStepButton.propTypes = {
-  location: PropTypes.string.isRequired,
   //
   // Props
   appId: PropTypes.string.isRequired,
@@ -106,15 +78,14 @@ PickStepButton.propTypes = {
   activityId: PropTypes.string.isRequired,
   lineId: PropTypes.string.isRequired,
   stepId: PropTypes.string.isRequired,
-  //
+  pickFrom: PropTypes.object.isRequired,
+  qtyToPick: PropTypes.number.isRequired,
+  altStepId: PropTypes.string,
   pickFromAlternatives: PropTypes.object,
   uom: PropTypes.string.isRequired,
-  qtyToPick: PropTypes.number.isRequired,
-  pickFrom: PropTypes.object.isRequired,
   //
   // Actions/Functions
-  dispatch: PropTypes.func.isRequired,
-  onHandleClick: PropTypes.func.isRequired,
+  push: PropTypes.func.isRequired,
 };
 
-export default StepButton(PickStepButton);
+export default withRouter(connect(null, { push })(PickStepButton));

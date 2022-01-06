@@ -6,10 +6,11 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.picking.OnOverDelivery;
 import de.metas.handlingunits.picking.PickFrom;
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.requests.PickRequest;
-import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.logging.LogManager;
 import de.metas.order.OrderLineId;
 import de.metas.picking.api.PickingSlotId;
@@ -77,6 +78,9 @@ public class WEBUI_M_HU_Pick extends ViewBasedProcessTemplate implements IProces
 
 	@Param(parameterName = WEBUI_M_HU_Pick_ParametersFiller.PARAM_M_ShipmentSchedule_ID, mandatory = true)
 	private ShipmentScheduleId shipmentScheduleId;
+
+	@Param(parameterName = "IsTakeWholeHU", mandatory = true)
+	private boolean isTakeWholeHU;
 
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
@@ -219,6 +223,9 @@ public class WEBUI_M_HU_Pick extends ViewBasedProcessTemplate implements IProces
 		final HURow row = getSingleHURow();
 		pickHU(row);
 
+		// invalidate view in order to be refreshed
+		getView().invalidateAll();
+
 		return MSG_OK;
 	}
 
@@ -231,8 +238,11 @@ public class WEBUI_M_HU_Pick extends ViewBasedProcessTemplate implements IProces
 				.pickingSlotId(pickingSlotId)
 				.build());
 		// NOTE: we are not moving the HU to shipment schedule's locator.
-
-		pickingCandidateService.processForHUIds(ImmutableSet.of(huId), shipmentScheduleId);
+		final PPOrderLinesView ppOrderView = (PPOrderLinesView)getView();
+		pickingCandidateService.processForHUIds(ImmutableSet.of(huId),
+												shipmentScheduleId,
+												OnOverDelivery.ofTakeWholeHUFlag(isTakeWholeHU),
+												ppOrderView.getPpOrderId());
 	}
 
 	@Override

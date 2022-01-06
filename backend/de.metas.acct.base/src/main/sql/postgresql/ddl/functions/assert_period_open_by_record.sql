@@ -30,6 +30,12 @@ BEGIN
         FROM c_invoice i
                  INNER JOIN c_doctype dt ON dt.c_doctype_id = i.c_doctype_id
         WHERE i.c_invoice_id = p_Record_ID;
+    ELSIF (p_TableName = 'C_Payment') THEN
+        SELECT p.dateacct, dt.docbasetype, p.ad_client_id, p.ad_org_id
+        INTO v_DateAcct, v_DocBaseType, v_AD_Client_ID, v_AD_Org_ID
+        FROM c_payment p
+                 INNER JOIN c_doctype dt ON dt.c_doctype_id = p.c_doctype_id
+        WHERE p.c_payment_id = p_Record_ID;
     ELSIF (p_TableName = 'M_InOut') THEN
         SELECT io.dateacct, dt.docbasetype, io.ad_client_id, io.ad_org_id
         INTO v_DateAcct, v_DocBaseType, v_AD_Client_ID, v_AD_Org_ID

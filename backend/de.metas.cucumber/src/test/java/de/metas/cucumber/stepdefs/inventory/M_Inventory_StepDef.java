@@ -24,6 +24,9 @@ package de.metas.cucumber.stepdefs.inventory;
 
 import de.metas.common.util.time.SystemTime;
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.M_Inventory_StepDefData;
+import de.metas.cucumber.stepdefs.M_Product_StepDefData;
+import de.metas.cucumber.stepdefs.M_ShipmentSchedule_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.document.engine.DocStatus;
@@ -58,6 +61,7 @@ import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
 
+import static de.metas.cucumber.stepdefs.StepDefConstants.WAREHOUSE_ID;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -66,19 +70,19 @@ public class M_Inventory_StepDef
 {
 	private final InventoryService inventoryService = SpringContextHolder.instance.getBean(InventoryService.class);
 
-	private final StepDefData<I_M_Inventory> inventoryTable;
+	private final M_Inventory_StepDefData inventoryTable;
 	private final StepDefData<I_M_InventoryLine> inventoryLineTable;
-	private final StepDefData<I_M_ShipmentSchedule> shipmentScheduleTable;
-	private final StepDefData<I_M_Product> productTable;
+	private final M_ShipmentSchedule_StepDefData shipmentScheduleTable;
+	private final M_Product_StepDefData productTable;
 	private final StepDefData<I_M_HU> huTable;
 
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
 	public M_Inventory_StepDef(
-			final StepDefData<I_M_Inventory> inventoryTable,
+			final M_Inventory_StepDefData inventoryTable,
 			final StepDefData<I_M_InventoryLine> inventoryLineTable,
-			final StepDefData<I_M_ShipmentSchedule> shipmentScheduleTable,
-			final StepDefData<I_M_Product> productTable,
+			final M_ShipmentSchedule_StepDefData shipmentScheduleTable,
+			final M_Product_StepDefData productTable,
 			final StepDefData<I_M_HU> huTable)
 	{
 		this.inventoryTable = inventoryTable;
@@ -166,7 +170,7 @@ public class M_Inventory_StepDef
 		inventoryRecord.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
 		inventoryRecord.setC_DocType_ID(StepDefConstants.DOC_TYPE_ID_MMI.getRepoId());
 		inventoryRecord.setDocStatus(DocStatus.Drafted.getCode());
-
+		inventoryRecord.setM_Warehouse_ID(WAREHOUSE_ID.getRepoId());
 		inventoryRecord.setMovementDate(movementDate);
 		inventoryRecord.setDocumentNo(documentNo);
 

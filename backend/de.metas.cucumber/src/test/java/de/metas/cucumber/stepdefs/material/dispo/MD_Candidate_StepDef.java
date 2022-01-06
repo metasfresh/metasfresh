@@ -22,7 +22,9 @@
 
 package de.metas.cucumber.stepdefs.material.dispo;
 
+import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.cucumber.stepdefs.StepDefUtil;
@@ -64,6 +66,7 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -85,16 +88,20 @@ public class MD_Candidate_StepDef
 	private PostMaterialEventService postMaterialEventService;
 	private MaterialDispoRecordRepository materialDispoRecordRepository;
 	private CandidateRepositoryRetrieval candidateRepositoryRetrieval;
-	private final StepDefData<I_M_Product> productTable;
-	private final StepDefData<I_MD_Candidate> stockCandidateTable;
+
 	private final StepDefData<MaterialDispoDataItem> materialDispoDataItemStepDefData = new StepDefData<>();
+	private final M_Product_StepDefData productTable;
+	private final StepDefData<I_MD_Candidate> stockCandidateTable;
+	private final C_OrderLine_StepDefData orderLineTable;
 
 	public MD_Candidate_StepDef(
-			@NonNull final StepDefData<I_M_Product> productTable,
-			@NonNull final StepDefData<I_MD_Candidate> stockCandidateTable)
+			@NonNull final M_Product_StepDefData productTable,
+			@NonNull final StepDefData<I_MD_Candidate> stockCandidateTable,
+			@NonNull final C_OrderLine_StepDefData orderLineTable)
 	{
 		this.productTable = productTable;
 		this.stockCandidateTable = stockCandidateTable;
+		this.orderLineTable = orderLineTable;
 	}
 
 	@Before
@@ -217,6 +224,59 @@ public class MD_Candidate_StepDef
 		}
 	}
 
+
+	@Then("^after not more than (.*)s, metasfresh has this MD_Candidate data$")
+	public void metasfresh_has_this_md_candidate_data(final int timeoutSec, @NonNull final MD_Candidate_StepDefTable table) throws InterruptedException
+	{
+		final Supplier<Boolean> mdCandidateDemandDetailRecordsCounterChecker = () ->
+				queryBL.createQueryBuilderOutOfTrx(I_MD_Candidate_Demand_Detail.class)
+						.addOnlyActiveRecordsFilter()
+						.create()
+						.count() > 0;
+
+		StepDefUtil.tryAndWait(timeoutSec, 500, mdCandidateDemandDetailRecordsCounterChecker);
+
+		for (final MaterialDispoTableRow tableRow : table.getRows())
+		{
+			final MaterialDispoDataItem materialDispoDataItem = materialDispoRecordRepository.getBy(tableRow.createQuery());
+
+			assertThat(materialDispoDataItem).isNotNull(); // add message
+			assertThat(materialDispoDataItem.getType()).isEqualTo(tableRow.getType());
+			assertThat(materialDispoDataItem.getBusinessCase()).isEqualTo(tableRow.getBusinessCase());
+			assertThat(materialDispoDataItem.getMaterialDescriptor().getProductId()).isEqualTo(tableRow.getProductId().getRepoId());
+			assertThat(materialDispoDataItem.getMaterialDescriptor().getQuantity()).isEqualByComparingTo(tableRow.getQty());
+			assertThat(materialDispoDataItem.getAtp()).isEqualByComparingTo(tableRow.getAtp());
+
+			materialDispoDataItemStepDefData.putIfMissing(tableRow.getIdentifier(), materialDispoDataItem);
+		}
+	}
+
+	@And("metasfresh generates this MD_Candidate_Demand_Detail data")
+	public void metasfresh_generates_this_MD_Candidate_Demand_Detail_data(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+		for (final Map<String, String> tableRow : tableRows)
+		{
+			final String materialDispoItemIdentifier = tableRow.get(I_MD_Candidate_Demand_Detail.COLUMNNAME_MD_Candidate_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+			final MaterialDispoDataItem materialDispoDataItem = materialDispoDataItemStepDefData.get(materialDispoItemIdentifier);
+
+			assertThat(materialDispoDataItem).isNotNull();    // add message
+
+			final BusinessCaseDetail businessCaseDetail = materialDispoDataItem.getBusinessCaseDetail();
+			assertThat(businessCaseDetail)
+					.as("Missing BusinessCaseDetail of MaterialDispoDataItem %s", materialDispoDataItem.toString())
+					.isNotNull();
+
+			final String orderLineIdentifier = tableRow.get(I_C_OrderLine.COLUMNNAME_C_OrderLine_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+			final BigDecimal plannedQty = DataTableUtil.extractBigDecimalForColumnName(tableRow, I_MD_Candidate_Demand_Detail.COLUMNNAME_PlannedQty);
+			final int orderLineId = StepDefUtil.extractId(orderLineIdentifier, orderLineTable);
+
+			assertThat(DemandDetail.cast(businessCaseDetail).getOrderLineId()).isEqualTo(orderLineId);
+			assertThat(DemandDetail.cast(businessCaseDetail).getQty()).isEqualByComparingTo(plannedQty);
+			assertThat(DemandDetail.cast(businessCaseDetail).getShipmentScheduleId()).isNotNull();
+		}
+	}
+
 	@Then("metasfresh has this MD_Candidate_Demand_Detail data")
 	public void metasfresh_has_this_md_candidate_demand_detail_data(@NonNull final DataTable dataTable)
 	{
@@ -311,11 +371,11 @@ public class MD_Candidate_StepDef
 		{
 			// make sure the given md_candidate has been created
 			final Supplier<Boolean> candidateCreated = () ->
-			{
-				final Candidate candidate = candidateRepositoryRetrieval.retrieveLatestMatchOrNull(tableRow.createQuery());
-
-				return candidate != null;
-			};
+					candidateRepositoryRetrieval.retrieveLatestMatch(tableRow.createQuery())
+							.map(Candidate::getMaterialDescriptor)
+							.filter(materialDescriptor -> materialDescriptor.getQuantity().equals(tableRow.getQty()))
+							.filter(materialDescriptor -> materialDescriptor.getDate().equals(tableRow.getTime()))
+							.isPresent();
 
 			StepDefUtil.tryAndWait(timeoutSec, 1000, candidateCreated);
 

@@ -132,7 +132,7 @@ public class DocumentAttachmentsRestController
 	public void attachURL(
 			@PathVariable("windowId") final String windowIdStr,
 			@PathVariable("documentId") final String documentId,
-			@RequestBody final JSONAttachURLRequest request)
+			@RequestBody @NonNull final JSONAttachURLRequest request)
 	{
 		userSession.assertLoggedIn();
 

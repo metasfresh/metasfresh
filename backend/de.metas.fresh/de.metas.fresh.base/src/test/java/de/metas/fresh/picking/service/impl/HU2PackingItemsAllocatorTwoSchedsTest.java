@@ -1,5 +1,36 @@
 package de.metas.fresh.picking.service.impl;
 
+import com.google.common.collect.ImmutableList;
+import de.metas.handlingunits.AbstractHUTest;
+import de.metas.handlingunits.HUTestHelper;
+import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.expectations.ShipmentScheduleQtyPickedExpectations;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_PI_Item;
+import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.handlingunits.picking.OnOverDelivery;
+import de.metas.handlingunits.picking.PickingCandidateRepository;
+import de.metas.handlingunits.shipmentschedule.util.ShipmentScheduleHelper;
+import de.metas.inout.ShipmentScheduleId;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.picking.service.IPackingItem;
+import de.metas.picking.service.PackingItemParts;
+import de.metas.picking.service.PackingItems;
+import de.metas.picking.service.PackingItemsMap;
+import de.metas.picking.service.impl.HU2PackingItemsAllocator;
+import de.metas.quantity.Quantity;
+import de.metas.util.Services;
+import org.adempiere.ad.wrapper.POJOLookupMap;
+import org.adempiere.util.comparator.FixedOrderByKeyComparator;
+import org.compiere.SpringContextHolder;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Set;
+
 import static de.metas.fresh.picking.service.impl.HU2PackingItemTestCommons.COUNT_Tomatoes_Per_IFCO;
 import static de.metas.fresh.picking.service.impl.HU2PackingItemTestCommons.commonCreateHUTestHelper;
 import static de.metas.fresh.picking.service.impl.HU2PackingItemTestCommons.createHuDefIFCO;
@@ -10,36 +41,6 @@ import static org.hamcrest.Matchers.comparesEqualTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertThat;
-
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.Set;
-
-import org.adempiere.ad.wrapper.POJOLookupMap;
-import org.adempiere.util.comparator.FixedOrderByKeyComparator;
-
-import com.google.common.collect.ImmutableList;
-
-import de.metas.handlingunits.AbstractHUTest;
-import de.metas.handlingunits.HUTestHelper;
-import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.IHandlingUnitsDAO;
-import de.metas.handlingunits.expectations.ShipmentScheduleQtyPickedExpectations;
-import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_HU_PI_Item;
-import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
-import de.metas.handlingunits.shipmentschedule.util.ShipmentScheduleHelper;
-import de.metas.inoutcandidate.ShipmentScheduleId;
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.picking.service.IPackingItem;
-import de.metas.picking.service.PackingItemParts;
-import de.metas.picking.service.PackingItems;
-import de.metas.picking.service.PackingItemsMap;
-import de.metas.picking.service.impl.HU2PackingItemsAllocator;
-import de.metas.quantity.Quantity;
-import de.metas.util.Services;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
 
 /*
  * #%L
@@ -96,6 +97,8 @@ public class HU2PackingItemsAllocatorTwoSchedsTest extends AbstractHUTest
 		huDefIFCOWithTen = createHuDefIFCO(helper, COUNT_Tomatoes_Per_IFCO);
 		huDefIFCOWithEleven = createHuDefIFCO(helper, COUNT_Tomatoes_Per_IFCO + 1);
 		huDefPalet = createHuDefPalet(helper, huDefIFCOWithTen);
+
+		SpringContextHolder.registerJUnitBean(new PickingCandidateRepository());
 	}
 
 	@Override
@@ -272,6 +275,7 @@ public class HU2PackingItemsAllocatorTwoSchedsTest extends AbstractHUTest
 		HU2PackingItemsAllocator.builder()
 				.itemToPack(itemToPack)
 				.packingItems(packingItems)
+				.onOverDelivery(OnOverDelivery.FAIL)
 				.pickFromHUs(luHUs)
 				.allocate();
 

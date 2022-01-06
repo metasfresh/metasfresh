@@ -7,7 +7,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.cache.CacheMgt;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.inout.model.I_M_InOutLine;
-import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.OlAndSched;
@@ -70,7 +70,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 	/**
 	 * Order by clause used to fetch {@link I_M_ShipmentSchedule}s.
 	 * <p>
-	 * NOTE: this ordering is VERY important because that's the order in which QtyOnHand will be allocated too.
+	 * NOTE: this ordering is VERY important because that's the order in which the available QtyOnHand will be allocated.
 	 */
 	private static final String ORDER_CLAUSE = "\n ORDER BY " //
 			//
@@ -78,9 +78,27 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 			+ "\n   COALESCE(" + I_M_ShipmentSchedule.COLUMNNAME_PriorityRule_Override + ", " + I_M_ShipmentSchedule.COLUMNNAME_PriorityRule + ")," //
 			//
 			// QtyToDeliver_Override:
-			// NOTE: (Mark) If we want to force deliverying something, that shall get higher priority,
+			// NOTE: (Mark) If we want to force delivering something, that shall get higher priority,
 			// so that's why QtyToDeliver_Override is much more important than PreparationDate, DeliveryDate etc
 			+ "\n   COALESCE(" + I_M_ShipmentSchedule.COLUMNNAME_QtyToDeliver_Override + ", 0) DESC,"
+			//
+			// manufacture-to-order - look at scheds for whose order lines actual HUs were created 
+			+ "\n CASE WHEN EXISTS(SELECT 1"
+			+ "\n                  FROM PP_Order ppo" 
+			+ "\n                       JOIN PP_Order_Qty ppoq ON ppoq.PP_Order_ID=ppo.PP_Order_ID" 
+			+ "\n                            JOIN M_HU hu ON hu.M_HU_ID=ppoq.M_HU_ID" 
+			+ "\n                  WHERE ppo.C_OrderLine_ID = M_ShipmentSchedule.C_OrderLine_ID" 
+			+ "\n                        AND ppoq.IsActive = 'Y'" 
+			+ "\n                        AND hu.IsActive='Y' AND hu.HUStatus NOT IN ('D'/*Destroyed*/, 'P'/*Planning*/, 'E'/*Shipped*/))"
+			+ "\n THEN FALSE ELSE TRUE END," // false comes before true, so we evaluate to false if there is such an HU
+			//
+			// Reservation - look at scheds for whose bpartners there are *dedicated* HUs.
+			+ "\n CASE WHEN EXISTS(SELECT 1"
+			+ "\n                  FROM M_HU hu"
+			+ "\n                  WHERE hu.C_BPartner_ID = COALESCE(M_ShipmentSchedule.C_BPartner_Override_ID, M_ShipmentSchedule.C_BPartner_ID)"
+			+ "\n                        AND hu.IsActive = 'Y'"
+			+ "\n                        AND hu.HUStatus NOT IN ('D'/*Destroyed*/, 'P'/*Planning*/, 'E'/*Shipped*/)) "
+			+ "\n THEN FALSE ELSE TRUE END," // false comes before true, so we evaluate to false if there is such an HU
 			//
 			// Preparation Date
 			+ "\n   " + I_M_ShipmentSchedule.COLUMNNAME_PreparationDate + ","
@@ -230,7 +248,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 		return createOlAndScheds(shipmentSchedules);
 	}
 
-	private static final OrderAndLineId extractOrderAndLineId(final I_M_ShipmentSchedule shipmentSchedule)
+	private static OrderAndLineId extractOrderAndLineId(final I_M_ShipmentSchedule shipmentSchedule)
 	{
 		return OrderAndLineId.ofRepoIdsOrNull(shipmentSchedule.getC_Order_ID(), shipmentSchedule.getC_OrderLine_ID());
 	}
@@ -240,7 +258,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 		final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 
 		final Set<OrderAndLineId> orderLineIds = shipmentSchedules.stream()
-				.map(shipmentSchedule -> extractOrderAndLineId(shipmentSchedule))
+				.map(ShipmentSchedulePA::extractOrderAndLineId)
 				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
 
@@ -319,7 +337,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 	 * @param updateOnlyIfNull         if true then it will update only if column value is null (not set)
 	 * @param selectionId              ShipmentSchedule selection (AD_PInstance_ID)
 	 */
-	private final <ValueType> void updateColumnForSelection(
+	private <ValueType> void updateColumnForSelection(
 			final String inoutCandidateColumnName,
 			final ValueType value,
 			final boolean updateOnlyIfNull,
@@ -440,13 +458,8 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 	{
 		// in case the preparation date is given, it will only be set. No Invalidation needed
 		// in case it is not given (null) an invalidation is needed because it will be calculated based on the delivery date
+		final boolean invalidate = preparationDate == null;
 
-		boolean invalidate = false;
-
-		if (preparationDate == null)
-		{
-			invalidate = true;
-		}
 		updateColumnForSelection(
 				I_M_ShipmentSchedule.COLUMNNAME_PreparationDate_Override,               // inoutCandidateColumnName
 				preparationDate,               // value
@@ -459,14 +472,12 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 	@Override
 	public IQueryBuilder<I_M_ShipmentSchedule> createQueryForShipmentScheduleSelection(final Properties ctx, final IQueryFilter<I_M_ShipmentSchedule> userSelectionFilter)
 	{
-		final IQueryBuilder<I_M_ShipmentSchedule> queryBuilder = queryBL
+		return queryBL
 				.createQueryBuilder(I_M_ShipmentSchedule.class, ctx, ITrx.TRXNAME_None)
 				.filter(userSelectionFilter)
 				.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_Processed, false)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient();
-
-		return queryBuilder;
 	}
 
 	@Override

@@ -484,7 +484,6 @@ public class FlatrateBL implements IFlatrateBL
 				() -> ContractLocationHelper.extractBillToLocationId(term));
 
 		final TaxId taxId = Services.get(ITaxBL.class).getTaxNotNull(
-				ctx,
 				term,
 				taxCategoryId,
 				productId,
@@ -618,7 +617,6 @@ public class FlatrateBL implements IFlatrateBL
 				() -> ContractLocationHelper.extractBillToLocationId(term));
 
 		final TaxId taxId = Services.get(ITaxBL.class).getTaxNotNull(
-				ctx,
 				term,
 				taxCategoryId,
 				productIdForIc,
@@ -1829,6 +1827,14 @@ public class FlatrateBL implements IFlatrateBL
 		{
 			// Only consider completed terms
 			if (!X_C_Flatrate_Term.DOCSTATUS_Completed.equals(term.getDocStatus()))
+			{
+				continue;
+			}
+
+			// Only consider terms with the same org.
+			// C_Flatrate_Term has access-level=Org, so there is no term with Org=*
+			// Also note that when finding a term for an invoice-candidate, that IC's org is used as a matching criterion
+			if(term.getAD_Org_ID() != newTerm.getAD_Org_ID())
 			{
 				continue;
 			}

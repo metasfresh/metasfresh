@@ -127,6 +127,8 @@ class BPartnerCompositeRepositoryTest
 						//.district("district")
 						.countryCode("DE")
 						.poBox("poBox")
+						.phone("phone")
+						.email("email")
 						.build())
 				.contact(BPartnerContact.builder()
 						// @Nullable final BPartnerContactId id,
@@ -159,8 +161,10 @@ class BPartnerCompositeRepositoryTest
 						.orgMappingId(null)
 						.birthday(LocalDate.parse("1901-02-03"))
 						.bPartnerLocationId(null)
-						.roles(ImmutableList.of()
-						).build())
+						.roles(ImmutableList.of())
+						.email2("email2")
+						.email3("email3")
+						.build())
 				.build();
 
 		bpartnerCompositeRepository.save(bpartnerComposite, true);

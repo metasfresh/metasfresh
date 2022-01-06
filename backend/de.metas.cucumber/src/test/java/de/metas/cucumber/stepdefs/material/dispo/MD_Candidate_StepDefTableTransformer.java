@@ -23,6 +23,7 @@
 package de.metas.cucumber.stepdefs.material.dispo;
 
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
@@ -42,9 +43,9 @@ import java.util.Map;
 
 public class MD_Candidate_StepDefTableTransformer implements TableTransformer<MD_Candidate_StepDefTable>
 {
-	private final StepDefData<I_M_Product> productTable;
+	private final M_Product_StepDefData productTable;
 
-	public MD_Candidate_StepDefTableTransformer(@NonNull final StepDefData<I_M_Product> productTable)
+	public MD_Candidate_StepDefTableTransformer(@NonNull final M_Product_StepDefData productTable)
 	{
 		this.productTable = productTable;
 	}
@@ -60,12 +61,10 @@ public class MD_Candidate_StepDefTableTransformer implements TableTransformer<MD
 		for (final Map<String, String> dataTableRow : dataTableRows)
 		{
 			final String identifier = DataTableUtil.extractRecordIdentifier(dataTableRow, "MD_Candidate");
-
 			final CandidateType type = CandidateType.ofCode(dataTableRow.get(I_MD_Candidate.COLUMNNAME_MD_Candidate_Type));
 			final CandidateBusinessCase businessCase = CandidateBusinessCase.ofCodeOrNull(dataTableRow.get(I_MD_Candidate.COLUMNNAME_MD_Candidate_BusinessCase));
 
 			final String productIdentifier = DataTableUtil.extractStringForColumnName(dataTableRow, I_M_Product.COLUMNNAME_M_Product_ID + ".Identifier");
-
 			final int productId = StepDefUtil.extractId(productIdentifier, productTable);
 
 			final Instant time = DataTableUtil.extractInstantForColumnName(dataTableRow, I_MD_Candidate.COLUMNNAME_DateProjected);
@@ -82,6 +81,7 @@ public class MD_Candidate_StepDefTableTransformer implements TableTransformer<MD
 					.identifier(identifier)
 					.type(type)
 					.businessCase(businessCase)
+					.productIdentifier(productIdentifier)
 					.productId(ProductId.ofRepoId(productId))
 					.time(time)
 					.qty(qty)

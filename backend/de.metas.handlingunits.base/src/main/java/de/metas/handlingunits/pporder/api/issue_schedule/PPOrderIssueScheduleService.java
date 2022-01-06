@@ -3,6 +3,7 @@ package de.metas.handlingunits.pporder.api.issue_schedule;
 import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
+import de.metas.handlingunits.allocation.transfer.ReservedHUsPolicy;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.QtyRejectedWithReason;
 import de.metas.handlingunits.pporder.api.HUPPOrderIssueProducer;
@@ -69,7 +70,7 @@ public class PPOrderIssueScheduleService
 											.sourceHU(issueFromHU)
 											.productId(productId)
 											.qtyCU(qtyIssued)
-											.onlyFromUnreservedHUs(true)
+											.reservedVHUsPolicy(ReservedHUsPolicy.CONSIDER_ONLY_NOT_RESERVED)
 											.build()
 							)
 					);

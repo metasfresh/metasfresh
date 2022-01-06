@@ -12,12 +12,15 @@ import de.metas.contracts.model.I_C_Flatrate_Transition;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Transition;
+import de.metas.invoicecandidate.api.IInvoiceCandInvalidUpdater;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.CandidatesAutoCreateMode;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.PriceAndTax;
 import de.metas.lang.SOTrx;
 import de.metas.organization.IOrgDAO;
+import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
+import de.metas.pricing.PricingSystemId;
 import de.metas.quantity.Quantity;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxCategoryId;
@@ -89,25 +92,29 @@ public class FlatrateTermSubscription_Handler implements ConditionTypeSpecificIn
 
 	@Override
 	public void setSpecificInvoiceCandidateValues(
-			@NonNull final I_C_Invoice_Candidate ic,
+			@NonNull final I_C_Invoice_Candidate icRecord,
 			@NonNull final I_C_Flatrate_Term term)
 	{
-		ic.setPriceActual(term.getPriceActual()); // TODO document and make sure there is the correct value
-		ic.setPrice_UOM_ID(term.getC_UOM_ID()); // 07090 when we set PiceActual, we shall also set PriceUOM.
-		ic.setPriceEntered(term.getPriceActual()); // cg : task 04917 -- same as price actual
-
-		final boolean isSOTrx = true;
+		final PriceAndTax priceAndTax = calculatePriceAndTax(icRecord);
+		IInvoiceCandInvalidUpdater.updatePriceAndTax(icRecord, priceAndTax);
 
 		// 05265
-		ic.setIsSOTrx(isSOTrx);
+		icRecord.setIsSOTrx(true);
 
 		final TaxCategoryId taxCategoryId = TaxCategoryId.ofRepoIdOrNull(term.getC_TaxCategory_ID());
 
 		final BigDecimal qty = Services.get(IContractsDAO.class).retrieveSubscriptionProgressQtyForTerm(term);
-		ic.setQtyOrdered(qty);
+		icRecord.setQtyOrdered(qty);
+	}
 
+	@Override
+	public PriceAndTax calculatePriceAndTax(@NonNull final I_C_Invoice_Candidate ic)
+	{
+		final I_C_Flatrate_Term term = HandlerTools.retrieveTerm(ic);
+
+		final TaxCategoryId taxCategoryId = TaxCategoryId.ofRepoIdOrNull(term.getC_TaxCategory_ID());
+		
 		final TaxId taxId = Services.get(ITaxBL.class).getTaxNotNull(
-				Env.getCtx(),
 				term,
 				taxCategoryId,
 				term.getM_Product_ID(),
@@ -117,17 +124,17 @@ public class FlatrateTermSubscription_Handler implements ConditionTypeSpecificIn
 				CoalesceUtil.coalesceSuppliersNotNull(
 						() -> ContractLocationHelper.extractDropshipLocationId(term),
 						() -> ContractLocationHelper.extractBillToLocationId(term)),
-				SOTrx.ofBoolean(isSOTrx));
-		ic.setC_Tax_ID(taxId.getRepoId());
-	}
-
-	@Override
-	public PriceAndTax calculatePriceAndTax(@NonNull final I_C_Invoice_Candidate ic)
-	{
-		final I_C_Flatrate_Term term = HandlerTools.retrieveTerm(ic);
+				SOTrx.ofBoolean(ic.isSOTrx()));
+		
 		return PriceAndTax.builder()
+				.pricingSystemId(PricingSystemId.ofRepoId(term.getM_PricingSystem_ID()))
 				.priceActual(term.getPriceActual())
+				.priceEntered(term.getPriceActual()) // cg : task 04917 -- same as price actual
 				.priceUOMId(UomId.ofRepoId(term.getC_UOM_ID())) // 07090: when setting a priceActual, we also need to specify a PriceUOM
+				.taxCategoryId(TaxCategoryId.ofRepoId(term.getC_TaxCategory_ID()))
+				.taxId(taxId)
+				.taxIncluded(term.isTaxIncluded())
+				.currencyId(CurrencyId.ofRepoIdOrNull(term.getC_Currency_ID()))
 				.build();
 	}
 

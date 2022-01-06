@@ -28,6 +28,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.common.util.IdConstants;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.product.ResourceId;
@@ -67,6 +68,8 @@ public class PPOrderData
 	 */
 	int orderLineId;
 
+	int shipmentScheduleId;
+
 	/**
 	 * This is usually the respective supply candidates' date value.
 	 */
@@ -99,6 +102,7 @@ public class PPOrderData
 			@JsonProperty("productPlanningId") final int productPlanningId,
 			@JsonProperty("productDescriptor") @NonNull final ProductDescriptor productDescriptor,
 			@JsonProperty("orderLineId") final int orderLineId,
+			@JsonProperty("shipmentScheduleId") final int shipmentScheduleId,
 			@JsonProperty("datePromised") @NonNull final Instant datePromised,
 			@JsonProperty("dateStartSchedule") @NonNull final Instant dateStartSchedule,
 			@JsonProperty("qtyRequired") @NonNull final BigDecimal qtyRequired,
@@ -112,6 +116,7 @@ public class PPOrderData
 		this.productPlanningId = productPlanningId; // ok to be not set
 		this.productDescriptor = productDescriptor;
 		this.orderLineId = orderLineId;
+		this.shipmentScheduleId = shipmentScheduleId;
 		this.datePromised = datePromised;
 		this.dateStartSchedule = dateStartSchedule;
 		this.qtyRequired = qtyRequired;
@@ -123,5 +128,15 @@ public class PPOrderData
 	public BigDecimal getQtyOpen()
 	{
 		return getQtyRequired().subtract(getQtyDelivered());
+	}
+
+	public int getShipmentScheduleIdAsRepoId()
+	{
+		return IdConstants.toRepoId(shipmentScheduleId);
+	}
+
+	public int getOrderLineIdAsRepoId()
+	{
+		return IdConstants.toRepoId(orderLineId);
 	}
 }

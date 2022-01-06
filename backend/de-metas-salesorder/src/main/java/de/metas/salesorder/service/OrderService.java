@@ -28,7 +28,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.service.AsyncBatchService;
-import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.async.CreateMissingShipmentSchedulesWorkpackageProcessor;
 import de.metas.logging.LogManager;
@@ -68,11 +68,11 @@ public class OrderService
 
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
-	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IOLCandDAO olCandDAO = Services.get(IOLCandDAO.class);
 	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
-
+	
 	private final AsyncBatchService asyncBatchService;
+
 	private final C_OLCandToOrderEnqueuer olCandToOrderEnqueuer;
 
 	public OrderService(

@@ -161,6 +161,9 @@ public class JsonRetrieverService
 			.put(BPartnerContact.DESCRIPTION, JsonResponseContact.DESCRIPTION)
 			.put(BPartnerContact.NEWSLETTER, JsonResponseContact.NEWSLETTER)
 			.put(BPartnerContact.SUBJECT_MATTER, JsonResponseContact.SUBJECT_MATTER)
+			.put(BPartnerContact.BPARTNER_LOCATION_ID, JsonResponseContact.METASFRESH_LOCATION_ID)
+			.put(BPartnerContact.EMAIL2, JsonResponseContact.EMAIL2)
+			.put(BPartnerContact.EMAIL3, JsonResponseContact.EMAIL3)
 
 			.put(BPartnerContactType.SHIP_TO_DEFAULT, JsonResponseContact.SHIP_TO_DEFAULT)
 			.put(BPartnerContactType.BILL_TO_DEFAULT, JsonResponseContact.BILL_TO_DEFAULT)
@@ -193,6 +196,8 @@ public class JsonRetrieverService
 			.put(BPartnerLocation.REGION, JsonResponseLocation.REGION)
 			.put(BPartnerLocation.DISTRICT, JsonResponseLocation.DISTRICT)
 			.put(BPartnerLocation.COUNTRYCODE, JsonResponseLocation.COUNTRY_CODE)
+			.put(BPartnerLocation.PHONE, JsonResponseLocation.PHONE)
+			.put(BPartnerLocation.EMAIL, JsonResponseLocation.EMAIL)
 			.put(BPartnerLocationType.BILL_TO, JsonResponseLocation.BILL_TO)
 			.put(BPartnerLocationType.BILL_TO_DEFAULT, JsonResponseLocation.BILL_TO_DEFAULT)
 			.put(BPartnerLocationType.SHIP_TO, JsonResponseLocation.SHIP_TO)
@@ -380,6 +385,7 @@ public class JsonRetrieverService
 		{
 			final JsonMetasfreshId metasfreshId = JsonMetasfreshId.of(BPartnerContactId.toRepoId(contact.getId()));
 			final JsonMetasfreshId metasfreshBPartnerId = JsonMetasfreshId.of(BPartnerId.toRepoId(contact.getId().getBpartnerId()));
+			final JsonMetasfreshId metasfreshLocationId = JsonMetasfreshId.ofOrNull(BPartnerLocationId.toRepoIdOrNull(contact.getBPartnerLocationId()));
 
 			final JsonChangeInfo jsonChangeInfo = createJsonChangeInfo(contact.getChangeLog(), CONTACT_FIELD_MAP);
 
@@ -426,6 +432,9 @@ public class JsonRetrieverService
 					.subjectMatter(contact.isSubjectMatterContact())
 					.roles(roles)
 					.changeInfo(jsonChangeInfo)
+					.metasfreshLocationId(metasfreshLocationId)
+					.email2(contact.getEmail2())
+					.email3(contact.getEmail3())
 					.build();
 		}
 		catch (final RuntimeException rte)
@@ -463,7 +472,14 @@ public class JsonRetrieverService
 					.shipToDefault(locationType.getIsShipToDefaultOr(false))
 					.billTo(locationType.getIsBillToOr(false))
 					.billToDefault(locationType.getIsBillToDefaultOr(false))
+					.setupPlaceNo(location.getSetupPlaceNo())
+					.remitTo(location.isRemitTo())
+					.replicationLookupDefault(location.isReplicationLookupDefault())
+					.handoverLocation(location.isHandOverLocation())
+					.visitorsAddress(location.isVisitorsAddress())
 					.changeInfo(jsonChangeInfo)
+					.phone(location.getPhone())
+					.email(location.getEmail())
 					.build();
 		}
 		catch (final RuntimeException rte)

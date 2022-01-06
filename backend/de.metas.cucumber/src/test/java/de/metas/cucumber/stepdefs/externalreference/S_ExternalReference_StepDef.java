@@ -23,6 +23,7 @@
 package de.metas.cucumber.stepdefs.externalreference;
 
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.externalreference.ExternalReference;
 import de.metas.externalreference.ExternalReferenceRepository;
@@ -56,11 +57,11 @@ public class S_ExternalReference_StepDef
 	private final ExternalReferenceRepository externalReferenceRepository = SpringContextHolder.instance.getBean(ExternalReferenceRepository.class);
 	private final ExternalReferenceTypes externalReferenceTypes = SpringContextHolder.instance.getBean(ExternalReferenceTypes.class);
 
-	private final StepDefData<I_M_Product> productTable;
+	private final M_Product_StepDefData productTable;
 
 	public S_ExternalReference_StepDef(
 			@NonNull final ExternalSystems externalSystems,
-			@NonNull final StepDefData<I_M_Product> productTable)
+			@NonNull final M_Product_StepDefData productTable)
 	{
 		this.externalSystems = externalSystems;
 		this.productTable = productTable;

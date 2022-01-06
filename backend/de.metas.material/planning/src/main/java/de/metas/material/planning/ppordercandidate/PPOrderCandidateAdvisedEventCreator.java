@@ -88,8 +88,7 @@ public class PPOrderCandidateAdvisedEventCreator
 					.supplyRequiredDescriptor(supplyRequiredDescriptor)
 					.eventDescriptor(supplyRequiredDescriptor.getEventDescriptor())
 					.ppOrderCandidate(ppOrderCandidate)
-					.directlyCreatePPOrder(productPlanning.isCreatePlan())
-					.directlyPickIfFeasible(productPlanning.isPickDirectlyIfFeasible());
+					.directlyCreatePPOrder(productPlanning.isCreatePlan());
 
 			if (firstRequest)
 			{

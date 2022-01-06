@@ -1654,6 +1654,24 @@ public class JsonPersisterService
 			location.setRegion(StringUtils.trim(jsonBPartnerLocation.getRegion()));
 		}
 
+		// bpartnerName
+		if (jsonBPartnerLocation.isBpartnerNameSet())
+		{
+			location.setBpartnerName(jsonBPartnerLocation.getBpartnerName());
+		}
+
+		// email
+		if (jsonBPartnerLocation.isEmailSet())
+		{
+			location.setEmail(jsonBPartnerLocation.getEmail());
+		}
+
+		// phone
+		if (jsonBPartnerLocation.isPhoneSet())
+		{
+			location.setPhone(jsonBPartnerLocation.getPhone());
+		}
+
 		final BPartnerLocationType locationType = syncJsonToLocationType(jsonBPartnerLocation);
 		location.setLocationType(locationType);
 	}

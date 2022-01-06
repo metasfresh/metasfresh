@@ -49,7 +49,6 @@ import de.metas.common.ordercandidates.v2.request.JsonSalesPartner;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.JSONPaymentRule;
 import de.metas.common.util.Check;
-import de.metas.common.util.CoalesceUtil;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
@@ -189,10 +188,7 @@ public class OLCandRequestProcessor implements Processor
 			@NonNull final ImportOrdersRouteContext context,
 			@NonNull final JsonResponseBPartnerCompositeUpsertItem bPartnerUpsertResponse)
 	{
-		final OrderCandidate orderCandidate = context.getOrderNotNull();
-
-		final String bPartnerExternalId = CoalesceUtil.coalesceNotNull(orderCandidate.getCustomBPartnerId(), orderCandidate.getJsonOrder().getOrderCustomer().getCustomerId());
-		final String bPartnerExternalIdentifier = ExternalIdentifierFormat.formatExternalId(bPartnerExternalId);
+		final String bPartnerExternalIdentifier = context.getEffectiveCustomerId().getIdentifier();
 
 		// extract the C_BPartner_ID
 		final JsonMetasfreshId bpartnerId = getMetasfreshIdForExternalIdentifier(
@@ -204,7 +200,8 @@ public class OLCandRequestProcessor implements Processor
 		// extract the AD_User_ID (contact-ID)
 		final JsonMetasfreshId contactId = getMetasfreshIdForExternalIdentifier(
 				bPartnerUpsertResponse.getResponseContactItems(),
-				shippingBPLocationExternalIdentifier);
+				bPartnerExternalIdentifier);
+
 		// extract the C_BPartner_Location_ID
 		final JsonMetasfreshId shippingBPartnerLocationId = getMetasfreshIdForExternalIdentifier(
 				bPartnerUpsertResponse.getResponseLocationItems(),
@@ -222,10 +219,8 @@ public class OLCandRequestProcessor implements Processor
 			@NonNull final ImportOrdersRouteContext context,
 			@NonNull final JsonResponseBPartnerCompositeUpsertItem bPartnerUpsertResponse)
 	{
-		final OrderCandidate orderCandidate = context.getOrderNotNull();
+		final String bPartnerExternalIdentifier = context.getEffectiveCustomerId().getIdentifier();
 
-		final String bPartnerExternalId = CoalesceUtil.coalesceNotNull(orderCandidate.getCustomBPartnerId(), orderCandidate.getJsonOrder().getOrderCustomer().getCustomerId());
-		final String bPartnerExternalIdentifier = ExternalIdentifierFormat.formatExternalId(bPartnerExternalId);
 		// extract the C_BPartner_ID
 		final JsonMetasfreshId bpartnerId = getMetasfreshIdForExternalIdentifier(
 				ImmutableList.of(bPartnerUpsertResponse.getResponseBPartnerItem()),
@@ -236,7 +231,7 @@ public class OLCandRequestProcessor implements Processor
 		// extract the AD_User_ID (contact-ID)
 		final JsonMetasfreshId contactId = getMetasfreshIdForExternalIdentifier(
 				bPartnerUpsertResponse.getResponseContactItems(),
-				billingBPLocationExternalIdentifier);
+				bPartnerExternalIdentifier);
 		// extract the C_BPartner_Location_ID
 		final JsonMetasfreshId billingBPartnerLocationId = getMetasfreshIdForExternalIdentifier(
 				bPartnerUpsertResponse.getResponseLocationItems(),

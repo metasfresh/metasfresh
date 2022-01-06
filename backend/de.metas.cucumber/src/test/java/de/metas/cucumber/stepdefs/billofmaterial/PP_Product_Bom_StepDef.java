@@ -23,6 +23,7 @@
 package de.metas.cucumber.stepdefs.billofmaterial;
 
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefData;
 import io.cucumber.datatable.DataTable;
@@ -47,13 +48,13 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 public class PP_Product_Bom_StepDef
 {
-	private final StepDefData<I_M_Product> productTable;
+	private final M_Product_StepDefData productTable;
 	private final StepDefData<I_PP_Product_BOM> productBOMTable;
 	private final StepDefData<I_PP_Product_BOMVersions> productBomVersionsTable;
 	private final StepDefData<I_PP_Product_BOMLine> productBOMLineTable;
 
 	public PP_Product_Bom_StepDef(
-			@NonNull final StepDefData<I_M_Product> productTable,
+			@NonNull final M_Product_StepDefData productTable,
 			@NonNull final StepDefData<I_PP_Product_BOM> productBOMTable,
 			@NonNull final StepDefData<I_PP_Product_BOMVersions> productBomVersionsTable,
 			@NonNull final StepDefData<I_PP_Product_BOMLine> productBOMLineTable)

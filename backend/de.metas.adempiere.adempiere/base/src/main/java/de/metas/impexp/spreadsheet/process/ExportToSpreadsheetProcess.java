@@ -22,16 +22,20 @@
 
 package de.metas.impexp.spreadsheet.process;
 
+import de.metas.common.util.CoalesceUtil;
 import de.metas.impexp.spreadsheet.csv.JdbcCSVExporter;
 import de.metas.impexp.spreadsheet.excel.JdbcExcelExporter;
 import de.metas.impexp.spreadsheet.service.SpreadsheetExporterService;
 import de.metas.process.JavaProcess;
+import de.metas.process.Param;
+import de.metas.process.ProcessInfoParameter;
 import de.metas.process.SpreadsheetExportOptions;
 import de.metas.process.SpreadsheetFormat;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_DatevAcctExport;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
@@ -43,6 +47,9 @@ public class ExportToSpreadsheetProcess extends JavaProcess
 {
 	final SpreadsheetExporterService spreadsheetExporterService = SpringContextHolder.instance.getBean(SpreadsheetExporterService.class);
 
+	@Param(parameterName = "SpreadsheetFormat")
+	private	String  p_SpreadsheetFormat;
+
 	@Override
 	protected String doIt()
 	{
@@ -52,7 +59,10 @@ public class ExportToSpreadsheetProcess extends JavaProcess
 		final File resultFile;
 
 		final SpreadsheetExportOptions spreadsheetExportOptions = getProcessInfo().getSpreadsheetExportOptions();
-		final SpreadsheetFormat spreadsheetFormat = spreadsheetExportOptions.getFormat();
+		final SpreadsheetFormat spreadsheetFormat = CoalesceUtil.coalesceNotNull(
+				SpreadsheetFormat.ofNullableCode(p_SpreadsheetFormat),
+				spreadsheetExportOptions.getFormat());
+
 		if (spreadsheetFormat == SpreadsheetFormat.Excel)
 		{
 			final JdbcExcelExporter jdbcExcelExporter = JdbcExcelExporter.builder()

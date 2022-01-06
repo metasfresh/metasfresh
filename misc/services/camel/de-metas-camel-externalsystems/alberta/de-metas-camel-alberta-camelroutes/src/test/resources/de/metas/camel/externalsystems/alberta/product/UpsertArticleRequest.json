@@ -16,6 +16,7 @@
     "inventoryType": 1,
     "status": 2,
     "medicalAidPositionNumber": "myMedicalAidPositionNumberUpdated",
+    "unavailableFrom": "2021-06-07",
     "stars": 4,
     "assortmentType": 2,
     "pharmacyPrice": "1600.00",

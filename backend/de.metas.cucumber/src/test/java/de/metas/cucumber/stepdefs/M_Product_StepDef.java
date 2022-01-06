@@ -26,7 +26,10 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductType;
+import de.metas.tax.api.ITaxBL;
+import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.UomId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -36,6 +39,8 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Product;
+import org.compiere.model.I_C_TaxCategory;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
 import java.util.List;
@@ -43,6 +48,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
+import static org.assertj.core.api.Assertions.*;
 import static org.compiere.model.I_C_Order.COLUMNNAME_C_BPartner_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_M_Product_ID;
 
@@ -50,13 +56,15 @@ public class M_Product_StepDef
 {
 	public static final ProductCategoryId PRODUCT_CATEGORY_ID = ProductCategoryId.ofRepoId(1000000);
 
-	private final StepDefData<I_M_Product> productTable;
-	private final StepDefData<I_C_BPartner> bpartnerTable;
+	private final M_Product_StepDefData productTable;
+	private final C_BPartner_StepDefData bpartnerTable;
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
+	private final ITaxBL taxBL = Services.get(ITaxBL.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	public M_Product_StepDef(
-			@NonNull final StepDefData<I_M_Product> productTable,
-			@NonNull final StepDefData<I_C_BPartner> bpartnerTable)
+			@NonNull final M_Product_StepDefData productTable,
+			@NonNull final C_BPartner_StepDefData bpartnerTable)
 	{
 		this.productTable = productTable;
 		this.bpartnerTable = bpartnerTable;
@@ -118,11 +126,25 @@ public class M_Product_StepDef
 		}
 	}
 
+	@And("taxCategory {string} is updated to work with all productTypes")
+	public void update_tax_category(@NonNull final String taxCategoryInternalName)
+	{
+		final Optional<TaxCategoryId> taxCategoryId = taxBL.getTaxCategoryIdByInternalName(taxCategoryInternalName);
+		assertThat(taxCategoryId).as("Missing taxCategory for internalName=%s", taxCategoryInternalName).isPresent();
+
+		final I_C_TaxCategory taxCategory = InterfaceWrapperHelper.loadOutOfTrx(taxCategoryId.get(), I_C_TaxCategory.class);
+		taxCategory.setProductType(null);
+
+		InterfaceWrapperHelper.saveRecord(taxCategory);
+	}
+
 	private void createM_Product(@NonNull final Map<String, String> tableRow)
 	{
 		final String productName = tableRow.get("Name");
 		final String productValue = CoalesceUtil.coalesceNotNull(tableRow.get("Value"), productName);
 		final Boolean isStocked = DataTableUtil.extractBooleanForColumnNameOr(tableRow, I_M_Product.COLUMNNAME_IsStocked, true);
+
+		final String productType = DataTableUtil.extractStringOrNullForColumnName(tableRow, I_M_Product.COLUMNNAME_ProductType);
 
 		final I_M_Product productRecord = CoalesceUtil.coalesceSuppliers(
 				() -> productDAO.retrieveProductByValue(productValue),
@@ -130,8 +152,24 @@ public class M_Product_StepDef
 		productRecord.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
 		productRecord.setValue(productValue);
 		productRecord.setName(productName);
-		productRecord.setC_UOM_ID(UomId.toRepoId(UomId.EACH));
-		productRecord.setProductType(ProductType.Item.getCode());
+
+		final String uomX12DE355 = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_UOM.COLUMNNAME_X12DE355);
+		if (Check.isNotBlank(uomX12DE355))
+		{
+			final UomId uomId = queryBL.createQueryBuilder(I_C_UOM.class)
+					.addEqualsFilter(I_C_UOM.COLUMNNAME_X12DE355, uomX12DE355)
+					.addOnlyActiveRecordsFilter()
+					.create()
+					.firstIdOnly(UomId::ofRepoIdOrNull);
+			assertThat(uomId).as("Found no C_UOM with X12DE355=%s", uomX12DE355).isNotNull();
+			productRecord.setC_UOM_ID(UomId.toRepoId(uomId));
+		}
+		else
+		{
+			productRecord.setC_UOM_ID(UomId.toRepoId(UomId.EACH));
+		}
+
+		productRecord.setProductType(CoalesceUtil.coalesceNotNull(productType, ProductType.Item.getCode()));
 		productRecord.setM_Product_Category_ID(PRODUCT_CATEGORY_ID.getRepoId());
 		productRecord.setIsStocked(isStocked);
 

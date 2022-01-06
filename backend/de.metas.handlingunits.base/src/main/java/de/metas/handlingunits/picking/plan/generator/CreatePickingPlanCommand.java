@@ -286,6 +286,7 @@ public class CreatePickingPlanCommand
 						.asiId(packageable.getAsiId())
 						.bestBeforePolicy(getBestBeforePolicy(packageable))
 						.reservationRef(packageable.getReservationRef())
+						.enforceMandatoryAttributesOnPicking(true)
 						.build());
 
 		return husEligibleToPick.stream()

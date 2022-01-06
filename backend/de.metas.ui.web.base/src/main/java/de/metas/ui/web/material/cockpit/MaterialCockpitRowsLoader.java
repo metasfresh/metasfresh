@@ -85,7 +85,7 @@ public class MaterialCockpitRowsLoader
 	public List<MaterialCockpitRow> getMaterialCockpitRows(
 			@NonNull final DocumentFilterList filters,
 			@NonNull final LocalDate date,
-			@NonNull final boolean includePerPlantDetailRows)
+			final boolean includePerPlantDetailRows)
 	{
 		final List<I_MD_Cockpit> cockpitRecords = materialCockpitFilters
 				.createQuery(filters)

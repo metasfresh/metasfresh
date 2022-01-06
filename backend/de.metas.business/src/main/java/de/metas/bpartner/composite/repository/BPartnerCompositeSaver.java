@@ -326,6 +326,12 @@ final class BPartnerCompositeSaver
 			bpartnerLocationRecord.setFax(partnerLocation.getFax());
 			bpartnerLocationRecord.setEMail(partnerLocation.getEmail());
 
+			bpartnerLocationRecord.setSetup_Place_No(partnerLocation.getSetupPlaceNo());
+			bpartnerLocationRecord.setIsHandOverLocation(partnerLocation.isHandOverLocation());
+			bpartnerLocationRecord.setIsRemitTo(partnerLocation.isRemitTo());
+			bpartnerLocationRecord.setVisitorsAddress(partnerLocation.isVisitorsAddress());
+			bpartnerLocationRecord.setIsReplicationLookupDefault(partnerLocation.isReplicationLookupDefault());
+
 			final BPartnerLocationType locationType = partnerLocation.getLocationType();
 			if (locationType != null)
 			{
@@ -587,6 +593,8 @@ final class BPartnerCompositeSaver
 
 			bpartnerContactRecord.setBirthday(TimeUtil.asTimestamp(bpartnerContact.getBirthday()));
 			bpartnerContactRecord.setC_BPartner_Location_ID(bpartnerContact.getBPartnerLocationId() != null ? bpartnerContact.getBPartnerLocationId().getRepoId() : -1);
+			bpartnerContactRecord.setEMail2(bpartnerContact.getEmail2());
+			bpartnerContactRecord.setEMail3(bpartnerContact.getEmail3());
 
 			if (validatePermissions)
 			{

@@ -44,7 +44,9 @@ class JsonExternalSystemRequestTest
 		final String sw6ConfigMappings = getExternalSystemShopware6ConfigMappings();
 		final String sw6UOMMappings = getExternalSystemShopware6UOMMappings();
 
-		final JsonExternalSystemRequest requestDeserialized = JsonExternalSystemRequest.builder().externalSystemName(JsonExternalSystemName.of("externalSystem"))
+		final JsonExternalSystemRequest requestDeserialized = JsonExternalSystemRequest.builder()
+				.externalSystemChildConfigValue("childValue")
+				.externalSystemName(JsonExternalSystemName.of("externalSystem"))
 				.externalSystemConfigId(JsonMetasfreshId.of(1))
 				.orgCode("orgCode")
 				.command("command")
@@ -75,6 +77,9 @@ class JsonExternalSystemRequestTest
 		assertThat(externalSystemShopware6ConfigMapping.getPaymentTermValue()).isEqualTo("testPaymentTerm");
 		assertThat(externalSystemShopware6ConfigMapping.getDocTypeOrder()).isEqualTo("testDocTypeOrder");
 		assertThat(externalSystemShopware6ConfigMapping.getSeqNo()).isEqualTo(10);
+		assertThat(externalSystemShopware6ConfigMapping.getBpartnerIdJSONPath()).isEqualTo("/some/path");
+		assertThat(externalSystemShopware6ConfigMapping.getBpartnerLookup()).isEqualTo(JsonBPartnerLookup.MetasfreshId);
+		assertThat(externalSystemShopware6ConfigMapping.getSeqNo()).isEqualTo(10);
 
 		final JsonUOMMappings uomMappings = mapper.readValue(requestDeserialized.getParameters().get("UOMMappings"), JsonUOMMappings.class);
 
@@ -98,6 +103,8 @@ class JsonExternalSystemRequestTest
 						.description("testDescription")
 						.bPartnerLocationSyncAdvice(SyncAdvise.CREATE_OR_MERGE)
 						.bPartnerSyncAdvice(SyncAdvise.READ_ONLY)
+						.bpartnerLookup(JsonBPartnerLookup.MetasfreshId)
+						.bpartnerIdJSONPath("/some/path")
 						.seqNo(10)
 						.build();
 

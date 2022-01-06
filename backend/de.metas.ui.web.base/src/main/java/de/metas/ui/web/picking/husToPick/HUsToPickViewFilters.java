@@ -7,7 +7,7 @@ import de.metas.handlingunits.picking.IHUPickingSlotBL;
 import de.metas.handlingunits.picking.requests.RetrieveAvailableHUIdsToPickRequest;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
-import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.process.BarcodeScannerType;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;

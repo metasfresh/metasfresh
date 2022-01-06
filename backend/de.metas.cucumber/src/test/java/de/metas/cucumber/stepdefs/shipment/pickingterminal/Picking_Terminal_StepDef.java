@@ -23,6 +23,7 @@
 package de.metas.cucumber.stepdefs.shipment.pickingterminal;
 
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.M_ShipmentSchedule_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.handlingunits.model.I_M_HU;
@@ -48,12 +49,12 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 public class Picking_Terminal_StepDef
 {
-	private final StepDefData<I_M_ShipmentSchedule> shipmentScheduleTable;
+	private final M_ShipmentSchedule_StepDefData shipmentScheduleTable;
 	private final StepDefData<I_M_HU> huTable;
 	private final PickingCandidateRepository pickingCandidateRepository;
 
 	public Picking_Terminal_StepDef(
-			@NonNull final StepDefData<I_M_ShipmentSchedule> shipmentScheduleTable,
+			@NonNull final M_ShipmentSchedule_StepDefData shipmentScheduleTable,
 			@NonNull final StepDefData<I_M_HU> huTable,
 			@NonNull final PickingCandidateRepository pickingCandidateRepository)
 	{

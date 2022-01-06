@@ -65,6 +65,9 @@ public class JsonResponseContact
 	public static final String PURCHASE = "purchase";
 	public static final String SUBJECT_MATTER = "subjectMatter";
 	public static final String ROLES = "roles";
+	public static final String METASFRESH_LOCATION_ID = "metasfreshLocationId";
+	public static final String EMAIL2 = "email2";
+	public static final String EMAIL3 = "email3";
 
 	@ApiModelProperty(allowEmptyValue = false, dataType = "java.lang.Long")
 	JsonMetasfreshId metasfreshId;
@@ -147,6 +150,15 @@ public class JsonResponseContact
 	@ApiModelProperty(position = 20) // shall be last
 	JsonChangeInfo changeInfo;
 
+	@ApiModelProperty(dataType = "java.lang.Integer")
+	JsonMetasfreshId metasfreshLocationId;
+
+	@JsonInclude(Include.NON_EMPTY)
+	String email2;
+
+	@JsonInclude(Include.NON_EMPTY)
+	String email3;
+
 	@Builder(toBuilder = true)
 	@JsonCreator
 	private JsonResponseContact(
@@ -161,6 +173,8 @@ public class JsonResponseContact
 			@JsonProperty(BIRTHDAY) @Nullable final LocalDate birthday,
 			@JsonProperty(EMAIL) final String email,
 			@JsonProperty(PHONE) final String phone,
+			@JsonProperty(EMAIL2) final String email2,
+			@JsonProperty(EMAIL3) final String email3,
 
 			@JsonProperty(MOBILE_PHONE) final String mobilePhone,
 			@JsonProperty(FAX) final String fax,
@@ -178,6 +192,7 @@ public class JsonResponseContact
 			@JsonProperty(SUBJECT_MATTER) final boolean subjectMatter,
 			@JsonProperty(INVOICE_EMAIL_ENABLED) final Boolean invoiceEmailEnabled,
 			@JsonProperty(ROLES) final List<JsonResponseContactRole> roles,
+			@JsonProperty(METASFRESH_LOCATION_ID) @Nullable final JsonMetasfreshId metasfreshLocationId,
 
 			@JsonProperty("changeInfo") @Nullable JsonChangeInfo changeInfo)
 	{
@@ -209,7 +224,10 @@ public class JsonResponseContact
 		this.phone = phone;
 		this.invoiceEmailEnabled = invoiceEmailEnabled;
 		this.roles = roles;
+		this.email2 = email2;
+		this.email3 = email3;
 
 		this.changeInfo = changeInfo;
+		this.metasfreshLocationId = metasfreshLocationId;
 	}
 }

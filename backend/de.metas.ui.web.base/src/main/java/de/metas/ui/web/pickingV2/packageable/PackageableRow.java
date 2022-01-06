@@ -25,9 +25,10 @@ package de.metas.ui.web.pickingV2.packageable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.i18n.ITranslatableString;
-import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_Packageable_V;
 import de.metas.order.OrderId;
+import de.metas.organization.IOrgDAO;
 import de.metas.organization.InstantAndOrgId;
 import de.metas.picking.api.Packageable;
 import de.metas.ui.web.view.IViewRow;
@@ -41,13 +42,13 @@ import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.user.UserId;
 import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.ToString;
 import org.adempiere.warehouse.WarehouseTypeId;
-import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
@@ -147,10 +148,11 @@ public final class PackageableRow implements IViewRow
 	@Nullable
 	private static LocalDate calculateEarliestDeliveryDate(final Collection<Packageable> packageables)
 	{
+		final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 		return packageables.stream()
 				.map(Packageable::getDeliveryDate)
 				.filter(Objects::nonNull)
-				.map(TimeUtil::asLocalDate)
+				.map(date -> date.toZonedDateTime(orgDAO::getTimeZone).toLocalDate())
 				.filter(Objects::nonNull)
 				.min(LocalDate::compareTo)
 				.orElse(null);

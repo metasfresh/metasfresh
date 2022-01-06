@@ -40,6 +40,7 @@ public class ExternalSystemConstants
 	public static final String PARAM_JSON_PATH_CONSTANT_BPARTNER_ID = "JSONPathConstantBPartnerID";
 	public static final String PARAM_JSON_PATH_CONSTANT_BPARTNER_LOCATION_ID = "JSONPathConstantBPartnerLocationID";
 	public static final String PARAM_JSON_PATH_SALES_REP_ID = "JSONPathConstantSalesRepID";
+	public static final String PARAM_JSON_PATH_EMAIL = "JSONPathEmail";
 	public static final String PARAM_PRODUCT_LOOKUP = "ProductLookup";
 	public static final String PARAM_CONFIG_MAPPINGS = "ConfigMappings";
 	public static final String PARAM_UOM_MAPPINGS = "UOMMappings";

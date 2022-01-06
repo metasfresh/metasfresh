@@ -63,8 +63,7 @@ public class PaymentRequestProcessor implements Processor
 	}
 
 	@NonNull
-	private Optional<JsonOrderPaymentCreateRequest> buildOrderPaymentCreateRequest(
-			@NonNull final ImportOrdersRouteContext context)
+	private Optional<JsonOrderPaymentCreateRequest> buildOrderPaymentCreateRequest(@NonNull final ImportOrdersRouteContext context)
 	{
 		final JsonPaymentMethod paymentMethod = context.getCompositeOrderNotNull().getJsonPaymentMethod();
 		final JsonOrderTransaction orderTransaction = context.getCompositeOrderNotNull().getOrderTransaction();
@@ -84,12 +83,13 @@ public class PaymentRequestProcessor implements Processor
 		final JsonOrder order = context.getOrderNotNull().getJsonOrder();
 
 		final String currencyCode = context.getCurrencyInfoProvider().getIsoCodeByCurrencyIdNotNull(order.getCurrencyId());
-		final String bPartnerIdentifier = context.getOrderNotNull().getEffectiveCustomerId();
+
+		final String bPartnerIdentifier = context.getEffectiveCustomerId().getIdentifier();
 
 		return Optional.of(JsonOrderPaymentCreateRequest.builder()
 								   .orgCode(context.getOrgCode())
 								   .externalPaymentId(orderTransaction.getId())
-								   .bpartnerIdentifier(ExternalIdentifierFormat.formatExternalId(bPartnerIdentifier))
+								   .bpartnerIdentifier(bPartnerIdentifier)
 
 								   .amount(orderTransaction.getAmount().getTotalPrice())
 								   .currencyCode(currencyCode)

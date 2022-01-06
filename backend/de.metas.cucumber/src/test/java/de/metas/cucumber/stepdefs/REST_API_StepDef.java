@@ -26,6 +26,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.metas.common.rest_api.common.JsonTestResponse;
 import de.metas.cucumber.stepdefs.context.TestContext;
+import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
@@ -36,6 +37,8 @@ import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.*;
 
@@ -132,16 +135,18 @@ public class REST_API_StepDef
 		testContext.setApiResponse(apiResponse);
 	}
 
-	@When("the metasfresh REST-API endpoint path {string} receives a {string} request with the headers from context")
+	@When("the metasfresh REST-API endpoint path {string} receives a {string} request with the headers from context, expecting status={string}")
 	public void metasfresh_rest_api_endpoint_api_external_ref_receives_request_with_additional_headers(
 			@NonNull final String endpointPath,
-			@NonNull final String verb) throws IOException
+			@NonNull final String verb,
+			@NonNull final String status) throws IOException
 	{
 		final APIRequest request = APIRequest.builder()
 				.endpointPath(endpointPath)
 				.verb(verb)
 				.authToken(userAuthToken)
 				.additionalHeaders(testContext.getHttpHeaders())
+				.statusCode(Integer.parseInt(status))
 				.build();
 
 		apiResponse = RESTUtil.performHTTPRequest(request);
@@ -182,5 +187,37 @@ public class REST_API_StepDef
 		final JsonTestResponse mappedResponseBody = mapper.readValue(responseBody, JsonTestResponse.class);
 
 		assertThat(apiResponse.getMessageBody()).isEqualTo(mappedResponseBody.getMessageBody());
+	}
+
+	@And("the actual response body is empty")
+	public void validate_empty_response_body()
+	{
+		final String responseJson = testContext.getApiResponse().getContent();
+
+		assertThat(responseJson).isBlank();
+	}
+
+
+	@And("the actual non JSON response body is")
+	public void validate_non_JSON_response_body(@NonNull final String responseBody)
+	{
+		final String content = testContext.getApiResponse().getContent();
+
+		assertThat(content).isEqualTo(responseBody);
+	}
+
+	@When("add HTTP header")
+	public void add_http_header(@NonNull final DataTable dataTable)
+	{
+		final Map<String, String> tableRow = dataTable.asMaps().get(0);
+
+		final String key = DataTableUtil.extractStringForColumnName(tableRow, "Key");
+		final String value = DataTableUtil.extractStringForColumnName(tableRow, "Value");
+
+		final Map<String, String> additionalHeaders = new HashMap<>();
+
+		additionalHeaders.put(key, value);
+
+		testContext.setHttpHeaders(additionalHeaders);
 	}
 }

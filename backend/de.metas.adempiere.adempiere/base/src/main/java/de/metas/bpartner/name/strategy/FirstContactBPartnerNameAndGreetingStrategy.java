@@ -54,7 +54,6 @@ public final class FirstContactBPartnerNameAndGreetingStrategy implements BPartn
 		{
 			return ExplainedOptional.of(NameAndGreeting.builder()
 					.name(userBL.buildContactName(primaryContact.getFirstName(), primaryContact.getLastName()))
-					.greetingId(primaryContact.getGreetingId())
 					.build());
 		}
 	}

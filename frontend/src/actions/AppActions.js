@@ -80,6 +80,13 @@ export function enableTutorial(flag = true) {
   };
 }
 
+export function connectionError({ errorType }) {
+  return {
+    type: types.CONNECTION_ERROR,
+    errorType,
+  };
+}
+
 export function addNotification(
   title,
   msg,
@@ -203,6 +210,17 @@ export function userSessionUpdate(me) {
   return {
     type: types.USER_SESSION_UPDATE,
     me,
+  };
+}
+
+/**
+ * @summary updates the lastBackPage in the store to have it for comparison when back button is used
+ * @param {string} lastBackPage
+ */
+export function updateLastBackPage(lastBackPage) {
+  return {
+    type: types.UPDATE_LAST_BACK_PAGE,
+    lastBackPage,
   };
 }
 

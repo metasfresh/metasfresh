@@ -72,8 +72,9 @@ public abstract class ExportToExternalSystemService
 	protected final Debouncer<BPartnerId> syncBPartnerDebouncer;
 	protected final ExternalSystemConfigService externalSystemConfigService;
 
+	protected final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
+
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	protected ExportToExternalSystemService(
@@ -154,6 +155,7 @@ public abstract class ExportToExternalSystemService
 								   .command(getExternalCommand())
 								   .parameters(buildParameters(config.getChildConfig(), bpartnerId))
 								   .traceId(externalSystemConfigService.getTraceId())
+								   .externalSystemChildConfigValue(config.getChildConfig().getValue())
 								   .writeAuditEndpoint(config.getAuditEndpointIfEnabled())
 								   .build());
 	}
@@ -177,24 +179,13 @@ public abstract class ExportToExternalSystemService
 
 	private void syncBPartnerIfRequired(@NonNull final BPartnerId bPartnerId)
 	{
-		final TableRecordReference bPartnerRecordReference = TableRecordReference.of(I_C_BPartner.Table_Name, bPartnerId);
+		final ImmutableSet.Builder<IExternalSystemChildConfigId> externalSysChildConfigCollector = ImmutableSet.builder();
 
-		final Optional<DataExportAudit> dataExportAudit = dataExportAuditRepository.getByTableRecordReference(bPartnerRecordReference);
-		if (!dataExportAudit.isPresent())
-		{
-			Loggables.withLogger(logger, Level.DEBUG).addLog("No dataExportAudit found for bPartnerRecordReference: {}! No action is performed!", bPartnerRecordReference);
-			return;
-		}
+		externalSysChildConfigCollector.addAll(getExternalSysConfigIdsFromExportAudit(bPartnerId));
+		externalSysChildConfigCollector.addAll(getAdditionalExternalSystemConfigIds(bPartnerId));
 
-		final ImmutableSet<IExternalSystemChildConfigId> externalSystemConfigIds = getExternalSystemConfigsToSyncWith(dataExportAudit.get().getId());
-
-		if (externalSystemConfigIds.isEmpty())
-		{
-			Loggables.withLogger(logger, Level.DEBUG).addLog("No externalSystemConfigIds found for DataExportAuditId: {}! No action is performed!", dataExportAudit.get().getId());
-			return;
-		}
-
-		externalSystemConfigIds.forEach(id -> exportBPartner(id, bPartnerId, null));
+		externalSysChildConfigCollector.build()
+				.forEach(id -> exportBPartner(id, bPartnerId, null));
 	}
 
 	@NonNull
@@ -209,6 +200,30 @@ public abstract class ExportToExternalSystemService
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
+	@NonNull
+	private ImmutableSet<IExternalSystemChildConfigId> getExternalSysConfigIdsFromExportAudit(@NonNull final BPartnerId bPartnerId)
+	{
+		final TableRecordReference bPartnerRecordReference = TableRecordReference.of(I_C_BPartner.Table_Name, bPartnerId);
+
+		final Optional<DataExportAudit> dataExportAudit = dataExportAuditRepository.getByTableRecordReference(bPartnerRecordReference);
+		if (!dataExportAudit.isPresent())
+		{
+			Loggables.withLogger(logger, Level.DEBUG).addLog("No dataExportAudit found for bPartnerRecordReference: {}! No action is performed!", bPartnerRecordReference);
+			return ImmutableSet.of();
+		}
+
+		final DataExportAuditId dataExportAuditId = dataExportAudit.get().getId();
+
+		final ImmutableSet<IExternalSystemChildConfigId> externalSystemConfigIds = getExternalSystemConfigsToSyncWith(dataExportAuditId);
+
+		if (externalSystemConfigIds.isEmpty())
+		{
+			Loggables.withLogger(logger, Level.DEBUG).addLog("No externalSystemConfigIds found for DataExportAuditId: {}! No action is performed!", dataExportAuditId);
+		}
+
+		return externalSystemConfigIds;
+	}
+
 	protected abstract Map<String, String> buildParameters(@NonNull final IExternalSystemChildConfig childConfig, @NonNull final BPartnerId bPartnerId);
 
 	protected abstract boolean isSyncBPartnerEnabled(@NonNull final IExternalSystemChildConfig childConfig);
@@ -216,4 +231,6 @@ public abstract class ExportToExternalSystemService
 	protected abstract ExternalSystemType getExternalSystemType();
 
 	protected abstract String getExternalCommand();
+
+	protected abstract ImmutableSet<IExternalSystemChildConfigId> getAdditionalExternalSystemConfigIds(@NonNull final BPartnerId bPartnerId);
 }

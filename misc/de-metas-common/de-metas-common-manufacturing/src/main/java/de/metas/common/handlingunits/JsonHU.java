@@ -42,6 +42,12 @@ public class JsonHU
 {
 	@NonNull String id;
 	@NonNull String huStatus;
+	@NonNull String huStatusCaption;
+
+	@NonNull String displayName;
+
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	@Nullable String barcode;
 
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	@Nullable String warehouseValue;

@@ -42,11 +42,10 @@ import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
-import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
 import de.metas.inout.event.InOutUserNotificationsProducer;
 import de.metas.inout.model.I_M_InOut;
-import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
@@ -162,8 +161,8 @@ public class InOutProducerFromShipmentScheduleWithHU
 	{
 		this.result = result;
 
-		shipmentScheduleKeyBuilder = shipmentScheduleBL.mkShipmentHeaderAggregationKeyBuilder();
-		huShipmentScheduleKeyBuilder = huShipmentScheduleBL.mkHUShipmentScheduleHeaderAggregationKeyBuilder();
+		this.shipmentScheduleKeyBuilder = shipmentScheduleBL.mkShipmentHeaderAggregationKeyBuilder();
+		this.huShipmentScheduleKeyBuilder = huShipmentScheduleBL.mkHUShipmentScheduleHeaderAggregationKeyBuilder();
 	}
 
 	@Override
