@@ -699,6 +699,8 @@ public class ExternalSystemConfigRepo
 				.tenantId(config.getTenantId())
 				.authToken(config.getAuthToken())
 				.syncBPartnersToRestEndpoint(config.isSyncBPartnersToRestEndpoint())
+				.autoSendVendors(config.isAutoSendVendors())
+				.autoSendCustomers(config.isAutoSendCustomers())
 				.build();
 	}
 

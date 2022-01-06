@@ -593,6 +593,8 @@ final class BPartnerCompositeSaver
 
 			bpartnerContactRecord.setBirthday(TimeUtil.asTimestamp(bpartnerContact.getBirthday()));
 			bpartnerContactRecord.setC_BPartner_Location_ID(bpartnerContact.getBPartnerLocationId() != null ? bpartnerContact.getBPartnerLocationId().getRepoId() : -1);
+			bpartnerContactRecord.setEMail2(bpartnerContact.getEmail2());
+			bpartnerContactRecord.setEMail3(bpartnerContact.getEmail3());
 
 			if (validatePermissions)
 			{

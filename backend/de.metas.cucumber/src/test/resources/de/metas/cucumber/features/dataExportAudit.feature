@@ -31,7 +31,7 @@ Feature: data export audit using bpartner metasfresh api
     And add external system config and pinstance headers
       | ExternalSystem_Config_ID.Identifier | AD_PInstance_ID.Identifier |
       | config_1                            | p_1                        |
-    When the metasfresh REST-API endpoint path 'api/v2/bpartner/2156425' receives a 'GET' request with the headers from context
+    When the metasfresh REST-API endpoint path 'api/v2/bpartner/2156425' receives a 'GET' request with the headers from context, expecting status='200'
     Then process bpartner endpoint response
       | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | C_Location_ID.Identifier |
       | bpartner_1               | bpartner_location_1               | location_1               |
@@ -54,7 +54,7 @@ Feature: data export audit using bpartner metasfresh api
     And add external system config and pinstance headers
       | ExternalSystem_Config_ID.Identifier | AD_PInstance_ID.Identifier |
       | config_1                            | p_1                        |
-    When the metasfresh REST-API endpoint path 'api/v2/bpartner/2156425' receives a 'GET' request with the headers from context
+    When the metasfresh REST-API endpoint path 'api/v2/bpartner/2156425' receives a 'GET' request with the headers from context, expecting status='200'
     And process bpartner endpoint response
       | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | C_Location_ID.Identifier |
       | bpartner_1               | bpartner_location_1               | location_1               |
@@ -83,7 +83,7 @@ Feature: data export audit using bpartner metasfresh api
     And add external system config and pinstance headers
       | ExternalSystem_Config_ID.Identifier | AD_PInstance_ID.Identifier |
       | config_2                            | p_2                        |
-    When the metasfresh REST-API endpoint path 'api/v2/bpartner/2156423' receives a 'GET' request with the headers from context
+    When the metasfresh REST-API endpoint path 'api/v2/bpartner/2156423' receives a 'GET' request with the headers from context, expecting status='200'
     And process bpartner endpoint response
       | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | C_Location_ID.Identifier |
       | bpartner_2               | bpartner_location_2               | location_2               |

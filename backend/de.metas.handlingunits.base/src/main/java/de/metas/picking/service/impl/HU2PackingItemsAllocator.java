@@ -16,6 +16,7 @@ import de.metas.handlingunits.allocation.impl.GenericAllocationSourceDestination
 import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
 import de.metas.handlingunits.allocation.impl.HULoader;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
+import de.metas.handlingunits.allocation.transfer.ReservedHUsPolicy;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
@@ -579,7 +580,7 @@ public class HU2PackingItemsAllocator
 																							 .sourceHU(pickFromVHU)
 																							 .productId(productId)
 																							 .qtyCU(qtyCU)
-																							 .onlyFromUnreservedHUs(true)
+																							 .reservedVHUsPolicy(ReservedHUsPolicy.CONSIDER_ONLY_NOT_RESERVED)
 																							 .build()));
 
 		final StockQtyAndUOMQty stockQtyAndUomQty = CatchWeightHelper.extractQtys(_huContext, getProductId(), qtyCU, huReceived);

@@ -36,7 +36,7 @@ import org.junit.jupiter.api.Test;
 import static io.github.jsonSnapshot.SnapshotMatcher.expect;
 import static io.github.jsonSnapshot.SnapshotMatcher.start;
 import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 public class ApiAuditConfigRepositoryTest
 {
@@ -87,7 +87,7 @@ public class ApiAuditConfigRepositoryTest
 		config.setAD_Org_ID(orgId.getRepoId());
 		config.setAD_UserGroup_InCharge_ID(1);
 		config.setIsActive(isActive);
-		config.setIsInvokerWaitsForResult(true);
+		config.setIsForceProcessedAsync(true);
 		config.setKeepRequestBodyDays(100);
 		config.setKeepRequestDays(101);
 		config.setKeepResponseBodyDays(102);
@@ -96,6 +96,8 @@ public class ApiAuditConfigRepositoryTest
 		config.setNotifyUserInCharge(NotificationTriggerType.ALWAYS.getCode());
 		config.setPathPrefix("pathPrefix");
 		config.setSeqNo(10);
+		config.setIsSynchronousAuditLoggingEnabled(true);
+		config.setIsWrapApiResponse(true);
 
 		InterfaceWrapperHelper.saveRecord(config);
 

@@ -216,7 +216,7 @@ Cypress.Commands.add('selectItemUsingBarcodeFilter', (columnAndValue, modal = fa
   cy.intercept('GET', new RegExp(RewriteURL.Filter)).as(filterAlias);
 
   const quickActionsAlias = 'quickActions_' + humanReadableNow();
-  cy.intercept('GET', new RegExp(RewriteURL.QuickActions)).as(quickActionsAlias);
+  cy.intercept('POST', new RegExp(RewriteURL.QuickActions)).as(quickActionsAlias);
 
   cy.get('label:contains("Barcode")') // todo @petrica: this label should use a data-cy attribute
     .siblings()

@@ -60,6 +60,7 @@ import org.compiere.model.I_C_Order;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -81,7 +82,7 @@ public class C_Invoice_StepDef
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final C_Invoice_StepDefData invoiceTable;
-	private final StepDefData<I_C_Invoice_Candidate> invoiceCandTable;	
+	private final StepDefData<I_C_Invoice_Candidate> invoiceCandTable;
 	private final C_Order_StepDefData orderTable;
 	private final C_BPartner_StepDefData bpartnerTable;
 	private final StepDefData<I_C_BPartner_Location> bPartnerLocationTable;
@@ -94,7 +95,7 @@ public class C_Invoice_StepDef
 			@NonNull final StepDefData<I_C_BPartner_Location> bPartnerLocationTable)
 	{
 		this.invoiceTable = invoiceTable;
-		this.invoiceCandTable = invoiceCandTable;		
+		this.invoiceCandTable = invoiceCandTable;
 		this.orderTable = orderTable;
 		this.bpartnerTable = bPartnerTable;
 		this.bPartnerLocationTable = bPartnerLocationTable;
@@ -137,8 +138,6 @@ public class C_Invoice_StepDef
 		final InvoiceCandidateId invoiceCandidateId = invoiceableInvoiceCandId.getFirstInvoiceableInvoiceCandId();
 
 		//enqueue invoice candidate
-		final I_C_Invoice_Candidate invoiceCandidateRecord = invoiceCandDAO.getById(invoiceCandidateId);
-
 		final PInstanceId invoiceCandidatesSelectionId = DB.createT_Selection(ImmutableList.of(invoiceCandidateId.getRepoId()), ITrx.TRXNAME_None);
 
 		final PlainInvoicingParams invoicingParams = new PlainInvoicingParams();
@@ -168,7 +167,7 @@ public class C_Invoice_StepDef
 		};
 		StepDefUtil.tryAndWait(timeoutSec, 500, invoiceCreated);
 	}
-	
+
 	@And("^after not more than (.*)s, C_Invoice are found:$")
 	public void wait_until_there_are_invoices(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
 	{
@@ -241,17 +240,27 @@ public class C_Invoice_StepDef
 				.map(InvoiceId::ofRepoId)
 				.collect(ImmutableSet.toImmutableSet());
 
-		if (invoiceIds.isEmpty())
+		final String invoiceIdCandidate = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Invoice_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+
+		final ImmutableList<String> invoiceIdentifiers = StepDefUtil.extractIdentifiers(invoiceIdCandidate);
+
+		if (invoiceIds.size() != invoiceIdentifiers.size())
 		{
 			return false;
 		}
 
-		final List<I_C_Invoice> invoices = invoiceDAO.getByIdsOutOfTrx(invoiceIds);
-		assertThat(invoices).isNotEmpty();
-		assertThat(invoices.size()).isEqualTo(1);
+		final List<I_C_Invoice> invoices = invoiceDAO.getByIdsOutOfTrx(invoiceIds)
+				.stream()
+				.sorted(Comparator.comparingInt(I_C_Invoice::getC_Invoice_ID))
+				.collect(ImmutableList.toImmutableList());
 
-		final String invoiceIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Invoice_ID + "." + TABLECOLUMN_IDENTIFIER);
-		invoiceTable.put(invoiceIdentifier, invoices.get(0));
+		assertThat(invoices).isNotEmpty();
+		assertThat(invoices.size()).isEqualTo(invoiceIdentifiers.size());
+
+		for (int invoiceIndex = 0; invoiceIndex < invoices.size(); invoiceIndex++)
+		{
+			invoiceTable.putOrReplace(invoiceIdentifiers.get(invoiceIndex), invoices.get(invoiceIndex));
+		}
 
 		return true;
 	}

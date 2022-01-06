@@ -1,6 +1,7 @@
 package de.metas.distribution.workflows_api;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.bpartner.BPartnerId;
 import de.metas.distribution.ddorder.DDOrderId;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleId;
 import de.metas.user.UserId;
@@ -22,6 +23,7 @@ public class DistributionJob
 {
 	@NonNull private final DDOrderId ddOrderId;
 	@NonNull private final String documentNo;
+	@NonNull private final BPartnerId customerId;
 	@NonNull private final ZonedDateTime dateRequired;
 	@NonNull private final WarehouseInfo pickFromWarehouse;
 	@NonNull private final WarehouseInfo dropToWarehouse;
@@ -35,6 +37,7 @@ public class DistributionJob
 	private DistributionJob(
 			final @NonNull DDOrderId ddOrderId,
 			final @NonNull String documentNo,
+			final @NonNull BPartnerId customerId,
 			final @NonNull ZonedDateTime dateRequired,
 			final @NonNull WarehouseInfo pickFromWarehouse,
 			final @NonNull WarehouseInfo dropToWarehouse,
@@ -44,6 +47,7 @@ public class DistributionJob
 	{
 		this.ddOrderId = ddOrderId;
 		this.documentNo = documentNo;
+		this.customerId = customerId;
 		this.dateRequired = dateRequired;
 		this.pickFromWarehouse = pickFromWarehouse;
 		this.dropToWarehouse = dropToWarehouse;

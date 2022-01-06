@@ -47,6 +47,7 @@ import de.metas.handlingunits.allocation.impl.HULoader;
 import de.metas.handlingunits.allocation.impl.LULoader;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.allocation.transfer.HUTransformService.HUsToNewCUsRequest;
+import de.metas.handlingunits.allocation.transfer.ReservedHUsPolicy;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
@@ -438,7 +439,14 @@ public class ShipmentScheduleWithHUService
 		final HUsToNewCUsRequest cuRequest = HUsToNewCUsRequest
 				.builder()
 				.keepNewCUsUnderSameParent(false)
-				.onlyFromUnreservedHUs(false) // note: the HUs returned by the query do not contain HUs which are reserved to someone else
+
+				// new, from PR https://github.com/metasfresh/metasfresh/pull/12146
+				// FIXME: we shall consider not reserved or reserved ones too if they are reserved for us
+				.reservedVHUsPolicy(ReservedHUsPolicy.CONSIDER_ALL)
+
+				// OLD
+				// .onlyFromUnreservedHUs(false) // note: the HUs returned by the query do not contain HUs which are reserved to someone else
+
 				.productId(ProductId.ofRepoId(scheduleRecord.getM_Product_ID()))
 				.qtyCU(quantityToSplit)
 				.sourceHU(sourceHURecord)

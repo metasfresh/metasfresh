@@ -72,11 +72,11 @@ BEGIN
             CLOCK_TIMESTAMP(), p_scramble_db, p_source_instance, p_target_instance;
     END IF;
 
-    RAISE NOTICE '% !! Enqueued % C_BPartners to be send to elastic search for FTS !!', 
+    RAISE NOTICE '% !! Enqueued % C_BPartners to be send to elastic search for FTS !!',
         CLOCK_TIMESTAMP(),
         (SELECT ops.es_fts_reindex_bpartners());
 
-    EXECUTE ops.after_transfer_db_custom_end(p_sourceinstance := p_source_instance, p_targetinstance := p_target_instance);
+    EXECUTE ops.after_transfer_db_custom_end(p_source_instance := p_source_instance, p_target_instance := p_target_instance);
 END ;
 $BODY$
     LANGUAGE plpgsql

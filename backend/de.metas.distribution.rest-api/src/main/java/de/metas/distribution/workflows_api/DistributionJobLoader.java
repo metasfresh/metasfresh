@@ -3,6 +3,7 @@ package de.metas.distribution.workflows_api;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.Multimaps;
+import de.metas.bpartner.BPartnerId;
 import de.metas.distribution.ddorder.DDOrderId;
 import de.metas.distribution.ddorder.DDOrderLineId;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveSchedule;
@@ -54,6 +55,7 @@ class DistributionJobLoader
 		return DistributionJob.builder()
 				.ddOrderId(ddOrderId)
 				.documentNo(ddOrder.getDocumentNo())
+				.customerId(BPartnerId.ofRepoId(ddOrder.getC_BPartner_ID()))
 				.dateRequired(dateRequired)
 				.pickFromWarehouse(loadingSupportServices.getWarehouseInfoByRepoId(ddOrder.getM_Warehouse_From_ID()))
 				.dropToWarehouse(loadingSupportServices.getWarehouseInfoByRepoId(ddOrder.getM_Warehouse_To_ID()))
