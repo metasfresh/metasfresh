@@ -88,3 +88,9 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 ALTER TABLE C_Printing_Queue ADD CONSTRAINT BillUser_CPrintingQueue FOREIGN KEY (Bill_User_ID) REFERENCES public.AD_User DEFERRABLE INITIALLY DEFERRED
 ;
 
+
+-- 2022-01-06T14:49:07.990546800Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Message SET MsgText='Fakturierung PDF wurde erstellt',Updated=TO_TIMESTAMP('2022-01-06 16:49:07','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Message_ID=545089
+;
+
