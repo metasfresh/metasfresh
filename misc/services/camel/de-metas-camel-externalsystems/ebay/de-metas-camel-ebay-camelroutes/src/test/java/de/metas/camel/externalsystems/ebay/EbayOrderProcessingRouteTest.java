@@ -175,12 +175,13 @@ public class EbayOrderProcessingRouteTest
 		JsonExternalSystemRequest jesr = new JsonExternalSystemRequest(
 				"orgCode",
 				JsonExternalSystemName.of("ebay"),
-				"command",
+				"getOrders",
 				null,
 				JsonMetasfreshId.of(1),
 				parameters,
 				"traceId",
-				"auditendpoint");
+				"auditendpoint",
+				"externalSystemChildConfigValue");
 
 		// put mock clients into body
 		Map<String, Object> body = new HashMap<>();
