@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_DatevAcctExport extends org.compiere.model.PO implements I_DatevAcctExport, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -176836392L;
+	private static final long serialVersionUID = -786084112L;
 
     /** Standard Constructor */
     public X_DatevAcctExport (final Properties ctx, final int DatevAcctExport_ID, @Nullable final String trxName)
@@ -76,13 +76,40 @@ public class X_DatevAcctExport extends org.compiere.model.PO implements I_DatevA
 		return get_ValueAsInt(COLUMNNAME_DatevAcctExport_ID);
 	}
 
+	@Override
+	public void setExportBy_ID (final int ExportBy_ID)
+	{
+		if (ExportBy_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_ExportBy_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_ExportBy_ID, ExportBy_ID);
+	}
+
+	@Override
+	public int getExportBy_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_ExportBy_ID);
+	}
+
+	@Override
+	public void setExportDate (final @Nullable java.sql.Timestamp ExportDate)
+	{
+		set_ValueNoCheck (COLUMNNAME_ExportDate, ExportDate);
+	}
+
+	@Override
+	public java.sql.Timestamp getExportDate() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_ExportDate);
+	}
+
 	/** 
 	 * ExportType AD_Reference_ID=541172
 	 * Reference name: DatevExportType
 	 */
 	public static final int EXPORTTYPE_AD_Reference_ID=541172;
-	/** Payment = Payment */
-	public static final String EXPORTTYPE_Payment = "Payment";
+	/** tbp test = tbp */
+	public static final String EXPORTTYPE_TbpTest = "tbp";
 	/** Commission Invoice = CommissionInvoice */
 	public static final String EXPORTTYPE_CommissionInvoice = "CommissionInvoice";
 	/** Sales Invoice = SalesInvoice */
