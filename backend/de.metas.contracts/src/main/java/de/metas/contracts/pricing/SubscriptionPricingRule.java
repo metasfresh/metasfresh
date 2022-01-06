@@ -124,7 +124,7 @@ public class SubscriptionPricingRule implements IPricingRule
 			subscriptionPricingResult.setDiscount(subscriptionDiscountLine.getDiscount());
 			if (subscriptionDiscountLine.isPrioritiseOwnDiscount())
 			{
-				subscriptionPricingResult.setDiscountEditable(false);
+				subscriptionPricingResult.setDontOverrideDiscountAdvice(true);
 			}
 		}
 		return subscriptionPricingResult;
@@ -235,6 +235,7 @@ public class SubscriptionPricingRule implements IPricingRule
 			{
 				result.setDiscount(subscriptionPricingResult.getDiscount());
 				result.setDiscountEditable(subscriptionPricingResult.isDiscountEditable());
+				result.setDontOverrideDiscountAdvice(subscriptionPricingResult.isDontOverrideDiscountAdvice());
 			}
 		}
 	}

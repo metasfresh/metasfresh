@@ -80,9 +80,9 @@ public class Discount implements IPricingRule
 			return false;
 		}
 
-		if (!result.isDiscountEditable())
+		if (result.isDontOverrideDiscountAdvice())
 		{
-			log.debug("Discount is not editable - {}", result);
+			log.debug("Discount should not be modified - {}", result);
 			return false;
 		}
 
