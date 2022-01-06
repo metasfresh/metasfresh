@@ -45,11 +45,5 @@ public class C_Async_Batch
 		{
 			AsyncBatchNotificationHelper.runPDFConcatenatingProcess(asyncBatch);
 		}
-		else if (asyncBatch.isProcessed()
-				&& asyncBatch.getC_Async_Batch_Type_ID() > 0
-				&& Async_Constants.C_Async_Batch_InternalName_AutomaticallyInvoicePdfPrinting.equals(asyncBatch.getC_Async_Batch_Type().getInternalName()))
-		{
-			AsyncBatchNotificationHelper.notify(asyncBatch);
-		}
 	}
 }
