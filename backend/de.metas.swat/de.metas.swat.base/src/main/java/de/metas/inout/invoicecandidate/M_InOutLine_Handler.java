@@ -608,7 +608,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		if (docStatus.isCompletedOrClosed())
 		{
 			final BigDecimal qtyMultiplier = getQtyMultiplier(icRecord);
-			final BigDecimal qtyOrdered = CoalesceUtil.coalesceSuppliers(
+			final BigDecimal qtyOrdered = CoalesceUtil.coalesceSuppliersNotNull(
 					() -> forcedQtyOrdered,
 					() -> extractQtyDelivered(icRecord, callerCanCreateAdditionalICs));
 
