@@ -66,7 +66,6 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
@@ -261,7 +260,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
 		//
 		// Log the result
-		Loggables.addLog("Update invalid result: {}", result.getSummary());
+		Loggables.withLogger(logger, Level.INFO).addLog("Update invalid result: {}", result.getSummary());
 	}
 
 	private class InvoiceCandidateValidationCollector

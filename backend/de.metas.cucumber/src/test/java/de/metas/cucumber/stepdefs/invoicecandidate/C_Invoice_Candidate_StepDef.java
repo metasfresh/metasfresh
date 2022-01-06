@@ -37,6 +37,7 @@ import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.InvoiceCandidateIdsSelection;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.logging.LogManager;
 import de.metas.order.OrderLineId;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -50,6 +51,7 @@ import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -66,6 +68,8 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 public class C_Invoice_Candidate_StepDef
 {
+	private final static Logger logger = LogManager.getLogger(C_Invoice_Candidate_StepDef.class);
+
 	private final InvoiceService invoiceService = SpringContextHolder.instance.getBean(InvoiceService.class);
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 
@@ -152,8 +156,11 @@ public class C_Invoice_Candidate_StepDef
 
 			if (recompute)
 			{
-				final InvoiceCandidateIdsSelection onlyInvoiceCandidateIds = InvoiceCandidateIdsSelection.ofIdsSet(
-						ImmutableSet.of(InvoiceCandidateId.ofRepoId(invoiceCandidate.getC_Invoice_Candidate_ID())));
+				final ImmutableSet<InvoiceCandidateId> invoiceCandidateIds = ImmutableSet.of(InvoiceCandidateId.ofRepoId(invoiceCandidate.getC_Invoice_Candidate_ID()));
+
+				invoiceCandDAO.invalidateCandsFor(invoiceCandidateIds);
+
+				final InvoiceCandidateIdsSelection onlyInvoiceCandidateIds = InvoiceCandidateIdsSelection.ofIdsSet(invoiceCandidateIds);
 
 				Services.get(IInvoiceCandBL.class)
 						.updateInvalid()
@@ -162,6 +169,10 @@ public class C_Invoice_Candidate_StepDef
 						.setOnlyInvoiceCandidateIds(onlyInvoiceCandidateIds)
 						.update();
 			}
+
+			InterfaceWrapperHelper.refresh(invoiceCandidate);
+
+			logger.info("*** C_Invoice_Candidate after recompute: " + invoiceCandidate);
 		}
 	}
 
@@ -177,7 +188,7 @@ public class C_Invoice_Candidate_StepDef
 
 			InterfaceWrapperHelper.refresh(invoiceCandidate);
 
-			InterfaceWrapperHelper.refresh(invoiceCandidate);
+			logger.info("*** C_Invoice_Candidate before validate: " + invoiceCandidate);
 
 			final String billBPIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_Bill_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
 			final I_C_BPartner billBPartner = bPartnerTable.get(billBPIdentifier);
