@@ -60,7 +60,7 @@
     "@welldone-software/why-did-you-render": "6.2.1",
     "autoprefixer": "10.3.4",
     "axios-mock-adapter": "1.20.0",
-    "babel-jest": "27.4.5",
+    "babel-jest": "27.4.6",
     "babel-loader": "8.2.3",
     "babel-plugin-dynamic-import-node": "2.3.3",
     "better-docs": "2.3.2",
