@@ -58,11 +58,7 @@ public class PrintingQueuePDFConcatenateWorkpackageProcessor implements IWorkpac
 		{
 			outputFile = concatenateFiles(workpackage);
 		}
-		catch (DocumentException e)
-		{
-			Loggables.withLogger(logger, Level.ERROR).addLog(e.getLocalizedMessage());
-		}
-		catch (IOException e)
+		catch (IOException | DocumentException e)
 		{
 			Loggables.withLogger(logger, Level.ERROR).addLog(e.getLocalizedMessage());
 		}
