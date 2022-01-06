@@ -6,6 +6,8 @@ import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -72,6 +74,8 @@ public class C_Order
 	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 	private final ISubscriptionDAO subscriptionDAO = Services.get(ISubscriptionDAO.class);
 	private final ISubscriptionBL subscriptionBL = Services.get(ISubscriptionBL.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 
 	@ModelChange( //
 			timings = ModelValidator.TYPE_BEFORE_CHANGE, //
@@ -151,7 +155,8 @@ public class C_Order
 					.nextTermStartDate(null)
 					.build();
 
-			Services.get(IFlatrateBL.class).extendContractAndNotifyUser(request);
+			// running in its own trx for backwards compatibility
+			trxManager.run(ITrx.TRXNAME_ThreadInherited, localTrxName_IGNORED -> flatrateBL.extendContractAndNotifyUser(request));
 		}
 	}
 

@@ -79,7 +79,7 @@ public class DocOutboundWorkpackageProcessor implements IWorkpackageProcessor
 		final UserId userId = UserId.ofRepoIdOrNull(workpackage.getAD_User_ID());
 		final I_C_Async_Batch asyncBatch = workpackage.getC_Async_Batch_ID() > 0 ? workpackage.getC_Async_Batch() : null;
 
-		final List<Object> records = queueDAO.retrieveItems(workpackage, Object.class, localTrxName);
+		final List<Object> records = queueDAO.retrieveAllItems(workpackage, Object.class);
 		for (final Object record : records)
 		{
 			InterfaceWrapperHelper.setDynAttribute(record, Async_Constants.C_Async_Batch, asyncBatch);

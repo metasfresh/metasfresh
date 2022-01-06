@@ -1099,54 +1099,51 @@ public class FlatrateBL implements IFlatrateBL
 	@Override
 	public void extendContractAndNotifyUser(final @NonNull ContractExtendingRequest request)
 	{
-		Services.get(ITrxManager.class).run(ITrx.TRXNAME_ThreadInherited, localTrxName_IGNORED -> {
+		final Map<Integer, String> seenFlatrateCondition = new LinkedHashMap<>();
+		final I_C_Flatrate_Conditions currentConditions = request.getContract().getC_Flatrate_Conditions();
+		seenFlatrateCondition.put(currentConditions.getC_Flatrate_Conditions_ID(), currentConditions.getName());
 
-			final Map<Integer, String> seenFlatrateCondition = new LinkedHashMap<>();
-			final I_C_Flatrate_Conditions currentConditions = request.getContract().getC_Flatrate_Conditions();
-			seenFlatrateCondition.put(currentConditions.getC_Flatrate_Conditions_ID(), currentConditions.getName());
+		ContractExtendingRequest currentRequest = request;
+		I_C_Flatrate_Transition nextTransition = null;
+		final List<I_C_Flatrate_Term> contracts = new ArrayList<>();
 
-			ContractExtendingRequest currentRequest = request;
-			I_C_Flatrate_Transition nextTransition = null;
-			final List<I_C_Flatrate_Term> contracts = new ArrayList<>();
+		contracts.add(currentRequest.getContract());
+		do
+		{
+			extendContractAndNotifyUserIfRequired(currentRequest);
 
-			contracts.add(currentRequest.getContract());
-			do
+			final I_C_Flatrate_Term currentTerm = currentRequest.getContract();
+			currentTerm.setAD_PInstance_EndOfTerm_ID(PInstanceId.toRepoId(currentRequest.getAD_PInstance_ID()));
+			InterfaceWrapperHelper.save(currentTerm);
+			if (currentTerm.getC_FlatrateTerm_Next_ID() <= 0)
 			{
-				extendContractAndNotifyUserIfRequired(currentRequest);
-
-				final I_C_Flatrate_Term currentTerm = currentRequest.getContract();
-				currentTerm.setAD_PInstance_EndOfTerm_ID(PInstanceId.toRepoId(currentRequest.getAD_PInstance_ID()));
-				InterfaceWrapperHelper.save(currentTerm);
-				if (currentTerm.getC_FlatrateTerm_Next_ID() <= 0)
-				{
-					// https://github.com/metasfresh/metasfresh/issues/4022 avoid NPE if currentTerm was actually *not* extended by extendContractIfRequired
-					break;
-				}
-
-				final I_C_Flatrate_Term nextTerm = currentTerm.getC_FlatrateTerm_Next();
-				final I_C_Flatrate_Conditions nextConditions = nextTerm.getC_Flatrate_Conditions();
-				Check.assumeNotNull(nextConditions, "C_Flatrate_Conditions shall not be null!");
-
-				nextTransition = nextConditions.getC_Flatrate_Transition();
-				Check.assumeNotNull(nextTransition, "C_Flatrate_Transition shall not be null!");
-
-				// infinite loop detection
-				if (X_C_Flatrate_Transition.EXTENSIONTYPE_ExtendAll.equals(nextTransition.getExtensionType()) && seenFlatrateCondition.containsKey(nextConditions.getC_Flatrate_Conditions_ID()))
-				{
-					throw new AdempiereException(MSG_INFINITE_LOOP, nextConditions.getName(), seenFlatrateCondition.values());
-				}
-				seenFlatrateCondition.put(nextConditions.getC_Flatrate_Conditions_ID(), nextConditions.getName());
-
-				currentRequest = currentRequest.toBuilder()
-						.AD_PInstance_ID(request.getAD_PInstance_ID())
-						.contract(nextTerm).build();
-
-				contracts.add(nextTerm);
+				// https://github.com/metasfresh/metasfresh/issues/4022 avoid NPE if currentTerm was actually *not* extended by extendContractIfRequired
+				break;
 			}
-			while (X_C_Flatrate_Transition.EXTENSIONTYPE_ExtendAll.equals(nextTransition.getExtensionType()) && nextTransition.getC_Flatrate_Conditions_Next_ID() > 0);
 
-			updateMasterEndDateIfNeeded(contracts, request.getContract());
-		});
+			final I_C_Flatrate_Term nextTerm = currentTerm.getC_FlatrateTerm_Next();
+			final I_C_Flatrate_Conditions nextConditions = nextTerm.getC_Flatrate_Conditions();
+			Check.assumeNotNull(nextConditions, "C_Flatrate_Conditions shall not be null!");
+
+			nextTransition = nextConditions.getC_Flatrate_Transition();
+			Check.assumeNotNull(nextTransition, "C_Flatrate_Transition shall not be null!");
+
+			// infinite loop detection
+			if (X_C_Flatrate_Transition.EXTENSIONTYPE_ExtendAll.equals(nextTransition.getExtensionType()) && seenFlatrateCondition.containsKey(nextConditions.getC_Flatrate_Conditions_ID()))
+			{
+				throw new AdempiereException(MSG_INFINITE_LOOP, nextConditions.getName(), seenFlatrateCondition.values());
+			}
+			seenFlatrateCondition.put(nextConditions.getC_Flatrate_Conditions_ID(), nextConditions.getName());
+
+			currentRequest = currentRequest.toBuilder()
+					.AD_PInstance_ID(request.getAD_PInstance_ID())
+					.contract(nextTerm).build();
+
+			contracts.add(nextTerm);
+		}
+		while (X_C_Flatrate_Transition.EXTENSIONTYPE_ExtendAll.equals(nextTransition.getExtensionType()) && nextTransition.getC_Flatrate_Conditions_Next_ID() > 0);
+
+		updateMasterEndDateIfNeeded(contracts, request.getContract());
 	}
 
 	/**
@@ -1940,7 +1937,7 @@ public class FlatrateBL implements IFlatrateBL
 					for (final I_C_Flatrate_Matching flatrateMatching : flatrateMatchings)
 					{
 						final org.compiere.model.I_M_Product matchingProduct = productDAO.getById(flatrateMatching.getM_Product_ID());
-						
+
 						if (flatrateMatching.getM_Product_ID() > 0 && (matchingProduct.getM_Product_Category_ID() == newFMProductCategory.getM_Product_Category_ID()))
 						{
 							// the term is for a product that matches the given product category

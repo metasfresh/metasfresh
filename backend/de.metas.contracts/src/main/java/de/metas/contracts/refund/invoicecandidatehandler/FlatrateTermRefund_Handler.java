@@ -12,6 +12,7 @@ import java.util.function.Consumer;
 import de.metas.contracts.refund.CandidateAssignmentService;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.CandidatesAutoCreateMode;
+import org.adempiere.ad.dao.QueryLimit;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_UOM;
 
@@ -66,7 +67,7 @@ public class FlatrateTermRefund_Handler
 	 * @return an empty iterator; invoice candidates that need to be there are created from {@link CandidateAssignmentService}.
 	 */
 	@Override
-	public Iterator<I_C_Flatrate_Term> retrieveTermsWithMissingCandidates(final int limit)
+	public Iterator<I_C_Flatrate_Term> retrieveTermsWithMissingCandidates(final QueryLimit limit_IGNORED)
 	{
 		return ImmutableList
 				.<I_C_Flatrate_Term> of()

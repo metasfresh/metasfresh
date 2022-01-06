@@ -31,6 +31,7 @@ import de.metas.tax.api.TaxCategoryId;
 import de.metas.tax.api.TaxId;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
@@ -366,7 +367,7 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 
 		setUpActivityAndTaxRetrieval(order4, oL4);
 
-		final List<I_C_Invoice_Candidate> candidates = InvoiceCandidatesTestHelper.createMissingCandidates(orderLineHandler, 5);
+		final List<I_C_Invoice_Candidate> candidates = InvoiceCandidatesTestHelper.createMissingCandidates(orderLineHandler, QueryLimit.ofInt(5));
 
 		assertEquals(2, candidates.size());
 

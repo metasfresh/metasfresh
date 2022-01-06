@@ -40,11 +40,11 @@ public class ContractsDAO implements IContractsDAO
 	@Override
 	public List<I_C_Flatrate_Term> retrieveSubscriptionTermsWithMissingCandidates(
 			@NonNull final String typeConditions,
-			final int limit)
+			@NonNull final QueryLimit limit)
 	{
 		return createTermWithMissingCandidateQueryBuilder(typeConditions, false /* ignoreDateFilters */ )
 				.orderBy().addColumn(I_C_Flatrate_Term.COLUMN_C_Flatrate_Term_ID).endOrderBy()
-				.setLimit(QueryLimit.ofInt(limit))
+				.setLimit(limit)
 				.create()
 				.list(I_C_Flatrate_Term.class);
 	}

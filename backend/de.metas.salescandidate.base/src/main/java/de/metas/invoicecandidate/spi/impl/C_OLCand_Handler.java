@@ -88,10 +88,10 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 	}
 
 	@Override
-	public Iterator<I_C_OLCand> retrieveAllModelsWithMissingCandidates(final int limit)
+	public Iterator<I_C_OLCand> retrieveAllModelsWithMissingCandidates(@NonNull final QueryLimit limit)
 	{
 		return dao.retrieveMissingCandidatesQuery(Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
-				.setLimit(QueryLimit.ofInt(limit))
+				.setLimit(limit)
 				.create()
 				.iterate(I_C_OLCand.class);
 	}

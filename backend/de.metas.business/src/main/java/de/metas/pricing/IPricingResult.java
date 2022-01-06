@@ -89,6 +89,9 @@ public interface IPricingResult
 	@NonNull
 	Percent getDiscount();
 
+	/**
+	 * Sets the given discount. After this, {@link #isDiscountCalculated()} will always return {@code true}.
+	 */
 	void setDiscount(Percent discount);
 
 	boolean isDiscountCalculated();

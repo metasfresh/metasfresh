@@ -28,6 +28,7 @@ import de.metas.uom.IUOMConversionBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.service.ISysConfigBL;
 
 import javax.annotation.Nullable;
@@ -89,7 +90,7 @@ public class FlatrateTerm_Handler extends AbstractInvoiceCandidateHandler
 	 * One invocation returns a maximum of <code>limit</code> {@link I_C_Flatrate_Term}s that are completed subscriptions and don't have an invoice candidate referencing them.
 	 */
 	@Override
-	public Iterator<I_C_Flatrate_Term> retrieveAllModelsWithMissingCandidates(final int limit)
+	public Iterator<I_C_Flatrate_Term> retrieveAllModelsWithMissingCandidates(@NonNull final QueryLimit limit)
 	{
 		final Collection<ConditionTypeSpecificInvoiceCandidateHandler> specificHandlers = conditionTypeSpecificInvoiceCandidateHandlers.values();
 		Iterator<I_C_Flatrate_Term> result = null;
