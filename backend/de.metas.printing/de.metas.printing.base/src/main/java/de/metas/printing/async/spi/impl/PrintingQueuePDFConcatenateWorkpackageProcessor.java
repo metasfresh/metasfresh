@@ -18,7 +18,6 @@ import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.archive.api.IArchiveBL;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Archive;
@@ -48,7 +47,7 @@ public class PrintingQueuePDFConcatenateWorkpackageProcessor implements IWorkpac
 	private final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
 	private final IPrintingQueueBL printingQueueBL = Services.get(IPrintingQueueBL.class);
 	private final IArchiveBL archiveBl = Services.get(IArchiveBL.class);
-	
+
 	private I_C_Async_Batch asyncBatch;
 
 	@Override
@@ -61,11 +60,11 @@ public class PrintingQueuePDFConcatenateWorkpackageProcessor implements IWorkpac
 		}
 		catch (DocumentException e)
 		{
-			e.printStackTrace();
+			Loggables.withLogger(logger, Level.ERROR).addLog(e.getLocalizedMessage());
 		}
 		catch (IOException e)
 		{
-			e.printStackTrace();
+			Loggables.withLogger(logger, Level.ERROR).addLog(e.getLocalizedMessage());
 		}
 
 		attachmentEntryService.createNewAttachment(workpackage.getC_Async_Batch(), outputFile);
@@ -87,7 +86,7 @@ public class PrintingQueuePDFConcatenateWorkpackageProcessor implements IWorkpac
 
 		document.open();
 
-		final List<I_C_Printing_Queue> pqs = queueDAO.retrieveItems(workpackage, I_C_Printing_Queue.class, ITrx.TRXNAME_ThreadInherited);
+		final List<I_C_Printing_Queue> pqs = queueDAO.retrieveAllItems(workpackage, I_C_Printing_Queue.class);
 
 		for (final I_C_Printing_Queue pq : pqs)
 		{
