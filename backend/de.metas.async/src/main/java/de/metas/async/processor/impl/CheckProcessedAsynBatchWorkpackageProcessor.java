@@ -25,13 +25,6 @@ package de.metas.async.processor.impl;
  * #L%
  */
 
-import java.util.List;
-import java.util.Optional;
-
-import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.service.ISysConfigBL;
-
 import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.api.IQueueDAO;
@@ -40,6 +33,12 @@ import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.IWorkpackageProcessor;
 import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ISysConfigBL;
+
+import java.util.List;
+import java.util.Optional;
 
 /**
  * <ul>
@@ -82,7 +81,7 @@ public class CheckProcessedAsynBatchWorkpackageProcessor implements IWorkpackage
 		final AsyncBatchId asyncBatchId = AsyncBatchId.ofRepoId(asyncBatch.getC_Async_Batch_ID());
 
 		//if it should be processed manually, there is no point in having this workpackage running forever
-		if (asyncBatchBL.shouldBeProcessedManually(asyncBatchId))
+		if (asyncBatchBL.shouldBeManuallyMarkedAsProcessed(asyncBatchId))
 		{
 			return Result.SUCCESS;
 		}
@@ -102,10 +101,6 @@ public class CheckProcessedAsynBatchWorkpackageProcessor implements IWorkpackage
 		{
 			return Result.SUCCESS;
 		}
-
-
-
-
 
 		//
 		// check if keep alive time expired and if it has; set wp to error

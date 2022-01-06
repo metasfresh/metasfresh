@@ -43,7 +43,7 @@ public class AsyncBatchBLTest
 	}
 
 	@Test
-	public void givenAsyncBatchWithLinkedMilestones_whenShouldBeProcessedManually_thenReturnTrue()
+	public void givenAsyncBatchWithLinkedMilestones_whenShouldBeManuallyMarkedAsProcessed_thenReturnTrue()
 	{
 		//given
 		final I_C_Async_Batch asyncBatch = newAsyncBatch();
@@ -54,7 +54,7 @@ public class AsyncBatchBLTest
 		InterfaceWrapperHelper.saveRecord(milestone);
 
 		//when
-		final boolean shouldBeProcessedManually = asyncBatchBL.shouldBeProcessedManually(AsyncBatchId.ofRepoId(asyncBatch.getC_Async_Batch_ID()));
+		final boolean shouldBeProcessedManually = asyncBatchBL.shouldBeManuallyMarkedAsProcessed(AsyncBatchId.ofRepoId(asyncBatch.getC_Async_Batch_ID()));
 
 		//then
 		Assert.assertTrue(shouldBeProcessedManually);

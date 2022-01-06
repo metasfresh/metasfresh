@@ -87,5 +87,5 @@ public interface IAsyncBatchBL extends ISingletonService
 
 	Optional<Integer> getDelayUntilCheckingProcessedState(I_C_Async_Batch asyncBatch);
 
-	boolean shouldBeProcessedManually(AsyncBatchId asyncBatchId);
+	boolean shouldBeManuallyMarkedAsProcessed(AsyncBatchId asyncBatchId);
 }

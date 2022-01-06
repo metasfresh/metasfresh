@@ -179,7 +179,7 @@ public class AsyncBatchBL implements IAsyncBatchBL
 			return true;
 		}
 
-		if (shouldBeProcessedManually(asyncBatchId))
+		if (shouldBeManuallyMarkedAsProcessed(asyncBatchId))
 		{
 			return false;
 		}
@@ -199,7 +199,7 @@ public class AsyncBatchBL implements IAsyncBatchBL
 	}
 
 	@Override
-	public boolean shouldBeProcessedManually(@NonNull final AsyncBatchId asyncBatchId)
+	public boolean shouldBeManuallyMarkedAsProcessed(@NonNull final AsyncBatchId asyncBatchId)
 	{
 		final List<I_C_Async_Batch_Milestone> milestones = asyncBatchDAO.retrieveMilestonesForAsyncBatchId(asyncBatchId);
 
