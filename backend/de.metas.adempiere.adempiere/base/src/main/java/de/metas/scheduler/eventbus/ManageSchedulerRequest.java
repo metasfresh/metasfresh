@@ -25,7 +25,7 @@ package de.metas.scheduler.eventbus;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import de.metas.process.AdProcessId;
+import de.metas.scheduler.SchedulerSearchKey;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -39,7 +39,7 @@ import javax.annotation.Nullable;
 @JsonDeserialize(builder = ManageSchedulerRequest.ManageSchedulerRequestBuilder.class)
 public class ManageSchedulerRequest
 {
-	@NonNull AdProcessId adProcessId;
+	@NonNull SchedulerSearchKey schedulerSearchKey;
 	@NonNull Advice schedulerAdvice;
 	@NonNull ClientId clientId;
 	@Nullable Advice supervisorAdvice;
@@ -47,12 +47,12 @@ public class ManageSchedulerRequest
 	@JsonCreator
 	@Builder
 	public ManageSchedulerRequest(
-			@JsonProperty("adProcessId") @NonNull final AdProcessId adProcessId,
+			@JsonProperty("schedulerSearchKey") @NonNull final SchedulerSearchKey schedulerSearchKey,
 			@JsonProperty("schedulerAdvice") @NonNull final Advice schedulerAdvice,
 			@JsonProperty("clientId") @NonNull final ClientId clientId,
 			@JsonProperty("supervisorAdvice") @Nullable final Advice supervisorAdvice)
 	{
-		this.adProcessId = adProcessId;
+		this.schedulerSearchKey = schedulerSearchKey;
 		this.schedulerAdvice = schedulerAdvice;
 		this.clientId = clientId;
 		this.supervisorAdvice = supervisorAdvice;
@@ -63,6 +63,7 @@ public class ManageSchedulerRequest
 	public enum Advice
 	{
 		ENABLE,
-		DISABLE
+		DISABLE,
+		RESTART
 	}
 }
