@@ -86,9 +86,9 @@
     "eslint-plugin-jsx-a11y": "6.4.1",
     "eslint-plugin-prettier": "3.4.0",
     "eslint-plugin-react": "7.24.0",
-    "node-sass": "7.0.1",
     "prettier": "2.3.2",
-    "react-hot-loader": "4.13.0"
+    "react-hot-loader": "4.13.0",
+    "sass": "^1.46.0"
   },
   "homepage": "/mobile"
 }
