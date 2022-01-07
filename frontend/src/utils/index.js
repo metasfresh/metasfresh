@@ -10,6 +10,7 @@ import history from '../services/History';
 export function updateUri(pathname, query, updatedQuery) {
   const isDifferentPage =
     query.page && Number(query.page) !== Number(updatedQuery.page);
+  const isDifferentView = query.viewId && query.viewId !== updatedQuery.viewId;
 
   const queryObject = {
     ...query,
@@ -18,7 +19,7 @@ export function updateUri(pathname, query, updatedQuery) {
   const queryUrl = queryString.stringify(queryObject);
   const url = `${pathname}?${queryUrl}`;
 
-  isDifferentPage ? history.push(url) : history.replace(url);
+  isDifferentPage || isDifferentView ? history.push(url) : history.replace(url);
 }
 
 /**
