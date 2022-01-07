@@ -184,14 +184,6 @@ public interface IPricingResult
 
 	ImmutableList<String> getLoggableMessages();
 
-	void setBaseCommissionPointsPerPriceUOM(BigDecimal commissionPointsPerPriceUOM);
-
-	BigDecimal getBaseCommissionPointsPerPriceUOM();
-
-	void setTradedCommissionPercent(Percent tradedCommissionPercent);
-
-	Percent getTradedCommissionPercent();
-
 	/**
 	 * @return {@code true} if the current discount should not be overridden by any other pricing rule, {@code false} otherwise.
 	 */
