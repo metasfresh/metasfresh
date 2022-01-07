@@ -36,7 +36,6 @@ import lombok.NonNull;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
 import org.compiere.util.MimeType;
-import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 
 import java.util.List;
@@ -74,16 +73,11 @@ public class C_Async_Batch_DownloadFileFromAttachment extends JavaProcess implem
 
 		final I_C_Async_Batch record = asyncBatchDAO.retrieveAsyncBatchRecord(AsyncBatchId.ofRepoId(getRecord_ID()));
 
-		final AttachmentEntryService.AttachmentEntryQuery attachmentQuery = AttachmentEntryService.AttachmentEntryQuery.builder()
-				.referencedRecord(TableRecordReference.of(record))
-				.mimeType(MimeType.TYPE_PDF)
-				.build();
-
-		final List<AttachmentEntry> attachments = attachmentEntryService.getByQuery(attachmentQuery);
+		final List<AttachmentEntry> attachments = getAttachmentEntries(record);
 		if (!attachments.isEmpty())
 		{
 			final AttachmentEntry attachment = attachments.get(0); // take first one
-			final Resource data = new ByteArrayResource(attachmentEntryService.retrieveData(attachment.getId()));
+			final Resource data = attachmentEntryService.retrieveDataResource(attachment.getId());
 
 			getResult().setReportData(data, attachment.getFilename(), attachment.getMimeType());
 		}
@@ -93,13 +87,18 @@ public class C_Async_Batch_DownloadFileFromAttachment extends JavaProcess implem
 
 	private boolean hasAttachments(@NonNull final I_C_Async_Batch record)
 	{
+		final List<AttachmentEntry> attachments = getAttachmentEntries(record);
+
+		return !attachments.isEmpty();
+	}
+
+	private List<AttachmentEntry> getAttachmentEntries(@NonNull final I_C_Async_Batch record)
+	{
 		final AttachmentEntryService.AttachmentEntryQuery attachmentQuery = AttachmentEntryService.AttachmentEntryQuery.builder()
 				.referencedRecord(TableRecordReference.of(record))
 				.mimeType(MimeType.TYPE_PDF)
 				.build();
 
-		final List<AttachmentEntry> attachments = attachmentEntryService.getByQuery(attachmentQuery);
-
-		return !attachments.isEmpty();
+		return attachmentEntryService.getByQuery(attachmentQuery);
 	}
 }

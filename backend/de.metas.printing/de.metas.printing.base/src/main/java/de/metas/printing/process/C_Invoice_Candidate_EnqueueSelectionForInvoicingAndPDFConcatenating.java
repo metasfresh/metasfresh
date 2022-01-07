@@ -38,7 +38,6 @@ import de.metas.printing.async.spi.impl.InvoiceEnqueueingWorkpackageProcessor;
 import de.metas.process.JavaProcess;
 import de.metas.process.PInstanceId;
 import de.metas.process.Param;
-import de.metas.process.ProcessExecutionResult.ShowProcessLogs;
 import de.metas.process.RunOutOfTrx;
 import de.metas.security.permissions.Access;
 import de.metas.util.Check;
@@ -79,8 +78,6 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicingAndPDFConcatenating
 	@RunOutOfTrx
 	protected void prepare()
 	{
-		setShowProcessLogs(ShowProcessLogs.OnError);
-
 		final IParams params = getParameterAsIParams();
 		this.invoicingParams = new InvoicingParams(params);
 
