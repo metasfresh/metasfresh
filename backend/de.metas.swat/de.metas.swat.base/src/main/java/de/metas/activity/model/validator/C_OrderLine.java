@@ -44,8 +44,10 @@ import org.compiere.model.ModelValidator;
 @Validator(I_C_OrderLine.class)
 public class C_OrderLine
 {
-	final DimensionService dimensionService = SpringContextHolder.instance.getBean(DimensionService.class);
-	final OrderGroupRepository orderGroupRepo = SpringContextHolder.instance.getBean(OrderGroupRepository.class);
+	private final DimensionService dimensionService = SpringContextHolder.instance.getBean(DimensionService.class);
+	private final OrderGroupRepository orderGroupRepo = SpringContextHolder.instance.getBean(OrderGroupRepository.class);
+	private final IProductAcctDAO productAcctDAO = Services.get(IProductAcctDAO.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
 			ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_M_Product_ID,
@@ -76,12 +78,13 @@ public class C_OrderLine
 		}
 
 		// IsDiverse flag
-		final IProductBL productBL = Services.get(IProductBL.class);
 		orderLine.setIsDiverse(productBL.isDiverse(productId));
 
 		// Activity
-		final ActivityId productActivityId = Services.get(IProductAcctDAO.class).retrieveActivityForAcct(ClientId.ofRepoId(orderLine.getAD_Client_ID()), OrgId.ofRepoId(orderLine.getAD_Org_ID()), productId);
-
+		final ActivityId productActivityId = productAcctDAO.retrieveActivityForAcct(
+				ClientId.ofRepoId(orderLine.getAD_Client_ID()),
+				OrgId.ofRepoId(orderLine.getAD_Org_ID()),
+				productId);
 		if (productActivityId == null)
 		{
 			return;

@@ -40,7 +40,8 @@ import de.metas.util.Services;
 @Validator(I_M_InOutLine.class)
 public class M_InOutLine
 {
-	final DimensionService dimensionService = SpringContextHolder.instance.getBean(DimensionService.class);
+	private final DimensionService dimensionService = SpringContextHolder.instance.getBean(DimensionService.class);
+	private final IProductAcctDAO productAcctDAO = Services.get(IProductAcctDAO.class);
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_M_InOutLine.COLUMNNAME_M_Product_ID })
 	public void updateActivity(final I_M_InOutLine inOutLine)
@@ -56,7 +57,10 @@ public class M_InOutLine
 			return;
 		}
 
-		final ActivityId productActivityId = Services.get(IProductAcctDAO.class).retrieveActivityForAcct(ClientId.ofRepoId(inOutLine.getAD_Client_ID()), OrgId.ofRepoId(inOutLine.getAD_Org_ID()), productId);
+		final ActivityId productActivityId = productAcctDAO.retrieveActivityForAcct(
+				ClientId.ofRepoId(inOutLine.getAD_Client_ID()),
+				OrgId.ofRepoId(inOutLine.getAD_Org_ID()),
+				productId);
 		if (productActivityId == null)
 		{
 			return;
