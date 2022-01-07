@@ -49,6 +49,7 @@ import {
   mergeColumnInfosIntoViewRows,
   mergeRows,
   parseToDisplay,
+  retainExistingRowIds,
 } from '../utils/documentListHelper';
 import { filtersActiveContains } from '../utils/filterHelpers';
 
@@ -197,10 +198,19 @@ class DocumentListContainer extends Component {
   }
 
   /**
-   * @method connectWebSocket
    * @summary Subscribe to websocket stream for this view
    */
   connectWebSocket = (customViewId) => {
+    const viewId = customViewId ? customViewId : this.props.viewId;
+
+    connectWS.call(this, `/view/${viewId}`, (event) =>
+      this.onViewChangedEvent({ viewId, event })
+    );
+  };
+
+  onViewChangedEvent = ({ viewId, event }) => {
+    const { fullyChanged, headerPropertiesChanged } = event;
+
     const {
       windowId,
       deselectTableRows,
@@ -209,60 +219,66 @@ class DocumentListContainer extends Component {
       fetchQuickActions,
       isModal,
       viewProfileId,
+      table,
     } = this.props;
-    const viewId = customViewId ? customViewId : this.props.viewId;
 
-    connectWS.call(this, `/view/${viewId}`, (msg) => {
-      const { fullyChanged, changedIds, headerPropertiesChanged } = msg;
-      const table = this.props.table;
+    const changedRowIdsInPage = retainExistingRowIds(
+      table.rows,
+      event.changedIds
+    );
 
-      if (changedIds) {
-        getViewRowsByIds(windowId, viewId, changedIds.join()).then(
-          (response) => {
-            const tableId = getTableId({ windowId, viewId });
-            const toRows = table.rows;
-            const { pageColumnInfosByFieldName } = this.state;
+    if (changedRowIdsInPage.length > 0) {
+      getViewRowsByIds(windowId, viewId, changedRowIdsInPage.join()).then(
+        (response) => {
+          // merge changed rows with data in the store
+          // TODO: I think we can move this to reducer
+          const { pageColumnInfosByFieldName } = this.state;
+          const { hasChanges, rows, removedRowIds } = mergeRows({
+            toRows: table.rows,
+            changedIds: changedRowIdsInPage,
+            changedRows: [...response.data],
+            columnInfosByFieldName: pageColumnInfosByFieldName,
+          });
 
-            // merge changed rows with data in the store
-            // TODO: I think we can move this to reducer
-            const { rows, removedRows } = mergeRows({
-              toRows,
-              fromRows: [...response.data],
-              columnInfosByFieldName: pageColumnInfosByFieldName,
-              changedIds,
+          // If merging rows produces no changes, we can stop here.
+          if (!hasChanges) {
+            return;
+          }
+
+          const tableId = getTableId({ windowId, viewId });
+
+          if (removedRowIds.length) {
+            deselectTableRows({
+              id: tableId,
+              selection: removedRowIds,
+              windowId,
+              viewId,
+              isModal,
             });
 
-            if (removedRows.length) {
-              deselectTableRows({
-                id: tableId,
-                selection: removedRows,
-                windowId,
-                viewId,
-                isModal,
-              });
-            } else {
-              fetchQuickActions({
-                windowId,
-                viewId,
-                selectedIds: table.selected,
-                viewProfileId,
-                isModal,
-              });
-            }
-
-            updateGridTableData(tableId, rows);
+            // NOTE: we assume quick actions are fetch as a consequence of changing the current selected rows
+          } else {
+            fetchQuickActions({
+              windowId,
+              viewId,
+              selectedIds: table.selected,
+              viewProfileId,
+              isModal,
+            });
           }
-        );
-      }
 
-      if (headerPropertiesChanged) {
-        fetchHeaderProperties({ windowId, viewId, isModal });
-      }
+          updateGridTableData(tableId, rows);
+        }
+      );
+    }
 
-      if (fullyChanged === true) {
-        this.debouncedRefresh();
-      }
-    });
+    if (headerPropertiesChanged) {
+      fetchHeaderProperties({ windowId, viewId, isModal });
+    }
+
+    if (fullyChanged === true) {
+      this.debouncedRefresh();
+    }
   };
 
   // FETCHING LAYOUT && DATA -------------------------------------------------
