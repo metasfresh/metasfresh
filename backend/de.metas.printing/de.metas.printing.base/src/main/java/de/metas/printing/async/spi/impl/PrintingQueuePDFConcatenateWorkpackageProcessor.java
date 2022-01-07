@@ -58,7 +58,7 @@ public class PrintingQueuePDFConcatenateWorkpackageProcessor implements IWorkpac
 		{
 			outputFile = concatenateFiles(workpackage);
 		}
-		catch (IOException | DocumentException e)
+		catch (IOException e)
 		{
 			Loggables.withLogger(logger, Level.ERROR).addLog(e.getLocalizedMessage());
 		}
@@ -67,7 +67,7 @@ public class PrintingQueuePDFConcatenateWorkpackageProcessor implements IWorkpac
 		return Result.SUCCESS;
 	}
 
-	private File concatenateFiles(final I_C_Queue_WorkPackage workpackage) throws IOException, DocumentException
+	private File concatenateFiles(final I_C_Queue_WorkPackage workpackage) throws IOException
 	{
 		this.asyncBatch = workpackage.getC_Async_Batch();
 		Check.assumeNotNull(asyncBatch, "Async batch is not null");
@@ -76,42 +76,53 @@ public class PrintingQueuePDFConcatenateWorkpackageProcessor implements IWorkpac
 
 		final File file = File.createTempFile(fileName, ".pdf");
 		final Document document = new Document();
-
 		final FileOutputStream fos = new FileOutputStream(file, false);
-		final PdfCopy copy = new PdfCopy(document, fos);
 
-		document.open();
-
-		final List<I_C_Printing_Queue> pqs = queueDAO.retrieveAllItems(workpackage, I_C_Printing_Queue.class);
-
-		for (final I_C_Printing_Queue pq : pqs)
+		try
 		{
-			try (final MDC.MDCCloseable ignored = TableRecordMDC.putTableRecordReference(pq))
+			final PdfCopy copy = new PdfCopy(document, fos);
+
+			document.open();
+
+			final List<I_C_Printing_Queue> pqs = queueDAO.retrieveAllItems(workpackage, I_C_Printing_Queue.class);
+
+			for (final I_C_Printing_Queue pq : pqs)
 			{
-				if (pq.isProcessed())
+				try (final MDC.MDCCloseable ignored = TableRecordMDC.putTableRecordReference(pq))
 				{
-					Loggables.withLogger(logger, Level.DEBUG).addLog("*** Printing queue is already processed. Skipping it: {}", pq);
-					continue;
+					if (pq.isProcessed())
+					{
+						Loggables.withLogger(logger, Level.DEBUG).addLog("*** Printing queue is already processed. Skipping it: {}", pq);
+						continue;
+					}
+					final I_AD_Archive archive = pq.getAD_Archive();
+					Check.assumeNotNull(archive, "Archive references an AD_Archive record");
+
+					final byte[] data = archiveBl.getBinaryData(archive);
+					final PdfReader reader = new PdfReader(data);
+
+					for (int page = 0; page < reader.getNumberOfPages(); )
+					{
+						copy.addPage(copy.getImportedPage(reader, ++page));
+					}
+					copy.freeReader(reader);
+					reader.close();
+
+					printingQueueBL.setProcessedAndSave(pq);
 				}
-				final I_AD_Archive archive = pq.getAD_Archive();
-				Check.assume(archive != null, pq + " references an AD_Archive record");
-
-				final byte[] data = archiveBl.getBinaryData(archive);
-				final PdfReader reader = new PdfReader(data);
-
-				for (int page = 0; page < reader.getNumberOfPages(); )
-				{
-					copy.addPage(copy.getImportedPage(reader, ++page));
-				}
-				copy.freeReader(reader);
-				reader.close();
-
-				printingQueueBL.setProcessedAndSave(pq);
 			}
+
+		}
+		catch (IOException | DocumentException e)
+		{
+			Loggables.withLogger(logger, Level.ERROR).addLog(e.getLocalizedMessage());
+		}
+		finally
+		{
+			document.close();
+			fos.close();
+			return file;
 		}
 
-		document.close();
-		fos.close();
-		return file;
 	}
 }
