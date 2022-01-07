@@ -5,6 +5,7 @@ import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.api.IAsyncBatchDAO;
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Async_Batch;
+import de.metas.async.model.I_C_Async_Batch_Type;
 import de.metas.async.spi.IAsyncBatchListener;
 import de.metas.i18n.AdMessageKey;
 import de.metas.notification.INotificationBL;
@@ -28,18 +29,16 @@ public class AutomaticallyInvoicePdfPrintinAsyncBatchListener implements IAsyncB
 {
 	private static final AdMessageKey MSG_Event_PDFGenerated = AdMessageKey.of("AutomaticallyInvoicePdfPrintinAsyncBatchListener_Pdf_Done");
 	private static final AdWindowId WINDOW_ID_C_Async_Batch = AdWindowId.ofRepoId(540231);
+
 	// services
-	private final IAsyncBatchDAO asyncBatchDAO = Services.get(IAsyncBatchDAO.class);
-	private final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
-	private final IPrintingDAO dao = Services.get(IPrintingDAO.class);
 	private final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
+	private final INotificationBL notificationBL = Services.get(INotificationBL.class);
 
 	@Override
 	public void createNotice(@NonNull final I_C_Async_Batch asyncBatch)
 	{
-		final String asyncBatchTypeName = asyncBatch.getC_Async_Batch_Type_ID() > 0
-				? asyncBatch.getC_Async_Batch_Type().getInternalName()
-				: null;
+		final I_C_Async_Batch_Type asyncBatchType = asyncBatch.getC_Async_Batch_Type();
+		final String asyncBatchTypeName = asyncBatch != null ? asyncBatchBL.getAsyncBatchTypeInternalName(asyncBatchType) : null;
 
 		if (Async_Constants.C_Async_Batch_InternalName_AutomaticallyInvoicePdfPrinting.equals(asyncBatchTypeName))
 		{
@@ -49,11 +48,7 @@ public class AutomaticallyInvoicePdfPrintinAsyncBatchListener implements IAsyncB
 
 	private void sendUserNotifications(@NonNull final I_C_Async_Batch asyncBatch)
 	{
-
-		final INotificationBL notificationBL = Services.get(INotificationBL.class);
-
 		final TableRecordReference asyncBatchItemRef = TableRecordReference.of(asyncBatch);
-
 		notificationBL.send(UserNotificationRequest.builder()
 									.topic(Printing_Constants.USER_NOTIFICATIONS_TOPIC)
 									.recipientUserId(UserId.ofRepoId(asyncBatch.getCreatedBy()))

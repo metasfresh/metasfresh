@@ -45,7 +45,6 @@ import de.metas.async.spi.IWorkpackagePrioStrategy;
 import de.metas.async.spi.NullWorkpackagePrio;
 import de.metas.common.util.time.SystemTime;
 import de.metas.process.PInstanceId;
-import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -54,7 +53,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.ImmutablePair;
-import org.adempiere.util.lang.NullAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -505,6 +503,7 @@ public class AsyncBatchBL implements IAsyncBatchBL
 	}
 
 	@NonNull
+	@Override
 	public AsyncBatchId newAsyncBatch(@NonNull final String asyncBatchType)
 	{
 		final I_C_Async_Batch asyncBatch = trxManager.callInNewTrx(() -> newAsyncBatch()
@@ -512,7 +511,6 @@ public class AsyncBatchBL implements IAsyncBatchBL
 				.setC_Async_Batch_Type(asyncBatchType)
 				.setName(asyncBatchType)
 				.build());
-
 		return AsyncBatchId.ofRepoId(asyncBatch.getC_Async_Batch_ID());
 	}
 
@@ -521,4 +519,13 @@ public class AsyncBatchBL implements IAsyncBatchBL
 		asyncBatch.setAD_PInstance_ID(pInstanceId.getRepoId());
 		InterfaceWrapperHelper.save(asyncBatch);
 	}
+
+	@NonNull
+	@Override
+	public String getAsyncBatchTypeInternalName(@NonNull final I_C_Async_Batch asyncBatch)
+	{
+		return asyncBatch.getC_Async_Batch_Type_ID() > 0 ? asyncBatch.getC_Async_Batch_Type().getInternalName() : null;
+	}
+
+
 }

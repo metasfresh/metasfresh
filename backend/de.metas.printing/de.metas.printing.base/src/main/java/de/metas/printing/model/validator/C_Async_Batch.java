@@ -4,12 +4,16 @@
 package de.metas.printing.model.validator;
 
 import de.metas.async.Async_Constants;
+import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.model.I_C_Async_Batch;
+import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
+
+import java.util.Objects;
 
 /*
  * #%L
@@ -36,14 +40,17 @@ import org.springframework.stereotype.Component;
 @Component
 public class C_Async_Batch
 {
+	private final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
+
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = I_C_Async_Batch.COLUMNNAME_Processed)
 	public void print(@NonNull final I_C_Async_Batch asyncBatch)
 	{
 		if (asyncBatch.isProcessed()
-				&& asyncBatch.getC_Async_Batch_Type_ID() > 0
-				&& Async_Constants.C_Async_Batch_InternalName_InvoiceCandidate_Processing.equals(asyncBatch.getC_Async_Batch_Type().getInternalName()))
+				&& Objects.equals(Async_Constants.C_Async_Batch_InternalName_InvoiceCandidate_Processing, asyncBatchBL.getAsyncBatchTypeInternalName(asyncBatch)))
 		{
-			AsyncBatchNotificationHelper.runPDFConcatenatingProcess(asyncBatch);
+			ConcatenatePDFsCommand.builder()
+					.printingQueueItemsGeneratedAsyncBatch(asyncBatch)
+					.build().execute();
 		}
 	}
 }

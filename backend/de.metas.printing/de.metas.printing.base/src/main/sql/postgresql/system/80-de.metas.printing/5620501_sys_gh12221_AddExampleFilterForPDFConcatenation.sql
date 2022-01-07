@@ -10,6 +10,6 @@ UPDATE AD_SysConfig SET ConfigurationLevel='O', IsActive='N',Updated=TO_TIMESTAM
 
 -- 2022-01-04T16:01:11.743439900Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_SysConfig SET ConfigurationLevel='O', Description='This sys config is used de.metas.printing.model.validator.AsyncBatchNotificationHelper#enqueuePrintQueues for filter which printing queues to enqueue.',Updated=TO_TIMESTAMP('2022-01-04 18:01:11','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_SysConfig_ID=541440
+UPDATE AD_SysConfig SET ConfigurationLevel='O', Description='This sys config is used de.metas.printing.model.validator.ConcatenatePDFsCommand#enqueuePrintQueues for filter which printing queues to enqueue.',Updated=TO_TIMESTAMP('2022-01-04 18:01:11','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_SysConfig_ID=541440
 ;
 

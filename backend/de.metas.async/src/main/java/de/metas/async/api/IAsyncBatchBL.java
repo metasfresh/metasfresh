@@ -7,6 +7,7 @@ import com.google.common.collect.Multimap;
 import de.metas.async.AsyncBatchId;
 import de.metas.async.Async_Constants;
 import de.metas.async.model.I_C_Async_Batch;
+import de.metas.async.model.I_C_Async_Batch_Type;
 import de.metas.async.model.I_C_Queue_Block;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.model.I_C_Queue_WorkPackage_Notified;
@@ -119,4 +120,6 @@ public interface IAsyncBatchBL extends ISingletonService
 	AsyncBatchId newAsyncBatch(String asyncBatchType);
 
 	public void setPInstance_IDAndSave(@NonNull final I_C_Async_Batch asyncBatch, @NonNull final PInstanceId pInstanceId);
+
+	@NonNull String getAsyncBatchTypeInternalName(@NonNull final I_C_Async_Batch asyncBatch);
 }
