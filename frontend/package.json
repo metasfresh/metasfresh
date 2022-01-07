@@ -111,7 +111,7 @@
     "stomp-broker-js": "1.3.0",
     "stompjs": "2.3.3",
     "style-loader": "3.3.1",
-    "stylelint": "13.13.1",
+    "stylelint": "14.2.0",
     "wait-for-expect": "3.0.2",
     "webpack": "5.65.0",
     "webpack-cli": "4.9.1",
