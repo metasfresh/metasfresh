@@ -1151,7 +1151,6 @@ body{
 .filter-btn-wrapper {
     text-align: right;
     padding-top: 10px;
-    border-top: 1px solid $brand-light-color;
 }
 
 .dashboard-wrapper {
