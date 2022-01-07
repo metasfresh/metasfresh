@@ -515,12 +515,6 @@ public class AsyncBatchBL implements IAsyncBatchBL
 		return AsyncBatchId.ofRepoId(asyncBatch.getC_Async_Batch_ID());
 	}
 
-	public void setPInstance_IDAndSave(@NonNull final I_C_Async_Batch asyncBatch, @NonNull final PInstanceId pInstanceId)
-	{
-		asyncBatch.setAD_PInstance_ID(pInstanceId.getRepoId());
-		InterfaceWrapperHelper.save(asyncBatch);
-	}
-
 	@Override
 	public Optional<String> getAsyncBatchTypeInternalName(@NonNull final I_C_Async_Batch asyncBatch)
 	{
