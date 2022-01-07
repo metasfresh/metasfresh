@@ -22,7 +22,9 @@ package de.metas.document.archive.async.spi.impl;
  * #L%
  */
 
+import de.metas.async.AsyncBatchId;
 import de.metas.async.Async_Constants;
+import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.model.I_C_Queue_WorkPackage;
@@ -42,6 +44,7 @@ import org.adempiere.archive.api.IArchiveEventManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
 
@@ -66,6 +69,7 @@ public class DocOutboundWorkpackageProcessor implements IWorkpackageProcessor
 	private final DocOutboundLogMailRecipientRegistry docOutboundLogMailRecipientRegistry = SpringContextHolder.instance.getBean(DocOutboundLogMailRecipientRegistry.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
 
 	@Override
 	public Result processWorkPackage(final I_C_Queue_WorkPackage workpackage, final String localTrxName)
@@ -83,7 +87,10 @@ public class DocOutboundWorkpackageProcessor implements IWorkpackageProcessor
 		for (final Object record : records)
 		{
 			InterfaceWrapperHelper.setDynAttribute(record, Async_Constants.C_Async_Batch, asyncBatch);
-			generateOutboundDocument(record, userId);
+			try (final IAutoCloseable ignored = asyncBatchBL.assignTempAsyncBatchIdToModel(record, AsyncBatchId.ofRepoIdOrNull(asyncBatch != null ? asyncBatch.getC_Async_Batch_ID() : null)))
+			{
+				generateOutboundDocument(record, userId);
+			}
 		}
 		return Result.SUCCESS;
 	}

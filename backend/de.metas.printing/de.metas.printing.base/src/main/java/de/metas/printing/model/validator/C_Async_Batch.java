@@ -1,17 +1,15 @@
 /**
  *
  */
-package de.metas.letter.interceptor;
+package de.metas.printing.model.validator;
 
+import de.metas.async.Async_Constants;
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.model.I_C_Async_Batch;
-import de.metas.letter.LetterConstants;
-import de.metas.letter.service.SerialLetterService;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.compiere.Adempiere;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
@@ -41,17 +39,16 @@ import org.springframework.stereotype.Component;
 public class C_Async_Batch
 {
 	private final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
-	private final SerialLetterService serialLetterService;
-
-	public C_Async_Batch(@NonNull final SerialLetterService serialLetterService) {this.serialLetterService = serialLetterService;}
 
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = I_C_Async_Batch.COLUMNNAME_Processed)
-	public void print(final I_C_Async_Batch asyncBatch)
+	public void print(@NonNull final I_C_Async_Batch asyncBatch)
 	{
 		if (asyncBatch.isProcessed()
-				&& asyncBatchBL.isAsyncBatchTypeInternalName(asyncBatch, LetterConstants.C_Async_Batch_InternalName_CreateLettersAsync))
+				&& asyncBatchBL.isAsyncBatchTypeInternalName(asyncBatch, Async_Constants.C_Async_Batch_InternalName_InvoiceCandidate_Processing))
 		{
-			serialLetterService.printAutomaticallyLetters(asyncBatch);
+			ConcatenatePDFsCommand.builder()
+					.printingQueueItemsGeneratedAsyncBatch(asyncBatch)
+					.build().execute();
 		}
 	}
 }

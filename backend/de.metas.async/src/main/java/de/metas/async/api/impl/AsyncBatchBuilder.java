@@ -59,7 +59,6 @@ class AsyncBatchBuilder implements IAsyncBatchBuilder
 
 	AsyncBatchBuilder(final AsyncBatchBL asyncBatchBL)
 	{
-		super();
 		this.asyncBatchBL = asyncBatchBL;
 	}
 

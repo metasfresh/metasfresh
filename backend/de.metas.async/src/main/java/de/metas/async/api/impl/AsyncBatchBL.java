@@ -28,6 +28,8 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.Multimap;
 import de.metas.async.AsyncBatchId;
+import de.metas.async.api.AsyncBatchType;
+import de.metas.async.api.AsyncBatchTypeId;
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.api.IAsyncBatchBuilder;
 import de.metas.async.api.IAsyncBatchDAO;
@@ -43,13 +45,17 @@ import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.processor.impl.CheckProcessedAsynBatchWorkpackageProcessor;
 import de.metas.async.spi.IWorkpackagePrioStrategy;
 import de.metas.async.spi.NullWorkpackagePrio;
+import de.metas.cache.CCache;
 import de.metas.common.util.time.SystemTime;
+import de.metas.process.PInstanceId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.Env;
@@ -57,6 +63,7 @@ import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
 import java.sql.Timestamp;
+import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
@@ -75,6 +82,10 @@ public class AsyncBatchBL implements IAsyncBatchBL
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	private final ReentrantLock lock = new ReentrantLock();
+
+	private final CCache<AsyncBatchTypeId, AsyncBatchType> asyncBatchTypesById = CCache.<AsyncBatchTypeId, AsyncBatchType>builder()
+			.tableName(I_C_Async_Batch_Type.Table_Name)
+			.build();
 
 	@Override
 	public IAsyncBatchBuilder newAsyncBatch()
@@ -104,7 +115,7 @@ public class AsyncBatchBL implements IAsyncBatchBL
 		}
 
 		final I_C_Async_Batch asyncBatch = asyncBatchDAO.retrieveAsyncBatchRecord(asyncBatchId);
-		final I_C_Async_Batch_Type asyncBatchType = asyncBatch.getC_Async_Batch_Type();
+		final AsyncBatchType asyncBatchType = getAsyncBatchType(asyncBatch).orElse(null);
 		if (asyncBatchType != null && X_C_Async_Batch_Type.NOTIFICATIONTYPE_WorkpackageProcessed.equals(asyncBatchType.getNotificationType()))
 		{
 			final Properties ctx = InterfaceWrapperHelper.getCtx(workPackage);
@@ -350,23 +361,16 @@ public class AsyncBatchBL implements IAsyncBatchBL
 	{
 		final I_C_Async_Batch asyncBatchRecord = asyncBatchDAO.retrieveAsyncBatchRecord(asyncBatchId);
 
-		final I_C_Async_Batch_Type asyncBatchType = asyncBatchRecord.getC_Async_Batch_Type();
+		final AsyncBatchType asyncBatchType = getAsyncBatchType(asyncBatchRecord).orElse(null);
 		if (asyncBatchType == null)
 		{
 			return false;
 		}
-		final String keepAliveTimeHours = asyncBatchType.getKeepAliveTimeHours();
 
-		// if null or empty, keep alive for ever
-		if (Check.isBlank(keepAliveTimeHours))
-		{
-			return false;
-		}
-
-		final int keepAlive = Integer.parseInt(keepAliveTimeHours);
+		final Duration keepAlive = asyncBatchType.getKeepAlive();
 
 		// if 0, keep alive for ever
-		if (keepAlive == 0)
+		if (keepAlive.isZero())
 		{
 			return false;
 		}
@@ -376,7 +380,7 @@ public class AsyncBatchBL implements IAsyncBatchBL
 
 		final long diffHours = TimeUtil.getHoursBetween(lastUpdated, today);
 
-		return diffHours > keepAlive;
+		return diffHours > keepAlive.toHours();
 	}
 
 	@Override
@@ -486,12 +490,21 @@ public class AsyncBatchBL implements IAsyncBatchBL
 		return result.build();
 	}
 
+	@Override
+	public IAutoCloseable assignTempAsyncBatchIdToModel(@NonNull final Object model, @NonNull final AsyncBatchId asyncBatchId)
+	{
+		InterfaceWrapperHelper.setDynAttribute(model, DYN_ATTR_TEMPORARY_BATCH_ID, asyncBatchId);
+
+		return () -> InterfaceWrapperHelper.setDynAttribute(model, DYN_ATTR_TEMPORARY_BATCH_ID, null);
+	}
+
 	public I_C_Async_Batch getAsyncBatchById(@NonNull final AsyncBatchId asyncBatchId)
 	{
 		return asyncBatchDAO.retrieveAsyncBatchRecord(asyncBatchId);
 	}
 
 	@NonNull
+	@Override
 	public AsyncBatchId newAsyncBatch(@NonNull final String asyncBatchType)
 	{
 		final I_C_Async_Batch asyncBatch = trxManager.callInNewTrx(() -> newAsyncBatch()
@@ -499,7 +512,66 @@ public class AsyncBatchBL implements IAsyncBatchBL
 				.setC_Async_Batch_Type(asyncBatchType)
 				.setName(asyncBatchType)
 				.build());
-
 		return AsyncBatchId.ofRepoId(asyncBatch.getC_Async_Batch_ID());
+	}
+
+	@Override
+	public Optional<String> getAsyncBatchTypeInternalName(@NonNull final I_C_Async_Batch asyncBatch)
+	{
+		return getAsyncBatchType(asyncBatch).map(AsyncBatchType::getInternalName);
+	}
+
+	@Override
+	public boolean isAsyncBatchTypeInternalName(@NonNull final I_C_Async_Batch asyncBatch, @NonNull final String expectedInternalName)
+	{
+		final String internalName = getAsyncBatchTypeInternalName(asyncBatch).orElse(null);
+		return internalName != null && internalName.equals(expectedInternalName);
+	}
+
+
+	@Override
+	public Optional<AsyncBatchType> getAsyncBatchType(@NonNull final I_C_Async_Batch asyncBatch)
+	{
+		return AsyncBatchTypeId.optionalOfRepoId(asyncBatch.getC_Async_Batch_Type_ID())
+				.map(this::getAsyncBatchTypeById);
+	}
+
+	@Override
+	public AsyncBatchType getAsyncBatchTypeById(@NonNull final AsyncBatchTypeId asyncBatchTypeId)
+	{
+		return asyncBatchTypesById.getOrLoad(asyncBatchTypeId, this::retrieveAsyncBatchTypeById);
+	}
+
+	private AsyncBatchType retrieveAsyncBatchTypeById(@NonNull final AsyncBatchTypeId asyncBatchTypeId)
+	{
+		final I_C_Async_Batch_Type record = InterfaceWrapperHelper.load(asyncBatchTypeId, I_C_Async_Batch_Type.class);
+		return AsyncBatchType.builder()
+				.id(asyncBatchTypeId)
+				.internalName(record.getInternalName())
+				.notificationType(record.getNotificationType())
+				.keepAlive(extractKeepAlive(record))
+				.skipTimeout(extractSkipTimeout(record))
+				.adBoilderPlateId(record.getAD_BoilerPlate_ID())
+				.build();
+	}
+
+	private static Duration extractKeepAlive(@NonNull final I_C_Async_Batch_Type asyncBatchType)
+	{
+		final String keepAliveTimeHoursStr = StringUtils.trimBlankToNull(asyncBatchType.getKeepAliveTimeHours());
+
+		// if null or empty, keep alive forever
+		if (keepAliveTimeHoursStr == null)
+		{
+			return Duration.ZERO;
+		}
+
+		final int keepAliveTimeHours = Integer.parseInt(keepAliveTimeHoursStr);
+		return keepAliveTimeHours > 0 ? Duration.ofHours(keepAliveTimeHours) : Duration.ZERO;
+	}
+
+	private static Duration extractSkipTimeout(final I_C_Async_Batch_Type asyncBatchType)
+	{
+		final int skipTimeoutMillis = asyncBatchType.getSkipTimeoutMillis();
+		return skipTimeoutMillis > 0 ? Duration.ofMillis(skipTimeoutMillis) : Duration.ZERO;
 	}
 }
