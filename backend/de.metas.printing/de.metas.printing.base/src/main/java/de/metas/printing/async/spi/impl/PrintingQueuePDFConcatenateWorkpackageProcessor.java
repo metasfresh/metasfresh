@@ -71,8 +71,9 @@ public class PrintingQueuePDFConcatenateWorkpackageProcessor implements IWorkpac
 	private File concatenateFiles(final I_C_Queue_WorkPackage workpackage) throws IOException, DocumentException
 	{
 		final File file = createNewTemporaryPDFFile(workpackage);
-		final FileOutputStream fos = new FileOutputStream(file, false);
 		final Document document = new Document();
+		final FileOutputStream fos = new FileOutputStream(file, false);
+		
 		try
 		{
 			final PdfCopy copy = new PdfCopy(document, fos);
