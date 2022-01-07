@@ -134,7 +134,7 @@
     "current-device": "0.10.2",
     "d3": "6.7.0",
     "deep-unfreeze": "0.1.1",
-    "detect-browser": "5.2.0",
+    "detect-browser": "5.3.0",
     "google-map-react": "2.1.10",
     "history": "4.10.1",
     "immer": "9.0.7",
