@@ -189,14 +189,14 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	@Override
 	public void setC_BPartner_Vendor_ID (final int C_BPartner_Vendor_ID)
 	{
-		if (C_BPartner_Vendor_ID < 1) 
+		if (C_BPartner_Vendor_ID < 1)
 			set_Value (COLUMNNAME_C_BPartner_Vendor_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_C_BPartner_Vendor_ID, C_BPartner_Vendor_ID);
 	}
 
 	@Override
-	public int getC_BPartner_Vendor_ID() 
+	public int getC_BPartner_Vendor_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_C_BPartner_Vendor_ID);
 	}
@@ -635,6 +635,18 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	public int getExplodedFrom_BOMLine_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_ExplodedFrom_BOMLine_ID);
+	}
+
+	@Override
+	public void setExternalId (final @Nullable java.lang.String ExternalId)
+	{
+		set_Value (COLUMNNAME_ExternalId, ExternalId);
+	}
+
+	@Override
+	public java.lang.String getExternalId()
+	{
+		return get_ValueAsString(COLUMNNAME_ExternalId);
 	}
 
 	@Override
@@ -1698,7 +1710,7 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	}
 
 	@Override
-	public BigDecimal getTraded_Commission_Percent() 
+	public BigDecimal getTraded_Commission_Percent()
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Traded_Commission_Percent);
 		return bd != null ? bd : BigDecimal.ZERO;

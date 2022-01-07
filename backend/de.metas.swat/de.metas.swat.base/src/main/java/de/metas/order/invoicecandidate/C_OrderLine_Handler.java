@@ -216,6 +216,11 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 
 		icRecord.setC_Async_Batch_ID(order.getC_Async_Batch_ID());
 
+
+		// external identifiers
+		icRecord.setExternalLineId(orderLine.getExternalId());
+		icRecord.setExternalHeaderId(order.getExternalId());
+
 		// Don't save.
 		// That's done by the invoking API-impl, because we want to avoid C_Invoice_Candidate.invalidateCandidates() from being called on every single IC that is created here.
 		// Because it's a performance nightmare for orders with a lot of lines

@@ -722,7 +722,7 @@ public interface I_C_OrderLine
 	String COLUMNNAME_DateOrdered = "DateOrdered";
 
 	/**
-	 * Set Zugesagter Termin.
+	 * Set Date Promised.
 	 * Date Order was promised
 	 *
 	 * <br>Type: DateTime
@@ -732,7 +732,7 @@ public interface I_C_OrderLine
 	void setDatePromised (@Nullable java.sql.Timestamp DatePromised);
 
 	/**
-	 * Get Zugesagter Termin.
+	 * Get Date Promised.
 	 * Date Order was promised
 	 *
 	 * <br>Type: DateTime
@@ -835,6 +835,27 @@ public interface I_C_OrderLine
 
 	ModelColumn<I_C_OrderLine, org.eevolution.model.I_PP_Product_BOMLine> COLUMN_ExplodedFrom_BOMLine_ID = new ModelColumn<>(I_C_OrderLine.class, "ExplodedFrom_BOMLine_ID", org.eevolution.model.I_PP_Product_BOMLine.class);
 	String COLUMNNAME_ExplodedFrom_BOMLine_ID = "ExplodedFrom_BOMLine_ID";
+
+	/**
+	 * Set External ID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setExternalId (@Nullable java.lang.String ExternalId);
+
+	/**
+	 * Get External ID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getExternalId();
+
+	ModelColumn<I_C_OrderLine, Object> COLUMN_ExternalId = new ModelColumn<>(I_C_OrderLine.class, "ExternalId", null);
+	String COLUMNNAME_ExternalId = "ExternalId";
 
 	/**
 	 * Set Frachtbetrag.
@@ -2017,8 +2038,7 @@ public interface I_C_OrderLine
 	String COLUMNNAME_ProfitPriceActual = "ProfitPriceActual";
 
 	/**
-	 * Set Gelieferte Menge.
-	 * Delivered Quantity
+	 * Set Shipped Qty.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -2027,8 +2047,7 @@ public interface I_C_OrderLine
 	void setQtyDelivered (BigDecimal QtyDelivered);
 
 	/**
-	 * Get Gelieferte Menge.
-	 * Delivered Quantity
+	 * Get Shipped Qty.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true

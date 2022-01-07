@@ -42,6 +42,8 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
+
 public class HUCapacityBL implements IHUCapacityBL
 {
 
@@ -58,13 +60,13 @@ public class HUCapacityBL implements IHUCapacityBL
 	@Override
 	public Capacity getCapacity(
 			@NonNull final I_M_HU_PI_Item_Product itemDefProduct,
-			final ProductId productId,
+			@Nullable final ProductId productId,
 			@NonNull final I_C_UOM uom)
 	{
 		final ProductId productToUseId;
 		if (itemDefProduct.isAllowAnyProduct())
 		{
-			Check.assumeNotNull(productId, "productId not null");
+			Check.assumeNotNull(productId, "M_HU_PI_Item_Produc_ID={} has AllowAnyProduct='Y', so the given productId not may not be null", itemDefProduct.getM_HU_PI_Item_Product_ID());
 			productToUseId = productId;
 		}
 		else
