@@ -22,13 +22,19 @@
 
 package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_450;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.commons.XmlMode;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.XmlProcessing.ProcessingMod;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.XmlRequest;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.XmlRequest.RequestMod;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.esr.XmlEsrQR;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.processing.XmlTransport.TransportMod;
 import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.SnapshotHelper;
+import org.compiere.model.I_C_BP_BankAccount;
+import org.compiere.model.I_C_BPartner;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
@@ -70,6 +76,7 @@ public class Invoice450RequestConversionServiceTest
 	public void init()
 	{
 		invoice450RequestConversionService = new Invoice450RequestConversionService();
+		AdempiereTestHelper.get().init();
 	}
 
 	@Test
@@ -138,6 +145,45 @@ public class Invoice450RequestConversionServiceTest
 						.build());
 
 		final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+		invoice450RequestConversionService.fromCrossVersionRequest(withMod, outputStream);
+
+		assertXmlIsValid(new ByteArrayInputStream(outputStream.toByteArray()));
+		final String exportXmlString = outputStream.toString();
+		System.out.println(exportXmlString);
+
+		expect(exportXmlString).toMatchSnapshot();
+	}
+
+	@Test
+	public void exampleFile_Abrechnung_Praktischer_Arzt_TARMED_450_with_augment()
+	{
+		final int bPartnerId = 10;
+
+		final I_C_BP_BankAccount bankAccount = InterfaceWrapperHelper.newInstance(I_C_BP_BankAccount.class);
+		bankAccount.setC_BPartner_ID(bPartnerId);
+		bankAccount.setQR_IBAN("CH0930769016110591261");
+		bankAccount.setC_Currency_ID(123);
+		bankAccount.setAD_Org_Mapping_ID(123);
+		bankAccount.setIBAN("123");
+		InterfaceWrapperHelper.save(bankAccount);
+
+		final I_C_BPartner bPartner = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
+		bPartner.setC_BPartner_ID(bPartnerId);
+		InterfaceWrapperHelper.save(bPartner);
+
+		final String inputXmlFileName = "/public_examples/Abrechnung Praktischer Arzt TARMED 450.xml";
+		final InputStream inputStream = createInputStream(inputXmlFileName);
+		assertXmlIsValid(inputStream); // guard
+
+		final XmlRequest xRequest = invoice450RequestConversionService.toCrossVersionRequest(createInputStream(inputXmlFileName));
+		assertThat(xRequest.getModus()).isEqualTo(XmlMode.TEST); // guard
+		assertThat(xRequest.getProcessing().getTransport().getVias().size()).isEqualTo(1); // guard
+
+		final XmlRequest withMod = invoice450RequestConversionService.augmentRequest(xRequest, BPartnerId.ofRepoId(bPartnerId));
+
+		assertThat(withMod.getPayload().getBody().getEsr()).isOfAnyClassIn(XmlEsrQR.class);
+		final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+
 		invoice450RequestConversionService.fromCrossVersionRequest(withMod, outputStream);
 
 		assertXmlIsValid(new ByteArrayInputStream(outputStream.toByteArray()));

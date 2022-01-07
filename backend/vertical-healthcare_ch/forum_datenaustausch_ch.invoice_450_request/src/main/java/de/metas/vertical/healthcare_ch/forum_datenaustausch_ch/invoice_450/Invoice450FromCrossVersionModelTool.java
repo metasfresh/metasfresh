@@ -23,8 +23,13 @@
 package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_450;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.composite.BPartnerBankAccount;
+import de.metas.bpartner.service.BankAccountQuery;
+import de.metas.bpartner.service.IBPBankAccountDAO;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.util.Check;
+import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.commons.XmlMode;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_450.request.BalanceTGType;
@@ -96,9 +101,12 @@ import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.commontypes.XmlPostal;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.commontypes.XmlTelecom;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.XmlPayload;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.XmlPayload.PayloadMod;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.XmlProcessing;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.XmlRequest;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.XmlRequest.RequestMod;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.XmlBody;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.XmlBody.BodyMod;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.XmlCredit;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.XmlReminder;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.XmlBalance;
@@ -175,6 +183,8 @@ public class Invoice450FromCrossVersionModelTool
 	private final ObjectFactory jaxbRequestObjectFactory = new ObjectFactory();
 
 	private final Map<String, String> zsrToEanPartyMap = new HashMap<>();
+
+	private final IBPBankAccountDAO bpBankAccountDAO = Services.get(IBPBankAccountDAO.class);
 
 	private static final long VALIDATION_STATUS_OK = 0L;
 
@@ -1505,4 +1515,86 @@ public class Invoice450FromCrossVersionModelTool
 
 		return documentType;
 	}
+
+	public XmlRequest augmentRequest(final XmlRequest xAugmentedRequest, final BPartnerId bPartnerId)
+	{
+		if (isValidEsrQRCandidate(xAugmentedRequest))
+		{
+			final String qrIban = getQrIbanOrNull(bPartnerId);
+			if (!Check.isBlank(qrIban))
+			{
+				final XmlBody body = xAugmentedRequest.getPayload()
+						.getBody();
+				return xAugmentedRequest.withMod(RequestMod.builder()
+						.payloadMod(PayloadMod.builder()
+								.bodyMod(BodyMod
+										.builder()
+										.esr(createEsrQrFromEsr9((XmlEsr9)body.getEsr(), qrIban))
+										.build())
+								.build())
+						.build());
+			}
+		}
+		return xAugmentedRequest;
+	}
+
+	private boolean isValidEsrQRCandidate(final XmlRequest xAugmentedRequest)
+	{
+		return hasEsr9(xAugmentedRequest) && isReferenceNumberConvertible(xAugmentedRequest);
+	}
+
+	/**
+	 * This check is needed because, based on specs, Esr9 reference numbers can be of either type:
+	 * <ol>
+	 *     <li>([0-9] [0-9]{5} [0-9]{5} [0-9]{5}</li>
+	 *     <li>[0-9]{2} [0-9]{5} [0-9]{5} [0-9]{5} [0-9]{5} [0-9]{5})</li>
+	 * </ol>
+	 * While the EsrQR reference number accepted patterns are:
+	 * <ol>
+	 * 	  <li>[0-9]{27}</li>
+	 * 	  <li>RF[0-9]{2}[0-9A-Z]{1,21}</li>
+	 * </ol>
+	 * As a result, the ESR9 reference number can be converted to EsrQR only if it's exactly 27 characters long.
+	 *
+	 * @param xAugmentedRequest the XmlRequest to check
+	 * @return true if the reference number is convertible to EsrQR, false otherwise.
+	 */
+	private boolean isReferenceNumberConvertible(@NonNull final XmlRequest xAugmentedRequest)
+	{
+		return StringUtils.cleanWhitespace(((XmlEsr9)xAugmentedRequest.getPayload()
+						.getBody()
+						.getEsr())
+						.getReferenceNumber())
+				.length() == 27;
+	}
+
+	private XmlEsr createEsrQrFromEsr9(final @NonNull XmlEsr9 esr9, @NonNull final String qrIban)
+	{
+		final XmlEsrQR.XmlEsrQRBuilder xEsrQR = XmlEsrQR.builder();
+
+		xEsrQR.bank(esr9.getBank());
+		xEsrQR.creditor(esr9.getCreditor());
+		xEsrQR.type(jaxbRequestObjectFactory.createEsrQRType().getType());
+		xEsrQR.iban(qrIban);
+		xEsrQR.referenceNumber(StringUtils.cleanWhitespace(esr9.getReferenceNumber()));
+		xEsrQR.paymentReason(Collections.emptyList());
+
+		return xEsrQR.build();
+	}
+
+	private boolean hasEsr9(final XmlRequest xAugmentedRequest)
+	{
+		return xAugmentedRequest.getPayload().getBody().getEsr() instanceof XmlEsr9;
+	}
+
+	@Nullable
+	private String getQrIbanOrNull(final BPartnerId bpartnerID)
+	{
+		final BPartnerBankAccount bPartnerBankAccount = bpBankAccountDAO.getBpartnerBankAccount(BankAccountQuery.builder()
+				.containsQRIBAN(true)
+				.bPartnerId(bpartnerID)
+				.build()).stream().findFirst().orElse(null);
+		return bPartnerBankAccount == null ? null : bPartnerBankAccount.getQrIban();
+	}
+
 }

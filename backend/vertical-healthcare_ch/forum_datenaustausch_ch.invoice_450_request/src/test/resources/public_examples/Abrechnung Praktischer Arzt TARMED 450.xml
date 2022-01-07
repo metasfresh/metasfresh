@@ -123,7 +123,7 @@
                     </invoice:vat>
                 </invoice:balance>
             </invoice:tiers_payant>
-            <invoice:esr9 type="16or27" participant_number="01-432-5" reference_number="00 00000 00000 00000 00000 01236" coding_line="0100000111555&gt;000000000000000000000001236+ 010004325&gt;">
+            <invoice:esr9 type="16or27" participant_number="01-432-5" reference_number="12 34560 40902 15594 60105 69490" coding_line="0100000111555&gt;000000000000000000000001236+ 010004325&gt;">
                 <invoice:bank>
                     <invoice:company>
                         <invoice:companyname>Bank AG</invoice:companyname>

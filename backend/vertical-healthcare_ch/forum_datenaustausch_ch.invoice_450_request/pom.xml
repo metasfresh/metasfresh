@@ -13,6 +13,10 @@
 	<version>10.0.0</version>
 	<packaging>jar</packaging>
 
+	<properties>
+		<metasfresh.version>[1,10.0.0]</metasfresh.version>
+	</properties>
+
 	<dependencies>
 
 		<dependency>

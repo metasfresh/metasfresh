@@ -22,6 +22,7 @@
 
 package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_450;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.commons.ForumDatenaustauschChConstants;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.commons.XmlVersion;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_450.request.RequestType;
@@ -72,5 +73,10 @@ public class Invoice450RequestConversionService implements CrossVersionRequestCo
 	public XmlVersion getVersion()
 	{
 		return XmlVersion.v450;
+	}
+
+	public XmlRequest augmentRequest(final XmlRequest xAugmentedRequest, final BPartnerId invoice)
+	{
+		return Invoice450FromCrossVersionModelTool.INSTANCE.augmentRequest(xAugmentedRequest, invoice);
 	}
 }

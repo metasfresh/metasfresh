@@ -3,6 +3,7 @@ package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.export.dunn
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableMultimap.Builder;
+import de.metas.bpartner.BPartnerId;
 import de.metas.dunning_gateway.spi.DunningExportClient;
 import de.metas.dunning_gateway.spi.model.DunningAttachment;
 import de.metas.dunning_gateway.spi.model.DunningExportResult;
@@ -91,7 +92,7 @@ public class DunningExportClientImpl implements DunningExportClient
 	public boolean canExport(@NonNull final DunningToExport dunningToExport)
 	{
 		final ImmutableMultimap<CrossVersionRequestConverter, DunningAttachment> //
-		converters = extractConverters(dunningToExport.getDunningAttachments());
+				converters = extractConverters(dunningToExport.getDunningAttachments());
 
 		// TODO check if
 		// * the invoice's language and currency is OK, and if the invoice has a supported XML attachment
@@ -103,7 +104,7 @@ public class DunningExportClientImpl implements DunningExportClient
 	public List<DunningExportResult> export(@NonNull final DunningToExport dunning)
 	{
 		final ImmutableMultimap<CrossVersionRequestConverter, DunningAttachment> //
-		converter2ConvertableAttachment = extractConverters(dunning.getDunningAttachments());
+				converter2ConvertableAttachment = extractConverters(dunning.getDunningAttachments());
 
 		final ImmutableList.Builder<DunningExportResult> exportResults = ImmutableList.builder();
 
@@ -114,8 +115,10 @@ public class DunningExportClientImpl implements DunningExportClient
 				final XmlRequest xRequest = importConverter.toCrossVersionRequest(attachment.getDataAsInputStream());
 				final XmlRequest xAugmentedRequest = augmentRequest(xRequest, dunning);
 
+				final XmlRequest xRequestAugmentedByConverter = exportConverter.augmentRequest(xAugmentedRequest, BPartnerId.ofRepoId(dunning.getRecipientId().getRepoId()));
+
 				final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-					exportConverter.fromCrossVersionRequest(xAugmentedRequest, outputStream);
+				exportConverter.fromCrossVersionRequest(xRequestAugmentedByConverter, outputStream);
 
 				final ByteArrayInputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
 
@@ -138,7 +141,7 @@ public class DunningExportClientImpl implements DunningExportClient
 			@NonNull final List<DunningAttachment> dunningAttachments)
 	{
 		final Builder<CrossVersionRequestConverter, DunningAttachment> //
-		result = ImmutableMultimap.builder();
+				result = ImmutableMultimap.builder();
 
 		for (final DunningAttachment attachment : dunningAttachments)
 		{

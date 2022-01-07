@@ -25,7 +25,6 @@ package de.metas.banking.payment.paymentallocation.service;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import de.metas.allocation.api.PaymentAllocationId;
 import de.metas.banking.payment.paymentallocation.service.AllocationLineCandidate.AllocationLineCandidateType;
 import de.metas.currency.CurrencyConversionContext;
@@ -724,17 +723,12 @@ public class PaymentAllocationBuilder
 		// Check invoice-payment compatibility: same sign
 		final boolean positiveInvoiceAmtToAllocate = payable.getAmountsToAllocateInitial().getPayAmt().signum() >= 0;
 		final boolean positivePaymentAmtToAllocate = payment.getAmountToAllocateInitial().signum() >= 0;
-		if (positiveInvoiceAmtToAllocate != positivePaymentAmtToAllocate)
-		{
-			return false;
-		}
+		return positiveInvoiceAmtToAllocate == positivePaymentAmtToAllocate;
 
 		//
 		// Check invoice-payment compatibility: same BPartner
 		// NOTE: we don't check this because we are allowed to allocate invoice-payments of different BPartners
 		// Think about BP relations.
-
-		return true;
 	}
 
 	/**
