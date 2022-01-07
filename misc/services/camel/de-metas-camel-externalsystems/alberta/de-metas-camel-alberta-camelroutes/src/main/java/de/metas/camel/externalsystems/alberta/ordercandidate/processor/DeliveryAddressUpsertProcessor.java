@@ -79,7 +79,7 @@ public class DeliveryAddressUpsertProcessor implements Processor
 		final String bPartnerLocationIdentifier = ExternalIdentifierFormat.formatDeliveryAddressExternalId(patientId);
 
 		final String addressName = Joiner.on(", ").skipNulls()
-				.join(orderDeliveryAddress.getAddress(), orderDeliveryAddress.getAdditionalAddress2());
+				.join(orderDeliveryAddress.getAddress(), orderDeliveryAddress.getAdditionalAddress(), orderDeliveryAddress.getAdditionalAddress2());
 
 		final JsonRequestLocation deliveryAddressRequest = new JsonRequestLocation();
 		deliveryAddressRequest.setBpartnerName(orderDeliveryAddress.getName());
