@@ -13,8 +13,6 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
-import java.util.Objects;
-
 /*
  * #%L
  * marketing-serialleter
@@ -46,7 +44,7 @@ public class C_Async_Batch
 	public void print(@NonNull final I_C_Async_Batch asyncBatch)
 	{
 		if (asyncBatch.isProcessed()
-				&& Objects.equals(Async_Constants.C_Async_Batch_InternalName_InvoiceCandidate_Processing, asyncBatchBL.getAsyncBatchTypeInternalName(asyncBatch)))
+				&& asyncBatchBL.isAsyncBatchTypeInternalName(asyncBatch, Async_Constants.C_Async_Batch_InternalName_InvoiceCandidate_Processing))
 		{
 			ConcatenatePDFsCommand.builder()
 					.printingQueueItemsGeneratedAsyncBatch(asyncBatch)

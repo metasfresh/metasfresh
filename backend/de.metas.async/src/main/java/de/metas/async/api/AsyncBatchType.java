@@ -22,12 +22,12 @@
 
 package de.metas.async.api;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import de.metas.async.AsyncBatchId;
-import de.metas.util.lang.RepoIdAware;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
+import java.time.Duration;
 
 @Value
 @Builder
@@ -35,5 +35,8 @@ public class AsyncBatchType
 {
 	@NonNull AsyncBatchTypeId id;
 	@NonNull String internalName;
-
+	@Nullable String notificationType;
+	@NonNull Duration keepAlive;
+	@NonNull Duration skipTimeout;
+	int adBoilderPlateId;
 }

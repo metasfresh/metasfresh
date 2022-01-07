@@ -37,10 +37,7 @@ public class AutomaticallyInvoicePdfPrintinAsyncBatchListener implements IAsyncB
 	@Override
 	public void createNotice(@NonNull final I_C_Async_Batch asyncBatch)
 	{
-		final I_C_Async_Batch_Type asyncBatchType = asyncBatch.getC_Async_Batch_Type();
-		final String asyncBatchTypeName = asyncBatch != null ? asyncBatchBL.getAsyncBatchTypeInternalName(asyncBatchType) : null;
-
-		if (Async_Constants.C_Async_Batch_InternalName_AutomaticallyInvoicePdfPrinting.equals(asyncBatchTypeName))
+		if(asyncBatchBL.isAsyncBatchTypeInternalName(asyncBatch, Async_Constants.C_Async_Batch_InternalName_AutomaticallyInvoicePdfPrinting))
 		{
 			sendUserNotifications(asyncBatch);
 		}

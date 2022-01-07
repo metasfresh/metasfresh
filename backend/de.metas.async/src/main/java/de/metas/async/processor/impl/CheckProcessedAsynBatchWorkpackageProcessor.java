@@ -22,13 +22,8 @@ package de.metas.async.processor.impl;
  * #L%
  */
 
-import java.util.List;
-
-import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.service.ISysConfigBL;
-
 import de.metas.async.AsyncBatchId;
+import de.metas.async.api.AsyncBatchType;
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.exceptions.WorkpackageSkipRequestException;
@@ -36,6 +31,12 @@ import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.IWorkpackageProcessor;
 import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ISysConfigBL;
+
+import java.time.Duration;
+import java.util.List;
 
 /**
  * <ul>
@@ -44,7 +45,6 @@ import de.metas.util.Services;
  * <ul>
  * * Also tries to update the process flag is some specific conditions are met
  * </ul>
- *
  */
 public class CheckProcessedAsynBatchWorkpackageProcessor implements IWorkpackageProcessor
 {
@@ -98,14 +98,12 @@ public class CheckProcessedAsynBatchWorkpackageProcessor implements IWorkpackage
 
 	private int getWorkpackageSkipTimeoutMillis(@NonNull final I_C_Async_Batch asyncBatch)
 	{
-		if (asyncBatch.getC_Async_Batch_Type_ID() > 0)
+		final long skipTimeoutMillis = asyncBatchBL.getAsyncBatchType(asyncBatch).map(AsyncBatchType::getSkipTimeout).orElse(Duration.ZERO).toMillis();
+		if (skipTimeoutMillis > 0)
 		{
-			final int skipTimeoutMillis = asyncBatch.getC_Async_Batch_Type().getSkipTimeoutMillis();
-			if (skipTimeoutMillis > 0)
-			{
-				return skipTimeoutMillis;
-			}
+			return (int)skipTimeoutMillis;
 		}
+
 		return sysConfigBL.getIntValue(SYSCONFIG_WorkpackageSkipTimeoutMillis, DEFAULT_WorkpackageSkipTimeoutMillis);
 	}
 }

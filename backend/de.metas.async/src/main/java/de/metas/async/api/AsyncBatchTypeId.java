@@ -28,6 +28,8 @@ import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
 
+import java.util.Optional;
+
 @Value
 public class AsyncBatchTypeId implements RepoIdAware
 {
@@ -47,6 +49,11 @@ public class AsyncBatchTypeId implements RepoIdAware
 	public static AsyncBatchTypeId ofRepoIdOrNull(final int repoId)
 	{
 		return repoId > 0 ? new AsyncBatchTypeId(repoId) : null;
+	}
+
+	public static Optional<AsyncBatchTypeId> optionalOfRepoId(final int repoId)
+	{
+		return Optional.ofNullable(ofRepoIdOrNull(repoId));
 	}
 
 	@Override
