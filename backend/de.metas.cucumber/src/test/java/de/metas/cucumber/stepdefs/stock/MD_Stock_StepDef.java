@@ -73,7 +73,24 @@ public class MD_Stock_StepDef
 		}
 	}
 
-	private void truncateMDStockData()
+	/**
+	 * TODO: prepare the initial state without truncating
+	 */
+	private void truncateMDStockData() throws InterruptedException
+	{
+		try
+		{
+			truncateMDStockData0();
+		}
+		catch (final DBDeadLockDetectedException e)
+		{
+			logger.warn("Caught DBDeadLockDetectedException while truncating MDStockData! Will retry in 1second");
+			Thread.sleep(1000);
+			truncateMDStockData0();
+		}
+	}
+
+	private void truncateMDStockData0()
 	{
 		DB.executeUpdateEx("TRUNCATE TABLE M_Transaction cascade", ITrx.TRXNAME_None);
 		DB.executeUpdateEx("TRUNCATE TABLE M_InventoryLine cascade", ITrx.TRXNAME_None);
