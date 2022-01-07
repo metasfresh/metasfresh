@@ -46,6 +46,9 @@ import org.springframework.util.CollectionUtils;
 import java.util.Map;
 import java.util.Optional;
 
+/**
+ * Upserts a doctor or pharmacy if required.
+ */
 public class CreateMissingBPartnerProcessor implements Processor
 {
 	@Override
