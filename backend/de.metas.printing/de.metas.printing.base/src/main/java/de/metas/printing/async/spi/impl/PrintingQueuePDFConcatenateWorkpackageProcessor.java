@@ -29,7 +29,6 @@ import org.slf4j.MDC;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
 
 /**
@@ -132,7 +131,8 @@ public class PrintingQueuePDFConcatenateWorkpackageProcessor implements IWorkpac
 		final I_AD_Archive archive = pq.getAD_Archive();
 		Check.assumeNotNull(archive, "Archive references an AD_Archive record");
 
-		final InputStream data = archiveBL.getBinaryDataAsStream(archive);
+		final byte[] data = archiveBL.getBinaryData(archive);
+
 		try
 		{
 			return new PdfReader(data);
