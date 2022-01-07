@@ -34,12 +34,13 @@ import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueuer;
 import de.metas.invoicecandidate.api.IInvoicingParams;
 import de.metas.invoicecandidate.api.impl.InvoicingParams;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.organization.OrgId;
 import de.metas.printing.async.spi.impl.InvoiceEnqueueingWorkpackageProcessor;
 import de.metas.process.JavaProcess;
 import de.metas.process.PInstanceId;
 import de.metas.process.Param;
-import de.metas.process.ProcessExecutionResult.ShowProcessLogs;
 import de.metas.process.RunOutOfTrx;
+import de.metas.product.ProductCategoryId;
 import de.metas.security.permissions.Access;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -67,24 +68,21 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicingAndPDFConcatenating
 	// Parameters
 	private IInvoicingParams invoicingParams;
 
-	private int selectionCount = 0;
-
 	@Param(parameterName = I_C_Invoice_Candidate.COLUMNNAME_AD_Org_ID, mandatory = true)
-	private int p_AD_Org_ID;
+	private OrgId p_AD_Org_ID;
 
 	@Param(parameterName = I_M_Product.COLUMNNAME_M_Product_Category_ID, mandatory = true)
-	private int p_M_Product_Category_ID;
+	private ProductCategoryId p_M_Product_Category_ID;
 
 	@Override
 	@RunOutOfTrx
 	protected void prepare()
 	{
-		setShowProcessLogs(ShowProcessLogs.OnError);
-
 		final IParams params = getParameterAsIParams();
 		this.invoicingParams = new InvoicingParams(params);
 
-		selectionCount = createSelection();
+		int selectionCount = createSelection();
+
 		if (selectionCount <= 0)
 		{
 			final Properties ctx = getCtx();

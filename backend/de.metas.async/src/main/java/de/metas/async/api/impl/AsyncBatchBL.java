@@ -493,7 +493,6 @@ public class AsyncBatchBL implements IAsyncBatchBL
 	@Override
 	public IAutoCloseable assignTempAsyncBatchIdToModel(@NonNull final Object model, @NonNull final AsyncBatchId asyncBatchId)
 	{
-		Check.assumeNotNull(asyncBatchId, "asyncBatchId not null");
 		InterfaceWrapperHelper.setDynAttribute(model, DYN_ATTR_TEMPORARY_BATCH_ID, asyncBatchId);
 
 		return () -> InterfaceWrapperHelper.setDynAttribute(model, DYN_ATTR_TEMPORARY_BATCH_ID, null);
